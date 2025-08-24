@@ -29,12 +29,12 @@ if TYPE_CHECKING:
 class MessageSession:
     session_info: SessionInfo
     sent: List[MessageChain] = []
-    trigger_msg: Optional[str] = ''
+    trigger_msg: Optional[str] = ""
     matched_msg: Optional[Union[Match[str], Tuple[Any]]] = None
     parsed_msg: Optional[dict] = None
 
     @property
-    @deprecated(reason='Use `session_info` instead.')
+    @deprecated(reason="Use `session_info` instead.")
     def target(self) -> SessionInfo:
         return self.session_info
 
@@ -390,13 +390,6 @@ class MessageSession:
         if self.session_info.sender_id in self.session_info.custom_admins or self.session_info.sender_info.superuser:
             return True
         return await self.check_native_permission()
-
-    async def qq_set_group_leave(self):
-        """
-        用于QQ平台设置群组离开。
-        """
-        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
-        return await _queue_server.qq_set_group_leave(self.session_info)
 
     async def qq_call_api(self, api_name: str, **kwargs) -> Any:
         """

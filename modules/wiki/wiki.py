@@ -731,7 +731,7 @@ async def query_pages(
         }
 
 
-@wiki.hook('autosearch')
+@wiki.hook("autosearch")
 async def auto_search(ctx: Bot.ModuleHookContext):
     title = ctx.args["title"]
     iw = ""
@@ -756,7 +756,7 @@ async def auto_search(ctx: Bot.ModuleHookContext):
     ]
 
 
-@wiki.hook('auto_get_custom_iw_list')
+@wiki.hook("auto_get_custom_iw_list")
 async def auto_get_custom_iw_list(ctx: Bot.ModuleHookContext):
     """
     Get custom interwiki list from target info.

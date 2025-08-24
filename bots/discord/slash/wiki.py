@@ -24,8 +24,8 @@ wiki = discord_bot.create_group("wiki", "Query information from Mediawiki-based 
 
 
 async def auto_get_custom_iw_list(ctx: discord.AutocompleteContext):
-    session = await ctx_to_session(ctx, '')
-    return await JobQueueClient.trigger_hook('wiki.auto_get_custom_iw_list',
+    session = await ctx_to_session(ctx, "")
+    return await JobQueueClient.trigger_hook("wiki.auto_get_custom_iw_list",
                                              session, wait=True)
 
 
@@ -35,10 +35,10 @@ async def default_wiki(ctx: discord.AutocompleteContext):
 
 
 async def auto_search(ctx: discord.AutocompleteContext):
-    session = await ctx_to_session(ctx, '')
-    return await JobQueueClient.trigger_hook('wiki.autosearch',
+    session = await ctx_to_session(ctx, "")
+    return await JobQueueClient.trigger_hook("wiki.autosearch",
                                              session, wait=True,
-                                             **{'title': ctx.options["pagename"]})
+                                             **{"title": ctx.options["pagename"]})
 
 
 @wiki.command(name="query", description="Query a wiki page.")

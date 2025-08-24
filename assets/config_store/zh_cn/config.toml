@@ -4,7 +4,6 @@
 
 default_locale = "zh_cn" # 默认的会话语言环境。
 config_version = 2 # 配置版本号，将会随功能更新自增，一般情况请勿修改。
-initialized = true
 
 [config]
 # 一些基础的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
@@ -17,6 +16,7 @@ tos_warning_counts = 5 # 违反 ToS 时的警告次数。
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # 问题反馈网址。
 enable_joke = true # 是否启用玩笑，启用后将在服务器时间 4 月 1 日时发生。
 shuffle_rate = 0.1 # 玩笑的随机发生率，范围 0 到 1 之间。
+unloaded_modules = [] # 不加载的模块列表，匹配到此列表中的模块将不会被加载。
 use_font_mirror = false # 渲染网页时是否使用字体镜像。
 use_secrets_random = false # 是否使用基于 secrets 库的随机数生成器。
 enable_petal = false # 是否启用花瓣功能。
@@ -50,7 +50,7 @@ slower_schedule = false # 是否启用更慢的计划任务调度器。（减少
 # 密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
 check_access_key_id = "<Replace me with str value>" # 阿里云内容安全服务的 AccessKey ID。
 check_access_key_secret = "<Replace me with str value>" # 阿里云内容安全服务的 AccessKey Secret。
-ff3_key = "25FDA29B045EE0034966792BAD5AF1C0" # 用于加密敏感信息的密钥。（使用 ff3 算法进行加密，部分场景可能会使用到）
-ff3_tweak = "1E915EC4922E78" # 用于加密敏感信息的密钥偏移量。
+ff3_key = "<Replace me with str value>" # 用于加密敏感信息的密钥。（使用 ff3 算法进行加密，部分场景可能会使用到）
+ff3_tweak = "<Replace me with str value>" # 用于加密敏感信息的密钥偏移量。
 proxy = "<Replace me with str value>" # 代理服务地址。
 db_path = "sqlite://database/save.db" # 数据库连接字符串，请使用 Tortoise ORM 支持的数据库连接字符串格式。

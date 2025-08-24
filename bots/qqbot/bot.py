@@ -65,8 +65,7 @@ class MyClient(botpy.Client):
                                            prefixes=prefixes,
                                            require_enable_modules=require_enable_modules,
                                            require_check_dirty_words=dirty_word_check,
-                                           use_url_manager=use_url_manager,
-                                           force_use_url_manager=True
+                                           use_url_manager=use_url_manager
                                            )
 
         await Bot.process_message(session, message)
@@ -107,8 +106,7 @@ class MyClient(botpy.Client):
                                            prefixes=prefixes,
                                            require_enable_modules=require_enable_modules,
                                            require_check_dirty_words=dirty_word_check,
-                                           use_url_manager=use_url_manager,
-                                           force_use_url_manager=True
+                                           use_url_manager=use_url_manager
                                            )
 
         await Bot.process_message(session, message)
@@ -150,8 +148,7 @@ class MyClient(botpy.Client):
                                            prefixes=prefixes,
                                            require_enable_modules=require_enable_modules,
                                            require_check_dirty_words=dirty_word_check,
-                                           use_url_manager=use_url_manager,
-                                           force_use_url_manager=True
+                                           use_url_manager=use_url_manager
                                            )
 
         await Bot.process_message(session, message)
@@ -189,8 +186,7 @@ class MyClient(botpy.Client):
                                            prefixes=prefixes,
                                            require_enable_modules=require_enable_modules,
                                            require_check_dirty_words=dirty_word_check,
-                                           use_url_manager=use_url_manager,
-                                           force_use_url_manager=True
+                                           use_url_manager=use_url_manager
                                            )
 
         await Bot.process_message(session, message)
@@ -228,8 +224,7 @@ class MyClient(botpy.Client):
                                            prefixes=prefixes,
                                            require_enable_modules=require_enable_modules,
                                            require_check_dirty_words=dirty_word_check,
-                                           use_url_manager=use_url_manager,
-                                           force_use_url_manager=True
+                                           use_url_manager=use_url_manager
                                            )
 
         await Bot.process_message(session, message)

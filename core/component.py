@@ -8,6 +8,7 @@ from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
 from core.builtins.parser.args import parse_template
+from core.config.decorator import _process_class
 from core.builtins.types import MessageElement
 from core.loader import ModulesManager
 from core.types import Module
@@ -188,6 +189,20 @@ class Bind:
             ):
                 return self.schedule(*args, **kwargs)
             return self.command(*args, **kwargs)
+
+        def config(self, cls=None, secret: bool = False):
+
+            def wrap(cls):
+                return _process_class(
+                    cls,
+                    "module_" +
+                    self.bind_prefix +
+                    '_secret' if secret else "module_" +
+                    self.bind_prefix)
+
+            if cls is None:
+                return wrap
+            return wrap(cls)
 
 
 def module(

@@ -51,8 +51,8 @@ def convert_msg_nodes(
     node_list = []
     for message in msg_node.values:
         content = ""
-        msgchain = message.as_sendable(session_info=session_info)
-        for x in msgchain:
+        msg_chain = message.as_sendable(session_info=session_info)
+        for x in msg_chain:
             if isinstance(x, PlainElement):
                 content += x.text + "\n"
             elif isinstance(x, ImageElement):
@@ -385,18 +385,6 @@ class AIOCQContextManager(ContextManager):
                                                 message=f"[CQ:poke,qq={qq_account}]")
             else:
                 pass
-
-    @classmethod
-    async def set_group_leave(cls, session_info: SessionInfo) -> None:
-        """
-        设置群组离开。
-
-        :param session_info: 会话信息
-        """
-        if session_info.target_from == target_group_prefix:
-            await aiocqhttp_bot.call_action("set_group_leave", group_id=int(session_info.get_common_target_id()))
-        else:
-            raise ValueError("Session is not a group session")
 
     @classmethod
     async def call_api(cls, api_name: str, **kwargs) -> Optional[dict]:

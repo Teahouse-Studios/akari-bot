@@ -21,7 +21,7 @@ from .background_tasks import init_background_task
 
 
 async def init_async(start_scheduler=True) -> None:
-    Info.client_name = 'Server'
+    Info.client_name = "Server"
     Logger.rename(Info.client_name)
     returncode, commit_hash, _ = await run_sys_command(["git", "rev-parse", "HEAD"])
     if returncode == 0:

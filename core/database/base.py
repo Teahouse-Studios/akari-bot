@@ -34,7 +34,7 @@ class DBModel(Model):
             t = target_id
         else:
             if ex := exports.get("Bot"):
-                ex: 'Bot'
+                ex: "Bot"
                 if isinstance(target_id, (ex.MessageSession, ex.FetchedMessageSession)):
                     t = target_id.session_info.target_id
         if not t:
@@ -61,7 +61,7 @@ class DBModel(Model):
             t = sender_id
         else:
             if ex := exports.get("Bot"):
-                ex: 'Bot'
+                ex: "Bot"
                 if isinstance(sender_id, (ex.MessageSession, ex.FetchedMessageSession)):
                     t = sender_id.session_info.sender_id
         if not t:

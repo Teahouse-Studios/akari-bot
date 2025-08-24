@@ -4,7 +4,6 @@
 
 default_locale = "en_us" # Default session language environment.
 config_version = 2 # Config version number, which will be automatically updated with the features and generally does not need to be modified.
-initialized = true
 
 [config]
 # The basic config section. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.
@@ -17,6 +16,7 @@ tos_warning_counts = 5 # Maximum number of warnings for ToS violations.
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # Issue feedback URL.
 enable_joke = true # Whether to enable the joke. It will occur at April 1st server time when enabled.
 shuffle_rate = 0.1 # The random occurrence rate of jokes, ranging from 0 to 1.
+unloaded_modules = [] # Unloaded modules list. Modules matching this list will not be loaded.
 use_font_mirror = false # Whether to use font mirrors when rendering web pages.
 use_secrets_random = false # Whether to use the random number generator based on the secrets library.
 enable_petal = false # Whether to enable the petal feature.
@@ -50,7 +50,7 @@ slower_schedule = false # Whether to enable a slower scheduled task scheduler. (
 # The secret config section. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.
 check_access_key_id = "<Replace me with str value>" # The AccessKey ID of Alibaba Cloud Content Security Service.
 check_access_key_secret = "<Replace me with str value>" # The AccessKey Secret of Alibaba Cloud Content Security Service.
-ff3_key = "25FDA29B045EE0034966792BAD5AF1C0" # The key used to encrypt sensitive information. (Encrypted using the ff3 algorithm, which may be used in some scenarios)
-ff3_tweak = "1E915EC4922E78" # The key tweak used to encrypt sensitive information.
+ff3_key = "<Replace me with str value>" # The key used to encrypt sensitive information. (Encrypted using the ff3 algorithm, which may be used in some scenarios)
+ff3_tweak = "<Replace me with str value>" # The key tweak used to encrypt sensitive information.
 proxy = "<Replace me with str value>" # Proxy service address.
 db_path = "sqlite://database/save.db" # Database connection string, use the connection string format supported by Tortoise ORM.

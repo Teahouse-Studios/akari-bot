@@ -70,7 +70,7 @@ class JobQueueBase:
 
     @classmethod
     async def _process_task(cls, tsk):
-        bot: "Bot" = exports['Bot']
+        bot: "Bot" = exports["Bot"]
         try:
             timestamp = tsk.timestamp
             if datetime.datetime.now().timestamp() - timestamp.timestamp() > 7200:
@@ -105,24 +105,24 @@ class JobQueueBase:
 
         # The code below should not be reached if the task is processed correctly.
         Logger.error(f"Task {tsk.action}({tsk.task_id}) seems not finished properly, bug in code?")
-        await tsk.set_status('failed')
+        await tsk.set_status("failed")
 
     @classmethod
     async def _check_queue(cls, target_client: str = None):
-        # Logger.debug(f"Checking job queue for {cls.name}, target client: {target_client if target_client else 'all'}")
+        # Logger.debug(f"Checking job queue for {cls.name}, target client: {target_client if target_client else "all"}")
         for task_id in QueueTaskManager.tasks.copy():
             tsk = await JobQueuesTable.get_or_none(task_id=task_id)
-            if tsk and tsk.status not in ['pending', 'processing']:
+            if tsk and tsk.status not in ["pending", "processing"]:
                 await QueueTaskManager.set_result(task_id, tsk.result)
-        # Logger.debug([cls.name, target_client if target_client else exports['Bot'].Info.client_name])
+        # Logger.debug([cls.name, target_client if target_client else exports["Bot"].Info.client_name])
 
         get_all = await JobQueuesTable.get_all(
-            [cls.name, target_client if target_client else exports['Bot'].Info.client_name])
+            [cls.name, target_client if target_client else exports["Bot"].Info.client_name])
 
         for tsk in get_all:
             Logger.trace(f"Received job queue task {tsk.task_id}, action: {tsk.action}")
             Logger.trace(f"Args: {tsk.args}")
-            await tsk.set_status('processing')
+            await tsk.set_status("processing")
             asyncio.create_task(cls._process_task(tsk))
 
     @classmethod

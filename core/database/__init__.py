@@ -1,5 +1,6 @@
 import importlib.util
 import pkgutil
+from typing import List, Optional
 
 from tortoise import Tortoise
 
@@ -17,7 +18,7 @@ def fetch_module_db():
     for m in pkgutil.iter_modules(modules.__path__):
         try:
             if m.name not in unloaded_modules:
-                database_list.append(importlib.util.find_spec('modules.' + m.name + '.database.models').name)
+                database_list.append(importlib.util.find_spec(f"modules.{m.name}.database.models").name)
         except ModuleNotFoundError:
             pass
 
@@ -25,9 +26,10 @@ def fetch_module_db():
     return database_list
 
 
-async def init_db(load_module_db: bool = True) -> None:
+async def init_db(load_module_db: bool = True, db_models: Optional[List[str]] = None) -> bool:
     try:
         database_list = fetch_module_db() if load_module_db else []
+        database_list += db_models if db_models else []
         await Tortoise.init(
             config={
                 "connections": {
@@ -56,9 +58,9 @@ async def init_db(load_module_db: bool = True) -> None:
         return False
 
 
-async def reload_db():
+async def reload_db(db_models: Optional[List[str]] = None):
     await Tortoise.close_connections()
-    if not await init_db():
+    if not await init_db(db_models=db_models):
         Logger.error("Failed to reload database, fallbacking...")
-        return await init_db(Temp.data["modules_db_list"])
+        return await init_db(load_module_db=False, db_models=Temp.data["modules_db_list"])
     return True

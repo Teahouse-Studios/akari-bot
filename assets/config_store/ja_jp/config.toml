@@ -4,7 +4,6 @@
 
 default_locale = "ja_jp" # デフォルトのセッション ロケール。
 config_version = 2 # バージョン番号。機能アップデートに伴い自動的に増加されるので、通常は変更しないでください。
-initialized = true
 
 [config]
 # 基本的な設定項目です。ここに入力された値は、メッセージ内にプレーンテキストで表示されます。この部分には機密情報を入力しないでください。
@@ -17,6 +16,7 @@ tos_warning_counts = 5 # 利用規約違反に対する警告の最大数。
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # フィードバックの URL。
 enable_joke = true # ジョークを有効にするかどうか。有効にすると、サーバー時間の 4 月 1 日（エイプリルフール）に実行されます。
 shuffle_rate = 0.1 # ジョークのランダム発生率。範囲は 0 から 1 です。
+unloaded_modules = [] # ロードされないモジュールのリスト。このリストに一致するモジュールはロードされない。
 use_font_mirror = false # ウェブページのをレンダリングするときにフォントのミラーリングを使用するかどうか。
 use_secrets_random = false # secrets ライブラリに基づく乱数ジェネレータを使用するかどうか。
 enable_petal = false # ペタル機能を有効にするかどうか。
@@ -36,7 +36,6 @@ timezone_offset = "+8" # ボットのデフォルトのタイムゾーン オフ
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # コマンド確認用のキーワード。ここに入力された値はコマンド確認用の単語として認識されます。
 command_prefix = ["~", "～"] # コマンドのプレフィックス。ここに入力された値はコマンドのプレフィックスとして認識されます。
 enable_dirty_check = false # テキスト フィルタ リング検出を有効にするかどうか。Alibaba Cloud コンテンツ セキュリティ サービスの AccessKey ID と AccessKey Secret を設定する必要があります。
-
 enable_urlmanager = false # URL スプリングボードの URLManager を有効にするかどうか。（URL が公式リンクではないことを宣言するなど）
 enable_eval = false # eval モジュールを有効にするかどうか。
 help_url = "https://bot.teahouse.team" # ドキュメントの URL。
@@ -47,11 +46,12 @@ enable_commit_url = true # バージョン情報を表示する時にコミッ�
 locale_url = "https://www.crowdin.com/project/akari-bot" # 翻訳プロジェクトの URL。
 slower_schedule = false # 低速のスケジュールタスクスケジューラを有効にするかどうか。（リクエストの負荷を軽減するため）
 
+
 [secret]
 # キーの設定項目です。ここに入力された値は、送信メッセージに誤って含まれた場合、ボットはそれを傍受しようとします。ただし、漏洩を防ぐよう注意してください。
 check_access_key_id = "<Replace me with str value>" # Alibaba Cloud コンテンツ セキュリティ サービスの AccessKey ID。
 check_access_key_secret = "<Replace me with str value>" # Alibaba Cloud コンテンツ セキュリティ サービスの AccessKey Secret。
-ff3_key = "25FDA29B045EE0034966792BAD5AF1C0" # 用于加密敏感信息的密钥。（使用 ff3 算法进行加密，部分场景可能会使用到）
-ff3_tweak = "1E915EC4922E78" # 用于加密敏感信息的密钥偏移量。
+ff3_key = "<Replace me with str value>" # 用于加密敏感信息的密钥。（使用 ff3 算法进行加密，部分场景可能会使用到）
+ff3_tweak = "<Replace me with str value>" # 用于加密敏感信息的密钥偏移量。
 proxy = "<Replace me with str value>" # プロキシ サービスのアドレス。
 db_path = "sqlite://database/save.db" # データベース接続文字列。Tortoise ORM でサポートされているデータベース接続文字列形式を使用してください。

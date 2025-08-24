@@ -24,7 +24,7 @@ async def get_weekly(with_img=False, zh_tw=False):
         200))
     b_result = BeautifulSoup(result["parse"]["text"]["*"], "html.parser")
     html = b_result.find("div", class_="mp-section")
-    el = html.find("div").find_all('div')
+    el = html.find("div").find_all("div")
     content = el[1]
     text = re.sub(r"<p>", "\n", str(content))  # 分段
     text = re.sub(r"<(.*?)>", "", text, flags=re.DOTALL)  # 移除所有 HTML 标签

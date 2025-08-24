@@ -1,7 +1,6 @@
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Image
 from core.component import module
-from core.utils.cooldown import CoolDown
 from modules.cytoid.database.models import CytoidBindInfo
 from .profile import cytoid_profile
 from .rating import get_rating
@@ -23,13 +22,13 @@ async def _(msg: Bot.MessageSession, username: str = None):
 
 @ctd.command(
     "b30 [<username>] {{I18N:cytoid.help.b30}}",
-    "r30 [<username>] {{I18N:cytoid.help.r30}}"
+    "r10 [<username>] {{I18N:cytoid.help.r10}}"
 )
 async def _(msg: Bot.MessageSession, username: str = None):
     if "b30" in msg.parsed_msg:
         query = "b30"
-    elif "r30" in msg.parsed_msg:
-        query = "r30"
+    elif "r10" in msg.parsed_msg:
+        query = "r10"
     else:
         return
     if username:
@@ -40,22 +39,12 @@ async def _(msg: Bot.MessageSession, username: str = None):
             await msg.finish(I18NContext("cytoid.message.user_unbound", prefix=msg.session_info.prefixes[0]))
         query_id = bind_info.username
     if query:
-        if msg.check_super_user():
-            c = 0
-        else:
-            qc = CoolDown("cytoid_rank", msg, 150)
-            c = qc.check()
-        if c == 0:
-            img = await get_rating(msg, query_id, query)
-            if not msg.check_super_user() and img["status"]:
-                qc.reset()
+        img = await get_rating(msg, query_id, query)
+        if img and img["status"]:
             if "path" in img:
-                await msg.finish([Image(path=img["path"])], enable_split_image=False)
+                await msg.finish(Image(path=img["path"]))
             elif "text" in img:
                 await msg.finish(img["text"])
-        else:
-            await msg.finish([I18NContext("message.cooldown", time=int(c)),
-                              I18NContext("cytoid.message.b30.cooldown")])
 
 
 @ctd.command("bind <username> {{I18N:cytoid.help.bind}}")

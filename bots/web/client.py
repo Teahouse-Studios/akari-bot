@@ -4,21 +4,28 @@ from contextlib import asynccontextmanager
 
 from argon2 import PasswordHasher
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
 from fastapi.responses import RedirectResponse
-from flask import Flask, abort, send_from_directory
+from fastapi.middleware.cors import CORSMiddleware
+from flask import Flask, send_from_directory
 from slowapi import Limiter
+from fastapi.responses import FileResponse
 from slowapi.util import get_remote_address
 from tortoise import Tortoise
 
 from bots.web.info import *
 from core.client.init import client_init
 from core.config import Config
-from core.constants.path import webui_path
+from core.constants.path import assets_path
 from core.database.models import JobQueuesTable, SenderInfo
 from core.logger import Logger
 from core.utils.socket import find_available_port, get_local_ip
+
+try:
+    from akari_bot_webui.entrypoint import dist_path
+except ImportError:
+    dist_path = ""
+
 
 enable_https = Config("enable_https", default=False, table_name="bot_web")
 protocol = "https" if enable_https else "http"
@@ -58,7 +65,7 @@ def _webui_message():
 async def lifespan(app: FastAPI):
     await client_init(target_prefix_list, sender_prefix_list)
     await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id=f"{sender_prefix}|0")
-    if os.path.exists(webui_path):
+    if os.path.exists(dist_path):
         Logger.info(_webui_message())
     yield
     await asyncio.sleep(3)  # 等待 server 清理进程
@@ -76,21 +83,23 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=allow_origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
-if os.path.exists(webui_path):
-    flask_app = Flask(__name__)
 
-    @flask_app.route("/")
+if os.path.exists(dist_path):
+    flask_app = Flask(__name__, root_path="webui")
+
+    @flask_app.route("/", defaults={"path": ""})
     @flask_app.route("/<path:path>")
-    def serve_webui(path=None):
-        if path and "/" in path:
-            abort(404)
-        return send_from_directory(webui_path, "index.html")
+    def serve_webui(path):
+        file_path = os.path.join(dist_path, path)
+        if path != "" and os.path.exists(file_path):
+            return send_from_directory(dist_path, path)
+        return send_from_directory(dist_path, "index.html")
 
-    app.mount("/webui", WSGIMiddleware(flask_app))
+    app.mount("/webui", WSGIMiddleware(flask_app), 'webui')
 
     @app.get("/")
     async def redirect_to_webui():
@@ -100,3 +109,8 @@ else:
     @app.get("/")
     async def redirect_to_api():
         return RedirectResponse(url="/api")
+
+
+@app.get("/favicon.ico")
+async def favicon():
+    return FileResponse(os.path.join(assets_path, "favicon.ico"))

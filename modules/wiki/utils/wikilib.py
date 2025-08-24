@@ -314,7 +314,7 @@ class WikiLib:
     async def check_wiki_info_from_database_cache(self):
         """检查wiki信息是否已记录在数据库缓存（由于部分wiki通过path区分语言，此处仅模糊查询域名部分，返回结果可能不准确）"""
         parse_url = urllib.parse.urlparse(self.url)
-        get = await WikiSiteInfo.get_like_this(parse_url.scheme + '://' + parse_url.netloc)
+        get = await WikiSiteInfo.get_like_this(parse_url.scheme + "://" + parse_url.netloc)
         if get:
             api_link = get.api_link
             if api_link in redirect_list:

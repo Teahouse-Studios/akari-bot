@@ -134,7 +134,7 @@ async def format_ip(msg: Bot.MessageSession, info: Dict[str, Any]):
     ip_type_label = str(I18NContext("ip.message.type"))
     ip_property_label = str(ip_property_map.get(info.get("ip_property"), ip_property_map["unknown"]))
     ip_property_suffix = str(I18NContext("ip.message.ip_property"))
-    ip_type = f"IPv{info['version']}{ip_property_label}{ip_property_suffix}"
+    ip_type = f"IPv{info["version"]}{ip_property_label}{ip_property_suffix}"
     res.append(Plain(f"{ip_type_label}{ip_type}"))
 
     real_ip = info.get("real_ip")

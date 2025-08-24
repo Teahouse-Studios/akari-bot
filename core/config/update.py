@@ -93,12 +93,14 @@ class ConfigReorganizer:
         self._init_file(cfg_name)
 
         if table not in self.configs[cfg_name]:
-            if self.prefix:
-                qk = f"config.table.secret_{self.prefix.rstrip('_')}" if table.endswith(
-                    "_secret") else f"config.table.config_{self.prefix.rstrip('_')}"
             self.configs[cfg_name].add(nl())
             self.configs[cfg_name].add(table, toml_document())
-            self.configs[cfg_name][table].add(toml_comment(self.locale.t(qk, fallback_failed_prompt=False)))
+            if self.prefix:
+                if table.endswith("_secret"):
+                    qk = f"config.table.secret_{self.prefix.rstrip("_")}"
+                else:
+                    qk = f"config.table.config_{self.prefix.rstrip("_")}"
+                self.configs[cfg_name][table].add(toml_comment(self.locale.t(qk, fallback_failed_prompt=False)))
 
         try:
             self.configs[cfg_name][table].add(key, self.config[c_target][key])
