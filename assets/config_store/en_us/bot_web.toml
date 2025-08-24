@@ -8,7 +8,10 @@ enable = true # Whether to enable this platform.
 enable_https = false # Whether to enable HTTPS protocol security measures.
 web_host = "127.0.0.1" # The host address of the Web service. Setting to 0.0.0.0 will listen to all addresses.
 web_port = 6485 # The port number of the Web service. Setting to 0 will disable the service.
-login_max_attempts = 5 # Maximum number of login requests limit.
+login_max_attempt = 5 # Maximum number of login requests limit.
+heartbeat_attempt = 3 # The number of attempts to send heartbeat messages.
+heartbeat_interval = 30 # The interval for sending heartbeat messages.
+heartbeat_timeout = 5 # Heartbeat message response timeout.
 
 [bot_web_secret]
 # The secret config section of the platform. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.

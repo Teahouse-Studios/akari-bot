@@ -3,6 +3,7 @@ import os
 import pkgutil
 import shutil
 import sys
+from multiprocessing import Process
 from time import sleep
 
 if __name__ == "__main__":
@@ -16,7 +17,6 @@ from core.utils.message import isint
 def generate_config(dir_path, language):
     load_locale_file()
 
-    config_code_list = {}
     os.makedirs(dir_path, exist_ok=True)
     path_ = os.path.join(dir_path, config_filename)
 
@@ -39,21 +39,30 @@ def generate_config(dir_path, language):
                     "config.comments.config_version",
                     fallback_failed_prompt=False)}\n")
         f.close()
-    import bots
     from core.config import CFGManager
     CFGManager.switch_config_path(dir_path)
     CFGManager.load()
+    import core.config.config_base  # noqa
+    import bots
     for subm in pkgutil.iter_modules(bots.__path__):
         submodule_name = bots.__name__ + "." + subm.name
-        CFGManager.load()
-        importlib.import_module(f"{submodule_name}.config")
-        CFGManager.save()
-        sleep(0.1)
-    import core.config.config_base  # noqa
-    sleep(1)
-    import core.web_render  # noqa
-    from core.loader import load_modules
-    load_modules()
+        try:
+            CFGManager.load()
+            importlib.import_module(f"{submodule_name}.config")
+            CFGManager.save()
+            sleep(0.1)
+        except Exception:
+            continue
+    import modules
+    for subm in pkgutil.iter_modules(modules.__path__):
+        submodule_name = modules.__name__ + "." + subm.name
+        try:
+            CFGManager.load()
+            importlib.import_module(f"{submodule_name}.config")
+            CFGManager.save()
+            sleep(0.1)
+        except Exception:
+            continue
 
 
 if not os.path.exists(os.path.join(config_path, config_filename)) and __name__ != "__main__":
@@ -118,19 +127,17 @@ if __name__ == "__main__":
     os.makedirs(config_store_path, exist_ok=True)
     os.makedirs(config_store_packed_path, exist_ok=True)
 
-    base_import_lists = list(sys.modules)
-
-    def clear_import_cache():
-        for m in list(sys.modules):
-            if m not in base_import_lists:
-                del sys.modules[m]
-
+    processes = []
     for lang in lang_list:
         config_store_path_ = os.path.join(config_store_path, lang)
         os.makedirs(config_store_path_, exist_ok=True)
-        generate_config(config_store_path_, lang)
-        clear_import_cache()
-    # compare old and new config files
+        p = Process(target=generate_config, args=(config_store_path_, lang))
+        p.start()
+        processes.append(p)
+
+    for p in processes:
+        p.join()
+
     repack = False
     for lang in lang_list:
         config_store_path_ = os.path.join(config_store_path, lang)
@@ -151,7 +158,6 @@ if __name__ == "__main__":
                     old = f.readlines()
                 diff = difflib.unified_diff(old, new, fromfile=file_path_bak, tofile=file_path)
                 for d in diff:
-
                     if d:
                         print(d)
                         repack = True
