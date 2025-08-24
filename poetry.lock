@@ -244,18 +244,18 @@ docs = ["sphinx (==8.1.3)", "sphinx-mdinclude (==0.6.1)"]
 
 [[package]]
 name = "akari-bot-webrender"
-version = "0.3.5"
+version = "0.3.6"
 description = ""
 optional = false
 python-versions = ">=3.12"
 groups = ["main"]
 files = [
-    {file = "akari_bot_webrender-0.3.5-py3-none-any.whl", hash = "sha256:9846452c2da15a4ee3097e03b7fb4232293a214945305a92e6e8979c81934581"},
-    {file = "akari_bot_webrender-0.3.5.tar.gz", hash = "sha256:2de5e74ca98e91e48ef57eabaf5b430517bbc64ad41bceb76c19dde0a064a496"},
+    {file = "akari_bot_webrender-0.3.6-py3-none-any.whl", hash = "sha256:74780b948b5e8ccf72397762ceea1aacfcd8e8d7b30ab2589eca234bd581a738"},
+    {file = "akari_bot_webrender-0.3.6.tar.gz", hash = "sha256:e3fd15a6270a38ee231a72beae1426466c95004222f931adfcee89504b103a71"},
 ]
 
 [package.dependencies]
-fastapi = ">=0.115.13,<0.116.0"
+fastapi = ">=0.116.0,<0.117.0"
 httpx = ">=0.28.1,<0.29.0"
 jinja2 = ">=3.1.6,<4.0.0"
 loguru = ">=0.7.3,<0.8.0"
@@ -264,18 +264,18 @@ playwright = ">=1.52.0,<2.0.0"
 pre-commit = ">=4.2.0,<5.0.0"
 pydantic = ">=2.11.7,<3.0.0"
 tf-playwright-stealth = ">=1.2.0,<2.0.0"
-uvicorn = ">=0.34.3,<0.35.0"
+uvicorn = ">=0.35.0,<0.36.0"
 
 [[package]]
 name = "akari-bot-webui"
-version = "0.1.2"
+version = "0.1.3"
 description = ""
 optional = false
 python-versions = ">=3.12"
 groups = ["main"]
 files = [
-    {file = "akari_bot_webui-0.1.2-py3-none-any.whl", hash = "sha256:ce1ad211f779265e94810c511e85c42652a724664653d2dbfb27215a22710ef3"},
-    {file = "akari_bot_webui-0.1.2.tar.gz", hash = "sha256:c32341101e739c0fbec2b5526e3ca8ce97fd044e2ec6a6fd9672f72b2499de12"},
+    {file = "akari_bot_webui-0.1.3-py3-none-any.whl", hash = "sha256:34c360ebd3711ef2369fd94e9e821c8fd64681e8f25f3ebb7ee02b911730f696"},
+    {file = "akari_bot_webui-0.1.3.tar.gz", hash = "sha256:1050f8803d7ef0d81f365c2b6c45bbbdcb1d9e3bd7686618c89ab28e5344e2db"},
 ]
 
 [[package]]
@@ -479,21 +479,21 @@ files = [
 
 [[package]]
 name = "attrs"
-version = "24.3.0"
+version = "25.3.0"
 description = "Classes Without Boilerplate"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "attrs-24.3.0-py3-none-any.whl", hash = "sha256:ac96cd038792094f438ad1f6ff80837353805ac950cd2aa0e0625ef19850c308"},
-    {file = "attrs-24.3.0.tar.gz", hash = "sha256:8f5c07333d543103541ba7be0e2ce16eeee8130cb0b3f9238ab904ce1e85baff"},
+    {file = "attrs-25.3.0-py3-none-any.whl", hash = "sha256:427318ce031701fea540783410126f03899a97ffc6f61596ad581ac2e40e3bc3"},
+    {file = "attrs-25.3.0.tar.gz", hash = "sha256:75d7cefc7fb576747b2c81b4442d4d4a1ce0900973527c011d1030fd3bf4af1b"},
 ]
 
 [package.extras]
 benchmark = ["cloudpickle ; platform_python_implementation == \"CPython\"", "hypothesis", "mypy (>=1.11.1) ; platform_python_implementation == \"CPython\" and python_version >= \"3.10\"", "pympler", "pytest (>=4.3.0)", "pytest-codspeed", "pytest-mypy-plugins ; platform_python_implementation == \"CPython\" and python_version >= \"3.10\"", "pytest-xdist[psutil]"]
 cov = ["cloudpickle ; platform_python_implementation == \"CPython\"", "coverage[toml] (>=5.3)", "hypothesis", "mypy (>=1.11.1) ; platform_python_implementation == \"CPython\" and python_version >= \"3.10\"", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins ; platform_python_implementation == \"CPython\" and python_version >= \"3.10\"", "pytest-xdist[psutil]"]
 dev = ["cloudpickle ; platform_python_implementation == \"CPython\"", "hypothesis", "mypy (>=1.11.1) ; platform_python_implementation == \"CPython\" and python_version >= \"3.10\"", "pre-commit-uv", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins ; platform_python_implementation == \"CPython\" and python_version >= \"3.10\"", "pytest-xdist[psutil]"]
-docs = ["cogapp", "furo", "myst-parser", "sphinx", "sphinx-notfound-page", "sphinxcontrib-towncrier", "towncrier (<24.7)"]
+docs = ["cogapp", "furo", "myst-parser", "sphinx", "sphinx-notfound-page", "sphinxcontrib-towncrier", "towncrier"]
 tests = ["cloudpickle ; platform_python_implementation == \"CPython\"", "hypothesis", "mypy (>=1.11.1) ; platform_python_implementation == \"CPython\" and python_version >= \"3.10\"", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins ; platform_python_implementation == \"CPython\" and python_version >= \"3.10\"", "pytest-xdist[psutil]"]
 tests-mypy = ["mypy (>=1.11.1) ; platform_python_implementation == \"CPython\" and python_version >= \"3.10\"", "pytest-mypy-plugins ; platform_python_implementation == \"CPython\" and python_version >= \"3.10\""]
 
@@ -1334,24 +1334,25 @@ files = [
 
 [[package]]
 name = "fastapi"
-version = "0.115.13"
+version = "0.116.1"
 description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "fastapi-0.115.13-py3-none-any.whl", hash = "sha256:0a0cab59afa7bab22f5eb347f8c9864b681558c278395e94035a741fc10cd865"},
-    {file = "fastapi-0.115.13.tar.gz", hash = "sha256:55d1d25c2e1e0a0a50aceb1c8705cd932def273c102bff0b1c1da88b3c6eb307"},
+    {file = "fastapi-0.116.1-py3-none-any.whl", hash = "sha256:c46ac7c312df840f0c9e220f7964bada936781bc4e2e6eb71f1c4d7553786565"},
+    {file = "fastapi-0.116.1.tar.gz", hash = "sha256:ed52cbf946abfd70c5a0dccb24673f0670deeb517a88b3544d03c2a6bf283143"},
 ]
 
 [package.dependencies]
 pydantic = ">=1.7.4,<1.8 || >1.8,<1.8.1 || >1.8.1,<2.0.0 || >2.0.0,<2.0.1 || >2.0.1,<2.1.0 || >2.1.0,<3.0.0"
-starlette = ">=0.40.0,<0.47.0"
+starlette = ">=0.40.0,<0.48.0"
 typing-extensions = ">=4.8.0"
 
 [package.extras]
-all = ["email-validator (>=2.0.0)", "fastapi-cli[standard] (>=0.0.5)", "httpx (>=0.23.0)", "itsdangerous (>=1.1.0)", "jinja2 (>=3.1.5)", "orjson (>=3.2.1)", "pydantic-extra-types (>=2.0.0)", "pydantic-settings (>=2.0.0)", "python-multipart (>=0.0.18)", "pyyaml (>=5.3.1)", "ujson (>=4.0.1,!=4.0.2,!=4.1.0,!=4.2.0,!=4.3.0,!=5.0.0,!=5.1.0)", "uvicorn[standard] (>=0.12.0)"]
-standard = ["email-validator (>=2.0.0)", "fastapi-cli[standard] (>=0.0.5)", "httpx (>=0.23.0)", "jinja2 (>=3.1.5)", "python-multipart (>=0.0.18)", "uvicorn[standard] (>=0.12.0)"]
+all = ["email-validator (>=2.0.0)", "fastapi-cli[standard] (>=0.0.8)", "httpx (>=0.23.0)", "itsdangerous (>=1.1.0)", "jinja2 (>=3.1.5)", "orjson (>=3.2.1)", "pydantic-extra-types (>=2.0.0)", "pydantic-settings (>=2.0.0)", "python-multipart (>=0.0.18)", "pyyaml (>=5.3.1)", "ujson (>=4.0.1,!=4.0.2,!=4.1.0,!=4.2.0,!=4.3.0,!=5.0.0,!=5.1.0)", "uvicorn[standard] (>=0.12.0)"]
+standard = ["email-validator (>=2.0.0)", "fastapi-cli[standard] (>=0.0.8)", "httpx (>=0.23.0)", "jinja2 (>=3.1.5)", "python-multipart (>=0.0.18)", "uvicorn[standard] (>=0.12.0)"]
+standard-no-fastapi-cloud-cli = ["email-validator (>=2.0.0)", "fastapi-cli[standard-no-fastapi-cloud-cli] (>=0.0.8)", "httpx (>=0.23.0)", "jinja2 (>=3.1.5)", "python-multipart (>=0.0.18)", "uvicorn[standard] (>=0.12.0)"]
 
 [[package]]
 name = "fastjsonschema"
@@ -2061,14 +2062,14 @@ files = [
 
 [[package]]
 name = "iso639-lang"
-version = "2.6.0"
-description = "A simpler, faster ISO 639 library."
+version = "2.6.3"
+description = "A fast, comprehensive, ISO 639 library."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "iso639_lang-2.6.0-py3-none-any.whl", hash = "sha256:e49908d63ae67903503cb0cc35b78af16eb3c91ba8b55167f7003574b6349edc"},
-    {file = "iso639_lang-2.6.0.tar.gz", hash = "sha256:ab491ec83d35bc094a00702547249db56ea2eaf780af0c890bad06c9ff3da352"},
+    {file = "iso639_lang-2.6.3-py3-none-any.whl", hash = "sha256:a6c2fb9f739dca180dc7f48b098880f303bcce2cdf93a4ca3152ed8bbbb94fbb"},
+    {file = "iso639_lang-2.6.3.tar.gz", hash = "sha256:078ddb7cd0182dcc04367691acc8022ddf7158b6cb09f08f798af823fa864265"},
 ]
 
 [[package]]
@@ -2485,14 +2486,14 @@ files = []
 develop = false
 
 [package.dependencies]
-attrs = "^24.2.0"
+attrs = "^25.0.0"
 iso639-lang = "^2.2.3"
 
 [package.source]
 type = "git"
 url = "https://github.com/OasisAkari/langconv.py.git"
 reference = "HEAD"
-resolved_reference = "975ee0896096b63148f0930db762607a5a2113df"
+resolved_reference = "c46b775d67c3bf2de3506927a4ac7aabba30b8b0"
 
 [[package]]
 name = "limits"
@@ -5001,14 +5002,14 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
 name = "uvicorn"
-version = "0.34.3"
+version = "0.35.0"
 description = "The lightning-fast ASGI server."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "uvicorn-0.34.3-py3-none-any.whl", hash = "sha256:16246631db62bdfbf069b0645177d6e8a77ba950cfedbfd093acef9444e4d885"},
-    {file = "uvicorn-0.34.3.tar.gz", hash = "sha256:35919a9a979d7a59334b6b10e05d77c1d0d574c50e0fc98b8b1a0f165708b55a"},
+    {file = "uvicorn-0.35.0-py3-none-any.whl", hash = "sha256:197535216b25ff9b785e29a0b79199f55222193d47f820816e7da751e9bc8d4a"},
+    {file = "uvicorn-0.35.0.tar.gz", hash = "sha256:bc662f087f7cf2ce11a1d7fd70b90c9f98ef2e2831556dd078d131b96cc94a01"},
 ]
 
 [package.dependencies]
@@ -5781,4 +5782,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12.0"
-content-hash = "4e70633bbede79e6ce7690438576c3d71dca54be9528753880fc32528d97cc8f"
+content-hash = "211df2518c5423d8602f7097123b33638e8a355e8f0fea5ae5bef7be5ad0edde"
