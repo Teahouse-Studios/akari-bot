@@ -43,7 +43,7 @@
     "maimai.help.unbind": "Unbind user.",
     "maimai.message.alias": "Alias of ${title}:",
     "maimai.message.alias.alias_not_found": "No matching aliases were found.",
-    "maimai.message.alias.file_not_found": "Alias file not found, please initialize the file by \"${prefix}maimai update\".",
+    "maimai.message.alias.file_not_found": "Alias file not found. Please initialize by \"${prefix}maimai update\".",
     "maimai.message.b50.text_prompt": "Here is the Best 50 list of ${user} (Rating ${rating}):",
     "maimai.message.base": "以下为定数 ${rating} 的曲目列表：",
     "maimai.message.base.range": "以下为定数 ${rating}-${rating_max} 的曲目列表：",
