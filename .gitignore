@@ -23,7 +23,7 @@ assets/modules/maimai*
 assets/modules/phigros*
 assets/private*
 bots/**/assets
-webui/config.json
+webui/*
 version*
 !version.py
 .pid_last

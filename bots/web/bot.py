@@ -80,7 +80,7 @@ async def restart_bot(request: Request):
         raise HTTPException(status_code=503, detail="Bot server process is not running")
 
     asyncio.create_task(restart())
-    return {"message": "Success"}
+    return Response(status_code=202)
 
 
 if Config("enable", True, table_name="bot_web") or __name__ == "__main__":

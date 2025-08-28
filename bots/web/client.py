@@ -16,15 +16,18 @@ from tortoise import Tortoise
 from bots.web.info import *
 from core.client.init import client_init
 from core.config import Config
-from core.constants.path import assets_path
+from core.constants.path import assets_path, webui_path
 from core.database.models import JobQueuesTable, SenderInfo
 from core.logger import Logger
 from core.utils.socket import find_available_port, get_local_ip
 
-try:
-    from akari_bot_webui.entrypoint import dist_path
-except ImportError:
-    dist_path = ""
+if os.path.exists(os.path.join(webui_path, "dist")):
+    dist_path = os.path.join(webui_path, "dist")
+else:
+    try:
+        from akari_bot_webui.entrypoint import dist_path
+    except ImportError:
+        dist_path = ""
 
 
 enable_https = Config("enable_https", default=False, table_name="bot_web")
