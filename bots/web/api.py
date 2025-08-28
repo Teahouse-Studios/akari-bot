@@ -10,8 +10,7 @@ import jwt
 import orjson as json
 import psutil
 from cpuinfo import get_cpu_info
-from fastapi import HTTPException, Request, Query, WebSocket, WebSocketDisconnect
-from fastapi.responses import JSONResponse, Response
+from fastapi import HTTPException, Request, Response, Query, WebSocket, WebSocketDisconnect
 from jwt.exceptions import ExpiredSignatureError
 from tortoise.expressions import Q
 

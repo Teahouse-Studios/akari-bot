@@ -45,29 +45,27 @@ def check_valid(expr):
             num_numbers += 1
             prev_char = "num"
             continue
-        elif char in operators:
+        if char in operators:
             if prev_char in operators or prev_char in ("", "("):
                 return False
             prev_char = char
             i += 1
-        elif char == "(":
-            if prev_char == "num" or prev_char == ")":
+        if char == "(":
+            if prev_char in ("num", ")"):
                 return False
             open_parens += 1
             prev_char = char
             i += 1
-
-        elif char == ")":
+        if char == ")":
             if open_parens <= 0 or prev_char in operators or prev_char in ("", "("):
                 return False
             open_parens -= 1
             prev_char = char
             i += 1
-        elif char == "\\":
+        if char == "\\":
             i += 1
             continue
-        else:
-            return False
+        return False
 
     if open_parens != 0:
         return False

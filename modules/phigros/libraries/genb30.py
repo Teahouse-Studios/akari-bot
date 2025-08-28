@@ -33,22 +33,21 @@ def truncate_text(arg_str: str, arg_len: int) -> str:
 def get_song_rank(song_score: int, song_fc: bool):
     if song_score == 1000000:
         return "Φ", "#FFD700"
-    elif song_fc and song_score != 1000000:
+    if song_fc and song_score != 1000000:
         return "V", "#1E90FF"
-    elif 960000 <= song_score <= 999999:
+    if 960000 <= song_score <= 999999:
         return "V", "#FFFFFF"
-    elif 920000 <= song_score <= 959999:
+    if 920000 <= song_score <= 959999:
         return "S", "#FFFFFF"
-    elif 880000 <= song_score <= 919999:
+    if 880000 <= song_score <= 919999:
         return "A", "#FFFFFF"
-    elif 820000 <= song_score <= 879999:
+    if 820000 <= song_score <= 879999:
         return "B", "#FFFFFF"
-    elif 700000 <= song_score <= 819999:
+    if 700000 <= song_score <= 819999:
         return "C", "#FFFFFF"
-    elif 0 <= song_score <= 699999:
+    if 0 <= song_score <= 699999:
         return "F", "#FFFFFF"
-    else:
-        return "", "#FFFFFF"
+    return "", "#FFFFFF"
 
 
 def drawb30(username, rks_acc, p3data, b27data):

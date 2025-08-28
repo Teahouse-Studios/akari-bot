@@ -107,20 +107,21 @@ async def _(msg: Bot.MessageSession):
 def get_rank(score: int, full_combo: bool) -> str:
     if score == 1000000:
         return "φ"
-    elif full_combo:
+    if full_combo:
         return "ν"
-    elif 960000 <= score <= 999999:
+    if 960000 <= score <= 999999:
         return "V"
-    elif 920000 <= score <= 959999:
+    if 920000 <= score <= 959999:
         return "S"
-    elif 880000 <= score <= 919999:
+    if 880000 <= score <= 919999:
         return "A"
-    elif 820000 <= score <= 879999:
+    if 820000 <= score <= 879999:
         return "B"
-    elif 700000 <= score <= 819999:
+    if 700000 <= score <= 819999:
         return "C"
-    else:
+    if 0 <= score <= 699999:
         return "F"
+    return ""
 
 
 @phi.command("random {{I18N:phigros.help.random}}")
@@ -177,8 +178,7 @@ async def _(msg: Bot.MessageSession, song_name: str):
                     rank = get_rank(score, full_combo)
                     msg_chain.append(Plain(f"{score} {acc:.2f}% {rank}"))
             await msg.finish(msg_chain)
-    else:
-        await msg.finish(I18NContext("phigros.message.music_not_found"))
+    await msg.finish(I18NContext("phigros.message.music_not_found"))
 
 
 @phi.command("update [--no-illus]", required_superuser=True)

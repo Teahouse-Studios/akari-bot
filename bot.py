@@ -283,12 +283,8 @@ async def run_bot():
     sys.exit(1)
 
 
-def terminate_process(process: multiprocessing.Process, timeout=5):
+def terminate_process(process: multiprocessing.Process):
     process.kill()
-    # process.terminate()
-    # process.join(timeout=timeout)
-    # if process.is_alive():
-    #     process.kill()
     process.join()
     process.close()
 

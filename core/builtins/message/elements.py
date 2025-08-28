@@ -430,6 +430,9 @@ class EmbedFieldElement(BaseElement):
         """
         return deepcopy(cls(name=name, value=value, inline=inline))
 
+    def kecode(self):
+        pass
+
     def __str__(self):
         return f"[EmbedField:{self.name},{self.value},{self.inline}]"
 
@@ -501,7 +504,7 @@ class EmbedElement(BaseElement):
         if self.url:
             text_lst.append(self.url)
         if self.fields:
-            for f in self.fields:
+            for f in (self.fields if isinstance(self.fields, list) else [self.fields] if self.fields else []):
                 if session_info:
                     text_lst.append(f"{session_info.locale.t_str(f.name)}{session_info.locale.t(
                         "message.colon")}{session_info.locale.t_str(f.value)}")
@@ -525,6 +528,9 @@ class EmbedElement(BaseElement):
             message_chain.append(self.image)
         return message_chain
 
+    def kecode(self):
+        pass
+
     def __str__(self):
         return str(self.to_message_chain())
 
@@ -545,6 +551,9 @@ class RawElement(BaseElement):
         :param value: 元数据值。
         """
         return deepcopy(cls(value=value))
+
+    def kecode(self):
+        pass
 
     def __str__(self):
         return f"Raw({self.value})"

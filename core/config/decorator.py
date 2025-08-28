@@ -32,9 +32,9 @@ def _process_class(cls: type[T], table_name) -> type[T]:
                 __attr = getattr(cls, attr_name)
                 __attr_type = attr_type
                 if __attr_type not in ALLOWED_TYPES and (isinstance(__attr_type, UnionType) and any(
-                        [k not in ALLOWED_TYPES for k in get_args(__attr_type)])):
+                        k not in ALLOWED_TYPES for k in get_args(__attr_type))):
                     __attr_type = None
-                if attr_name not in CFGManager.values.keys():
+                if attr_name not in CFGManager.values:
                     CFGManager.load()
                     CFGManager.get(
                         attr_name,

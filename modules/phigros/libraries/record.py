@@ -10,7 +10,6 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
 from core.constants.path import assets_path, cache_path
 from core.logger import Logger
-from core.utils.cache import random_cache_path
 from core.utils.http import get_url, download
 from .update import p_headers, remove_punctuations
 
@@ -72,7 +71,7 @@ def parse_game_record(rd_path):
     with open(os.path.join(pgr_assets_path, "song_info.json"), "rb") as f:
         song_info = json.loads(f.read())
     decrypted_data = {}
-    with open(os.path.join(rd_path, "gameRecord"), "rb+") as rd:
+    with open(os.path.join(rd_path, "gameRecord"), "rb+") as rd:  # skipcq
         data = decrypt_bytes(rd.read())
         pos = int(data[0] < 0) + 1
         while pos < len(data):

@@ -5,11 +5,10 @@ from contextlib import asynccontextmanager
 from argon2 import PasswordHasher
 from fastapi import FastAPI
 from fastapi.middleware.wsgi import WSGIMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from flask import Flask, send_from_directory
 from slowapi import Limiter
-from fastapi.responses import FileResponse
 from slowapi.util import get_remote_address
 from tortoise import Tortoise
 
@@ -43,7 +42,7 @@ jwt_secret = Config("jwt_secret", cfg_type=str, secret=True, table_name="bot_web
 
 
 def _webui_message():
-    if web_host == "0.0.0.0":
+    if web_host == "0.0.0.0":  # skipcq
         local_ip = get_local_ip()
         network_line = f"Network: {protocol}://{local_ip}:{avaliable_web_port}/webui\n" if local_ip else ""
         message = (

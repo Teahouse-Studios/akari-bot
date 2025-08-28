@@ -276,8 +276,8 @@ async def query_pages(
                         plain_slice.append(str(Url(r.link,
                                                    use_mm=not r.info.in_allowlist and (isinstance(session,
                                                                                                   Bot.MessageSession) and session.session_info.use_url_manager),
-                                                   md_format=True if isinstance(session,
-                                                                                Bot.MessageSession) and session.session_info.use_url_md_format else False,
+                                                   md_format=isinstance(session,
+                                                                        Bot.MessageSession) and session.session_info.use_url_md_format,
                                                    )))
 
                     if r.file:

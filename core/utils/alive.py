@@ -31,7 +31,7 @@ class Alive:
         :param target_id: 目标 ID
         :return: 前缀
         """
-        for client_name, data in cls.get_alive().copy().items():
+        for _, data in cls.get_alive().copy().items():
             for prefix in data.get("target_prefix_list", []):
                 if target_id.startswith(prefix):
                     return prefix
@@ -45,7 +45,7 @@ class Alive:
         :param sender_id: 发送者 ID
         :return: 前缀
         """
-        for client_name, data in cls.get_alive().copy().items():
+        for _, data in cls.get_alive().copy().items():
             for prefix in data.get("sender_prefix_list", []):
                 if sender_id.startswith(prefix):
                     return prefix

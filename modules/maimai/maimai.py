@@ -405,7 +405,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                 if s:
                     msg_chain.append(Plain(f"{s["id"]} - {s["title"]}{" (DX)" if s["type"] == "DX" else ""}"))
             msg_chain.append(I18NContext("maimai.message.song.prompt", prefix=msg.session_info.prefixes[0]))
-            await msg.finish(res)
+            await msg.finish(msg_chain)
         else:
             sid = str(sid_list[0])
     music = (await total_list.get()).by_id(sid)

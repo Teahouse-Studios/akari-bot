@@ -9,4 +9,3 @@ class TestModuleConfig:
         config_1: str = "default_value"
         config_2: int = item(42, table_name="test_table")
     """
-    pass
