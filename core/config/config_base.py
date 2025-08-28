@@ -25,6 +25,7 @@ class Config:
     ignored_sender: list = ["QQ|2854196310"]
     enable_tos: bool = True
     enable_analytics: bool = False
+    enable_module_invalid_prompt: bool = False
     bug_report_url: str = "https://s.wd-ljt.com/botreportbug"
     tos_temp_ban_time: int = 300
     no_confirm: bool = False

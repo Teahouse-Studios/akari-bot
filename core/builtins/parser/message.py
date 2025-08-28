@@ -33,6 +33,7 @@ ignored_sender = Config("ignored_sender", ignored_sender_default)
 enable_tos = Config("enable_tos", True)
 enable_analytics = Config("enable_analytics", False)
 report_targets = Config("report_targets", [])
+enable_module_invalid_prompt = Config("enable_module_invalid_prompt", False)
 TOS_TEMPBAN_TIME = Config("tos_temp_ban_time", 300) if Config("tos_temp_ban_time", 300) > 0 else 300
 bug_report_url = Config("bug_report_url", bug_report_url_default)
 
@@ -105,10 +106,12 @@ async def parser(msg: "Bot.MessageSession"):
 
             if command_first_word in modules:  # 检查触发命令是否在模块列表中
                 await _execute_module(msg, modules, command_first_word, identify_str)
-            if command_first_word in current_unloaded_modules:
+            elif command_first_word in current_unloaded_modules:
                 await msg.send_message(I18NContext("parser.module.unloaded", module=command_first_word))
             elif command_first_word in err_modules:
                 await msg.send_message(I18NContext("error.module.unloaded", module=command_first_word))
+            elif enable_module_invalid_prompt:
+                await msg.send_message(I18NContext("parser.command.invalid.module", prefix=msg.session_info.prefixes[0]))
 
             return msg
         if msg.session_info.muted:
@@ -614,7 +617,7 @@ async def _execute_submodule(msg: "Bot.MessageSession", module, command_first_wo
                 await parsed_msg[0].function(**kwargs)
             raise FinishedException(msg.sent)  # if not using msg.finish
         except InvalidCommandFormatError:
-            await msg.send_message(I18NContext("parser.command.format.invalid",
+            await msg.send_message(I18NContext("parser.command.invalid.format",
                                                module=command_first_word,
                                                prefix=msg.session_info.prefixes[0]))
             """if msg.session_info.target_info.target_data.get("typo_check", True):  # 判断是否开启错字检查
