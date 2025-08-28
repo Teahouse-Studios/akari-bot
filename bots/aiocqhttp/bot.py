@@ -178,11 +178,12 @@ async def _(event: Event):
         sender_info = await SenderInfo.get_by_sender_id(sender_id)
         target_id = f"{target_group_prefix}|{event.group_id}"
         target_info = await TargetInfo.get_by_target_id(target_id)
-        await UnfriendlyActionRecords.create(target_id=target_id,
-                                             sender_id=sender_id,
-                                             action="mute",
-                                             detail=str(event.duration))
-        Logger.info(f"Unfriendly action detected: mute ({event.duration})")
+        if event.duration > 0:
+            await UnfriendlyActionRecords.create(target_id=target_id,
+                                                 sender_id=sender_id,
+                                                 action="mute",
+                                                 detail=str(event.duration))
+            Logger.info(f"Unfriendly action detected: mute ({event.duration})")
         result = await UnfriendlyActionRecords.check_mute(target_id=target_id)
         if event.duration >= 259200:  # 3 days
             result = True
