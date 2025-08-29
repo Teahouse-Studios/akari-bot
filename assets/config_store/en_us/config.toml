@@ -29,6 +29,7 @@ allow_request_private_ip = false # Whether to allow bot to request local private
 ignored_sender = ["QQ|2854196310"] # Ignore user list. Users matching this list will be ignored.
 enable_tos = true # Whether to enable built-in ToS checking rules.
 enable_analytics = false # Whether to enable built-in statistics features.
+enable_module_invalid_prompt = false # Whether to enable the prompt message when the module does not exist.
 bug_report_url = "https://s.wd-ljt.com/botreportbug" # Report error URL.
 tos_temp_ban_time = 300 # Temporary ban duration for ToS violations.
 no_confirm = false # Whether to execute the command without the sender confirming the message.

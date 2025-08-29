@@ -29,6 +29,7 @@ allow_request_private_ip = false # ボットがローカル プライベート I
 ignored_sender = ["QQ|2854196310"] # 無視されるユーザーのリスト。このリストにマッチしたユーザーは無視されます。
 enable_tos = true # 組み込みの ToS（利用規約）チェック ルールを有効にするかどうか。
 enable_analytics = false # 組み込みの統計機能を有効にするかどうか。
+enable_module_invalid_prompt = false # モジュールが存在しない場合にプロンプ​​ト メッセージを有効にするかどうか。
 bug_report_url = "https://s.wd-ljt.com/botreportbug" # エラーを報告するための URL。
 tos_temp_ban_time = 300 # 利用規約違反時の一時的な禁止時間。
 no_confirm = false # 送信者がメッセージを確認せずにコマンドを実行するかどうか。

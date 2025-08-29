@@ -29,6 +29,7 @@ allow_request_private_ip = false # 是否允许机器人请求本地私有 IP �
 ignored_sender = ["QQ|2854196310"] # 无视的用户列表，匹配到此列表中的用户将会被忽略。
 enable_tos = true # 是否开启内置的 ToS 检查规则。
 enable_analytics = false # 是否开启内置的统计功能。
+enable_module_invalid_prompt = false # 是否开启模块不存在的提示消息。
 bug_report_url = "https://s.wd-ljt.com/botreportbug" # 汇报错误网址。
 tos_temp_ban_time = 300 # 违反 ToS 时的临时封禁时间。
 no_confirm = false # 是否无需发送者确认消息后再执行命令。
