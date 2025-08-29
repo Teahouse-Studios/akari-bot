@@ -71,7 +71,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
         else:
             avatar_img = None
         transport = HTTPXAsyncTransport(url="https://services.cytoid.io/graphql")
-        client = Client(transport=transport, fetch_schema_from_transport=True)
+        client = Client(transport=transport, fetch_schema_from_transport=False)
         query = gql(
             f"""
             query StudioAnalytics($id: ID = "{profile_id}") {{
