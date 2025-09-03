@@ -103,7 +103,7 @@ async def _(msg: Bot.MessageSession, apilink, logtype: str):
             if status.value.lang:
                 wiki_name += f' ({status.value.lang})'
             records = await WikiLogTargetSetInfo.get_by_target_id(msg)
-            if records.conf_log(
+            if await records.conf_log(
                 status.value.api, logtype, enable="enable" in msg.parsed_msg
             ):
                 await msg.finish(
