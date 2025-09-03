@@ -68,6 +68,7 @@ class WikiInfo:
     in_blocklist: bool = False
     script: str = ""
     logo_url: str = ""
+    lang: str = None
 
 
 @define
@@ -188,6 +189,7 @@ class WikiLib:
             articlepath=real_url + info["query"]["general"]["articlepath"],
             extensions=ext_list,
             name=info["query"]["general"]["sitename"],
+            lang=info["query"]["general"].get("lang"),
             realurl=real_url,
             api=wiki_api_link,
             namespaces=namespaces,
