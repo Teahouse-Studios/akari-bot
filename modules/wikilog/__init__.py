@@ -548,15 +548,15 @@ async def _():
             for wiki in matched[id_]:
                 wiki_info = (await WikiLib(wiki).check_wiki_available()).value
                 wiki_name = wiki_info.name
-                if wiki_info.lang:
-                    wiki_name = f'({wiki_info.lang}) ' + wiki_name
+                if wiki_info.wikiid:
+                    wiki_name = f'({wiki_info.wikiid}) '
                 if matched[id_][wiki]["AbuseLog"]:
                     ab = await convert_ab_to_detailed_format(ft_session,
                                                              matched[id_][wiki]["AbuseLog"]
                                                              )
                     for x in ab:
                         await ft_session.send_direct_message(
-                            f"{wiki_name}\n{x}" if len(matched[id_]) > 1 else x
+                            f"{wiki_name}{x}" if len(matched[id_]) > 1 else x
                         )
                 if matched[id_][wiki]["RecentChanges"]:
                     rc = await convert_rc_to_detailed_format(ft_session,
@@ -565,5 +565,5 @@ async def _():
 
                     for x in rc:
                         await ft_session.send_direct_message(
-                            f"{wiki_name}\n{x}" if len(matched[id_]) > 1 else x
+                            f"{wiki_name}{x}" if len(matched[id_]) > 1 else x
                         )
