@@ -7,11 +7,10 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Image, I18NContext, Plain
 from core.component import module
 from core.constants.path import assets_path
-from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.random import Random
 from .database.models import PhigrosBindInfo
-from .libraries.genb30 import drawb30
+from .libraries.genb30 import get_b30
 from .libraries.update import remove_punctuations, update_assets, p_headers
 from .libraries.record import get_game_record
 
@@ -76,30 +75,7 @@ async def _(msg: Bot.MessageSession):
     if not os.path.exists(song_info_path):
         await msg.finish(I18NContext("phigros.message.file_not_found"))
 
-    game_records: dict = await get_game_record(msg, bind_info.session_token)
-    result = []
-
-    for song_id, song_data in game_records.items():
-        name = song_data["name"]
-        for diff, info in song_data["diff"].items():
-            result.append((song_id, diff, name, info))
-
-    result.sort(key=lambda x: x[3]["rks"], reverse=True)
-
-    phi_list = [s for s in result if s[3]["score"] == 1000000]
-
-    p3_data = sorted(phi_list, key=lambda x: x[3]["rks"], reverse=True)[:3]
-    b27_data = result[:27]
-
-    all_rks = [i[3]["rks"] for i in (p3_data + b27_data)]
-    if len(all_rks) < 30:
-        all_rks += [0] * (30 - len(all_rks))
-    avg_acc = round(sum(all_rks) / len(all_rks), 2)
-
-    Logger.debug(f"P3 Data: {p3_data}")
-    Logger.debug(f"B27 Data: {b27_data}")
-
-    img = drawb30(bind_info.username, avg_acc, p3_data, b27_data)
+    img = await get_b30(msg, bind_info.username, bind_info.session_token)
     if img:
         await msg.finish(Image(img))
 

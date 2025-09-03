@@ -2,9 +2,11 @@ import os
 
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 
+from core.builtins.bot import Bot
 from core.constants.path import assets_path, noto_sans_demilight_path, noto_sans_bold_path
 from core.logger import Logger
 from core.utils.cache import random_cache_path
+from .record import get_game_record
 
 pgr_assets_path = os.path.join(assets_path, "modules", "phigros")
 
@@ -50,7 +52,33 @@ def get_song_rank(song_score: int, song_fc: bool):
     return "", "#FFFFFF"
 
 
-def drawb30(username, rks_acc, p3data, b27data):
+async def get_b30(msg: Bot.MessageSession, username: str, session_token: str):
+    game_records: dict = await get_game_record(msg, session_token)
+    result = []
+
+    for song_id, song_data in game_records.items():
+        name = song_data["name"]
+        for diff, info in song_data["diff"].items():
+            result.append((song_id, diff, name, info))
+
+    result.sort(key=lambda x: x[3]["rks"], reverse=True)
+
+    phi_list = [s for s in result if s[3]["score"] == 1000000]
+    p3_data = sorted(phi_list, key=lambda x: x[3]["rks"], reverse=True)[:3]
+    b27_data = result[:27]
+
+    all_rks = [i[3]["rks"] for i in (p3_data + b27_data)]
+    if len(all_rks) < 30:
+        all_rks += [0] * (30 - len(all_rks))
+    avg_acc = round(sum(all_rks) / len(all_rks), 2)
+
+    Logger.debug(f"P3 Data: {p3_data}")
+    Logger.debug(f"B27 Data: {b27_data}")
+
+    return draw_b30(username, avg_acc, p3_data, b27_data)
+
+
+def draw_b30(username, rks_acc, p3data, b27data):
     card_w, card_h = 384, 240
     cols, rows = 3, 10
     margin_top = 100
@@ -103,12 +131,8 @@ def drawb30(username, rks_acc, p3data, b27data):
                 cardimg = Image.new("RGBA", (card_w, card_h), "black")
             else:
                 imgpath = os.path.join(
-                    pgr_assets_path, "illustration", f"{song_id.split('.')[0].lower()}.png"
+                    pgr_assets_path, "illustration", f"{song_id.lower()}.png"
                 )
-                if not os.path.exists(imgpath):
-                    imgpath = os.path.join(
-                        pgr_assets_path, "illustration", f"{song_id.lower()}.png"
-                    )
                 if not os.path.exists(imgpath):
                     cardimg = Image.new("RGBA", (card_w, card_h), "black")
                 else:
@@ -230,9 +254,6 @@ def drawb30(username, rks_acc, p3data, b27data):
         font=font1
     )
 
-    if __name__ == "__main__":
-        final_img.show()
-    else:
-        savefilename = f"{random_cache_path()}.png"
-        final_img.convert("RGB").save(savefilename)
-        return savefilename
+    savefilename = f"{random_cache_path()}.png"
+    final_img.convert("RGB").save(savefilename)
+    return savefilename

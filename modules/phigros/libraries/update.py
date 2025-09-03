@@ -1,7 +1,9 @@
+import csv
 import os
 import re
 import shutil
 import string
+from io import StringIO
 
 import orjson as json
 
@@ -63,13 +65,12 @@ async def update_assets(update_cover=True):
             data[song_full_id]["diff"] = diff
 
             if update_cover:
-                song_id = remove_punctuations(update[song]["song"])
-                if song_id not in illustration_list:
+                if song_full_id not in illustration_list:
                     try:
-                        download_file = await download(update[song]["illustration_big"], f"{song_id}.png")
+                        download_file = await download(update[song]["illustration_big"], f"{song_full_id}.png")
                         if download_file:
                             shutil.move(
-                                download_file, os.path.join(illustration_path, f"{song_id}.png")
+                                download_file, os.path.join(illustration_path, f"{song_full_id}.png")
                             )
                     except Exception:
                         pass
@@ -79,51 +80,44 @@ async def update_assets(update_cover=True):
         if update_cover:
             Logger.success("Phigros illustrations download completed.")
 
-    with open(file_path, "wb") as f:
-        f.write(json.dumps(data, option=json.OPT_INDENT_2))
-    shutil.move(file_path, song_info_path)
-    return True
-"""
-    another_assets_url = "https://github.com/7aGiven/PhigrosLibrary/archive/refs/heads/master.zip"
+    info_tsv_url = "https://raw.githubusercontent.com/7aGiven/Phigros_Resource/refs/heads/info/info.tsv"
     try:
-        download_file = await download(another_assets_url)
+        info_tsv = await get_url(info_tsv_url, 200)
     except Exception:
         Logger.exception()
         return False
-    if download_file:
-        ca = random_cache_path()
-        shutil.unpack_archive(download_file, ca)
+    if info_tsv:
+        f = StringIO(info_tsv)
+        reader = csv.reader(f, delimiter="\t")
+        for row in reader:
+            sid_split = row[0].lower().split(".", 1)
+            sid = f"{remove_punctuations(sid_split[0])}.{remove_punctuations(sid_split[1])}"
+            if not data.get(sid):
+                data[sid] = {}
+            data[sid]["name"] = row[1]
+            data[sid]["composer"] = row[2]
 
-        with open(
-            os.path.join(ca, "PhigrosLibrary-main", "difficulty.tsv"),
-            "r",
-            encoding="utf-8",
-        ) as f:
-            reader = csv.reader(f, delimiter="\t")
-            for row in reader:
-                sid_split = row[0].lower().split(".", 1)
-                sid = f"{sid_split[0]}.{sid_split[1]}"
-                if not data.get(sid):
-                    data[sid] = {}
-                data[sid]["diff"] = {"EZ": row[1], "HD": row[2], "IN": row[3]}
-                if len(row) > 4:
-                    data[sid]["diff"]["AT"] = row[4]
+    diff_tsv_url = "https://raw.githubusercontent.com/7aGiven/Phigros_Resource/refs/heads/info/difficulty.tsv"
+    try:
+        diff_tsv = await get_url(diff_tsv_url, 200)
+    except Exception:
+        Logger.exception()
+        return False
+    if diff_tsv:
+        f = StringIO(diff_tsv)
+        reader = csv.reader(f, delimiter="\t")
+        for row in reader:
+            sid_split = row[0].lower().split(".", 1)
+            sid = f"{remove_punctuations(sid_split[0])}.{remove_punctuations(sid_split[1])}"
+            if not data.get(sid):
+                data[sid] = {}
+            data[sid]["diff"] = {"EZ": row[1], "HD": row[2], "IN": row[3]}
+            if len(row) > 4:
+                data[sid]["diff"]["AT"] = row[4]
 
-        with open(
-            os.path.join(ca, "PhigrosLibrary-main", "info.tsv"),
-            "r",
-            encoding="utf-8",
-        ) as f:
-            reader = csv.reader(f, delimiter="\t")
-            for row in reader:
-                sid_split = row[0].lower().split(".", 1)
-                sid = f"{remove_punctuations(sid_split[0])}.{remove_punctuations(sid_split[1])}"
-                if not data.get(sid):
-                    data[sid] = {}
-                data[sid]["name"] = row[1]
-                data[sid]["composer"] = row[2]
-
-        os.remove(download_file)
+        with open(file_path, "wb") as f:
+            f.write(json.dumps(data, option=json.OPT_INDENT_2))
+        shutil.move(file_path, song_info_path)
+        return True
     else:
         return False
-"""
