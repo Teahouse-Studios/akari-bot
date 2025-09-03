@@ -547,7 +547,7 @@ async def _():
             ft_session = await FetchedMessageSession.from_session_info(ft)
             for wiki in matched[id_]:
                 wiki_info = (await WikiLib(wiki).check_wiki_available()).value
-                wiki_name = wiki_info.name
+                wiki_name = f'({wiki_info.name}) '
                 if wiki_info.wikiid:
                     wiki_name = f'({wiki_info.wikiid}) '
                 if matched[id_][wiki]["AbuseLog"]:
