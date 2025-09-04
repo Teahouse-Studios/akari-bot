@@ -9,7 +9,7 @@ from . import CFGManager, ALLOWED_TYPES
 T = TypeVar("T")
 
 
-def _process_class(cls: type[T], table_name) -> type[T]:
+def _process_class(cls: type[T], table_name, secret=False) -> type[T]:
     cls_annotations = {k: v for k, v in inspect.get_annotations(cls).items() if not k.startswith("__")}
     if not cls_annotations:
         cls_annotations = {k: Any for k, _ in vars(cls).items() if not k.startswith("__")}
@@ -40,7 +40,7 @@ def _process_class(cls: type[T], table_name) -> type[T]:
                         attr_name,
                         __attr if __attr != "" else None,
                         get_args(__attr_type) if isinstance(__attr_type, UnionType) else attr_type,
-                        False,
+                        secret,
                         table_name,
                         _generate=True
                     )
@@ -61,7 +61,7 @@ def on_config(
 
     def wrap(cls: type[T]):
         __type = table_type + "_" if table_type != "" else table_type
-        return _process_class(cls, __type + table_name + "_secret" if secret else __type + table_name)
+        return _process_class(cls, __type + table_name, secret)
     return wrap
 
 

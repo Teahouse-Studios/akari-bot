@@ -196,9 +196,7 @@ class Bind:
                 return _process_class(
                     cls,
                     "module_" +
-                    self.bind_prefix +
-                    '_secret' if secret else "module_" +
-                    self.bind_prefix)
+                    self.bind_prefix, secret=secret)
 
             if cls is None:
                 return wrap
