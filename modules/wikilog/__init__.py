@@ -60,7 +60,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
     in_allowlist = True
     wiki_name = status.value.name
     if status.value.lang:
-        wiki_name += f' ({status.value.lang})'
+        wiki_name += f" ({status.value.lang})"
     if Bot.Info.use_url_manager:
         in_allowlist = status.value.in_allowlist
         if status.value.in_blocklist and not in_allowlist:
@@ -101,7 +101,7 @@ async def _(msg: Bot.MessageSession, apilink, logtype: str):
         if status.available:
             wiki_name = status.value.name
             if status.value.lang:
-                wiki_name += f' ({status.value.lang})'
+                wiki_name += f" ({status.value.lang})"
             records = await WikiLogTargetSetInfo.get_by_target_id(msg)
             if await records.conf_log(
                 status.value.api, logtype, enable="enable" in msg.parsed_msg
@@ -221,7 +221,7 @@ async def _(msg: Bot.MessageSession, apilink: str, logtype: str):
             if status.available:
                 wiki_name = status.value.name
                 if status.value.lang:
-                    wiki_name += f' ({status.value.lang})'
+                    wiki_name += f" ({status.value.lang})"
                 if status.value.api in infos:
                     await records.set_filters(status.value.api, logtype, filters)
                     await msg.finish(
@@ -274,7 +274,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
     if status.available:
         wiki_name = status.value.name
         if status.value.lang:
-            wiki_name += f' ({status.value.lang})'
+            wiki_name += f" ({status.value.lang})"
         if status.value.api in infos:
             if "keepalive" in msg.parsed_msg:
                 r = await records.set_keep_alive(status.value.api, "enable" in msg.parsed_msg)
@@ -311,7 +311,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
         if status.available:
             wiki_name = status.value.name
             if status.value.lang:
-                wiki_name += f' ({status.value.lang})'
+                wiki_name += f" ({status.value.lang})"
             if status.value.api in infos:
                 for r in rcshows_:
                     if r not in rcshows:
@@ -547,9 +547,9 @@ async def _():
             ft_session = await FetchedMessageSession.from_session_info(ft)
             for wiki in matched[id_]:
                 wiki_info = (await WikiLib(wiki).check_wiki_available()).value
-                wiki_name = f'({wiki_info.name}) '
+                wiki_name = f"({wiki_info.name}) "
                 if wiki_info.wikiid:
-                    wiki_name = f'({wiki_info.wikiid}) '
+                    wiki_name = f"({wiki_info.wikiid}) "
                 if matched[id_][wiki]["AbuseLog"]:
                     ab = await convert_ab_to_detailed_format(ft_session,
                                                              matched[id_][wiki]["AbuseLog"]
