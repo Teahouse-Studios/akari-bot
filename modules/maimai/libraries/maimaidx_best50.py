@@ -1,7 +1,7 @@
 import os
 from typing import Optional, Dict, List
 
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from PIL import Image, ImageDraw, ImageFont
 
 from core.builtins.bot import Bot
 from core.constants.path import noto_sans_demilight_path, noto_sans_symbol_path

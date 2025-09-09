@@ -17,7 +17,7 @@ from core.builtins.temp import Temp
 from core.builtins.utils import command_prefix
 from core.client.init import client_init
 from core.config import Config
-from core.constants.default import issue_url_default, ignored_sender_default, qq_host_default
+from core.constants.default import issue_url_default, ignored_sender_default, qq_host_default, confirm_command_default
 from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords
 from core.i18n import Locale
 from core.logger import Logger
@@ -33,6 +33,7 @@ enable_listening_self_message = Config("qq_enable_listening_self_message", False
 enable_tos = Config("enable_tos", True)
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 default_locale = Config("default_locale", cfg_type=str)
+disable_temp_session = Config("qq_disable_temp_session", True, table_name="bot_aiocqhttp")
 
 
 @aiocqhttp_bot.on_startup
@@ -54,10 +55,10 @@ async def _(event: Event):
 async def message_handler(event: Event):
     qq_account = Temp.data.get("qq_account")
     if event.detail_type == "private" and event.sub_type == "group" \
-            and Config("qq_disable_temp_session", True, table_name="bot_aiocqhttp"):
+            and disable_temp_session:
         return
 
-    if event.detail_type == "group":
+    if event.group_id:
         target_id = f"{target_group_prefix}|{event.group_id}"
     else:
         target_id = f"{target_private_prefix}|{event.user_id}"
@@ -113,11 +114,17 @@ async def message_handler(event: Event):
 
     msg_chain = await to_message_chain(event.message)
 
+    sender_name = None
+
+    if event.sender:
+        sender_name = event.sender.get("nickname")
+
     session = await SessionInfo.assign(target_id=target_id,
                                        sender_id=sender_id,
                                        target_from=target_group_prefix if event.detail_type == "group" else target_private_prefix,
                                        sender_from=sender_prefix,
-                                       sender_name=event.sender["nickname"], client_name=client_name,
+                                       sender_name=sender_name,
+                                       client_name=client_name,
                                        message_id=str(event.message_id),
                                        reply_id=str(reply_id),
                                        messages=msg_chain,
@@ -140,6 +147,13 @@ if enable_listening_self_message:
 @aiocqhttp_bot.on_message("group", "private")
 async def _(event: Event):
     await message_handler(event)
+
+
+@aiocqhttp_bot.on("notice.notify")
+async def _(event: Event):
+    if event.sub_type == "poke":
+        event.message = confirm_command_default[0]
+        await message_handler(event)
 
 
 @aiocqhttp_bot.on("request.friend")
@@ -178,11 +192,12 @@ async def _(event: Event):
         sender_info = await SenderInfo.get_by_sender_id(sender_id)
         target_id = f"{target_group_prefix}|{event.group_id}"
         target_info = await TargetInfo.get_by_target_id(target_id)
-        await UnfriendlyActionRecords.create(target_id=target_id,
-                                             sender_id=sender_id,
-                                             action="mute",
-                                             detail=str(event.duration))
-        Logger.info(f"Unfriendly action detected: mute ({event.duration})")
+        if event.duration > 0:
+            await UnfriendlyActionRecords.create(target_id=target_id,
+                                                 sender_id=sender_id,
+                                                 action="mute",
+                                                 detail=str(event.duration))
+            Logger.info(f"Unfriendly action detected: mute ({event.duration})")
         result = await UnfriendlyActionRecords.check_mute(target_id=target_id)
         if event.duration >= 259200:  # 3 days
             result = True

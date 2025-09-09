@@ -123,7 +123,7 @@ async def get_article(version):
             soup = BeautifulSoup(html, "html.parser")
 
             title = soup.find("h1")
-            if title.text == "WE’RE SSSSSSSORRY":
+            if title.text == "404":
                 return "", ""
             return link, title.text
     except Exception:

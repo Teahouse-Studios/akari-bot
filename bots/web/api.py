@@ -10,8 +10,7 @@ import jwt
 import orjson as json
 import psutil
 from cpuinfo import get_cpu_info
-from fastapi import Query, WebSocket, WebSocketDisconnect
-from fastapi import Request, Response, HTTPException
+from fastapi import HTTPException, Request, Response, Query, WebSocket, WebSocketDisconnect
 from jwt.exceptions import ExpiredSignatureError
 from tortoise.expressions import Q
 
@@ -121,7 +120,7 @@ async def auth(request: Request, response: Response):
             login_failed_attempts[ip] = [t for t in login_failed_attempts[ip] if (now - t).total_seconds() < 600]
             login_failed_attempts[ip].append(now)
 
-            if len(login_failed_attempts[ip]) >= login_max_attempts:
+            if len(login_failed_attempts[ip]) > login_max_attempt:
                 await MaliciousLoginRecords.create(ip_address=ip,
                                                    blocked_until=now + timedelta(seconds=LOGIN_BLOCK_DURATION))
                 login_failed_attempts[ip].clear()
@@ -168,7 +167,7 @@ async def change_password(request: Request, response: Response):
             with open(PASSWORD_PATH, "wb") as file:
                 file.write(json.dumps(password_data))
             response.delete_cookie("deviceToken")
-            return Response(status_code=204)
+            return Response(status_code=205)
 
         with open(PASSWORD_PATH, "rb") as file:
             password_data = json.loads(file.read())
@@ -185,7 +184,7 @@ async def change_password(request: Request, response: Response):
             file.write(json.dumps(password_data))
 
         # TODO 签的jwt存db, 改密码时删掉
-        return Response(status_code=204)
+        return Response(status_code=205)
     except HTTPException as e:
         raise e
     except Exception:
@@ -214,7 +213,7 @@ async def clear_password(request: Request, response: Response):
             raise HTTPException(status_code=401, detail="Invalid password")
 
         os.remove(PASSWORD_PATH)
-        return Response(status_code=204)
+        return Response(status_code=205)
     except HTTPException as e:
         raise e
     except Exception:
@@ -222,7 +221,7 @@ async def clear_password(request: Request, response: Response):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.get("/api/has-password")
+@app.get("/api/have-password")
 @limiter.limit("10/minute")
 async def has_password(request: Request):
     return {"data": os.path.exists(PASSWORD_PATH)}
@@ -233,7 +232,6 @@ async def has_password(request: Request):
 async def server_info(request: Request):
     verify_jwt(request)
     return {
-        "message": "Success",
         "os": {
             "system": platform.system(),
             "version": platform.version(),
@@ -476,7 +474,8 @@ async def delete_target_info(request: Request, target_id: str):
         target_info = await TargetInfo.get_by_target_id(target_id, create=False)
         if target_info:
             await target_info.delete()
-        return {"message": "Success"}
+
+        return Response(status_code=204)
     except HTTPException as e:
         raise e
     except Exception:
@@ -600,7 +599,7 @@ async def delete_sender_info(request: Request, sender_id: str):
         sender_info = await SenderInfo.get_by_sender_id(sender_id, create=False)
         if sender_info:
             await sender_info.delete()
-        return {"message": "Success"}
+        return Response(status_code=204)
     except HTTPException as e:
         raise e
     except Exception:
@@ -614,7 +613,7 @@ async def get_modules_list(request: Request):
     try:
         verify_jwt(request)
         modules_list = await JobQueueClient.get_modules_list()
-        return {"message": "Success", "modules": modules_list}
+        return {"modules": modules_list}
     except HTTPException as e:
         raise e
     except Exception:
@@ -628,7 +627,7 @@ async def get_modules_info(request: Request, locale: str = Query(default_locale)
     try:
         verify_jwt(request)
         modules = await JobQueueClient.get_modules_info(locale=locale)
-        return {"message": "Success", "modules": modules}
+        return {"modules": modules}
     except HTTPException as e:
         raise e
     except Exception:
@@ -648,8 +647,7 @@ async def load_module(request: Request, module_name: str):
                 unloaded_list.remove(module_name)
                 CFGManager.write("unloaded_modules", unloaded_list)
 
-            return {"message": "Success"}
-        return {"message": "Failed"}
+        return Response(status_code=204)
 
     except HTTPException as e:
         raise e
@@ -671,7 +669,7 @@ async def unload_module(request: Request, module_name: str):
             unloaded_list.append(module_name)
             CFGManager.write("unloaded_modules", unloaded_list)
 
-            return {"message": "Success"}
+        return Response(status_code=204)
     except HTTPException as e:
         raise e
     except Exception:

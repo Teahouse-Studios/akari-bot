@@ -45,6 +45,7 @@ jobs:
               langconv
               emoji
               akari_bot_webrender
+              akari_bot_webui
               fake_http_header
               limits
               discord

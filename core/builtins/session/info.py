@@ -167,7 +167,6 @@ class FetchedSessionInfo(SessionInfo):
     """
     主动获取的消息会话信息。
     """
-    pass
 
 
 @define

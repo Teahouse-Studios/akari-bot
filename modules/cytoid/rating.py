@@ -71,7 +71,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
         else:
             avatar_img = None
         transport = HTTPXAsyncTransport(url="https://services.cytoid.io/graphql")
-        client = Client(transport=transport, fetch_schema_from_transport=True)
+        client = Client(transport=transport, fetch_schema_from_transport=False)
         query = gql(
             f"""
             query StudioAnalytics($id: ID = "{profile_id}") {{
@@ -154,7 +154,6 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
             havecover = bool(thumbpath)
             songcards.append(
                 make_songcard(
-                    query_type,
                     thumbpath,
                     chart_type,
                     difficulty,
@@ -182,7 +181,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
         sorted_cards = sorted(cards_d.items(), key=lambda x: x[0])
 
         if best_records:
-            avg_rating = sum([x["rating"] for x in best_records]) / len(best_records)
+            avg_rating = sum(x["rating"] for x in best_records) / len(best_records)
         else:
             avg_rating = 0.0
         # b30card
@@ -330,7 +329,6 @@ async def download_avatar_thumb(link, id):
 
 
 async def make_songcard(
-    query_type,
     coverpath,
     chart_type,
     difficulty,

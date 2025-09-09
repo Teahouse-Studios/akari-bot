@@ -242,8 +242,7 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
 async def help_generator(msg: Bot.MessageSession,
                          show_base_modules: bool = True,
                          show_disabled_modules: bool = False,
-                         show_dev_modules: bool = True,
-                         use_local: bool = True):
+                         show_dev_modules: bool = True):
     is_base_superuser = msg.session_info.sender_id in Bot.base_superuser_list
     is_superuser = msg.check_super_user()
     module_list = ModulesManager.return_modules_list(

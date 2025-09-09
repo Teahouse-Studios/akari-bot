@@ -4,7 +4,7 @@
 
 [module_ncmusic]
 # 模块的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
-ncmusic_enable_card = false # ncmusic 模块是否启用卡片消息。（仅在 QQ 客户端有效）
+ncmusic_enable_card = false # ncmusic 模块是否开启卡片消息。（仅在 QQ 客户端有效）
 
 [module_ncmusic_secret]
 # 模块的密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。

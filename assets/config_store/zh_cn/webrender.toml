@@ -4,7 +4,7 @@
 
 [webrender]
 # WebRender 的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
-enable_web_render = false # 是否启用 WebRender。
+enable_web_render = false # 是否开启 WebRender。
 remote_web_render_url = "<Replace me with str value>" # 远程 WebRender 服务的 URL，在本地 WebRender 渲染失败时尝试请求。
 browser_type = "chrome" # WebRender 使用的浏览器类型。
 browser_executable_path = "<Replace me with str value>" # WebRender 使用的浏览器可执行文件路径，若空则使用 playwright 默认安装浏览器。（使用二进制部署时，必须指定路径才可使用 WebRender）

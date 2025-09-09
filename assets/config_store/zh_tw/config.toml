@@ -29,6 +29,7 @@ allow_request_private_ip = false # 是否允許機器人請求本地私有 IP �
 ignored_sender = ["QQ|2854196310"] # 無視的使用者列表，匹配到此列表中的使用者將會被忽略。
 enable_tos = true # 是否啟用內建的 ToS 檢查規則。
 enable_analytics = false # 是否啟用內建的統計功能。
+enable_module_invalid_prompt = false # 是否啟用模組不存在的提示訊息。
 bug_report_url = "https://s.wd-ljt.com/botreportbug" # 回報錯誤網址。
 tos_temp_ban_time = 300 # 違反 ToS 時的暫時封鎖時間。
 no_confirm = false # 是否無需傳送者確認訊息後再執行指令。

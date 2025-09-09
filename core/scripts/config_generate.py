@@ -1,9 +1,9 @@
 import importlib
 import os
+import multiprocessing
 import pkgutil
 import shutil
 import sys
-from multiprocessing import Process
 from time import sleep
 
 if __name__ == "__main__":
@@ -93,6 +93,7 @@ if not os.path.exists(os.path.join(config_path, config_filename)) and __name__ !
 
 
 if __name__ == "__main__":
+    multiprocessing.set_start_method("spawn", force=True)
 
     cfg_file_path = os.path.join(config_path, config_filename)
     old_cfg_file_path = os.path.join(config_path, "config.cfg")
@@ -131,7 +132,7 @@ if __name__ == "__main__":
     for lang in lang_list:
         config_store_path_ = os.path.join(config_store_path, lang)
         os.makedirs(config_store_path_, exist_ok=True)
-        p = Process(target=generate_config, args=(config_store_path_, lang))
+        p = multiprocessing.Process(target=generate_config, args=(config_store_path_, lang))
         p.start()
         processes.append(p)
 

@@ -5,26 +5,28 @@ from contextlib import asynccontextmanager
 from argon2 import PasswordHasher
 from fastapi import FastAPI
 from fastapi.middleware.wsgi import WSGIMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from flask import Flask, send_from_directory
 from slowapi import Limiter
-from fastapi.responses import FileResponse
 from slowapi.util import get_remote_address
 from tortoise import Tortoise
 
 from bots.web.info import *
 from core.client.init import client_init
 from core.config import Config
-from core.constants.path import assets_path
+from core.constants.path import assets_path, webui_path
 from core.database.models import JobQueuesTable, SenderInfo
 from core.logger import Logger
 from core.utils.socket import find_available_port, get_local_ip
 
-try:
-    from akari_bot_webui.entrypoint import dist_path
-except ImportError:
-    dist_path = ""
+if os.path.exists(os.path.join(webui_path, "dist")):
+    dist_path = os.path.join(webui_path, "dist")
+else:
+    try:
+        from akari_bot_webui.entrypoint import dist_path
+    except ImportError:
+        dist_path = ""
 
 
 enable_https = Config("enable_https", default=False, table_name="bot_web")
@@ -40,7 +42,7 @@ jwt_secret = Config("jwt_secret", cfg_type=str, secret=True, table_name="bot_web
 
 
 def _webui_message():
-    if web_host == "0.0.0.0":
+    if web_host == "0.0.0.0":  # skipcq
         local_ip = get_local_ip()
         network_line = f"Network: {protocol}://{local_ip}:{avaliable_web_port}/webui\n" if local_ip else ""
         message = (

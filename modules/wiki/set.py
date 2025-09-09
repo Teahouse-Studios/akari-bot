@@ -18,11 +18,14 @@ async def _(msg: Bot.MessageSession, wikiurl: str):
     target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     check = await WikiLib(wikiurl, headers=target.headers).check_wiki_available()
     if check.available:
+        wiki_name = check.value.name
+        if check.value.lang:
+            wiki_name += f' ({check.value.lang})'
         in_allowlist = True
         if Bot.Info.use_url_manager:
             in_allowlist = check.value.in_allowlist
             if check.value.in_blocklist and not in_allowlist:
-                await msg.finish(I18NContext("wiki.message.invalid.blocked", name=check.value.name))
+                await msg.finish(I18NContext("wiki.message.invalid.blocked", name=wiki_name))
         result = await target.add_start_wiki(check.value.api)
         if result and enable_urlmanager and not in_allowlist:
             prompt = "\n" + msg.session_info.locale.t("wiki.message.wiki_audit.untrust")
@@ -32,7 +35,7 @@ async def _(msg: Bot.MessageSession, wikiurl: str):
         else:
             prompt = ""
         await msg.finish(
-            msg.session_info.locale.t("wiki.message.set.success", name=check.value.name) + prompt
+            msg.session_info.locale.t("wiki.message.set.success", name=wiki_name) + prompt
         )
     else:
         result = msg.session_info.locale.t("wiki.message.error.add") + (
@@ -48,13 +51,16 @@ async def _(msg: Bot.MessageSession, interwiki: str, wikiurl: str):
     target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     check = await WikiLib(wikiurl, headers=target.headers).check_wiki_available()
     if check.available:
+        wiki_name = check.value.name
+        if check.value.lang:
+            wiki_name += f' ({check.value.lang})'
         if (
             Bot.Info.use_url_manager
             and check.value.in_blocklist
             and not check.value.in_allowlist
         ):
             await msg.finish(
-                msg.session_info.locale.t("wiki.message.invalid.blocked", name=check.value.name)
+                msg.session_info.locale.t("wiki.message.invalid.blocked", name=wiki_name)
             )
         result = await target.config_interwikis(interwiki, check.value.api)
         if result and enable_urlmanager and not check.value.in_allowlist:
@@ -67,7 +73,7 @@ async def _(msg: Bot.MessageSession, interwiki: str, wikiurl: str):
             prompt = ""
         await msg.finish(
             msg.session_info.locale.t(
-                "wiki.message.iw.add.success", iw=interwiki, name=check.value.name
+                "wiki.message.iw.add.success", iw=interwiki, name=wiki_name
             )
             + prompt
         )

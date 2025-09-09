@@ -63,8 +63,7 @@ save_source = True
 
 
 async def msgnode2image(message_node: MessageNodes,
-                        session: Optional[Union[MessageSession, SessionInfo, FetchedSessionInfo]] = None,
-                        use_local: bool = True):
+                        session: Optional[Union[MessageSession, SessionInfo, FetchedSessionInfo]] = None):
     new_chain_list = []
     for m in message_node.values:
         for x in m.as_sendable(session):

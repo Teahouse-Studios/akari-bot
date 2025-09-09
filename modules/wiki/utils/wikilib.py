@@ -68,6 +68,8 @@ class WikiInfo:
     in_blocklist: bool = False
     script: str = ""
     logo_url: str = ""
+    lang: str = None
+    wikiid: str = None
 
 
 @define
@@ -188,6 +190,8 @@ class WikiLib:
             articlepath=real_url + info["query"]["general"]["articlepath"],
             extensions=ext_list,
             name=info["query"]["general"]["sitename"],
+            lang=info["query"]["general"].get("lang"),
+            wikiid=info["query"]["general"].get("wikiid"),
             realurl=real_url,
             api=wiki_api_link,
             namespaces=namespaces,
@@ -276,8 +280,6 @@ class WikiLib:
                     value=await self.rearrange_siteinfo(get_cache_info.site_info, wiki_api_link),
                     message="",
                 )
-            await get_cache_info.delete()
-            get_cache_info = await WikiSiteInfo.create(api_link=wiki_api_link)
         else:
             get_cache_info = await WikiSiteInfo.create(api_link=wiki_api_link)
         try:
@@ -299,6 +301,7 @@ class WikiLib:
                 )
             return WikiStatus(available=False, value=False, message=message)
         get_cache_info.site_info = get_json
+        get_cache_info.timestamp = datetime.datetime.now()
         await get_cache_info.save()
         info = await self.rearrange_siteinfo(get_json, wiki_api_link)
         return WikiStatus(
@@ -1110,7 +1113,7 @@ class WikiLib:
             page_info.id = -1
             if page_info.link:
                 page_info.desc = str(Url(page_info.link, use_mm=True,
-                                         md_format=True if session and session.session_info.use_url_md_format else False))
+                                         md_format=session and session.session_info.use_url_md_format))
             page_info.link = None
         return page_info
 

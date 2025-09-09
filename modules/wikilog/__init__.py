@@ -58,14 +58,17 @@ async def _(msg: Bot.MessageSession, apilink: str):
     wiki_info = WikiLib(apilink)
     status = await wiki_info.check_wiki_available()
     in_allowlist = True
+    wiki_name = status.value.name
+    if status.value.lang:
+        wiki_name += f" ({status.value.lang})"
     if Bot.Info.use_url_manager:
         in_allowlist = status.value.in_allowlist
         if status.value.in_blocklist and not in_allowlist:
             await msg.finish(
-                I18NContext("wiki.message.invalid.blocked", name=status.value.name)
+                I18NContext("wiki.message.invalid.blocked", name=wiki_name)
             )
     if not in_allowlist:
-        prompt = msg.session_info.locale.t("wikilog.message.untrust.wiki", name=status.value.name)
+        prompt = msg.session_info.locale.t("wikilog.message.untrust.wiki", name=wiki_name)
         if wiki_whitelist_url:
             prompt += "\n" + \
                       msg.session_info.locale.t("wiki.message.wiki_audit.untrust.address", url=wiki_whitelist_url)
@@ -78,7 +81,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
             reset="reset" in msg.parsed_msg,
         )
         await msg.finish(
-            I18NContext("wikilog.message.config.wiki.success", wiki=status.value.name)
+            I18NContext("wikilog.message.config.wiki.success", wiki=wiki_name)
         )
     else:
         await msg.finish(
@@ -96,14 +99,17 @@ async def _(msg: Bot.MessageSession, apilink, logtype: str):
         wiki_info = WikiLib(apilink)
         status = await wiki_info.check_wiki_available()
         if status.available:
+            wiki_name = status.value.name
+            if status.value.lang:
+                wiki_name += f" ({status.value.lang})"
             records = await WikiLogTargetSetInfo.get_by_target_id(msg)
-            if records.conf_log(
+            if await records.conf_log(
                 status.value.api, logtype, enable="enable" in msg.parsed_msg
             ):
                 await msg.finish(
                     I18NContext(
                         "wikilog.message.enable.log.success",
-                        wiki=status.value.name,
+                        wiki=wiki_name,
                         logtype=logtype,
                     )
                 )
@@ -213,12 +219,15 @@ async def _(msg: Bot.MessageSession, apilink: str, logtype: str):
             wiki_info = WikiLib(apilink)
             status = await wiki_info.check_wiki_available()
             if status.available:
+                wiki_name = status.value.name
+                if status.value.lang:
+                    wiki_name += f" ({status.value.lang})"
                 if status.value.api in infos:
                     await records.set_filters(status.value.api, logtype, filters)
                     await msg.finish(
                         I18NContext(
                             "wikilog.message.filter.set.success",
-                            wiki=status.value.name,
+                            wiki=wiki_name,
                             logtype=logtype,
                             filters="\n".join(filters),
                         )
@@ -263,6 +272,9 @@ async def _(msg: Bot.MessageSession, apilink: str):
     wiki_info = WikiLib(apilink)
     status = await wiki_info.check_wiki_available()
     if status.available:
+        wiki_name = status.value.name
+        if status.value.lang:
+            wiki_name += f" ({status.value.lang})"
         if status.value.api in infos:
             if "keepalive" in msg.parsed_msg:
                 r = await records.set_keep_alive(status.value.api, "enable" in msg.parsed_msg)
@@ -271,7 +283,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
             if r:
                 await msg.finish(
                     I18NContext(
-                        "wikilog.message.config.wiki.success", wiki=status.value.name
+                        "wikilog.message.config.wiki.success", wiki=wiki_name
                     )
                 )
             else:
@@ -297,6 +309,9 @@ async def _(msg: Bot.MessageSession, apilink: str):
         wiki_info = WikiLib(apilink)
         status = await wiki_info.check_wiki_available()
         if status.available:
+            wiki_name = status.value.name
+            if status.value.lang:
+                wiki_name += f" ({status.value.lang})"
             if status.value.api in infos:
                 for r in rcshows_:
                     if r not in rcshows:
@@ -307,7 +322,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
                 await msg.finish(
                     I18NContext(
                         "wikilog.message.rcshow_set.success",
-                        wiki=status.value.name,
+                        wiki=wiki_name,
                         rcshows="\n".join(rcshows_),
                     )
                 )
@@ -532,13 +547,16 @@ async def _():
             ft_session = await FetchedMessageSession.from_session_info(ft)
             for wiki in matched[id_]:
                 wiki_info = (await WikiLib(wiki).check_wiki_available()).value
+                wiki_name = f"({wiki_info.name}) "
+                if wiki_info.wikiid:
+                    wiki_name = f"({wiki_info.wikiid}) "
                 if matched[id_][wiki]["AbuseLog"]:
                     ab = await convert_ab_to_detailed_format(ft_session,
                                                              matched[id_][wiki]["AbuseLog"]
                                                              )
                     for x in ab:
                         await ft_session.send_direct_message(
-                            f"{wiki_info.name}\n{x}" if len(matched[id_]) > 1 else x
+                            f"{wiki_name}{x}" if len(matched[id_]) > 1 else x
                         )
                 if matched[id_][wiki]["RecentChanges"]:
                     rc = await convert_rc_to_detailed_format(ft_session,
@@ -547,5 +565,5 @@ async def _():
 
                     for x in rc:
                         await ft_session.send_direct_message(
-                            f"{wiki_info.name}\n{x}" if len(matched[id_]) > 1 else x
+                            f"{wiki_name}{x}" if len(matched[id_]) > 1 else x
                         )

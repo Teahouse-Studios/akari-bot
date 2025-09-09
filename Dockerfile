@@ -11,5 +11,11 @@ MAINTAINER Teahouse Studios <admin@teahou.se>
 WORKDIR /akari-bot
 ADD . .
 
+RUN apt-get update && apt-get install -y \
+    fonts-noto-cjk \
+    fonts-noto-color-emoji \
+    fonts-dejavu \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN pip install -r requirements.txt --no-deps
 CMD ["python", "./bot.py"]

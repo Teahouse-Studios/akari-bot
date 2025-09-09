@@ -276,8 +276,8 @@ async def query_pages(
                         plain_slice.append(str(Url(r.link,
                                                    use_mm=not r.info.in_allowlist and (isinstance(session,
                                                                                                   Bot.MessageSession) and session.session_info.use_url_manager),
-                                                   md_format=True if isinstance(session,
-                                                                                Bot.MessageSession) and session.session_info.use_url_md_format else False,
+                                                   md_format=isinstance(session,
+                                                                        Bot.MessageSession) and session.session_info.use_url_md_format,
                                                    )))
 
                     if r.file:
@@ -476,8 +476,12 @@ async def query_pages(
                                             redirected_title=display_title,
                                         )
                                     )
+                                    _t = "message.wait.prompt.confirm"
+                                    if isinstance(session, Bot.MessageSession):
+                                        if session.session_info.client_name == "QQ":
+                                            _t = "message.wait.prompt.confirm.qq"
                                     wait_plain_slice.append(
-                                        session.session_info.locale.t("message.wait.prompt.confirm")
+                                        session.session_info.locale.t(_t)
                                     )
                             else:
                                 if r.edit_link:
