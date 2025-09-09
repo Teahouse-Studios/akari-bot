@@ -476,8 +476,12 @@ async def query_pages(
                                             redirected_title=display_title,
                                         )
                                     )
+                                    _t = "message.wait.prompt.confirm"
+                                    if isinstance(session, Bot.MessageSession):
+                                        if session.session_info.client_name == "QQ":
+                                            _t = "message.wait.prompt.confirm.qq"
                                     wait_plain_slice.append(
-                                        session.session_info.locale.t("message.wait.prompt.confirm")
+                                        session.session_info.locale.t(_t)
                                     )
                             else:
                                 if r.edit_link:

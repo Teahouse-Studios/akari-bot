@@ -226,7 +226,10 @@ class MessageSession:
         else:
             message_chain = MessageChain.assign(I18NContext("core.message.confirm"))
         if append_instruction:
-            message_chain.append(I18NContext("message.wait.prompt.confirm"))
+            if self.session_info.client_name == "QQ":
+                message_chain.append(I18NContext("message.wait.prompt.confirm.qq"))
+            else:
+                message_chain.append(I18NContext("message.wait.prompt.confirm"))
         send = await self.send_message(message_chain, quote)
         await asyncio.sleep(0.1)
         flag = asyncio.Event()
