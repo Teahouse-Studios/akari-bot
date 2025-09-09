@@ -99,7 +99,7 @@
     "core.message.help.command_count": "${count} コマンド",
     "core.message.help.detail": "詳細情報を表示するには、「${prefix}help <モジュール名>」を使用します。",
     "core.message.help.document": "オンライン ドキュメントを参照してヘルプを入手することもできます：${url}",
-    "core.message.help.donate": "経済的余裕があれば、スポンサーとして歓迎します：${url}",
+    "core.message.help.donate": "もしご支援いただける余裕がございましたら、ぜひご協力をお願いいたします：${url}",
     "core.message.help.helpdoc.address": "オンライン モジュール ドキュメント：${url}",
     "core.message.help.legacy.availables": "現在利用可能なモジュール：",
     "core.message.help.legacy.availables.none": "現在利用可能なモジュールはありません。",

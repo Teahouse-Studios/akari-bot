@@ -99,7 +99,7 @@
     "core.message.help.command_count": "${count} 條指令",
     "core.message.help.detail": "使用「${prefix}help <模組名稱>」檢視詳細資訊。",
     "core.message.help.document": "你也可以透過查閱線上文件取得說明：${url}",
-    "core.message.help.donate": "若你有經濟實力，歡迎在愛發電提供贊助：${url}",
+    "core.message.help.donate": "若你有經濟實力，歡迎提供贊助：${url}",
     "core.message.help.helpdoc.address": "線上模組說明文件：${url}",
     "core.message.help.legacy.availables": "當前可用的模組有：",
     "core.message.help.legacy.availables.none": "當前沒有可用的模組。",

@@ -99,7 +99,7 @@
     "core.message.help.command_count": "${count} 条命令",
     "core.message.help.detail": "使用“${prefix}help <模块名称>”查看详细信息。",
     "core.message.help.document": "你也可以通过查阅在线文档获取帮助：${url}",
-    "core.message.help.donate": "若你有经济实力，欢迎给孩子们在爱发电上打钱：${url}",
+    "core.message.help.donate": "若你有经济实力，欢迎给孩子们打钱：${url}",
     "core.message.help.helpdoc.address": "在线模块文档：${url}",
     "core.message.help.legacy.availables": "当前可用的模块有：",
     "core.message.help.legacy.availables.none": "当前没有可用的模块。",
