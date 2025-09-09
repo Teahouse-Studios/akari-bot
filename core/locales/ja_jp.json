@@ -158,7 +158,7 @@
     "message.list": "メッセージ リスト",
     "message.no": "いいえ",
     "message.none": "なし",
-    "message.reply.prompt": "（返信するには、指定した単語を使用してください）",
+    "message.reply.prompt": "（指定した単語を返信してください）",
     "message.success": "成功しました。",
     "message.unknown": "不明",
     "message.wait.prompt.confirm": "（「Yes」などの確認語を送信してください）",
