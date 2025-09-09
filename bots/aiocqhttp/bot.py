@@ -151,8 +151,9 @@ async def _(event: Event):
 
 @aiocqhttp_bot.on("notice.notify")
 async def _(event: Event):
-    event.message = confirm_command_default[0]
-    await message_handler(event)
+    if event.sub_type == "poke":
+        event.message = confirm_command_default[0]
+        await message_handler(event)
 
 
 @aiocqhttp_bot.on("request.friend")
