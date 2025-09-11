@@ -104,7 +104,7 @@ combo_mapping = {
     "app": "AP+",
 }
 
-sync_list = ["SYNC", "FS", "FS+", "FSD", "FSD+"]
+sync_list = ["SYNC", "FS", "FS+", "FDX", "FDX+"]
 sync_list_raw = ["sync", "fs", "fsp", "fsd", "fsdp"]
 sync_mapping = {
     "sync": "SYNC",

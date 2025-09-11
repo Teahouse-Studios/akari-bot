@@ -99,7 +99,15 @@ async def _(msg: Bot.MessageSession):
     level = msg.matched_msg.groups()[0]
     goal = msg.matched_msg.groups()[1]
     username = msg.matched_msg.groups()[2]
-    await query_process(msg, level, goal, username)
+    await query_process(msg, level, goal, username, get_list=False)
+
+
+@mai_regex.regex(r"(\d+\+?)\s?([a-zA-Z]+\+?)\s?完成表\s?(.+)?", desc="{I18N:maimai.help.maimai_regex.process.list}")
+async def _(msg: Bot.MessageSession):
+    level = msg.matched_msg.groups()[0]
+    goal = msg.matched_msg.groups()[1]
+    username = msg.matched_msg.groups()[2]
+    await query_process(msg, level, goal, username, get_list=True)
 
 
 @mai_regex.regex(r"(.?)([極极将將舞神者]舞?)[进進]度\s?(.+)?", desc="{I18N:maimai.help.maimai_regex.plate}")

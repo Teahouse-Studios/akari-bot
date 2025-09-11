@@ -10,6 +10,7 @@ from .database.models import DivingProberBindInfo
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_cover
 from .libraries.maimaidx_best50 import generate as generate_b50
 from .libraries.maimaidx_platelist import generate as generate_plate
+from .libraries.maimaidx_scorelist import generate as generate_process
 from .libraries.maimaidx_utils import *
 
 total_list = TotalList()
@@ -537,12 +538,18 @@ async def query_plate(msg, plate, username, get_list=False):
             await msg.finish(output)
 
 
-@mai.command("process <level> <goal> [<username>] {{I18N:maimai.help.process}}")
-async def _(msg: Bot.MessageSession, level: str, goal: str, username: str = None):
-    await query_process(msg, level, goal, username)
+@mai.command("process <level> <goal> [-u <username>]  [-l] {{I18N:maimai.help.process}}",
+             options_desc={
+                 "-u": "{I18N:maimai.help.option.u}",
+                 "-l": "{I18N:maimai.help.option.l}"})
+async def _(msg: Bot.MessageSession, level: str, goal: str):
+    get_user = msg.parsed_msg.get("-u", False)
+    username = get_user["<username>"] if get_user else None
+    get_list = msg.parsed_msg.get("-l", False)
+    await query_process(msg, level, goal, username, get_list)
 
 
-async def query_process(msg, level, goal, username):
+async def query_process(msg, level, goal, username, get_list=False):
     if not username:
         if msg.session_info.sender_from == "QQ":
             payload = {"qq": msg.session_info.get_common_sender_id()}
@@ -562,16 +569,21 @@ async def query_process(msg, level, goal, username):
     if goal.upper() not in goal_list:
         await msg.finish(I18NContext("maimai.message.goal_invalid"))
 
-    output, get_img = await get_level_process(msg, payload, level, goal, use_cache)
+    if get_list:
+        img = await generate_process(msg, payload, level, goal, use_cache)
+        if img:
+            await msg.finish(BImage(img))
+    else:
+        output, get_img = await get_level_process(msg, payload, level, goal, use_cache)
 
-    if get_img:
-        imgs = await msgchain2image(output, msg)
-        if imgs:
-            await msg.finish(imgs)
+        if get_img:
+            imgs = await msgchain2image(output, msg)
+            if imgs:
+                await msg.finish(imgs)
+            else:
+                await msg.finish(output)
         else:
             await msg.finish(output)
-    else:
-        await msg.finish(output)
 
 
 @mai.command("rank [<username>] {{I18N:maimai.help.rank}}")
