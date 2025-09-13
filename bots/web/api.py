@@ -86,11 +86,10 @@ async def verify_token(request: Request):
 
 
 @app.post("/api/login")
-@limiter.limit("10/minute")
 async def auth(request: Request, response: Response):
     ip = request.client.host
     if await MaliciousLoginRecords.check_blocked(ip):
-        raise HTTPException(status_code=403, detail="This IP has been blocked")
+        raise HTTPException(status_code=429, detail="This IP has been blocked")
 
     try:
         if not os.path.exists(PASSWORD_PATH):

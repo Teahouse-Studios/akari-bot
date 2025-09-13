@@ -633,7 +633,7 @@ async def _execute_submodule(msg: "Bot.MessageSession", module, command_first_wo
             return
     except InvalidHelpDocTypeError:
         Logger.exception()
-        await msg.send_message(I18NContext("error.module.helpdoc.invalid", module=command_first_word))
+        await msg.send_message(I18NContext("error.module.helpdoc_invalid", module=command_first_word))
         return
 
 

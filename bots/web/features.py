@@ -8,5 +8,5 @@ class Features:
     markdown = True
     quote = False
     rss = False
-    typing = False
+    typing = True
     wait = True

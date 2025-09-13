@@ -1,3 +1,4 @@
+import asyncio
 import uuid
 from typing import Optional, List
 
@@ -76,12 +77,54 @@ class WebContextManager(ContextManager):
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
-        pass
+        async def _typing():
+            if session_info.session_id not in cls.context:
+                raise ValueError("Session not found in context")
+            # 这里可以添加开始输入状态的逻辑
+            ctx = cls.context[session_info.session_id]
+            if ctx:
+                try:
+                    websocket: WebSocket = Temp.data.get("web_chat_websocket")
+
+                    resp = {"action": "typing", "status": "start", "id": session_info.message_id}
+                    if websocket:
+                        await websocket.send_text(json.dumps(resp).decode())
+                except Exception:
+                    Logger.exception()
+
+                flag = asyncio.Event()
+                cls.typing_flags[session_info.session_id] = flag
+                await flag.wait()
+
+        asyncio.create_task(_typing())
 
     @classmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
-        pass
+        # if session_info.session_id not in cls.context:
+        #     raise ValueError("Session not found in context")
+        if session_info.session_id in cls.typing_flags:
+            cls.typing_flags[session_info.session_id].set()
+            del cls.typing_flags[session_info.session_id]
+        # 这里可以添加结束输入状态的逻辑
+        try:
+            websocket: WebSocket = Temp.data.get("web_chat_websocket")
+
+            resp = {"action": "typing", "status": "end", "id": session_info.message_id}
+            if websocket:
+                await websocket.send_text(json.dumps(resp).decode())
+        except Exception:
+            Logger.exception()
 
     @classmethod
     async def error_signal(cls, session_info: SessionInfo) -> None:
-        pass
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+        # 这里可以添加错误处理逻辑
+        try:
+            websocket: WebSocket = Temp.data.get("web_chat_websocket")
+
+            resp = {"action": "typing", "status": "error", "id": session_info.message_id}
+            if websocket:
+                await websocket.send_text(json.dumps(resp).decode())
+        except Exception:
+            Logger.exception()
