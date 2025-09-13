@@ -17,9 +17,9 @@ package-mode = false
 [tool.poetry.dependencies]
 python = "^3.12.0"
 
-# akari-bot-services
-akari-bot-webrender = "0.4.2"
-akari-bot-webui = "0.1.5"
+# akari-bot-service
+akari-bot-webrender = "0.4.4"
+akari-bot-webui = "0.1.6"
 
 # lib
 coverage = "^7.9.1"

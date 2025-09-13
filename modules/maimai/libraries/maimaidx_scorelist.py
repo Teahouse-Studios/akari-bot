@@ -285,7 +285,6 @@ async def _get_level_process(msg: Bot.MessageSession,
                     song_list[const] = []
                 song_list[const].append((music.id, idx))
 
-                                 
     song_list = {k: song_list[k] for k in sorted(song_list, reverse=True)}
 
     return song_list, song_played
