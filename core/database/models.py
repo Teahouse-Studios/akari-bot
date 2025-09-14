@@ -424,11 +424,7 @@ class JobQueuesTable(DBModel):
         timestamp = datetime.now(UTC) - timedelta(seconds=time)
         Logger.debug(f"Clearing tasks older than {timestamp}...")
 
-        queries = await cls.filter(timestamp__lt=timestamp)
-
-        for q in queries:
-            await q.delete()
-
+        await cls.filter(timestamp__lt=timestamp).delete()
         return True
 
     @classmethod
