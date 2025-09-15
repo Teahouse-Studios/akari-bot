@@ -72,8 +72,41 @@ class WebContextManager(ContextManager):
             resp = {"action": "delete", "id": message_id}
             if websocket:
                 await websocket.send_text(json.dumps(resp).decode())
+            Logger.info(f"Deleted message {message_id} in session {session_info.session_id}")
         except Exception:
-            Logger.exception()
+            Logger.exception(f"Failed to delete message {message_id} in session {session_info.session_id}: ")
+
+    @classmethod
+    async def add_reaction(cls, session_info: SessionInfo, message_id: str, emoji: str) -> None:
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+
+        try:
+            websocket: WebSocket = Temp.data.get("web_chat_websocket")
+
+            resp = {"action": "reaction", "id": message_id, "emoji": emoji, "add": True}
+            if websocket:
+                await websocket.send_text(json.dumps(resp).decode())
+            Logger.info(f"Added reaction {emoji} to message {message_id} in session {session_info.session_id}")
+        except Exception:
+            Logger.exception(f"Failed to add reaction {emoji} to message {
+                message_id} in session {session_info.session_id}: ")
+
+    @classmethod
+    async def remove_reaction(cls, session_info: SessionInfo, message_id: str, emoji: str) -> None:
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+
+        try:
+            websocket: WebSocket = Temp.data.get("web_chat_websocket")
+
+            resp = {"action": "reaction", "id": message_id, "emoji": emoji, "add": False}
+            if websocket:
+                await websocket.send_text(json.dumps(resp).decode())
+            Logger.info(f"Removed reaction {emoji} to message {message_id} in session {session_info.session_id}")
+        except Exception:
+            Logger.exception(f"Failed to remove reaction {emoji} to message {
+                message_id} in session {session_info.session_id}: ")
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:

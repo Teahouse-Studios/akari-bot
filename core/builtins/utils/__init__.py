@@ -7,7 +7,7 @@ from core.constants.default import (
 confirm_command = list(set(
     filter(str.strip, Config("confirm_command", confirm_command_default))
     or confirm_command_default
-))  # 确认指令
+) | {"✅", "⭕"})  # 确认指令
 command_prefix = list(set(
     filter(str.strip, Config("command_prefix", command_prefix_default))
     or command_prefix_default

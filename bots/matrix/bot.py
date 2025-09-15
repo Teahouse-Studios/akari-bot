@@ -15,7 +15,7 @@ from core.builtins.message.internal import Plain, Image, Voice
 from core.builtins.session.info import SessionInfo
 from core.client.init import client_init
 from core.config import Config
-from core.constants.default import confirm_command_default, ignored_sender_default
+from core.constants.default import ignored_sender_default
 from core.logger import Logger
 from core.queue.client import JobQueueClient
 
@@ -145,21 +145,19 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
 
 async def on_reaction(room: nio.MatrixRoom, event: nio.ReactionEvent):
     relates_to = event.source.get("content", {}).get("m.relates_to", {})
-    reaction = relates_to.get("key")
-    if reaction in ["✅", "⭕"]:
-        target_id = f"{target_prefix}|{room.room_id}"
-        sender_id = f"{sender_prefix}|{event.sender}"
-        session = await SessionInfo.assign(
-            target_id=target_id,
-            sender_id=sender_id,
-            target_from=target_prefix,
-            sender_from=sender_prefix,
-            client_name=client_name,
-            message_id=str(event.event_id),
-            messages=MessageChain.assign(Plain(confirm_command_default[0])),
-            ctx_slot=ctx_id
-        )
-        await Bot.process_message(session, (room, event))
+    target_id = f"{target_prefix}|{room.room_id}"
+    sender_id = f"{sender_prefix}|{event.sender}"
+    session = await SessionInfo.assign(
+        target_id=target_id,
+        sender_id=sender_id,
+        target_from=target_prefix,
+        sender_from=sender_prefix,
+        client_name=client_name,
+        message_id=str(event.event_id),
+        messages=MessageChain.assign(Plain(relates_to.get("key"))),
+        ctx_slot=ctx_id
+    )
+    await Bot.process_message(session, (room, event))
 
 
 async def on_verify(event: nio.KeyVerificationEvent):

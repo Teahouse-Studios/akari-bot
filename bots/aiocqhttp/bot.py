@@ -3,6 +3,7 @@ import html
 import logging
 import re
 
+import emoji
 import orjson as json
 from aiocqhttp import Event
 from hypercorn import Config as HyperConfig
@@ -161,10 +162,15 @@ async def _(event: Event):
     # API 假定点赞消息只能由自己收到
     if event.likes:
         for like in event.likes:
-            if like["emoji_id"] in ["11093", "9989"]:
-                event.message = confirm_command_default[0]
-                await message_handler(event)
-                break
+            try:
+                char = chr(int(like["emoji_id"]))
+                if not emoji.is_emoji(char):
+                    raise ValueError
+                event.message = char
+            except (ValueError, OverflowError):
+                event.message = f"[CQ:face,id={like["emoji_id"]}]"
+            await message_handler(event)
+            break
 
 
 @aiocqhttp_bot.on("request.friend")
