@@ -225,8 +225,7 @@ class MessageSession:
                 else:
                     await _queue_server.client_add_reaction(self.session_info, message_id, "11088")
                 await _queue_server.client_add_reaction(self.session_info, message_id, "10060")
-            # else:
-            elif self.session_info.client_name in ["Discord", "Matrix", "Web"]:
+            else:
                 if self.session_info.locale.locale == "ja_jp":
                     await _queue_server.client_add_reaction(self.session_info, message_id, "⭕")
                 else:
@@ -264,8 +263,7 @@ class MessageSession:
             if self.session_info.support_reaction and quick_confirm:
                 if self.session_info.client_name == "QQ":
                     message_chain.append(I18NContext("message.wait.confirm.prompt.qq"))
-                # else:
-                elif self.session_info.client_name in ["Discord", "Matrix"]:
+                else:
                     message_chain.append(I18NContext("message.wait.confirm.prompt.reaction"))
             else:
                 message_chain.append(I18NContext("message.wait.confirm.prompt"))
