@@ -214,22 +214,24 @@ class MessageSession:
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         await _queue_server.client_end_typing_signal(self.session_info)
 
-    async def _add_confirm_reaction(self, message_id: List[str]):
+    async def _add_confirm_reaction(self, message_id: Union[str, List[str]]):
+        if isinstance(message_id, str):
+            message_id = [message_id]
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         if self.session_info.support_reaction:
             if self.session_info.client_name in ["QQ", "QQBot"]:
                 if self.session_info.locale.locale == "ja_jp":
-                    await _queue_server.client_add_reaction(self.session_info, message_id[-1], "11093")
+                    await _queue_server.client_add_reaction(self.session_info, message_id, "11093")
                 else:
-                    await _queue_server.client_add_reaction(self.session_info, message_id[-1], "11088")
-                await _queue_server.client_add_reaction(self.session_info, message_id[-1], "10060")
+                    await _queue_server.client_add_reaction(self.session_info, message_id, "11088")
+                await _queue_server.client_add_reaction(self.session_info, message_id, "10060")
             # else:
             elif self.session_info.client_name in ["Discord", "Matrix", "Web"]:
                 if self.session_info.locale.locale == "ja_jp":
-                    await _queue_server.client_add_reaction(self.session_info, message_id[-1], "⭕")
+                    await _queue_server.client_add_reaction(self.session_info, message_id, "⭕")
                 else:
-                    await _queue_server.client_add_reaction(self.session_info, message_id[-1], "✅")
-                await _queue_server.client_add_reaction(self.session_info, message_id[-1], "❌")
+                    await _queue_server.client_add_reaction(self.session_info, message_id, "✅")
+                await _queue_server.client_add_reaction(self.session_info, message_id, "❌")
 
     async def wait_confirm(
         self,

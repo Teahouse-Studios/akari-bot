@@ -35,7 +35,7 @@ class JobQueueServer(JobQueueBase):
         return value
 
     @classmethod
-    async def client_delete_message(cls, session_info: SessionInfo, message_id: Union[str, list]):
+    async def client_delete_message(cls, session_info: SessionInfo, message_id: Union[str, list[str]]):
         if isinstance(message_id, str):
             message_id = [message_id]
         value = await cls.add_job(session_info.client_name, "delete_message",
@@ -44,7 +44,7 @@ class JobQueueServer(JobQueueBase):
         return value
 
     @classmethod
-    async def client_add_reaction(cls, session_info: SessionInfo, message_id: str, emoji: str):
+    async def client_add_reaction(cls, session_info: SessionInfo, message_id: Union[str, list[str]], emoji: str):
         value = await cls.add_job(session_info.client_name, "add_reaction",
                                   {"session_info": converter.unstructure(session_info),
                                    "message_id": message_id,
@@ -52,7 +52,7 @@ class JobQueueServer(JobQueueBase):
         return value
 
     @classmethod
-    async def client_remove_reaction(cls, session_info: SessionInfo, message_id: str, emoji: str):
+    async def client_remove_reaction(cls, session_info: SessionInfo, message_id: Union[str, list[str]], emoji: str):
         value = await cls.add_job(session_info.client_name, "add_reaction",
                                   {"session_info": converter.unstructure(session_info),
                                    "message_id": message_id,

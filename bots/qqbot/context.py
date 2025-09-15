@@ -1,6 +1,6 @@
 import asyncio
 import html
-from typing import Optional, List
+from typing import Optional, Union, List
 
 from botpy.api import BotAPI
 from botpy.errors import ServerError
@@ -331,7 +331,7 @@ class QQBotContextManager(ContextManager):
         return msg_ids
 
     @classmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: list[str]) -> None:
+    async def delete_message(cls, session_info: SessionInfo, message_id: Union[str, List[str]]) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -366,9 +366,15 @@ class QQBotContextManager(ContextManager):
                     Logger.exception(f"Failed to delete message {msg_id} in session {session_info.session_id}: ")
 
     @classmethod
-    async def add_reaction(cls, session_info: SessionInfo, message_id: str, emoji: str) -> None:
+    async def add_reaction(cls, session_info: SessionInfo, message_id: Union[str, list[str]], emoji: str) -> None:
+        if isinstance(message_id, str):
+            message_id = [message_id]
+        if not isinstance(message_id, list):
+            raise TypeError("Message ID must be a list or str")
+
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
+
         if session_info.target_from == target_guild_prefix:
             emoji_type = 1 if int(qq_typing_emoji) < 9000 else 2
 
@@ -376,19 +382,25 @@ class QQBotContextManager(ContextManager):
             try:
                 await client.api.put_reaction(
                     channel_id=session_info.get_common_target_id(),
-                    message_id=message_id,
+                    message_id=message_id[-1],
                     emoji_type=emoji_type,
                     emoji_id=emoji,
                 )
-                Logger.info(f"Added reaction {emoji} to message {message_id} in session {session_info.session_id}")
+                Logger.info(f"Added reaction \"{emoji}\" to message {message_id} in session {session_info.session_id}")
             except Exception:
-                Logger.exception(f"Failed to add reaction {emoji} to message {
+                Logger.exception(f"Failed to add reaction \"{emoji}\" to message {
                                  message_id} in session {session_info.session_id}: ")
 
     @classmethod
-    async def remove_reaction(cls, session_info: SessionInfo, message_id: str, emoji: str) -> None:
+    async def remove_reaction(cls, session_info: SessionInfo, message_id: Union[str, list[str]], emoji: str) -> None:
+        if isinstance(message_id, str):
+            message_id = [message_id]
+        if not isinstance(message_id, list):
+            raise TypeError("Message ID must be a list or str")
+
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
+
         if session_info.target_from == target_guild_prefix:
             emoji_type = 1 if int(qq_typing_emoji) < 9000 else 2
 
@@ -396,13 +408,14 @@ class QQBotContextManager(ContextManager):
             try:
                 await client.api.delete_reaction(
                     channel_id=session_info.get_common_target_id(),
-                    message_id=message_id,
+                    message_id=message_id[-1],
                     emoji_type=emoji_type,
                     emoji_id=emoji,
                 )
-                Logger.info(f"Removed reaction {emoji} to message {message_id} in session {session_info.session_id}")
+                Logger.info(f"Removed reaction \"{emoji}\" to message {
+                            message_id} in session {session_info.session_id}")
             except Exception:
-                Logger.exception(f"Failed to remove reaction {emoji} to message {
+                Logger.exception(f"Failed to remove reaction \"{emoji}\" to message {
                                  message_id} in session {session_info.session_id}: ")
 
     @classmethod

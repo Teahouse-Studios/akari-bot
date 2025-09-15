@@ -556,7 +556,7 @@ class RawElement(BaseElement):
         pass
 
     def __str__(self):
-        return f"Raw({self.value})"
+        return self.value
 
 
 __all__ = [

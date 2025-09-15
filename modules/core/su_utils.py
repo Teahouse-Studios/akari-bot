@@ -562,7 +562,7 @@ echo = module("echo", required_superuser=True, base=True, doc=True)
 
 @echo.command()
 async def _(msg: Bot.MessageSession):
-    dis = await msg.wait_next_message()
+    dis = await msg.wait_next_message(I18NContext("core.message.echo.prompt"), add_confirm_reaction=True)
     if dis:
         try:
             dis = dis.as_display()

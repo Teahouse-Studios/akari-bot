@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union, List
 
 import httpx
 import orjson as json
@@ -172,7 +172,7 @@ class KOOKContextManager(ContextManager):
         return msg_ids
 
     @classmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: list[str]) -> None:
+    async def delete_message(cls, session_info: SessionInfo, message_id: Union[str, List[str]]) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -193,7 +193,12 @@ class KOOKContextManager(ContextManager):
                 Logger.exception(f"Failed to delete message {id_} in session {session_info.session_id}: ")
 
     @classmethod
-    async def add_reaction(cls, session_info: SessionInfo, message_id: str, emoji: str) -> None:
+    async def add_reaction(cls, session_info: SessionInfo, message_id: Union[str, list[str]], emoji: str) -> None:
+        if isinstance(message_id, str):
+            message_id = [message_id]
+        if not isinstance(message_id, list):
+            raise TypeError("Message ID must be a list or str")
+
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
 
@@ -204,16 +209,21 @@ class KOOKContextManager(ContextManager):
 
         try:
             if _channel.type.name == "PERSON":
-                await direct_api("add-reaction", msg_id=message_id, emoji=emoji)
+                await direct_api("add-reaction", msg_id=message_id[-1], emoji=emoji)
             else:
-                await channel_api("add-reaction", msg_id=message_id, emoji=emoji)
-            Logger.info(f"Added reaction {emoji} to message {message_id} in session {session_info.session_id}")
+                await channel_api("add-reaction", msg_id=message_id[-1], emoji=emoji)
+            Logger.info(f"Added reaction \"{emoji}\" to message {message_id} in session {session_info.session_id}")
         except Exception:
-            Logger.exception(f"Failed to add reaction {emoji} to message {
+            Logger.exception(f"Failed to add reaction \"{emoji}\" to message {
                              message_id} in session {session_info.session_id}: ")
 
     @classmethod
-    async def remove_reaction(cls, session_info: SessionInfo, message_id: str, emoji: str) -> None:
+    async def remove_reaction(cls, session_info: SessionInfo, message_id: Union[str, list[str]], emoji: str) -> None:
+        if isinstance(message_id, str):
+            message_id = [message_id]
+        if not isinstance(message_id, list):
+            raise TypeError("Message ID must be a list or str")
+
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
 
@@ -224,12 +234,12 @@ class KOOKContextManager(ContextManager):
 
         try:
             if _channel.type.name == "PERSON":
-                await direct_api("delete-reaction", msg_id=message_id, emoji=emoji)
+                await direct_api("delete-reaction", msg_id=message_id[-1], emoji=emoji)
             else:
-                await channel_api("delete-reaction", msg_id=message_id, emoji=emoji)
-            Logger.info(f"Added reaction {emoji} to message {message_id} in session {session_info.session_id}")
+                await channel_api("delete-reaction", msg_id=message_id[-1], emoji=emoji)
+            Logger.info(f"Added reaction \"{emoji}\" to message {message_id} in session {session_info.session_id}")
         except Exception:
-            Logger.exception(f"Failed to remove reaction {emoji} to message {
+            Logger.exception(f"Failed to remove reaction \"{emoji}\" to message {
                              message_id} in session {session_info.session_id}: ")
 
     @classmethod
