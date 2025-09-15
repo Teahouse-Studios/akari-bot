@@ -9,6 +9,7 @@ from core.builtins.message.internal import I18NContext, Plain, Image, Voice, Url
 from core.builtins.session.internal import MessageSession
 from core.builtins.utils import confirm_command
 from core.component import module
+from core.config import Config
 from core.constants.exceptions import AbuseWarning
 from core.logger import Logger
 from core.utils.http import download
@@ -478,7 +479,8 @@ async def query_pages(
                                     )
                                     _t = "message.wait.confirm.prompt"
                                     if isinstance(session, Bot.MessageSession) and \
-                                            session.session_info.support_reaction:
+                                            session.session_info.support_reaction and \
+                                            Config("quick_confirm", True):
                                         if session.session_info.client_name == "QQ":
                                             _t = "message.wait.confirm.prompt.qq"
                                         # else:

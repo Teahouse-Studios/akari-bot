@@ -24,6 +24,8 @@ from core.utils.message import isint
 if TYPE_CHECKING:
     from core.queue.server import JobQueueServer
 
+quick_confirm = Config("quick_confirm", True)
+
 
 @define
 class MessageSession:
@@ -257,7 +259,7 @@ class MessageSession:
         else:
             message_chain = MessageChain.assign(I18NContext("core.message.confirm"))
         if append_instruction:
-            if self.session_info.support_reaction:
+            if self.session_info.support_reaction and quick_confirm:
                 if self.session_info.client_name == "QQ":
                     message_chain.append(I18NContext("message.wait.confirm.prompt.qq"))
                 # else:
@@ -267,7 +269,8 @@ class MessageSession:
                 message_chain.append(I18NContext("message.wait.confirm.prompt"))
         send = await self.send_message(message_chain, quote)
         await asyncio.sleep(0.1)
-        await self._add_confirm_reaction(send.message_id)
+        if quick_confirm:
+            await self._add_confirm_reaction(send.message_id)
         flag = asyncio.Event()
         SessionTaskManager.add_task(self, flag, timeout=timeout)
         try:
@@ -314,7 +317,7 @@ class MessageSession:
                 message_chain.append(I18NContext("message.wait.next_message.prompt"))
             send = await self.send_message(message_chain, quote)
         await asyncio.sleep(0.1)
-        if add_confirm_reaction:
+        if add_confirm_reaction and quick_confirm:
             await self._add_confirm_reaction(send.message_id)
 
         flag = asyncio.Event()

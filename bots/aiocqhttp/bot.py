@@ -29,12 +29,13 @@ ctx_id = Bot.register_context_manager(AIOCQContextManager)
 Bot.register_context_manager(AIOCQFetchedContextManager, fetch_session=True)
 
 dirty_word_check = Config("enable_dirty_check", False)
-use_url_manager = Config("enable_urlmanager", False)
-enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name="bot_aiocqhttp")
+default_locale = Config("default_locale", cfg_type=str)
 enable_tos = Config("enable_tos", True)
 ignored_sender = Config("ignored_sender", ignored_sender_default)
-default_locale = Config("default_locale", cfg_type=str)
+quick_confirm = Config("quick_confirm", True)
+use_url_manager = Config("enable_urlmanager", False)
 disable_temp_session = Config("qq_disable_temp_session", True, table_name="bot_aiocqhttp")
+enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name="bot_aiocqhttp")
 
 
 @aiocqhttp_bot.on_startup
@@ -152,7 +153,7 @@ async def _(event: Event):
 
 @aiocqhttp_bot.on("notice.notify")
 async def _(event: Event):
-    if event.sub_type == "poke":
+    if event.sub_type == "poke" and quick_confirm:
         event.message = confirm_command_default[0]
         await message_handler(event)
 
