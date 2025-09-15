@@ -221,7 +221,7 @@ class MessageSession:
                 if self.session_info.locale.locale == "ja_jp":
                     await _queue_server.client_add_reaction(self.session_info, message_id[-1], "11093")
                 else:
-                    await _queue_server.client_add_reaction(self.session_info, message_id[-1], "9989")
+                    await _queue_server.client_add_reaction(self.session_info, message_id[-1], "11088")
                 await _queue_server.client_add_reaction(self.session_info, message_id[-1], "10060")
             # else:
             elif self.session_info.client_name in ["Discord", "Matrix", "Web"]:
