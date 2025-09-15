@@ -477,11 +477,13 @@ async def query_pages(
                                         )
                                     )
                                     _t = "message.wait.confirm.prompt"
-                                    if isinstance(session, Bot.MessageSession):
+                                    if isinstance(session, Bot.MessageSession) and \
+                                            session.session_info.support_reaction:
                                         if session.session_info.client_name == "QQ":
                                             _t = "message.wait.confirm.prompt.qq"
-                                        elif session.session_info.client_name == "Discord":
-                                            _t = "message.wait.confirm.prompt.discord"
+                                        # else:
+                                        elif session.session_info.client_name in ["Discord", "Matrix"]:
+                                            _t = "message.wait.confirm.prompt.reaction"
                                     wait_plain_slice.append(
                                         session.session_info.locale.t(_t)
                                     )

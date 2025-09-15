@@ -278,8 +278,32 @@ class MatrixContextManager(ContextManager):
         for m in message_id:
             try:
                 await matrix_bot.room_redact(session_info.get_common_target_id(), m)
+                Logger.info(f"Deleted message {m} in session {session_info.session_id}")
             except Exception:
-                Logger.exception()
+                Logger.exception(f"Failed to delete message {m} in session {session_info.session_id}: ")
+
+    @classmethod
+    async def add_reaction(cls, session_info: SessionInfo, message_id: str, emoji: str) -> None:
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+
+        content = {
+            "m.relates_to": {
+                "rel_type": "m.annotation",
+                "event_id": message_id,
+                "key": emoji
+            }
+        }
+        try:
+            await matrix_bot.room_send(
+                session_info.get_common_target_id(),
+                message_type="m.reaction",
+                content=content
+            )
+            Logger.info(f"Added reaction {emoji} to message {message_id} in session {session_info.session_id}")
+        except Exception:
+            Logger.exception(f"Failed to add reaction {emoji} to message {
+                             message_id} in session {session_info.session_id}: ")
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:

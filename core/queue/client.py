@@ -96,6 +96,18 @@ async def _(tsk: JobQueuesTable, args: dict):
     return {"success": True}
 
 
+@JobQueueClient.action("add_reaction")
+async def _(tsk: JobQueuesTable, args: dict):
+    session_info, bot, ctx_manager = await get_session(args)
+    await ctx_manager.add_reaction(session_info, args["message_id"], args["emoji"])
+
+
+@JobQueueClient.action("remove_reaction")
+async def _(tsk: JobQueuesTable, args: dict):
+    session_info, bot, ctx_manager = await get_session(args)
+    await ctx_manager.add_reaction(session_info, args["message_id"], args["emoji"])
+
+
 @JobQueueClient.action("start_typing")
 async def _(tsk: JobQueuesTable, args: dict):
     session_info, bot, ctx_manager = await get_session(args)
@@ -139,12 +151,6 @@ async def _(tsk: JobQueuesTable, args: dict):
         g = await get_(args["api_name"], **args["args"])
         return g
     return {"success": False, "error": "API not supported in this context"}
-
-
-@JobQueueClient.action("add_reaction")
-async def _(tsk: JobQueuesTable, args: dict):
-    session_info, bot, ctx_manager = await get_session(args)
-    await ctx_manager.add_reaction(session_info, args["message_id"], args["emoji"])
 
 
 add_export(JobQueueClient)

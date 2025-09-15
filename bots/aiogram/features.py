@@ -9,6 +9,7 @@ class Features(FeaturesBase):
     forward = False
     delete = True
     markdown = False
+    reaction = False
     quote = True
     rss = True
     typing = False

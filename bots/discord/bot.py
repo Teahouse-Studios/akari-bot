@@ -20,8 +20,7 @@ from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
 from core.client.init import client_init
 from core.config import Config
-from core.constants import confirm_command_default
-from core.constants.default import ignored_sender_default
+from core.constants.default import confirm_command_default, ignored_sender_default
 from core.logger import Logger
 from core.utils.http import download
 
@@ -146,20 +145,18 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
     if isinstance(await discord_bot.fetch_channel(payload.channel_id), discord.DMChannel):
         target_from = target_dm_channel_prefix
     target_id = f"{target_from}|{payload.channel_id}"
-    if payload.emoji.name == "✅":
+    if payload.emoji.name in ["✅", "⭕"]:
         msg = confirm_command_default[0]
-    else:
-        msg = payload.emoji.name
-    session = await SessionInfo.assign(target_id=target_id,
-                                       sender_id=sender_id,
-                                       target_from=target_from,
-                                       sender_from=sender_prefix,
-                                       client_name=client_name,
-                                       message_id=str(payload.message_id),
-                                       messages=MessageChain.assign([Plain(msg)]),
-                                       ctx_slot=ctx_id
-                                       )
-    await Bot.process_message(session, payload)
+        session = await SessionInfo.assign(target_id=target_id,
+                                           sender_id=sender_id,
+                                           target_from=target_from,
+                                           sender_from=sender_prefix,
+                                           client_name=client_name,
+                                           message_id=str(payload.message_id),
+                                           messages=MessageChain.assign([Plain(msg)]),
+                                           ctx_slot=ctx_id
+                                           )
+        await Bot.process_message(session, payload)
 
 
 if Config("enable", False, table_name="bot_discord"):

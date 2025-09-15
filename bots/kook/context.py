@@ -21,34 +21,34 @@ kook_headers = {
 }
 
 
-async def direct_msg_delete(msg_id: str):
-    """删除私聊消息"""
-    url = f"{kook_base}/api/v3/direct-message/delete"
-    params = {"msg_id": msg_id}
+async def channel_api(endpoint: str, **params):
+    url = f"{kook_base}/api/v3/message/{endpoint}"
     async with httpx.AsyncClient() as client:
         resp = await client.post(url, data=params, headers=kook_headers)
-    return json.loads(resp.text)
+    data = json.loads(resp.text)
+    if not str(resp.status_code).startswith("2"):
+        raise ValueError(data)
+    return data
 
 
-async def channel_msg_delete(msg_id: str):
-    """删除普通消息"""
-    url = f"{kook_base}/api/v3/message/delete"
-    params = {"msg_id": msg_id}
+async def direct_api(endpoint: str, **params):
+    url = f"{kook_base}/api/v3/direct-message/{endpoint}"
     async with httpx.AsyncClient() as client:
         resp = await client.post(url, data=params, headers=kook_headers)
-    return json.loads(resp.text)
+    data = json.loads(resp.text)
+    if not str(resp.status_code).startswith("2"):
+        raise ValueError(data)
+    return data
 
 
 async def get_channel(session_info: SessionInfo) -> PublicChannel | User | None:
     if session_info.target_from == target_group_prefix:
         _channel = await bot.client.fetch_public_channel(session_info.get_common_target_id())
         if not _channel:
-            Logger.warning(f"Channel {session_info.target_id} not found, cannot send message.")
             return None
     elif session_info.target_from == target_person_prefix:
         _channel = await bot.client.fetch_user(session_info.get_common_target_id())
         if not _channel:
-            Logger.warning(f"Channel {session_info.target_id} not found, cannot send message.")
             return None
     else:
         Logger.warning(f"Unknown target_from: {session_info.target_from}")
@@ -183,10 +183,54 @@ class KOOKContextManager(ContextManager):
             Logger.warning(f"Channel {session_info.target_id} not found, cannot delete message.")
             return
         for id_ in message_id:
+            try:
+                if _channel.type.name == "PERSON":
+                    await direct_api("delete", msg_id=id_)
+                else:
+                    await channel_api("delete", msg_id=id_)
+                Logger.info(f"Deleted message {id_} in session {session_info.session_id}")
+            except Exception:
+                Logger.exception(f"Failed to delete message {id_} in session {session_info.session_id}: ")
+
+    @classmethod
+    async def add_reaction(cls, session_info: SessionInfo, message_id: str, emoji: str) -> None:
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+
+        _channel = await get_channel(session_info)
+        if not _channel:
+            Logger.warning(f"Channel {session_info.target_id} not found, cannot add reaction.")
+            return
+
+        try:
             if _channel.type.name == "PERSON":
-                await direct_msg_delete(id_)
+                await direct_api("add-reaction", msg_id=message_id, emoji=emoji)
             else:
-                await channel_msg_delete(id_)
+                await channel_api("add-reaction", msg_id=message_id, emoji=emoji)
+            Logger.info(f"Added reaction {emoji} to message {message_id} in session {session_info.session_id}")
+        except Exception:
+            Logger.exception(f"Failed to add reaction {emoji} to message {
+                             message_id} in session {session_info.session_id}: ")
+
+    @classmethod
+    async def remove_reaction(cls, session_info: SessionInfo, message_id: str, emoji: str) -> None:
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+
+        _channel = await get_channel(session_info)
+        if not _channel:
+            Logger.warning(f"Channel {session_info.target_id} not found, cannot add reaction.")
+            return
+
+        try:
+            if _channel.type.name == "PERSON":
+                await direct_api("delete-reaction", msg_id=message_id, emoji=emoji)
+            else:
+                await channel_api("delete-reaction", msg_id=message_id, emoji=emoji)
+            Logger.info(f"Added reaction {emoji} to message {message_id} in session {session_info.session_id}")
+        except Exception:
+            Logger.exception(f"Failed to remove reaction {emoji} to message {
+                             message_id} in session {session_info.session_id}: ")
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:

@@ -9,8 +9,8 @@ class Features(FeaturesBase):
     forward = False
     delete = True
     markdown = True
+    reaction = True
     quote = True
     rss = True
     typing = True
     wait = True
-    reaction = True

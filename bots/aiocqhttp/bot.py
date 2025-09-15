@@ -17,7 +17,7 @@ from core.builtins.temp import Temp
 from core.builtins.utils import command_prefix
 from core.client.init import client_init
 from core.config import Config
-from core.constants.default import issue_url_default, ignored_sender_default, qq_host_default, confirm_command_default
+from core.constants.default import confirm_command_default, issue_url_default, ignored_sender_default, qq_host_default
 from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords
 from core.i18n import Locale
 from core.logger import Logger
@@ -161,12 +161,8 @@ async def _(event: Event):
     # API 假定点赞消息只能由自己收到
     if event.likes:
         for like in event.likes:
-            if like["emoji_id"] == "10024":
+            if like["emoji_id"] in ["11093", "9989"]:
                 event.message = confirm_command_default[0]
-                await message_handler(event)
-                break
-            if like["emoji_id"] == "10060":
-                event.message = "no"  # 随便一个不会触发任何命令的消息
                 await message_handler(event)
                 break
 

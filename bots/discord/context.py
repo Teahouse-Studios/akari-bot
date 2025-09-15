@@ -144,8 +144,39 @@ class DiscordContextManager(ContextManager):
                     Logger.info(f"Deleted message {msg_id} in session {session_info.session_id}")
             except discord.NotFound:
                 Logger.warning(f"Message {msg_id} not found in session {session_info.session_id}")
-            except Exception as e:
-                Logger.error(f"Failed to delete message {msg_id} in session {session_info.session_id}: {e}")
+            except Exception:
+                Logger.exception(f"Failed to delete message {msg_id} in session {session_info.session_id}: ")
+
+    @classmethod
+    async def add_reaction(cls, session_info: SessionInfo, message_id: str, emoji: str) -> None:
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+
+        if c := await discord_bot.fetch_channel(get_channel_id(session_info)):
+            m = await c.fetch_message(message_id)
+            if m:
+                try:
+                    await m.add_reaction(emoji)
+                    Logger.info(f"Added reaction {emoji} to message {message_id} in session {session_info.session_id}")
+                except Exception:
+                    Logger.exception(f"Failed to add reaction {emoji} to message {
+                                     message_id} in session {session_info.session_id}: ")
+
+    @classmethod
+    async def remove_reaction(cls, session_info: SessionInfo, message_id: str, emoji: str) -> None:
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+
+        if c := await discord_bot.fetch_channel(get_channel_id(session_info)):
+            m = await c.fetch_message(message_id)
+            if m:
+                try:
+                    await m.remove_reaction(emoji)
+                    Logger.info(f"Removed reaction {emoji} to message {
+                                message_id} in session {session_info.session_id}")
+                except Exception:
+                    Logger.exception(f"Failed to remove reaction {emoji} to message {
+                                     message_id} in session {session_info.session_id}: ")
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
@@ -179,17 +210,6 @@ class DiscordContextManager(ContextManager):
     @classmethod
     async def error_signal(cls, session_info: SessionInfo) -> None:
         pass
-
-    @classmethod
-    async def add_reaction(cls, session_info: SessionInfo, message_id: str, emoji: str) -> None:
-        if session_info.session_id not in cls.context:
-            raise ValueError("Session not found in context")
-
-        if c := await discord_bot.fetch_channel(get_channel_id(session_info)):
-            m = await c.fetch_message(message_id)
-            if m:
-                await m.add_reaction(emoji)
-                Logger.info(f"Added reaction {emoji} to message {message_id} in session {session_info.session_id}")
 
 
 class DiscordFetchedContextManager(DiscordContextManager):

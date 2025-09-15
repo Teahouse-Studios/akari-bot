@@ -44,6 +44,22 @@ class JobQueueServer(JobQueueBase):
         return value
 
     @classmethod
+    async def client_add_reaction(cls, session_info: SessionInfo, message_id: str, emoji: str):
+        value = await cls.add_job(session_info.client_name, "add_reaction",
+                                  {"session_info": converter.unstructure(session_info),
+                                   "message_id": message_id,
+                                   "emoji": emoji})
+        return value
+
+    @classmethod
+    async def client_remove_reaction(cls, session_info: SessionInfo, message_id: str, emoji: str):
+        value = await cls.add_job(session_info.client_name, "add_reaction",
+                                  {"session_info": converter.unstructure(session_info),
+                                   "message_id": message_id,
+                                   "emoji": emoji})
+        return value
+
+    @classmethod
     async def client_start_typing_signal(cls, session_info: SessionInfo):
         value = await cls.add_job(session_info.client_name, "start_typing",
                                   {"session_info": converter.unstructure(session_info)})
@@ -85,14 +101,6 @@ class JobQueueServer(JobQueueBase):
                                   {"session_info": converter.unstructure(session_info),
                                    "api_name": api_name,
                                    "args": kwargs})
-        return value
-
-    @classmethod
-    async def add_reaction(cls, session_info: SessionInfo, message_id: str, emoji: str):
-        value = await cls.add_job(session_info.client_name, "add_reaction",
-                                  {"session_info": converter.unstructure(session_info),
-                                   "message_id": message_id,
-                                   "emoji": emoji})
         return value
 
 

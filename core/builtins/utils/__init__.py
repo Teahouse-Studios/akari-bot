@@ -4,13 +4,13 @@ from core.constants.default import (
     command_prefix_default,
 )
 
-confirm_command = list(
+confirm_command = list(set(
     filter(str.strip, Config("confirm_command", confirm_command_default))
     or confirm_command_default
-)  # 确认指令
-command_prefix = list(
+))  # 确认指令
+command_prefix = list(set(
     filter(str.strip, Config("command_prefix", command_prefix_default))
     or command_prefix_default
-)  # 消息前缀
+))  # 消息前缀
 
 __all__ = ["confirm_command", "command_prefix"]

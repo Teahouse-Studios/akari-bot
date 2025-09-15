@@ -159,6 +159,20 @@ class MessageSession:
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         await _queue_server.client_delete_message(self.session_info, self.session_info.message_id)
 
+    async def add_reaction(self, emoji: str) -> Any:
+        """
+        用于给这条消息添加反应。
+        """
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        return await _queue_server.client_add_reaction(self.session_info, self.session_info.message_id, emoji)
+
+    async def remove_reaction(self, emoji: str) -> Any:
+        """
+        用于给这条消息删除反应。
+        """
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        return await _queue_server.client_remove_reaction(self.session_info, self.session_info.message_id, emoji)
+
     async def check_native_permission(self) -> bool:
         """
         用于检查消息发送者原本在聊天平台中是否具有管理员权限。
@@ -201,12 +215,19 @@ class MessageSession:
     async def _add_confirm_reaction(self, message_id: List[str]):
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         if self.session_info.support_reaction:
-            if self.session_info.client_name == "QQ":
-                await _queue_server.add_reaction(self.session_info, message_id[-1], "10024")
-                await _queue_server.add_reaction(self.session_info, message_id[-1], "10060")
-            if self.session_info.client_name == "Discord":
-                await _queue_server.add_reaction(self.session_info, message_id[-1], "✅")
-                await _queue_server.add_reaction(self.session_info, message_id[-1], "❌")
+            if self.session_info.client_name in ["QQ", "QQBot"]:
+                if self.session_info.locale.locale == "ja_jp":
+                    await _queue_server.client_add_reaction(self.session_info, message_id[-1], "11093")
+                else:
+                    await _queue_server.client_add_reaction(self.session_info, message_id[-1], "9989")
+                await _queue_server.client_add_reaction(self.session_info, message_id[-1], "10060")
+            # else:
+            elif self.session_info.client_name in ["Discord", "Matrix"]:
+                if self.session_info.locale.locale == "ja_jp":
+                    await _queue_server.client_add_reaction(self.session_info, message_id[-1], "⭕")
+                else:
+                    await _queue_server.client_add_reaction(self.session_info, message_id[-1], "✅")
+                await _queue_server.client_add_reaction(self.session_info, message_id[-1], "❌")
 
     async def wait_confirm(
         self,
@@ -236,10 +257,12 @@ class MessageSession:
         else:
             message_chain = MessageChain.assign(I18NContext("core.message.confirm"))
         if append_instruction:
-            if self.session_info.client_name == "QQ":
-                message_chain.append(I18NContext("message.wait.confirm.prompt.qq"))
-            elif self.session_info.client_name == "Discord":
-                message_chain.append(I18NContext("message.wait.confirm.prompt.discord"))
+            if self.session_info.support_reaction:
+                if self.session_info.client_name == "QQ":
+                    message_chain.append(I18NContext("message.wait.confirm.prompt.qq"))
+                # else:
+                elif self.session_info.client_name in ["Discord", "Matrix"]:
+                    message_chain.append(I18NContext("message.wait.confirm.prompt.reaction"))
             else:
                 message_chain.append(I18NContext("message.wait.confirm.prompt"))
         send = await self.send_message(message_chain, quote)
@@ -414,7 +437,7 @@ class MessageSession:
 
     async def qq_call_api(self, api_name: str, **kwargs) -> Any:
         """
-        用于QQ平台调用API。
+        用于 QQ 平台调用 API。
         """
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         return await _queue_server.qq_call_api(self.session_info, api_name=api_name, **kwargs)
