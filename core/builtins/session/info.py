@@ -38,6 +38,7 @@ class SessionInfo:
     support_rss: bool = False
     support_typing: bool = False
     support_wait: bool = False
+    support_reaction: bool = False
     timestamp: Optional[float] = None
     session_id: Optional[str] = None
     target_info: Optional[TargetInfo] = None

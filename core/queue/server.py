@@ -87,6 +87,14 @@ class JobQueueServer(JobQueueBase):
                                    "args": kwargs})
         return value
 
+    @classmethod
+    async def add_reaction(cls, session_info: SessionInfo, message_id: str, emoji: str):
+        value = await cls.add_job(session_info.client_name, "add_reaction",
+                                  {"session_info": converter.unstructure(session_info),
+                                   "message_id": message_id,
+                                   "emoji": emoji})
+        return value
+
 
 @JobQueueServer.action("receive_message_from_client")
 async def receive_message_from_client(tsk: JobQueuesTable, args: dict):

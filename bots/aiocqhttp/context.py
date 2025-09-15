@@ -397,6 +397,16 @@ class AIOCQContextManager(ContextManager):
         """
         return await aiocqhttp_bot.call_action(api_name, **kwargs)
 
+    @classmethod
+    async def add_reaction(cls, session_info: SessionInfo, message_id: str, emoji: str) -> None:
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+        if session_info.target_from == target_group_prefix:
+            await aiocqhttp_bot.call_action("set_msg_emoji_like",
+                                            message_id=message_id,
+                                            emoji_id=emoji)
+            Logger.info(f"Added reaction {emoji} to message {message_id} in session {session_info.session_id}")
+
 
 _tasks_high_priority = []
 _tasks = []

@@ -480,6 +480,8 @@ async def query_pages(
                                     if isinstance(session, Bot.MessageSession):
                                         if session.session_info.client_name == "QQ":
                                             _t = "message.wait.confirm.prompt.qq"
+                                        elif session.session_info.client_name == "Discord":
+                                            _t = "message.wait.confirm.prompt.discord"
                                     wait_plain_slice.append(
                                         session.session_info.locale.t(_t)
                                     )
@@ -660,7 +662,7 @@ async def query_pages(
         async def wait_confirm():
             if wait_msg_list and session.session_info.support_wait:
                 confirm = await session.wait_next_message(
-                    wait_msg_list, delete=True, append_instruction=False
+                    wait_msg_list, delete=True, append_instruction=False, add_confirm_reaction=True
                 )
                 auto_index = False
                 index = 0

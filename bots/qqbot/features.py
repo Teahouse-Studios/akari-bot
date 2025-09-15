@@ -1,4 +1,7 @@
-class Features:
+from core.builtins.session.features import Features as FeaturesBase
+
+
+class Features(FeaturesBase):
     image = True
     voice = False
     mention = True

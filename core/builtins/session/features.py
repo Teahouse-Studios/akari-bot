@@ -10,3 +10,4 @@ class Features:
     rss: bool = False
     typing: bool = False
     wait: bool = False
+    reaction: bool = False

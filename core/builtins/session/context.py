@@ -155,3 +155,18 @@ class ContextManager(ABC):
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
         # 这里可以添加错误处理逻辑
+
+    @classmethod
+    @abstractmethod
+    async def add_reaction(cls, session_info: SessionInfo, message_id: str, emoji: str) -> None:
+        """
+        为指定消息添加反应。
+
+        :param session_info: 会话信息
+        :param message_id: 消息 ID
+        :param emoji: 反应内容（如表情符号）
+        """
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+        # 这里可以添加反应的逻辑
+        raise NotImplementedError

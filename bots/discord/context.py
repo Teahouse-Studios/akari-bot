@@ -180,6 +180,17 @@ class DiscordContextManager(ContextManager):
     async def error_signal(cls, session_info: SessionInfo) -> None:
         pass
 
+    @classmethod
+    async def add_reaction(cls, session_info: SessionInfo, message_id: str, emoji: str) -> None:
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+
+        if c := await discord_bot.fetch_channel(get_channel_id(session_info)):
+            m = await c.fetch_message(message_id)
+            if m:
+                await m.add_reaction(emoji)
+                Logger.info(f"Added reaction {emoji} to message {message_id} in session {session_info.session_id}")
+
 
 class DiscordFetchedContextManager(DiscordContextManager):
     pass  # 由于 DiscordContextManager 已具备无 ctx 时主动获取的特性，因此不需要额外实现，此处继承为后续可能的扩展备用

@@ -156,6 +156,21 @@ async def _(event: Event):
         await message_handler(event)
 
 
+@aiocqhttp_bot.on("notice.group_msg_emoji_like")
+async def _(event: Event):
+    # API 假定点赞消息只能由自己收到
+    if event.likes:
+        for like in event.likes:
+            if like["emoji_id"] == "10024":
+                event.message = confirm_command_default[0]
+                await message_handler(event)
+                break
+            if like["emoji_id"] == "10060":
+                event.message = "no"  # 随便一个不会触发任何命令的消息
+                await message_handler(event)
+                break
+
+
 @aiocqhttp_bot.on("request.friend")
 async def _(event: Event):
     sender_id = f"{sender_prefix}|{event.user_id}"

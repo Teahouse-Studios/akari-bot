@@ -198,6 +198,16 @@ class MessageSession:
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         await _queue_server.client_end_typing_signal(self.session_info)
 
+    async def _add_confirm_reaction(self, message_id: List[str]):
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        if self.session_info.support_reaction:
+            if self.session_info.client_name == "QQ":
+                await _queue_server.add_reaction(self.session_info, message_id[-1], "10024")
+                await _queue_server.add_reaction(self.session_info, message_id[-1], "10060")
+            if self.session_info.client_name == "Discord":
+                await _queue_server.add_reaction(self.session_info, message_id[-1], "✅")
+                await _queue_server.add_reaction(self.session_info, message_id[-1], "❌")
+
     async def wait_confirm(
         self,
         message_chain: Optional[Chainable] = None,
@@ -228,10 +238,13 @@ class MessageSession:
         if append_instruction:
             if self.session_info.client_name == "QQ":
                 message_chain.append(I18NContext("message.wait.confirm.prompt.qq"))
+            elif self.session_info.client_name == "Discord":
+                message_chain.append(I18NContext("message.wait.confirm.prompt.discord"))
             else:
                 message_chain.append(I18NContext("message.wait.confirm.prompt"))
         send = await self.send_message(message_chain, quote)
         await asyncio.sleep(0.1)
+        await self._add_confirm_reaction(send.message_id)
         flag = asyncio.Event()
         SessionTaskManager.add_task(self, flag, timeout=timeout)
         try:
@@ -256,6 +269,7 @@ class MessageSession:
         delete: bool = False,
         timeout: Optional[float] = 120,
         append_instruction: bool = True,
+        add_confirm_reaction: bool = False,
     ) -> MessageSession:
         """
         一次性模板，用于等待对象的下一条消息。
@@ -265,6 +279,7 @@ class MessageSession:
         :param delete: 是否在触发后删除消息。（默认为False）
         :param timeout: 超时时间。（默认为120）
         :param append_instruction: 是否在发送的消息中附加提示。
+        :param add_confirm_reaction: 是否在发送的消息上添加确认反应。
         :return: 下一条消息的MessageChain对象。
         """
         send = None
@@ -276,6 +291,9 @@ class MessageSession:
                 message_chain.append(I18NContext("message.wait.next_message.prompt"))
             send = await self.send_message(message_chain, quote)
         await asyncio.sleep(0.1)
+        if add_confirm_reaction:
+            await self._add_confirm_reaction(send.message_id)
+
         flag = asyncio.Event()
         SessionTaskManager.add_task(self, flag, timeout=timeout)
         try:

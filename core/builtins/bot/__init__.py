@@ -63,6 +63,7 @@ class Bot:
         session_info.support_rss = features.rss
         session_info.support_typing = features.typing
         session_info.support_wait = features.wait
+        session_info.support_reaction = features.reaction
 
         async def _process_msg():
             ctx_manager.add_context(session_info, ctx)
