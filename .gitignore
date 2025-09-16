@@ -32,3 +32,4 @@ version*
 *.log
 matrix_store
 output/*
+.bot.lock

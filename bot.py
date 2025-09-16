@@ -211,6 +211,7 @@ async def run_bot():
             if "enable" in CFGManager.values[t][t]:
                 if not CFGManager.values[t][t]["enable"]:
                     disabled_bots.append(t[4:])
+                    Logger.warning(f"Bot {t[4:]} is disabled in config, skip to launch.")
             else:
                 Logger.warning(f"Bot {t} cannot found config \"enable\".")
                 disabled_bots.append(t[4:])
@@ -336,4 +337,26 @@ def main():
 
 
 if __name__ == "__main__":
+    # Detect if the program is already running
+
+    lock_file_path = os.path.abspath("./.bot.lock")
+    if sys.platform == "win32":
+        import msvcrt
+
+        lock_file = open(lock_file_path, "w")
+        try:
+            msvcrt.locking(lock_file.fileno(), msvcrt.LK_NBLCK, 1)
+        except OSError:
+            Logger.error("Another instance is already running. Aborting.")
+            sys.exit(1)
+    else:
+        import fcntl
+
+        lock_file = open(lock_file_path, "w")
+        try:
+            fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            Logger.error("Another instance is already running. Aborting.")
+            sys.exit(1)
+
     main()
