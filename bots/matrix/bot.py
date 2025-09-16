@@ -104,7 +104,7 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
         # https://spec.matrix.org/v1.9/client-server-api/#mnotice
         return
     target_id = f"{target_prefix}|{room.room_id}"
-    sender_id = f"{sender_prefix}|{event.sender}"
+    sender_id = f"{sender_prefix}|{event.sender[1:]}"
     if sender_id in ignored_sender:
         return
     reply_id = None
@@ -146,7 +146,7 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
 async def on_reaction(room: nio.MatrixRoom, event: nio.ReactionEvent):
     relates_to = event.source.get("content", {}).get("m.relates_to", {})
     target_id = f"{target_prefix}|{room.room_id}"
-    sender_id = f"{sender_prefix}|{event.sender}"
+    sender_id = f"{sender_prefix}|{event.sender[1:]}"
     session = await SessionInfo.assign(
         target_id=target_id,
         sender_id=sender_id,

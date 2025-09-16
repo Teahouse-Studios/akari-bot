@@ -347,7 +347,7 @@ if __name__ == "__main__":
         try:
             msvcrt.locking(lock_file.fileno(), msvcrt.LK_NBLCK, 1)
         except OSError:
-            Logger.error("Another instance is already running. Aborting.")
+            Logger.critical("Another instance is already running. Aborting.")
             sys.exit(1)
     else:
         import fcntl
@@ -356,7 +356,7 @@ if __name__ == "__main__":
         try:
             fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
-            Logger.error("Another instance is already running. Aborting.")
+            Logger.critical("Another instance is already running. Aborting.")
             sys.exit(1)
 
     main()

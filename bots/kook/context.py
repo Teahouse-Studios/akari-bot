@@ -110,9 +110,7 @@ class KOOKContextManager(ContextManager):
                 if ctx:
                     send_ = await ctx.reply(
                         x.text,
-                        quote=(
-                            quote if quote and not msg_ids and ctx else None
-                        ),
+                        use_quote=quote and not msg_ids and ctx,
                     )
 
                 else:
@@ -124,10 +122,8 @@ class KOOKContextManager(ContextManager):
                 if ctx:
                     send_ = await ctx.reply(
                         url,
+                        use_quote=quote and not msg_ids and ctx,
                         type=MessageTypes.IMG,
-                        quote=(
-                            quote if quote and not msg_ids and ctx else None
-                        ),
                     )
                 else:
                     send_ = await _channel.send(url, type=MessageTypes.IMG, )
@@ -140,10 +136,8 @@ class KOOKContextManager(ContextManager):
                 if ctx:
                     send_ = await ctx.reply(
                         url,
+                        use_quote=quote and not msg_ids and ctx,
                         type=MessageTypes.AUDIO,
-                        quote=(
-                            quote if quote and not msg_ids and ctx else None
-                        ),
                     )
                 else:
                     send_ = await _channel.send(url, type=MessageTypes.AUDIO, )
@@ -156,9 +150,7 @@ class KOOKContextManager(ContextManager):
                     if ctx:
                         send_ = await ctx.reply(
                             f"(met){x.id}(met)",
-                            quote=(
-                                quote if quote and not msg_ids and ctx else None
-                            ),
+                            use_quote=quote and not msg_ids and ctx,
                         )
                     else:
                         send_ = await _channel.send(
