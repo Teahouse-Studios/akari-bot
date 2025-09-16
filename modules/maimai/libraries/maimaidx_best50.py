@@ -132,6 +132,40 @@ class DrawBest:
     def _resize_image(img: Image.Image, scale: float) -> Image.Image:
         return img.resize((int(img.width * scale), int(img.height * scale)))
 
+    def _get_goal_color(self, goal):
+        match goal:
+            case "C" | "D":
+                color = (206, 196, 204)
+            case "B" | "BB" | "BBB":
+                color = (69, 174, 255)
+            case "A" | "AA" | "AAA":
+                color = (255, 129, 141)
+            case "S" | "S+" | "SS" | "SS+":
+                color = (239, 243, 13)
+            case "SSS":
+                color = [(239, 243, 13), (69, 174, 255), (255, 129, 141)]
+            case "SSS+":
+                color = [(239, 243, 13), (69, 174, 255), (255, 129, 141), (239, 243, 13)]
+            case "FC" | "FC+":
+                color = (129, 217, 85)
+            case "AP" | "AP+":
+                color = (249, 128, 4)
+            case "SYNC":
+                color = (49, 195, 246)
+            case "FS" | "FS+":
+                color = (69, 174, 255)
+            case "FDX" | "FDX+":
+                color = (249, 128, 4)
+            case "✦" | "✦✦":
+                color = (129, 217, 85)
+            case "✦✦✦" | "✦✦✦✦":
+                color = (249, 128, 4)
+            case "✦✦✦✦✦":
+                color = (239, 243, 13)
+            case _:
+                color = (255, 255, 255)
+        return color
+
     def _draw_best_list(self, img: Image.Image, sd_best: BestList, dx_best: BestList):
         item_weight = 150
         item_height = 100
@@ -176,12 +210,19 @@ class DrawBest:
             font = ImageFont.truetype(noto_sans_demilight_path, 16, encoding="utf-8")
             temp_draw.text((6, 42), f"{chart_info.achievement:.4f}%", "white", font)
             font = ImageFont.truetype(noto_sans_demilight_path, 18, encoding="utf-8")
-            temp_draw.text((96, 42), chart_info.rate, "white", font)
+            if chart_info.rate in ["SSS", "SSS+"]:
+                x_ = 96
+                for k, char in enumerate(chart_info.rate):
+                    temp_draw.text((x_, 42), char, self._get_goal_color(chart_info.rate)[k], font)
+                    char_width = font.getbbox(char)[2]
+                    x_ += char_width
+            else:
+                temp_draw.text((96, 42), chart_info.rate, self._get_goal_color(chart_info.rate), font)
             font = ImageFont.truetype(noto_sans_demilight_path, 12, encoding="utf-8")
             if chart_info.combo:
-                temp_draw.text((80, 27), chart_info.combo, "white", font)
+                temp_draw.text((80, 27), chart_info.combo, self._get_goal_color(chart_info.combo), font)
             if chart_info.sync:
-                temp_draw.text((110, 27), chart_info.sync, "white", font)
+                temp_draw.text((110, 27), chart_info.sync, self._get_goal_color(chart_info.sync), font)
             if chart_info.dx_score:
                 font = ImageFont.truetype(
                     noto_sans_demilight_path, 12, encoding="utf-8"
@@ -193,10 +234,11 @@ class DrawBest:
                     font,
                 )
                 font = ImageFont.truetype(noto_sans_symbol_path, 12, encoding="utf-8")
+                dx_star = calc_dxstar(chart_info.dx_score, chart_info.dx_score_max)
                 temp_draw.text(
                     (90, 61),
-                    calc_dxstar(chart_info.dx_score, chart_info.dx_score_max),
-                    "white",
+                    dx_star,
+                    self._get_goal_color(dx_star),
                     font,
                 )
             font = ImageFont.truetype(noto_sans_demilight_path, 12, encoding="utf-8")
@@ -244,12 +286,19 @@ class DrawBest:
             font = ImageFont.truetype(noto_sans_demilight_path, 16, encoding="utf-8")
             temp_draw.text((6, 42), f"{chart_info.achievement:.4f}%", "white", font)
             font = ImageFont.truetype(noto_sans_demilight_path, 18, encoding="utf-8")
-            temp_draw.text((96, 42), chart_info.rate, "white", font)
+            if chart_info.rate in ["SSS", "SSS+"]:
+                x_ = 96
+                for k, char in enumerate(chart_info.rate):
+                    temp_draw.text((x_, 42), char, self._get_goal_color(chart_info.rate)[k], font)
+                    char_width = font.getbbox(char)[2]
+                    x_ += char_width
+            else:
+                temp_draw.text((96, 42), chart_info.rate, self._get_goal_color(chart_info.rate), font)
             font = ImageFont.truetype(noto_sans_demilight_path, 12, encoding="utf-8")
             if chart_info.combo:
-                temp_draw.text((80, 27), chart_info.combo, "white", font)
+                temp_draw.text((80, 27), chart_info.combo, self._get_goal_color(chart_info.combo), font)
             if chart_info.sync:
-                temp_draw.text((110, 27), chart_info.sync, "white", font)
+                temp_draw.text((110, 27), chart_info.sync, self._get_goal_color(chart_info.sync), font)
             if chart_info.dx_score:
                 font = ImageFont.truetype(
                     noto_sans_demilight_path, 12, encoding="utf-8"
@@ -261,10 +310,11 @@ class DrawBest:
                     font,
                 )
                 font = ImageFont.truetype(noto_sans_symbol_path, 12, encoding="utf-8")
+                dx_star = calc_dxstar(chart_info.dx_score, chart_info.dx_score_max)
                 temp_draw.text(
                     (90, 61),
-                    calc_dxstar(chart_info.dx_score, chart_info.dx_score_max),
-                    "white",
+                    dx_star,
+                    self._get_goal_color(dx_star),
                     font,
                 )
             font = ImageFont.truetype(noto_sans_demilight_path, 12, encoding="utf-8")

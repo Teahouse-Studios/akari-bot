@@ -50,11 +50,13 @@ class DrawLevelList:
             case "FC" | "FC+":
                 color = (129, 217, 85)
             case "AP" | "AP+":
-                color = (252, 197, 49)
-            case "SYNC" | "FS" | "FS+":
+                color = (249, 128, 4)
+            case "SYNC":
+                color = (49, 195, 246)
+            case "FS" | "FS+":
                 color = (69, 174, 255)
             case "FDX" | "FDX+":
-                color = (252, 197, 49)
+                color = (249, 128, 4)
             case _:
                 color = (255, 255, 255)
         return color
@@ -166,15 +168,15 @@ class DrawLevelList:
                         rank_list = combo_list
                         mark_fill = [(129, 217, 85),
                                      (129, 217, 85),
-                                     (252, 197, 49),
-                                     (252, 197, 49)]
+                                     (249, 128, 4),
+                                     (249, 128, 4)]
                     elif self.goal in sync_list:
                         rank_list = sync_list
-                        mark_fill = [(69, 174, 255),
+                        mark_fill = [(49, 195, 246),
                                      (69, 174, 255),
                                      (69, 174, 255),
-                                     (252, 197, 49),
-                                     (252, 197, 49)]
+                                     (249, 128, 4),
+                                     (249, 128, 4)]
                     else:
                         rank_list = []
                         mark_fill = []

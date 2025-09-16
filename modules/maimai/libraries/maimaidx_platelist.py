@@ -97,7 +97,7 @@ class DrawPlateList:
             case "将":
                 color = (239, 243, 13)
             case "神":
-                color = (252, 197, 49)
+                color = (249, 128, 4)
             case "舞":
                 color = (69, 174, 255)
             case _:
