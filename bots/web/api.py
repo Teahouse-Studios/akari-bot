@@ -19,7 +19,6 @@ from core.config import Config, CFGManager
 from core.constants import config_filename
 from core.constants.path import PrivateAssets, config_path, logs_path
 from core.database.models import AnalyticsData, SenderInfo, TargetInfo, MaliciousLoginRecords
-from core.loader import ModulesManager
 from core.logger import Logger
 from core.queue.client import JobQueueClient
 
@@ -512,7 +511,6 @@ async def get_sender_list(request: Request,
         results = await query.offset((page - 1) * size).limit(size)
 
         return {
-            "message": "Success",
             "sender_list": results,
             "total": total
         }
@@ -531,7 +529,7 @@ async def get_sender_info(request: Request, sender_id: str):
         sender_info = await SenderInfo.get_by_sender_id(sender_id, create=False)
         if not sender_info:
             raise HTTPException(status_code=404, detail="Not found")
-        return {"message": "Success", "sender_info": sender_info}
+        return {"sender_info": sender_info}
     except HTTPException as e:
         raise e
     except Exception:
@@ -581,7 +579,7 @@ async def edit_sender_info(request: Request, sender_id: str):
             sender_info.sender_data = sender_data
         await sender_info.save()
 
-        return {"message": "Success"}
+        return Response(status_code=204)
     except HTTPException as e:
         raise e
     except Exception:
@@ -626,6 +624,7 @@ async def get_modules_info(request: Request, locale: str = Query(default_locale)
     try:
         verify_jwt(request)
         modules = await JobQueueClient.get_modules_info(locale=locale)
+
         return {"modules": modules}
     except HTTPException as e:
         raise e
@@ -634,18 +633,49 @@ async def get_modules_info(request: Request, locale: str = Query(default_locale)
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/api/modules/{module_name}/load")
+@app.get("/api/module/{module_name}/related")
+@limiter.limit("10/minute")
+async def search_related_module(request: Request, module_name: str):
+    try:
+        verify_jwt(request)
+        modules = await JobQueueClient.get_module_related(module=module_name)
+        return {"modules": modules}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.post("/api/module/{module_name}/reload")
+@limiter.limit("10/minute")
+async def reload_module(request: Request, module_name: str):
+    try:
+        verify_jwt(request)
+        status = await JobQueueClient.post_module_action(module=module_name, action="reload")
+        if not status:
+            raise HTTPException(status_code=422, detail="Reload modules failed")
+        return Response(status_code=204)
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.post("/api/module/{module_name}/load")
 @limiter.limit("10/minute")
 async def load_module(request: Request, module_name: str):
     try:
         verify_jwt(request)
+        status = await JobQueueClient.post_module_action(module=module_name, action="load")
+        if not status:
+            raise HTTPException(status_code=422, detail="Load modules failed")
 
-        if ModulesManager.load_module(module_name):
-            unloaded_list = CFGManager.get("unloaded_modules", [])
-            if unloaded_list and module_name in unloaded_list:
-                unloaded_list.remove(module_name)
-                CFGManager.write("unloaded_modules", unloaded_list)
-
+        unloaded_list = CFGManager.get("unloaded_modules", [])
+        if unloaded_list and module_name in unloaded_list:
+            unloaded_list.remove(module_name)
+            CFGManager.write("unloaded_modules", unloaded_list)
         return Response(status_code=204)
 
     except HTTPException as e:
@@ -655,19 +685,20 @@ async def load_module(request: Request, module_name: str):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/api/modules/{module_name}/unload")
+@app.post("/api/module/{module_name}/unload")
 @limiter.limit("10/minute")
 async def unload_module(request: Request, module_name: str):
     try:
         verify_jwt(request)
+        status = await JobQueueClient.post_module_action(module=module_name, action="unload")
+        if not status:
+            raise HTTPException(status_code=422, detail="Unload modules failed")
 
-        if ModulesManager.unload_module(module_name):
-            unloaded_list = CFGManager.get("unloaded_modules", [])
-            if not unloaded_list:
-                unloaded_list = []
-            unloaded_list.append(module_name)
-            CFGManager.write("unloaded_modules", unloaded_list)
-
+        unloaded_list = CFGManager.get("unloaded_modules", [])
+        if not unloaded_list:
+            unloaded_list = []
+        unloaded_list.append(module_name)
+        CFGManager.write("unloaded_modules", unloaded_list)
         return Response(status_code=204)
     except HTTPException as e:
         raise e

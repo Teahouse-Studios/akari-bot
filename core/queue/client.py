@@ -60,6 +60,16 @@ class JobQueueClient(JobQueueBase):
         ret = await cls.add_job("Server", "get_modules_info", {"locale": locale})
         return ret["modules"]
 
+    @classmethod
+    async def get_module_related(cls, module: str):
+        ret = await cls.add_job("Server", "get_module_related", {"module": module})
+        return ret["modules_list"]
+
+    @classmethod
+    async def post_module_action(cls, module: str, action: str):
+        ret = await cls.add_job("Server", "post_module_action", {"module": module, "action": action})
+        return ret["success"]
+
 
 async def get_session(args: dict):
     session_info: SessionInfo = converter.structure(args["session_info"], SessionInfo)

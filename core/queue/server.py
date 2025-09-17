@@ -1,6 +1,7 @@
 from typing import Union, TYPE_CHECKING, Optional
 
 from core.builtins.parser.message import parser
+from core.config import CFGManager
 from core.utils.bash import run_sys_command
 from core.web_render import init_web_render
 from .base import JobQueueBase
@@ -179,7 +180,29 @@ async def get_modules_info(tsk: JobQueuesTable, args: dict):
     for module in modules.values():
         if "desc" in module and module.get("desc"):
             module["desc"] = Locale(args["locale"]).t_str(module["desc"])
+
+    unloaded_modules = CFGManager.get("unloaded_modules", [])
+    for m in unloaded_modules:
+        modules.setdefault(str(m), {})
     return {"modules": modules}
 
+
+@JobQueueServer.action("get_module_related")
+async def get_module_related(tsk: JobQueuesTable, args: dict):
+    return {"modules_list": ModulesManager.search_related_module(args["module"], include_self=False)}
+
+
+@JobQueueServer.action("post_module_action")
+async def post_module_action(tsk: JobQueuesTable, args: dict):
+    match args["action"]:
+        case "reload":
+            status, _ = await ModulesManager.reload_module(args["module"])
+        case "load":
+            status = await ModulesManager.load_module(args["module"])
+        case "unload":
+            status = await ModulesManager.unload_module(args["module"])
+        case _:
+            status = False
+    return {"success": status}
 
 add_export(JobQueueServer)

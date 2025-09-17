@@ -163,8 +163,10 @@ async def config_modules(msg: Bot.MessageSession):
     elif msg.parsed_msg.get("reload", False):
 
         async def module_reload(module, extra_modules, base_module=False):
-            reload_count = await ModulesManager.reload_module(module)
-            if base_module and reload_count >= 1:
+            status, reload_count = await ModulesManager.reload_module(module)
+            if not status:
+                return I18NContext("core.message.module.reload.failed")
+            if base_module and status:
                 return I18NContext("core.message.module.reload.base.success")
             if reload_count > 1:
                 return Plain(
@@ -182,7 +184,6 @@ async def config_modules(msg: Bot.MessageSession):
                     + "\n"
                     + str(I18NContext("core.message.module.reload.no_more"))
                 )
-            return I18NContext("core.message.module.reload.failed")
 
         for module_ in wait_config_list:
             base_module = False
@@ -253,10 +254,11 @@ async def config_modules(msg: Bot.MessageSession):
                 else:
                     msglist.append(I18NContext("core.message.module.unload.not_found"))
                 continue
+            extra_unload_modules = ModulesManager.search_related_module(module_)
             if modules_[module_].base:
                 msglist.append(I18NContext("core.message.module.unload.base", module=module_))
                 continue
-            if await msg.wait_confirm(I18NContext("core.message.module.unload.confirm"),
+            if await msg.wait_confirm(I18NContext("core.message.module.unload.confirm", modules="\n".join(extra_unload_modules)),
                                       append_instruction=False):
                 if await ModulesManager.unload_module(module_):
                     msglist.append(I18NContext("core.message.module.unload.success", module=module_))

@@ -194,10 +194,10 @@ class ModulesManager:
         py_module = cls.return_py_module(module_name)
         unbind_modules = cls.search_related_module(module_name)
         cls.remove_modules(unbind_modules)
-        cls.reload_py_module(py_module)
+        count = cls.reload_py_module(py_module)
         cls.refresh()
         await reload_db()
-        return True
+        return count > 0, count
 
     @classmethod
     async def load_module(cls, module_name: str):
