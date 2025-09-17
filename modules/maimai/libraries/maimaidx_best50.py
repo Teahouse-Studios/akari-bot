@@ -4,7 +4,7 @@ from typing import Optional, Dict, List
 from PIL import Image, ImageDraw, ImageFont
 
 from core.builtins.bot import Bot
-from core.constants.path import noto_sans_demilight_path, noto_sans_symbol_path
+from core.constants.path import noto_sans_bold_path, noto_sans_demilight_path, noto_sans_symbol_path
 from .maimaidx_apidata import get_record
 from .maimaidx_mapping import (
     mai_cover_path,
@@ -210,7 +210,7 @@ class DrawBest:
             temp_draw.text((7, 29), f"ID: {chart_info.song_id}", "white", font)
             font = ImageFont.truetype(noto_sans_demilight_path, 16, encoding="utf-8")
             temp_draw.text((6, 42), f"{chart_info.achievement:.4f}%", "white", font)
-            font = ImageFont.truetype(noto_sans_demilight_path, 18, encoding="utf-8")
+            font = ImageFont.truetype(noto_sans_bold_path, 18, encoding="utf-8")
             if chart_info.rate in ["SSS", "SSS+"]:
                 x_ = 96
                 for k, char in enumerate(chart_info.rate):
@@ -219,7 +219,7 @@ class DrawBest:
                     x_ += char_width
             else:
                 temp_draw.text((96, 42), chart_info.rate, self._get_goal_color(chart_info.rate), font)
-            font = ImageFont.truetype(noto_sans_demilight_path, 12, encoding="utf-8")
+            font = ImageFont.truetype(noto_sans_bold_path, 12, encoding="utf-8")
             if chart_info.combo:
                 temp_draw.text((80, 27), chart_info.combo, self._get_goal_color(chart_info.combo), font)
             if chart_info.sync:
@@ -286,7 +286,7 @@ class DrawBest:
             temp_draw.text((7, 29), f"ID: {chart_info.song_id}", "white", font)
             font = ImageFont.truetype(noto_sans_demilight_path, 16, encoding="utf-8")
             temp_draw.text((6, 42), f"{chart_info.achievement:.4f}%", "white", font)
-            font = ImageFont.truetype(noto_sans_demilight_path, 18, encoding="utf-8")
+            font = ImageFont.truetype(noto_sans_bold_path, 18, encoding="utf-8")
             if chart_info.rate in ["SSS", "SSS+"]:
                 x_ = 96
                 for k, char in enumerate(chart_info.rate):
@@ -295,7 +295,7 @@ class DrawBest:
                     x_ += char_width
             else:
                 temp_draw.text((96, 42), chart_info.rate, self._get_goal_color(chart_info.rate), font)
-            font = ImageFont.truetype(noto_sans_demilight_path, 12, encoding="utf-8")
+            font = ImageFont.truetype(noto_sans_bold_path, 12, encoding="utf-8")
             if chart_info.combo:
                 temp_draw.text((80, 27), chart_info.combo, self._get_goal_color(chart_info.combo), font)
             if chart_info.sync:
