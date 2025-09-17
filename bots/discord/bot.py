@@ -125,7 +125,7 @@ async def on_message(message: discord.Message):
                                        sender_from=sender_prefix,
                                        client_name=client_name,
                                        message_id=str(message.id),
-                                       reply_id=reply_id,
+                                       reply_id=str(reply_id),
                                        messages=msg_chain,
                                        ctx_slot=ctx_id
                                        )
@@ -150,7 +150,7 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
                                        target_from=target_from,
                                        sender_from=sender_prefix,
                                        client_name=client_name,
-                                       message_id=str(payload.message_id),
+                                       reply_id=str(payload.message_id),
                                        messages=MessageChain.assign([Plain(payload.emoji.name)]),
                                        ctx_slot=ctx_id
                                        )

@@ -343,6 +343,7 @@ class MessageSession:
         timeout: Optional[float] = 120,
         all_: bool = False,
         append_instruction: bool = True,
+        add_confirm_reaction: bool = False,
     ) -> MessageSession:
         """
         一次性模板，用于等待触发对象回复消息。
@@ -363,6 +364,8 @@ class MessageSession:
             message_chain.append(I18NContext("message.reply.prompt"))
         send = await self.send_message(message_chain, quote)
         await asyncio.sleep(0.1)
+        if add_confirm_reaction and quick_confirm:
+            await self._add_confirm_reaction(send.message_id)
         flag = asyncio.Event()
         SessionTaskManager.add_task(
             self, flag, reply=send.message_id, all_=all_, timeout=timeout

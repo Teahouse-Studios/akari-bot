@@ -85,6 +85,7 @@ async def add_reaction(b: khlBot, event: Event):
                                        sender_from=sender_prefix,
                                        client_name=client_name,
                                        message_id=str(event.id),
+                                       reply_id=event.extra["body"]["msg_id"],
                                        messages=MessageChain.assign([Plain(event.extra["body"]["emoji"]["id"])]),
                                        ctx_slot=ctx_id,
                                        )
@@ -106,6 +107,7 @@ async def private_add_reaction(b: khlBot, event: Event):
                                        sender_from=sender_prefix,
                                        client_name=client_name,
                                        message_id=str(event.id),
+                                       reply_id=event.extra["body"]["msg_id"],
                                        messages=MessageChain.assign([Plain(event.extra["body"]["emoji"]["id"])]),
                                        ctx_slot=ctx_id,
                                        )
