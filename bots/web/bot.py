@@ -12,10 +12,8 @@ from bots.web.client import web_host, avaliable_web_port  # noqa: E402
 from bots.web.context import WebContextManager  # noqa: E402
 from core.builtins.bot import Bot  # noqa: E402
 from core.builtins.message.chain import MessageChain  # noqa: E402
-from core.builtins.message.internal import Plain  # noqa: E402
 from core.builtins.session.info import SessionInfo  # noqa: E402
 from core.builtins.temp import Temp  # noqa: E402
-from core.constants.default import confirm_command_default  # noqa: E402
 
 Bot.register_bot(client_name=client_name)
 

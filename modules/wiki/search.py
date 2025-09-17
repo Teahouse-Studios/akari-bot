@@ -79,8 +79,8 @@ async def search_pages(
     if isint(reply.as_display(text_only=True)):
         reply_number = max(0, int(reply.as_display(text_only=True)) - 1)
         if reply_number < len(wait_msg_list):
-           await query_pages(reply, wait_msg_list[reply_number])
+            await query_pages(reply, wait_msg_list[reply_number])
         else:
-           await msg.finish()
+            await msg.finish()
     else:
         await msg.finish()

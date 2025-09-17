@@ -132,7 +132,8 @@ class DrawBest:
     def _resize_image(img: Image.Image, scale: float) -> Image.Image:
         return img.resize((int(img.width * scale), int(img.height * scale)))
 
-    def _get_goal_color(self, goal):
+    @staticmethod
+    def _get_goal_color(goal: str):
         match goal:
             case "C" | "D":
                 color = (206, 196, 204)
