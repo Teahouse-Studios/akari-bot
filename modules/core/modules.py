@@ -4,7 +4,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
 from core.builtins.parser.command import CommandParser
 from core.component import module
-from core.config import Config, CFGManager
+from core.config import Config
 from core.constants.exceptions import InvalidHelpDocTypeError
 from core.i18n import load_locale_file
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
@@ -209,10 +209,6 @@ async def config_modules(msg: Bot.MessageSession):
                         append_instruction=False,
                     ):
                         await msg.finish()
-                unloaded_list = CFGManager.get("unloaded_modules", [])
-                if unloaded_list and module_ in unloaded_list:
-                    unloaded_list.remove(module_)
-                    CFGManager.write("unloaded_modules", unloaded_list)
                 msglist.append(await module_reload(module_, extra_reload_modules, base_module))
 
         locale_err = load_locale_file()
@@ -225,12 +221,7 @@ async def config_modules(msg: Bot.MessageSession):
                 msglist.append(I18NContext("core.message.module.load.not_found"))
                 continue
             if await ModulesManager.load_module(module_):
-                msglist.append(I18NContext("core.message.module.load.success", module=module_)
-                               )
-                unloaded_list = CFGManager.get("unloaded_modules", [])
-                if unloaded_list and module_ in unloaded_list:
-                    unloaded_list.remove(module_)
-                    CFGManager.write("unloaded_modules", unloaded_list)
+                msglist.append(I18NContext("core.message.module.load.success", module=module_))
             else:
                 msglist.append(I18NContext("core.message.module.load.failed"))
 
@@ -240,12 +231,6 @@ async def config_modules(msg: Bot.MessageSession):
                 if module_ in err_modules:
                     if await msg.wait_confirm(I18NContext("core.message.module.unload.unavailable.confirm"),
                                               append_instruction=False):
-                        unloaded_list = CFGManager.get("unloaded_modules", [])
-                        if not unloaded_list:
-                            unloaded_list = []
-                        if module_ not in unloaded_list:
-                            unloaded_list.append(module_)
-                            CFGManager.write("unloaded_modules", unloaded_list)
                         msglist.append(I18NContext("core.message.module.unload.success", module=module_))
                         err_modules.remove(module_)
                         current_unloaded_modules.append(module_)
@@ -254,19 +239,14 @@ async def config_modules(msg: Bot.MessageSession):
                 else:
                     msglist.append(I18NContext("core.message.module.unload.not_found"))
                 continue
-            extra_unload_modules = ModulesManager.search_related_module(module_)
+            unload_modules = ModulesManager.search_related_module(module_)
             if modules_[module_].base:
                 msglist.append(I18NContext("core.message.module.unload.base", module=module_))
                 continue
-            if await msg.wait_confirm(I18NContext("core.message.module.unload.confirm", modules="\n".join(extra_unload_modules)),
+            if await msg.wait_confirm(I18NContext("core.message.module.unload.confirm", modules="\n".join(unload_modules)),
                                       append_instruction=False):
                 if await ModulesManager.unload_module(module_):
                     msglist.append(I18NContext("core.message.module.unload.success", module=module_))
-                    unloaded_list = CFGManager.get("unloaded_modules", [])
-                    if not unloaded_list:
-                        unloaded_list = []
-                    unloaded_list.append(module_)
-                    CFGManager.write("unloaded_modules", unloaded_list)
             else:
                 await msg.finish()
 

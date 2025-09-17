@@ -1,14 +1,13 @@
 from typing import Union, TYPE_CHECKING, Optional
 
 from core.builtins.parser.message import parser
-from core.config import CFGManager
 from core.utils.bash import run_sys_command
 from core.web_render import init_web_render
 from .base import JobQueueBase
 from ..builtins.converter import converter
 from ..builtins.message.chain import MessageChain, MessageNodes
 from ..builtins.session.info import SessionInfo
-from ..database.models import JobQueuesTable
+from ..database.models import JobQueuesTable, ModuleStatus
 from ..exports import exports, add_export
 from ..i18n import Locale
 from ..loader import ModulesManager
@@ -181,7 +180,7 @@ async def get_modules_info(tsk: JobQueuesTable, args: dict):
         if "desc" in module and module.get("desc"):
             module["desc"] = Locale(args["locale"]).t_str(module["desc"])
 
-    unloaded_modules = CFGManager.get("unloaded_modules", [])
+    unloaded_modules = await ModuleStatus.get_unloaded_modules()
     for m in unloaded_modules:
         modules.setdefault(str(m), {})
     return {"modules": modules}

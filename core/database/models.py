@@ -7,6 +7,7 @@ from decimal import Decimal
 from typing import Any, List, Optional, Union
 
 from tortoise import fields
+from tortoise.transactions import in_transaction
 
 from core.constants.default import default_locale
 from core.utils.message import convert2lst
@@ -308,6 +309,48 @@ class AnalyticsData(DBModel):
         analytics = await cls.all().values("module_name")
         module_counter = Counter([entry["module_name"] for entry in analytics])
         return dict(module_counter)
+
+
+class ModuleStatus(DBModel):
+    """
+    模块状态。
+
+    :param module_name: 模块名称。
+    :param load: 是否已加载。
+    """
+    module_name = fields.CharField(pk=True, max_length=255, unique=True)
+    load = fields.BooleanField(default=False)
+
+    class Meta:
+        table = "module_status"
+
+    @classmethod
+    async def add_module(cls, module: str):
+        async with in_transaction("default"):
+            existing = await cls.filter(module_name=module).first()
+            if not existing:
+                await cls.create(module_name=module, load=True)
+
+    @classmethod
+    async def set_module_loaded(cls, module_name: str, load: bool = True):
+        module = await cls.filter(module_name=module_name).first()
+        if module:
+            module.load = load
+            await module.save()
+        else:
+            raise ValueError(f"Module '{module_name}' not found")
+
+    @classmethod
+    async def get_all_modules(cls) -> list[str]:
+        return await cls.all().values_list("module_name", flat=True)
+
+    @classmethod
+    async def get_loaded_modules(cls) -> list[str]:
+        return await cls.filter(load=True).values_list("module_name", flat=True)
+
+    @classmethod
+    async def get_unloaded_modules(cls) -> list[str]:
+        return await cls.filter(load=False).values_list("module_name", flat=True)
 
 
 class DBVersion(DBModel):

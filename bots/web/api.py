@@ -15,7 +15,7 @@ from jwt.exceptions import ExpiredSignatureError
 from tortoise.expressions import Q
 
 from bots.web.client import app, limiter, ph, enable_https, jwt_secret
-from core.config import Config, CFGManager
+from core.config import Config
 from core.constants import config_filename
 from core.constants.path import assets_path, config_path, logs_path
 from core.database.models import AnalyticsData, SenderInfo, TargetInfo, MaliciousLoginRecords
@@ -672,10 +672,6 @@ async def load_module(request: Request, module_name: str):
         if not status:
             raise HTTPException(status_code=422, detail="Load modules failed")
 
-        unloaded_list = CFGManager.get("unloaded_modules", [])
-        if unloaded_list and module_name in unloaded_list:
-            unloaded_list.remove(module_name)
-            CFGManager.write("unloaded_modules", unloaded_list)
         return Response(status_code=204)
 
     except HTTPException as e:
@@ -694,11 +690,6 @@ async def unload_module(request: Request, module_name: str):
         if not status:
             raise HTTPException(status_code=422, detail="Unload modules failed")
 
-        unloaded_list = CFGManager.get("unloaded_modules", [])
-        if not unloaded_list:
-            unloaded_list = []
-        unloaded_list.append(module_name)
-        CFGManager.write("unloaded_modules", unloaded_list)
         return Response(status_code=204)
     except HTTPException as e:
         raise e

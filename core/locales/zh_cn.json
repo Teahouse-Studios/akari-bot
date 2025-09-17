@@ -82,7 +82,6 @@
     "config.comments.timezone_offset": "机器人的默认时区偏移量。",
     "config.comments.tos_temp_ban_time": "违反 ToS 时的临时封禁时间。",
     "config.comments.tos_warning_counts": "违反 ToS 时的警告次数。",
-    "config.comments.unloaded_modules": "不加载的模块列表，匹配到此列表中的模块将不会被加载。",
     "config.comments.use_font_mirror": "渲染网页时是否使用字体镜像。",
     "config.comments.use_secrets_random": "是否使用基于 secrets 库的随机数生成器。",
     "config.comments.web_host": "Web 服务的主机地址，设为 0.0.0.0 则监听所有地址。",

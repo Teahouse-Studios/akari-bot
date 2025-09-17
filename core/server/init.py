@@ -33,7 +33,7 @@ async def init_async(start_scheduler=True) -> None:
     if await init_db():
         Logger.success("Database initialized successfully.")
 
-    load_modules()
+    await load_modules()
     gather_list = []
     modules = ModulesManager.return_modules_list()
     for x in modules:

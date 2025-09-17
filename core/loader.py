@@ -1,3 +1,4 @@
+import asyncio
 import importlib
 import os
 import pkgutil
@@ -6,9 +7,9 @@ import sys
 import traceback
 from typing import Dict, Optional, Union, Callable
 
-from core.config import CFGManager
 from core.constants import PrivateAssets
 from core.database import reload_db
+from core.database.models import ModuleStatus
 from core.i18n import load_locale_file
 from core.logger import Logger
 from core.types import Module
@@ -23,9 +24,12 @@ current_unloaded_modules = []
 err_modules = []
 
 
-def load_modules():
+async def load_modules():
     import modules
-    unloaded_modules = CFGManager.get("unloaded_modules", [])
+
+    unloaded_modules = await ModuleStatus.get_unloaded_modules()
+    current_unloaded_modules.clear()
+
     err_prompt = []
     locale_loaded_err = load_locale_file()
     if locale_loaded_err:
@@ -33,27 +37,35 @@ def load_modules():
         err_prompt.append("\n".join(locale_loaded_err))
 
     Logger.info("Attempting to load modules...")
+
     for subm in pkgutil.iter_modules(modules.__path__):
         submodule_name = modules.__name__ + "." + subm.name
         try:
             Logger.debug(f"Loading {submodule_name}...")
+
             if subm.name in unloaded_modules:
                 Logger.warning(f"Skipped {submodule_name}!")
                 current_unloaded_modules.append(subm.name)
                 continue
+
             importlib.import_module(submodule_name)
             Logger.debug(f"Successfully loaded {submodule_name}!")
+
             try:
                 importlib.import_module(submodule_name + ".config")
                 Logger.debug(f"Successfully loaded {submodule_name}'s config definition!")
             except ModuleNotFoundError:
                 Logger.debug(f"Module {submodule_name}'s config definition not found, skipped.")
+
         except Exception:
             errmsg = f"Failed to load {submodule_name}: \n{traceback.format_exc()}"
             Logger.error(errmsg)
             err_prompt.append(errmsg)
-            err_modules.append(subm.name)
+            if subm.name not in err_modules:
+                err_modules.append(subm.name)
+
     Logger.success("All modules loaded.")
+
     loader_cache = os.path.join(PrivateAssets.path, ".cache_loader")
     with open(loader_cache, "w") as open_loader_cache:
         if err_prompt:
@@ -78,6 +90,9 @@ class ModulesManager:
         if module.bind_prefix not in ModulesManager.modules:
             cls.modules.update({module.bind_prefix: module})
             cls.modules_origin.update({module.bind_prefix: py_module_name})
+
+            loop = asyncio.get_running_loop()
+            loop.create_task(ModuleStatus.add_module(module=module.bind_prefix))
         else:
             raise ValueError(f"Duplicate bind prefix \"{module.bind_prefix}\"")
 
@@ -192,10 +207,16 @@ class ModulesManager:
         重载该机器人模块（以及该模块所在文件的其它模块）
         """
         py_module = cls.return_py_module(module_name)
-        unbind_modules = cls.search_related_module(module_name)
-        cls.remove_modules(unbind_modules)
+        related_modules = cls.search_related_module(module_name)
+
+        cls.remove_modules(related_modules)
+
         count = cls.reload_py_module(py_module)
         cls.refresh()
+
+        for m in related_modules:
+            await ModuleStatus.set_module_loaded(m, True)
+
         await reload_db()
         return count > 0, count
 
@@ -223,7 +244,16 @@ class ModulesManager:
                     err_modules.append(module_name)
                 return False
         cls.refresh()
-        await reload_db([modules])
+        await ModuleStatus.set_module_loaded(module_name, True)
+
+        try:
+            models_module = importlib.import_module(f"{module_name}.database.models")
+            models_list = [getattr(models_module, attr) for attr in dir(models_module)
+                           if not attr.startswith("_")]
+        except ModuleNotFoundError:
+            models_list = []
+
+        await reload_db(models_list)
         return True
 
     @classmethod
@@ -231,10 +261,17 @@ class ModulesManager:
         """
         卸载该机器人模块（以及该模块所在文件的其它模块）
         """
-        unbind_modules = cls.search_related_module(module_name)
-        cls.remove_modules(unbind_modules)
+        related_modules = cls.search_related_module(module_name)
+        cls.remove_modules(related_modules)
         cls.refresh()
-        current_unloaded_modules.append(module_name)
+
+        for m in related_modules:
+            await ModuleStatus.set_module_loaded(m, False)
+
+        current_unloaded_modules.extend(
+            [m for m in related_modules if m not in current_unloaded_modules]
+        )
+
         await reload_db()
         return True
 
