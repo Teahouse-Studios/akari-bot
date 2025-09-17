@@ -82,7 +82,6 @@
     "config.comments.timezone_offset": "The bot's default timezone offset.",
     "config.comments.tos_temp_ban_time": "Temporary ban duration for ToS violations.",
     "config.comments.tos_warning_counts": "Maximum number of warnings for ToS violations.",
-    "config.comments.unloaded_modules": "Unloaded modules list. Modules matching this list will not be loaded.",
     "config.comments.use_font_mirror": "Whether to use font mirrors when rendering web pages.",
     "config.comments.use_secrets_random": "Whether to use the random number generator based on the secrets library.",
     "config.comments.web_host": "The host address of the Web service. Setting to 0.0.0.0 will listen to all addresses.",
