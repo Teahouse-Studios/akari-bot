@@ -82,7 +82,6 @@
     "config.comments.timezone_offset": "ボットのデフォルトのタイムゾーン オフセット。",
     "config.comments.tos_temp_ban_time": "利用規約違反時の一時的な禁止時間。",
     "config.comments.tos_warning_counts": "利用規約違反に対する警告の最大数。",
-    "config.comments.unloaded_modules": "ロードされないモジュールのリスト。このリストに一致するモジュールはロードされない。",
     "config.comments.use_font_mirror": "ウェブページのをレンダリングするときにフォントのミラーリングを使用するかどうか。",
     "config.comments.use_secrets_random": "secrets ライブラリに基づく乱数ジェネレータを使用するかどうか。",
     "config.comments.web_host": "Web サービスのホスト アドレス。0.0.0.0 に設定すると、すべてのアドレスをリッスンします。",
