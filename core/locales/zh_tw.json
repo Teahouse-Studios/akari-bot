@@ -82,7 +82,6 @@
     "config.comments.timezone_offset": "機器人的預設時區偏移量。",
     "config.comments.tos_temp_ban_time": "違反 ToS 時的暫時封鎖時間。",
     "config.comments.tos_warning_counts": "違反 ToS 時的警告次數。",
-    "config.comments.unloaded_modules": "不載入的模組列表，符合到此列表中的模組將不會被載入。",
     "config.comments.use_font_mirror": "網頁成像時是否使用字體鏡像。",
     "config.comments.use_secrets_random": "是否使用基於 secrets 庫的隨機數產生器。",
     "config.comments.web_host": "Web 服務的主機位址，設為 0.0.0.0 則監聽所有位址。",
