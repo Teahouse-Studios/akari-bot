@@ -36,7 +36,7 @@ class Config:
     tos_warning_counts: int = 5
     tos_temp_ban_time: int = 300
 
-    # 花瓣（虚拟货币）系统
+    # 花瓣
     enable_petal: bool = False
     enable_get_petal: bool = False
     petal_gained_limit: int = 0
