@@ -17,14 +17,14 @@ from tortoise.expressions import Q
 from bots.web.client import app, limiter, ph, enable_https, jwt_secret
 from core.config import Config, CFGManager
 from core.constants import config_filename
-from core.constants.path import PrivateAssets, config_path, logs_path
+from core.constants.path import assets_path, config_path, logs_path
 from core.database.models import AnalyticsData, SenderInfo, TargetInfo, MaliciousLoginRecords
 from core.logger import Logger
 from core.queue.client import JobQueueClient
 
 started_time = datetime.now()
 
-PASSWORD_PATH = os.path.join(PrivateAssets.path, ".password")
+PASSWORD_PATH = os.path.join(assets_path, "private", "web", ".password")
 
 default_locale = Config("default_locale", cfg_type=str)
 login_max_attempt = Config("login_max_attempt", default=5, table_name="bot_web")
