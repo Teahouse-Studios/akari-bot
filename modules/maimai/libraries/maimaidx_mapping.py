@@ -283,7 +283,7 @@ sd_plate_mapping = {
     "菫": "maimai MURASAKi PLUS",
     "白": "maimai MiLK",
     "雪": "MiLK PLUS",
-    "輝": "maimai FiNALE",
+    "輝": "maimai FiNALE"
 }
 
 dx_plate_mapping = {
@@ -298,6 +298,7 @@ dx_plate_mapping = {
     "双": "maimai でらっくす BUDDiES",
     "宴": "maimai でらっくす BUDDiES",
     "鏡": "maimai でらっくす PRiSM",
+    "彩": "maimai でらっくす PRiSM",
 }
 
 plate_mapping = sd_plate_mapping | dx_plate_mapping
