@@ -319,18 +319,27 @@ class ModuleStatus(DBModel):
     :param load: 是否已加载。
     """
     module_name = fields.CharField(pk=True, max_length=255, unique=True)
-    py_module_name = fields.CharField(max_length=255)
     load = fields.BooleanField(default=False)
 
     class Meta:
         table = "module_status"
 
     @classmethod
-    async def add_module(cls, module_name: str, py_module_name: str):
-        async with in_transaction("default"):
-            existing = await cls.filter(module_name=module_name).first()
-            if not existing:
-                await cls.create(module_name=module_name, py_module_name=py_module_name, load=True)
+    async def init_modules(cls, modules_list: List[str]):
+        existing = await cls.all().values_list("module_name", flat=True)
+        existing_set = set(existing)
+        input_set = set(modules_list)
+
+        to_add = input_set.difference(existing_set)
+        to_remove = existing_set.difference(input_set)
+
+        if to_add:
+            await cls.bulk_create(
+                [cls(module_name=m, load=True) for m in to_add]
+            )
+
+        if to_remove:
+            await cls.filter(module_name__in=to_remove).delete()
 
     @classmethod
     async def set_module_loaded(cls, module_name: str, load: bool = True):

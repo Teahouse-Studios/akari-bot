@@ -42,7 +42,7 @@ async def _(msg: Bot.MessageSession, module: str):
         if help_name in module_list:
             module_ = module_list[help_name]
 
-            if not module_.load:
+            if not module_._db_load:
                 await msg.finish(I18NContext("parser.module.unloaded", module=help_name))
             if module_.desc:
                 desc = msg.session_info.locale.t_str(module_.desc)

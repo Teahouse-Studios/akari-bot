@@ -105,7 +105,7 @@ async def parser(msg: "Bot.MessageSession"):
                 return
 
             if command_first_word in modules:  # 检查触发命令是否在模块列表中
-                if modules[command_first_word].load:
+                if modules[command_first_word]._db_load:
                     await _execute_module(msg, modules, command_first_word, identify_str)
                 else:
                     await msg.send_message(I18NContext("parser.module.unloaded", module=command_first_word))
@@ -233,7 +233,6 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
             await _check_temp_ban(msg)
 
         module: Module = modules[command_first_word]
-        Logger.critical(str(module))
         if not module.command_list.set:  # 如果没有可用的命令，则展示模块简介
             if module.desc:
                 desc = [I18NContext("parser.module.desc", desc=msg.session_info.locale.t_str(module.desc))]

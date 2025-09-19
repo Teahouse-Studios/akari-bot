@@ -51,6 +51,12 @@ async def load_modules():
             Logger.error(errmsg)
             err_prompt.append(errmsg)
 
+    await ModuleStatus.init_modules(ModulesManager.modules.keys())
+    for module_name, module in ModulesManager.modules.items():
+        module_status = await ModuleStatus.filter(module_name=module_name).first()
+        if module_status and not module_status.load or not module.load:
+            module._db_load = False
+
     Logger.success("All modules loaded.")
 
     loader_cache = os.path.join(PrivateAssets.path, ".cache_loader")
@@ -75,25 +81,20 @@ class ModulesManager:
 
     @classmethod
     def add_module(cls, module: Module, py_module_name: str):
-        async def _async_add():
-            module_status = await ModuleStatus.filter(module_name=module.module_name).first()
-            if module_status and not module_status.load:
-                module.load = False
-
-            if module.module_name not in cls.modules:
-                cls.modules[module.module_name] = module
-                cls.modules_origin[module.module_name] = py_module_name
-
-                await ModuleStatus.add_module(module_name=module.module_name, py_module_name=py_module_name)
-            else:
-                raise ValueError(f'Duplicate bind prefix "{module.module_name}"')
-
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            asyncio.create_task(_async_add())
+        if module.module_name not in cls.modules:
+            cls.modules[module.module_name] = module
+            cls.modules_origin[module.module_name] = py_module_name
         else:
-            loop.run_until_complete(_async_add())
-        ModulesManager.process_deferred_bindings(module.module_name)
+            raise ValueError(f'Duplicate bind prefix "{module.module_name}"')
+
+    @classmethod
+    def remove_modules(cls, modules):
+        for module in modules:
+            if module in cls.modules:
+                cls.modules.pop(module)
+                cls.modules_origin.pop(module)
+            else:
+                raise ValueError(f"Module \"{module}\" is not exist.")
 
     @classmethod
     def refresh_modules_aliases(cls):
@@ -143,25 +144,7 @@ class ModulesManager:
         return None
 
     @classmethod
-    def bind_to_module(cls, module_name, meta):
-        if module_name not in cls.modules:
-            cls._deferred_bindings.append((module_name, meta))
-        else:
-            cls._register(meta, module_name)
-
-    @classmethod
-    def process_deferred_bindings(cls, module_name):
-        remaining = []
-        for mod_name, meta in cls._deferred_bindings:
-            if mod_name == module_name:
-                cls._register(mod_name, meta)
-            else:
-                remaining.append((mod_name, meta))
-
-        cls._deferred_bindings = remaining
-
-    @classmethod
-    def _register(
+    def bind_to_module(
         cls,
         module_name: str,
         meta: Union[CommandMeta, RegexMeta, ScheduleMeta, HookMeta],
@@ -180,8 +163,8 @@ class ModulesManager:
 
     @classmethod
     def return_modules_list(cls, target_from: Optional[str] = None,
-                            client_name: Optional[str] = None) -> Dict[str, Module]:
-        if target_from and target_from in cls._return_cache:
+                            client_name: Optional[str] = None, use_cache: bool = True) -> Dict[str, Module]:
+        if target_from and target_from in cls._return_cache and use_cache:
             return cls._return_cache[target_from]
         modules = {
             module_name: cls.modules[module_name] for module_name in sorted(cls.modules)
@@ -214,7 +197,7 @@ class ModulesManager:
         全域加载该机器人模块。
         """
         if module_name in cls.modules:
-            cls.modules[module_name].load = True
+            cls.modules[module_name]._db_load = True
             await ModuleStatus.set_module_loaded(module_name, True)
             return True
         return False
@@ -225,7 +208,7 @@ class ModulesManager:
         全域卸载该机器人模块。
         """
         if module_name in cls.modules:
-            cls.modules[module_name].load = False
+            cls.modules[module_name]._db_load = False
             await ModuleStatus.set_module_loaded(module_name, False)
             return True
         return False
@@ -238,12 +221,15 @@ class ModulesManager:
         py_module = cls.return_py_module(module_name)
         related_modules = cls.search_related_module(module_name)
 
+        cls.remove_modules(related_modules)
+        await ModuleStatus.filter(module_name__in=related_modules).delete()
         count = cls.reload_py_module(py_module)
+
+        if count > 0:
+            await ModuleStatus.bulk_create(
+                [cls(module_name=m, load=True) for m in related_modules]
+            )
         cls.refresh()
-
-        for m in related_modules:
-            await ModuleStatus.set_module_loaded(m, True)
-
         await reload_db()
         return count > 0, count
 

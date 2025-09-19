@@ -40,10 +40,13 @@ class Module:
     regex_list: RegexMatches = RegexMatches.init()
     schedule_list: ScheduleMatches = ScheduleMatches.init()
     hooks_list: HookMatches = HookMatches.init()
+    _db_load: bool = False
 
     @classmethod
     def assign(cls, **kwargs):
-        return deepcopy(cls(**kwargs))
+        obj = cls(**{k: v for k, v in kwargs.items() if not k.startswith("_")})
+        obj._db_load = kwargs.get("_db_load", False)
+        return deepcopy(obj)
 
     def to_dict(self):
         return {
@@ -65,6 +68,7 @@ class Module:
             "required_base_superuser": self.required_base_superuser,
             "commands": len(self.command_list.set),
             "regexp": len(self.regex_list.set),
+            "_db_load": self._db_load
         }
 
 

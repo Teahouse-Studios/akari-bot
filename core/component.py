@@ -259,6 +259,7 @@ def module(
         available_for=available_for,
         exclude_from=exclude_from,
         support_languages=support_languages,
+        _db_load=True
     )
     frame = inspect.currentframe()
     ModulesManager.add_module(module, frame.f_back.f_globals["__name__"])
