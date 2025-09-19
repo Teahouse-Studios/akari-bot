@@ -91,8 +91,11 @@ class ModulesManager:
             cls.modules.update({module.bind_prefix: module})
             cls.modules_origin.update({module.bind_prefix: py_module_name})
 
-            loop = asyncio.get_running_loop()
-            loop.create_task(ModuleStatus.add_module(module=module.bind_prefix))
+            try:
+                loop = asyncio.get_running_loop()
+                loop.create_task(ModuleStatus.add_module(module=module.bind_prefix))
+            except RuntimeError:
+                pass
         else:
             raise ValueError(f"Duplicate bind prefix \"{module.bind_prefix}\"")
 

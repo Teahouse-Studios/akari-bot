@@ -188,7 +188,6 @@ class CFGManager:
                 else:
                     cfg_type = cfg_type if cfg_type else type(default)
 
-            logger.debug(f"[Config] Config {q} not found, filled with default value.")
             cls.write(q, default, cfg_type, secret, table_name, _generate)
             return default
 
@@ -239,6 +238,7 @@ class CFGManager:
         q = q.lower()
         if value is None:
             if _generate:  # if the value is None when generating the config file, fill with a placeholder
+                logger.debug(f"[Config] Config {q} not found, filled with default value.")
                 if cfg_type:
                     if isinstance(cfg_type, tuple):
                         cfg_type_str = "(" + ", ".join(map(lambda ty: ty.__name__, cfg_type)) + ")"
