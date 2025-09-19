@@ -3,7 +3,7 @@ from core.component import module
 from .mcmod import mcmod as m
 
 mcmod = module(
-    bind_prefix="mcmod",
+    module_name="mcmod",
     desc="{I18N:mcmod.help.desc}",
     doc=True,
     developers=["Dianliang233", "HornCopper", "DrLee_lihr"],

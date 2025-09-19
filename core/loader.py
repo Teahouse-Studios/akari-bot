@@ -20,15 +20,9 @@ from core.types.module.component_meta import (
     HookMeta,
 )
 
-current_unloaded_modules = []
-err_modules = []
-
 
 async def load_modules():
     import modules
-
-    unloaded_modules = await ModuleStatus.get_unloaded_modules()
-    current_unloaded_modules.clear()
 
     err_prompt = []
     locale_loaded_err = load_locale_file()
@@ -39,30 +33,23 @@ async def load_modules():
     Logger.info("Attempting to load modules...")
 
     for subm in pkgutil.iter_modules(modules.__path__):
-        submodule_name = modules.__name__ + "." + subm.name
+        module_py_name = f"{modules.__name__}.{subm.name}"
         try:
-            Logger.debug(f"Loading {submodule_name}...")
+            Logger.debug(f"Loading {module_py_name}...")
 
-            if subm.name in unloaded_modules:
-                Logger.warning(f"Skipped {submodule_name}!")
-                current_unloaded_modules.append(subm.name)
-                continue
-
-            importlib.import_module(submodule_name)
-            Logger.debug(f"Successfully loaded {submodule_name}!")
+            importlib.import_module(module_py_name)
+            Logger.debug(f"Successfully loaded {module_py_name}!")
 
             try:
-                importlib.import_module(submodule_name + ".config")
-                Logger.debug(f"Successfully loaded {submodule_name}'s config definition!")
+                importlib.import_module(module_py_name + ".config")
+                Logger.debug(f"Successfully loaded {module_py_name}'s config definition!")
             except ModuleNotFoundError:
-                Logger.debug(f"Module {submodule_name}'s config definition not found, skipped.")
+                Logger.debug(f"Module {module_py_name}'s config definition not found, skipped.")
 
         except Exception:
-            errmsg = f"Failed to load {submodule_name}: \n{traceback.format_exc()}"
+            errmsg = f"Failed to load {module_py_name}: \n{traceback.format_exc()}"
             Logger.error(errmsg)
             err_prompt.append(errmsg)
-            if subm.name not in err_modules:
-                err_modules.append(subm.name)
 
     Logger.success("All modules loaded.")
 
@@ -84,30 +71,29 @@ class ModulesManager:
     modules_aliases: Dict[str, str] = {}
     modules_hooks: Dict[str, Callable] = {}
     modules_origin: Dict[str, str] = {}
+    _deferred_bindings = []
 
     @classmethod
     def add_module(cls, module: Module, py_module_name: str):
-        if module.bind_prefix not in ModulesManager.modules:
-            cls.modules.update({module.bind_prefix: module})
-            cls.modules_origin.update({module.bind_prefix: py_module_name})
+        async def _async_add():
+            module_status = await ModuleStatus.filter(module_name=module.module_name).first()
+            if module_status and not module_status.load:
+                module.load = False
 
-            try:
-                loop = asyncio.get_running_loop()
-                loop.create_task(ModuleStatus.add_module(module=module.bind_prefix))
-            except RuntimeError:
-                pass
-        else:
-            raise ValueError(f"Duplicate bind prefix \"{module.bind_prefix}\"")
+            if module.module_name not in cls.modules:
+                cls.modules[module.module_name] = module
+                cls.modules_origin[module.module_name] = py_module_name
 
-    @classmethod
-    def remove_modules(cls, modules):
-        for module in modules:
-            if module in cls.modules:
-                Logger.info(f"Removing... {module}")
-                cls.modules.pop(module)
-                cls.modules_origin.pop(module)
+                await ModuleStatus.add_module(module_name=module.module_name, py_module_name=py_module_name)
             else:
-                raise ValueError(f"Module \"{module}\" is not exist.")
+                raise ValueError(f'Duplicate bind prefix "{module.module_name}"')
+
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            asyncio.create_task(_async_add())
+        else:
+            loop.run_until_complete(_async_add())
+        ModulesManager.process_deferred_bindings(module.module_name)
 
     @classmethod
     def refresh_modules_aliases(cls):
@@ -124,7 +110,7 @@ class ModulesManager:
             module = cls.modules[m]
             if module.hooks_list:
                 for hook in module.hooks_list.set:
-                    hook_name = module.bind_prefix + (
+                    hook_name = module.module_name + (
                         ("." + hook.name) if hook.name else ""
                     )
                     cls.modules_hooks.update({hook_name: hook.function})
@@ -157,20 +143,38 @@ class ModulesManager:
         return None
 
     @classmethod
-    def bind_to_module(
+    def bind_to_module(cls, module_name, meta):
+        if module_name not in cls.modules:
+            cls._deferred_bindings.append((module_name, meta))
+        else:
+            cls._register(meta, module_name)
+
+    @classmethod
+    def process_deferred_bindings(cls, module_name):
+        remaining = []
+        for mod_name, meta in cls._deferred_bindings:
+            if mod_name == module_name:
+                cls._register(mod_name, meta)
+            else:
+                remaining.append((mod_name, meta))
+
+        cls._deferred_bindings = remaining
+
+    @classmethod
+    def _register(
         cls,
-        bind_prefix: str,
+        module_name: str,
         meta: Union[CommandMeta, RegexMeta, ScheduleMeta, HookMeta],
     ):
-        if bind_prefix in cls.modules:
+        if module_name in cls.modules:
             if isinstance(meta, CommandMeta):
-                cls.modules[bind_prefix].command_list.add(meta)
+                cls.modules[module_name].command_list.add(meta)
             elif isinstance(meta, RegexMeta):
-                cls.modules[bind_prefix].regex_list.add(meta)
+                cls.modules[module_name].regex_list.add(meta)
             elif isinstance(meta, ScheduleMeta):
-                cls.modules[bind_prefix].schedule_list.add(meta)
+                cls.modules[module_name].schedule_list.add(meta)
             elif isinstance(meta, HookMeta):
-                cls.modules[bind_prefix].hooks_list.add(meta)
+                cls.modules[module_name].hooks_list.add(meta)
 
     _return_cache = {}
 
@@ -180,7 +184,7 @@ class ModulesManager:
         if target_from and target_from in cls._return_cache:
             return cls._return_cache[target_from]
         modules = {
-            bind_prefix: cls.modules[bind_prefix] for bind_prefix in sorted(cls.modules)
+            module_name: cls.modules[module_name] for module_name in sorted(cls.modules)
         }
 
         if target_from:
@@ -205,14 +209,34 @@ class ModulesManager:
         return modules
 
     @classmethod
+    async def load_module(cls, module_name: str):
+        """
+        全域加载该机器人模块。
+        """
+        if module_name in cls.modules:
+            cls.modules[module_name].load = True
+            await ModuleStatus.set_module_loaded(module_name, True)
+            return True
+        return False
+
+    @classmethod
+    async def unload_module(cls, module_name: str):
+        """
+        全域卸载该机器人模块。
+        """
+        if module_name in cls.modules:
+            cls.modules[module_name].load = False
+            await ModuleStatus.set_module_loaded(module_name, False)
+            return True
+        return False
+
+    @classmethod
     async def reload_module(cls, module_name: str):
         """
         重载该机器人模块（以及该模块所在文件的其它模块）
         """
         py_module = cls.return_py_module(module_name)
         related_modules = cls.search_related_module(module_name)
-
-        cls.remove_modules(related_modules)
 
         count = cls.reload_py_module(py_module)
         cls.refresh()
@@ -222,61 +246,6 @@ class ModulesManager:
 
         await reload_db()
         return count > 0, count
-
-    @classmethod
-    async def load_module(cls, module_name: str):
-        """
-        加载该机器人模块（以及该模块所在文件的其它模块）
-        """
-        if module_name not in current_unloaded_modules:
-            return False
-        modules = "modules." + module_name
-        if modules in sys.modules:
-            cls.reload_py_module(modules)
-            current_unloaded_modules.remove(module_name)
-        else:
-            try:
-                importlib.import_module(modules)
-                Logger.success(f"Succeeded loaded modules.{module_name}!")
-                if module_name in err_modules:
-                    err_modules.remove(module_name)
-                current_unloaded_modules.remove(module_name)
-            except Exception:
-                Logger.exception(f"Failed to load modules.{module_name}: ")
-                if module_name not in err_modules:
-                    err_modules.append(module_name)
-                return False
-        cls.refresh()
-        await ModuleStatus.set_module_loaded(module_name, True)
-
-        try:
-            models_module = importlib.import_module(f"{module_name}.database.models")
-            models_list = [getattr(models_module, attr) for attr in dir(models_module)
-                           if not attr.startswith("_")]
-        except ModuleNotFoundError:
-            models_list = []
-
-        await reload_db(models_list)
-        return True
-
-    @classmethod
-    async def unload_module(cls, module_name: str):
-        """
-        卸载该机器人模块（以及该模块所在文件的其它模块）
-        """
-        related_modules = cls.search_related_module(module_name)
-        cls.remove_modules(related_modules)
-        cls.refresh()
-
-        for m in related_modules:
-            await ModuleStatus.set_module_loaded(m, False)
-
-        current_unloaded_modules.extend(
-            [m for m in related_modules if m not in current_unloaded_modules]
-        )
-
-        await reload_db()
-        return True
 
     @classmethod
     def reload_py_module(cls, module_name: str):
@@ -293,17 +262,9 @@ class ModulesManager:
                     cnt += cls.reload_py_module(mod)
             importlib.reload(module)
             Logger.success(f"Successfully reloaded {module_name}.")
-            if (m := re.match(r"^modules(\.[a-zA-Z0-9_]*)?", module_name)) and m.group(
-                1
-            ) in err_modules:
-                err_modules.remove(m.group(1))
             return cnt + 1
         except Exception:
             Logger.exception(f"Failed to reload {module_name}:")
-            if (m := re.match(r"^modules(\.[a-zA-Z0-9_]*)?", module_name)) and m.group(
-                1
-            ) not in err_modules:
-                err_modules.append(m.group(1))
             return -999
         finally:
             cls.refresh()

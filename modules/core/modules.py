@@ -7,7 +7,7 @@ from core.component import module
 from core.config import Config
 from core.constants.exceptions import InvalidHelpDocTypeError
 from core.i18n import load_locale_file
-from core.loader import ModulesManager, current_unloaded_modules, err_modules
+from core.loader import ModulesManager
 from .help import modules_list_help
 
 m = module(
@@ -126,7 +126,7 @@ async def config_modules(msg: Bot.MessageSession):
                     hdoc = CommandParser(
                         modules_[m],
                         msg=msg,
-                        bind_prefix=modules_[m].bind_prefix,
+                        module_name=modules_[m].module_name,
                         command_prefixes=msg.session_info.prefixes,
                         is_superuser=is_superuser,
                     ).return_formatted_help_doc()
@@ -217,9 +217,9 @@ async def config_modules(msg: Bot.MessageSession):
             msglist.append(Plain("\n".join(locale_err), disable_joke=True))
     elif msg.parsed_msg.get("load", False):
         for module_ in wait_config_list:
-            if module_ not in current_unloaded_modules:
-                msglist.append(I18NContext("core.message.module.load.not_found"))
-                continue
+            #            if module_ not in current_unloaded_modules:
+            #                msglist.append(I18NContext("core.message.module.load.not_found"))
+            #                continue
             if await ModulesManager.load_module(module_):
                 msglist.append(I18NContext("core.message.module.load.success", module=module_))
             else:
@@ -227,18 +227,6 @@ async def config_modules(msg: Bot.MessageSession):
 
     elif msg.parsed_msg.get("unload", False):
         for module_ in wait_config_list:
-            if module_ not in modules_:
-                if module_ in err_modules:
-                    if await msg.wait_confirm(I18NContext("core.message.module.unload.unavailable.confirm"),
-                                              append_instruction=False):
-                        msglist.append(I18NContext("core.message.module.unload.success", module=module_))
-                        err_modules.remove(module_)
-                        current_unloaded_modules.append(module_)
-                    else:
-                        await msg.finish()
-                else:
-                    msglist.append(I18NContext("core.message.module.unload.not_found"))
-                continue
             unload_modules = ModulesManager.search_related_module(module_)
             if modules_[module_].base:
                 msglist.append(I18NContext("core.message.module.unload.base", module=module_))

@@ -167,7 +167,7 @@ async def get_module_list(tsk: JobQueuesTable, args: dict):
     modules = {k: v for k, v in modules.items() if v.get("load", True) and not v.get("base", False)}
     module_list = []
     for module in modules.values():
-        module_list.append(module["bind_prefix"])
+        module_list.append(module["module_name"])
     return {"modules_list": module_list}
 
 
