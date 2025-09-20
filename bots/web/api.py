@@ -15,6 +15,7 @@ from jwt.exceptions import ExpiredSignatureError
 from tortoise.expressions import Q
 
 from bots.web.client import app, limiter, ph, enable_https, jwt_secret
+from core.builtins.utils import command_prefix
 from core.config import Config
 from core.constants import config_filename
 from core.constants.path import assets_path, config_path, logs_path
@@ -71,6 +72,7 @@ async def api_root(request: Request):
 @limiter.limit("2/second")
 async def get_config(request: Request):
     return {"enable_https": enable_https,
+            "command_prefix": command_prefix[0],
             "locale": Config("default_locale", cfg_type=str),
             "heartbeat_interval": Config("heartbeat_interval", 30, table_name="bot_web"),
             "heartbeat_timeout": Config("heartbeat_timeout", 5, table_name="bot_web"),
@@ -639,6 +641,22 @@ async def search_related_module(request: Request, module_name: str):
         verify_jwt(request)
         modules = await JobQueueClient.get_module_related(module=module_name)
         return {"modules": modules}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.get("/api/module/{module_name}/helpdoc")
+@limiter.limit("10/minute")
+async def get_module_helpdoc(request: Request, module_name: str, locale: str = Query(default_locale)):
+    try:
+        verify_jwt(request)
+        help_doc = await JobQueueClient.get_module_helpdoc(module=module_name, locale=locale)
+        if not help_doc:
+            raise HTTPException(status_code=404, detail="Not found")
+        return help_doc
     except HTTPException as e:
         raise e
     except Exception:

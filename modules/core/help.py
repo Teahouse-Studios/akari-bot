@@ -75,14 +75,16 @@ async def _(msg: Bot.MessageSession, module: str):
                         elif isinstance(regex.pattern, re.Pattern):
                             pattern = regex.pattern.pattern
                         if pattern:
+                            if msg.session_info.support_markdown:
+                                pattern = re.sub(r'([\\`*_{}\[\]()#+\-.!>~|])', r'\\\1', pattern)
                             rdesc = regex.desc
                             if rdesc:
                                 rdesc = msg.session_info.locale.t_str(rdesc)
                                 mdocs.append(
-                                    f"{pattern} {str(I18NContext("I18N:core.message.help.regex.detail", msg=rdesc))}")
+                                    f"{pattern}{str(I18NContext("core.message.help.regex.detail", msg=rdesc))}")
                             else:
                                 mdocs.append(
-                                    f"{pattern} {str(I18NContext("I18N:core.message.help.regex.no_information"))}")
+                                    f"{pattern}{str(I18NContext("core.message.help.regex.no_information"))}")
 
                 if module_.alias:
                     for a in module_.alias:

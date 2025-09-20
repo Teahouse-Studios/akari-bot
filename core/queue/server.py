@@ -1,6 +1,10 @@
+import re
+
 from typing import Union, TYPE_CHECKING, Optional
 
+from core.builtins.parser.command import CommandParser
 from core.builtins.parser.message import parser
+from core.builtins.utils import command_prefix
 from core.utils.bash import run_sys_command
 from core.web_render import init_web_render
 from .base import JobQueueBase
@@ -181,6 +185,44 @@ async def get_modules_info(tsk: JobQueuesTable, args: dict):
             module["desc"] = Locale(args["locale"]).t_str(module["desc"])
 
     return {"modules": modules}
+
+
+@JobQueueServer.action("get_module_helpdoc")
+async def get_module_helpdoc(tsk: JobQueuesTable, args: dict):
+    module = ModulesManager.modules.get(args["module"], None)
+    help_doc = {}
+    if module:
+        help_doc["module_name"] = module.module_name
+        module_ = module.to_dict()
+        if "desc" in module_ and module_.get("desc"):
+            help_doc["desc"] = Locale(args["locale"]).t_str(module_["desc"])
+
+        help_ = CommandParser(module,
+                              module_name=module.module_name,
+                              command_prefixes=[command_prefix[0]],
+                              is_superuser=True)
+        help_doc["commands"] = help_.return_json_help_doc(args["locale"])
+
+        regex_ = []
+        regex_list = module.regex_list.get(show_required_superuser=True)
+        if regex_list:
+            for regex in regex_list:
+                pattern = None
+                if isinstance(regex.pattern, str):
+                    pattern = regex.pattern
+                elif isinstance(regex.pattern, re.Pattern):
+                    pattern = regex.pattern.pattern
+
+                if pattern:
+                    rdesc = regex.desc
+                    if rdesc:
+                        rdesc = Locale(args["locale"]).t_str(rdesc)
+
+                    regex_.append({"pattern": pattern,
+                                   "desc": rdesc})
+        help_doc["regexp"] = regex_
+
+    return {"help_doc": help_doc}
 
 
 @JobQueueServer.action("get_module_related")

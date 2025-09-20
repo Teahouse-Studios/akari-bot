@@ -61,6 +61,11 @@ class JobQueueClient(JobQueueBase):
         return ret["modules"]
 
     @classmethod
+    async def get_module_helpdoc(cls, module: str, locale: str = "zh_cn"):
+        ret = await cls.add_job("Server", "get_module_helpdoc", {"module": module, "locale": locale})
+        return ret["help_doc"]
+
+    @classmethod
     async def get_module_related(cls, module: str):
         ret = await cls.add_job("Server", "get_module_related", {"module": module})
         return ret["modules_list"]
