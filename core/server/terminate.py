@@ -5,7 +5,6 @@ from tortoise import Tortoise
 # from core.builtins.session.tasks import SessionTaskManager
 from core.database.models import JobQueuesTable
 from core.logger import Logger
-from core.queue.server import JobQueueServer
 from core.scheduler import Scheduler
 
 
@@ -18,7 +17,6 @@ async def cleanup_sessions():
     #             if get_wait_list[x][y][z]["active"]:
     #                 await z.send_message(I18NContext("core.message.restart.prompt"))
     await JobQueuesTable.clear_task(time=0)
-    JobQueueServer.pause_event.clear()
     Scheduler.shutdown()
     await Tortoise.close_connections()
 
