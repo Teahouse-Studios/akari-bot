@@ -125,7 +125,6 @@
     "error.message.timeout": "Message sending timed out. Please retry the command later or wait for the result to be returned.",
     "error.module.helpdoc_invalid": "\"${module}\" module provided invalid help information. Please contact the developers to solve this issue.",
     "error.module.unbound": "\"${module}\" module is unbound with any commands and doesn't have the description. Please contact the developers to solve this issue.",
-    "error.module.unloaded": "\"${module}\" module failed to load. Please contact the developers to resolve this issue.",
     "example": "Hello world!",
     "game.help.stop": "Stop the current game.",
     "game.message.running": "This game is currently in progress.",
