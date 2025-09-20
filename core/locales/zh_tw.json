@@ -125,7 +125,6 @@
     "error.message.timeout": "訊息傳送逾時，請稍後重試指令或嘗試等待傳回結果。",
     "error.module.helpdoc_invalid": "「${module}」模組的說明資訊有誤，請聯絡開發人員解決問題。",
     "error.module.unbound": "「${module}」模組未綁定任何指令且無簡介，請聯絡開發人員解決問題。",
-    "error.module.unloaded": "「${module}」模組載入失敗，請聯絡開發人員解決問題。",
     "example": "你好世界！",
     "game.help.stop": "停止當前的遊戲。",
     "game.message.running": "當前此遊戲正在進行。",
