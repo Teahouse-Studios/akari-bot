@@ -326,20 +326,21 @@ class ModuleStatus(DBModel):
 
     @classmethod
     async def init_modules(cls, modules_list: List[str]):
-        existing = await cls.all().values_list("module_name", flat=True)
-        existing_set = set(existing)
-        input_set = set(modules_list)
+        async with in_transaction("default"):
+            existing = await cls.all().values_list("module_name", flat=True)
+            existing_set = set(existing)
+            input_set = set(modules_list)
 
-        to_add = input_set.difference(existing_set)
-        to_remove = existing_set.difference(input_set)
+            to_add = input_set.difference(existing_set)
+            to_remove = existing_set.difference(input_set)
 
-        if to_add:
-            await cls.bulk_create(
-                [cls(module_name=m, load=True) for m in to_add]
-            )
+            if to_add:
+                await cls.bulk_create(
+                    [cls(module_name=m, load=True) for m in to_add]
+                )
 
-        if to_remove:
-            await cls.filter(module_name__in=to_remove).delete()
+            if to_remove:
+                await cls.filter(module_name__in=to_remove).delete()
 
     @classmethod
     async def set_module_loaded(cls, module_name: str, load: bool = True):

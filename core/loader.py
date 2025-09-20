@@ -41,7 +41,7 @@ async def load_modules():
             Logger.debug(f"Successfully loaded {module_py_name}!")
 
             try:
-                importlib.import_module(module_py_name + ".config")
+                importlib.import_module(f"{module_py_name}.config")
                 Logger.debug(f"Successfully loaded {module_py_name}'s config definition!")
             except ModuleNotFoundError:
                 Logger.debug(f"Module {module_py_name}'s config definition not found, skipped.")
@@ -51,7 +51,7 @@ async def load_modules():
             Logger.error(errmsg)
             err_prompt.append(errmsg)
 
-    await ModuleStatus.init_modules(ModulesManager.modules.keys())
+    await ModuleStatus.init_modules(list(ModulesManager.modules.keys()))
     for module_name, module in ModulesManager.modules.items():
         module_status = await ModuleStatus.filter(module_name=module_name).first()
         if module_status and not module_status.load or not module.load:
@@ -225,9 +225,9 @@ class ModulesManager:
         await ModuleStatus.filter(module_name__in=related_modules).delete()
         count = cls.reload_py_module(py_module)
 
-        if count > 0:
+        if count > 0 and related_modules:
             await ModuleStatus.bulk_create(
-                [cls(module_name=m, load=True) for m in related_modules]
+                [ModuleStatus(module_name=m, load=True) for m in related_modules]
             )
         cls.refresh()
         await reload_db()
