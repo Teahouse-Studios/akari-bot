@@ -163,7 +163,7 @@ async def get_web_render_status(tsk: JobQueuesTable, args: dict):
 
 @JobQueueServer.action("get_modules_list")
 async def get_module_list(tsk: JobQueuesTable, args: dict):
-    modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items(use_cache=False)}
+    modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list(use_cache=False).items()}
     modules = {k: v for k, v in modules.items() if v.get("load", True) and not v.get("base", False)}
     module_list = []
     for module in modules.values():
