@@ -1,4 +1,5 @@
 import inspect
+import os
 import re
 from typing import Union, overload
 
@@ -242,6 +243,18 @@ def module(
     :param exclude_from: 此命令排除的平台列表。
     :param support_languages: 此命令支持的语言列表。
     """
+
+    frame = inspect.currentframe().f_back
+    caller_file = frame.f_globals.get("__file__", None)
+
+    py_module_name = ""
+    if caller_file:
+        parts = os.path.normpath(caller_file).split(os.sep)
+        if "modules" in parts:
+            idx = parts.index("modules")
+            if idx + 1 < len(parts):
+                py_module_name = parts[idx + 1]
+
     module = Module.assign(
         module_name=module_name,
         alias=alias,
@@ -259,6 +272,7 @@ def module(
         available_for=available_for,
         exclude_from=exclude_from,
         support_languages=support_languages,
+        _py_module_name=py_module_name,
         _db_load=True
     )
     frame = inspect.currentframe()

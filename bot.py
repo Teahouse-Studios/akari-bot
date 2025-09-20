@@ -69,6 +69,7 @@ processes: list[multiprocessing.Process] = []
 
 
 def pre_init():
+
     from core.constants.path import cache_path  # noqa
     if os.path.exists(cache_path):
         shutil.rmtree(cache_path)
@@ -337,8 +338,16 @@ def main():
 
 
 if __name__ == "__main__":
-    # Detect if the program is already running
+    # Check Python version
+    required_version = (3, 12)
+    if sys.version_info < required_version:
+        Logger.critical(
+            f"Your Python version is {sys.version_info.major}.{sys.version_info.minor}, "
+            f"and you need Python {required_version[0]}.{required_version[1]} or higher."
+        )
+        sys.exit(1)
 
+    # Detect if the program is already running
     lock_file_path = os.path.abspath("./.bot.lock")
     if sys.platform == "win32":
         import msvcrt
