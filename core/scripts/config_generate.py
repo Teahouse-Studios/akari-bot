@@ -45,20 +45,20 @@ def generate_config(dir_path, language):
     import core.config.config_base  # noqa
     import bots
     for subm in pkgutil.iter_modules(bots.__path__):
-        submodule_name = bots.__name__ + "." + subm.name
+        module_py_name = f"{bots.__name__}.{subm.name}"
         try:
             CFGManager.load()
-            importlib.import_module(f"{submodule_name}.config")
+            importlib.import_module(f"{module_py_name}.config")
             CFGManager.save()
             sleep(0.1)
         except Exception:
             continue
     import modules
     for subm in pkgutil.iter_modules(modules.__path__):
-        submodule_name = modules.__name__ + "." + subm.name
+        module_py_name = f"{modules.__name__}.{subm.name}"
         try:
             CFGManager.load()
-            importlib.import_module(f"{submodule_name}.config")
+            importlib.import_module(f"{module_py_name}.config")
             CFGManager.save()
             sleep(0.1)
         except Exception:

@@ -125,7 +125,6 @@
     "error.message.timeout": "消息发送超时，请稍后重试命令或尝试等待返回结果。",
     "error.module.helpdoc_invalid": "“${module}”模块的帮助信息无效，请联系开发者解决问题。",
     "error.module.unbound": "“${module}”模块未绑定任何命令且无简介，请联系开发者解决问题。",
-    "error.module.unloaded": "“${module}”模块加载失败，请联系开发者解决问题。",
     "example": "你好世界！",
     "game.help.stop": "停止当前的游戏。",
     "game.message.running": "当前此游戏正在进行中。",

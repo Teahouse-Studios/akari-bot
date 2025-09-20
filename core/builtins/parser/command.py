@@ -24,13 +24,13 @@ class CommandParser:
         self,
         args: Module,
         command_prefixes: list,
-        bind_prefix=None,
+        module_name=None,
         msg: Optional["Bot.MessageSession"] = None,
         is_superuser: Optional[bool] = None,
     ):
         args = copy.deepcopy(args)
         self.command_prefixes = command_prefixes
-        self.bind_prefix = bind_prefix
+        self.module_name = module_name
         self.origin_template = args
         self.msg: Union["Bot.MessageSession", None] = msg
         self.options_desc = []
@@ -72,7 +72,7 @@ class CommandParser:
         )
         for x in format_args:
             x = self.lang.t_str(x, fallback_failed_prompt=False)
-            x = f"{self.command_prefixes[0]}{self.bind_prefix} {x}"
+            x = f"{self.command_prefixes[0]}{self.module_name} {x}"
             lst.append(x)
         args = "\n".join(y for y in lst)
         if self.options_desc:

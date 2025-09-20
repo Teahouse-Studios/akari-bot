@@ -7,7 +7,7 @@ from .base import JobQueueBase
 from ..builtins.converter import converter
 from ..builtins.message.chain import MessageChain, MessageNodes
 from ..builtins.session.info import SessionInfo
-from ..database.models import JobQueuesTable, ModuleStatus
+from ..database.models import JobQueuesTable
 from ..exports import exports, add_export
 from ..i18n import Locale
 from ..loader import ModulesManager
@@ -163,26 +163,23 @@ async def get_web_render_status(tsk: JobQueuesTable, args: dict):
 
 @JobQueueServer.action("get_modules_list")
 async def get_module_list(tsk: JobQueuesTable, args: dict):
-    modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items()}
+    modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items(use_cache=False)}
     modules = {k: v for k, v in modules.items() if v.get("load", True) and not v.get("base", False)}
     module_list = []
     for module in modules.values():
-        module_list.append(module["bind_prefix"])
+        module_list.append(module["module_name"])
     return {"modules_list": module_list}
 
 
 @JobQueueServer.action("get_modules_info")
 async def get_modules_info(tsk: JobQueuesTable, args: dict):
-    modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items()}
-    modules = {k: v for k, v in modules.items() if v.get("load", True) and not v.get("base", False)}
+    modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list(use_cache=False).items()}
+    modules = {k: v for k, v in modules.items() if v.get("load", True)}
 
     for module in modules.values():
         if "desc" in module and module.get("desc"):
             module["desc"] = Locale(args["locale"]).t_str(module["desc"])
 
-    unloaded_modules = await ModuleStatus.get_unloaded_modules()
-    for m in unloaded_modules:
-        modules.setdefault(str(m), {})
     return {"modules": modules}
 
 

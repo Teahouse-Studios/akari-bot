@@ -11,7 +11,7 @@ from core.component import module
 from core.config import Config
 from core.constants.default import donate_url_default, help_url_default, help_page_url_default
 from core.constants.path import templates_path
-from core.loader import ModulesManager, current_unloaded_modules, err_modules
+from core.loader import ModulesManager
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.image import cb64imglst
@@ -39,18 +39,16 @@ async def _(msg: Bot.MessageSession, module: str):
         malias = []
 
         help_name = alias[module].split()[0] if module in alias else module.split()[0]
-        if help_name in current_unloaded_modules:
-            await msg.finish(I18NContext("parser.module.unloaded", module=help_name))
-        elif help_name in err_modules:
-            await msg.finish(I18NContext("error.module.unloaded", module=help_name))
-        elif help_name in module_list:
+        if help_name in module_list:
             module_ = module_list[help_name]
 
+            if not module_._db_load:
+                await msg.finish(I18NContext("parser.module.unloaded", module=help_name))
             if module_.desc:
                 desc = msg.session_info.locale.t_str(module_.desc)
                 mdocs.append(desc)
 
-            help_ = CommandParser(module_, msg=msg, bind_prefix=module_.bind_prefix,
+            help_ = CommandParser(module_, msg=msg, module_name=module_.module_name,
                                   command_prefixes=msg.session_info.prefixes, is_superuser=is_superuser)
 
             if help_.args:
@@ -186,7 +184,7 @@ async def _(msg: Bot.MessageSession):
             if module_list[x].base and not module_list[x].hidden or \
                     not is_superuser and module_list[x].required_superuser or \
                     not is_base_superuser and module_list[x].required_base_superuser:
-                essential.append(module_list[x].bind_prefix)
+                essential.append(module_list[x].module_name)
         help_msg.append(Plain(" | ".join(essential), disable_joke=True))
         module_ = []
         for x in module_list:
@@ -227,7 +225,7 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
             if module_list[x].base or module_list[x].hidden or \
                     module_list[x].required_superuser or module_list[x].required_base_superuser:
                 continue
-            module_.append(module_list[x].bind_prefix)
+            module_.append(module_list[x].module_name)
         if module_:
             help_msg = MessageChain.assign([I18NContext("core.message.help.legacy.availables"),
                                             Plain(" | ".join(module_), disable_joke=True)])

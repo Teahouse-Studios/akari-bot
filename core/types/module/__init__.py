@@ -12,15 +12,15 @@ from .component_matches import *
 
 def alias_converter(value, _self) -> dict:
     if isinstance(value, str):
-        return {value: _self.bind_prefix}
+        return {value: _self.module_name}
     if isinstance(value, (tuple, list)):
-        return {x: _self.bind_prefix for x in value}
+        return {x: _self.module_name for x in value}
     return value
 
 
 @define
 class Module:
-    bind_prefix: str
+    module_name: str
     alias: dict = field(converter=Converter(alias_converter, takes_self=True))
     recommend_modules: list = field(converter=convert2lst)
     developers: list = field(converter=convert2lst)
@@ -40,14 +40,17 @@ class Module:
     regex_list: RegexMatches = RegexMatches.init()
     schedule_list: ScheduleMatches = ScheduleMatches.init()
     hooks_list: HookMatches = HookMatches.init()
+    _db_load: bool = False
 
     @classmethod
     def assign(cls, **kwargs):
-        return deepcopy(cls(**kwargs))
+        obj = cls(**{k: v for k, v in kwargs.items() if not k.startswith("_")})
+        obj._db_load = kwargs.get("_db_load", False)
+        return deepcopy(obj)
 
     def to_dict(self):
         return {
-            "bind_prefix": self.bind_prefix,
+            "module_name": self.module_name,
             "alias": self.alias,
             "recommend_modules": self.recommend_modules,
             "developers": self.developers,
@@ -65,6 +68,7 @@ class Module:
             "required_base_superuser": self.required_base_superuser,
             "commands": len(self.command_list.set),
             "regexp": len(self.regex_list.set),
+            "_db_load": self._db_load
         }
 
 

@@ -103,7 +103,6 @@ async def auth(request: Request, response: Response):
 
         body = await request.json()
         password = body.get("password", "")
-        remember = body.get("remember", False)
 
         if len(password) == 0:
             raise HTTPException(status_code=401, detail="Require password")
@@ -129,7 +128,7 @@ async def auth(request: Request, response: Response):
         login_failed_attempts.pop(ip, None)
 
         payload = {
-            "exp": datetime.now(UTC) + (timedelta(days=365) if remember else timedelta(hours=24)),
+            "exp": datetime.now(UTC) + timedelta(hours=24),
             "iat": datetime.now(UTC),
             "iss": "auth-api"
         }
