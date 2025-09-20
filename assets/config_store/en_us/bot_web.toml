@@ -1,0 +1,19 @@
+# https://toml.io/en/v1.0.0
+# NOTE: TOML is not like Python. Do not use Python syntax here.
+# EXAMPLE: Boolean values in TOML must be lowercase.
+
+[bot_web]
+# The basic config section of the platform. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.
+enable = true # Whether to enable this platform.
+enable_https = false # Whether to enable HTTPS protocol security measures.
+web_host = "127.0.0.1" # The host address of the Web service. Setting to 0.0.0.0 will listen to all addresses.
+web_port = 6485 # The port number of the Web service. Setting to 0 will disable the service.
+login_max_attempt = 5 # Maximum number of login requests limit.
+heartbeat_attempt = 3 # The number of attempts to send heartbeat messages.
+heartbeat_interval = 30 # The interval for sending heartbeat messages.
+heartbeat_timeout = 5 # Heartbeat message response timeout.
+
+[bot_web_secret]
+# The secret config section of the platform. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.
+allow_origins = [] # The API service allows CORS sources list.
+jwt_secret = "<Replace me with str value>" # The authentication key for the built-in API, for signing and verifying validity.
