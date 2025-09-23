@@ -131,6 +131,7 @@ pypika-tortoise==0.6.1 ; python_version >= "3.12" and python_full_version < "4.0
 pyproject-hooks==1.2.0 ; python_version >= "3.12" and python_full_version < "4.0.0"
 python-dateutil==2.9.0.post0 ; python_version >= "3.12" and python_full_version < "4.0.0"
 python-dotenv==1.1.1 ; python_version >= "3.12" and python_full_version < "4.0.0"
+python-multipart==0.0.20 ; python_version >= "3.12" and python_full_version < "4.0.0"
 python-socks==2.7.2 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 python-whois==0.9.5 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 pytz==2025.2 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"

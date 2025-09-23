@@ -99,6 +99,7 @@ webcolors = "^24.0.0"
 wolframalpha = "^5.0.0"
 
 # uncategorized
+python-multipart = "^0.0.20"
 
 [tool.poetry.group.dev.dependencies]
 autopep8 = "^2.0.2"
