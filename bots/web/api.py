@@ -1,16 +1,20 @@
 import asyncio
 import glob
+import mimetypes
 import os
 import platform
 import re
+import shutil
 from collections import defaultdict, deque
 from datetime import datetime, timedelta, UTC
+from pathlib import Path
 
 import jwt
 import orjson as json
 import psutil
 from cpuinfo import get_cpu_info
-from fastapi import HTTPException, Request, Response, Query, WebSocket, WebSocketDisconnect
+from fastapi import HTTPException, Request, File, Query, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi.responses import Response, FileResponse
 from jwt.exceptions import ExpiredSignatureError
 from tortoise.expressions import Q
 
@@ -26,6 +30,8 @@ from core.queue.client import JobQueueClient
 started_time = datetime.now()
 
 PASSWORD_PATH = os.path.join(assets_path, "private", "web", ".password")
+ROOT_DIR = Path(__file__).parent.parent.parent
+Logger.error(ROOT_DIR)
 
 default_locale = Config("default_locale", cfg_type=str)
 login_max_attempt = Config("login_max_attempt", default=5, table_name="bot_web")
@@ -145,7 +151,7 @@ async def auth(request: Request, response: Response):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/api/change-password")
+@app.put("/api/password")
 @limiter.limit("10/minute")
 async def change_password(request: Request, response: Response):
     try:
@@ -191,7 +197,7 @@ async def change_password(request: Request, response: Response):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/api/clear-password")
+@app.delete("/api/password")
 @limiter.limit("10/minute")
 async def clear_password(request: Request, response: Response):
     try:
@@ -220,10 +226,10 @@ async def clear_password(request: Request, response: Response):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.get("/api/have-password")
+@app.get("/api/password")
 @limiter.limit("10/minute")
 async def has_password(request: Request):
-    return {"data": os.path.exists(PASSWORD_PATH)}
+    return {"have_password": os.path.exists(PASSWORD_PATH)}
 
 
 @app.get("/api/server-info")
@@ -326,7 +332,7 @@ async def get_config_file(request: Request, cfg_filename: str):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/api/config/{cfg_filename}/edit")
+@app.put("/api/config/{cfg_filename}")
 @limiter.limit("10/minute")
 async def edit_config_file(request: Request, cfg_filename: str):
     try:
@@ -408,7 +414,7 @@ async def get_target_info(request: Request, target_id: str):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/api/target/{target_id}/edit")
+@app.patch("/api/target/{target_id}")
 @limiter.limit("10/minute")
 async def edit_target_info(request: Request, target_id: str):
     try:
@@ -464,7 +470,7 @@ async def edit_target_info(request: Request, target_id: str):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/api/target/{target_id}/delete")
+@app.delete("/api/target/{target_id}")
 @limiter.limit("10/minute")
 async def delete_target_info(request: Request, target_id: str):
     try:
@@ -538,7 +544,7 @@ async def get_sender_info(request: Request, sender_id: str):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/api/sender/{sender_id}/edit")
+@app.patch("/api/sender/{sender_id}")
 @limiter.limit("10/minute")
 async def edit_sender_info(request: Request, sender_id: str):
     try:
@@ -588,7 +594,7 @@ async def edit_sender_info(request: Request, sender_id: str):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/api/sender/{sender_id}/delete")
+@app.delete("/api/sender/{sender_id}")
 @limiter.limit("10/minute")
 async def delete_sender_info(request: Request, sender_id: str):
     try:
