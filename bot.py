@@ -12,7 +12,7 @@ from loguru import logger
 from tortoise import Tortoise, run_async
 from tortoise.exceptions import ConfigurationError
 
-from core.constants import config_path, config_filename
+from core.constants import config_path, config_filename, logs_path
 
 # Capture the base import lists to avoid clearing essential modules when restarting
 base_import_lists = list(sys.modules)
@@ -26,15 +26,34 @@ except ValueError:
 
 Logger = logger.bind(name="BotDaemon")
 
+logger_format = (
+    "<cyan>[BotDaemon]</cyan>"
+    "<yellow>[{name}:{function}:{line}]</yellow>"
+    "<green>[{time:YYYY-MM-DD HH:mm:ss}]</green>"
+    "<level>[{level}]:{message}</level>"
+)
 Logger.add(
     sys.stderr,
-    format=(
-        "<cyan>[BotDaemon]</cyan>"
-        "<yellow>[{name}:{function}:{line}]</yellow>"
-        "<green>[{time:YYYY-MM-DD HH:mm:ss}]</green>"
-        "<level>[{level}]:{message}</level>"
-    ),
+    format=logger_format,
     colorize=True,
+    filter=lambda record: record["extra"].get("name") == "BotDaemon"
+)
+Logger.add(
+    sink=os.path.join(logs_path, "BotDaemon_debug_{time:YYYY-MM-DD}.log"),
+    format=logger_format,
+    rotation="00:00",
+    retention="1 day",
+    level="DEBUG",
+    filter=lambda record: record["level"].name == "DEBUG" and record["extra"].get("name") == "BotDaemon",
+    encoding="utf8",
+)
+Logger.add(
+    sink=os.path.join(logs_path, "BotDaemon_{time:YYYY-MM-DD}.log"),
+    format=logger_format,
+    rotation="00:00",
+    retention="10 days",
+    level="INFO",
+    encoding="utf8",
     filter=lambda record: record["extra"].get("name") == "BotDaemon"
 )
 
@@ -152,7 +171,6 @@ def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
     Logger.info(f"[{bot_name}] Here we go!")
     Info.subprocess = subprocess
     Info.binary_mode = binary_mode
-    Logger.rename(bot_name)
 
     try:
         importlib.import_module(f"bots.{bot_name}.bot")
