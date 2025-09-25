@@ -4,7 +4,7 @@ from core.component import module
 from .mojang_api import *
 
 mcplayer = module(
-    bind_prefix="mcplayer",
+    module_name="mcplayer",
     desc="{I18N:mcplayer.help.desc}",
     doc=True,
     developers=["Dianliang233"],

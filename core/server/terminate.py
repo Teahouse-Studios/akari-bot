@@ -2,14 +2,14 @@ import sys
 
 from tortoise import Tortoise
 
-from core.builtins.session.tasks import SessionTaskManager
+# from core.builtins.session.tasks import SessionTaskManager
 from core.database.models import JobQueuesTable
 from core.logger import Logger
 from core.scheduler import Scheduler
 
 
 async def cleanup_sessions():
-    get_wait_list = SessionTaskManager.get()
+    # get_wait_list = SessionTaskManager.get()
     Logger.warning("Cleaning up sessions...")
     # for x in get_wait_list:
     #     for y in get_wait_list[x]:

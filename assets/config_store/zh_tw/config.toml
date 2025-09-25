@@ -3,10 +3,10 @@
 # 例如：TOML 中的布林值必須是小寫。
 
 default_locale = "zh_tw" # 預設的會話語言環境。
-config_version = 2 # 設定檔版本號，將會隨功能更新自動增加，一般情況下請勿修改。
+config_version = 2 # 組態檔版本號，將會隨功能更新自動增加，一般情況下請勿修改。
 
 [config]
-# 一些基礎的設定部分，此處填寫的值可在訊息中以明文形式顯示。請不要在此部分填寫敏感資訊。
+# 一些基礎的組態部分，此處填寫的值可在訊息中以明文形式顯示。請不要在此部分填寫敏感資訊。
 debug = false # 是否啟用調試模式，啟用後會輸出更多的日誌訊息。
 timezone_offset = "+8" # 機器人的預設時區偏移量。
 allow_reload_base = false # 是否允許重載基礎模組。
@@ -48,7 +48,7 @@ issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # 問題
 locale_url = "https://www.crowdin.com/project/akari-bot" # 在地化專案網址。
 
 [secret]
-# 金鑰設定部分，此處的值若意外出現在傳送的訊息中，機器人會嘗試攔截。但請務必提防洩漏。
+# 金鑰組態部分，此處的值若意外出現在傳送的訊息中，機器人會嘗試攔截。但請務必提防洩漏。
 db_path = "sqlite://database/save.db" # 資料庫連結字串，請使用 Tortoise ORM 支援的連結字串格式。
 proxy = "<Replace me with str value>" # 代理服務位址。
 check_access_key_id = "<Replace me with str value>" # 阿里雲內容安全服務的 AccessKey ID。

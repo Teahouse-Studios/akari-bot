@@ -125,7 +125,6 @@
     "error.message.timeout": "メッセージの送信がタイムアウトしました。後で再試行するか、結果が返されるまでお待ちください。",
     "error.module.helpdoc_invalid": "モジュール「${module}」のヘルプ情報が無効です。開発者に連絡してください。",
     "error.module.unbound": "モジュール「${module}」はどのコマンドにもバインドされておらず、紹介もありません。開発者に連絡してください。",
-    "error.module.unloaded": "モジュール「${module}」のロードに失敗しました。開発者に連絡してください。",
     "example": "ハローワールド！",
     "game.help.stop": "現在のゲームを止めます。",
     "game.message.running": "現在このゲームは進行中です。",

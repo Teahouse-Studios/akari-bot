@@ -20,7 +20,7 @@ def fetch_module_db():
     for m in pkgutil.iter_modules(modules.__path__):
         try:
             database_list.append(importlib.util.find_spec(f"modules.{m.name}.database.models").name)
-        except ModuleNotFoundError:
+        except Exception:
             pass
 
     Logger.debug(f"Database list: {database_list}")

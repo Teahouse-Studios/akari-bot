@@ -1,20 +1,27 @@
 import asyncio
 import glob
+import mimetypes
 import os
 import platform
 import re
+import shutil
+import tempfile
+import zipfile
 from collections import defaultdict, deque
 from datetime import datetime, timedelta, UTC
+from pathlib import Path
 
 import jwt
 import orjson as json
 import psutil
 from cpuinfo import get_cpu_info
-from fastapi import HTTPException, Request, Response, Query, WebSocket, WebSocketDisconnect
+from fastapi import HTTPException, Request, File, Query, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi.responses import Response, FileResponse, PlainTextResponse
 from jwt.exceptions import ExpiredSignatureError
 from tortoise.expressions import Q
 
 from bots.web.client import app, limiter, ph, enable_https, jwt_secret
+from core.builtins.utils import command_prefix
 from core.config import Config
 from core.constants import config_filename
 from core.constants.path import assets_path, config_path, logs_path
@@ -25,6 +32,7 @@ from core.queue.client import JobQueueClient
 started_time = datetime.now()
 
 PASSWORD_PATH = os.path.join(assets_path, "private", "web", ".password")
+ROOT_DIR = Path(__file__).parent.parent.parent
 
 default_locale = Config("default_locale", cfg_type=str)
 login_max_attempt = Config("login_max_attempt", default=5, table_name="bot_web")
@@ -71,6 +79,7 @@ async def api_root(request: Request):
 @limiter.limit("2/second")
 async def get_config(request: Request):
     return {"enable_https": enable_https,
+            "command_prefix": command_prefix[0],
             "locale": Config("default_locale", cfg_type=str),
             "heartbeat_interval": Config("heartbeat_interval", 30, table_name="bot_web"),
             "heartbeat_timeout": Config("heartbeat_timeout", 5, table_name="bot_web"),
@@ -85,7 +94,7 @@ async def verify_token(request: Request):
 
 
 @app.post("/api/login")
-async def auth(request: Request, response: Response):
+async def auth(request: Request):
     ip = request.client.host
     if await MaliciousLoginRecords.check_blocked(ip):
         raise HTTPException(status_code=429, detail="This IP has been blocked")
@@ -103,7 +112,6 @@ async def auth(request: Request, response: Response):
 
         body = await request.json()
         password = body.get("password", "")
-        remember = body.get("remember", False)
 
         if len(password) == 0:
             raise HTTPException(status_code=401, detail="Require password")
@@ -129,7 +137,7 @@ async def auth(request: Request, response: Response):
         login_failed_attempts.pop(ip, None)
 
         payload = {
-            "exp": datetime.now(UTC) + (timedelta(days=365) if remember else timedelta(hours=24)),
+            "exp": datetime.now(UTC) + timedelta(hours=24),
             "iat": datetime.now(UTC),
             "iss": "auth-api"
         }
@@ -144,7 +152,7 @@ async def auth(request: Request, response: Response):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/api/change-password")
+@app.put("/api/password")
 @limiter.limit("10/minute")
 async def change_password(request: Request, response: Response):
     try:
@@ -190,9 +198,9 @@ async def change_password(request: Request, response: Response):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/api/clear-password")
+@app.delete("/api/password")
 @limiter.limit("10/minute")
-async def clear_password(request: Request, response: Response):
+async def clear_password(request: Request):
     try:
         verify_jwt(request)
 
@@ -219,10 +227,10 @@ async def clear_password(request: Request, response: Response):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.get("/api/have-password")
+@app.get("/api/password")
 @limiter.limit("10/minute")
 async def has_password(request: Request):
-    return {"data": os.path.exists(PASSWORD_PATH)}
+    return {"have_password": os.path.exists(PASSWORD_PATH)}
 
 
 @app.get("/api/server-info")
@@ -325,7 +333,7 @@ async def get_config_file(request: Request, cfg_filename: str):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/api/config/{cfg_filename}/edit")
+@app.put("/api/config/{cfg_filename}")
 @limiter.limit("10/minute")
 async def edit_config_file(request: Request, cfg_filename: str):
     try:
@@ -407,7 +415,7 @@ async def get_target_info(request: Request, target_id: str):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/api/target/{target_id}/edit")
+@app.patch("/api/target/{target_id}")
 @limiter.limit("10/minute")
 async def edit_target_info(request: Request, target_id: str):
     try:
@@ -463,7 +471,7 @@ async def edit_target_info(request: Request, target_id: str):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/api/target/{target_id}/delete")
+@app.delete("/api/target/{target_id}")
 @limiter.limit("10/minute")
 async def delete_target_info(request: Request, target_id: str):
     try:
@@ -537,7 +545,7 @@ async def get_sender_info(request: Request, sender_id: str):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/api/sender/{sender_id}/edit")
+@app.patch("/api/sender/{sender_id}")
 @limiter.limit("10/minute")
 async def edit_sender_info(request: Request, sender_id: str):
     try:
@@ -587,7 +595,7 @@ async def edit_sender_info(request: Request, sender_id: str):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/api/sender/{sender_id}/delete")
+@app.delete("/api/sender/{sender_id}")
 @limiter.limit("10/minute")
 async def delete_sender_info(request: Request, sender_id: str):
     try:
@@ -640,6 +648,22 @@ async def search_related_module(request: Request, module_name: str):
         verify_jwt(request)
         modules = await JobQueueClient.get_module_related(module=module_name)
         return {"modules": modules}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.get("/api/module/{module_name}/helpdoc")
+@limiter.limit("10/minute")
+async def get_module_helpdoc(request: Request, module_name: str, locale: str = Query(default_locale)):
+    try:
+        verify_jwt(request)
+        help_doc = await JobQueueClient.get_module_helpdoc(module=module_name, locale=locale)
+        if not help_doc:
+            raise HTTPException(status_code=404, detail="Not found")
+        return help_doc
     except HTTPException as e:
         raise e
     except Exception:
@@ -780,3 +804,184 @@ def _extract_timestamp(line: str):
     if match:
         return datetime.strptime(match.group(1), "%Y-%m-%d %H:%M:%S")
     return None
+
+
+def _secure_path(path: str) -> Path:
+    full_path = (ROOT_DIR / path).resolve()
+    if not str(full_path).startswith(str(ROOT_DIR)):
+        raise HTTPException(status_code=403, detail="Forbidden")
+    return full_path
+
+
+def _format_file_info(p: Path):
+    return {
+        "name": p.name,
+        "is_dir": p.is_dir(),
+        "size": p.stat().st_size,
+        "modified": datetime.fromtimestamp(p.stat().st_mtime).isoformat()
+    }
+
+
+@app.get("/api/files/list")
+def list_files(request: Request, path: str = ""):
+    try:
+        verify_jwt(request)
+
+        target = _secure_path(path)
+        if not target.exists() or not target.is_dir():
+            raise HTTPException(status_code=404, detail="Not found")
+        files = [_format_file_info(f) for f in sorted(target.iterdir(), key=lambda x: (not x.is_dir(), x.name.lower()))]
+        return {"path": str(target.relative_to(ROOT_DIR)), "files": files}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.get("/api/files/download")
+def download_file(request: Request, path: str):
+    try:
+        verify_jwt(request)
+
+        target = _secure_path(path)
+        if not target.exists():
+            raise HTTPException(status_code=404, detail="Not found")
+
+        if target.is_file():
+            return FileResponse(target, filename=target.name)
+        else:
+            temp_dir = tempfile.mkdtemp()
+            zip_name = f"{target.name}.zip"
+            zip_path = Path(temp_dir) / zip_name
+            with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                for file in target.rglob("*"):
+                    # 保持相对路径
+                    zipf.write(file, file.relative_to(target))
+            return FileResponse(zip_path, filename=zip_name)
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.delete("/api/files/delete")
+def delete_file(request: Request, path: str):
+    try:
+        verify_jwt(request)
+
+        target = _secure_path(path)
+        if target.is_file():
+            target.unlink()
+        elif target.is_dir():
+            shutil.rmtree(target)
+        else:
+            raise HTTPException(status_code=404, detail="Not found")
+        return Response(status_code=204)
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.post("/api/files/rename")
+async def rename_file(request: Request):
+    try:
+        verify_jwt(request)
+
+        body = await request.json()
+        old_path = body.get("old_path", "")
+        new_name = body.get("new_name", "")
+
+        old_target = _secure_path(old_path)
+        new_target = old_target.parent / new_name
+        if new_target.exists():
+            raise HTTPException(
+                status_code=409,
+                detail=f"File '{new_name}' already exists"
+            )
+
+        old_target.rename(new_target)
+        return Response(status_code=204)
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.post("/api/files/upload")
+def upload_file(request: Request, path: str = "", file: UploadFile = File(...)):
+    try:
+        verify_jwt(request)
+
+        target_dir = _secure_path(path)
+        if not target_dir.exists():
+            target_dir.mkdir(parents=True)
+
+        if "/" in file.filename:
+            sub_path = target_dir / "/".join(file.filename.split("/")[:-1])
+            sub_path.mkdir(parents=True, exist_ok=True)
+            target_file = sub_path / file.filename.split("/")[-1]
+        else:
+            target_file = target_dir / file.filename
+
+        with target_file.open("wb") as f:
+            shutil.copyfileobj(file.file, f)
+        return Response(status_code=204)
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.post("/api/files/create")
+def create_file_or_dir(request: Request, path: str = "", name: str = "", type: str = ""):
+    try:
+        verify_jwt(request)
+
+        target = _secure_path((Path(path) / name).as_posix())
+        if type == "dir":
+            target.mkdir(parents=True, exist_ok=True)
+        else:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.touch(exist_ok=True)
+        return Response(status_code=204)
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.get("/api/files/preview")
+def preview_file(request: Request, path: str):
+    try:
+        verify_jwt(request)
+
+        target = _secure_path(path)
+        if not target.is_file():
+            raise HTTPException(status_code=404, detail="Not found")
+
+        mime_type, _ = mimetypes.guess_type(target)
+
+        if mime_type and mime_type.startswith("image"):
+            return FileResponse(target, media_type=mime_type)
+
+        if target.stat().st_size > 1024 * 1024:
+            raise HTTPException(status_code=408, detail="File is too large")
+
+        try:
+            content = target.read_text(encoding="utf-8")
+            return PlainTextResponse(content)
+        except UnicodeDecodeError:
+            return {"detail": "Unable to preview"}
+
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")

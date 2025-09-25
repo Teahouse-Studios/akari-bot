@@ -18,12 +18,12 @@ bili = module(
 )
 
 
+@bili.command("<bid> {{I18N:bilibili.help}}", available_for=["Discord|Channel"])
 @bili.command(
     "<bid> [-i] {{I18N:bilibili.help}}",
     options_desc={"-i": "{I18N:bilibili.help.option.i}"},
     exclude_from=["Discord|Channel"],
 )
-@bili.command("<bid> {{I18N:bilibili.help}}", available_for=["Discord|Channel"])
 async def _(msg: Bot.MessageSession, bid: str, get_detail=False):
     if msg.parsed_msg.get("-i", False):
         get_detail = True

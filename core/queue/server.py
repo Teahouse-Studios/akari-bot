@@ -1,13 +1,17 @@
+import re
+
 from typing import Union, TYPE_CHECKING, Optional
 
+from core.builtins.parser.command import CommandParser
 from core.builtins.parser.message import parser
+from core.builtins.utils import command_prefix
 from core.utils.bash import run_sys_command
 from core.web_render import init_web_render
 from .base import JobQueueBase
 from ..builtins.converter import converter
 from ..builtins.message.chain import MessageChain, MessageNodes
 from ..builtins.session.info import SessionInfo
-from ..database.models import JobQueuesTable, ModuleStatus
+from ..database.models import JobQueuesTable
 from ..exports import exports, add_export
 from ..i18n import Locale
 from ..loader import ModulesManager
@@ -163,27 +167,62 @@ async def get_web_render_status(tsk: JobQueuesTable, args: dict):
 
 @JobQueueServer.action("get_modules_list")
 async def get_module_list(tsk: JobQueuesTable, args: dict):
-    modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items()}
+    modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list(use_cache=False).items()}
     modules = {k: v for k, v in modules.items() if v.get("load", True) and not v.get("base", False)}
     module_list = []
     for module in modules.values():
-        module_list.append(module["bind_prefix"])
+        module_list.append(module["module_name"])
     return {"modules_list": module_list}
 
 
 @JobQueueServer.action("get_modules_info")
 async def get_modules_info(tsk: JobQueuesTable, args: dict):
-    modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items()}
-    modules = {k: v for k, v in modules.items() if v.get("load", True) and not v.get("base", False)}
+    modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list(use_cache=False).items()}
+    modules = {k: v for k, v in modules.items() if v.get("load", True)}
 
     for module in modules.values():
         if "desc" in module and module.get("desc"):
             module["desc"] = Locale(args["locale"]).t_str(module["desc"])
 
-    unloaded_modules = await ModuleStatus.get_unloaded_modules()
-    for m in unloaded_modules:
-        modules.setdefault(str(m), {})
     return {"modules": modules}
+
+
+@JobQueueServer.action("get_module_helpdoc")
+async def get_module_helpdoc(tsk: JobQueuesTable, args: dict):
+    module = ModulesManager.modules.get(args["module"], None)
+    help_doc = {}
+    if module:
+        help_doc["module_name"] = module.module_name
+        module_ = module.to_dict()
+        if "desc" in module_ and module_.get("desc"):
+            help_doc["desc"] = Locale(args["locale"]).t_str(module_["desc"])
+
+        help_ = CommandParser(module,
+                              module_name=module.module_name,
+                              command_prefixes=[command_prefix[0]],
+                              is_superuser=True)
+        help_doc["commands"] = help_.return_json_help_doc(args["locale"])
+
+        regex_ = []
+        regex_list = module.regex_list.get(show_required_superuser=True)
+        if regex_list:
+            for regex in regex_list:
+                pattern = None
+                if isinstance(regex.pattern, str):
+                    pattern = regex.pattern
+                elif isinstance(regex.pattern, re.Pattern):
+                    pattern = regex.pattern.pattern
+
+                if pattern:
+                    rdesc = regex.desc
+                    if rdesc:
+                        rdesc = Locale(args["locale"]).t_str(rdesc)
+
+                    regex_.append({"pattern": pattern,
+                                   "desc": rdesc})
+        help_doc["regexp"] = regex_
+
+    return {"help_doc": help_doc}
 
 
 @JobQueueServer.action("get_module_related")

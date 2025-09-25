@@ -66,13 +66,13 @@ def load_slashcommands():
     for subm in pkgutil.iter_modules(slash_modules.__path__):
         if subm.name in ["context", "parser"]:  # dunno why these appear in the list in some environments
             continue
-        submodule_name = slash_modules.__name__ + "." + subm.name
+        module_py_name = f"{slash_modules.__name__}.{subm.name}"
         try:
-            Logger.debug(f"Loading {submodule_name}...")
-            importlib.import_module(submodule_name)
-            Logger.debug(f"Successfully loaded {submodule_name}!")
+            Logger.debug(f"Loading {module_py_name}...")
+            importlib.import_module(module_py_name)
+            Logger.debug(f"Successfully loaded {module_py_name}!")
         except Exception:
-            Logger.exception(f"Failed to load {submodule_name}: ")
+            Logger.exception(f"Failed to load {module_py_name}: ")
 
 
 load_slashcommands()

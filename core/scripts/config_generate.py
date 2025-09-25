@@ -45,20 +45,20 @@ def generate_config(dir_path, language):
     import core.config.config_base  # noqa
     import bots
     for subm in pkgutil.iter_modules(bots.__path__):
-        submodule_name = bots.__name__ + "." + subm.name
+        module_py_name = f"{bots.__name__}.{subm.name}"
         try:
             CFGManager.load()
-            importlib.import_module(f"{submodule_name}.config")
+            importlib.import_module(f"{module_py_name}.config")
             CFGManager.save()
             sleep(0.1)
         except Exception:
             continue
     import modules
     for subm in pkgutil.iter_modules(modules.__path__):
-        submodule_name = modules.__name__ + "." + subm.name
+        module_py_name = f"{modules.__name__}.{subm.name}"
         try:
             CFGManager.load()
-            importlib.import_module(f"{submodule_name}.config")
+            importlib.import_module(f"{module_py_name}.config")
             CFGManager.save()
             sleep(0.1)
         except Exception:
@@ -138,6 +138,28 @@ if __name__ == "__main__":
 
     for p in processes:
         p.join()
+
+    missing_config_section = False
+    for lang in lang_list:
+        config_file = os.path.join(config_store_path, lang, config_filename)
+        if not os.path.exists(config_file):
+            missing_config_section = True
+            break
+        with open(config_file, "r", encoding="utf-8") as f:
+            content = f.read()
+            if "[config]" not in content:
+                missing_config_section = True
+                break
+
+    if missing_config_section:
+        print(
+            f"Error: Some {config_filename} files are missing [config] section. Rolling back to previous config files.")
+        if os.path.exists(config_store_path):
+            shutil.rmtree(config_store_path)
+        if os.path.exists(config_store_path_bak):
+            shutil.move(config_store_path_bak, config_store_path)
+        print("Rollback completed. Please try again later.")
+        sys.exit(1)
 
     repack = False
     for lang in lang_list:

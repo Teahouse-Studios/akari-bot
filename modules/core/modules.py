@@ -6,8 +6,9 @@ from core.builtins.parser.command import CommandParser
 from core.component import module
 from core.config import Config
 from core.constants.exceptions import InvalidHelpDocTypeError
+from core.database.models import ModuleStatus
 from core.i18n import load_locale_file
-from core.loader import ModulesManager, current_unloaded_modules, err_modules
+from core.loader import ModulesManager
 from .help import modules_list_help
 
 m = module(
@@ -91,7 +92,9 @@ async def config_modules(msg: Bot.MessageSession):
                 if module_ not in modules_:
                     msglist.append(I18NContext("core.message.module.enable.not_found", module=module_))
                 else:
-                    if modules_[module_].required_superuser and not is_superuser:
+                    if not modules_[module_]._db_load:
+                        msglist.append(I18NContext("parser.module.unloaded", module=module_))
+                    elif modules_[module_].required_superuser and not is_superuser:
                         msglist.append(I18NContext("parser.superuser.permission.denied"))
                     elif modules_[module_].base:
                         msglist.append(I18NContext("core.message.module.enable.already", module=module_))
@@ -126,7 +129,7 @@ async def config_modules(msg: Bot.MessageSession):
                     hdoc = CommandParser(
                         modules_[m],
                         msg=msg,
-                        bind_prefix=modules_[m].bind_prefix,
+                        module_name=modules_[m].module_name,
                         command_prefixes=msg.session_info.prefixes,
                         is_superuser=is_superuser,
                     ).return_formatted_help_doc()
@@ -147,7 +150,9 @@ async def config_modules(msg: Bot.MessageSession):
                 if module_ not in modules_:
                     msglist.append(I18NContext("core.message.module.disable.not_found", module=module_))
                 else:
-                    if modules_[module_].required_superuser and not is_superuser:
+                    if not modules_[module_]._db_load:
+                        msglist.append(I18NContext("parser.module.unloaded", module=module_))
+                    elif modules_[module_].required_superuser and not is_superuser:
                         msglist.append(I18NContext("parser.superuser.permission.denied"))
                     elif modules_[module_].base:
                         msglist.append(I18NContext("core.message.module.disable.base", module=module_))
@@ -217,7 +222,7 @@ async def config_modules(msg: Bot.MessageSession):
             msglist.append(Plain("\n".join(locale_err), disable_joke=True))
     elif msg.parsed_msg.get("load", False):
         for module_ in wait_config_list:
-            if module_ not in current_unloaded_modules:
+            if module_ not in await ModuleStatus.get_unloaded_modules():
                 msglist.append(I18NContext("core.message.module.load.not_found"))
                 continue
             if await ModulesManager.load_module(module_):
@@ -227,28 +232,14 @@ async def config_modules(msg: Bot.MessageSession):
 
     elif msg.parsed_msg.get("unload", False):
         for module_ in wait_config_list:
-            if module_ not in modules_:
-                if module_ in err_modules:
-                    if await msg.wait_confirm(I18NContext("core.message.module.unload.unavailable.confirm"),
-                                              append_instruction=False):
-                        msglist.append(I18NContext("core.message.module.unload.success", module=module_))
-                        err_modules.remove(module_)
-                        current_unloaded_modules.append(module_)
-                    else:
-                        await msg.finish()
-                else:
-                    msglist.append(I18NContext("core.message.module.unload.not_found"))
+            if module_ not in await ModuleStatus.get_loaded_modules():
+                msglist.append(I18NContext("core.message.module.unload.not_found"))
                 continue
-            unload_modules = ModulesManager.search_related_module(module_)
             if modules_[module_].base:
                 msglist.append(I18NContext("core.message.module.unload.base", module=module_))
                 continue
-            if await msg.wait_confirm(I18NContext("core.message.module.unload.confirm", modules="\n".join(unload_modules)),
-                                      append_instruction=False):
-                if await ModulesManager.unload_module(module_):
-                    msglist.append(I18NContext("core.message.module.unload.success", module=module_))
-            else:
-                await msg.finish()
+            if await ModulesManager.unload_module(module_):
+                msglist.append(I18NContext("core.message.module.unload.success", module=module_))
 
     if msglist:
         if not recommend_modules_help_doc_list:
