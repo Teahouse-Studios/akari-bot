@@ -18,7 +18,7 @@ package-mode = false
 python = "^3.12.0"
 
 # akari-bot-service
-akari-bot-webrender = "0.4.4"
+akari-bot-webrender = "^0.4.5"
 akari-bot-webui = "0.2.0"
 
 # lib
