@@ -24,6 +24,7 @@ from core.tos import _abuse_warn_target
 from core.types import Module, Param
 from core.types.module.component_meta import CommandMeta
 from core.utils.message import remove_duplicate_space
+from core.utils.temp import MinuteTempCounter
 
 if TYPE_CHECKING:
     from core.builtins.bot import Bot
@@ -131,6 +132,7 @@ async def parser(msg: "Bot.MessageSession"):
     finally:
         await msg.end_typing()
         ExecutionLockList.remove(msg)
+        MinuteTempCounter.add()
 
 
 def _transform_alias(msg, command: str):
