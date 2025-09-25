@@ -68,7 +68,7 @@ async def _(msg: Bot.MessageSession):
             disk_space_total=disk_total,
             client_name=msg.session_info.client_name,
             command_parsed=Bot.Info.command_parsed,
-            minute_parsed=MinuteTempCounter.value
+            minute_parsed=MinuteTempCounter.value_before,
         ))
     else:
         disk_percent = psutil.disk_usage("/").percent
