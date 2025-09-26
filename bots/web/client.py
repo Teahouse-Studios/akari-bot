@@ -4,10 +4,9 @@ from contextlib import asynccontextmanager
 
 from argon2 import PasswordHasher
 from fastapi import FastAPI
-from fastapi.middleware.wsgi import WSGIMiddleware
-from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
-from flask import Flask, send_from_directory
+from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from tortoise import Tortoise
@@ -91,22 +90,19 @@ app.add_middleware(
 
 
 if os.path.exists(dist_path):
-    flask_app = Flask(__name__, root_path="webui")
-
-    @flask_app.route("/", defaults={"path": ""})
-    @flask_app.route("/<path:path>")
-    def serve_webui(path):
+    @app.get("/webui")
+    @app.get("/webui/{path:path}")
+    async def serve_webui(path: str = ""):
         file_path = os.path.join(dist_path, path)
-        if path != "" and os.path.exists(file_path):
-            return send_from_directory(dist_path, path)
-        return send_from_directory(dist_path, "index.html")
 
-    app.mount("/webui", WSGIMiddleware(flask_app), 'webui')
+        if path and os.path.exists(file_path) and os.path.isfile(file_path):
+            return FileResponse(file_path)
+
+        return FileResponse(os.path.join(dist_path, "index.html"))
 
     @app.get("/")
     async def redirect_to_webui():
         return RedirectResponse(url="/webui/")
-
 else:
     @app.get("/")
     async def redirect_to_api():
