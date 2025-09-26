@@ -130,7 +130,7 @@
     "core.message.module.load.failed": "Failed to load module.",
     "core.message.module.load.not_found": "Failed: This module has been loaded or does not exist.",
     "core.message.module.load.success": "Successfully loaded module(s): ${module}",
-    "core.message.module.recommends": "It is recommended to enable the following module(s): \n${modules}\nProceed?",
+    "core.message.module.recommends": "It is recommended to enable the following module(s) at the same time: \n${modules}\nProceed?",
     "core.message.module.recommends.help": "Help information for module \"${module}\": ",
     "core.message.module.reload.base.confirm": "You are reloading the base modules, which may cause unexpected problems. Continue?",
     "core.message.module.reload.base.failed": "Failed: \"${module}\" is a base module. To prevent exceptions in the bot, this operation has been blocked.",
