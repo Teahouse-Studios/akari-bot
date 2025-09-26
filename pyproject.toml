@@ -28,6 +28,7 @@ deprecated = "^1.2.18"
 poetry-plugin-export = "^1.9.0"
 pre-commit = "^4.0.0"
 pycryptodome = "^3.18.0"
+python-multipart = "^0.0.20"
 pywin32 = { version = "^308", platform = "win32" }
 
 # bots
@@ -36,7 +37,6 @@ aiogram = "^3.4.1"
 argon2-cffi = "^25.0.0"
 fastapi = "^0.117.0"
 ffmpy = "^0.6.0"
-flask = "^3.1.0"
 khl-py = "^0.3.16"
 matrix-nio = "^0.25.0"
 py-cord = {git = "https://github.com/Pycord-Development/pycord"}
@@ -99,7 +99,6 @@ webcolors = "^24.0.0"
 wolframalpha = "^5.0.0"
 
 # uncategorized
-python-multipart = "^0.0.20"
 
 [tool.poetry.group.dev.dependencies]
 autopep8 = "^2.0.2"
