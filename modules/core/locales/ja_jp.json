@@ -135,7 +135,7 @@
     "core.message.module.reload.base.confirm": "基本モジュールをリロードしたため、予期しない問題が発生する可能性があります。続行しますか？",
     "core.message.module.reload.base.failed": "失敗：モジュール「${module}」は基本モジュールです。ボットがエラーを生成しないように、この操作はブロックされました。",
     "core.message.module.reload.base.success": "基本モジュールをリロードしました。",
-    "core.message.module.reload.confirm": "以下のモジュールが追加でリロードされます：\n${modules}\n続行しますか？",
+    "core.message.module.reload.confirm": "以下のモジュールもリロードされます：\n${modules}\n続行しますか？",
     "core.message.module.reload.failed": "モジュールのリロードに失敗しました。",
     "core.message.module.reload.no_more": "ロードされた残りのファイルは見つかりませんでした。",
     "core.message.module.reload.not_found": "失敗：モジュール「${module}」が存在しません。",
