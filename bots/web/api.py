@@ -897,14 +897,9 @@ def upload_file(request: Request, path: str = "", file: UploadFile = File(...)):
 
         target_dir = _secure_path(path)
         if not target_dir.exists():
-            target_dir.mkdir(parents=True)
+            target_dir.mkdir(parents=True, exist_ok=True)
 
-        if "/" in file.filename:
-            sub_path = target_dir / "/".join(file.filename.split("/")[:-1])
-            sub_path.mkdir(parents=True, exist_ok=True)
-            target_file = sub_path / file.filename.split("/")[-1]
-        else:
-            target_file = target_dir / file.filename
+        target_file = target_dir / Path(file.filename).name
 
         with target_file.open("wb") as f:
             shutil.copyfileobj(file.file, f)
