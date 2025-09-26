@@ -15,7 +15,7 @@ import jwt
 import orjson as json
 import psutil
 from cpuinfo import get_cpu_info
-from fastapi import HTTPException, Request, File, Query, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi import HTTPException, Request, File, Form, Query, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import Response, FileResponse, PlainTextResponse
 from jwt.exceptions import ExpiredSignatureError
 from tortoise.expressions import Q
@@ -891,7 +891,7 @@ async def rename_file(request: Request):
 
 
 @app.post("/api/files/upload")
-def upload_file(request: Request, path: str = "", file: UploadFile = File(...)):
+def upload_file(request: Request, path: str = Form(""), file: UploadFile = File(...)):
     try:
         verify_jwt(request)
 
