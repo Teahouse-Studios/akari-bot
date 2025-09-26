@@ -132,7 +132,7 @@
     "core.message.module.load.success": "成功載入模組：${module}",
     "core.message.module.recommends": "建議同時啟用以下模組：\n${modules}\n是否一同啟用？",
     "core.message.module.recommends.help": "模組「${module}」的說明資訊：",
-    "core.message.module.reload.base.confirm": "你正在重載基礎模組，可能會產生不可預料的問題。 是否繼續？",
+    "core.message.module.reload.base.confirm": "你正在重載基礎模組，可能會產生預料之外的問題。 是否繼續？",
     "core.message.module.reload.base.failed": "失败：「${module}」為基礎模組，為防止機器人發生異常，此行為已被阻擋。",
     "core.message.module.reload.base.success": "成功重載基礎模組。",
     "core.message.module.reload.confirm": "此操作將額外重載以下模組：\n${modules}\n是否繼續？",
