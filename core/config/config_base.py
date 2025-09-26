@@ -3,60 +3,75 @@ from core.config.decorator import on_config
 
 @on_config("config")
 class Config:
+    # 调试与运行
     debug: bool = False
-    base_superuser: list = ["QQ|2596322644"]
-    rickroll_msg: str = ""
-    enable_rickroll: bool = True
-    report_targets: list = []
-    tos_warning_counts: int = 5
-    issue_url: str = "https://github.com/Teahouse-Studios/bot/issues/new/choose"
-    enable_joke: bool = True
-    shuffle_rate: float = 0.1
-    unloaded_modules: list = []
+    timezone_offset: str = "+8"
+    allow_reload_base: bool = False
+    allow_request_private_ip: bool = False
+    slower_schedule: bool = False
     use_font_mirror: bool = False
     use_secrets_random: bool = False
+
+    # 身份与权限
+    base_superuser: list = ["QQ|2596322644"]
+    ignored_sender: list = ["QQ|2854196310"]
+    report_targets: list = []
+
+    # 命令交互
+    command_prefix: list = ["~", "～"]
+    confirm_command: list = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"]
+    no_confirm: bool = False
+    quick_confirm: bool = True
+
+    # 通用功能
+    enable_analytics: bool = False
+    enable_commit_url: bool = True
+    enable_dirty_check: bool = False
+    enable_eval: bool = False
+    enable_module_invalid_prompt: bool = False
+    enable_urlmanager: bool = False
+
+    # TOS
+    enable_tos: bool = True
+    tos_warning_counts: int = 5
+    tos_temp_ban_time: int = 300
+
+    # 花瓣
     enable_petal: bool = False
     enable_get_petal: bool = False
     petal_gained_limit: int = 0
     petal_lost_limit: int = 0
     petal_sign_limit: int = 5
     petal_sign_rate: float = 0.5
-    allow_request_private_ip: bool = False
-    ignored_sender: list = ["QQ|2854196310"]
-    enable_tos: bool = True
-    enable_analytics: bool = False
-    enable_module_invalid_prompt: bool = False
+
+    # 玩笑
+    enable_joke: bool = True
+    shuffle_rate: float = 0.1
+    enable_rickroll: bool = True
+    rickroll_msg: str = ""
+
+    # 外部链接
     bug_report_url: str = "https://s.wd-ljt.com/botreportbug"
-    tos_temp_ban_time: int = 300
-    no_confirm: bool = False
-    timezone_offset: str = "+8"
-    confirm_command: list = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"]
-    command_prefix: list = ["~", "～"]
-    enable_dirty_check: bool = False
-    enable_urlmanager: bool = False
-    enable_eval: bool = False
-    help_url: str = "https://bot.teahouse.team"
     donate_url: str = "http://afdian.com/a/teahouse"
+    help_url: str = "https://bot.teahouse.team"
     help_page_url: str = "https://bot.teahouse.team/wiki/${module}"
-    allow_reload_base: bool = False
-    enable_commit_url: bool = True
+    issue_url: str = "https://github.com/Teahouse-Studios/bot/issues/new/choose"
     locale_url: str = "https://www.crowdin.com/project/akari-bot"
-    slower_schedule: bool = False
 
 
 @on_config("secret")
 class SecretConfig:
+    db_path: str = "sqlite://database/save.db"
+    proxy: str = ""
     check_access_key_id: str = ""
     check_access_key_secret: str = ""
     ff3_key: str = ""
     ff3_tweak: str = ""
-    proxy: str = ""
-    db_path: str = "sqlite://database/save.db"
 
 
 @on_config("webrender")
 class WebRenderConfig:
     enable_web_render: bool = False
-    remote_web_render_url: str = ""
     browser_type: str = "chrome"
     browser_executable_path: str = ""
+    remote_web_render_url: str = ""

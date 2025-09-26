@@ -119,5 +119,4 @@ async def update_assets(update_cover=True):
             f.write(json.dumps(data, option=json.OPT_INDENT_2))
         shutil.move(file_path, song_info_path)
         return True
-    else:
-        return False
+    return False

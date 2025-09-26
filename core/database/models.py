@@ -7,6 +7,7 @@ from decimal import Decimal
 from typing import Any, List, Optional, Union
 
 from tortoise import fields
+from tortoise.transactions import in_transaction
 
 from core.constants.default import default_locale
 from core.utils.message import convert2lst
@@ -310,6 +311,59 @@ class AnalyticsData(DBModel):
         return dict(module_counter)
 
 
+class ModuleStatus(DBModel):
+    """
+    模块状态。
+
+    :param module_name: 模块名称。
+    :param load: 是否已加载。
+    """
+    module_name = fields.CharField(pk=True, max_length=255, unique=True)
+    load = fields.BooleanField(default=False)
+
+    class Meta:
+        table = "module_status"
+
+    @classmethod
+    async def init_modules(cls, modules_list: List[str]):
+        async with in_transaction("default"):
+            existing = await cls.all().values_list("module_name", flat=True)
+            existing_set = set(existing)
+            input_set = set(modules_list)
+
+            to_add = input_set.difference(existing_set)
+            to_remove = existing_set.difference(input_set)
+
+            if to_add:
+                await cls.bulk_create(
+                    [cls(module_name=m, load=True) for m in to_add]
+                )
+
+            if to_remove:
+                await cls.filter(module_name__in=to_remove).delete()
+
+    @classmethod
+    async def set_module_loaded(cls, module_name: str, load: bool = True):
+        module = await cls.filter(module_name=module_name).first()
+        if module:
+            module.load = load
+            await module.save()
+        else:
+            raise ValueError(f"Module '{module_name}' not found")
+
+    @classmethod
+    async def get_all_modules(cls) -> list[str]:
+        return await cls.all().values_list("module_name", flat=True)
+
+    @classmethod
+    async def get_loaded_modules(cls) -> list[str]:
+        return await cls.filter(load=True).values_list("module_name", flat=True)
+
+    @classmethod
+    async def get_unloaded_modules(cls) -> list[str]:
+        return await cls.filter(load=False).values_list("module_name", flat=True)
+
+
 class DBVersion(DBModel):
     """
     数据库版本。
@@ -424,11 +478,7 @@ class JobQueuesTable(DBModel):
         timestamp = datetime.now(UTC) - timedelta(seconds=time)
         Logger.debug(f"Clearing tasks older than {timestamp}...")
 
-        queries = await cls.filter(timestamp__lt=timestamp)
-
-        for q in queries:
-            await q.delete()
-
+        await cls.filter(timestamp__lt=timestamp).delete()
         return True
 
     @classmethod

@@ -9,7 +9,7 @@ from core.utils.http import get_url
 from core.utils.message import isint
 
 mod_dl = module(
-    bind_prefix="mod_dl",
+    module_name="mod_dl",
     desc="{I18N:mod_dl.help.desc}", doc=True,
     developers=["HornCopper", "OasisAkari", "z0z0r4"],
     recommend_modules=["mcmod"],

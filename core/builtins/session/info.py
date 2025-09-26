@@ -34,6 +34,7 @@ class SessionInfo:
     support_forward: bool = False
     support_delete: bool = False
     support_markdown: bool = False
+    support_reaction: bool = False
     support_quote: bool = False
     support_rss: bool = False
     support_typing: bool = False

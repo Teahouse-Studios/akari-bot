@@ -24,6 +24,8 @@ from core.utils.message import isint
 if TYPE_CHECKING:
     from core.queue.server import JobQueueServer
 
+quick_confirm = Config("quick_confirm", True)
+
 
 @define
 class MessageSession:
@@ -159,6 +161,20 @@ class MessageSession:
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         await _queue_server.client_delete_message(self.session_info, self.session_info.message_id)
 
+    async def add_reaction(self, emoji: str) -> Any:
+        """
+        用于给这条消息添加反应。
+        """
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        return await _queue_server.client_add_reaction(self.session_info, self.session_info.message_id, emoji)
+
+    async def remove_reaction(self, emoji: str) -> Any:
+        """
+        用于给这条消息删除反应。
+        """
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        return await _queue_server.client_remove_reaction(self.session_info, self.session_info.message_id, emoji)
+
     async def check_native_permission(self) -> bool:
         """
         用于检查消息发送者原本在聊天平台中是否具有管理员权限。
@@ -198,6 +214,24 @@ class MessageSession:
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         await _queue_server.client_end_typing_signal(self.session_info)
 
+    async def _add_confirm_reaction(self, message_id: Union[str, List[str]]):
+        if isinstance(message_id, str):
+            message_id = [message_id]
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        if self.session_info.support_reaction:
+            if self.session_info.client_name in ["QQ", "QQBot"]:
+                if self.session_info.locale.locale == "ja_jp":
+                    await _queue_server.client_add_reaction(self.session_info, message_id, "11093")
+                else:
+                    await _queue_server.client_add_reaction(self.session_info, message_id, "11088")
+                await _queue_server.client_add_reaction(self.session_info, message_id, "10060")
+            else:
+                if self.session_info.locale.locale == "ja_jp":
+                    await _queue_server.client_add_reaction(self.session_info, message_id, "⭕")
+                else:
+                    await _queue_server.client_add_reaction(self.session_info, message_id, "✅")
+                await _queue_server.client_add_reaction(self.session_info, message_id, "❌")
+
     async def wait_confirm(
         self,
         message_chain: Optional[Chainable] = None,
@@ -226,12 +260,17 @@ class MessageSession:
         else:
             message_chain = MessageChain.assign(I18NContext("core.message.confirm"))
         if append_instruction:
-            if self.session_info.client_name == "QQ":
-                message_chain.append(I18NContext("message.wait.prompt.confirm.qq"))
+            if self.session_info.support_reaction and quick_confirm:
+                if self.session_info.client_name == "QQ":
+                    message_chain.append(I18NContext("message.wait.confirm.prompt.qq"))
+                else:
+                    message_chain.append(I18NContext("message.wait.confirm.prompt.reaction"))
             else:
-                message_chain.append(I18NContext("message.wait.prompt.confirm"))
+                message_chain.append(I18NContext("message.wait.confirm.prompt"))
         send = await self.send_message(message_chain, quote)
         await asyncio.sleep(0.1)
+        if quick_confirm:
+            await self._add_confirm_reaction(send.message_id)
         flag = asyncio.Event()
         SessionTaskManager.add_task(self, flag, timeout=timeout)
         try:
@@ -256,6 +295,7 @@ class MessageSession:
         delete: bool = False,
         timeout: Optional[float] = 120,
         append_instruction: bool = True,
+        add_confirm_reaction: bool = False,
     ) -> MessageSession:
         """
         一次性模板，用于等待对象的下一条消息。
@@ -265,6 +305,7 @@ class MessageSession:
         :param delete: 是否在触发后删除消息。（默认为False）
         :param timeout: 超时时间。（默认为120）
         :param append_instruction: 是否在发送的消息中附加提示。
+        :param add_confirm_reaction: 是否在发送的消息上添加确认反应。
         :return: 下一条消息的MessageChain对象。
         """
         send = None
@@ -273,9 +314,12 @@ class MessageSession:
         if message_chain:
             message_chain = get_message_chain(self.session_info, message_chain)
             if append_instruction:
-                message_chain.append(I18NContext("message.wait.prompt.next_message"))
+                message_chain.append(I18NContext("message.wait.next_message.prompt"))
             send = await self.send_message(message_chain, quote)
         await asyncio.sleep(0.1)
+        if add_confirm_reaction and quick_confirm:
+            await self._add_confirm_reaction(send.message_id)
+
         flag = asyncio.Event()
         SessionTaskManager.add_task(self, flag, timeout=timeout)
         try:
@@ -299,6 +343,7 @@ class MessageSession:
         timeout: Optional[float] = 120,
         all_: bool = False,
         append_instruction: bool = True,
+        add_confirm_reaction: bool = False,
     ) -> MessageSession:
         """
         一次性模板，用于等待触发对象回复消息。
@@ -319,6 +364,8 @@ class MessageSession:
             message_chain.append(I18NContext("message.reply.prompt"))
         send = await self.send_message(message_chain, quote)
         await asyncio.sleep(0.1)
+        if add_confirm_reaction and quick_confirm:
+            await self._add_confirm_reaction(send.message_id)
         flag = asyncio.Event()
         SessionTaskManager.add_task(
             self, flag, reply=send.message_id, all_=all_, timeout=timeout
@@ -396,7 +443,7 @@ class MessageSession:
 
     async def qq_call_api(self, api_name: str, **kwargs) -> Any:
         """
-        用于QQ平台调用API。
+        用于 QQ 平台调用 API。
         """
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         return await _queue_server.qq_call_api(self.session_info, api_name=api_name, **kwargs)

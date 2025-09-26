@@ -1,6 +1,6 @@
 import asyncio
 from abc import ABC, abstractmethod
-from typing import Any, Optional, List
+from typing import Any, Optional, Union, List
 
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.session.features import Features
@@ -63,7 +63,7 @@ class ContextManager(ABC):
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
         # 这里可以添加权限检查的逻辑
-        raise NotImplementedError
+        raise NotImplementedError  # 请继承 class 后实现方法
 
     @classmethod
     @abstractmethod
@@ -91,7 +91,7 @@ class ContextManager(ABC):
 
     @classmethod
     @abstractmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: list[str]) -> None:
+    async def delete_message(cls, session_info: SessionInfo, message_id: Union[str, List[str]]) -> None:
         """
         删除指定会话中的消息。
 
@@ -106,6 +106,46 @@ class ContextManager(ABC):
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
 
+        raise NotImplementedError  # 请继承 class 后实现方法
+
+    @classmethod
+    @abstractmethod
+    async def add_reaction(cls, session_info: SessionInfo, message_id: Union[str, List[str]], emoji: str) -> None:
+        """
+        为指定消息添加反应。
+
+        :param session_info: 会话信息
+        :param message_id: 消息 ID
+        :param emoji: 反应内容（如表情符号）
+        """
+        if isinstance(message_id, str):
+            message_id = [message_id]
+        if not isinstance(message_id, list):
+            raise TypeError("Message ID must be a list or str")
+
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+        # 这里可以添加表情反应的逻辑
+        raise NotImplementedError  # 请继承 class 后实现方法
+
+    @classmethod
+    @abstractmethod
+    async def remove_reaction(cls, session_info: SessionInfo, message_id: Union[str, List[str]], emoji: str) -> None:
+        """
+        为指定消息删除反应。
+
+        :param session_info: 会话信息
+        :param message_id: 消息 ID
+        :param emoji: 反应内容（如表情符号）
+        """
+        if isinstance(message_id, str):
+            message_id = [message_id]
+        if not isinstance(message_id, list):
+            raise TypeError("Message ID must be a list or str")
+
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+        # 这里可以添加表情反应的逻辑
         raise NotImplementedError  # 请继承 class 后实现方法
 
     @classmethod

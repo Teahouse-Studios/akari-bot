@@ -66,13 +66,13 @@ def load_slashcommands():
     for subm in pkgutil.iter_modules(slash_modules.__path__):
         if subm.name in ["context", "parser"]:  # dunno why these appear in the list in some environments
             continue
-        submodule_name = slash_modules.__name__ + "." + subm.name
+        module_py_name = f"{slash_modules.__name__}.{subm.name}"
         try:
-            Logger.debug(f"Loading {submodule_name}...")
-            importlib.import_module(submodule_name)
-            Logger.debug(f"Successfully loaded {submodule_name}!")
+            Logger.debug(f"Loading {module_py_name}...")
+            importlib.import_module(module_py_name)
+            Logger.debug(f"Successfully loaded {module_py_name}!")
         except Exception:
-            Logger.exception(f"Failed to load {submodule_name}: ")
+            Logger.exception(f"Failed to load {module_py_name}: ")
 
 
 load_slashcommands()
@@ -125,12 +125,36 @@ async def on_message(message: discord.Message):
                                        sender_from=sender_prefix,
                                        client_name=client_name,
                                        message_id=str(message.id),
-                                       reply_id=reply_id,
+                                       reply_id=str(reply_id),
                                        messages=msg_chain,
                                        ctx_slot=ctx_id
                                        )
 
     await Bot.process_message(session, message)
+
+
+@discord_bot.event
+async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
+    if payload.user_id == discord_bot.user.id:
+        return
+    Logger.debug(payload)
+    sender_id = f"{sender_prefix}|{payload.user_id}"
+    if sender_id in ignored_sender:
+        return
+    target_from = target_channel_prefix
+    if isinstance(await discord_bot.fetch_channel(payload.channel_id), discord.DMChannel):
+        target_from = target_dm_channel_prefix
+    target_id = f"{target_from}|{payload.channel_id}"
+    session = await SessionInfo.assign(target_id=target_id,
+                                       sender_id=sender_id,
+                                       target_from=target_from,
+                                       sender_from=sender_prefix,
+                                       client_name=client_name,
+                                       reply_id=str(payload.message_id),
+                                       messages=MessageChain.assign([Plain(payload.emoji.name)]),
+                                       ctx_slot=ctx_id
+                                       )
+    await Bot.process_message(session, payload)
 
 
 if Config("enable", False, table_name="bot_discord"):

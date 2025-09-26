@@ -104,7 +104,7 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
         # https://spec.matrix.org/v1.9/client-server-api/#mnotice
         return
     target_id = f"{target_prefix}|{room.room_id}"
-    sender_id = f"{sender_prefix}|{event.sender}"
+    sender_id = f"{sender_prefix}|{event.sender[1:]}"
     if sender_id in ignored_sender:
         return
     reply_id = None
@@ -134,12 +134,30 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
                                        target_from=target_prefix,
                                        sender_from=sender_prefix,
                                        client_name=client_name,
-                                       message_id=str(event.event_id),
+                                       message_id=event.event_id,
                                        reply_id=reply_id,
                                        messages=msg_chain,
                                        ctx_slot=ctx_id
                                        )
 
+    await Bot.process_message(session, (room, event))
+
+
+async def on_reaction(room: nio.MatrixRoom, event: nio.ReactionEvent):
+    relates_to = event.source.get("content", {}).get("m.relates_to", {})
+    target_id = f"{target_prefix}|{room.room_id}"
+    sender_id = f"{sender_prefix}|{event.sender[1:]}"
+    session = await SessionInfo.assign(
+        target_id=target_id,
+        sender_id=sender_id,
+        target_from=target_prefix,
+        sender_from=sender_prefix,
+        client_name=client_name,
+        message_id=event.event_id,
+        reply_id=event.reacts_to,
+        messages=MessageChain.assign(Plain(relates_to.get("key"))),
+        ctx_slot=ctx_id
+    )
     await Bot.process_message(session, (room, event))
 
 
@@ -208,6 +226,7 @@ async def start():
     matrix_bot.add_event_callback(on_invite, nio.InviteEvent)
     matrix_bot.add_event_callback(on_room_member, nio.RoomMemberEvent)
     matrix_bot.add_event_callback(on_message, nio.RoomMessageFormatted)
+    matrix_bot.add_event_callback(on_reaction, nio.ReactionEvent)
     matrix_bot.add_to_device_callback(on_verify, nio.KeyVerificationEvent)
     matrix_bot.add_event_callback(on_in_room_verify, nio.RoomMessageUnknown)
 

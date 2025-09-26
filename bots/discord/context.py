@@ -1,5 +1,5 @@
 import asyncio
-from typing import Optional, List
+from typing import Optional, Union, List
 
 import discord
 from discord import Message
@@ -126,7 +126,7 @@ class DiscordContextManager(ContextManager):
         return msg_ids
 
     @classmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: list[str]) -> None:
+    async def delete_message(cls, session_info: SessionInfo, message_id: Union[str, List[str]]) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -144,8 +144,50 @@ class DiscordContextManager(ContextManager):
                     Logger.info(f"Deleted message {msg_id} in session {session_info.session_id}")
             except discord.NotFound:
                 Logger.warning(f"Message {msg_id} not found in session {session_info.session_id}")
-            except Exception as e:
-                Logger.error(f"Failed to delete message {msg_id} in session {session_info.session_id}: {e}")
+            except Exception:
+                Logger.exception(f"Failed to delete message {msg_id} in session {session_info.session_id}: ")
+
+    @classmethod
+    async def add_reaction(cls, session_info: SessionInfo, message_id: Union[str, list[str]], emoji: str) -> None:
+        if isinstance(message_id, str):
+            message_id = [message_id]
+        if not isinstance(message_id, list):
+            raise TypeError("Message ID must be a list or str")
+
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+
+        if c := await discord_bot.fetch_channel(get_channel_id(session_info)):
+            m = await c.fetch_message(message_id[-1])
+            if m:
+                try:
+                    await m.add_reaction(emoji)
+                    Logger.info(f"Added reaction \"{emoji}\" to message {
+                                message_id} in session {session_info.session_id}")
+                except Exception:
+                    Logger.exception(f"Failed to add reaction \"{emoji}\" to message {
+                                     message_id} in session {session_info.session_id}: ")
+
+    @classmethod
+    async def remove_reaction(cls, session_info: SessionInfo, message_id: Union[str, list[str]], emoji: str) -> None:
+        if isinstance(message_id, str):
+            message_id = [message_id]
+        if not isinstance(message_id, list):
+            raise TypeError("Message ID must be a list or str")
+
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+
+        if c := await discord_bot.fetch_channel(get_channel_id(session_info)):
+            m = await c.fetch_message(message_id[-1])
+            if m:
+                try:
+                    await m.remove_reaction(emoji)
+                    Logger.info(f"Removed reaction \"{emoji}\" to message {
+                                message_id} in session {session_info.session_id}")
+                except Exception:
+                    Logger.exception(f"Failed to remove reaction \"{emoji}\" to message {
+                                     message_id} in session {session_info.session_id}: ")
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:

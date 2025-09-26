@@ -50,18 +50,21 @@ def check_valid(expr):
                 return False
             prev_char = char
             i += 1
+            continue
         if char == "(":
             if prev_char in ("num", ")"):
                 return False
             open_parens += 1
             prev_char = char
             i += 1
+            continue
         if char == ")":
             if open_parens <= 0 or prev_char in operators or prev_char in ("", "("):
                 return False
             open_parens -= 1
             prev_char = char
             i += 1
+            continue
         if char == "\\":
             i += 1
             continue

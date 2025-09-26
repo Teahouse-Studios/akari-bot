@@ -1,25 +1,26 @@
+import asyncio
 import importlib.util
 import pkgutil
 from typing import List, Optional
 
 from tortoise import Tortoise
+from tortoise.exceptions import DBConnectionError
 
 from core.builtins.temp import Temp
-from core.config import CFGManager
 from core.logger import Logger
 from .link import get_db_link
 from .local import DB_LINK
 
+_reload_lock = asyncio.Lock()
+
 
 def fetch_module_db():
     import modules
-    unloaded_modules = CFGManager.get("unloaded_modules", [])
     database_list = []
     for m in pkgutil.iter_modules(modules.__path__):
         try:
-            if m.name not in unloaded_modules:
-                database_list.append(importlib.util.find_spec(f"modules.{m.name}.database.models").name)
-        except ModuleNotFoundError:
+            database_list.append(importlib.util.find_spec(f"modules.{m.name}.database.models").name)
+        except Exception:
             pass
 
     Logger.debug(f"Database list: {database_list}")
@@ -59,8 +60,18 @@ async def init_db(load_module_db: bool = True, db_models: Optional[List[str]] = 
 
 
 async def reload_db(db_models: Optional[List[str]] = None):
-    await Tortoise.close_connections()
-    if not await init_db(db_models=db_models):
-        Logger.error("Failed to reload database, fallbacking...")
-        return await init_db(load_module_db=False, db_models=Temp.data["modules_db_list"])
-    return True
+    async with _reload_lock:
+        from core.queue.server import JobQueueServer  # noqa
+
+        JobQueueServer.pause_event.clear()
+        old_modules_db_list = Temp.data.get("modules_db_list", [])
+        try:
+            success = await init_db(db_models=db_models)
+            if success:
+                await Tortoise.close_connections()
+                return True
+        except DBConnectionError:
+            Logger.error("Failed to reload database, fallbacking...")
+            return await init_db(load_module_db=False, db_models=old_modules_db_list)
+        finally:
+            JobQueueServer.pause_event.set()

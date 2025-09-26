@@ -3,8 +3,8 @@
 # 例如：TOML 中的布林值必須是小寫。
 
 [webrender]
-# WebRender 的設定部分，此處填寫的值可在訊息中以明文顯示。請不要在此部分填寫敏感資訊。
+# WebRender 的組態部分，此處填寫的值可在訊息中以明文顯示。請不要在此部分填寫敏感資訊。
 enable_web_render = false # 是否啟用 Webrender。
+browser_type = "chrome" # WebRender 所使用的瀏覽器類型。（支援「chrome」與「firefox」）
+browser_executable_path = "<Replace me with str value>" # WebRender 使用的瀏覽器可執行檔案路徑，若為空白則使用 playwright 預設安裝之瀏覽器。
 remote_web_render_url = "<Replace me with str value>" # 遠端 WebRender 服務的 URL，在本機 WebRender 成像失敗時會嘗試請求。
-browser_type = "chrome" # WebRender 所使用的瀏覽器類型。
-browser_executable_path = "<Replace me with str value>" # WebRender 使用的瀏覽器可執行檔案路徑，若為空白則使用 playwright 預設安裝之瀏覽器。 （使用二進位部署時，必須指定路徑才可使用 WebRender）

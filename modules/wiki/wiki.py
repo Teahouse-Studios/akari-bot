@@ -9,6 +9,7 @@ from core.builtins.message.internal import I18NContext, Plain, Image, Voice, Url
 from core.builtins.session.internal import MessageSession
 from core.builtins.utils import confirm_command
 from core.component import module
+from core.config import Config
 from core.constants.exceptions import AbuseWarning
 from core.logger import Logger
 from core.utils.http import download
@@ -465,7 +466,7 @@ async def query_pages(
                                     )
                                     wait_plain_slice.append(
                                         session.session_info.locale.t(
-                                            "message.wait.prompt.next_message"
+                                            "message.wait.next_message.prompt"
                                         )
                                     )
                                 else:
@@ -476,10 +477,14 @@ async def query_pages(
                                             redirected_title=display_title,
                                         )
                                     )
-                                    _t = "message.wait.prompt.confirm"
-                                    if isinstance(session, Bot.MessageSession):
+                                    _t = "message.wait.confirm.prompt"
+                                    if isinstance(session, Bot.MessageSession) and \
+                                            session.session_info.support_reaction and \
+                                            Config("quick_confirm", True):
                                         if session.session_info.client_name == "QQ":
-                                            _t = "message.wait.prompt.confirm.qq"
+                                            _t = "message.wait.confirm.prompt.qq"
+                                        else:
+                                            _t = "message.wait.confirm.prompt.reaction"
                                     wait_plain_slice.append(
                                         session.session_info.locale.t(_t)
                                     )
@@ -660,7 +665,7 @@ async def query_pages(
         async def wait_confirm():
             if wait_msg_list and session.session_info.support_wait:
                 confirm = await session.wait_next_message(
-                    wait_msg_list, delete=True, append_instruction=False
+                    wait_msg_list, delete=True, append_instruction=False, add_confirm_reaction=True
                 )
                 auto_index = False
                 index = 0

@@ -5,6 +5,6 @@
 [webrender]
 # The basic config section of WebRender. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.
 enable_web_render = false # Whether to enable WebRender.
+browser_type = "chrome" # The browser type used by WebRender. (Supports "chrome" and "firefox")
+browser_executable_path = "<Replace me with str value>" # The browser executable file path used by WebRender. If empty, the default browser installed by playwright is used.
 remote_web_render_url = "<Replace me with str value>" # The URL of the remote WebRender service. Try the request if the local WebRender rendering fails.
-browser_type = "chrome" # The browser type used by WebRender.
-browser_executable_path = "<Replace me with str value>" # The browser executable file path used by WebRender. If empty, the default browser installed by playwright is used. (When using binary deployment, you must specify the path to use WebRender)

@@ -18,12 +18,13 @@ from core.constants.exceptions import AbuseWarning, FinishedException, InvalidCo
 from core.constants.info import Info
 from core.database.models import AnalyticsData
 from core.exports import exports
-from core.loader import ModulesManager, current_unloaded_modules, err_modules
+from core.loader import ModulesManager
 from core.logger import Logger
 from core.tos import _abuse_warn_target
 from core.types import Module, Param
 from core.types.module.component_meta import CommandMeta
 from core.utils.message import remove_duplicate_space
+from core.utils.temp import TempCounter
 
 if TYPE_CHECKING:
     from core.builtins.bot import Bot
@@ -105,11 +106,10 @@ async def parser(msg: "Bot.MessageSession"):
                 return
 
             if command_first_word in modules:  # 检查触发命令是否在模块列表中
-                await _execute_module(msg, modules, command_first_word, identify_str)
-            elif command_first_word in current_unloaded_modules:
-                await msg.send_message(I18NContext("parser.module.unloaded", module=command_first_word))
-            elif command_first_word in err_modules:
-                await msg.send_message(I18NContext("error.module.unloaded", module=command_first_word))
+                if modules[command_first_word]._db_load:
+                    await _execute_module(msg, modules, command_first_word, identify_str)
+                else:
+                    await msg.send_message(I18NContext("parser.module.unloaded", module=command_first_word))
             elif enable_module_invalid_prompt:
                 await msg.send_message(I18NContext("parser.command.invalid.module", prefix=msg.session_info.prefixes[0]))
 
@@ -132,6 +132,7 @@ async def parser(msg: "Bot.MessageSession"):
     finally:
         await msg.end_typing()
         ExecutionLockList.remove(msg)
+        TempCounter.add()
 
 
 def _transform_alias(msg, command: str):
@@ -206,18 +207,6 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
             not_alias = True
             cm = moduleName
             break
-    if not not_alias:
-        for um in current_unloaded_modules:
-            if command.startswith(um):
-                not_alias = True
-                cm = um
-                break
-    if not not_alias:
-        for em in err_modules:
-            if command.startswith(em):
-                not_alias = True
-                cm = em
-                break
     alias_list = []
     for alias in ModulesManager.modules_aliases:
         if not not_alias:  # 如果没有匹配到模块，则判断是否匹配命令别名
@@ -529,7 +518,7 @@ async def _tos_msg_counter(msg: "Bot.MessageSession", command: str):
 async def _execute_submodule(msg: "Bot.MessageSession", module, command_first_word):
     bot: "Bot" = exports["Bot"]
     try:
-        command_parser = CommandParser(module, msg=msg, bind_prefix=command_first_word,
+        command_parser = CommandParser(module, msg=msg, module_name=command_first_word,
                                        command_prefixes=msg.session_info.prefixes)
         try:
             parsed_msg = command_parser.parse(msg.trigger_msg)  # 解析命令对应的子模块
@@ -633,7 +622,7 @@ async def _execute_submodule(msg: "Bot.MessageSession", module, command_first_wo
             return
     except InvalidHelpDocTypeError:
         Logger.exception()
-        await msg.send_message(I18NContext("error.module.helpdoc.invalid", module=command_first_word))
+        await msg.send_message(I18NContext("error.module.helpdoc_invalid", module=command_first_word))
         return
 
 

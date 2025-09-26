@@ -60,6 +60,21 @@ class JobQueueClient(JobQueueBase):
         ret = await cls.add_job("Server", "get_modules_info", {"locale": locale})
         return ret["modules"]
 
+    @classmethod
+    async def get_module_helpdoc(cls, module: str, locale: str = "zh_cn"):
+        ret = await cls.add_job("Server", "get_module_helpdoc", {"module": module, "locale": locale})
+        return ret["help_doc"]
+
+    @classmethod
+    async def get_module_related(cls, module: str):
+        ret = await cls.add_job("Server", "get_module_related", {"module": module})
+        return ret["modules_list"]
+
+    @classmethod
+    async def post_module_action(cls, module: str, action: str):
+        ret = await cls.add_job("Server", "post_module_action", {"module": module, "action": action})
+        return ret["success"]
+
 
 async def get_session(args: dict):
     session_info: SessionInfo = converter.structure(args["session_info"], SessionInfo)
@@ -94,6 +109,18 @@ async def _(tsk: JobQueuesTable, args: dict):
     session_info, bot, ctx_manager = await get_session(args)
     await ctx_manager.delete_message(session_info, message_id=args["message_id"])
     return {"success": True}
+
+
+@JobQueueClient.action("add_reaction")
+async def _(tsk: JobQueuesTable, args: dict):
+    session_info, bot, ctx_manager = await get_session(args)
+    await ctx_manager.add_reaction(session_info, args["message_id"], args["emoji"])
+
+
+@JobQueueClient.action("remove_reaction")
+async def _(tsk: JobQueuesTable, args: dict):
+    session_info, bot, ctx_manager = await get_session(args)
+    await ctx_manager.add_reaction(session_info, args["message_id"], args["emoji"])
 
 
 @JobQueueClient.action("start_typing")

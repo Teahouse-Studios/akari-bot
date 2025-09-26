@@ -125,9 +125,9 @@ class AiogramContextManager(ContextManager):
                     chat_id=session_info.get_common_target_id(),
                     message_id=int(msg_id)
                 )
-                Logger.info(f"[Bot] -> [{session_info.target_id}]: Deleted message ID {msg_id}")
-            except Exception as e:
-                Logger.error(f"[Bot] -> [{session_info.target_id}]: Failed to delete message ID {msg_id}: {e}")
+                Logger.info(f"Deleted message {msg_id} in session {session_info.session_id}")
+            except Exception:
+                Logger.exception(f"Failed to delete message {msg_id} in session {session_info.session_id}: ")
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:

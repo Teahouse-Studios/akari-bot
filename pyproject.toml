@@ -17,9 +17,9 @@ package-mode = false
 [tool.poetry.dependencies]
 python = "^3.12.0"
 
-# akari-bot-services
-akari-bot-webrender = "0.4.2"
-akari-bot-webui = "0.1.5"
+# akari-bot-service
+akari-bot-webrender = "0.4.6"
+akari-bot-webui = "0.2.2"
 
 # lib
 coverage = "^7.9.1"
@@ -34,7 +34,7 @@ pywin32 = { version = "^308", platform = "win32" }
 aiocqhttp = "^1.4.3"
 aiogram = "^3.4.1"
 argon2-cffi = "^25.0.0"
-fastapi = "^0.116.0"
+fastapi = "^0.117.0"
 ffmpy = "^0.6.0"
 flask = "^3.1.0"
 khl-py = "^0.3.16"
@@ -43,7 +43,7 @@ py-cord = {git = "https://github.com/Pycord-Development/pycord"}
 pyjwt = {extras = ["crypto"], version = "^2.8.0"}
 qq-botpy = "^1.2.1"
 slowapi = "^0.1.9"
-uvicorn = {extras = ["standard"], version = "^0.35.0"}
+uvicorn = {extras = ["standard"], version = "^0.37.0"}
 
 # core
 cattrs = "^25.0.0"
@@ -99,6 +99,7 @@ webcolors = "^24.0.0"
 wolframalpha = "^5.0.0"
 
 # uncategorized
+python-multipart = "^0.0.20"
 
 [tool.poetry.group.dev.dependencies]
 autopep8 = "^2.0.2"

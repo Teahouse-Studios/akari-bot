@@ -12,6 +12,7 @@ from core.config import Config
 from core.constants.default import locale_url_default
 from core.i18n import get_available_locales, Locale, load_locale_file
 from core.utils.bash import run_sys_command
+from core.utils.temp import TempCounter
 
 ver = module("version", base=True, doc=True)
 
@@ -67,6 +68,7 @@ async def _(msg: Bot.MessageSession):
             disk_space_total=disk_total,
             client_name=msg.session_info.client_name,
             command_parsed=Bot.Info.command_parsed,
+            parsed=TempCounter.value,
         ))
     else:
         disk_percent = psutil.disk_usage("/").percent

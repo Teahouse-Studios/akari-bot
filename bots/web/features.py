@@ -1,4 +1,7 @@
-class Features:
+from core.builtins.session.features import Features as FeaturesBase
+
+
+class Features(FeaturesBase):
     image = True
     voice = False
     mention = False
@@ -6,7 +9,8 @@ class Features:
     forward = False
     delete = True
     markdown = True
+    reaction = True
     quote = False
     rss = False
-    typing = False
+    typing = True
     wait = True

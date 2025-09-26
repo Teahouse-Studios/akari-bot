@@ -3,6 +3,7 @@ import html
 import logging
 import re
 
+import emoji
 import orjson as json
 from aiocqhttp import Event
 from hypercorn import Config as HyperConfig
@@ -12,12 +13,14 @@ from bots.aiocqhttp.context import AIOCQContextManager, AIOCQFetchedContextManag
 from bots.aiocqhttp.info import *
 from bots.aiocqhttp.utils import to_message_chain, get_onebot_implementation
 from core.builtins.bot import Bot
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import Plain
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
 from core.builtins.utils import command_prefix
 from core.client.init import client_init
 from core.config import Config
-from core.constants.default import issue_url_default, ignored_sender_default, qq_host_default, confirm_command_default
+from core.constants.default import confirm_command_default, issue_url_default, ignored_sender_default, qq_host_default
 from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords
 from core.i18n import Locale
 from core.logger import Logger
@@ -28,12 +31,13 @@ ctx_id = Bot.register_context_manager(AIOCQContextManager)
 Bot.register_context_manager(AIOCQFetchedContextManager, fetch_session=True)
 
 dirty_word_check = Config("enable_dirty_check", False)
-use_url_manager = Config("enable_urlmanager", False)
-enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name="bot_aiocqhttp")
+default_locale = Config("default_locale", cfg_type=str)
 enable_tos = Config("enable_tos", True)
 ignored_sender = Config("ignored_sender", ignored_sender_default)
-default_locale = Config("default_locale", cfg_type=str)
+quick_confirm = Config("quick_confirm", True)
+use_url_manager = Config("enable_urlmanager", False)
 disable_temp_session = Config("qq_disable_temp_session", True, table_name="bot_aiocqhttp")
+enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name="bot_aiocqhttp")
 
 
 @aiocqhttp_bot.on_startup
@@ -53,7 +57,6 @@ async def _(event: Event):
 
 
 async def message_handler(event: Event):
-    qq_account = Temp.data.get("qq_account")
     if event.detail_type == "private" and event.sub_type == "group" \
             and disable_temp_session:
         return
@@ -94,7 +97,7 @@ async def message_handler(event: Event):
     prefix = None
     if string_post:
         if match_at := re.match(r"^\[CQ:at,qq=(\d+).*\](.*)", event.message):
-            if match_at.group(1) == str(qq_account):
+            if match_at.group(1) == str(event.self_id):
                 event.message = match_at.group(2)
                 if event.message in ["", " "]:
                     event.message = f"{command_prefix[0]}help"
@@ -103,7 +106,7 @@ async def message_handler(event: Event):
                 return
     else:
         if event.message[0]["type"] == "at":
-            if event.message[0]["data"]["qq"] == str(qq_account):
+            if event.message[0]["data"]["qq"] == str(event.self_id):
                 event.message = event.message[1:]
                 if not event.message or \
                         event.message[0]["type"] == "text" and event.message[0]["data"]["text"] == " ":
@@ -151,9 +154,49 @@ async def _(event: Event):
 
 @aiocqhttp_bot.on("notice.notify")
 async def _(event: Event):
-    if event.sub_type == "poke":
+    if event.sub_type == "poke" and quick_confirm:
         event.message = confirm_command_default[0]
         await message_handler(event)
+
+
+@aiocqhttp_bot.on("notice.group_msg_emoji_like")
+async def _(event: Event):
+    # API 假定点赞消息只能由自己收到
+    if event.likes:
+        like = event.likes[0]
+        try:
+            char = chr(int(like["emoji_id"]))
+            if not emoji.is_emoji(char):
+                raise ValueError
+            emoji_ = char
+        except (ValueError, OverflowError):
+            emoji_ = f"[CQ:face,id={like["emoji_id"]}]"
+
+        if event.group_id:
+            target_id = f"{target_group_prefix}|{event.group_id}"
+        else:
+            target_id = f"{target_private_prefix}|{event.user_id}"
+        sender_id = f"{sender_prefix}|{event.user_id}"
+
+        if sender_id in ignored_sender:
+            return
+
+        sender_name = None
+
+        if event.sender:
+            sender_name = event.sender.get("nickname")
+        session = await SessionInfo.assign(target_id=target_id,
+                                           sender_id=sender_id,
+                                           target_from=target_group_prefix if event.detail_type == "group" else target_private_prefix,
+                                           sender_from=sender_prefix,
+                                           sender_name=sender_name,
+                                           client_name=client_name,
+                                           reply_id=str(event.message_id),
+                                           messages=MessageChain.assign([Plain(emoji_)]),
+                                           ctx_slot=ctx_id
+                                           )
+
+        await Bot.process_message(session, event)
 
 
 @aiocqhttp_bot.on("request.friend")
@@ -186,8 +229,7 @@ async def _(event: Event):
 
 @aiocqhttp_bot.on_notice("group_ban")
 async def _(event: Event):
-    qq_account = Temp.data.get("qq_account")
-    if enable_tos and event.user_id == int(qq_account):
+    if enable_tos and event.sub_type == "ban" and event.user_id == int(event.self_id):
         sender_id = f"{sender_prefix}|{event.operator_id}"
         sender_info = await SenderInfo.get_by_sender_id(sender_id)
         target_id = f"{target_group_prefix}|{event.group_id}"

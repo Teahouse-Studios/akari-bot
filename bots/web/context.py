@@ -1,5 +1,6 @@
+import asyncio
 import uuid
-from typing import Optional, List
+from typing import Optional, Union, List
 
 import orjson as json
 from fastapi import WebSocket
@@ -56,7 +57,7 @@ class WebContextManager(ContextManager):
         return []
 
     @classmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: list[str]) -> None:
+    async def delete_message(cls, session_info: SessionInfo, message_id: Union[str, List[str]]) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -71,17 +72,102 @@ class WebContextManager(ContextManager):
             resp = {"action": "delete", "id": message_id}
             if websocket:
                 await websocket.send_text(json.dumps(resp).decode())
+            Logger.info(f"Deleted message {message_id} in session {session_info.session_id}")
+        except Exception:
+            Logger.exception(f"Failed to delete message {message_id} in session {session_info.session_id}: ")
+
+    @classmethod
+    async def add_reaction(cls, session_info: SessionInfo, message_id: Union[str, List[str]], emoji: str) -> None:
+        if isinstance(message_id, str):
+            message_id = [message_id]
+        if not isinstance(message_id, list):
+            raise TypeError("Message ID must be a list or str")
+
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+
+        try:
+            websocket: WebSocket = Temp.data.get("web_chat_websocket")
+
+            resp = {"action": "reaction", "id": message_id[-1], "emoji": emoji, "add": True}
+            if websocket:
+                await websocket.send_text(json.dumps(resp).decode())
+            Logger.info(f"Added reaction \"{emoji}\" to message {message_id} in session {session_info.session_id}")
+        except Exception:
+            Logger.exception(f"Failed to add reaction \"{emoji}\" to message {
+                message_id} in session {session_info.session_id}: ")
+
+    @classmethod
+    async def remove_reaction(cls, session_info: SessionInfo, message_id: Union[str, List[str]], emoji: str) -> None:
+        if isinstance(message_id, str):
+            message_id = [message_id]
+        if not isinstance(message_id, list):
+            raise TypeError("Message ID must be a list or str")
+
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+
+        try:
+            websocket: WebSocket = Temp.data.get("web_chat_websocket")
+
+            resp = {"action": "reaction", "id": message_id[-1], "emoji": emoji, "add": False}
+            if websocket:
+                await websocket.send_text(json.dumps(resp).decode())
+            Logger.info(f"Removed reaction \"{emoji}\" to message {message_id} in session {session_info.session_id}")
+        except Exception:
+            Logger.exception(f"Failed to remove reaction \"{emoji}\" to message {
+                message_id} in session {session_info.session_id}: ")
+
+    @classmethod
+    async def start_typing(cls, session_info: SessionInfo) -> None:
+        async def _typing():
+            if session_info.session_id not in cls.context:
+                raise ValueError("Session not found in context")
+            # 这里可以添加开始输入状态的逻辑
+            ctx = cls.context[session_info.session_id]
+            if ctx:
+                try:
+                    websocket: WebSocket = Temp.data.get("web_chat_websocket")
+
+                    resp = {"action": "typing", "status": "start", "id": session_info.message_id}
+                    if websocket:
+                        await websocket.send_text(json.dumps(resp).decode())
+                except Exception:
+                    Logger.exception()
+
+                flag = asyncio.Event()
+                cls.typing_flags[session_info.session_id] = flag
+                await flag.wait()
+
+        asyncio.create_task(_typing())
+
+    @classmethod
+    async def end_typing(cls, session_info: SessionInfo) -> None:
+        # if session_info.session_id not in cls.context:
+        #     raise ValueError("Session not found in context")
+        if session_info.session_id in cls.typing_flags:
+            cls.typing_flags[session_info.session_id].set()
+            del cls.typing_flags[session_info.session_id]
+        # 这里可以添加结束输入状态的逻辑
+        try:
+            websocket: WebSocket = Temp.data.get("web_chat_websocket")
+
+            resp = {"action": "typing", "status": "end", "id": session_info.message_id}
+            if websocket:
+                await websocket.send_text(json.dumps(resp).decode())
         except Exception:
             Logger.exception()
 
     @classmethod
-    async def start_typing(cls, session_info: SessionInfo) -> None:
-        pass
-
-    @classmethod
-    async def end_typing(cls, session_info: SessionInfo) -> None:
-        pass
-
-    @classmethod
     async def error_signal(cls, session_info: SessionInfo) -> None:
-        pass
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+        # 这里可以添加错误处理逻辑
+        try:
+            websocket: WebSocket = Temp.data.get("web_chat_websocket")
+
+            resp = {"action": "typing", "status": "error", "id": session_info.message_id}
+            if websocket:
+                await websocket.send_text(json.dumps(resp).decode())
+        except Exception:
+            Logger.exception()

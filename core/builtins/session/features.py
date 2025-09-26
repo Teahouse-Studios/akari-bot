@@ -6,6 +6,7 @@ class Features:
     forward: bool = False
     delete: bool = False
     markdown: bool = False
+    reaction: bool = False
     quote: bool = False
     rss: bool = False
     typing: bool = False

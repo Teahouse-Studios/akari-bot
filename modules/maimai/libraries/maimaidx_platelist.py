@@ -32,7 +32,7 @@ class DrawPlateList:
         self.image_size = 80
         self.spacing = 10
         self.margin = 20
-        self.rank_colors = [
+        self.diff_colors = [
             (69, 193, 36),
             (255, 186, 1),
             (255, 90, 102),
@@ -82,7 +82,7 @@ class DrawPlateList:
                 color = (184, 123, 191)
             case "双" | "宴":
                 color = (255, 186, 95)
-            case "鏡":
+            case "鏡" | "彩":
                 color = (221, 255, 241)
             case _:
                 color = (0, 0, 0)
@@ -97,7 +97,7 @@ class DrawPlateList:
             case "将":
                 color = (239, 243, 13)
             case "神":
-                color = (252, 197, 49)
+                color = (249, 128, 4)
             case "舞":
                 color = (69, 174, 255)
             case _:
@@ -110,14 +110,14 @@ class DrawPlateList:
 
     def create_ranked_image(self):
         total_width = 10 * (self.image_size + self.spacing) - self.spacing + 2 * self.margin
-        total_height = 0
+
+        total_height = self.margin
         for level, elements in self.song_list.items():
             if not elements:
                 continue
             rows = (len(elements) + 9) // 10
-            total_height += rows * (self.image_size + self.spacing + 20) + 15
+            total_height += rows * (self.image_size + self.spacing + 20) + 40
 
-        total_height += (len(self.song_list) - 1) * self.spacing
         self.img = Image.new("RGB", (total_width, total_height), (211, 211, 211))
         draw = ImageDraw.Draw(self.img)
 
@@ -198,7 +198,7 @@ class DrawPlateList:
                                 x_offset + (i + 1) * mark_width if i < mark_count - 1 else x_offset + large_bar_width,
                                 bar_top + bar_height,
                             ],
-                            fill=self.rank_colors[i],
+                            fill=self.diff_colors[i],
                         )
 
                 # 绘制封面ID

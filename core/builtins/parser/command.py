@@ -24,16 +24,16 @@ class CommandParser:
         self,
         args: Module,
         command_prefixes: list,
-        bind_prefix=None,
+        module_name=None,
         msg: Optional["Bot.MessageSession"] = None,
         is_superuser: Optional[bool] = None,
     ):
         args = copy.deepcopy(args)
         self.command_prefixes = command_prefixes
-        self.bind_prefix = bind_prefix
+        self.module_name = module_name
         self.origin_template = args
         self.msg: Union["Bot.MessageSession", None] = msg
-        self.options_desc = []
+        self.options_desc = {}
         self.lang = self.msg.session_info.locale if self.msg else Locale(default_locale)
         help_docs = {}
         if is_superuser is None:
@@ -57,35 +57,91 @@ class CommandParser:
                 help_docs[""] = {"priority": match.priority, "meta": match}
             if match.options_desc:
                 for m in match.options_desc:
-                    desc = self.lang.t_str(
-                        match.options_desc[m], fallback_failed_prompt=False
-                    )
-                    self.options_desc.append(f"{m} - {desc}")
+                    self.options_desc[m] = match.options_desc[m]
+
         self.args: Dict[Union[Template, ""], dict] = help_docs
 
-    def return_formatted_help_doc(self) -> str:
+        seen_values = set()
+        deduped_options_desc = {}
+        for k, v in self.options_desc.items():
+            if v not in seen_values:
+                deduped_options_desc[k] = v
+                seen_values.add(v)
+        self.options_desc = deduped_options_desc
+
+    def return_formatted_help_doc(self, locale=None) -> str:
         if not self.args:
             return ""
-        lst = []
+
+        if locale:
+            locale = Locale(locale)
+        else:
+            locale = self.lang
+
         format_args = templates_to_str(
             [args for args in self.args if args != ""], with_desc=True
         )
+
+        args_lst = []
         for x in format_args:
-            x = self.lang.t_str(x, fallback_failed_prompt=False)
-            x = f"{self.command_prefixes[0]}{self.bind_prefix} {x}"
-            lst.append(x)
-        args = "\n".join(y for y in lst)
+            x = locale.t_str(x, fallback_failed_prompt=False)
+            x = f"{self.command_prefixes[0]}{self.module_name} {x}"
+            args_lst.append(x)
+        args = "\n".join(y for y in args_lst)
+
         if self.options_desc:
-            options_desc = self.options_desc.copy()
-            options_desc_localed = []
-            for x in options_desc:
-                x = self.lang.t_str(x, fallback_failed_prompt=False)
-                options_desc_localed.append(x)
-            options_desc_localed = list(set(options_desc_localed))  # 移除重复内容
-            args += f"\n{self.lang.t("core.help.options")}\n" + "\n".join(
-                options_desc_localed
+            options_desc_fmtted = []
+            for m, desc in self.options_desc.items():
+                desc = locale.t_str(desc, fallback_failed_prompt=False)
+                options_desc_fmtted.append(f"{m} - {desc}")
+            args += f"\n{locale.t("core.help.options")}\n" + "\n".join(
+                options_desc_fmtted
             )
         return args
+
+    def return_json_help_doc(self, locale=None) -> dict:
+        if not self.args:
+            return {}
+
+        if locale:
+            locale = Locale(locale)
+        else:
+            locale = self.lang
+
+        format_args = templates_to_str(
+            [args for args in self.args if args != ""], with_desc=True
+        )
+
+        args_list = []
+
+        for x in format_args:
+            desc = ""
+
+            match = re.fullmatch(r"- (\{I18N:.*?\})", x)
+            if match:
+                x = ""
+                desc = locale.t_str(match.group(1), fallback_failed_prompt=False)
+            else:
+                match = re.search(r" - (\{I18N:.*?\})$", x)
+                if match:
+                    x = x[:match.start()]
+                    desc = locale.t_str(match.group(1), fallback_failed_prompt=False)
+
+            args_list.append({
+                "args": f"{self.command_prefixes[0]}{self.module_name} {x}",
+                "desc": desc
+            })
+
+        options_desc_fmtted = []
+        if self.options_desc:
+            for m, desc in self.options_desc.items():
+                desc = locale.t_str(desc, fallback_failed_prompt=False)
+                options_desc_fmtted.append({m: desc})
+
+        return {
+            "args": args_list,
+            "options": options_desc_fmtted
+        }
 
     def parse(self, command):
         if not self.args:

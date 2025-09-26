@@ -51,6 +51,8 @@ class JobQueueBase:
     queue_actions = {}
     report_targets = Config("report_targets", [])
     is_running = False
+    pause_event = asyncio.Event()
+    pause_event.set()
 
     @classmethod
     async def add_job(cls, target_client: str, action, args, wait=True):
@@ -130,9 +132,13 @@ class JobQueueBase:
         if cls.is_running:
             raise QueueAlreadyRunning
         cls.is_running = True
-        while True:
-            await cls._check_queue(target_client)
-            await asyncio.sleep(0.1)
+        try:
+            while True:
+                await cls.pause_event.wait()
+                await cls._check_queue(target_client)
+                await asyncio.sleep(0.1)
+        finally:
+            cls.is_running = False
 
     @classmethod
     def action(cls, action_name: str):
