@@ -90,17 +90,17 @@ app.add_middleware(
 
 
 if os.path.exists(dist_path):
-    @app.get("/webui")
     @app.get("/webui/{path:path}")
-    async def serve_webui(path: str = ""):
+    async def serve_webui(path: str):
         file_path = os.path.join(dist_path, path)
 
-        if path and os.path.exists(file_path) and os.path.isfile(file_path):
+        if os.path.exists(file_path) and os.path.isfile(file_path):
             return FileResponse(file_path)
 
         return FileResponse(os.path.join(dist_path, "index.html"))
 
     @app.get("/")
+    @app.get("/webui")
     async def redirect_to_webui():
         return RedirectResponse(url="/webui/")
 else:
