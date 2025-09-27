@@ -1,4 +1,3 @@
-import os
 from collections import Counter
 from enum import Enum
 from typing import List, Optional
@@ -10,8 +9,8 @@ from attrs import define, field
 from core.constants.path import assets_path, noto_sans_bold_path
 from core.utils.random import Random
 
-words_txt = os.path.join(assets_path, "modules", "wordle", "words.txt")
-answers_txt = os.path.join(assets_path, "modules", "wordle", "answers.txt")
+words_txt = assets_path / "modules" / "wordle" / "words.txt"
+answers_txt = assets_path / "modules" / "wordle" / "answers.txt"
 with open(words_txt, encoding="utf8") as handle:
     word_list = handle.read().splitlines()
 with open(answers_txt, encoding="utf8") as handle:

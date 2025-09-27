@@ -22,7 +22,7 @@ async def bg():
 
 @Scheduler.scheduled_job(CronTrigger.from_crontab("0 0 * * *"))
 async def auto_purge():
-    if os.path.exists(cache_path):
+    if cache_path.exists():
         shutil.rmtree(cache_path)
     os.makedirs(cache_path, exist_ok=True)
 

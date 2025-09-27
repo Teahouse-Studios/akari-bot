@@ -1,5 +1,5 @@
 import mimetypes
-import os
+from pathlib import Path
 from typing import Optional, Union, List, Tuple
 
 import nio
@@ -170,8 +170,8 @@ class MatrixContextManager(ContextManager):
                 for xs in split:
                     path = await xs.get()
                     with open(path, "rb") as image:
-                        filename = os.path.basename(path)
-                        filesize = os.path.getsize(path)
+                        filename = Path(path).name
+                        filesize = Path(path).stat().st_size
                         (content_type, content_encoding) = mimetypes.guess_type(path)
                         if not content_type or not content_encoding:
                             content_type = "image"
@@ -215,8 +215,8 @@ class MatrixContextManager(ContextManager):
                         await _send_msg(content)
             elif isinstance(x, VoiceElement):
                 path = x.path
-                filename = os.path.basename(path)
-                filesize = os.path.getsize(path)
+                filename = Path(path).name
+                filesize = Path(path).stat().st_size
                 (content_type, content_encoding) = mimetypes.guess_type(path)
                 if not content_type or not content_encoding:
                     content_type = "audio"

@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from core.config import Config
 from core.constants import db_path_default, database_path
@@ -8,7 +9,7 @@ db_type = db_link.split("://")[0].split("+")[0]
 db_path = database_path
 
 if db_type == "sqlite":
-    db_path = os.path.dirname(db_link.replace("sqlite://", ""))
+    db_path = Path(db_link.replace("sqlite://", "")).parent
 os.makedirs(db_path, exist_ok=True)
 
 

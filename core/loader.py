@@ -1,6 +1,4 @@
-import asyncio
 import importlib
-import os
 import pkgutil
 import re
 import sys
@@ -59,7 +57,7 @@ async def load_modules():
 
     Logger.success("All modules loaded.")
 
-    loader_cache = os.path.join(PrivateAssets.path, ".cache_loader")
+    loader_cache = PrivateAssets.path / ".cache_loader"
     with open(loader_cache, "w") as open_loader_cache:
         if err_prompt:
             err_prompt = re.sub(

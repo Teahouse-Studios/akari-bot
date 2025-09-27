@@ -3,12 +3,12 @@
 请勿在模块中导入`request`库，否则会导致阻塞问题。
 """
 
-import os
 import re
 import socket
 import urllib.parse
 import uuid
 from http.cookies import SimpleCookie
+from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
 import filetype as ft
@@ -277,7 +277,7 @@ async def download(
                 filename = f"{str(uuid.uuid4())}.{ftt}"
             if not path:
                 path = cache_path
-            path = os.path.join(path, filename)
+            path = Path(path) / filename
             async with async_open(path, "wb+") as file:
                 await file.write(data)
                 return path

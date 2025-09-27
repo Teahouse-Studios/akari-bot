@@ -1,12 +1,10 @@
-import os
-
 from core.constants.path import assets_path
 
 SONGS_PER_PAGE = 30
 
-mai_assets_path = os.path.join(assets_path, "modules", "maimai")
-chu_cover_path = os.path.join(mai_assets_path, "static", "chu", "cover")
-chu_song_info_path = os.path.join(mai_assets_path, "chu_song_info.json")
+mai_assets_path = assets_path / "modules" / "maimai"
+chu_cover_path = mai_assets_path / "static" / "chu" / "cover"
+chu_song_info_path = mai_assets_path / "chu_song_info.json"
 
 score_to_rate = {
     (0, 499999): "D",

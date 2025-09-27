@@ -4,6 +4,7 @@ import urllib3
 from nio import AsyncClient, AsyncClientConfig
 
 from core.config import Config
+from core.constants.path import assets_path
 from core.constants.default import matrix_homeserver_default, matrix_user_default
 from core.logger import Logger
 
@@ -20,11 +21,11 @@ megolm_backup_passphrase = Config(
 )
 proxy = Config("proxy", cfg_type=str, secret=True)
 
-store_path = os.path.abspath("./assets/private/matrix/matrix_store")
-store_path_nio = os.path.join(store_path, "nio")
-store_path_megolm_backup = os.path.join(store_path, "megolm_backup")
+store_path = assets_path / "private" / "matrix" / "matrix_store"
+store_path_nio = store_path / "nio"
+store_path_megolm_backup = store_path / "megolm_backup"
 
-store_path_next_batch = os.path.join(store_path, "next_batch.txt")
+store_path_next_batch = store_path / "next_batch.txt"
 
 os.makedirs(store_path, exist_ok=True)
 os.makedirs(store_path_nio, exist_ok=True)

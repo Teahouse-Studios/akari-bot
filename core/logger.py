@@ -64,7 +64,7 @@ class LoggingLogger:
         )
 
         self.log.add(
-            sink=os.path.join(logs_path, f"{name}_debug_{{time:YYYY-MM-DD}}.log"),
+            sink=logs_path / f"{name}_debug_{{time:YYYY-MM-DD}}.log",
             format=basic_logger_format(name),
             rotation="00:00",
             retention="1 day",
@@ -73,7 +73,7 @@ class LoggingLogger:
             encoding="utf8",
         )
         self.log.add(
-            sink=os.path.join(logs_path, f"{name}_{{time:YYYY-MM-DD}}.log"),
+            sink=logs_path / f"{name}_{{time:YYYY-MM-DD}}.log",
             format=basic_logger_format(name),
             rotation="00:00",
             retention="10 days",

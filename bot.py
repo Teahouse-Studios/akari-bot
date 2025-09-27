@@ -6,6 +6,7 @@ import shutil
 import sys
 import traceback
 from datetime import datetime
+from pathlib import Path
 from time import sleep
 
 from loguru import logger
@@ -39,7 +40,7 @@ Logger.add(
     filter=lambda record: record["extra"].get("name") == "BotDaemon"
 )
 Logger.add(
-    sink=os.path.join(logs_path, "BotDaemon_debug_{time:YYYY-MM-DD}.log"),
+    sink=logs_path / "BotDaemon_debug_{time:YYYY-MM-DD}.log",
     format=logger_format,
     rotation="00:00",
     retention="1 day",
@@ -48,7 +49,7 @@ Logger.add(
     encoding="utf8",
 )
 Logger.add(
-    sink=os.path.join(logs_path, "BotDaemon_{time:YYYY-MM-DD}.log"),
+    sink=logs_path / "BotDaemon_{time:YYYY-MM-DD}.log",
     format=logger_format,
     rotation="00:00",
     retention="10 days",
@@ -90,7 +91,7 @@ processes: list[multiprocessing.Process] = []
 def pre_init():
 
     from core.constants.path import cache_path  # noqa
-    if os.path.exists(cache_path):
+    if cache_path.exists():
         shutil.rmtree(cache_path)
     os.makedirs(cache_path, exist_ok=True)
 
@@ -222,7 +223,7 @@ async def run_bot():
 
     envs = os.environ.copy()
     envs["PYTHONIOENCODING"] = "UTF-8"
-    envs["PYTHONPATH"] = os.path.abspath(".")
+    envs["PYTHONPATH"] = Path(".").resolve()
     lst = bots_and_required_configs.keys()
 
     for t in CFGManager.values:
@@ -310,7 +311,7 @@ def terminate_process(process: multiprocessing.Process):
 
 
 async def main_async():
-    if not os.path.exists(os.path.join(config_path, config_filename)):
+    if not (config_path / config_filename).exists():
         import core.scripts.config_generate  # noqa
     from core.config import Config  # noqa
 
@@ -366,7 +367,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # Detect if the program is already running
-    lock_file_path = os.path.abspath("./.bot.lock")
+    lock_file_path = Path("./.bot.lock").resolve()
     if sys.platform == "win32":
         import msvcrt
 

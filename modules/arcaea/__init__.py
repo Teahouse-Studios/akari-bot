@@ -1,5 +1,3 @@
-import os
-
 import orjson as json
 
 from core.builtins.bot import Bot
@@ -8,7 +6,7 @@ from core.component import module
 from core.constants.path import assets_path
 from core.web_render import web_render, SourceOptions
 
-arc_assets_path = os.path.join(assets_path, "modules", "arcaea")
+arc_assets_path = assets_path / "modules" / "arcaea"
 
 arc = module(
     "arcaea",
@@ -39,9 +37,9 @@ async def _(msg: Bot.MessageSession):
     if resp:
         load_json = json.loads(resp)
         value = load_json["value"][0]
-        image = os.path.join(arc_assets_path, "jacket", f"{value["song_id"]}.jpg")
+        image = arc_assets_path / "jacket" / f"{value["song_id"]}.jpg"
         result = [Plain(value["title"]["en"])]
-        if os.path.exists(image):
+        if image.exists():
             result.append(BImage(path=image))
         await msg.finish(result)
     else:

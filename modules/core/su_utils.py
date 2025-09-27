@@ -62,7 +62,7 @@ purge = module("purge", required_superuser=True, base=True, doc=True)
 
 @purge.command()
 async def _(msg: Bot.MessageSession):
-    if os.path.exists(cache_path):
+    if cache_path.exists():
         if os.listdir(cache_path):
             shutil.rmtree(cache_path)
             os.makedirs(cache_path, exist_ok=True)
@@ -420,7 +420,7 @@ rst = module(
 
 
 def write_restart_cache(msg: Bot.MessageSession):
-    update = os.path.join(Bot.PrivateAssets.path, ".cache_restart_author")
+    update = Bot.PrivateAssets.path / ".cache_restart_author"
     with open(update, "wb") as write_version:
         write_version.write(json.dumps(converter.unstructure(msg.session_info)))
 

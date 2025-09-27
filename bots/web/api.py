@@ -31,7 +31,7 @@ from core.queue.client import JobQueueClient
 
 started_time = datetime.now()
 
-PASSWORD_PATH = os.path.join(assets_path, "private", "web", ".password")
+PASSWORD_PATH = assets_path / "private" / "web" / ".password"
 ROOT_DIR = Path(__file__).parent.parent.parent
 
 default_locale = Config("default_locale", cfg_type=str)
@@ -54,7 +54,7 @@ def verify_jwt(request: Request):
 
     try:
         payload = jwt.decode(auth_token, jwt_secret, algorithms=["HS256"])
-        if os.path.exists(PASSWORD_PATH):
+        if PASSWORD_PATH.exists():
             with open(PASSWORD_PATH, "rb") as f:
                 last_updated = json.loads(f.read()).get("last_updated")
 
@@ -100,7 +100,7 @@ async def auth(request: Request):
         raise HTTPException(status_code=429, detail="This IP has been blocked")
 
     try:
-        if not os.path.exists(PASSWORD_PATH):
+        if not PASSWORD_PATH.exists():
             payload = {
                 "exp": datetime.now(UTC) + timedelta(hours=24),  # 过期时间
                 "iat": datetime.now(UTC),  # 签发时间
@@ -161,7 +161,7 @@ async def change_password(request: Request, response: Response):
         new_password = body.get("new_password", "")
         password = body.get("password", "")
 
-        if not os.path.exists(PASSWORD_PATH):
+        if not PASSWORD_PATH.exists():
             if new_password == "":
                 raise HTTPException(status_code=400, detail="New password required")
 
@@ -205,7 +205,7 @@ async def clear_password(request: Request):
         body = await request.json()
         password = body.get("password", "")
 
-        if not os.path.exists(PASSWORD_PATH):
+        if not PASSWORD_PATH.exists():
             raise HTTPException(status_code=404, detail="Password not set")
 
         with open(PASSWORD_PATH, "rb") as file:
@@ -228,7 +228,7 @@ async def clear_password(request: Request):
 @app.get("/api/password")
 @limiter.limit("10/minute")
 async def has_password(request: Request):
-    return {"have_password": os.path.exists(PASSWORD_PATH)}
+    return {"have_password": PASSWORD_PATH.exists()}
 
 
 @app.get("/api/server-info")
@@ -308,12 +308,12 @@ async def get_config_list(request: Request):
 @app.get("/api/config/{cfg_filename}")
 async def get_config_file(request: Request, cfg_filename: str):
     verify_jwt(request)
-    if not os.path.exists(config_path):
+    if not config_path.exists():
         raise HTTPException(status_code=404, detail="Not found")
-    cfg_file_path = os.path.normpath(os.path.join(config_path, cfg_filename))
+    cfg_file_path = config_path / cfg_filename
     if not cfg_filename.endswith(".toml"):
         raise HTTPException(status_code=400, detail="Bad request")
-    if not cfg_file_path.startswith(config_path):
+    if not str(cfg_file_path).startswith(str(config_path)):
         raise HTTPException(status_code=400, detail="Bad request")
 
     try:
@@ -332,12 +332,12 @@ async def edit_config_file(request: Request, cfg_filename: str):
     try:
         verify_jwt(request)
 
-        if not os.path.exists(config_path):
+        if not config_path.exists():
             raise HTTPException(status_code=404, detail="Not found")
-        cfg_file_path = os.path.normpath(os.path.join(config_path, cfg_filename))
+        cfg_file_path = config_path / cfg_filename
         if not cfg_filename.endswith(".toml"):
             raise HTTPException(status_code=400, detail="Bad request")
-        if not cfg_file_path.startswith(config_path):
+        if not str(cfg_file_path).startswith(str(config_path)):
             raise HTTPException(status_code=400, detail="Bad request")
 
         body = await request.json()
@@ -717,13 +717,13 @@ async def websocket_logs(websocket: WebSocket):
                 last_file_size.clear()
                 current_date = new_date
 
-            today_logs = glob.glob(f"{logs_path}/*_{current_date}.log")
+            today_logs = glob.glob(str(logs_path / "*_{current_date}.log"))
 
             new_loglines = []  # 打包后的日志行
             for log_file in today_logs:
                 try:
                     # 比较文件大小，当相同时跳过
-                    current_size = os.path.getsize(log_file)
+                    current_size = Path(log_file).stat().st_size
                     if log_file in last_file_size and current_size == last_file_size[log_file]:
                         continue
                     last_file_size[log_file] = current_size

@@ -62,8 +62,8 @@ async def generate_screenshot_v1(
             return False
         soup = BeautifulSoup(html, "html.parser")
         pagename = uuid.uuid4()
-        url = os.path.join(cache_path, f"{pagename}.html")
-        if os.path.exists(url):
+        url = cache_path / f"{pagename}.html"
+        if url.exists():
             os.remove(url)
         Logger.info("Downloaded raw.")
 
