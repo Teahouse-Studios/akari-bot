@@ -13,8 +13,8 @@ from core.constants.version import config_version
 from core.i18n import Locale
 from core.utils.message import isint, isfloat
 
-cfg_file_path = os.path.join(config_path, config_filename)
-old_cfg_file_path = os.path.join(config_path, "config.cfg")
+cfg_file_path = config_path / config_filename
+old_cfg_file_path = config_path / "config.cfg"
 
 
 def convert_cfg_to_toml():
@@ -45,8 +45,8 @@ def convert_cfg_to_toml():
 # If the config file does not exist, try to convert the old config file to the new format, or raise an error.
 
 
-if not os.path.exists(cfg_file_path):
-    if os.path.exists(old_cfg_file_path):
+if not cfg_file_path.exists():
+    if old_cfg_file_path.exists():
         convert_cfg_to_toml()
     else:
         raise ConfigFileNotFound(cfg_file_path) from None
@@ -259,7 +259,7 @@ if "config_version" not in config:
         filename = c
         if not c.endswith(".toml"):
             filename += ".toml"
-        with open(os.path.join(config_path, filename), "w", encoding="utf-8") as f:
+        with open(config_path / filename, "w", encoding="utf-8") as f:
             f.write(toml_dumps(configs[c]))
     logger.success("Config file regenerated successfully.")
     sleep(3)
@@ -330,7 +330,7 @@ if config["config_version"] < config_version:
             filename = c
             if not c.endswith(".toml"):
                 filename += ".toml"
-            with open(os.path.join(config_path, filename), "w", encoding="utf-8") as f:
+            with open(config_path / filename, "w", encoding="utf-8") as f:
                 f.write(toml_dumps(configs[c]))
         with open(cfg_file_path, "w", encoding="utf-8") as f:
             f.write(toml_dumps(config))
@@ -354,7 +354,7 @@ if config["config_version"] < config_version:
             filename = c
             if not c.endswith(".toml"):
                 filename += ".toml"
-            with open(os.path.join(config_path, filename), "w", encoding="utf-8") as f:
+            with open(config_path / filename, "w", encoding="utf-8") as f:
                 f.write(toml_dumps(configs[c]))
         with open(cfg_file_path, "w", encoding="utf-8") as f:
             f.write(toml_dumps(config))

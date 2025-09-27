@@ -1,3 +1,5 @@
+import os
+
 from collections import defaultdict
 from typing import Optional, Union
 
@@ -25,8 +27,8 @@ async def update_cover() -> bool:
         id_list.append(song["id"])
     os.makedirs(mai_cover_path, exist_ok=True)
     for id in id_list:
-        cover_path = os.path.join(mai_cover_path, f"{id}.png")
-        if not os.path.exists(cover_path):
+        cover_path = mai_cover_path / f"{id}.png"
+        if not cover_path.exists():
             try:
                 url = f"https://www.diving-fish.com/covers/{get_cover_len5_id(id)}.png"
                 await download(
@@ -101,12 +103,12 @@ async def update_alias() -> bool:
 
 async def get_info(music: Music, details: Union[str, MessageChain]) -> MessageChain:
     info = MessageChain.assign(Plain(f"{music.id} - {music.title}{" (DX)" if music["type"] == "DX" else ""}"))
-    cover_path = os.path.join(mai_cover_path, f"{music.id}.png")
-    if os.path.exists(cover_path):
+    cover_path = mai_cover_path / f"{music.id}.png"
+    if cover_path.exists():
         info.append(Image(cover_path))
     else:
-        cover_path = os.path.join(mai_cover_path, "0.png")
-        if os.path.exists(cover_path):
+        cover_path = mai_cover_path / "0.png"
+        if cover_path.exists():
             info.append(Image(cover_path))
     if details:
         if not isinstance(details, MessageChain):
@@ -117,7 +119,7 @@ async def get_info(music: Music, details: Union[str, MessageChain]) -> MessageCh
 
 
 async def get_alias(msg: Bot.MessageSession, sid: str) -> list:
-    if not os.path.exists(mai_alias_path):
+    if not mai_alias_path.exists():
         await msg.finish(
             I18NContext("maimai.message.alias.file_not_found", prefix=msg.session_info.prefixes[0])
         )
@@ -146,7 +148,7 @@ async def search_by_alias(input_: str) -> list:
         if music:
             result.append(input_)
 
-    if not os.path.exists(mai_alias_path):
+    if not mai_alias_path.exists():
         return list(set(result))
 
     with open(mai_alias_path, "rb") as file:
@@ -163,11 +165,9 @@ async def search_by_alias(input_: str) -> list:
 async def get_record(
     msg: Bot.MessageSession, payload: dict, use_cache: bool = True
 ) -> Optional[str]:
-    mai_cache_path = os.path.join(cache_path, "maimai-record")
+    mai_cache_path = cache_path / "maimai-record"
     os.makedirs(mai_cache_path, exist_ok=True)
-    cache_dir = os.path.join(
-        mai_cache_path, f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_record.json"
-    )
+    cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_record.json"
     url = "https://www.diving-fish.com/api/maimaidxprober/query/player"
     try:
         data = await post_url(
@@ -194,7 +194,7 @@ async def get_record(
                 await msg.finish(I18NContext("maimai.message.forbidden"))
         else:
             Logger.exception()
-        if use_cache and os.path.exists(cache_dir):
+        if use_cache and cache_dir.exists():
             try:
                 with open(cache_dir, "rb") as f:
                     data = json.loads(f.read())
@@ -213,11 +213,9 @@ async def get_song_record(
     use_cache: bool = True,
 ) -> Optional[str]:
     if DEVELOPER_TOKEN:
-        mai_cache_path = os.path.join(cache_path, "maimai-record")
+        mai_cache_path = cache_path / "maimai-record"
         os.makedirs(mai_cache_path, exist_ok=True)
-        cache_dir = os.path.join(
-            mai_cache_path, f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_song_record.json"
-        )
+        cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_song_record.json"
         url = "https://www.diving-fish.com/api/maimaidxprober/dev/player/record"
         try:
             payload.update({"music_id": sid})
@@ -233,7 +231,7 @@ async def get_song_record(
                 fmt="json",
             )
             if use_cache and data:
-                if os.path.exists(cache_dir):
+                if cache_dir.exists():
                     with open(cache_dir, "rb") as f:
                         try:
                             backup_data = json.loads(f.read())
@@ -249,7 +247,7 @@ async def get_song_record(
             if str(e).startswith("400"):
                 raise ConfigValueError("{I18N:error.config.invalid}")
             Logger.exception()
-            if use_cache and os.path.exists(cache_dir):
+            if use_cache and cache_dir.exists():
                 try:
                     with open(cache_dir, "rb") as f:
                         data = json.loads(f.read())
@@ -266,11 +264,9 @@ async def get_song_record(
 async def get_total_record(
     msg: Bot.MessageSession, payload: dict, utage: bool = False, use_cache: bool = True
 ):
-    mai_cache_path = os.path.join(cache_path, "maimai-record")
+    mai_cache_path = cache_path / "maimai-record"
     os.makedirs(mai_cache_path, exist_ok=True)
-    cache_dir = os.path.join(
-        mai_cache_path, f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_total_record.json"
-    )
+    cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_total_record.json"
     url = "https://www.diving-fish.com/api/maimaidxprober/query/plate"
     payload["version"] = versions
     try:
@@ -302,7 +298,7 @@ async def get_total_record(
                 await msg.finish(I18NContext("maimai.message.forbidden"))
         else:
             Logger.exception()
-        if use_cache and os.path.exists(cache_dir):
+        if use_cache and cache_dir.exists():
             try:
                 with open(cache_dir, "rb") as f:
                     data = json.loads(f.read())
@@ -324,11 +320,9 @@ async def get_plate(
     msg: Bot.MessageSession, payload: dict, version: str, use_cache: bool = True
 ) -> Optional[str]:
     version = "舞" if version == "覇" else version  # “覇者”属于舞代
-    mai_cache_path = os.path.join(cache_path, "maimai-record")
+    mai_cache_path = cache_path / "maimai-record"
     os.makedirs(mai_cache_path, exist_ok=True)
-    cache_dir = os.path.join(
-        mai_cache_path, f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_plate_{version}.json"
-    )
+    cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_plate_{version}.json"
     url = "https://www.diving-fish.com/api/maimaidxprober/query/plate"
     try:
         data = await post_url(
@@ -358,7 +352,7 @@ async def get_plate(
                 await msg.finish(I18NContext("maimai.message.forbidden"))
         else:
             Logger.exception()
-        if use_cache and os.path.exists(cache_dir):
+        if use_cache and cache_dir.exists():
             try:
                 with open(cache_dir, "rb") as f:
                     data = json.loads(f.read())

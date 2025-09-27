@@ -2,6 +2,7 @@ import datetime
 import os
 import re
 from time import sleep
+from pathlib import Path
 from typing import Optional, Union, Any
 
 import orjson as json
@@ -22,7 +23,7 @@ ALLOWED_TYPES = (bool, datetime.datetime, datetime.date, float, int, list, str)
 
 
 class CFGManager:
-    config_path = config_path  # don't change this plzzzzz it will break switch_config_path
+    config_path: Path = Path(config_path)  # don't change this plzzzzz it will break switch_config_path
     config_file_list = [cfg for cfg in os.listdir(config_path) if cfg.endswith(".toml")]
     values: dict[str, TOMLDocument] = {}
     _tss: dict[str, float] = {}
@@ -49,9 +50,9 @@ class CFGManager:
                     cfg_name = cfg
                     if cfg_name.endswith(".toml"):
                         cfg_name = cfg_name.removesuffix(".toml")
-                    with open(os.path.join(cls.config_path, cfg), "r", encoding="utf-8") as c:
+                    with open(cls.config_path / cfg, "r", encoding="utf-8") as c:
                         cls.values[cfg_name] = toml_parser(c.read())
-                    cls._tss[cfg_name] = os.path.getmtime(os.path.join(cls.config_path, cfg))
+                    cls._tss[cfg_name] = (cls.config_path / cfg).stat().st_mtime
             except Exception as e:
                 raise ConfigValueError(e)
             cls._load_lock = False
@@ -65,7 +66,7 @@ class CFGManager:
                     cfg_name = cfg
                     if not cfg_name.endswith(".toml"):
                         cfg_name += ".toml"
-                    with open(os.path.join(cls.config_path, cfg_name), "w", encoding="utf-8") as f:
+                    with open(cls.config_path / cfg_name, "w", encoding="utf-8") as f:
                         f.write(toml_dumps(cls.values[cfg], sort_keys=True))
             except Exception as e:
                 raise ConfigValueError(e)
@@ -82,9 +83,9 @@ class CFGManager:
                 cfg_file = cfg
                 if not cfg_file.endswith(".toml"):
                     cfg_file += ".toml"
-                file_path = os.path.join(cls.config_path, cfg_file)
-                if os.path.exists(file_path):
-                    if os.path.getmtime(file_path) != cls._tss[cfg]:
+                file_path = cls.config_path / cfg_file
+                if file_path.exists():
+                    if file_path.stat().st_mtime != cls._tss[cfg]:
                         logger.warning("[Config] Config file has been modified, reloading...")
                         cls.load()
                         break
@@ -403,7 +404,7 @@ class CFGManager:
 
     @classmethod
     def switch_config_path(cls, path: str):
-        cls.config_path = os.path.abspath(path)
+        cls.config_path = Path(path).resolve()
         cls._tss = {}
         cls.config_file_list = [cfg for cfg in os.listdir(cls.config_path) if cfg.endswith(".toml")]
         cls.values = {}

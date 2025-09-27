@@ -1,5 +1,3 @@
-import os
-
 from core.config import Config
 from core.constants.path import assets_path
 
@@ -7,12 +5,12 @@ DEVELOPER_TOKEN = Config("diving_fish_developer_token", cfg_type=str, secret=Tru
 SONGS_PER_PAGE = 30
 SONGS_NEED_IMG = 10
 
-mai_assets_path = os.path.join(assets_path, "modules", "maimai")
-mai_cover_path = os.path.join(mai_assets_path, "static", "mai", "cover")
-mai_alias_path = os.path.join(mai_assets_path, "mai_song_alias.json")
-mai_grade_info_path = os.path.join(mai_assets_path, "mai_grade_info.json")
-mai_song_info_path = os.path.join(mai_assets_path, "mai_song_info.json")
-mai_utage_info_path = os.path.join(mai_assets_path, "mai_utage_info.json")
+mai_assets_path = assets_path / "modules" / "maimai"
+mai_cover_path = mai_assets_path / "static" / "mai" / "cover"
+mai_alias_path = mai_assets_path / "mai_song_alias.json"
+mai_grade_info_path = mai_assets_path / "mai_grade_info.json"
+mai_song_info_path = mai_assets_path / "mai_song_info.json"
+mai_utage_info_path = mai_assets_path / "mai_utage_info.json"
 
 achievement_list = [
     50.0,
