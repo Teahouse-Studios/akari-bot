@@ -1,4 +1,3 @@
-import os
 import re
 import shutil
 from datetime import datetime
@@ -63,14 +62,14 @@ purge = module("purge", required_superuser=True, base=True, doc=True)
 @purge.command()
 async def _(msg: Bot.MessageSession):
     if cache_path.exists():
-        if os.listdir(cache_path):
+        if len(list(cache_path.iterdir())) > 0:
             shutil.rmtree(cache_path)
-            os.makedirs(cache_path, exist_ok=True)
+            cache_path.mkdir(parents=True, exist_ok=True)
             await msg.finish(I18NContext("core.message.purge.success"))
         else:
             await msg.finish(I18NContext("core.message.purge.empty"))
     else:
-        os.makedirs(cache_path, exist_ok=True)
+        cache_path.mkdir(parents=True, exist_ok=True)
         await msg.finish(I18NContext("core.message.purge.empty"))
 
 

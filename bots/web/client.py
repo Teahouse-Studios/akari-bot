@@ -1,5 +1,4 @@
 import asyncio
-import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -21,12 +20,12 @@ from core.logger import Logger
 from core.utils.socket import find_available_port, get_local_ip
 
 if (webui_path / "dist").exists():
-    dist_path: Path = os.path.join(webui_path / "dist")
+    dist_path: Path = webui_path / "dist"
 else:
     try:
         from akari_bot_webui.entrypoint import dist_path
     except ImportError:
-        dist_path = None
+        dist_path = Path()
 
 
 enable_https = Config("enable_https", default=False, table_name="bot_web")
@@ -67,7 +66,7 @@ def _webui_message():
 async def lifespan(app: FastAPI):
     await client_init(target_prefix_list, sender_prefix_list)
     await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id=f"{sender_prefix}|0")
-    if dist_path.exists():
+    if Path(dist_path).exists():
         Logger.info(_webui_message())
     yield
     await asyncio.sleep(3)  # 等待 server 清理进程
@@ -90,7 +89,7 @@ app.add_middleware(
 )
 
 
-if dist_path.exists():
+if Path(dist_path).exists():
     @app.get("/webui/{path:path}")
     async def serve_webui(path: str):
         file_path = dist_path / path

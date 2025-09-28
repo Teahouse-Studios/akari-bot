@@ -1,5 +1,4 @@
 import datetime
-import os
 import re
 from time import sleep
 from pathlib import Path
@@ -24,7 +23,7 @@ ALLOWED_TYPES = (bool, datetime.datetime, datetime.date, float, int, list, str)
 
 class CFGManager:
     config_path: Path = Path(config_path)  # don't change this plzzzzz it will break switch_config_path
-    config_file_list = [cfg for cfg in os.listdir(config_path) if cfg.endswith(".toml")]
+    config_file_list = [cfg.name for cfg in config_path.glob("*.toml")]
     values: dict[str, TOMLDocument] = {}
     _tss: dict[str, float] = {}
     _load_lock = False
@@ -45,7 +44,7 @@ class CFGManager:
         if not cls._load_lock:
             cls._load_lock = True
             try:
-                cls.config_file_list = [cfg for cfg in os.listdir(cls.config_path) if cfg.endswith(".toml")]
+                cls.config_file_list = [cfg.name for cfg in config_path.glob("*.toml")]
                 for cfg in cls.config_file_list:
                     cfg_name = cfg
                     if cfg_name.endswith(".toml"):
@@ -406,7 +405,7 @@ class CFGManager:
     def switch_config_path(cls, path: str):
         cls.config_path = Path(path).resolve()
         cls._tss = {}
-        cls.config_file_list = [cfg for cfg in os.listdir(cls.config_path) if cfg.endswith(".toml")]
+        cls.config_file_list = [cfg.name for cfg in config_path.glob("*.toml")]
         cls.values = {}
         cls._load_lock = False
         cls._save_lock = False

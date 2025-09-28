@@ -1,6 +1,5 @@
 import glob
 import html
-import os
 import re
 import traceback
 from collections.abc import MutableMapping
@@ -80,7 +79,7 @@ def load_locale_file() -> List[str]:
     locale_dict = {}
     err_prompt = []
 
-    locales = os.listdir(locales_path)
+    locales = [c.name for c in locales_path.iterdir()]
     try:
         for loc in locales:
             with open(locales_path / loc, "rb") as f:
@@ -91,7 +90,7 @@ def load_locale_file() -> List[str]:
 
     for modules_locales_file in glob.glob(modules_locales_path):
         if Path(modules_locales_file).is_dir():
-            locales_m = os.listdir(modules_locales_file)
+            locales_m = [c.name for c in Path(modules_locales_file).iterdir()]
             for lang_file in locales_m:
                 lang_file_path = Path(modules_locales_file) / lang_file
                 with open(lang_file_path, "rb") as f:

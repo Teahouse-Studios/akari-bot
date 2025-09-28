@@ -1,7 +1,6 @@
 import asyncio
 import glob
 import mimetypes
-import os
 import platform
 import re
 import shutil
@@ -216,7 +215,7 @@ async def clear_password(request: Request):
         except Exception:
             raise HTTPException(status_code=401, detail="Invalid password")
 
-        os.remove(PASSWORD_PATH)
+        PASSWORD_PATH.unlink()
         return Response(status_code=205)
     except HTTPException as e:
         raise e
@@ -290,7 +289,7 @@ async def get_analytics(request: Request, days: int = Query(1)):
 async def get_config_list(request: Request):
     verify_jwt(request)
     try:
-        files = os.listdir(config_path)
+        files = [c.name for c in config_path.iterdir()]
         cfg_files = [f for f in files if f.endswith(".toml")]
 
         if config_filename in cfg_files:

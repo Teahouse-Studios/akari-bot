@@ -1,4 +1,3 @@
-import os
 import shutil
 import struct
 
@@ -137,7 +136,7 @@ def parse_game_record(rd_path):
 
 async def get_game_record(msg: Bot.MessageSession, session_token: str, use_cache: bool = True):
     pgr_cache_path = cache_path / "phigros-record"
-    os.makedirs(pgr_cache_path, exist_ok=True)
+    pgr_cache_path.mkdir(parents=True, exist_ok=True)
     cache_dir = pgr_cache_path / f"{msg.session_info.sender_id.replace("|", "_")}_phigros_song_record.json"
     save_filename = f"{msg.session_info.sender_id.replace("|", "_")}_phigros_gamesave"
     save_dir = pgr_cache_path / save_filename
@@ -152,7 +151,7 @@ async def get_game_record(msg: Bot.MessageSession, session_token: str, use_cache
         dl = await download(save_url, f"{save_filename}.zip", pgr_cache_path)
         shutil.unpack_archive(dl, save_dir)
         data = parse_game_record(save_dir)
-        os.remove(pgr_cache_path / f"{save_filename}.zip")
+        (pgr_cache_path / f"{save_filename}.zip").unlink()
 
         if use_cache and data:
             if cache_dir.exists():

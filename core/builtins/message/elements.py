@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import base64
 import mimetypes
-import os
 import random
 import re
 from copy import deepcopy

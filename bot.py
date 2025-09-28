@@ -93,7 +93,7 @@ def pre_init():
     from core.constants.path import cache_path  # noqa
     if cache_path.exists():
         shutil.rmtree(cache_path)
-    os.makedirs(cache_path, exist_ok=True)
+    cache_path.mkdir(parents=True, exist_ok=True)
 
     from core.config import Config  # noqa
     from core.constants.default import base_superuser_default  # noqa

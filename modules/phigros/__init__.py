@@ -1,5 +1,3 @@
-import os
-
 import orjson as json
 
 from core.builtins.bot import Bot

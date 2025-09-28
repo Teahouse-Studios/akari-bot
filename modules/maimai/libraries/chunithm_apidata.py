@@ -1,5 +1,3 @@
-import os
-
 from typing import Optional
 
 import orjson as json
@@ -29,7 +27,7 @@ async def get_info(music: Music, details) -> MessageChain:
 
 async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> Optional[str]:
     maimai_cache_dir = cache_path / "maimai-record"
-    os.makedirs(maimai_cache_dir, exist_ok=True)
+    maimai_cache_dir.mkdir(parents=True, exist_ok=True)
     cache_dir = maimai_cache_dir / f"{msg.session_info.sender_id.replace("|", "_")}_chunithm_record.json"
     url = "https://www.diving-fish.com/api/chunithmprober/query/player"
     if "username" in payload:

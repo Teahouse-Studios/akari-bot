@@ -1,4 +1,3 @@
-import os
 import re
 import uuid
 from typing import Union, List
@@ -64,7 +63,7 @@ async def generate_screenshot_v1(
         pagename = uuid.uuid4()
         url = cache_path / f"{pagename}.html"
         if url.exists():
-            os.remove(url)
+            url.unlink()
         Logger.info("Downloaded raw.")
 
         def join_url(base, target):

@@ -1,5 +1,4 @@
 import asyncio
-import os
 import time
 from datetime import datetime
 
@@ -299,7 +298,7 @@ async def download_cover_thumb(uid):
     try:
         filename = "thumbnail.png"
         d = cache_path / "cytoid-cover" / uid
-        os.makedirs(d, exist_ok=True)
+        d.mkdir(parents=True, exist_ok=True)
         path = d / filename
         if not path.exists():
             level_url = f"http://services.cytoid.io/levels/{uid}"
@@ -318,7 +317,7 @@ async def download_avatar_thumb(link, id):
     Logger.debug(f"Downloading avatar for {id}")
     try:
         d = cache_path / "cytoid-avatar"
-        os.makedirs(d, exist_ok=True)
+        d.mkdir(parents=True, exist_ok=True)
         path = await download(
             link, filename=f"{id}.png", path=d, logging_err_resp=False
         )
@@ -345,7 +344,7 @@ async def make_songcard(
         try:
             img = Image.open(coverpath)
         except Exception:
-            os.remove(coverpath)
+            coverpath.unlink()
             img = Image.new("RGBA", (384, 240), "black")
     else:
         img = Image.new("RGBA", (384, 240), "black")

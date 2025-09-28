@@ -1,5 +1,4 @@
 import csv
-import os
 import re
 import shutil
 import string
@@ -41,8 +40,8 @@ async def update_assets(update_cover=True):
     file_path = f"{random_cache_path()}.json"
     data = {}
     illustration_path = pgr_assets_path / "illustration"
-    os.makedirs(illustration_path, exist_ok=True)
-    illustration_list = os.listdir(illustration_path)
+    illustration_path.mkdir(parents=True, exist_ok=True)
+    illustration_list = [c.name for c in illustration_path.iterdir()]
     try:
         update = await get_url(json_url, 200, fmt="json")
     except Exception:

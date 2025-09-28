@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import os
 
 import orjson as json
 from apscheduler.schedulers import SchedulerAlreadyRunningError
@@ -85,7 +84,7 @@ async def load_prompt() -> None:
                     message = I18NContext("loader.load.success")
                 message = MessageChain.assign(message)
                 await Bot.send_direct_message(author_session, message)
-        os.remove(author_cache)
+        author_cache.unlink()
 
 
 __all__ = ["init_async", "load_prompt"]

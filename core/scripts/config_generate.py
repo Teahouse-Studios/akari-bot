@@ -15,10 +15,10 @@ from core.i18n import Locale, load_locale_file
 from core.utils.message import isint
 
 
-def generate_config(dir_path, language):
+def generate_config(dir_path: Path, language: str):
     load_locale_file()
 
-    os.makedirs(dir_path, exist_ok=True)
+    dir_path.mkdir(parents=True, exist_ok=True)
     path_ = dir_path / config_filename
 
     # create empty config.toml
@@ -102,21 +102,22 @@ if __name__ == "__main__":
         if old_cfg_file_path.exists():
             pass
         else:
-            os.makedirs(config_path, exist_ok=True)
+            config_path.mkdir(parents=True, exist_ok=True)
             open(cfg_file_path, "w", encoding="utf-8").close()
     import zipfile
     import difflib
 
-    def zip_language_folders(config_store_path, config_store_packed_path):
-        for lang in os.listdir(config_store_path):
+    def zip_language_folders(config_store_path: Path, config_store_packed_path):
+        for lang in [c.name for c in config_store_path.iterdir()]:
             lang_path = config_store_path / lang
             if lang_path.is_dir():
                 zip_path = config_store_packed_path / f"{lang}.zip"
                 with zipfile.ZipFile(zip_path, "w") as zipf:
-                    for root, _, files in os.walk(lang_path):
-                        for file in files:
-                            file_path = root / file
-                            arcname = Path(file_path).relative_to(lang_path)
+                    lang_path_obj = Path(lang_path)
+
+                    for file_path in lang_path_obj.rglob("*"):
+                        if file_path.is_file():
+                            arcname = file_path.relative_to(lang_path_obj)
                             zipf.write(file_path, arcname)
 
     config_store_path = assets_path / "config_store"
@@ -126,13 +127,13 @@ if __name__ == "__main__":
         shutil.rmtree(config_store_path_bak)
     if config_store_path.exists():
         shutil.move(config_store_path, config_store_path_bak)
-    os.makedirs(config_store_path, exist_ok=True)
-    os.makedirs(config_store_packed_path, exist_ok=True)
+    config_store_path.mkdir(parents=True, exist_ok=True)
+    config_store_packed_path.mkdir(parents=True, exist_ok=True)
 
     processes = []
     for lang in lang_list:
         config_store_path_ = config_store_path / lang
-        os.makedirs(config_store_path_, exist_ok=True)
+        config_store_path_.mkdir(parents=True, exist_ok=True)
         p = multiprocessing.Process(target=generate_config, args=(config_store_path_, lang))
         p.start()
         processes.append(p)
@@ -169,25 +170,28 @@ if __name__ == "__main__":
         if not config_store_path_bak.exists():
             repack = True
             break
-        for root, _, files_ in os.walk(config_store_path_):
-            for file in files_:
-                file_path = Path(root) / file
-                file_path_bak = config_store_path_bak / file_path.relative_to(config_store_path)
+        for file_path in config_store_path_.rglob('*'):
+            if file_path.is_file():
+                file_path_bak = config_store_path_bak / file_path.relative_to(config_store_path_)
                 if not file_path_bak.exists():
                     repack = True
                     break
+
                 with open(file_path, "r", encoding="utf-8") as f:
                     new = f.readlines()
                 with open(file_path_bak, "r", encoding="utf-8") as f:
                     old = f.readlines()
+
                 diff = difflib.unified_diff(old, new, fromfile=str(file_path_bak), tofile=str(file_path))
                 for d in diff:
                     if d:
                         print(d)
                         repack = True
                         break
-            if repack:
-                break
+
+                if repack:
+                    break
+
     if repack:
         zip_language_folders(config_store_path, config_store_packed_path)
         print("Changes detected, repacked the config files.")

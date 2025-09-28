@@ -1,5 +1,3 @@
-import os
-
 from collections import defaultdict
 from typing import Optional, Union
 
@@ -25,7 +23,7 @@ async def update_cover() -> bool:
     id_list = ["0", "1000"]
     for song in await total_list.get():
         id_list.append(song["id"])
-    os.makedirs(mai_cover_path, exist_ok=True)
+    mai_cover_path.mkdir(parents=True, exist_ok=True)
     for id in id_list:
         cover_path = mai_cover_path / f"{id}.png"
         if not cover_path.exists():
@@ -166,7 +164,7 @@ async def get_record(
     msg: Bot.MessageSession, payload: dict, use_cache: bool = True
 ) -> Optional[str]:
     mai_cache_path = cache_path / "maimai-record"
-    os.makedirs(mai_cache_path, exist_ok=True)
+    mai_cache_path.mkdir(parents=True, exist_ok=True)
     cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_record.json"
     url = "https://www.diving-fish.com/api/maimaidxprober/query/player"
     try:
@@ -214,7 +212,7 @@ async def get_song_record(
 ) -> Optional[str]:
     if DEVELOPER_TOKEN:
         mai_cache_path = cache_path / "maimai-record"
-        os.makedirs(mai_cache_path, exist_ok=True)
+        mai_cache_path.mkdir(parents=True, exist_ok=True)
         cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_song_record.json"
         url = "https://www.diving-fish.com/api/maimaidxprober/dev/player/record"
         try:
@@ -265,7 +263,7 @@ async def get_total_record(
     msg: Bot.MessageSession, payload: dict, utage: bool = False, use_cache: bool = True
 ):
     mai_cache_path = cache_path / "maimai-record"
-    os.makedirs(mai_cache_path, exist_ok=True)
+    mai_cache_path.mkdir(parents=True, exist_ok=True)
     cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_total_record.json"
     url = "https://www.diving-fish.com/api/maimaidxprober/query/plate"
     payload["version"] = versions
@@ -321,7 +319,7 @@ async def get_plate(
 ) -> Optional[str]:
     version = "舞" if version == "覇" else version  # “覇者”属于舞代
     mai_cache_path = cache_path / "maimai-record"
-    os.makedirs(mai_cache_path, exist_ok=True)
+    mai_cache_path.mkdir(parents=True, exist_ok=True)
     cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_plate_{version}.json"
     url = "https://www.diving-fish.com/api/maimaidxprober/query/plate"
     try:

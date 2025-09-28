@@ -1,4 +1,3 @@
-import os
 import shutil
 from time import sleep
 
@@ -39,7 +38,7 @@ def convert_cfg_to_toml():
 
     with open(cfg_file_path, "w") as f:
         f.write(toml_dumps(config_dict))
-    os.remove(old_cfg_file_path)
+    old_cfg_file_path.unlink()
 
 
 # If the config file does not exist, try to convert the old config file to the new format, or raise an error.
