@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from core.queue.client import JobQueueClient
     from core.queue.server import JobQueueServer
 
-enable_analytics = Config("enable_analytics", False)
+enable_analytics = Config("enable_analytics", True)
 
 
 class Bot:

@@ -1,6 +1,7 @@
 import asyncio
 import glob
 import mimetypes
+import os
 import platform
 import re
 import shutil
@@ -957,3 +958,16 @@ def preview_file(request: Request, path: str):
     except Exception:
         Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
+
+
+async def restart():
+    await asyncio.sleep(1)
+    os._exit(233)
+
+
+@app.post("/api/restart")
+async def restart_bot(request: Request):
+    verify_jwt(request)
+
+    asyncio.create_task(restart())
+    return Response(status_code=202)

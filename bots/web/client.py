@@ -66,7 +66,7 @@ def _webui_message():
 async def lifespan(app: FastAPI):
     await client_init(target_prefix_list, sender_prefix_list)
     await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id=f"{sender_prefix}|0")
-    if Path(dist_path).exists():
+    if dist_path.exists():
         Logger.info(_webui_message())
     yield
     await asyncio.sleep(3)  # 等待 server 清理进程
@@ -89,7 +89,7 @@ app.add_middleware(
 )
 
 
-if Path(dist_path).exists():
+if dist_path.exists():
     @app.get("/webui/{path:path}")
     async def serve_webui(path: str):
         file_path = dist_path / path

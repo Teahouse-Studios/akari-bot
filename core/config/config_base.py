@@ -24,7 +24,7 @@ class Config:
     quick_confirm: bool = True
 
     # 通用功能
-    enable_analytics: bool = False
+    enable_analytics: bool = True
     enable_commit_url: bool = True
     enable_dirty_check: bool = False
     enable_eval: bool = False

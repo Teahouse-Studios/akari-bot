@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 
 enable_tos = Config("enable_tos", True)
-enable_analytics = Config("enable_analytics", False)
+enable_analytics = Config("enable_analytics", True)
 report_targets = Config("report_targets", [])
 enable_module_invalid_prompt = Config("enable_module_invalid_prompt", False)
 TOS_TEMPBAN_TIME = Config("tos_temp_ban_time", 300) if Config("tos_temp_ban_time", 300) > 0 else 300

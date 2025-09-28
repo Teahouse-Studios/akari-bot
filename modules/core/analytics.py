@@ -12,6 +12,8 @@ from core.database.models import AnalyticsData
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 
+enable_analytics = Config("enable_analytics", True)
+
 
 async def get_first_record():
     try:
@@ -29,7 +31,7 @@ ana = module("analytics", alias="ana", required_superuser=True, base=True, doc=T
 
 @ana.command()
 async def _(msg: Bot.MessageSession):
-    if Config("enable_analytics", False):
+    if enable_analytics:
         first_record = await get_first_record()
         if not first_record:
             await msg.finish(I18NContext("core.message.analytics.none"))
@@ -50,7 +52,7 @@ async def _(msg: Bot.MessageSession):
 
 @ana.command("days [<module>]")
 async def _(msg: Bot.MessageSession):
-    if Config("enable_analytics", False):
+    if enable_analytics:
         first_record = await get_first_record()
         if not first_record:
             await msg.finish(I18NContext("core.message.analytics.none"))
@@ -109,7 +111,7 @@ async def _(msg: Bot.MessageSession):
 
 @ana.command("year [<module>]")
 async def _(msg: Bot.MessageSession):
-    if Config("enable_analytics", False):
+    if enable_analytics:
         first_record = await get_first_record()
 
         if not first_record:
@@ -170,7 +172,7 @@ async def _(msg: Bot.MessageSession):
 @ana.command("modules [<rank>]")
 async def _(msg: Bot.MessageSession, rank: int = None):
     rank = rank if rank and rank > 0 else 30
-    if Config("enable_analytics", False):
+    if enable_analytics:
         try:
             module_counts = await AnalyticsData.get_modules_count()
             top_modules = sorted(

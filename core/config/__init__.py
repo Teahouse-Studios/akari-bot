@@ -14,7 +14,7 @@ from tomlkit.items import Table
 import core.config.update  # noqa
 from core.constants.default import default_locale
 from core.constants.exceptions import ConfigValueError, ConfigOperationError
-from core.constants.path import config_path
+from core.constants.path import config_path as default_config_path
 from core.exports import add_export
 from core.i18n import Locale
 
@@ -22,7 +22,7 @@ ALLOWED_TYPES = (bool, datetime.datetime, datetime.date, float, int, list, str)
 
 
 class CFGManager:
-    config_path: Path = Path(config_path)  # don't change this plzzzzz it will break switch_config_path
+    config_path = default_config_path  # don't change this plzzzzz it will break switch_config_path
     config_file_list = [cfg.name for cfg in config_path.glob("*.toml")]
     values: dict[str, TOMLDocument] = {}
     _tss: dict[str, float] = {}
@@ -44,7 +44,7 @@ class CFGManager:
         if not cls._load_lock:
             cls._load_lock = True
             try:
-                cls.config_file_list = [cfg.name for cfg in config_path.glob("*.toml")]
+                cls.config_file_list = [cfg.name for cfg in cls.config_path.glob("*.toml")]
                 for cfg in cls.config_file_list:
                     cfg_name = cfg
                     if cfg_name.endswith(".toml"):
@@ -402,10 +402,10 @@ class CFGManager:
         return True
 
     @classmethod
-    def switch_config_path(cls, path: str):
-        cls.config_path = Path(path).resolve()
+    def switch_config_path(cls, path: "Path"):
+        cls.config_path = path.resolve()
         cls._tss = {}
-        cls.config_file_list = [cfg.name for cfg in config_path.glob("*.toml")]
+        cls.config_file_list = [cfg.name for cfg in cls.config_path.glob("*.toml")]
         cls.values = {}
         cls._load_lock = False
         cls._save_lock = False
