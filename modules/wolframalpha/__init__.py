@@ -1,4 +1,3 @@
-import os
 import urllib.parse
 
 from PIL import Image as PILImage
@@ -37,9 +36,9 @@ async def _(msg: Bot.MessageSession, query: str):
         img_path = await download(url, status_code=200)
         if img_path:
             with PILImage.open(img_path) as img:
-                output = os.path.splitext(img_path)[0] + ".png"
+                output = f"{img_path.stem}.png"
                 img.save(output, "PNG")
-            os.remove(img_path)
+            img_path.unlink()
             await msg.finish([BImage(output)])
     except ValueError as e:
         if str(e).startswith("501"):

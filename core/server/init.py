@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import os
 
 import orjson as json
 from apscheduler.schedulers import SchedulerAlreadyRunningError
@@ -72,9 +71,9 @@ async def load_secret():
 
 
 async def load_prompt() -> None:
-    author_cache = os.path.join(PrivateAssets.path, ".cache_restart_author")
-    loader_cache = os.path.join(PrivateAssets.path, ".cache_loader")
-    if os.path.exists(author_cache):
+    author_cache = PrivateAssets.path / ".cache_restart_author"
+    loader_cache = PrivateAssets.path / ".cache_loader"
+    if author_cache.exists():
         with open(author_cache, "r", encoding="utf-8") as open_author_cache:
             author_session = converter.structure(json.loads(open_author_cache.read()), SessionInfo)
             await author_session.refresh_info()
@@ -85,7 +84,7 @@ async def load_prompt() -> None:
                     message = I18NContext("loader.load.success")
                 message = MessageChain.assign(message)
                 await Bot.send_direct_message(author_session, message)
-        os.remove(author_cache)
+        author_cache.unlink()
 
 
 __all__ = ["init_async", "load_prompt"]

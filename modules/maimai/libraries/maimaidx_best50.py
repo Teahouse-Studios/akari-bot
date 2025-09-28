@@ -1,4 +1,3 @@
-import os
 from typing import Optional, Dict, List
 
 from PIL import Image, ImageDraw, ImageFont
@@ -184,11 +183,11 @@ class DrawBest:
             i = num // 5
             j = num % 5
             chart_info: ChartInfo = sd_best[num]
-            cover_path = os.path.join(mai_cover_path, f"{chart_info.song_id}.png")
-            if not os.path.exists(cover_path):
-                cover_path = os.path.join(mai_cover_path, "0.png")
+            cover_path = mai_cover_path / f"{chart_info.song_id}.png"
+            if not cover_path.exists():
+                cover_path = mai_cover_path / "0.png"
 
-            if os.path.exists(cover_path):
+            if cover_path.exists():
                 temp = Image.open(cover_path).convert("RGBA")
                 temp = self._resize_image(temp, item_weight / temp.size[0])
                 temp = temp.crop(
@@ -260,11 +259,11 @@ class DrawBest:
             i = num // 5
             j = num % 5
             chart_info: ChartInfo = dx_best[num]
-            cover_path = os.path.join(mai_cover_path, f"{chart_info.song_id}.png")
-            if not os.path.exists(cover_path):
-                cover_path = os.path.join(mai_cover_path, "0.png")
+            cover_path = mai_cover_path / f"{chart_info.song_id}.png"
+            if not cover_path.exists():
+                cover_path = mai_cover_path / "0.png"
 
-            if os.path.exists(cover_path):
+            if cover_path.exists():
                 temp = Image.open(cover_path).convert("RGBA")
                 temp = self._resize_image(temp, item_weight / temp.size[0])
                 temp = temp.crop(

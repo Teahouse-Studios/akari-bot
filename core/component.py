@@ -1,6 +1,6 @@
 import inspect
-import os
 import re
+from pathlib import Path
 from typing import Union, overload
 
 from apscheduler.triggers.combining import AndTrigger, OrTrigger
@@ -249,11 +249,12 @@ def module(
 
     py_module_name = ""
     if caller_file:
-        parts = os.path.normpath(caller_file).split(os.sep)
-        if "modules" in parts:
-            idx = parts.index("modules")
-            if idx + 1 < len(parts):
-                py_module_name = parts[idx + 1]
+        path = Path(caller_file).resolve()
+        try:
+            modules_idx = path.parts.index("modules")
+            py_module_name = path.parts[modules_idx + 1]
+        except (ValueError, IndexError):
+            py_module_name = ""
 
     module = Module.assign(
         module_name=module_name,

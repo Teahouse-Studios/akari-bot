@@ -1,9 +1,9 @@
 import asyncio
 import importlib
 import logging
-import os
 import pkgutil
 import re
+from pathlib import Path
 
 import discord
 import filetype
@@ -57,9 +57,7 @@ async def on_ready():
         count += 1
 
 
-slash_load_dir = os.path.abspath(
-    os.path.join(os.path.abspath(os.path.dirname(__file__)), "slash")
-)
+slash_load_dir = (Path(__file__).parent / "slash").resolve()
 
 
 def load_slashcommands():

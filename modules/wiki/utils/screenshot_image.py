@@ -1,4 +1,3 @@
-import os
 import re
 import uuid
 from typing import Union, List
@@ -62,9 +61,9 @@ async def generate_screenshot_v1(
             return False
         soup = BeautifulSoup(html, "html.parser")
         pagename = uuid.uuid4()
-        url = os.path.join(cache_path, f"{pagename}.html")
-        if os.path.exists(url):
-            os.remove(url)
+        url = cache_path / f"{pagename}.html"
+        if url.exists():
+            url.unlink()
         Logger.info("Downloaded raw.")
 
         def join_url(base, target):

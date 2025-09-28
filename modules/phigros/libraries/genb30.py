@@ -1,5 +1,3 @@
-import os
-
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 
 from core.builtins.bot import Bot
@@ -8,9 +6,9 @@ from core.logger import Logger
 from core.utils.cache import random_cache_path
 from .record import get_game_record
 
-pgr_assets_path = os.path.join(assets_path, "modules", "phigros")
+pgr_assets_path = assets_path / "modules" / "phigros"
 
-saira_regular_path = os.path.join(pgr_assets_path, "Saira Regular.ttf")
+saira_regular_path = pgr_assets_path / "Saira Regular.ttf"
 
 levels = {"EZ": 0, "HD": 1, "IN": 2, "AT": 3}
 
@@ -130,10 +128,8 @@ def draw_b30(username, rks_acc, p3data, b27data):
             if not song_id:
                 cardimg = Image.new("RGBA", (card_w, card_h), "black")
             else:
-                imgpath = os.path.join(
-                    pgr_assets_path, "illustration", f"{song_id.lower()}.png"
-                )
-                if not os.path.exists(imgpath):
+                imgpath = pgr_assets_path / "illustration" / f"{song_id.lower()}.png"
+                if not imgpath.exists():
                     cardimg = Image.new("RGBA", (card_w, card_h), "black")
                 else:
                     cardimg = Image.open(imgpath)

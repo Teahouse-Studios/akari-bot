@@ -1,4 +1,3 @@
-import os
 import shutil
 import struct
 
@@ -13,7 +12,7 @@ from core.logger import Logger
 from core.utils.http import get_url, download
 from .update import p_headers, remove_punctuations
 
-pgr_assets_path = os.path.join(assets_path, "modules", "phigros")
+pgr_assets_path = assets_path / "modules" / "phigros"
 
 
 levels = {
@@ -68,10 +67,10 @@ def decrypt_bytes(encrypted):
 
 
 def parse_game_record(rd_path):
-    with open(os.path.join(pgr_assets_path, "song_info.json"), "rb") as f:
+    with open(pgr_assets_path / "song_info.json", "rb") as f:
         song_info = json.loads(f.read())
     decrypted_data = {}
-    with open(os.path.join(rd_path, "gameRecord"), "rb+") as rd:  # skipcq
+    with open(rd_path / "gameRecord", "rb+") as rd:  # skipcq
         data = decrypt_bytes(rd.read())
         pos = int(data[0] < 0) + 1
         while pos < len(data):
@@ -136,13 +135,11 @@ def parse_game_record(rd_path):
 
 
 async def get_game_record(msg: Bot.MessageSession, session_token: str, use_cache: bool = True):
-    pgr_cache_path = os.path.join(cache_path, "phigros-record")
-    os.makedirs(pgr_cache_path, exist_ok=True)
-    cache_dir = os.path.join(
-        pgr_cache_path, f"{msg.session_info.sender_id.replace("|", "_")}_phigros_song_record.json"
-    )
+    pgr_cache_path = cache_path / "phigros-record"
+    pgr_cache_path.mkdir(parents=True, exist_ok=True)
+    cache_dir = pgr_cache_path / f"{msg.session_info.sender_id.replace("|", "_")}_phigros_song_record.json"
     save_filename = f"{msg.session_info.sender_id.replace("|", "_")}_phigros_gamesave"
-    save_dir = os.path.join(pgr_cache_path, save_filename)
+    save_dir = pgr_cache_path / save_filename
 
     save_url = "https://rak3ffdi.cloud.tds1.tapapis.cn/1.1/classes/_GameSave"
     headers = p_headers.copy()
@@ -154,10 +151,10 @@ async def get_game_record(msg: Bot.MessageSession, session_token: str, use_cache
         dl = await download(save_url, f"{save_filename}.zip", pgr_cache_path)
         shutil.unpack_archive(dl, save_dir)
         data = parse_game_record(save_dir)
-        os.remove(os.path.join(pgr_cache_path, f"{save_filename}.zip"))
+        (pgr_cache_path / f"{save_filename}.zip").unlink()
 
         if use_cache and data:
-            if os.path.exists(cache_dir):
+            if cache_dir.exists():
                 with open(cache_dir, "rb") as f:
                     try:
                         backup_data = json.loads(f.read())
@@ -171,7 +168,7 @@ async def get_game_record(msg: Bot.MessageSession, session_token: str, use_cache
         return data
     except Exception as e:
         Logger.exception()
-        if use_cache and os.path.exists(cache_dir):
+        if use_cache and cache_dir.exists():
             try:
                 with open(cache_dir, "rb") as f:
                     data = json.loads(f.read())

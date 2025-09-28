@@ -1,4 +1,3 @@
-import os
 import re
 import shutil
 from datetime import datetime
@@ -62,15 +61,15 @@ purge = module("purge", required_superuser=True, base=True, doc=True)
 
 @purge.command()
 async def _(msg: Bot.MessageSession):
-    if os.path.exists(cache_path):
-        if os.listdir(cache_path):
+    if cache_path.exists():
+        if len(list(cache_path.iterdir())) > 0:
             shutil.rmtree(cache_path)
-            os.makedirs(cache_path, exist_ok=True)
+            cache_path.mkdir(parents=True, exist_ok=True)
             await msg.finish(I18NContext("core.message.purge.success"))
         else:
             await msg.finish(I18NContext("core.message.purge.empty"))
     else:
-        os.makedirs(cache_path, exist_ok=True)
+        cache_path.mkdir(parents=True, exist_ok=True)
         await msg.finish(I18NContext("core.message.purge.empty"))
 
 
@@ -420,7 +419,7 @@ rst = module(
 
 
 def write_restart_cache(msg: Bot.MessageSession):
-    update = os.path.join(Bot.PrivateAssets.path, ".cache_restart_author")
+    update = Bot.PrivateAssets.path / ".cache_restart_author"
     with open(update, "wb") as write_version:
         write_version.write(json.dumps(converter.unstructure(msg.session_info)))
 

@@ -1,6 +1,6 @@
 import asyncio
-import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from argon2 import PasswordHasher
 from fastapi import FastAPI
@@ -19,13 +19,13 @@ from core.database.models import JobQueuesTable, SenderInfo
 from core.logger import Logger
 from core.utils.socket import find_available_port, get_local_ip
 
-if os.path.exists(os.path.join(webui_path, "dist")):
-    dist_path = os.path.join(webui_path, "dist")
+if (webui_path / "dist").exists():
+    dist_path: Path = webui_path / "dist"
 else:
     try:
         from akari_bot_webui.entrypoint import dist_path
     except ImportError:
-        dist_path = ""
+        dist_path = Path()
 
 
 enable_https = Config("enable_https", default=False, table_name="bot_web")
@@ -66,7 +66,7 @@ def _webui_message():
 async def lifespan(app: FastAPI):
     await client_init(target_prefix_list, sender_prefix_list)
     await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id=f"{sender_prefix}|0")
-    if os.path.exists(dist_path):
+    if Path(dist_path).exists():
         Logger.info(_webui_message())
     yield
     await asyncio.sleep(3)  # 等待 server 清理进程
@@ -89,15 +89,15 @@ app.add_middleware(
 )
 
 
-if os.path.exists(dist_path):
+if Path(dist_path).exists():
     @app.get("/webui/{path:path}")
     async def serve_webui(path: str):
-        file_path = os.path.join(dist_path, path)
+        file_path = dist_path / path
 
-        if os.path.exists(file_path) and os.path.isfile(file_path):
+        if file_path.exists() and file_path.is_file():
             return FileResponse(file_path)
 
-        return FileResponse(os.path.join(dist_path, "index.html"))
+        return FileResponse(dist_path / "index.html")
 
     @app.get("/")
     @app.get("/webui")
@@ -111,4 +111,4 @@ else:
 
 @app.get("/favicon.ico")
 async def favicon():
-    return FileResponse(os.path.join(assets_path, "favicon.ico"))
+    return FileResponse(assets_path / "favicon.ico")

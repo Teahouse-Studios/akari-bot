@@ -1,9 +1,9 @@
 import glob
 import html
-import os
 import re
 import traceback
 from collections.abc import MutableMapping
+from pathlib import Path
 from string import Template
 from typing import Any, Dict, List, Optional, Union
 
@@ -79,20 +79,20 @@ def load_locale_file() -> List[str]:
     locale_dict = {}
     err_prompt = []
 
-    locales = os.listdir(locales_path)
+    locales = [c.name for c in locales_path.iterdir()]
     try:
         for loc in locales:
-            with open(os.path.join(locales_path, loc), "rb") as f:
+            with open(locales_path / loc, "rb") as f:
                 locale_dict[loc.removesuffix(".json")] = flatten(json.loads(f.read()))
     except Exception as e:
         traceback.print_exc()
         err_prompt.append(str(e))
 
     for modules_locales_file in glob.glob(modules_locales_path):
-        if os.path.isdir(modules_locales_file):
-            locales_m = os.listdir(modules_locales_file)
+        if Path(modules_locales_file).is_dir():
+            locales_m = [c.name for c in Path(modules_locales_file).iterdir()]
             for lang_file in locales_m:
-                lang_file_path = os.path.join(modules_locales_file, lang_file)
+                lang_file_path = Path(modules_locales_file) / lang_file
                 with open(lang_file_path, "rb") as f:
                     try:
                         if lang_file.removesuffix(".json") in locale_dict:

@@ -1,5 +1,3 @@
-import os
-
 import orjson as json
 from PIL import Image as PILImage
 
@@ -35,7 +33,7 @@ async def uuid_to_skin_and_cape(uuid):
         if is_cape:
             cape = PILImage.open(await download(f"https://crafatar.com/capes/{uuid}"))
             cape.crop((0, 0, 10, 16))
-            path = os.path.join(cache_path, f"{uuid}_fixed.png")
+            path = cache_path / f"{uuid}_fixed.png"
             cape.save(path)
         return {"render": render, "skin": skin, "cape": path}
     except Exception:

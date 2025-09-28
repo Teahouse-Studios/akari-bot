@@ -14,8 +14,8 @@ from .chunithm_music import Music
 
 async def get_info(music: Music, details) -> MessageChain:
     info = MessageChain.assign(Plain(f"{music.id} - {music.title}"))
-    cover_path = os.path.join(chu_cover_path, f"{music.id}.png")
-    if os.path.exists(cover_path):
+    cover_path = chu_cover_path / f"{music.id}.png"
+    if cover_path.exists():
         info.append(Image(cover_path))
     if details:
         if not isinstance(details, MessageChain):
@@ -26,9 +26,9 @@ async def get_info(music: Music, details) -> MessageChain:
 
 
 async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> Optional[str]:
-    maimai_cache_dir = os.path.join(cache_path, "maimai-record")
-    os.makedirs(maimai_cache_dir, exist_ok=True)
-    cache_dir = os.path.join(maimai_cache_dir, f"{msg.session_info.sender_id.replace("|", "_")}_chunithm_record.json")
+    maimai_cache_dir = cache_path / "maimai-record"
+    maimai_cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_dir = maimai_cache_dir / f"{msg.session_info.sender_id.replace("|", "_")}_chunithm_record.json"
     url = "https://www.diving-fish.com/api/chunithmprober/query/player"
     if "username" in payload:
         use_cache = False
@@ -55,7 +55,7 @@ async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = T
                 await msg.finish(I18NContext("maimai.message.forbidden"))
         else:
             Logger.exception()
-        if use_cache and os.path.exists(cache_dir):
+        if use_cache and cache_dir.exists():
             try:
                 with open(cache_dir, "rb") as f:
                     data = json.loads(f.read())

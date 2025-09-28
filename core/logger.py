@@ -1,6 +1,5 @@
 """机器人内置的基于`loguru`的日志工具。"""
 
-import os
 import re
 import sys
 import traceback
@@ -11,7 +10,7 @@ from loguru import logger
 from core.config import Config
 from core.constants.path import logs_path
 
-os.makedirs(logs_path, exist_ok=True)
+logs_path.mkdir(parents=True, exist_ok=True)
 
 bot_name = re.split(r"[/\\]", sys.path[0])[-1]
 
@@ -64,7 +63,7 @@ class LoggingLogger:
         )
 
         self.log.add(
-            sink=os.path.join(logs_path, f"{name}_debug_{{time:YYYY-MM-DD}}.log"),
+            sink=logs_path / f"{name}_debug_{{time:YYYY-MM-DD}}.log",
             format=basic_logger_format(name),
             rotation="00:00",
             retention="1 day",
@@ -73,7 +72,7 @@ class LoggingLogger:
             encoding="utf8",
         )
         self.log.add(
-            sink=os.path.join(logs_path, f"{name}_{{time:YYYY-MM-DD}}.log"),
+            sink=logs_path / f"{name}_{{time:YYYY-MM-DD}}.log",
             format=basic_logger_format(name),
             rotation="00:00",
             retention="10 days",

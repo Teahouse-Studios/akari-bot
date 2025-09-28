@@ -1,5 +1,4 @@
 import csv
-import os
 import re
 import shutil
 import string
@@ -12,8 +11,8 @@ from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.http import get_url, download
 
-pgr_assets_path = os.path.join(assets_path, "modules", "phigros")
-song_info_path = os.path.join(pgr_assets_path, "song_info.json")
+pgr_assets_path = assets_path / "modules" / "phigros"
+song_info_path = pgr_assets_path / "song_info.json"
 json_url = "https://raw.githubusercontent.com/ssmzhn/Phigros/main/Phigros.json"
 
 p_headers = {
@@ -40,9 +39,9 @@ def remove_punctuations(text):
 async def update_assets(update_cover=True):
     file_path = f"{random_cache_path()}.json"
     data = {}
-    illustration_path = os.path.join(pgr_assets_path, "illustration")
-    os.makedirs(illustration_path, exist_ok=True)
-    illustration_list = os.listdir(illustration_path)
+    illustration_path = pgr_assets_path / "illustration"
+    illustration_path.mkdir(parents=True, exist_ok=True)
+    illustration_list = [c.name for c in illustration_path.iterdir()]
     try:
         update = await get_url(json_url, 200, fmt="json")
     except Exception:
@@ -70,7 +69,7 @@ async def update_assets(update_cover=True):
                         download_file = await download(update[song]["illustration_big"], f"{song_full_id}.png")
                         if download_file:
                             shutil.move(
-                                download_file, os.path.join(illustration_path, f"{song_full_id}.png")
+                                download_file, illustration_path / f"{song_full_id}.png"
                             )
                     except Exception:
                         pass

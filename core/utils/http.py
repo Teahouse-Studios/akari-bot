@@ -3,12 +3,12 @@
 请勿在模块中导入`request`库，否则会导致阻塞问题。
 """
 
-import os
 import re
 import socket
 import urllib.parse
 import uuid
 from http.cookies import SimpleCookie
+from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
 import filetype as ft
@@ -209,7 +209,7 @@ async def post_url(
 async def download(
     url: str,
     filename: Optional[str] = None,
-    path: Optional[str] = None,
+    path: Optional[Union[str, Path]] = None,
     status_code: Optional[int] = 200,
     method: str = "GET",
     post_data: Any = None,
@@ -218,7 +218,7 @@ async def download(
     attempt: int = 3,
     request_private_ip: bool = False,
     logging_err_resp: bool = True,
-) -> Union[str, bool]:
+) -> Optional[Path]:
     """利用httpx下载指定url的内容，并保存到指定目录。
 
     :param url: 需要获取的URL。
@@ -277,12 +277,12 @@ async def download(
                 filename = f"{str(uuid.uuid4())}.{ftt}"
             if not path:
                 path = cache_path
-            path = os.path.join(path, filename)
+            path = Path(path) / filename
             async with async_open(path, "wb+") as file:
                 await file.write(data)
                 return path
         else:
-            return False
+            return None
 
     return await download_()
 

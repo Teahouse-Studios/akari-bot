@@ -1,5 +1,4 @@
 import asyncio
-import os
 import shutil
 
 from core.builtins.session.tasks import SessionTaskManager
@@ -22,9 +21,9 @@ async def bg():
 
 @Scheduler.scheduled_job(CronTrigger.from_crontab("0 0 * * *"))
 async def auto_purge():
-    if os.path.exists(cache_path):
+    if cache_path.exists():
         shutil.rmtree(cache_path)
-    os.makedirs(cache_path, exist_ok=True)
+    cache_path.mkdir(parents=True, exist_ok=True)
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=1), max_instances=1)

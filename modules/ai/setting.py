@@ -1,20 +1,18 @@
-import os
-
 import orjson as json
 
 from core.constants.path import assets_path
 
-ai_assets_path = os.path.join(assets_path, "modules", "ai")
+ai_assets_path = assets_path / "modules" / "ai"
 
-instructions_path = os.path.join(ai_assets_path, "instructions.txt")
-if os.path.exists(instructions_path):
+instructions_path = ai_assets_path / "instructions.txt"
+if instructions_path.exists():
     with open(instructions_path, "r", encoding="utf-8") as f:
         INSTRUCTIONS = f.read()
 else:
     INSTRUCTIONS = ""
 
-llm_api_list_path = os.path.join(ai_assets_path, "llm_api_list.json")
-if os.path.exists(llm_api_list_path):
+llm_api_list_path = ai_assets_path / "llm_api_list.json"
+if llm_api_list_path.exists():
     with open(llm_api_list_path, "rb") as f:
         llm_api_list = json.loads(f.read()).get("llm_api_list", [])
 else:

@@ -97,13 +97,13 @@ class DrawLevelList:
                     x_offset = self.margin
                     y_offset += self.image_size + self.spacing + 20
 
-                cover_path = os.path.join(mai_cover_path, f"{sid}.png")
-                if os.path.exists(cover_path):
+                cover_path = mai_cover_path / f"{sid}.png"
+                if cover_path.exists():
                     cover = Image.open(cover_path)
                     cover = cover.resize((self.image_size, self.image_size))
                     self.img.paste(cover, (x_offset, y_offset))
-                elif os.path.exists(os.path.join(mai_cover_path, "0.png")):
-                    cover = Image.open(os.path.join(mai_cover_path, "0.png"))
+                elif (mai_cover_path / "0.png").exists():
+                    cover = Image.open(mai_cover_path / "0.png")
                     cover = cover.resize((self.image_size, self.image_size))
                     self.img.paste(cover, (x_offset, y_offset))
                 else:

@@ -1,5 +1,4 @@
 import asyncio
-import os
 import time
 from datetime import datetime
 
@@ -23,9 +22,9 @@ from core.utils.http import get_url, download
 from core.utils.image import get_fontsize
 from core.utils.message import parse_time_string
 
-ctd_assets_path = os.path.join(assets_path, "modules", "cytoid")
-nunito_light_path = os.path.join(ctd_assets_path, "Nunito Light.ttf")
-nunito_regular_path = os.path.join(ctd_assets_path, "Nunito Regular.ttf")
+ctd_assets_path = assets_path / "modules" / "cytoid"
+nunito_light_path = ctd_assets_path / "Nunito Light.ttf"
+nunito_regular_path = ctd_assets_path / "Nunito Regular.ttf"
 
 
 def truncate_text(arg_str: str, arg_len: int) -> str:
@@ -298,10 +297,10 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
 async def download_cover_thumb(uid):
     try:
         filename = "thumbnail.png"
-        d = os.path.join(cache_path, "cytoid-cover", uid)
-        os.makedirs(d, exist_ok=True)
-        path = os.path.join(d, filename)
-        if not os.path.exists(path):
+        d = cache_path / "cytoid-cover" / uid
+        d.mkdir(parents=True, exist_ok=True)
+        path = d / filename
+        if not path.exists():
             level_url = f"http://services.cytoid.io/levels/{uid}"
             get_level = json.loads(await get_url(level_url))
             cover_thumbnail = f"{get_level["cover"]["original"]}?h=240&w=384"
@@ -317,8 +316,8 @@ async def download_cover_thumb(uid):
 async def download_avatar_thumb(link, id):
     Logger.debug(f"Downloading avatar for {id}")
     try:
-        d = os.path.join(cache_path, "cytoid-avatar")
-        os.makedirs(d, exist_ok=True)
+        d = cache_path / "cytoid-avatar"
+        d.mkdir(parents=True, exist_ok=True)
         path = await download(
             link, filename=f"{id}.png", path=d, logging_err_resp=False
         )
@@ -345,7 +344,7 @@ async def make_songcard(
         try:
             img = Image.open(coverpath)
         except Exception:
-            os.remove(coverpath)
+            coverpath.unlink()
             img = Image.new("RGBA", (384, 240), "black")
     else:
         img = Image.new("RGBA", (384, 240), "black")
@@ -376,7 +375,7 @@ async def make_songcard(
         )
     else:
         img = downlight.enhance(0.5).resize((384, img_h))
-    img_type = Image.open(os.path.join(ctd_assets_path, f"{chart_type}.png"))
+    img_type = Image.open(ctd_assets_path / f"{chart_type}.png")
     img_type = img_type.convert("RGBA")
     img_type = img_type.resize((40, 40))
     img.alpha_composite(img_type, (20, 20))

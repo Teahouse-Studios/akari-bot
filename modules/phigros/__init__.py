@@ -1,5 +1,3 @@
-import os
-
 import orjson as json
 
 from core.builtins.bot import Bot
@@ -14,8 +12,8 @@ from .libraries.genb30 import get_b30
 from .libraries.update import remove_punctuations, update_assets, p_headers
 from .libraries.record import get_game_record
 
-pgr_assets_path = os.path.join(assets_path, "modules", "phigros")
-song_info_path = os.path.join(pgr_assets_path, "song_info.json")
+pgr_assets_path = assets_path / "modules" / "phigros"
+song_info_path = pgr_assets_path / "song_info.json"
 
 phi = module(
     "phigros",
@@ -72,7 +70,7 @@ async def _(msg: Bot.MessageSession):
     bind_info = await PhigrosBindInfo.get_by_sender_id(msg, create=False)
     if not bind_info:
         await msg.finish(I18NContext("phigros.message.user_unbound", prefix=msg.session_info.prefixes[0]))
-    if not os.path.exists(song_info_path):
+    if not song_info_path.exists():
         await msg.finish(I18NContext("phigros.message.file_not_found"))
 
     img = await get_b30(msg, bind_info.username, bind_info.session_token)
@@ -102,15 +100,15 @@ def get_rank(score: int, full_combo: bool) -> str:
 
 @phi.command("random {{I18N:phigros.help.random}}")
 async def _(msg: Bot.MessageSession):
-    if not os.path.exists(song_info_path):
+    if not song_info_path.exists():
         await msg.finish(I18NContext("phigros.message.file_not_found"))
 
     msg_chain = MessageChain.assign()
     with open(song_info_path, "rb") as f:
         song_info = json.loads(f.read())
     sid, sinfo = Random.choice(list(song_info.items()))
-    illustration_path = os.path.join(pgr_assets_path, "illustration", f"{sid.split(".")[0]}.png")
-    if os.path.exists(illustration_path):
+    illustration_path = pgr_assets_path / "illustration" / f"{sid.split(".")[0]}.png"
+    if illustration_path.exists():
         msg_chain.append(Image(illustration_path))
 
     msg_chain.append(Plain(sinfo["name"]))
@@ -125,15 +123,15 @@ async def _(msg: Bot.MessageSession, song_name: str):
     bind_info = await PhigrosBindInfo.get_by_sender_id(msg, create=False)
     if not bind_info:
         await msg.finish(I18NContext("phigros.message.user_unbound", prefix=msg.session_info.prefixes[0]))
-    if not os.path.exists(song_info_path):
+    if not song_info_path.exists():
         await msg.finish(I18NContext("phigros.message.file_not_found"))
 
     msg_chain = MessageChain.assign()
     game_records: dict = await get_game_record(msg, bind_info.session_token)
     for sid, record in game_records.items():
         if remove_punctuations(record.get("name").lower()) == remove_punctuations(song_name.lower()):
-            illustration_path = os.path.join(pgr_assets_path, "illustration", f"{sid.split(".")[0]}.png")
-            if os.path.exists(illustration_path):
+            illustration_path = pgr_assets_path / "illustration" / f"{sid.split(".")[0]}.png"
+            if illustration_path.exists():
                 msg_chain.append(Image(illustration_path))
 
             msg_chain.append(Plain(record.get("name")))

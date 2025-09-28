@@ -1,5 +1,4 @@
 import asyncio
-import os
 from time import strftime
 from uuid import uuid4
 
@@ -255,14 +254,10 @@ async def start():
                             f"Successfully uploaded matrix OTK keys after {keys} claims."
                         )
                         break
-        megolm_backup_path = os.path.join(
-            client.store_path_megolm_backup, "restore.txt"
-        )
-        if os.path.exists(megolm_backup_path):
-            pass_path = os.path.join(
-                client.store_path_megolm_backup, "restore-passphrase.txt"
-            )
-            if not os.path.exists(pass_path):
+        megolm_backup_path = client.store_path_megolm_backup / "restore.txt"
+        if megolm_backup_path.exists():
+            pass_path = client.store_path_megolm_backup / "restore-passphrase.txt"
+            if not pass_path.exists():
                 Logger.error(f"Passphrase file {pass_path} not found.")
                 return
             Logger.info(f"Importing megolm keys backup from {megolm_backup_path}")
@@ -297,20 +292,14 @@ async def start():
     if matrix_bot.olm:
         if client.megolm_backup_passphrase:
             backup_date = strftime("%Y-%m")
-            backup_path = os.path.join(
-                client.store_path_megolm_backup,
-                f"akaribot-megolm-backup-{backup_date}.txt",
-            )
-            old_backup_path = os.path.join(
-                client.store_path_megolm_backup,
-                f"akaribot-megolm-backup-{backup_date}-old.txt",
-            )
-            if os.path.exists(backup_path):
-                if os.path.exists(old_backup_path):
-                    os.remove(old_backup_path)
-                os.rename(backup_path, old_backup_path)
+            backup_path = client.store_path_megolm_backup / f"akaribot-megolm-backup-{backup_date}.txt"
+            old_backup_path = client.store_path_megolm_backup / f"akaribot-megolm-backup-{backup_date}-old.txt"
+            if backup_path.exists():
+                if old_backup_path.exists():
+                    old_backup_path.unlink()
+                backup_path.rename(old_backup_path)
             Logger.info(f"Saving megolm keys backup to {backup_path}")
-            await matrix_bot.export_keys(backup_path, client.megolm_backup_passphrase)
+            await matrix_bot.export_keys(str(backup_path), client.megolm_backup_passphrase)
             Logger.info("Megolm backup exported.")
 
     await matrix_bot.set_presence("offline")

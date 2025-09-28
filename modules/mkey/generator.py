@@ -20,7 +20,6 @@
 from __future__ import print_function
 
 import datetime
-import os
 import struct
 
 from Crypto.Cipher import AES
@@ -98,11 +97,11 @@ class MkeyGenerator:
     def __init__(self, debug=False):
         self._dbg = debug
 
-        self._data_path = os.path.join(assets_path, "modules", "mkey", "data")
+        self._data_path = assets_path / "modules" / "mkey" / "data"
 
     # Read AES key (v2).
     def _read_aes_key(self, file_name):
-        file_path = os.path.join(self._data_path, file_name)
+        file_path = self._data_path / file_name
         if self._dbg:
             print(f"Using {file_path}.")
 
@@ -119,7 +118,7 @@ class MkeyGenerator:
 
     # Read masterkey.bin (v2).
     def _read_mkey_file(self, file_name):
-        file_path = os.path.join(self._data_path, file_name)
+        file_path = self._data_path / file_name
         if self._dbg:
             print(f"Using {file_path}.")
 
@@ -137,7 +136,7 @@ class MkeyGenerator:
 
     # Read HMAC key (v1/v3/v4).
     def _read_hmac_key(self, file_name):
-        file_path = os.path.join(self._data_path, file_name)
+        file_path = self._data_path / file_name
         if self._dbg:
             print(f"Using {file_path}.")
 
@@ -226,7 +225,7 @@ class MkeyGenerator:
         algorithm = props["algorithm"]
         traits = props["traits"]
 
-        if self._data_path and not os.path.isdir(self._data_path):
+        if self._data_path and not self._data_path.is_dir():
             self._data_path = None
 
         if not self._data_path:
@@ -350,7 +349,7 @@ class MkeyGenerator:
     def _generate_v3_v4(self, props, inquiry, aux=None):
         algorithm = props["algorithm"]
 
-        if self._data_path and not os.path.isdir(self._data_path):
+        if self._data_path and not self._data_path.is_dir():
             self._data_path = None
 
         if not self._data_path:
