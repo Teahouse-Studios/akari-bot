@@ -75,7 +75,7 @@ class Bot:
 
     @staticmethod
     async def post_global_message(
-        message: str,
+        message: Chainable,
         session_list: Optional[List[FetchedSessionInfo]] = None,
         **kwargs: Dict[str, Any],
     ):
