@@ -703,68 +703,75 @@ async def unload_module(request: Request, module_name: str):
 @app.websocket("/ws/logs")
 async def websocket_logs(websocket: WebSocket):
     await websocket.accept()
-
     current_date = datetime.today().strftime("%Y-%m-%d")
-    last_file_pos = defaultdict(int)  # 日志文件当前位置
+
+    last_file_pos = defaultdict(int)   # 日志文件当前位置
     last_file_size = defaultdict(int)  # 日志文件大小
     logs_history = deque(maxlen=MAX_LOG_HISTORY)  # 日志缓存历史
+    today_logs = list((logs_path).glob(f"*_{current_date}.log"))  # 缓存日志文件列表
+
     try:
         while True:
             new_date = datetime.today().strftime("%Y-%m-%d")
-
             if new_date != current_date:  # 处理跨日期
                 last_file_pos.clear()
                 last_file_size.clear()
                 current_date = new_date
+                today_logs = list((logs_path).glob(f"*_{current_date}.log"))
 
-            today_logs = glob.glob(str(logs_path / "*_{current_date}.log"))
-
-            new_loglines = []  # 打包后的日志行
+            new_loglines = []
             for log_file in today_logs:
                 try:
-                    # 比较文件大小，当相同时跳过
-                    current_size = Path(log_file).stat().st_size
+                    current_size = os.path.getsize(log_file)
                     if log_file in last_file_size and current_size == last_file_size[log_file]:
                         continue
-                    last_file_size[log_file] = current_size
 
-                    if log_file not in last_file_pos:  # 初始化
+                    last_file_size[log_file] = current_size
+                    if log_file not in last_file_pos:
                         last_file_pos[log_file] = 0
 
                     with open(log_file, "r", encoding="utf-8") as f:
                         f.seek(last_file_pos[log_file])
-                        new_data = f.read()  # 读取新数据
+                        new_data = f.read()
                         last_file_pos[log_file] = f.tell()
 
-                    new_loglines_raw = [line.rstrip() for line in new_data.splitlines() if line.strip()]  # 未打包的新日志行
+                    if not new_data:
+                        continue
+
+                    new_loglines_raw = [line.rstrip() for line in new_data.splitlines() if line.strip()]
+
                 except Exception:
                     Logger.exception()
                     continue
 
+                current_entry = None
                 for line in new_loglines_raw:
-                    if _log_line_valid(line):  # 日志头
-                        new_loglines.append(line)
-                    elif new_loglines:
-                        last = new_loglines.pop()
-                        if isinstance(last, list):  # 添加到多行日志中
-                            last.append(line)
-                            new_loglines.append(last)
-                        elif isinstance(last, str) and _log_line_valid(last):  # 与日志头拼接为多行日志
-                            new_loglines.append([last, line])
+                    if _log_line_valid(line):
+                        if current_entry:
+                            new_loglines.append(current_entry)
+                        current_entry = line
+                    else:
+                        if isinstance(current_entry, list):
+                            current_entry.append(line)
+                        elif isinstance(current_entry, str):
+                            current_entry = [current_entry, line]
+                if current_entry:
+                    new_loglines.append(current_entry)
 
             if new_loglines:
-                new_loglines.sort(
-                    key=lambda item: _extract_timestamp(item[0]) if isinstance(item, list) else _extract_timestamp(item)
-                )  # 按时间排序
+                if len(today_logs) > 1:
+                    new_loglines.sort(
+                        key=lambda item: _extract_timestamp(item[0]) if isinstance(item, list) else _extract_timestamp(item)
+                    )
 
                 payload = "\n".join(
                     "\n".join(item) if isinstance(item, list) else item
                     for item in new_loglines
                 )
-                await websocket.send_text(payload)  # 发送
-                logs_history.extend(new_loglines)  # 添加到历史
+                await websocket.send_text(payload)
+                logs_history.extend(new_loglines)
 
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.2 if new_loglines else 1.0)
 
     except WebSocketDisconnect:
         pass

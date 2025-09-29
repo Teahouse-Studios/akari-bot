@@ -36,7 +36,7 @@ async def _(msg: Bot.MessageSession, query: str):
         img_path = await download(url, status_code=200)
         if img_path:
             with PILImage.open(img_path) as img:
-                output = f"{img_path.stem}.png"
+                output = f"{img_path}.png"
                 img.save(output, "PNG")
             img_path.unlink()
             await msg.finish([BImage(output)])

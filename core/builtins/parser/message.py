@@ -661,11 +661,22 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
     err_msg = msg.session_info.locale.t_str(str(e))
     err_msg_chain += match_kecode(err_msg)
     await msg.handle_error_signal()
+    
+    timeout = False
     if "timeout" in err_msg.lower().replace(" ", ""):
         timeout = True
+    else:
+        try:
+            status_code = int(str(e).strip().split("[")[0])
+            expected_msg = f"{status_code}[KE:Image,path=https://http.cat/{status_code}.jpg]"
+            if err_msg == expected_msg and 500 <= status_code < 600:
+                timeout = True
+        except Exception:
+            pass
+
+    if timeout:
         err_msg_chain.append(I18NContext("error.message.prompt.timeout"))
     else:
-        timeout = False
         err_msg_chain.append(I18NContext("error.message.prompt.report"))
 
     if bug_report_url:
