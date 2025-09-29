@@ -4,8 +4,8 @@ from akari_bot_webrender.functions.main import WebRender
 from akari_bot_webrender.functions.options import ElementScreenshotOptions, PageScreenshotOptions, SourceOptions, \
     SectionScreenshotOptions, LegacyScreenshotOptions
 
-from core.config import logs_path
-from core.constants.path import 
+from core.config import Config
+from core.constants.path import logs_path
 from core.logger import Logger
 
 
