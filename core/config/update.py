@@ -149,7 +149,7 @@ with open(cfg_file_path, "r", encoding="utf-8") as cfg_file:
 if "config_version" not in config:
     old_config = config
     logger.info("Config version not found, regenerating the config file...")
-    shutil.copy(cfg_file_path, cfg_file_path + ".bak")
+    shutil.copy(cfg_file_path, str(cfg_file_path) + ".bak")
     configs = {"config": toml_document()}
     if "cfg" in old_config:
         get_old_locale = old_config["cfg"].get("locale", "zh_cn")
