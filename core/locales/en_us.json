@@ -120,7 +120,7 @@
     "error.message.prompt.address": "Report this issue: ${url}",
     "error.message.prompt.noreport": "This error is not caused by the bot and thus should not be reported to bot owner.",
     "error.message.prompt.report": "Please report the following message to bot owner.",
-    "error.message.prompt.timeout": "此问题可能由不可预料的情况导致，若持续发生，请将此消息报告给机器人所有者。",
+    "error.message.prompt.external": "此问题可能由外部系统导致，若持续发生，请将此消息报告给机器人所有者。",
     "error.message.report": "The following error occurred while executing \"${command}\": ",
     "error.message.timeout": "Message sending timed out. Please retry the command later or wait for the result to be returned.",
     "error.module.helpdoc_invalid": "\"${module}\" module provided invalid help information. Please contact the developers to solve this issue.",
