@@ -120,7 +120,7 @@
     "error.message.prompt.address": "エラー報告アドレス：${url}",
     "error.message.prompt.noreport": "これはボットエラーではありませんので、この情報をボットの所有者に報告しないてください。",
     "error.message.prompt.report": "この情報をボットの所有者に報告してください。",
-    "error.message.prompt.timeout": "此问题可能由不可预料的情况导致，若持续发生，请将此消息报告给机器人所有者。",
+    "error.message.prompt.external": "此问题可能由外部系统导致，若持续发生，请将此消息报告给机器人所有者。",
     "error.message.report": "「${command}」の実行中に次のエラーが発生しました。すぐに対処してください：",
     "error.message.timeout": "メッセージの送信がタイムアウトしました。後で再試行するか、結果が返されるまでお待ちください。",
     "error.module.helpdoc_invalid": "モジュール「${module}」のヘルプ情報が無効です。開発者に連絡してください。",
