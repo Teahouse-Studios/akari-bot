@@ -75,9 +75,8 @@ class MessageChain:
         if isinstance(elements, (list, tuple)):
             for e in elements:
                 if isinstance(e, str):
-                    if e != "":
-                        values += match_kecode(e)
-                elif isinstance(e, dict):
+                    values.append(PlainElement.assign(e))
+                if isinstance(e, dict):
                     for key in e:
                         tmp_e = converter.structure(e[key], MessageElement)
                         values.append(tmp_e)
@@ -164,8 +163,9 @@ class MessageChain:
                 if session_info:
                     if x.text != "":
                         if parse_message:
+                            x.text = session_info.locale.t_str(x.text)
                             element_chain = match_kecode(x.text)
-                            for elem in element_chain:
+                            for elem in element_chain.values:
                                 elem = MessageChain.assign(elem).as_sendable(session_info, parse_message=False)
                                 if isinstance(elem, PlainElement):
                                     elem.text = session_info.locale.t_str(elem.text)
