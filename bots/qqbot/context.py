@@ -115,10 +115,11 @@ class QQBotContextManager(ContextManager):
         plains: List[PlainElement] = []
         images: List[ImageElement] = []
 
-        for x in message.as_sendable(session_info):
+        for x in message.as_sendable(session_info, parse_message=enable_parse_message):
             if isinstance(x, PlainElement):
                 x.text = html.unescape(x.text)
-                x.text = match_atcode(x.text, client_name, "<@{uid}>")
+                if enable_parse_message:
+                    x.text = match_atcode(x.text, client_name, "<@{uid}>")
                 plains.append(x)
             elif isinstance(x, ImageElement):
                 images.append(x)

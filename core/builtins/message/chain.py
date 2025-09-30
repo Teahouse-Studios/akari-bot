@@ -66,13 +66,9 @@ class MessageChain:
             return elements
         values = []
         if isinstance(elements, str):
-            elements = match_kecode(elements)
+            elements = PlainElement.assign(elements)
         if isinstance(elements, BaseElement):
-            if isinstance(elements, PlainElement):
-                if elements.text != "":
-                    elements = match_kecode(elements.text, elements.disable_joke)
-            else:
-                elements = [elements]
+            elements = [elements]
         if isinstance(elements, dict):
             for key in elements:
                 elements = converter.structure(elements[key], MessageElement)
@@ -84,16 +80,7 @@ class MessageChain:
                 elif isinstance(e, dict):
                     for key in e:
                         tmp_e = converter.structure(e[key], MessageElement)
-                        if isinstance(tmp_e, PlainElement):
-                            if tmp_e.text != "":
-                                values += match_kecode(tmp_e.text, tmp_e.disable_joke)
-                        else:
-                            values.append(tmp_e)
-
-                elif isinstance(e, PlainElement):
-                    if isinstance(e, PlainElement):
-                        if e.text != "":
-                            values += match_kecode(e.text, e.disable_joke)
+                        values.append(tmp_e)
 
                 elif isinstance(e, BaseElement):
                     values.append(e)
@@ -162,7 +149,7 @@ class MessageChain:
                             return False
         return True
 
-    def as_sendable(self, session_info: SessionInfo = None) -> list:
+    def as_sendable(self, session_info: SessionInfo = None, parse_message: bool = True) -> list:
         """
         将消息链转换为可发送的格式。
         """
@@ -176,7 +163,14 @@ class MessageChain:
             elif isinstance(x, PlainElement):
                 if session_info:
                     if x.text != "":
-                        x.text = session_info.locale.t_str(x.text)
+                        if parse_message:
+                            element_chain = match_kecode(x.text)
+                            for elem in element_chain:
+                                elem = MessageChain.assign(elem).as_sendable(session_info, parse_message=False)
+                                if isinstance(elem, PlainElement):
+                                    elem.text = session_info.locale.t_str(elem.text)
+                                value += elem
+                            continue
                     else:
                         x = PlainElement.assign(session_info.locale.t("error.message.chain.empty"))
                 value.append(x)
@@ -434,12 +428,10 @@ def _extract_kecode_blocks(text):
 
 
 def match_kecode(text: str,
-                 disable_joke: bool = False) -> List[Union[
-                     PlainElement, ImageElement, VoiceElement,
-                     I18NContextElement, MentionElement]]:
+                 disable_joke: bool = False) -> MessageChain:
     split_all = _extract_kecode_blocks(text)
     split_all = [x for x in split_all if x]
-    elements = []
+    elements = MessageChain.assign()
 
     for e in split_all:
         match = re.match(r"\[KE:([^\s,\]]+)(?:,(.*))?\]$", e, re.DOTALL)

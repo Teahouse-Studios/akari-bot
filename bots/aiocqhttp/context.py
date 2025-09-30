@@ -163,9 +163,10 @@ class AIOCQContextManager(ContextManager):
                 convert_msg_segments = MessageSegment.reply(int(session_info.message_id))
 
             count = 0
-            for x in message.as_sendable(session_info):
+            for x in message.as_sendable(session_info, parse_message=enable_parse_message):
                 if isinstance(x, PlainElement):
-                    x.text = match_atcode(x.text, client_name, "[CQ:at,qq={uid}]")
+                    if enable_parse_message:
+                        x.text = match_atcode(x.text, client_name, "[CQ:at,qq={uid}]")
                     if enable_parse_message:
                         parts = re.split(r"(\[CQ:[^\]]+\])", x.text)
                         parts = [part for part in parts if part]

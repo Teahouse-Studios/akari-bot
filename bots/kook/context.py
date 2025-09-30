@@ -104,9 +104,10 @@ class KOOKContextManager(ContextManager):
         if isinstance(message, MessageNodes):
             message = MessageChain.assign(await msgnode2image(message))
 
-        for x in message.as_sendable(session_info):
+        for x in message.as_sendable(session_info, parse_message=enable_parse_message):
             if isinstance(x, PlainElement):
-                x.text = match_atcode(x.text, client_name, "(met){uid}(met)")
+                if enable_parse_message:
+                    x.text = match_atcode(x.text, client_name, "(met){uid}(met)")
                 if ctx:
                     send_ = await ctx.reply(
                         x.text,

@@ -40,7 +40,7 @@ class WebContextManager(ContextManager):
         if isinstance(message, MessageNodes):
             message = MessageChain.assign(await msgnode2image(message))
 
-        for x in message.as_sendable(session_info):
+        for x in message.as_sendable(session_info, parse_message=enable_parse_message):
             if isinstance(x, PlainElement):
                 sends.append({"type": "text", "content": x.text})
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")

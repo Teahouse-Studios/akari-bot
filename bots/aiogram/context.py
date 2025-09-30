@@ -51,9 +51,10 @@ class AiogramContextManager(ContextManager):
         if isinstance(message, MessageNodes):
             message = MessageChain.assign(await msgnode2image(message))
 
-        for x in message.as_sendable(session_info):
+        for x in message.as_sendable(session_info, parse_message=enable_parse_message):
             if isinstance(x, PlainElement):
-                x.text = match_atcode(x.text, client_name, "<a href=\"tg://user?id={uid}\">@{uid}</a>")
+                if enable_parse_message:
+                    x.text = match_atcode(x.text, client_name, "<a href=\"tg://user?id={uid}\">@{uid}</a>")
                 send_ = await aiogram_bot.send_message(session_info.get_common_target_id(),
                                                        x.text,
                                                        reply_to_message_id=(

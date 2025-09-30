@@ -6,6 +6,7 @@ import orjson as json
 
 from core.builtins.bot import Bot
 from core.builtins.converter import converter
+from core.builtins.message.chain import MessageChain, match_kecode
 from core.builtins.message.internal import I18NContext, Plain
 from core.builtins.parser.message import check_temp_ban, remove_temp_ban
 from core.component import module
@@ -620,10 +621,11 @@ async def _(msg: Bot.MessageSession, target: str, post_msg: str):
     if not Alive.determine_target_from(target):
         await msg.finish(I18NContext("message.id.invalid.target", target=msg.session_info.target_from))
     session = await Bot.fetch_target(target)
-    post_msg = f"{{I18N:core.message.post.prefix}} {post_msg}"
-    if await msg.wait_confirm(I18NContext("core.message.post.confirm", target=target, post_msg=post_msg),
-                              append_instruction=False):
-        await Bot.post_global_message(post_msg, [session])
+    msg_chain = MessageChain.assign([I18NContext("core.message.post.prefix")] + match_kecode(post_msg))
+    preview = msg_chain.copy()
+    preview.insert(0, I18NContext("core.message.post.confirm", target=target))
+    if await msg.wait_confirm(preview, append_instruction=False):
+        await Bot.post_global_message(msg_chain, [session])
         await msg.finish(I18NContext("core.message.post.success"))
     else:
         await msg.finish()
@@ -631,10 +633,11 @@ async def _(msg: Bot.MessageSession, target: str, post_msg: str):
 
 @post_.command("global <post_msg>")
 async def _(msg: Bot.MessageSession, post_msg: str):
-    post_msg = f"{{I18N:core.message.post.prefix}} {post_msg}"
-    if await msg.wait_confirm(I18NContext("core.message.post.global.confirm", post_msg=post_msg),
-                              append_instruction=False):
-        await Bot.post_global_message(post_msg)
+    msg_chain = MessageChain.assign([I18NContext("core.message.post.prefix")] + match_kecode(post_msg))
+    preview = msg_chain.copy()
+    preview.insert(0, I18NContext("core.message.post.global.confirm"))
+    if await msg.wait_confirm(preview, append_instruction=False):
+        await Bot.post_global_message(msg_chain)
         await msg.finish(I18NContext("core.message.post.success"))
     else:
         await msg.finish()

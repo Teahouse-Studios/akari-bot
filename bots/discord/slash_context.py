@@ -28,7 +28,7 @@ class DiscordSlashContextManager(DiscordContextManager):
 
         count = 0
         msg_ids = []
-        for x in message.as_sendable(session_info):
+        for x in message.as_sendable(session_info, parse_message=enable_parse_message):
             send_ = None
             if isinstance(x, PlainElement):
                 if count == 0:

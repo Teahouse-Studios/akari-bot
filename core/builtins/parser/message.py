@@ -661,21 +661,21 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
     err_msg = msg.session_info.locale.t_str(str(e))
     err_msg_chain += match_kecode(err_msg)
     await msg.handle_error_signal()
-    
-    timeout = False
+
+    external = False
     if "timeout" in err_msg.lower().replace(" ", ""):
-        timeout = True
+        external = True
     else:
         try:
             status_code = int(str(e).strip().split("[")[0])
             expected_msg = f"{status_code}[KE:Image,path=https://http.cat/{status_code}.jpg]"
             if err_msg == expected_msg and 500 <= status_code < 600:
-                timeout = True
+                external = True
         except Exception:
             pass
 
-    if timeout:
-        err_msg_chain.append(I18NContext("error.message.prompt.timeout"))
+    if external:
+        err_msg_chain.append(I18NContext("error.message.prompt.external"))
     else:
         err_msg_chain.append(I18NContext("error.message.prompt.report"))
 
@@ -683,7 +683,7 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
         err_msg_chain.append(I18NContext("error.message.prompt.address", url=bug_report_url))
     await msg.send_message(err_msg_chain)
 
-    if not timeout and report_targets:
+    if not external and report_targets:
         for target in report_targets:
             if f := await bot.fetch_target(target):
                 await bot.send_direct_message(f, [I18NContext("error.message.report", command=msg.trigger_msg),
