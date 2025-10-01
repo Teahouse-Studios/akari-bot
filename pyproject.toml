@@ -89,7 +89,7 @@ gql = "^4.0.0"
 langconv = {git = "https://github.com/Teahouse-Studios/langconv.py.git"}
 mcstatus = "^12.0.0"
 numpy = "<2.3.4"
-openai = "^1.6.1"
+openai = "^2.0.0"
 pandas = "^2.2.0"
 pint = "^0.24.0"
 python-whois = "^0.9.0"
