@@ -462,17 +462,18 @@ async def _check_target_cooldown(msg: "Bot.MessageSession"):
     cooldown_time = int(msg.session_info.target_info.target_data.get("cooldown_time", 0))
 
     if cooldown_time and not await msg.check_permission():
-        if cooldown_counter.get(msg.session_info.target_id, {}).get(msg.session_info.sender_id):
-            time = datetime.now().timestamp() - \
-                cooldown_counter[msg.session_info.target_id][msg.session_info.sender_id]["ts"]
-            if time > cooldown_time:
-                cooldown_counter[msg.session_info.target_id].update(
-                    {msg.session_info.sender_id: {"ts": datetime.now().timestamp()}})
-            else:
-                await msg.finish(I18NContext("message.cooldown.manual", time=int(cooldown_time - time)))
+        if sender_cooldown := cooldown_counter.setdefault(msg.session_info.target_id, {}).get(
+            msg.session_info.sender_id):
+            elapsed = datetime.now().timestamp() - sender_cooldown["ts"]
+            if elapsed <= cooldown_time:
+                if not sender_cooldown.get("notified", False):
+                    sender_cooldown["notified"] = True
+                    await msg.finish(I18NContext("message.cooldown.manual", time=int(cooldown_time - elapsed)))
+                await msg.finish()
+            sender_cooldown.update({"ts": datetime.now().timestamp(), "notified": False})
         else:
             cooldown_counter[msg.session_info.target_id] = {
-                msg.session_info.sender_id: {"ts": datetime.now().timestamp()}}
+                msg.session_info.sender_id: {"ts": datetime.now().timestamp(), "notified": False}}
 
 
 async def _check_temp_ban(msg: "Bot.MessageSession"):
