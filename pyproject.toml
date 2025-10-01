@@ -23,7 +23,7 @@ akari-bot-webui = "0.2.4"
 
 # lib
 coverage = "^7.9.1"
-cryptography = "^45.0.0"
+cryptography = "^46.0.0"
 deprecated = "^1.2.18"
 poetry-plugin-export = "^1.9.0"
 pre-commit = "^4.0.0"
