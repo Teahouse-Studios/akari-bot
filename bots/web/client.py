@@ -92,8 +92,12 @@ app.add_middleware(
 if dist_path.exists():
     @app.get("/webui/{path:path}")
     async def serve_webui(path: str):
-        file_path = dist_path / path
+        file_path = (dist_path / path).resolve()
 
+        try:
+            file_path.relative_to(dist_path)
+        except ValueError:
+            return FileResponse(dist_path / "index.html")
         if file_path.exists() and file_path.is_file():
             return FileResponse(file_path)
 
