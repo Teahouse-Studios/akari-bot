@@ -793,7 +793,10 @@ def _extract_timestamp(line: str):
 
 def _secure_path(path: str) -> Path:
     full_path = (ROOT_DIR / path).resolve()
-    if not str(full_path).startswith(str(ROOT_DIR)):
+    try:
+        # If full_path is not a subpath of ROOT_DIR, this will raise ValueError
+        full_path.relative_to(ROOT_DIR)
+    except ValueError:
         raise HTTPException(status_code=403, detail="Forbidden")
     return full_path
 
