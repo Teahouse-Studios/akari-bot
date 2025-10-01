@@ -1,12 +1,15 @@
+import copy
+import difflib
 import inspect
 import re
 import traceback
 from datetime import datetime
-from string import Template
-from typing import TYPE_CHECKING
+from string import Template as stringTemplate
+from typing import List, TYPE_CHECKING
 
 from core.builtins.message.chain import MessageChain, match_kecode
 from core.builtins.message.internal import Plain, I18NContext
+from core.builtins.parser.args import ArgumentPattern, Template as argsTemplate, templates_to_str
 from core.builtins.parser.command import CommandParser
 from core.builtins.session.lock import ExecutionLockList
 from core.builtins.session.tasks import SessionTaskManager
@@ -38,6 +41,11 @@ enable_module_invalid_prompt = Config("enable_module_invalid_prompt", False)
 TOS_TEMPBAN_TIME = Config("tos_temp_ban_time", 300) if Config("tos_temp_ban_time", 300) > 0 else 300
 bug_report_url = Config("bug_report_url", bug_report_url_default)
 
+typo_check_module_score = Config("typo_check_module_score", 0.6)
+typo_check_command_score = Config("typo_check_command_score", 0.3)
+typo_check_args_score = Config("typo_check_args_score", 0.5)
+typo_check_options_score = Config("typo_check_options_score", 0.3)
+
 counter_same = {}  # 命令使用次数计数（重复使用单一命令）
 counter_all = {}  # 命令使用次数计数（使用所有命令）
 
@@ -66,7 +74,7 @@ async def parser(msg: "Bot.MessageSession"):
     """
     接收消息必经的预处理器。
 
-    :param msg: 从监听器接收到的dict，该dict将会经过此预处理器传入下游。
+    :param msg: 从监听器接收到的MessageSession，该MessageSession将会经过此预处理器传入下游。
     """
     await msg.session_info.refresh_info()
     identify_str = f"[{msg.session_info.sender_id} ({msg.session_info.target_id})]"
@@ -88,13 +96,12 @@ async def parser(msg: "Bot.MessageSession"):
                                                                                        []) and not msg.session_info.superuser):
             return
 
-        disable_prefix, in_prefix_list, display_prefix = _get_prefixes(msg)
+        disable_prefix, in_prefix_list = _get_prefixes(msg)
 
         if in_prefix_list or disable_prefix:  # 检查消息前缀
             Logger.info(
                 f"{identify_str} -> [Bot]: {msg.trigger_msg}")
-            command_first_word = await _process_command(msg, modules, disable_prefix, in_prefix_list, display_prefix)
-
+            command_first_word = await _process_command(msg, modules, disable_prefix, in_prefix_list)
             if command_first_word:
                 if not ExecutionLockList.check(msg):  # 加锁
                     ExecutionLockList.add(msg)
@@ -102,7 +109,7 @@ async def parser(msg: "Bot.MessageSession"):
                     await msg.send_message(I18NContext("parser.command.running.prompt"))
                     return
 
-            if msg.session_info.muted and command_first_word != "mute":
+            if msg.session_info.muted and command_first_word != "mute":  # 检查机器人在会话中是否被禁言
                 return
 
             if command_first_word in modules:  # 检查触发命令是否在模块列表中
@@ -110,10 +117,24 @@ async def parser(msg: "Bot.MessageSession"):
                     await _execute_module(msg, modules, command_first_word, identify_str)
                 else:
                     await msg.send_message(I18NContext("parser.module.unloaded", module=command_first_word))
+            elif msg.session_info.sender_info.sender_data.get("typo_check", True):
+                new_msg, new_command_first_word, confirmed = await _command_typo_check(msg, modules, command_first_word)
+                if new_msg:
+                    if modules[new_command_first_word]._db_load:
+                        if msg.session_info.sender_info.sender_data.get("typing_prompt", True):
+                            await msg.start_typing()
+                        await _execute_module(new_msg, modules, new_command_first_word, identify_str)
+                        await msg.end_typing()
+                    else:
+                        await msg.send_message(I18NContext("parser.module.unloaded", module=new_command_first_word))
+                elif enable_module_invalid_prompt and not confirmed:
+                    await msg.send_message(I18NContext("parser.command.invalid.module", prefix=msg.session_info.prefixes[0]))
             elif enable_module_invalid_prompt:
                 await msg.send_message(I18NContext("parser.command.invalid.module", prefix=msg.session_info.prefixes[0]))
 
             return msg
+
+        # 检查正则
         if msg.session_info.muted:
             return
         if msg.session_info.running_mention:
@@ -154,7 +175,7 @@ def _transform_alias(msg, command: str):
                 groups = match.groups()
                 placeholder_dict = {placeholder: groups[i] for i,
                                     placeholder in enumerate(pattern_placeholders) if i < len(groups)}
-                result = Template(replacement).safe_substitute(placeholder_dict)
+                result = stringTemplate(replacement).safe_substitute(placeholder_dict)
 
                 Logger.debug(msg.session_info.prefixes[0] + result)
                 return msg.session_info.prefixes[0] + result
@@ -191,39 +212,48 @@ def _get_prefixes(msg: "Bot.MessageSession"):
             msg.session_info.prefixes.remove(display_prefix)
             msg.session_info.prefixes.insert(0, display_prefix)
 
-    return disable_prefix, in_prefix_list, display_prefix
+    return disable_prefix, in_prefix_list
 
 
-async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, in_prefix_list, display_prefix):
+async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, in_prefix_list):
     if disable_prefix and not in_prefix_list:
         command = msg.trigger_msg
     else:
-        command = msg.trigger_msg[len(display_prefix):]
+        command = msg.trigger_msg[len(msg.session_info.prefixes[0]):]
+
     command = command.strip()
+    command_split: list = command.split(" ")  # 切割消息
+
     not_alias = False
     cm = ""
-    for moduleName in modules:
-        if command.startswith(moduleName):  # 判断此命令是否匹配一个实际的模块
+    for module_name in modules:
+        if command_split[0] == module_name:  # 判断此命令是否匹配一个实际的模块
             not_alias = True
-            cm = moduleName
+            cm = module_name
             break
+
     alias_list = []
-    for alias in ModulesManager.modules_aliases:
-        if not not_alias:  # 如果没有匹配到模块，则判断是否匹配命令别名
-            if command.startswith(alias) and not command.startswith(ModulesManager.modules_aliases[alias]):
+    for alias, _ in ModulesManager.modules_aliases.items():
+        alias_words = alias.split(" ")
+        cmd_words = command.split(" ")
+
+        if not not_alias:
+            if cmd_words[:len(alias_words)] == alias_words:
                 alias_list.append(alias)
-        else:  # 如果是模块，则判断是否有基于此模块前缀的别名
-            if alias.startswith(cm) and command.startswith(alias):
-                alias_list.append(alias)
+        else:
+            if alias.startswith(cm):
+                if cmd_words[:len(alias_words)] == alias_words:
+                    alias_list.append(alias)
+
     if alias_list:
-        max_ = max(alias_list, key=len)
-        command = command.replace(max_, ModulesManager.modules_aliases[str(max_)], 1)
+        max_alias = max(alias_list, key=len)
+        real_name = ModulesManager.modules_aliases[max_alias]
+        command_words = command.split(" ")
+        command_words = real_name.split(" ") + command_words[len(max_alias.split(" ")):]
+        command = " ".join(command_words)
 
-    command_split: list = command.split(" ")  # 切割消息
-    msg.trigger_msg = command  # 触发该命令的消息，去除消息前缀
-    command_first_word = command_split[0].lower()
-
-    return command_first_word
+    msg.trigger_msg = command
+    return command.split(" ")[0]
 
 
 async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word, identify_str):
@@ -276,7 +306,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                 return
 
         if not module.base:
-            if enable_tos:
+            if enable_tos:  # 检查TOS是否滥用命令
                 await _tos_msg_counter(msg, msg.trigger_msg)
             else:
                 Logger.debug("Tos is disabled, check the configuration if it is not work as expected.")
@@ -286,18 +316,31 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
             if func.help_doc:
                 none_doc = False
         if not none_doc:  # 如果有，送入命令解析
-            await _execute_submodule(msg, module, command_first_word)
+            await _execute_module_command(msg, module, command_first_word)
         else:  # 如果没有，直接传入下游模块
             msg.parsed_msg = None
             for func in module.command_list.set:
                 if not func.help_doc:
-                    if not msg.session_info.sender_info.sender_data.get("disable_typing", False):
+                    if msg.session_info.sender_info.sender_data.get("typing_prompt", True):
                         await msg.start_typing()
-                        await func.function(msg)  # 将msg传入下游模块
+                    await func.function(msg)  # 将msg传入下游模块
 
-                    else:
-                        await func.function(msg)
                     raise FinishedException(msg.sent)  # if not using msg.finish
+
+        if msg.session_info.sender_info.sender_data.get("typo_check", True):  # 判断是否开启错字检查
+            new_msg, new_command_first_word, confirmed = await _command_typo_check(msg, modules, command_first_word)
+            if new_msg:
+                if modules[new_command_first_word]._db_load:
+                    if msg.session_info.sender_info.sender_data.get("typing_prompt", True):
+                        await msg.start_typing()
+                    await _execute_module(new_msg, modules, new_command_first_word, identify_str)
+                    await msg.end_typing()
+                else:
+                    await msg.send_message(I18NContext("parser.module.unloaded", module=new_command_first_word))
+            elif not confirmed:
+                await msg.send_message(I18NContext("parser.command.invalid.format",
+                                                   module=command_first_word,
+                                                   prefix=msg.session_info.prefixes[0]))
     except SendMessageFailed:
         await _process_send_message_failed(msg)
 
@@ -414,8 +457,8 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                             else:
                                 return await msg.send_message(I18NContext("parser.command.running.prompt"))
 
-                            if rfunc.show_typing and not msg.session_info.sender_info.sender_data.get(
-                                    "disable_typing", False):
+                            if rfunc.show_typing and msg.session_info.sender_info.sender_data.get(
+                                    "typing_prompt", True):
                                 await msg.start_typing()
                                 _typing = True
                                 await rfunc.function(msg)  # 将msg传入下游模块
@@ -463,7 +506,7 @@ async def _check_target_cooldown(msg: "Bot.MessageSession"):
 
     if cooldown_time and not await msg.check_permission():
         if sender_cooldown := cooldown_counter.setdefault(msg.session_info.target_id, {}).get(
-            msg.session_info.sender_id):
+                msg.session_info.sender_id):
             elapsed = datetime.now().timestamp() - sender_cooldown["ts"]
             if elapsed <= cooldown_time:
                 if not sender_cooldown.get("notified", False):
@@ -516,40 +559,40 @@ async def _tos_msg_counter(msg: "Bot.MessageSession", command: str):
             raise AbuseWarning("{I18N:tos.message.reason.abuse}")
 
 
-async def _execute_submodule(msg: "Bot.MessageSession", module, command_first_word):
+async def _execute_module_command(msg: "Bot.MessageSession", module, command_first_word):
     bot: "Bot" = exports["Bot"]
     try:
         command_parser = CommandParser(module, msg=msg, module_name=command_first_word,
                                        command_prefixes=msg.session_info.prefixes)
         try:
-            parsed_msg = command_parser.parse(msg.trigger_msg)  # 解析命令对应的子模块
-            submodule: CommandMeta = parsed_msg[0]
+            parsed_msg = command_parser.parse(msg.trigger_msg)  # 解析模块的子功能命令
+            command: CommandMeta = parsed_msg[0]
             msg.parsed_msg = parsed_msg[1]  # 使用命令模板解析后的消息
             Logger.trace("Parsed message: " + str(msg.parsed_msg))
 
-            if submodule.required_base_superuser:
+            if command.required_base_superuser:
                 if msg.session_info.sender_id not in bot.base_superuser_list:
                     await msg.send_message(I18NContext("parser.superuser.permission.denied"))
                     return
-            elif submodule.required_superuser:
+            elif command.required_superuser:
                 if not msg.check_super_user():
                     await msg.send_message(I18NContext("parser.superuser.permission.denied"))
                     return
-            elif submodule.required_admin:
+            elif command.required_admin:
                 if not await msg.check_permission():
-                    await msg.send_message(I18NContext("parser.admin.submodule.permission.denied"))
+                    await msg.send_message(I18NContext("parser.admin.command.permission.denied"))
                     return
 
-            if not submodule.load or \
-                msg.session_info.target_from in submodule.exclude_from or \
-                msg.session_info.client_name in submodule.exclude_from or \
-                ("*" not in submodule.available_for and
-                 msg.session_info.target_from not in submodule.available_for and
-                 msg.session_info.client_name not in submodule.available_for):
+            if not command.load or \
+                msg.session_info.target_from in command.exclude_from or \
+                msg.session_info.client_name in command.exclude_from or \
+                ("*" not in command.available_for and
+                 msg.session_info.target_from not in command.available_for and
+                 msg.session_info.client_name not in command.available_for):
                 raise InvalidCommandFormatError
 
             kwargs = {}
-            func_params = inspect.signature(submodule.function).parameters
+            func_params = inspect.signature(command.function).parameters
             if len(func_params) > 1 and msg.parsed_msg:
                 parsed_msg_ = msg.parsed_msg.copy()
                 no_message_session = True
@@ -595,31 +638,21 @@ async def _execute_submodule(msg: "Bot.MessageSession", module, command_first_wo
                                 kwargs[param_name_] = None
                 if no_message_session:
                     Logger.warning(
-                        f"{submodule.function.__name__} has no Bot.MessageSession parameter, did you forgot to add it?\n"
+                        f"{command.function.__name__} has no Bot.MessageSession parameter, did you forgot to add it?\n"
                         "Remember: MessageSession IS NOT Bot.MessageSession")
             else:
                 kwargs[func_params[list(func_params.keys())[0]].name] = msg
 
-            if not msg.session_info.target_info.target_data.get("disable_typing", False):
+            if msg.session_info.target_info.target_data.get("typing_prompt", True):
                 await msg.start_typing()
-                await parsed_msg[0].function(**kwargs)  # 将msg传入下游模块
-            else:
-                await parsed_msg[0].function(**kwargs)
+            await parsed_msg[0].function(**kwargs)  # 将msg传入下游模块
+
             raise FinishedException(msg.sent)  # if not using msg.finish
         except InvalidCommandFormatError:
-            await msg.send_message(I18NContext("parser.command.invalid.format",
-                                               module=command_first_word,
-                                               prefix=msg.session_info.prefixes[0]))
-            """if msg.session_info.target_info.target_data.get("typo_check", True):  # 判断是否开启错字检查
-                nmsg, command_first_word, command_split = await _typo_check(msg,
-                                                                            display_prefix,
-                                                                            modules,
-                                                                            command_first_word,
-                                                                            command_split)
-                if nmsg is None:
-                    return ExecutionLockList.remove(msg)
-                msg = nmsg
-                await _execute_submodule(msg, command_first_word, command_split)"""
+            if not msg.session_info.sender_info.sender_data.get("typo_check", True):
+                await msg.send_message(I18NContext("parser.command.invalid.format",
+                                                   module=command_first_word,
+                                                   prefix=msg.session_info.prefixes[0]))
             return
     except InvalidHelpDocTypeError:
         Logger.exception()
@@ -692,27 +725,38 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
                                               enable_parse_message=False, disable_secret_check=True)
 
 
-"""async def typo_check(msg: MessageSession, display_prefix, modules, command_first_word, command_split):
-    enabled_modules = []
-    for m in msg.session_info.enabled_modules:
-        if m in modules and isinstance(modules[m], Command):
-            enabled_modules.append(m)
-    match_close_module: list = difflib.get_close_matches(command_first_word, enabled_modules, 1, 0.6)
+async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_word):
+    bot: "Bot" = exports["Bot"]
+    is_base_superuser = msg.session_info.sender_id in bot.base_superuser_list
+    is_superuser = msg.check_super_user()
+
+    avaliable_modules = []
+    for x in modules:
+        if modules[x].base or \
+                x in msg.session_info.enabled_modules and \
+                not modules[x].hidden or \
+                not is_superuser and modules[x].required_superuser or \
+                not is_base_superuser and modules[x].required_base_superuser:
+            avaliable_modules.append(x)
+
+    match_close_module: list = difflib.get_close_matches(
+        command_first_word, avaliable_modules, 1, typo_check_module_score)
     if match_close_module:
-        module = modules[match_close_module[0]]
+        Logger.debug(f"Match module: {command_first_word} -> {match_close_module[0]}")
+        module: Module = modules[match_close_module[0]]
+
         none_doc = True  # 检查模块绑定的命令是否有文档
-        for func in module.match_list.get(msg.session_info.targetFrom):
-            if func.help_doc is not None:
+        for func in module.command_list.get(msg.session_info.target_from):
+            if func.help_doc:
                 none_doc = False
+
+        command_split = msg.trigger_msg.split(" ")
         len_command_split = len(command_split)
         if not none_doc and len_command_split > 1:
-            get_submodules: List[CommandMeta] = module.match_list.get(msg.session_info.targetFrom)
+            get_commands: List[CommandMeta] = module.command_list.get(msg.session_info.target_from)
             docs = {}  # 根据命令模板的空格数排序命令
-            for func in get_submodules:
-                help_doc: List[Template] = copy.deepcopy(func.help_doc)
-                if not help_doc:
-                    ...  # todo: ...此处应该有一个处理例外情况的逻辑
-
+            for func in get_commands:
+                help_doc: List[argsTemplate] = copy.deepcopy(func.help_doc)
                 for h_ in help_doc:
                     h_.args_ = [a for a in h_.args if isinstance(a, ArgumentPattern)]
                     if (len_args := len(h_.args)) not in docs:
@@ -723,11 +767,15 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
             if len_command_split - 1 > len(docs):  # 如果空格数远大于命令模板的空格数
                 select_docs = docs[max(docs)]
             else:
-                select_docs = docs[len_command_split - 1]  # 选择匹配的命令组
-            match_close_command: list = difflib.get_close_matches(" ".join(command_split[1:]),
-                                                                  templates_to_str(select_docs),
-                                                                  1, 0.3)  # 进一步匹配命令
+                try:
+                    select_docs = docs[len_command_split - 1]  # 选择匹配的命令组
+                except KeyError:
+                    # 找一个最接近的命令模板
+                    select_docs = docs[max(docs.keys(), key=lambda k: min(abs(k - (len_command_split - 1)), k))]
+            match_close_command: list = difflib.get_close_matches(
+                " ".join(command_split[1:]), templates_to_str(select_docs), 1, typo_check_command_score)  # 进一步匹配命令
             if match_close_command:
+                Logger.debug(f"Match command: {" ".join(command_split[1:])} -> {match_close_command[0]}")
                 match_split = match_close_command[0]
                 m_split_options = filter(None, re.split(r"(\\[.*?])", match_split))  # 切割可选参数
                 old_command_split = command_split.copy()
@@ -737,9 +785,10 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
                     if m_.startswith("["):  # 如果是可选参数
                         m_split = m_.split(" ")  # 切割可选参数中的空格（说明存在多个子必须参数）
                         if len(m_split) > 1:
-                            match_close_options = difflib.get_close_matches(m_split[0][1:], old_command_split, 1,
-                                                                            0.3)  # 进一步匹配可选参数
+                            match_close_options = difflib.get_close_matches(
+                                m_split[0][1:], old_command_split, 1, typo_check_options_score)  # 进一步匹配可选参数
                             if match_close_options:
+                                Logger.debug(f"Match close options: {m_split[0][1:]} -> {match_close_options[0]}")
                                 position = old_command_split.index(match_close_options[0])  # 定位可选参数的位置
                                 new_command_split.append(m_split[0][1:])  # 将可选参数插入到新命令列表中
                                 new_command_split += old_command_split[position + 1: position + len(m_split)]
@@ -758,9 +807,11 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
                                     new_command_split.append(old_command_split[0])
                                     del old_command_split[0]
                                 else:
-                                    match_close_args = difflib.get_close_matches(old_command_split[0], [mm], 1,
-                                                                                 0.5)  # 进一步匹配参数
+                                    match_close_args = difflib.get_close_matches(
+                                        old_command_split[0], [mm], 1, typo_check_args_score)  # 进一步匹配参数
                                     if match_close_args:
+                                        Logger.debug(f"Match close args: {
+                                                     old_command_split[0]} -> {match_close_args[0]}")
                                         new_command_split.append(mm)
                                         del old_command_split[0]
                                     else:
@@ -770,36 +821,33 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
                                 new_command_split.append(mm)
                 new_command_display = " ".join(new_command_split)
                 if new_command_display != msg.trigger_msg:
-                    wait_confirm = await msg.waitConfirm(
-                        f"你是否想要输入{display_prefix}{new_command_display}？")
+                    wait_confirm = await msg.wait_confirm(I18NContext("parser.command.fixup.confirm", command=f"{msg.session_info.prefixes[0]}{new_command_display}"))
                     if wait_confirm:
-                        command_split = new_command_split
                         command_first_word = new_command_split[0]
                         msg.trigger_msg = " ".join(new_command_split)
-                        return msg, command_first_word, command_split
+                        return msg, command_first_word, True
+                    return None, None, True
             else:
                 if len_command_split - 1 == 1:
                     new_command_display = f"{match_close_module[0]} {" ".join(command_split[1:])}"
                     if new_command_display != msg.trigger_msg:
-                        wait_confirm = await msg.waitConfirm(
-                            f"你是否想要输入{display_prefix}{new_command_display}？")
+                        wait_confirm = await msg.wait_confirm(
+                            I18NContext("parser.command.fixup.confirm", command=f"{msg.session_info.prefixes[0]}{new_command_display}"))
                         if wait_confirm:
-                            command_split = [match_close_module[0]] + command_split[1:]
                             command_first_word = match_close_module[0]
-                            msg.trigger_msg = " ".join(command_split)
-                            return msg, command_first_word, command_split
-
+                            msg.trigger_msg = " ".join([match_close_module[0]] + command_split[1:])
+                            return msg, command_first_word, True
+                        return None, None, True
         else:
-            new_command_display = f"{match_close_module[0] + (" " + " ".join(command_split[1:]) if len(command_split) > 1 else "")}"
+            new_command_display = f"{
+                match_close_module[0] + (" " + " ".join(command_split[1:]) if len(command_split) > 1 else "")}"
             if new_command_display != msg.trigger_msg:
-                wait_confirm = await msg.waitConfirm(
-                    f"你是否想要输入{display_prefix}{new_command_display}？")
+                wait_confirm = await msg.wait_confirm(I18NContext("parser.command.fixup.confirm", command=f"{msg.session_info.prefixes[0]}{new_command_display}"))
                 if wait_confirm:
-                    command_split = [match_close_module[0]]
                     command_first_word = match_close_module[0]
-                    msg.trigger_msg = " ".join(command_split)
-                    return msg, command_first_word, command_split
-    return None, None, None
-"""
+                    msg.trigger_msg = match_close_module[0]
+                    return msg, command_first_word, True
+                return None, None, True
+    return None, None, False
 
 __all__ = ["parser", "check_temp_ban", "remove_temp_ban"]

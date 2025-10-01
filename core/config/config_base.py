@@ -31,6 +31,12 @@ class Config:
     enable_module_invalid_prompt: bool = False
     enable_urlmanager: bool = False
 
+    # 拼写检查
+    typo_check_module_score: float = 0.6
+    typo_check_command_score: float = 0.3
+    typo_check_args_score: float = 0.5
+    typo_check_options_score: float = 0.3
+
     # TOS
     enable_tos: bool = True
     tos_warning_counts: int = 5

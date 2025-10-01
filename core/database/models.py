@@ -84,14 +84,14 @@ class SenderInfo(DBModel):
         await self.save()
         return True
 
-    async def edit_sender_data(self, key: str, value: Optional[Any]) -> bool:
+    async def edit_sender_data(self, key: str, value: Optional[Any] = None) -> bool:
         """
         设置用户数据。
 
         :param key: 键名。
         :param value: 值，若留空则删除该键值对。
         """
-        if not value:
+        if value is None:
             if key in self.sender_data:
                 del self.sender_data[key]
         else:
@@ -160,14 +160,14 @@ class TargetInfo(DBModel):
         await self.save()
         return self.muted
 
-    async def edit_target_data(self, key: str, value: Optional[Any]) -> bool:
+    async def edit_target_data(self, key: str, value: Optional[Any] = None) -> bool:
         """
         设置会话数据。
 
         :param key: 键名。
         :param value: 值，若留空则删除该键值对。
         """
-        if not value:
+        if value is None:
             if key in self.target_data:
                 del self.target_data[key]
         else:

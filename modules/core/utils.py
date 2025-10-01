@@ -211,36 +211,34 @@ setup = module(
 
 @setup.command("typing {{I18N:core.help.setup.typing}}")
 async def _(msg: Bot.MessageSession):
-    if not msg.session_info.sender_info.sender_data.get("disable_typing", False):
-        await msg.session_info.sender_info.edit_sender_data("disable_typing", True)
-        await msg.finish(I18NContext("core.message.setup.typing.disable"))
-    else:
-        await msg.session_info.sender_info.edit_sender_data("disable_typing", False)
+    if not msg.session_info.sender_info.sender_data.get("typing_prompt", True):
+        await msg.session_info.sender_info.edit_sender_data("typing_prompt", True)
         await msg.finish(I18NContext("core.message.setup.typing.enable"))
+    else:
+        await msg.session_info.sender_info.edit_sender_data("typing_prompt", False)
+        await msg.finish(I18NContext("core.message.setup.typing.disable"))
 
 
-"""
-@setup.command("check {{I18N:core.help.setup.check}}", required_admin=True)
+@setup.command("check {{I18N:core.help.setup.check}}")
 async def _(msg: Bot.MessageSession):
-    if not msg.session_info.sender_info.sender_data.get("typo_check", False):
+    if not msg.session_info.sender_info.sender_data.get("typo_check", True):
         await msg.session_info.sender_info.edit_sender_data("typo_check", True)
-        await msg.finish(I18NContext("core.message.setup.check.disable"))
+        await msg.finish(I18NContext("core.message.setup.check.enable"))
     else:
         await msg.session_info.sender_info.edit_sender_data("typo_check", False)
-        await msg.finish(I18NContext("core.message.setup.check.enable"))
-"""
+        await msg.finish(I18NContext("core.message.setup.check.disable"))
 
 
 @setup.command("sign {{I18N:core.help.setup.sign}}",
                required_admin=True,
                load=Config("enable_petal", False))
 async def _(msg: Bot.MessageSession):
-    if not msg.session_info.target_info.target_data.get("disable_sign", False):
-        await msg.session_info.target_info.edit_target_data("disable_sign", True)
-        await msg.finish(I18NContext("core.message.setup.sign.disable"))
-    else:
-        await msg.session_info.target_info.edit_target_data("disable_sign", False)
+    if not msg.session_info.target_info.target_data.get("petal_sign", True):
+        await msg.session_info.target_info.edit_target_data("petal_sign", True)
         await msg.finish(I18NContext("core.message.setup.sign.enable"))
+    else:
+        await msg.session_info.target_info.edit_target_data("petal_sign", False)
+        await msg.finish(I18NContext("core.message.setup.sign.disable"))
 
 
 @setup.command(

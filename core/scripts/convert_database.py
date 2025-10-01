@@ -243,7 +243,7 @@ async def convert_database():
                 superuser=r.isSuperUser,
                 warns=r.warns,
                 petal=r.petal,
-                sender_data={"disable_typing": r.disableTyping}
+                sender_data={"typing_prompt": not r.disableTyping}
             )
         except Exception as e:
             Logger.error(f"Failed to convert SenderInfo: {r.id}, error: {e}")
