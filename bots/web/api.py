@@ -1,5 +1,4 @@
 import asyncio
-import glob
 import mimetypes
 import os
 import platform
@@ -761,8 +760,9 @@ async def websocket_logs(websocket: WebSocket):
             if new_loglines:
                 if len(today_logs) > 1:
                     new_loglines.sort(
-                        key=lambda item: _extract_timestamp(item[0]) if isinstance(item, list) else _extract_timestamp(item)
-                    )
+                        key=lambda item: _extract_timestamp(
+                            item[0]) if isinstance(
+                            item, list) else _extract_timestamp(item))
 
                 payload = "\n".join(
                     "\n".join(item) if isinstance(item, list) else item
@@ -837,15 +837,14 @@ def download_file(request: Request, path: str):
 
         if target.is_file():
             return FileResponse(target, filename=target.name)
-        else:
-            temp_dir = tempfile.mkdtemp()
-            zip_name = f"{target.name}.zip"
-            zip_path = Path(temp_dir) / zip_name
-            with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-                for file in target.rglob("*"):
-                    # 保持相对路径
-                    zipf.write(file, file.relative_to(target))
-            return FileResponse(zip_path, filename=zip_name)
+
+        temp_dir = tempfile.mkdtemp()
+        zip_name = f"{target.name}.zip"
+        zip_path = Path(temp_dir) / zip_name
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for file in target.rglob("*"):
+                zipf.write(file, file.relative_to(target))
+        return FileResponse(zip_path, filename=zip_name)
     except HTTPException as e:
         raise e
     except Exception:
@@ -921,12 +920,12 @@ def upload_file(request: Request, path: str = Form(""), file: UploadFile = File(
 
 
 @app.post("/api/files/create")
-def create_file_or_dir(request: Request, path: str = "", name: str = "", type: str = ""):
+def create_file_or_dir(request: Request, path: str = "", name: str = "", filetype: str = ""):
     try:
         verify_jwt(request)
 
         target = _secure_path((Path(path) / name).as_posix())
-        if type == "dir":
+        if filetype == "dir":
             target.mkdir(parents=True, exist_ok=True)
         else:
             target.parent.mkdir(parents=True, exist_ok=True)
