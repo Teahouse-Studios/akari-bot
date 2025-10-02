@@ -3,7 +3,7 @@
 
 # 小可 · AkariBot
 
-_多功能、多语言、多平台支持的异步聊天机器人_
+_多功能、跨平台、可自由扩展的异步聊天机器人助手_
 
 [![GitHub issues](https://img.shields.io/github/issues/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/pulls)
