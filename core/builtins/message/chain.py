@@ -74,9 +74,9 @@ class MessageChain:
                 elements = converter.structure(elements[key], MessageElement)
         if isinstance(elements, (list, tuple)):
             for e in elements:
-                if isinstance(e, str):
+                if isinstance(e, str) and e:
                     values.append(PlainElement.assign(e))
-                if isinstance(e, dict):
+                elif isinstance(e, dict):
                     for key in e:
                         tmp_e = converter.structure(e[key], MessageElement)
                         values.append(tmp_e)

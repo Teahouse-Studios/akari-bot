@@ -1,18 +1,21 @@
 import re
 import shutil
 from datetime import datetime
+from tabulate import tabulate
 
+from tortoise import Tortoise
 import orjson as json
 
 from core.builtins.bot import Bot
 from core.builtins.converter import converter
 from core.builtins.message.chain import MessageChain, convert_senderid_to_atcode, match_kecode
-from core.builtins.message.internal import I18NContext, Plain
+from core.builtins.message.internal import I18NContext, Plain, Image
 from core.builtins.parser.message import check_temp_ban, remove_temp_ban
 from core.component import module
 from core.config import Config, CFGManager
 from core.constants.exceptions import NoReportException, TestException
 from core.constants.path import cache_path
+from core.database import fetch_module_db, get_table_names
 from core.database.models import SenderInfo, TargetInfo, JobQueuesTable
 from core.loader import ModulesManager
 from core.logger import Logger
@@ -22,8 +25,12 @@ from core.types import Param
 from core.utils.alive import Alive
 from core.utils.bash import run_sys_command
 from core.utils.decrypt import decrypt_string
+from core.utils.image_table import image_table_render, ImageTable
 from core.utils.message import isfloat, isint
 from core.utils.storedata import get_stored_list, update_stored_list
+
+DBDATA_PER_PAGE = 10
+
 
 su = module("superuser", alias="su", required_superuser=True, base=True, doc=True)
 
@@ -479,6 +486,65 @@ async def _(msg: Bot.MessageSession):
             await msg.finish()
     else:
         await msg.finish(I18NContext("core.message.update.binary_mode"))
+
+
+db = module("database", alias="db", required_superuser=True, base=True, doc=True)
+
+
+@db.command("list")
+async def _(msg: Bot.MessageSession):
+    models_path = ["core.database.models"] + fetch_module_db()
+    table_lst = sorted(get_table_names(models_path))
+    await msg.finish([I18NContext("core.message.database.list")] + table_lst)
+
+
+@db.command("exec <sql> [-p <page>] [--legacy]")
+async def _(msg: Bot.MessageSession, sql: str):
+    try:
+        conn = Tortoise.get_connection("default")
+        result = await conn.execute_query_dict(sql)
+
+        if "select" in sql.lower():
+            if not result:
+                await msg.finish(I18NContext("core.message.database.no_result"))
+
+            headers = list(result[0].keys())
+            data = [[str(v) for v in r.values()] for r in result]
+
+            total_pages = (len(data) + DBDATA_PER_PAGE - 1) // DBDATA_PER_PAGE
+            get_page = msg.parsed_msg.get("-p", False)
+
+            page = (
+                max(min(int(get_page["<page>"]), total_pages), 1)
+                if get_page and isint(get_page["<page>"])
+                else 1
+            )
+            start_index = (page - 1) * DBDATA_PER_PAGE
+            end_index = page * DBDATA_PER_PAGE
+            page_data = data[start_index:end_index]
+
+            footer = I18NContext(
+                "core.message.database.pages",
+                page=page,
+                total_pages=total_pages,
+                data_count=len(data))
+
+            if not msg.parsed_msg.get("--legacy", False) and msg.session_info.support_image:
+                table = ImageTable(data=page_data, headers=headers, session_info=msg.session_info)
+                imgs = await image_table_render(table)
+            else:
+                imgs = None
+
+            if imgs:
+                img_list = [Image(ii) for ii in imgs]
+                await msg.finish(img_list + [footer])
+            else:
+                table_str = tabulate(page_data, headers=headers, tablefmt="grid")
+                await msg.finish([Plain(table_str), footer])
+
+        await msg.finish(I18NContext("message.success"))
+    except Exception as e:
+        raise NoReportException(str(e))
 
 
 git = module("git", required_superuser=True, base=True, doc=True, load=bool(Bot.Info.version))

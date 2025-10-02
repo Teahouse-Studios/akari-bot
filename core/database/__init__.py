@@ -1,5 +1,6 @@
 import asyncio
 import importlib.util
+import inspect
 import pkgutil
 from typing import List, Optional
 
@@ -10,6 +11,7 @@ from core.builtins.temp import Temp
 from core.logger import Logger
 from .link import get_db_link
 from .local import DB_LINK
+from .models import DBModel
 
 _reload_lock = asyncio.Lock()
 
@@ -25,6 +27,19 @@ def fetch_module_db():
 
     Logger.debug(f"Database list: {database_list}")
     return database_list
+
+
+def get_table_names(models_path: List[str]) -> List[str]:
+    table_names = []
+    for p in models_path:
+        m = importlib.import_module(p)
+        for _, obj in inspect.getmembers(m, inspect.isclass):
+            if issubclass(obj, DBModel) and obj is not DBModel:
+                meta = getattr(obj, "Meta", None)
+                if meta and hasattr(meta, "table"):
+                    table_names.append(meta.table)
+
+    return table_names
 
 
 async def init_db(load_module_db: bool = True, db_models: Optional[List[str]] = None) -> bool:
