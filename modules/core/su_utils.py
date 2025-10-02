@@ -6,7 +6,7 @@ import orjson as json
 
 from core.builtins.bot import Bot
 from core.builtins.converter import converter
-from core.builtins.message.chain import MessageChain, match_kecode
+from core.builtins.message.chain import MessageChain, convert_senderid_to_atcode, match_kecode
 from core.builtins.message.internal import I18NContext, Plain
 from core.builtins.parser.message import check_temp_ban, remove_temp_ban
 from core.component import module
@@ -587,6 +587,7 @@ say = module("say", required_superuser=True, base=True, doc=True)
 @say.command("<display_msg>")
 async def _(msg: Bot.MessageSession, display_msg: str):
     try:
+        display_msg = convert_senderid_to_atcode(display_msg, msg.session_info.sender_from)
         await msg.finish(display_msg, quote=False)
     except Exception as e:
         raise NoReportException(str(e))
@@ -605,10 +606,10 @@ async def _(msg: Bot.MessageSession, args: str = None):
 _eval = module("eval", required_superuser=True, base=True, doc=True, load=Config("enable_eval", False))
 
 
-@_eval.command("<display_msg>")
-async def _(msg: Bot.MessageSession, display_msg: str):
+@_eval.command("<expr>")
+async def _(msg: Bot.MessageSession, expr: str):
     try:
-        await msg.finish(str(eval(display_msg, {"msg": msg, "Bot": Bot})), disable_secret_check=True)  # skipcq
+        await msg.finish(str(eval(expr, {"msg": msg, "Bot": Bot})), disable_secret_check=True)  # skipcq
     except Exception as e:
         raise NoReportException(str(e))
 
@@ -620,7 +621,7 @@ post_ = module("post", required_superuser=True, base=True, doc=True)
 async def _(msg: Bot.MessageSession, target: str, post_msg: str):
     if not Alive.determine_target_from(target):
         await msg.finish(I18NContext("message.id.invalid.target", target=msg.session_info.target_from))
-    session = await Bot.fetch_target(target)
+    session = await Bot.fetch_target(target, create=True)
     msg_chain = MessageChain.assign([I18NContext("core.message.post.prefix")] + match_kecode(post_msg))
     preview = msg_chain.copy()
     preview.insert(0, I18NContext("core.message.post.confirm", target=target))

@@ -48,23 +48,33 @@ class AiogramContextManager(ContextManager):
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         msg_ids = []
+        buffer_text = []
+
+        async def send_buffer_text():
+            nonlocal buffer_text, msg_ids
+            if buffer_text:
+                send_ = await aiogram_bot.send_message(
+                    session_info.get_common_target_id(),
+                    "\n".join(buffer_text),
+                    reply_to_message_id=(session_info.message_id if quote and not msg_ids and session_info.message_id else None),
+                    parse_mode="HTML"
+                )
+                msg_ids.append(send_.message_id)
+                buffer_text = []
+
         if isinstance(message, MessageNodes):
             message = MessageChain.assign(await msgnode2image(message))
 
+        count = 0
         for x in message.as_sendable(session_info, parse_message=enable_parse_message):
             if isinstance(x, PlainElement):
                 if enable_parse_message:
                     x.text = match_atcode(x.text, client_name, "<a href=\"tg://user?id={uid}\">@{uid}</a>")
-                send_ = await aiogram_bot.send_message(session_info.get_common_target_id(),
-                                                       x.text,
-                                                       reply_to_message_id=(
-                    session_info.message_id if quote and not msg_ids and session_info.message_id
-                    else None
-                ), parse_mode="HTML"
-                )
+                buffer_text.append(x.text)
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
-                msg_ids.append(send_.message_id)
+                count += 1
             elif isinstance(x, ImageElement):
+                await send_buffer_text()
                 if enable_split_image:
                     split = await image_split(x)
                     for xs in split:
@@ -89,7 +99,9 @@ class AiogramContextManager(ContextManager):
                     )
                     Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(x)}")
                     msg_ids.append(send_.message_id)
+                count += 1
             elif isinstance(x, VoiceElement):
+                await send_buffer_text()
                 send_ = await aiogram_bot.send_audio(
                     session_info.get_common_target_id(),
                     FSInputFile(x.path),
@@ -100,19 +112,16 @@ class AiogramContextManager(ContextManager):
                 )
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Voice: {str(x)}")
                 msg_ids.append(send_.message_id)
+                count += 1
             elif isinstance(x, MentionElement):
                 if x.client == client_name and session_info.target_from in [
                         f"{client_name}|Group", f"{client_name}|Supergroup"]:
-                    send_ = await aiogram_bot.send_message(
-                        session_info.get_common_target_id(),
-                        f"<a href=\"tg://user?id={x.id}\">@{x.id}</a>",
-                        reply_to_message_id=(
-                            session_info.message_id if quote and not msg_ids and session_info.message_id else None),
-                        parse_mode="HTML"
-                    )
+                    buffer_text.append(f"<a href=\"tg://user?id={x.id}\">@{x.id}</a>")
                     Logger.info(f"[Bot] -> [{session_info.target_id}]: Mention: {x.client}|{x.id}")
-                    msg_ids.append(send_.message_id)
+                count += 1
 
+            if count == len(message):
+                await send_buffer_text()
         return msg_ids
 
     @classmethod

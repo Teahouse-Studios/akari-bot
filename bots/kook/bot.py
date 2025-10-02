@@ -29,8 +29,9 @@ async def to_message_chain(message: Message):
     if message.type == MessageTypes.TEXT:
         lst.append(Plain(message.content))
     if message.type == MessageTypes.KMD:
-        sub_url = re.sub(r"\[.*?]\((.*?)\)", r"\1", message.content)
-        lst.append(Plain(sub_url))
+        message.content = re.sub(r"\[.*?]\((.*?)\)", r"\1", message.content)
+        message.content = re.sub(r"\(met\)(.*?)\(met\)", rf"{sender_prefix}|\1", message.content)
+        lst.append(Plain(message.content))
     elif message.type == MessageTypes.IMG:
         lst.append(Image(message.content))
     elif message.type == MessageTypes.AUDIO:
