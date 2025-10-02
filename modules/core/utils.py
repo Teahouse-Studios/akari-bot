@@ -21,7 +21,7 @@ ver = module("version", base=True, doc=True)
 async def _(msg: Bot.MessageSession):
     if Bot.Info.version:
         commit = Bot.Info.version[:6]
-        send_msgs = MessageChain.assign([I18NContext("core.message.version", disable_joke=True, commit=commit)])
+        send_msgs = MessageChain.assign([I18NContext("core.message.version", commit=commit, disable_joke=True)])
         if Config("enable_commit_url", True):
             returncode, repo_url, _ = await run_sys_command(["git", "config", "--get", "remote.origin.url"])
             if returncode == 0:
@@ -69,13 +69,14 @@ async def _(msg: Bot.MessageSession):
             client_name=msg.session_info.client_name,
             command_parsed=Bot.Info.command_parsed,
             parsed=TempCounter.value,
-        ))
+            disable_joke=True))
     else:
         disk_percent = psutil.disk_usage("/").percent
         result.append(I18NContext(
             "core.message.ping.simple",
             bot_running_time=timediff,
             disk_percent=disk_percent,
+            disable_joke=True
         ))
     await msg.finish(result)
 
@@ -125,9 +126,9 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     admin_ban_list = msg.session_info.target_info.target_data.get("ban", [])
     if "list" in msg.parsed_msg:
-        if msg.session_info.banned_users:
+        if admin_ban_list:
             await msg.finish(
-                [I18NContext("core.message.admin.ban.list"), Plain("\n".join(msg.session_info.custom_admins))])
+                [I18NContext("core.message.admin.ban.list"), Plain("\n".join(admin_ban_list))])
         else:
             await msg.finish(I18NContext("core.message.admin.ban.list.none"))
     user = msg.parsed_msg["<user>"]

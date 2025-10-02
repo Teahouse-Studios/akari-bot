@@ -121,10 +121,7 @@ async def parser(msg: "Bot.MessageSession"):
                 new_msg, new_command_first_word, confirmed = await _command_typo_check(msg, modules, command_first_word)
                 if new_msg:
                     if modules[new_command_first_word]._db_load:
-                        if msg.session_info.sender_info.sender_data.get("typing_prompt", True):
-                            await msg.start_typing()
                         await _execute_module(new_msg, modules, new_command_first_word, identify_str)
-                        await msg.end_typing()
                     else:
                         await msg.send_message(I18NContext("parser.module.unloaded", module=new_command_first_word))
                 elif enable_module_invalid_prompt and not confirmed:
@@ -331,10 +328,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
             new_msg, new_command_first_word, confirmed = await _command_typo_check(msg, modules, command_first_word)
             if new_msg:
                 if modules[new_command_first_word]._db_load:
-                    if msg.session_info.sender_info.sender_data.get("typing_prompt", True):
-                        await msg.start_typing()
                     await _execute_module(new_msg, modules, new_command_first_word, identify_str)
-                    await msg.end_typing()
                 else:
                     await msg.send_message(I18NContext("parser.module.unloaded", module=new_command_first_word))
             elif not confirmed:
@@ -730,17 +724,19 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
     is_base_superuser = msg.session_info.sender_id in bot.base_superuser_list
     is_superuser = msg.check_super_user()
 
-    avaliable_modules = []
+    available_modules = []
     for x in modules:
-        if modules[x].base or \
-                x in msg.session_info.enabled_modules and \
-                not modules[x].hidden or \
-                not is_superuser and modules[x].required_superuser or \
-                not is_base_superuser and modules[x].required_base_superuser:
-            avaliable_modules.append(x)
+        if modules[x].base or (x in msg.session_info.enabled_modules):
+            if modules[x].hidden:
+                continue
+            if modules[x].required_superuser and not is_superuser:
+                continue
+            if modules[x].required_base_superuser and not is_base_superuser:
+                continue
+            available_modules.append(x)
 
     match_close_module: list = difflib.get_close_matches(
-        command_first_word, avaliable_modules, 1, typo_check_module_score)
+        command_first_word, available_modules, 1, typo_check_module_score)
     if match_close_module:
         Logger.debug(f"Match module: {command_first_word} -> {match_close_module[0]}")
         module: Module = modules[match_close_module[0]]
@@ -777,7 +773,7 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
             if match_close_command:
                 Logger.debug(f"Match command: {" ".join(command_split[1:])} -> {match_close_command[0]}")
                 match_split = match_close_command[0]
-                m_split_options = filter(None, re.split(r"(\\[.*?])", match_split))  # 切割可选参数
+                m_split_options = filter(None, re.split(r"(\[.*?\])", match_split))  # 切割可选参数
                 old_command_split = command_split.copy()
                 del old_command_split[0]
                 new_command_split = [match_close_module[0]]

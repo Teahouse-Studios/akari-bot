@@ -164,7 +164,7 @@ class MessageChain:
                     if x.text != "":
                         if parse_message:
                             x.text = session_info.locale.t_str(x.text)
-                            element_chain = match_kecode(x.text)
+                            element_chain = match_kecode(x.text, x.disable_joke)
                             for elem in element_chain.values:
                                 elem = MessageChain.assign(elem).as_sendable(session_info, parse_message=False)
                                 if isinstance(elem, PlainElement):
