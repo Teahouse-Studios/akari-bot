@@ -10,7 +10,7 @@ from core.config import Config
 from core.constants.default import wiki_whitelist_url_default
 from core.logger import Logger
 from core.scheduler import IntervalTrigger
-from core.utils.templist import TempList
+from core.utils.temp import TempList
 from modules.wiki.utils.ab import convert_ab_to_detailed_format
 from modules.wiki.utils.rc import convert_rc_to_detailed_format
 from modules.wiki.utils.wikilib import WikiLib
