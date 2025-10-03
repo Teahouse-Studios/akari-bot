@@ -19,6 +19,7 @@ from core.database import fetch_module_db, get_table_names
 from core.database.models import SenderInfo, TargetInfo, JobQueuesTable
 from core.loader import ModulesManager
 from core.logger import Logger
+from core.scheduler import CronTrigger
 from core.server.terminate import restart
 from core.tos import WARNING_COUNTS
 from core.types import Param
@@ -29,6 +30,7 @@ from core.utils.image_table import image_table_render, ImageTable
 from core.utils.message import isfloat, isint
 from core.utils.storedata import get_stored_list, update_stored_list
 
+auto_purge_crontab = Config("auto_purge_crontab", "0 0 * * *")
 DBDATA_PER_PAGE = 10
 
 
@@ -79,6 +81,13 @@ async def _(msg: Bot.MessageSession):
     else:
         cache_path.mkdir(parents=True, exist_ok=True)
         await msg.finish(I18NContext("core.message.purge.empty"))
+
+
+@purge.schedule(CronTrigger.from_crontab(auto_purge_crontab))
+async def _():
+    if cache_path.exists():
+        shutil.rmtree(cache_path)
+    cache_path.mkdir(parents=True, exist_ok=True)
 
 
 set_ = module("set", required_superuser=True, base=True, doc=True)
@@ -147,17 +156,18 @@ async def _(msg: Bot.MessageSession, target: str):
     elif "edit" in msg.parsed_msg:
         k = msg.parsed_msg.get("<k>")
         v = msg.parsed_msg.get("<v>")
-        if re.match(r"\[.*\]|\{.*\}", v):
-            try:
-                v = v.replace("\'", "\"")
-                v = json.loads(v)
-            except json.JSONDecodeError as e:
-                Logger.error(str(e))
-                await msg.finish(I18NContext("message.failed"))
-        elif v.lower() == "true":
-            v = True
-        elif v.lower() == "false":
-            v = False
+        if isinstance(v, str):
+            if re.match(r"\[.*\]|\{.*\}", v):
+                try:
+                    v = v.replace("\'", "\"")
+                    v = json.loads(v)
+                except json.JSONDecodeError as e:
+                    Logger.error(str(e))
+                    await msg.finish(I18NContext("message.failed"))
+            elif v.lower() == "true":
+                v = True
+            elif v.lower() == "false":
+                v = False
         await target_info.edit_target_data(k, v)
         await msg.finish(I18NContext("core.message.set.option.edit.success", k=k, v=v))
     elif "delete" in msg.parsed_msg:
@@ -187,17 +197,18 @@ async def _(msg: Bot.MessageSession, user: str):
     elif "edit" in msg.parsed_msg:
         k = msg.parsed_msg.get("<k>")
         v = msg.parsed_msg.get("<v>")
-        if re.match(r"\[.*\]|\{.*\}", v):
-            try:
-                v = v.replace("\'", "\"")
-                v = json.loads(v)
-            except json.JSONDecodeError as e:
-                Logger.error(str(e))
-                await msg.finish(I18NContext("message.failed"))
-        elif v.lower() == "true":
-            v = True
-        elif v.lower() == "false":
-            v = False
+        if isinstance(v, str):
+            if re.match(r"\[.*\]|\{.*\}", v):
+                try:
+                    v = v.replace("\'", "\"")
+                    v = json.loads(v)
+                except json.JSONDecodeError as e:
+                    Logger.error(str(e))
+                    await msg.finish(I18NContext("message.failed"))
+            elif v.lower() == "true":
+                v = True
+            elif v.lower() == "false":
+                v = False
         await sender_info.edit_sender_data(k, v)
         await msg.finish(I18NContext("core.message.set.option.edit.success", k=k, v=v))
     elif "delete" in msg.parsed_msg:

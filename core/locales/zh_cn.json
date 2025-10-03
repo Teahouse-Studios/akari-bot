@@ -5,6 +5,7 @@
     "config.comments.allow_origins": "API 服务允许 CORS 的源列表。",
     "config.comments.allow_reload_base": "是否允许重载基础模块。",
     "config.comments.allow_request_private_ip": "是否允许机器人请求本地私有 IP 地址。（防止可能的信息泄露）",
+    "config.comments.auto_purge_crontab": "自动清除缓存的 Cron 表达式。",
     "config.comments.base_superuser": "机器人的基础超级用户列表，此处填写的值将会在机器人启动时被加载进入数据库。",
     "config.comments.browser_executable_path": "WebRender 使用的浏览器可执行文件路径，若空则使用 playwright 默认安装浏览器。",
     "config.comments.browser_type": "WebRender 使用的浏览器类型。（支持“chrome”与“firefox”）",

@@ -5,6 +5,7 @@
     "config.comments.allow_origins": "API サービスで CORS が許可されるオリジンのリスト。",
     "config.comments.allow_reload_base": "基本モジュールの再読み込みを許可するかどうか。",
     "config.comments.allow_request_private_ip": "ボットがローカル プライベート IP アドレスをリクエストすることを許可するかどうか。（情報漏洩を防ぐため）",
+    "config.comments.auto_purge_crontab": "自動キャッシュ パージの Cron 式。",
     "config.comments.base_superuser": "ボットの基本スーパーユーザー リスト。ここに入力された値はボットの起動時にデータベースに読み込まれます。",
     "config.comments.browser_executable_path": "WebRender が使用するブラウザ実行ファイルのパス。空の場合は、Playwright によってインストールされたデフォルトのブラウザが使用されます。",
     "config.comments.browser_type": "WebRender が使用しているブラウザの種類。（「chrome」と「firefox」をサポート）",

@@ -20,6 +20,7 @@ class Config:
     # 命令交互
     command_prefix: list = ["~", "～"]
     confirm_command: list = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"]
+    enable_module_invalid_prompt: bool = False
     no_confirm: bool = False
     quick_confirm: bool = True
 
@@ -28,8 +29,8 @@ class Config:
     enable_commit_url: bool = True
     enable_dirty_check: bool = False
     enable_eval: bool = False
-    enable_module_invalid_prompt: bool = False
     enable_urlmanager: bool = False
+    auto_purge_crontab: str = "0 0 * * *"
 
     # 拼写检查
     typo_check_module_score: float = 0.6

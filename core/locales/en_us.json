@@ -5,6 +5,7 @@
     "config.comments.allow_origins": "The API service allows CORS sources list.",
     "config.comments.allow_reload_base": "Whether to allow reloading of the base modules.",
     "config.comments.allow_request_private_ip": "Whether to allow bot to request local private IP addresses. (Prevent possible leakage)",
+    "config.comments.auto_purge_crontab": "Cron expression for automatic cache purge.",
     "config.comments.base_superuser": "The bot's base superuser list. The values ​​filled in here will be loaded into the database when the bot starts.",
     "config.comments.browser_executable_path": "The browser executable file path used by WebRender. If empty, the default browser installed by playwright is used.",
     "config.comments.browser_type": "The browser type used by WebRender. (Supports \"chrome\" and \"firefox\")",
