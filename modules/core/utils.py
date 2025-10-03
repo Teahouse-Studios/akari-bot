@@ -98,7 +98,7 @@ admin = module(
 async def _(msg: Bot.MessageSession):
     if "list" in msg.parsed_msg:
         if msg.session_info.custom_admins:
-            await msg.finish([I18NContext("core.message.admin.list"), Plain("\n".join(msg.session_info.custom_admins))])
+            await msg.finish([I18NContext("core.message.admin.list")] + msg.session_info.custom_admins)
         else:
             await msg.finish(I18NContext("core.message.admin.list.none"))
     user = msg.parsed_msg["<user>"]
@@ -106,7 +106,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("core.message.admin.invalid", sender=msg.session_info.sender_from,
                                      prefix=msg.session_info.prefixes[0]))
     if "add" in msg.parsed_msg:
-        if await msg.check_permission():
+        if user in msg.session_info.custom_admins:
             await msg.finish(I18NContext("core.message.admin.add.already"))
         if await msg.session_info.target_info.config_custom_admin(user):
             await msg.finish(I18NContext("core.message.admin.add.success", user=user))
@@ -124,32 +124,25 @@ async def _(msg: Bot.MessageSession):
     "ban list {{I18N:core.help.admin.ban.list}}",
 )
 async def _(msg: Bot.MessageSession):
-    admin_ban_list = msg.session_info.target_info.target_data.get("ban", [])
     if "list" in msg.parsed_msg:
-        if admin_ban_list:
-            await msg.finish(
-                [I18NContext("core.message.admin.ban.list"), Plain("\n".join(admin_ban_list))])
+        if msg.session_info.banned_users:
+            await msg.finish([I18NContext("core.message.admin.ban.list")] + msg.session_info.banned_users)
         else:
             await msg.finish(I18NContext("core.message.admin.ban.list.none"))
     user = msg.parsed_msg["<user>"]
     if not user.startswith(f"{msg.session_info.sender_from}|"):
         await msg.finish(I18NContext("core.message.admin.invalid", sender=msg.session_info.sender_from,
                                      prefix=msg.session_info.prefixes[0]))
-    if user == msg.session_info.sender_id:
-        await msg.finish(I18NContext("core.message.admin.ban.self"))
     if "ban" in msg.parsed_msg:
-        if user not in admin_ban_list:
-            await msg.session_info.target_info.edit_target_data("ban", admin_ban_list + [user])
-            await msg.finish(I18NContext("core.message.admin.ban.success", user=user))
-        else:
+        if user == msg.session_info.sender_id:
+            await msg.finish(I18NContext("core.message.admin.ban.self"))
+        if user in msg.session_info.banned_users:
             await msg.finish(I18NContext("core.message.admin.ban.already"))
+        await msg.session_info.target_info.config_banned_user(user)
+        await msg.finish(I18NContext("core.message.admin.ban.success", user=user))
     if "unban" in msg.parsed_msg:
-        if user in (banlist := admin_ban_list):
-            banlist.remove(user)
-            await msg.session_info.target_info.edit_target_data("ban", banlist)
+        if await msg.session_info.target_info.config_banned_user(user, enable=False):
             await msg.finish(I18NContext("core.message.admin.unban.success", user=user))
-        else:
-            await msg.finish(I18NContext("core.message.admin.unban.none"))
 
 
 locale = module(

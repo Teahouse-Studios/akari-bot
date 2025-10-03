@@ -90,10 +90,10 @@ async def parser(msg: "Bot.MessageSession"):
         msg.trigger_msg = remove_duplicate_space(msg.as_display())  # 将消息转换为一般显示形式
         if len(msg.trigger_msg) == 0:
             return
-        if (
-            msg.session_info.sender_info.blocked and not msg.session_info.sender_info.trusted and not msg.session_info.sender_info.superuser) or (
-            msg.session_info.sender_id in msg.session_info.target_info.target_data.get("ban",
-                                                                                       []) and not msg.session_info.superuser):
+        if msg.session_info.sender_info.blocked and \
+                not (msg.session_info.sender_info.trusted or msg.session_info.sender_info.superuser):
+            return
+        if msg.session_info.sender_id in msg.session_info.banned_users and not msg.session_info.superuser:
             return
 
         disable_prefix, in_prefix_list = _get_prefixes(msg)

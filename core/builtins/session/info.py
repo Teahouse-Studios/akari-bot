@@ -43,6 +43,7 @@ class SessionInfo:
     session_id: Optional[str] = None
     target_info: Optional[TargetInfo] = None
     sender_info: Optional[SenderInfo] = None
+    banned_users: Optional[list] = None
     custom_admins: Optional[list] = None
     locale: Optional[Locale] = None
     _tz_offset: Optional[str] = None
@@ -120,6 +121,7 @@ class SessionInfo:
             message_id=message_id,
             reply_id=reply_id,
             messages=messages,
+            banned_users=target_info.banned_users if target_info else [],
             custom_admins=target_info.custom_admins if target_info else [],
             timestamp=timestamp,
             session_id=session_id,
