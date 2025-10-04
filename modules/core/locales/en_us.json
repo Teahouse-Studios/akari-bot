@@ -66,7 +66,6 @@
     "core.message.admin.list.none": "There are currently no manual bot administrators.",
     "core.message.admin.remove.confirm": "You are removing your own bot administrator permissions! Are you sure?",
     "core.message.admin.remove.success": "Successfully removed ${user} from bot administrator.",
-    "core.message.admin.unban.none": "This member has not been limited to use the bot.",
     "core.message.admin.unban.success": "Successfully removed the limited of ${user} to use the bot.",
     "core.message.alias.add.already": "\"${alias}\" alias already exists in custom alias list.",
     "core.message.alias.add.invalid_placeholder": "Invalid placeholder in the added alias.",
