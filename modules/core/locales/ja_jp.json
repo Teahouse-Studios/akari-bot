@@ -66,7 +66,6 @@
     "core.message.admin.list.none": "現在手動で設定されてボット管理者はいません。",
     "core.message.admin.remove.confirm": "自分のボット管理者権限を削除しています！本当によろしいですか？",
     "core.message.admin.remove.success": "${user} にボット管理者から解除しました。",
-    "core.message.admin.unban.none": "このメンバーのボット利用を制限されています。",
     "core.message.admin.unban.success": "${user} のボット利用を制限解除しました。",
     "core.message.alias.add.already": "エイリアス 「${alias}」はカスタム エイリアス リストに既に存在します。",
     "core.message.alias.add.invalid_placeholder": "追加されたエイリアスに無効なプレースホルダーが存在します。",
