@@ -541,7 +541,7 @@ async def _(msg: Bot.MessageSession, sql: str):
                 data_count=len(data))
 
             if not msg.parsed_msg.get("--legacy", False) and msg.session_info.support_image:
-                table = ImageTable(data=page_data, headers=headers, session_info=msg.session_info)
+                table = ImageTable(data=page_data, headers=headers, session_info=msg.session_info, disable_joke=True)
                 imgs = await image_table_render(table)
             else:
                 imgs = None
@@ -551,7 +551,7 @@ async def _(msg: Bot.MessageSession, sql: str):
                 await msg.finish(img_list + [footer])
             else:
                 table_str = tabulate(page_data, headers=headers, tablefmt="grid")
-                await msg.finish([Plain(table_str), footer])
+                await msg.finish([Plain(table_str, disable_joke=True), footer])
 
         await msg.finish(I18NContext("message.success"))
     except Exception as e:

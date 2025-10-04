@@ -21,7 +21,11 @@ class ImageTable:
     :param headers: 表格表头。
     """
 
-    def __init__(self, data: List[List[Any]], headers: List[str], session_info: Optional["SessionInfo"] = None):
+    def __init__(self,
+                 data: List[List[Any]],
+                 headers: List[str],
+                 session_info: Optional["SessionInfo"] = None,
+                 disable_joke: bool = False):
         if not all(len(row) == len(headers) for row in data):
             raise ValueError("The number of columns of data must match the number of table headers.")
 
@@ -29,15 +33,22 @@ class ImageTable:
             localized_data = []
             for row in data:
                 translated_row = [
-                    session_info.locale.t_str(cell) if isinstance(cell, str) else cell
+                    session_info.locale.t_str(cell) if isinstance(cell, str) else str(cell)
                     for cell in row
                 ]
                 localized_data.append(translated_row)
-            self.data = localized_data
             self.headers = [session_info.locale.t_str(h) for h in headers]
+            self.data = localized_data
         else:
-            self.data = data
             self.headers = headers
+            self.data = data
+
+        if not disable_joke:
+            self.headers = [joke(header) for header in self.headers]
+            new_data = []
+            for row in self.data:
+                new_data.append([joke(cell) for cell in row])
+            self.data = new_data
 
 
 async def image_table_render(
@@ -64,13 +75,12 @@ async def image_table_render(
                     c = joke(c)
                     cs.append(re.sub(r"\n", "<br>", escape(c)))
                 d.append(cs)
-            headers = [joke(header) for header in tbl.headers]
-            w = len(headers) * 500
+            w = len(tbl.headers) * 500
             if w > max_width:
                 max_width = w
             tblst.append(
                 re.sub(
-                    r"<table>|</table>", "", tabulate(d, headers, tablefmt="unsafehtml")
+                    r"<table>|</table>", "", tabulate(d, tbl.headers, tablefmt="unsafehtml")
                 )
             )
         tblst = "<table>" + "\n".join(tblst) + "</table>"
