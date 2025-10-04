@@ -93,6 +93,7 @@
     "core.message.database.list": "資料庫中所有已支援操作的表格：",
     "core.message.database.no_result": "無結果。",
     "core.message.database.pages": "（第 ${page} 頁，共 ${total_pages} 頁，共 ${data_count} 條）",
+    "core.message.database.success": "成功修改了 ${rows} 筆資料。",
     "core.message.echo.prompt": "請傳送想要重複的訊息。",
     "core.message.forward_msg.disable": "已停用轉發訊息。",
     "core.message.forward_msg.disabled": "轉發訊息已停用。",

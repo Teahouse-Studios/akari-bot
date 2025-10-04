@@ -3,8 +3,9 @@ import shutil
 from datetime import datetime
 from tabulate import tabulate
 
-from tortoise import Tortoise
 import orjson as json
+from tortoise import Tortoise
+from tortoise.exceptions import OperationalError
 
 from core.builtins.bot import Bot
 from core.builtins.converter import converter
@@ -513,9 +514,9 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession, sql: str):
     try:
         conn = Tortoise.get_connection("default")
-        result = await conn.execute_query_dict(sql)
+        if sql.upper().startswith("SELECT"):
+            result = await conn.execute_query_dict(sql)
 
-        if "select" in sql.lower():
             if not result:
                 await msg.finish(I18NContext("core.message.database.no_result"))
 
@@ -552,9 +553,10 @@ async def _(msg: Bot.MessageSession, sql: str):
             else:
                 table_str = tabulate(page_data, headers=headers, tablefmt="grid")
                 await msg.finish([Plain(table_str, disable_joke=True), footer])
-
-        await msg.finish(I18NContext("message.success"))
-    except Exception as e:
+        else:
+            rows, _ = await conn.execute_query(sql)
+            await msg.finish(I18NContext("core.message.database.success", rows=rows))
+    except OperationalError as e:
         raise NoReportException(str(e))
 
 

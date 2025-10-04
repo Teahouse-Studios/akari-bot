@@ -93,6 +93,7 @@
     "core.message.database.list": "All tables in the database that support operations:",
     "core.message.database.no_result": "No results.",
     "core.message.database.pages": "(Page ${page} / ${total_pages} | Total ${data_count} entries)",
+    "core.message.database.success": "Successfully affected ${rows} row(s) of data.",
     "core.message.echo.prompt": "Please send the message you want to be repeated.",
     "core.message.forward_msg.disable": "Forward message disabled.",
     "core.message.forward_msg.disabled": "Forward message has been disabled.",

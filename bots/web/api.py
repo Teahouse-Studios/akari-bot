@@ -17,6 +17,8 @@ from cpuinfo import get_cpu_info
 from fastapi import HTTPException, Request, File, Form, Query, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import Response, FileResponse, PlainTextResponse
 from jwt.exceptions import ExpiredSignatureError
+from tortoise import Tortoise
+from tortoise.exceptions import OperationalError
 from tortoise.expressions import Q
 
 from bots.web.client import app, limiter, ph, enable_https, jwt_secret
@@ -789,6 +791,31 @@ def _extract_timestamp(line: str):
     if match:
         return datetime.strptime(match.group(1), "%Y-%m-%d %H:%M:%S")
     return None
+
+
+@app.post("/api/database/exec")
+async def exec_sql(request: Request):
+    try:
+        verify_jwt(request)
+
+        body = await request.json()
+        sql = body.get("sql", "")
+
+        conn = Tortoise.get_connection("default")
+
+        if sql.upper().startswith("SELECT"):
+            rows = await conn.execute_query_dict(sql)
+            return {"success": True, "data": rows}
+        else:
+            rows, _ = await conn.execute_query(sql)
+            return {"success": True, "affected_rows": rows}
+    except OperationalError as e:
+        return {"success": False, "error": str(e)}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
 
 
 def _secure_path(path: str) -> Path:
