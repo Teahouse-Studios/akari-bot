@@ -34,7 +34,10 @@ class MatrixContextManager(ContextManager):
             sender = session_info.get_common_sender_id()
         if room_id.startswith("@") or sender.startswith("!"):
             return True
-        sender_mxid = f"@{sender}"
+        if sender.startswith("@"):
+            sender_mxid = sender
+        else:
+            sender_mxid = f"@{sender}"
 
         # check room creator for room v12
         create_event_id = "$" + str(room_id)[1:]
