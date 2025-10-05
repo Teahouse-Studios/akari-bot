@@ -26,6 +26,7 @@ from core.builtins.utils import command_prefix
 from core.config import Config
 from core.constants import config_filename
 from core.constants.path import assets_path, config_path, logs_path
+from core.database import fetch_module_db, get_model_fields, get_model_names
 from core.database.models import AnalyticsData, SenderInfo, TargetInfo, MaliciousLoginRecords
 from core.logger import Logger
 from core.queue.client import JobQueueClient
@@ -791,6 +792,36 @@ def _extract_timestamp(line: str):
     if match:
         return datetime.strptime(match.group(1), "%Y-%m-%d %H:%M:%S")
     return None
+
+
+@app.get("/api/database/list")
+async def get_db_model_list(request: Request):
+    try:
+        verify_jwt(request)
+
+        models_path = ["core.database.models"] + fetch_module_db()
+        table_lst = sorted(get_model_names(models_path))
+        return {"model_list": table_lst}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.get("/api/database/field/{model}")
+async def get_db_model_fields(request: Request, model: str):
+    try:
+        verify_jwt(request)
+
+        models_path = ["core.database.models"] + fetch_module_db()
+        result = get_model_fields(models_path, model)
+        return {"model_fields": result}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
 
 
 @app.post("/api/database/exec")

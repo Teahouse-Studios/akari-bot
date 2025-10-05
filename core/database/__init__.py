@@ -2,7 +2,7 @@ import asyncio
 import importlib.util
 import inspect
 import pkgutil
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from tortoise import Tortoise
 from tortoise.exceptions import DBConnectionError
@@ -29,7 +29,7 @@ def fetch_module_db():
     return database_list
 
 
-def get_table_names(models_path: List[str]) -> List[str]:
+def get_model_names(models_path: List[str]) -> List[str]:
     table_names = []
     for p in models_path:
         m = importlib.import_module(p)
@@ -40,6 +40,26 @@ def get_table_names(models_path: List[str]) -> List[str]:
                     table_names.append(meta.table)
 
     return table_names
+
+
+def get_model_fields(models_path: List[str], table_name: str) -> List[Dict[str, Any]]:
+    for p in models_path:
+        m = importlib.import_module(p)
+        for _, obj in inspect.getmembers(m, inspect.isclass):
+            if issubclass(obj, DBModel) and obj is not DBModel:
+                meta = getattr(obj, "Meta", None)
+                if meta and getattr(meta, "table", None) == table_name:
+                    field_info = []
+                    for field_name, field_obj in obj._meta.fields_map.items():
+                        info = {
+                            "name": field_name,
+                            "type": type(field_obj).__name__,
+                            "max_length": getattr(field_obj, "max_length", -1),
+                            "nullable": field_obj.null
+                        }
+                        field_info.append(info)
+                    return field_info
+    return []
 
 
 async def init_db(load_module_db: bool = True, db_models: Optional[List[str]] = None) -> bool:

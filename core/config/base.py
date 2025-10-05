@@ -28,6 +28,7 @@ class Config:
     enable_analytics: bool = True
     enable_commit_url: bool = True
     enable_dirty_check: bool = False
+    enable_db: bool = False
     enable_eval: bool = False
     enable_urlmanager: bool = False
     auto_purge_crontab: str = "0 0 * * *"

@@ -43,7 +43,7 @@ def generate_config(dir_path: Path, language: str):
     from core.config import CFGManager
     CFGManager.switch_config_path(dir_path)
     CFGManager.load()
-    import core.config.config_base  # noqa
+    import core.config.base  # noqa
     import bots
     for subm in pkgutil.iter_modules(bots.__path__):
         module_py_name = f"{bots.__name__}.{subm.name}"
