@@ -852,8 +852,11 @@ async def exec_sql(request: Request):
 
 
 def _secure_path(path: str) -> Path:
-    full_path = (ROOT_DIR / path).resolve()
     try:
+        if len(str(path)) > 256:
+            raise ValueError
+        path = os.path.normpath(path)
+        full_path = (ROOT_DIR / path).resolve()
         full_path.relative_to(ROOT_DIR)
     except ValueError:
         raise HTTPException(status_code=403, detail="Forbidden")
@@ -918,6 +921,9 @@ def delete_file(request: Request, path: str):
         verify_jwt(request)
 
         target = _secure_path(path)
+        if target == ROOT_DIR:
+            raise HTTPException(status_code=403, detail="Cannot delete root directory")
+
         if target.is_file():
             target.unlink()
         elif target.is_dir():
@@ -942,6 +948,8 @@ async def rename_file(request: Request):
         new_name = body.get("new_name", "")
 
         old_target = _secure_path(old_path)
+        if old_target == ROOT_DIR:
+            raise HTTPException(status_code=403, detail="Cannot rename root directory")
         new_target = old_target.parent / new_name
         if new_target.exists():
             raise HTTPException(
@@ -967,10 +975,17 @@ def upload_file(request: Request, path: str = Form(""), file: UploadFile = File(
         if not target_dir.exists():
             target_dir.mkdir(parents=True, exist_ok=True)
 
-        target_file = target_dir / Path(file.filename).name
+        safe_name = Path(file.filename).name
+        target_file = target_dir / safe_name
+
+        MAX_UPLOAD_SIZE = 10 * 1024 * 1024
+        content = file.file.read(MAX_UPLOAD_SIZE + 1)
+        if len(content) > MAX_UPLOAD_SIZE:
+            raise HTTPException(status_code=413, detail="File too large")
 
         with target_file.open("wb") as f:
-            shutil.copyfileobj(file.file, f)
+            f.write(content)
+
         return Response(status_code=204)
     except HTTPException as e:
         raise e
