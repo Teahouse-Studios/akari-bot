@@ -357,7 +357,7 @@ class ImageElement(BaseElement):
         return PILImage.open(path)
 
     def __str__(self):
-        return f"Image(path={self.path})"
+        return self.kecode()
 
 
 @define
@@ -381,7 +381,7 @@ class VoiceElement(BaseElement):
         return f"[KE:voice,path={self.path}]"
 
     def __str__(self):
-        return f"Voice(path={self.path})"
+        return self.kecode()
 
 
 @define
