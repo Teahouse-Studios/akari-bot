@@ -2,8 +2,12 @@
     "weekly.help": "获取中文 Minecraft Wiki 的每周页面。",
     "weekly.help.image": "获取中文 Minecraft Wiki 的每周页面（图片版）。",
     "weekly.help.teahouse": "获取茶馆周报。",
+    "weekly.help.ysarchives": "获取有兽档案馆双周报",
+    "weekly.feed.teahouse": "茶館週報",
+    "weekly.feed.ysarchives": "有獣档案馆双周報",
     "weekly.message.prompt": "本周页面：${text}",
     "weekly.message.expired": "提示：本周页面已过期，请联系中文 Minecraft Wiki 更新。",
     "weekly.message.image": "图片：${img}",
-    "weekly.message.link": "\n图片：${img}\n\n页面链接：${article}\n每周页面：${link}"
+    "weekly.message.link": "\n图片：${img}\n\n页面链接：${article}\n每周页面：${link}",
+    "weekly.message.rss_error": "暂时无法获取${source}，请稍后再试。"
 }
