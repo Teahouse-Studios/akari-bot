@@ -18,7 +18,6 @@ from modules.wiki.utils.screenshot_image import generate_screenshot_v2
 from modules.wiki.utils.wikilib import WikiLib
 from .rss_utils import RSSFeedError
 from .teahouse import get_rss as get_teahouse_rss
-from .ysarchives import get_rss as get_ysarchives_rss
 
 
 async def _fetch_rss_with_fallback(
@@ -158,15 +157,3 @@ async def _(msg: Bot.MessageSession):
     await _finish_text_as_image(msg, weekly)
 
 
-@wky.command("ysarchives {{I18N:weekly.help.ysarchives}}")
-async def _(msg: Bot.MessageSession):
-    locale = _resolve_locale(msg)
-    weekly = await _fetch_rss_with_fallback(get_ysarchives_rss, "ysarchives", locale)
-    await _finish_text(msg, weekly)
-
-
-@wky.command("ysarchives image {{I18N:weekly.help.ysarchives}}")
-async def _(msg: Bot.MessageSession):
-    locale = _resolve_locale(msg)
-    weekly = await _fetch_rss_with_fallback(get_ysarchives_rss, "ysarchives", locale)
-    await _finish_text_as_image(msg, weekly)
