@@ -9,7 +9,7 @@ report_targets = Config("report_targets", [])
 WARNING_COUNTS = Config("tos_warning_counts", 5)
 
 
-async def _abuse_warn_target(msg: Bot.MessageSession, reason: str):
+async def abuse_warn_target(msg: Bot.MessageSession, reason: str):
     issue_url = Config("issue_url", issue_url_default)
     if WARNING_COUNTS >= 1 and not msg.check_super_user():
         await msg.session_info.sender_info.warn_user()
