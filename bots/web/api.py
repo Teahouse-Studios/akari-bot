@@ -167,6 +167,8 @@ async def change_password(request: Request, response: Response):
             if new_password == "":
                 raise HTTPException(status_code=400, detail="New password required")
 
+            PASSWORD_PATH.parent.mkdir(parents=True, exist_ok=True)
+
             password_data = {
                 "password": ph.hash(new_password),
                 "last_updated": datetime.now().timestamp()

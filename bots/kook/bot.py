@@ -21,7 +21,6 @@ Bot.register_context_manager(KOOKFetchedContextManager, fetch_session=True)
 
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 use_url_manager = Config("enable_urlmanager", False)
-use_url_md_format = True
 
 
 async def to_message_chain(message: Message):
@@ -66,7 +65,7 @@ async def msg_handler(message: Message):
                                        messages=msg_chain,
                                        ctx_slot=ctx_id,
                                        use_url_manager=use_url_manager,
-                                       use_url_md_format=use_url_md_format,
+                                       use_url_md_format=True,
                                        )
 
     await Bot.process_message(session, message)

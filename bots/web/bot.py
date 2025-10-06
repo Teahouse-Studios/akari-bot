@@ -66,7 +66,8 @@ async def websocket_chat(websocket: WebSocket):
                                                            client_name=client_name,
                                                            message_id=message["id"],
                                                            messages=msg_chain,
-                                                           ctx_slot=ctx_id
+                                                           ctx_slot=ctx_id,
+                                                           use_url_md_format=True
                                                            )
 
                         await Bot.process_message(session, message)
