@@ -52,6 +52,7 @@ help_url = "https://bot.teahouse.team" # 線上說明文件網址。
 help_page_url = "https://bot.teahouse.team/wiki/${module}" # 模組線上說明文件網址。
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # 問題報告網址。
 locale_url = "https://www.crowdin.com/project/akari-bot" # 在地化專案網址。
+check_use_textscan_v1 = false # 是否使用旧版阿里云内容安全 1.0 服务。
 
 [secret]
 # 金鑰組態部分，此處的值若意外出現在傳送的訊息中，機器人會嘗試攔截。但請務必提防洩漏。

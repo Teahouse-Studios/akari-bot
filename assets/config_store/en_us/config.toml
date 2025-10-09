@@ -52,6 +52,7 @@ help_url = "https://bot.teahouse.team" # Help document URL.
 help_page_url = "https://bot.teahouse.team/wiki/${module}" # Module help document URL.
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # Issue feedback URL.
 locale_url = "https://www.crowdin.com/project/akari-bot" # Localized project URL.
+check_use_textscan_v1 = false # 是否使用旧版阿里云内容安全 1.0 服务。
 
 [secret]
 # The secret config section. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.

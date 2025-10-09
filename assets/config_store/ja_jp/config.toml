@@ -52,6 +52,7 @@ help_url = "https://bot.teahouse.team" # ドキュメントの URL。
 help_page_url = "https://bot.teahouse.team/wiki/${module}" # モジュールのヘルプ情報の URL。
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # フィードバックの URL。
 locale_url = "https://www.crowdin.com/project/akari-bot" # 翻訳プロジェクトの URL。
+check_use_textscan_v1 = false # 是否使用旧版阿里云内容安全 1.0 服务。
 
 
 [secret]

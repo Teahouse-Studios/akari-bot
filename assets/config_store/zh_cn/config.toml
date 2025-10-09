@@ -52,6 +52,7 @@ help_url = "https://bot.teahouse.team" # 帮助文档网址。
 help_page_url = "https://bot.teahouse.team/wiki/${module}" # 模块帮助文档网址。
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # 问题反馈网址。
 locale_url = "https://www.crowdin.com/project/akari-bot" # 本地化项目网址。
+check_use_textscan_v1 = false # 是否使用旧版阿里云内容安全 1.0 服务。
 
 [secret]
 # 密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
