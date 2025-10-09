@@ -2,7 +2,7 @@ name: "Nightly Build and Release (3:00, UTC+8)"
 
 on:
   schedule:
-    - cron: '0 3 * * *'
+    - cron: '0 19 * * *'
   workflow_dispatch:
 
 permissions:

@@ -2,38 +2,45 @@ name: "Docker Build and Publish (3:00, UTC+8)"
 
 on:
   schedule:
-    - cron: "0 3 * * *"
+    - cron: "0 19 * * *"
   workflow_dispatch:
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Set up Python (For config generation)
         uses: actions/setup-python@v5
         with:
-              python-version: '3.13'
+          python-version: '3.13'
 
       - name: Config generation
         id: config
-        continue-on-error: true
         run: |
-            python -m pip install --upgrade pip
-            pip install -r requirements.txt
-            python core/scripts/config_generate.py
-            if test ! -z "$(git diff)"; then
-                git config --local user.email "action@github.com"
-                git config --local user.name "GitHub Action"
-                git add assets/
-                git pull origin master
-                git commit -m "Update Config [skip ci]"
-            fi
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python core/scripts/config_generate.py
+
+          if [[ -z "$(git status --porcelain assets/)" ]]; then
+              echo "No config changes detected."
+              echo "changed=false" >> $GITHUB_OUTPUT
+          else
+              echo "Config files changed."
+              git config --local user.email "action@github.com"
+              git config --local user.name "GitHub Action"
+              git add assets/
+              git commit -m "Update Config [skip ci]"
+              echo "changed=true" >> $GITHUB_OUTPUT
+          fi
         shell: bash
 
       - name: Push changes
-        if: steps.config.outcome == 'success' && steps.config.conclusion != 'failure'
+        if: steps.config.outputs.changed == 'true'
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
