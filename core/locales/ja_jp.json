@@ -10,6 +10,7 @@
     "config.comments.browser_executable_path": "WebRender が使用するブラウザ実行ファイルのパス。空の場合は、Playwright によってインストールされたデフォルトのブラウザが使用されます。",
     "config.comments.browser_type": "WebRender が使用しているブラウザの種類。（「chrome」と「firefox」をサポート）",
     "config.comments.bug_report_url": "エラーを報告するための URL。",
+    "config.comments.check_use_textscan_v1": "是否使用旧版阿里云内容安全 1.0 服务。",
     "config.comments.check_access_key_id": "Alibaba Cloud コンテンツ セキュリティ サービスの AccessKey ID。",
     "config.comments.check_access_key_secret": "Alibaba Cloud コンテンツ セキュリティ サービスの AccessKey Secret。",
     "config.comments.command_prefix": "コマンドのプレフィックス。ここに入力された値はコマンドのプレフィックスとして認識されます。",
