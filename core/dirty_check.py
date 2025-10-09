@@ -119,7 +119,7 @@ async def check(text: Union[str,
 
     headers = {}
     if call_api_list_:
-        if use_text_scan_v1:
+        if use_textscan_v1:
             url = "/green/text/scan"
             root = "https://green.cn-shanghai.aliyuncs.com"
             headers["x-acs-version"] = "2018-05-09"
@@ -165,7 +165,7 @@ async def check(text: Union[str,
                 result = json.loads(resp.content)
                 Logger.debug(result)
 
-                if use_text_scan_v1:
+                if use_textscan_v1:
                     for item in result["data"]:
                         content = item["content"]
                         for n in call_api_list[content]:
