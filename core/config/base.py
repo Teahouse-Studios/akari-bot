@@ -43,6 +43,7 @@ class Config:
     enable_tos: bool = True
     tos_warning_counts: int = 5
     tos_temp_ban_time: int = 300
+    check_use_textscan_v1 = False
 
     # 花瓣
     enable_petal: bool = False

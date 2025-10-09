@@ -10,6 +10,7 @@
     "config.comments.browser_executable_path": "WebRender 使用的浏览器可执行文件路径，若空则使用 playwright 默认安装浏览器。",
     "config.comments.browser_type": "WebRender 使用的浏览器类型。（支持“chrome”与“firefox”）",
     "config.comments.bug_report_url": "汇报错误网址。",
+    "config.comments.check_use_textscan_v1": "是否使用旧版阿里云内容安全 1.0 服务。",
     "config.comments.check_access_key_id": "阿里云内容安全服务的 AccessKey ID。",
     "config.comments.check_access_key_secret": "阿里云内容安全服务的 AccessKey Secret。",
     "config.comments.command_prefix": "命令前缀，此处填写的值将会被识别为命令前缀。",

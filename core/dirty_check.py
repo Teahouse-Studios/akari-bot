@@ -22,6 +22,8 @@ from core.config import Config
 from core.database.local import DirtyWordCache
 from core.logger import Logger
 
+use_textscan_v1 = Config("check_use_textscan_v1", cfg_type=bool, default=False)
+
 
 def hash_hmac(key, code):
     hmac_code = hmac.new(key.encode(), code.encode(), hashlib.sha1)
@@ -115,13 +117,25 @@ async def check(text: Union[str,
     call_api_list_ = list(call_api_list)
     Logger.debug(call_api_list_)
 
+    headers = {}
     if call_api_list_:
-        body = {
-            "scenes": ["antispam"],
-            "tasks": [{"dataId": f"Nullcat is god {time.time()}", "content": x} for x in call_api_list_],
-        }
-        root = "https://green.cn-shanghai.aliyuncs.com"
-        url = "/green/text/scan"
+        if use_text_scan_v1:
+            url = "/green/text/scan"
+            root = "https://green.cn-shanghai.aliyuncs.com"
+            headers["x-acs-version"] = "2018-05-09"
+            body = {
+                "scenes": ["antispam"],
+                "tasks": [{"dataId": f"Nullcat {time.time()}", "content": x} for x in call_api_list_],
+            }
+        else:
+            url = "/green/text/asyncscan"
+            root = "https://green-cip.cn-shanghai.aliyuncs.com"
+            headers["x-acs-version"] = "2022-12-28"
+            body = {
+                "bizType": "default",
+                "scenes": ["antispam"],
+                "tasks": [{"dataId": f"Nullcat {time.time()}", "content": x} for x in call_api_list_],
+            }
 
         gmt_format = "%a, %d %b %Y %H:%M:%S GMT"
         date = datetime.datetime.now(datetime.UTC).strftime(gmt_format)
@@ -129,16 +143,15 @@ async def check(text: Union[str,
         content_md5 = base64.b64encode(
             hashlib.md5(json.dumps(body), usedforsecurity=False).digest()
         ).decode("utf-8")
-        headers = {
+        headers.update({
             "Accept": "application/json",
             "Content-Type": "application/json",
             "Content-MD5": content_md5,
             "Date": date,
-            "x-acs-version": "2018-05-09",
             "x-acs-signature-nonce": nonce,
             "x-acs-signature-version": "1.0",
             "x-acs-signature-method": "HMAC-SHA1",
-        }
+        })
         sorted_header = {k: headers[k] for k in sorted(headers) if k.startswith("x-acs-")}
         step1 = "\n".join([f"{k}:{v}" for k, v in sorted_header.items()])
         step2 = url
@@ -151,11 +164,19 @@ async def check(text: Union[str,
             if resp.status_code == 200:
                 result = json.loads(resp.content)
                 Logger.debug(result)
-                for item in result["data"]:
-                    content = item["content"]
-                    for n in call_api_list[content]:
-                        query_list[n][content] = parse_data(item, additional_text=additional_text)
-                    await DirtyWordCache.create(desc=content, result=item)
+
+                if use_text_scan_v1:
+                    for item in result["data"]:
+                        content = item["content"]
+                        for n in call_api_list[content]:
+                            query_list[n][content] = parse_data(item, additional_text=additional_text)
+                        await DirtyWordCache.create(desc=content, result=item)
+                else:
+                    for item in result.get("data", []):
+                        content = item.get("content", "")
+                        for n in call_api_list.get(content, []):
+                            query_list[n][content] = parse_data(item, additional_text=additional_text)
+                        await DirtyWordCache.create(desc=content, result=item)
             else:
                 raise ValueError(resp.text)
 
