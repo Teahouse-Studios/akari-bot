@@ -7,7 +7,7 @@ from modules.github.utils import time_diff, dirty_check, dark_check
 
 async def user(msg: Bot.MessageSession, name: str, pat: str):
     try:
-        result = await get_url("https://api.github.com/users/" + name, 200, fmt="json",
+        result = await get_url(f"https://api.github.com/users/{name}", 200, fmt="json",
                                headers=[("Authorization", f"Bearer {pat}")] if pat else [])
         optional = []
         if "hireable" in result and result["hireable"]:
@@ -29,15 +29,15 @@ async def user(msg: Bot.MessageSession, name: str, pat: str):
         else:
             bio = "\n" + result["bio"]
 
-        optional_text = "\n" + " | ".join(optional)
-        message = f"""{result["login"]} aka {result["name"]} ({result["id"]}){
-            bio}
+        optional_text = "\n" + " | ".join(optional) if optional else ""
+        message = f"""{result["login"]} aka {result["name"]} ({result["id"]}){bio}
 Type · {result["type"]} | Follower · {result["followers"]} | Following · {result["following"]}
-                                                              | Repo · {result["public_repos"]} | Gist · {result["public_gists"]}{optional_text}
-Account Created {time_diff(result["created_at"])} ago | Latest activity {time_diff(result["updated_at"])} ago
-{str(Url(result["html_url"], md_format=msg.session_info.use_url_md_format))}"""
+Repo · {result["public_repos"]} | Gist · {result["public_gists"]}{optional_text}
+Account Created {time_diff(result["created_at"])} ago
+Latest activity {time_diff(result["updated_at"])} ago
+{str(Url(result["html_url"]))}"""
 
-        is_dirty = await dirty_check(message, result["login"]) or dark_check(message)
+        is_dirty = await dirty_check(msg, message, result["login"]) or dark_check(message)
         if is_dirty:
             await msg.finish(rickroll())
 

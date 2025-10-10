@@ -120,8 +120,7 @@ async def _(msg: Bot.MessageSession):
             img_list = [Image(ii) for ii in imgs]
             mt = msg.session_info.locale.t("wiki.message.iw.list", prefix=msg.session_info.prefixes[0])
             if base_interwiki_link:
-                mt += "\n" + msg.session_info.locale.t("wiki.message.iw.list.prompt", url=str(
-                    Url(base_interwiki_link, md_format=msg.session_info.use_url_md_format)))
+                mt += "\n" + msg.session_info.locale.t("wiki.message.iw.list.prompt", url=str(Url(base_interwiki_link)))
             await msg.finish(img_list + [Plain(mt)])
         else:
             result = (
@@ -132,10 +131,7 @@ async def _(msg: Bot.MessageSession):
     else:
         result = msg.session_info.locale.t("wiki.message.iw.list.none", prefix=msg.session_info.prefixes[0])
     if base_interwiki_link:
-        result += "\n" + msg.session_info.locale.t(
-            "wiki.message.iw.list.prompt",
-            url=str(Url(base_interwiki_link, md_format=msg.session_info.use_url_md_format))
-        )
+        result += "\n" + msg.session_info.locale.t("wiki.message.iw.list.prompt", url=str(Url(base_interwiki_link)))
     await msg.finish(result)
 
 

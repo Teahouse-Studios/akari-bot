@@ -9,7 +9,7 @@ from modules.github.utils import time_diff, dirty_check, dark_check
 
 async def repo(msg: Bot.MessageSession, name: str, pat: str):
     try:
-        result = await get_url("https://api.github.com/repos/" + name, 200, fmt="json",
+        result = await get_url(f"https://api.github.com/repos/{name}", 200, fmt="json",
                                headers=[("Authorization", f"Bearer {pat}")] if pat else [])
         rlicense = "Unknown"
         if "license" in result and result["license"]:
@@ -19,19 +19,18 @@ async def repo(msg: Bot.MessageSession, name: str, pat: str):
         parent = False
 
         if result["homepage"]:
-            website = "Website: " + str(Url(result["homepage"], md_format=msg.session_info.use_url_md_format)) + "\n"
+            website = str(Url(result["homepage"])) + "\n"
         else:
             website = ""
 
         if result["mirror_url"]:
-            mirror = f" (This is a mirror of {
-                str(Url(result["mirror_url"], md_format=msg.session_info.use_url_md_format))} )"
+            mirror = f" (This is a mirror of {str(Url(result["mirror_url"]))})"
         else:
             mirror = ""
 
         if is_fork:
             parent_name = result["parent"]["name"]
-            parent = f" (This is a fork of {parent_name} )"
+            parent = f" (This is a fork of {parent_name})"
 
         desc = result["description"]
         if not desc:
@@ -43,7 +42,7 @@ async def repo(msg: Bot.MessageSession, name: str, pat: str):
 Fork · {result["forks_count"]} | Star · {result["stargazers_count"]} | Watch · {result["subscribers_count"]}
 Language: {result["language"]} | License: {rlicense}
 Created {time_diff(result["created_at"])} ago | Updated {time_diff(result["updated_at"])} ago
-{website}{str(Url(result["html_url"], md_format=msg.session_info.use_url_md_format))}"""
+{website}{str(Url(result["html_url"]))}"""
 
         if mirror:
             message += "\n" + mirror
@@ -51,9 +50,8 @@ Created {time_diff(result["created_at"])} ago | Updated {time_diff(result["updat
         if parent:
             message += "\n" + parent
 
-        is_dirty = await dirty_check(message, result["owner"]["login"]) or dark_check(
-            message
-        )
+        is_dirty = await dirty_check(msg, message, result["owner"]["login"]) or \
+            dark_check(message)
         if is_dirty:
             await msg.finish(rickroll())
         else:
