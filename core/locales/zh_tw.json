@@ -1,7 +1,6 @@
 {
     "bot_name": "小可",
     "check.redacted": "<已編輯:${reason}>",
-    "check.redacted.all": "<全部已編輯:${reason}>",
     "config.comments.allow_origins": "API 服務允许 CORS 的來源列表。",
     "config.comments.allow_reload_base": "是否允許重載基礎模組。",
     "config.comments.allow_request_private_ip": "是否允許機器人請求本地私有 IP 位址。（防止可能的資訊外洩）",
@@ -12,6 +11,7 @@
     "config.comments.bug_report_url": "回報錯誤網址。",
     "config.comments.check_access_key_id": "阿里雲內容安全服務的 AccessKey ID。",
     "config.comments.check_access_key_secret": "阿里雲內容安全服務的 AccessKey Secret。",
+    "config.comments.check_use_textscan_v1": "是否使用舊版阿里雲內容安全 1.0 服務介面。",
     "config.comments.command_prefix": "指令前綴，此處填入的值將會被辨識為指令前綴。",
     "config.comments.config_version": "組態檔版本號，將會隨功能更新自動增加，一般情況下請勿修改。",
     "config.comments.confirm_command": "確認指令的關鍵字，此處填入的值將會被辨識為確認指令。",

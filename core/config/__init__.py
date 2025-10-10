@@ -84,7 +84,7 @@ class CFGManager:
                     cfg_file += ".toml"
                 file_path = cls.config_path / cfg_file
                 if file_path.exists():
-                    if file_path.stat().st_mtime != cls._tss[cfg]:
+                    if file_path.stat().st_mtime != cls._tss.get(cfg):
                         logger.warning("[Config] Config file has been modified, reloading...")
                         cls.load()
                         break

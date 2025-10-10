@@ -8,6 +8,7 @@ import datetime
 import hashlib
 import hmac
 import time
+import urllib.parse
 from typing import Union, List, Dict, Optional
 
 import httpx
@@ -22,6 +23,8 @@ from core.config import Config
 from core.database.local import DirtyWordCache
 from core.logger import Logger
 
+access_key_id = Config("check_access_key_id", cfg_type=str, secret=True)
+access_key_secret = Config("check_access_key_secret", cfg_type=str, secret=True)
 use_textscan_v1 = Config("check_use_textscan_v1", cfg_type=bool, default=False)
 
 
@@ -36,33 +39,46 @@ def computeMD5hash(my_string):
     return m.hexdigest()
 
 
-def parse_data(result: dict, additional_text=None) -> Dict:
-    original_content = content = result["content"]
+def parse_data(original_content: str, result: dict, confidence: float = 60, additional_text=None) -> Dict:
+    content = original_content
     status = True
-    for itemResult in result["results"]:
-        if itemResult["suggestion"] == "block":
-            for itemDetail in itemResult["details"]:
-                if "contexts" in itemDetail:
-                    for itemContext in itemDetail["contexts"]:
-                        _offset = 0
-                        if "positions" in itemContext:
-                            for pos in itemContext["positions"]:
-                                filter_words_length = pos["endPos"] - pos["startPos"]
-                                reason = str(I18NContext("check.redacted", reason=itemDetail["label"]))
-                                content = (content[: pos["startPos"] + _offset] +
-                                           reason + content[pos["endPos"] + _offset:])
-                                if additional_text:
-                                    content += "\n" + additional_text + "\n"
-                                _offset += len(reason) - filter_words_length
-                        else:
-                            content = str(I18NContext("check.redacted", reason=itemDetail["label"]))
-                        status = False
-                else:
-                    content = str(I18NContext("check.redacted.all", reason=itemDetail["label"]))
 
-                    if additional_text:
-                        content += "\n" + additional_text + "\n"
-                    status = False
+    if use_textscan_v1:
+        for itemResult in result["results"]:
+            if float(itemResult["rate"]) >= confidence and itemResult["suggestion"] == "block":
+                status = False
+                for itemDetail in itemResult["details"]:
+                    if "contexts" in itemDetail:
+                        for itemContext in itemDetail["contexts"]:
+                            _offset = 0
+                            if "positions" in itemContext:
+                                for pos in itemContext["positions"]:
+                                    filter_words_length = pos["endPos"] - pos["startPos"]
+                                    reason = str(I18NContext("check.redacted", reason=itemDetail["label"]))
+                                    content = (content[: pos["startPos"] + _offset] +
+                                               reason + content[pos["endPos"] + _offset:])
+                                    _offset += len(reason) - filter_words_length
+                            else:
+                                content = str(I18NContext("check.redacted", reason=itemDetail["label"]))
+                    else:
+                        content = str(I18NContext("check.redacted", reason=itemDetail["label"]))
+    else:
+        if result["RiskLevel"] == "high":
+            status = False
+            for itemDetail in result["Result"]:
+                if float(itemDetail["Confidence"]) >= confidence:
+                    risk_words = itemDetail.get("RiskWords")
+                    if risk_words:
+                        for word in itemDetail["RiskWords"].split(","):
+                            word = word.strip()
+                            if word in content:
+                                reason = str(I18NContext("check.redacted", reason=itemDetail["Label"]))
+                                content = content.replace(word, reason)
+                    else:
+                        content = str(I18NContext("check.redacted", reason=itemDetail["Label"]))
+
+    if additional_text:
+        content += "\n" + additional_text + "\n"
     return {"content": content, "status": status, "original": original_content}
 
 
@@ -71,7 +87,10 @@ async def check(text: Union[str,
                             List[str],
                             List[MessageElement],
                             MessageElement,
-                            MessageChain], session: Optional[MessageSession] = None, additional_text=None) -> List[Dict]:
+                            MessageChain],
+                session: Optional[MessageSession] = None,
+                confidence: float = 60,
+                additional_text: Optional[str] = None) -> List[Dict]:
     """检查字符串。
 
     :param text: 字符串（List/Union）。
@@ -79,8 +98,6 @@ async def check(text: Union[str,
     :param additional_text: 附加文本，若指定则会在返回的消息中附加此文本。
     :returns: 经过审核后的字符串。不合规部分会被替换为`<REDACTED:原因>`，全部不合规则是`<ALL REDACTED:原因>`。
     """
-    access_key_id = Config("check_access_key_id", cfg_type=str, secret=True)
-    access_key_secret = Config("check_access_key_secret", cfg_type=str, secret=True)
 
     if isinstance(text, str):
         text = [text]
@@ -105,7 +122,7 @@ async def check(text: Union[str,
             if not query_list[q][pq]:
                 cache = await DirtyWordCache.check(pq)
                 if cache:
-                    query_list[q][pq] = parse_data(cache.result, additional_text=additional_text)
+                    query_list[q][pq] = parse_data(pq, cache.result, confidence, additional_text)
 
     call_api_list = {}
     for q in query_list:
@@ -117,68 +134,99 @@ async def check(text: Union[str,
     call_api_list_ = list(call_api_list)
     Logger.debug(call_api_list_)
 
-    headers = {}
     if call_api_list_:
         if use_textscan_v1:
             url = "/green/text/scan"
             root = "https://green.cn-shanghai.aliyuncs.com"
-            headers["x-acs-version"] = "2018-05-09"
             body = {
                 "scenes": ["antispam"],
                 "tasks": [{"dataId": f"Nullcat {time.time()}", "content": x} for x in call_api_list_],
             }
-        else:
-            url = "/green/text/asyncscan"
-            root = "https://green-cip.cn-shanghai.aliyuncs.com"
-            headers["x-acs-version"] = "2022-12-28"
-            body = {
-                "bizType": "default",
-                "scenes": ["antispam"],
-                "tasks": [{"dataId": f"Nullcat {time.time()}", "content": x} for x in call_api_list_],
+            date = datetime.datetime.now(datetime.UTC).strftime("%a, %d %b %Y %H:%M:%S GMT")
+            content_md5 = base64.b64encode(
+                hashlib.md5(json.dumps(body), usedforsecurity=False).digest()
+            ).decode("utf-8")
+            headers = {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "Content-MD5": content_md5,
+                "Date": date,
+                "x-acs-version": "2018-05-09",
+                "x-acs-signature-nonce": f"LittleC sb {time.time()}",
+                "x-acs-signature-version": "1.0",
+                "x-acs-signature-method": "HMAC-SHA1",
             }
+            sorted_header = {k: headers[k] for k in sorted(headers) if k.startswith("x-acs-")}
+            step1 = "\n".join([f"{k}:{v}" for k, v in sorted_header.items()])
+            step2 = url
+            step3 = f"POST\napplication/json\n{content_md5}\napplication/json\n{date}\n{step1}\n{step2}"
+            sign = f"acs {access_key_id}:{hash_hmac(access_key_secret, step3)}"
+            headers["Authorization"] = sign
 
-        gmt_format = "%a, %d %b %Y %H:%M:%S GMT"
-        date = datetime.datetime.now(datetime.UTC).strftime(gmt_format)
-        nonce = f"LittleC sb {time.time()}"
-        content_md5 = base64.b64encode(
-            hashlib.md5(json.dumps(body), usedforsecurity=False).digest()
-        ).decode("utf-8")
-        headers.update({
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-            "Content-MD5": content_md5,
-            "Date": date,
-            "x-acs-signature-nonce": nonce,
-            "x-acs-signature-version": "1.0",
-            "x-acs-signature-method": "HMAC-SHA1",
-        })
-        sorted_header = {k: headers[k] for k in sorted(headers) if k.startswith("x-acs-")}
-        step1 = "\n".join([f"{k}:{v}" for k, v in sorted_header.items()])
-        step2 = url
-        step3 = f"POST\napplication/json\n{content_md5}\napplication/json\n{date}\n{step1}\n{step2}"
-        sign = f"acs {access_key_id}:{hash_hmac(access_key_secret, step3)}"
-        headers["Authorization"] = sign
+            async with httpx.AsyncClient(headers=headers) as client:
+                resp = await client.post(f"{root}{url}", content=json.dumps(body))
+                if resp.status_code == 200:
+                    result = json.loads(resp.content)
+                    Logger.debug(result)
 
-        async with httpx.AsyncClient(headers=headers) as client:
-            resp = await client.post(f"{root}{url}", content=json.dumps(body))
-            if resp.status_code == 200:
-                result = json.loads(resp.content)
-                Logger.debug(result)
-
-                if use_textscan_v1:
-                    for item in result["data"]:
-                        content = item["content"]
-                        for n in call_api_list[content]:
-                            query_list[n][content] = parse_data(item, additional_text=additional_text)
-                        await DirtyWordCache.create(desc=content, result=item)
+                    if result["code"] == 200:
+                        for item in result["data"]:
+                            content = item["content"]
+                            for n in call_api_list[content]:
+                                query_list[n][content] = parse_data(content, item, confidence, additional_text)
+                            await DirtyWordCache.create(desc=content, result=item)
+                    else:
+                        raise ValueError(result["msg"])
                 else:
-                    for item in result.get("data", []):
-                        content = item.get("content", "")
-                        for n in call_api_list.get(content, []):
-                            query_list[n][content] = parse_data(item, additional_text=additional_text)
-                        await DirtyWordCache.create(desc=content, result=item)
-            else:
-                raise ValueError(resp.text)
+                    raise ValueError(resp.text)
+        else:
+            root = "https://green-cip.cn-shanghai.aliyuncs.com"
+            for x in call_api_list_:
+                date = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+                params = {
+                    "Format": "JSON",
+                    "Version": "2022-03-02",
+                    "AccessKeyId": access_key_id,
+                    "SignatureMethod": "Hmac-SHA1",
+                    "Timestamp": date,
+                    "SignatureVersion": "1.0",
+                    "SignatureNonce": f"LittleC sb {time.time()}",
+                    "Action": "TextModerationPlus",
+                    "Service": "chat_detection_pro",
+                    "ServiceParameters": json.dumps({"dataId": f"Nullcat {time.time()}", "content": x}).decode("utf-8")
+                }
+                sorted_params = sorted(params.items(), key=lambda k: k[0])
+                step1 = "&".join(
+                    f"{urllib.parse.quote(str(k), safe='-_.~')}="
+                    f"{urllib.parse.quote(str(v), safe='-_.~')}"
+                    for k, v in sorted_params
+                )
+                step2 = "POST&%2F&" + urllib.parse.quote(step1, safe='-_.~')
+                step3 = f"{access_key_secret}&"
+                signature = base64.b64encode(
+                    hmac.new(step3.encode("utf-8"),
+                             step2.encode("utf-8"),
+                             hashlib.sha1).digest()
+                ).decode("utf-8")
+                params["Signature"] = signature
+
+                query_string = "&".join(
+                    f"{k}={urllib.parse.quote(str(v), safe='-_.~')}" for k, v in params.items()
+                )
+                async with httpx.AsyncClient() as client:
+                    resp = await client.post(f"{root}/?{query_string}")
+                    if resp.status_code == 200:
+                        result = json.loads(resp.content)
+                        Logger.debug(result)
+
+                        if result["Code"] == 200:
+                            for n in call_api_list[x]:
+                                query_list[n][x] = parse_data(x, result["Data"], confidence, additional_text)
+                            await DirtyWordCache.create(desc=x, result=result["Data"])
+                        else:
+                            raise ValueError(result["Message"])
+                    else:
+                        raise ValueError(resp.text)
 
     results = []
     Logger.debug(query_list)
@@ -188,13 +236,19 @@ async def check(text: Union[str,
     return results
 
 
-async def check_bool(text: Union[str, List[str], List[MessageElement], MessageElement, MessageChain]) -> bool:
+async def check_bool(text: Union[str,
+                                 List[str],
+                                 List[MessageElement],
+                                 MessageElement,
+                                 MessageChain],
+                     session: Optional[MessageSession] = None,
+                     confidence: float = 60) -> bool:
     """检查字符串是否合规。
 
     :param text: 字符串（List/Union）。
     :returns: 字符串是否合规。
     """
-    chk = await check(text)
+    chk = await check(text, session, confidence)
     for x in chk:
         if not x["status"]:
             return True

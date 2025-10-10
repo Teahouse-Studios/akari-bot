@@ -1,7 +1,6 @@
 {
     "bot_name": "小可",
     "check.redacted": "<吃掉了:${reason}>",
-    "check.redacted.all": "<全部吃掉了:${reason}>",
     "config.comments.allow_origins": "API 服务允许 CORS 的源列表。",
     "config.comments.allow_reload_base": "是否允许重载基础模块。",
     "config.comments.allow_request_private_ip": "是否允许机器人请求本地私有 IP 地址。（防止可能的信息泄露）",
@@ -10,9 +9,9 @@
     "config.comments.browser_executable_path": "WebRender 使用的浏览器可执行文件路径，若空则使用 playwright 默认安装浏览器。",
     "config.comments.browser_type": "WebRender 使用的浏览器类型。（支持“chrome”与“firefox”）",
     "config.comments.bug_report_url": "汇报错误网址。",
-    "config.comments.check_use_textscan_v1": "是否使用旧版阿里云内容安全 1.0 服务。",
     "config.comments.check_access_key_id": "阿里云内容安全服务的 AccessKey ID。",
     "config.comments.check_access_key_secret": "阿里云内容安全服务的 AccessKey Secret。",
+    "config.comments.check_use_textscan_v1": "是否使用旧版阿里云内容安全 1.0 服务接口。",
     "config.comments.command_prefix": "命令前缀，此处填写的值将会被识别为命令前缀。",
     "config.comments.config_version": "配置版本号，将会随功能更新自增，一般情况请勿修改。",
     "config.comments.confirm_command": "确认命令的关键词，此处填写的值将会被识别为确认命令。",

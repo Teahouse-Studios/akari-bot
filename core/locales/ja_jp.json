@@ -1,7 +1,6 @@
 {
     "bot_name": "アカリボット",
     "check.redacted": "<自主規制:${reason}>",
-    "check.redacted.all": "<完全自主規制:${reason}>",
     "config.comments.allow_origins": "API サービスで CORS が許可されるオリジンのリスト。",
     "config.comments.allow_reload_base": "基本モジュールの再読み込みを許可するかどうか。",
     "config.comments.allow_request_private_ip": "ボットがローカル プライベート IP アドレスをリクエストすることを許可するかどうか。（情報漏洩を防ぐため）",
@@ -12,6 +11,7 @@
     "config.comments.bug_report_url": "エラーを報告するための URL。",
     "config.comments.check_access_key_id": "Alibaba Cloud コンテンツ セキュリティ サービスの AccessKey ID。",
     "config.comments.check_access_key_secret": "Alibaba Cloud コンテンツ セキュリティ サービスの AccessKey Secret。",
+    "config.comments.check_use_textscan_v1": "Alibaba Cloud コンテンツ セキュリティ サービスの Text Scan 1.0 レガシー API を使用するかどうか。",
     "config.comments.command_prefix": "コマンドのプレフィックス。ここに入力された値はコマンドのプレフィックスとして認識されます。",
     "config.comments.config_version": "バージョン番号。機能アップデートに伴い自動的に増加されるので、通常は変更しないでください。",
     "config.comments.confirm_command": "コマンド確認用のキーワード。ここに入力された値はコマンド確認用の単語として認識されます。",
