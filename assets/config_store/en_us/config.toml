@@ -25,6 +25,7 @@ quick_confirm = true # Whether to enable quick confirmation of message.
 enable_analytics = true # Whether to enable built-in statistics features.
 enable_commit_url = true # Whether to show the commit URL when displaying version information.
 enable_dirty_check = false # Whether to enable text filtering detection, requires the AccessKey ID and AccessKey Secret of Alibaba Cloud Content Security Service.
+check_use_textscan_v1 = false # Whether to use Alibaba Cloud Content Security Text Scan 1.0 legacy API.
 enable_db = false # Whether to enable "database" module.
 enable_eval = false # Whether to enable "eval" module.
 enable_urlmanager = false # Whether to enable URLManager for URL springboard. (Declare this URL is not an official link, etc.)
@@ -52,7 +53,6 @@ help_url = "https://bot.teahouse.team" # Help document URL.
 help_page_url = "https://bot.teahouse.team/wiki/${module}" # Module help document URL.
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # Issue feedback URL.
 locale_url = "https://www.crowdin.com/project/akari-bot" # Localized project URL.
-check_use_textscan_v1 = false # 是否使用旧版阿里云内容安全 1.0 服务。
 
 [secret]
 # The secret config section. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.

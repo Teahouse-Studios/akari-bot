@@ -25,6 +25,7 @@ quick_confirm = true # 是否开启消息快速确认。
 enable_analytics = true # 是否开启内置的统计功能。
 enable_commit_url = true # 是否在展示版本信息时显示 commit URL。
 enable_dirty_check = false # 是否开启文字过滤检测，需要配置阿里云内容安全服务的 AccessKey ID 与 AccessKey Secret。
+check_use_textscan_v1 = false # 是否使用旧版阿里云内容安全 1.0 服务接口。
 enable_db = false # 是否开启“database”模块。
 enable_eval = false # 是否开启“eval”模块。
 enable_urlmanager = false # 是否开启 URLManager，用于 URL 跳板用。（声明此 URL 非官方链接等）
@@ -52,7 +53,6 @@ help_url = "https://bot.teahouse.team" # 帮助文档网址。
 help_page_url = "https://bot.teahouse.team/wiki/${module}" # 模块帮助文档网址。
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # 问题反馈网址。
 locale_url = "https://www.crowdin.com/project/akari-bot" # 本地化项目网址。
-check_use_textscan_v1 = false # 是否使用旧版阿里云内容安全 1.0 服务。
 
 [secret]
 # 密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。

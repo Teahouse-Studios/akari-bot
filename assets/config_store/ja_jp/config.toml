@@ -25,6 +25,7 @@ quick_confirm = true # メッセージのクイック確認を有効にするか
 enable_analytics = true # 組み込みの統計機能を有効にするかどうか。
 enable_commit_url = true # バージョン情報を表示する時にコミット URL を表示するかどうか。
 enable_dirty_check = false # テキスト フィルタ リング検出を有効にするかどうか。Alibaba Cloud コンテンツ セキュリティ サービスの AccessKey ID と AccessKey Secret を設定する必要があります。
+check_use_textscan_v1 = false # Alibaba Cloud コンテンツ セキュリティ サービスの Text Scan 1.0 レガシー API を使用するかどうか。
 enable_db = false # 「database」モジュールを有効にするかどうか。
 enable_eval = false # 「eval」モジュールを有効にするかどうか。
 enable_urlmanager = false # URL スプリングボードの URLManager を有効にするかどうか。（URL が公式リンクではないことを宣言するなど）
@@ -52,7 +53,6 @@ help_url = "https://bot.teahouse.team" # ドキュメントの URL。
 help_page_url = "https://bot.teahouse.team/wiki/${module}" # モジュールのヘルプ情報の URL。
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # フィードバックの URL。
 locale_url = "https://www.crowdin.com/project/akari-bot" # 翻訳プロジェクトの URL。
-check_use_textscan_v1 = false # 是否使用旧版阿里云内容安全 1.0 服务。
 
 
 [secret]
