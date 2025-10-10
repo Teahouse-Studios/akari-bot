@@ -1,6 +1,6 @@
 {
     "bot_name": "小可",
-    "check.redacted": "[吃掉了:${reason}]",
+    "check.redacted": "<吃掉了:${reason}>",
     "config.comments.allow_origins": "API 服務允许 CORS 的來源列表。",
     "config.comments.allow_reload_base": "是否允許重載基礎模組。",
     "config.comments.allow_request_private_ip": "是否允許機器人請求本地私有 IP 位址。（防止可能的資訊外洩）",
