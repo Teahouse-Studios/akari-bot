@@ -28,7 +28,7 @@ class Config:
     enable_analytics: bool = True
     enable_commit_url: bool = True
     enable_dirty_check: bool = False
-    check_use_textscan_v1 = False
+    check_use_textscan_v1: bool = False
     enable_db: bool = False
     enable_eval: bool = False
     enable_urlmanager: bool = False
