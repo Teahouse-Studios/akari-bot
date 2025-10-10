@@ -1,6 +1,6 @@
 {
     "bot_name": "AkariBot",
-    "check.redacted": "[吃掉了:${reason}]",
+    "check.redacted": "<吃掉了:${reason}>",
     "config.comments.allow_origins": "The API service allows CORS sources list.",
     "config.comments.allow_reload_base": "Whether to allow reloading of the base modules.",
     "config.comments.allow_request_private_ip": "Whether to allow bot to request local private IP addresses. (Prevent possible leakage)",
