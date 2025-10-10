@@ -1,6 +1,6 @@
 {
     "bot_name": "アカリボット",
-    "check.redacted": "[吃掉了:${reason}]",
+    "check.redacted": "<吃掉了:${reason}>",
     "config.comments.allow_origins": "API サービスで CORS が許可されるオリジンのリスト。",
     "config.comments.allow_reload_base": "基本モジュールの再読み込みを許可するかどうか。",
     "config.comments.allow_request_private_ip": "ボットがローカル プライベート IP アドレスをリクエストすることを許可するかどうか。（情報漏洩を防ぐため）",
