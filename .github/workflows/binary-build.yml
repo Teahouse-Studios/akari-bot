@@ -55,9 +55,6 @@ jobs:
               asyncmy
               discord
           clang: true
-          playwright-include-browser: none
-          enable-plugins: |
-              playwright
 
       - name: Copy Assets
         run: |
