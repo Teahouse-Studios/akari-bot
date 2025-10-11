@@ -585,19 +585,6 @@ async def _(msg: Bot.MessageSession, sql: str):
         raise NoReportException(str(e))
 
 
-git = module("git", required_superuser=True, base=True, doc=True, load=bool(Bot.Info.version))
-
-
-@git.command("<command>")
-async def _(msg: Bot.MessageSession, command: str):
-    cmd_lst = ["git"] + command.split()
-    returncode, output, error = await run_sys_command(cmd_lst)
-    if returncode == 0:
-        await msg.finish(Plain(output, disable_joke=True))
-    else:
-        await msg.finish(Plain(error, disable_joke=True))
-
-
 resume = module("resume", required_base_superuser=True, base=True, doc=True, available_for="QQ")
 
 

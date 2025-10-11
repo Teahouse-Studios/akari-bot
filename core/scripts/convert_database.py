@@ -310,6 +310,7 @@ async def convert_database():
         except Exception as e:
             Logger.error(f"Failed to convert StoredData: {r.name}, error: {e}")
             Logger.error(f"StoredData record: {r.__dict__}")
+    await conn.execute_query("DROP TABLE IF EXISTS _old_TargetInfo;")
     await conn.execute_query("DROP TABLE IF EXISTS _old_StoredData;")
 
     Logger.info("Converting Analytics...")

@@ -57,7 +57,7 @@ class Config:
     enable_joke: bool = True
     shuffle_rate: float = 0.1
     enable_rickroll: bool = True
-    rickroll_msg: str = ""
+    rickroll_msg: str = "https://b23.tv/vXaKjqJ"
 
     # 外部链接
     bug_report_url: str = "https://s.wd-ljt.com/botreportbug"
