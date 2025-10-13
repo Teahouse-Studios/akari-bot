@@ -12,7 +12,7 @@ def convert2lst(elements: Union[str, list, tuple]) -> list:
 
 def isfloat(num_str: Any) -> bool:
     """
-    检查字符串是否符合float。
+    检查字符串是否符合 `float`。
     """
     try:
         float(num_str)
@@ -23,7 +23,7 @@ def isfloat(num_str: Any) -> bool:
 
 def isint(num_str: Any) -> bool:
     """
-    检查字符串是否符合int。
+    检查字符串是否符合 `int`。
     """
     try:
         int(num_str)
@@ -66,3 +66,46 @@ def remove_duplicate_space(text: str) -> str:
             break
     text = " ".join(strip_display_space)
     return text
+
+
+def generate_progress_bar(current: float, 
+                 total: float, 
+                 length: int = 10,
+                 fill: str = "█",
+                 empty: str = "░",
+                 show_number: bool = False,
+                 show_percent: bool = True,
+                 precision: int = 1):
+    """生成静态文本进度条。
+
+    :param current: 当前进度。
+    :param total: 目标数字。
+    :param length: 进度条长度
+    :param fill: 填充字符。
+    :param empty: 空白字符。
+    :param show_percent: 是否显示百分比。
+    :param show_number: 是否显示数字形式 current/total。
+    :param precision: 百分比小数点精度。
+    :returns: 类似 `[███████░░░] 75.0%` 的文本进度条。
+    """
+    if total == 0:
+        percent = 0
+    else:
+        percent = current / total
+
+    filled_length = int(round(length * percent))
+    bar = fill * filled_length + empty * (length - filled_length)
+
+    display = f"[{bar}]"
+
+    bar_info = []
+    if show_number:
+        bar_info.append(f"{current}/{total}")
+    if show_percent:
+        pct_text = f"{percent*100:.{precision}f}%"
+        bar_info.append(pct_text)
+
+    if bar_info:
+        display += " " + " ".join(bar_info)
+
+    return display
