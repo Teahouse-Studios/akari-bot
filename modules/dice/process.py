@@ -83,7 +83,7 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
         dices = dices.partition("#")[2]
     else:
         times = "1"
-    if not isint(times):
+    if not is_int(times):
         errmsg = "{I18N:dice.message.error.value.times.invalid}"
         return (
             None,
@@ -149,7 +149,7 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
             elif "D" in item:
                 dice_count += 1
                 dice_expr_list[j] = Dice(item)
-            elif isint(item):
+            elif is_int(item):
                 dice_count += 1
             else:
                 continue
@@ -177,13 +177,13 @@ def insert_multiply(msg: Bot.MessageSession, lst: list):
         if i == 0:
             result.append(item)
         else:
-            if isint(lst[i - 1][-1]) and isint(item[0]):
+            if is_int(lst[i - 1][-1]) and is_int(item[0]):
                 result.append(asterisk)
             elif lst[i - 1][-1] == ")" and item[0] == "(":
                 result.append(asterisk)
-            elif isint(lst[i - 1][-1]) and item[0] == "(":
+            elif is_int(lst[i - 1][-1]) and item[0] == "(":
                 result.append(asterisk)
-            elif lst[i - 1][-1] == ")" and isint(item[0]):
+            elif lst[i - 1][-1] == ")" and is_int(item[0]):
                 result.append(asterisk)
             result.append(item)
     return result

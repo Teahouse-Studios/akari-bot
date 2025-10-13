@@ -3,7 +3,7 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, I18NContext
 from core.component import module
 from core.utils.image import msgchain2image
-from core.utils.message import isint
+from core.utils.message import is_int
 from .database.models import DivingProberBindInfo
 from .libraries.chunithm_apidata import get_info, get_record
 from .libraries.chunithm_mapping import diff_list
@@ -65,7 +65,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
     get_page = msg.parsed_msg.get("-p", False)
     page = (
         max(min(int(get_page["<page>"]), total_pages), 1)
-        if get_page and isint(get_page["<page>"])
+        if get_page and is_int(get_page["<page>"])
         else 1
     )
     start_index = (page - 1) * SONGS_PER_PAGE
@@ -108,7 +108,7 @@ async def _(msg: Bot.MessageSession, level: str):
     get_page = msg.parsed_msg.get("-p", False)
     page = (
         max(min(int(get_page["<page>"]), total_pages), 1)
-        if get_page and isint(get_page["<page>"])
+        if get_page and is_int(get_page["<page>"])
         else 1
     )
     start_index = (page - 1) * SONGS_PER_PAGE
@@ -145,7 +145,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
     get_page = msg.parsed_msg.get("-p", False)
     page = (
         max(min(int(get_page["<page>"]), total_pages), 1)
-        if get_page and isint(get_page["<page>"])
+        if get_page and is_int(get_page["<page>"])
         else 1
     )
     start_index = (page - 1) * SONGS_PER_PAGE
@@ -272,7 +272,7 @@ async def _(msg: Bot.MessageSession):
     diff = ""
     try:
         for char in condit:
-            if isint(char) or char == "+":
+            if is_int(char) or char == "+":
                 level += char
             else:
                 diff += char

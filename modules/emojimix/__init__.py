@@ -9,6 +9,7 @@ from core.builtins.message.internal import Image, I18NContext, Plain
 from core.component import module
 from core.constants.path import assets_path
 from core.logger import Logger
+from core.utils.message import chunk_list
 from core.utils.random import Random
 
 data_path = assets_path / "modules" / "emojimix" / "emoji_data.json"
@@ -181,8 +182,10 @@ async def _(msg: Bot.MessageSession, emoji: str = None):
         send_msgs = MessageChain.assign(I18NContext("emojimix.message.all_supported"))
         if supported_emojis:
             if msg.session_info.client_name == "Discord":
-                send_msgs += MessageChain.assign([Plain("".join(supported_emojis[i:i + 200]))
-                                                  for i in range(0, len(supported_emojis), 200)])
+                send_msgs += MessageChain.assign([
+                    Plain("".join(chunk))
+                    for chunk in chunk_list(supported_emojis, 200)
+                ])
             else:
                 send_msgs.append(Plain("".join(supported_emojis)))
         await msg.finish(send_msgs)

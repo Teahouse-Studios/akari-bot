@@ -26,7 +26,7 @@ from core.logger import Logger
 from core.tos import abuse_warn_target
 from core.types import Module, Param
 from core.types.module.component_meta import CommandMeta
-from core.utils.message import remove_duplicate_space
+from core.utils.message import normalize_space
 from core.utils.temp import TempCounter
 
 if TYPE_CHECKING:
@@ -87,7 +87,7 @@ async def parser(msg: "Bot.MessageSession"):
         await SessionTaskManager.check(msg)
         modules = ModulesManager.return_modules_list(msg.session_info.target_from, msg.session_info.client_name)
 
-        msg.trigger_msg = remove_duplicate_space(msg.as_display())  # 将消息转换为一般显示形式
+        msg.trigger_msg = normalize_space(msg.as_display())  # 将消息转换为一般显示形式
         if len(msg.trigger_msg) == 0:
             return
         if msg.session_info.sender_info.blocked and \

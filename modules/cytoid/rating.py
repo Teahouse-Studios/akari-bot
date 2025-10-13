@@ -20,28 +20,11 @@ from core.utils.cache import random_cache_path
 from core.utils.html2text import html2text
 from core.utils.http import get_url, download
 from core.utils.image import get_fontsize
-from core.utils.message import parse_time_string
+from core.utils.message import parse_time_string, truncate_text
 
 ctd_assets_path = assets_path / "modules" / "cytoid"
 nunito_light_path = ctd_assets_path / "Nunito Light.ttf"
 nunito_regular_path = ctd_assets_path / "Nunito Regular.ttf"
-
-
-def truncate_text(arg_str: str, arg_len: int) -> str:
-    count = 0
-    list_str = []
-    for str_ in arg_str:
-        inside_code = ord(str_)
-        if inside_code == 0x0020:
-            count += 1
-        elif inside_code < 0x7F:
-            count += 1
-        else:
-            count += 2
-        if count > arg_len:
-            return "".join(list_str) + "..."
-        list_str.append(str_)
-    return "".join(list_str)
 
 
 async def get_rating(msg: Bot.MessageSession, uid, query_type):

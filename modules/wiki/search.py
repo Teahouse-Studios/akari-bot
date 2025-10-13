@@ -5,7 +5,7 @@ from typing import Union
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
 from core.logger import Logger
-from core.utils.message import isint
+from core.utils.message import is_int
 from .database.models import WikiTargetInfo
 from .utils.wikilib import WikiLib
 from .wiki import wiki, query_pages
@@ -76,7 +76,7 @@ async def search_pages(
     else:
         await msg.finish(I18NContext("wiki.message.search.not_found"))
     reply = await msg.wait_reply(msg_list, delete=True)
-    if isint(reply.as_display(text_only=True)):
+    if is_int(reply.as_display(text_only=True)):
         reply_number = max(0, int(reply.as_display(text_only=True)) - 1)
         if reply_number < len(wait_msg_list):
             await query_pages(reply, wait_msg_list[reply_number])

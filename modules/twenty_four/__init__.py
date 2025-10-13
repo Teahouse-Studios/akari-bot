@@ -6,7 +6,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
 from core.component import module
 from core.utils.game import PlayState, GAME_EXPIRED
-from core.utils.message import isint
+from core.utils.message import is_int
 from core.utils.petal import gained_petal, lost_petal
 from core.utils.random import Random
 
@@ -39,8 +39,8 @@ def check_valid(expr):
     i = 0
     while i < len(expr):
         char = expr[i]
-        if isint(char):
-            while i < len(expr) and isint(expr[i]):
+        if is_int(char):
+            while i < len(expr) and is_int(expr[i]):
                 i += 1
             num_numbers += 1
             prev_char = "num"
@@ -120,9 +120,9 @@ def contains_all_numbers(expr, numbers):
     i = 0
     while i < len(expr):
         char = expr[i]
-        if isint(char):
+        if is_int(char):
             number = char
-            while i + 1 < len(expr) and isint(expr[i + 1]):
+            while i + 1 < len(expr) and is_int(expr[i + 1]):
                 number += expr[i + 1]
                 i += 1
             if number in used_numbers:

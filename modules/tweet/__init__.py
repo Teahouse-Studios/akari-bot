@@ -6,7 +6,7 @@ from core.component import module
 from core.dirty_check import check_bool, rickroll
 from core.utils.http import get_url
 from core.utils.image import cb64imglst
-from core.utils.message import isint
+from core.utils.message import is_int
 from core.web_render import web_render, ElementScreenshotOptions
 
 t = module(
@@ -30,7 +30,7 @@ async def _(msg: Bot.MessageSession, tweet: int):
          )
 async def _(msg: Bot.MessageSession):
     tweet = msg.matched_msg.group(1)
-    if isint(tweet):
+    if is_int(tweet):
         await get_tweet(msg, int(tweet))
 
 

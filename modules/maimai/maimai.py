@@ -5,7 +5,7 @@ from core.component import module
 from core.utils.image import msgchain2image
 from core.logger import Logger
 from core.scheduler import CronTrigger
-from core.utils.message import isint
+from core.utils.message import is_int
 from .database.models import DivingProberBindInfo
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_cover
 from .libraries.maimaidx_best50 import generate as generate_b50
@@ -69,7 +69,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
 
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
     get_page = msg.parsed_msg.get("-p", False)
-    if get_page and isint(get_page["<page>"]):
+    if get_page and is_int(get_page["<page>"]):
         page = max(min(int(get_page["<page>"]), total_pages), 1)
     else:
         page = 1
@@ -116,7 +116,7 @@ async def _(msg: Bot.MessageSession, level: str):
     get_page = msg.parsed_msg.get("-p", False)
     page = (
         max(min(int(get_page["<page>"]), total_pages), 1)
-        if get_page and isint(get_page["<page>"])
+        if get_page and is_int(get_page["<page>"])
         else 1
     )
     start_index = (page - 1) * SONGS_PER_PAGE
@@ -154,7 +154,7 @@ async def _(msg: Bot.MessageSession):
     get_page = msg.parsed_msg.get("-p", False)
     page = (
         max(min(int(get_page["<page>"]), total_pages), 1)
-        if get_page and isint(get_page["<page>"])
+        if get_page and is_int(get_page["<page>"])
         else 1
     )
     start_index = (page - 1) * SONGS_PER_PAGE
@@ -194,7 +194,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
     get_page = msg.parsed_msg.get("-p", False)
     page = (
         max(min(int(get_page["<page>"]), total_pages), 1)
-        if get_page and isint(get_page["<page>"])
+        if get_page and is_int(get_page["<page>"])
         else 1
     )
     start_index = (page - 1) * SONGS_PER_PAGE
@@ -216,7 +216,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
 
 @mai.command("alias <sid> {{I18N:maimai.help.alias}}")
 async def _(msg: Bot.MessageSession, sid: str):
-    if not isint(sid):
+    if not is_int(sid):
         if sid[:2].lower() == "id":
             sid = sid[2:]
         else:
@@ -614,7 +614,7 @@ async def _(msg: Bot.MessageSession, level: str):
     get_user = msg.parsed_msg.get("-u", False)
     username = get_user["<username>"] if get_user else None
     get_page = msg.parsed_msg.get("-p", False)
-    page = get_page["<page>"] if get_page and isint(get_page["<page>"]) else 1
+    page = get_page["<page>"] if get_page and is_int(get_page["<page>"]) else 1
     if not username:
         if msg.session_info.sender_from == "QQ":
             payload = {"qq": msg.session_info.get_common_sender_id()}
@@ -655,7 +655,7 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
             dx_type_lst = ["SD", "DX"]
 
         for char in condit:
-            if isint(char) or char == "+":
+            if is_int(char) or char == "+":
                 level += char
             else:
                 diff += char
@@ -695,7 +695,7 @@ async def _(msg: Bot.MessageSession):
 @mai.command("scoreline <sid> <diff> <score> {{I18N:maimai.help.scoreline}}")
 async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
     try:
-        if not isint(sid):
+        if not is_int(sid):
             if sid[:2].lower() == "id":
                 sid = sid[2:]
             else:

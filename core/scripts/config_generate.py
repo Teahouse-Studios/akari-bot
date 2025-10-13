@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
 from core.constants import *
 from core.i18n import Locale, load_locale_file
-from core.utils.message import isint
+from core.utils.message import is_int
 
 
 def generate_config(dir_path: Path, language: str):
@@ -74,7 +74,7 @@ if not (config_path / config_filename).exists() and __name__ != "__main__":
             lang = input("Please input the number of the language you want to use: ")
             if lang.strip() == "":
                 sys.exit(0)
-            if isint(lang) and (langI := int(lang) - 1) in range(len(lang_list)):
+            if is_int(lang) and (langI := int(lang) - 1) in range(len(lang_list)):
                 lang = list(lang_list.keys())[langI]
                 break
             print("Invalid input, please try again.")

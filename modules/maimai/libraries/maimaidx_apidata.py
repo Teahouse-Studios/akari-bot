@@ -12,7 +12,7 @@ from core.constants.exceptions import ConfigValueError
 from core.constants.path import cache_path
 from core.logger import Logger
 from core.utils.http import download, get_url, post_url
-from core.utils.message import isint
+from core.utils.message import is_int
 from .maimaidx_mapping import *
 from .maimaidx_music import get_cover_len5_id, Music, TotalList
 
@@ -141,7 +141,7 @@ async def search_by_alias(input_: str) -> list:
     for s in res:
         result.append(s["id"])
 
-    if isint(input_):
+    if is_int(input_):
         music = (await total_list.get()).by_id(input_)
         if music:
             result.append(input_)

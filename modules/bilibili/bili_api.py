@@ -2,6 +2,7 @@ import orjson as json
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import Embed, EmbedField, Image, Url, I18NContext
+from core.utils.message import truncate_text
 from core.web_render import web_render, SourceOptions
 
 DESC_LENGTH = 100
@@ -37,8 +38,7 @@ async def get_video_info(
     pic = view["pic"]
     title = view["title"]
     tname = view["tname"]
-    desc = view["desc"]
-    desc = (desc[:100] + "...") if len(desc) > 100 else desc
+    desc = truncate_text(view["desc"], DESC_LENGTH)
     time = msg.format_time(view["pubdate"], iso=True, timezone=False)
 
     if len(view["pages"]) > 1:
@@ -124,3 +124,4 @@ async def get_video_info(
             time=time,
         )
     return [Image(pic), Url(video_url, use_mm=False), output]
+

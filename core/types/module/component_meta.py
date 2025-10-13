@@ -9,7 +9,7 @@ from attrs import define, field
 
 from core.builtins.parser.args import Template
 from core.builtins.types import MessageElement
-from core.utils.message import convert2lst
+from core.utils.message import convert_list
 
 
 class ModuleMeta:
@@ -19,13 +19,13 @@ class ModuleMeta:
 @define
 class CommandMeta(ModuleMeta):
     function: Callable = None
-    help_doc: List[Template] = field(default=[], converter=convert2lst)
+    help_doc: List[Template] = field(default=[], converter=convert_list)
     options_desc: dict = None
     required_admin: bool = False
     required_superuser: bool = False
     required_base_superuser: bool = False
-    available_for: list = field(default=["*"], converter=convert2lst)
-    exclude_from: list = field(default=[], converter=convert2lst)
+    available_for: list = field(default=["*"], converter=convert_list)
+    exclude_from: list = field(default=[], converter=convert_list)
     load: bool = True
     priority: int = 1
 
@@ -39,8 +39,8 @@ class RegexMeta(ModuleMeta):
     required_admin: bool = False
     required_superuser: bool = False
     required_base_superuser: bool = False
-    available_for: list = field(default=["*"], converter=convert2lst)
-    exclude_from: list = field(default=[], converter=convert2lst)
+    available_for: list = field(default=["*"], converter=convert_list)
+    exclude_from: list = field(default=[], converter=convert_list)
     flags: re.RegexFlag = 0
     load: bool = True
     logging: bool = True

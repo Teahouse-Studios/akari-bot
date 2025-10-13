@@ -6,7 +6,7 @@ from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 from attrs import define, field, Converter
 
-from core.utils.message import convert2lst
+from core.utils.message import convert_list
 from .component_matches import *
 
 
@@ -22,11 +22,11 @@ def alias_converter(value, _self) -> dict:
 class Module:
     module_name: str
     alias: dict = field(converter=Converter(alias_converter, takes_self=True))
-    recommend_modules: list = field(converter=convert2lst)
-    developers: list = field(converter=convert2lst)
-    available_for: list = field(default=["*"], converter=convert2lst)
-    exclude_from: list = field(default=[], converter=convert2lst)
-    support_languages: list = field(default=None, converter=convert2lst)
+    recommend_modules: list = field(converter=convert_list)
+    developers: list = field(converter=convert_list)
+    available_for: list = field(default=["*"], converter=convert_list)
+    exclude_from: list = field(default=[], converter=convert_list)
+    support_languages: list = field(default=None, converter=convert_list)
     desc: str = ""
     required_admin: bool = False
     base: bool = False

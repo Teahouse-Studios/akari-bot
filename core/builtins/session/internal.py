@@ -19,7 +19,7 @@ from core.builtins.utils import confirm_command
 from core.config import Config
 from core.constants import FinishedException, WaitCancelException
 from core.exports import add_export, exports
-from core.utils.message import isint
+from core.utils.message import is_int
 
 if TYPE_CHECKING:
     from core.queue.server import JobQueueServer
@@ -541,7 +541,7 @@ class MessageSession:
             num_str = f"{number:.{precision}f}".rstrip("0").rstrip(".")
             return num_str if precision > 0 else str(int(number))
 
-        if isint(number):
+        if is_int(number):
             number = int(number)
         else:
             return str(number)
