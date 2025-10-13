@@ -72,13 +72,13 @@ def verify_jwt(request: Request):
 
 
 @app.get("/api")
-@limiter.limit("2/second")
+@limiter.limit("10/second")
 async def api_root(request: Request):
     return {"message": "Hello, AkariBot!"}
 
 
 @app.get("/api/init")
-@limiter.limit("2/second")
+@limiter.limit("10/second")
 async def get_config(request: Request):
     return {"enable_https": enable_https,
             "command_prefix": command_prefix[0],
@@ -90,7 +90,7 @@ async def get_config(request: Request):
 
 
 @app.get("/api/verify")
-@limiter.limit("2/second")
+@limiter.limit("10/second")
 async def verify_token(request: Request):
     return verify_jwt(request)
 

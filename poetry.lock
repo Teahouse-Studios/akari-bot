@@ -274,14 +274,14 @@ uvicorn = ">=0.37.0,<0.38.0"
 
 [[package]]
 name = "akari-bot-webui"
-version = "0.2.11"
+version = "0.2.12"
 description = ""
 optional = false
 python-versions = ">=3.12"
 groups = ["main"]
 files = [
-    {file = "akari_bot_webui-0.2.11-py3-none-any.whl", hash = "sha256:473417cd38a04e790a42874c9a835dbdc0e0dfaae87d76e076ad47a00b50a851"},
-    {file = "akari_bot_webui-0.2.11.tar.gz", hash = "sha256:61ded784ac087e8d9124facb77dc41e5ffe2b1e27828e24c66a23cad12c10741"},
+    {file = "akari_bot_webui-0.2.12-py3-none-any.whl", hash = "sha256:8fc540ddafb1e119bac1f283687c0628755a3d845189f1320629c746ef237196"},
+    {file = "akari_bot_webui-0.2.12.tar.gz", hash = "sha256:5b77aaaff4788f99799557c68fa8c77ca1f7e40eb71f1131f9cf52adc84c7ccd"},
 ]
 
 [[package]]
@@ -5940,4 +5940,4 @@ cffi = ["cffi (>=1.17) ; python_version >= \"3.13\" and platform_python_implemen
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12.0"
-content-hash = "dbd5491eac04870ddfb156d3d26ee9eb65f51d493c588e9530e9085c6ae84057"
+content-hash = "e54b0e3a9c0284c7076492e2fe3be63ea9932ad0cd1989bf56d92d079bd0595b"

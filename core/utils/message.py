@@ -68,14 +68,14 @@ def remove_duplicate_space(text: str) -> str:
     return text
 
 
-def generate_progress_bar(current: float, 
-                 total: float, 
-                 length: int = 10,
-                 fill: str = "█",
-                 empty: str = "░",
-                 show_number: bool = False,
-                 show_percent: bool = True,
-                 precision: int = 1):
+def generate_progress_bar(current: float,
+                          total: float,
+                          length: int = 10,
+                          fill: str = "█",
+                          empty: str = "░",
+                          show_number: bool = False,
+                          show_percent: bool = True,
+                          precision: int = 1):
     """生成静态文本进度条。
 
     :param current: 当前进度。
@@ -102,7 +102,7 @@ def generate_progress_bar(current: float,
     if show_number:
         bar_info.append(f"{current}/{total}")
     if show_percent:
-        pct_text = f"{percent*100:.{precision}f}%"
+        pct_text = f"{percent * 100:.{precision}f}%"
         bar_info.append(pct_text)
 
     if bar_info:
