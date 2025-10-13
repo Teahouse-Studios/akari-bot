@@ -12,7 +12,7 @@ def convert2lst(elements: Union[str, list, tuple]) -> list:
 
 def isfloat(num_str: Any) -> bool:
     """
-    检查字符串是否符合float。
+    检查字符串是否符合 `float`。
     """
     try:
         float(num_str)
@@ -23,7 +23,7 @@ def isfloat(num_str: Any) -> bool:
 
 def isint(num_str: Any) -> bool:
     """
-    检查字符串是否符合int。
+    检查字符串是否符合 `int`。
     """
     try:
         int(num_str)
@@ -76,7 +76,7 @@ def generate_progress_bar(current: float,
                  show_number: bool = False,
                  show_percent: bool = True,
                  precision: int = 1):
-    """输出静态文本进度条。
+    """生成静态文本进度条。
 
     :param current: 当前进度。
     :param total: 目标数字。
