@@ -87,7 +87,7 @@
 
         hr {
         border: 0;
-        border-top: 1px dashed gray;
+        border-top: 1px dashed var(--theme-color-main-2);
         margin: 5px 0;
         }
 
@@ -95,7 +95,7 @@
             font-size: 1.6em;
             margin: .1em 0;
             padding: .2em .5em;
-            color: #ffffff;
+            {#color: #ffffff;#}
             color: var(--theme-color-title);
             font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
             font-weight: bolder;
@@ -153,8 +153,8 @@
         }
 
         .help-detail {
-            border-bottom: .5px solid #cecece;
-            background-color: #f0f4f4;
+            border-bottom: .5px solid var(--theme-color-highlight);
+            background-color: var(--theme-color-secondary);
             white-space: nowrap;
             padding: 0 1em;
         }
@@ -163,12 +163,12 @@
             padding: .2em 1em;
             color: var(--theme-color-highlight);
             background-color: var(--theme-color-main-3);
-            border-bottom: 1px solid #cecece;
+            border-bottom: 1px solid var(--theme-color-highlight);
             font-size: 14px;
         }
 
         .help-detail:nth-child(2n) {
-            background-color: #f8fAfA;
+            background-color: var(--theme-color-tertiary);
         }
     </style>
 </head>
