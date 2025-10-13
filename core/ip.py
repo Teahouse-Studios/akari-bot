@@ -18,6 +18,5 @@ async def fetch_ip_info() -> dict:
         append_ip(ip_info)
         return ip_info
     except Exception:
-        Logger.error("Failed to get IP information.")
-        Logger.exception()
+        Logger.exception("Failed to get IP information.")
         return {}
