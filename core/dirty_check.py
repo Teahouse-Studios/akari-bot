@@ -248,14 +248,14 @@ async def check_bool(text: Union[str,
                                  List[MessageElement],
                                  MessageElement,
                                  MessageChain],
-                     session: Optional[MessageSession] = None,
-                     confidence: float = 60) -> bool:
+                     session: Optional[MessageSession] = None
+                     ) -> bool:
     """检查字符串是否合规。
 
     :param text: 字符串（List/Union）。
     :returns: 字符串是否合规。
     """
-    chk = await check(text, session, confidence)
+    chk = await check(text, session)
     for x in chk:
         if not x["status"]:
             return True
