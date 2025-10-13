@@ -70,7 +70,8 @@ def parse_data(original_content: str, result: dict, confidence: float = 60, addi
                 if float(itemDetail["Confidence"]) >= confidence:
                     risk_words = itemDetail.get("RiskWords")
                     if risk_words:
-                        for word in itemDetail["RiskWords"].split(","):
+                        risk_words = sorted(risk_words.split(","), key=len, reverse=True)
+                        for word in risk_words:
                             word = word.strip()
                             if word in content:
                                 reason = str(I18NContext("check.redacted", reason=itemDetail["Label"]))
