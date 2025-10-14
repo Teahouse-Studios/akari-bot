@@ -87,7 +87,7 @@
     "maimai.message.score.no_record": "No record",
     "maimai.message.score.prompt": "Use \"${prefix}maimai score <ID>\" to query the exact result.",
     "maimai.message.score.utage": "U·TA·GE charts are not supported at this moment.",
-    "maimai.message.scoreline": "分数线 ${scoreline}% 允许的最多 TAP GREAT 数量为 ${tap_great}（每个-${tap_great_prop}%）\nBREAK 2550（一共 ${brk} 个）相当于 ${b2t_2550_great} 个 TAP GREAT（-${b2t_2550_great_prop}%）\nBREAK 2000（一共 ${brk} 个）相当于 ${b2t_2000_great} 个 TAP GREAT（-${b2t_2000_great_prop}%）",
+    "maimai.message.scoreline": "分数线 ${scoreline}% 允许的最多 TAP GREAT 数量为 ${tap_great}\nBREAK 2550 相当于 ${b2t_2550_great} 个 TAP GREAT\nBREAK 2000 相当于 ${b2t_2000_great} 个 TAP GREAT",
     "maimai.message.scoreline.failed": "Calculation failed, please check the input.",
     "maimai.message.scorelist": "以下为 ${user} 的 ${level} 级分数列表：",
     "maimai.message.search": "Search result of \"${keyword}\":",
