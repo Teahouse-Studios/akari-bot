@@ -12,6 +12,7 @@ from .database.models import DivingProberBindInfo
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_cover
 from .libraries.maimaidx_best50 import generate as generate_b50
 from .libraries.maimaidx_platelist import generate as generate_plate
+from .libraries.maimaidx_scoreline import draw_scoreline_table
 from .libraries.maimaidx_scorelist import generate as generate_process
 from .libraries.maimaidx_utils import *
 
@@ -710,8 +711,11 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
         hold = int(chart["notes"][1])
         touch = int(chart["notes"][3]) if len(chart["notes"]) == 5 else 0
         brk = int(chart["notes"][-1])
+
+        img = draw_scoreline_table(tap, hold, slide, touch, brk, "101-")
+        
         total_score = (
-            500 * tap + slide * 1500 + hold * 1000 + touch * 500 + brk * 2500
+            tap * 500 + slide * 1500 + hold * 1000 + touch * 500 + brk * 2500
         )  # 基础分
         bonus_score = total_score * 0.01 / brk  # 奖励分
         break_2550_reduce = bonus_score * 0.25  # 一个 BREAK 2550 减少 25% 奖励分
@@ -724,26 +728,21 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
         tap_great = (
             f"{(total_score * reduce / 10000):.2f}"  # 一个 TAP GREAT 减少 100 分
         )
-        tap_great_prop = f"{(10000 / total_score):.4f}"
         b2t_2550_great = (
             f"{(break_2550_reduce / 100):.3f}"  # 一个 TAP GREAT 减少 100 分
         )
-        b2t_2550_great_prop = f"{(break_2550_reduce / total_score * 100):.4f}"
         b2t_2000_great = (
             f"{(break_2000_reduce / 100):.3f}"  # 一个 TAP GREAT 减少 100 分
         )
-        b2t_2000_great_prop = f"{(break_2000_reduce / total_score * 100):.4f}"
+
         msg_chain = MessageChain.assign([
-            Plain(f"{music["title"]}{" (DX)" if music["type"] == "DX" else ""} {diff_list[diff_index]}"),
+            Plain(f"{music["id"]} - {music["title"]}{" (DX)" if music["type"] == "DX" else ""} [{diff_list[diff_index]}]"),
+            BImage(img),
             I18NContext("maimai.message.scoreline",
                         scoreline=score,
                         tap_great=tap_great,
-                        tap_great_prop=tap_great_prop,
-                        brk=brk,
                         b2t_2550_great=b2t_2550_great,
-                        b2t_2550_great_prop=b2t_2550_great_prop,
-                        b2t_2000_great=b2t_2000_great,
-                        b2t_2000_great_prop=b2t_2000_great_prop)
+                        b2t_2000_great=b2t_2000_great)
         ])
         await msg.finish(msg_chain)
     except ValueError:
