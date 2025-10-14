@@ -1,4 +1,4 @@
-import orjson as json
+import orjson
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Image, Plain
@@ -16,7 +16,7 @@ async def cytoid_profile(msg: Bot.MessageSession, username):
         query_id = bind_info.username
     profile_url = f"http://services.cytoid.io/profile/{query_id}"
     try:
-        profile = json.loads(await get_url(profile_url, 200))
+        profile = orjson.loads(await get_url(profile_url, 200))
     except ValueError as e:
         if str(e).startswith("404"):
             await msg.finish(I18NContext("cytoid.message.user_not_found"))

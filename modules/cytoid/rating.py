@@ -2,7 +2,7 @@ import asyncio
 import time
 from datetime import datetime
 
-import orjson as json
+import orjson
 from PIL import Image, ImageEnhance, ImageFont, ImageDraw, ImageOps
 from gql import Client, gql
 from gql.transport.httpx import HTTPXAsyncTransport
@@ -34,7 +34,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
         elif query_type == "r10":
             query_type = "recentRecords"
         profile_url = f"http://services.cytoid.io/profile/{uid}"
-        profile_json = json.loads(await get_url(profile_url, 200))
+        profile_json = orjson.loads(await get_url(profile_url, 200))
         if "statusCode" in profile_json:
             if profile_json["statusCode"] == 404:
                 return {
@@ -285,7 +285,7 @@ async def download_cover_thumb(uid):
         path = d / filename
         if not path.exists():
             level_url = f"http://services.cytoid.io/levels/{uid}"
-            get_level = json.loads(await get_url(level_url))
+            get_level = orjson.loads(await get_url(level_url))
             cover_thumbnail = f"{get_level["cover"]["original"]}?h=240&w=384"
             path = await download(
                 cover_thumbnail, filename=filename, path=d, logging_err_resp=False

@@ -1,4 +1,4 @@
-import orjson as json
+import orjson
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import Embed, EmbedField, Image, Url, I18NContext
@@ -19,7 +19,7 @@ async def get_video_info(
         if not res:
             res = await web_render.source(SourceOptions(url=url, raw_text=True))
         if res:
-            load_json = json.loads(res)
+            load_json = orjson.loads(res)
             if load_json["code"] != 0:
                 if load_json["code"] == -400:
                     return I18NContext("bilibili.message.invalid")
@@ -124,4 +124,3 @@ async def get_video_info(
             time=time,
         )
     return [Image(pic), Url(video_url, use_mm=False), output]
-

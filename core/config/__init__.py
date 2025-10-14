@@ -4,7 +4,7 @@ from time import sleep
 from pathlib import Path
 from typing import Optional, Union, Any
 
-import orjson as json
+import orjson
 from loguru import logger
 from tomlkit import parse as toml_parser, dumps as toml_dumps, TOMLDocument, comment as toml_comment, \
     document as toml_document, nl
@@ -178,7 +178,7 @@ class CFGManager:
         if value is None:  # if the value is not found, write the default value to the config file
             if default is not None:
                 if isinstance(default, dict):
-                    default = json.dumps(default).decode()  # if the default value is dict, convert to json str
+                    default = orjson.dumps(default).decode()  # if the default value is dict, convert to json str
                 elif isinstance(default, tuple):  # if the default value is tuple, convert to list
                     default = list(default)
                     cfg_type = cfg_type if cfg_type else list

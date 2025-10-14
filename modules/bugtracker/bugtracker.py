@@ -1,4 +1,4 @@
-import orjson as json
+import orjson
 
 from core.builtins.message.internal import I18NContext, Plain
 from core.logger import Logger
@@ -40,7 +40,7 @@ async def bugtracker_get(msg, mojira_id: str):
             201,
             headers={"Content-Type": "application/json"},
         )
-        load_json = json.loads(get_json).get("issues")[0]
+        load_json = orjson.loads(get_json).get("issues")[0]
     except IndexError:
         return I18NContext("bugtracker.message.get_failed"), None
     except ValueError as e:
@@ -52,7 +52,7 @@ async def bugtracker_get(msg, mojira_id: str):
             "https://spxx-db.teahouse.team/crowdin/zh-CN/zh_CN.json", 200
         )
         if get_spx:
-            spx_cache.update(json.loads(get_spx))
+            spx_cache.update(orjson.loads(get_spx))
     if id_ in spx_cache and msg.session_info.locale.locale == "zh_cn":
         data["translation"] = spx_cache[id_]
     if get_json:

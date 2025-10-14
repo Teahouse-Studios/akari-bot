@@ -1,4 +1,4 @@
-import orjson as json
+import orjson
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import Image as BImage, Plain, I18NContext
@@ -22,7 +22,7 @@ async def _(msg: Bot.MessageSession):
     url = "https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/"
     resp = await web_render.source(SourceOptions(url=url, raw_text=True))
     if resp:
-        load_json = json.loads(resp)
+        load_json = orjson.loads(resp)
         url = load_json.get("value", {}).get("url")
     if url:
         await msg.finish(I18NContext("arcaea.message.download", version=load_json["value"]["version"], url=url))
@@ -35,7 +35,7 @@ async def _(msg: Bot.MessageSession):
     url = "https://webapi.lowiro.com/webapi/song/showcase/"
     resp = await web_render.source(SourceOptions(url=url, raw_text=True))
     if resp:
-        load_json = json.loads(resp)
+        load_json = orjson.loads(resp)
         value = load_json["value"][0]
         image = arc_assets_path / "jacket" / f"{value["song_id"]}.jpg"
         result = [Plain(value["title"]["en"])]
@@ -58,7 +58,7 @@ async def _(msg: Bot.MessageSession):
         url = "https://webapi.lowiro.com/webapi/song/rank/paid/"
     resp = await web_render.source(SourceOptions(url=url, raw_text=True))
     if resp:
-        load_json = json.loads(resp)
+        load_json = orjson.loads(resp)
         r = []
         rank = 0
         for x in load_json["value"]:

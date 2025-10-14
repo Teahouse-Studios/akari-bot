@@ -9,7 +9,7 @@ from typing import List, Optional, Tuple, Union, Any
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
-import orjson as json
+import orjson
 
 from core.builtins.message.elements import (
     BaseElement,
@@ -486,7 +486,7 @@ def match_kecode(text: str,
                             if parse_url[0] == "file" or url_pattern.match(parse_url[1]):
                                 img = ImageElement.assign(path=ma.group(2))
                         if ma.group(1) == "headers" and img:
-                            img.headers = json.loads(str(base64.b64decode(ma.group(2)), "UTF-8"))
+                            img.headers = orjson.loads(str(base64.b64decode(ma.group(2)), "UTF-8"))
                         if img:
                             elements.append(img)
                         else:

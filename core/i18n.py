@@ -7,7 +7,7 @@ from pathlib import Path
 from string import Template
 from typing import Any, Dict, List, Optional, Union
 
-import orjson as json
+import orjson
 
 from core.constants.default import lang_list
 from core.constants.path import locales_path, modules_locales_path
@@ -83,7 +83,7 @@ def load_locale_file() -> List[str]:
     try:
         for loc in locales:
             with open(locales_path / loc, "rb") as f:
-                locale_dict[loc.removesuffix(".json")] = flatten(json.loads(f.read()))
+                locale_dict[loc.removesuffix(".json")] = flatten(orjson.loads(f.read()))
     except Exception as e:
         traceback.print_exc()
         err_prompt.append(str(e))
@@ -97,11 +97,11 @@ def load_locale_file() -> List[str]:
                     try:
                         if lang_file.removesuffix(".json") in locale_dict:
                             locale_dict[lang_file.removesuffix(".json")].update(
-                                flatten(json.loads(f.read()))
+                                flatten(orjson.loads(f.read()))
                             )
                         else:
                             locale_dict[lang_file.removesuffix(".json")] = flatten(
-                                json.loads(f.read())
+                                orjson.loads(f.read())
                             )
                     except Exception as e:
                         traceback.print_exc()

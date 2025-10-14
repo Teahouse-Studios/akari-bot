@@ -13,7 +13,7 @@ import uuid
 from typing import Union, List, Dict, Optional
 
 import httpx
-import orjson as json
+import orjson
 from tenacity import retry, wait_fixed, stop_after_attempt
 
 from core.builtins.message.chain import MessageChain
@@ -146,7 +146,7 @@ async def check(text: Union[str,
             }
             date = datetime.datetime.now(datetime.UTC).strftime("%a, %d %b %Y %H:%M:%S GMT")
             content_md5 = base64.b64encode(
-                hashlib.md5(json.dumps(body), usedforsecurity=False).digest()
+                hashlib.md5(orjson.dumps(body), usedforsecurity=False).digest()
             ).decode("utf-8")
             headers = {
                 "Accept": "application/json",
@@ -166,9 +166,9 @@ async def check(text: Union[str,
             headers["Authorization"] = sign
 
             async with httpx.AsyncClient(headers=headers) as client:
-                resp = await client.post(f"{root}{url}", content=json.dumps(body))
+                resp = await client.post(f"{root}{url}", content=orjson.dumps(body))
                 if resp.status_code == 200:
-                    result = json.loads(resp.content)
+                    result = orjson.loads(resp.content)
                     Logger.debug(result)
 
                     if result["code"] == 200:
@@ -198,7 +198,7 @@ async def check(text: Union[str,
                         "SignatureNonce": str(uuid.uuid4()),
                         "Action": "TextModerationPlus",
                         "Service": "comment_detection_pro",
-                        "ServiceParameters": json.dumps(
+                        "ServiceParameters": orjson.dumps(
                             {"dataId": str(uuid.uuid4()), "content": x}
                         ).decode("utf-8")
                     }

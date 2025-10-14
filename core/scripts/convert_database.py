@@ -1,6 +1,7 @@
 import os
 import sys
 
+import orjson
 from tortoise import run_async, Tortoise
 from tortoise.models import Model
 
@@ -299,8 +300,8 @@ async def convert_database():
             v = f"[{v}]"
         try:
             try:
-                v = json.loads(v)
-            except json.JSONDecodeError:
+                v = orjson.loads(v)
+            except orjson.JSONDecodeError:
                 continue
 
             await StoredData.create(
@@ -493,7 +494,7 @@ async def convert_database():
         try:
             await WikiLogTargetSetInfo.create(
                 target_id=r.targetId,
-                infos=json.loads(r.infos)
+                infos=orjson.loads(r.infos)
             )
         except Exception as e:
             Logger.error(f"Failed to convert WikiLogTargetSetInfo: {r.targetId}, error: {e}")

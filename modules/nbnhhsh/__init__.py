@@ -1,4 +1,4 @@
-import orjson as json
+import orjson
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
@@ -22,7 +22,7 @@ async def _(msg: Bot.MessageSession, term: str):
 
 
 async def nbnhhsh(msg: Bot.MessageSession, term: str):
-    req = json.dumps({"text": term})
+    req = orjson.dumps({"text": term})
     data = await post_url("https://lab.magiconch.com/api/nbnhhsh/guess",
                           data=req,
                           headers={"Content-Type": "application/json",

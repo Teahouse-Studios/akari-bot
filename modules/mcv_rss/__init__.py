@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 
-import orjson as json
+import orjson
 from bs4 import BeautifulSoup
 from google_play_scraper import app as google_play_scraper
 
@@ -140,7 +140,7 @@ async def _():
     url = "https://piston-meta.mojang.com/mc/game/version_manifest.json"
     try:
         verlist = await get_stored_list(Bot, "mcv_rss")
-        file = json.loads(await get_url(url, attempt=1, logging_err_resp=False))
+        file = orjson.loads(await get_url(url, attempt=1, logging_err_resp=False))
         release = file["latest"]["release"]
         snapshot = file["latest"]["snapshot"]
         time_release = 0
@@ -251,7 +251,7 @@ async def mcv_jira_rss():
     try:
         url = "https://bugs.mojang.com/rest/api/2/project/10400/versions"
         verlist = await get_stored_list(bot, "mcv_jira_rss")
-        file = json.loads(await get_url(url, 200, attempt=1, logging_err_resp=False))
+        file = orjson.loads(await get_url(url, 200, attempt=1, logging_err_resp=False))
         releases = []
         for v in file:
             if not v["archived"]:
@@ -298,7 +298,7 @@ async def mcbv_jira_rss():
     try:
         url = "https://bugs.mojang.com/rest/api/2/project/10200/versions"
         verlist = await get_stored_list(bot, "mcbv_jira_rss")
-        file = json.loads(await get_url(url, 200, attempt=1, logging_err_resp=False))
+        file = orjson.loads(await get_url(url, 200, attempt=1, logging_err_resp=False))
         releases = []
         for v in file:
             if not v["archived"]:
@@ -328,7 +328,7 @@ async def mcdv_rss():
     try:
         url = "https://bugs.mojang.com/rest/api/2/project/11901/versions"
         verlist = await get_stored_list(bot, "mcdv_rss")
-        file = json.loads(await get_url(url, 200, attempt=1, logging_err_resp=False))
+        file = orjson.loads(await get_url(url, 200, attempt=1, logging_err_resp=False))
         releases = []
         for v in file:
             if not v["archived"]:
@@ -358,7 +358,7 @@ async def mclgv_rss():
     try:
         url = "https://bugs.mojang.com/rest/api/2/project/12200/versions"
         verlist = await get_stored_list(bot, "mclgv_rss")
-        file = json.loads(await get_url(url, 200, attempt=1, logging_err_resp=False))
+        file = orjson.loads(await get_url(url, 200, attempt=1, logging_err_resp=False))
         releases = []
         for v in file:
             if not v["archived"]:

@@ -1,6 +1,6 @@
 from datetime import datetime, UTC
 
-import orjson as json
+import orjson
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
@@ -21,7 +21,7 @@ async def osu_profile(msg: Bot.MessageSession, uid, mode, api_key):
         raise ConfigValueError("{I18N:error.config.secret.not_found}")
     profile_url = f"https://osu.ppy.sh/api/get_user?k={api_key}&u={uid}&m={mode}"
     try:
-        profile = json.loads(await get_url(profile_url, 200))[0]
+        profile = orjson.loads(await get_url(profile_url, 200))[0]
 
         userid = profile["user_id"]
         username = profile["username"]

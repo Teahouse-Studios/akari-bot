@@ -1,3 +1,5 @@
+import orjson
+
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Image as BImage
@@ -315,7 +317,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
     msg_chain = MessageChain.assign()
     if int(sid) > 100000:
         with open(mai_utage_info_path, "rb") as file:
-            utage_data = json.loads(file.read())
+            utage_data = orjson.loads(file.read())
 
         if utage_data:
             try:
@@ -416,7 +418,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
     msg_chain = MessageChain.assign()
     if int(sid) > 100000:
         with open(mai_utage_info_path, "rb") as file:
-            utage_data = json.loads(file.read())
+            utage_data = orjson.loads(file.read())
         if utage_data:
             try:
                 msg_chain.append(Plain(f"「{utage_data[sid]["comment"]}」"))

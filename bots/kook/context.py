@@ -1,7 +1,7 @@
 from typing import Optional, Union, List
 
 import httpx
-import orjson as json
+import orjson
 from khl import Message, MessageTypes, PublicChannel, User
 
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
@@ -25,7 +25,7 @@ async def channel_api(endpoint: str, **params):
     url = f"{kook_base}/api/v3/message/{endpoint}"
     async with httpx.AsyncClient() as client:
         resp = await client.post(url, data=params, headers=kook_headers)
-    data = json.loads(resp.text)
+    data = orjson.loads(resp.text)
     if not str(resp.status_code).startswith("2"):
         raise ValueError(data)
     return data
@@ -35,7 +35,7 @@ async def direct_api(endpoint: str, **params):
     url = f"{kook_base}/api/v3/direct-message/{endpoint}"
     async with httpx.AsyncClient() as client:
         resp = await client.post(url, data=params, headers=kook_headers)
-    data = json.loads(resp.text)
+    data = orjson.loads(resp.text)
     if not str(resp.status_code).startswith("2"):
         raise ValueError(data)
     return data

@@ -3,7 +3,7 @@ from collections.abc import Iterable as IterableABC
 from datetime import timedelta
 from typing import Any, Dict, Iterable, Generator, List
 
-import orjson as json
+import orjson
 
 
 def convert_list(v: Any) -> list:
@@ -25,7 +25,7 @@ def is_iterable(obj: Any) -> bool:
 def is_json_serializable(obj: Any) -> bool:
     """检查对象是否可以被 JSON 序列化。"""
     try:
-        json.dumps(obj)
+        orjson.dumps(obj)
         return True
     except (TypeError, ValueError, OverflowError):
         return False

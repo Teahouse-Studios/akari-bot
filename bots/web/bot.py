@@ -1,6 +1,7 @@
 import sys
 import uuid
 
+import orjson
 import uvicorn
 
 from bots.web.api import *
@@ -34,12 +35,12 @@ async def websocket_chat(websocket: WebSocket):
             rmessage = await websocket.receive_text()
             if rmessage:
                 try:
-                    message = json.loads(rmessage)
+                    message = orjson.loads(rmessage)
 
                     if message["action"] == "heartbeat" and message["message"] == "ping!":
                         Logger.debug("Heartbeat received.")
                         resp = {"action": "heartbeat", "message": "pong!"}
-                        await websocket.send_text(json.dumps(resp).decode())
+                        await websocket.send_text(orjson.dumps(resp).decode())
                         continue
 
                     if message["action"] == "reaction" and message["add"]:
@@ -71,7 +72,7 @@ async def websocket_chat(websocket: WebSocket):
                                                            )
 
                         await Bot.process_message(session, message)
-                except json.JSONDecodeError:
+                except orjson.JSONDecodeError:
                     continue
     except WebSocketDisconnect:
         pass

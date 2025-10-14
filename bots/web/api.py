@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, UTC
 from pathlib import Path
 
 import jwt
-import orjson as json
+import orjson
 import psutil
 from cpuinfo import get_cpu_info
 from fastapi import HTTPException, Request, File, Form, Query, UploadFile, WebSocket, WebSocketDisconnect
@@ -58,7 +58,7 @@ def verify_jwt(request: Request):
         payload = jwt.decode(auth_token, jwt_secret, algorithms=["HS256"])
         if PASSWORD_PATH.exists():
             with open(PASSWORD_PATH, "rb") as f:
-                last_updated = json.loads(f.read()).get("last_updated")
+                last_updated = orjson.loads(f.read()).get("last_updated")
 
             if last_updated and payload["iat"] < last_updated:
                 raise ExpiredSignatureError
@@ -119,7 +119,7 @@ async def auth(request: Request):
             raise HTTPException(status_code=401, detail="Require password")
 
         with open(PASSWORD_PATH, "rb") as file:
-            password_data = json.loads(file.read())
+            password_data = orjson.loads(file.read())
 
         try:
             ph.verify(password_data.get("password", ""), password)
@@ -174,12 +174,12 @@ async def change_password(request: Request, response: Response):
                 "last_updated": datetime.now().timestamp()
             }
             with open(PASSWORD_PATH, "wb") as file:
-                file.write(json.dumps(password_data))
+                file.write(orjson.dumps(password_data))
             response.delete_cookie("deviceToken")
             return Response(status_code=205)
 
         with open(PASSWORD_PATH, "rb") as file:
-            password_data = json.loads(file.read())
+            password_data = orjson.loads(file.read())
 
         try:
             ph.verify(password_data.get("password", ""), password)
@@ -190,7 +190,7 @@ async def change_password(request: Request, response: Response):
         password_data["last_updated"] = datetime.now().timestamp()
 
         with open(PASSWORD_PATH, "wb") as file:
-            file.write(json.dumps(password_data))
+            file.write(orjson.dumps(password_data))
 
         # TODO 签的jwt存db, 改密码时删掉
         return Response(status_code=205)
@@ -213,7 +213,7 @@ async def clear_password(request: Request):
             raise HTTPException(status_code=404, detail="Password not set")
 
         with open(PASSWORD_PATH, "rb") as file:
-            password_data = json.loads(file.read())
+            password_data = orjson.loads(file.read())
 
         try:
             ph.verify(password_data.get("password", ""), password)

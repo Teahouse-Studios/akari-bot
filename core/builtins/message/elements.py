@@ -11,7 +11,7 @@ from typing import Optional, TYPE_CHECKING, Dict, Any, Union, List
 from urllib import parse
 
 import httpx
-import orjson as json
+import orjson
 from PIL import Image as PILImage
 from attrs import define
 from filetype import filetype
@@ -343,7 +343,7 @@ class ImageElement(BaseElement):
 
     def kecode(self):
         if self.headers:
-            headers_b64 = base64.b64encode(json.dumps(self.headers)).decode("utf-8")
+            headers_b64 = base64.b64encode(orjson.dumps(self.headers)).decode("utf-8")
             return f"[KE:image,path={self.path},headers={headers_b64}]"
         return f"[KE:image,path={self.path}]"
 

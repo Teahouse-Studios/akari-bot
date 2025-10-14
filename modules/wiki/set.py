@@ -1,4 +1,4 @@
-import orjson as json
+import orjson
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Image, Plain, Url
@@ -158,7 +158,7 @@ async def _(msg: Bot.MessageSession):
     headers = target.headers
     prompt = msg.session_info.locale.t(
         "wiki.message.headers.show",
-        headers=json.dumps(headers).decode(),
+        headers=orjson.dumps(headers).decode(),
         prefix=msg.session_info.prefixes[0],
     )
     await msg.finish(prompt)
@@ -172,7 +172,7 @@ async def _(msg: Bot.MessageSession, headers: str):
         await msg.finish(
             msg.session_info.locale.t(
                 "wiki.message.headers.add.success",
-                headers=json.dumps(target.headers).decode(),
+                headers=orjson.dumps(target.headers).decode(),
             )
         )
     else:
@@ -189,7 +189,7 @@ async def _(msg: Bot.MessageSession, headerkey: str):
         await msg.finish(
             msg.session_info.locale.t(
                 "wiki.message.headers.add.success",
-                headers=json.dumps(target.headers).decode(),
+                headers=orjson.dumps(target.headers).decode(),
             )
         )
 

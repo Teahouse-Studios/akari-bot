@@ -1,7 +1,7 @@
 from typing import List, Optional, Tuple
 
 import emoji
-import orjson as json
+import orjson
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
@@ -19,7 +19,7 @@ API = "https://www.gstatic.com/android/keyboard/emojikitchen"
 class EmojimixGenerator:
     def __init__(self):
         with open(data_path, "rb") as f:
-            data = json.loads(f.read())
+            data = orjson.loads(f.read())
         self.known_supported_emoji: List[str] = data["knownSupportedEmoji"]
         self.data: dict = data["data"]
         self.date_mapping: dict = dict(enumerate(data["date"]))

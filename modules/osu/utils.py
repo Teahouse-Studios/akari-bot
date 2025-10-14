@@ -1,4 +1,4 @@
-import orjson as json
+import orjson
 
 from core.constants.exceptions import ConfigValueError
 from core.logger import Logger
@@ -10,7 +10,7 @@ async def get_profile_name(uid, api_key):
         raise ConfigValueError("{I18N:error.config.secret.not_found}")
     try:
         profile_url = f"https://osu.ppy.sh/api/get_user?k={api_key}&u={uid}"
-        profile = json.loads(await get_url(profile_url, 200))[0]
+        profile = orjson.loads(await get_url(profile_url, 200))[0]
         userid = profile["user_id"]
         username = profile["username"]
     except ValueError as e:

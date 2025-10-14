@@ -2,7 +2,7 @@ import asyncio
 import uuid
 from typing import Optional, Union, List
 
-import orjson as json
+import orjson
 from fastapi import WebSocket
 
 from bots.web.features import Features
@@ -52,7 +52,7 @@ class WebContextManager(ContextManager):
         msg_id = str(uuid.uuid4())
         if websocket:
             resp = {"action": "send", "message": sends, "id": msg_id}
-            await websocket.send_text(json.dumps(resp).decode())
+            await websocket.send_text(orjson.dumps(resp).decode())
             return [msg_id]
         return []
 
@@ -71,7 +71,7 @@ class WebContextManager(ContextManager):
 
             resp = {"action": "delete", "id": message_id}
             if websocket:
-                await websocket.send_text(json.dumps(resp).decode())
+                await websocket.send_text(orjson.dumps(resp).decode())
             Logger.info(f"Deleted message {message_id} in session {session_info.session_id}")
         except Exception:
             Logger.exception(f"Failed to delete message {message_id} in session {session_info.session_id}: ")
@@ -91,7 +91,7 @@ class WebContextManager(ContextManager):
 
             resp = {"action": "reaction", "id": message_id[-1], "emoji": emoji, "add": True}
             if websocket:
-                await websocket.send_text(json.dumps(resp).decode())
+                await websocket.send_text(orjson.dumps(resp).decode())
             Logger.info(f"Added reaction \"{emoji}\" to message {message_id} in session {session_info.session_id}")
         except Exception:
             Logger.exception(f"Failed to add reaction \"{emoji}\" to message {
@@ -112,7 +112,7 @@ class WebContextManager(ContextManager):
 
             resp = {"action": "reaction", "id": message_id[-1], "emoji": emoji, "add": False}
             if websocket:
-                await websocket.send_text(json.dumps(resp).decode())
+                await websocket.send_text(orjson.dumps(resp).decode())
             Logger.info(f"Removed reaction \"{emoji}\" to message {message_id} in session {session_info.session_id}")
         except Exception:
             Logger.exception(f"Failed to remove reaction \"{emoji}\" to message {
@@ -131,7 +131,7 @@ class WebContextManager(ContextManager):
 
                     resp = {"action": "typing", "status": "start", "id": session_info.message_id}
                     if websocket:
-                        await websocket.send_text(json.dumps(resp).decode())
+                        await websocket.send_text(orjson.dumps(resp).decode())
                 except Exception:
                     Logger.exception()
 
@@ -154,7 +154,7 @@ class WebContextManager(ContextManager):
 
             resp = {"action": "typing", "status": "end", "id": session_info.message_id}
             if websocket:
-                await websocket.send_text(json.dumps(resp).decode())
+                await websocket.send_text(orjson.dumps(resp).decode())
         except Exception:
             Logger.exception()
 
@@ -168,6 +168,6 @@ class WebContextManager(ContextManager):
 
             resp = {"action": "typing", "status": "error", "id": session_info.message_id}
             if websocket:
-                await websocket.send_text(json.dumps(resp).decode())
+                await websocket.send_text(orjson.dumps(resp).decode())
         except Exception:
             Logger.exception()

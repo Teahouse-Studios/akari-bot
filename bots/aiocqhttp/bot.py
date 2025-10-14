@@ -4,7 +4,7 @@ import logging
 import re
 
 import emoji
-import orjson as json
+import orjson
 from aiocqhttp import Event
 from hypercorn import Config as HyperConfig
 
@@ -76,12 +76,12 @@ async def message_handler(event: Event):
     if string_post:
         match_json = re.match(r"\[CQ:json,data=(.*?)\]", event.message, re.MULTILINE | re.DOTALL)
         if match_json:
-            load_json = json.loads(html.unescape(match_json.group(1)))
+            load_json = orjson.loads(html.unescape(match_json.group(1)))
             if load_json["app"] == "com.tencent.multimsg":
                 event.message = f"[CQ:forward,id={load_json["meta"]["detail"]["resid"]}]"
     else:
         if event.message[0]["type"] == "json":
-            load_json = json.loads(event.message[0]["data"]["data"])
+            load_json = orjson.loads(event.message[0]["data"]["data"])
             if load_json["app"] == "com.tencent.multimsg":
                 event.message = [{"type": "forward", "data": {"id": f"{load_json["meta"]["detail"]["resid"]}"}}]
 

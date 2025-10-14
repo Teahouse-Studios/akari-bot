@@ -1,4 +1,4 @@
-import orjson as json
+import orjson
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Url
@@ -43,7 +43,7 @@ async def get_tweet(msg: Bot.MessageSession, tweet_id: int):
         else:
             raise e
 
-    res_json = json.loads(res)
+    res_json = orjson.loads(res)
     if await check_bool("\n".join(
             [res_json["data"]["text"], res_json["data"]["user"]["name"], res_json["data"]["user"]["screen_name"]]), msg):
         await msg.finish(rickroll())

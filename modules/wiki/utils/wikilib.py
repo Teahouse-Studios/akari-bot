@@ -5,7 +5,7 @@ import urllib.parse
 from copy import deepcopy
 from typing import Union, Dict, List
 
-import orjson as json
+import orjson
 from attrs import define
 from bs4 import BeautifulSoup
 
@@ -143,7 +143,7 @@ class WikiLib:
                     cookies=cookies,
                 )
             req = await web_render.source(SourceOptions(url=api, raw_text=True))
-            return json.loads(req)
+            return orjson.loads(req)
 
         except Exception as e:
             if api.find("moegirl.org.cn") != -1:
@@ -156,7 +156,7 @@ class WikiLib:
         self, info: Union[dict, str, bytes], wiki_api_link
     ) -> WikiInfo:
         if isinstance(info, (str, bytes)):
-            info = json.loads(info)
+            info = orjson.loads(info)
         extensions = info["query"]["extensions"]
         ext_list = []
         for ext in extensions:

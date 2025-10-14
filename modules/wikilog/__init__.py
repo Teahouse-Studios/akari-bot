@@ -1,6 +1,6 @@
 import re
 
-import orjson as json
+import orjson
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
@@ -156,7 +156,7 @@ async def _(msg: Bot.MessageSession):
     try:
         example = msg.trigger_msg.replace("wikilog filter example ", "", 1)
         Logger.debug(example)
-        load = json.loads(example)
+        load = orjson.loads(example)
         await msg.send_message(convert_data_to_text(load))
     except Exception:
         await msg.send_message(I18NContext("wikilog.message.filter.example.invalid"))
@@ -305,7 +305,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
         rcshows_ = msg.parsed_msg.get("...")
     if rcshows:
         records = await WikiLogTargetSetInfo.get_by_target_id(msg)
-        infos = json.loads(records.infos)
+        infos = orjson.loads(records.infos)
         wiki_info = WikiLib(apilink)
         status = await wiki_info.check_wiki_available()
         if status.available:
