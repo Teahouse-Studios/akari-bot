@@ -1,7 +1,12 @@
 from PIL import Image, ImageDraw, ImageFont
 
+from core.constants.path import noto_sans_demilight_path
 
-def draw_score_table(tap=0, hold=0, slide=0, touch=0, brk=0):
+def draw_scoreline_table(tap: int = 0,
+                         hold: int = 0,
+                         slide: int = 0,
+                         touch: int = 0,
+                         brk: int = 0):
     total_notes = tap + 2 * hold + 3 * slide + touch
     if total_notes == 0:
         base_fixup = None
@@ -18,8 +23,6 @@ def draw_score_table(tap=0, hold=0, slide=0, touch=0, brk=0):
     PINK = "#EC407A"
     GREEN = "#4CAF50"
     GREY = "#9E9E9E"
-    BLACK = "#000000"
-    WHITE = "#FFFFFF"
 
     header1 = ["TAP", "HOLD", "SLIDE", "TOUCH", "BREAK"]
     header2 = ["PERFECT", "GREAT", "GOOD", "MISS"]
@@ -33,65 +36,62 @@ def draw_score_table(tap=0, hold=0, slide=0, touch=0, brk=0):
     img_w = len(header1) * cell_w + padding * 2
     img_h = (len(rows) + 3) * cell_h + padding * 2 + gap
 
-    img = Image.new("RGB", (img_w, img_h), WHITE)
+    img = Image.new("RGB", (img_w, img_h), (211, 211, 211))
     draw = ImageDraw.Draw(img)
 
-    try:
-        font = ImageFont.truetype("arial.ttf", 24)
-    except BaseException:
-        font = ImageFont.load_default()
+    font = ImageFont.truetype(noto_sans_demilight_path, 24)
 
     for i, text in enumerate(header1):
         x = padding + i * cell_w
         y = padding
-        draw.rectangle([x, y, x + cell_w, y + cell_h], outline=BLACK, width=2)
+        draw.rectangle([x, y, x + cell_w, y + cell_h], outline=(0, 0, 0), width=2)
         bbox = draw.textbbox((0, 0), text, font=font)
         w = bbox[2] - bbox[0]
         h = bbox[3] - bbox[1]
-        draw.text((x + (cell_w - w) / 2, y + (cell_h - h) / 2), text, fill=BLACK, font=font)
+        draw.text((x + (cell_w - w) / 2, y + (cell_h - h) / 2), text, fill=(0, 0, 0), font=font)
 
-    draw.rectangle([padding, padding, padding + cell_w, padding + cell_h], outline=BLACK, width=2)
+    draw.rectangle([padding, padding, padding + cell_w, padding + cell_h], outline=(0, 0, 0), width=2)
 
     values = [tap, hold, slide, touch, brk]
     for i, val in enumerate(values):
         x = padding + i * cell_w
         y = padding + cell_h
-        draw.rectangle([x, y, x + cell_w, y + cell_h], outline=BLACK, width=2)
+        draw.rectangle([x, y, x + cell_w, y + cell_h], outline=(0, 0, 0), width=2)
         bbox = draw.textbbox((0, 0), str(val), font=font)
         w = bbox[2] - bbox[0]
         h = bbox[3] - bbox[1]
-        draw.text((x + (cell_w - w) / 2, y + (cell_h - h) / 2), str(val), fill=BLACK, font=font)
-    draw.rectangle([padding, padding + cell_h, padding + cell_w, padding + 2 * cell_h], outline=BLACK, width=2)
+        draw.text((x + (cell_w - w) / 2, y + (cell_h - h) / 2), str(val), fill=(0, 0, 0), font=font)
+    draw.rectangle([padding, padding + cell_h, padding + cell_w, padding + 2 * cell_h], outline=(0, 0, 0), width=2)
 
     offset_y = padding + 2 * cell_h + gap
-    draw.rectangle([padding, offset_y, padding + cell_w, offset_y + cell_h], outline=BLACK, width=2)
+    draw.rectangle([padding, offset_y, padding + cell_w, offset_y + cell_h], outline=(0, 0, 0), width=2)
     for i, text in enumerate(header2):
         x = padding + (i + 1) * cell_w
         y = offset_y
         color = [ORANGE, PINK, GREEN, GREY][i]
-        draw.rectangle([x, y, x + cell_w, y + cell_h], fill=color, outline=BLACK, width=2)
+        draw.rectangle([x, y, x + cell_w, y + cell_h], fill=color, outline=(0, 0, 0), width=2)
         bbox = draw.textbbox((0, 0), text, font=font)
         w = bbox[2] - bbox[0]
         h = bbox[3] - bbox[1]
-        draw.text((x + (cell_w - w) / 2, y + (cell_h - h) / 2), text, fill=WHITE, font=font)
+        draw.text((x + (cell_w - w) / 2, y + (cell_h - h) / 2), text, fill=(255, 255, 255), font=font)
 
     for i, text in enumerate(rows[:-3]):
         x = padding
         y = offset_y + (i + 1) * cell_h
-        draw.rectangle([x, y, x + cell_w, y + cell_h], outline=BLACK, width=2)
+        draw.rectangle([x, y, x + cell_w, y + cell_h], outline=(0, 0, 0), width=2)
         bbox = draw.textbbox((0, 0), text, font=font)
         w = bbox[2] - bbox[0]
         h = bbox[3] - bbox[1]
-        draw.text((x + (cell_w - w) / 2, y + (cell_h - h) / 2), text, fill=BLACK, font=font)
+        draw.text((x + (cell_w - w) / 2, y + (cell_h - h) / 2), text, fill=(0, 0, 0), font=font)
 
     x = padding
     y_start = offset_y + 5 * cell_h
     y_end = offset_y + 8 * cell_h
-    draw.rectangle([x, y_start, x + cell_w, y_end], outline=BLACK, width=2)
+    draw.rectangle([x, y_start, x + cell_w, y_end], outline=(0, 0, 0), width=2)
     bbox = draw.textbbox((0, 0), "BREAK", font=font)
     w = bbox[2] - bbox[0]
     h = bbox[3] - bbox[1]
-    draw.text((x + (cell_w - w) / 2, y_start + ((y_end - y_start) - h) / 2), "BREAK", fill=BLACK, font=font)
+    draw.text((x + (cell_w - w) / 2, y_start + ((y_end - y_start) - h) / 2), "BREAK", fill=(0, 0, 0), font=font)
 
     note_counts = [tap, hold, slide, touch, brk]
     for row in range(len(rows)):
@@ -103,7 +103,7 @@ def draw_score_table(tap=0, hold=0, slide=0, touch=0, brk=0):
                 if row == 4:
                     y_start = offset_y + 5 * cell_h
                     y_end = offset_y + 8 * cell_h
-                    draw.rectangle([x, y_start, x + cell_w, y_end], fill=[GREEN, GREY][col - 2], outline=BLACK, width=2)
+                    draw.rectangle([x, y_start, x + cell_w, y_end], fill=[GREEN, GREY][col - 2], outline=(0, 0, 0), width=2)
 
                     if brk == 0:
                         text = "-"
@@ -117,13 +117,13 @@ def draw_score_table(tap=0, hold=0, slide=0, touch=0, brk=0):
                     bbox = draw.textbbox((0, 0), text, font=font)
                     w = bbox[2] - bbox[0]
                     h = bbox[3] - bbox[1]
-                    draw.text((x + (cell_w - w) / 2, y_start + ((y_end - y_start) - h) / 2), text, fill=WHITE, font=font)
+                    draw.text((x + (cell_w - w) / 2, y_start + ((y_end - y_start) - h) / 2), text, fill=(255, 255, 255), font=font)
                 continue
             else:
                 color = [ORANGE, PINK, GREEN, GREY][col]
                 if col == 0 and row == 4:
                     color = YELLOW
-                draw.rectangle([x, y, x + cell_w, y + cell_h], fill=color, outline=BLACK, width=2)
+                draw.rectangle([x, y, x + cell_w, y + cell_h], fill=color, outline=(0, 0, 0), width=2)
 
                 if row < 5 and note_counts[row] == 0:
                     text = "-"
@@ -167,9 +167,10 @@ def draw_score_table(tap=0, hold=0, slide=0, touch=0, brk=0):
                 bbox = draw.textbbox((0, 0), text, font=font)
                 w = bbox[2] - bbox[0]
                 h = bbox[3] - bbox[1]
-                draw.text((x + (cell_w - w) / 2, y + (cell_h - h) / 2), text, fill=WHITE, font=font)
+                draw.text((x + (cell_w - w) / 2, y + (cell_h - h) / 2), text, fill=(255, 255, 255), font=font)
 
-    img.show()
-    # img.save("table.png")
-
-# draw_score_table(tap=1, hold=1, slide=1, touch=1, brk=1)
+    font = ImageFont.truetype(noto_sans_demilight_path, 10, encoding="utf-8")
+    draw.text(
+        (5, img_h - 15), "Generated by Teahouse Studios \"AkariBot\"", (0, 0, 0), font=font
+    )
+    return self.img
