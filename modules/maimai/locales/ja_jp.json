@@ -87,7 +87,7 @@
     "maimai.message.score.no_record": "未游玩过此谱面",
     "maimai.message.score.prompt": "请使用“${prefix}maimai score <ID>”查询对应结果。",
     "maimai.message.score.utage": "机器人暂不支持宴会场谱面查询。",
-    "maimai.message.scoreline": "分数线 ${scoreline}% 允许的最多 TAP GREAT 数量为 ${tap_great}（每个-${tap_great_prop}%）\nBREAK 2550（一共 ${brk} 个）相当于 ${b2t_2550_great} 个 TAP GREAT（-${b2t_2550_great_prop}%）\nBREAK 2000（一共 ${brk} 个）相当于 ${b2t_2000_great} 个 TAP GREAT（-${b2t_2000_great_prop}%）",
+    "maimai.message.scoreline": "分数线 ${scoreline}% 允许的最多 TAP GREAT 数量为 ${tap_great}\nBREAK 2550 相当于 ${b2t_2550_great} 个 TAP GREAT\nBREAK 2000 相当于 ${b2t_2000_great} 个 TAP GREAT",
     "maimai.message.scoreline.failed": "计算结果失败，请检查输入。",
     "maimai.message.scorelist": "以下为 ${user} 的 ${level} 级成绩列表：",
     "maimai.message.search": "“${keyword}”的搜索结果：",
