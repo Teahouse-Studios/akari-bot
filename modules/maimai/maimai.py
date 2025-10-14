@@ -12,6 +12,7 @@ from .database.models import DivingProberBindInfo
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_cover
 from .libraries.maimaidx_best50 import generate as generate_b50
 from .libraries.maimaidx_platelist import generate as generate_plate
+from .libraries.maimaidx_scoreline import draw_scoreline_table
 from .libraries.maimaidx_scorelist import generate as generate_process
 from .libraries.maimaidx_utils import *
 
@@ -710,6 +711,9 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
         hold = int(chart["notes"][1])
         touch = int(chart["notes"][3]) if len(chart["notes"]) == 5 else 0
         brk = int(chart["notes"][-1])
+
+        img = draw_scoreline_table(tap, slide, hold, touch, brk)
+        
         total_score = (
             500 * tap + slide * 1500 + hold * 1000 + touch * 500 + brk * 2500
         )  # 基础分
@@ -733,8 +737,10 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
             f"{(break_2000_reduce / 100):.3f}"  # 一个 TAP GREAT 减少 100 分
         )
         b2t_2000_great_prop = f"{(break_2000_reduce / total_score * 100):.4f}"
+    
         msg_chain = MessageChain.assign([
             Plain(f"{music["title"]}{" (DX)" if music["type"] == "DX" else ""} {diff_list[diff_index]}"),
+            Image(img),
             I18NContext("maimai.message.scoreline",
                         scoreline=score,
                         tap_great=tap_great,
