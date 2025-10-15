@@ -713,7 +713,7 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
         brk = int(chart["notes"][-1])
 
         img = draw_scoreline_table(tap, hold, slide, touch, brk, "101-")
-        
+
         total_score = (
             tap * 500 + slide * 1500 + hold * 1000 + touch * 500 + brk * 2500
         )  # 基础分

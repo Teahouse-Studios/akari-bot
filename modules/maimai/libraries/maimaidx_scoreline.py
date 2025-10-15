@@ -2,6 +2,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from core.constants.path import noto_sans_demilight_path
 
+
 def draw_scoreline_table(tap: int = 0,
                          hold: int = 0,
                          slide: int = 0,
@@ -104,7 +105,8 @@ def draw_scoreline_table(tap: int = 0,
                 if row == 4:
                     y_start = offset_y + 5 * cell_h
                     y_end = offset_y + 8 * cell_h
-                    draw.rectangle([x, y_start, x + cell_w, y_end], fill=[GREEN, GREY][col - 2], outline=(0, 0, 0), width=2)
+                    draw.rectangle([x, y_start, x + cell_w, y_end], fill=[GREEN, GREY]
+                                   [col - 2], outline=(0, 0, 0), width=2)
 
                     if brk == 0:
                         text = "-"
@@ -127,7 +129,8 @@ def draw_scoreline_table(tap: int = 0,
                     bbox = draw.textbbox((0, 0), text, font=font)
                     w = bbox[2] - bbox[0]
                     h = bbox[3] - bbox[1]
-                    draw.text((x + (cell_w - w) / 2, y_start + ((y_end - y_start) - h) / 2), text, fill=(255, 255, 255), font=font)
+                    draw.text((x + (cell_w - w) / 2, y_start + ((y_end - y_start) - h) / 2),
+                              text, fill=(255, 255, 255), font=font)
                 continue
             else:
                 color = [ORANGE, PINK, GREEN, GREY][col]
@@ -173,7 +176,7 @@ def draw_scoreline_table(tap: int = 0,
 
                         if mode == "100-":
                             if row <= 3:  # TAP, HOLD, SLIDE, TOUCH
-                                max_base = [base_fixup, 2*base_fixup, 3*base_fixup, base_fixup][row]
+                                max_base = [base_fixup, 2 * base_fixup, 3 * base_fixup, base_fixup][row]
                                 value = (value - max_base)
                             elif row in [4, 5, 6]:  # BREAK 系列
                                 max_base = 5 * base_fixup
@@ -181,12 +184,12 @@ def draw_scoreline_table(tap: int = 0,
                                 value = (base_part - max_base) + (bonus_fixup if bonus_fixup else 0)
                         elif mode == "101-":
                             if row <= 3:
-                                max_base = [base_fixup, 2*base_fixup, 3*base_fixup, base_fixup][row]
+                                max_base = [base_fixup, 2 * base_fixup, 3 * base_fixup, base_fixup][row]
                                 value = value - max_base
                             elif row in [4, 5, 6]:
                                 max_total = 5 * base_fixup + (bonus_fixup if bonus_fixup else 0)
                                 value = value - max_total
-                        
+
                         text = f"{value:.4f}%"
                     except TypeError:
                         text = "-"

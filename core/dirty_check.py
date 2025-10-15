@@ -43,12 +43,10 @@ def computeMD5hash(my_string):
 
 def parse_data(original_content: str, result: dict, confidence: float = 60, additional_text=None) -> Dict:
     content = original_content
-    status = True
 
     if use_textscan_v1:
         for itemResult in result["results"]:
             if float(itemResult["rate"]) >= confidence and itemResult["suggestion"] == "block":
-                status = False
                 for itemDetail in itemResult["details"]:
                     if "contexts" in itemDetail:
                         for itemContext in itemDetail["contexts"]:
@@ -66,7 +64,6 @@ def parse_data(original_content: str, result: dict, confidence: float = 60, addi
                         content = str(I18NContext("check.redacted", reason=itemDetail["label"]))
     else:
         if result["RiskLevel"] == "high":
-            status = False
             for itemDetail in result["Result"]:
                 if float(itemDetail["Confidence"]) >= confidence:
                     risk_words = itemDetail.get("RiskWords")
@@ -89,13 +86,14 @@ def parse_data(original_content: str, result: dict, confidence: float = 60, addi
                                     reason = str(I18NContext("check.redacted", reason=itemDetail["Label"]))
                                     content = content[:start] + reason + content[end:]
                                     shift = len(reason) - len(word)
-                                    placeholders = [(s + shift if s > start else s, e + shift if e > start else e) for s, e in placeholders]
+                                    placeholders = [
+                                        (s + shift if s > start else s, e + shift if e > start else e) for s, e in placeholders]
                     else:
                         content = str(I18NContext("check.redacted", reason=itemDetail["Label"]))
 
     if additional_text:
         content += "\n" + additional_text + "\n"
-    return {"content": content, "status": status, "original": original_content}
+    return {"content": content, "status": content == original_content, "original": original_content}
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
