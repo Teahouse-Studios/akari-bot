@@ -36,6 +36,9 @@ async def get_user_info(msg: Bot.MessageSession, username, wikiurl, headers=None
     )["query"]["users"][0]
     if "missing" in base_user_info:
         return I18NContext("wiki.message.user.not_found")
+
+    if await check_bool(base_user_info["name"], msg):
+        return Plain(rickroll())
     data["username"] = base_user_info["name"]
     data["url"] = re.sub(
         r"\$1", urllib.parse.quote("User:" + username), wiki.wiki_info.articlepath
@@ -199,7 +202,4 @@ async def get_user_info(msg: Bot.MessageSession, username, wikiurl, headers=None
 
     if url := data.get("url", ""):
         msgs.append(Url(url, use_mm=msg.session_info.use_url_manager and not wiki.wiki_info.in_allowlist))
-
-    if await check_bool(msgs, msg):
-        return Plain(rickroll())
     return MessageChain.assign(msgs)

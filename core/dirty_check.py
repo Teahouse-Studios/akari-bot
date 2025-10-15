@@ -110,7 +110,7 @@ async def check(text: Union[str,
     :param text: 字符串（List/Union）。
     :param session: 消息会话，若指定则会在返回的消息中附加会话信息。
     :param additional_text: 附加文本，若指定则会在返回的消息中附加此文本。
-    :returns: 经过审核后的字符串。不合规部分会被替换为`<REDACTED:原因>`，全部不合规则是`<ALL REDACTED:原因>`。
+    :returns: 经过审核后的字典列表。不合规部分会被替换为`<REDACTED:原因>`，全部不合规则是`<ALL REDACTED:原因>`。
     """
 
     if isinstance(text, str):
