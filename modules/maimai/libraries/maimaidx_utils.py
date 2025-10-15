@@ -342,7 +342,7 @@ async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, pag
         if (page - 1) * SONGS_PER_PAGE <= i < page * SONGS_PER_PAGE:
             music = (await total_list.get()).by_id(str(s["id"]))
 
-            output = f"{music.id} - {music.title}{" (DX)" if music.type == "DX" else ""} {diffs[s["level_index"]]} {
+            output = f"{music.id} - {music.title}{" (DX)" if music.type == "DX" else ""} [{diffs[s["level_index"]]}] {
                 music.ds[s["level_index"]]} {s["achievements"]:.4f}%"
             if s["fc"] and s["fs"]:
                 output += f" {combo_mapping.get(s["fc"], "")} {sync_mapping.get(s["fs"], "")}"
@@ -428,7 +428,7 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, 
                 elif goal in sync_list:
                     if verlist[record_index]["fs"]:
                         self_record = sync_list[sync_list_raw.index(verlist[record_index]["fs"])]
-            msg_chain.append(Plain(f"{s[0]} - {s[1]}{" (DX)" if s[5] == "DX" else ""} {s[2]} {s[3]} {self_record}"))
+            msg_chain.append(Plain(f"{s[0]} - {s[1]}{" (DX)" if s[5] == "DX" else ""} [{s[2]}] {s[3]} {self_record}"))
             if i == SONGS_PER_PAGE - 1:
                 break
         if len(song_remain) > SONGS_PER_PAGE:
@@ -608,7 +608,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                         if verlist[record_index]["fs"]:
                             self_record = sync_list[sync_list_raw.index(verlist[record_index]["fs"])]
                 msg_chain.append(Plain(f"{s[0]} - {s[1]}{" (DX)" if s[5] ==
-                                                         "DX" else ""} {s[2]} {s[3]} {self_record}"))
+                                                         "DX" else ""} [{s[2]}] {s[3]} {self_record}"))
             if len(song_remain_difficult) > SONGS_NEED_IMG:
                 get_img = True
         else:
@@ -681,8 +681,8 @@ async def get_grade_info(msg: Bot.MessageSession, grade: str):
                 f"{
                     music["id"]} - {
                     music["title"]}{
-                    " (DX)" if music["type"] == "DX" else ""} {
-                    diffs[level]} {
+                    " (DX)" if music["type"] == "DX" else ""} [{
+                    diffs[level]}] {
                     music["level"][level]}")
 
     else:
@@ -704,8 +704,8 @@ async def get_grade_info(msg: Bot.MessageSession, grade: str):
                     f"{
                         music["id"]} - {
                         music["title"]}{
-                        " (DX)" if music["type"] == "DX" else ""} {
-                        diffs[level]} {
+                        " (DX)" if music["type"] == "DX" else ""} [{
+                        diffs[level]}] {
                         music["level"][level]}")
         else:
             level = 2
@@ -716,8 +716,8 @@ async def get_grade_info(msg: Bot.MessageSession, grade: str):
                     f"{
                         music["id"]} - {
                         music["title"]}{
-                        " (DX)" if music["type"] == "DX" else ""} {
-                        diffs[level]} {
+                        " (DX)" if music["type"] == "DX" else ""} [{
+                        diffs[level]}] {
                         music["level"][level]}")
 
     content = "\n".join(chart_info)
