@@ -8,6 +8,7 @@ import base64
 import datetime
 import hashlib
 import hmac
+import re
 import urllib.parse
 import uuid
 from typing import Union, List, Dict, Optional
@@ -71,11 +72,24 @@ def parse_data(original_content: str, result: dict, confidence: float = 60, addi
                     risk_words = itemDetail.get("RiskWords")
                     if risk_words:
                         risk_words = sorted(risk_words.split(","), key=len, reverse=True)
+                        i18ncode_pattern = re.compile(r"\{I18N:[^}]*\}")
+                        placeholders = [(m.start(), m.end()) for m in i18ncode_pattern.finditer(content)]
+
+                        def is_in_placeholder(start, end):
+                            for p_start, p_end in placeholders:
+                                if start < p_end and end > p_start:
+                                    return True
+                            return False
+
                         for word in risk_words:
                             word = word.strip()
-                            if word in content:
-                                reason = str(I18NContext("check.redacted", reason=itemDetail["Label"]))
-                                content = content.replace(word, reason)
+                            for match in re.finditer(re.escape(word), content):
+                                start, end = match.start(), match.end()
+                                if not is_in_placeholder(start, end):
+                                    reason = str(I18NContext("check.redacted", reason=itemDetail["Label"]))
+                                    content = content[:start] + reason + content[end:]
+                                    shift = len(reason) - len(word)
+                                    placeholders = [(s + shift if s > start else s, e + shift if e > start else e) for s, e in placeholders]
                     else:
                         content = str(I18NContext("check.redacted", reason=itemDetail["Label"]))
 
