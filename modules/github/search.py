@@ -9,7 +9,7 @@ SEARCH_LIMIT = 5
 
 async def search(msg: Bot.MessageSession, keyword: str, pat: str):
     result = await get_url(
-        "https://api.github.com/search/repositories?q=" + keyword, 200, fmt="json",
+        f"https://api.github.com/search/repositories?q={keyword}", 200, fmt="json",
         headers=[("Authorization", f"Bearer {pat}")] if pat else []
     )
     if result["total_count"] == 0:
@@ -19,8 +19,7 @@ async def search(msg: Bot.MessageSession, keyword: str, pat: str):
         items_out = []
         for item in items:
             try:
-                items_out.append(str(item["full_name"] + ": " +
-                                     str(Url(item["html_url"], md_format=msg.session_info.use_url_md_format))))
+                items_out.append(str(item["full_name"] + ": " + str(Url(item["html_url"]))))
             except TypeError:
                 continue
         message = (
@@ -31,7 +30,7 @@ async def search(msg: Bot.MessageSession, keyword: str, pat: str):
         if result["total_count"] > 5:
             message += "\n" + str(I18NContext("message.collapse", amount=SEARCH_LIMIT))
 
-    is_dirty = await dirty_check(message) or dark_check(message)
+    is_dirty = await dirty_check(msg, message) or dark_check(message)
     if is_dirty:
         await msg.finish(rickroll())
 

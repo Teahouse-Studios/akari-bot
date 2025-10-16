@@ -10,7 +10,7 @@ from tortoise import fields
 from tortoise.transactions import in_transaction
 
 from core.constants.default import default_locale
-from core.utils.message import convert2lst
+from core.utils.message import convert_list
 from .base import DBModel
 from ..logger import Logger
 
@@ -84,14 +84,14 @@ class SenderInfo(DBModel):
         await self.save()
         return True
 
-    async def edit_sender_data(self, key: str, value: Optional[Any]) -> bool:
+    async def edit_sender_data(self, key: str, value: Optional[Any] = None) -> bool:
         """
         设置用户数据。
 
         :param key: 键名。
         :param value: 值，若留空则删除该键值对。
         """
-        if not value:
+        if value is None:
             if key in self.sender_data:
                 del self.sender_data[key]
         else:
@@ -138,7 +138,7 @@ class TargetInfo(DBModel):
         :param module_name: 指定的模块名称。
         :param enable: 是否要开启模块，若 False 则关闭模块。
         """
-        module_names = convert2lst(module_name)
+        module_names = convert_list(module_name)
         for mname in module_names:
             if enable:
                 if mname not in self.modules:
@@ -160,14 +160,14 @@ class TargetInfo(DBModel):
         await self.save()
         return self.muted
 
-    async def edit_target_data(self, key: str, value: Optional[Any]) -> bool:
+    async def edit_target_data(self, key: str, value: Optional[Any] = None) -> bool:
         """
         设置会话数据。
 
         :param key: 键名。
         :param value: 值，若留空则删除该键值对。
         """
-        if not value:
+        if value is None:
             if key in self.target_data:
                 del self.target_data[key]
         else:
@@ -235,7 +235,7 @@ class TargetInfo(DBModel):
             result = []
             for target in all_targets:
                 modules = target.modules or []
-                if any(mod in modules for mod in convert2lst(module_name)):
+                if any(mod in modules for mod in convert_list(module_name)):
                     result.append(target)
             return result
 

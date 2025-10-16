@@ -1,7 +1,7 @@
 from copy import deepcopy
 from typing import Dict, List, Optional, Union, Tuple, Any
 
-import orjson as json
+import orjson
 
 from core.logger import Logger
 from core.utils.http import get_url
@@ -170,13 +170,13 @@ class TotalList:
             data = await get_url(url, 200, fmt="json")
             if data:
                 with open(chu_song_info_path, "wb") as f:
-                    f.write(json.dumps(data, option=json.OPT_INDENT_2))
+                    f.write(orjson.dumps(data, option=orjson.OPT_INDENT_2))
             return data
         except Exception:
             Logger.exception()
             try:
                 with open(chu_song_info_path, "rb") as f:
-                    data = json.loads(f.read())
+                    data = orjson.loads(f.read())
                 return data
             except Exception:
                 return None

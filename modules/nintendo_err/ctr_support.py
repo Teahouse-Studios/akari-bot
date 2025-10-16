@@ -85,10 +85,10 @@ account = Module(
             "游戏或应用需要更新。这个会在你启动的游戏或程序版本已过时时出现。"
         ),
         121: ResultInfo(
-            "Local friend code SEED的签证非法。这个应只在其被修改时出现。", is_ban=True
+            "Local friend code SEED的签证非法。这个应只在其被修改时出现。请检查系统完整性。（如果曾经切换过私人服务器，请检查是否配置正确）"
         ),
         123: ResultInfo("此主机已被任天堂永久封禁。", is_ban=True),
-        1021: ResultInfo('There is no Nintendo Network ID linked with this system.')
+        1021: ResultInfo('此系统没有绑定任何NNID。'),
     },
 )
 

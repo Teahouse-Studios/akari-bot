@@ -1,5 +1,4 @@
 import asyncio
-import glob
 import mimetypes
 import os
 import platform
@@ -12,12 +11,14 @@ from datetime import datetime, timedelta, UTC
 from pathlib import Path
 
 import jwt
-import orjson as json
+import orjson
 import psutil
 from cpuinfo import get_cpu_info
 from fastapi import HTTPException, Request, File, Form, Query, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import Response, FileResponse, PlainTextResponse
 from jwt.exceptions import ExpiredSignatureError
+from tortoise import Tortoise
+from tortoise.exceptions import OperationalError
 from tortoise.expressions import Q
 
 from bots.web.client import app, limiter, ph, enable_https, jwt_secret
@@ -25,6 +26,7 @@ from core.builtins.utils import command_prefix
 from core.config import Config
 from core.constants import config_filename
 from core.constants.path import assets_path, config_path, logs_path
+from core.database import fetch_module_db, get_model_fields, get_model_names
 from core.database.models import AnalyticsData, SenderInfo, TargetInfo, MaliciousLoginRecords
 from core.logger import Logger
 from core.queue.client import JobQueueClient
@@ -56,7 +58,7 @@ def verify_jwt(request: Request):
         payload = jwt.decode(auth_token, jwt_secret, algorithms=["HS256"])
         if PASSWORD_PATH.exists():
             with open(PASSWORD_PATH, "rb") as f:
-                last_updated = json.loads(f.read()).get("last_updated")
+                last_updated = orjson.loads(f.read()).get("last_updated")
 
             if last_updated and payload["iat"] < last_updated:
                 raise ExpiredSignatureError
@@ -70,13 +72,13 @@ def verify_jwt(request: Request):
 
 
 @app.get("/api")
-@limiter.limit("2/second")
+@limiter.limit("10/second")
 async def api_root(request: Request):
     return {"message": "Hello, AkariBot!"}
 
 
 @app.get("/api/init")
-@limiter.limit("2/second")
+@limiter.limit("10/second")
 async def get_config(request: Request):
     return {"enable_https": enable_https,
             "command_prefix": command_prefix[0],
@@ -88,7 +90,7 @@ async def get_config(request: Request):
 
 
 @app.get("/api/verify")
-@limiter.limit("2/second")
+@limiter.limit("10/second")
 async def verify_token(request: Request):
     return verify_jwt(request)
 
@@ -117,7 +119,7 @@ async def auth(request: Request):
             raise HTTPException(status_code=401, detail="Require password")
 
         with open(PASSWORD_PATH, "rb") as file:
-            password_data = json.loads(file.read())
+            password_data = orjson.loads(file.read())
 
         try:
             ph.verify(password_data.get("password", ""), password)
@@ -165,17 +167,19 @@ async def change_password(request: Request, response: Response):
             if new_password == "":
                 raise HTTPException(status_code=400, detail="New password required")
 
+            PASSWORD_PATH.parent.mkdir(parents=True, exist_ok=True)
+
             password_data = {
                 "password": ph.hash(new_password),
                 "last_updated": datetime.now().timestamp()
             }
             with open(PASSWORD_PATH, "wb") as file:
-                file.write(json.dumps(password_data))
+                file.write(orjson.dumps(password_data))
             response.delete_cookie("deviceToken")
             return Response(status_code=205)
 
         with open(PASSWORD_PATH, "rb") as file:
-            password_data = json.loads(file.read())
+            password_data = orjson.loads(file.read())
 
         try:
             ph.verify(password_data.get("password", ""), password)
@@ -186,7 +190,7 @@ async def change_password(request: Request, response: Response):
         password_data["last_updated"] = datetime.now().timestamp()
 
         with open(PASSWORD_PATH, "wb") as file:
-            file.write(json.dumps(password_data))
+            file.write(orjson.dumps(password_data))
 
         # TODO 签的jwt存db, 改密码时删掉
         return Response(status_code=205)
@@ -209,7 +213,7 @@ async def clear_password(request: Request):
             raise HTTPException(status_code=404, detail="Password not set")
 
         with open(PASSWORD_PATH, "rb") as file:
-            password_data = json.loads(file.read())
+            password_data = orjson.loads(file.read())
 
         try:
             ph.verify(password_data.get("password", ""), password)
@@ -761,8 +765,9 @@ async def websocket_logs(websocket: WebSocket):
             if new_loglines:
                 if len(today_logs) > 1:
                     new_loglines.sort(
-                        key=lambda item: _extract_timestamp(item[0]) if isinstance(item, list) else _extract_timestamp(item)
-                    )
+                        key=lambda item: _extract_timestamp(
+                            item[0]) if isinstance(
+                            item, list) else _extract_timestamp(item))
 
                 payload = "\n".join(
                     "\n".join(item) if isinstance(item, list) else item
@@ -791,9 +796,69 @@ def _extract_timestamp(line: str):
     return None
 
 
+@app.get("/api/database/list")
+async def get_db_model_list(request: Request):
+    try:
+        verify_jwt(request)
+
+        models_path = ["core.database.models"] + fetch_module_db()
+        table_lst = sorted(get_model_names(models_path))
+        return {"model_list": table_lst}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.get("/api/database/field/{model}")
+async def get_db_model_fields(request: Request, model: str):
+    try:
+        verify_jwt(request)
+
+        models_path = ["core.database.models"] + fetch_module_db()
+        result = get_model_fields(models_path, model)
+        return {"model_fields": result}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.post("/api/database/exec")
+async def exec_sql(request: Request):
+    try:
+        verify_jwt(request)
+
+        body = await request.json()
+        sql = body.get("sql", "")
+
+        conn = Tortoise.get_connection("default")
+
+        if sql.upper().startswith("SELECT"):
+            rows = await conn.execute_query_dict(sql)
+            return {"success": True, "data": rows}
+        else:
+            rows, _ = await conn.execute_query(sql)
+            return {"success": True, "affected_rows": rows}
+    except OperationalError as e:
+        return {"success": False, "error": str(e)}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
 def _secure_path(path: str) -> Path:
-    full_path = (ROOT_DIR / path).resolve()
-    if not str(full_path).startswith(str(ROOT_DIR)):
+    try:
+        if len(str(path)) > 256:
+            raise ValueError
+        path = os.path.normpath(path)
+        full_path = (ROOT_DIR / path).resolve()
+        full_path.relative_to(ROOT_DIR)
+    except ValueError:
         raise HTTPException(status_code=403, detail="Forbidden")
     return full_path
 
@@ -835,15 +900,14 @@ def download_file(request: Request, path: str):
 
         if target.is_file():
             return FileResponse(target, filename=target.name)
-        else:
-            temp_dir = tempfile.mkdtemp()
-            zip_name = f"{target.name}.zip"
-            zip_path = Path(temp_dir) / zip_name
-            with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-                for file in target.rglob("*"):
-                    # 保持相对路径
-                    zipf.write(file, file.relative_to(target))
-            return FileResponse(zip_path, filename=zip_name)
+
+        temp_dir = tempfile.mkdtemp()
+        zip_name = f"{target.name}.zip"
+        zip_path = Path(temp_dir) / zip_name
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for file in target.rglob("*"):
+                zipf.write(file, file.relative_to(target))
+        return FileResponse(zip_path, filename=zip_name)
     except HTTPException as e:
         raise e
     except Exception:
@@ -857,6 +921,9 @@ def delete_file(request: Request, path: str):
         verify_jwt(request)
 
         target = _secure_path(path)
+        if target == ROOT_DIR:
+            raise HTTPException(status_code=403, detail="Cannot delete root directory")
+
         if target.is_file():
             target.unlink()
         elif target.is_dir():
@@ -881,6 +948,8 @@ async def rename_file(request: Request):
         new_name = body.get("new_name", "")
 
         old_target = _secure_path(old_path)
+        if old_target == ROOT_DIR:
+            raise HTTPException(status_code=403, detail="Cannot rename root directory")
         new_target = old_target.parent / new_name
         if new_target.exists():
             raise HTTPException(
@@ -906,10 +975,17 @@ def upload_file(request: Request, path: str = Form(""), file: UploadFile = File(
         if not target_dir.exists():
             target_dir.mkdir(parents=True, exist_ok=True)
 
-        target_file = target_dir / Path(file.filename).name
+        safe_name = Path(file.filename).name
+        target_file = target_dir / safe_name
+
+        MAX_UPLOAD_SIZE = 10 * 1024 * 1024
+        content = file.file.read(MAX_UPLOAD_SIZE + 1)
+        if len(content) > MAX_UPLOAD_SIZE:
+            raise HTTPException(status_code=413, detail="File too large")
 
         with target_file.open("wb") as f:
-            shutil.copyfileobj(file.file, f)
+            f.write(content)
+
         return Response(status_code=204)
     except HTTPException as e:
         raise e
@@ -919,12 +995,12 @@ def upload_file(request: Request, path: str = Form(""), file: UploadFile = File(
 
 
 @app.post("/api/files/create")
-def create_file_or_dir(request: Request, path: str = "", name: str = "", type: str = ""):
+def create_file_or_dir(request: Request, path: str = "", name: str = "", filetype: str = ""):
     try:
         verify_jwt(request)
 
         target = _secure_path((Path(path) / name).as_posix())
-        if type == "dir":
+        if filetype == "dir":
             target.mkdir(parents=True, exist_ok=True)
         else:
             target.parent.mkdir(parents=True, exist_ok=True)

@@ -125,7 +125,8 @@ async def on_message(message: discord.Message):
                                        message_id=str(message.id),
                                        reply_id=str(reply_id),
                                        messages=msg_chain,
-                                       ctx_slot=ctx_id
+                                       ctx_slot=ctx_id,
+                                       use_url_md_format=True
                                        )
 
     await Bot.process_message(session, message)

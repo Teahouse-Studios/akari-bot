@@ -34,6 +34,10 @@ class MatrixContextManager(ContextManager):
             sender = session_info.get_common_sender_id()
         if room_id.startswith("@") or sender.startswith("!"):
             return True
+        if sender.startswith("@"):
+            sender_mxid = sender
+        else:
+            sender_mxid = f"@{sender}"
 
         # check room creator for room v12
         create_event_id = "$" + str(room_id)[1:]
@@ -47,7 +51,7 @@ class MatrixContextManager(ContextManager):
                 if "additional_creators" in event_content:
                     creators = creators + event_content["additional_creators"]
                 Logger.debug(f"Matrix room v12 creators: {creators}")
-                if sender in creators:
+                if sender_mxid in creators:
                     return True
         else:
             # When the room does not follow MSC4291, ignore it silently
@@ -60,8 +64,8 @@ class MatrixContextManager(ContextManager):
             await matrix_bot.room_get_state_event(room_id, "m.room.power_levels")
         ).content
         level = (
-            power_levels["users"][sender]
-            if sender in power_levels["users"]
+            power_levels["users"][sender_mxid]
+            if sender_mxid in power_levels["users"]
             else power_levels["users_default"]
         )
         if level and int(level) >= 50:
@@ -86,13 +90,13 @@ class MatrixContextManager(ContextManager):
             room, event = ctx
         if isinstance(message, MessageNodes):
             message = MessageChain.assign(await msgnode2image(message))
-        for x in message.as_sendable(session_info):
+        for x in message.as_sendable(session_info, parse_message=enable_parse_message):
             async def _send_msg(content):
                 reply_to = None
                 reply_to_user = None
                 if quote and not msg_ids:
                     reply_to = session_info.message_id
-                    reply_to_user = session_info.get_common_sender_id()
+                    reply_to_user = f"@{session_info.get_common_sender_id()}"
 
                 if reply_to:
                     # rich reply
@@ -158,7 +162,8 @@ class MatrixContextManager(ContextManager):
                 # reply_to_user = None
 
             if isinstance(x, PlainElement):
-                x.text = match_atcode(x.text, client_name, "{uid}")
+                if enable_parse_message:
+                    x.text = match_atcode(x.text, client_name, "{uid}")
                 content = {"msgtype": "m.notice", "body": x.text}
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
                 await _send_msg(content)

@@ -1,6 +1,6 @@
 from typing import Optional
 
-import orjson as json
+import orjson
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
@@ -34,13 +34,13 @@ async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = T
         use_cache = False
     try:
         data = await post_url(url,
-                              data=json.dumps(payload),
+                              data=orjson.dumps(payload),
                               status_code=200,
                               headers={"Content-Type": "application/json", "accept": "*/*"},
                               fmt="json")
         if use_cache and data:
             with open(cache_dir, "wb") as f:
-                f.write(json.dumps(data))
+                f.write(orjson.dumps(data))
         return data
     except Exception as e:
         if str(e).startswith("400"):
@@ -58,7 +58,7 @@ async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = T
         if use_cache and cache_dir.exists():
             try:
                 with open(cache_dir, "rb") as f:
-                    data = json.loads(f.read())
+                    data = orjson.loads(f.read())
                 await msg.send_message(I18NContext("maimai.message.use_cache"))
                 return data
             except Exception:

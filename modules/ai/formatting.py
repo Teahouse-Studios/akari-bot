@@ -2,7 +2,7 @@ import re
 from typing import Dict, List
 
 import matplotlib.pyplot as plt
-import orjson as json
+import orjson
 
 from core.utils.cache import random_cache_path
 from core.utils.http import post_url
@@ -84,7 +84,7 @@ def generate_latex(formula: str):
 async def generate_code_snippet(code: str, language: str):
     return await post_url(
         url="https://carbonara.solopov.dev/api/cook",
-        data=json.dumps(
+        data=orjson.dumps(
             {
                 "code": code,
                 "backgroundColor": "rgba(255, 255, 255, 0)",

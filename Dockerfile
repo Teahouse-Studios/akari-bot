@@ -6,7 +6,7 @@ LABEL org.opencontainers.image.source=https://github.com/Teahouse-Studios/akari-
 LABEL org.opencontainers.image.vendor="Teahouse Studios"
 LABEL org.opencontainers.image.licenses=AGPL-3.0-or-later
 LABEL org.opencontainers.image.title="AkariBot"
-MAINTAINER Teahouse Studios <admin@teahou.se>
+LABEL maintainer="Teahouse Studios <admin@teahou.se>"
 
 WORKDIR /akari-bot
 ADD . .

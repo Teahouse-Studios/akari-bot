@@ -21,7 +21,7 @@ ver = module("version", base=True, doc=True)
 async def _(msg: Bot.MessageSession):
     if Bot.Info.version:
         commit = Bot.Info.version[:6]
-        send_msgs = MessageChain.assign([I18NContext("core.message.version", disable_joke=True, commit=commit)])
+        send_msgs = MessageChain.assign([I18NContext("core.message.version", commit=commit, disable_joke=True)])
         if Config("enable_commit_url", True):
             returncode, repo_url, _ = await run_sys_command(["git", "config", "--get", "remote.origin.url"])
             if returncode == 0:
@@ -69,13 +69,14 @@ async def _(msg: Bot.MessageSession):
             client_name=msg.session_info.client_name,
             command_parsed=Bot.Info.command_parsed,
             parsed=TempCounter.value,
-        ))
+            disable_joke=True))
     else:
         disk_percent = psutil.disk_usage("/").percent
         result.append(I18NContext(
             "core.message.ping.simple",
             bot_running_time=timediff,
             disk_percent=disk_percent,
+            disable_joke=True
         ))
     await msg.finish(result)
 
@@ -97,7 +98,7 @@ admin = module(
 async def _(msg: Bot.MessageSession):
     if "list" in msg.parsed_msg:
         if msg.session_info.custom_admins:
-            await msg.finish([I18NContext("core.message.admin.list"), Plain("\n".join(msg.session_info.custom_admins))])
+            await msg.finish([I18NContext("core.message.admin.list")] + msg.session_info.custom_admins)
         else:
             await msg.finish(I18NContext("core.message.admin.list.none"))
     user = msg.parsed_msg["<user>"]
@@ -105,7 +106,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("core.message.admin.invalid", sender=msg.session_info.sender_from,
                                      prefix=msg.session_info.prefixes[0]))
     if "add" in msg.parsed_msg:
-        if await msg.check_permission():
+        if user in msg.session_info.custom_admins:
             await msg.finish(I18NContext("core.message.admin.add.already"))
         if await msg.session_info.target_info.config_custom_admin(user):
             await msg.finish(I18NContext("core.message.admin.add.success", user=user))
@@ -123,32 +124,25 @@ async def _(msg: Bot.MessageSession):
     "ban list {{I18N:core.help.admin.ban.list}}",
 )
 async def _(msg: Bot.MessageSession):
-    admin_ban_list = msg.session_info.target_info.target_data.get("ban", [])
     if "list" in msg.parsed_msg:
         if msg.session_info.banned_users:
-            await msg.finish(
-                [I18NContext("core.message.admin.ban.list"), Plain("\n".join(msg.session_info.custom_admins))])
+            await msg.finish([I18NContext("core.message.admin.ban.list")] + msg.session_info.banned_users)
         else:
             await msg.finish(I18NContext("core.message.admin.ban.list.none"))
     user = msg.parsed_msg["<user>"]
     if not user.startswith(f"{msg.session_info.sender_from}|"):
         await msg.finish(I18NContext("core.message.admin.invalid", sender=msg.session_info.sender_from,
                                      prefix=msg.session_info.prefixes[0]))
-    if user == msg.session_info.sender_id:
-        await msg.finish(I18NContext("core.message.admin.ban.self"))
     if "ban" in msg.parsed_msg:
-        if user not in admin_ban_list:
-            await msg.session_info.target_info.edit_target_data("ban", admin_ban_list + [user])
-            await msg.finish(I18NContext("core.message.admin.ban.success", user=user))
-        else:
+        if user == msg.session_info.sender_id:
+            await msg.finish(I18NContext("core.message.admin.ban.self"))
+        if user in msg.session_info.banned_users:
             await msg.finish(I18NContext("core.message.admin.ban.already"))
+        await msg.session_info.target_info.config_banned_user(user)
+        await msg.finish(I18NContext("core.message.admin.ban.success", user=user))
     if "unban" in msg.parsed_msg:
-        if user in (banlist := admin_ban_list):
-            banlist.remove(user)
-            await msg.session_info.target_info.edit_target_data("ban", banlist)
+        if await msg.session_info.target_info.config_banned_user(user, enable=False):
             await msg.finish(I18NContext("core.message.admin.unban.success", user=user))
-        else:
-            await msg.finish(I18NContext("core.message.admin.unban.none"))
 
 
 locale = module(
@@ -211,36 +205,34 @@ setup = module(
 
 @setup.command("typing {{I18N:core.help.setup.typing}}")
 async def _(msg: Bot.MessageSession):
-    if not msg.session_info.sender_info.sender_data.get("disable_typing", False):
-        await msg.session_info.sender_info.edit_sender_data("disable_typing", True)
-        await msg.finish(I18NContext("core.message.setup.typing.disable"))
-    else:
-        await msg.session_info.sender_info.edit_sender_data("disable_typing", False)
+    if not msg.session_info.sender_info.sender_data.get("typing_prompt", True):
+        await msg.session_info.sender_info.edit_sender_data("typing_prompt", True)
         await msg.finish(I18NContext("core.message.setup.typing.enable"))
+    else:
+        await msg.session_info.sender_info.edit_sender_data("typing_prompt", False)
+        await msg.finish(I18NContext("core.message.setup.typing.disable"))
 
 
-"""
-@setup.command("check {{I18N:core.help.setup.check}}", required_admin=True)
+@setup.command("check {{I18N:core.help.setup.check}}")
 async def _(msg: Bot.MessageSession):
-    if not msg.session_info.sender_info.sender_data.get("typo_check", False):
+    if not msg.session_info.sender_info.sender_data.get("typo_check", True):
         await msg.session_info.sender_info.edit_sender_data("typo_check", True)
-        await msg.finish(I18NContext("core.message.setup.check.disable"))
+        await msg.finish(I18NContext("core.message.setup.check.enable"))
     else:
         await msg.session_info.sender_info.edit_sender_data("typo_check", False)
-        await msg.finish(I18NContext("core.message.setup.check.enable"))
-"""
+        await msg.finish(I18NContext("core.message.setup.check.disable"))
 
 
 @setup.command("sign {{I18N:core.help.setup.sign}}",
                required_admin=True,
                load=Config("enable_petal", False))
 async def _(msg: Bot.MessageSession):
-    if not msg.session_info.target_info.target_data.get("disable_sign", False):
-        await msg.session_info.target_info.edit_target_data("disable_sign", True)
-        await msg.finish(I18NContext("core.message.setup.sign.disable"))
-    else:
-        await msg.session_info.target_info.edit_target_data("disable_sign", False)
+    if not msg.session_info.target_info.target_data.get("petal_sign", True):
+        await msg.session_info.target_info.edit_target_data("petal_sign", True)
         await msg.finish(I18NContext("core.message.setup.sign.enable"))
+    else:
+        await msg.session_info.target_info.edit_target_data("petal_sign", False)
+        await msg.finish(I18NContext("core.message.setup.sign.disable"))
 
 
 @setup.command(

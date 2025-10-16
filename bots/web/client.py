@@ -6,7 +6,6 @@ from argon2 import PasswordHasher
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
-from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from tortoise import Tortoise
@@ -92,8 +91,12 @@ app.add_middleware(
 if dist_path.exists():
     @app.get("/webui/{path:path}")
     async def serve_webui(path: str):
-        file_path = dist_path / path
+        file_path = (dist_path / path).resolve()
 
+        try:
+            file_path.relative_to(dist_path)
+        except ValueError:
+            return FileResponse(dist_path / "index.html")
         if file_path.exists() and file_path.is_file():
             return FileResponse(file_path)
 

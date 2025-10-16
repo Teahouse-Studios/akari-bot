@@ -4,9 +4,11 @@ on:
   schedule:
     - cron: "00 19 * * *"
   workflow_dispatch:
+
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
 
@@ -54,10 +56,7 @@ jobs:
               fake_http_header
               asyncmy
               discord
-          clang: true
-          playwright-include-browser: none
-          enable-plugins: |
-              playwright
+          clang: ${{ matrix.os != 'windows-latest' }}
 
       - name: Copy Assets
         run: |

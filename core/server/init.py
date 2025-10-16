@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-import orjson as json
+import orjson
 from apscheduler.schedulers import SchedulerAlreadyRunningError
 
 from core.builtins.bot import Bot
@@ -75,7 +75,7 @@ async def load_prompt() -> None:
     loader_cache = PrivateAssets.path / ".cache_loader"
     if author_cache.exists():
         with open(author_cache, "r", encoding="utf-8") as open_author_cache:
-            author_session = converter.structure(json.loads(open_author_cache.read()), SessionInfo)
+            author_session = converter.structure(orjson.loads(open_author_cache.read()), SessionInfo)
             await author_session.refresh_info()
             with open(loader_cache, "r", encoding="utf-8") as open_loader_cache:
                 if (read := open_loader_cache.read()) != "":

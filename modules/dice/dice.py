@@ -5,7 +5,7 @@ import numpy as np
 
 from core.builtins.message.internal import I18NContext
 from core.config import Config
-from core.utils.message import isint
+from core.utils.message import is_int
 from core.utils.random import Random
 
 MAX_DICE_COUNT = Config("dice_limit", 100, table_name="module_dice")  # 一次摇动最多的骰子数量
@@ -115,17 +115,17 @@ class Dice(DiceItemBase):
         if positive and not dice_adv:
             dice_adv = "1"  # K/Q后没有值默认为1
         # 语法合法检定
-        if not isint(dice_count):
+        if not is_int(dice_count):
             raise DiceValueError(
                 "{I18N:dice.message.error.value.count.invalid}",
                 dice_count
             )
-        if not isint(dice_sides):
+        if not is_int(dice_sides):
             raise DiceValueError(
                 "{I18N:dice.message.error.value.sides.invalid}",
                 dice_sides
             )
-        if not isint(dice_adv):
+        if not is_int(dice_adv):
             raise DiceValueError(
                 "{I18N:dice.message.error.value.advantage.invalid}",
                 dice_adv,
@@ -213,7 +213,7 @@ class FudgeDice(DiceItemBase):
             dice_count = temp[0]
 
         # 语法合法检定
-        if not isint(dice_count):
+        if not is_int(dice_count):
             raise DiceValueError(
                 "{I18N:dice.message.error.value.count.invalid}",
                 dice_count
@@ -280,7 +280,7 @@ class BonusPunishDice(DiceItemBase):
                 dice_count = temp[1]
 
         # 语法合法检定
-        if not isint(dice_count):
+        if not is_int(dice_count):
             raise DiceValueError(
                 "{I18N:dice.message.error.value.count.invalid}",
                 dice_count
@@ -380,27 +380,27 @@ class WODDice(DiceItemBase):
         dice_success_line_max = match.group(4) if match.group(4) else "0"  # 最大成功线
         dice_sides = match.group(5) if match.group(5) else "10"  # 骰子面数
         # 语法合法检定
-        if not isint(dice_count):
+        if not is_int(dice_count):
             raise DiceValueError(
                 "{I18N:dice.message.error.value.count.invalid}",
                 dice_count
             )
-        if not isint(dice_add_line):
+        if not is_int(dice_add_line):
             raise DiceValueError(
                 "{I18N:dice.message.error.value.add_line.invalid}",
                 dice_add_line
             )
-        if not isint(dice_success_line):
+        if not is_int(dice_success_line):
             raise DiceValueError(
                 "{I18N:dice.message.error.value.dice_success_line.invalid}",
                 dice_success_line
             )
-        if not isint(dice_success_line_max):
+        if not is_int(dice_success_line_max):
             raise DiceValueError(
                 "{I18N:dice.message.error.value.dice_success_line.invalid}",
                 dice_success_line_max
             )
-        if not isint(dice_sides):
+        if not is_int(dice_sides):
             raise DiceValueError(
                 "{I18N:dice.message.error.value.sides.invalid}",
                 dice_sides
@@ -521,17 +521,17 @@ class DXDice(DiceItemBase):
         dice_add_line = match.group(2)  # 加骰线
         dice_sides = match.group(3) if match.group(3) else "10"  # 骰子面数
         # 语法合法检定
-        if not isint(dice_count):
+        if not is_int(dice_count):
             raise DiceValueError(
                 "{I18N:dice.message.error.value.count.invalid}",
                 dice_count
             )
-        if not isint(dice_add_line):
+        if not is_int(dice_add_line):
             raise DiceValueError(
                 "{I18N:dice.message.error.value.add_line.invalid}",
                 dice_add_line,
             )
-        if not isint(dice_sides):
+        if not is_int(dice_sides):
             raise DiceValueError(
                 "{I18N:dice.message.error.value.sides.invalid}",
                 dice_sides

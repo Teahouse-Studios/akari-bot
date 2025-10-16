@@ -40,7 +40,7 @@ async def _(msg: Bot.MessageSession, question: str):
         if not is_superuser and not precount_petal(msg, llm_info["price_in"], llm_info["price_out"]):
             await msg.finish(I18NContext("petal.message.cost.not_enough"))
 
-        if await check_bool(question):
+        if await check_bool(question, msg):
             await msg.finish(rickroll())
 
         qc = CoolDown("call_ai", msg, 60)

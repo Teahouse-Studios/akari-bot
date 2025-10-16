@@ -21,7 +21,6 @@ Bot.register_context_manager(KOOKFetchedContextManager, fetch_session=True)
 
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 use_url_manager = Config("enable_urlmanager", False)
-use_url_md_format = True
 
 
 async def to_message_chain(message: Message):
@@ -29,8 +28,9 @@ async def to_message_chain(message: Message):
     if message.type == MessageTypes.TEXT:
         lst.append(Plain(message.content))
     if message.type == MessageTypes.KMD:
-        sub_url = re.sub(r"\[.*?]\((.*?)\)", r"\1", message.content)
-        lst.append(Plain(sub_url))
+        message.content = re.sub(r"\[.*?]\((.*?)\)", r"\1", message.content)
+        message.content = re.sub(r"\(met\)(.*?)\(met\)", rf"{sender_prefix}|\1", message.content)
+        lst.append(Plain(message.content))
     elif message.type == MessageTypes.IMG:
         lst.append(Image(message.content))
     elif message.type == MessageTypes.AUDIO:
@@ -65,7 +65,7 @@ async def msg_handler(message: Message):
                                        messages=msg_chain,
                                        ctx_slot=ctx_id,
                                        use_url_manager=use_url_manager,
-                                       use_url_md_format=use_url_md_format,
+                                       use_url_md_format=True,
                                        )
 
     await Bot.process_message(session, message)

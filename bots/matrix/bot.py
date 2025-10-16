@@ -1,4 +1,5 @@
 import asyncio
+import re
 from time import strftime
 from uuid import uuid4
 
@@ -71,7 +72,7 @@ async def to_message_chain(event: nio.RoomMessageFormatted, reply_id: str = None
             # https://spec.matrix.org/v1.9/client-server-api/#fallbacks-for-rich-replies
             while text.startswith("> "):
                 text = "".join(text.splitlines(keepends=True)[1:])
-        return MessageChain.assign(Plain(text.strip()))
+        return MessageChain.assign(Plain(re.sub(r"@(.*?)", rf"{sender_prefix}|\1", text.strip())))
     if msgtype == "m.image":
         url = None
         if "url" in content:

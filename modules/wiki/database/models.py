@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 from urllib.parse import urlparse
 
-import orjson as json
+import orjson
 from tortoise import fields
 from tortoise.exceptions import DoesNotExist
 
@@ -51,7 +51,7 @@ class WikiTargetInfo(DBModel):
         try:
             headers_ = self.headers
             if headers and add:
-                headers = json.loads(headers)
+                headers = orjson.loads(headers)
                 for x in headers:
                     headers_[x] = headers[x]
             elif headers:
@@ -88,11 +88,11 @@ class WikiSiteInfo(DBModel):
     async def update(self, info: dict):
         try:
             query = await WikiSiteInfo.get(api_link=self.api_link)
-            query.site_info = json.dumps(info)
+            query.site_info = orjson.dumps(info)
             query.timestamp = datetime.now()
             await query.save()
         except DoesNotExist:
-            await WikiSiteInfo.create(api_link=self.api_link, site_info=json.dumps(info), timestamp=datetime.now())
+            await WikiSiteInfo.create(api_link=self.api_link, site_info=orjson.dumps(info), timestamp=datetime.now())
 
         return True
 

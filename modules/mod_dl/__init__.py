@@ -6,7 +6,7 @@ from core.builtins.message.internal import Plain, I18NContext
 from core.component import module
 from core.config import Config
 from core.utils.http import get_url
-from core.utils.message import isint
+from core.utils.message import is_int
 
 mod_dl = module(
     module_name="mod_dl",
@@ -138,7 +138,7 @@ async def _(msg: Bot.MessageSession, mod_name: str, version: str = None):
         replied = reply.as_display(text_only=True)
 
         # 查找 Mod
-        if isint(replied):
+        if is_int(replied):
             replied = int(replied)
             if not replied or replied > len(cache_result):
                 await msg.finish(I18NContext("mod_dl.message.invalid.out_of_range"))

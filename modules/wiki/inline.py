@@ -12,7 +12,7 @@ from core.logger import Logger
 from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
-from core.utils.message import isint
+from core.utils.message import is_int
 from .database.models import WikiTargetInfo
 from .utils.mapping import generate_screenshot_v2_blocklist
 from .utils.screenshot_image import (
@@ -87,7 +87,7 @@ async def _(msg: Bot.MessageSession):
                 get_id = re.sub(r".*curid=(\d+)", "\\1", qq)
                 get_title = re.sub(r"" + articlepath, "\\1", qq)
                 get_page = None
-                if isint(get_id):
+                if is_int(get_id):
                     get_page = await wiki_.parse_page_info(pageid=int(get_id), session=msg)
                     if not q[qq].in_allowlist and msg.session_info.use_url_manager:
                         for result in await check(get_page.title, session=msg):
@@ -251,7 +251,7 @@ async def _(msg: Bot.MessageSession):
 
                                 async def _callback(msg: Bot.MessageSession):
                                     display = msg.as_display(text_only=True)
-                                    if isint(display):
+                                    if is_int(display):
                                         display = int(display)
                                         if display <= len(get_page.sections):
                                             get_page.selected_section = display - 1
@@ -300,7 +300,7 @@ async def _(msg: Bot.MessageSession):
                             async def _callback(msg: Bot.MessageSession):
                                 display = msg.as_display(text_only=True)
                                 if (
-                                    isint(display)
+                                    is_int(display)
                                     and int(display) <= len(forum_data) - 1
                                 ):
                                     await query_pages(

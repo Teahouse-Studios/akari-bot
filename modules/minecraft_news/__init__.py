@@ -1,4 +1,4 @@
-import orjson as json
+import orjson
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
@@ -70,7 +70,7 @@ async def _():
             return
         if getpage:
             alist = await get_stored_list(Bot.Info.client_name, "mcnews")
-            o_json = json.loads(getpage)
+            o_json = orjson.loads(getpage)
             o_nws = o_json["article_grid"]
             for o_article in o_nws:
                 default_tile = o_article["default_tile"]
@@ -117,7 +117,7 @@ async def _():
                 request_private_ip=True,
                 logging_err_resp=False,
             )
-            res = json.loads(get)
+            res = orjson.loads(get)
             articles = []
             for i in res["articles"]:
                 articles.append(i)

@@ -1,7 +1,7 @@
 import shutil
 import struct
 
-import orjson as json
+import orjson
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 
@@ -68,7 +68,7 @@ def decrypt_bytes(encrypted):
 
 def parse_game_record(rd_path):
     with open(pgr_assets_path / "song_info.json", "rb") as f:
-        song_info = json.loads(f.read())
+        song_info = orjson.loads(f.read())
     decrypted_data = {}
     with open(rd_path / "gameRecord", "rb+") as rd:  # skipcq
         data = decrypt_bytes(rd.read())
@@ -157,21 +157,21 @@ async def get_game_record(msg: Bot.MessageSession, session_token: str, use_cache
             if cache_dir.exists():
                 with open(cache_dir, "rb") as f:
                     try:
-                        backup_data = json.loads(f.read())
+                        backup_data = orjson.loads(f.read())
                     except Exception:
                         backup_data = {}
             else:
                 backup_data = {}
             backup_data.update(data)
             with open(cache_dir, "wb") as f:
-                f.write(json.dumps(backup_data))
+                f.write(orjson.dumps(backup_data))
         return data
     except Exception as e:
         Logger.exception()
         if use_cache and cache_dir.exists():
             try:
                 with open(cache_dir, "rb") as f:
-                    data = json.loads(f.read())
+                    data = orjson.loads(f.read())
                 await msg.send_message(I18NContext("phigros.message.use_cache"))
                 return data
             except Exception:

@@ -24,7 +24,7 @@ async def _(msg: Bot.MessageSession):
 
 @petal_.command("sign {{I18N:core.help.petal.sign}}")
 async def _(msg: Bot.MessageSession):
-    if not msg.session_info.target_info.target_data.get("disable_sign", False):
+    if msg.session_info.target_info.target_data.get("petal_sign", True):
         amount = await sign_get_petal(msg)
         if amount:
             await msg.finish([I18NContext("core.message.petal.sign.success"),

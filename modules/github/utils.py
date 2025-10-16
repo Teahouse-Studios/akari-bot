@@ -1,5 +1,6 @@
 import datetime
 
+from core.builtins.bot import Bot
 from core.dirty_check import check_bool
 
 
@@ -40,7 +41,7 @@ def time_diff(time: str):
     return diff
 
 
-async def dirty_check(text: str, *allowlist_check):
+async def dirty_check(msg: Bot.MessageSession, text: str, *allowlist_check):
     allowlist = [
         "Teahouse-Studios",
         "Dianliang233",
@@ -52,7 +53,7 @@ async def dirty_check(text: str, *allowlist_check):
     ]
     if allowlist_check in allowlist:
         return False
-    check = await check_bool(text)
+    check = await check_bool(text, msg)
     if check:
         return True
     return False

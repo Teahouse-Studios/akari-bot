@@ -85,7 +85,9 @@ class Bot:
 
     @classmethod
     async def fetch_target(cls,
-                           target_id: str, sender_id: Optional[Union[int, str]] = None
+                           target_id: str,
+                           sender_id: Optional[Union[int, str]] = None,
+                           create: bool = False
                            ) -> Union[FetchedSessionInfo, None]:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
@@ -94,7 +96,7 @@ class Bot:
             Logger.trace(f"Fetching target {target_id} with sender {sender_id}")
             session = await FetchedSessionInfo.assign(target_id=target_id,
                                                       sender_id=sender_id,
-                                                      fetch=True, create=False)
+                                                      fetch=True, create=create)
         except Exception:
             return None
 

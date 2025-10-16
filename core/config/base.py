@@ -20,6 +20,7 @@ class Config:
     # 命令交互
     command_prefix: list = ["~", "～"]
     confirm_command: list = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"]
+    enable_module_invalid_prompt: bool = False
     no_confirm: bool = False
     quick_confirm: bool = True
 
@@ -27,9 +28,17 @@ class Config:
     enable_analytics: bool = True
     enable_commit_url: bool = True
     enable_dirty_check: bool = False
+    check_use_textscan_v1: bool = False
+    enable_db: bool = False
     enable_eval: bool = False
-    enable_module_invalid_prompt: bool = False
     enable_urlmanager: bool = False
+    auto_purge_crontab: str = "0 0 * * *"
+
+    # 拼写检查
+    typo_check_module_score: float = 0.6
+    typo_check_command_score: float = 0.3
+    typo_check_args_score: float = 0.5
+    typo_check_options_score: float = 0.3
 
     # TOS
     enable_tos: bool = True
@@ -48,7 +57,7 @@ class Config:
     enable_joke: bool = True
     shuffle_rate: float = 0.1
     enable_rickroll: bool = True
-    rickroll_msg: str = ""
+    rickroll_msg: str = "https://b23.tv/vXaKjqJ"
 
     # 外部链接
     bug_report_url: str = "https://s.wd-ljt.com/botreportbug"

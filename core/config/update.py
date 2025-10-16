@@ -10,7 +10,7 @@ from core.constants.exceptions import ConfigFileNotFound
 from core.constants.path import config_path
 from core.constants.version import config_version
 from core.i18n import Locale
-from core.utils.message import isint, isfloat
+from core.utils.message import is_int, is_float
 
 cfg_file_path = config_path / config_filename
 old_cfg_file_path = config_path / "config.cfg"
@@ -31,9 +31,9 @@ def convert_cfg_to_toml():
                 config_dict[x][y] = True
             elif config_dict[x][y] == "False":
                 config_dict[x][y] = False
-            elif isint(config_dict[x][y]):
+            elif is_int(config_dict[x][y]):
                 config_dict[x][y] = int(config_dict[x][y])
-            elif isfloat(config_dict[x][y]):
+            elif is_float(config_dict[x][y]):
                 config_dict[x][y] = float(config_dict[x][y])
 
     with open(cfg_file_path, "w") as f:

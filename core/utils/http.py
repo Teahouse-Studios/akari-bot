@@ -47,8 +47,10 @@ def private_ip_check(url: str):
         )
 
 
-async def get_url(
+async def request_url(
     url: str,
+    method: str,
+    data: Any = None,
     status_code: Optional[int] = 200,
     headers: Optional[Dict[str, Any]] = None,
     params: Optional[Dict[str, Any]] = None,
@@ -59,10 +61,12 @@ async def get_url(
     logging_err_resp: bool = True,
     cookies: Optional[Dict[str, Any]] = None,
 ) -> Any:
-    """利用httpx获取指定URL的内容。
+    """利用httpx请求指定URL的内容。
 
-    :param url: 需要获取的URL。
-    :param status_code: 指定请求到的状态码，若不符则抛出ValueError。
+    :param method: HTTP方法（GET, POST, PATCH, PUT, DELETE）。
+    :param url: 请求的URL。
+    :param data: 请求数据（适用于POST, PATCH, PUT）。
+    :param status_code: 预期的HTTP状态码，若不符则抛出ValueError。
     :param headers: 请求时使用的http头。
     :param params: 请求时使用的参数。
     :param fmt: 指定返回的格式。
@@ -71,12 +75,12 @@ async def get_url(
     :param request_private_ip: 是否允许请求私有IP。
     :param logging_err_resp: 是否记录错误响应。
     :param cookies: 使用的cookies。
-    :returns: 指定URL的内容。（字符串）
+    :returns: 请求结果。
     """
 
     @retry(stop=stop_after_attempt(attempt), wait=wait_fixed(3), reraise=True)
-    async def get_():
-        Logger.debug(f"[GET] {url}")
+    async def _request():
+        Logger.debug(f"[{method}] {url}")
 
         if not Config("allow_request_private_ip", False) and not request_private_ip:
             private_ip_check(url)
@@ -93,88 +97,11 @@ async def get_url(
                 client.cookies.update(cookies_dict)
                 Logger.debug(f"Using cookies: {cookies_dict}")
             try:
-                resp = await client.get(
-                    url,
-                    timeout=timeout,
-                    headers=headers,
-                    params=params,
-                    follow_redirects=True,
-                )
-                Logger.debug(f"[{resp.status_code}] {url}")
-                if logging_resp:
-                    Logger.debug(resp.text)
-                if status_code and resp.status_code != status_code:
-                    if not logging_resp and logging_err_resp:
-                        Logger.error(resp.text)
-                    raise ValueError(
-                        f"{str(resp.status_code)}[KE:Image,path=https://http.cat/{str(resp.status_code)}.jpg]"
-                    )
-                if fmt:
-                    if hasattr(resp, fmt):
-                        attr = getattr(resp, fmt)
-                        if callable(attr):
-                            return attr()
-                        return attr
-                    raise ValueError(f"NoSuchMethod: {fmt}")
-                return resp.text
-            except (httpx.ConnectError, httpx.TimeoutException):
-                raise ValueError("Request timeout")
-            except Exception as e:
-                if logging_err_resp:
-                    Logger.error(f"Error while requesting {url}: \n{e}")
-                raise e
-
-    return await get_()
-
-
-async def post_url(
-    url: str,
-    data: Any = None,
-    status_code: Optional[int] = 200,
-    headers: Optional[Dict[str, Any]] = None,
-    fmt: Optional[str] = None,
-    timeout: Optional[float] = 20,
-    attempt: int = 3,
-    request_private_ip: bool = False,
-    logging_err_resp: bool = True,
-    cookies: Optional[Dict[str, Any]] = None,
-) -> Any:
-    """利用httpx发送POST请求。
-
-    :param url: 需要发送的URL。
-    :param data: 需要发送的数据。
-    :param status_code: 指定请求到的状态码，若不符则抛出ValueError。
-    :param headers: 请求时使用的http头。
-    :param fmt: 指定返回的格式。
-    :param timeout: 超时时间。
-    :param attempt: 指定请求尝试次数。
-    :param request_private_ip: 是否允许请求私有IP。
-    :param logging_err_resp: 是否记录错误响应。
-    :param cookies: 使用的 cookies。
-    :returns: 指定URL的内容。（字符串）
-    """
-
-    @retry(stop=stop_after_attempt(attempt), wait=wait_fixed(3), reraise=True)
-    async def _post():
-        Logger.debug(f"[POST] {url}")
-        if not Config("allow_request_private_ip", False) and not request_private_ip:
-            private_ip_check(url)
-
-        async with httpx.AsyncClient(
-            headers=headers,
-            proxy=proxy,
-            verify=not debug
-        ) as client:
-            if cookies:
-                ck = SimpleCookie()
-                ck.load(cookies)
-                cookies_dict = {key: morsel.value for key, morsel in ck.items()}
-                client.cookies.update(cookies_dict)
-                Logger.debug(f"Using cookies: {cookies_dict}")
-            try:
-                resp = await client.post(
-                    url,
+                resp = await client.request(
+                    method=method,
+                    url=url,
                     data=data,
+                    params=params,
                     headers=headers,
                     timeout=timeout,
                     follow_redirects=True,
@@ -203,15 +130,222 @@ async def post_url(
                     Logger.error(f"Error while requesting {url}: {e}")
                 raise e
 
-    return await _post()
+    return await _request()
+
+
+async def get_url(
+    url: str,
+    status_code: Optional[int] = 200,
+    headers: Optional[Dict[str, Any]] = None,
+    params: Optional[Dict[str, Any]] = None,
+    fmt: Optional[str] = None,
+    timeout: Optional[float] = 20,
+    attempt: int = 3,
+    request_private_ip: bool = False,
+    logging_err_resp: bool = True,
+    cookies: Optional[Dict[str, Any]] = None,
+) -> Any:
+    """利用httpx发送GET请求。
+
+    :param url: 需要获取的URL。
+    :param status_code: 指定请求到的状态码，若不符则抛出ValueError。
+    :param headers: 请求时使用的http头。
+    :param params: 请求时使用的参数。
+    :param fmt: 指定返回的格式。
+    :param timeout: 超时时间。
+    :param attempt: 指定请求尝试次数。
+    :param request_private_ip: 是否允许请求私有IP。
+    :param logging_err_resp: 是否记录错误响应。
+    :param cookies: 使用的cookies。
+    :returns: 请求结果。
+    """
+
+    return await request_url(
+        method="GET",
+        url=url,
+        status_code=status_code,
+        headers=headers,
+        params=params,
+        fmt=fmt,
+        timeout=timeout,
+        attempt=attempt,
+        request_private_ip=request_private_ip,
+        logging_err_resp=logging_err_resp,
+        cookies=cookies,
+    )
+
+
+async def post_url(
+    url: str,
+    data: Any = None,
+    status_code: Optional[int] = 200,
+    headers: Optional[Dict[str, Any]] = None,
+    fmt: Optional[str] = None,
+    timeout: Optional[float] = 20,
+    attempt: int = 3,
+    request_private_ip: bool = False,
+    logging_err_resp: bool = True,
+    cookies: Optional[Dict[str, Any]] = None,
+) -> Any:
+    """利用httpx发送POST请求。
+
+    :param url: 需要发送的URL。
+    :param data: 需要发送的数据。
+    :param status_code: 指定请求到的状态码，若不符则抛出ValueError。
+    :param headers: 请求时使用的http头。
+    :param fmt: 指定返回的格式。
+    :param timeout: 超时时间。
+    :param attempt: 指定请求尝试次数。
+    :param request_private_ip: 是否允许请求私有IP。
+    :param logging_err_resp: 是否记录错误响应。
+    :param cookies: 使用的 cookies。
+    :returns: 请求结果。
+    """
+
+    return await request_url(
+        method="POST",
+        url=url,
+        data=data,
+        status_code=status_code,
+        headers=headers,
+        fmt=fmt,
+        timeout=timeout,
+        attempt=attempt,
+        request_private_ip=request_private_ip,
+        logging_err_resp=logging_err_resp,
+        cookies=cookies,
+    )
+
+
+async def patch_url(
+    url: str,
+    data: Any = None,
+    status_code: Optional[int] = 200,
+    headers: Optional[Dict[str, Any]] = None,
+    fmt: Optional[str] = None,
+    timeout: Optional[float] = 20,
+    attempt: int = 3,
+    request_private_ip: bool = False,
+    logging_err_resp: bool = True,
+    cookies: Optional[Dict[str, Any]] = None,
+) -> Any:
+    """利用httpx发送PATCH请求。
+
+    :param url: 需要发送的URL。
+    :param data: 需要发送的数据。
+    :param status_code: 指定请求到的状态码，若不符则抛出ValueError。
+    :param headers: 请求时使用的http头。
+    :param fmt: 指定返回的格式。
+    :param timeout: 超时时间。
+    :param attempt: 指定请求尝试次数。
+    :param request_private_ip: 是否允许请求私有IP。
+    :param logging_err_resp: 是否记录错误响应。
+    :param cookies: 使用的 cookies。
+    :returns: 请求结果。
+    """
+
+    return await request_url(
+        method="PATCH",
+        url=url,
+        data=data,
+        status_code=status_code,
+        headers=headers,
+        fmt=fmt,
+        timeout=timeout,
+        attempt=attempt,
+        request_private_ip=request_private_ip,
+        logging_err_resp=logging_err_resp,
+        cookies=cookies,
+    )
+
+
+async def put_url(
+    url: str,
+    data: Any = None,
+    status_code: Optional[int] = 200,
+    headers: Optional[Dict[str, Any]] = None,
+    fmt: Optional[str] = None,
+    timeout: Optional[float] = 20,
+    attempt: int = 3,
+    request_private_ip: bool = False,
+    logging_err_resp: bool = True,
+    cookies: Optional[Dict[str, Any]] = None,
+) -> Any:
+    """利用httpx发送PUT请求。
+
+    :param url: 需要发送的URL。
+    :param data: 需要发送的数据。
+    :param status_code: 指定请求到的状态码，若不符则抛出ValueError。
+    :param headers: 请求时使用的http头。
+    :param fmt: 指定返回的格式。
+    :param timeout: 超时时间。
+    :param attempt: 指定请求尝试次数。
+    :param request_private_ip: 是否允许请求私有IP。
+    :param logging_err_resp: 是否记录错误响应。
+    :param cookies: 使用的 cookies。
+    :returns: 请求结果。
+    """
+
+    return await request_url(
+        method="PUT",
+        url=url,
+        data=data,
+        status_code=status_code,
+        headers=headers,
+        fmt=fmt,
+        timeout=timeout,
+        attempt=attempt,
+        request_private_ip=request_private_ip,
+        logging_err_resp=logging_err_resp,
+        cookies=cookies,
+    )
+
+
+async def delete_url(
+    url: str,
+    status_code: Optional[int] = 200,
+    headers: Optional[Dict[str, Any]] = None,
+    fmt: Optional[str] = None,
+    timeout: Optional[float] = 20,
+    attempt: int = 3,
+    request_private_ip: bool = False,
+    logging_err_resp: bool = True,
+    cookies: Optional[Dict[str, Any]] = None,
+) -> Any:
+    """利用httpx发送DELETE请求。
+
+    :param url: 需要发送的URL。
+    :param status_code: 指定请求到的状态码，若不符则抛出ValueError。
+    :param headers: 请求时使用的http头。
+    :param fmt: 指定返回的格式。
+    :param timeout: 超时时间。
+    :param attempt: 指定请求尝试次数。
+    :param request_private_ip: 是否允许请求私有IP。
+    :param logging_err_resp: 是否记录错误响应。
+    :param cookies: 使用的 cookies。
+    :returns: 请求结果。
+    """
+
+    return await request_url(
+        method="DELETE",
+        url=url,
+        status_code=status_code,
+        headers=headers,
+        fmt=fmt,
+        timeout=timeout,
+        attempt=attempt,
+        request_private_ip=request_private_ip,
+        logging_err_resp=logging_err_resp,
+        cookies=cookies,
+    )
 
 
 async def download(
     url: str,
     filename: Optional[str] = None,
     path: Optional[Union[str, Path]] = None,
-    status_code: Optional[int] = 200,
     method: str = "GET",
+    status_code: Optional[int] = 200,
     post_data: Any = None,
     headers: Optional[Dict[str, Any]] = None,
     timeout: Optional[float] = 20,
@@ -235,56 +369,34 @@ async def download(
     :returns: 文件的相对路径，若获取失败则返回False。
     """
 
-    if post_data is not None:
-        method = "POST"
+    data = await request_url(
+        method=method,
+        url=url,
+        data=post_data,
+        status_code=status_code,
+        headers=headers,
+        fmt="read",
+        timeout=timeout,
+        attempt=attempt,
+        request_private_ip=request_private_ip,
+        logging_err_resp=logging_err_resp,
+    )
 
-    @retry(stop=stop_after_attempt(attempt), wait=wait_fixed(3), reraise=True)
-    async def download_(filename=filename, path=path):
-        if not Config("allow_request_private_ip", False) and not request_private_ip:
-            private_ip_check(url)
-
-        data = None
-        if method.upper() == "GET":
-            data = await get_url(
-                url,
-                status_code=status_code,
-                headers=headers,
-                fmt="read",
-                timeout=timeout,
-                attempt=1,
-                request_private_ip=request_private_ip,
-                logging_err_resp=logging_err_resp,
-            )
-        if method.upper() == "POST":
-            data = await post_url(
-                url,
-                data=post_data,
-                status_code=status_code,
-                headers=headers,
-                fmt="read",
-                timeout=timeout,
-                attempt=1,
-                request_private_ip=request_private_ip,
-                logging_err_resp=logging_err_resp,
-            )
-
-        if data:
-            if not filename:
-                try:
-                    ftt = ft.match(data).extension
-                except AttributeError:
-                    ftt = "txt"
-                filename = f"{str(uuid.uuid4())}.{ftt}"
-            if not path:
-                path = cache_path
-            path = Path(path) / filename
-            async with async_open(path, "wb+") as file:
-                await file.write(data)
-                return path
-        else:
-            return None
-
-    return await download_()
+    if data:
+        if not filename:
+            try:
+                ftt = ft.match(data).extension
+            except AttributeError:
+                ftt = "txt"
+            filename = f"{str(uuid.uuid4())}.{ftt}"
+        if not path:
+            path = cache_path
+        path = Path(path) / filename
+        async with async_open(path, "wb+") as file:
+            await file.write(data)
+            return path
+    else:
+        return None
 
 
-__all__ = ["get_url", "post_url", "download", "url_pattern"]
+__all__ = ["get_url", "post_url", "patch_url", "put_url", "delete_url", "download", "url_pattern"]

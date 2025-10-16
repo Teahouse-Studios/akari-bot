@@ -15,7 +15,7 @@ from core.logger import Logger
 from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
-from core.utils.message import isint
+from core.utils.message import is_int
 from .database.models import WikiTargetInfo
 from .utils.mapping import generate_screenshot_v2_blocklist
 from .utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
@@ -64,7 +64,7 @@ async def _(msg: Bot.MessageSession, pageid: str):
     if match_iw := re.match(r"(.*?):(.*)", pageid):
         iw = match_iw.group(1)
         pageid = match_iw.group(2)
-    if not isint(pageid):
+    if not is_int(pageid):
         await msg.finish(I18NContext("wiki.message.id.invalid"))
     get_lang = msg.parsed_msg.get("-l", False)
     if get_lang:
@@ -349,7 +349,7 @@ async def query_pages(
 
                                 async def _callback(msg: Bot.MessageSession):
                                     display = msg.as_display(text_only=True)
-                                    if isint(display):
+                                    if is_int(display):
                                         display = int(display)
                                         if display <= len(r.sections):
                                             r.selected_section = str(display - 1)
@@ -413,7 +413,7 @@ async def query_pages(
                                 async def _callback(msg: Bot.MessageSession):
                                     display = msg.as_display(text_only=True)
                                     if (
-                                        isint(display)
+                                        is_int(display)
                                         and int(display) <= len(forum_data) - 1
                                     ):
                                         await query_pages(
@@ -671,7 +671,7 @@ async def query_pages(
                 index = 0
                 if confirm.as_display(text_only=True) in confirm_command:
                     auto_index = True
-                elif isint(confirm.as_display(text_only=True)):
+                elif is_int(confirm.as_display(text_only=True)):
                     index = int(confirm.as_display(text_only=True)) - 1
                 else:
                     return

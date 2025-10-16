@@ -4,7 +4,7 @@ import shutil
 import string
 from io import StringIO
 
-import orjson as json
+import orjson
 
 from core.constants.path import assets_path
 from core.logger import Logger
@@ -115,7 +115,7 @@ async def update_assets(update_cover=True):
                 data[sid]["diff"]["AT"] = row[4]
 
         with open(file_path, "wb") as f:
-            f.write(json.dumps(data, option=json.OPT_INDENT_2))
+            f.write(orjson.dumps(data, option=orjson.OPT_INDENT_2))
         shutil.move(file_path, song_info_path)
         return True
     return False

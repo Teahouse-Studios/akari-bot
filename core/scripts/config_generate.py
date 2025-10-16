@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
 from core.constants import *
 from core.i18n import Locale, load_locale_file
-from core.utils.message import isint
+from core.utils.message import is_int
 
 
 def generate_config(dir_path: Path, language: str):
@@ -43,7 +43,7 @@ def generate_config(dir_path: Path, language: str):
     from core.config import CFGManager
     CFGManager.switch_config_path(dir_path)
     CFGManager.load()
-    import core.config.config_base  # noqa
+    import core.config.base  # noqa
     import bots
     for subm in pkgutil.iter_modules(bots.__path__):
         module_py_name = f"{bots.__name__}.{subm.name}"
@@ -74,7 +74,7 @@ if not (config_path / config_filename).exists() and __name__ != "__main__":
             lang = input("Please input the number of the language you want to use: ")
             if lang.strip() == "":
                 sys.exit(0)
-            if isint(lang) and (langI := int(lang) - 1) in range(len(lang_list)):
+            if is_int(lang) and (langI := int(lang) - 1) in range(len(lang_list)):
                 lang = list(lang_list.keys())[langI]
                 break
             print("Invalid input, please try again.")
@@ -123,56 +123,65 @@ if __name__ == "__main__":
     config_store_path = assets_path / "config_store"
     config_store_packed_path = assets_path / "config_store_packed"
     config_store_path_bak = assets_path / "config_store_bak"
-    if config_store_path_bak.exists():
-        shutil.rmtree(config_store_path_bak)
-    if config_store_path.exists():
-        shutil.move(config_store_path, config_store_path_bak)
-    config_store_path.mkdir(parents=True, exist_ok=True)
-    config_store_packed_path.mkdir(parents=True, exist_ok=True)
 
-    processes = []
-    for lang in lang_list:
-        config_store_path_ = config_store_path / lang
-        config_store_path_.mkdir(parents=True, exist_ok=True)
-        p = multiprocessing.Process(target=generate_config, args=(config_store_path_, lang))
-        p.start()
-        processes.append(p)
+    attempt = 1
+    success = False
+    while attempt <= 3 and not success:
+        if config_store_path_bak.exists():
+            shutil.rmtree(config_store_path_bak)
+        if config_store_path.exists():
+            shutil.move(config_store_path, config_store_path_bak)
+        config_store_path.mkdir(parents=True, exist_ok=True)
+        config_store_packed_path.mkdir(parents=True, exist_ok=True)
 
-    for p in processes:
-        p.join()
+        processes = []
+        for lang in lang_list:
+            config_store_path_ = config_store_path / lang
+            config_store_path_.mkdir(parents=True, exist_ok=True)
+            p = multiprocessing.Process(target=generate_config, args=(config_store_path_, lang))
+            p.start()
+            processes.append(p)
 
-    missing_config_section = False
-    for lang in lang_list:
-        config_file = config_store_path / lang / config_filename
-        if not config_file.exists():
-            missing_config_section = True
-            break
-        with open(config_file, "r", encoding="utf-8") as f:
-            content = f.read()
-            if "[config]" not in content:
-                missing_config_section = True
+        for p in processes:
+            p.join()
+
+        for lang in lang_list:
+            config_file = config_store_path / lang / config_filename
+            if not config_file.exists():
                 break
+            with open(config_file, "r", encoding="utf-8") as f:
+                content = f.read()
+                if "[config]" not in content:
+                    break
+        else:
+            success = True
 
-    if missing_config_section:
+        if success:
+            break
+
         print(
             f"Error: Some {config_filename} files are missing [config] section. Rolling back to previous config files.")
         if config_store_path.exists():
             shutil.rmtree(config_store_path)
         if config_store_path_bak.exists():
             shutil.move(config_store_path_bak, config_store_path)
-        print("Rollback completed. Please try again later.")
+        print(f"Rollback completed. Attempt {attempt}...")
+        attempt += 1
+        sleep(1)
+    else:
+        print("Failed after 3 attempts. Exiting.")
         sys.exit(1)
 
     repack = False
     for lang in lang_list:
         config_store_path_ = config_store_path / lang
-        config_store_path_bak = Path(str(config_store_path) + "_bak")
-        if not config_store_path_bak.exists():
+        config_store_path_bak_ = config_store_path_bak / lang
+        if not config_store_path_bak_.exists():
             repack = True
             break
         for file_path in config_store_path_.rglob('*'):
             if file_path.is_file():
-                file_path_bak = config_store_path_bak / file_path.relative_to(config_store_path_)
+                file_path_bak = config_store_path_bak_ / file_path.relative_to(config_store_path_)
                 if not file_path_bak.exists():
                     repack = True
                     break
@@ -185,7 +194,6 @@ if __name__ == "__main__":
                 diff = difflib.unified_diff(old, new, fromfile=str(file_path_bak), tofile=str(file_path))
                 for d in diff:
                     if d:
-                        print(d)
                         repack = True
                         break
 
@@ -195,6 +203,6 @@ if __name__ == "__main__":
     if repack:
         zip_language_folders(config_store_path, config_store_packed_path)
         print("Changes detected, repacked the config files.")
-    shutil.rmtree(Path(str(config_store_path) + "_bak"))
+    shutil.rmtree(config_store_path_bak)
 
     print("Config files generated successfully.")

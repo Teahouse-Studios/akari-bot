@@ -2,7 +2,7 @@ import asyncio
 import time
 from datetime import datetime
 
-import orjson as json
+import orjson
 from PIL import Image, ImageEnhance, ImageFont, ImageDraw, ImageOps
 from gql import Client, gql
 from gql.transport.httpx import HTTPXAsyncTransport
@@ -20,28 +20,11 @@ from core.utils.cache import random_cache_path
 from core.utils.html2text import html2text
 from core.utils.http import get_url, download
 from core.utils.image import get_fontsize
-from core.utils.message import parse_time_string
+from core.utils.message import parse_time_string, truncate_text
 
 ctd_assets_path = assets_path / "modules" / "cytoid"
 nunito_light_path = ctd_assets_path / "Nunito Light.ttf"
 nunito_regular_path = ctd_assets_path / "Nunito Regular.ttf"
-
-
-def truncate_text(arg_str: str, arg_len: int) -> str:
-    count = 0
-    list_str = []
-    for str_ in arg_str:
-        inside_code = ord(str_)
-        if inside_code == 0x0020:
-            count += 1
-        elif inside_code < 0x7F:
-            count += 1
-        else:
-            count += 2
-        if count > arg_len:
-            return "".join(list_str) + "..."
-        list_str.append(str_)
-    return "".join(list_str)
 
 
 async def get_rating(msg: Bot.MessageSession, uid, query_type):
@@ -51,7 +34,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
         elif query_type == "r10":
             query_type = "recentRecords"
         profile_url = f"http://services.cytoid.io/profile/{uid}"
-        profile_json = json.loads(await get_url(profile_url, 200))
+        profile_json = orjson.loads(await get_url(profile_url, 200))
         if "statusCode" in profile_json:
             if profile_json["statusCode"] == 404:
                 return {
@@ -302,7 +285,7 @@ async def download_cover_thumb(uid):
         path = d / filename
         if not path.exists():
             level_url = f"http://services.cytoid.io/levels/{uid}"
-            get_level = json.loads(await get_url(level_url))
+            get_level = orjson.loads(await get_url(level_url))
             cover_thumbnail = f"{get_level["cover"]["original"]}?h=240&w=384"
             path = await download(
                 cover_thumbnail, filename=filename, path=d, logging_err_resp=False

@@ -1,3 +1,5 @@
+import orjson
+
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Image as BImage
@@ -5,11 +7,12 @@ from core.component import module
 from core.utils.image import msgchain2image
 from core.logger import Logger
 from core.scheduler import CronTrigger
-from core.utils.message import isint
+from core.utils.message import is_int
 from .database.models import DivingProberBindInfo
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_cover
 from .libraries.maimaidx_best50 import generate as generate_b50
 from .libraries.maimaidx_platelist import generate as generate_plate
+from .libraries.maimaidx_scoreline import draw_scoreline_table
 from .libraries.maimaidx_scorelist import generate as generate_process
 from .libraries.maimaidx_utils import *
 
@@ -69,7 +72,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
 
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
     get_page = msg.parsed_msg.get("-p", False)
-    if get_page and isint(get_page["<page>"]):
+    if get_page and is_int(get_page["<page>"]):
         page = max(min(int(get_page["<page>"]), total_pages), 1)
     else:
         page = 1
@@ -78,7 +81,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
 
     for elem in result_set[start_index:end_index]:
         msg_chain.append(Plain(f"{elem[0]} - {elem[1]}{" (DX)" if elem[5]
-                         == "DX" else ""} {elem[3]} {elem[4]} ({elem[2]})"))
+                         == "DX" else ""} [{elem[3]}] {elem[4]} ({elem[2]})"))
     if len(result_set) == 0:
         await msg.finish(I18NContext("maimai.message.music_not_found"))
     elif len(result_set) <= SONGS_PER_PAGE:
@@ -116,7 +119,7 @@ async def _(msg: Bot.MessageSession, level: str):
     get_page = msg.parsed_msg.get("-p", False)
     page = (
         max(min(int(get_page["<page>"]), total_pages), 1)
-        if get_page and isint(get_page["<page>"])
+        if get_page and is_int(get_page["<page>"])
         else 1
     )
     start_index = (page - 1) * SONGS_PER_PAGE
@@ -125,7 +128,7 @@ async def _(msg: Bot.MessageSession, level: str):
     msg_chain = MessageChain.assign(I18NContext("maimai.message.level", level=level))
     for elem in result_set[start_index:end_index]:
         msg_chain.append(Plain(f"{elem[0]} - {elem[1]}{" (DX)" if elem[5]
-                         == "DX" else ""} {elem[3]} {elem[4]} ({elem[2]})"))
+                         == "DX" else ""} [{elem[3]}] {elem[4]} ({elem[2]})"))
 
     if len(result_set) == 0:
         await msg.finish(I18NContext("maimai.message.music_not_found"))
@@ -154,7 +157,7 @@ async def _(msg: Bot.MessageSession):
     get_page = msg.parsed_msg.get("-p", False)
     page = (
         max(min(int(get_page["<page>"]), total_pages), 1)
-        if get_page and isint(get_page["<page>"])
+        if get_page and is_int(get_page["<page>"])
         else 1
     )
     start_index = (page - 1) * SONGS_PER_PAGE
@@ -194,7 +197,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
     get_page = msg.parsed_msg.get("-p", False)
     page = (
         max(min(int(get_page["<page>"]), total_pages), 1)
-        if get_page and isint(get_page["<page>"])
+        if get_page and is_int(get_page["<page>"])
         else 1
     )
     start_index = (page - 1) * SONGS_PER_PAGE
@@ -216,7 +219,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
 
 @mai.command("alias <sid> {{I18N:maimai.help.alias}}")
 async def _(msg: Bot.MessageSession, sid: str):
-    if not isint(sid):
+    if not is_int(sid):
         if sid[:2].lower() == "id":
             sid = sid[2:]
         else:
@@ -303,7 +306,10 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                 s = (await total_list.get()).by_id(sid)
                 if s:
                     msg_chain.append(Plain(f"{s["id"]} - {s["title"]}{" (DX)" if s["type"] == "DX" else ""}"))
-            msg_chain.append(I18NContext("maimai.message.chart.prompt", prefix=msg.session_info.prefixes[0]))
+            msg_chain.append(
+                I18NContext(
+                    "maimai.message.disambiguation.chart.prompt",
+                    prefix=msg.session_info.prefixes[0]))
             await msg.finish(msg_chain)
         else:
             sid = str(sid_list[0])
@@ -315,7 +321,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
     msg_chain = MessageChain.assign()
     if int(sid) > 100000:
         with open(mai_utage_info_path, "rb") as file:
-            utage_data = json.loads(file.read())
+            utage_data = orjson.loads(file.read())
 
         if utage_data:
             try:
@@ -405,7 +411,10 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                 s = (await total_list.get()).by_id(sid)
                 if s:
                     msg_chain.append(Plain(f"{s["id"]} - {s["title"]}{" (DX)" if s["type"] == "DX" else ""}"))
-            msg_chain.append(I18NContext("maimai.message.song.prompt", prefix=msg.session_info.prefixes[0]))
+            msg_chain.append(
+                I18NContext(
+                    "maimai.message.disambiguation.song.prompt",
+                    prefix=msg.session_info.prefixes[0]))
             await msg.finish(msg_chain)
         else:
             sid = str(sid_list[0])
@@ -416,7 +425,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
     msg_chain = MessageChain.assign()
     if int(sid) > 100000:
         with open(mai_utage_info_path, "rb") as file:
-            utage_data = json.loads(file.read())
+            utage_data = orjson.loads(file.read())
         if utage_data:
             try:
                 msg_chain.append(Plain(f"「{utage_data[sid]["comment"]}」"))
@@ -469,7 +478,10 @@ async def query_song_score(msg, query, username):
                 s = (await total_list.get()).by_id(sid)
                 if s:
                     msg_chain.append(Plain(f"{s["id"]} - {s["title"]}{" (DX)" if s["type"] == "DX" else ""}"))
-            msg_chain.append(I18NContext("maimai.message.score.prompt", prefix=msg.session_info.prefixes[0]))
+            msg_chain.append(
+                I18NContext(
+                    "maimai.message.disambiguation.score.prompt",
+                    prefix=msg.session_info.prefixes[0]))
             await msg.finish(msg_chain)
         else:
             sid = str(sid_list[0])
@@ -614,7 +626,7 @@ async def _(msg: Bot.MessageSession, level: str):
     get_user = msg.parsed_msg.get("-u", False)
     username = get_user["<username>"] if get_user else None
     get_page = msg.parsed_msg.get("-p", False)
-    page = get_page["<page>"] if get_page and isint(get_page["<page>"]) else 1
+    page = get_page["<page>"] if get_page and is_int(get_page["<page>"]) else 1
     if not username:
         if msg.session_info.sender_from == "QQ":
             payload = {"qq": msg.session_info.get_common_sender_id()}
@@ -655,7 +667,7 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
             dx_type_lst = ["SD", "DX"]
 
         for char in condit:
-            if isint(char) or char == "+":
+            if is_int(char) or char == "+":
                 level += char
             else:
                 diff += char
@@ -692,24 +704,45 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(await get_info(music, diffs))
 
 
-@mai.command("scoreline <sid> <diff> <score> {{I18N:maimai.help.scoreline}}")
-async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
+@mai.command("scoreline <id_or_alias> <diff> <score> {{I18N:maimai.help.scoreline}}")
+async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str, score: float):
+    if id_or_alias[:2].lower() == "id":
+        sid = id_or_alias[2:]
+    else:
+        sid_list = await search_by_alias(id_or_alias)
+        if len(sid_list) == 0:
+            await msg.finish(I18NContext("maimai.message.music_not_found"))
+        elif len(sid_list) > 1:
+            msg_chain = MessageChain.assign(I18NContext("maimai.message.disambiguation"))
+            for sid in sorted(sid_list, key=int):
+                s = (await total_list.get()).by_id(sid)
+                if s:
+                    msg_chain.append(Plain(f"{s["id"]} - {s["title"]}{" (DX)" if s["type"] == "DX" else ""}"))
+            msg_chain.append(
+                I18NContext(
+                    "maimai.message.disambiguation.scoreline.prompt",
+                    prefix=msg.session_info.prefixes[0]))
+            await msg.finish(msg_chain)
+        else:
+            sid = str(sid_list[0])
+
+    music = (await total_list.get()).by_id(sid)
+    if not music:
+        await msg.finish(I18NContext("maimai.message.music_not_found"))
+
     try:
-        if not isint(sid):
-            if sid[:2].lower() == "id":
-                sid = sid[2:]
-            else:
-                await msg.finish(I18NContext("maimai.message.id_invalid"))
         diff_index = get_diff(diff)
-        music = (await total_list.get()).by_id(sid)
         chart = music["charts"][diff_index]
         tap = int(chart["notes"][0])
         slide = int(chart["notes"][2])
         hold = int(chart["notes"][1])
         touch = int(chart["notes"][3]) if len(chart["notes"]) == 5 else 0
         brk = int(chart["notes"][-1])
+
+        img = draw_scoreline_table(tap, hold, slide, touch, brk, "101-")
+
         total_score = (
-            500 * tap + slide * 1500 + hold * 1000 + touch * 500 + brk * 2500
+            tap * 500 + slide * 1500 + hold * 1000 + touch * 500 + brk * 2500
         )  # 基础分
         bonus_score = total_score * 0.01 / brk  # 奖励分
         break_2550_reduce = bonus_score * 0.25  # 一个 BREAK 2550 减少 25% 奖励分
@@ -722,29 +755,24 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
         tap_great = (
             f"{(total_score * reduce / 10000):.2f}"  # 一个 TAP GREAT 减少 100 分
         )
-        tap_great_prop = f"{(10000 / total_score):.4f}"
         b2t_2550_great = (
             f"{(break_2550_reduce / 100):.3f}"  # 一个 TAP GREAT 减少 100 分
         )
-        b2t_2550_great_prop = f"{(break_2550_reduce / total_score * 100):.4f}"
         b2t_2000_great = (
             f"{(break_2000_reduce / 100):.3f}"  # 一个 TAP GREAT 减少 100 分
         )
-        b2t_2000_great_prop = f"{(break_2000_reduce / total_score * 100):.4f}"
+
         msg_chain = MessageChain.assign([
-            Plain(f"{music["title"]}{" (DX)" if music["type"] == "DX" else ""} {diff_list[diff_index]}"),
+            Plain(f"{music["id"]} - {music["title"]}{" (DX)" if music["type"] == "DX" else ""} [{diff_list[diff_index]}]"),
+            BImage(img),
             I18NContext("maimai.message.scoreline",
                         scoreline=score,
                         tap_great=tap_great,
-                        tap_great_prop=tap_great_prop,
-                        brk=brk,
                         b2t_2550_great=b2t_2550_great,
-                        b2t_2550_great_prop=b2t_2550_great_prop,
-                        b2t_2000_great=b2t_2000_great,
-                        b2t_2000_great_prop=b2t_2000_great_prop)
+                        b2t_2000_great=b2t_2000_great)
         ])
         await msg.finish(msg_chain)
-    except ValueError:
+    except (IndexError, ValueError):
         await msg.finish(I18NContext("maimai.message.scoreline.failed", prefix=msg.session_info.prefixes[0]))
 
 

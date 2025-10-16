@@ -9,7 +9,7 @@ from typing import List, Optional, Tuple, Union, Any
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
-import orjson as json
+import orjson
 
 from core.builtins.message.elements import (
     BaseElement,
@@ -66,34 +66,20 @@ class MessageChain:
             return elements
         values = []
         if isinstance(elements, str):
-            elements = match_kecode(elements)
+            elements = PlainElement.assign(elements)
         if isinstance(elements, BaseElement):
-            if isinstance(elements, PlainElement):
-                if elements.text != "":
-                    elements = match_kecode(elements.text, elements.disable_joke)
-            else:
-                elements = [elements]
+            elements = [elements]
         if isinstance(elements, dict):
             for key in elements:
                 elements = converter.structure(elements[key], MessageElement)
         if isinstance(elements, (list, tuple)):
             for e in elements:
-                if isinstance(e, str):
-                    if e != "":
-                        values += match_kecode(e)
+                if isinstance(e, str) and e:
+                    values.append(PlainElement.assign(e))
                 elif isinstance(e, dict):
                     for key in e:
                         tmp_e = converter.structure(e[key], MessageElement)
-                        if isinstance(tmp_e, PlainElement):
-                            if tmp_e.text != "":
-                                values += match_kecode(tmp_e.text, tmp_e.disable_joke)
-                        else:
-                            values.append(tmp_e)
-
-                elif isinstance(e, PlainElement):
-                    if isinstance(e, PlainElement):
-                        if e.text != "":
-                            values += match_kecode(e.text, e.disable_joke)
+                        values.append(tmp_e)
 
                 elif isinstance(e, BaseElement):
                     values.append(e)
@@ -162,7 +148,7 @@ class MessageChain:
                             return False
         return True
 
-    def as_sendable(self, session_info: SessionInfo = None) -> list:
+    def as_sendable(self, session_info: SessionInfo = None, parse_message: bool = True) -> list:
         """
         将消息链转换为可发送的格式。
         """
@@ -176,7 +162,15 @@ class MessageChain:
             elif isinstance(x, PlainElement):
                 if session_info:
                     if x.text != "":
-                        x.text = session_info.locale.t_str(x.text)
+                        if parse_message:
+                            x.text = session_info.locale.t_str(x.text)
+                            element_chain = match_kecode(x.text, x.disable_joke)
+                            for elem in element_chain.values:
+                                elem = MessageChain.assign(elem).as_sendable(session_info, parse_message=False)
+                                if isinstance(elem, PlainElement):
+                                    elem.text = session_info.locale.t_str(elem.text)
+                                value += elem
+                            continue
                     else:
                         x = PlainElement.assign(session_info.locale.t("error.message.chain.empty"))
                 value.append(x)
@@ -284,6 +278,9 @@ class MessageChain:
 
     def __iter__(self):
         return iter(self.values)
+
+    def __len__(self):
+        return len(self.values)
 
     def __add__(self, other):
         if isinstance(other, MessageChain):
@@ -434,12 +431,10 @@ def _extract_kecode_blocks(text):
 
 
 def match_kecode(text: str,
-                 disable_joke: bool = False) -> List[Union[
-                     PlainElement, ImageElement, VoiceElement,
-                     I18NContextElement, MentionElement]]:
+                 disable_joke: bool = False) -> MessageChain:
     split_all = _extract_kecode_blocks(text)
     split_all = [x for x in split_all if x]
-    elements = []
+    elements = MessageChain.assign()
 
     for e in split_all:
         match = re.match(r"\[KE:([^\s,\]]+)(?:,(.*))?\]$", e, re.DOTALL)
@@ -491,7 +486,7 @@ def match_kecode(text: str,
                             if parse_url[0] == "file" or url_pattern.match(parse_url[1]):
                                 img = ImageElement.assign(path=ma.group(2))
                         if ma.group(1) == "headers" and img:
-                            img.headers = json.loads(str(base64.b64decode(ma.group(2)), "UTF-8"))
+                            img.headers = orjson.loads(str(base64.b64decode(ma.group(2)), "UTF-8"))
                         if img:
                             elements.append(img)
                         else:
@@ -555,6 +550,12 @@ def match_atcode(text: str, client: str, pattern: str) -> str:
         return match.group(0)
 
     return re.sub(r"<(?:AT|@):([^\|]+)\|(?:.*?\|)?([^\|>]+)>", _replacer, text)
+
+
+def convert_senderid_to_atcode(text: str, sender_prefix: str) -> str:
+    sender_prefix = sender_prefix.replace("|", "\\|")
+
+    return re.sub(rf"(?<!<AT:)(?<!<@:){sender_prefix}\|\w+", r"<AT:\g<0>>", text).replace("\\", "")
 
 
 add_export(MessageChain)

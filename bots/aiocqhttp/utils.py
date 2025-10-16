@@ -2,7 +2,7 @@ import html
 import re
 from typing import Any, Dict, Optional, Union
 
-import orjson as json
+import orjson
 
 from bots.aiocqhttp.info import sender_prefix
 from core.builtins.message.chain import MessageChain
@@ -83,7 +83,7 @@ class CQCodeHandler:
                 ma = re.match(r"(.*?)=(.*)", a)
                 if ma:
                     if cq_type == "json":
-                        kwargs[html.unescape(ma.group(1))] = json.loads(ma.group(2))
+                        kwargs[html.unescape(ma.group(1))] = orjson.loads(ma.group(2))
                     else:
                         kwargs[html.unescape(ma.group(1))] = html.unescape(ma.group(2))
         data = {"type": cq_type, "data": kwargs}
@@ -131,7 +131,7 @@ async def to_message_chain(message: Union[str, list[Dict[str, Any]]]) -> Message
                     elif cq_data["type"] == "record":
                         lst.append(Voice(cq_data["data"].get("file")))
                     elif cq_data["type"] == "at":
-                        lst.append(Mention(f"{sender_prefix}|{cq_data["data"].get("qq")}"))
+                        lst.append(Plain(f"{sender_prefix}|{cq_data["data"].get("qq")}"))
                     else:
                         lst.append(Plain(s))
                 else:
@@ -151,7 +151,7 @@ async def to_message_chain(message: Union[str, list[Dict[str, Any]]]) -> Message
             elif item["type"] == "record":
                 lst.append(Voice(item["data"]["file"]))
             elif item["type"] == "at":
-                lst.append(Mention(f"{sender_prefix}|{item["data"].get("qq")}"))
+                lst.append(Plain(f"{sender_prefix}|{item["data"].get("qq")}"))
             else:
                 lst.append(Raw(CQCodeHandler.generate_cq(item)))
 

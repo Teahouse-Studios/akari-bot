@@ -1,4 +1,4 @@
-import orjson as json
+import orjson
 
 from core.constants.path import assets_path
 
@@ -14,7 +14,7 @@ else:
 llm_api_list_path = ai_assets_path / "llm_api_list.json"
 if llm_api_list_path.exists():
     with open(llm_api_list_path, "rb") as f:
-        llm_api_list = json.loads(f.read()).get("llm_api_list", [])
+        llm_api_list = orjson.loads(f.read()).get("llm_api_list", [])
 else:
     llm_api_list = []
 

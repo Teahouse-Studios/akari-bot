@@ -1,4 +1,4 @@
-import orjson as json
+import orjson
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Image, Plain, Url
@@ -120,8 +120,7 @@ async def _(msg: Bot.MessageSession):
             img_list = [Image(ii) for ii in imgs]
             mt = msg.session_info.locale.t("wiki.message.iw.list", prefix=msg.session_info.prefixes[0])
             if base_interwiki_link:
-                mt += "\n" + msg.session_info.locale.t("wiki.message.iw.list.prompt", url=str(
-                    Url(base_interwiki_link, md_format=msg.session_info.use_url_md_format)))
+                mt += "\n" + msg.session_info.locale.t("wiki.message.iw.list.prompt", url=str(Url(base_interwiki_link)))
             await msg.finish(img_list + [Plain(mt)])
         else:
             result = (
@@ -132,10 +131,7 @@ async def _(msg: Bot.MessageSession):
     else:
         result = msg.session_info.locale.t("wiki.message.iw.list.none", prefix=msg.session_info.prefixes[0])
     if base_interwiki_link:
-        result += "\n" + msg.session_info.locale.t(
-            "wiki.message.iw.list.prompt",
-            url=str(Url(base_interwiki_link, md_format=msg.session_info.use_url_md_format))
-        )
+        result += "\n" + msg.session_info.locale.t("wiki.message.iw.list.prompt", url=str(Url(base_interwiki_link)))
     await msg.finish(result)
 
 
@@ -162,7 +158,7 @@ async def _(msg: Bot.MessageSession):
     headers = target.headers
     prompt = msg.session_info.locale.t(
         "wiki.message.headers.show",
-        headers=json.dumps(headers).decode(),
+        headers=orjson.dumps(headers).decode(),
         prefix=msg.session_info.prefixes[0],
     )
     await msg.finish(prompt)
@@ -176,7 +172,7 @@ async def _(msg: Bot.MessageSession, headers: str):
         await msg.finish(
             msg.session_info.locale.t(
                 "wiki.message.headers.add.success",
-                headers=json.dumps(target.headers).decode(),
+                headers=orjson.dumps(target.headers).decode(),
             )
         )
     else:
@@ -193,7 +189,7 @@ async def _(msg: Bot.MessageSession, headerkey: str):
         await msg.finish(
             msg.session_info.locale.t(
                 "wiki.message.headers.add.success",
-                headers=json.dumps(target.headers).decode(),
+                headers=orjson.dumps(target.headers).decode(),
             )
         )
 

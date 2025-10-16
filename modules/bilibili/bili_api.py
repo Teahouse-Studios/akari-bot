@@ -1,7 +1,8 @@
-import orjson as json
+import orjson
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import Embed, EmbedField, Image, Url, I18NContext
+from core.utils.message import truncate_text
 from core.web_render import web_render, SourceOptions
 
 DESC_LENGTH = 100
@@ -18,7 +19,7 @@ async def get_video_info(
         if not res:
             res = await web_render.source(SourceOptions(url=url, raw_text=True))
         if res:
-            load_json = json.loads(res)
+            load_json = orjson.loads(res)
             if load_json["code"] != 0:
                 if load_json["code"] == -400:
                     return I18NContext("bilibili.message.invalid")
@@ -37,8 +38,7 @@ async def get_video_info(
     pic = view["pic"]
     title = view["title"]
     tname = view["tname"]
-    desc = view["desc"]
-    desc = (desc[:100] + "...") if len(desc) > 100 else desc
+    desc = truncate_text(view["desc"], DESC_LENGTH)
     time = msg.format_time(view["pubdate"], iso=True, timezone=False)
 
     if len(view["pages"]) > 1:

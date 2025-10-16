@@ -29,7 +29,7 @@ from Crypto.Util.number import bytes_to_long
 from Crypto.Util.strxor import strxor
 
 from core.constants.path import assets_path
-from core.utils.message import isint
+from core.utils.message import is_int
 
 
 class MkeyGenerator:
@@ -430,7 +430,7 @@ class MkeyGenerator:
 
     def generate(self, inquiry, month=None, day=None, aux=None, device=None):
         inquiry = inquiry.replace(" ", "")
-        if not isint(inquiry):
+        if not is_int(inquiry):
             raise ValueError("Inquiry string must represent a decimal number.")
 
         if not month:

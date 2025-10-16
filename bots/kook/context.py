@@ -1,7 +1,7 @@
 from typing import Optional, Union, List
 
 import httpx
-import orjson as json
+import orjson
 from khl import Message, MessageTypes, PublicChannel, User
 
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
@@ -25,7 +25,7 @@ async def channel_api(endpoint: str, **params):
     url = f"{kook_base}/api/v3/message/{endpoint}"
     async with httpx.AsyncClient() as client:
         resp = await client.post(url, data=params, headers=kook_headers)
-    data = json.loads(resp.text)
+    data = orjson.loads(resp.text)
     if not str(resp.status_code).startswith("2"):
         raise ValueError(data)
     return data
@@ -35,7 +35,7 @@ async def direct_api(endpoint: str, **params):
     url = f"{kook_base}/api/v3/direct-message/{endpoint}"
     async with httpx.AsyncClient() as client:
         resp = await client.post(url, data=params, headers=kook_headers)
-    data = json.loads(resp.text)
+    data = orjson.loads(resp.text)
     if not str(resp.status_code).startswith("2"):
         raise ValueError(data)
     return data
@@ -104,9 +104,10 @@ class KOOKContextManager(ContextManager):
         if isinstance(message, MessageNodes):
             message = MessageChain.assign(await msgnode2image(message))
 
-        for x in message.as_sendable(session_info):
+        for x in message.as_sendable(session_info, parse_message=enable_parse_message):
             if isinstance(x, PlainElement):
-                x.text = match_atcode(x.text, client_name, "(met){uid}(met)")
+                if enable_parse_message:
+                    x.text = match_atcode(x.text, client_name, "(met){uid}(met)")
                 if ctx:
                     send_ = await ctx.reply(
                         x.text,

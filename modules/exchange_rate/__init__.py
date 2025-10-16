@@ -7,7 +7,7 @@ from core.component import module
 from core.config import Config
 from core.constants.exceptions import ConfigValueError
 from core.utils.http import get_url
-from core.utils.message import isfloat
+from core.utils.message import is_float
 
 api_key = Config("exchange_rate_api_key", cfg_type=str, secret=True, table_name="module_exchange_rate")
 
@@ -85,7 +85,7 @@ async def exchange(msg: Bot.MessageSession, base_currency, target_currency, amou
 )
 async def _(msg: Bot.MessageSession):
     matched_msg = msg.matched_msg
-    amount = matched_msg.group(1) if matched_msg.group(1) and isfloat(matched_msg.group(1)) else 1
+    amount = matched_msg.group(1) if matched_msg.group(1) and is_float(matched_msg.group(1)) else 1
     base = matched_msg.group(2).upper()
     target = matched_msg.group(3).upper()
     if base != target:

@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 
-import orjson as json
+import orjson
 from google_play_scraper import app as google_play_scraper
 
 from core.builtins.bot import Bot
@@ -12,7 +12,7 @@ from core.utils.http import get_url, post_url
 
 async def mcjv(msg: Bot.MessageSession):
     try:
-        data = json.loads(
+        data = orjson.loads(
             await get_url(
                 "https://piston-meta.mojang.com/mc/game/version_manifest.json", 200
             )

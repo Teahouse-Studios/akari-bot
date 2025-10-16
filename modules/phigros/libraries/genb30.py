@@ -4,6 +4,7 @@ from core.builtins.bot import Bot
 from core.constants.path import assets_path, noto_sans_demilight_path, noto_sans_bold_path
 from core.logger import Logger
 from core.utils.cache import random_cache_path
+from core.utils.message import truncate_text
 from .record import get_game_record
 
 pgr_assets_path = assets_path / "modules" / "phigros"
@@ -11,23 +12,6 @@ pgr_assets_path = assets_path / "modules" / "phigros"
 saira_regular_path = pgr_assets_path / "Saira Regular.ttf"
 
 levels = {"EZ": 0, "HD": 1, "IN": 2, "AT": 3}
-
-
-def truncate_text(arg_str: str, arg_len: int) -> str:
-    count = 0
-    list_str = []
-    for str_ in arg_str:
-        inside_code = ord(str_)
-        if inside_code == 0x0020:
-            count += 1
-        elif inside_code < 0x7F:
-            count += 1
-        else:
-            count += 2
-        if count > arg_len:
-            return "".join(list_str) + "..."
-        list_str.append(str_)
-    return "".join(list_str)
 
 
 def get_song_rank(song_score: int, song_fc: bool):

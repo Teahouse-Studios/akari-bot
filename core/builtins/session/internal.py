@@ -19,7 +19,7 @@ from core.builtins.utils import confirm_command
 from core.config import Config
 from core.constants import FinishedException, WaitCancelException
 from core.exports import add_export, exports
-from core.utils.message import isint
+from core.utils.message import is_int
 
 if TYPE_CHECKING:
     from core.queue.server import JobQueueServer
@@ -61,7 +61,7 @@ class MessageSession:
         :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链。
         :param quote: 是否引用传入dict中的消息。（默认为True）
         :param disable_secret_check: 是否禁用消息检查。（默认为False）
-        :param enable_parse_message: 是否允许解析消息。（此参数作接口兼容用，仅QQ平台使用，默认为True）
+        :param enable_parse_message: 是否允许解析消息。
         :param enable_split_image: 是否允许拆分图片发送。（此参数作接口兼容用，仅telegram平台使用，默认为True）
         :param callback: 回调函数，用于在消息发送完成后回复本消息执行的函数。
         :return: 被发送的消息链。
@@ -541,7 +541,7 @@ class MessageSession:
             num_str = f"{number:.{precision}f}".rstrip("0").rstrip(".")
             return num_str if precision > 0 else str(int(number))
 
-        if isint(number):
+        if is_int(number):
             number = int(number)
         else:
             return str(number)

@@ -1,4 +1,4 @@
-import orjson as json
+import orjson
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
@@ -105,7 +105,7 @@ async def _(msg: Bot.MessageSession):
 
     msg_chain = MessageChain.assign()
     with open(song_info_path, "rb") as f:
-        song_info = json.loads(f.read())
+        song_info = orjson.loads(f.read())
     sid, sinfo = Random.choice(list(song_info.items()))
     illustration_path = pgr_assets_path / "illustration" / f"{sid.split(".")[0]}.png"
     if illustration_path.exists():
@@ -136,7 +136,7 @@ async def _(msg: Bot.MessageSession, song_name: str):
 
             msg_chain.append(Plain(record.get("name")))
             with open(song_info_path, "rb") as f:
-                song_info = json.loads(f.read())
+                song_info = orjson.loads(f.read())
             diff_info = song_info.get(sid, {}).get("diff", {})
 
             for diff, diff_data in diff_info.items():
