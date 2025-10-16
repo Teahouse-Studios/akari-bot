@@ -704,8 +704,8 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(await get_info(music, diffs))
 
 
-@mai.command("scoreline <id_or_alias> <diff> <score> {{I18N:maimai.help.scoreline}}")
-async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str, score: float):
+@mai.command("scoreline <id_or_alias> <diff> {{I18N:maimai.help.scoreline}}")
+async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str):
     if id_or_alias[:2].lower() == "id":
         sid = id_or_alias[2:]
     else:
@@ -733,28 +733,22 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str, score: float):
     try:
         diff_index = get_diff(diff)
         chart = music["charts"][diff_index]
+    except IndexError:
+        await msg.finish(I18NContext("maimai.message.chart_not_found"))
+
+    try:
         tap = int(chart["notes"][0])
         slide = int(chart["notes"][2])
         hold = int(chart["notes"][1])
         touch = int(chart["notes"][3]) if len(chart["notes"]) == 5 else 0
         brk = int(chart["notes"][-1])
 
-        img = draw_scoreline_table(tap, hold, slide, touch, brk, "101-")
-
         total_score = (
             tap * 500 + slide * 1500 + hold * 1000 + touch * 500 + brk * 2500
         )  # 基础分
         bonus_score = total_score * 0.01 / brk  # 奖励分
         break_2550_reduce = bonus_score * 0.25  # 一个 BREAK 2550 减少 25% 奖励分
-        break_2000_reduce = (
-            bonus_score * 0.6 + 500
-        )  # 一个 BREAK 2000 减少 500 基础分和 60% 奖励分
-        reduce = 101 - score  # 理论值与给定完成率的差，以百分比计
-        if reduce <= 0 or reduce >= 101:
-            raise ValueError
-        tap_great = (
-            f"{(total_score * reduce / 10000):.2f}"  # 一个 TAP GREAT 减少 100 分
-        )
+        break_2000_reduce = (bonus_score * 0.6 + 500)  # 一个 BREAK 2000 减少 500 基础分和 60% 奖励分
         b2t_2550_great = (
             f"{(break_2550_reduce / 100):.3f}"  # 一个 TAP GREAT 减少 100 分
         )
@@ -764,15 +758,13 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str, score: float):
 
         msg_chain = MessageChain.assign([
             Plain(f"{music["id"]} - {music["title"]}{" (DX)" if music["type"] == "DX" else ""} [{diff_list[diff_index]}]"),
-            BImage(img),
+            BImage(draw_scoreline_table(tap, hold, slide, touch, brk, "101-")),
             I18NContext("maimai.message.scoreline",
-                        scoreline=score,
-                        tap_great=tap_great,
                         b2t_2550_great=b2t_2550_great,
                         b2t_2000_great=b2t_2000_great)
         ])
         await msg.finish(msg_chain)
-    except (IndexError, ValueError):
+    except ValueError:
         await msg.finish(I18NContext("maimai.message.scoreline.failed", prefix=msg.session_info.prefixes[0]))
 
 
