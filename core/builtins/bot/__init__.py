@@ -1,4 +1,5 @@
 import asyncio
+from collections.abc import Sequence
 from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 from core.builtins.message.chain import *
@@ -24,9 +25,9 @@ enable_analytics = Config("enable_analytics", True)
 
 
 class Bot:
-    MessageSession = MessageSession
-    FetchedMessageSession = FetchedMessageSession
-    ModuleHookContext = ModuleHookContext
+    MessageSession: type[MessageSession] = MessageSession
+    FetchedMessageSession: type[FetchedMessageSession] = FetchedMessageSession
+    ModuleHookContext: type[ModuleHookContext] = ModuleHookContext
     ExecutionLockList = ExecutionLockList
     Info = Info
     Temp = Temp
