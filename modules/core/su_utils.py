@@ -1,6 +1,8 @@
 import re
 import shutil
 from datetime import datetime
+
+from akari_bot_webrender.functions.options import StatusOptions
 from tabulate import tabulate
 
 import orjson
@@ -12,6 +14,7 @@ from core.builtins.converter import converter
 from core.builtins.message.chain import MessageChain, convert_senderid_to_atcode, match_kecode
 from core.builtins.message.internal import I18NContext, Plain, Image
 from core.builtins.parser.message import check_temp_ban, remove_temp_ban
+from core.builtins.session.internal import MessageSession
 from core.component import module
 from core.config import Config, CFGManager
 from core.constants.exceptions import NoReportException, TestException
@@ -30,6 +33,7 @@ from core.utils.decrypt import decrypt_string
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.message import is_float, is_int
 from core.utils.storedata import get_stored_list, update_stored_list
+from core.web_render import web_render
 
 auto_purge_crontab = Config("auto_purge_crontab", "0 0 * * *")
 DBDATA_PER_PAGE = 10
@@ -795,3 +799,11 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(dec)
     else:
         await msg.finish(I18NContext("message.failed"))
+
+
+wr = module("webrender", required_superuser=True, base=True)
+
+
+@wr.command("status")
+async def _(msg: Bot.MessageSession):
+    await msg.finish(str(await web_render.status(StatusOptions())))
