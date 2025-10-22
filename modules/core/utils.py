@@ -20,14 +20,21 @@ ver = module("version", base=True, doc=True)
 @ver.command("{{I18N:core.help.version}}")
 async def _(msg: Bot.MessageSession):
     if Bot.Info.version:
-        commit = Bot.Info.version[:6]
-        send_msgs = MessageChain.assign([I18NContext("core.message.version", commit=commit, disable_joke=True)])
-        if Config("enable_commit_url", True):
-            returncode, repo_url, _ = await run_sys_command(["git", "config", "--get", "remote.origin.url"])
-            if returncode == 0:
-                repo_url = repo_url.strip().replace(".git", "")
-                commit_url = f"{repo_url}/commit/{commit}"
-                send_msgs.append(Url(commit_url, use_mm=False))
+        if str(Bot.Info.version).startswith("git:"):
+            commit = Bot.Info.version[4:10]
+            send_msgs = MessageChain.assign(I18NContext("core.message.version", commit=commit, disable_joke=True))
+            if Config("enable_commit_url", True):
+                returncode, repo_url, _ = await run_sys_command(["git", "config", "--get", "remote.origin.url"])
+                if returncode == 0:
+                    repo_url = repo_url.strip().replace(".git", "")
+                    commit_url = f"{repo_url}/commit/{commit}"
+                    send_msgs.append(Url(commit_url, use_mm=False))
+        else:
+            send_msgs = MessageChain.assign(
+                I18NContext(
+                    "core.message.version",
+                    commit=Bot.Info.version,
+                    disable_joke=True))
         await msg.finish(send_msgs)
     else:
         await msg.finish(I18NContext("core.message.version.unknown"))

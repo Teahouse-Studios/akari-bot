@@ -5,6 +5,7 @@ from typing import Union, TYPE_CHECKING, Optional
 from core.builtins.parser.command import CommandParser
 from core.builtins.parser.message import parser
 from core.builtins.utils import command_prefix
+from core.constants.path import PrivateAssets
 from core.utils.bash import run_sys_command
 from core.web_render import init_web_render
 from .base import JobQueueBase
@@ -153,9 +154,15 @@ async def client_direct_message(tsk: JobQueuesTable, args: dict):
 @JobQueueServer.action("get_bot_version")
 async def get_bot_version(tsk: JobQueuesTable, args: dict):
     version = None
-    returncode, commit_hash, _ = await run_sys_command(["git", "rev-parse", "HEAD"])
-    if returncode == 0:
-        version = commit_hash
+    version_path = PrivateAssets.path / ".version"
+    if version_path.exists():
+        with open(version_path, "r") as f:
+            version = f.read()
+    else:
+        returncode, commit_hash, _ = await run_sys_command(["git", "rev-parse", "HEAD"])
+        if returncode == 0:
+            version = f"git:{commit_hash}"
+
     return {"version": version}
 
 

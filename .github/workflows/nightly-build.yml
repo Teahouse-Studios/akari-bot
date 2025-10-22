@@ -17,6 +17,24 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Write version file
+        run: |
+          mkdir -p assets/private/default
+          echo "nightly-v$(date +'%Y%m%d')" > assets/private/default/.version
+          cat assets/private/default/.version
+
+      - name: Package code
+        run: |
+          ZIP_NAME="AkariBot.zip"
+          zip -r "$ZIP_NAME" . -x '*.git*'
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: AkariBot
+          path: |
+            AkariBot.zip
+
       - name: Delete and recreate nightly tag
         run: |
           if git rev-parse refs/tags/nightly >/dev/null 2>&1; then
@@ -26,7 +44,7 @@ jobs:
           git tag nightly
           git push origin nightly
 
-      - name: Update release version
+      - name: Update release version and upload assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -36,4 +54,5 @@ jobs:
           fi
           gh release create nightly \
             --title "Nightly Release" \
-            --notes "> 这是 Nightly 版本，由于无法及时同步代码和验证版本的稳定性，本项目已不再提供正式版本。请点击 Assets -> Source code 下载当前最新源代码。"
+            --notes "> 这是 Nightly 版本，由于无法及时同步代码和验证版本稳定性，本项目已不再提供正式版本。" \
+            AkariBot.zip

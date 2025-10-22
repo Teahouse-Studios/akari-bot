@@ -1,0 +1,53 @@
+name: "Release Build"
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set TAG_NAME
+        id: tag
+        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Write version file
+        run: |
+          mkdir -p assets/private/default
+          echo "$TAG_NAME" > assets/private/default/.version
+          cat assets/private/default/.version
+
+      - name: Package code
+        run: |
+          ZIP_NAME="AkariBot-$TAG_NAME.zip"
+          zip -r "$ZIP_NAME" . -x '*.git*'
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AkariBot
+          path: ${{ env.ZIP_NAME }}
+
+      - name: Create GitHub release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          release_exists=$(gh release list --json tagName --jq ".[] | select(.tagName==\"$TAG_NAME\") | .tagName")
+          if [ -n "$release_exists" ]; then
+            gh release delete "$TAG_NAME" -y
+          fi
+
+          gh release create "$TAG_NAME" \
+            --title "$TAG_NAME" \
+            "$ZIP_NAME"

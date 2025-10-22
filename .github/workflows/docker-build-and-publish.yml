@@ -46,6 +46,12 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: master
 
+      - name: Write version file
+        run: |
+          mkdir -p assets/private/default
+          echo "nightly-v$(date +'%Y%m%d')" > assets/private/default/.version
+          cat assets/private/default/.version
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -64,4 +70,6 @@ jobs:
           TAG: ${{ github.sha }}
         run: |
           docker buildx create --use
-          docker buildx build --platform linux/amd64,linux/arm64 -t $IMAGE_NAME:$TAG -t $IMAGE_NAME:latest --push .
+          docker buildx build --platform linux/amd64,linux/arm64 \
+            --build-arg VERSION=$VERSION \
+            -t $IMAGE_NAME:$TAG -t $IMAGE_NAME:latest --push .

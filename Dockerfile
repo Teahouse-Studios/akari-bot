@@ -7,6 +7,8 @@ LABEL org.opencontainers.image.vendor="Teahouse Studios"
 LABEL org.opencontainers.image.licenses=AGPL-3.0-or-later
 LABEL org.opencontainers.image.title="AkariBot"
 LABEL maintainer="Teahouse Studios <admin@teahou.se>"
+ARG VERSION
+LABEL version=$VERSION
 
 WORKDIR /akari-bot
 ADD . .

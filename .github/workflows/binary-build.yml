@@ -33,6 +33,12 @@ jobs:
           playwright install --with-deps chromium
           python core/scripts/config_generate.py
 
+      - name: Write version file
+        run: |
+          mkdir -p assets/private/default
+          echo "nightly-v$(date +'%Y%m%d')" > assets/private/default/.version
+          cat assets/private/default/.version
+
       - name: Build Wrapper Executable
         uses: Nuitka/Nuitka-Action@main
         with:
