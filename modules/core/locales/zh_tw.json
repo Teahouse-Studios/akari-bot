@@ -211,7 +211,7 @@
     "core.message.superuser.remove.success": "成功將 ${user} 移出超級使用者。",
     "core.message.update.binary_mode": "機器人正在使用二進位部署，無法更新。請手動下載最新版本的二進位檔案覆寫。",
     "core.message.update.failed": "嘗試從 GitHub 取得更新失敗。",
-    "core.message.version": "當前機器人版本號：${commit}",
+    "core.message.version": "當前機器人版本號：${version}",
     "core.message.version.unknown": "無法取得版本號。此實例可能沒有使用 Git 進行部署。",
     "core.message.whoami": "你的 ID：${sender}\n本會話的 ID：${target}",
     "core.message.whoami.admin": "（你擁有本會話的管理員權限）",
