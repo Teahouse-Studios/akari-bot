@@ -211,7 +211,7 @@
     "core.message.superuser.remove.success": "${user} にスーパーユーザーから解除しました。",
     "core.message.update.binary_mode": "ボットはバイナリデプロイメントを使用しているため、更新できません。最新バージョンのバイナリファイルを手動でダウンロードして置き換えてください。\n",
     "core.message.update.failed": "GitHub から更新を取得しようとして失敗しました。",
-    "core.message.version": "現在ボットのバージョン：${commit}",
+    "core.message.version": "現在ボットのバージョン：${version}",
     "core.message.version.unknown": "バージョンを取得できません。このインスタンスは Git を使用してデプロイされていない可能性があります。",
     "core.message.whoami": "あなたの ID：${sender}\nこのセッションの ID：${target}",
     "core.message.whoami.admin": "（このセッションでは管理者権限があります）",
