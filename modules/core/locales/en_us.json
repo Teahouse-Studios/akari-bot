@@ -211,7 +211,7 @@
     "core.message.superuser.remove.success": "Successfully remove ${user} from superuser.",
     "core.message.update.binary_mode": "The bot is deployed through the binary executable and therefore cannot be updated. Please download the latest version of the executable and replace it manually.",
     "core.message.update.failed": "Failed to fetch update from GitHub.",
-    "core.message.version": "Current bot version: ${commit}",
+    "core.message.version": "Current bot version: ${version}",
     "core.message.version.unknown": "Unable to get version. This instance may not be deployed using Git.",
     "core.message.whoami": "Your ID: ${sender}\nSession ID: ${target}",
     "core.message.whoami.admin": "(You have admin permission for this session)",

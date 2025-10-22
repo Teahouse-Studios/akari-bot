@@ -22,7 +22,7 @@ async def _(msg: Bot.MessageSession):
     if Bot.Info.version:
         if str(Bot.Info.version).startswith("git:"):
             commit = Bot.Info.version[4:10]
-            send_msgs = MessageChain.assign(I18NContext("core.message.version", commit=commit, disable_joke=True))
+            send_msgs = MessageChain.assign(I18NContext("core.message.version", version=commit, disable_joke=True))
             if Config("enable_commit_url", True):
                 returncode, repo_url, _ = await run_sys_command(["git", "config", "--get", "remote.origin.url"])
                 if returncode == 0:
@@ -33,7 +33,7 @@ async def _(msg: Bot.MessageSession):
             send_msgs = MessageChain.assign(
                 I18NContext(
                     "core.message.version",
-                    commit=Bot.Info.version,
+                    version=Bot.Info.version,
                     disable_joke=True))
         await msg.finish(send_msgs)
     else:

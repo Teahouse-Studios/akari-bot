@@ -211,7 +211,7 @@
     "core.message.superuser.remove.success": "成功将 ${user} 移出超级用户。",
     "core.message.update.binary_mode": "机器人正在使用二进制部署，无法更新。请手动下载最新版本的二进制文件进行替换。",
     "core.message.update.failed": "尝试从 GitHub 获取更新失败。",
-    "core.message.version": "当前机器人版本号：${commit}",
+    "core.message.version": "当前机器人版本号：${version}",
     "core.message.version.unknown": "无法获取版本号。此实例可能没有使用 Git 进行部署。",
     "core.message.whoami": "你的 ID：${sender}\n本会话的 ID：${target}",
     "core.message.whoami.admin": "（你拥有本会话的管理员权限）",
