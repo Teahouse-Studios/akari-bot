@@ -25,7 +25,7 @@ jobs:
 
       - name: Package code
         run: |
-          ZIP_NAME="AkariBot.zip"
+          ZIP_NAME="AkariBot-nightly.zip"
           zip -r "$ZIP_NAME" . -x '*.git*'
 
       - name: Upload artifacts
@@ -33,7 +33,7 @@ jobs:
         with:
           name: AkariBot
           path: |
-            AkariBot.zip
+            AkariBot-nightly.zip
 
       - name: Delete and recreate nightly tag
         run: |
@@ -55,4 +55,5 @@ jobs:
           gh release create nightly \
             --title "Nightly Release" \
             --notes "> 这是 Nightly 版本，由于无法及时同步代码和验证版本稳定性，本项目已不再提供正式版本。" \
-            AkariBot.zip
+            --prerelease \
+            AkariBot-nightly.zip
