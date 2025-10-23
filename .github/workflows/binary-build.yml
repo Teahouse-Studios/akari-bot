@@ -34,6 +34,7 @@ jobs:
           python core/scripts/config_generate.py
 
       - name: Write version file
+        shell: bash
         run: |
           mkdir -p assets/private/default
           echo "nightly-v$(date +'%Y%m%d')" > assets/private/default/.version
