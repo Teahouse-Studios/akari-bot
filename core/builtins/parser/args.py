@@ -121,9 +121,6 @@ def parse_template(argv: List[str], depth: int = 0) -> List[Template]:
     if depth > MAX_NEST_DEPTH:
         raise InvalidTemplatePattern("Template nesting too deep")
 
-    if not argv or all(not str(a).strip() for a in argv):
-        raise InvalidTemplatePattern("Empty template input")
-
     templates = []
     argv_ = []
 
@@ -156,7 +153,7 @@ def parse_template(argv: List[str], depth: int = 0) -> List[Template]:
 
                 if strip_pattern.startswith("["):
                     if not strip_pattern.endswith("]"):
-                        raise InvalidTemplatePattern(p)
+                        raise InvalidTemplatePattern(f"Broken optional block: {p}")
                     inner = strip_pattern[1:-1].strip()
                     if not inner:
                         raise InvalidTemplatePattern("Empty optional block [] not allowed")
@@ -167,7 +164,9 @@ def parse_template(argv: List[str], depth: int = 0) -> List[Template]:
 
                     if optional_patterns[0].startswith("<"):
                         if not optional_patterns[0].endswith(">"):
-                            raise InvalidTemplatePattern(p)
+                            raise InvalidTemplatePattern(f"Broken argument block: {p}")
+                        if not optional_patterns[0][1:-1].strip():
+                            raise InvalidTemplatePattern("Empty argument block <> not allowed")
                         args += optional_patterns
                     else:
                         flag = optional_patterns[0]
@@ -175,9 +174,6 @@ def parse_template(argv: List[str], depth: int = 0) -> List[Template]:
 
                     if flag and flag.startswith("{"):
                         raise InvalidTemplatePattern(f"Optional flag cannot be description: {flag}")
-
-                    if flag and not flag.startswith("--") and not flag.startswith("-"):
-                        raise InvalidTemplatePattern(f"Invalid flag format: {flag}")
 
                     arg_names_ = set()
                     for arg in args:
@@ -208,7 +204,7 @@ def parse_template(argv: List[str], depth: int = 0) -> List[Template]:
 
                 elif strip_pattern.startswith("{"):
                     if not strip_pattern.endswith("}"):
-                        raise InvalidTemplatePattern(p)
+                        raise InvalidTemplatePattern(f"Broken description block: {p}")
                     if seen_desc:
                         raise InvalidTemplatePattern(f"Multiple descriptions not allowed: {p}")
                     seen_desc = True
@@ -221,8 +217,11 @@ def parse_template(argv: List[str], depth: int = 0) -> List[Template]:
                     last_type = "desc"
 
                 else:
-                    if strip_pattern.startswith("<") and not strip_pattern.endswith(">"):
-                        raise InvalidTemplatePattern(p)
+                    if strip_pattern.startswith("<"):
+                        if not strip_pattern.endswith(">"):
+                            raise InvalidTemplatePattern(f"Broken argument block: {p}")
+                        if not strip_pattern[1:-1].strip():
+                            raise InvalidTemplatePattern("Empty argument block <> not allowed")
                     if last_type in ("optional", "optional_no_flag"):
                         raise InvalidTemplatePattern(f"Argument cannot follow optional block: {p}")
                     if last_type == "desc":
