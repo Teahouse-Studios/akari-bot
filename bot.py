@@ -13,7 +13,7 @@ from loguru import logger
 from tortoise import Tortoise, run_async
 from tortoise.exceptions import ConfigurationError
 
-from core.constants import config_path, config_filename, logs_path
+from core.constants import bots_path, config_path, config_filename, logs_path
 
 # Capture the base import lists to avoid clearing essential modules when restarting
 base_import_lists = list(sys.modules)
@@ -67,16 +67,6 @@ ascii_art = r"""
  /_/    \_\_|\_\__,_|_|  |_| |____/ \___/ \__|
 """
 encode = "UTF-8"
-
-bots_and_required_configs = {
-    "aiocqhttp": ["qq_host"],
-    "discord": ["discord_token"],
-    "aiogram": ["telegram_token"],
-    "kook": ["kook_token"],
-    "matrix": ["matrix_homeserver", "matrix_user", "matrix_device_id", "matrix_token"],
-    "qqbot": ["qq_bot_appid", "qq_bot_secret"],
-    "web": [],
-}
 
 
 class RestartBot(Exception):
@@ -224,32 +214,21 @@ async def run_bot():
     envs = os.environ.copy()
     envs["PYTHONIOENCODING"] = "UTF-8"
     envs["PYTHONPATH"] = Path(".").resolve()
-    lst = bots_and_required_configs.keys()
+    bots_list = [p.name for p in bots_path.iterdir() if p.is_dir() and not p.name.startswith("_")]
 
     for t in CFGManager.values:
-        if t.startswith("bot_") and not t.endswith("_secret"):
+        if t.startswith("bot_") and not t.endswith("_secret") and t[4:] in bots_list:
             if "enable" in CFGManager.values[t][t]:
                 if not CFGManager.values[t][t]["enable"]:
                     disabled_bots.append(t[4:])
                     Logger.warning(f"Bot {t[4:]} is disabled in config, skip to launch.")
             else:
-                Logger.warning(f"Bot {t} cannot found config \"enable\".")
+                Logger.warning(f"Bot {t[4:]} cannot found config \"enable\".")
                 disabled_bots.append(t[4:])
 
-    for bl in lst:
+    for bl in bots_list:
         if bl in disabled_bots:
             continue
-        if bl in bots_and_required_configs:
-            abort = False
-            for c in bots_and_required_configs[bl]:
-                if not CFGManager.get(c, _global=True):
-                    Logger.error(
-                        f"Bot {bl} requires config \"{c}\" but not found, abort to launch."
-                    )
-                    abort = True
-                    break
-            if abort:
-                continue
         p = multiprocessing.Process(
             target=go, args=(bl, True, binary_mode), name=bl, daemon=True
         )
