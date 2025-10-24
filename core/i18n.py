@@ -2,7 +2,6 @@ import glob
 import html
 import re
 import traceback
-from collections.abc import MutableMapping
 from pathlib import Path
 from string import Template
 from typing import Any, Dict, List, Optional, Union
@@ -11,6 +10,7 @@ import orjson
 
 from core.constants.default import lang_list
 from core.constants.path import locales_path, modules_locales_path
+from core.utils.message import flatten_dict as flatten
 
 # Load all locale files into memory
 
@@ -59,20 +59,6 @@ class LocaleNode:
 
 
 locale_root = LocaleNode()
-
-
-# From https://stackoverflow.com/a/6027615
-
-
-def flatten(d: Dict[str, Any], parent_key="", sep="."):
-    items = []
-    for k, v in d.items():
-        new_key = parent_key + sep + k if parent_key else k
-        if isinstance(v, MutableMapping):
-            items.extend(flatten(v, new_key, sep=sep).items())
-        else:
-            items.append((new_key, v))
-    return dict(items)
 
 
 def load_locale_file() -> List[str]:
@@ -137,6 +123,12 @@ class Locale:
     def __contains__(self, key: str):
         return key in self.data
 
+    def reload(self):
+        error = load_locale_file()
+        if not error:
+            self.data = locale_root.query_node(self.locale)
+        return error
+
     def get_locale_node(self, path: str):
         """获取本地化节点。"""
         return self.data.query_node(path)
@@ -146,16 +138,16 @@ class Locale:
     ) -> str:
         node = self.data.query_node(key)
         if node:
-            return node.value  # 1. 如果本地化字符串存在，直接返回
+            return node.value
+            # 1. 如果本地化字符串存在，直接返回
         fallback_lng = list(self.fallback_lng)
         fallback_lng.insert(0, self.locale)
         for lng in fallback_lng:
             if lng in locale_root.children:
                 node = locale_root.query_node(lng).query_node(key)
                 if node:
-                    return (
-                        node.value
-                    )  # 2. 如果在 fallback 语言中本地化字符串存在，直接返回
+                    return node.value
+                    # 2. 如果在 fallback 语言中本地化字符串存在，直接返回
         if fallback_failed_prompt:
             return f"{{I18N:{key}}}" + self.t(
                 "error.i18n.fallback", fallback_failed_prompt=False
