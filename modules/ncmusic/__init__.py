@@ -22,7 +22,7 @@ ncmusic = module(
 
 
 @ncmusic.command(
-    "search [--legacy] <keyword> {{I18N:ncmusic.help.search}}",
+    "search <keyword> [--legacy] {{I18N:ncmusic.help.search}}",
     options_desc={"--legacy": "{I18N:help.option.legacy}"},
 )
 async def _(msg: Bot.MessageSession, keyword: str):
@@ -190,3 +190,4 @@ async def info(msg: Bot.MessageSession, sid: int):
         )
     else:
         await msg.finish(I18NContext("ncmusic.message.info.not_found"))
+
