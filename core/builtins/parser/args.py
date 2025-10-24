@@ -1,8 +1,10 @@
 import re
 import traceback
-from typing import List, Dict, Union
+from typing import List, Dict, Set, Union
 
 from core.constants.exceptions import InvalidTemplatePattern, InvalidCommandFormatError
+
+MAX_NEST_DEPTH = 10
 
 
 class ArgumentPattern:
@@ -115,55 +117,139 @@ def split_multi_arguments(lst: list):
     return list(set(new_lst))
 
 
-def parse_template(argv: List[str]) -> List[Template]:
+def parse_template(argv: List[str], depth: int = 0) -> List[Template]:
+    if depth > MAX_NEST_DEPTH:
+        raise InvalidTemplatePattern("Template nesting too deep")
+
+    if not argv or all(not str(a).strip() for a in argv):
+        raise InvalidTemplatePattern("Empty template input")
+
     templates = []
     argv_ = []
+
     for a in argv:
         if isinstance(a, str):
+            a = a.strip()
+            if not a:
+                continue
             spl = split_multi_arguments([a])
             for split in spl:
                 argv_.append(split)
 
-    for a in argv_:
-        template = Template([])
-        patterns = filter(None, re.split(r"(\[.*?])|(<.*?>)|(\{.*})| ", a))
-        for p in patterns:
-            strip_pattern = p.strip()
-            if not strip_pattern:
-                continue
-            if strip_pattern.startswith("["):
-                if not strip_pattern.endswith("]"):
-                    raise InvalidTemplatePattern(p)
-                optional_patterns = strip_pattern[1:-1].split(" ")
-                flag = None
-                args = []
-                if optional_patterns[0].startswith("<"):
-                    if not optional_patterns[0].endswith(">"):
+    try:
+        for a in argv_:
+            if any(x in a for x in ["<[", ">{", "{<", "[{", "{["]):
+                raise InvalidTemplatePattern(f"Illegal mixed bracket nesting: {a}")
+
+            template = Template([])
+            patterns = list(filter(None, re.split(r"(\[.*?])|(<.*?>)|(\{.*})| ", a)))
+
+            arg_names: Set[str] = set()
+            last_type = None
+            seen_desc = False
+            seen_variadic = False
+
+            for p in patterns:
+                strip_pattern = p.strip()
+                if not strip_pattern:
+                    continue
+
+                if strip_pattern.startswith("["):
+                    if not strip_pattern.endswith("]"):
                         raise InvalidTemplatePattern(p)
-                    args += optional_patterns
-                else:
-                    flag = optional_patterns[0]
-                    args += optional_patterns[1:]
-                template.args.append(
-                    OptionalPattern(
-                        flag=flag,
-                        args=(
-                            parse_template([" ".join(args).strip()])
-                            if len(args) > 0
-                            else []
-                        ),
+                    inner = strip_pattern[1:-1].strip()
+                    if not inner:
+                        raise InvalidTemplatePattern("Empty optional block [] not allowed")
+
+                    optional_patterns = inner.split(" ")
+                    flag = None
+                    args = []
+
+                    if optional_patterns[0].startswith("<"):
+                        if not optional_patterns[0].endswith(">"):
+                            raise InvalidTemplatePattern(p)
+                        args += optional_patterns
+                    else:
+                        flag = optional_patterns[0]
+                        args += optional_patterns[1:]
+
+                    if flag and flag.startswith("{"):
+                        raise InvalidTemplatePattern(f"Optional flag cannot be description: {flag}")
+
+                    if flag and not flag.startswith("--") and not flag.startswith("-"):
+                        raise InvalidTemplatePattern(f"Invalid flag format: {flag}")
+
+                    arg_names_ = set()
+                    for arg in args:
+                        if arg in arg_names_:
+                            raise InvalidTemplatePattern(
+                                f"Duplicate argument in optional flag \"{flag}\": {arg}"
+                            )
+                        arg_names_.add(arg)
+
+                    if not flag:
+                        for arg in args:
+                            if arg in arg_names:
+                                raise InvalidTemplatePattern(f"Duplicate required argument: {arg}")
+                            arg_names.add(arg)
+
+                    if last_type == "desc":
+                        raise InvalidTemplatePattern(f"Optional argument cannot follow description: {p}")
+                    if last_type == "optional_no_flag" and not flag:
+                        raise InvalidTemplatePattern(f"Two no-flag optional arguments not allowed: {p}")
+
+                    template.args.append(
+                        OptionalPattern(
+                            flag=flag,
+                            args=parse_template([" ".join(args)], depth + 1) if args else []
+                        )
                     )
-                )
-            elif strip_pattern.startswith("{"):
-                if not strip_pattern.endswith("}"):
-                    raise InvalidTemplatePattern(p)
-                template.args.append(DescPattern(strip_pattern[1:-1]))
-            else:
-                if strip_pattern.startswith("<") and not strip_pattern.endswith(">"):
-                    raise InvalidTemplatePattern(p)
-                template.args.append(ArgumentPattern(strip_pattern))
-        templates.append(template)
-    return templates
+                    last_type = "optional" if flag else "optional_no_flag"
+
+                elif strip_pattern.startswith("{"):
+                    if not strip_pattern.endswith("}"):
+                        raise InvalidTemplatePattern(p)
+                    if seen_desc:
+                        raise InvalidTemplatePattern(f"Multiple descriptions not allowed: {p}")
+                    seen_desc = True
+
+                    desc = strip_pattern[1:-1].strip()
+                    if not desc:
+                        raise InvalidTemplatePattern("Empty description block {} not allowed")
+
+                    template.args.append(DescPattern(desc))
+                    last_type = "desc"
+
+                else:
+                    if strip_pattern.startswith("<") and not strip_pattern.endswith(">"):
+                        raise InvalidTemplatePattern(p)
+                    if last_type in ("optional", "optional_no_flag"):
+                        raise InvalidTemplatePattern(f"Argument cannot follow optional block: {p}")
+                    if last_type == "desc":
+                        raise InvalidTemplatePattern(f"Argument cannot follow description: {p}")
+
+                    if strip_pattern in arg_names:
+                        raise InvalidTemplatePattern(f"Duplicate argument: \"{strip_pattern}\"")
+
+                    if strip_pattern == "...":
+                        if seen_variadic:
+                            raise InvalidTemplatePattern("Duplicate \"...\" not allowed")
+                        seen_variadic = True
+                        last_type = "variadic"
+                        template.args.append(ArgumentPattern("..."))
+                        continue
+
+                    arg_names.add(strip_pattern)
+                    template.args.append(ArgumentPattern(strip_pattern))
+                    last_type = "argument"
+
+            templates.append(template)
+
+        return templates
+
+    except InvalidTemplatePattern as e:
+        traceback.print_exc()
+        raise e
 
 
 def templates_to_str(
@@ -251,12 +337,7 @@ def parse_argv(argv: List[str], templates: List["Template"]) -> MatchedResult:
                         else:
                             parsed_argv[a.name] = False
                     elif a.name == "...":
-                        if len(args) - 1 == args.index(a):
-                            afters.append(Template([a]))
-                        else:
-                            raise InvalidTemplatePattern(
-                                "... must be the last argument"
-                            )
+                        afters.append(Template([a]))
                     else:
                         parsed_argv[a.name] = a.name in argv_copy
                         if parsed_argv[a.name]:

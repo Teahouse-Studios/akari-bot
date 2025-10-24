@@ -19,7 +19,7 @@ class ModuleMeta:
 @define
 class CommandMeta(ModuleMeta):
     function: Callable = None
-    help_doc: List[Template] = field(default=[], converter=convert_list)
+    command_template: List[Template] = field(default=[], converter=convert_list)
     options_desc: dict = None
     required_admin: bool = False
     required_superuser: bool = False

@@ -308,16 +308,16 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
             else:
                 Logger.debug("Tos is disabled, check the configuration if it is not work as expected.")
 
-        none_doc = True  # 检查模块绑定的命令是否有文档
+        none_templates = True  # 检查模块绑定的命令是否有模板
         for func in module.command_list.get(msg.session_info.target_from):
-            if func.help_doc:
-                none_doc = False
-        if not none_doc:  # 如果有，送入命令解析
+            if func.command_template:
+                none_templates = False
+        if not none_templates:  # 如果有，送入命令解析
             await _execute_module_command(msg, module, command_first_word)
         else:  # 如果没有，直接传入下游模块
             msg.parsed_msg = None
             for func in module.command_list.set:
-                if not func.help_doc:
+                if not func.command_template:
                     if msg.session_info.sender_info.sender_data.get("typing_prompt", True):
                         await msg.start_typing()
                     await func.function(msg)  # 将msg传入下游模块
@@ -648,6 +648,8 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
                                                    module=command_first_word,
                                                    prefix=msg.session_info.prefixes[0]))
             return
+        except Exception as e:
+            raise e
     except InvalidHelpDocTypeError:
         Logger.exception()
         await msg.send_message(I18NContext("error.module.helpdoc_invalid", module=command_first_word))
@@ -741,35 +743,36 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
         Logger.debug(f"Match module: {command_first_word} -> {match_close_module[0]}")
         module: Module = modules[match_close_module[0]]
 
-        none_doc = True  # 检查模块绑定的命令是否有文档
+        none_template = True  # 检查模块绑定的命令是否有文档
         for func in module.command_list.get(msg.session_info.target_from):
-            if func.help_doc:
-                none_doc = False
+            if func.command_template:
+                none_template = False
 
         command_split = msg.trigger_msg.split(" ")
         len_command_split = len(command_split)
-        if not none_doc and len_command_split > 1:
+        if not none_template and len_command_split > 1:
             get_commands: List[CommandMeta] = module.command_list.get(msg.session_info.target_from)
-            docs = {}  # 根据命令模板的空格数排序命令
+            command_templates = {}  # 根据命令模板的空格数排序命令
             for func in get_commands:
-                help_doc: List[argsTemplate] = copy.deepcopy(func.help_doc)
-                for h_ in help_doc:
-                    h_.args_ = [a for a in h_.args if isinstance(a, ArgumentPattern)]
-                    if (len_args := len(h_.args)) not in docs:
-                        docs[len_args] = [h_]
+                command_template: List[argsTemplate] = copy.deepcopy(func.command_template)
+                for ct in command_template:
+                    ct.args_ = [a for a in ct.args if isinstance(a, ArgumentPattern)]
+                    if (len_args := len(ct.args)) not in command_templates:
+                        command_templates[len_args] = [ct]
                     else:
-                        docs[len_args].append(h_)
+                        command_templates[len_args].append(ct)
 
-            if len_command_split - 1 > len(docs):  # 如果空格数远大于命令模板的空格数
-                select_docs = docs[max(docs)]
+            if len_command_split - 1 > len(command_templates):  # 如果空格数远大于命令模板的空格数
+                select_templates = command_templates[max(command_templates)]
             else:
                 try:
-                    select_docs = docs[len_command_split - 1]  # 选择匹配的命令组
+                    select_templates = command_templates[len_command_split - 1]  # 选择匹配的命令组
                 except KeyError:
                     # 找一个最接近的命令模板
-                    select_docs = docs[max(docs.keys(), key=lambda k: min(abs(k - (len_command_split - 1)), k))]
+                    select_templates = command_templates[max(
+                        command_templates.keys(), key=lambda k: min(abs(k - (len_command_split - 1)), k))]
             match_close_command: list = difflib.get_close_matches(
-                " ".join(command_split[1:]), templates_to_str(select_docs), 1, typo_check_command_score)  # 进一步匹配命令
+                " ".join(command_split[1:]), templates_to_str(select_templates), 1, typo_check_command_score)  # 进一步匹配命令
             if match_close_command:
                 Logger.debug(f"Match command: {" ".join(command_split[1:])} -> {match_close_command[0]}")
                 match_split = match_close_command[0]

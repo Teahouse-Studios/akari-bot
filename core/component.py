@@ -10,6 +10,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 
 from core.builtins.parser.args import parse_template
 from core.config.decorator import _process_class
+from core.constants.exceptions import InvalidTemplatePattern
 from core.builtins.types import MessageElement
 from core.loader import ModulesManager
 from core.types import Module
@@ -23,8 +24,8 @@ class Bind:
 
         def command(
             self,
-            help_doc: Union[str, list, tuple] = None,
-            *help_docs,
+            command_template: Union[str, list, tuple] = None,
+            *command_templates,
             options_desc: dict = None,
             required_admin: bool = False,
             required_superuser: bool = False,
@@ -35,19 +36,24 @@ class Bind:
             priority: int = 1
         ):
             def decorator(function):
-                nonlocal help_doc
-                if isinstance(help_doc, str):
-                    help_doc = [help_doc]
-                if help_docs:
-                    help_doc += help_docs
-                if not help_doc:
-                    help_doc = []
+                nonlocal command_template
+                if isinstance(command_template, str):
+                    command_template = [command_template]
+                if command_templates:
+                    command_template += command_templates
+                if not command_template:
+                    command_template = []
+
+                try:
+                    command_template = parse_template(command_template)
+                except InvalidTemplatePattern:
+                    return
 
                 ModulesManager.bind_to_module(
                     self.module_name,
                     CommandMeta(
                         function=function,
-                        help_doc=parse_template(help_doc),
+                        command_template=command_template,
                         options_desc=options_desc,
                         required_admin=required_admin,
                         required_superuser=required_superuser,
@@ -135,8 +141,8 @@ class Bind:
         @overload
         def handle(
             self,
-            help_doc: Union[str, list, tuple] = None,
-            *help_docs,
+            command_template: Union[str, list, tuple] = None,
+            *command_templates,
             options_desc: dict = None,
             required_admin: bool = False,
             required_superuser: bool = False,
