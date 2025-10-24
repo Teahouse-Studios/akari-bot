@@ -54,6 +54,6 @@ jobs:
           fi
           gh release create nightly \
             --title "Nightly Release" \
-            --notes "> 这是 Nightly 版本，由于无法及时同步代码和验证版本稳定性，本项目已不再提供正式版本。" \
+            --notes "> 这是 Nightly 版本，功能可能不稳定，如发生错误请及时更新版本或回报问题。" \
             --prerelease \
             AkariBot-nightly.zip
