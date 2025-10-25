@@ -21,7 +21,7 @@ ver = module("version", base=True, doc=True)
 async def _(msg: Bot.MessageSession):
     if Bot.Info.version:
         if str(Bot.Info.version).startswith("git:"):
-            commit = Bot.Info.version[4:10]
+            commit = Bot.Info.version[4:11]
             send_msgs = MessageChain.assign(I18NContext("core.message.version", version=commit, disable_joke=True))
             if Config("enable_commit_url", True):
                 returncode, repo_url, _ = await run_sys_command(["git", "config", "--get", "remote.origin.url"])
@@ -296,3 +296,4 @@ async def _(msg: Bot.MessageSession):
         await msg.qq_call_api("set_group_leave", group_id=int(msg.session_info.get_common_target_id()))
     else:
         await msg.finish()
+
