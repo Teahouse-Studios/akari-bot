@@ -1,4 +1,6 @@
 name: Push Emoji Data
+permissions:
+  contents: write
 
 on:
   schedule:
