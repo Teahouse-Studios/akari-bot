@@ -19,7 +19,7 @@ python = "^3.12.0"
 
 # akari-bot-service
 akari-bot-webrender = "0.5.5"
-akari-bot-webui = "0.3.4"
+akari-bot-webui = "0.3.5"
 
 # lib
 coverage = "^7.9.1"
