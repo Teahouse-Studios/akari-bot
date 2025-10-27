@@ -1,4 +1,6 @@
 name: "Binary Build Nightly x64 Executables (3:00, UTC+8)"
+permissions:
+  contents: read
 
 on:
   schedule:
