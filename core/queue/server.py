@@ -2,12 +2,14 @@ import re
 
 from typing import Union, TYPE_CHECKING, Optional
 
+from akari_bot_webrender.functions.options import StatusOptions
+
 from core.builtins.parser.command import CommandParser
 from core.builtins.parser.message import parser
 from core.builtins.utils import command_prefix
 from core.constants.path import PrivateAssets
 from core.utils.bash import run_sys_command
-from core.web_render import init_web_render
+from core.web_render import init_web_render, web_render
 from .base import JobQueueBase
 from ..builtins.converter import converter
 from ..builtins.message.chain import MessageChain, MessageNodes
@@ -168,8 +170,7 @@ async def get_bot_version(tsk: JobQueuesTable, args: dict):
 
 @JobQueueServer.action("get_web_render_status")
 async def get_web_render_status(tsk: JobQueuesTable, args: dict):
-    web_render_status = await init_web_render()
-    return {"web_render_status": web_render_status}
+    return {"web_render_status": await web_render.browser.check_status()}
 
 
 @JobQueueServer.action("get_modules_list")

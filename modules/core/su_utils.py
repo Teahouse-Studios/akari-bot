@@ -33,7 +33,7 @@ from core.utils.decrypt import decrypt_string
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.message import is_float, is_int
 from core.utils.storedata import get_stored_list, update_stored_list
-from core.web_render import web_render
+from core.web_render import web_render, close_web_render, init_web_render
 
 auto_purge_crontab = Config("auto_purge_crontab", "0 0 * * *")
 DBDATA_PER_PAGE = 10
@@ -807,3 +807,29 @@ wr = module("webrender", required_superuser=True, base=True)
 @wr.command("status")
 async def _(msg: Bot.MessageSession):
     await msg.finish(str(await web_render.status(StatusOptions())))
+
+
+@wr.command("start")
+async def _(msg: Bot.MessageSession):
+    if await init_web_render():
+        Bot.Info.web_render_status = await web_render.browser.check_status()
+        await msg.finish(I18NContext("message.success"))
+    else:
+        await msg.finish(I18NContext("message.failed"))
+
+
+@wr.command("stop")
+async def _(msg: Bot.MessageSession):
+    await close_web_render()
+    Bot.Info.web_render_status = await web_render.browser.check_status()
+    await msg.finish(I18NContext("message.success"))
+
+
+@wr.command("reload")
+async def _(msg: Bot.MessageSession):
+    await close_web_render()
+    if await init_web_render():
+        Bot.Info.web_render_status = await web_render.browser.check_status()
+        await msg.finish(I18NContext("message.success"))
+    else:
+        await msg.finish(I18NContext("message.failed"))
