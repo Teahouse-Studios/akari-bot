@@ -18,7 +18,7 @@ package-mode = false
 python = "^3.12.0"
 
 # akari-bot-service
-akari-bot-webrender = "0.5.0"
+akari-bot-webrender = "0.5.5"
 akari-bot-webui = "0.3.4"
 
 # lib
@@ -35,7 +35,7 @@ pywin32 = { version = "^308", platform = "win32" }
 aiocqhttp = "^1.4.3"
 aiogram = "^3.4.1"
 argon2-cffi = "^25.0.0"
-fastapi = ">=0.119.0, <1.0.0"
+fastapi = ">=0.120.0, <1.0.0"
 ffmpy = "^0.6.0"
 khl-py = "^0.3.16"
 matrix-nio = "^0.25.0"
@@ -43,7 +43,7 @@ py-cord = {git = "https://github.com/Pycord-Development/pycord"}
 pyjwt = {extras = ["crypto"], version = "^2.8.0"}
 qq-botpy = "^1.2.1"
 slowapi = "^0.1.9"
-uvicorn = {extras = ["standard"], version = "^0.37.0"}
+uvicorn = {extras = ["standard"], version = ">=0.38.0, <1.0.0"}
 
 # core
 cattrs = "^25.0.0"
