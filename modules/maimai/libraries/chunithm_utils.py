@@ -93,4 +93,3 @@ async def generate_best30_text(msg: Bot.MessageSession, payload: dict, use_cache
     if img:
         return img
     await msg.finish(I18NContext("error.config.webrender.invalid"))
-

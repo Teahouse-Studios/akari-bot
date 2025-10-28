@@ -30,7 +30,7 @@ async def _(msg: Bot.MessageSession, msg_type: str = None):
         data = await get_url(f"{api}?c={msg_type}", 200, fmt="json")
     else:
         data = await get_url(api, 200, fmt="json")
-        
+
     if msg.session_info.locale.locale == "zh_tw":
         data = {
             k: (
@@ -45,4 +45,3 @@ async def _(msg: Bot.MessageSession, msg_type: str = None):
     msg_chain = MessageChain.assign([Plain(f"{data["hitokoto"]}\n——{from_who}「{data["from"]}」\n{tp}"),
                                      Url(f"https://hitokoto.cn?id={data["id"]}", use_mm=False)])
     await msg.finish(msg_chain)
-

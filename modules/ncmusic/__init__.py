@@ -190,4 +190,3 @@ async def info(msg: Bot.MessageSession, sid: int):
         )
     else:
         await msg.finish(I18NContext("ncmusic.message.info.not_found"))
-
