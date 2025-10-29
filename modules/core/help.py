@@ -139,7 +139,11 @@ async def _(msg: Bot.MessageSession, module: str):
 
                         images = await web_render.element_screenshot(
                             ElementScreenshotOptions(content=html_content, element=[".botbox"]))
-                        await msg.finish(cb64imglst(images, bot_img=True) + [Plain(wiki_msg.strip())])
+
+                        msgchain = MessageChain.assign(cb64imglst(images, bot_img=True))
+                        if wiki_msg:
+                            msgchain.append(Plain(wiki_msg.strip()))
+                        await msg.finish(msgchain)
                     except Exception:
                         Logger.exception()
 
