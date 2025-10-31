@@ -1471,14 +1471,14 @@ pycryptodome = "*"
 
 [[package]]
 name = "ffmpy"
-version = "0.6.1"
+version = "0.6.4"
 description = "A simple Python wrapper for FFmpeg"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "ffmpy-0.6.1-py3-none-any.whl", hash = "sha256:69a37e2d7d6feb840e233d5640f3499a8b0a8657336774c86e4c52a3219222d4"},
-    {file = "ffmpy-0.6.1.tar.gz", hash = "sha256:b5830fd05f72bace05b8fb28724d54a7a63c5119d7f74ca36a75df33f749142d"},
+    {file = "ffmpy-0.6.4-py3-none-any.whl", hash = "sha256:21fbf9cd3116279e0629e0f2bf5892306b3336d588165c8db1b5f6361118d811"},
+    {file = "ffmpy-0.6.4.tar.gz", hash = "sha256:9533ad21f878b609ab1a5235668f5c514cb0953361e266e34d33614c3f6712d1"},
 ]
 
 [package.extras]
