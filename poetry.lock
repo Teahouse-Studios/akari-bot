@@ -3476,14 +3476,14 @@ xmp = ["defusedxml"]
 
 [[package]]
 name = "pint"
-version = "0.24.4"
+version = "0.25.1"
 description = "Physical quantities module"
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.11"
 groups = ["main"]
 files = [
-    {file = "Pint-0.24.4-py3-none-any.whl", hash = "sha256:aa54926c8772159fcf65f82cc0d34de6768c151b32ad1deb0331291c38fe7659"},
-    {file = "pint-0.24.4.tar.gz", hash = "sha256:35275439b574837a6cd3020a5a4a73645eb125ce4152a73a2f126bf164b91b80"},
+    {file = "pint-0.25.1-py3-none-any.whl", hash = "sha256:b13dc42d0effa2d98b621b06eb0f2990d262c655c8893f6d40a74c334f9aa6b4"},
+    {file = "pint-0.25.1.tar.gz", hash = "sha256:34e6f89bfbfca94f29bde65c9ea42c1c56e05426692c655a3ee6f3ca2a92d252"},
 ]
 
 [package.dependencies]
@@ -3493,14 +3493,18 @@ platformdirs = ">=2.1.0"
 typing-extensions = ">=4.0.0"
 
 [package.extras]
+all = ["babel (<=2.8)", "dask (<2025.3.0)", "matplotlib", "mip (>=1.13) ; python_version < \"3.13\"", "numpy (>=1.23)", "pint-pandas (>=0.3)", "uncertainties (>=3.1.6)", "xarray"]
 babel = ["babel (<=2.8)"]
-bench = ["pytest", "pytest-codspeed"]
-dask = ["dask"]
-mip = ["mip (>=1.13)"]
+codspeed = ["pytest", "pytest-benchmark", "pytest-codspeed", "pytest-cov", "pytest-mpl", "pytest-subtests"]
+dask = ["dask (<2025.3.0)"]
+docs = ["babel", "commonmark (==0.8.1)", "currencyconverter", "docutils", "graphviz", "ipykernel", "ipython (<=8.12)", "jupyter-client", "nbsphinx", "pooch", "pygments (>=2.4)", "recommonmark (==0.5.0)", "sciform", "scipy", "serialize", "sparse", "sphinx (>=6,<8.2)", "sphinx-book-theme (>=1.1.0)", "sphinx-copybutton", "sphinx-design"]
+matplotlib = ["matplotlib"]
+mip = ["mip (>=1.13) ; python_version < \"3.13\""]
 numpy = ["numpy (>=1.23)"]
 pandas = ["pint-pandas (>=0.3)"]
-test = ["pytest", "pytest-benchmark", "pytest-cov", "pytest-mpl", "pytest-subtests"]
-testbase = ["pytest", "pytest-benchmark", "pytest-cov", "pytest-subtests"]
+test = ["pytest", "pytest-benchmark", "pytest-cov", "pytest-subtests"]
+test-all = ["pytest", "pytest-benchmark", "pytest-cov", "pytest-mpl", "pytest-subtests"]
+test-mpl = ["pytest-mpl"]
 uncertainties = ["uncertainties (>=3.1.6)"]
 xarray = ["xarray"]
 
@@ -5931,4 +5935,4 @@ cffi = ["cffi (>=1.17) ; python_version >= \"3.13\" and platform_python_implemen
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12.0"
-content-hash = "6c1aaecb7126f50c1537c8dcbb0ed875ab02fdea02638290052191d03368a5bc"
+content-hash = "ef6a468fae8330aa74a462cdef6e0616eab187a3d68c444907bc6aa1f07a59b7"
