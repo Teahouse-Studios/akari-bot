@@ -77,6 +77,11 @@ async def request_url(
     :param cookies: 使用的cookies。
     :returns: 请求结果。
     """
+    if not headers:
+        headers = {}
+    # Default User-Agent
+    if "User-Agent" not in headers:
+        headers["User-Agent"] = "AkariBot/1.0 (+https://github.com/Teahouse-Studios/akari-bot)"
 
     @retry(stop=stop_after_attempt(attempt), wait=wait_fixed(3), reraise=True)
     async def _request():
