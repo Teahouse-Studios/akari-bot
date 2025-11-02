@@ -24,9 +24,9 @@ async def get_video_info(
                 return I18NContext("bilibili.message.not_found")
         else:
             return I18NContext("bilibili.message.failed")
-    except ValueError as e:
-        # if str(e).startswith("412"):
-        #     return I18NContext("bilibili.message.error.rejected")
+    except orjson.JSONDecodeError:
+        return I18NContext("bilibili.message.error.rejected")
+    except Exception as e:
         raise e
 
     view = load_json["data"]["View"]
