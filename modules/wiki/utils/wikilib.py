@@ -112,8 +112,14 @@ class WikiLib:
     def __init__(self, url: str, headers=None, locale="zh_cn"):
         self.url = url
         self.wiki_info = WikiInfo()
-        self.headers = headers
         self.locale = Locale(locale)
+
+        if not headers:
+            headers = {}
+        # Default User-Agent
+        if "User-Agent" not in headers:
+            headers["User-Agent"] = "AkariBot/1.0"
+        self.headers = headers
 
     async def get_json_from_api(self, api, _no_login=False, **kwargs) -> dict:
         cookies = None
