@@ -246,6 +246,9 @@ class Bot:
                 if module_or_hook_name:
                     modules = ModulesManager.modules
                     if module_or_hook_name in modules:
+                        if not modules[module_or_hook_name]._db_load:
+                            return None
+
                         for hook in modules[module_or_hook_name].hooks_list.set:
                             await asyncio.create_task(
                                 hook.function(ModuleHookContext(args, session_info=session_info))

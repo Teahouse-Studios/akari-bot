@@ -15,7 +15,7 @@ async def get_video_info(
         use_embed = True
     try:
         url = f"https://api.bilibili.com/x/web-interface/view/detail{query}"
-        res = await web_render.source(SourceOptions(url=url, raw_text=True))
+        res = await web_render.source(SourceOptions(url=url, raw_text=True, stealth=True))
         if res:
             load_json = orjson.loads(res)
             if load_json["code"] != 0:

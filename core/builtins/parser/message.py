@@ -366,6 +366,9 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
 async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
     bot: "Bot" = exports["Bot"]
     for m in modules:  # 遍历模块
+        if not modules[m]._db_load:
+            continue
+
         try:
             if m in msg.session_info.enabled_modules and modules[m].regex_list.set:  # 如果模块已启用
                 regex_module: Module = modules[m]

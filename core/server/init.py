@@ -41,6 +41,9 @@ async def init_async(start_scheduler=True) -> None:
     gather_list = []
     modules = ModulesManager.return_modules_list()
     for x in modules:
+        if not modules[x]._db_load:
+            continue
+
         if schedules := modules[x].schedule_list.set:
             for schedule in schedules:
                 Scheduler.add_job(
