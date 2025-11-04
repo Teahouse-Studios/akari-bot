@@ -34,7 +34,7 @@ logger_format = (
     "<level>[{level}]:{message}</level>"
 )
 Logger.add(
-    sys.stderr,
+    sys.stdout,
     format=logger_format,
     colorize=True,
     filter=lambda record: record["extra"].get("name") == "BotDaemon"

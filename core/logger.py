@@ -55,7 +55,7 @@ class LoggingLogger:
             pass
         self.log = logger.bind(name=name)
         self.log.add(
-            sys.stderr,
+            sys.stdout,
             format=basic_logger_format(name),
             level="TRACE" if Config("debug", False) else "INFO",
             colorize=True,
