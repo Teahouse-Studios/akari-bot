@@ -314,6 +314,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                 none_templates = False
         if not none_templates:  # 如果有，送入命令解析
             await _execute_module_command(msg, module, command_first_word)
+            raise FinishedException(msg.sent)  # if not using msg.finish
         else:  # 如果没有，直接传入下游模块
             msg.parsed_msg = None
             for func in module.command_list.set:
