@@ -633,7 +633,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                         if verlist[record_index]["fs"]:
                             self_record = sync_list[sync_list_raw.index(verlist[record_index]["fs"])]
                 msg_chain.append(Plain(f"{m.id} - {m.title}{" (DX)" if m.type ==
-                                                            "DX" else ""} {diffs[s[1]]} {m.ds[s[1]]} {self_record}"))
+                                                            "DX" else ""} [{diffs[s[1]]}] {m.ds[s[1]]} {self_record}"))
             if len(song_remain) > SONGS_NEED_IMG:
                 get_img = True
         else:
