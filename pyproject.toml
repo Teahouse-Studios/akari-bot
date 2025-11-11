@@ -36,7 +36,7 @@ aiocqhttp = "^1.4.3"
 aiogram = "^3.4.1"
 argon2-cffi = "^25.0.0"
 fastapi = ">=0.120.0, <1.0.0"
-ffmpy = "^0.6.0"
+ffmpy = "^1.0.0"
 khl-py = "^0.3.16"
 matrix-nio = "^0.25.0"
 py-cord = {git = "https://github.com/Pycord-Development/pycord"}
