@@ -187,14 +187,16 @@ async def _(msg: Bot.MessageSession):
         help_msg = MessageChain.assign(I18NContext("core.message.help.legacy.base"))
         essential = []
         for x in module_list:
-            if module_list[x].base and not module_list[x].hidden or \
+            if module_list[x].base and \
+                    not module_list[x].hidden or \
                     not is_superuser and module_list[x].required_superuser or \
                     not is_base_superuser and module_list[x].required_base_superuser:
                 essential.append(module_list[x].module_name)
         help_msg.append(Plain(" | ".join(essential), disable_joke=True))
         module_ = []
         for x in module_list:
-            if x in target_enabled_list and not module_list[x].hidden or \
+            if x in target_enabled_list and module_list[x]._db_load and \
+                    not module_list[x].hidden or \
                     not is_superuser and module_list[x].required_superuser or \
                     not is_base_superuser and module_list[x].required_base_superuser:
                 module_.append(x)
@@ -228,8 +230,11 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
         for x in module_list:
             if x[0] == "_":
                 continue
-            if module_list[x].base or module_list[x].hidden or \
-                    module_list[x].required_superuser or module_list[x].required_base_superuser:
+            if module_list[x].base or \
+               module_list[x].hidden or \
+               not module_list[x]._db_load or \
+               module_list[x].required_superuser or \
+               module_list[x].required_base_superuser:
                 continue
             module_.append(module_list[x].module_name)
         if module_:
@@ -258,6 +263,10 @@ async def help_generator(msg: Bot.MessageSession,
     module_ = {}
 
     for key, value in module_list.items():
+        if key[0] == "_":
+            continue
+        if not value._db_load and not value.base:
+            continue
         if value.hidden:
             continue
         if value.rss and not msg.session_info.support_rss:
