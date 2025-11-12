@@ -68,12 +68,7 @@ async def lifespan(app: FastAPI):
     if dist_path.exists():
         Logger.info(_webui_message())
     yield
-    await asyncio.sleep(3)  # 等待 server 清理进程
-    try:
-        await JobQueuesTable.clear_task(time=0)
-        await Tortoise.close_connections()
-    except Exception:
-        pass
+    await asyncio.sleep(99999)  # 等待 server 清理进程
 
 app = FastAPI(lifespan=lifespan)
 limiter = Limiter(key_func=get_remote_address)
