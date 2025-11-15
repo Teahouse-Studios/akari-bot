@@ -16,8 +16,6 @@ ali = module("alias", base=True, doc=True)
     "add <alias> <command> {{I18N:core.help.alias.add}}",
     "remove <alias> {{I18N:core.help.alias.remove}}",
     "reset {{I18N:core.help.alias.reset}}",
-    "raise <alias> {{I18N:core.help.alias.raise}}",
-    "lower <alias> {{I18N:core.help.alias.lower}}"
 ], required_admin=True)
 async def _(msg: Bot.MessageSession):
     aliases = msg.session_info.target_info.target_data.get("command_alias")
@@ -68,46 +66,6 @@ async def _(msg: Bot.MessageSession):
     elif "reset" in msg.parsed_msg:
         await msg.session_info.target_info.edit_target_data("command_alias", {})
         await msg.finish(I18NContext("core.message.alias.reset.success"))
-    elif "raise" in msg.parsed_msg:
-        alias = alias.replace("_", " ")
-        alias = re.sub(
-            r"\$\{([^}]*)\}",
-            lambda match: "${" + match.group(1).replace(" ", "_") + "}",
-            alias,
-        )
-        if alias not in aliases:
-            await msg.finish(I18NContext("core.message.alias.not_found", alias=alias))
-
-        aliases_list = list(aliases.items())
-        index = next((i for i, (k, _) in enumerate(aliases_list) if k == alias), None)
-        if index is not None and index > 0:
-            aliases_list[index - 1], aliases_list[index] = aliases_list[index], aliases_list[index - 1]
-            new_aliases = dict(aliases_list)
-            await msg.session_info.target_info.edit_target_data("command_alias", new_aliases)
-            priority = len(new_aliases) - (index - 1)
-            await msg.finish(I18NContext("core.message.alias.raise.success", alias=alias, priority=priority))
-        else:
-            await msg.finish(I18NContext("core.message.alias.raise.failed", alias=alias))
-    elif "lower" in msg.parsed_msg:
-        alias = alias.replace("_", " ")
-        alias = re.sub(
-            r"\$\{([^}]*)\}",
-            lambda match: "${" + match.group(1).replace(" ", "_") + "}",
-            alias,
-        )
-        if alias not in aliases:
-            await msg.finish(I18NContext("core.message.alias.not_found", alias=alias))
-
-        aliases_list = list(aliases.items())
-        index = next((i for i, (k, _) in enumerate(aliases_list) if k == alias), None)
-        if index is not None and index < len(aliases_list) - 1:
-            aliases_list[index], aliases_list[index + 1] = aliases_list[index + 1], aliases_list[index]
-            new_aliases = dict(aliases_list)
-            await msg.session_info.target_info.edit_target_data("command_alias", new_aliases)
-            priority = len(new_aliases) - (index + 1)
-            await msg.finish(I18NContext("core.message.alias.lower.success", alias=alias, priority=priority))
-        else:
-            await msg.finish(I18NContext("core.message.alias.lower.failed", alias=alias))
     elif "list" in msg.parsed_msg:
         aliases_count = len(list(aliases.keys()))
         legacy = True
