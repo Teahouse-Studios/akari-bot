@@ -73,7 +73,6 @@
     "core.message.alias.list.none": "The custom command alias list is empty.",
     "core.message.alias.list.table.header.alias": "Alias",
     "core.message.alias.list.table.header.command": "Command",
-    "core.message.alias.list.table.header.priority": "Priority",
     "core.message.alias.not_found": "\"${alias}\" alias does not exist in custom alias list.",
     "core.message.alias.remove.success": "Removed custom command alias: ${alias}",
     "core.message.alias.reset.success": "The custom command alias has been reset.",
