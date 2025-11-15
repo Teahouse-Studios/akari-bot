@@ -67,18 +67,16 @@ async def _(msg: Bot.MessageSession):
         await msg.session_info.target_info.edit_target_data("command_alias", {})
         await msg.finish(I18NContext("core.message.alias.reset.success"))
     elif "list" in msg.parsed_msg:
-        aliases_count = len(list(aliases.keys()))
         legacy = True
         if len(aliases) == 0:
             await msg.finish(I18NContext("core.message.alias.list.none"))
         elif not msg.parsed_msg.get("--legacy", False):
             table = ImageTable(
                 [
-                    [str(aliases_count - i), k, msg.session_info.prefixes[0] + aliases[k]]
+                    [k, msg.session_info.prefixes[0] + aliases[k]]
                     for i, k in enumerate(aliases)
                 ],
                 [
-                    "{I18N:core.message.alias.list.table.header.priority}",
                     "{I18N:core.message.alias.list.table.header.alias}",
                     "{I18N:core.message.alias.list.table.header.command}",
                 ],
@@ -95,10 +93,9 @@ async def _(msg: Bot.MessageSession):
                 pass
 
         if legacy:
-            await msg.finish([I18NContext("core.message.alias.list"),
-                              Plain("\n".join(
-                                  [f"{aliases_count - i} - {k} -> {msg.session_info.prefixes[0]}{aliases[k]}" for i, k
-                                   in enumerate(aliases)]))])
+            await msg.finish([I18NContext("core.message.alias.list")] +
+                             [Plain(f"{k} -> {msg.session_info.prefixes[0]}{aliases[k]}") for i, k
+                                   in enumerate(aliases)])
 
 
 def check_valid_placeholder(alias):
