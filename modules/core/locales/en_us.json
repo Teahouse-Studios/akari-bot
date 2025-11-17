@@ -32,7 +32,7 @@
     "core.help.setup.check": "Set up whether to enable command typo checking.",
     "core.help.setup.cooldown": "Set up the command cooldown time within the session.",
     "core.help.setup.desc": "Set up bot actions.",
-    "core.help.setup.sign": "Setup whether to allow sign-in within the session.",
+    "core.help.setup.sign": "Set up whether to allow sign-in within the session.",
     "core.help.setup.timeoffset": "Set the time offset within the session.",
     "core.help.setup.typing": "Set up whether to display input prompts.",
     "core.help.version": "View bot version.",
