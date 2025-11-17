@@ -151,7 +151,7 @@
     "core.message.petal.give.self": "自身にペタルを贈ることはできません！",
     "core.message.petal.give.success": "已将 ${give_petal} 花瓣给予用户 ${sender}，当前花瓣数为：${petal}。",
     "core.message.petal.modify": "已为用户 ${sender} 修改了 ${add_petal} 花瓣，当前花瓣数为：${petal}。",
-    "core.message.petal.modify.self": "自分の ${add_petal} 枚のペタルを変更しました。現在のペタル数：${petal}。",
+    "core.message.petal.modify.self": "自分に ${add_petal} 枚のペタルを変更しました。現在のペタル数：${petal}。",
     "core.message.petal.self": "現在のペタル数は ${petal} です。",
     "core.message.petal.sign.already": "今日はサインインしました。明日もう一度お試しください。",
     "core.message.petal.sign.disabled": "このセッションではチェックインが無効です。",
