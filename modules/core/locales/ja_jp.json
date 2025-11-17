@@ -148,7 +148,7 @@
     "core.message.petal.clear": "ユーザー「${sender}」のすべてのペタルを削除しました。",
     "core.message.petal.clear.self": "ペタルを全てクリアしました。",
     "core.message.petal.give.confirm": "ユーザー「${sender}」に ${give_petal} 枚のペタルが贈られます。続行しますか？",
-    "core.message.petal.give.self": "自分にペタルを贈ることはできません！",
+    "core.message.petal.give.self": "自身にペタルを贈ることはできません！",
     "core.message.petal.give.success": "ユーザー「${sender}」に ${give_petal} 枚のペタルを贈りました。現在のペタル数：${petal}。",
     "core.message.petal.modify": "ユーザー「${sender}」の ${add_petal} 枚のペタルを変更しました。現在のペタル数：${petal}。",
     "core.message.petal.modify.self": "自分に ${add_petal} 枚のペタルを変更しました。現在のペタル数：${petal}。",
