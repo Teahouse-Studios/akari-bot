@@ -52,7 +52,7 @@ async def _(msg: Bot.MessageSession, user: str):
             await msg.finish()
         sender_info = await SenderInfo.create(sender_id=user)
     if await sender_info.edit_attr("superuser", True):
-        await msg.finish(I18NContext("core.message.superuser.add.success", user=user))
+        await msg.finish(I18NContext("core.message.superuser.add.success", sender=user))
 
 
 @su.command("remove <user>")
@@ -68,7 +68,7 @@ async def _(msg: Bot.MessageSession, user: str):
             await msg.finish()
         sender_info = await SenderInfo.create(sender_id=user)
     if await sender_info.edit_attr("superuser", False):
-        await msg.finish(I18NContext("core.message.superuser.remove.success", user=user))
+        await msg.finish(I18NContext("core.message.superuser.remove.success", sender=user))
 
 
 purge = module("purge", required_superuser=True, base=True, doc=True)
@@ -267,7 +267,7 @@ async def _(msg: Bot.MessageSession, user: str):
         stat.append(I18NContext("core.message.abuse.check.trusted"))
     elif sender_info.blocked:
         stat.append(I18NContext("core.message.abuse.check.banned"))
-    await msg.finish([I18NContext("core.message.abuse.check.warns", user=user, warns=warns)] + stat)
+    await msg.finish([I18NContext("core.message.abuse.check.warns", sender=user, warns=warns)] + stat)
 
 
 @ae.command("warn <user> [<count>]")
@@ -283,7 +283,7 @@ async def _(msg: Bot.MessageSession, user: str, count: int = 1):
     if sender_info.warns > WARNING_COUNTS >= 1 and not sender_info.trusted:
         await sender_info.switch_identity(trust=False)
     await msg.finish(
-        I18NContext("core.message.abuse.warn.success", user=user, count=count, warn_count=sender_info.warns))
+        I18NContext("core.message.abuse.warn.success", sender=user, count=count, warn_count=sender_info.warns))
 
 
 @ae.command("revoke <user> [<count>]")
@@ -297,7 +297,7 @@ async def _(msg: Bot.MessageSession, user: str, count: int = 1):
         sender_info = await SenderInfo.create(sender_id=user)
     await sender_info.warn_user(-count)
     await msg.finish(
-        I18NContext("core.message.abuse.revoke.success", user=user, count=count, warn_count=sender_info.warns))
+        I18NContext("core.message.abuse.revoke.success", sender=user, count=count, warn_count=sender_info.warns))
 
 
 @ae.command("clear <user>")
@@ -310,7 +310,7 @@ async def _(msg: Bot.MessageSession, user: str):
             await msg.finish()
         sender_info = await SenderInfo.create(sender_id=user)
     await sender_info.edit_attr("warns", 0)
-    await msg.finish(I18NContext("core.message.abuse.clear.success", user=user))
+    await msg.finish(I18NContext("core.message.abuse.clear.success", sender=user))
 
 
 @ae.command("untempban <user>")
@@ -318,7 +318,7 @@ async def _(msg: Bot.MessageSession, user: str):
     if not Alive.determine_sender_from(user):
         await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
     await remove_temp_ban(user)
-    await msg.finish(I18NContext("core.message.abuse.untempban.success", user=user))
+    await msg.finish(I18NContext("core.message.abuse.untempban.success", sender=user))
 
 
 @ae.command("ban <user>")
@@ -331,7 +331,7 @@ async def _(msg: Bot.MessageSession, user: str):
             await msg.finish()
         sender_info = await SenderInfo.create(sender_id=user)
     if await sender_info.switch_identity(trust=False, enable=True):
-        await msg.finish(I18NContext("core.message.abuse.ban.success", user=user))
+        await msg.finish(I18NContext("core.message.abuse.ban.success", sender=user))
 
 
 @ae.command("unban <user>")
@@ -344,7 +344,7 @@ async def _(msg: Bot.MessageSession, user: str):
             await msg.finish()
         sender_info = await SenderInfo.create(sender_id=user)
     if await sender_info.switch_identity(trust=False, enable=False):
-        await msg.finish(I18NContext("core.message.abuse.unban.success", user=user))
+        await msg.finish(I18NContext("core.message.abuse.unban.success", sender=user))
 
 
 @ae.command("trust <user>")
@@ -357,7 +357,7 @@ async def _(msg: Bot.MessageSession, user: str):
             await msg.finish()
         sender_info = await SenderInfo.create(sender_id=user)
     if await sender_info.switch_identity(trust=True, enable=True):
-        await msg.finish(I18NContext("core.message.abuse.trust.success", user=user))
+        await msg.finish(I18NContext("core.message.abuse.trust.success", sender=user))
 
 
 @ae.command("distrust <user>")
@@ -370,7 +370,7 @@ async def _(msg: Bot.MessageSession, user: str):
             await msg.finish()
         sender_info = await SenderInfo.create(sender_id=user)
     if await sender_info.switch_identity(trust=True, enable=False):
-        await msg.finish(I18NContext("core.message.abuse.distrust.success", user=user))
+        await msg.finish(I18NContext("core.message.abuse.distrust.success", sender=user))
 
 
 @ae.command("block <target>", available_for="QQ")
