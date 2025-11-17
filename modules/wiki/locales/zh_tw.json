@@ -151,6 +151,7 @@
     "wiki.message.utils.wikilib.error.empty": "發生錯誤：API 未返回任何內容，請聯絡此網站管理員取得原因。",
     "wiki.message.utils.wikilib.error.text_too_long": "發生錯誤：請求的頁面段落文本過長，無法正常顯示。",
     "wiki.message.utils.wikilib.get_failed.api": "從 API 取得資訊時出錯：",
+    "wiki.message.utils.wikilib.get_failed.wikimedia": "根據維基媒體基金會的政策（T400119），需要設定一個合適的 User-Agent 請求標頭。",
     "wiki.message.utils.wikilib.get_failed.cloudflare": "CloudFlare 攔截了機器人的請求，請聯絡網站管理員解決此問題。",
     "wiki.message.utils.wikilib.get_failed.forbidden": "伺服器拒絕了機器人的請求。",
     "wiki.message.utils.wikilib.get_failed.invalid_interwiki": "網站設定的 Interwiki 無效，請聯絡網站管理員解決此問題。",

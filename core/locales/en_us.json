@@ -173,7 +173,7 @@
     "message.yes": "Yes",
     "parser.admin.command.permission.denied": "This command can only be used by the admins of the session. Please contact the admins to execute the command.",
     "parser.admin.module.permission.denied": "Commands under the \"${module}\" module can only be used by the admins of the session. Please contact the admins to execute the command.",
-    "parser.command.fixup.confirm": "Do you mean \"${command}\"?",
+    "parser.command.fixup.confirm": "Did you mean \"${command}\"?",
     "parser.command.invalid.format": "Syntax error.\nUse \"${prefix}help ${module}\" for help.",
     "parser.command.invalid.module": "Invalid module.\nUse \"${prefix}help\" for help.",
     "parser.command.running.prompt": "There are currently commands executing. Please try again later.",

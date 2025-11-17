@@ -151,6 +151,7 @@
     "wiki.message.utils.wikilib.error.empty": "An error occurred: API returned no contents. Please contact the site administrator for reasons.",
     "wiki.message.utils.wikilib.error.text_too_long": "An error occurred: The requested page section text is too long to be displayed.",
     "wiki.message.utils.wikilib.get_failed.api": "An error occurred while getting information from API:",
+    "wiki.message.utils.wikilib.get_failed.wikimedia": "According to the Wikimedia Foundation policy (T400119), an appropriate User-Agent request header needs to be set.",
     "wiki.message.utils.wikilib.get_failed.cloudflare": "CloudFlare blocked the request from bot. Please contact site administrator to resolve this issue.",
     "wiki.message.utils.wikilib.get_failed.forbidden": "The server rejected the request from bot.",
     "wiki.message.utils.wikilib.get_failed.invalid_interwiki": "The Interwiki for the site is invalid. Please contact site administrator to resolve this issue.",
