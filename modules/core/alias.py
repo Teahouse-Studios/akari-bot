@@ -95,7 +95,7 @@ async def _(msg: Bot.MessageSession):
         if legacy:
             await msg.finish([I18NContext("core.message.alias.list")] +
                              [Plain(f"{k} -> {msg.session_info.prefixes[0]}{aliases[k]}") for i, k
-                                   in enumerate(aliases)])
+                              in enumerate(aliases)])
 
 
 def check_valid_placeholder(alias):

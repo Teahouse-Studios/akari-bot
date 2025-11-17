@@ -178,7 +178,7 @@ async def _(msg: Bot.MessageSession, lang: str):
         await msg.finish([I18NContext("core.message.locale.set.invalid"),
                           I18NContext("core.message.locale.langlist", langlist=avaliable_lang)])
 
-
+"""
 @locale.command("reload", required_superuser=True)
 async def _(msg: Bot.MessageSession):
     err = load_locale_file()
@@ -186,7 +186,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("message.success"))
     else:
         await msg.finish([I18NContext("core.message.locale.reload.failed"), Plain("\n".join(err), disable_joke=True)])
-
+"""
 
 whoami = module("whoami", base=True, doc=True)
 
