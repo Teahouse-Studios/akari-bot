@@ -80,7 +80,7 @@
     "core.message.analytics.days": "過去 30 日間のコマンド「${module}」の呼び出し回数の統計（${first_record} から開始)：",
     "core.message.analytics.days.total": "過去 30 日間のすべてのコマンドの呼び出し回数の統計（${first_record} から開始)：",
     "core.message.analytics.disabled": "ボットにはコマンド統計機能が有効になってません。",
-    "core.message.analytics.none": "ボット データベースは空です。初期化しています……",
+    "core.message.analytics.none": "ボット データベースは空です。初期化中……",
     "core.message.analytics.year": "過去一年間のコマンド「${module}」の呼び出し回数の統計（${first_record} から開始)：",
     "core.message.analytics.year.total": "過去一年間のすべてのコマンドの呼び出し回数の統計（${first_record} から開始)：",
     "core.message.database.list": "データベース内の操作をサポートするすべてのモデル：",
