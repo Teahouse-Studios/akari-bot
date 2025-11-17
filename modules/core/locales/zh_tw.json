@@ -83,7 +83,7 @@
     "core.message.analytics.none": "機器人資料庫為空，正在初始化……",
     "core.message.analytics.year": "最近一年的「${module}」指令呼叫次數统计（自 ${first_record} 開始統計）：",
     "core.message.analytics.year.total": "最近一年的所有指令呼叫次數統計（自 ${first_record} 開始統計）：",
-    "core.message.database.list": "資料庫中所有已支援操作的表格：",
+    "core.message.database.list": "資料庫中所有已支援操作的模型：",
     "core.message.database.no_result": "無結果。",
     "core.message.database.pages": "（第 ${page} 頁，共 ${total_pages} 頁，共 ${data_count} 條）",
     "core.message.database.success": "成功修改了 ${rows} 筆資料。",
