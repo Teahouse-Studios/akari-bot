@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 from core.exports import exports
 
 
-async def get_stored_list(bot: Union["Bot", str], name: str) -> list:
+async def get_stored_list(bot: Union[type["Bot"], str], name: str) -> list:
     try:
         if isinstance(bot, exports["Bot"]):
             bot = bot.Info.client_name
@@ -22,7 +22,7 @@ async def get_stored_list(bot: Union["Bot", str], name: str) -> list:
         return []
 
 
-async def update_stored_list(bot: Union["Bot", str], name: str, value: list):
+async def update_stored_list(bot: Union[type["Bot"], str], name: str, value: list):
     if isinstance(bot, exports["Bot"]):
         bot = bot.Info.client_name
     await StoredData.update_or_create(

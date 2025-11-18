@@ -3,7 +3,7 @@ import datetime
 import re
 import urllib.parse
 from copy import deepcopy
-from typing import Union, Dict, List
+from typing import Union, Dict, List, Optional
 
 import orjson
 from attrs import define
@@ -82,17 +82,17 @@ class WikiStatus:
 @define
 class PageInfo:
     info: WikiInfo
-    title: str
+    title: Optional[str]
     id: int = -1
-    before_title: str = None
-    link: str = None
-    edit_link: str = None
-    file: str = None
-    desc: str = None
-    args: str = None
-    selected_section: str = None
+    before_title: Optional[str] = None
+    link: Optional[str] = None
+    edit_link: Optional[str] = None
+    file: Optional[str] = None
+    desc: Optional[str] = None
+    args: Optional[str] = None
+    selected_section: Optional[str] = None
     sections: List[str] = None
-    interwiki_prefix: str = ""
+    interwiki_prefix: Optional[str] = ""
     status: bool = True
     templates: List[str] = None
     before_page_property: str = "page"

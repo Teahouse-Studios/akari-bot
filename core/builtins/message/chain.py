@@ -380,7 +380,7 @@ class MessageNodes:
 
 
 Chainable = Union[MessageChain, I18NMessageChain, PlatformMessageChain,
-                  str, list[MessageElement], MessageElement, MessageNodes]
+                  str, list[str], list[MessageElement], MessageElement, MessageNodes]
 
 
 def get_message_chain(session: SessionInfo, chain: Chainable) -> MessageChain:

@@ -1,5 +1,6 @@
 import base64
 from io import BytesIO
+from pathlib import Path
 from typing import List, Optional, Union
 
 from PIL import Image as PILImage
@@ -118,7 +119,7 @@ async def msgchain2image(message_chain: Union[List, MessageChain],
     return cb64imglst(pic_list, bot_img=True)
 
 
-async def svg_render(file_path: str) -> Union[List[ImageElement], bool]:
+async def svg_render(file_path: Union[str, Path]) -> Union[List[ImageElement], bool]:
     """使用WebRender渲染svg文件。
 
     :param file_path: svg文件路径。

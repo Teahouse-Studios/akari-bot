@@ -10,7 +10,7 @@ SEARCH_LIMIT = 5
 async def search(msg: Bot.MessageSession, keyword: str, pat: str):
     result = await get_url(
         f"https://api.github.com/search/repositories?q={keyword}", 200, fmt="json",
-        headers=[("Authorization", f"Bearer {pat}")] if pat else []
+        headers={"Authorization": f"Bearer {pat}"} if pat else {}
     )
     if result["total_count"] == 0:
         message = str(I18NContext("github.message.search.not_found"))

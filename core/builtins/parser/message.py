@@ -260,7 +260,7 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
                     alias_list.append(alias)
 
     if alias_list:
-        max_alias = max(alias_list, key=len)
+        max_alias = str(max(alias_list, key=len))
         real_name = ModulesManager.modules_aliases[max_alias]
         command_words = command.split(" ")
         command_words = real_name.split(" ") + command_words[len(max_alias.split(" ")):]
@@ -422,8 +422,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                                 matched = True
                                 matched_hash = hash(msg.matched_msg.groups())
                         elif rfunc.mode.upper() in ["A", "FINDALL"]:
-                            msg.matched_msg = re.findall(rfunc.pattern, trigger_msg, flags=rfunc.flags)
-                            msg.matched_msg = tuple(set(msg.matched_msg))
+                            msg.matched_msg = tuple(set(re.findall(rfunc.pattern, trigger_msg, flags=rfunc.flags)))
                             if msg.matched_msg:
                                 matched = True
                                 matched_hash = hash(msg.matched_msg)

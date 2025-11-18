@@ -59,7 +59,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
         if not res:
             await msg.finish(
                 msg.session_info.locale.t(
-                    "wiki.message.wiki_audit.remove.failed.other_wiki", api=apilink
+                    "wiki.message.wiki_audit.remove.failed.other", api=apilink
                 )
             )
         list_name = msg.session_info.locale.t("wiki.message.wiki_audit.list_name.allowlist")

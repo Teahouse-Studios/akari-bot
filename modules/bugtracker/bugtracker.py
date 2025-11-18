@@ -55,8 +55,8 @@ async def bugtracker_get(msg, mojira_id: str):
             spx_cache.update(orjson.loads(get_spx))
     if id_ in spx_cache and msg.session_info.locale.locale == "zh_cn":
         data["translation"] = spx_cache[id_]
+    errmsg = ""
     if get_json:
-        errmsg = ""
         if "errorMessages" in load_json:
             for msgs in load_json["errorMessages"]:
                 errmsg += "\n" + msgs
@@ -113,30 +113,30 @@ async def bugtracker_get(msg, mojira_id: str):
                             data["fixversion"] = fields["fixVersions"][0]["name"]
     issue_link = None
     msglist = []
-    if errmsg != "":
+    if errmsg:
         msglist.append(errmsg)
     else:
-        if title := data.get("title", False):
+        if title := data.get("title", ""):
             msglist.append(title)
-        if type_ := data.get("type", False):
+        if type_ := data.get("type", ""):
             type_ = "Type: " + type_
             if status_ := data.get("status", False):
                 if status_ in ["Open", "Resolved"]:
                     type_ = f"{type_} | Status: {status_}"
             msglist.append(type_)
-        if project := data.get("project", False):
+        if project := data.get("project", ""):
             project = "Project: " + project
             msglist.append(project)
-        if status_ := data.get("status", False):
+        if status_ := data.get("status", ""):
             if status_ not in ["Open", "Resolved"]:
                 status_ = "Status: " + status_
                 msglist.append(status_)
         if priority := data.get("priority", False):
             msglist.append(priority)
-        if resolution := data.get("resolution", False):
+        if resolution := data.get("resolution", ""):
             resolution = "Resolution: " + resolution
             msglist.append(resolution)
-        if fixversion := data.get("fixversion", False):
+        if fixversion := data.get("fixversion", ""):
             msglist.append("Fixed Version: " + fixversion)
         if version := data.get("version", False):
             msglist.append(version)

@@ -25,7 +25,7 @@ async def get_info(music: Music, details) -> MessageChain:
     return info
 
 
-async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> Optional[str]:
+async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> Optional[dict]:
     maimai_cache_dir = cache_path / "maimai-record"
     maimai_cache_dir.mkdir(parents=True, exist_ok=True)
     cache_dir = maimai_cache_dir / f"{msg.session_info.sender_id.replace("|", "_")}_chunithm_record.json"
