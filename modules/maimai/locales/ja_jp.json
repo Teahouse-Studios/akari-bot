@@ -2,7 +2,7 @@
     "chunithm.help.b30": "查询 CHUNITHM 玩家的 B30 列表。（Beta 版）",
     "chunithm.help.desc": "查询 CHUNITHM 相关内容。",
     "chunithm.message.b30.text_prompt": "以下为 ${user} (Rating ${rating}) 的 Best30 列表：",
-    "chunithm.message.chart": "${diff} ${level} (${ds})\n连击：${combo}\n谱师：${charter}",
+    "chunithm.message.chart": "${diff} ${level} (${ds})\nTAP：${tap}/HOLD：${hold}/SLIDE：${slide}/AIR：${air}/FLICK：${flick}\n谱师：${charter}",
     "chunithm.message.song": "艺术家：${artist}\n分类：${genre}\nBPM：${bpm}\n版本：${version}\n难度：${level}",
     "chunithm.message.song.worlds_end": "艺术家：${artist}\n分类：${genre}\nBPM：${bpm}\n版本：${version}",
     "chunithm.message.user_unbound": "未绑定用户，请使用“${prefix}chunithm bind”绑定一个用户。",
