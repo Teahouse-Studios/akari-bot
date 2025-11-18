@@ -2,7 +2,7 @@
     "chunithm.help.b30": "Query the Best 30 list of CHUNITHM player. (Beta)",
     "chunithm.help.desc": "Query about CHUNITHM.",
     "chunithm.message.b30.text_prompt": "Here is the Best 30 list of ${user} (Rating ${rating}):",
-    "chunithm.message.chart": "${diff} ${level} (${ds})\nCombo: ${combo}\nCharter: ${charter}",
+    "chunithm.message.chart": "${diff} ${level} (${ds})\nTAP：${tap}/HOLD：${hold}/SLIDE：${slide}/AIR：${air}/FLICK：${flick}\n谱师：${charter}",
     "chunithm.message.song": "Artist: ${artist}\nGenre: ${genre}\nBPM: ${bpm}\nVersion: ${version}\nLevel: ${level}",
     "chunithm.message.song.worlds_end": "Artist: ${artist}\nGenre: ${genre}\nBPM: ${bpm}\nVersion: ${version}",
     "chunithm.message.user_unbound": "The user is not bound. Please bind user by \"${prefix}chunithm bind\".",
