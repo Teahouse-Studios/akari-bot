@@ -25,19 +25,21 @@ async def get_info(music: Music, details) -> MessageChain:
     return info
 
 
-async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> Optional[dict]:
-    maimai_cache_dir = cache_path / "maimai-record"
-    maimai_cache_dir.mkdir(parents=True, exist_ok=True)
-    cache_dir = maimai_cache_dir / f"{msg.session_info.sender_id.replace("|", "_")}_chunithm_record.json"
+async def get_record(
+    msg: Bot.MessageSession, payload: dict, use_cache: bool = True
+) -> Optional[dict]:
+    mai_cache_path = cache_path / "maimai-record"
+    mai_cache_path.mkdir(parents=True, exist_ok=True)
+    cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace("|", "_")}_chunithm_record.json"
     url = "https://www.diving-fish.com/api/chunithmprober/query/player"
-    if "username" in payload:
-        use_cache = False
     try:
-        data = await post_url(url,
-                              data=orjson.dumps(payload),
-                              status_code=200,
-                              headers={"Content-Type": "application/json", "accept": "*/*"},
-                              fmt="json")
+        data = await post_url(
+            url,
+            data=orjson.dumps(payload),
+            status_code=200,
+            headers={"Content-Type": "application/json", "accept": "*/*"},
+            fmt="json"
+        )
         if use_cache and data:
             with open(cache_dir, "wb") as f:
                 f.write(orjson.dumps(data))

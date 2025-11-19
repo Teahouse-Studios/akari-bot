@@ -8,6 +8,7 @@ from langconv.language.zh import zh_cn
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Image, Plain
+from core.config import Config
 from core.constants.exceptions import ConfigValueError
 from core.constants.path import cache_path
 from core.logger import Logger
@@ -64,7 +65,7 @@ async def update_alias() -> bool:
 
         except Exception:
             Logger.exception()
-
+        """
         try:
             xray_data = await get_url("https://download.xraybot.site/maimai/alias.json", 200, fmt="json")
 
@@ -75,7 +76,7 @@ async def update_alias() -> bool:
 
         except Exception:
             Logger.exception()
-
+        """
         if not alias_map:
             return False
 
@@ -173,7 +174,7 @@ async def get_record(
             data=orjson.dumps(payload),
             status_code=200,
             headers={"Content-Type": "application/json", "accept": "*/*"},
-            fmt="json",
+            fmt="json"
         )
         if use_cache and data:
             with open(cache_dir, "wb") as f:

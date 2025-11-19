@@ -23,7 +23,7 @@ score_to_rate = {
     (1009000, 1010000): "SSS+",
 }
 
-combo_mapping = {"fullcombo": "FC", "alljustice": "AJ"}
+combo_mapping = {"fullcombo": "FULL COMBO", "alljustice": "ALL JUSTICE"}
 
 diff_list = ["Basic", "Advanced", "Expert", "Master", "Ultima"]
 diff_list_abbr = ["bas", "adv", "exp", "mas", "ult"]

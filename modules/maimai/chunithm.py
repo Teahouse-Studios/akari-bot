@@ -1,14 +1,15 @@
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Plain, I18NContext
+from core.builtins.message.internal import Plain, I18NContext, Image as BImage
 from core.component import module
 from core.utils.image import msgchain2image
 from core.utils.message import is_int
 from .database.models import DivingProberBindInfo
 from .libraries.chunithm_apidata import get_info, get_record
+from .libraries.chunithm_best30 import generate as generate_b30
 from .libraries.chunithm_mapping import diff_list
 from .libraries.chunithm_music import TotalList
-from .libraries.chunithm_utils import generate_best30_text, get_diff, SONGS_PER_PAGE
+from .libraries.chunithm_utils import get_diff, SONGS_PER_PAGE
 
 total_list = TotalList()
 
@@ -183,14 +184,16 @@ async def _(msg: Bot.MessageSession, username: str = None):
         payload = {"username": username}
         use_cache = False
 
-    imgs = await generate_best30_text(msg, payload, use_cache)
-    if imgs:
-        await msg.finish(imgs)
+    img = await generate_b30(msg, payload, use_cache)
+    if img:
+        await msg.finish(BImage(img))
 
 
 @chu.command("chart <song> {{I18N:maimai.help.chart}}")
 async def _(msg: Bot.MessageSession, song: str):
-    if song[:2].lower() == "id":
+    if is_int(song):
+        music = (await total_list.get()).by_id(song)
+    elif song[:2].lower() == "id":
         sid = song[2:]
         music = (await total_list.get()).by_id(sid)
     else:
@@ -200,16 +203,20 @@ async def _(msg: Bot.MessageSession, song: str):
         await msg.finish(I18NContext("maimai.message.music_not_found"))
 
     msg_chain = MessageChain.assign()
-    if len(music["ds"]) == 6:
-        chart = music["charts"][5]
-        ds = music["ds"][5]
-        level = music["level"][5]
+    if len(music["ds"]) == 1:
+        chart = music["charts"][0]
+        ds = music["ds"][0]
+        level = music["level"][0]
         msg_chain.append(I18NContext(
             "chunithm.message.chart",
             diff="World's End",
             level=level,
-            ds=ds,
-            combo=chart["combo"],
+            ds="☆" * ds,
+            tap=chart["notes"][0],
+            hold=chart["notes"][1],
+            slide=chart["notes"][2],
+            air=chart["notes"][3],
+            flick=chart["notes"][4],
             charter=chart["charter"],
         )
         )
@@ -222,7 +229,11 @@ async def _(msg: Bot.MessageSession, song: str):
                 diff=diff_list[_diff],
                 level=level,
                 ds=ds,
-                combo=chart["combo"],
+                tap=chart["notes"][0],
+                hold=chart["notes"][1],
+                slide=chart["notes"][2],
+                air=chart["notes"][3],
+                flick=chart["notes"][4],
                 charter=chart["charter"],
             )
             )
@@ -235,11 +246,14 @@ async def _(msg: Bot.MessageSession, song: str):
     if "<id>" in msg.parsed_msg:
         sid = msg.parsed_msg["<id>"]
         music = (await total_list.get()).by_id(sid)
-    elif song[:2].lower() == "id":
-        sid = song[2:]
-        music = (await total_list.get()).by_id(sid)
     else:
-        music = (await total_list.get()).by_title(song)
+        if is_int(song):
+            music = (await total_list.get()).by_id(song)
+        elif song[:2].lower() == "id":
+            sid = song[2:]
+            music = (await total_list.get()).by_id(sid)
+        else:
+            music = (await total_list.get()).by_title(song)
 
     if not music:
         await msg.finish(I18NContext("maimai.message.music_not_found"))
