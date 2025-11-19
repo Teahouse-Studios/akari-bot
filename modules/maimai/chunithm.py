@@ -9,7 +9,7 @@ from .libraries.chunithm_apidata import get_info, get_record
 from .libraries.chunithm_best30 import generate as generate_b30
 from .libraries.chunithm_mapping import diff_list
 from .libraries.chunithm_music import TotalList
-from .libraries.chunithm_utils import get_diff, SONGS_PER_PAGE
+from .libraries.chunithm_utils import *
 
 total_list = TotalList()
 
@@ -166,29 +166,6 @@ async def _(msg: Bot.MessageSession, keyword: str):
             await msg.finish(msg_chain)
 
 
-@chu.command("b30 [<username>] {{I18N:chunithm.help.b30}}")
-async def _(msg: Bot.MessageSession, username: str = None):
-    if not username:
-        if msg.session_info.sender_from == "QQ":
-            payload = {"qq": msg.session_info.get_common_sender_id()}
-        else:
-            bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
-            if not bind_info:
-                await msg.finish(
-                    msg.session_info.locale.t("chunithm.message.user_unbound", prefix=msg.session_info.prefixes[0])
-                )
-            username = bind_info.username
-            payload = {"username": username}
-        use_cache = True
-    else:
-        payload = {"username": username}
-        use_cache = False
-
-    img = await generate_b30(msg, payload, use_cache)
-    if img:
-        await msg.finish(BImage(img))
-
-
 @chu.command("chart <song> {{I18N:maimai.help.chart}}")
 async def _(msg: Bot.MessageSession, song: str):
     if is_int(song):
@@ -316,14 +293,22 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("maimai.message.random.failed"))
 
 
-@chu.command("bind <username> {{I18N:maimai.help.bind}}", exclude_from=["QQ|Private", "QQ|Group"])
+@chu.command("bind <username> {{I18N:maimai.help.bind}}")
 async def _(msg: Bot.MessageSession, username: str):
-    await get_record(msg, {"username": username}, use_cache=False)
-    await DivingProberBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, username=username)
-    await msg.finish(msg.session_info.locale.t("maimai.message.bind.success") + username)
+    if await get_record(msg, {"username": username}, use_cache=False):
+        await DivingProberBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, username=username)
+        await msg.finish(msg.session_info.locale.t("maimai.message.bind.success") + username)
 
 
-@chu.command("unbind {{I18N:maimai.help.unbind}}", exclude_from=["QQ|Private", "QQ|Group"])
+@chu.command("unbind {{I18N:maimai.help.unbind}}")
 async def _(msg: Bot.MessageSession):
     await DivingProberBindInfo.remove_bind_info(sender_id=msg.session_info.sender_id)
     await msg.finish(I18NContext("maimai.message.unbind.success"))
+
+
+@chu.command("b30 {{I18N:chunithm.help.b30}}")
+async def _(msg: Bot.MessageSession):
+    payload = await get_diving_prober_bind_info(msg)
+    img = await generate_b30(msg, payload)
+    if img:
+        await msg.finish(BImage(img))

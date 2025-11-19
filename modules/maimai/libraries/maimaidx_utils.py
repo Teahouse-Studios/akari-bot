@@ -11,8 +11,20 @@ from core.utils.random import Random
 from .maimaidx_apidata import get_record, get_song_record, get_total_record, get_plate
 from .maimaidx_mapping import *
 from .maimaidx_music import TotalList
+from ..database.models import DivingProberBindInfo
 
 total_list = TotalList()
+
+
+async def get_diving_prober_bind_info(msg: Bot.MessageSession):
+    bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
+    if not bind_info:
+        if msg.session_info.sender_from == "QQ":
+            payload = {"qq": msg.session_info.get_common_sender_id(), "b50": True}
+        else:
+            await msg.finish(I18NContext("maimai.message.user_unbound", prefix=msg.session_info.prefixes[0]))
+    payload = {"username": bind_info.username, "b50": True}
+    return payload
 
 
 def get_diff(diff: str) -> int:

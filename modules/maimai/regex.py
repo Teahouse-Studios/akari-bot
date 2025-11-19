@@ -87,41 +87,36 @@ async def _(msg: Bot.MessageSession):
     await query_alias(msg, sid)
 
 
-@mai_regex.regex(r"(.+)\s?有什[么麼]分\s?(.+)?", desc="{I18N:maimai.help.maimai_regex.score}")
+@mai_regex.regex(r"(.+)\s?有什[么麼]分", desc="{I18N:maimai.help.maimai_regex.score}")
 async def _(msg: Bot.MessageSession):
     songname = msg.matched_msg.groups()[0]
-    username = msg.matched_msg.groups()[1]
-    await query_song_score(msg, songname, username)
+    await query_song_score(msg, songname)
 
 
-@mai_regex.regex(r"(\d+\+?)\s?([a-zA-Z]+\+?)\s?[进進]度\s?(.+)?", desc="{I18N:maimai.help.maimai_regex.process}")
+@mai_regex.regex(r"(\d+\+?)\s?([a-zA-Z]+\+?)\s?[进進]度", desc="{I18N:maimai.help.maimai_regex.process}")
 async def _(msg: Bot.MessageSession):
     level = msg.matched_msg.groups()[0]
     goal = msg.matched_msg.groups()[1]
-    username = msg.matched_msg.groups()[2]
-    await query_process(msg, level, goal, username, get_list=False)
+    await query_process(msg, level, goal, get_list=False)
 
 
-@mai_regex.regex(r"(\d+\+?)\s?([a-zA-Z]+\+?)\s?完成表\s?(.+)?", desc="{I18N:maimai.help.maimai_regex.process.list}")
+@mai_regex.regex(r"(\d+\+?)\s?([a-zA-Z]+\+?)\s?完成表", desc="{I18N:maimai.help.maimai_regex.process.list}")
 async def _(msg: Bot.MessageSession):
     level = msg.matched_msg.groups()[0]
     goal = msg.matched_msg.groups()[1]
-    username = msg.matched_msg.groups()[2]
-    await query_process(msg, level, goal, username, get_list=True)
+    await query_process(msg, level, goal, get_list=True)
 
 
-@mai_regex.regex(r"(.?)([極极将將舞神者]舞?)[进進]度\s?(.+)?", desc="{I18N:maimai.help.maimai_regex.plate}")
+@mai_regex.regex(r"(.?)([極极将將舞神者]舞?)[进進]度", desc="{I18N:maimai.help.maimai_regex.plate}")
 async def _(msg: Bot.MessageSession):
     plate = msg.matched_msg.groups()[0] + msg.matched_msg.groups()[1]
-    username = msg.matched_msg.groups()[2]
-    await query_plate(msg, plate, username, get_list=False)
+    await query_plate(msg, plate, get_list=False)
 
 
-@mai_regex.regex(r"(.?)([極极将將舞神者]舞?)完成表\s?(.+)?", desc="{I18N:maimai.help.maimai_regex.plate.list}")
+@mai_regex.regex(r"(.?)([極极将將舞神者]舞?)完成表", desc="{I18N:maimai.help.maimai_regex.plate.list}")
 async def _(msg: Bot.MessageSession):
     plate = msg.matched_msg.groups()[0] + msg.matched_msg.groups()[1]
-    username = msg.matched_msg.groups()[2]
-    await query_plate(msg, plate, username, get_list=True)
+    await query_plate(msg, plate, get_list=True)
 
 
 @mai_regex.regex(r"(?:随个|隨個)\s?((?:dx|DX|sd|SD|标准|標準)\s?)?([绿綠黄黃红紅紫白]?)\s?([0-9]+\+?)",

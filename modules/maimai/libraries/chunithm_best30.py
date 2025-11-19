@@ -209,15 +209,15 @@ class DrawBest:
             case "C" | "D":
                 color = (206, 196, 204)
             case "B" | "BB" | "BBB":
-                color = (69, 174, 255)
+                color = (202, 242, 255)
             case "A" | "AA" | "AAA":
-                color = (239, 243, 13)
+                color = (255, 215, 0)
             case "S" | "S+" | "SS" | "SS+" | "SSS" | "SSS+":
-                color = (173, 244, 248)
+                color = (255, 255, 224)
             case "FULL COMBO":
-                color = (239, 243, 13)
+                color = (255, 215, 0)
             case "ALL JUSTICE":
-                color = (173, 244, 248)
+                color = (255, 255, 224)
             case _:
                 color = (255, 255, 255)
         return color
