@@ -126,6 +126,84 @@ class DrawBest:
         return img.resize((int(img.width * scale), int(img.height * scale)))
 
     @staticmethod
+    def _draw_rating(img, draw, position, rating, font):
+        x, y = position
+        text = f"RATING    {rating:.2f}"
+
+        padding = 2
+        bbox = draw.textbbox((0, 0), text, font=font)
+        text_width = bbox[2] - bbox[0] + 2 * padding
+        text_height = bbox[3] - bbox[1] + 2 * padding
+
+        outline_width = 1
+        outline_color = (0, 0, 0)
+
+        if rating >= 16.00:
+            gradient_colors = DrawBest._get_rating_color(rating)
+            gradient = Image.new("RGB", (text_width, text_height))
+            grad_draw = ImageDraw.Draw(gradient)
+            for y_pos in range(text_height):
+                t = y_pos / (text_height - 1)
+                n = len(gradient_colors) - 1
+                segment = t * n
+                i = int(segment)
+                t_seg = segment - i
+                if i >= n:
+                    i = n - 1
+                    t_seg = 1
+                c0 = gradient_colors[i]
+                c1 = gradient_colors[i + 1]
+                r = int(c0[0] + (c1[0] - c0[0]) * t_seg)
+                g = int(c0[1] + (c1[1] - c0[1]) * t_seg)
+                b = int(c0[2] + (c1[2] - c0[2]) * t_seg)
+                grad_draw.line([(0, y_pos), (text_width, y_pos)], fill=(r, g, b))
+
+            mask = Image.new("L", (text_width, text_height), 0)
+            mask_draw = ImageDraw.Draw(mask)
+            mask_draw.text((0, 0), text, font=font, fill=255)
+
+            for dx in [-outline_width, 0, outline_width]:
+                for dy in [-outline_width, 0, outline_width]:
+                    if dx != 0 or dy != 0:
+                        temp_mask = Image.new("L", (text_width, text_height), 0)
+                        temp_draw = ImageDraw.Draw(temp_mask)
+                        temp_draw.text((dx, dy), text, font=font, fill=255)
+                        img.paste(outline_color, (x, y), temp_mask)
+
+            img.paste(gradient, (x, y), mask)
+        else:
+            color = DrawBest._get_rating_color(rating)
+            for dx in [-outline_width, 0, outline_width]:
+                for dy in [-outline_width, 0, outline_width]:
+                    if dx != 0 or dy != 0:
+                        draw.text((x + dx, y + dy), text, font=font, fill=outline_color)
+            draw.text((x, y), text, font=font, fill=color)
+
+    @staticmethod
+    def _get_rating_color(rating: float):
+        if rating >= 16.00:
+            color = [(11, 229, 186), (60, 249, 25), (244, 222, 49), (255, 235, 238), (42, 201, 240)]  # 彩
+        elif rating >= 15.25:
+            color = (255, 255, 224)  # 白金
+        elif rating >= 14.50:
+            color = (255, 215, 0)  # 金
+        elif rating >= 13.25:
+            color = (202, 242, 255)  # 银
+        elif rating >= 12.00:
+            color = (150, 107, 231)  # 铜
+        elif rating >= 10.00:
+            color = (128, 0, 128)  # 紫
+        elif rating >= 7.00:
+            color = (255, 0, 0)  # 红
+        elif rating >= 4.00:
+            color = (255, 165, 0)  # 橙
+        elif rating >= 0.00:
+            color = (0, 128, 0)  # 绿
+        else:
+            color = (0, 0, 0)
+        return color
+
+    @staticmethod
     def _get_goal_color(goal: str):
         match goal:
             case "C" | "D":
@@ -288,10 +366,8 @@ class DrawBest:
         img_draw = ImageDraw.Draw(self.img)
         font = ImageFont.truetype(noto_sans_demilight_path, 30, encoding="utf-8")
         img_draw.text((34, 24), " ".join(self.username), fill="black", font=font)
-        font = ImageFont.truetype(noto_sans_demilight_path, 16, encoding="utf-8")
-        img_draw.text(
-            (34, 64), f"RATING    {self.player_rating:.2f}", fill="black", font=font
-        )
+        font = ImageFont.truetype(noto_sans_bold_path, 16, encoding="utf-8")
+        self._draw_rating(self.img, img_draw, (38, 64), self.player_rating, font)
         font = ImageFont.truetype(noto_sans_demilight_path, 20, encoding="utf-8")
         img_draw.text((34, 114), f"BEST ({self.b30_rating:.2f})", fill="black", font=font)
         img_draw.text((34, 804), f"NEW ({self.n20_rating:.2f})", fill="black", font=font)

@@ -132,6 +132,71 @@ class DrawBest:
         return img.resize((int(img.width * scale), int(img.height * scale)))
 
     @staticmethod
+    def _draw_rating(img, draw, position, rating, font):
+        x, y = position
+        padding = 8
+        text = f"RATING    {rating}"
+
+        bbox = draw.textbbox((0, 0), text, font=font)
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
+
+        rect = [x, y, x + text_width + padding * 2, y + text_height + padding * 2]
+
+        if rating >= 12000:
+            gradient_colors = DrawBest._get_rating_color(rating)
+            gradient = Image.new("RGB", (rect[2] - rect[0], rect[3] - rect[1]))
+            grad_draw = ImageDraw.Draw(gradient)
+            width = gradient.width
+            for i, color in enumerate(gradient_colors[:-1]):
+                next_color = gradient_colors[i + 1]
+                for x_pos in range(int(i * width / (len(gradient_colors) - 1)),
+                                   int((i + 1) * width / (len(gradient_colors) - 1))):
+                    r = int(color[0] + (next_color[0] - color[0]) * (x_pos - i * width /
+                            (len(gradient_colors) - 1)) / (width / (len(gradient_colors) - 1)))
+                    g = int(color[1] + (next_color[1] - color[1]) * (x_pos - i * width /
+                            (len(gradient_colors) - 1)) / (width / (len(gradient_colors) - 1)))
+                    b = int(color[2] + (next_color[2] - color[2]) * (x_pos - i * width /
+                            (len(gradient_colors) - 1)) / (width / (len(gradient_colors) - 1)))
+                    grad_draw.line([(x_pos, 0), (x_pos, gradient.height)], fill=(r, g, b))
+            mask = Image.new("L", gradient.size, 0)
+            mask_draw = ImageDraw.Draw(mask)
+            mask_draw.rounded_rectangle([0, 0, gradient.width, gradient.height], radius=10, fill=255)
+            img.paste(gradient, (rect[0], rect[1]), mask)
+        else:
+            color = DrawBest._get_rating_color(rating)
+            draw.rounded_rectangle(rect, radius=10, fill=color)
+
+        text_color = (255, 255, 255) if rating >= 1000 else (0, 0, 0)
+        draw.text((x + padding, y + padding - 2), text, fill=text_color, font=font)
+
+    @staticmethod
+    def _get_rating_color(rating: int):
+        if rating >= 15000:
+            color = [(255, 56, 56), (255, 235, 0), (129, 217, 85), (69, 174, 255), (186, 82, 255)]  # 彩
+        elif rating >= 14500:
+            color = [(248, 225, 67), (255, 250, 160), (248, 225, 67)]  # 白金
+        elif rating >= 14000:
+            color = [(210, 130, 16), (248, 225, 67), (210, 130, 16)]  # 金
+        elif rating >= 13000:
+            color = [(136, 144, 190), (182, 201, 241), (136, 144, 190)]  # 银
+        elif rating >= 12000:
+            color = [(206, 100, 30), (182, 201, 241), (206, 100, 30)]  # 铜
+        elif rating >= 10000:
+            color = (186, 82, 255)  # 紫
+        elif rating >= 7000:
+            color = (255, 56, 56)  # 红
+        elif rating >= 4000:
+            color = (255, 235, 0)  # 黄
+        elif rating >= 2000:
+            color = (129, 217, 85)  # 绿
+        elif rating >= 1000:
+            color = (69, 174, 255)  # 蓝
+        else:
+            color = (255, 255, 255)  # 白
+        return color
+
+    @staticmethod
     def _get_goal_color(goal: str):
         match goal:
             case "C" | "D":
@@ -214,8 +279,7 @@ class DrawBest:
                 x_ = 96
                 for k, char in enumerate(chart_info.rate):
                     temp_draw.text((x_, 42), char, self._get_goal_color(chart_info.rate)[k], font)
-                    char_width = font.getbbox(char)[2]
-                    x_ += char_width
+                    x_ += font.getbbox(char)[2]
             else:
                 temp_draw.text((96, 42), chart_info.rate, self._get_goal_color(chart_info.rate), font)
             font = ImageFont.truetype(noto_sans_bold_path, 12, encoding="utf-8")
@@ -290,8 +354,7 @@ class DrawBest:
                 x_ = 96
                 for k, char in enumerate(chart_info.rate):
                     temp_draw.text((x_, 42), char, self._get_goal_color(chart_info.rate)[k], font)
-                    char_width = font.getbbox(char)[2]
-                    x_ += char_width
+                    x_ += font.getbbox(char)[2]
             else:
                 temp_draw.text((96, 42), chart_info.rate, self._get_goal_color(chart_info.rate), font)
             font = ImageFont.truetype(noto_sans_bold_path, 12, encoding="utf-8")
@@ -369,10 +432,8 @@ class DrawBest:
         img_draw = ImageDraw.Draw(self.img)
         font = ImageFont.truetype(noto_sans_demilight_path, 30, encoding="utf-8")
         img_draw.text((34, 24), " ".join(self.username), fill="black", font=font)
-        font = ImageFont.truetype(noto_sans_demilight_path, 16, encoding="utf-8")
-        img_draw.text(
-            (34, 64), f"RATING    {self.player_rating}", fill="black", font=font
-        )
+        font = ImageFont.truetype(noto_sans_bold_path, 16, encoding="utf-8")
+        self._draw_rating(self.img, img_draw, (34, 64), self.player_rating, font)
         font = ImageFont.truetype(noto_sans_demilight_path, 20, encoding="utf-8")
         img_draw.text((34, 114), f"PAST ({self.sd_rating})", fill="black", font=font)
         img_draw.text((34, 914), f"NEW ({self.dx_rating})", fill="black", font=font)
