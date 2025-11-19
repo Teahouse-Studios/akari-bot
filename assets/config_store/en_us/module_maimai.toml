@@ -5,3 +5,4 @@
 [module_maimai_secret]
 # The secret config section of the module. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.
 diving_fish_developer_token = "<Replace me with str value>" # Developer token for Diving Fish prober. (For maimai module)
+lxns_developer_token = "<Replace me with str value>" # 落雪咖啡屋查分器的开发者令牌。（用于 maimai 模块）
