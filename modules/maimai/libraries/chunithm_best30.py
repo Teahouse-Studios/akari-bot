@@ -1,15 +1,16 @@
-from typing import Optional, Dict, List
+from typing import Any, Optional, Dict, List
 
 from PIL import Image, ImageDraw, ImageFont
 
 from core.builtins.bot import Bot
-from core.constants.path import noto_sans_bold_path, noto_sans_demilight_path, noto_sans_symbol_path
-from .chunithm_apidata import get_record
+from core.constants.path import noto_sans_bold_path, noto_sans_demilight_path
+from core.utils.message import truncate_text
+from .chunithm_apidata import get_record_df, get_record_lx
 from .chunithm_mapping import (
     chu_cover_path,
     score_to_rate,
     combo_mapping,
-    diff_list,
+    diff_list
 )
 from .chunithm_music import TotalList
 
@@ -100,16 +101,15 @@ class BestList:
 
 
 class DrawBest:
-    def __init__(self, best_30: BestList, new_20: BestList, username: str):
+    def __init__(self, best_30: BestList, new_20: BestList, username: str, rating: float, source: str):
         self.best_30 = best_30
         self.new_20 = new_20
         self.username = self._fullwidth_to_halfwidth(username)
-        self.b30_rating = 0
-        self.n20_rating = 0
+        self.source = source
         self.player_rating = 0
-        self.b30_rating = sum(c.ra for c in best_30) / 30
-        self.n20_rating = sum(c.ra for c in new_20) / 20
-        self.player_rating = (sum(c.ra for c in best_30) + sum(c.ra for c in new_20)) / 50
+        self.b30_rating = sum(c.ra for c in best_30) / len(best_30) if len(best_30) != 0 else 0.0
+        self.n20_rating = sum(c.ra for c in new_20) / len(new_20) if len(new_20) != 0 else 0.0
+        self.player_rating = rating
 
         self.img = Image.new("RGBA", (860, 1300), color=(211, 211, 211, 255))  # 创建空白图像
         self.rows_image = [140 + 110 * i for i in range(6)] + [830 + 110 * i for i in range(4)]
@@ -255,9 +255,7 @@ class DrawBest:
             temp_draw = ImageDraw.Draw(temp)
             temp_draw.polygon(level_triagle, color[chart_info.diff])
             font = ImageFont.truetype(noto_sans_demilight_path, 18, encoding="utf-8")
-            title = chart_info.title
-            if self._coloum_width(title) > 12:
-                title = self._change_column_width(title, 12) + "..."
+            title = truncate_text(chart_info.title, 12)
             temp_draw.text((6, 7), title, "white", font)
             font = ImageFont.truetype(noto_sans_demilight_path, 10, encoding="utf-8")
             temp_draw.text((7, 29), f"ID: {chart_info.mid}", "white", font)
@@ -301,9 +299,7 @@ class DrawBest:
             temp_draw = ImageDraw.Draw(temp)
             temp_draw.polygon(level_triagle, color[chart_info.diff])
             font = ImageFont.truetype(noto_sans_demilight_path, 18, encoding="utf-8")
-            title = chart_info.title
-            if self._coloum_width(title) > 12:
-                title = self._change_column_width(title, 12) + "..."
+            title = truncate_text(chart_info.title, 12)
             temp_draw.text((6, 7), title, "white", font)
             font = ImageFont.truetype(noto_sans_demilight_path, 10, encoding="utf-8")
             temp_draw.text((7, 29), f"ID: {chart_info.mid}", "white", font)
@@ -332,40 +328,12 @@ class DrawBest:
                 temp, (self.columns_image[j + 1] + 4, self.rows_image[i + 6] + 4)
             )
 
-    @staticmethod
-    def _coloum_width(arg_str: str):
-        count = 0
-        for str_ in arg_str:
-            inside_code = ord(str_)
-            if inside_code == 0x0020:
-                count += 1
-            elif inside_code < 0x7F:
-                count += 1
-            else:
-                count += 2
-        return count
-
-    @staticmethod
-    def _change_column_width(arg_str: str, arg_len: int):
-        count = 0
-        list_str = []
-        for str_ in arg_str:
-            inside_code = ord(str_)
-            if inside_code == 0x0020:
-                count += 1
-            elif inside_code < 0x7F:
-                count += 1
-            else:
-                count += 2
-            list_str.append(str_)
-            if count == arg_len:
-                return "".join(list_str)
-        return "".join(list_str)
-
     def draw(self):
         img_draw = ImageDraw.Draw(self.img)
         font = ImageFont.truetype(noto_sans_demilight_path, 30, encoding="utf-8")
         img_draw.text((34, 24), " ".join(self.username), fill="black", font=font)
+        font = ImageFont.truetype(noto_sans_demilight_path, 24, encoding="utf-8")
+        img_draw.text((512, 60), f"API Source: {self.source}", fill="black", font=font)
         font = ImageFont.truetype(noto_sans_bold_path, 16, encoding="utf-8")
         self._draw_rating(self.img, img_draw, (38, 64), self.player_rating, font)
         font = ImageFont.truetype(noto_sans_demilight_path, 20, encoding="utf-8")
@@ -382,8 +350,11 @@ class DrawBest:
         return self.img
 
 
-async def generate(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> Optional[Image.Image]:
-    resp = await get_record(msg, payload, use_cache)
+async def generate(msg: Bot.MessageSession, token: Any = None, source: str = "Lxns", use_cache: bool = True) -> Optional[Image.Image]:
+    if source == "Lxns":
+        resp = await get_record_lx(msg, token, use_cache)
+    else:
+        resp = await get_record_df(msg, token, use_cache)
     best = BestList(30)
     new = BestList(20)
     b30: List[Dict] = resp["records"]["b30"]
@@ -392,5 +363,5 @@ async def generate(msg: Bot.MessageSession, payload: dict, use_cache: bool = Tru
         best.push(await ChartInfo.from_json(c))
     for c in n20:
         new.push(await ChartInfo.from_json(c))
-    pic = DrawBest(best, new, resp["nickname"]).get_dir()
+    pic = DrawBest(best, new, resp["nickname"], resp["rating"], source).get_dir()
     return pic

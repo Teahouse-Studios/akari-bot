@@ -4,6 +4,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from core.builtins.bot import Bot
 from core.constants.path import noto_sans_bold_path, noto_sans_demilight_path, noto_sans_symbol_path
+from core.utils.message import truncate_text
 from .maimaidx_apidata import get_record
 from .maimaidx_mapping import (
     mai_cover_path,
@@ -266,9 +267,7 @@ class DrawBest:
             temp_draw = ImageDraw.Draw(temp)
             temp_draw.polygon(level_triagle, color[chart_info.diff])
             font = ImageFont.truetype(noto_sans_demilight_path, 18, encoding="utf-8")
-            title = chart_info.title
-            if self._coloum_width(title) > 12:
-                title = self._change_column_width(title, 12) + "..."
+            title = truncate_text(chart_info.title, 12)
             temp_draw.text((6, 7), title, "white", font)
             font = ImageFont.truetype(noto_sans_demilight_path, 10, encoding="utf-8")
             temp_draw.text((7, 29), f"ID: {chart_info.song_id}", "white", font)
@@ -341,9 +340,7 @@ class DrawBest:
             temp_draw = ImageDraw.Draw(temp)
             temp_draw.polygon(level_triagle, color[chart_info.diff])
             font = ImageFont.truetype(noto_sans_demilight_path, 18, encoding="utf-8")
-            title = chart_info.title
-            if self._coloum_width(title) > 12:
-                title = self._change_column_width(title, 12) + "..."
+            title = truncate_text(chart_info.title, 12)
             temp_draw.text((6, 7), title, "white", font)
             font = ImageFont.truetype(noto_sans_demilight_path, 10, encoding="utf-8")
             temp_draw.text((7, 29), f"ID: {chart_info.song_id}", "white", font)
@@ -397,36 +394,6 @@ class DrawBest:
             self.img.paste(
                 temp, (self.columns_image[j + 1] + 4, self.rows_image[i + 7] + 4)
             )
-
-    @staticmethod
-    def _coloum_width(arg_str: str):
-        count = 0
-        for str_ in arg_str:
-            inside_code = ord(str_)
-            if inside_code == 0x0020:
-                count += 1
-            elif inside_code < 0x7F:
-                count += 1
-            else:
-                count += 2
-        return count
-
-    @staticmethod
-    def _change_column_width(arg_str: str, arg_len: int):
-        count = 0
-        list_str = []
-        for str_ in arg_str:
-            inside_code = ord(str_)
-            if inside_code == 0x0020:
-                count += 1
-            elif inside_code < 0x7F:
-                count += 1
-            else:
-                count += 2
-            list_str.append(str_)
-            if count == arg_len:
-                return "".join(list_str)
-        return "".join(list_str)
 
     def draw(self):
         img_draw = ImageDraw.Draw(self.img)

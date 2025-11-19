@@ -41,13 +41,13 @@ def process_lxns_to_diving_fish(data):
                 "notes": notes_ordered
             })
 
-            ds.append(diff.get("star", diff.get("level_value", 0.0)))
+            ds.append(diff.get("star", float(diff.get("level_value", 0.0))))
             levels.append(diff.get("kanji", diff.get("level", "")))
 
         title_with_kanji = song["title"]
         kanji_list = [diff.get("kanji") for diff in song.get("difficulties", []) if "kanji" in diff]
         if kanji_list:
-            title_with_kanji = f"[{kanji_list[0]}]{song['title']}"
+            title_with_kanji = f"[{kanji_list[0]}]{song["title"]}"
             basic_info["title"] = title_with_kanji
 
         song_entry = {

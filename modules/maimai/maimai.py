@@ -540,7 +540,7 @@ async def _(msg: Bot.MessageSession, base: float, score: float):
     await msg.finish(Plain(compute_rating(base, score)))
 
 
-@mai.command("bind <username> {{I18N:maimai.help.bind}}")
+@mai.command("bind <username> {{I18N:maimai.help.bind.lx}}")
 async def _(msg: Bot.MessageSession, username: str):
     if await get_record(msg, {"username": username}, use_cache=False):
         await DivingProberBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, username=username)

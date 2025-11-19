@@ -116,9 +116,6 @@ class WikiLib:
 
         if not headers:
             headers = {}
-        # Default User-Agent
-        if "User-Agent" not in headers:
-            headers["User-Agent"] = "AkariBot/1.0"
         self.headers = headers
 
     async def get_json_from_api(self, api, _no_login=False, **kwargs) -> dict:

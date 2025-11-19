@@ -23,7 +23,8 @@ async def get_diving_prober_bind_info(msg: Bot.MessageSession):
             payload = {"qq": msg.session_info.get_common_sender_id(), "b50": True}
         else:
             await msg.finish(I18NContext("maimai.message.user_unbound", prefix=msg.session_info.prefixes[0]))
-    payload = {"username": bind_info.username, "b50": True}
+    else:
+        payload = {"username": bind_info.username, "b50": True}
     return payload
 
 
