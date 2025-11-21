@@ -280,6 +280,8 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
 
         module: Module = modules[command_first_word]
         if not module.command_list.set:  # 如果没有可用的命令，则展示模块简介
+            if module.rss and not msg.session_info.support_rss:
+                return
             if module.desc:
                 desc = [I18NContext("parser.module.desc", desc=msg.session_info.locale.t_str(module.desc))]
                 if command_first_word not in msg.session_info.enabled_modules:
