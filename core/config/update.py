@@ -312,9 +312,6 @@ if config["config_version"] < config_version:
         reorganizer.reorganize_key("ncmusic_enable_card")
         reorganizer.reorganize_key("ncmusic_api", True)
 
-        reorganizer.set_table("osu")
-        reorganizer.reorganize_key("osu_api_key", True)
-
         reorganizer.set_table("wiki")
         reorganizer.reorganize_key("wiki_whitelist_url")
 

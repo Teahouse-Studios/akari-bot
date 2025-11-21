@@ -1,14 +1,15 @@
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Plain, I18NContext
+from core.builtins.message.internal import Plain, I18NContext, Image as BImage
 from core.component import module
 from core.utils.image import msgchain2image
 from core.utils.message import is_int
-from .database.models import DivingProberBindInfo
-from .libraries.chunithm_apidata import get_info, get_record
-from .libraries.chunithm_mapping import diff_list
+from .database.models import DivingProberBindInfo, LxnsProberBindInfo
+from .libraries.chunithm_apidata import get_info, get_record_df, get_record_lx, update_cover
+from .libraries.chunithm_best30 import generate as generate_b30
+from .libraries.chunithm_mapping import diff_list, default_source
 from .libraries.chunithm_music import TotalList
-from .libraries.chunithm_utils import generate_best30_text, get_diff, SONGS_PER_PAGE
+from .libraries.chunithm_utils import *
 
 total_list = TotalList()
 
@@ -165,32 +166,11 @@ async def _(msg: Bot.MessageSession, keyword: str):
             await msg.finish(msg_chain)
 
 
-@chu.command("b30 [<username>] {{I18N:chunithm.help.b30}}")
-async def _(msg: Bot.MessageSession, username: str = None):
-    if not username:
-        if msg.session_info.sender_from == "QQ":
-            payload = {"qq": msg.session_info.get_common_sender_id()}
-        else:
-            bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
-            if not bind_info:
-                await msg.finish(
-                    msg.session_info.locale.t("chunithm.message.user_unbound", prefix=msg.session_info.prefixes[0])
-                )
-            username = bind_info.username
-            payload = {"username": username}
-        use_cache = True
-    else:
-        payload = {"username": username}
-        use_cache = False
-
-    imgs = await generate_best30_text(msg, payload, use_cache)
-    if imgs:
-        await msg.finish(imgs)
-
-
 @chu.command("chart <song> {{I18N:maimai.help.chart}}")
 async def _(msg: Bot.MessageSession, song: str):
-    if song[:2].lower() == "id":
+    if is_int(song):
+        music = (await total_list.get()).by_id(song)
+    elif song[:2].lower() == "id":
         sid = song[2:]
         music = (await total_list.get()).by_id(sid)
     else:
@@ -200,16 +180,20 @@ async def _(msg: Bot.MessageSession, song: str):
         await msg.finish(I18NContext("maimai.message.music_not_found"))
 
     msg_chain = MessageChain.assign()
-    if len(music["ds"]) == 6:
-        chart = music["charts"][5]
-        ds = music["ds"][5]
-        level = music["level"][5]
+    if len(music["ds"]) == 1:
+        chart = music["charts"][0]
+        ds = music["ds"][0]
+        level = music["level"][0]
         msg_chain.append(I18NContext(
             "chunithm.message.chart",
             diff="World's End",
             level=level,
-            ds=ds,
-            combo=chart["combo"],
+            ds="☆" * ds,
+            tap=chart["notes"][0],
+            hold=chart["notes"][1],
+            slide=chart["notes"][2],
+            air=chart["notes"][3],
+            flick=chart["notes"][4],
             charter=chart["charter"],
         )
         )
@@ -222,7 +206,11 @@ async def _(msg: Bot.MessageSession, song: str):
                 diff=diff_list[_diff],
                 level=level,
                 ds=ds,
-                combo=chart["combo"],
+                tap=chart["notes"][0],
+                hold=chart["notes"][1],
+                slide=chart["notes"][2],
+                air=chart["notes"][3],
+                flick=chart["notes"][4],
                 charter=chart["charter"],
             )
             )
@@ -235,11 +223,14 @@ async def _(msg: Bot.MessageSession, song: str):
     if "<id>" in msg.parsed_msg:
         sid = msg.parsed_msg["<id>"]
         music = (await total_list.get()).by_id(sid)
-    elif song[:2].lower() == "id":
-        sid = song[2:]
-        music = (await total_list.get()).by_id(sid)
     else:
-        music = (await total_list.get()).by_title(song)
+        if is_int(song):
+            music = (await total_list.get()).by_id(song)
+        elif song[:2].lower() == "id":
+            sid = song[2:]
+            music = (await total_list.get()).by_id(sid)
+        else:
+            music = (await total_list.get()).by_title(song)
 
     if not music:
         await msg.finish(I18NContext("maimai.message.music_not_found"))
@@ -302,14 +293,63 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("maimai.message.random.failed"))
 
 
-@chu.command("bind <username> {{I18N:maimai.help.bind}}", exclude_from=["QQ|Private", "QQ|Group"])
+@chu.command("bind df <username> {{I18N:maimai.help.bind.df}}")
 async def _(msg: Bot.MessageSession, username: str):
-    await get_record(msg, {"username": username}, use_cache=False)
-    await DivingProberBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, username=username)
-    await msg.finish(msg.session_info.locale.t("maimai.message.bind.success") + username)
+    if await get_record_df(msg, {"username": username}, use_cache=False):
+        await DivingProberBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, username=username)
+        await msg.finish(msg.session_info.locale.t("maimai.message.bind.success") + username)
 
 
-@chu.command("unbind {{I18N:maimai.help.unbind}}", exclude_from=["QQ|Private", "QQ|Group"])
+@chu.command("unbind df {{I18N:maimai.help.unbind}}")
 async def _(msg: Bot.MessageSession):
     await DivingProberBindInfo.remove_bind_info(sender_id=msg.session_info.sender_id)
     await msg.finish(I18NContext("maimai.message.unbind.success"))
+
+if LX_DEVELOPER_TOKEN:
+    @chu.command("switch {{I18N:chunithm.help.switch}}")
+    async def _(msg: Bot.MessageSession):
+        if msg.session_info.sender_info.sender_data.get("chunithum_record_source", default_source) == "lxns":
+            await msg.session_info.sender_info.edit_sender_data("chunithum_record_source", "diving-fish")
+            await msg.finish(I18NContext("maimai.message.switch.df"))
+        else:
+            await msg.session_info.sender_info.edit_sender_data("chunithum_record_source", "lxns")
+            await msg.finish(I18NContext("maimai.message.switch.lx"))
+
+    @chu.command("bind lx <friendcode> {{I18N:maimai.help.bind.lx}}")
+    async def _(msg: Bot.MessageSession, friendcode: str):
+        data = await get_record_lx(msg, friendcode, use_cache=False)
+        if data:
+            await LxnsProberBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, friend_code=friendcode)
+            await msg.finish(msg.session_info.locale.t("maimai.message.bind.success") + data["nickname"])
+
+    @chu.command("unbind lx {{I18N:maimai.help.unbind}}")
+    async def _(msg: Bot.MessageSession):
+        await LxnsProberBindInfo.remove_bind_info(sender_id=msg.session_info.sender_id)
+        await msg.finish(I18NContext("maimai.message.unbind.success"))
+
+
+@chu.command("b30 {{I18N:chunithm.help.b30}}")
+async def _(msg: Bot.MessageSession):
+    if msg.session_info.sender_info.sender_data.get("chunithum_record_source", default_source) == "lxns":
+        token = await get_lxns_prober_bind_info(msg)
+        source = "Lxns"
+    else:
+        token = await get_diving_prober_bind_info(msg)
+        source = "Diving-Fish"
+    img = await generate_b30(msg, token, source)
+    if img:
+        await msg.finish(BImage(img))
+
+
+@chu.command("update [--no-cover]", required_superuser=True)
+async def _(msg: Bot.MessageSession):
+    if msg.parsed_msg.get("--no-cover", False):
+        actions = await total_list.update()
+    else:
+        actions = (
+            await update_cover() and await total_list.update()
+        )
+    if actions:
+        await msg.finish(I18NContext("message.success"))
+    else:
+        await msg.finish(I18NContext("message.failed"))

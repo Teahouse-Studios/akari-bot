@@ -258,40 +258,6 @@ async def _(msg: Bot.MessageSession, grade: str):
     await get_grade_info(msg, grade)
 
 
-@mai.command("bind <username> {{I18N:maimai.help.bind}}", exclude_from=["QQ|Private", "QQ|Group"])
-async def _(msg: Bot.MessageSession, username: str):
-    await get_record(msg, {"username": username}, use_cache=False)
-    await DivingProberBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, username=username)
-    await msg.finish(str(I18NContext("maimai.message.bind.success")) + username)
-
-
-@mai.command("unbind {{I18N:maimai.help.unbind}}", exclude_from=["QQ|Private", "QQ|Group"])
-async def _(msg: Bot.MessageSession):
-    await DivingProberBindInfo.remove_bind_info(sender_id=msg.session_info.sender_id)
-    await msg.finish(I18NContext("maimai.message.unbind.success"))
-
-
-@mai.command("b50 [<username>] {{I18N:maimai.help.b50}}")
-async def _(msg: Bot.MessageSession, username: str = None):
-    if not username:
-        if msg.session_info.sender_from == "QQ":
-            payload = {"qq": msg.session_info.get_common_sender_id(), "b50": True}
-        else:
-            bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
-            if not bind_info:
-                await msg.finish(I18NContext("maimai.message.user_unbound", prefix=msg.session_info.prefixes[0]))
-            username = bind_info.username
-            payload = {"username": username, "b50": True}
-        use_cache = True
-    else:
-        payload = {"username": username, "b50": True}
-        use_cache = False
-
-    img = await generate_b50(msg, payload, use_cache)
-    if img:
-        await msg.finish(BImage(img))
-
-
 @mai.command("chart <id_or_alias> {{I18N:maimai.help.chart}}")
 async def _(msg: Bot.MessageSession, id_or_alias: str):
     if id_or_alias[:2].lower() == "id":
@@ -454,205 +420,6 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
     await msg.finish(await get_info(music, msg_chain))
 
 
-@mai.command(
-    "score <id_or_alias> [-u <username>] {{I18N:maimai.help.score}}",
-    options_desc={"-u": "{I18N:maimai.help.option.u}"},
-)
-async def _(msg: Bot.MessageSession, id_or_alias: str):
-    get_user = msg.parsed_msg.get("-u", False)
-    username = get_user["<username>"] if get_user else None
-    await query_song_score(msg, id_or_alias, username)
-
-
-async def query_song_score(msg, query, username):
-    if query[:2].lower() == "id":
-        sid = query[2:]
-    else:
-        sid_list = await search_by_alias(query)
-
-        if len(sid_list) == 0:
-            await msg.finish(I18NContext("maimai.message.music_not_found"))
-        elif len(sid_list) > 1:
-            msg_chain = MessageChain.assign(I18NContext("maimai.message.disambiguation"))
-            for sid in sorted(sid_list, key=int):
-                s = (await total_list.get()).by_id(sid)
-                if s:
-                    msg_chain.append(Plain(f"{s["id"]} - {s["title"]}{" (DX)" if s["type"] == "DX" else ""}"))
-            msg_chain.append(
-                I18NContext(
-                    "maimai.message.disambiguation.score.prompt",
-                    prefix=msg.session_info.prefixes[0]))
-            await msg.finish(msg_chain)
-        else:
-            sid = str(sid_list[0])
-
-    music = (await total_list.get()).by_id(sid)
-    if not music:
-        await msg.finish(I18NContext("maimai.message.music_not_found"))
-
-    if not username:
-        if msg.session_info.sender_from == "QQ":
-            payload = {"qq": msg.session_info.get_common_sender_id()}
-        else:
-            bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
-            if not bind_info:
-                await msg.finish(I18NContext("maimai.message.user_unbound", prefix=msg.session_info.prefixes[0]))
-            username = bind_info.username
-            payload = {"username": username}
-        use_cache = True
-    else:
-        payload = {"username": username}
-        use_cache = False
-
-    output = await get_player_score(msg, payload, sid, use_cache)
-    await msg.finish(await get_info(music, output))
-
-
-@mai.command("plate <plate> [<username>] [-l] {{I18N:maimai.help.plate}}",
-             options_desc={"-l": "{I18N:maimai.help.option.l}"})
-async def _(msg: Bot.MessageSession, plate: str, username: str = None):
-    get_list = msg.parsed_msg.get("-l", False)
-    await query_plate(msg, plate, username, get_list)
-
-
-async def query_plate(msg, plate, username, get_list=False):
-    if not username:
-        if msg.session_info.sender_from == "QQ":
-            payload = {"qq": msg.session_info.get_common_sender_id()}
-        else:
-            bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
-            if not bind_info:
-                await msg.finish(I18NContext("maimai.message.user_unbound", prefix=msg.session_info.prefixes[0]))
-            username = bind_info.username
-            payload = {"username": username}
-        use_cache = True
-    else:
-        payload = {"username": username}
-        use_cache = False
-
-    if plate in ["真将", "真將"] or (plate[1] == "者" and plate[0] not in ["覇", "霸"]):
-        await msg.finish(I18NContext("maimai.message.plate.plate_not_found"))
-
-    if get_list:
-        img = await generate_plate(msg, payload, plate, use_cache)
-        if img:
-            await msg.finish(BImage(img))
-    else:
-        output, get_img = await get_plate_process(msg, payload, plate, use_cache)
-
-        if get_img:
-            imgs = await msgchain2image(output, msg)
-            if imgs:
-                await msg.finish(imgs)
-            else:
-                await msg.finish(output)
-        else:
-            await msg.finish(output)
-
-
-@mai.command("process <level> <goal> [-u <username>]  [-l] {{I18N:maimai.help.process}}",
-             options_desc={
-                 "-u": "{I18N:maimai.help.option.u}",
-                 "-l": "{I18N:maimai.help.option.l}"})
-async def _(msg: Bot.MessageSession, level: str, goal: str):
-    get_user = msg.parsed_msg.get("-u", False)
-    username = get_user["<username>"] if get_user else None
-    get_list = msg.parsed_msg.get("-l", False)
-    await query_process(msg, level, goal, username, get_list)
-
-
-async def query_process(msg, level, goal, username, get_list=False):
-    if not username:
-        if msg.session_info.sender_from == "QQ":
-            payload = {"qq": msg.session_info.get_common_sender_id()}
-        else:
-            bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
-            if not bind_info:
-                await msg.finish(I18NContext("maimai.message.user_unbound", prefix=msg.session_info.prefixes[0]))
-            username = bind_info.username
-            payload = {"username": username}
-        use_cache = True
-    else:
-        payload = {"username": username}
-        use_cache = False
-
-    if level not in level_list:
-        await msg.finish(I18NContext("maimai.message.level_invalid"))
-    if goal.upper() not in goal_list:
-        await msg.finish(I18NContext("maimai.message.goal_invalid"))
-
-    if get_list:
-        img = await generate_process(msg, payload, level, goal, use_cache)
-        if img:
-            await msg.finish(BImage(img))
-    else:
-        output, get_img = await get_level_process(msg, payload, level, goal, use_cache)
-
-        if get_img:
-            imgs = await msgchain2image(output, msg)
-            if imgs:
-                await msg.finish(imgs)
-            else:
-                await msg.finish(output)
-        else:
-            await msg.finish(output)
-
-
-@mai.command("rank [<username>] {{I18N:maimai.help.rank}}")
-async def _(msg: Bot.MessageSession, username: str = None):
-    if not username:
-        if msg.session_info.sender_from == "QQ":
-            payload = {"qq": msg.session_info.get_common_sender_id()}
-        else:
-            bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
-            if not bind_info:
-                await msg.finish(I18NContext("maimai.message.user_unbound", prefix=msg.session_info.prefixes[0]))
-            username = bind_info.username
-            payload = {"username": username}
-        use_cache = True
-    else:
-        payload = {"username": username}
-        use_cache = False
-
-    await get_rank(msg, payload, use_cache)
-
-
-@mai.command(
-    "scorelist <level> [-p <page>] [-u <username>] {{I18N:maimai.help.scorelist}}",
-    options_desc={"-p": "{I18N:maimai.help.option.p}",
-                  "-u": "{I18N:maimai.help.option.u}"}
-)
-async def _(msg: Bot.MessageSession, level: str):
-    get_user = msg.parsed_msg.get("-u", False)
-    username = get_user["<username>"] if get_user else None
-    get_page = msg.parsed_msg.get("-p", False)
-    page = get_page["<page>"] if get_page and is_int(get_page["<page>"]) else 1
-    if not username:
-        if msg.session_info.sender_from == "QQ":
-            payload = {"qq": msg.session_info.get_common_sender_id()}
-        else:
-            bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
-            if not bind_info:
-                await msg.finish(I18NContext("maimai.message.user_unbound", prefix=msg.session_info.prefixes[0]))
-            username = bind_info.username
-            payload = {"username": username}
-        use_cache = True
-    else:
-        payload = {"username": username}
-        use_cache = False
-
-    output, get_img = await get_score_list(msg, payload, level, page, use_cache)
-
-    if get_img:
-        imgs = await msgchain2image(output, msg)
-        if imgs:
-            await msg.finish(imgs)
-        else:
-            await msg.finish(output)
-    else:
-        await msg.finish(output)
-
-
 @mai.command("random <diff+level> [<dx_type>] {{I18N:maimai.help.random.filter}}")
 async def _(msg: Bot.MessageSession, dx_type: str = None):
     condit = msg.parsed_msg["<diff+level>"]
@@ -771,6 +538,153 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str):
 @mai.command("calc <base> <score> {{I18N:maimai.help.calc}}")
 async def _(msg: Bot.MessageSession, base: float, score: float):
     await msg.finish(Plain(compute_rating(base, score)))
+
+
+@mai.command("bind <username> {{I18N:maimai.help.bind.lx}}")
+async def _(msg: Bot.MessageSession, username: str):
+    if await get_record(msg, {"username": username}, use_cache=False):
+        await DivingProberBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, username=username)
+        await msg.finish(str(I18NContext("maimai.message.bind.success")) + username)
+
+
+@mai.command("unbind {{I18N:maimai.help.unbind}}")
+async def _(msg: Bot.MessageSession):
+    await DivingProberBindInfo.remove_bind_info(sender_id=msg.session_info.sender_id)
+    await msg.finish(I18NContext("maimai.message.unbind.success"))
+
+
+@mai.command("b50 {{I18N:maimai.help.b50}}")
+async def _(msg: Bot.MessageSession):
+    payload = await get_diving_prober_bind_info(msg)
+    img = await generate_b50(msg, payload)
+    if img:
+        await msg.finish(BImage(img))
+
+
+@mai.command("score <id_or_alias> {{I18N:maimai.help.score}}")
+async def _(msg: Bot.MessageSession, id_or_alias: str):
+    await query_song_score(msg, id_or_alias)
+
+
+async def query_song_score(msg, query):
+    if query[:2].lower() == "id":
+        sid = query[2:]
+    else:
+        sid_list = await search_by_alias(query)
+
+        if len(sid_list) == 0:
+            await msg.finish(I18NContext("maimai.message.music_not_found"))
+        elif len(sid_list) > 1:
+            msg_chain = MessageChain.assign(I18NContext("maimai.message.disambiguation"))
+            for sid in sorted(sid_list, key=int):
+                s = (await total_list.get()).by_id(sid)
+                if s:
+                    msg_chain.append(Plain(f"{s["id"]} - {s["title"]}{" (DX)" if s["type"] == "DX" else ""}"))
+            msg_chain.append(
+                I18NContext(
+                    "maimai.message.disambiguation.score.prompt",
+                    prefix=msg.session_info.prefixes[0]))
+            await msg.finish(msg_chain)
+        else:
+            sid = str(sid_list[0])
+
+    music = (await total_list.get()).by_id(sid)
+    if not music:
+        await msg.finish(I18NContext("maimai.message.music_not_found"))
+
+    payload = await get_diving_prober_bind_info(msg)
+    output = await get_player_score(msg, payload, sid)
+    await msg.finish(await get_info(music, output))
+
+
+@mai.command("plate <plate> [-l] {{I18N:maimai.help.plate}}",
+             options_desc={"-l": "{I18N:maimai.help.option.l}"})
+async def _(msg: Bot.MessageSession, plate: str):
+    get_list = msg.parsed_msg.get("-l", False)
+    await query_plate(msg, plate, get_list)
+
+
+async def query_plate(msg, plate, get_list=False):
+    payload = await get_diving_prober_bind_info(msg)
+
+    if plate in ["真将", "真將"] or (plate[1] == "者" and plate[0] not in ["覇", "霸"]):
+        await msg.finish(I18NContext("maimai.message.plate.plate_not_found"))
+
+    if get_list:
+        img = await generate_plate(msg, payload, plate)
+        if img:
+            await msg.finish(BImage(img))
+    else:
+        output, get_img = await get_plate_process(msg, payload, plate)
+
+        if get_img:
+            imgs = await msgchain2image(output, msg)
+            if imgs:
+                await msg.finish(imgs)
+            else:
+                await msg.finish(output)
+        else:
+            await msg.finish(output)
+
+
+@mai.command("process <level> <goal> [-l] {{I18N:maimai.help.process}}",
+             options_desc={
+                 "-l": "{I18N:maimai.help.option.l}"})
+async def _(msg: Bot.MessageSession, level: str, goal: str):
+    get_list = msg.parsed_msg.get("-l", False)
+    await query_process(msg, level, goal, get_list)
+
+
+async def query_process(msg, level, goal, get_list=False):
+    payload = await get_diving_prober_bind_info(msg)
+
+    if level not in level_list:
+        await msg.finish(I18NContext("maimai.message.level_invalid"))
+    if goal.upper() not in goal_list:
+        await msg.finish(I18NContext("maimai.message.goal_invalid"))
+
+    if get_list:
+        img = await generate_process(msg, payload, level, goal)
+        if img:
+            await msg.finish(BImage(img))
+    else:
+        output, get_img = await get_level_process(msg, payload, level, goal)
+
+        if get_img:
+            imgs = await msgchain2image(output, msg)
+            if imgs:
+                await msg.finish(imgs)
+            else:
+                await msg.finish(output)
+        else:
+            await msg.finish(output)
+
+
+@mai.command("rank {{I18N:maimai.help.rank}}")
+async def _(msg: Bot.MessageSession):
+    payload = await get_diving_prober_bind_info(msg)
+    await get_rank(msg, payload)
+
+
+@mai.command(
+    "scorelist <level> [-p <page>] {{I18N:maimai.help.scorelist}}",
+    options_desc={"-p": "{I18N:maimai.help.option.p}"}
+)
+async def _(msg: Bot.MessageSession, level: str):
+    get_page = msg.parsed_msg.get("-p", False)
+    page = get_page["<page>"] if get_page and is_int(get_page["<page>"]) else 1
+
+    payload = await get_diving_prober_bind_info(msg)
+    output, get_img = await get_score_list(msg, payload, level, page)
+
+    if get_img:
+        imgs = await msgchain2image(output, msg)
+        if imgs:
+            await msg.finish(imgs)
+        else:
+            await msg.finish(output)
+    else:
+        await msg.finish(output)
 
 
 @mai.command("update [--no-cover]", required_superuser=True)

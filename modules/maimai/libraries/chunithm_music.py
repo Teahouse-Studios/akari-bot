@@ -9,6 +9,61 @@ from core.utils.random import Random
 from .chunithm_mapping import *
 
 
+def process_lxns_to_diving_fish(data):
+    version_map = {v["version"]: v["title"] for v in data.get("versions", [])}
+
+    result = []
+    for song in data.get("songs", []):
+        basic_info = {
+            "artist": song["artist"],
+            "bpm": song["bpm"],
+            "from": version_map.get(song["version"], "Unknown"),
+            "genre": song["genre"],
+            "title": song["title"]
+        }
+
+        charts = []
+        ds = []
+        levels = []
+
+        for diff in song.get("difficulties", []):
+            notes_ordered = [
+                diff["notes"].get("tap", 0),
+                diff["notes"].get("hold", 0),
+                diff["notes"].get("slide", 0),
+                diff["notes"].get("air", 0),
+                diff["notes"].get("flick", 0)
+            ]
+
+            charter_name = diff.get("note_designer", "")
+            charts.append({
+                "charter": charter_name,
+                "notes": notes_ordered
+            })
+
+            ds.append(diff.get("star", float(diff.get("level_value", 0.0))))
+            levels.append(diff.get("kanji", diff.get("level", "")))
+
+        title_with_kanji = song["title"]
+        kanji_list = [diff.get("kanji") for diff in song.get("difficulties", []) if "kanji" in diff]
+        if kanji_list:
+            title_with_kanji = f"[{kanji_list[0]}]{song["title"]}"
+            basic_info["title"] = title_with_kanji
+
+        song_entry = {
+            "basic_info": basic_info,
+            "charts": charts,
+            "ds": ds,
+            "id": song["id"],
+            "level": levels,
+            "title": title_with_kanji
+        }
+
+        result.append(song_entry)
+
+    return result
+
+
 def cross(checker: List[Any], elem: Optional[Union[Any, List[Any]]], diff):
     ret = False
     diff_ret = []
@@ -51,12 +106,27 @@ def in_or_equal(checker: Any, elem: Optional[Union[Any, List[Any]]]):
 
 
 class Chart(Dict):
-    combo: Optional[int] = None
+    tap: Optional[int] = None
+    hold: Optional[int] = None
+    slide: Optional[int] = None
+    air: Optional[int] = None
+    flick: Optional[int] = None
+    total: Optional[int] = None
     charter: Optional[int] = None
 
     def __getattribute__(self, item):
-        if item == "combo":
-            return self["combo"]
+        if item == "tap":
+            return self["notes"][0]
+        if item == "hold":
+            return self["notes"][1]
+        if item == "slide":
+            return self["notes"][2]
+        if item == "air":
+            return self["notes"][3]
+        if item == "flick":
+            return self["notes"][4]
+        if item == "total":
+            return sum(self["notes"])
         if item == "charter":
             return self["charter"]
         return super().__getattribute__(item)
@@ -72,7 +142,6 @@ class Music(Dict):
     version: Optional[str] = None
     charts: Optional[Chart] = None
     artist: Optional[str] = None
-
     diff: List[int] = []
 
     def __getattribute__(self, item):
@@ -166,9 +235,10 @@ class TotalList:
     @staticmethod
     async def dl_cache():
         try:
-            url = "https://www.diving-fish.com/api/chunithmprober/music_data"
-            data = await get_url(url, 200, fmt="json")
+            url = "https://maimai.lxns.net/api/v0/chunithm/song/list?notes=true"
+            data = await get_url(url, 200, headers={"User-Agent": "AkariBot/1.0"}, fmt="json")
             if data:
+                data = process_lxns_to_diving_fish(data)
                 with open(chu_song_info_path, "wb") as f:
                     f.write(orjson.dumps(data, option=orjson.OPT_INDENT_2))
             return data
