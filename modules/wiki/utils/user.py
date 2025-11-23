@@ -70,8 +70,8 @@ async def get_user_info(msg: Bot.MessageSession, username, wikiurl, headers=None
         data["global_edit_count"] = str(
             user_central_auth_data["query"]["globaluserinfo"].get("editcount", 0)
         )
-        data["global_home"] = user_central_auth_data["query"]["globaluserinfo"]["home"]
-        for g in user_central_auth_data["query"]["globaluserinfo"]["groups"]:
+        data["global_home"] = user_central_auth_data["query"]["globaluserinfo"].get("home")
+        for g in user_central_auth_data["query"]["globaluserinfo"].get("groups"):
             data["global_users_groups"].append(groups[g] if g in groups else g)
 
     data["registration_time"] = base_user_info.get("registration")
