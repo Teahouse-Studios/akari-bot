@@ -15,7 +15,6 @@ from core.database.models import *
 from core.logger import Logger
 from modules.cytoid.database.models import *
 from modules.maimai.database.models import *
-from modules.osu.database.models import *
 from modules.phigros.database.models import *
 from modules.wiki.database.models import *
 from modules.wikilog.database.models import *
@@ -383,19 +382,19 @@ async def convert_database():
             Logger.error(f"DivingProberBindInfo record: {r.__dict__}")
     await conn.execute_query("DROP TABLE IF EXISTS _old_module_maimai_DivingProberBindInfo;")
 
-    Logger.info("Converting OsuBindInfo...")
-
-    osu_bind_record = await OsuBindInfoL.all()
-    for r in osu_bind_record:
-        try:
-            await OsuBindInfo.create(
-                sender_id=r.targetId,
-                username=r.username,
-            )
-        except Exception as e:
-            Logger.error(f"Failed to convert OsuBindInfo: {r.targetId}, error: {e}")
-            Logger.error(f"OsuBindInfo record: {r.__dict__}")
-    await conn.execute_query("DROP TABLE IF EXISTS _old_module_osu_OsuBindInfo;")
+    # Logger.info("Converting OsuBindInfo...")
+    #
+    # osu_bind_record = await OsuBindInfoL.all()
+    # for r in osu_bind_record:
+    #     try:
+    #         await OsuBindInfo.create(
+    #             sender_id=r.targetId,
+    #             username=r.username,
+    #         )
+    #     except Exception as e:
+    #         Logger.error(f"Failed to convert OsuBindInfo: {r.targetId}, error: {e}")
+    #         Logger.error(f"OsuBindInfo record: {r.__dict__}")
+    # await conn.execute_query("DROP TABLE IF EXISTS _old_module_osu_OsuBindInfo;")
 
     Logger.info("Converting PhigrosBindInfo...")
 
