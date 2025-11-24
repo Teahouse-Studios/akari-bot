@@ -97,8 +97,8 @@ class WikiSiteInfo(DBModel):
         return True
 
     @classmethod
-    def get_like_this(cls, t: str):
-        return cls.filter(api_link__contains=t).first()
+    async def get_like_this(cls, t: str):
+        return await (cls.filter(api_link__contains=t)).first()
 
 
 class WikiAllowList(DBModel):
@@ -121,7 +121,7 @@ class WikiAllowList(DBModel):
 
     @classmethod
     async def add(cls, api_link) -> bool:
-        if await cls.filter(api_link=api_link).exists():
+        if (await cls.filter(api_link=api_link)).exists():
             return False
         await cls.create(api_link=api_link)
         return True
@@ -149,18 +149,18 @@ class WikiBlockList(DBModel):
 
     @classmethod
     async def check(cls, api_link: str) -> bool:
-        return await cls.filter(api_link=api_link).exists()
+        return await (cls.filter(api_link=api_link)).exists()
 
     @classmethod
     async def add(cls, api_link) -> bool:
-        if await cls.filter(api_link=api_link).exists():
+        if await (cls.filter(api_link=api_link)).exists():
             return False
         await cls.create(api_link=api_link)
         return True
 
     @classmethod
     async def remove(cls, api_link) -> bool:
-        if not await cls.filter(api_link=api_link).exists():
+        if not await (cls.filter(api_link=api_link)).exists():
             return False
         await cls.filter(api_link=api_link).delete()
         return True
@@ -183,7 +183,7 @@ class WikiBotAccountList(DBModel):
 
     @classmethod
     async def add(cls, api_link: str, bot_account: str, bot_password: str):
-        if await cls.filter(api_link=api_link):
+        if await (cls.filter(api_link=api_link)).exists():
             return False
 
         await cls.create(api_link=api_link,
