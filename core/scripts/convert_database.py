@@ -101,14 +101,6 @@ class DivingProberBindInfoL(Model):
         table = "_old_module_maimai_DivingProberBindInfo"
 
 
-class OsuBindInfoL(Model):
-    targetId = fields.CharField(max_length=512, pk=True)
-    username = fields.CharField(max_length=512)
-
-    class Meta:
-        table = "_old_module_osu_OsuBindInfo"
-
-
 class PhigrosBindInfoL(Model):
     targetId = fields.CharField(max_length=512, pk=True)
     sessiontoken = fields.CharField(max_length=512)
@@ -195,7 +187,6 @@ async def rename_old_tables():
             "ALTER TABLE module_cytoid_CytoidBindInfo RENAME TO _old_module_cytoid_CytoidBindInfo;")
         await conn.execute_query(
             "ALTER TABLE module_maimai_DivingProberBindInfo RENAME TO _old_module_maimai_DivingProberBindInfo;")
-        await conn.execute_query("ALTER TABLE module_osu_OsuBindInfo RENAME TO _old_module_osu_OsuBindInfo;")
         await conn.execute_query("ALTER TABLE module_phigros_PgrBindInfo RENAME TO _old_module_phigros_PgrBindInfo;")
         await conn.execute_query("ALTER TABLE module_wiki_TargetSetInfo RENAME TO _old_module_wiki_TargetSetInfo;")
         await conn.execute_query("ALTER TABLE module_wiki_WikiInfo RENAME TO _old_module_wiki_WikiInfo;")
@@ -381,20 +372,6 @@ async def convert_database():
             Logger.error(f"Failed to convert DivingProberBindInfo: {r.targetId}, error: {e}")
             Logger.error(f"DivingProberBindInfo record: {r.__dict__}")
     await conn.execute_query("DROP TABLE IF EXISTS _old_module_maimai_DivingProberBindInfo;")
-
-    # Logger.info("Converting OsuBindInfo...")
-    #
-    # osu_bind_record = await OsuBindInfoL.all()
-    # for r in osu_bind_record:
-    #     try:
-    #         await OsuBindInfo.create(
-    #             sender_id=r.targetId,
-    #             username=r.username,
-    #         )
-    #     except Exception as e:
-    #         Logger.error(f"Failed to convert OsuBindInfo: {r.targetId}, error: {e}")
-    #         Logger.error(f"OsuBindInfo record: {r.__dict__}")
-    # await conn.execute_query("DROP TABLE IF EXISTS _old_module_osu_OsuBindInfo;")
 
     Logger.info("Converting PhigrosBindInfo...")
 
