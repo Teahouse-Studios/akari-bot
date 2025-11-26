@@ -104,7 +104,7 @@
     "maimai.message.unbind.success": "解绑成功。",
     "maimai.message.use_cache": "获取玩家分数失败，已使用缓存数据。",
     "maimai.message.user_not_found.df": "未找到用户，请确保此玩家的用户名和查分器中的用户名相同。",
-    "maimai.message.user_not_found.lx": "未找到用户，请检查此玩家的好友码是否存在。",
+    "maimai.message.user_not_found.lx": "未找到用户，请检查好友码是否存在。",
     "maimai.message.user_unbound": "未绑定用户，请使用“${prefix}maimai bind”绑定一个用户。",
     "maimai.message.user_unbound.qq": "未绑定用户，请前往查分器并绑定你的 QQ 号。\n查分器地址：https://www.diving-fish.com/maimaidx/prober"
 }
