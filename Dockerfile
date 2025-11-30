@@ -1,4 +1,4 @@
-FROM python:3.13
+FROM python:3.14
 
 LABEL org.opencontainers.image.url=https://github.com/Teahouse-Studios/akari-bot
 LABEL org.opencontainers.image.documentation=https://bot.teahouse.team/
