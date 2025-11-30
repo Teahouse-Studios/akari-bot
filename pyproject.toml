@@ -88,7 +88,7 @@ google-play-scraper = "^1.2.2"
 gql = "^4.0.0"
 langconv = {git = "https://github.com/Teahouse-Studios/langconv.py.git"}
 mcstatus = "^12.0.0"
-numpy = "<2.3.5"
+numpy = "<2.3.6"
 openai = "^2.0.0"
 pandas = "^2.2.0"
 pint = "^0.25.0"
