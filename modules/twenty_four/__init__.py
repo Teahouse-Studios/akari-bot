@@ -5,7 +5,7 @@ from simpleeval import simple_eval
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
 from core.component import module
-from core.utils.game import PlayState, GAME_EXPIRED
+from core.game import PlayState, GAME_EXPIRED
 from core.utils.message import is_int
 from core.utils.petal import gained_petal, lost_petal
 from core.utils.random import Random

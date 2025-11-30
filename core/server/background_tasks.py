@@ -4,12 +4,12 @@ from akari_bot_webrender.functions.options import StatusOptions
 
 from core.builtins.session.tasks import SessionTaskManager
 from core.constants import Info
+from core.cooldown import clear_expired_cooldown
 from core.database.models import JobQueuesTable
+from core.game import clear_expired_playstate
 from core.ip import fetch_ip_info
 from core.logger import Logger
 from core.scheduler import Scheduler, IntervalTrigger
-from core.utils.cooldown import clear_cd_list
-from core.utils.game import clear_ps_list
 from core.web_render import init_web_render, web_render
 
 
@@ -20,9 +20,9 @@ async def bg():
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=1), max_instances=1)
-async def clear_list():
-    clear_cd_list()
-    clear_ps_list()
+async def clear_timetempdict():
+    clear_expired_cooldown()
+    clear_expired_playstate()
 
 
 async def init_background_task():

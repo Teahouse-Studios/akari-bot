@@ -23,11 +23,12 @@ from core.database.models import AnalyticsData
 from core.exports import exports
 from core.loader import ModulesManager
 from core.logger import Logger
-from core.tos import abuse_warn_target
+from core.tos import TOS_TEMPBAN_TIME, temp_ban_counter, abuse_warn_target, remove_temp_ban
 from core.types import Module, Param
 from core.types.module.component_meta import CommandMeta
 from core.utils.message import normalize_space
 from core.utils.temp import TempCounter
+from core.utils.token_bucket import TokenBucket
 
 if TYPE_CHECKING:
     from core.builtins.bot import Bot
@@ -38,7 +39,6 @@ enable_tos = Config("enable_tos", True)
 enable_analytics = Config("enable_analytics", True)
 report_targets = Config("report_targets", [])
 enable_module_invalid_prompt = Config("enable_module_invalid_prompt", False)
-TOS_TEMPBAN_TIME = Config("tos_temp_ban_time", 300) if Config("tos_temp_ban_time", 300) > 0 else 300
 bug_report_url = Config("bug_report_url", bug_report_url_default)
 
 typo_check_module_score = Config("typo_check_module_score", 0.6)
@@ -46,28 +46,12 @@ typo_check_command_score = Config("typo_check_command_score", 0.3)
 typo_check_args_score = Config("typo_check_args_score", 0.5)
 typo_check_options_score = Config("typo_check_options_score", 0.3)
 
-counter_same = {}  # 命令使用次数计数（重复使用单一命令）
-counter_all = {}  # 命令使用次数计数（使用所有命令）
+buckets_same = {}  # 命令使用次数计数（重复使用单一命令）
+buckets_all = {}  # 命令使用次数计数（使用所有命令）
 
-temp_ban_counter = {}  # 临时封禁计数
-cooldown_counter = {}  # 冷却计数
+target_cooldown_counter = {}  # 冷却计数
 
 match_hash_cache = {}
-
-
-async def check_temp_ban(target):
-    is_temp_banned = temp_ban_counter.get(target)
-    if is_temp_banned:
-        ban_time = datetime.now().timestamp() - is_temp_banned["ts"]
-        ban_time_remain = int(TOS_TEMPBAN_TIME - ban_time)
-        if ban_time_remain > 0:
-            return ban_time_remain
-    return False
-
-
-async def remove_temp_ban(target):
-    if await check_temp_ban(target):
-        del temp_ban_counter[target]
 
 
 async def parser(msg: "Bot.MessageSession"):
@@ -276,7 +260,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
     try:
         await _check_target_cooldown(msg)
         if enable_tos:
-            await _check_temp_ban(msg)
+            await _tos_temp_ban(msg)
 
         module: Module = modules[command_first_word]
         if not module.command_list.set:  # 如果没有可用的命令，则展示模块简介
@@ -451,7 +435,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                             match_hash_cache[msg.session_info.target_id][matched_hash] = datetime.now().timestamp()
 
                             if enable_tos and rfunc.show_typing:
-                                await _check_temp_ban(msg)
+                                await _tos_temp_ban(msg)
                             if rfunc.show_typing:
                                 await _check_target_cooldown(msg)
                             if rfunc.required_superuser:
@@ -521,7 +505,7 @@ async def _check_target_cooldown(msg: "Bot.MessageSession"):
     cooldown_time = int(msg.session_info.target_info.target_data.get("cooldown_time", 0))
 
     if cooldown_time and not await msg.check_permission():
-        if sender_cooldown := cooldown_counter.setdefault(msg.session_info.target_id, {}).get(
+        if sender_cooldown := target_cooldown_counter.setdefault(msg.session_info.target_id, {}).get(
                 msg.session_info.sender_id):
             elapsed = datetime.now().timestamp() - sender_cooldown["ts"]
             if elapsed <= cooldown_time:
@@ -531,11 +515,11 @@ async def _check_target_cooldown(msg: "Bot.MessageSession"):
                 await msg.finish()
             sender_cooldown.update({"ts": datetime.now().timestamp(), "notified": False})
         else:
-            cooldown_counter[msg.session_info.target_id] = {
+            target_cooldown_counter[msg.session_info.target_id] = {
                 msg.session_info.sender_id: {"ts": datetime.now().timestamp(), "notified": False}}
 
 
-async def _check_temp_ban(msg: "Bot.MessageSession"):
+async def _tos_temp_ban(msg: "Bot.MessageSession"):
     is_temp_banned = temp_ban_counter.get(msg.session_info.sender_id)
     if is_temp_banned:
         if msg.check_super_user():
@@ -555,24 +539,24 @@ async def _check_temp_ban(msg: "Bot.MessageSession"):
 
 
 async def _tos_msg_counter(msg: "Bot.MessageSession", command: str):
-    same = counter_same.get(msg.session_info.sender_id)
-    if not same or datetime.now().timestamp() - same["ts"] > 300 or same["command"] != command:
+    key_same = (msg.session_info.sender_id, command)
+    bucket_same = buckets_same.get(key_same)
+    if not bucket_same:
         # 检查是否滥用（5分钟内重复使用同一命令10条）
+        bucket_same = TokenBucket(10, 300)
+        buckets_same[key_same] = bucket_same
 
-        counter_same[msg.session_info.sender_id] = {"command": command, "count": 1,
-                                                    "ts": datetime.now().timestamp()}
-    else:
-        same["count"] += 1
-        if same["count"] > 10:
-            raise AbuseWarning("{I18N:tos.message.reason.cooldown}")
-    all_ = counter_all.get(msg.session_info.sender_id)
-    if not all_ or datetime.now().timestamp() - all_["ts"] > 300:  # 检查是否滥用（5分钟内使用20条命令）
-        counter_all[msg.session_info.sender_id] = {"count": 1,
-                                                   "ts": datetime.now().timestamp()}
-    else:
-        all_["count"] += 1
-        if all_["count"] > 20:
-            raise AbuseWarning("{I18N:tos.message.reason.abuse}")
+    if not bucket_same.consume():
+        raise AbuseWarning("{I18N:tos.message.reason.cooldown}")
+
+    bucket_all = buckets_all.get(msg.session_info.sender_id)
+    if not bucket_all:
+        # 检查是否滥用（5分钟内使用20条命令）
+        bucket_all = TokenBucket(20, 300)
+        buckets_all[msg.session_info.sender_id] = bucket_all
+
+    if not bucket_all.consume():
+        raise AbuseWarning("{I18N:tos.message.reason.abuse}")
 
 
 async def _execute_module_command(msg: "Bot.MessageSession", module, command_first_word):

@@ -13,7 +13,6 @@ from core.builtins.bot import Bot
 from core.builtins.converter import converter
 from core.builtins.message.chain import MessageChain, convert_senderid_to_atcode, match_kecode
 from core.builtins.message.internal import I18NContext, Plain, Image
-from core.builtins.parser.message import check_temp_ban, remove_temp_ban
 from core.builtins.session.internal import MessageSession
 from core.component import module
 from core.config import Config, CFGManager
@@ -25,7 +24,7 @@ from core.loader import ModulesManager
 from core.logger import Logger
 from core.scheduler import CronTrigger
 from core.server.terminate import restart
-from core.tos import WARNING_COUNTS
+from core.tos import WARNING_COUNTS, check_temp_ban, remove_temp_ban
 from core.types import Param
 from core.utils.alive import Alive
 from core.utils.bash import run_sys_command

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext
@@ -7,6 +9,24 @@ from core.logger import Logger
 
 report_targets = Config("report_targets", [])
 WARNING_COUNTS = Config("tos_warning_counts", 5)
+TOS_TEMPBAN_TIME = Config("tos_temp_ban_time", 300) if Config("tos_temp_ban_time", 300) > 0 else 300
+
+temp_ban_counter = {}  # 临时封禁计数
+
+
+async def check_temp_ban(target):
+    is_temp_banned = temp_ban_counter.get(target)
+    if is_temp_banned:
+        ban_time = datetime.now().timestamp() - is_temp_banned["ts"]
+        ban_time_remain = int(TOS_TEMPBAN_TIME - ban_time)
+        if ban_time_remain > 0:
+            return ban_time_remain
+    return False
+
+
+async def remove_temp_ban(target):
+    if await check_temp_ban(target):
+        del temp_ban_counter[target]
 
 
 async def abuse_warn_target(msg: Bot.MessageSession, reason: str):
