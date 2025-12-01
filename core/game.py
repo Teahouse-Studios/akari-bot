@@ -28,7 +28,7 @@ class PlayState:
         """
         获取目标的游戏事件字典，如果不存在则自动创建。
         """
-        target_dict = self._ps_lst[self.target_id]
+        target_dict = _ps_lst[self.target_id]
         return target_dict[self.game]
 
     def enable(self) -> None:

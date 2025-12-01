@@ -1,7 +1,7 @@
 import asyncio
 import threading
 import time
-from typing import Dict, Any, ClassVar, Union, Iterable
+from typing import Any, ClassVar, Union, Iterable
 
 
 class TempCounter:
