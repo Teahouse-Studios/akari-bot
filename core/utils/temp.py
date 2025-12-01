@@ -1,4 +1,8 @@
-from typing import Union, Iterable
+import asyncio
+import threading
+import time
+from dataclasses import dataclass, field
+from typing import Dict, Any, ClassVar, Optional, Union, Iterable
 
 
 class TempCounter:
@@ -132,3 +136,103 @@ class TempList:
 
     def __getattr__(self, item):
         return getattr(self.items, item)
+
+
+@dataclass
+class ExpiringTempDict:
+    _exp: float = 86400.0
+    _ts: float = field(default_factory=_current_ts)
+    _data: Dict[str, Any] = field(default_factory=dict)
+
+    _registry: ClassVar[list] = []
+    _lock: ClassVar[threading.RLock] = threading.RLock()
+
+    def __post_init__(self):
+        with self._lock:
+            self.__class__._registry.append(self)
+
+    def __getitem__(self, key: str):
+        with self._lock:
+            if key not in self._data:
+                self._data[key] = ExpiringTempDict()
+            return self._data[key]
+
+    def __setitem__(self, key: str, value: Any):
+        with self._lock:
+            self._data[key] = value
+
+    def is_expired(self) -> bool:
+        with self._lock:
+            return (time.time() - self._ts) > self._exp
+
+    def update_exp(self):
+        with self._lock:
+            self._ts = time.time()
+
+    def clear_expired(self) -> bool:
+        """
+        清除内部过期数据。
+        返回 True 表示自身可被外层删除。
+        """
+        with self._lock:
+            to_delete = []
+            for k, v in self._data.items():
+                if isinstance(v, ExpiringTempDict):
+                    should_delete = v.clear_expired()
+                    if should_delete:
+                        to_delete.append(k)
+                else:
+                    to_delete.append(k)
+
+            for k in to_delete:
+                del self._data[k]
+
+            if hasattr(self, "_ts") and self.is_expired() and not self._data:
+                return True
+            return False
+
+    async def async_clear_expired(self) -> bool:
+        with self._lock:
+            to_delete = []
+            for k, v in self._data.items():
+                if isinstance(v, ExpiringTempDict):
+                    should_delete = await v.async_clear_expired()
+                    if should_delete:
+                        to_delete.append(k)
+                else:
+                    to_delete.append(k)
+            for k in to_delete:
+                del self._data[k]
+            if hasattr(self, "_ts") and self.is_expired() and not self._data:
+                return True
+            return False
+
+    @classmethod
+    async def clear_all(cls):
+        async with asyncio.Lock():
+            for obj in cls._registry:
+                await obj.async_clear_expired()
+
+    def to_dict(self) -> dict:
+        with self._lock:
+            result = {}
+            for k, v in self._data.items():
+                if isinstance(v, ExpiringTempDict):
+                    result[k] = v.to_dict()
+                else:
+                    result[k] = v
+            result["_ts"] = self._ts
+            result["_exp"] = self._exp
+            return result
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "ExpiringTempDict":
+        obj = cls(_ts=d.get("_ts", time.time()), _exp=d.get("_exp", 86400))
+        for k, v in d.items():
+            if k in ("_ts", "_exp"):
+                continue
+            if isinstance(v, dict):
+                obj._data[k] = cls.from_dict(v)
+            else:
+                obj._data[k] = v
+        return obj
