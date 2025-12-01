@@ -150,10 +150,10 @@ class ExpiringTempDict:
     _registry: ClassVar[list] = []
     _lock: ClassVar[threading.RLock] = threading.RLock()
 
-    def __init__(self, exp=86400.0, data=None):
+    def __init__(self, exp: Union[int, float] = 86400.0, ts: Union[int, float] = time.time(), data: Any = None):
         self.exp = exp
         self.data = data or {}
-        self.ts = time.time()
+        self.ts = float(ts)
 
     def __post_init__(self):
         with self._lock:

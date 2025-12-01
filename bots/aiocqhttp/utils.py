@@ -6,7 +6,7 @@ import orjson
 
 from bots.aiocqhttp.info import sender_prefix
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Plain, Image, Voice, Mention, Raw
+from core.builtins.message.internal import Plain, Image, Voice, Raw
 from core.builtins.temp import Temp
 from core.logger import Logger
 from .client import aiocqhttp_bot

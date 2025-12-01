@@ -839,9 +839,8 @@ async def exec_sql(request: Request):
         if sql.upper().startswith("SELECT"):
             rows = await conn.execute_query_dict(sql)
             return {"success": True, "data": rows}
-        else:
-            rows, _ = await conn.execute_query(sql)
-            return {"success": True, "affected_rows": rows}
+        rows, _ = await conn.execute_query(sql)
+        return {"success": True, "affected_rows": rows}
     except OperationalError as e:
         return {"success": False, "error": str(e)}
     except HTTPException as e:

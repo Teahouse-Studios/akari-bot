@@ -304,7 +304,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                 return
 
         if not module.base:
-            if enable_tos:  # 检查TOS是否滥用命令
+            if enable_tos:  # 检查ToS是否滥用命令
                 await _tos_msg_counter(msg, msg.trigger_msg)
             else:
                 Logger.debug("Tos is disabled, check the configuration if it is not work as expected.")
@@ -316,15 +316,14 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
         if not none_templates:  # 如果有，送入命令解析
             await _execute_module_command(msg, module, command_first_word)
             raise FinishedException(msg.sent)  # if not using msg.finish
-        else:  # 如果没有，直接传入下游模块
-            msg.parsed_msg = None
-            for func in module.command_list.set:
-                if not func.command_template:
-                    if msg.session_info.sender_info.sender_data.get("typing_prompt", True):
-                        await msg.start_typing()
-                    await func.function(msg)  # 将msg传入下游模块
-
-                    raise FinishedException(msg.sent)  # if not using msg.finish
+        # 如果没有，直接传入下游模块
+        msg.parsed_msg = None
+        for func in module.command_list.set:
+            if not func.command_template:
+                if msg.session_info.sender_info.sender_data.get("typing_prompt", True):
+                    await msg.start_typing()
+                await func.function(msg)  # 将msg传入下游模块
+                raise FinishedException(msg.sent)  # if not using msg.finish
 
         if msg.session_info.sender_info.sender_data.get("typo_check", True):  # 判断是否开启错字检查
             new_msg, new_command_first_word, confirmed = await _command_typo_check(msg, modules, command_first_word)
@@ -853,4 +852,4 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
                 return None, None, True
     return None, None, False
 
-__all__ = ["parser", "check_temp_ban", "remove_temp_ban"]
+__all__ = ["parser"]

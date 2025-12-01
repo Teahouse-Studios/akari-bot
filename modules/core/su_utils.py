@@ -13,7 +13,6 @@ from core.builtins.bot import Bot
 from core.builtins.converter import converter
 from core.builtins.message.chain import MessageChain, convert_senderid_to_atcode, match_kecode
 from core.builtins.message.internal import I18NContext, Plain, Image
-from core.builtins.session.internal import MessageSession
 from core.component import module
 from core.config import Config, CFGManager
 from core.constants.exceptions import NoReportException, TestException
@@ -581,9 +580,9 @@ async def _(msg: Bot.MessageSession, sql: str):
             else:
                 table_str = tabulate(page_data, headers=headers, tablefmt="grid")
                 await msg.finish([Plain(table_str, disable_joke=True), footer])
-        else:
-            rows, _ = await conn.execute_query(sql)
-            await msg.finish(I18NContext("core.message.database.success", rows=rows))
+
+        rows, _ = await conn.execute_query(sql)
+        await msg.finish(I18NContext("core.message.database.success", rows=rows))
     except OperationalError as e:
         raise NoReportException(str(e))
 

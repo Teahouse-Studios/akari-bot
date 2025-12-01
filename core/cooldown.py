@@ -34,11 +34,11 @@ class CoolDown:
             if self.key not in target_dict:
                 target_dict[self.key] = ExpiringTempDict(exp=self.delay)
             return target_dict[self.key]
-        else:
-            sender_dict = target_dict[self.sender_id]
-            if self.key not in sender_dict:
-                sender_dict[self.key] = ExpiringTempDict(exp=self.delay)
-            return sender_dict[self.key]
+
+        sender_dict = target_dict[self.sender_id]
+        if self.key not in sender_dict:
+            sender_dict[self.key] = ExpiringTempDict(exp=self.delay)
+        return sender_dict[self.key]
 
     def check(self) -> float:
         """

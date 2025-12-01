@@ -35,12 +35,6 @@ def hash_hmac(key, code):
     return base64.b64encode(hmac_code.digest()).decode("utf-8")
 
 
-def computeMD5hash(my_string):
-    m = hashlib.md5(usedforsecurity=False)
-    m.update(my_string.encode("gb2312"))
-    return m.hexdigest()
-
-
 def parse_data(original_content: str, result: dict, confidence: float = 60, additional_text=None) -> Dict:
     content = original_content
 
@@ -73,10 +67,7 @@ def parse_data(original_content: str, result: dict, confidence: float = 60, addi
                         placeholders = [(m.start(), m.end()) for m in i18ncode_pattern.finditer(content)]
 
                         def is_in_placeholder(start, end):
-                            for p_start, p_end in placeholders:
-                                if start < p_end and end > p_start:
-                                    return True
-                            return False
+                            return any(start < p_end and end > p_start for p_start, p_end in placeholders)
 
                         for word in risk_words:
                             word = word.strip()
@@ -284,3 +275,6 @@ def rickroll() -> str:
     if Config("enable_rickroll", True) and rickroll_msg:
         return rickroll_msg
     return "{I18N:error.message.chain.unsafe}"
+
+
+__all__ = ["check", "check_bool", "rickroll"]

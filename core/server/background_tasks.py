@@ -1,7 +1,5 @@
 import asyncio
 
-from akari_bot_webrender.functions.options import StatusOptions
-
 from core.builtins.session.tasks import SessionTaskManager
 from core.constants import Info
 from core.database.models import JobQueuesTable

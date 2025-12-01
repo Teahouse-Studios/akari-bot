@@ -1,5 +1,4 @@
 import asyncio
-from collections.abc import Sequence
 from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 from core.builtins.message.chain import *

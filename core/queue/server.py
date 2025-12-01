@@ -1,15 +1,12 @@
 import re
-
 from typing import Union, TYPE_CHECKING, Optional
-
-from akari_bot_webrender.functions.options import StatusOptions
 
 from core.builtins.parser.command import CommandParser
 from core.builtins.parser.message import parser
 from core.builtins.utils import command_prefix
 from core.constants.path import PrivateAssets
 from core.utils.bash import run_sys_command
-from core.web_render import init_web_render, web_render
+from core.web_render import web_render
 from .base import JobQueueBase
 from ..builtins.converter import converter
 from ..builtins.message.chain import MessageChain, MessageNodes

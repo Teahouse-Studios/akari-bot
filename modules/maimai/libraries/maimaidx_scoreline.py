@@ -132,72 +132,72 @@ def draw_scoreline_table(tap: int = 0,
                     draw.text((x + (cell_w - w) / 2, y_start + ((y_end - y_start) - h) / 2),
                               text, fill=(255, 255, 255), font=font)
                 continue
+
+            color = [ORANGE, PINK, GREEN, GREY][col]
+            if col == 0 and row == 4:
+                color = YELLOW
+            draw.rectangle([x, y, x + cell_w, y + cell_h], fill=color, outline=(0, 0, 0), width=2)
+
+            if row < 5 and note_counts[row] == 0:
+                text = "-"
             else:
-                color = [ORANGE, PINK, GREEN, GREY][col]
-                if col == 0 and row == 4:
-                    color = YELLOW
-                draw.rectangle([x, y, x + cell_w, y + cell_h], fill=color, outline=(0, 0, 0), width=2)
+                try:
+                    if row == 0:  # TAP
+                        value = [base_fixup, 0.8 * base_fixup, 0.5 * base_fixup, 0][col]
+                    elif row == 1:  # HOLD
+                        value = [2 * base_fixup, 1.6 * base_fixup, base_fixup, 0][col]
+                    elif row == 2:  # SLIDE
+                        value = [3 * base_fixup, 2.4 * base_fixup, 1.5 * base_fixup, 0][col]
+                    elif row == 3:  # TOUCH
+                        value = [base_fixup, 0.8 * base_fixup, 0.5 * base_fixup, 0][col]
+                    elif row == 4:  # BREAK 2600
+                        value = [
+                            5 * base_fixup + bonus_fixup,
+                            4 * base_fixup + 0.4 * bonus_fixup,
+                            2 * base_fixup + 0.3 * bonus_fixup,
+                            0,
+                        ][col]
+                    elif row == 5:  # BREAK 2550
+                        value = [
+                            5 * base_fixup + 0.75 * bonus_fixup,
+                            3 * base_fixup + 0.4 * bonus_fixup,
+                            2 * base_fixup + 0.3 * bonus_fixup,
+                            0,
+                        ][col]
+                    elif row == 6:  # BREAK 2500
+                        value = [
+                            5 * base_fixup + 0.5 * bonus_fixup,
+                            2.5 * base_fixup + 0.4 * bonus_fixup,
+                            2 * base_fixup + 0.3 * bonus_fixup,
+                            0,
+                        ][col]
+                    else:
+                        value = 0
 
-                if row < 5 and note_counts[row] == 0:
+                    if mode == "100-":
+                        if row <= 3:  # TAP, HOLD, SLIDE, TOUCH
+                            max_base = [base_fixup, 2 * base_fixup, 3 * base_fixup, base_fixup][row]
+                            value = (value - max_base)
+                        elif row in [4, 5, 6]:  # BREAK 系列
+                            max_base = 5 * base_fixup
+                            base_part = value - bonus_fixup if bonus_fixup else value
+                            value = (base_part - max_base) + (bonus_fixup if bonus_fixup else 0)
+                    elif mode == "101-":
+                        if row <= 3:
+                            max_base = [base_fixup, 2 * base_fixup, 3 * base_fixup, base_fixup][row]
+                            value = value - max_base
+                        elif row in [4, 5, 6]:
+                            max_total = 5 * base_fixup + (bonus_fixup if bonus_fixup else 0)
+                            value = value - max_total
+
+                    text = f"{value:.4f}%"
+                except TypeError:
                     text = "-"
-                else:
-                    try:
-                        if row == 0:  # TAP
-                            value = [base_fixup, 0.8 * base_fixup, 0.5 * base_fixup, 0][col]
-                        elif row == 1:  # HOLD
-                            value = [2 * base_fixup, 1.6 * base_fixup, base_fixup, 0][col]
-                        elif row == 2:  # SLIDE
-                            value = [3 * base_fixup, 2.4 * base_fixup, 1.5 * base_fixup, 0][col]
-                        elif row == 3:  # TOUCH
-                            value = [base_fixup, 0.8 * base_fixup, 0.5 * base_fixup, 0][col]
-                        elif row == 4:  # BREAK 2600
-                            value = [
-                                5 * base_fixup + bonus_fixup,
-                                4 * base_fixup + 0.4 * bonus_fixup,
-                                2 * base_fixup + 0.3 * bonus_fixup,
-                                0,
-                            ][col]
-                        elif row == 5:  # BREAK 2550
-                            value = [
-                                5 * base_fixup + 0.75 * bonus_fixup,
-                                3 * base_fixup + 0.4 * bonus_fixup,
-                                2 * base_fixup + 0.3 * bonus_fixup,
-                                0,
-                            ][col]
-                        elif row == 6:  # BREAK 2500
-                            value = [
-                                5 * base_fixup + 0.5 * bonus_fixup,
-                                2.5 * base_fixup + 0.4 * bonus_fixup,
-                                2 * base_fixup + 0.3 * bonus_fixup,
-                                0,
-                            ][col]
-                        else:
-                            value = 0
 
-                        if mode == "100-":
-                            if row <= 3:  # TAP, HOLD, SLIDE, TOUCH
-                                max_base = [base_fixup, 2 * base_fixup, 3 * base_fixup, base_fixup][row]
-                                value = (value - max_base)
-                            elif row in [4, 5, 6]:  # BREAK 系列
-                                max_base = 5 * base_fixup
-                                base_part = value - bonus_fixup if bonus_fixup else value
-                                value = (base_part - max_base) + (bonus_fixup if bonus_fixup else 0)
-                        elif mode == "101-":
-                            if row <= 3:
-                                max_base = [base_fixup, 2 * base_fixup, 3 * base_fixup, base_fixup][row]
-                                value = value - max_base
-                            elif row in [4, 5, 6]:
-                                max_total = 5 * base_fixup + (bonus_fixup if bonus_fixup else 0)
-                                value = value - max_total
-
-                        text = f"{value:.4f}%"
-                    except TypeError:
-                        text = "-"
-
-                bbox = draw.textbbox((0, 0), text, font=font)
-                w = bbox[2] - bbox[0]
-                h = bbox[3] - bbox[1]
-                draw.text((x + (cell_w - w) / 2, y + (cell_h - h) / 2), text, fill=(255, 255, 255), font=font)
+            bbox = draw.textbbox((0, 0), text, font=font)
+            w = bbox[2] - bbox[0]
+            h = bbox[3] - bbox[1]
+            draw.text((x + (cell_w - w) / 2, y + (cell_h - h) / 2), text, fill=(255, 255, 255), font=font)
 
     font = ImageFont.truetype(noto_sans_demilight_path, 10, encoding="utf-8")
     draw.text(

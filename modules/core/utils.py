@@ -10,7 +10,7 @@ from core.builtins.message.internal import Plain, FormattedTime, I18NContext, Ur
 from core.component import module
 from core.config import Config
 from core.constants.default import locale_url_default
-from core.i18n import get_available_locales, Locale, load_locale_file
+from core.i18n import get_available_locales, Locale
 from core.utils.bash import run_sys_command
 from core.utils.temp import TempCounter
 

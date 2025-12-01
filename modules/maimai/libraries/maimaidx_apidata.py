@@ -65,18 +65,6 @@ async def update_alias() -> bool:
 
         except Exception:
             Logger.exception()
-        """
-        try:
-            xray_data = await get_url("https://download.xraybot.site/maimai/alias.json", 200, fmt="json")
-
-            for song_id, aliases in xray_data.items():
-                if song_id not in alias_map:
-                    alias_map[song_id]["song_id"] = song_id
-                alias_map[song_id]["alias"].update(aliases)
-
-        except Exception:
-            Logger.exception()
-        """
         if not alias_map:
             return False
 

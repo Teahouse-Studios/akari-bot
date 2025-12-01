@@ -33,7 +33,7 @@ async def get_lxns_prober_bind_info(msg: Bot.MessageSession):
                 )
                 return str(profile_data["data"]["friend_code"])
             except Exception as e:
-                if str(e).startswith("400") or str(e).startswith("404"):
+                if str(e).startswith(("400", "404")):
                     await msg.finish(I18NContext("maimai.message.user_not_found.lx"))
                 elif str(e).startswith("401"):
                     raise ConfigValueError("{I18N:error.config.invalid}")

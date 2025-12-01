@@ -176,7 +176,7 @@ async def get_record_lx(
                     f.write(orjson.dumps(data))
             return data
         except Exception as e:
-            if str(e).startswith("400") or str(e).startswith("404"):
+            if str(e).startswith(("400", "404")):
                 await msg.finish(I18NContext("maimai.message.user_not_found.lx"))
             elif str(e).startswith("401"):
                 raise ConfigValueError("{I18N:error.config.invalid}")
