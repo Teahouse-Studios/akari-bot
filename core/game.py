@@ -7,7 +7,7 @@ from core.utils.temp import ExpiringTempDict
 
 GAME_EXPIRED = 3600  # 游戏事件过期时间（秒）
 
-_ps_lst = ExpiringTempDict(_exp=GAME_EXPIRED)
+_ps_lst = ExpiringTempDict(exp=GAME_EXPIRED)
 
 
 class PlayState:
@@ -37,7 +37,7 @@ class PlayState:
         """
         playstate_dict = self._get_ps_dict()
         playstate_dict["_status"] = True
-        playstate_dict.update_exp()
+        playstate_dict.refresh()
         Logger.info(f"[{self.target_id}]: Enabled {self.game} by {self.sender_id}.")
 
     def disable(self) -> None:
@@ -72,7 +72,7 @@ class PlayState:
     def get(self, key: str, default: Any = None) -> Any:
         """
         获取游戏事件中需要的值。
-        
+
         :param key: 键名。
         :param default: 默认值。
         """

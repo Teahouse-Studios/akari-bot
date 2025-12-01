@@ -48,7 +48,7 @@ typo_check_options_score = Config("typo_check_options_score", 0.3)
 
 buckets_same = ExpiringTempDict()  # 命令使用次数计数（重复使用单一命令）
 buckets_all = ExpiringTempDict()  # 命令使用次数计数（使用所有命令）
-target_cooldown_counter = ExpiringTempDict(_exp=TOS_TEMPBAN_TIME)  # 冷却计数
+target_cooldown_counter = ExpiringTempDict(exp=TOS_TEMPBAN_TIME)  # 冷却计数
 match_hash_cache = ExpiringTempDict()
 
 
@@ -422,15 +422,12 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                                 Logger.info(
                                     f"{identify_str} -> [Bot]: {msg.trigger_msg}")
                             Logger.debug("Matched hash:" + str(matched_hash))
-                            if msg.session_info.target_id not in match_hash_cache:
-                                match_hash_cache[msg.session_info.target_id] = {}
-                            if rfunc.logging and matched_hash in match_hash_cache[msg.session_info.target_id] and \
-                                    datetime.now().timestamp() - match_hash_cache[msg.session_info.target_id][
-                                    matched_hash] < int(
-                                    (msg.session_info.target_info.target_data.get("cooldown_time", 0)) or 3):
+                            cooldown_time = int(msg.session_info.target_info.target_data.get("cooldown_time", 0) or 3)
+                            if rfunc.logging and matched_hash in match_hash_cache[msg.session_info.target_id]:
                                 Logger.warning("Match loop detected, skipping...")
                                 continue
-                            match_hash_cache[msg.session_info.target_id][matched_hash] = datetime.now().timestamp()
+                            match_hash_cache[msg.session_info.target_id][matched_hash] = ExpiringTempDict(
+                                exp=cooldown_time)
 
                             if enable_tos and rfunc.show_typing:
                                 await _tos_temp_ban(msg)
@@ -501,49 +498,54 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
 
 async def _check_target_cooldown(msg: "Bot.MessageSession"):
     cooldown_time = int(msg.session_info.target_info.target_data.get("cooldown_time", 0))
-    
+
     if not cooldown_time or await msg.check_permission():
         return
 
-    sender_record = target_cooldown_counter[msg.session_info.target_id][msg.session_info.sender_id]
-    if "_ts" in sender_record:
-        elapsed = datetime.now().timestamp() - sender_record["_ts"]
-        if elapsed <= cooldown_time:
-            if not sender_record.get("notified", False):
-                sender_record["notified"] = True
-                await msg.finish(I18NContext("message.cooldown.manual", time=int(cooldown_time - elapsed)))
-            await msg.finish()
+    target_record = target_cooldown_counter[msg.session_info.target_id]
+    sender_record = target_record.setdefault(
+        msg.session_info.sender_id, ExpiringTempDict(exp=cooldown_time)
+    )
+    if not sender_record.is_expired():
+        if not sender_record.get("notified", False):
+            sender_record["notified"] = True
+            elapsed = cooldown_time - (datetime.now().timestamp() - sender_record.ts)
+            await msg.finish(I18NContext("message.cooldown.manual", time=int(elapsed)))
+        await msg.finish()
 
-    sender_record.update_exp()
+    sender_record.refresh()
     sender_record["notified"] = False
-
-    sender_record._exp = cooldown_time
+    sender_record.exp = cooldown_time
 
 
 async def _tos_temp_ban(msg: "Bot.MessageSession"):
     ban_info = temp_ban_counter.get(msg.session_info.sender_id)
-    if ban_info:
+    if ban_info and not ban_info.is_expired():
         if msg.check_super_user():
             await remove_temp_ban(msg.session_info.sender_id)
             return None
-        ban_time = datetime.now().timestamp() - ban_info["_ts"]
-        if ban_time < TOS_TEMPBAN_TIME:
-            if ban_info["count"] < 2:
-                ban_info["count"] += 1
-                await msg.finish(I18NContext("tos.message.tempbanned", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
-            elif ban_info["count"] <= 3:
-                ban_info["count"] += 1
-                await msg.finish(
-                    I18NContext("tos.message.tempbanned.warning", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
-            else:
-                raise AbuseWarning("{I18N:tos.message.reason.ignore}")
+        ban_time = datetime.now().timestamp() - ban_info.ts
+        remaining = int(TOS_TEMPBAN_TIME - ban_time)
+
+        if not ban_info.get("count", 0):
+            ban_info["count"] = 0
+
+        if ban_info["count"] < 2:
+            ban_info["count"] += 1
+            await msg.finish(I18NContext("tos.message.tempbanned", ban_time=remaining))
+        elif ban_info["count"] <= 3:
+            ban_info["count"] += 1
+            await msg.finish(
+                I18NContext("tos.message.tempbanned.warning", ban_time=remaining))
+        else:
+            raise AbuseWarning("{I18N:tos.message.reason.ignore}")
 
 
 async def _tos_msg_counter(msg: "Bot.MessageSession", command: str):
     bucket_same = buckets_same[msg.session_info.sender_id][command]
     if "bucket" not in bucket_same:
         bucket_same["bucket"] = TokenBucket(10, 300)
-    
+
     if not bucket_same["bucket"].consume():
         raise AbuseWarning("{I18N:tos.message.reason.cooldown}")
 

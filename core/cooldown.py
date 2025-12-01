@@ -4,6 +4,7 @@ from core.utils.temp import ExpiringTempDict
 
 _cd_dict = ExpiringTempDict()
 
+
 class CoolDown:
     """
     冷却事件构造器。
@@ -12,6 +13,7 @@ class CoolDown:
     :param delay: 冷却时间（秒）
     :param whole_target: 是否应用至全对话（默认为 False）
     """
+
     def __init__(self, key: str, msg: MessageSession, delay: float, whole_target: bool = False):
         self.key = key
         self.msg = msg
@@ -30,12 +32,12 @@ class CoolDown:
 
         if self.whole_target:
             if self.key not in target_dict:
-                target_dict[self.key] = ExpiringTempDict(_exp=self.delay)
+                target_dict[self.key] = ExpiringTempDict(exp=self.delay)
             return target_dict[self.key]
         else:
             sender_dict = target_dict[self.sender_id]
             if self.key not in sender_dict:
-                sender_dict[self.key] = ExpiringTempDict(_exp=self.delay)
+                sender_dict[self.key] = ExpiringTempDict(exp=self.delay)
             return sender_dict[self.key]
 
     def check(self) -> float:
@@ -53,4 +55,4 @@ class CoolDown:
         重置冷却事件。
         """
         cd_instance = self._get_cd_dict()
-        cd_instance.update_exp()
+        cd_instance.refresh()

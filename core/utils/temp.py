@@ -1,8 +1,7 @@
 import asyncio
 import threading
 import time
-from dataclasses import dataclass, field
-from typing import Dict, Any, ClassVar, Optional, Union, Iterable
+from typing import Dict, Any, ClassVar, Union, Iterable
 
 
 class TempCounter:
@@ -28,14 +27,20 @@ class TempList:
     def __iter__(self):
         return iter(self.items)
 
+    def __reversed__(self):
+        return reversed(self.items)
+
     def __len__(self):
         return len(self.items)
 
     def __getitem__(self, item):
         return self.items[item]
 
-    def __setitem__(self, key, value):
-        self.items[key] = value
+    def __setitem__(self, index, value):
+        self.items[index] = value
+
+    def __delitem__(self, index):
+        del self.items[index]
 
     def append(self, item):
         self.items.append(item)
@@ -48,6 +53,9 @@ class TempList:
         self.items.extend(items)
         if len(self.items) > self.length:
             self.items = self.items[-self.length:]
+
+    def insert(self, index, item):
+        return self.items.insert(index, item)
 
     def remove(self, item):
         self.items.remove(item)
@@ -138,36 +146,49 @@ class TempList:
         return getattr(self.items, item)
 
 
-@dataclass
 class ExpiringTempDict:
-    _exp: float = 86400.0
-    _ts: float = field(default_factory=_current_ts)
-    _data: Dict[str, Any] = field(default_factory=dict)
-
     _registry: ClassVar[list] = []
     _lock: ClassVar[threading.RLock] = threading.RLock()
+
+    def __init__(self, exp=86400.0, data=None):
+        self.exp = exp
+        self.data = data or {}
+        self.ts = time.time()
 
     def __post_init__(self):
         with self._lock:
             self.__class__._registry.append(self)
 
+    def __reversed__(self):
+        return reversed(self.data)
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def __len__(self) -> int:
+        return len(self.data)
+
     def __getitem__(self, key: str):
         with self._lock:
-            if key not in self._data:
-                self._data[key] = ExpiringTempDict()
-            return self._data[key]
+            if key not in self.data:
+                self.data[key] = ExpiringTempDict(exp=self.exp)
+            return self.data[key]
 
     def __setitem__(self, key: str, value: Any):
         with self._lock:
-            self._data[key] = value
+            self.data[key] = value
+
+    def __delitem__(self, key: str):
+        with self._lock:
+            del self.data[key]
 
     def is_expired(self) -> bool:
         with self._lock:
-            return (time.time() - self._ts) > self._exp
+            return (time.time() - self.ts) > self.exp
 
-    def update_exp(self):
+    def refresh(self):
         with self._lock:
-            self._ts = time.time()
+            self.ts = time.time()
 
     def clear_expired(self) -> bool:
         """
@@ -176,7 +197,7 @@ class ExpiringTempDict:
         """
         with self._lock:
             to_delete = []
-            for k, v in self._data.items():
+            for k, v in self.data.items():
                 if isinstance(v, ExpiringTempDict):
                     should_delete = v.clear_expired()
                     if should_delete:
@@ -185,16 +206,16 @@ class ExpiringTempDict:
                     to_delete.append(k)
 
             for k in to_delete:
-                del self._data[k]
+                del self.data[k]
 
-            if hasattr(self, "_ts") and self.is_expired() and not self._data:
+            if hasattr(self, "_ts") and self.is_expired() and not self.data:
                 return True
             return False
 
     async def async_clear_expired(self) -> bool:
         with self._lock:
             to_delete = []
-            for k, v in self._data.items():
+            for k, v in self.data.items():
                 if isinstance(v, ExpiringTempDict):
                     should_delete = await v.async_clear_expired()
                     if should_delete:
@@ -202,8 +223,8 @@ class ExpiringTempDict:
                 else:
                     to_delete.append(k)
             for k in to_delete:
-                del self._data[k]
-            if hasattr(self, "_ts") and self.is_expired() and not self._data:
+                del self.data[k]
+            if hasattr(self, "_ts") and self.is_expired() and not self.data:
                 return True
             return False
 
@@ -216,23 +237,111 @@ class ExpiringTempDict:
     def to_dict(self) -> dict:
         with self._lock:
             result = {}
-            for k, v in self._data.items():
+            for k, v in self.data.items():
                 if isinstance(v, ExpiringTempDict):
                     result[k] = v.to_dict()
                 else:
                     result[k] = v
-            result["_ts"] = self._ts
-            result["_exp"] = self._exp
+            result["_ts"] = self.ts
+            result["_exp"] = self.exp
             return result
 
     @classmethod
     def from_dict(cls, d: dict) -> "ExpiringTempDict":
-        obj = cls(_ts=d.get("_ts", time.time()), _exp=d.get("_exp", 86400))
+        obj = cls(ts=d.get("_ts", time.time()), exp=d.get("_exp", 86400))
         for k, v in d.items():
             if k in ("_ts", "_exp"):
                 continue
             if isinstance(v, dict):
-                obj._data[k] = cls.from_dict(v)
+                obj.data[k] = cls.from_dict(v)
             else:
-                obj._data[k] = v
+                obj.data[k] = v
         return obj
+
+    def clear(self):
+        with self._lock:
+            self.data.clear()
+
+    def copy(self):
+        with self._lock:
+            new_obj = ExpiringTempDict(exp=self.exp, ts=self.ts)
+            for k, v in self.data.items():
+                new_obj.data[k] = v.copy() if isinstance(v, ExpiringTempDict) else v
+            return new_obj
+
+    def fromkeys(self, keys, value=None):
+        with self._lock:
+            new_obj = ExpiringTempDict(exp=self.exp)
+            for key in keys:
+                new_obj.data[key] = value
+            return new_obj
+
+    def get(self, key, default=None):
+        with self._lock:
+            return self.data.get(key, default)
+
+    def keys(self):
+        with self._lock:
+            return self.data.keys()
+
+    def values(self):
+        with self._lock:
+            return self.data.values()
+
+    def items(self):
+        with self._lock:
+            return self.data.items()
+
+    def pop(self, key, default=None):
+        with self._lock:
+            return self.data.pop(key, default)
+
+    def popitem(self):
+        with self._lock:
+            return self.data.popitem()
+
+    def setdefault(self, key, default=None):
+        with self._lock:
+            return self.data.setdefault(key, default)
+
+    def update(self, other=(), **kwargs):
+        with self._lock:
+            if isinstance(other, ExpiringTempDict):
+                other = other.data
+            elif isinstance(other, dict):
+                pass
+            else:
+                other = dict(other)
+            self.data.update(other)
+            if kwargs:
+                self.data.update(kwargs)
+
+    def __ior__(self, other: Union[dict, "ExpiringTempDict"]):
+        self.update(other)
+        return self
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.data})"
+
+    def __str__(self):
+        return str(self.data)
+
+    def __contains__(self, item):
+        return item in self.data
+
+    def __eq__(self, other):
+        if isinstance(other, ExpiringTempDict):
+            return self.data == other.data
+        return self.data == other
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash(frozenset(self.data.items()))
+
+    def __bool__(self):
+        return bool(self.data)
+
+    def __getattr__(self, item):
+        return getattr(self.data, item)
