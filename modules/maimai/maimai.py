@@ -515,7 +515,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str):
         )  # 基础分
         bonus_score = total_score * 0.01 / brk  # 奖励分
         break_2550_reduce = bonus_score * 0.25  # 一个 BREAK 2550 减少 25% 奖励分
-        break_2000_reduce = (bonus_score * 0.6 + 500)  # 一个 BREAK 2000 减少 500 基础分和 60% 奖励分
+        break_2000_reduce = bonus_score * 0.6 + 500  # 一个 BREAK 2000 减少 500 基础分和 60% 奖励分
         b2t_2550_great = (
             f"{(break_2550_reduce / 100):.3f}"  # 一个 TAP GREAT 减少 100 分
         )

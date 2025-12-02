@@ -1,4 +1,4 @@
-import sys
+import os
 
 from tortoise import Tortoise
 
@@ -23,4 +23,4 @@ async def cleanup_sessions():
 
 async def restart():
     await cleanup_sessions()
-    sys.exit(233)
+    os._exit(233)

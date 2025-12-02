@@ -149,13 +149,12 @@ class TempList:
 class ExpiringTempDict:
     _registry: ClassVar[list] = []
     _lock: ClassVar[threading.RLock] = threading.RLock()
+    _clear_lock: ClassVar[asyncio.Lock] = asyncio.Lock()
 
     def __init__(self, exp: Union[int, float] = 86400.0, ts: Union[int, float] = time.time(), data: Any = None):
         self.exp = exp
         self.data = data or {}
         self.ts = float(ts)
-
-    def __post_init__(self):
         with self._lock:
             self.__class__._registry.append(self)
 
@@ -203,12 +202,10 @@ class ExpiringTempDict:
                     if should_delete:
                         to_delete.append(k)
                 else:
-                    to_delete.append(k)
-
+                    continue
             for k in to_delete:
                 del self.data[k]
-
-            if hasattr(self, "_ts") and self.is_expired() and not self.data:
+            if hasattr(self, "ts") and self.is_expired() and not self.data:
                 return True
             return False
 
@@ -221,16 +218,16 @@ class ExpiringTempDict:
                     if should_delete:
                         to_delete.append(k)
                 else:
-                    to_delete.append(k)
+                    continue
             for k in to_delete:
                 del self.data[k]
-            if hasattr(self, "_ts") and self.is_expired() and not self.data:
+            if hasattr(self, "ts") and self.is_expired() and not self.data:
                 return True
             return False
 
     @classmethod
     async def clear_all(cls):
-        async with asyncio.Lock():
+        async with cls._clear_lock:
             for obj in cls._registry:
                 await obj.async_clear_expired()
 
@@ -316,9 +313,21 @@ class ExpiringTempDict:
             if kwargs:
                 self.data.update(kwargs)
 
+    def __or__(self, other: Union[dict, "ExpiringTempDict"]):
+        new_obj = self.copy()
+        new_obj.update(other)
+        return new_obj
+        
     def __ior__(self, other: Union[dict, "ExpiringTempDict"]):
         self.update(other)
         return self
+
+    def __ror__(self, other: Union[dict, "ExpiringTempDict"]):
+        if isinstance(other, dict):
+            new_dict = other.copy()
+            new_dict.update(self.to_dict())
+            return new_dict
+        return NotImplemented
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.data})"
@@ -336,9 +345,6 @@ class ExpiringTempDict:
 
     def __ne__(self, other):
         return not self.__eq__(other)
-
-    def __hash__(self):
-        return hash(frozenset(self.data.items()))
 
     def __bool__(self):
         return bool(self.data)
