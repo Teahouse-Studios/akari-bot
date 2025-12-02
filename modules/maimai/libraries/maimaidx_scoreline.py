@@ -177,7 +177,7 @@ def draw_scoreline_table(tap: int = 0,
                     if mode == "100-":
                         if row <= 3:  # TAP, HOLD, SLIDE, TOUCH
                             max_base = [base_fixup, 2 * base_fixup, 3 * base_fixup, base_fixup][row]
-                            value = (value - max_base)
+                            value -= max_base
                         elif row in [4, 5, 6]:  # BREAK 系列
                             max_base = 5 * base_fixup
                             base_part = value - bonus_fixup if bonus_fixup else value
@@ -185,10 +185,10 @@ def draw_scoreline_table(tap: int = 0,
                     elif mode == "101-":
                         if row <= 3:
                             max_base = [base_fixup, 2 * base_fixup, 3 * base_fixup, base_fixup][row]
-                            value = value - max_base
+                            value -= max_base
                         elif row in [4, 5, 6]:
                             max_total = 5 * base_fixup + (bonus_fixup if bonus_fixup else 0)
-                            value = value - max_total
+                            value -= max_total
 
                     text = f"{value:.4f}%"
                 except TypeError:

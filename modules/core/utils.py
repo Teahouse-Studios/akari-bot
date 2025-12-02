@@ -51,8 +51,8 @@ async def _(msg: Bot.MessageSession):
 
     td_seconds = (datetime.now() - started_time).total_seconds()
     timediff = f"{int(td_seconds // 3600):02d
-               }:{int((td_seconds % 3600) // 60):02d
-               }:{int(td_seconds % 60):02d}"
+                  }:{int((td_seconds % 3600) // 60):02d
+                     }:{int(td_seconds % 60):02d}"
     if msg.check_super_user():
         boot_start = str(FormattedTime(psutil.boot_time(), iso=True))
         web_render_status = str(Bot.Info.web_render_status)
@@ -300,4 +300,3 @@ async def _(msg: Bot.MessageSession):
         await msg.qq_call_api("set_group_leave", group_id=int(msg.session_info.get_common_target_id()))
     else:
         await msg.finish()
-
