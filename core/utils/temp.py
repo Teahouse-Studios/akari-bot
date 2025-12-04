@@ -313,9 +313,21 @@ class ExpiringTempDict:
             if kwargs:
                 self.data.update(kwargs)
 
+    def __or__(self, other: Union[dict, "ExpiringTempDict"]):
+        new_obj = self.copy()
+        new_obj.update(other)
+        return new_obj
+        
     def __ior__(self, other: Union[dict, "ExpiringTempDict"]):
         self.update(other)
         return self
+
+    def __ror__(self, other: Union[dict, "ExpiringTempDict"]):
+        if isinstance(other, dict):
+            new_dict = other.copy()
+            new_dict.update(self.to_dict())
+            return new_dict
+        return NotImplemented
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.data})"
