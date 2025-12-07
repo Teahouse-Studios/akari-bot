@@ -52,6 +52,7 @@ description = "Modern and fully asynchronous framework for Telegram Bot API"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
+markers = "python_version >= \"3.14\""
 files = [
     {file = "aiogram-3.22.0-py3-none-any.whl", hash = "sha256:1c6eceb078ff62cf0556a5466cf3e7e8119678c26cc56803b7ac5f73633934a8"},
     {file = "aiogram-3.22.0.tar.gz", hash = "sha256:c483f81e37aeea8e7f592c9bd14f6acc80d9b7a2698e296a45bf47ff60a98510"},
@@ -76,6 +77,39 @@ proxy = ["aiohttp-socks (>=0.8.3,<0.9.0)"]
 redis = ["redis[hiredis] (>=5.0.1,<5.3.0)"]
 signature = ["cryptography (>=43.0.0)"]
 test = ["aresponses (>=2.1.6,<2.2.0)", "pycryptodomex (>=3.19.0,<3.20.0)", "pytest (>=7.4.2,<7.5.0)", "pytest-aiohttp (>=1.0.5,<1.1.0)", "pytest-asyncio (>=0.21.1,<0.22.0)", "pytest-cov (>=4.1.0,<4.2.0)", "pytest-html (>=4.0.2,<4.1.0)", "pytest-lazy-fixture (>=0.6.3,<0.7.0)", "pytest-mock (>=3.12.0,<3.13.0)", "pytest-mypy (>=0.10.3,<0.11.0)", "pytz (>=2023.3,<2024.0)"]
+
+[[package]]
+name = "aiogram"
+version = "3.23.0"
+description = "Modern and fully asynchronous framework for Telegram Bot API"
+optional = false
+python-versions = "<3.15,>=3.10"
+groups = ["main"]
+markers = "python_version < \"3.14\""
+files = [
+    {file = "aiogram-3.23.0-py3-none-any.whl", hash = "sha256:62de64edf7f3e9c8ec86351e0ace6a53a6e073cc81cfd762cb5a0401565d80ad"},
+    {file = "aiogram-3.23.0.tar.gz", hash = "sha256:bb48c0bc1e567b6e9e9d7cfd448f2b3d142d2a405c58ab217596b62f64968f1a"},
+]
+
+[package.dependencies]
+aiofiles = ">=23.2.1,<26.0"
+aiohttp = ">=3.9.0,<3.14"
+certifi = ">=2023.7.22"
+magic-filter = ">=1.0.12,<1.1"
+pydantic = ">=2.4.1,<2.13"
+typing-extensions = ">=4.7.0,<=5.0"
+
+[package.extras]
+cli = ["aiogram-cli (>=1.1.0,<2.0.0)"]
+dev = ["black (>=25.9,<26.0)", "isort (>=7.0,<8.0)", "motor-types (==1.0.0b4)", "mypy (==1.10.1)", "packaging (>=25.0,<26.0)", "pre-commit (>=4.3,<5.0)", "ruff (>=0.14,<1.0)", "toml (>=0.10.2,<0.11.0)"]
+docs = ["furo (>=2024.8.6,<2024.9.0)", "markdown-include (>=0.8.1,<0.9.0)", "pygments (>=2.18.0,<2.19.0)", "pymdown-extensions (>=10.3,<11.0)", "sphinx (>=8.0.2,<8.1.0)", "sphinx-autobuild (>=2024.9.3,<2024.10.0)", "sphinx-copybutton (>=0.5.2,<0.6.0)", "sphinx-intl (>=2.2.0,<2.3.0)", "sphinx-substitution-extensions (>=2024.8.6,<2024.9.0)", "sphinxcontrib-towncrier (>=0.4.0a0,<0.5.0)", "towncrier (>=24.8.0,<24.9.0)"]
+fast = ["aiodns (>=3.0.0)", "uvloop (>=0.17.0) ; (sys_platform == \"darwin\" or sys_platform == \"linux\") and platform_python_implementation != \"PyPy\" and python_version < \"3.13\"", "uvloop (>=0.21.0) ; (sys_platform == \"darwin\" or sys_platform == \"linux\") and platform_python_implementation != \"PyPy\" and python_version >= \"3.13\""]
+i18n = ["babel (>=2.13.0,<3)"]
+mongo = ["motor (>=3.3.2,<3.8)", "pymongo (>4.5,<4.16)"]
+proxy = ["aiohttp-socks (>=0.10.1,<0.11.0)"]
+redis = ["redis[hiredis] (>=6.2.0,<8)"]
+signature = ["cryptography (>=46.0.0)"]
+test = ["aresponses (==3.0.0)", "pycryptodomex (==3.23.0)", "pytest (==9.0.1)", "pytest-aiohttp (==1.1.0)", "pytest-cov (==7.0.0)", "pytest-html (==4.1.1)", "pytest-mock (==3.15.1)", "pytest-mypy (==1.0.1)", "pytz (==2025.2)"]
 
 [[package]]
 name = "aiohappyeyeballs"
