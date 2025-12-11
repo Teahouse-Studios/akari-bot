@@ -267,8 +267,6 @@ async def run_bot():
                     f"Process {p.pid} ({p.name}) exited with code 233, restart all bots."
                 )
                 raise RestartBot
-            if p.exitcode == 466:
-                break
             Logger.critical(
                 f"Process {p.pid} ({p.name}) exited with code {p.exitcode}, please check the log."
             )
