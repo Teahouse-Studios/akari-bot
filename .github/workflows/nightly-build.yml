@@ -29,7 +29,7 @@ jobs:
           zip -r "$ZIP_NAME" . -x '*.git*'
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: AkariBot
           path: |
