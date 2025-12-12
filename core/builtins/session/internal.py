@@ -239,6 +239,7 @@ class MessageSession:
         delete: bool = True,
         timeout: Optional[float] = 120,
         append_instruction: bool = True,
+        no_confirm_action: bool = True
     ) -> bool:
         """
         一次性模板，用于等待触发对象确认。
@@ -248,13 +249,14 @@ class MessageSession:
         :param delete: 是否在触发后删除消息。（默认为True）
         :param timeout: 超时时间。（默认为120）
         :param append_instruction: 是否在发送的消息中附加提示。
+        :param no_confirm_action: 在 `no_confirm` 配置项启用后的默认行为。
         :return: 若对象发送confirm_command中的其一文本时返回True，反之则返回False。
         """
         send = None
         ExecutionLockList.remove(self)
         await self.end_typing()
         if Config("no_confirm", False):
-            return True
+            return no_confirm_action
         if message_chain:
             message_chain = get_message_chain(self.session_info, message_chain)
         else:

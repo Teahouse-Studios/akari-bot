@@ -287,17 +287,17 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                 return
         elif not module.base:
             if command_first_word not in msg.session_info.enabled_modules and msg.session_info.require_enable_modules:  # 若未开启
-                await msg.send_message(I18NContext("parser.module.disabled.prompt", module=command_first_word,
-                                                   prefix=msg.session_info.prefixes[0]))
                 if await msg.check_permission():
-                    if await msg.wait_confirm(I18NContext("parser.module.disabled.to_enable")):
+                    await msg.send_message(I18NContext("parser.module.disabled.prompt", module=command_first_word,
+                                                   prefix=msg.session_info.prefixes[0]))
+                    if await msg.wait_confirm(I18NContext("parser.module.disabled.to_enable"), no_confirm_action=False):
                         await msg.session_info.target_info.config_module(command_first_word)
                         await msg.send_message(
                             I18NContext("core.message.module.enable.success", module=command_first_word))
                     else:
                         return
                 else:
-                    return
+                    await msg.finish(I18NContext("parser.module.disabled", module=command_first_word))
         elif module.required_admin:
             if not await msg.check_permission():
                 await msg.send_message(I18NContext("parser.admin.module.permission.denied", module=command_first_word))

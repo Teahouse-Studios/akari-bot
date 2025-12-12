@@ -53,12 +53,12 @@ async def _(msg: Bot.MessageSession):
     timediff = f"{int(td_seconds // 3600):02d
                   }:{int((td_seconds % 3600) // 60):02d
                      }:{int(td_seconds % 60):02d}"
+    cpu_percent = psutil.cpu_percent()
+    ram_percent = psutil.virtual_memory().percent
     if msg.check_super_user():
         boot_start = str(FormattedTime(psutil.boot_time(), iso=True))
         web_render_status = str(Bot.Info.web_render_status)
-        cpu_usage = psutil.cpu_percent()
         ram = int(psutil.virtual_memory().total / (1024 * 1024))
-        ram_percent = psutil.virtual_memory().percent
         swap = int(psutil.swap_memory().total / (1024 * 1024))
         swap_percent = psutil.swap_memory().percent
         disk = int(psutil.disk_usage("/").used / (1024 * 1024 * 1024))
@@ -70,7 +70,7 @@ async def _(msg: Bot.MessageSession):
             python_version=platform.python_version(),
             web_render_status=web_render_status,
             cpu_brand=get_cpu_info()["brand_raw"],
-            cpu_usage=cpu_usage,
+            cpu_percent=cpu_percent,
             ram=ram,
             ram_percent=ram_percent,
             swap=swap,
@@ -86,6 +86,8 @@ async def _(msg: Bot.MessageSession):
         result.append(I18NContext(
             "core.message.ping.simple",
             bot_running_time=timediff,
+            cpu_percent=cpu_percent,
+            ram_percent=ram_percent,
             disk_percent=disk_percent,
             disable_joke=True
         ))
@@ -300,3 +302,4 @@ async def _(msg: Bot.MessageSession):
         await msg.qq_call_api("set_group_leave", group_id=int(msg.session_info.get_common_target_id()))
     else:
         await msg.finish()
+
