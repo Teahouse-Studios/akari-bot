@@ -30,11 +30,19 @@ async def _(msg: Bot.MessageSession):
                     commit_url = f"{repo_url}/commit/{commit}"
                     send_msgs.append(Url(commit_url, use_mm=False))
         else:
+            version = Bot.Info.version
             send_msgs = MessageChain.assign(
                 I18NContext(
                     "core.message.version",
-                    version=Bot.Info.version,
+                    version=version,
                     disable_joke=True))
+            if Config("enable_commit_url", True):
+                version = "nightly" if version.startswith("nightly")
+                returncode, repo_url, _ = await run_sys_command(["git", "config", "--get", "remote.origin.url"])
+                if returncode == 0:
+                    repo_url = repo_url.strip().replace(".git", "")
+                    commit_url = f"{repo_url}/releases/tag/{version}"
+                    send_msgs.append(Url(commit_url, use_mm=False))
         await msg.finish(send_msgs)
     else:
         await msg.finish(I18NContext("core.message.version.unknown"))
@@ -302,4 +310,5 @@ async def _(msg: Bot.MessageSession):
         await msg.qq_call_api("set_group_leave", group_id=int(msg.session_info.get_common_target_id()))
     else:
         await msg.finish()
+
 
