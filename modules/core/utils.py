@@ -37,7 +37,7 @@ async def _(msg: Bot.MessageSession):
                     version=version,
                     disable_joke=True))
             if Config("enable_commit_url", True):
-                version = "nightly" if version.startswith("nightly")
+                version = "nightly" if version.startswith("nightly") else version
                 returncode, repo_url, _ = await run_sys_command(["git", "config", "--get", "remote.origin.url"])
                 if returncode == 0:
                     repo_url = repo_url.strip().replace(".git", "")
@@ -310,5 +310,6 @@ async def _(msg: Bot.MessageSession):
         await msg.qq_call_api("set_group_leave", group_id=int(msg.session_info.get_common_target_id()))
     else:
         await msg.finish()
+
 
 
