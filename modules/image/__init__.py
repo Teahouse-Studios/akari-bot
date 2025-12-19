@@ -27,7 +27,7 @@ async def fillwhite(msg: Bot.MessageSession):
         if len(imgs) > 1:
             converted_imgs.append(Plain(str(i) + "."))
         if get_img.mode in ("RGBA", "LA") or (get_img.mode == "P" and "transparency" in get_img.info):
-            background = PILImage.new("RGB", get_img.size, (255, 255, 255))
+            background = PILImage.new("RGBA", get_img.size, (255, 255, 255))
             background.paste(get_img, mask=get_img.split()[3] if get_img.mode == "RGBA" else None)
             get_img = background
 
