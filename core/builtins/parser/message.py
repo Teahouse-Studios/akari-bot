@@ -300,7 +300,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                     await msg.finish(I18NContext("parser.module.disabled", module=command_first_word))
         elif module.required_admin:
             if not await msg.check_permission():
-                await msg.send_message(I18NContext("parser.admin.module.permission.denied", module=command_first_word))
+                await msg.send_message(I18NContext("parser.admin.permission.denied.module", module=command_first_word))
                 return
 
         if not module.base:
@@ -333,7 +333,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                 else:
                     await msg.send_message(I18NContext("parser.module.unloaded", module=new_command_first_word))
             elif not confirmed:
-                await msg.send_message(I18NContext("parser.command.invalid.format",
+                await msg.send_message(I18NContext("parser.command.invalid.syntax",
                                                    module=command_first_word,
                                                    prefix=msg.session_info.prefixes[0]))
     except SendMessageFailed:
@@ -577,7 +577,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
                     return
             elif command.required_admin:
                 if not await msg.check_permission():
-                    await msg.send_message(I18NContext("parser.admin.command.permission.denied"))
+                    await msg.send_message(I18NContext("parser.admin.permission.denied.command"))
                     return
 
             if not command.load or \
@@ -647,7 +647,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
             raise FinishedException(msg.sent)  # if not using msg.finish
         except InvalidCommandFormatError:
             if not msg.session_info.sender_info.sender_data.get("typo_check", True):
-                await msg.send_message(I18NContext("parser.command.invalid.format",
+                await msg.send_message(I18NContext("parser.command.invalid.syntax",
                                                    module=command_first_word,
                                                    prefix=msg.session_info.prefixes[0]))
             return
