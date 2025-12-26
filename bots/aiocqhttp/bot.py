@@ -100,8 +100,8 @@ async def message_handler(event: Event):
         if match_at := re.match(r"^\[CQ:at,qq=(\d+).*\](.*)", event.message):
             if match_at.group(1) == str(event.self_id):
                 at_message = True
-                event.message = match_at.group(2)
-                if event.message in ["", " "]:
+                event.message = match_at.group(2).strip()
+                if not event.message:
                     event.message = f"{command_prefix[0]}help"
             else:
                 return
@@ -109,9 +109,9 @@ async def message_handler(event: Event):
         if event.message[0]["type"] == "at":
             if event.message[0]["data"]["qq"] == str(event.self_id):
                 at_message = True
-                event.message = event.message[1:]
+                event.message = event.message[1:].strip()
                 if not event.message or \
-                        event.message[0]["type"] == "text" and event.message[0]["data"]["text"] == " ":
+                        event.message[0]["type"] == "text" and event.message[0]["data"]["text"] == "":
                     event.message = [{"type": "text", "data": {"text": f"{command_prefix[0]}help"}}]
             else:
                 return
