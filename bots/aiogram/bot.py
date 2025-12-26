@@ -9,6 +9,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Voice, Image, Plain
 from core.builtins.session.info import SessionInfo
+from core.builtins.utils import command_prefix
 from core.client.init import client_init
 from core.config import Config
 from core.constants.default import ignored_sender_default
@@ -59,6 +60,31 @@ async def msg_handler(message: types.Message):
     reply_id = None
     if message.reply_to_message:
         reply_id = message.reply_to_message.message_id
+
+    at_message = False
+    text = message.text or ""
+    if not message.entities:
+        return
+
+    first_entity = message.entities[0]
+    if first_entity.offset != 0:
+        return
+    if first_entity.type == MessageEntityType.MENTION:
+        mention_text = text[first_entity.offset:first_entity.offset + first_entity.length]
+        if mention_text != f"@{(await aiogram_bot.me()).username}":
+            return
+    elif first_entity.type == MessageEntityType.TEXT_MENTION:
+        if first_entity.user.id != aiogram_bot.id:
+            return
+    else:
+        return
+
+    at_message = True
+    text = text[first_entity.length:].strip()
+    if not text:
+        text = f"{command_prefix}help"
+    if force_mention and not at_message and message.chat.type != "private":
+        return
 
     msg_chain = await to_message_chain(message)
 
