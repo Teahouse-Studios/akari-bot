@@ -111,7 +111,7 @@ async def on_message(message: discord.Message):
         if match_at.group(1) == str(discord_bot.user.id):
             at_message = True
             message.content = re.sub(r"<@(.*?)>", "", message.content).strip()
-            if message.content in ["", " "]:
+            if not message.content:
                 message.content = f"{command_prefix[0]}help"
         else:
             return
