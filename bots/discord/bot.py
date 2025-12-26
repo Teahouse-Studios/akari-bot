@@ -31,6 +31,8 @@ Bot.register_context_manager(DiscordFetchedContextManager, fetch_session=True)
 
 dc_token = Config("discord_token", cfg_type=str, secret=True, table_name="bot_discord")
 ignored_sender = Config("ignored_sender", ignored_sender_default)
+force_mention = Config("force_mention", False)
+
 
 count = 0
 
@@ -104,15 +106,17 @@ async def on_message(message: discord.Message):
     if message.reference:
         reply_id = message.reference.message_id
 
+    at_message = False
     if match_at := re.match(r"^<@(.*?)>", message.content):  # pop up help information when user mentions bot
         if match_at.group(1) == str(discord_bot.user.id):
+            at_message = True
             message.content = re.sub(r"<@(.*?)>", "", message.content).strip()
             if message.content in ["", " "]:
                 message.content = f"{command_prefix[0]}help"
-            else:
-                message.content = f"{command_prefix[0]} {message.content}"
         else:
             return
+    if force_mention and not at_message and target_from == target_channel_prefix:
+        return
 
     msg_chain = await to_message_chain(message)
 
