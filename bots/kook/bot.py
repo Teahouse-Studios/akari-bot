@@ -10,6 +10,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, Image, Voice
 from core.builtins.session.info import SessionInfo
+from core.builtins.utils import command_prefix
 from core.client.init import client_init
 from core.config import Config
 from core.constants.default import ignored_sender_default
@@ -21,6 +22,7 @@ Bot.register_context_manager(KOOKFetchedContextManager, fetch_session=True)
 
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 use_url_manager = Config("enable_urlmanager", False)
+force_mention = Config("force_mention", False)
 
 
 async def to_message_chain(message: Message):
@@ -52,6 +54,20 @@ async def msg_handler(message: Message):
     if "quote" in message.extra:
         reply_id = message.extra["quote"]["rong_id"]
 
+    at_message = False
+    match_at = re.match(r"^\(met\)(\d+)\(met\)",  msg.content)
+    if match_at:
+        mention_id = match_at.group(1)
+        if mention_id == str(bot.me.id):
+            at_message = True
+            content = re.sub(r"^\(met\)\d+\(met\)", "",  msg.content).strip()
+            if not content:
+                content = f"{command_prefix[0]}help"
+        else:
+            return
+    if force_mention and not at_message and target_from == target_group_prefix:
+        return
+    
     msg_chain = await to_message_chain(message)
 
     session = await SessionInfo.assign(target_id=target_id,
