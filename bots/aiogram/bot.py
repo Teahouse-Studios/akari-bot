@@ -1,6 +1,7 @@
 import asyncio
 
 from aiogram import types
+from aiogram.enums import MessageEntityType
 
 from bots.aiogram.client import dp, aiogram_bot, token
 from bots.aiogram.context import AiogramContextManager, AiogramFetchedContextManager
@@ -9,6 +10,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Voice, Image, Plain
 from core.builtins.session.info import SessionInfo
+from core.builtins.utils import command_prefix
 from core.client.init import client_init
 from core.config import Config
 from core.constants.default import ignored_sender_default
@@ -20,6 +22,7 @@ ctx_id = Bot.register_context_manager(AiogramContextManager)
 Bot.register_context_manager(AiogramFetchedContextManager, fetch_session=True)
 
 ignored_sender = Config("ignored_sender", ignored_sender_default)
+mention_required = Config("mention_required", False)
 
 
 async def to_message_chain(msg: types.Message):
@@ -60,7 +63,39 @@ async def msg_handler(message: types.Message):
     if message.reply_to_message:
         reply_id = message.reply_to_message.message_id
 
-    msg_chain = await to_message_chain(message)
+    text = message.text or ""
+    at_message = False
+    entities = message.entities or []
+
+    if entities and entities[0].offset == 0:
+        first = entities[0]
+        if first.type == MessageEntityType.TEXT_MENTION:
+            bot_id = (await message.bot.get_me()).id
+            if first.user.id != bot_id:
+                return
+
+            at_message = True
+            text = text[first.length:].strip()
+
+        elif first.type == MessageEntityType.MENTION:
+            bot_username = (await message.bot.get_me()).username
+            mention_text = text[:first.length]
+            if mention_text != f"@{bot_username}":
+                return
+
+            at_message = True
+            text = text[first.length:].strip()
+        else:
+            pass
+
+        if at_message and not text:
+            text = f"{command_prefix[0]}help"
+
+    if mention_required and not at_message and message.chat.type != "private":
+        return
+
+    processed_message = message.model_copy(update={"text": text})
+    msg_chain = await to_message_chain(processed_message)
 
     session = await SessionInfo.assign(target_id=target_id,
                                        sender_id=sender_id,

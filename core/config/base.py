@@ -21,6 +21,7 @@ class Config:
     command_prefix: list = ["~", "～"]
     confirm_command: list = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"]
     enable_module_invalid_prompt: bool = False
+    mention_required: bool = False
     no_confirm: bool = False
     quick_confirm: bool = True
 

@@ -37,6 +37,7 @@
     "config.comments.enable_web_render": "是否开启 WebRender。",
     "config.comments.ff3_key": "用于加密敏感信息的密钥。（使用 ff3 算法进行加密，部分场景可能会使用到）",
     "config.comments.ff3_tweak": "用于加密敏感信息的密钥偏移量。",
+    "config.comments.mention_required": "是否强制仅处理在消息开头提及机器人的消息。",
     "config.comments.heartbeat_attempt": "心跳消息发送尝试次数。",
     "config.comments.heartbeat_interval": "心跳信息发送时间间隔。",
     "config.comments.heartbeat_timeout": "心跳消息回应超时时间。",
