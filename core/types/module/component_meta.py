@@ -9,7 +9,7 @@ from attrs import define, field
 
 from core.builtins.parser.args import Template
 from core.builtins.types import MessageElement
-from core.utils.message import convert_list
+from core.utils.tools import convert_list
 
 
 class ModuleMeta:

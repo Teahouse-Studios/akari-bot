@@ -29,7 +29,7 @@ from core.utils.alive import Alive
 from core.utils.bash import run_sys_command
 from core.utils.decrypt import decrypt_string
 from core.utils.image_table import image_table_render, ImageTable
-from core.utils.message import is_float, is_int
+from core.utils.tools import is_float, is_int
 from core.utils.storedata import get_stored_list, update_stored_list
 from core.web_render import web_render, close_web_render, init_web_render
 

@@ -10,7 +10,7 @@ from tortoise import fields
 from tortoise.transactions import in_transaction
 
 from core.constants.default import default_locale
-from core.utils.message import convert_list
+from core.utils.tools import convert_list
 from .base import DBModel
 from ..logger import Logger
 

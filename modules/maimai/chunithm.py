@@ -3,7 +3,7 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, I18NContext, Image as BImage
 from core.component import module
 from core.utils.image import msgchain2image
-from core.utils.message import is_int
+from core.utils.tools import is_int
 from .database.models import DivingProberBindInfo, LxnsProberBindInfo
 from .libraries.chunithm_apidata import get_info, get_record_df, get_record_lx, update_cover
 from .libraries.chunithm_best30 import generate as generate_b30

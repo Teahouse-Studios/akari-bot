@@ -26,7 +26,7 @@ from core.logger import Logger
 from core.tos import TOS_TEMPBAN_TIME, temp_ban_counter, abuse_warn_target, remove_temp_ban
 from core.types import Module, Param
 from core.types.module.component_meta import CommandMeta
-from core.utils.message import normalize_space
+from core.utils.format import normalize_space
 from core.utils.temp import ExpiringTempDict, TempCounter
 from core.utils.token_bucket import TokenBucket
 

@@ -19,7 +19,7 @@ from core.builtins.utils import confirm_command
 from core.config import Config
 from core.constants import FinishedException, WaitCancelException
 from core.exports import add_export, exports
-from core.utils.message import is_int
+from core.utils.tools import is_int
 
 if TYPE_CHECKING:
     from core.queue.server import JobQueueServer

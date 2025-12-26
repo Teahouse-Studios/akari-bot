@@ -4,7 +4,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from core.builtins.bot import Bot
 from core.constants.path import noto_sans_bold_path, noto_sans_demilight_path, noto_sans_symbol_path
-from core.utils.message import truncate_text
+from core.utils.format import truncate_text
 from .maimaidx_apidata import get_record
 from .maimaidx_mapping import (
     mai_cover_path,

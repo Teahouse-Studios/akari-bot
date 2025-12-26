@@ -9,8 +9,8 @@ from core.builtins.message.internal import Image, I18NContext, Plain
 from core.component import module
 from core.constants.path import assets_path
 from core.logger import Logger
-from core.utils.message import chunk_list
 from core.utils.random import Random
+from core.utils.tools import chunk_list
 
 data_path = assets_path / "modules" / "emojimix" / "emoji_data.json"
 API = "https://www.gstatic.com/android/keyboard/emojikitchen"
