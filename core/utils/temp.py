@@ -317,7 +317,7 @@ class ExpiringTempDict:
         new_obj = self.copy()
         new_obj.update(other)
         return new_obj
-        
+
     def __ior__(self, other: Union[dict, "ExpiringTempDict"]):
         self.update(other)
         return self
