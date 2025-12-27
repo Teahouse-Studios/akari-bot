@@ -46,6 +46,9 @@ def check_valid(expr):
             prev_char = "num"
             continue
         if char in operators:
+            if char == "-" and prev_char in ("", "("):
+                i += 1
+                continue
             if prev_char in operators or prev_char in ("", "("):
                 return False
             prev_char = char
