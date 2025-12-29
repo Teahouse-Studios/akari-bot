@@ -7,7 +7,6 @@ import sys
 import time
 import traceback
 from pathlib import Path
-from time import sleep
 
 from loguru import logger
 from tortoise import Tortoise, run_async
@@ -151,7 +150,7 @@ def multiprocess_run_until_complete(func):
     while True:
         if not p.is_alive():
             break
-        sleep(1)
+        time.sleep(1)
     terminate_process(p)
 
 
