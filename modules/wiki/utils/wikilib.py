@@ -641,6 +641,7 @@ class WikiLib:
                 "inprop": "url",
                 "iiprop": "url",
                 "redirects": "true",
+                "converttitles": "true",
                 "titles": title,
             }
 
@@ -655,6 +656,7 @@ class WikiLib:
                 "inprop": "url",
                 "iiprop": "url",
                 "redirects": "true",
+                "converttitles": "true",
                 "pageids": pageid,
             }
         else:
@@ -685,19 +687,25 @@ class WikiLib:
                 desc=self.locale.t("wiki.message.utils.wikilib.error.empty"),
                 info=self.wiki_info,
             )
-
-        redirects_: List[Dict[str, str]] = query.get("redirects")
-        if redirects_:
-            for r in redirects_:
-                if r["from"] == title:
-                    page_info.before_title = r["from"]
-                    page_info.title = r["to"]
         normalized_: List[Dict[str, str]] = query.get("normalized")
         if normalized_:
             for n in normalized_:
                 if n["from"] == title:
                     page_info.before_title = n["from"]
                     page_info.title = n["to"]
+        converted_: List[Dict[str, str]] = query.get("converted")
+        if converted_:
+            for c in converted_:
+                if c["from"] == title:
+                    page_info.before_title = c["from"]
+                    page_info.title = c["to"]
+        redirects_: List[Dict[str, str]] = query.get("redirects")
+        if redirects_:
+            for r in redirects_:
+                if r["from"] == title:
+                    page_info.before_title = r["from"]
+                    page_info.title = r["to"]
+
         pages: Dict[str, dict] = query.get("pages")
         if pages:
             for page_id in pages:
