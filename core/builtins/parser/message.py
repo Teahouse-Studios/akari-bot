@@ -343,7 +343,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
 
         time_used = time.time() - time_start
         Logger.success(f"Successfully finished session from {identify_str}, returns: {str(e)}. "
-                       f"Times take up: {time_used:06d}s")
+                       f"Times take up: {time_used:06f}s")
         Info.command_parsed += 1
         if enable_analytics:
             await AnalyticsData.create(target_id=msg.session_info.target_id,
