@@ -11,10 +11,10 @@ image = module("image", developers=["OasisAkari"], required_superuser=True)
 # only superusers now due to indeterminate safety
 
 
-@image.command("fillwhite ...")  # convert picture with transparent background to white background jpg
+@image.command("fillwhite ...")  # convert picture with transparent background to white background image
 async def fillwhite(msg: Bot.MessageSession):
     imgs = [e for e in msg.session_info.messages.values if isinstance(e, ImageElement)]
-    if not isinstance(imgs, ImageElement):
+    if not imgs:
         nm = await msg.wait_next_message(I18NContext("image.fillwhite.send.a.image"))
         nm_image = [e for e in nm.session_info.messages.values if isinstance(e, ImageElement)]
         if not nm_image:

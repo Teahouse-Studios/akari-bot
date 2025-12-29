@@ -34,7 +34,7 @@ async def to_message_chain(msg: types.Message):
         )
         lst.append(Voice(d))
     if msg.photo:
-        file = await aiogram_bot.get_file(msg.photo[-1]["file_id"])
+        file = await aiogram_bot.get_file(msg.photo[-1].file_id)
         lst.append(
             Image(f"https://api.telegram.org/file/bot{token}/{file.file_path}")
         )
@@ -44,6 +44,17 @@ async def to_message_chain(msg: types.Message):
             f"https://api.telegram.org/file/bot{token}/{file.file_path}"
         )
         lst.append(Voice(d))
+    if msg.document:
+        file = await aiogram_bot.get_file(msg.document.file_id)
+        if msg.document.mime_type.startswith("image/"):
+            lst.append(
+                Image(f"https://api.telegram.org/file/bot{token}/{file.file_path}")
+            )
+        if msg.document.mime_type.startswith("audio/"):
+            d = await download(
+                f"https://api.telegram.org/file/bot{token}/{file.file_path}"
+            )
+            lst.append(Voice(d))
     if msg.caption:
         lst.append(Plain(msg.caption))
     if msg.text:
