@@ -466,7 +466,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                         if rfunc.logging:
                             Logger.success(
                                 f"Successfully finished session from {identify_str}, returns: {str(e)}. "
-                                f"Times take up: {time_used:06d}s")
+                                f"Times take up: {time_used:06f}s")
 
                         Info.command_parsed += 1
                         if enable_analytics:
