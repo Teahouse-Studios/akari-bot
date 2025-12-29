@@ -43,7 +43,7 @@ class MyClient(botpy.Client):
             reply_id = message.message_reference.message_id
 
         message.content = re.sub(r"<@(.*?)>", "", message.content).strip()
-        if message.content in ["", " "]:
+        if not message.content:
             message.content = f"{command_prefix[0]}help"
 
         if message.content.strip().startswith("/"):
@@ -84,7 +84,7 @@ class MyClient(botpy.Client):
         if message.message_reference:
             reply_id = message.message_reference.message_id
 
-        if message.content in ["", " "]:
+        if not message.content.strip():
             message.content = f"{command_prefix[0]}help"
 
         if message.content.strip().startswith("/"):
@@ -126,7 +126,7 @@ class MyClient(botpy.Client):
             reply_id = message.message_reference.message_id
 
         message.content = re.sub(r"<@(.*?)>", "", message.content).strip()
-        if message.content in ["", " "]:
+        if not message.content:
             message.content = f"{command_prefix[0]}help"
 
         if message.content.strip().startswith("/"):

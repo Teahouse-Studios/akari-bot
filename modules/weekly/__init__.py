@@ -57,7 +57,7 @@ async def get_weekly(with_img=False, zh_tw=False):
                     Url(f"https://zh.minecraft.wiki{page[0]}") if page else locale.t("message.none")),
                 link=str(
                     Url(f"https://zh.minecraft.wiki/w/Minecraft_Wiki:%E7%89%B9%E8%89%B2%E6%9D%A1%E7%9B%AE/Minecraft/{iso_year}#%E7%AC%AC{iso_week}%E5%91%A8")
-                    ))))
+                ))))
     if imglink and with_img:
         msg_list.append(Image(path=imglink))
 
