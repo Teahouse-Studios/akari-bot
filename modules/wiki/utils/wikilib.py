@@ -149,6 +149,7 @@ class WikiLib:
             return orjson.loads(req)
 
         except Exception as e:
+            # Exception handling for moegirl.org.cn
             if api.find("moegirl.org.cn") != -1:
                 raise InvalidWikiError(
                     self.locale.t("wiki.message.utils.wikilib.get_failed.moegirl")
@@ -327,7 +328,9 @@ class WikiLib:
         )
 
     async def check_wiki_info_from_database_cache(self):
-        """检查wiki信息是否已记录在数据库缓存（由于部分wiki通过path区分语言，此处仅模糊查询域名部分，返回结果可能不准确）"""
+        """
+        check wiki_info from database cache, the result maybe incorrect since some wiki that distinguish languages by url path
+        """
         parse_url = urllib.parse.urlparse(self.url)
         get = await WikiSiteInfo.get_like_this(parse_url.scheme + "://" + parse_url.netloc)
         if get:
@@ -342,6 +345,9 @@ class WikiLib:
         return WikiStatus(available=False, value=False, message="")
 
     async def fixup_wiki_info(self):
+        """
+        autofill missing required information for wiki_info
+        """
         if not self.wiki_info.api:
             wiki_info = await self.check_wiki_available()
             if wiki_info.available:
@@ -353,10 +359,12 @@ class WikiLib:
 
     async def get_json(self, _no_login=False, **kwargs) -> dict:
         await self.fixup_wiki_info()
-        api = self.wiki_info.api
-        return await self.get_json_from_api(api, _no_login=_no_login, **kwargs)
+        return await self.get_json_from_api(self.wiki_info.api, _no_login=_no_login, **kwargs)
 
     async def return_api(self, _no_login=False, _no_format=False, **kwargs) -> str:
+        """
+        return formatted api links with kwargs
+        """
         await self.fixup_wiki_info()
         api = self.wiki_info.api
         if api in redirect_list:
@@ -375,6 +383,9 @@ class WikiLib:
 
     @staticmethod
     def parse_text(text):
+        """
+        parse text to get a short description
+        """
         try:
             desc = text.split("\n")
             desc_list = []
@@ -412,6 +423,9 @@ class WikiLib:
         return "\n".join(split_desc) + ("..." if ell else "")
 
     async def get_html_to_text(self, page_name, section=None):
+        """
+        get html and convert to text
+        """
         await self.fixup_wiki_info()
         get_parse = await self.get_json(action="parse", page=page_name, prop="text")
         h = html2text.HTML2Text()
@@ -424,10 +438,10 @@ class WikiLib:
         if len(t) > 65535:
             return self.locale.t("wiki.message.utils.wikilib.error.text_too_long")
         if section:
-            for i in range(1, 7):
-                s = re.split(r"(.*" + "#" * i + r"[^#].*\[.*?])", t, re.M | re.S)
+            for i in range(1, 7):  # H1 to H6
+                s = re.split(r"(.*" + "#" * i + r"[^#].*\[.*?])", t, re.M | re.S)  # e.g. ### Section [..]
                 ls = len(s)
-                if ls > 1:
+                if ls > 1:  # found section
                     ii = 0
                     for x in s:
                         ii += 1
@@ -586,13 +600,18 @@ class WikiLib:
         ban = False
         if self.wiki_info.in_blocklist and not self.wiki_info.in_allowlist:
             ban = True
+
+        # if redirected too many times, raise AbuseWarning
         if _tried > 5 and enable_tos:
             raise AbuseWarning("{I18N:tos.message.reason.too_many_redirects}")
         selected_section = None
         query_props = ["info", "imageinfo", "langlinks", "templates"]
+
+        # special handling for moegirl.org.cn
         if self.wiki_info.api.find("moegirl.org.cn") != -1:
             query_props.remove("imageinfo")
-        if title:
+
+        if title:  # parse title, generate args
             if inline:
                 split_name = re.split(r"(#)", title)
             else:
@@ -601,16 +620,18 @@ class WikiLib:
             arg_list = []
             _arg_list = []
             section_list = []
-            used_quote = False
-            quote_code = False
+            has_section = False
+            section_code = False
+
+            # handling section and query args in title
             for a in split_name[1:]:
                 if len(a) > 0:
                     if a[0] == "#":
-                        quote_code = True
-                        used_quote = True
+                        section_code = True
+                        has_section = True
                     if a[0] == "?":
-                        quote_code = False
-                    if quote_code:
+                        section_code = False
+                    if section_code:
                         arg_list.append(urllib.parse.quote(a))
                         section_list.append(a)
                     else:
@@ -625,15 +646,20 @@ class WikiLib:
                     title += _arg
             if len(section_list) > 1:
                 selected_section = "".join(section_list)[1:].replace(" ", "_")
+
+            # generate base PageInfo
             page_info = PageInfo(
                 info=self.wiki_info,
                 title=title,
                 args="".join(arg_list),
                 interwiki_prefix=_prefix,
             )
+            # if selected section is None, but used # in title, mark invalid_section
             page_info.selected_section = selected_section
-            if not selected_section and used_quote:
+            if not selected_section and has_section:
                 page_info.invalid_section = True
+
+            # generate final query string
             query_string = {
                 "action": "query",
                 "prop": "|".join(query_props),
@@ -645,10 +671,12 @@ class WikiLib:
                 "titles": title,
             }
 
-        elif pageid:
+        elif pageid:  # parse pageid
+            # generate base PageInfo
             page_info = PageInfo(
                 info=self.wiki_info, title=title, args="", interwiki_prefix=_prefix
             )
+            # generate final query string
             query_string = {
                 "action": "query",
                 "prop": "|".join(query_props),
@@ -660,6 +688,7 @@ class WikiLib:
                 "pageids": pageid,
             }
         else:
+            # neither title nor pageid is given, return empty PageInfo with base article link for wiki
             return PageInfo(
                 title="",
                 link=self.wiki_info.articlepath.replace("$1", ""),
@@ -667,6 +696,8 @@ class WikiLib:
                 interwiki_prefix=_prefix,
                 templates=[],
             )
+
+        # if TextExtracts extension is available and no selected section, add extracts to query
         use_textextracts = "TextExtracts" in self.wiki_info.extensions
         if use_textextracts and not selected_section:
             query_props += ["extracts", "pageprops"]
@@ -679,14 +710,22 @@ class WikiLib:
                     "exchars": "200",
                 }
             )
+
+        # get page info from api
         get_page = await self.get_json(**query_string)
+
+        # parse the result
         query = get_page.get("query")
+
+        # if no query returned, return error PageInfo
         if not query:
             return PageInfo(
                 title=title,
                 desc=self.locale.t("wiki.message.utils.wikilib.error.empty"),
                 info=self.wiki_info,
             )
+
+        # handle redirects, normalized titles, converted titles
         normalized_: List[Dict[str, str]] = query.get("normalized")
         if normalized_:
             for n in normalized_:
@@ -706,9 +745,11 @@ class WikiLib:
                     page_info.before_title = r["from"]
                     page_info.title = r["to"]
 
+        # get page data
         pages: Dict[str, dict] = query.get("pages")
         if pages:
             for page_id in pages:
+                # set default values
                 page_info.status = False
                 page_info.id = int(page_id)
                 page_raw = pages[page_id]
@@ -716,6 +757,7 @@ class WikiLib:
                     page_info.title = page_raw["title"]
                 if "editurl" in page_raw:
                     page_info.edit_link = page_raw["editurl"]
+
                 if "invalid" in page_raw:
                     match = re.search(r"\"(.)\"", page_raw["invalidreason"])
                     if match:
@@ -828,7 +870,10 @@ class WikiLib:
                                 page_info.invalid_namespace = invalid_namespace
                                 page_info.possible_research_title = searched_result
                 else:
+                    # otherwise, assume page exists
                     page_info.status = True
+
+                    # handling special talk pages and forums
                     try:
                         page_info.body_class = await self.get_page_body_class(
                             page_info.title
@@ -857,9 +902,13 @@ class WikiLib:
                     except Exception:
                         Logger.exception()
 
+                    # handling templates
+
                     templates = page_info.templates = [
                         t["title"] for t in page_raw.get("templates", [])
                     ]
+
+                    # handling special talk page
                     if (
                         selected_section
                         or page_info.invalid_section
@@ -883,6 +932,8 @@ class WikiLib:
                                 not in section_list
                             ):
                                 page_info.invalid_section = True
+
+                    # handling special pages
                     if "special" in page_raw:
                         full_url = (
                             re.sub(
@@ -895,8 +946,9 @@ class WikiLib:
                         page_info.link = full_url
                         page_info.status = True
                     else:
+                        # handling normal pages
                         query_langlinks = False
-                        if lang:
+                        if lang:  # e.g. get page with another language version parameter given
                             langlinks_ = {}
                             for x in page_raw.get("langlinks", []):
                                 langlinks_[x["lang"]] = x["url"]
@@ -983,11 +1035,12 @@ class WikiLib:
                                 if query_langlinks_.status:
                                     query_langlinks = query_langlinks_
 
-                        if not query_langlinks:
+                        if not query_langlinks:  # normal handling
                             title = page_raw["title"]
                             page_desc = ""
                             split_title = title.split(":")
                             get_desc = True
+                            # handling documentation subpage for templates
                             if (
                                 not _doc
                                 and len(split_title) > 1
@@ -1020,6 +1073,7 @@ class WikiLib:
                                     page_info.before_page_property = (
                                         page_info.page_property
                                     ) = "template"
+                            # get description
                             if get_desc:
                                 if use_textextracts and (
                                     not selected_section or page_info.invalid_section
@@ -1051,6 +1105,7 @@ class WikiLib:
                                     self.wiki_info.script + f"?curid={page_info.id}"
                                 )
                         else:
+                            # handling langlinks query result, skip normal processing
                             page_info.title = query_langlinks.title
                             page_info.before_title = query_langlinks.title
                             page_info.link = query_langlinks.link
