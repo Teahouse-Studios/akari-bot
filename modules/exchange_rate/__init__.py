@@ -1,5 +1,5 @@
-import datetime
 import re
+import time
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
@@ -61,9 +61,7 @@ async def exchange(msg: Bot.MessageSession, base_currency, target_currency, amou
 
     url = f"https://v6.exchangerate-api.com/v6/{api_key}/pair/{base_currency}/{target_currency}/{amount}"
     data = await get_url(url, 200, fmt="json")
-    time = msg.format_time(
-        datetime.datetime.now().timestamp(), time=False, timezone=False
-    )
+    time_ = msg.format_time(time.time(), time=False, timezone=False)
     if data and data["result"] == "success":
         exchange_rate = data["conversion_result"]
         await msg.finish(I18NContext(
@@ -72,7 +70,7 @@ async def exchange(msg: Bot.MessageSession, base_currency, target_currency, amou
             base=base_currency,
             exchange_rate=exchange_rate,
             target=target_currency,
-            time=time,
+            time=time_,
         )
         )
 

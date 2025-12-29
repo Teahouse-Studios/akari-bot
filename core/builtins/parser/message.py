@@ -2,8 +2,8 @@ import copy
 import difflib
 import inspect
 import re
+import time
 import traceback
-from datetime import datetime
 from string import Template as stringTemplate
 from typing import List, TYPE_CHECKING
 
@@ -253,7 +253,7 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
 
 
 async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word, identify_str):
-    time_start = datetime.now()
+    time_start = time.time()
     bot: "Bot" = exports["Bot"]
     try:
         await _check_target_cooldown(msg)
@@ -341,9 +341,9 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
 
     except FinishedException as e:
 
-        time_used = datetime.now() - time_start
+        time_used = time.time() - time_start
         Logger.success(f"Successfully finished session from {identify_str}, returns: {str(e)}. "
-                       f"Times take up: {str(time_used)}")
+                       f"Times take up: {time_used:06d}s")
         Info.command_parsed += 1
         if enable_analytics:
             await AnalyticsData.create(target_id=msg.session_info.target_id,
@@ -393,7 +393,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                     continue
 
                 for rfunc in regex_module.regex_list.set:  # 遍历正则模块的表达式
-                    time_start = datetime.now()
+                    time_start = time.time()
                     matched = False
                     _typing = False
                     try:
@@ -462,11 +462,11 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                             ExecutionLockList.remove(msg)
                             raise FinishedException(msg.sent)  # if not using msg.finish
                     except FinishedException as e:
-                        time_used = datetime.now() - time_start
+                        time_used = time.time() - time_start
                         if rfunc.logging:
                             Logger.success(
                                 f"Successfully finished session from {identify_str}, returns: {str(e)}. "
-                                f"Times take up: {time_used}")
+                                f"Times take up: {time_used:06d}s")
 
                         Info.command_parsed += 1
                         if enable_analytics:
@@ -508,7 +508,7 @@ async def _check_target_cooldown(msg: "Bot.MessageSession"):
     if not sender_record.is_expired():
         if not sender_record.get("notified", False):
             sender_record["notified"] = True
-            elapsed = cooldown_time - (datetime.now().timestamp() - sender_record.ts)
+            elapsed = cooldown_time - (time.time() - sender_record.ts)
             await msg.finish(I18NContext("message.cooldown.manual", time=int(elapsed)))
         await msg.finish()
 
@@ -523,7 +523,7 @@ async def _tos_temp_ban(msg: "Bot.MessageSession"):
         if msg.check_super_user():
             await remove_temp_ban(msg.session_info.sender_id)
             return None
-        ban_time = datetime.now().timestamp() - ban_info.ts
+        ban_time = time.time() - ban_info.ts
         remaining = int(TOS_TEMPBAN_TIME - ban_time)
 
         if not ban_info.get("count", 0):
@@ -662,8 +662,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
 async def _process_tos_abuse_warning(msg: "Bot.MessageSession", e: AbuseWarning):
     if enable_tos and Config("tos_warning_counts", 5) >= 1 and not msg.check_super_user():
         await abuse_warn_target(msg, str(e))
-        temp_ban_counter[msg.session_info.sender_id] = {"count": 1,
-                                                        "ts": datetime.now().timestamp()}
+        temp_ban_counter[msg.session_info.sender_id] = {"count": 1, "ts": time.time()}
     else:
         err_msg_chain = MessageChain.assign(I18NContext("error.message.prompt"))
         err_msg_chain.append(Plain(msg.session_info.locale.t_str(str(e))))

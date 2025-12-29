@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 
 from core.builtins.bot import Bot
 from core.dirty_check import check_bool
@@ -23,8 +23,8 @@ def dark_check(message: str):
 
 
 def time_diff(time: str):
-    datetimed = datetime.datetime.strptime(time, "%Y-%m-%dT%H:%M:%SZ").timestamp()
-    now = datetime.datetime.now().timestamp()
+    datetimed = datetime.strptime(time, "%Y-%m-%dT%H:%M:%SZ").timestamp()
+    now = datetime.now().timestamp()
     diff = now - datetimed
     t = diff / 60 / 60 / 24
     dw = " day(s)"

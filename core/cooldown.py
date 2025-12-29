@@ -1,4 +1,5 @@
-from datetime import datetime
+import time
+
 from core.builtins.session.internal import MessageSession
 from core.utils.temp import ExpiringTempDict
 
@@ -46,7 +47,7 @@ class CoolDown:
         :return: 剩余冷却时间（秒），0 表示已可用
         """
         cd_instance = self._get_cd_dict()
-        elapsed = datetime.now().timestamp() - cd_instance.ts
+        elapsed = time.time() - cd_instance.ts
         remaining = cd_instance.exp - elapsed
         return max(remaining, 0)
 

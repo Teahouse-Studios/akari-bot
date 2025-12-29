@@ -1,8 +1,8 @@
 import asyncio
-import datetime
 import re
 import urllib.parse
 from copy import deepcopy
+from datetime import datetime
 from typing import Union, Dict, List, Optional
 
 import orjson
@@ -287,7 +287,7 @@ class WikiLib:
             wiki_api_link = redirect_list[wiki_api_link]
         get_cache_info = await WikiSiteInfo.get_or_none(api_link=wiki_api_link)
         if get_cache_info:
-            if get_cache_info.site_info and datetime.datetime.now().timestamp() - get_cache_info.timestamp.timestamp() < 43200:
+            if get_cache_info.site_info and datetime.now().timestamp() - get_cache_info.timestamp.timestamp() < 43200:
                 return WikiStatus(
                     available=True,
                     value=await self.rearrange_siteinfo(get_cache_info.site_info, wiki_api_link),
@@ -314,7 +314,7 @@ class WikiLib:
                 )
             return WikiStatus(available=False, value=False, message=message)
         get_cache_info.site_info = get_json
-        get_cache_info.timestamp = datetime.datetime.now()
+        get_cache_info.timestamp = datetime.now()
         await get_cache_info.save()
         info = await self.rearrange_siteinfo(get_json, wiki_api_link)
         return WikiStatus(

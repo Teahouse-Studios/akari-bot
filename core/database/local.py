@@ -1,5 +1,5 @@
 import hashlib
-from datetime import datetime
+import time
 
 from tortoise import fields
 
@@ -23,7 +23,7 @@ class DirtyWordCache(DBModel):
     async def check(cls, query_word):
         query = await cls.filter(desc=query_word).first()
 
-        if query and datetime.now().timestamp() - query.timestamp.timestamp() > 86400:
+        if query and time.time() - query.timestamp.timestamp() > 86400:
             await query.delete()
 
         return query

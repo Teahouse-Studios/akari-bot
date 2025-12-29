@@ -1,6 +1,6 @@
 import re
 import shutil
-from datetime import datetime
+import time
 
 from akari_bot_webrender.functions.options import StatusOptions
 from tabulate import tabulate
@@ -451,7 +451,7 @@ restart_time = []
 
 async def wait_for_restart(msg: Bot.MessageSession):
     get = Bot.ExecutionLockList.get()
-    if datetime.now().timestamp() - restart_time[0] < 60:
+    if time.time() - restart_time[0] < 60:
         if len(get) != 0:
             await msg.send_message(I18NContext("core.message.restart.wait", count=len(get)))
             await msg.sleep(10)
@@ -464,7 +464,7 @@ async def wait_for_restart(msg: Bot.MessageSession):
 @rst.command()
 async def _(msg: Bot.MessageSession):
     if await msg.wait_confirm(append_instruction=False):
-        restart_time.append(datetime.now().timestamp())
+        restart_time.append(time.time())
         await wait_for_restart(msg)
         write_restart_cache(msg)
         await restart()
@@ -486,7 +486,7 @@ upds = module(
 async def _(msg: Bot.MessageSession):
     if not Bot.Info.binary_mode:
         if await msg.wait_confirm(append_instruction=False):
-            restart_time.append(datetime.now().timestamp())
+            restart_time.append(time.time())
             await wait_for_restart(msg)
             write_restart_cache(msg)
             if Bot.Info.version:
