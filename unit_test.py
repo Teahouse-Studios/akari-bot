@@ -3,6 +3,7 @@ import os
 import traceback
 
 from core.builtins.message.chain import MessageChain
+from core.builtins.message.elements import PlainElement
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import confirm_command
 from core.constants import FinishedException
@@ -121,15 +122,16 @@ async def main():
                     sender_id="TEST|0",
                     sender_from="TEST"
                 )
-                expected = MessageChain.assign(session_info, expected)
+                expected = MessageChain.assign(expected).as_sendable(session_info)
+                excepted_ = "\n".join([x.text if isinstance(x, PlainElement) else str(x) for x in expected])
 
-                ok = output == expected.as_sendable()
+                ok = output == expected
                 if ok:
                     Logger.success("RESULT: PASS")
                     passed += 1
                 else:
                     Logger.error("RESULT: FAIL")
-                    Logger.error("EXPECTED:\n", expected)
+                    Logger.error(f"EXPECTED:\n{excepted_}")
                     failed += 1
         print("-" * 60)
     Logger.info(f"TOTAL: {total}")
