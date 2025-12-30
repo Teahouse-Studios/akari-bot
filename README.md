@@ -86,16 +86,19 @@ _多功能、跨平台、可自由扩展的异步聊天机器人助手_
 
 如你想为我们编写新的模块，可以看看[这里](https://bot.teahouse.team/wiki/%E6%A8%A1%E5%9D%97%E5%BC%80%E5%8F%91%E6%8C%87%E5%8D%97)。
 
-## 许可
-
-小可使用 AGPL-3.0 协议授权。详见 [./LICENSE](./LICENSE)。
-
 ## Star 历史
 [![Star Chart](https://starchart.cc/Teahouse-Studios/akari-bot.svg?variant=adaptive)](https://starchart.cc/Teahouse-Studios/akari-bot)
 
 ## 相关项目
-- [AkariBot WebRender](https://github.com/Teahouse-Studios/akari-bot-webrender)
-- [AkariBot WebUI](https://github.com/Teahouse-Studios/akari-bot-webui)
+- [`AkariBot WebRender`](https://github.com/Teahouse-Studios/akari-bot-webrender)
+- [`AkariBot WebUI`](https://github.com/Teahouse-Studios/akari-bot-webui)
+
+## 鸣谢
+- [`Graia`](https://github.com/GraiaProject/Application) — 小可曾基于此项目搭建
+
+## 许可
+
+小可使用 AGPL-3.0 协议授权。详见 [./LICENSE](./LICENSE)。
 
 ## 赞助者
 <p align="center">
