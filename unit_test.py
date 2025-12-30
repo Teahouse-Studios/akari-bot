@@ -125,8 +125,7 @@ async def main():
                 expected = MessageChain.assign(expected).as_sendable(session_info)
                 excepted_ = "\n".join([x.text if isinstance(x, PlainElement) else str(x) for x in expected])
 
-                ok = output == expected
-                if ok:
+                if output == expected:
                     Logger.success("RESULT: PASS")
                     passed += 1
                 else:
