@@ -20,7 +20,6 @@ from core.unit_test.parser import parser
 async def _run_entry(entry: dict):
     func = entry["func"]
     input_ = entry["input"]
-    note = entry.get("note")
 
     results = []
     msg = TestMessageSession(input_)
@@ -32,10 +31,10 @@ async def _run_entry(entry: dict):
         pass
     except Exception:
         tb = traceback.format_exc()
-        results.append({"input": input_, "error": tb, "output": msg.sent, "action": msg.action, "note": note})
+        results.append({"input": input_, "error": tb, "output": msg.sent, "action": msg.action})
         return results
 
-    results.append({"input": input_, "output": msg.sent, "action": msg.action, "note": note})
+    results.append({"input": input_, "output": msg.sent, "action": msg.action})
     return results
 
 
@@ -107,6 +106,7 @@ def main():
     for entry in registry:
         print("-" * 60)
         fn = entry["func"]
+        note = entry.get("note")
         Logger.info(f"TEST: {fn.__name__}  ({entry.get('file')}:{entry.get('line')})")
         results = loop.run_until_complete(_run_entry(entry))
 
@@ -114,7 +114,8 @@ def main():
             total += 1
             if "error" in r:
                 Logger.error(f"INPUT: {r['input']}")
-                Logger.error(f"NOTE: {r['note']}")
+                if note:
+                    Logger.error(f"NOTE: {note}")
                 Logger.error("ERROR during execution:")
                 Logger.error(r["error"])
                 continue
@@ -124,7 +125,8 @@ def main():
             fmted_output = "\n".join(action) if action else "[NO OUTPUT]"
             expected = entry.get("expected")
             Logger.info(f"INPUT: {r["input"]}")
-            Logger.info(f"NOTE: {r['note']}")
+            if note:
+                Logger.info(f"NOTE: {note}")
             Logger.info(f"OUTPUT:\n{fmted_output}")
 
             if expected is None:

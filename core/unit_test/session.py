@@ -5,7 +5,9 @@ from PIL import Image as PILImage
 from core.builtins.message.chain import get_message_chain, MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement, MentionElement, BaseElement
 from core.builtins.session.info import SessionInfo
-from core.builtins.session.internal import MessageSession
+from core.builtins.session.internal import MessageSession, I18NContext
+from core.builtins.utils import confirm_command
+from core.config import Config
 from core.constants import FinishedException
 
 
@@ -113,8 +115,25 @@ class TestMessageSession(MessageSession):
         append_instruction=True,
         no_confirm_action=True
     ):
-        ...
-        return no_confirm_action
+        if Config("no_confirm", False):
+            return no_confirm_action
+
+        if message_chain:
+            message_chain = get_message_chain(self.session_info, message_chain)
+        else:
+            message_chain = MessageChain.assign(I18NContext("core.message.confirm"))
+        if append_instruction:
+            message_chain.append(I18NContext("message.wait.confirm.prompt"))
+        await self.send_message(message_chain)
+        await asyncio.sleep(0.1)
+
+        result = input("Confirm: ")
+        if result:
+            if delete:
+                await self.delete()
+            if result in confirm_command:
+                return True
+            return False
 
     async def wait_next_message(
         self,
@@ -125,7 +144,18 @@ class TestMessageSession(MessageSession):
         append_instruction=True,
         add_confirm_reaction=False,
     ):
-        ...
+        if message_chain:
+            message_chain = get_message_chain(self.session_info, message_chain)
+            if append_instruction:
+                message_chain.append(I18NContext("message.wait.next_message.prompt"))
+            await self.send_message(message_chain, quote)
+        await asyncio.sleep(0.1)
+
+        result = input("Confirm: ")
+        if delete:
+            await self.delete()
+        if result:
+            return ...
 
     async def wait_reply(
         self,
@@ -137,7 +167,18 @@ class TestMessageSession(MessageSession):
         append_instruction=True,
         add_confirm_reaction=False,
     ):
-        ...
+        if message_chain:
+            message_chain = get_message_chain(self.session_info, message_chain)
+            if append_instruction:
+                message_chain.append(I18NContext("message.reply.prompt"))
+            await self.send_message(message_chain, quote)
+        await asyncio.sleep(0.1)
+
+        result = input("Confirm: ")
+        if delete:
+            await self.delete()
+        if result:
+            return ...
 
     async def wait_anyone(
         self,
@@ -146,7 +187,16 @@ class TestMessageSession(MessageSession):
         delete=False,
         timeout=120,
     ):
-        ...
+        if message_chain:
+            message_chain = get_message_chain(self.session_info, message_chain)
+            await self.send_message(message_chain, quote)
+        await asyncio.sleep(0.1)
+
+        result = input("Confirm: ")
+        if delete:
+            await self.delete()
+        if result:
+            return ...
 
     async def sleep(self, s):
         await asyncio.sleep(s)
