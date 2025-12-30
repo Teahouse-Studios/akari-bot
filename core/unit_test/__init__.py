@@ -7,7 +7,7 @@ _REGISTRY: List[dict] = []
 
 
 def case(
-    input: str,
+    input_: str,
     expected: Optional[Union[str, list, MessageElement]] = None,
     manual: bool = False,
     note: Optional[str] = None
@@ -17,21 +17,21 @@ def case(
 
     示例：
     ```
-    @case(input="~test say Hello", expected="Hello is Hello")
+    @case("~test say Hello", "Hello is Hello")
     @test.command("say <word>")
     async def _(msg: Bot.MessageSession, word: str):
         await msg.finish(f"{word} is {msg.parsed_msg["<word>"]}")
     ```
     :param input: 预期输入。
     :param expected: 预期输出。
-    :param manual: 是否采用人工检查。
-    :param note: 额外说明文字。
+    :param manual: 是否使用人工检查。
+    :param note: 额外说明。
     """
 
     def _decorator(fn: Callable):
         entry = {
             "func": fn,
-            "input": input,
+            "input": input_,
             "expected": expected,
             "manual": manual,
             "note": note,
