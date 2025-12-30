@@ -41,7 +41,7 @@ async def parser(msg: "Bot.MessageSession"):
     # 检查正则
     # 若任何正则命中则会在 _execute_regex 中调用对应函数并抛出 FinishedException
     await _execute_regex(msg, modules)
-    # 若未命中任何正则，视為不匹配（适用于单元测试）
+    # 若未命中任何正则，视为不匹配（适用于单元测试）
     return None
 
 
@@ -164,7 +164,6 @@ async def _execute_regex(msg: "Bot.MessageSession", modules):
                         matched = True
 
                 if matched:  # 如果匹配成功
-                    # 單元測試期間：僅執行目標函數
                     if hasattr(msg, "_unittest_target") and rfunc.function is not msg._unittest_target:
                         continue
                     await rfunc.function(msg)  # 将msg传入下游模块
