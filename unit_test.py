@@ -20,20 +20,23 @@ from core.unit_test.parser import parser
 async def _run_entry(entry: dict):
     func = entry["func"]
     input_ = entry["input"]
+    note = entry.get("note")
 
     results = []
     msg = TestMessageSession(input_)
     await msg.async_init()
+    # 告知 parser 測試期望的目標函數，parser 在單元測試模式下會僅執行此函數
+    setattr(msg, "_unittest_target", func)
     try:
         await parser(msg)
     except FinishedException:
         pass
     except Exception:
         tb = traceback.format_exc()
-        results.append({"input": input_, "error": tb, "output": msg.sent_msg, "action": msg.action})
+        results.append({"input": input_, "error": tb, "output": msg.sent_msg, "action": msg.action, "note": note})
         return results
 
-    results.append({"input": input_, "output": msg.sent_msg, "action": msg.action})
+    results.append({"input": input_, "output": msg.sent_msg, "action": msg.action, "note": note})
     return results
 
 
@@ -112,6 +115,7 @@ def main():
             total += 1
             if "error" in r:
                 Logger.error(f"INPUT: {r['input']}")
+                Logger.error(f"NOTE: {r['note']}")
                 Logger.error("ERROR during execution:")
                 Logger.error(r["error"])
                 continue
@@ -121,6 +125,7 @@ def main():
             fmted_output = "\n".join(action) if action else "[NO OUTPUT]"
             expected = entry.get("expected")
             Logger.info(f"INPUT: {r["input"]}")
+            Logger.info(f"NOTE: {r['note']}")
             Logger.info(f"OUTPUT:\n{fmted_output}")
 
             if expected is None:
@@ -134,8 +139,8 @@ def main():
                         failed += 1
                 except KeyboardInterrupt:
                     print("")
-                    Logger.error("RESULT: FAIL")
-                    failed += 1
+                    Logger.warning("Interrupted by user.")
+                    os._exit(1)
             else:
                 ok = False
                 if isinstance(expected, list):
