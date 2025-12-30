@@ -14,33 +14,26 @@ from core.database import init_db
 from core.unit_test import get_registry
 from core.unit_test.session import TestMessageSession
 from core.unit_test.logger import Logger
+from core.unit_test.parser import parser
 
 
 async def _run_entry(entry: dict):
     func = entry["func"]
-    inputs = entry["input"]
-
-    if isinstance(inputs, str):
-        inputs = [inputs]
+    input_ = entry["input"]
 
     results = []
-    for inp in inputs:
-        msg = TestMessageSession(inp)
-        await msg.async_init()
-        try:
-            if asyncio.iscoroutinefunction(func):
-                await func(msg)
-            else:
-                func(msg)
-        except FinishedException:
-            pass
-        except Exception:
-            tb = traceback.format_exc()
-            results.append({"input": inp, "error": tb, "output": msg.sent_msg, "action": msg.action})
-            continue
+    msg = TestMessageSession(input_)
+    await msg.async_init()
+    try:
+        await parser(msg)
+    except FinishedException:
+        pass
+    except Exception:
+        tb = traceback.format_exc()
+        results.append({"input": input_, "error": tb, "output": msg.sent_msg, "action": msg.action})
+        return results
 
-        results.append({"input": inp, "output": msg.sent_msg, "action": msg.action})
-
+    results.append({"input": input_, "output": msg.sent_msg, "action": msg.action})
     return results
 
 
@@ -81,7 +74,7 @@ def main():
     try:
         init_success = loop.run_until_complete(init_db())
         if not init_success:
-            Logger.error("Failed to initialize database. Aborting tests.")
+            Logger.critical("Failed to initialize database. Aborting tests.")
             try:
                 loop.run_until_complete(Tortoise.close_connections())
             except ConfigurationError:
@@ -108,11 +101,12 @@ def main():
 
     total = 0
     passed = 0
+    failed = 0
 
     for entry in registry:
         print("-" * 60)
         fn = entry["func"]
-        Logger.info(f"Test: {fn.__name__}  ({entry.get('file')}:{entry.get('line')})")
+        Logger.info(f"TEST: {fn.__name__}  ({entry.get('file')}:{entry.get('line')})")
         results = loop.run_until_complete(_run_entry(entry))
 
         for r in results:
@@ -131,13 +125,18 @@ def main():
             Logger.info(f"OUTPUT:\n{fmted_output}")
 
             if expected is None:
-                Logger.warning("EXPECTED: <manual check required>")
-                check = input("Did the result meet expectations? [Y/n]: ")
-                if check in confirm_command:
-                    Logger.success("RESULT: PASS")
-                    passed += 1
-                else:
+                try:
+                    check = input("Did the output meet expectations? [Y/n]: ")
+                    if check in confirm_command:
+                        Logger.success("RESULT: PASS")
+                        passed += 1
+                    else:
+                        Logger.error("RESULT: FAIL")
+                        failed += 1
+                except KeyboardInterrupt:
+                    print("")
                     Logger.error("RESULT: FAIL")
+                    failed += 1
             else:
                 ok = False
                 if isinstance(expected, list):
@@ -152,8 +151,13 @@ def main():
                 else:
                     Logger.error("RESULT: FAIL")
                     Logger.error("EXPECTED:", expected)
+                    failed += 1
         print("-" * 60)
-    Logger.info(f"Total: {total}, Passed: {passed}")
+    Logger.info(f"TOTAL: {total}")
+    if passed:
+        Logger.success(f"PASSED: {passed}")
+    if failed:
+        Logger.error(f"FAILED: {failed}")
     print("-" * 60)
 
     try:

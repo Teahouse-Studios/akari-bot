@@ -11,7 +11,6 @@ Logger = logger.bind(name="uniTest")
 
 logger_format = (
     "<cyan>[uniTest]</cyan>"
-    "<yellow>[{name}:{function}:{line}]</yellow>"
     "<green>[{time:YYYY-MM-DD HH:mm:ss}]</green>"
     "<level>[{level}]:{message}</level>"
 )

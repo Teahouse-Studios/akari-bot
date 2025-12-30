@@ -1,29 +1,21 @@
 import asyncio
-import time
-import uuid
 
 from PIL import Image as PILImage
 
-from core.builtins.message.chain import get_message_chain
+from core.builtins.message.chain import get_message_chain, MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement, MentionElement, BaseElement
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
-from core.builtins.utils import command_prefix
-from core.constants import FinishedException, default_locale
-from core.config import Config
-from core.i18n import Locale
-from core.utils.format import parse_time_string
-from core.unit_test.logger import Logger
+from core.constants import FinishedException
 
 
 class TestMessageSession(MessageSession):
-    def __init__(self, content: str):
-        self.content = content
-        self.session_info = None
-        self.sent_msg = []
-        self.action = []
+    def __init__(self, trigger_msg: str):
+        self.trigger_msg = trigger_msg
         self.parsed_msg = {}
         self.matched_msg = None
+        self.sent_msg = []
+        self.action = []
 
     async def async_init(self):
         self.session_info = await SessionInfo.assign(
@@ -33,12 +25,9 @@ class TestMessageSession(MessageSession):
             sender_id="TEST|0",
             sender_from="TEST",
             sender_name="TEST",
+            messages=MessageChain.assign(self.trigger_msg),
+            require_enable_modules=False
         )
-        parts = self.content.strip().split()
-        if parts and parts[0].startswith("~") and len(parts) >= 2:
-            if len(parts) >= 3:
-                self.parsed_msg["<word>"] = " ".join(parts[2:])
-        return self
 
     async def send_message(
             self,
@@ -104,7 +93,7 @@ class TestMessageSession(MessageSession):
         return True
 
     async def handle_error_signal(self):
-        self.action.append("(send error signal)")
+        pass
 
     async def hold(self):
         self.action.append("(holding context)")
@@ -113,10 +102,10 @@ class TestMessageSession(MessageSession):
         self.action.append("(release context)")
 
     async def start_typing(self):
-        self.action.append("(send start typing signal)")
+        pass
 
     async def end_typing(self):
-        self.action.append("(send end typing signal)")
+        pass
 
     async def wait_confirm(
         self,

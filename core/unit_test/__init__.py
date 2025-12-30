@@ -1,21 +1,21 @@
 import inspect
-from typing import Any, Callable, List, Optional, Union
+from typing import Callable, List, Optional
 
+from core.builtins.message.chain import Chainable
 
 _REGISTRY: List[dict] = []
 
 
 def case(
-    input: Union[str, List[str]],
-    expected: Optional[Any] = None,
-    *,
+    input: str,
+    expected: Optional[Chainable] = None,
     note: Optional[str] = None,
 ):
     """
     注册一个单元测试案例。
 
     參數:
-    - input: 预期输入（字符串或字符串列表）。
+    - input: 预期输入。
     - expected: 预期输出；可以是字符串或任意可比較形态；若为 None 表示人工判定。
     - note: 额外说明文字。
 
