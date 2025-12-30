@@ -173,7 +173,7 @@
     "message.wait.next_message.prompt": "（发送符合条件的词语来确认）",
     "message.yes": "是",
     "parser.admin.permission.denied.command": "此命令仅能被该会话的管理员所使用，请联系管理员执行此命令。",
-    "parser.admin.permission.denied.module:": "“${module}”模块下的命令仅能被该会话的管理员所使用，请联系管理员执行此命令。",
+    "parser.admin.permission.denied.module": "“${module}”模块下的命令仅能被该会话的管理员所使用，请联系管理员执行此命令。",
     "parser.command.fixup.confirm": "你是否想要输入“${command}”？\n（仅提供命令语法修正，不保证预期结果）",
     "parser.command.invalid.module": "此模块不存在。\n使用“${prefix}help”查看帮助。",
     "parser.command.invalid.syntax": "语法错误。\n使用“${prefix}help ${module}”查看帮助。",
