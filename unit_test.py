@@ -5,45 +5,15 @@ import importlib.util
 import traceback
 from typing import List
 
-from loguru import logger
+from tortoise import Tortoise
+from tortoise.exceptions import ConfigurationError
 
-from core.builtins.session.info import SessionInfo
-from core.builtins.session.internal import MessageSession
+from core.builtins.utils import confirm_command
+from core.constants import FinishedException
+from core.database import init_db
 from core.unit_test import get_registry
-
-# Basic logger setup
-
-try:
-    logger.remove(0)
-except ValueError:
-    pass
-
-Logger = logger.bind(name="uniTest")
-
-logger_format = (
-    "<cyan>[uniTest]</cyan>"
-    "<level>[{level}]:{message}</level>"
-)
-Logger.add(
-    sys.stdout,
-    format=logger_format,
-    level="INFO",
-    colorize=True
-)
-
-
-class FakeMessageSession(MessageSession):
-    def __init__(self, content: str):
-        self.content = content
-        self.sent = []
-        self.parsed_msg = {}
-        self.matched_msg = None
-        parts = content.strip().split()
-        if parts and parts[0].startswith("~") and len(parts) >= 2:
-            if len(parts) >= 3:
-                self.parsed_msg["<word>"] = " ".join(parts[2:])
-
-    ...
+from core.unit_test.session import TestMessageSession
+from core.unit_test.logger import Logger
 
 
 async def _run_entry(entry: dict):
@@ -55,18 +25,21 @@ async def _run_entry(entry: dict):
 
     results = []
     for inp in inputs:
-        msg = FakeMessageSession(inp)
+        msg = TestMessageSession(inp)
+        await msg.async_init()
         try:
             if asyncio.iscoroutinefunction(func):
                 await func(msg)
             else:
                 func(msg)
+        except FinishedException:
+            pass
         except Exception:
             tb = traceback.format_exc()
-            results.append({"input": inp, "error": tb, "sent": msg.sent})
+            results.append({"input": inp, "error": tb, "output": msg.sent_msg, "action": msg.action})
             continue
 
-        results.append({"input": inp, "sent": msg.sent})
+        results.append({"input": inp, "output": msg.sent_msg, "action": msg.action})
 
     return results
 
@@ -101,15 +74,37 @@ def import_file(path: str):
 def main():
     paths = ["modules"]
     abs_paths = [os.path.join(os.getcwd(), p) for p in paths]
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    # initialize database before importing modules (some tests/modules may need DB)
+    try:
+        init_success = loop.run_until_complete(init_db())
+        if not init_success:
+            Logger.error("Failed to initialize database. Aborting tests.")
+            try:
+                loop.run_until_complete(Tortoise.close_connections())
+            except ConfigurationError:
+                pass
+            return
+    except Exception:
+        Logger.error(traceback.format_exc())
+        try:
+            loop.run_until_complete(Tortoise.close_connections())
+        except ConfigurationError:
+            pass
+        return
+
     discover_and_import(abs_paths)
 
     registry = get_registry()
     if not registry:
         Logger.error("No tests registered. Use `core.unittest.case` to register tests.")
+        try:
+            loop.run_until_complete(Tortoise.close_connections())
+        except ConfigurationError:
+            pass
         return
-
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
 
     total = 0
     passed = 0
@@ -128,22 +123,28 @@ def main():
                 Logger.error(r["error"])
                 continue
 
-            sent = r.get("sent", [])
+            output = r.get("output", [])
+            action = r.get("action", [])
+            fmted_output = "\n".join(action) if action else "[NO OUTPUT]"
             expected = entry.get("expected")
-            Logger.info(f"INPUT: {r['input']}")
-            Logger.info("SENT:")
-            for s in sent:
-                print("  -", s)
+            Logger.info(f"INPUT: {r["input"]}")
+            Logger.info(f"OUTPUT:\n{fmted_output}")
 
             if expected is None:
                 Logger.warning("EXPECTED: <manual check required>")
+                check = input("Did the result meet expectations? [Y/n]: ")
+                if check in confirm_command:
+                    Logger.success("RESULT: PASS")
+                    passed += 1
+                else:
+                    Logger.error("RESULT: FAIL")
             else:
                 ok = False
                 if isinstance(expected, list):
-                    ok = expected == sent
+                    ok = expected == output
                 else:
-                    joined = "\n".join(map(str, sent))
-                    ok = str(expected) == joined or (len(sent) == 1 and str(expected) == str(sent[0]))
+                    joined = "\n".join(map(str, output))
+                    ok = str(expected) == joined or (len(output) == 1 and str(expected) == str(output[0]))
 
                 if ok:
                     Logger.success("RESULT: PASS")
@@ -151,9 +152,14 @@ def main():
                 else:
                     Logger.error("RESULT: FAIL")
                     Logger.error("EXPECTED:", expected)
-
-    print("-" * 60)
+        print("-" * 60)
     Logger.info(f"Total: {total}, Passed: {passed}")
+    print("-" * 60)
+
+    try:
+        loop.run_until_complete(Tortoise.close_connections())
+    except ConfigurationError:
+        pass
 
 
 if __name__ == "__main__":
