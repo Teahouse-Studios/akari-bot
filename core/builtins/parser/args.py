@@ -343,15 +343,25 @@ def parse_argv(argv: List[str], templates: List["Template"]) -> MatchedResult:
                             argv_copy.remove(a.name)
             if argv_copy:  # if there are still some argv left
                 if afters:
+                    ai = 1
                     for arg in afters:
+                        subi = 1
                         for sub_args in arg.args:
                             if isinstance(sub_args, ArgumentPattern):
                                 if sub_args.name.startswith("<"):
                                     if len(argv_copy) > 0:
-                                        parsed_argv[sub_args.name] = Argument(
-                                            argv_copy[0]
-                                        )
-                                        del argv_copy[0]
+                                        if len(arg.args) == 1 and len(afters) == 1:  # only one optional arg
+                                            parsed_argv[sub_args.name] = Argument(" ".join(argv_copy))
+                                            argv_copy.clear()
+                                        else:
+                                            if len(afters) == ai and len(arg.args) == subi:  # last optional arg
+                                                parsed_argv[sub_args.name] = Argument(" ".join(argv_copy))
+                                                argv_copy.clear()
+                                            else:
+                                                parsed_argv[sub_args.name] = Argument(
+                                                    argv_copy[0]
+                                                )
+                                                del argv_copy[0]
                                     else:
                                         parsed_argv[sub_args.name] = False
                                 elif sub_args.name == "...":
@@ -365,6 +375,8 @@ def parse_argv(argv: List[str], templates: List["Template"]) -> MatchedResult:
                                     )
                                     if parsed_argv[sub_args.name]:
                                         argv_copy.remove(sub_args.name)
+                            subi += 1
+                        ai += 1
                 if argv_copy:
                     template_arguments = [
                         arg for arg in args if isinstance(arg, ArgumentPattern)
