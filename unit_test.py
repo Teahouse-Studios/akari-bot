@@ -9,7 +9,7 @@ from loguru import logger
 
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
-from core.unittest import get_registry
+from core.unit_test import get_registry
 
 # Basic logger setup
 
@@ -18,10 +18,10 @@ try:
 except ValueError:
     pass
 
-Logger = logger.bind(name="UnitTest")
+Logger = logger.bind(name="uniTest")
 
 logger_format = (
-    "<cyan>[UnitTest]</cyan>"
+    "<cyan>[uniTest]</cyan>"
     "<level>[{level}]:{message}</level>"
 )
 Logger.add(
