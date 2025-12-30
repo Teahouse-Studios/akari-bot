@@ -92,15 +92,7 @@ async def main():
                 Logger.info(f"NOTE: {note}")
             Logger.info(f"OUTPUT:\n{fmted_output}")
 
-            if entry.get("noreturn"):
-                if r.get("output") is None:
-                    Logger.success("RESULT: PASS")
-                    passed += 1
-                else:
-                    Logger.error("RESULT: FAIL")
-                    Logger.error("EXPECTED:\n[NO OUTPUT]")
-                    failed += 1
-            elif expected is None:
+            if entry.get("manual"):
                 try:
                     Logger.warning("REVIEW: Did the output meet expectations? [y/N]")
                     check = input()
@@ -114,6 +106,14 @@ async def main():
                     print("")
                     Logger.warning("Interrupted by user.")
                     os._exit(1)
+            elif expected is None:
+                if r.get("output") is None:
+                    Logger.success("RESULT: PASS")
+                    passed += 1
+                else:
+                    Logger.error("RESULT: FAIL")
+                    Logger.error("EXPECTED:\n[NO OUTPUT]")
+                    failed += 1
             else:
                 session_info = await SessionInfo.assign(
                     target_id="TEST|Console|0",
