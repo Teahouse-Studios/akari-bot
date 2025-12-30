@@ -8,9 +8,9 @@ _REGISTRY: List[dict] = []
 
 def case(
     input: str,
-    noreturn: bool = False,
     expected: Optional[Union[str, list, MessageElement]] = None,
-    note: Optional[str] = None,
+    manual: bool = False,
+    note: Optional[str] = None
 ):
     """
     注册一个单元测试案例。
@@ -23,8 +23,8 @@ def case(
         await msg.finish(f"{word} is {msg.parsed_msg["<word>"]}")
     ```
     :param input: 预期输入。
-    :param noreturn: 预期是否存在输出。
-    :param expected: 预期输出，若为 None 则表示人工判断。
+    :param expected: 预期输出。
+    :param manual: 是否采用人工检查。
     :param note: 额外说明文字。
     """
 
@@ -33,8 +33,8 @@ def case(
             "func": fn,
             "input": input,
             "expected": expected,
+            "manual": manual,
             "note": note,
-            "noreturn": noreturn,
             "file": inspect.getsourcefile(fn),
             "line": inspect.getsourcelines(fn)[1],
         }
