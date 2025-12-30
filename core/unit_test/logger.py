@@ -7,10 +7,11 @@ try:
 except ValueError:
     pass
 
-Logger = logger.bind(name="uniTest")
+Logger = logger.bind(name="unittest")
 
 logger_format = (
-    "<cyan>[uniTest]</cyan>"
+    "<cyan>[unittest]</cyan>"
+    "<yellow>[{name}:{function}:{line}]</yellow>"
     "<green>[{time:YYYY-MM-DD HH:mm:ss}]</green>"
     "<level>[{level}]:{message}</level>"
 )

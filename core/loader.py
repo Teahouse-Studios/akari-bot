@@ -83,7 +83,7 @@ class ModulesManager:
             cls.modules[module.module_name] = module
             cls.modules_origin[module.module_name] = py_module_name
         else:
-            raise ValueError(f'Duplicate bind prefix "{module.module_name}"')
+            raise ValueError(f"Duplicate bind prefix \"{module.module_name}\"")
 
     @classmethod
     def remove_modules(cls, modules):
