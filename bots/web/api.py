@@ -9,6 +9,7 @@ import zipfile
 from collections import defaultdict, deque
 from datetime import datetime, timedelta, UTC
 from pathlib import Path
+from typing import Tuple
 
 import jwt
 import orjson
@@ -110,6 +111,7 @@ async def auth(request: Request):
             }
             jwt_token = jwt.encode(payload, jwt_secret, algorithm="HS256")
 
+            Logger.info(f"[WebUI] {ip} login successfully.")
             return {"data": jwt_token}
 
         body = await request.json()
@@ -132,8 +134,10 @@ async def auth(request: Request):
                 await MaliciousLoginRecords.create(ip_address=ip,
                                                    blocked_until=now + timedelta(seconds=LOGIN_BLOCK_DURATION))
                 login_failed_attempts[ip].clear()
+                Logger.warning(f"[WebUI] {ip} has been blocked due to excessive login failures.")
                 raise HTTPException(status_code=429, detail="This IP has been blocked")
 
+            Logger.warning(f"[WebUI] {ip} login failed.")
             raise HTTPException(status_code=403, detail="Invalid password")
 
         login_failed_attempts.pop(ip, None)
@@ -145,6 +149,7 @@ async def auth(request: Request):
         }
         jwt_token = jwt.encode(payload, jwt_secret, algorithm="HS256")
 
+        Logger.info(f"[WebUI] {ip} login successfully.")
         return {"data": jwt_token}
 
     except HTTPException as e:
@@ -156,6 +161,7 @@ async def auth(request: Request):
 
 @app.put("/api/password")
 async def change_password(request: Request, response: Response):
+    ip = request.client.host
     try:
         verify_jwt(request)
 
@@ -193,6 +199,7 @@ async def change_password(request: Request, response: Response):
             file.write(orjson.dumps(password_data))
 
         # TODO 签的jwt存db, 改密码时删掉
+        Logger.info(f"[WebUI] {ip} has changed password.")
         return Response(status_code=205)
     except HTTPException as e:
         raise e
@@ -203,6 +210,7 @@ async def change_password(request: Request, response: Response):
 
 @app.delete("/api/password")
 async def clear_password(request: Request):
+    ip = request.client.host
     try:
         verify_jwt(request)
 
@@ -221,6 +229,7 @@ async def clear_password(request: Request):
             raise HTTPException(status_code=401, detail="Invalid password")
 
         PASSWORD_PATH.unlink()
+        Logger.info(f"[WebUI] {ip} has deleted password.")
         return Response(status_code=205)
     except HTTPException as e:
         raise e
@@ -333,6 +342,7 @@ async def get_config_file(request: Request, cfg_filename: str):
 
 @app.put("/api/config/{cfg_filename}")
 async def edit_config_file(request: Request, cfg_filename: str):
+    ip = request.client.host
     try:
         verify_jwt(request)
 
@@ -348,6 +358,7 @@ async def edit_config_file(request: Request, cfg_filename: str):
         content = body["content"]
         with open(cfg_file_path, "w", encoding="UTF-8") as f:
             f.write(content)
+        Logger.info(f"[WebUI] {ip} has edited the config file: {cfg_filename}")
         return Response(status_code=204)
 
     except HTTPException as e:
@@ -412,6 +423,7 @@ async def get_target_info(request: Request, target_id: str):
 
 @app.patch("/api/target/{target_id}")
 async def edit_target_info(request: Request, target_id: str):
+    ip = request.client.host
     try:
         verify_jwt(request)
 
@@ -457,6 +469,7 @@ async def edit_target_info(request: Request, target_id: str):
             target_info.target_data = target_data
         await target_info.save()
 
+        Logger.info(f"[WebUI] {ip} has edited the session data: {target_id}")
         return Response(status_code=204)
     except HTTPException as e:
         raise e
@@ -467,6 +480,7 @@ async def edit_target_info(request: Request, target_id: str):
 
 @app.delete("/api/target/{target_id}")
 async def delete_target_info(request: Request, target_id: str):
+    ip = request.client.host
     try:
         verify_jwt(request)
 
@@ -474,6 +488,7 @@ async def delete_target_info(request: Request, target_id: str):
         if target_info:
             await target_info.delete()
 
+        Logger.info(f"[WebUI] {ip} has deleted the session data: {target_id}")
         return Response(status_code=204)
     except HTTPException as e:
         raise e
@@ -538,6 +553,7 @@ async def get_sender_info(request: Request, sender_id: str):
 
 @app.patch("/api/sender/{sender_id}")
 async def edit_sender_info(request: Request, sender_id: str):
+    ip = request.client.host
     try:
         verify_jwt(request)
 
@@ -577,6 +593,7 @@ async def edit_sender_info(request: Request, sender_id: str):
             sender_info.sender_data = sender_data
         await sender_info.save()
 
+        Logger.info(f"[WebUI] {ip} has edited the user data: {sender_id}")
         return Response(status_code=204)
     except HTTPException as e:
         raise e
@@ -587,12 +604,14 @@ async def edit_sender_info(request: Request, sender_id: str):
 
 @app.delete("/api/sender/{sender_id}")
 async def delete_sender_info(request: Request, sender_id: str):
+    ip = request.client.host
     try:
         verify_jwt(request)
 
         sender_info = await SenderInfo.get_by_sender_id(sender_id, create=False)
         if sender_info:
             await sender_info.delete()
+        Logger.info(f"[WebUI] {ip} has deleted the user data: {sender_id}")
         return Response(status_code=204)
     except HTTPException as e:
         raise e
@@ -658,11 +677,14 @@ async def get_module_helpdoc(request: Request, module_name: str, locale: str = Q
 
 @app.post("/api/module/{module_name}/reload")
 async def reload_module(request: Request, module_name: str):
+    ip = request.client.host
     try:
         verify_jwt(request)
         status = await JobQueueClient.post_module_action(module=module_name, action="reload")
         if not status:
+            Logger.warning(f"[WebUI] {ip} failed to reload module: {module_name}")
             raise HTTPException(status_code=422, detail="Reload modules failed")
+        Logger.info(f"[WebUI] {ip} has reloaded the module: {module_name}")
         return Response(status_code=204)
     except HTTPException as e:
         raise e
@@ -673,12 +695,14 @@ async def reload_module(request: Request, module_name: str):
 
 @app.post("/api/module/{module_name}/load")
 async def load_module(request: Request, module_name: str):
+    ip = request.client.host
     try:
         verify_jwt(request)
         status = await JobQueueClient.post_module_action(module=module_name, action="load")
         if not status:
+            Logger.warning(f"[WebUI] {ip} failed to load module: {module_name}")
             raise HTTPException(status_code=422, detail="Load modules failed")
-
+        Logger.info(f"[WebUI] {ip} has loaded the module: {module_name}")
         return Response(status_code=204)
 
     except HTTPException as e:
@@ -690,12 +714,14 @@ async def load_module(request: Request, module_name: str):
 
 @app.post("/api/module/{module_name}/unload")
 async def unload_module(request: Request, module_name: str):
+    ip = request.client.host
     try:
         verify_jwt(request)
         status = await JobQueueClient.post_module_action(module=module_name, action="unload")
         if not status:
+            Logger.warning(f"[WebUI] {ip} failed to unload module: {module_name}")
             raise HTTPException(status_code=422, detail="Unload modules failed")
-
+        Logger.info(f"[WebUI] {ip} has unloaded the module: {module_name}")
         return Response(status_code=204)
     except HTTPException as e:
         raise e
@@ -828,6 +854,7 @@ async def get_db_model_fields(request: Request, model: str):
 
 @app.post("/api/database/exec")
 async def exec_sql(request: Request):
+    ip = request.client.host
     try:
         verify_jwt(request)
 
@@ -838,10 +865,13 @@ async def exec_sql(request: Request):
 
         if sql.upper().startswith("SELECT"):
             rows = await conn.execute_query_dict(sql)
+            Logger.info(f"[WebUI] {ip} successfully executed SQL: \"{sql}\"")
             return {"success": True, "data": rows}
         rows, _ = await conn.execute_query(sql)
+        Logger.info(f"[WebUI] {ip} successfully executed SQL: \"{sql}\", affecting {rows} rows of data.")
         return {"success": True, "affected_rows": rows}
     except OperationalError as e:
+        Logger.warning(f"[WebUI] {ip} failed to execute SQL: \"{sql}\"")
         return {"success": False, "error": str(e)}
     except HTTPException as e:
         raise e
@@ -850,16 +880,16 @@ async def exec_sql(request: Request):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-def _secure_path(path: str) -> Path:
+def _secure_path(path: str) -> Tuple[Path, str]:
     try:
         if len(str(path)) > 256:
             raise ValueError
         path = os.path.normpath(path)
         full_path = (ROOT_DIR / path).resolve()
-        full_path.relative_to(ROOT_DIR)
+        display_path = f"./{full_path.relative_to(ROOT_DIR).as_posix()}"
     except ValueError:
         raise HTTPException(status_code=403, detail="Forbidden")
-    return full_path
+    return full_path, display_path
 
 
 def _format_file_info(p: Path):
@@ -876,7 +906,7 @@ def list_files(request: Request, path: str = ""):
     try:
         verify_jwt(request)
 
-        target = _secure_path(path)
+        target, _ = _secure_path(path)
         if not target.exists() or not target.is_dir():
             raise HTTPException(status_code=404, detail="Not found")
         files = [_format_file_info(f) for f in sorted(target.iterdir(), key=lambda x: (not x.is_dir(), x.name.lower()))]
@@ -890,14 +920,16 @@ def list_files(request: Request, path: str = ""):
 
 @app.get("/api/files/download")
 def download_file(request: Request, path: str):
+    ip = request.client.host
     try:
         verify_jwt(request)
 
-        target = _secure_path(path)
+        target, display_path = _secure_path(path)
         if not target.exists():
             raise HTTPException(status_code=404, detail="Not found")
 
         if target.is_file():
+            Logger.info(f"[WebUI] {ip} downloaded file: \"{display_path}\"")
             return FileResponse(target, filename=target.name)
 
         temp_dir = tempfile.mkdtemp()
@@ -906,6 +938,7 @@ def download_file(request: Request, path: str):
         with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
             for file in target.rglob("*"):
                 zipf.write(file, file.relative_to(target))
+        Logger.info(f"[WebUI] {ip} downloaded file: \"{display_path}.zip\"")
         return FileResponse(zip_path, filename=zip_name)
     except HTTPException as e:
         raise e
@@ -916,18 +949,23 @@ def download_file(request: Request, path: str):
 
 @app.delete("/api/files/delete")
 def delete_file(request: Request, path: str):
+    ip = request.client.host
     try:
         verify_jwt(request)
 
-        target = _secure_path(path)
+        target, display_path = _secure_path(path)
         if target == ROOT_DIR:
+            Logger.warning(f"[WebUI] {ip} failed to delete path: \"{display_path}\"")
             raise HTTPException(status_code=403, detail="Cannot delete root directory")
 
         if target.is_file():
             target.unlink()
+            Logger.info(f"[WebUI] {ip} deleted file: \"{display_path}\"")
         elif target.is_dir():
             shutil.rmtree(target)
+            Logger.info(f"[WebUI] {ip} deleted dir: \"{display_path}\"")
         else:
+            Logger.warning(f"[WebUI] {ip} failed to delete path: \"{display_path}\"")
             raise HTTPException(status_code=404, detail="Not found")
         return Response(status_code=204)
     except HTTPException as e:
@@ -939,24 +977,38 @@ def delete_file(request: Request, path: str):
 
 @app.post("/api/files/rename")
 async def rename_file(request: Request):
+    ip = request.client.host
     try:
         verify_jwt(request)
 
         body = await request.json()
-        old_path = body.get("old_path", "")
         new_name = body.get("new_name", "")
+        old_target, old_display_path = _secure_path(body.get("path", ""))
+        new_target, new_display_path = _secure_path(old_target.parent / new_name)
 
-        old_target = _secure_path(old_path)
         if old_target == ROOT_DIR:
+            Logger.warning(f"[WebUI] {ip} failed to rename path: \"{old_display_path}\"")
             raise HTTPException(status_code=403, detail="Cannot rename root directory")
-        new_target = old_target.parent / new_name
+        if old_target.is_dir():
+            try:
+                new_target.relative_to(old_target)
+                Logger.warning(f"[WebUI] {ip} failed to rename path: \"{old_display_path}\"")
+                raise HTTPException(
+                    status_code=400,
+                    detail="Cannot move a directory into itself"
+                )
+            except ValueError:
+                pass
         if new_target.exists():
+            Logger.warning(f"[WebUI] {ip} failed to rename path: \"{old_display_path}\"")
             raise HTTPException(
                 status_code=409,
-                detail=f"File '{new_name}' already exists"
+                detail=f"Path '{new_name}' already exists"
             )
 
+        new_target.parent.mkdir(parents=True, exist_ok=True)
         old_target.rename(new_target)
+        Logger.info(f"[WebUI] {ip} renamed path: \"{old_display_path}\" -> \"{new_display_path}\"")
         return Response(status_code=204)
     except HTTPException as e:
         raise e
@@ -967,10 +1019,11 @@ async def rename_file(request: Request):
 
 @app.post("/api/files/upload")
 def upload_file(request: Request, path: str = Form(""), file: UploadFile = File(...)):
+    ip = request.client.host
     try:
         verify_jwt(request)
 
-        target_dir = _secure_path(path)
+        target_dir, display_path = _secure_path(path)
         if not target_dir.exists():
             target_dir.mkdir(parents=True, exist_ok=True)
 
@@ -985,6 +1038,7 @@ def upload_file(request: Request, path: str = Form(""), file: UploadFile = File(
         with target_file.open("wb") as f:
             f.write(content)
 
+        Logger.info(f"[WebUI] {ip} uploaded file: \"{display_path}\"")
         return Response(status_code=204)
     except HTTPException as e:
         raise e
@@ -995,15 +1049,18 @@ def upload_file(request: Request, path: str = Form(""), file: UploadFile = File(
 
 @app.post("/api/files/create")
 def create_file_or_dir(request: Request, path: str = "", name: str = "", filetype: str = ""):
+    ip = request.client.host
     try:
         verify_jwt(request)
 
-        target = _secure_path((Path(path) / name).as_posix())
+        target, display_path = _secure_path((Path(path) / name).as_posix())
         if filetype == "dir":
             target.mkdir(parents=True, exist_ok=True)
+            Logger.info(f"[WebUI] {ip} created dir: \"{display_path}\"")
         else:
             target.parent.mkdir(parents=True, exist_ok=True)
             target.touch(exist_ok=True)
+            Logger.info(f"[WebUI] {ip} created file: \"{display_path}\"")
         return Response(status_code=204)
     except HTTPException as e:
         raise e
@@ -1017,7 +1074,7 @@ def preview_file(request: Request, path: str):
     try:
         verify_jwt(request)
 
-        target = _secure_path(path)
+        target, _ = _secure_path(path)
         if not target.is_file():
             raise HTTPException(status_code=404, detail="Not found")
 
@@ -1049,7 +1106,8 @@ async def restart():
 
 @app.post("/api/restart")
 async def restart_bot(request: Request):
+    ip = request.client.host
     verify_jwt(request)
-
+    Logger.info(f"[WebUI] {ip} restarted bot.")
     asyncio.create_task(restart())
     return Response(status_code=202)

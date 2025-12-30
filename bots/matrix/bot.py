@@ -13,6 +13,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, Image, Voice
 from core.builtins.session.info import SessionInfo
+from core.builtins.utils import command_prefix
 from core.client.init import client_init
 from core.config import Config
 from core.constants.default import ignored_sender_default
@@ -25,6 +26,7 @@ ctx_id = Bot.register_context_manager(MatrixContextManager)
 Bot.register_context_manager(MatrixFetchedContextManager, fetch_session=True)
 
 ignored_sender = Config("ignored_sender", ignored_sender_default)
+mention_required = Config("mention_required", False)
 
 
 async def on_sync(resp: nio.SyncResponse):
@@ -124,6 +126,17 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
     resp = await matrix_bot.get_displayname(event.sender)
     if isinstance(resp, nio.ErrorResponse):
         Logger.error(f"Failed to get display name for {event.sender}")
+        return
+
+    at_message = False
+    if event.body.startswith(client.user_id):
+        at_message = True
+        event.body = event.body[len(client.user_id):].strip()
+        if not event.body:
+            event.body = f"{command_prefix[0]}help"
+    else:
+        return
+    if mention_required and not at_message:
         return
 
     msg_chain = await to_message_chain(event, reply_id, target_id)

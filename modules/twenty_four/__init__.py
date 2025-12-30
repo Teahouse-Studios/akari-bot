@@ -6,9 +6,9 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
 from core.component import module
 from core.game import PlayState, GAME_EXPIRED
-from core.utils.message import is_int
 from core.utils.petal import gained_petal, lost_petal
 from core.utils.random import Random
+from core.utils.tools import is_int
 
 no_solution_lst = [
     "无解",
@@ -46,6 +46,9 @@ def check_valid(expr):
             prev_char = "num"
             continue
         if char in operators:
+            if char == "-" and prev_char in ("", "("):
+                i += 1
+                continue
             if prev_char in operators or prev_char in ("", "("):
                 return False
             prev_char = char

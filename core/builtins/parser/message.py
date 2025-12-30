@@ -2,8 +2,8 @@ import copy
 import difflib
 import inspect
 import re
+import time
 import traceback
-from datetime import datetime
 from string import Template as stringTemplate
 from typing import List, TYPE_CHECKING
 
@@ -26,7 +26,7 @@ from core.logger import Logger
 from core.tos import TOS_TEMPBAN_TIME, temp_ban_counter, abuse_warn_target, remove_temp_ban
 from core.types import Module, Param
 from core.types.module.component_meta import CommandMeta
-from core.utils.message import normalize_space
+from core.utils.format import normalize_space
 from core.utils.temp import ExpiringTempDict, TempCounter
 from core.utils.token_bucket import TokenBucket
 
@@ -203,7 +203,7 @@ def _get_prefixes(msg: "Bot.MessageSession"):
             break
     if in_prefix_list or disable_prefix:  # 检查消息前缀
         if len(msg.trigger_msg) <= 1 or msg.trigger_msg[:2] == "~~":  # 排除 ~~xxx~~ 的情况
-            return False, False, ""
+            return False, False
         if in_prefix_list:  # 如果在命令前缀列表中，则将此命令前缀移动到列表首位
             msg.session_info.prefixes.remove(display_prefix)
             msg.session_info.prefixes.insert(0, display_prefix)
@@ -253,7 +253,7 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
 
 
 async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word, identify_str):
-    time_start = datetime.now()
+    time_start = time.time()
     bot: "Bot" = exports["Bot"]
     try:
         await _check_target_cooldown(msg)
@@ -289,7 +289,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
             if command_first_word not in msg.session_info.enabled_modules and msg.session_info.require_enable_modules:  # 若未开启
                 if await msg.check_permission():
                     await msg.send_message(I18NContext("parser.module.disabled.prompt", module=command_first_word,
-                                                   prefix=msg.session_info.prefixes[0]))
+                                                       prefix=msg.session_info.prefixes[0]))
                     if await msg.wait_confirm(I18NContext("parser.module.disabled.to_enable"), no_confirm_action=False):
                         await msg.session_info.target_info.config_module(command_first_word)
                         await msg.send_message(
@@ -300,7 +300,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                     await msg.finish(I18NContext("parser.module.disabled", module=command_first_word))
         elif module.required_admin:
             if not await msg.check_permission():
-                await msg.send_message(I18NContext("parser.admin.module.permission.denied", module=command_first_word))
+                await msg.send_message(I18NContext("parser.admin.permission.denied.module", module=command_first_word))
                 return
 
         if not module.base:
@@ -333,7 +333,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                 else:
                     await msg.send_message(I18NContext("parser.module.unloaded", module=new_command_first_word))
             elif not confirmed:
-                await msg.send_message(I18NContext("parser.command.invalid.format",
+                await msg.send_message(I18NContext("parser.command.invalid.syntax",
                                                    module=command_first_word,
                                                    prefix=msg.session_info.prefixes[0]))
     except SendMessageFailed:
@@ -341,9 +341,9 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
 
     except FinishedException as e:
 
-        time_used = datetime.now() - time_start
+        time_used = time.time() - time_start
         Logger.success(f"Successfully finished session from {identify_str}, returns: {str(e)}. "
-                       f"Times take up: {str(time_used)}")
+                       f"Times take up: {time_used:06f}s")
         Info.command_parsed += 1
         if enable_analytics:
             await AnalyticsData.create(target_id=msg.session_info.target_id,
@@ -393,7 +393,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                     continue
 
                 for rfunc in regex_module.regex_list.set:  # 遍历正则模块的表达式
-                    time_start = datetime.now()
+                    time_start = time.time()
                     matched = False
                     _typing = False
                     try:
@@ -462,11 +462,11 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                             ExecutionLockList.remove(msg)
                             raise FinishedException(msg.sent)  # if not using msg.finish
                     except FinishedException as e:
-                        time_used = datetime.now() - time_start
+                        time_used = time.time() - time_start
                         if rfunc.logging:
                             Logger.success(
                                 f"Successfully finished session from {identify_str}, returns: {str(e)}. "
-                                f"Times take up: {time_used}")
+                                f"Times take up: {time_used:06f}s")
 
                         Info.command_parsed += 1
                         if enable_analytics:
@@ -508,7 +508,7 @@ async def _check_target_cooldown(msg: "Bot.MessageSession"):
     if not sender_record.is_expired():
         if not sender_record.get("notified", False):
             sender_record["notified"] = True
-            elapsed = cooldown_time - (datetime.now().timestamp() - sender_record.ts)
+            elapsed = cooldown_time - (time.time() - sender_record.ts)
             await msg.finish(I18NContext("message.cooldown.manual", time=int(elapsed)))
         await msg.finish()
 
@@ -523,7 +523,7 @@ async def _tos_temp_ban(msg: "Bot.MessageSession"):
         if msg.check_super_user():
             await remove_temp_ban(msg.session_info.sender_id)
             return None
-        ban_time = datetime.now().timestamp() - ban_info.ts
+        ban_time = time.time() - ban_info.ts
         remaining = int(TOS_TEMPBAN_TIME - ban_time)
 
         if not ban_info.get("count", 0):
@@ -577,7 +577,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
                     return
             elif command.required_admin:
                 if not await msg.check_permission():
-                    await msg.send_message(I18NContext("parser.admin.command.permission.denied"))
+                    await msg.send_message(I18NContext("parser.admin.permission.denied.command"))
                     return
 
             if not command.load or \
@@ -647,7 +647,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
             raise FinishedException(msg.sent)  # if not using msg.finish
         except InvalidCommandFormatError:
             if not msg.session_info.sender_info.sender_data.get("typo_check", True):
-                await msg.send_message(I18NContext("parser.command.invalid.format",
+                await msg.send_message(I18NContext("parser.command.invalid.syntax",
                                                    module=command_first_word,
                                                    prefix=msg.session_info.prefixes[0]))
             return
@@ -662,8 +662,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
 async def _process_tos_abuse_warning(msg: "Bot.MessageSession", e: AbuseWarning):
     if enable_tos and Config("tos_warning_counts", 5) >= 1 and not msg.check_super_user():
         await abuse_warn_target(msg, str(e))
-        temp_ban_counter[msg.session_info.sender_id] = {"count": 1,
-                                                        "ts": datetime.now().timestamp()}
+        temp_ban_counter[msg.session_info.sender_id] = {"count": 1, "ts": time.time()}
     else:
         err_msg_chain = MessageChain.assign(I18NContext("error.message.prompt"))
         err_msg_chain.append(Plain(msg.session_info.locale.t_str(str(e))))

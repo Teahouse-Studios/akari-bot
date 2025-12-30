@@ -28,7 +28,7 @@ deprecated = "^1.2.18"
 poetry-plugin-export = "^1.9.0"
 pre-commit = "^4.0.0"
 pycryptodome = "^3.18.0"
-python-multipart = "^0.0.20"
+python-multipart = "^0.0.21"
 pywin32 = { version = "^308", platform = "win32" }
 
 # bots
@@ -88,7 +88,7 @@ google-play-scraper = "^1.2.2"
 gql = "^4.0.0"
 langconv = {git = "https://github.com/Teahouse-Studios/langconv.py.git"}
 mcstatus = "^12.0.0"
-numpy = "<2.3.6"
+numpy = "<2.4.1"
 openai = "^2.0.0"
 pandas = "^2.2.0"
 pint = "^0.25.0"

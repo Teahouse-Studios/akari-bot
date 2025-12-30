@@ -1,7 +1,7 @@
 import asyncio
 import io
 import re
-from datetime import datetime
+import time
 from typing import Optional
 
 from PIL import Image as PImage
@@ -337,7 +337,7 @@ async def chemical_code(
 
     async def timer(start):
         if play_state.check():
-            if datetime.now().timestamp() - start > 60 * set_timeout:
+            if time.time() - start > 60 * set_timeout:
                 play_state.disable()
                 await msg.finish(I18NContext("chemical_code.message.timeup", answer=play_state.get("answer")))
             else:
@@ -352,7 +352,7 @@ async def chemical_code(
                 I18NContext("chemical_code.message", times=set_timeout),
             ]
         )
-        time_start = datetime.now().timestamp()
+        time_start = time.time()
 
         await asyncio.gather(ans(msg, random_mode), timer(time_start))
     else:

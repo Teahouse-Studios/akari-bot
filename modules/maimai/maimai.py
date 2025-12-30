@@ -7,7 +7,7 @@ from core.component import module
 from core.utils.image import msgchain2image
 from core.logger import Logger
 from core.scheduler import CronTrigger
-from core.utils.message import is_int
+from core.utils.tools import is_int
 from .database.models import DivingProberBindInfo
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_cover
 from .libraries.maimaidx_best50 import generate as generate_b50

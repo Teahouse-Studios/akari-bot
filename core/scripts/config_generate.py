@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
 from core.constants import *
 from core.i18n import Locale, load_locale_file
-from core.utils.message import is_int
+from core.utils.tools import is_int
 
 
 def generate_config(dir_path: Path, language: str):

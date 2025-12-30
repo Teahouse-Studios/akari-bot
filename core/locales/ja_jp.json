@@ -173,6 +173,7 @@
     "message.wait.next_message.prompt": "（条件に一致する単語を送信してください）",
     "message.yes": "はい",
     "parser.admin.permission.denied.command": "このモジュールのコマンドは、セッションの管理者のみが使用できます。管理者に連絡してください。",
+    "parser.admin.permission.denied.module": "モジュール「${module}」のコマンドは、セッションの管理者のみが使用できます。管理者に連絡してください。",
     "parser.command.fixup.confirm": "「${command}」のことですか？\n（コマンド構文の修正のみを提供し、期待される結果は保証しません）",
     "parser.command.invalid.module": "無効なモジュールです。\nヘルプには「${prefix}help」を使用してください。",
     "parser.command.invalid.syntax": "文法エラーです。\nヘルプには「${prefix}help ${module}」を使用してください。",
@@ -213,6 +214,5 @@
     "tos.message.warning": "警告：\n利用規約に基づいて、あなたは行動規範に違反しています。",
     "tos.message.warning.count": "これは ${current_warns} 回目の警告です。",
     "tos.message.warning.last": "これは最後の警告です。",
-    "tos.message.warning.prompt": "${warn_counts} 回以上の警告を受けた場合、アカウントはブロックされます。",
-    "parser.admin.permission.denied.module": "モジュール「${module}」のコマンドは、セッションの管理者のみが使用できます。管理者に連絡してください。"
+    "tos.message.warning.prompt": "${warn_counts} 回以上の警告を受けた場合、アカウントはブロックされます。"
 }

@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime
+import time
 from typing import TYPE_CHECKING, Optional, Union, List, Coroutine
 
 from core.exports import add_export
@@ -44,7 +44,7 @@ class SessionTaskManager:
             "active": True,
             "type": task_type,
             "reply": reply,
-            "ts": datetime.now().timestamp(),
+            "ts": time.time(),
             "timeout": timeout,
         }
         Logger.debug(cls._task_list)
@@ -61,7 +61,7 @@ class SessionTaskManager:
             message_id = str(message_id)
         cls._callback_list[message_id] = {
             "callback": callback,
-            "ts": datetime.now().timestamp(),
+            "ts": time.time(),
         }
 
     @classmethod
@@ -87,7 +87,7 @@ class SessionTaskManager:
             for sender in cls._task_list[target]:
                 for session in cls._task_list[target][sender]:
                     if cls._task_list[target][sender][session]["active"]:
-                        if datetime.now().timestamp() - cls._task_list[target][sender][
+                        if time.time() - cls._task_list[target][sender][
                             session
                         ]["ts"] > cls._task_list[target][sender][session].get(
                             "timeout", 3600
@@ -97,7 +97,7 @@ class SessionTaskManager:
                                 "flag"
                             ].set()  # no result = cancel
         for message_id in cls._callback_list.copy():
-            if datetime.now().timestamp() - cls._callback_list[message_id]["ts"] > 3600:
+            if time.time() - cls._callback_list[message_id]["ts"] > 3600:
                 del cls._callback_list[message_id]
 
     @classmethod

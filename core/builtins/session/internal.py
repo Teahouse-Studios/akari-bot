@@ -19,7 +19,7 @@ from core.builtins.utils import confirm_command
 from core.config import Config
 from core.constants import FinishedException, WaitCancelException
 from core.exports import add_export, exports
-from core.utils.message import is_int
+from core.utils.tools import is_int
 
 if TYPE_CHECKING:
     from core.queue.server import JobQueueServer
@@ -144,15 +144,20 @@ class MessageSession:
         if callback:
             SessionTaskManager.add_callback(return_val["message_id"], callback)
 
-    def as_display(self, text_only: bool = False, element_filter: tuple[MessageElement] = None) -> str:
+    def as_display(
+            self,
+            text_only: bool = False,
+            element_filter: tuple[MessageElement] = None,
+            connector: str = " ") -> str:
         """
         用于将消息转换为一般文本格式。
 
         :param text_only: 是否只保留纯文本。（默认为False）
         :param element_filter: 元素过滤器，用于过滤消息链中的元素。（默认为None）
+        :param connector: 元素连接符，用于连接消息链中的各个元素。（默认为" "）
         :return: 转换后的字符串。
         """
-        return self.session_info.messages.to_str(text_only, element_filter=element_filter)
+        return self.session_info.messages.to_str(text_only, element_filter=element_filter, connector=connector)
 
     async def delete(self):
         """

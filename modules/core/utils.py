@@ -1,5 +1,5 @@
 import platform
-from datetime import datetime
+import time
 
 import psutil
 from cpuinfo import get_cpu_info
@@ -30,11 +30,19 @@ async def _(msg: Bot.MessageSession):
                     commit_url = f"{repo_url}/commit/{commit}"
                     send_msgs.append(Url(commit_url, use_mm=False))
         else:
+            version = Bot.Info.version
             send_msgs = MessageChain.assign(
                 I18NContext(
                     "core.message.version",
-                    version=Bot.Info.version,
+                    version=version,
                     disable_joke=True))
+            if Config("enable_commit_url", True):
+                version = "nightly" if version.startswith("nightly") else version
+                returncode, repo_url, _ = await run_sys_command(["git", "config", "--get", "remote.origin.url"])
+                if returncode == 0:
+                    repo_url = repo_url.strip().replace(".git", "")
+                    commit_url = f"{repo_url}/releases/tag/{version}"
+                    send_msgs.append(Url(commit_url, use_mm=False))
         await msg.finish(send_msgs)
     else:
         await msg.finish(I18NContext("core.message.version.unknown"))
@@ -42,17 +50,15 @@ async def _(msg: Bot.MessageSession):
 
 ping = module("ping", base=True, doc=True)
 
-started_time = datetime.now()
+started_time = time.time()
 
 
 @ping.command("{{I18N:core.help.ping}}")
 async def _(msg: Bot.MessageSession):
     result = MessageChain.assign(Plain("Pong!"))
 
-    td_seconds = (datetime.now() - started_time).total_seconds()
-    timediff = f"{int(td_seconds // 3600):02d
-                  }:{int((td_seconds % 3600) // 60):02d
-                     }:{int(td_seconds % 60):02d}"
+    td_seconds = time.time() - started_time
+    timediff = f"{int(td_seconds // 3600):02d}:{int((td_seconds % 3600) // 60):02d}:{int(td_seconds % 60):02d}"
     cpu_percent = psutil.cpu_percent()
     ram_percent = psutil.virtual_memory().percent
     if msg.check_super_user():
@@ -302,4 +308,3 @@ async def _(msg: Bot.MessageSession):
         await msg.qq_call_api("set_group_leave", group_id=int(msg.session_info.get_common_target_id()))
     else:
         await msg.finish()
-

@@ -20,6 +20,7 @@ report_targets = [] # レポート セッション リスト。ここに入力�
 command_prefix = ["~", "～"] # コマンドのプレフィックス。ここに入力された値はコマンドのプレフィックスとして認識されます。
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # コマンド確認用のキーワード。ここに入力された値はコマンド確認用の単語として認識されます。
 enable_module_invalid_prompt = false # モジュールが存在しない場合にプロンプ​​ト メッセージを有効にするかどうか。
+mention_required = false # メッセージの冒頭にロボットについて言及したメッセージのみを処理することを強制しますか。
 no_confirm = false # 送信者がメッセージを確認せずにコマンドを実行するかどうか。
 quick_confirm = true # メッセージのクイック確認を有効にするかどうか。
 enable_analytics = true # 組み込みの統計機能を有効にするかどうか。

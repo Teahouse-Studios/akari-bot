@@ -3,7 +3,7 @@ from core.constants.default import (
     confirm_command_default,
     command_prefix_default,
 )
-from core.utils.message import unique_list
+from core.utils.tools import unique_list
 
 
 confirm_command = unique_list(

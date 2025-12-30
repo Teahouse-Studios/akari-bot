@@ -1,5 +1,7 @@
 import re
+from datetime import date
 from html import unescape
+from urllib import parse
 
 import orjson
 from bs4 import BeautifulSoup
@@ -35,7 +37,7 @@ async def get_weekly(with_img=False, zh_tw=False):
 
     img_filename = re.match(r"/w/(.*)", img.attrs["href"]) if img else None
     page = re.findall(r"(?<=<b><a href=\").*?(?=\")", str(content))
-    if (page and page[0] == "/w/%E7%8E%BB%E7%92%83"):
+    if page and page[0] == parse.quote("/w/玻璃"):
         msg_list = MessageChain.assign([Plain(locale.t("weekly.message.expired"))])
     else:
         msg_list = MessageChain.assign([Plain(locale.t("weekly.message.prompt", text=text))])
@@ -44,6 +46,9 @@ async def get_weekly(with_img=False, zh_tw=False):
         get_image = await (WikiLib("https://zh.minecraft.wiki/")).parse_page_info(img_filename.group(1))
         if get_image.status:
             imglink = get_image.file
+
+    iso_year, iso_week, _ = date.today().isocalendar()
+
     msg_list.append(
         Plain(
             locale.t(
@@ -52,7 +57,8 @@ async def get_weekly(with_img=False, zh_tw=False):
                 article=str(
                     Url(f"https://zh.minecraft.wiki{page[0]}") if page else locale.t("message.none")),
                 link=str(
-                    Url(f"https://zh.minecraft.wiki/wiki/?oldid={str(result["parse"]["revid"])}")))))
+                    Url(f"https://zh.minecraft.wiki/w/Minecraft_Wiki:{parse.quote("特色条目/Minecraft/" + str(iso_year))}#{parse.quote("第" + str(iso_week) + "周")}")
+                ))))
     if imglink and with_img:
         msg_list.append(Image(path=imglink))
 

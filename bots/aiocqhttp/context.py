@@ -1,7 +1,7 @@
 import asyncio
-import datetime
 import random
 import re
+import time
 from pathlib import Path
 from typing import Optional, Union, List
 
@@ -393,9 +393,9 @@ class AIOCQContextManager(ContextManager):
                         is_add=True)
                 else:
                     if session_info.sender_id in last_send_typing_time:
-                        if datetime.datetime.now().timestamp() - last_send_typing_time[session_info.sender_id] <= 3600:
+                        if time.time() - last_send_typing_time[session_info.sender_id] <= 3600:
                             return
-                    last_send_typing_time[session_info.sender_id] = datetime.datetime.now().timestamp()
+                    last_send_typing_time[session_info.sender_id] = time.time()
                     if obi == "shamrock":
                         await aiocqhttp_bot.send_group_msg(
                             group_id=int(session_info.get_common_target_id()),

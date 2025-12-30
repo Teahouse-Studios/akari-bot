@@ -1,5 +1,5 @@
 import asyncio
-import datetime
+import time
 import traceback
 from typing import TYPE_CHECKING, Union
 from uuid import uuid4
@@ -75,7 +75,7 @@ class JobQueueBase:
         bot: "Bot" = exports["Bot"]
         try:
             timestamp = tsk.timestamp
-            if datetime.datetime.now().timestamp() - timestamp.timestamp() > 7200:
+            if time.time() - timestamp.timestamp() > 7200:
                 Logger.warning(f"Task {tsk.task_id} timeout, skip.")
                 await cls.return_val(tsk, {}, status="timeout")
             elif tsk.action in cls.queue_actions:

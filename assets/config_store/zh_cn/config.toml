@@ -20,6 +20,7 @@ report_targets = [] # 上报会话列表，此处填写的值将会被识别为�
 command_prefix = ["~", "～"] # 命令前缀，此处填写的值将会被识别为命令前缀。
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # 确认命令的关键词，此处填写的值将会被识别为确认命令。
 enable_module_invalid_prompt = false # 是否开启模块不存在的提示消息。
+mention_required = false # 是否强制仅处理在消息开头提及机器人的消息。
 no_confirm = false # 是否无需发送者确认消息后再执行命令。
 quick_confirm = true # 是否开启消息快速确认。
 enable_analytics = true # 是否开启内置的统计功能。

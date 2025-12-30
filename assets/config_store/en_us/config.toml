@@ -20,6 +20,7 @@ report_targets = [] # Reporting session list, the value filled in here will be i
 command_prefix = ["~", "～"] # Command prefix. The value filled in here will be recognized as the command prefix.
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # The keyword of the confirmation command. The value filled in here will be recognized as the confirmation command.
 enable_module_invalid_prompt = false # Whether to enable the prompt message when the module does not exist.
+mention_required = false # Whether to force processing of only messages that mention the bot at the beginning of the message.
 no_confirm = false # Whether to execute the command without the sender confirming the message.
 quick_confirm = true # Whether to enable quick confirmation of message.
 enable_analytics = true # Whether to enable built-in statistics features.

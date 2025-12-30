@@ -12,7 +12,7 @@ from core.config import Config
 from core.database.models import TargetInfo, SenderInfo
 from core.i18n import Locale
 from core.utils.alive import Alive
-from core.utils.message import parse_time_string
+from core.utils.format import parse_time_string
 
 
 @define

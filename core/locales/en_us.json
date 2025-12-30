@@ -173,6 +173,7 @@
     "message.wait.next_message.prompt": "(Send a matching word to confirm)",
     "message.yes": "Yes",
     "parser.admin.permission.denied.command": "This command can only be used by the admins of the session. Please contact the admins to execute this command.",
+    "parser.admin.permission.denied.module": "Commands under the \"${module}\" module can only be used by the admins of the session. Please contact the admins to execute the command.",
     "parser.command.fixup.confirm": "Did you mean \"${command}\"?\n(Command syntax corrections only, no guarantee of expected results)",
     "parser.command.invalid.module": "Invalid module.\nUse \"${prefix}help\" for help.",
     "parser.command.invalid.syntax": "Syntax error.\nUse \"${prefix}help ${module}\" for help.",
@@ -213,6 +214,5 @@
     "tos.message.warning": "Warning:\nYou have violated our Code of Conduct according to our Terms of Service.",
     "tos.message.warning.count": "You have received ${current_warns} warnings.",
     "tos.message.warning.last": "This is the last warning.",
-    "tos.message.warning.prompt": "Your account will be blocked if you receive more than ${warn_counts} warnings.",
-    "parser.admin.permission.denied.module": "Commands under the \"${module}\" module can only be used by the admins of the session. Please contact the admins to execute the command."
+    "tos.message.warning.prompt": "Your account will be blocked if you receive more than ${warn_counts} warnings."
 }

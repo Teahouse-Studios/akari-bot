@@ -5,10 +5,10 @@
 
 import asyncio
 import base64
-import datetime
 import hashlib
 import hmac
 import re
+import time
 import urllib.parse
 import uuid
 from typing import Union, List, Dict, Optional
@@ -147,7 +147,7 @@ async def check(text: Union[str,
                 "scenes": ["antispam"],
                 "tasks": [{"dataId": str(uuid.uuid4()), "content": x} for x in call_api_list_],
             }
-            date = datetime.datetime.now(datetime.UTC).strftime("%a, %d %b %Y %H:%M:%S GMT")
+            date = time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime())
             content_md5 = base64.b64encode(
                 hashlib.md5(orjson.dumps(body), usedforsecurity=False).digest()
             ).decode("utf-8")
@@ -190,7 +190,7 @@ async def check(text: Union[str,
 
             async def call_api(x: str):
                 async with sem:
-                    date = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+                    date = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
                     params = {
                         "Format": "JSON",
                         "Version": "2022-03-02",

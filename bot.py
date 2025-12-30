@@ -4,10 +4,9 @@ import multiprocessing
 import os
 import shutil
 import sys
+import time
 import traceback
-from datetime import datetime
 from pathlib import Path
-from time import sleep
 
 from loguru import logger
 from tortoise import Tortoise, run_async
@@ -151,7 +150,7 @@ def multiprocess_run_until_complete(func):
     while True:
         if not p.is_alive():
             break
-        sleep(1)
+        time.sleep(1)
     terminate_process(p)
 
 
@@ -186,15 +185,15 @@ async def run_bot():
     def restart_bot_process(bot_name: str):
         if (
                 bot_name not in failed_to_start_attempts
-                or datetime.now().timestamp()
+                or time.time()
                 - failed_to_start_attempts[bot_name]["timestamp"]
                 > 60
         ):
             failed_to_start_attempts[bot_name] = {}
             failed_to_start_attempts[bot_name]["count"] = 0
-            failed_to_start_attempts[bot_name]["timestamp"] = datetime.now().timestamp()
+            failed_to_start_attempts[bot_name]["timestamp"] = time.time()
         failed_to_start_attempts[bot_name]["count"] += 1
-        failed_to_start_attempts[bot_name]["timestamp"] = datetime.now().timestamp()
+        failed_to_start_attempts[bot_name]["timestamp"] = time.time()
         if failed_to_start_attempts[bot_name]["count"] >= 3:
             Logger.error(
                 f"Bot {bot_name} failed to start 3 times, abort to restart, please check the log."
