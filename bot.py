@@ -10,9 +10,9 @@ from pathlib import Path
 
 from loguru import logger
 from tortoise import Tortoise, run_async
-from tortoise.exceptions import ConfigurationError
 
 from core.constants import bots_path, config_path, config_filename, logs_path
+from core.database import close_db
 
 # Capture the base import lists to avoid clearing essential modules when restarting
 base_import_lists = list(sys.modules)
@@ -105,18 +105,18 @@ def pre_init():
         if not query_dbver:
             from core.scripts.convert_database import convert_database
 
-            await Tortoise.close_connections()
+            await close_db()
             await convert_database()
             Logger.success("Database converted successfully!")
         elif (current_ver := query_dbver.version) < (target_ver := database_version):
             Logger.info(f"Updating database from {current_ver} to {target_ver}...")
             from core.database.update import update_database
 
-            await Tortoise.close_connections()
+            await close_db()
             await update_database()
             Logger.success("Database updated successfully!")
         else:
-            await Tortoise.close_connections()
+            await close_db()
 
         base_superuser = Config(
             "base_superuser", base_superuser_default, cfg_type=(str, list)
@@ -309,10 +309,7 @@ async def main_async():
         traceback.print_exc()
         raise e
     finally:
-        try:
-            await Tortoise.close_connections()
-        except ConfigurationError:
-            pass
+        await close_db()
 
 
 def main():
