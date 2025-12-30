@@ -1,4 +1,5 @@
 import asyncio
+import os
 
 from PIL import Image as PILImage
 
@@ -12,14 +13,15 @@ from core.constants import FinishedException
 
 
 class TestMessageSession(MessageSession):
-    def __init__(self, trigger_msg: str):
+    def __init__(self, trigger_msg=None, parent_session=None):
         self.trigger_msg = trigger_msg
         self.parsed_msg = {}
         self.matched_msg = None
         self.sent = []
         self.action = []
+        self.parent_session = parent_session
 
-    async def async_init(self):
+    async def async_init(self, msg):
         self.session_info = await SessionInfo.assign(
             target_id="TEST|Console|0",
             client_name="TEST",
@@ -27,7 +29,7 @@ class TestMessageSession(MessageSession):
             sender_id="TEST|0",
             sender_from="TEST",
             sender_name="TEST",
-            messages=MessageChain.assign(self.trigger_msg),
+            messages=MessageChain.assign(msg),
             require_enable_modules=False
         )
 
@@ -54,8 +56,10 @@ class TestMessageSession(MessageSession):
                 self.action.append(f"<@{x.client}|{str(x.id)}>")
             elif isinstance(x, BaseElement):
                 self.action.append(str(x))
-            else:
-                pass
+
+        if self.parent_session:
+            self.parent_session.sent.extend(self.sent)
+            self.parent_session.action.extend(self.action)
 
     async def finish(
             self,
@@ -125,15 +129,19 @@ class TestMessageSession(MessageSession):
         if append_instruction:
             message_chain.append(I18NContext("message.wait.confirm.prompt"))
         await self.send_message(message_chain)
-        await asyncio.sleep(0.1)
-
-        result = input("Confirm: ")
-        if result:
+        try:
+            confirm_prompt = "\n".join([x.text if isinstance(x, PlainElement) else str(x)
+                                       for x in message_chain.as_sendable()])
+            result = input(f"{confirm_prompt}\nConfirm: ")
             if delete:
                 await self.delete()
             if result in confirm_command:
                 return True
             return False
+        except KeyboardInterrupt:
+            os._exit(1)
+        except Exception as e:
+            raise e
 
     async def wait_next_message(
         self,
@@ -144,18 +152,28 @@ class TestMessageSession(MessageSession):
         append_instruction=True,
         add_confirm_reaction=False,
     ):
+        confirm_prompt = None
         if message_chain:
             message_chain = get_message_chain(self.session_info, message_chain)
             if append_instruction:
                 message_chain.append(I18NContext("message.wait.next_message.prompt"))
             await self.send_message(message_chain, quote)
-        await asyncio.sleep(0.1)
-
-        result = input("Confirm: ")
-        if delete:
-            await self.delete()
-        if result:
-            return ...
+            confirm_prompt = "\n".join([x.text if isinstance(x, PlainElement) else str(x)
+                                       for x in message_chain.as_sendable()])
+        try:
+            if confirm_prompt:
+                result = input(f"{confirm_prompt}\nSend: ")
+            else:
+                result = input("Send: ")
+            if delete:
+                await self.delete()
+            new_msg = TestMessageSession(parent_session=self)
+            await new_msg.async_init(result)
+            return new_msg
+        except KeyboardInterrupt:
+            os._exit(1)
+        except Exception as e:
+            raise e
 
     async def wait_reply(
         self,
@@ -167,18 +185,28 @@ class TestMessageSession(MessageSession):
         append_instruction=True,
         add_confirm_reaction=False,
     ):
+        confirm_prompt = None
         if message_chain:
             message_chain = get_message_chain(self.session_info, message_chain)
             if append_instruction:
                 message_chain.append(I18NContext("message.reply.prompt"))
             await self.send_message(message_chain, quote)
-        await asyncio.sleep(0.1)
-
-        result = input("Confirm: ")
-        if delete:
-            await self.delete()
-        if result:
-            return ...
+            confirm_prompt = "\n".join([x.text if isinstance(x, PlainElement) else str(x)
+                                       for x in message_chain.as_sendable()])
+        try:
+            if confirm_prompt:
+                result = input(f"{confirm_prompt}\nReply: ")
+            else:
+                result = input("Reply: ")
+            if delete:
+                await self.delete()
+            new_msg = TestMessageSession(parent_session=self)
+            await new_msg.async_init(result)
+            return new_msg
+        except KeyboardInterrupt:
+            os._exit(1)
+        except Exception as e:
+            raise e
 
     async def wait_anyone(
         self,
@@ -187,16 +215,27 @@ class TestMessageSession(MessageSession):
         delete=False,
         timeout=120,
     ):
+        confirm_prompt = None
         if message_chain:
             message_chain = get_message_chain(self.session_info, message_chain)
             await self.send_message(message_chain, quote)
-        await asyncio.sleep(0.1)
+            confirm_prompt = "\n".join([x.text if isinstance(x, PlainElement) else str(x)
+                                       for x in message_chain.as_sendable()])
 
-        result = input("Confirm: ")
-        if delete:
-            await self.delete()
-        if result:
-            return ...
+        try:
+            if confirm_prompt:
+                result = input(f"{confirm_prompt}\nSend: ")
+            else:
+                result = input("Send: ")
+            if delete:
+                await self.delete()
+            new_msg = TestMessageSession(parent_session=self)
+            await new_msg.async_init(result)
+            return new_msg
+        except KeyboardInterrupt:
+            os._exit(1)
+        except Exception as e:
+            raise e
 
     async def sleep(self, s):
         await asyncio.sleep(s)

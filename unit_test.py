@@ -23,7 +23,7 @@ async def _run_entry(entry: dict):
 
     results = []
     msg = TestMessageSession(input_)
-    await msg.async_init()
+    await msg.async_init(input_)
     setattr(msg, "_unittest_target", func)
     try:
         await parser(msg)
@@ -131,7 +131,7 @@ def main():
 
             if expected is None:
                 try:
-                    check = input("Did the output meet expectations? [Y/n]: ")
+                    check = input("Did the output meet expectations? [y/N]: ")
                     if check in confirm_command:
                         Logger.success("RESULT: PASS")
                         passed += 1
