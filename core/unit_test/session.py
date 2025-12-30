@@ -29,8 +29,7 @@ class TestMessageSession(MessageSession):
             sender_id="TEST|0",
             sender_from="TEST",
             sender_name="TEST",
-            messages=MessageChain.assign(msg),
-            require_enable_modules=False
+            messages=MessageChain.assign(msg)
         )
 
     async def send_message(

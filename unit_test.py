@@ -1,13 +1,12 @@
-import os
 import asyncio
+import os
 import traceback
 
-from tortoise import Tortoise
-from tortoise.exceptions import ConfigurationError
-
+from core.builtins.message.chain import MessageChain
+from core.builtins.session.info import SessionInfo
 from core.builtins.utils import confirm_command
 from core.constants import FinishedException
-from core.database import init_db
+from core.database import init_db, close_db
 from core.unit_test import get_registry
 from core.unit_test.session import TestMessageSession
 from core.unit_test.logger import Logger
@@ -36,29 +35,20 @@ async def _run_entry(entry: dict):
     return results
 
 
-def main():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
+async def main():
     try:
-        init_success = loop.run_until_complete(init_db())
+        init_success = await init_db()
         if not init_success:
             Logger.critical("Failed to initialize database. Aborting tests.")
-            try:
-                loop.run_until_complete(Tortoise.close_connections())
-            except ConfigurationError:
-                pass
+            await close_db()
             return
     except Exception:
         Logger.error(traceback.format_exc())
-        try:
-            loop.run_until_complete(Tortoise.close_connections())
-        except ConfigurationError:
-            pass
+        await close_db()
         return
 
     try:
-        loop.run_until_complete(load_modules())
+        await load_modules()
     except Exception:
         Logger.error("Failed to load modules for tests:")
         Logger.error(traceback.format_exc())
@@ -66,10 +56,7 @@ def main():
     registry = get_registry()
     if not registry:
         Logger.error("No tests registered. Use `core.unittest.case` to register tests.")
-        try:
-            loop.run_until_complete(Tortoise.close_connections())
-        except ConfigurationError:
-            pass
+        await close_db()
         return
 
     i = 0
@@ -83,7 +70,7 @@ def main():
         fn = entry["func"]
         note = entry.get("note")
         Logger.info(f"TEST{i}: {fn.__name__}  ({entry.get("file")}:{entry.get("line")})")
-        results = loop.run_until_complete(_run_entry(entry))
+        results = await _run_entry(entry)
 
         for r in results:
             total += 1
@@ -104,7 +91,15 @@ def main():
                 Logger.info(f"NOTE: {note}")
             Logger.info(f"OUTPUT:\n{fmted_output}")
 
-            if expected is None:
+            if entry.get("noreturn"):
+                if r.get("output") is None:
+                    Logger.success("RESULT: PASS")
+                    passed += 1
+                else:
+                    Logger.error("RESULT: FAIL")
+                    Logger.error("EXPECTED:\n[NO OUTPUT]")
+                    failed += 1
+            elif expected is None:
                 try:
                     Logger.warning("REVIEW: Did the output meet expectations? [y/N]")
                     check = input()
@@ -119,23 +114,23 @@ def main():
                     Logger.warning("Interrupted by user.")
                     os._exit(1)
             else:
-                ...
-                """
-                ok = False
-                if isinstance(expected, list):
-                    ok = expected == output
-                else:
-                    joined = "\n".join(map(str, output))
-                    ok = str(expected) == joined or (len(output) == 1 and str(expected) == str(output[0]))
+                session_info = await SessionInfo.assign(
+                    target_id="TEST|Console|0",
+                    client_name="TEST",
+                    target_from="TEST",
+                    sender_id="TEST|0",
+                    sender_from="TEST"
+                )
+                expected = MessageChain.assign(session_info, expected)
 
+                ok = output == expected.as_sendable()
                 if ok:
                     Logger.success("RESULT: PASS")
                     passed += 1
                 else:
                     Logger.error("RESULT: FAIL")
-                    Logger.error("EXPECTED:", expected)
+                    Logger.error("EXPECTED:\n", expected)
                     failed += 1
-                """
         print("-" * 60)
     Logger.info(f"TOTAL: {total}")
     if passed:
@@ -144,11 +139,8 @@ def main():
         Logger.error(f"FAILED: {failed}")
     print("-" * 60)
 
-    try:
-        loop.run_until_complete(Tortoise.close_connections())
-    except ConfigurationError:
-        pass
+    await close_db()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

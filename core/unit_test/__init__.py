@@ -1,15 +1,16 @@
 import inspect
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Union
 
-from core.builtins.message.chain import Chainable
+from core.builtins.types import MessageElement
 
 _REGISTRY: List[dict] = []
 
 
 def case(
     input: str,
-    expected: Optional[Chainable] = None,
-    note: Optional[str] = None
+    noreturn: bool = False,
+    expected: Optional[Union[str, list, MessageElement]] = None,
+    note: Optional[str] = None,
 ):
     """
     注册一个单元测试案例。
@@ -22,6 +23,7 @@ def case(
         await msg.finish(f"{word} is {msg.parsed_msg["<word>"]}")
     ```
     :param input: 预期输入。
+    :param noreturn: 预期是否存在输出。
     :param expected: 预期输出，若为 None 则表示人工判断。
     :param note: 额外说明文字。
     """
@@ -32,6 +34,7 @@ def case(
             "input": input,
             "expected": expected,
             "note": note,
+            "noreturn": noreturn,
             "file": inspect.getsourcefile(fn),
             "line": inspect.getsourcelines(fn)[1],
         }
