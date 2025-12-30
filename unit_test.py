@@ -25,7 +25,6 @@ async def _run_entry(entry: dict):
     results = []
     msg = TestMessageSession(input_)
     await msg.async_init()
-    # 告知 parser 測試期望的目標函數，parser 在單元測試模式下會僅執行此函數
     setattr(msg, "_unittest_target", func)
     try:
         await parser(msg)
@@ -33,10 +32,10 @@ async def _run_entry(entry: dict):
         pass
     except Exception:
         tb = traceback.format_exc()
-        results.append({"input": input_, "error": tb, "output": msg.sent_msg, "action": msg.action, "note": note})
+        results.append({"input": input_, "error": tb, "output": msg.sent, "action": msg.action, "note": note})
         return results
 
-    results.append({"input": input_, "output": msg.sent_msg, "action": msg.action, "note": note})
+    results.append({"input": input_, "output": msg.sent, "action": msg.action, "note": note})
     return results
 
 

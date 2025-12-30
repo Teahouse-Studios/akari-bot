@@ -152,12 +152,10 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
         executed = await _execute_module_command(msg, module, command_first_word)
         if executed:
             raise FinishedException  # if not using msg.finish
-        # 若未執行（可能是因為 unittest 模式目標不匹配），則繼續，不視為命中
     # 如果没有，直接传入下游模块
     msg.parsed_msg = None
     for func in module.command_list.set:
         if not func.command_template:
-            # 在單元測試模式下，只執行目標函數
             if hasattr(msg, "_unittest_target") and func.function is not msg._unittest_target:
                 continue
             if msg.session_info.sender_info.sender_data.get("typing_prompt", True):
@@ -200,7 +198,6 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
     msg.parsed_msg = parsed_msg[1]  # 使用命令模板解析后的消息
     Logger.trace("Parsed message: " + str(msg.parsed_msg))
 
-    # 若為單元測試模式且目標函數與此命令不符，則跳過執行
     if hasattr(msg, "_unittest_target") and command.function is not msg._unittest_target:
         return False
 

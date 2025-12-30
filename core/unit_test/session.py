@@ -14,7 +14,7 @@ class TestMessageSession(MessageSession):
         self.trigger_msg = trigger_msg
         self.parsed_msg = {}
         self.matched_msg = None
-        self.sent_msg = []
+        self.sent = []
         self.action = []
 
     async def async_init(self):
@@ -40,20 +40,17 @@ class TestMessageSession(MessageSession):
         message = get_message_chain(self.session_info, chain=message_chain)
 
         for x in message.as_sendable(self.session_info, parse_message=enable_parse_message):
+            self.sent.append(x)
             if isinstance(x, PlainElement):
-                self.sent_msg.append(x.text)
                 self.action.append(x.text)
             elif isinstance(x, ImageElement):
                 image_path = await x.get()
                 img = PILImage.open(image_path)
                 img.show()
-                self.sent_msg.append(str(x))
                 self.action.append(str(x))
             elif isinstance(x, MentionElement):
-                self.sent_msg.append(f"<@{x.client}|{str(x.id)}>")
                 self.action.append(f"<@{x.client}|{str(x.id)}>")
             elif isinstance(x, BaseElement):
-                self.sent_msg.append(str(x))
                 self.action.append(str(x))
             else:
                 pass
