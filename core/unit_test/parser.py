@@ -146,7 +146,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
             none_templates = False
     if not none_templates:  # 如果有，送入命令解析
         await _execute_module_command(msg, module, command_first_word)
-        raise FinishedException(msg.sent)  # if not using msg.finish
+        raise FinishedException  # if not using msg.finish
     # 如果没有，直接传入下游模块
     msg.parsed_msg = None
     for func in module.command_list.set:
@@ -154,7 +154,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
             if msg.session_info.sender_info.sender_data.get("typing_prompt", True):
                 await msg.start_typing()
             await func.function(msg)  # 将msg传入下游模块
-            raise FinishedException(msg.sent)  # if not using msg.finish
+            raise FinishedException  # if not using msg.finish
 
 
 async def _execute_regex(msg: "Bot.MessageSession", modules):
@@ -176,7 +176,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules):
 
                 if matched:  # 如果匹配成功
                     await rfunc.function(msg)  # 将msg传入下游模块
-                    raise FinishedException(msg.sent)  # if not using msg.finish
+                    raise FinishedException  # if not using msg.finish
 
 
 async def _execute_module_command(msg: "Bot.MessageSession", module, command_first_word):
@@ -241,6 +241,6 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
         kwargs[func_params[list(func_params.keys())[0]].name] = msg
 
     await parsed_msg[0].function(**kwargs)  # 将msg传入下游模块
-    raise FinishedException(msg.sent)  # if not using msg.finish
+    raise FinishedException  # if not using msg.finish
 
 __all__ = ["parser"]

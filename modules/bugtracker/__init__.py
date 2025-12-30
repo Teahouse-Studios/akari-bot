@@ -3,6 +3,7 @@ import re
 from core.builtins.bot import Bot
 from core.builtins.message.internal import Url, I18NContext
 from core.component import module
+from core.unit_test import case
 from .bugtracker import bugtracker_get, make_screenshot
 
 bug = module("bugtracker", alias="bug", developers=["OasisAkari"], doc=True)
@@ -20,6 +21,9 @@ async def query_bugtracker(msg: Bot.MessageSession, mojiraid: str):
             await msg.send_message(screenshot)
 
 
+@case("~bugtracker MC-4")
+@case("~coin")
+@case("~aaa")
 @bug.command("<mojiraid> {{I18N:bugtracker.help}}")
 async def _(msg: Bot.MessageSession, mojiraid: str):
     if mojiraid:
@@ -30,6 +34,7 @@ async def _(msg: Bot.MessageSession, mojiraid: str):
             await msg.finish(I18NContext("bugtracker.message.invalid_mojira_id"))
 
 
+@case("MC-4")
 @bug.regex(
     r"((?:BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-\d+)",
     mode="A",

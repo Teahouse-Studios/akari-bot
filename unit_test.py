@@ -70,7 +70,6 @@ def main():
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
-    # initialize database before importing modules (some tests/modules may need DB)
     try:
         init_success = loop.run_until_complete(init_db())
         if not init_success:
