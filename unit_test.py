@@ -37,7 +37,7 @@ async def _run_entry(entry: dict):
         return results
     except Exception:
         tb = traceback.format_exc()
-        results.append({"input": input_, "error": tb, "output": msg.sent, "action": msg.action})
+        results.append({"input": input_, "error": tb})
         return results
 
     results.append({"input": input_, "output": msg.sent, "action": msg.action})
@@ -89,6 +89,7 @@ async def main():
                     Logger.error(f"NOTE: {note}")
                 Logger.error("ERROR during execution:")
                 Logger.error(r["error"])
+                failed += 1
                 continue
 
             output = r.get("output", [])
