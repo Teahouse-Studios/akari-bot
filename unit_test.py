@@ -8,6 +8,7 @@ from core.builtins.session.info import SessionInfo
 from core.builtins.utils import confirm_command
 from core.constants.exceptions import AbuseWarning, FinishedException, NoReportException, TestException
 from core.database import init_db, close_db
+from core.database.models import SenderInfo, TargetInfo
 from core.loader import load_modules
 from core.unit_test import get_registry
 from core.unit_test.session import TestMessageSession
@@ -18,6 +19,18 @@ from core.unit_test.parser import parser
 async def _run_entry(entry: dict):
     func = entry["func"]
     input_ = entry["input"]
+    # set session db
+    sender_info = entry["sender_info"]
+    if sender_info is None:
+        sender_info = {"superuser": True}
+    target_info = entry["target_info"]
+    if target_info is None:
+        target_info = {}
+    try:
+        await TargetInfo.update_or_create(defaults=target_info, target_id="TEST|Console|0")
+        await SenderInfo.update_or_create(defaults=sender_info, sender_id="TEST|0")
+    except Exception:
+        pass
 
     results = []
     msg = TestMessageSession(input_)
@@ -39,6 +52,14 @@ async def _run_entry(entry: dict):
         tb = traceback.format_exc()
         results.append({"input": input_, "error": tb})
         return results
+    finally:
+        # cleanup
+        target_info = await TargetInfo.get_by_target_id(target_id="TEST|Console|0", create=False)
+        if target_info:
+            await target_info.delete()
+        sender_info = await SenderInfo.get_by_sender_id(sender_id="TEST|0", create=False)
+        if sender_info:
+            await sender_info.delete()
 
     results.append({"input": input_, "output": msg.sent, "action": msg.action})
     return results
@@ -55,7 +76,6 @@ async def main():
         Logger.error(traceback.format_exc())
         await close_db()
         return
-
     try:
         await load_modules()
     except Exception:
@@ -111,7 +131,7 @@ async def main():
                     else:
                         Logger.error("RESULT: FAIL")
                         failed += 1
-                except KeyboardInterrupt:
+                except (EOFError, KeyboardInterrupt):
                     print("")
                     Logger.warning("Interrupted by user.")
                     os._exit(1)
@@ -148,7 +168,6 @@ async def main():
     if failed:
         Logger.error(f"FAILED: {failed}")
     print("-" * 60)
-
     await close_db()
 
 

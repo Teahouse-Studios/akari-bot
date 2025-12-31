@@ -1,5 +1,5 @@
 import inspect
-from typing import Callable, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from core.builtins.types import MessageElement
 
@@ -10,6 +10,8 @@ def case(
     input_: str,
     expected: Optional[Union[str, list, MessageElement]] = None,
     manual: bool = False,
+    sender_info: Optional[Dict[str, Any]] = None,
+    target_info: Optional[Dict[str, Any]] = None,
     note: Optional[str] = None
 ):
     """
@@ -25,6 +27,8 @@ def case(
     :param input: 预期输入。
     :param expected: 预期输出。
     :param manual: 是否使用人工检查。
+    :param session_info: 预先设置的用户数据。
+    :param target_info: 预先设置的会话数据。
     :param note: 额外说明。
     """
 
@@ -34,6 +38,8 @@ def case(
             "input": input_,
             "expected": expected,
             "manual": manual,
+            "sender_info": sender_info,
+            "target_info": target_info,
             "note": note,
             "file": inspect.getsourcefile(fn),
             "line": inspect.getsourcelines(fn)[1],

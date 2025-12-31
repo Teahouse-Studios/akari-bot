@@ -239,9 +239,6 @@ class TestMessageSession(MessageSession):
     async def sleep(self, s):
         await asyncio.sleep(s)
 
-    def check_super_user(self):
-        return True
-
     async def check_permission(self):
         return True
 
