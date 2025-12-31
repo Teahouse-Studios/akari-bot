@@ -1,4 +1,4 @@
-FROM python:3.14
+FROM python:3.12
 
 LABEL org.opencontainers.image.url=https://github.com/Teahouse-Studios/akari-bot
 LABEL org.opencontainers.image.documentation=https://bot.teahouse.team/
@@ -19,5 +19,5 @@ RUN apt-get update && apt-get install -y \
     fonts-dejavu \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install -r requirements.txt --no-deps
+RUN pip install -r requirements.txt
 CMD ["python", "./bot.py"]
