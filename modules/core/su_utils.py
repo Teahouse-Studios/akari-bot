@@ -25,7 +25,6 @@ from core.scheduler import CronTrigger
 from core.server.terminate import restart
 from core.tos import WARNING_COUNTS, check_temp_ban, remove_temp_ban
 from core.types import Param
-from core.unit_test import case
 from core.utils.alive import Alive
 from core.utils.bash import run_sys_command
 from core.utils.decrypt import decrypt_string
@@ -667,7 +666,6 @@ async def _(msg: Bot.MessageSession):
             raise NoReportException(str(e))
 
 
-@case("echo echo hello", "echo hello")
 @echo.command("[<display_msg>]")
 async def _(msg: Bot.MessageSession, dis: Param("<display_msg>", str)):
     try:
