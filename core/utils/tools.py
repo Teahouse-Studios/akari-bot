@@ -124,6 +124,8 @@ def is_float(obj: Any) -> bool:
 def is_int(obj: Any) -> bool:
     """检查对象是否符合 `int` 类型。"""
     try:
+        if isinstance(obj, float):
+            return obj.is_integer()
         int(str(obj))
         return True
     except ValueError:
