@@ -116,7 +116,7 @@ async def main():
                     Logger.warning("Interrupted by user.")
                     os._exit(1)
             elif expected is None:
-                if r.get("output") is None:
+                if not output:
                     Logger.success("RESULT: PASS")
                     passed += 1
                 else:
