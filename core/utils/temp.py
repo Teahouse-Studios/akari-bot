@@ -55,7 +55,9 @@ class TempList:
             self.items = self.items[-self.length:]
 
     def insert(self, index, item):
-        return self.items.insert(index, item)
+        self.items.insert(index, item)
+        if len(self.items) > self.length:
+            self.items = self.items[:self.length]
 
     def remove(self, item):
         self.items.remove(item)

@@ -36,10 +36,10 @@ class Module:
     rss: bool = False
     required_superuser: bool = False
     required_base_superuser: bool = False
-    command_list: CommandMatches = CommandMatches.init()
-    regex_list: RegexMatches = RegexMatches.init()
-    schedule_list: ScheduleMatches = ScheduleMatches.init()
-    hooks_list: HookMatches = HookMatches.init()
+    command_list: CommandMatches = field(factory=CommandMatches.init)
+    regex_list: RegexMatches = field(factory=RegexMatches.init)
+    schedule_list: ScheduleMatches = field(factory=ScheduleMatches.init)
+    hooks_list: HookMatches = field(factory=HookMatches.init)
     _py_module_name: str = ""
     _db_load: bool = False
 

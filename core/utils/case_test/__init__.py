@@ -46,7 +46,7 @@ def case(
         }
         _REGISTRY.append(entry)
 
-        setattr(fn, "_unittest_meta", entry)
+        setattr(fn, "_casetest_meta", entry)
 
         return fn
 

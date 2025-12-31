@@ -9,6 +9,7 @@ import orjson
 from tortoise import Tortoise
 from tortoise.exceptions import OperationalError
 
+from core.alive import Alive
 from core.builtins.bot import Bot
 from core.builtins.converter import converter
 from core.builtins.message.chain import MessageChain, convert_senderid_to_atcode, match_kecode
@@ -25,7 +26,6 @@ from core.scheduler import CronTrigger
 from core.server.terminate import restart
 from core.tos import WARNING_COUNTS, check_temp_ban, remove_temp_ban
 from core.types import Param
-from core.utils.alive import Alive
 from core.utils.bash import run_sys_command
 from core.utils.decrypt import decrypt_string
 from core.utils.image_table import image_table_render, ImageTable

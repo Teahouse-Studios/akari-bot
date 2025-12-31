@@ -26,28 +26,28 @@ class Alive:
     @classmethod
     def determine_target_from(cls, target_id: str):
         """
-        确定目标 ID 的前缀。
+        确定会话 ID 前缀。
 
-        :param target_id: 目标 ID
+        :param target_id: 会话 ID
         :return: 前缀
         """
-        for _, data in cls.get_alive().copy().items():
-            for prefix in data.get("target_prefix_list", []):
-                if target_id.startswith(prefix):
+        for _, data in cls.get_alive().items():
+            for prefix in sorted(data.get("target_prefix_list", []), key=len, reverse=True):
+                if target_id.startswith(prefix + "|") or target_id == prefix:
                     return prefix
         return None
 
     @classmethod
     def determine_sender_from(cls, sender_id: str):
         """
-        确定发送者 ID 的前缀。
+        确定用户 ID 前缀。
 
-        :param sender_id: 发送者 ID
+        :param sender_id: 用户 ID
         :return: 前缀
         """
-        for _, data in cls.get_alive().copy().items():
-            for prefix in data.get("sender_prefix_list", []):
-                if sender_id.startswith(prefix):
+        for _, data in cls.get_alive().items():
+            for prefix in sorted(data.get("sender_prefix_list", []), key=len, reverse=True):
+                if sender_id.startswith(prefix + "|") or sender_id == prefix:
                     return prefix
         return None
 
@@ -56,11 +56,19 @@ class Alive:
         """
         确定客户端名称。
 
-        :param id: 目标 ID 或发送者 ID
+        :param id: 会话 ID 或用户 ID
         :return: 客户端名称
         """
-        for client_name, data in cls.get_alive().copy().items():
-            if id.startswith(tuple(data.get("target_prefix_list", []))) or \
-                    id.startswith(tuple(data.get("sender_prefix_list", []))):
-                return client_name
+        for client_name, data in cls.get_alive().items():
+            for prefix in sorted(
+                    data.get(
+                        "target_prefix_list",
+                        []) +
+                    data.get(
+                        "sender_prefix_list",
+                        []),
+                    key=len,
+                    reverse=True):
+                if id.startswith(prefix + "|") or id == prefix:
+                    return client_name
         return None

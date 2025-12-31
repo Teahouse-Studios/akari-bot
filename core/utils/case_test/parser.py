@@ -138,7 +138,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
     msg.parsed_msg = None
     for func in module.command_list.set:
         if not func.command_template:
-            if hasattr(msg, "_unittest_target") and func.function is not msg._unittest_target:
+            if hasattr(msg, "_casetest_target") and func.function is not msg._casetest_target:
                 continue
             if msg.session_info.sender_info.sender_data.get("typing_prompt", True):
                 await msg.start_typing()
@@ -164,7 +164,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules):
                         matched = True
 
                 if matched:  # 如果匹配成功
-                    if hasattr(msg, "_unittest_target") and rfunc.function is not msg._unittest_target:
+                    if hasattr(msg, "_casetest_target") and rfunc.function is not msg._casetest_target:
                         continue
                     await rfunc.function(msg)  # 将msg传入下游模块
                     raise FinishedException  # if not using msg.finish
@@ -179,7 +179,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
     msg.parsed_msg = parsed_msg[1]  # 使用命令模板解析后的消息
     Logger.trace("Parsed message: " + str(msg.parsed_msg))
 
-    if hasattr(msg, "_unittest_target") and command.function is not msg._unittest_target:
+    if hasattr(msg, "_casetest_target") and command.function is not msg._casetest_target:
         return False
 
     kwargs = {}

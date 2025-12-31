@@ -6,12 +6,12 @@ from typing import Optional, List
 
 from attrs import define
 
+from core.alive import Alive
 from core.builtins.message.chain import MessageChain
 from core.builtins.utils import command_prefix
 from core.config import Config
 from core.database.models import TargetInfo, SenderInfo
 from core.i18n import Locale
-from core.utils.alive import Alive
 from core.utils.format import parse_time_string
 
 

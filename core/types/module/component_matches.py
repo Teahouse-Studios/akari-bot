@@ -1,14 +1,14 @@
 from copy import deepcopy
 from typing import Optional, List
 
-from attrs import define
+from attrs import define, field
 
 from .component_meta import *
 
 
 @define
 class BaseMatches:
-    set: List[ModuleMeta] = []
+    set: List[ModuleMeta] = field(factory=list)
 
     def add(self, meta):
         self.set.append(meta)
@@ -21,7 +21,7 @@ class BaseMatches:
 
 @define
 class CommandMatches(BaseMatches):
-    set: List[CommandMeta] = []
+    set: List[CommandMeta] = field(factory=list)
 
     def get(
         self,
@@ -54,7 +54,7 @@ class CommandMatches(BaseMatches):
 
 @define
 class RegexMatches(BaseMatches):
-    set: List[RegexMeta] = []
+    set: List[RegexMeta] = field(factory=list)
 
     def get(
         self,
@@ -87,12 +87,12 @@ class RegexMatches(BaseMatches):
 
 @define
 class ScheduleMatches(BaseMatches):
-    set: List[ScheduleMeta] = []
+    set: List[ScheduleMeta] = field(factory=list)
 
 
 @define
 class HookMatches(BaseMatches):
-    set: List[HookMeta] = []
+    set: List[HookMeta] = field(factory=list)
 
 
 __all__ = ["CommandMatches", "RegexMatches", "ScheduleMatches", "HookMatches"]

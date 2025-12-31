@@ -10,10 +10,10 @@ from core.constants.exceptions import AbuseWarning, FinishedException, NoReportE
 from core.database import init_db, close_db
 from core.database.models import SenderInfo, TargetInfo
 from core.loader import load_modules
-from core.unit_test import get_registry
-from core.unit_test.session import TestMessageSession
-from core.unit_test.logger import Logger
-from core.unit_test.parser import parser
+from core.utils.case_test import get_registry
+from core.utils.case_test.session import TestMessageSession
+from core.utils.case_test.logger import Logger
+from core.utils.case_test.parser import parser
 
 
 async def _run_entry(entry: dict):
@@ -35,7 +35,7 @@ async def _run_entry(entry: dict):
     results = []
     msg = TestMessageSession(input_)
     await msg.async_init(input_)
-    setattr(msg, "_unittest_target", func)
+    setattr(msg, "_casetest_target", func)
     try:
         await parser(msg)
     except FinishedException:
@@ -84,7 +84,7 @@ async def main():
 
     registry = get_registry()
     if not registry:
-        Logger.error("No tests registered. Use `core.unittest.case` to register tests.")
+        Logger.error("No tests registered. Use `core.casetest.case` to register tests.")
         await close_db()
         return
 

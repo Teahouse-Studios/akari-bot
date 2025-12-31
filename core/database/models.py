@@ -28,7 +28,7 @@ class SenderInfo(DBModel):
     :param sender_data: 用户数据。
     """
 
-    sender_id = fields.CharField(max_length=512, pk=True)
+    sender_id = fields.CharField(max_length=512, primary_key=True)
     blocked = fields.BooleanField(default=False)
     trusted = fields.BooleanField(default=False)
     superuser = fields.BooleanField(default=False)
@@ -119,7 +119,7 @@ class TargetInfo(DBModel):
     :param banned_users: 会话内已限制用户。
     :param target_data: 会话数据。
     """
-    target_id = fields.CharField(max_length=512, pk=True)
+    target_id = fields.CharField(max_length=512, primary_key=True)
     blocked = fields.BooleanField(default=False)
     muted = fields.BooleanField(default=False)
     locale = fields.CharField(max_length=32, default=default_locale)
@@ -254,7 +254,7 @@ class StoredData(DBModel):
     :param stored_key: 存储键。
     :param value: 值。
     """
-    stored_key = fields.CharField(max_length=512, pk=True)
+    stored_key = fields.CharField(max_length=512, primary_key=True)
     value = fields.JSONField(default=[])
 
     class Meta:
@@ -272,7 +272,7 @@ class AnalyticsData(DBModel):
     :param command: 命令。
     :param timestamp: 时间戳。
     """
-    id = fields.IntField(pk=True)
+    id = fields.IntField(primary_key=True)
     module_name = fields.CharField(max_length=512)
     module_type = fields.CharField(max_length=512)
     target_id = fields.CharField(max_length=512)
@@ -318,7 +318,7 @@ class ModuleStatus(DBModel):
     :param module_name: 模块名称。
     :param load: 是否已加载。
     """
-    module_name = fields.CharField(pk=True, max_length=255, unique=True)
+    module_name = fields.CharField(primary_key=True, max_length=255, unique=True)
     load = fields.BooleanField(default=False)
 
     class Meta:
@@ -371,7 +371,7 @@ class DBVersion(DBModel):
     :param version: 数据库版本号。
     """
 
-    version = fields.IntField(pk=True)
+    version = fields.IntField(primary_key=True)
 
     class Meta:
         table = "database_version"
@@ -387,7 +387,7 @@ class UnfriendlyActionRecords(DBModel):
     :param detail: 行为详情。
     :param timestamp: 时间戳。
     """
-    id = fields.IntField(pk=True)
+    id = fields.IntField(primary_key=True)
     target_id = fields.CharField(max_length=512)
     sender_id = fields.CharField(max_length=512)
     action = fields.CharField(max_length=512)
@@ -440,7 +440,7 @@ class JobQueuesTable(DBModel):
     :param result: 任务结果。
     :param timestamp: 时间戳。
     """
-    task_id = fields.UUIDField(pk=True)
+    task_id = fields.UUIDField(primary_key=True)
     target_client = fields.CharField(max_length=512)
     action = fields.CharField(max_length=512)
     args = fields.JSONField(default={})
@@ -507,7 +507,7 @@ class MaliciousLoginRecords(DBModel):
     :param blocked_until: 被封禁的截止时间。
     :param created_date: 创建日期。
     """
-    id = fields.IntField(pk=True)
+    id = fields.IntField(primary_key=True)
     ip_address = fields.CharField(max_length=45)
     blocked_until = fields.DatetimeField()
     created_date = fields.DatetimeField(auto_now_add=True)

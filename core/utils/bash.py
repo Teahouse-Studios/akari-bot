@@ -1,4 +1,5 @@
 import asyncio
+import locale
 from typing import List, Tuple
 
 
@@ -16,7 +17,12 @@ async def run_sys_command(command: List[str], timeout: float = 10) -> Tuple[int,
     )
     try:
         stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout)
-        return process.returncode, stdout.decode("utf-8").strip(), stderr.decode("utf-8").strip()
+        encoding = locale.getpreferredencoding(False)
+        return (
+            process.returncode,
+            stdout.decode(encoding, errors="ignore").strip(),
+            stderr.decode(encoding, errors="ignore").strip(),
+        )
     except asyncio.TimeoutError:
         process.kill()
         await process.wait()

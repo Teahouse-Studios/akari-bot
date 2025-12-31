@@ -5,11 +5,10 @@ from typing import Dict, Optional
 
 def camel_to_snake(text: str, abbr_map: Optional[Dict[str, str]] = None) -> str:
     """驼峰命名转蛇形命名。"""
-    text = re.sub(r"(?<!^)(?=[A-Z])", "_", text).lower()
     if abbr_map:
         for k, v in abbr_map.items():
-            text = text.replace(k, v.lower())
-    return text
+            text = text.replace(k, v)
+    return re.sub(r"(?<!^)(?=[A-Z])", "_", text).lower()
 
 
 def snake_to_camel(text: str,
@@ -20,7 +19,7 @@ def snake_to_camel(text: str,
     :param upper: 是否转为大驼峰。（默认True）"""
     if abbr_map:
         for k, v in abbr_map.items():
-            text = text.replace(v.lower(), k)
+            text = text.replace(v, k)
     words = text.split("_")
     if upper:
         return "".join(w.title() for w in words)

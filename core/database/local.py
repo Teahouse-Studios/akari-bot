@@ -12,7 +12,7 @@ DB_LINK = "sqlite://database/local.db"
 
 
 class DirtyWordCache(DBModel):
-    desc = fields.TextField(pk=True)
+    desc = fields.CharField(max_length=512, primary_key=True)
     result = fields.JSONField(default={})
     timestamp = fields.DatetimeField(auto_now=True)
 
@@ -30,7 +30,7 @@ class DirtyWordCache(DBModel):
 
 
 class CrowdinActivityRecords(DBModel):
-    hash_id = fields.TextField(pk=True)
+    hash_id = fields.CharField(max_length=512, primary_key=True)
 
     class Meta:
         table = "crowdin_activity_records"

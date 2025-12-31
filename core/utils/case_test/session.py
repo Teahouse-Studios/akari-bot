@@ -13,6 +13,8 @@ from core.constants import FinishedException
 
 
 class TestMessageSession(MessageSession):
+    __test__ = False
+
     def __init__(self, trigger_msg=None, parent_session=None):
         self.trigger_msg = trigger_msg
         self.parsed_msg = {}

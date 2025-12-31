@@ -7,6 +7,7 @@ from core.builtins.utils import command_prefix
 from core.constants.path import PrivateAssets
 from core.utils.bash import run_sys_command
 from core.web_render import web_render
+from ..alive import Alive
 from .base import JobQueueBase
 from ..builtins.converter import converter
 from ..builtins.message.chain import MessageChain, MessageNodes
@@ -16,7 +17,6 @@ from ..exports import exports, add_export
 from ..i18n import Locale
 from ..loader import ModulesManager
 from ..logger import Logger
-from ..utils.alive import Alive
 
 if TYPE_CHECKING:
     from core.builtins.bot import Bot

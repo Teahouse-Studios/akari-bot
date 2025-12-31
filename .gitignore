@@ -5,7 +5,6 @@ config*/*.toml*
 .idea
 .DS_Store
 .vscode
-test*
 *.db
 *.db-shm
 *.db-wal
@@ -22,7 +21,9 @@ assets/arc.apk
 assets/modules/maimai*
 assets/modules/phigros*
 assets/private*
+bots/test/*
 bots/**/assets
+modules/test/*
 webui/*
 version*
 !version.py

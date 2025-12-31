@@ -21,7 +21,7 @@ from modules.wikilog.database.models import *
 
 
 class SenderInfoL(Model):
-    id = fields.CharField(max_length=512, pk=True)
+    id = fields.CharField(max_length=512, primary_key=True)
     isInBlockList = fields.BooleanField(default=False)
     isInAllowList = fields.BooleanField(default=False)
     isSuperUser = fields.BooleanField(default=False)
@@ -34,7 +34,7 @@ class SenderInfoL(Model):
 
 
 class TargetInfoL(Model):
-    targetId = fields.CharField(max_length=512, pk=True)
+    targetId = fields.CharField(max_length=512, primary_key=True)
     enabledModules = fields.JSONField(default=[])
     options = fields.JSONField(default={})
     customAdmins = fields.JSONField(default=[])
@@ -46,14 +46,14 @@ class TargetInfoL(Model):
 
 
 class GroupBlockList(Model):
-    targetId = fields.CharField(max_length=512, pk=True)
+    targetId = fields.CharField(max_length=512, primary_key=True)
 
     class Meta:
         table = "_old_GroupBlockList"
 
 
 class StoredDataL(Model):
-    name = fields.CharField(max_length=512, pk=True)
+    name = fields.CharField(max_length=512, primary_key=True)
     value = fields.CharField(max_length=512)
 
     class Meta:
@@ -61,7 +61,7 @@ class StoredDataL(Model):
 
 
 class Analytics(Model):
-    id = fields.IntField(pk=True)
+    id = fields.IntField(primary_key=True)
     moduleName = fields.CharField(max_length=512)
     moduleType = fields.CharField(max_length=512)
     targetId = fields.CharField(max_length=512)
@@ -74,7 +74,7 @@ class Analytics(Model):
 
 
 class UnfriendlyActionsTable(Model):
-    id = fields.CharField(max_length=512, pk=True)
+    id = fields.CharField(max_length=512, primary_key=True)
     targetId = fields.CharField(max_length=512)
     senderId = fields.CharField(max_length=512)
     action = fields.CharField(max_length=512)
@@ -86,7 +86,7 @@ class UnfriendlyActionsTable(Model):
 
 
 class CytoidBindInfoL(Model):
-    targetId = fields.CharField(max_length=512, pk=True)
+    targetId = fields.CharField(max_length=512, primary_key=True)
     username = fields.CharField(max_length=512)
 
     class Meta:
@@ -94,7 +94,7 @@ class CytoidBindInfoL(Model):
 
 
 class DivingProberBindInfoL(Model):
-    targetId = fields.CharField(max_length=512, pk=True)
+    targetId = fields.CharField(max_length=512, primary_key=True)
     username = fields.CharField(max_length=512)
 
     class Meta:
@@ -102,7 +102,7 @@ class DivingProberBindInfoL(Model):
 
 
 class PhigrosBindInfoL(Model):
-    targetId = fields.CharField(max_length=512, pk=True)
+    targetId = fields.CharField(max_length=512, primary_key=True)
     sessiontoken = fields.CharField(max_length=512)
     username = fields.CharField(max_length=512)
 
@@ -111,7 +111,7 @@ class PhigrosBindInfoL(Model):
 
 
 class WikiTargetInfoL(Model):
-    targetId = fields.CharField(max_length=512, pk=True)
+    targetId = fields.CharField(max_length=512, primary_key=True)
     link = fields.CharField(max_length=512, null=True)
     iws = fields.JSONField(default={})
     headers = fields.JSONField(default={"accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"})
@@ -122,7 +122,7 @@ class WikiTargetInfoL(Model):
 
 
 class WikiSiteInfoL(Model):
-    apiLink = fields.CharField(max_length=512, pk=True)
+    apiLink = fields.CharField(max_length=512, primary_key=True)
     siteInfo = fields.JSONField(default={})
     timestamp = fields.DatetimeField()
 
@@ -131,7 +131,7 @@ class WikiSiteInfoL(Model):
 
 
 class WikiAllowListL(Model):
-    apiLink = fields.CharField(max_length=512, pk=True)
+    apiLink = fields.CharField(max_length=512, primary_key=True)
     timestamp = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
@@ -139,7 +139,7 @@ class WikiAllowListL(Model):
 
 
 class WikiBlockListL(Model):
-    apiLink = fields.CharField(max_length=512, pk=True)
+    apiLink = fields.CharField(max_length=512, primary_key=True)
     timestamp = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
@@ -147,7 +147,7 @@ class WikiBlockListL(Model):
 
 
 class WikiBotAccountListL(Model):
-    apiLink = fields.CharField(max_length=512, pk=True)
+    apiLink = fields.CharField(max_length=512, primary_key=True)
     botAccount = fields.CharField(max_length=512)
     botPassword = fields.CharField(max_length=512)
 
@@ -156,7 +156,7 @@ class WikiBotAccountListL(Model):
 
 
 class WikiLogTargetSetInfoL(Model):
-    targetId = fields.CharField(max_length=512, pk=True)
+    targetId = fields.CharField(max_length=512, primary_key=True)
     infos = fields.TextField()
 
     class Meta:
