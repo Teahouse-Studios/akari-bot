@@ -350,18 +350,14 @@ def parse_argv(argv: List[str], templates: List["Template"]) -> MatchedResult:
                             if isinstance(sub_args, ArgumentPattern):
                                 if sub_args.name.startswith("<"):
                                     if len(argv_copy) > 0:
-                                        if len(arg.args) == 1 and len(afters) == 1:  # only one optional arg
+                                        if len(afters) == ai and len(arg.args) == subi:  # last optional arg
                                             parsed_argv[sub_args.name] = Argument(" ".join(argv_copy))
                                             argv_copy.clear()
                                         else:
-                                            if len(afters) == ai and len(arg.args) == subi:  # last optional arg
-                                                parsed_argv[sub_args.name] = Argument(" ".join(argv_copy))
-                                                argv_copy.clear()
-                                            else:
-                                                parsed_argv[sub_args.name] = Argument(
-                                                    argv_copy[0]
-                                                )
-                                                del argv_copy[0]
+                                            parsed_argv[sub_args.name] = Argument(
+                                                argv_copy[0]
+                                            )
+                                            del argv_copy[0]
                                     else:
                                         parsed_argv[sub_args.name] = False
                                 elif sub_args.name == "...":
