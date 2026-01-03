@@ -12,7 +12,7 @@ from core.config import Config
 from core.constants import FinishedException
 
 
-class TestMessageSession(MessageSession):
+class MockMessageSession(MessageSession):
     __test__ = False
 
     def __init__(self, trigger_msg=None, parent_session=None):
@@ -139,7 +139,7 @@ class TestMessageSession(MessageSession):
             if result in confirm_command:
                 return True
             return False
-        except KeyboardInterrupt:
+        except (EOFError, KeyboardInterrupt):
             os._exit(1)
         except Exception as e:
             raise e
@@ -168,10 +168,10 @@ class TestMessageSession(MessageSession):
                 result = input("Send: ")
             if delete:
                 await self.delete()
-            new_msg = TestMessageSession(parent_session=self)
+            new_msg = MockMessageSession(parent_session=self)
             await new_msg.async_init(result)
             return new_msg
-        except KeyboardInterrupt:
+        except (EOFError, KeyboardInterrupt):
             os._exit(1)
         except Exception as e:
             raise e
@@ -201,10 +201,10 @@ class TestMessageSession(MessageSession):
                 result = input("Reply: ")
             if delete:
                 await self.delete()
-            new_msg = TestMessageSession(parent_session=self)
+            new_msg = MockMessageSession(parent_session=self)
             await new_msg.async_init(result)
             return new_msg
-        except KeyboardInterrupt:
+        except (EOFError, KeyboardInterrupt):
             os._exit(1)
         except Exception as e:
             raise e
@@ -230,10 +230,10 @@ class TestMessageSession(MessageSession):
                 result = input("Send: ")
             if delete:
                 await self.delete()
-            new_msg = TestMessageSession(parent_session=self)
+            new_msg = MockMessageSession(parent_session=self)
             await new_msg.async_init(result)
             return new_msg
-        except KeyboardInterrupt:
+        except (EOFError, KeyboardInterrupt):
             os._exit(1)
         except Exception as e:
             raise e

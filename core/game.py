@@ -5,7 +5,7 @@ from core.utils.temp import ExpiringTempDict
 
 GAME_EXPIRED = 3600  # 游戏事件过期时间（秒）
 
-_ps_lst = ExpiringTempDict(exp=GAME_EXPIRED)
+_ps_dict = ExpiringTempDict(exp=GAME_EXPIRED)
 
 
 class PlayState:
@@ -26,7 +26,7 @@ class PlayState:
         """
         获取目标的游戏事件字典，如果不存在则自动创建。
         """
-        target_dict = _ps_lst[self.target_id]
+        target_dict = _ps_dict[self.target_id]
         return target_dict[self.game]
 
     def enable(self) -> None:
@@ -42,9 +42,9 @@ class PlayState:
         """
         关闭游戏事件。
         """
-        if self.target_id not in _ps_lst:
+        if self.target_id not in _ps_dict:
             return
-        playstate_dict = _ps_lst[self.target_id].get(self.game)
+        playstate_dict = _ps_dict[self.target_id].get(self.game)
         if playstate_dict and playstate_dict.get("_status"):
             playstate_dict["_status"] = False
             Logger.info(

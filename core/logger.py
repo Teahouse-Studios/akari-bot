@@ -47,7 +47,7 @@ class LoggingLogger:
         self.critical = logger.critical
         """严重错误信息，记录产生可能使程序崩溃的情况。"""
 
-    def rename(self, name):
+    def rename(self, name, export=True):
         try:
             logger.remove(0)
         except ValueError:
@@ -61,25 +61,25 @@ class LoggingLogger:
             colorize=True,
             filter=lambda record: record["extra"].get("name") == name
         )
-
-        self.log.add(
-            sink=logs_path / f"{name}_debug_{{time:YYYY-MM-DD}}.log",
-            format=basic_logger_format(name),
-            rotation="00:00",
-            retention="1 day",
-            level="DEBUG",
-            filter=lambda record: record["level"].name == "DEBUG" and record["extra"].get("name") == name,
-            encoding="utf8",
-        )
-        self.log.add(
-            sink=logs_path / f"{name}_{{time:YYYY-MM-DD}}.log",
-            format=basic_logger_format(name),
-            rotation="00:00",
-            retention="10 days",
-            level="INFO",
-            encoding="utf8",
-            filter=lambda record: record["extra"].get("name") == name
-        )
+        if export:
+            self.log.add(
+                sink=logs_path / f"{name}_debug_{{time:YYYY-MM-DD}}.log",
+                format=basic_logger_format(name),
+                rotation="00:00",
+                retention="1 day",
+                level="DEBUG",
+                filter=lambda record: record["level"].name == "DEBUG" and record["extra"].get("name") == name,
+                encoding="utf8",
+            )
+            self.log.add(
+                sink=logs_path / f"{name}_{{time:YYYY-MM-DD}}.log",
+                format=basic_logger_format(name),
+                rotation="00:00",
+                retention="10 days",
+                level="INFO",
+                encoding="utf8",
+                filter=lambda record: record["extra"].get("name") == name
+            )
         self.trace = self.log.trace
         self.debug = self.log.debug
         self.info = self.log.info

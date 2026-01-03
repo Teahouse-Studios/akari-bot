@@ -1,86 +1,32 @@
 import asyncio
 import os
-import traceback
 
-from core.builtins.message.chain import MessageChain, match_kecode
+from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import confirm_command
-from core.constants.exceptions import AbuseWarning, FinishedException, NoReportException, TestException
-from core.database import init_db, close_db
-from core.database.models import SenderInfo, TargetInfo
-from core.loader import load_modules
-from core.utils.case_test import get_registry
-from core.utils.case_test.session import TestMessageSession
-from core.utils.case_test.logger import Logger
-from core.utils.case_test.parser import parser
-
-
-async def _run_entry(entry: dict):
-    func = entry["func"]
-    input_ = entry["input"]
-    # set session db
-    sender_info = entry["sender_info"]
-    if sender_info is None:
-        sender_info = {"superuser": True}
-    target_info = entry["target_info"]
-    if target_info is None:
-        target_info = {}
-    try:
-        await TargetInfo.update_or_create(defaults=target_info, target_id="TEST|Console|0")
-        await SenderInfo.update_or_create(defaults=sender_info, sender_id="TEST|0")
-    except Exception:
-        pass
-
-    results = []
-    msg = TestMessageSession(input_)
-    await msg.async_init(input_)
-    setattr(msg, "_casetest_target", func)
-    try:
-        await parser(msg)
-    except FinishedException:
-        pass
-    except (AbuseWarning, NoReportException, TestException) as e:
-        err_msg = msg.session_info.locale.t_str(str(e))
-        err_msg_chain = match_kecode(err_msg, disable_joke=True)
-        err_action = [x.text if isinstance(x, PlainElement) else str(x)
-                      for x in err_msg_chain.as_sendable(msg.session_info)]
-        results.append({"input": input_, "output": err_msg_chain, "action": [
-                       f"(raise {type(e).__name__})"] + err_action})
-        return results
-    except Exception:
-        tb = traceback.format_exc()
-        results.append({"input": input_, "error": tb})
-        return results
-    finally:
-        # cleanup
-        target_info = await TargetInfo.get_by_target_id(target_id="TEST|Console|0", create=False)
-        if target_info:
-            await target_info.delete()
-        sender_info = await SenderInfo.get_by_sender_id(sender_id="TEST|0", create=False)
-        if sender_info:
-            await sender_info.delete()
-
-    results.append({"input": input_, "output": msg.sent, "action": msg.action})
-    return results
+from core.logger import Logger
+from core.tester import get_registry, run_registry
+from core.tester.mock.database import init_db, close_db
+from core.tester.mock.loader import load_modules
+from core.tester.mock.random import Random
 
 
 async def main():
+    Logger.rename("test", export=False)
     try:
-        init_success = await init_db()
-        if not init_success:
+        if not await init_db():
             Logger.critical("Failed to initialize database. Aborting tests.")
             await close_db()
             return
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         await close_db()
         return
     try:
-        await load_modules()
+        await load_modules(monkey_patches={"Random": Random()})
     except Exception:
-        Logger.error("Failed to load modules for tests:")
-        Logger.error(traceback.format_exc())
+        Logger.exception("Failed to load modules for tests:")
 
     registry = get_registry()
     if not registry:
@@ -98,8 +44,22 @@ async def main():
         print("-" * 60)
         fn = entry["func"]
         note = entry.get("note")
-        Logger.info(f"TEST{i}: {fn.__name__}  ({entry.get("file")}:{entry.get("line")})")
-        results = await _run_entry(entry)
+        Logger.info(f"TEST{i}: {fn.__name__}  ({entry.get('file')}:{entry.get('line')})")
+
+        try:
+            await close_db()
+        except Exception:
+            Logger.exception("Error closing database before test")
+        if not await init_db():
+            Logger.critical(f"Failed to reinitialize database for TEST{i}. Skipping tests.")
+            continue
+
+        try:
+            await load_modules(show_logs=False, monkey_patches={"Random": Random()})
+        except Exception:
+            Logger.exception("Failed to load modules for tests:")
+
+        results = await run_registry(entry)
 
         for r in results:
             total += 1
@@ -135,7 +95,14 @@ async def main():
                     print("")
                     Logger.warning("Interrupted by user.")
                     os._exit(1)
-            elif expected is None:
+            elif expected is True:
+                if output:
+                    Logger.success("RESULT: PASS")
+                    passed += 1
+                else:
+                    Logger.error("RESULT: FAIL")
+                    failed += 1
+            elif expected in (False, None):
                 if not output:
                     Logger.success("RESULT: PASS")
                     passed += 1

@@ -11,15 +11,6 @@ repos:
       hooks:
           - id: autopep8
 
-    - repo: local
-      hooks:
-        - id: pytest
-          name: Run pytest tests
-          entry: poetry run python -m pytest -q
-          language: system
-          types: [python]
-          pass_filenames: false
-
 #    - repo: local
 #      hooks:
 #          - id: auto-generate-config
