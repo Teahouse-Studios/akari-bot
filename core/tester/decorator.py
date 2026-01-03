@@ -1,16 +1,9 @@
 import inspect
-import traceback
 from typing import Callable, List, Optional, Tuple, Union
 
-from core.builtins.message.chain import MessageChain, match_kecode
-from core.builtins.message.elements import PlainElement
+from core.builtins.message.chain import MessageChain
 from core.builtins.types import MessageElement
-from core.constants.exceptions import AbuseWarning, FinishedException, NoReportException, TestException
-from core.cooldown import _cd_dict
-from core.database.models import SenderInfo, TargetInfo
-from core.game import _ps_dict
-from core.tester.mock.session import MockMessageSession
-from core.tester.mock.parser import parser
+
 
 _REGISTRY: List[dict] = []
 
@@ -60,42 +53,10 @@ def get_registry():
     return list(_REGISTRY)
 
 
-async def run_registry(entry: dict):
-    func = entry["func"]
-    input_ = entry["input"]
+def func_case(fn: Callable):
+    """标记函数是否为测试函数（测试时会被调用）。"""
+    setattr(fn, "_func_case", True)
+    return fn
 
-    try:
-        await TargetInfo.update_or_create(defaults={}, target_id="TEST|Console|0")
-        await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id="TEST|0")
-    except Exception:
-        pass
 
-    results = []
-    msg = MockMessageSession(input_)
-    await msg.async_init(msg.trigger_msg)
-    setattr(msg, "_casetest_target", func)
-    try:
-        await parser(msg)
-    except FinishedException:
-        pass
-    except (AbuseWarning, NoReportException, TestException) as e:
-        err_msg = msg.session_info.locale.t_str(str(e))
-        err_msg_chain = match_kecode(err_msg, disable_joke=True)
-        err_action = [x.text if isinstance(x, PlainElement) else str(x)
-                      for x in err_msg_chain.as_sendable(msg.session_info)]
-        results.append({"input": input_, "output": err_msg_chain, "action": [
-                       f"(raise {type(e).__name__})"] + err_action})
-        return results
-    except Exception:
-        tb = traceback.format_exc()
-        results.append({"input": input_, "error": tb})
-        return results
-    finally:
-        # cleanup
-        _cd_dict.clear()
-        _ps_dict.clear()
-
-    results.append({"input": input_, "output": msg.sent, "action": msg.action})
-    return results
-
-__all__ = ["case", "get_registry", "run_registry"]
+__all__ = ["case", "func_case", "get_registry"]
