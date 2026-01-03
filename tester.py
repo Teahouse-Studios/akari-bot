@@ -81,7 +81,7 @@ async def main():
                 Logger.info(f"NOTE: {note}")
             Logger.info(f"OUTPUT:\n{fmted_output}")
 
-            if entry.get("manual"):
+            if expected is None:  # noqa
                 try:
                     Logger.warning("REVIEW: Did the output meet expectations? [y/N]")
                     check = input()
@@ -95,14 +95,14 @@ async def main():
                     print("")
                     Logger.warning("Interrupted by user.")
                     os._exit(1)
-            elif expected is True:
+            elif expected is True:  # noqa
                 if output:
                     Logger.success("RESULT: PASS")
                     passed += 1
                 else:
                     Logger.error("RESULT: FAIL")
                     failed += 1
-            elif expected in (False, None):
+            elif expected is False:  # noqa
                 if not output:
                     Logger.success("RESULT: PASS")
                     passed += 1

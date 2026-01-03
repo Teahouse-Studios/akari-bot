@@ -16,7 +16,13 @@ class MockMessageSession(MessageSession):
     __test__ = False
 
     def __init__(self, trigger_msg=None, parent_session=None):
-        self.trigger_msg = trigger_msg
+        if isinstance(trigger_msg, (list, tuple)):
+            self._script = list(trigger_msg)
+            self.trigger_msg = self._script.pop(0) if self._script else ""
+        else:
+            self._script = []
+            self.trigger_msg = trigger_msg
+
         self.parsed_msg = {}
         self.matched_msg = None
         self.sent = []
@@ -133,6 +139,14 @@ class MockMessageSession(MessageSession):
         try:
             confirm_prompt = "\n".join([x.text if isinstance(x, PlainElement) else str(x)
                                        for x in message_chain.as_sendable()])
+            if self._script:
+                result = self._script.pop(0)
+                if delete:
+                    await self.delete()
+                if result in confirm_command:
+                    return True
+                return False
+
             result = input(f"{confirm_prompt}\nConfirm: ")
             if delete:
                 await self.delete()
@@ -162,6 +176,16 @@ class MockMessageSession(MessageSession):
             confirm_prompt = "\n".join([x.text if isinstance(x, PlainElement) else str(x)
                                        for x in message_chain.as_sendable()])
         try:
+            if self._script:
+                result = self._script.pop(0)
+                if delete:
+                    await self.delete()
+                new_msg = MockMessageSession(parent_session=self)
+                new_msg._script = self._script
+                self._script = []
+                await new_msg.async_init(result)
+                return new_msg
+
             if confirm_prompt:
                 result = input(f"{confirm_prompt}\nSend: ")
             else:
@@ -195,6 +219,16 @@ class MockMessageSession(MessageSession):
             confirm_prompt = "\n".join([x.text if isinstance(x, PlainElement) else str(x)
                                        for x in message_chain.as_sendable()])
         try:
+            if self._script:
+                result = self._script.pop(0)
+                if delete:
+                    await self.delete()
+                new_msg = MockMessageSession(parent_session=self)
+                new_msg._script = self._script
+                self._script = []
+                await new_msg.async_init(result)
+                return new_msg
+
             if confirm_prompt:
                 result = input(f"{confirm_prompt}\nReply: ")
             else:
@@ -224,6 +258,16 @@ class MockMessageSession(MessageSession):
                                        for x in message_chain.as_sendable()])
 
         try:
+            if self._script:
+                result = self._script.pop(0)
+                if delete:
+                    await self.delete()
+                new_msg = MockMessageSession(parent_session=self)
+                new_msg._script = self._script
+                self._script = []
+                await new_msg.async_init(result)
+                return new_msg
+
             if confirm_prompt:
                 result = input(f"{confirm_prompt}\nSend: ")
             else:

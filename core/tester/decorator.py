@@ -15,14 +15,13 @@ from core.tester.mock.parser import parser
 _REGISTRY: List[dict] = []
 
 
-def case(input_: str,
+def case(input_: Union[str, list[str], Tuple[str]],
          expected: Optional[Union[bool,
                                   str,
                                   MessageChain,
                                   list[MessageElement],
                                   Tuple[MessageElement],
                                   MessageElement]] = None,
-         manual: bool = False,
          note: Optional[str] = None):
     """
     快捷注册一个测试案例。
@@ -36,7 +35,6 @@ def case(input_: str,
     ```
     :param input: 预期输入。
     :param expected: 预期输出，若为 bool 则表示是否存在输出，否则将对比预期输出。
-    :param manual: 是否使用人工检查。
     :param note: 额外说明。
     """
 
@@ -45,7 +43,6 @@ def case(input_: str,
             "func": fn,
             "input": input_,
             "expected": expected,
-            "manual": manual,
             "note": note,
             "file": inspect.getsourcefile(fn),
             "line": inspect.getsourcelines(fn)[1],
@@ -75,7 +72,7 @@ async def run_registry(entry: dict):
 
     results = []
     msg = MockMessageSession(input_)
-    await msg.async_init(input_)
+    await msg.async_init(msg.trigger_msg)
     setattr(msg, "_casetest_target", func)
     try:
         await parser(msg)
