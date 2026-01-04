@@ -253,7 +253,7 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
 
 
 async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word, identify_str):
-    time_start = time.time()
+    time_start = time.perf_counter()
     bot: "Bot" = exports["Bot"]
     try:
         await _check_target_cooldown(msg)
@@ -341,7 +341,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
 
     except FinishedException as e:
 
-        time_used = time.time() - time_start
+        time_used = time.perf_counter() - time_start
         Logger.success(f"Successfully finished session from {identify_str}, returns: {str(e)}. "
                        f"Times take up: {time_used:06f}s")
         Info.command_parsed += 1
@@ -393,7 +393,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                     continue
 
                 for rfunc in regex_module.regex_list.set:  # 遍历正则模块的表达式
-                    time_start = time.time()
+                    time_start = time.perf_counter()
                     matched = False
                     _typing = False
                     try:
@@ -462,7 +462,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                             ExecutionLockList.remove(msg)
                             raise FinishedException(msg.sent)  # if not using msg.finish
                     except FinishedException as e:
-                        time_used = time.time() - time_start
+                        time_used = time.perf_counter() - time_start
                         if rfunc.logging:
                             Logger.success(
                                 f"Successfully finished session from {identify_str}, returns: {str(e)}. "
