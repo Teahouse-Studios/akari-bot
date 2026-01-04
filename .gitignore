@@ -35,3 +35,4 @@ matrix_store
 output/*
 .bot.lock
 /test*.*
+!tester.py
