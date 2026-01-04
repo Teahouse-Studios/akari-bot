@@ -13,16 +13,14 @@ from core.constants import FinishedException
 
 
 class MockMessageSession(MessageSession):
-    __test__ = False
-
-    def __init__(self, trigger_msg=None, parent_session=None):
+    def __init__(self, trigger_msg=None, parent_session=None, is_ci=False):
         if isinstance(trigger_msg, (list, tuple)):
             self._script = list(trigger_msg)
             self.trigger_msg = self._script.pop(0) if self._script else ""
         else:
             self._script = []
             self.trigger_msg = trigger_msg
-
+        self.is_ci = is_ci
         self.parsed_msg = {}
         self.matched_msg = None
         self.sent = []
@@ -56,8 +54,9 @@ class MockMessageSession(MessageSession):
                 self.action.append(x.text)
             elif isinstance(x, ImageElement):
                 image_path = await x.get()
-                img = PILImage.open(image_path)
-                img.show()
+                if not self.is_ci:
+                    img = PILImage.open(image_path)
+                    img.show()
                 self.action.append(str(x))
             elif isinstance(x, MentionElement):
                 self.action.append(f"<@{x.client}|{str(x.id)}>")
@@ -147,12 +146,14 @@ class MockMessageSession(MessageSession):
                     return True
                 return False
 
-            result = input(f"{confirm_prompt}\nConfirm: ")
-            if delete:
-                await self.delete()
-            if result in confirm_command:
-                return True
-            return False
+            if not self.is_ci:
+                result = input(f"{confirm_prompt}\nConfirm: ")
+                if delete:
+                    await self.delete()
+                if result in confirm_command:
+                    return True
+                return False
+            raise IndexError("Input has been exhausted")
         except (EOFError, KeyboardInterrupt):
             os._exit(1)
         except Exception as e:
@@ -180,21 +181,23 @@ class MockMessageSession(MessageSession):
                 result = self._script.pop(0)
                 if delete:
                     await self.delete()
-                new_msg = MockMessageSession(parent_session=self)
+                new_msg = MockMessageSession(parent_session=self, is_ci=self.is_ci)
                 new_msg._script = self._script
                 self._script = []
                 await new_msg.async_init(result)
                 return new_msg
-
-            if confirm_prompt:
-                result = input(f"{confirm_prompt}\nSend: ")
-            else:
-                result = input("Send: ")
-            if delete:
-                await self.delete()
-            new_msg = MockMessageSession(parent_session=self)
-            await new_msg.async_init(result)
-            return new_msg
+    
+            if not self.is_ci:
+                if confirm_prompt:
+                    result = input(f"{confirm_prompt}\nSend: ")
+                else:
+                    result = input("Send: ")
+                if delete:
+                    await self.delete()
+                new_msg = MockMessageSession(parent_session=self)
+                await new_msg.async_init(result)
+                return new_msg
+            raise IndexError("Input has been exhausted")
         except (EOFError, KeyboardInterrupt):
             os._exit(1)
         except Exception as e:
@@ -223,21 +226,23 @@ class MockMessageSession(MessageSession):
                 result = self._script.pop(0)
                 if delete:
                     await self.delete()
-                new_msg = MockMessageSession(parent_session=self)
+                new_msg = MockMessageSession(parent_session=self, is_ci=self.is_ci)
                 new_msg._script = self._script
                 self._script = []
                 await new_msg.async_init(result)
                 return new_msg
 
-            if confirm_prompt:
-                result = input(f"{confirm_prompt}\nReply: ")
-            else:
-                result = input("Reply: ")
-            if delete:
-                await self.delete()
-            new_msg = MockMessageSession(parent_session=self)
-            await new_msg.async_init(result)
-            return new_msg
+            if not self.is_ci:
+                if confirm_prompt:
+                    result = input(f"{confirm_prompt}\nReply: ")
+                else:
+                    result = input("Reply: ")
+                if delete:
+                    await self.delete()
+                new_msg = MockMessageSession(parent_session=self)
+                await new_msg.async_init(result)
+                return new_msg
+            raise IndexError("Input has been exhausted")
         except (EOFError, KeyboardInterrupt):
             os._exit(1)
         except Exception as e:
@@ -262,21 +267,23 @@ class MockMessageSession(MessageSession):
                 result = self._script.pop(0)
                 if delete:
                     await self.delete()
-                new_msg = MockMessageSession(parent_session=self)
+                new_msg = MockMessageSession(parent_session=self, is_ci=self.is_ci)
                 new_msg._script = self._script
                 self._script = []
                 await new_msg.async_init(result)
                 return new_msg
 
-            if confirm_prompt:
-                result = input(f"{confirm_prompt}\nSend: ")
-            else:
-                result = input("Send: ")
-            if delete:
-                await self.delete()
-            new_msg = MockMessageSession(parent_session=self)
-            await new_msg.async_init(result)
-            return new_msg
+            if not self.is_ci:
+                if confirm_prompt:
+                    result = input(f"{confirm_prompt}\nSend: ")
+                else:
+                    result = input("Send: ")
+                if delete:
+                    await self.delete()
+                new_msg = MockMessageSession(parent_session=self)
+                await new_msg.async_init(result)
+                return new_msg
+            raise IndexError("Input has been exhausted")
         except (EOFError, KeyboardInterrupt):
             os._exit(1)
         except Exception as e:

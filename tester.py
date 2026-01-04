@@ -9,11 +9,15 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import confirm_command
+from core.constants import tests_path
 from core.logger import Logger
-from core.tester import get_registry, run_registry, Tester
+from core.tester.decorator import get_registry, run_registry
 from core.tester.mock.database import init_db, close_db
 from core.tester.mock.loader import load_modules
 from core.tester.mock.random import Random
+from core.tester.process import run_function_test
+
+IS_CI = os.environ.get("CI", "0") == "1"
 
 
 async def main():
@@ -32,14 +36,14 @@ async def main():
     except Exception:
         Logger.exception("Failed to load modules for tests:")
 
+    print("=" * 60)
     registry = get_registry()
-    if not registry:
-        Logger.warning("No tests registered. Use `core.casetest.case` to register tests. Continuing to function-based tests.")
 
     i = 0
     total = 0
     passed = 0
     failed = 0
+    total_test_cost = 0.0
 
     for entry in registry:
         i += 1
@@ -49,7 +53,7 @@ async def main():
         file_loc = f"{entry.get('file')}:{entry.get('line')}"
         Logger.info(f"TEST{i}: {fn.__name__} ({file_loc})")
         if fn.__doc__:
-            Logger.info(f"NOTE: {fn.__doc__}")
+            Logger.info(f"DOC: {fn.__doc__}")
 
         try:
             await close_db()
@@ -64,7 +68,7 @@ async def main():
         except Exception:
             Logger.exception("Failed to load modules for tests:")
 
-        results = await run_registry(entry)
+        results = await run_registry(entry, IS_CI)
 
         for r in results:
             total += 1
@@ -88,19 +92,28 @@ async def main():
             Logger.info(f"OUTPUT:\n{fmted_output}")
 
             if expected is None:  # noqa
-                try:
-                    Logger.warning("REVIEW: Did the output meet expectations? [y/N]")
-                    check = input()
-                    if check in confirm_command:
-                        Logger.success("RESULT: PASS")
+                if IS_CI:
+                    if not output:
+                        Logger.success("RESULT: PASS (auto CI)")
                         passed += 1
                     else:
-                        Logger.error("RESULT: FAIL")
+                        Logger.error("RESULT: FAIL (auto CI)")
+                        Logger.error("EXPECTED:\n[NO OUTPUT]")
                         failed += 1
-                except (EOFError, KeyboardInterrupt):
-                    print("")
-                    Logger.warning("Interrupted by user.")
-                    os._exit(1)
+                else:
+                    try:
+                        Logger.warning("REVIEW: Did the output meet expectations? [y/N]")
+                        check = input()
+                        if check in confirm_command:
+                            Logger.success("RESULT: PASS")
+                            passed += 1
+                        else:
+                            Logger.error("RESULT: FAIL")
+                            failed += 1
+                    except (EOFError, KeyboardInterrupt):
+                        print("")
+                        Logger.warning("Interrupted by user.")
+                        os._exit(1)
             elif expected is True:  # noqa
                 if output:
                     Logger.success("RESULT: PASS")
@@ -134,11 +147,14 @@ async def main():
                     Logger.error("RESULT: FAIL")
                     Logger.error(f"EXPECTED:\n{excepted_}")
                     failed += 1
+            tcost = r.get("time_cost")
+            if tcost is not None:
+                Logger.info(f"TIME COST: {tcost:.06f}s")
+                total_test_cost += tcost
         print("-" * 60)
 
-    tests_dir = os.path.join(os.getcwd(), "tests")
-    if os.path.isdir(tests_dir):
-        pyfiles = sorted(glob.glob(os.path.join(tests_dir, "*.py")))
+    if os.path.isdir(tests_path):
+        pyfiles = sorted(glob.glob(os.path.join(tests_path, "*.py")))
         for path in pyfiles:
             name = os.path.splitext(os.path.basename(path))[0]
             spec = importlib.util.spec_from_file_location(f"tests_{name}", path)
@@ -156,50 +172,22 @@ async def main():
                 i += 1
                 Logger.info(f"TEST{i}: {fn.__name__} ({path})")
                 if fn.__doc__:
-                    Logger.info(f"NOTE: {fn.__doc__}")
+                    Logger.info(f"DOC: {fn.__doc__}")
 
-                try:
-                    await close_db()
-                except Exception:
-                    Logger.exception("Error closing database before func test")
-                if not await init_db():
-                    Logger.critical(f"Failed to reinitialize database for func test {fn.__name__}. Skipping.")
+                res = await run_function_test(fn, IS_CI)
+                if res.get("skipped"):
                     continue
-
-                try:
-                    await load_modules(show_logs=False, monkey_patches={"Random": Random()})
-                except Exception:
-                    Logger.exception("Failed to load modules for tests:")
-
-                tester = Tester(fn.__name__)
-                returned = None
-                try:
-                    sig = inspect.signature(fn)
-                    if inspect.iscoroutinefunction(fn):
-                        if len(sig.parameters) >= 1:
-                            returned = await fn(tester)
-                        else:
-                            returned = await fn()
-                    else:
-                        if len(sig.parameters) >= 1:
-                            returned = fn(tester)
-                        else:
-                            returned = fn()
-                except Exception:
-                    Logger.exception(f"Error running test function {fn.__name__}:")
+                if res.get("error"):
                     failed += 1
                     total += 1
                     continue
 
-                if isinstance(returned, Tester):
-                    tester = returned
-
-                entries = tester.get_entries()
+                entries = res["entries"]
                 if not entries:
                     Logger.warning(f"No inputs registered in func test {fn.__name__}; skipping.")
                     continue
 
-                results = tester.get_results()
+                results = res["results"]
 
                 func_pass = True
                 for r in results:
@@ -250,15 +238,24 @@ async def main():
                     Logger.error(f"FUNC ({fn.__name__}) RESULT: FAIL")
                     failed += 1
 
-                total += 1
+                tcost = res.get("time_cost")
+                if tcost is not None:
+                    Logger.info(f"TIME COST: {tcost:.06f}s")
+                    total_test_cost += tcost
 
-    print("-" * 60)
-    Logger.info(f"TOTAL: {total}")
-    if passed:
-        Logger.success(f"PASSED: {passed}")
-    if failed:
-        Logger.error(f"FAILED: {failed}")
-    print("-" * 60)
+                total += 1
+                print("-" * 60)
+
+    if total > 0:
+        Logger.info(f"TOTAL: {total}")
+        if passed:
+            Logger.success(f"PASSED: {passed}")
+        if failed:
+            Logger.error(f"FAILED: {failed}")
+        Logger.info(f"TIME COST: {total_test_cost:.06f}s")
+        print("=" * 60)
+    else:
+        Logger.warning("No tests registered. Use `core.tester.case` or `core.tester.test_case` to register tests.")
     await close_db()
 
 

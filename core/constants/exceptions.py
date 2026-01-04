@@ -43,7 +43,6 @@ class NoReportException(Exception):
 
 
 class TestException(Exception):
-    __test__ = False
     pass
 
 
