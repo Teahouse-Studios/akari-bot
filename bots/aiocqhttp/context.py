@@ -3,7 +3,6 @@ import random
 import re
 import time
 from pathlib import Path
-from typing import Optional, Union, List
 
 import aiocqhttp
 from aiocqhttp import Event, MessageSegment
@@ -47,7 +46,7 @@ async def fake_forward_msg(session_info: SessionInfo, nodelist):
 def convert_msg_nodes(
     session_info: SessionInfo,
     msg_node: MessageNodes,
-) -> List[dict]:
+) -> list[dict]:
     node_list = []
     for message in msg_node.values:
         content = ""
@@ -104,7 +103,7 @@ async def get_avaliable_private_list():
 
 class AIOCQContextManager(ContextManager):
     context: dict[str, Event] = {}
-    features: Optional[Features] = Features
+    features: Features | None = Features
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
@@ -130,7 +129,7 @@ class AIOCQContextManager(ContextManager):
     async def send_message(cls, session_info: SessionInfo, message: MessageChain | MessageNodes,
                            quote: bool = True,
                            enable_parse_message=True,
-                           enable_split_image=True, ) -> List[str]:
+                           enable_split_image=True, ) -> list[str]:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
 
@@ -291,7 +290,7 @@ class AIOCQContextManager(ContextManager):
         return []
 
     @classmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: Union[str, List[str]]) -> None:
+    async def delete_message(cls, session_info: SessionInfo, message_id: str | list[str]) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -306,7 +305,7 @@ class AIOCQContextManager(ContextManager):
                     Logger.exception(f"Failed to delete message {x} in session {session_info.session_id}: ")
 
     @classmethod
-    async def add_reaction(cls, session_info: SessionInfo, message_id: Union[str, list[str]], emoji: str) -> None:
+    async def add_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -337,7 +336,7 @@ class AIOCQContextManager(ContextManager):
                                  message_id} in session {session_info.session_id}: ")
 
     @classmethod
-    async def remove_reaction(cls, session_info: SessionInfo, message_id: Union[str, list[str]], emoji: str) -> None:
+    async def remove_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -454,7 +453,7 @@ class AIOCQContextManager(ContextManager):
                 pass
 
     @classmethod
-    async def call_api(cls, api_name: str, **kwargs) -> Optional[dict]:
+    async def call_api(cls, api_name: str, **kwargs) -> dict | None:
         """
         调用 OneBot API。
 
@@ -475,7 +474,7 @@ class AIOCQFetchedContextManager(AIOCQContextManager):
     async def send_message(cls, session_info: SessionInfo, message: MessageChain | MessageNodes,
                            quote: bool = True,
                            enable_parse_message=True,
-                           enable_split_image=True, ) -> None:
+                           enable_split_image=True) -> None:
         append_tsk = _tasks_high_priority if session_info.target_info.target_data.get(
             "in_post_whitelist", False) else _tasks
         append_tsk.append(

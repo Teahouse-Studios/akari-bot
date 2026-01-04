@@ -3,7 +3,6 @@ import re
 import urllib.parse
 from copy import deepcopy
 from datetime import datetime
-from typing import Union, Dict, List, Optional
 
 import orjson
 from attrs import define
@@ -34,7 +33,7 @@ class InvalidWikiError(Exception):
 @define
 class QueryInfo:
     api: str
-    headers: Dict[str, str] = {
+    headers: dict[str, str] = {
         "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"
     }
     prefix: str = ""
@@ -44,7 +43,7 @@ class QueryInfo:
     def assign(
         cls,
         api: str,
-        headers: Dict[str, str],
+        headers: dict[str, str],
         prefix: str = "",
         locale: str = default_locale,
     ):
@@ -57,13 +56,13 @@ class QueryInfo:
 class WikiInfo:
     api: str = ""
     articlepath: str = ""
-    extensions: List[str] = []
-    interwiki: Dict[str, str] = {}
+    extensions: list[str] = []
+    interwiki: dict[str, str] = {}
     realurl: str = ""
     name: str = ""
-    namespaces: Dict[str, int] = {}
-    namespaces_local: Dict[str, str] = {}
-    namespacealiases: Dict[str, str] = {}
+    namespaces: dict[str, int] = {}
+    namespaces_local: dict[str, str] = {}
+    namespacealiases: dict[str, str] = {}
     in_allowlist: bool = False
     in_blocklist: bool = False
     script: str = ""
@@ -75,32 +74,32 @@ class WikiInfo:
 @define
 class WikiStatus:
     available: bool
-    value: Union[WikiInfo, bool]
+    value: WikiInfo | bool
     message: str
 
 
 @define
 class PageInfo:
     info: WikiInfo
-    title: Optional[str]
+    title: str | None
     id: int = -1
-    before_title: Optional[str] = None
-    link: Optional[str] = None
-    edit_link: Optional[str] = None
-    file: Optional[str] = None
-    desc: Optional[str] = None
-    args: Optional[str] = None
-    selected_section: Optional[str] = None
-    sections: List[str] = None
-    interwiki_prefix: Optional[str] = ""
+    before_title: str | None = None
+    link: str | None = None
+    edit_link: str | None = None
+    file: str | None = None
+    desc: str | None = None
+    args: str | None = None
+    selected_section: str | None = None
+    sections: list[str] = None
+    interwiki_prefix: str | None = ""
     status: bool = True
-    templates: List[str] = None
+    templates: list[str] = None
     before_page_property: str = "page"
     page_property: str = "page"
     has_template_doc: bool = False
-    invalid_namespace: Union[str, bool] = False
-    possible_research_title: List[str] = None
-    body_class: List[str] = None
+    invalid_namespace: str | bool = False
+    possible_research_title: list[str] = None
+    body_class: list[str] = None
     invalid_section: bool = False
     is_talk_page: bool = False
     is_forum: bool = False
@@ -157,7 +156,7 @@ class WikiLib:
             raise NoReportException(str(e))
 
     async def rearrange_siteinfo(
-        self, info: Union[dict, str, bytes], wiki_api_link
+        self, info: dict | str | bytes, wiki_api_link
     ) -> WikiInfo:
         if isinstance(info, (str, bytes)):
             info = orjson.loads(info)
@@ -726,19 +725,19 @@ class WikiLib:
             )
 
         # handle redirects, normalized titles, converted titles
-        normalized_: List[Dict[str, str]] = query.get("normalized")
+        normalized_: list[dict[str, str]] = query.get("normalized")
         if normalized_:
             for n in normalized_:
                 if n["from"] == title:
                     page_info.before_title = n["from"]
                     page_info.title = n["to"]
-        converted_: List[Dict[str, str]] = query.get("converted")
+        converted_: list[dict[str, str]] = query.get("converted")
         if converted_:
             for c in converted_:
                 if c["from"] == title:
                     page_info.before_title = c["from"]
                     page_info.title = c["to"]
-        redirects_: List[Dict[str, str]] = query.get("redirects")
+        redirects_: list[dict[str, str]] = query.get("redirects")
         if redirects_:
             for r in redirects_:
                 if r["from"] == title:
@@ -746,7 +745,7 @@ class WikiLib:
                     page_info.title = r["to"]
 
         # get page data
-        pages: Dict[str, dict] = query.get("pages")
+        pages: dict[str, dict] = query.get("pages")
         if pages:
             for page_id in pages:
                 # set default values
@@ -1123,7 +1122,7 @@ class WikiLib:
                             page_info.edit_link = query_langlinks.edit_link
                             page_info.file = query_langlinks.file
                             page_info.desc = query_langlinks.desc
-        interwiki_: List[Dict[str, str]] = query.get("interwiki")
+        interwiki_: list[dict[str, str]] = query.get("interwiki")
         if interwiki_:
             # handling interwiki pages
             for i in interwiki_:

@@ -1,7 +1,7 @@
 import asyncio
 import threading
 import time
-from typing import Any, ClassVar, Union, Iterable
+from typing import Any, ClassVar, Iterable
 
 
 class TempCounter:
@@ -47,7 +47,7 @@ class TempList:
         if len(self.items) > self.length:
             self.items.pop(0)
 
-    def extend(self, items: Union[Iterable, "TempList"]):
+    def extend(self, items: "Iterable | TempList"):
         if isinstance(items, TempList):
             items = items.items
         self.items.extend(items)
@@ -92,7 +92,7 @@ class TempList:
     def __contains__(self, item):
         return item in self.items
 
-    def __add__(self, other: Union[Iterable, "TempList"]):
+    def __add__(self, other: "Iterable | TempList"):
         if isinstance(other, TempList):
             other = other.items
         new_items = self.items + other
@@ -100,7 +100,7 @@ class TempList:
             new_items = new_items[-self.length:]
         return TempList(self.length, _items=new_items)
 
-    def __iadd__(self, other: Union[Iterable, "TempList"]):
+    def __iadd__(self, other: "Iterable | TempList"):
         if isinstance(other, TempList):
             other = other.items
         self.items += other
@@ -153,7 +153,7 @@ class ExpiringTempDict:
     _lock: ClassVar[threading.RLock] = threading.RLock()
     _clear_lock: ClassVar[asyncio.Lock] = asyncio.Lock()
 
-    def __init__(self, exp: Union[int, float] = 86400.0, ts: Union[int, float] = time.time(), data: Any = None):
+    def __init__(self, exp: int | float = 86400.0, ts: int | float = time.time(), data: Any = None):
         self.exp = exp
         self.data = data or {}
         self.ts = float(ts)
@@ -315,16 +315,16 @@ class ExpiringTempDict:
             if kwargs:
                 self.data.update(kwargs)
 
-    def __or__(self, other: Union[dict, "ExpiringTempDict"]):
+    def __or__(self, other: "dict | ExpiringTempDict"):
         new_obj = self.copy()
         new_obj.update(other)
         return new_obj
 
-    def __ior__(self, other: Union[dict, "ExpiringTempDict"]):
+    def __ior__(self, other: "dict | ExpiringTempDict"):
         self.update(other)
         return self
 
-    def __ror__(self, other: Union[dict, "ExpiringTempDict"]):
+    def __ror__(self, other: "dict | ExpiringTempDict"):
         if isinstance(other, dict):
             new_dict = other.copy()
             new_dict.update(self.to_dict())

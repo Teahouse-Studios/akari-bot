@@ -1,6 +1,5 @@
 import asyncio
 import re
-from typing import Optional, Union
 
 import filetype
 
@@ -75,13 +74,13 @@ async def _(msg: Bot.MessageSession, pageid: str):
 
 
 async def query_pages(
-    session: Union[Bot.MessageSession, QueryInfo],
-    title: Optional[Union[str, list, tuple]] = None,
-    pageid: Optional[str] = None,
-    iw: Optional[str] = None,
-    lang: Optional[str] = None,
-    preset_message: Optional[str] = None,
-    start_wiki_api: Optional[str] = None,
+    session: Bot.MessageSession | QueryInfo,
+    title: str | list | tuple | None = None,
+    pageid: str | None = None,
+    iw: str | None = None,
+    lang: str | None = None,
+    preset_message: str | None = None,
+    start_wiki_api: str | None = None,
     template: bool = False,
     mediawiki: bool = False,
     use_prefix: bool = True,

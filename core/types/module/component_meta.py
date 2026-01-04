@@ -1,5 +1,5 @@
 import re
-from typing import Callable, Union, List
+from typing import Callable
 
 from apscheduler.triggers.combining import AndTrigger, OrTrigger
 from apscheduler.triggers.cron import CronTrigger
@@ -19,7 +19,7 @@ class ModuleMeta:
 @define
 class CommandMeta(ModuleMeta):
     function: Callable = None
-    command_template: List[Template] = field(default=[], converter=convert_list)
+    command_template: list[Template] = field(default=[], converter=convert_list)
     options_desc: dict = None
     required_admin: bool = False
     required_superuser: bool = False
@@ -33,7 +33,7 @@ class CommandMeta(ModuleMeta):
 @define
 class RegexMeta(ModuleMeta):
     function: Callable = None
-    pattern: Union[str, re.Pattern] = None
+    pattern: str | re.Pattern = None
     mode: str = None
     desc: str = None
     required_admin: bool = False
@@ -46,12 +46,12 @@ class RegexMeta(ModuleMeta):
     logging: bool = True
     show_typing: bool = True
     text_only: bool = True
-    element_filter: tuple[MessageElement] = []
+    element_filter: tuple[MessageElement, ...] = []
 
 
 @define
 class ScheduleMeta(ModuleMeta):
-    trigger: Union[AndTrigger, OrTrigger, DateTrigger, CronTrigger, IntervalTrigger]
+    trigger: AndTrigger | OrTrigger | DateTrigger | CronTrigger | IntervalTrigger
     function: Callable = None
 
 

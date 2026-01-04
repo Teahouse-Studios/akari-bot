@@ -7,7 +7,7 @@ import re
 from copy import deepcopy
 from datetime import datetime, UTC
 from pathlib import Path
-from typing import Optional, TYPE_CHECKING, Dict, Any, Union, List
+from typing import Any, TYPE_CHECKING
 from urllib import parse
 
 import httpx
@@ -77,7 +77,7 @@ class URLElement(BaseElement):
     url: str
     applied_mm: bool | None = None
     applied_md_format: bool = False
-    md_format_name: Optional[str] = None
+    md_format_name: str | None = None
 
     @classmethod
     def assign(
@@ -85,7 +85,7 @@ class URLElement(BaseElement):
             url: str,
             use_mm: bool | None = None,
             md_format: bool = False,
-            md_format_name: Optional[str] = None):
+            md_format_name: str | None = None):
         """
         :param url: URL。
         :param use_mm: 是否使用链接跳板，覆盖全局设置。（默认为 None，为 None 时将根据客户端情况选择是否使用跳板）
@@ -125,7 +125,7 @@ class FormattedTimeElement(BaseElement):
     seconds: bool = True
     timezone: bool = True
 
-    def to_str(self, session_info: Optional[SessionInfo] = None):
+    def to_str(self, session_info: SessionInfo | None = None):
         ftime_template = []
         if session_info:
             dt = datetime.fromtimestamp(self.timestamp, UTC) + session_info.timezone_offset
@@ -178,7 +178,7 @@ class FormattedTimeElement(BaseElement):
             ftime_template.append(tz_template)
         return datetime.fromtimestamp(self.timestamp).strftime(" ".join(ftime_template))
 
-    def kecode(self, session_info: Optional[SessionInfo] = None):
+    def kecode(self, session_info: SessionInfo | None = None):
         return f"[KE:plain,text={self.to_str(session_info)}]"
 
     def __str__(self):
@@ -222,7 +222,7 @@ class I18NContextElement(BaseElement):
 
     key: str
     disable_joke: bool
-    kwargs: Dict[str, Any]
+    kwargs: dict[str, Any]
 
     @classmethod
     def assign(cls, key: str, disable_joke: bool = False, **kwargs: Any):
@@ -257,12 +257,12 @@ class ImageElement(BaseElement):
 
     path: str
     need_get: bool = False
-    headers: Optional[Dict[str, Any]] = None
-    cached_b64: Optional[str] = None
+    headers: dict[str, Any] | None = None
+    cached_b64: str | None = None
 
     @classmethod
     def assign(
-        cls, path: Union[str, Path, PILImage.Image], headers: Optional[Dict[str, Any]] = None
+        cls, path: str | Path | PILImage.Image, headers: dict[str, Any] | None = None
     ):
         """
         :param path: 图片路径。
@@ -455,30 +455,30 @@ class EmbedElement(BaseElement):
     :param fields: 字段。
     """
 
-    title: Optional[str] = None
-    description: Optional[str] = None
-    url: Optional[str] = None
+    title: str | None = None
+    description: str | None = None
+    url: str | None = None
     timestamp: float = datetime.now().timestamp()
     color: int = 0x0091FF
-    image: Optional[ImageElement] = None
-    thumbnail: Optional[ImageElement] = None
-    author: Optional[str] = None
-    footer: Optional[str] = None
-    fields: Optional[List[EmbedFieldElement]] = None
+    image: ImageElement | None = None
+    thumbnail: ImageElement | None = None
+    author: str | None = None
+    footer: str | None = None
+    fields: list[EmbedFieldElement] | None = None
 
     @classmethod
     def assign(
         cls,
-        title: Optional[str] = None,
-        description: Optional[str] = None,
-        url: Optional[str] = None,
+        title: str | None = None,
+        description: str | None = None,
+        url: str | None = None,
         timestamp: float = datetime.now().timestamp(),
         color: int = 0x0091FF,
-        image: Optional[ImageElement] = None,
-        thumbnail: Optional[ImageElement] = None,
-        author: Optional[str] = None,
-        footer: Optional[str] = None,
-        fields: Optional[List[EmbedFieldElement]] = None,
+        image: ImageElement | None = None,
+        thumbnail: ImageElement | None = None,
+        author: str | None = None,
+        footer: str | None = None,
+        fields: list[EmbedFieldElement] | None = None,
     ):
         return deepcopy(
             cls(
@@ -495,7 +495,7 @@ class EmbedElement(BaseElement):
             )
         )
 
-    def to_message_chain(self, session_info: Optional[SessionInfo] = None):
+    def to_message_chain(self, session_info: SessionInfo | None = None):
         """
         将Embed转换为消息链。
         """

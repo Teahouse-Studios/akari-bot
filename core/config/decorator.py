@@ -1,5 +1,5 @@
 import inspect
-from typing import Literal, TypeVar, Any, get_args
+from typing import Any, Literal, TypeVar, get_args
 from types import UnionType
 
 

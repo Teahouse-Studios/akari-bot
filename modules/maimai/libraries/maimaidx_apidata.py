@@ -1,5 +1,4 @@
 from collections import defaultdict
-from typing import Optional, Union
 
 import orjson
 from langconv.converter import LanguageConverter
@@ -88,7 +87,7 @@ async def update_alias() -> bool:
         return False
 
 
-async def get_info(music: Music, details: Union[str, MessageChain]) -> MessageChain:
+async def get_info(music: Music, details: str | MessageChain) -> MessageChain:
     info = MessageChain.assign(Plain(f"{music.id} - {music.title}{" (DX)" if music["type"] == "DX" else ""}"))
     cover_path = mai_cover_path / f"{music.id}.png"
     if cover_path.exists():
@@ -151,7 +150,7 @@ async def search_by_alias(input_: str) -> list:
 
 async def get_record(
     msg: Bot.MessageSession, payload: dict, use_cache: bool = True
-) -> Optional[dict]:
+) -> dict | None:
     mai_cache_path = cache_path / "maimai-record"
     mai_cache_path.mkdir(parents=True, exist_ok=True)
     cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_record.json"
@@ -196,9 +195,9 @@ async def get_record(
 async def get_song_record(
     msg: Bot.MessageSession,
     payload: dict,
-    sid: Union[str, list[str]],
+    sid: str | list[str],
     use_cache: bool = True,
-) -> Optional[str]:
+) -> str | None:
     if DF_DEVELOPER_TOKEN:
         mai_cache_path = cache_path / "maimai-record"
         mai_cache_path.mkdir(parents=True, exist_ok=True)
@@ -305,7 +304,7 @@ async def get_total_record(
 
 async def get_plate(
     msg: Bot.MessageSession, payload: dict, version: str, use_cache: bool = True
-) -> Optional[dict]:
+) -> dict | None:
     version = "舞" if version == "覇" else version  # “覇者”属于舞代
     mai_cache_path = cache_path / "maimai-record"
     mai_cache_path.mkdir(parents=True, exist_ok=True)

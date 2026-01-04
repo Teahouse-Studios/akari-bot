@@ -11,7 +11,6 @@ import re
 import time
 import urllib.parse
 import uuid
-from typing import Union, List, Dict, Optional
 
 import httpx
 import orjson
@@ -35,7 +34,7 @@ def hash_hmac(key, code):
     return base64.b64encode(hmac_code.digest()).decode("utf-8")
 
 
-def parse_data(original_content: str, result: dict, confidence: float = 60, additional_text=None) -> Dict:
+def parse_data(original_content: str, result: dict, confidence: float = 60, additional_text=None) -> dict:
     content = original_content
 
     if use_textscan_v1:
@@ -88,14 +87,14 @@ def parse_data(original_content: str, result: dict, confidence: float = 60, addi
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
-async def check(text: Union[str,
-                            List[str],
-                            List[MessageElement],
-                            MessageElement,
-                            MessageChain],
-                session: Optional[MessageSession] = None,
+async def check(text: str |
+                list[str] |
+                list[MessageElement] |
+                MessageElement |
+                MessageChain,
+                session: MessageSession | None = None,
                 confidence: float = 60,
-                additional_text: Optional[str] = None) -> List[Dict]:
+                additional_text: str | None = None) -> list[dict]:
     """检查字符串。
 
     :param text: 字符串（List/Union）。
@@ -247,12 +246,12 @@ async def check(text: Union[str,
     return results
 
 
-async def check_bool(text: Union[str,
-                                 List[str],
-                                 List[MessageElement],
-                                 MessageElement,
-                                 MessageChain],
-                     session: Optional[MessageSession] = None,
+async def check_bool(text: str |
+                     list[str] |
+                     list[MessageElement] |
+                     MessageElement |
+                     MessageChain,
+                     session: MessageSession | None = None,
                      confidence: float = 60) -> bool:
     """检查字符串是否合规。
 

@@ -1,6 +1,6 @@
 import time
 import traceback
-from typing import Optional, Union, Tuple
+from typing import Any
 
 from core.builtins.message.chain import MessageChain, match_kecode
 from core.builtins.message.elements import PlainElement
@@ -21,10 +21,9 @@ from core.tester.mock.database import init_db, close_db
 from core.tester.mock.loader import load_modules
 from core.tester.mock.random import Random
 from core.logger import Logger
-from typing import List, Dict, Any
 
 
-async def run_case_entry(entry: dict, is_ci: bool = False) -> List[dict]:
+async def run_case_entry(entry: dict, is_ci: bool = False) -> list[dict]:
     try:
         await close_db()
     except Exception:
@@ -49,7 +48,7 @@ async def run_case_entry(entry: dict, is_ci: bool = False) -> List[dict]:
     return [result]
 
 
-async def run_function_test(fn, is_ci: bool = False) -> Dict[str, Any]:
+async def run_function_test(fn, is_ci: bool = False) -> dict[str, Any]:
     try:
         await close_db()
     except Exception:
@@ -85,7 +84,7 @@ async def run_function_test(fn, is_ci: bool = False) -> Dict[str, Any]:
 
 
 async def run_single_test(
-    input_: Union[str, list[str], Tuple[str]],
+    input_: str | list[str] | tuple[str, ...],
     *,
     casetest_target=None,
     is_ci=False
@@ -142,8 +141,8 @@ async def run_single_test(
 
 async def match_expected(
     output,
-    expected: Optional[Union[bool, str, MessageChain, list[MessageElement], Tuple[MessageElement], MessageElement]],
-) -> Optional[bool]:
+    expected: bool | str | MessageChain | list[MessageElement] | tuple[MessageElement, ...] | MessageElement,
+) -> bool | None:
     if expected is None:  # noqa
         return None
     if expected is True:  # noqa

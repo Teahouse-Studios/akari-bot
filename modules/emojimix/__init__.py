@@ -1,5 +1,3 @@
-from typing import List, Optional, Tuple
-
 import emoji
 import orjson
 
@@ -20,7 +18,7 @@ class EmojimixGenerator:
     def __init__(self):
         with open(data_path, "rb") as f:
             data = orjson.loads(f.read())
-        self.known_supported_emoji: List[str] = data["knownSupportedEmoji"]
+        self.known_supported_emoji: list[str] = data["knownSupportedEmoji"]
         self.data: dict = data["data"]
         self.date_mapping: dict = dict(enumerate(data["date"]))
 
@@ -32,12 +30,12 @@ class EmojimixGenerator:
         return emoji
 
     @staticmethod
-    def make_emoji_tuple(emoji1: str, emoji2: str) -> Tuple[str, str]:
+    def make_emoji_tuple(emoji1: str, emoji2: str) -> tuple[str, str]:
         emoji_code1 = "-".join(f"{ord(char):x}" for char in emoji1)
         emoji_code2 = "-".join(f"{ord(char):x}" for char in emoji2)
         return (emoji_code1, emoji_code2)
 
-    def random_choice_emoji(self, emoji: Optional[str] = None) -> Tuple[str, str]:
+    def random_choice_emoji(self, emoji: str | None = None) -> tuple[str, str]:
         if emoji:
             emoji_code = "-".join(f"{ord(char):x}" for char in emoji)
             emoji_combo_list = []
@@ -50,8 +48,8 @@ class EmojimixGenerator:
         combo = tuple(i.strip() for i in combo[1:-1].split(","))
         return combo
 
-    def check_supported(self, emoji_tuple: Tuple[str, str]) -> List[str]:
-        unsupported_emojis: List[str] = []
+    def check_supported(self, emoji_tuple: tuple[str, str]) -> list[str]:
+        unsupported_emojis: list[str] = []
         checked: set = set()
         for emoji_ in emoji_tuple:
             if emoji_ not in self.known_supported_emoji and emoji_ not in checked:
@@ -60,7 +58,7 @@ class EmojimixGenerator:
                 checked.add(emoji_)
         return unsupported_emojis
 
-    def mix_emoji(self, emoji_tuple: Tuple[str, str]) -> Optional[str]:
+    def mix_emoji(self, emoji_tuple: tuple[str, str]) -> str | None:
         str_tuple_1 = f"({emoji_tuple[0]}, {emoji_tuple[1]})"
         str_tuple_2 = f"({emoji_tuple[1]}, {emoji_tuple[0]})"
 
@@ -82,8 +80,8 @@ class EmojimixGenerator:
         url = f"{API}/{date}/{left_code_point}/{left_code_point}_{right_code_point}.png"
         return url
 
-    def list_supported_emojis(self, emoji: Optional[str] = None) -> Optional[List[str]]:
-        supported_combinations: List[str] = []
+    def list_supported_emojis(self, emoji: str | None = None) -> list[str] | None:
+        supported_combinations: list[str] = []
 
         if emoji:
             emoji_symbol = emoji

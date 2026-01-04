@@ -1,6 +1,5 @@
 import asyncio
 import html
-from typing import Optional, Union, List
 
 from botpy.api import BotAPI
 from botpy.errors import ServerError
@@ -44,9 +43,9 @@ class ModdedBotAPI(BotAPI):
         self,
         group_openid: str,
         file_type: int,
-        url: Optional[str] = None,
+        url: str | None = None,
         srv_send_msg: bool = False,
-        file_data: Optional[str] = None,
+        file_data: str | None = None,
     ) -> Media:
         payload = locals()
         payload.pop("self", None)
@@ -57,9 +56,9 @@ class ModdedBotAPI(BotAPI):
         self,
         openid: str,
         file_type: int,
-        url: Optional[str] = None,
+        url: str | None = None,
         srv_send_msg: bool = False,
-        file_data: Optional[str] = None,
+        file_data: str | None = None,
     ) -> Media:
         payload = locals()
         payload.pop("self", None)
@@ -69,7 +68,7 @@ class ModdedBotAPI(BotAPI):
 
 class QQBotContextManager(ContextManager):
     context: dict[str, BaseMessage] = {}
-    features: Optional[Features] = Features
+    features: Features | None = Features
 
     @classmethod
     def add_context(cls, session_info: SessionInfo, context: BaseMessage):
@@ -103,7 +102,7 @@ class QQBotContextManager(ContextManager):
     @classmethod
     async def send_message(cls, session_info: SessionInfo, message: MessageChain | MessageNodes, quote: bool = True,
                            enable_parse_message: bool = True,
-                           enable_split_image: bool = True) -> List[str]:
+                           enable_split_image: bool = True) -> list[str]:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         ctx: BaseMessage = cls.context.get(session_info.session_id)
@@ -112,8 +111,8 @@ class QQBotContextManager(ContextManager):
         if isinstance(message, MessageNodes):
             message = MessageChain.assign(await msgnode2image(message))
 
-        plains: List[PlainElement] = []
-        images: List[ImageElement] = []
+        plains: list[PlainElement] = []
+        images: list[ImageElement] = []
 
         for x in message.as_sendable(session_info, parse_message=enable_parse_message):
             if isinstance(x, PlainElement):
@@ -332,7 +331,7 @@ class QQBotContextManager(ContextManager):
         return msg_ids
 
     @classmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: Union[str, List[str]]) -> None:
+    async def delete_message(cls, session_info: SessionInfo, message_id: str | list[str]) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -367,7 +366,7 @@ class QQBotContextManager(ContextManager):
                     Logger.exception(f"Failed to delete message {msg_id} in session {session_info.session_id}: ")
 
     @classmethod
-    async def add_reaction(cls, session_info: SessionInfo, message_id: Union[str, list[str]], emoji: str) -> None:
+    async def add_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -393,7 +392,7 @@ class QQBotContextManager(ContextManager):
                                  message_id} in session {session_info.session_id}: ")
 
     @classmethod
-    async def remove_reaction(cls, session_info: SessionInfo, message_id: Union[str, list[str]], emoji: str) -> None:
+    async def remove_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):

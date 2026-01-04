@@ -1,5 +1,3 @@
-from typing import Optional
-
 from core.builtins.message.internal import Url
 
 
@@ -60,7 +58,7 @@ class ConsoleErrorField:
         name: str,
         *,
         message_str: str = "",
-        supplementary_value: Optional[int] = None,
+        supplementary_value: int | None = None,
     ):
 
         self.field_name = name
@@ -90,8 +88,8 @@ class ConsoleErrorInfo:
         error: str,
         console_name: str,
         color: int,
-        extra_description: Optional[str] = None,
-        secondary_error: Optional[str] = None,
+        extra_description: str | None = None,
+        secondary_error: str | None = None,
     ):
         self.error = error
         self.secondary_error = secondary_error

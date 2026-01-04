@@ -1,9 +1,8 @@
 import re
 from datetime import timedelta
-from typing import Dict, Optional
 
 
-def camel_to_snake(text: str, abbr_map: Optional[Dict[str, str]] = None) -> str:
+def camel_to_snake(text: str, abbr_map: dict[str, str] | None = None) -> str:
     """驼峰命名转蛇形命名。"""
     if abbr_map:
         for k, v in abbr_map.items():
@@ -13,7 +12,7 @@ def camel_to_snake(text: str, abbr_map: Optional[Dict[str, str]] = None) -> str:
 
 def snake_to_camel(text: str,
                    upper: bool = True,
-                   abbr_map: Optional[Dict[str, str]] = None) -> str:
+                   abbr_map: dict[str, str] | None = None) -> str:
     """蛇形命名转驼峰命名。
 
     :param upper: 是否转为大驼峰。（默认True）"""

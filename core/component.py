@@ -1,7 +1,7 @@
 import inspect
 import re
 from pathlib import Path
-from typing import Union, overload
+from typing import overload
 
 from apscheduler.triggers.combining import AndTrigger, OrTrigger
 from apscheduler.triggers.cron import CronTrigger
@@ -24,14 +24,14 @@ class Bind:
 
         def command(
             self,
-            command_template: Union[str, list, tuple] = None,
+            command_template: str | list | tuple = None,
             *command_templates,
             options_desc: dict = None,
             required_admin: bool = False,
             required_superuser: bool = False,
             required_base_superuser: bool = False,
-            available_for: Union[str, list, tuple] = "*",
-            exclude_from: Union[str, list, tuple] = "",
+            available_for: str | list | tuple = "*",
+            exclude_from: str | list | tuple = "",
             load: bool = True,
             priority: int = 1
         ):
@@ -70,20 +70,20 @@ class Bind:
 
         def regex(
             self,
-            pattern: Union[str, re.Pattern],
+            pattern: str | re.Pattern,
             mode: str = "M",
             flags: re.RegexFlag = 0,
             desc: str = None,
             required_admin: bool = False,
             required_superuser: bool = False,
             required_base_superuser: bool = False,
-            available_for: Union[str, list, tuple] = "*",
-            exclude_from: Union[str, list, tuple] = "",
+            available_for: str | list | tuple = "*",
+            exclude_from: str | list | tuple = "",
             load: bool = True,
             logging: bool = True,
             show_typing: bool = True,
             text_only: bool = True,
-            element_filter: tuple[MessageElement] = None
+            element_filter: tuple[MessageElement, ...] = None
         ):
             def decorator(function):
                 ModulesManager.bind_to_module(
@@ -112,9 +112,7 @@ class Bind:
 
         def schedule(
             self,
-            trigger: Union[
-                AndTrigger, OrTrigger, DateTrigger, CronTrigger, IntervalTrigger
-            ],
+            trigger: AndTrigger | OrTrigger | DateTrigger | CronTrigger | IntervalTrigger,
         ):
             def decorator(function):
                 ModulesManager.bind_to_module(
@@ -141,14 +139,14 @@ class Bind:
         @overload
         def handle(
             self,
-            command_template: Union[str, list, tuple] = None,
+            command_template: str | list | tuple = None,
             *command_templates,
             options_desc: dict = None,
             required_admin: bool = False,
             required_superuser: bool = False,
             required_base_superuser: bool = False,
-            available_for: Union[str, list, tuple] = "*",
-            exclude_from: Union[str, list, tuple] = "",
+            available_for: str | list | tuple = "*",
+            exclude_from: str | list | tuple = "",
             load: bool = True,
             priority: int = 1
         ):
@@ -157,28 +155,26 @@ class Bind:
         @overload
         def handle(
             self,
-            pattern: Union[str, re.Pattern],
+            pattern: str | re.Pattern,
             mode: str = "M",
             flags: re.RegexFlag = 0,
             desc: str = None,
             required_admin: bool = False,
             required_superuser: bool = False,
             required_base_superuser: bool = False,
-            available_for: Union[str, list, tuple] = "*",
-            exclude_from: Union[str, list, tuple] = "",
+            available_for: str | list | tuple = "*",
+            exclude_from: str | list | tuple = "",
             load: bool = True,
             show_typing: bool = True,
             logging: bool = True,
-            element_filter: tuple[MessageElement] = None
+            element_filter: tuple[MessageElement, ...] = None
         ):
             ...
 
         @overload
         def handle(
             self,
-            trigger: Union[
-                AndTrigger, OrTrigger, DateTrigger, CronTrigger, IntervalTrigger
-            ],
+            trigger: AndTrigger | OrTrigger | DateTrigger | CronTrigger | IntervalTrigger,
         ):
             ...
 
@@ -212,10 +208,10 @@ class Bind:
 
 def module(
     module_name: str,
-    alias: Union[str, list, tuple, dict, None] = None,
+    alias: str | list | tuple | dict | None = None,
     desc: str | None = None,
-    recommend_modules: Union[str, list, tuple, None] = None,
-    developers: Union[str, list, tuple, None] = None,
+    recommend_modules: str | list | tuple | None = None,
+    developers: str | list | tuple | None = None,
     required_admin: bool = False,
     base: bool = False,
     doc: bool = False,
@@ -224,9 +220,9 @@ def module(
     rss: bool = False,
     required_superuser: bool = False,
     required_base_superuser: bool = False,
-    available_for: Union[str, list, tuple] = "*",
-    exclude_from: Union[str, list, tuple] = "",
-    support_languages: Union[str, list, tuple, None] = None,
+    available_for: str | list | tuple = "*",
+    exclude_from: str | list | tuple = "",
+    support_languages: str | list | tuple | None = None,
 ):
     """
     绑定一个模块。

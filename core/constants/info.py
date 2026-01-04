@@ -1,10 +1,10 @@
-from typing import Iterable, Optional, Set, Union
+from typing import Iterable
 
 
 class Secret:
-    data: Set[str] = set()
-    ip_address: Optional[str] = None
-    ip_country: Optional[str] = None
+    data: set[str] = set()
+    ip_address: str | None = None
+    ip_country: str | None = None
 
     @classmethod
     def add(cls, secret: str):
@@ -12,7 +12,7 @@ class Secret:
             cls.data.add(secret.upper())
 
     @classmethod
-    def check(cls, text: str) -> Union[str, bool]:
+    def check(cls, text: str) -> str | bool:
         for secret in cls.data:
             if secret in text.upper():
                 return secret

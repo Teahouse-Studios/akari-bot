@@ -1,6 +1,6 @@
 import asyncio
 import time
-from typing import TYPE_CHECKING, Optional, Union, List, Coroutine
+from typing import Coroutine, TYPE_CHECKING
 
 from core.exports import add_export
 from core.logger import Logger
@@ -23,8 +23,8 @@ class SessionTaskManager:
         msg: "MessageSession",
         flag: asyncio.Event,
         all_: bool = False,
-        reply: Optional[Union[List[int], List[str], int, str]] = None,
-        timeout: Optional[float] = 120,
+        reply: list[int] | list[str] | int | str | None = None,
+        timeout: float | None = 120,
     ):
         sender = msg.session_info.sender_id
         task_type = "reply" if reply else "wait"
@@ -52,8 +52,8 @@ class SessionTaskManager:
     @classmethod
     def add_callback(
         cls,
-        message_id: Union[List[int], List[str], int, str],
-        callback: Optional[Coroutine],
+        message_id: list[int] | list[str] | int | str,
+        callback: Coroutine | None,
     ):
         if isinstance(message_id, list):
             message_id = ",".join(str(mid) for mid in message_id)

@@ -1,6 +1,5 @@
 import asyncio
 import re
-from typing import Union
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
@@ -17,7 +16,7 @@ async def _(msg: Bot.MessageSession, pagename: str):
 
 
 async def search_pages(
-    msg: Bot.MessageSession, title: Union[str, list, tuple], use_prefix: bool = True
+    msg: Bot.MessageSession, title: str | list | tuple, use_prefix: bool = True
 ):
     target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     start_wiki = target.api_link

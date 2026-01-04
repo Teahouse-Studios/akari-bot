@@ -1,22 +1,23 @@
 import inspect
-from typing import Callable, List, Optional, Tuple, Union
+from typing import Callable
 
 from core.builtins.message.chain import MessageChain
 from core.builtins.types import MessageElement
 from core.tester.process import run_case_entry
 
 
-_REGISTRY: List[dict] = []
+_REGISTRY: list[dict] = []
 
 
-def case(input_: Union[str, list[str], Tuple[str]],
-         expected: Optional[Union[bool,
-                                  str,
-                                  MessageChain,
-                                  list[MessageElement],
-                                  Tuple[MessageElement],
-                                  MessageElement]] = None,
-         note: Optional[str] = None):
+def case(input_: str | list[str] | tuple[str, ...],
+         expected: bool |
+         str |
+         MessageChain |
+         list[MessageElement] |
+         tuple[MessageElement, ...] |
+         MessageElement |
+         None = None,
+         note: str | None = None):
     """
     快捷注册一个测试案例。
 

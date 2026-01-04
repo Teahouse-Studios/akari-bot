@@ -1,6 +1,5 @@
 from collections import Counter
 from enum import Enum
-from typing import List, Optional
 
 import unicodedata
 from PIL import Image, ImageDraw, ImageFont
@@ -26,9 +25,9 @@ class WordleState(Enum):
 @define
 class WordleBoard:
     word: str
-    board: List[str] = field(factory=list)
+    board: list[str] = field(factory=list)
 
-    def add_word(self, word: str, last_word: Optional[str] = None):
+    def add_word(self, word: str, last_word: str | None = None):
         if last_word:
             last_word_state = self.test_word(last_word)
             yellow_letters = {}
@@ -54,13 +53,13 @@ class WordleBoard:
         return word in word_list
 
     def test_board(self):
-        state: List[List[WordleState]] = []
+        state: list[list[WordleState]] = []
         for row in self.board:
             state.append(self.test_word(row))
         return state
 
     def test_word(self, word: str):
-        state: List[WordleState] = [
+        state: list[WordleState] = [
             WordleState.GREY,
             WordleState.GREY,
             WordleState.GREY,
@@ -93,11 +92,11 @@ class WordleBoard:
         yellow = "🟨"
         grey = "⬜"
 
-        formatted: List[List[str]] = []
+        formatted: list[list[str]] = []
         board = self.test_board()
         for row_index, row in enumerate(board):
-            letters: List[str] = []
-            squares: List[str] = []
+            letters: list[str] = []
+            squares: list[str] = []
             for char_index, char in enumerate(row):
                 letters.append(
                     unicodedata.lookup(

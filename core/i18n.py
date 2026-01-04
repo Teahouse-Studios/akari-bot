@@ -4,7 +4,7 @@ import re
 import traceback
 from pathlib import Path
 from string import Template
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 import orjson
 
@@ -34,7 +34,7 @@ class LocaleNode:
         """查询本地化树节点"""
         return self._query_node(path.split("."))
 
-    def _query_node(self, path: List[str]):
+    def _query_node(self, path: list[str]):
         """通过路径队列查询本地化树节点"""
         if len(path) == 0:
             return self
@@ -47,7 +47,7 @@ class LocaleNode:
         """更新本地化树节点"""
         return self._update_node(path.split("."), write_value)
 
-    def _update_node(self, path: List[str], write_value: str):
+    def _update_node(self, path: list[str], write_value: str):
         """通过路径队列更新本地化树节点"""
         if len(path) == 0:
             self.value = write_value
@@ -61,7 +61,7 @@ class LocaleNode:
 locale_root = LocaleNode()
 
 
-def load_locale_file() -> List[str]:
+def load_locale_file() -> list[str]:
     locale_dict = {}
     err_prompt = []
 
@@ -100,7 +100,7 @@ def load_locale_file() -> List[str]:
     return err_prompt
 
 
-def get_available_locales() -> List[str]:
+def get_available_locales() -> list[str]:
     return list(locale_root.children.keys())
 
 
@@ -109,7 +109,7 @@ class Locale:
     创建一个本地化对象。
     """
 
-    def __init__(self, locale: str, fallback_lng: Optional[List[str]] = None):
+    def __init__(self, locale: str, fallback_lng: list[str] | None = None):
         if not fallback_lng:
             fallback_lng = supported_locales.copy()
             fallback_lng.remove(locale)
@@ -156,7 +156,7 @@ class Locale:
         # 3. 如果在 fallback 语言中本地化字符串不存在，返回 key
 
     def t(
-        self, key: Union[str, dict], fallback_failed_prompt: bool = True, **kwargs: Any
+        self, key: str | dict, fallback_failed_prompt: bool = True, **kwargs: Any
     ) -> str:
         """
         获取本地化字符串。
@@ -174,7 +174,7 @@ class Locale:
         localized = self.get_string_with_fallback(key, fallback_failed_prompt)
         return Template(localized).safe_substitute(**kwargs)
 
-    def t_str(self, text: str, fallback_failed_prompt: bool = False, **kwargs: Dict[str, Any]) -> str:
+    def t_str(self, text: str, fallback_failed_prompt: bool = False, **kwargs: dict[str, Any]) -> str:
         """
         替换字符串中的本地化键名。
 

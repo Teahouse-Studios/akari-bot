@@ -1,6 +1,5 @@
 import mimetypes
 from pathlib import Path
-from typing import Optional, Union, List, Tuple
 
 import nio
 
@@ -16,15 +15,15 @@ from .info import client_name
 
 
 class MatrixContextManager(ContextManager):
-    context: dict[str, Tuple[nio.MatrixRoom, nio.RoomMessageFormatted]] = {}
-    features: Optional[Features] = Features
+    context: dict[str, tuple[nio.MatrixRoom, nio.RoomMessageFormatted]] = {}
+    features: Features | None = Features
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         # 这里可以添加权限检查的逻辑
-        ctx: Tuple[nio.MatrixRoom, nio.RoomMessageFormatted] = cls.context.get(session_info.session_id)
+        ctx: tuple[nio.MatrixRoom, nio.RoomMessageFormatted] = cls.context.get(session_info.session_id)
         if ctx:
             room, event = ctx
             room_id = room.room_id if room else session_info.get_common_target_id()
@@ -84,7 +83,7 @@ class MatrixContextManager(ContextManager):
         #     raise ValueError("Session not found in context")
 
         msg_ids = []
-        ctx: Tuple[nio.MatrixRoom, nio.RoomMessageFormatted] = cls.context.get(session_info.session_id)
+        ctx: tuple[nio.MatrixRoom, nio.RoomMessageFormatted] = cls.context.get(session_info.session_id)
         room, event = None, None
         if ctx:
             room, event = ctx
@@ -272,7 +271,7 @@ class MatrixContextManager(ContextManager):
         return msg_ids
 
     @classmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: Union[str, List[str]]) -> None:
+    async def delete_message(cls, session_info: SessionInfo, message_id: str | list[str]) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -288,7 +287,7 @@ class MatrixContextManager(ContextManager):
                 Logger.exception(f"Failed to delete message {m} in session {session_info.session_id}: ")
 
     @classmethod
-    async def add_reaction(cls, session_info: SessionInfo, message_id: Union[str, List[str]], emoji: str) -> None:
+    async def add_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):

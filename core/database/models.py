@@ -4,7 +4,7 @@ import uuid
 from collections import Counter
 from datetime import datetime, UTC, timedelta
 from decimal import Decimal
-from typing import Any, List, Optional, Union
+from typing import Any
 
 from tortoise import fields
 from tortoise.transactions import in_transaction
@@ -66,7 +66,7 @@ class SenderInfo(DBModel):
         await self.save()
         return True
 
-    async def modify_petal(self, amount: Union[str, int, Decimal]) -> bool:
+    async def modify_petal(self, amount: str | int | Decimal) -> bool:
         """
         修改用户花瓣数量。
 
@@ -84,7 +84,7 @@ class SenderInfo(DBModel):
         await self.save()
         return True
 
-    async def edit_sender_data(self, key: str, value: Optional[Any] = None) -> bool:
+    async def edit_sender_data(self, key: str, value: Any | None = None) -> bool:
         """
         设置用户数据。
 
@@ -131,7 +131,7 @@ class TargetInfo(DBModel):
     class Meta:
         table = "target_info"
 
-    async def config_module(self, module_name: Union[str, list, tuple[str]], enable: bool = True) -> bool:
+    async def config_module(self, module_name: str | list | tuple, enable: bool = True) -> bool:
         """
         设置会话内可用模块。
 
@@ -160,7 +160,7 @@ class TargetInfo(DBModel):
         await self.save()
         return self.muted
 
-    async def edit_target_data(self, key: str, value: Optional[Any] = None) -> bool:
+    async def edit_target_data(self, key: str, value: Any | None = None) -> bool:
         """
         设置会话数据。
 
@@ -220,8 +220,8 @@ class TargetInfo(DBModel):
         return True
 
     @classmethod
-    async def get_target_list_by_module(cls, module_name: Optional[Union[str, list[str], tuple[str]]],
-                                        id_prefix: Optional[str] = None) -> List[TargetInfo]:
+    async def get_target_list_by_module(cls, module_name: str | list[str] | tuple[str, ...] | None,
+                                        id_prefix: str | None = None) -> list[TargetInfo]:
         """
         获取开启此模块的所有会话列表。
 
@@ -325,7 +325,7 @@ class ModuleStatus(DBModel):
         table = "module_status"
 
     @classmethod
-    async def init_modules(cls, modules_list: List[str]):
+    async def init_modules(cls, modules_list: list[str]):
         async with in_transaction("default"):
             existing = await cls.all().values_list("module_name", flat=True)
             existing_set = set(existing)
@@ -482,7 +482,7 @@ class JobQueuesTable(DBModel):
         return True
 
     @classmethod
-    async def get_first(cls, target_clients: Union[str, List[str]]):
+    async def get_first(cls, target_clients: str | list[str]):
         if isinstance(target_clients, str):
             target_clients = [target_clients]
         return await cls.filter(
@@ -490,7 +490,7 @@ class JobQueuesTable(DBModel):
         ).first()
 
     @classmethod
-    async def get_all(cls, target_clients: Union[str, List[str]]):
+    async def get_all(cls, target_clients: str | list[str]):
         if isinstance(target_clients, str):
             target_clients = [target_clients]
         return await cls.filter(

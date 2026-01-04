@@ -1,5 +1,3 @@
-from typing import Optional, Union, List
-
 import httpx
 import orjson
 from khl import Message, MessageTypes, PublicChannel, User
@@ -58,7 +56,7 @@ async def get_channel(session_info: SessionInfo) -> PublicChannel | User | None:
 
 class KOOKContextManager(ContextManager):
     context: dict[str, Message] = {}
-    features: Optional[Features] = Features
+    features: Features | None = Features
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
@@ -165,7 +163,7 @@ class KOOKContextManager(ContextManager):
         return msg_ids
 
     @classmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: Union[str, List[str]]) -> None:
+    async def delete_message(cls, session_info: SessionInfo, message_id: str | list[str]) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -186,7 +184,7 @@ class KOOKContextManager(ContextManager):
                 Logger.exception(f"Failed to delete message {id_} in session {session_info.session_id}: ")
 
     @classmethod
-    async def add_reaction(cls, session_info: SessionInfo, message_id: Union[str, list[str]], emoji: str) -> None:
+    async def add_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -211,7 +209,7 @@ class KOOKContextManager(ContextManager):
                              message_id} in session {session_info.session_id}: ")
 
     @classmethod
-    async def remove_reaction(cls, session_info: SessionInfo, message_id: Union[str, list[str]], emoji: str) -> None:
+    async def remove_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):

@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 from urllib.parse import urlparse
 
 import orjson
@@ -36,7 +35,7 @@ class WikiTargetInfo(DBModel):
         await self.save()
         return True
 
-    async def config_interwikis(self, iw: str, iwlink: Optional[str] = None):
+    async def config_interwikis(self, iw: str, iwlink: str | None = None):
         interwikis = self.interwikis
         if iwlink:
             interwikis[iw] = iwlink
@@ -47,7 +46,7 @@ class WikiTargetInfo(DBModel):
         await self.save()
         return True
 
-    async def config_headers(self, headers: Optional[str] = None, add: bool = True):
+    async def config_headers(self, headers: str | None = None, add: bool = True):
         try:
             headers_ = self.headers
             if headers and add:
@@ -64,7 +63,7 @@ class WikiTargetInfo(DBModel):
         except Exception:
             return False
 
-    async def config_prefix(self, prefix: Optional[str] = None):
+    async def config_prefix(self, prefix: str | None = None):
         self.prefix = prefix
         await self.save()
         return True

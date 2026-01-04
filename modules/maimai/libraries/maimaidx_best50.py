@@ -1,5 +1,3 @@
-from typing import Optional, Dict, List
-
 from PIL import Image, ImageDraw, ImageFont
 
 from core.builtins.bot import Bot
@@ -415,12 +413,12 @@ class DrawBest:
         return self.img
 
 
-async def generate(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> Optional[Image.Image]:
+async def generate(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> Image.Image | None:
     resp = await get_record(msg, payload, use_cache)
     sd_best = BestList(35)
     dx_best = BestList(15)
-    dx: List[Dict] = resp["charts"]["dx"]
-    sd: List[Dict] = resp["charts"]["sd"]
+    dx: list[dict] = resp["charts"]["dx"]
+    sd: list[dict] = resp["charts"]["sd"]
     for c in sd:
         sd_best.push(await ChartInfo.from_json(c))
     for c in dx:

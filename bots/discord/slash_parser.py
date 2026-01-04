@@ -1,5 +1,3 @@
-from typing import Union
-
 import discord
 
 from bots.discord.info import *
@@ -12,7 +10,7 @@ from core.logger import Logger
 slash_ctx_id = Bot.register_context_manager(DiscordSlashContextManager)
 
 
-async def ctx_to_session(ctx: Union[discord.ApplicationContext, discord.AutocompleteContext],
+async def ctx_to_session(ctx: discord.ApplicationContext | discord.AutocompleteContext,
                          command: str) -> SessionInfo:
     target_from = target_channel_prefix
     if isinstance(ctx, discord.ApplicationContext):

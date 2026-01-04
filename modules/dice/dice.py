@@ -1,5 +1,4 @@
 import re
-from typing import Optional, Union
 
 import numpy as np
 
@@ -35,7 +34,7 @@ class DiceSyntaxError(Exception):
 class DiceValueError(Exception):
     """骰子参数值错误"""
 
-    def __init__(self, message: str, value: Optional[Union[int, str]] = None):
+    def __init__(self, message: str, value: int | str | None = None):
         if value:
             self.message = str(I18NContext("dice.message.error.value", value=value)) + message
         else:

@@ -1,9 +1,8 @@
 import asyncio
 import locale
-from typing import List, Tuple
 
 
-async def run_sys_command(command: List[str], timeout: float = 10) -> Tuple[int, str, str]:
+async def run_sys_command(command: list[str], timeout: float = 10) -> tuple[int, str, str]:
     """执行系统命令并返回执行结果。此函数仅在安全环境中调用，确保知道你正在干什么。
 
     :param command: 需要执行的命令（List），禁止直接使用用户输入。

@@ -2,7 +2,7 @@ import datetime
 import re
 from time import sleep
 from pathlib import Path
-from typing import Optional, Union, Any
+from typing import Any
 
 import orjson
 from loguru import logger
@@ -93,10 +93,10 @@ class CFGManager:
     @classmethod
     def get(cls,
             q: str,
-            default: Union[Any, None] = None,
-            cfg_type: Union[type, tuple, None] = None,
+            default: Any | None = None,
+            cfg_type: type | tuple | None = None,
             secret: bool = False,
-            table_name: Optional[str] = None,
+            table_name: str | None = None,
             _global: bool = False,
             _generate: bool = False) -> Any:
         """
@@ -223,8 +223,8 @@ class CFGManager:
         return value
 
     @classmethod
-    def write(cls, q: str, value: Union[Any, None], cfg_type: Union[type, tuple, None] = None, secret: bool = False,
-              table_name: Optional[str] = None, _generate: bool = False):
+    def write(cls, q: str, value: Any | None, cfg_type: type | tuple | None = None, secret: bool = False,
+              table_name: str | None = None, _generate: bool = False):
         """
         修改配置文件中的配置项。
 
@@ -375,7 +375,7 @@ class CFGManager:
         cls.load()
 
     @classmethod
-    def delete(cls, q: str, table_name: Optional[str] = None) -> bool:
+    def delete(cls, q: str, table_name: str | None = None) -> bool:
         """
         删除配置文件中的配置项。
 
@@ -417,13 +417,10 @@ CFGManager.load()
 
 
 def Config(q: str,
-           default: Union[Any,
-                          None] = None,
-           cfg_type: Union[type,
-                           tuple,
-                           None] = None,
+           default: Any | None = None,
+           cfg_type: type | tuple | None = None,
            secret: bool = False,
-           table_name: Optional[str] = None,
+           table_name: str | None = None,
            get_url: bool = False,
            _global: bool = False,
            _generate: bool = False) -> Any:

@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Dict, List, Optional, Union, Tuple, Any
+from typing import Any
 
 import orjson
 
@@ -64,12 +64,12 @@ def process_lxns_to_diving_fish(data):
     return result
 
 
-def cross(checker: List[Any], elem: Optional[Union[Any, List[Any]]], diff):
+def cross(checker: list[Any], elem: Any | list[Any] | None, diff):
     ret = False
     diff_ret = []
     if not elem or elem is Ellipsis:
         return True, diff
-    if isinstance(elem, List):
+    if isinstance(elem, list):
         for _j in range(len(checker)) if diff is Ellipsis else diff:
             if _j >= len(checker):
                 continue
@@ -77,7 +77,7 @@ def cross(checker: List[Any], elem: Optional[Union[Any, List[Any]]], diff):
             if __e in elem:
                 diff_ret.append(_j)
                 ret = True
-    elif isinstance(elem, Tuple):
+    elif isinstance(elem, tuple):
         for _j in range(len(checker)) if diff is Ellipsis else diff:
             if _j >= len(checker):
                 continue
@@ -95,24 +95,24 @@ def cross(checker: List[Any], elem: Optional[Union[Any, List[Any]]], diff):
     return ret, diff_ret
 
 
-def in_or_equal(checker: Any, elem: Optional[Union[Any, List[Any]]]):
+def in_or_equal(checker: Any, elem: Any | list[Any] | None):
     if elem is Ellipsis:
         return True
-    if isinstance(elem, List):
+    if isinstance(elem, list):
         return checker in elem
-    if isinstance(elem, Tuple):
+    if isinstance(elem, tuple):
         return elem[0] <= checker <= elem[1]
     return checker == elem
 
 
-class Chart(Dict):
-    tap: Optional[int] = None
-    hold: Optional[int] = None
-    slide: Optional[int] = None
-    air: Optional[int] = None
-    flick: Optional[int] = None
-    total: Optional[int] = None
-    charter: Optional[int] = None
+class Chart(dict):
+    tap: int | None = None
+    hold: int | None = None
+    slide: int | None = None
+    air: int | None = None
+    flick: int | None = None
+    total: int | None = None
+    charter: int | None = None
 
     def __getattribute__(self, item):
         if item == "tap":
@@ -132,17 +132,17 @@ class Chart(Dict):
         return super().__getattribute__(item)
 
 
-class Music(Dict):
-    id: Optional[str] = None
-    title: Optional[str] = None
-    ds: Optional[List[float]] = None
-    level: Optional[List[str]] = None
-    genre: Optional[str] = None
-    bpm: Optional[float] = None
-    version: Optional[str] = None
-    charts: Optional[Chart] = None
-    artist: Optional[str] = None
-    diff: List[int] = []
+class Music(dict):
+    id: str | None = None
+    title: str | None = None
+    ds: list[float] | None = None
+    level: list[str] | None = None
+    genre: str | None = None
+    bpm: float | None = None
+    version: str | None = None
+    charts: Chart | None = None
+    artist: str | None = None
+    diff: list[int] = []
 
     def __getattribute__(self, item):
         if item in {"genre", "artist", "bpm", "version"}:
@@ -154,14 +154,14 @@ class Music(Dict):
         return super().__getattribute__(item)
 
 
-class MusicList(List[Music]):
-    def by_id(self, music_id: str) -> Optional[Music]:
+class MusicList(list[Music]):
+    def by_id(self, music_id: str) -> Music | None:
         for music in self:
             if music.id == int(music_id):
                 return music
         return None
 
-    def by_title(self, music_title: str) -> Optional[Music]:
+    def by_title(self, music_title: str) -> Music | None:
         for music in self:
             if music.title.lower() == music_title.lower():
                 return music
@@ -173,13 +173,13 @@ class MusicList(List[Music]):
     def filter(
         self,
         *,
-        level: Optional[Union[str, List[str]]] = ...,
-        ds: Optional[Union[float, List[float], Tuple[float, float]]] = ...,
-        title: Optional[str] = ...,
-        title_search: Optional[str] = ...,
-        genre: Optional[Union[str, List[str]]] = ...,
-        bpm: Optional[Union[float, List[float], Tuple[float, float]]] = ...,
-        diff: List[int] = ...,
+        level: str | list[str] | None = None,
+        ds: float | list[float] | tuple[float, float] | None = None,
+        title: str | None = None,
+        title_search: str | None = None,
+        genre: str | list[str] | None = None,
+        bpm: float | list[float] | tuple[float, float] | None = None,
+        diff: list[int] = None,
     ):
         new_list = MusicList()
         for music in self:

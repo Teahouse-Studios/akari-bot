@@ -1,5 +1,4 @@
 import re
-from typing import Dict, List
 
 import matplotlib.pyplot as plt
 import orjson
@@ -9,7 +8,7 @@ from core.utils.http import post_url
 from core.utils.image_table import ImageTable, image_table_render
 
 
-def parse_markdown(md: str) -> List[Dict[str, str]]:
+def parse_markdown(md: str) -> list[dict[str, str]]:
     code_block_pattern = r"```(\w*)\n([\s\S]*?)\n```"  # 代码块
     block_latex_pattern = r"\$\$([\s\S]*?)\$\$"  # 块级 LaTeX
     inline_latex_pattern = r"(?<!\$)`?\$([^\n\$]+?)\$`?(?!\$)"  # 行内 LaTeX

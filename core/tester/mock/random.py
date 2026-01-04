@@ -1,5 +1,5 @@
 import random
-from typing import Sequence, List, MutableSequence, Optional, TypeVar
+from typing import Sequence, MutableSequence, TypeVar
 
 T = TypeVar("T")
 
@@ -21,7 +21,7 @@ class Random:
         return random.uniform(a, b)
 
     @classmethod
-    def randrange(cls, start: int, stop: Optional[int] = None, step: int = 1) -> int:
+    def randrange(cls, start: int, stop: int | None = None, step: int = 1) -> int:
         return random.randrange(start, stop, step)
 
     @classmethod
@@ -37,11 +37,11 @@ class Random:
         return random.choice(seq)
 
     @classmethod
-    def choices(cls, population: Sequence[T], k: int = 1) -> List[T]:
+    def choices(cls, population: Sequence[T], k: int = 1) -> list[T]:
         return random.choices(population, k=k)
 
     @classmethod
-    def sample(cls, population: Sequence[T], k: int) -> List[T]:
+    def sample(cls, population: Sequence[T], k: int) -> list[T]:
         return random.sample(population, k)
 
     @classmethod

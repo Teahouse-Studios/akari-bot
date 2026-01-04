@@ -1,5 +1,4 @@
 import io
-from typing import List, Tuple
 
 from PIL import Image as PILImage
 from openai import AsyncOpenAI
@@ -22,7 +21,7 @@ presence_penalty = Config("llm_presence_penalty", 0, cfg_type=float, table_name=
 async def ask_llm(prompt: str,
                   model_name: str,
                   api_url: str,
-                  api_key: str, session: MessageSession) -> Tuple[List, int, int]:
+                  api_key: str, session: MessageSession) -> tuple[list, int, int]:
     client = AsyncOpenAI(base_url=api_url, api_key=api_key)
     completion = await client.chat.completions.create(
         model=model_name,

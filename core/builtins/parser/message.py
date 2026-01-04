@@ -5,7 +5,7 @@ import re
 import time
 import traceback
 from string import Template as stringTemplate
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from core.builtins.message.chain import MessageChain, match_kecode
 from core.builtins.message.internal import Plain, I18NContext
@@ -753,10 +753,10 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
         command_split = msg.trigger_msg.split(" ")
         len_command_split = len(command_split)
         if not none_template and len_command_split > 1:
-            get_commands: List[CommandMeta] = module.command_list.get(msg.session_info.target_from)
+            get_commands: list[CommandMeta] = module.command_list.get(msg.session_info.target_from)
             command_templates = {}  # 根据命令模板的空格数排序命令
             for func in get_commands:
-                command_template: List[argsTemplate] = copy.deepcopy(func.command_template)
+                command_template: list[argsTemplate] = copy.deepcopy(func.command_template)
                 for ct in command_template:
                     ct.args_ = [a for a in ct.args if isinstance(a, ArgumentPattern)]
                     if (len_args := len(ct.args)) not in command_templates:

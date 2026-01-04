@@ -1,5 +1,5 @@
 from collections.abc import Iterable as IterableABC
-from typing import Any, Dict, Iterable, Generator, List
+from typing import Any, Iterable, Generator
 
 import orjson
 
@@ -33,7 +33,7 @@ def is_json_serializable(obj: Any) -> bool:
 
 def chunk_list(iterable: Iterable[Any],
                chunk_size: int,
-               reverse: bool = False) -> Generator[List[Any], None, None]:
+               reverse: bool = False) -> Generator[list[Any], None, None]:
     """将可迭代对象分块，返回生成器。"""
     if isinstance(iterable, (str, bytes)):
         raise TypeError("Type str is not supported")
@@ -53,7 +53,7 @@ def chunk_list(iterable: Iterable[Any],
         yield chunk
 
 
-def unique_list(iterable: Iterable[Any], reverse: bool = False) -> List[Any]:
+def unique_list(iterable: Iterable[Any], reverse: bool = False) -> list[Any]:
     """在不破坏顺序下去重可迭代对象。"""
     if isinstance(iterable, (str, bytes)):
         raise TypeError("Type str is not supported")
@@ -70,7 +70,7 @@ def unique_list(iterable: Iterable[Any], reverse: bool = False) -> List[Any]:
     return result
 
 
-def flatten_list(nested_iterable: Iterable[Any]) -> List[Any]:
+def flatten_list(nested_iterable: Iterable[Any]) -> list[Any]:
     """将嵌套可迭代对象扁平化。"""
     if isinstance(nested_iterable, dict):
         raise TypeError("Type dict is not supported, use flatten_dict instead")
@@ -84,9 +84,9 @@ def flatten_list(nested_iterable: Iterable[Any]) -> List[Any]:
     return flat_list
 
 
-def flatten_dict(nested_dict: Dict[str, Any],
+def flatten_dict(nested_dict: dict[str, Any],
                  parent_key: str = "",
-                 sep: str = ".") -> Dict[str, Any]:
+                 sep: str = ".") -> dict[str, Any]:
     """将嵌套字典扁平化。"""
     flat_dict = {}
     for k, v in nested_dict.items():
@@ -98,9 +98,9 @@ def flatten_dict(nested_dict: Dict[str, Any],
     return flat_dict
 
 
-def unflatten_dict(flat_dict: Dict[str, Any], sep: str = ".") -> Dict[str, Any]:
+def unflatten_dict(flat_dict: dict[str, Any], sep: str = ".") -> dict[str, Any]:
     """将扁平化字典还原。"""
-    nested_dict: Dict[str, Any] = {}
+    nested_dict: dict[str, Any] = {}
     for flat_key, value in flat_dict.items():
         keys = flat_key.split(sep)
         d = nested_dict

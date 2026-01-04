@@ -9,7 +9,6 @@ import zipfile
 from collections import defaultdict, deque
 from datetime import datetime, timedelta, UTC
 from pathlib import Path
-from typing import Tuple
 
 import jwt
 import orjson
@@ -880,7 +879,7 @@ async def exec_sql(request: Request):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-def _secure_path(path: str) -> Tuple[Path, str]:
+def _secure_path(path: str) -> tuple[Path, str]:
     try:
         if len(str(path)) > 256:
             raise ValueError

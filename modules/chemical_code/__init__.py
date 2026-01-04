@@ -2,7 +2,6 @@ import asyncio
 import io
 import re
 import time
-from typing import Optional
 
 from PIL import Image as PImage
 from rdkit import Chem
@@ -166,7 +165,7 @@ def parse_elements(formula: str) -> dict:
 
 
 @retry(stop=stop_after_attempt(3), reraise=True)
-async def search_pubchem(id: Optional[int] = None):
+async def search_pubchem(id: int | None = None):
     if id:
         answer_id = id
     else:
@@ -238,7 +237,7 @@ async def _(msg: Bot.MessageSession, pcid: int):
 
 
 async def chemical_code(
-    msg: Bot.MessageSession, id: Optional[int] = None, random_mode=True, captcha_mode=False
+    msg: Bot.MessageSession, id: int | None = None, random_mode=True, captcha_mode=False
 ):
     play_state = PlayState("chemical_code", msg)
     if play_state.check():

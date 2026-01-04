@@ -1,5 +1,4 @@
 import time
-from typing import Union
 
 
 class TokenBucket:
@@ -33,7 +32,7 @@ class TokenBucket:
             return 0.0
         return (amount - self.tokens) / self.rate
 
-    def refill(self, amount: Union[int, float] = 1):
+    def refill(self, amount: int | float = 1):
         self._refill()
         self.tokens = min(self.capacity, self.tokens + amount)
 

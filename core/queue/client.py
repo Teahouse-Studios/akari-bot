@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Union, Optional
+from typing import TYPE_CHECKING
 
 from core.builtins.session.info import SessionInfo
 from .base import JobQueueBase
@@ -27,7 +27,7 @@ class JobQueueClient(JobQueueBase):
                            "sender_prefix_list": sender_prefix_list or []}, wait=False)
 
     @classmethod
-    async def trigger_hook(cls, module_or_hook_name: str, session_info: Optional[SessionInfo] = "", wait=False,
+    async def trigger_hook(cls, module_or_hook_name: str, session_info: SessionInfo | None = "", wait=False,
                            **kwargs):
         for k in kwargs:
             if isinstance(kwargs[k], exports["MessageChain"]):
@@ -97,7 +97,7 @@ async def _(tsk: JobQueuesTable, args: dict):
 async def _(tsk: JobQueuesTable, args: dict):
     session_info, bot, ctx_manager = await get_session(args)
     send = await ctx_manager.send_message(session_info,
-                                          converter.structure(args["message"], Union[MessageChain, MessageNodes]),
+                                          converter.structure(args["message"], MessageChain | MessageNodes),
                                           quote=args["quote"],
                                           enable_parse_message=args["enable_parse_message"],
                                           enable_split_image=args["enable_split_image"])

@@ -1,4 +1,3 @@
-from typing import Optional
 import unicodedata
 
 import orjson
@@ -60,7 +59,7 @@ async def get_info(music: Music, details) -> MessageChain:
 
 async def get_record_df(
     msg: Bot.MessageSession, payload: dict, use_cache: bool = True
-) -> Optional[dict]:
+) -> dict | None:
     mai_cache_path = cache_path / "maimai-record"
     mai_cache_path.mkdir(parents=True, exist_ok=True)
     cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace("|", "_")}_chunithm_record_df.json"
@@ -104,7 +103,7 @@ async def get_record_df(
 
 async def get_record_lx(
     msg: Bot.MessageSession, friend_code: str, use_cache: bool = True
-) -> Optional[dict]:
+) -> dict | None:
     mai_cache_path = cache_path / "maimai-record"
     mai_cache_path.mkdir(parents=True, exist_ok=True)
     cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace("|", "_")}_chunithm_record_lx.json"

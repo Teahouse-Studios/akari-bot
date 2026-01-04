@@ -1,5 +1,4 @@
 import inspect
-from typing import List, Optional, Union, Tuple
 
 from core.builtins.message.chain import MessageChain
 from core.builtins.types import MessageElement
@@ -9,24 +8,24 @@ from .decorator import *
 
 
 class Tester:
-    def __init__(self, name: Optional[str] = None):
+    def __init__(self, name: str | None = None):
         self.name = name
-        self._entries: List[dict] = []
-        self._results: List[dict] = []
+        self._entries: list[dict] = []
+        self._results: list[dict] = []
         self.is_ci: bool = False
 
     async def input(
         self,
-        input_: Union[str, list[str], Tuple[str]],
-        expected: Optional[Union[
-            bool,
-            str,
-            MessageChain,
-            list[MessageElement],
-            Tuple[MessageElement],
-            MessageElement,
-        ]] = None,
-        note: Optional[str] = None,
+        input_: str | list[str] | tuple[str, ...] | None,
+        expected:
+            bool |
+            str |
+            MessageChain |
+            list[MessageElement] |
+            tuple[MessageElement, ...] |
+            MessageElement |
+            None = None,
+        note: str | None = None,
     ):
         frame = inspect.stack()[1]
         entry_meta = {
@@ -74,10 +73,10 @@ class Tester:
         self._results.append(final)
         return final
 
-    def get_entries(self) -> List[dict]:
+    def get_entries(self) -> list[dict]:
         return list(self._entries)
 
-    def get_results(self) -> List[dict]:
+    def get_results(self) -> list[dict]:
         return list(self._results)
 
 

@@ -1,4 +1,4 @@
-from typing import Any, Optional, Dict, List
+from typing import Any
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -350,15 +350,15 @@ class DrawBest:
         return self.img
 
 
-async def generate(msg: Bot.MessageSession, token: Any = None, source: str = "Lxns", use_cache: bool = True) -> Optional[Image.Image]:
+async def generate(msg: Bot.MessageSession, token: Any = None, source: str = "Lxns", use_cache: bool = True) -> Image.Image | None:
     if source == "Lxns":
         resp = await get_record_lx(msg, token, use_cache)
     else:
         resp = await get_record_df(msg, token, use_cache)
     best = BestList(30)
     new = BestList(20)
-    b30: List[Dict] = resp["records"]["b30"]
-    n20: List[Dict] = resp["records"]["n20"]
+    b30: list[dict] = resp["records"]["b30"]
+    n20: list[dict] = resp["records"]["n20"]
     for c in b30:
         best.push(await ChartInfo.from_json(c))
     for c in n20:

@@ -1,5 +1,4 @@
 from copy import deepcopy
-from typing import Optional, List
 
 from attrs import define, field
 
@@ -8,7 +7,7 @@ from .component_meta import *
 
 @define
 class BaseMatches:
-    set: List[ModuleMeta] = field(factory=list)
+    set: list[ModuleMeta] = field(factory=list)
 
     def add(self, meta):
         self.set.append(meta)
@@ -21,14 +20,14 @@ class BaseMatches:
 
 @define
 class CommandMatches(BaseMatches):
-    set: List[CommandMeta] = field(factory=list)
+    set: list[CommandMeta] = field(factory=list)
 
     def get(
         self,
-        target_from: Optional[str] = None,
+        target_from: str | None = None,
         show_required_superuser: bool = False,
         show_required_base_superuser: bool = False,
-    ) -> List[CommandMeta]:
+    ) -> list[CommandMeta]:
         metas = []
         for meta in self.set:
             if not show_required_base_superuser and meta.required_base_superuser:
@@ -54,14 +53,14 @@ class CommandMatches(BaseMatches):
 
 @define
 class RegexMatches(BaseMatches):
-    set: List[RegexMeta] = field(factory=list)
+    set: list[RegexMeta] = field(factory=list)
 
     def get(
         self,
-        target_from: Optional[str] = None,
+        target_from: str | None = None,
         show_required_superuser: bool = False,
         show_required_base_superuser: bool = False,
-    ) -> List[RegexMeta]:
+    ) -> list[RegexMeta]:
         metas = []
         for meta in self.set:
             if not show_required_base_superuser and meta.required_base_superuser:
@@ -87,12 +86,12 @@ class RegexMatches(BaseMatches):
 
 @define
 class ScheduleMatches(BaseMatches):
-    set: List[ScheduleMeta] = field(factory=list)
+    set: list[ScheduleMeta] = field(factory=list)
 
 
 @define
 class HookMatches(BaseMatches):
-    set: List[HookMeta] = field(factory=list)
+    set: list[HookMeta] = field(factory=list)
 
 
 __all__ = ["CommandMatches", "RegexMatches", "ScheduleMatches", "HookMatches"]

@@ -1,6 +1,6 @@
 import html
 import re
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 import orjson
 
@@ -12,7 +12,7 @@ from core.logger import Logger
 from .client import aiocqhttp_bot
 
 
-async def get_onebot_implementation() -> Optional[str]:
+async def get_onebot_implementation() -> str | None:
     """获取正在使用的OneBot实现。"""
     data = await aiocqhttp_bot.call_action("get_version_info")
     Logger.debug(str(data))
@@ -43,7 +43,7 @@ class CQCodeHandler:
         )
 
     @staticmethod
-    def generate_cq(data: Dict[str, Any]) -> Optional[str]:
+    def generate_cq(data: dict[str, Any]) -> str | None:
         """
         生成CQ码字符串。
 
@@ -64,7 +64,7 @@ class CQCodeHandler:
         return None
 
     @staticmethod
-    def parse_cq(cq_code: str) -> Optional[Dict[str, Union[str, Dict[str, Any]]]]:
+    def parse_cq(cq_code: str) -> dict[str, str | dict[str, Any]] | None:
         """
         解析CQ码字符串，返回包含类型和参数的字典。
 
@@ -106,7 +106,7 @@ class CQCodeHandler:
         return s
 
 
-async def to_message_chain(message: Union[str, list[Dict[str, Any]]]) -> MessageChain:
+async def to_message_chain(message: str | list[dict[str, Any]]) -> MessageChain:
     lst = []
     if isinstance(message, str):
         spl = re.split(

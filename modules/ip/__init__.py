@@ -1,6 +1,6 @@
 import ipaddress
 import socket
-from typing import Any, Dict
+from typing import Any
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
@@ -111,7 +111,7 @@ def parse_coordinate(axis: str, value: float):
         return f"{abs(value)}°{"E" if value > 0 else "W"}"
 
 
-async def format_ip(msg: Bot.MessageSession, info: Dict[str, Any]):
+async def format_ip(msg: Bot.MessageSession, info: dict[str, Any]):
     ip_property_map = {
         "global": I18NContext("ip.message.ip_property.global"),
         "private": I18NContext("ip.message.ip_property.private"),

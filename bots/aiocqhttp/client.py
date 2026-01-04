@@ -1,5 +1,5 @@
 import traceback
-from typing import Dict, Any, Optional
+from typing import Any
 
 from aiocqhttp import CQHttp
 from aiocqhttp.event import Event
@@ -11,7 +11,7 @@ access_token = Config("qq_access_token", cfg_type=str, secret=True, table_name="
 
 class EventModded(Event):
     @staticmethod
-    def from_payload(payload: Dict[str, Any]) -> "Optional[Event]":
+    def from_payload(payload: dict[str, Any]) -> "Event | None":
         """
         从 OneBot 事件数据构造 `Event` 对象。
         """
@@ -36,7 +36,7 @@ class EventModded(Event):
 
 class CQHttpModded(CQHttp):
 
-    async def _handle_event(self, payload: Dict[str, Any]) -> Any:
+    async def _handle_event(self, payload: dict[str, Any]) -> Any:
         ev = EventModded.from_payload(payload)
         if not ev:
             return

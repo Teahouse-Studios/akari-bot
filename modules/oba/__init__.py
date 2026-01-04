@@ -118,7 +118,7 @@ async def _(msg: Bot.MessageSession, rank: int = 1):
 
     node_list = []
     for i in range(rank - 1, rank - 1 + TOP_LIMIT):
-        node = rankList[i]
+        node = ranklist[i]
         sponsor = node.get("sponsor", str(I18NContext("message.unknown")))
         try:
             sponsor_name = sponsor.get("name")
