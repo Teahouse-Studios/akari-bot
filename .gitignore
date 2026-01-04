@@ -36,3 +36,4 @@ output/*
 .bot.lock
 /test*.*
 !tester.py
+.run/*
