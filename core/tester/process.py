@@ -85,7 +85,7 @@ async def run_function_test(fn, is_ci: bool = False) -> Dict[str, Any]:
 
 
 async def run_single_test(
-    input_: Union[str, list[str], Tuple[str]],
+    input_: Union[str, list[str], Tuple[str, ...]],
     *,
     casetest_target=None,
     is_ci=False
@@ -142,7 +142,7 @@ async def run_single_test(
 
 async def match_expected(
     output,
-    expected: Optional[Union[bool, str, MessageChain, list[MessageElement], Tuple[MessageElement], MessageElement]],
+    expected: Optional[Union[bool, str, MessageChain, list[MessageElement], Tuple[MessageElement, ...], MessageElement]],
 ) -> Optional[bool]:
     if expected is None:  # noqa
         return None

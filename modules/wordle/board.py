@@ -1,6 +1,6 @@
 from collections import Counter
 from enum import Enum
-from typing import List, Optional
+from typing import List, Tuple, Optional
 
 import unicodedata
 from PIL import Image, ImageDraw, ImageFont
@@ -136,7 +136,7 @@ class WordleBoardImage:
     image: Image.Image
     wordle_board: WordleBoard
     dark_theme: bool
-    outline_color: tuple[int, int, int]
+    outline_color: Tuple[int, int, int]
     background_color: str
     cell_size = 50
     margin = 10

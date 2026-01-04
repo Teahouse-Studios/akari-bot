@@ -131,7 +131,7 @@ class TargetInfo(DBModel):
     class Meta:
         table = "target_info"
 
-    async def config_module(self, module_name: Union[str, list, tuple[str]], enable: bool = True) -> bool:
+    async def config_module(self, module_name: Union[str, list, tuple], enable: bool = True) -> bool:
         """
         设置会话内可用模块。
 
@@ -220,7 +220,7 @@ class TargetInfo(DBModel):
         return True
 
     @classmethod
-    async def get_target_list_by_module(cls, module_name: Optional[Union[str, list[str], tuple[str]]],
+    async def get_target_list_by_module(cls, module_name: Optional[Union[str, list[str], tuple[str, ...]]],
                                         id_prefix: Optional[str] = None) -> List[TargetInfo]:
         """
         获取开启此模块的所有会话列表。

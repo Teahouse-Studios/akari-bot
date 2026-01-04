@@ -83,7 +83,7 @@ class Bind:
             logging: bool = True,
             show_typing: bool = True,
             text_only: bool = True,
-            element_filter: tuple[MessageElement] = None
+            element_filter: tuple[MessageElement, ...] = None
         ):
             def decorator(function):
                 ModulesManager.bind_to_module(
@@ -169,7 +169,7 @@ class Bind:
             load: bool = True,
             show_typing: bool = True,
             logging: bool = True,
-            element_filter: tuple[MessageElement] = None
+            element_filter: tuple[MessageElement, ...] = None
         ):
             ...
 

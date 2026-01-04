@@ -53,7 +53,7 @@ class MessageChain:
             Union[
                 str,
                 List[MessageElement],
-                Tuple[MessageElement],
+                Tuple[MessageElement, ...],
                 MessageElement,
                 MessageChain,
             ]
@@ -213,7 +213,7 @@ class MessageChain:
 
         return value
 
-    def to_str(self, text_only=True, element_filter: tuple[MessageElement] = None, connector: str = " ") -> str:
+    def to_str(self, text_only=True, element_filter: tuple[MessageElement, ...] = None, connector: str = " ") -> str:
         """
         将消息链转换为字符串。
 

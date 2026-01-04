@@ -32,7 +32,7 @@ class MessageSession:
     session_info: SessionInfo
     sent: List[MessageChain] = []
     trigger_msg: Optional[str] = ""
-    matched_msg: Optional[Union[Match[str], Tuple[Any]]] = None
+    matched_msg: Optional[Union[Match[str], Tuple[Any, ...]]] = None
     parsed_msg: Optional[dict] = None
 
     @property
@@ -147,7 +147,7 @@ class MessageSession:
     def as_display(
             self,
             text_only: bool = False,
-            element_filter: tuple[MessageElement] = None,
+            element_filter: tuple[MessageElement, ...] = None,
             connector: str = " ") -> str:
         """
         用于将消息转换为一般文本格式。

@@ -46,7 +46,7 @@ class RegexMeta(ModuleMeta):
     logging: bool = True
     show_typing: bool = True
     text_only: bool = True
-    element_filter: tuple[MessageElement] = []
+    element_filter: tuple[MessageElement, ...] = []
 
 
 @define

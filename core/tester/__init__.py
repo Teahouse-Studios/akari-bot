@@ -17,13 +17,13 @@ class Tester:
 
     async def input(
         self,
-        input_: Union[str, list[str], Tuple[str]],
+        input_: Union[str, List[str], Tuple[str, ...]],
         expected: Optional[Union[
             bool,
             str,
             MessageChain,
-            list[MessageElement],
-            Tuple[MessageElement],
+            List[MessageElement],
+            Tuple[MessageElement, ...],
             MessageElement,
         ]] = None,
         note: Optional[str] = None,

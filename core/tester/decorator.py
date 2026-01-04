@@ -9,12 +9,12 @@ from core.tester.process import run_case_entry
 _REGISTRY: List[dict] = []
 
 
-def case(input_: Union[str, list[str], Tuple[str]],
+def case(input_: Union[str, list[str], Tuple[str, ...]],
          expected: Optional[Union[bool,
                                   str,
                                   MessageChain,
                                   list[MessageElement],
-                                  Tuple[MessageElement],
+                                  Tuple[MessageElement, ...],
                                   MessageElement]] = None,
          note: Optional[str] = None):
     """
