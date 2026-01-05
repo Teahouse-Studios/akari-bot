@@ -4,7 +4,7 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.types import MessageElement
 from core.logger import Logger
 from core.tester.process import match_expected, run_single_test
-from .decorator import *
+from .decorator import case, func_case
 
 
 class Tester:

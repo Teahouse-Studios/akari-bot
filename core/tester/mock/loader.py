@@ -6,7 +6,7 @@ from core.loader import ModulesManager
 from core.logger import Logger
 
 
-def apply_monkey_patch(module, monkey_patches: dict[str, object]):
+def apply_monkey_patch(module, monkey_patches: dict[str, object] | None):
     if not monkey_patches:
         return
 

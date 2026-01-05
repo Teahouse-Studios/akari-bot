@@ -82,7 +82,6 @@ class MockMessageSession(MessageSession):
     async def send_direct_message(
             self,
             message_chain,
-            quote=True,
             disable_secret_check=False,
             enable_parse_message=True,
             enable_split_image=True,
@@ -186,7 +185,7 @@ class MockMessageSession(MessageSession):
                 self._script = []
                 await new_msg.async_init(result)
                 return new_msg
-    
+
             if not self.is_ci:
                 if confirm_prompt:
                     result = input(f"{confirm_prompt}\nSend: ")

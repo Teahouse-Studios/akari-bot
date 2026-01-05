@@ -141,7 +141,7 @@ async def run_single_test(
 
 async def match_expected(
     output,
-    expected: bool | str | MessageChain | list[MessageElement] | tuple[MessageElement, ...] | MessageElement,
+    expected: bool | str | MessageChain | list[MessageElement] | tuple[MessageElement, ...] | MessageElement | None
 ) -> bool | None:
     if expected is None:  # noqa
         return None

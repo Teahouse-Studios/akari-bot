@@ -220,8 +220,7 @@ async def main():
                             check = input()
                             if check in confirm_command:
                                 continue
-                            else:
-                                func_pass = False
+                            func_pass = False
                         except (EOFError, KeyboardInterrupt):
                             print("")
                             Logger.warning("Interrupted by user.")
