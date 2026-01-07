@@ -97,8 +97,7 @@ _多功能、跨平台、可自由扩展的异步聊天机器人助手_
 - [`Graia`](https://github.com/GraiaProject/Application) — 小可曾基于此项目搭建
 
 ## 许可
-
-小可使用 AGPL-3.0 协议授权。详见 [./LICENSE](./LICENSE)。
+除另有说明外，本项目的所有代码与资源均使用 AGPL-3.0 协议授权。详见 [./LICENSE](./LICENSE)。
 
 ## 赞助者
 <p align="center">
