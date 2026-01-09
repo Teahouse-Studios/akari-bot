@@ -1,0 +1,42 @@
+name: "Generate Config (00:00, UTC+8)"
+
+on:
+  schedule:
+    - cron: "0 16 * * *"
+  workflow_dispatch:
+
+jobs:
+  generate-config:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Generate config
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python core/scripts/config_generate.py
+
+          if [[ -z "$(git status --porcelain assets/)" ]]; then
+            echo "No config changes detected."
+            exit 0
+          fi
+
+          echo "Config files changed, committing..."
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
+          git add assets/
+          git commit -m "Update Config [skip ci]"
+          git push origin master
