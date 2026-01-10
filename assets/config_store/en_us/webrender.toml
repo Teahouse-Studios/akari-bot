@@ -7,4 +7,5 @@
 enable_web_render = false # Whether to enable WebRender.
 browser_type = "chrome" # The browser type used by WebRender. (Supports "chrome" and "firefox")
 browser_executable_path = "<Replace me with str value>" # The browser executable file path used by WebRender. If empty, the default browser installed by playwright is used.
+remote_only = false # Whether to allow use the remote WebRender service only.
 remote_web_render_url = "<Replace me with str value>" # The URL of the remote WebRender service. Try the request if the local WebRender rendering fails.

@@ -7,4 +7,5 @@
 enable_web_render = false # WebRender を有効にするかどうか。
 browser_type = "chrome" # WebRender が使用しているブラウザの種類。（「chrome」と「firefox」をサポート）
 browser_executable_path = "<Replace me with str value>" # WebRender が使用するブラウザ実行ファイルのパス。空の場合は、Playwright によってインストールされたデフォルトのブラウザが使用されます。
+remote_only = false # リモート WebRender サービスのみの使用を許可するかどうか。
 remote_web_render_url = "<Replace me with str value>" # リモート WebRender サービスの URL。ローカル WebRender レンダリングが失敗した場合にリクエストを試行します。
