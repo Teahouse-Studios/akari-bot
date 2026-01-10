@@ -361,8 +361,7 @@ async def chemical_code(
                 Image(newpath),
                 I18NContext("chemical_code.message.captcha", times=set_timeout),
             ],
-            timeout=GAME_EXPIRED,
-            append_instruction=False,
+            timeout=GAME_EXPIRED
         )
         if play_state.check():
             play_state.disable()
@@ -373,3 +372,4 @@ async def chemical_code(
                 await result.finish(send_)
             else:
                 await result.finish(I18NContext("chemical_code.message.incorrect", answer=play_state.get("answer")))
+
