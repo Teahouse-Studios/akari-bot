@@ -7,11 +7,13 @@ LABEL org.opencontainers.image.vendor="Teahouse Studios"
 LABEL org.opencontainers.image.licenses=AGPL-3.0-or-later
 LABEL org.opencontainers.image.title="AkariBot"
 LABEL maintainer="Teahouse Studios <admin@teahou.se>"
+
 ARG VERSION
 LABEL version=$VERSION
 
 WORKDIR /akari-bot
-ADD . .
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update && apt-get install -y \
     fonts-noto-cjk \
@@ -19,5 +21,8 @@ RUN apt-get update && apt-get install -y \
     fonts-dejavu \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install -r requirements.txt
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+ADD . .
 CMD ["python", "./bot.py"]
