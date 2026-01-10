@@ -85,3 +85,4 @@ class WebRenderConfig:
     browser_type: str = "chrome"
     browser_executable_path: str = ""
     remote_web_render_url: str = ""
+    remote_only = False
