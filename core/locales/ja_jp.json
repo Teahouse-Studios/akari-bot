@@ -75,6 +75,7 @@
     "config.comments.qq_private_bot": "QQ ロボット（公式）を使用する場合、プライベートドメイン ロボットであるかどうか。",
     "config.comments.qq_typing_emoji": "QQ関連プロトコル側でメッセージを処理するときにメッセージに添付される応答顔文字の ID。プロトコルのサポートが必要です。ID の詳細について：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji をご覧ください。",
     "config.comments.quick_confirm": "メッセージのクイック確認を有効にするかどうか。",
+    "config.comments.remote_only": "リモート WebRender サービスのみの使用を許可するかどうか。",
     "config.comments.remote_web_render_url": "リモート WebRender サービスの URL。ローカル WebRender レンダリングが失敗した場合にリクエストを試行します。",
     "config.comments.report_targets": "レポート セッション リスト。ここに入力された値がレポートセッションとして認識されます。（例：コマンド エラーを実行すると、ボットは対応するセッションにエラー情報を送信します）",
     "config.comments.rickroll_msg": "テキスト フィルタ リング検出に失敗したときのリックロール メッセージ。",
