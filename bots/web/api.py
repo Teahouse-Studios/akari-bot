@@ -303,7 +303,7 @@ async def get_config_list(request: Request):
     verify_jwt(request)
     try:
         files = [c.name for c in config_path.iterdir()]
-        cfg_files = [f for f in files if f.endswith(".toml")]
+        cfg_files = sorted([f for f in files if f.endswith(".toml")])
 
         if config_filename in cfg_files:
             cfg_files.remove(config_filename)
