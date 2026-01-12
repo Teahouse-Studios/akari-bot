@@ -66,10 +66,9 @@ jobs:
           TAG_ARGS="-t $IMAGE_NAME:$TAG"
 
           if [[ "$IS_RELEASE" == "true" ]]; then
-            echo "Release build detected, tagging :latest"
             TAG_ARGS="$TAG_ARGS -t $IMAGE_NAME:latest"
           else
-            echo "Nightly build, skip :latest"
+            TAG_ARGS="$TAG_ARGS -t $IMAGE_NAME:nightly"
           fi
 
           docker buildx build \
