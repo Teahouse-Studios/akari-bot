@@ -67,10 +67,10 @@ def process_lxns_to_diving_fish(data):
 def cross(checker: list[Any], elem: Any | list[Any] | None, diff):
     ret = False
     diff_ret = []
-    if not elem or elem is Ellipsis:
+    if not elem:
         return True, diff
     if isinstance(elem, list):
-        for _j in range(len(checker)) if diff is Ellipsis else diff:
+        for _j in range(len(checker)):
             if _j >= len(checker):
                 continue
             __e = checker[_j]
@@ -78,7 +78,7 @@ def cross(checker: list[Any], elem: Any | list[Any] | None, diff):
                 diff_ret.append(_j)
                 ret = True
     elif isinstance(elem, tuple):
-        for _j in range(len(checker)) if diff is Ellipsis else diff:
+        for _j in range(len(checker)):
             if _j >= len(checker):
                 continue
             __e = checker[_j]
@@ -86,7 +86,7 @@ def cross(checker: list[Any], elem: Any | list[Any] | None, diff):
                 diff_ret.append(_j)
                 ret = True
     else:
-        for _j in range(len(checker)) if diff is Ellipsis else diff:
+        for _j in range(len(checker)):
             if _j >= len(checker):
                 continue
             __e = checker[_j]
@@ -96,7 +96,7 @@ def cross(checker: list[Any], elem: Any | list[Any] | None, diff):
 
 
 def in_or_equal(checker: Any, elem: Any | list[Any] | None):
-    if elem is Ellipsis:
+    if not elem:
         return True
     if isinstance(elem, list):
         return checker in elem
@@ -195,14 +195,9 @@ class MusicList(list[Music]):
                 continue
             if not in_or_equal(music.bpm, bpm):
                 continue
-            if title is not Ellipsis and not in_or_equal(
-                music.title.lower(), title.lower()
-            ):
+            if title and not in_or_equal(music.title.lower(), title.lower()):
                 continue
-            if (
-                title_search is not Ellipsis
-                and title_search.lower() not in music.title.lower()
-            ):
+            if title_search and title_search.lower() not in music.title.lower():
                 continue
             music.diff = diff2
             new_list.append(music)
