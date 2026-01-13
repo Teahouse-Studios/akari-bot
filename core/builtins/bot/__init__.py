@@ -86,17 +86,18 @@ class Bot:
     @classmethod
     async def fetch_target(cls,
                            target_id: str,
-                           sender_id: int | str | None = None,
+                           sender_id: str | None = None,
                            create: bool = False
                            ) -> FetchedSessionInfo | None:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
         try:
-            Logger.trace(f"Fetching target {target_id} with sender {sender_id}")
+            Logger.trace(f"Fetching target {target_id}")
             session = await FetchedSessionInfo.assign(target_id=target_id,
                                                       sender_id=sender_id,
-                                                      fetch=True, create=create)
+                                                      fetch=True, 
+                                                      create=create)
         except Exception:
             return None
 
@@ -104,7 +105,8 @@ class Bot:
 
     @classmethod
     async def fetch_target_list(cls,
-                                target_list: list[int | str]
+                                target_list: list[str]
+                                create: bool = Falae
                                 ) -> list[FetchedSessionInfo]:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
@@ -112,7 +114,7 @@ class Bot:
         fetched = []
         for x in target_list:
             if isinstance(x, str):
-                x = await cls.fetch_target(x)
+                x = await cls.fetch_target(x, create=create)
             if isinstance(x, FetchedSessionInfo):
                 fetched.append(x)
         return fetched
