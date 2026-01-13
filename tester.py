@@ -11,11 +11,11 @@ from core.builtins.session.info import SessionInfo
 from core.builtins.utils import confirm_command
 from core.constants import tests_path
 from core.logger import Logger
-from core.tester.decorator import get_registry, run_registry
+from core.tester.decorator import get_registry
 from core.tester.mock.database import init_db, close_db
 from core.tester.mock.loader import load_modules
 from core.tester.mock.random import Random
-from core.tester.process import run_function_test
+from core.tester.process import run_case_entry, run_function_test
 
 IS_CI = os.environ.get("CI", "0") == "1"
 
@@ -68,7 +68,7 @@ async def main():
         except Exception:
             Logger.exception("Failed to load modules for tests:")
 
-        results = await run_registry(entry, IS_CI)
+        results = await run_case_entry(entry, IS_CI)
 
         for r in results:
             total += 1
@@ -257,6 +257,8 @@ async def main():
         Logger.warning("No tests registered. Use `core.tester.case` or `core.tester.test_case` to register tests.")
     await close_db()
 
+    if IS_CI and failed > 0:
+        sys.exit(1)
 
 if __name__ == "__main__":
     asyncio.run(main())

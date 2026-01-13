@@ -3,7 +3,6 @@ from typing import Callable
 
 from core.builtins.message.chain import MessageChain
 from core.builtins.types import MessageElement
-from core.tester.process import run_case_entry
 
 
 _REGISTRY: list[dict] = []
@@ -55,14 +54,10 @@ def get_registry():
     return list(_REGISTRY)
 
 
-async def run_registry(entry: dict, is_ci: bool = False):
-    return await run_case_entry(entry, is_ci)
-
-
 def func_case(fn: Callable):
     """标记函数是否为测试函数（测试时会被调用）。"""
     setattr(fn, "_func_case", True)
     return fn
 
 
-__all__ = ["case", "func_case", "get_registry", "run_registry"]
+__all__ = ["case", "func_case", "get_registry"]

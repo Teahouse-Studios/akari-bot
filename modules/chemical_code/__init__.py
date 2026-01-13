@@ -372,4 +372,3 @@ async def chemical_code(
                 await result.finish(send_)
             else:
                 await result.finish(I18NContext("chemical_code.message.incorrect", answer=play_state.get("answer")))
-
