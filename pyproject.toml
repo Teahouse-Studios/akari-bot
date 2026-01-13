@@ -54,7 +54,7 @@ Pillow = "^12.0.0"
 tenacity = "^9.0.0"
 
 # core.config
-tomlkit = "^0.13.2"
+tomlkit = "^0.14.0"
 
 # core.database
 tortoise-orm = {extras = ["asyncmy"], version = "^0.25.0"}
