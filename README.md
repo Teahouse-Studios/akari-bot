@@ -7,6 +7,8 @@ _多功能、跨平台、可自由扩展的异步聊天机器人助手_
 
 [![GitHub issues](https://img.shields.io/github/issues/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/pulls)
+[![GitHub tag](https://img.shields.io/github/v/tag/Teahouse-Studios/akari-bot?filter=v*
+)](https://github.com/Teahouse-Studios/akari-bot/tags)
 [![Crowdin](https://badges.crowdin.net/akari-bot/localized.svg)](https://crowdin.com/project/akari-bot)
 ![GitHub Repo stars](https://img.shields.io/github/stars/Teahouse-Studios/akari-bot?style=social)
 <br>
@@ -94,7 +96,7 @@ _多功能、跨平台、可自由扩展的异步聊天机器人助手_
 - [`AkariBot WebUI`](https://github.com/Teahouse-Studios/akari-bot-webui)
 
 ## 鸣谢
-- [`Graia`](https://github.com/GraiaProject/Application) — 小可曾基于此项目搭建
+- [`Graia`](https://github.com/GraiaProject/Application) — 小可曾基于此项目开发
 
 ## 许可
 除另有说明外，本项目的所有代码与资源均使用 [AGPL-3.0](./LICENSE) 协议授权。
