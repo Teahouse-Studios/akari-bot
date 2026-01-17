@@ -136,7 +136,7 @@ class JobQueueBase:
             while True:
                 await cls.pause_event.wait()
                 await cls._check_queue(target_client)
-                await asyncio.sleep(0.5)
+                await asyncio.sleep(0.1)
         finally:
             cls.is_running = False
 
