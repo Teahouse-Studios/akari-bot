@@ -130,7 +130,6 @@ async def parser(msg: "Bot.MessageSession"):
     except Exception:
         Logger.exception()
     finally:
-        await msg.end_typing()
         ExecutionLockList.remove(msg)
         TempCounter.add()
 
@@ -255,6 +254,7 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
 async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word, identify_str):
     time_start = time.perf_counter()
     bot: "Bot" = exports["Bot"]
+    _typing = False
     try:
         await _check_target_cooldown(msg)
         if enable_tos:
@@ -322,6 +322,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
             if not func.command_template:
                 if msg.session_info.sender_info.sender_data.get("typing_prompt", True):
                     await msg.start_typing()
+                    _typing = True
                 await func.function(msg)  # 将msg传入下游模块
                 raise FinishedException(msg.sent)  # if not using msg.finish
 
@@ -360,7 +361,8 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
     except Exception as e:
         await _process_exception(msg, e)
     finally:
-        await msg.end_typing()
+        if _typing:
+            await msg.end_typing()
         ExecutionLockList.remove(msg)
 
 
@@ -488,7 +490,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                     finally:
                         if _typing:
                             await msg.end_typing()
-                            ExecutionLockList.remove(msg)
+                        ExecutionLockList.remove(msg)
 
         except SendMessageFailed:
             await _process_send_message_failed(msg)
@@ -558,6 +560,7 @@ async def _tos_msg_counter(msg: "Bot.MessageSession", command: str):
 
 async def _execute_module_command(msg: "Bot.MessageSession", module, command_first_word):
     bot: "Bot" = exports["Bot"]
+    _typing = False
     try:
         command_parser = CommandParser(module, msg=msg, module_name=command_first_word,
                                        command_prefixes=msg.session_info.prefixes)
@@ -642,6 +645,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
 
             if msg.session_info.target_info.target_data.get("typing_prompt", True):
                 await msg.start_typing()
+                _typing = True
             await parsed_msg[0].function(**kwargs)  # 将msg传入下游模块
 
             raise FinishedException(msg.sent)  # if not using msg.finish
@@ -657,6 +661,9 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
         Logger.exception()
         await msg.send_message(I18NContext("error.module.helpdoc_invalid", module=command_first_word))
         return
+    finally:
+        if _typing:
+            await msg.end_typing()
 
 
 async def _process_tos_abuse_warning(msg: "Bot.MessageSession", e: AbuseWarning):
