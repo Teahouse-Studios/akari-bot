@@ -90,14 +90,14 @@ class SessionTaskManager:
                         if time.time() - cls._task_list[target][sender][
                             session
                         ]["ts"] > cls._task_list[target][sender][session].get(
-                            "timeout", 3600
+                            "timeout", 600
                         ):
                             cls._task_list[target][sender][session]["active"] = False
                             cls._task_list[target][sender][session][
                                 "flag"
                             ].set()  # no result = cancel
         for message_id in cls._callback_list.copy():
-            if time.time() - cls._callback_list[message_id]["ts"] > 3600:
+            if time.time() - cls._callback_list[message_id]["ts"] > 600:
                 del cls._callback_list[message_id]
 
     @classmethod
