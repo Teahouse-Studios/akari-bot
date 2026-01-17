@@ -155,6 +155,8 @@ class MessageChain:
         if session_info:
             support_embed = session_info.support_embed
         for x in self.values:
+            if x is None:
+                continue
             if isinstance(x, EmbedElement) and not support_embed:
                 value += x.to_message_chain(session_info)
             elif isinstance(x, PlainElement):

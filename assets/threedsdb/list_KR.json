@@ -1,0 +1,2414 @@
+[
+    {
+        "Name": "Mario Cart 7 Update Data Ver.1.2(\ub9c8\ub9ac\uc624 \uce74\ud2b8 7 \uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver. 1.2)",
+        "UID": "50010000049755",
+        "TitleID": "0004000E00030A00",
+        "Version": "3088",
+        "Size": "5.22 MB [42 blocks]",
+        "Product Code": "CTR-U-AMKK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Super Mario Maker for Nintendo 3DS Update Data VER.1.05(\uc288\ud37c \ub9c8\ub9ac\uc624 \uba54\uc774\ucee4 for \ub2cc\ud150\ub3c4 3DS \uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 ver.1.05)",
+        "UID": "50010000044096",
+        "TitleID": "0004000E001BB800",
+        "Version": "8240",
+        "Size": "4.0 MB [32 blocks]",
+        "Product Code": "CTR-U-AJHK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Wool Kirby Story Plus(\ud138\uc2e4 \ucee4\ube44 \uc774\uc57c\uae30 \ud50c\ub7ec\uc2a4)",
+        "UID": "50010000047735",
+        "TitleID": "00040000001D7500",
+        "Version": "N/A",
+        "Size": "1.42 GB [11652 blocks]",
+        "Product Code": "CTR-N-BE4K",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Luigi Mansion(\ub8e8\uc774\uc9c0 \ub9e8\uc158)",
+        "UID": "50010000046975",
+        "TitleID": "00040000001D4F00",
+        "Version": "0",
+        "Size": "217.51 MB [1740 blocks]",
+        "Product Code": "CTR-P-BGNK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Update Data Ver.2.3 Yo -Kai Watch \u00ae Busters(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver.2.3 \uc694\uad34\uc6cc\uce58\u00ae \ubc84\uc2a4\ud130\uc988 \uc801\ubb18\ub2e8)",
+        "UID": "50010000046655",
+        "TitleID": "0004000E001CED00",
+        "Version": "1040",
+        "Size": "574.36 MB [4595 blocks]",
+        "Product Code": "CTR-U-BYAK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Update Data Ver.2.3 Yo -Kai Watch \u00ae Busters Baek Dogdae(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver.2.3 \uc694\uad34\uc6cc\uce58\u00ae \ubc84\uc2a4\ud130\uc988 \ubc31\uacac\ub300)",
+        "UID": "50010000046656",
+        "TitleID": "0004000E001CF200",
+        "Version": "1040",
+        "Size": "574.36 MB [4595 blocks]",
+        "Product Code": "CTR-U-BYBK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Hey!PIKMIN (Hey! Peak Min)(Hey! PIKMIN(\ud5e4\uc774! \ud53c\ud06c\ubbfc))",
+        "UID": "50010000046495",
+        "TitleID": "00040000001C5600",
+        "Version": "0",
+        "Size": "403.09 MB [3225 blocks]",
+        "Product Code": "CTR-N-BRCK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Yo -Kai Watch \u00ae Busters(\uc694\uad34\uc6cc\uce58\u00ae \ubc84\uc2a4\ud130\uc988 \uc801\ubb18\ub2e8)",
+        "UID": "50010000044695",
+        "TitleID": "00040000001CED00",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-BYAK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Yo -Kai Watch \u00ae Busters Baek Dogdae(\uc694\uad34\uc6cc\uce58\u00ae \ubc84\uc2a4\ud130\uc988 \ubc31\uacac\ub300)",
+        "UID": "50010000044696",
+        "TitleID": "00040000001CF200",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-BYBK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Mario & Luigi RPG 1 DX(\ub9c8\ub9ac\uc624&\ub8e8\uc774\uc9c0 RPG 1 DX)",
+        "UID": "50010000045575",
+        "TitleID": "00040000001C4F00",
+        "Version": "N/A",
+        "Size": "522.15 MB [4177 blocks]",
+        "Product Code": "CTR-P-BRMK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Update Data VER1.5.0 Fire Emblem Warriors (Japanese)(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver1.5.0 Fire Emblem Warriors (\uc77c\ubcf8\uc5b4))",
+        "UID": "50010000044256",
+        "TitleID": "0004000E0F70DE00",
+        "Version": "4160",
+        "Size": "110.03 MB [880 blocks]",
+        "Product Code": "KTR-U-CFMY",
+        "Publisher": "KOEI TECMO GAMES"
+    },
+    {
+        "Name": "Update Data VER1.5.0 Fire Emblem Warriors (English)(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver1.5.0 Fire Emblem Warriors(\uc601\uc5b4))",
+        "UID": "50010000044257",
+        "TitleID": "0004000E0F70CF00",
+        "Version": "4160",
+        "Size": "95.18 MB [761 blocks]",
+        "Product Code": "KTR-U-CFMZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Update Data Ver.1.2 Pokemon Ultra Sun(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver. 1.2 \ud3ec\ucf13\ubaac\uc2a4\ud130 \uc6b8\ud2b8\ub77c\uc36c)",
+        "UID": "50010000044635",
+        "TitleID": "0004000E001B5000",
+        "Version": "2080",
+        "Size": "66.87 MB [535 blocks]",
+        "Product Code": "CTR-U-A2AA",
+        "Publisher": "The Pok\u00e9mon Company"
+    },
+    {
+        "Name": "Update Data Ver.1.2 Pokemon Ultra Moon(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver. 1.2 \ud3ec\ucf13\ubaac\uc2a4\ud130 \uc6b8\ud2b8\ub77c\ubb38)",
+        "UID": "50010000044636",
+        "TitleID": "0004000E001B5100",
+        "Version": "2080",
+        "Size": "66.87 MB [535 blocks]",
+        "Product Code": "CTR-U-A2BA",
+        "Publisher": "The Pok\u00e9mon Company"
+    },
+    {
+        "Name": "Update Data Ver.3.0 Kirby Battle Deluxe!(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver.3.0 \ucee4\ube44 \ubc30\ud2c0 \ub514\ub7ed\uc2a4! )",
+        "UID": "50010000044937",
+        "TitleID": "0004000E001C2200",
+        "Version": "5168",
+        "Size": "119.55 MB [956 blocks]",
+        "Product Code": "CTR-U-AJ8K",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Kirby Battle Deluxe!(\ucee4\ube44 \ubc30\ud2c0 \ub514\ub7ed\uc2a4!)",
+        "UID": "50010000044938",
+        "TitleID": "00040000001C2200",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-AJ8K",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Kirby Battle Deluxe!Trial board(\ucee4\ube44 \ubc30\ud2c0 \ub514\ub7ed\uc2a4! \uccb4\ud5d8\ud310)",
+        "UID": "50010000044936",
+        "TitleID": "00040000001CAD00",
+        "Version": "N/A",
+        "Size": "136.91 MB [1095 blocks]",
+        "Product Code": "CTR-N-BB4K",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Update Data VER.1.2 Le Rayton Mystery Journey: The seven great plot(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver.1.2 \ub808\uc774\ud2bc \ubbf8\uc2a4\ud130\ub9ac \uc800\ub2c8: \uc77c\uacf1 \ub300\ubd80\ud638\uc758 \uc74c\ubaa8)",
+        "UID": "50010000044755",
+        "TitleID": "0004000E001C7900",
+        "Version": "1072",
+        "Size": "10.89 MB [87 blocks]",
+        "Product Code": "CTR-U-BLFK",
+        "Publisher": "LEVEL5"
+    },
+    {
+        "Name": "Reverse Trial \u00ae4 / Apollo Justice \u2122 ACE ATTORNEY\u00ae(\uc5ed\uc804\uc7ac\ud310\u00ae4 / Apollo Justice\u2122 Ace Attorney\u00ae)",
+        "UID": "50010000044155",
+        "TitleID": "00040000001BC100",
+        "Version": "16",
+        "Size": "341.26 MB [2730 blocks]",
+        "Product Code": "CTR-N-AXRZ",
+        "Publisher": "Capcom Asia"
+    },
+    {
+        "Name": "Pok\u00e9mon Ultra Sun(\ud3ec\ucf13\ubaac\uc2a4\ud130 \uc6b8\ud2b8\ub77c\uc36c)",
+        "UID": "50010000043877",
+        "TitleID": "00040000001B5000",
+        "Version": "N/A",
+        "Size": "3.44 GB [28195 blocks]",
+        "Product Code": "CTR-N-A2AA",
+        "Publisher": "The Pok\u00e9mon Company"
+    },
+    {
+        "Name": "Pok\u00e9mon Ultra Moon(\ud3ec\ucf13\ubaac\uc2a4\ud130 \uc6b8\ud2b8\ub77c\ubb38)",
+        "UID": "50010000043878",
+        "TitleID": "00040000001B5100",
+        "Version": "N/A",
+        "Size": "3.45 GB [28292 blocks]",
+        "Product Code": "CTR-N-A2BA",
+        "Publisher": "The Pok\u00e9mon Company"
+    },
+    {
+        "Name": "CUBE CREATOR DX Update Data Ver.1.1.1(Cube Creator DX \uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 ver.1.1.1)",
+        "UID": "50010000044135",
+        "TitleID": "0004000E001C7800",
+        "Version": "1040",
+        "Size": "18.19 MB [146 blocks]",
+        "Product Code": "CTR-U-A9CK",
+        "Publisher": "ARC SYSTEM WORKS"
+    },
+    {
+        "Name": "Fire EMBLEM WARRIORS (English)(Fire Emblem Warriors (\uc601\uc5b4))",
+        "UID": "50010000042982",
+        "TitleID": "000400000F70CF00",
+        "Version": "N/A",
+        "Size": "1.82 GB [14917 blocks]",
+        "Product Code": "KTR-N-CFMZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Fire EMBLEM Warriors (Japanese)(Fire Emblem Warriors (\uc77c\ubcf8\uc5b4))",
+        "UID": "50010000043775",
+        "TitleID": "000400000F70DE00",
+        "Version": "N/A",
+        "Size": "2.05 GB [16816 blocks]",
+        "Product Code": "KTR-N-CFMY",
+        "Publisher": "KOEI TECMO GAMES"
+    },
+    {
+        "Name": "Pok\u00e9mon gold(\ud3ec\ucf13\ubaac\uc2a4\ud130 \uae08)",
+        "UID": "50010000043635",
+        "TitleID": "0004000000173500",
+        "Version": "N/A",
+        "Size": "8.78 MB [70 blocks]",
+        "Product Code": "CTR-N-QB6A",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Pok\u00e9mon(\ud3ec\ucf13\ubaac\uc2a4\ud130 \uc740)",
+        "UID": "50010000043637",
+        "TitleID": "0004000000173600",
+        "Version": "N/A",
+        "Size": "8.77 MB [70 blocks]",
+        "Product Code": "CTR-N-QB7A",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Yo -Kai Watch 2 End King King(\uc694\uad34\uc6cc\uce58 2 \ub05d\ud310\uc655)",
+        "UID": "50010000042080",
+        "TitleID": "00040000001B2A00",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-BYSK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Cube Creator DX(Cube Creator DX)",
+        "UID": "50010000043275",
+        "TitleID": "00040000001C7800",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-A9CK",
+        "Publisher": "ARC SYSTEM WORKS"
+    },
+    {
+        "Name": "Update Data Ver.2.0 Yokai Watch 2 Aid(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver.2.0 \uc694\uad34\uc6cc\uce58 2 \uc6d0\uc870)",
+        "UID": "50010000043535",
+        "TitleID": "0004000E0019AE00",
+        "Version": "1040",
+        "Size": "297.01 MB [2376 blocks]",
+        "Product Code": "CTR-U-BYGK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Update Data Ver.2.0 Yokai Watch 2(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver.2.0 \uc694\uad34\uc6cc\uce58 2 \ubcf8\uac00)",
+        "UID": "50010000043536",
+        "TitleID": "0004000E0019AF00",
+        "Version": "1040",
+        "Size": "297.01 MB [2376 blocks]",
+        "Product Code": "CTR-U-BYHK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Metroid Samus Returns (Japanese)(METROID Samus Returns (\uc77c\ubcf8\uc5b4))",
+        "UID": "50010000043115",
+        "TitleID": "00040000001BFC00",
+        "Version": "N/A",
+        "Size": "692.73 MB [5542 blocks]",
+        "Product Code": "CTR-N-A9AJ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Metroid Samus Returns (English)(METROID Samus Returns (\uc601\uc5b4))",
+        "UID": "50010000043235",
+        "TitleID": "00040000001BB200",
+        "Version": "N/A",
+        "Size": "681.44 MB [5452 blocks]",
+        "Product Code": "CTR-N-A9AE",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Super Mario Maker for Nintendo 3DS(\uc288\ud37c \ub9c8\ub9ac\uc624 \uba54\uc774\ucee4 for \ub2cc\ud150\ub3c4 3DS)",
+        "UID": "50010000043075",
+        "TitleID": "00040000001BB800",
+        "Version": "N/A",
+        "Size": "362.4 MB [2899 blocks]",
+        "Product Code": "CTR-N-AJHK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Update Data Ver.1.1.7 Super Smash Brothers for Nintendo 3DS(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver.1.1.7 \uc288\ud37c \uc2a4\ub9e4\uc2dc\ube0c\ub77c\ub354\uc2a4 for \ub2cc\ud150\ub3c4 3DS)",
+        "UID": "50010000036875",
+        "TitleID": "0004000E00167C00",
+        "Version": "N/A",
+        "Size": "168.25 MB [1346 blocks]",
+        "Product Code": "CTR-U-AXCK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "EVER OASIS (Japanese)(Ever Oasis (\uc77c\ubcf8\uc5b4) )",
+        "UID": "50010000042837",
+        "TitleID": "0004000000164A00",
+        "Version": "N/A",
+        "Size": "729.05 MB [5832 blocks]",
+        "Product Code": "CTR-N-BAGJ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Fire Emblem Echoes Another Hero King(\ud30c\uc774\uc5b4 \uc5e0\ube14\ub818 Echoes \ub610 \ud558\ub098\uc758 \uc601\uc6c5\uc655)",
+        "UID": "50010000042877",
+        "TitleID": "00040000001C6800",
+        "Version": "0",
+        "Size": "1.57 GB [12869 blocks]",
+        "Product Code": "CTR-P-AJJK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Mario Sports Superstars(\ub9c8\ub9ac\uc624 \uc2a4\ud3ec\uce20 \uc288\ud37c\uc2a4\ud0c0\uc988)",
+        "UID": "50010000043040",
+        "TitleID": "00040000001A6400",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-AUNK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Update Data Ver.1.1 Mario Party Star Rush(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver. 1.1 \ub9c8\ub9ac\uc624 \ud30c\ud2f0 \uc2a4\ud0c0 \ub7ec\uc2dc)",
+        "UID": "50010000043035",
+        "TitleID": "0004000E001AC700",
+        "Version": "N/A",
+        "Size": "6.13 MB [49 blocks]",
+        "Product Code": "CTR-U-BAAK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Kirby's sucking masterpiece(\ucee4\ube44\uc758 \ube68\uc544\ub4e4\uc774\uae30 \ub300\uc791\uc804)",
+        "UID": "50010000043024",
+        "TitleID": "0004000000197000",
+        "Version": "N/A",
+        "Size": "86.76 MB [694 blocks]",
+        "Product Code": "CTR-N-JHUK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "EVER OASIS (English)(Ever Oasis (\uc601\uc5b4))",
+        "UID": "50010000042800",
+        "TitleID": "00040000001A4800",
+        "Version": "N/A",
+        "Size": "779.64 MB [6237 blocks]",
+        "Product Code": "CTR-N-BAGE",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Update Data Ver.1.2 Pok\u00e9mon Moon(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver. 1.2 \ud3ec\ucf13\ubaac\uc2a4\ud130\ubb38)",
+        "UID": "50010000042235",
+        "TitleID": "0004000E00175E00",
+        "Version": "2112",
+        "Size": "36.56 MB [292 blocks]",
+        "Product Code": "CTR-U-BNEA",
+        "Publisher": "The Pok\u00e9mon Company"
+    },
+    {
+        "Name": "Update Data Ver.1.2 Pok\u00e9mon Sun(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver. 1.2 \ud3ec\ucf13\ubaac\uc2a4\ud130\uc36c)",
+        "UID": "50010000042236",
+        "TitleID": "0004000E00164800",
+        "Version": "2112",
+        "Size": "36.56 MB [292 blocks]",
+        "Product Code": "CTR-U-BNDA",
+        "Publisher": "The Pok\u00e9mon Company"
+    },
+    {
+        "Name": "Mario Party Star Rush Party Guest(\ub9c8\ub9ac\uc624 \ud30c\ud2f0 \uc2a4\ud0c0 \ub7ec\uc2dc \ud30c\ud2f0 \uac8c\uc2a4\ud2b8)",
+        "UID": "50010000041496",
+        "TitleID": "00040000001AC800",
+        "Version": "N/A",
+        "Size": "347.86 MB [2783 blocks]",
+        "Product Code": "CTR-N-BABK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Mario Party Star Rush(\ub9c8\ub9ac\uc624 \ud30c\ud2f0 \uc2a4\ud0c0 \ub7ec\uc2dc)",
+        "UID": "50010000042544",
+        "TitleID": "00040000001AC700",
+        "Version": "N/A",
+        "Size": "375.15 MB [3001 blocks]",
+        "Product Code": "CTR-N-BAAK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Yokai Watch 2 Aid(\uc694\uad34\uc6cc\uce58 2 \uc6d0\uc870)",
+        "UID": "50010000042083",
+        "TitleID": "000400000019AE00",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-BYGK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Yo -Kai Watch 2 Main Street(\uc694\uad34\uc6cc\uce58 2 \ubcf8\uac00)",
+        "UID": "50010000042085",
+        "TitleID": "000400000019AF00",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-BYHK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Desert's decision!(\uc0ac\ub9c9\uc758 \uc11c\uc0dd\uacb0\ub2e8!)",
+        "UID": "50010000042655",
+        "TitleID": "00040000001BF800",
+        "Version": "N/A",
+        "Size": "51.4 MB [411 blocks]",
+        "Product Code": "CTR-N-KSZK",
+        "Publisher": "Game Museum"
+    },
+    {
+        "Name": "Yo -Kai Watch 2 Special Experience Version(\uc694\uad34\uc6cc\uce58 2 \ud2b9\ubcc4\uccb4\ud5d8\ud310)",
+        "UID": "50010000042524",
+        "TitleID": "00040000001BB500",
+        "Version": "N/A",
+        "Size": "260.17 MB [2081 blocks]",
+        "Product Code": "CTR-N-BYWK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Come on!Yoshi Ullie World(\ud3ec\uce58\uc640! \uc694\uc2dc \uc6b8\ub9ac \uc6d4\ub4dc)",
+        "UID": "50010000042438",
+        "TitleID": "00040000001B3300",
+        "Version": "N/A",
+        "Size": "971.44 MB [7772 blocks]",
+        "Product Code": "CTR-N-AJNK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Terraria(Terraria)",
+        "UID": "50010000042440",
+        "TitleID": "00040000001B3200",
+        "Version": "N/A",
+        "Size": "57.96 MB [464 blocks]",
+        "Product Code": "CTR-N-BTEZ",
+        "Publisher": "505 Games"
+    },
+    {
+        "Name": "In general, let's make a city of the times(\ub300\uac1c\ucc99\uc2dc\ub300 \ub3c4\uc2dc\ub97c \ub9cc\ub4e4\uc790)",
+        "UID": "50010000042362",
+        "TitleID": "00040000001B8200",
+        "Version": "N/A",
+        "Size": "61.75 MB [494 blocks]",
+        "Product Code": "CTR-N-KDJK",
+        "Publisher": "Game Museum"
+    },
+    {
+        "Name": "Dragon Quest VIII: Journey of the Cursed King(Dragon Quest VIII: Journey of the Cursed King)",
+        "UID": "50010000042338",
+        "TitleID": "0004000000198500",
+        "Version": "N/A",
+        "Size": "2.98 GB [24404 blocks]",
+        "Product Code": "CTR-N-BQ8Z",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Kunio -gun Passion Comicom(\ucfe0\ub2c8\uc624\uad70 \uc5f4\ud608 \ucef4\ud50c\ub9ac\ud2b8 \ud328\ubbf8\ucef4 \ud3b8)",
+        "UID": "50010000042188",
+        "TitleID": "00040000001B2600",
+        "Version": "N/A",
+        "Size": "65.69 MB [526 blocks]",
+        "Product Code": "CTR-N-BKCZ",
+        "Publisher": "Game Museum"
+    },
+    {
+        "Name": "Isaac's burnt offer: Reverse(\uc544\uc774\uc791\uc758 \ubc88\uc81c: \ub9ac\ubc84\uc2a4)",
+        "UID": "50010000042189",
+        "TitleID": "000400000F703900",
+        "Version": "N/A",
+        "Size": "351.28 MB [2810 blocks]",
+        "Product Code": "KTR-N-CBRK",
+        "Publisher": "Pikii"
+    },
+    {
+        "Name": "Update Data Ver.1.5 protrudes out of animal forest(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver.1.5 \ud280\uc5b4\ub098\uc640\uc694 \ub3d9\ubb3c\uc758 \uc232)",
+        "UID": "50010000013631",
+        "TitleID": "0004000E00086500",
+        "Version": "N/A",
+        "Size": "202.67 MB [1621 blocks]",
+        "Product Code": "CTR-U-EGDK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Objects out animal forest Amiibo+(\ud280\uc5b4\ub098\uc640\uc694 \ub3d9\ubb3c\uc758 \uc232 amiibo+)",
+        "UID": "50010000041897",
+        "TitleID": "0004000000199000",
+        "Version": "N/A",
+        "Size": "840.73 MB [6726 blocks]",
+        "Product Code": "CTR-P-EAAK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Rhythm World The Best Plus(\ub9ac\ub4ec \uc138\uc0c1 \ub354 \ubca0\uc2a4\ud2b8 \ud50c\ub7ec\uc2a4)",
+        "UID": "50010000042096",
+        "TitleID": "000400000018A600",
+        "Version": "N/A",
+        "Size": "437.1 MB [3497 blocks]",
+        "Product Code": "CTR-N-BPJK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Update Data Ver.1.5 protrudes out of animal forest Amiibo+(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver.1.5 \ud280\uc5b4\ub098\uc640\uc694 \ub3d9\ubb3c\uc758 \uc232 amiibo+)",
+        "UID": "50010000042123",
+        "TitleID": "0004000E00199000",
+        "Version": "N/A",
+        "Size": "14.66 MB [117 blocks]",
+        "Product Code": "CTR-U-EAAK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Cave Story Cave Story(Cave Story \ub3d9\uad74 \uc774\uc57c\uae30)",
+        "UID": "50010000042075",
+        "TitleID": "00040000001A5500",
+        "Version": "N/A",
+        "Size": "23.5 MB [188 blocks]",
+        "Product Code": "CTR-N-JD9K",
+        "Publisher": "Pikii"
+    },
+    {
+        "Name": "Pok\u00e9mon Sun(\ud3ec\ucf13\ubaac\uc2a4\ud130\uc36c)",
+        "UID": "50010000041462",
+        "TitleID": "0004000000164800",
+        "Version": "N/A",
+        "Size": "3.0 GB [24567 blocks]",
+        "Product Code": "CTR-N-BNDA",
+        "Publisher": "The Pok\u00e9mon Company"
+    },
+    {
+        "Name": "Pok\u00e9mon Moon(\ud3ec\ucf13\ubaac\uc2a4\ud130\ubb38)",
+        "UID": "50010000041463",
+        "TitleID": "0004000000175E00",
+        "Version": "N/A",
+        "Size": "2.98 GB [24447 blocks]",
+        "Product Code": "CTR-N-BNEA",
+        "Publisher": "The Pok\u00e9mon Company"
+    },
+    {
+        "Name": "Pocket Card Jockey(Pocket Card Jockey)",
+        "UID": "50010000041943",
+        "TitleID": "0004000000194A00",
+        "Version": "N/A",
+        "Size": "105.79 MB [846 blocks]",
+        "Product Code": "CTR-N-JVAZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Update Data Ver.1.6.0 Zeldamu -hyung -hyal legends(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver. 1.6.0 \uc824\ub2e4\ubb34\uc30d \ud558\uc774\ub784\uc758 \uc804\uc124\ub4e4)",
+        "UID": "50010000040075",
+        "TitleID": "0004000E00189E00",
+        "Version": "N/A",
+        "Size": "191.78 MB [1534 blocks]",
+        "Product Code": "CTR-U-BZHK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "BOXBOXBOY!(BOXBOXBOY! )",
+        "UID": "50010000041775",
+        "TitleID": "00040000001A5200",
+        "Version": "N/A",
+        "Size": "89.81 MB [718 blocks]",
+        "Product Code": "CTR-N-KCAZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Pok\u00e9mon Sun Moon Special Experience version(\ud3ec\ucf13\ubaac\uc2a4\ud130\uc36c\u30fb\ubb38 \ud2b9\ubcc4\uccb4\ud5d8\ud310)",
+        "UID": "50010000041552",
+        "TitleID": "00040000001A7100",
+        "Version": "N/A",
+        "Size": "380.66 MB [3045 blocks]",
+        "Product Code": "CTR-N-BACA",
+        "Publisher": "The Pok\u00e9mon Company"
+    },
+    {
+        "Name": "LEGO\u00ae Star Wars \u2122: Awakened Force(\ub808\uace0\u00ae \uc2a4\ud0c0\uc6cc\uc988\u2122: \uae68\uc5b4\ub09c \ud3ec\uc2a4)",
+        "UID": "50010000041623",
+        "TitleID": "00040000001A5900",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-BLWK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "DRAGON QUEST VII: Fragments of the Forgotten Past(DRAGON QUEST VII: Fragments of the Forgotten Past)",
+        "UID": "50010000041656",
+        "TitleID": "0004000000198600",
+        "Version": "N/A",
+        "Size": "1.42 GB [11629 blocks]",
+        "Product Code": "CTR-N-AD7Z",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Fire Emblem if(\ud30c\uc774\uc5b4 \uc5e0\ube14\ub818 if)",
+        "UID": "50010000041479",
+        "TitleID": "0004000000188E00",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-BFZK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Phoenix Wright: Ace Attorney - Spirit of Justice(Phoenix Wright: Ace Attorney - Spirit of Justice)",
+        "UID": "50010000041487",
+        "TitleID": "000400000018F900",
+        "Version": "N/A",
+        "Size": "848.71 MB [6790 blocks]",
+        "Product Code": "CTR-N-BG6Y",
+        "Publisher": "Capcom Asia"
+    },
+    {
+        "Name": "BOXBOY!(BOXBOY! )",
+        "UID": "50010000041483",
+        "TitleID": "00040000001A5300",
+        "Version": "N/A",
+        "Size": "80.15 MB [641 blocks]",
+        "Product Code": "CTR-N-JCPZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Shift DX(Shift DX)",
+        "UID": "50010000041256",
+        "TitleID": "000400000019B900",
+        "Version": "N/A",
+        "Size": "38.78 MB [310 blocks]",
+        "Product Code": "CTR-N-KDXY",
+        "Publisher": "COSEN"
+    },
+    {
+        "Name": "\ucf65\uc2a4\ud30c\ud2f0  Blood Covered: ...Repeated fear.(\ucf65\uc2a4\ud30c\ud2f0  Blood Covered: ...Repeated fear.)",
+        "UID": "50010000041156",
+        "TitleID": "0004000000194000",
+        "Version": "N/A",
+        "Size": "852.8 MB [6822 blocks]",
+        "Product Code": "CTR-N-BCPK",
+        "Publisher": "Digital Touch"
+    },
+    {
+        "Name": "Golf(Golf)",
+        "UID": "50010000040929",
+        "TitleID": "0004000000181B00",
+        "Version": "N/A",
+        "Size": "3.6 MB [29 blocks]",
+        "Product Code": "CTR-N-RALZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Wario\u2018s Woods(Wario\u2018s Woods)",
+        "UID": "50010000040930",
+        "TitleID": "0004000000195C00",
+        "Version": "N/A",
+        "Size": "13.0 MB [104 blocks]",
+        "Product Code": "CTR-N-TASZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "LEGO\u00ae ninjago \u2122: Shadow of Ronin(LEGO\u00ae Ninjago\u2122: \uc100\ub3c4 \uc624\ube0c \ub85c\ub2cc)",
+        "UID": "50010000040723",
+        "TitleID": "000400000017FC00",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-BLSK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Zelda's legend Mujura's mask 3D(\uc824\ub2e4\uc758 \uc804\uc124 \ubb34\uc96c\ub77c\uc758 \uac00\uba74 3D)",
+        "UID": "50010000040795",
+        "TitleID": "0004000000185D00",
+        "Version": "N/A",
+        "Size": "614.91 MB [4919 blocks]",
+        "Product Code": "CTR-N-AJRK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "RV-7 My Drone(RV-7 My Drone)",
+        "UID": "50010000040859",
+        "TitleID": "000400000019BB00",
+        "Version": "N/A",
+        "Size": "44.32 MB [355 blocks]",
+        "Product Code": "CTR-N-KVRY",
+        "Publisher": "COSEN"
+    },
+    {
+        "Name": "Toys VS Monsters(Toys VS Monsters)",
+        "UID": "50010000040857",
+        "TitleID": "000400000019BA00",
+        "Version": "N/A",
+        "Size": "51.71 MB [414 blocks]",
+        "Product Code": "CTR-N-KTMY",
+        "Publisher": "COSEN"
+    },
+    {
+        "Name": "Super Mario Bros.: The Lost Levels(Super Mario Bros.: The Lost Levels)",
+        "UID": "50010000040861",
+        "TitleID": "0004000000195D00",
+        "Version": "N/A",
+        "Size": "6.08 MB [49 blocks]",
+        "Product Code": "CTR-N-TATZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Donkey Kong 3(Donkey Kong 3)",
+        "UID": "50010000040862",
+        "TitleID": "0004000000195E00",
+        "Version": "N/A",
+        "Size": "5.99 MB [48 blocks]",
+        "Product Code": "CTR-N-TB4Z",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "The Mysterious Murasame Castle(The Mysterious Murasame Castle)",
+        "UID": "50010000040863",
+        "TitleID": "0004000000196000",
+        "Version": "N/A",
+        "Size": "6.27 MB [50 blocks]",
+        "Product Code": "CTR-N-TCZZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Zero Escape: Zero Time Dilemma(Zero Escape: Zero Time Dilemma)",
+        "UID": "50010000040775",
+        "TitleID": "000400000018E600",
+        "Version": "N/A",
+        "Size": "1.17 GB [9566 blocks]",
+        "Product Code": "CTR-N-BZEY",
+        "Publisher": "Aksys Games"
+    },
+    {
+        "Name": "Fantasy Pirates(Fantasy Pirates)",
+        "UID": "50010000040779",
+        "TitleID": "000400000019B700",
+        "Version": "N/A",
+        "Size": "44.63 MB [357 blocks]",
+        "Product Code": "CTR-N-KFPY",
+        "Publisher": "COSEN"
+    },
+    {
+        "Name": "Nyanko War POP!(\ub0e5\ucf54\ub300\uc804\uc7c1 POP!)",
+        "UID": "50010000040722",
+        "TitleID": "000400000018B500",
+        "Version": "N/A",
+        "Size": "433.11 MB [3465 blocks]",
+        "Product Code": "CTR-N-KNSK",
+        "Publisher": "PONOS"
+    },
+    {
+        "Name": "Magic Hammer(Magic Hammer)",
+        "UID": "50010000040778",
+        "TitleID": "000400000019B800",
+        "Version": "N/A",
+        "Size": "80.17 MB [641 blocks]",
+        "Product Code": "CTR-N-KHMY",
+        "Publisher": "COSEN"
+    },
+    {
+        "Name": "Harmina Ju Lee Moon -rok Hwanida Maejeon Amenomi(\uc5d0\ub974\ubbf8\ub098\uc96c \uc774\ubb38\ub85d \ud658\uc138\uc694\ub9c8\uc804 \uc544\uba54\ub178\ubbf8\ud558\uc2dc\ub77c)",
+        "UID": "50010000040698",
+        "TitleID": "0004000000193800",
+        "Version": "N/A",
+        "Size": "457.77 MB [3662 blocks]",
+        "Product Code": "CTR-N-BAMK",
+        "Publisher": "CFK"
+    },
+    {
+        "Name": "Mario and Sonic Rio Olympics \u2122(\ub9c8\ub9ac\uc624\uc640 \uc18c\ub2c9 \ub9ac\uc6b0 \uc62c\ub9bc\ud53d\u2122)",
+        "UID": "50010000040725",
+        "TitleID": "0004000000191D00",
+        "Version": "N/A",
+        "Size": "617.5 MB [4940 blocks]",
+        "Product Code": "CTR-N-BGXK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Balloon Kid (Balloon Kid)(Balloon Kid(\ubc8c\ub8ec \ud0a4\ub4dc))",
+        "UID": "50010000040620",
+        "TitleID": "0004000000195700",
+        "Version": "N/A",
+        "Size": "3.2 MB [26 blocks]",
+        "Product Code": "CTR-N-RBEZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "MACH Rider (Maha Rider)(Mach Rider(\ub9c8\ud558 \ub77c\uc774\ub354))",
+        "UID": "50010000040621",
+        "TitleID": "0004000000195600",
+        "Version": "N/A",
+        "Size": "6.1 MB [49 blocks]",
+        "Product Code": "CTR-N-TC8Z",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Metroid II -Return of Samus (Metroid II -Return of Samus)(Metroid II - Return of Samus (\uba54\ud2b8\ub85c\uc774\ub4dc II-\ub9ac\ud134 \uc624\ube0c \uc0ac\ubb34\uc2a4))",
+        "UID": "50010000040622",
+        "TitleID": "0004000000195500",
+        "Version": "N/A",
+        "Size": "3.82 MB [31 blocks]",
+        "Product Code": "CTR-N-RA4Z",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Arc Style Baseball 3D(\uc544\ud06c\uc2a4\ud0c0\uc77c \ubca0\uc774\uc2a4\ubcfc 3D)",
+        "UID": "50010000040541",
+        "TitleID": "0004000000169200",
+        "Version": "N/A",
+        "Size": "330.22 MB [2642 blocks]",
+        "Product Code": "CTR-N-JBSZ",
+        "Publisher": "Game Museum"
+    },
+    {
+        "Name": "Alleyway(Alleyway)",
+        "UID": "50010000040542",
+        "TitleID": "0004000000195F00",
+        "Version": "N/A",
+        "Size": "3.19 MB [26 blocks]",
+        "Product Code": "CTR-N-RACZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Super Mario Land 2: 6 Golden Coins(Super Mario Land 2: 6 Golden Coins)",
+        "UID": "50010000040543",
+        "TitleID": "0004000000181500",
+        "Version": "N/A",
+        "Size": "3.91 MB [31 blocks]",
+        "Product Code": "CTR-N-RAGZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Mario & Luigi RPG Paper Mario MIX(\ub9c8\ub9ac\uc624&\ub8e8\uc774\uc9c0 RPG  \ud398\uc774\ud37c \ub9c8\ub9ac\uc624 MIX)",
+        "UID": "50010000040220",
+        "TitleID": "0004000000188900",
+        "Version": "N/A",
+        "Size": "398.99 MB [3192 blocks]",
+        "Product Code": "CTR-N-AYNK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Dr. Mario(Dr. Mario)",
+        "UID": "50010000040396",
+        "TitleID": "0004000000196100",
+        "Version": "N/A",
+        "Size": "3.28 MB [26 blocks]",
+        "Product Code": "CTR-N-RA5Z",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Wrecking Crew(Wrecking Crew(\ub808\ud0b9 \ud06c\ub8e8))",
+        "UID": "50010000040397",
+        "TitleID": "0004000000181800",
+        "Version": "N/A",
+        "Size": "6.3 MB [50 blocks]",
+        "Product Code": "CTR-N-TAGZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Wario Land: Super Mario Land 3(Wario Land: Super Mario Land 3)",
+        "UID": "50010000040398",
+        "TitleID": "0004000000181A00",
+        "Version": "N/A",
+        "Size": "3.91 MB [31 blocks]",
+        "Product Code": "CTR-N-RBAZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Super Mario Bros. Deluxe(Super Mario Bros. Deluxe)",
+        "UID": "50010000040256",
+        "TitleID": "0004000000181400",
+        "Version": "N/A",
+        "Size": "4.31 MB [34 blocks]",
+        "Product Code": "CTR-N-QA5Z",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Zelda II The Adventure of Link(Zelda II The Adventure of Link)",
+        "UID": "50010000040257",
+        "TitleID": "0004000000195300",
+        "Version": "N/A",
+        "Size": "6.38 MB [51 blocks]",
+        "Product Code": "CTR-N-TANZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Star Kirby Robo Planet(\ubcc4\uc758 \ucee4\ube44 \ub85c\ubcf4\ubcf4 \ud50c\ub798\ub2db)",
+        "UID": "50010000040155",
+        "TitleID": "000400000017C600",
+        "Version": "N/A",
+        "Size": "640.9 MB [5127 blocks]",
+        "Product Code": "CTR-N-AT3K",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "The legends of Zelda(\uc824\ub2e4\ubb34\uc30d \ud558\uc774\ub784\uc758 \uc804\uc124\ub4e4)",
+        "UID": "50010000039796",
+        "TitleID": "0004000000189E00",
+        "Version": "N/A",
+        "Size": "1.97 GB [16128 blocks]",
+        "Product Code": "CTR-N-BZHK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "The Legend of Zelda:  Oracle of Ages(The Legend of Zelda:  Oracle of Ages)",
+        "UID": "50010000039898",
+        "TitleID": "0004000000191800",
+        "Version": "N/A",
+        "Size": "4.87 MB [39 blocks]",
+        "Product Code": "CTR-N-QADZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "The Legend of Zelda: Oracle of Seasons(The Legend of Zelda: Oracle of Seasons)",
+        "UID": "50010000039899",
+        "TitleID": "0004000000191900",
+        "Version": "N/A",
+        "Size": "4.88 MB [39 blocks]",
+        "Product Code": "CTR-N-QACZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Kirby's Dream Land 2(Kirby's Dream Land 2)",
+        "UID": "50010000039900",
+        "TitleID": "0004000000191A00",
+        "Version": "N/A",
+        "Size": "3.87 MB [31 blocks]",
+        "Product Code": "CTR-N-RBNZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Langrisser Re:Incarnation -TENSEI-(Langrisser Re:Incarnation -TENSEI-)",
+        "UID": "50010000040120",
+        "TitleID": "000400000018E500",
+        "Version": "N/A",
+        "Size": "730.4 MB [5843 blocks]",
+        "Product Code": "CTR-N-BRGY",
+        "Publisher": "Aksys Games"
+    },
+    {
+        "Name": "Update Data Ver.1.1 Dragon Ball Z Chogung Mutual Fight(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver. 1.1  \ub4dc\ub798\uace4\ubcfc Z \ucd08\uad81\uadf9\ubb34\ud22c\uc804)",
+        "UID": "50010000039956",
+        "TitleID": "0004000E0017E800",
+        "Version": "N/A",
+        "Size": "24.55 MB [196 blocks]",
+        "Product Code": "CTR-U-BDVK",
+        "Publisher": "BANDAI NAMCO Entertainment"
+    },
+    {
+        "Name": "Super Mario Bros. 3(Super Mario Bros. 3)",
+        "UID": "50010000039895",
+        "TitleID": "0004000000184B00",
+        "Version": "N/A",
+        "Size": "12.98 MB [104 blocks]",
+        "Product Code": "CTR-N-TABZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Donke Co.(Donkey Kong Jr.)",
+        "UID": "50010000039896",
+        "TitleID": "0004000000184D00",
+        "Version": "N/A",
+        "Size": "5.94 MB [47 blocks]",
+        "Product Code": "CTR-N-TAKZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Baseball(Baseball)",
+        "UID": "50010000039897",
+        "TitleID": "0004000000191700",
+        "Version": "N/A",
+        "Size": "3.48 MB [28 blocks]",
+        "Product Code": "CTR-N-RABZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "BRAVELY SECOND(BRAVELY SECOND)",
+        "UID": "50010000038875",
+        "TitleID": "000400000017BC00",
+        "Version": "N/A",
+        "Size": "2.48 GB [20325 blocks]",
+        "Product Code": "CTR-N-BSEK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Update Data Ver.1.1 Shinsegae Water Labyrinth 2 Papnir Knights(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver. 1.1 \uc2e0 \uc138\uacc4\uc218\uc758 \ubbf8\uad81 2 \ud30c\ud504\ub2c8\ub974\uae30\uc0ac)",
+        "UID": "50010000039675",
+        "TitleID": "0004000E0016D700",
+        "Version": "N/A",
+        "Size": "3.71 MB [30 blocks]",
+        "Product Code": "CTR-U-BM9K",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Tennis(Tennis)",
+        "UID": "50010000039576",
+        "TitleID": "0004000000181700",
+        "Version": "N/A",
+        "Size": "3.29 MB [26 blocks]",
+        "Product Code": "CTR-N-RADZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Super Mario Bros. 2(Super Mario Bros. 2)",
+        "UID": "50010000039577",
+        "TitleID": "0004000000181200",
+        "Version": "N/A",
+        "Size": "6.52 MB [52 blocks]",
+        "Product Code": "CTR-N-TBMZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "The Legend of Zelda  Link's Awakening DX(The Legend of Zelda  Link's Awakening DX)",
+        "UID": "50010000039578",
+        "TitleID": "0004000000184A00",
+        "Version": "N/A",
+        "Size": "4.67 MB [37 blocks]",
+        "Product Code": "CTR-N-QAAZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Donkey Kong(Donkey Kong)",
+        "UID": "50010000039579",
+        "TitleID": "0004000000181300",
+        "Version": "N/A",
+        "Size": "6.16 MB [49 blocks]",
+        "Product Code": "CTR-N-TBJZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Wario Land 2(Wario Land 2)",
+        "UID": "50010000039580",
+        "TitleID": "0004000000181900",
+        "Version": "N/A",
+        "Size": "5.32 MB [43 blocks]",
+        "Product Code": "CTR-N-QAJZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Ice Climber(Ice Climber)",
+        "UID": "50010000039581",
+        "TitleID": "0004000000184C00",
+        "Version": "N/A",
+        "Size": "12.08 MB [97 blocks]",
+        "Product Code": "CTR-N-TAMZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Family Beach Bali Ball 3D(\ud328\ubc00\ub9ac \ube44\uce58\ubc1c\ub9ac\ubcfc 3D)",
+        "UID": "50010000039676",
+        "TitleID": "0004000000186B00",
+        "Version": "N/A",
+        "Size": "78.3 MB [626 blocks]",
+        "Product Code": "CTR-N-JBEK",
+        "Publisher": "Game Museum"
+    },
+    {
+        "Name": "Mucus muco Friends(Moco Moco Friends)",
+        "UID": "50010000039499",
+        "TitleID": "000400000018E400",
+        "Version": "N/A",
+        "Size": "213.14 MB [1705 blocks]",
+        "Product Code": "CTR-N-BM5Y",
+        "Publisher": "Aksys Games"
+    },
+    {
+        "Name": "Mega Man\u00ae  Legacy Collection(Mega Man\u00ae  Legacy Collection)",
+        "UID": "50010000039498",
+        "TitleID": "0004000000180300",
+        "Version": "N/A",
+        "Size": "463.67 MB [3709 blocks]",
+        "Product Code": "CTR-N-BMMY",
+        "Publisher": "Capcom Asia"
+    },
+    {
+        "Name": "Super Mario Bros.(Super Mario Bros.)",
+        "UID": "50010000035995",
+        "TitleID": "000400000017E600",
+        "Version": "N/A",
+        "Size": "2.57 MB [21 blocks]",
+        "Product Code": "CTR-N-TAAZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "The Legend of Zelda(The Legend of Zelda)",
+        "UID": "50010000039275",
+        "TitleID": "0004000000184800",
+        "Version": "N/A",
+        "Size": "4.62 MB [37 blocks]",
+        "Product Code": "CTR-N-TAEZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Kirby's Dream Land(Kirby's Dream Land)",
+        "UID": "50010000039276",
+        "TitleID": "0004000000184900",
+        "Version": "N/A",
+        "Size": "3.55 MB [28 blocks]",
+        "Product Code": "CTR-N-RAFZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Super Mario Land(Super Mario Land)",
+        "UID": "50010000039277",
+        "TitleID": "0004000000181600",
+        "Version": "N/A",
+        "Size": "3.47 MB [28 blocks]",
+        "Product Code": "CTR-N-RAAZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Metroid(Metroid)",
+        "UID": "50010000039357",
+        "TitleID": "0004000000191500",
+        "Version": "N/A",
+        "Size": "4.4 MB [35 blocks]",
+        "Product Code": "CTR-N-TADZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Donkey Kong(Donkey Kong)",
+        "UID": "50010000039358",
+        "TitleID": "0004000000191600",
+        "Version": "N/A",
+        "Size": "3.96 MB [32 blocks]",
+        "Product Code": "CTR-N-RAHZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Radio hammer(\ub77c\ub514\uc624\ud574\uba38)",
+        "UID": "50010000039368",
+        "TitleID": "0004000000183200",
+        "Version": "N/A",
+        "Size": "265.18 MB [2121 blocks]",
+        "Product Code": "CTR-N-KRHZ",
+        "Publisher": "Game Museum"
+    },
+    {
+        "Name": "Zelda's Legend Tripos Three Musketeers(\uc824\ub2e4\uc758 \uc804\uc124 \ud2b8\ub77c\uc774\ud3ec\uc2a4 \uc0bc\ucd1d\uc0ac)",
+        "UID": "50010000039235",
+        "TitleID": "0004000000182B00",
+        "Version": "N/A",
+        "Size": "576.37 MB [4611 blocks]",
+        "Product Code": "CTR-P-EA3K",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Bravely Second Free Three Musketeers(BRAVELY SECOND  \ubb34\ub8cc\ub85c \uc990\uae30\ub294 \uc0bc\ucd1d\uc0ac\ud3b8)",
+        "UID": "50010000039195",
+        "TitleID": "0004000000183900",
+        "Version": "N/A",
+        "Size": "328.11 MB [2625 blocks]",
+        "Product Code": "CTR-N-KHSK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Update Data Ver.1.2 Passion Kunio -kun SP SPA Concerto(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver. 1.2 \uc5f4\ud608\uacbd\ud30c \ucfe0\ub2c8\uc624\uad70SP \ub09c\ud22c\ud611\uc8fc\uace1)",
+        "UID": "50010000039076",
+        "TitleID": "0004000E00188A00",
+        "Version": "N/A",
+        "Size": "1.32 MB [11 blocks]",
+        "Product Code": "CTR-U-AK2K",
+        "Publisher": "SHINSEGAE I&C"
+    },
+    {
+        "Name": "Kunio -kun -gun SP(\uc5f4\ud608\uacbd\ud30c \ucfe0\ub2c8\uc624\uad70SP \ub09c\ud22c\ud611\uc8fc\uace1)",
+        "UID": "50010000038855",
+        "TitleID": "0004000000188A00",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-AK2K",
+        "Publisher": "SHINSEGAE I&C"
+    },
+    {
+        "Name": "Update Data Ver.1.1 The Sky Soldier(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver. 1.1 \ub85c\ub370\uc544 \ub354 \uc2a4\uce74\uc774 \uc194\uc838)",
+        "UID": "50010000038995",
+        "TitleID": "0004000E00183100",
+        "Version": "N/A",
+        "Size": "1.93 MB [15 blocks]",
+        "Product Code": "CTR-U-AR6K",
+        "Publisher": "SHINSEGAE I&C"
+    },
+    {
+        "Name": "Update Data VER.2.0 Puzzle & Dragon Z + Puzzle & Dragon Super Marie Obraders Edition(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver.2.0  \ud37c\uc990\uc564\ub4dc\ub798\uace4 Z + \ud37c\uc990\uc564\ub4dc\ub798\uace4  \uc288\ud37c \ub9c8\ub9ac\uc624\ube0c\ub77c\ub354\uc2a4 \uc5d0\ub514\uc158)",
+        "UID": "50010000038921",
+        "TitleID": "0004000E0015A700",
+        "Version": "N/A",
+        "Size": "68.42 MB [547 blocks]",
+        "Product Code": "CTR-U-AZGK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Ranch Story Story of Seasons(\ubaa9\uc7a5\uc774\uc57c\uae30 STORY OF SEASONS)",
+        "UID": "50010000038679",
+        "TitleID": "000400000015FD00",
+        "Version": "N/A",
+        "Size": "552.08 MB [4417 blocks]",
+        "Product Code": "CTR-P-BTSK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Yokai Watch(\uc694\uad34\uc6cc\uce58)",
+        "UID": "50010000037555",
+        "TitleID": "0004000000167600",
+        "Version": "N/A",
+        "Size": "819.8 MB [6558 blocks]",
+        "Product Code": "CTR-N-AYWK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "JOHNNY'S PAYDAY PANIC(JOHNNY'S PAYDAY PANIC)",
+        "UID": "50010000038476",
+        "TitleID": "0004000000184600",
+        "Version": "N/A",
+        "Size": "28.51 MB [228 blocks]",
+        "Product Code": "CTR-N-KAKY",
+        "Publisher": "OFFICE CREATE"
+    },
+    {
+        "Name": "Dragon Ball Z Chogung Mutual Fight(\ub4dc\ub798\uace4\ubcfc Z \ucd08\uad81\uadf9\ubb34\ud22c\uc804)",
+        "UID": "50010000037795",
+        "TitleID": "000400000017E800",
+        "Version": "N/A",
+        "Size": "316.71 MB [2534 blocks]",
+        "Product Code": "CTR-P-BDVK",
+        "Publisher": "BANDAI NAMCO Entertainment"
+    },
+    {
+        "Name": "Roda The Sky Soldier(\ub85c\ub370\uc544 \ub354 \uc2a4\uce74\uc774 \uc194\uc838)",
+        "UID": "50010000038437",
+        "TitleID": "0004000000183100",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-AR6K",
+        "Publisher": "SHINSEGAE I&C"
+    },
+    {
+        "Name": "Shinsegae Water's Labyrinth 2 Papnir Knight(\uc2e0 \uc138\uacc4\uc218\uc758 \ubbf8\uad81 2 \ud30c\ud504\ub2c8\ub974\uae30\uc0ac)",
+        "UID": "50010000034955",
+        "TitleID": "000400000016D700",
+        "Version": "N/A",
+        "Size": "899.52 MB [7196 blocks]",
+        "Product Code": "CTR-N-BM9K",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Princess collection at my own way(\ub0b4\ub9d8\ub300\ub85c \ud504\ub9b0\uc138\uc2a4 \uceec\ub809\uc158)",
+        "UID": "50010000037315",
+        "TitleID": "000400000017E700",
+        "Version": "N/A",
+        "Size": "153.54 MB [1228 blocks]",
+        "Product Code": "CTR-N-AULK",
+        "Publisher": "CFK"
+    },
+    {
+        "Name": "Steel Empire(\uac15\ucca0\uc81c\uad6d)",
+        "UID": "50010000037295",
+        "TitleID": "000400000017F700",
+        "Version": "N/A",
+        "Size": "47.66 MB [381 blocks]",
+        "Product Code": "CTR-N-JPUK",
+        "Publisher": "Digital Touch"
+    },
+    {
+        "Name": "Family Lure Fishing 3D(\ud328\ubc00\ub9ac \ub8e8\uc5b4\ud53c\uc2f1 3D)",
+        "UID": "50010000037075",
+        "TitleID": "000400000017DA00",
+        "Version": "0",
+        "Size": "91.99 MB [736 blocks]",
+        "Product Code": "CTR-N-JFGK",
+        "Publisher": "Game Museum"
+    },
+    {
+        "Name": "Update Data Ver.1.2 Azure Striker Gunvolt(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver. 1.2 Azure Striker GUNVOLT)",
+        "UID": "50010000030855",
+        "TitleID": "0004000E0015BD00",
+        "Version": "2096",
+        "Size": "24.14 MB [193 blocks]",
+        "Product Code": "CTR-U-JV7K",
+        "Publisher": "INTI CREATES"
+    },
+    {
+        "Name": "Super Smash Brothers for Nintendo 3DS(\uc288\ud37c \uc2a4\ub9e4\uc2dc\ube0c\ub77c\ub354\uc2a4 for \ub2cc\ud150\ub3c4 3DS)",
+        "UID": "50010000036656",
+        "TitleID": "0004000000167C00",
+        "Version": "N/A",
+        "Size": "1.18 GB [9664 blocks]",
+        "Product Code": "CTR-P-AXCK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Adventure of ancient masters(\ud0dc\uace0\uc758 \ub2ec\uc778 \ucff5\ub531\ucff5\ub531 \uc2dc\uacf5 \ub300\ubaa8\ud5d8)",
+        "UID": "50010000036296",
+        "TitleID": "000400000016D900",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-BT7K",
+        "Publisher": "BANDAI NAMCO Entertainment"
+    },
+    {
+        "Name": "Fossil fighter(\ud654\uc11d \ud30c\uc774\ud130)",
+        "UID": "50010000035855",
+        "TitleID": "0004000000143700",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-AHRK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Slice it!(\uc2ac\ub77c\uc774\uc2a4 \uc787!)",
+        "UID": "50010000036095",
+        "TitleID": "0004000000178A00",
+        "Version": "N/A",
+        "Size": "57.34 MB [459 blocks]",
+        "Product Code": "CTR-N-JL2K",
+        "Publisher": "Game Museum"
+    },
+    {
+        "Name": "Update Data Ver.1.2.0 Code Name: S.T.E.A.M.(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver. 1.2.0 CODE NAME: S.T.E.A.M.)",
+        "UID": "50010000032535",
+        "TitleID": "0004000E00132500",
+        "Version": "2080",
+        "Size": "7.63 MB [61 blocks]",
+        "Product Code": "CTR-U-AY6A",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Goonyan(Goonyan)",
+        "UID": "50010000035896",
+        "TitleID": "0004000000166800",
+        "Version": "N/A",
+        "Size": "4.48 MB [36 blocks]",
+        "Product Code": "CTR-N-KGNZ",
+        "Publisher": "COSEN"
+    },
+    {
+        "Name": "Gacha racing(\uac00\ucc60 \ub808\uc774\uc2f1)",
+        "UID": "50010000035897",
+        "TitleID": "0004000000178900",
+        "Version": "N/A",
+        "Size": "107.85 MB [863 blocks]",
+        "Product Code": "CTR-N-JTQZ",
+        "Publisher": "Game Museum"
+    },
+    {
+        "Name": "Code Name: S.T.E.A.M.(Code Name: Steam)(CODE NAME: S.T.E.A.M.  (\ucf54\ub4dc\ub124\uc784: \uc2a4\ud300))",
+        "UID": "50010000029435",
+        "TitleID": "0004000000132500",
+        "Version": "N/A",
+        "Size": "1.02 GB [8381 blocks]",
+        "Product Code": "CTR-N-AY6A",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Hatsune Miku P Roger CT Future DX(Hatsune Miku  Project mirai DX)",
+        "UID": "50010000033415",
+        "TitleID": "0004000000153100",
+        "Version": "N/A",
+        "Size": "2.17 GB [17809 blocks]",
+        "Product Code": "CTR-N-BRXK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "BLAZBLUE  -CLONEPHANTASMA-(BLAZBLUE  -CLONEPHANTASMA- )",
+        "UID": "50010000033675",
+        "TitleID": "0004000000165100",
+        "Version": "N/A",
+        "Size": "180.14 MB [1441 blocks]",
+        "Product Code": "CTR-N-JB2Z",
+        "Publisher": "Game Museum"
+    },
+    {
+        "Name": "puzzle(PAZURU)",
+        "UID": "50010000033255",
+        "TitleID": "0004000000166700",
+        "Version": "N/A",
+        "Size": "30.75 MB [246 blocks]",
+        "Product Code": "CTR-N-KPZZ",
+        "Publisher": "COSEN"
+    },
+    {
+        "Name": "Puzzle & Dragon Z + Puzzle & Dragon Super Marie of Brothers Edition(\ud37c\uc990\uc564\ub4dc\ub798\uace4 Z + \ud37c\uc990\uc564\ub4dc\ub798\uace4  \uc288\ud37c \ub9c8\ub9ac\uc624\ube0c\ub77c\ub354\uc2a4 \uc5d0\ub514\uc158)",
+        "UID": "50010000032875",
+        "TitleID": "000400000015A700",
+        "Version": "N/A",
+        "Size": "908.55 MB [7268 blocks]",
+        "Product Code": "CTR-N-AZGK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Puzzle & Dragon Z + Puzzle & Dragon Super Marie of Brothers Edition(\ud37c\uc990\uc564\ub4dc\ub798\uace4 Z + \ud37c\uc990\uc564\ub4dc\ub798\uace4 \uc288\ud37c \ub9c8\ub9ac\uc624\ube0c\ub77c\ub354\uc2a4 \uc5d0\ub514\uc158 \uccb4\ud5d8\ud310)",
+        "UID": "50010000032877",
+        "TitleID": "000400000016BF00",
+        "Version": "N/A",
+        "Size": "77.57 MB [621 blocks]",
+        "Product Code": "CTR-N-KPMK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Xenoblade (Japanese)(Xenoblade (\uc77c\ubcf8\uc5b4))",
+        "UID": "50010000033215",
+        "TitleID": "000400000F700700",
+        "Version": "N/A",
+        "Size": "3.41 GB [27971 blocks]",
+        "Product Code": "KTR-N-CAFY",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Xenoblade (English)(Xenoblade (\uc601\uc5b4))",
+        "UID": "50010000033235",
+        "TitleID": "000400000F700400",
+        "Version": "N/A",
+        "Size": "3.52 GB [28825 blocks]",
+        "Product Code": "KTR-N-CAFZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Update Data Ver.1.5 Pokemon X(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver. 1.5 \ud3ec\ucf13\ubaac\uc2a4\ud130 X)",
+        "UID": "50010000017453",
+        "TitleID": "0004000E00055D00",
+        "Version": "5232",
+        "Size": "30.25 MB [242 blocks]",
+        "Product Code": "CTR-U-EKJA",
+        "Publisher": "The Pok\u00e9mon Company"
+    },
+    {
+        "Name": "Update Data Ver.1.5 Pokemon Y(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver. 1.5 \ud3ec\ucf13\ubaac\uc2a4\ud130 Y\u3000)",
+        "UID": "50010000017454",
+        "TitleID": "0004000E00055E00",
+        "Version": "5216",
+        "Size": "30.25 MB [242 blocks]",
+        "Product Code": "CTR-U-EK2A",
+        "Publisher": "The Pok\u00e9mon Company"
+    },
+    {
+        "Name": "Update Data Ver.1.4 Pok\u00e9mon Alpha Sapphire(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver. 1.4 \ud3ec\ucf13\ubaac\uc2a4\ud130 \uc54c\ud30c\uc0ac\ud30c\uc774\uc5b4 )",
+        "UID": "50010000025575",
+        "TitleID": "0004000E0011C500",
+        "Version": "7280",
+        "Size": "33.41 MB [267 blocks]",
+        "Product Code": "CTR-U-ECLA",
+        "Publisher": "The Pok\u00e9mon Company"
+    },
+    {
+        "Name": "Update Data Ver.1.4 Pokemon Omega Ruby(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver. 1.4 \ud3ec\ucf13\ubaac\uc2a4\ud130 \uc624\uba54\uac00\ub8e8\ube44)",
+        "UID": "50010000025576",
+        "TitleID": "0004000E0011C400",
+        "Version": "7280",
+        "Size": "33.41 MB [267 blocks]",
+        "Product Code": "CTR-U-ECRA",
+        "Publisher": "The Pok\u00e9mon Company"
+    },
+    {
+        "Name": "Pokemon Art Academy(\ud3ec\ucf13\ubaac \uc544\ud2b8 \uc544\uce74\ub370\ubbf8)",
+        "UID": "50010000032915",
+        "TitleID": "0004000000150B00",
+        "Version": "N/A",
+        "Size": "318.69 MB [2550 blocks]",
+        "Product Code": "CTR-N-BPCK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Toy Stunt Bike(Toy Stunt Bike)",
+        "UID": "50010000032975",
+        "TitleID": "0004000000166600",
+        "Version": "N/A",
+        "Size": "58.66 MB [469 blocks]",
+        "Product Code": "CTR-N-JTVY",
+        "Publisher": "COSEN"
+    },
+    {
+        "Name": "Can you help Cooking Mama Mama?(\ucfe0\ud0b9\ub9c8\ub9c8 \ub9c8\ub9c8\ub97c \ub3c4\uc640\uc904\ub798?)",
+        "UID": "50010000028555",
+        "TitleID": "0004000000155D00",
+        "Version": "N/A",
+        "Size": "211.48 MB [1692 blocks]",
+        "Product Code": "CTR-N-BC5K",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Update Data Ver.1.1 Suman Kagura 2 -Crimson-(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver. 1.1 \uc12c\ub780 \uce74\uad6c\ub77c 2 -\uc9c4\ud64d- )",
+        "UID": "50010000032456",
+        "TitleID": "0004000E00150200",
+        "Version": "N/A",
+        "Size": "4.37 MB [35 blocks]",
+        "Product Code": "CTR-U-BNUK",
+        "Publisher": "CFK"
+    },
+    {
+        "Name": "Monster Hunter 4G(\ubaac\uc2a4\ud130\ud5cc\ud130 4G)",
+        "UID": "50010000031795",
+        "TitleID": "0004000000153200",
+        "Version": "N/A",
+        "Size": "2.63 GB [21530 blocks]",
+        "Product Code": "CTR-P-BFGK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "BIKE RIDER DX2 GALAXY(BIKE RIDER DX2 GALAXY)",
+        "UID": "50010000032135",
+        "TitleID": "0004000000161400",
+        "Version": "N/A",
+        "Size": "97.44 MB [780 blocks]",
+        "Product Code": "CTR-N-JGYZ",
+        "Publisher": "Spicysoft"
+    },
+    {
+        "Name": "Update Data Ver.1.1 Devil Survivor 2 Brake Records(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver. 1.1 \ub370\ube4c \uc11c\ubc14\uc774\ubc842 \ube0c\ub808\uc774\ud06c \ub808\ucf54\ub4dc)",
+        "UID": "50010000031555",
+        "TitleID": "0004000E0015EC00",
+        "Version": "N/A",
+        "Size": "2.61 MB [21 blocks]",
+        "Product Code": "CTR-U-ADXK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Devil Survivor 2 Brake Record(\ub370\ube4c \uc11c\ubc14\uc774\ubc842 \ube0c\ub808\uc774\ud06c \ub808\ucf54\ub4dc)",
+        "UID": "50010000030075",
+        "TitleID": "000400000015EC00",
+        "Version": "N/A",
+        "Size": "3.44 GB [28213 blocks]",
+        "Product Code": "CTR-N-ADXK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "MIGHTY GUNVOLT(MIGHTY GUNVOLT)",
+        "UID": "50010000027415",
+        "TitleID": "000400000015BE00",
+        "Version": "N/A",
+        "Size": "8.21 MB [66 blocks]",
+        "Product Code": "CTR-N-KMGZ",
+        "Publisher": "INTI CREATES"
+    },
+    {
+        "Name": "Suman Kagura 2 -Crimson-(\uc12c\ub780 \uce74\uad6c\ub77c 2 -\uc9c4\ud64d-)",
+        "UID": "50010000030055",
+        "TitleID": "0004000000150200",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-BNUK",
+        "Publisher": "CFK"
+    },
+    {
+        "Name": "LEGO NINJAGO: Ningroid(LEGO Ninjago: \ub2cc\ub4dc\ub85c\uc774\ub4dc)",
+        "UID": "50010000029660",
+        "TitleID": "000400000015BF00",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-BLNK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Gardening Mama: Mama and Friends in the Forest(\uac00\ub4dc\ub2dd\ub9c8\ub9c8: \ub9c8\ub9c8\uc640 \uc232 \uc18d \uce5c\uad6c\ub4e4)",
+        "UID": "50010000027835",
+        "TitleID": "0004000000155E00",
+        "Version": "N/A",
+        "Size": "210.55 MB [1684 blocks]",
+        "Product Code": "CTR-N-BGMK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Yoshi NEW Island(\uc694\uc2dc New \uc544\uc77c\ub79c\ub4dc)",
+        "UID": "50010000028115",
+        "TitleID": "000400000012C500",
+        "Version": "N/A",
+        "Size": "417.82 MB [3343 blocks]",
+        "Product Code": "CTR-N-ATAK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Pok\u00e9mon Omega Ruby(\ud3ec\ucf13\ubaac\uc2a4\ud130 \uc624\uba54\uac00\ub8e8\ube44)",
+        "UID": "50010000024797",
+        "TitleID": "000400000011C400",
+        "Version": "N/A",
+        "Size": "1.77 GB [14485 blocks]",
+        "Product Code": "CTR-N-ECRA",
+        "Publisher": "The Pok\u00e9mon Company"
+    },
+    {
+        "Name": "Pok\u00e9mon Alpha Sapphire(\ud3ec\ucf13\ubaac\uc2a4\ud130 \uc54c\ud30c\uc0ac\ud30c\uc774\uc5b4)",
+        "UID": "50010000024798",
+        "TitleID": "000400000011C500",
+        "Version": "N/A",
+        "Size": "1.77 GB [14486 blocks]",
+        "Product Code": "CTR-N-ECLA",
+        "Publisher": "The Pok\u00e9mon Company"
+    },
+    {
+        "Name": "Azure Striker GUNVOLT(Azure Striker GUNVOLT)",
+        "UID": "50010000027275",
+        "TitleID": "000400000015BD00",
+        "Version": "N/A",
+        "Size": "328.62 MB [2629 blocks]",
+        "Product Code": "CTR-N-JV7K",
+        "Publisher": "INTI CREATES"
+    },
+    {
+        "Name": "Update Data Ver.1.1 Blay Blue Continue Shift 2(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver. 1.1 \ube14\ub808\uc774 \ube14\ub8e8 \ucee8\ud2f0\ub274\uc5c4 \uc2dc\ud504\ud2b8 2)",
+        "UID": "50010000027137",
+        "TitleID": "0004000E00130C00",
+        "Version": "N/A",
+        "Size": "1.55 MB [12 blocks]",
+        "Product Code": "CTR-U-ABLK",
+        "Publisher": "Game Museum"
+    },
+    {
+        "Name": "Persona Q Shadow of the Laverins(\ud398\ub974\uc18c\ub098 Q \uc100\ub3c4\uc6b0 \uc624\ube0c \ub354 \ub798\ubc84\ub9b0\uc2a4)",
+        "UID": "50010000026615",
+        "TitleID": "0004000000145C00",
+        "Version": "N/A",
+        "Size": "1.79 GB [14674 blocks]",
+        "Product Code": "CTR-N-AQQK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Star Kirby Triple Deluxe(\ubcc4\uc758 \ucee4\ube44 \ud2b8\ub9ac\ud50c \ub514\ub7ed\uc2a4)",
+        "UID": "50010000021713",
+        "TitleID": "0004000000120F00",
+        "Version": "N/A",
+        "Size": "588.72 MB [4710 blocks]",
+        "Product Code": "CTR-N-BALK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Jin Goddess Life \u2173(\uc9c4 \uc5ec\uc2e0\uc804\uc0dd\u2163)",
+        "UID": "50010000017637",
+        "TitleID": "00040000000F6100",
+        "Version": "N/A",
+        "Size": "1.8 GB [14741 blocks]",
+        "Product Code": "CTR-N-AMXK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Shinsegae Water's Labyrinth Millennium Girl(\uc2e0 \uc138\uacc4\uc218\uc758 \ubbf8\uad81 \ubc00\ub808\ub2c8\uc5c4\uc758 \uc18c\ub140)",
+        "UID": "50010000020514",
+        "TitleID": "0004000000115D00",
+        "Version": "N/A",
+        "Size": "788.76 MB [6310 blocks]",
+        "Product Code": "CTR-N-BSKK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Kirby Fighters!Z(\ucee4\ube44 \ud30c\uc774\ud130\uc988! Z)",
+        "UID": "50010000026057",
+        "TitleID": "0004000000148000",
+        "Version": "N/A",
+        "Size": "117.14 MB [937 blocks]",
+        "Product Code": "CTR-N-JVXK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Great King Didi and Kung Z(\ub300\uc655 \ub514\ub514\ub514\ub85c \ucff5\ucff5 Z)",
+        "UID": "50010000026155",
+        "TitleID": "0004000000147C00",
+        "Version": "N/A",
+        "Size": "55.73 MB [446 blocks]",
+        "Product Code": "CTR-N-JVQK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Mario Party Island Tour(\ub9c8\ub9ac\uc624 \ud30c\ud2f0 \uc544\uc77c\ub79c\ub4dc \ud22c\uc5b4)",
+        "UID": "50010000021144",
+        "TitleID": "0004000000119B00",
+        "Version": "N/A",
+        "Size": "229.11 MB [1833 blocks]",
+        "Product Code": "CTR-N-ATSK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Dillon's Rolling Western(Dillon's Rolling Western)",
+        "UID": "50010000014434",
+        "TitleID": "00040000000EDD00",
+        "Version": "1056",
+        "Size": "49.05 MB [392 blocks]",
+        "Product Code": "CTR-N-JAMY",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Dillon's Rolling Western The Last Ranger(Dillon's Rolling Western The Last Ranger)",
+        "UID": "50010000014435",
+        "TitleID": "00040000000EDC00",
+        "Version": "1040",
+        "Size": "287.26 MB [2298 blocks]",
+        "Product Code": "CTR-N-JGWZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Update Data Ver.1.1 Nintendo 3DS Guide Louvre Museum(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver. 1.1  \ub2cc\ud150\ub3c4 3DS \uac00\uc774\ub4dc \ub8e8\ube0c\ub974 \ubc15\ubb3c\uad00)",
+        "UID": "50010000024735",
+        "TitleID": "0004000E000CBA00",
+        "Version": "1056",
+        "Size": "90.15 MB [721 blocks]",
+        "Product Code": "CTR-U-AL8K",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Friends Moa Apartment(\uce5c\uad6c\ubaa8\uc544 \uc544\ud30c\ud2b8)",
+        "UID": "50010000023521",
+        "TitleID": "0004000000120C00",
+        "Version": "N/A",
+        "Size": "388.8 MB [3110 blocks]",
+        "Product Code": "CTR-N-EC6K",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Mario & Luigi RPG 4 Dream Adventure(\ub9c8\ub9ac\uc624&\ub8e8\uc774\uc9c0 RPG 4 \ub4dc\ub9bc \uc5b4\ub4dc\ubca4\ucc98)",
+        "UID": "50010000019534",
+        "TitleID": "00040000000FCD00",
+        "Version": "N/A",
+        "Size": "815.84 MB [6527 blocks]",
+        "Product Code": "CTR-N-AYMK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Rilakkuma Sweets Tower(Rilakkuma Sweets Tower)",
+        "UID": "50010000023575",
+        "TitleID": "0004000000139500",
+        "Version": "N/A",
+        "Size": "85.81 MB [686 blocks]",
+        "Product Code": "CTR-N-ARLZ",
+        "Publisher": "Imagineer"
+    },
+    {
+        "Name": "Zelda's legendary gods of trifos 2(\uc824\ub2e4\uc758 \uc804\uc124 \uc2e0\ub4e4\uc758 \ud2b8\ub77c\uc774\ud3ec\uc2a4 2)",
+        "UID": "50010000021873",
+        "TitleID": "0004000000115800",
+        "Version": "N/A",
+        "Size": "674.95 MB [5400 blocks]",
+        "Product Code": "CTR-N-BZLK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "New Super Marie Obraders 2(\ub274 \uc288\ud37c \ub9c8\ub9ac\uc624\ube0c\ub77c\ub354\uc2a4 2)",
+        "UID": "50010000012286",
+        "TitleID": "00040000000B8900",
+        "Version": "N/A",
+        "Size": "340.08 MB [2721 blocks]",
+        "Product Code": "CTR-N-ABEK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Paper Mario Sticker Star(\ud398\uc774\ud37c \ub9c8\ub9ac\uc624 \uc2a4\ud2f0\ucee4 \uc2a4\ud0c0)",
+        "UID": "50010000014634",
+        "TitleID": "00040000000C6800",
+        "Version": "N/A",
+        "Size": "515.56 MB [4124 blocks]",
+        "Product Code": "CTR-N-AG5K",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Donkey Kong Returns 3D(\ub3d9\ud0a4\ucf69 \ub9ac\ud134\uc988 3D)",
+        "UID": "50010000018315",
+        "TitleID": "00040000000FFC00",
+        "Version": "N/A",
+        "Size": "2.15 GB [17647 blocks]",
+        "Product Code": "CTR-N-AYTK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Dalgine Sports Baseball(\ub2ec\uad6c\ub124 \uc2a4\ud3ec\uce20 \uc57c\uad6c\ud3b8)",
+        "UID": "50010000022537",
+        "TitleID": "0004000000126200",
+        "Version": "N/A",
+        "Size": "60.53 MB [484 blocks]",
+        "Product Code": "CTR-N-JBCK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Blay Blue Continue Shift 2(\ube14\ub808\uc774 \ube14\ub8e8 \ucee8\ud2f0\ub274\uc5c4 \uc2dc\ud504\ud2b8 2)",
+        "UID": "50010000022595",
+        "TitleID": "0004000000130C00",
+        "Version": "N/A",
+        "Size": "1.27 GB [10396 blocks]",
+        "Product Code": "CTR-N-ABLK",
+        "Publisher": "Game Museum"
+    },
+    {
+        "Name": "Zelda's Legend \u2122 Ocarina 3D(\uc824\ub2e4\uc758 \uc804\uc124\u2122 \uc2dc\uac04\uc758 \uc624\uce74\ub9ac\ub098 3D)",
+        "UID": "50010000012019",
+        "TitleID": "000400000008F800",
+        "Version": "N/A",
+        "Size": "428.14 MB [3425 blocks]",
+        "Product Code": "CTR-N-AQEK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "nintendogs + cats poodle & new friends(nintendogs + cats \ud478\ub4e4 & NEW\uce5c\uad6c\ub4e4)",
+        "UID": "50010000012190",
+        "TitleID": "0004000000031900",
+        "Version": "N/A",
+        "Size": "447.67 MB [3581 blocks]",
+        "Product Code": "CTR-N-ADCK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Nintendogs + Cats French Fire & New Friends(nintendogs + cats \ud504\ub80c\uce58 \ubd88 & NEW\uce5c\uad6c\ub4e4)",
+        "UID": "50010000012191",
+        "TitleID": "0004000000031400",
+        "Version": "N/A",
+        "Size": "447.67 MB [3581 blocks]",
+        "Product Code": "CTR-N-ADBK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Nintendogs + Cats Shiva Inu & New Friends(nintendogs + cats \uc2dc\ubc14 \uc774\ub204 & NEW\uce5c\uad6c\ub4e4)",
+        "UID": "50010000012192",
+        "TitleID": "0004000000030F00",
+        "Version": "N/A",
+        "Size": "447.67 MB [3581 blocks]",
+        "Product Code": "CTR-N-ADAK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Cooking Mama and my cooking time!(\ucfe0\ud0b9\ub9c8\ub9c8 \ub9c8\ub9c8\uc640 \ub098\uc758 \uc694\ub9ac \uc2dc\uac04 !)",
+        "UID": "50010000012816",
+        "TitleID": "00040000000BF500",
+        "Version": "N/A",
+        "Size": "178.46 MB [1428 blocks]",
+        "Product Code": "CTR-N-ACQK",
+        "Publisher": "OFFICE CREATE"
+    },
+    {
+        "Name": "Dr. Kawashima Ryuta Super Super Super Power!5 minutes of concentration training(\uce74\uc640\uc2dc\ub9c8 \ub958\ud0c0 \ubc15\uc0ac \uac10\uc218 \ucd08\uac15\ub825! 5\ubd84\uac04\uc758 \uc9d1\uc911\ub825 \ud2b8\ub808\uc774\ub2dd)",
+        "UID": "50010000015673",
+        "TitleID": "00040000000CB100",
+        "Version": "N/A",
+        "Size": "212.81 MB [1702 blocks]",
+        "Product Code": "CTR-N-ASRK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Girls Style Fashion Leader Declaration!(Girls Style \ud328\uc158 \ub9ac\ub354 \uc120\uc5b8!)",
+        "UID": "50010000015954",
+        "TitleID": "00040000000C4F00",
+        "Version": "N/A",
+        "Size": "1.16 GB [9535 blocks]",
+        "Product Code": "CTR-N-ACLK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Mario Golf World Tour(\ub9c8\ub9ac\uc624 \uace8\ud504 \uc6d4\ub4dc \ud22c\uc5b4)",
+        "UID": "50010000021993",
+        "TitleID": "0004000000106300",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-AJ3K",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "DISNEY MAGICAL WORLD(DISNEY MAGICAL WORLD)",
+        "UID": "50010000021994",
+        "TitleID": "000400000012C700",
+        "Version": "N/A",
+        "Size": "467.56 MB [3740 blocks]",
+        "Product Code": "CTR-N-AMQZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "BRAVELY DEFAULT(BRAVELY DEFAULT)",
+        "UID": "50010000021257",
+        "TitleID": "0004000000122200",
+        "Version": "N/A",
+        "Size": "3.23 GB [26499 blocks]",
+        "Product Code": "CTR-N-BTRZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "WAKEDAS(WAKEDAS)",
+        "UID": "50010000021273",
+        "TitleID": "000400000011BF00",
+        "Version": "N/A",
+        "Size": "52.7 MB [422 blocks]",
+        "Product Code": "CTR-N-JWKZ",
+        "Publisher": "Flyhigh Works"
+    },
+    {
+        "Name": "Witch&Hero(Witch&Hero)",
+        "UID": "50010000021274",
+        "TitleID": "000400000011BD00",
+        "Version": "N/A",
+        "Size": "38.0 MB [304 blocks]",
+        "Product Code": "CTR-N-JWHZ",
+        "Publisher": "Flyhigh Works"
+    },
+    {
+        "Name": "Qualification by(Shikaku by Nikoli)",
+        "UID": "50010000020513",
+        "TitleID": "0004000000109F00",
+        "Version": "N/A",
+        "Size": "52.66 MB [421 blocks]",
+        "Product Code": "CTR-N-JCQZ",
+        "Publisher": "HAMSTER"
+    },
+    {
+        "Name": "Family Tennis(Family Tennis)",
+        "UID": "50010000019735",
+        "TitleID": "00040000000CB000",
+        "Version": "N/A",
+        "Size": "64.06 MB [512 blocks]",
+        "Product Code": "CTR-N-JK3K",
+        "Publisher": "Game Museum"
+    },
+    {
+        "Name": "LEGO LEGENS OF Chima: Laval's Travel(LEGO Legends of Chima: \ub77c\ubc1c\uc758 \uc5ec\ud589)",
+        "UID": "50010000019614",
+        "TitleID": "0004000000115E00",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-APRK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "BRUNCH PANIC(BRUNCH PANIC)",
+        "UID": "50010000019593",
+        "TitleID": "000400000011BE00",
+        "Version": "N/A",
+        "Size": "97.96 MB [784 blocks]",
+        "Product Code": "CTR-N-JBNZ",
+        "Publisher": "Flyhigh Works"
+    },
+    {
+        "Name": "I would never mass(Masyu by Nikoli)",
+        "UID": "50010000019493",
+        "TitleID": "000400000010AD00",
+        "Version": "N/A",
+        "Size": "36.44 MB [291 blocks]",
+        "Product Code": "CTR-N-JM9Z",
+        "Publisher": "HAMSTER"
+    },
+    {
+        "Name": "Pokemon Bank(\ud3ec\ucf13\ubaac \ubc45\ud06c)",
+        "UID": "50010000018433",
+        "TitleID": "00040000000C9B00",
+        "Version": "6272",
+        "Size": "64.0 MB [512 blocks]",
+        "Product Code": "CTR-N-JTTA",
+        "Publisher": "The Pok\u00e9mon Company"
+    },
+    {
+        "Name": "Hitori by never(Hitori by Nikoli)",
+        "UID": "50010000018993",
+        "TitleID": "0004000000109D00",
+        "Version": "N/A",
+        "Size": "35.88 MB [287 blocks]",
+        "Product Code": "CTR-N-JHTZ",
+        "Publisher": "HAMSTER"
+    },
+    {
+        "Name": "Gekyaburun Picture R(GEKIYABA RUNNER)",
+        "UID": "50010000018973",
+        "TitleID": "0004000000113C00",
+        "Version": "N/A",
+        "Size": "40.42 MB [323 blocks]",
+        "Product Code": "CTR-N-JT4K",
+        "Publisher": "Flyhigh Works"
+    },
+    {
+        "Name": "Monster Hunter 4(\ubaac\uc2a4\ud130\ud5cc\ud130 4)",
+        "UID": "50010000018574",
+        "TitleID": "0004000000105000",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-AH4K",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Update Data Ver.1.1 Monster Hunter 4(\uc5c5\ub370\uc774\ud2b8 \ub370\uc774\ud130 Ver. 1.1 \ubaac\uc2a4\ud130\ud5cc\ud130 4)",
+        "UID": "50010000018893",
+        "TitleID": "0004000E00105000",
+        "Version": "1040",
+        "Size": "7.46 MB [60 blocks]",
+        "Product Code": "CTR-U-AH4K",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Kakuro by never(Kakuro by Nikoli)",
+        "UID": "50010000018633",
+        "TitleID": "0004000000109B00",
+        "Version": "N/A",
+        "Size": "36.51 MB [292 blocks]",
+        "Product Code": "CTR-N-JK6Z",
+        "Publisher": "HAMSTER"
+    },
+    {
+        "Name": "I can't dry the crayon fantastic-!Space adventure!(\uc9f1\uad6c\ub294 \ubabb\ub9d0\ub824 \ud310\ud0c0\uc2a4\ud2f1-! \uc6b0\uc8fc\ubcc4 \ub300\ubaa8\ud5d8!!)",
+        "UID": "50010000018356",
+        "TitleID": "00040000000FD700",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-ACHK",
+        "Publisher": "DAEWON MEDIA"
+    },
+    {
+        "Name": "Nintendo 3DS Guide Louvre Museum(\ub2cc\ud150\ub3c4 3DS \uac00\uc774\ub4dc \ub8e8\ube0c\ub974 \ubc15\ubb3c\uad00)",
+        "UID": "50010000018375",
+        "TitleID": "00040000000CBA00",
+        "Version": "N/A",
+        "Size": "1.65 GB [13557 blocks]",
+        "Product Code": "CTR-N-AL8K",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Heyawake by Nikoli(Heyawake by Nikoli)",
+        "UID": "50010000018213",
+        "TitleID": "0004000000109C00",
+        "Version": "N/A",
+        "Size": "36.12 MB [289 blocks]",
+        "Product Code": "CTR-N-JHWZ",
+        "Publisher": "HAMSTER"
+    },
+    {
+        "Name": "Phoenix Wright: Ace Attorney - Dual Destinies(Phoenix Wright: Ace Attorney - Dual Destinies)",
+        "UID": "50010000016755",
+        "TitleID": "00040000000FEB00",
+        "Version": "N/A",
+        "Size": "551.78 MB [4414 blocks]",
+        "Product Code": "CTR-N-AGKY",
+        "Publisher": "Capcom"
+    },
+    {
+        "Name": "Pok\u00e9mon X(\ud3ec\ucf13\ubaac\uc2a4\ud130 X)",
+        "UID": "50010000014807",
+        "TitleID": "0004000000055D00",
+        "Version": "N/A",
+        "Size": "1.68 GB [13789 blocks]",
+        "Product Code": "CTR-N-EKJA",
+        "Publisher": "The Pok\u00e9mon Company"
+    },
+    {
+        "Name": "Pokemon Y(\ud3ec\ucf13\ubaac\uc2a4\ud130 Y)",
+        "UID": "50010000014813",
+        "TitleID": "0004000000055E00",
+        "Version": "N/A",
+        "Size": "1.68 GB [13789 blocks]",
+        "Product Code": "CTR-N-EK2A",
+        "Publisher": "The Pok\u00e9mon Company"
+    },
+    {
+        "Name": "Slitherlink by Nikoli(Slitherlink by Nikoli)",
+        "UID": "50010000016957",
+        "TitleID": "0004000000102500",
+        "Version": "N/A",
+        "Size": "36.09 MB [289 blocks]",
+        "Product Code": "CTR-N-JC3Z",
+        "Publisher": "HAMSTER"
+    },
+    {
+        "Name": "Bike Rider DX(Bike Rider DX)",
+        "UID": "50010000016958",
+        "TitleID": "0004000000107400",
+        "Version": "N/A",
+        "Size": "74.95 MB [600 blocks]",
+        "Product Code": "CTR-N-JCXZ",
+        "Publisher": "Spicysoft"
+    },
+    {
+        "Name": "Labyrinth of World Water \u2173 (English)(\uc138\uacc4\uc218\uc758 \ubbf8\uad81 \u2163 (\uc601\uc5b4))",
+        "UID": "50010000016773",
+        "TitleID": "00040000000F7800",
+        "Version": "N/A",
+        "Size": "713.67 MB [5709 blocks]",
+        "Product Code": "CTR-N-ASJY",
+        "Publisher": "ATLUS"
+    },
+    {
+        "Name": "Labyrinth of World Water IV (Japanese)(\uc138\uacc4\uc218\uc758 \ubbf8\uad81 \u2163 (\uc77c\ubcf8\uc5b4))",
+        "UID": "50010000016774",
+        "TitleID": "00040000000F7700",
+        "Version": "N/A",
+        "Size": "714.34 MB [5715 blocks]",
+        "Product Code": "CTR-N-ASJZ",
+        "Publisher": "ATLUS"
+    },
+    {
+        "Name": "GUNMAN STORY(GUNMAN STORY)",
+        "UID": "50010000016673",
+        "TitleID": "000400000010B000",
+        "Version": "N/A",
+        "Size": "31.01 MB [248 blocks]",
+        "Product Code": "CTR-N-JGCK",
+        "Publisher": "Flyhigh Works"
+    },
+    {
+        "Name": "Painted wall by by(Nurikabe by Nikoli)",
+        "UID": "50010000016695",
+        "TitleID": "0004000000106900",
+        "Version": "N/A",
+        "Size": "36.11 MB [289 blocks]",
+        "Product Code": "CTR-N-JNKZ",
+        "Publisher": "HAMSTER"
+    },
+    {
+        "Name": "THEATRHYTHM FINAL FANTASY(THEATRHYTHM FINAL FANTASY)",
+        "UID": "50010000016195",
+        "TitleID": "00040000000C3D00",
+        "Version": "N/A",
+        "Size": "869.53 MB [6956 blocks]",
+        "Product Code": "CTR-N-ATHZ",
+        "Publisher": "Square Enix"
+    },
+    {
+        "Name": "Luigi Mansion Dark Gate(\ub8e8\uc774\uc9c0 \ub9e8\uc158 \ub2e4\ud06c \ubb38)",
+        "UID": "50010000015153",
+        "TitleID": "00040000000CFF00",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-AGGK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Sayonara Sea Foreign Exchange(Sayonara Umihara Kawase)",
+        "UID": "50010000015073",
+        "TitleID": "00040000000F9A00",
+        "Version": "N/A",
+        "Size": "127.74 MB [1022 blocks]",
+        "Product Code": "CTR-N-AUFZ",
+        "Publisher": "Agatsuma Entertainment"
+    },
+    {
+        "Name": "Grand by Nikoli(Akari by Nikoli)",
+        "UID": "50010000014755",
+        "TitleID": "00040000000E6100",
+        "Version": "0",
+        "Size": "35.82 MB [287 blocks]",
+        "Product Code": "CTR-N-JBJZ",
+        "Publisher": "HAMSTER"
+    },
+    {
+        "Name": "Suddenly exchange diary(\uc5b4\ub290\uc0c8 \uad50\ud658 \uc77c\uae30)",
+        "UID": "50010000014573",
+        "TitleID": "00040000000CC900",
+        "Version": "N/A",
+        "Size": "6.1 MB [49 blocks]",
+        "Product Code": "CTR-N-JFRK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Push and drop(\ubc00\uace0 \ub5a8\uad6c\uace0)",
+        "UID": "50010000014233",
+        "TitleID": "00040000000C8A00",
+        "Version": "0",
+        "Size": "20.1 MB [161 blocks]",
+        "Product Code": "CTR-N-JAUK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Maple Story Destiny Girl(\uba54\uc774\ud50c\uc2a4\ud1a0\ub9ac \uc6b4\uba85\uc758 \uc18c\ub140)",
+        "UID": "50010000014031",
+        "TitleID": "00040000000E6000",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-BMPK",
+        "Publisher": "Nexon Korea"
+    },
+    {
+        "Name": "MONSTER HUNTER 3 ULTIMATE(MONSTER HUNTER 3 ULTIMATE)",
+        "UID": "50010000014110",
+        "TitleID": "00040000000D2E00",
+        "Version": "0",
+        "Size": "1.74 GB [14256 blocks]",
+        "Product Code": "CTR-N-AMHZ",
+        "Publisher": "Capcom"
+    },
+    {
+        "Name": "Mario Tennis Open(\ub9c8\ub9ac\uc624 \ud14c\ub2c8\uc2a4 \uc624\ud508)",
+        "UID": "50010000013991",
+        "TitleID": "00040000000B8800",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-AGAK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Go to download version of storage data(\uc800\uc7a5 \ub370\uc774\ud130\ub97c \ub2e4\uc6b4\ub85c\ub4dc \ubc84\uc804\uc73c\ub85c \uc774\ub3d9)",
+        "UID": "50010000013690",
+        "TitleID": "00040000000C7300",
+        "Version": "N/A",
+        "Size": "2.54 MB [20 blocks]",
+        "Product Code": "CTR-N-JS7A",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Tom Clanche's Ghost Recon Shadow Wars(\ud1b0 \ud074\ub79c\uc2dc\uc758 \uace0\uc2a4\ud2b8 \ub9ac\ucf58 \uc100\ub3c4\uc6b0 \uc6cc\uc988)",
+        "UID": "50010000013290",
+        "TitleID": "00040000000C7F00",
+        "Version": "0",
+        "Size": "215.58 MB [1725 blocks]",
+        "Product Code": "CTR-N-AGRZ",
+        "Publisher": "Ubisoft"
+    },
+    {
+        "Name": "Extra!Drop to Well(\uc9dc\ub9bf! \uc6b0\ubb3c\ub85c \ub4dc\ub86d)",
+        "UID": "50010000013213",
+        "TitleID": "00040000000C8900",
+        "Version": "0",
+        "Size": "23.93 MB [191 blocks]",
+        "Product Code": "CTR-N-JHSK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "LEGO Batman 2: DC Super Heroes(\ub808\uace0 \ubc30\ud2b8\ub9e82: DC \uc288\ud37c \ud788\uc5b4\ub85c\uc988)",
+        "UID": "50010000013214",
+        "TitleID": "00040000000C6A00",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-ALBK",
+        "Publisher": "Inplay Interactive"
+    },
+    {
+        "Name": "Renka Kagura Club RST(SENRAN KAGURA Burst)",
+        "UID": "50010000013133",
+        "TitleID": "00040000000CFD00",
+        "Version": "0",
+        "Size": "1.78 GB [14609 blocks]",
+        "Product Code": "CTR-N-AVHZ",
+        "Publisher": "MarvelousAQL"
+    },
+    {
+        "Name": "Tom Clancy's Splin Cell 3D(\ud1b0 \ud074\ub79c\uc2dc\uc758 \uc2a4\ud50c\ub9b0\ud130 \uc140 3D)",
+        "UID": "50010000013150",
+        "TitleID": "00040000000C8000",
+        "Version": "0",
+        "Size": "1.7 GB [13946 blocks]",
+        "Product Code": "CTR-N-ASCY",
+        "Publisher": "Ubisoft"
+    },
+    {
+        "Name": "Sudoku by Nikola(Sudoku by Nikoli)",
+        "UID": "50010000013115",
+        "TitleID": "00040000000CD600",
+        "Version": "16",
+        "Size": "36.06 MB [288 blocks]",
+        "Product Code": "CTR-N-JH4Z",
+        "Publisher": "HAMSTER"
+    },
+    {
+        "Name": "Rhythm Thief & the Emperor\u2019s Treasure\u2122(Rhythm Thief & the Emperor\u2019s Treasure\u2122)",
+        "UID": "50010000012907",
+        "TitleID": "00040000000C4200",
+        "Version": "0",
+        "Size": "1.35 GB [11026 blocks]",
+        "Product Code": "CTR-P-ARTZ",
+        "Publisher": "SEGA"
+    },
+    {
+        "Name": "Bizarre Rabbit Time Travel 3D(\uc5fd\uae30\ud1a0\ub07c \uc2dc\uac04\uc5ec\ud589 3D)",
+        "UID": "50010000012864",
+        "TitleID": "00040000000BEA00",
+        "Version": "0",
+        "Size": "114.29 MB [914 blocks]",
+        "Product Code": "CTR-P-ARBZ",
+        "Publisher": "Ubisoft"
+    },
+    {
+        "Name": "Rayman Origin(\ub808\uc774\ub9e8 \uc624\ub9ac\uc9c4)",
+        "UID": "50010000012865",
+        "TitleID": "00040000000BEC00",
+        "Version": "16",
+        "Size": "193.71 MB [1550 blocks]",
+        "Product Code": "CTR-P-ARMZ",
+        "Publisher": "Ubisoft"
+    },
+    {
+        "Name": "Tokyo Crash Mobs(Tokyo Crash Mobs)",
+        "UID": "50010000012835",
+        "TitleID": "00040000000C4E00",
+        "Version": "N/A",
+        "Size": "162.76 MB [1302 blocks]",
+        "Product Code": "CTR-N-JUEZ",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Gonwagu Wagu Adventure(\uace4 \uc640\uad6c\uc640\uad6c \uc5b4\ub4dc\ubca4\ucc98)",
+        "UID": "50010000012670",
+        "TitleID": "00040000000BC800",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-AG7K",
+        "Publisher": "DAEWON MEDIA"
+    },
+    {
+        "Name": "Of Goga(KOKUGA)",
+        "UID": "50010000012631",
+        "TitleID": "00040000000C4100",
+        "Version": "N/A",
+        "Size": "32.78 MB [262 blocks]",
+        "Product Code": "CTR-P-AK8Z",
+        "Publisher": "G.rev"
+    },
+    {
+        "Name": "Pets Fantasy 3D(\ud3ab\uce20 \ud310\ud0c0\uc9c0 3D)",
+        "UID": "50010000012646",
+        "TitleID": "00040000000BE900",
+        "Version": "N/A",
+        "Size": "71.47 MB [572 blocks]",
+        "Product Code": "CTR-P-APFZ",
+        "Publisher": "Ubisoft"
+    },
+    {
+        "Name": "Rayman 3D(\ub808\uc774\ub9e8 3D)",
+        "UID": "50010000012647",
+        "TitleID": "00040000000BEB00",
+        "Version": "N/A",
+        "Size": "185.62 MB [1485 blocks]",
+        "Product Code": "CTR-P-ARYZ",
+        "Publisher": "Ubisoft"
+    },
+    {
+        "Name": "Pokemon AR West(\ud3ec\ucf13\ubaac AR \uc11c\ucc98)",
+        "UID": "50010000011487",
+        "TitleID": "00040000000AE100",
+        "Version": "N/A",
+        "Size": "24.84 MB [199 blocks]",
+        "Product Code": "CTR-N-NCGA",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Biohazard Revalation(\ubc14\uc774\uc624\ud558\uc790\ub4dc \ub808\ubc8c\ub808\uc774\uc158\uc2a4)",
+        "UID": "50010000012020",
+        "TitleID": "000400000009FF00",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-ABRK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Kunio -gun Special(\uc5f4\ud608\uacbd\ud30c \ucfe0\ub2c8\uc624\uad70 \uc2a4\ud398\uc15c)",
+        "UID": "50010000012041",
+        "TitleID": "000400000009CF00",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-AK9K",
+        "Publisher": "CFK"
+    },
+    {
+        "Name": "Star Fox 64 3D(\uc2a4\ud0c0\ud3ed\uc2a4 64 3D)",
+        "UID": "50010000011666",
+        "TitleID": "0004000000080E00",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-ANRK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Super Pokemon Catholic Doll(\uc288\ud37c \ud3ec\ucf13\ubaac \ub300\uaca9\ub3cc)",
+        "UID": "50010000010946",
+        "TitleID": "000400000009AA00",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-ACCK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Mario and Sonic London Olympics \u2122(\ub9c8\ub9ac\uc624\uc640 \uc18c\ub2c9 \ub7f0\ub358 \uc62c\ub9bc\ud53d\u2122)",
+        "UID": "50010000010526",
+        "TitleID": "0004000000053500",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-ACMK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Mario Cart 7(\ub9c8\ub9ac\uc624 \uce74\ud2b8 7)",
+        "UID": "50010000010411",
+        "TitleID": "0004000000030A00",
+        "Version": "N/A",
+        "Size": "633.35 MB [5067 blocks]",
+        "Product Code": "CTR-N-AMKK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Super Mario 3D Land(\uc288\ud37c \ub9c8\ub9ac\uc624 3D\ub79c\ub4dc)",
+        "UID": "50010000010287",
+        "TitleID": "0004000000089D00",
+        "Version": "N/A",
+        "Size": "289.41 MB [2315 blocks]",
+        "Product Code": "CTR-N-AREK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "Push and pull(\ubc00\uace0 \ub2f9\uae30\uace0)",
+        "UID": "50010000010290",
+        "TitleID": "0004000000086700",
+        "Version": "N/A",
+        "Size": "16.52 MB [132 blocks]",
+        "Product Code": "CTR-N-JCAK",
+        "Publisher": "Nintendo"
+    },
+    {
+        "Name": "National Model \u2605 Audition Superstar 2(\uc804\uad6d\ubbfc \ubaa8\ub378\u2605\uc624\ub514\uc158 \uc288\ud37c\uc2a4\ud0c0 2)",
+        "UID": "50010000010291",
+        "TitleID": "0004000000091F00",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-ANLK",
+        "Publisher": "CFK"
+    },
+    {
+        "Name": "Tekken 3D Prime Edition(\ucca0\uad8c 3D \ud504\ub77c\uc784 \uc5d0\ub514\uc158)",
+        "UID": "50010000010292",
+        "TitleID": "0004000000091E00",
+        "Version": "N/A",
+        "Size": "0B [N/A]",
+        "Product Code": "CTR-P-ATKK",
+        "Publisher": "BANDAI NAMCO Entertainment"
+    }
+]

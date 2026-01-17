@@ -1,0 +1,7 @@
+{
+    "threedsdb.message.no_results": "没有找到结果。",
+    "threedsdb.message.limited_results": "结果过多，请提供更具体的关键词以缩小搜索范围。",
+    "threedsdb.help.desc": "根据 3DSDB 搜索应用信息。",
+    "threedsdb.help.command": "使用关键词查找，可以是应用名称或 Title ID。"
+
+}
