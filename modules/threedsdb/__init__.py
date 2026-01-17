@@ -21,7 +21,7 @@ async def _(msg: Bot.MessageSession, keywords: str):
             for item in load_json:
                 if keywords in item.get("TitleID", ""):
                     if i < 10:
-                        message_str += [f"{k}: {v}\n" for k, v in item.items()]
+                        message_str += [f"{k}: {v}" for k, v in item.items()]
                         message_str.append("\n")
                         i += 1
 
@@ -31,7 +31,7 @@ async def _(msg: Bot.MessageSession, keywords: str):
             for item in load_json:
                 if keywords.lower() in item.get("Name", "").lower():
                     if i < 10:
-                        message_str += [f"{k}: {v}\n" for k, v in item.items()]
+                        message_str += [f"{k}: {v}" for k, v in item.items()]
                         message_str.append("\n")
                         i += 1
     if message_str:
