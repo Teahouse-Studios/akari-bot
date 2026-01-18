@@ -7,6 +7,7 @@ if __name__ == "__main__":
 
     shutil.copytree("assets", output_dir / "assets")
     shutil.copytree("assets/config_store/zh_cn", output_dir / "config")
+    shutil.copytree("bots", output_dir / "bots")
     shutil.copytree("core/locales", output_dir / "core" / "locales")
     shutil.copytree("modules", output_dir / "modules")
 
