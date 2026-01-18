@@ -212,7 +212,7 @@ async def get_song_record(
                 headers={
                     "Content-Type": "application/json",
                     "accept": "*/*",
-                    "Developer-Token": DF_DEVELOPER_TOKEN,
+                    "Developer-Token": DF_DEVELOPER_TOKEN
                 },
                 fmt="json",
             )
@@ -248,103 +248,116 @@ async def get_song_record(
 
 
 async def get_total_record(
-    msg: Bot.MessageSession, payload: dict, utage: bool = False, use_cache: bool = True
+    msg: Bot.MessageSession,
+    payload: dict,
+    utage: bool = False,
+    use_cache: bool = True,
 ):
-    mai_cache_path = cache_path / "maimai-record"
-    mai_cache_path.mkdir(parents=True, exist_ok=True)
-    cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_total_record.json"
-    url = "https://www.diving-fish.com/api/maimaidxprober/query/plate"
-    payload["version"] = versions
-    try:
-        data = await post_url(
-            url,
-            data=orjson.dumps(payload),
-            status_code=200,
-            headers={"Content-Type": "application/json", "accept": "*/*"},
-            fmt="json",
-        )
-        if use_cache and data:
-            with open(cache_dir, "wb") as f:
-                f.write(orjson.dumps(data))
-        if not utage:
-            data = {
-                "verlist": [d for d in data["verlist"] if int(d.get("id", 0)) < 100000]
-            }  # 过滤宴谱
-        return data
-    except Exception as e:
-        if str(e).startswith("400"):
-            if "qq" in payload:
-                await msg.finish(I18NContext("maimai.message.user_unbound.qq"))
+    if DF_DEVELOPER_TOKEN:
+        mai_cache_path = cache_path / "maimai-record"
+        mai_cache_path.mkdir(parents=True, exist_ok=True)
+        cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_total_record.json"
+        url = "https://www.diving-fish.com/api/maimaidxprober/dev/player/records"
+        payload["version"] = versions
+        try:
+            data = await post_url(
+                url,
+                data=orjson.dumps(payload),
+                status_code=200,
+                headers={"Content-Type": "application/json", "accept": "*/*"},
+                fmt="json",
+            )
+            if use_cache and data:
+                with open(cache_dir, "wb") as f:
+                    f.write(orjson.dumps(data))
+            if not utage:
+                data = {
+                    "verlist": [d for d in data["verlist"] if int(d.get("id", 0)) < 100000]
+                }  # 过滤宴谱
+            return data
+        except Exception as e:
+            if str(e).startswith("400"):
+                if "qq" in payload:
+                    await msg.finish(I18NContext("maimai.message.user_unbound.qq"))
+                else:
+                    await msg.finish(I18NContext("maimai.message.user_not_found.df"))
+            elif str(e).startswith("403"):
+                if "qq" in payload:
+                    await msg.finish(I18NContext("maimai.message.forbidden.eula"))
+                else:
+                    await msg.finish(I18NContext("maimai.message.forbidden"))
             else:
-                await msg.finish(I18NContext("maimai.message.user_not_found.df"))
-        elif str(e).startswith("403"):
-            if "qq" in payload:
-                await msg.finish(I18NContext("maimai.message.forbidden.eula"))
+                Logger.exception()
+            if use_cache and cache_dir.exists():
+                try:
+                    with open(cache_dir, "rb") as f:
+                        data = orjson.loads(f.read())
+                    await msg.send_message(I18NContext("maimai.message.use_cache"))
+                    if not utage:
+                        data = {
+                            "verlist": [
+                                d for d in data["verlist"] if d.get("id", 0) < 100000
+                            ]
+                        }  # 过滤宴谱
+                    return data
+                except Exception:
+                    raise e
             else:
-                await msg.finish(I18NContext("maimai.message.forbidden"))
-        else:
-            Logger.exception()
-        if use_cache and cache_dir.exists():
-            try:
-                with open(cache_dir, "rb") as f:
-                    data = orjson.loads(f.read())
-                await msg.send_message(I18NContext("maimai.message.use_cache"))
-                if not utage:
-                    data = {
-                        "verlist": [
-                            d for d in data["verlist"] if d.get("id", 0) < 100000
-                        ]
-                    }  # 过滤宴谱
-                return data
-            except Exception:
                 raise e
-        else:
-            raise e
+    else:
+        raise ConfigValueError("{I18N:error.config.secret.not_found}")
 
 
 async def get_plate(
     msg: Bot.MessageSession, payload: dict, version: str, use_cache: bool = True
 ) -> dict | None:
-    version = "舞" if version == "覇" else version  # “覇者”属于舞代
-    mai_cache_path = cache_path / "maimai-record"
-    mai_cache_path.mkdir(parents=True, exist_ok=True)
-    cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_plate_{version}.json"
-    url = "https://www.diving-fish.com/api/maimaidxprober/query/plate"
-    try:
-        data = await post_url(
-            url,
-            data=orjson.dumps(payload),
-            status_code=200,
-            headers={"Content-Type": "application/json", "accept": "*/*"},
-            fmt="json",
-        )
-        data = {
-            "verlist": [d for d in data["verlist"] if int(d.get("id", 0)) < 100000]
-        }  # 过滤宴谱
-        if use_cache and data:
-            with open(cache_dir, "wb") as f:
-                f.write(orjson.dumps(data))
-        return data
-    except Exception as e:
-        if str(e).startswith("400"):
-            if "qq" in payload:
-                await msg.finish(I18NContext("maimai.message.user_unbound.qq"))
+    if DF_DEVELOPER_TOKEN:
+        version = "舞" if version == "覇" else version  # “覇者”属于舞代
+        mai_cache_path = cache_path / "maimai-record"
+        mai_cache_path.mkdir(parents=True, exist_ok=True)
+        cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_plate_{version}.json"
+        url = "https://www.diving-fish.com/api/maimaidxprober/query/plate"
+        try:
+            data = await post_url(
+                url,
+                data=orjson.dumps(payload),
+                status_code=200,
+                headers={
+                    "Content-Type": "application/json",
+                    "accept": "*/*",
+                    "Developer-Token": DF_DEVELOPER_TOKEN
+                },
+                fmt="json",
+            )
+            data = {
+                "verlist": [d for d in data["verlist"] if int(d.get("id", 0)) < 100000]
+            }  # 过滤宴谱
+            if use_cache and data:
+                with open(cache_dir, "wb") as f:
+                    f.write(orjson.dumps(data))
+            return data
+        except Exception as e:
+            if str(e).startswith("400"):
+                if "qq" in payload:
+                    await msg.finish(I18NContext("maimai.message.user_unbound.qq"))
+                else:
+                    await msg.finish(I18NContext("maimai.message.user_not_found.df"))
+            elif str(e).startswith("403"):
+                if "qq" in payload:
+                    await msg.finish(I18NContext("maimai.message.forbidden.eula"))
+                else:
+                    await msg.finish(I18NContext("maimai.message.forbidden"))
             else:
-                await msg.finish(I18NContext("maimai.message.user_not_found.df"))
-        elif str(e).startswith("403"):
-            if "qq" in payload:
-                await msg.finish(I18NContext("maimai.message.forbidden.eula"))
+                Logger.exception()
+            if use_cache and cache_dir.exists():
+                try:
+                    with open(cache_dir, "rb") as f:
+                        data = orjson.loads(f.read())
+                    await msg.send_message(I18NContext("maimai.message.use_cache"))
+                    return data
+                except Exception:
+                    raise e
             else:
-                await msg.finish(I18NContext("maimai.message.forbidden"))
-        else:
-            Logger.exception()
-        if use_cache and cache_dir.exists():
-            try:
-                with open(cache_dir, "rb") as f:
-                    data = orjson.loads(f.read())
-                await msg.send_message(I18NContext("maimai.message.use_cache"))
-                return data
-            except Exception:
                 raise e
-        else:
-            raise e
+    else:
+        raise ConfigValueError("{I18N:error.config.secret.not_found}")
