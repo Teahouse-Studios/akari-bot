@@ -1,11 +1,12 @@
+import orjson
+
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
-from pathlib import Path
-import orjson as json
+from core.constants.path import assets_path
 
 
-data_path = Path('assets/threedsdb')
+data_path = assets_path / "modules" / "threedsdb"
 
 
 threedsdb = module("3dsdb", desc="{I18N:threedsdb.help.desc}", developers=["OasisAkari"])
@@ -17,7 +18,7 @@ async def _(msg: Bot.MessageSession, keywords: str):
     i = 0
     if keywords.isdigit():
         for file in data_path.glob(f"*.json"):
-            load_json = json.loads(file.read_text(encoding='utf-8'))
+            load_json = orjson.loads(file.read_text(encoding="utf-8"))
             for item in load_json:
                 if keywords in item.get("TitleID", ""):
                     if i < 10:
@@ -27,7 +28,7 @@ async def _(msg: Bot.MessageSession, keywords: str):
 
     else:
         for file in data_path.glob(f"*.json"):
-            load_json = json.loads(file.read_text(encoding='utf-8'))
+            load_json = orjson.loads(file.read_text(encoding="utf-8"))
             for item in load_json:
                 if keywords.lower() in item.get("Name", "").lower():
                     if i < 10:
