@@ -348,6 +348,8 @@ class ExpiringTempDict:
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    __hash__ = None
+
     def __bool__(self):
         return bool(self.data)
 

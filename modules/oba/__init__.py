@@ -113,12 +113,12 @@ async def _(msg: Bot.MessageSession, rank: int = 1):
 
 @oba.command("top [<rank>] {{I18N:oba.help.top}}")
 async def _(msg: Bot.MessageSession, rank: int = 1):
-    rankList = await get_url(f"{API}/metric/rank", fmt="json")
+    rank_list = await get_url(f"{API}/metric/rank", fmt="json")
     rank = 1 if rank <= 0 else rank
 
     node_list = []
     for i in range(rank - 1, rank - 1 + TOP_LIMIT):
-        node = ranklist[i]
+        node = rank_list[i]
         sponsor = node.get("sponsor", str(I18NContext("message.unknown")))
         try:
             sponsor_name = sponsor.get("name")

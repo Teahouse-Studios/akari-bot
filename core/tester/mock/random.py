@@ -1,4 +1,4 @@
-import random
+import random as pyrandom
 from typing import Sequence, MutableSequence, TypeVar
 
 T = TypeVar("T")
@@ -6,45 +6,45 @@ T = TypeVar("T")
 
 class Random:
     def __init__(self, seed=0):
-        random.seed(seed)
+        pyrandom.seed(seed)
 
     @classmethod
     def random(cls) -> float:
-        return random.random()
+        return pyrandom.random()
 
     @classmethod
     def randint(cls, a: int, b: int) -> int:
-        return random.randint(a, b)
+        return pyrandom.randint(a, b)
 
     @classmethod
     def uniform(cls, a: float, b: float) -> float:
-        return random.uniform(a, b)
+        return pyrandom.uniform(a, b)
 
     @classmethod
     def randrange(cls, start: int, stop: int | None = None, step: int = 1) -> int:
-        return random.randrange(start, stop, step)
+        return pyrandom.randrange(start, stop, step)
 
     @classmethod
     def randbits(cls, k: int) -> int:
-        return random.getrandbits(k)
+        return pyrandom.getrandbits(k)
 
     @classmethod
     def randbytes(cls, n: int) -> bytes:
-        return random.randbytes(n)
+        return pyrandom.randbytes(n)
 
     @classmethod
     def choice(cls, seq: Sequence[T]) -> T:
-        return random.choice(seq)
+        return pyrandom.choice(seq)
 
     @classmethod
     def choices(cls, population: Sequence[T], k: int = 1) -> list[T]:
-        return random.choices(population, k=k)
+        return pyrandom.choices(population, k=k)
 
     @classmethod
     def sample(cls, population: Sequence[T], k: int) -> list[T]:
-        return random.sample(population, k)
+        return pyrandom.sample(population, k)
 
     @classmethod
     def shuffle(cls, seq: MutableSequence[T]) -> MutableSequence[T]:
-        random.shuffle(seq)
+        pyrandom.shuffle(seq)
         return seq

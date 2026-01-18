@@ -1,9 +1,9 @@
-import random
 import time
 
 from core.config import Config
 from core.logger import Logger
 from core.utils.http import url_pattern
+from core.utils.random import Random
 
 
 def check_apr_fools() -> bool:
@@ -38,7 +38,7 @@ def shuffle_joke(text: str) -> str:
         for i in range(0, len(parts), 2):
             text_list = list(parts[i])
             for j in range(len(text_list) - 1):
-                if random.random() <= shuffle_rate:
+                if Random.random() <= shuffle_rate:
                     text_list[j], text_list[j + 1] = text_list[j + 1], text_list[j]
             parts[i] = "".join(text_list)
         return "".join(parts)

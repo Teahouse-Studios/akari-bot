@@ -8,7 +8,7 @@ from bots.discord.slash_parser import slash_parser
     name="mcv",
     description="Get the latest version of Minecraft: Java Edition in the launcher.",
 )
-async def mcv(ctx: discord.ApplicationContext):
+async def _(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
 
@@ -16,5 +16,5 @@ async def mcv(ctx: discord.ApplicationContext):
     name="mcbv",
     description="Get the latest version of Minecraft: Bedrock Edition on Mojira.",
 )
-async def mcbv(ctx: discord.ApplicationContext):
+async def _(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")

@@ -3,8 +3,8 @@ import inspect
 from core.builtins.message.chain import MessageChain
 from core.builtins.types import MessageElement
 from core.logger import Logger
-from core.tester.process import match_expected, run_single_test
 from .decorator import case, func_case
+from .process import run_single_test, match_expected
 
 
 class Tester:

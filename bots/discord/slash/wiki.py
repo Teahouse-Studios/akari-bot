@@ -6,17 +6,17 @@ from core.queue.client import JobQueueClient
 
 
 @discord_bot.slash_command(description="Get recent abuse logs for the default wiki.")
-async def ab(ctx: discord.ApplicationContext):
+async def _(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
 
 @discord_bot.slash_command(description="Get recent newbie logs for the default wiki.")
-async def newbie(ctx: discord.ApplicationContext):
+async def _(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
 
 @discord_bot.slash_command(description="Get recent changes for the default wiki.")
-async def rc(ctx: discord.ApplicationContext):
+async def _(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
 
@@ -48,7 +48,7 @@ async def auto_search(ctx: discord.AutocompleteContext):
 @discord.option(
     name="lang", description="Find the corresponding language version of this page."
 )
-async def query(ctx: discord.ApplicationContext, pagename: str, lang: str = None):
+async def _(ctx: discord.ApplicationContext, pagename: str, lang: str = None):
     if lang:
         await slash_parser(ctx, f"{pagename} -l {lang}")
     else:
@@ -60,7 +60,7 @@ async def query(ctx: discord.ApplicationContext, pagename: str, lang: str = None
 @discord.option(
     name="lang", description="Find the corresponding language version of this page."
 )
-async def byid(ctx: discord.ApplicationContext, pageid: str, lang: str = None):
+async def _(ctx: discord.ApplicationContext, pageid: str, lang: str = None):
     if lang:
         await slash_parser(ctx, f"id {pageid} -l {lang}")
     else:
@@ -71,7 +71,7 @@ async def byid(ctx: discord.ApplicationContext, pageid: str, lang: str = None):
 @discord.option(
     name="pagename", description="The title of wiki page.", autocomplete=auto_search
 )
-async def search(ctx: discord.ApplicationContext, pagename: str):
+async def _(ctx: discord.ApplicationContext, pagename: str):
     await slash_parser(ctx, f"search {pagename}")
 
 
@@ -79,7 +79,7 @@ async def search(ctx: discord.ApplicationContext, pagename: str):
 @discord.option(
     name="wikiurl", description="The URL of wiki.", autocomplete=default_wiki
 )
-async def set_base(ctx: discord.ApplicationContext, wikiurl: str):
+async def _(ctx: discord.ApplicationContext, wikiurl: str):
     await slash_parser(ctx, f"set {wikiurl}")
 
 
@@ -89,7 +89,7 @@ iw = wiki.create_subgroup("iw", "Set up commands for custom Interwiki.")
 @iw.command(name="add", description="Add custom Interwiki.")
 @discord.option(name="interwiki", description="The custom Interwiki.")
 @discord.option(name="wikiurl", description="The URL of wiki.")
-async def add(ctx: discord.ApplicationContext, interwiki: str, wikiurl: str):
+async def _(ctx: discord.ApplicationContext, interwiki: str, wikiurl: str):
     await slash_parser(ctx, f"iw add {interwiki} {wikiurl}")
 
 
@@ -99,7 +99,7 @@ async def add(ctx: discord.ApplicationContext, interwiki: str, wikiurl: str):
     description="The custom Interwiki.",
     autocomplete=auto_get_custom_iw_list,
 )
-async def iwremove(ctx: discord.ApplicationContext, interwiki: str):
+async def _(ctx: discord.ApplicationContext, interwiki: str):
     await slash_parser(ctx, f"iw remove {interwiki}")
 
 
@@ -107,7 +107,7 @@ async def iwremove(ctx: discord.ApplicationContext, interwiki: str):
 @discord.option(
     name="legacy", choices=["false", "true"], description="Whether to use legacy mode."
 )
-async def iw_list(ctx: discord.ApplicationContext, legacy: str):
+async def _(ctx: discord.ApplicationContext, legacy: str):
     legacy = "--legacy" if legacy == "true" else ""
     await slash_parser(ctx, f"iw list {legacy}")
 
@@ -120,7 +120,7 @@ async def iw_list(ctx: discord.ApplicationContext, legacy: str):
     description="The custom Interwiki.",
     autocomplete=auto_get_custom_iw_list,
 )
-async def get(ctx: discord.ApplicationContext, interwiki: str):
+async def _(ctx: discord.ApplicationContext, interwiki: str):
     await slash_parser(ctx, f"iw get {interwiki}")
 
 
@@ -131,23 +131,23 @@ headers = wiki.create_subgroup(
 
 @headers.command(name="add", description="Add custom request headers.")
 @discord.option(name="headers", description="The json of custom request headers.")
-async def add_headers(ctx: discord.ApplicationContext, headers: str):
+async def _(ctx: discord.ApplicationContext, headers: str):
     await slash_parser(ctx, f"headers set {headers}")
 
 
 @headers.command(name="remove", description="Remove custom request headers.")
 @discord.option(name="headerkey", description="The key of custom request headers json.")
-async def set_headers(ctx: discord.ApplicationContext, headerkey: str):
+async def _(ctx: discord.ApplicationContext, headerkey: str):
     await slash_parser(ctx, f"headers remove {headerkey}")
 
 
 @headers.command(name="show", description="View the currently set request headers.")
-async def show_headers(ctx: discord.ApplicationContext):
+async def _(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "headers show")
 
 
 @headers.command(name="reset", description="Reset custom request headers.")
-async def reset_headers(ctx: discord.ApplicationContext):
+async def _(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "headers reset")
 
 
@@ -156,12 +156,12 @@ p = wiki.create_subgroup("prefix", "Set up commands for custom wiki prefix.")
 
 @p.command(name="set", description="Set custom wiki prefix.")
 @discord.option(name="prefix", description="The custom wiki prefix.")
-async def set_prefix(ctx: discord.ApplicationContext, prefix: str):
+async def _(ctx: discord.ApplicationContext, prefix: str):
     await slash_parser(ctx, f"prefix set {prefix}")
 
 
 @p.command(name="reset", description="Reset custom wiki prefix.")
-async def reset_prefix(ctx: discord.ApplicationContext):
+async def _(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "prefix reset")
 
 
@@ -169,5 +169,5 @@ async def reset_prefix(ctx: discord.ApplicationContext):
     name="redlink",
     description="Toggle whether to return the edit link when the page does not exist.",
 )
-async def redlink(ctx: discord.ApplicationContext):
+async def _(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "redlink")

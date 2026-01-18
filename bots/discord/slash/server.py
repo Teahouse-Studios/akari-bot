@@ -16,5 +16,5 @@ async def auto_search(ctx: discord.AutocompleteContext):
 @discord.option(
     name="address", description="The server address.", autocomplete=auto_search
 )
-async def server(ctx: discord.ApplicationContext, address: str):
+async def _(ctx: discord.ApplicationContext, address: str):
     await slash_parser(ctx, address)
