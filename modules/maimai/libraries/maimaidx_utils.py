@@ -6,12 +6,13 @@ import orjson
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Plain
+from core.constants import ConfigValueError
 from core.utils.http import get_url
 from core.utils.random import Random
 from .maimaidx_apidata import get_record, get_song_record, get_total_record, get_plate
 from .maimaidx_mapping import *
 from .maimaidx_music import TotalList
-from ..database.models import DivingProberBindInfo
+from ..database.models import DivingProberBindInfo, LxnsProberBindInfo
 
 total_list = TotalList()
 
@@ -22,9 +23,38 @@ async def get_diving_prober_bind_info(msg: Bot.MessageSession):
         if msg.session_info.sender_from == "QQ":
             payload = {"qq": msg.session_info.get_common_sender_id(), "b50": True}
         else:
-            await msg.finish(I18NContext("maimai.message.user_unbound", prefix=msg.session_info.prefixes[0]))
-    payload = {"username": bind_info.username, "b50": True}
+            await msg.finish(I18NContext("maimai.message.user_unbound.df", prefix=msg.session_info.prefixes[0]))
+    else:
+        payload = {"username": bind_info.username, "b50": True}
     return payload
+
+
+async def get_lxns_prober_bind_info(msg: Bot.MessageSession):
+    bind_info = await LxnsProberBindInfo.get_by_sender_id(msg, create=False)
+    if not bind_info:
+        if msg.session_info.sender_from == "QQ":
+            try:
+                profile_url = f"https://maimai.lxns.net/api/v0/maimai/player/qq/{
+                    msg.session_info.get_common_sender_id()}"
+                profile_data = await get_url(
+                    profile_url,
+                    status_code=200,
+                    headers={"User-Agent": "AkariBot/1.0", "Authorization": LX_DEVELOPER_TOKEN, "Content-Type": "application/json", "accept": "*/*"},
+                    fmt="json"
+                )
+                return str(profile_data["data"]["friend_code"])
+            except Exception as e:
+                if str(e).startswith(("400", "404")):
+                    await msg.finish(I18NContext("maimai.message.user_not_found.lx"))
+                elif str(e).startswith("401"):
+                    raise ConfigValueError("{I18N:error.config.invalid}")
+                elif str(e).startswith("403"):
+                    await msg.finish(I18NContext("maimai.message.forbidden"))
+                else:
+                    raise e
+        else:
+            await msg.finish(I18NContext("maimai.message.user_unbound.lx", prefix=msg.session_info.prefixes[0]))
+    return bind_info.friend_code
 
 
 def get_diff(diff: str) -> int:
