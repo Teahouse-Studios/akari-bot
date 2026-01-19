@@ -2846,14 +2846,14 @@ e2e = ["atomicwrites (>=1.4,<2.0)", "cachetools (>=5.3,<6.0)", "peewee (>=3.14,<
 
 [[package]]
 name = "mcstatus"
-version = "12.0.6"
+version = "12.1.0"
 description = "A library to query Minecraft Servers for their status and capabilities."
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "mcstatus-12.0.6-py3-none-any.whl", hash = "sha256:1823acf21abcfe03cf09eb0657b1a97d22cef8ff2b43c7f3bb082ef8a607b827"},
-    {file = "mcstatus-12.0.6.tar.gz", hash = "sha256:16eff2abf5df211d0f04be59f4bc26e1b3120383d10486c4ddec2828cca00581"},
+    {file = "mcstatus-12.1.0-py3-none-any.whl", hash = "sha256:85fa03d3486a1ac3c3d38b308540c06cacea6c580b58f6ddd2e8b4dbeb53caa6"},
+    {file = "mcstatus-12.1.0.tar.gz", hash = "sha256:8e2ce2f18dbd621293113b78944bcfbd0c1f75eb4010f01aca08be12c6947876"},
 ]
 
 [package.dependencies]
