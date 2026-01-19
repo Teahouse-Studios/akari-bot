@@ -9,7 +9,7 @@ import urllib.parse
 import uuid
 from http.cookies import SimpleCookie
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 import filetype as ft
 import httpx
@@ -51,15 +51,15 @@ async def request_url(
     url: str,
     method: str,
     data: Any = None,
-    status_code: Optional[int] = 200,
-    headers: Optional[Dict[str, Any]] = None,
-    params: Optional[Dict[str, Any]] = None,
-    fmt: Optional[str] = None,
-    timeout: Optional[float] = 20,
+    status_code: int | None = 200,
+    headers: dict[str, Any] | None = None,
+    params: dict[str, Any] | None = None,
+    fmt: str | None = None,
+    timeout: float | None = 20,
     attempt: int = 3,
     request_private_ip: bool = False,
     logging_err_resp: bool = True,
-    cookies: Optional[Dict[str, Any]] = None,
+    cookies: dict[str, Any] | None = None,
 ) -> Any:
     """利用httpx请求指定URL的内容。
 
@@ -140,15 +140,15 @@ async def request_url(
 
 async def get_url(
     url: str,
-    status_code: Optional[int] = 200,
-    headers: Optional[Dict[str, Any]] = None,
-    params: Optional[Dict[str, Any]] = None,
-    fmt: Optional[str] = None,
-    timeout: Optional[float] = 20,
+    status_code: int | None = 200,
+    headers: dict[str, Any] | None = None,
+    params: dict[str, Any] | None = None,
+    fmt: str | None = None,
+    timeout: float | None = 20,
     attempt: int = 3,
     request_private_ip: bool = False,
     logging_err_resp: bool = True,
-    cookies: Optional[Dict[str, Any]] = None,
+    cookies: dict[str, Any] | None = None,
 ) -> Any:
     """利用httpx发送GET请求。
 
@@ -183,14 +183,14 @@ async def get_url(
 async def post_url(
     url: str,
     data: Any = None,
-    status_code: Optional[int] = 200,
-    headers: Optional[Dict[str, Any]] = None,
-    fmt: Optional[str] = None,
-    timeout: Optional[float] = 20,
+    status_code: int | None = 200,
+    headers: dict[str, Any] | None = None,
+    fmt: str | None = None,
+    timeout: float | None = 20,
     attempt: int = 3,
     request_private_ip: bool = False,
     logging_err_resp: bool = True,
-    cookies: Optional[Dict[str, Any]] = None,
+    cookies: dict[str, Any] | None = None,
 ) -> Any:
     """利用httpx发送POST请求。
 
@@ -225,14 +225,14 @@ async def post_url(
 async def patch_url(
     url: str,
     data: Any = None,
-    status_code: Optional[int] = 200,
-    headers: Optional[Dict[str, Any]] = None,
-    fmt: Optional[str] = None,
-    timeout: Optional[float] = 20,
+    status_code: int | None = 200,
+    headers: dict[str, Any] | None = None,
+    fmt: str | None = None,
+    timeout: float | None = 20,
     attempt: int = 3,
     request_private_ip: bool = False,
     logging_err_resp: bool = True,
-    cookies: Optional[Dict[str, Any]] = None,
+    cookies: dict[str, Any] | None = None,
 ) -> Any:
     """利用httpx发送PATCH请求。
 
@@ -267,14 +267,14 @@ async def patch_url(
 async def put_url(
     url: str,
     data: Any = None,
-    status_code: Optional[int] = 200,
-    headers: Optional[Dict[str, Any]] = None,
-    fmt: Optional[str] = None,
-    timeout: Optional[float] = 20,
+    status_code: int | None = 200,
+    headers: dict[str, Any] | None = None,
+    fmt: str | None = None,
+    timeout: float | None = 20,
     attempt: int = 3,
     request_private_ip: bool = False,
     logging_err_resp: bool = True,
-    cookies: Optional[Dict[str, Any]] = None,
+    cookies: dict[str, Any] | None = None,
 ) -> Any:
     """利用httpx发送PUT请求。
 
@@ -308,14 +308,14 @@ async def put_url(
 
 async def delete_url(
     url: str,
-    status_code: Optional[int] = 200,
-    headers: Optional[Dict[str, Any]] = None,
-    fmt: Optional[str] = None,
-    timeout: Optional[float] = 20,
+    status_code: int | None = 200,
+    headers: dict[str, Any] | None = None,
+    fmt: str | None = None,
+    timeout: float | None = 20,
     attempt: int = 3,
     request_private_ip: bool = False,
     logging_err_resp: bool = True,
-    cookies: Optional[Dict[str, Any]] = None,
+    cookies: dict[str, Any] | None = None,
 ) -> Any:
     """利用httpx发送DELETE请求。
 
@@ -347,17 +347,17 @@ async def delete_url(
 
 async def download(
     url: str,
-    filename: Optional[str] = None,
-    path: Optional[Union[str, Path]] = None,
+    filename: str | None = None,
+    path: str | Path | None = None,
     method: str = "GET",
-    status_code: Optional[int] = 200,
+    status_code: int | None = 200,
     post_data: Any = None,
-    headers: Optional[Dict[str, Any]] = None,
-    timeout: Optional[float] = 20,
+    headers: dict[str, Any] | None = None,
+    timeout: float | None = 20,
     attempt: int = 3,
     request_private_ip: bool = False,
     logging_err_resp: bool = True,
-) -> Optional[Path]:
+) -> Path | None:
     """利用httpx下载指定url的内容，并保存到指定目录。
 
     :param url: 需要获取的URL。

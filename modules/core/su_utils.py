@@ -1,6 +1,6 @@
 import re
 import shutil
-from datetime import datetime
+import time
 
 from akari_bot_webrender.functions.options import StatusOptions
 from tabulate import tabulate
@@ -9,12 +9,11 @@ import orjson
 from tortoise import Tortoise
 from tortoise.exceptions import OperationalError
 
+from core.alive import Alive
 from core.builtins.bot import Bot
 from core.builtins.converter import converter
 from core.builtins.message.chain import MessageChain, convert_senderid_to_atcode, match_kecode
 from core.builtins.message.internal import I18NContext, Plain, Image
-from core.builtins.parser.message import check_temp_ban, remove_temp_ban
-from core.builtins.session.internal import MessageSession
 from core.component import module
 from core.config import Config, CFGManager
 from core.constants.exceptions import NoReportException, TestException
@@ -25,13 +24,12 @@ from core.loader import ModulesManager
 from core.logger import Logger
 from core.scheduler import CronTrigger
 from core.server.terminate import restart
-from core.tos import WARNING_COUNTS
+from core.tos import WARNING_COUNTS, check_temp_ban, remove_temp_ban
 from core.types import Param
-from core.utils.alive import Alive
 from core.utils.bash import run_sys_command
 from core.utils.decrypt import decrypt_string
 from core.utils.image_table import image_table_render, ImageTable
-from core.utils.message import is_float, is_int
+from core.utils.tools import is_float, is_int
 from core.utils.storedata import get_stored_list, update_stored_list
 from core.web_render import web_render, close_web_render, init_web_render
 
@@ -453,7 +451,7 @@ restart_time = []
 
 async def wait_for_restart(msg: Bot.MessageSession):
     get = Bot.ExecutionLockList.get()
-    if datetime.now().timestamp() - restart_time[0] < 60:
+    if time.time() - restart_time[0] < 60:
         if len(get) != 0:
             await msg.send_message(I18NContext("core.message.restart.wait", count=len(get)))
             await msg.sleep(10)
@@ -466,7 +464,7 @@ async def wait_for_restart(msg: Bot.MessageSession):
 @rst.command()
 async def _(msg: Bot.MessageSession):
     if await msg.wait_confirm(append_instruction=False):
-        restart_time.append(datetime.now().timestamp())
+        restart_time.append(time.time())
         await wait_for_restart(msg)
         write_restart_cache(msg)
         await restart()
@@ -488,7 +486,7 @@ upds = module(
 async def _(msg: Bot.MessageSession):
     if not Bot.Info.binary_mode:
         if await msg.wait_confirm(append_instruction=False):
-            restart_time.append(datetime.now().timestamp())
+            restart_time.append(time.time())
             await wait_for_restart(msg)
             write_restart_cache(msg)
             if Bot.Info.version:
@@ -582,9 +580,9 @@ async def _(msg: Bot.MessageSession, sql: str):
             else:
                 table_str = tabulate(page_data, headers=headers, tablefmt="grid")
                 await msg.finish([Plain(table_str, disable_joke=True), footer])
-        else:
-            rows, _ = await conn.execute_query(sql)
-            await msg.finish(I18NContext("core.message.database.success", rows=rows))
+
+        rows, _ = await conn.execute_query(sql)
+        await msg.finish(I18NContext("core.message.database.success", rows=rows))
     except OperationalError as e:
         raise NoReportException(str(e))
 

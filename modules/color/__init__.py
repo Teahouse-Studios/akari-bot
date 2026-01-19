@@ -1,6 +1,5 @@
 import colorsys
 import re
-from typing import Tuple, Union
 
 import numpy as np
 import orjson
@@ -141,7 +140,7 @@ def get_luminance(color: webcolors.HTML5SimpleColor):
 
 def get_color_name(
     color: webcolors.HTML5SimpleColor, name_dict
-) -> Tuple[Union[str, None], bool]:
+) -> tuple[str | None, bool]:
     # check exact match
     hex_name = webcolors.rgb_to_hex(color)
     if hex_name in name_dict:

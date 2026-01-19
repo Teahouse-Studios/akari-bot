@@ -1,10 +1,10 @@
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Image as BImage, Plain
 from core.component import module
+from core.cooldown import CoolDown
 from core.config import Config
 from core.logger import Logger
-from core.utils.cooldown import CoolDown
-from core.utils.game import PlayState, GAME_EXPIRED
+from core.game import PlayState, GAME_EXPIRED
 from core.utils.petal import gained_petal
 from .board import WordleBoard, WordleBoardImage
 

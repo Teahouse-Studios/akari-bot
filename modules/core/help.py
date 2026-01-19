@@ -184,22 +184,31 @@ async def _(msg: Bot.MessageSession):
         module_list = ModulesManager.return_modules_list(
             target_from=msg.session_info.target_from, client_name=msg.session_info.client_name)
         target_enabled_list = msg.session_info.enabled_modules
-        help_msg = MessageChain.assign(I18NContext("core.message.help.legacy.base"))
+
         essential = []
-        for x in module_list:
-            if module_list[x].base and \
-                    not module_list[x].hidden or \
-                    not is_superuser and module_list[x].required_superuser or \
-                    not is_base_superuser and module_list[x].required_base_superuser:
-                essential.append(module_list[x].module_name)
-        help_msg.append(Plain(" | ".join(essential), disable_joke=True))
         module_ = []
-        for x in module_list:
-            if x in target_enabled_list and module_list[x]._db_load and \
-                    not module_list[x].hidden or \
-                    not is_superuser and module_list[x].required_superuser or \
-                    not is_base_superuser and module_list[x].required_base_superuser:
-                module_.append(x)
+
+        for key, value in module_list.items():
+            if key[0] == "_":
+                continue
+            if not value._db_load and not value.base:
+                continue
+            if value.hidden:
+                continue
+            if value.rss and not msg.session_info.support_rss:
+                continue
+            if not is_superuser and value.required_superuser or \
+                    not is_base_superuser and value.required_base_superuser:
+                continue
+
+            if value.base:
+                essential.append(key)
+            else:
+                module_.append(key)
+        module_ = [m for m in module_ if m in target_enabled_list]
+
+        help_msg = MessageChain.assign(I18NContext("core.message.help.legacy.base"))
+        help_msg.append(Plain(" | ".join(essential), disable_joke=True))
         if module_:
             help_msg.append(I18NContext("core.message.help.legacy.external"))
             help_msg.append(Plain(" | ".join(module_), disable_joke=True))

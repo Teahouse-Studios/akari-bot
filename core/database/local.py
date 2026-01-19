@@ -1,5 +1,5 @@
 import hashlib
-from datetime import datetime
+import time
 
 from tortoise import fields
 
@@ -12,7 +12,7 @@ DB_LINK = "sqlite://database/local.db"
 
 
 class DirtyWordCache(DBModel):
-    desc = fields.TextField(pk=True)
+    desc = fields.CharField(max_length=512, primary_key=True)
     result = fields.JSONField(default={})
     timestamp = fields.DatetimeField(auto_now=True)
 
@@ -23,14 +23,14 @@ class DirtyWordCache(DBModel):
     async def check(cls, query_word):
         query = await cls.filter(desc=query_word).first()
 
-        if query and datetime.now().timestamp() - query.timestamp.timestamp() > 86400:
+        if query and time.time() - query.timestamp.timestamp() > 86400:
             await query.delete()
 
         return query
 
 
 class CrowdinActivityRecords(DBModel):
-    hash_id = fields.TextField(pk=True)
+    hash_id = fields.CharField(max_length=512, primary_key=True)
 
     class Meta:
         table = "crowdin_activity_records"

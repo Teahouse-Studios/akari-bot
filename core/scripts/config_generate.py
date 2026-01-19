@@ -1,9 +1,10 @@
 import importlib
-import os
 import multiprocessing
+import os
 import pkgutil
 import shutil
 import sys
+import traceback
 from pathlib import Path
 from time import sleep
 
@@ -12,7 +13,7 @@ if __name__ == "__main__":
 
 from core.constants import *
 from core.i18n import Locale, load_locale_file
-from core.utils.message import is_int
+from core.utils.tools import is_int
 
 
 def generate_config(dir_path: Path, language: str):
@@ -52,7 +53,10 @@ def generate_config(dir_path: Path, language: str):
             importlib.import_module(f"{module_py_name}.config")
             CFGManager.save()
             sleep(0.1)
+        except ModuleNotFoundError:
+            continue
         except Exception:
+            traceback.print_exc()
             continue
     import modules
     for subm in pkgutil.iter_modules(modules.__path__):
@@ -62,7 +66,10 @@ def generate_config(dir_path: Path, language: str):
             importlib.import_module(f"{module_py_name}.config")
             CFGManager.save()
             sleep(0.1)
+        except ModuleNotFoundError:
+            continue
         except Exception:
+            traceback.print_exc()
             continue
 
 

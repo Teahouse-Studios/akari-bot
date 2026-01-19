@@ -15,5 +15,5 @@ async def auto_search(ctx: discord.AutocompleteContext):
 @discord.option(
     name="mojiraid", autocomplete=auto_search, description="Mojira ticket ID."
 )
-async def bugtracker(ctx: discord.ApplicationContext, mojiraid: str):
+async def _(ctx: discord.ApplicationContext, mojiraid: str):
     await slash_parser(ctx, mojiraid)

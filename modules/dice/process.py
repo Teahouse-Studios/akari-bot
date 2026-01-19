@@ -47,7 +47,7 @@ se = SimpleEval()
 se.functions.update(math_funcs)
 
 
-async def process_expression(msg: Bot.MessageSession, expr: str, dc: Optional[int]):
+async def process_expression(msg: Bot.MessageSession, expr: str, dc: int | None):
     if not all(
         [
             MAX_DICE_COUNT > 0,
@@ -195,7 +195,7 @@ def generate_dice_message(
     dice_expr_list: list,
     dice_count: int,
     times: int,
-    dc: Optional[int],
+    dc: int | None,
 ):
     """开始投掷并生成消息"""
     success_num = 0

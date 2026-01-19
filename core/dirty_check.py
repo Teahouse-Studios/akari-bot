@@ -5,13 +5,12 @@
 
 import asyncio
 import base64
-import datetime
 import hashlib
 import hmac
 import re
+import time
 import urllib.parse
 import uuid
-from typing import Union, List, Dict, Optional
 
 import httpx
 import orjson
@@ -35,13 +34,7 @@ def hash_hmac(key, code):
     return base64.b64encode(hmac_code.digest()).decode("utf-8")
 
 
-def computeMD5hash(my_string):
-    m = hashlib.md5(usedforsecurity=False)
-    m.update(my_string.encode("gb2312"))
-    return m.hexdigest()
-
-
-def parse_data(original_content: str, result: dict, confidence: float = 60, additional_text=None) -> Dict:
+def parse_data(original_content: str, result: dict, confidence: float = 60, additional_text=None) -> dict:
     content = original_content
 
     if use_textscan_v1:
@@ -73,10 +66,7 @@ def parse_data(original_content: str, result: dict, confidence: float = 60, addi
                         placeholders = [(m.start(), m.end()) for m in i18ncode_pattern.finditer(content)]
 
                         def is_in_placeholder(start, end):
-                            for p_start, p_end in placeholders:
-                                if start < p_end and end > p_start:
-                                    return True
-                            return False
+                            return any(start < p_end and end > p_start for p_start, p_end in placeholders)
 
                         for word in risk_words:
                             word = word.strip()
@@ -97,14 +87,14 @@ def parse_data(original_content: str, result: dict, confidence: float = 60, addi
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
-async def check(text: Union[str,
-                            List[str],
-                            List[MessageElement],
-                            MessageElement,
-                            MessageChain],
-                session: Optional[MessageSession] = None,
+async def check(text: str |
+                list[str] |
+                list[MessageElement] |
+                MessageElement |
+                MessageChain,
+                session: MessageSession | None = None,
                 confidence: float = 60,
-                additional_text: Optional[str] = None) -> List[Dict]:
+                additional_text: str | None = None) -> list[dict]:
     """检查字符串。
 
     :param text: 字符串（List/Union）。
@@ -156,7 +146,7 @@ async def check(text: Union[str,
                 "scenes": ["antispam"],
                 "tasks": [{"dataId": str(uuid.uuid4()), "content": x} for x in call_api_list_],
             }
-            date = datetime.datetime.now(datetime.UTC).strftime("%a, %d %b %Y %H:%M:%S GMT")
+            date = time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime())
             content_md5 = base64.b64encode(
                 hashlib.md5(orjson.dumps(body), usedforsecurity=False).digest()
             ).decode("utf-8")
@@ -199,7 +189,7 @@ async def check(text: Union[str,
 
             async def call_api(x: str):
                 async with sem:
-                    date = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+                    date = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
                     params = {
                         "Format": "JSON",
                         "Version": "2022-03-02",
@@ -256,12 +246,12 @@ async def check(text: Union[str,
     return results
 
 
-async def check_bool(text: Union[str,
-                                 List[str],
-                                 List[MessageElement],
-                                 MessageElement,
-                                 MessageChain],
-                     session: Optional[MessageSession] = None,
+async def check_bool(text: str |
+                     list[str] |
+                     list[MessageElement] |
+                     MessageElement |
+                     MessageChain,
+                     session: MessageSession | None = None,
                      confidence: float = 60) -> bool:
     """检查字符串是否合规。
 
@@ -284,3 +274,6 @@ def rickroll() -> str:
     if Config("enable_rickroll", True) and rickroll_msg:
         return rickroll_msg
     return "{I18N:error.message.chain.unsafe}"
+
+
+__all__ = ["check", "check_bool", "rickroll"]

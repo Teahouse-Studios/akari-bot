@@ -4,13 +4,13 @@ import uuid
 from collections import Counter
 from datetime import datetime, UTC, timedelta
 from decimal import Decimal
-from typing import Any, List, Optional, Union
+from typing import Any
 
 from tortoise import fields
 from tortoise.transactions import in_transaction
 
 from core.constants.default import default_locale
-from core.utils.message import convert_list
+from core.utils.tools import convert_list
 from .base import DBModel
 from ..logger import Logger
 
@@ -28,7 +28,7 @@ class SenderInfo(DBModel):
     :param sender_data: 用户数据。
     """
 
-    sender_id = fields.CharField(max_length=512, pk=True)
+    sender_id = fields.CharField(max_length=512, primary_key=True)
     blocked = fields.BooleanField(default=False)
     trusted = fields.BooleanField(default=False)
     superuser = fields.BooleanField(default=False)
@@ -66,7 +66,7 @@ class SenderInfo(DBModel):
         await self.save()
         return True
 
-    async def modify_petal(self, amount: Union[str, int, Decimal]) -> bool:
+    async def modify_petal(self, amount: str | int | Decimal) -> bool:
         """
         修改用户花瓣数量。
 
@@ -84,7 +84,7 @@ class SenderInfo(DBModel):
         await self.save()
         return True
 
-    async def edit_sender_data(self, key: str, value: Optional[Any] = None) -> bool:
+    async def edit_sender_data(self, key: str, value: Any | None = None) -> bool:
         """
         设置用户数据。
 
@@ -119,7 +119,7 @@ class TargetInfo(DBModel):
     :param banned_users: 会话内已限制用户。
     :param target_data: 会话数据。
     """
-    target_id = fields.CharField(max_length=512, pk=True)
+    target_id = fields.CharField(max_length=512, primary_key=True)
     blocked = fields.BooleanField(default=False)
     muted = fields.BooleanField(default=False)
     locale = fields.CharField(max_length=32, default=default_locale)
@@ -131,7 +131,7 @@ class TargetInfo(DBModel):
     class Meta:
         table = "target_info"
 
-    async def config_module(self, module_name: Union[str, list, tuple[str]], enable: bool = True) -> bool:
+    async def config_module(self, module_name: str | list | tuple, enable: bool = True) -> bool:
         """
         设置会话内可用模块。
 
@@ -160,7 +160,7 @@ class TargetInfo(DBModel):
         await self.save()
         return self.muted
 
-    async def edit_target_data(self, key: str, value: Optional[Any] = None) -> bool:
+    async def edit_target_data(self, key: str, value: Any | None = None) -> bool:
         """
         设置会话数据。
 
@@ -220,8 +220,8 @@ class TargetInfo(DBModel):
         return True
 
     @classmethod
-    async def get_target_list_by_module(cls, module_name: Optional[Union[str, list[str], tuple[str]]],
-                                        id_prefix: Optional[str] = None) -> List[TargetInfo]:
+    async def get_target_list_by_module(cls, module_name: str | list[str] | tuple[str, ...] | None,
+                                        id_prefix: str | None = None) -> list[TargetInfo]:
         """
         获取开启此模块的所有会话列表。
 
@@ -254,7 +254,7 @@ class StoredData(DBModel):
     :param stored_key: 存储键。
     :param value: 值。
     """
-    stored_key = fields.CharField(max_length=512, pk=True)
+    stored_key = fields.CharField(max_length=512, primary_key=True)
     value = fields.JSONField(default=[])
 
     class Meta:
@@ -272,7 +272,7 @@ class AnalyticsData(DBModel):
     :param command: 命令。
     :param timestamp: 时间戳。
     """
-    id = fields.IntField(pk=True)
+    id = fields.IntField(primary_key=True)
     module_name = fields.CharField(max_length=512)
     module_type = fields.CharField(max_length=512)
     target_id = fields.CharField(max_length=512)
@@ -318,14 +318,14 @@ class ModuleStatus(DBModel):
     :param module_name: 模块名称。
     :param load: 是否已加载。
     """
-    module_name = fields.CharField(pk=True, max_length=255, unique=True)
+    module_name = fields.CharField(primary_key=True, max_length=255, unique=True)
     load = fields.BooleanField(default=False)
 
     class Meta:
         table = "module_status"
 
     @classmethod
-    async def init_modules(cls, modules_list: List[str]):
+    async def init_modules(cls, modules_list: list[str]):
         async with in_transaction("default"):
             existing = await cls.all().values_list("module_name", flat=True)
             existing_set = set(existing)
@@ -371,7 +371,7 @@ class DBVersion(DBModel):
     :param version: 数据库版本号。
     """
 
-    version = fields.IntField(pk=True)
+    version = fields.IntField(primary_key=True)
 
     class Meta:
         table = "database_version"
@@ -387,7 +387,7 @@ class UnfriendlyActionRecords(DBModel):
     :param detail: 行为详情。
     :param timestamp: 时间戳。
     """
-    id = fields.IntField(pk=True)
+    id = fields.IntField(primary_key=True)
     target_id = fields.CharField(max_length=512)
     sender_id = fields.CharField(max_length=512)
     action = fields.CharField(max_length=512)
@@ -440,7 +440,7 @@ class JobQueuesTable(DBModel):
     :param result: 任务结果。
     :param timestamp: 时间戳。
     """
-    task_id = fields.UUIDField(pk=True)
+    task_id = fields.UUIDField(primary_key=True)
     target_client = fields.CharField(max_length=512)
     action = fields.CharField(max_length=512)
     args = fields.JSONField(default={})
@@ -474,7 +474,7 @@ class JobQueuesTable(DBModel):
         return True
 
     @classmethod
-    async def clear_task(cls, time=3600) -> bool:
+    async def clear_task(cls, time=600) -> bool:
         timestamp = datetime.now(UTC) - timedelta(seconds=time)
         Logger.debug(f"Clearing tasks older than {timestamp}...")
 
@@ -482,7 +482,7 @@ class JobQueuesTable(DBModel):
         return True
 
     @classmethod
-    async def get_first(cls, target_clients: Union[str, List[str]]):
+    async def get_first(cls, target_clients: str | list[str]):
         if isinstance(target_clients, str):
             target_clients = [target_clients]
         return await cls.filter(
@@ -490,7 +490,7 @@ class JobQueuesTable(DBModel):
         ).first()
 
     @classmethod
-    async def get_all(cls, target_clients: Union[str, List[str]]):
+    async def get_all(cls, target_clients: str | list[str]):
         if isinstance(target_clients, str):
             target_clients = [target_clients]
         return await cls.filter(
@@ -507,7 +507,7 @@ class MaliciousLoginRecords(DBModel):
     :param blocked_until: 被封禁的截止时间。
     :param created_date: 创建日期。
     """
-    id = fields.IntField(pk=True)
+    id = fields.IntField(primary_key=True)
     ip_address = fields.CharField(max_length=45)
     blocked_until = fields.DatetimeField()
     created_date = fields.DatetimeField(auto_now_add=True)

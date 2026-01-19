@@ -13,6 +13,6 @@ from bots.discord.slash_parser import slash_parser
     choices=["false", "true"],
     description="Whether to get extra information about sites using SocialProFile extension.",
 )
-async def user(ctx: discord.ApplicationContext, username: str, enable_profile: str):
+async def _(ctx: discord.ApplicationContext, username: str, enable_profile: str):
     p = "-p" if enable_profile == "true" else ""
     await slash_parser(ctx, f"{username} {p}")

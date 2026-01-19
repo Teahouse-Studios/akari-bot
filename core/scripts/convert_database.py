@@ -15,14 +15,13 @@ from core.database.models import *
 from core.logger import Logger
 from modules.cytoid.database.models import *
 from modules.maimai.database.models import *
-from modules.osu.database.models import *
 from modules.phigros.database.models import *
 from modules.wiki.database.models import *
 from modules.wikilog.database.models import *
 
 
 class SenderInfoL(Model):
-    id = fields.CharField(max_length=512, pk=True)
+    id = fields.CharField(max_length=512, primary_key=True)
     isInBlockList = fields.BooleanField(default=False)
     isInAllowList = fields.BooleanField(default=False)
     isSuperUser = fields.BooleanField(default=False)
@@ -35,7 +34,7 @@ class SenderInfoL(Model):
 
 
 class TargetInfoL(Model):
-    targetId = fields.CharField(max_length=512, pk=True)
+    targetId = fields.CharField(max_length=512, primary_key=True)
     enabledModules = fields.JSONField(default=[])
     options = fields.JSONField(default={})
     customAdmins = fields.JSONField(default=[])
@@ -47,14 +46,14 @@ class TargetInfoL(Model):
 
 
 class GroupBlockList(Model):
-    targetId = fields.CharField(max_length=512, pk=True)
+    targetId = fields.CharField(max_length=512, primary_key=True)
 
     class Meta:
         table = "_old_GroupBlockList"
 
 
 class StoredDataL(Model):
-    name = fields.CharField(max_length=512, pk=True)
+    name = fields.CharField(max_length=512, primary_key=True)
     value = fields.CharField(max_length=512)
 
     class Meta:
@@ -62,7 +61,7 @@ class StoredDataL(Model):
 
 
 class Analytics(Model):
-    id = fields.IntField(pk=True)
+    id = fields.IntField(primary_key=True)
     moduleName = fields.CharField(max_length=512)
     moduleType = fields.CharField(max_length=512)
     targetId = fields.CharField(max_length=512)
@@ -75,7 +74,7 @@ class Analytics(Model):
 
 
 class UnfriendlyActionsTable(Model):
-    id = fields.CharField(max_length=512, pk=True)
+    id = fields.CharField(max_length=512, primary_key=True)
     targetId = fields.CharField(max_length=512)
     senderId = fields.CharField(max_length=512)
     action = fields.CharField(max_length=512)
@@ -87,7 +86,7 @@ class UnfriendlyActionsTable(Model):
 
 
 class CytoidBindInfoL(Model):
-    targetId = fields.CharField(max_length=512, pk=True)
+    targetId = fields.CharField(max_length=512, primary_key=True)
     username = fields.CharField(max_length=512)
 
     class Meta:
@@ -95,23 +94,15 @@ class CytoidBindInfoL(Model):
 
 
 class DivingProberBindInfoL(Model):
-    targetId = fields.CharField(max_length=512, pk=True)
+    targetId = fields.CharField(max_length=512, primary_key=True)
     username = fields.CharField(max_length=512)
 
     class Meta:
         table = "_old_module_maimai_DivingProberBindInfo"
 
 
-class OsuBindInfoL(Model):
-    targetId = fields.CharField(max_length=512, pk=True)
-    username = fields.CharField(max_length=512)
-
-    class Meta:
-        table = "_old_module_osu_OsuBindInfo"
-
-
 class PhigrosBindInfoL(Model):
-    targetId = fields.CharField(max_length=512, pk=True)
+    targetId = fields.CharField(max_length=512, primary_key=True)
     sessiontoken = fields.CharField(max_length=512)
     username = fields.CharField(max_length=512)
 
@@ -120,7 +111,7 @@ class PhigrosBindInfoL(Model):
 
 
 class WikiTargetInfoL(Model):
-    targetId = fields.CharField(max_length=512, pk=True)
+    targetId = fields.CharField(max_length=512, primary_key=True)
     link = fields.CharField(max_length=512, null=True)
     iws = fields.JSONField(default={})
     headers = fields.JSONField(default={"accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"})
@@ -131,7 +122,7 @@ class WikiTargetInfoL(Model):
 
 
 class WikiSiteInfoL(Model):
-    apiLink = fields.CharField(max_length=512, pk=True)
+    apiLink = fields.CharField(max_length=512, primary_key=True)
     siteInfo = fields.JSONField(default={})
     timestamp = fields.DatetimeField()
 
@@ -140,7 +131,7 @@ class WikiSiteInfoL(Model):
 
 
 class WikiAllowListL(Model):
-    apiLink = fields.CharField(max_length=512, pk=True)
+    apiLink = fields.CharField(max_length=512, primary_key=True)
     timestamp = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
@@ -148,7 +139,7 @@ class WikiAllowListL(Model):
 
 
 class WikiBlockListL(Model):
-    apiLink = fields.CharField(max_length=512, pk=True)
+    apiLink = fields.CharField(max_length=512, primary_key=True)
     timestamp = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
@@ -156,7 +147,7 @@ class WikiBlockListL(Model):
 
 
 class WikiBotAccountListL(Model):
-    apiLink = fields.CharField(max_length=512, pk=True)
+    apiLink = fields.CharField(max_length=512, primary_key=True)
     botAccount = fields.CharField(max_length=512)
     botPassword = fields.CharField(max_length=512)
 
@@ -165,7 +156,7 @@ class WikiBotAccountListL(Model):
 
 
 class WikiLogTargetSetInfoL(Model):
-    targetId = fields.CharField(max_length=512, pk=True)
+    targetId = fields.CharField(max_length=512, primary_key=True)
     infos = fields.TextField()
 
     class Meta:
@@ -196,7 +187,6 @@ async def rename_old_tables():
             "ALTER TABLE module_cytoid_CytoidBindInfo RENAME TO _old_module_cytoid_CytoidBindInfo;")
         await conn.execute_query(
             "ALTER TABLE module_maimai_DivingProberBindInfo RENAME TO _old_module_maimai_DivingProberBindInfo;")
-        await conn.execute_query("ALTER TABLE module_osu_OsuBindInfo RENAME TO _old_module_osu_OsuBindInfo;")
         await conn.execute_query("ALTER TABLE module_phigros_PgrBindInfo RENAME TO _old_module_phigros_PgrBindInfo;")
         await conn.execute_query("ALTER TABLE module_wiki_TargetSetInfo RENAME TO _old_module_wiki_TargetSetInfo;")
         await conn.execute_query("ALTER TABLE module_wiki_WikiInfo RENAME TO _old_module_wiki_WikiInfo;")
@@ -382,20 +372,6 @@ async def convert_database():
             Logger.error(f"Failed to convert DivingProberBindInfo: {r.targetId}, error: {e}")
             Logger.error(f"DivingProberBindInfo record: {r.__dict__}")
     await conn.execute_query("DROP TABLE IF EXISTS _old_module_maimai_DivingProberBindInfo;")
-
-    Logger.info("Converting OsuBindInfo...")
-
-    osu_bind_record = await OsuBindInfoL.all()
-    for r in osu_bind_record:
-        try:
-            await OsuBindInfo.create(
-                sender_id=r.targetId,
-                username=r.username,
-            )
-        except Exception as e:
-            Logger.error(f"Failed to convert OsuBindInfo: {r.targetId}, error: {e}")
-            Logger.error(f"OsuBindInfo record: {r.__dict__}")
-    await conn.execute_query("DROP TABLE IF EXISTS _old_module_osu_OsuBindInfo;")
 
     Logger.info("Converting PhigrosBindInfo...")
 

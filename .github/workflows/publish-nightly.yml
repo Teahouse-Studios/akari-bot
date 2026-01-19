@@ -1,0 +1,59 @@
+name: "Nightly Release (3:00, UTC+8)"
+
+on:
+  schedule:
+    - cron: '0 19 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Write version file
+        run: |
+          mkdir -p assets/private/default
+          echo "nightly-v$(date +'%Y%m%d')" > assets/private/default/.version
+          cat assets/private/default/.version
+
+      - name: Package code
+        run: |
+          ZIP_NAME="AkariBot-nightly.zip"
+          zip -r "$ZIP_NAME" . -x '*.git*'
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: AkariBot
+          path: |
+            AkariBot-nightly.zip
+
+      - name: Delete and recreate nightly tag
+        run: |
+          if git rev-parse refs/tags/nightly >/dev/null 2>&1; then
+            git tag -d nightly
+            git push origin --delete nightly
+          fi
+          git tag nightly
+          git push origin nightly
+
+      - name: Update release version and upload assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          release_exists=$(gh release list --json tagName --jq '.[] | select(.tagName=="nightly") | .tagName')
+          if [ -n "$release_exists" ]; then
+            gh release delete nightly -y
+          fi
+          gh release create nightly \
+            --title "Nightly Release" \
+            --notes "> 这是 Nightly 版本，功能可能不稳定，如发生错误请及时更新版本或回报问题。" \
+            --prerelease \
+            AkariBot-nightly.zip

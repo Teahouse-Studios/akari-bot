@@ -4,16 +4,15 @@ import multiprocessing
 import os
 import shutil
 import sys
+import time
 import traceback
-from datetime import datetime
 from pathlib import Path
-from time import sleep
 
 from loguru import logger
 from tortoise import Tortoise, run_async
-from tortoise.exceptions import ConfigurationError
 
 from core.constants import bots_path, config_path, config_filename, logs_path
+from core.database import close_db
 
 # Capture the base import lists to avoid clearing essential modules when restarting
 base_import_lists = list(sys.modules)
@@ -106,18 +105,18 @@ def pre_init():
         if not query_dbver:
             from core.scripts.convert_database import convert_database
 
-            await Tortoise.close_connections()
+            await close_db()
             await convert_database()
             Logger.success("Database converted successfully!")
         elif (current_ver := query_dbver.version) < (target_ver := database_version):
             Logger.info(f"Updating database from {current_ver} to {target_ver}...")
             from core.database.update import update_database
 
-            await Tortoise.close_connections()
+            await close_db()
             await update_database()
             Logger.success("Database updated successfully!")
         else:
-            await Tortoise.close_connections()
+            await close_db()
 
         base_superuser = Config(
             "base_superuser", base_superuser_default, cfg_type=(str, list)
@@ -151,7 +150,7 @@ def multiprocess_run_until_complete(func):
     while True:
         if not p.is_alive():
             break
-        sleep(1)
+        time.sleep(1)
     terminate_process(p)
 
 
@@ -186,15 +185,15 @@ async def run_bot():
     def restart_bot_process(bot_name: str):
         if (
                 bot_name not in failed_to_start_attempts
-                or datetime.now().timestamp()
+                or time.time()
                 - failed_to_start_attempts[bot_name]["timestamp"]
                 > 60
         ):
             failed_to_start_attempts[bot_name] = {}
             failed_to_start_attempts[bot_name]["count"] = 0
-            failed_to_start_attempts[bot_name]["timestamp"] = datetime.now().timestamp()
+            failed_to_start_attempts[bot_name]["timestamp"] = time.time()
         failed_to_start_attempts[bot_name]["count"] += 1
-        failed_to_start_attempts[bot_name]["timestamp"] = datetime.now().timestamp()
+        failed_to_start_attempts[bot_name]["timestamp"] = time.time()
         if failed_to_start_attempts[bot_name]["count"] >= 3:
             Logger.error(
                 f"Bot {bot_name} failed to start 3 times, abort to restart, please check the log."
@@ -267,8 +266,6 @@ async def run_bot():
                     f"Process {p.pid} ({p.name}) exited with code 233, restart all bots."
                 )
                 raise RestartBot
-            if p.exitcode == 466:
-                break
             Logger.critical(
                 f"Process {p.pid} ({p.name}) exited with code {p.exitcode}, please check the log."
             )
@@ -312,10 +309,7 @@ async def main_async():
         traceback.print_exc()
         raise e
     finally:
-        try:
-            await Tortoise.close_connections()
-        except ConfigurationError:
-            pass
+        await close_db()
 
 
 def main():

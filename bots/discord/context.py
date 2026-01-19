@@ -1,5 +1,4 @@
 import asyncio
-from typing import Optional, Union, List
 
 import discord
 from discord import Message
@@ -18,7 +17,7 @@ from core.utils.image import msgnode2image
 
 class DiscordContextManager(ContextManager):
     context: dict[str, Message] = {}
-    features: Optional[Features] = Features
+    features: Features | None = Features
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
@@ -48,7 +47,7 @@ class DiscordContextManager(ContextManager):
     @classmethod
     async def send_message(cls, session_info: SessionInfo, message: MessageChain | MessageNodes, quote: bool = True,
                            enable_parse_message: bool = True,
-                           enable_split_image: bool = True, ) -> List[str]:
+                           enable_split_image: bool = True, ) -> list[str]:
 
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
@@ -127,7 +126,7 @@ class DiscordContextManager(ContextManager):
         return msg_ids
 
     @classmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: Union[str, List[str]]) -> None:
+    async def delete_message(cls, session_info: SessionInfo, message_id: str | list[str]) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -149,7 +148,7 @@ class DiscordContextManager(ContextManager):
                 Logger.exception(f"Failed to delete message {msg_id} in session {session_info.session_id}: ")
 
     @classmethod
-    async def add_reaction(cls, session_info: SessionInfo, message_id: Union[str, list[str]], emoji: str) -> None:
+    async def add_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -170,7 +169,7 @@ class DiscordContextManager(ContextManager):
                                      message_id} in session {session_info.session_id}: ")
 
     @classmethod
-    async def remove_reaction(cls, session_info: SessionInfo, message_id: Union[str, list[str]], emoji: str) -> None:
+    async def remove_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):

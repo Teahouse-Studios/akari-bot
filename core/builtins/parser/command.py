@@ -2,7 +2,7 @@ import copy
 import re
 import shlex
 import traceback
-from typing import Dict, Optional, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from ...exports import exports
 
@@ -25,14 +25,14 @@ class CommandParser:
         args: Module,
         command_prefixes: list,
         module_name=None,
-        msg: Optional["Bot.MessageSession"] = None,
-        is_superuser: Optional[bool] = None,
+        msg: "Bot.MessageSession | None" = None,
+        is_superuser: bool | None = None,
     ):
         args = copy.deepcopy(args)
         self.command_prefixes = command_prefixes
         self.module_name = module_name
         self.origin_template = args
-        self.msg: Union["Bot.MessageSession", None] = msg
+        self.msg: "Bot.MessageSession | None" = msg
         self.options_desc = {}
         self.lang = self.msg.session_info.locale if self.msg else Locale(default_locale)
         command_templates = {}
@@ -59,7 +59,7 @@ class CommandParser:
                 for m in match.options_desc:
                     self.options_desc[m] = match.options_desc[m]
 
-        self.args: Dict[Union[Template, ""], dict] = command_templates
+        self.args: dict[Template, dict] = command_templates
 
         seen_values = set()
         deduped_options_desc = {}

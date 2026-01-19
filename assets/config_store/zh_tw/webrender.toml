@@ -7,4 +7,5 @@
 enable_web_render = false # 是否啟用 Webrender。
 browser_type = "chrome" # WebRender 所使用的瀏覽器類型。（支援「chrome」與「firefox」）
 browser_executable_path = "<Replace me with str value>" # WebRender 使用的瀏覽器可執行檔案路徑，若為空白則使用 playwright 預設安裝之瀏覽器。
+remote_only = false # 是否僅允許使用遠端 WebRender 服務。
 remote_web_render_url = "<Replace me with str value>" # 遠端 WebRender 服務的 URL，在本機 WebRender 成像失敗時會嘗試請求。

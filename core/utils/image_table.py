@@ -1,6 +1,6 @@
 import re
 from html import escape
-from typing import Any, List, Optional, Union
+from typing import Any
 
 from PIL import Image as PILImage
 from tabulate import tabulate
@@ -22,9 +22,9 @@ class ImageTable:
     """
 
     def __init__(self,
-                 data: List[List[Any]],
-                 headers: List[str],
-                 session_info: Optional["SessionInfo"] = None,
+                 data: list[list[Any]],
+                 headers: list[str],
+                 session_info: "SessionInfo | None" = None,
                  disable_joke: bool = False):
         if not all(len(row) == len(headers) for row in data):
             raise ValueError("The number of columns of data must match the number of table headers.")
@@ -52,9 +52,9 @@ class ImageTable:
 
 
 async def image_table_render(
-    table: Union[ImageTable, List[ImageTable]],
+    table: ImageTable | list[ImageTable],
     save_source: bool = True,
-) -> Union[List[PILImage.Image], None]:
+) -> list[PILImage.Image] | None:
     """
     使用WebRender渲染图片表格。
 

@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 
 import discord
 
@@ -22,7 +22,7 @@ async def convert_embed(embed: EmbedElement, session_info: SessionInfo):
             description=session_info.locale.t_str(embed.description) if embed.description else None,
             color=embed.color if embed.color else None,
             url=embed.url if embed.url else None,
-            timestamp=datetime.datetime.fromtimestamp(embed.timestamp) if embed.timestamp else None
+            timestamp=datetime.fromtimestamp(embed.timestamp) if embed.timestamp else None
         )
         if embed.image:
             upload = discord.File(await embed.image.get(), filename="image.png")

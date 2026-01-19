@@ -5,7 +5,6 @@ import html.parser
 import re
 import urllib.parse as urlparse
 from textwrap import wrap
-from typing import Dict, List, Optional, Tuple, Union
 
 from core.builtins.message.internal import Url
 from . import config
@@ -37,7 +36,7 @@ __version__ = (2020, 1, 16)
 class HTML2Text(html.parser.HTMLParser):
     def __init__(
         self,
-        out: Optional[OutCallback] = None,
+        out: OutCallback | None = None,
         baseurl: str = "",
         bodywidth: int = config.BODY_WIDTH,
     ) -> None:
@@ -91,20 +90,20 @@ class HTML2Text(html.parser.HTMLParser):
             self.out = out
 
         # empty list to store output characters before they are "joined"
-        self.outtextlist = []  # type: List[str]
+        self.outtextlist = []  # type: list[str]
 
         self.quiet = 0
         self.p_p = 0  # number of newline character to print before next output
         self.outcount = 0
         self.start = True
         self.space = False
-        self.a = []  # type: List[AnchorElement]
-        self.astack = []  # type: List[Optional[Dict[str, Optional[str]]]]
-        self.maybe_automatic_link = None  # type: Optional[str]
+        self.a = []  # type: list[AnchorElement]
+        self.astack = []  # type: list[dict[str, str | None]]
+        self.maybe_automatic_link = None  # type: str | None
         self.empty_link = False
         self.absolute_url_matcher = re.compile(r"^[a-zA-Z+]+://")
         self.acount = 0
-        self.list = []  # type: List[ListElement]
+        self.list = []  # type: list[ListElement]
         self.blockquote = 0
         self.pre = False
         self.startpre = False
@@ -114,19 +113,19 @@ class HTML2Text(html.parser.HTMLParser):
         self.lastWasNL = False
         self.lastWasList = False
         self.style = 0
-        self.style_def = {}  # type: Dict[str, Dict[str, str]]
+        self.style_def = {}  # type: dict[str, dict[str, str]]
         self.tag_stack = (
             []
-        )  # type: List[Tuple[str, Dict[str, Optional[str]], Dict[str, str]]]
+        )  # type: list[tuple[str, dict[str, str | None], dict[str, str]]]
         self.emphasis = 0
         self.drop_white_space = 0
         self.inheader = False
         # Current abbreviation definition
-        self.abbr_title = None  # type: Optional[str]
+        self.abbr_title = None  # type: str | None
         # Last inner HTML (for abbr being defined)
-        self.abbr_data = None  # type: Optional[str]
+        self.abbr_data = None  # type: str | None
         # Stack of abbreviations to write later
-        self.abbr_list = {}  # type: Dict[str, str]
+        self.abbr_list = {}  # type: dict[str, str]
         self.baseurl = baseurl
         self.stressed = False
         self.preceding_stressed = False
@@ -187,13 +186,13 @@ class HTML2Text(html.parser.HTMLParser):
         if ref:
             self.handle_data(ref, True)
 
-    def handle_starttag(self, tag: str, attrs: List[Tuple[str, Optional[str]]]) -> None:
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         self.handle_tag(tag, dict(attrs), start=True)
 
     def handle_endtag(self, tag: str) -> None:
         self.handle_tag(tag, {}, start=False)
 
-    def previousIndex(self, attrs: Dict[str, Optional[str]]) -> Optional[int]:
+    def previousIndex(self, attrs: dict[str, str | None]) -> int | None:
         """
         :type attrs: dict
 
@@ -222,7 +221,7 @@ class HTML2Text(html.parser.HTMLParser):
         return None
 
     def handle_emphasis(
-        self, start: bool, tag_style: Dict[str, str], parent_style: Dict[str, str]
+        self, start: bool, tag_style: dict[str, str], parent_style: dict[str, str]
     ) -> None:
         """
         Handles various text emphases
@@ -295,7 +294,7 @@ class HTML2Text(html.parser.HTMLParser):
                 self.quiet -= 1
 
     def handle_tag(
-        self, tag: str, attrs: Dict[str, Optional[str]], start: bool
+        self, tag: str, attrs: dict[str, str | None], start: bool
     ) -> None:
         self.current_tag = tag
 
@@ -320,7 +319,7 @@ class HTML2Text(html.parser.HTMLParser):
             # need the attributes of the parent nodes in order to get a
             # complete style description for the current element. we assume
             # that google docs export well formed html.
-            parent_style = {}  # type: Dict[str, str]
+            parent_style = {}  # type: dict[str, str]
             if start:
                 if self.tag_stack:
                     parent_style = self.tag_stack[-1][2]
@@ -681,7 +680,7 @@ class HTML2Text(html.parser.HTMLParser):
         self.br_toggle = "  "
 
     def o(
-        self, data: str, puredata: bool = False, force: Union[bool, str] = False
+        self, data: str, puredata: bool = False, force: bool | str = False
     ) -> None:
         """
         Deal with indentation and whitespace
@@ -858,7 +857,7 @@ class HTML2Text(html.parser.HTMLParser):
             return "&" + c + ";"
         return config.UNIFIABLE[c] if c == "nbsp" else ch
 
-    def google_nest_count(self, style: Dict[str, str]) -> int:
+    def google_nest_count(self, style: dict[str, str]) -> int:
         """
         Calculate the nesting count of google doc lists
 
@@ -933,7 +932,7 @@ class HTML2Text(html.parser.HTMLParser):
         return result
 
 
-def html2text(html: str, baseurl: str = "", bodywidth: Optional[int] = None) -> str:
+def html2text(html: str, baseurl: str = "", bodywidth: int | None = None) -> str:
     if bodywidth is None:
         bodywidth = config.BODY_WIDTH
     h = HTML2Text(baseurl=baseurl, bodywidth=bodywidth)

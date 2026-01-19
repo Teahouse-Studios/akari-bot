@@ -17,10 +17,10 @@ dice = discord_bot.create_group("dice", "Random dice.")
     name="dices", autocomplete=auto_complete, description="Dice expression."
 )
 @discord.option(name="dc", default="", description="Difficulty class.")
-async def roll(ctx: discord.ApplicationContext, dices: str, dc: str):
+async def _(ctx: discord.ApplicationContext, dices: str, dc: str):
     await slash_parser(ctx, f"{dices} {dc}")
 
 
 @dice.command(name="rule", description="Modify the checking rule of dc.")
-async def rule(ctx: discord.ApplicationContext):
+async def _(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "rule")

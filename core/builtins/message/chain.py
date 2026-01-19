@@ -5,8 +5,7 @@ import html
 import random
 import re
 from copy import deepcopy
-from typing import List, Optional, Tuple, Union, Any
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 from urllib.parse import urlparse
 
 import orjson
@@ -44,20 +43,19 @@ class MessageChain:
     消息链。
     """
 
-    values: List[MessageElement]
+    values: list[MessageElement]
 
     @classmethod
     def assign(
         cls,
-        elements: Optional[
-            Union[
-                str,
-                List[MessageElement],
-                Tuple[MessageElement],
-                MessageElement,
-                MessageChain,
-            ]
-        ] = None,
+        elements:
+        str |
+        list[MessageElement] |
+        tuple[MessageElement, ...] |
+        MessageElement |
+        MessageChain |
+            None
+        = None,
     ):
         """
         :param elements: 消息链元素。
@@ -157,6 +155,8 @@ class MessageChain:
         if session_info:
             support_embed = session_info.support_embed
         for x in self.values:
+            if x is None:
+                continue
             if isinstance(x, EmbedElement) and not support_embed:
                 value += x.to_message_chain(session_info)
             elif isinstance(x, PlainElement):
@@ -213,24 +213,25 @@ class MessageChain:
 
         return value
 
-    def to_str(self, text_only=True, element_filter: tuple[MessageElement] = None) -> str:
+    def to_str(self, text_only=True, element_filter: tuple[MessageElement, ...] = None, connector: str = " ") -> str:
         """
         将消息链转换为字符串。
 
         :param text_only: 是否仅转换文本元素为字符串，默认为True。
         :param element_filter: 可选的元素过滤器，指定哪些元素类型需要被转换为字符串。
+        :param connector: 元素之间的连接符，默认为空格。
         """
-        result = ""
+        result = []
         for x in self.values:
             if element_filter and not isinstance(x, element_filter):
                 continue
             if isinstance(x, PlainElement):
-                result += x.text
+                result.append(x.text)
             else:
                 if not text_only:
-                    result += str(x)
+                    result.append(str(x))
 
-        return result
+        return connector.join(result)
 
     def to_list(self) -> list[dict[str, Any]]:
         """
@@ -338,10 +339,10 @@ class PlatformMessageChain:
     平台消息链，适用于不同平台的消息处理。优先级为 PlatformMessageChain > I18NMessageChain > MessageChain，使用时须保证嵌套关系正确。
     """
 
-    values: dict[str, Union[MessageChain, I18NMessageChain]]
+    values: dict[str, MessageChain | I18NMessageChain]
 
     @classmethod
-    def assign(cls, values: dict[str, Union[MessageChain, I18NMessageChain]]) -> PlatformMessageChain:
+    def assign(cls, values: dict[str, MessageChain | I18NMessageChain]) -> PlatformMessageChain:
         """
         :param values: 平台消息链元素，键为平台名称，值为消息链。必须包含 `default` 键用于回滚处理。
         """
@@ -357,11 +358,11 @@ class MessageNodes:
 
     """
 
-    values: List[MessageChain]
+    values: list[MessageChain]
     name: str = ""
 
     @classmethod
-    def assign(cls, values: List[MessageChain], name: Optional[str] = None):
+    def assign(cls, values: list[MessageChain], name: str | None = None):
         """
         :param values: 节点列表。
         :param name: 节点名称，默认为随机生成的字符串。
@@ -379,8 +380,8 @@ class MessageNodes:
         return all(chain.is_safe for chain in self.values)
 
 
-Chainable = Union[MessageChain, I18NMessageChain, PlatformMessageChain,
-                  str, list[str], list[MessageElement], MessageElement, MessageNodes]
+Chainable = MessageChain | I18NMessageChain | PlatformMessageChain | str | list[
+    str] | list[MessageElement] | MessageElement | MessageNodes
 
 
 def get_message_chain(session: SessionInfo, chain: Chainable) -> MessageChain:
@@ -561,19 +562,19 @@ def convert_senderid_to_atcode(text: str, sender_prefix: str) -> str:
 add_export(MessageChain)
 add_export(I18NMessageChain)
 
-converter.register_unstructure_hook(Union[MessageChain, I18NMessageChain],
+converter.register_unstructure_hook(MessageChain | I18NMessageChain,
                                     lambda obj: {"_type": type(obj).__name__, **converter.unstructure(obj)})
 
-converter.register_unstructure_hook(Union[MessageChain, MessageNodes],
+converter.register_unstructure_hook(MessageChain | MessageNodes,
                                     lambda obj: {"_type": type(obj).__name__, **converter.unstructure(obj)})
 
 converter.register_structure_hook(
-    Union[MessageChain, I18NMessageChain],
+    MessageChain | I18NMessageChain,
     lambda o, _: converter.structure(o, MessageChain if o["_type"] == "MessageChain" else I18NMessageChain)
 )
 
 converter.register_structure_hook(
-    Union[MessageChain, MessageNodes],
+    MessageChain | MessageNodes,
     lambda o, _: converter.structure(o, MessageChain if o["_type"] == "MessageChain" else MessageNodes)
 )
 

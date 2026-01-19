@@ -1,5 +1,5 @@
 import platform
-from datetime import datetime
+import time
 
 import psutil
 from cpuinfo import get_cpu_info
@@ -10,7 +10,7 @@ from core.builtins.message.internal import Plain, FormattedTime, I18NContext, Ur
 from core.component import module
 from core.config import Config
 from core.constants.default import locale_url_default
-from core.i18n import get_available_locales, Locale, load_locale_file
+from core.i18n import get_available_locales, Locale
 from core.utils.bash import run_sys_command
 from core.utils.temp import TempCounter
 
@@ -30,11 +30,19 @@ async def _(msg: Bot.MessageSession):
                     commit_url = f"{repo_url}/commit/{commit}"
                     send_msgs.append(Url(commit_url, use_mm=False))
         else:
+            version = Bot.Info.version
             send_msgs = MessageChain.assign(
                 I18NContext(
                     "core.message.version",
-                    version=Bot.Info.version,
+                    version=version,
                     disable_joke=True))
+            if Config("enable_commit_url", True):
+                version = "nightly" if version.startswith("nightly") else version
+                returncode, repo_url, _ = await run_sys_command(["git", "config", "--get", "remote.origin.url"])
+                if returncode == 0:
+                    repo_url = repo_url.strip().replace(".git", "")
+                    commit_url = f"{repo_url}/releases/tag/{version}"
+                    send_msgs.append(Url(commit_url, use_mm=False))
         await msg.finish(send_msgs)
     else:
         await msg.finish(I18NContext("core.message.version.unknown"))
@@ -42,19 +50,21 @@ async def _(msg: Bot.MessageSession):
 
 ping = module("ping", base=True, doc=True)
 
-started_time = datetime.now()
+started_time = time.time()
 
 
 @ping.command("{{I18N:core.help.ping}}")
 async def _(msg: Bot.MessageSession):
     result = MessageChain.assign(Plain("Pong!"))
-    timediff = str(datetime.now() - started_time).split(".")[0]
+
+    td_seconds = time.time() - started_time
+    timediff = f"{int(td_seconds // 3600):02d}:{int((td_seconds % 3600) // 60):02d}:{int(td_seconds % 60):02d}"
+    cpu_percent = psutil.cpu_percent()
+    ram_percent = psutil.virtual_memory().percent
     if msg.check_super_user():
         boot_start = str(FormattedTime(psutil.boot_time(), iso=True))
         web_render_status = str(Bot.Info.web_render_status)
-        cpu_usage = psutil.cpu_percent()
         ram = int(psutil.virtual_memory().total / (1024 * 1024))
-        ram_percent = psutil.virtual_memory().percent
         swap = int(psutil.swap_memory().total / (1024 * 1024))
         swap_percent = psutil.swap_memory().percent
         disk = int(psutil.disk_usage("/").used / (1024 * 1024 * 1024))
@@ -66,7 +76,7 @@ async def _(msg: Bot.MessageSession):
             python_version=platform.python_version(),
             web_render_status=web_render_status,
             cpu_brand=get_cpu_info()["brand_raw"],
-            cpu_usage=cpu_usage,
+            cpu_percent=cpu_percent,
             ram=ram,
             ram_percent=ram_percent,
             swap=swap,
@@ -82,6 +92,8 @@ async def _(msg: Bot.MessageSession):
         result.append(I18NContext(
             "core.message.ping.simple",
             bot_running_time=timediff,
+            cpu_percent=cpu_percent,
+            ram_percent=ram_percent,
             disk_percent=disk_percent,
             disable_joke=True
         ))

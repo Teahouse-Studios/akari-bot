@@ -18,12 +18,12 @@ jobs:
 
     steps:
       - name: Check-out repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.13' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+          python-version: '3.12' # Version range or exact version of a Python version to use, using SemVer's version range syntax
           architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
           cache: 'pip'
           cache-dependency-path: |
@@ -71,7 +71,7 @@ jobs:
         run: |
           python .github/scripts/build_copy_files.py
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ runner.os }} Build
           path: |

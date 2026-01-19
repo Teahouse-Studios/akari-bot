@@ -21,6 +21,7 @@ class Config:
     command_prefix: list = ["~", "～"]
     confirm_command: list = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"]
     enable_module_invalid_prompt: bool = False
+    mention_required: bool = False
     no_confirm: bool = False
     quick_confirm: bool = True
 
@@ -83,4 +84,5 @@ class WebRenderConfig:
     enable_web_render: bool = False
     browser_type: str = "chrome"
     browser_executable_path: str = ""
+    remote_only: bool = False
     remote_web_render_url: str = ""

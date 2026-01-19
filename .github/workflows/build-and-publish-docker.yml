@@ -1,0 +1,78 @@
+name: "Build and Publish Docker (3:00, UTC+8)"
+
+on:
+  schedule:
+    - cron: "0 19 * * *"
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-and-push:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Determine image tag
+        id: tag
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            IMAGE_TAG="${GITHUB_REF_NAME}"
+            IS_RELEASE="true"
+          else
+            IMAGE_TAG="nightly-$(date +'%Y%m%d')"
+            IS_RELEASE="false"
+          fi
+
+          echo "IMAGE_TAG=$IMAGE_TAG"
+          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "is_release=$IS_RELEASE" >> $GITHUB_OUTPUT
+
+      - name: Write version file
+        run: |
+          mkdir -p assets/private/default
+          echo "${{ steps.tag.outputs.image_tag }}" > assets/private/default/.version
+          cat assets/private/default/.version
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        env:
+          IMAGE_NAME: dorowolf/akari-bot
+          TAG: ${{ steps.tag.outputs.image_tag }}
+          IS_RELEASE: ${{ steps.tag.outputs.is_release }}
+        shell: bash
+        run: |
+          docker buildx create --use
+
+          TAG_ARGS="-t $IMAGE_NAME:$TAG"
+
+          if [[ "$IS_RELEASE" == "true" ]]; then
+            TAG_ARGS="$TAG_ARGS -t $IMAGE_NAME:latest"
+          else
+            TAG_ARGS="$TAG_ARGS -t $IMAGE_NAME:nightly"
+          fi
+
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --build-arg VERSION=$TAG \
+            $TAG_ARGS \
+            --push .

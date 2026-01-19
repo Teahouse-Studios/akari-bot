@@ -7,6 +7,8 @@ _多功能、跨平台、可自由扩展的异步聊天机器人助手_
 
 [![GitHub issues](https://img.shields.io/github/issues/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/pulls)
+[![GitHub releases](https://img.shields.io/github/v/release/Teahouse-Studios/akari-bot
+)](https://github.com/Teahouse-Studios/akari-bot/releases)
 [![Crowdin](https://badges.crowdin.net/akari-bot/localized.svg)](https://crowdin.com/project/akari-bot)
 ![GitHub Repo stars](https://img.shields.io/github/stars/Teahouse-Studios/akari-bot?style=social)
 <br>
@@ -14,19 +16,6 @@ _多功能、跨平台、可自由扩展的异步聊天机器人助手_
 ![OneBot v11](https://img.shields.io/badge/OneBot-v11-black)
 [![License](https://img.shields.io/github/license/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/blob/master/LICENSE)
 </div>
-
-## 功能列表
-> 此处展示的功能非机器人可用全部功能，详情请查看机器人文档。
-
-| 核心          | MediaWiki    | Minecraft      | 音乐游戏        | API 查询工具  | 实用工具         | 娱乐       | RSS               |
-| :-----------: | :----------: | :------------: | :------------: | :-----------: |  :------------: | :--------: | :---------------: |
-| 模块化功能管理  | Wiki 页面查询 | 漏洞追踪器     | ~~Arcaea~~     | Bilibili      | IP 地址查询     | Wordle     | MC 版本更新推送     |
-| 用户权限管理    | Wiki 页面搜索 | 服务器 MOTD    | Cytoid         | 网易云音乐    | 网站 WHOIS 查询 | 24 点       | MC 新闻推送        |
-| 自定义命令别名  | Wiki 用户查询 | 玩家信息查询   | Maimai          | GitHub       | 汇率信息查询    | 化学式小游戏 | MCWiki 每周页面推送 |
-| 自定义命令前缀  | 滥用日志查询  | 版本更新查询   | Phigros         | X（Twitter）  |   色彩查看器    | 抛硬币      | 茶馆周报推送        |
-| 多语言支持      | 最近更改查询 | MCWiki 每周页面 | Chunithm（WIP） |   nbnhhsh    |   随机生成器    | 掷骰工具    |                    |
-| 对话内行为设置  | 最新用户查询 |                | Osu!（WIP）     | WolframAlpha  |   AI 大语言模型   | Emojimix   |                    |
-|   WebUI |             |                |                |               |                | 一言        |                    |
 
 ## 运行
 
@@ -86,16 +75,18 @@ _多功能、跨平台、可自由扩展的异步聊天机器人助手_
 
 如你想为我们编写新的模块，可以看看[这里](https://bot.teahouse.team/wiki/%E6%A8%A1%E5%9D%97%E5%BC%80%E5%8F%91%E6%8C%87%E5%8D%97)。
 
-## 许可
-
-小可使用 AGPL-3.0 协议授权。详见 [./LICENSE](./LICENSE)。
-
 ## Star 历史
 [![Star Chart](https://starchart.cc/Teahouse-Studios/akari-bot.svg?variant=adaptive)](https://starchart.cc/Teahouse-Studios/akari-bot)
 
 ## 相关项目
-- [AkariBot WebRender](https://github.com/Teahouse-Studios/akari-bot-webrender)
-- [AkariBot WebUI](https://github.com/Teahouse-Studios/akari-bot-webui)
+- [`AkariBot WebRender`](https://github.com/Teahouse-Studios/akari-bot-webrender)
+- [`AkariBot WebUI`](https://github.com/Teahouse-Studios/akari-bot-webui)
+
+## 鸣谢
+- [`Graia`](https://github.com/GraiaProject/Application) — 小可曾基于此项目开发
+
+## 许可
+除另有说明外，本项目的所有代码与资源均使用 [AGPL-3.0](./LICENSE) 协议授权。
 
 ## 赞助者
 <p align="center">

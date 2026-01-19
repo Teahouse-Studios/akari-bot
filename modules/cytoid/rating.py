@@ -17,10 +17,11 @@ from core.constants.path import (
 )
 from core.logger import Logger
 from core.utils.cache import random_cache_path
+from core.utils.format import parse_time_string
 from core.utils.html2text import html2text
 from core.utils.http import get_url, download
 from core.utils.image import get_fontsize
-from core.utils.message import parse_time_string, truncate_text
+from core.utils.tools import truncate_text
 
 ctd_assets_path = assets_path / "modules" / "cytoid"
 nunito_light_path = ctd_assets_path / "Nunito Light.ttf"

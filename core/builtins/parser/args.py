@@ -1,6 +1,5 @@
 import re
 import traceback
-from typing import List, Dict, Set, Union
 
 from core.constants.exceptions import InvalidTemplatePattern, InvalidCommandFormatError
 
@@ -32,7 +31,7 @@ class DescPattern:
 class Template:
     def __init__(
         self,
-        args: List[Union[ArgumentPattern, "OptionalPattern", DescPattern]],
+        args: "list[ArgumentPattern | OptionalPattern | DescPattern]",
         priority: int = 1,
     ):
         self.args_ = args
@@ -50,7 +49,7 @@ class Template:
 
 
 class OptionalPattern:
-    def __init__(self, flag: str, args: List[Template]):
+    def __init__(self, flag: str, args: list[Template]):
         self.flag = flag
         self.args = args
 
@@ -67,7 +66,7 @@ class Argument:
 
 
 class Optional:
-    def __init__(self, args: Dict[str, dict], flagged=False):
+    def __init__(self, args: dict[str, dict], flagged=False):
         self.flagged = flagged
         self.args = args
 
@@ -117,7 +116,7 @@ def split_multi_arguments(lst: list):
     return list(set(new_lst))
 
 
-def parse_template(argv: List[str], depth: int = 0) -> List[Template]:
+def parse_template(argv: list[str], depth: int = 0) -> list[Template]:
     if depth > MAX_NEST_DEPTH:
         raise InvalidTemplatePattern("Template nesting too deep")
 
@@ -141,7 +140,7 @@ def parse_template(argv: List[str], depth: int = 0) -> List[Template]:
             template = Template([])
             patterns = list(filter(None, re.split(r"(\[.*?])|(<.*?>)|(\{.*})| ", a)))
 
-            arg_names: Set[str] = set()
+            arg_names: set[str] = set()
             last_type = None
             seen_desc = False
             seen_variadic = False
@@ -252,8 +251,8 @@ def parse_template(argv: List[str], depth: int = 0) -> List[Template]:
 
 
 def templates_to_str(
-    templates: List[Template], with_desc=False, simplify=True
-) -> List[str]:
+    templates: list[Template], with_desc=False, simplify=True
+) -> list[str]:
     text = []
     last_desc = None
     for template in templates:
@@ -294,7 +293,7 @@ def templates_to_str(
     return text
 
 
-def parse_argv(argv: List[str], templates: List["Template"]) -> MatchedResult:
+def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
     matched_result = []
     for template in templates:
         try:
@@ -343,15 +342,21 @@ def parse_argv(argv: List[str], templates: List["Template"]) -> MatchedResult:
                             argv_copy.remove(a.name)
             if argv_copy:  # if there are still some argv left
                 if afters:
+                    ai = 1
                     for arg in afters:
+                        subi = 1
                         for sub_args in arg.args:
                             if isinstance(sub_args, ArgumentPattern):
                                 if sub_args.name.startswith("<"):
                                     if len(argv_copy) > 0:
-                                        parsed_argv[sub_args.name] = Argument(
-                                            argv_copy[0]
-                                        )
-                                        del argv_copy[0]
+                                        if len(afters) == ai and len(arg.args) == subi:  # last optional arg
+                                            parsed_argv[sub_args.name] = Argument(" ".join(argv_copy))
+                                            argv_copy.clear()
+                                        else:
+                                            parsed_argv[sub_args.name] = Argument(
+                                                argv_copy[0]
+                                            )
+                                            del argv_copy[0]
                                     else:
                                         parsed_argv[sub_args.name] = False
                                 elif sub_args.name == "...":
@@ -365,6 +370,8 @@ def parse_argv(argv: List[str], templates: List["Template"]) -> MatchedResult:
                                     )
                                     if parsed_argv[sub_args.name]:
                                         argv_copy.remove(sub_args.name)
+                            subi += 1
+                        ai += 1
                 if argv_copy:
                     template_arguments = [
                         arg for arg in args if isinstance(arg, ArgumentPattern)

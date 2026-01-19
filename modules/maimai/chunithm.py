@@ -3,11 +3,11 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, I18NContext, Image as BImage
 from core.component import module
 from core.utils.image import msgchain2image
-from core.utils.message import is_int
-from .database.models import DivingProberBindInfo
-from .libraries.chunithm_apidata import get_info, get_record
+from core.utils.tools import is_int
+from .database.models import DivingProberBindInfo, LxnsProberBindInfo
+from .libraries.chunithm_apidata import get_info, get_record_df, get_record_lx, update_cover
 from .libraries.chunithm_best30 import generate as generate_b30
-from .libraries.chunithm_mapping import diff_list
+from .libraries.chunithm_mapping import diff_list, default_source
 from .libraries.chunithm_music import TotalList
 from .libraries.chunithm_utils import *
 
@@ -293,17 +293,39 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("maimai.message.random.failed"))
 
 
-@chu.command("bind <username> {{I18N:maimai.help.bind}}")
+@chu.command("bind df <username> {{I18N:maimai.help.bind.df}}")
 async def _(msg: Bot.MessageSession, username: str):
-    if await get_record(msg, {"username": username}, use_cache=False):
+    if await get_record_df(msg, {"username": username}, use_cache=False):
         await DivingProberBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, username=username)
         await msg.finish(msg.session_info.locale.t("maimai.message.bind.success") + username)
 
 
-@chu.command("unbind {{I18N:maimai.help.unbind}}")
+@chu.command("unbind df {{I18N:maimai.help.unbind}}")
 async def _(msg: Bot.MessageSession):
     await DivingProberBindInfo.remove_bind_info(sender_id=msg.session_info.sender_id)
     await msg.finish(I18NContext("maimai.message.unbind.success"))
+
+if LX_DEVELOPER_TOKEN:
+    @chu.command("switch {{I18N:chunithm.help.switch}}")
+    async def _(msg: Bot.MessageSession):
+        if msg.session_info.sender_info.sender_data.get("chunithum_record_source", default_source) == "lxns":
+            await msg.session_info.sender_info.edit_sender_data("chunithum_record_source", "diving-fish")
+            await msg.finish(I18NContext("maimai.message.switch.df"))
+        else:
+            await msg.session_info.sender_info.edit_sender_data("chunithum_record_source", "lxns")
+            await msg.finish(I18NContext("maimai.message.switch.lx"))
+
+    @chu.command("bind lx <friendcode> {{I18N:maimai.help.bind.lx}}")
+    async def _(msg: Bot.MessageSession, friendcode: str):
+        data = await get_record_lx(msg, friendcode, use_cache=False)
+        if data:
+            await LxnsProberBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, friend_code=friendcode)
+            await msg.finish(msg.session_info.locale.t("maimai.message.bind.success") + data["nickname"])
+
+    @chu.command("unbind lx {{I18N:maimai.help.unbind}}")
+    async def _(msg: Bot.MessageSession):
+        await LxnsProberBindInfo.remove_bind_info(sender_id=msg.session_info.sender_id)
+        await msg.finish(I18NContext("maimai.message.unbind.success"))
 
 
 @chu.command("bind lx <friendcode> {{I18N:maimai.help.bind.lx}}")
@@ -332,7 +354,26 @@ async def _(msg: Bot.MessageSession):
 
 @chu.command("b30 {{I18N:chunithm.help.b30}}")
 async def _(msg: Bot.MessageSession):
-    payload = await get_diving_prober_bind_info(msg)
-    img = await generate_b30(msg, payload)
+    if msg.session_info.sender_info.sender_data.get("chunithum_record_source", default_source) == "lxns":
+        token = await get_lxns_prober_bind_info(msg)
+        source = "Lxns"
+    else:
+        token = await get_diving_prober_bind_info(msg)
+        source = "Diving-Fish"
+    img = await generate_b30(msg, token, source)
     if img:
         await msg.finish(BImage(img))
+
+
+@chu.command("update [--no-cover]", required_superuser=True)
+async def _(msg: Bot.MessageSession):
+    if msg.parsed_msg.get("--no-cover", False):
+        actions = await total_list.update()
+    else:
+        actions = (
+            await update_cover() and await total_list.update()
+        )
+    if actions:
+        await msg.finish(I18NContext("message.success"))
+    else:
+        await msg.finish(I18NContext("message.failed"))

@@ -4,7 +4,7 @@ def hex_to_rgb(hex_color):
 
 
 element_colors = {
-    1: hex_to_rgb("#ffffff"),
+    1: hex_to_rgb("#e8e8e8"),
     2: hex_to_rgb("#d9ffff"),
     3: hex_to_rgb("#cc80ff"),
     4: hex_to_rgb("#c2ff00"),

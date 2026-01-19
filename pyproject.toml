@@ -18,7 +18,7 @@ package-mode = false
 python = "^3.12.0"
 
 # akari-bot-service
-akari-bot-webrender = "0.5.11"
+akari-bot-webrender = "0.5.12"
 akari-bot-webui = "0.3.6"
 
 # lib
@@ -28,7 +28,7 @@ deprecated = "^1.2.18"
 poetry-plugin-export = "^1.9.0"
 pre-commit = "^4.0.0"
 pycryptodome = "^3.18.0"
-python-multipart = "^0.0.20"
+python-multipart = "^0.0.21"
 pywin32 = { version = "^308", platform = "win32" }
 
 # bots
@@ -54,7 +54,7 @@ Pillow = "^12.0.0"
 tenacity = "^9.0.0"
 
 # core.config
-tomlkit = "^0.13.2"
+tomlkit = "^0.14.0"
 
 # core.database
 tortoise-orm = {extras = ["asyncmy"], version = "^0.25.0"}
@@ -88,7 +88,7 @@ google-play-scraper = "^1.2.2"
 gql = "^4.0.0"
 langconv = {git = "https://github.com/Teahouse-Studios/langconv.py.git"}
 mcstatus = "^12.0.0"
-numpy = "<2.3.5"
+numpy = "<2.4.2"
 openai = "^2.0.0"
 pandas = "^2.2.0"
 pint = "^0.25.0"

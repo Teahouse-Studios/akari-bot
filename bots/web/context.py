@@ -1,6 +1,5 @@
 import asyncio
 import uuid
-from typing import Optional, Union, List
 
 import orjson
 from fastapi import WebSocket
@@ -17,7 +16,7 @@ from core.utils.image import msgnode2image
 
 class WebContextManager(ContextManager):
     context: dict[str, dict] = {}
-    features: Optional[Features] = Features
+    features: Features | None = Features
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
@@ -33,7 +32,7 @@ class WebContextManager(ContextManager):
                            quote: bool = True,
                            enable_parse_message: bool = True,
                            enable_split_image: bool = True
-                           ) -> List[str]:
+                           ) -> list[str]:
         websocket: WebSocket = Temp.data.get("web_chat_websocket")
         sends = []
 
@@ -57,7 +56,7 @@ class WebContextManager(ContextManager):
         return []
 
     @classmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: Union[str, List[str]]) -> None:
+    async def delete_message(cls, session_info: SessionInfo, message_id: str | list[str]) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -77,7 +76,7 @@ class WebContextManager(ContextManager):
             Logger.exception(f"Failed to delete message {message_id} in session {session_info.session_id}: ")
 
     @classmethod
-    async def add_reaction(cls, session_info: SessionInfo, message_id: Union[str, List[str]], emoji: str) -> None:
+    async def add_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -98,7 +97,7 @@ class WebContextManager(ContextManager):
                 message_id} in session {session_info.session_id}: ")
 
     @classmethod
-    async def remove_reaction(cls, session_info: SessionInfo, message_id: Union[str, List[str]], emoji: str) -> None:
+    async def remove_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):

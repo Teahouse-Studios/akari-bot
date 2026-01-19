@@ -1,6 +1,6 @@
 import asyncio
-from datetime import datetime
-from typing import TYPE_CHECKING, Optional, Union, List, Coroutine
+import time
+from typing import Coroutine, TYPE_CHECKING
 
 from core.exports import add_export
 from core.logger import Logger
@@ -23,8 +23,8 @@ class SessionTaskManager:
         msg: "MessageSession",
         flag: asyncio.Event,
         all_: bool = False,
-        reply: Optional[Union[List[int], List[str], int, str]] = None,
-        timeout: Optional[float] = 120,
+        reply: list[int] | list[str] | int | str | None = None,
+        timeout: float | None = 120,
     ):
         sender = msg.session_info.sender_id
         task_type = "reply" if reply else "wait"
@@ -44,7 +44,7 @@ class SessionTaskManager:
             "active": True,
             "type": task_type,
             "reply": reply,
-            "ts": datetime.now().timestamp(),
+            "ts": time.time(),
             "timeout": timeout,
         }
         Logger.debug(cls._task_list)
@@ -52,8 +52,8 @@ class SessionTaskManager:
     @classmethod
     def add_callback(
         cls,
-        message_id: Union[List[int], List[str], int, str],
-        callback: Optional[Coroutine],
+        message_id: list[int] | list[str] | int | str,
+        callback: Coroutine | None,
     ):
         if isinstance(message_id, list):
             message_id = ",".join(str(mid) for mid in message_id)
@@ -61,7 +61,7 @@ class SessionTaskManager:
             message_id = str(message_id)
         cls._callback_list[message_id] = {
             "callback": callback,
-            "ts": datetime.now().timestamp(),
+            "ts": time.time(),
         }
 
     @classmethod
@@ -87,17 +87,17 @@ class SessionTaskManager:
             for sender in cls._task_list[target]:
                 for session in cls._task_list[target][sender]:
                     if cls._task_list[target][sender][session]["active"]:
-                        if datetime.now().timestamp() - cls._task_list[target][sender][
+                        if time.time() - cls._task_list[target][sender][
                             session
                         ]["ts"] > cls._task_list[target][sender][session].get(
-                            "timeout", 3600
+                            "timeout", 600
                         ):
                             cls._task_list[target][sender][session]["active"] = False
                             cls._task_list[target][sender][session][
                                 "flag"
                             ].set()  # no result = cancel
         for message_id in cls._callback_list.copy():
-            if datetime.now().timestamp() - cls._callback_list[message_id]["ts"] > 3600:
+            if time.time() - cls._callback_list[message_id]["ts"] > 600:
                 del cls._callback_list[message_id]
 
     @classmethod

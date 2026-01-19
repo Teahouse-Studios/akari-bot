@@ -12,7 +12,7 @@ class DivingProberBindInfo(DBModel):
     :param sender_id: 发送者 ID
     :param username: 用户名
     """
-    sender_id = fields.CharField(max_length=512, pk=True)
+    sender_id = fields.CharField(max_length=512, primary_key=True)
     username = fields.CharField(max_length=512)
 
     class Meta:
@@ -24,6 +24,36 @@ class DivingProberBindInfo(DBModel):
         if exist_info:
             await exist_info.delete()
         bind_info = (await cls.get_or_create(sender_id=sender_id, username=username))[0]
+        await bind_info.save()
+        return True
+
+    @classmethod
+    async def remove_bind_info(cls, sender_id):
+        bind_info = await cls.get_or_none(sender_id=sender_id)
+        if bind_info:
+            await bind_info.delete()
+        return True
+
+
+class LxnsProberBindInfo(DBModel):
+    """
+    maimai 落雪绑定信息表。
+
+    :param sender_id: 发送者 ID
+    :param username: 用户名
+    """
+    sender_id = fields.CharField(max_length=512, primary_key=True)
+    friend_code = fields.CharField(max_length=512)
+
+    class Meta:
+        table = f"{table_prefix}lxns_prober_bind_info"
+
+    @classmethod
+    async def set_bind_info(cls, sender_id: str, friend_code: str):
+        exist_info = await cls.get_or_none(sender_id=sender_id)
+        if exist_info:
+            await exist_info.delete()
+        bind_info = (await cls.get_or_create(sender_id=sender_id, friend_code=friend_code))[0]
         await bind_info.save()
         return True
 

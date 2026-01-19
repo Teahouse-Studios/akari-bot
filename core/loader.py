@@ -3,7 +3,7 @@ import pkgutil
 import re
 import sys
 import traceback
-from typing import Dict, Optional, Union, Callable
+from typing import Callable
 
 from core.constants import PrivateAssets
 from core.database import reload_db
@@ -71,10 +71,10 @@ async def load_modules():
 
 
 class ModulesManager:
-    modules: Dict[str, Module] = {}
-    modules_aliases: Dict[str, str] = {}
-    modules_hooks: Dict[str, Callable] = {}
-    modules_origin: Dict[str, str] = {}
+    modules: dict[str, Module] = {}
+    modules_aliases: dict[str, str] = {}
+    modules_hooks: dict[str, Callable] = {}
+    modules_origin: dict[str, str] = {}
     _deferred_bindings = []
 
     @classmethod
@@ -83,7 +83,7 @@ class ModulesManager:
             cls.modules[module.module_name] = module
             cls.modules_origin[module.module_name] = py_module_name
         else:
-            raise ValueError(f'Duplicate bind prefix "{module.module_name}"')
+            raise ValueError(f"Duplicate bind prefix \"{module.module_name}\"")
 
     @classmethod
     def remove_modules(cls, modules):
@@ -145,7 +145,7 @@ class ModulesManager:
     def bind_to_module(
         cls,
         module_name: str,
-        meta: Union[CommandMeta, RegexMeta, ScheduleMeta, HookMeta],
+        meta: CommandMeta | RegexMeta | ScheduleMeta | HookMeta,
     ):
         if module_name in cls.modules:
             if isinstance(meta, CommandMeta):
@@ -160,8 +160,8 @@ class ModulesManager:
     _return_cache = {}
 
     @classmethod
-    def return_modules_list(cls, target_from: Optional[str] = None,
-                            client_name: Optional[str] = None, use_cache: bool = True) -> Dict[str, Module]:
+    def return_modules_list(cls, target_from: str | None = None,
+                            client_name: str | None = None, use_cache: bool = True) -> dict[str, Module]:
         if target_from and target_from in cls._return_cache and use_cache:
             return cls._return_cache[target_from]
         modules = {

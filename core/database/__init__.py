@@ -2,10 +2,10 @@ import asyncio
 import importlib.util
 import inspect
 import pkgutil
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from tortoise import Tortoise
-from tortoise.exceptions import DBConnectionError
+from tortoise.exceptions import ConfigurationError, DBConnectionError
 
 from core.builtins.temp import Temp
 from core.logger import Logger
@@ -29,7 +29,7 @@ def fetch_module_db():
     return database_list
 
 
-def get_model_names(models_path: List[str]) -> List[str]:
+def get_model_names(models_path: list[str]) -> list[str]:
     table_names = []
     for p in models_path:
         m = importlib.import_module(p)
@@ -42,7 +42,7 @@ def get_model_names(models_path: List[str]) -> List[str]:
     return table_names
 
 
-def get_model_fields(models_path: List[str], table_name: str) -> List[Dict[str, Any]]:
+def get_model_fields(models_path: list[str], table_name: str) -> list[dict[str, Any]]:
     for p in models_path:
         m = importlib.import_module(p)
         for _, obj in inspect.getmembers(m, inspect.isclass):
@@ -62,7 +62,7 @@ def get_model_fields(models_path: List[str], table_name: str) -> List[Dict[str, 
     return []
 
 
-async def init_db(load_module_db: bool = True, db_models: Optional[List[str]] = None) -> bool:
+async def init_db(load_module_db: bool = True, db_models: list[str] | None = None) -> bool:
     try:
         database_list = fetch_module_db() if load_module_db else []
         database_list += db_models if db_models else []
@@ -94,7 +94,7 @@ async def init_db(load_module_db: bool = True, db_models: Optional[List[str]] = 
         return False
 
 
-async def reload_db(db_models: Optional[List[str]] = None):
+async def reload_db(db_models: list[str] | None = None):
     async with _reload_lock:
         from core.queue.server import JobQueueServer  # noqa
 
@@ -110,3 +110,10 @@ async def reload_db(db_models: Optional[List[str]] = None):
             return await init_db(load_module_db=False, db_models=old_modules_db_list)
         finally:
             JobQueueServer.pause_event.set()
+
+
+async def close_db():
+    try:
+        await Tortoise.close_connections()
+    except ConfigurationError:
+        pass

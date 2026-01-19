@@ -7,7 +7,7 @@ from core.component import module
 from core.utils.image import msgchain2image
 from core.logger import Logger
 from core.scheduler import CronTrigger
-from core.utils.message import is_int
+from core.utils.tools import is_int
 from .database.models import DivingProberBindInfo
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_cover
 from .libraries.maimaidx_best50 import generate as generate_b50
@@ -515,7 +515,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str):
         )  # 基础分
         bonus_score = total_score * 0.01 / brk  # 奖励分
         break_2550_reduce = bonus_score * 0.25  # 一个 BREAK 2550 减少 25% 奖励分
-        break_2000_reduce = (bonus_score * 0.6 + 500)  # 一个 BREAK 2000 减少 500 基础分和 60% 奖励分
+        break_2000_reduce = bonus_score * 0.6 + 500  # 一个 BREAK 2000 减少 500 基础分和 60% 奖励分
         b2t_2550_great = (
             f"{(break_2550_reduce / 100):.3f}"  # 一个 TAP GREAT 减少 100 分
         )
@@ -540,7 +540,7 @@ async def _(msg: Bot.MessageSession, base: float, score: float):
     await msg.finish(Plain(compute_rating(base, score)))
 
 
-@mai.command("bind <username> {{I18N:maimai.help.bind}}")
+@mai.command("bind <username> {{I18N:maimai.help.bind.lx}}")
 async def _(msg: Bot.MessageSession, username: str):
     if await get_record(msg, {"username": username}, use_cache=False):
         await DivingProberBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, username=username)

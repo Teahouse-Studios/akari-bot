@@ -1,6 +1,6 @@
 import asyncio
 from abc import ABC, abstractmethod
-from typing import Any, Optional, Union, List
+from typing import Any
 
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.session.features import Features
@@ -10,7 +10,7 @@ from core.logger import Logger
 
 class ContextManager(ABC):
     context: dict[str, Any] = {}
-    features: Optional[Features] = Features
+    features: Features | None = Features
     typing_flags: dict[str, asyncio.Event] = {}
     context_marks_hold: dict[str, int] = {}
 
@@ -72,7 +72,7 @@ class ContextManager(ABC):
                            quote: bool = True,
                            enable_parse_message: bool = True,
                            enable_split_image: bool = True,
-                           ) -> List[str]:
+                           ) -> list[str]:
         """
         发送消息到指定的会话。
 
@@ -91,7 +91,7 @@ class ContextManager(ABC):
 
     @classmethod
     @abstractmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: Union[str, List[str]]) -> None:
+    async def delete_message(cls, session_info: SessionInfo, message_id: str | list[str]) -> None:
         """
         删除指定会话中的消息。
 
@@ -110,7 +110,7 @@ class ContextManager(ABC):
 
     @classmethod
     @abstractmethod
-    async def add_reaction(cls, session_info: SessionInfo, message_id: Union[str, List[str]], emoji: str) -> None:
+    async def add_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
         """
         为指定消息添加反应。
 
@@ -130,7 +130,7 @@ class ContextManager(ABC):
 
     @classmethod
     @abstractmethod
-    async def remove_reaction(cls, session_info: SessionInfo, message_id: Union[str, List[str]], emoji: str) -> None:
+    async def remove_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
         """
         为指定消息删除反应。
 

@@ -1,8 +1,7 @@
 import asyncio
 import io
 import re
-from datetime import datetime
-from typing import Optional
+import time
 
 from PIL import Image as PImage
 from rdkit import Chem
@@ -12,9 +11,9 @@ from tenacity import retry, stop_after_attempt
 from core.builtins.bot import Bot
 from core.builtins.message.internal import Image, I18NContext
 from core.component import module
+from core.game import PlayState, GAME_EXPIRED
 from core.logger import Logger
 from core.utils.cache import random_cache_path
-from core.utils.game import PlayState, GAME_EXPIRED
 from core.utils.http import get_url
 from core.utils.petal import gained_petal
 from core.utils.random import Random
@@ -166,7 +165,7 @@ def parse_elements(formula: str) -> dict:
 
 
 @retry(stop=stop_after_attempt(3), reraise=True)
-async def search_pubchem(id: Optional[int] = None):
+async def search_pubchem(id: int | None = None):
     if id:
         answer_id = id
     else:
@@ -238,7 +237,7 @@ async def _(msg: Bot.MessageSession, pcid: int):
 
 
 async def chemical_code(
-    msg: Bot.MessageSession, id: Optional[int] = None, random_mode=True, captcha_mode=False
+    msg: Bot.MessageSession, id: int | None = None, random_mode=True, captcha_mode=False
 ):
     play_state = PlayState("chemical_code", msg)
     if play_state.check():
@@ -337,7 +336,7 @@ async def chemical_code(
 
     async def timer(start):
         if play_state.check():
-            if datetime.now().timestamp() - start > 60 * set_timeout:
+            if time.time() - start > 60 * set_timeout:
                 play_state.disable()
                 await msg.finish(I18NContext("chemical_code.message.timeup", answer=play_state.get("answer")))
             else:
@@ -352,7 +351,7 @@ async def chemical_code(
                 I18NContext("chemical_code.message", times=set_timeout),
             ]
         )
-        time_start = datetime.now().timestamp()
+        time_start = time.time()
 
         await asyncio.gather(ans(msg, random_mode), timer(time_start))
     else:
@@ -362,8 +361,7 @@ async def chemical_code(
                 Image(newpath),
                 I18NContext("chemical_code.message.captcha", times=set_timeout),
             ],
-            timeout=GAME_EXPIRED,
-            append_instruction=False,
+            timeout=GAME_EXPIRED
         )
         if play_state.check():
             play_state.disable()

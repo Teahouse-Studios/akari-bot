@@ -1,10 +1,10 @@
+from core.alive import Alive
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
 from core.component import module
 from core.config import Config
 from core.database.models import SenderInfo
 from core.utils.petal import sign_get_petal, cost_petal
-from core.utils.alive import Alive
 
 petal_ = module("petal",
                 alias={

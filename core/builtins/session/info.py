@@ -2,17 +2,16 @@ from __future__ import annotations
 
 import uuid
 from datetime import timedelta, datetime
-from typing import Optional, List
 
 from attrs import define
 
+from core.alive import Alive
 from core.builtins.message.chain import MessageChain
 from core.builtins.utils import command_prefix
 from core.config import Config
 from core.database.models import TargetInfo, SenderInfo
 from core.i18n import Locale
-from core.utils.alive import Alive
-from core.utils.message import parse_time_string
+from core.utils.format import parse_time_string
 
 
 @define
@@ -20,12 +19,12 @@ class SessionInfo:
     target_id: str
     target_from: str
     client_name: str
-    sender_id: Optional[str] = None
-    sender_from: Optional[str] = None
-    sender_name: Optional[str] = None
-    message_id: Optional[str] = None
-    reply_id: Optional[str] = None
-    messages: Optional[MessageChain] = None
+    sender_id: str | None = None
+    sender_from: str | None = None
+    sender_name: str | None = None
+    message_id: str | None = None
+    reply_id: str | None = None
+    messages: MessageChain | None = None
     superuser: bool = False
     support_image: bool = False
     support_voice: bool = False
@@ -39,40 +38,40 @@ class SessionInfo:
     support_rss: bool = False
     support_typing: bool = False
     support_wait: bool = False
-    timestamp: Optional[float] = None
-    session_id: Optional[str] = None
-    target_info: Optional[TargetInfo] = None
-    sender_info: Optional[SenderInfo] = None
-    banned_users: Optional[list] = None
-    custom_admins: Optional[list] = None
-    locale: Optional[Locale] = None
-    _tz_offset: Optional[str] = None
-    timezone_offset: Optional[timedelta] = None
-    bot_name: Optional[str] = None
-    muted: Optional[bool] = None
-    enabled_modules: Optional[list] = None
-    petal: Optional[int] = None
-    prefixes: List[str] = []
-    ctx_slot: Optional[int] = 0
+    timestamp: float | None = None
+    session_id: str | None = None
+    target_info: TargetInfo | None = None
+    sender_info: SenderInfo | None = None
+    banned_users: list | None = None
+    custom_admins: list | None = None
+    locale: Locale | None = None
+    _tz_offset: str | None = None
+    timezone_offset: timedelta | None = None
+    bot_name: str | None = None
+    muted: bool | None = None
+    enabled_modules: list | None = None
+    petal: int | None = None
+    prefixes: list[str] = []
+    ctx_slot: int | None = 0
     fetch: bool = False
     require_enable_modules: bool = True
     require_check_dirty_words: bool = False
     use_url_manager: bool = False
     use_url_md_format: bool = False
     running_mention: bool = True
-    tmp: Optional[dict[str, str]] = {}
+    tmp: dict[str, str] | None = {}
 
     @classmethod
     async def assign(cls, target_id: str,
-                     client_name: Optional[str] = None,
-                     target_from: Optional[str] = None,
-                     sender_id: Optional[str] = None,
-                     sender_from: Optional[str] = None,
-                     sender_name: Optional[str] = None,
-                     message_id: Optional[str] = None,
-                     reply_id: Optional[str] = None,
-                     messages: Optional[MessageChain] = None,
-                     prefixes: Optional[List[str]] = None,
+                     client_name: str | None = None,
+                     target_from: str | None = None,
+                     sender_id: str | None = None,
+                     sender_from: str | None = None,
+                     sender_name: str | None = None,
+                     message_id: str | None = None,
+                     reply_id: str | None = None,
+                     messages: MessageChain | None = None,
+                     prefixes: list[str] | None = None,
                      ctx_slot: int = 0,
                      fetch: bool = False,
                      create: bool = True,
@@ -81,7 +80,7 @@ class SessionInfo:
                      use_url_manager: bool = False,
                      use_url_md_format: bool = False,
                      running_mention: bool = True,
-                     tmp: Optional[dict[str, str]] = None
+                     tmp: dict[str, str] | None = None
                      ) -> SessionInfo:
 
         """
@@ -179,7 +178,7 @@ class ModuleHookContext:
     """
 
     args: dict
-    session_info: Optional[SessionInfo] = None
+    session_info: SessionInfo | None = None
 
 
 __all__ = ["SessionInfo", "FetchedSessionInfo", "ModuleHookContext"]

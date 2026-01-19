@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from datetime import datetime, UTC as datetimeUTC
 from decimal import Decimal, ROUND_HALF_UP
-from typing import Any, Optional, Union, TYPE_CHECKING, List, Match, Tuple, Coroutine
+from typing import Any, Coroutine, Match, TYPE_CHECKING
 
 from attrs import define
 from deprecated import deprecated
@@ -19,7 +19,7 @@ from core.builtins.utils import confirm_command
 from core.config import Config
 from core.constants import FinishedException, WaitCancelException
 from core.exports import add_export, exports
-from core.utils.message import is_int
+from core.utils.tools import is_int
 
 if TYPE_CHECKING:
     from core.queue.server import JobQueueServer
@@ -30,10 +30,10 @@ quick_confirm = Config("quick_confirm", True)
 @define
 class MessageSession:
     session_info: SessionInfo
-    sent: List[MessageChain] = []
-    trigger_msg: Optional[str] = ""
-    matched_msg: Optional[Union[Match[str], Tuple[Any]]] = None
-    parsed_msg: Optional[dict] = None
+    sent: list[MessageChain] = []
+    trigger_msg: str | None = ""
+    matched_msg: Match[str] | tuple[Any, ...] | None = None
+    parsed_msg: dict | None = None
 
     @property
     @deprecated(reason="Use `session_info` instead.")
@@ -53,7 +53,7 @@ class MessageSession:
         disable_secret_check: bool = False,
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
-        callback: Optional[Any] = None,
+        callback: Any | None = None,
     ) -> FinishedSession:
         """
         用于向消息发送者返回消息。
@@ -84,12 +84,12 @@ class MessageSession:
 
     async def finish(
         self,
-        message_chain: Optional[Chainable] = None,
+        message_chain: Chainable | None = None,
         quote: bool = True,
         disable_secret_check: bool = False,
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
-        callback: Optional[Coroutine] = None,
+        callback: Coroutine | None = None,
     ):
         """
         用于向消息发送者返回消息并终结会话（模块后续代码不再执行）。
@@ -117,11 +117,11 @@ class MessageSession:
 
     async def send_direct_message(
         self,
-        message_chain: Union[Chainable],
+        message_chain: Chainable,
         disable_secret_check: bool = False,
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
-        callback: Optional[Coroutine] = None,
+        callback: Coroutine | None = None,
     ):
         """
         用于向消息发送者直接发送消息。
@@ -144,15 +144,20 @@ class MessageSession:
         if callback:
             SessionTaskManager.add_callback(return_val["message_id"], callback)
 
-    def as_display(self, text_only: bool = False, element_filter: tuple[MessageElement] = None) -> str:
+    def as_display(
+            self,
+            text_only: bool = False,
+            element_filter: tuple[MessageElement, ...] = None,
+            connector: str = " ") -> str:
         """
         用于将消息转换为一般文本格式。
 
         :param text_only: 是否只保留纯文本。（默认为False）
         :param element_filter: 元素过滤器，用于过滤消息链中的元素。（默认为None）
+        :param connector: 元素连接符，用于连接消息链中的各个元素。（默认为" "）
         :return: 转换后的字符串。
         """
-        return self.session_info.messages.to_str(text_only, element_filter=element_filter)
+        return self.session_info.messages.to_str(text_only, element_filter=element_filter, connector=connector)
 
     async def delete(self):
         """
@@ -214,7 +219,7 @@ class MessageSession:
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         await _queue_server.client_end_typing_signal(self.session_info)
 
-    async def _add_confirm_reaction(self, message_id: Union[str, List[str]]):
+    async def _add_confirm_reaction(self, message_id: str | list[str]):
         if isinstance(message_id, str):
             message_id = [message_id]
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
@@ -234,11 +239,12 @@ class MessageSession:
 
     async def wait_confirm(
         self,
-        message_chain: Optional[Chainable] = None,
+        message_chain: Chainable | None = None,
         quote: bool = True,
         delete: bool = True,
-        timeout: Optional[float] = 120,
+        timeout: float | None = 120,
         append_instruction: bool = True,
+        no_confirm_action: bool = True
     ) -> bool:
         """
         一次性模板，用于等待触发对象确认。
@@ -248,13 +254,14 @@ class MessageSession:
         :param delete: 是否在触发后删除消息。（默认为True）
         :param timeout: 超时时间。（默认为120）
         :param append_instruction: 是否在发送的消息中附加提示。
+        :param no_confirm_action: 在 `no_confirm` 配置项启用后的默认行为。
         :return: 若对象发送confirm_command中的其一文本时返回True，反之则返回False。
         """
         send = None
         ExecutionLockList.remove(self)
         await self.end_typing()
         if Config("no_confirm", False):
-            return True
+            return no_confirm_action
         if message_chain:
             message_chain = get_message_chain(self.session_info, message_chain)
         else:
@@ -290,10 +297,10 @@ class MessageSession:
 
     async def wait_next_message(
         self,
-        message_chain: Optional[Chainable] = None,
+        message_chain: Chainable | None = None,
         quote: bool = True,
         delete: bool = False,
-        timeout: Optional[float] = 120,
+        timeout: float | None = 120,
         append_instruction: bool = True,
         add_confirm_reaction: bool = False,
     ) -> MessageSession:
@@ -337,10 +344,10 @@ class MessageSession:
 
     async def wait_reply(
         self,
-        message_chain: Union[Chainable],
+        message_chain: Chainable,
         quote: bool = True,
         delete: bool = False,
-        timeout: Optional[float] = 120,
+        timeout: float | None = 120,
         all_: bool = False,
         append_instruction: bool = True,
         add_confirm_reaction: bool = False,
@@ -385,10 +392,10 @@ class MessageSession:
 
     async def wait_anyone(
         self,
-        message_chain: Optional[Chainable] = None,
+        message_chain: Chainable | None = None,
         quote: bool = False,
         delete: bool = False,
-        timeout: Optional[float] = 120,
+        timeout: float | None = 120,
     ) -> MessageSession:
         """
         一次性模板，用于等待触发对象所属对话内任意成员确认。
@@ -505,7 +512,7 @@ class MessageSession:
 
     def format_num(
         self,
-        number: Union[Decimal, int, str],
+        number: Decimal | int | str,
         precision: int = 0
     ) -> str:
         """
@@ -516,7 +523,7 @@ class MessageSession:
         :returns: 本地化后的数字。
         """
 
-        def _get_cjk_unit(number: Decimal) -> Optional[Tuple[int, Decimal]]:
+        def _get_cjk_unit(number: Decimal) -> tuple[int, Decimal] | None:
             if number >= Decimal("10e11"):
                 return 3, Decimal("10e11")
             if number >= Decimal("10e7"):
@@ -525,7 +532,7 @@ class MessageSession:
                 return 1, Decimal("10e3")
             return None
 
-        def _get_unit(number: Decimal) -> Optional[Tuple[int, Decimal]]:
+        def _get_unit(number: Decimal) -> tuple[int, Decimal] | None:
             if number >= Decimal("10e8"):
                 return 3, Decimal("10e8")
             if number >= Decimal("10e5"):
@@ -571,10 +578,10 @@ class FinishedSession:
     结束会话。
     """
     session: SessionInfo
-    message_id: Union[List[int], List[str], int, str] = None
+    message_id: list[int] | list[str] | int | str | None = None
 
     @classmethod
-    def assign(cls, session: SessionInfo, message_id: Union[List[int], List[str], int, str]):
+    def assign(cls, session: SessionInfo, message_id: list[int] | list[str] | int | str):
         if isinstance(message_id, (int, str)):
             message_id = [message_id]
         return cls(session, message_id)
@@ -597,7 +604,7 @@ class FetchedMessageSession(MessageSession):
     """
 
     @classmethod
-    async def from_session_info(cls, session: Union[FetchedSessionInfo, SessionInfo]):
+    async def from_session_info(cls, session: FetchedSessionInfo | SessionInfo):
         return cls(
             session_info=session
         )

@@ -1,10 +1,10 @@
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
+from core.cooldown import CoolDown
 from core.config import Config
 from core.dirty_check import check_bool, rickroll
 from core.logger import Logger
-from core.utils.cooldown import CoolDown
 from .llm import ask_llm
 from .petal import precount_petal, count_token_petal
 from .setting import llm_api_list, llm_list, llm_su_list

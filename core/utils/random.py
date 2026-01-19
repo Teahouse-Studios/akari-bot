@@ -3,9 +3,9 @@
 
 请在模块中使用此库进行随机生成，避免导入`random`或`secrets`库。
 """
-import random
+import random as pyrandom
 import secrets
-from typing import Sequence, List, MutableSequence, Optional, TypeVar
+from typing import Sequence, MutableSequence, TypeVar
 
 from core.config import Config
 
@@ -26,7 +26,7 @@ class Random:
         """
         if cls.use_secrets:
             return secrets.randbelow(INF) / INF
-        return random.random()
+        return pyrandom.random()
 
     @classmethod
     def randint(cls, a: int, b: int) -> int:
@@ -39,7 +39,7 @@ class Random:
         """
         if cls.use_secrets:
             return secrets.randbelow(b - a + 1) + a
-        return random.randint(a, b)
+        return pyrandom.randint(a, b)
 
     @classmethod
     def uniform(cls, a: float, b: float) -> float:
@@ -52,10 +52,10 @@ class Random:
         """
         if cls.use_secrets:
             return a + (b - a) * secrets.randbelow(INF) / INF
-        return random.uniform(a, b)
+        return pyrandom.uniform(a, b)
 
     @classmethod
-    def randrange(cls, start: int, stop: Optional[int] = None, step: int = 1) -> int:
+    def randrange(cls, start: int, stop: int | None = None, step: int = 1) -> int:
         """
         返回范围内的随机整数，类似于`range`。
 
@@ -73,7 +73,7 @@ class Random:
                 return start + secrets.randbelow(width)
             n = (width + step - 1) // step
             return start + step * secrets.randbelow(n)
-        return random.randrange(start, stop, step)
+        return pyrandom.randrange(start, stop, step)
 
     @classmethod
     def randbits(cls, k: int) -> int:
@@ -85,7 +85,7 @@ class Random:
         """
         if cls.use_secrets:
             return secrets.randbits(k)
-        return random.getrandbits(k)
+        return pyrandom.getrandbits(k)
 
     @classmethod
     def randbytes(cls, n: int) -> bytes:
@@ -97,7 +97,7 @@ class Random:
         """
         if cls.use_secrets:
             return secrets.token_bytes(n)
-        return random.randbytes(n)
+        return pyrandom.randbytes(n)
 
     @classmethod
     def choice(cls, seq: Sequence[T]) -> T:
@@ -109,10 +109,10 @@ class Random:
         """
         if cls.use_secrets:
             return secrets.choice(seq)
-        return random.choice(seq)
+        return pyrandom.choice(seq)
 
     @classmethod
-    def choices(cls, population: Sequence[T], k: int = 1) -> List[T]:
+    def choices(cls, population: Sequence[T], k: int = 1) -> list[T]:
         """
         从总体中选择k个元素，允许重复。
 
@@ -122,10 +122,10 @@ class Random:
         """
         if cls.use_secrets:
             return [secrets.choice(population) for _ in range(k)]
-        return random.choices(population, k=k)
+        return pyrandom.choices(population, k=k)
 
     @classmethod
-    def sample(cls, population: Sequence[T], k: int) -> List[T]:
+    def sample(cls, population: Sequence[T], k: int) -> list[T]:
         """
         从总体中选择k个不重复元素。
 
@@ -142,7 +142,7 @@ class Random:
                 idx = secrets.randbelow(len(pool))
                 selected.append(pool.pop(idx))
             return selected
-        return random.sample(population, k)
+        return pyrandom.sample(population, k)
 
     @classmethod
     def shuffle(cls, seq: MutableSequence[T]) -> MutableSequence[T]:
@@ -157,5 +157,5 @@ class Random:
                 j = secrets.randbelow(i + 1)
                 seq[i], seq[j] = seq[j], seq[i]
         else:
-            random.shuffle(seq)
+            pyrandom.shuffle(seq)
         return seq

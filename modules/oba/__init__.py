@@ -1,5 +1,5 @@
 import re
-from datetime import datetime
+import time
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
@@ -69,7 +69,7 @@ async def _(msg: Bot.MessageSession):
     msg_chain.append(I18NContext(
         "oba.message.query_time",
         query_time=msg.format_time(
-            datetime.now().timestamp(),
+            time.time(),
             timezone=False)))
     await msg.finish(msg_chain)
 
@@ -91,7 +91,7 @@ async def _(msg: Bot.MessageSession, rank: int = 1):
     msg_chain.append(I18NContext(
         "oba.message.query_time",
         query_time=msg.format_time(
-            datetime.now().timestamp(),
+            time.time(),
             timezone=False)))
 
     if "sponsor" not in node:
@@ -113,12 +113,12 @@ async def _(msg: Bot.MessageSession, rank: int = 1):
 
 @oba.command("top [<rank>] {{I18N:oba.help.top}}")
 async def _(msg: Bot.MessageSession, rank: int = 1):
-    rankList = await get_url(f"{API}/metric/rank", fmt="json")
+    rank_list = await get_url(f"{API}/metric/rank", fmt="json")
     rank = 1 if rank <= 0 else rank
 
     node_list = []
     for i in range(rank - 1, rank - 1 + TOP_LIMIT):
-        node = rankList[i]
+        node = rank_list[i]
         sponsor = node.get("sponsor", str(I18NContext("message.unknown")))
         try:
             sponsor_name = sponsor.get("name")

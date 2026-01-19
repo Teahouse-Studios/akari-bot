@@ -1,5 +1,4 @@
 import asyncio
-from typing import Optional
 
 import discord
 
@@ -15,7 +14,7 @@ from core.logger import Logger
 
 class DiscordSlashContextManager(DiscordContextManager):
     context: dict[str, discord.ApplicationContext] = {}
-    features: Optional[Features] = Features
+    features: Features | None = Features
     typing_flags: dict[str, asyncio.Event] = {}
 
     @classmethod

@@ -1,12 +1,10 @@
-from typing import Union
-
 from discord import Embed as DiscordEmbed
 
 from core.builtins.message.elements import EmbedElement
 from core.builtins.message.internal import EmbedField, Embed
 
 
-def convert_discord_embed(embed: Union[DiscordEmbed, dict]) -> EmbedElement:
+def convert_discord_embed(embed: DiscordEmbed | dict) -> EmbedElement:
     """将DiscordEmbed转换为Embed。
 
     :param embed: DiscordEmbed。

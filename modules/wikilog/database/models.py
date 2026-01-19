@@ -6,7 +6,7 @@ table_prefix = "module_wikilog_"
 
 
 class WikiLogTargetSetInfo(DBModel):
-    target_id = fields.CharField(max_length=512, pk=True)
+    target_id = fields.CharField(max_length=512, primary_key=True)
     infos = fields.JSONField(default={})
 
     class Meta:

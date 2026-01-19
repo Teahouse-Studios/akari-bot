@@ -1,7 +1,4 @@
-from typing import Union
-
-
-def convert_data_to_text(data: Union[dict, list]):
+def convert_data_to_text(data: dict | list):
     texts = []
     if isinstance(data, dict):
         for k in data:

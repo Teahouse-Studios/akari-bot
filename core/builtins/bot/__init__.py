@@ -1,6 +1,5 @@
 import asyncio
-from collections.abc import Sequence
-from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 from core.builtins.message.chain import *
 from core.builtins.session.context import ContextManager
@@ -77,8 +76,8 @@ class Bot:
     @staticmethod
     async def post_global_message(
         message: Chainable,
-        session_list: Optional[List[FetchedSessionInfo]] = None,
-        **kwargs: Dict[str, Any],
+        session_list: list[FetchedSessionInfo] | None = None,
+        **kwargs: dict[str, Any],
     ):
         await Bot.post_message(
             "*", message=message, session_list=session_list, **kwargs
@@ -87,17 +86,18 @@ class Bot:
     @classmethod
     async def fetch_target(cls,
                            target_id: str,
-                           sender_id: Optional[Union[int, str]] = None,
+                           sender_id: str | None = None,
                            create: bool = False
-                           ) -> Union[FetchedSessionInfo, None]:
+                           ) -> FetchedSessionInfo | None:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
         try:
-            Logger.trace(f"Fetching target {target_id} with sender {sender_id}")
+            Logger.trace(f"Fetching target {target_id}")
             session = await FetchedSessionInfo.assign(target_id=target_id,
                                                       sender_id=sender_id,
-                                                      fetch=True, create=create)
+                                                      fetch=True,
+                                                      create=create)
         except Exception:
             return None
 
@@ -105,15 +105,16 @@ class Bot:
 
     @classmethod
     async def fetch_target_list(cls,
-                                target_list: List[Union[int, str]]
-                                ) -> List[FetchedSessionInfo]:
+                                target_list: list[str],
+                                create: bool = False
+                                ) -> list[FetchedSessionInfo]:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
         fetched = []
         for x in target_list:
             if isinstance(x, str):
-                x = await cls.fetch_target(x)
+                x = await cls.fetch_target(x, create=create)
             if isinstance(x, FetchedSessionInfo):
                 fetched.append(x)
         return fetched
@@ -122,8 +123,8 @@ class Bot:
     async def post_message(cls,
                            module_name: str,
                            message: Chainable,
-                           session_list: Optional[List[FetchedSessionInfo]] = None,
-                           **kwargs: Dict[str, Any],
+                           session_list: list[FetchedSessionInfo] | None = None,
+                           **kwargs: dict[str, Any],
                            ):
         """
         尝试向开启此模块的对象发送一条消息。
@@ -225,7 +226,7 @@ class Bot:
         )
 
     @classmethod
-    async def get_enabled_this_module(cls, module: str) -> List[FetchedSessionInfo]:
+    async def get_enabled_this_module(cls, module: str) -> list[FetchedSessionInfo]:
         lst = await TargetInfo.get_target_list_by_module(module)
         fetched = []
         for x in lst:
@@ -236,7 +237,7 @@ class Bot:
 
     class Hook:
         @staticmethod
-        async def trigger(module_or_hook_name: str, session_info: Optional[SessionInfo] = None, args=None) -> Any:
+        async def trigger(module_or_hook_name: str, session_info: SessionInfo | None = None, args=None) -> Any:
             if args is None:
                 args = {}
             hook_mode = False

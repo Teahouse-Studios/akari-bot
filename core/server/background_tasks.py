@@ -1,28 +1,24 @@
 import asyncio
 
-from akari_bot_webrender.functions.options import StatusOptions
-
 from core.builtins.session.tasks import SessionTaskManager
 from core.constants import Info
 from core.database.models import JobQueuesTable
 from core.ip import fetch_ip_info
 from core.logger import Logger
 from core.scheduler import Scheduler, IntervalTrigger
-from core.utils.cooldown import clear_cd_list
-from core.utils.game import clear_ps_list
+from core.utils.temp import ExpiringTempDict
 from core.web_render import init_web_render, web_render
 
 
-@Scheduler.scheduled_job(IntervalTrigger(minutes=60))
-async def bg():
+@Scheduler.scheduled_job(IntervalTrigger(minutes=10))
+async def _():
     await SessionTaskManager.bg_check()
     await JobQueuesTable.clear_task()
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=1), max_instances=1)
-async def clear_list():
-    clear_cd_list()
-    clear_ps_list()
+async def _():
+    await ExpiringTempDict.clear_all()
 
 
 async def init_background_task():

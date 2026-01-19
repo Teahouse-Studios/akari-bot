@@ -8,6 +8,7 @@ config_path = Path("./config").resolve()
 database_path = Path("./database").resolve()
 locales_path = Path("./core/locales").resolve()
 logs_path = Path("./logs").resolve()
+tests_path = Path("./tests").resolve()
 webui_path = Path("./webui").resolve()
 
 # assets 子路径

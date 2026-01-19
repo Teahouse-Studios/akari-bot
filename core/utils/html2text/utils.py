@@ -1,5 +1,4 @@
 import html.entities
-from typing import Dict, List, Optional
 
 from . import config
 
@@ -18,7 +17,7 @@ def hn(tag: str) -> int:
     return 0
 
 
-def dumb_property_dict(style: str) -> Dict[str, str]:
+def dumb_property_dict(style: str) -> dict[str, str]:
     """
     :returns: A hash of css attributes
     """
@@ -28,7 +27,7 @@ def dumb_property_dict(style: str) -> Dict[str, str]:
     }
 
 
-def dumb_css_parser(data: str) -> Dict[str, Dict[str, str]]:
+def dumb_css_parser(data: str) -> dict[str, dict[str, str]]:
     """
     :type data: str
 
@@ -55,10 +54,10 @@ def dumb_css_parser(data: str) -> Dict[str, Dict[str, str]]:
 
 
 def element_style(
-    attrs: Dict[str, Optional[str]],
-    style_def: Dict[str, Dict[str, str]],
-    parent_style: Dict[str, str],
-) -> Dict[str, str]:
+    attrs: dict[str, str | None],
+    style_def: dict[str, dict[str, str]],
+    parent_style: dict[str, str],
+) -> dict[str, str]:
     """
     :type attrs: dict
     :type style_def: dict
@@ -79,7 +78,7 @@ def element_style(
     return style
 
 
-def google_list_style(style: Dict[str, str]) -> str:
+def google_list_style(style: dict[str, str]) -> str:
     """
     Finds out whether this is an ordered or unordered list
 
@@ -95,7 +94,7 @@ def google_list_style(style: Dict[str, str]) -> str:
     return "ol"
 
 
-def google_has_height(style: Dict[str, str]) -> bool:
+def google_has_height(style: dict[str, str]) -> bool:
     """
     Check if the style of the element has the \"height\" attribute
     explicitly defined
@@ -107,7 +106,7 @@ def google_has_height(style: Dict[str, str]) -> bool:
     return "height" in style
 
 
-def google_text_emphasis(style: Dict[str, str]) -> List[str]:
+def google_text_emphasis(style: dict[str, str]) -> list[str]:
     """
     :type style: dict
 
@@ -125,7 +124,7 @@ def google_text_emphasis(style: Dict[str, str]) -> List[str]:
     return emphasis
 
 
-def google_fixed_width_font(style: Dict[str, str]) -> bool:
+def google_fixed_width_font(style: dict[str, str]) -> bool:
     """
     Check if the css of the current element defines a fixed width font
 
@@ -139,7 +138,7 @@ def google_fixed_width_font(style: Dict[str, str]) -> bool:
     return font_family in ("courier new", "consolas")
 
 
-def list_numbering_start(attrs: Dict[str, Optional[str]]) -> int:
+def list_numbering_start(attrs: dict[str, str | None]) -> int:
     """
     Extract numbering from list element attributes
 
@@ -211,7 +210,7 @@ def escape_md_section(text: str, snob: bool = False) -> str:
     return text
 
 
-def reformat_table(lines: List[str], right_margin: int) -> List[str]:
+def reformat_table(lines: list[str], right_margin: int) -> list[str]:
     """
     Given the lines of a table
     padds the cells and returns the new lines
@@ -259,7 +258,7 @@ def pad_tables_in_text(text: str, right_margin: int = 1) -> str:
     Provide padding for tables in the text
     """
     lines = text.split("\n")
-    table_buffer = []  # type: List[str]
+    table_buffer = []  # type: list[str]
     table_started = False
     new_lines = []
     for line in lines:

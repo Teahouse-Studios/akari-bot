@@ -1,6 +1,5 @@
 import re
 import uuid
-from typing import Union, List
 from urllib.parse import urljoin
 
 from PIL import Image as PILImage
@@ -22,9 +21,9 @@ async def generate_screenshot_v2(
     content_mode=False,
     element=None,
     locale: str = "zh_cn",
-) -> Union[List[PILImage], bool]:
+) -> list[PILImage.Image] | bool:
     elements_ = infobox_elements.copy()
-    if element and isinstance(element, List):
+    if element and isinstance(element, list):
         elements_ += element
     if not section:
         if allow_special_page and content_mode:
@@ -49,7 +48,7 @@ async def generate_screenshot_v2(
 
 async def generate_screenshot_v1(
     link, page_link, headers, section=None, allow_special_page=False
-) -> Union[List[PILImage], bool]:
+) -> list[PILImage.Image] | bool:
     try:
         Logger.info("Starting find infobox/section..")
         if link[-1] != "/":

@@ -1,5 +1,3 @@
-from typing import Optional
-
 from aiogram import types
 from aiogram.types import FSInputFile
 
@@ -16,7 +14,7 @@ from core.utils.image import msgnode2image, image_split
 
 class AiogramContextManager(ContextManager):
     context: dict[str, types.Message] = {}
-    features: Optional[Features] = Features
+    features: Features | None = Features
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:

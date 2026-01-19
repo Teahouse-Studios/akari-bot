@@ -1,7 +1,6 @@
 import base64
 from io import BytesIO
 from pathlib import Path
-from typing import List, Optional, Union
 
 from PIL import Image as PILImage
 from jinja2 import FileSystemLoader, Environment
@@ -20,7 +19,7 @@ env = Environment(loader=FileSystemLoader(templates_path), autoescape=True, enab
 use_font_mirror = Config("use_font_mirror", False, bool)
 
 
-async def image_split(i: ImageElement) -> List[ImageElement]:
+async def image_split(i: ImageElement) -> list[ImageElement]:
     i = PILImage.open(await i.get())
     iw, ih = i.size
     if ih <= 1500:
@@ -42,7 +41,7 @@ def get_fontsize(font, text):
     return right - left, bottom - top
 
 
-def cb64imglst(b64imglst: List[str], bot_img=False) -> List[Union[PILImage.Image, ImageElement]]:
+def cb64imglst(b64imglst: list[str], bot_img=False) -> list[PILImage.Image | ImageElement]:
     """转换base64编码的图片列表。
 
     :param b64imglst: base64编码的图片列表。
@@ -64,7 +63,7 @@ save_source = True
 
 
 async def msgnode2image(message_node: MessageNodes,
-                        session: Optional[Union[MessageSession, SessionInfo, FetchedSessionInfo]] = None):
+                        session: MessageSession | SessionInfo | FetchedSessionInfo | None = None):
     new_chain_list = []
     for m in message_node.values:
         for x in m.as_sendable(session):
@@ -73,9 +72,8 @@ async def msgnode2image(message_node: MessageNodes,
     return await msgchain2image(message_chain, session)
 
 
-async def msgchain2image(message_chain: Union[List, MessageChain],
-                         session: Optional[Union[MessageSession, SessionInfo, FetchedSessionInfo]] = None) -> Union[
-        List[ImageElement], bool]:
+async def msgchain2image(message_chain: list | MessageChain,
+                         session: MessageSession | SessionInfo | FetchedSessionInfo | None = None) -> list[ImageElement] | bool:
     """使用WebRender将消息链转换为图片。
 
     :param message_chain: 消息链或消息链列表。
@@ -83,7 +81,7 @@ async def msgchain2image(message_chain: Union[List, MessageChain],
     :return: 机器人 Image 对象。
     """
 
-    if isinstance(message_chain, List):
+    if isinstance(message_chain, list):
         message_chain = MessageChain.assign(message_chain)
 
     if isinstance(session, MessageSession):
@@ -119,7 +117,7 @@ async def msgchain2image(message_chain: Union[List, MessageChain],
     return cb64imglst(pic_list, bot_img=True)
 
 
-async def svg_render(file_path: Union[str, Path]) -> Union[List[ImageElement], bool]:
+async def svg_render(file_path: str | Path) -> list[ImageElement] | bool:
     """使用WebRender渲染svg文件。
 
     :param file_path: svg文件路径。

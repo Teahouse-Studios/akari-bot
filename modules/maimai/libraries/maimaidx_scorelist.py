@@ -1,5 +1,3 @@
-from typing import Optional, Dict, List
-
 from PIL import Image, ImageDraw, ImageFont
 
 from core.builtins.bot import Bot
@@ -250,8 +248,8 @@ class DrawLevelList:
 async def _get_level_process(msg: Bot.MessageSession,
                              payload: dict,
                              level: str,
-                             goal: Optional[str] = None,
-                             use_cache: bool = True) -> tuple[Dict[str, List[str]], List[tuple[str, int]]]:
+                             goal: str | None = None,
+                             use_cache: bool = True) -> tuple[dict[str, list[str]], list[tuple[str, int]]]:
     res = await get_total_record(msg, payload, use_cache)
     verlist: list = res["verlist"]
 
@@ -292,7 +290,7 @@ async def _get_level_process(msg: Bot.MessageSession,
     return song_list, song_played
 
 
-async def generate(msg: Bot.MessageSession, payload: dict, level: str, goal: Optional[str], use_cache: bool = True) -> Optional[Image.Image]:
+async def generate(msg: Bot.MessageSession, payload: dict, level: str, goal: str | None, use_cache: bool = True) -> Image.Image | None:
     if goal:
         goal = goal.upper()
     song_list, song_played = await _get_level_process(msg, payload, level, goal, use_cache)

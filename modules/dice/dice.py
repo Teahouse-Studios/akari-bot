@@ -1,12 +1,11 @@
 import re
-from typing import Optional, Union
 
 import numpy as np
 
 from core.builtins.message.internal import I18NContext
 from core.config import Config
-from core.utils.message import is_int
 from core.utils.random import Random
+from core.utils.tools import is_int
 
 MAX_DICE_COUNT = Config("dice_limit", 100, table_name="module_dice")  # 一次摇动最多的骰子数量
 MAX_OUTPUT_CNT = Config("dice_output_count", 50, table_name="module_dice")  # 输出的最多数据量
@@ -35,7 +34,7 @@ class DiceSyntaxError(Exception):
 class DiceValueError(Exception):
     """骰子参数值错误"""
 
-    def __init__(self, message: str, value: Optional[Union[int, str]] = None):
+    def __init__(self, message: str, value: int | str | None = None):
         if value:
             self.message = str(I18NContext("dice.message.error.value", value=value)) + message
         else:

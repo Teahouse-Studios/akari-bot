@@ -10,7 +10,7 @@ from core.constants.exceptions import ConfigFileNotFound
 from core.constants.path import config_path
 from core.constants.version import config_version
 from core.i18n import Locale
-from core.utils.message import is_int, is_float
+from core.utils.tools import is_int, is_float
 
 cfg_file_path = config_path / config_filename
 old_cfg_file_path = config_path / "config.cfg"
@@ -311,9 +311,6 @@ if config["config_version"] < config_version:
         reorganizer.set_table("ncmusic")
         reorganizer.reorganize_key("ncmusic_enable_card")
         reorganizer.reorganize_key("ncmusic_api", True)
-
-        reorganizer.set_table("osu")
-        reorganizer.reorganize_key("osu_api_key", True)
 
         reorganizer.set_table("wiki")
         reorganizer.reorganize_key("wiki_whitelist_url")

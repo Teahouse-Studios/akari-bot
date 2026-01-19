@@ -1,7 +1,7 @@
 import asyncio
-import datetime
+import time
 import traceback
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from core.builtins.converter import converter
@@ -75,7 +75,7 @@ class JobQueueBase:
         bot: "Bot" = exports["Bot"]
         try:
             timestamp = tsk.timestamp
-            if datetime.datetime.now().timestamp() - timestamp.timestamp() > 7200:
+            if time.time() - timestamp.timestamp() > 7200:
                 Logger.warning(f"Task {tsk.task_id} timeout, skip.")
                 await cls.return_val(tsk, {}, status="timeout")
             elif tsk.action in cls.queue_actions:
@@ -153,6 +153,6 @@ class JobQueueBase:
                                     enable_parse_message=False, disable_secret_check=True):
         await cls.add_job("Server", "client_direct_message",
                           {"session_info": converter.unstructure(session_info),
-                           "message": converter.unstructure(message, Union[MessageChain, MessageNodes]),
+                           "message": converter.unstructure(message, MessageChain | MessageNodes),
                            "enable_parse_message": enable_parse_message,
                            "disable_secret_check": disable_secret_check}, )

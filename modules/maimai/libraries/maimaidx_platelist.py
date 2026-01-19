@@ -1,5 +1,3 @@
-from typing import Optional, Dict, List
-
 from PIL import Image, ImageDraw, ImageFont
 
 from core.builtins.bot import Bot
@@ -249,7 +247,7 @@ class DrawPlateList:
 
 
 async def _get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, use_cache: bool = True) -> tuple[
-        Dict[str, List[str]], List[tuple[str, int]]]:
+        dict[str, list[str]], list[tuple[str, int]]]:
     song_complete_basic = []
     song_complete_advanced = []
     song_complete_expert = []
@@ -366,13 +364,13 @@ async def _get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str,
     song_complete_expert = [music for music in song_complete_expert if music[0] not in song_expect]
     song_complete_master = [music for music in song_complete_master if music[0] not in song_expect]
     song_complete_remaster = [music for music in song_complete_remaster if music[0] not in song_expect]
-    song_complete: List[tuple[str, int]] = song_complete_basic + song_complete_advanced + \
+    song_complete: list[tuple[str, int]] = song_complete_basic + song_complete_advanced + \
         song_complete_expert + song_complete_master + song_complete_remaster
 
     return song_list, song_complete
 
 
-async def generate(msg: Bot.MessageSession, payload: dict, plate: str, use_cache: bool = True) -> Optional[Image.Image]:
+async def generate(msg: Bot.MessageSession, payload: dict, plate: str, use_cache: bool = True) -> Image.Image | None:
     version = plate[0]
     goal = plate[1:]
 

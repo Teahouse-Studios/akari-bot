@@ -1,15 +1,13 @@
 import re
-
-from typing import Union, TYPE_CHECKING, Optional
-
-from akari_bot_webrender.functions.options import StatusOptions
+from typing import TYPE_CHECKING
 
 from core.builtins.parser.command import CommandParser
 from core.builtins.parser.message import parser
 from core.builtins.utils import command_prefix
 from core.constants.path import PrivateAssets
 from core.utils.bash import run_sys_command
-from core.web_render import init_web_render, web_render
+from core.web_render import web_render
+from ..alive import Alive
 from .base import JobQueueBase
 from ..builtins.converter import converter
 from ..builtins.message.chain import MessageChain, MessageNodes
@@ -19,7 +17,6 @@ from ..exports import exports, add_export
 from ..i18n import Locale
 from ..loader import ModulesManager
 from ..logger import Logger
-from ..utils.alive import Alive
 
 if TYPE_CHECKING:
     from core.builtins.bot import Bot
@@ -34,7 +31,7 @@ class JobQueueServer(JobQueueBase):
                                   enable_split_image: bool = True):
         value = await cls.add_job(session_info.client_name, "send_message",
                                   {"session_info": converter.unstructure(session_info),
-                                   "message": converter.unstructure(message, Union[MessageChain, MessageNodes]),
+                                   "message": converter.unstructure(message, MessageChain | MessageNodes),
                                    "quote": quote,
                                    "enable_parse_message": enable_parse_message,
                                    "enable_split_image": enable_split_image
@@ -42,7 +39,7 @@ class JobQueueServer(JobQueueBase):
         return value
 
     @classmethod
-    async def client_delete_message(cls, session_info: SessionInfo, message_id: Union[str, list[str]]):
+    async def client_delete_message(cls, session_info: SessionInfo, message_id: str | list[str]):
         if isinstance(message_id, str):
             message_id = [message_id]
         value = await cls.add_job(session_info.client_name, "delete_message",
@@ -51,7 +48,7 @@ class JobQueueServer(JobQueueBase):
         return value
 
     @classmethod
-    async def client_add_reaction(cls, session_info: SessionInfo, message_id: Union[str, list[str]], emoji: str):
+    async def client_add_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str):
         value = await cls.add_job(session_info.client_name, "add_reaction",
                                   {"session_info": converter.unstructure(session_info),
                                    "message_id": message_id,
@@ -59,7 +56,7 @@ class JobQueueServer(JobQueueBase):
         return value
 
     @classmethod
-    async def client_remove_reaction(cls, session_info: SessionInfo, message_id: Union[str, list[str]], emoji: str):
+    async def client_remove_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str):
         value = await cls.add_job(session_info.client_name, "add_reaction",
                                   {"session_info": converter.unstructure(session_info),
                                    "message_id": message_id,
@@ -129,7 +126,7 @@ async def client_keepalive(tsk: JobQueuesTable, args: dict):
 @JobQueueServer.action("trigger_hook")
 async def _(tsk: JobQueuesTable, args: dict):
     bot: "Bot" = exports["Bot"]
-    session_info: Optional[SessionInfo] = None
+    session_info: SessionInfo | None = None
     if args["session_info"]:
         session_info = converter.structure(args["session_info"], SessionInfo)
         await session_info.refresh_info()
@@ -147,7 +144,7 @@ async def client_direct_message(tsk: JobQueuesTable, args: dict):
     bot: "Bot" = exports["Bot"]
     session_info = converter.structure(args["session_info"], SessionInfo)
     await session_info.refresh_info()
-    message = converter.structure(args["message"], Union[MessageChain, MessageNodes])
+    message = converter.structure(args["message"], MessageChain | MessageNodes)
     await bot.send_direct_message(session_info, message, disable_secret_check=args["disable_secret_check"],
                                   enable_parse_message=args["enable_parse_message"])
     return {"success": True}

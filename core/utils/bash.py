@@ -1,8 +1,8 @@
 import asyncio
-from typing import List, Tuple
+import locale
 
 
-async def run_sys_command(command: List[str], timeout: float = 10) -> Tuple[int, str, str]:
+async def run_sys_command(command: list[str], timeout: float = 10) -> tuple[int, str, str]:
     """执行系统命令并返回执行结果。此函数仅在安全环境中调用，确保知道你正在干什么。
 
     :param command: 需要执行的命令（List），禁止直接使用用户输入。
@@ -16,7 +16,12 @@ async def run_sys_command(command: List[str], timeout: float = 10) -> Tuple[int,
     )
     try:
         stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout)
-        return process.returncode, stdout.decode("utf-8").strip(), stderr.decode("utf-8").strip()
+        encoding = locale.getpreferredencoding(False)
+        return (
+            process.returncode,
+            stdout.decode(encoding, errors="ignore").strip(),
+            stderr.decode(encoding, errors="ignore").strip(),
+        )
     except asyncio.TimeoutError:
         process.kill()
         await process.wait()
