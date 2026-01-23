@@ -6,7 +6,7 @@ from core.builtins.message.internal import I18NContext
 from core.config import Config
 from core.constants.default import issue_url_default
 from core.logger import Logger
-from core.utils.temp import ExpiringTempDict
+from core.utils.container import ExpiringTempDict
 
 report_targets = Config("report_targets", [])
 WARNING_COUNTS = Config("tos_warning_counts", 5)

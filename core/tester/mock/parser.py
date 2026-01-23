@@ -11,7 +11,7 @@ from core.loader import ModulesManager
 from core.logger import Logger
 from core.types import Module, Param
 from core.types.module.component_meta import CommandMeta
-from core.utils.format import normalize_space
+from core.utils.func import normalize_space
 
 if TYPE_CHECKING:
     from core.builtins.bot import Bot

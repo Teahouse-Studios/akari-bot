@@ -4,7 +4,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from core.builtins.bot import Bot
 from core.constants.path import noto_sans_bold_path, noto_sans_demilight_path
-from core.utils.format import truncate_text
+from core.utils.func import truncate_text
 from .chunithm_apidata import get_record_df, get_record_lx
 from .chunithm_mapping import (
     chu_cover_path,

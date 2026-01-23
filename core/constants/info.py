@@ -37,6 +37,7 @@ class Info:
     :param subprocess: 是否为子进程。
     :param binary_mode: 是否为二进制模式。
     :param command_parsed: 已处理命令数量。
+    :param message_parsed: 已处理消息数量。
     :param client_name: 客户端名称。
     :param dirty_word_check: 是否启用文本过滤。
     :param web_render_status: WebRender 状态。
@@ -48,6 +49,7 @@ class Info:
     subprocess = False
     binary_mode = False
     command_parsed = 0
+    message_parsed = 0
     client_name = ""
     dirty_word_check = False
     web_render_status = False

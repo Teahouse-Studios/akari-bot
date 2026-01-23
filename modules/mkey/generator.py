@@ -29,7 +29,7 @@ from Crypto.Util.number import bytes_to_long
 from Crypto.Util.strxor import strxor
 
 from core.constants.path import assets_path
-from core.utils.tools import is_int
+from core.utils.func import is_int
 
 
 class MkeyGenerator:

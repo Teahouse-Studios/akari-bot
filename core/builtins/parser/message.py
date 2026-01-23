@@ -26,9 +26,8 @@ from core.logger import Logger
 from core.tos import TOS_TEMPBAN_TIME, temp_ban_counter, abuse_warn_target, remove_temp_ban
 from core.types import Module, Param
 from core.types.module.component_meta import CommandMeta
-from core.utils.format import normalize_space
-from core.utils.temp import ExpiringTempDict, TempCounter
-from core.utils.token_bucket import TokenBucket
+from core.utils.func import normalize_space
+from core.utils.container import ExpiringTempDict, TokenBucket
 
 if TYPE_CHECKING:
     from core.builtins.bot import Bot
@@ -131,7 +130,7 @@ async def parser(msg: "Bot.MessageSession"):
         Logger.exception()
     finally:
         ExecutionLockList.remove(msg)
-        TempCounter.add()
+        Info.message_parsed += 1
 
 
 def _transform_alias(msg, command: str):

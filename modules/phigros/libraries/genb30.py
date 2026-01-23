@@ -4,7 +4,7 @@ from core.builtins.bot import Bot
 from core.constants.path import assets_path, noto_sans_demilight_path, noto_sans_bold_path
 from core.logger import Logger
 from core.utils.cache import random_cache_path
-from core.utils.format import truncate_text
+from core.utils.func import truncate_text
 from .record import get_game_record
 
 pgr_assets_path = assets_path / "modules" / "phigros"

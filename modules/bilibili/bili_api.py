@@ -2,7 +2,7 @@ import orjson
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import Embed, EmbedField, Image, Url, I18NContext
-from core.utils.format import truncate_text
+from core.utils.func import truncate_text
 from core.web_render import web_render, SourceOptions
 
 DESC_LENGTH = 100

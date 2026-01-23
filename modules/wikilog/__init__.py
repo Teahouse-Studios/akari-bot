@@ -1,4 +1,5 @@
 import re
+from collections import deque
 
 import orjson
 
@@ -10,7 +11,6 @@ from core.config import Config
 from core.constants.default import wiki_whitelist_url_default
 from core.logger import Logger
 from core.scheduler import IntervalTrigger
-from core.utils.temp import TempList
 from modules.wiki.utils.ab import convert_ab_to_detailed_format
 from modules.wiki.utils.rc import convert_rc_to_detailed_format
 from modules.wiki.utils.wikilib import WikiLib
@@ -447,8 +447,8 @@ async def _():
             Logger.debug(f"Checking fetch {id_} {wiki}...")
             if wiki not in fetch_cache[id_]:
                 fetch_cache[id_][wiki] = {
-                    "AbuseLog": TempList(300),
-                    "RecentChanges": TempList(300),
+                    "AbuseLog": deque(maxlen=300),
+                    "RecentChanges": deque(maxlen=300),
                 }
             if wiki not in matched_logs[id_]:
                 matched_logs[id_][wiki] = {"AbuseLog": [], "RecentChanges": []}

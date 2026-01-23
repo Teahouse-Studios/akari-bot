@@ -10,7 +10,7 @@ import orjson
 
 from core.constants.default import lang_list
 from core.constants.path import locales_path, modules_locales_path
-from core.utils.tools import flatten_dict as flatten
+from core.utils.func import flatten_dict as flatten
 
 # Load all locale files into memory
 

@@ -1,7 +1,7 @@
 from typing import Any
 from core.builtins.session.internal import MessageSession
 from core.logger import Logger
-from core.utils.temp import ExpiringTempDict
+from core.utils.container import ExpiringTempDict
 
 GAME_EXPIRED = 3600  # 游戏事件过期时间（秒）
 

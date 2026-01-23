@@ -8,7 +8,7 @@ from core.component import module
 from core.game import PlayState, GAME_EXPIRED
 from core.utils.petal import gained_petal, lost_petal
 from core.utils.random import Random
-from core.utils.tools import is_int
+from core.utils.func import is_int
 
 no_solution_lst = [
     "无解",

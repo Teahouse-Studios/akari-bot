@@ -6,7 +6,7 @@ from core.builtins.message.internal import Plain, I18NContext
 from core.component import module
 from core.config import Config
 from core.utils.http import get_url
-from core.utils.tools import is_int
+from core.utils.func import is_int
 
 mod_dl = module(
     module_name="mod_dl",

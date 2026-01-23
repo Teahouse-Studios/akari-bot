@@ -1,7 +1,7 @@
 import time
 
 from core.builtins.session.internal import MessageSession
-from core.utils.temp import ExpiringTempDict
+from core.utils.container import ExpiringTempDict
 
 _cd_dict = ExpiringTempDict()
 

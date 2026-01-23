@@ -6,7 +6,7 @@ from core.database.models import JobQueuesTable
 from core.ip import fetch_ip_info
 from core.logger import Logger
 from core.scheduler import Scheduler, IntervalTrigger
-from core.utils.temp import ExpiringTempDict
+from core.utils.container import ExpiringTempDict
 from core.web_render import init_web_render, web_render
 
 

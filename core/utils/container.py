@@ -1,151 +1,49 @@
 import asyncio
 import threading
 import time
-from typing import Any, ClassVar, Iterable
+from typing import Any, ClassVar
 
 
-class TempCounter:
-    value = 0
+class TokenBucket:
+    def __init__(self, capacity: int, refill_interval: int):
+        self.capacity = capacity
+        self.rate = capacity / float(refill_interval) if refill_interval > 0 else capacity
+        self.tokens = float(capacity)
+        self.ts = time.time()
 
-    @classmethod
-    def add(cls):
-        cls.value += 1
-        return cls.value
+    def _refill(self):
+        now = time.time()
+        self.tokens = min(self.capacity, self.tokens + (now - self.ts) * self.rate)
+        self.ts = now
 
+    def consume(self, amount: int = 1) -> bool:
+        now = time.time()
+        self.tokens = min(self.capacity, self.tokens + (now - self.ts) * self.rate)
+        self.ts = now
+        if self.tokens >= amount:
+            self.tokens -= amount
+            return True
+        return False
 
-class TempList:
-    def __init__(self, length=200, _items=None):
-        self.items = _items or []
-        self.length = length
+    def peek(self) -> float:
+        now = time.time()
+        return min(self.capacity, self.tokens + (now - self.ts) * self.rate)
 
-    def __enter__(self):
-        return self.items
+    def wait_time(self, amount: int = 1) -> float:
+        self._refill()
+        if self.tokens >= amount:
+            return 0.0
+        return (amount - self.tokens) / self.rate
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.items.clear()
-
-    def __iter__(self):
-        return iter(self.items)
-
-    def __reversed__(self):
-        return reversed(self.items)
-
-    def __len__(self):
-        return len(self.items)
-
-    def __getitem__(self, item):
-        return self.items[item]
-
-    def __setitem__(self, index, value):
-        self.items[index] = value
-
-    def __delitem__(self, index):
-        del self.items[index]
-
-    def append(self, item):
-        self.items.append(item)
-        if len(self.items) > self.length:
-            self.items.pop(0)
-
-    def extend(self, items: "Iterable | TempList"):
-        if isinstance(items, TempList):
-            items = items.items
-        self.items.extend(items)
-        if len(self.items) > self.length:
-            self.items = self.items[-self.length:]
-
-    def insert(self, index, item):
-        self.items.insert(index, item)
-        if len(self.items) > self.length:
-            self.items = self.items[:self.length]
-
-    def remove(self, item):
-        self.items.remove(item)
-
-    def pop(self, index=-1):
-        return self.items.pop(index)
-
-    def clear(self):
-        self.items.clear()
-
-    def index(self, item):
-        return self.items.index(item)
-
-    def count(self, item):
-        return self.items.count(item)
-
-    def sort(self, key=None, reverse=False):
-        self.items.sort(key=key, reverse=reverse)
-
-    def reverse(self):
-        self.items.reverse()
-
-    def copy(self):
-        return TempList(self.length, _items=self.items.copy())
+    def refill(self, amount: int | float = 1):
+        self._refill()
+        self.tokens = min(self.capacity, self.tokens + amount)
 
     def __repr__(self):
-        return repr(self.items)
-
-    def __str__(self):
-        return str(self.items)
-
-    def __contains__(self, item):
-        return item in self.items
-
-    def __add__(self, other: "Iterable | TempList"):
-        if isinstance(other, TempList):
-            other = other.items
-        new_items = self.items + other
-        if len(new_items) > self.length:
-            new_items = new_items[-self.length:]
-        return TempList(self.length, _items=new_items)
-
-    def __iadd__(self, other: "Iterable | TempList"):
-        if isinstance(other, TempList):
-            other = other.items
-        self.items += other
-        if len(self.items) > self.length:
-            self.items = self.items[-self.length:]
-        return self
-
-    def __mul__(self, other):
-        new_items = self.items * other
-        if len(new_items) > self.length:
-            new_items = new_items[-self.length:]
-        return TempList(self.length, _items=new_items)
-
-    def __imul__(self, other):
-        self.items *= other
-        if len(self.items) > self.length:
-            self.items = self.items[-self.length:]
-        return self
-
-    def __eq__(self, other):
-        return self.items == other
-
-    def __ne__(self, other):
-        return self.items != other
-
-    def __lt__(self, other):
-        return self.items < other
-
-    def __le__(self, other):
-        return self.items <= other
-
-    def __gt__(self, other):
-        return self.items > other
-
-    def __ge__(self, other):
-        return self.items >= other
-
-    def __hash__(self):
-        return hash(self.items)
+        return f"{self.__class__.__name__}(capacity={self.capacity}, tokens={self.peek():.2f}, rate={self.rate:.2f}/s)"
 
     def __bool__(self):
-        return bool(self.items)
-
-    def __getattr__(self, item):
-        return getattr(self.items, item)
+        return self.peek() > 0
 
 
 class ExpiringTempDict:
