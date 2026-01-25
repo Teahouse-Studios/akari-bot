@@ -135,7 +135,6 @@ async def parser(msg: "Bot.MessageSession"):
 
 def _transform_alias(msg, command: str):
     aliases = dict(msg.session_info.target_info.target_data.get("command_alias", {}).items())
-    command_split = msg.trigger_msg.split(" ")  # 切割消息
     matched_aliases = []  # 用来记录所有可匹配的模板 (placeholder_count, pattern, replacement, match_obj)
 
     for pattern, replacement in aliases.items():
@@ -173,13 +172,13 @@ def _transform_alias(msg, command: str):
         Logger.debug(msg.session_info.prefixes[0] + result)
         return msg.session_info.prefixes[0] + result
 
-    # 旧语法兼容
+    # 处理不带占位符的命令别名
     for pattern, replacement in aliases.items():
         if not re.search(r"\${[^}]*}", pattern):
-            if command_split[0] == pattern:
-                command_split[0] = msg.session_info.prefixes[0] + replacement  # 将自定义别名替换为命令
-                Logger.debug(" ".join(command_split))
-                return " ".join(command_split)  # 重新连接消息
+            if command.startswith(pattern):
+                new_command = command.replace(pattern, msg.session_info.prefixes[0] + replacement, 1)
+                Logger.debug(new_command)
+                return new_command
 
     return command
 

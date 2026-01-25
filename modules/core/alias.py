@@ -25,14 +25,17 @@ async def _(msg: Bot.MessageSession):
         aliases = {}
     if "add" in msg.parsed_msg:
         # 处理下划线与空格的情况
+        alias = re.sub(r"_", " ", alias)
+        alias = re.sub(r"\\ ", "_", alias)
+
         alias = re.sub(
             r"\$\{([^}]*)\}",
-            lambda match: "${" + match.group(1).replace(" ", "_") + "}",
-            alias.replace("_", " "),
+            lambda match: "${" + match.group(1) + "}",
+            alias,
         )
         command = re.sub(
             r"\$\{([^}]*)\}",
-            lambda match: "${" + match.group(1).replace(" ", "_") + "}",
+            lambda match: "${" + match.group(1) + "}",
             command,
         )
 
@@ -52,10 +55,12 @@ async def _(msg: Bot.MessageSession):
         else:
             await msg.finish(I18NContext("core.message.alias.add.already", alias=alias))
     elif "remove" in msg.parsed_msg:
+        alias = re.sub(r"_", " ", alias)
+        alias = re.sub(r"\\ ", "_", alias)
         alias = re.sub(
             r"\$\{([^}]*)\}",
-            lambda match: "${" + match.group(1).replace(" ", "_") + "}",
-            alias.replace("_", " "),
+            lambda match: "${" + match.group(1) + "}",
+            alias,
         )
         if alias in aliases:
             del aliases[alias]
