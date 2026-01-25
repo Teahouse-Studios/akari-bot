@@ -28,7 +28,7 @@ deprecated = "^1.2.18"
 poetry-plugin-export = "^1.9.0"
 pre-commit = "^4.0.0"
 pycryptodome = "^3.18.0"
-python-multipart = "^0.0.21"
+python-multipart = "^0.0.22"
 pywin32 = { version = "^308", platform = "win32" }
 
 # bots
