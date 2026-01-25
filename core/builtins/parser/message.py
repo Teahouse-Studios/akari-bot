@@ -15,9 +15,9 @@ from core.builtins.session.lock import ExecutionLockList
 from core.builtins.session.tasks import SessionTaskManager
 from core.config import Config
 from core.constants.default import bug_report_url_default, ignored_sender_default
-from core.constants.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, \
-    InvalidHelpDocTypeError, \
-    WaitCancelException, NoReportException, SendMessageFailed
+from core.constants.exceptions import AbuseWarning, ExternalException, FinishedException, \
+    InvalidCommandFormatError, InvalidHelpDocTypeError, \
+    NoReportException, SendMessageFailed, WaitCancelException
 from core.constants.info import Info
 from core.database.models import AnalyticsData
 from core.exports import exports
@@ -350,6 +350,11 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                                        command=msg.trigger_msg,
                                        module_name=command_first_word,
                                        module_type="normal")
+
+
+    except ExternalException as e:
+    await _process_external_exception(msg, e)
+
     except AbuseWarning as e:
         await _process_tos_abuse_warning(msg, e)
 
@@ -357,6 +362,8 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
         await _process_noreport_exception(msg, e)
 
     except Exception as e:
+        if "timeout" in err_msg.lower().replace(" ", ""):
+            _process_external_exception(msg, e)
         await _process_exception(msg, e)
     finally:
         if _typing:
@@ -477,6 +484,9 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                                                        module_type="regex")
                         continue
 
+                    except ExternalException as e:
+                        await _process_external_exception(msg, e)
+
                     except NoReportException as e:
                         await _process_noreport_exception(msg, e)
 
@@ -484,6 +494,8 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                         await _process_tos_abuse_warning(msg, e)
 
                     except Exception as e:
+                        if "timeout" in err_msg.lower().replace(" ", ""):
+                            _process_external_exception(msg, e)
                         await _process_exception(msg, e)
                     finally:
                         if _typing:
@@ -690,6 +702,17 @@ async def _process_noreport_exception(msg: "Bot.MessageSession", e: NoReportExce
     await msg.send_message(err_msg_chain)
 
 
+async def _process_external_exception(msg: "Bot.MessageSession", e: ExternalException):
+    Logger.exception()
+    err_msg = msg.session_info.locale.t_str(str(e))
+    err_msg_chain += match_kecode(err_msg)
+    err_msg_chain.append(I18NContext("error.message.prompt.external"))
+    if bug_report_url:
+        err_msg_chain.append(I18NContext("error.message.prompt.address", url=bug_report_url))
+    await msg.handle_error_signal()
+    await msg.send_message(err_msg_chain)
+
+
 async def _process_exception(msg: "Bot.MessageSession", e: Exception):
     bot: "Bot" = exports["Bot"]
     tb = traceback.format_exc()
@@ -697,30 +720,12 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
     err_msg_chain = MessageChain.assign(I18NContext("error.message.prompt"))
     err_msg = msg.session_info.locale.t_str(str(e))
     err_msg_chain += match_kecode(err_msg)
-    await msg.handle_error_signal()
-
-    external = False
-    if "timeout" in err_msg.lower().replace(" ", ""):
-        external = True
-    else:
-        try:
-            status_code = int(str(e).strip().split("[")[0])
-            expected_msg = f"{status_code}[KE:Image,path=https://http.cat/{status_code}.jpg]"
-            if err_msg == expected_msg and 500 <= status_code < 600:
-                external = True
-        except Exception:
-            pass
-
-    if external:
-        err_msg_chain.append(I18NContext("error.message.prompt.external"))
-    else:
-        err_msg_chain.append(I18NContext("error.message.prompt.report"))
-
+    err_msg_chain.append(I18NContext("error.message.prompt.external")) 
     if bug_report_url:
         err_msg_chain.append(I18NContext("error.message.prompt.address", url=bug_report_url))
+    await msg.handle_error_signal()
     await msg.send_message(err_msg_chain)
-
-    if not external and report_targets:
+    if report_targets:
         for target in report_targets:
             if f := await bot.fetch_target(target):
                 await bot.send_direct_message(f, [I18NContext("error.message.report", command=msg.trigger_msg),
