@@ -77,6 +77,7 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
     )  # 数学函数
     errmsg = None
 
+    dices = re.sub(r"(\d+)\.\d+", r"\1", dices)  # 去掉所有小数
     # 切分骰子表达式
     if "#" in dices:
         times = dices.partition("#")[0]
