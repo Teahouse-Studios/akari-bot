@@ -17,6 +17,7 @@ from aiofile import async_open
 from tenacity import retry, wait_fixed, stop_after_attempt
 
 from core.config import Config
+from core.constants.exceptions import ExternalException
 from core.constants.path import cache_path
 from core.logger import Logger
 
@@ -117,9 +118,10 @@ async def request_url(
                 if status_code and resp.status_code != status_code:
                     if not logging_resp and logging_err_resp:
                         Logger.error(resp.text)
-                    raise ValueError(
-                        f"{str(resp.status_code)}[KE:Image,path=https://http.cat/{str(resp.status_code)}.jpg]"
-                    )
+                    error_fmt = f"{str(resp.status_code)}[KE:Image,path=https://http.cat/{str(resp.status_code)}.jpg]"
+                    if 500 <= resp.status_code < 600:
+                        raise ExternalException(error_fmt)
+                    raise ValueError(error_fmt)
                 if fmt:
                     if hasattr(resp, fmt):
                         attr = getattr(resp, fmt)
@@ -129,7 +131,7 @@ async def request_url(
                     raise ValueError(f"NoSuchMethod: {fmt}")
                 return resp.text
             except (httpx.ConnectError, httpx.TimeoutException):
-                raise ValueError("Request timeout")
+                raise ExternalException("Request timeout")
             except Exception as e:
                 if logging_err_resp:
                     Logger.error(f"Error while requesting {url}: {e}")
