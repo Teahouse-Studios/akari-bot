@@ -382,6 +382,8 @@ def mai_plate_song_expect(version):
             song_expect = ["185", "189", "190"]
         case "檄":
             song_expect = ["341"]
+        case "橙":
+            song_expect = ["281"]
         case "暁":
             song_expect = ["419"]
         case "桃":
@@ -403,6 +405,7 @@ def mai_plate_song_expect(version):
                 "185",
                 "189",
                 "190",
+                "281",
                 "341",
                 "419",
                 "451",
