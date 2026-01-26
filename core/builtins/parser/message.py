@@ -702,8 +702,9 @@ async def _process_noreport_exception(msg: "Bot.MessageSession", e: NoReportExce
     await msg.send_message(err_msg_chain)
 
 
-async def _process_external_exception(msg: "Bot.MessageSession", e: ExternalException):
+async def _process_external_exception(msg: "Bot.MessageSession", e: Exception):
     Logger.exception()
+    err_msg_chain = MessageChain.assign(I18NContext("error.message.prompt"))
     err_msg = msg.session_info.locale.t_str(str(e))
     err_msg_chain += match_kecode(err_msg)
     err_msg_chain.append(I18NContext("error.message.prompt.external"))
