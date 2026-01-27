@@ -37,6 +37,9 @@ class QueueTaskManager:
         finally:
             if task_id in cls.tasks:
                 del cls.tasks[task_id]
+            tsk = await JobQueuesTable.get_or_none(task_id=task_id)
+            if tsk:
+                await tsk.delete()
 
     @classmethod
     async def set_result(cls, task_id: str, result: dict):
@@ -71,7 +74,7 @@ class JobQueueBase:
         raise QueueFinished
 
     @classmethod
-    async def _process_task(cls, tsk):
+    async def _process_task(cls, tsk: JobQueuesTable):
         bot: "Bot" = exports["Bot"]
         try:
             timestamp = tsk.timestamp
@@ -85,7 +88,7 @@ class JobQueueBase:
                 Logger.warning(f"Unknown action {tsk.action}, skip.")
                 await cls.return_val(tsk, {}, status="failed")
         except QueueFinished:
-            Logger.trace(f"Task {tsk.action}({tsk.task_id}) finished.")
+            Logger.trace(f"Task {tsk.action}({tsk.task_id}) {tsk.status}.")
             return
         except Exception:
             f = traceback.format_exc()
@@ -110,7 +113,7 @@ class JobQueueBase:
         await tsk.set_status("failed")
 
     @classmethod
-    async def _check_queue(cls, target_client: str = None):
+    async def _check_queue(cls, target_client: str | None = None):
         # Logger.debug(f"Checking job queue for {cls.name}, target client: {target_client if target_client else "all"}")
         for task_id in QueueTaskManager.tasks.copy():
             tsk = await JobQueuesTable.get_or_none(task_id=task_id)
@@ -128,7 +131,7 @@ class JobQueueBase:
             asyncio.create_task(cls._process_task(tsk))
 
     @classmethod
-    async def check_job_queue(cls, target_client: str = None):
+    async def check_job_queue(cls, target_client: str | None = None):
         if cls.is_running:
             raise QueueAlreadyRunning
         cls.is_running = True
@@ -155,4 +158,4 @@ class JobQueueBase:
                           {"session_info": converter.unstructure(session_info),
                            "message": converter.unstructure(message, MessageChain | MessageNodes),
                            "enable_parse_message": enable_parse_message,
-                           "disable_secret_check": disable_secret_check}, )
+                           "disable_secret_check": disable_secret_check})
