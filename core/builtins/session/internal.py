@@ -225,16 +225,10 @@ class MessageSession:
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         if self.session_info.support_reaction:
             if self.session_info.client_name in ["QQ", "QQBot"]:
-                if self.session_info.locale.locale == "ja_jp":
-                    await _queue_server.client_add_reaction(self.session_info, message_id, "11093")
-                else:
-                    await _queue_server.client_add_reaction(self.session_info, message_id, "11088")
+                await _queue_server.client_add_reaction(self.session_info, message_id, "11093")
                 await _queue_server.client_add_reaction(self.session_info, message_id, "10060")
             else:
-                if self.session_info.locale.locale == "ja_jp":
-                    await _queue_server.client_add_reaction(self.session_info, message_id, "⭕")
-                else:
-                    await _queue_server.client_add_reaction(self.session_info, message_id, "✅")
+                await _queue_server.client_add_reaction(self.session_info, message_id, "⭕")
                 await _queue_server.client_add_reaction(self.session_info, message_id, "❌")
 
     async def wait_confirm(
