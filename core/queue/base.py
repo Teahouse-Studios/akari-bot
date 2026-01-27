@@ -1,6 +1,7 @@
 import asyncio
 import time
 import traceback
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
@@ -20,8 +21,11 @@ if TYPE_CHECKING:
     from core.builtins.bot import Bot
 
 
-class QueueFinished(Exception):
-    pass
+@dataclass
+class QueueFinished:
+    task_id: str
+    action: str
+    status: str
 
 
 class QueueTaskManager:
@@ -72,7 +76,7 @@ class JobQueueBase:
     @staticmethod
     async def return_val(tsk: JobQueuesTable, value: dict, status: str = "done"):
         await tsk.set_val(value, status)
-        raise QueueFinished
+        return QueueFinished(str(tsk.task_id), tsk.action, tsk.status)
 
     @classmethod
     async def _process_task(cls, tsk: JobQueuesTable):
@@ -81,23 +85,24 @@ class JobQueueBase:
             timestamp = tsk.timestamp
             if time.time() - timestamp.timestamp() > 7200:
                 Logger.warning(f"Task {tsk.task_id} timeout, skip.")
-                await cls.return_val(tsk, {}, status="timeout")
+                tsk_val = await cls.return_val(tsk, {}, status="timeout")
             elif tsk.action in cls.queue_actions:
                 returns: dict = await cls.queue_actions[tsk.action](tsk, tsk.args)
-                await cls.return_val(tsk, returns if returns else {})
+                tsk_val = await cls.return_val(tsk, returns if returns else {})
             else:
                 Logger.warning(f"Unknown action {tsk.action}, skip.")
-                await cls.return_val(tsk, {}, status="failed")
-        except QueueFinished:
-            Logger.trace(f"Task {tsk.action}({tsk.task_id}) {tsk.status}.")
-            return
+                tsk_val = await cls.return_val(tsk, {}, status="failed")
+
+            if tsk_val:
+                Logger.trace(f"Task {tsk.action}({tsk.task_id}) {tsk.status}.")
+                return
+            # The code below should not be reached if the task is processed correctly.
+            Logger.error(f"Task {tsk.action}({tsk.task_id}) seems not finished properly, bug in code?")
+            await tsk.set_status("failed")
         except Exception:
             f = traceback.format_exc()
             Logger.error(f)
-            try:
-                await cls.return_val(tsk, {"traceback": f}, status="failed")
-            except QueueFinished:
-                pass
+            await cls.return_val(tsk, {"traceback": f}, status="failed")
             try:
                 for target in cls.report_targets:
                     if ft := await bot.fetch_target(target):
@@ -108,10 +113,6 @@ class JobQueueBase:
             except Exception:
                 Logger.exception()
             return
-
-        # The code below should not be reached if the task is processed correctly.
-        Logger.error(f"Task {tsk.action}({tsk.task_id}) seems not finished properly, bug in code?")
-        await tsk.set_status("failed")
 
     @classmethod
     async def _check_queue(cls, target_client: str | None = None):
