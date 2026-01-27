@@ -351,7 +351,6 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                                        module_name=command_first_word,
                                        module_type="normal")
 
-
     except ExternalException as e:
         await _process_external_exception(msg, e)
 
@@ -721,7 +720,7 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
     err_msg_chain = MessageChain.assign(I18NContext("error.message.prompt"))
     err_msg = msg.session_info.locale.t_str(str(e))
     err_msg_chain += match_kecode(err_msg)
-    err_msg_chain.append(I18NContext("error.message.prompt.report")) 
+    err_msg_chain.append(I18NContext("error.message.prompt.report"))
     if bug_report_url:
         err_msg_chain.append(I18NContext("error.message.prompt.address", url=bug_report_url))
     await msg.handle_error_signal()
