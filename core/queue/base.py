@@ -13,6 +13,8 @@ from core.constants import QueueAlreadyRunning
 from core.database.models import JobQueuesTable
 from core.exports import exports
 from core.logger import Logger
+from core.utils.container import ExpiringTempDict
+
 
 if TYPE_CHECKING:
     from core.builtins.bot import Bot
@@ -23,7 +25,7 @@ class QueueFinished(Exception):
 
 
 class QueueTaskManager:
-    tasks = {}
+    tasks = ExpiringTempDict()
 
     @classmethod
     async def add(cls, task_id: str):
@@ -37,6 +39,9 @@ class QueueTaskManager:
         finally:
             if task_id in cls.tasks:
                 del cls.tasks[task_id]
+            tsk = await JobQueuesTable.get_or_none(task_id=task_id)
+            if tsk:
+                await tsk.delete()
 
     @classmethod
     async def set_result(cls, task_id: str, result: dict):
@@ -47,7 +52,6 @@ class QueueTaskManager:
 
 class JobQueueBase:
     name = "Internal|" + str(uuid4())
-    _queue_tasks = {}
     queue_actions = {}
     report_targets = Config("report_targets", [])
     is_running = False
@@ -71,7 +75,7 @@ class JobQueueBase:
         raise QueueFinished
 
     @classmethod
-    async def _process_task(cls, tsk):
+    async def _process_task(cls, tsk: JobQueuesTable):
         bot: "Bot" = exports["Bot"]
         try:
             timestamp = tsk.timestamp
@@ -80,12 +84,12 @@ class JobQueueBase:
                 await cls.return_val(tsk, {}, status="timeout")
             elif tsk.action in cls.queue_actions:
                 returns: dict = await cls.queue_actions[tsk.action](tsk, tsk.args)
-                await cls.return_val(tsk, returns if returns else {}, status="done")
+                await cls.return_val(tsk, returns if returns else {})
             else:
                 Logger.warning(f"Unknown action {tsk.action}, skip.")
                 await cls.return_val(tsk, {}, status="failed")
         except QueueFinished:
-            Logger.trace(f"Task {tsk.action}({tsk.task_id}) finished.")
+            Logger.trace(f"Task {tsk.action}({tsk.task_id}) {tsk.status}.")
             return
         except Exception:
             f = traceback.format_exc()
@@ -99,7 +103,7 @@ class JobQueueBase:
                     if ft := await bot.fetch_target(target):
                         await cls.client_direct_message(ft, MessageChain.assign(
                             [I18NContext("error.message.report", command=tsk.action),
-                             Plain(f.strip(), disable_joke=True)]), enable_parse_message=False,
+                                Plain(f.strip(), disable_joke=True)]), enable_parse_message=False,
                             disable_secret_check=True)
             except Exception:
                 Logger.exception()
@@ -110,7 +114,7 @@ class JobQueueBase:
         await tsk.set_status("failed")
 
     @classmethod
-    async def _check_queue(cls, target_client: str = None):
+    async def _check_queue(cls, target_client: str | None = None):
         # Logger.debug(f"Checking job queue for {cls.name}, target client: {target_client if target_client else "all"}")
         for task_id in QueueTaskManager.tasks.copy():
             tsk = await JobQueuesTable.get_or_none(task_id=task_id)
@@ -128,7 +132,7 @@ class JobQueueBase:
             asyncio.create_task(cls._process_task(tsk))
 
     @classmethod
-    async def check_job_queue(cls, target_client: str = None):
+    async def check_job_queue(cls, target_client: str | None = None):
         if cls.is_running:
             raise QueueAlreadyRunning
         cls.is_running = True
@@ -155,4 +159,4 @@ class JobQueueBase:
                           {"session_info": converter.unstructure(session_info),
                            "message": converter.unstructure(message, MessageChain | MessageNodes),
                            "enable_parse_message": enable_parse_message,
-                           "disable_secret_check": disable_secret_check}, )
+                           "disable_secret_check": disable_secret_check})
