@@ -445,99 +445,104 @@ async def _():
             matched_logs[id_] = {}
         for wiki in fetches[id_]:
             Logger.debug(f"Checking fetch {id_} {wiki}...")
-            if wiki not in fetch_cache[id_]:
-                fetch_cache[id_][wiki] = {
-                    "AbuseLog": deque(maxlen=300),
-                    "RecentChanges": deque(maxlen=300),
-                }
-            if wiki not in matched_logs[id_]:
-                matched_logs[id_][wiki] = {"AbuseLog": [], "RecentChanges": []}
-            use_bot = fetches[id_][wiki]["use_bot"]
-            query_wiki = WikiLib(wiki)
-            await query_wiki.fixup_wiki_info()
-            Logger.debug(query_wiki.wiki_info.api)
-            if fetches[id_][wiki]["AbuseLog"]["enable"]:
-                try:
-                    query = await query_wiki.get_json(
-                        action="query",
-                        list="abuselog",
-                        aflprop="user|title|action|result|filter|timestamp",
-                        _no_login=not use_bot,
-                        afllimit=30,
-                    )
-                    if "error" not in query:
-                        first_fetch = False
-                        if not fetch_cache[id_][wiki]["AbuseLog"]:
-                            first_fetch = True
-                        for y in query["query"]["abuselog"]:
-                            identify = convert_data_to_text(y)
-                            if identify not in fetch_cache[id_][wiki]["AbuseLog"]:
-                                fetch_cache[id_][wiki]["AbuseLog"].append(identify)
-                                if not first_fetch:
-                                    matched_f = False
-                                    if (
-                                        "*" in fetches[id_][wiki]["AbuseLog"]["filters"]
-                                        or not fetches[id_][wiki]["AbuseLog"]["filters"]
-                                    ):
-                                        matched_f = True
-                                    else:
-                                        for f in fetches[id_][wiki]["AbuseLog"][
-                                            "filters"
-                                        ]:
-                                            fc = re.compile(f)
-                                            if fc.search(identify):
-                                                matched_f = True
-                                                break
-                                    if matched_f:
-                                        matched_logs[id_][wiki]["AbuseLog"].append(y)
-                except Exception:
-                    Logger.exception()
-            if fetches[id_][wiki]["RecentChanges"]["enable"]:
-                try:
-                    query = await query_wiki.get_json(
-                        action="query",
-                        list="recentchanges",
-                        rcprop="title|user|timestamp|loginfo|comment|redirect|flags|sizes|ids",
-                        _no_login=not use_bot,
-                        rclimit=100,
-                        rcshow="|".join(fetches[id_][wiki]["RecentChanges"]["rcshow"]),
-                    )
-                    if "error" not in query:
-                        first_fetch = False
-                        if not fetch_cache[id_][wiki]["RecentChanges"]:
-                            first_fetch = True
-                        for y in query["query"]["recentchanges"]:
-                            if "actionhidden" in y:
-                                continue
-                            identify = convert_data_to_text(y)
-                            if identify not in fetch_cache[id_][wiki]["RecentChanges"]:
-                                fetch_cache[id_][wiki]["RecentChanges"].append(identify)
-                                if not first_fetch:
-                                    matched_f = False
-                                    if (
-                                        "*"
-                                        in fetches[id_][wiki]["RecentChanges"][
-                                            "filters"
-                                        ]
-                                        or not fetches[id_][wiki]["RecentChanges"][
-                                            "filters"
-                                        ]
-                                    ):
-                                        matched_f = True
-                                    else:
-                                        for f in fetches[id_][wiki]["RecentChanges"][
-                                            "filters"
-                                        ]:
-                                            fc = re.compile(f)
-                                            if fc.search(identify):
-                                                matched_f = True
-                                                break
-                                    if matched_f:
-                                        matched_logs[id_][wiki]["RecentChanges"].append(
-                                            y
-                                        )
-                except Exception:
-                    Logger.exception()
+            try:
+                if wiki not in fetch_cache[id_]:
+                    fetch_cache[id_][wiki] = {
+                        "AbuseLog": deque(maxlen=300),
+                        "RecentChanges": deque(maxlen=300),
+                    }
+                if wiki not in matched_logs[id_]:
+                    matched_logs[id_][wiki] = {"AbuseLog": [], "RecentChanges": []}
+                use_bot = fetches[id_][wiki]["use_bot"]
+                query_wiki = WikiLib(wiki)
+                await query_wiki.fixup_wiki_info()
+                Logger.debug(query_wiki.wiki_info.api)
+                if fetches[id_][wiki]["AbuseLog"]["enable"]:
+                    try:
+                        query = await query_wiki.get_json(
+                            action="query",
+                            list="abuselog",
+                            aflprop="user|title|action|result|filter|timestamp",
+                            _no_login=not use_bot,
+                            afllimit=30,
+                        )
+                        if "error" not in query:
+                            first_fetch = False
+                            if not fetch_cache[id_][wiki]["AbuseLog"]:
+                                first_fetch = True
+                            for y in query["query"]["abuselog"]:
+                                identify = convert_data_to_text(y)
+                                if identify not in fetch_cache[id_][wiki]["AbuseLog"]:
+                                    fetch_cache[id_][wiki]["AbuseLog"].append(identify)
+                                    if not first_fetch:
+                                        matched_f = False
+                                        if (
+                                            "*" in fetches[id_][wiki]["AbuseLog"]["filters"]
+                                            or not fetches[id_][wiki]["AbuseLog"]["filters"]
+                                        ):
+                                            matched_f = True
+                                        else:
+                                            for f in fetches[id_][wiki]["AbuseLog"][
+                                                "filters"
+                                            ]:
+                                                fc = re.compile(f)
+                                                if fc.search(identify):
+                                                    matched_f = True
+                                                    break
+                                        if matched_f:
+                                            matched_logs[id_][wiki]["AbuseLog"].append(y)
+                    except Exception:
+                        Logger.exception()
+                if fetches[id_][wiki]["RecentChanges"]["enable"]:
+                    try:
+                        query = await query_wiki.get_json(
+                            action="query",
+                            list="recentchanges",
+                            rcprop="title|user|timestamp|loginfo|comment|redirect|flags|sizes|ids",
+                            _no_login=not use_bot,
+                            rclimit=100,
+                            rcshow="|".join(fetches[id_][wiki]["RecentChanges"]["rcshow"]),
+                        )
+                        if "error" not in query:
+                            first_fetch = False
+                            if not fetch_cache[id_][wiki]["RecentChanges"]:
+                                first_fetch = True
+                            for y in query["query"]["recentchanges"]:
+                                if "actionhidden" in y:
+                                    continue
+                                identify = convert_data_to_text(y)
+                                if identify not in fetch_cache[id_][wiki]["RecentChanges"]:
+                                    fetch_cache[id_][wiki]["RecentChanges"].append(identify)
+                                    if not first_fetch:
+                                        matched_f = False
+                                        if (
+                                            "*"
+                                            in fetches[id_][wiki]["RecentChanges"][
+                                                "filters"
+                                            ]
+                                            or not fetches[id_][wiki]["RecentChanges"][
+                                                "filters"
+                                            ]
+                                        ):
+                                            matched_f = True
+                                        else:
+                                            for f in fetches[id_][wiki]["RecentChanges"][
+                                                "filters"
+                                            ]:
+                                                fc = re.compile(f)
+                                                if fc.search(identify):
+                                                    matched_f = True
+                                                    break
+                                        if matched_f:
+                                            matched_logs[id_][wiki]["RecentChanges"].append(
+                                                y
+                                            )
+                    except Exception:
+                        Logger.warning("Failed to fetch wiki log:")
+                        Logger.exception()
+            except Exception:
+                Logger.warning("Failed to fetch wiki log:")
+                Logger.exception()
 
     matched = matched_logs
 
