@@ -551,10 +551,14 @@ async def _():
         if ft:
             ft_session = await FetchedMessageSession.from_session_info(ft)
             for wiki in matched[id_]:
-                wiki_info = (await WikiLib(wiki).check_wiki_available()).value
-                wiki_name = f"({wiki_info.name}) "
-                if wiki_info.wikiid:
-                    wiki_name = f"({wiki_info.wikiid}) "
+                try:
+                    wiki_info = (await WikiLib(wiki).check_wiki_available()).value
+                    wiki_name = f"({wiki_info.name}) "
+                    if wiki_info.wikiid:
+                        wiki_name = f"({wiki_info.wikiid}) "
+                except Exception:
+                    continue
+
                 if matched[id_][wiki]["AbuseLog"]:
                     ab = await convert_ab_to_detailed_format(ft_session,
                                                              matched[id_][wiki]["AbuseLog"]
