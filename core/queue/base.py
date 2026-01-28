@@ -71,7 +71,7 @@ class JobQueueBase:
         raise QueueFinished
 
     @classmethod
-    async def _process_task(cls, tsk):
+    async def _process_task(cls, tsk: JobQueuesTable):
         bot: "Bot" = exports["Bot"]
         try:
             timestamp = tsk.timestamp
@@ -86,6 +86,8 @@ class JobQueueBase:
                 await cls.return_val(tsk, {}, status="failed")
         except QueueFinished:
             Logger.trace(f"Task {tsk.action}({tsk.task_id}) finished.")
+            await asyncio.sleep(5)
+            await tsk.delete()
             return
         except Exception:
             f = traceback.format_exc()
