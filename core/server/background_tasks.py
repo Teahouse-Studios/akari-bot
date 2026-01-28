@@ -10,7 +10,7 @@ from core.utils.container import ExpiringTempDict
 from core.web_render import init_web_render, web_render
 
 
-@Scheduler.scheduled_job(IntervalTrigger(minutes=10))
+@Scheduler.scheduled_job(IntervalTrigger(minutes=60))
 async def _():
     await SessionTaskManager.bg_check()
     await JobQueuesTable.clear_task()
