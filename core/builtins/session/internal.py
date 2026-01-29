@@ -396,11 +396,11 @@ class MessageSession:
         if not self.session_info.support_quote:
             message_chain = get_message_chain(self.session_info, message_chain)
             if append_instruction:
-                message_chain.append(I18NContext("message.reply.prompt"))
+                message_chain.append(I18NContext("message.wait.next_message.prompt"))
             if all_:
                 return await self.wait_anyone(message_chain, False, delete, timeout)
             return await self.wait_next_message(message_chain, False, delete, timeout, False)
-            
+
         send = None
         ExecutionLockList.remove(self)
         await self.end_typing()

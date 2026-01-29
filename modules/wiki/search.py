@@ -2,7 +2,7 @@ import asyncio
 import re
 
 from core.builtins.bot import Bot
-from core.builtins.message.internal import I18NContext
+from core.builtins.message.internal import I18NContext, Plain
 from core.logger import Logger
 from core.utils.func import is_int
 from .database.models import WikiTargetInfo
@@ -69,8 +69,7 @@ async def search_pages(
         i = 0
         for w in wait_msg_list:
             i += 1
-            w = f"{i}. {w}"
-            msg_list.append(w)
+            msg_list.append(Plain(f"{i}. {w}"))
         msg_list.append(I18NContext("wiki.message.search.prompt"))
     else:
         await msg.finish(I18NContext("wiki.message.search.not_found"))
