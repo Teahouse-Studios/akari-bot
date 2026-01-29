@@ -15,9 +15,9 @@ from core.builtins.session.lock import ExecutionLockList
 from core.builtins.session.tasks import SessionTaskManager
 from core.config import Config
 from core.constants.default import bug_report_url_default, ignored_sender_default
-from core.constants.exceptions import AbuseWarning, ExternalException, FinishedException, \
+from core.constants.exceptions import AbuseWarning, ExternalException, \
     InvalidCommandFormatError, InvalidHelpDocTypeError, \
-    NoReportException, SendMessageFailed, WaitCancelException
+    NoReportException, SessionFinished, SendMessageFailed, WaitCancelException
 from core.constants.info import Info
 from core.database.models import AnalyticsData
 from core.exports import exports
@@ -313,7 +313,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                 none_templates = False
         if not none_templates:  # 如果有，送入命令解析
             await _execute_module_command(msg, module, command_first_word)
-            raise FinishedException(msg.sent)  # if not using msg.finish
+            raise SessionFinished(msg.sent)  # if not using msg.finish
         # 如果没有，直接传入下游模块
         msg.parsed_msg = None
         for func in module.command_list.set:
@@ -322,7 +322,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                     await msg.start_typing()
                     _typing = True
                 await func.function(msg)  # 将msg传入下游模块
-                raise FinishedException(msg.sent)  # if not using msg.finish
+                raise SessionFinished(msg.sent)  # if not using msg.finish
 
         if msg.session_info.sender_info.sender_data.get("typo_check", True):  # 判断是否开启错字检查
             new_msg, new_command_first_word, confirmed = await _command_typo_check(msg, modules, command_first_word)
@@ -338,8 +338,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
     except SendMessageFailed:
         await _process_send_message_failed(msg)
 
-    except FinishedException as e:
-
+    except SessionFinished as e:
         time_used = time.perf_counter() - time_start
         Logger.success(f"Successfully finished session from {identify_str}, returns: {str(e)}. "
                        f"Times take up: {time_used:06f}s")
@@ -466,8 +465,8 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                             else:
                                 await rfunc.function(msg)  # 将msg传入下游模块
                             ExecutionLockList.remove(msg)
-                            raise FinishedException(msg.sent)  # if not using msg.finish
-                    except FinishedException as e:
+                            raise SessionFinished(msg.sent)  # if not using msg.finish
+                    except SessionFinished as e:
                         time_used = time.perf_counter() - time_start
                         if rfunc.logging:
                             Logger.success(
@@ -657,7 +656,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
                 _typing = True
             await parsed_msg[0].function(**kwargs)  # 将msg传入下游模块
 
-            raise FinishedException(msg.sent)  # if not using msg.finish
+            raise SessionFinished(msg.sent)  # if not using msg.finish
         except InvalidCommandFormatError:
             if not msg.session_info.sender_info.sender_data.get("typo_check", True):
                 await msg.send_message(I18NContext("parser.command.invalid.syntax",

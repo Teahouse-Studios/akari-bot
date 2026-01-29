@@ -17,7 +17,7 @@ from core.builtins.session.tasks import SessionTaskManager
 from core.builtins.types import MessageElement
 from core.builtins.utils import confirm_command
 from core.config import Config
-from core.constants import FinishedException, WaitCancelException
+from core.constants import SessionFinished, WaitCancelException
 from core.exports import add_export, exports
 from core.utils.func import is_int
 
@@ -113,7 +113,7 @@ class MessageSession:
                 enable_split_image=enable_split_image,
                 callback=callback,
             )
-        raise FinishedException(f)
+        raise SessionFinished(f)
 
     async def send_direct_message(
         self,

@@ -8,8 +8,8 @@ from core.builtins.session.info import SessionInfo
 from core.builtins.types import MessageElement
 from core.constants.exceptions import (
     AbuseWarning,
-    FinishedException,
     NoReportException,
+    SessionFinished,
     TestException,
 )
 from core.cooldown import _cd_dict
@@ -103,7 +103,7 @@ async def run_single_test(
 
     try:
         await parser(msg)
-    except FinishedException:
+    except SessionFinished:
         pass
     except (AbuseWarning, NoReportException, TestException) as e:
         err_msg = msg.session_info.locale.t_str(str(e))

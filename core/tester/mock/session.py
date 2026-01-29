@@ -9,7 +9,7 @@ from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession, I18NContext
 from core.builtins.utils import confirm_command
 from core.config import Config
-from core.constants import FinishedException
+from core.constants.exceptions import SessionFinished
 
 
 class MockMessageSession(MessageSession):
@@ -77,7 +77,7 @@ class MockMessageSession(MessageSession):
             callback=None):
         if message_chain:
             await self.send_message(message_chain)
-        raise FinishedException
+        raise SessionFinished
 
     async def send_direct_message(
             self,

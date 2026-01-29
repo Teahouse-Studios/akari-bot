@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from core.builtins.message.internal import I18NContext
 from core.builtins.parser.command import CommandParser
 from core.builtins.session.tasks import SessionTaskManager
-from core.constants.exceptions import FinishedException, InvalidCommandFormatError
+from core.constants.exceptions import InvalidCommandFormatError, SessionFinished
 from core.exports import exports
 from core.loader import ModulesManager
 from core.logger import Logger
@@ -39,7 +39,7 @@ async def parser(msg: "Bot.MessageSession"):
         return None
 
     # 检查正则
-    # 若任何正则命中则会在 _execute_regex 中调用对应函数并抛出 FinishedException
+    # 若任何正则命中则会在 _execute_regex 中调用对应函数并抛出 SessionFinished
     await _execute_regex(msg, modules)
     # 若未命中任何正则，视为不匹配（适用于单元测试）
     return None
@@ -133,7 +133,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
     if not none_templates:  # 如果有，送入命令解析
         executed = await _execute_module_command(msg, module, command_first_word)
         if executed:
-            raise FinishedException  # if not using msg.finish
+            raise SessionFinished  # if not using msg.finish
     # 如果没有，直接传入下游模块
     msg.parsed_msg = None
     for func in module.command_list.set:
@@ -143,7 +143,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
             if msg.session_info.sender_info.sender_data.get("typing_prompt", True):
                 await msg.start_typing()
             await func.function(msg)  # 将msg传入下游模块
-            raise FinishedException  # if not using msg.finish
+            raise SessionFinished  # if not using msg.finish
 
 
 async def _execute_regex(msg: "Bot.MessageSession", modules):
@@ -167,7 +167,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules):
                     if hasattr(msg, "_casetest_target") and rfunc.function is not msg._casetest_target:
                         continue
                     await rfunc.function(msg)  # 将msg传入下游模块
-                    raise FinishedException  # if not using msg.finish
+                    raise SessionFinished  # if not using msg.finish
 
 
 async def _execute_module_command(msg: "Bot.MessageSession", module, command_first_word):

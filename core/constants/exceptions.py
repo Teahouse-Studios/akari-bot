@@ -1,8 +1,8 @@
-class FinishedException(BaseException):
+class SendMessageFailed(BaseException):
     pass
 
 
-class SendMessageFailed(BaseException):
+class SessionFinished(BaseException):
     pass
 
 
