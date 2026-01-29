@@ -92,8 +92,12 @@ class JobQueueBase:
 
             if tsk_val:
                 Logger.trace(f"Task {tsk.action}({tsk.task_id}) {tsk.status}.")
-                await asyncio.sleep(5)
-                await tsk.delete()
+
+                # Auto-delete done tasks after 5 seconds to reduce database size.
+                # Assume 5 seconds is enough for processing the possible things after task is done.
+                if tsk.status == "done":
+                    await asyncio.sleep(5)
+                    await tsk.delete()
                 return
             # The code below should not be reached if the task is processed correctly.
             Logger.error(f"Task {tsk.action}({tsk.task_id}) seems not finished properly, bug in code?")
