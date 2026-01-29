@@ -92,6 +92,8 @@ class JobQueueBase:
 
             if tsk_val:
                 Logger.trace(f"Task {tsk.action}({tsk.task_id}) {tsk.status}.")
+                await asyncio.sleep(5)
+                await tsk.delete()
                 return
             # The code below should not be reached if the task is processed correctly.
             Logger.error(f"Task {tsk.action}({tsk.task_id}) seems not finished properly, bug in code?")
