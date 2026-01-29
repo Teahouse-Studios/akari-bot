@@ -1,3 +1,6 @@
+from core import check_python_version  # noqa
+check_python_version()  # noqa
+
 import asyncio
 import importlib
 import multiprocessing
@@ -14,11 +17,11 @@ from tortoise import Tortoise, run_async
 from core.constants import bots_path, config_path, config_filename, logs_path
 from core.database import close_db
 
+
 # Capture the base import lists to avoid clearing essential modules when restarting
 base_import_lists = list(sys.modules)
 
 # Basic logger setup
-
 try:
     logger.remove(0)
 except ValueError:
@@ -38,6 +41,7 @@ Logger.add(
     colorize=True,
     filter=lambda record: record["extra"].get("name") == "BotDaemon"
 )
+
 Logger.add(
     sink=logs_path / "BotDaemon_debug_{time:YYYY-MM-DD}.log",
     format=logger_format,
@@ -108,8 +112,8 @@ def pre_init():
             await close_db()
             await convert_database()
             Logger.success("Database converted successfully!")
-        elif (current_ver := query_dbver.version) < (target_ver := database_version):
-            Logger.info(f"Updating database from {current_ver} to {target_ver}...")
+        elif query_dbver.version < database_version:
+            Logger.info(f"Updating database from {query_dbver.version} to {database_version}...")
             from core.database.update import update_database
 
             await close_db()
@@ -211,7 +215,7 @@ async def run_bot():
         processes.append(p)
 
     envs = os.environ.copy()
-    envs["PYTHONIOENCODING"] = "UTF-8"
+    envs["PYTHONIOENCODING"] = encode
     envs["PYTHONPATH"] = Path(".").resolve()
     bots_list = [p.name for p in bots_path.iterdir() if p.is_dir() and not p.name.startswith("_")]
 
@@ -324,15 +328,6 @@ def main():
 
 
 if __name__ == "__main__":
-    # Check Python version
-    required_version = (3, 12)
-    if sys.version_info < required_version:
-        Logger.critical(
-            f"Your Python version is {sys.version_info.major}.{sys.version_info.minor}, "
-            f"and you need Python {required_version[0]}.{required_version[1]} or higher."
-        )
-        sys.exit(1)
-
     # Detect if the program is already running
     lock_file_path = Path("./.bot.lock").resolve()
     if sys.platform == "win32":

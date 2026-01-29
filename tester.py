@@ -1,3 +1,6 @@
+from core import check_python_version  # noqa
+check_python_version()  # noqa
+
 import asyncio
 import glob
 import importlib.util
