@@ -23,27 +23,30 @@ def cross(checker: list[Any], elem: Any | list[Any] | None, diff):
         return True, diff
     if isinstance(elem, list):
         for _j in enumerate(checker):
-            if _j >= len(checker):
+            __j = _j[0]
+            if __j >= len(checker):
                 continue
-            __e = checker[_j]
+            __e = checker[__j]
             if __e in elem:
-                diff_ret.append(_j)
+                diff_ret.append(__j)
                 ret = True
     elif isinstance(elem, tuple):
         for _j in enumerate(checker):
-            if _j >= len(checker):
+            __j = _j[0]
+            if __j >= len(checker):
                 continue
-            __e = checker[_j]
+            __e = checker[__j]
             if elem[0] <= __e <= elem[1]:
-                diff_ret.append(_j)
+                diff_ret.append(__j)
                 ret = True
     else:
         for _j in enumerate(checker):
-            if _j >= len(checker):
+            __j = _j[0]
+            if __j >= len(checker):
                 continue
-            __e = checker[_j]
+            __e = checker[__j]
             if elem == __e:
-                return True, [_j]
+                return True, [__j]
     return ret, diff_ret
 
 

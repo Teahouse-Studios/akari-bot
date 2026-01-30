@@ -251,33 +251,33 @@ async def _get_level_process(msg: Bot.MessageSession,
                              goal: str | None = None,
                              use_cache: bool = True) -> tuple[dict[str, list[str]], list[tuple[str, int]]]:
     res = await get_total_record(msg, payload, use_cache)
-    verlist: list = res["verlist"]
+    records: list = res["records"]
 
     song_played = []
     if goal:
         if goal in rate_list:
-            for song in verlist:
+            for song in records:
                 try:
                     rank = next(rank for interval, rank in score_to_rate.items()
                                 if interval[0] <= song["achievements"] < interval[1])
                 except StopIteration:
                     continue
-                song_played.append((str(song["id"]), song["level_index"], rank))
+                song_played.append((str(song["song_id"]), song["level_index"], rank))
         elif goal in combo_list:
-            for song in verlist:
+            for song in records:
                 rank = combo_mapping[song["fc"]] if song["fc"] else None
-                song_played.append((str(song["id"]), song["level_index"], rank))
+                song_played.append((str(song["song_id"]), song["level_index"], rank))
         elif goal in sync_list:
-            for song in verlist:
+            for song in records:
                 rank = sync_mapping[song["fs"]] if song["fs"] else None
-                song_played.append((str(song["id"]), song["level_index"], rank))
+                song_played.append((str(song["song_id"]), song["level_index"], rank))
         else:
             await msg.finish(I18NContext("maimai.message.goal_invalid"))
 
     song_list = {}
 
     for music in (await total_list.get()).filter(level=level):
-        if music["basic_info"]["from"] in payload["version"] and int(music.id) < 100000:  # 过滤宴谱
+        if int(music.id) < 100000:  # 过滤宴谱
             indices = [i for i, lv in enumerate(music.level) if lv == level]
             for idx in indices:
                 const = str(music.ds[idx])

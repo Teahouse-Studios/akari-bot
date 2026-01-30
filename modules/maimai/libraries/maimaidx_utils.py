@@ -16,16 +16,15 @@ from ..database.models import DivingProberBindInfo
 total_list = TotalList()
 
 
-async def get_diving_prober_bind_info(msg: Bot.MessageSession):
+async def get_diving_prober_bind_info(msg: Bot.MessageSession, **kwargs):
     bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
     if not bind_info:
         if msg.session_info.sender_from == "QQ":
-            payload = {"qq": msg.session_info.get_common_sender_id(), "b50": True}
+            return {"qq": msg.session_info.get_common_sender_id()} | kwargs
         else:
             await msg.finish(I18NContext("maimai.message.user_unbound", prefix=msg.session_info.prefixes[0]))
     else:
-        payload = {"username": bind_info.username, "b50": True}
-    return payload
+        return {"username": bind_info.username} | kwargs
 
 
 def get_diff(diff: str) -> int:

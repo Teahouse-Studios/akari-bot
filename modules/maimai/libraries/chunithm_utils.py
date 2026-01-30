@@ -6,16 +6,15 @@ from .chunithm_mapping import *
 from ..database.models import DivingProberBindInfo, LxnsProberBindInfo
 
 
-async def get_diving_prober_bind_info(msg: Bot.MessageSession):
+async def get_diving_prober_bind_info(msg: Bot.MessageSession, **kwargs):
     bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
     if not bind_info:
         if msg.session_info.sender_from == "QQ":
-            payload = {"qq": msg.session_info.get_common_sender_id()}
+            return {"qq": msg.session_info.get_common_sender_id()} | kwargs
         else:
             await msg.finish(I18NContext("chunithm.message.user_unbound.df", prefix=msg.session_info.prefixes[0]))
     else:
-        payload = {"username": bind_info.username}
-    return payload
+        return {"username": bind_info.username} | kwargs
 
 
 async def get_lxns_prober_bind_info(msg: Bot.MessageSession):

@@ -555,7 +555,7 @@ async def _(msg: Bot.MessageSession):
 
 @mai.command("b50 {{I18N:maimai.help.b50}}")
 async def _(msg: Bot.MessageSession):
-    payload = await get_diving_prober_bind_info(msg)
+    payload = await get_diving_prober_bind_info(msg, b50=True)
     img = await generate_b50(msg, payload)
     if img:
         await msg.finish(BImage(img))

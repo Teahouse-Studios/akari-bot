@@ -259,7 +259,6 @@ async def get_total_record(
         mai_cache_path.mkdir(parents=True, exist_ok=True)
         cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_total_record.json"
         url = "https://www.diving-fish.com/api/maimaidxprober/dev/player/records"
-        payload["version"] = versions
         try:
             data = await get_url(
                 f"{url}?{urlencode(payload)}",
@@ -276,7 +275,7 @@ async def get_total_record(
                     f.write(orjson.dumps(data))
             if not utage:
                 data = {
-                    "verlist": [d for d in data["verlist"] if int(d.get("id", 0)) < 100000]
+                    "records": [d for d in data["records"] if int(d.get("id", 0)) < 100000]
                 }  # 过滤宴谱
             return data
         except Exception as e:
@@ -299,8 +298,8 @@ async def get_total_record(
                     await msg.send_message(I18NContext("maimai.message.use_cache"))
                     if not utage:
                         data = {
-                            "verlist": [
-                                d for d in data["verlist"] if d.get("id", 0) < 100000
+                            "records": [
+                                d for d in data["records"] if d.get("id", 0) < 100000
                             ]
                         }  # 过滤宴谱
                     return data
@@ -365,7 +364,3 @@ async def get_plate(
                 raise e
     else:
         raise ConfigValueError("{I18N:error.config.secret.not_found}")
-
-
-
-
