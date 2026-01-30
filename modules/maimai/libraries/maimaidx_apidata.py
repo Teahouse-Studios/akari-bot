@@ -264,7 +264,11 @@ async def get_total_record(
                 url,
                 data=orjson.dumps(payload),
                 status_code=200,
-                headers={"Content-Type": "application/json", "accept": "*/*"},
+                headers={
+                    "Content-Type": "application/json",
+                    "accept": "*/*",
+                    "Developer-Token": DF_DEVELOPER_TOKEN
+                },
                 fmt="json",
             )
             if use_cache and data:
@@ -361,3 +365,5 @@ async def get_plate(
                 raise e
     else:
         raise ConfigValueError("{I18N:error.config.secret.not_found}")
+
+
