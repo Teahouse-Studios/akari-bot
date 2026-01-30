@@ -262,7 +262,7 @@ async def get_total_record(
         payload["version"] = versions
         try:
             data = await get_url(
-                f"{url}?{urlencode(payload}",
+                f"{url}?{urlencode(payload)}",
                 status_code=200,
                 headers={
                     "Content-Type": "application/json",
@@ -365,6 +365,7 @@ async def get_plate(
                 raise e
     else:
         raise ConfigValueError("{I18N:error.config.secret.not_found}")
+
 
 
 
