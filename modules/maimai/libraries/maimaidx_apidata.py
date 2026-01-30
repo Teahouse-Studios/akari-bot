@@ -1,4 +1,5 @@
 from collections import defaultdict
+from urllib.parse import urlencode
 
 import orjson
 from langconv.converter import LanguageConverter
@@ -260,9 +261,8 @@ async def get_total_record(
         url = "https://www.diving-fish.com/api/maimaidxprober/dev/player/records"
         payload["version"] = versions
         try:
-            data = await post_url(
-                url,
-                data=orjson.dumps(payload),
+            data = await get_url(
+                f"{url}?{urlencode(payload}",
                 status_code=200,
                 headers={
                     "Content-Type": "application/json",
@@ -365,5 +365,6 @@ async def get_plate(
                 raise e
     else:
         raise ConfigValueError("{I18N:error.config.secret.not_found}")
+
 
 
