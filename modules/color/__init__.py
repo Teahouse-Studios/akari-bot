@@ -103,45 +103,38 @@ async def _(msg: Bot.MessageSession, color: str = None):
 
     css_color_name_raw = get_color_name(color, css_hex_to_names)
     css_color_name = ""
-    css_color_name_short = ""
     if css_color_name_raw[1]:
         css_color_name = str(I18NContext("color.message.embed.css"))
-        if css_color_name_raw[0] != "black" and css_color_name_raw[0] != "white":
-            css_color_name_short = f"{css_color_name_raw[0]}\n"
     elif css_color_name_raw[0]:
         css_color_name = str(I18NContext("color.message.embed.css.approximate"))
 
     img_css = Image.new("RGB", (500, 250), color=css_names_to_hex.get(css_color_name_raw[0], "#FFFFFF"))
     draw_css = ImageDraw.Draw(img_css)
     draw_css.text(
-        (250, 125), f"CSS: {
-            css_color_name_raw[0]}", font=font, fill=(
-            0, 0, 0) if get_luminance(
-                webcolors.html5_parse_simple_color(
-                    css_names_to_hex.get(
-                        css_color_name_raw[0], "#FFFFFF"))) > 140 else (
-                            255, 255, 255), anchor="mm", align="center", )
+        (250, 125),
+        f"CSS: {css_color_name_raw[0]}",
+        font=font,
+        fill=(0, 0, 0) if get_luminance(webcolors.html5_parse_simple_color(css_names_to_hex.get(
+            css_color_name_raw[0], "#FFFFFF"))) > 140 else (255, 255, 255),
+        anchor="mm",
+        align="center", )
     img.paste(img_css, (500, 0))
 
     material_color_name_raw = get_color_name(color, material_colors_hex_to_names)
     material_color_name = ""
-    material_color_name_short = ""
     if material_color_name_raw[1]:
         material_color_name = str(I18NContext("color.message.embed.md"))
-        material_color_name_short = f"{material_color_name_raw[0]}\n"
     elif material_color_name_raw[0]:
         material_color_name = str(I18NContext("color.message.embed.md.approximate"))
 
     img_md = Image.new("RGB", (500, 250), color=material_colors_names_to_hex.get(material_color_name_raw[0], "#FFFFFF"))
     draw_md = ImageDraw.Draw(img_md)
     draw_md.text(
-        (250, 125), f"MD: {
-            material_color_name_raw[0]}", font=font, fill=(
-            0, 0, 0) if get_luminance(
-                webcolors.html5_parse_simple_color(
-                    material_colors_names_to_hex.get(
-                        material_color_name_raw[0], "#FFFFFF"))) > 140 else (
-                            255, 255, 255), anchor="mm", align="center", )
+        (250, 125), f"MD: {material_color_name_raw[0]}",
+        font=font,
+        fill=(0, 0, 0) if get_luminance(webcolors.html5_parse_simple_color(material_colors_names_to_hex.get(
+            material_color_name_raw[0], "#FFFFFF"))) > 140 else (255, 255, 255),
+        anchor="mm", align="center", )
     img.paste(img_md, (500, 250))
 
     await msg.finish(
