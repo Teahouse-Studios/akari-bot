@@ -1465,14 +1465,14 @@ sgmllib3k = "*"
 
 [[package]]
 name = "ff3"
-version = "1.0.2"
+version = "1.0.3"
 description = "Format Preserving Encryption (FPE) with FF3"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "ff3-1.0.2-py3-none-any.whl", hash = "sha256:d289644085037c1357497bae0bace18e31e13b25f60e1eadffa71b9eeed4779d"},
-    {file = "ff3-1.0.2.tar.gz", hash = "sha256:ff892c7472509c17f68cb4907f8af7fc91835cb68c260e2ab7597b57ad44bc7a"},
+    {file = "ff3-1.0.3-py3-none-any.whl", hash = "sha256:e747e344e6da8a97400bba3a55acc0e54202225a23f95af0f0b5ffb4fc9ed26d"},
+    {file = "ff3-1.0.3.tar.gz", hash = "sha256:88e37be28d26fa498bb9dc0f911923f0f2f26c02a1a6d1efb84ac5ebd66ae4af"},
 ]
 
 [package.dependencies]
