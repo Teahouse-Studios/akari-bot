@@ -198,7 +198,7 @@ class Bot:
         if private_assets_path:
             PrivateAssets.set(private_assets_path)
         else:
-            PrivateAssets.set(assets_path / "private" / client_name)
+            PrivateAssets.set(assets_path / "private" / client_name.lower())
         Info.client_name = client_name
 
     @classmethod

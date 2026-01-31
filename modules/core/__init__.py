@@ -1,5 +1,6 @@
 from .alias import *
 from .analytics import *
+from .dev import *
 from .modules import *
 from .petal import *
 from .prefix import *

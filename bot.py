@@ -183,6 +183,7 @@ binary_mode = not sys.argv[0].endswith(".py")
 
 
 async def run_bot():
+    from dotenv import load_dotenv  # noqa
     from core.config import CFGManager  # noqa
     from core.server.run import run_async as server_run_async  # noqa
 
@@ -214,6 +215,7 @@ async def run_bot():
         p.start()
         processes.append(p)
 
+    load_dotenv()
     envs = os.environ.copy()
     envs["PYTHONIOENCODING"] = encode
     envs["PYTHONPATH"] = Path(".").resolve()
