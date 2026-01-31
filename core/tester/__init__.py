@@ -2,7 +2,6 @@ import inspect
 
 from core.builtins.message.chain import MessageChain
 from core.builtins.types import MessageElement
-from core.logger import Logger
 from .decorator import case, func_case
 from .process import run_single_test, match_expected
 
@@ -16,7 +15,7 @@ class Tester:
 
     async def input(
         self,
-        input_: str | list[str] | tuple[str, ...] | None,
+        input_: str | list[str] | tuple[str, ...],
         expected:
             bool |
             str |
@@ -46,19 +45,6 @@ class Tester:
 
         output = result.get("output")
         action = result.get("action")
-
-        if not output:
-            try:
-                Logger.debug(
-                    "Tester debug - trigger: %s, parsed: %s, sent: %s, action: %s",
-                    input_,
-                    getattr(result, "parsed_msg", None),
-                    output,
-                    action,
-                )
-            except Exception:
-                pass
-
         match = await match_expected(output, expected)
 
         final = {

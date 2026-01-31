@@ -4,7 +4,7 @@ config*/*.cfg*
 config*/*.toml*
 .idea
 .DS_Store
-.vscode
+.vscode/*
 *.db
 *.db-shm
 *.db-wal
