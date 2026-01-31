@@ -91,4 +91,4 @@ if Config("enable", True, table_name="bot_web"):
     if not enable_https:
         Logger.warning("HTTPS is disabled. HTTP mode is insecure and should only be used in trusted environments.")
 
-    uvicorn.run(app, host=web_host, port=avaliable_web_port, log_level="info")
+    uvicorn.run(app, host=web_host, port=avaliable_web_port, log_level="info", access_log=False)
