@@ -1,4 +1,4 @@
-name: "Generate Config (00:00, UTC+8)"
+name: "Generate Config (0:00, UTC+8)"
 
 on:
   schedule:
