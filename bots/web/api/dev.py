@@ -13,11 +13,11 @@ from tortoise import Tortoise
 from tortoise.exceptions import OperationalError
 
 from bots.web.client import app
+from core.constants import dev_mode
 from core.database import fetch_module_db, get_model_fields, get_model_names
 from core.logger import Logger
 from .auth import verify_jwt
 
-dev_mode = os.getenv("DEV_MODE") == "True"
 ROOT_DIR = Path(__file__).parent.parent.parent
 
 

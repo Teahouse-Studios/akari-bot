@@ -6,12 +6,11 @@ from tortoise.exceptions import OperationalError
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain, Image
 from core.component import module
-from core.constants.exceptions import NoReportException
+from core.constants import dev_mode, NoReportException
 from core.database import fetch_module_db, get_model_fields, get_model_names
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.func import is_int
 
-dev_mode = os.getenv("DEV_MODE") == "True"
 DBDATA_PER_PAGE = 10
 
 _eval = module("eval", required_superuser=True, base=True, doc=True, load=dev_mode)
