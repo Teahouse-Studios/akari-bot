@@ -362,7 +362,8 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
     except Exception as e:
         if "timeout" in str(e).lower().replace(" ", ""):
             await _process_external_exception(msg, e)
-        await _process_exception(msg, e)
+        else:
+            await _process_exception(msg, e)
     finally:
         if _typing:
             await msg.end_typing()
@@ -494,7 +495,8 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                     except Exception as e:
                         if "timeout" in str(e).lower().replace(" ", ""):
                             await _process_external_exception(msg, e)
-                        await _process_exception(msg, e)
+                        else:
+                            await _process_exception(msg, e)
                     finally:
                         if _typing:
                             await msg.end_typing()

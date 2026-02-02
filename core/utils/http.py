@@ -128,7 +128,7 @@ async def request_url(
                         if callable(attr):
                             return attr()
                         return attr
-                    raise ValueError(f"NoSuchMethod: {fmt}")
+                    raise ValueError(f"No such method: {fmt}")
                 return resp.text
             except (httpx.ConnectError, httpx.TimeoutException):
                 raise ExternalException("Request timeout")
