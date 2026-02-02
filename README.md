@@ -47,7 +47,7 @@ _多功能、跨平台、可自由扩展的异步聊天机器人助手_
 
 #### Discord
 
-邀请链接：<https://discord.com/oauth2/authorize?client_id=879379218209861712&scope=bot&permissions=259846044864>
+邀请链接：<https://discord.com/oauth2/authorize?client_id=879379218209861712&scope=bot&permissions=71605695277126>
 
 #### Telegram
 
