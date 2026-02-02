@@ -454,7 +454,6 @@ class AIOCQContextManager(ContextManager):
 
     @classmethod
     async def call_onebot_api(cls, api_name: str, **kwargs) -> dict | None:
-
         return await aiocqhttp_bot.call_action(api_name, **kwargs)
 
 
