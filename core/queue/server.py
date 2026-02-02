@@ -48,6 +48,29 @@ class JobQueueServer(JobQueueBase):
         return value
 
     @classmethod
+    async def client_kick_member(cls, session_info: SessionInfo, user_id: str | list[str], ban: bool = False):
+        value = await cls.add_job(session_info.client_name, "kick_member",
+                                  {"session_info": converter.unstructure(session_info),
+                                   "user_id": user_id,
+                                   "ban": ban})
+        return value
+
+    @classmethod
+    async def client_restrict_member(cls, session_info: SessionInfo, user_id: str | list[str], duration: int | None = None):
+        value = await cls.add_job(session_info.client_name, "restrict_member",
+                                  {"session_info": converter.unstructure(session_info),
+                                   "user_id": user_id,
+                                   "duration": duration})
+        return value
+
+    @classmethod
+    async def client_unrestrict_member(cls, session_info: SessionInfo, user_id: str | list[str]):
+        value = await cls.add_job(session_info.client_name, "unrestrict_member",
+                                  {"session_info": converter.unstructure(session_info),
+                                   "user_id": user_id})
+        return value
+
+    @classmethod
     async def client_add_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str):
         value = await cls.add_job(session_info.client_name, "add_reaction",
                                   {"session_info": converter.unstructure(session_info),
@@ -57,7 +80,7 @@ class JobQueueServer(JobQueueBase):
 
     @classmethod
     async def client_remove_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str):
-        value = await cls.add_job(session_info.client_name, "add_reaction",
+        value = await cls.add_job(session_info.client_name, "remove_reaction",
                                   {"session_info": converter.unstructure(session_info),
                                    "message_id": message_id,
                                    "emoji": emoji})

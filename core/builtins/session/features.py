@@ -5,6 +5,7 @@ class Features:
     embed: bool = False
     forward: bool = False
     delete: bool = False
+    manage: bool = False
     markdown: bool = False
     reaction: bool = False
     quote: bool = False

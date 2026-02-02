@@ -19,18 +19,8 @@ kook_headers = {
 }
 
 
-async def channel_api(endpoint: str, **params):
-    url = f"{kook_base}/api/v3/message/{endpoint}"
-    async with httpx.AsyncClient() as client:
-        resp = await client.post(url, data=params, headers=kook_headers)
-    data = orjson.loads(resp.text)
-    if not str(resp.status_code).startswith("2"):
-        raise ValueError(data)
-    return data
-
-
-async def direct_api(endpoint: str, **params):
-    url = f"{kook_base}/api/v3/direct-message/{endpoint}"
+async def call_api(endpoint: str, **params):
+    url = f"{kook_base}/api/v3/{endpoint}"
     async with httpx.AsyncClient() as client:
         resp = await client.post(url, data=params, headers=kook_headers)
     data = orjson.loads(resp.text)
@@ -176,9 +166,9 @@ class KOOKContextManager(ContextManager):
         for id_ in message_id:
             try:
                 if _channel.type.name == "PERSON":
-                    await direct_api("delete", msg_id=id_)
+                    await call_api("direct-message/delete", msg_id=id_)
                 else:
-                    await channel_api("delete", msg_id=id_)
+                    await call_api("message/delete", msg_id=id_)
                 Logger.info(f"Deleted message {id_} in session {session_info.session_id}")
             except Exception:
                 Logger.exception(f"Failed to delete message {id_} in session {session_info.session_id}: ")
@@ -200,9 +190,9 @@ class KOOKContextManager(ContextManager):
 
         try:
             if _channel.type.name == "PERSON":
-                await direct_api("add-reaction", msg_id=message_id[-1], emoji=emoji)
+                await call_api("direct-message/add-reaction", msg_id=message_id[-1], emoji=emoji)
             else:
-                await channel_api("add-reaction", msg_id=message_id[-1], emoji=emoji)
+                await call_api("message/add-reaction", msg_id=message_id[-1], emoji=emoji)
             Logger.info(f"Added reaction \"{emoji}\" to message {message_id} in session {session_info.session_id}")
         except Exception:
             Logger.exception(f"Failed to add reaction \"{emoji}\" to message {
@@ -225,9 +215,9 @@ class KOOKContextManager(ContextManager):
 
         try:
             if _channel.type.name == "PERSON":
-                await direct_api("delete-reaction", msg_id=message_id[-1], emoji=emoji)
+                await call_api("direct-message/delete-reaction", msg_id=message_id[-1], emoji=emoji)
             else:
-                await channel_api("delete-reaction", msg_id=message_id[-1], emoji=emoji)
+                await call_api("message/delete-reaction", msg_id=message_id[-1], emoji=emoji)
             Logger.info(f"Added reaction \"{emoji}\" to message {message_id} in session {session_info.session_id}")
         except Exception:
             Logger.exception(f"Failed to remove reaction \"{emoji}\" to message {

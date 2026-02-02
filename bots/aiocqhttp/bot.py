@@ -238,16 +238,16 @@ async def _(event: Event):
         if event.duration > 0:
             await UnfriendlyActionRecords.create(target_id=target_id,
                                                  sender_id=sender_id,
-                                                 action="mute",
+                                                 action="restrict",
                                                  detail=str(event.duration))
-            Logger.info(f"Unfriendly action detected: mute ({event.duration})")
+            Logger.info(f"Unfriendly action detected: restrict ({event.duration})")
         result = await UnfriendlyActionRecords.check_mute(target_id=target_id)
         if event.duration >= 259200:  # 3 days
             result = True
         if result and not sender_info.superuser:
-            Logger.info(f"Ban {sender_id} ({target_id}) by ToS: mute")
-            Logger.info(f"Block {target_id} by ToS: mute")
-            reason = Locale(default_locale).t("tos.message.reason.mute")
+            Logger.info(f"Ban {sender_id} ({target_id}) by ToS: restrict")
+            Logger.info(f"Block {target_id} by ToS: restrict")
+            reason = Locale(default_locale).t("tos.message.reason.restrict")
             await tos_report(sender_id, target_id, reason, banned=True)
             await target_info.edit_attr("blocked", True)
             await aiocqhttp_bot.call_action("set_group_leave", group_id=event.group_id)

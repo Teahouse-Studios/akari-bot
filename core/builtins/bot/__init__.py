@@ -57,6 +57,7 @@ class Bot:
         session_info.support_embed = features.embed
         session_info.support_forward = features.forward
         session_info.support_delete = features.delete
+        session_info.support_manage = features.manage
         session_info.support_markdown = features.markdown
         session_info.support_quote = features.quote
         session_info.support_rss = features.rss

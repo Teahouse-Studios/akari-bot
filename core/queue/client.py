@@ -111,6 +111,24 @@ async def _(tsk: JobQueuesTable, args: dict):
     return {"success": True}
 
 
+@JobQueueClient.action("kick_member")
+async def _(tsk: JobQueuesTable, args: dict):
+    session_info, bot, ctx_manager = await get_session(args)
+    await ctx_manager.kick_member(session_info, args["user_id"], args["ban"])
+
+
+@JobQueueClient.action("restrict_member")
+async def _(tsk: JobQueuesTable, args: dict):
+    session_info, bot, ctx_manager = await get_session(args)
+    await ctx_manager.restrict_member(session_info, args["user_id"], args["duration"])
+
+
+@JobQueueClient.action("unrestrict_member")
+async def _(tsk: JobQueuesTable, args: dict):
+    session_info, bot, ctx_manager = await get_session(args)
+    await ctx_manager.unrestrict_member(session_info, args["user_id"])
+
+
 @JobQueueClient.action("add_reaction")
 async def _(tsk: JobQueuesTable, args: dict):
     session_info, bot, ctx_manager = await get_session(args)
@@ -120,7 +138,7 @@ async def _(tsk: JobQueuesTable, args: dict):
 @JobQueueClient.action("remove_reaction")
 async def _(tsk: JobQueuesTable, args: dict):
     session_info, bot, ctx_manager = await get_session(args)
-    await ctx_manager.add_reaction(session_info, args["message_id"], args["emoji"])
+    await ctx_manager.remove_reaction(session_info, args["message_id"], args["emoji"])
 
 
 @JobQueueClient.action("start_typing")

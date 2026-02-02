@@ -206,7 +206,7 @@
     "tos.message.reason.cooldown": "一段时间内使用相同命令的次数过多。",
     "tos.message.reason.ignore": "无视临时封禁警告。",
     "tos.message.reason.kick": "将机器人移出群聊。",
-    "tos.message.reason.mute": "对机器人实施禁言。",
+    "tos.message.reason.restrict": "对机器人实施禁言。",
     "tos.message.report": "用户 ${sender} 在会话 ${target} 触发了滥用警告。",
     "tos.message.tempbanned": "提示：\n由于你的行为触发了警告，我们已对你进行临时封禁。\n距离解封时间还有 ${ban_time} 秒。",
     "tos.message.tempbanned.warning": "提示：\n即使已被临时封禁，尝试继续滥用命令可能会导致你被再次警告。\n距离解封时间还有 ${ban_time} 秒。",

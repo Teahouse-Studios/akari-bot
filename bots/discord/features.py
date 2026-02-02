@@ -8,6 +8,7 @@ class Features(FeaturesBase):
     embed = True
     forward = False
     delete = True
+    manage = True
     markdown = True
     reaction = True
     quote = True

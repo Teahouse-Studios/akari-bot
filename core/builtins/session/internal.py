@@ -166,6 +166,27 @@ class MessageSession:
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         await _queue_server.client_delete_message(self.session_info, self.session_info.message_id)
 
+    async def kick_member(self, user_id: str | list[str], ban: bool = False):
+        """
+        用于踢出成员。
+        """
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        await _queue_server.client_kick_member(self.session_info, user_id, ban)
+
+    async def restrict_member(self, user_id: str | list[str], duration: int | None):
+        """
+        用于禁言成员。
+        """
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        await _queue_server.client_restrict_member(self.session_info, user_id, duration)
+
+    async def unrestrict_member(self, user_id: str | list[str]):
+        """
+        用于解除禁言成员。
+        """
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        await _queue_server.client_unrestrict_member(self.session_info, user_id)
+
     async def add_reaction(self, emoji: str) -> Any:
         """
         用于给这条消息添加反应。
@@ -220,8 +241,6 @@ class MessageSession:
         await _queue_server.client_end_typing_signal(self.session_info)
 
     async def _add_confirm_reaction(self, message_id: str | list[str]):
-        if isinstance(message_id, str):
-            message_id = [message_id]
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         if self.session_info.support_reaction:
             if self.session_info.client_name in ["QQ", "QQBot"]:

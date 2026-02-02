@@ -32,6 +32,7 @@ class SessionInfo:
     support_embed: bool = False
     support_forward: bool = False
     support_delete: bool = False
+    support_manage: bool = False
     support_markdown: bool = False
     support_reaction: bool = False
     support_quote: bool = False

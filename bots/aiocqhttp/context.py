@@ -305,6 +305,68 @@ class AIOCQContextManager(ContextManager):
                     Logger.exception(f"Failed to delete message {x} in session {session_info.session_id}: ")
 
     @classmethod
+    async def restrict_member(cls, session_info: SessionInfo, user_id: str | list[str], duration: int | None) -> None:
+        if isinstance(user_id, str):
+            user_id = [user_id]
+        if not isinstance(user_id, list):
+            raise TypeError("User ID must be a list or str")
+
+        if not duration:
+            duration = 1800
+        if session_info.target_from == target_group_prefix:
+            for x in user_id:
+                try:
+                    await aiocqhttp_bot.call_action("set_group_ban",
+                                                    group_id=session_info.get_common_target_id(),
+                                                    user_id=x.split("|")[-1],
+                                                    duration=duration
+                                                    )
+                    Logger.info(f"Restricted member {x} ({duration}s) in group {session_info.target_id}")
+                except Exception:
+                    Logger.exception(f"Failed to restrict member {x} in group {session_info.target_id}: ")
+
+    @classmethod
+    async def unrestrict_member(cls, session_info: SessionInfo, user_id: str | list[str]) -> None:
+        if isinstance(user_id, str):
+            user_id = [user_id]
+        if not isinstance(user_id, list):
+            raise TypeError("User ID must be a list or str")
+
+        if session_info.target_from == target_group_prefix:
+            for x in user_id:
+                try:
+                    await aiocqhttp_bot.call_action("set_group_ban",
+                                                    group_id=session_info.get_common_target_id(),
+                                                    user_id=x.split("|")[-1],
+                                                    duration=0
+                                                    )
+                    Logger.info(f"Unrestricted member {x} in group {session_info.target_id}")
+                except Exception:
+                    Logger.exception(f"Failed to unrestrict member {x} in group {session_info.target_id}: ")
+
+    @classmethod
+    async def kick_member(cls, session_info: SessionInfo, user_id: str | list[str], ban: bool = False) -> None:
+        if isinstance(user_id, str):
+            user_id = [user_id]
+        if not isinstance(user_id, list):
+            raise TypeError("User ID must be a list or str")
+
+        if session_info.target_from == target_group_prefix:
+            for x in user_id:
+                try:
+                    await aiocqhttp_bot.call_action("set_group_kick",
+                                                    group_id=session_info.get_common_target_id(),
+                                                    user_id=x.split("|")[-1],
+                                                    reject_add_request=ban
+                                                    )
+                    Logger.info(f"{"Banned" if ban else "Kicked"} member {x} in group {session_info.target_id}")
+                except Exception:
+                    Logger.exception(
+                        f"Failed to {
+                            "ban" if ban else "kick"} member {x} in group {
+                            session_info.target_id}: ")
+
+    @classmethod
     async def add_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
@@ -329,7 +391,7 @@ class AIOCQContextManager(ContextManager):
                                                     code=emoji,
                                                     is_add=True)
                 else:
-                    pass
+                    return
                 Logger.info(f"Added reaction \"{emoji}\" to message {message_id} in session {session_info.session_id}")
             except Exception:
                 Logger.exception(f"Failed to add reaction \"{emoji}\" to message {
@@ -360,7 +422,7 @@ class AIOCQContextManager(ContextManager):
                                                     code=emoji,
                                                     is_add=False)
                 else:
-                    pass
+                    return
                 Logger.info(f"Removed reaction \"{emoji}\" to message {
                             message_id} in session {session_info.session_id}")
             except Exception:

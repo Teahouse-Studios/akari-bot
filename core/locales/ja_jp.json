@@ -206,7 +206,7 @@
     "tos.message.reason.cooldown": "同じコマンドは一定期間内に何度も使用されました。",
     "tos.message.reason.ignore": "一時的に禁止の警告を無視した。",
     "tos.message.reason.kick": "ボットをグループから追い出します。",
-    "tos.message.reason.mute": "ボットの非友好的なミュートを強制します。",
+    "tos.message.reason.restrict": "ボットに非友好的な制限を課します。",
     "tos.message.report": "ユーザ ${sender} はセッション ${target} で乱用の警告を発生させました。",
     "tos.message.tempbanned": "ヒント：\nあなたの行動が警告を引き起こしたため、一時的に禁止をしました。\n禁止解除まであと ${ban_time} 秒あります。",
     "tos.message.tempbanned.warning": "ヒント:\n一時的に禁止された後も、コマンドの乱用を続けると再度警告が出る場合があります。\n禁止解除まであと ${ban_time} 秒あります。",

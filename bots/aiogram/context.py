@@ -1,5 +1,7 @@
+from datetime import datetime, timedelta
+
 from aiogram import types
-from aiogram.types import FSInputFile
+from aiogram.types import ChatPermissions, FSInputFile
 
 from bots.aiogram.client import aiogram_bot
 from bots.aiogram.features import Features
@@ -123,9 +125,14 @@ class AiogramContextManager(ContextManager):
         return msg_ids
 
     @classmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: list[str]) -> None:
+    async def delete_message(cls, session_info: SessionInfo, message_id: str | list[str]) -> None:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
+
+        if isinstance(message_id, str):
+            message_id = [message_id]
+        if not isinstance(message_id, list):
+            raise TypeError("Message ID must be a list or str")
 
         for msg_id in message_id:
             try:
@@ -136,6 +143,77 @@ class AiogramContextManager(ContextManager):
                 Logger.info(f"Deleted message {msg_id} in session {session_info.session_id}")
             except Exception:
                 Logger.exception(f"Failed to delete message {msg_id} in session {session_info.session_id}: ")
+
+    @classmethod
+    async def restrict_member(cls, session_info: SessionInfo, user_id: str | list[str], duration: int | None) -> None:
+        if isinstance(user_id, str):
+            user_id = [user_id]
+        if not isinstance(user_id, list):
+            raise TypeError("User ID must be a list or str")
+
+        until_date = None
+        if duration:
+            until_date = datetime.now() + timedelta(seconds=duration)
+        if session_info.target_from != f"{client_name}|Private":
+            for x in user_id:
+                try:
+                    await aiogram_bot.restrict_chat_member(chat_id=session_info.get_common_target_id(),
+                                                           user_id=int(x.split("|")[-1]),
+                                                           permissions=ChatPermissions(can_send_messages=False,
+                                                                                       can_send_media_messages=False,
+                                                                                       can_send_polls=False,
+                                                                                       can_send_other_messages=False,
+                                                                                       can_add_web_page_previews=False),
+                                                           until_date=until_date)
+                    Logger.info(
+                        f"Restricted member {x}{
+                            f" ({duration}s)" if duration else " "} in group {
+                            session_info.target_id}")
+                except Exception:
+                    Logger.exception(f"Failed to restrict member {x} in group {session_info.target_id}: ")
+
+    @classmethod
+    async def unrestrict_member(cls, session_info: SessionInfo, user_id: str | list[str]) -> None:
+        if isinstance(user_id, str):
+            user_id = [user_id]
+        if not isinstance(user_id, list):
+            raise TypeError("User ID must be a list or str")
+
+        if session_info.target_from != f"{client_name}|Private":
+            for x in user_id:
+                try:
+                    await aiogram_bot.restrict_chat_member(chat_id=session_info.get_common_target_id(),
+                                                           user_id=int(x.split("|")[-1]),
+                                                           permissions=ChatPermissions(can_send_messages=True,
+                                                                                       can_send_media_messages=True,
+                                                                                       can_send_polls=True,
+                                                                                       can_send_other_messages=True,
+                                                                                       can_add_web_page_previews=True))
+                    Logger.info(f"Unrestricted member {x} in group {session_info.target_id}")
+                except Exception:
+                    Logger.exception(f"Failed to unrestrict member {x} in group {session_info.target_id}: ")
+
+    @classmethod
+    async def kick_member(cls, session_info: SessionInfo, user_id: str | list[str], ban: bool = False) -> None:
+        if isinstance(user_id, str):
+            user_id = [user_id]
+        if not isinstance(user_id, list):
+            raise TypeError("User ID must be a list or str")
+
+        if session_info.target_from != f"{client_name}|Private":
+            for x in user_id:
+                try:
+                    await aiogram_bot.ban_chat_member(chat_id=session_info.get_common_target_id(),
+                                                      user_id=int(x.split("|")[-1]))
+                    if not ban:
+                        await aiogram_bot.unban_chat_member(chat_id=session_info.get_common_target_id(),
+                                                            user_id=int(x.split("|")[-1]))
+                    Logger.info(f"{"Banned" if ban else "Kicked"} member {x} in group {session_info.target_id}")
+                except Exception:
+                    Logger.exception(
+                        f"Failed to {
+                            "ban" if ban else "kick"} member {x} in group {
+                            session_info.target_id}: ")
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
