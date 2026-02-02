@@ -453,14 +453,8 @@ class AIOCQContextManager(ContextManager):
                 pass
 
     @classmethod
-    async def call_api(cls, api_name: str, **kwargs) -> dict | None:
-        """
-        调用 OneBot API。
+    async def call_onebot_api(cls, api_name: str, **kwargs) -> dict | None:
 
-        :param api_name: API 名称
-        :param kwargs: API 参数
-        :return: API 返回结果
-        """
         return await aiocqhttp_bot.call_action(api_name, **kwargs)
 
 

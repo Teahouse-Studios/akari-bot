@@ -158,10 +158,10 @@ async def _(tsk: JobQueuesTable, args: dict):
     return {"success": True}
 
 
-@JobQueueClient.action("qq_call_api")
+@JobQueueClient.action("call_onebot_api")
 async def _(tsk: JobQueuesTable, args: dict):
     session_info, bot, ctx_manager = await get_session(args)
-    get_ = getattr(ctx_manager, "call_api", None)
+    get_ = getattr(ctx_manager, "call_onebot_api", None)
     if get_:
         g = await get_(args["api_name"], **args["args"])
         return g

@@ -292,5 +292,5 @@ class MockMessageSession(MessageSession):
     async def check_permission(self):
         return True
 
-    async def qq_call_api(self, api_name, **kwargs):
+    async def call_onebot_api(self, api_name, **kwargs):
         pass

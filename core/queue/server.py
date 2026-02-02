@@ -100,8 +100,8 @@ class JobQueueServer(JobQueueBase):
         return value
 
     @classmethod
-    async def qq_call_api(cls, session_info: SessionInfo, api_name: str, **kwargs: dict):
-        value = await cls.add_job(session_info.client_name, "qq_call_api",
+    async def call_onebot_api(cls, session_info: SessionInfo, api_name: str, **kwargs: dict):
+        value = await cls.add_job(session_info.client_name, "call_onebot_api",
                                   {"session_info": converter.unstructure(session_info),
                                    "api_name": api_name,
                                    "args": kwargs})

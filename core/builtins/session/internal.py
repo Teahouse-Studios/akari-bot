@@ -444,12 +444,20 @@ class MessageSession:
             return True
         return await self.check_native_permission()
 
-    async def qq_call_api(self, api_name: str, **kwargs) -> Any:
+    async def call_onebot_api(self, api_name: str, **kwargs) -> Any:
         """
-        用于 QQ 平台调用 API。
+        调用 OneBot API。
+
+        :param api_name: API 名称
+        :param kwargs: API 参数
+        :return: API 返回结果
         """
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
-        return await _queue_server.qq_call_api(self.session_info, api_name=api_name, **kwargs)
+        return await _queue_server.call_onebot_api(self.session_info, api_name=api_name, **kwargs)
+
+    @deprecated(reason="Use `call_onebot_api` instead.")
+    async def call_api(self, api_name: str, **kwargs):
+        return await self.call_onebot_api(api_name, **kwargs)
 
     waitConfirm = wait_confirm
     waitNextMessage = wait_next_message
@@ -461,6 +469,7 @@ class MessageSession:
     sendDirectMessage = send_direct_message
     asDisplay = as_display
     checkNativePermission = check_native_permission
+    callOneBotAPI = call_onebot_api
 
     def format_time(
         self,
