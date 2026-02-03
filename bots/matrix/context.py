@@ -271,7 +271,7 @@ class MatrixContextManager(ContextManager):
         return msg_ids
 
     @classmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: str | list[str]) -> None:
+    async def delete_message(cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -281,10 +281,52 @@ class MatrixContextManager(ContextManager):
         #     raise ValueError("Session not found in context")
         for m in message_id:
             try:
-                await matrix_bot.room_redact(session_info.get_common_target_id(), m)
+                await matrix_bot.room_redact(session_info.get_common_target_id(), m, reason)
                 Logger.info(f"Deleted message {m} in session {session_info.session_id}")
             except Exception:
                 Logger.exception(f"Failed to delete message {m} in session {session_info.session_id}: ")
+
+    @classmethod
+    async def kick_member(cls, session_info: SessionInfo, user_id: str | list[str], reason: str | None = None) -> None:
+        if isinstance(user_id, str):
+            user_id = [user_id]
+        if not isinstance(user_id, list):
+            raise TypeError("User ID must be a list or str")
+
+        for x in user_id:
+            try:
+                await matrix_bot.room_kick(session_info.get_common_target_id(), f"@{x.split("|")[-1]}", reason)
+                Logger.info(f"Kicked member {x} in channel {session_info.target_id}")
+            except Exception:
+                Logger.exception(f"Failed to kick member {x} in channel {session_info.target_id}: ")
+
+    @classmethod
+    async def ban_member(cls, session_info: SessionInfo, user_id: str | list[str], reason: str | None = None) -> None:
+        if isinstance(user_id, str):
+            user_id = [user_id]
+        if not isinstance(user_id, list):
+            raise TypeError("User ID must be a list or str")
+
+        for x in user_id:
+            try:
+                await matrix_bot.room_ban(session_info.get_common_target_id(), f"@{x.split("|")[-1]}", reason)
+                Logger.info(f"Banned member {x} in channel {session_info.target_id}")
+            except Exception:
+                Logger.exception(f"Failed to ban member {x} in channel {session_info.target_id}: ")
+
+    @classmethod
+    async def unban_member(cls, session_info: SessionInfo, user_id: str | list[str]) -> None:
+        if isinstance(user_id, str):
+            user_id = [user_id]
+        if not isinstance(user_id, list):
+            raise TypeError("User ID must be a list or str")
+
+        for x in user_id:
+            try:
+                await matrix_bot.room_unban(session_info.get_common_target_id(), f"@{x.split("|")[-1]}")
+                Logger.info(f"Unbanned member {x} in channel {session_info.target_id}")
+            except Exception:
+                Logger.exception(f"Failed to unban member {x} in channel {session_info.target_id}: ")
 
     @classmethod
     async def add_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:

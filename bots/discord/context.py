@@ -127,7 +127,7 @@ class DiscordContextManager(ContextManager):
         return msg_ids
 
     @classmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: str | list[str]) -> None:
+    async def delete_message(cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -141,7 +141,7 @@ class DiscordContextManager(ContextManager):
                 channel = await discord_bot.fetch_channel(int(get_channel_id(session_info)))
                 message = await channel.fetch_message(int(msg_id))
                 if message:
-                    await message.delete()
+                    await message.delete(reason=reason)
                     Logger.info(f"Deleted message {msg_id} in session {session_info.session_id}")
             except discord.NotFound:
                 Logger.warning(f"Message {msg_id} not found in session {session_info.session_id}")
@@ -149,7 +149,7 @@ class DiscordContextManager(ContextManager):
                 Logger.exception(f"Failed to delete message {msg_id} in session {session_info.session_id}: ")
 
     @classmethod
-    async def restrict_member(cls, session_info: SessionInfo, user_id: str | list[str], duration: int | None) -> None:
+    async def restrict_member(cls, session_info: SessionInfo, user_id: str | list[str], duration: int | None = None, reason: str | None = None) -> None:
         if isinstance(user_id, str):
             user_id = [user_id]
         if not isinstance(user_id, list):
@@ -163,7 +163,7 @@ class DiscordContextManager(ContextManager):
                 try:
                     channel = await discord_bot.fetch_channel(int(get_channel_id(session_info)))
                     member = await channel.guild.fetch_member(int(get_sender_id(session_info)))
-                    await member.timeout(until=until_date)
+                    await member.timeout(until=until_date, reason=reason)
                     Logger.info(f"Restricted member {x} ({duration}s) in channel {session_info.target_id}")
                 except Exception:
                     Logger.exception(f"Failed to restrict member {x} in channel {session_info.target_id}: ")
@@ -186,7 +186,7 @@ class DiscordContextManager(ContextManager):
                     Logger.exception(f"Failed to unrestrict member {x} in channel {session_info.target_id}: ")
 
     @classmethod
-    async def kick_member(cls, session_info: SessionInfo, user_id: str | list[str], ban: bool = False) -> None:
+    async def kick_member(cls, session_info: SessionInfo, user_id: str | list[str], reason: str | None = None) -> None:
         if isinstance(user_id, str):
             user_id = [user_id]
         if not isinstance(user_id, list):
@@ -197,16 +197,44 @@ class DiscordContextManager(ContextManager):
                 try:
                     channel = await discord_bot.fetch_channel(int(get_channel_id(session_info)))
                     member = await channel.guild.fetch_member(int(get_sender_id(session_info)))
-                    if ban:
-                        await member.ban()
-                    else:
-                        await member.kick()
-                    Logger.info(f"{"Banned" if ban else "Kicked"} member {x} in channel {session_info.target_id}")
+                    await member.kick(reason=reason)
+                    Logger.info(f"Kicked member {x} in channel {session_info.target_id}")
                 except Exception:
-                    Logger.exception(
-                        f"Failed to {
-                            "ban" if ban else "kick"} member {x} in channel {
-                            session_info.target_id}: ")
+                    Logger.exception(f"Failed to kick member {x} in channel {session_info.target_id}: ")
+
+    @classmethod
+    async def ban_member(cls, session_info: SessionInfo, user_id: str | list[str], reason: str | None = None) -> None:
+        if isinstance(user_id, str):
+            user_id = [user_id]
+        if not isinstance(user_id, list):
+            raise TypeError("User ID must be a list or str")
+
+        if session_info.target_from == target_channel_prefix:
+            for x in user_id:
+                try:
+                    channel = await discord_bot.fetch_channel(int(get_channel_id(session_info)))
+                    member = await channel.guild.fetch_member(int(get_sender_id(session_info)))
+                    await member.ban(reason=reason)
+                    Logger.info(f"Banned member {x} in channel {session_info.target_id}")
+                except Exception:
+                    Logger.exception(f"Failed to ban member {x} in channel {session_info.target_id}: ")
+
+    @classmethod
+    async def unban_member(cls, session_info: SessionInfo, user_id: str | list[str]) -> None:
+        if isinstance(user_id, str):
+            user_id = [user_id]
+        if not isinstance(user_id, list):
+            raise TypeError("User ID must be a list or str")
+
+        if session_info.target_from == target_channel_prefix:
+            for x in user_id:
+                try:
+                    channel = await discord_bot.fetch_channel(int(get_channel_id(session_info)))
+                    member = await channel.guild.fetch_member(int(get_sender_id(session_info)))
+                    await member.unban()
+                    Logger.info(f"Unbanned member {x} in channel {session_info.target_id}")
+                except Exception:
+                    Logger.exception(f"Failed to unban member {x} in channel {session_info.target_id}: ")
 
     @classmethod
     async def add_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:

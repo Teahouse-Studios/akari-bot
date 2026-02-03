@@ -106,84 +106,96 @@ async def _(tsk: JobQueuesTable, args: dict):
 
 @JobQueueClient.action("delete_message")
 async def _(tsk: JobQueuesTable, args: dict):
-    session_info, bot, ctx_manager = await get_session(args)
-    await ctx_manager.delete_message(session_info, message_id=args["message_id"])
+    session_info, _, ctx_manager = await get_session(args)
+    await ctx_manager.delete_message(session_info, args["message_id"], args["reason"])
     return {"success": True}
-
-
-@JobQueueClient.action("kick_member")
-async def _(tsk: JobQueuesTable, args: dict):
-    session_info, bot, ctx_manager = await get_session(args)
-    await ctx_manager.kick_member(session_info, args["user_id"], args["ban"])
 
 
 @JobQueueClient.action("restrict_member")
 async def _(tsk: JobQueuesTable, args: dict):
-    session_info, bot, ctx_manager = await get_session(args)
-    await ctx_manager.restrict_member(session_info, args["user_id"], args["duration"])
+    session_info, _, ctx_manager = await get_session(args)
+    await ctx_manager.restrict_member(session_info, args["user_id"], args["duration"], args["reason"])
 
 
 @JobQueueClient.action("unrestrict_member")
 async def _(tsk: JobQueuesTable, args: dict):
-    session_info, bot, ctx_manager = await get_session(args)
+    session_info, _, ctx_manager = await get_session(args)
     await ctx_manager.unrestrict_member(session_info, args["user_id"])
+
+
+@JobQueueClient.action("kick_member")
+async def _(tsk: JobQueuesTable, args: dict):
+    session_info, _, ctx_manager = await get_session(args)
+    await ctx_manager.kick_member(session_info, args["user_id"], args["reason"])
+
+
+@JobQueueClient.action("ban_member")
+async def _(tsk: JobQueuesTable, args: dict):
+    session_info, _, ctx_manager = await get_session(args)
+    await ctx_manager.ban_member(session_info, args["user_id"], args["reason"])
+
+
+@JobQueueClient.action("unban_member")
+async def _(tsk: JobQueuesTable, args: dict):
+    session_info, _, ctx_manager = await get_session(args)
+    await ctx_manager.unban_member(session_info, args["user_id"])
 
 
 @JobQueueClient.action("add_reaction")
 async def _(tsk: JobQueuesTable, args: dict):
-    session_info, bot, ctx_manager = await get_session(args)
+    session_info, _, ctx_manager = await get_session(args)
     await ctx_manager.add_reaction(session_info, args["message_id"], args["emoji"])
 
 
 @JobQueueClient.action("remove_reaction")
 async def _(tsk: JobQueuesTable, args: dict):
-    session_info, bot, ctx_manager = await get_session(args)
+    session_info, _, ctx_manager = await get_session(args)
     await ctx_manager.remove_reaction(session_info, args["message_id"], args["emoji"])
 
 
 @JobQueueClient.action("start_typing")
 async def _(tsk: JobQueuesTable, args: dict):
-    session_info, bot, ctx_manager = await get_session(args)
+    session_info, _, ctx_manager = await get_session(args)
     await ctx_manager.start_typing(session_info)
     return {"success": True}
 
 
 @JobQueueClient.action("end_typing")
 async def _(tsk: JobQueuesTable, args: dict):
-    session_info, bot, ctx_manager = await get_session(args)
+    session_info, _, ctx_manager = await get_session(args)
     await ctx_manager.end_typing(session_info)
     return {"success": True}
 
 
 @JobQueueClient.action("error_signal")
 async def _(tsk: JobQueuesTable, args: dict):
-    session_info, bot, ctx_manager = await get_session(args)
+    session_info, _, ctx_manager = await get_session(args)
     await ctx_manager.error_signal(session_info)
     return {"success": True}
 
 
 @JobQueueClient.action("hold_context")
 async def _(tsk: JobQueuesTable, args: dict):
-    session_info, bot, ctx_manager = await get_session(args)
+    session_info, _, ctx_manager = await get_session(args)
     ctx_manager.hold_context(session_info)
     return {"success": True}
 
 
 @JobQueueClient.action("release_context")
 async def _(tsk: JobQueuesTable, args: dict):
-    session_info, bot, ctx_manager = await get_session(args)
+    session_info, _, ctx_manager = await get_session(args)
     ctx_manager.release_context(session_info)
     return {"success": True}
 
 
 @JobQueueClient.action("call_onebot_api")
 async def _(tsk: JobQueuesTable, args: dict):
-    session_info, bot, ctx_manager = await get_session(args)
+    _, _, ctx_manager = await get_session(args)
     get_ = getattr(ctx_manager, "call_onebot_api", None)
     if get_:
         g = await get_(args["api_name"], **args["args"])
         return g
-    return {"success": False, "error": "API not supported in this context"}
+    return {"success": False, "error": "OneBot API not supported in this context"}
 
 
 add_export(JobQueueClient)

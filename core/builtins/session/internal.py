@@ -159,37 +159,69 @@ class MessageSession:
         """
         return self.session_info.messages.to_str(text_only, element_filter=element_filter, connector=connector)
 
-    async def delete(self):
+    async def delete(self, reason: str | None = None):
         """
         用于删除这条消息。
-        """
-        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
-        await _queue_server.client_delete_message(self.session_info, self.session_info.message_id)
 
-    async def kick_member(self, user_id: str | list[str], ban: bool = False):
-        """
-        用于踢出成员。
+        :param reason: 原因（可选）
         """
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
-        await _queue_server.client_kick_member(self.session_info, user_id, ban)
+        await _queue_server.client_delete_message(self.session_info, self.session_info.message_id, reason)
 
-    async def restrict_member(self, user_id: str | list[str], duration: int | None):
+    async def restrict_member(self, user_id: str | list[str], duration: int | None = None, reason: str | None = None):
         """
-        用于禁言成员。
+        用于禁言会话内成员，可能需要该会话的管理员权限。
+
+        :param user_id: 用户 ID
+        :param duration: 禁言时长
+        :param reason: 原因（可选）
         """
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
-        await _queue_server.client_restrict_member(self.session_info, user_id, duration)
+        await _queue_server.client_restrict_member(self.session_info, user_id, duration, reason)
 
     async def unrestrict_member(self, user_id: str | list[str]):
         """
-        用于解除禁言成员。
+        用于解除禁言成员，可能需要该会话的管理员权限。
+
+        :param user_id: 用户 ID
         """
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         await _queue_server.client_unrestrict_member(self.session_info, user_id)
 
+    async def kick_member(self, user_id: str | list[str], reason: str | None = None):
+        """
+        用于踢出成员，可能需要该会话的管理员权限。
+
+        :param user_id: 用户 ID
+        :param reason: 原因（可选）
+        """
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        await _queue_server.client_kick_member(self.session_info, user_id, reason)
+
+    async def ban_member(self, user_id: str | list[str], reason: str | None = None):
+        """
+        用于封禁成员，可能需要该会话的管理员权限。
+
+        :param user_id: 用户 ID
+        :param reason: 原因（可选）
+        """
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        await _queue_server.client_ban_member(self.session_info, user_id, reason)
+
+    async def unban_member(self, user_id: str | list[str]):
+        """
+        用于解除封禁成员，可能需要该会话的管理员权限。
+
+        :param user_id: 用户 ID
+        """
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        await _queue_server.client_unban_member(self.session_info, user_id)
+
     async def add_reaction(self, emoji: str) -> Any:
         """
         用于给这条消息添加反应。
+
+        :param emoji: 反应内容（如表情符号）
         """
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         return await _queue_server.client_add_reaction(self.session_info, self.session_info.message_id, emoji)
@@ -197,6 +229,8 @@ class MessageSession:
     async def remove_reaction(self, emoji: str) -> Any:
         """
         用于给这条消息删除反应。
+
+        :param emoji: 反应内容（如表情符号）
         """
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         return await _queue_server.client_remove_reaction(self.session_info, self.session_info.message_id, emoji)

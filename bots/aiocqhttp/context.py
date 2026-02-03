@@ -290,7 +290,7 @@ class AIOCQContextManager(ContextManager):
         return []
 
     @classmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: str | list[str]) -> None:
+    async def delete_message(cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -305,7 +305,7 @@ class AIOCQContextManager(ContextManager):
                     Logger.exception(f"Failed to delete message {x} in session {session_info.session_id}: ")
 
     @classmethod
-    async def restrict_member(cls, session_info: SessionInfo, user_id: str | list[str], duration: int | None) -> None:
+    async def restrict_member(cls, session_info: SessionInfo, user_id: str | list[str], duration: int | None = None, reason: str | None = None) -> None:
         if isinstance(user_id, str):
             user_id = [user_id]
         if not isinstance(user_id, list):
@@ -345,7 +345,7 @@ class AIOCQContextManager(ContextManager):
                     Logger.exception(f"Failed to unrestrict member {x} in group {session_info.target_id}: ")
 
     @classmethod
-    async def kick_member(cls, session_info: SessionInfo, user_id: str | list[str], ban: bool = False) -> None:
+    async def kick_member(cls, session_info: SessionInfo, user_id: str | list[str], reason: str | None = None) -> None:
         if isinstance(user_id, str):
             user_id = [user_id]
         if not isinstance(user_id, list):
@@ -357,14 +357,32 @@ class AIOCQContextManager(ContextManager):
                     await aiocqhttp_bot.call_action("set_group_kick",
                                                     group_id=session_info.get_common_target_id(),
                                                     user_id=x.split("|")[-1],
-                                                    reject_add_request=ban
+                                                    reject_add_request=False
                                                     )
-                    Logger.info(f"{"Banned" if ban else "Kicked"} member {x} in group {session_info.target_id}")
+                    Logger.info(f"Kicked member {x} in group {session_info.target_id}")
                 except Exception:
                     Logger.exception(
-                        f"Failed to {
-                            "ban" if ban else "kick"} member {x} in group {
-                            session_info.target_id}: ")
+                        f"Failed to kick member {x} in group {session_info.target_id}: ")
+
+    @classmethod
+    async def ban_member(cls, session_info: SessionInfo, user_id: str | list[str], reason: str | None = None) -> None:
+        if isinstance(user_id, str):
+            user_id = [user_id]
+        if not isinstance(user_id, list):
+            raise TypeError("User ID must be a list or str")
+
+        if session_info.target_from == target_group_prefix:
+            for x in user_id:
+                try:
+                    await aiocqhttp_bot.call_action("set_group_kick",
+                                                    group_id=session_info.get_common_target_id(),
+                                                    user_id=x.split("|")[-1],
+                                                    reject_add_request=True
+                                                    )
+                    Logger.info(f"Banned member {x} in group {session_info.target_id}")
+                except Exception:
+                    Logger.exception(
+                        f"Failed to ban member {x} in group {session_info.target_id}: ")
 
     @classmethod
     async def add_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:

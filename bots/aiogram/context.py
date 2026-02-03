@@ -125,7 +125,7 @@ class AiogramContextManager(ContextManager):
         return msg_ids
 
     @classmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: str | list[str]) -> None:
+    async def delete_message(cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None) -> None:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
 
@@ -145,7 +145,7 @@ class AiogramContextManager(ContextManager):
                 Logger.exception(f"Failed to delete message {msg_id} in session {session_info.session_id}: ")
 
     @classmethod
-    async def restrict_member(cls, session_info: SessionInfo, user_id: str | list[str], duration: int | None) -> None:
+    async def restrict_member(cls, session_info: SessionInfo, user_id: str | list[str], duration: int | None = None, reason: str | None = None) -> None:
         if isinstance(user_id, str):
             user_id = [user_id]
         if not isinstance(user_id, list):
@@ -194,7 +194,7 @@ class AiogramContextManager(ContextManager):
                     Logger.exception(f"Failed to unrestrict member {x} in group {session_info.target_id}: ")
 
     @classmethod
-    async def kick_member(cls, session_info: SessionInfo, user_id: str | list[str], ban: bool = False) -> None:
+    async def kick_member(cls, session_info: SessionInfo, user_id: str | list[str], reason: str | None = None) -> None:
         if isinstance(user_id, str):
             user_id = [user_id]
         if not isinstance(user_id, list):
@@ -205,15 +205,43 @@ class AiogramContextManager(ContextManager):
                 try:
                     await aiogram_bot.ban_chat_member(chat_id=session_info.get_common_target_id(),
                                                       user_id=int(x.split("|")[-1]))
-                    if not ban:
-                        await aiogram_bot.unban_chat_member(chat_id=session_info.get_common_target_id(),
-                                                            user_id=int(x.split("|")[-1]))
-                    Logger.info(f"{"Banned" if ban else "Kicked"} member {x} in group {session_info.target_id}")
+                    await aiogram_bot.unban_chat_member(chat_id=session_info.get_common_target_id(),
+                                                        user_id=int(x.split("|")[-1]))
+                    Logger.info(f"Kicked member {x} in group {session_info.target_id}")
                 except Exception:
-                    Logger.exception(
-                        f"Failed to {
-                            "ban" if ban else "kick"} member {x} in group {
-                            session_info.target_id}: ")
+                    Logger.exception(f"Failed to kick member {x} in group {session_info.target_id}: ")
+
+    @classmethod
+    async def ban_member(cls, session_info: SessionInfo, user_id: str | list[str], reason: str | None = None) -> None:
+        if isinstance(user_id, str):
+            user_id = [user_id]
+        if not isinstance(user_id, list):
+            raise TypeError("User ID must be a list or str")
+
+        if session_info.target_from != f"{client_name}|Private":
+            for x in user_id:
+                try:
+                    await aiogram_bot.ban_chat_member(chat_id=session_info.get_common_target_id(),
+                                                      user_id=int(x.split("|")[-1]))
+                    Logger.info(f"Banned member {x} in group {session_info.target_id}")
+                except Exception:
+                    Logger.exception(f"Failed to ban member {x} in group {session_info.target_id}: ")
+
+    @classmethod
+    async def unban_member(cls, session_info: SessionInfo, user_id: str | list[str]) -> None:
+        if isinstance(user_id, str):
+            user_id = [user_id]
+        if not isinstance(user_id, list):
+            raise TypeError("User ID must be a list or str")
+
+        if session_info.target_from != f"{client_name}|Private":
+            for x in user_id:
+                try:
+                    await aiogram_bot.unban_chat_member(chat_id=session_info.get_common_target_id(),
+                                                        user_id=int(x.split("|")[-1]))
+                    Logger.info(f"Unbanned member {x} in group {session_info.target_id}")
+                except Exception:
+                    Logger.exception(f"Failed to unban member {x} in group {session_info.target_id}: ")
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:

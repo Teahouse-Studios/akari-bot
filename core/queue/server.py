@@ -39,35 +39,52 @@ class JobQueueServer(JobQueueBase):
         return value
 
     @classmethod
-    async def client_delete_message(cls, session_info: SessionInfo, message_id: str | list[str]):
+    async def client_delete_message(cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None):
         if isinstance(message_id, str):
             message_id = [message_id]
         value = await cls.add_job(session_info.client_name, "delete_message",
                                   {"session_info": converter.unstructure(session_info),
-                                   "message_id": message_id}, wait=False)
+                                   "message_id": message_id,
+                                   "reason": reason}, wait=False)
         return value
 
     @classmethod
-    async def client_kick_member(cls, session_info: SessionInfo, user_id: str | list[str], ban: bool = False):
-        value = await cls.add_job(session_info.client_name, "kick_member",
-                                  {"session_info": converter.unstructure(session_info),
-                                   "user_id": user_id,
-                                   "ban": ban})
-        return value
-
-    @classmethod
-    async def client_restrict_member(cls, session_info: SessionInfo, user_id: str | list[str], duration: int | None = None):
+    async def client_restrict_member(cls, session_info: SessionInfo, user_id: str | list[str], duration: int | None = None, reason: str | None = None):
         value = await cls.add_job(session_info.client_name, "restrict_member",
                                   {"session_info": converter.unstructure(session_info),
                                    "user_id": user_id,
-                                   "duration": duration})
+                                   "duration": duration,
+                                   "reason": reason}, wait=False)
         return value
 
     @classmethod
     async def client_unrestrict_member(cls, session_info: SessionInfo, user_id: str | list[str]):
         value = await cls.add_job(session_info.client_name, "unrestrict_member",
                                   {"session_info": converter.unstructure(session_info),
-                                   "user_id": user_id})
+                                   "user_id": user_id}, wait=False)
+        return value
+
+    @classmethod
+    async def client_kick_member(cls, session_info: SessionInfo, user_id: str | list[str], reason: str | None = None):
+        value = await cls.add_job(session_info.client_name, "kick_member",
+                                  {"session_info": converter.unstructure(session_info),
+                                   "user_id": user_id,
+                                   "reason": reason}, wait=False)
+        return value
+
+    @classmethod
+    async def client_ban_member(cls, session_info: SessionInfo, user_id: str | list[str], reason: str | None = None):
+        value = await cls.add_job(session_info.client_name, "ban_member",
+                                  {"session_info": converter.unstructure(session_info),
+                                   "user_id": user_id,
+                                   "reason": reason}, wait=False)
+        return value
+
+    @classmethod
+    async def client_unban_member(cls, session_info: SessionInfo, user_id: str | list[str]):
+        value = await cls.add_job(session_info.client_name, "unban_member",
+                                  {"session_info": converter.unstructure(session_info),
+                                   "user_id": user_id}, wait=False)
         return value
 
     @classmethod
