@@ -109,7 +109,7 @@ async def _(msg: Bot.MessageSession):
         ).parse_page_info("Special:Interwiki", session=msg)
         if base_interwiki_link_.status:
             base_interwiki_link = base_interwiki_link_.link
-    result = ""
+    result = []
     if query != {}:
         if not msg.parsed_msg.get("--legacy", False) and msg.session_info.support_image:
             columns = [[x, query[x]] for x in query]
@@ -118,20 +118,18 @@ async def _(msg: Bot.MessageSession):
             imgs = None
         if imgs:
             img_list = [Image(ii) for ii in imgs]
-            mt = msg.session_info.locale.t("wiki.message.iw.list", prefix=msg.session_info.prefixes[0])
+            mt = [I18NContext("wiki.message.iw.list", prefix=msg.session_info.prefixes[0])]
             if base_interwiki_link:
-                mt += "\n" + msg.session_info.locale.t("wiki.message.iw.list.prompt", url=str(Url(base_interwiki_link)))
-            await msg.finish(img_list + [Plain(mt)])
+                mt.append(I18NContext("wiki.message.iw.list.prompt", url=str(Url(base_interwiki_link))))
+            await msg.finish(img_list + mt)
         else:
-            result = (
-                msg.session_info.locale.t("wiki.message.iw.list.legacy")
-                + "\n"
-                + "\n".join([f"{x}: {query[x]}" for x in query])
-            )
+            result.append(I18NContext("wiki.message.iw.list.legacy"))
+            for x in query:
+                result.append(Plain(f"{x}: {query[x]}"))
     else:
-        result = msg.session_info.locale.t("wiki.message.iw.list.none", prefix=msg.session_info.prefixes[0])
+        result.append(I18NContext("wiki.message.iw.list.none", prefix=msg.session_info.prefixes[0]))
     if base_interwiki_link:
-        result += "\n" + msg.session_info.locale.t("wiki.message.iw.list.prompt", url=str(Url(base_interwiki_link)))
+        result.append(I18NContext("wiki.message.iw.list.prompt", url=str(Url(base_interwiki_link))))
     await msg.finish(result)
 
 
@@ -143,25 +141,18 @@ async def _(msg: Bot.MessageSession, interwiki: str):
         if interwiki in query:
             await msg.finish(Url(query[interwiki], use_mm=False))
         else:
-            await msg.finish(
-                msg.session_info.locale.t("wiki.message.iw.get.not_found", iw=interwiki)
-            )
+            await msg.finish(I18NContext("wiki.message.iw.get.not_found", iw=interwiki))
     else:
-        await msg.finish(
-            msg.session_info.locale.t("wiki.message.iw.list.none", prefix=msg.session_info.prefixes[0])
-        )
+        await msg.finish(I18NContext("wiki.message.iw.list.none", prefix=msg.session_info.prefixes[0]))
 
 
 @wiki.command("headers show {{I18N:wiki.help.headers.show}}")
 async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
-    headers = target.headers
-    prompt = msg.session_info.locale.t(
-        "wiki.message.headers.show",
-        headers=orjson.dumps(headers).decode(),
-        prefix=msg.session_info.prefixes[0],
-    )
-    await msg.finish(prompt)
+    await msg.finish(I18NContext("wiki.message.headers.show",
+                                 headers=orjson.dumps(target.headers).decode(),
+                                 prefix=msg.session_info.prefixes[0]
+                                 ))
 
 
 @wiki.command("headers add <headers> {{I18N:wiki.help.headers.add}}", required_admin=True)
@@ -169,12 +160,7 @@ async def _(msg: Bot.MessageSession, headers: str):
     target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     add = await target.config_headers(headers)
     if add:
-        await msg.finish(
-            msg.session_info.locale.t(
-                "wiki.message.headers.add.success",
-                headers=orjson.dumps(target.headers).decode(),
-            )
-        )
+        await msg.finish(I18NContext("wiki.message.headers.add.success", headers=orjson.dumps(target.headers).decode()))
     else:
         await msg.finish(I18NContext("wiki.message.headers.add.failed"))
 
@@ -186,12 +172,7 @@ async def _(msg: Bot.MessageSession, headerkey: str):
     target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     delete = await target.config_headers(headerkey, add=False)
     if delete:
-        await msg.finish(
-            msg.session_info.locale.t(
-                "wiki.message.headers.add.success",
-                headers=orjson.dumps(target.headers).decode(),
-            )
-        )
+        await msg.finish(I18NContext("wiki.message.headers.add.success", headers=orjson.dumps(target.headers).decode()))
 
 
 @wiki.command("headers reset {{I18N:wiki.help.headers.reset}}", required_admin=True)
@@ -207,9 +188,7 @@ async def _(msg: Bot.MessageSession, prefix: str):
     target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     set_prefix = await target.config_prefix(prefix)
     if set_prefix:
-        await msg.finish(
-            msg.session_info.locale.t("wiki.message.prefix.set.success", wiki_prefix=prefix)
-        )
+        await msg.finish(I18NContext("wiki.message.prefix.set.success", wiki_prefix=prefix))
 
 
 @wiki.command("prefix reset {{I18N:wiki.help.prefix.reset}}", required_admin=True)

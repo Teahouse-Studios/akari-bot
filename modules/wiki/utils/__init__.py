@@ -33,20 +33,16 @@ async def _(msg: Bot.MessageSession):
     if not msg.parsed_msg and msg.session_info.support_forward and await check_enable_forward_msg():
         if msg.session_info.tmp.get("onebot_impl") in ["napcat", "llonebot"]:
             try:
-                await msg.send_message(
-                    msg.session_info.locale.t("wiki.message.ntqq.forward.sending")
-                )
+                await msg.send_message(I18NContext("wiki.message.ntqq.forward.sending"))
                 nodelist = await get_rc_qq(msg, start_wiki, headers)
                 await msg.send_message(nodelist)
                 legacy = False
             except NetworkError:
                 legacy = False
-                await msg.send_message(
-                    msg.session_info.locale.t("wiki.message.ntqq.forward.timeout")
-                )
+                await msg.send_message(I18NContext("wiki.message.ntqq.forward.timeout"))
             except Exception:
                 Logger.exception()
-                await msg.send_message(msg.session_info.locale.t("wiki.message.rollback"))
+                await msg.send_message(I18NContext("wiki.message.rollback"))
         else:
             try:
                 nodelist = await get_rc_qq(msg, start_wiki, headers)
@@ -54,7 +50,7 @@ async def _(msg: Bot.MessageSession):
                 legacy = False
             except Exception:
                 Logger.exception()
-                await msg.send_message(msg.session_info.locale.t("wiki.message.rollback"))
+                await msg.send_message(I18NContext("wiki.message.rollback"))
     if legacy:
         try:
             res = await get_rc(msg, start_wiki, headers)
@@ -99,20 +95,16 @@ async def _(msg: Bot.MessageSession):
     if not msg.parsed_msg and msg.session_info.support_forward and await check_enable_forward_msg():
         if msg.session_info.tmp.get("onebot_impl") in ["napcat", "llonebot"]:
             try:
-                await msg.send_message(
-                    msg.session_info.locale.t("wiki.message.ntqq.forward.sending")
-                )
+                await msg.send_message(I18NContext("wiki.message.ntqq.forward.sending"))
                 nodelist = await get_ab_qq(msg, start_wiki, headers)
                 await msg.send_message(nodelist)
                 legacy = False
             except NetworkError:
                 legacy = False
-                await msg.send_message(
-                    msg.session_info.locale.t("wiki.message.ntqq.forward.timeout")
-                )
+                await msg.send_message(I18NContext("wiki.message.ntqq.forward.timeout"))
             except Exception:
                 Logger.exception()
-                await msg.send_message(msg.session_info.locale.t("wiki.message.rollback"))
+                await msg.send_message(I18NContext("wiki.message.rollback"))
         else:
             try:
                 nodelist = await get_ab_qq(msg, start_wiki, headers)
@@ -120,7 +112,7 @@ async def _(msg: Bot.MessageSession):
                 legacy = False
             except Exception:
                 Logger.exception()
-                await msg.send_message(msg.session_info.locale.t("wiki.message.rollback"))
+                await msg.send_message(I18NContext("wiki.message.rollback"))
     if legacy:
         try:
             res = await get_ab(msg, start_wiki, headers)

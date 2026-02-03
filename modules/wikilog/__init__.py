@@ -68,10 +68,9 @@ async def _(msg: Bot.MessageSession, apilink: str):
                 I18NContext("wiki.message.invalid.blocked", name=wiki_name)
             )
     if not in_allowlist:
-        prompt = msg.session_info.locale.t("wikilog.message.untrust.wiki", name=wiki_name)
+        prompt = [I18NContext("wikilog.message.untrust.wiki", name=wiki_name)]
         if wiki_whitelist_url:
-            prompt += "\n" + \
-                      msg.session_info.locale.t("wiki.message.wiki_audit.untrust.address", url=wiki_whitelist_url)
+            prompt.append(I18NContext("wiki.message.wiki_audit.untrust.address", url=wiki_whitelist_url))
         await msg.finish(prompt)
     if status.available:
         records = await WikiLogTargetSetInfo.get_by_target_id(msg)
