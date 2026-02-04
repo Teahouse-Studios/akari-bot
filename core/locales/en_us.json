@@ -206,7 +206,7 @@
     "tos.message.reason.cooldown": "Too many usages of the same command within a period of time.",
     "tos.message.reason.ignore": "Ignoring temporary ban warning.",
     "tos.message.reason.kick": "Kick the bot from the group.",
-    "tos.message.reason.restrict": "Imposing unfriendly restrictions on the bot.",
+    "tos.message.reason.restrict": "对机器人实施禁言。",
     "tos.message.report": "User ${sender} triggered an abuse warning in session ${target}.",
     "tos.message.tempbanned": "Note:\nWe have temporarily banned you because your action triggered a warning.\n${ban_time} second(s) remaining until unban.",
     "tos.message.tempbanned.warning": "Note:\nAlthough the temporary ban was triggered, using commands still may cause you to be warned again.\n${ban_time} second(s) remaining until unban.",

@@ -206,7 +206,7 @@
     "tos.message.reason.cooldown": "一段時間內使用相同指令的次數過多。",
     "tos.message.reason.ignore": "無視暫時封鎖警告。",
     "tos.message.reason.kick": "將機器人移出群組。",
-    "tos.message.reason.restrict": "對機器人實施禁言。",
+    "tos.message.reason.restrict": "对机器人实施禁言。",
     "tos.message.report": "使用者 ${sender} 在會話 ${target} 觸發了濫用警告。",
     "tos.message.tempbanned": "提示：\n由於你的行為觸發了警告，我們已對你暫時封鎖。\n距解除時間還有 ${ban_time} 秒。",
     "tos.message.tempbanned.warning": "提示：\n即使已被暫時封鎖，嘗試繼續濫用指令可能會導致你被再次警告。\n距解除時間還有 ${ban_time} 秒。",
