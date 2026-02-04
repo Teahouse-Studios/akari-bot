@@ -18,7 +18,7 @@ from core.database import fetch_module_db, get_model_fields, get_model_names
 from core.logger import Logger
 from .auth import verify_jwt
 
-ROOT_DIR = Path(__file__).parent.parent.parent
+ROOT_DIR = Path(__file__).parent.parent.parent.parent
 
 
 @app.get("/api/dev")
