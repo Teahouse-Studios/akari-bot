@@ -53,12 +53,12 @@ class ExpiringTempDict:
     _registry_lock: ClassVar[threading.Lock] = threading.Lock()
     _clear_lock: ClassVar[asyncio.Lock] = asyncio.Lock()
 
-    def __init__(self, exp: int | float = 86400.0, ts: int | float = time.time(), data: Any = None, _root: bool = True):
+    def __init__(self, exp: int | float = 86400.0, ts: int | float = time.time(), data: Any = None, root: bool = True):
         self.exp = exp
         self.ts = float(ts)
         self.data = data or {}
         self._lock = threading.RLock()
-        if _root:
+        if root:
             with self._registry_lock:
                 self._registry.append(self)
 
@@ -74,7 +74,7 @@ class ExpiringTempDict:
     def __getitem__(self, key: str):
         with self._lock:
             if key not in self.data:
-                self.data[key] = ExpiringTempDict(exp=self.exp, _root=False)
+                self.data[key] = ExpiringTempDict(exp=self.exp, root=False)
             return self.data[key]
 
     def __setitem__(self, key: str, value: Any):

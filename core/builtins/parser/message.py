@@ -432,7 +432,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                                 Logger.warning("Match loop detected, skipping...")
                                 continue
                             match_hash_cache[msg.session_info.target_id][matched_hash] = ExpiringTempDict(
-                                exp=cooldown_time)
+                                exp=cooldown_time, root=False)
 
                             if enable_tos and rfunc.show_typing:
                                 await _tos_temp_ban(msg)
@@ -515,7 +515,7 @@ async def _check_target_cooldown(msg: "Bot.MessageSession"):
 
     target_record = target_cooldown_counter[msg.session_info.target_id]
     sender_record = target_record.setdefault(
-        msg.session_info.sender_id, ExpiringTempDict(exp=cooldown_time)
+        msg.session_info.sender_id, ExpiringTempDict(exp=cooldown_time, root=False)
     )
     if not sender_record.is_expired():
         if not sender_record.get("notified", False):
