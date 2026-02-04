@@ -1,9 +1,11 @@
 <div align="center">
-<img width="512" src="./assets/character_marked.png" alt="logo">
+<img width="512" src="./assets/character_marked.png" alt="character">
 
 # 小可 · AkariBot
 
 _多功能、跨平台、可自由扩展的异步聊天机器人助手_
+
+<img width="256" src="./assets/akaribot_logo.png" alt="logo">
 
 [![GitHub issues](https://img.shields.io/github/issues/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/pulls)
