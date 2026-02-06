@@ -132,19 +132,32 @@ class WordleBoard:
 
 @define
 class WordleBoardImage:
-    image: Image.Image
+    board_image: Image.Image
+    keyboard_image: Image.Image
     wordle_board: WordleBoard
     dark_theme: bool
     outline_color: tuple[int, int, int]
     background_color: str
+    green_color: tuple[int, int, int]
+    yellow_color: tuple[int, int, int]
+    grey_color: tuple[int, int, int]
+    light_grey_color: tuple[int, int, int]
+
     cell_size = 50
     margin = 10
     outline_width = 2
     rows = 6
     columns = 5
-    green_color = (107, 169, 100)
-    yellow_color = (201, 180, 88)
-    grey_color = (120, 124, 126)
+
+    keyboard_rows = [
+        "QWERTYUIOP",
+        "ASDFGHJKL",
+        "ZXCVBNM",
+    ]
+
+    key_width = 40
+    key_height = 55
+    key_margin = 6
 
     def __init__(self, wordle_board: WordleBoard, dark_theme: bool):
         self.wordle_board = wordle_board
@@ -152,28 +165,81 @@ class WordleBoardImage:
         self.outline_color = (58, 58, 60) if dark_theme else (211, 214, 218)
         self.background_color = "black" if dark_theme else "white"
 
-        width = self.columns * (self.cell_size + self.margin) + self.margin
-        height = self.rows * (self.cell_size + self.margin) + self.margin
+        self.green_color = (83, 141, 78) if dark_theme else (107, 169, 100)
+        self.yellow_color = (181, 159, 59) if dark_theme else (201, 180, 88)
+        self.grey_color = (58, 58, 60) if dark_theme else (120, 124, 126)
+        self.light_grey_color = (129, 131, 132) if dark_theme else (211, 214, 218)
 
-        image = Image.new("RGB", (width, height), self.background_color)
-        draw = ImageDraw.Draw(image)
+        board_width = self.columns * (self.cell_size + self.margin) + self.margin
+        board_height = self.rows * (self.cell_size + self.margin) + self.margin
+
+        board_image = Image.new("RGB", (board_width, board_height), self.background_color)
+        board_draw = ImageDraw.Draw(board_image)
 
         for row in range(self.rows):
             for col in range(self.columns):
                 x = col * (self.cell_size + self.margin) + self.margin
                 y = row * (self.cell_size + self.margin) + self.margin
 
-                draw.rectangle(
+                board_draw.rectangle(
                     (x, y, x + self.cell_size, y + self.cell_size),
                     fill=None,
                     outline=self.outline_color,
                     width=self.outline_width,
                 )
 
-        self.image = image
+        self.board_image = board_image
+
+        keyboard_rows_count = len(self.keyboard_rows)
+        keyboard_width = (
+            max(len(r) for r in self.keyboard_rows)
+            * (self.key_width + self.key_margin)
+            + self.key_margin
+        )
+        keyboard_height = (
+            keyboard_rows_count * (self.key_height + self.key_margin)
+            + self.key_margin
+        )
+
+        keyboard_image = Image.new(
+            "RGB", (keyboard_width, keyboard_height), self.background_color
+        )
+        keyboard_draw = ImageDraw.Draw(keyboard_image)
+
+        for row_index, row_keys in enumerate(self.keyboard_rows):
+            row_width = (
+                len(row_keys) * self.key_width
+                + (len(row_keys) - 1) * self.key_margin
+            )
+            start_x = (keyboard_width - row_width) // 2
+            y = self.key_margin + row_index * (self.key_height + self.key_margin)
+
+            for col_index, letter in enumerate(row_keys):
+                x = start_x + col_index * (self.key_width + self.key_margin)
+
+                keyboard_draw.rectangle(
+                    (x, y, x + self.key_width, y + self.key_height),
+                    fill=self.light_grey_color,
+                    outline=None,
+                )
+
+                font_size = int(self.key_height * 0.5)
+                font = ImageFont.truetype(noto_sans_bold_path, font_size)
+
+                _, _, w, h = keyboard_draw.textbbox((0, 0), letter, font=font)
+                keyboard_draw.text(
+                    (
+                        x + (self.key_width - w) // 2,
+                        y + (self.key_height - h) // 2 - 2,
+                    ),
+                    letter,
+                    fill="white" if self.dark_theme else "black",
+                    font=font,
+                )
+        self.keyboard_image = keyboard_image
 
     def update_board(self):
-        draw = ImageDraw.Draw(self.image)
+        draw = ImageDraw.Draw(self.board_image)
         font_size = int(self.cell_size * 0.8)
         font = ImageFont.truetype(noto_sans_bold_path, font_size)
 
@@ -196,10 +262,89 @@ class WordleBoardImage:
                 )
 
                 letter = self.wordle_board.board[row_index][col_index].upper()
-                _, _, width, height = draw.textbbox((0, 0), letter, font=font)
-                text_position = (
-                    x + (self.cell_size - width) // 2,
-                    y + (self.cell_size - height) // 2 - 3,
+                _, _, w, h = draw.textbbox((0, 0), letter, font=font)
+
+                draw.text(
+                    (
+                        x + (self.cell_size - w) // 2,
+                        y + (self.cell_size - h) // 2 - 3,
+                    ),
+                    letter,
+                    fill="white",
+                    font=font,
                 )
 
-                draw.text(text_position, letter, fill="white", font=font)
+    def _collect_letter_states(self) -> dict[str, WordleState]:
+        result: dict[str, WordleState] = {}
+
+        for r, row in enumerate(self.wordle_board.test_board()):
+            for c, state in enumerate(row):
+                letter = self.wordle_board.board[r][c].upper()
+
+                if letter not in result:
+                    result[letter] = state
+                else:
+                    if state == WordleState.GREEN:
+                        result[letter] = WordleState.GREEN
+                    elif (
+                        state == WordleState.YELLOW
+                        and result[letter] != WordleState.GREEN
+                    ):
+                        result[letter] = WordleState.YELLOW
+
+        return result
+
+    def update_keyboard(self):
+        draw = ImageDraw.Draw(self.keyboard_image)
+
+        font_size = int(self.key_height * 0.5)
+        font = ImageFont.truetype(noto_sans_bold_path, font_size)
+
+        letter_states = self._collect_letter_states()
+
+        keyboard_width, _ = self.keyboard_image.size
+
+        for row_index, row_keys in enumerate(self.keyboard_rows):
+            row_width = (
+                len(row_keys) * self.key_width
+                + (len(row_keys) - 1) * self.key_margin
+            )
+
+            start_x = (keyboard_width - row_width) // 2
+            y = self.key_margin + row_index * (self.key_height + self.key_margin)
+
+            for col_index, letter in enumerate(row_keys):
+                x = start_x + col_index * (self.key_width + self.key_margin)
+
+                state = letter_states.get(letter)
+
+                if state == WordleState.GREEN:
+                    color = self.green_color
+                    text_color = "white"
+                elif state == WordleState.YELLOW:
+                    color = self.yellow_color
+                    text_color = "white"
+                elif state == WordleState.GREY:
+                    color = self.grey_color
+                    text_color = "white"
+                else:
+                    color = self.light_grey_color
+                    text_color = "white" if self.dark_theme else "black"
+
+                draw.rectangle(
+                    (x, y, x + self.key_width, y + self.key_height),
+                    fill=color,
+                    outline=None
+                )
+
+                _, _, w, h = draw.textbbox((0, 0), letter, font=font)
+
+                draw.text(
+                    (
+                        x + (self.key_width - w) // 2,
+                        y + (self.key_height - h) // 2 - 2,
+                    ),
+                    letter,
+                    fill=text_color,
+                    font=font,
+                )

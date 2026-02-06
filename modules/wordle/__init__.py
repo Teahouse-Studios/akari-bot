@@ -49,7 +49,8 @@ async def _(msg: Bot.MessageSession):
     Logger.info(f"Answer: {board.word}")
     start_msg = []
     if not text_mode:
-        start_msg.append(BImage(board_image.image))
+        start_msg.append(BImage(board_image.board_image))
+        start_msg.append(BImage(board_image.keyboard_image))
     start_msg.append(I18NContext("wordle.message.start"))
     if hard_mode:
         start_msg.append(I18NContext("wordle.message.start.hard"))
@@ -74,13 +75,14 @@ async def _(msg: Bot.MessageSession):
         if hard_mode:
             last_word = word
         board_image.update_board()
+        board_image.update_keyboard()
 
         if not board.is_game_over() and board.get_trials() <= 6:
             Logger.info(f"{word} != {board.word}, attempt {board.get_trials() - 1}")
             if text_mode:
                 await wait.send_message(board.format_board())
             else:
-                await wait.send_message([BImage(board_image.image)])
+                await wait.send_message([BImage(board_image.board_image), BImage(board_image.keyboard_image)])
 
     if board.is_game_over():
         play_state.disable()
@@ -97,7 +99,7 @@ async def _(msg: Bot.MessageSession):
         if text_mode:
             await msg.finish([Plain(board.format_board())] + g_msg, quote=False)
         else:
-            await msg.finish([BImage(board_image.image)] + g_msg, quote=False)
+            await msg.finish([BImage(board_image.board_image), BImage(board_image.keyboard_image)] + g_msg, quote=False)
 
 
 @wordle.command("stop {{I18N:game.help.stop}}")
