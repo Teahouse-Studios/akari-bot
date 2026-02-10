@@ -13,6 +13,7 @@ from core.constants.default import locale_url_default
 from core.i18n import get_available_locales, Locale
 from core.utils.bash import run_sys_command
 
+"""
 ver = module("version", base=True, doc=True)
 
 
@@ -45,7 +46,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(send_msgs)
     else:
         await msg.finish(I18NContext("core.message.version.unknown"))
-
+"""
 
 ping = module("ping", base=True, doc=True)
 
