@@ -286,7 +286,7 @@ class DiscordContextManager(ContextManager):
 
             ctx = cls.context[session_info.session_id]
             if ctx:
-                async with ctx.channel.typing() as typing:
+                async with ctx.channel.typing():
                     Logger.debug(f"Start typing in session: {session_info.session_id}")
                     # 这里可以添加开始输入状态的逻辑
                     flag = asyncio.Event()

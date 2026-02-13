@@ -86,7 +86,7 @@ class DiscordSlashContextManager(DiscordContextManager):
                 raise ValueError("Session not found in context")
             ctx: discord.ApplicationContext = cls.context[session_info.session_id]
             if ctx:
-                async with ctx.channel.typing() as typing:
+                async with ctx.channel.typing():
                     await ctx.defer()
                     Logger.debug(f"Start typing in session: {session_info.session_id}")
                     # 这里可以添加开始输入状态的逻辑

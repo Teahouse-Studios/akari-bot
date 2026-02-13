@@ -1,22 +1,20 @@
 repos:
-    - repo: https://github.com/python-poetry/poetry-plugin-export
-      rev: "1.9.0"
+    - repo: https://github.com/astral-sh/uv-pre-commit
+      rev: 0.10.2
       hooks:
-          - id: poetry-export
-            args: ["--without-hashes", "-f", "requirements.txt", "-o", "requirements.txt"]
-            verbose: true
+          - id: uv-export
+            args: ["--no-hashes"]
 
-    - repo: https://github.com/pre-commit/mirrors-autopep8
-      rev: "v2.0.4"
+    - repo: https://github.com/astral-sh/ruff-pre-commit
+      rev: v0.15.0
       hooks:
-          - id: autopep8
+          - id: ruff-check
+            args: [--fix]
 
 #    - repo: local
 #      hooks:
 #          - id: auto-generate-config
 #            name: Auto-generate config
-#            entry: poetry run python ./core/scripts/config_generate.py
+#            entry: uv python ./core/scripts/config_generate.py
 #            language: python
 #            pass_filenames: false
-
-

@@ -1,4 +1,3 @@
-import os
 from tabulate import tabulate
 from tortoise import Tortoise
 from tortoise.exceptions import OperationalError
