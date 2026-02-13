@@ -48,7 +48,7 @@ jobs:
           git config --local user.name "GitHub Action"
           git add ./assets/modules/emojimix/emoji_data.json
           git commit -m "Update emojimix data [skip ci]"
-          
+
       - name: Push changes
         if: steps.check_changes.outputs.files_changed == 'true'
         uses: ad-m/github-push-action@master

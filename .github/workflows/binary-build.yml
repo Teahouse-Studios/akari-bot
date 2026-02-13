@@ -23,17 +23,18 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.12' # Version range or exact version of a Python version to use, using SemVer's version range syntax
-          architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
-          cache: 'pip'
-          cache-dependency-path: |
-              **/requirements*.txt
+          python-version: '3.12'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
 
       - name: Install Dependencies
         run: |
-          pip install -r requirements.txt
+          uv sync --locked --all-extras --dev
           playwright install --with-deps chromium
-          python core/scripts/config_generate.py
+          uv python core/scripts/config_generate.py
 
       - name: Write version file
         shell: bash
@@ -69,7 +70,7 @@ jobs:
 
       - name: Copy Assets
         run: |
-          python .github/scripts/build_copy_files.py
+          uv python .github/scripts/build_copy_files.py
       - name: Upload Artifacts
         uses: actions/upload-artifact@v6
         with:
