@@ -2,4 +2,4 @@ chcp 65001
 set PYTHONIOENCODING=utf-8
 set PYTHONPATH=%~dp0
 
-uv python bot.py
+uv run python bot.py

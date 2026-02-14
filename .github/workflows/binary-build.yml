@@ -34,7 +34,7 @@ jobs:
         run: |
           uv sync --locked --all-extras --dev
           playwright install --with-deps chromium
-          uv python core/scripts/config_generate.py
+          uv run python core/scripts/config_generate.py
 
       - name: Write version file
         shell: bash
@@ -70,7 +70,7 @@ jobs:
 
       - name: Copy Assets
         run: |
-          uv python .github/scripts/build_copy_files.py
+          uv run python .github/scripts/build_copy_files.py
       - name: Upload Artifacts
         uses: actions/upload-artifact@v6
         with:
