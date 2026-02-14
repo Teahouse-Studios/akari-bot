@@ -20,7 +20,7 @@ from core.builtins.temp import Temp
 from core.builtins.utils import command_prefix
 from core.client.init import client_init
 from core.config import Config
-from core.constants.default import confirm_command_default, issue_url_default, ignored_sender_default, qq_host_default
+from core.constants.default import confirm_command_default, ignored_sender_default, qq_host_default
 from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords
 from core.i18n import Locale
 from core.logger import Logger
@@ -284,7 +284,7 @@ async def _(event: Event):
         target_info = await TargetInfo.get_by_target_id(target_id, create=False)
         if target_info and target_info.blocked:
             res = Locale(default_locale).t("tos.message.in_group_blocklist")
-            if issue_url := Config("issue_url", issue_url_default):
+            if issue_url := Config("issue_url", cfg_type=str):
                 res += "\n" + Locale(default_locale).t("tos.message.appeal", issue_url=issue_url)
             await aiocqhttp_bot.send(event=event, message=res)
             await aiocqhttp_bot.call_action("set_group_leave", group_id=event.group_id)

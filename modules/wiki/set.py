@@ -3,14 +3,13 @@ import orjson
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Image, Plain, Url
 from core.config import Config
-from core.constants.default import wiki_whitelist_url_default
 from core.utils.image_table import image_table_render, ImageTable
 from . import wiki
 from .database.models import WikiTargetInfo
 from .utils.wikilib import WikiLib
 
 enable_urlmanager = Config("enable_urlmanager", False)
-wiki_whitelist_url = Config("wiki_whitelist_url", wiki_whitelist_url_default, table_name="module_wiki")
+wiki_whitelist_url = Config("wiki_whitelist_url", cfg_type=str, table_name="module_wiki")
 
 
 @wiki.command("set <wikiurl> {{I18N:wiki.help.set}}", required_admin=True)

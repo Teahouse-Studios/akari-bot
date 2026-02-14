@@ -9,7 +9,6 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, FormattedTime, I18NContext, Url
 from core.component import module
 from core.config import Config
-from core.constants.default import locale_url_default
 from core.i18n import get_available_locales, Locale
 from core.utils.bash import run_sys_command
 
@@ -175,7 +174,7 @@ async def _(msg: Bot.MessageSession):
            I18NContext("core.message.locale.set.prompt", prefix=msg.session_info.prefixes[0]),
            I18NContext("core.message.locale.langlist", langlist=avaliable_lang)]
 
-    if locale_url := Config("locale_url", locale_url_default, cfg_type=str):
+    if locale_url := Config("locale_url", cfg_type=str):
         res.append(I18NContext("core.message.locale.contribute", url=locale_url))
     await msg.finish(res)
 

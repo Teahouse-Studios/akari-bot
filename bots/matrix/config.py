@@ -1,11 +1,12 @@
 from core.config.decorator import on_config
+from core.constants.default import matrix_homeserver_default, matrix_user_default
 
 
 @on_config("matrix", "bot", False)
 class MatrixConfig:
     enable: bool = False
-    matrix_homeserver: str = "https://matrix.org"
-    matrix_user: str = "@akaribot:matrix.org"
+    matrix_homeserver: str = matrix_homeserver_default
+    matrix_user: str = matrix_user_default
     matrix_device_name: str = ""
 
 

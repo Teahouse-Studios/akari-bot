@@ -1,4 +1,16 @@
 from core.config.decorator import on_config
+from core.constants.default import (
+    base_superuser_default,
+    bug_report_url_default,
+    command_prefix_default,
+    confirm_command_default,
+    db_path_default,
+    donate_url_default,
+    help_url_default,
+    help_page_url_default,
+    ignored_sender_default,
+    issue_url_default,
+    locale_url_default)
 
 
 @on_config("config")
@@ -13,13 +25,13 @@ class Config:
     use_secrets_random: bool = False
 
     # 身份与权限
-    base_superuser: list = ["QQ|2596322644"]
-    ignored_sender: list = ["QQ|2854196310"]
+    base_superuser: list = base_superuser_default
+    ignored_sender: list = ignored_sender_default
     report_targets: list = []
 
     # 命令交互
-    command_prefix: list = ["~", "～"]
-    confirm_command: list = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"]
+    command_prefix: list = command_prefix_default
+    confirm_command: list = confirm_command_default
     enable_module_invalid_prompt: bool = False
     mention_required: bool = False
     no_confirm: bool = False
@@ -59,17 +71,17 @@ class Config:
     rickroll_msg: str = "https://b23.tv/vXaKjqJ"
 
     # 外部链接
-    bug_report_url: str = "https://s.wd-ljt.com/botreportbug"
-    donate_url: str = "http://afdian.com/a/teahouse"
-    help_url: str = "https://bot.teahouse.team"
-    help_page_url: str = "https://bot.teahouse.team/wiki/${module}"
-    issue_url: str = "https://github.com/Teahouse-Studios/bot/issues/new/choose"
-    locale_url: str = "https://www.crowdin.com/project/akari-bot"
+    bug_report_url: str = bug_report_url_default
+    donate_url: str = donate_url_default
+    help_url: str = help_url_default
+    help_page_url: str = help_page_url_default
+    issue_url: str = issue_url_default
+    locale_url: str = locale_url_default
 
 
 @on_config("secret")
 class SecretConfig:
-    db_path: str = "sqlite://database/save.db"
+    db_path: str = db_path_default
     proxy: str = ""
     check_access_key_id: str = ""
     check_access_key_secret: str = ""
