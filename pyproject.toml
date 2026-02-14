@@ -27,7 +27,7 @@ dependencies = [
     "pycryptodome>=3.18.0,<4.0.0",
     "python-dotenv>=1.2.1,<2.0.0",
     "python-multipart>=0.0.22,<1.0.0",
-    "pywin32>=308,<309; platform_system == 'Windows'",
+    "pywin32>=311,<312; platform_system == 'Windows'",
 
     # bots
     "aiocqhttp>=1.4.3,<2.0.0",
