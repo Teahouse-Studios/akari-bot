@@ -82,7 +82,8 @@ async def init_db(load_module_db: bool = True, db_models: list[str] | None = Non
                         "default_connection": "local",
                     }
                 }
-            }
+            },
+            _enable_global_fallback=True
         )
 
         await Tortoise.generate_schemas(safe=True)
