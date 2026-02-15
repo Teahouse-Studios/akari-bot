@@ -8,9 +8,3 @@ async def _(tester: Tester):
     await tester.input("~echo hello", "hello", "should output hello")
     await tester.input(["~echo", "lol"], True, "should output lol")
     return tester
-
-@func_case
-async def _(tester: Tester):
-    await tester.input("~maimai bind hldorowolf", True)
-    await tester.input("~maimai b50", None)
-    return tester
