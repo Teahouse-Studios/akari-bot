@@ -1,12 +1,11 @@
 .git
 .github
-.vscode
 .deepsource.toml
 .editorconfig
 .gitignore
 .pre-commit-config.yaml
 crowdin.yml
-pyproject.toml
+requirements.txt
 renovate.json
 start
 start.bat

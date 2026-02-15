@@ -1,4 +1,4 @@
-FROM python:3.12
+FROM python:3.12-slim
 
 LABEL org.opencontainers.image.url=https://github.com/Teahouse-Studios/akari-bot
 LABEL org.opencontainers.image.documentation=https://bot.teahouse.team/
@@ -11,7 +11,10 @@ LABEL maintainer="Teahouse Studios <admin@teahou.se>"
 ARG VERSION
 LABEL version=$VERSION
 
+RUN pip install uv
+
 WORKDIR /akari-bot
+
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
@@ -19,10 +22,11 @@ RUN apt-get update && apt-get install -y \
     fonts-noto-cjk \
     fonts-noto-color-emoji \
     fonts-dejavu \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen
 
 ADD . .
 CMD ["python", "./bot.py"]
