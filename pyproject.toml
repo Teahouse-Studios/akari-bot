@@ -42,7 +42,7 @@ dependencies = [
     "urllib3>=2.6.3",
     "uvicorn[standard]>=0.38.0,<1.0.0",
     # core
-    "cattrs>=25.0.0,<26.0.0",
+    "cattrs>=26.1.0,<26.2.0",
     "filetype>=1.2.0,<2.0.0",
     "japanera>=2.1.3,<3.0.0",
     "orjson>=3.10.9,<4.0.0",
