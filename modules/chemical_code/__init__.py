@@ -219,9 +219,10 @@ async def _(msg: Bot.MessageSession):
     play_state = PlayState("chemical_code", msg)
     if play_state.check():
         play_state.disable()
-        await msg.finish(I18NContext("chemical_code.stop.message", answer=play_state.get("answer")),
-                         quote=False,
-                         )
+        await msg.finish(
+            I18NContext("chemical_code.stop.message", answer=play_state.get("answer")),
+            quote=False,
+        )
     else:
         await msg.finish(I18NContext("game.message.stop.none"))
 
@@ -236,9 +237,7 @@ async def _(msg: Bot.MessageSession, pcid: int):
         await chemical_code(msg, pcid, random_mode=False)
 
 
-async def chemical_code(
-    msg: Bot.MessageSession, id: int | None = None, random_mode=True, captcha_mode=False
-):
+async def chemical_code(msg: Bot.MessageSession, id: int | None = None, random_mode=True, captcha_mode=False):
     play_state = PlayState("chemical_code", msg)
     if play_state.check():
         await msg.finish(I18NContext("game.message.running"))
@@ -251,7 +250,7 @@ async def chemical_code(
         play_state.disable()
         await msg.finish(I18NContext("chemical_code.message.error"))
     play_state.update(**csr)  # 储存并获取不同用户所需的信息
-    Logger.info(f"Answer: {play_state.get("answer")}")
+    Logger.info(f"Answer: {play_state.get('answer')}")
 
     mol = Chem.MolFromSmiles(play_state.get("smiles"))
     if not mol:
@@ -281,9 +280,7 @@ async def chemical_code(
     async def ans(msg: Bot.MessageSession, random_mode):
         wait = await msg.wait_next_message(timeout=GAME_EXPIRED)
         if play_state.check():
-            if (wait_text := wait.as_display(text_only=True)) != play_state.get(
-                "answer"
-            ):
+            if (wait_text := wait.as_display(text_only=True)) != play_state.get("answer"):
                 if re.match(r"^[A-Za-z0-9]+$", wait_text):
                     try:
                         parse_ = parse_elements(wait_text)  # 解析消息中的化学元素
@@ -320,12 +317,15 @@ async def chemical_code(
 
                                 if incorrect_list:
                                     incorrect_elements = "{I18N:message.delimiter}".join(incorrect_list)
-                                    await wait.send_message(I18NContext("chemical_code.message.incorrect.remind2",
-                                                                        elements=incorrect_elements))
+                                    await wait.send_message(
+                                        I18NContext(
+                                            "chemical_code.message.incorrect.remind2", elements=incorrect_elements
+                                        )
+                                    )
                     except ValueError:
                         Logger.exception()
 
-                Logger.info(f"{wait_text} != {play_state.get("answer")}")
+                Logger.info(f"{wait_text} != {play_state.get('answer')}")
                 return await ans(wait, random_mode)
             send_ = [I18NContext("chemical_code.message.correct")]
             if random_mode:
@@ -361,7 +361,7 @@ async def chemical_code(
                 Image(newpath),
                 I18NContext("chemical_code.message.captcha", times=set_timeout),
             ],
-            timeout=GAME_EXPIRED
+            timeout=GAME_EXPIRED,
         )
         if play_state.check():
             play_state.disable()

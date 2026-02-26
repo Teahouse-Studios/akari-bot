@@ -43,9 +43,7 @@ def private_ip_check(url: str):
 
     addr = addr_info[0][4][0]
     if _matcher_private_ips.match(addr):
-        raise ValueError(
-            f"Attempt of requesting private IP addresses is not allowed, requesting {hostname}."
-        )
+        raise ValueError(f"Attempt of requesting private IP addresses is not allowed, requesting {hostname}.")
 
 
 async def request_url(
@@ -91,11 +89,7 @@ async def request_url(
         if not Config("allow_request_private_ip", False) and not request_private_ip:
             private_ip_check(url)
 
-        async with httpx.AsyncClient(
-            headers=headers,
-            proxy=proxy,
-            verify=not debug
-        ) as client:
+        async with httpx.AsyncClient(headers=headers, proxy=proxy, verify=not debug) as client:
             if cookies:
                 ck = SimpleCookie()
                 ck.load(cookies)

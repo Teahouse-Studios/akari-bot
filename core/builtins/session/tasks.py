@@ -66,15 +66,8 @@ class SessionTaskManager:
 
     @classmethod
     def get_result(cls, msg: "MessageSession"):
-        if (
-            "result"
-            in cls._task_list[msg.session_info.target_id][msg.session_info.sender_id][
-                msg
-            ]
-        ):
-            return cls._task_list[msg.session_info.target_id][msg.session_info.sender_id][
-                msg
-            ]["result"]
+        if "result" in cls._task_list[msg.session_info.target_id][msg.session_info.sender_id][msg]:
+            return cls._task_list[msg.session_info.target_id][msg.session_info.sender_id][msg]["result"]
         return None
 
     @classmethod
@@ -87,15 +80,11 @@ class SessionTaskManager:
             for sender in cls._task_list[target]:
                 for session in cls._task_list[target][sender]:
                     if cls._task_list[target][sender][session]["active"]:
-                        if time.time() - cls._task_list[target][sender][
+                        if time.time() - cls._task_list[target][sender][session]["ts"] > cls._task_list[target][sender][
                             session
-                        ]["ts"] > cls._task_list[target][sender][session].get(
-                            "timeout", 3600
-                        ):
+                        ].get("timeout", 3600):
                             cls._task_list[target][sender][session]["active"] = False
-                            cls._task_list[target][sender][session][
-                                "flag"
-                            ].set()  # no result = cancel
+                            cls._task_list[target][sender][session]["flag"].set()  # no result = cancel
         for message_id in cls._callback_list.copy():
             if time.time() - cls._callback_list[message_id]["ts"] > 3600:
                 del cls._callback_list[message_id]

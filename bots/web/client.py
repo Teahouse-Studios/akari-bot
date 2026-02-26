@@ -56,12 +56,7 @@ def _webui_message():
             f"---\n"
         )
     else:
-        message = (
-            f"\n---\n"
-            f"Visit AkariBot WebUI:\n"
-            f"{protocol}://{web_host}:{available_web_port}/webui\n"
-            f"---\n"
-        )
+        message = f"\n---\nVisit AkariBot WebUI:\n{protocol}://{web_host}:{available_web_port}/webui\n---\n"
 
     return message
 
@@ -74,6 +69,7 @@ async def lifespan(app: FastAPI):
         Logger.info(_webui_message())
     yield
     await asyncio.Event().wait()  # 等待 server 清理进程
+
 
 app = FastAPI(lifespan=lifespan)
 limiter = Limiter(key_func=get_remote_address)
@@ -89,6 +85,7 @@ app.add_middleware(
 
 
 if dist_path.exists():
+
     @app.get("/webui/{path:path}")
     async def serve_webui(path: str):
         file_path = (dist_path / path).resolve()
@@ -107,6 +104,7 @@ if dist_path.exists():
     async def redirect_to_webui():
         return RedirectResponse(url="/webui/")
 else:
+
     @app.get("/")
     async def redirect_to_api():
         return RedirectResponse(url="/api")

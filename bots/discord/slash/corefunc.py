@@ -18,9 +18,7 @@ async def _(ctx: discord.ApplicationContext, module: str):
 
 
 @discord_bot.slash_command(name="locale", description="Set the bot running languages.")
-@discord.option(
-    name="lang", description="Supported language codes.", autocomplete=auto_get_lang
-)
+@discord.option(name="lang", description="Supported language codes.", autocomplete=auto_get_lang)
 async def _(ctx: discord.ApplicationContext, lang: str = None):
     if lang:
         await slash_parser(ctx, lang)
@@ -39,6 +37,7 @@ async def _(ctx: discord.ApplicationContext):
 
 
 if Config("enable_petal", False):
+
     @discord_bot.slash_command(name="petal", description="Get the number of petals.")
     async def _(ctx: discord.ApplicationContext):
         await slash_parser(ctx, "")
@@ -83,9 +82,7 @@ async def _(ctx: discord.ApplicationContext, userid: str):
     await slash_parser(ctx, f"ban {userid}")
 
 
-@admin.command(
-    name="unban", description="Remove limit someone to use bot in the channel."
-)
+@admin.command(name="unban", description="Remove limit someone to use bot in the channel.")
 @discord.option(name="userid", description="The user ID.")
 async def _(ctx: discord.ApplicationContext, userid: str):
     await slash_parser(ctx, f"unban {userid}")
@@ -108,9 +105,7 @@ async def _(ctx: discord.ApplicationContext, alias: str):
 
 
 @ali.command(name="list", description="View custom command alias.")
-@discord.option(
-    name="legacy", choices=["false", "true"], description="Whether to use legacy mode."
-)
+@discord.option(name="legacy", choices=["false", "true"], description="Whether to use legacy mode.")
 async def _(ctx: discord.ApplicationContext, legacy: str):
     legacy = "--legacy" if legacy == "true" else ""
     await slash_parser(ctx, f"list {legacy}")
@@ -125,9 +120,7 @@ m = discord_bot.create_group("module", "Set about modules.")
 
 
 @m.command(name="list", description="View all available modules.")
-@discord.option(
-    name="legacy", choices=["false", "true"], description="Whether to use legacy mode."
-)
+@discord.option(name="legacy", choices=["false", "true"], description="Whether to use legacy mode.")
 async def _(ctx: discord.ApplicationContext, legacy: str):
     legacy = "--legacy" if legacy == "true" else ""
     await slash_parser(ctx, f"list {legacy}")
@@ -172,16 +165,12 @@ async def _(ctx: discord.ApplicationContext, offset: str):
     await slash_parser(ctx, f"timeoffset {offset}")
 
 
-@setup.command(
-    name="check", description="Set up whether to enable command typo checking."
-)
+@setup.command(name="check", description="Set up whether to enable command typo checking.")
 async def _(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "check")
 
 
-@setup.command(
-    name="cooldown", description="Set up the command cooldown time within the session."
-)
+@setup.command(name="cooldown", description="Set up the command cooldown time within the session.")
 @discord.option(name="second", description="The command cooldown seconds.")
 async def _(ctx: discord.ApplicationContext, second: str):
     await slash_parser(ctx, f"cooldown {second}")

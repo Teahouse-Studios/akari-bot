@@ -10,7 +10,8 @@ from core.constants.default import (
     help_page_url_default,
     ignored_sender_default,
     issue_url_default,
-    locale_url_default)
+    locale_url_default,
+)
 
 
 @on_config("config")

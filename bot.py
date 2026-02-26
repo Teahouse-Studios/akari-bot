@@ -1,7 +1,9 @@
 from core import check_python_version
+
 check_python_version()  # noqa
 
 from core.constants import config_path, config_filename  # skipcq
+
 if not (config_path / config_filename).exists():
     import core.scripts.config_generate  # noqa
 
@@ -40,10 +42,7 @@ logger_format = (
     "<level>[{level}]:{message}</level>"
 )
 Logger.add(
-    sys.stdout,
-    format=logger_format,
-    colorize=True,
-    filter=lambda record: record["extra"].get("name") == "BotDaemon"
+    sys.stdout, format=logger_format, colorize=True, filter=lambda record: record["extra"].get("name") == "BotDaemon"
 )
 
 Logger.add(
@@ -62,7 +61,7 @@ Logger.add(
     retention="10 days",
     level="INFO",
     encoding="utf8",
-    filter=lambda record: record["extra"].get("name") == "BotDaemon"
+    filter=lambda record: record["extra"].get("name") == "BotDaemon",
 )
 
 ascii_art = r"""
@@ -87,6 +86,7 @@ processes: list[multiprocessing.Process] = []
 
 def pre_init():
     from core.constants.path import cache_path
+
     if cache_path.exists():
         shutil.rmtree(cache_path)
     cache_path.mkdir(parents=True, exist_ok=True)
@@ -102,10 +102,7 @@ def pre_init():
         Logger.debug("Debug mode is enabled.")
 
     async def update_db():
-        await Tortoise.init(
-            db_url=get_db_link(),
-            modules={"models": ["core.database.models"]}
-        )
+        await Tortoise.init(db_url=get_db_link(), modules={"models": ["core.database.models"]})
         await Tortoise.generate_schemas(safe=True)
 
         query_dbver = await DBVersion.all().first()
@@ -125,18 +122,14 @@ def pre_init():
         else:
             await close_db()
 
-        base_superuser = Config(
-            "base_superuser", base_superuser_default, cfg_type=(str, list)
-        )
+        base_superuser = Config("base_superuser", base_superuser_default, cfg_type=(str, list))
         if base_superuser:
             if isinstance(base_superuser, str):
                 base_superuser = [base_superuser]
             for bu in base_superuser:
                 await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id=bu)
         else:
-            Logger.warning(
-                "The base superuser is not found, please setup it in the config file."
-            )
+            Logger.warning("The base superuser is not found, please setup it in the config file.")
 
     run_async(update_db())
 
@@ -148,10 +141,7 @@ def clear_import_cache():
 
 
 def multiprocess_run_until_complete(func):
-    p = multiprocessing.Process(
-        target=func,
-        daemon=True
-    )
+    p = multiprocessing.Process(target=func, daemon=True)
     p.start()
 
     while True:
@@ -192,10 +182,8 @@ async def run_bot():
 
     def restart_bot_process(bot_name: str):
         if (
-                bot_name not in failed_to_start_attempts
-                or time.time()
-                - failed_to_start_attempts[bot_name]["timestamp"]
-                > 60
+            bot_name not in failed_to_start_attempts
+            or time.time() - failed_to_start_attempts[bot_name]["timestamp"] > 60
         ):
             failed_to_start_attempts[bot_name] = {}
             failed_to_start_attempts[bot_name]["count"] = 0
@@ -203,17 +191,19 @@ async def run_bot():
         failed_to_start_attempts[bot_name]["count"] += 1
         failed_to_start_attempts[bot_name]["timestamp"] = time.time()
         if failed_to_start_attempts[bot_name]["count"] >= 3:
-            Logger.error(
-                f"Bot {bot_name} failed to start 3 times, abort to restart, please check the log."
-            )
+            Logger.error(f"Bot {bot_name} failed to start 3 times, abort to restart, please check the log.")
             return
 
         Logger.warning(f"Restarting bot {bot_name}...")
         p = multiprocessing.Process(
             target=go,
-            args=(bot_name, True, binary_mode,),
+            args=(
+                bot_name,
+                True,
+                binary_mode,
+            ),
             name=bot_name,
-            daemon=True
+            daemon=True,
         )
         p.start()
         processes.append(p)
@@ -231,21 +221,20 @@ async def run_bot():
                     disabled_bots.append(t[4:])
                     Logger.warning(f"Bot {t[4:]} is disabled in config, skip to launch.")
             else:
-                Logger.warning(f"Bot {t[4:]} cannot found config \"enable\".")
+                Logger.warning(f'Bot {t[4:]} cannot found config "enable".')
                 disabled_bots.append(t[4:])
 
     for bl in bots_list:
         if bl in disabled_bots:
             continue
-        p = multiprocessing.Process(
-            target=go, args=(bl, True, binary_mode), name=bl, daemon=True
-        )
+        p = multiprocessing.Process(target=go, args=(bl, True, binary_mode), name=bl, daemon=True)
         p.start()
         processes.append(p)
 
     # run the server process
-    server_process = multiprocessing.Process(target=server_run_async, args=(True, binary_mode
-                                                                            ), name="server", daemon=True)
+    server_process = multiprocessing.Process(
+        target=server_run_async, args=(True, binary_mode), name="server", daemon=True
+    )
     server_process.start()
     processes.append(server_process)
 
@@ -257,27 +246,19 @@ async def run_bot():
                 if p.exitcode == 0:
                     sys.exit(0)
                 if p.exitcode == 233:
-                    Logger.warning(
-                        f"Process {p.pid} (server) exited with code 233, restart all bots."
-                    )
+                    Logger.warning(f"Process {p.pid} (server) exited with code 233, restart all bots.")
                     raise RestartBot
                 Logger.critical(f"Process {p.pid} (server) exited with code {p.exitcode}, please check the log.")
                 sys.exit(p.exitcode)
             if p.exitcode == 0:
-                Logger.warning(
-                    f"Process {p.pid} ({p.name}) exited with code 0, abort to restart."
-                )
+                Logger.warning(f"Process {p.pid} ({p.name}) exited with code 0, abort to restart.")
                 processes.remove(p)
                 terminate_process(p)
                 break
             if p.exitcode == 233:
-                Logger.warning(
-                    f"Process {p.pid} ({p.name}) exited with code 233, restart all bots."
-                )
+                Logger.warning(f"Process {p.pid} ({p.name}) exited with code 233, restart all bots.")
                 raise RestartBot
-            Logger.critical(
-                f"Process {p.pid} ({p.name}) exited with code {p.exitcode}, please check the log."
-            )
+            Logger.critical(f"Process {p.pid} ({p.name}) exited with code {p.exitcode}, please check the log.")
             processes.remove(p)
             terminate_process(p)
             restart_bot_process(p.name)

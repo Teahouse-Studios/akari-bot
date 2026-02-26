@@ -12,15 +12,10 @@ from .setting import llm_api_list, llm_list, llm_su_list
 default_llm = Config("ai_default_llm", cfg_type=str, table_name="module_ai")
 default_llm = default_llm if default_llm in llm_list else None
 
-ai = module("ai",
-            developers=["DoroWolf", "Dianliang233"],
-            desc="{I18N:ai.help.desc}",
-            doc=True,
-            exclude_from="QQBot")
+ai = module("ai", developers=["DoroWolf", "Dianliang233"], desc="{I18N:ai.help.desc}", doc=True, exclude_from="QQBot")
 
 
-@ai.command("<prompt> [--llm <llm>] {{I18N:ai.help}}",
-            options_desc={"--llm": "{I18N:ai.help.option.llm}"})
+@ai.command("<prompt> [--llm <llm>] {{I18N:ai.help}}", options_desc={"--llm": "{I18N:ai.help.option.llm}"})
 async def _(msg: Bot.MessageSession, prompt: str):
     get_llm = msg.parsed_msg.get("--llm", False)
     llm = get_llm["<llm>"].lower() if get_llm else None
@@ -46,12 +41,14 @@ async def _(msg: Bot.MessageSession, prompt: str):
         qc = CoolDown("call_ai", msg, 60)
         c = qc.check()
         if c == 0 or is_superuser:
-            chain, input_tokens, output_tokens = await ask_llm(prompt, llm_info["model_name"], llm_info["api_url"],
-                                                               llm_info["api_key"], session=msg)
+            chain, input_tokens, output_tokens = await ask_llm(
+                prompt, llm_info["model_name"], llm_info["api_url"], llm_info["api_key"], session=msg
+            )
 
             Logger.info(f"{input_tokens + output_tokens} tokens used while calling AI.")
-            petal = await count_token_petal(msg, llm_info["price_in"], llm_info["price_out"], input_tokens,
-                                            output_tokens)
+            petal = await count_token_petal(
+                msg, llm_info["price_in"], llm_info["price_out"], input_tokens, output_tokens
+            )
 
             if petal != 0:
                 chain.append(I18NContext("petal.message.cost", amount=petal))
@@ -80,7 +77,12 @@ async def _(msg: Bot.MessageSession):
     avaliable_llms = llm_list + (llm_su_list if msg.check_super_user() else [])
 
     if avaliable_llms:
-        await msg.finish([I18NContext("ai.message.list"), Plain("\n".join(sorted(avaliable_llms))),
-                          I18NContext("ai.message.list.prompt", prefix=msg.session_info.prefixes[0])])
+        await msg.finish(
+            [
+                I18NContext("ai.message.list"),
+                Plain("\n".join(sorted(avaliable_llms))),
+                I18NContext("ai.message.list.prompt", prefix=msg.session_info.prefixes[0]),
+            ]
+        )
     else:
         await msg.finish(I18NContext("ai.message.list.none"))

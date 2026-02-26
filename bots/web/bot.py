@@ -39,32 +39,34 @@ async def websocket_chat(websocket: WebSocket):
                         continue
 
                     if message["action"] == "reaction" and message["add"]:
-                        session = await SessionInfo.assign(target_id=target_id,
-                                                           sender_id=sender_id,
-                                                           sender_name="Console",
-                                                           target_from=target_prefix,
-                                                           sender_from=sender_prefix,
-                                                           client_name=client_name,
-                                                           reply_id=message["id"],
-                                                           message_id=str(uuid.uuid4()),
-                                                           messages=MessageChain.assign(message["emoji"]),
-                                                           ctx_slot=ctx_id
-                                                           )
+                        session = await SessionInfo.assign(
+                            target_id=target_id,
+                            sender_id=sender_id,
+                            sender_name="Console",
+                            target_from=target_prefix,
+                            sender_from=sender_prefix,
+                            client_name=client_name,
+                            reply_id=message["id"],
+                            message_id=str(uuid.uuid4()),
+                            messages=MessageChain.assign(message["emoji"]),
+                            ctx_slot=ctx_id,
+                        )
 
                         await Bot.process_message(session, message)
                     elif message["action"] == "send":
                         msg_chain = MessageChain.assign(message["message"][0]["content"])
-                        session = await SessionInfo.assign(target_id=target_id,
-                                                           sender_id=sender_id,
-                                                           sender_name="Console",
-                                                           target_from=target_prefix,
-                                                           sender_from=sender_prefix,
-                                                           client_name=client_name,
-                                                           message_id=message["id"],
-                                                           messages=msg_chain,
-                                                           ctx_slot=ctx_id,
-                                                           use_url_md_format=True
-                                                           )
+                        session = await SessionInfo.assign(
+                            target_id=target_id,
+                            sender_id=sender_id,
+                            sender_name="Console",
+                            target_from=target_prefix,
+                            sender_from=sender_prefix,
+                            client_name=client_name,
+                            message_id=message["id"],
+                            messages=msg_chain,
+                            ctx_slot=ctx_id,
+                            use_url_md_format=True,
+                        )
 
                         await Bot.process_message(session, message)
                 except orjson.JSONDecodeError:

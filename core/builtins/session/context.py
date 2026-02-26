@@ -67,12 +67,14 @@ class ContextManager(ABC):
 
     @classmethod
     @abstractmethod
-    async def send_message(cls, session_info: SessionInfo,
-                           message: MessageChain | MessageNodes,
-                           quote: bool = True,
-                           enable_parse_message: bool = True,
-                           enable_split_image: bool = True,
-                           ) -> list[str]:
+    async def send_message(
+        cls,
+        session_info: SessionInfo,
+        message: MessageChain | MessageNodes,
+        quote: bool = True,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> list[str]:
         """
         发送消息到指定的会话。
 
@@ -91,7 +93,9 @@ class ContextManager(ABC):
 
     @classmethod
     @abstractmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None) -> None:
+    async def delete_message(
+        cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None
+    ) -> None:
         """
         删除指定会话中的消息，可能需要该会话的管理员权限。
 
@@ -111,7 +115,9 @@ class ContextManager(ABC):
 
     @classmethod
     @abstractmethod
-    async def restrict_member(cls, session_info: SessionInfo, user_id: str | list[str], duration: int | None = None, reason: str | None = None) -> None:
+    async def restrict_member(
+        cls, session_info: SessionInfo, user_id: str | list[str], duration: int | None = None, reason: str | None = None
+    ) -> None:
         """
         禁言指定会话中的成员，可能需要该会话的管理员权限。
 

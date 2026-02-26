@@ -48,14 +48,7 @@ class MessageChain:
     @classmethod
     def assign(
         cls,
-        elements:
-        str |
-        list[MessageElement] |
-        tuple[MessageElement, ...] |
-        MessageElement |
-        MessageChain |
-            None
-        = None,
+        elements: str | list[MessageElement] | tuple[MessageElement, ...] | MessageElement | MessageChain | None = None,
     ):
         """
         :param elements: 消息链元素。
@@ -98,7 +91,7 @@ class MessageChain:
         """
 
         def unsafeprompt(name, secret, text):
-            return f"{name} contains unsafe text \"{secret}\": {text}"
+            return f'{name} contains unsafe text "{secret}": {text}'
 
         for v in self.values:
             if isinstance(v, PlainElement):
@@ -112,21 +105,15 @@ class MessageChain:
                         return False
                 if v.description:
                     if secret := Secret.check(v.description):
-                        Logger.warning(
-                            unsafeprompt("Embed.description", secret, v.description)
-                        )
+                        Logger.warning(unsafeprompt("Embed.description", secret, v.description))
                         return False
                 if v.footer:
                     if secret := Secret.check(v.footer):
-                        Logger.warning(
-                            unsafeprompt("Embed.footer", secret, v.footer)
-                        )
+                        Logger.warning(unsafeprompt("Embed.footer", secret, v.footer))
                         return False
                 if v.author:
                     if secret := Secret.check(v.author):
-                        Logger.warning(
-                            unsafeprompt("Embed.author", secret, v.author)
-                        )
+                        Logger.warning(unsafeprompt("Embed.author", secret, v.author))
                         return False
                 if v.url:
                     if secret := Secret.check(v.url):
@@ -135,14 +122,10 @@ class MessageChain:
                 if v.fields:
                     for f in v.fields:
                         if secret := Secret.check(f.name):
-                            Logger.warning(
-                                unsafeprompt("Embed.field.name", secret, f.name)
-                            )
+                            Logger.warning(unsafeprompt("Embed.field.name", secret, f.name))
                             return False
                         if secret := Secret.check(f.value):
-                            Logger.warning(
-                                unsafeprompt("Embed.field.value", secret, f.value)
-                            )
+                            Logger.warning(unsafeprompt("Embed.field.value", secret, f.value))
                             return False
         return True
 
@@ -213,8 +196,9 @@ class MessageChain:
 
         return value
 
-    def to_str(self, text_only=True,
-               element_filter: tuple[MessageElement, ...] | None = None, connector: str = "\n") -> str:
+    def to_str(
+        self, text_only=True, element_filter: tuple[MessageElement, ...] | None = None, connector: str = "\n"
+    ) -> str:
         """
         将消息链转换为字符串。
 
@@ -276,7 +260,7 @@ class MessageChain:
         return MessageChain.assign(self.values.copy())
 
     def __str__(self):
-        return f"[{", ".join([x.__repr__() for x in self.values])}]"
+        return f"[{', '.join([x.__repr__() for x in self.values])}]"
 
     def __iter__(self):
         return iter(self.values)
@@ -289,18 +273,14 @@ class MessageChain:
             return MessageChain.assign(self.values + other.values)
         if isinstance(other, list):
             return MessageChain.assign(self.values + other)
-        raise TypeError(
-            f"Unsupported operand type(s) for +: \"MessageChain\" and \"{type(other).__name__}\""
-        )
+        raise TypeError(f'Unsupported operand type(s) for +: "MessageChain" and "{type(other).__name__}"')
 
     def __radd__(self, other):
         if isinstance(other, MessageChain):
             return MessageChain.assign(other.values + self.values)
         if isinstance(other, list):
             return MessageChain.assign(other + self.values)
-        raise TypeError(
-            f"Unsupported operand type(s) for +: \"{type(other).__name__}\" and \"MessageChain\""
-        )
+        raise TypeError(f'Unsupported operand type(s) for +: "{type(other).__name__}" and "MessageChain"')
 
     def __iadd__(self, other):
         if isinstance(other, MessageChain):
@@ -308,9 +288,7 @@ class MessageChain:
         elif isinstance(other, list):
             self.values += other
         else:
-            raise TypeError(
-                f"Unsupported operand type(s) for +=: \"MessageChain\" and \"{type(other).__name__}\""
-            )
+            raise TypeError(f'Unsupported operand type(s) for +=: "MessageChain" and "{type(other).__name__}"')
         return self
 
 
@@ -330,7 +308,7 @@ class I18NMessageChain:
         if not isinstance(values, dict):
             raise TypeError("I18NMessageChain values must be a dictionary.")
         if "default" not in values:
-            raise ValueError("I18NMessageChain values must have \"default\" key.")
+            raise ValueError('I18NMessageChain values must have "default" key.')
         return cls(values=deepcopy(values))
 
 
@@ -381,8 +359,16 @@ class MessageNodes:
         return all(chain.is_safe for chain in self.values)
 
 
-Chainable = MessageChain | I18NMessageChain | PlatformMessageChain | str | list[
-    str] | list[MessageElement] | MessageElement | MessageNodes
+Chainable = (
+    MessageChain
+    | I18NMessageChain
+    | PlatformMessageChain
+    | str
+    | list[str]
+    | list[MessageElement]
+    | MessageElement
+    | MessageNodes
+)
 
 
 def get_message_chain(session: SessionInfo, chain: Chainable) -> MessageChain:
@@ -398,7 +384,9 @@ def get_message_chain(session: SessionInfo, chain: Chainable) -> MessageChain:
 
     raise TypeError(
         f"Unsupported chain type: {
-            type(chain).__name__}, expected MessageChain, MessageNodes, I18NMessageChain, or PlatformMessageChain.")
+            type(chain).__name__
+        }, expected MessageChain, MessageNodes, I18NMessageChain, or PlatformMessageChain."
+    )
 
 
 def _extract_kecode_blocks(text):
@@ -432,8 +420,7 @@ def _extract_kecode_blocks(text):
     return result
 
 
-def match_kecode(text: str,
-                 disable_joke: bool = False) -> MessageChain:
+def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
     split_all = _extract_kecode_blocks(text)
     split_all = [x for x in split_all if x]
     elements = MessageChain.assign()
@@ -563,20 +550,22 @@ def convert_senderid_to_atcode(text: str, sender_prefix: str) -> str:
 add_export(MessageChain)
 add_export(I18NMessageChain)
 
-converter.register_unstructure_hook(MessageChain | I18NMessageChain,
-                                    lambda obj: {"_type": type(obj).__name__, **converter.unstructure(obj)})
+converter.register_unstructure_hook(
+    MessageChain | I18NMessageChain, lambda obj: {"_type": type(obj).__name__, **converter.unstructure(obj)}
+)
 
-converter.register_unstructure_hook(MessageChain | MessageNodes,
-                                    lambda obj: {"_type": type(obj).__name__, **converter.unstructure(obj)})
+converter.register_unstructure_hook(
+    MessageChain | MessageNodes, lambda obj: {"_type": type(obj).__name__, **converter.unstructure(obj)}
+)
 
 converter.register_structure_hook(
     MessageChain | I18NMessageChain,
-    lambda o, _: converter.structure(o, MessageChain if o["_type"] == "MessageChain" else I18NMessageChain)
+    lambda o, _: converter.structure(o, MessageChain if o["_type"] == "MessageChain" else I18NMessageChain),
 )
 
 converter.register_structure_hook(
     MessageChain | MessageNodes,
-    lambda o, _: converter.structure(o, MessageChain if o["_type"] == "MessageChain" else MessageNodes)
+    lambda o, _: converter.structure(o, MessageChain if o["_type"] == "MessageChain" else MessageNodes),
 )
 
 __all__ = [
@@ -586,4 +575,5 @@ __all__ = [
     "Chainable",
     "get_message_chain",
     "MessageNodes",
-    "match_kecode"]
+    "match_kecode",
+]

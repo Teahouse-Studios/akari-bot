@@ -7,16 +7,12 @@ from core.utils.http import get_url, download
 
 
 async def uuid_to_name(uuid):
-    res = orjson.loads(
-        await get_url(f"https://api.mojang.com/user/profiles/{uuid}/names", 200)
-    )
+    res = orjson.loads(await get_url(f"https://api.mojang.com/user/profiles/{uuid}/names", 200))
     return res[0]["name"]
 
 
 async def name_to_uuid(name):
-    res = orjson.loads(
-        await get_url(f"https://api.mojang.com/users/profiles/minecraft/{name}", 200)
-    )
+    res = orjson.loads(await get_url(f"https://api.mojang.com/users/profiles/minecraft/{name}", 200))
     return res["id"]
 
 

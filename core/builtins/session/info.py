@@ -63,27 +63,28 @@ class SessionInfo:
     tmp: dict[str, str] | None = {}
 
     @classmethod
-    async def assign(cls, target_id: str,
-                     client_name: str | None = None,
-                     target_from: str | None = None,
-                     sender_id: str | None = None,
-                     sender_from: str | None = None,
-                     sender_name: str | None = None,
-                     message_id: str | None = None,
-                     reply_id: str | None = None,
-                     messages: MessageChain | None = None,
-                     prefixes: list[str] | None = None,
-                     ctx_slot: int = 0,
-                     fetch: bool = False,
-                     create: bool = True,
-                     require_enable_modules: bool = True,
-                     require_check_dirty_words: bool = False,
-                     use_url_manager: bool = False,
-                     use_url_md_format: bool = False,
-                     running_mention: bool = True,
-                     tmp: dict[str, str] | None = None
-                     ) -> SessionInfo:
-
+    async def assign(
+        cls,
+        target_id: str,
+        client_name: str | None = None,
+        target_from: str | None = None,
+        sender_id: str | None = None,
+        sender_from: str | None = None,
+        sender_name: str | None = None,
+        message_id: str | None = None,
+        reply_id: str | None = None,
+        messages: MessageChain | None = None,
+        prefixes: list[str] | None = None,
+        ctx_slot: int = 0,
+        fetch: bool = False,
+        create: bool = True,
+        require_enable_modules: bool = True,
+        require_check_dirty_words: bool = False,
+        use_url_manager: bool = False,
+        use_url_md_format: bool = False,
+        running_mention: bool = True,
+        tmp: dict[str, str] | None = None,
+    ) -> SessionInfo:
         """
         用于将参数传入SessionInfo对象中。
 
@@ -143,7 +144,6 @@ class SessionInfo:
             use_url_md_format=use_url_md_format,
             running_mention=running_mention,
             tmp=tmp,
-
         )
 
     async def refresh_info(self):

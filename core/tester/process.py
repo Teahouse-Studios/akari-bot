@@ -24,7 +24,7 @@ async def run_case_entry(entry: dict, is_ci: bool = False) -> list[dict]:
         Logger.exception("Error closing database before test")
 
     if not await init_db():
-        Logger.critical(f"Failed to reinitialize database for case {entry.get("func")}. Skipping tests.")
+        Logger.critical(f"Failed to reinitialize database for case {entry.get('func')}. Skipping tests.")
         return []
 
     try:
@@ -33,10 +33,7 @@ async def run_case_entry(entry: dict, is_ci: bool = False) -> list[dict]:
         Logger.exception("Failed to load modules for tests:")
 
     start = time.perf_counter()
-    result = await run_test_case(entry["input"],
-                                 expected=entry["expected"],
-                                 casetest_target=entry["func"],
-                                 is_ci=is_ci)
+    result = await run_test_case(entry["input"], expected=entry["expected"], casetest_target=entry["func"], is_ci=is_ci)
     elapsed = time.perf_counter() - start
     try:
         result["time_cost"] = elapsed
@@ -84,7 +81,7 @@ async def run_test_case(
     input_: str | list[str] | tuple[str, ...],
     expected: Expectation | None = None,
     casetest_target: Callable | None = None,
-    is_ci: bool = False
+    is_ci: bool = False,
 ):
     try:
         await TargetInfo.update_or_create(defaults={}, target_id="TEST|Console|0")
@@ -110,8 +107,7 @@ async def run_test_case(
             err_chain = MessageChain.assign(err_msg)
 
         err_action = [
-            x.text if isinstance(x, PlainElement) else str(x)
-            for x in err_chain.as_sendable(msg.session_info)
+            x.text if isinstance(x, PlainElement) else str(x) for x in err_chain.as_sendable(msg.session_info)
         ]
 
         return {

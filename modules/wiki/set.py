@@ -19,7 +19,7 @@ async def _(msg: Bot.MessageSession, wikiurl: str):
     if check.available:
         wiki_name = check.value.name
         if check.value.lang:
-            wiki_name += f' ({check.value.lang})'
+            wiki_name += f" ({check.value.lang})"
         in_allowlist = True
         if Bot.Info.use_url_manager:
             in_allowlist = check.value.in_allowlist
@@ -29,18 +29,15 @@ async def _(msg: Bot.MessageSession, wikiurl: str):
         if result and enable_urlmanager and not in_allowlist:
             prompt = "\n" + msg.session_info.locale.t("wiki.message.wiki_audit.untrust")
             if wiki_whitelist_url:
-                prompt += "\n" + \
-                          msg.session_info.locale.t("wiki.message.wiki_audit.untrust.address", url=wiki_whitelist_url)
+                prompt += "\n" + msg.session_info.locale.t(
+                    "wiki.message.wiki_audit.untrust.address", url=wiki_whitelist_url
+                )
         else:
             prompt = ""
-        await msg.finish(
-            msg.session_info.locale.t("wiki.message.set.success", name=wiki_name) + prompt
-        )
+        await msg.finish(msg.session_info.locale.t("wiki.message.set.success", name=wiki_name) + prompt)
     else:
         result = msg.session_info.locale.t("wiki.message.error.add") + (
-            "\n" + msg.session_info.locale.t("wiki.message.error.info") + check.message
-            if check.message != ""
-            else ""
+            "\n" + msg.session_info.locale.t("wiki.message.error.info") + check.message if check.message != "" else ""
         )
         await msg.finish(result)
 
@@ -52,35 +49,25 @@ async def _(msg: Bot.MessageSession, interwiki: str, wikiurl: str):
     if check.available:
         wiki_name = check.value.name
         if check.value.lang:
-            wiki_name += f' ({check.value.lang})'
-        if (
-            Bot.Info.use_url_manager
-            and check.value.in_blocklist
-            and not check.value.in_allowlist
-        ):
-            await msg.finish(
-                msg.session_info.locale.t("wiki.message.invalid.blocked", name=wiki_name)
-            )
+            wiki_name += f" ({check.value.lang})"
+        if Bot.Info.use_url_manager and check.value.in_blocklist and not check.value.in_allowlist:
+            await msg.finish(msg.session_info.locale.t("wiki.message.invalid.blocked", name=wiki_name))
         result = await target.config_interwikis(interwiki, check.value.api)
         if result and enable_urlmanager and not check.value.in_allowlist:
             prompt = "\n" + msg.session_info.locale.t("wiki.message.wiki_audit.untrust")
             if wiki_whitelist_url:
-                prompt += "\n" + \
-                          msg.session_info.locale.t("wiki.message.wiki_audit.untrust.address", url=wiki_whitelist_url)
+                prompt += "\n" + msg.session_info.locale.t(
+                    "wiki.message.wiki_audit.untrust.address", url=wiki_whitelist_url
+                )
 
         else:
             prompt = ""
         await msg.finish(
-            msg.session_info.locale.t(
-                "wiki.message.iw.add.success", iw=interwiki, name=wiki_name
-            )
-            + prompt
+            msg.session_info.locale.t("wiki.message.iw.add.success", iw=interwiki, name=wiki_name) + prompt
         )
     else:
         result = msg.session_info.locale.t("wiki.message.error.add") + (
-            "\n" + msg.session_info.locale.t("wiki.message.error.info") + check.message
-            if check.message != ""
-            else ""
+            "\n" + msg.session_info.locale.t("wiki.message.error.info") + check.message if check.message != "" else ""
         )
         await msg.finish(result)
 
@@ -103,9 +90,9 @@ async def _(msg: Bot.MessageSession):
     start_wiki = target.api_link
     base_interwiki_link = None
     if start_wiki:
-        base_interwiki_link_ = await WikiLib(
-            start_wiki, target.headers
-        ).parse_page_info("Special:Interwiki", session=msg)
+        base_interwiki_link_ = await WikiLib(start_wiki, target.headers).parse_page_info(
+            "Special:Interwiki", session=msg
+        )
         if base_interwiki_link_.status:
             base_interwiki_link = base_interwiki_link_.link
     result = []
@@ -148,10 +135,13 @@ async def _(msg: Bot.MessageSession, interwiki: str):
 @wiki.command("headers show {{I18N:wiki.help.headers.show}}")
 async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
-    await msg.finish(I18NContext("wiki.message.headers.show",
-                                 headers=orjson.dumps(target.headers).decode(),
-                                 prefix=msg.session_info.prefixes[0]
-                                 ))
+    await msg.finish(
+        I18NContext(
+            "wiki.message.headers.show",
+            headers=orjson.dumps(target.headers).decode(),
+            prefix=msg.session_info.prefixes[0],
+        )
+    )
 
 
 @wiki.command("headers add <headers> {{I18N:wiki.help.headers.add}}", required_admin=True)
@@ -164,9 +154,7 @@ async def _(msg: Bot.MessageSession, headers: str):
         await msg.finish(I18NContext("wiki.message.headers.add.failed"))
 
 
-@wiki.command(
-    "headers remove <headerkey> {{I18N:wiki.help.headers.remove}}", required_admin=True
-)
+@wiki.command("headers remove <headerkey> {{I18N:wiki.help.headers.remove}}", required_admin=True)
 async def _(msg: Bot.MessageSession, headerkey: str):
     target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     delete = await target.config_headers(headerkey, add=False)

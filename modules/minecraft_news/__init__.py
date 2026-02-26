@@ -56,12 +56,12 @@ feedback_news = module(
         return random_tags"""
 
 
-startup_mute = True  # flag to prevent news spam on bot startup, will be set to False after the first run of the news check
-
-
-@minecraft_news.schedule(
-    IntervalTrigger(seconds=600)
+startup_mute = (
+    True  # flag to prevent news spam on bot startup, will be set to False after the first run of the news check
 )
+
+
+@minecraft_news.schedule(IntervalTrigger(seconds=600))
 async def _():
     # baseurl = "https://www.minecraft.net"
     global startup_mute
@@ -74,7 +74,7 @@ async def _():
         if getpage:
             alist = await get_stored_list(Bot.Info.client_name, "mcnews")
             o_json = orjson.loads(getpage)
-            o_nws = o_json["result"]['results']
+            o_nws = o_json["result"]["results"]
             for o_article in o_nws:
                 title = o_article["title"]
                 desc = o_article["description"]
@@ -91,7 +91,7 @@ async def _():
                                         title=title,
                                         desc=desc,
                                     ),
-                                    Url(link, use_mm=False)
+                                    Url(link, use_mm=False),
                                 ]
                             ),
                         )
@@ -104,13 +104,16 @@ async def _():
 
 @feedback_news.schedule(IntervalTrigger(seconds=600))
 async def _():
-    sections = [{"name": "beta",
-                 "url": "https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001185332/articles?per_page=5",
-                 },
-                {"name": "article",
-                 "url": "https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001186971/articles?per_page=5",
-                 },
-                ]
+    sections = [
+        {
+            "name": "beta",
+            "url": "https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001185332/articles?per_page=5",
+        },
+        {
+            "name": "article",
+            "url": "https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001186971/articles?per_page=5",
+        },
+    ]
     for section in sections:
         try:
             alist = await get_stored_list(Bot.Info.client_name, "mcfeedbacknews")
@@ -137,7 +140,8 @@ async def _():
                                 I18NContext(
                                     "minecraft_news.message.feedback_news",
                                     name=name,
-                                ), Url(link, use_mm=False)
+                                ),
+                                Url(link, use_mm=False),
                             ]
                         ),
                     )

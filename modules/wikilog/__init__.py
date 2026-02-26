@@ -43,9 +43,7 @@ rcshows = [
     "unpatrolled",
 ]
 
-wikilog = module(
-    "wikilog", developers=["OasisAkari"], required_admin=True, doc=True, rss=True, required_superuser=True
-)
+wikilog = module("wikilog", developers=["OasisAkari"], required_admin=True, doc=True, rss=True, required_superuser=True)
 
 
 @wikilog.command(
@@ -63,9 +61,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
     if Bot.Info.use_url_manager:
         in_allowlist = status.value.in_allowlist
         if status.value.in_blocklist and not in_allowlist:
-            await msg.finish(
-                I18NContext("wiki.message.invalid.blocked", name=wiki_name)
-            )
+            await msg.finish(I18NContext("wiki.message.invalid.blocked", name=wiki_name))
     if not in_allowlist:
         prompt = [I18NContext("wikilog.message.untrust.wiki", name=wiki_name)]
         if wiki_whitelist_url:
@@ -78,13 +74,9 @@ async def _(msg: Bot.MessageSession, apilink: str):
             add="add" in msg.parsed_msg,
             reset="reset" in msg.parsed_msg,
         )
-        await msg.finish(
-            I18NContext("wikilog.message.config.wiki.success", wiki=wiki_name)
-        )
+        await msg.finish(I18NContext("wikilog.message.config.wiki.success", wiki=wiki_name))
     else:
-        await msg.finish(
-            I18NContext("wikilog.message.config.wiki.failed", message=status.message)
-        )
+        await msg.finish(I18NContext("wikilog.message.config.wiki.failed", message=status.message))
 
 
 @wikilog.command(
@@ -101,9 +93,7 @@ async def _(msg: Bot.MessageSession, apilink, logtype: str):
             if status.value.lang:
                 wiki_name += f" ({status.value.lang})"
             records = await WikiLogTargetSetInfo.get_by_target_id(msg)
-            if await records.conf_log(
-                status.value.api, logtype, enable="enable" in msg.parsed_msg
-            ):
+            if await records.conf_log(status.value.api, logtype, enable="enable" in msg.parsed_msg):
                 await msg.finish(
                     I18NContext(
                         "wikilog.message.enable.log.success",
@@ -128,9 +118,7 @@ async def _(msg: Bot.MessageSession, apilink, logtype: str):
                 )
             )
     else:
-        await msg.finish(
-            I18NContext("wikilog.message.enable.log.invalid_logtype", logtype=logtype)
-        )
+        await msg.finish(I18NContext("wikilog.message.enable.log.invalid_logtype", logtype=logtype))
 
 
 @wikilog.command("filter test <filters> <example> {{I18N:wikilog.help.filter.test}}")
@@ -142,7 +130,7 @@ async def _(msg: Bot.MessageSession, filters: str, example: str):
                 "wikilog.message.filter.test.success",
                 start=m.start(),
                 end=m.end(),
-                string=example[m.start(): m.end()],
+                string=example[m.start() : m.end()],
             )
         )
     else:
@@ -177,9 +165,7 @@ async def _(msg: Bot.MessageSession, apilink, logtype):
                         list="recentchanges",
                         rcprop="title|user|timestamp|loginfo|comment|redirect|flags|sizes|ids",
                         rclimit=100,
-                        rcshow="|".join(
-                            infos[status.value.api]["RecentChanges"]["rcshow"]
-                        ),
+                        rcshow="|".join(infos[status.value.api]["RecentChanges"]["rcshow"]),
                     )
                 )
             if logtype == "AbuseLog":
@@ -195,11 +181,7 @@ async def _(msg: Bot.MessageSession, apilink, logtype):
         else:
             await msg.finish(I18NContext("wikilog.message.filter.set.failed"))
     else:
-        await msg.finish(
-            I18NContext(
-                "wikilog.message.enable.log.failed", apilink=apilink, logtype=logtype
-            )
-        )
+        await msg.finish(I18NContext("wikilog.message.enable.log.failed", apilink=apilink, logtype=logtype))
 
 
 @wikilog.command("filter set <apilink> <logtype> ... {{I18N:wikilog.help.filter.set}}")
@@ -241,21 +223,13 @@ async def _(msg: Bot.MessageSession, apilink: str, logtype: str):
                     )
                 )
         else:
-            await msg.finish(
-                I18NContext(
-                    "wikilog.message.enable.log.invalid_logtype", logtype=logtype
-                )
-            )
+            await msg.finish(I18NContext("wikilog.message.enable.log.invalid_logtype", logtype=logtype))
     else:
         await msg.finish(I18NContext("wikilog.message.filter.set.no_filter"))
 
 
-@wikilog.command(
-    "bot enable <apilink> {{I18N:wikilog.help.bot.enable}}", required_superuser=True
-)
-@wikilog.command(
-    "bot disable <apilink> {{I18N:wikilog.help.bot.disable}}", required_superuser=True
-)
+@wikilog.command("bot enable <apilink> {{I18N:wikilog.help.bot.enable}}", required_superuser=True)
+@wikilog.command("bot disable <apilink> {{I18N:wikilog.help.bot.disable}}", required_superuser=True)
 @wikilog.command(
     "keepalive enable <apilink> {{I18N:wikilog.help.keepalive.enable}}",
     required_superuser=True,
@@ -279,19 +253,13 @@ async def _(msg: Bot.MessageSession, apilink: str):
             else:
                 r = await records.set_use_bot(status.value.api, "enable" in msg.parsed_msg)
             if r:
-                await msg.finish(
-                    I18NContext(
-                        "wikilog.message.config.wiki.success", wiki=wiki_name
-                    )
-                )
+                await msg.finish(I18NContext("wikilog.message.config.wiki.success", wiki=wiki_name))
             else:
                 await msg.finish(I18NContext("wikilog.message.filter.set.failed"))
         else:
             await msg.finish(I18NContext("wikilog.message.filter.set.failed"))
     else:
-        await msg.finish(
-            I18NContext("wikilog.message.config.wiki.failed", message=status.message)
-        )
+        await msg.finish(I18NContext("wikilog.message.config.wiki.failed", message=status.message))
 
 
 @wikilog.command("rcshow set <apilink> ... {{I18N:wikilog.help.rcshow.set}}")
@@ -313,9 +281,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
             if status.value.api in infos:
                 for r in rcshows_:
                     if r not in rcshows:
-                        return await msg.finish(
-                            I18NContext("wikilog.message.rcshow.invalid", rcshow=r)
-                        )
+                        return await msg.finish(I18NContext("wikilog.message.rcshow.invalid", rcshow=r))
                 await records.set_rcshow(status.value.api, rcshows_)
                 await msg.finish(
                     I18NContext(
@@ -327,11 +293,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
             else:
                 await msg.finish(I18NContext("wikilog.message.filter.set.failed"))
         else:
-            await msg.finish(
-                I18NContext(
-                    "wikilog.message.config.wiki.failed", message=status.message
-                )
-            )
+            await msg.finish(I18NContext("wikilog.message.config.wiki.failed", message=status.message))
     else:
         await msg.finish(I18NContext("wikilog.message.filter.set.no_filter"))
 
@@ -354,9 +316,9 @@ async def _(msg: Bot.MessageSession):
         )
         text += (
             msg.session_info.locale.t("wikilog.message.filters")
-            + "\n\""
-            + "\" \"".join(infos[apilink]["AbuseLog"]["filters"])
-            + "\""
+            + '\n"'
+            + '" "'.join(infos[apilink]["AbuseLog"]["filters"])
+            + '"'
             + "\n"
         )
         text += (
@@ -370,16 +332,16 @@ async def _(msg: Bot.MessageSession):
         )
         text += (
             msg.session_info.locale.t("wikilog.message.filters")
-            + "\n\""
-            + "\" \"".join(infos[apilink]["RecentChanges"]["filters"])
-            + "\""
+            + '\n"'
+            + '" "'.join(infos[apilink]["RecentChanges"]["filters"])
+            + '"'
             + "\n"
         )
         text += (
             msg.session_info.locale.t("wikilog.message.rcshow")
-            + "\n\""
-            + "\" \"".join(infos[apilink]["RecentChanges"]["rcshow"])
-            + "\""
+            + '\n"'
+            + '" "'.join(infos[apilink]["RecentChanges"]["rcshow"])
+            + '"'
             + "\n"
         )
         text += (
@@ -399,19 +361,14 @@ async def _(ctx: Bot.ModuleHookContext):
     data_ = await WikiLogTargetSetInfo.return_all_data()
     for target in data_:
         for wiki in data_[target]:
-            if (
-                "keep_alive" in data_[target][wiki]
-                and data_[target][wiki]["keep_alive"]
-            ):
+            if "keep_alive" in data_[target][wiki] and data_[target][wiki]["keep_alive"]:
                 fetch_target = await Bot.fetch_target(target)
                 if fetch_target:
                     session = await FetchedMessageSession.from_session_info(fetch_target)
                     try:
                         wiki_ = WikiLib(wiki)
                         await wiki_.fixup_wiki_info()
-                        get_user_info = await wiki_.get_json(
-                            action="query", meta="userinfo"
-                        )
+                        get_user_info = await wiki_.get_json(action="query", meta="userinfo")
                         if n := get_user_info["query"]["userinfo"]["name"]:
                             await session.send_direct_message(
                                 I18NContext(
@@ -422,9 +379,7 @@ async def _(ctx: Bot.ModuleHookContext):
                             )
                     except Exception as e:
                         Logger.error(f"Keep alive failed: {e}")
-                        await session.send_direct_message(
-                            I18NContext("wikilog.message.keepalive.failed", link=wiki)
-                        )
+                        await session.send_direct_message(I18NContext("wikilog.message.keepalive.failed", link=wiki))
 
 
 fetch_cache = {}
@@ -480,9 +435,7 @@ async def _():
                                         ):
                                             matched_f = True
                                         else:
-                                            for f in fetches[id_][wiki]["AbuseLog"][
-                                                "filters"
-                                            ]:
+                                            for f in fetches[id_][wiki]["AbuseLog"]["filters"]:
                                                 fc = re.compile(f)
                                                 if fc.search(identify):
                                                     matched_f = True
@@ -514,27 +467,18 @@ async def _():
                                     if not first_fetch:
                                         matched_f = False
                                         if (
-                                            "*"
-                                            in fetches[id_][wiki]["RecentChanges"][
-                                                "filters"
-                                            ]
-                                            or not fetches[id_][wiki]["RecentChanges"][
-                                                "filters"
-                                            ]
+                                            "*" in fetches[id_][wiki]["RecentChanges"]["filters"]
+                                            or not fetches[id_][wiki]["RecentChanges"]["filters"]
                                         ):
                                             matched_f = True
                                         else:
-                                            for f in fetches[id_][wiki]["RecentChanges"][
-                                                "filters"
-                                            ]:
+                                            for f in fetches[id_][wiki]["RecentChanges"]["filters"]:
                                                 fc = re.compile(f)
                                                 if fc.search(identify):
                                                     matched_f = True
                                                     break
                                         if matched_f:
-                                            matched_logs[id_][wiki]["RecentChanges"].append(
-                                                y
-                                            )
+                                            matched_logs[id_][wiki]["RecentChanges"].append(y)
                     except Exception:
                         Logger.warning("Failed to fetch wiki log:")
                         Logger.exception()
@@ -558,19 +502,11 @@ async def _():
                     continue
 
                 if matched[id_][wiki]["AbuseLog"]:
-                    ab = await convert_ab_to_detailed_format(ft_session,
-                                                             matched[id_][wiki]["AbuseLog"]
-                                                             )
+                    ab = await convert_ab_to_detailed_format(ft_session, matched[id_][wiki]["AbuseLog"])
                     for x in ab:
-                        await ft_session.send_direct_message(
-                            f"{wiki_name}{x}" if len(matched[id_]) > 1 else x
-                        )
+                        await ft_session.send_direct_message(f"{wiki_name}{x}" if len(matched[id_]) > 1 else x)
                 if matched[id_][wiki]["RecentChanges"]:
-                    rc = await convert_rc_to_detailed_format(ft_session,
-                                                             matched[id_][wiki]["RecentChanges"], wiki_info
-                                                             )
+                    rc = await convert_rc_to_detailed_format(ft_session, matched[id_][wiki]["RecentChanges"], wiki_info)
 
                     for x in rc:
-                        await ft_session.send_direct_message(
-                            f"{wiki_name}{x}" if len(matched[id_]) > 1 else x
-                        )
+                        await ft_session.send_direct_message(f"{wiki_name}{x}" if len(matched[id_]) > 1 else x)

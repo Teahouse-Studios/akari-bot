@@ -10,9 +10,7 @@ async def run_sys_command(command: list[str], timeout: float = 10) -> tuple[int,
     :returns: 包含返回码、标准输出和标准错误的 Tuple (returncode, stdout, stderr)。
     """
     process = await asyncio.create_subprocess_exec(
-        *command,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE
+        *command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
     )
     try:
         stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout)

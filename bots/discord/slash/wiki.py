@@ -25,8 +25,7 @@ wiki = discord_bot.create_group("wiki", "Query information from Mediawiki-based 
 
 async def auto_get_custom_iw_list(ctx: discord.AutocompleteContext):
     session = await ctx_to_session(ctx, "")
-    return await JobQueueClient.trigger_hook("wiki.auto_get_custom_iw_list",
-                                             session, wait=True)
+    return await JobQueueClient.trigger_hook("wiki.auto_get_custom_iw_list", session, wait=True)
 
 
 async def default_wiki(ctx: discord.AutocompleteContext):
@@ -36,18 +35,14 @@ async def default_wiki(ctx: discord.AutocompleteContext):
 
 async def auto_search(ctx: discord.AutocompleteContext):
     session = await ctx_to_session(ctx, "")
-    return await JobQueueClient.trigger_hook("wiki.autosearch",
-                                             session, wait=True,
-                                             **{"title": ctx.options["pagename"]})
+    return await JobQueueClient.trigger_hook(
+        "wiki.autosearch", session, wait=True, **{"title": ctx.options["pagename"]}
+    )
 
 
 @wiki.command(name="query", description="Query a wiki page.")
-@discord.option(
-    name="pagename", description="The title of wiki page.", autocomplete=auto_search
-)
-@discord.option(
-    name="lang", description="Find the corresponding language version of this page."
-)
+@discord.option(name="pagename", description="The title of wiki page.", autocomplete=auto_search)
+@discord.option(name="lang", description="Find the corresponding language version of this page.")
 async def _(ctx: discord.ApplicationContext, pagename: str, lang: str = None):
     if lang:
         await slash_parser(ctx, f"{pagename} -l {lang}")
@@ -57,9 +52,7 @@ async def _(ctx: discord.ApplicationContext, pagename: str, lang: str = None):
 
 @wiki.command(name="id", description="Query a Wiki page based on page ID.")
 @discord.option(name="pageid", description="The wiki page ID.")
-@discord.option(
-    name="lang", description="Find the corresponding language version of this page."
-)
+@discord.option(name="lang", description="Find the corresponding language version of this page.")
 async def _(ctx: discord.ApplicationContext, pageid: str, lang: str = None):
     if lang:
         await slash_parser(ctx, f"id {pageid} -l {lang}")
@@ -68,17 +61,13 @@ async def _(ctx: discord.ApplicationContext, pageid: str, lang: str = None):
 
 
 @wiki.command(name="search", description="Search a wiki page.")
-@discord.option(
-    name="pagename", description="The title of wiki page.", autocomplete=auto_search
-)
+@discord.option(name="pagename", description="The title of wiki page.", autocomplete=auto_search)
 async def _(ctx: discord.ApplicationContext, pagename: str):
     await slash_parser(ctx, f"search {pagename}")
 
 
 @wiki.command(name="set", description="Set up start wiki.")
-@discord.option(
-    name="wikiurl", description="The URL of wiki.", autocomplete=default_wiki
-)
+@discord.option(name="wikiurl", description="The URL of wiki.", autocomplete=default_wiki)
 async def _(ctx: discord.ApplicationContext, wikiurl: str):
     await slash_parser(ctx, f"set {wikiurl}")
 
@@ -104,17 +93,13 @@ async def _(ctx: discord.ApplicationContext, interwiki: str):
 
 
 @iw.command(name="list", description="Lists the currently configured Interwiki.")
-@discord.option(
-    name="legacy", choices=["false", "true"], description="Whether to use legacy mode."
-)
+@discord.option(name="legacy", choices=["false", "true"], description="Whether to use legacy mode.")
 async def _(ctx: discord.ApplicationContext, legacy: str):
     legacy = "--legacy" if legacy == "true" else ""
     await slash_parser(ctx, f"iw list {legacy}")
 
 
-@iw.command(
-    name="get", description="Get the API address corresponding to the set Interwiki."
-)
+@iw.command(name="get", description="Get the API address corresponding to the set Interwiki.")
 @discord.option(
     name="interwiki",
     description="The custom Interwiki.",
@@ -124,9 +109,7 @@ async def _(ctx: discord.ApplicationContext, interwiki: str):
     await slash_parser(ctx, f"iw get {interwiki}")
 
 
-headers = wiki.create_subgroup(
-    "headers", "Set up commands for custom response headers."
-)
+headers = wiki.create_subgroup("headers", "Set up commands for custom response headers.")
 
 
 @headers.command(name="add", description="Add custom request headers.")

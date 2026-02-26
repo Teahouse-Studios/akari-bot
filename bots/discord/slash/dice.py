@@ -13,9 +13,7 @@ dice = discord_bot.create_group("dice", "Random dice.")
 
 
 @dice.command(name="roll", description="Roll the specified dice.")
-@discord.option(
-    name="dices", autocomplete=auto_complete, description="Dice expression."
-)
+@discord.option(name="dices", autocomplete=auto_complete, description="Dice expression.")
 @discord.option(name="dc", default="", description="Difficulty class.")
 async def _(ctx: discord.ApplicationContext, dices: str, dc: str):
     await slash_parser(ctx, f"{dices} {dc}")

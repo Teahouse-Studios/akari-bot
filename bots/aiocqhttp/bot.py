@@ -58,8 +58,7 @@ async def _(event: Event):
 
 
 async def message_handler(event: Event):
-    if event.detail_type == "private" and event.sub_type == "group" \
-            and disable_temp_session:
+    if event.detail_type == "private" and event.sub_type == "group" and disable_temp_session:
         return
 
     if event.group_id:
@@ -79,12 +78,12 @@ async def message_handler(event: Event):
         if match_json:
             load_json = orjson.loads(html.unescape(match_json.group(1)))
             if load_json["app"] == "com.tencent.multimsg":
-                event.message = f"[CQ:forward,id={load_json["meta"]["detail"]["resid"]}]"
+                event.message = f"[CQ:forward,id={load_json['meta']['detail']['resid']}]"
     else:
         if event.message[0]["type"] == "json":
             load_json = orjson.loads(event.message[0]["data"]["data"])
             if load_json["app"] == "com.tencent.multimsg":
-                event.message = [{"type": "forward", "data": {"id": f"{load_json["meta"]["detail"]["resid"]}"}}]
+                event.message = [{"type": "forward", "data": {"id": f"{load_json['meta']['detail']['resid']}"}}]
 
     reply_id = None
     if string_post:
@@ -110,8 +109,11 @@ async def message_handler(event: Event):
             if event.message[0]["data"]["qq"] == str(event.self_id):
                 at_message = True
                 event.message = event.message[1:]
-                if not event.message or \
-                        event.message[0]["type"] == "text" and not event.message[0]["data"]["text"].strip():
+                if (
+                    not event.message
+                    or event.message[0]["type"] == "text"
+                    and not event.message[0]["data"]["text"].strip()
+                ):
                     event.message = [{"type": "text", "data": {"text": f"{command_prefix[0]}help"}}]
             else:
                 return
@@ -125,25 +127,27 @@ async def message_handler(event: Event):
     if event.sender:
         sender_name = event.sender.get("nickname")
 
-    session = await SessionInfo.assign(target_id=target_id,
-                                       sender_id=sender_id,
-                                       target_from=target_group_prefix if event.detail_type == "group" else target_private_prefix,
-                                       sender_from=sender_prefix,
-                                       sender_name=sender_name,
-                                       client_name=client_name,
-                                       message_id=str(event.message_id),
-                                       reply_id=str(reply_id),
-                                       messages=msg_chain,
-                                       ctx_slot=ctx_id,
-                                       use_url_manager=use_url_manager,
-                                       require_check_dirty_words=dirty_word_check,
-                                       tmp=Temp.data.copy()
-                                       )
+    session = await SessionInfo.assign(
+        target_id=target_id,
+        sender_id=sender_id,
+        target_from=target_group_prefix if event.detail_type == "group" else target_private_prefix,
+        sender_from=sender_prefix,
+        sender_name=sender_name,
+        client_name=client_name,
+        message_id=str(event.message_id),
+        reply_id=str(reply_id),
+        messages=msg_chain,
+        ctx_slot=ctx_id,
+        use_url_manager=use_url_manager,
+        require_check_dirty_words=dirty_word_check,
+        tmp=Temp.data.copy(),
+    )
 
     await Bot.process_message(session, event)
 
 
 if enable_listening_self_message:
+
     @aiocqhttp_bot.on("message_sent")
     async def _(event: Event):
         await message_handler(event)
@@ -172,7 +176,7 @@ async def _(event: Event):
                 raise ValueError
             emoji_ = char
         except (ValueError, OverflowError):
-            emoji_ = f"[CQ:face,id={like["emoji_id"]}]"
+            emoji_ = f"[CQ:face,id={like['emoji_id']}]"
 
         if event.group_id:
             target_id = f"{target_group_prefix}|{event.group_id}"
@@ -187,16 +191,17 @@ async def _(event: Event):
 
         if event.sender:
             sender_name = event.sender.get("nickname")
-        session = await SessionInfo.assign(target_id=target_id,
-                                           sender_id=sender_id,
-                                           target_from=target_group_prefix if event.detail_type == "group" else target_private_prefix,
-                                           sender_from=sender_prefix,
-                                           sender_name=sender_name,
-                                           client_name=client_name,
-                                           reply_id=str(event.message_id),
-                                           messages=MessageChain.assign([Plain(emoji_)]),
-                                           ctx_slot=ctx_id
-                                           )
+        session = await SessionInfo.assign(
+            target_id=target_id,
+            sender_id=sender_id,
+            target_from=target_group_prefix if event.detail_type == "group" else target_private_prefix,
+            sender_from=sender_prefix,
+            sender_name=sender_name,
+            client_name=client_name,
+            reply_id=str(event.message_id),
+            messages=MessageChain.assign([Plain(emoji_)]),
+            ctx_slot=ctx_id,
+        )
 
         await Bot.process_message(session, event)
 
@@ -236,10 +241,9 @@ async def _(event: Event):
         target_id = f"{target_group_prefix}|{event.group_id}"
         target_info = await TargetInfo.get_by_target_id(target_id)
         if event.duration > 0:
-            await UnfriendlyActionRecords.create(target_id=target_id,
-                                                 sender_id=sender_id,
-                                                 action="restrict",
-                                                 detail=str(event.duration))
+            await UnfriendlyActionRecords.create(
+                target_id=target_id, sender_id=sender_id, action="restrict", detail=str(event.duration)
+            )
             Logger.info(f"Unfriendly action detected: restrict ({event.duration})")
         result = await UnfriendlyActionRecords.check_mute(target_id=target_id)
         if event.duration >= 259200:  # 3 days
@@ -262,10 +266,7 @@ async def _(event: Event):
         sender_info = await SenderInfo.get_by_sender_id(sender_id)
         target_id = f"{target_group_prefix}|{event.group_id}"
         target_info = await TargetInfo.get_by_target_id(target_id)
-        await UnfriendlyActionRecords.create(target_id=target_id,
-                                             sender_id=sender_id,
-                                             action="kick",
-                                             detail="")
+        await UnfriendlyActionRecords.create(target_id=target_id, sender_id=sender_id, action="kick", detail="")
         Logger.info("Unfriendly action detected: kick")
         if not sender_info.superuser:
             Logger.info(f"Ban {sender_id} ({target_id}) by ToS: kick")

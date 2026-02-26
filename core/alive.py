@@ -61,14 +61,8 @@ class Alive:
         """
         for client_name, data in cls.get_alive().items():
             for prefix in sorted(
-                    data.get(
-                        "target_prefix_list",
-                        []) +
-                    data.get(
-                        "sender_prefix_list",
-                        []),
-                    key=len,
-                    reverse=True):
+                data.get("target_prefix_list", []) + data.get("sender_prefix_list", []), key=len, reverse=True
+            ):
                 if id.startswith(prefix + "|") or id == prefix:
                     return client_name
         return None

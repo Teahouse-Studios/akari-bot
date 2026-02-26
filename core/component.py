@@ -33,7 +33,7 @@ class Bind:
             available_for: str | list | tuple = "*",
             exclude_from: str | list | tuple = "",
             load: bool = True,
-            priority: int = 1
+            priority: int = 1,
         ):
             def decorator(function):
                 nonlocal command_template
@@ -83,7 +83,7 @@ class Bind:
             logging: bool = True,
             show_typing: bool = True,
             text_only: bool = True,
-            element_filter: tuple[MessageElement, ...] = None
+            element_filter: tuple[MessageElement, ...] = None,
         ):
             def decorator(function):
                 ModulesManager.bind_to_module(
@@ -115,18 +115,14 @@ class Bind:
             trigger: AndTrigger | OrTrigger | DateTrigger | CronTrigger | IntervalTrigger,
         ):
             def decorator(function):
-                ModulesManager.bind_to_module(
-                    self.module_name, ScheduleMeta(function=function, trigger=trigger)
-                )
+                ModulesManager.bind_to_module(self.module_name, ScheduleMeta(function=function, trigger=trigger))
                 return function
 
             return decorator
 
         def hook(self, name: str = None):
             def decorator(function):
-                ModulesManager.bind_to_module(
-                    self.module_name, HookMeta(function=function, name=name)
-                )
+                ModulesManager.bind_to_module(self.module_name, HookMeta(function=function, name=name))
                 return function
 
             return decorator
@@ -148,9 +144,8 @@ class Bind:
             available_for: str | list | tuple = "*",
             exclude_from: str | list | tuple = "",
             load: bool = True,
-            priority: int = 1
-        ):
-            ...
+            priority: int = 1,
+        ): ...
 
         @overload
         def handle(
@@ -167,23 +162,17 @@ class Bind:
             load: bool = True,
             show_typing: bool = True,
             logging: bool = True,
-            element_filter: tuple[MessageElement, ...] = None
-        ):
-            ...
+            element_filter: tuple[MessageElement, ...] = None,
+        ): ...
 
         @overload
         def handle(
             self,
             trigger: AndTrigger | OrTrigger | DateTrigger | CronTrigger | IntervalTrigger,
-        ):
-            ...
+        ): ...
 
         def handle(self, *args, **kwargs):
-            first_key = (
-                args[0]
-                if args
-                else (kwargs[list(kwargs.keys())[0]] if kwargs else None)
-            )
+            first_key = args[0] if args else (kwargs[list(kwargs.keys())[0]] if kwargs else None)
             if isinstance(first_key, re.Pattern):
                 return self.regex(*args, **kwargs)
             if isinstance(
@@ -196,10 +185,7 @@ class Bind:
         def config(self, cls=None, secret: bool = False):
 
             def wrap(cls):
-                return _process_class(
-                    cls,
-                    "module_" +
-                    self.module_name, secret=secret)
+                return _process_class(cls, "module_" + self.module_name, secret=secret)
 
             if cls is None:
                 return wrap
@@ -276,7 +262,7 @@ def module(
         exclude_from=exclude_from,
         support_languages=support_languages,
         _py_module_name=py_module_name,
-        _db_load=True
+        _db_load=True,
     )
     frame = inspect.currentframe()
     ModulesManager.add_module(module, frame.f_back.f_globals["__name__"])

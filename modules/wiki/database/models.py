@@ -77,6 +77,7 @@ class WikiSiteInfo(DBModel):
     :param site_info: 站点信息
     :param timestamp: 更新时间
     """
+
     api_link = fields.CharField(max_length=512, primary_key=True)
     site_info = fields.JSONField(default={})
     timestamp = fields.DatetimeField(auto_now_add=True)
@@ -107,6 +108,7 @@ class WikiAllowList(DBModel):
     :param api_link: API 链接
     :param timestamp: 更新时间
     """
+
     api_link = fields.CharField(max_length=512, primary_key=True)
     timestamp = fields.DatetimeField(auto_now_add=True)
 
@@ -140,6 +142,7 @@ class WikiBlockList(DBModel):
     :param api_link: API 链接
     :param timestamp: 更新时间
     """
+
     api_link = fields.CharField(max_length=512, primary_key=True)
     timestamp = fields.DatetimeField(auto_now_add=True)
 
@@ -173,6 +176,7 @@ class WikiBotAccountList(DBModel):
     :param bot_account: Bot 账号
     :param bot_password: Bot 密码
     """
+
     api_link = fields.CharField(max_length=512, primary_key=True)
     bot_account = fields.CharField(max_length=512)
     bot_password = fields.CharField(max_length=512)
@@ -185,9 +189,7 @@ class WikiBotAccountList(DBModel):
         if await (cls.filter(api_link=api_link)).exists():
             return False
 
-        await cls.create(api_link=api_link,
-                         bot_account=bot_account,
-                         bot_password=bot_password)
+        await cls.create(api_link=api_link, bot_account=bot_account, bot_password=bot_password)
         return True
 
     @classmethod

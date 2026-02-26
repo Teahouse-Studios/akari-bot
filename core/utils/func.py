@@ -31,9 +31,7 @@ def is_json_serializable(obj: Any) -> bool:
         return False
 
 
-def chunk_list(iterable: Iterable[Any],
-               chunk_size: int,
-               reverse: bool = False) -> Generator[list[Any], None, None]:
+def chunk_list(iterable: Iterable[Any], chunk_size: int, reverse: bool = False) -> Generator[list[Any], None, None]:
     """将可迭代对象分块，返回生成器。"""
     if isinstance(iterable, (str, bytes)):
         raise TypeError("Type str is not supported")
@@ -84,9 +82,7 @@ def flatten_list(nested_iterable: Iterable[Any]) -> list[Any]:
     return flat_list
 
 
-def flatten_dict(nested_dict: dict[str, Any],
-                 parent_key: str = "",
-                 sep: str = ".") -> dict[str, Any]:
+def flatten_dict(nested_dict: dict[str, Any], parent_key: str = "", sep: str = ".") -> dict[str, Any]:
     """将嵌套字典扁平化。"""
     flat_dict = {}
     for k, v in nested_dict.items():
@@ -140,9 +136,7 @@ def camel_to_snake(text: str, abbr_map: dict[str, str] | None = None) -> str:
     return re.sub(r"(?<!^)(?=[A-Z])", "_", text).lower()
 
 
-def snake_to_camel(text: str,
-                   upper: bool = True,
-                   abbr_map: dict[str, str] | None = None) -> str:
+def snake_to_camel(text: str, upper: bool = True, abbr_map: dict[str, str] | None = None) -> str:
     """蛇形命名转驼峰命名。
 
     :param upper: 是否转为大驼峰。（默认True）"""
@@ -161,9 +155,7 @@ def normalize_space(text: str) -> str:
     return " ".join(words)
 
 
-def truncate_text(text: str,
-                  length: int,
-                  suffix: str = "...") -> str:
+def truncate_text(text: str, length: int, suffix: str = "...") -> str:
     """按长度截断字符串。
 
     :param length: 允许的字符串长度。
@@ -204,14 +196,16 @@ def parse_time_string(text: str) -> timedelta:
         return timedelta()
 
 
-def generate_progress_bar(current: float,
-                          total: float,
-                          length: int = 10,
-                          fill: str = "█",
-                          empty: str = "░",
-                          show_number: bool = False,
-                          show_percent: bool = True,
-                          precision: int = 1) -> str:
+def generate_progress_bar(
+    current: float,
+    total: float,
+    length: int = 10,
+    fill: str = "█",
+    empty: str = "░",
+    show_number: bool = False,
+    show_percent: bool = True,
+    precision: int = 1,
+) -> str:
     """生成静态文本进度条。
 
     :param current: 当前进度。

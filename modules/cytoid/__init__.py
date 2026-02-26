@@ -20,10 +20,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
     await cytoid_profile(msg, username)
 
 
-@ctd.command(
-    "b30 [<username>] {{I18N:cytoid.help.b30}}",
-    "r10 [<username>] {{I18N:cytoid.help.r10}}"
-)
+@ctd.command("b30 [<username>] {{I18N:cytoid.help.b30}}", "r10 [<username>] {{I18N:cytoid.help.r10}}")
 async def _(msg: Bot.MessageSession, username: str = None):
     if "b30" in msg.parsed_msg:
         query = "b30"

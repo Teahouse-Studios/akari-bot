@@ -64,14 +64,15 @@ async def exchange(msg: Bot.MessageSession, base_currency, target_currency, amou
     time_ = msg.format_time(time.time(), time=False, timezone=False)
     if data and data["result"] == "success":
         exchange_rate = data["conversion_result"]
-        await msg.finish(I18NContext(
-            "exchange_rate.message",
-            amount=float(amount),
-            base=base_currency,
-            exchange_rate=exchange_rate,
-            target=target_currency,
-            time=time_,
-        )
+        await msg.finish(
+            I18NContext(
+                "exchange_rate.message",
+                amount=float(amount),
+                base=base_currency,
+                exchange_rate=exchange_rate,
+                target=target_currency,
+                time=time_,
+            )
         )
 
 

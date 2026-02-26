@@ -12,11 +12,14 @@ ali = module("alias", base=True, doc=True)
     "list [--legacy] {{I18N:core.help.alias.list}}",
     options_desc={"--legacy": "{I18N:help.option.legacy}"},
 )
-@ali.command([
-    "add <alias> <command> {{I18N:core.help.alias.add}}",
-    "remove <alias> {{I18N:core.help.alias.remove}}",
-    "reset {{I18N:core.help.alias.reset}}",
-], required_admin=True)
+@ali.command(
+    [
+        "add <alias> <command> {{I18N:core.help.alias.add}}",
+        "remove <alias> {{I18N:core.help.alias.remove}}",
+        "reset {{I18N:core.help.alias.reset}}",
+    ],
+    required_admin=True,
+)
 async def _(msg: Bot.MessageSession):
     aliases = msg.session_info.target_info.target_data.get("command_alias")
     alias = msg.parsed_msg.get("<alias>", False)
@@ -77,15 +80,12 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(I18NContext("core.message.alias.list.none"))
         elif not msg.parsed_msg.get("--legacy", False):
             table = ImageTable(
-                [
-                    [k, msg.session_info.prefixes[0] + aliases[k]]
-                    for i, k in enumerate(aliases)
-                ],
+                [[k, msg.session_info.prefixes[0] + aliases[k]] for i, k in enumerate(aliases)],
                 [
                     "{I18N:core.message.alias.list.table.header.alias}",
                     "{I18N:core.message.alias.list.table.header.command}",
                 ],
-                msg.session_info
+                msg.session_info,
             )
             imgs = await image_table_render(table)
             if imgs:
@@ -98,9 +98,10 @@ async def _(msg: Bot.MessageSession):
                 pass
 
         if legacy:
-            await msg.finish([I18NContext("core.message.alias.list")] +
-                             [Plain(f"{k} -> {msg.session_info.prefixes[0]}{aliases[k]}") for i, k
-                              in enumerate(aliases)])
+            await msg.finish(
+                [I18NContext("core.message.alias.list")]
+                + [Plain(f"{k} -> {msg.session_info.prefixes[0]}{aliases[k]}") for i, k in enumerate(aliases)]
+            )
 
 
 def check_valid_placeholder(alias):

@@ -42,9 +42,7 @@ class MessageSession:
 
     @classmethod
     async def from_session_info(cls, session: SessionInfo):
-        return cls(
-            session_info=session
-        )
+        return cls(session_info=session)
 
     async def send_message(
         self,
@@ -71,10 +69,13 @@ class MessageSession:
         if not message_chain.is_safe and not disable_secret_check:
             message_chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
 
-        return_val = await _queue_server.client_send_message(self.session_info, message_chain,
-                                                             quote=quote,
-                                                             enable_parse_message=enable_parse_message,
-                                                             enable_split_image=enable_split_image)
+        return_val = await _queue_server.client_send_message(
+            self.session_info,
+            message_chain,
+            quote=quote,
+            enable_parse_message=enable_parse_message,
+            enable_split_image=enable_split_image,
+        )
         if "message_id" in return_val:
             if callback:
                 SessionTaskManager.add_callback(return_val["message_id"], callback)
@@ -138,17 +139,19 @@ class MessageSession:
         if not message_chain.is_safe and not disable_secret_check:
             message_chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
 
-        return_val = await _queue_server.client_send_message(self.session_info, message_chain, wait=False,
-                                                             enable_parse_message=enable_parse_message,
-                                                             enable_split_image=enable_split_image)
+        return_val = await _queue_server.client_send_message(
+            self.session_info,
+            message_chain,
+            wait=False,
+            enable_parse_message=enable_parse_message,
+            enable_split_image=enable_split_image,
+        )
         if callback:
             SessionTaskManager.add_callback(return_val["message_id"], callback)
 
     def as_display(
-            self,
-            text_only: bool = False,
-            element_filter: tuple[MessageElement, ...] = None,
-            connector: str = "\n") -> str:
+        self, text_only: bool = False, element_filter: tuple[MessageElement, ...] = None, connector: str = "\n"
+    ) -> str:
         """
         用于将消息转换为一般文本格式。
 
@@ -291,7 +294,7 @@ class MessageSession:
         delete: bool = True,
         timeout: float | None = 120,
         append_instruction: bool = True,
-        no_confirm_action: bool = True
+        no_confirm_action: bool = True,
     ) -> bool:
         """
         一次性模板，用于等待触发对象确认。
@@ -420,9 +423,7 @@ class MessageSession:
         if "result" in result:
             if send and delete:
                 await send.delete()
-            return SessionTaskManager.get()[self.session_info.target_id]["all"][self][
-                "result"
-            ]
+            return SessionTaskManager.get()[self.session_info.target_id]["all"][self]["result"]
         raise WaitCancelException
 
     async def wait_reply(
@@ -462,9 +463,7 @@ class MessageSession:
         send = await self.send_message(message_chain, quote)
         await asyncio.sleep(0.1)
         flag = asyncio.Event()
-        SessionTaskManager.add_task(
-            self, flag, reply=send.message_id, all_=all_, timeout=timeout
-        )
+        SessionTaskManager.add_task(self, flag, reply=send.message_id, all_=all_, timeout=timeout)
         try:
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
@@ -563,15 +562,11 @@ class MessageSession:
                 ftime_template.append("(UTC)")
             else:
                 ftime_template.append(f"(UTC{self.session_info._tz_offset})")
-        return (
-            datetime.fromtimestamp(timestamp, UTC) + self.session_info.timezone_offset
-        ).strftime(" ".join(ftime_template))
+        return (datetime.fromtimestamp(timestamp, UTC) + self.session_info.timezone_offset).strftime(
+            " ".join(ftime_template)
+        )
 
-    def format_num(
-        self,
-        number: Decimal | int | str,
-        precision: int = 0
-    ) -> str:
+    def format_num(self, number: Decimal | int | str, precision: int = 0) -> str:
         """
         格式化数字。
 
@@ -599,9 +594,7 @@ class MessageSession:
             return None
 
         def _fmt_num(number: Decimal, precision: int) -> str:
-            number = number.quantize(
-                Decimal(f"1.{"0" * precision}"), rounding=ROUND_HALF_UP
-            )
+            number = number.quantize(Decimal(f"1.{'0' * precision}"), rounding=ROUND_HALF_UP)
             num_str = f"{number:.{precision}f}".rstrip("0").rstrip(".")
             return num_str if precision > 0 else str(int(number))
 
@@ -642,6 +635,7 @@ class FinishedSession:
     """
     结束会话。
     """
+
     session: SessionInfo
     message_id: list[int] | list[str] | int | str | None = None
 
@@ -670,9 +664,7 @@ class FetchedMessageSession(MessageSession):
 
     @classmethod
     async def from_session_info(cls, session: FetchedSessionInfo | SessionInfo):
-        return cls(
-            session_info=session
-        )
+        return cls(session_info=session)
 
 
 add_export(MessageSession)

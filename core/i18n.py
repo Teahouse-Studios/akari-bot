@@ -82,13 +82,9 @@ def load_locale_file() -> list[str]:
                 with open(lang_file_path, "rb") as f:
                     try:
                         if lang_file.removesuffix(".json") in locale_dict:
-                            locale_dict[lang_file.removesuffix(".json")].update(
-                                flatten(orjson.loads(f.read()))
-                            )
+                            locale_dict[lang_file.removesuffix(".json")].update(flatten(orjson.loads(f.read())))
                         else:
-                            locale_dict[lang_file.removesuffix(".json")] = flatten(
-                                orjson.loads(f.read())
-                            )
+                            locale_dict[lang_file.removesuffix(".json")] = flatten(orjson.loads(f.read()))
                     except Exception as e:
                         traceback.print_exc()
                         err_prompt.append(f"Failed to load {lang_file_path}: {e}")
@@ -133,9 +129,7 @@ class Locale:
         """获取本地化节点。"""
         return self.data.query_node(path)
 
-    def get_string_with_fallback(
-        self, key: str, fallback_failed_prompt: bool = True
-    ) -> str:
+    def get_string_with_fallback(self, key: str, fallback_failed_prompt: bool = True) -> str:
         node = self.data.query_node(key)
         if node:
             return node.value
@@ -149,15 +143,11 @@ class Locale:
                     return node.value
                     # 2. 如果在 fallback 语言中本地化字符串存在，直接返回
         if fallback_failed_prompt:
-            return f"{{I18N:{key}}}" + self.t(
-                "error.i18n.fallback", fallback_failed_prompt=False
-            )
+            return f"{{I18N:{key}}}" + self.t("error.i18n.fallback", fallback_failed_prompt=False)
         return f"{{I18N:{key}}}"
         # 3. 如果在 fallback 语言中本地化字符串不存在，返回 key
 
-    def t(
-        self, key: str | dict, fallback_failed_prompt: bool = True, **kwargs: Any
-    ) -> str:
+    def t(self, key: str | dict, fallback_failed_prompt: bool = True, **kwargs: Any) -> str:
         """
         获取本地化字符串。
 

@@ -71,11 +71,7 @@ class ConsoleErrorField:
             supplementary_value = int(supplementary_value)
         except ValueError:
             return
-        self.message = (
-            f"{self.message} ({supplementary_value})"
-            if self.message
-            else f"{supplementary_value}"
-        )
+        self.message = f"{self.message} ({supplementary_value})" if self.message else f"{supplementary_value}"
 
 
 class ConsoleErrorInfo:
@@ -116,13 +112,9 @@ REPORT_DETAILS = "你应该向本模块的原仓库发起Issue来添加有关内
     Url("https://github.com/nh-server/Kurisu/issues", use_mm=False)
 )
 
-UNKNOWN_MODULE = ResultInfo(
-    f"无效/未知的module。请问你正确输入错误代码了吗？{REPORT_DETAILS}"
-)
+UNKNOWN_MODULE = ResultInfo(f"无效/未知的module。请问你正确输入错误代码了吗？{REPORT_DETAILS}")
 
-NO_RESULTS_FOUND = ResultInfo(
-    f"我知道这个module。但是我没有任何有关这个错误的记载。{REPORT_DETAILS}"
-)
+NO_RESULTS_FOUND = ResultInfo(f"我知道这个module。但是我没有任何有关这个错误的记载。{REPORT_DETAILS}")
 
 BANNED_FIELD = ConsoleErrorField(
     "致主机、账户或游戏被封禁者",
@@ -131,6 +123,4 @@ BANNED_FIELD = ConsoleErrorField(
 
 WARNING_COLOR = 0xFFFF00
 
-UNKNOWN_CATEGORY_DESCRIPTION = ConsoleErrorField(
-    "描述", message_str=f"对应你的报错描述未知。{REPORT_DETAILS}"
-)
+UNKNOWN_CATEGORY_DESCRIPTION = ConsoleErrorField("描述", message_str=f"对应你的报错描述未知。{REPORT_DETAILS}")

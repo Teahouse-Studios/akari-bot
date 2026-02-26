@@ -6,6 +6,7 @@ class KookConfig:
     """
     Kook bot configuration.
     """
+
     enable: bool = False
 
 
@@ -14,4 +15,5 @@ class KookSecretConfig:
     """
     Kook bot secret configuration.
     """
+
     kook_token: str = ""

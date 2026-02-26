@@ -25,27 +25,28 @@ def generate_config(dir_path: Path, language: str):
     # create empty config.toml
     locale = Locale(language)
     with open(path_, "w", encoding="utf-8") as f:
-        f.write(f"# {locale.t("config.header.line.1", fallback_failed_prompt=False)}\n")
-        f.write(f"# {locale.t("config.header.line.2", fallback_failed_prompt=False)}\n")
-        f.write(f"# {locale.t("config.header.line.3", fallback_failed_prompt=False)}\n")
+        f.write(f"# {locale.t('config.header.line.1', fallback_failed_prompt=False)}\n")
+        f.write(f"# {locale.t('config.header.line.2', fallback_failed_prompt=False)}\n")
+        f.write(f"# {locale.t('config.header.line.3', fallback_failed_prompt=False)}\n")
         f.write("\n")
         f.write(
-            f"default_locale = \"{language}\" # {
-                locale.t(
-                    "config.comments.default_locale",
-                    fallback_failed_prompt=False)}\n")
+            f'default_locale = "{language}" # {
+                locale.t("config.comments.default_locale", fallback_failed_prompt=False)
+            }\n'
+        )
         f.write(
-            f"config_version = {
-                str(config_version)} # {
-                locale.t(
-                    "config.comments.config_version",
-                    fallback_failed_prompt=False)}\n")
+            f"config_version = {str(config_version)} # {
+                locale.t('config.comments.config_version', fallback_failed_prompt=False)
+            }\n"
+        )
         f.close()
     from core.config import CFGManager
+
     CFGManager.switch_config_path(dir_path)
     CFGManager.load()
     import core.config.base  # noqa
     import bots
+
     for subm in pkgutil.iter_modules(bots.__path__):
         module_py_name = f"{bots.__name__}.{subm.name}"
         try:
@@ -59,6 +60,7 @@ def generate_config(dir_path: Path, language: str):
             traceback.print_exc()
             continue
     import modules
+
     for subm in pkgutil.iter_modules(modules.__path__):
         module_py_name = f"{modules.__name__}.{subm.name}"
         try:
@@ -90,7 +92,7 @@ if not (config_path / config_filename).exists() and __name__ != "__main__":
 
         sleep(1)
         print("Config file generated successfully, please modify the config file according to your needs.")
-        print(f"The config file is located at \"{config_path}\"")
+        print(f'The config file is located at "{config_path}"')
         print("Please restart the bot after modifying the config file.")
         print("Press enter to exit.")
         input()
@@ -167,7 +169,8 @@ if __name__ == "__main__":
             break
 
         print(
-            f"Error: Some {config_filename} files are missing [config] section. Rolling back to previous config files.")
+            f"Error: Some {config_filename} files are missing [config] section. Rolling back to previous config files."
+        )
         if config_store_path.exists():
             shutil.rmtree(config_store_path)
         if config_store_path_bak.exists():
@@ -186,7 +189,7 @@ if __name__ == "__main__":
         if not config_store_path_bak_.exists():
             repack = True
             break
-        for file_path in config_store_path_.rglob('*'):
+        for file_path in config_store_path_.rglob("*"):
             if file_path.is_file():
                 file_path_bak = config_store_path_bak_ / file_path.relative_to(config_store_path_)
                 if not file_path_bak.exists():

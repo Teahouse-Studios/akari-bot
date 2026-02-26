@@ -21,11 +21,13 @@ class ImageTable:
     :param headers: 表格表头。
     """
 
-    def __init__(self,
-                 data: list[list[Any]],
-                 headers: list[str],
-                 session_info: "SessionInfo | None" = None,
-                 disable_joke: bool = False):
+    def __init__(
+        self,
+        data: list[list[Any]],
+        headers: list[str],
+        session_info: "SessionInfo | None" = None,
+        disable_joke: bool = False,
+    ):
         if not all(len(row) == len(headers) for row in data):
             raise ValueError("The number of columns of data must match the number of table headers.")
 
@@ -33,8 +35,7 @@ class ImageTable:
             localized_data = []
             for row in data:
                 translated_row = [
-                    session_info.locale.t_str(cell) if isinstance(cell, str) else str(cell)
-                    for cell in row
+                    session_info.locale.t_str(cell) if isinstance(cell, str) else str(cell) for cell in row
                 ]
                 localized_data.append(translated_row)
             self.headers = [session_info.locale.t_str(h) for h in headers]
@@ -78,11 +79,7 @@ async def image_table_render(
             w = len(tbl.headers) * 500
             if w > max_width:
                 max_width = w
-            tblst.append(
-                re.sub(
-                    r"<table>|</table>", "", tabulate(d, tbl.headers, tablefmt="unsafehtml")
-                )
-            )
+            tblst.append(re.sub(r"<table>|</table>", "", tabulate(d, tbl.headers, tablefmt="unsafehtml")))
         tblst = "<table>" + "\n".join(tblst) + "</table>"
         css = """
         <style>table {
@@ -102,7 +99,8 @@ async def image_table_render(
             with open(fname, "w", encoding="utf-8") as fi:
                 fi.write(tblst + css)
         image_list = await web_render.legacy_screenshot(
-            LegacyScreenshotOptions(content=tblst + css, width=w, mw=False, counttime=False))
+            LegacyScreenshotOptions(content=tblst + css, width=w, mw=False, counttime=False)
+        )
     except Exception:
         Logger.exception()
         return None

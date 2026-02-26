@@ -36,7 +36,7 @@ def main() -> None:
         dest="wrap_links",
         action="store_false",
         default=config.WRAP_LINKS,
-        help="don\'t wrap links during conversion",
+        help="don't wrap links during conversion",
     )
     p.add_argument(
         "--wrap-list-items",
@@ -50,7 +50,7 @@ def main() -> None:
         dest="ignore_emphasis",
         action="store_true",
         default=config.IGNORE_EMPHASIS,
-        help="don\'t include any formatting for emphasis",
+        help="don't include any formatting for emphasis",
     )
     p.add_argument(
         "--reference-links",
@@ -64,7 +64,7 @@ def main() -> None:
         dest="ignore_links",
         action="store_true",
         default=config.IGNORE_ANCHORS,
-        help="don\'t include any formatting for links",
+        help="don't include any formatting for links",
     )
     p.add_argument(
         "--protect-links",
@@ -78,17 +78,14 @@ def main() -> None:
         dest="ignore_images",
         action="store_true",
         default=config.IGNORE_IMAGES,
-        help="don\'t include any formatting for images",
+        help="don't include any formatting for images",
     )
     p.add_argument(
         "--images-as-html",
         dest="images_as_html",
         action="store_true",
         default=config.IMAGES_AS_HTML,
-        help=(
-            "Always write image tags as raw html; preserves `height`, `width` and "
-            "`alt` if possible."
-        ),
+        help=("Always write image tags as raw html; preserves `height`, `width` and `alt` if possible."),
     )
     p.add_argument(
         "--images-to-alt",
@@ -102,10 +99,7 @@ def main() -> None:
         dest="images_with_size",
         action="store_true",
         default=config.IMAGES_WITH_SIZE,
-        help=(
-            "Write image tags with height and width attrs as raw html to retain "
-            "dimensions"
-        ),
+        help=("Write image tags with height and width attrs as raw html to retain dimensions"),
     )
     p.add_argument(
         "-g",
@@ -153,17 +147,14 @@ def main() -> None:
         action="store_true",
         dest="hide_strikethrough",
         default=False,
-        help="hide strike-through text. only relevant when -g is " "specified as well",
+        help="hide strike-through text. only relevant when -g is specified as well",
     )
     p.add_argument(
         "--escape-all",
         action="store_true",
         dest="escape_snob",
         default=False,
-        help=(
-            "Escape all special characters.  Output is less readable, but avoids "
-            "corner case formatting issues."
-        ),
+        help=("Escape all special characters.  Output is less readable, but avoids corner case formatting issues."),
     )
     p.add_argument(
         "--bypass-tables",
@@ -177,7 +168,7 @@ def main() -> None:
         action="store_true",
         dest="ignore_tables",
         default=config.IGNORE_TABLES,
-        help="Ignore table-related tags (table, th, td, tr) " "while keeping rows.",
+        help="Ignore table-related tags (table, th, td, tr) while keeping rows.",
     )
     p.add_argument(
         "--single-line-break",
@@ -185,8 +176,7 @@ def main() -> None:
         dest="single_line_break",
         default=config.SINGLE_LINE_BREAK,
         help=(
-            "Use a single line break after a block element rather than two line "
-            "breaks. NOTE: Requires --body-width=0"
+            "Use a single line break after a block element rather than two line breaks. NOTE: Requires --body-width=0"
         ),
     )
     p.add_argument(
@@ -228,10 +218,7 @@ def main() -> None:
         "--decode-errors",
         dest="decode_errors",
         default=config.DECODE_ERRORS,
-        help=(
-            "What to do in case of decode errors.\"ignore\", \"strict\" and \"replace\" are "
-            "acceptable values"
-        ),
+        help=('What to do in case of decode errors."ignore", "strict" and "replace" are acceptable values'),
     )
     p.add_argument(
         "--open-quote",
@@ -245,9 +232,7 @@ def main() -> None:
         default=config.CLOSE_QUOTE,
         help="The character used to close quotes",
     )
-    p.add_argument(
-        "--version", action="version", version=".".join(map(str, __version__))
-    )
+    p.add_argument("--version", action="version", version=".".join(map(str, __version__)))
     p.add_argument("filename", nargs="?")
     p.add_argument("encoding", nargs="?", default="utf-8")
     args = p.parse_args()

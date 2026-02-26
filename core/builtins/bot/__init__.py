@@ -34,9 +34,7 @@ class Bot:
     ContextSlots: list[ContextManager] = []
     fetched_session_ctx_slot = 0
 
-    base_superuser_list = Config(
-        "base_superuser", base_superuser_default, cfg_type=(str, list)
-    )
+    base_superuser_list = Config("base_superuser", base_superuser_default, cfg_type=(str, list))
     if isinstance(base_superuser_list, str):
         base_superuser_list = [base_superuser_list]
 
@@ -80,35 +78,27 @@ class Bot:
         session_list: list[FetchedSessionInfo] | None = None,
         **kwargs: dict[str, Any],
     ):
-        await Bot.post_message(
-            "*", message=message, session_list=session_list, **kwargs
-        )
+        await Bot.post_message("*", message=message, session_list=session_list, **kwargs)
 
     @classmethod
-    async def fetch_target(cls,
-                           target_id: str,
-                           sender_id: str | None = None,
-                           create: bool = False
-                           ) -> FetchedSessionInfo | None:
+    async def fetch_target(
+        cls, target_id: str, sender_id: str | None = None, create: bool = False
+    ) -> FetchedSessionInfo | None:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
         try:
             Logger.trace(f"Fetching target {target_id}")
-            session = await FetchedSessionInfo.assign(target_id=target_id,
-                                                      sender_id=sender_id,
-                                                      fetch=True,
-                                                      create=create)
+            session = await FetchedSessionInfo.assign(
+                target_id=target_id, sender_id=sender_id, fetch=True, create=create
+            )
         except Exception:
             return None
 
         return session
 
     @classmethod
-    async def fetch_target_list(cls,
-                                target_list: list[str],
-                                create: bool = False
-                                ) -> list[FetchedSessionInfo]:
+    async def fetch_target_list(cls, target_list: list[str], create: bool = False) -> list[FetchedSessionInfo]:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
@@ -121,12 +111,13 @@ class Bot:
         return fetched
 
     @classmethod
-    async def post_message(cls,
-                           module_name: str,
-                           message: Chainable,
-                           session_list: list[FetchedSessionInfo] | None = None,
-                           **kwargs: dict[str, Any],
-                           ):
+    async def post_message(
+        cls,
+        module_name: str,
+        message: Chainable,
+        session_list: list[FetchedSessionInfo] | None = None,
+        **kwargs: dict[str, Any],
+    ):
         """
         尝试向开启此模块的对象发送一条消息。
 
@@ -148,11 +139,13 @@ class Bot:
                 post_message = message
             await queue_server.client_send_message(session_, post_message)
             if enable_analytics and module_name:
-                await AnalyticsData.create(target_id=session_.target_id,
-                                           sender_id=session_.sender_id,
-                                           command="",
-                                           module_name=module_name,
-                                           module_type="schedule")
+                await AnalyticsData.create(
+                    target_id=session_.target_id,
+                    sender_id=session_.sender_id,
+                    command="",
+                    module_name=module_name,
+                    module_type="schedule",
+                )
 
     postMessage = post_message
     postGlobalMessage = post_global_message
@@ -189,8 +182,7 @@ class Bot:
         return slot_num
 
     @classmethod
-    def register_bot(cls, client_name: str = None,
-                     private_assets_path: str = None):
+    def register_bot(cls, client_name: str = None, private_assets_path: str = None):
         """
         :param client_name: Client name
         :param private_assets_path: Private assets path
@@ -203,13 +195,14 @@ class Bot:
         Info.client_name = client_name
 
     @classmethod
-    async def send_direct_message(cls,
-                                  target: SessionInfo,
-                                  message: Chainable,
-                                  disable_secret_check: bool = False,
-                                  enable_parse_message: bool = True,
-                                  enable_split_image: bool = True,
-                                  ):
+    async def send_direct_message(
+        cls,
+        target: SessionInfo,
+        message: Chainable,
+        disable_secret_check: bool = False,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ):
         if isinstance(target, str):
             target = await cls.fetch_target(target)
         if isinstance(target, (SessionInfo, FetchedSessionInfo)):
@@ -252,9 +245,7 @@ class Bot:
                             return None
 
                         for hook in modules[module_or_hook_name].hooks_list.set:
-                            await asyncio.create_task(
-                                hook.function(ModuleHookContext(args, session_info=session_info))
-                            )
+                            await asyncio.create_task(hook.function(ModuleHookContext(args, session_info=session_info)))
                         return None
 
                 raise ValueError(f"Invalid module name {module_or_hook_name}")

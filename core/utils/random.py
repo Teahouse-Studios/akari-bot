@@ -3,18 +3,20 @@
 
 请在模块中使用此库进行随机生成，避免导入`random`或`secrets`库。
 """
+
 import random as pyrandom
 import secrets
 from typing import Sequence, MutableSequence, TypeVar
 
 from core.config import Config
 
-INF = 2 ** 53
+INF = 2**53
 T = TypeVar("T")
 
 
 class Random:
     """随机生成工具。"""
+
     use_secrets = Config("use_secrets_random", False)
 
     @classmethod

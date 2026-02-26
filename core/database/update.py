@@ -8,10 +8,7 @@ database_list = fetch_module_db()
 
 
 async def update_database():
-    await Tortoise.init(
-        db_url=get_db_link(),
-        modules={"models": ["core.database.models"] + database_list}
-    )
+    await Tortoise.init(db_url=get_db_link(), modules={"models": ["core.database.models"] + database_list})
 
     await Tortoise.generate_schemas(safe=True)
 

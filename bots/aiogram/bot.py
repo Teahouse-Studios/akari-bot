@@ -29,31 +29,21 @@ async def to_message_chain(msg: types.Message):
     lst = []
     if msg.audio:
         file = await aiogram_bot.get_file(msg.audio.file_id)
-        d = await download(
-            f"https://api.telegram.org/file/bot{token}/{file.file_path}"
-        )
+        d = await download(f"https://api.telegram.org/file/bot{token}/{file.file_path}")
         lst.append(Voice(d))
     if msg.photo:
         file = await aiogram_bot.get_file(msg.photo[-1].file_id)
-        lst.append(
-            Image(f"https://api.telegram.org/file/bot{token}/{file.file_path}")
-        )
+        lst.append(Image(f"https://api.telegram.org/file/bot{token}/{file.file_path}"))
     if msg.voice:
         file = await aiogram_bot.get_file(msg.voice.file_id)
-        d = await download(
-            f"https://api.telegram.org/file/bot{token}/{file.file_path}"
-        )
+        d = await download(f"https://api.telegram.org/file/bot{token}/{file.file_path}")
         lst.append(Voice(d))
     if msg.document:
         file = await aiogram_bot.get_file(msg.document.file_id)
         if msg.document.mime_type.startswith("image/"):
-            lst.append(
-                Image(f"https://api.telegram.org/file/bot{token}/{file.file_path}")
-            )
+            lst.append(Image(f"https://api.telegram.org/file/bot{token}/{file.file_path}"))
         if msg.document.mime_type.startswith("audio/"):
-            d = await download(
-                f"https://api.telegram.org/file/bot{token}/{file.file_path}"
-            )
+            d = await download(f"https://api.telegram.org/file/bot{token}/{file.file_path}")
             lst.append(Voice(d))
     if msg.caption:
         lst.append(Plain(msg.caption))
@@ -86,16 +76,16 @@ async def msg_handler(message: types.Message):
                 return
 
             at_message = True
-            text = text[first.length:].strip()
+            text = text[first.length :].strip()
 
         elif first.type == MessageEntityType.MENTION:
             bot_username = (await message.bot.get_me()).username
-            mention_text = text[:first.length]
+            mention_text = text[: first.length]
             if mention_text != f"@{bot_username}":
                 return
 
             at_message = True
-            text = text[first.length:].strip()
+            text = text[first.length :].strip()
         else:
             pass
 
@@ -108,17 +98,18 @@ async def msg_handler(message: types.Message):
     processed_message = message.model_copy(update={"text": text})
     msg_chain = await to_message_chain(processed_message)
 
-    session = await SessionInfo.assign(target_id=target_id,
-                                       sender_id=sender_id,
-                                       sender_name=message.from_user.username,
-                                       target_from=target_from,
-                                       sender_from=sender_prefix,
-                                       client_name=client_name,
-                                       message_id=str(message.message_id),
-                                       reply_id=reply_id,
-                                       messages=msg_chain,
-                                       ctx_slot=ctx_id
-                                       )
+    session = await SessionInfo.assign(
+        target_id=target_id,
+        sender_id=sender_id,
+        sender_name=message.from_user.username,
+        target_from=target_from,
+        sender_from=sender_prefix,
+        client_name=client_name,
+        message_id=str(message.message_id),
+        reply_id=reply_id,
+        messages=msg_chain,
+        ctx_slot=ctx_id,
+    )
 
     await Bot.process_message(session, message)
 

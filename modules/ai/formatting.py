@@ -92,7 +92,7 @@ async def generate_code_snippet(code: str, language: str):
             }
         ),
         headers={"content-type": "application/json"},
-        fmt="content"
+        fmt="content",
     )
 
 

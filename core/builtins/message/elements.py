@@ -26,7 +26,6 @@ if TYPE_CHECKING:
 
 
 class BaseElement:
-
     @classmethod
     def __name__(cls):
         return cls.__name__
@@ -80,12 +79,7 @@ class URLElement(BaseElement):
     md_format_name: str | None = None
 
     @classmethod
-    def assign(
-            cls,
-            url: str,
-            use_mm: bool | None = None,
-            md_format: bool = False,
-            md_format_name: str | None = None):
+    def assign(cls, url: str, use_mm: bool | None = None, md_format: bool = False, md_format_name: str | None = None):
         """
         :param url: URL。
         :param use_mm: 是否使用链接跳板，覆盖全局设置。（默认为 None，为 None 时将根据客户端情况选择是否使用跳板）
@@ -261,9 +255,7 @@ class ImageElement(BaseElement):
     cached_b64: str | None = None
 
     @classmethod
-    def assign(
-        cls, path: str | Path | PILImage.Image, headers: dict[str, Any] | None = None
-    ):
+    def assign(cls, path: str | Path | PILImage.Image, headers: dict[str, Any] | None = None):
         """
         :param path: 图片路径。
         :param headers: 获取图片时的请求头。
@@ -507,16 +499,20 @@ class EmbedElement(BaseElement):
         if self.url:
             text_lst.append(self.url)
         if self.fields:
-            for f in (self.fields if isinstance(self.fields, list) else [self.fields] if self.fields else []):
+            for f in self.fields if isinstance(self.fields, list) else [self.fields] if self.fields else []:
                 if session_info:
-                    text_lst.append(f"{session_info.locale.t_str(f.name)}{session_info.locale.t(
-                        "message.colon")}{session_info.locale.t_str(f.value)}")
+                    text_lst.append(
+                        f"{session_info.locale.t_str(f.name)}{session_info.locale.t('message.colon')}{
+                            session_info.locale.t_str(f.value)
+                        }"
+                    )
                 else:
                     text_lst.append(f"{f.name}: {f.value}")
         if self.author:
             if session_info:
-                text_lst.append(f"{session_info.locale.t("message.embed.author")}{
-                    session_info.locale.t_str(self.author)}")
+                text_lst.append(
+                    f"{session_info.locale.t('message.embed.author')}{session_info.locale.t_str(self.author)}"
+                )
             else:
                 text_lst.append(f"Author: {self.author}")
         if self.footer:

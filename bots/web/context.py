@@ -26,13 +26,14 @@ class WebContextManager(ContextManager):
         return True
 
     @classmethod
-    async def send_message(cls,
-                           session_info: SessionInfo,
-                           message: MessageChain | MessageNodes,
-                           quote: bool = True,
-                           enable_parse_message: bool = True,
-                           enable_split_image: bool = True
-                           ) -> list[str]:
+    async def send_message(
+        cls,
+        session_info: SessionInfo,
+        message: MessageChain | MessageNodes,
+        quote: bool = True,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> list[str]:
         websocket: WebSocket = Temp.data.get("web_chat_websocket")
         sends = []
 
@@ -56,7 +57,9 @@ class WebContextManager(ContextManager):
         return []
 
     @classmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None) -> None:
+    async def delete_message(
+        cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None
+    ) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -91,10 +94,11 @@ class WebContextManager(ContextManager):
             resp = {"action": "reaction", "id": message_id[-1], "emoji": emoji, "add": True}
             if websocket:
                 await websocket.send_text(orjson.dumps(resp).decode())
-            Logger.info(f"Added reaction \"{emoji}\" to message {message_id} in session {session_info.session_id}")
+            Logger.info(f'Added reaction "{emoji}" to message {message_id} in session {session_info.session_id}')
         except Exception:
-            Logger.exception(f"Failed to add reaction \"{emoji}\" to message {
-                message_id} in session {session_info.session_id}: ")
+            Logger.exception(
+                f'Failed to add reaction "{emoji}" to message {message_id} in session {session_info.session_id}: '
+            )
 
     @classmethod
     async def remove_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
@@ -112,10 +116,11 @@ class WebContextManager(ContextManager):
             resp = {"action": "reaction", "id": message_id[-1], "emoji": emoji, "add": False}
             if websocket:
                 await websocket.send_text(orjson.dumps(resp).decode())
-            Logger.info(f"Removed reaction \"{emoji}\" to message {message_id} in session {session_info.session_id}")
+            Logger.info(f'Removed reaction "{emoji}" to message {message_id} in session {session_info.session_id}')
         except Exception:
-            Logger.exception(f"Failed to remove reaction \"{emoji}\" to message {
-                message_id} in session {session_info.session_id}: ")
+            Logger.exception(
+                f'Failed to remove reaction "{emoji}" to message {message_id} in session {session_info.session_id}: '
+            )
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:

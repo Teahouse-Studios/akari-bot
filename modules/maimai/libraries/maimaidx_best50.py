@@ -85,7 +85,7 @@ class BestList:
             return
         self._data.append(chart)
         self._data.sort(reverse=True)
-        self._data = self._data[:self._size]
+        self._data = self._data[: self._size]
 
     def pop(self):
         if self._data:
@@ -143,14 +143,27 @@ class DrawBest:
             width = gradient.width
             for i, color in enumerate(gradient_colors[:-1]):
                 next_color = gradient_colors[i + 1]
-                for x_pos in range(int(i * width / (len(gradient_colors) - 1)),
-                                   int((i + 1) * width / (len(gradient_colors) - 1))):
-                    r = int(color[0] + (next_color[0] - color[0]) * (x_pos - i * width /
-                            (len(gradient_colors) - 1)) / (width / (len(gradient_colors) - 1)))
-                    g = int(color[1] + (next_color[1] - color[1]) * (x_pos - i * width /
-                            (len(gradient_colors) - 1)) / (width / (len(gradient_colors) - 1)))
-                    b = int(color[2] + (next_color[2] - color[2]) * (x_pos - i * width /
-                            (len(gradient_colors) - 1)) / (width / (len(gradient_colors) - 1)))
+                for x_pos in range(
+                    int(i * width / (len(gradient_colors) - 1)), int((i + 1) * width / (len(gradient_colors) - 1))
+                ):
+                    r = int(
+                        color[0]
+                        + (next_color[0] - color[0])
+                        * (x_pos - i * width / (len(gradient_colors) - 1))
+                        / (width / (len(gradient_colors) - 1))
+                    )
+                    g = int(
+                        color[1]
+                        + (next_color[1] - color[1])
+                        * (x_pos - i * width / (len(gradient_colors) - 1))
+                        / (width / (len(gradient_colors) - 1))
+                    )
+                    b = int(
+                        color[2]
+                        + (next_color[2] - color[2])
+                        * (x_pos - i * width / (len(gradient_colors) - 1))
+                        / (width / (len(gradient_colors) - 1))
+                    )
                     grad_draw.line([(x_pos, 0), (x_pos, gradient.height)], fill=(r, g, b))
             mask = Image.new("L", gradient.size, 0)
             mask_draw = ImageDraw.Draw(mask)
@@ -248,9 +261,7 @@ class DrawBest:
             if cover_path.exists():
                 temp = Image.open(cover_path).convert("RGBA")
                 temp = self._resize_image(temp, item_weight / temp.size[0])
-                temp = temp.crop(
-                    (0, (temp.size[1] - item_height) / 2, item_weight, (temp.size[1] + item_height) / 2)
-                )
+                temp = temp.crop((0, (temp.size[1] - item_height) / 2, item_weight, (temp.size[1] + item_height) / 2))
                 overlay = Image.new("RGBA", temp.size, (0, 0, 0, 100))
                 temp = Image.alpha_composite(temp, overlay)
             else:
@@ -279,9 +290,7 @@ class DrawBest:
             if chart_info.sync:
                 temp_draw.text((110, 27), chart_info.sync, self._get_goal_color(chart_info.sync), font)
             if chart_info.dx_score:
-                font = ImageFont.truetype(
-                    noto_sans_demilight_path, 12, encoding="utf-8"
-                )
+                font = ImageFont.truetype(noto_sans_demilight_path, 12, encoding="utf-8")
                 temp_draw.text(
                     (7, 63),
                     f"{chart_info.dx_score}/{chart_info.dx_score_max}",
@@ -321,9 +330,7 @@ class DrawBest:
             if cover_path.exists():
                 temp = Image.open(cover_path).convert("RGBA")
                 temp = self._resize_image(temp, item_weight / temp.size[0])
-                temp = temp.crop(
-                    (0, (temp.size[1] - item_height) / 2, item_weight, (temp.size[1] + item_height) / 2)
-                )
+                temp = temp.crop((0, (temp.size[1] - item_height) / 2, item_weight, (temp.size[1] + item_height) / 2))
                 overlay = Image.new("RGBA", temp.size, (0, 0, 0, 100))
                 temp = Image.alpha_composite(temp, overlay)
             else:
@@ -352,9 +359,7 @@ class DrawBest:
             if chart_info.sync:
                 temp_draw.text((110, 27), chart_info.sync, self._get_goal_color(chart_info.sync), font)
             if chart_info.dx_score:
-                font = ImageFont.truetype(
-                    noto_sans_demilight_path, 12, encoding="utf-8"
-                )
+                font = ImageFont.truetype(noto_sans_demilight_path, 12, encoding="utf-8")
                 temp_draw.text(
                     (7, 63),
                     f"{chart_info.dx_score}/{chart_info.dx_score_max}",
@@ -380,12 +385,8 @@ class DrawBest:
 
             rec_base = Image.new("RGBA", (item_weight, item_height), "black")
             rec_base = rec_base.point(lambda p: int(p * 0.8))
-            self.img.paste(
-                rec_base, (self.columns_image[j + 1] + 5, self.rows_image[i + 7] + 5)
-            )
-            self.img.paste(
-                temp, (self.columns_image[j + 1] + 4, self.rows_image[i + 7] + 4)
-            )
+            self.img.paste(rec_base, (self.columns_image[j + 1] + 5, self.rows_image[i + 7] + 5))
+            self.img.paste(temp, (self.columns_image[j + 1] + 4, self.rows_image[i + 7] + 4))
 
     def draw(self):
         img_draw = ImageDraw.Draw(self.img)
@@ -399,9 +400,7 @@ class DrawBest:
         self._draw_best_list(self.img, self.sd_best, self.dx_best)
 
         font = ImageFont.truetype(noto_sans_demilight_path, 10, encoding="utf-8")
-        img_draw.text(
-            (5, 1285), "Generated by Teahouse Studios \"AkariBot\"", "black", font=font
-        )
+        img_draw.text((5, 1285), 'Generated by Teahouse Studios "AkariBot"', "black", font=font)
 
     def get_dir(self):
         return self.img

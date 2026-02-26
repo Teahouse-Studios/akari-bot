@@ -11,7 +11,7 @@ class ArgumentPattern:
         self.name = name
 
     def __str__(self):
-        return f"ArgumentPattern(\"{self.name}\")"
+        return f'ArgumentPattern("{self.name}")'
 
     def __repr__(self):
         return self.__str__()
@@ -22,7 +22,7 @@ class DescPattern:
         self.text = text
 
     def __str__(self):
-        return f"DescPattern(\"{self.text}\")"
+        return f'DescPattern("{self.text}")'
 
     def __repr__(self):
         return self.__str__()
@@ -54,7 +54,7 @@ class OptionalPattern:
         self.args = args
 
     def __str__(self):
-        return f"OptionalPattern(\"{self.flag}\", {self.args})"
+        return f'OptionalPattern("{self.flag}", {self.args})'
 
     def __repr__(self):
         return self.__str__()
@@ -177,9 +177,7 @@ def parse_template(argv: list[str], depth: int = 0) -> list[Template]:
                     arg_names_ = set()
                     for arg in args:
                         if arg in arg_names_:
-                            raise InvalidTemplatePattern(
-                                f"Duplicate argument in optional flag \"{flag}\": {arg}"
-                            )
+                            raise InvalidTemplatePattern(f'Duplicate argument in optional flag "{flag}": {arg}')
                         arg_names_.add(arg)
 
                     if not flag:
@@ -194,10 +192,7 @@ def parse_template(argv: list[str], depth: int = 0) -> list[Template]:
                         raise InvalidTemplatePattern(f"Two no-flag optional arguments not allowed: {p}")
 
                     template.args.append(
-                        OptionalPattern(
-                            flag=flag,
-                            args=parse_template([" ".join(args)], depth + 1) if args else []
-                        )
+                        OptionalPattern(flag=flag, args=parse_template([" ".join(args)], depth + 1) if args else [])
                     )
                     last_type = "optional" if flag else "optional_no_flag"
 
@@ -227,11 +222,11 @@ def parse_template(argv: list[str], depth: int = 0) -> list[Template]:
                         raise InvalidTemplatePattern(f"Argument cannot follow description: {p}")
 
                     if strip_pattern in arg_names:
-                        raise InvalidTemplatePattern(f"Duplicate argument: \"{strip_pattern}\"")
+                        raise InvalidTemplatePattern(f'Duplicate argument: "{strip_pattern}"')
 
                     if strip_pattern == "...":
                         if seen_variadic:
-                            raise InvalidTemplatePattern("Duplicate \"...\" not allowed")
+                            raise InvalidTemplatePattern('Duplicate "..." not allowed')
                         seen_variadic = True
                         last_type = "variadic"
                         template.args.append(ArgumentPattern("..."))
@@ -250,9 +245,7 @@ def parse_template(argv: list[str], depth: int = 0) -> list[Template]:
         raise e
 
 
-def templates_to_str(
-    templates: list[Template], with_desc=False, simplify=True
-) -> list[str]:
+def templates_to_str(templates: list[Template], with_desc=False, simplify=True) -> list[str]:
     text = []
     last_desc = None
     for template in templates:
@@ -318,14 +311,10 @@ def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
                             index_flag = argv_copy.index(a.flag)
                             len_t_args = len(a.args[0].args)
                             if len(argv_copy[index_flag:]) >= len_t_args:
-                                sub_argv = argv_copy[
-                                    index_flag + 1: index_flag + len_t_args + 1
-                                ]
+                                sub_argv = argv_copy[index_flag + 1 : index_flag + len_t_args + 1]
 
-                                parsed_argv[a.flag] = Optional(
-                                    parse_argv(sub_argv, a.args).args, flagged=True
-                                )
-                                del argv_copy[index_flag: index_flag + len_t_args + 1]
+                                parsed_argv[a.flag] = Optional(parse_argv(sub_argv, a.args).args, flagged=True)
+                                del argv_copy[index_flag : index_flag + len_t_args + 1]
             for a in args:
                 if isinstance(a, ArgumentPattern):
                     if a.name.startswith("<"):
@@ -353,44 +342,30 @@ def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
                                             parsed_argv[sub_args.name] = Argument(" ".join(argv_copy))
                                             argv_copy.clear()
                                         else:
-                                            parsed_argv[sub_args.name] = Argument(
-                                                argv_copy[0]
-                                            )
+                                            parsed_argv[sub_args.name] = Argument(argv_copy[0])
                                             del argv_copy[0]
                                     else:
                                         parsed_argv[sub_args.name] = False
                                 elif sub_args.name == "...":
-                                    parsed_argv[sub_args.name] = [
-                                        Argument(x) for x in argv_copy
-                                    ]
+                                    parsed_argv[sub_args.name] = [Argument(x) for x in argv_copy]
                                     del argv_copy[:]
                                 else:
-                                    parsed_argv[sub_args.name] = (
-                                        sub_args.name in argv_copy
-                                    )
+                                    parsed_argv[sub_args.name] = sub_args.name in argv_copy
                                     if parsed_argv[sub_args.name]:
                                         argv_copy.remove(sub_args.name)
                             subi += 1
                         ai += 1
                 if argv_copy:
-                    template_arguments = [
-                        arg for arg in args if isinstance(arg, ArgumentPattern)
-                    ]
+                    template_arguments = [arg for arg in args if isinstance(arg, ArgumentPattern)]
                     if template_arguments:
                         if isinstance(template_arguments[-1], ArgumentPattern):
-                            if template_arguments[-1].name.startswith(
-                                "<"
-                            ):  # if last arg is variable
+                            if template_arguments[-1].name.startswith("<"):  # if last arg is variable
                                 argv_keys = list(parsed_argv.keys())
-                                parsed_argv[
-                                    argv_keys[
-                                        argv_keys.index(template_arguments[-1].name)
-                                    ]
-                                ].value += " " + " ".join(argv_copy)
+                                parsed_argv[argv_keys[argv_keys.index(template_arguments[-1].name)]].value += (
+                                    " " + " ".join(argv_copy)
+                                )
                                 del argv_copy[0]
-            matched_result.append(
-                MatchedResult(parsed_argv, original_template, template.priority)
-            )
+            matched_result.append(MatchedResult(parsed_argv, original_template, template.priority))
         except TypeError:
             traceback.print_exc()
             continue
@@ -417,9 +392,7 @@ def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
                     break
         if not filtered:
             filtered_result.append(m)
-    if (
-        len_filtered_result := len(filtered_result)
-    ) > 1:  # if multiple result, select one by priority
+    if (len_filtered_result := len(filtered_result)) > 1:  # if multiple result, select one by priority
         priority_result = {}
         for f in filtered_result:
             priority = f.priority  # base priority

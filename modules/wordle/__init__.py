@@ -19,9 +19,10 @@ wordle = module(
 
 
 @wordle.command()
-@wordle.command("[--hard] [--trial] {{I18N:wordle.help}}",
-                options_desc={"--hard": "{I18N:wordle.help.option.hard}",
-                              "--trial": "{I18N:wordle.help.option.trial}"})
+@wordle.command(
+    "[--hard] [--trial] {{I18N:wordle.help}}",
+    options_desc={"--hard": "{I18N:wordle.help.option.hard}", "--trial": "{I18N:wordle.help.option.trial}"},
+)
 async def _(msg: Bot.MessageSession):
     hard_mode = bool(msg.parsed_msg and msg.parsed_msg.get("--hard", False))
     trial = bool(msg.parsed_msg and msg.parsed_msg.get("--trial", False))

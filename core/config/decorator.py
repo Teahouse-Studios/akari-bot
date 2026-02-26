@@ -21,8 +21,7 @@ def _process_class(cls: type[T], table_name, secret=False) -> type[T]:
             setattr(self, field_name, __value)
 
     def __repr__(self):
-        fields_str = ", ".join(f"{name}={getattr(self, name)!r}"
-                               for name in cls_annotations)
+        fields_str = ", ".join(f"{name}={getattr(self, name)!r}" for name in cls_annotations)
         return f"{cls.__name__}({fields_str})"
 
     def __generate_config_file():
@@ -31,8 +30,9 @@ def _process_class(cls: type[T], table_name, secret=False) -> type[T]:
             if not attr_name.startswith("__"):
                 __attr = getattr(cls, attr_name)
                 __attr_type = attr_type
-                if __attr_type not in ALLOWED_TYPES and (isinstance(__attr_type, UnionType) and any(
-                        k not in ALLOWED_TYPES for k in get_args(__attr_type))):
+                if __attr_type not in ALLOWED_TYPES and (
+                    isinstance(__attr_type, UnionType) and any(k not in ALLOWED_TYPES for k in get_args(__attr_type))
+                ):
                     __attr_type = None
                 if attr_name not in CFGManager.values:
                     CFGManager.load()
@@ -42,7 +42,7 @@ def _process_class(cls: type[T], table_name, secret=False) -> type[T]:
                         get_args(__attr_type) if isinstance(__attr_type, UnionType) else attr_type,
                         secret,
                         table_name,
-                        _generate=True
+                        _generate=True,
                     )
                     CFGManager.save()
 
@@ -53,15 +53,12 @@ def _process_class(cls: type[T], table_name, secret=False) -> type[T]:
     return cls
 
 
-def on_config(
-    table_name: str,
-    table_type: Literal["module", "bot", ""] = "",
-    secret: bool = False
-):
+def on_config(table_name: str, table_type: Literal["module", "bot", ""] = "", secret: bool = False):
 
     def wrap(cls: type[T]):
         __type = table_type + "_" if table_type != "" else table_type
         return _process_class(cls, __type + table_name, secret)
+
     return wrap
 
 

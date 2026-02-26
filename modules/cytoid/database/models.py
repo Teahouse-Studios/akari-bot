@@ -12,6 +12,7 @@ class CytoidBindInfo(DBModel):
     :param sender_id: 绑定的用户 ID。
     :param username: 绑定的用户名。
     """
+
     sender_id = fields.CharField(max_length=512, primary_key=True)
     username = fields.CharField(max_length=512)
 

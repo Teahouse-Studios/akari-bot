@@ -48,8 +48,11 @@ def parse_data(original_content: str, result: dict, confidence: float = 60, addi
                                 for pos in itemContext["positions"]:
                                     filter_words_length = pos["endPos"] - pos["startPos"]
                                     reason = str(I18NContext("check.redacted", reason=itemDetail["label"]))
-                                    content = (content[: pos["startPos"] + _offset] +
-                                               reason + content[pos["endPos"] + _offset:])
+                                    content = (
+                                        content[: pos["startPos"] + _offset]
+                                        + reason
+                                        + content[pos["endPos"] + _offset :]
+                                    )
                                     _offset += len(reason) - filter_words_length
                             else:
                                 content = str(I18NContext("check.redacted", reason=itemDetail["label"]))
@@ -77,7 +80,9 @@ def parse_data(original_content: str, result: dict, confidence: float = 60, addi
                                     content = content[:start] + reason + content[end:]
                                     shift = len(reason) - len(word)
                                     placeholders = [
-                                        (s + shift if s > start else s, e + shift if e > start else e) for s, e in placeholders]
+                                        (s + shift if s > start else s, e + shift if e > start else e)
+                                        for s, e in placeholders
+                                    ]
                     else:
                         content = str(I18NContext("check.redacted", reason=itemDetail["Label"]))
 
@@ -87,14 +92,12 @@ def parse_data(original_content: str, result: dict, confidence: float = 60, addi
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
-async def check(text: str |
-                list[str] |
-                list[MessageElement] |
-                MessageElement |
-                MessageChain,
-                session: MessageSession | None = None,
-                confidence: float = 60,
-                additional_text: str | None = None) -> list[dict]:
+async def check(
+    text: str | list[str] | list[MessageElement] | MessageElement | MessageChain,
+    session: MessageSession | None = None,
+    confidence: float = 60,
+    additional_text: str | None = None,
+) -> list[dict]:
     """检查字符串。
 
     :param text: 字符串（List/Union）。
@@ -147,9 +150,9 @@ async def check(text: str |
                 "tasks": [{"dataId": str(uuid.uuid4()), "content": x} for x in call_api_list_],
             }
             date = time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime())
-            content_md5 = base64.b64encode(
-                hashlib.md5(orjson.dumps(body), usedforsecurity=False).digest()
-            ).decode("utf-8")
+            content_md5 = base64.b64encode(hashlib.md5(orjson.dumps(body), usedforsecurity=False).digest()).decode(
+                "utf-8"
+            )
             headers = {
                 "Accept": "application/json",
                 "Content-Type": "application/json",
@@ -200,27 +203,22 @@ async def check(text: str |
                         "SignatureNonce": str(uuid.uuid4()),
                         "Action": "TextModerationPlus",
                         "Service": "comment_detection_pro",
-                        "ServiceParameters": orjson.dumps(
-                            {"dataId": str(uuid.uuid4()), "content": x}
-                        ).decode("utf-8")
+                        "ServiceParameters": orjson.dumps({"dataId": str(uuid.uuid4()), "content": x}).decode("utf-8"),
                     }
 
                     sorted_params = sorted(params.items(), key=lambda k: k[0])
                     step1 = "&".join(
-                        f"{urllib.parse.quote(str(k), safe='-_.~')}="
-                        f"{urllib.parse.quote(str(v), safe='-_.~')}"
+                        f"{urllib.parse.quote(str(k), safe='-_.~')}={urllib.parse.quote(str(v), safe='-_.~')}"
                         for k, v in sorted_params
                     )
-                    step2 = "POST&%2F&" + urllib.parse.quote(step1, safe='-_.~')
+                    step2 = "POST&%2F&" + urllib.parse.quote(step1, safe="-_.~")
                     step3 = f"{access_key_secret}&"
                     signature = base64.b64encode(
                         hmac.new(step3.encode("utf-8"), step2.encode("utf-8"), hashlib.sha1).digest()
                     ).decode("utf-8")
                     params["Signature"] = signature
 
-                    query_string = "&".join(
-                        f"{k}={urllib.parse.quote(str(v), safe='-_.~')}" for k, v in params.items()
-                    )
+                    query_string = "&".join(f"{k}={urllib.parse.quote(str(v), safe='-_.~')}" for k, v in params.items())
 
                     resp = await client.post(f"{root}/?{query_string}")
                     if resp.status_code == 200:
@@ -246,13 +244,11 @@ async def check(text: str |
     return results
 
 
-async def check_bool(text: str |
-                     list[str] |
-                     list[MessageElement] |
-                     MessageElement |
-                     MessageChain,
-                     session: MessageSession | None = None,
-                     confidence: float = 60) -> bool:
+async def check_bool(
+    text: str | list[str] | list[MessageElement] | MessageElement | MessageChain,
+    session: MessageSession | None = None,
+    confidence: float = 60,
+) -> bool:
     """检查字符串是否合规。
 
     :param text: 字符串（List/Union）。

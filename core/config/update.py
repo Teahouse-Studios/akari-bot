@@ -18,6 +18,7 @@ old_cfg_file_path = config_path / "config.cfg"
 
 def convert_cfg_to_toml():
     import configparser
+
     config_old = configparser.ConfigParser()
     config_old.read(old_cfg_file_path)
     config_dict = {}
@@ -66,20 +67,14 @@ class ConfigReorganizer:
         if cfg_name not in self.configs:
             self.configs[cfg_name] = toml_document()
             self.configs[cfg_name].add(
-                toml_comment(
-                    self.locale.t(
-                        "config.header.line.1",
-                        fallback_failed_prompt=False)))
+                toml_comment(self.locale.t("config.header.line.1", fallback_failed_prompt=False))
+            )
             self.configs[cfg_name].add(
-                toml_comment(
-                    self.locale.t(
-                        "config.header.line.2",
-                        fallback_failed_prompt=False)))
+                toml_comment(self.locale.t("config.header.line.2", fallback_failed_prompt=False))
+            )
             self.configs[cfg_name].add(
-                toml_comment(
-                    self.locale.t(
-                        "config.header.line.3",
-                        fallback_failed_prompt=False)))
+                toml_comment(self.locale.t("config.header.line.3", fallback_failed_prompt=False))
+            )
 
     def reorganize_key(self, key, secret=False):
         cfg_name = self.prefix + self.table
@@ -96,9 +91,9 @@ class ConfigReorganizer:
             self.configs[cfg_name].add(table, toml_document())
             if self.prefix:
                 if table.endswith("_secret"):
-                    qk = f"config.table.secret_{self.prefix.rstrip("_")}"
+                    qk = f"config.table.secret_{self.prefix.rstrip('_')}"
                 else:
-                    qk = f"config.table.config_{self.prefix.rstrip("_")}"
+                    qk = f"config.table.config_{self.prefix.rstrip('_')}"
                 self.configs[cfg_name][table].add(toml_comment(self.locale.t(qk, fallback_failed_prompt=False)))
 
         try:
@@ -120,9 +115,7 @@ class ConfigReorganizer:
             self.configs[cfg_name].add(nl())
             self.configs[cfg_name].add(cfg_name, toml_document())
             self.configs[cfg_name][cfg_name].add(
-                toml_comment(
-                    self.locale.t("config.table.config_bot", fallback_failed_prompt=False)
-                )
+                toml_comment(self.locale.t("config.table.config_bot", fallback_failed_prompt=False))
             )
         try:
             self.configs[cfg_name][cfg_name].add("enable", True)
@@ -162,14 +155,14 @@ if "config_version" not in config:
     configs["config"].add(nl())
 
     configs["config"].add("default_locale", get_old_locale)
-    configs["config"].item("default_locale").comment(old_locale.t(
-        "config.comments.default_locale",
-        fallback_failed_prompt=False))
+    configs["config"].item("default_locale").comment(
+        old_locale.t("config.comments.default_locale", fallback_failed_prompt=False)
+    )
 
     configs["config"].add("config_version", 0)
-    configs["config"].item("config_version").comment(old_locale.t(
-        "config.comments.default_locale",
-        fallback_failed_prompt=False))
+    configs["config"].item("config_version").comment(
+        old_locale.t("config.comments.default_locale", fallback_failed_prompt=False)
+    )
     configs["config"].add(nl())
 
     # reorganize some keys
@@ -265,7 +258,7 @@ if "config_version" not in config:
     with open(cfg_file_path, "r", encoding="utf-8") as cfg_file:
         config = toml_parser(cfg_file.read())  # Reload the config file after regeneration
 if config["config_version"] < config_version:
-    logger.info(f"Updating Config file from {config["config_version"]} to {config_version}...")
+    logger.info(f"Updating Config file from {config['config_version']} to {config_version}...")
     if config["config_version"] < 1:
         with open(cfg_file_path, "r", encoding="utf-8") as f:
             config = toml_parser(f.read())

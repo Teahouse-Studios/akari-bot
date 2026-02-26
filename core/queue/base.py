@@ -109,10 +109,17 @@ class JobQueueBase:
             try:
                 for target in cls.report_targets:
                     if ft := await bot.fetch_target(target):
-                        await cls.client_direct_message(ft, MessageChain.assign(
-                            [I18NContext("error.message.report", command=tsk.action),
-                                Plain(f.strip(), disable_joke=True)]), enable_parse_message=False,
-                            disable_secret_check=True)
+                        await cls.client_direct_message(
+                            ft,
+                            MessageChain.assign(
+                                [
+                                    I18NContext("error.message.report", command=tsk.action),
+                                    Plain(f.strip(), disable_joke=True),
+                                ]
+                            ),
+                            enable_parse_message=False,
+                            disable_secret_check=True,
+                        )
             except Exception:
                 Logger.exception()
             return
@@ -127,7 +134,8 @@ class JobQueueBase:
         # Logger.debug([cls.name, target_client if target_client else exports["Bot"].Info.client_name])
 
         get_all = await JobQueuesTable.get_all(
-            [cls.name, target_client if target_client else exports["Bot"].Info.client_name])
+            [cls.name, target_client if target_client else exports["Bot"].Info.client_name]
+        )
 
         for tsk in get_all:
             Logger.trace(f"Received job queue task {tsk.task_id}, action: {tsk.action}")
@@ -157,10 +165,20 @@ class JobQueueBase:
         return decorator
 
     @classmethod
-    async def client_direct_message(cls, session_info: SessionInfo, message: MessageChain | MessageNodes,
-                                    enable_parse_message=False, disable_secret_check=True):
-        await cls.add_job("Server", "client_direct_message",
-                          {"session_info": converter.unstructure(session_info),
-                           "message": converter.unstructure(message, MessageChain | MessageNodes),
-                           "enable_parse_message": enable_parse_message,
-                           "disable_secret_check": disable_secret_check})
+    async def client_direct_message(
+        cls,
+        session_info: SessionInfo,
+        message: MessageChain | MessageNodes,
+        enable_parse_message=False,
+        disable_secret_check=True,
+    ):
+        await cls.add_job(
+            "Server",
+            "client_direct_message",
+            {
+                "session_info": converter.unstructure(session_info),
+                "message": converter.unstructure(message, MessageChain | MessageNodes),
+                "enable_parse_message": enable_parse_message,
+                "disable_secret_check": disable_secret_check,
+            },
+        )

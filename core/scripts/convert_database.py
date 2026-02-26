@@ -168,10 +168,7 @@ database_list = fetch_module_db()
 
 async def rename_old_tables():
     Logger.warning("Renaming old tables...")
-    await Tortoise.init(
-        db_url=get_db_link(),
-        modules={"models": ["core.scripts.convert_database"]}
-    )
+    await Tortoise.init(db_url=get_db_link(), modules={"models": ["core.scripts.convert_database"]})
     conn = Tortoise.get_connection("default")
 
     # Renaming old tables to avoid conflicts
@@ -184,18 +181,22 @@ async def rename_old_tables():
         await conn.execute_query("ALTER TABLE Analytics RENAME TO _old_Analytics;")
         await conn.execute_query("ALTER TABLE unfriendly_action RENAME TO _old_unfriendly_action;")
         await conn.execute_query(
-            "ALTER TABLE module_cytoid_CytoidBindInfo RENAME TO _old_module_cytoid_CytoidBindInfo;")
+            "ALTER TABLE module_cytoid_CytoidBindInfo RENAME TO _old_module_cytoid_CytoidBindInfo;"
+        )
         await conn.execute_query(
-            "ALTER TABLE module_maimai_DivingProberBindInfo RENAME TO _old_module_maimai_DivingProberBindInfo;")
+            "ALTER TABLE module_maimai_DivingProberBindInfo RENAME TO _old_module_maimai_DivingProberBindInfo;"
+        )
         await conn.execute_query("ALTER TABLE module_phigros_PgrBindInfo RENAME TO _old_module_phigros_PgrBindInfo;")
         await conn.execute_query("ALTER TABLE module_wiki_TargetSetInfo RENAME TO _old_module_wiki_TargetSetInfo;")
         await conn.execute_query("ALTER TABLE module_wiki_WikiInfo RENAME TO _old_module_wiki_WikiInfo;")
         await conn.execute_query("ALTER TABLE module_wiki_WikiAllowList RENAME TO _old_module_wiki_WikiAllowList;")
         await conn.execute_query("ALTER TABLE module_wiki_WikiBlockList RENAME TO _old_module_wiki_WikiBlockList;")
         await conn.execute_query(
-            "ALTER TABLE module_wiki_WikiBotAccountList RENAME TO _old_module_wiki_WikiBotAccountList;")
+            "ALTER TABLE module_wiki_WikiBotAccountList RENAME TO _old_module_wiki_WikiBotAccountList;"
+        )
         await conn.execute_query(
-            "ALTER TABLE module_wikilog_WikiLogTargetSetInfo RENAME TO _old_module_wikilog_WikiLogTargetSetInfo;")
+            "ALTER TABLE module_wikilog_WikiLogTargetSetInfo RENAME TO _old_module_wikilog_WikiLogTargetSetInfo;"
+        )
         await conn.execute_query("ALTER TABLE job_queues RENAME TO _old_job_queues;")
         await conn.execute_query("ALTER TABLE DBVersion RENAME TO _old_DBVersion;")
     except Exception:
@@ -211,7 +212,7 @@ async def convert_database():
 
     await Tortoise.init(
         db_url=get_db_link(),
-        modules={"models": ["core.scripts.convert_database", "core.database.models"] + database_list}
+        modules={"models": ["core.scripts.convert_database", "core.database.models"] + database_list},
     )
     conn = Tortoise.get_connection("default")
 
@@ -234,7 +235,7 @@ async def convert_database():
                 superuser=r.isSuperUser,
                 warns=r.warns,
                 petal=r.petal,
-                sender_data={"typing_prompt": not r.disableTyping}
+                sender_data={"typing_prompt": not r.disableTyping},
             )
         except Exception as e:
             Logger.error(f"Failed to convert SenderInfo: {r.id}, error: {e}")
@@ -259,7 +260,7 @@ async def convert_database():
                 locale=r.locale,
                 modules=r.enabledModules,
                 custom_admins=r.customAdmins,
-                target_data=r.options
+                target_data=r.options,
             )
         except Exception as e:
             Logger.error(f"Failed to convert TargetInfo: {r.targetId}, error: {e}")
@@ -272,10 +273,7 @@ async def convert_database():
                     target_info_record.blocked = True
                     await target_info_record.save()
                 else:
-                    await TargetInfo.create(
-                        target_id=r.targetId,
-                        blocked=True
-                    )
+                    await TargetInfo.create(target_id=r.targetId, blocked=True)
             except Exception as e:
                 Logger.error(f"Failed to convert TargetInfo: {r.targetId}, error: {e}")
                 Logger.error(f"TargetInfo record: {r.__dict__}")
@@ -294,10 +292,7 @@ async def convert_database():
             except orjson.JSONDecodeError:
                 continue
 
-            await StoredData.create(
-                stored_key=r.name,
-                value=v
-            )
+            await StoredData.create(stored_key=r.name, value=v)
         except Exception as e:
             Logger.error(f"Failed to convert StoredData: {r.name}, error: {e}")
             Logger.error(f"StoredData record: {r.__dict__}")
@@ -320,7 +315,7 @@ async def convert_database():
                 target_id=r.targetId,
                 sender_id=r.senderId,
                 command=r.command,
-                timestamp=r.timestamp
+                timestamp=r.timestamp,
             )
         except Exception as e:
             Logger.error(f"Failed to convert Analytics: {r.id}, error: {e}")
@@ -410,11 +405,7 @@ async def convert_database():
     wiki_site_info_record = await WikiSiteInfoL.all()
     for r in wiki_site_info_record:
         try:
-            await WikiSiteInfo.create(
-                api_link=r.apiLink,
-                site_info=r.siteInfo,
-                timestamp=r.timestamp
-            )
+            await WikiSiteInfo.create(api_link=r.apiLink, site_info=r.siteInfo, timestamp=r.timestamp)
         except Exception as e:
             Logger.error(f"Failed to convert WikiSiteInfo: {r.apiLink}, error: {e}")
             Logger.error(f"WikiSiteInfo record: {r.__dict__}")
@@ -425,10 +416,7 @@ async def convert_database():
     wiki_allow_list_record = await WikiAllowListL.all()
     for r in wiki_allow_list_record:
         try:
-            await WikiAllowList.create(
-                api_link=r.apiLink,
-                timestamp=r.timestamp
-            )
+            await WikiAllowList.create(api_link=r.apiLink, timestamp=r.timestamp)
         except Exception as e:
             Logger.error(f"Failed to convert WikiAllowList: {r.apiLink}, error: {e}")
             Logger.error(f"WikiAllowList record: {r.__dict__}")
@@ -439,10 +427,7 @@ async def convert_database():
     wiki_block_list_record = await WikiBlockListL.all()
     for r in wiki_block_list_record:
         try:
-            await WikiBlockList.create(
-                api_link=r.apiLink,
-                timestamp=r.timestamp
-            )
+            await WikiBlockList.create(api_link=r.apiLink, timestamp=r.timestamp)
         except Exception as e:
             Logger.error(f"Failed to convert WikiBlockList: {r.apiLink}, error: {e}")
             Logger.error(f"WikiBlockList record: {r.__dict__}")
@@ -453,11 +438,7 @@ async def convert_database():
     wiki_account_list_record = await WikiBotAccountListL.all()
     for r in wiki_account_list_record:
         try:
-            await WikiBotAccountList.create(
-                api_link=r.apiLink,
-                bot_account=r.botAccount,
-                bot_password=r.botPassword
-            )
+            await WikiBotAccountList.create(api_link=r.apiLink, bot_account=r.botAccount, bot_password=r.botPassword)
         except Exception as e:
             Logger.error(f"Failed to convert WikiBotAccountList: {r.apiLink}, error: {e}")
             Logger.error(f"WikiBotAccountList record: {r.__dict__}")
@@ -468,10 +449,7 @@ async def convert_database():
     wikilog_target_set_info_record = await WikiLogTargetSetInfoL.all()
     for r in wikilog_target_set_info_record:
         try:
-            await WikiLogTargetSetInfo.create(
-                target_id=r.targetId,
-                infos=orjson.loads(r.infos)
-            )
+            await WikiLogTargetSetInfo.create(target_id=r.targetId, infos=orjson.loads(r.infos))
         except Exception as e:
             Logger.error(f"Failed to convert WikiLogTargetSetInfo: {r.targetId}, error: {e}")
             Logger.error(f"WikiLogTargetSetInfo record: {r.__dict__}")

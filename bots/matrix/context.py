@@ -59,9 +59,7 @@ class MatrixContextManager(ContextManager):
             pass
 
         # https://spec.matrix.org/v1.9/client-server-api/#permissions
-        power_levels = (
-            await matrix_bot.room_get_state_event(room_id, "m.room.power_levels")
-        ).content
+        power_levels = (await matrix_bot.room_get_state_event(room_id, "m.room.power_levels")).content
         level = (
             power_levels["users"][sender_mxid]
             if sender_mxid in power_levels["users"]
@@ -72,13 +70,14 @@ class MatrixContextManager(ContextManager):
         return False
 
     @classmethod
-    async def send_message(cls,
-                           session_info: SessionInfo,
-                           message: MessageChain | MessageNodes,
-                           quote: bool = True,
-                           enable_parse_message: bool = True,
-                           enable_split_image: bool = True,
-                           ) -> list[str]:
+    async def send_message(
+        cls,
+        session_info: SessionInfo,
+        message: MessageChain | MessageNodes,
+        quote: bool = True,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> list[str]:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
 
@@ -90,6 +89,7 @@ class MatrixContextManager(ContextManager):
         if isinstance(message, MessageNodes):
             message = MessageChain.assign(await msgnode2image(message))
         for x in message.as_sendable(session_info, parse_message=enable_parse_message):
+
             async def _send_msg(content):
                 reply_to = None
                 reply_to_user = None
@@ -106,29 +106,24 @@ class MatrixContextManager(ContextManager):
                         # https://spec.matrix.org/v1.9/client-server-api/#fallbacks-for-rich-replies
                         # todo: standardize fallback for m.image, m.video, m.audio, and m.file
                         reply_to_type = event.source["content"]["msgtype"]
-                        content["body"] = (f">{" *" if reply_to_type == "m.emote" else ""} <{event.sender}> {
-                            event.source["content"]["body"]}\n\n{x.text}")
+                        content["body"] = f">{' *' if reply_to_type == 'm.emote' else ''} <{event.sender}> {
+                            event.source['content']['body']
+                        }\n\n{x.text}"
                         content["format"] = "org.matrix.custom.html"
                         html_text = x.text
                         html_text = html_text.replace("<", "&lt;").replace(">", "&gt;")
                         html_text = html_text.replace("\n", "<br />")
-                        content["formatted_body"] = (
-                            f"<mx-reply><blockquote><a href=\"https://matrix.to/#/{
-                                room.room_id}/{reply_to}?via={homeserver_host}\">In reply to</a>{
-                                " *" if reply_to_type == "m.emote" else ""} <a href=\"https://matrix.to/#/{
-                                event.sender}\">{
-                                event.sender}</a><br/>{
-                                event.source["content"]["body"]}</blockquote></mx-reply>{html_text}")
+                        content["formatted_body"] = f'<mx-reply><blockquote><a href="https://matrix.to/#/{
+                            room.room_id
+                        }/{reply_to}?via={homeserver_host}">In reply to</a>{
+                            " *" if reply_to_type == "m.emote" else ""
+                        } <a href="https://matrix.to/#/{event.sender}">{event.sender}</a><br/>{
+                            event.source["content"]["body"]
+                        }</blockquote></mx-reply>{html_text}'
 
-                if (
-                    event
-                    and "m.relates_to" in event.source["content"]
-                ):
+                if event and "m.relates_to" in event.source["content"]:
                     relates_to = event.source["content"]["m.relates_to"]
-                    if (
-                        "rel_type" in relates_to
-                        and relates_to["rel_type"] == "m.thread"
-                    ):
+                    if "rel_type" in relates_to and relates_to["rel_type"] == "m.thread":
                         # replying in thread
                         thread_root = relates_to["event_id"]
                         if reply_to:
@@ -191,8 +186,10 @@ class MatrixContextManager(ContextManager):
                             filesize=filesize,
                         )
                         Logger.info(
-                            f"Uploaded image {filename} to media repo, uri: {
-                                upload.content_uri}, mime: {mimetype}, encrypted: {encrypted}")
+                            f"Uploaded image {filename} to media repo, uri: {upload.content_uri}, mime: {
+                                mimetype
+                            }, encrypted: {encrypted}"
+                        )
                         # todo: provide more image info
                         if not encrypted:
                             content = {
@@ -236,8 +233,11 @@ class MatrixContextManager(ContextManager):
                         encrypt=encrypted,
                         filesize=filesize,
                     )
-                Logger.info(f"Uploaded audio {filename} to media repo, uri: {
-                    upload.content_uri}, mime: {mimetype}, encrypted: {encrypted}")
+                Logger.info(
+                    f"Uploaded audio {filename} to media repo, uri: {upload.content_uri}, mime: {mimetype}, encrypted: {
+                        encrypted
+                    }"
+                )
                 # todo: provide audio duration info
                 if not encrypted:
                     content = {
@@ -271,7 +271,9 @@ class MatrixContextManager(ContextManager):
         return msg_ids
 
     @classmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None) -> None:
+    async def delete_message(
+        cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None
+    ) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -295,7 +297,7 @@ class MatrixContextManager(ContextManager):
 
         for x in user_id:
             try:
-                await matrix_bot.room_kick(session_info.get_common_target_id(), f"@{x.split("|")[-1]}", reason)
+                await matrix_bot.room_kick(session_info.get_common_target_id(), f"@{x.split('|')[-1]}", reason)
                 Logger.info(f"Kicked member {x} in channel {session_info.target_id}")
             except Exception:
                 Logger.exception(f"Failed to kick member {x} in channel {session_info.target_id}: ")
@@ -309,7 +311,7 @@ class MatrixContextManager(ContextManager):
 
         for x in user_id:
             try:
-                await matrix_bot.room_ban(session_info.get_common_target_id(), f"@{x.split("|")[-1]}", reason)
+                await matrix_bot.room_ban(session_info.get_common_target_id(), f"@{x.split('|')[-1]}", reason)
                 Logger.info(f"Banned member {x} in channel {session_info.target_id}")
             except Exception:
                 Logger.exception(f"Failed to ban member {x} in channel {session_info.target_id}: ")
@@ -323,7 +325,7 @@ class MatrixContextManager(ContextManager):
 
         for x in user_id:
             try:
-                await matrix_bot.room_unban(session_info.get_common_target_id(), f"@{x.split("|")[-1]}")
+                await matrix_bot.room_unban(session_info.get_common_target_id(), f"@{x.split('|')[-1]}")
                 Logger.info(f"Unbanned member {x} in channel {session_info.target_id}")
             except Exception:
                 Logger.exception(f"Failed to unban member {x} in channel {session_info.target_id}: ")
@@ -338,23 +340,14 @@ class MatrixContextManager(ContextManager):
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
 
-        content = {
-            "m.relates_to": {
-                "rel_type": "m.annotation",
-                "event_id": message_id[-1],
-                "key": emoji
-            }
-        }
+        content = {"m.relates_to": {"rel_type": "m.annotation", "event_id": message_id[-1], "key": emoji}}
         try:
-            await matrix_bot.room_send(
-                session_info.get_common_target_id(),
-                message_type="m.reaction",
-                content=content
-            )
-            Logger.info(f"Added reaction \"{emoji}\" to message {message_id} in session {session_info.session_id}")
+            await matrix_bot.room_send(session_info.get_common_target_id(), message_type="m.reaction", content=content)
+            Logger.info(f'Added reaction "{emoji}" to message {message_id} in session {session_info.session_id}')
         except Exception:
-            Logger.exception(f"Failed to add reaction \"{emoji}\" to message {
-                             message_id} in session {session_info.session_id}: ")
+            Logger.exception(
+                f'Failed to add reaction "{emoji}" to message {message_id} in session {session_info.session_id}: '
+            )
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
@@ -386,16 +379,12 @@ class MatrixFetchedContextManager(MatrixContextManager):
                     (room.member_count == 2 and target_id in room.users)
                     or (room.member_count == 1 and target_id in room.invited_users)
                 ):
-                    resp = await matrix_bot.room_get_state_event(
-                        room.room_id, "m.room.member", target_id
-                    )
+                    resp = await matrix_bot.room_get_state_event(room.room_id, "m.room.member", target_id)
                     if resp is nio.ErrorResponse:
                         pass
                     elif resp.content["membership"] in ["join", "leave", "invite"]:
                         return room
-            Logger.info(
-                f"Could not find any exist private room for {target_id}, trying to create one."
-            )
+            Logger.info(f"Could not find any exist private room for {target_id}, trying to create one.")
             try:
                 resp = await matrix_bot.room_create(
                     visibility=nio.RoomVisibility.private,
@@ -411,24 +400,26 @@ class MatrixFetchedContextManager(MatrixContextManager):
                 return None
 
     @classmethod
-    async def send_message(cls,
-                           session_info: SessionInfo,
-                           message: MessageChain | MessageNodes,
-                           quote: bool = True,
-                           enable_parse_message: bool = True,
-                           enable_split_image: bool = True,
-                           ) -> list[str]:
+    async def send_message(
+        cls,
+        session_info: SessionInfo,
+        message: MessageChain | MessageNodes,
+        quote: bool = True,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> list[str]:
         try:
             room = await cls._resolve_matrix_room_(session_info)
             cls.add_context(session_info, (room, None))
-            return await super().send_message(session_info=session_info,
-                                              message=message,
-                                              quote=quote,
-                                              enable_parse_message=enable_parse_message,
-                                              enable_split_image=enable_split_image)
+            return await super().send_message(
+                session_info=session_info,
+                message=message,
+                quote=quote,
+                enable_parse_message=enable_parse_message,
+                enable_split_image=enable_split_image,
+            )
         except Exception as e:
-            Logger.exception(
-                f"Failed to send message to {session_info.get_common_target_id()}: {e}")
+            Logger.exception(f"Failed to send message to {session_info.get_common_target_id()}: {e}")
             return []
         finally:
             cls.del_context(session_info)

@@ -7,9 +7,7 @@ from .expectations import Expectation
 _REGISTRY: list[dict] = []
 
 
-def case(input_: str | list[str] | tuple[str, ...],
-         expected: Expectation | None = None,
-         note: str | None = None):
+def case(input_: str | list[str] | tuple[str, ...], expected: Expectation | None = None, note: str | None = None):
     """
     快捷注册一个测试案例。
 

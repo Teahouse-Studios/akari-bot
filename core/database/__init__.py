@@ -18,6 +18,7 @@ _reload_lock = asyncio.Lock()
 
 def fetch_module_db():
     import modules
+
     database_list = []
     for m in pkgutil.iter_modules(modules.__path__):
         try:
@@ -55,7 +56,7 @@ def get_model_fields(models_path: list[str], table_name: str) -> list[dict[str, 
                             "name": field_name,
                             "type": type(field_obj).__name__,
                             "max_length": getattr(field_obj, "max_length", -1),
-                            "nullable": field_obj.null
+                            "nullable": field_obj.null,
                         }
                         field_info.append(info)
                     return field_info
@@ -80,10 +81,10 @@ async def init_db(load_module_db: bool = True, db_models: list[str] | None = Non
                     "local_models": {
                         "models": ["core.database.local"],
                         "default_connection": "local",
-                    }
-                }
+                    },
+                },
             },
-            _enable_global_fallback=True
+            _enable_global_fallback=True,
         )
 
         await Tortoise.generate_schemas(safe=True)

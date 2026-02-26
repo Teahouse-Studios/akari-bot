@@ -21,4 +21,5 @@ async def fetch_ip_info() -> dict:
         Logger.exception("Failed to get IP information.")
         return {}
 
+
 __all__ = ["fetch_ip_info"]

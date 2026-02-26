@@ -70,19 +70,20 @@ async def msg_handler(message: Message):
 
     msg_chain = await to_message_chain(message)
 
-    session = await SessionInfo.assign(target_id=target_id,
-                                       sender_id=sender_id,
-                                       sender_name=message.author.nickname,
-                                       target_from=f"{target_prefix}|{message.channel_type.name.title()}",
-                                       sender_from=sender_prefix,
-                                       client_name=client_name,
-                                       message_id=str(message.id),
-                                       reply_id=reply_id,
-                                       messages=msg_chain,
-                                       ctx_slot=ctx_id,
-                                       use_url_manager=use_url_manager,
-                                       use_url_md_format=True,
-                                       )
+    session = await SessionInfo.assign(
+        target_id=target_id,
+        sender_id=sender_id,
+        sender_name=message.author.nickname,
+        target_from=f"{target_prefix}|{message.channel_type.name.title()}",
+        sender_from=sender_prefix,
+        client_name=client_name,
+        message_id=str(message.id),
+        reply_id=reply_id,
+        messages=msg_chain,
+        ctx_slot=ctx_id,
+        use_url_manager=use_url_manager,
+        use_url_md_format=True,
+    )
 
     await Bot.process_message(session, message)
 
@@ -91,20 +92,21 @@ async def msg_handler(message: Message):
 async def add_reaction(b: khlBot, event: Event):
     if event.extra["body"]["user_id"] == b.client.me.id:
         return
-    sender_id = f"{sender_prefix}|{event.extra["body"]["user_id"]}"
+    sender_id = f"{sender_prefix}|{event.extra['body']['user_id']}"
     if sender_id in ignored_sender:
         return
 
-    session = await SessionInfo.assign(target_id=f"{target_group_prefix}|{event.extra["body"]["channel_id"]}",
-                                       sender_id=sender_id,
-                                       target_from=target_group_prefix,
-                                       sender_from=sender_prefix,
-                                       client_name=client_name,
-                                       message_id=str(event.id),
-                                       reply_id=event.extra["body"]["msg_id"],
-                                       messages=MessageChain.assign([Plain(event.extra["body"]["emoji"]["id"])]),
-                                       ctx_slot=ctx_id,
-                                       )
+    session = await SessionInfo.assign(
+        target_id=f"{target_group_prefix}|{event.extra['body']['channel_id']}",
+        sender_id=sender_id,
+        target_from=target_group_prefix,
+        sender_from=sender_prefix,
+        client_name=client_name,
+        message_id=str(event.id),
+        reply_id=event.extra["body"]["msg_id"],
+        messages=MessageChain.assign([Plain(event.extra["body"]["emoji"]["id"])]),
+        ctx_slot=ctx_id,
+    )
 
     await Bot.process_message(session, event)
 
@@ -113,20 +115,21 @@ async def add_reaction(b: khlBot, event: Event):
 async def private_add_reaction(b: khlBot, event: Event):
     if event.extra["body"]["user_id"] == b.client.me.id:
         return
-    sender_id = f"{sender_prefix}|{event.extra["body"]["user_id"]}"
+    sender_id = f"{sender_prefix}|{event.extra['body']['user_id']}"
     if sender_id in ignored_sender:
         return
 
-    session = await SessionInfo.assign(target_id=f"{target_person_prefix}|{event.extra["body"]["user_id"]}",
-                                       sender_id=sender_id,
-                                       target_from=target_person_prefix,
-                                       sender_from=sender_prefix,
-                                       client_name=client_name,
-                                       message_id=str(event.id),
-                                       reply_id=event.extra["body"]["msg_id"],
-                                       messages=MessageChain.assign([Plain(event.extra["body"]["emoji"]["id"])]),
-                                       ctx_slot=ctx_id,
-                                       )
+    session = await SessionInfo.assign(
+        target_id=f"{target_person_prefix}|{event.extra['body']['user_id']}",
+        sender_id=sender_id,
+        target_from=target_person_prefix,
+        sender_from=sender_prefix,
+        client_name=client_name,
+        message_id=str(event.id),
+        reply_id=event.extra["body"]["msg_id"],
+        messages=MessageChain.assign([Plain(event.extra["body"]["emoji"]["id"])]),
+        ctx_slot=ctx_id,
+    )
 
     await Bot.process_message(session, event)
 

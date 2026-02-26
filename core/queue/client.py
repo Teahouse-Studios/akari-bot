@@ -12,30 +12,42 @@ if TYPE_CHECKING:
 
 
 class JobQueueClient(JobQueueBase):
-
     @classmethod
     async def send_message_to_server(cls, session_info: SessionInfo):
-        await cls.add_job("Server", "receive_message_from_client",
-                          {"session_info": converter.unstructure(session_info)})
+        await cls.add_job(
+            "Server", "receive_message_from_client", {"session_info": converter.unstructure(session_info)}
+        )
 
     @classmethod
-    async def send_keepalive_signal_to_server(cls, client_name: str, target_prefix_list: list = None,
-                                              sender_prefix_list: list = None):
-        await cls.add_job("Server", "client_keepalive",
-                          {"client_name": client_name,
-                           "target_prefix_list": target_prefix_list or [],
-                           "sender_prefix_list": sender_prefix_list or []}, wait=False)
+    async def send_keepalive_signal_to_server(
+        cls, client_name: str, target_prefix_list: list = None, sender_prefix_list: list = None
+    ):
+        await cls.add_job(
+            "Server",
+            "client_keepalive",
+            {
+                "client_name": client_name,
+                "target_prefix_list": target_prefix_list or [],
+                "sender_prefix_list": sender_prefix_list or [],
+            },
+            wait=False,
+        )
 
     @classmethod
-    async def trigger_hook(cls, module_or_hook_name: str, session_info: SessionInfo | None = "", wait=False,
-                           **kwargs):
+    async def trigger_hook(cls, module_or_hook_name: str, session_info: SessionInfo | None = "", wait=False, **kwargs):
         for k in kwargs:
             if isinstance(kwargs[k], exports["MessageChain"]):
                 kwargs[k] = kwargs[k].to_list()
-        ret = await cls.add_job("Server", "trigger_hook",
-                                {"module_or_hook_name": module_or_hook_name,
-                                 "session_info": converter.unstructure(session_info) if session_info else "",
-                                 "args": kwargs}, wait=wait)
+        ret = await cls.add_job(
+            "Server",
+            "trigger_hook",
+            {
+                "module_or_hook_name": module_or_hook_name,
+                "session_info": converter.unstructure(session_info) if session_info else "",
+                "args": kwargs,
+            },
+            wait=wait,
+        )
         if wait:
             return ret["result"]
         return None
@@ -96,11 +108,13 @@ async def _(tsk: JobQueuesTable, args: dict):
 @JobQueueClient.action("send_message")
 async def _(tsk: JobQueuesTable, args: dict):
     session_info, bot, ctx_manager = await get_session(args)
-    send = await ctx_manager.send_message(session_info,
-                                          converter.structure(args["message"], MessageChain | MessageNodes),
-                                          quote=args["quote"],
-                                          enable_parse_message=args["enable_parse_message"],
-                                          enable_split_image=args["enable_split_image"])
+    send = await ctx_manager.send_message(
+        session_info,
+        converter.structure(args["message"], MessageChain | MessageNodes),
+        quote=args["quote"],
+        enable_parse_message=args["enable_parse_message"],
+        enable_split_image=args["enable_split_image"],
+    )
     return {"message_id": send}
 
 

@@ -57,13 +57,14 @@ async def _(msg: Bot.MessageSession):
             await msg.send_message(output)
 
 
-@bili.regex(r"(?:http[s]?:.*?)?(?:bili(?:22|33|2233)\.cn|b23\.tv).*?([A-Za-z0-9]{7})(?:.*?|)",
-            mode="A",
-            desc="{I18N:bilibili.help.regex.url}",
-            show_typing=False,
-            element_filter=(PlainElement, RawElement),
-            text_only=False
-            )
+@bili.regex(
+    r"(?:http[s]?:.*?)?(?:bili(?:22|33|2233)\.cn|b23\.tv).*?([A-Za-z0-9]{7})(?:.*?|)",
+    mode="A",
+    desc="{I18N:bilibili.help.regex.url}",
+    show_typing=False,
+    element_filter=(PlainElement, RawElement),
+    text_only=False,
+)
 async def _(msg: Bot.MessageSession):
     matched = msg.matched_msg[:5]
     for video in matched:

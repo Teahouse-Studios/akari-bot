@@ -38,9 +38,7 @@ class CQCodeHandler:
         :param s: 正则匹配对象，包含CQ码的字符串消息。
         :return: 如果CQ类型在支持列表中，返回原CQ码；否则返回空字符串。
         """
-        return CQCodeHandler.pattern.sub(
-            lambda m: m.group(0) if m.group(1) in CQCodeHandler.get_supported else "", s
-        )
+        return CQCodeHandler.pattern.sub(lambda m: m.group(0) if m.group(1) in CQCodeHandler.get_supported else "", s)
 
     @staticmethod
     def generate_cq(data: dict[str, Any]) -> str | None:
@@ -56,11 +54,8 @@ class CQCodeHandler:
 
             if not params:
                 return f"[CQ:{cq_type}]"
-            param_str = [
-                f"{key}={CQCodeHandler.escape_special_char(str(value))}"
-                for key, value in params.items()
-            ]
-            return f"[CQ:{cq_type},{", ".join(param_str)}]"
+            param_str = [f"{key}={CQCodeHandler.escape_special_char(str(value))}" for key, value in params.items()]
+            return f"[CQ:{cq_type},{', '.join(param_str)}]"
         return None
 
     @staticmethod
@@ -109,9 +104,7 @@ class CQCodeHandler:
 async def to_message_chain(message: str | list[dict[str, Any]]) -> MessageChain:
     lst = []
     if isinstance(message, str):
-        spl = re.split(
-            r"(\[CQ:(?:text|image|record|at).*?])", message
-        )
+        spl = re.split(r"(\[CQ:(?:text|image|record|at).*?])", message)
         for s in spl:
             if not s:
                 continue
@@ -131,7 +124,7 @@ async def to_message_chain(message: str | list[dict[str, Any]]) -> MessageChain:
                     elif cq_data["type"] == "record":
                         lst.append(Voice(cq_data["data"].get("file")))
                     elif cq_data["type"] == "at":
-                        lst.append(Plain(f"{sender_prefix}|{cq_data["data"].get("qq")}"))
+                        lst.append(Plain(f"{sender_prefix}|{cq_data['data'].get('qq')}"))
                     else:
                         lst.append(Plain(s))
                 else:
@@ -151,7 +144,7 @@ async def to_message_chain(message: str | list[dict[str, Any]]) -> MessageChain:
             elif item["type"] == "record":
                 lst.append(Voice(item["data"]["file"]))
             elif item["type"] == "at":
-                lst.append(Plain(f"{sender_prefix}|{item["data"].get("qq")}"))
+                lst.append(Plain(f"{sender_prefix}|{item['data'].get('qq')}"))
             else:
                 lst.append(Raw(CQCodeHandler.generate_cq(item)))
 

@@ -20,7 +20,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession, word: str):
     #  >>> ~test say Word
     #  <<< Word is Word
-    await msg.finish(f"{word} is {msg.parsed_msg["<word>"]}")
+    await msg.finish(f"{word} is {msg.parsed_msg['<word>']}")
 
 
 @test.command("reply")
@@ -49,7 +49,9 @@ async def _(msg: Bot.MessageSession):
     #  <<< A picture: Image(url="https://http.cat/100.jpg")
     #  <<< KE Code is also Image(url="https://http.cat/200.jpg")
     await msg.send_message(MessageChain.assign([Plain("A picture:"), Image("https://http.cat/100.jpg")]))
-    await msg.send_message("[KE:plain,text=KE Code is also][KE:image,path=https://http.cat/200.jpg][KE:i18n,i18nkey=example]")
+    await msg.send_message(
+        "[KE:plain,text=KE Code is also][KE:image,path=https://http.cat/200.jpg][KE:i18n,i18nkey=example]"
+    )
 
 
 @test.regex(r"\{\{(.*?)}}", mode="M")  # re.match

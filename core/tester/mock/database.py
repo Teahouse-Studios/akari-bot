@@ -21,10 +21,10 @@ async def init_db(load_module_db: bool = True) -> bool:
                     "local_models": {
                         "models": ["core.database.local"],
                         "default_connection": "local",
-                    }
-                }
+                    },
+                },
             },
-            _enable_global_fallback=True
+            _enable_global_fallback=True,
         )
 
         await Tortoise.generate_schemas(safe=True)
@@ -32,5 +32,6 @@ async def init_db(load_module_db: bool = True) -> bool:
     except Exception:
         Logger.exception()
         return False
+
 
 __all__ = ["init_db", "close_db"]

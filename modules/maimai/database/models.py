@@ -12,6 +12,7 @@ class DivingProberBindInfo(DBModel):
     :param sender_id: 发送者 ID
     :param username: 用户名
     """
+
     sender_id = fields.CharField(max_length=512, primary_key=True)
     username = fields.CharField(max_length=512)
 
@@ -42,6 +43,7 @@ class LxnsProberBindInfo(DBModel):
     :param sender_id: 发送者 ID
     :param friend_code: 好友码
     """
+
     sender_id = fields.CharField(max_length=512, primary_key=True)
     friend_code = fields.CharField(max_length=512)
 

@@ -13,4 +13,4 @@ db_path.mkdir(parents=True, exist_ok=True)
 
 
 def get_db_link():
-    return f"{db_type}://{db_link.split("://")[1]}"
+    return f"{db_type}://{db_link.split('://')[1]}"

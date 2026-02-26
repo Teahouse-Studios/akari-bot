@@ -229,9 +229,7 @@ class MkeyGenerator:
             self._data_path = None
 
         if not self._data_path:
-            raise ValueError(
-                "v1/v2 attempted, but data directory doesn\'t exist or was not specified."
-            )
+            raise ValueError("v1/v2 attempted, but data directory doesn't exist or was not specified.")
 
         #
         # Extract key ID fields from inquiry number.
@@ -265,9 +263,7 @@ class MkeyGenerator:
             else:
                 file_name = props["mkey_file"] % (region, version)
 
-            (mkey_region, mkey_version, mkey_ctr, mkey_hmac_key) = self._read_mkey_file(
-                file_name
-            )
+            (mkey_region, mkey_version, mkey_ctr, mkey_hmac_key) = self._read_mkey_file(file_name)
 
             file_name = props["aes_file"] % region
             mkey_aes_key = self._read_aes_key(file_name)
@@ -353,19 +349,13 @@ class MkeyGenerator:
             self._data_path = None
 
         if not self._data_path:
-            raise ValueError(
-                "v3/v4 attempted, but data directory doesn\'t exist or was not specified."
-            )
+            raise ValueError("v3/v4 attempted, but data directory doesn't exist or was not specified.")
 
         if algorithm == "v4" and not aux:
-            raise ValueError(
-                "v4 attempted, but no auxiliary string (device ID required)."
-            )
+            raise ValueError("v4 attempted, but no auxiliary string (device ID required).")
 
         if algorithm == "v4" and len(aux) != 16:
-            raise ValueError(
-                "v4 attempted, but auxiliary string (device ID) of invalid length."
-            )
+            raise ValueError("v4 attempted, but auxiliary string (device ID) of invalid length.")
 
         if algorithm == "v4":
             version = int((inquiry / 10000) % 100)

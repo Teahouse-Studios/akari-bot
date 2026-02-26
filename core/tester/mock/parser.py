@@ -71,7 +71,7 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
     if disable_prefix and not in_prefix_list:
         command = msg.trigger_msg
     else:
-        command = msg.trigger_msg[len(msg.session_info.prefixes[0]):]
+        command = msg.trigger_msg[len(msg.session_info.prefixes[0]) :]
 
     command = command.strip()
     command_split: list = command.split(" ")  # 切割消息
@@ -90,18 +90,18 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
         cmd_words = command.split(" ")
 
         if not not_alias:
-            if cmd_words[:len(alias_words)] == alias_words:
+            if cmd_words[: len(alias_words)] == alias_words:
                 alias_list.append(alias)
         else:
             if alias.startswith(cm):
-                if cmd_words[:len(alias_words)] == alias_words:
+                if cmd_words[: len(alias_words)] == alias_words:
                     alias_list.append(alias)
 
     if alias_list:
         max_alias = str(max(alias_list, key=len))
         real_name = ModulesManager.modules_aliases[max_alias]
         command_words = command.split(" ")
-        command_words = real_name.split(" ") + command_words[len(max_alias.split(" ")):]
+        command_words = real_name.split(" ") + command_words[len(max_alias.split(" ")) :]
         command = " ".join(command_words)
 
     msg.trigger_msg = command
@@ -118,9 +118,9 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
             if command_first_word not in msg.session_info.enabled_modules:
                 desc.append(
                     I18NContext(
-                        "parser.module.disabled.prompt",
-                        module=command_first_word,
-                        prefix=msg.session_info.prefixes[0]))
+                        "parser.module.disabled.prompt", module=command_first_word, prefix=msg.session_info.prefixes[0]
+                    )
+                )
             await msg.send_message(desc)
         else:
             await msg.send_message(I18NContext("error.module.unbound", module=command_first_word))
@@ -172,8 +172,9 @@ async def _execute_regex(msg: "Bot.MessageSession", modules):
 
 async def _execute_module_command(msg: "Bot.MessageSession", module, command_first_word):
     bot: "Bot" = exports["Bot"]
-    command_parser = CommandParser(module, msg=msg, module_name=command_first_word,
-                                   command_prefixes=msg.session_info.prefixes)
+    command_parser = CommandParser(
+        module, msg=msg, module_name=command_first_word, command_prefixes=msg.session_info.prefixes
+    )
     parsed_msg = command_parser.parse(msg.trigger_msg)  # 解析模块的子功能命令
     command: CommandMeta = parsed_msg[0]
     msg.parsed_msg = parsed_msg[1]  # 使用命令模板解析后的消息
@@ -193,15 +194,11 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
                 no_message_session = False
             elif isinstance(param_obj.annotation, Param):
                 if param_obj.annotation.name in parsed_msg_:
-                    if isinstance(
-                            parsed_msg_[
-                                param_obj.annotation.name],
-                            param_obj.annotation.type):
+                    if isinstance(parsed_msg_[param_obj.annotation.name], param_obj.annotation.type):
                         kwargs[param_name] = parsed_msg_[param_obj.annotation.name]
                         del parsed_msg_[param_obj.annotation.name]
                     else:
-                        Logger.warning(f"{param_obj.annotation.name} is not a {
-                            param_obj.annotation.type}")
+                        Logger.warning(f"{param_obj.annotation.name} is not a {param_obj.annotation.type}")
                 else:
                     Logger.warning(f"{param_obj.annotation.name} is not in parsed_msg")
             param_name_ = param_name
@@ -230,11 +227,13 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
         if no_message_session:
             Logger.warning(
                 f"{command.function.__name__} has no Bot.MessageSession parameter, did you forgot to add it?\n"
-                "Remember: MessageSession IS NOT Bot.MessageSession")
+                "Remember: MessageSession IS NOT Bot.MessageSession"
+            )
     else:
         kwargs[func_params[list(func_params.keys())[0]].name] = msg
 
     await parsed_msg[0].function(**kwargs)  # 将msg传入下游模块
     return True
+
 
 __all__ = ["parser"]

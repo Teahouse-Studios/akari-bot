@@ -40,7 +40,7 @@ async def _(msg: Bot.MessageSession):
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
                 if s:
-                    msg_chain.append(Plain(f"{s["id"]} - {s["title"]}{" (DX)" if s["type"] == "DX" else ""}"))
+                    msg_chain.append(Plain(f"{s['id']} - {s['title']}{' (DX)' if s['type'] == 'DX' else ''}"))
             await msg.finish(msg_chain)
         else:
             sid = str(sid_list[0])
@@ -54,29 +54,31 @@ async def _(msg: Bot.MessageSession):
             utage_data = orjson.loads(file.read())
         if utage_data:
             try:
-                msg_chain.append(Plain(f"「{utage_data[sid]["comment"]}」"))
+                msg_chain.append(Plain(f"「{utage_data[sid]['comment']}」"))
             except KeyError:
                 msg_chain.append(Plain("「Let's party!」"))
 
-        msg_chain.append(I18NContext(
-            "maimai.message.song",
-            artist=music["basic_info"]["artist"],
-            genre="宴會場",
-            bpm=music["basic_info"]["bpm"],
-            version=music["basic_info"]["from"],
-            level=music["level"][0]
-        ))
+        msg_chain.append(
+            I18NContext(
+                "maimai.message.song",
+                artist=music["basic_info"]["artist"],
+                genre="宴會場",
+                bpm=music["basic_info"]["bpm"],
+                version=music["basic_info"]["from"],
+                level=music["level"][0],
+            )
+        )
     else:
-        msg_chain.append(I18NContext(
-            "maimai.message.song",
-            artist=music["basic_info"]["artist"],
-            genre=genre_i18n_mapping.get(
-                music["basic_info"]["genre"], music["basic_info"]["genre"]
-            ),
-            bpm=music["basic_info"]["bpm"],
-            version=music["basic_info"]["from"],
-            level="/".join((str(ds) for ds in music["ds"])),
-        ))
+        msg_chain.append(
+            I18NContext(
+                "maimai.message.song",
+                artist=music["basic_info"]["artist"],
+                genre=genre_i18n_mapping.get(music["basic_info"]["genre"], music["basic_info"]["genre"]),
+                bpm=music["basic_info"]["bpm"],
+                version=music["basic_info"]["from"],
+                level="/".join((str(ds) for ds in music["ds"])),
+            )
+        )
 
     await msg.finish(await get_info(music, msg_chain))
 
@@ -119,8 +121,10 @@ async def _(msg: Bot.MessageSession):
     await query_plate(msg, plate, get_list=True)
 
 
-@mai_regex.regex(r"(?:随个|隨個)\s?((?:dx|DX|sd|SD|标准|標準)\s?)?([绿綠黄黃红紅紫白]?)\s?([0-9]+\+?)",
-                 desc="{I18N:maimai.help.maimai_regex.random}")
+@mai_regex.regex(
+    r"(?:随个|隨個)\s?((?:dx|DX|sd|SD|标准|標準)\s?)?([绿綠黄黃红紅紫白]?)\s?([0-9]+\+?)",
+    desc="{I18N:maimai.help.maimai_regex.random}",
+)
 async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
     if res:
@@ -135,14 +139,12 @@ async def _(msg: Bot.MessageSession):
             if res.groups()[1] == "":
                 music_data = (await total_list.get()).filter(level=level, type=tp)
             else:
-                music_data = (await total_list.get()).filter(
-                    level=level, diff=[get_diff(res.groups()[1])], type=tp
-                )
+                music_data = (await total_list.get()).filter(level=level, diff=[get_diff(res.groups()[1])], type=tp)
             if len(music_data) == 0:
                 await msg.finish(I18NContext("maimai.message.music_not_found"))
             else:
                 music = music_data.random()
-                diffs = MessageChain.assign(Plain(f"{"/".join(str(ds) for ds in music.ds)}"))
+                diffs = MessageChain.assign(Plain(f"{'/'.join(str(ds) for ds in music.ds)}"))
                 await msg.finish(await get_info(music, diffs))
         except ValueError:
             await msg.finish(I18NContext("maimai.message.random.failed"))

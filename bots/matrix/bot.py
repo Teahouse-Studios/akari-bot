@@ -35,17 +35,13 @@ async def on_sync(resp: nio.SyncResponse):
 
 
 async def on_invite(room: nio.MatrixRoom, event: nio.InviteEvent):
-    Logger.info(
-        f"Received room invitation for {room.room_id} ({room.name}) from {event.sender}"
-    )
+    Logger.info(f"Received room invitation for {room.room_id} ({room.name}) from {event.sender}")
     await matrix_bot.join(room.room_id)
     Logger.info(f"Joined room: {room.room_id}")
 
 
 async def on_room_member(room: nio.MatrixRoom, event: nio.RoomMemberEvent):
-    Logger.info(
-        f"Received m.room.member, {event.sender}: {event.prev_membership} -> {event.membership}"
-    )
+    Logger.info(f"Received m.room.member, {event.sender}: {event.prev_membership} -> {event.membership}")
     # is_direct = (room.member_count == 1 or room.member_count == 2) and room.join_rule == "invite"
     # if not is_direct:
     #     resp = await bot.room_get_state_event(room.room_id, "m.room.member", client.user)
@@ -99,9 +95,7 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
             if matrix_bot.olm.is_device_verified(olm_device):
                 continue
             matrix_bot.verify_device(olm_device)
-            Logger.info(
-                f"Trust olm device for device id: {event.sender} -> {device_id}"
-            )
+            Logger.info(f"Trust olm device for device id: {event.sender} -> {device_id}")
     if event.source["content"]["msgtype"] == "m.notice":
         # https://spec.matrix.org/v1.9/client-server-api/#mnotice
         return
@@ -131,7 +125,7 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
     at_message = False
     if event.body.startswith(matrix_bot.user_id):
         at_message = True
-        event.body = event.body[len(matrix_bot.user_id):].strip()
+        event.body = event.body[len(matrix_bot.user_id) :].strip()
         if not event.body:
             event.body = f"{command_prefix[0]}help"
 
@@ -140,17 +134,18 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
 
     msg_chain = await to_message_chain(event, reply_id, target_id)
 
-    session = await SessionInfo.assign(target_id=target_id,
-                                       sender_id=sender_id,
-                                       sender_name=resp.displayname,
-                                       target_from=target_prefix,
-                                       sender_from=sender_prefix,
-                                       client_name=client_name,
-                                       message_id=event.event_id,
-                                       reply_id=reply_id,
-                                       messages=msg_chain,
-                                       ctx_slot=ctx_id
-                                       )
+    session = await SessionInfo.assign(
+        target_id=target_id,
+        sender_id=sender_id,
+        sender_name=resp.displayname,
+        target_from=target_prefix,
+        sender_from=sender_prefix,
+        client_name=client_name,
+        message_id=event.event_id,
+        reply_id=reply_id,
+        messages=msg_chain,
+        ctx_slot=ctx_id,
+    )
 
     await Bot.process_message(session, (room, event))
 
@@ -168,7 +163,7 @@ async def on_reaction(room: nio.MatrixRoom, event: nio.ReactionEvent):
         message_id=event.event_id,
         reply_id=event.reacts_to,
         messages=MessageChain.assign(Plain(relates_to.get("key"))),
-        ctx_slot=ctx_id
+        ctx_slot=ctx_id,
     )
     await Bot.process_message(session, (room, event))
 
@@ -177,13 +172,9 @@ async def on_verify(event: nio.KeyVerificationEvent):
     if isinstance(event, nio.KeyVerificationStart):
         await matrix_bot.accept_key_verification(event.transaction_id)
         await matrix_bot.to_device(matrix_bot.key_verifications[event.transaction_id].share_key())
-        Logger.info(
-            f"Accepted key verification request {event.transaction_id} from {event.sender} {event.from_device}"
-        )
+        Logger.info(f"Accepted key verification request {event.transaction_id} from {event.sender} {event.from_device}")
     elif isinstance(event, nio.KeyVerificationCancel):
-        Logger.info(
-            f"Key verification {event.transaction_id} is cancelled: {event.reason}"
-        )
+        Logger.info(f"Key verification {event.transaction_id} is cancelled: {event.reason}")
     elif isinstance(event, nio.KeyVerificationKey):
         Logger.info(
             f"Key verification {event.transaction_id}: {matrix_bot.key_verifications[event.transaction_id].get_emoji()}"
@@ -201,9 +192,7 @@ async def on_in_room_verify(room: nio.MatrixRoom, event: nio.RoomMessageUnknown)
     if event.msgtype == "m.key.verification.request":
         Logger.info(f"Cancelling in-room verification in {room.room_id}")
         msg = "You are requesting a in-room verification to AkariBot. But I does not support in-room-verification at this time, please use to-device verification!"
-        await matrix_bot.room_send(
-            room.room_id, "m.room.message", {"msgtype": "m.notice", "body": msg}
-        )
+        await matrix_bot.room_send(room.room_id, "m.room.message", {"msgtype": "m.notice", "body": msg})
         tx_id = str(uuid4())
         resp = await matrix_bot.to_device(
             nio.ToDeviceMessage(
@@ -253,7 +242,8 @@ async def start():
                 and "already exists." in resp.message
             ):
                 Logger.warning(
-                    f"Matrix E2EE keys have been uploaded for this session, we are going to force claim them down, although this is very dangerous and should never happen for a clean session: {resp}")
+                    f"Matrix E2EE keys have been uploaded for this session, we are going to force claim them down, although this is very dangerous and should never happen for a clean session: {resp}"
+                )
                 keys = 0
                 while True:
                     resp = await matrix_bot.keys_claim({client.user: [client.device_id]})
@@ -263,9 +253,7 @@ async def start():
                     keys += 1
                     resp = await matrix_bot.keys_upload()
                     if not isinstance(resp, nio.KeysUploadError):
-                        Logger.success(
-                            f"Successfully uploaded matrix OTK keys after {keys} claims."
-                        )
+                        Logger.success(f"Successfully uploaded matrix OTK keys after {keys} claims.")
                         break
         megolm_backup_path = client.store_path_megolm_backup / "restore.txt"
         if megolm_backup_path.exists():
@@ -281,9 +269,7 @@ async def start():
 
     # set device name
     if client.device_name:
-        asyncio.create_task(
-            matrix_bot.update_device(client.device_id, {"display_name": client.device_name})
-        )
+        asyncio.create_task(matrix_bot.update_device(client.device_id, {"display_name": client.device_name}))
 
     # sync joined room state
     Logger.info("Starting sync room full state...")

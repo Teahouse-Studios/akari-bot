@@ -90,9 +90,11 @@ async def _():
 set_ = module("set", required_superuser=True, base=True, doc=True)
 
 
-@set_.command("target module enable <target> <modules> ...",
-              "target module disable <target> <modules> ...",
-              "target module list <target>")
+@set_.command(
+    "target module enable <target> <modules> ...",
+    "target module disable <target> <modules> ...",
+    "target module list <target>",
+)
 async def _(msg: Bot.MessageSession, target: str):
     if not Alive.determine_target_from(target):
         await msg.finish(I18NContext("message.id.invalid.target", target=msg.session_info.target_from))
@@ -104,21 +106,20 @@ async def _(msg: Bot.MessageSession, target: str):
         target_info = await TargetInfo.create(target_id=target)
     if "enable" in msg.parsed_msg:
         modules = [
-            m for m in [
-                msg.parsed_msg["<modules>"]] +
-            msg.parsed_msg.get(
-                "...",
-                []) if m in ModulesManager.return_modules_list(
-                msg.session_info.target_from,
-                client_name=msg.session_info.client_name)]
+            m
+            for m in [msg.parsed_msg["<modules>"]] + msg.parsed_msg.get("...", [])
+            if m
+            in ModulesManager.return_modules_list(
+                msg.session_info.target_from, client_name=msg.session_info.client_name
+            )
+        ]
         await target_info.config_module(modules, True)
         if modules:
             await msg.finish(I18NContext("core.message.set.module.enable.success", modules=", ".join(modules)))
         else:
             await msg.finish(I18NContext("core.message.set.module.enable.failed"))
     elif "disable" in msg.parsed_msg:
-        modules = [m for m in [msg.parsed_msg["<modules>"]] + msg.parsed_msg.get("...", [])
-                   if m in target_info.modules]
+        modules = [m for m in [msg.parsed_msg["<modules>"]] + msg.parsed_msg.get("...", []) if m in target_info.modules]
         await target_info.config_module(modules, False)
         if modules:
             await msg.finish(I18NContext("core.message.set.module.disable.success", modules=", ".join(modules)))
@@ -132,9 +133,7 @@ async def _(msg: Bot.MessageSession, target: str):
             await msg.finish(I18NContext("core.message.set.module.list.none"))
 
 
-@set_.command("target data get <target> [<k>]",
-              "target data edit <target> <k> <v>",
-              "target data delete <target> <k>")
+@set_.command("target data get <target> [<k>]", "target data edit <target> <k> <v>", "target data delete <target> <k>")
 async def _(msg: Bot.MessageSession, target: str):
     if not Alive.determine_sender_from(target):
         await msg.finish(I18NContext("message.id.invalid.target", target=msg.session_info.target_from))
@@ -156,7 +155,7 @@ async def _(msg: Bot.MessageSession, target: str):
         if isinstance(v, str):
             if re.match(r"\[.*\]|\{.*\}", v):
                 try:
-                    v = v.replace("\'", "\"")
+                    v = v.replace("'", '"')
                     v = orjson.loads(v)
                 except orjson.JSONDecodeError as e:
                     Logger.error(str(e))
@@ -173,9 +172,7 @@ async def _(msg: Bot.MessageSession, target: str):
         await msg.finish(I18NContext("message.success"))
 
 
-@set_.command("sender data get <user> [<k>]",
-              "sender data edit <user> <k> <v>",
-              "sender data delete <user> <k>")
+@set_.command("sender data get <user> [<k>]", "sender data edit <user> <k> <v>", "sender data delete <user> <k>")
 async def _(msg: Bot.MessageSession, user: str):
     if not Alive.determine_sender_from(user):
         await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
@@ -197,7 +194,7 @@ async def _(msg: Bot.MessageSession, user: str):
         if isinstance(v, str):
             if re.match(r"\[.*\]|\{.*\}", v):
                 try:
-                    v = v.replace("\'", "\"")
+                    v = v.replace("'", '"')
                     v = orjson.loads(v)
                 except orjson.JSONDecodeError as e:
                     Logger.error(str(e))
@@ -214,12 +211,7 @@ async def _(msg: Bot.MessageSession, user: str):
         await msg.finish(I18NContext("message.success"))
 
 
-post_whitelist = module(
-    "post_whitelist",
-    required_superuser=True,
-    base=True,
-    doc=True,
-    available_for="QQ")
+post_whitelist = module("post_whitelist", required_superuser=True, base=True, doc=True, available_for="QQ")
 
 
 @post_whitelist.command("<group_id>")
@@ -275,7 +267,8 @@ async def _(msg: Bot.MessageSession, user: str, count: int = 1):
     if sender_info.warns > WARNING_COUNTS >= 1 and not sender_info.trusted:
         await sender_info.switch_identity(trust=False)
     await msg.finish(
-        I18NContext("core.message.abuse.warn.success", sender=user, count=count, warn_count=sender_info.warns))
+        I18NContext("core.message.abuse.warn.success", sender=user, count=count, warn_count=sender_info.warns)
+    )
 
 
 @ae.command("revoke <user> [<count>]")
@@ -289,7 +282,8 @@ async def _(msg: Bot.MessageSession, user: str, count: int = 1):
         sender_info = await SenderInfo.create(sender_id=user)
     await sender_info.warn_user(-count)
     await msg.finish(
-        I18NContext("core.message.abuse.revoke.success", sender=user, count=count, warn_count=sender_info.warns))
+        I18NContext("core.message.abuse.revoke.success", sender=user, count=count, warn_count=sender_info.warns)
+    )
 
 
 @ae.command("clear <user>")
@@ -426,13 +420,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("core.message.update.binary_mode"))
 
 
-rst = module(
-    "restart",
-    required_superuser=True,
-    base=True,
-    doc=True,
-    exclude_from=["Web"],
-    load=Bot.Info.subprocess)
+rst = module("restart", required_superuser=True, base=True, doc=True, exclude_from=["Web"], load=Bot.Info.subprocess)
 
 
 def write_restart_cache(msg: Bot.MessageSession):
@@ -474,7 +462,8 @@ upds = module(
     base=True,
     doc=True,
     exclude_from=["Web"],
-    load=Bot.Info.subprocess)
+    load=Bot.Info.subprocess,
+)
 
 
 @upds.command()
@@ -565,9 +554,7 @@ echo = module("echo", required_superuser=True, base=True, doc=True)
 
 @echo.command()
 async def _(msg: Bot.MessageSession):
-    dis = await msg.wait_next_message(I18NContext("core.message.echo.prompt"),
-                                      delete=True,
-                                      append_instruction=False)
+    dis = await msg.wait_next_message(I18NContext("core.message.echo.prompt"), delete=True, append_instruction=False)
     if dis:
         try:
             dis = dis.as_display()
@@ -657,7 +644,7 @@ async def _(msg: Bot.MessageSession, k: str, v: str, table_name: str = None):
         v = float(v)
     elif re.match(r"\[.*\]", v):
         try:
-            v = v.replace("\'", "\"")
+            v = v.replace("'", '"')
             v = orjson.loads(v)
         except orjson.JSONDecodeError as e:
             Logger.error(str(e))

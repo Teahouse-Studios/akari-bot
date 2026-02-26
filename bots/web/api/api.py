@@ -34,14 +34,15 @@ async def api_root(request: Request):
 @app.get("/api/init")
 @limiter.limit("10/second")
 async def get_config(request: Request):
-    return {"enable_https": enable_https,
-            "command_prefix": command_prefix[0],
-            "help_url": Config("help_url", cfg_type=str),
-            "locale": Config("default_locale", cfg_type=str),
-            "heartbeat_interval": Config("heartbeat_interval", 30, table_name="bot_web"),
-            "heartbeat_timeout": Config("heartbeat_timeout", 5, table_name="bot_web"),
-            "heartbeat_attempt": Config("heartbeat_attempt", 3, table_name="bot_web")
-            }
+    return {
+        "enable_https": enable_https,
+        "command_prefix": command_prefix[0],
+        "help_url": Config("help_url", cfg_type=str),
+        "locale": Config("default_locale", cfg_type=str),
+        "heartbeat_interval": Config("heartbeat_interval", 30, table_name="bot_web"),
+        "heartbeat_timeout": Config("heartbeat_timeout", 5, table_name="bot_web"),
+        "heartbeat_attempt": Config("heartbeat_attempt", 3, table_name="bot_web"),
+    }
 
 
 @app.get("/api/server-info")
@@ -52,28 +53,25 @@ async def server_info(request: Request):
             "system": platform.system(),
             "version": platform.version(),
             "machine": platform.machine(),
-            "boot_time": psutil.boot_time()
+            "boot_time": psutil.boot_time(),
         },
         "bot": {
             "running_time": (datetime.now() - started_time).total_seconds(),
             "python_version": platform.python_version(),
             "version": await JobQueueClient.get_bot_version(),
-            "web_render_status": await JobQueueClient.get_web_render_status()
+            "web_render_status": await JobQueueClient.get_web_render_status(),
         },
-        "cpu": {
-            "cpu_brand": get_cpu_info()["brand_raw"],
-            "cpu_percent": psutil.cpu_percent(interval=1)
-        },
+        "cpu": {"cpu_brand": get_cpu_info()["brand_raw"], "cpu_percent": psutil.cpu_percent(interval=1)},
         "memory": {
             "total": psutil.virtual_memory().total / (1024 * 1024),
             "used": psutil.virtual_memory().used / (1024 * 1024),
-            "percent": psutil.virtual_memory().percent
+            "percent": psutil.virtual_memory().percent,
         },
         "disk": {
             "total": psutil.disk_usage("/").total / (1024 * 1024 * 1024),
             "used": psutil.disk_usage("/").used / (1024 * 1024 * 1024),
-            "percent": psutil.disk_usage("/").percent
-        }
+            "percent": psutil.disk_usage("/").percent,
+        },
     }
 
 
@@ -175,7 +173,7 @@ async def get_target_list(
     status: str = Query(None, pattern=r"^(muted|blocked)?$"),
     id: str = Query(None),
     page: int = Query(1, gt=0),
-    size: int = Query(20, gt=0, le=100)
+    size: int = Query(20, gt=0, le=100),
 ):
     try:
         verify_jwt(request)
@@ -195,10 +193,7 @@ async def get_target_list(
         total = await query.count()
         results = await query.offset((page - 1) * size).limit(size)
 
-        return {
-            "target_list": results,
-            "total": total
-        }
+        return {"target_list": results, "total": total}
     except HTTPException as e:
         raise e
     except Exception:
@@ -238,19 +233,19 @@ async def edit_target_info(request: Request, target_id: str):
         target_data = body.get("target_data")
 
         if blocked is not None and not isinstance(blocked, bool):
-            raise HTTPException(status_code=400, detail="\"blocked\" must be bool")
+            raise HTTPException(status_code=400, detail='"blocked" must be bool')
         if muted is not None and not isinstance(muted, bool):
-            raise HTTPException(status_code=400, detail="\"muted\" must be bool")
+            raise HTTPException(status_code=400, detail='"muted" must be bool')
         if locale is not None and not isinstance(locale, str):
-            raise HTTPException(status_code=400, detail="\"locale\" must be str")
+            raise HTTPException(status_code=400, detail='"locale" must be str')
         if modules is not None and not isinstance(modules, list):
-            raise HTTPException(status_code=400, detail="\"modules\" must be list")
+            raise HTTPException(status_code=400, detail='"modules" must be list')
         if custom_admins is not None and not isinstance(custom_admins, list):
-            raise HTTPException(status_code=400, detail="\"custom_admins\" must be list")
+            raise HTTPException(status_code=400, detail='"custom_admins" must be list')
         if banned_users is not None and not isinstance(banned_users, list):
-            raise HTTPException(status_code=400, detail="\"banned_users\" must be list")
+            raise HTTPException(status_code=400, detail='"banned_users" must be list')
         if target_data is not None and not isinstance(target_data, dict):
-            raise HTTPException(status_code=400, detail="\"target_data\" must be dict")
+            raise HTTPException(status_code=400, detail='"target_data" must be dict')
 
         if blocked is not None:
             target_info.blocked = blocked
@@ -297,13 +292,14 @@ async def delete_target_info(request: Request, target_id: str):
 
 
 @app.get("/api/sender")
-async def get_sender_list(request: Request,
-                          prefix: str = Query(None),
-                          status: str = Query(None, pattern=r"^(superuser|trusted|blocked)?$"),
-                          id: str = Query(None),
-                          page: int = Query(1, gt=0),
-                          size: int = Query(20, gt=0, le=100)
-                          ):
+async def get_sender_list(
+    request: Request,
+    prefix: str = Query(None),
+    status: str = Query(None, pattern=r"^(superuser|trusted|blocked)?$"),
+    id: str = Query(None),
+    page: int = Query(1, gt=0),
+    size: int = Query(20, gt=0, le=100),
+):
     try:
         verify_jwt(request)
 
@@ -324,10 +320,7 @@ async def get_sender_list(request: Request,
         total = await query.count()
         results = await query.offset((page - 1) * size).limit(size)
 
-        return {
-            "sender_list": results,
-            "total": total
-        }
+        return {"sender_list": results, "total": total}
     except HTTPException as e:
         raise e
     except Exception:
@@ -366,17 +359,17 @@ async def edit_sender_info(request: Request, sender_id: str):
         sender_data = body.get("sender_data")
 
         if superuser is not None and not isinstance(superuser, bool):
-            raise HTTPException(status_code=400, detail="\"superuser\" must be bool")
+            raise HTTPException(status_code=400, detail='"superuser" must be bool')
         if trusted is not None and not isinstance(trusted, bool):
-            raise HTTPException(status_code=400, detail="\"trusted\" must be bool")
+            raise HTTPException(status_code=400, detail='"trusted" must be bool')
         if blocked is not None and not isinstance(blocked, bool):
-            raise HTTPException(status_code=400, detail="\"blocked\" must be bool")
+            raise HTTPException(status_code=400, detail='"blocked" must be bool')
         if warns is not None and not isinstance(warns, int):
-            raise HTTPException(status_code=400, detail="\"warns\" must be int")
+            raise HTTPException(status_code=400, detail='"warns" must be int')
         if petal is not None and not isinstance(petal, int):
-            raise HTTPException(status_code=400, detail="\"petal\" must be int")
+            raise HTTPException(status_code=400, detail='"petal" must be int')
         if sender_data is not None and not isinstance(sender_data, dict):
-            raise HTTPException(status_code=400, detail="\"sender_data\" must be dict")
+            raise HTTPException(status_code=400, detail='"sender_data" must be dict')
 
         if superuser is not None:
             sender_info.superuser = superuser

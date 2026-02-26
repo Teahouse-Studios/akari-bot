@@ -145,7 +145,7 @@ am = Module(
         43: ResultInfo("数据库不存在或打开失败。"),
         44: ResultInfo("尝试卸载系统程序。"),
         106: ResultInfo("无效的签名/CIA。"),
-        107: ResultInfo('The console ID in the ticket does not match the current console ID.'),
+        107: ResultInfo("The console ID in the ticket does not match the current console ID."),
         393: ResultInfo("无效的数据库。"),
     },
 )
@@ -157,15 +157,9 @@ nim = Module(
     {
         1: ResultInfo("无效的IPC字符串参数（非null终止于其指示的长度）。"),
         12: ResultInfo("CFG模块在读取配置的0xB0000时返回了无效的地区代码。"),
-        13: ResultInfo(
-            "CFG的SecureInfoGetSerialNo返回了零字符长度的序列号或“000000000000000”"
-        ),
-        18: ResultInfo(
-            "读取在系统存档里的NIM的.dat文件发生了错误，数据损坏或数据长度不正确。"
-        ),
-        22: ResultInfo(
-            "任天堂服务器返回了无效的数据或无效的数据长度。（仅适用某些操作）"
-        ),
+        13: ResultInfo("CFG的SecureInfoGetSerialNo返回了零字符长度的序列号或“000000000000000”"),
+        18: ResultInfo("读取在系统存档里的NIM的.dat文件发生了错误，数据损坏或数据长度不正确。"),
+        22: ResultInfo("任天堂服务器返回了无效的数据或无效的数据长度。（仅适用某些操作）"),
         25: ResultInfo(
             "IntegrityVerificationSeed正在等待服务器同步主机。如果未先通过IPC请求完成同步，则无法于在线服务进行处理。"
         ),
@@ -178,9 +172,7 @@ nim = Module(
         ),
         39: ResultInfo("HTTP状态码非200。（仅适用某些操作）"),
         40: ResultInfo("处理自动传递XML时写入/读取错误。"),
-        41: ResultInfo(
-            "处理自动传递XML时写入/读取错误。（Stubbed virtual call被调用）"
-        ),
+        41: ResultInfo("处理自动传递XML时写入/读取错误。（Stubbed virtual call被调用）"),
         58: ResultInfo("CFG模块在读取配置的0xF0006时返回了无效的NPNS口令。"),
         67: ResultInfo("当下载游戏的seed时得到了404状态码。"),
         68: ResultInfo("当下载游戏的seed时得到了503状态码。"),
@@ -197,11 +189,7 @@ qtm = Module("qtm", {8: ResultInfo("相机正在工作或忙碌。")})
 # false information.
 application = Module(
     "application-specific error",
-    {
-        (0, 1023): ResultInfo(
-            "程序抛出了错误。请向其他人请教源代码的问题或者向程序的作者发送报告。"
-        )
-    },
+    {(0, 1023): ResultInfo("程序抛出了错误。请向其他人请教源代码的问题或者向程序的作者发送报告。")},
 )
 
 # We have some modules partially documented, those that aren\'t have dummy Modules.
@@ -359,9 +347,7 @@ def hexinfo(error: str):
 
 def construct_result(ret, mod, summary, level, desc):
     module = modules.get(mod, Module(""))
-    ret.add_field(
-        ConsoleErrorField("Module", message_str=module.name, supplementary_value=mod)
-    )
+    ret.add_field(ConsoleErrorField("Module", message_str=module.name, supplementary_value=mod))
     ret.add_field(
         ConsoleErrorField(
             "Summary",
@@ -369,11 +355,7 @@ def construct_result(ret, mod, summary, level, desc):
             supplementary_value=summary,
         )
     )
-    ret.add_field(
-        ConsoleErrorField(
-            "Level", message_str=levels.get(level, ""), supplementary_value=level
-        )
-    )
+    ret.add_field(ConsoleErrorField("Level", message_str=levels.get(level, ""), supplementary_value=level))
     description = module.get_error(desc)
     if not description:
         description = common.get_error(desc)

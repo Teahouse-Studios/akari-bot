@@ -60,9 +60,7 @@ async def load_modules():
     loader_cache = PrivateAssets.path / ".cache_loader"
     with open(loader_cache, "w") as open_loader_cache:
         if err_prompt:
-            err_prompt = re.sub(
-                r"  File \"<frozen importlib.*?>\", .*?\n", "", "\n".join(err_prompt)
-            )
+            err_prompt = re.sub(r"  File \"<frozen importlib.*?>\", .*?\n", "", "\n".join(err_prompt))
             open_loader_cache.write(err_prompt)
         else:
             open_loader_cache.write("")
@@ -83,7 +81,7 @@ class ModulesManager:
             cls.modules[module.module_name] = module
             cls.modules_origin[module.module_name] = py_module_name
         else:
-            raise ValueError(f"Duplicate bind prefix \"{module.module_name}\"")
+            raise ValueError(f'Duplicate bind prefix "{module.module_name}"')
 
     @classmethod
     def remove_modules(cls, modules):
@@ -92,7 +90,7 @@ class ModulesManager:
                 cls.modules.pop(module)
                 cls.modules_origin.pop(module)
             else:
-                raise ValueError(f"Module \"{module}\" is not exist.")
+                raise ValueError(f'Module "{module}" is not exist.')
 
     @classmethod
     def refresh_modules_aliases(cls):
@@ -109,9 +107,7 @@ class ModulesManager:
             module = cls.modules[m]
             if module.hooks_list:
                 for hook in module.hooks_list.set:
-                    hook_name = module.module_name + (
-                        ("." + hook.name) if hook.name else ""
-                    )
+                    hook_name = module.module_name + (("." + hook.name) if hook.name else "")
                     cls.modules_hooks.update({hook_name: hook.function})
 
     @classmethod
@@ -131,14 +127,12 @@ class ModulesManager:
             if not include_self:
                 modules.remove(module)
             return modules
-        raise ValueError(f"Could not find \"{module}\" in modules_origin dict")
+        raise ValueError(f'Could not find "{module}" in modules_origin dict')
 
     @classmethod
     def return_py_module(cls, module):
         if module in cls.modules_origin:
-            return re.match(
-                r"^modules(\.[a-zA-Z0-9_]*)?", cls.modules_origin[module]
-            ).group()
+            return re.match(r"^modules(\.[a-zA-Z0-9_]*)?", cls.modules_origin[module]).group()
         return None
 
     @classmethod
@@ -160,13 +154,12 @@ class ModulesManager:
     _return_cache = {}
 
     @classmethod
-    def return_modules_list(cls, target_from: str | None = None,
-                            client_name: str | None = None, use_cache: bool = True) -> dict[str, Module]:
+    def return_modules_list(
+        cls, target_from: str | None = None, client_name: str | None = None, use_cache: bool = True
+    ) -> dict[str, Module]:
         if target_from and target_from in cls._return_cache and use_cache:
             return cls._return_cache[target_from]
-        modules = {
-            module_name: cls.modules[module_name] for module_name in sorted(cls.modules)
-        }
+        modules = {module_name: cls.modules[module_name] for module_name in sorted(cls.modules)}
 
         if target_from:
             if not client_name:
@@ -224,9 +217,7 @@ class ModulesManager:
         count = cls.reload_py_module(py_module)
 
         if count > 0 and related_modules:
-            await ModuleStatus.bulk_create(
-                [ModuleStatus(module_name=m, load=True) for m in related_modules]
-            )
+            await ModuleStatus.bulk_create([ModuleStatus(module_name=m, load=True) for m in related_modules])
         cls.refresh()
         await reload_db()
         return count > 0, count

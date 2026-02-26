@@ -74,20 +74,14 @@ async def _(msg: Bot.MessageSession, sql: str):
             total_pages = (len(data) + DBDATA_PER_PAGE - 1) // DBDATA_PER_PAGE
             get_page = msg.parsed_msg.get("-p", False)
 
-            page = (
-                max(min(int(get_page["<page>"]), total_pages), 1)
-                if get_page and is_int(get_page["<page>"])
-                else 1
-            )
+            page = max(min(int(get_page["<page>"]), total_pages), 1) if get_page and is_int(get_page["<page>"]) else 1
             start_index = (page - 1) * DBDATA_PER_PAGE
             end_index = page * DBDATA_PER_PAGE
             page_data = data[start_index:end_index]
 
             footer = I18NContext(
-                "core.message.database.pages",
-                page=page,
-                total_pages=total_pages,
-                data_count=len(data))
+                "core.message.database.pages", page=page, total_pages=total_pages, data_count=len(data)
+            )
 
             if not msg.parsed_msg.get("--legacy", False) and msg.session_info.support_image:
                 table = ImageTable(data=page_data, headers=headers, session_info=msg.session_info, disable_joke=True)

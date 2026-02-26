@@ -3,9 +3,7 @@ from core.builtins.message.internal import I18NContext
 from core.component import module
 from .generator import get_mkey
 
-mk = module(
-    "mkey", desc="{I18N:mkey.help.desc}", doc=True, developers=["OasisAkari", "Kurisu"]
-)
+mk = module("mkey", desc="{I18N:mkey.help.desc}", doc=True, developers=["OasisAkari", "Kurisu"])
 
 
 @mk.command("<device> <month> <day> <inquiry_num> [<device_id>]")

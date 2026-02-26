@@ -151,18 +151,23 @@ async def get_rank(msg: Bot.MessageSession, payload: dict, use_cache: bool = Tru
     average_rating = total_rating / total_rank
     surpassing_rate = (total_rank - rank) / total_rank * 100
 
-    await msg.finish(I18NContext("maimai.message.rank",
-                                 time=time_,
-                                 total_rank=total_rank,
-                                 user=username,
-                                 rating=rating,
-                                 rank=rank,
-                                 average_rating=f"{average_rating:.4f}",
-                                 surpassing_rate=f"{surpassing_rate:.2f}"))
+    await msg.finish(
+        I18NContext(
+            "maimai.message.rank",
+            time=time_,
+            total_rank=total_rank,
+            user=username,
+            rating=rating,
+            rank=rank,
+            average_rating=f"{average_rating:.4f}",
+            surpassing_rate=f"{surpassing_rate:.2f}",
+        )
+    )
 
 
-async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str,
-                           use_cache: bool = True) -> MessageChain:
+async def get_player_score(
+    msg: Bot.MessageSession, payload: dict, input_id: str, use_cache: bool = True
+) -> MessageChain:
     music = (await total_list.get()).by_id(input_id)
     level_scores = {level: [] for level in range(len(music["level"]))}  # 获取歌曲难度列表
 
@@ -178,8 +183,9 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
                     try:
                         score_rank = next(
                             # 根据成绩获得等级
-                            rank for interval, rank in score_to_rate.items() if
-                            interval[0] <= achievements < interval[1]
+                            rank
+                            for interval, rank in score_to_rate.items()
+                            if interval[0] <= achievements < interval[1]
                         )
                     except StopIteration:
                         continue
@@ -203,7 +209,9 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
                 try:
                     score_rank = next(
                         # 根据成绩获得等级
-                        rank for interval, rank in score_to_rate.items() if interval[0] <= achievements < interval[1]
+                        rank
+                        for interval, rank in score_to_rate.items()
+                        if interval[0] <= achievements < interval[1]
                     )
                 except StopIteration:
                     continue
@@ -217,7 +225,7 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
             await msg.finish(I18NContext("maimai.message.score.utage"))
         else:
             for level, scores in level_scores.items():  # 使用循环输出格式化文本
-                msg_chain.append(Plain(f"U·TA·GE {music["level"][level]}"))  # 难度字典转换
+                msg_chain.append(Plain(f"U·TA·GE {music['level'][level]}"))  # 难度字典转换
                 if scores:
                     for score in scores:
                         level, achievements, score_rank, combo_rank, sync_rank, *dx = score
@@ -233,7 +241,7 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
                     msg_chain.append(I18NContext("maimai.message.score.no_record"))
     else:
         for level, scores in level_scores.items():  # 使用循环输出格式化文本
-            msg_chain.append(Plain(f"{diffs[level]} {music["level"][level]}"))
+            msg_chain.append(Plain(f"{diffs[level]} {music['level'][level]}"))
             if scores:  # 难度字典转换
                 for score in scores:
                     level, achievements, score_rank, combo_rank, sync_rank, *dx = score
@@ -251,8 +259,9 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
     return msg_chain
 
 
-async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, page: int,
-                         use_cache: bool = True) -> tuple[MessageChain, bool]:
+async def get_score_list(
+    msg: Bot.MessageSession, payload: dict, level: str, page: int, use_cache: bool = True
+) -> tuple[MessageChain, bool]:
     res: dict = await get_total_record(msg, payload, use_cache=use_cache)
     records = res["verlist"]
 
@@ -269,19 +278,19 @@ async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, pag
         if (page - 1) * SONGS_PER_PAGE <= i < page * SONGS_PER_PAGE:
             music = (await total_list.get()).by_id(str(s["id"]))
 
-            output = f"{music.id} - {music.title}{" (DX)" if music.type == "DX" else ""} [{diffs[s["level_index"]]}] {
-                music.ds[s["level_index"]]} {s["achievements"]:.4f}%"
+            output = f"{music.id} - {music.title}{' (DX)' if music.type == 'DX' else ''} [{diffs[s['level_index']]}] {
+                music.ds[s['level_index']]
+            } {s['achievements']:.4f}%"
             if s["fc"] and s["fs"]:
-                output += f" {combo_mapping.get(s["fc"], "")} {sync_mapping.get(s["fs"], "")}"
+                output += f" {combo_mapping.get(s['fc'], '')} {sync_mapping.get(s['fs'], '')}"
             elif s["fc"] or s["fs"]:
-                output += f" {combo_mapping.get(s["fc"], "")}{sync_mapping.get(s["fs"], "")}"
+                output += f" {combo_mapping.get(s['fc'], '')}{sync_mapping.get(s['fs'], '')}"
             output_line.append(Plain(output))
 
-    msg_chain = MessageChain.assign(
-        I18NContext(
-            "maimai.message.scorelist",
-            user=player_data["username"],
-            level=level)) + output_line
+    msg_chain = (
+        MessageChain.assign(I18NContext("maimai.message.scorelist", user=player_data["username"], level=level))
+        + output_line
+    )
     get_img = False
 
     if len(output_line) == 0:
@@ -293,8 +302,9 @@ async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, pag
     return msg_chain, get_img
 
 
-async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, goal: str,
-                            use_cache: bool = True) -> tuple[MessageChain, bool]:
+async def get_level_process(
+    msg: Bot.MessageSession, payload: dict, level: str, goal: str, use_cache: bool = True
+) -> tuple[MessageChain, bool]:
     song_played = []
     song_remain = []
 
@@ -312,20 +322,20 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, 
         combo_index = combo_list.index(goal)  # 根据API结果字典转换
         for song in verlist:
             if song["level"] == level and (
-                (song["fc"] and combo_list_raw.index(
-                    song["fc"]) < combo_index) or not song["fc"]):  # 达成难度条件但未达成目标条件
+                (song["fc"] and combo_list_raw.index(song["fc"]) < combo_index) or not song["fc"]
+            ):  # 达成难度条件但未达成目标条件
                 song_remain.append((str(song["id"]), song["level_index"]))  # 将剩余歌曲ID和难度加入目标列表
             song_played.append((str(song["id"]), song["level_index"]))  # 将已游玩歌曲ID和难度加入列表
     elif goal in sync_list:
         sync_index = sync_list.index(goal)  # 根据API结果字典转换
         for song in verlist:
             if song["level"] == level and (
-                (song["fs"] and sync_list_raw.index(
-                    song["fs"]) < sync_index) or not song["fs"]):  # 达成难度条件但未达成目标条件
+                (song["fs"] and sync_list_raw.index(song["fs"]) < sync_index) or not song["fs"]
+            ):  # 达成难度条件但未达成目标条件
                 song_remain.append((str(song["id"]), song["level_index"]))  # 将剩余歌曲ID和难度加入目标列表
             song_played.append((str(song["id"]), song["level_index"]))  # 将已游玩歌曲ID和难度加入列表
 
-    for music in ((await total_list.get()).filter(level=level)):  # 遍历歌曲列表
+    for music in (await total_list.get()).filter(level=level):  # 遍历歌曲列表
         for i in enumerate(music.level):
             if i[1] == level and int(music.id) < 100000 and (music.id, i[0]) not in song_played:
                 song_remain.append((music.id, i[0]))  # 将未游玩歌曲ID和难度加入目标列表
@@ -348,23 +358,20 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, 
             if (s[0], s[-2]) in song_record:
                 record_index = song_record.index((s[0], s[-2]))
                 if goal in rate_list:
-                    self_record = f"{verlist[record_index]["achievements"]:.4f}%"
+                    self_record = f"{verlist[record_index]['achievements']:.4f}%"
                 elif goal in combo_list:
                     if verlist[record_index]["fc"]:
                         self_record = combo_list[combo_list_raw.index(verlist[record_index]["fc"])]
                 elif goal in sync_list:
                     if verlist[record_index]["fs"]:
                         self_record = sync_list[sync_list_raw.index(verlist[record_index]["fs"])]
-            msg_chain.append(Plain(f"{s[0]} - {s[1]}{" (DX)" if s[5] == "DX" else ""} [{s[2]}] {s[3]} {self_record}"))
+            msg_chain.append(Plain(f"{s[0]} - {s[1]}{' (DX)' if s[5] == 'DX' else ''} [{s[2]}] {s[3]} {self_record}"))
             if i == SONGS_PER_PAGE - 1:
                 break
         if len(song_remain) > SONGS_PER_PAGE:
             msg_chain.append(
-                I18NContext(
-                    "maimai.message.process",
-                    song_remain=len(song_remain),
-                    level=level,
-                    goal=goal))
+                I18NContext("maimai.message.process", song_remain=len(song_remain), level=level, goal=goal)
+            )
         if len(song_remain) > SONGS_NEED_IMG:
             get_img = True
     else:
@@ -373,8 +380,9 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, 
     return msg_chain, get_img
 
 
-async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, use_cache: bool = True) -> tuple[
-        MessageChain, bool]:
+async def get_plate_process(
+    msg: Bot.MessageSession, payload: dict, plate: str, use_cache: bool = True
+) -> tuple[MessageChain, bool]:
     song_played = []
     song_remain_basic = []
     song_remain_advanced = []
@@ -415,8 +423,12 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                 song_remain_expert.append((str(song["id"]), song["level_index"]))
             if song["level_index"] == 3 and song["achievements"] < (100.0 if goal == "将" else 80.0):
                 song_remain_master.append((str(song["id"]), song["level_index"]))
-            if version in ["舞", "覇"] and str(song["id"]) in mai_plate_remaster_required and \
-                    song["level_index"] == 4 and song["achievements"] < (100.0 if goal == "将" else 80.0):
+            if (
+                version in ["舞", "覇"]
+                and str(song["id"]) in mai_plate_remaster_required
+                and song["level_index"] == 4
+                and song["achievements"] < (100.0 if goal == "将" else 80.0)
+            ):
                 song_remain_remaster.append((str(song["id"]), song["level_index"]))  # 霸者和舞牌需要Re:MASTER难度
             song_played.append((str(song["id"]), song["level_index"]))
     elif goal == "極":
@@ -429,8 +441,12 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                 song_remain_expert.append((str(song["id"]), song["level_index"]))
             if song["level_index"] == 3 and not song["fc"]:
                 song_remain_master.append((str(song["id"]), song["level_index"]))
-            if version == "舞" and str(song["id"]) in mai_plate_remaster_required and \
-                    song["level_index"] == 4 and not song["fc"]:
+            if (
+                version == "舞"
+                and str(song["id"]) in mai_plate_remaster_required
+                and song["level_index"] == 4
+                and not song["fc"]
+            ):
                 song_remain_remaster.append((str(song["id"]), song["level_index"]))
             song_played.append((str(song["id"]), song["level_index"]))
     elif goal == "舞舞":
@@ -443,8 +459,12 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                 song_remain_expert.append((str(song["id"]), song["level_index"]))
             if song["level_index"] == 3 and song["fs"] not in ["fsd", "fsdp"]:
                 song_remain_master.append((str(song["id"]), song["level_index"]))
-            if version == "舞" and str(song["id"]) in mai_plate_remaster_required and \
-                    song["level_index"] == 4 and song["fs"] not in ["fsd", "fsdp"]:
+            if (
+                version == "舞"
+                and str(song["id"]) in mai_plate_remaster_required
+                and song["level_index"] == 4
+                and song["fs"] not in ["fsd", "fsdp"]
+            ):
                 song_remain_remaster.append((str(song["id"]), song["level_index"]))
             song_played.append((str(song["id"]), song["level_index"]))
     elif goal == "神":
@@ -457,14 +477,18 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                 song_remain_expert.append((str(song["id"]), song["level_index"]))
             if song["level_index"] == 3 and song["fc"] not in ["ap", "app"]:
                 song_remain_master.append((str(song["id"]), song["level_index"]))
-            if version == "舞" and str(song["id"]) in mai_plate_remaster_required and \
-                    song["level_index"] == 4 and song["fc"] not in ["ap", "app"]:
+            if (
+                version == "舞"
+                and str(song["id"]) in mai_plate_remaster_required
+                and song["level_index"] == 4
+                and song["fc"] not in ["ap", "app"]
+            ):
                 song_remain_remaster.append((str(song["id"]), song["level_index"]))
             song_played.append((str(song["id"]), song["level_index"]))
     else:
         await msg.finish(I18NContext("maimai.message.plate.plate_not_found"))
 
-    for music in (await total_list.get()):  # 将未游玩歌曲ID加入目标列表
+    for music in await total_list.get():  # 将未游玩歌曲ID加入目标列表
         if music["basic_info"]["from"] in payload["version"] and int(music.id) < 100000:  # 过滤宴谱
             if (music.id, 0) not in song_played:
                 song_remain_basic.append((music.id, 0))
@@ -474,21 +498,26 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                 song_remain_expert.append((music.id, 2))
             if (music.id, 3) not in song_played:
                 song_remain_master.append((music.id, 3))
-            if version in ["舞", "覇"] and len(music.level) == 5 and \
-                    music.id in mai_plate_remaster_required and \
-                    (music.id, 4) not in song_played:
+            if (
+                version in ["舞", "覇"]
+                and len(music.level) == 5
+                and music.id in mai_plate_remaster_required
+                and (music.id, 4) not in song_played
+            ):
                 song_remain_remaster.append((music.id, 4))
     song_remain_basic = sorted(song_remain_basic, key=lambda i: int(i[0]))  # 根据ID排序结果
     song_remain_advanced = sorted(song_remain_advanced, key=lambda i: int(i[0]))
     song_remain_expert = sorted(song_remain_expert, key=lambda i: int(i[0]))
     song_remain_master = sorted(song_remain_master, key=lambda i: int(i[0]))
     song_remain_remaster = sorted(song_remain_remaster, key=lambda i: int(i[0]))
-    for song in song_remain_basic + song_remain_advanced + \
-            song_remain_expert + song_remain_master + song_remain_remaster:  # 循环查询歌曲信息
+    for song in (
+        song_remain_basic + song_remain_advanced + song_remain_expert + song_remain_master + song_remain_remaster
+    ):  # 循环查询歌曲信息
         music = (await total_list.get()).by_id(song[0])
         if music.ds[song[1]] > 13.6:  # 将难度为13+以上的谱面加入列表
-            song_remain_difficult.append((music.id, music.title, diffs[song[1]],
-                                          music.ds[song[1]], song[1], music.type))
+            song_remain_difficult.append(
+                (music.id, music.title, diffs[song[1]], music.ds[song[1]], song[1], music.type)
+            )
 
     song_expect = mai_plate_song_expect(version)
 
@@ -497,8 +526,9 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
     song_remain_expert = [music for music in song_remain_expert if music[0] not in song_expect]
     song_remain_master = [music for music in song_remain_master if music[0] not in song_expect]
     song_remain_remaster = [music for music in song_remain_remaster if music[0] not in song_expect]
-    song_remain = song_remain_basic + song_remain_advanced + \
-        song_remain_expert + song_remain_master + song_remain_remaster
+    song_remain = (
+        song_remain_basic + song_remain_advanced + song_remain_expert + song_remain_master + song_remain_remaster
+    )
     song_remain_difficult = [music for music in song_remain_difficult if music[0] not in song_expect]
 
     prompt = MessageChain.assign(I18NContext("maimai.message.plate.prompt", plate=plate))
@@ -527,15 +557,16 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                 if (s[0], s[-2]) in song_record:  # 显示剩余13+以上歌曲信息
                     record_index = song_record.index((s[0], s[-2]))
                     if goal in ["將", "者"]:
-                        self_record = f"{verlist[record_index]["achievements"]:.4f}%"
+                        self_record = f"{verlist[record_index]['achievements']:.4f}%"
                     elif goal in ["極", "神"]:
                         if verlist[record_index]["fc"]:
                             self_record = combo_list[combo_list_raw.index(verlist[record_index]["fc"])]
                     elif goal == "舞舞":
                         if verlist[record_index]["fs"]:
                             self_record = sync_list[sync_list_raw.index(verlist[record_index]["fs"])]
-                msg_chain.append(Plain(f"{s[0]} - {s[1]}{" (DX)" if s[5] ==
-                                                         "DX" else ""} [{s[2]}] {s[3]} {self_record}"))
+                msg_chain.append(
+                    Plain(f"{s[0]} - {s[1]}{' (DX)' if s[5] == 'DX' else ''} [{s[2]}] {s[3]} {self_record}")
+                )
             if len(song_remain_difficult) > SONGS_NEED_IMG:
                 get_img = True
         else:
@@ -552,15 +583,20 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                 if [int(s[0]), s[-2]] in song_record:  # 显示剩余歌曲信息
                     record_index = song_record.index((s[0], s[-2]))
                     if goal in ["將", "者"]:
-                        self_record = f"{verlist[record_index]["achievements"]:.4f}%"
+                        self_record = f"{verlist[record_index]['achievements']:.4f}%"
                     elif goal in ["極", "神"]:
                         if verlist[record_index]["fc"]:
                             self_record = combo_list[combo_list_raw.index(verlist[record_index]["fc"])]
                     elif goal == "舞舞":
                         if verlist[record_index]["fs"]:
                             self_record = sync_list[sync_list_raw.index(verlist[record_index]["fs"])]
-                msg_chain.append(Plain(f"{m.id} - {m.title}{" (DX)" if m.type ==
-                                                            "DX" else ""} [{diffs[s[1]]}] {m.ds[s[1]]} {self_record}"))
+                msg_chain.append(
+                    Plain(
+                        f"{m.id} - {m.title}{' (DX)' if m.type == 'DX' else ''} [{diffs[s[1]]}] {m.ds[s[1]]} {
+                            self_record
+                        }"
+                    )
+                )
             if len(song_remain) > SONGS_NEED_IMG:
                 get_img = True
         else:
@@ -605,12 +641,10 @@ async def get_grade_info(msg: Bot.MessageSession, grade: str):
             music = (await total_list.get()).by_id(str(chart["id"]))
             level = chart["level_index"]
             chart_info.append(
-                f"{
-                    music["id"]} - {
-                    music["title"]}{
-                    " (DX)" if music["type"] == "DX" else ""} [{
-                    diffs[level]}] {
-                    music["level"][level]}")
+                f"{music['id']} - {music['title']}{' (DX)' if music['type'] == 'DX' else ''} [{diffs[level]}] {
+                    music['level'][level]
+                }"
+            )
 
     else:
         base = grade_data["base"]
@@ -628,30 +662,26 @@ async def get_grade_info(msg: Bot.MessageSession, grade: str):
                 else:
                     level = 3
                 chart_info.append(
-                    f"{
-                        music["id"]} - {
-                        music["title"]}{
-                        " (DX)" if music["type"] == "DX" else ""} [{
-                        diffs[level]}] {
-                        music["level"][level]}")
+                    f"{music['id']} - {music['title']}{' (DX)' if music['type'] == 'DX' else ''} [{diffs[level]}] {
+                        music['level'][level]
+                    }"
+                )
         else:
             level = 2
             music_data = (await total_list.get()).filter(ds=(base[0], base[1]), diff=[level])
             for _ in range(4):
                 music = music_data.random()
                 chart_info.append(
-                    f"{
-                        music["id"]} - {
-                        music["title"]}{
-                        " (DX)" if music["type"] == "DX" else ""} [{
-                        diffs[level]}] {
-                        music["level"][level]}")
+                    f"{music['id']} - {music['title']}{' (DX)' if music['type'] == 'DX' else ''} [{diffs[level]}] {
+                        music['level'][level]
+                    }"
+                )
 
     content = "\n".join(chart_info)
     condition_info = f"GREAT{condition[0]}/GOOD{condition[1]}/MISS{condition[2]}/CLEAR{condition[3]}"
 
-    await msg.finish(I18NContext("maimai.message.grade",
-                                 grade=grade,
-                                 content=content,
-                                 life=grade_data["life"],
-                                 condition=condition_info))
+    await msg.finish(
+        I18NContext(
+            "maimai.message.grade", grade=grade, content=content, life=grade_data["life"], condition=condition_info
+        )
+    )

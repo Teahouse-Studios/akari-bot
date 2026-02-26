@@ -58,7 +58,7 @@ class LoggingLogger:
             format=basic_logger_format(name),
             level="TRACE" if Config("debug", False) else "INFO",
             colorize=True,
-            filter=lambda record: record["extra"].get("name") == name
+            filter=lambda record: record["extra"].get("name") == name,
         )
         if export:
             self.log.add(
@@ -77,7 +77,7 @@ class LoggingLogger:
                 retention="10 days",
                 level="INFO",
                 encoding="utf8",
-                filter=lambda record: record["extra"].get("name") == name
+                filter=lambda record: record["extra"].get("name") == name,
             )
         self.trace = self.log.trace
         self.debug = self.log.debug

@@ -37,18 +37,21 @@ class DiscordContextManager(ContextManager):
             channel = ctx.channel
             author = ctx.author
         try:
-            if channel.permissions_for(author).administrator or isinstance(
-                channel, discord.DMChannel
-            ):
+            if channel.permissions_for(author).administrator or isinstance(channel, discord.DMChannel):
                 return True
         except Exception:
             Logger.exception()
         return False
 
     @classmethod
-    async def send_message(cls, session_info: SessionInfo, message: MessageChain | MessageNodes, quote: bool = True,
-                           enable_parse_message: bool = True,
-                           enable_split_image: bool = True, ) -> list[str]:
+    async def send_message(
+        cls,
+        session_info: SessionInfo,
+        message: MessageChain | MessageNodes,
+        quote: bool = True,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> list[str]:
 
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
@@ -69,31 +72,21 @@ class DiscordContextManager(ContextManager):
                     x.text = match_atcode(x.text, client_name, "<@{uid}>")
                 send_ = await channel.send(
                     x.text,
-                    reference=(
-                        ctx
-                        if quote and not msg_ids and ctx
-                        else None
-                    ),
+                    reference=(ctx if quote and not msg_ids and ctx else None),
                 )
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
                 msg_ids.append(str(send_.id))
             elif isinstance(x, ImageElement):
                 send_ = await channel.send(
                     file=discord.File(await x.get()),
-                    reference=(ctx
-                               if quote and not msg_ids and ctx
-                               else None
-                               ),
+                    reference=(ctx if quote and not msg_ids and ctx else None),
                 )
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(x)}")
                 msg_ids.append(str(send_.id))
             elif isinstance(x, VoiceElement):
                 send_ = await channel.send(
                     file=discord.File(x.path),
-                    reference=(ctx
-                               if quote and not msg_ids and ctx
-                               else None
-                               ),
+                    reference=(ctx if quote and not msg_ids and ctx else None),
                 )
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Voice: {str(x)}")
                 msg_ids.append(str(send_.id))
@@ -101,10 +94,7 @@ class DiscordContextManager(ContextManager):
                 if x.client == client_name and session_info.target_from == target_channel_prefix:
                     send_ = await channel.send(
                         f"<@{x.id}>",
-                        reference=(ctx
-                                   if quote and not msg_ids and ctx
-                                   else None
-                                   ),
+                        reference=(ctx if quote and not msg_ids and ctx else None),
                     )
                     Logger.info(f"[Bot] -> [{session_info.target_id}]: Mention: {x.client}|{str(x.id)}")
                     msg_ids.append(str(send_.id))
@@ -112,22 +102,18 @@ class DiscordContextManager(ContextManager):
                 em, files = await convert_embed(x, session_info)
                 send_ = await channel.send(
                     embed=em,
-                    reference=(
-                        ctx
-                        if quote and not msg_ids and ctx
-                        else None
-                    ),
+                    reference=(ctx if quote and not msg_ids and ctx else None),
                     files=files,
                 )
-                Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Embed: {str(x)}"
-                )
+                Logger.info(f"[Bot] -> [{session_info.target_id}]: Embed: {str(x)}")
                 msg_ids.append(str(send_.id))
 
         return msg_ids
 
     @classmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None) -> None:
+    async def delete_message(
+        cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None
+    ) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -149,7 +135,9 @@ class DiscordContextManager(ContextManager):
                 Logger.exception(f"Failed to delete message {msg_id} in session {session_info.session_id}: ")
 
     @classmethod
-    async def restrict_member(cls, session_info: SessionInfo, user_id: str | list[str], duration: int | None = None, reason: str | None = None) -> None:
+    async def restrict_member(
+        cls, session_info: SessionInfo, user_id: str | list[str], duration: int | None = None, reason: str | None = None
+    ) -> None:
         if isinstance(user_id, str):
             user_id = [user_id]
         if not isinstance(user_id, list):
@@ -251,11 +239,15 @@ class DiscordContextManager(ContextManager):
             if m:
                 try:
                     await m.add_reaction(emoji)
-                    Logger.info(f"Added reaction \"{emoji}\" to message {
-                                message_id} in session {session_info.session_id}")
+                    Logger.info(
+                        f'Added reaction "{emoji}" to message {message_id} in session {session_info.session_id}'
+                    )
                 except Exception:
-                    Logger.exception(f"Failed to add reaction \"{emoji}\" to message {
-                                     message_id} in session {session_info.session_id}: ")
+                    Logger.exception(
+                        f'Failed to add reaction "{emoji}" to message {message_id} in session {
+                            session_info.session_id
+                        }: '
+                    )
 
     @classmethod
     async def remove_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
@@ -272,11 +264,15 @@ class DiscordContextManager(ContextManager):
             if m:
                 try:
                     await m.remove_reaction(emoji, discord_bot.user)
-                    Logger.info(f"Removed reaction \"{emoji}\" to message {
-                                message_id} in session {session_info.session_id}")
+                    Logger.info(
+                        f'Removed reaction "{emoji}" to message {message_id} in session {session_info.session_id}'
+                    )
                 except Exception:
-                    Logger.exception(f"Failed to remove reaction \"{emoji}\" to message {
-                                     message_id} in session {session_info.session_id}: ")
+                    Logger.exception(
+                        f'Failed to remove reaction "{emoji}" to message {message_id} in session {
+                            session_info.session_id
+                        }: '
+                    )
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:

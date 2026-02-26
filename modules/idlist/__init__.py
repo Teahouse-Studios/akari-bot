@@ -23,11 +23,15 @@ async def _(msg: Bot.MessageSession, query: str):
     if result:
         for x in result[0:SEARCH_LIMIT]:
             v = x["value"].split("\n")[0]
-            msg_chain.append(f"{x["enumName"]}：{x["key"]} -> {v}")
+            msg_chain.append(f"{x['enumName']}：{x['key']} -> {v}")
         if resp["data"]["count"] > SEARCH_LIMIT:
-            msg_chain.append(Plain(str(I18NContext("message.collapse", amount=SEARCH_LIMIT)) +
-                                   str(I18NContext("idlist.message.collapse"))))
-            msg_chain.append(Url(f"https://idlist.projectxero.top/{resp["data"]["hash"]}", use_mm=False))
+            msg_chain.append(
+                Plain(
+                    str(I18NContext("message.collapse", amount=SEARCH_LIMIT))
+                    + str(I18NContext("idlist.message.collapse"))
+                )
+            )
+            msg_chain.append(Url(f"https://idlist.projectxero.top/{resp['data']['hash']}", use_mm=False))
         await msg.finish(msg_chain)
     else:
         await msg.finish(I18NContext("idlist.message.none"))

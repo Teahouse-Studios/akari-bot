@@ -78,9 +78,7 @@ class CommandParser:
         else:
             locale = self.lang
 
-        format_args = templates_to_str(
-            [args for args in self.args if args != ""], with_desc=True
-        )
+        format_args = templates_to_str([args for args in self.args if args != ""], with_desc=True)
 
         args_lst = []
         for x in format_args:
@@ -94,9 +92,7 @@ class CommandParser:
             for m, desc in self.options_desc.items():
                 desc = locale.t_str(desc, fallback_failed_prompt=False)
                 options_desc_fmtted.append(f"{m} - {desc}")
-            args += f"\n{locale.t("core.help.options")}\n" + "\n".join(
-                options_desc_fmtted
-            )
+            args += f"\n{locale.t('core.help.options')}\n" + "\n".join(options_desc_fmtted)
         return args
 
     def return_json_help_doc(self, locale=None) -> dict:
@@ -108,9 +104,7 @@ class CommandParser:
         else:
             locale = self.lang
 
-        format_args = templates_to_str(
-            [args for args in self.args if args != ""], with_desc=True
-        )
+        format_args = templates_to_str([args for args in self.args if args != ""], with_desc=True)
 
         args_list = []
 
@@ -124,13 +118,10 @@ class CommandParser:
             else:
                 match = re.search(r" - (\{I18N:.*?\})$", x)
                 if match:
-                    x = x[:match.start()]
+                    x = x[: match.start()]
                     desc = locale.t_str(match.group(1), fallback_failed_prompt=False)
 
-            args_list.append({
-                "args": f"{self.command_prefixes[0]}{self.module_name} {x}",
-                "desc": desc
-            })
+            args_list.append({"args": f"{self.command_prefixes[0]}{self.module_name} {x}", "desc": desc})
 
         options_desc_fmtted = []
         if self.options_desc:
@@ -138,15 +129,12 @@ class CommandParser:
                 desc = locale.t_str(desc, fallback_failed_prompt=False)
                 options_desc_fmtted.append({m: desc})
 
-        return {
-            "args": args_list,
-            "options": options_desc_fmtted
-        }
+        return {"args": args_list, "options": options_desc_fmtted}
 
     def parse(self, command):
         if not self.args:
             return None
-        command = re.sub(r"[“”]", "\"", command)
+        command = re.sub(r"[“”]", '"', command)
         try:
             split_command = shlex.split(command)
         except ValueError:
@@ -164,9 +152,7 @@ class CommandParser:
                         if len(arg.args) == 1 and isinstance(arg.args[0], DescPattern):
                             return self.args[arg]["meta"], None
                     raise InvalidCommandFormatError
-                base_match = parse_argv(
-                    split_command[1:], [args for args in self.args if args != ""]
-                )
+                base_match = parse_argv(split_command[1:], [args for args in self.args if args != ""])
                 return (
                     self.args[base_match.original_template]["meta"],
                     base_match.args,

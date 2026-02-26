@@ -13,6 +13,7 @@ class Expectation:
     """
     所有期望匹配器的基类。
     """
+
     async def match(self, result: dict) -> bool:
         raise NotImplementedError
 
@@ -43,7 +44,7 @@ class All(Expectation):
         return True
 
     def __str__(self):
-        return f"({" AND ".join(str(e) for e in self.expects)})"
+        return f"({' AND '.join(str(e) for e in self.expects)})"
 
 
 class Any(Expectation):
@@ -63,7 +64,7 @@ class Any(Expectation):
         return False
 
     def __str__(self):
-        return f"({" OR ".join(str(e) for e in self.expects)})"
+        return f"({' OR '.join(str(e) for e in self.expects)})"
 
 
 class Not(Expectation):
@@ -88,6 +89,7 @@ class Empty(Expectation):
     """
     是否无输出。
     """
+
     async def match(self, result):
         return not bool(result.get("output"))
 
@@ -102,8 +104,9 @@ class Equal(Expectation):
     :param msg_chain: 期望消息链
     """
 
-    def __init__(self,
-                 msg_chain: str | MessageChain | list[MessageElement] | tuple[MessageElement, ...] | MessageElement):
+    def __init__(
+        self, msg_chain: str | MessageChain | list[MessageElement] | tuple[MessageElement, ...] | MessageElement
+    ):
         self.expected = msg_chain
 
     async def match(self, result):
@@ -120,7 +123,7 @@ class Equal(Expectation):
         return expected == actual
 
     def __str__(self):
-        return f"Equal({MessageChain.assign(self.expected).to_str(text_only=False, connector=" ")!r})"
+        return f"Equal({MessageChain.assign(self.expected).to_str(text_only=False, connector=' ')!r})"
 
 
 class Match(Expectation):
@@ -131,9 +134,11 @@ class Match(Expectation):
     :param case_sensitive: 是否大小写敏感，默认 False
     """
 
-    def __init__(self,
-                 msg_chain: str | MessageChain | list[MessageElement] | tuple[MessageElement, ...] | MessageElement,
-                 case_sensitive: bool = False):
+    def __init__(
+        self,
+        msg_chain: str | MessageChain | list[MessageElement] | tuple[MessageElement, ...] | MessageElement,
+        case_sensitive: bool = False,
+    ):
         self.expected = msg_chain
         self.case_sensitive = case_sensitive
 
@@ -146,11 +151,9 @@ class Match(Expectation):
         return expected == actual
 
     def __str__(self):
-        return f"Match({
-            MessageChain.assign(
-                self.expected).to_str(
-                connector=" ")!r}, case_sensitive={
-            self.case_sensitive})"
+        return (
+            f"Match({MessageChain.assign(self.expected).to_str(connector=' ')!r}, case_sensitive={self.case_sensitive})"
+        )
 
 
 class Contains(Expectation):
@@ -253,10 +256,7 @@ class Length(Expectation):
     :param le: 预期消息链最大长度
     """
 
-    def __init__(self,
-                 eq: int | None = None,
-                 ge: int | None = None,
-                 le: int | None = None):
+    def __init__(self, eq: int | None = None, ge: int | None = None, le: int | None = None):
         self.eq = eq
         self.ge = ge
         self.le = le
@@ -280,7 +280,7 @@ class Length(Expectation):
             parts.append(f"ge={self.ge}")
         if self.le is not None:
             parts.append(f"le={self.le}")
-        return f"Length({", ".join(parts)})"
+        return f"Length({', '.join(parts)})"
 
 
 class Exist(Expectation):
@@ -291,9 +291,7 @@ class Exist(Expectation):
     :param func: 自定义函数
     """
 
-    def __init__(self,
-                 element: type[MultimodalElement],
-                 func: Callable | None = None):
+    def __init__(self, element: type[MultimodalElement], func: Callable | None = None):
         self.element = element
         self.func = func
 
@@ -316,7 +314,7 @@ class Exist(Expectation):
         parts = [f"{self.element.__name__}"]
         if self.func is not None:
             parts.append(f"func={self.func.__name__}")
-        return f"Exist({", ".join(parts)})"
+        return f"Exist({', '.join(parts)})"
 
 
 class Count(Expectation):
@@ -329,11 +327,9 @@ class Count(Expectation):
     :param le: 预期匹配最大数量
     """
 
-    def __init__(self,
-                 element: type[MultimodalElement],
-                 eq: int | None = None,
-                 ge: int | None = None,
-                 le: int | None = None):
+    def __init__(
+        self, element: type[MultimodalElement], eq: int | None = None, ge: int | None = None, le: int | None = None
+    ):
         self.element = element
         self.eq = eq
         self.ge = ge
@@ -363,7 +359,7 @@ class Count(Expectation):
             parts.append(f"ge={self.ge}")
         if self.le is not None:
             parts.append(f"le={self.le}")
-        return f"Count({", ".join(parts)})"
+        return f"Count({', '.join(parts)})"
 
 
 class InOrder(Expectation):
@@ -374,8 +370,11 @@ class InOrder(Expectation):
     :param consecutive: 是否严格匹配，不允许插入干扰元素。（默认 False）
     """
 
-    def __init__(self, *elements: type[MultimodalElement] | list[type[MultimodalElement]]
-                 | tuple[type[MultimodalElement], ...], consecutive: bool = False):
+    def __init__(
+        self,
+        *elements: type[MultimodalElement] | list[type[MultimodalElement]] | tuple[type[MultimodalElement], ...],
+        consecutive: bool = False,
+    ):
         if len(elements) == 1 and isinstance(elements[0], (list, tuple)):
             elements = tuple(elements[0])
         self.elements = tuple(elements)
@@ -416,7 +415,7 @@ class InOrder(Expectation):
         return False
 
     def __str__(self):
-        return f"InOrder([{", ".join(e.__name__ for e in self.elements)}], consecutive={self.consecutive})"
+        return f"InOrder([{', '.join(e.__name__ for e in self.elements)}], consecutive={self.consecutive})"
 
 
 class StructureEqual(Expectation):
@@ -426,8 +425,9 @@ class StructureEqual(Expectation):
     :param elements: 消息元素类型，可以是多个类型或包含类型的 list/tuple。
     """
 
-    def __init__(self, *elements: type[MultimodalElement] |
-                 list[type[MultimodalElement]] | tuple[type[MultimodalElement], ...]):
+    def __init__(
+        self, *elements: type[MultimodalElement] | list[type[MultimodalElement]] | tuple[type[MultimodalElement], ...]
+    ):
         if len(elements) == 1 and isinstance(elements[0], (list, tuple)):
             elements = tuple(elements[0])
         self.elements = tuple(elements)
@@ -444,7 +444,7 @@ class StructureEqual(Expectation):
         return True
 
     def __str__(self):
-        return f"StructureEqual([{", ".join(e.__name__ for e in self.elements)}])"
+        return f"StructureEqual([{', '.join(e.__name__ for e in self.elements)}])"
 
 
 class Raise(Expectation):
@@ -456,10 +456,7 @@ class Raise(Expectation):
     :param case_sensitive: 是否大小写敏感，默认 False
     """
 
-    def __init__(self,
-                 exc: type[Exception],
-                 message_contain: str | None = None,
-                 case_sensitive: bool = False):
+    def __init__(self, exc: type[Exception], message_contain: str | None = None, case_sensitive: bool = False):
         self.exc_type: type[Exception] = exc
         self.message_contain = message_contain
         self.case_sensitive = case_sensitive
@@ -485,10 +482,9 @@ class Raise(Expectation):
 
     def __str__(self):
         if self.message_contain is not None:
-            return f"Raise({
-                self.exc_type.__name__}, message_contain={
-                self.message_contain!r}, case_sensitive={
-                self.case_sensitive})"
+            return f"Raise({self.exc_type.__name__}, message_contain={self.message_contain!r}, case_sensitive={
+                self.case_sensitive
+            })"
         return f"Raise({self.exc_type.__name__})"
 
 

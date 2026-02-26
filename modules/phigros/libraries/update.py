@@ -25,13 +25,7 @@ p_headers = {
 
 def remove_punctuations(text):
     punctuations = "！？｡＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～、。〃〈〉《》「」『』【】〒〔〕〖〗〘〙〚〛〜・♫☆×♪↑↓²³ "
-    text = "".join(
-        [
-            char
-            for char in text
-            if char not in string.punctuation and char not in punctuations
-        ]
-    )
+    text = "".join([char for char in text if char not in string.punctuation and char not in punctuations])
     text = re.sub(" +", " ", text)
     return text.lower()
 
@@ -49,11 +43,9 @@ async def update_assets(update_cover=True):
         return False
     if update:
         for song in update:
-            song_full_id = f"{
-                remove_punctuations(
-                    update[song]["song"])}.{
-                remove_punctuations(
-                    update[song]["composer"])}"
+            song_full_id = (
+                f"{remove_punctuations(update[song]['song'])}.{remove_punctuations(update[song]['composer'])}"
+            )
             if not data.get(song_full_id):
                 data[song_full_id] = {}
             data[song_full_id]["name"] = update[song]["song"]
@@ -68,9 +60,7 @@ async def update_assets(update_cover=True):
                     try:
                         download_file = await download(update[song]["illustration_big"], f"{song_full_id}.png")
                         if download_file:
-                            shutil.move(
-                                download_file, illustration_path / f"{song_full_id}.png"
-                            )
+                            shutil.move(download_file, illustration_path / f"{song_full_id}.png")
                     except Exception:
                         pass
                 else:

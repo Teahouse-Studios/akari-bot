@@ -43,14 +43,10 @@ async def load_modules(show_logs=True, monkey_patches: dict[str, object] | None 
             try:
                 importlib.import_module(f"{module_py_name}.config")
                 if show_logs:
-                    Logger.debug(
-                        f"Successfully loaded {module_py_name}'s config definition!"
-                    )
+                    Logger.debug(f"Successfully loaded {module_py_name}'s config definition!")
             except ModuleNotFoundError:
                 if show_logs:
-                    Logger.debug(
-                        f"Module {module_py_name}'s config definition not found, skipped."
-                    )
+                    Logger.debug(f"Module {module_py_name}'s config definition not found, skipped.")
 
         except Exception:
             if show_logs:

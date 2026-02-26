@@ -37,7 +37,7 @@ async def _(msg: Bot.MessageSession):
     if resp:
         load_json = orjson.loads(resp)
         value = load_json["value"][0]
-        image = arc_assets_path / "jacket" / f"{value["song_id"]}.jpg"
+        image = arc_assets_path / "jacket" / f"{value['song_id']}.jpg"
         result = [Plain(value["title"]["en"])]
         if image.exists():
             result.append(BImage(path=image))
@@ -46,10 +46,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("arcaea.message.get_failed"))
 
 
-@arc.command(
-    "rank free {{I18N:arcaea.help.rank.free}}",
-    "rank paid {{I18N:arcaea.help.rank.paid}}"
-)
+@arc.command("rank free {{I18N:arcaea.help.rank.free}}", "rank paid {{I18N:arcaea.help.rank.paid}}")
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get("free", False):
         url = "https://webapi.lowiro.com/webapi/song/rank/free/"
@@ -63,7 +60,7 @@ async def _(msg: Bot.MessageSession):
         rank = 0
         for x in load_json["value"]:
             rank += 1
-            r.append(f"{rank}. {x["title"]["en"]} ({x["status"]})")
+            r.append(f"{rank}. {x['title']['en']} ({x['status']})")
         await msg.finish(r)
     else:
         await msg.finish(I18NContext("arcaea.message.get_failed"))

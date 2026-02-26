@@ -30,21 +30,20 @@ class AiogramContextManager(ContextManager):
             chat = ctx.chat
         if chat.type == "private":
             return True
-        admins = [
-            member.user.id for member in await aiogram_bot.get_chat_administrators(chat.id)
-        ]
+        admins = [member.user.id for member in await aiogram_bot.get_chat_administrators(chat.id)]
         if ctx.from_user and ctx.from_user.id in admins:
             return True
         return False
 
     @classmethod
-    async def send_message(cls,
-                           session_info: SessionInfo,
-                           message: MessageChain | MessageNodes,
-                           quote: bool = True,
-                           enable_parse_message: bool = True,
-                           enable_split_image: bool = True,
-                           ) -> list[str]:
+    async def send_message(
+        cls,
+        session_info: SessionInfo,
+        message: MessageChain | MessageNodes,
+        quote: bool = True,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> list[str]:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         msg_ids = []
@@ -56,8 +55,10 @@ class AiogramContextManager(ContextManager):
                 send_ = await aiogram_bot.send_message(
                     session_info.get_common_target_id(),
                     "\n".join(buffer_text),
-                    reply_to_message_id=(session_info.message_id if quote and not msg_ids and session_info.message_id else None),
-                    parse_mode="HTML"
+                    reply_to_message_id=(
+                        session_info.message_id if quote and not msg_ids and session_info.message_id else None
+                    ),
+                    parse_mode="HTML",
                 )
                 msg_ids.append(send_.message_id)
                 buffer_text = []
@@ -69,7 +70,7 @@ class AiogramContextManager(ContextManager):
         for x in message.as_sendable(session_info, parse_message=enable_parse_message):
             if isinstance(x, PlainElement):
                 if enable_parse_message:
-                    x.text = match_atcode(x.text, client_name, "<a href=\"tg://user?id={uid}\">@{uid}</a>")
+                    x.text = match_atcode(x.text, client_name, '<a href="tg://user?id={uid}">@{uid}</a>')
                 buffer_text.append(x.text)
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
                 count += 1
@@ -82,8 +83,7 @@ class AiogramContextManager(ContextManager):
                             session_info.get_common_target_id(),
                             FSInputFile(await xs.get()),
                             reply_to_message_id=(
-                                session_info.message_id if quote and not msg_ids and session_info.message_id
-                                else None
+                                session_info.message_id if quote and not msg_ids and session_info.message_id else None
                             ),
                         )
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(xs)}")
@@ -93,8 +93,7 @@ class AiogramContextManager(ContextManager):
                         session_info.get_common_target_id(),
                         FSInputFile(await x.get()),
                         reply_to_message_id=(
-                            session_info.message_id if quote and not msg_ids and session_info.message_id
-                            else None
+                            session_info.message_id if quote and not msg_ids and session_info.message_id else None
                         ),
                     )
                     Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(x)}")
@@ -106,8 +105,7 @@ class AiogramContextManager(ContextManager):
                     session_info.get_common_target_id(),
                     FSInputFile(x.path),
                     reply_to_message_id=(
-                        session_info.message_id if quote and not msg_ids and session_info.message_id
-                        else None
+                        session_info.message_id if quote and not msg_ids and session_info.message_id else None
                     ),
                 )
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Voice: {str(x)}")
@@ -115,8 +113,10 @@ class AiogramContextManager(ContextManager):
                 count += 1
             elif isinstance(x, MentionElement):
                 if x.client == client_name and session_info.target_from in [
-                        f"{client_name}|Group", f"{client_name}|Supergroup"]:
-                    buffer_text.append(f"<a href=\"tg://user?id={x.id}\">@{x.id}</a>")
+                    f"{client_name}|Group",
+                    f"{client_name}|Supergroup",
+                ]:
+                    buffer_text.append(f'<a href="tg://user?id={x.id}">@{x.id}</a>')
                     Logger.info(f"[Bot] -> [{session_info.target_id}]: Mention: {x.client}|{x.id}")
                 count += 1
 
@@ -125,7 +125,9 @@ class AiogramContextManager(ContextManager):
         return msg_ids
 
     @classmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None) -> None:
+    async def delete_message(
+        cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None
+    ) -> None:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
 
@@ -136,16 +138,15 @@ class AiogramContextManager(ContextManager):
 
         for msg_id in message_id:
             try:
-                await aiogram_bot.delete_message(
-                    chat_id=session_info.get_common_target_id(),
-                    message_id=int(msg_id)
-                )
+                await aiogram_bot.delete_message(chat_id=session_info.get_common_target_id(), message_id=int(msg_id))
                 Logger.info(f"Deleted message {msg_id} in session {session_info.session_id}")
             except Exception:
                 Logger.exception(f"Failed to delete message {msg_id} in session {session_info.session_id}: ")
 
     @classmethod
-    async def restrict_member(cls, session_info: SessionInfo, user_id: str | list[str], duration: int | None = None, reason: str | None = None) -> None:
+    async def restrict_member(
+        cls, session_info: SessionInfo, user_id: str | list[str], duration: int | None = None, reason: str | None = None
+    ) -> None:
         if isinstance(user_id, str):
             user_id = [user_id]
         if not isinstance(user_id, list):
@@ -157,18 +158,23 @@ class AiogramContextManager(ContextManager):
         if session_info.target_from != f"{client_name}|Private":
             for x in user_id:
                 try:
-                    await aiogram_bot.restrict_chat_member(chat_id=session_info.get_common_target_id(),
-                                                           user_id=int(x.split("|")[-1]),
-                                                           permissions=ChatPermissions(can_send_messages=False,
-                                                                                       can_send_media_messages=False,
-                                                                                       can_send_polls=False,
-                                                                                       can_send_other_messages=False,
-                                                                                       can_add_web_page_previews=False),
-                                                           until_date=until_date)
+                    await aiogram_bot.restrict_chat_member(
+                        chat_id=session_info.get_common_target_id(),
+                        user_id=int(x.split("|")[-1]),
+                        permissions=ChatPermissions(
+                            can_send_messages=False,
+                            can_send_media_messages=False,
+                            can_send_polls=False,
+                            can_send_other_messages=False,
+                            can_add_web_page_previews=False,
+                        ),
+                        until_date=until_date,
+                    )
                     Logger.info(
-                        f"Restricted member {x}{
-                            f" ({duration}s)" if duration else " "} in group {
-                            session_info.target_id}")
+                        f"Restricted member {x}{f' ({duration}s)' if duration else ' '} in group {
+                            session_info.target_id
+                        }"
+                    )
                 except Exception:
                     Logger.exception(f"Failed to restrict member {x} in group {session_info.target_id}: ")
 
@@ -182,13 +188,17 @@ class AiogramContextManager(ContextManager):
         if session_info.target_from != f"{client_name}|Private":
             for x in user_id:
                 try:
-                    await aiogram_bot.restrict_chat_member(chat_id=session_info.get_common_target_id(),
-                                                           user_id=int(x.split("|")[-1]),
-                                                           permissions=ChatPermissions(can_send_messages=True,
-                                                                                       can_send_media_messages=True,
-                                                                                       can_send_polls=True,
-                                                                                       can_send_other_messages=True,
-                                                                                       can_add_web_page_previews=True))
+                    await aiogram_bot.restrict_chat_member(
+                        chat_id=session_info.get_common_target_id(),
+                        user_id=int(x.split("|")[-1]),
+                        permissions=ChatPermissions(
+                            can_send_messages=True,
+                            can_send_media_messages=True,
+                            can_send_polls=True,
+                            can_send_other_messages=True,
+                            can_add_web_page_previews=True,
+                        ),
+                    )
                     Logger.info(f"Unrestricted member {x} in group {session_info.target_id}")
                 except Exception:
                     Logger.exception(f"Failed to unrestrict member {x} in group {session_info.target_id}: ")
@@ -203,10 +213,12 @@ class AiogramContextManager(ContextManager):
         if session_info.target_from != f"{client_name}|Private":
             for x in user_id:
                 try:
-                    await aiogram_bot.ban_chat_member(chat_id=session_info.get_common_target_id(),
-                                                      user_id=int(x.split("|")[-1]))
-                    await aiogram_bot.unban_chat_member(chat_id=session_info.get_common_target_id(),
-                                                        user_id=int(x.split("|")[-1]))
+                    await aiogram_bot.ban_chat_member(
+                        chat_id=session_info.get_common_target_id(), user_id=int(x.split("|")[-1])
+                    )
+                    await aiogram_bot.unban_chat_member(
+                        chat_id=session_info.get_common_target_id(), user_id=int(x.split("|")[-1])
+                    )
                     Logger.info(f"Kicked member {x} in group {session_info.target_id}")
                 except Exception:
                     Logger.exception(f"Failed to kick member {x} in group {session_info.target_id}: ")
@@ -221,8 +233,9 @@ class AiogramContextManager(ContextManager):
         if session_info.target_from != f"{client_name}|Private":
             for x in user_id:
                 try:
-                    await aiogram_bot.ban_chat_member(chat_id=session_info.get_common_target_id(),
-                                                      user_id=int(x.split("|")[-1]))
+                    await aiogram_bot.ban_chat_member(
+                        chat_id=session_info.get_common_target_id(), user_id=int(x.split("|")[-1])
+                    )
                     Logger.info(f"Banned member {x} in group {session_info.target_id}")
                 except Exception:
                     Logger.exception(f"Failed to ban member {x} in group {session_info.target_id}: ")
@@ -237,8 +250,9 @@ class AiogramContextManager(ContextManager):
         if session_info.target_from != f"{client_name}|Private":
             for x in user_id:
                 try:
-                    await aiogram_bot.unban_chat_member(chat_id=session_info.get_common_target_id(),
-                                                        user_id=int(x.split("|")[-1]))
+                    await aiogram_bot.unban_chat_member(
+                        chat_id=session_info.get_common_target_id(), user_id=int(x.split("|")[-1])
+                    )
                     Logger.info(f"Unbanned member {x} in group {session_info.target_id}")
                 except Exception:
                     Logger.exception(f"Failed to unban member {x} in group {session_info.target_id}: ")

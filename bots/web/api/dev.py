@@ -28,6 +28,7 @@ async def is_dev(request: Request):
 
 
 if dev_mode:
+
     @app.get("/api/dev/database/list")
     async def get_db_model_list(request: Request):
         try:
@@ -69,13 +70,13 @@ if dev_mode:
 
             if sql.upper().startswith("SELECT"):
                 rows = await conn.execute_query_dict(sql)
-                Logger.info(f"[WebUI] {ip} successfully executed SQL: \"{sql}\"")
+                Logger.info(f'[WebUI] {ip} successfully executed SQL: "{sql}"')
                 return {"success": True, "data": rows}
             rows, _ = await conn.execute_query(sql)
-            Logger.info(f"[WebUI] {ip} successfully executed SQL: \"{sql}\", affecting {rows} rows of data.")
+            Logger.info(f'[WebUI] {ip} successfully executed SQL: "{sql}", affecting {rows} rows of data.')
             return {"success": True, "affected_rows": rows}
         except OperationalError as e:
-            Logger.warning(f"[WebUI] {ip} failed to execute SQL: \"{sql}\"")
+            Logger.warning(f'[WebUI] {ip} failed to execute SQL: "{sql}"')
             return {"success": False, "error": str(e)}
         except HTTPException as e:
             raise e
@@ -99,7 +100,7 @@ if dev_mode:
             "name": p.name,
             "is_dir": p.is_dir(),
             "size": p.stat().st_size,
-            "modified": datetime.fromtimestamp(p.stat().st_mtime).isoformat()
+            "modified": datetime.fromtimestamp(p.stat().st_mtime).isoformat(),
         }
 
     @app.get("/api/dev/files/list")
@@ -111,11 +112,8 @@ if dev_mode:
             if not target.exists() or not target.is_dir():
                 raise HTTPException(status_code=404, detail="Not found")
             files = [
-                _format_file_info(f) for f in sorted(
-                    target.iterdir(),
-                    key=lambda x: (
-                        not x.is_dir(),
-                        x.name.lower()))]
+                _format_file_info(f) for f in sorted(target.iterdir(), key=lambda x: (not x.is_dir(), x.name.lower()))
+            ]
             return {"path": str(target.relative_to(ROOT_DIR)), "files": files}
         except HTTPException as e:
             raise e
@@ -134,16 +132,16 @@ if dev_mode:
                 raise HTTPException(status_code=404, detail="Not found")
 
             if target.is_file():
-                Logger.info(f"[WebUI] {ip} downloaded file: \"{display_path}\"")
+                Logger.info(f'[WebUI] {ip} downloaded file: "{display_path}"')
                 return FileResponse(target, filename=target.name)
 
             temp_dir = tempfile.mkdtemp()
             zip_name = f"{target.name}.zip"
             zip_path = Path(temp_dir) / zip_name
-            with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
                 for file in target.rglob("*"):
                     zipf.write(file, file.relative_to(target))
-            Logger.info(f"[WebUI] {ip} downloaded file: \"{display_path}.zip\"")
+            Logger.info(f'[WebUI] {ip} downloaded file: "{display_path}.zip"')
             return FileResponse(zip_path, filename=zip_name)
         except HTTPException as e:
             raise e
@@ -159,17 +157,17 @@ if dev_mode:
 
             target, display_path = _secure_path(path)
             if target == ROOT_DIR:
-                Logger.warning(f"[WebUI] {ip} failed to delete path: \"{display_path}\"")
+                Logger.warning(f'[WebUI] {ip} failed to delete path: "{display_path}"')
                 raise HTTPException(status_code=403, detail="Cannot delete root directory")
 
             if target.is_file():
                 target.unlink()
-                Logger.info(f"[WebUI] {ip} deleted file: \"{display_path}\"")
+                Logger.info(f'[WebUI] {ip} deleted file: "{display_path}"')
             elif target.is_dir():
                 shutil.rmtree(target)
-                Logger.info(f"[WebUI] {ip} deleted dir: \"{display_path}\"")
+                Logger.info(f'[WebUI] {ip} deleted dir: "{display_path}"')
             else:
-                Logger.warning(f"[WebUI] {ip} failed to delete path: \"{display_path}\"")
+                Logger.warning(f'[WebUI] {ip} failed to delete path: "{display_path}"')
                 raise HTTPException(status_code=404, detail="Not found")
             return Response(status_code=204)
         except HTTPException as e:
@@ -190,28 +188,22 @@ if dev_mode:
             new_target, new_display_path = _secure_path(old_target.parent / new_name)
 
             if old_target == ROOT_DIR:
-                Logger.warning(f"[WebUI] {ip} failed to rename path: \"{old_display_path}\"")
+                Logger.warning(f'[WebUI] {ip} failed to rename path: "{old_display_path}"')
                 raise HTTPException(status_code=403, detail="Cannot rename root directory")
             if old_target.is_dir():
                 try:
                     new_target.relative_to(old_target)
-                    Logger.warning(f"[WebUI] {ip} failed to rename path: \"{old_display_path}\"")
-                    raise HTTPException(
-                        status_code=400,
-                        detail="Cannot move a directory into itself"
-                    )
+                    Logger.warning(f'[WebUI] {ip} failed to rename path: "{old_display_path}"')
+                    raise HTTPException(status_code=400, detail="Cannot move a directory into itself")
                 except ValueError:
                     pass
             if new_target.exists():
-                Logger.warning(f"[WebUI] {ip} failed to rename path: \"{old_display_path}\"")
-                raise HTTPException(
-                    status_code=409,
-                    detail=f"Path '{new_name}' already exists"
-                )
+                Logger.warning(f'[WebUI] {ip} failed to rename path: "{old_display_path}"')
+                raise HTTPException(status_code=409, detail=f"Path '{new_name}' already exists")
 
             new_target.parent.mkdir(parents=True, exist_ok=True)
             old_target.rename(new_target)
-            Logger.info(f"[WebUI] {ip} renamed path: \"{old_display_path}\" -> \"{new_display_path}\"")
+            Logger.info(f'[WebUI] {ip} renamed path: "{old_display_path}" -> "{new_display_path}"')
             return Response(status_code=204)
         except HTTPException as e:
             raise e
@@ -240,7 +232,7 @@ if dev_mode:
             with target_file.open("wb") as f:
                 f.write(content)
 
-            Logger.info(f"[WebUI] {ip} uploaded file: \"{display_path}\"")
+            Logger.info(f'[WebUI] {ip} uploaded file: "{display_path}"')
             return Response(status_code=204)
         except HTTPException as e:
             raise e
@@ -257,11 +249,11 @@ if dev_mode:
             target, display_path = _secure_path((Path(path) / name).as_posix())
             if filetype == "dir":
                 target.mkdir(parents=True, exist_ok=True)
-                Logger.info(f"[WebUI] {ip} created dir: \"{display_path}\"")
+                Logger.info(f'[WebUI] {ip} created dir: "{display_path}"')
             else:
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.touch(exist_ok=True)
-                Logger.info(f"[WebUI] {ip} created file: \"{display_path}\"")
+                Logger.info(f'[WebUI] {ip} created file: "{display_path}"')
             return Response(status_code=204)
         except HTTPException as e:
             raise e
