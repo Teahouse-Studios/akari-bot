@@ -1,4 +1,4 @@
-name: 报告漏洞
+name: 报告问题
 description: 发现机器人的功能出现问题。
 title: "[BUG]: "
 labels: ["bug"]
