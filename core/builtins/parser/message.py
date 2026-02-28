@@ -967,10 +967,12 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
     执行模块的命令解析和处理。
 
     该函数是带命令模板的模块的执行入口，负责：
-    1. 解析命令参数（使用 CommandParser）
-    2. 验证参数格式
-    3. 执行匹配的命令函数
-    4. 处理帮助文档请求
+    1. 使用 CommandParser 解析命令参数
+    2. 验证发送者权限（超级用户、管理员等）
+    3. 检查命令在当前会话中的有效性（平台限制等）
+    4. 根据命令函数的参数签名构建调用参数
+    5. 显示"正在输入"状态（如果用户启用）
+    6. 执行命令函数
 
     :param msg: 消息会话对象
     :param module: 模块对象
@@ -979,6 +981,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
     bot: "Bot" = exports["Bot"]
     _typing = False  # 标记是否显示"正在输入"状态
     try:
+        # ========== 步骤 1: 解析命令参数 ==========
         command_parser = CommandParser(
             module, msg=msg, module_name=command_first_word, command_prefixes=msg.session_info.prefixes
         )
@@ -987,6 +990,8 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
             command: CommandMeta = parsed_msg[0]
             msg.parsed_msg = parsed_msg[1]  # 使用命令模板解析后的消息
             Logger.trace("Parsed message: " + str(msg.parsed_msg))
+
+            # ========== 步骤 2: 验证发送者权限 ==========
 
             if command.required_base_superuser:
                 if msg.session_info.sender_id not in bot.base_superuser_list:
@@ -1001,6 +1006,8 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
                     await msg.send_message(I18NContext("parser.admin.permission.denied.command"))
                     return
 
+            # ========== 步骤 3: 检查命令是否在会话内有效 ==========
+
             if (
                 not command.load
                 or msg.session_info.target_from in command.exclude_from
@@ -1013,7 +1020,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
             ):
                 raise InvalidCommandFormatError
 
-            # ========== 步骤 5: 构建函数参数 ==========
+            # ========== 步骤 4: 构建函数参数 ==========
             # 根据命令函数的签名，准备调用参数
             kwargs = {}
             func_params = inspect.signature(command.function).parameters
@@ -1082,12 +1089,12 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
                 # 函数只有一个参数，直接传入 MessageSession
                 kwargs[func_params[list(func_params.keys())[0]].name] = msg
 
-            # ========== 步骤 6: 显示"正在输入"状态 ==========
+            # ========== 步骤 5: 显示"正在输入"状态 ==========
             if msg.session_info.target_info.target_data.get("typing_prompt", True):
                 await msg.start_typing()
                 _typing = True
 
-            # ========== 步骤 7: 执行命令函数 ==========
+            # ========== 步骤 6: 执行命令函数 ==========
             await parsed_msg[0].function(**kwargs)
 
             # 如果函数没有使用 msg.finish，手动结束会话
