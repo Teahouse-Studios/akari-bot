@@ -476,7 +476,7 @@ class ImageElement(BaseElement):
         :param path: 图片来源，可以是：
                     - 本地文件路径（str 或 Path）
                     - URL 地址（以 http:// 或 https:// 开头）
-                    - Base64 编码数据（以 data:image 开头）
+                    - Base64 编码数据（以 base64 开头）
                     - PIL Image 对象
         :param headers: 获取网络图片时的请求头（如用户代理、认证信息等）
         :return: ImageElement 实例
