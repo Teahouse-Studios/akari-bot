@@ -115,7 +115,7 @@ class MessageSession:
         :param disable_secret_check: 是否禁用消息安全检查（默认为 False）
                                     如果启用，不检查敏感信息
         :param enable_parse_message: 是否允许解析消息中的特殊格式（默认为 True）
-                                    如多语言标记、KECode 等
+                                    如多语言标记、KE 码等
         :param enable_split_image: 是否允许拆分图片发送（默认为 True）
                                   某些平台（如 Telegram）需要逐个发送图片
         :param callback: 回调函数，在消息发送完成后执行（可选）

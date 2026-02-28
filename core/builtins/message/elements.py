@@ -422,7 +422,7 @@ class I18NContextElement(BaseElement):
         :return: KE 码格式的字符串
         """
         if self.kwargs:
-            # 有参数，将其拼接到 KECode 中
+            # 有参数，将其拼接到 KE 码中
             params = ",".join(f"{k}={v}" for k, v in self.kwargs.items())
             return f"[KE:i18n,i18nkey={self.key},{params}]"
         return f"[KE:i18n,i18nkey={self.key}]"
@@ -625,7 +625,7 @@ class ImageElement(BaseElement):
         return PILImage.open(path)
 
     def __str__(self):
-        """返回 KECode 格式"""
+        """返回 KE 码格式"""
         return self.kecode()
 
 

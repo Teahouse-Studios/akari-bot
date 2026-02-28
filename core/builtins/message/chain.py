@@ -215,7 +215,7 @@ class MessageChain:
 
         该方法将消息链中的各种元素转换为适合发送的格式，包括：
         1. 多语言翻译
-        2. KECode 解析
+        2. KE 码解析
         3. URL 处理（跳板和 Markdown 格式）
         4. 时间格式化
         5. 玩笑文本处理（愚人节）
@@ -252,7 +252,7 @@ class MessageChain:
                         if parse_message:
                             # 进行多语言翻译
                             x.text = session_info.locale.t_str(x.text)
-                            # 解析 KECode 格式的消息
+                            # 解析 KE 码格式的消息
                             element_chain = match_kecode(x.text, x.disable_joke)
                             # 递归处理解析出的元素
                             for elem in element_chain.values:
@@ -747,18 +747,18 @@ def get_message_chain(session: SessionInfo, chain: Chainable) -> MessageChain:
 
 def _extract_kecode_blocks(text):
     """
-    从文本中提取 KECode 块。
+    从文本中提取 KE 码块。
 
-    该函数解析包含 KECode 格式的文本，将其分割为 KECode 块和
-    普通文本块。KECode 格式为 [KE:type,params]。
+    该函数解析包含 KE 码格式的文本，将其分割为 KE 码块和
+    普通文本块。KE 码格式为 [KE:type,params]。
 
     处理逻辑：
     - 遇到 [KE: 开始一个新块
     - 遇到 ] 结束当前块
-    - 非 KECode 部分作为普通文本块
+    - 非 KE 码部分作为普通文本块
 
-    :param text: 包含 KECode 的文本字符串
-    :return: 字符串列表，包含 KECode 块和普通文本块
+    :param text: 包含 KE 码的文本字符串
+    :return: 字符串列表，包含 KE 码块和普通文本块
 
     示例：
         > text = "Hello [KE:plain,text=World] !"
@@ -769,13 +769,13 @@ def _extract_kecode_blocks(text):
     i = 0
     while i < len(text):
         if text.startswith("[KE:", i):
-            # ========== 找到 KECode 开始标记 ==========
+            # ========== 找到 KE 码开始标记 ==========
             start = i
             i += 4  # Skip "[KE:"
             depth = 1
             while i < len(text):
                 if text.startswith("[KE:", i):
-                    # 新的 KECode 开始，停止当前块
+                    # 新的 KE 码开始，停止当前块
                     break
                 if text[i] == "]" and depth == 1:
                     # 找到匹配的结束标记
@@ -802,19 +802,19 @@ def _extract_kecode_blocks(text):
 
 def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
     """
-    解析 KECode 格式的文本并转换为消息链。
+    解析 KE 码格式的文本并转换为消息链。
 
-    KECode 是 Akari Bot 的消息元素文本化的格式，用于在不便于使用标准的元素类的情况下使用。
-    在机器人发出消息的最后阶段，KECode 会被解析器解析成对应的消息元素对象。
+    KE 码是 Akari Bot 的消息元素文本化的格式，用于在不便于使用标准的元素类的情况下使用。
+    在机器人发出消息的最后阶段，KE 码会被解析器解析成对应的消息元素对象。
 
-    支持的 KECode 类型：
+    支持的 KE 码类型：
     - [KE:plain,text=...]: 纯文本
     - [KE:image,path=...]: 图片
     - [KE:voice,path=...]: 语音
     - [KE:i18n,i18nkey=...,param1=val1,...]: 多语言文本
     - [KE:mention,userid=...]: 提及用户
 
-    :param text: 包含 KECode 的文本字符串
+    :param text: 包含 KE 码的文本字符串
     :param disable_joke: 是否禁用玩笑功能（默认为 False）
     :return: 解析后的消息链
 
@@ -824,21 +824,21 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
         > len(chain.values)
         2
     """
-    # ========== 步骤 1: 提取 KECode 块 ==========
+    # ========== 步骤 1: 提取 KE 码块 ==========
     split_all = _extract_kecode_blocks(text)
     split_all = [x for x in split_all if x]
     elements = MessageChain.assign()
 
     # ========== 步骤 2: 解析每个块 ==========
     for e in split_all:
-        # 尝试匹配 KECode 格式
+        # 尝试匹配 KE 码格式
         match = re.match(r"\[KE:([^\s,\]]+)(?:,(.*))?\]$", e, re.DOTALL)
         if not match:
             # 不是 KECode，作为普通文本处理
             if e != "":
                 elements.append(PlainElement.assign(e, disable_joke=disable_joke))
         else:
-            # ========== 提取 KECode 类型和参数 ==========
+            # ========== 提取 KE 码类型和参数 ==========
             element_type = match.group(1).lower()
             param_str = match.group(2) or ""
 
