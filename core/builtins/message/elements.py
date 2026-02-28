@@ -67,7 +67,8 @@ class BaseElement:
         """
         转换为KE 码格式（AkariBot 特定的消息格式）。
 
-        该方法将消息元素转换为 KE 码格式，用于在不同平台间统一传输和处理。
+        KE 码是 AkariBot 的消息元素文本化的格式，用于在不便于使用标准的元素类的情况下使用。
+        在机器人发出消息的最后阶段，KE 码会被解析器解析成对应的消息元素对象。
 
         :return: KE 码格式的字符串
         :raises NotImplementedError: 子类必须实现此方法
