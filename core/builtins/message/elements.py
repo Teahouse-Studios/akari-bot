@@ -91,12 +91,11 @@ class PlainElement(BaseElement):
     """
     纯文本元素 - 用于表示消息中的纯文本内容。
 
-    该类用于创建和处理消息中的文本部分。支持禁用玩笑功能的选项，
-    用于某些需要严肃对待的内容（如错误消息、重要信息等）。
+    该类用于创建和处理消息中的文本部分。
 
     属性：
         text: 文本内容，可以包含任何字符串
-        disable_joke: 是否禁用玩笑功能，True 表示此文本内容不应被修改为开玩笑的文本
+        disable_joke: 是否禁用玩笑功能，True 表示此文本内容不应被玩笑影响
 
     示例：
         > plain = PlainElement.assign("Hello, World!")
@@ -116,7 +115,7 @@ class PlainElement(BaseElement):
         并进行深拷贝以确保数据安全。
 
         :param texts: 文本内容（支持多个参数），每个参数会被转换为字符串并拼接
-        :param disable_joke: 是否禁用玩笑功能（默认为 False），如果为 True，表示此文本不应被修改为开玩笑的文本（如愚人节功能）
+        :param disable_joke: 是否禁用玩笑功能（默认为 False）
         :return: PlainElement 实例
         """
         # 将所有参数转换为字符串并用空字符连接（保留原始格式）
@@ -128,7 +127,6 @@ class PlainElement(BaseElement):
         """
         转换为 KE 码格式。
 
-        KE 码是 AkariBot 特定的消息格式，用于在不同平台间统一表示消息。
         纯文本在 KE 码中用 [KE:plain,text=...] 表示。
 
         :return: KE 码格式的字符串
@@ -389,7 +387,7 @@ class I18NContextElement(BaseElement):
 
     属性：
         key: 多语言字典中的键名，格式如 "message.hello"、"error.permission.denied" 等
-        disable_joke: 是否禁用玩笑功能（愚人节功能）
+        disable_joke: 是否禁用玩笑功能，True 表示此文本内容不应被玩笑影响
         kwargs: 多语言字符串中的变量字典，如 {"user": "Alice", "count": 10}
 
     示例：
@@ -906,7 +904,9 @@ class RawElement(BaseElement):
     """
     原始元素 - 用于包含未处理的原始数据。
 
-    该类用于传递不需要特殊处理的原始数据，可以是任何字符串内容。
+    该类用于传递不需要特殊处理的原始数据，可以是任何字符串内容，
+    在原则上不应该被主动使用。
+
     通常用于包含预格式化的文本或特殊的元数据。
 
     属性：
