@@ -38,12 +38,12 @@ class BaseElement:
     所有消息元素的基类，定义了元素应该实现的接口。
 
     消息系统中的元素必须继承此类并实现以下方法：
-    - kecode(): 将元素转换为 KECode 格式
+    - kecode(): 将元素转换为 KE 码格式
     - __str__(): 将元素转换为字符串表示
 
-    KECode 格式说明：
-    KECode 是 Akari Bot 的消息元素文本化的格式，用于在不便于使用标准的元素类的情况下使用。
-    在机器人发出消息的最后阶段，KECode 会被解析器解析成对应的消息元素对象。
+    KE 码格式说明：
+    KE 码是 AkariBot 的消息元素文本化的格式，用于在不便于使用标准的元素类的情况下使用。
+    在机器人发出消息的最后阶段，KE 码会被解析器解析成对应的消息元素对象。
     格式为 [KE:type,param1=value1,param2=value2]，其中：
     - type: 元素类型（plain、image、voice、mention 等）
     - param*: 元素特定的参数
@@ -65,11 +65,11 @@ class BaseElement:
 
     def kecode(self):
         """
-        转换为 KECode 格式（Akari Bot 特定的消息格式）。
+        转换为KE 码格式（AkariBot 特定的消息格式）。
 
-        该方法将消息元素转换为 KECode 格式，用于在不同平台间统一传输和处理。
+        该方法将消息元素转换为KE 码格式，用于在不同平台间统一传输和处理。
 
-        :return: KECode 格式的字符串
+        :return: KE 码格式的字符串
         :raises NotImplementedError: 子类必须实现此方法
         """
         raise NotImplementedError
@@ -126,12 +126,12 @@ class PlainElement(BaseElement):
 
     def kecode(self):
         """
-        转换为 KECode 格式。
+        转换为 KE 码格式。
 
-        KECode 是 Akari Bot 特定的消息格式，用于在不同平台间统一表示消息。
-        纯文本在 KECode 中用 [KE:plain,text=...] 表示。
+        KE 码是 AkariBot 特定的消息格式，用于在不同平台间统一表示消息。
+        纯文本在 KE 码中用 [KE:plain,text=...] 表示。
 
-        :return: KECode 格式的字符串
+        :return: KE 码格式的字符串
         """
         return f"[KE:plain,text={self.text}]"
 
@@ -204,11 +204,11 @@ class URLElement(BaseElement):
 
     def kecode(self):
         """
-        转换为 KECode 格式。
+        转换为 KE 码格式。
 
-        URL 在 KECode 中以纯文本形式表示，系统会自动识别和处理链接。
+        URL 在 KE 码中以纯文本形式表示，系统会自动识别和处理链接。
 
-        :return: KECode 格式的字符串
+        :return: KE 码格式的字符串
         """
         return f"[KE:plain,text={self.url}]"
 
@@ -335,10 +335,10 @@ class FormattedTimeElement(BaseElement):
 
     def kecode(self, session_info: SessionInfo | None = None):
         """
-        转换为 KECode 格式。
+        转换为 KE 码格式。
 
         :param session_info: 会话信息，用于本地化转换
-        :return: KECode 格式的字符串
+        :return: KE 码格式的字符串
         """
         return f"[KE:plain,text={self.to_str(session_info)}]"
 
@@ -416,11 +416,11 @@ class I18NContextElement(BaseElement):
 
     def kecode(self):
         """
-        转换为 KECode 格式。
+        转换为 KE 码格式。
 
-        多语言消息在 KECode 中表示为 [KE:i18n,i18nkey=...,param1=val1,...]
+        多语言消息在 KE 码中表示为 [KE:i18n,i18nkey=...,param1=val1,...]
 
-        :return: KECode 格式的字符串
+        :return: KE 码格式的字符串
         """
         if self.kwargs:
             # 有参数，将其拼接到 KECode 中
@@ -432,7 +432,7 @@ class I18NContextElement(BaseElement):
         """
         返回字符串表示。
 
-        :return: I18N 格式的字符串表示
+        :return: I18N 码格式的字符串表示
         """
         if self.kwargs:
             params = ",".join(f"{k}={v}" for k, v in self.kwargs.items())
@@ -602,9 +602,9 @@ class ImageElement(BaseElement):
 
     def kecode(self):
         """
-        转换为 KECode 格式。
+        转换为 KE 码格式。
 
-        :return: KECode 格式的字符串
+        :return: KE 码格式的字符串
         """
         if self.headers:
             # 有请求头，进行 Base64 编码后传递
@@ -659,11 +659,11 @@ class VoiceElement(BaseElement):
         return deepcopy(cls(str(path)))
 
     def kecode(self):
-        """转换为 KECode 格式"""
+        """转换为 KE 码格式"""
         return f"[KE:voice,path={self.path}]"
 
     def __str__(self):
-        """返回 KECode 格式"""
+        """返回 KE 码格式"""
         return self.kecode()
 
 
@@ -700,11 +700,11 @@ class MentionElement(BaseElement):
         return deepcopy(cls(client=user_id.split("|")[0], id=user_id.split("|")[-1]))
 
     def kecode(self):
-        """转换为 KECode 格式"""
+        """转换为 KE 码格式"""
         return f"[KE:mention,userid={self.client}|{self.id}]"
 
     def __str__(self):
-        """返回可读的提及格式"""
+        """返回 AT 码提及格式"""
         return f"<AT:{self.client}|{self.id}>"
 
 
@@ -743,7 +743,7 @@ class EmbedFieldElement(BaseElement):
         return deepcopy(cls(name=name, value=value, inline=inline))
 
     def kecode(self):
-        """... KECode 格式未实现 ..."""
+        """... KE 码格式未实现 ..."""
         pass
 
     def __str__(self):
@@ -893,7 +893,7 @@ class EmbedElement(BaseElement):
         return message_chain
 
     def kecode(self):
-        """... KECode 格式未实现 ..."""
+        """... KE 码格式未实现 ..."""
         pass
 
     def __str__(self):
@@ -931,7 +931,7 @@ class RawElement(BaseElement):
         return deepcopy(cls(value=value))
 
     def kecode(self):
-        """... KECode 格式未实现 ..."""
+        """... KE 码格式未实现 ..."""
         pass
 
     def __str__(self):
