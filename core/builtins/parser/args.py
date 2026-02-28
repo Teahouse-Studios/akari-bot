@@ -88,8 +88,6 @@ class OptionalPattern:
     """
     可选模式类 - 表示可选的命令参数或选项。
 
-    用于定义命令中的可选部分，如 --option 或 -o。
-
     :param flag: 可选标志，如 "option" 或 "o"
     :param args: 该选项下的模板列表（支持多个可选变体）
     """
@@ -241,8 +239,10 @@ def parse_template(argv: list[str], depth: int = 0) -> list[Template]:
         - {description}: 描述信息，用于生成帮助文本
 
     示例:
-        >>> parse_template(["<source> [target]"])
-        [Template([ArgumentPattern('source'), OptionalPattern(...)])]
+        > parse_template(["<source> [-o <destination>] {Copy a file}"])
+        [Template([ArgumentPattern('source'),
+        OptionalPattern('-o', [Template([ArgumentPattern('destination')])]),
+         DescPattern('Copy a file')])]
 
     :param argv: 包含模板字符串的列表
     :param depth: 递归深度，用于防止无限递归（最大深度由 MAX_NEST_DEPTH 定义）
@@ -317,7 +317,7 @@ def parse_template(argv: list[str], depth: int = 0) -> list[Template]:
 
                     # 分割可选参数内容（空格分隔）
                     optional_patterns = inner.split(" ")
-                    flag = None  # 可选参数的标志（如 "remove", "set" 等）
+                    flag = None  # 可选参数的标志（如 "-o"）
                     args = []  # 可选参数包含的参数列表
 
                     # 判断第一个元素是参数还是标志
@@ -330,7 +330,7 @@ def parse_template(argv: list[str], depth: int = 0) -> list[Template]:
                             raise InvalidTemplatePattern("Empty argument block <> not allowed")
                         args += optional_patterns  # 所有元素都是参数
                     else:
-                        # 第一个是标志：如 [--output <file>] 或 [-r]
+                        # 第一个是标志：如 [-o <output>]
                         flag = optional_patterns[0]  # 标志名称
                         args += optional_patterns[1:]  # 后续元素是该标志的参数
 
@@ -442,9 +442,9 @@ def templates_to_str(templates: list[Template], with_desc=False, simplify=True) 
     该函数用于生成帮助文本，将解析后的 Template 对象转换为人类可读的字符串格式。
 
     示例:
-        >>> template = Template([ArgumentPattern('<file>'), OptionalPattern('--output', ...)])
-        >>> templates_to_str([template])
-        ['<file> [--output ...]']
+        > template = Template([ArgumentPattern('<source>'), OptionalPattern('-o', [Template([ArgumentPattern('<destination>')])]), DescPattern('Copy a file')])
+        > templates_to_str([template])
+        ['<source> [-o <destination>] - Copy a file']
 
     :param templates: Template 对象列表
     :param with_desc: 是否包含描述信息（用于生成详细帮助）
@@ -527,7 +527,7 @@ def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
 
     参数类型说明：
     - <param>: 值参数，必须消耗一个参数值，如 <file>、<name>
-    - flag: 标志参数，是否存在于参数列表中（True/False），如 --verbose、-v
+    - flag: 标志参数，是否存在于参数列表中（True/False），如 -v
     - ...: 可变长参数，可消耗 0 个或多个参数
     - [flag <param>]: 可选参数，可能带有标志和子参数
 
@@ -627,7 +627,7 @@ def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
                             argv_copy.remove(a.name)
 
             # ========== 步骤 4: 处理剩余参数（可变长参数和无标志可选参数）==========
-            if argv_copy:  # if there are still some argv left
+            if argv_copy:
                 if afters:
                     # 有可变长参数或无标志可选参数需要处理
                     ai = 1
