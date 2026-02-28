@@ -100,7 +100,7 @@ tl;dr：[《🐧你为啥直接 commit 到我的 master 分支啊》](https://bi
 
 ### 开发环境
 本项目基于 Python 开发。
-Python 环境是必要的，注意最低版本要求（见 README）。
+Python 环境是必要的，注意最低版本要求（见 [README](/README.md)）。
 
 推荐搭配 IDE 使用，例如 [PyCharm](https://www.jetbrains.com/pycharm) 或 [VSCode](https://code.visualstudio.com)。
 
