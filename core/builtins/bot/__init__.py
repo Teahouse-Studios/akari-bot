@@ -27,7 +27,6 @@ if TYPE_CHECKING:
     from core.queue.client import JobQueueClient
     from core.queue.server import JobQueueServer
 
-# 是否启用分析功能 - 记录命令执行统计等数据
 enable_analytics = Config("enable_analytics", True)
 
 
@@ -68,7 +67,7 @@ class Bot:
     # 主动获取消息会话的上下文管理器索引
     fetched_session_ctx_slot = 0
 
-    # 超级用户列表 - 拥有最高权限的用户ID列表
+    # 超级用户列表 - 拥有最高权限的用户 ID 列表
     base_superuser_list = Config("base_superuser", base_superuser_default, cfg_type=(str, list))
     if isinstance(base_superuser_list, str):
         base_superuser_list = [base_superuser_list]
@@ -250,7 +249,7 @@ class Bot:
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
         """
-        在指定会话中显示"正在输入..."状态。
+        在指定会话中显示“正在输入……”状态。
 
         :param session_info: 会话信息
         :raises TypeError: 如果 session_info 不是 SessionInfo 类型
@@ -263,7 +262,7 @@ class Bot:
     @classmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
         """
-        结束"正在输入..."状态。
+        结束“正在输入……”状态。
 
         :param session_info: 会话信息
         :raises TypeError: 如果 session_info 不是 SessionInfo 类型
@@ -302,7 +301,7 @@ class Bot:
 
         :param client_name: 客户端名称（如 "qq"、"discord" 等）
         :param private_assets_path: 私有资源文件夹路径
-                                  如果为 None，自动使用 assets/private/{client_name} 路径
+                                  如果为 None，自动使用 `assets/private/{client_name}` 路径
         """
         # 设置私有资源路径
         if private_assets_path:
@@ -389,7 +388,7 @@ class Bot:
             钩子可以在特定事件发生时执行，如 Discord Slash 命令需要 Autocomplete 时。
 
             :param module_or_hook_name: 模块名称或钩子名称
-                                      如果包含 "."，视为自定义钩子名；否则视为模块名
+                                      如果包含 `.`，视为自定义钩子名；否则视为模块名
             :param session_info: 会话信息（可选）
             :param args: 传递给钩子的参数字典
             :return: 钩子函数的返回值

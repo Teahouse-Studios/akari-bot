@@ -82,9 +82,11 @@ class MessageChain:
         :return: 消息链实例（会进行深拷贝）
 
         示例：
+        ```
             > MessageChain.assign("Hello")  # 字符串
             > MessageChain.assign([PlainElement.assign("A"), ImageElement.assign("path")])  # 列表
             > MessageChain.assign(PlainElement.assign("Text"))  # 单个元素
+        ```
         """
         # ========== 步骤 1: 如果已经是消息链，直接返回 ==========
         if isinstance(elements, MessageChain):
@@ -150,9 +152,11 @@ class MessageChain:
         :return: 如果消息链不包含敏感信息返回 True，否则返回 False
 
         示例：
+        ```
             > chain = MessageChain.assign("Hello World")
             > chain.is_safe
             True
+        ```
         """
 
         def unsafeprompt(name, secret, text):
@@ -218,15 +222,17 @@ class MessageChain:
         2. KE 码解析
         3. URL 处理（跳板和 Markdown 格式）
         4. 时间格式化
-        5. 玩笑文本处理（愚人节）
+        5. 愚人节玩笑处理
 
         :param session_info: 会话信息，用于本地化和平台特定的处理
-        :param parse_message: 是否解析消息中的特殊格式（如 KECode、多语言标记等）
+        :param parse_message: 是否解析消息中的特殊格式（如 KE 码、多语言标记等）
         :return: 可发送的消息元素列表
 
         示例：
+        ```
             > chain = MessageChain.assign("{I18N:message.hello}")
             > sendable = chain.as_sendable(session_info)
+        ```
         """
         value = []
         support_embed = True
@@ -319,7 +325,7 @@ class MessageChain:
             if session_info:
                 value.append(PlainElement.assign(session_info.locale.t("error.message.chain.empty")))
 
-        # ========== 应用玩笑文本处理 ==========
+        # ========== 应用愚人节玩笑 ==========
         for x in value:
             if isinstance(x, PlainElement) and not x.disable_joke:
                 x.text = joke(x.text)
@@ -339,15 +345,17 @@ class MessageChain:
                          False: 包含所有元素的字符串表示
         :param element_filter: 可选的元素过滤器，指定哪些元素类型需要被转换为字符串
                               如 (PlainElement, ImageElement) 只转换这两种类型
-        :param connector: 元素之间的连接符，默认为换行符 "\n"
+        :param connector: 元素之间的连接符，默认为换行符 "\\n"
         :return: 转换后的字符串
 
         示例：
+        ```
             > chain = MessageChain.assign([PlainElement.assign("Hello"), PlainElement.assign("World")])
             > chain.to_str()
             'Hello\nWorld'
             > chain.to_str(connector=" ")
             'Hello World'
+        ```
         """
         result = []
         for x in self.values:
@@ -374,9 +382,11 @@ class MessageChain:
         :return: 字典列表，每个字典代表一个消息元素
 
         示例：
+        ```
             > chain = MessageChain.assign("Hello")
             > chain.to_list()
             [{'_type': 'PlainElement', 'text': 'Hello', 'disable_joke': False}]
+        ```
         """
         return [converter.unstructure(x, MessageElement) for x in self.values]
 
@@ -385,14 +395,16 @@ class MessageChain:
         """
         从列表构造消息链。
 
-        将序列化的列表转换回消息链对象，与 to_list 方法配对使用。
+        将序列化的列表转换回消息链对象，与 `to_list` 方法配对使用。
 
         :param lst: 消息元素的字典列表
         :return: 新的消息链实例
 
         示例：
+        ```
             > data = [{'_type': 'PlainElement', 'text': 'Hello'}]
             > chain = MessageChain.from_list(data)
+        ```
         """
         converted = []
         for x in lst:
@@ -407,8 +419,10 @@ class MessageChain:
         :param element: 要添加的消息元素
 
         示例：
+        ```
             > chain = MessageChain.assign("Hello")
-            > chain.append(PlainElement.assign(" World"))
+            > chain.append(PlainElement.assign("World"))
+        ```
         """
         self.values.append(element)
 
@@ -419,9 +433,11 @@ class MessageChain:
         :param element: 要删除的消息元素
 
         示例：
+        ```
             > chain = MessageChain.assign("Hello")
             > elem = chain.values[0]
             > chain.remove(elem)
+        ```
         """
         self.values.remove(element)
 
@@ -433,8 +449,10 @@ class MessageChain:
         :param element: 要插入的消息元素
 
         示例：
+        ```
             > chain = MessageChain.assign("World")
-            > chain.insert(0, PlainElement.assign("Hello "))
+            > chain.insert(0, PlainElement.assign("Hello"))
+        ```
         """
         self.values.insert(index, element)
 
@@ -447,8 +465,10 @@ class MessageChain:
         :return: 新的消息链实例
 
         示例：
+        ```
             > chain = MessageChain.assign("Hello")
             > chain_copy = chain.copy()
+        ```
         """
         return MessageChain.assign(self.values.copy())
 
@@ -534,11 +554,13 @@ class I18NMessageChain:
                值为对应语言的消息链。必须包含 "default" 键作为回退选项。
 
     示例：
+    ```
         > i18n_chain = I18NMessageChain.assign({
         ...     "zh_CN": MessageChain.assign("你好"),
         ...     "en_US": MessageChain.assign("Hello"),
         ...     "default": MessageChain.assign("Hello")
         ... })
+    ```
     """
 
     values: dict[str, MessageChain]
@@ -555,11 +577,13 @@ class I18NMessageChain:
         :raises ValueError: 如果缺少 "default" 键
 
         示例：
+        ```
             > chains = {
             ...     "zh_CN": MessageChain.assign("你好"),
             ...     "default": MessageChain.assign("Hello")
             ... }
             > i18n_chain = I18NMessageChain.assign(chains)
+        ```
         """
         if not isinstance(values, dict):
             raise TypeError("I18NMessageChain values must be a dictionary.")
@@ -589,11 +613,13 @@ class PlatformMessageChain:
                必须包含 "default" 键作为回退选项。
 
     示例：
+    ```
         > platform_chain = PlatformMessageChain.assign({
         ...     "QQ": MessageChain.assign("[QQ专属消息]"),
         ...     "Discord": MessageChain.assign("[Discord专属消息]"),
         ...     "default": MessageChain.assign("[通用消息]")
         ... })
+    ```
     """
 
     values: dict[str, MessageChain | I18NMessageChain]
@@ -609,11 +635,13 @@ class PlatformMessageChain:
         :raises TypeError: 如果 values 不是字典
 
         示例：
+        ```
             > chains = {
             ...     "QQ": MessageChain.assign("QQ消息"),
             ...     "default": MessageChain.assign("默认消息")
             ... }
             > platform_chain = PlatformMessageChain.assign(chains)
+        ```
         """
         if not isinstance(values, dict):
             raise TypeError("PlatformMessageChain values must be a dictionary.")
@@ -633,11 +661,13 @@ class MessageNodes:
         name: 节点列表的名称，用于标识这组转发消息
 
     示例：
+    ```
         > nodes = MessageNodes.assign([
         ...     MessageChain.assign("第一条消息"),
         ...     MessageChain.assign("第二条消息"),
         ...     MessageChain.assign("第三条消息")
         ... ], name="转发消息组")
+    ```
     """
 
     values: list[MessageChain]
@@ -653,11 +683,13 @@ class MessageNodes:
         :return: MessageNodes 实例
 
         示例：
+        ```
             > chains = [
             ...     MessageChain.assign("消息1"),
             ...     MessageChain.assign("消息2")
             ... ]
             > nodes = MessageNodes.assign(chains, "我的转发消息")
+        ```
         """
         if not name:
             # 生成随机名称：Message + 5个随机小写字母
@@ -675,9 +707,11 @@ class MessageNodes:
         :return: 如果所有节点都安全返回 True，否则返回 False
 
         示例：
+        ```
             > nodes = MessageNodes.assign([MessageChain.assign("Hello")])
             > nodes.is_safe
             True
+        ```
         """
         return all(chain.is_safe for chain in self.values)
 
@@ -704,7 +738,7 @@ def get_message_chain(session: SessionInfo, chain: Chainable) -> MessageChain:
     处理优先级：
     1. PlatformMessageChain: 先根据平台选择
     2. I18NMessageChain: 再根据语言选择
-    3. MessageChain/str/list/MessageElement: 直接使用
+    3. MessageChain / str / list / MessageElement: 直接使用
 
     :param session: 会话信息，包含平台、语言等配置
     :param chain: 可链接的消息对象（支持多种类型）
@@ -712,11 +746,13 @@ def get_message_chain(session: SessionInfo, chain: Chainable) -> MessageChain:
     :raises TypeError: 如果传入不支持的链类型
 
     示例：
+    ```
         > platform_chain = PlatformMessageChain.assign({
         ...     "QQ": MessageChain.assign("QQ消息"),
         ...     "default": MessageChain.assign("默认消息")
         ... })
         > result = get_message_chain(session, platform_chain)
+    ```
     """
     # ========== 处理平台消息链 ==========
     if isinstance(chain, PlatformMessageChain):
@@ -750,20 +786,22 @@ def _extract_kecode_blocks(text):
     从文本中提取 KE 码块。
 
     该函数解析包含 KE 码格式的文本，将其分割为 KE 码块和
-    普通文本块。KE 码格式为 [KE:type,params]。
+    普通文本块。KE 码格式为 `[KE:type,params]`。
 
     处理逻辑：
-    - 遇到 [KE: 开始一个新块
-    - 遇到 ] 结束当前块
+    - 遇到 `[KE:` 开始一个新块
+    - 遇到 `]` 结束当前块
     - 非 KE 码部分作为普通文本块
 
     :param text: 包含 KE 码的文本字符串
     :return: 字符串列表，包含 KE 码块和普通文本块
 
     示例：
+    ```
         > text = "Hello [KE:plain,text=World] !"
         > _extract_kecode_blocks(text)
         ['Hello ', '[KE:plain,text=World]', ' !']
+    ```
     """
     result = []
     i = 0
@@ -804,25 +842,27 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
     """
     解析 KE 码格式的文本并转换为消息链。
 
-    KE 码是 Akari Bot 的消息元素文本化的格式，用于在不便于使用标准的元素类的情况下使用。
+    KE 码是 AkariBot 的消息元素文本化的格式，用于在不便于使用标准的元素类的情况下使用。
     在机器人发出消息的最后阶段，KE 码会被解析器解析成对应的消息元素对象。
 
     支持的 KE 码类型：
-    - [KE:plain,text=...]: 纯文本
-    - [KE:image,path=...]: 图片
-    - [KE:voice,path=...]: 语音
-    - [KE:i18n,i18nkey=...,param1=val1,...]: 多语言文本
-    - [KE:mention,userid=...]: 提及用户
+    - `[KE:plain,text=...]`: 纯文本
+    - `[KE:image,path=...]`: 图片
+    - `[KE:voice,path=...]`: 语音
+    - `[KE:i18n,i18nkey=...,param1=val1,...]`: 多语言文本
+    - `[KE:mention,userid=...]`: 提及用户
 
     :param text: 包含 KE 码的文本字符串
     :param disable_joke: 是否禁用玩笑功能（默认为 False）
     :return: 解析后的消息链
 
     示例：
+    ```
         > text = "Hello [KE:plain,text=World]"
         > chain = match_kecode(text)
         > len(chain.values)
         2
+    ```
     """
     # ========== 步骤 1: 提取 KE 码块 ==========
     split_all = _extract_kecode_blocks(text)
@@ -949,28 +989,30 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
 
 def match_atcode(text: str, client: str, pattern: str) -> str:
     """
-    匹配并替换 AT 代码。
+    匹配并替换 AT 码。
 
-    该函数用于将统一的 AT 代码格式转换为平台特定的提及格式。
-    AT 代码格式为 <AT:client|userid> 或 <@:client|userid>。
+    该函数用于将统一的 AT 码格式转换为平台特定的提及格式。
+    AT 码格式为 `<AT:client|userid>` 或 `<@:client|userid>`。
 
     处理流程：
-    1. 查找所有 AT 代码
+    1. 查找所有 AT 码
     2. 检查客户端是否匹配
     3. 如果匹配，使用指定的模式替换
     4. 如果不匹配，保留原样
 
-    :param text: 包含 AT 代码的文本
+    :param text: 包含 AT 码的文本
     :param client: 客户端标识（如 "QQ"、"Discord"）
-    :param pattern: 替换模式，其中 {uid} 会被替换为用户 ID
+    :param pattern: 替换模式，其中 `{uid}` 会被替换为用户 ID
     :return: 替换后的文本
 
     示例：
+    ```
         > text = "Hello <AT:QQ|123456>"
         > match_atcode(text, "QQ", "@{uid}")
         'Hello @123456'
         > match_atcode(text, "Discord", "@{uid}")
         'Hello <AT:QQ|123456>'  # 不匹配，保留原样
+    ```
     """
 
     def _replacer(match):
@@ -983,37 +1025,37 @@ def match_atcode(text: str, client: str, pattern: str) -> str:
         # 客户端不匹配，保留原样
         return match.group(0)
 
-    # 使用正则表达式查找并替换所有 AT 代码
+    # 使用正则表达式查找并替换所有 AT 码
     # 格式: <AT:client|...?|userid> 或 <@:client|...?|userid>
     return re.sub(r"<(?:AT|@):([^\|]+)\|(?:.*?\|)?([^\|>]+)>", _replacer, text)
 
 
 def convert_senderid_to_atcode(text: str, sender_prefix: str) -> str:
     """
-    将发送者 ID 转换为 AT 代码格式。
+    将发送者 ID 转换为 AT 码格式。
 
-    该函数用于将文本中的发送者 ID 引用转换为统一的 AT 代码格式。
+    该函数用于将文本中的发送者 ID 引用转换为统一的 AT 码格式。
     主要用于在消息中自动识别和转换用户 ID 引用。
 
     处理流程：
     1. 转义 sender_prefix 中的特殊字符
     2. 查找所有匹配的发送者 ID
-    3. 将其包装为 <AT:...> 格式
+    3. 将其包装为 `<AT:...>` 格式
 
     :param text: 包含发送者 ID 的文本
     :param sender_prefix: 发送者 ID 的前缀（如 "QQ|"）
-    :return: 转换后的文本，发送者 ID 被包装为 AT 代码
+    :return: 转换后的文本，发送者 ID 被包装为 AT 码
 
     示例：
         > text = "User QQ|123456 said hello"
         > convert_senderid_to_atcode(text, "QQ|")
         'User <AT:QQ|123456> said hello'
     """
-    # 转义前缀中的特殊字符（如 |）
+    # 转义前缀中的特殊字符（如 `|`）
     sender_prefix = sender_prefix.replace("|", "\\|")
 
     # 使用正则表达式查找并包装发送者 ID
-    # 负向后瞻断言确保不会重复包装已有的 AT 代码
+    # 负向后瞻断言确保不会重复包装已有的 AT 码
     # \g<0> 引用整个匹配的字符串
     return re.sub(rf"(?<!<AT:)(?<!<@:){sender_prefix}\|\w+", r"<AT:\g<0>>", text).replace("\\", "")
 

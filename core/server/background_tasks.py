@@ -4,8 +4,8 @@
 定义服务器启动后运行的后台任务，包括：
 - 定期的会话检查和清理
 - 过期临时数据清理
-- IP信息获取
-- Web Render初始化
+- IP 信息获取
+- WebRender 初始化
 """
 
 import asyncio
@@ -47,8 +47,8 @@ async def init_background_task():
 
     启动以下服务：
     1. IP信息获取
-    2. Web Render初始化
-    3. 检查并记录 Web Render 状态
+    2. WebRender 初始化
+    3. 检查并记录 WebRender 状态
     """
     asyncio.create_task(fetch_ip_info())
     Logger.info("Starting WebRender...")

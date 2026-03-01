@@ -167,10 +167,12 @@ def split_multi_arguments(lst: list):
     支持嵌套的括号和多个选择组。使用递归处理多层嵌套。
 
     示例:
+    ```
         >>> split_multi_arguments(["hello(world|earth)"])
         ["hello world", "hello earth"]
         >>> split_multi_arguments(["a(b|c)d(e|f)"])
         ["abde", "abdf", "acde", "acdf"]
+    ```
 
     :param lst: 包含参数字符串的列表，字符串中可能包含 (option1|option2) 形式的选择组
     :return: 展开后的参数列表，每个变体为一个独立的字符串
@@ -239,10 +241,12 @@ def parse_template(argv: list[str], depth: int = 0) -> list[Template]:
         - {description}: 描述信息，用于生成帮助文本
 
     示例:
+    ```
         > parse_template(["<source> [-o <destination>] {Copy a file}"])
         [Template([ArgumentPattern('source'),
         OptionalPattern('-o', [Template([ArgumentPattern('destination')])]),
          DescPattern('Copy a file')])]
+    ```
 
     :param argv: 包含模板字符串的列表
     :param depth: 递归深度，用于防止无限递归（最大深度由 MAX_NEST_DEPTH 定义）
@@ -442,9 +446,11 @@ def templates_to_str(templates: list[Template], with_desc=False, simplify=True) 
     该函数用于生成帮助文本，将解析后的 Template 对象转换为人类可读的字符串格式。
 
     示例:
+    ```
         > template = Template([ArgumentPattern('<source>'), OptionalPattern('-o', [Template([ArgumentPattern('<destination>')])]), DescPattern('Copy a file')])
         > templates_to_str([template])
         ['<source> [-o <destination>] - Copy a file']
+    ```
 
     :param templates: Template 对象列表
     :param with_desc: 是否包含描述信息（用于生成详细帮助）
@@ -526,15 +532,15 @@ def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
     - 多个相同优先级时：再次按有值参数的个数排序
 
     参数类型说明：
-    - <param>: 值参数，必须消耗一个参数值，如 <file>、<name>
+    - `<param>`: 值参数，必须消耗一个参数值，如 <file>、<name>
     - flag: 标志参数，是否存在于参数列表中（True/False），如 -v
     - ...: 可变长参数，可消耗 0 个或多个参数
-    - [flag <param>]: 可选参数，可能带有标志和子参数
+    - `[flag <param>]`: 可选参数，可能带有标志和子参数
 
     示例：
-    模板: Template([ArgumentPattern('<lang>'), OptionalPattern('-v', [...])])
-    输入: argv = ["python", "-v"]
-    输出: MatchedResult({"<lang>": "python", "-v": True}, template, priority)
+    - 模板: Template([ArgumentPattern('<lang>'), OptionalPattern('-v', [...])])
+    - 输入: argv = ["python", "-v"]
+    - 输出: MatchedResult({"<lang>": "python", "-v": True}, template, priority)
 
     :param argv: 命令行参数列表（不包括命令名本身）
     :param templates: 可用的模板列表，会逐个尝试匹配

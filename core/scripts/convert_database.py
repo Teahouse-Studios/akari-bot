@@ -2,11 +2,12 @@
 数据库格式转换脚本。
 
 该脚本用于将旧版本数据库格式迁移到新版本。
+
 主要功能：
-1. 将旧表重命名为临时表（以_old前缀）
+1. 将旧表重命名为临时表（以 `_old` 前缀）
 2. 初始化新的数据库架构
 3. 从旧表中读取数据，转换格式后导入新表
-4. 支持多个模块的数据迁移（如Cytoid、Maimai、Phigros、Wiki等）
+4. 支持多个模块的数据迁移
 5. 清理临时表
 
 使用场景：
@@ -175,13 +176,13 @@ class UnfriendlyActionsTable(Model):
 
 
 class CytoidBindInfoL(Model):
-    """Cytoid模块的绑定信息表（旧版）。
+    """Cytoid 模块的绑定信息表（旧版）。
 
-    存储用户与Cytoid游戏账号的绑定关系。
+    存储用户与 Cytoid 游戏账号的绑定关系。
 
     Attributes:
-        targetId: 用户ID
-        username: Cytoid用户名
+        targetId: 用户 ID
+        username: Cytoid 用户名
     """
 
     targetId = fields.CharField(max_length=512, primary_key=True)
@@ -192,13 +193,13 @@ class CytoidBindInfoL(Model):
 
 
 class DivingProberBindInfoL(Model):
-    """Maimai模块的绑定信息表（旧版）。
+    """Maimai 模块的绑定信息表（旧版）。
 
-    存储用户与Maimai游戏账号的绑定关系。
+    存储用户与 Maimai 游戏账号的绑定关系。
 
     Attributes:
-        targetId: 用户ID
-        username: Maimai用户名
+        targetId: 用户 ID
+        username: Maimai 用户名
     """
 
     targetId = fields.CharField(max_length=512, primary_key=True)
@@ -209,14 +210,14 @@ class DivingProberBindInfoL(Model):
 
 
 class PhigrosBindInfoL(Model):
-    """Phigros模块的绑定信息表（旧版）。
+    """Phigros 模块的绑定信息表（旧版）。
 
-    存储用户与Phigros游戏账号的绑定关系。
+    存储用户与 Phigros 游戏账号的绑定关系。
 
     Attributes:
-        targetId: 用户ID
+        targetId: 用户 ID
         sessiontoken: 游戏会话令牌
-        username: Phigros用户名
+        username: Phigros 用户名
     """
 
     targetId = fields.CharField(max_length=512, primary_key=True)
@@ -228,15 +229,15 @@ class PhigrosBindInfoL(Model):
 
 
 class WikiTargetInfoL(Model):
-    """Wiki模块的目标设置表（旧版）。
+    """Wiki 模块的目标设置表（旧版）。
 
-    存储各Wiki目标的个性化设置。
+    存储各会话 Wiki 模块的个性化设置。
 
     Attributes:
-        targetId: 目标ID
-        link: Wiki API链接
-        iws: 跨Wiki链接映射
-        headers: HTTP请求头
+        targetId: 会话 ID
+        link: Wiki API 链接
+        iws: 跨 Wiki 链接映射
+        headers: HTTP 请求头
         prefix: 页面前缀
     """
 
@@ -251,13 +252,13 @@ class WikiTargetInfoL(Model):
 
 
 class WikiSiteInfoL(Model):
-    """Wiki网站信息表（旧版）。
+    """Wiki 网站信息表（旧版）。
 
-    缓存Wiki网站的元信息。
+    缓存 Wiki 网站的元信息。
 
     Attributes:
-        apiLink: Wiki的API链接
-        siteInfo: 网站信息（JSON格式）
+        apiLink: Wiki 的 API 链接
+        siteInfo: 网站信息（JSON 格式）
         timestamp: 缓存时间
     """
 
@@ -270,12 +271,12 @@ class WikiSiteInfoL(Model):
 
 
 class WikiAllowListL(Model):
-    """Wiki白名单表（旧版）。
+    """Wiki 白名单表（旧版）。
 
-    允许访问的Wiki网站列表。
+    允许访问的 Wiki 网站列表。
 
     Attributes:
-        apiLink: Wiki的API链接
+        apiLink: Wiki 的 API 链接
         timestamp: 添加时间
     """
 
@@ -287,12 +288,12 @@ class WikiAllowListL(Model):
 
 
 class WikiBlockListL(Model):
-    """Wiki黑名单表（旧版）。
+    """Wiki 黑名单表（旧版）。
 
-    禁止访问的Wiki网站列表。
+    禁止访问的 Wiki 网站列表。
 
     Attributes:
-        apiLink: Wiki的API链接
+        apiLink: Wiki 的 API 链接
         timestamp: 添加时间
     """
 
@@ -304,12 +305,12 @@ class WikiBlockListL(Model):
 
 
 class WikiBotAccountListL(Model):
-    """Wiki机器人账号表（旧版）。
+    """Wiki 机器人账号表（旧版）。
 
-    存储用于Wiki编辑操作的机器人账号信息。
+    存储用于 Wiki 编辑操作的机器人账号信息。
 
     Attributes:
-        apiLink: Wiki的API链接
+        apiLink: Wiki 的 API 链接
         botAccount: 机器人账号名称
         botPassword: 机器人账号密码
     """
@@ -323,13 +324,13 @@ class WikiBotAccountListL(Model):
 
 
 class WikiLogTargetSetInfoL(Model):
-    """WikiLog模块的目标设置表（旧版）。
+    """WikiLog 模块的目标设置表（旧版）。
 
-    存储WikiLog功能的目标特定配置。
+    存储 WikiLog 功能的目标特定配置。
 
     Attributes:
-        targetId: 目标ID
-        infos: 配置信息（JSON格式）
+        targetId: 目标 ID
+        infos: 配置信息（JSON 格式）
     """
 
     targetId = fields.CharField(max_length=512, primary_key=True)
@@ -432,7 +433,7 @@ async def convert_database():
     i = 0
     for r in sender_info_records:
         i += 1
-        # 每处理1000条记录显示一次进度
+        # 每处理 1000 条记录显示一次进度
         if i % 1000 == 0:
             Logger.info(f"Converting SenderInfo {i}/{len(sender_info_records)}...")
         try:
@@ -457,7 +458,7 @@ async def convert_database():
     # 获取所有目标信息和黑名单信息
     target_info_records = await TargetInfoL.all()
     group_block_records = await GroupBlockList.all()
-    # 创建黑名单ID集合，便于后续查询
+    # 创建黑名单 ID 集合，便于后续查询
     blocked_target_ids = {record.targetId for record in group_block_records}
     i = 0
     for r in target_info_records:
@@ -479,7 +480,7 @@ async def convert_database():
             Logger.error(f"Failed to convert TargetInfo: {r.targetId}, error: {e}")
             Logger.error(f"TargetInfo record: {r.__dict__}")
 
-        # 如果目标在黑名单中，更新其blocked字段
+        # 如果目标在黑名单中，更新其 blocked 字段
         if r.targetId in blocked_target_ids:
             try:
                 target_info_record = await TargetInfo.get_by_target_id(r.targetId, create=False)
@@ -496,19 +497,19 @@ async def convert_database():
 
     Logger.info("Converting StoredData...")
 
-    # 转换存储数据，处理JSON格式
+    # 转换存储数据，处理 JSON 格式
     stored_data_records = await StoredDataL.all()
     for r in stored_data_records:
         v = r.value.strip()
-        # 确保值是JSON数组格式
+        # 确保值是 JSON 数组格式
         if not (v.startswith("[") and v.endswith("]")):
             v = f"[{v}]"
         try:
             try:
-                # 解析JSON值
+                # 解析 JSON 值
                 v = orjson.loads(v)
             except orjson.JSONDecodeError:
-                # 如果JSON解析失败则跳过此项
+                # 如果 JSON 解析失败则跳过此项
                 continue
 
             await StoredData.create(stored_key=r.name, value=v)
@@ -566,7 +567,7 @@ async def convert_database():
 
     Logger.info("Converting CytoidBindInfo...")
 
-    # Cytoid模块：绑定信息转换
+    # Cytoid 模块：绑定信息转换
     cytoid_bind_record = await CytoidBindInfoL.all()
     for r in cytoid_bind_record:
         try:
@@ -581,7 +582,7 @@ async def convert_database():
 
     Logger.info("Converting DivingProberBindInfo...")
 
-    # Maimai模块：绑定信息转换
+    # Maimai 模块：绑定信息转换
     maimai_bind_record = await DivingProberBindInfoL.all()
     for r in maimai_bind_record:
         try:
@@ -596,7 +597,7 @@ async def convert_database():
 
     Logger.info("Converting PhigrosBindInfo...")
 
-    # Phigros模块：绑定信息转换
+    # Phigros 模块：绑定信息转换
     phigros_bind_record = await PhigrosBindInfoL.all()
     for r in phigros_bind_record:
         try:
@@ -612,7 +613,7 @@ async def convert_database():
 
     Logger.info("Converting WikiTargetInfo...")
 
-    # Wiki模块：目标设置转换
+    # Wiki 模块：会话设置转换
     wiki_target_info_record = await WikiTargetInfoL.all()
     for r in wiki_target_info_record:
         try:
@@ -630,7 +631,7 @@ async def convert_database():
 
     Logger.info("Converting WikiSiteInfo...")
 
-    # Wiki网站信息转换
+    # Wiki 网站信息转换
     wiki_site_info_record = await WikiSiteInfoL.all()
     for r in wiki_site_info_record:
         try:
@@ -642,7 +643,7 @@ async def convert_database():
 
     Logger.info("Converting WikiAllowList...")
 
-    # Wiki白名单转换
+    # Wiki 白名单转换
     wiki_allow_list_record = await WikiAllowListL.all()
     for r in wiki_allow_list_record:
         try:
@@ -654,7 +655,7 @@ async def convert_database():
 
     Logger.info("Converting WikiBlockList...")
 
-    # Wiki黑名单转换
+    # Wiki 黑名单转换
     wiki_block_list_record = await WikiBlockListL.all()
     for r in wiki_block_list_record:
         try:
@@ -666,7 +667,7 @@ async def convert_database():
 
     Logger.info("Converting WikiBotAccountList...")
 
-    # Wiki机器人账号转换
+    # Wiki 机器人账号转换
     wiki_account_list_record = await WikiBotAccountListL.all()
     for r in wiki_account_list_record:
         try:
@@ -678,7 +679,7 @@ async def convert_database():
 
     Logger.info("Converting WikiLogTargetSetInfo...")
 
-    # WikiLog目标设置转换
+    # WikiLog 目标设置转换
     wikilog_target_set_info_record = await WikiLogTargetSetInfoL.all()
     for r in wikilog_target_set_info_record:
         try:
@@ -703,7 +704,5 @@ async def convert_database():
     await Tortoise.close_connections()
 
 
-# 脚本主入口
 if __name__ == "__main__":
-    # 运行数据库转换
     run_async(convert_database())

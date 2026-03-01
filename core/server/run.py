@@ -22,7 +22,7 @@ stop_event = asyncio.Event()
 
 def inner_ctrl_c_signal_handler(sig, frame):
     """
-    处理Ctrl+C信号。
+    处理 Ctrl+C 信号。
     """
     stop_event.set()
 
@@ -53,9 +53,8 @@ async def main():
 def run_async(subprocess: bool = False, binary_mode: bool = False):
     """运行服务器。
 
-    Args:
-        subprocess: 是否以子进程模式运行
-        binary_mode: 是否启用二进制模式
+    :param subprocess: 是否以子进程模式运行
+    :param binary_mode: 是否启用二进制模式
     """
     Info.subprocess = subprocess
     Info.binary_mode = binary_mode

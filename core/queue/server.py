@@ -59,17 +59,15 @@ class JobQueueServer(JobQueueBase):
 
         通过队列系统向指定的客户端发送消息。支持引用、消息解析和图片分割等功能。
 
-        Args:
-            session_info: 目标会话信息，指定消息发送到哪个频道/用户
-            message: 要发送的消息链对象
-            quote: 是否引用原消息（默认True）
-            wait: 是否等待消息发送完成（默认True）
-            enable_parse_message: 是否解析消息中的特殊标记（默认True）
-            enable_split_image: 是否将大图片拆分成多条消息发送（默认True）
+        :param session_info: 目标会话信息，指定消息发送到哪个频道/用户
+        :param message: 要发送的消息链对象
+        :param quote: 是否引用原消息（默认 True）
+        :param wait: 是否等待消息发送完成（默认 True）
+        :param enable_parse_message: 是否解析消息中的特殊标记（默认 True）
+        :param enable_split_image: 是否将大图片拆分成多条消息发送（默认 True）
 
-        Returns:
-            如果wait=True，返回发送结果字典（包含message_id等）
-            如果wait=False，返回任务ID
+        :return wait=True: 返回发送结果字典（包含 message_id 等）
+        :return wait=False: 返回任务 ID
         """
         value = await cls.add_job(
             session_info.client_name,
@@ -91,15 +89,13 @@ class JobQueueServer(JobQueueBase):
     ):
         """删除客户端的消息。
 
-        通过队列系统删除指定的消息。这是一个非阻塞操作（wait=False）。
+        通过队列系统删除指定的消息。这是一个非阻塞操作。
 
-        Args:
-            session_info: 消息所在的会话信息
-            message_id: 要删除的消息ID或ID列表
-            reason: 删除原因（可选）
+        :param session_info: 消息所在的会话信息
+        :param message_id: 要删除的消息ID或ID列表
+        :param reason: 删除原因（可选）
 
-        Returns:
-            任务ID或返回值（通常不会被等待）
+        :return: 任务 ID 或返回值（通常不会被等待）
         """
         if isinstance(message_id, str):
             message_id = [message_id]
@@ -119,14 +115,12 @@ class JobQueueServer(JobQueueBase):
 
         通过队列系统对指定的成员进行禁言处理。这是一个非阻塞操作。
 
-        Args:
-            session_info: 目标群组/频道的会话信息
-            user_id: 要限制的成员ID或ID列表
-            duration: 限制时长（秒），为None表示永久
-            reason: 限制原因（可选）
+        :param session_info: 目标群组 / 频道的会话信息
+        :param user_id: 要限制的成员 ID 或 ID 列表
+        :param duration: 限制时长（秒），None 表示永久
+        :param reason: 限制原因（可选）
 
-        Returns:
-            任务ID或返回值
+        :return: 任务 ID 或返回值
         """
         value = await cls.add_job(
             session_info.client_name,
@@ -147,12 +141,10 @@ class JobQueueServer(JobQueueBase):
 
         通过队列系统取消之前对成员的限制。这是一个非阻塞操作。
 
-        Args:
-            session_info: 目标群组/频道的会话信息
-            user_id: 要解除限制的成员ID或ID列表
+        :param session_info: 目标群组 / 频道的会话信息
+        :param user_id: 要解除限制的成员 ID 或 ID 列表
 
-        Returns:
-            任务ID或返回值
+        :return: 任务ID或返回值
         """
         value = await cls.add_job(
             session_info.client_name,
@@ -166,15 +158,13 @@ class JobQueueServer(JobQueueBase):
     async def client_kick_member(cls, session_info: SessionInfo, user_id: str | list[str], reason: str | None = None):
         """踢出群组成员。
 
-        通过队列系统将指定的成员从群组/频道中踢出。这是一个非阻塞操作。
+        通过队列系统将指定的成员从群组 / 频道中踢出。这是一个非阻塞操作。
 
-        Args:
-            session_info: 目标群组/频道的会话信息
-            user_id: 要踢出的成员ID或ID列表
-            reason: 踢出原因（可选）
+        :param session_info: 目标群组 / 频道的会话信息
+        :param user_id: 要踢出的成员 ID 或 ID 列表
+        :param reason: 踢出原因（可选）
 
-        Returns:
-            任务ID或返回值
+        :return: 任务 ID 或返回值
         """
         value = await cls.add_job(
             session_info.client_name,
@@ -190,13 +180,11 @@ class JobQueueServer(JobQueueBase):
 
         通过队列系统永久封禁指定的成员。这是一个非阻塞操作。
 
-        Args:
-            session_info: 目标群组/频道的会话信息
-            user_id: 要封禁的成员ID或ID列表
-            reason: 封禁原因（可选）
+        :param session_info: 目标群组 / 频道的会话信息
+        :param user_id: 要封禁的成员 ID 或 ID 列表
+        :param reason: 封禁原因（可选）
 
-        Returns:
-            任务ID或返回值
+        :return: 任务 ID 或返回值
         """
         value = await cls.add_job(
             session_info.client_name,
@@ -212,12 +200,10 @@ class JobQueueServer(JobQueueBase):
 
         通过队列系统取消之前对成员的永久封禁。这是一个非阻塞操作。
 
-        Args:
-            session_info: 目标群组/频道的会话信息
-            user_id: 要解除封禁的成员ID或ID列表
+        :param session_info: 目标群组 / 频道的会话信息
+        :param user_id: 要解除封禁的成员 ID 或 ID 列表
 
-        Returns:
-            任务ID或返回值
+        :return: 任务 ID 或返回值
         """
         value = await cls.add_job(
             session_info.client_name,
@@ -231,15 +217,13 @@ class JobQueueServer(JobQueueBase):
     async def client_add_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str):
         """向消息添加反应。
 
-        通过队列系统在指定的消息上添加表情反应（如emoji点赞）。
+        通过队列系统在指定的消息上添加表情反应。
 
-        Args:
-            session_info: 消息所在的会话信息
-            message_id: 目标消息ID或ID列表
-            emoji: 要添加的表情代码
+        :param session_info: 消息所在的会话信息
+        :param message_id: 目标消息 ID 或 ID 列表
+        :param emoji: 要添加的表情代码
 
-        Returns:
-            任务结果字典
+        :return: 任务结果字典
         """
         value = await cls.add_job(
             session_info.client_name,
@@ -254,13 +238,11 @@ class JobQueueServer(JobQueueBase):
 
         通过队列系统移除指定消息上的表情反应。
 
-        Args:
-            session_info: 消息所在的会话信息
-            message_id: 目标消息ID或ID列表
-            emoji: 要移除的表情代码
+        :param session_info: 消息所在的会话信息
+        :param message_id: 目标消息 ID 或 ID 列表
+        :param emoji: 要添加的表情代码
 
-        Returns:
-            任务结果字典
+        :return: 任务结果字典
         """
         value = await cls.add_job(
             session_info.client_name,
@@ -271,15 +253,12 @@ class JobQueueServer(JobQueueBase):
 
     @classmethod
     async def client_start_typing_signal(cls, session_info: SessionInfo):
-        """发送"正在输入"信号。
+        """发送“正在输入……”信号。
 
-        通过队列系统向指定会话发送"正在输入"的状态指示。
+        通过队列系统向指定会话发送“正在输入……”的状态指示。
 
-        Args:
-            session_info: 目标会话信息
-
-        Returns:
-            任务结果字典
+        :param session_info: 目标会话信息
+        :return: 任务结果字典
         """
         value = await cls.add_job(
             session_info.client_name, "start_typing", {"session_info": converter.unstructure(session_info)}
@@ -288,15 +267,12 @@ class JobQueueServer(JobQueueBase):
 
     @classmethod
     async def client_end_typing_signal(cls, session_info: SessionInfo):
-        """隐藏"正在输入"信号。
+        """隐藏“正在输入……”信号。
 
-        通过队列系统隐藏指定会话的"正在输入"状态指示。
+        通过队列系统隐藏指定会话的“正在输入……”状态指示。
 
-        Args:
-            session_info: 目标会话信息
-
-        Returns:
-            任务结果字典
+        :param session_info: 目标会话信息
+        :return: 任务结果字典
         """
         value = await cls.add_job(
             session_info.client_name, "end_typing", {"session_info": converter.unstructure(session_info)}
@@ -309,11 +285,8 @@ class JobQueueServer(JobQueueBase):
 
         通过队列系统向指定会话发送错误通知。这是一个非阻塞操作。
 
-        Args:
-            session_info: 目标会话信息
-
-        Returns:
-            任务ID或返回值
+        :param session_info: 目标会话信息
+        :return: 任务ID或返回值
         """
         value = await cls.add_job(
             session_info.client_name, "error_signal", {"session_info": converter.unstructure(session_info)}, wait=False
@@ -326,11 +299,8 @@ class JobQueueServer(JobQueueBase):
 
         通过队列系统检查指定会话是否拥有原生权限（如管理员权限等）。
 
-        Args:
-            session_info: 要检查的会话信息
-
-        Returns:
-            布尔值，表示是否拥有权限
+        :param session_info: 目标会话信息
+        :return: 布尔值，表示是否拥有权限
         """
         v = await cls.add_job(
             session_info.client_name,
@@ -345,11 +315,8 @@ class JobQueueServer(JobQueueBase):
 
         通过队列系统保持指定会话的上下文，防止其被自动清理。
 
-        Args:
-            session_info: 目标会话信息
-
-        Returns:
-            任务结果字典
+        :param session_info: 目标会话信息
+        :return: 任务结果字典
         """
         value = await cls.add_job(
             session_info.client_name, "hold_context", {"session_info": converter.unstructure(session_info)}
@@ -362,11 +329,8 @@ class JobQueueServer(JobQueueBase):
 
         通过队列系统释放之前保持的会话上下文，允许其被自动清理。
 
-        Args:
-            session_info: 目标会话信息
-
-        Returns:
-            任务结果字典
+        :param session_info: 目标会话信息
+        :return: 任务结果字典
         """
         value = await cls.add_job(
             session_info.client_name, "release_context", {"session_info": converter.unstructure(session_info)}
@@ -375,17 +339,15 @@ class JobQueueServer(JobQueueBase):
 
     @classmethod
     async def call_onebot_api(cls, session_info: SessionInfo, api_name: str, **kwargs: dict):
-        """调用OneBot标准API。
+        """调用 OneBot 标准 API。
 
-        通过队列系统在客户端调用OneBot标准API（如获取群信息、获取群成员列表等）。
+        通过队列系统在客户端调用 OneBot 标准 API（如获取群信息、获取群成员列表等）。
 
-        Args:
-            session_info: 相关的会话信息
-            api_name: OneBot API名称
-            **kwargs: 传递给API的参数
+        :param session_info: 目标会话信息
+        :param api_name: OneBot API 名称
+        :param **kwargs: 传递给 API 的参数
 
-        Returns:
-            API调用的结果字典
+        :return: API 调用的结果字典
         """
         value = await cls.add_job(
             session_info.client_name,
@@ -402,12 +364,10 @@ async def receive_message_from_client(tsk: JobQueuesTable, args: dict):
     这是服务器端的主要消息入口。当客户端接收到用户消息时，会通过队列
     系统将消息转发到服务器，由该处理器进行解析和分发处理。
 
-    Args:
-        tsk: 任务对象
-        args: 操作参数，包含session_info
+    :param tsk: 任务对象（未使用）
+    :param args: 操作参数，包含 session_info
 
-    Returns:
-        包含success标志的字典
+    :return: 包含 success 标志的字典
     """
     await parser(
         await exports["Bot"].MessageSession.from_session_info(converter.structure(args["session_info"], SessionInfo))
@@ -421,12 +381,10 @@ async def client_keepalive(tsk: JobQueuesTable, args: dict):
 
     刷新客户端的存活状态，确保其被认为在线。同时更新可接收消息的前缀列表。
 
-    Args:
-        tsk: 任务对象
-        args: 操作参数（未使用，使用tsk.args代替）
+    :param tsk: 任务对象
+    :param args: 操作参数（未使用，使用tsk.args代替）
 
-    Returns:
-        包含success标志的字典
+    :return: 包含 success 标志的字典
     """
     Alive.refresh_alive(
         tsk.args["client_name"],
@@ -440,15 +398,12 @@ async def client_keepalive(tsk: JobQueuesTable, args: dict):
 async def _(tsk: JobQueuesTable, args: dict):
     """触发钩子函数处理器。
 
-    在服务器上执行指定的钩子函数，并返回其执行结果。这允许客户端
-    远程触发服务器上的事件和逻辑。
+    在服务器上执行指定的钩子函数，并返回其执行结果。这允许客户端远程触发服务器上的事件和逻辑。
 
-    Args:
-        tsk: 任务对象
-        args: 操作参数，包含module_or_hook_name、session_info和args
+    :param tsk: 任务对象
+    :param args: 操作参数，包含 module_or_hook_name、session_info 和 args
 
-    Returns:
-        包含result的字典，其中result是钩子函数的返回值
+    :return: 包含 result 的字典，其中 result 是钩子函数的返回值
     """
     bot: "Bot" = exports["Bot"]
     session_info: SessionInfo | None = None
@@ -468,12 +423,10 @@ async def client_direct_message(tsk: JobQueuesTable, args: dict):
 
     服务器通过客户端向用户直接发送消息（不通过消息队列）。
 
-    Args:
-        tsk: 任务对象
-        args: 操作参数，包含session_info、message等
+    :param tsk: 任务对象（未使用）
+    :param args: 操作参数，包含 session_info、message 等
 
-    Returns:
-        包含success标志的字典
+    :return: 包含 success 标志的字典
     """
     bot: "Bot" = exports["Bot"]
     session_info = converter.structure(args["session_info"], SessionInfo)
@@ -494,12 +447,10 @@ async def get_bot_version(tsk: JobQueuesTable, args: dict):
 
     返回机器人的版本号。如果本地有版本文件则读取，否则尝试从git获取提交哈希。
 
-    Args:
-        tsk: 任务对象
-        args: 操作参数（未使用）
+    :param tsk: 任务对象（未使用）
+    :param args: 操作参数操作参数（未使用）
 
-    Returns:
-        包含version的字典，version为版本字符串
+    :return: 包含 version 的字典，version 为版本字符串
     """
     version = None
     version_path = PrivateAssets.path / ".version"
@@ -516,16 +467,14 @@ async def get_bot_version(tsk: JobQueuesTable, args: dict):
 
 @JobQueueServer.action("get_web_render_status")
 async def get_web_render_status(tsk: JobQueuesTable, args: dict):
-    """获取Web渲染服务状态处理器。
+    """获取 WebRender 服务状态处理器。
 
-    检查Web渲染服务（如浏览器）是否正常运行。
+    检查 WebRender 服务是否正常运行。
 
-    Args:
-        tsk: 任务对象
-        args: 操作参数（未使用）
+    :param tsk: 任务对象（未使用）
+    :param args: 操作参数（未使用）
 
-    Returns:
-        包含web_render_status的字典
+    :return: 包含 web_render_status 的字典
     """
     return {"web_render_status": await web_render.browser.check_status()}
 
@@ -536,12 +485,10 @@ async def get_module_list(tsk: JobQueuesTable, args: dict):
 
     获取所有已加载且启用的模块名称列表（不包括基础模块）。
 
-    Args:
-        tsk: 任务对象
-        args: 操作参数（未使用）
+    :param tsk: 任务对象（未使用）
+    :param args: 操作参数（未使用）
 
-    Returns:
-        包含modules_list的字典
+    :return: 包含 modules_list 的字典
     """
     modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list(use_cache=False).items()}
     modules = {k: v for k, v in modules.items() if v.get("load", True) and not v.get("base", False)}
@@ -557,12 +504,10 @@ async def get_modules_info(tsk: JobQueuesTable, args: dict):
 
     获取所有模块的信息并按指定语言进行本地化处理。
 
-    Args:
-        tsk: 任务对象
-        args: 操作参数，包含locale（本地化语言）
+    :param tsk: 任务对象（未使用）
+    :param args: 操作参数，包含 locale（本地化语言）
 
-    Returns:
-        包含modules的字典，modules为模块信息字典
+    :return: 包含 modules 的字典，modules 为模块信息字典
     """
     modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list(use_cache=False).items()}
     modules = {k: v for k, v in modules.items() if v.get("load", True)}
@@ -581,12 +526,10 @@ async def get_module_helpdoc(tsk: JobQueuesTable, args: dict):
     获取指定模块的详细帮助文档，包括所有命令和正则表达式规则，
     并按指定语言进行本地化。
 
-    Args:
-        tsk: 任务对象
-        args: 操作参数，包含module和locale
+    :param tsk: 任务对象（未使用）
+    :param args: 操作参数，包含 module 和 locale
 
-    Returns:
-        包含help_doc的字典，help_doc包含模块名称、描述、命令和正则规则
+    :return: 包含 help_doc 的字典，help_doc 包含模块名称、描述、命令和正则规则
     """
     module = ModulesManager.modules.get(args["module"], None)
     help_doc = {}
@@ -628,12 +571,10 @@ async def get_module_related(tsk: JobQueuesTable, args: dict):
 
     查找与指定模块相关的其他模块（基于模块的依赖关系）。
 
-    Args:
-        tsk: 任务对象
-        args: 操作参数，包含module
+    :param tsk: 任务对象（未使用）
+    :param args: 操作参数，包含 module
 
-    Returns:
-        包含modules_list的字典
+    :return: 包含 modules_list 的字典
     """
     return {"modules_list": ModulesManager.search_related_module(args["module"], include_self=False)}
 
@@ -644,13 +585,12 @@ async def post_module_action(tsk: JobQueuesTable, args: dict):
 
     对模块执行操作：加载、卸载或重新加载。
 
-    Args:
-        tsk: 任务对象
-        args: 操作参数，包含module和action
-              - action: "load"（加载）、"unload"（卸载）或"reload"（重新加载）
+    :param tsk: 任务对象（未使用）
+    :param args: 操作参数，包含 module 和 action
 
-    Returns:
-        包含success标志的字典
+        - action: "load"（加载）、"unload"（卸载）或"reload"（重新加载）
+
+    :return: 包含 success 标志的字典
     """
     match args["action"]:
         case "reload":

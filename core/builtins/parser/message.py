@@ -452,7 +452,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
     """
     time_start = time.perf_counter()
     bot: "Bot" = exports["Bot"]
-    _typing = False  # 标记是否正在显示"正在输入"状态
+    _typing = False  # 标记是否正在显示“正在输入……”状态
     try:
         # ========== 步骤 1: 冷却检查 ==========
         # 检查目标是否在冷却期内（被临时禁止）
@@ -554,7 +554,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
         msg.parsed_msg = None
         for func in module.command_list.set:
             if not func.command_template:
-                # 显示"正在输入"状态（如果用户启用）
+                # 显示“正在输入……”状态（如果用户启用）
                 if msg.session_info.sender_info.sender_data.get("typing_prompt", True):
                     await msg.start_typing()
                     _typing = True
@@ -625,7 +625,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
     finally:
         # 清理工作
         if _typing:
-            # 结束"正在输入"状态
+            # 结束“正在输入……”状态
             await msg.end_typing()
         # 释放执行锁
         ExecutionLockList.remove(msg)
@@ -694,7 +694,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                 for rfunc in regex_module.regex_list.set:
                     time_start = time.perf_counter()
                     matched = False  # 标记是否匹配成功
-                    _typing = False  # 标记是否显示"正在输入"
+                    _typing = False  # 标记是否显示“正在输入……”
                     try:
                         matched_hash = 0  # 用于检测重复匹配
 
@@ -971,7 +971,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
     2. 验证发送者权限（超级用户、管理员等）
     3. 检查命令在当前会话中的有效性（平台限制等）
     4. 根据命令函数的参数签名构建调用参数
-    5. 显示"正在输入"状态（如果用户启用）
+    5. 显示“正在输入……”状态（如果用户启用）
     6. 执行命令函数
 
     :param msg: 消息会话对象
@@ -979,7 +979,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
     :param command_first_word: 命令的第一个词（模块名）
     """
     bot: "Bot" = exports["Bot"]
-    _typing = False  # 标记是否显示"正在输入"状态
+    _typing = False  # 标记是否显示“正在输入……”状态
     try:
         # ========== 步骤 1: 解析命令参数 ==========
         command_parser = CommandParser(
@@ -1089,7 +1089,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
                 # 函数只有一个参数，直接传入 MessageSession
                 kwargs[func_params[list(func_params.keys())[0]].name] = msg
 
-            # ========== 步骤 5: 显示"正在输入"状态 ==========
+            # ========== 步骤 5: 显示“正在输入……”状态 ==========
             if msg.session_info.target_info.target_data.get("typing_prompt", True):
                 await msg.start_typing()
                 _typing = True

@@ -23,6 +23,7 @@ class SessionTaskManager:
     负责追踪正在进行的异步任务，如等待用户回复，以及执行已发送消息的回调函数。
 
     数据结构说明:
+    ```
         _task_list: {
             target_id: {
                 sender_id: {
@@ -30,7 +31,7 @@ class SessionTaskManager:
                         'flag': asyncio.Event,  # 用于同步的事件标志
                         'active': bool,          # 任务是否活跃
                         'type': str,             # 任务类型 ('wait' 或 'reply')
-                        'reply': str,            # 预期的回复消息ID（仅reply类型）
+                        'reply': str,            # 预期的回复消息 ID（仅 reply 类型）
                         'ts': float,             # 任务创建时间戳
                         'timeout': float,        # 任务超时时间（秒）
                         'result': MessageSession # 任务完成后的结果（可选）
@@ -45,12 +46,13 @@ class SessionTaskManager:
                 'ts': float             # 回调添加时间戳
             }
         }
+    ```
     """
 
-    # 存储活跃任务的字典，按目标ID、发送者ID、消息会话层次组织
+    # 存储活跃任务的字典，按会话 ID、发送者 ID、消息会话层次组织
     _task_list = {}
 
-    # 存储待执行回调的字典，按消息ID索引
+    # 存储待执行回调的字典，按消息 ID 索引
     _callback_list = {}
 
     @classmethod

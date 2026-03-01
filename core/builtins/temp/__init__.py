@@ -14,8 +14,10 @@ class Temp:
     存储临时数据。数据在程序重启后将丢失。
 
     示例:
+    ```
         Temp.data['key'] = 'value'
         value = Temp.data['key']
+    ```
     """
 
     # 存储临时数据的字典，键值对形式存储临时信息

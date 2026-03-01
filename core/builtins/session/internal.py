@@ -111,13 +111,9 @@ class MessageSession:
 
         :param message_chain: 消息链，若传入 str 则自动创建一条带有 PlainElement 的消息链
         :param quote: 是否引用原始消息（默认为 True）
-                     某些平台支持引用回复功能
         :param disable_secret_check: 是否禁用消息安全检查（默认为 False）
-                                    如果启用，不检查敏感信息
-        :param enable_parse_message: 是否允许解析消息中的特殊格式（默认为 True）
-                                    如多语言标记、KE 码等
-        :param enable_split_image: 是否允许拆分图片发送（默认为 True）
-                                  某些平台（如 Telegram）需要逐个发送图片
+        :param enable_parse_message: 是否允许解析消息（此参数作接口兼容用，仅 QQ 平台使用，默认为 True）
+        :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅 Telegram 平台使用，默认为 True）
         :param callback: 回调函数，在消息发送完成后执行（可选）
         :return: FinishedSession 对象，包含消息 ID，可用于后续操作
 
@@ -215,7 +211,7 @@ class MessageSession:
         1. 获取消息队列服务
         2. 转换消息链格式
         3. 进行安全检查
-        4. 以后台任务方式发送消息（wait=False）
+        4. 以后台任务（非阻塞）方式发送消息
         5. 注册回调函数（如有）
 
         :param message_chain: 消息链，若传入 str 则自动创建一条带有 PlainElement 的消息链
@@ -340,7 +336,7 @@ class MessageSession:
         """
         用于检查消息发送者原本在聊天平台中是否具有管理员权限。
 
-        这检查的是原生平台权限（如 QQ 群管理员），而非 Akari Bot 的权限。
+        这检查的是原生平台权限（如 QQ 群管理员），而非 AkariBot 的权限。
 
         :return: 如果用户是平台管理员返回 True，否则返回 False
         """
@@ -370,7 +366,7 @@ class MessageSession:
         """
         用于手动释放持久化的会话。
 
-        释放之前通过 hold() 方法保持的会话，允许系统回收相关资源。
+        释放之前通过 `hold()` 方法保持的会话，允许系统回收相关资源。
         """
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         await _queue_server.client_release_context(self.session_info)
@@ -379,7 +375,7 @@ class MessageSession:
         """
         用于在会话中开始输入状态。
 
-        显示"正在输入"提示给其他用户，表示机器人正在处理消息。
+        显示“正在输入……”提示给其他用户，表示机器人正在处理消息。
         """
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         await _queue_server.client_start_typing_signal(self.session_info)
@@ -388,7 +384,7 @@ class MessageSession:
         """
         用于结束会话中的输入状态。
 
-        关闭"正在输入"提示。
+        关闭“正在输入……”提示。
         """
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         await _queue_server.client_end_typing_signal(self.session_info)
@@ -592,7 +588,8 @@ class MessageSession:
         一次性模板，用于等待触发对象回复消息。
 
         该方法会发送一条消息并等待用户以回复的形式响应（需要平台支持）。
-        如果平台不支持回复功能，会退化为 wait_next_message 或 wait_anyone。
+
+        如果平台不支持回复功能，会退化为 `wait_next_message` 或 `wait_anyone`。
 
         处理流程：
         1. 检查平台是否支持回复功能
@@ -723,8 +720,10 @@ class MessageSession:
         :return: 格式化后的时间字符串
 
         示例：
+        ```
             > session.format_time(1234567890, date=True, time=True)
             'February 13, 2009 23:31:30 (UTC)'
+        ```
         """
         dt = datetime.fromtimestamp(timestamp, UTC) + self.session_info.timezone_offset
         ftime_template = []
@@ -762,8 +761,10 @@ class MessageSession:
         :return: 本地化格式的数字字符串
 
         示例：
+        ```
             > session.format_num(1000000, precision=1)  # 中文: '100.0万'
             > session.format_num(1000000, precision=1)  # 英文: '1.0M'
+        ```
         """
 
         def _get_cjk_unit(number: Decimal) -> tuple[int, Decimal] | None:

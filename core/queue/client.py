@@ -38,8 +38,7 @@ class JobQueueClient(JobQueueBase):
 
         用于客户端将接收到的消息转发给服务器进行处理（如触发命令、模块等）。
 
-        Args:
-            session_info: 包含消息的会话信息，包括发送者、目标频道等
+        :param session_info: 包含消息的会话信息，包括发送者、目标频道等
         """
         await cls.add_job(
             "Server", "receive_message_from_client", {"session_info": converter.unstructure(session_info)}
@@ -52,12 +51,11 @@ class JobQueueClient(JobQueueBase):
         """向服务器发送保活信号。
 
         用于客户端定期向服务器报告自身仍在运行，防止连接被认为已离线。
-        这是一个非阻塞操作（wait=False）。
+        这是一个非阻塞操作。
 
-        Args:
-            client_name: 客户端的名称标识
-            target_prefix_list: 可选的目标前缀列表，用于过滤接收消息的频道
-            sender_prefix_list: 可选的发送者前缀列表，用于过滤消息来源
+        :param client_name: 客户端的名称标识
+        :param target_prefix_list: 可选的目标前缀列表，用于过滤接收消息的频道
+        :param sender_prefix_list: 可选的发送者前缀列表，用于过滤消息来源
         """
         await cls.add_job(
             "Server",
@@ -75,19 +73,17 @@ class JobQueueClient(JobQueueBase):
         """触发服务器上的钩子函数或模块事件。
 
         用于客户端主动触发服务器上注册的钩子函数，并可选择等待执行结果。
-        支持将MessageChain对象自动转换为列表形式传递。
+        支持将 MessageChain 对象自动转换为列表形式传递。
 
-        Args:
-            module_or_hook_name: 要触发的钩子函数或模块名称
-            session_info: 关联的会话信息，用于提供操作上下文（可选）
-            wait: 是否等待钩子执行完成（默认False）
-            **kwargs: 传递给钩子函数的自定义参数
+        :param module_or_hook_name: 要触发的钩子函数或模块名称
+        :param session_info: 关联的会话信息，用于提供操作上下文（可选）
+        :param wait: 是否等待钩子执行完成（默认False）
+        :param **kwargs: 传递给钩子函数的自定义参数
 
-        Returns:
-            如果wait=True，返回钩子函数的执行结果
-            如果wait=False，返回None
+        :return wait=True: 返回钩子函数的执行结果
+        :return wait=False: 返回 None
         """
-        # 将MessageChain对象转换为列表以便序列化
+        # 将 MessageChain 对象转换为列表以便序列化
         for k in kwargs:
             if isinstance(kwargs[k], exports["MessageChain"]):
                 kwargs[k] = kwargs[k].to_list()
@@ -109,18 +105,16 @@ class JobQueueClient(JobQueueBase):
     async def get_bot_version(cls):
         """获取服务器的机器人版本信息。
 
-        Returns:
-            版本字符串，格式为版本号或"git:提交哈希"
+        :return: 版本字符串，格式为版本号或"git:<提交哈希>"
         """
         ret = await cls.add_job("Server", "get_bot_version", {})
         return ret["version"]
 
     @classmethod
     async def get_web_render_status(cls):
-        """获取Web渲染服务的状态。
+        """获取 WebRender 服务的状态。
 
-        Returns:
-            布尔值或状态字典，表示Web渲染服务是否可用
+        :return: 布尔值或状态字典，表示 WebRender 服务是否可用
         """
         ret = await cls.add_job("Server", "get_web_render_status", {})
         return ret["web_render_status"]
@@ -129,8 +123,7 @@ class JobQueueClient(JobQueueBase):
     async def get_modules_list(cls):
         """获取已加载的所有模块名称列表。
 
-        Returns:
-            模块名称列表，不包括禁用或基础模块
+        :return: 模块名称列表，不包括禁用或基础模块
         """
         ret = await cls.add_job("Server", "get_modules_list", {})
         return ret["modules_list"]
@@ -139,11 +132,9 @@ class JobQueueClient(JobQueueBase):
     async def get_modules_info(cls, locale: str = "zh_cn"):
         """获取所有模块的详细信息。
 
-        Args:
-            locale: 本地化语言代码（默认"zh_cn"，中文）
+        :param locale: 本地化语言代码（默认"zh_cn"）
 
-        Returns:
-            模块信息字典，包含模块名称、描述等，按指定语言本地化
+        :return: 模块信息字典，包含模块名称、描述等，按指定语言本地化
         """
         ret = await cls.add_job("Server", "get_modules_info", {"locale": locale})
         return ret["modules"]
@@ -154,12 +145,10 @@ class JobQueueClient(JobQueueBase):
 
         返回的帮助文档包括命令列表和正则表达式规则。
 
-        Args:
-            module: 模块名称
-            locale: 本地化语言代码（默认"zh_cn"）
+        :param module: 模块名称
+        :param locale: 本地化语言代码（默认"zh_cn"）
 
-        Returns:
-            帮助文档字典，包含模块名称、描述、命令列表和正则规则
+        :return: 帮助文档字典，包含模块名称、描述、命令列表和正则规则
         """
         ret = await cls.add_job("Server", "get_module_helpdoc", {"module": module, "locale": locale})
         return ret["help_doc"]
@@ -168,11 +157,9 @@ class JobQueueClient(JobQueueBase):
     async def get_module_related(cls, module: str):
         """获取与指定模块相关的其他模块列表。
 
-        Args:
-            module: 模块名称
+        :param module: 模块名称
 
-        Returns:
-            相关模块名称列表
+        :return: 相关模块名称列表
         """
         ret = await cls.add_job("Server", "get_module_related", {"module": module})
         return ret["modules_list"]
@@ -181,15 +168,14 @@ class JobQueueClient(JobQueueBase):
     async def post_module_action(cls, module: str, action: str):
         """对模块执行操作（加载、卸载、重新加载）。
 
-        Args:
-            module: 模块名称
-            action: 操作类型，可选值：
-                   - "load": 加载模块
-                   - "unload": 卸载模块
-                   - "reload": 重新加载模块
+        :param module: 模块名称
+        :param action: 操作类型
 
-        Returns:
-            布尔值，表示操作是否成功
+            - "load": 加载模块
+            - "unload": 卸载模块
+            - "reload": 重新加载模块
+
+        :return: 布尔值，表示操作是否成功
         """
         ret = await cls.add_job("Server", "post_module_action", {"module": module, "action": action})
         return ret["success"]
@@ -198,14 +184,13 @@ class JobQueueClient(JobQueueBase):
 async def get_session(args: dict):
     """从操作参数中恢复会话信息。
 
-    该辅助函数从序列化的参数中反序列化SessionInfo对象，刷新其信息，
+    该辅助函数从序列化的参数中反序列化 SessionInfo 对象，刷新其信息，
     并获取相关的上下文管理器和机器人对象。
 
-    Args:
-        args: 操作参数字典，必须包含"session_info"键
+    :param args: 操作参数字典，必须包含 "session_info" 键
 
-    Returns:
-        元组(session_info, bot, ctx_manager)：
+    :return: 元组 `(session_info, bot, ctx_manager)`
+
         - session_info: 会话信息对象
         - bot: 机器人实例
         - ctx_manager: 该会话对应的上下文管理器
@@ -235,7 +220,7 @@ async def _(tsk: JobQueuesTable, args: dict):
     """发送消息处理器。
 
     将消息发送到指定的会话，支持消息解析和图片分割等选项。
-    返回发送的消息ID。
+    返回发送的消息 ID。
     """
     session_info, bot, ctx_manager = await get_session(args)
     send = await ctx_manager.send_message(
@@ -283,7 +268,7 @@ async def _(tsk: JobQueuesTable, args: dict):
 async def _(tsk: JobQueuesTable, args: dict):
     """踢出成员处理器。
 
-    将指定的成员从群组/频道中踢出，可指定踢出原因。
+    将指定的成员从群组 / 频道中踢出，可指定踢出原因。
     """
     session_info, _, ctx_manager = await get_session(args)
     await ctx_manager.kick_member(session_info, args["user_id"], args["reason"])
@@ -313,7 +298,7 @@ async def _(tsk: JobQueuesTable, args: dict):
 async def _(tsk: JobQueuesTable, args: dict):
     """添加反应处理器。
 
-    向消息添加表情反应（如emoji点赞等）。
+    向消息添加表情反应。
     """
     session_info, _, ctx_manager = await get_session(args)
     await ctx_manager.add_reaction(session_info, args["message_id"], args["emoji"])
@@ -333,7 +318,7 @@ async def _(tsk: JobQueuesTable, args: dict):
 async def _(tsk: JobQueuesTable, args: dict):
     """开始输入处理器。
 
-    向用户显示"正在输入"的状态指示。
+    向用户显示“正在输入……”的状态指示。
     """
     session_info, _, ctx_manager = await get_session(args)
     await ctx_manager.start_typing(session_info)
@@ -344,7 +329,7 @@ async def _(tsk: JobQueuesTable, args: dict):
 async def _(tsk: JobQueuesTable, args: dict):
     """结束输入处理器。
 
-    隐藏"正在输入"的状态指示。
+    隐藏“正在输入……”的状态指示。
     """
     session_info, _, ctx_manager = await get_session(args)
     await ctx_manager.end_typing(session_info)
@@ -366,7 +351,7 @@ async def _(tsk: JobQueuesTable, args: dict):
 async def _(tsk: JobQueuesTable, args: dict):
     """保持上下文处理器。
 
-    保持/锁定指定会话的上下文，防止其被自动清理。
+    保持 / 锁定指定会话的上下文，防止其被自动清理。
     """
     session_info, _, ctx_manager = await get_session(args)
     ctx_manager.hold_context(session_info)
@@ -386,12 +371,11 @@ async def _(tsk: JobQueuesTable, args: dict):
 
 @JobQueueClient.action("call_onebot_api")
 async def _(tsk: JobQueuesTable, args: dict):
-    """调用OneBot API处理器。
+    """调用 OneBot API 处理器。
 
-    通过上下文管理器调用OneBot标准API（如果支持的话）。
+    通过上下文管理器调用 OneBot 标准 API（如果支持的话）。
 
-    Returns:
-        API调用结果字典，或错误信息字典（如果不支持）
+    :return: API 调用结果字典，或错误信息字典（如果不支持）
     """
     _, _, ctx_manager = await get_session(args)
     get_ = getattr(ctx_manager, "call_onebot_api", None)

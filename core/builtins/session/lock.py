@@ -17,11 +17,11 @@ class ExecutionLockList:
     """
     执行锁列表 - 管理正在执行的消息会话。
 
-    通过维护一个锁定用户ID的集合，确保同一用户在任何时刻只能有一个命令在执行。
+    通过维护一个锁定用户 ID 的集合，确保同一用户在任何时刻只能有一个命令在执行。
     这防止了由于并发执行导致的竞态条件和数据不一致问题。
     """
 
-    # 存储当前处于锁定状态的用户ID集合
+    # 存储当前处于锁定状态的用户 ID 集合
     _list = set()
 
     @staticmethod
@@ -29,14 +29,14 @@ class ExecutionLockList:
         """
         向执行锁列表中添加用户。
 
-        当用户开始执行命令时调用此方法，将用户ID添加到锁定集合中。
+        当用户开始执行命令时调用此方法，将用户 ID 添加到锁定集合中。
 
         :param msg: 消息会话对象，包含用户信息
         :type msg: MessageSession
         """
-        # 从消息会话中获取发送者ID（用户ID）
+        # 从消息会话中获取发送者 ID（用户 ID）
         target_id = msg.session_info.sender_id
-        # 将发送者ID添加到锁定集合中
+        # 将发送者 ID 添加到锁定集合中
         ExecutionLockList._list.add(target_id)
 
     @staticmethod
@@ -44,12 +44,12 @@ class ExecutionLockList:
         """
         从执行锁列表中移除用户。
 
-        当用户命令执行完毕时调用此方法，将用户ID从锁定集合中移除。
+        当用户命令执行完毕时调用此方法，将用户 ID 从锁定集合中移除。
 
         :param msg: 消息会话对象，包含用户信息
-        :type msg: MessageSession
+        :type msg: MessageSession 对象
         """
-        # 从消息会话中获取发送者ID
+        # 从消息会话中获取发送者 ID
         target_id = msg.session_info.sender_id
         # 如果该用户在锁定集合中，则移除
         if target_id in ExecutionLockList._list:
@@ -63,7 +63,7 @@ class ExecutionLockList:
         用于判断指定用户是否正在执行命令，如果是则应该等待其执行完毕。
 
         :param msg: 消息会话对象，包含用户信息
-        :type msg: MessageSession
+        :type msg: MessageSession 对象
         :return: 如果用户已被锁定返回 True，否则返回 False
         :rtype: bool
         """

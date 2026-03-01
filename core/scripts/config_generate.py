@@ -42,9 +42,8 @@ def generate_config(dir_path: Path, language: str):
     3. 写入配置文件头注释和默认配置
     4. 扫描所有机器人和模块配置，自动加载并生成配置项
 
-    Args:
-        dir_path: 配置文件保存的目录路径
-        language: 语言代码（如"zh_cn"、"en_us"等）
+    :param dir_path: 配置文件保存的目录路径
+    :param language: 语言代码（如"zh_cn"、"en_us"等）
     """
     # 加载本地化语言文件
     load_locale_file()
@@ -191,13 +190,12 @@ if __name__ == "__main__":
     import difflib
 
     def zip_language_folders(config_store_path: Path, config_store_packed_path):
-        """将各语言的配置文件夹打包为zip文件。
+        """将各语言的配置文件夹打包为 zip 文件。
 
-        将每个语言的配置目录压缩为单个zip文件，便于分发和备份。
+        将每个语言的配置目录压缩为单个 zip 文件，便于分发和备份。
 
-        Args:
-            config_store_path: 配置存储根目录（包含各语言子目录）
-            config_store_packed_path: 压缩文件的输出目录
+        :param config_store_path: 配置存储根目录（包含各语言子目录）
+        :param config_store_packed_path: 压缩文件的输出目录
         """
         # 遍历配置目录下的所有语言文件夹
         for lang in [c.name for c in config_store_path.iterdir()]:
@@ -223,7 +221,7 @@ if __name__ == "__main__":
     # 定义备份路径（用于失败时的恢复）
     config_store_path_bak = assets_path / "config_store_bak"
 
-    # 最多尝试3次生成配置，如果失败则回滚
+    # 最多尝试 3 次生成配置，如果失败则回滚
     attempt = 1
     success = False
     while attempt <= 3 and not success:
@@ -259,7 +257,7 @@ if __name__ == "__main__":
             # 检查配置文件是否存在
             if not config_file.exists():
                 break
-            # 检查配置文件是否包含[config]部分（标志配置成功）
+            # 检查主配置文件是否包含 `[config]` 部分（标志配置成功）
             with open(config_file, "r", encoding="utf-8") as f:
                 content = f.read()
                 if "[config]" not in content:
@@ -283,7 +281,7 @@ if __name__ == "__main__":
         attempt += 1
         sleep(1)
     else:
-        # 3次尝试都失败，退出程序
+        # 3 次尝试都失败，退出程序
         print("Failed after 3 attempts. Exiting.")
         sys.exit(1)
 

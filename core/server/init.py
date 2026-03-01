@@ -43,7 +43,7 @@ async def init_async(start_scheduler=True) -> None:
     Args:
         start_scheduler: 是否启动定时任务（默认True）
     """
-    # 设置客户端信息为"Server"
+    # 设置客户端信息为 "Server"
     Info.client_name = "Server"
     Logger.rename(Info.client_name)
 
@@ -84,7 +84,7 @@ async def init_async(start_scheduler=True) -> None:
                 )
     await asyncio.gather(*gather_list)
 
-    # 初始化后台任务（如IP查询、WebRender等）
+    # 初始化后台任务（如 IP 查询、WebRender 等）
     asyncio.create_task(init_background_task())
 
     # 启动调度器
@@ -104,7 +104,7 @@ async def init_async(start_scheduler=True) -> None:
 async def load_secret():
     """从配置文件中加载所有密钥信息。
 
-    扫描配置中所有带有"secret"后缀的配置项，
+    扫描配置中所有带有 "secret" 后缀的配置项，
     将非占位符的值添加到密钥管理系统中，用于内容过滤。
     """
     for x in CFGManager.values:

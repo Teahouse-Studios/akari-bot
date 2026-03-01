@@ -108,9 +108,9 @@ class SessionInfo:
         tmp: dict[str, str] | None = None,
     ) -> SessionInfo:
         """
-        用于将参数传入SessionInfo对象中。
+        用于将参数传入 SessionInfo 对象中。
 
-        :return: SessionInfo对象。
+        :return: SessionInfo 对象。
         """
         if target_from is None:
             target_from = Alive.determine_target_from(target_id)

@@ -38,20 +38,20 @@ class BaseElement:
     所有消息元素的基类，定义了元素应该实现的接口。
 
     消息系统中的元素必须继承此类并实现以下方法：
-    - kecode(): 将元素转换为 KE 码格式
-    - __str__(): 将元素转换为字符串表示
+    - kecode()：将元素转换为 KE 码格式
+    - __str__()：将元素转换为字符串表示
 
     KE 码格式说明：
     KE 码是 AkariBot 的消息元素文本化的格式，用于在不便于使用标准的元素类的情况下使用。
     在机器人发出消息的最后阶段，KE 码会被解析器解析成对应的消息元素对象。
-    格式为 [KE:type,param1=value1,param2=value2]，其中：
-    - type: 元素类型（plain、image、voice、mention 等）
-    - param*: 元素特定的参数
+    格式为 `[KE:type,param1=value1,param2=value2]`，其中：
+    - type：元素类型（plain、image、voice、mention 等）
+    - param*：元素特定的参数
 
     示例：
-        纯文本: [KE:plain,text=Hello]
-        图片: [KE:image,path=/path/to/image.png]
-        提及: [KE:mention,userid=QQ|123456789]
+        纯文本：`[KE:plain,text=Hello]`
+        图片：`[KE:image,path=/path/to/image.png]`
+        提及：`[KE:mention,userid=QQ|123456789]`
     """
 
     @classmethod
@@ -65,7 +65,7 @@ class BaseElement:
 
     def kecode(self):
         """
-        转换为KE 码格式（AkariBot 特定的消息格式）。
+        转换为 KE 码格式（AkariBot 特定的消息格式）。
 
         KE 码是 AkariBot 的消息元素文本化的格式，用于在不便于使用标准的元素类的情况下使用。
         在机器人发出消息的最后阶段，KE 码会被解析器解析成对应的消息元素对象。
@@ -99,9 +99,11 @@ class PlainElement(BaseElement):
         disable_joke: 是否禁用玩笑功能，True 表示此文本内容不应被玩笑影响
 
     示例：
+    ```
         > plain = PlainElement.assign("Hello, World!")
         > str(plain)
         'Hello, World!'
+    ```
     """
 
     text: str
@@ -128,7 +130,7 @@ class PlainElement(BaseElement):
         """
         转换为 KE 码格式。
 
-        纯文本在 KE 码中用 [KE:plain,text=...] 表示。
+        纯文本在 KE 码中用 `[KE:plain,text=...]` 表示。
 
         :return: KE 码格式的字符串
         """
@@ -155,9 +157,11 @@ class URLElement(BaseElement):
         md_format_name: Markdown 格式的链接显示名称
 
     示例：
+    ```
         > url = URLElement.assign("https://example.com")
         > str(url)
         'https://example.com'
+    ```
     """
 
     url: str
@@ -233,9 +237,11 @@ class FormattedTimeElement(BaseElement):
         timezone: 是否显示时区（默认为 True）
 
     示例：
+    ```
         > elem = FormattedTimeElement.assign(1234567890, date=True, time=True)
         > str(elem)
         'February 13, 2009 23:31:30 (UTC)'
+    ```
     """
 
     timestamp: float
@@ -389,12 +395,14 @@ class I18NContextElement(BaseElement):
     属性：
         key: 多语言字典中的键名，格式如 "message.hello"、"error.permission.denied" 等
         disable_joke: 是否禁用玩笑功能，True 表示此文本内容不应被玩笑影响
-        kwargs: 多语言字符串中的变量字典，如 {"user": "Alice", "count": 10}
+        kwargs: 多语言字符串中的变量字典，如 `{"user": "Alice", "count": 10}`
 
     示例：
+    ```
         > elem = I18NContextElement.assign("message.hello", user="Alice")
         > str(elem)
         '{I18N:message.hello,user=Alice}'
+    ```
     """
 
     key: str
@@ -417,7 +425,7 @@ class I18NContextElement(BaseElement):
         """
         转换为 KE 码格式。
 
-        多语言消息在 KE 码中表示为 [KE:i18n,i18nkey=...,param1=val1,...]
+        多语言消息在 KE 码中表示为 `[KE:i18n,i18nkey=...,param1=val1,...]`
 
         :return: KE 码格式的字符串
         """
@@ -429,9 +437,9 @@ class I18NContextElement(BaseElement):
 
     def __str__(self):
         """
-        返回字符串表示。
+        返回多语言标记表示。
 
-        :return: I18N 码格式的字符串表示
+        :return:多语言标记格式的字符串表示
         """
         if self.kwargs:
             params = ",".join(f"{k}={v}" for k, v in self.kwargs.items())
@@ -475,7 +483,7 @@ class ImageElement(BaseElement):
 
         :param path: 图片来源，可以是：
                     - 本地文件路径（str 或 Path）
-                    - URL 地址（以 http:// 或 https:// 开头）
+                    - URL 地址（以 `http://` 或 `https://` 开头）
                     - Base64 编码数据（以 base64 开头）
                     - PIL Image 对象
         :param headers: 获取网络图片时的请求头（如用户代理、认证信息等）
@@ -577,7 +585,7 @@ class ImageElement(BaseElement):
         """
         为图片添加随机噪点。
 
-        用于某些特殊效果。（QQ 侧防止同一图片发送过多触发风控）
+        用于 QQ 侧防止同一图片发送过多触发风控。
 
         :return: 新的 ImageElement 实例
         """
@@ -640,9 +648,11 @@ class VoiceElement(BaseElement):
         path: 语音文件的本地路径
 
     示例：
+    ```
         > voice = VoiceElement.assign("/path/to/audio.mp3")
         > str(voice)
         '[KE:voice,path=/path/to/audio.mp3]'
+    ```
     """
 
     path: str
@@ -678,9 +688,11 @@ class MentionElement(BaseElement):
         id: 用户在该平台的唯一标识
 
     示例：
+    ```
         > mention = MentionElement.assign("QQ|123456789")
         > str(mention)
         '<AT:QQ|123456789>'
+    ```
     """
 
     client: str
@@ -703,7 +715,7 @@ class MentionElement(BaseElement):
         return f"[KE:mention,userid={self.client}|{self.id}]"
 
     def __str__(self):
-        """返回 AT 码提及格式"""
+        """返回 AT 码格式"""
         return f"<AT:{self.client}|{self.id}>"
 
 
@@ -721,7 +733,9 @@ class EmbedFieldElement(BaseElement):
         inline: 是否内联显示（True 表示在同一行显示多个字段）
 
     示例：
+    ```
         > field = EmbedFieldElement.assign("作者", "Alice", inline=True)
+    ```
     """
 
     name: str
@@ -771,11 +785,13 @@ class EmbedElement(BaseElement):
         fields: 字段列表（EmbedFieldElement 对象列表）
 
     示例：
+    ```
         > embed = EmbedElement.assign(
         ...     title="标题",
         ...     description="描述文本",
         ...     color=0xFF0000
         ... )
+    ```
     """
 
     title: str | None = None
@@ -905,8 +921,7 @@ class RawElement(BaseElement):
     """
     原始元素 - 用于包含未处理的原始数据。
 
-    该类用于传递不需要特殊处理的原始数据，可以是任何字符串内容，
-    在原则上不应该被主动使用。
+    该类用于传递不需要特殊处理的原始数据，可以是任何字符串内容，原则上不应该被主动使用。
 
     通常用于包含预格式化的文本或特殊的元数据。
 
@@ -914,9 +929,11 @@ class RawElement(BaseElement):
         value: 原始值/数据
 
     示例：
+    ```
         > raw = RawElement.assign("<custom>data</custom>")
         > str(raw)
         '<custom>data</custom>'
+    ```
     """
 
     value: str

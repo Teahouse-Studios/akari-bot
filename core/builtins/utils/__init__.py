@@ -19,7 +19,7 @@ confirm_command = unique_list(
     filter(str.strip, Config("confirm_command", confirm_command_default)) or confirm_command_default
 ) + ["⭕"]  # 确认词
 
-# 命令前缀列表 - 触发命令的前缀符号，如 / 或 !
+# 命令前缀列表 - 触发命令的前缀符号，如 "/" 或 "~"
 # 从配置中加载，进行去重处理
 command_prefix = unique_list(
     filter(str.strip, Config("command_prefix", command_prefix_default)) or command_prefix_default

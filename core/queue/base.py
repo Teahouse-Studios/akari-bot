@@ -50,7 +50,7 @@ class QueueTaskManager:
     """管理队列中待处理任务的内存状态。
 
     该管理器维护任务的事件同步机制，允许异步等待任务完成并获取结果。
-    使用asyncio.Event实现任务的完成信号通知。
+    使用 asyncio.Event 实现任务的完成信号通知。
 
     Attributes:
         tasks: 字典，存储所有待处理的任务，键为task_id，值为任务状态字典
@@ -63,17 +63,11 @@ class QueueTaskManager:
     async def add(cls, task_id: str):
         """添加任务并等待其完成。
 
-        该方法会阻塞直到任务完成（通过set_result方法设置），然后返回结果。
+        该方法会阻塞直到任务完成（通过 set_result 方法设置），然后返回结果。
         无论成功或失败，都会清理任务记录。
 
-        Args:
-            task_id: 任务的唯一标识符
-
-        Returns:
-            任务执行的结果字典，如果发生错误返回None
-
-        Raises:
-            异常被捕获并记录，不会直接抛出
+        :param task_id: 任务的唯一标识符
+        :return: 任务执行的结果字典，如果发生错误返回 None
         """
         try:
             cls.tasks[task_id] = {"flag": asyncio.Event()}
@@ -90,11 +84,10 @@ class QueueTaskManager:
     async def set_result(cls, task_id: str, result: dict):
         """设置任务结果并通知等待方。
 
-        该方法将结果保存到任务记录，并触发asyncio.Event以唤醒等待该任务的协程。
+        该方法将结果保存到任务记录，并触发 asyncio.Event 以唤醒等待该任务的协程。
 
-        Args:
-            task_id: 任务的唯一标识符
-            result: 任务执行的结果字典
+        :param task_id: 任务的唯一标识符
+        :param result: 任务执行的结果字典
         """
         if task_id in cls.tasks:
             cls.tasks[task_id]["result"] = result
@@ -130,18 +123,17 @@ class JobQueueBase:
 
         该方法将任务信息保存到数据库，可选择等待任务完成或立即返回。
 
-        Args:
-            target_client: 目标客户端名称，用于将任务路由到特定客户端
-            action: 操作名称，对应queue_actions中的处理器
-            args: 操作参数，会被传递给处理器
-            wait: 是否等待任务完成（默认True）
-                  - True: 阻塞直到任务完成，返回执行结果
-                  - False: 立即返回任务ID，不等待执行
+        :param target_client: 目标客户端名称，用于将任务路由到特定客户端
+        :param action: 操作名称，对应queue_actions中的处理器
+        :param args: 操作参数，会被传递给处理器
+        :param wait: 是否等待任务完成（默认True）。
 
-        Returns:
-            如果wait=True，返回任务的执行结果字典
-            如果wait=False，返回任务ID字符串
-            如果target_client为None，返回None
+            - True: 阻塞直到任务完成，返回执行结果；
+            - False: 立即返回任务 ID，不等待执行
+
+        :return wait=True: 返回任务的执行结果字典
+        :return wait=False: 返回任务 ID 字符串
+        :return target_client 为 None: 返回 None
         """
         if target_client:
             task_id = await JobQueuesTable.add_task(target_client, action, args)
@@ -156,18 +148,17 @@ class JobQueueBase:
     async def return_val(tsk: JobQueuesTable, value: dict, status: str = "done"):
         """保存任务执行结果并更新任务状态。
 
-        该方法将结果写入数据库，并返回QueueFinished对象表示任务完成。
+        该方法将结果写入数据库，并返回 QueueFinished 对象表示任务完成。
 
-        Args:
-            tsk: 任务对象
-            value: 任务执行的结果字典
-            status: 任务最终状态（默认"done"），可选值：
-                   - "done": 执行成功
-                   - "failed": 执行失败
-                   - "timeout": 执行超时
+        :param tsk: 任务对象
+        :param value: 任务执行的结果字典
+        :param status: 任务最终状态（默认"done"）
 
-        Returns:
-            QueueFinished对象，包含任务ID、操作名称和最终状态
+            - "done": 执行成功
+            - "failed": 执行失败
+            - "timeout": 执行超时
+
+        :return: QueueFinished 对象，包含任务 ID、操作名称和最终状态
         """
         await tsk.set_val(value, status)
         return QueueFinished(str(tsk.task_id), tsk.action, tsk.status)
@@ -183,8 +174,7 @@ class JobQueueBase:
         4. 处理任何异常并发送错误报告
         5. 5秒后自动删除已完成的任务以节省数据库空间
 
-        Args:
-            tsk: 待处理的任务对象
+        :param tsk: 待处理的任务对象
         """
         bot: "Bot" = exports["Bot"]
         try:
@@ -205,13 +195,13 @@ class JobQueueBase:
             if tsk_val:
                 Logger.trace(f"Task {tsk.action}({tsk.task_id}) {tsk.status}.")
 
-                # 完成的任务在5秒后自动删除以减少数据库大小
-                # 假定5秒足够处理任务完成后可能发生的事情
+                # 完成的任务在 5 秒后自动删除以减少数据库大小
+                # 假定 5 秒足够处理任务完成后可能发生的事情
                 if tsk.status == "done":
                     await asyncio.sleep(5)
                     await tsk.delete()
                 return
-            # 下面的代码不应该被执行，如果执行说明有代码bug
+            # 下面的代码不应该被执行，如果执行说明有代码 bug
             Logger.error(f"Task {tsk.action}({tsk.task_id}) seems not finished properly, bug in code?")
             await tsk.set_status("failed")
         except Exception:
@@ -243,12 +233,11 @@ class JobQueueBase:
         """检查队列中的待处理任务。
 
         该方法执行以下步骤：
-        1. 检查QueueTaskManager中是否有待处理任务，如果已完成则设置其结果
+        1. 检查 QueueTaskManager 中是否有待处理任务，如果已完成则设置其结果
         2. 从数据库中获取待处理和正在处理的任务
         3. 为每个待处理任务创建异步处理任务
 
-        Args:
-            target_client: 可选的目标客户端过滤，如果为None则获取当前客户端的任务
+        :param target_client: 可选的目标客户端过滤，如果为 None 则获取当前客户端的任务
         """
         # Logger.debug(f"Checking job queue for {cls.name}, target client: {target_client if target_client else "all"}")
         # 检查并设置已完成的任务结果
@@ -274,14 +263,11 @@ class JobQueueBase:
     async def check_job_queue(cls, target_client: str | None = None):
         """启动队列检查循环。
 
-        该方法以100毫秒的间隔持续检查队列中的任务，直到遇到异常或被外部停止。
-        使用pause_event来支持队列的暂停/恢复功能。
+        该方法以 100 毫秒的间隔持续检查队列中的任务，直到遇到异常或被外部停止。
+        使用 pause_event 来支持队列的暂停/恢复功能。
 
-        Args:
-            target_client: 可选的目标客户端过滤
-
-        Raises:
-            QueueAlreadyRunning: 如果队列检查循环已经在运行
+        :param target_client: 可选的目标客户端过滤
+        :raise QueueAlreadyRunning: 如果队列检查循环已经在运行
         """
         if cls.is_running:
             raise QueueAlreadyRunning
@@ -302,19 +288,19 @@ class JobQueueBase:
         """装饰器：注册操作处理器。
 
         使用此装饰器可以为特定的操作名称注册处理函数。
-        处理器函数应该是异步函数，接收JobQueuesTable对象和参数字典。
+        处理器函数应该是异步函数，接收 JobQueuesTable 对象和参数字典。
 
-        Example:
+        示例:
+        ```
             @JobQueueBase.action("my_action")
             async def handle_my_action(tsk: JobQueuesTable, args: dict):
                 # 处理逻辑
                 return {"result": "success"}
+        ```
 
-        Args:
-            action_name: 操作的名称
+        :param action_name: 操作的名称
 
-        Returns:
-            装饰器函数
+        :return: 装饰器函数
         """
 
         def decorator(func):
@@ -335,11 +321,10 @@ class JobQueueBase:
 
         该方法通过队列系统异步发送消息，不等待消息发送完成。
 
-        Args:
-            session_info: 会话信息对象，包含目标客户端和频道等信息
-            message: 要发送的消息链对象
-            enable_parse_message: 是否解析消息中的特殊标记（默认False）
-            disable_secret_check: 是否禁用密钥检查（默认True）
+        :param session_info: 会话信息对象，包含目标客户端和频道等信息
+        :param message: 要发送的消息链对象
+        :param enable_parse_message: 是否解析消息中的特殊标记（默认 False）
+        :param disable_secret_check: 是否禁用密钥检查（默认 True）
         """
         await cls.add_job(
             "Server",
