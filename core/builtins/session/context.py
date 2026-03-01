@@ -1,3 +1,11 @@
+"""
+会话上下文管理模块 - 管理消息会话的生命周期和通信接口。
+
+该模块提供了 ContextManager 抽象基类，定义了会话上下文的管理接口
+以及消息发送、权限检查等核心功能的抽象方法。各个通讯平台的具体实现
+应继承此类并实现所有抽象方法。
+"""
+
 import asyncio
 from abc import ABC, abstractmethod
 from typing import Any
@@ -9,30 +17,74 @@ from core.logger import Logger
 
 
 class ContextManager(ABC):
+    """
+    上下文管理器抽象基类。
+
+    定义了会话上下文的管理接口、消息发送接口、权限管理接口等，
+    用于与各种通讯平台的集成。
+
+    属性说明:
+        context: 存储会话上下文的字典，键为 session_id，值为上下文对象
+        features: 会话支持的功能特性对象
+        typing_flags: 输入状态标志的事件对象字典
+        context_marks_hold: 记录上下文被保持的次数（支持嵌套保持）
+    """
+
+    # 会话上下文存储 - 键为 session_id，值为上下文对象（如对应平台框架下的消息实例）
     context: dict[str, Any] = {}
+
+    # 会话功能特性 - 标记该管理器支持的功能
     features: Features | None = Features
+
+    # 输入状态标志 - 记录正在输入的会话
     typing_flags: dict[str, asyncio.Event] = {}
+
+    # 上下文持有计数 - 用于支持嵌套的上下文持有/释放
     context_marks_hold: dict[str, int] = {}
 
     @classmethod
     def add_context(cls, session_info: SessionInfo, context: Any):
+        """
+        为会话添加上下文。
+
+        :param session_info: 会话信息对象
+        :param context: 要存储的上下文对象（通常是对应平台框架下的消息实例）
+        """
+        # 以 session_id 为键存储上下文
         cls.context[session_info.session_id] = context
 
     @classmethod
     def del_context(cls, session_info: SessionInfo):
+        """
+        删除会话的上下文。
+
+        只有当上下文未被标记为保持时才会删除。如果上下文被保持，则跳过删除。
+
+        :param session_info: 会话信息对象
+        """
+        # 检查上下文是否存在且未被保持
         if session_info.session_id in cls.context and session_info.session_id not in cls.context_marks_hold:
             del cls.context[session_info.session_id]
             Logger.trace(f"Context for session {session_info.session_id} deleted.")
+        # 如果上下文被保持，记录日志但不删除
         if session_info.session_id in cls.context_marks_hold:
             Logger.trace(f"Context for session {session_info.session_id} is held, skipping deletion.")
 
     @classmethod
     def hold_context(cls, session_info: SessionInfo):
         """
-        Hold the context for a session.
+        保持会话的上下文。
+
+        防止上下文被删除。支持嵌套保持，每次调用增加计数。
+
+        :param session_info: 会话信息对象
+        :raises ValueError: 如果会话上下文不存在
         """
+        # 检查上下文是否存在
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
+
+        # 增加持有计数
         if session_info.session_id in cls.context_marks_hold:
             cls.context_marks_hold[session_info.session_id] += 1
         else:
@@ -42,10 +94,16 @@ class ContextManager(ABC):
     @classmethod
     def release_context(cls, session_info: SessionInfo):
         """
-        Release the held context for a session.
+        释放会话的上下文保持。
+
+        保持持有计数。当计数达到 0 时，上下文会被立即删除。
+
+        :param session_info: 会话信息对象
         """
+        # 递减保持计数
         if session_info.session_id in cls.context_marks_hold:
             cls.context_marks_hold[session_info.session_id] -= 1
+            # 当计数达到 0 时，删除上下文和计数记录
             if cls.context_marks_hold[session_info.session_id] == 0:
                 del cls.context[session_info.session_id]
                 del cls.context_marks_hold[session_info.session_id]
@@ -81,8 +139,8 @@ class ContextManager(ABC):
         :param session_info: 会话信息
         :param message: 消息内容，可以是 MessageChain 或字符串
         :param quote: 是否引用消息
-        :param enable_parse_message: 是否允许解析消息。（此参数作接口兼容用，仅QQ平台使用，默认为True）
-        :param enable_split_image: 是否允许拆分图片发送。（此参数作接口兼容用，仅Telegram平台使用，默认为True）
+        :param enable_parse_message: 是否允许解析消息。（此参数作接口兼容用，仅 QQ 平台使用，默认为 True）
+        :param enable_split_image: 是否允许拆分图片发送。（此参数作接口兼容用，仅 Telegram 平台使用，默认为 True）
         :return: 消息 ID 列表
         """
 
@@ -100,7 +158,7 @@ class ContextManager(ABC):
         删除指定会话中的消息，可能需要该会话的管理员权限。
 
         :param session_info: 会话信息
-        :param message_id: 消息 ID 列表（为最大兼容，请将元素转换为str，若实现需要传入其他类型再在下方另行实现）
+        :param message_id: 消息 ID 列表（为最大兼容，请将元素转换为 str，若实现需要传入其他类型再在下方另行实现）
         :param reason: 原因（可选）
         """
         if isinstance(message_id, str):
