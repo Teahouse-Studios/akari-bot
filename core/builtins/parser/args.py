@@ -276,7 +276,7 @@ def parse_template(argv: list[str], depth: int = 0) -> list[Template]:
         # 主处理循环：处理每一个模板字符串
         for a in argv_:
             # 检查非法的括号嵌套（如 <[ >{  等）
-            if any(x in a for x in ["<[", ">{", "{<", "[{", "{"]):
+            if any(x in a for x in ["<[", ">{", "{<", "[{", "{["]):
                 raise InvalidTemplatePattern(f"Illegal mixed bracket nesting: {a}")
 
             # 创建新的模板对象
