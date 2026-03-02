@@ -439,7 +439,9 @@ class MatrixFetchedContextManager(MatrixContextManager):
             cls.del_context(session_info)
 
     @classmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: list[str]) -> None:
+    async def delete_message(
+        cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None
+    ) -> None:
         try:
             room = await cls._resolve_matrix_room_(session_info)
             cls.add_context(session_info, (room, None))
