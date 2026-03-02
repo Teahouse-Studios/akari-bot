@@ -80,7 +80,7 @@ async def _():
 async def _(msg: Bot.MessageSession):
     #  >>> ~test test
     #  <<< Hello World!
-    await msg.finish("Hello World Again!")
+    await msg.finish("Hello World!")
 
 
 @test.handle(re.compile(r"<(.*?)>"), mode="A")  # re.findall

@@ -219,7 +219,7 @@ class DrawBest:
             (134, 49, 200),
             (25, 25, 25),
         ]
-        level_triagle = [(item_weight, 0), (item_weight - 27, 0), (item_weight, 27)]
+        level_triangle = [(item_weight, 0), (item_weight - 27, 0), (item_weight, 27)]
         ImageDraw.Draw(img)
 
         for num in range(min(len(self.best_30), 30)):
@@ -238,7 +238,7 @@ class DrawBest:
                 temp = Image.new("RGBA", (item_weight, item_height), (111, 111, 111, 255))
 
             temp_draw = ImageDraw.Draw(temp)
-            temp_draw.polygon(level_triagle, color[chart_info.diff])
+            temp_draw.polygon(level_triangle, color[chart_info.diff])
             font = ImageFont.truetype(noto_sans_demilight_path, 18, encoding="utf-8")
             title = truncate_text(chart_info.title, 12)
             temp_draw.text((6, 7), title, "white", font)
@@ -280,7 +280,7 @@ class DrawBest:
                 temp = Image.new("RGBA", (item_weight, item_height), (111, 111, 111, 255))
 
             temp_draw = ImageDraw.Draw(temp)
-            temp_draw.polygon(level_triagle, color[chart_info.diff])
+            temp_draw.polygon(level_triangle, color[chart_info.diff])
             font = ImageFont.truetype(noto_sans_demilight_path, 18, encoding="utf-8")
             title = truncate_text(chart_info.title, 12)
             temp_draw.text((6, 7), title, "white", font)

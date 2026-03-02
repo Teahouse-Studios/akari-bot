@@ -372,7 +372,6 @@ def parse_template(argv: list[str], depth: int = 0) -> list[Template]:
                     last_type = "optional" if flag else "optional_no_flag"
 
                 # ========== 处理描述块 {...} ==========
-                # ========== 处理描述块 {...} ==========
                 elif strip_pattern.startswith("{"):
                     # 验证括号完整性
                     if not strip_pattern.endswith("}"):
