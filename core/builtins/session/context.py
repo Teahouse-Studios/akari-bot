@@ -34,7 +34,7 @@ class ContextManager(ABC):
     context: dict[str, Any] = {}
 
     # 会话功能特性 - 标记该管理器支持的功能
-    features: Features | None = Features
+    features: type[Features] | None = Features
 
     # 输入状态标志 - 记录正在输入的会话
     typing_flags: dict[str, asyncio.Event] = {}

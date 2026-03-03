@@ -16,7 +16,7 @@ from core.utils.image import msgnode2image, image_split
 
 class AiogramContextManager(ContextManager):
     context: dict[str, types.Message] = {}
-    features: Features | None = Features
+    features: type[Features] | None = Features
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:

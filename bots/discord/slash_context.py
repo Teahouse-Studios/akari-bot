@@ -14,7 +14,7 @@ from core.logger import Logger
 
 class DiscordSlashContextManager(DiscordContextManager):
     context: dict[str, discord.ApplicationContext] = {}
-    features: Features | None = Features
+    features: type[Features] | None = Features
     typing_flags: dict[str, asyncio.Event] = {}
 
     @classmethod

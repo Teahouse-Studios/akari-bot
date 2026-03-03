@@ -16,7 +16,7 @@ from .info import client_name
 
 class MatrixContextManager(ContextManager):
     context: dict[str, tuple[nio.MatrixRoom, nio.RoomMessageFormatted]] = {}
-    features: Features | None = Features
+    features: type[Features] | None = Features
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:

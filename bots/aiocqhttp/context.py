@@ -101,7 +101,7 @@ async def get_avaliable_private_list():
 
 class AIOCQContextManager(ContextManager):
     context: dict[str, Event] = {}
-    features: Features | None = Features
+    features: type[Features] | None = Features
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:

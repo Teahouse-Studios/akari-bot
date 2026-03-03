@@ -65,7 +65,7 @@ class ModdedBotAPI(BotAPI):
 
 class QQBotContextManager(ContextManager):
     context: dict[str, BaseMessage] = {}
-    features: Features | None = Features
+    features: type[Features] | None = Features
 
     @classmethod
     def add_context(cls, session_info: SessionInfo, context: BaseMessage):

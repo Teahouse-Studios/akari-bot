@@ -18,7 +18,7 @@ from core.utils.image import msgnode2image
 
 class DiscordContextManager(ContextManager):
     context: dict[str, Message] = {}
-    features: Features | None = Features
+    features: type[Features] | None = Features
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:

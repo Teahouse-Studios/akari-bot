@@ -44,7 +44,7 @@ async def get_channel(session_info: SessionInfo) -> PublicChannel | User | None:
 
 class KOOKContextManager(ContextManager):
     context: dict[str, Message] = {}
-    features: Features | None = Features
+    features: type[Features] | None = Features
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
