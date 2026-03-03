@@ -18,12 +18,7 @@ async def get_onebot_implementation() -> str | None:
     Logger.debug(str(data))
     app_name = data.get("app_name")
 
-    if app_name == "NapCat.Onebot":
-        app_name = "napcat"
-    elif app_name == "Lagrange.OneBot":
-        app_name = "lagrange"
-
-    return app_name.lower()
+    return app_name.lower().removesuffix(".onebot")
 
 
 class CQCodeHandler:
