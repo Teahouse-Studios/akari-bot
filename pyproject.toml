@@ -75,7 +75,7 @@ dependencies = [
     "google-play-scraper>=1.2.2,<2.0.0",
     "gql>=4.0.0,<5.0.0",
     "langconv @ git+https://github.com/Teahouse-Studios/langconv.py.git",
-    "mcstatus>=12.0.0,<13.0.0",
+    "mcstatus>=13.0.0,<13.1.0",
     "numpy<2.4.3",
     "openai>=2.0.0,<3.0.0",
     "pandas>=3.0.0,<4.0.0",
