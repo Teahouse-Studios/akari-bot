@@ -21,29 +21,28 @@ arc = module(
 async def _(msg: Bot.MessageSession):
     url = "https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/"
     resp = await web_render.source(SourceOptions(url=url, raw_text=True))
-    if resp:
+    try:
         load_json = orjson.loads(resp)
-        url = load_json.get("value", {}).get("url")
-    if url:
-        await msg.finish(I18NContext("arcaea.message.download", version=load_json["value"]["version"], url=url))
-    else:
+    except Exception:
         await msg.finish(I18NContext("arcaea.message.get_failed"))
+    await msg.finish(I18NContext("arcaea.message.download", version=load_json["value"]["version"], url=load_json["value"]["url"]))
+
 
 
 @arc.command("random {{I18N:arcaea.help.random}}")
 async def _(msg: Bot.MessageSession):
     url = "https://webapi.lowiro.com/webapi/song/showcase/"
     resp = await web_render.source(SourceOptions(url=url, raw_text=True))
-    if resp:
+    try:
         load_json = orjson.loads(resp)
-        value = load_json["value"][0]
-        image = arc_assets_path / "jacket" / f"{value['song_id']}.jpg"
-        result = [Plain(value["title"]["en"])]
-        if image.exists():
-            result.append(BImage(path=image))
-        await msg.finish(result)
-    else:
+    except Exception:
         await msg.finish(I18NContext("arcaea.message.get_failed"))
+    value = load_json["value"][0]
+    image = arc_assets_path / "jacket" / f"{value['song_id']}.jpg"
+    result = [Plain(value["title"]["en"])]
+    if image.exists():
+        result.append(BImage(path=image))
+    await msg.finish(result)
 
 
 @arc.command("rank free {{I18N:arcaea.help.rank.free}}", "rank paid {{I18N:arcaea.help.rank.paid}}")
@@ -54,16 +53,16 @@ async def _(msg: Bot.MessageSession):
     else:
         url = "https://webapi.lowiro.com/webapi/song/rank/paid/"
     resp = await web_render.source(SourceOptions(url=url, raw_text=True))
-    if resp:
+    try:
         load_json = orjson.loads(resp)
-        r = []
-        rank = 0
-        for x in load_json["value"]:
-            rank += 1
-            r.append(f"{rank}. {x['title']['en']} ({x['status']})")
-        await msg.finish(r)
-    else:
+    except Exception:
         await msg.finish(I18NContext("arcaea.message.get_failed"))
+    r = []
+    rank = 0
+    for x in load_json["value"]:
+        rank += 1
+        r.append(Plain(f"{rank}. {x['title']['en']} ({x['status']})"))
+    await msg.finish(r)
 
 
 @arc.command("calc <score> <rating> {{I18N:arcaea.help.calc}}")
