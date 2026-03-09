@@ -122,7 +122,7 @@ class WikiAllowList(DBModel):
 
     @classmethod
     async def add(cls, api_link) -> bool:
-        if (await cls.filter(api_link=api_link)).exists():
+        if await cls.filter(api_link=api_link).exists():
             return False
         await cls.create(api_link=api_link)
         return True
