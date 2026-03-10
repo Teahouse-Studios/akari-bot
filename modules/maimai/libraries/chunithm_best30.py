@@ -168,7 +168,9 @@ class DrawBest:
 
     @staticmethod
     def _get_rating_color(rating: float):
-        if rating >= 16.00:
+        if rating >= 17.00:
+            color = [(255, 235, 0), (255, 56, 56), (186, 82, 255), (50, 90, 200), (69, 174, 255)]  # 彩极
+        elif rating >= 16.00:
             color = [(11, 229, 186), (60, 249, 25), (244, 222, 49), (255, 235, 238), (42, 201, 240)]  # 彩
         elif rating >= 15.25:
             color = (255, 255, 224)  # 白金
