@@ -33,7 +33,7 @@ async def run_case_entry(entry: dict, is_ci: bool = False) -> list[dict]:
         Logger.exception("Failed to load modules for tests:")
 
     start = time.perf_counter()
-    result = await run_test_case(entry["input"], expected=entry["expected"], casetest_target=entry["func"], is_ci=is_ci)
+    result = await run_test_case(entry["input"], entry["expected"], entry["func"], is_ci)
     elapsed = time.perf_counter() - start
     try:
         result["time_cost"] = elapsed

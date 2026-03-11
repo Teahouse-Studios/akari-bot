@@ -8,6 +8,9 @@ import importlib.util
 import inspect
 import os
 import sys
+from pathlib import Path
+
+from dotenv import load_dotenv
 
 from core.builtins.utils import confirm_command
 from core.constants import cache_path, tests_path
@@ -18,6 +21,13 @@ from core.tester.mock.database import init_db, close_db
 from core.tester.mock.loader import load_modules
 from core.tester.mock.random import Random
 from core.tester.process import run_case_entry, run_function_entry
+from bot import ascii_art, encode
+
+
+load_dotenv()
+envs = os.environ.copy()
+envs["PYTHONIOENCODING"] = encode
+envs["PYTHONPATH"] = str(Path(".").resolve())
 
 IS_CI = os.environ.get("CI", "0") == "1"
 
@@ -25,6 +35,7 @@ IS_CI = os.environ.get("CI", "0") == "1"
 async def main():
     Logger.rename("test", export=False)
     cache_path.mkdir(parents=True, exist_ok=True)
+    Logger.info(ascii_art)
 
     try:
         if not await init_db():
@@ -194,17 +205,22 @@ async def main():
                         Logger.success("RESULT: PASS")
                         continue
                     if expected is None:
-                        try:
-                            Logger.warning("REVIEW: Did the output meet expectations? [y/N]")
-                            check = input()
-                            if check in confirm_command:
-                                Logger.success("RESULT: PASS")
-                                continue
+                        if IS_CI:
+                            Logger.error("RESULT: FAIL (expects manual review, unavailable in CI)")
                             func_pass = False
-                        except (EOFError, KeyboardInterrupt):
-                            print("")
-                            Logger.warning("Interrupted by user.")
-                            os._exit(1)
+                            break
+                        else:
+                            try:
+                                Logger.warning("REVIEW: Did the output meet expectations? [y/N]")
+                                check = input()
+                                if check in confirm_command:
+                                    Logger.success("RESULT: PASS")
+                                    continue
+                                func_pass = False
+                            except (EOFError, KeyboardInterrupt):
+                                print("")
+                                Logger.warning("Interrupted by user.")
+                                os._exit(1)
                     else:
                         Logger.error("RESULT: FAIL")
                     func_pass = False

@@ -211,7 +211,7 @@ async def run_bot():
     load_dotenv()
     envs = os.environ.copy()
     envs["PYTHONIOENCODING"] = encode
-    envs["PYTHONPATH"] = Path(".").resolve()
+    envs["PYTHONPATH"] = str(Path(".").resolve())
     bots_list = [p.name for p in bots_path.iterdir() if p.is_dir() and not p.name.startswith("_")]
 
     for t in CFGManager.values:

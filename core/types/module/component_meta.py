@@ -32,33 +32,33 @@ class CommandMeta(ModuleMeta):
 
 @define
 class RegexMeta(ModuleMeta):
-    function: Callable = None
-    pattern: str | re.Pattern = None
-    mode: str = None
-    desc: str = None
+    function: Callable | None = None
+    pattern: str | re.Pattern | None = None
+    mode: str | None = None
+    desc: str | None = None
     required_admin: bool = False
     required_superuser: bool = False
     required_base_superuser: bool = False
     available_for: list = field(default=["*"], converter=convert_list)
     exclude_from: list = field(default=[], converter=convert_list)
-    flags: re.RegexFlag = 0
+    flags: re.RegexFlag = re.NOFLAG
     load: bool = True
     logging: bool = True
     show_typing: bool = True
     text_only: bool = True
-    element_filter: tuple[MessageElement, ...] = []
+    element_filter: tuple[MessageElement, ...] | None = None
 
 
 @define
 class ScheduleMeta(ModuleMeta):
     trigger: AndTrigger | OrTrigger | DateTrigger | CronTrigger | IntervalTrigger
-    function: Callable = None
+    function: Callable | None = None
 
 
 @define
 class HookMeta(ModuleMeta):
-    function: Callable = None
-    name: str = None
+    function: Callable | None = None
+    name: str | None = None
 
 
 __all__ = ["ModuleMeta", "CommandMeta", "RegexMeta", "ScheduleMeta", "HookMeta"]

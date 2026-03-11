@@ -24,9 +24,9 @@ class Bind:
 
         def command(
             self,
-            command_template: str | list | tuple = None,
+            command_template: str | list | tuple | None = None,
             *command_templates,
-            options_desc: dict = None,
+            options_desc: dict | None = None,
             required_admin: bool = False,
             required_superuser: bool = False,
             required_base_superuser: bool = False,
@@ -72,8 +72,8 @@ class Bind:
             self,
             pattern: str | re.Pattern,
             mode: str = "M",
-            flags: re.RegexFlag = 0,
-            desc: str = None,
+            flags: re.RegexFlag = re.NOFLAG,
+            desc: str | None = None,
             required_admin: bool = False,
             required_superuser: bool = False,
             required_base_superuser: bool = False,
@@ -83,7 +83,7 @@ class Bind:
             logging: bool = True,
             show_typing: bool = True,
             text_only: bool = True,
-            element_filter: tuple[MessageElement, ...] = None,
+            element_filter: tuple[MessageElement, ...] | None = None,
         ):
             def decorator(function):
                 ModulesManager.bind_to_module(
@@ -135,9 +135,9 @@ class Bind:
         @overload
         def handle(
             self,
-            command_template: str | list | tuple = None,
+            command_template: str | list | tuple | None = None,
             *command_templates,
-            options_desc: dict = None,
+            options_desc: dict | None = None,
             required_admin: bool = False,
             required_superuser: bool = False,
             required_base_superuser: bool = False,
@@ -152,8 +152,8 @@ class Bind:
             self,
             pattern: str | re.Pattern,
             mode: str = "M",
-            flags: re.RegexFlag = 0,
-            desc: str = None,
+            flags: re.RegexFlag = re.NOFLAG,
+            desc: str | None = None,
             required_admin: bool = False,
             required_superuser: bool = False,
             required_base_superuser: bool = False,
@@ -162,7 +162,7 @@ class Bind:
             load: bool = True,
             show_typing: bool = True,
             logging: bool = True,
-            element_filter: tuple[MessageElement, ...] = None,
+            element_filter: tuple[MessageElement, ...] | None = None,
         ): ...
 
         @overload

@@ -25,8 +25,9 @@ async def _(msg: Bot.MessageSession):
         load_json = orjson.loads(resp)
     except Exception:
         await msg.finish(I18NContext("arcaea.message.get_failed"))
-    await msg.finish(I18NContext("arcaea.message.download", version=load_json["value"]["version"], url=load_json["value"]["url"]))
-
+    await msg.finish(
+        I18NContext("arcaea.message.download", version=load_json["value"]["version"], url=load_json["value"]["url"])
+    )
 
 
 @arc.command("random {{I18N:arcaea.help.random}}")

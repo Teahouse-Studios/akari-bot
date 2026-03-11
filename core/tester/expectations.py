@@ -236,7 +236,7 @@ class Regex(Expectation):
     :param flags: 匹配方式
     """
 
-    def __init__(self, pattern: str | re.Pattern, flags: re.RegexFlag = 0):
+    def __init__(self, pattern: str | re.Pattern, flags: re.RegexFlag = re.NOFLAG):
         self.pattern = re.compile(pattern, flags) if isinstance(pattern, str) else pattern
 
     async def match(self, result):
