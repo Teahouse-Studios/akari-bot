@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="4" failures="1" errors="1" skipped="1" time="0.800000">
+  <testsuite name="Sample Tests" tests="4" failures="1" errors="1" skipped="1" time="0.800000" timestamp="2026-03-15T02:01:03.316690">
+    <testcase name="test_pass" classname="SampleTest" time="0.500000" />
+    <testcase name="test_fail" classname="SampleTest" time="0.200000">
+      <failure message="Assertion failed">Expected: foo
+Actual: bar</failure>
+    </testcase>
+    <testcase name="test_error" classname="SampleTest" time="0.100000">
+      <error message="Runtime error">Traceback: ...
+ZeroDivisionError</error>
+    </testcase>
+    <testcase name="test_skip" classname="SampleTest" time="0.000000">
+      <skipped message="Requires manual review in non-CI mode" />
+    </testcase>
+  </testsuite>
+</testsuites>

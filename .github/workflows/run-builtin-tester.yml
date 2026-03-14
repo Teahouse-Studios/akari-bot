@@ -1,6 +1,7 @@
 name: Run Builtin Tester
 
 permissions:
+  checks: write
   contents: read
 
 on:
@@ -44,3 +45,10 @@ jobs:
           CI: "1"
         run: |
           uv run python tester.py
+
+      - name: Test report
+        uses: dorny/test-reporter@v1
+        with:
+          name: Tester report
+          path: tester-result/junit.xml
+          reporter: java-junit
