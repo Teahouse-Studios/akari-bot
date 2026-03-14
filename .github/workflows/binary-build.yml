@@ -1,81 +1,82 @@
-name: "Binary Build Nightly x64 Executables (3:00, UTC+8)"
+name: Binary Build Nightly x64 Executables (3:00, UTC+8)
+
 permissions:
-    contents: read
+  contents: read
 
 on:
-    schedule:
-        - cron: "00 19 * * *"
-    workflow_dispatch:
+  schedule:
+    - cron: "00 19 * * *"
+  workflow_dispatch:
 
 jobs:
-    build:
-        strategy:
-            fail-fast: false
-            matrix:
-                os: [macos-latest, ubuntu-latest, windows-latest]
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
 
-        runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
 
-        steps:
-            - name: Check-out repository
-              uses: actions/checkout@v6
+    steps:
+      - name: Check-out repository
+        uses: actions/checkout@v6
 
-            - uses: actions/setup-python@v6
-              with:
-                  python-version: "3.12"
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
 
-            - name: Install uv
-              uses: astral-sh/setup-uv@v7.3.1
-              with:
-                  enable-cache: true
-                  cache-dependency-glob: "uv.lock"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7.3.1
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
 
-            - name: Install Dependencies
-              run: |
-                  uv export --no-hashes --output-file=requirements.txt
-                  uv pip sync requirements.txt --system
-                  uv run playwright install --with-deps chromium
-                  uv run python core/scripts/config_generate.py
+      - name: Install Dependencies
+        run: |
+          uv export --no-hashes --output-file=requirements.txt
+          uv pip sync requirements.txt --system
+          uv run playwright install --with-deps chromium
+          uv run python core/scripts/config_generate.py
 
-            - name: Build Wrapper Executable
-              uses: Nuitka/Nuitka-Action@main
-              with:
-                  nuitka-version: main
-                  script-name: bot.py
-                  mode: onefile
-                  output-dir: wrapper-build
-                  include-plugin-directory: |
-                      modules
-                      bots
-                  include-package-data: |
-                      langconv
-                      emoji
-                      akari_bot_webrender
-                      akari_bot_webui
-                      fake_http_header
-                      limits
-                      discord
-                  include-package: |
-                      tortoise
-                      fake_http_header
-                      asyncmy
-                      discord
-                  clang: ${{ matrix.os != 'windows-latest' }}
+      - name: Build Wrapper Executable
+        uses: Nuitka/Nuitka-Action@main
+        with:
+          nuitka-version: main
+          script-name: bot.py
+          mode: onefile
+          output-dir: wrapper-build
+          include-plugin-directory: |
+            modules
+            bots
+          include-package-data: |
+            langconv
+            emoji
+            akari_bot_webrender
+            akari_bot_webui
+            fake_http_header
+            limits
+            discord
+          include-package: |
+            tortoise
+            fake_http_header
+            asyncmy
+            discord
+          clang: ${{ matrix.os != 'windows-latest' }}
 
-            - name: Copy Assets
-              run: |
-                  python .github/scripts/build_copy_files.py
+      - name: Copy Assets
+        run: |
+          python .github/scripts/build_copy_files.py
 
-            - name: Write version file
-              shell: bash
-              run: |
-                  mkdir -p assets/private/default
-                  echo "nightly-v$(date +'%Y%m%d')" > assets/private/default/.version
-                  cat assets/private/default/.version
+      - name: Write version file
+        shell: bash
+        run: |
+          mkdir -p assets/private/default
+          echo "nightly-v$(date +'%Y%m%d')" > assets/private/default/.version
+          cat assets/private/default/.version
 
-            - name: Upload Artifacts
-              uses: actions/upload-artifact@v7
-              with:
-                  name: ${{ runner.os }} Build
-                  path: |
-                      output/**
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ runner.os }} Build
+          path: |
+            output/**

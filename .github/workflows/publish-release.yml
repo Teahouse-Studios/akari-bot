@@ -1,12 +1,12 @@
-name: "Publish Release"
+name: Publish Release
+
+permissions:
+  contents: write
 
 on:
   push:
     tags:
       - 'v*'
-
-permissions:
-  contents: write
 
 jobs:
   release:

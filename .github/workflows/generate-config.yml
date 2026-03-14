@@ -1,4 +1,7 @@
-name: "Generate Config (0:00, UTC+8)"
+name: Generate Config (0:00, UTC+8)
+
+permissions:
+  contents: write
 
 on:
   schedule:
@@ -8,8 +11,6 @@ on:
 jobs:
   generate-config:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
       - name: Checkout repository

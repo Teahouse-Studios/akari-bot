@@ -1,4 +1,5 @@
-name: Push Emoji Data
+name: Push Emojimix Data
+
 permissions:
   contents: write
 

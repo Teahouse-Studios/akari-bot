@@ -1,12 +1,12 @@
-name: "Nightly Release (3:00, UTC+8)"
+name: Nightly Release (3:00, UTC+8)
+
+permissions:
+  contents: write
 
 on:
   schedule:
     - cron: '0 19 * * *'
   workflow_dispatch:
-
-permissions:
-  contents: write
 
 jobs:
   nightly:
