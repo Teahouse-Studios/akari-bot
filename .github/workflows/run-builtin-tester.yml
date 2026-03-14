@@ -47,7 +47,7 @@ jobs:
           uv run python tester.py
 
       - name: Test report
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v2
         with:
           name: Tester report
           path: tester-result/junit.xml
