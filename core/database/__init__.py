@@ -117,5 +117,5 @@ async def reload_db(db_models: list[str] | None = None):
 async def close_db():
     try:
         await Tortoise.close_connections()
-    except RuntimeError:
+    except Exception:
         pass

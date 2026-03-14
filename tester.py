@@ -28,6 +28,38 @@ os.environ.setdefault("PYTHONIOENCODING", "UTF-8")
 os.environ.setdefault("PYTHONPATH", str(Path(".").resolve()))
 
 IS_CI = os.environ.get("CI", "0") == "1"
+MAX_CONCURRENT = 10
+
+
+async def _run_registry_entry(semaphore: asyncio.Semaphore, entry: dict, test_number: int) -> dict:
+    async with semaphore:
+        fn = entry["func"]
+        note = entry.get("note") or (fn.__doc__ if fn.__doc__ else None)
+        file_loc = f"{entry.get('file')}:{entry.get('line')}"
+        Logger.info(f"TEST{test_number}: {fn.__name__} ({file_loc})")
+        if fn.__doc__:
+            Logger.info(f"DOC: {fn.__doc__}")
+
+        try:
+            await close_db()
+        except Exception:
+            Logger.exception("Error closing database before test")
+        if not await init_db():
+            Logger.critical(f"Failed to reinitialize database for TEST{test_number}. Skipping tests.")
+            return {"test_number": test_number, "skipped": True, "note": note}
+
+        try:
+            await load_modules(show_logs=False, monkey_patches={"Random": Random()})
+        except Exception:
+            Logger.exception("Failed to load modules for tests:")
+
+        results = await run_case_entry(entry, IS_CI)
+        return {"test_number": test_number, "results": results, "note": note}
+
+
+async def _run_func_test(fn, path) -> dict:
+    res = await run_function_entry(fn, IS_CI)
+    return {"fn": fn, "path": path, "res": res}
 
 
 async def main():
@@ -58,34 +90,43 @@ async def main():
     failed = 0
     total_test_cost = 0.0
 
-    for entry in registry:
-        test_number += 1
-        print("-" * 60)
-        fn = entry["func"]
-        note = entry.get("note") or (fn.__doc__ if fn.__doc__ else None)
-        file_loc = f"{entry.get('file')}:{entry.get('line')}"
-        Logger.info(f"TEST{test_number}: {fn.__name__} ({file_loc})")
-        if fn.__doc__:
-            Logger.info(f"DOC: {fn.__doc__}")
+    semaphore = asyncio.Semaphore(MAX_CONCURRENT)
+    registry_tasks = []
 
-        try:
-            await close_db()
-        except Exception:
-            Logger.exception("Error closing database before test")
-        if not await init_db():
-            Logger.critical(f"Failed to reinitialize database for TEST{test_number}. Skipping tests.")
+    for idx, entry in enumerate(registry, 1):
+        task = _run_registry_entry(semaphore, entry, idx)
+        registry_tasks.append(task)
+
+    registry_results = await asyncio.gather(*registry_tasks, return_exceptions=True)
+
+    for reg_result in registry_results:
+        if isinstance(reg_result, Exception):
+            Logger.error(f"Error during test execution: {reg_result}")
             continue
 
-        try:
-            await load_modules(show_logs=False, monkey_patches={"Random": Random()})
-        except Exception:
-            Logger.exception("Failed to load modules for tests:")
+        if not isinstance(reg_result, dict):
+            continue
 
-        results = await run_case_entry(entry, IS_CI)
+        print("-" * 60)
+
+        if reg_result.get("skipped"):
+            continue
+
+        test_number = reg_result.get("test_number")
+        note = reg_result.get("note")
+        results = reg_result.get("results", [])
 
         for r in results:
             total += 1
             inp = r.get("input")
+
+            if "timeout" in r:
+                Logger.error(f"INPUT: {inp}")
+                if note:
+                    Logger.error(f"NOTE: {note}")
+                Logger.error("RESULT: FAIL (timeout)")
+                failed += 1
+                continue
 
             if "traceback" in r:
                 Logger.error(f"INPUT: {inp}")
@@ -138,6 +179,9 @@ async def main():
 
     if os.path.isdir(tests_path):
         pyfiles = sorted(glob.glob(os.path.join(tests_path, "*.py")))
+        func_tasks = []
+        func_info_list = []
+
         for path in pyfiles:
             name = os.path.splitext(os.path.basename(path))[0]
             spec = importlib.util.spec_from_file_location(f"tests_{name}", path)
@@ -152,89 +196,118 @@ async def main():
             for _, fn in inspect.getmembers(mod, inspect.isfunction):
                 if not getattr(fn, "_func_case", False):
                     continue
-                test_number += 1
-                Logger.info(f"TEST{test_number}: {fn.__name__} ({path})")
-                if fn.__doc__:
-                    Logger.info(f"DOC: {fn.__doc__}")
 
-                res = await run_function_entry(fn, IS_CI)
-                if res.get("skipped"):
-                    continue
-                if res.get("error"):
-                    failed += 1
-                    total += 1
-                    continue
+                task = _run_func_test(fn, path)
+                func_tasks.append(task)
+                func_info_list.append((len(func_tasks) - 1, len(registry) + len(func_info_list) + 1))
 
-                entries = res["entries"]
-                if not entries:
-                    Logger.warning(f"No inputs registered in func test {fn.__name__}; skipping.")
-                    continue
+        func_results = await asyncio.gather(*func_tasks, return_exceptions=True)
 
-                results = res["results"]
+        for idx, func_result in enumerate(func_results):
+            if isinstance(func_result, Exception):
+                Logger.error(f"Error during function test execution: {func_result}")
+                continue
 
-                func_pass = True
-                for r in results:
-                    note = r.get("note")
-                    inp = r.get("input")
+            if not isinstance(func_result, dict):
+                continue
 
-                    if "traceback" in r:
-                        Logger.error(f"INPUT: {inp}")
-                        if note:
-                            Logger.error(f"NOTE: {note}")
-                        Logger.error("ERROR during execution:")
-                        Logger.error(r.get("traceback"))
-                        func_pass = False
-                        break
+            fn = func_result.get("fn")
+            path = func_result.get("path")
+            res = func_result.get("res", {})
 
-                    expected = r.get("expected")
-                    action = r.get("action", [])
-                    fmted_output = "\n".join(action) if action else "[NO OUTPUT]"
+            test_number = len(registry) + idx + 1
 
-                    Logger.info(f"INPUT: {inp}")
+            Logger.info(f"TEST{test_number}: {fn.__name__} ({path})")
+            if fn.__doc__:
+                Logger.info(f"DOC: {fn.__doc__}")
+
+            print("-" * 60)
+
+            if res.get("skipped"):
+                continue
+            if res.get("error"):
+                failed += 1
+                total += 1
+                continue
+
+            entries = res["entries"]
+            if not entries:
+                Logger.warning(f"No inputs registered in func test {fn.__name__}; skipping.")
+                continue
+
+            results = res["results"]
+
+            func_pass = True
+            for r in results:
+                note = r.get("note")
+                inp = r.get("input")
+
+                if "timeout" in r:
+                    Logger.error(f"INPUT: {inp}")
                     if note:
-                        Logger.info(f"NOTE: {note}")
-                    Logger.info(f"OUTPUT:\n{fmted_output}")
-
-                    if expected is not None:
-                        Logger.info(f"EXPECT: {expected}")
-
-                    if r.get("match"):
-                        Logger.success("RESULT: PASS")
-                        continue
-                    if expected is None:
-                        if IS_CI:
-                            Logger.info("RESULT: SKIP (expects manual review, unavailable in CI)")
-                            continue
-                        try:
-                            Logger.warning("REVIEW: Did the output meet expectations? [y/N]")
-                            check = input()
-                            if check in confirm_command:
-                                Logger.success("RESULT: PASS")
-                                continue
-                            func_pass = False
-                        except (EOFError, KeyboardInterrupt):
-                            print("")
-                            Logger.warning("Interrupted by user.")
-                            os._exit(1)
-                    else:
-                        Logger.error("RESULT: FAIL")
+                        Logger.error(f"NOTE: {note}")
+                    Logger.error("RESULT: FAIL (timeout)")
                     func_pass = False
                     break
 
-                if func_pass:
-                    Logger.success(f"FUNC ({fn.__name__}) RESULT: PASS")
-                    passed += 1
+                if "traceback" in r:
+                    Logger.error(f"INPUT: {inp}")
+                    if note:
+                        Logger.error(f"NOTE: {note}")
+                    Logger.error("ERROR during execution:")
+                    Logger.error(r.get("traceback"))
+                    func_pass = False
+                    break
+
+                expected = r.get("expected")
+                action = r.get("action", [])
+                fmted_output = "\n".join(action) if action else "[NO OUTPUT]"
+
+                Logger.info(f"INPUT: {inp}")
+                if note:
+                    Logger.info(f"NOTE: {note}")
+                Logger.info(f"OUTPUT:\n{fmted_output}")
+
+                if expected is not None:
+                    Logger.info(f"EXPECT: {expected}")
+
+                if r.get("match"):
+                    Logger.success("RESULT: PASS")
+                    continue
+                if expected is None:
+                    if IS_CI:
+                        Logger.info("RESULT: SKIP (expects manual review, unavailable in CI)")
+                        continue
+                    try:
+                        Logger.warning("REVIEW: Did the output meet expectations? [y/N]")
+                        check = input()
+                        if check in confirm_command:
+                            Logger.success("RESULT: PASS")
+                            continue
+                        func_pass = False
+                    except (EOFError, KeyboardInterrupt):
+                        print("")
+                        Logger.warning("Interrupted by user.")
+                        os._exit(1)
                 else:
-                    Logger.error(f"FUNC ({fn.__name__}) RESULT: FAIL")
-                    failed += 1
+                    Logger.error("RESULT: FAIL")
+                func_pass = False
+                break
 
-                tcost = res.get("time_cost")
-                if tcost is not None:
-                    Logger.info(f"TIME COST: {tcost:.06f}s")
-                    total_test_cost += tcost
+            if func_pass:
+                Logger.success(f"FUNC ({fn.__name__}) RESULT: PASS")
+                passed += 1
+            else:
+                Logger.error(f"FUNC ({fn.__name__}) RESULT: FAIL")
+                failed += 1
 
-                total += 1
-                print("-" * 60)
+            tcost = res.get("time_cost")
+            if tcost is not None:
+                Logger.info(f"TIME COST: {tcost:.06f}s")
+                total_test_cost += tcost
+
+            total += 1
+            print("-" * 60)
 
     if total > 0:
         Logger.info(f"TOTAL: {total}")

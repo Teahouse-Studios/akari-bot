@@ -1,3 +1,4 @@
+import asyncio
 import time
 import traceback
 from typing import Any, Callable
@@ -5,15 +6,14 @@ from typing import Any, Callable
 from core.builtins.message.chain import MessageChain, match_kecode
 from core.builtins.message.elements import PlainElement
 from core.constants.exceptions import SessionFinished
-from core.cooldown import _cd_dict
 from core.database.models import SenderInfo, TargetInfo
-from core.game import _ps_dict
 from core.tester.mock.session import MockMessageSession
 from core.tester.mock.parser import parser
 from core.tester.mock.database import init_db, close_db
 from core.tester.mock.loader import load_modules
 from core.tester.mock.random import Random
 from core.logger import Logger
+from core.utils.container import ExpiringTempDict
 from .expectations import Expectation
 
 
@@ -33,8 +33,13 @@ async def run_case_entry(entry: dict, is_ci: bool = False) -> list[dict]:
         Logger.exception("Failed to load modules for tests:")
 
     start = time.perf_counter()
-    result = await run_test_case(entry["input"], entry["expected"], entry["func"], is_ci)
+    timeout = entry.get("timeout")
+    result = await run_test_case(entry["input"], entry["expected"], entry["func"], is_ci, timeout=timeout)
     elapsed = time.perf_counter() - start
+    if "exception" in result and isinstance(result["expected"], Expectation):
+        match = await result["expected"].match(result)
+        if match:
+            del result["traceback"]
     try:
         result["time_cost"] = elapsed
     except Exception:
@@ -82,49 +87,60 @@ async def run_test_case(
     expected: Expectation | None = None,
     casetest_target: Callable | None = None,
     is_ci: bool = False,
+    timeout: float | None = None,
 ):
-    try:
-        await TargetInfo.update_or_create(defaults={}, target_id="TEST|Console|0")
-        await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id="TEST|0")
-    except Exception:
-        pass
-
-    msg = MockMessageSession(input_, is_ci=is_ci)
-    await msg.async_init(msg.trigger_msg)
-
-    if casetest_target is not None:
-        setattr(msg, "_casetest_target", casetest_target)
-
-    try:
-        await parser(msg)
-    except SessionFinished:
-        pass
-    except Exception as e:
-        err_msg = msg.session_info.locale.t_str(str(e))
+    async def _run_test():
         try:
-            err_chain = match_kecode(err_msg, disable_joke=True)
+            await TargetInfo.update_or_create(defaults={}, target_id="TEST|Console|0")
+            await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id="TEST|0")
         except Exception:
-            err_chain = MessageChain.assign(err_msg)
+            pass
 
-        err_action = [
-            x.text if isinstance(x, PlainElement) else str(x) for x in err_chain.as_sendable(msg.session_info)
-        ]
+        msg = MockMessageSession(input_, is_ci=is_ci)
+        await msg.async_init(msg.trigger_msg)
+
+        if casetest_target is not None:
+            setattr(msg, "_casetest_target", casetest_target)
+
+        try:
+            await parser(msg)
+        except SessionFinished:
+            pass
+        except Exception as e:
+            err_msg = msg.session_info.locale.t_str(str(e))
+            try:
+                err_chain = match_kecode(err_msg, disable_joke=True)
+            except Exception:
+                err_chain = MessageChain.assign(err_msg)
+
+            err_action = [
+                x.text if isinstance(x, PlainElement) else str(x) for x in err_chain.as_sendable(msg.session_info)
+            ]
+
+            return {
+                "input": input_,
+                "exception": e,
+                "exception_message": err_chain.to_str(),
+                "action": [f"(raise {type(e).__name__})"] + err_action,
+                "traceback": traceback.format_exc(),
+                "expected": expected,
+            }
+        finally:
+            await ExpiringTempDict.clear_all()
 
         return {
             "input": input_,
-            "exception": e,
-            "exception_message": err_chain.to_str(),
-            "action": [f"(raise {type(e).__name__})"] + err_action,
-            "traceback": traceback.format_exc(),
+            "output": msg.sent,
+            "action": msg.action,
             "expected": expected,
         }
-    finally:
-        _cd_dict.clear()
-        _ps_dict.clear()
 
-    return {
-        "input": input_,
-        "output": msg.sent,
-        "action": msg.action,
-        "expected": expected,
-    }
+    if timeout:
+        try:
+            result = await asyncio.wait_for(_run_test(), timeout=timeout)
+        except asyncio.TimeoutError:
+            await ExpiringTempDict.clear_all()
+            result = {"input": input_, "expected": expected, "timeout": True}
+    else:
+        result = await _run_test()
+    return result

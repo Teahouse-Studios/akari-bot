@@ -16,6 +16,7 @@ class Tester:
         input_: str | list[str] | tuple[str, ...],
         expected: Expectation | None = None,
         note: str | None = None,
+        timeout: float | None = None,
     ):
         """
         注册一个测试案例。
@@ -23,23 +24,25 @@ class Tester:
         :param input_: 预期输入。
         :param expected: 预期输出，传入期望匹配器，若为 None 则手动复核。
         :param note: 额外说明。
+        :param timeout: 超时时间（秒），若为 None 则无超时限制。
         """
         frame = inspect.stack()[1]
         entry_meta = {
             "input": input_,
             "expected": expected,
             "note": note,
+            "timeout": timeout,
             "file": frame.filename,
             "line": frame.lineno,
         }
         self._entries.append(entry_meta)
 
-        result = await run_test_case(input_, expected=expected, is_ci=self.is_ci)
+        result = await run_test_case(input_, expected=expected, is_ci=self.is_ci, timeout=timeout)
 
         output = result.get("output")
         action = result.get("action")
 
-        if "exception" in result and not isinstance(expected, Expectation):
+        if "timeout" in result or "exception" in result and not isinstance(expected, Expectation):
             result.update({"expected": expected, "match": False, "note": note})
             self._results.append(result)
             return result
