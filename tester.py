@@ -12,9 +12,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from bot import ascii_art, encode
 from core.builtins.utils import confirm_command
-from core.constants import cache_path, tests_path
+from core.constants import ascii_art, cache_path, encode, tests_path
 from core.logger import Logger
 from core.tester.decorator import get_registry
 from core.tester.expectations import Expectation
@@ -117,8 +116,7 @@ async def main():
                     failed += 1
             else:
                 if IS_CI:
-                    Logger.error("RESULT: FAIL (expects manual review, unavailable in CI)")
-                    failed += 1
+                    Logger.info("RESULT: SKIP (expects manual review, unavailable in CI)")
                 else:
                     try:
                         Logger.warning("REVIEW: Did the output meet expectations? [y/N]")
@@ -206,9 +204,8 @@ async def main():
                         continue
                     if expected is None:
                         if IS_CI:
-                            Logger.error("RESULT: FAIL (expects manual review, unavailable in CI)")
-                            func_pass = False
-                            break
+                            Logger.info("RESULT: SKIP (expects manual review, unavailable in CI)")
+                            continue
                         try:
                             Logger.warning("REVIEW: Did the output meet expectations? [y/N]")
                             check = input()

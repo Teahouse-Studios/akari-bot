@@ -20,7 +20,7 @@ from pathlib import Path
 from loguru import logger
 from tortoise import Tortoise, run_async
 
-from core.constants import bots_path, logs_path  # skipcq
+from core.constants import ascii_art, bots_path, encode, logs_path  # skipcq
 from core.database import close_db
 
 
@@ -63,16 +63,6 @@ Logger.add(
     encoding="utf8",
     filter=lambda record: record["extra"].get("name") == "BotDaemon",
 )
-
-ascii_art = r"""
-           _              _   ____        _
-     /\   | |            (_) |  _ \      | |
-    /  \  | | ____ _ _ __ _  | |_) | ___ | |_
-   / /\ \ | |/ / _` | '__| | |  _ < / _ \| __|
-  / ____ \|   < (_| | |  | | | |_) | (_) | |_
- /_/    \_\_|\_\__,_|_|  |_| |____/ \___/ \__|
-"""
-encode = "UTF-8"
 
 
 class RestartBot(Exception):
