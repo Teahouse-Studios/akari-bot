@@ -23,6 +23,7 @@ assets/modules/phigros*
 assets/private*
 bots/test/*
 bots/**/assets
+junit.xml
 modules/test/*
 webui/*
 version*

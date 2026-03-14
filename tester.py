@@ -17,6 +17,7 @@ from core.constants import ascii_art, cache_path, tests_path
 from core.logger import Logger
 from core.tester.decorator import get_registry
 from core.tester.expectations import Expectation
+from core.tester.junit import JUnitReport, JUnitTestSuite, JUnitTestCase
 from core.tester.mock.database import init_db, close_db
 from core.tester.mock.loader import load_modules
 from core.tester.mock.random import Random
@@ -29,6 +30,10 @@ os.environ.setdefault("PYTHONPATH", str(Path(".").resolve()))
 
 IS_CI = os.environ.get("CI", "0") == "1"
 MAX_CONCURRENT = 10
+
+junit_report = JUnitReport()
+junit_registry_suite = JUnitTestSuite("Registry Tests")
+junit_func_suite = JUnitTestSuite("Function Tests")
 
 
 async def _run_registry_entry(semaphore: asyncio.Semaphore, entry: dict, test_number: int) -> dict:
@@ -119,6 +124,12 @@ async def main():
         for r in results:
             total += 1
             inp = r.get("input")
+            tcost = r.get("time_cost", 0.0)
+
+            test_case_name = f"TEST{test_number}_{total}"
+            junit_testcase = JUnitTestCase(
+                name=test_case_name, classname=f"RegistryTest.{test_number}", time=tcost if tcost else 0.0
+            )
 
             if "timeout" in r:
                 Logger.error(f"INPUT: {inp}")
@@ -126,6 +137,11 @@ async def main():
                     Logger.error(f"NOTE: {note}")
                 Logger.error("RESULT: FAIL (timeout)")
                 failed += 1
+                junit_testcase.failure = (
+                    "Test timeout",
+                    f"Test exceeded timeout limit\nInput: {inp}\nNote: {note or 'N/A'}",
+                )
+                junit_registry_suite.add_testcase(junit_testcase)
                 continue
 
             if "traceback" in r:
@@ -135,6 +151,8 @@ async def main():
                 Logger.error("ERROR during execution:")
                 Logger.error(r.get("traceback"))
                 failed += 1
+                junit_testcase.error = ("Test execution error", r.get("traceback", "Unknown error"))
+                junit_registry_suite.add_testcase(junit_testcase)
                 continue
 
             action = r.get("action", [])
@@ -154,9 +172,15 @@ async def main():
                 elif match is False:
                     Logger.error("RESULT: FAIL")
                     failed += 1
+                    junit_testcase.failure = ("Assertion failed", f"Expected: {expected}\nActual: {fmted_output}")
+                    junit_registry_suite.add_testcase(junit_testcase)
+                    continue
             else:
                 if IS_CI:
                     Logger.info("RESULT: SKIP (expects manual review, unavailable in CI)")
+                    junit_testcase.skipped = "Manual review required (unavailable in CI)"
+                    junit_registry_suite.add_testcase(junit_testcase)
+                    continue
                 else:
                     try:
                         Logger.warning("REVIEW: Did the output meet expectations? [y/N]")
@@ -167,11 +191,19 @@ async def main():
                         else:
                             Logger.error("RESULT: FAIL")
                             failed += 1
+                            junit_testcase.failure = (
+                                "Manual review failed",
+                                f"Expected: {expected}\nActual: {fmted_output}",
+                            )
+                            junit_registry_suite.add_testcase(junit_testcase)
+                            continue
                     except (EOFError, KeyboardInterrupt):
                         print("")
                         Logger.warning("Interrupted by user.")
                         os._exit(1)
-            tcost = r.get("time_cost")
+
+            junit_registry_suite.add_testcase(junit_testcase)
+
             if tcost is not None:
                 Logger.info(f"TIME COST: {tcost:.06f}s")
                 total_test_cost += tcost
@@ -224,20 +256,36 @@ async def main():
             print("-" * 60)
 
             if res.get("skipped"):
+                junit_testcase = JUnitTestCase(
+                    name=fn.__name__, classname=f"FunctionTest.{test_number}", time=res.get("time_cost", 0.0)
+                )
+                junit_testcase.skipped = "Test skipped"
+                junit_func_suite.add_testcase(junit_testcase)
                 continue
             if res.get("error"):
                 failed += 1
                 total += 1
+                junit_testcase = JUnitTestCase(
+                    name=fn.__name__, classname=f"FunctionTest.{test_number}", time=res.get("time_cost", 0.0)
+                )
+                junit_testcase.error = ("Test error", res.get("error", "Unknown error"))
+                junit_func_suite.add_testcase(junit_testcase)
                 continue
 
             entries = res["entries"]
             if not entries:
                 Logger.warning(f"No inputs registered in func test {fn.__name__}; skipping.")
+                junit_testcase = JUnitTestCase(
+                    name=fn.__name__, classname=f"FunctionTest.{test_number}", time=res.get("time_cost", 0.0)
+                )
+                junit_testcase.skipped = "No inputs registered"
+                junit_func_suite.add_testcase(junit_testcase)
                 continue
 
             results = res["results"]
 
             func_pass = True
+            func_error_msg = ""
             for r in results:
                 note = r.get("note")
                 inp = r.get("input")
@@ -248,6 +296,7 @@ async def main():
                         Logger.error(f"NOTE: {note}")
                     Logger.error("RESULT: FAIL (timeout)")
                     func_pass = False
+                    func_error_msg = f"Test timeout for input: {inp}"
                     break
 
                 if "traceback" in r:
@@ -257,6 +306,7 @@ async def main():
                     Logger.error("ERROR during execution:")
                     Logger.error(r.get("traceback"))
                     func_pass = False
+                    func_error_msg = r.get("traceback", "Unknown error")
                     break
 
                 expected = r.get("expected")
@@ -285,21 +335,32 @@ async def main():
                             Logger.success("RESULT: PASS")
                             continue
                         func_pass = False
+                        func_error_msg = f"Manual review failed for input: {inp}"
                     except (EOFError, KeyboardInterrupt):
                         print("")
                         Logger.warning("Interrupted by user.")
                         os._exit(1)
                 else:
                     Logger.error("RESULT: FAIL")
-                func_pass = False
+                    func_pass = False
+                    func_error_msg = f"Expected: {expected}\nActual: {fmted_output}"
                 break
 
             if func_pass:
                 Logger.success(f"FUNC ({fn.__name__}) RESULT: PASS")
                 passed += 1
+                junit_testcase = JUnitTestCase(
+                    name=fn.__name__, classname=f"FunctionTest.{test_number}", time=res.get("time_cost", 0.0)
+                )
             else:
                 Logger.error(f"FUNC ({fn.__name__}) RESULT: FAIL")
                 failed += 1
+                junit_testcase = JUnitTestCase(
+                    name=fn.__name__, classname=f"FunctionTest.{test_number}", time=res.get("time_cost", 0.0)
+                )
+                junit_testcase.failure = ("Function test failed", func_error_msg)
+
+            junit_func_suite.add_testcase(junit_testcase)
 
             tcost = res.get("time_cost")
             if tcost is not None:
@@ -319,6 +380,19 @@ async def main():
         print("=" * 60)
     else:
         Logger.warning("No tests registered. Use `core.tester.case` or `core.tester.test_case` to register tests.")
+
+    if IS_CI:
+        try:
+            junit_report.add_testsuite(junit_registry_suite)
+            if junit_func_suite.test_cases:
+                junit_report.add_testsuite(junit_func_suite)
+
+            junit_output_path = Path("junit.xml")
+            junit_report.write_to_file(junit_output_path)
+            Logger.success(f"JUnit XML report generated: {junit_output_path}")
+        except Exception as e:
+            Logger.error(f"Failed to generate JUnit XML report: {e}")
+
     await close_db()
 
     if IS_CI and failed > 0:
