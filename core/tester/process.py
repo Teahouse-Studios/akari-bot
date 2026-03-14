@@ -126,7 +126,7 @@ async def run_test_case(
                 "expected": expected,
             }
         finally:
-            await ExpiringTempDict.clear_all()
+            await ExpiringTempDict.clear_all(now=time.time() + 31536000)
 
         return {
             "input": input_,
@@ -139,7 +139,7 @@ async def run_test_case(
         try:
             result = await asyncio.wait_for(_run_test(), timeout=timeout)
         except asyncio.TimeoutError:
-            await ExpiringTempDict.clear_all()
+            await ExpiringTempDict.clear_all(now=time.time() + 31536000)
             result = {"input": input_, "expected": expected, "timeout": True}
     else:
         result = await _run_test()
