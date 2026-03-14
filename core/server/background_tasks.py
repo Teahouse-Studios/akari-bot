@@ -21,7 +21,7 @@ from core.web_render import init_web_render, web_render
 
 
 @Scheduler.scheduled_job(IntervalTrigger(minutes=60))
-async def _():
+async def hourly_background_task():
     """每小时执行一次的后台检查任务。
 
     功能：

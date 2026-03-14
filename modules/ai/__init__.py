@@ -18,18 +18,18 @@ ai = module("ai", developers=["DoroWolf", "Dianliang233"], desc="{I18N:ai.help.d
 @ai.command("<prompt> [--llm <llm>] {{I18N:ai.help}}", options_desc={"--llm": "{I18N:ai.help.option.llm}"})
 async def _(msg: Bot.MessageSession, prompt: str):
     get_llm = msg.parsed_msg.get("--llm", False)
-    llm = get_llm["<llm>"].lower() if get_llm else None
-    target_llm = msg.session_info.target_info.target_data.get("ai_default_llm")
+    selected_llm = get_llm["<llm>"].lower() if get_llm else None
+    target_default_llm = msg.session_info.target_info.target_data.get("ai_default_llm")
     is_superuser = msg.check_super_user()
 
     avaliable_llms = llm_list + (llm_su_list if is_superuser else [])
 
-    if not llm:
-        llm = target_llm if target_llm else default_llm
+    if not selected_llm:
+        selected_llm = target_default_llm if target_default_llm else default_llm
 
     llm_info = None
-    if llm in avaliable_llms:
-        llm_info = next((l for l in llm_api_list if l["name"] == llm), None)
+    if selected_llm in avaliable_llms:
+        llm_info = next((llm for llm in llm_api_list if llm["name"] == selected_llm), None)
 
     if llm_info:
         if not is_superuser and not precount_petal(msg, llm_info["price_in"], llm_info["price_out"]):

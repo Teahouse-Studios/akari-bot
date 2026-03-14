@@ -135,7 +135,7 @@ async def _(msg: Bot.MessageSession, target: str):
 
 @set_.command("target data get <target> [<k>]", "target data edit <target> <k> <v>", "target data delete <target> <k>")
 async def _(msg: Bot.MessageSession, target: str):
-    if not Alive.determine_sender_from(target):
+    if not Alive.determine_target_from(target):
         await msg.finish(I18NContext("message.id.invalid.target", target=msg.session_info.target_from))
     target_info = await TargetInfo.get_by_target_id(target, create=False)
     if not target_info:
@@ -408,7 +408,7 @@ async def update_dependencies():
 @upd.command()
 async def _(msg: Bot.MessageSession):
     if not Bot.Info.binary_mode:
-        if Bot.Info.version:
+        if Bot.Info.version and Bot.Info.version.startswith("git:"):
             pull_repo_result = await pull_repo()
             if pull_repo_result:
                 await msg.send_message(Plain(pull_repo_result, disable_joke=True))
@@ -473,7 +473,7 @@ async def _(msg: Bot.MessageSession):
             restart_time.append(time.time())
             await wait_for_restart(msg)
             write_restart_cache(msg)
-            if Bot.Info.version:
+            if Bot.Info.version and Bot.Info.version.startswith("git:"):
                 pull_repo_result = await pull_repo()
                 if pull_repo_result:
                     await msg.send_message(Plain(pull_repo_result, disable_joke=True))
@@ -516,7 +516,7 @@ async def _(msg: Bot.MessageSession):
         await msg.send_message(I18NContext("core.message.resume.skip", counts=len(targets)))
         for x in targets:
             if x["i18n"]:
-                await x["fetch"].send_direct_message(I18NContext(x["message"]))
+                await x["fetch"].send_direct_message(I18NContext(x["message"], **x["kwargs"]))
             else:
                 await x["fetch"].send_direct_message(x["message"])
             Bot.Temp.data["waiting_for_send_group_message"].remove(x)

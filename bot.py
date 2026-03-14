@@ -1,4 +1,4 @@
-from core import check_python_version
+from core import check_python_version  # skipcq
 
 check_python_version()  # noqa
 
@@ -20,7 +20,7 @@ from pathlib import Path
 from loguru import logger
 from tortoise import Tortoise, run_async
 
-from core.constants import bots_path, logs_path
+from core.constants import bots_path, logs_path  # skipcq
 from core.database import close_db
 
 

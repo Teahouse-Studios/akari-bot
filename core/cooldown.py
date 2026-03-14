@@ -48,8 +48,7 @@ class CoolDown:
         """
         cd_instance = self._get_cd_dict()
         if cd_instance:
-            elapsed = time.time() - cd_instance.ts
-            remaining = cd_instance.exp - elapsed
+            remaining = cd_instance.exp - (time.time() - cd_instance.ts)
         else:
             remaining = 0
         return remaining

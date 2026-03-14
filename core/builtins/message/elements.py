@@ -757,7 +757,6 @@ class EmbedFieldElement(BaseElement):
 
     def kecode(self):
         """... KE 码格式未实现 ..."""
-        pass
 
     def __str__(self):
         """返回字符串表示"""
@@ -909,7 +908,6 @@ class EmbedElement(BaseElement):
 
     def kecode(self):
         """... KE 码格式未实现 ..."""
-        pass
 
     def __str__(self):
         """返回消息链的字符串表示"""
@@ -950,7 +948,6 @@ class RawElement(BaseElement):
 
     def kecode(self):
         """... KE 码格式未实现 ..."""
-        pass
 
     def __str__(self):
         """返回原始值"""

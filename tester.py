@@ -1,4 +1,4 @@
-from core import check_python_version
+from core import check_python_version  # skipcq
 
 check_python_version()  # noqa
 
@@ -12,6 +12,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from bot import ascii_art, encode
 from core.builtins.utils import confirm_command
 from core.constants import cache_path, tests_path
 from core.logger import Logger
@@ -21,7 +22,6 @@ from core.tester.mock.database import init_db, close_db
 from core.tester.mock.loader import load_modules
 from core.tester.mock.random import Random
 from core.tester.process import run_case_entry, run_function_entry
-from bot import ascii_art, encode
 
 
 load_dotenv()
@@ -54,19 +54,19 @@ async def main():
     print("=" * 60)
     registry = get_registry()
 
-    i = 0
+    test_number = 0
     total = 0
     passed = 0
     failed = 0
     total_test_cost = 0.0
 
     for entry in registry:
-        i += 1
+        test_number += 1
         print("-" * 60)
         fn = entry["func"]
         note = entry.get("note") or (fn.__doc__ if fn.__doc__ else None)
         file_loc = f"{entry.get('file')}:{entry.get('line')}"
-        Logger.info(f"TEST{i}: {fn.__name__} ({file_loc})")
+        Logger.info(f"TEST{test_number}: {fn.__name__} ({file_loc})")
         if fn.__doc__:
             Logger.info(f"DOC: {fn.__doc__}")
 
@@ -75,7 +75,7 @@ async def main():
         except Exception:
             Logger.exception("Error closing database before test")
         if not await init_db():
-            Logger.critical(f"Failed to reinitialize database for TEST{i}. Skipping tests.")
+            Logger.critical(f"Failed to reinitialize database for TEST{test_number}. Skipping tests.")
             continue
 
         try:
@@ -155,8 +155,8 @@ async def main():
             for _, fn in inspect.getmembers(mod, inspect.isfunction):
                 if not getattr(fn, "_func_case", False):
                     continue
-                i += 1
-                Logger.info(f"TEST{i}: {fn.__name__} ({path})")
+                test_number += 1
+                Logger.info(f"TEST{test_number}: {fn.__name__} ({path})")
                 if fn.__doc__:
                     Logger.info(f"DOC: {fn.__doc__}")
 
@@ -209,18 +209,17 @@ async def main():
                             Logger.error("RESULT: FAIL (expects manual review, unavailable in CI)")
                             func_pass = False
                             break
-                        else:
-                            try:
-                                Logger.warning("REVIEW: Did the output meet expectations? [y/N]")
-                                check = input()
-                                if check in confirm_command:
-                                    Logger.success("RESULT: PASS")
-                                    continue
-                                func_pass = False
-                            except (EOFError, KeyboardInterrupt):
-                                print("")
-                                Logger.warning("Interrupted by user.")
-                                os._exit(1)
+                        try:
+                            Logger.warning("REVIEW: Did the output meet expectations? [y/N]")
+                            check = input()
+                            if check in confirm_command:
+                                Logger.success("RESULT: PASS")
+                                continue
+                            func_pass = False
+                        except (EOFError, KeyboardInterrupt):
+                            print("")
+                            Logger.warning("Interrupted by user.")
+                            os._exit(1)
                     else:
                         Logger.error("RESULT: FAIL")
                     func_pass = False

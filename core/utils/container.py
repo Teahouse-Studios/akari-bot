@@ -17,9 +17,7 @@ class TokenBucket:
         self.ts = now
 
     def consume(self, amount: int = 1) -> bool:
-        now = time.time()
-        self.tokens = min(self.capacity, self.tokens + (now - self.ts) * self.rate)
-        self.ts = now
+        self._refill()
         if self.tokens >= amount:
             self.tokens -= amount
             return True
@@ -53,8 +51,10 @@ class ExpiringTempDict:
     _registry_lock: ClassVar[threading.Lock] = threading.Lock()
     _clear_lock: ClassVar[asyncio.Lock] = asyncio.Lock()
 
-    def __init__(self, exp: int | float = 86400.0, ts: int | float = time.time(), data: Any = None, root: bool = True):
+    def __init__(self, exp: int | float = 86400.0, ts: int | float | None = None, data: Any = None, root: bool = True):
         self.exp = exp
+        if not ts:
+            ts = time.time()
         self.ts = float(ts)
         self.data = data or {}
         self._lock = threading.RLock()

@@ -18,25 +18,25 @@ if llm_api_list_path.exists():
 else:
     llm_api_list = []
 
-for l in llm_api_list:
-    if not l.get("name"):
-        l["name"] = l["model_name"]
-    if not l.get("price_in"):
-        l["price_in"] = 0
-    if not l.get("price_out"):
-        l["price_out"] = 0
+for llm in llm_api_list:
+    if not llm.get("name"):
+        llm["name"] = llm["model_name"]
+    if not llm.get("price_in"):
+        llm["price_in"] = 0
+    if not llm.get("price_out"):
+        llm["price_out"] = 0
 
 _name_count = {}
-for l in llm_api_list:
-    name = l["name"]
+for llm in llm_api_list:
+    name = llm["name"]
     _name_count[name] = _name_count.get(name, 0) + 1
 
 _llm_api_list = []
-for l in llm_api_list:
-    if _name_count[l["name"]] == 1:
-        _llm_api_list.append(l)
+for llm in llm_api_list:
+    if _name_count[llm["name"]] == 1:
+        _llm_api_list.append(llm)
 
 llm_api_list = _llm_api_list
 
-llm_list = [l["name"] for l in llm_api_list if not l.get("superuser", False)]
-llm_su_list = [l["name"] for l in llm_api_list if l.get("superuser", False)]
+llm_list = [llm["name"] for llm in llm_api_list if not llm.get("superuser", False)]
+llm_su_list = [llm["name"] for llm in llm_api_list if llm.get("superuser", False)]
