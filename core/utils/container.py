@@ -119,11 +119,11 @@ class ExpiringTempDict:
             return len(self.data) == 0
 
     @classmethod
-    async def clear_all(cls):
-        now = time.time()
+    async def clear_all(cls, now: float | None = None):
+        now = now or time.time()
+
         async with cls._clear_lock:
             root_objs = list(cls._registry)
-
             await asyncio.to_thread(cls._sync_clear_all, root_objs, now)
 
     @staticmethod
