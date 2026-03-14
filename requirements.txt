@@ -321,7 +321,7 @@ pydantic-core==2.41.5
     # via pydantic
 pyee==13.0.0
     # via playwright
-pyjwt==2.11.0
+pyjwt==2.12.1
     # via akari-bot
 pyparsing==3.3.2
     # via matplotlib
@@ -366,7 +366,7 @@ rpds-py==0.30.0
 ruff==0.15.1
 sgmllib3k==1.0.0
     # via feedparser
-simpleeval==1.0.3
+simpleeval==1.0.6
     # via akari-bot
 six==1.17.0
     # via python-dateutil

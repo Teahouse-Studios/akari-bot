@@ -72,10 +72,14 @@ class ExpiringTempDict:
         return len(self.data)
 
     def __getitem__(self, key: str):
-        with self._lock:
-            if key not in self.data:
-                self.data[key] = ExpiringTempDict(exp=self.exp, root=False)
-            return self.data[key]
+        if self.is_expired():
+            return None
+        if key not in self.data:
+            self.data[key] = ExpiringTempDict(exp=self.exp, root=False)
+        v = self.data[key]
+        if isinstance(v, ExpiringTempDict) and v.is_expired():
+            return None
+        return v
 
     def __setitem__(self, key: str, value: Any):
         with self._lock:
@@ -87,7 +91,7 @@ class ExpiringTempDict:
 
     def is_expired(self, now: float | None = None) -> bool:
         now = now or time.time()
-        return (time.time() - self.ts) > self.exp
+        return (now - self.ts) > self.exp
 
     def refresh(self):
         with self._lock:
@@ -173,8 +177,12 @@ class ExpiringTempDict:
             return new_obj
 
     def get(self, key, default=None):
-        with self._lock:
-            return self.data.get(key, default)
+        if self.is_expired():
+            return default
+        v = self.data.get(key, default)
+        if isinstance(v, ExpiringTempDict) and v.is_expired():
+            return default
+        return v
 
     def keys(self):
         return self.data.keys()
@@ -232,6 +240,11 @@ class ExpiringTempDict:
         return str(self.data)
 
     def __contains__(self, item):
+        if self.is_expired():
+            return False
+        v = self.data.get(item)
+        if isinstance(v, ExpiringTempDict) and v.is_expired():
+            return False
         return item in self.data
 
     def __eq__(self, other):
