@@ -13,7 +13,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from core.builtins.utils import confirm_command
-from core.constants import ascii_art, cache_path, encode, tests_path
+from core.constants import ascii_art, cache_path, tests_path
 from core.logger import Logger
 from core.tester.decorator import get_registry
 from core.tester.expectations import Expectation
@@ -24,9 +24,8 @@ from core.tester.process import run_case_entry, run_function_entry
 
 
 load_dotenv()
-envs = os.environ.copy()
-envs["PYTHONIOENCODING"] = encode
-envs["PYTHONPATH"] = str(Path(".").resolve())
+os.environ.setdefault("PYTHONIOENCODING", "UTF-8")
+os.environ.setdefault("PYTHONPATH", str(Path(".").resolve()))
 
 IS_CI = os.environ.get("CI", "0") == "1"
 

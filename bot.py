@@ -17,12 +17,17 @@ import time
 import traceback
 from pathlib import Path
 
+from dotenv import load_dotenv
 from loguru import logger
 from tortoise import Tortoise, run_async
 
-from core.constants import ascii_art, bots_path, encode, logs_path  # skipcq
+from core.constants import ascii_art, bots_path, logs_path  # skipcq
 from core.database import close_db
 
+
+load_dotenv()
+os.environ.setdefault("PYTHONIOENCODING", "UTF-8")
+os.environ.setdefault("PYTHONPATH", str(Path(".").resolve()))
 
 # Capture the base import lists to avoid clearing essential modules when restarting
 base_import_lists = list(sys.modules)
@@ -166,7 +171,6 @@ binary_mode = not sys.argv[0].endswith(".py")
 
 
 async def run_bot():
-    from dotenv import load_dotenv
     from core.config import CFGManager
     from core.server.run import run_async as server_run_async
 
@@ -198,10 +202,6 @@ async def run_bot():
         p.start()
         processes.append(p)
 
-    load_dotenv()
-    envs = os.environ.copy()
-    envs["PYTHONIOENCODING"] = encode
-    envs["PYTHONPATH"] = str(Path(".").resolve())
     bots_list = [p.name for p in bots_path.iterdir() if p.is_dir() and not p.name.startswith("_")]
 
     for t in CFGManager.values:
