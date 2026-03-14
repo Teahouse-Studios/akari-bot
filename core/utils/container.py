@@ -72,13 +72,19 @@ class ExpiringTempDict:
         return len(self.data)
 
     def __getitem__(self, key: str):
-        if self.is_expired():
-            return None
         if key not in self.data:
             self.data[key] = ExpiringTempDict(exp=self.exp, root=False)
+
         v = self.data[key]
-        if isinstance(v, ExpiringTempDict) and v.is_expired():
+        if isinstance(v, ExpiringTempDict):
+            if v.is_expired():
+                v.clear()
+                v.refresh()
+            return v
+
+        if self.is_expired():
             return None
+
         return v
 
     def __setitem__(self, key: str, value: Any):
@@ -119,11 +125,11 @@ class ExpiringTempDict:
             return len(self.data) == 0
 
     @classmethod
-    async def clear_all(cls):
-        now = time.time()
+    async def clear_all(cls, now: float | None = None):
+        now = now or time.time()
+
         async with cls._clear_lock:
             root_objs = list(cls._registry)
-
             await asyncio.to_thread(cls._sync_clear_all, root_objs, now)
 
     @staticmethod
@@ -177,11 +183,17 @@ class ExpiringTempDict:
             return new_obj
 
     def get(self, key, default=None):
+        v = self.data.get(key, default)
+
+        if isinstance(v, ExpiringTempDict):
+            if v.is_expired():
+                v.clear()
+                v.refresh()
+            return v
+
         if self.is_expired():
             return default
-        v = self.data.get(key, default)
-        if isinstance(v, ExpiringTempDict) and v.is_expired():
-            return default
+
         return v
 
     def keys(self):
@@ -240,12 +252,21 @@ class ExpiringTempDict:
         return str(self.data)
 
     def __contains__(self, item):
+        if item not in self.data:
+            return False
+
+        v = self.data[item]
+
+        if isinstance(v, ExpiringTempDict):
+            if v.is_expired():
+                v.clear()
+                v.refresh()
+            return True
+
         if self.is_expired():
             return False
-        v = self.data.get(item)
-        if isinstance(v, ExpiringTempDict) and v.is_expired():
-            return False
-        return item in self.data
+
+        return True
 
     def __eq__(self, other):
         if isinstance(other, ExpiringTempDict):
