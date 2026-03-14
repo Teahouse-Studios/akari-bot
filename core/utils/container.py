@@ -122,13 +122,13 @@ class ExpiringTempDict:
     async def clear_all(cls):
         now = time.time()
         async with cls._clear_lock:
-            objs = list(cls._registry)
+            root_objs = list(cls._registry)
 
-            await asyncio.to_thread(cls._sync_clear_all, objs, now)
+            await asyncio.to_thread(cls._sync_clear_all, root_objs, now)
 
     @staticmethod
-    def _sync_clear_all(objs, now):
-        for obj in objs:
+    def _sync_clear_all(root_objs, now):
+        for obj in root_objs:
             try:
                 obj.clear_expired(now)
             except Exception:

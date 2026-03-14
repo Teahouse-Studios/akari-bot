@@ -100,7 +100,7 @@ buckets_same = ExpiringTempDict()
 buckets_all = ExpiringTempDict()
 
 # 冷却计数 - 记录被暂时禁止的用户和禁止时长
-target_cooldown_counter = ExpiringTempDict(exp=TOS_TEMPBAN_TIME)
+target_cooldown_counter = ExpiringTempDict()
 
 # 匹配哈希缓存 - 缓存消息与模块的匹配结果，加速处理
 match_hash_cache = ExpiringTempDict()
@@ -857,9 +857,14 @@ async def _check_target_cooldown(msg: "Bot.MessageSession"):
     target_record = target_cooldown_counter[msg.session_info.target_id]
 
     # 获取或创建该发送者的冷却记录
-    sender_record = target_record.setdefault(
-        msg.session_info.sender_id, ExpiringTempDict(exp=cooldown_time, root=False)
-    )
+    if target_record:
+        sender_record = target_record.setdefault(
+            msg.session_info.sender_id, ExpiringTempDict(exp=cooldown_time, root=False)
+        )
+    else:
+        sender_record = target_cooldown_counter[msg.session_info.target_id].setdefault(
+            msg.session_info.sender_id, ExpiringTempDict(exp=cooldown_time, root=False)
+        )
 
     # 检查是否还在冷却期内
     if not sender_record.is_expired():
