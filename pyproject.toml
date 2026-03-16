@@ -59,6 +59,8 @@ dependencies = [
     "jinja2>=3.1.6,<4.0.0",
     # core.logger
     "loguru>=0.7.0,<1.0.0",
+    # core.tester
+    "defusedxml>=0.7.1",
     # core.utils
     "ff3>=1.0.2,<2.0.0",
     "psutil>=7.0.0,<8.0.0",

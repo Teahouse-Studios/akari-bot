@@ -1,9 +1,10 @@
 """JUnit XML Report Generator for test results."""
 
-import xml.etree.ElementTree as ET
-from pathlib import Path
-from typing import Optional
+import xml.etree.ElementTree as ET  # skipci
 from datetime import datetime
+from pathlib import Path
+
+from defusedxml.ElementTree import tostring
 
 
 class JUnitTestCase:
@@ -18,9 +19,9 @@ class JUnitTestCase:
         self.name = name
         self.classname = classname
         self.time = time
-        self.failure: Optional[tuple[str, str]] = None  # (message, traceback)
-        self.skipped: Optional[str] = None  # skip reason
-        self.error: Optional[tuple[str, str]] = None  # (message, traceback)
+        self.failure: tuple[str, str] | None = None  # (message, traceback)
+        self.skipped: str | None = None  # skip reason
+        self.error: tuple[str, str] | None = None  # (message, traceback)
 
     def to_xml(self) -> ET.Element:
         """Convert to XML element."""
@@ -117,7 +118,7 @@ class JUnitReport:
 
         # Format XML with proper indentation
         self._indent_element(root)
-        xml_str = ET.tostring(root, encoding="unicode")
+        xml_str = tostring(root, encoding="unicode")
         return f'<?xml version="1.0" encoding="UTF-8"?>\n{xml_str}'
 
     @staticmethod
