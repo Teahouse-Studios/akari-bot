@@ -861,9 +861,8 @@ async def _check_target_cooldown(msg: "Bot.MessageSession"):
 
     # 如果不存在，则创建并跳过冷却提示
     if not sender_record:
-        sender_record = target_record.setdefault(
-        msg.session_info.sender_id, ExpiringTempDict(exp=cooldown_time, root=False)
-    )
+        sender_record = ExpiringTempDict(exp=cooldown_time, root=False)
+        target_record[msg.session_info.sender_id] = sender_record
         return
 
     # 检查是否还在冷却期内
