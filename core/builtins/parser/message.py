@@ -856,10 +856,15 @@ async def _check_target_cooldown(msg: "Bot.MessageSession"):
     # 获取该目标的冷却记录
     target_record = target_cooldown_counter[msg.session_info.target_id]
 
-    # 获取或创建该发送者的冷却记录
-    sender_record = target_record.setdefault(
+    # 获取该发送者的冷却记录
+    sender_record = target_record.get(msg.session_info.sender_id)
+
+    # 如果不存在，则创建并跳过冷却提示
+    if not sender_record:
+        sender_record = target_record.setdefault(
         msg.session_info.sender_id, ExpiringTempDict(exp=cooldown_time, root=False)
     )
+        return
 
     # 检查是否还在冷却期内
     if not sender_record.is_expired():
@@ -871,6 +876,7 @@ async def _check_target_cooldown(msg: "Bot.MessageSession"):
             await msg.finish(I18NContext("message.cooldown.manual", time=int(elapsed)))
         await msg.finish()
 
+    # 重置冷却期
     sender_record.refresh()
     sender_record["notified"] = False
     sender_record.exp = cooldown_time
