@@ -20,9 +20,6 @@ class WebContextManager(ContextManager):
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
-        if session_info.session_id not in cls.context:
-            raise ValueError("Session not found in context")
-
         return True
 
     @classmethod
