@@ -1,6 +1,6 @@
 """JUnit XML Report Generator for test results."""
 
-import xml.etree.ElementTree as ET  # skipci
+import xml.etree.ElementTree as ET  # skipcq
 from datetime import datetime
 from pathlib import Path
 
