@@ -1,6 +1,6 @@
-"""基于`httpx`的互联网请求工具，用于让机器人请求外部网站。
+"""基于 `httpx` 的互联网请求工具，用于让机器人请求外部网站。
 
-请勿在模块中导入`request`库，否则会导致阻塞问题。
+请勿在本项目中导入并使用 `request`，否则可能会导致阻塞问题。
 """
 
 import re
@@ -35,9 +35,11 @@ _matcher_private_ips = re.compile(
 
 
 def private_ip_check(url: str):
-    """检查是否为私有IP，若是则抛出ValueError异常。
+    """检查是否为私有 IP 地址。
 
-    :param url: 需要检查的url。"""
+    :param url: 需要检查的 URL。
+    :raise ValueError: 此 URL 为私有 IP 地址。
+    """
     hostname = urllib.parse.urlparse(url).hostname
     addr_info = socket.getaddrinfo(hostname, 80)
 
@@ -60,21 +62,23 @@ async def request_url(
     logging_err_resp: bool = True,
     cookies: dict[str, Any] | None = None,
 ) -> Any:
-    """利用httpx请求指定URL的内容。
+    """请求指定 URL 的内容。
 
-    :param method: HTTP方法（GET, POST, PATCH, PUT, DELETE）。
-    :param url: 请求的URL。
-    :param data: 请求数据（适用于POST, PATCH, PUT）。
-    :param status_code: 预期的HTTP状态码，若不符则抛出ValueError。
-    :param headers: 请求时使用的http头。
+    :param method: HTTP 方法（GET, POST, PATCH, PUT, DELETE）。
+    :param url: 请求的 URL。
+    :param data: 请求数据（适用于 POST, PATCH, PUT）。
+    :param status_code: 预期的 HTTP 状态码，若不符则抛出 ValueError。
+    :param headers: 请求时使用的 HTTP 头。
     :param params: 请求时使用的参数。
     :param fmt: 指定返回的格式。
     :param timeout: 超时时间。
     :param attempt: 指定请求尝试次数。
-    :param request_private_ip: 是否允许请求私有IP。
+    :param request_private_ip: 是否允许请求私有 IP。
     :param logging_err_resp: 是否记录错误响应。
-    :param cookies: 使用的cookies。
-    :returns: 请求结果。
+    :param cookies: 使用的 cookies。
+    :returns: 相应结果。
+    :raise ValueError: 异常可能来自于内部规则不符合响应。
+    :raise ExternalException: 异常可能来自于外部服务器。
     """
     if not headers:
         headers = {}
@@ -146,19 +150,21 @@ async def get_url(
     logging_err_resp: bool = True,
     cookies: dict[str, Any] | None = None,
 ) -> Any:
-    """利用httpx发送GET请求。
+    """ 发送 GET 请求。
 
-    :param url: 需要获取的URL。
-    :param status_code: 指定请求到的状态码，若不符则抛出ValueError。
-    :param headers: 请求时使用的http头。
+    :param url: 需要获取的 URL。
+    :param status_code: 指定请求到的状态码，若不符则抛出 ValueError。
+    :param headers: 请求时使用的 HTTP 头。
     :param params: 请求时使用的参数。
     :param fmt: 指定返回的格式。
     :param timeout: 超时时间。
     :param attempt: 指定请求尝试次数。
-    :param request_private_ip: 是否允许请求私有IP。
+    :param request_private_ip: 是否允许请求私有 IP。
     :param logging_err_resp: 是否记录错误响应。
-    :param cookies: 使用的cookies。
-    :returns: 请求结果。
+    :param cookies: 使用的 cookies。
+    :returns: 相应结果。
+    :raise ValueError: 异常可能来自于预期规则不符合响应结果。
+    :raise ExternalException: 异常可能来自于外部服务器。
     """
 
     return await request_url(
@@ -188,19 +194,21 @@ async def post_url(
     logging_err_resp: bool = True,
     cookies: dict[str, Any] | None = None,
 ) -> Any:
-    """利用httpx发送POST请求。
+    """发送 POST 请求。
 
-    :param url: 需要发送的URL。
+    :param url: 需要发送的 URL。
     :param data: 需要发送的数据。
-    :param status_code: 指定请求到的状态码，若不符则抛出ValueError。
-    :param headers: 请求时使用的http头。
+    :param status_code: 指定请求到的状态码，若不符则抛出 ValueError。
+    :param headers: 请求时使用的 HTTP 头。
     :param fmt: 指定返回的格式。
     :param timeout: 超时时间。
     :param attempt: 指定请求尝试次数。
-    :param request_private_ip: 是否允许请求私有IP。
+    :param request_private_ip: 是否允许请求私有 IP。
     :param logging_err_resp: 是否记录错误响应。
     :param cookies: 使用的 cookies。
-    :returns: 请求结果。
+    :returns: 相应结果。
+    :raise ValueError: 异常可能来自于预期规则不符合响应结果。
+    :raise ExternalException: 异常可能来自于外部服务器。
     """
 
     return await request_url(
@@ -230,19 +238,21 @@ async def patch_url(
     logging_err_resp: bool = True,
     cookies: dict[str, Any] | None = None,
 ) -> Any:
-    """利用httpx发送PATCH请求。
+    """发送 PATCH 请求。
 
-    :param url: 需要发送的URL。
+    :param url: 需要发送的 URL。
     :param data: 需要发送的数据。
-    :param status_code: 指定请求到的状态码，若不符则抛出ValueError。
-    :param headers: 请求时使用的http头。
+    :param status_code: 指定请求到的状态码，若不符则抛出 ValueError。
+    :param headers: 请求时使用的 HTTP 头。
     :param fmt: 指定返回的格式。
     :param timeout: 超时时间。
     :param attempt: 指定请求尝试次数。
-    :param request_private_ip: 是否允许请求私有IP。
+    :param request_private_ip: 是否允许请求私有 IP。
     :param logging_err_resp: 是否记录错误响应。
     :param cookies: 使用的 cookies。
-    :returns: 请求结果。
+    :returns: 相应结果。
+    :raise ValueError: 异常可能来自于内部规则不符合响应。
+    :raise ExternalException: 异常可能来自于外部服务器。
     """
 
     return await request_url(
@@ -272,19 +282,21 @@ async def put_url(
     logging_err_resp: bool = True,
     cookies: dict[str, Any] | None = None,
 ) -> Any:
-    """利用httpx发送PUT请求。
+    """发送 PUT 请求。
 
-    :param url: 需要发送的URL。
+    :param url: 需要发送的 URL。
     :param data: 需要发送的数据。
-    :param status_code: 指定请求到的状态码，若不符则抛出ValueError。
-    :param headers: 请求时使用的http头。
+    :param status_code: 指定请求到的状态码，若不符则抛出 ValueError。
+    :param headers: 请求时使用的 HTTP 头。
     :param fmt: 指定返回的格式。
     :param timeout: 超时时间。
     :param attempt: 指定请求尝试次数。
-    :param request_private_ip: 是否允许请求私有IP。
+    :param request_private_ip: 是否允许请求私有 IP。
     :param logging_err_resp: 是否记录错误响应。
     :param cookies: 使用的 cookies。
-    :returns: 请求结果。
+    :returns: 相应结果。
+    :raise ValueError: 异常可能来自于内部规则不符合响应。
+    :raise ExternalException: 异常可能来自于外部服务器。
     """
 
     return await request_url(
@@ -313,18 +325,20 @@ async def delete_url(
     logging_err_resp: bool = True,
     cookies: dict[str, Any] | None = None,
 ) -> Any:
-    """利用httpx发送DELETE请求。
+    """发送 DELETE 请求。
 
-    :param url: 需要发送的URL。
-    :param status_code: 指定请求到的状态码，若不符则抛出ValueError。
-    :param headers: 请求时使用的http头。
+    :param url: 需要发送的 URL。
+    :param status_code: 指定请求到的状态码，若不符则抛出 ValueError。
+    :param headers: 请求时使用的 HTTP 头。
     :param fmt: 指定返回的格式。
     :param timeout: 超时时间。
     :param attempt: 指定请求尝试次数。
-    :param request_private_ip: 是否允许请求私有IP。
+    :param request_private_ip: 是否允许请求私有 IP。
     :param logging_err_resp: 是否记录错误响应。
     :param cookies: 使用的 cookies。
-    :returns: 请求结果。
+    :returns: 相应结果。
+    :raise ValueError: 异常可能来自于内部规则不符合响应。
+    :raise ExternalException: 异常可能来自于外部服务器。
     """
 
     return await request_url(
@@ -354,20 +368,22 @@ async def download(
     request_private_ip: bool = False,
     logging_err_resp: bool = True,
 ) -> Path | None:
-    """利用httpx下载指定url的内容，并保存到指定目录。
+    """下载指定 URL 的内容，并保存到指定目录。
 
-    :param url: 需要获取的URL。
+    :param url: 需要获取的 URL。
     :param filename: 指定保存的文件名，默认为随机文件名。
     :param path: 指定目录，默认为缓存目录。
-    :param status_code: 指定请求到的状态码，若不符则抛出ValueError。
+    :param status_code: 指定请求到的状态码，若不符则抛出 ValueError。
     :param method: 指定请求方式。
-    :param post_data: 如果指定请求方式为POST，需要传入的数据。
-    :param headers: 请求时使用的http头。
+    :param post_data: 如果指定请求方式为 POST，需要传入的数据。
+    :param headers: 请求时使用的 HTTP 头。
     :param timeout: 超时时间。
     :param attempt: 指定请求尝试次数。
-    :param request_private_ip: 是否允许请求私有IP。
+    :param request_private_ip: 是否允许请求私有 IP。
     :param logging_err_resp: 是否记录错误响应。
-    :returns: 文件的相对路径，若获取失败则返回False。
+    :returns: 文件的相对路径，若获取失败则返回 False。
+    :raise ValueError: 异常可能来自于内部规则不符合响应。
+    :raise ExternalException: 异常可能来自于外部服务器。
     """
 
     data = await request_url(
