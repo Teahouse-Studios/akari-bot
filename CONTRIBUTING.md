@@ -30,7 +30,7 @@
 
 ## 提出问题
 > [!NOTE]
-> 建议先阅读[《提问的智慧》](https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/main/README-zh_CN.md)，以避免带来不必要的麻烦。
+> 建议先阅读[《提问的智慧》](https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/main/README-zh_CN.md)，以避免带来不必要的困扰。
 > 
 > 提示：本指南不提供此项目的实际支持服务！
 > 
@@ -96,7 +96,7 @@
 4. 做出你的更改
 5. 向本项目提交 PR
 
-tl;dr：[《🐧你为啥直接 commit 到我的 master 分支啊》](https://bilibili.com/video/BV1pwC6BxEeb)
+省流（？）助手：[《🐧你为啥直接 commit 到我的 master 分支啊》](https://bilibili.com/video/BV1pwC6BxEeb)
 
 ### 开发环境
 本项目基于 Python 开发。
@@ -176,3 +176,210 @@ ruff check .
 - 机器人自称时避免使用“我”，统一使用“机器人”
 - 尽可能避免使用第一人称进行描述
 - 机器人的第三人称统一为“它”
+
+---
+
+# Contributing Guide
+
+Thank you for your interest in AkariBot (and its derivative projects)!
+
+We welcome contributions of all kinds. For detailed information on different ways to participate and the corresponding workflows, please refer to the [table of contents](#table-of-contents) below.
+
+Before starting to contribute, please make sure to read the relevant sections. This will significantly reduce the burden on maintainers and lead to a smoother collaboration experience for everyone.
+
+> [!NOTE]
+> If you like this project but are not planning to contribute code at the moment, that's completely fine. You can still support us in the following ways:
+> - Starring the repository
+> - Mentioning / linking to this project in your own project's README
+> - Adding the bot to your group chat / server
+> - Sharing or recommending the project / bot to others
+
+## Table of Contents
+
+- [Asking Questions](#asking-questions)
+- [Making Contributions](#making-contributions)
+  - [Reporting Bugs](#reporting-bugs)
+  - [Suggesting Features](#suggesting-features)
+  - [Localization](#localization)
+- [Submitting Code Changes](#submitting-code-changes)
+  - [Quick Start](#quick-start)
+  - [Development Environment](#development-environment)
+  - [Branch Naming](#branch-naming)
+  - [Commit Message Convention](#commit-message-convention)
+  - [Pull Request Description](#pull-request-description)
+  - [Code Style](#code-style)
+- [Text Typography (for Chinese)](#text-typography-for-chinese)
+
+## Asking Questions
+
+> [!NOTE]
+> We strongly recommend reading [*How To Ask Questions The Smart Way*](http://www.catb.org/~esr/faqs/smart-questions.html) first — it helps avoid unnecessary back-and-forth.
+>
+> Important: This guide is **not** a help desk for this project!
+
+Before asking, please search whether a similar [Issue](https://github.com/Teahouse-Studios/akari-bot/issues) already exists. For very obvious questions, we recommend trying a search engine first.
+
+If you still need to reach the developers, you can use these channels:
+
+- Create a new [Issue](https://github.com/Teahouse-Studios/akari-bot/issues/new)
+- Join the QQ group for [public instance testing (738829671)](https://qm.qq.com/q/Rmuo5ORYgq) or the [Teahouse Studios chat group (979982065)](https://qm.qq.com/q/sjwFNX1NVC)
+- We are not able to be online with Discord frequently, so we do not have a Discord server at the moment. sorry :(
+
+No matter which method you choose, please **describe your problem in as much detail as possible**.
+
+## Making Contributions
+
+### Reporting Bugs
+
+> [!WARNING]
+> **Never** report or reproduce security issues / vulnerabilities that involve sensitive information in Issues or any public channels.
+>
+> Such issues must be reported privately via email (address available in [`pyproject.toml`](/pyproject.toml)) or direct message to the developers.
+>
+> Content that violates this rule will be removed. Persistent violation may have consequences.
+
+Before submitting a bug report, please check if a similar [Issue](https://github.com/Teahouse-Studios/akari-bot/issues) already exists.
+
+If not, create a new Issue using the [Bug Report template](https://github.com/Teahouse-Studios/akari-bot/issues/new?template=report_bug.yaml) and include:
+
+- A short description of the bug
+- Steps to reproduce
+- Expected vs. actual behavior
+- Error messages / logs (if any)
+
+A good bug report should not require others to keep asking for more details. Please provide as much complete information as possible.
+
+### Suggesting Features
+
+Before suggesting a feature, please check if a similar [Issue](https://github.com/Teahouse-Studios/akari-bot/issues) already exists.
+
+If not, create a new Issue using the [Feature Request template](https://github.com/Teahouse-Studios/akari-bot/issues/new?template=feature_request.yaml) and include:
+
+- A short description of the suggestion
+- Possible implementation ideas (optional but welcome)
+- Why this would benefit the project (recommended)
+
+Even if you have already implemented the feature, we still recommend opening an Issue for discussion first before submitting a PR — it helps ensure alignment.
+
+### Localization
+
+Internationalization content for this project is hosted on Crowdin and periodically synced by the automated account.
+
+You can participate in translation and improvement [here](https://crowdin.com/project/akari-bot).
+
+To avoid unnecessary Issue clutter, we prefer that translation-related discussions (except for Simplified Chinese) happen on Crowdin rather than in Issues.
+
+If you do not have a Crowdin account, feel free to contact the developers and we can submit the translations on your behalf.
+
+## Submitting Code Changes
+
+If you'd like to make more hardcore contributions...
+
+This project doesn't enforce too many strict rules (after all, we don't always follow every convention ourselves). Still, please at least follow basic good practices so your contribution helps rather than creates extra work.
+
+### Quick Start
+
+1. Fork the repository
+2. Clone your fork locally
+3. Create a new branch
+4. Make your changes
+5. Open a Pull Request to this repository
+
+tl;dr: don't commit directly to someone else's `master` / `main` branch plzzz
+
+### Development Environment
+
+The project is based on Python. Make sure you meet the minimum Python version requirement (see [README](/README.md)).
+
+Recommended IDEs: [PyCharm](https://www.jetbrains.com/pycharm) or [VSCode](https://code.visualstudio.com).
+
+This project uses [uv](https://docs.astral.sh/uv) to manage dependencies. After installing uv, run:
+
+```bash
+uv sync
+```
+
+To add a new dependency:
+
+```bash
+uv add <package-name>
+```
+
+Please move the new dependency to the appropriate commented group in `pyproject.toml` and sort dependencies alphabetically.
+
+Finally, remember to lock the dependencies:
+
+```bash
+uv lock
+```
+
+Pre-commit hooks are already configured. Install them with:
+
+```bash
+pre-commit install
+```
+
+They will automatically run formatting, linting, dependency export, etc. on commit.
+
+### Branch Naming
+
+Branches for new features or changes should use the `dev/` prefix.  
+Bugfix branches should use the `fix/` prefix.
+
+(Although in practice many changes still go straight to `main`...)
+
+Branch names must be in English. Short descriptive names or Issue numbers (e.g. `dev/add-xxx-command`, `fix/123`) are recommended.
+
+### Commit Message Convention
+
+Commit messages should be written in **Chinese or English**. No other strict requirements.
+
+Following [Conventional Commits](https://www.conventionalcommits.org/) is appreciated but not mandatory.
+
+### Pull Request Description
+
+PR titles **must** be in English.  
+The body can be in Chinese or English — just briefly describe the changes.
+
+It is recommended to reference related Issues in the description by writing `#<number>`.
+
+A PR must pass CI checks and receive at least one developer's **LGTM** (Looks Good To Me) before it can be merged.
+
+Major changes should *in principle* not be pushed directly to `main` — please open a PR for review.
+
+### Code Style
+
+This project uses [Ruff](https://docs.astral.sh/ruff) for formatting and static analysis. Before submitting code, please run:
+
+```bash
+ruff format .
+ruff check .
+```
+
+If you're using VSCode, installing the Ruff extension is recommended.
+
+## Text Typography (for Chinese)
+
+> “Research shows that, people adding no space between Chinese and English suffer from pathetic relationships. 70% of them are married by the age of 34, with someone they don't love; 30% of them left everything for their cats and died. Blank spaces are essential to both romance and writing.”
+>
+> —— [vinta/paranoid-auto-spacing](https://github.com/vinta/pangu.js)
+
+All Chinese text in this project (including this document) follows the guidelines from [*Chinese Copywriting Guidelines*](https://github.com/sparanoid/chinese-copywriting-guidelines/blob/master/README.en.md).
+
+Includes (but is not limited to):
+
+- Place one space before/after English words
+- Use punctuation in fullwidth form
+- Avoid jargons
+
+Exceptions:
+
+- Use curly quotation marks instead of  corner brackets for Chinese Simplified
+- No extra spaces before/after links
+
+Additional project-specific conventions:
+
+- Address users with “你” (informal/casual “you”), not “您” (polite/formal)
+- When the bot refers to itself, avoid “我” (I / me); use “机器人” (the Bot / this Bot) instead
+- Avoid first-person descriptions whenever possible
+- The bot's third-person pronoun is uniformly “它” (it / it)
