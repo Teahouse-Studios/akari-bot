@@ -70,7 +70,7 @@
 
 如果没有类似的内容，请使用[功能建议模板](https://github.com/Teahouse-Studios/akari-bot/issues/new?template=feature_request.yaml)创建新的 Issue，并提供：
 - 建议的简要描述
-- 可能的实现方案
+- 可能的实现方案（若有）
 - 建议对项目有益的理由（推荐）
 
 如果你已经完成了对应功能的开发，仍建议先提交 Issue 进行讨论，再创建 PR，以便充分沟通。
@@ -141,7 +141,7 @@ PR 标题必须使用英文，正文可使用中文或英文简要描述更改�
 
 建议在描述中[关联 Issue](#提出建议)，输入 `#<编号>` 即可关联。
 
-一个 PR 必须通过 CI 测试，并得到至少 1 名开发者的 LGTM（看起来不错）后方可合并。
+一个 PR 必须通过所有 CI 测试，并得到至少 1 名开发者的 LGTM（看起来不错）后方可合并。
 
 重大更改*原则上*不应该直接 push 到 `main`，须提交 PR 进行审查。
 
@@ -189,10 +189,10 @@ Before starting to contribute, please make sure to read the relevant sections. T
 
 > [!NOTE]
 > If you like this project but are not planning to contribute code at the moment, that's completely fine. You can still support us in the following ways:
-> - Starring the repository
-> - Mentioning / linking to this project in your own project's README
-> - Adding the bot to your group chat / server
-> - Sharing or recommending the project / bot to others
+> - Star this repository
+> - Mention / link to this project in your own project's README
+> - Add the bot to your group chat / server
+> - Share or recommend the project / bot to others
 
 ## Table of Contents
 
@@ -215,13 +215,13 @@ Before starting to contribute, please make sure to read the relevant sections. T
 > [!NOTE]
 > We strongly recommend reading [*How To Ask Questions The Smart Way*](http://www.catb.org/~esr/faqs/smart-questions.html) first — it helps avoid unnecessary back-and-forth.
 >
-> Important: This guide is **not** a help desk for this project!
+> Notice: This guide is not a help desk for this project!
 
-Before asking, please search whether a similar [Issue](https://github.com/Teahouse-Studios/akari-bot/issues) already exists. For very obvious questions, we recommend trying a search engine first.
+Before asking, please search whether a similar [issue](https://github.com/Teahouse-Studios/akari-bot/issues) already exists. For very obvious questions, we recommend trying a search engine first.
 
 If you still need to reach the developers, you can use these channels:
 
-- Create a new [Issue](https://github.com/Teahouse-Studios/akari-bot/issues/new)
+- Create a new [issue](https://github.com/Teahouse-Studios/akari-bot/issues/new)
 - Join the QQ group for [public instance testing (738829671)](https://qm.qq.com/q/Rmuo5ORYgq) or the [Teahouse Studios chat group (979982065)](https://qm.qq.com/q/sjwFNX1NVC)
 - We are not able to be online with Discord frequently, so we do not have a Discord server at the moment. sorry :(
 
@@ -238,7 +238,7 @@ No matter which method you choose, please **describe your problem in as much det
 >
 > Content that violates this rule will be removed. Persistent violation may have consequences.
 
-Before submitting a bug report, please check if a similar [Issue](https://github.com/Teahouse-Studios/akari-bot/issues) already exists.
+Before submitting a bug report, please check if a similar [issue](https://github.com/Teahouse-Studios/akari-bot/issues) already exists.
 
 If not, create a new Issue using the [Bug Report template](https://github.com/Teahouse-Studios/akari-bot/issues/new?template=report_bug.yaml) and include:
 
@@ -251,15 +251,15 @@ A good bug report should not require others to keep asking for more details. Ple
 
 ### Suggesting Features
 
-Before suggesting a feature, please check if a similar [Issue](https://github.com/Teahouse-Studios/akari-bot/issues) already exists.
+Before suggesting a feature, please check if a similar [issue](https://github.com/Teahouse-Studios/akari-bot/issues) already exists.
 
-If not, create a new Issue using the [Feature Request template](https://github.com/Teahouse-Studios/akari-bot/issues/new?template=feature_request.yaml) and include:
+If not, create a new issue using the [Feature Request template](https://github.com/Teahouse-Studios/akari-bot/issues/new?template=feature_request.yaml) and include:
 
 - A short description of the suggestion
 - Possible implementation ideas (optional but welcome)
 - Why this would benefit the project (recommended)
 
-Even if you have already implemented the feature, we still recommend opening an Issue for discussion first before submitting a PR — it helps ensure alignment.
+Even if you have already implemented the feature, we still recommend opening an Issue for discussion first before submitting a pull request — it helps ensure alignment.
 
 ### Localization
 
@@ -267,7 +267,7 @@ Internationalization content for this project is hosted on Crowdin and periodica
 
 You can participate in translation and improvement [here](https://crowdin.com/project/akari-bot).
 
-To avoid unnecessary Issue clutter, we prefer that translation-related discussions (except for Simplified Chinese) happen on Crowdin rather than in Issues.
+To avoid unnecessary issues clutter, we prefer that translation-related discussions (except for Simplified Chinese) happen on Crowdin rather than in issues.
 
 If you do not have a Crowdin account, feel free to contact the developers and we can submit the translations on your behalf.
 
@@ -283,7 +283,7 @@ This project doesn't enforce too many strict rules (after all, we don't always f
 2. Clone your fork locally
 3. Create a new branch
 4. Make your changes
-5. Open a Pull Request to this repository
+5. Open a pull request to this repository
 
 tl;dr: don't commit directly to someone else's `master` / `main` branch plzzz
 
@@ -332,20 +332,20 @@ Branch names must be in English. Short descriptive names or Issue numbers (e.g. 
 
 ### Commit Message Convention
 
-Commit messages should be written in **Chinese or English**. No other strict requirements.
+Commit messages should be written in Chinese or English. No other strict requirements.
 
 Following [Conventional Commits](https://www.conventionalcommits.org/) is appreciated but not mandatory.
 
 ### Pull Request Description
 
-PR titles **must** be in English.  
+Pull request titles must be in English.  
 The body can be in Chinese or English — just briefly describe the changes.
 
-It is recommended to reference related Issues in the description by writing `#<number>`.
+It is recommended to [reference related issues](#suggesting-features) in the description by writing `#<number>`.
 
-A PR must pass CI checks and receive at least one developer's **LGTM** (Looks Good To Me) before it can be merged.
+A pull request must pass all CI checks and receive at least 1 developer's LGTM (Looks Good To Me) before it can be merged.
 
-Major changes should *in principle* not be pushed directly to `main` — please open a PR for review.
+Major changes should not be pushed directly to `main` — please open a pull request for review.
 
 ### Code Style
 
