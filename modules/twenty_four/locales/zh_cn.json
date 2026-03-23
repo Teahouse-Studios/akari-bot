@@ -1,9 +1,9 @@
 {
-    "twenty_four.help": "开始新游戏。",
-    "twenty_four.help.desc": "24 点小游戏。",
-    "twenty_four.message": "给出的数字组合：${numbers}\n请输入表达式使其结果为 24。（若无解，请输入“无解”）",
-    "twenty_four.message.correct": "回答正确。",
-    "twenty_four.message.incorrect.have_solution": "回答错误：该组合存在解。\n其中一组解为：${solution}",
-    "twenty_four.message.incorrect.invalid": "回答错误：表达式无效。",
-    "twenty_four.message.incorrect": "回答错误。"
+    "twenty_four.help": "来玩一局 24 点吧！小可陪你～",
+    "twenty_four.help.desc": "24 点小游戏（算术小挑战）",
+    "twenty_four.message": "给出的数字组合：${numbers}\n请输入一个表达式使结果为 24（若无解，请输入“无解”）。小可在旁边加油～",
+    "twenty_four.message.correct": "回答正确！太棒啦～",
+    "twenty_four.message.incorrect.have_solution": "回答错误：该组合还有解哦～\n其中一组解为：${solution}",
+    "twenty_four.message.incorrect.invalid": "回答错误：表达式无效，请检查语法～",
+    "twenty_four.message.incorrect": "回答错误，别灰心，再试一次吧～"
 }

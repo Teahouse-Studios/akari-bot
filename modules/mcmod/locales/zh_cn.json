@@ -1,6 +1,6 @@
 {
-    "mcmod.help.desc": "从 MC 百科获取 Minecraft Mod 信息。",
-    "mcmod.help.details": "通过 Mod 内容的名称获取 Mod 简介及链接，可使用物品/方块/实体的 ID 或准确名称。",
-    "mcmod.help.mod_name": "通过 Mod 名称获取 Mod 简介及链接，可使用无歧义缩写和准确名称。",
-    "mcmod.message.not_found": "未找到结果。"
+    "mcmod.help.desc": "小可去 MC 百科找 Mod 的信息给你～",
+    "mcmod.help.details": "输入 Mod 的名称（或物品/方块/实体 ID），小可会帮你找简介和链接～",
+    "mcmod.help.mod_name": "通过 Mod 名称获取简介及链接，小可帮你去查～",
+    "mcmod.message.not_found": "没找到相关结果，小可也有点摸不着头脑 T T"
 }

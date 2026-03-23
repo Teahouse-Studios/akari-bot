@@ -1,6 +1,6 @@
 {
-    "tweet.help": "通过推文 ID 获取推文摘要图片。（P.S. 我们没有付 $200 月费）",
-    "tweet.help.desc": "获取推文摘要。",
-    "tweet.help.regex.url": "通过 URL 获取推文摘要。",
-    "tweet.message.not_found": "未找到推文，可能被限制或不存在。"
+    "tweet.help": "通过推文 ID 获取推文摘要图片（小可帮你抓要点～）",
+    "tweet.help.desc": "获取推文摘要，小可来帮你整理要点～",
+    "tweet.help.regex.url": "通过 URL 获取推文摘要（支持直接发链接）",
+    "tweet.message.not_found": "未找到推文，可能被限制或不存在，小可找不到 T T"
 }

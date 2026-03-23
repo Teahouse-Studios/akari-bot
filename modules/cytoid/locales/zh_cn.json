@@ -1,13 +1,13 @@
 {
-    "cytoid.help.b30": "查询 Cytoid 用户的 B30 列表。",
-    "cytoid.help.bind": "绑定 Cytoid 用户。",
-    "cytoid.help.desc": "查询 Cytoid 相关内容。",
-    "cytoid.help.profile": "查询一个用户的基本信息。",
-    "cytoid.help.r10": "查询 Cytoid 用户的 R10 列表。",
-    "cytoid.help.unbind": "解绑用户。",
-    "cytoid.message.bind.failed": "绑定失败，请检查输入。",
-    "cytoid.message.bind.success": "绑定成功：${user}",
-    "cytoid.message.unbind.success": "解绑成功。",
-    "cytoid.message.user_not_found": "未找到用户。",
-    "cytoid.message.user_unbound": "未绑定用户，请使用“${prefix}cytoid bind”绑定一个用户。"
+    "cytoid.help.b30": "查询 Cytoid 用户的 B30 列表，小可帮你抓数据～",
+    "cytoid.help.bind": "绑定 Cytoid 用户～",
+    "cytoid.help.desc": "查询 Cytoid 相关内容，小可陪你看～",
+    "cytoid.help.profile": "查询用户基本信息～",
+    "cytoid.help.r10": "查询 R10 列表，小可来查～",
+    "cytoid.help.unbind": "解绑用户～",
+    "cytoid.message.bind.failed": "绑定失败，请检查输入内容～",
+    "cytoid.message.bind.success": "绑定成功：${user}，小可记住啦～",
+    "cytoid.message.unbind.success": "解绑成功～",
+    "cytoid.message.user_not_found": "未找到用户～",
+    "cytoid.message.user_unbound": "未绑定用户，请使用“${prefix}cytoid bind”绑定一个用户～"
 }

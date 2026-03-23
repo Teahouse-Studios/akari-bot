@@ -1,12 +1,12 @@
 {
-    "github.help": "尝试自动识别并区分 repo/user。",
-    "github.help.desc": "GitHub 查询工具。",
-    "github.help.repo": "获取 GitHub 存储库信息。",
-    "github.help.search": "搜索 GitHub 上的存储库。",
-    "github.help.user": "获取 GitHub 用户或组织信息。",
-    "github.message.repo.not_found": "此存储库不存在，请检查输入。",
+    "github.help": "自动识别 repo 或 user，帮你查询 GitHub 资料～",
+    "github.help.desc": "GitHub 查询工具（支持仓库/用户检索）",
+    "github.help.repo": "获取 GitHub 仓库信息～",
+    "github.help.search": "在 GitHub 上搜索仓库或项目～",
+    "github.help.user": "获取 GitHub 用户或组织的信息～",
+    "github.message.repo.not_found": "未找到该存储库，请检查输入～",
     "github.message.search": "搜索结果：",
-    "github.message.search.not_found": "未找到结果。",
-    "github.message.user.not_found": "查无此人，请检查输入。",
-    "config.comments.github_pat": "GitHub 的 Personal Access Token。（用于提高 API 请求速率限制）"
+    "github.message.search.not_found": "未找到匹配结果～",
+    "github.message.user.not_found": "查无此用户，请确认输入～",
+    "config.comments.github_pat": "GitHub 的 Personal Access Token（用于提高 API 速率限制）"
 }

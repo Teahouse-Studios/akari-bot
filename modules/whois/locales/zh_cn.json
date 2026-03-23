@@ -1,11 +1,11 @@
 {
-    "whois.help": "查询 WHOIS 信息。",
+    "whois.help": "查询 WHOIS 信息，小可来帮你看看域名详情～",
     "whois.message.creation_date": "注册日期：",
     "whois.message.dnssec": "DNSSEC：",
     "whois.message.domain_name": "域名名称：",
     "whois.message.email": "邮箱：",
     "whois.message.expiration_date": "截止日期：",
-    "whois.message.get_failed": "获取 WHOIS 失败。",
+    "whois.message.get_failed": "获取 WHOIS 信息失败，小可拿不到数据了 T T",
     "whois.message.location": "位置：",
     "whois.message.name": "名称：",
     "whois.message.name_servers": "DNS 服务器：",

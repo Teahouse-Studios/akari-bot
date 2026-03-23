@@ -1,7 +1,7 @@
 {
-    "random.help.choice": "从列表中选择元素。",
-    "random.help.desc": "随机数生成器。",
-    "random.help.number": "生成区间内的随机整数。",
-    "random.help.shuffle": "打乱列表的顺序。",
-    "random.help.uuid": "生成随机 UUID（v4）。"
+    "random.help.choice": "从给定列表里随机挑一个，交给小可就好～",
+    "random.help.desc": "随机数小帮手：小可可以帮你生成随机内容～",
+    "random.help.number": "生成区间内的随机整数，小可来抽一个吧～",
+    "random.help.shuffle": "把列表顺序打乱一下（就像洗牌～）",
+    "random.help.uuid": "生成随机 UUID（v4），小可给你一个独一无二的 ID～"
 }

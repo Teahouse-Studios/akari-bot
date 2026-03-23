@@ -1,7 +1,7 @@
 {
-    "wolframalpha.help": "输入问题或公式以搜索 WolframAlpha。",
-    "wolframalpha.help.ask": "通过 WolframAlpha 回答问题。",
-    "wolframalpha.help.desc": "使用 WolframAlpha。",
-    "wolframalpha.message.incomprehensible": "WolframAlpha 无法理解你的问题，请尝试使用英语提问。",
-    "config.comments.wolfram_alpha_appid": "WolframAlpha 的 AppID。（用于 wolframalpha 模块）"
+    "wolframalpha.help": "向 WolframAlpha 提问吧，小可会帮你把问题发出去～",
+    "wolframalpha.help.ask": "使用 WolframAlpha 回答问题（尽量用清晰表达）",
+    "wolframalpha.help.desc": "调用 WolframAlpha 服务，小可在背后代劳～",
+    "wolframalpha.message.incomprehensible": "哎呀，WolframAlpha 好像没听懂你的问题，试试用英文或更简洁的描述吧～",
+    "config.comments.wolfram_alpha_appid": "WolframAlpha 的 AppID（用于 wolframalpha 模块）"
 }

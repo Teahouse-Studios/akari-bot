@@ -1,6 +1,6 @@
 {
   "core.help.admin.add": "让我把成员设置成我的机器人管理员吧～如果已经是会话管理员的话，我就不用多此一举啦（挠头）。",
-  "core.help.admin.ban": "我会限制该成员继续使用我哦（小声但认真）。",
+  "core.help.admin.ban": "我会限制该成员继续使用我哦。",
   "core.help.admin.ban.list": "让我翻翻小本本，给你看看目前被我限制使用的小伙伴们。",
   "core.help.admin.desc": "这些是只有机器人管理员才能指挥我的专属指令清单～",
   "core.help.admin.list": "当前所有被大家委托管理我的机器人管理员在这里！",

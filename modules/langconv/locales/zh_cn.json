@@ -1,4 +1,4 @@
 {
-    "langconv.help": "简繁转换。",
-    "langconv.message.unsupported_language": "不支持此语言。支持的语言：zh_cn、zh_tw、zh_hk"
+    "langconv.help": "简繁中文转换，小可来帮你切换～",
+    "langconv.message.unsupported_language": "不支持此语言，目前支持：zh_cn、zh_tw、zh_hk～"
 }
