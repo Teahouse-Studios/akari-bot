@@ -9,7 +9,6 @@ from .maimaidx_mapping import (
     rate_mapping,
     combo_mapping,
     sync_mapping,
-    diff_list,
 )
 from .maimaidx_music import TotalList
 from .maimaidx_utils import compute_rating, calc_dxstar
@@ -23,7 +22,6 @@ class ChartInfo:
         song_id: str,
         diff: int,
         chart_type: str,
-        rating: int,
         achievement: float,
         dx_score: int,
         dx_score_max: int,
@@ -48,9 +46,6 @@ class ChartInfo:
         self.ds = ds
         self.level = level
 
-    def __str__(self):
-        return f"{self.title:<50} [{self.chart_type}]{self.ds}\t{diff_list[self.diff]}\t{self.rating}"
-
     def __eq__(self, other):
         return self.rating == other.rating
 
@@ -69,7 +64,6 @@ class ChartInfo:
             title=data["title"],
             diff=data["level_index"],
             ds=data["ds"],
-            rating=data["ra"],
             dx_score=data["dxScore"],
             dx_score_max=dx_score_max,
             combo=combo_mapping.get(data["fc"], ""),
@@ -91,7 +85,7 @@ class BestList:
             return
         self._data.append(chart)
         self._data.sort(reverse=True)
-        self._data = self._data[:self._size]
+        self._data = self._data[: self._size]
 
     def pop(self):
         if self._data:
@@ -149,14 +143,27 @@ class DrawBest:
             width = gradient.width
             for i, color in enumerate(gradient_colors[:-1]):
                 next_color = gradient_colors[i + 1]
-                for x_pos in range(int(i * width / (len(gradient_colors) - 1)),
-                                   int((i + 1) * width / (len(gradient_colors) - 1))):
-                    r = int(color[0] + (next_color[0] - color[0]) * (x_pos - i * width /
-                            (len(gradient_colors) - 1)) / (width / (len(gradient_colors) - 1)))
-                    g = int(color[1] + (next_color[1] - color[1]) * (x_pos - i * width /
-                            (len(gradient_colors) - 1)) / (width / (len(gradient_colors) - 1)))
-                    b = int(color[2] + (next_color[2] - color[2]) * (x_pos - i * width /
-                            (len(gradient_colors) - 1)) / (width / (len(gradient_colors) - 1)))
+                for x_pos in range(
+                    int(i * width / (len(gradient_colors) - 1)), int((i + 1) * width / (len(gradient_colors) - 1))
+                ):
+                    r = int(
+                        color[0]
+                        + (next_color[0] - color[0])
+                        * (x_pos - i * width / (len(gradient_colors) - 1))
+                        / (width / (len(gradient_colors) - 1))
+                    )
+                    g = int(
+                        color[1]
+                        + (next_color[1] - color[1])
+                        * (x_pos - i * width / (len(gradient_colors) - 1))
+                        / (width / (len(gradient_colors) - 1))
+                    )
+                    b = int(
+                        color[2]
+                        + (next_color[2] - color[2])
+                        * (x_pos - i * width / (len(gradient_colors) - 1))
+                        / (width / (len(gradient_colors) - 1))
+                    )
                     grad_draw.line([(x_pos, 0), (x_pos, gradient.height)], fill=(r, g, b))
             mask = Image.new("L", gradient.size, 0)
             mask_draw = ImageDraw.Draw(mask)
@@ -171,7 +178,9 @@ class DrawBest:
 
     @staticmethod
     def _get_rating_color(rating: int):
-        if rating >= 15000:
+        if rating >= 16000:
+            color = [(255, 235, 0), (255, 56, 56), (186, 82, 255), (50, 90, 200), (69, 174, 255)]  # 彩极
+        elif rating >= 15000:
             color = [(255, 56, 56), (255, 235, 0), (129, 217, 85), (69, 174, 255), (186, 82, 255)]  # 彩
         elif rating >= 14500:
             color = [(248, 225, 67), (255, 250, 160), (248, 225, 67)]  # 白金
@@ -231,7 +240,7 @@ class DrawBest:
         return color
 
     def _draw_best_list(self, img: Image.Image, sd_best: BestList, dx_best: BestList):
-        item_weight = 150
+        item_width = 150
         item_height = 100
         color = [
             (69, 193, 36),
@@ -240,8 +249,7 @@ class DrawBest:
             (134, 49, 200),
             (217, 197, 233),
         ]
-        level_triagle = [(item_weight, 0), (item_weight - 27, 0), (item_weight, 27)]
-        ImageDraw.Draw(img)
+        level_triangle = [(item_width, 0), (item_width - 27, 0), (item_width, 27)]
 
         for num in range(min(len(self.sd_best), 35)):
             i = num // 5
@@ -253,17 +261,15 @@ class DrawBest:
 
             if cover_path.exists():
                 temp = Image.open(cover_path).convert("RGBA")
-                temp = self._resize_image(temp, item_weight / temp.size[0])
-                temp = temp.crop(
-                    (0, (temp.size[1] - item_height) / 2, item_weight, (temp.size[1] + item_height) / 2)
-                )
+                temp = self._resize_image(temp, item_width / temp.size[0])
+                temp = temp.crop((0, (temp.size[1] - item_height) / 2, item_width, (temp.size[1] + item_height) / 2))
                 overlay = Image.new("RGBA", temp.size, (0, 0, 0, 100))
                 temp = Image.alpha_composite(temp, overlay)
             else:
-                temp = Image.new("RGBA", (item_weight, item_height), (111, 111, 111, 255))
+                temp = Image.new("RGBA", (item_width, item_height), (111, 111, 111, 255))
 
             temp_draw = ImageDraw.Draw(temp)
-            temp_draw.polygon(level_triagle, color[chart_info.diff])
+            temp_draw.polygon(level_triangle, color[chart_info.diff])
             font = ImageFont.truetype(noto_sans_demilight_path, 18, encoding="utf-8")
             title = truncate_text(chart_info.title, 12)
             temp_draw.text((6, 7), title, "white", font)
@@ -285,9 +291,7 @@ class DrawBest:
             if chart_info.sync:
                 temp_draw.text((110, 27), chart_info.sync, self._get_goal_color(chart_info.sync), font)
             if chart_info.dx_score:
-                font = ImageFont.truetype(
-                    noto_sans_demilight_path, 12, encoding="utf-8"
-                )
+                font = ImageFont.truetype(noto_sans_demilight_path, 12, encoding="utf-8")
                 temp_draw.text(
                     (7, 63),
                     f"{chart_info.dx_score}/{chart_info.dx_score_max}",
@@ -311,7 +315,7 @@ class DrawBest:
             )
             temp_draw.text((120, 80), f"#{num + 1}", "white", font)
 
-            rec_base = Image.new("RGBA", (item_weight, item_height), "black")
+            rec_base = Image.new("RGBA", (item_width, item_height), "black")
             rec_base = rec_base.point(lambda p: int(p * 0.8))
             self.img.paste(rec_base, (self.columns_image[j + 1] + 5, self.rows_image[i] + 5))
             self.img.paste(temp, (self.columns_image[j + 1] + 4, self.rows_image[i] + 4))
@@ -326,17 +330,15 @@ class DrawBest:
 
             if cover_path.exists():
                 temp = Image.open(cover_path).convert("RGBA")
-                temp = self._resize_image(temp, item_weight / temp.size[0])
-                temp = temp.crop(
-                    (0, (temp.size[1] - item_height) / 2, item_weight, (temp.size[1] + item_height) / 2)
-                )
+                temp = self._resize_image(temp, item_width / temp.size[0])
+                temp = temp.crop((0, (temp.size[1] - item_height) / 2, item_width, (temp.size[1] + item_height) / 2))
                 overlay = Image.new("RGBA", temp.size, (0, 0, 0, 100))
                 temp = Image.alpha_composite(temp, overlay)
             else:
-                temp = Image.new("RGBA", (item_weight, item_height), (111, 111, 111, 255))
+                temp = Image.new("RGBA", (item_width, item_height), (111, 111, 111, 255))
 
             temp_draw = ImageDraw.Draw(temp)
-            temp_draw.polygon(level_triagle, color[chart_info.diff])
+            temp_draw.polygon(level_triangle, color[chart_info.diff])
             font = ImageFont.truetype(noto_sans_demilight_path, 18, encoding="utf-8")
             title = truncate_text(chart_info.title, 12)
             temp_draw.text((6, 7), title, "white", font)
@@ -358,9 +360,7 @@ class DrawBest:
             if chart_info.sync:
                 temp_draw.text((110, 27), chart_info.sync, self._get_goal_color(chart_info.sync), font)
             if chart_info.dx_score:
-                font = ImageFont.truetype(
-                    noto_sans_demilight_path, 12, encoding="utf-8"
-                )
+                font = ImageFont.truetype(noto_sans_demilight_path, 12, encoding="utf-8")
                 temp_draw.text(
                     (7, 63),
                     f"{chart_info.dx_score}/{chart_info.dx_score_max}",
@@ -384,14 +384,10 @@ class DrawBest:
             )
             temp_draw.text((120, 80), f"#{num + 1}", "white", font)
 
-            rec_base = Image.new("RGBA", (item_weight, item_height), "black")
+            rec_base = Image.new("RGBA", (item_width, item_height), "black")
             rec_base = rec_base.point(lambda p: int(p * 0.8))
-            self.img.paste(
-                rec_base, (self.columns_image[j + 1] + 5, self.rows_image[i + 7] + 5)
-            )
-            self.img.paste(
-                temp, (self.columns_image[j + 1] + 4, self.rows_image[i + 7] + 4)
-            )
+            self.img.paste(rec_base, (self.columns_image[j + 1] + 5, self.rows_image[i + 7] + 5))
+            self.img.paste(temp, (self.columns_image[j + 1] + 4, self.rows_image[i + 7] + 4))
 
     def draw(self):
         img_draw = ImageDraw.Draw(self.img)
@@ -405,9 +401,7 @@ class DrawBest:
         self._draw_best_list(self.img, self.sd_best, self.dx_best)
 
         font = ImageFont.truetype(noto_sans_demilight_path, 10, encoding="utf-8")
-        img_draw.text(
-            (5, 1285), "Generated by Teahouse Studios \"AkariBot\"", "black", font=font
-        )
+        img_draw.text((5, 1285), 'Generated by Teahouse Studios "AkariBot"', "black", font=font)
 
     def get_dir(self):
         return self.img

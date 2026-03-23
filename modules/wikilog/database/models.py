@@ -17,9 +17,7 @@ class WikiLogTargetSetInfo(DBModel):
         if add or reset:
             if api_link not in infos or reset:
                 infos[api_link] = {}
-                infos[api_link].setdefault(
-                    "AbuseLog", {"enable": False, "filters": ["*"]}
-                )
+                infos[api_link].setdefault("AbuseLog", {"enable": False, "filters": ["*"]})
                 infos[api_link].setdefault(
                     "RecentChanges",
                     {"enable": False, "filters": ["*"], "rcshow": ["!bot"]},
@@ -44,9 +42,7 @@ class WikiLogTargetSetInfo(DBModel):
                 return True
         return False
 
-    async def set_filters(
-        self, api_link: str, log_name: str, filters: list[str]
-    ):
+    async def set_filters(self, api_link: str, log_name: str, filters: list[str]):
         infos = self.infos
         if api_link in infos:
             if log_name in infos[api_link]:

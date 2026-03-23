@@ -14,7 +14,7 @@ MAX_OUTPUT_EXP = Config("dice_output_digit", 9, table_name="module_dice")  # 输
 
 
 def fmt_num(num: int, sep: bool = False):
-    if MAX_OUTPUT_EXP > 0 and abs(num) >= 10 ** MAX_OUTPUT_EXP:
+    if MAX_OUTPUT_EXP > 0 and abs(num) >= 10**MAX_OUTPUT_EXP:
         fmt_num = f"{num:.{MAX_OUTPUT_EXP}e}"
         if not sep:
             fmt_num = f"({fmt_num})"
@@ -73,21 +73,14 @@ class Dice(DiceItemBase):
         self.positive = args[3]
         if self.count < 1 or self.count > MAX_DICE_COUNT:
             raise DiceValueError(
-                str(I18NContext("dice.message.error.value.count.out_of_range", max=MAX_DICE_COUNT)),
-                self.count
+                str(I18NContext("dice.message.error.value.count.out_of_range", max=MAX_DICE_COUNT)), self.count
             )
         if self.sides < 1:
-            raise DiceValueError(
-                "{I18N:dice.message.error.value.sides.out_of_range}",
-                self.sides
-            )
+            raise DiceValueError("{I18N:dice.message.error.value.sides.out_of_range}", self.sides)
         if self.sides == 1:
             raise DiceValueError("{I18N:dice.message.error.value.sides.d1}")
         if self.adv > self.count:
-            raise DiceValueError(
-                "{I18N:dice.message.error.value.advantage.out_of_range}",
-                self.adv
-            )
+            raise DiceValueError("{I18N:dice.message.error.value.advantage.out_of_range}", self.adv)
 
     def get_args(self):
         dice_code = self.code.upper()  # 便于识别
@@ -115,15 +108,9 @@ class Dice(DiceItemBase):
             dice_adv = "1"  # K/Q后没有值默认为1
         # 语法合法检定
         if not is_int(dice_count):
-            raise DiceValueError(
-                "{I18N:dice.message.error.value.count.invalid}",
-                dice_count
-            )
+            raise DiceValueError("{I18N:dice.message.error.value.count.invalid}", dice_count)
         if not is_int(dice_sides):
-            raise DiceValueError(
-                "{I18N:dice.message.error.value.sides.invalid}",
-                dice_sides
-            )
+            raise DiceValueError("{I18N:dice.message.error.value.sides.invalid}", dice_sides)
         if not is_int(dice_adv):
             raise DiceValueError(
                 "{I18N:dice.message.error.value.advantage.invalid}",
@@ -154,11 +141,7 @@ class Dice(DiceItemBase):
                     output_buffer += ", "
             output_buffer += "]"
             if self.count >= MAX_OUTPUT_CNT:
-                output_buffer = (
-                    "=["
-                    + str(I18NContext("dice.message.output.too_long", length=self.count))
-                    + "]"
-                )
+                output_buffer = "=[" + str(I18NContext("dice.message.output.too_long", length=self.count)) + "]"
             output += output_buffer
             dice_results = new_results
         # 公用加法
@@ -172,11 +155,7 @@ class Dice(DiceItemBase):
                     output_buffer += "+"
             output_buffer += "]"
             if self.count > MAX_OUTPUT_CNT:
-                output_buffer = (
-                    "=["
-                    + str(I18NContext("dice.message.output.too_long", length=self.count))
-                    + "]"
-                )
+                output_buffer = "=[" + str(I18NContext("dice.message.output.too_long", length=self.count)) + "]"
             output += output_buffer
         else:
             result = dice_results[0]
@@ -197,8 +176,7 @@ class FudgeDice(DiceItemBase):
         self.count = args[0]
         if self.count < 1 or self.count > MAX_DICE_COUNT:
             raise DiceValueError(
-                str(I18NContext("dice.message.error.value.count.out_of_range", max=MAX_DICE_COUNT)),
-                self.count
+                str(I18NContext("dice.message.error.value.count.out_of_range", max=MAX_DICE_COUNT)), self.count
             )
 
     def get_args(self):
@@ -213,10 +191,7 @@ class FudgeDice(DiceItemBase):
 
         # 语法合法检定
         if not is_int(dice_count):
-            raise DiceValueError(
-                "{I18N:dice.message.error.value.count.invalid}",
-                dice_count
-            )
+            raise DiceValueError("{I18N:dice.message.error.value.count.invalid}", dice_count)
         return (int(dice_count), 0)
 
     def roll(self):
@@ -226,11 +201,7 @@ class FudgeDice(DiceItemBase):
         selected_results = [Random.choice(["-", "0", "+"]) for _ in range(self.count)]
 
         if self.count > MAX_OUTPUT_CNT:  # 显示数据含100
-            output = (
-                "=["
-                + str(I18NContext("dice.message.output.too_long", length=self.count))
-                + "]"
-            )
+            output = "=[" + str(I18NContext("dice.message.output.too_long", length=self.count)) + "]"
         else:
             output += "=[" + ", ".join(selected_results) + "]"
 
@@ -258,8 +229,7 @@ class BonusPunishDice(DiceItemBase):
         self.positive = args[1]
         if self.count < 1 or self.count > MAX_DICE_COUNT:
             raise DiceValueError(
-                str(I18NContext("dice.message.error.value.count.out_of_range", max=MAX_DICE_COUNT)),
-                self.count
+                str(I18NContext("dice.message.error.value.count.out_of_range", max=MAX_DICE_COUNT)), self.count
             )
 
     def get_args(self):
@@ -280,10 +250,7 @@ class BonusPunishDice(DiceItemBase):
 
         # 语法合法检定
         if not is_int(dice_count):
-            raise DiceValueError(
-                "{I18N:dice.message.error.value.count.invalid}",
-                dice_count
-            )
+            raise DiceValueError("{I18N:dice.message.error.value.count.invalid}", dice_count)
 
         return (int(dice_count), positive)
 
@@ -301,20 +268,12 @@ class BonusPunishDice(DiceItemBase):
         for i in range(self.count):
             dice_results.append(Random.randint(0, 9))
 
-        new_results = [d100_result] + [
-            int(str(item) + str(d100_digit)) for item in dice_results
-        ]
-        new_results = [
-            100 if item == 0 else item for item in new_results
-        ]  # 将所有00转为100
+        new_results = [d100_result] + [int(str(item) + str(d100_digit)) for item in dice_results]
+        new_results = [100 if item == 0 else item for item in new_results]  # 将所有00转为100
 
         if self.count > 1:
             if self.count >= MAX_OUTPUT_CNT:
-                output_buffer = (
-                    "=["
-                    + str(I18NContext("dice.message.output.too_long", length=self.count))
-                    + "]"
-                )
+                output_buffer = "=[" + str(I18NContext("dice.message.output.too_long", length=self.count)) + "]"
             else:
                 output_buffer = "=["
                 for i in range(self.count):
@@ -352,20 +311,15 @@ class WODDice(DiceItemBase):
         self.sides = args[4]
         if self.count < 1 or self.count > MAX_DICE_COUNT:
             raise DiceValueError(
-                str(I18NContext("dice.message.error.value.count.out_of_range", max=MAX_DICE_COUNT)),
-                self.count
+                str(I18NContext("dice.message.error.value.count.out_of_range", max=MAX_DICE_COUNT)), self.count
             )
         if self.sides < 1:
-            raise DiceValueError(
-                "{I18N:dice.message.error.value.sides.out_of_range}",
-                self.sides
-            )
+            raise DiceValueError("{I18N:dice.message.error.value.sides.out_of_range}", self.sides)
         if self.sides == 1:
             raise DiceValueError("{I18N:dice.message.error.value.sides.d1}")
         if self.add_line != 0 and (self.add_line < 2 or self.add_line > self.sides):
             raise DiceValueError(
-                str(I18NContext("dice.message.error.value.add_line.out_of_range", max=self.sides)),
-                self.add_line
+                str(I18NContext("dice.message.error.value.add_line.out_of_range", max=self.sides)), self.add_line
             )
 
     def get_args(self):
@@ -380,30 +334,15 @@ class WODDice(DiceItemBase):
         dice_sides = match.group(5) if match.group(5) else "10"  # 骰子面数
         # 语法合法检定
         if not is_int(dice_count):
-            raise DiceValueError(
-                "{I18N:dice.message.error.value.count.invalid}",
-                dice_count
-            )
+            raise DiceValueError("{I18N:dice.message.error.value.count.invalid}", dice_count)
         if not is_int(dice_add_line):
-            raise DiceValueError(
-                "{I18N:dice.message.error.value.add_line.invalid}",
-                dice_add_line
-            )
+            raise DiceValueError("{I18N:dice.message.error.value.add_line.invalid}", dice_add_line)
         if not is_int(dice_success_line):
-            raise DiceValueError(
-                "{I18N:dice.message.error.value.dice_success_line.invalid}",
-                dice_success_line
-            )
+            raise DiceValueError("{I18N:dice.message.error.value.dice_success_line.invalid}", dice_success_line)
         if not is_int(dice_success_line_max):
-            raise DiceValueError(
-                "{I18N:dice.message.error.value.dice_success_line.invalid}",
-                dice_success_line_max
-            )
+            raise DiceValueError("{I18N:dice.message.error.value.dice_success_line.invalid}", dice_success_line_max)
         if not is_int(dice_sides):
-            raise DiceValueError(
-                "{I18N:dice.message.error.value.sides.invalid}",
-                dice_sides
-            )
+            raise DiceValueError("{I18N:dice.message.error.value.sides.invalid}", dice_sides)
 
         return (
             int(dice_count),
@@ -468,11 +407,7 @@ class WODDice(DiceItemBase):
         output_buffer = output_buffer[:-2]  # 去除最后的", "
         output_buffer += "]"
         if self.count >= MAX_OUTPUT_CNT:
-            output_buffer = (
-                "=["
-                + str(I18NContext("dice.message.output.too_long", length=self.count))
-                + "]"
-            )
+            output_buffer = "=[" + str(I18NContext("dice.message.output.too_long", length=self.count)) + "]"
         output += output_buffer
 
         result = success_count
@@ -495,14 +430,10 @@ class DXDice(DiceItemBase):
         self.sides = args[2]
         if self.count < 1 or self.count > MAX_DICE_COUNT:
             raise DiceValueError(
-                str(I18NContext("dice.message.error.value.count.out_of_range", max=MAX_DICE_COUNT)),
-                self.count
+                str(I18NContext("dice.message.error.value.count.out_of_range", max=MAX_DICE_COUNT)), self.count
             )
         if self.sides < 1:
-            raise DiceValueError(
-                "{I18N:dice.message.error.value.sides.out_of_range}",
-                self.sides
-            )
+            raise DiceValueError("{I18N:dice.message.error.value.sides.out_of_range}", self.sides)
         if self.sides == 1:
             raise DiceValueError("{I18N:dice.message.error.value.sides.d1}")
         if self.add_line < 2 or self.add_line > self.sides:
@@ -521,20 +452,14 @@ class DXDice(DiceItemBase):
         dice_sides = match.group(3) if match.group(3) else "10"  # 骰子面数
         # 语法合法检定
         if not is_int(dice_count):
-            raise DiceValueError(
-                "{I18N:dice.message.error.value.count.invalid}",
-                dice_count
-            )
+            raise DiceValueError("{I18N:dice.message.error.value.count.invalid}", dice_count)
         if not is_int(dice_add_line):
             raise DiceValueError(
                 "{I18N:dice.message.error.value.add_line.invalid}",
                 dice_add_line,
             )
         if not is_int(dice_sides):
-            raise DiceValueError(
-                "{I18N:dice.message.error.value.sides.invalid}",
-                dice_sides
-            )
+            raise DiceValueError("{I18N:dice.message.error.value.sides.invalid}", dice_sides)
         return (int(dice_count), int(dice_add_line), int(dice_sides))
 
     def roll(self):
@@ -575,11 +500,7 @@ class DXDice(DiceItemBase):
         output_buffer = output_buffer[:-2]  # 去除最后的", "
         output_buffer += "]"
         if self.count >= MAX_OUTPUT_CNT:
-            output_buffer = (
-                "=["
-                + str(I18NContext("dice.message.output.too_long", length=self.count))
-                + "]"
-            )
+            output_buffer = "=[" + str(I18NContext("dice.message.output.too_long", length=self.count)) + "]"
         output += output_buffer
 
         result = (dice_rounds - 1) * self.sides + max(dice_results)

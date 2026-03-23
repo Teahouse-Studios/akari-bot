@@ -11,8 +11,7 @@ async def get_diving_prober_bind_info(msg: Bot.MessageSession, **kwargs):
     if not bind_info:
         if msg.session_info.sender_from == "QQ":
             return {"qq": msg.session_info.get_common_sender_id()} | kwargs
-        else:
-            await msg.finish(I18NContext("chunithm.message.user_unbound.df", prefix=msg.session_info.prefixes[0]))
+        await msg.finish(I18NContext("chunithm.message.user_unbound.df", prefix=msg.session_info.prefixes[0]))
     else:
         return {"username": bind_info.username} | kwargs
 
@@ -22,13 +21,19 @@ async def get_lxns_prober_bind_info(msg: Bot.MessageSession):
     if not bind_info:
         if msg.session_info.sender_from == "QQ":
             try:
-                profile_url = f"https://maimai.lxns.net/api/v0/chunithm/player/qq/{
-                    msg.session_info.get_common_sender_id()}"
+                profile_url = (
+                    f"https://maimai.lxns.net/api/v0/chunithm/player/qq/{msg.session_info.get_common_sender_id()}"
+                )
                 profile_data = await get_url(
                     profile_url,
                     status_code=200,
-                    headers={"User-Agent": "AkariBot/1.0", "Authorization": LX_DEVELOPER_TOKEN, "Content-Type": "application/json", "accept": "*/*"},
-                    fmt="json"
+                    headers={
+                        "User-Agent": "AkariBot/1.0",
+                        "Authorization": LX_DEVELOPER_TOKEN,
+                        "Content-Type": "application/json",
+                        "accept": "*/*",
+                    },
+                    fmt="json",
                 )
                 return str(profile_data["data"]["friend_code"])
             except Exception as e:

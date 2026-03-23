@@ -1,188 +1,460 @@
-aiocqhttp==1.4.4 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-aiofile==3.9.0 ; python_version >= "3.12" and python_version < "4" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-aiofiles==24.1.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-aiogram==3.22.0 ; python_version >= "3.14" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-aiogram==3.24.0 ; python_version >= "3.12" and python_version < "3.14" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-aiohappyeyeballs==2.6.1 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-aiohttp-socks==0.10.1 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-aiohttp==3.12.15 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-aiosignal==1.4.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-aiosqlite==0.21.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-akari-bot-webrender==0.5.13 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-akari-bot-webui==0.3.7 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-annotated-doc==0.0.3 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-annotated-types==0.7.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-anyio==4.10.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-apscheduler==3.11.2 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-argon2-cffi-bindings==25.1.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-argon2-cffi==25.1.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-asyncio-dgram==2.2.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-asyncmy==0.2.10 ; python_version >= "3.12" and python_version < "4.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-attrs==25.4.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-backoff==2.2.1 ; python_version >= "3.12" and python_version < "4.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-beautifulsoup4==4.14.3 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-blinker==1.9.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-build==1.3.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-cachecontrol==0.14.3 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-caio==0.9.24 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-cattrs==25.3.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-certifi==2025.8.3 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-cffi==2.0.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform == "darwin" or sys_platform != "win32" and sys_platform != "emscripten")
-cfgv==3.4.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-charset-normalizer==3.4.3 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-cleo==2.1.0 ; python_version >= "3.12" and python_version < "4.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-click==8.2.1 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-colorama==0.4.6 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten") and (platform_system == "Windows" or os_name == "nt" or sys_platform == "win32")
-contourpy==1.3.3 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-coverage==7.13.2 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-crashtest==0.4.1 ; python_version >= "3.12" and python_version < "4.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-cryptography==46.0.4 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-cycler==0.12.1 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-deprecated==1.3.1 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-distlib==0.4.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-distro==1.9.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-dnspython==2.7.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-dulwich==0.22.8 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-emoji==2.15.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-fake-http-header==0.3.5 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-fastapi==0.128.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-fastjsonschema==2.21.2 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-feedparser==6.0.12 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-ff3==1.0.3 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-ffmpy==1.0.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-filelock==3.19.1 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-filetype==1.2.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-findpython==0.6.3 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-flask==3.1.2 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-flexcache==0.3 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-flexparser==0.4 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-fonttools==4.59.2 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-frozenlist==1.7.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-google-play-scraper==1.2.7 ; python_version >= "3.12" and python_version < "4.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-gql==4.0.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-graphql-core==3.2.6 ; python_version >= "3.12" and python_version < "4" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-greenlet==3.2.4 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-h11==0.16.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-h2==4.3.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-hpack==4.1.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-httpcore==1.0.9 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-httptools==0.6.4 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-httpx==0.28.1 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-hypercorn==0.17.3 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-hyperframe==6.1.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-identify==2.6.13 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-idna==3.10 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-installer==0.7.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-iso639-lang==2.6.3 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-iso8601==2.1.0 ; python_version >= "3.12" and python_version < "4.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-itsdangerous==2.2.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-japanera==2.1.3 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-jaraco-classes==3.4.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-jaraco-context==6.0.1 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-jaraco-functools==4.3.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-jeepney==0.9.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and sys_platform == "linux"
-jinja2==3.1.6 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-jiter==0.10.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-jsonschema-specifications==2025.4.1 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-jsonschema==4.25.1 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-kanjize==1.6.1 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-keyring==25.6.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-khl-py==0.3.17 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-kiwisolver==1.4.9 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-langconv @ git+https://github.com/Teahouse-Studios/langconv.py.git@c46b775d67c3bf2de3506927a4ac7aabba30b8b0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-limits==5.5.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-loguru==0.7.3 ; python_version >= "3.12" and python_version < "4.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-magic-filter==1.0.12 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-markupsafe==3.0.2 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-matplotlib==3.10.8 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-matrix-nio==0.25.2 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-mcstatus==12.1.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-more-itertools==10.7.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-msgpack==1.1.1 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-multidict==6.6.4 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-nodeenv==1.9.1 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-numpy==2.4.2 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-openai==2.16.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-orjson==3.11.6 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-packaging==25.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-pandas==3.0.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-pbs-installer==2025.8.27 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-pillow==12.1.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-pint==0.25.2 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-pkginfo==1.12.1.2 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-platformdirs==4.4.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-playwright==1.55.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-poetry-core==2.1.3 ; python_version >= "3.12" and python_version < "4.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-poetry-plugin-export==1.10.0 ; python_version >= "3.12" and python_version < "4.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-poetry==2.1.4 ; python_version >= "3.12" and python_version < "4.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-pre-commit==4.5.1 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-priority==2.0.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-propcache==0.3.2 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-psutil==7.2.2 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-py-cord @ git+https://github.com/Pycord-Development/pycord@233ca6404261219e5045610a14847107c713ccf7 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-py-cpuinfo==9.0.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-pycparser==2.22 ; python_version >= "3.12" and python_full_version < "4.0.0" and implementation_name != "PyPy" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform == "darwin" or sys_platform != "win32" and sys_platform != "emscripten")
-pycryptodome==3.23.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-pycryptodomex==3.23.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-pydantic-core==2.33.2 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-pydantic==2.11.7 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-pyee==13.0.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-pyjwt==2.11.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-pyparsing==3.2.3 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-pypika-tortoise==0.6.3 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-pyproject-hooks==1.2.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-python-dateutil==2.9.0.post0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-python-dotenv==1.2.1 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-python-multipart==0.0.22 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-python-socks==2.7.2 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-python-whois==0.9.6 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-pytz==2025.2 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-pywin32-ctypes==0.2.3 ; python_version >= "3.12" and python_full_version < "4.0.0" and sys_platform == "win32"
-pywin32==308 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and sys_platform == "win32"
-pyyaml==6.0.2 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-qq-botpy==1.2.1 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-quart==0.20.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-rapidfuzz==3.14.1 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-rdkit==2025.9.4 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-referencing==0.36.2 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-requests-toolbelt==1.0.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-requests==2.32.5 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-rpds-py==0.27.1 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-secretstorage==3.3.3 ; python_version >= "3.12" and python_full_version < "4.0.0" and sys_platform == "linux"
-setuptools==80.9.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-sgmllib3k==1.0.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-shellingham==1.5.4 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-simpleeval==1.0.3 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-six==1.17.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-slowapi==0.1.9 ; python_version >= "3.12" and python_version < "4.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-sniffio==1.3.1 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-soupsieve==2.8 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-starlette==0.47.3 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-tabulate==0.9.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-tenacity==9.1.2 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-tf-playwright-stealth==1.2.0 ; python_version >= "3.12" and python_version < "4.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-tomlkit==0.14.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-tortoise-orm==0.25.3 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-tqdm==4.67.1 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-trove-classifiers==2025.8.26.11 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-typing-extensions==4.15.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-typing-inspection==0.4.1 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-tzdata==2025.2 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten" and platform_system == "Windows") and python_version >= "2"
-tzlocal==5.3.1 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-unpaddedbase64==2.1.0 ; python_version >= "3.12" and python_version < "4.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-urllib3==2.5.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-uvicorn==0.40.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-uvloop==0.21.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and platform_python_implementation != "PyPy" and sys_platform != "win32" and sys_platform != "cygwin"
-virtualenv==20.32.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-watchfiles==1.1.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-webcolors==25.10.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-websockets==15.0.1 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-werkzeug==3.1.3 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-win32-setctime==1.2.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and sys_platform == "win32"
-wolframalpha==5.1.3 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-wrapt==1.17.3 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-wsproto==1.2.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-xattr==1.2.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and sys_platform == "darwin"
-xmltodict==0.14.2 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-yarl==1.20.1 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
-zstandard==0.24.0 ; python_version >= "3.12" and python_full_version < "4.0.0" and (sys_platform == "win32" or sys_platform == "emscripten" or sys_platform != "win32" and sys_platform != "emscripten")
+# This file was autogenerated by uv via the following command:
+#    uv export --no-hashes --output-file=requirements.txt
+aiocqhttp==1.4.4
+    # via akari-bot
+aiofile==3.9.0
+    # via akari-bot
+aiofiles==24.1.0
+    # via
+    #   aiogram
+    #   matrix-nio
+    #   quart
+aiogram==3.25.0
+    # via akari-bot
+aiohappyeyeballs==2.6.1
+    # via aiohttp
+aiohttp==3.13.3
+    # via
+    #   aiogram
+    #   aiohttp-socks
+    #   khl-py
+    #   matrix-nio
+    #   py-cord
+    #   qq-botpy
+aiohttp-socks==0.11.0
+    # via matrix-nio
+aiosignal==1.4.0
+    # via aiohttp
+aiosqlite==0.22.1
+    # via tortoise-orm
+akari-bot-webrender==0.5.13
+    # via akari-bot
+akari-bot-webui==0.3.8
+    # via akari-bot
+annotated-doc==0.0.4
+    # via fastapi
+annotated-types==0.7.0
+    # via pydantic
+anyio==4.12.1
+    # via
+    #   gql
+    #   httpx
+    #   openai
+    #   starlette
+    #   tortoise-orm
+    #   watchfiles
+apscheduler==3.11.2
+    # via
+    #   akari-bot
+    #   khl-py
+    #   qq-botpy
+argon2-cffi==25.1.0
+    # via akari-bot
+argon2-cffi-bindings==25.1.0
+    # via argon2-cffi
+asyncio-dgram==3.0.0
+    # via mcstatus
+asyncmy==0.2.11
+    # via tortoise-orm
+attrs==25.4.0
+    # via
+    #   aiohttp
+    #   akari-bot
+    #   cattrs
+    #   jsonschema
+    #   langconv
+    #   referencing
+backoff==2.2.1
+    # via gql
+beautifulsoup4==4.14.3
+    # via akari-bot
+blinker==1.9.0
+    # via
+    #   flask
+    #   quart
+caio==0.9.25
+    # via aiofile
+cattrs==26.1.0
+    # via akari-bot
+certifi==2026.1.4
+    # via
+    #   aiogram
+    #   httpcore
+    #   httpx
+cffi==2.0.0
+    # via
+    #   argon2-cffi-bindings
+    #   cryptography
+cfgv==3.5.0
+    # via pre-commit
+click==8.3.1
+    # via
+    #   flask
+    #   quart
+    #   uvicorn
+colorama==0.4.6 ; sys_platform == 'win32'
+    # via
+    #   click
+    #   loguru
+    #   tqdm
+    #   uvicorn
+contourpy==1.3.3
+    # via matplotlib
+coverage==7.13.4
+    # via akari-bot
+cryptography==46.0.5
+    # via
+    #   akari-bot
+    #   pyjwt
+cycler==0.12.1
+    # via matplotlib
+defusedxml==0.7.1
+    # via akari-bot
+deprecated==1.3.1
+    # via
+    #   akari-bot
+    #   limits
+distlib==0.4.0
+    # via virtualenv
+distro==1.9.0
+    # via openai
+dnspython==2.8.0
+    # via mcstatus
+emoji==2.15.0
+    # via akari-bot
+fake-http-header==0.3.5
+    # via tf-playwright-stealth
+fastapi==0.129.0
+    # via
+    #   akari-bot
+    #   akari-bot-webrender
+feedparser==6.0.12
+    # via akari-bot
+ff3==1.0.3
+    # via akari-bot
+ffmpy==1.0.0
+    # via akari-bot
+filelock==3.21.2
+    # via virtualenv
+filetype==1.2.0
+    # via akari-bot
+flask==3.1.2
+    # via quart
+flexcache==0.3
+    # via pint
+flexparser==0.4
+    # via pint
+fonttools==4.61.1
+    # via matplotlib
+frozenlist==1.8.0
+    # via
+    #   aiohttp
+    #   aiosignal
+google-play-scraper==1.2.7
+    # via akari-bot
+gql==4.0.0
+    # via akari-bot
+graphql-core==3.2.7
+    # via gql
+greenlet==3.3.1
+    # via playwright
+h11==0.16.0
+    # via
+    #   httpcore
+    #   hypercorn
+    #   matrix-nio
+    #   uvicorn
+    #   wsproto
+h2==4.3.0
+    # via
+    #   hypercorn
+    #   matrix-nio
+hpack==4.1.0
+    # via h2
+httpcore==1.0.9
+    # via httpx
+httptools==0.7.1
+    # via uvicorn
+httpx==0.28.1
+    # via
+    #   aiocqhttp
+    #   akari-bot
+    #   akari-bot-webrender
+    #   openai
+    #   wolframalpha
+hypercorn==0.18.0
+    # via quart
+hyperframe==6.1.0
+    # via h2
+identify==2.6.16
+    # via pre-commit
+idna==3.11
+    # via
+    #   anyio
+    #   httpx
+    #   yarl
+iso639-lang==2.6.3
+    # via langconv
+iso8601==2.1.0
+    # via tortoise-orm
+itsdangerous==2.2.0
+    # via
+    #   flask
+    #   quart
+japanera==2.1.3
+    # via akari-bot
+jaraco-context==6.1.0
+    # via wolframalpha
+jinja2==3.1.6
+    # via
+    #   akari-bot
+    #   akari-bot-webrender
+    #   flask
+    #   quart
+jiter==0.13.0
+    # via openai
+jsonschema==4.26.0
+    # via matrix-nio
+jsonschema-specifications==2025.9.1
+    # via jsonschema
+kanjize==1.6.1
+    # via japanera
+khl-py==0.3.17
+    # via akari-bot
+kiwisolver==1.4.9
+    # via matplotlib
+langconv @ git+https://github.com/Teahouse-Studios/langconv.py.git@c46b775d67c3bf2de3506927a4ac7aabba30b8b0
+    # via akari-bot
+limits==5.8.0
+    # via slowapi
+loguru==0.7.3
+    # via
+    #   akari-bot
+    #   akari-bot-webrender
+magic-filter==1.0.12
+    # via aiogram
+markupsafe==3.0.3
+    # via
+    #   flask
+    #   jinja2
+    #   quart
+    #   werkzeug
+matplotlib==3.10.8
+    # via akari-bot
+matrix-nio==0.25.2
+    # via akari-bot
+mcstatus==12.2.1
+    # via akari-bot
+more-itertools==10.8.0
+    # via wolframalpha
+multidict==6.7.1
+    # via
+    #   aiohttp
+    #   wolframalpha
+    #   yarl
+nodeenv==1.10.0
+    # via pre-commit
+numpy==2.4.2
+    # via
+    #   akari-bot
+    #   contourpy
+    #   matplotlib
+    #   pandas
+    #   rdkit
+openai==2.20.0
+    # via akari-bot
+orjson==3.11.7
+    # via
+    #   akari-bot
+    #   akari-bot-webrender
+packaging==26.0
+    # via
+    #   limits
+    #   matplotlib
+pandas==3.0.0
+    # via akari-bot
+pillow==12.1.1
+    # via
+    #   akari-bot
+    #   matplotlib
+    #   rdkit
+pint==0.25.2
+    # via akari-bot
+platformdirs==4.7.0
+    # via
+    #   pint
+    #   virtualenv
+playwright==1.58.0
+    # via
+    #   akari-bot-webrender
+    #   tf-playwright-stealth
+pre-commit==4.5.1
+    # via
+    #   akari-bot
+    #   akari-bot-webrender
+priority==2.0.0
+    # via hypercorn
+propcache==0.4.1
+    # via
+    #   aiohttp
+    #   yarl
+psutil==7.2.2
+    # via akari-bot
+py-cord @ git+https://github.com/Pycord-Development/pycord@13f9bbcd6b80f242556ede630de99301a123b834
+    # via akari-bot
+py-cpuinfo==9.0.0
+    # via akari-bot
+pycparser==3.0 ; implementation_name != 'PyPy'
+    # via cffi
+pycryptodome==3.23.0
+    # via
+    #   akari-bot
+    #   ff3
+    #   matrix-nio
+pycryptodomex==3.23.0
+    # via khl-py
+pydantic==2.12.5
+    # via
+    #   aiogram
+    #   akari-bot-webrender
+    #   fastapi
+    #   openai
+pydantic-core==2.41.5
+    # via pydantic
+pyee==13.0.0
+    # via playwright
+pyjwt==2.12.1
+    # via akari-bot
+pyparsing==3.3.2
+    # via matplotlib
+pypika-tortoise==0.6.3
+    # via tortoise-orm
+python-dateutil==2.9.0.post0
+    # via
+    #   matplotlib
+    #   pandas
+    #   python-whois
+python-dotenv==1.2.1
+    # via
+    #   akari-bot
+    #   uvicorn
+python-multipart==0.0.22
+    # via akari-bot
+python-socks==2.8.0
+    # via aiohttp-socks
+python-whois==0.9.6
+    # via akari-bot
+pywin32==311 ; sys_platform == 'win32'
+    # via akari-bot
+pyyaml==6.0.3
+    # via
+    #   pre-commit
+    #   qq-botpy
+    #   uvicorn
+qq-botpy==1.2.1
+    # via akari-bot
+quart==0.20.0
+    # via aiocqhttp
+rdkit==2025.9.4
+    # via akari-bot
+referencing==0.37.0
+    # via
+    #   jsonschema
+    #   jsonschema-specifications
+rpds-py==0.30.0
+    # via
+    #   jsonschema
+    #   referencing
+ruff==0.15.1
+sgmllib3k==1.0.0
+    # via feedparser
+simpleeval==1.0.6
+    # via akari-bot
+six==1.17.0
+    # via python-dateutil
+slowapi==0.1.9
+    # via akari-bot
+sniffio==1.3.1
+    # via openai
+soupsieve==2.8.3
+    # via beautifulsoup4
+starlette==0.52.1
+    # via fastapi
+tabulate==0.9.0
+    # via akari-bot
+tenacity==9.1.4
+    # via akari-bot
+tf-playwright-stealth==1.2.0
+    # via akari-bot-webrender
+tomlkit==0.14.0
+    # via akari-bot
+tortoise-orm==1.1.2
+    # via akari-bot
+tqdm==4.67.3
+    # via openai
+typing-extensions==4.15.0
+    # via
+    #   aiogram
+    #   aiosignal
+    #   anyio
+    #   beautifulsoup4
+    #   cattrs
+    #   fastapi
+    #   flexcache
+    #   flexparser
+    #   limits
+    #   openai
+    #   pint
+    #   py-cord
+    #   pydantic
+    #   pydantic-core
+    #   pyee
+    #   referencing
+    #   starlette
+    #   typing-inspection
+typing-inspection==0.4.2
+    # via
+    #   fastapi
+    #   pydantic
+tzdata==2025.3 ; sys_platform == 'emscripten' or sys_platform == 'win32'
+    # via
+    #   pandas
+    #   tzlocal
+tzlocal==5.3.1
+    # via apscheduler
+unpaddedbase64==2.1.0
+    # via matrix-nio
+urllib3==2.6.3
+    # via akari-bot
+uvicorn==0.40.0
+    # via
+    #   akari-bot
+    #   akari-bot-webrender
+uvloop==0.22.1 ; platform_python_implementation != 'PyPy' and sys_platform != 'cygwin' and sys_platform != 'win32'
+    # via uvicorn
+virtualenv==20.36.1
+    # via pre-commit
+watchfiles==1.1.1
+    # via uvicorn
+webcolors==25.10.0
+    # via akari-bot
+websockets==16.0
+    # via uvicorn
+werkzeug==3.1.5
+    # via
+    #   flask
+    #   quart
+win32-setctime==1.2.0 ; sys_platform == 'win32'
+    # via loguru
+wolframalpha==5.1.3
+    # via akari-bot
+wrapt==2.1.1
+    # via deprecated
+wsproto==1.3.2
+    # via hypercorn
+xmltodict==1.0.2
+    # via wolframalpha
+yarl==1.22.0
+    # via
+    #   aiohttp
+    #   gql

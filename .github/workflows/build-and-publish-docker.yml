@@ -1,4 +1,7 @@
-name: "Build and Publish Docker (3:00, UTC+8)"
+name: Build and Publish Docker (3:00, UTC+8)
+
+permissions:
+  contents: write
 
 on:
   schedule:
@@ -10,8 +13,6 @@ on:
 
 jobs:
   build-and-push:
-    permissions:
-      contents: write
     runs-on: ubuntu-latest
 
     steps:

@@ -47,9 +47,7 @@ class PlayState:
         playstate_dict = _ps_dict[self.target_id].get(self.game)
         if playstate_dict and playstate_dict.get("_status"):
             playstate_dict["_status"] = False
-            Logger.info(
-                f"[{self.target_id}]: Disabled {self.game} by {self.sender_id}."
-            )
+            Logger.info(f"[{self.target_id}]: Disabled {self.game} by {self.sender_id}.")
 
     def update(self, **kwargs) -> None:
         """

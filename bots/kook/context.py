@@ -14,9 +14,7 @@ from .features import Features
 from .info import client_name, target_group_prefix, target_person_prefix
 
 kook_base = "https://www.kookapp.cn"
-kook_headers = {
-    "Authorization": f"Bot {kook_token}"
-}
+kook_headers = {"Authorization": f"Bot {kook_token}"}
 
 
 async def call_api(endpoint: str, **params):
@@ -46,21 +44,20 @@ async def get_channel(session_info: SessionInfo) -> PublicChannel | User | None:
 
 class KOOKContextManager(ContextManager):
     context: dict[str, Message] = {}
-    features: Features | None = Features
+    features: type[Features] | None = Features
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
+        if session_info.target_from == target_person_prefix:
+            return True
         if session_info.session_id not in cls.context:
             channel = await bot.client.fetch_public_channel(session_info.get_common_target_id())
             author = session_info.get_common_sender_id()
         else:
             ctx: Message = cls.context.get(session_info.session_id)
-            channel = await bot.client.fetch_public_channel(
-                ctx.ctx.channel.id
-            )
+            Logger.warning(str(ctx.ctx.channel.id))
+            channel = await bot.client.fetch_public_channel(ctx.ctx.channel.id)
             author = ctx.author.id
-        if channel.name == "PERSON":
-            return True
         guild = await bot.client.fetch_guild(channel.guild_id)
         user_roles = (await guild.fetch_user(author)).roles
         guild_roles = await guild.fetch_roles()
@@ -72,13 +69,14 @@ class KOOKContextManager(ContextManager):
         return False
 
     @classmethod
-    async def send_message(cls,
-                           session_info: SessionInfo,
-                           message: MessageChain | MessageNodes,
-                           quote: bool = True,
-                           enable_parse_message: bool = True,
-                           enable_split_image: bool = True,
-                           ) -> list[str]:
+    async def send_message(
+        cls,
+        session_info: SessionInfo,
+        message: MessageChain | MessageNodes,
+        quote: bool = True,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> list[str]:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         ctx: Message = cls.context.get(session_info.session_id)
@@ -107,7 +105,7 @@ class KOOKContextManager(ContextManager):
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
                 msg_ids.append(str(send_["msg_id"]))
             if isinstance(x, ImageElement):
-                url = await bot.create_asset(open(await x.get(), "rb"))
+                url = await bot.create_asset(open(await x.get(), "rb"))  # skipcq
                 if ctx:
                     send_ = await ctx.reply(
                         url,
@@ -115,13 +113,14 @@ class KOOKContextManager(ContextManager):
                         type=MessageTypes.IMG,
                     )
                 else:
-                    send_ = await _channel.send(url, type=MessageTypes.IMG, )
-                Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Image: {str(x.path)}"
-                )
+                    send_ = await _channel.send(
+                        url,
+                        type=MessageTypes.IMG,
+                    )
+                Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(x.path)}")
                 msg_ids.append(str(send_["msg_id"]))
             if isinstance(x, VoiceElement):
-                url = await bot.create_asset(open(x.path, "rb"))
+                url = await bot.create_asset(open(x.path, "rb"))  # skipcq
                 if ctx:
                     send_ = await ctx.reply(
                         url,
@@ -129,10 +128,11 @@ class KOOKContextManager(ContextManager):
                         type=MessageTypes.AUDIO,
                     )
                 else:
-                    send_ = await _channel.send(url, type=MessageTypes.AUDIO, )
-                Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Voice: {str(x.__dict__)}"
-                )
+                    send_ = await _channel.send(
+                        url,
+                        type=MessageTypes.AUDIO,
+                    )
+                Logger.info(f"[Bot] -> [{session_info.target_id}]: Voice: {str(x.__dict__)}")
                 msg_ids.append(str(send_["msg_id"]))
             if isinstance(x, MentionElement):
                 if x.client == client_name and session_info.target_from == target_group_prefix:
@@ -145,15 +145,15 @@ class KOOKContextManager(ContextManager):
                         send_ = await _channel.send(
                             f"(met){x.id}(met)",
                         )
-                    Logger.info(
-                        f"[Bot] -> [{session_info.target_id}]: Mention: {x.client}|{str(x.id)}"
-                    )
+                    Logger.info(f"[Bot] -> [{session_info.target_id}]: Mention: {x.client}|{str(x.id)}")
                     msg_ids.append(str(send_["msg_id"]))
 
         return msg_ids
 
     @classmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None) -> None:
+    async def delete_message(
+        cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None
+    ) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -165,7 +165,7 @@ class KOOKContextManager(ContextManager):
             return
         for id_ in message_id:
             try:
-                if _channel.type.name == "PERSON":
+                if session_info.target_from == target_person_prefix:
                     await call_api("direct-message/delete", msg_id=id_)
                 else:
                     await call_api("message/delete", msg_id=id_)
@@ -189,14 +189,15 @@ class KOOKContextManager(ContextManager):
             return
 
         try:
-            if _channel.type.name == "PERSON":
+            if session_info.target_from == target_person_prefix:
                 await call_api("direct-message/add-reaction", msg_id=message_id[-1], emoji=emoji)
             else:
                 await call_api("message/add-reaction", msg_id=message_id[-1], emoji=emoji)
-            Logger.info(f"Added reaction \"{emoji}\" to message {message_id} in session {session_info.session_id}")
+            Logger.info(f'Added reaction "{emoji}" to message {message_id} in session {session_info.session_id}')
         except Exception:
-            Logger.exception(f"Failed to add reaction \"{emoji}\" to message {
-                             message_id} in session {session_info.session_id}: ")
+            Logger.exception(
+                f'Failed to add reaction "{emoji}" to message {message_id} in session {session_info.session_id}: '
+            )
 
     @classmethod
     async def remove_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
@@ -214,14 +215,15 @@ class KOOKContextManager(ContextManager):
             return
 
         try:
-            if _channel.type.name == "PERSON":
+            if session_info.target_from == target_person_prefix:
                 await call_api("direct-message/delete-reaction", msg_id=message_id[-1], emoji=emoji)
             else:
                 await call_api("message/delete-reaction", msg_id=message_id[-1], emoji=emoji)
-            Logger.info(f"Added reaction \"{emoji}\" to message {message_id} in session {session_info.session_id}")
+            Logger.info(f'Added reaction "{emoji}" to message {message_id} in session {session_info.session_id}')
         except Exception:
-            Logger.exception(f"Failed to remove reaction \"{emoji}\" to message {
-                             message_id} in session {session_info.session_id}: ")
+            Logger.exception(
+                f'Failed to remove reaction "{emoji}" to message {message_id} in session {session_info.session_id}: '
+            )
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:

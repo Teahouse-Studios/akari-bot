@@ -119,6 +119,7 @@ class TargetInfo(DBModel):
     :param banned_users: 会话内已限制用户。
     :param target_data: 会话数据。
     """
+
     target_id = fields.CharField(max_length=512, primary_key=True)
     blocked = fields.BooleanField(default=False)
     muted = fields.BooleanField(default=False)
@@ -220,8 +221,9 @@ class TargetInfo(DBModel):
         return True
 
     @classmethod
-    async def get_target_list_by_module(cls, module_name: str | list[str] | tuple[str, ...] | None,
-                                        id_prefix: str | None = None) -> list[TargetInfo]:
+    async def get_target_list_by_module(
+        cls, module_name: str | list[str] | tuple[str, ...] | None, id_prefix: str | None = None
+    ) -> list[TargetInfo]:
         """
         获取开启此模块的所有会话列表。
 
@@ -254,6 +256,7 @@ class StoredData(DBModel):
     :param stored_key: 存储键。
     :param value: 值。
     """
+
     stored_key = fields.CharField(max_length=512, primary_key=True)
     value = fields.JSONField(default=[])
 
@@ -272,6 +275,7 @@ class AnalyticsData(DBModel):
     :param command: 命令。
     :param timestamp: 时间戳。
     """
+
     id = fields.IntField(primary_key=True)
     module_name = fields.CharField(max_length=512)
     module_type = fields.CharField(max_length=512)
@@ -318,6 +322,7 @@ class ModuleStatus(DBModel):
     :param module_name: 模块名称。
     :param load: 是否已加载。
     """
+
     module_name = fields.CharField(primary_key=True, max_length=255, unique=True)
     load = fields.BooleanField(default=False)
 
@@ -335,9 +340,7 @@ class ModuleStatus(DBModel):
             to_remove = existing_set.difference(input_set)
 
             if to_add:
-                await cls.bulk_create(
-                    [cls(module_name=m, load=True) for m in to_add]
-                )
+                await cls.bulk_create([cls(module_name=m, load=True) for m in to_add])
 
             if to_remove:
                 await cls.filter(module_name__in=to_remove).delete()
@@ -387,6 +390,7 @@ class UnfriendlyActionRecords(DBModel):
     :param detail: 行为详情。
     :param timestamp: 时间戳。
     """
+
     id = fields.IntField(primary_key=True)
     target_id = fields.CharField(max_length=512)
     sender_id = fields.CharField(max_length=512)
@@ -410,7 +414,8 @@ class UnfriendlyActionRecords(DBModel):
         """
         records = await cls.filter(target_id=target_id, action="mute").all()
         unfriendly_list = [
-            record for record in records
+            record
+            for record in records
             if (datetime.now(UTC) - record.timestamp).total_seconds() < 432000  # 5 days
         ]
 
@@ -440,6 +445,7 @@ class JobQueuesTable(DBModel):
     :param result: 任务结果。
     :param timestamp: 时间戳。
     """
+
     task_id = fields.UUIDField(primary_key=True)
     target_client = fields.CharField(max_length=512)
     action = fields.CharField(max_length=512)
@@ -454,12 +460,7 @@ class JobQueuesTable(DBModel):
     @classmethod
     async def add_task(cls, target_client: str, action: str, args: dict) -> str:
         task_id = str(uuid.uuid4())
-        await cls.create(
-            task_id=task_id,
-            target_client=target_client,
-            action=action,
-            args=args
-        )
+        await cls.create(task_id=task_id, target_client=target_client, action=action, args=args)
         return task_id
 
     async def set_val(self, value, status) -> bool:
@@ -485,17 +486,13 @@ class JobQueuesTable(DBModel):
     async def get_first(cls, target_clients: str | list[str]):
         if isinstance(target_clients, str):
             target_clients = [target_clients]
-        return await cls.filter(
-            target_client__in=target_clients, status="pending"
-        ).first()
+        return await cls.filter(target_client__in=target_clients, status="pending").first()
 
     @classmethod
     async def get_all(cls, target_clients: str | list[str]):
         if isinstance(target_clients, str):
             target_clients = [target_clients]
-        return await cls.filter(
-            target_client__in=target_clients, status="pending"
-        ).all()
+        return await cls.filter(target_client__in=target_clients, status="pending").all()
 
 
 class MaliciousLoginRecords(DBModel):
@@ -507,6 +504,7 @@ class MaliciousLoginRecords(DBModel):
     :param blocked_until: 被封禁的截止时间。
     :param created_date: 创建日期。
     """
+
     id = fields.IntField(primary_key=True)
     ip_address = fields.CharField(max_length=45)
     blocked_until = fields.DatetimeField()
@@ -517,6 +515,4 @@ class MaliciousLoginRecords(DBModel):
 
     @classmethod
     async def check_blocked(cls, ip_address: str) -> bool:
-        return await cls.filter(
-            ip_address=ip_address, blocked_until__gt=datetime.now(UTC)
-        ).exists()
+        return await cls.filter(ip_address=ip_address, blocked_until__gt=datetime.now(UTC)).exists()

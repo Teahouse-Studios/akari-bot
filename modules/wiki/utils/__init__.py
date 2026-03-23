@@ -19,10 +19,11 @@ rc_ = module("rc", developers=["OasisAkari"], recommend_modules="wiki", doc=True
 
 
 @rc_.command()
-@rc_.command("[--legacy] {{I18N:wiki.help.rc}}",
-             options_desc={"--legacy": "{I18N:help.option.legacy}"},
-             available_for=["QQ|Group", "QQ|Private"]
-             )
+@rc_.command(
+    "[--legacy] {{I18N:wiki.help.rc}}",
+    options_desc={"--legacy": "{I18N:help.option.legacy}"},
+    available_for=["QQ|Group", "QQ|Private"],
+)
 async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     start_wiki = target.api_link
@@ -60,9 +61,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(I18NContext("wiki.message.error.fetch_log"))
 
 
-@rc_.command("{{I18N:wiki.help.rc}}",
-             exclude_from=["QQ|Group", "QQ|Private"]
-             )
+@rc_.command("{{I18N:wiki.help.rc}}", exclude_from=["QQ|Group", "QQ|Private"])
 async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     start_wiki = target.api_link
@@ -81,10 +80,11 @@ ab_ = module("ab", developers=["OasisAkari"], recommend_modules="wiki", doc=True
 
 
 @ab_.command()
-@ab_.command("[--legacy] {{I18N:wiki.help.ab}}",
-             options_desc={"--legacy": "{I18N:help.option.legacy}"},
-             available_for=["QQ|Group", "QQ|Private"]
-             )
+@ab_.command(
+    "[--legacy] {{I18N:wiki.help.ab}}",
+    options_desc={"--legacy": "{I18N:help.option.legacy}"},
+    available_for=["QQ|Group", "QQ|Private"],
+)
 async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     start_wiki = target.api_link
@@ -122,9 +122,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(I18NContext("wiki.message.error.fetch_log"))
 
 
-@ab_.command("{{I18N:wiki.help.ab}}",
-             exclude_from=["QQ|Group", "QQ|Private"]
-             )
+@ab_.command("{{I18N:wiki.help.ab}}", exclude_from=["QQ|Group", "QQ|Private"])
 async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     start_wiki = target.api_link
@@ -170,9 +168,9 @@ async def _(msg: Bot.MessageSession, username: str):
         if match_interwiki:
             interwikis = target.interwikis
             if match_interwiki.group(1) in interwikis:
-                await msg.finish(await get_user_info(
-                    msg, match_interwiki.group(2), interwikis[match_interwiki.group(1)], headers
-                ))
+                await msg.finish(
+                    await get_user_info(msg, match_interwiki.group(2), interwikis[match_interwiki.group(1)], headers)
+                )
         await msg.finish(await get_user_info(msg, username, start_wiki, headers))
     else:
         await msg.finish(I18NContext("wiki.message.not_set"))

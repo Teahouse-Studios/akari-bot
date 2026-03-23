@@ -115,23 +115,24 @@ async def on_message(message: discord.Message):
                 message.content = f"{command_prefix[0]}help"
         else:
             return
-    if mention_required and not at_message and isinstance(message.channel, discord.Channel):
+    if mention_required and not at_message and not isinstance(message.channel, discord.DMChannel):
         return
 
     msg_chain = await to_message_chain(message)
 
-    session = await SessionInfo.assign(target_id=target_id,
-                                       sender_id=sender_id,
-                                       sender_name=message.author.name,
-                                       target_from=target_from,
-                                       sender_from=sender_prefix,
-                                       client_name=client_name,
-                                       message_id=str(message.id),
-                                       reply_id=str(reply_id),
-                                       messages=msg_chain,
-                                       ctx_slot=ctx_id,
-                                       use_url_md_format=False
-                                       )
+    session = await SessionInfo.assign(
+        target_id=target_id,
+        sender_id=sender_id,
+        sender_name=message.author.name,
+        target_from=target_from,
+        sender_from=sender_prefix,
+        client_name=client_name,
+        message_id=str(message.id),
+        reply_id=str(reply_id),
+        messages=msg_chain,
+        ctx_slot=ctx_id,
+        use_url_md_format=False,
+    )
 
     await Bot.process_message(session, message)
 
@@ -148,18 +149,18 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
     if isinstance(await discord_bot.fetch_channel(payload.channel_id), discord.DMChannel):
         target_from = target_dm_channel_prefix
     target_id = f"{target_from}|{payload.channel_id}"
-    session = await SessionInfo.assign(target_id=target_id,
-                                       sender_id=sender_id,
-                                       target_from=target_from,
-                                       sender_from=sender_prefix,
-                                       client_name=client_name,
-                                       reply_id=str(payload.message_id),
-                                       messages=MessageChain.assign([Plain(payload.emoji.name)]),
-                                       ctx_slot=ctx_id
-                                       )
+    session = await SessionInfo.assign(
+        target_id=target_id,
+        sender_id=sender_id,
+        target_from=target_from,
+        sender_from=sender_prefix,
+        client_name=client_name,
+        reply_id=str(payload.message_id),
+        messages=MessageChain.assign([Plain(payload.emoji.name)]),
+        ctx_slot=ctx_id,
+    )
     await Bot.process_message(session, payload)
 
 
 if Config("enable", False, table_name="bot_discord"):
-    loop = asyncio.new_event_loop()
     discord_bot.run(dc_token)

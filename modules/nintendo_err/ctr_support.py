@@ -81,14 +81,12 @@ account = Module(
         107: ResultInfo("此主机已被任天堂暂时（？）封禁。", is_ban=True),
         110: ResultInfo("当使用已放弃支持的youtube 3ds版时出现。"),
         119: ResultInfo("需要系统更新。这个会在好友模块版本已过时时出现。"),
-        120: ResultInfo(
-            "游戏或应用需要更新。这个会在你启动的游戏或程序版本已过时时出现。"
-        ),
+        120: ResultInfo("游戏或应用需要更新。这个会在你启动的游戏或程序版本已过时时出现。"),
         121: ResultInfo(
             "Local friend code SEED的签证非法。这个应只在其被修改时出现。请检查系统完整性。（如果曾经切换过私人服务器，请检查是否配置正确）"
         ),
         123: ResultInfo("此主机已被任天堂永久封禁。", is_ban=True),
-        1021: ResultInfo('此系统没有绑定任何NNID。'),
+        1021: ResultInfo("此系统没有绑定任何NNID。"),
     },
 )
 
@@ -105,8 +103,9 @@ internet = Module(
         1101: ResultInfo("错误的接入点密码或配置不兼容3DS"),
         2001: ResultInfo("DNS错误，如果你正在使用自定义DNS服务器，请确保设置正确。"),
         (1401, 1403): ResultInfo(
-            'Incorrect password for access point or configuration is not compatible with the 3DS.'),
-        (2101, 2103): ResultInfo('Generic connection error(?)')
+            "Incorrect password for access point or configuration is not compatible with the 3DS."
+        ),
+        (2101, 2103): ResultInfo("Generic connection error(?)"),
     },
 )
 
@@ -206,9 +205,7 @@ eshop_mint = Module(
             "你输入的下载码只能用来在对应程序兑换。它不能在eShop兑换。",
             "https://en-americas-support.nintendo.com/app/answers/detail/a_id/14600",
         ),
-        2001: ResultInfo(
-            "当你改区后访问eShop就会发生此错误，目前解决它的唯一办法就是改回去。"
-        ),
+        2001: ResultInfo("当你改区后访问eShop就会发生此错误，目前解决它的唯一办法就是改回去。"),
         2100: ResultInfo(
             "连接eShop超时。此错误代码通常出现于网络连接质量较差或受到了某网络组织的干扰。",
             "参见支持页面：https://en-americas-support.nintendo.com/app/answers/detail/a_id/4432\n或任天堂网络状态：https://support.nintendo.com/networkstatus",
@@ -231,10 +228,10 @@ eshop_mint = Module(
             "https://en-americas-support.nintendo.com/app/answers/detail/a_id/41692",
         ),
         2924: ResultInfo("出现于使用无效的语言设置打开eShop。"),
-        3049: ResultInfo(
-            "eShop已停服维护。", "https://support.nintendo.com/networkstatus/"
+        3049: ResultInfo("eShop已停服维护。", "https://support.nintendo.com/networkstatus/"),
+        6106: ResultInfo(
+            "常见于从eShop重新下载带有非法或无效ticket的软件时。当 Luma3DS 的 UNITINFO 补丁开启时，也可能会出现此错误。"
         ),
-        6106: ResultInfo("常见于从eShop重新下载带有非法或无效ticket的软件时。当 Luma3DS 的 UNITINFO 补丁开启时，也可能会出现此错误。"),
     },
 )
 
@@ -246,7 +243,9 @@ eshop_app = Module(
         # "https://en-americas-support.nintendo.com/app/answers/detail/a_id/45399"),
         1000: ResultInfo("需要系统更新（好友模块？）。"),
         1001: eshop_mint.data[3049],
-        1003: ResultInfo('Often caused by the country setting setting of the system and the eshop country setting of eShop not matching.'),
+        1003: ResultInfo(
+            "Often caused by the country setting setting of the system and the eshop country setting of eShop not matching."
+        ),
         2001: eshop_mint.data[2001],
         2705: ResultInfo(
             "此错误经常于eShop网络连接超时或丢失时出现。",
@@ -281,17 +280,13 @@ eshop_site = Module(
     "eshop (website?)",
     {
         3010: ResultInfo("由于用户不活跃导致的服务器响应超时。"),
-        3021: ResultInfo(
-            "无法在eShop找到这个应用（错误的区域或者这个东西就根本不存在）"
-        ),
+        3021: ResultInfo("无法在eShop找到这个应用（错误的区域或者这个东西就根本不存在）"),
         3136: ResultInfo("eShop不可用，等会再试。"),
         5998: ResultInfo(
             "任天堂eShop正在维护中。",
             "https://en-americas-support.nintendo.com/app/answers/detail/a_id/24326/",
         ),
-        6901: ResultInfo(
-            "此主机已被任天堂永久封禁（由于某种原因只显示日文）。", is_ban=True
-        ),
+        6901: ResultInfo("此主机已被任天堂永久封禁（由于某种原因只显示日文）。", is_ban=True),
     },
 )
 
@@ -300,9 +295,7 @@ data_transfer = Module(
     "system transfer",
     {
         13: ResultInfo("尝试使用无效的语言设定时进行数据迁移。"),
-        16: ResultInfo(
-            "两个主机拥有同样的movable.sed，初始化准备迁移数据到的主机然后再试一次。"
-        ),
+        16: ResultInfo("两个主机拥有同样的movable.sed，初始化准备迁移数据到的主机然后再试一次。"),
         62: ResultInfo(
             "数据迁移时发生了错误，将它们靠近路由器然后再试。",
             "https://en-americas-support.nintendo.com/app/answers/detail/a_id/15664",
@@ -310,23 +303,20 @@ data_transfer = Module(
     },
 )
 # 012: a category related to the web browser or ssl module considered 1511
-browser1 = Module(
-    "browser (?)", {1004: ResultInfo("SSL连接失败。"),
-                    (1510, 1511): ResultInfo("证书警告。")}
-)
+browser1 = Module("browser (?)", {1004: ResultInfo("SSL连接失败。"), (1510, 1511): ResultInfo("证书警告。")})
 
 # 032: a second category related to the web browser
 browser2 = Module(
     "browser (?)",
     {
-        1035: ResultInfo('Unable to open this webpage. The 3ds browser can\'t display this page.'),
+        1035: ResultInfo("Unable to open this webpage. The 3ds browser can't display this page."),
         1209: ResultInfo(
-            'Unable to load file. Seems to happen when attemping to download something on the 3DS Browser (invalid Format?)'),
+            "Unable to load file. Seems to happen when attemping to download something on the 3DS Browser (invalid Format?)"
+        ),
         1222: ResultInfo(
-            'Displayed during a maintenance period of the browser filter service on Japanese consoles. (Known to be the 15th and 19th JST, separately, of each month.)'),
-        1820: ResultInfo(
-            "于你想访问一个危险的网站时出现。如果你是秋名山车神就直接确认。"
-        )
+            "Displayed during a maintenance period of the browser filter service on Japanese consoles. (Known to be the 15th and 19th JST, separately, of each month.)"
+        ),
+        1820: ResultInfo("于你想访问一个危险的网站时出现。如果你是秋名山车神就直接确认。"),
     },
 )
 
@@ -355,31 +345,30 @@ account2 = Module(
             "NNID没有正确绑定主机。",
             "如果你想修复它，使用这个教程：https://3ds.hacks.guide/zh_CN/godmode9-usage#%E5%9C%A8%E4%B8%8D%E5%88%9D%E5%A7%8B%E5%8C%96%E4%B8%BB%E6%9C%BA%E7%9A%84%E6%83%85%E5%86%B5%E4%B8%8B%E6%B8%85%E9%99%A4-nnid",
         ),
-        2812: ResultInfo(
-            "此主机由于在宝可梦日月发售日前偷跑联网而被永久封禁。", is_ban=True
-        ),
+        2812: ResultInfo("此主机由于在宝可梦日月发售日前偷跑联网而被永久封禁。", is_ban=True),
         2815: ResultInfo("此主机的Miiverse功能已被任天堂封禁。"),
-        2882: ResultInfo('The online services for the game or application you are trying to use are no longer available.'),
+        2882: ResultInfo(
+            "The online services for the game or application you are trying to use are no longer available."
+        ),
         5363: ResultInfo("出现于设置了无效的语言后加载NNID设置。"),
         5515: ResultInfo("网络连接超时。"),
     },
 )
 
 account3 = Module(
-    'account',
+    "account",
     {
         3278: ResultInfo(
-            'Adding funds to NNID via the 3DS console is deprecated.',
-            'https://en-americas-support.nintendo.com/app/answers/detail/a_id/22369/~/how-to-combine-nintendo-account-and-nintendo-network-id-funds')})
+            "Adding funds to NNID via the 3DS console is deprecated.",
+            "https://en-americas-support.nintendo.com/app/answers/detail/a_id/22369/~/how-to-combine-nintendo-account-and-nintendo-network-id-funds",
+        )
+    },
+)
 
 # 090: application defined?
 unknown1 = Module(
     "unknown",
-    {
-        212: ResultInfo(
-            "此游戏的PGL功能已因使用了修改或非法的存档而被永久封禁。", is_ban=True
-        )
-    },
+    {212: ResultInfo("此游戏的PGL功能已因使用了修改或非法的存档而被永久封禁。", is_ban=True)},
 )
 
 # We have some modules partially documented, those that aren't return None.
@@ -415,9 +404,7 @@ def is_valid(error: str):
 
 def construct_result(ret, mod, desc):
     module = ctr_results_modules.get(mod, Module(""))
-    ret.add_field(
-        ConsoleErrorField("模组", message_str=module.name, supplementary_value=mod)
-    )
+    ret.add_field(ConsoleErrorField("模组", message_str=module.name, supplementary_value=mod))
     description = module.get_error(desc)
     if not description or not description.description:
         description = ctr_results_modules[0].get_error(desc)
@@ -432,20 +419,14 @@ def construct_result(ret, mod, desc):
                 )
             )
     else:
-        ret.add_field(
-            ConsoleErrorField(
-                "描述", message_str=description.description, supplementary_value=desc
-            )
-        )
+        ret.add_field(ConsoleErrorField("描述", message_str=description.description, supplementary_value=desc))
 
     return ret
 
 
 def construct_result_range(ret, mod, range_desc):
     module = ctr_results_modules.get(mod, Module(""))
-    ret.add_field(
-        ConsoleErrorField("模组", message_str=module.name, supplementary_value=mod)
-    )
+    ret.add_field(ConsoleErrorField("模组", message_str=module.name, supplementary_value=mod))
     found_descs = []
     unknown_descs = []
     for desc in range_desc:
@@ -475,13 +456,9 @@ def construct_result_range(ret, mod, range_desc):
             )
 
     if found_descs:
-        ret.add_field(
-            ConsoleErrorField("可能已知描述", message_str="\n".join(found_descs))
-        )
+        ret.add_field(ConsoleErrorField("可能已知描述", message_str="\n".join(found_descs)))
     if unknown_descs:
-        ret.add_field(
-            ConsoleErrorField("可能未知描述", message_str=", ".join(unknown_descs))
-        )
+        ret.add_field(ConsoleErrorField("可能未知描述", message_str=", ".join(unknown_descs)))
 
     return ret
 
@@ -496,9 +473,7 @@ def construct_support(ret, mod, desc):
     if description and description.description:
         ret.add_field(ConsoleErrorField("描述", message_str=description.description))
         if description.support_url:
-            ret.add_field(
-                ConsoleErrorField("更多描述", message_str=description.support_url)
-            )
+            ret.add_field(ConsoleErrorField("更多描述", message_str=description.support_url))
         if description.is_ban:
             ret.add_field(BANNED_FIELD)
             ret.color = WARNING_COLOR
@@ -529,30 +504,20 @@ def nim_handler(ret, description):
 
     if 2000 <= description < 3024:
         description -= 2000
-        return construct_result(
-            ret, 52, description
-        )  # nim result module, not support category
+        return construct_result(ret, 52, description)  # nim result module, not support category
 
     if 4200 <= description < 4400:
         description -= 4200
-        construct_result(
-            ret, 40, description
-        )  # http result module, not support category
+        construct_result(ret, 40, description)  # http result module, not support category
         if description == 199:
-            ret.add_field(
-                ConsoleErrorField(
-                    "扩展信息", message_str="或者超过199的http描述会被NIM截断为199。"
-                )
-            )
+            ret.add_field(ConsoleErrorField("扩展信息", message_str="或者超过199的http描述会被NIM截断为199。"))
 
     elif 4400 <= description < 5000:
         description -= 4400
         ret.add_field(ConsoleErrorField("分类", message_str="nim"))
         if description < 100:
-            ret.add_field(
-                ConsoleErrorField("HTTP状态码", message_str=f"{description + 100}")
-            )
-        elif 100 <= description < 500:
+            ret.add_field(ConsoleErrorField("HTTP状态码", message_str=f"{description + 100}"))
+        elif description < 500:
             ret.add_field(
                 ConsoleErrorField(
                     "HTTP状态码",
@@ -565,11 +530,7 @@ def nim_handler(ret, description):
     elif 5000 <= description < 7000:
         description -= 5000
         ret.add_field(ConsoleErrorField("分类", message_str="nim"))
-        ret.add_field(
-            ConsoleErrorField(
-                "描述", message_str=f"NIM活动时SOAP消息返回了状态码{description}"
-            )
-        )
+        ret.add_field(ConsoleErrorField("描述", message_str=f"NIM活动时SOAP消息返回了状态码{description}"))
 
     # >= 7000 range is compacted
     elif description >= 7000:
@@ -577,9 +538,7 @@ def nim_handler(ret, description):
         module = description >> 5
         # There are way more than 0x1F descriptions, but this is how Nintendo does it...
         description = description & 0x1F
-        return construct_result_range(
-            ret, module, range(0 + description, 1024 + description, 32)
-        )
+        return construct_result_range(ret, module, range(0 + description, 1024 + description, 32))
 
     else:
         ret.add_field(ConsoleErrorField("分类", message_str="nim"))

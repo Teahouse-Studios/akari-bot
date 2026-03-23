@@ -1,35 +1,34 @@
 import inspect
 from typing import Callable
 
-from core.builtins.message.chain import MessageChain
-from core.builtins.types import MessageElement
+from .expectations import Expectation
 
 
 _REGISTRY: list[dict] = []
 
 
-def case(input_: str | list[str] | tuple[str, ...],
-         expected: bool |
-         str |
-         MessageChain |
-         list[MessageElement] |
-         tuple[MessageElement, ...] |
-         MessageElement |
-         None = None,
-         note: str | None = None):
+def case(
+    input_: str | list[str] | tuple[str, ...],
+    expected: Expectation | None = None,
+    note: str | None = None,
+    timeout: float | None = None,
+):
     """
     快捷注册一个测试案例。
 
     示例：
     ```
-    @case("~test say Hello", "Hello is Hello")
+    from core.tester import case, Match
+
+    @case("~test say Hello", Match("Hello is Hello"))
     @test.command("say <word>")
     async def _(msg: Bot.MessageSession, word: str):
         await msg.finish(f"{word} is {msg.parsed_msg["<word>"]}")
     ```
-    :param input: 预期输入。
-    :param expected: 预期输出，若为 bool 则表示是否存在输出，否则将对比预期输出。
+    :param input_: 预期输入。
+    :param expected: 预期输出，传入期望匹配器，若为 None 则手动复核。
     :param note: 额外说明。
+    :param timeout: 超时时间（秒），若为 None 则无超时限制。
     """
 
     def _decorator(fn: Callable):
@@ -38,6 +37,7 @@ def case(input_: str | list[str] | tuple[str, ...],
             "input": input_,
             "expected": expected,
             "note": note,
+            "timeout": timeout,
             "file": inspect.getsourcefile(fn),
             "line": inspect.getsourcelines(fn)[1],
         }

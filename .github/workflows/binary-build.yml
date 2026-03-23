@@ -1,4 +1,5 @@
-name: "Binary Build Nightly x64 Executables (3:00, UTC+8)"
+name: Binary Build Nightly x64 Executables (3:00, UTC+8)
+
 permissions:
   contents: read
 
@@ -20,27 +21,22 @@ jobs:
       - name: Check-out repository
         uses: actions/checkout@v6
 
-      - name: Setup Python
-        uses: actions/setup-python@v6
+      - uses: actions/setup-python@v6
         with:
-          python-version: '3.12' # Version range or exact version of a Python version to use, using SemVer's version range syntax
-          architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
-          cache: 'pip'
-          cache-dependency-path: |
-              **/requirements*.txt
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7.3.1
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
 
       - name: Install Dependencies
         run: |
-          pip install -r requirements.txt
-          playwright install --with-deps chromium
-          python core/scripts/config_generate.py
-
-      - name: Write version file
-        shell: bash
-        run: |
-          mkdir -p assets/private/default
-          echo "nightly-v$(date +'%Y%m%d')" > assets/private/default/.version
-          cat assets/private/default/.version
+          uv export --no-hashes --output-file=requirements.txt
+          uv pip sync requirements.txt --system
+          uv run playwright install --with-deps chromium
+          uv run python core/scripts/config_generate.py
 
       - name: Build Wrapper Executable
         uses: Nuitka/Nuitka-Action@main
@@ -50,28 +46,36 @@ jobs:
           mode: onefile
           output-dir: wrapper-build
           include-plugin-directory: |
-              modules
-              bots
+            modules
+            bots
           include-package-data: |
-              langconv
-              emoji
-              akari_bot_webrender
-              akari_bot_webui
-              fake_http_header
-              limits
-              discord
+            langconv
+            emoji
+            akari_bot_webrender
+            akari_bot_webui
+            fake_http_header
+            limits
+            discord
           include-package: |
-              tortoise
-              fake_http_header
-              asyncmy
-              discord
+            tortoise
+            fake_http_header
+            asyncmy
+            discord
           clang: ${{ matrix.os != 'windows-latest' }}
 
       - name: Copy Assets
         run: |
           python .github/scripts/build_copy_files.py
+
+      - name: Write version file
+        shell: bash
+        run: |
+          mkdir -p assets/private/default
+          echo "nightly-v$(date +'%Y%m%d')" > assets/private/default/.version
+          cat assets/private/default/.version
+
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ runner.os }} Build
           path: |

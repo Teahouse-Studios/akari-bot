@@ -89,7 +89,7 @@ async def update_alias() -> bool:
 
 
 async def get_info(music: Music, details: str | MessageChain) -> MessageChain:
-    info = MessageChain.assign(Plain(f"{music.id} - {music.title}{" (DX)" if music["type"] == "DX" else ""}"))
+    info = MessageChain.assign(Plain(f"{music.id} - {music.title}{' (DX)' if music['type'] == 'DX' else ''}"))
     cover_path = mai_cover_path / f"{music.id}.png"
     if cover_path.exists():
         info.append(Image(cover_path))
@@ -107,9 +107,7 @@ async def get_info(music: Music, details: str | MessageChain) -> MessageChain:
 
 async def get_alias(msg: Bot.MessageSession, sid: str) -> list:
     if not mai_alias_path.exists():
-        await msg.finish(
-            I18NContext("maimai.message.alias.file_not_found", prefix=msg.session_info.prefixes[0])
-        )
+        await msg.finish(I18NContext("maimai.message.alias.file_not_found", prefix=msg.session_info.prefixes[0]))
     with open(mai_alias_path, "rb") as file:
         data = orjson.loads(file.read())
 
@@ -149,12 +147,10 @@ async def search_by_alias(input_: str) -> list:
     return list(set(result))
 
 
-async def get_record(
-    msg: Bot.MessageSession, payload: dict, use_cache: bool = True
-) -> dict | None:
+async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> dict | None:
     mai_cache_path = cache_path / "maimai-record"
     mai_cache_path.mkdir(parents=True, exist_ok=True)
-    cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_record.json"
+    cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace('|', '_')}_maimaidx_record.json"
     url = "https://www.diving-fish.com/api/maimaidxprober/query/player"
     try:
         data = await post_url(
@@ -162,7 +158,7 @@ async def get_record(
             data=orjson.dumps(payload),
             status_code=200,
             headers={"Content-Type": "application/json", "accept": "*/*"},
-            fmt="json"
+            fmt="json",
         )
         if use_cache and data:
             with open(cache_dir, "wb") as f:
@@ -202,7 +198,7 @@ async def get_song_record(
     if DF_DEVELOPER_TOKEN:
         mai_cache_path = cache_path / "maimai-record"
         mai_cache_path.mkdir(parents=True, exist_ok=True)
-        cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_song_record.json"
+        cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace('|', '_')}_maimaidx_song_record.json"
         url = "https://www.diving-fish.com/api/maimaidxprober/dev/player/record"
         try:
             payload.update({"music_id": sid})
@@ -210,11 +206,7 @@ async def get_song_record(
                 url,
                 data=orjson.dumps(payload),
                 status_code=200,
-                headers={
-                    "Content-Type": "application/json",
-                    "accept": "*/*",
-                    "Developer-Token": DF_DEVELOPER_TOKEN
-                },
+                headers={"Content-Type": "application/json", "accept": "*/*", "Developer-Token": DF_DEVELOPER_TOKEN},
                 fmt="json",
             )
             if use_cache and data:
@@ -257,26 +249,20 @@ async def get_total_record(
     if DF_DEVELOPER_TOKEN:
         mai_cache_path = cache_path / "maimai-record"
         mai_cache_path.mkdir(parents=True, exist_ok=True)
-        cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_total_record.json"
+        cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace('|', '_')}_maimaidx_total_record.json"
         url = "https://www.diving-fish.com/api/maimaidxprober/dev/player/records"
         try:
             data = await get_url(
                 f"{url}?{urlencode(payload)}",
                 status_code=200,
-                headers={
-                    "Content-Type": "application/json",
-                    "accept": "*/*",
-                    "Developer-Token": DF_DEVELOPER_TOKEN
-                },
+                headers={"Content-Type": "application/json", "accept": "*/*", "Developer-Token": DF_DEVELOPER_TOKEN},
                 fmt="json",
             )
             if use_cache and data:
                 with open(cache_dir, "wb") as f:
                     f.write(orjson.dumps(data))
             if not utage:
-                data = {
-                    "records": [d for d in data["records"] if int(d.get("id", 0)) < 100000]
-                }  # 过滤宴谱
+                data = {"records": [d for d in data["records"] if int(d.get("id", 0)) < 100000]}  # 过滤宴谱
             return data
         except Exception as e:
             if str(e).startswith("400"):
@@ -297,11 +283,7 @@ async def get_total_record(
                         data = orjson.loads(f.read())
                     await msg.send_message(I18NContext("maimai.message.use_cache"))
                     if not utage:
-                        data = {
-                            "records": [
-                                d for d in data["records"] if d.get("id", 0) < 100000
-                            ]
-                        }  # 过滤宴谱
+                        data = {"records": [d for d in data["records"] if d.get("id", 0) < 100000]}  # 过滤宴谱
                     return data
                 except Exception:
                     raise e
@@ -311,30 +293,22 @@ async def get_total_record(
         raise ConfigValueError("{I18N:error.config.secret.not_found}")
 
 
-async def get_plate(
-    msg: Bot.MessageSession, payload: dict, version: str, use_cache: bool = True
-) -> dict | None:
+async def get_plate(msg: Bot.MessageSession, payload: dict, version: str, use_cache: bool = True) -> dict | None:
     if DF_DEVELOPER_TOKEN:
         version = "舞" if version == "覇" else version  # “覇者”属于舞代
         mai_cache_path = cache_path / "maimai-record"
         mai_cache_path.mkdir(parents=True, exist_ok=True)
-        cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_plate_{version}.json"
+        cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace('|', '_')}_maimaidx_plate_{version}.json"
         url = "https://www.diving-fish.com/api/maimaidxprober/query/plate"
         try:
             data = await post_url(
                 url,
                 data=orjson.dumps(payload),
                 status_code=200,
-                headers={
-                    "Content-Type": "application/json",
-                    "accept": "*/*",
-                    "Developer-Token": DF_DEVELOPER_TOKEN
-                },
+                headers={"Content-Type": "application/json", "accept": "*/*", "Developer-Token": DF_DEVELOPER_TOKEN},
                 fmt="json",
             )
-            data = {
-                "verlist": [d for d in data["verlist"] if int(d.get("id", 0)) < 100000]
-            }  # 过滤宴谱
+            data = {"verlist": [d for d in data["verlist"] if int(d.get("id", 0)) < 100000]}  # 过滤宴谱
             if use_cache and data:
                 with open(cache_dir, "wb") as f:
                     f.write(orjson.dumps(data))

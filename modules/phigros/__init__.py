@@ -37,9 +37,7 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
         "Telegram|Supergroup",
     ]:
         await msg.send_message(I18NContext("phigros.message.bind.warning"), quote=False)
-        deleted = await msg.delete()
-        if not deleted:
-            await msg.send_message(I18NContext("phigros.message.bind.delete_failed"), quote=False)
+        await msg.delete()
     headers = p_headers.copy()
     headers["X-LC-Session"] = sessiontoken
     try:
@@ -50,8 +48,9 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
         )
         if get_user_info:
             username = get_user_info.get("nickname", "Guest")
-            await PhigrosBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, session_token=sessiontoken,
-                                                username=username)
+            await PhigrosBindInfo.set_bind_info(
+                sender_id=msg.session_info.sender_id, session_token=sessiontoken, username=username
+            )
             await msg.finish(I18NContext("phigros.message.bind.success", username=username), quote=False)
         else:
             await msg.finish(I18NContext("phigros.message.bind.failed"), quote=False)
@@ -107,7 +106,7 @@ async def _(msg: Bot.MessageSession):
     with open(song_info_path, "rb") as f:
         song_info = orjson.loads(f.read())
     sid, sinfo = Random.choice(list(song_info.items()))
-    illustration_path = pgr_assets_path / "illustration" / f"{sid.split(".")[0]}.png"
+    illustration_path = pgr_assets_path / "illustration" / f"{sid.split('.')[0]}.png"
     if illustration_path.exists():
         msg_chain.append(Image(illustration_path))
 
@@ -130,7 +129,7 @@ async def _(msg: Bot.MessageSession, song_name: str):
     game_records: dict = await get_game_record(msg, bind_info.session_token)
     for sid, record in game_records.items():
         if remove_punctuations(record.get("name").lower()) == remove_punctuations(song_name.lower()):
-            illustration_path = pgr_assets_path / "illustration" / f"{sid.split(".")[0]}.png"
+            illustration_path = pgr_assets_path / "illustration" / f"{sid.split('.')[0]}.png"
             if illustration_path.exists():
                 msg_chain.append(Image(illustration_path))
 

@@ -36,6 +36,8 @@ async def _(msg: Bot.MessageSession, keywords: str):
                         message_str.append("\n")
                         i += 1
     if message_str:
-        await msg.finish([Plain("\n".join(message_str)), (I18NContext("threedsdb.message.limited_results") if i >= 10 else None)])
+        await msg.finish(
+            [Plain("\n".join(message_str)), (I18NContext("threedsdb.message.limited_results") if i >= 10 else None)]
+        )
     else:
         await msg.finish(I18NContext("threedsdb.message.no_results"))

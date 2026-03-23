@@ -52,21 +52,22 @@ class MyClient(botpy.Client):
 
         msg_chain = MessageChain.assign(re.sub(r"<@(.*?)>", rf"{sender_tiny_prefix}|\1", message.content))
 
-        session = await SessionInfo.assign(target_id=target_id,
-                                           sender_id=sender_id,
-                                           sender_name=message.author.id[:6],
-                                           target_from=target_guild_prefix,
-                                           sender_from=sender_tiny_prefix,
-                                           client_name=client_name,
-                                           message_id=str(message.id),
-                                           reply_id=reply_id,
-                                           messages=msg_chain,
-                                           ctx_slot=ctx_id,
-                                           prefixes=prefixes,
-                                           require_enable_modules=require_enable_modules,
-                                           require_check_dirty_words=dirty_word_check,
-                                           use_url_manager=use_url_manager
-                                           )
+        session = await SessionInfo.assign(
+            target_id=target_id,
+            sender_id=sender_id,
+            sender_name=message.author.id[:6],
+            target_from=target_guild_prefix,
+            sender_from=sender_tiny_prefix,
+            client_name=client_name,
+            message_id=str(message.id),
+            reply_id=reply_id,
+            messages=msg_chain,
+            ctx_slot=ctx_id,
+            prefixes=prefixes,
+            require_enable_modules=require_enable_modules,
+            require_check_dirty_words=dirty_word_check,
+            use_url_manager=use_url_manager,
+        )
 
         await Bot.process_message(session, message)
 
@@ -93,21 +94,22 @@ class MyClient(botpy.Client):
 
         msg_chain = MessageChain.assign(re.sub(r"<@(.*?)>", rf"{sender_tiny_prefix}|\1", message.content))
 
-        session = await SessionInfo.assign(target_id=target_id,
-                                           sender_id=sender_id,
-                                           sender_name=message.author.id[:6],
-                                           target_from=target_guild_prefix,
-                                           sender_from=sender_tiny_prefix,
-                                           client_name=client_name,
-                                           message_id=str(message.id),
-                                           reply_id=reply_id,
-                                           messages=msg_chain,
-                                           ctx_slot=ctx_id,
-                                           prefixes=prefixes,
-                                           require_enable_modules=require_enable_modules,
-                                           require_check_dirty_words=dirty_word_check,
-                                           use_url_manager=use_url_manager
-                                           )
+        session = await SessionInfo.assign(
+            target_id=target_id,
+            sender_id=sender_id,
+            sender_name=message.author.id[:6],
+            target_from=target_guild_prefix,
+            sender_from=sender_tiny_prefix,
+            client_name=client_name,
+            message_id=str(message.id),
+            reply_id=reply_id,
+            messages=msg_chain,
+            ctx_slot=ctx_id,
+            prefixes=prefixes,
+            require_enable_modules=require_enable_modules,
+            require_check_dirty_words=dirty_word_check,
+            use_url_manager=use_url_manager,
+        )
 
         await Bot.process_message(session, message)
 
@@ -135,21 +137,22 @@ class MyClient(botpy.Client):
 
         msg_chain = MessageChain.assign(re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", message.content))
 
-        session = await SessionInfo.assign(target_id=target_id,
-                                           sender_id=sender_id,
-                                           sender_name=message.author.member_openid[:6],
-                                           target_from=target_group_prefix,
-                                           sender_from=sender_prefix,
-                                           client_name=client_name,
-                                           message_id=str(message.id),
-                                           reply_id=reply_id,
-                                           messages=msg_chain,
-                                           ctx_slot=ctx_id,
-                                           prefixes=prefixes,
-                                           require_enable_modules=require_enable_modules,
-                                           require_check_dirty_words=dirty_word_check,
-                                           use_url_manager=use_url_manager
-                                           )
+        session = await SessionInfo.assign(
+            target_id=target_id,
+            sender_id=sender_id,
+            sender_name=message.author.member_openid[:6],
+            target_from=target_group_prefix,
+            sender_from=sender_prefix,
+            client_name=client_name,
+            message_id=str(message.id),
+            reply_id=reply_id,
+            messages=msg_chain,
+            ctx_slot=ctx_id,
+            prefixes=prefixes,
+            require_enable_modules=require_enable_modules,
+            require_check_dirty_words=dirty_word_check,
+            use_url_manager=use_url_manager,
+        )
 
         await Bot.process_message(session, message)
 
@@ -173,21 +176,22 @@ class MyClient(botpy.Client):
 
         msg_chain = MessageChain.assign(message.content)
 
-        session = await SessionInfo.assign(target_id=target_id,
-                                           sender_id=sender_id,
-                                           sender_name=message.author.id[:6],
-                                           target_from=target_direct_prefix,
-                                           sender_from=sender_tiny_prefix,
-                                           client_name=client_name,
-                                           message_id=str(message.id),
-                                           reply_id=reply_id,
-                                           messages=msg_chain,
-                                           ctx_slot=ctx_id,
-                                           prefixes=prefixes,
-                                           require_enable_modules=require_enable_modules,
-                                           require_check_dirty_words=dirty_word_check,
-                                           use_url_manager=use_url_manager
-                                           )
+        session = await SessionInfo.assign(
+            target_id=target_id,
+            sender_id=sender_id,
+            sender_name=message.author.id[:6],
+            target_from=target_direct_prefix,
+            sender_from=sender_tiny_prefix,
+            client_name=client_name,
+            message_id=str(message.id),
+            reply_id=reply_id,
+            messages=msg_chain,
+            ctx_slot=ctx_id,
+            prefixes=prefixes,
+            require_enable_modules=require_enable_modules,
+            require_check_dirty_words=dirty_word_check,
+            use_url_manager=use_url_manager,
+        )
 
         await Bot.process_message(session, message)
 
@@ -211,21 +215,22 @@ class MyClient(botpy.Client):
 
         msg_chain = MessageChain.assign(message.content)
 
-        session = await SessionInfo.assign(target_id=target_id,
-                                           sender_id=sender_id,
-                                           sender_name=message.author.user_openid[:6],
-                                           target_from=target_c2c_prefix,
-                                           sender_from=sender_prefix,
-                                           client_name=client_name,
-                                           message_id=str(message.id),
-                                           reply_id=reply_id,
-                                           messages=msg_chain,
-                                           ctx_slot=ctx_id,
-                                           prefixes=prefixes,
-                                           require_enable_modules=require_enable_modules,
-                                           require_check_dirty_words=dirty_word_check,
-                                           use_url_manager=use_url_manager
-                                           )
+        session = await SessionInfo.assign(
+            target_id=target_id,
+            sender_id=sender_id,
+            sender_name=message.author.user_openid[:6],
+            target_from=target_c2c_prefix,
+            sender_from=sender_prefix,
+            client_name=client_name,
+            message_id=str(message.id),
+            reply_id=reply_id,
+            messages=msg_chain,
+            ctx_slot=ctx_id,
+            prefixes=prefixes,
+            require_enable_modules=require_enable_modules,
+            require_check_dirty_words=dirty_word_check,
+            use_url_manager=use_url_manager,
+        )
 
         await Bot.process_message(session, message)
 

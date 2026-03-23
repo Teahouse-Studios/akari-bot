@@ -12,7 +12,8 @@ from core.logger import Logger
 
 MAX_LOG_HISTORY = 1024
 LOG_HEAD_PATTERN = re.compile(
-    r"^\[.+\]\[[a-zA-Z0-9\._]+:[a-zA-Z0-9\._]+:\d+\]\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]\[[A-Z]+\]:")
+    r"^\[.+\]\[[a-zA-Z0-9\._]+:[a-zA-Z0-9\._]+:\d+\]\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]\[[A-Z]+\]:"
+)
 LOG_TIME_PATTERN = re.compile(r"\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]")
 
 
@@ -32,7 +33,7 @@ async def websocket_logs(websocket: WebSocket):
     await websocket.accept()
     current_date = datetime.today().strftime("%Y-%m-%d")
 
-    last_file_pos = defaultdict(int)   # 日志文件当前位置
+    last_file_pos = defaultdict(int)  # 日志文件当前位置
     last_file_size = defaultdict(int)  # 日志文件大小
     logs_history = deque(maxlen=MAX_LOG_HISTORY)  # 日志缓存历史
     today_logs = list((logs_path).glob(f"*_{current_date}.log"))  # 缓存日志文件列表
@@ -88,14 +89,12 @@ async def websocket_logs(websocket: WebSocket):
             if new_loglines:
                 if len(today_logs) > 1:
                     new_loglines.sort(
-                        key=lambda item: _extract_timestamp(
-                            item[0]) if isinstance(
-                            item, list) else _extract_timestamp(item))
+                        key=lambda item: (
+                            _extract_timestamp(item[0]) if isinstance(item, list) else _extract_timestamp(item)
+                        )
+                    )
 
-                payload = "\n".join(
-                    "\n".join(item) if isinstance(item, list) else item
-                    for item in new_loglines
-                )
+                payload = "\n".join("\n".join(item) if isinstance(item, list) else item for item in new_loglines)
                 await websocket.send_text(payload)
                 logs_history.extend(new_loglines)
 

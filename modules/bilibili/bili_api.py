@@ -8,9 +8,7 @@ from core.web_render import web_render, SourceOptions
 DESC_LENGTH = 100
 
 
-async def get_video_info(
-    msg: Bot.MessageSession, query, get_detail=False, use_embed=False
-):
+async def get_video_info(msg: Bot.MessageSession, query, get_detail=False, use_embed=False):
     if msg.session_info.sender_from in ["Discord|Client"]:
         use_embed = True
     try:
@@ -32,7 +30,7 @@ async def get_video_info(
     view = load_json["data"]["View"]
     stat = view["stat"]
 
-    video_url = f"https://www.bilibili.com/video/{view["bvid"]}"
+    video_url = f"https://www.bilibili.com/video/{view['bvid']}"
     pic = view["pic"]
     title = view["title"]
     tname = view["tname"]
@@ -40,7 +38,7 @@ async def get_video_info(
     time = msg.format_time(view["pubdate"], iso=True, timezone=False)
 
     if len(view["pages"]) > 1:
-        pages = str(I18NContext("message.brackets", msg=f"{len(view["pages"])}P"))
+        pages = str(I18NContext("message.brackets", msg=f"{len(view['pages'])}P"))
     else:
         pages = ""
 
@@ -61,48 +59,53 @@ async def get_video_info(
             title=f"{title}{pages}",
             description=desc,
             url=video_url,
-            author=f"{owner}{str(I18NContext("message.brackets", msg=fans))}",
+            author=f"{owner}{str(I18NContext('message.brackets', msg=fans))}",
             footer="Bilibili",
             image=Image(pic),
             thumbnail=Image(avatar),
             fields=[
                 EmbedField("{I18N:bilibili.message.embed.type}", tname),
-                EmbedField("{I18N:bilibili.message.embed.view}",
-                           stat_view,
-                           inline=True,
-                           ),
-                EmbedField("{I18N:bilibili.message.embed.danmaku}",
-                           stat_danmaku,
-                           inline=True,
-                           ),
-                EmbedField("{I18N:bilibili.message.embed.reply}",
-                           stat_reply,
-                           inline=True,
-                           ),
-                EmbedField("{I18N:bilibili.message.embed.like}",
-                           stat_like,
-                           inline=True,
-                           ),
-                EmbedField("{I18N:bilibili.message.embed.coin}",
-                           stat_coin,
-                           inline=True,
-                           ),
-                EmbedField("{I18N:bilibili.message.embed.favorite}",
-                           stat_favorite,
-                           inline=True,
-                           ),
-                EmbedField("{I18N:bilibili.message.embed.share}",
-                           stat_share,
-                           inline=True,
-                           ),
+                EmbedField(
+                    "{I18N:bilibili.message.embed.view}",
+                    stat_view,
+                    inline=True,
+                ),
+                EmbedField(
+                    "{I18N:bilibili.message.embed.danmaku}",
+                    stat_danmaku,
+                    inline=True,
+                ),
+                EmbedField(
+                    "{I18N:bilibili.message.embed.reply}",
+                    stat_reply,
+                    inline=True,
+                ),
+                EmbedField(
+                    "{I18N:bilibili.message.embed.like}",
+                    stat_like,
+                    inline=True,
+                ),
+                EmbedField(
+                    "{I18N:bilibili.message.embed.coin}",
+                    stat_coin,
+                    inline=True,
+                ),
+                EmbedField(
+                    "{I18N:bilibili.message.embed.favorite}",
+                    stat_favorite,
+                    inline=True,
+                ),
+                EmbedField(
+                    "{I18N:bilibili.message.embed.share}",
+                    stat_share,
+                    inline=True,
+                ),
                 EmbedField("{I18N:bilibili.message.embed.time}", time),
             ],
         )
 
     if not get_detail:
-        output = I18NContext(
-            "bilibili.message", title=title, tname=tname, owner=owner, time=time
-        )
+        output = I18NContext("bilibili.message", title=title, tname=tname, owner=owner, time=time)
     else:
         output = I18NContext(
             "bilibili.message.detail",

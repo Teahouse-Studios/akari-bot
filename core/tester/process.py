@@ -1,26 +1,20 @@
+import asyncio
 import time
 import traceback
-from typing import Any
+from typing import Any, Callable
 
 from core.builtins.message.chain import MessageChain, match_kecode
 from core.builtins.message.elements import PlainElement
-from core.builtins.session.info import SessionInfo
-from core.builtins.types import MessageElement
-from core.constants.exceptions import (
-    AbuseWarning,
-    NoReportException,
-    SessionFinished,
-    TestException,
-)
-from core.cooldown import _cd_dict
+from core.constants.exceptions import SessionFinished
 from core.database.models import SenderInfo, TargetInfo
-from core.game import _ps_dict
 from core.tester.mock.session import MockMessageSession
 from core.tester.mock.parser import parser
 from core.tester.mock.database import init_db, close_db
 from core.tester.mock.loader import load_modules
 from core.tester.mock.random import Random
 from core.logger import Logger
+from core.utils.container import ExpiringTempDict
+from .expectations import Expectation
 
 
 async def run_case_entry(entry: dict, is_ci: bool = False) -> list[dict]:
@@ -39,8 +33,13 @@ async def run_case_entry(entry: dict, is_ci: bool = False) -> list[dict]:
         Logger.exception("Failed to load modules for tests:")
 
     start = time.perf_counter()
-    result = await run_single_test(entry["input"], casetest_target=entry.get("func"), is_ci=is_ci)
+    timeout = entry.get("timeout")
+    result = await run_test_case(entry["input"], entry["expected"], entry["func"], is_ci, timeout=timeout)
     elapsed = time.perf_counter() - start
+    if "exception" in result and isinstance(result["expected"], Expectation):
+        match = await result["expected"].match(result)
+        if match:
+            del result["traceback"]
     try:
         result["time_cost"] = elapsed
     except Exception:
@@ -48,7 +47,7 @@ async def run_case_entry(entry: dict, is_ci: bool = False) -> list[dict]:
     return [result]
 
 
-async def run_function_test(fn, is_ci: bool = False) -> dict[str, Any]:
+async def run_function_entry(fn: Callable, is_ci: bool = False) -> dict[str, Any]:
     try:
         await close_db()
     except Exception:
@@ -83,80 +82,65 @@ async def run_function_test(fn, is_ci: bool = False) -> dict[str, Any]:
     return {"tester": tester, "entries": entries, "results": results, "time_cost": elapsed}
 
 
-async def run_single_test(
+async def run_test_case(
     input_: str | list[str] | tuple[str, ...],
-    *,
-    casetest_target=None,
-    is_ci=False
+    expected: Expectation | None = None,
+    casetest_target: Callable | None = None,
+    is_ci: bool = False,
+    timeout: float | None = None,
 ):
-    try:
-        await TargetInfo.update_or_create(defaults={}, target_id="TEST|Console|0")
-        await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id="TEST|0")
-    except Exception:
-        pass
-
-    msg = MockMessageSession(input_, is_ci=is_ci)
-    await msg.async_init(msg.trigger_msg)
-
-    if casetest_target is not None:
-        setattr(msg, "_casetest_target", casetest_target)
-
-    try:
-        await parser(msg)
-    except SessionFinished:
-        pass
-    except (AbuseWarning, NoReportException, TestException) as e:
-        err_msg = msg.session_info.locale.t_str(str(e))
+    async def _run_test():
         try:
-            err_chain = match_kecode(err_msg, disable_joke=True)
+            await TargetInfo.update_or_create(defaults={}, target_id="TEST|Console|0")
+            await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id="TEST|0")
         except Exception:
-            err_chain = MessageChain(err_msg)
+            pass
 
-        err_action = [
-            x.text if isinstance(x, PlainElement) else str(x)
-            for x in err_chain.as_sendable(msg.session_info)
-        ]
+        msg = MockMessageSession(input_, is_ci=is_ci)
+        await msg.async_init(msg.trigger_msg)
+
+        if casetest_target is not None:
+            setattr(msg, "_casetest_target", casetest_target)
+
+        try:
+            await parser(msg)
+        except SessionFinished:
+            pass
+        except Exception as e:
+            err_msg = msg.session_info.locale.t_str(str(e))
+            try:
+                err_chain = match_kecode(err_msg, disable_joke=True)
+            except Exception:
+                err_chain = MessageChain.assign(err_msg)
+
+            err_action = [
+                x.text if isinstance(x, PlainElement) else str(x) for x in err_chain.as_sendable(msg.session_info)
+            ]
+
+            return {
+                "input": input_,
+                "exception": e,
+                "exception_message": err_chain.to_str(),
+                "action": [f"(raise {type(e).__name__})"] + err_action,
+                "traceback": traceback.format_exc(),
+                "expected": expected,
+            }
+        finally:
+            await ExpiringTempDict.clear_all(now=time.time() + 31536000)
 
         return {
             "input": input_,
-            "output": err_chain,
-            "action": [f"(raise {type(e).__name__})"] + err_action,
-            "exception": type(e).__name__,
+            "output": msg.sent,
+            "action": msg.action,
+            "expected": expected,
         }
-    except Exception:
-        return {
-            "input": input_,
-            "error": traceback.format_exc(),
-        }
-    finally:
-        _cd_dict.clear()
-        _ps_dict.clear()
 
-    return {
-        "input": input_,
-        "output": msg.sent,
-        "action": msg.action,
-    }
-
-
-async def match_expected(
-    output,
-    expected: bool | str | MessageChain | list[MessageElement] | tuple[MessageElement, ...] | MessageElement | None
-) -> bool | None:
-    if expected is None:  # noqa
-        return None
-    if expected is True:  # noqa
-        return bool(output)
-    if expected is False:  # noqa
-        return not bool(output)
-
-    session_info = await SessionInfo.assign(
-        target_id="TEST|Console|0",
-        client_name="TEST",
-        target_from="TEST",
-        sender_id="TEST|0",
-        sender_from="TEST",
-    )
-
-    expected_chain = MessageChain.assign(expected).as_sendable(session_info)
-    return output == expected_chain
+    if timeout:
+        try:
+            result = await asyncio.wait_for(_run_test(), timeout=timeout)
+        except asyncio.TimeoutError:
+            await ExpiringTempDict.clear_all(now=time.time() + 31536000)
+            result = {"input": input_, "expected": expected, "timeout": True}
+    else:
+        result = await _run_test()
+    return result

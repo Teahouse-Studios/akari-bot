@@ -184,7 +184,7 @@ genre_i18n_mapping = {
     "舞萌": "maimai",
     "音击&中二节奏": "ONGEKI & CHUNITHM",
     "オンゲキCHUNITHM": "ONGEKI & CHUNITHM",
-    "宴会场": "宴會場"
+    "宴会场": "宴會場",
 }
 
 mai_plate_remaster_required = [
@@ -284,7 +284,7 @@ sd_plate_mapping = {
     "菫": "maimai MURASAKi PLUS",
     "白": "maimai MiLK",
     "雪": "MiLK PLUS",
-    "輝": "maimai FiNALE"
+    "輝": "maimai FiNALE",
 }
 
 dx_plate_mapping = {
@@ -314,10 +314,7 @@ plate_version_ts_mapping = {
     "雙": "双",
     "镜": "鏡",
 }
-plate_goal_ts_mapping = {
-    "將": "将",
-    "极": "極"
-}
+plate_goal_ts_mapping = {"將": "将", "极": "極"}
 
 grade_mapping = {
     "初段": "grade1",
@@ -417,7 +414,8 @@ def mai_plate_song_expect(version):
                 "712",
                 "731",
                 "792",
-                "853"]
+                "853",
+            ]
         case "熊" | "華":
             song_expect = ["10146"]
         case "爽" | "煌":

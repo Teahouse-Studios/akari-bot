@@ -25,7 +25,7 @@ def size_convert(value):
 async def latest_version():
     try:
         version = await get_url(f"{API}/metric/version", fmt="json")
-        return f"{version.get("version")}@{version.get("_resolved").split("#")[1][:7]}"
+        return f"{version.get('version')}@{version.get('_resolved').split('#')[1][:7]}"
     except Exception:
         return None
 
@@ -34,7 +34,7 @@ def search_cluster(clusterList: dict, key: str, value: str):
     result = []
     regex = re.compile(value, re.IGNORECASE)
 
-    for (rank, node) in enumerate(clusterList, 1):
+    for rank, node in enumerate(clusterList, 1):
         if regex.search(node.get(key)):
             result.append((rank, node))
         elif "sponsor" in node and regex.search(node.get("sponsor").get(key)):
@@ -49,28 +49,27 @@ async def _(msg: Bot.MessageSession):
     dashboard = await get_url(f"{API}/metric/dashboard", fmt="json")
 
     current_nodes = dashboard.get("currentNodes")
-    load = f"{round(dashboard.get("load") * 100, 2)}%"
+    load = f"{round(dashboard.get('load') * 100, 2)}%"
     bandwidth = dashboard.get("bandwidth")
     current_bandwidth = round(dashboard.get("currentBandwidth"), 2)
     hits = dashboard.get("hits")
     size = size_convert(dashboard.get("bytes"))
     version = await latest_version()
 
-    msg_chain = MessageChain.assign(I18NContext("oba.message.status.detail",
-                                                current_nodes=current_nodes,
-                                                load=load,
-                                                bandwidth=bandwidth,
-                                                current_bandwidth=current_bandwidth,
-                                                hits=hits,
-                                                size=size
-                                                ))
+    msg_chain = MessageChain.assign(
+        I18NContext(
+            "oba.message.status.detail",
+            current_nodes=current_nodes,
+            load=load,
+            bandwidth=bandwidth,
+            current_bandwidth=current_bandwidth,
+            hits=hits,
+            size=size,
+        )
+    )
     if version:
         msg_chain.append(I18NContext("oba.message.status.version", version=version))
-    msg_chain.append(I18NContext(
-        "oba.message.query_time",
-        query_time=msg.format_time(
-            time.time(),
-            timezone=False)))
+    msg_chain.append(I18NContext("oba.message.query_time", query_time=msg.format_time(time.time(), timezone=False)))
     await msg.finish(msg_chain)
 
 
@@ -86,13 +85,10 @@ async def _(msg: Bot.MessageSession, rank: int = 1):
     hits = node.get("metric").get("hits")
     size = size_convert(node.get("metric").get("bytes"))
 
-    msg_chain = MessageChain.assign([Plain(status), I18NContext(
-        "oba.message.node", name=name, id=_id, hits=hits, size=size)])
-    msg_chain.append(I18NContext(
-        "oba.message.query_time",
-        query_time=msg.format_time(
-            time.time(),
-            timezone=False)))
+    msg_chain = MessageChain.assign(
+        [Plain(status), I18NContext("oba.message.node", name=name, id=_id, hits=hits, size=size)]
+    )
+    msg_chain.append(I18NContext("oba.message.query_time", query_time=msg.format_time(time.time(), timezone=False)))
 
     if "sponsor" not in node:
         await msg.finish(msg_chain)
@@ -131,13 +127,23 @@ async def _(msg: Bot.MessageSession, rank: int = 1):
             _id = node.get("_id")
             hits = node.get("metric").get("hits")
             size = size_convert(node.get("metric").get("bytes"))
-            node_list.append(Plain(f"{status} | {str(I18NContext("oba.message.top",
-                                                                 rank=i + 1,
-                                                                 name=name,
-                                                                 id=_id,
-                                                                 hits=hits,
-                                                                 size=size,
-                                                                 sponsor_name=sponsor_name))}"))
+            node_list.append(
+                Plain(
+                    f"{status} | {
+                        str(
+                            I18NContext(
+                                'oba.message.top',
+                                rank=i + 1,
+                                name=name,
+                                id=_id,
+                                hits=hits,
+                                size=size,
+                                sponsor_name=sponsor_name,
+                            )
+                        )
+                    }"
+                )
+            )
         except KeyError:
             break
 
@@ -165,13 +171,23 @@ async def _(msg: Bot.MessageSession, keyword: str):
             _id = node.get("_id")
             hits = node.get("metric").get("hits")
             size = size_convert(node.get("metric").get("bytes"))
-            node_list.append(Plain(f"{status} | {str(I18NContext("oba.message.top",
-                                                                 rank=rank,
-                                                                 name=name,
-                                                                 id=_id,
-                                                                 hits=hits,
-                                                                 size=size,
-                                                                 sponsor_name=sponsor_name))}"))
+            node_list.append(
+                Plain(
+                    f"{status} | {
+                        str(
+                            I18NContext(
+                                'oba.message.top',
+                                rank=rank,
+                                name=name,
+                                id=_id,
+                                hits=hits,
+                                size=size,
+                                sponsor_name=sponsor_name,
+                            )
+                        )
+                    }"
+                )
+            )
         except KeyError:
             break
 
@@ -187,7 +203,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
 @oba.command("sponsor {{I18N:oba.help.sponsor}}")
 async def _(msg: Bot.MessageSession):
     sponsor = await get_url(f"{API}/sponsor", fmt="json")
-    cluster = await get_url(f"{API}/sponsor/{str(sponsor["_id"])}", fmt="json")
+    cluster = await get_url(f"{API}/sponsor/{str(sponsor['_id'])}", fmt="json")
     name = cluster.get("name")
     url = cluster.get("url")
     banner = cluster.get("banner")

@@ -1,12 +1,12 @@
-name: "Publish Release"
+name: Publish Release
+
+permissions:
+  contents: write
 
 on:
   push:
     tags:
       - 'v*'
-
-permissions:
-  contents: write
 
 jobs:
   release:
@@ -34,7 +34,7 @@ jobs:
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: AkariBot
           path: ${{ env.ZIP_NAME }}

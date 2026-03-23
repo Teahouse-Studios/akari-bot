@@ -47,9 +47,11 @@ class CoolDown:
         :return: 剩余冷却时间（秒），0 表示已可用
         """
         cd_instance = self._get_cd_dict()
-        elapsed = time.time() - cd_instance.ts
-        remaining = cd_instance.exp - elapsed
-        return max(remaining, 0)
+        if cd_instance:
+            remaining = cd_instance.exp - (time.time() - cd_instance.ts)
+        else:
+            remaining = 0
+        return remaining
 
     def reset(self):
         """

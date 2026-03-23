@@ -10,7 +10,6 @@ from .chunithm_mapping import (
     chu_cover_path,
     score_to_rate,
     combo_mapping,
-    diff_list
 )
 from .chunithm_music import TotalList
 
@@ -19,16 +18,7 @@ total_list = TotalList()
 
 class ChartInfo:
     def __init__(
-        self,
-        mid: str,
-        diff: int,
-        ra: float,
-        score: int,
-        fc: str,
-        title: str,
-        ds: float,
-        level: str,
-        rate: str
+        self, mid: str, diff: int, ra: float, score: int, fc: str, title: str, ds: float, level: str, rate: str
     ):
         self.mid = mid
         self.diff = diff
@@ -39,9 +29,6 @@ class ChartInfo:
         self.ds = ds
         self.level = level
         self.rate = rate
-
-    def __str__(self):
-        return f"{self.title:<50} {self.ds}\t{diff_list[self.diff]}\t{self.ra}"
 
     def __eq__(self, other):
         return self.ra == other.ra
@@ -70,7 +57,7 @@ class ChartInfo:
             fc=combo_mapping.get(data["fc"], ""),
             level=data["level"],
             score=data["score"],
-            rate=rate
+            rate=rate,
         )
 
 
@@ -80,11 +67,11 @@ class BestList:
         self._size = size
 
     def push(self, chart: ChartInfo):
-        if len(self._data) >= self._size and chart < self._data[-1]:
+        if len(self._data) >= self._size and chart.ra < self._data[-1].ra:
             return
         self._data.append(chart)
         self._data.sort(reverse=True)
-        self._data = self._data[:self._size]
+        self._data = self._data[: self._size]
 
     def pop(self):
         if self._data:
@@ -181,7 +168,9 @@ class DrawBest:
 
     @staticmethod
     def _get_rating_color(rating: float):
-        if rating >= 16.00:
+        if rating >= 17.00:
+            color = [(255, 235, 0), (255, 56, 56), (186, 82, 255), (50, 90, 200), (69, 174, 255)]  # 彩极
+        elif rating >= 16.00:
             color = [(11, 229, 186), (60, 249, 25), (244, 222, 49), (255, 235, 238), (42, 201, 240)]  # 彩
         elif rating >= 15.25:
             color = (255, 255, 224)  # 白金
@@ -223,7 +212,7 @@ class DrawBest:
         return color
 
     def _draw_best_list(self, img: Image.Image, sd_best: BestList, dx_best: BestList):
-        item_weight = 150
+        item_width = 150
         item_height = 100
         color = [
             (69, 193, 36),
@@ -232,8 +221,7 @@ class DrawBest:
             (134, 49, 200),
             (25, 25, 25),
         ]
-        level_triagle = [(item_weight, 0), (item_weight - 27, 0), (item_weight, 27)]
-        ImageDraw.Draw(img)
+        level_triangle = [(item_width, 0), (item_width - 27, 0), (item_width, 27)]
 
         for num in range(min(len(self.best_30), 30)):
             i = num // 5
@@ -243,17 +231,15 @@ class DrawBest:
 
             if cover_path.exists():
                 temp = Image.open(cover_path).convert("RGBA")
-                temp = self._resize_image(temp, item_weight / temp.size[0])
-                temp = temp.crop(
-                    (0, (temp.size[1] - item_height) / 2, item_weight, (temp.size[1] + item_height) / 2)
-                )
+                temp = self._resize_image(temp, item_width / temp.size[0])
+                temp = temp.crop((0, (temp.size[1] - item_height) / 2, item_width, (temp.size[1] + item_height) / 2))
                 overlay = Image.new("RGBA", temp.size, (0, 0, 0, 100))
                 temp = Image.alpha_composite(temp, overlay)
             else:
-                temp = Image.new("RGBA", (item_weight, item_height), (111, 111, 111, 255))
+                temp = Image.new("RGBA", (item_width, item_height), (111, 111, 111, 255))
 
             temp_draw = ImageDraw.Draw(temp)
-            temp_draw.polygon(level_triagle, color[chart_info.diff])
+            temp_draw.polygon(level_triangle, color[chart_info.diff])
             font = ImageFont.truetype(noto_sans_demilight_path, 18, encoding="utf-8")
             title = truncate_text(chart_info.title, 12)
             temp_draw.text((6, 7), title, "white", font)
@@ -275,7 +261,7 @@ class DrawBest:
             )
             temp_draw.text((120, 80), f"#{num + 1}", "white", font)
 
-            rec_base = Image.new("RGBA", (item_weight, item_height), "black")
+            rec_base = Image.new("RGBA", (item_width, item_height), "black")
             rec_base = rec_base.point(lambda p: int(p * 0.8))
             self.img.paste(rec_base, (self.columns_image[j + 1] + 5, self.rows_image[i] + 5))
             self.img.paste(temp, (self.columns_image[j + 1] + 4, self.rows_image[i] + 4))
@@ -287,17 +273,15 @@ class DrawBest:
             cover_path = chu_cover_path / f"{chart_info.mid}.png"
             if cover_path.exists():
                 temp = Image.open(cover_path).convert("RGBA")
-                temp = self._resize_image(temp, item_weight / temp.size[0])
-                temp = temp.crop(
-                    (0, (temp.size[1] - item_height) / 2, item_weight, (temp.size[1] + item_height) / 2)
-                )
+                temp = self._resize_image(temp, item_width / temp.size[0])
+                temp = temp.crop((0, (temp.size[1] - item_height) / 2, item_width, (temp.size[1] + item_height) / 2))
                 overlay = Image.new("RGBA", temp.size, (0, 0, 0, 100))
                 temp = Image.alpha_composite(temp, overlay)
             else:
-                temp = Image.new("RGBA", (item_weight, item_height), (111, 111, 111, 255))
+                temp = Image.new("RGBA", (item_width, item_height), (111, 111, 111, 255))
 
             temp_draw = ImageDraw.Draw(temp)
-            temp_draw.polygon(level_triagle, color[chart_info.diff])
+            temp_draw.polygon(level_triangle, color[chart_info.diff])
             font = ImageFont.truetype(noto_sans_demilight_path, 18, encoding="utf-8")
             title = truncate_text(chart_info.title, 12)
             temp_draw.text((6, 7), title, "white", font)
@@ -319,14 +303,10 @@ class DrawBest:
             )
             temp_draw.text((120, 80), f"#{num + 1}", "white", font)
 
-            rec_base = Image.new("RGBA", (item_weight, item_height), "black")
+            rec_base = Image.new("RGBA", (item_width, item_height), "black")
             rec_base = rec_base.point(lambda p: int(p * 0.8))
-            self.img.paste(
-                rec_base, (self.columns_image[j + 1] + 5, self.rows_image[i + 6] + 5)
-            )
-            self.img.paste(
-                temp, (self.columns_image[j + 1] + 4, self.rows_image[i + 6] + 4)
-            )
+            self.img.paste(rec_base, (self.columns_image[j + 1] + 5, self.rows_image[i + 6] + 5))
+            self.img.paste(temp, (self.columns_image[j + 1] + 4, self.rows_image[i + 6] + 4))
 
     def draw(self):
         img_draw = ImageDraw.Draw(self.img)
@@ -342,15 +322,15 @@ class DrawBest:
         self._draw_best_list(self.img, self.best_30, self.new_20)
 
         font = ImageFont.truetype(noto_sans_demilight_path, 10, encoding="utf-8")
-        img_draw.text(
-            (5, 1285), "Generated by Teahouse Studios \"AkariBot\"", "black", font=font
-        )
+        img_draw.text((5, 1285), 'Generated by Teahouse Studios "AkariBot"', "black", font=font)
 
     def get_dir(self):
         return self.img
 
 
-async def generate(msg: Bot.MessageSession, token: Any = None, source: str = "Lxns", use_cache: bool = True) -> Image.Image | None:
+async def generate(
+    msg: Bot.MessageSession, token: Any = None, source: str = "Lxns", use_cache: bool = True
+) -> Image.Image | None:
     if source == "Lxns":
         resp = await get_record_lx(msg, token, use_cache)
     else:

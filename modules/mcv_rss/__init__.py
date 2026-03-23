@@ -111,10 +111,7 @@ async def get_article(version):
             + f"-release-candidate-{match_release_candidate.group(2)}"
         )
     if not link:
-        link = (
-            "https://www.minecraft.net/en-us/article/minecraft-java-edition-"
-            + re.sub("\\.", "-", version)
-        )
+        link = "https://www.minecraft.net/en-us/article/minecraft-java-edition-" + re.sub("\\.", "-", version)
 
     try:
         if link:
@@ -233,9 +230,7 @@ async def _():
             Logger.info(f"Huh, we find Bedrock {version}.")
             await Bot.post_message(
                 "mcbv_rss",
-                message=MessageChain.assign(
-                    [I18NContext("mcv_rss.message.mcbv_rss", version=version)]
-                ),
+                message=MessageChain.assign([I18NContext("mcv_rss.message.mcbv_rss", version=version)]),
             )
             verlist.append(version)
             await update_stored_list(Bot, "mcbv_rss", verlist)

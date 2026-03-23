@@ -74,11 +74,7 @@ class WordleBoard:
                 counter[letter] -= 1
 
         for index, letter in enumerate(word):
-            if (
-                letter != self.word[index]
-                and letter in self.word
-                and counter[letter] != 0
-            ):
+            if letter != self.word[index] and letter in self.word and counter[letter] != 0:
                 state[index] = WordleState.YELLOW
                 counter[letter] -= 1
 
@@ -99,10 +95,7 @@ class WordleBoard:
             squares: list[str] = []
             for char_index, char in enumerate(row):
                 letters.append(
-                    unicodedata.lookup(
-                        "FULLWIDTH LATIN CAPITAL LETTER "
-                        + self.board[row_index][char_index]
-                    )
+                    unicodedata.lookup("FULLWIDTH LATIN CAPITAL LETTER " + self.board[row_index][char_index])
                 )
                 if char == WordleState.GREEN:
                     squares.append(green)
@@ -116,10 +109,7 @@ class WordleBoard:
         return "\n".join("".join(row) for row in formatted)
 
     def is_game_over(self):
-        return bool(
-            len(self.board) != 0
-            and (self.word == self.board[-1] or len(self.board) >= 6)
-        )
+        return bool(len(self.board) != 0 and (self.word == self.board[-1] or len(self.board) >= 6))
 
     @staticmethod
     def from_random_word():
@@ -191,26 +181,14 @@ class WordleBoardImage:
         self.board_image = board_image
 
         keyboard_rows_count = len(self.keyboard_rows)
-        keyboard_width = (
-            max(len(r) for r in self.keyboard_rows)
-            * (self.key_width + self.key_margin)
-            + self.key_margin
-        )
-        keyboard_height = (
-            keyboard_rows_count * (self.key_height + self.key_margin)
-            + self.key_margin
-        )
+        keyboard_width = max(len(r) for r in self.keyboard_rows) * (self.key_width + self.key_margin) + self.key_margin
+        keyboard_height = keyboard_rows_count * (self.key_height + self.key_margin) + self.key_margin
 
-        keyboard_image = Image.new(
-            "RGB", (keyboard_width, keyboard_height), self.background_color
-        )
+        keyboard_image = Image.new("RGB", (keyboard_width, keyboard_height), self.background_color)
         keyboard_draw = ImageDraw.Draw(keyboard_image)
 
         for row_index, row_keys in enumerate(self.keyboard_rows):
-            row_width = (
-                len(row_keys) * self.key_width
-                + (len(row_keys) - 1) * self.key_margin
-            )
+            row_width = len(row_keys) * self.key_width + (len(row_keys) - 1) * self.key_margin
             start_x = (keyboard_width - row_width) // 2
             y = self.key_margin + row_index * (self.key_height + self.key_margin)
 
@@ -286,10 +264,7 @@ class WordleBoardImage:
                 else:
                     if state == WordleState.GREEN:
                         result[letter] = WordleState.GREEN
-                    elif (
-                        state == WordleState.YELLOW
-                        and result[letter] != WordleState.GREEN
-                    ):
+                    elif state == WordleState.YELLOW and result[letter] != WordleState.GREEN:
                         result[letter] = WordleState.YELLOW
 
         return result
@@ -305,10 +280,7 @@ class WordleBoardImage:
         keyboard_width, _ = self.keyboard_image.size
 
         for row_index, row_keys in enumerate(self.keyboard_rows):
-            row_width = (
-                len(row_keys) * self.key_width
-                + (len(row_keys) - 1) * self.key_margin
-            )
+            row_width = len(row_keys) * self.key_width + (len(row_keys) - 1) * self.key_margin
 
             start_x = (keyboard_width - row_width) // 2
             y = self.key_margin + row_index * (self.key_height + self.key_margin)
@@ -331,11 +303,7 @@ class WordleBoardImage:
                     color = self.light_grey_color
                     text_color = "white" if self.dark_theme else "black"
 
-                draw.rectangle(
-                    (x, y, x + self.key_width, y + self.key_height),
-                    fill=color,
-                    outline=None
-                )
+                draw.rectangle((x, y, x + self.key_width, y + self.key_height), fill=color, outline=None)
 
                 _, _, w, h = draw.textbbox((0, 0), letter, font=font)
 

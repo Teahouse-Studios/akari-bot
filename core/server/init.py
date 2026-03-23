@@ -1,3 +1,13 @@
+"""
+服务器初始化模块。
+
+该模块负责服务器启动时的初始化工作，包括：
+- 数据库初始化
+- 模块加载和注册
+- 调度器启动
+- 密钥和提示信息加载
+"""
+
 import asyncio
 import logging
 
@@ -20,8 +30,24 @@ from .background_tasks import init_background_task
 
 
 async def init_async(start_scheduler=True) -> None:
+    """初始化服务器。
+
+    执行服务器启动的所有初始化步骤：
+    1. 设置客户端信息和日志
+    2. 初始化数据库
+    3. 加载所有模块
+    4. 初始化定时任务
+    5. 初始化后台任务
+    6. 加载密钥和启动提示
+
+    Args:
+        start_scheduler: 是否启动定时任务（默认True）
+    """
+    # 设置客户端信息为 "Server"
     Info.client_name = "Server"
     Logger.rename(Info.client_name)
+
+    # 读取版本信息
     version_path = PrivateAssets.path / ".version"
     if version_path.exists():
         with open(version_path, "r") as f:
@@ -33,13 +59,17 @@ async def init_async(start_scheduler=True) -> None:
         else:
             Logger.warning("Failed to get Git commit hash, is it a Git repository?")
 
+    # 初始化数据库
     Logger.info("Initializing database...")
     if await init_db():
         Logger.success("Database initialized successfully.")
 
+    # 加载所有模块
     await load_modules()
     gather_list = []
     modules = ModulesManager.return_modules_list()
+
+    # 为各模块配置的定时任务添加到调度器
     for x in modules:
         if not modules[x]._db_load:
             continue
@@ -53,19 +83,30 @@ async def init_async(start_scheduler=True) -> None:
                     max_instance=1,
                 )
     await asyncio.gather(*gather_list)
+
+    # 初始化后台任务（如 IP 查询、WebRender 等）
     asyncio.create_task(init_background_task())
+
+    # 启动调度器
     if start_scheduler:
         try:
             Scheduler.start()
         except SchedulerAlreadyRunningError:
             pass
     logging.getLogger("apscheduler.executors.default").setLevel(logging.WARNING)
+
+    # 加载密钥和启动提示
     await load_secret()
     Logger.info(f"Hello, {Info.client_name}!")
     await load_prompt()
 
 
 async def load_secret():
+    """从配置文件中加载所有密钥信息。
+
+    扫描配置中所有带有 "secret" 后缀的配置项，
+    将非占位符的值添加到密钥管理系统中，用于内容过滤。
+    """
     for x in CFGManager.values:
         for y in CFGManager.values[x].keys():
             if y == "secret" or y.endswith("_secret"):
@@ -79,6 +120,11 @@ async def load_secret():
 
 
 async def load_prompt() -> None:
+    """加载并发送启动提示信息。
+
+    如果存在缓存的发送重启命令的对象信息，发送加载成功或失败的提示。
+    清理缓存文件。
+    """
     author_cache = PrivateAssets.path / ".cache_restart_author"
     loader_cache = PrivateAssets.path / ".cache_loader"
     if author_cache.exists():

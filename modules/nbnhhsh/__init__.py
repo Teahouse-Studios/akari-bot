@@ -7,12 +7,9 @@ from core.dirty_check import check
 from core.logger import Logger
 from core.utils.http import post_url
 
-n = module("nbnhhsh",
-           desc="{I18N:nbnhhsh.help.desc}",
-           doc=True,
-           developers=["Dianliang233"],
-           support_languages=["zh_cn"]
-           )
+n = module(
+    "nbnhhsh", desc="{I18N:nbnhhsh.help.desc}", doc=True, developers=["Dianliang233"], support_languages=["zh_cn"]
+)
 
 
 @n.command("<term> {{I18N:nbnhhsh.help}}")
@@ -23,12 +20,12 @@ async def _(msg: Bot.MessageSession, term: str):
 
 async def nbnhhsh(msg: Bot.MessageSession, term: str):
     req = orjson.dumps({"text": term})
-    data = await post_url("https://lab.magiconch.com/api/nbnhhsh/guess",
-                          data=req,
-                          headers={"Content-Type": "application/json",
-                                   "Accept": "*/*",
-                                   "Content-Length": str(len(req))},
-                          fmt="json")
+    data = await post_url(
+        "https://lab.magiconch.com/api/nbnhhsh/guess",
+        data=req,
+        headers={"Content-Type": "application/json", "Accept": "*/*", "Content-Length": str(len(req))},
+        fmt="json",
+    )
     Logger.debug(data)
     try:
         result = data[0]

@@ -81,7 +81,7 @@ async def check_ip(ip: str):
         "offset": None,
         "reverse": None,
         "ip_property": ip_property,
-        "real_ip": real_ip
+        "real_ip": real_ip,
     }
     if not skip_geoip:
         data = await get_url(f"https://api.ip.sb/geoip/{ip}", 200, fmt="json")
@@ -98,17 +98,16 @@ async def check_ip(ip: str):
 
 
 def zzzq(msg: Bot.MessageSession, country: str):
-    if msg.session_info.client_name in ["KOOK", "QQ", "QQBot"] and \
-            country in ["Hong Kong", "Macao", "Taiwan"]:
+    if msg.session_info.client_name in ["KOOK", "QQ", "QQBot"] and country in ["Hong Kong", "Macao", "Taiwan"]:
         return "China"
     return country
 
 
 def parse_coordinate(axis: str, value: float):
     if axis == "latitude":
-        return f"{abs(value)}°{"N" if value > 0 else "S"}"
+        return f"{abs(value)}°{'N' if value > 0 else 'S'}"
     if axis == "longitude":
-        return f"{abs(value)}°{"E" if value > 0 else "W"}"
+        return f"{abs(value)}°{'E' if value > 0 else 'W'}"
 
 
 async def format_ip(msg: Bot.MessageSession, info: dict[str, Any]):
@@ -134,7 +133,7 @@ async def format_ip(msg: Bot.MessageSession, info: dict[str, Any]):
     ip_type_label = str(I18NContext("ip.message.type"))
     ip_property_label = str(ip_property_map.get(info.get("ip_property"), ip_property_map["unknown"]))
     ip_property_suffix = str(I18NContext("ip.message.ip_property"))
-    ip_type = f"IPv{info["version"]}{ip_property_label}{ip_property_suffix}"
+    ip_type = f"IPv{info['version']}{ip_property_label}{ip_property_suffix}"
     res.append(Plain(f"{ip_type_label}{ip_type}"))
 
     real_ip = info.get("real_ip")

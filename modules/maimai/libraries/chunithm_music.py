@@ -19,7 +19,7 @@ def process_lxns_to_diving_fish(data):
             "bpm": song["bpm"],
             "from": version_map.get(song["version"], "Unknown"),
             "genre": song["genre"],
-            "title": song["title"]
+            "title": song["title"],
         }
 
         charts = []
@@ -32,14 +32,11 @@ def process_lxns_to_diving_fish(data):
                 diff["notes"].get("hold", 0),
                 diff["notes"].get("slide", 0),
                 diff["notes"].get("air", 0),
-                diff["notes"].get("flick", 0)
+                diff["notes"].get("flick", 0),
             ]
 
             charter_name = diff.get("note_designer", "")
-            charts.append({
-                "charter": charter_name,
-                "notes": notes_ordered
-            })
+            charts.append({"charter": charter_name, "notes": notes_ordered})
 
             ds.append(diff.get("star", float(diff.get("level_value", 0.0))))
             levels.append(diff.get("kanji", diff.get("level", "")))
@@ -47,7 +44,7 @@ def process_lxns_to_diving_fish(data):
         title_with_kanji = song["title"]
         kanji_list = [diff.get("kanji") for diff in song.get("difficulties", []) if "kanji" in diff]
         if kanji_list:
-            title_with_kanji = f"[{kanji_list[0]}]{song["title"]}"
+            title_with_kanji = f"[{kanji_list[0]}]{song['title']}"
             basic_info["title"] = title_with_kanji
 
         song_entry = {
@@ -56,7 +53,7 @@ def process_lxns_to_diving_fish(data):
             "ds": ds,
             "id": song["id"],
             "level": levels,
-            "title": title_with_kanji
+            "title": title_with_kanji,
         }
 
         result.append(song_entry)

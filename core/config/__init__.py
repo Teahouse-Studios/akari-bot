@@ -6,8 +6,14 @@ from typing import Any
 
 import orjson
 from loguru import logger
-from tomlkit import parse as toml_parser, dumps as toml_dumps, TOMLDocument, comment as toml_comment, \
-    document as toml_document, nl
+from tomlkit import (
+    parse as toml_parser,
+    dumps as toml_dumps,
+    TOMLDocument,
+    comment as toml_comment,
+    document as toml_document,
+    nl,
+)
 from tomlkit.exceptions import KeyAlreadyPresent
 from tomlkit.items import Table
 
@@ -37,7 +43,7 @@ class CFGManager:
             count += 1
             sleep(1)
             if count > 5:
-                ConfigOperationError("Operation timeout.")
+                raise ConfigOperationError("Operation timeout.")
 
     @classmethod
     def load(cls):  # Load the config file
@@ -91,14 +97,16 @@ class CFGManager:
             cls._watch_lock = False
 
     @classmethod
-    def get(cls,
-            q: str,
-            default: Any | None = None,
-            cfg_type: type | tuple | None = None,
-            secret: bool = False,
-            table_name: str | None = None,
-            _global: bool = False,
-            _generate: bool = False) -> Any:
+    def get(
+        cls,
+        q: str,
+        default: Any | None = None,
+        cfg_type: type | tuple | None = None,
+        secret: bool = False,
+        table_name: str | None = None,
+        _global: bool = False,
+        _generate: bool = False,
+    ) -> Any:
         """
         获取配置文件中的配置项。
 
@@ -163,7 +171,7 @@ class CFGManager:
             table_name = table_name.lower()
             # if table_name is provided, write the value to the specified table
             if table_name != "config":
-                target = f"{table_name}{"_secret" if secret else ""}"
+                target = f"{table_name}{'_secret' if secret else ''}"
             else:
                 target = "secret" if secret else "config"
             try:
@@ -204,27 +212,40 @@ class CFGManager:
                 if value is not None and not isinstance(value, cfg_type):
                     if list in (cfg_type if isinstance(cfg_type, tuple) else [cfg_type]) and isinstance(value, tuple):
                         value = list(value)  # allow tuple as list
-                    if (float in (cfg_type if isinstance(cfg_type, tuple)
-                                  else [cfg_type])) and isinstance(value, int):
+                    if (float in (cfg_type if isinstance(cfg_type, tuple) else [cfg_type])) and isinstance(value, int):
                         pass  # allow int as float
                     else:
-                        expected_type = ", ".join(map(lambda t: t.__name__, cfg_type)) if isinstance(
-                            cfg_type, tuple) else cfg_type.__name__
-                        logger.warning(f"[Config] Config {q} has a wrong type, expected {
-                            expected_type}, got {type(value).__name__}.")
+                        expected_type = (
+                            ", ".join(map(lambda t: t.__name__, cfg_type))
+                            if isinstance(cfg_type, tuple)
+                            else cfg_type.__name__
+                        )
+                        logger.warning(
+                            f"[Config] Config {q} has a wrong type, expected {expected_type}, got {
+                                type(value).__name__
+                            }."
+                        )
         elif default is not None and not isinstance(value, type(default)):
             # if cfg_type is not provided but default is given, check that value is consistent with default type
             if not (isinstance(default, float) and isinstance(value, int)):  # allow int as float
                 logger.warning(
-                    f"[Config] Config {q} has a wrong type, expected {
-                        type(default).__name__}, got {
-                        type(value).__name__}.")
+                    f"[Config] Config {q} has a wrong type, expected {type(default).__name__}, got {
+                        type(value).__name__
+                    }."
+                )
 
         return value
 
     @classmethod
-    def write(cls, q: str, value: Any | None, cfg_type: type | tuple | None = None, secret: bool = False,
-              table_name: str | None = None, _generate: bool = False):
+    def write(
+        cls,
+        q: str,
+        value: Any | None,
+        cfg_type: type | tuple | None = None,
+        secret: bool = False,
+        table_name: str | None = None,
+        _generate: bool = False,
+    ):
         """
         修改配置文件中的配置项。
 
@@ -296,7 +317,7 @@ class CFGManager:
                 secret = True
 
             if table_name != "config":
-                target = f"{table_name}{"_secret" if secret else ""}"
+                target = f"{table_name}{'_secret' if secret else ''}"
             else:
                 target = "secret" if secret else "config"
             try:
@@ -308,9 +329,11 @@ class CFGManager:
                 pass
 
         if not found:  # if the value is not found, write the default value to the config file
-            if table_name and table_name != "config":  # if table_name is provided, write the value to the specified table
+            if (
+                table_name and table_name != "config"
+            ):  # if table_name is provided, write the value to the specified table
                 cfg_name = table_name
-                target = f"{table_name}{"_secret" if secret else ""}"
+                target = f"{table_name}{'_secret' if secret else ''}"
             else:
                 cfg_name = "config"
                 target = "secret" if secret else "config"
@@ -319,20 +342,14 @@ class CFGManager:
             if cfg_name not in cls.values:  # if the target table is not found, create a new table
                 cls.values[cfg_name] = toml_document()
                 cls.values[cfg_name].add(
-                    toml_comment(
-                        get_locale.t(
-                            "config.header.line.1",
-                            fallback_failed_prompt=False)))
+                    toml_comment(get_locale.t("config.header.line.1", fallback_failed_prompt=False))
+                )
                 cls.values[cfg_name].add(
-                    toml_comment(
-                        get_locale.t(
-                            "config.header.line.2",
-                            fallback_failed_prompt=False)))
+                    toml_comment(get_locale.t("config.header.line.2", fallback_failed_prompt=False))
+                )
                 cls.values[cfg_name].add(
-                    toml_comment(
-                        get_locale.t(
-                            "config.header.line.3",
-                            fallback_failed_prompt=False)))
+                    toml_comment(get_locale.t("config.header.line.3", fallback_failed_prompt=False))
+                )
             if target not in cls.values[cfg_name]:  # assume the child table name is the same as the parent table name
                 if target == "config":
                     table_comment_key = "config.table.config"  # i18n comment
@@ -348,14 +365,12 @@ class CFGManager:
                     else:
                         prefix = target.split("_")[0]
 
-                    table_comment_key = f"config.table.{"secret" if is_secret else "config"}_{prefix}"
+                    table_comment_key = f"config.table.{'secret' if is_secret else 'config'}_{prefix}"
                 cls.values[cfg_name].add(nl())
                 cls.values[cfg_name].add(target, toml_document())
                 cls.values[cfg_name][target].add(
-                    toml_comment(
-                        get_locale.t(
-                            table_comment_key,
-                            fallback_failed_prompt=False)))
+                    toml_comment(get_locale.t(table_comment_key, fallback_failed_prompt=False))
+                )
 
             try:
                 cls.values[cfg_name][target].add(q, value)
@@ -416,14 +431,16 @@ class CFGManager:
 CFGManager.load()
 
 
-def Config(q: str,
-           default: Any | None = None,
-           cfg_type: type | tuple | None = None,
-           secret: bool = False,
-           table_name: str | None = None,
-           get_url: bool = False,
-           _global: bool = False,
-           _generate: bool = False) -> Any:
+def Config(
+    q: str,
+    default: Any | None = None,
+    cfg_type: type | tuple | None = None,
+    secret: bool = False,
+    table_name: str | None = None,
+    get_url: bool = False,
+    _global: bool = False,
+    _generate: bool = False,
+) -> Any:
     """
     获取配置文件中的配置项。
 

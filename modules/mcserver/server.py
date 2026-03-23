@@ -20,26 +20,15 @@ async def query_java_server(address: str, raw: bool = False, showplayer: bool = 
             query_msg.append(description)
         elif isinstance(description, dict):
             query_msg.append(description.get("text", ""))
-            query_msg.append(
-                "".join(extra.get("text", "") for extra in description.get("extra", []))
-            )
+            query_msg.append("".join(extra.get("text", "") for extra in description.get("extra", [])))
 
-        onlinesplayer = f"{str(I18NContext("server.message.player"))}{
-            status.players.online} / {status.players.max}"
+        onlinesplayer = f"{str(I18NContext('server.message.player'))}{status.players.online} / {status.players.max}"
         query_msg.append(onlinesplayer)
 
         if showplayer:
-            playerlist = (
-                [player.name for player in status.players.sample]
-                if status.players.sample
-                else []
-            )
-            players_text = (
-                "\n".join(playerlist) if playerlist else str(I18NContext("message.none"))
-            )
-            query_msg.append(
-                str(I18NContext("server.message.player.current")) + "\n" + players_text
-            )
+            playerlist = [player.name for player in status.players.sample] if status.players.sample else []
+            players_text = "\n".join(playerlist) if playerlist else str(I18NContext("message.none"))
+            query_msg.append(str(I18NContext("server.message.player.current")) + "\n" + players_text)
 
         if hasattr(status, "version") and hasattr(status.version, "name"):
             query_msg.append(str(I18NContext("server.message.version")) + status.version.name)
@@ -65,8 +54,7 @@ async def query_bedrock_server(address, raw=False) -> str:
         query_msg.append("[BE]")
         query_msg.append(status.motd.raw)
 
-        player_count = f"{str(I18NContext("server.message.player"))}{
-            status.players.online} / {status.players.max}"
+        player_count = f"{str(I18NContext('server.message.player'))}{status.players.online} / {status.players.max}"
         query_msg.append(player_count)
 
         if hasattr(status, "version") and hasattr(status.version, "name"):

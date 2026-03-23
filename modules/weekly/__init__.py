@@ -20,10 +20,13 @@ from .teahouse import get_rss as get_teahouse_rss
 
 async def get_weekly(with_img=False, zh_tw=False):
     locale = Locale("zh_cn" if not zh_tw else "zh_tw")
-    result = orjson.loads(await get_url(
-        "https://zh.minecraft.wiki/api.php?action=parse&page=Template:Mainpage_section_featured_article&prop=text|revid|images&format=json" +
-        ("&variant=zh-tw" if zh_tw else ""),
-        200))
+    result = orjson.loads(
+        await get_url(
+            "https://zh.minecraft.wiki/api.php?action=parse&page=Template:Mainpage_section_featured_article&prop=text|revid|images&format=json"
+            + ("&variant=zh-tw" if zh_tw else ""),
+            200,
+        )
+    )
     b_result = BeautifulSoup(result["parse"]["text"]["*"], "html.parser")
     html = b_result.find("div", class_="mp-section")
     el = html.find("div").find_all("div")
@@ -54,11 +57,15 @@ async def get_weekly(with_img=False, zh_tw=False):
             locale.t(
                 "weekly.message.link",
                 img=imglink if imglink else locale.t("message.none"),
-                article=str(
-                    Url(f"https://zh.minecraft.wiki{page[0]}") if page else locale.t("message.none")),
+                article=str(Url(f"https://zh.minecraft.wiki{page[0]}") if page else locale.t("message.none")),
                 link=str(
-                    Url(f"https://zh.minecraft.wiki/w/Minecraft_Wiki:{parse.quote("特色条目/Minecraft/" + str(iso_year))}#{parse.quote("第" + str(iso_week) + "周")}")
-                ))))
+                    Url(
+                        f"https://zh.minecraft.wiki/w/Minecraft_Wiki:{parse.quote('特色条目/Minecraft/' + str(iso_year))}#{parse.quote('第' + str(iso_week) + '周')}"
+                    )
+                ),
+            )
+        )
+    )
     if imglink and with_img:
         msg_list.append(Image(path=imglink))
 
@@ -67,9 +74,12 @@ async def get_weekly(with_img=False, zh_tw=False):
 
 async def get_weekly_img(with_img=False, zh_tw=False):
     # locale = Locale("zh_cn" if not zh_tw else "zh_tw")
-    img = await generate_screenshot_v2("https://zh.minecraft.wiki/w/Template:Mainpage_section_featured_article" +
-                                       ("?variant=zh-tw" if zh_tw else ""), content_mode=False, allow_special_page=True,
-                                       element=["div.mp-section"])
+    img = await generate_screenshot_v2(
+        "https://zh.minecraft.wiki/w/Template:Mainpage_section_featured_article" + ("?variant=zh-tw" if zh_tw else ""),
+        content_mode=False,
+        allow_special_page=True,
+        element=["div.mp-section"],
+    )
     msg_ = []
     if img:
         for i in img:
@@ -92,15 +102,19 @@ wky = module("weekly", developers=["Dianliang233"], support_languages=["zh_cn", 
 
 @wky.command("{{I18N:weekly.help}}")
 async def _(msg: Bot.MessageSession):
-    weekly = await get_weekly(msg.session_info.client_name in ["QQ", "TEST"],
-                              zh_tw=msg.session_info.locale.locale == "zh_tw")
+    weekly = await get_weekly(
+        msg.session_info.client_name in ["QQ", "TEST"], zh_tw=msg.session_info.locale.locale == "zh_tw"
+    )
     await msg.finish(weekly)
 
 
 @wky.command("image {{I18N:weekly.help.image}}")
 async def _(msg: Bot.MessageSession):
-    await msg.finish(await get_weekly_img(msg.session_info.client_name in ["QQ", "TEST"],
-                                          zh_tw=msg.session_info.locale.locale == "zh_tw"))
+    await msg.finish(
+        await get_weekly_img(
+            msg.session_info.client_name in ["QQ", "TEST"], zh_tw=msg.session_info.locale.locale == "zh_tw"
+        )
+    )
 
 
 @wky.command("teahouse {{I18N:weekly.help.teahouse}}")

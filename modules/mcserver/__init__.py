@@ -17,8 +17,7 @@ s = module(
 
 @s.command(
     "<address:port> [-r] [-p] {{I18N:server.help}}",
-    options_desc={"-r": "{I18N:server.help.option.r}",
-                  "-p": "{I18N:server.help.option.p}"}
+    options_desc={"-r": "{I18N:server.help.option.r}", "-p": "{I18N:server.help.option.p}"},
 )
 async def _(msg: Bot.MessageSession):
     server_address = msg.parsed_msg["<address:port>"]

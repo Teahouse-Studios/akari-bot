@@ -78,7 +78,7 @@ def parse_game_record(rd_path):
             pos += 1
             if name_length == 1:
                 continue
-            song_id = data[pos: (pos + name_length)]
+            song_id = data[pos : (pos + name_length)]
             song_id = song_id.decode("utf-8").removesuffix(".0").lower()
             sid_split = song_id.split(".", 1)
             if len(sid_split) == 2:
@@ -90,7 +90,7 @@ def parse_game_record(rd_path):
             score_length = data[pos]
             pos += 1
 
-            score = data[pos: (pos + score_length)]
+            score = data[pos : (pos + score_length)]
             pos += score_length
 
             has_score = score[0]
@@ -103,13 +103,11 @@ def parse_game_record(rd_path):
                 if (has_score & digit) == digit:
                     record[diff] = {
                         "score": int.from_bytes(
-                            score[score_pos: (score_pos + 4)],
+                            score[score_pos : (score_pos + 4)],
                             byteorder="little",
                             signed=True,
                         ),
-                        "accuracy": struct.unpack(
-                            "<f", score[(score_pos + 4): (score_pos + 8)]
-                        )[0],
+                        "accuracy": struct.unpack("<f", score[(score_pos + 4) : (score_pos + 8)])[0],
                         "full_combo": (full_combo & digit) == digit,
                     }
                     if song_id in song_info and diff in song_info[song_id]["diff"]:
@@ -119,8 +117,9 @@ def parse_game_record(rd_path):
                         elif record[diff]["accuracy"] < 70:
                             record[diff]["rks"] = 0
                         else:
-                            record[diff]["rks"] = (((record[diff]["accuracy"] - 55) / 45) ** 2) * \
-                                float(song_info[song_id]["diff"][diff])
+                            record[diff]["rks"] = (((record[diff]["accuracy"] - 55) / 45) ** 2) * float(
+                                song_info[song_id]["diff"][diff]
+                            )
                     else:
                         del record[diff]
                     score_pos += 8
@@ -137,8 +136,8 @@ def parse_game_record(rd_path):
 async def get_game_record(msg: Bot.MessageSession, session_token: str, use_cache: bool = True):
     pgr_cache_path = cache_path / "phigros-record"
     pgr_cache_path.mkdir(parents=True, exist_ok=True)
-    cache_dir = pgr_cache_path / f"{msg.session_info.sender_id.replace("|", "_")}_phigros_song_record.json"
-    save_filename = f"{msg.session_info.sender_id.replace("|", "_")}_phigros_gamesave"
+    cache_dir = pgr_cache_path / f"{msg.session_info.sender_id.replace('|', '_')}_phigros_song_record.json"
+    save_filename = f"{msg.session_info.sender_id.replace('|', '_')}_phigros_gamesave"
     save_dir = pgr_cache_path / save_filename
 
     save_url = "https://rak3ffdi.cloud.tds1.tapapis.cn/1.1/classes/_GameSave"

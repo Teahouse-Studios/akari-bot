@@ -10,5 +10,13 @@ from .info import *
 from .path import *
 from .version import *
 
+ascii_art = r"""
+           _              _   ____        _
+     /\   | |            (_) |  _ \      | |
+    /  \  | | ____ _ _ __ _  | |_) | ___ | |_
+   / /\ \ | |/ / _` | '__| | |  _ < / _ \| __|
+  / ____ \|   < (_| | |  | | | |_) | (_) | |_
+ /_/    \_\_|\_\__,_|_|  |_| |____/ \___/ \__|
+"""
 config_filename = "config.toml"
 dev_mode = str(os.getenv("DEV_MODE")).lower() == "true"

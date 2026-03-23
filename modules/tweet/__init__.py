@@ -23,11 +23,12 @@ async def _(msg: Bot.MessageSession, tweet: int):
     await get_tweet(msg, tweet)
 
 
-@t.regex(r"(?:http[s]?:\/\/)?(?:www\.)?(?:twitter|x)\.com\/\S+\/status\/(\d+)",
-         mode="M",
-         desc="{I18N:tweet.help.regex.url}",
-         show_typing=False,
-         )
+@t.regex(
+    r"(?:http[s]?:\/\/)?(?:www\.)?(?:twitter|x)\.com\/\S+\/status\/(\d+)",
+    mode="M",
+    desc="{I18N:tweet.help.regex.url}",
+    show_typing=False,
+)
 async def _(msg: Bot.MessageSession):
     tweet = msg.matched_msg.group(1)
     if is_int(tweet):
@@ -44,8 +45,12 @@ async def get_tweet(msg: Bot.MessageSession, tweet_id: int):
             raise e
 
     res_json = orjson.loads(res)
-    if await check_bool("\n".join(
-            [res_json["data"]["text"], res_json["data"]["user"]["name"], res_json["data"]["user"]["screen_name"]]), msg):
+    if await check_bool(
+        "\n".join(
+            [res_json["data"]["text"], res_json["data"]["user"]["name"], res_json["data"]["user"]["screen_name"]]
+        ),
+        msg,
+    ):
         await msg.finish(rickroll())
 
     css = """
@@ -81,14 +86,11 @@ async def get_tweet(msg: Bot.MessageSession, tweet_id: int):
         }
     """
 
-    load_img = await web_render.element_screenshot(ElementScreenshotOptions(
-        url=f"https://react-tweet-next.vercel.app/light/{tweet_id}",
-        css=css,
-        element="article"))
-    img_lst = cb64imglst(load_img, bot_img=True)
-    img_lst.append(
-        Url(
-            f"https://x.com/{res_json["data"]["user"]["screen_name"]}/status/{tweet_id}"
+    load_img = await web_render.element_screenshot(
+        ElementScreenshotOptions(
+            url=f"https://react-tweet-next.vercel.app/light/{tweet_id}", css=css, element="article"
         )
     )
+    img_lst = cb64imglst(load_img, bot_img=True)
+    img_lst.append(Url(f"https://x.com/{res_json['data']['user']['screen_name']}/status/{tweet_id}"))
     await msg.finish(img_lst)

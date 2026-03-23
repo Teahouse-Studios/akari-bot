@@ -270,8 +270,12 @@ act = Module(
         1023: ResultInfo("Not committed."),
         1101: ResultInfo("Network clock is invalid."),
         2000: ResultInfo("Authentication error."),
-        2402: ResultInfo('Invalid NNID. Usually happens if the console is trying to connect to Nintendo servers with a Pretendo Network ID, or Pretendo Network with an NNID.'),
-        2511: ResultInfo('This error occurs when the Wii U system software is not up to date and must be updated in order to sign in to the Nintendo Network.'),
+        2402: ResultInfo(
+            "Invalid NNID. Usually happens if the console is trying to connect to Nintendo servers with a Pretendo Network ID, or Pretendo Network with an NNID."
+        ),
+        2511: ResultInfo(
+            "This error occurs when the Wii U system software is not up to date and must be updated in order to sign in to the Nintendo Network."
+        ),
         # TODO: 2001-2644 (there aren't really that many errors)
         2643: ResultInfo("Authentication is required."),
         2651: ResultInfo("Confirmation code is expired."),
@@ -293,47 +297,27 @@ act = Module(
         2801: ResultInfo("Account is banned.", is_ban=True),
         2802: ResultInfo("Account is banned from all services.", is_ban=True),
         2803: ResultInfo("Account is banned from a particular game.", is_ban=True),
-        2804: ResultInfo(
-            "Account is banned from Nintendo\'s online service.", is_ban=True
-        ),
+        2804: ResultInfo("Account is banned from Nintendo's online service.", is_ban=True),
         2805: ResultInfo("Account is banned from independent services.", is_ban=True),
         2811: ResultInfo("Console is banned.", is_ban=True),
         2812: ResultInfo("Console is banned from all services.", is_ban=True),
         2813: ResultInfo("Console is banned from a particular game.", is_ban=True),
-        2814: ResultInfo(
-            "Console is banned from Nintendo\'s online service.", is_ban=True
-        ),
+        2814: ResultInfo("Console is banned from Nintendo's online service.", is_ban=True),
         2815: ResultInfo("Console is banned from independent services.", is_ban=True),
         2816: ResultInfo(
             "Console is banned for an unknown duration, due to using modified/hacked files in online games like Splatoon.",
             is_ban=True,
         ),
         2821: ResultInfo("Account is temporarily banned.", is_ban=True),
-        2822: ResultInfo(
-            "Account is temporarily banned from all services.", is_ban=True
-        ),
-        2823: ResultInfo(
-            "Account is temporarily banned from a particular game.", is_ban=True
-        ),
-        2824: ResultInfo(
-            "Account is temporarily banned from Nintendo\'s online service.", is_ban=True
-        ),
-        2825: ResultInfo(
-            "Acccount is temporarily banned from independent services.", is_ban=True
-        ),
+        2822: ResultInfo("Account is temporarily banned from all services.", is_ban=True),
+        2823: ResultInfo("Account is temporarily banned from a particular game.", is_ban=True),
+        2824: ResultInfo("Account is temporarily banned from Nintendo's online service.", is_ban=True),
+        2825: ResultInfo("Acccount is temporarily banned from independent services.", is_ban=True),
         2831: ResultInfo("Console is temporarily banned.", is_ban=True),
-        2832: ResultInfo(
-            "Console is temporarily banned from all services.", is_ban=True
-        ),
-        2833: ResultInfo(
-            "Console is temporarily banned from a particular game.", is_ban=True
-        ),
-        2834: ResultInfo(
-            "Console is temporarily banned from Nintendo\'s online service.", is_ban=True
-        ),
-        2835: ResultInfo(
-            "Console is temporarily banned from independent services.", is_ban=True
-        ),
+        2832: ResultInfo("Console is temporarily banned from all services.", is_ban=True),
+        2833: ResultInfo("Console is temporarily banned from a particular game.", is_ban=True),
+        2834: ResultInfo("Console is temporarily banned from Nintendo's online service.", is_ban=True),
+        2835: ResultInfo("Console is temporarily banned from independent services.", is_ban=True),
         2880: ResultInfo("Service is not provided."),
         2881: ResultInfo("Service is currently under maintenance."),
         2882: ResultInfo("Service is closed."),
@@ -391,37 +375,27 @@ nex = Module(
         111: ResultInfo(
             "Invalid argument were passed with the operation. The argument(s) may be out of range or invalid."
         ),
-        112: ResultInfo(
-            "The operation did not complete within the specified timeout for that operation."
-        ),
+        112: ResultInfo("The operation did not complete within the specified timeout for that operation."),
         113: ResultInfo("Initialization of the component failed."),
         114: ResultInfo("The call failed to initialize."),
         115: ResultInfo("An error occurred during registration."),
         116: ResultInfo("The buffer is too large to be sent."),
         117: ResultInfo("Invalid lock state."),
         118: ResultInfo("Invalid sequence."),
-        301: ResultInfo(
-            "Connection was unable to be established, either with the Rendez-Vous back end or a Peer."
-        ),
-        302: ResultInfo(
-            "The Principal could not be authenticated by the Authentication Service."
-        ),
+        301: ResultInfo("Connection was unable to be established, either with the Rendez-Vous back end or a Peer."),
+        302: ResultInfo("The Principal could not be authenticated by the Authentication Service."),
         303: ResultInfo(
             "The Principal tried to log in with an invalid user name, i.e. the user name does not exist in the database."
         ),
         304: ResultInfo(
             "The Principal either tried to log in with an invalid password for the provided user name or tried to join a Gathering with an invalid password."
         ),
-        305: ResultInfo(
-            "The provided user name already exists in the database. All usernames must be unique."
-        ),
+        305: ResultInfo("The provided user name already exists in the database. All usernames must be unique."),
         306: ResultInfo(
-            "The Principal\'s account still exists in the database but the account has been disabled.",
+            "The Principal's account still exists in the database but the account has been disabled.",
             is_ban=True,
         ),
-        307: ResultInfo(
-            "The Principal\'s account still exists in the database but the account has expired."
-        ),
+        307: ResultInfo("The Principal's account still exists in the database but the account has expired."),
         308: ResultInfo(
             "The Principal does not have the Capabilities to perform concurrent log ins, i.e. at any given time only one log-in may be maintained."
         ),
@@ -435,9 +409,7 @@ nex = Module(
         346: ResultInfo("NNID is permanently banned.", is_ban=True),
         501: ResultInfo("The reason for the error is unknown."),
         502: ResultInfo("Network connection was unable to be established."),
-        503: ResultInfo(
-            "The URL contained in the StationURL is invalid. The syntax may be incorrect."
-        ),
+        503: ResultInfo("The URL contained in the StationURL is invalid. The syntax may be incorrect."),
         504: ResultInfo(
             "The key used to authenticate a given station is invalid. The secure transport layer uses secret-key based cryptography to ensure the integrity and confidentiality of data sent across the network."
         ),
@@ -446,13 +418,9 @@ nex = Module(
         507: ResultInfo(
             "The data could not be sent across the network. This could be due to an invalid message, packet, or buffer."
         ),
-        508: ResultInfo(
-            "The operation did not complete within the specified timeout for that operation."
-        ),
+        508: ResultInfo("The operation did not complete within the specified timeout for that operation."),
         509: ResultInfo("The network connection was reset."),
-        510: ResultInfo(
-            "The destination Station did not authenticate itself properly."
-        ),
+        510: ResultInfo("The destination Station did not authenticate itself properly."),
         511: ResultInfo(
             "3rd-party server or device answered with an error code according to protocol used e.g. HTTP error code."
         ),
@@ -483,9 +451,7 @@ eshop_web = Module(
         9000: ResultInfo("Close application (Connection timeout issue?)."),
         9001: ResultInfo("Retriable."),
         9002: ResultInfo("Online services are undergoing maintenance."),
-        9003: ResultInfo(
-            "The online services are discontinued and thus are no longer available."
-        ),
+        9003: ResultInfo("The online services are discontinued and thus are no longer available."),
         9100: ResultInfo("Invalid template."),
     },
 )
@@ -494,8 +460,9 @@ unknown2 = Module(
     "unknown (browser?)",
     {
         1037: ResultInfo(
-            'Incorrect permissions for the default index.html file which prevents the Internet Browser from reading it.',
-            '[To fix it, follow these steps.](https://wiki.hacks.guide/wiki/Wii_U:Fix_error_code_112-1037)'),
+            "Incorrect permissions for the default index.html file which prevents the Internet Browser from reading it.",
+            "[To fix it, follow these steps.](https://wiki.hacks.guide/wiki/Wii_U:Fix_error_code_112-1037)",
+        ),
         1035: ResultInfo("SSL handshake failed due to cipher mismatch."),
         1209: ResultInfo("Internet Browser is unable to load a file(?)."),
     },
@@ -540,17 +507,21 @@ syserr = Module(
         104: ResultInfo("The SLC system memory is corrupted."),
         105: ResultInfo("The USB storage is corrupted."),
         1400: ResultInfo(
-            'Disc drive error.',
-            'Actually, the disc drive is probably okay, but rather, a Common Mode Filter may be broken. Fixing this requires soldering, [see for more info.](https://gbatemp.net/threads/572879/)'),
+            "Disc drive error.",
+            "Actually, the disc drive is probably okay, but rather, a Common Mode Filter may be broken. Fixing this requires soldering, [see for more info.](https://gbatemp.net/threads/572879/)",
+        ),
         2706: ResultInfo("Error when reading from USB storage device"),
-        2713: ResultInfo('The USB Storage device has been disconnected.'),
-        2793: ResultInfo('Usually indicates missing files on vWii. Run vWii Decaffeinator, then update your Wii U.'),
-        4711: ResultInfo('This error usually indicates the USB storage device connected to the console is dying or dead.')},
+        2713: ResultInfo("The USB Storage device has been disconnected."),
+        2793: ResultInfo("Usually indicates missing files on vWii. Run vWii Decaffeinator, then update your Wii U."),
+        4711: ResultInfo(
+            "This error usually indicates the USB storage device connected to the console is dying or dead."
+        ),
+    },
 )
 
-vpad_gamepad = Module('vpad (gamepad)', {
-    9901: ResultInfo('Error when updating a GamePad with a different region from the console.')
-})
+vpad_gamepad = Module(
+    "vpad (gamepad)", {9901: ResultInfo("Error when updating a GamePad with a different region from the console.")}
+)
 
 unknown = Module(
     "unknown/misc.",
@@ -610,15 +581,9 @@ def construct_support(ret, mod, desc):
         ret.add_field(ConsoleErrorField("Summary", message_str=summary))
     description = category.get_error(desc)
     if description and description.description:
-        ret.add_field(
-            ConsoleErrorField("Description", message_str=description.description)
-        )
+        ret.add_field(ConsoleErrorField("Description", message_str=description.description))
         if description.support_url:
-            ret.add_field(
-                ConsoleErrorField(
-                    "Further information", message_str=description.support_url
-                )
-            )
+            ret.add_field(ConsoleErrorField("Further information", message_str=description.support_url))
         if description.is_ban:
             ret.add_field(BANNED_FIELD)
             ret.color = WARNING_COLOR

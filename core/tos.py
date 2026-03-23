@@ -4,7 +4,6 @@ from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext
 from core.config import Config
-from core.constants.default import issue_url_default
 from core.logger import Logger
 from core.utils.container import ExpiringTempDict
 
@@ -29,11 +28,12 @@ async def remove_temp_ban(target):
 
 
 async def abuse_warn_target(msg: Bot.MessageSession, reason: str):
-    issue_url = Config("issue_url", issue_url_default)
+    issue_url = Config("issue_url", cfg_type=str)
     if WARNING_COUNTS >= 1 and not msg.check_super_user():
         await msg.session_info.sender_info.warn_user()
-        warn_template = MessageChain.assign([I18NContext("tos.message.warning"),
-                                             I18NContext("tos.message.reason", reason=reason)])
+        warn_template = MessageChain.assign(
+            [I18NContext("tos.message.warning"), I18NContext("tos.message.reason", reason=reason)]
+        )
 
         # Logs
         identify_str = f"[{msg.session_info.sender_id} ({msg.session_info.target_id})]"
@@ -48,9 +48,8 @@ async def abuse_warn_target(msg: Bot.MessageSession, reason: str):
         if msg.session_info.sender_info.warns < WARNING_COUNTS or msg.session_info.sender_info.trusted:
             await tos_report(msg.session_info.sender_id, msg.session_info.target_id, reason)
             warn_template.append(
-                I18NContext(
-                    "tos.message.warning.count",
-                    current_warns=msg.session_info.sender_info.warns))
+                I18NContext("tos.message.warning.count", current_warns=msg.session_info.sender_info.warns)
+            )
             if not msg.session_info.sender_info.trusted:
                 warn_template.append(I18NContext("tos.message.warning.prompt", warn_counts=WARNING_COUNTS))
             if msg.session_info.sender_info.warns <= 2 and issue_url:

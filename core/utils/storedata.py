@@ -25,9 +25,7 @@ async def get_stored_list(bot: type["Bot"] | str, name: str) -> list:
 async def update_stored_list(bot: type["Bot"] | str, name: str, value: list):
     if isinstance(bot, exports["Bot"]):
         bot = bot.Info.client_name
-    await StoredData.update_or_create(
-        defaults={"value": value}, stored_key=f"{bot}|{name}"
-    )
+    await StoredData.update_or_create(defaults={"value": value}, stored_key=f"{bot}|{name}")
 
 
 __all__ = ["get_stored_list", "update_stored_list"]

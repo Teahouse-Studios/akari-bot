@@ -5,7 +5,6 @@
     "phigros.help.random": "Random a song.",
     "phigros.help.score": "查询歌曲的相关成绩。",
     "phigros.help.unbind": "Unbind user.",
-    "phigros.message.bind.delete_failed": "Failed to delete message automatically; please delete the message manually.",
     "phigros.message.bind.failed": "Binding failed. Please check the input.",
     "phigros.message.bind.success": "Bound successfully: ${username}",
     "phigros.message.bind.warning": "Warning: you are binding user data in PUBLIC SESSIONS, which may lead to DATA CORRUPTION of your Cloud Save since your token is LEAKED here. Please bind user data in private chats to avoid this.\nYou can reset your SessionToken by logging out and then logging back in again.",

@@ -18,22 +18,18 @@ frequency_penalty = Config("llm_frequency_penalty", 0, cfg_type=float, table_nam
 presence_penalty = Config("llm_presence_penalty", 0, cfg_type=float, table_name="module_ai")
 
 
-async def ask_llm(prompt: str,
-                  model_name: str,
-                  api_url: str,
-                  api_key: str, session: MessageSession) -> tuple[list, int, int]:
+async def ask_llm(
+    prompt: str, model_name: str, api_url: str, api_key: str, session: MessageSession
+) -> tuple[list, int, int]:
     client = AsyncOpenAI(base_url=api_url, api_key=api_key)
     completion = await client.chat.completions.create(
         model=model_name,
-        messages=[
-            {"role": "system", "content": INSTRUCTIONS},
-            {"role": "user", "content": prompt}
-        ],
+        messages=[{"role": "system", "content": INSTRUCTIONS}, {"role": "user", "content": prompt}],
         max_completion_tokens=max_tokens,
         temperature=temperature,
         top_p=top_p,
         frequency_penalty=frequency_penalty,
-        presence_penalty=presence_penalty
+        presence_penalty=presence_penalty,
     )
 
     if "reasoning_content" in completion.choices[0].message.model_extra:

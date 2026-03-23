@@ -32,14 +32,16 @@ async def generate_screenshot_v2(
             elements_.insert(0, ".diff")
         Logger.info("[WebRender] Generating element screenshot...")
         imgs = await web_render.element_screenshot(
-            ElementScreenshotOptions(url=page_link, element=elements_, locale=locale))
+            ElementScreenshotOptions(url=page_link, element=elements_, locale=locale)
+        )
         if not imgs:
             Logger.error("[WebRender] Generation Failed.")
             return False
     else:
         Logger.info("[WebRender] Generating section screenshot...")
         imgs = await web_render.section_screenshot(
-            SectionScreenshotOptions(url=page_link, section=section, locale=locale))
+            SectionScreenshotOptions(url=page_link, section=section, locale=locale)
+        )
         if not imgs:
             Logger.error("[WebRender] Generation Failed.")
             return False
@@ -83,16 +85,16 @@ async def generate_screenshot_v1(
                 fl = []
                 for f in x.attrs:
                     if isinstance(x.attrs[f], str):
-                        fl.append(f"{f}=\"{x.attrs[f]}\"")
+                        fl.append(f'{f}="{x.attrs[f]}"')
                     elif isinstance(x.attrs[f], list):
-                        fl.append(f"{f}=\"{" ".join(x.attrs[f])}\"")
-                open_file.write(f"<html {" ".join(fl)}>")
+                        fl.append(f'{f}="{" ".join(x.attrs[f])}"')
+                open_file.write(f"<html {' '.join(fl)}>")
 
             open_file.write("<head>\n")
             for x in soup.find_all(rel="stylesheet"):
                 if x.has_attr("href"):
-                    get_herf = x.get("href")
-                    x.attrs["href"] = re.sub(";", "&", urljoin(link, get_herf))
+                    get_href = x.get("href")
+                    x.attrs["href"] = re.sub(";", "&", urljoin(link, get_href))
                 open_file.write(str(x))
 
             for x in soup.find_all():
@@ -111,31 +113,28 @@ async def generate_screenshot_v1(
                         Logger.info("Found diff...")
                         for x in soup.find_all("body"):
                             if x.has_attr("class"):
-                                open_file.write(
-                                    f"<body class=\"{" ".join(x.get("class"))}\">"
-                                )
+                                open_file.write(f'<body class="{" ".join(x.get("class"))}">')
 
                         for x in soup.find_all("div"):
                             if x.get("id") in ["content", "mw-content-text"]:
                                 fl = []
                                 for f in x.attrs:
                                     if isinstance(x.attrs[f], str):
-                                        fl.append(f"{f}=\"{x.attrs[f]}\"")
+                                        fl.append(f'{f}="{x.attrs[f]}"')
                                     elif isinstance(x.attrs[f], list):
-                                        fl.append(f"{f}=\"{" ".join(x.attrs[f])}\"")
-                                open_file.write(f"<div {" ".join(fl)}>")
-                        open_file.write("<div class=\"mw-parser-output\">")
+                                        fl.append(f'{f}="{" ".join(x.attrs[f])}"')
+                                open_file.write(f"<div {' '.join(fl)}>")
+                        open_file.write('<div class="mw-parser-output">')
 
                         for x in soup.find_all("main"):
                             fl = []
                             for f in x.attrs:
                                 if isinstance(x.attrs[f], str):
-                                    fl.append(f"{f}=\"{x.attrs[f]}\"")
+                                    fl.append(f'{f}="{x.attrs[f]}"')
                                 elif isinstance(x.attrs[f], list):
-                                    fl.append(f"{f}=\"{" ".join(x.attrs[f])}\"")
-                            open_file.write(f"<main {" ".join(fl)}>")
+                                    fl.append(f'{f}="{" ".join(x.attrs[f])}"')
+                            open_file.write(f"<main {' '.join(fl)}>")
                         open_file.write(str(find_diff))
-                        w = 2000
                 if not find_diff:
                     infoboxes = infobox_elements.copy()
                     find_infobox = None
@@ -156,45 +155,42 @@ async def generate_screenshot_v1(
                         if x.has_attr("srcset"):
                             x.attrs["srcset"] = join_url(link, x.get("srcset"))
                         if x.has_attr("style"):
-                            x.attrs["style"] = re.sub(
-                                r"url\(/(.*)\)", "url(" + link + "\\1)", x.get("style")
-                            )
+                            x.attrs["style"] = re.sub(r"url\(/(.*)\)", "url(" + link + "\\1)", x.get("style"))
 
                     for x in find_infobox.find_all(class_="lazyload"):
                         if x.has_attr("class") and x.has_attr("data-src"):
                             x.attrs["class"] = "image"
                             x.attrs["src"] = x.attrs["data-src"]
 
-                    open_file.write("<div class=\"mw-parser-output\">")
+                    open_file.write('<div class="mw-parser-output">')
 
                     open_file.write(str(find_infobox))
-                    w = 500
                     open_file.write("</div>")
             else:
                 for x in soup.find_all("body"):
                     if x.has_attr("class"):
-                        open_file.write(f"<body class=\"{" ".join(x.get("class"))}\">")
+                        open_file.write(f'<body class="{" ".join(x.get("class"))}">')
 
                 for x in soup.find_all("div"):
                     if x.get("id") in ["content", "mw-content-text"]:
                         fl = []
                         for f in x.attrs:
                             if isinstance(x.attrs[f], str):
-                                fl.append(f"{f}=\"{x.attrs[f]}\"")
+                                fl.append(f'{f}="{x.attrs[f]}"')
                             elif isinstance(x.attrs[f], list):
-                                fl.append(f"{f}=\"{" ".join(x.attrs[f])}\"")
-                        open_file.write(f"<div {" ".join(fl)}>")
+                                fl.append(f'{f}="{" ".join(x.attrs[f])}"')
+                        open_file.write(f"<div {' '.join(fl)}>")
 
-                open_file.write("<div class=\"mw-parser-output\">")
+                open_file.write('<div class="mw-parser-output">')
 
                 for x in soup.find_all("main"):
                     fl = []
                     for f in x.attrs:
                         if isinstance(x.attrs[f], str):
-                            fl.append(f"{f}=\"{x.attrs[f]}\"")
+                            fl.append(f'{f}="{x.attrs[f]}"')
                         elif isinstance(x.attrs[f], list):
-                            fl.append(f"{f}=\"{" ".join(x.attrs[f])}\"")
-                    open_file.write(f"<main {" ".join(fl)}>")
+                            fl.append(f'{f}="{" ".join(x.attrs[f])}"')
+                    open_file.write(f"<main {' '.join(fl)}>")
 
                 def is_comment(e):
                     return isinstance(e, Comment)
@@ -248,14 +244,7 @@ async def generate_screenshot_v1(
             if x.has_attr("srcset"):
                 x.attrs["srcset"] = join_url(link, x.get("srcset"))
             if x.has_attr("style"):
-                x.attrs["style"] = re.sub(
-                    r"url\(/(.*)\)", "url(" + link + "\\1)", x.get("style")
-                )
-
-        for x in soup.find_all(class_="lazyload"):
-            if x.has_attr("class") and x.has_attr("data-src"):
-                x.attrs["class"] = "image"
-                x.attrs["src"] = x.attrs["data-src"]
+                x.attrs["style"] = re.sub(r"url\(/(.*)\)", "url(" + link + "\\1)", x.get("style"))
 
         for x in soup.find_all(class_="lazyload"):
             if x.has_attr("class") and x.has_attr("data-src"):

@@ -15,11 +15,7 @@ def compress_json(input_data):
     data = input_data["data"]
     known_supported_emoji = input_data["knownSupportedEmoji"]
 
-    compressed_data = {
-        "knownSupportedEmoji": known_supported_emoji,
-        "data": defaultdict(dict),
-        "date": []
-    }
+    compressed_data = {"knownSupportedEmoji": known_supported_emoji, "data": defaultdict(dict), "date": []}
 
     unique_dates = set()
 

@@ -45,7 +45,7 @@ _多功能、跨平台、可自由扩展的异步聊天机器人助手_
 ##### 第三方协议
 由于腾讯风控问题，请[在此提交](https://github.com/Teahouse-Studios/akari-bot/issues/new?assignees=OasisAkari&labels=New&template=add_new_group.yaml&title=%5BNEW%5D%3A+)入群申请。
 
-你也可以加入我们的 QQ 公共实例测试群：[738829671](http://qm.qq.com/cgi-bin/qm/qr?k=nXkV2SUP_WWlCuSzzpnKJK_uYkG7n1im)
+你也可以加入我们的 QQ 公共实例测试群：[738829671](https://qm.qq.com/q/Rmuo5ORYgq)
 
 #### Discord
 
@@ -69,13 +69,8 @@ _多功能、跨平台、可自由扩展的异步聊天机器人助手_
 
 若遇到问题，可以通过 [Issue](https://github.com/Teahouse-Studios/akari-bot/issues/new) 或其他方式咨询开发者。
 
-### 本地化
-
-你可以前往 [Crowdin](https://crowdin.com/project/akari-bot) 参与改进小可的本地化支持。
-
 ### 贡献
-
-如你想为我们编写新的模块，可以看看[这里](https://bot.teahouse.team/wiki/%E6%A8%A1%E5%9D%97%E5%BC%80%E5%8F%91%E6%8C%87%E5%8D%97)。
+如你想为我们做出贡献，可以看看[这里](/CONTRIBUTING.md)。
 
 ## Star 历史
 [![Star Chart](https://starchart.cc/Teahouse-Studios/akari-bot.svg?variant=adaptive)](https://starchart.cc/Teahouse-Studios/akari-bot)

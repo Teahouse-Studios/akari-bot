@@ -108,76 +108,42 @@ fs = Module(
         37: ResultInfo("Not enough free space on USER partition."),
         38: ResultInfo("Not enough free space on SYSTEM partition."),
         39: ResultInfo("Not enough free space on SD card."),
-        50: ResultInfo(
-            "NCA is older than version 3, or NCA SDK version is < 0.11.0.0."
-        ),
+        50: ResultInfo("NCA is older than version 3, or NCA SDK version is < 0.11.0.0."),
         60: ResultInfo("Mount name already exists."),
         1001: ResultInfo("Process does not have RomFS."),
         1002: ResultInfo("Target not found."),
         2001: ResultInfo("SD card not present."),
         2520: ResultInfo("Game Card is not inserted."),
-        2522: ResultInfo(
-            "Attempted to process an AsicHandler command in initial mode."
-        ),
-        2540: ResultInfo(
-            "Attempted to read from the secure Game Card partition in normal mode."
-        ),
-        2541: ResultInfo(
-            "Attempted to read from the normal Game Card partition in secure mode."
-        ),
-        2542: ResultInfo(
-            "Attempted a read that spanned both the normal and secure Game Card partitions."
-        ),
-        2544: ResultInfo(
-            "Game Card initial data hash doesn\'t match the initial data hash in the card header."
-        ),
+        2522: ResultInfo("Attempted to process an AsicHandler command in initial mode."),
+        2540: ResultInfo("Attempted to read from the secure Game Card partition in normal mode."),
+        2541: ResultInfo("Attempted to read from the normal Game Card partition in secure mode."),
+        2542: ResultInfo("Attempted a read that spanned both the normal and secure Game Card partitions."),
+        2544: ResultInfo("Game Card initial data hash doesn't match the initial data hash in the card header."),
         2545: ResultInfo("Game Card initial data reserved area is not all zeroes."),
-        2546: ResultInfo(
-            "Game Card certificate kek index doesn\'t match card header kek index."
-        ),
+        2546: ResultInfo("Game Card certificate kek index doesn't match card header kek index."),
         2551: ResultInfo("Unable to read card header on Game Card initialization."),
         2565: ResultInfo("Encountered SDMMC error in write operation."),
-        2600: ResultInfo(
-            "Attempted to switch Lotus state machine to secure mode from a mode other than normal mode."
-        ),
-        2601: ResultInfo(
-            "Attempted to switch Lotus state machine to normal mode from a mode other than initial mode."
-        ),
-        2602: ResultInfo(
-            "Attempted to switch Lotus state machine to write mode from a mode other than normal mode."
-        ),
+        2600: ResultInfo("Attempted to switch Lotus state machine to secure mode from a mode other than normal mode."),
+        2601: ResultInfo("Attempted to switch Lotus state machine to normal mode from a mode other than initial mode."),
+        2602: ResultInfo("Attempted to switch Lotus state machine to write mode from a mode other than normal mode."),
         2634: ResultInfo("Error processing Lotus command SetUserAsicFirmware."),
         2637: ResultInfo("Error processing Lotus command GetAsicCert."),
-        2640: ResultInfo(
-            "Error processing Lotus command SetEmmcEmbeddedSocCertificate."
-        ),
+        2640: ResultInfo("Error processing Lotus command SetEmmcEmbeddedSocCertificate."),
         2645: ResultInfo("Error processing Lotus command GetAsicEncryptedMessage."),
         2646: ResultInfo("Error processing Lotus command SetLibraryEncryptedMessage."),
         2651: ResultInfo("Error processing Lotus command GetAsicAuthenticationData."),
-        2652: ResultInfo(
-            "Error processing Lotus command SetAsicAuthenticationDataHash."
-        ),
-        2653: ResultInfo(
-            "Error processing Lotus command SetLibraryAuthenticationData."
-        ),
-        2654: ResultInfo(
-            "Error processing Lotus command GetLibraryAuthenticationDataHash."
-        ),
-        2657: ResultInfo(
-            "Error processing Lotus command ExchangeRandomValuesInSecureMode."
-        ),
-        2668: ResultInfo(
-            "Error calling nn::gc::detail::GcCrypto::GenerateRandomBytes."
-        ),
+        2652: ResultInfo("Error processing Lotus command SetAsicAuthenticationDataHash."),
+        2653: ResultInfo("Error processing Lotus command SetLibraryAuthenticationData."),
+        2654: ResultInfo("Error processing Lotus command GetLibraryAuthenticationDataHash."),
+        2657: ResultInfo("Error processing Lotus command ExchangeRandomValuesInSecureMode."),
+        2668: ResultInfo("Error calling nn::gc::detail::GcCrypto::GenerateRandomBytes."),
         2671: ResultInfo("Error processing Lotus command ReadAsicRegister."),
         2672: ResultInfo("Error processing Lotus command GetGameCardIdSet."),
         2674: ResultInfo("Error processing Lotus command GetCardHeader."),
         2676: ResultInfo("Error processing Lotus command GetCardKeyArea."),
         2677: ResultInfo("Error processing Lotus command ChangeDebugMode."),
         2678: ResultInfo("Error processing Lotus command GetRmaInformation."),
-        2692: ResultInfo(
-            "Tried sending Lotus card command Refresh when not in secure mode."
-        ),
+        2692: ResultInfo("Tried sending Lotus card command Refresh when not in secure mode."),
         2693: ResultInfo("Tried sending Lotus card command when not in correct mode."),
         2731: ResultInfo("Error processing Lotus card command ReadId1."),
         2732: ResultInfo("Error processing Lotus card command ReadId2."),
@@ -186,27 +152,15 @@ fs = Module(
         2737: ResultInfo("Error processing Lotus card command WritePage."),
         2738: ResultInfo("Error processing Lotus card command Refresh."),
         2742: ResultInfo("Error processing Lotus card command ReadCrc."),
-        2743: ResultInfo(
-            "Error processing Lotus card command Erase or UnlockForceErase."
-        ),
+        2743: ResultInfo("Error processing Lotus card command Erase or UnlockForceErase."),
         2744: ResultInfo("Error processing Lotus card command ReadDevParam."),
         2745: ResultInfo("Error processing Lotus card command WriteDevParam."),
-        2904: ResultInfo(
-            "Id2Normal did not match the value in the buffer returned by ChangeDebugMode."
-        ),
-        2905: ResultInfo(
-            "Id1Normal did not match Id1Writer when switching gamecard to write mode."
-        ),
-        2906: ResultInfo(
-            "Id2Normal did not match Id2Writer when switching gamecard to write mode."
-        ),
+        2904: ResultInfo("Id2Normal did not match the value in the buffer returned by ChangeDebugMode."),
+        2905: ResultInfo("Id1Normal did not match Id1Writer when switching gamecard to write mode."),
+        2906: ResultInfo("Id2Normal did not match Id2Writer when switching gamecard to write mode."),
         2954: ResultInfo("Invalid Game Card handle."),
-        2960: ResultInfo(
-            "Invalid gamecard handle when opening normal gamecard partition."
-        ),
-        2961: ResultInfo(
-            "Invalid gamecard handle when opening secure gamecard partition."
-        ),
+        2960: ResultInfo("Invalid gamecard handle when opening normal gamecard partition."),
+        2961: ResultInfo("Invalid gamecard handle when opening secure gamecard partition."),
         3001: ResultInfo("Not implemented."),
         3002: ResultInfo("Unsupported version."),
         3003: ResultInfo("File or directory already exists."),
@@ -319,9 +273,7 @@ fs = Module(
         4142: ResultInfo("Incorrect ROM integrity verification magic."),
         4143: ResultInfo("Invalid ROM0 hash."),
         4144: ResultInfo("ROM non-real data verification failed."),
-        4145: ResultInfo(
-            "Invalid ROM hierarchical integrity verification layer count."
-        ),
+        4145: ResultInfo("Invalid ROM hierarchical integrity verification layer count."),
         4151: ResultInfo("Cleared ROM real data verification failed."),
         4152: ResultInfo("Uncleared ROM real data verification failed."),
         4153: ResultInfo("Invalid ROM0 hash."),
@@ -338,9 +290,7 @@ fs = Module(
         4245: ResultInfo("Invalid ROM host handle."),
         4262: ResultInfo("Invalid ROM allocation table block."),
         4263: ResultInfo("Invalid ROM key value list element index."),
-        4318: ResultInfo(
-            "Invalid save data filesystem magic (valid magic is SAVE in ASCII)."
-        ),
+        4318: ResultInfo("Invalid save data filesystem magic (valid magic is SAVE in ASCII)."),
         4508: ResultInfo("NcaBaseStorage is out of Range A."),
         4509: ResultInfo("NcaBaseStorage is out of Range B."),
         4512: ResultInfo("Invalid NCA filesystem type."),
@@ -357,9 +307,7 @@ fs = Module(
         4523: ResultInfo("Invalid NCA FS header encryption type."),
         4524: ResultInfo("Redirection BKTR table size is negative."),
         4525: ResultInfo("Encryption BKTR table size is negative."),
-        4526: ResultInfo(
-            "Redirection BKTR table end offset is past the Encryption BKTR table start offset."
-        ),
+        4526: ResultInfo("Redirection BKTR table end offset is past the Encryption BKTR table start offset."),
         4527: ResultInfo("NCA path used with the wrong program ID."),
         4528: ResultInfo("NCA header value is out of range."),
         4529: ResultInfo("NCA FS header value is out of range."),
@@ -417,9 +365,7 @@ fs = Module(
         6031: ResultInfo("The directory is not deletable."),
         6032: ResultInfo("The directory is not renameable."),
         6033: ResultInfo("The path is incompatible."),
-        6034: ResultInfo(
-            "Rename to other filesystem."
-        ),  # "Attempted to rename to other filesystem."?
+        6034: ResultInfo("Rename to other filesystem."),  # "Attempted to rename to other filesystem."?
         6061: ResultInfo("Invalid offset."),
         6062: ResultInfo("Invalid size."),
         6063: ResultInfo("Argument is nullptr."),
@@ -434,9 +380,7 @@ fs = Module(
         6202: ResultInfo("Reads are not permitted."),
         6203: ResultInfo("Writes are not permitted."),
         6300: ResultInfo("Operation not supported."),
-        6301: ResultInfo(
-            "A specified filesystem has no MultiCommitTarget when doing a multi-filesystem commit."
-        ),
+        6301: ResultInfo("A specified filesystem has no MultiCommitTarget when doing a multi-filesystem commit."),
         6302: ResultInfo(
             "Attempted to resize a nn::fs::SubStorage or BufferedStorage that is marked as non-resizable."
         ),
@@ -444,218 +388,96 @@ fs = Module(
             "Attempted to resize a nn::fs::SubStorage or BufferedStorage when the SubStorage ends before the base storage."
         ),
         6304: ResultInfo("Attempted to call nn::fs::MemoryStorage::SetSize."),
-        6305: ResultInfo(
-            "Invalid Operation ID in nn::fs::MemoryStorage::OperateRange."
-        ),
+        6305: ResultInfo("Invalid Operation ID in nn::fs::MemoryStorage::OperateRange."),
         6306: ResultInfo("Invalid Operation ID in nn::fs::FileStorage::OperateRange."),
-        6307: ResultInfo(
-            "Invalid Operation ID in nn::fs::FileHandleStorage::OperateRange."
-        ),
-        6308: ResultInfo(
-            "Invalid Operation ID in nn::fssystem::SwitchStorage::OperateRange."
-        ),
-        6309: ResultInfo(
-            "Invalid Operation ID in nn::fs::detail::StorageServiceObjectAdapter::OperateRange."
-        ),
-        6310: ResultInfo(
-            "Attempted to call nn::fssystem::AesCtrCounterExtendedStorage::Write."
-        ),
-        6311: ResultInfo(
-            "Attempted to call nn::fssystem::AesCtrCounterExtendedStorage::SetSize."
-        ),
-        6312: ResultInfo(
-            "Invalid Operation ID in nn::fssystem::AesCtrCounterExtendedStorage::OperateRange."
-        ),
-        6313: ResultInfo(
-            "Attempted to call nn::fssystem::AesCtrStorageExternal::Write."
-        ),
-        6314: ResultInfo(
-            "Attempted to call nn::fssystem::AesCtrStorageExternal::SetSize."
-        ),
+        6307: ResultInfo("Invalid Operation ID in nn::fs::FileHandleStorage::OperateRange."),
+        6308: ResultInfo("Invalid Operation ID in nn::fssystem::SwitchStorage::OperateRange."),
+        6309: ResultInfo("Invalid Operation ID in nn::fs::detail::StorageServiceObjectAdapter::OperateRange."),
+        6310: ResultInfo("Attempted to call nn::fssystem::AesCtrCounterExtendedStorage::Write."),
+        6311: ResultInfo("Attempted to call nn::fssystem::AesCtrCounterExtendedStorage::SetSize."),
+        6312: ResultInfo("Invalid Operation ID in nn::fssystem::AesCtrCounterExtendedStorage::OperateRange."),
+        6313: ResultInfo("Attempted to call nn::fssystem::AesCtrStorageExternal::Write."),
+        6314: ResultInfo("Attempted to call nn::fssystem::AesCtrStorageExternal::SetSize."),
         6315: ResultInfo("Attempted to call nn::fssystem::AesCtrStorage::SetSize."),
-        6316: ResultInfo(
-            "Attempted to call nn::fssystem::save::HierarchicalIntegrityVerificationStorage::SetSize."
-        ),
+        6316: ResultInfo("Attempted to call nn::fssystem::save::HierarchicalIntegrityVerificationStorage::SetSize."),
         6317: ResultInfo(
             "Attempted to call nn::fssystem::save::HierarchicalIntegrityVerificationStorage::OperateRange."
         ),
-        6318: ResultInfo(
-            "Attempted to call nn::fssystem::save::IntegrityVerificationStorage::SetSize."
-        ),
+        6318: ResultInfo("Attempted to call nn::fssystem::save::IntegrityVerificationStorage::SetSize."),
         6319: ResultInfo(
             "Attempted to invalidate the cache of a RomFs IVFC storage in nn::fssystem::save::IntegrityVerificationStorage::OperateRange."
         ),
-        6320: ResultInfo(
-            "Invalid Operation ID in nn::fssystem::save::IntegrityVerificationStorage::OperateRange."
-        ),
-        6321: ResultInfo(
-            "Attempted to call nn::fssystem::save::BlockCacheBufferedStorage::SetSize."
-        ),
+        6320: ResultInfo("Invalid Operation ID in nn::fssystem::save::IntegrityVerificationStorage::OperateRange."),
+        6321: ResultInfo("Attempted to call nn::fssystem::save::BlockCacheBufferedStorage::SetSize."),
         6322: ResultInfo(
             "Attempted to invalidate the cache of something other than a savedata IVFC storage in nn::fssystem::save::BlockCacheBufferedStorage::OperateRange."
         ),
-        6323: ResultInfo(
-            "Invalid Operation ID in nn::fssystem::save::BlockCacheBufferedStorage::OperateRange."
-        ),
+        6323: ResultInfo("Invalid Operation ID in nn::fssystem::save::BlockCacheBufferedStorage::OperateRange."),
         6324: ResultInfo("Attempted to call nn::fssystem::IndirectStorage::Write."),
         6325: ResultInfo("Attempted to call nn::fssystem::IndirectStorage::SetSize."),
-        6326: ResultInfo(
-            "Invalid Operation ID in nn::fssystem::IndirectStorage::OperateRange."
-        ),
-        6327: ResultInfo(
-            "Attempted to call nn::fssystem::SparseStorage::ZeroStorage::Write."
-        ),
-        6328: ResultInfo(
-            "Attempted to call nn::fssystem::SparseStorage::ZeroStorage::SetSize."
-        ),
-        6329: ResultInfo(
-            "Attempted to call nn::fssystem::HierarchicalSha256Storage::SetSize."
-        ),
-        6330: ResultInfo(
-            "Attempted to call nn::fssystem::ReadOnlyBlockCacheStorage::Write."
-        ),
-        6331: ResultInfo(
-            "Attempted to call nn::fssystem::ReadOnlyBlockCacheStorage::SetSize."
-        ),
-        6332: ResultInfo(
-            "Attempted to call nn::fssystem::IntegrityRomFsStorage::SetSize."
-        ),
-        6333: ResultInfo(
-            "Attempted to call nn::fssystem::save::DuplexStorage::SetSize."
-        ),
-        6334: ResultInfo(
-            "Invalid Operation ID in nn::fssystem::save::DuplexStorage::OperateRange."
-        ),
-        6335: ResultInfo(
-            "Attempted to call nn::fssystem::save::HierarchicalDuplexStorage::SetSize."
-        ),
-        6336: ResultInfo(
-            "Attempted to call nn::fssystem::save::RemapStorage::GetSize."
-        ),
-        6337: ResultInfo(
-            "Attempted to call nn::fssystem::save::RemapStorage::SetSize."
-        ),
-        6338: ResultInfo(
-            "Invalid Operation ID in nn::fssystem::save::RemapStorage::OperateRange."
-        ),
-        6339: ResultInfo(
-            "Attempted to call nn::fssystem::save::IntegritySaveDataStorage::SetSize."
-        ),
-        6340: ResultInfo(
-            "Invalid Operation ID in nn::fssystem::save::IntegritySaveDataStorage::OperateRange."
-        ),
-        6341: ResultInfo(
-            "Attempted to call nn::fssystem::save::JournalIntegritySaveDataStorage::SetSize."
-        ),
-        6342: ResultInfo(
-            "Invalid Operation ID in nn::fssystem::save::JournalIntegritySaveDataStorage::OperateRange."
-        ),
-        6343: ResultInfo(
-            "Attempted to call nn::fssystem::save::JournalStorage::GetSize."
-        ),
-        6344: ResultInfo(
-            "Attempted to call nn::fssystem::save::JournalStorage::SetSize."
-        ),
-        6345: ResultInfo(
-            "Invalid Operation ID in nn::fssystem::save::JournalStorage::OperateRange."
-        ),
-        6346: ResultInfo(
-            "Attempted to call nn::fssystem::save::UnionStorage::SetSize."
-        ),
-        6347: ResultInfo(
-            "Attempted to call nn::fssystem::dbm::AllocationTableStorage::SetSize."
-        ),
-        6348: ResultInfo(
-            "Attempted to call nn::fssrv::fscreator::WriteOnlyGameCardStorage::Read."
-        ),
-        6349: ResultInfo(
-            "Attempted to call nn::fssrv::fscreator::WriteOnlyGameCardStorage::SetSize."
-        ),
-        6350: ResultInfo(
-            "Attempted to call nn::fssrv::fscreator::ReadOnlyGameCardStorage::Write."
-        ),
-        6351: ResultInfo(
-            "Attempted to call nn::fssrv::fscreator::ReadOnlyGameCardStorage::SetSize."
-        ),
-        6352: ResultInfo(
-            "Invalid Operation ID in nn::fssrv::fscreator::ReadOnlyGameCardStorage::OperateRange."
-        ),
+        6326: ResultInfo("Invalid Operation ID in nn::fssystem::IndirectStorage::OperateRange."),
+        6327: ResultInfo("Attempted to call nn::fssystem::SparseStorage::ZeroStorage::Write."),
+        6328: ResultInfo("Attempted to call nn::fssystem::SparseStorage::ZeroStorage::SetSize."),
+        6329: ResultInfo("Attempted to call nn::fssystem::HierarchicalSha256Storage::SetSize."),
+        6330: ResultInfo("Attempted to call nn::fssystem::ReadOnlyBlockCacheStorage::Write."),
+        6331: ResultInfo("Attempted to call nn::fssystem::ReadOnlyBlockCacheStorage::SetSize."),
+        6332: ResultInfo("Attempted to call nn::fssystem::IntegrityRomFsStorage::SetSize."),
+        6333: ResultInfo("Attempted to call nn::fssystem::save::DuplexStorage::SetSize."),
+        6334: ResultInfo("Invalid Operation ID in nn::fssystem::save::DuplexStorage::OperateRange."),
+        6335: ResultInfo("Attempted to call nn::fssystem::save::HierarchicalDuplexStorage::SetSize."),
+        6336: ResultInfo("Attempted to call nn::fssystem::save::RemapStorage::GetSize."),
+        6337: ResultInfo("Attempted to call nn::fssystem::save::RemapStorage::SetSize."),
+        6338: ResultInfo("Invalid Operation ID in nn::fssystem::save::RemapStorage::OperateRange."),
+        6339: ResultInfo("Attempted to call nn::fssystem::save::IntegritySaveDataStorage::SetSize."),
+        6340: ResultInfo("Invalid Operation ID in nn::fssystem::save::IntegritySaveDataStorage::OperateRange."),
+        6341: ResultInfo("Attempted to call nn::fssystem::save::JournalIntegritySaveDataStorage::SetSize."),
+        6342: ResultInfo("Invalid Operation ID in nn::fssystem::save::JournalIntegritySaveDataStorage::OperateRange."),
+        6343: ResultInfo("Attempted to call nn::fssystem::save::JournalStorage::GetSize."),
+        6344: ResultInfo("Attempted to call nn::fssystem::save::JournalStorage::SetSize."),
+        6345: ResultInfo("Invalid Operation ID in nn::fssystem::save::JournalStorage::OperateRange."),
+        6346: ResultInfo("Attempted to call nn::fssystem::save::UnionStorage::SetSize."),
+        6347: ResultInfo("Attempted to call nn::fssystem::dbm::AllocationTableStorage::SetSize."),
+        6348: ResultInfo("Attempted to call nn::fssrv::fscreator::WriteOnlyGameCardStorage::Read."),
+        6349: ResultInfo("Attempted to call nn::fssrv::fscreator::WriteOnlyGameCardStorage::SetSize."),
+        6350: ResultInfo("Attempted to call nn::fssrv::fscreator::ReadOnlyGameCardStorage::Write."),
+        6351: ResultInfo("Attempted to call nn::fssrv::fscreator::ReadOnlyGameCardStorage::SetSize."),
+        6352: ResultInfo("Invalid Operation ID in nn::fssrv::fscreator::ReadOnlyGameCardStorage::OperateRange."),
         6353: ResultInfo("Attempted to call SdStorage::SetSize."),
         6354: ResultInfo("Invalid Operation ID in SdStorage::OperateRange."),
         6355: ResultInfo("Invalid Operation ID in nn::fat::FatFile::DoOperateRange."),
-        6356: ResultInfo(
-            "Invalid Operation ID in nn::fssystem::StorageFile::DoOperateRange."
-        ),
+        6356: ResultInfo("Invalid Operation ID in nn::fssystem::StorageFile::DoOperateRange."),
         6357: ResultInfo("Attempted to call nn::fssystem::ConcatenationFile::SetSize."),
-        6358: ResultInfo(
-            "Attempted to call nn::fssystem::ConcatenationFile::OperateRange."
-        ),
-        6359: ResultInfo(
-            "Invalid Query ID in nn::fssystem::ConcatenationFileSystem::DoQueryEntry."
-        ),
-        6360: ResultInfo(
-            "Invalid Operation ID in nn::fssystem::ConcatenationFile::DoOperateRange."
-        ),
+        6358: ResultInfo("Attempted to call nn::fssystem::ConcatenationFile::OperateRange."),
+        6359: ResultInfo("Invalid Query ID in nn::fssystem::ConcatenationFileSystem::DoQueryEntry."),
+        6360: ResultInfo("Invalid Operation ID in nn::fssystem::ConcatenationFile::DoOperateRange."),
         6361: ResultInfo("Attempted to call nn::fssystem::ZeroBitmapFile::SetSize."),
-        6362: ResultInfo(
-            "Invalid Operation ID in nn::fs::detail::FileServiceObjectAdapter::DoOperateRange."
-        ),
-        6363: ResultInfo(
-            "Invalid Operation ID in nn::fssystem::AesXtsFile::DoOperateRange."
-        ),
+        6362: ResultInfo("Invalid Operation ID in nn::fs::detail::FileServiceObjectAdapter::DoOperateRange."),
+        6363: ResultInfo("Invalid Operation ID in nn::fssystem::AesXtsFile::DoOperateRange."),
         6364: ResultInfo("Attempted to modify a nn::fs::RomFsFileSystem."),
-        6365: ResultInfo(
-            "Attempted to call nn::fs::RomFsFileSystem::DoCommitProvisionally."
-        ),
+        6365: ResultInfo("Attempted to call nn::fs::RomFsFileSystem::DoCommitProvisionally."),
         6366: ResultInfo("Attempted to query the space in a nn::fs::RomFsFileSystem."),
         6367: ResultInfo("Attempted to modify a nn::fssystem::RomFsFile."),
-        6368: ResultInfo(
-            "Invalid Operation ID in nn::fssystem::RomFsFile::DoOperateRange."
-        ),
+        6368: ResultInfo("Invalid Operation ID in nn::fssystem::RomFsFile::DoOperateRange."),
         6369: ResultInfo("Attempted to modify a nn::fs::ReadOnlyFileSystemTemplate."),
-        6370: ResultInfo(
-            "Attempted to call nn::fs::ReadOnlyFileSystemTemplate::DoCommitProvisionally."
-        ),
-        6371: ResultInfo(
-            "Attempted to query the space in a nn::fs::ReadOnlyFileSystemTemplate."
-        ),
+        6370: ResultInfo("Attempted to call nn::fs::ReadOnlyFileSystemTemplate::DoCommitProvisionally."),
+        6371: ResultInfo("Attempted to query the space in a nn::fs::ReadOnlyFileSystemTemplate."),
         6372: ResultInfo("Attempted to modify a nn::fs::ReadOnlyFileSystemFile."),
-        6373: ResultInfo(
-            "Invalid Operation ID in nn::fs::ReadOnlyFileSystemFile::DoOperateRange."
-        ),
-        6374: ResultInfo(
-            "UAttempted to modify a nn::fssystem::PartitionFileSystemCore."
-        ),
-        6375: ResultInfo(
-            "Attempted to call nn::fssystem::PartitionFileSystemCore::DoCommitProvisionally."
-        ),
-        6376: ResultInfo(
-            "Attempted to call nn::fssystem::PartitionFileSystemCore::PartitionFile::DoSetSize."
-        ),
+        6373: ResultInfo("Invalid Operation ID in nn::fs::ReadOnlyFileSystemFile::DoOperateRange."),
+        6374: ResultInfo("UAttempted to modify a nn::fssystem::PartitionFileSystemCore."),
+        6375: ResultInfo("Attempted to call nn::fssystem::PartitionFileSystemCore::DoCommitProvisionally."),
+        6376: ResultInfo("Attempted to call nn::fssystem::PartitionFileSystemCore::PartitionFile::DoSetSize."),
         6377: ResultInfo(
             "Invalid Operation ID in nn::fssystem::PartitionFileSystemCore::PartitionFile::DoOperateRange."
         ),
-        6378: ResultInfo(
-            "Invalid Operation ID in nn::fssystem::TmFileSystemFile::DoOperateRange."
-        ),
+        6378: ResultInfo("Invalid Operation ID in nn::fssystem::TmFileSystemFile::DoOperateRange."),
         6379: ResultInfo(
             "Attempted to call unsupported functions in nn::fssrv::fscreator::SaveDataInternalStorageFileSystem, nn::fssrv::detail::SaveDataInternalStorageAccessor::PaddingFile or nn::fssystem::save::detail::SaveDataExtraDataInternalStorageFile."
         ),
-        6382: ResultInfo(
-            "Attempted to call nn::fssystem::ApplicationTemporaryFileSystem::DoCommitProvisionally."
-        ),
-        6383: ResultInfo(
-            "Attempted to call nn::fssystem::SaveDataFileSystem::DoCommitProvisionally."
-        ),
-        6384: ResultInfo(
-            "Attempted to call nn::fssystem::DirectorySaveDataFileSystem::DoCommitProvisionally."
-        ),
-        6385: ResultInfo(
-            "Attempted to call nn::fssystem::ZeroBitmapHashStorageFile::Write."
-        ),
-        6386: ResultInfo(
-            "Attempted to call nn::fssystem::ZeroBitmapHashStorageFile::SetSize."
-        ),
+        6382: ResultInfo("Attempted to call nn::fssystem::ApplicationTemporaryFileSystem::DoCommitProvisionally."),
+        6383: ResultInfo("Attempted to call nn::fssystem::SaveDataFileSystem::DoCommitProvisionally."),
+        6384: ResultInfo("Attempted to call nn::fssystem::DirectorySaveDataFileSystem::DoCommitProvisionally."),
+        6385: ResultInfo("Attempted to call nn::fssystem::ZeroBitmapHashStorageFile::Write."),
+        6386: ResultInfo("Attempted to call nn::fssystem::ZeroBitmapHashStorageFile::SetSize."),
         6400: ResultInfo("Permission denied."),
         6451: ResultInfo("Missing titlekey (required to mount content)."),
         6454: ResultInfo("Needs flush."),
@@ -682,9 +504,7 @@ fs = Module(
         7907: ResultInfo("DBM key is full."),
         7908: ResultInfo("DBM directory entry is full."),
         7909: ResultInfo("DBM file entry is full."),
-        7910: ResultInfo(
-            "RomFs directory has no more child directories/files when iterating."
-        ),
+        7910: ResultInfo("RomFs directory has no more child directories/files when iterating."),
         7911: ResultInfo("DBM FindKey finished."),
         7912: ResultInfo("DBM iteration finished."),
         7914: ResultInfo("Invalid DBM operation."),
@@ -914,7 +734,7 @@ hipc = Module(
         102: ResultInfo("Out of session memory."),
         (131, 139): ResultInfo("Out of sessions."),
         141: ResultInfo("Pointer buffer is too small."),
-        200: ResultInfo("Out of domains (session doesn\'t support domains)."),
+        200: ResultInfo("Out of domains (session doesn't support domains)."),
         301: ResultInfo("Session closed."),
         402: ResultInfo("Invalid request size."),
         403: ResultInfo("Unknown command type."),
@@ -969,16 +789,10 @@ ns = Module(
         270: ResultInfo("Card update not set up."),
         280: ResultInfo("Card update not prepared."),
         290: ResultInfo("Card update already set up."),
-        340: ResultInfo(
-            "IsAnyInternetRequestAccepted with the output from GetClientId returned false."
-        ),
+        340: ResultInfo("IsAnyInternetRequestAccepted with the output from GetClientId returned false."),
         460: ResultInfo("PrepareCardUpdate already requested."),
-        801: ResultInfo(
-            "SystemDeliveryInfo system_delivery_protocol_version is less than the system setting."
-        ),
-        802: ResultInfo(
-            "SystemDeliveryInfo system_delivery_protocol_version is greater than the system setting."
-        ),
+        801: ResultInfo("SystemDeliveryInfo system_delivery_protocol_version is less than the system setting."),
+        802: ResultInfo("SystemDeliveryInfo system_delivery_protocol_version is greater than the system setting."),
         892: ResultInfo("Unknown state: reference count is zero."),
         931: ResultInfo("Invalid SystemDeliveryInfo HMAC/invalid Meta ID."),
         2101: ResultInfo(
@@ -1251,9 +1065,7 @@ time = Module(
 friends = Module(
     "friends",
     {
-        6: ResultInfo(
-            "IsAnyInternetRequestAccepted with the output from GetClientId returned false."
-        ),
+        6: ResultInfo("IsAnyInternetRequestAccepted with the output from GetClientId returned false."),
     },
 )
 
@@ -1267,9 +1079,7 @@ bcat = Module(
         5: ResultInfo("Target not mounted."),
         6: ResultInfo("Object already opened."),
         7: ResultInfo("Object not opened."),
-        8: ResultInfo(
-            "IsAnyInternetRequestAccepted with the output from GetClientId returned false."
-        ),
+        8: ResultInfo("IsAnyInternetRequestAccepted with the output from GetClientId returned false."),
         80: ResultInfo("Passphrase not found."),
         81: ResultInfo("Data verification failed."),
         90: ResultInfo("Invalid API call."),
@@ -1285,9 +1095,7 @@ ssl = Module(
             "https://switchbrew.org/wiki/Error_codes",
         ),
         13: ResultInfo("Unrecognized error."),
-        102: ResultInfo(
-            "Out of memory or table full (NSS SEC error -8173 or NSPR errors -6000, -5974, -5971)."
-        ),
+        102: ResultInfo("Out of memory or table full (NSS SEC error -8173 or NSPR errors -6000, -5974, -5971)."),
         116: ResultInfo("NSPR error -5999 (PR_BAD_DESCRIPTOR_ERROR)."),
         204: ResultInfo("NSPR error -5998 (PR_WOULD_BLOCK_ERROR)."),
         205: ResultInfo("NSPR error -5990 (PR_IO_TIMEOUT_ERROR)."),
@@ -1297,9 +1105,7 @@ ssl = Module(
         210: ResultInfo("NSPR error -5928 (PR_CONNECT_ABORTED_ERROR)."),
         211: ResultInfo("NSPR error -5929 (PR_SOCKET_SHUTDOWN_ERROR)."),
         212: ResultInfo("NSPR error -5930 (PR_NETWORK_DOWN_ERROR)."),
-        215: ResultInfo(
-            "ClientPki/InternalPki was already previously imported/registered."
-        ),
+        215: ResultInfo("ClientPki/InternalPki was already previously imported/registered."),
         218: ResultInfo("Maximum number of ServerPki objects were already imported."),
         301: ResultInfo("NSS SSL error -12276 (SSL_ERROR_BAD_CERT_DOMAIN)."),
         302: ResultInfo("NSS SSL error -12285 (SSL_ERROR_NO_CERTIFICATE)."),
@@ -1331,13 +1137,9 @@ ssl = Module(
             " NSS SSL errors: -12237 (SSL_ERROR_RX_UNEXPECTED_CHANGE_CIPHER), -12236 (SSL_ERROR_RX_UNEXPECTED_ALERT), -12235 (SSL_ERROR_RX_UNEXPECTED_HANDSHAKE), -12234 (SSL_ERROR_RX_UNEXPECTED_APPLICATION_DATA)."
         ),
         314: ResultInfo("NSS SSL error -12263 (SSL_ERROR_RX_RECORD_TOO_LONG)."),
-        315: ResultInfo(
-            "NSS SSL error -12165 (SSL_ERROR_RX_UNEXPECTED_HELLO_VERIFY_REQUEST)."
-        ),
+        315: ResultInfo("NSS SSL error -12165 (SSL_ERROR_RX_UNEXPECTED_HELLO_VERIFY_REQUEST)."),
         316: ResultInfo("NSS SSL error -12163 (SSL_ERROR_RX_UNEXPECTED_CERT_STATUS)."),
-        317: ResultInfo(
-            "NSS SSL error -12160 (SSL_ERROR_INCORRECT_SIGNATURE_ALGORITHM)."
-        ),
+        317: ResultInfo("NSS SSL error -12160 (SSL_ERROR_INCORRECT_SIGNATURE_ALGORITHM)."),
         318: ResultInfo(
             "NSS SSL errors: -12173 (SSL_ERROR_WEAK_SERVER_EPHEMERAL_DH_KEY), -12156 (SSL_ERROR_WEAK_SERVER_CERT_KEY)."
         ),
@@ -1351,15 +1153,11 @@ ssl = Module(
         326: ResultInfo("NSS SEC error -8032 (SEC_ERROR_POLICY_VALIDATION_FAILED)."),
         330: ResultInfo("NSS SSL error -12177 (SSL_ERROR_DECOMPRESSION_FAILURE)."),
         1501: ResultInfo("NSS SSL error -12230 (SSL_ERROR_CLOSE_NOTIFY_ALERT)."),
-        1502: ResultInfo(
-            "NSS SSL error -12229 (SSL_ERROR_HANDSHAKE_UNEXPECTED_ALERT)."
-        ),
+        1502: ResultInfo("NSS SSL error -12229 (SSL_ERROR_HANDSHAKE_UNEXPECTED_ALERT)."),
         1503: ResultInfo("NSS SSL error -12272 (SSL_ERROR_BAD_MAC_ALERT)."),
         1504: ResultInfo("NSS SSL error -12197 (SSL_ERROR_DECRYPTION_FAILED_ALERT)."),
         1505: ResultInfo("NSS SSL error -12196 (SSL_ERROR_RECORD_OVERFLOW_ALERT)."),
-        1506: ResultInfo(
-            "NSS SSL error -12228 (SSL_ERROR_DECOMPRESSION_FAILURE_ALERT)."
-        ),
+        1506: ResultInfo("NSS SSL error -12228 (SSL_ERROR_DECOMPRESSION_FAILURE_ALERT)."),
         1507: ResultInfo("NSS SSL error -12227 (SSL_ERROR_HANDSHAKE_FAILURE_ALERT)."),
         1509: ResultInfo("NSS SSL error -12271 (SSL_ERROR_BAD_CERT_ALERT)."),
         1510: ResultInfo("NSS SSL error -12225 (SSL_ERROR_UNSUPPORTED_CERT_ALERT)."),
@@ -1373,25 +1171,15 @@ ssl = Module(
         1518: ResultInfo("NSS SSL error -12192 (SSL_ERROR_DECRYPT_ERROR_ALERT)."),
         1519: ResultInfo("NSS SSL error -12191 (SSL_ERROR_EXPORT_RESTRICTION_ALERT)."),
         1520: ResultInfo("NSS SSL error -12190 (SSL_ERROR_PROTOCOL_VERSION_ALERT)."),
-        1521: ResultInfo(
-            "NSS SSL error -12189 (SSL_ERROR_INSUFFICIENT_SECURITY_ALERT)."
-        ),
+        1521: ResultInfo("NSS SSL error -12189 (SSL_ERROR_INSUFFICIENT_SECURITY_ALERT)."),
         1522: ResultInfo("NSS SSL error -12188 (SSL_ERROR_INTERNAL_ERROR_ALERT)."),
-        1523: ResultInfo(
-            "NSS SSL error -12157 (SSL_ERROR_INAPPROPRIATE_FALLBACK_ALERT)."
-        ),
+        1523: ResultInfo("NSS SSL error -12157 (SSL_ERROR_INAPPROPRIATE_FALLBACK_ALERT)."),
         1524: ResultInfo("NSS SSL error -12187 (SSL_ERROR_USER_CANCELED_ALERT)."),
         1525: ResultInfo("NSS SSL error -12186 (SSL_ERROR_NO_RENEGOTIATION_ALERT)."),
-        1526: ResultInfo(
-            "NSS SSL error -12184 (SSL_ERROR_UNSUPPORTED_EXTENSION_ALERT)."
-        ),
-        1527: ResultInfo(
-            "NSS SSL error -12183 (SSL_ERROR_CERTIFICATE_UNOBTAINABLE_ALERT)."
-        ),
+        1526: ResultInfo("NSS SSL error -12184 (SSL_ERROR_UNSUPPORTED_EXTENSION_ALERT)."),
+        1527: ResultInfo("NSS SSL error -12183 (SSL_ERROR_CERTIFICATE_UNOBTAINABLE_ALERT)."),
         1528: ResultInfo("NSS SSL error -12182 (SSL_ERROR_UNRECOGNIZED_NAME_ALERT)."),
-        1529: ResultInfo(
-            "NSS SSL error -12181 (SSL_ERROR_BAD_CERT_STATUS_RESPONSE_ALERT)."
-        ),
+        1529: ResultInfo("NSS SSL error -12181 (SSL_ERROR_BAD_CERT_STATUS_RESPONSE_ALERT)."),
         1530: ResultInfo("NSS SSL error -12180 (SSL_ERROR_BAD_CERT_HASH_VALUE_ALERT)."),
         5001: ResultInfo("NSS SSL error -12155 (SSL_ERROR_RX_SHORT_DTLS_READ)."),
         5007: ResultInfo("Out-of-bounds error during error conversion."),
@@ -1401,9 +1189,7 @@ ssl = Module(
 account = Module(
     "account",
     {
-        59: ResultInfo(
-            "IsAnyInternetRequestAccepted with the output from GetClientId returned false."
-        ),
+        59: ResultInfo("IsAnyInternetRequestAccepted with the output from GetClientId returned false."),
         3000: ResultInfo(
             "System update is required.",
             "https://en-americas-support.nintendo.com/app/answers/detail/a_id/27166/",
@@ -1448,7 +1234,7 @@ mii = Module(
     {
         1: ResultInfo("Invalid argument."),
         4: ResultInfo("Entry not found."),
-        67: ResultInfo("Invalid database signature value (should be \"NFDB\")."),
+        67: ResultInfo('Invalid database signature value (should be "NFDB").'),
         69: ResultInfo("Invalid database entry count."),
         204: ResultInfo("Development/debug-only behavior."),
     },
@@ -1460,9 +1246,7 @@ am = Module(
         2: ResultInfo("IStorage not available."),
         3: ResultInfo("No messages."),
         35: ResultInfo("Error while launching applet."),
-        37: ResultInfo(
-            "Program ID not found. This usually happens when applet launch fails."
-        ),
+        37: ResultInfo("Program ID not found. This usually happens when applet launch fails."),
         500: ResultInfo("Invalid input."),
         502: ResultInfo("IStorage is already opened."),
         503: ResultInfo("IStorage read/write out of bounds."),
@@ -1474,9 +1258,7 @@ am = Module(
         600: ResultInfo("Failed to allocate memory for IStorage."),
         712: ResultInfo("Thread stack pool exhausted."),
         974: ResultInfo("DebugMode not enabled."),
-        980: ResultInfo(
-            "am.debug!dev_function setting needs to be set (DebugMode not enabled)."
-        ),
+        980: ResultInfo("am.debug!dev_function setting needs to be set (DebugMode not enabled)."),
         998: ResultInfo("Not implemented."),
     },
 )
@@ -1486,9 +1268,9 @@ prepo = Module(
     {
         102: ResultInfo("Transmission not agreed."),
         105: ResultInfo("Network unavailable."),
-        1005: ResultInfo("Couldn\'t resolve proxy."),
-        1006: ResultInfo("Couldn\'t resolve host."),
-        1007: ResultInfo("Couldn\'t connect."),
+        1005: ResultInfo("Couldn't resolve proxy."),
+        1006: ResultInfo("Couldn't resolve host."),
+        1007: ResultInfo("Couldn't connect."),
         1023: ResultInfo("Write error."),
         1026: ResultInfo("Read error."),
         1027: ResultInfo("Out of memory."),
@@ -1529,11 +1311,9 @@ nim = Module(
         70: ResultInfo("HTTP connection canceled."),
         330: ResultInfo("ContentMetaType does not match SystemUpdate."),
         5001: ResultInfo(
-            "A socket error occurred (ENETDOWN, ECONNRESET, EHOSTDOWN, EHOSTUNREACH, or EPIPE). Also occurs when the received size doesn\'t match the expected size (recvfrom() ret with meta_size data receiving)."
+            "A socket error occurred (ENETDOWN, ECONNRESET, EHOSTDOWN, EHOSTUNREACH, or EPIPE). Also occurs when the received size doesn't match the expected size (recvfrom() ret with meta_size data receiving)."
         ),
-        5010: ResultInfo(
-            "Socket was shutdown due to the async operation being cancelled."
-        ),
+        5010: ResultInfo("Socket was shutdown due to the async operation being cancelled."),
         5020: ResultInfo(
             "Too many internal input entries with nim command 42, or an unrecognized socket error occurred."
         ),
@@ -1543,9 +1323,7 @@ nim = Module(
             "Invalid magicnum. Can also be caused by the connection being closed by the peer, since non-negative return values from recv() are ignored in this case."
         ),
         5430: ResultInfo("Invalid data_size."),
-        5440: ResultInfo(
-            "The input ContentMetaKey doesn\'t match the ContentMetaKey in state."
-        ),
+        5440: ResultInfo("The input ContentMetaKey doesn't match the ContentMetaKey in state."),
         5450: ResultInfo("Invalid meta_size."),
         7001: ResultInfo("Invalid HTTP response code (>=600)."),
         7002: ResultInfo("Invalid HTTP client response code (4xx)."),
@@ -1555,15 +1333,11 @@ nim = Module(
         (7400, 7417): ResultInfo("HTTP response code 400-417."),
         (7500, 7509): ResultInfo("HTTP response code 500-509."),
         7800: ResultInfo("Unknown/invalid libcurl error."),
-        (8001, 8096): ResultInfo(
-            "libcurl error 1-96. Some errors map to the 7800 result code range instead, however."
-        ),
+        (8001, 8096): ResultInfo("libcurl error 1-96. Some errors map to the 7800 result code range instead, however."),
     },
 )
 
-psc = Module(
-    "psc", {2: ResultInfo("Already initialized."), 3: ResultInfo("Not initialized.")}
-)
+psc = Module("psc", {2: ResultInfo("Already initialized."), 3: ResultInfo("Not initialized.")})
 
 usb = Module(
     "usb",
@@ -1576,11 +1350,7 @@ usb = Module(
 
 pctl = Module(
     "pctl",
-    {
-        223: ResultInfo(
-            "IsAnyInternetRequestAccepted with the output from GetClientId returned false."
-        )
-    },
+    {223: ResultInfo("IsAnyInternetRequestAccepted with the output from GetClientId returned false.")},
 )
 
 applet = Module(
@@ -1683,9 +1453,7 @@ ec = Module(
             "Unable to start the software.",
             "https://en-americas-support.nintendo.com/app/answers/detail/a_id/22539/kw/2164-0020",
         ),
-        56: ResultInfo(
-            "IsAnyInternetRequestAccepted with the output from GetClientId returned false."
-        ),
+        56: ResultInfo("IsAnyInternetRequestAccepted with the output from GetClientId returned false."),
     },
 )
 
@@ -1713,9 +1481,7 @@ jit = Module(
         101: ResultInfo("Input NRO/NRR is too large for the storage buffer."),
         600: ResultInfo("Function pointer is not initialized (Control/GenerateCode)."),
         601: ResultInfo("DllPlugin not initialized, or plugin NRO already loaded."),
-        602: ResultInfo(
-            "An error occurred when calling the function pointer with the Control command."
-        ),
+        602: ResultInfo("An error occurred when calling the function pointer with the Control command."),
     },
 )
 
@@ -1838,8 +1604,14 @@ web_applet = Module(
     },
 )
 
-youtube_app = Module("youtube", {0: ResultInfo(
-    "This error typically occurs when your system clock isn\'t set correctly. If the problem persists, try reinstalling YouTube from the Nintendo eShop.")}, )
+youtube_app = Module(
+    "youtube",
+    {
+        0: ResultInfo(
+            "This error typically occurs when your system clock isn't set correctly. If the problem persists, try reinstalling YouTube from the Nintendo eShop."
+        )
+    },
+)
 
 arms_game = Module(
     "ARMS",
@@ -1853,11 +1625,7 @@ arms_game = Module(
 
 splatoon_game = Module(
     "Splatoon 2",
-    {
-        3400: ResultInfo(
-            "You have been kicked from the online service due to using exefs/romfs edits."
-        )
-    },
+    {3400: ResultInfo("You have been kicked from the online service due to using exefs/romfs edits.")},
 )
 
 # known homebrew modules go below here
@@ -2027,9 +1795,7 @@ emuiibo = Module(
     },
 )
 
-exosphere = Module(
-    "exosphere", {1: ResultInfo("Not present."), 2: ResultInfo("Version mismatch.")}
-)
+exosphere = Module("exosphere", {1: ResultInfo("Not present."), 2: ResultInfo("Version mismatch.")})
 
 # We have some modules partially documented, those that aren't have dummy Modules.
 modules = {
@@ -2227,9 +1993,7 @@ def get(error):
 
     ret = ConsoleErrorInfo(error, CONSOLE_NAME, COLOR, secondary_error=sec_error)
     module = modules.get(mod, Module("Unknown"))
-    ret.add_field(
-        ConsoleErrorField("Module", message_str=module.name, supplementary_value=mod)
-    )
+    ret.add_field(ConsoleErrorField("Module", message_str=module.name, supplementary_value=mod))
     summary = module.get_summary(code)
     if summary:
         ret.add_field(ConsoleErrorField("Summary", message_str=summary))
@@ -2245,11 +2009,7 @@ def get(error):
             )
         )
         if description.support_url:
-            ret.add_field(
-                ConsoleErrorField(
-                    "Further information", message_str=description.support_url
-                )
-            )
+            ret.add_field(ConsoleErrorField("Further information", message_str=description.support_url))
         if description.is_ban:
             ret.add_field(BANNED_FIELD)
             ret.color = WARNING_COLOR

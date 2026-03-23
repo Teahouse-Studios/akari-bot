@@ -21,11 +21,8 @@ async def gained_petal(msg: Bot.MessageSession, amount: int) -> I18NContextEleme
         p = await get_stored_list(msg.session_info.client_name, "gainedpetal") or [{}]
         p = p[0]
         now = datetime.now()
-        expired = datetime.combine(
-            (now + timedelta(days=1)).date(), datetime.min.time()
-        )
-        if msg.session_info.sender_id not in p \
-                or now.timestamp() > p[msg.session_info.sender_id]["expired"]:
+        expired = datetime.combine((now + timedelta(days=1)).date(), datetime.min.time())
+        if msg.session_info.sender_id not in p or now.timestamp() > p[msg.session_info.sender_id]["expired"]:
             p[msg.session_info.sender_id] = {
                 "time": now.timestamp(),
                 "expired": expired.timestamp(),
@@ -58,11 +55,8 @@ async def lost_petal(msg: Bot.MessageSession, amount: int) -> I18NContextElement
         p = await get_stored_list(msg.session_info.client_name, "lostpetal") or [{}]
         p = p[0]
         now = datetime.now()
-        expired = datetime.combine(
-            (now + timedelta(days=1)).date(), datetime.min.time()
-        )
-        if msg.session_info.sender_id not in p \
-                or now.timestamp() > p[msg.session_info.sender_id]["expired"]:
+        expired = datetime.combine((now + timedelta(days=1)).date(), datetime.min.time())
+        if msg.session_info.sender_id not in p or now.timestamp() > p[msg.session_info.sender_id]["expired"]:
             p[msg.session_info.sender_id] = {
                 "time": now.timestamp(),
                 "expired": expired.timestamp(),
@@ -101,6 +95,7 @@ async def cost_petal(msg: Bot.MessageSession, amount: int, send_prompt: bool = T
 
 async def sign_get_petal(msg: Bot.MessageSession) -> int | None:
     if Config("enable_petal", False):
+
         def _draw_petals() -> int:
             petal = 1
             limit = Config("petal_sign_limit", 5)
@@ -117,11 +112,8 @@ async def sign_get_petal(msg: Bot.MessageSession) -> int | None:
         p = await get_stored_list(msg.session_info.client_name, "signgetpetal") or [{}]
         p = p[0]
         now = datetime.now()
-        expired = datetime.combine(
-            (now + timedelta(days=1)).date(), datetime.min.time()
-        )
-        if msg.session_info.sender_id not in p \
-                or now.timestamp() > p[msg.session_info.sender_id]["expired"]:
+        expired = datetime.combine((now + timedelta(days=1)).date(), datetime.min.time())
+        if msg.session_info.sender_id not in p or now.timestamp() > p[msg.session_info.sender_id]["expired"]:
             p[msg.session_info.sender_id] = {
                 "time": now.timestamp(),
                 "expired": expired.timestamp(),

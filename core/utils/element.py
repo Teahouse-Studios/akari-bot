@@ -34,10 +34,6 @@ def convert_discord_embed(embed: DiscordEmbed | dict) -> EmbedElement:
         if "fields" in embed:
             fields = []
             for field_value in embed["fields"]:
-                fields.append(
-                    EmbedField(
-                        field_value["name"], field_value["value"], field_value["inline"]
-                    )
-                )
+                fields.append(EmbedField(field_value["name"], field_value["value"], field_value["inline"]))
             embed_.fields = fields
     return embed_

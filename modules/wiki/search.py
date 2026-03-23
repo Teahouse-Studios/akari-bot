@@ -15,9 +15,7 @@ async def _(msg: Bot.MessageSession, pagename: str):
     await search_pages(msg, pagename)
 
 
-async def search_pages(
-    msg: Bot.MessageSession, title: str | list | tuple, use_prefix: bool = True
-):
+async def search_pages(msg: Bot.MessageSession, title: str | list | tuple, use_prefix: bool = True):
     target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     start_wiki = target.api_link
     interwiki_list = target.interwikis
@@ -54,9 +52,7 @@ async def search_pages(
     for q in query_task:
         current_task = query_task[q]
         ready_for_query_pages = current_task["query"] if "query" in current_task else []
-        iw_prefix = (
-            (current_task["iw_prefix"] + ":") if current_task["iw_prefix"] != "" else ""
-        )
+        iw_prefix = (current_task["iw_prefix"] + ":") if current_task["iw_prefix"] != "" else ""
         tasks = []
         for rd in ready_for_query_pages:
             tasks.append(asyncio.ensure_future(WikiLib(q, headers).search_page(rd)))

@@ -17,9 +17,7 @@ class TokenBucket:
         self.ts = now
 
     def consume(self, amount: int = 1) -> bool:
-        now = time.time()
-        self.tokens = min(self.capacity, self.tokens + (now - self.ts) * self.rate)
-        self.ts = now
+        self._refill()
         if self.tokens >= amount:
             self.tokens -= amount
             return True
@@ -53,8 +51,10 @@ class ExpiringTempDict:
     _registry_lock: ClassVar[threading.Lock] = threading.Lock()
     _clear_lock: ClassVar[asyncio.Lock] = asyncio.Lock()
 
-    def __init__(self, exp: int | float = 86400.0, ts: int | float = time.time(), data: Any = None, root: bool = True):
+    def __init__(self, exp: int | float = 86400.0, ts: int | float | None = None, data: Any = None, root: bool = True):
         self.exp = exp
+        if not ts:
+            ts = time.time()
         self.ts = float(ts)
         self.data = data or {}
         self._lock = threading.RLock()
@@ -72,10 +72,20 @@ class ExpiringTempDict:
         return len(self.data)
 
     def __getitem__(self, key: str):
-        with self._lock:
-            if key not in self.data:
-                self.data[key] = ExpiringTempDict(exp=self.exp, root=False)
-            return self.data[key]
+        if key not in self.data:
+            self.data[key] = ExpiringTempDict(exp=self.exp, root=False)
+
+        v = self.data[key]
+        if isinstance(v, ExpiringTempDict):
+            if v.is_expired():
+                v.clear()
+                v.refresh()
+            return v
+
+        if self.is_expired():
+            return None
+
+        return v
 
     def __setitem__(self, key: str, value: Any):
         with self._lock:
@@ -87,7 +97,7 @@ class ExpiringTempDict:
 
     def is_expired(self, now: float | None = None) -> bool:
         now = now or time.time()
-        return (time.time() - self.ts) > self.exp
+        return (now - self.ts) > self.exp
 
     def refresh(self):
         with self._lock:
@@ -115,16 +125,16 @@ class ExpiringTempDict:
             return len(self.data) == 0
 
     @classmethod
-    async def clear_all(cls):
-        now = time.time()
-        async with cls._clear_lock:
-            objs = list(cls._registry)
+    async def clear_all(cls, now: float | None = None):
+        now = now or time.time()
 
-            await asyncio.to_thread(cls._sync_clear_all, objs, now)
+        async with cls._clear_lock:
+            root_objs = list(cls._registry)
+            await asyncio.to_thread(cls._sync_clear_all, root_objs, now)
 
     @staticmethod
-    def _sync_clear_all(objs, now):
-        for obj in objs:
+    def _sync_clear_all(root_objs, now):
+        for obj in root_objs:
             try:
                 obj.clear_expired(now)
             except Exception:
@@ -173,8 +183,18 @@ class ExpiringTempDict:
             return new_obj
 
     def get(self, key, default=None):
-        with self._lock:
-            return self.data.get(key, default)
+        v = self.data.get(key, default)
+
+        if isinstance(v, ExpiringTempDict):
+            if v.is_expired():
+                v.clear()
+                v.refresh()
+            return v
+
+        if self.is_expired():
+            return default
+
+        return v
 
     def keys(self):
         return self.data.keys()
@@ -232,7 +252,21 @@ class ExpiringTempDict:
         return str(self.data)
 
     def __contains__(self, item):
-        return item in self.data
+        if item not in self.data:
+            return False
+
+        v = self.data[item]
+
+        if isinstance(v, ExpiringTempDict):
+            if v.is_expired():
+                v.clear()
+                v.refresh()
+            return True
+
+        if self.is_expired():
+            return False
+
+        return True
 
     def __eq__(self, other):
         if isinstance(other, ExpiringTempDict):

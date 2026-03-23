@@ -4,7 +4,6 @@ from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Url
 from core.component import module
-from core.config import Config
 from core.logger import Logger
 from core.scheduler import IntervalTrigger
 from core.utils.http import get_url
@@ -57,12 +56,16 @@ feedback_news = module(
         return random_tags"""
 
 
-@minecraft_news.schedule(
-    IntervalTrigger(seconds=600)
+startup_mute = (
+    True  # flag to prevent news spam on bot startup, will be set to False after the first run of the news check
 )
+
+
+@minecraft_news.schedule(IntervalTrigger(seconds=600))
 async def _():
-    baseurl = "https://www.minecraft.net"
-    url = "https://www.minecraft.net/content/minecraftnet/language-masters/en-us/jcr:content/root/container/image_grid_a_copy_64.articles.page-1.json"
+    # baseurl = "https://www.minecraft.net"
+    global startup_mute
+    url = "https://net-secondary.web.minecraft-services.net/api/v1.0/en-us/search?pageSize=24&sortType=Recent&category=News&newsOnly=true&geography=SG"
     try:
         getpage = await web_render.source(SourceOptions(url=url, raw_text=True))
         if not getpage:
@@ -71,42 +74,46 @@ async def _():
         if getpage:
             alist = await get_stored_list(Bot.Info.client_name, "mcnews")
             o_json = orjson.loads(getpage)
-            o_nws = o_json["article_grid"]
+            o_nws = o_json["result"]["results"]
             for o_article in o_nws:
-                default_tile = o_article["default_tile"]
-                title = default_tile["title"]
-                desc = default_tile["sub_header"]
-                link = baseurl + o_article["article_url"]
+                title = o_article["title"]
+                desc = o_article["description"]
+                link = o_article["url"]
                 if title not in alist:
-                    await Bot.post_message(
-                        "minecraft_news",
-                        message=MessageChain.assign(
-                            [
-                                I18NContext(
-                                    "minecraft_news.message.minecraft_news",
-                                    title=title,
-                                    desc=desc,
-                                ),
-                                Url(link, use_mm=False)
-                            ]
-                        ),
-                    )
+                    Logger.info(f"New Minecraft news found: {title} - {desc} - {link}")
+                    if not startup_mute:
+                        await Bot.post_message(
+                            "minecraft_news",
+                            message=MessageChain.assign(
+                                [
+                                    I18NContext(
+                                        "minecraft_news.message.minecraft_news",
+                                        title=title,
+                                        desc=desc,
+                                    ),
+                                    Url(link, use_mm=False),
+                                ]
+                            ),
+                        )
                     alist.append(title)
                     await update_stored_list(Bot.Info.client_name, "mcnews", alist)
+        startup_mute = False
     except Exception:
-        if Config("debug", False):
-            Logger.exception()
+        Logger.exception()
 
 
 @feedback_news.schedule(IntervalTrigger(seconds=600))
 async def _():
-    sections = [{"name": "beta",
-                 "url": "https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001185332/articles?per_page=5",
-                 },
-                {"name": "article",
-                 "url": "https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001186971/articles?per_page=5",
-                 },
-                ]
+    sections = [
+        {
+            "name": "beta",
+            "url": "https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001185332/articles?per_page=5",
+        },
+        {
+            "name": "article",
+            "url": "https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001186971/articles?per_page=5",
+        },
+    ]
     for section in sections:
         try:
             alist = await get_stored_list(Bot.Info.client_name, "mcfeedbacknews")
@@ -133,12 +140,12 @@ async def _():
                                 I18NContext(
                                     "minecraft_news.message.feedback_news",
                                     name=name,
-                                ), Url(link, use_mm=False)
+                                ),
+                                Url(link, use_mm=False),
                             ]
                         ),
                     )
                     alist.append(name)
                     await update_stored_list(Bot.Info.client_name, "mcfeedbacknews", alist)
         except Exception:
-            if Config("debug", False):
-                Logger.exception()
+            Logger.exception()

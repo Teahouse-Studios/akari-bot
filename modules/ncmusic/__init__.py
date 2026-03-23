@@ -40,24 +40,14 @@ async def _(msg: Bot.MessageSession, keyword: str):
 
     send_msg = MessageChain.assign(I18NContext("ncmusic.message.search.result"))
     if not msg.parsed_msg.get("--legacy", False) and msg.session_info.support_image:
-
         data = [
             [
                 str(i),
-                song["name"]
-                + (
-                    f" ({" / ".join(song["transNames"])})"
-                    if "transNames" in song
-                    else ""
-                ),
-                f"{" / ".join(artist["name"] for artist in song["artists"])}",
-                f"{song["album"]["name"]}"
-                + (
-                    f" ({" / ".join(song["album"]["transNames"])})"
-                    if "transNames" in song["album"]
-                    else ""
-                ),
-                f"{song["id"]}",
+                song["name"] + (f" ({' / '.join(song['transNames'])})" if "transNames" in song else ""),
+                f"{' / '.join(artist['name'] for artist in song['artists'])}",
+                f"{song['album']['name']}"
+                + (f" ({' / '.join(song['album']['transNames'])})" if "transNames" in song["album"] else ""),
+                f"{song['id']}",
             ]
             for i, song in enumerate(songs, start=1)
         ]
@@ -71,7 +61,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
                 "{I18N:ncmusic.message.search.table.header.album}",
                 "ID",
             ],
-            msg.session_info
+            msg.session_info,
         )
 
         imgs = await image_table_render(tables)
@@ -107,17 +97,16 @@ async def _(msg: Bot.MessageSession, keyword: str):
         await info(msg, sid)
 
     if legacy:
-
         for i, song in enumerate(songs, start=1):
-            song_msg = f"{i} - {song["name"]}"
+            song_msg = f"{i} - {song['name']}"
             if "transNames" in song:
-                song_msg += f"（{" / ".join(song["transNames"])}）"
-            song_msg += f"——{" / ".join(artist["name"] for artist in song["artists"])}"
+                song_msg += f"（{' / '.join(song['transNames'])}）"
+            song_msg += f"——{' / '.join(artist['name'] for artist in song['artists'])}"
             if song["album"]["name"]:
-                song_msg += f"《{song["album"]["name"]}》"
+                song_msg += f"《{song['album']['name']}》"
             if "transNames" in song["album"]:
-                song_msg += f"（{" / ".join(song["album"]["transNames"])}）"
-            song_msg += f"（{song["id"]}）"
+                song_msg += f"（{' / '.join(song['album']['transNames'])}）"
+            song_msg += f"（{song['id']}）"
             send_msg.append(Plain(song_msg))
 
         if song_count > SEARCH_LIMIT:
@@ -172,7 +161,7 @@ async def info(msg: Bot.MessageSession, sid: int):
     if result["songs"]:
         info = result["songs"][0]
         artist = " / ".join([ar["name"] for ar in info["ar"]])
-        song_url = f"https://music.163.com/#/song?id={info["id"]}"
+        song_url = f"https://music.163.com/#/song?id={info['id']}"
 
         await msg.finish(
             [

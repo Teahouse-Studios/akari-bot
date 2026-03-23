@@ -12,11 +12,7 @@ from core.utils.http import get_url, post_url
 
 async def mcjv(msg: Bot.MessageSession):
     try:
-        data = orjson.loads(
-            await get_url(
-                "https://piston-meta.mojang.com/mc/game/version_manifest.json", 200
-            )
-        )
+        data = orjson.loads(await get_url("https://piston-meta.mojang.com/mc/game/version_manifest.json", 200))
         release = data["latest"]["release"]
         snapshot = data["latest"]["snapshot"]
         time_release = None
@@ -43,9 +39,7 @@ async def mcbv(msg: Bot.MessageSession):
     play_store_version = None
     if Secret.ip_country != "China":
         try:  # play store
-            play_store_version = google_play_scraper("com.mojang.minecraftpe")[
-                "version"
-            ]
+            play_store_version = google_play_scraper("com.mojang.minecraftpe")["version"]
         except Exception:
             pass
     ms_store_version = None
@@ -62,9 +56,7 @@ async def mcbv(msg: Bot.MessageSession):
             },
         )
         if fetch_:
-            ms_store_version = re.findall(
-                r".*Microsoft.MinecraftUWP_(.*?)_.*", fetch_, re.M | re.I
-            )[0]
+            ms_store_version = re.findall(r".*Microsoft.MinecraftUWP_(.*?)_.*", fetch_, re.M | re.I)[0]
     except Exception:
         pass
     return (
@@ -78,6 +70,7 @@ async def mcbv(msg: Bot.MessageSession):
         + f"""{msg.session_info.locale.t("mcv.message.mcbv.ms_store")}
 {ms_store_version if ms_store_version else msg.session_info.locale.t("mcv.message.mcbv.get_failed")}"""
     )
+
 
 # async def mcev(msg: Bot.MessageSession):
 #     try:

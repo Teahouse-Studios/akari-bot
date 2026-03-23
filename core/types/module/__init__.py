@@ -71,7 +71,7 @@ class Module:
             "commands": len(self.command_list.set),
             "regexp": len(self.regex_list.set),
             "_py_module_name": self._py_module_name,
-            "_db_load": self._db_load
+            "_db_load": self._db_load,
         }
 
 

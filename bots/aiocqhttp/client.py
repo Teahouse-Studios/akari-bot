@@ -35,7 +35,6 @@ class EventModded(Event):
 
 
 class CQHttpModded(CQHttp):
-
     async def _handle_event(self, payload: dict[str, Any]) -> Any:
         ev = EventModded.from_payload(payload)
         if not ev:
@@ -46,9 +45,7 @@ class CQHttpModded(CQHttp):
 
         if self._message_class and "message" in ev:
             ev["message"] = self._message_class(ev["message"])
-        results = list(
-            filter(lambda r: r is not None, await self._bus.emit(event_name, ev))
-        )
+        results = list(filter(lambda r: r is not None, await self._bus.emit(event_name, ev)))
         # return the first non-none result
         return results[0] if results else None
 

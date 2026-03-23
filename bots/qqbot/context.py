@@ -27,10 +27,7 @@ enable_send_url = Config("qq_bot_enable_send_url", False, table_name="bot_qqbot"
 # 额外添加平台接口支持但 SDK 不支持的方法
 # https://github.com/tencent-connect/botpy/pull/215
 class ModdedBotAPI(BotAPI):
-    async def recall_group_message(
-            self,
-            group_openid: str,
-            message_id: str) -> str:
+    async def recall_group_message(self, group_openid: str, message_id: str) -> str:
         route = Route(
             "DELETE",
             "/v2/groups/{group_openid}/messages/{message_id}",
@@ -68,11 +65,11 @@ class ModdedBotAPI(BotAPI):
 
 class QQBotContextManager(ContextManager):
     context: dict[str, BaseMessage] = {}
-    features: Features | None = Features
+    features: type[Features] | None = Features
 
     @classmethod
     def add_context(cls, session_info: SessionInfo, context: BaseMessage):
-        from bots.qqbot.bot import client  # noqa
+        from bots.qqbot.bot import client
 
         context._api = ModdedBotAPI(http=client.http)
         cls.context[session_info.session_id] = context
@@ -100,9 +97,14 @@ class QQBotContextManager(ContextManager):
         return False
 
     @classmethod
-    async def send_message(cls, session_info: SessionInfo, message: MessageChain | MessageNodes, quote: bool = True,
-                           enable_parse_message: bool = True,
-                           enable_split_image: bool = True) -> list[str]:
+    async def send_message(
+        cls,
+        session_info: SessionInfo,
+        message: MessageChain | MessageNodes,
+        quote: bool = True,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> list[str]:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         ctx: BaseMessage = cls.context.get(session_info.session_id)
@@ -132,6 +134,7 @@ class QQBotContextManager(ContextManager):
             lines = msg.split("\n")
             for line in lines:
                 if enable_send_url:
+
                     def process_url(match):
                         url_ = match.group(0)
                         parts = url_.split(".")
@@ -165,23 +168,17 @@ class QQBotContextManager(ContextManager):
                     if not msg_quote and quote:
                         msg = f"<@{ctx.author.id}> \n" + msg
                     msg = "" if not msg else msg
-                    send = await ctx.reply(
-                        content=msg, file_image=send_img, message_reference=msg_quote
-                    )
+                    send = await ctx.reply(content=msg, file_image=send_img, message_reference=msg_quote)
                     Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
                     if image_1:
-                        Logger.info(
-                            f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}"
-                        )
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
                     if send:
                         msg_ids.append(send["id"])
                     if images:
                         for img in images:
                             send_img = await img.get()
                             send = await ctx.reply(file_image=send_img)
-                            Logger.info(
-                                f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}"
-                            )
+                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
                             if send:
                                 msg_ids.append(send["id"])
                 elif isinstance(ctx, DirectMessage):
@@ -198,29 +195,21 @@ class QQBotContextManager(ContextManager):
                         else None
                     )
                     msg = "" if not msg else msg
-                    send = await ctx.reply(
-                        content=msg, file_image=send_img, message_reference=msg_quote
-                    )
+                    send = await ctx.reply(content=msg, file_image=send_img, message_reference=msg_quote)
                     Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
                     if image_1:
-                        Logger.info(
-                            f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}"
-                        )
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
                     if send:
                         msg_ids.append(send["id"])
                     if images:
                         for img in images:
                             send_img = await img.get()
                             send = await ctx.reply(file_image=send_img)
-                            Logger.info(
-                                f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}"
-                            )
+                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
                             if send:
                                 msg_ids.append(send["id"])
                 elif isinstance(ctx, GroupMessage):
-                    seq = (
-                        ctx.msg_seq if ctx.msg_seq else 1
-                    )
+                    seq = ctx.msg_seq if ctx.msg_seq else 1
                     if images:
                         image_1 = images[0]
                         images.pop(0)
@@ -241,9 +230,7 @@ class QQBotContextManager(ContextManager):
                         )
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
                         if image_1:
-                            Logger.info(
-                                f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}"
-                            )
+                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
                         if send:
                             msg_ids.append(send["id"])
                             seq += 1
@@ -263,20 +250,14 @@ class QQBotContextManager(ContextManager):
                                 file_type=1,
                                 file_data=await img.get_base64(),
                             )
-                            send = await ctx.reply(
-                                msg_type=7, media=send_img, msg_seq=seq
-                            )
-                            Logger.info(
-                                f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}"
-                            )
+                            send = await ctx.reply(msg_type=7, media=send_img, msg_seq=seq)
+                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
                             if send:
                                 msg_ids.append(send["id"])
                                 seq += 1
                     ctx.msg_seq = seq
                 elif isinstance(ctx, C2CMessage):
-                    seq = (
-                        ctx.msg_seq if ctx.msg_seq else 1
-                    )
+                    seq = ctx.msg_seq if ctx.msg_seq else 1
                     if images:
                         image_1 = images[0]
                         images.pop(0)
@@ -295,9 +276,7 @@ class QQBotContextManager(ContextManager):
                         )
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
                         if image_1:
-                            Logger.info(
-                                f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}"
-                            )
+                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
                         if send:
                             msg_ids.append(send["id"])
                             seq += 1
@@ -317,12 +296,8 @@ class QQBotContextManager(ContextManager):
                                 file_type=1,
                                 file_data=await img.get_base64(),
                             )
-                            send = await ctx.reply(
-                                msg_type=7, media=send_img, msg_seq=seq
-                            )
-                            Logger.info(
-                                f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}"
-                            )
+                            send = await ctx.reply(msg_type=7, media=send_img, msg_seq=seq)
+                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
                             if send:
                                 msg_ids.append(send["id"])
                                 seq += 1
@@ -331,7 +306,9 @@ class QQBotContextManager(ContextManager):
         return msg_ids
 
     @classmethod
-    async def delete_message(cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None) -> None:
+    async def delete_message(
+        cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None
+    ) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -340,16 +317,14 @@ class QQBotContextManager(ContextManager):
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
 
-        from bots.qqbot.bot import client  # noqa
+        from bots.qqbot.bot import client
 
         client.api = ModdedBotAPI(http=client.http)
         if session_info.target_from == target_guild_prefix:
             for msg_id in message_id:
                 try:
                     await client.api.recall_message(
-                        channel_id=session_info.get_common_target_id(),
-                        message_id=msg_id,
-                        hidetip=True
+                        channel_id=session_info.get_common_target_id(), message_id=msg_id, hidetip=True
                     )
                     Logger.info(f"Deleted message {msg_id} in session {session_info.session_id}")
                 except Exception:
@@ -358,8 +333,7 @@ class QQBotContextManager(ContextManager):
             for msg_id in message_id:
                 try:
                     await client.api.recall_group_message(
-                        group_openid=session_info.get_common_target_id(),
-                        message_id=msg_id
+                        group_openid=session_info.get_common_target_id(), message_id=msg_id
                     )
                     Logger.info(f"Deleted message {msg_id} in session {session_info.session_id}")
                 except Exception:
@@ -378,7 +352,8 @@ class QQBotContextManager(ContextManager):
         if session_info.target_from == target_guild_prefix:
             emoji_type = 1 if int(qq_typing_emoji) < 9000 else 2
 
-            from bots.qqbot.bot import client  # noqa
+            from bots.qqbot.bot import client
+
             try:
                 await client.api.put_reaction(
                     channel_id=session_info.get_common_target_id(),
@@ -386,10 +361,11 @@ class QQBotContextManager(ContextManager):
                     emoji_type=emoji_type,
                     emoji_id=emoji,
                 )
-                Logger.info(f"Added reaction \"{emoji}\" to message {message_id} in session {session_info.session_id}")
+                Logger.info(f'Added reaction "{emoji}" to message {message_id} in session {session_info.session_id}')
             except Exception:
-                Logger.exception(f"Failed to add reaction \"{emoji}\" to message {
-                                 message_id} in session {session_info.session_id}: ")
+                Logger.exception(
+                    f'Failed to add reaction "{emoji}" to message {message_id} in session {session_info.session_id}: '
+                )
 
     @classmethod
     async def remove_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
@@ -404,7 +380,8 @@ class QQBotContextManager(ContextManager):
         if session_info.target_from == target_guild_prefix:
             emoji_type = 1 if int(qq_typing_emoji) < 9000 else 2
 
-            from bots.qqbot.bot import client  # noqa
+            from bots.qqbot.bot import client
+
             try:
                 await client.api.delete_reaction(
                     channel_id=session_info.get_common_target_id(),
@@ -412,11 +389,13 @@ class QQBotContextManager(ContextManager):
                     emoji_type=emoji_type,
                     emoji_id=emoji,
                 )
-                Logger.info(f"Removed reaction \"{emoji}\" to message {
-                            message_id} in session {session_info.session_id}")
+                Logger.info(f'Removed reaction "{emoji}" to message {message_id} in session {session_info.session_id}')
             except Exception:
-                Logger.exception(f"Failed to remove reaction \"{emoji}\" to message {
-                                 message_id} in session {session_info.session_id}: ")
+                Logger.exception(
+                    f'Failed to remove reaction "{emoji}" to message {message_id} in session {
+                        session_info.session_id
+                    }: '
+                )
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
@@ -428,7 +407,7 @@ class QQBotContextManager(ContextManager):
             if session_info.target_from == target_guild_prefix:
                 emoji_type = 1 if int(qq_typing_emoji) < 9000 else 2
 
-                from bots.qqbot.bot import client  # noqa
+                from bots.qqbot.bot import client
 
                 await client.api.put_reaction(
                     channel_id=session_info.get_common_target_id(),
@@ -462,7 +441,7 @@ class QQBotContextManager(ContextManager):
         if session_info.target_from == target_guild_prefix:
             emoji_type = 1 if int(qq_limited_emoji) < 9000 else 2
 
-            from bots.qqbot.bot import client  # noqa
+            from bots.qqbot.bot import client
 
             await client.api.put_reaction(
                 channel_id=session_info.get_common_target_id(),

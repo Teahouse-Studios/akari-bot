@@ -41,11 +41,14 @@ async def _(msg: Bot.MessageSession):
         old = datetime.now().replace(hour=0, minute=0, second=0)
         get_counts_today = await AnalyticsData.get_count_by_times(new, old)
 
-        await msg.finish(I18NContext(
-            "core.message.analytics.counts",
-            first_record=first_record,
-            counts=get_counts,
-            counts_today=get_counts_today))
+        await msg.finish(
+            I18NContext(
+                "core.message.analytics.counts",
+                first_record=first_record,
+                counts=get_counts,
+                counts_today=get_counts_today,
+            )
+        )
     else:
         await msg.finish(I18NContext("core.message.analytics.disabled"))
 
@@ -58,9 +61,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(I18NContext("core.message.analytics.none"))
         module_ = msg.parsed_msg.get("<module>")
         if not module_:
-            result = I18NContext(
-                "core.message.analytics.days.total", first_record=first_record
-            )
+            result = I18NContext("core.message.analytics.days.total", first_record=first_record)
         else:
             result = I18NContext(
                 "core.message.analytics.days",
@@ -69,16 +70,8 @@ async def _(msg: Bot.MessageSession):
             )
         data_ = {}
         for d in range(30):
-            new = (
-                datetime.now().replace(hour=0, minute=0, second=0)
-                + timedelta(days=1)
-                - timedelta(days=30 - d - 1)
-            )
-            old = (
-                datetime.now().replace(hour=0, minute=0, second=0)
-                + timedelta(days=1)
-                - timedelta(days=30 - d)
-            )
+            new = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1) - timedelta(days=30 - d - 1)
+            old = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1) - timedelta(days=30 - d)
             get_ = await AnalyticsData.get_count_by_times(new, old, module_)
             data_[old.day] = get_
         data_x = []
@@ -118,9 +111,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(I18NContext("core.message.analytics.none"))
         module_ = msg.parsed_msg.get("<module>")
         if not module_:
-            result = I18NContext(
-                "core.message.analytics.year.total", first_record=first_record
-            )
+            result = I18NContext("core.message.analytics.year.total", first_record=first_record)
         else:
             result = I18NContext(
                 "core.message.analytics.year",
@@ -175,9 +166,7 @@ async def _(msg: Bot.MessageSession, rank: int = None):
     if enable_analytics:
         try:
             module_counts = await AnalyticsData.get_modules_count()
-            top_modules = sorted(
-                module_counts.items(), key=lambda x: x[1], reverse=True
-            )[:rank]
+            top_modules = sorted(module_counts.items(), key=lambda x: x[1], reverse=True)[:rank]
 
             module_names = [item[0] for item in top_modules]
             module_counts = [item[1] for item in top_modules]

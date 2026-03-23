@@ -1,0 +1,54 @@
+name: Builtin Tester
+
+permissions:
+  checks: write
+  contents: read
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          uv sync --locked --all-extras --dev
+
+      - name: Copy config files
+        shell: bash
+        run: |
+          mkdir -p config
+          cp -r assets/config_store/zh_cn/* config/
+
+      - name: Run tests
+        env:
+          CI: "1"
+        run: |
+          uv run python tester.py
+
+      - name: Generate test report
+        uses: dorny/test-reporter@v2
+        with:
+          name: Test report
+          path: junit.xml
+          reporter: java-junit

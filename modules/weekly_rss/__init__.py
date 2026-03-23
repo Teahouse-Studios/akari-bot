@@ -36,20 +36,18 @@ async def _():
     weekly_tw = MessageChain.assign(await get_weekly(zh_tw=True))
     w_cn_qq = MessageChain.assign(await get_weekly(True))
     w_tw_qq = MessageChain.assign(await get_weekly(True, zh_tw=True))
-    w_cn_qq = [
-        Plain(Locale("zh_cn").t("weekly_rss.message", prefix=command_prefix[0]))
-    ] + w_cn_qq.as_sendable()
-    w_tw_qq = [
-        Plain(Locale("zh_tw").t("weekly_rss.message", prefix=command_prefix[0]))
-    ] + w_tw_qq.as_sendable()
+    w_cn_qq = [Plain(Locale("zh_cn").t("weekly_rss.message", prefix=command_prefix[0]))] + w_cn_qq.as_sendable()
+    w_tw_qq = [Plain(Locale("zh_tw").t("weekly_rss.message", prefix=command_prefix[0]))] + w_tw_qq.as_sendable()
     weekly_cn_qq = MessageChain.assign(await msgchain2image(w_cn_qq))
     weekly_tw_qq = MessageChain.assign(await msgchain2image(w_tw_qq))
     post_msg = I18NMessageChain.assign({"zh_cn": weekly_cn, "zh_tw": weekly_tw, "default": weekly_cn})
-    post_msg_qq = I18NMessageChain.assign({
-        "zh_cn": weekly_cn_qq,
-        "zh_tw": weekly_tw_qq,
-        "default": weekly_cn_qq,
-    })
+    post_msg_qq = I18NMessageChain.assign(
+        {
+            "zh_cn": weekly_cn_qq,
+            "zh_tw": weekly_tw_qq,
+            "default": weekly_cn_qq,
+        }
+    )
     await Bot.post_message("weekly_rss", PlatformMessageChain.assign({"QQ": post_msg_qq, "default": post_msg}))
     Logger.success("Weekly checked.")
 
@@ -60,19 +58,12 @@ async def _():
 
     weekly = await get_teahouse_rss()
 
-    weekly_cn = MessageChain.assign(Plain(
-        Locale("zh_cn").t(
-            "weekly_rss.message.teahouse_weekly_rss", prefix=command_prefix[0]
-        )
-        + weekly
-    ))
+    weekly_cn = MessageChain.assign(
+        Plain(Locale("zh_cn").t("weekly_rss.message.teahouse_weekly_rss", prefix=command_prefix[0]) + weekly)
+    )
     weekly_tw = MessageChain.assign(
-        Plain(
-            Locale("zh_tw").t(
-                "weekly_rss.message.teahouse_weekly_rss", prefix=command_prefix[0]
-            )
-            + weekly
-        ))
+        Plain(Locale("zh_tw").t("weekly_rss.message.teahouse_weekly_rss", prefix=command_prefix[0]) + weekly)
+    )
     weekly_cn_qq = MessageChain.assign(await msgchain2image(weekly_cn))
     weekly_tw_qq = MessageChain.assign(await msgchain2image(weekly_tw))
     post_msg = I18NMessageChain.assign({"zh_cn": weekly_cn, "zh_tw": weekly_tw, "default": weekly_cn})

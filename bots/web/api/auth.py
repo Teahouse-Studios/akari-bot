@@ -21,7 +21,7 @@ login_max_attempt = Config("login_max_attempt", default=5, table_name="bot_web")
 
 
 def verify_jwt(request: Request):
-    auth = request.headers.get('authorization')
+    auth = request.headers.get("authorization")
     if not auth or not auth[:7] == "Bearer ":
         raise HTTPException(status_code=401)
     auth_token = auth[7:]
@@ -60,7 +60,7 @@ async def auth(request: Request):
             payload = {
                 "exp": datetime.now(UTC) + timedelta(hours=24),  # 过期时间
                 "iat": datetime.now(UTC),  # 签发时间
-                "iss": "auth-api"  # 签发者
+                "iss": "auth-api",  # 签发者
             }
             jwt_token = jwt.encode(payload, jwt_secret, algorithm="HS256")
 
@@ -84,8 +84,9 @@ async def auth(request: Request):
             login_failed_attempts[ip].append(now)
 
             if len(login_failed_attempts[ip]) > login_max_attempt:
-                await MaliciousLoginRecords.create(ip_address=ip,
-                                                   blocked_until=now + timedelta(seconds=LOGIN_BLOCK_DURATION))
+                await MaliciousLoginRecords.create(
+                    ip_address=ip, blocked_until=now + timedelta(seconds=LOGIN_BLOCK_DURATION)
+                )
                 login_failed_attempts[ip].clear()
                 Logger.warning(f"[WebUI] {ip} has been blocked due to excessive login failures.")
                 raise HTTPException(status_code=429, detail="This IP has been blocked")
@@ -95,11 +96,7 @@ async def auth(request: Request):
 
         login_failed_attempts.pop(ip, None)
 
-        payload = {
-            "exp": datetime.now(UTC) + timedelta(hours=24),
-            "iat": datetime.now(UTC),
-            "iss": "auth-api"
-        }
+        payload = {"exp": datetime.now(UTC) + timedelta(hours=24), "iat": datetime.now(UTC), "iss": "auth-api"}
         jwt_token = jwt.encode(payload, jwt_secret, algorithm="HS256")
 
         Logger.info(f"[WebUI] {ip} login successfully.")
@@ -128,10 +125,7 @@ async def change_password(request: Request, response: Response):
 
             PASSWORD_PATH.parent.mkdir(parents=True, exist_ok=True)
 
-            password_data = {
-                "password": ph.hash(new_password),
-                "last_updated": datetime.now().timestamp()
-            }
+            password_data = {"password": ph.hash(new_password), "last_updated": datetime.now().timestamp()}
             with open(PASSWORD_PATH, "wb") as file:
                 file.write(orjson.dumps(password_data))
             response.delete_cookie("deviceToken")

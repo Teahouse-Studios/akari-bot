@@ -1,4 +1,4 @@
-from tortoise import Tortoise, connections
+from tortoise import Tortoise
 
 from core.database import fetch_module_db
 from core.database.link import db_type, get_db_link
@@ -8,14 +8,11 @@ database_list = fetch_module_db()
 
 
 async def update_database():
-    await Tortoise.init(
-        db_url=get_db_link(),
-        modules={"models": ["core.database.models"] + database_list}
-    )
+    await Tortoise.init(db_url=get_db_link(), modules={"models": ["core.database.models"] + database_list})
 
     await Tortoise.generate_schemas(safe=True)
 
-    conn = connections.get("default")
+    conn = Tortoise.get_connection("default")
     query_dbver = await DBVersion.first()
     if query_dbver:
         db_version = query_dbver.version

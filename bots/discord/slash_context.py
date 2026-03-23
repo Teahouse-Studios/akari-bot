@@ -14,13 +14,18 @@ from core.logger import Logger
 
 class DiscordSlashContextManager(DiscordContextManager):
     context: dict[str, discord.ApplicationContext] = {}
-    features: Features | None = Features
+    features: type[Features] | None = Features
     typing_flags: dict[str, asyncio.Event] = {}
 
     @classmethod
-    async def send_message(cls, session_info: SessionInfo, message: MessageChain, quote: bool = True,
-                           enable_parse_message: bool = True,
-                           enable_split_image: bool = True, ):
+    async def send_message(
+        cls,
+        session_info: SessionInfo,
+        message: MessageChain,
+        quote: bool = True,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ):
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
         ctx: discord.ApplicationContext = cls.context.get(session_info.session_id)
@@ -37,23 +42,15 @@ class DiscordSlashContextManager(DiscordContextManager):
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
             elif isinstance(x, ImageElement):
                 if count == 0:
-                    send_ = await ctx.respond(
-                        file=discord.File(await x.get())
-                    )
+                    send_ = await ctx.respond(file=discord.File(await x.get()))
                 else:
-                    send_ = await ctx.send(
-                        file=discord.File(await x.get())
-                    )
+                    send_ = await ctx.send(file=discord.File(await x.get()))
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(x)}")
             elif isinstance(x, VoiceElement):
                 if count == 0:
-                    send_ = await ctx.respond(
-                        file=discord.File(x.path)
-                    )
+                    send_ = await ctx.respond(file=discord.File(x.path))
                 else:
-                    send_ = await ctx.send(
-                        file=discord.File(x.path)
-                    )
+                    send_ = await ctx.send(file=discord.File(x.path))
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Voice: {str(x)}")
             elif isinstance(x, MentionElement):
                 if x.client == client_name and session_info.target_from == target_channel_prefix:
@@ -65,13 +62,9 @@ class DiscordSlashContextManager(DiscordContextManager):
             elif isinstance(x, EmbedElement):
                 embeds, files = await convert_embed(x, session_info)
                 if count == 0:
-                    send_ = await ctx.respond(
-                        embed=embeds,
-                        files=files)
+                    send_ = await ctx.respond(embed=embeds, files=files)
                 else:
-                    send_ = await ctx.send(
-                        embed=embeds,
-                        files=files)
+                    send_ = await ctx.send(embed=embeds, files=files)
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Embed: {str(x)}")
 
             if send_:
@@ -86,7 +79,7 @@ class DiscordSlashContextManager(DiscordContextManager):
                 raise ValueError("Session not found in context")
             ctx: discord.ApplicationContext = cls.context[session_info.session_id]
             if ctx:
-                async with ctx.channel.typing() as typing:
+                async with ctx.channel.typing():
                     await ctx.defer()
                     Logger.debug(f"Start typing in session: {session_info.session_id}")
                     # 这里可以添加开始输入状态的逻辑

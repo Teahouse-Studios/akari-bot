@@ -2,11 +2,7 @@ import html.entities
 
 from . import config
 
-unifiable_n = {
-    html.entities.name2codepoint[k]: v
-    for k, v in config.UNIFIABLE.items()
-    if k != "nbsp"
-}
+unifiable_n = {html.entities.name2codepoint[k]: v for k, v in config.UNIFIABLE.items() if k != "nbsp"}
 
 
 def hn(tag: str) -> int:
@@ -21,10 +17,7 @@ def dumb_property_dict(style: str) -> dict[str, str]:
     """
     :returns: A hash of css attributes
     """
-    return {
-        x.strip().lower(): y.strip().lower()
-        for x, y in [z.split(":", 1) for z in style.split(";") if ":" in z]
-    }
+    return {x.strip().lower(): y.strip().lower() for x, y in [z.split(":", 1) for z in style.split(";") if ":" in z]}
 
 
 def dumb_css_parser(data: str) -> dict[str, dict[str, str]]:
@@ -39,7 +32,7 @@ def dumb_css_parser(data: str) -> dict[str, dict[str, str]]:
     data += ";"
     importIndex = data.find("@import")
     while importIndex != -1:
-        data = data[0:importIndex] + data[data.find(";", importIndex) + 1:]
+        data = data[0:importIndex] + data[data.find(";", importIndex) + 1 :]
         importIndex = data.find("@import")
 
     # parse the css. reverted from dictionary comprehension in order to
@@ -180,10 +173,7 @@ def skipwrap(para: str, wrap_links: bool, wrap_list_items: bool) -> bool:
     # If the text begins with a single -, *, or +, followed by a space,
     # or an integer, followed by a ., followed by a space (in either
     # case optionally proceeded by whitespace), it's a list; don't wrap.
-    return bool(
-        config.RE_ORDERED_LIST_MATCHER.match(stripped)
-        or config.RE_UNORDERED_LIST_MATCHER.match(stripped)
-    )
+    return bool(config.RE_ORDERED_LIST_MATCHER.match(stripped) or config.RE_UNORDERED_LIST_MATCHER.match(stripped))
 
 
 def escape_md(text: str) -> str:
@@ -226,12 +216,10 @@ def reformat_table(lines: list[str], right_margin: int) -> list[str]:
         if num_cols < max_cols:
             cols += [""] * (max_cols - num_cols)
         elif max_cols < num_cols:
-            max_width += [len(x) + right_margin for x in cols[-(num_cols - max_cols):]]
+            max_width += [len(x) + right_margin for x in cols[-(num_cols - max_cols) :]]
             max_cols = num_cols
 
-        max_width = [
-            max(len(x) + right_margin, old_len) for x, old_len in zip(cols, max_width)
-        ]
+        max_width = [max(len(x) + right_margin, old_len) for x, old_len in zip(cols, max_width)]
 
     # reformat
     new_lines = []
@@ -239,16 +227,10 @@ def reformat_table(lines: list[str], right_margin: int) -> list[str]:
         cols = [x.rstrip() for x in line.split("|")]
         if set(line.strip()) == set("-|"):
             filler = "-"
-            new_cols = [
-                x.rstrip() + (filler * (M - len(x.rstrip())))
-                for x, M in zip(cols, max_width)
-            ]
+            new_cols = [x.rstrip() + (filler * (M - len(x.rstrip()))) for x, M in zip(cols, max_width)]
         else:
             filler = " "
-            new_cols = [
-                x.rstrip() + (filler * (M - len(x.rstrip())))
-                for x, M in zip(cols, max_width)
-            ]
+            new_cols = [x.rstrip() + (filler * (M - len(x.rstrip()))) for x, M in zip(cols, max_width)]
         new_lines.append("|".join(new_cols))
     return new_lines
 

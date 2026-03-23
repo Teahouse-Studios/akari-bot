@@ -58,9 +58,7 @@ async def _(msg: Bot.MessageSession, color: str = None):
         color = webcolors.HTML5SimpleColor(*(int(x.strip()) for x in color))
     elif re.match(r"^rgb\(\d{1,3}%,\s?\d{1,3}%,\s?\d{1,3}%\)$", color):
         color = color[4:-1].split(",")
-        color = webcolors.HTML5SimpleColor(
-            *(int(x.strip()[:-1]) * 255 / 100 for x in color)
-        )
+        color = webcolors.HTML5SimpleColor(*(int(x.strip()[:-1]) * 255 / 100 for x in color))
     elif re.match(r"^hsl\(\d{1,3},\s?\d{1,3}%,\s?\d{1,3}%\)$", color):
         color = color[4:-1].split(",")
         color = colorsys.hls_to_rgb(
@@ -114,10 +112,13 @@ async def _(msg: Bot.MessageSession, color: str = None):
         (250, 125),
         f"CSS: {css_color_name_raw[0]}",
         font=font,
-        fill=(0, 0, 0) if get_luminance(webcolors.html5_parse_simple_color(css_names_to_hex.get(
-            css_color_name_raw[0], "#FFFFFF"))) > 140 else (255, 255, 255),
+        fill=(0, 0, 0)
+        if get_luminance(webcolors.html5_parse_simple_color(css_names_to_hex.get(css_color_name_raw[0], "#FFFFFF")))
+        > 140
+        else (255, 255, 255),
         anchor="mm",
-        align="center", )
+        align="center",
+    )
     img.paste(img_css, (500, 0))
 
     material_color_name_raw = get_color_name(color, material_colors_hex_to_names)
@@ -130,11 +131,18 @@ async def _(msg: Bot.MessageSession, color: str = None):
     img_md = Image.new("RGB", (500, 250), color=material_colors_names_to_hex.get(material_color_name_raw[0], "#FFFFFF"))
     draw_md = ImageDraw.Draw(img_md)
     draw_md.text(
-        (250, 125), f"MD: {material_color_name_raw[0]}",
+        (250, 125),
+        f"MD: {material_color_name_raw[0]}",
         font=font,
-        fill=(0, 0, 0) if get_luminance(webcolors.html5_parse_simple_color(material_colors_names_to_hex.get(
-            material_color_name_raw[0], "#FFFFFF"))) > 140 else (255, 255, 255),
-        anchor="mm", align="center", )
+        fill=(0, 0, 0)
+        if get_luminance(
+            webcolors.html5_parse_simple_color(material_colors_names_to_hex.get(material_color_name_raw[0], "#FFFFFF"))
+        )
+        > 140
+        else (255, 255, 255),
+        anchor="mm",
+        align="center",
+    )
     img.paste(img_md, (500, 250))
 
     await msg.finish(
@@ -156,9 +164,7 @@ def get_luminance(color: webcolors.HTML5SimpleColor):
     return color.red * 0.2126 + color.green * 0.7152 + color.blue * 0.0722
 
 
-def get_color_name(
-    color: webcolors.HTML5SimpleColor, name_dict
-) -> tuple[str | None, bool]:
+def get_color_name(color: webcolors.HTML5SimpleColor, name_dict) -> tuple[str | None, bool]:
     # check exact match
     hex_name = webcolors.rgb_to_hex(color)
     if hex_name in name_dict:
@@ -166,9 +172,7 @@ def get_color_name(
     color_name = None
     min_dist = 1000000
     for name, value in name_dict.items():
-        dist = np.linalg.norm(
-            np.array(color) - np.array(webcolors.html5_parse_simple_color(name))
-        )
+        dist = np.linalg.norm(np.array(color) - np.array(webcolors.html5_parse_simple_color(name)))
         if dist < min_dist:
             min_dist = dist
             color_name = value
