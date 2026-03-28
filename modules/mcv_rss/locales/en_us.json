@@ -11,6 +11,6 @@
     "mcv_rss.message.mclgv_rss": "Minecraft Legends ${version} is updated on Mojira.\n(The information on Mojira is only for version preview and does not mean that the Launcher/store has updated.)",
     "mcv_rss.message.mcv_jira_rss": "Java Edition ${version} is updated on Mojira.\n(The information on Mojira is only for version preview and does not mean that the Launcher has updated.)",
     "mcv_rss.message.mcv_jira_rss.future": "Java Edition ${version} is added to Mojira.\n(\"Future Version\" only indicates that a new version is planned and does not mean that the Launcher has updated.)",
-    "mcv_rss.message.mcv_rss.release": "启动器已更新 ${version} 正式版。\n记录内更新时间： ${record_time}（${record_ts}）\n检测到更新时间：${detected_time}",
-    "mcv_rss.message.mcv_rss.snapshot": "启动器已更新 ${version} 快照。\n记录内更新时间： ${record_time}（${record_ts}）\n检测到更新时间：${detected_time}"
+    "mcv_rss.message.mcv_rss.release": "启动器已更新 ${version} 正式版。\n更新时间： ${record_time}\n推送时间：${posted_time}",
+    "mcv_rss.message.mcv_rss.snapshot": "启动器已更新 ${version} 快照。\n更新时间： ${record_time}\n推送时间：${posted_time}"
 }
