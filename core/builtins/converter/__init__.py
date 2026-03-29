@@ -25,9 +25,11 @@ converter = Converter()
 # 消息元素类型的反结构化处理
 # 将任何 MessageElement 对象转换为字典，添加 _type 字段标记类型
 def elements_to_kwargs(kwargs):
+    Logger.trace(f"kwargs before unstructured: {kwargs}")
     for k in kwargs:
         if isinstance(kwargs[k], MessageElement):
             kwargs[k] = {"_type": type(kwargs[k]).__name__, "element": converter.unstructure(kwargs[k])}
+    Logger.trace(f"kwargs after unstructured: {kwargs}")
     return kwargs
 
 
@@ -61,9 +63,21 @@ converter.register_unstructure_hook(timedelta, lambda obj: {"_type": "timedelta"
 
 # ========== 注册 structure 钩子（字典 -> 对象）==========
 
+
 # 消息元素类型的结构化处理
 # 从字典恢复为对应的 MessageElement 子类对象
-converter.register_structure_hook(MessageElement, lambda o, _: converter.structure(o, getattr(elements, o["_type"])))
+def kwargs_to_elements(o):
+    Logger.trace(f"kwargs before structure: {o}")
+    if o["_type"] == "I18NContextElement":
+        for k in o["kwargs"]:
+            if isinstance(o["kwargs"][k], dict) and (g := getattr(elements, o["kwargs"][k]["_type"])):
+                o["kwargs"][k] = converter.structure(o["kwargs"][k]["element"], g)
+    s = converter.structure(o, getattr(elements, o["_type"]))
+    Logger.trace(f"kwargs after structure: {s}")
+    return s
+
+
+converter.register_structure_hook(MessageElement, lambda o, _: kwargs_to_elements(o))
 
 # 目标信息的结构化处理
 # 从字典恢复为 TargetInfo 对象（由于需要从数据库异步获取信息，这里实际只返回一个类本身用于占位，信息会在某个流程重新被刷新）
@@ -80,18 +94,5 @@ converter.register_structure_hook(Locale, lambda o, _: Locale(o["locale"]))
 # 时间间隔的结构化处理
 # 从字典恢复为 timedelta 对象，使用保存的秒数值
 converter.register_structure_hook(timedelta, lambda o, _: timedelta(seconds=o["seconds"]))
-
-
-def kwargs_to_elements(kwargs):
-    Logger.debug(f"kwargs before structure: {kwargs}")
-    for k in kwargs:
-        if isinstance(kwargs[k], dict) and (g := getattr(elements, kwargs[k]["_type"])):
-            kwargs[k] = converter.structure(kwargs[k]["element"], g)
-    return kwargs
-
-
-converter.register_structure_hook(
-    I18NContextElement, lambda o, _: I18NContextElement(o["key"], o["disable_joke"], kwargs_to_elements(o["kwargs"]))
-)
 
 __all__ = ["converter"]
