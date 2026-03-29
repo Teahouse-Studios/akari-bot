@@ -1,4 +1,0 @@
-{
-    "langconv.help": "Conversion betweem Simplified Chinese and Traditional Chinese.",
-    "langconv.message.unsupported_language": "This language code is not supported. Supported: zh_cn, zh_tw, zh_hk"
-}

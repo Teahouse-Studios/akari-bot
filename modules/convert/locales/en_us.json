@@ -1,5 +1,0 @@
-{
-    "convert.help": "Unit conversion, case sensitive.",
-    "convert.help.desc": "Unit conversion tool.",
-    "convert.message.invalid": "Unable to convert units. Please check your input."
-}
