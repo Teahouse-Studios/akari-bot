@@ -106,7 +106,7 @@ async def _(msg: Bot.MessageSession):
             img_list = [Image(ii) for ii in imgs]
             mt = [I18NContext("wiki.message.iw.list", prefix=msg.session_info.prefixes[0])]
             if base_interwiki_link:
-                mt.append(I18NContext("wiki.message.iw.list.prompt", url=str(Url(base_interwiki_link))))
+                mt.append(I18NContext("wiki.message.iw.list.prompt", url=Url(base_interwiki_link)))
             await msg.finish(img_list + mt)
         else:
             result.append(I18NContext("wiki.message.iw.list.legacy"))
@@ -115,7 +115,7 @@ async def _(msg: Bot.MessageSession):
     else:
         result.append(I18NContext("wiki.message.iw.list.none", prefix=msg.session_info.prefixes[0]))
     if base_interwiki_link:
-        result.append(I18NContext("wiki.message.iw.list.prompt", url=str(Url(base_interwiki_link))))
+        result.append(I18NContext("wiki.message.iw.list.prompt", url=Url(base_interwiki_link)))
     await msg.finish(result)
 
 
