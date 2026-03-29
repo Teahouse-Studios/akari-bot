@@ -1,0 +1,4 @@
+{
+    "nintendo_err.help": "解析任天堂系列主機的報錯碼並給出原因。",
+    "nintendo_err.message.invalid": "您輸入的代碼是無效的，或是此功能不支援您使用的主機。"
+}
