@@ -1,0 +1,19 @@
+# https://toml.io/ko/v1.0.0
+# 주의: TOML은 Python이 아닙니다. 이곳에서 Python 구문을 사용하지 마십시오.
+# 예를 들어, TOML의 부울 값은 반드시 소문자로 표기해야 합니다.
+
+[bot_web]
+# 클라이언트 구성 섹션입니다. 여기에 입력한 값은 메시지에 일반 텍스트로 표시됩니다. 민감한 정보는 이 섹션에 입력하지 마십시오.
+enable = true # 이 플랫폼을 활성화할지 여부.
+enable_https = false # HTTPS 프로토콜 보안 기능을 활성화할지 여부.
+web_host = "127.0.0.1" # Web 서비스의 호스트 주소. 0.0.0.0으로 설정하면 모든 주소를 수신 대기합니다.
+web_port = 6485 # Web 서비스의 포트 번호. 0으로 설정하면 서비스가 비활성화됩니다.
+login_max_attempt = 5 # 로그인 요청의 최대 횟수 제한.
+heartbeat_attempt = 3 # 하트비트 메시지를 전송하려는 시도 횟수.
+heartbeat_interval = 30 # 하트비트 메시지를 전송하는 간격.
+heartbeat_timeout = 5 # 하트비트 메시지 응답 시간 초과.
+
+[bot_web_secret]
+# 클라이언트 키 설정 섹션입니다. 이 값이 전송된 메시지에 실수로 나타날 경우 봇이 해당 메시지를 가로채려고 시도합니다. 하지만 이 값이 유출되지 않도록 각별히 주의해 주십시오.
+allow_origins = [] # CORS를 허용하는 API 서비스의 원본 목록.
+jwt_secret = "<Replace me with str value>" # 내장된 API의 인증 키. 서명 및 유효성 검사에 사용됩니다.

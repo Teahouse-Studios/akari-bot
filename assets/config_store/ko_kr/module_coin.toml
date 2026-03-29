@@ -1,0 +1,10 @@
+# https://toml.io/ko/v1.0.0
+# 주의: TOML은 Python이 아닙니다. 이곳에서 Python 구문을 사용하지 마십시오.
+# 예를 들어, TOML의 부울 값은 반드시 소문자로 표기해야 합니다.
+
+[module_coin]
+# 모듈의 구성 섹션입니다. 여기에 입력한 값은 메시지에 일반 텍스트로 표시됩니다. 민감한 정보는 이 섹션에 입력하지 마십시오.
+coin_limit = 10000 # coin 模块可抛硬币的上限。
+coin_faceup_weight = 4997 # coin 模块抛硬币时正面的权重。
+coin_facedown_weight = 4997 # coin 模块抛硬币时反面的权重。
+coin_stand_weight = 6 # coin 模块抛硬币时立起的权重。
