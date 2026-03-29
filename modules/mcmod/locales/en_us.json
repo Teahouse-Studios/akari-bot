@@ -1,0 +1,6 @@
+{
+    "mcmod.help.desc": "Get Minecraft mod information from mcmod.cn.",
+    "mcmod.help.details": "Get mod information and link from the name of mod content, using the exact name or ID of block/item/entity.",
+    "mcmod.help.mod_name": "Get mod information and link from the mod name, using abbreviation or exact name.",
+    "mcmod.message.not_found": "No results found."
+}
