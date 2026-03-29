@@ -1,0 +1,6 @@
+{
+    "nbnhhsh.help.desc": "能不能好好說話？ 拼音首字母縮寫釋義工具。",
+    "nbnhhsh.help": "輸入含有首字母縮寫的文字取得含義。",
+    "nbnhhsh.message.guess": "有可能是：${term}",
+    "nbnhhsh.message.not_found": "沒有符合的拼音首字母縮寫含義。"
+}
