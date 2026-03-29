@@ -6,7 +6,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Image as BImage
 from core.component import module
 from core.config import Config
-from core.constants.exceptions import ConfigValueError
+from core.constants.exceptions import ConfigValueError, ExternalException
 from core.dirty_check import rickroll
 from core.utils.http import download, get_url
 from .check import secret_check
@@ -40,11 +40,13 @@ async def _(msg: Bot.MessageSession, query: str):
                 img.save(output, "PNG")
             img_path.unlink()
             await msg.finish([BImage(output)])
-    except ValueError as e:
+    except ExternalException as e:
         if str(e).startswith("501"):
             await msg.finish(I18NContext("wolframalpha.message.incomprehensible"))
         else:
             raise e
+    except Exception as e:
+        raise e
 
 
 @w.command("ask <question> {{I18N:wolframalpha.help.ask}}")
@@ -58,8 +60,10 @@ async def _(msg: Bot.MessageSession, question: str):
     try:
         data = await get_url(url, 200)
         await msg.finish(data)
-    except ValueError as e:
+    except ExternalException as e:
         if str(e).startswith("501"):
             await msg.finish(I18NContext("wolframalpha.message.incomprehensible"))
         else:
             raise e
+    except Exception as e:
+        raise e
