@@ -1,0 +1,4 @@
+{
+    "nintendo_err.help": "Parse the error code of Nintendo devices and tell the reason.",
+    "nintendo_err.message.invalid": "The code you entered is invalid, or the device you use is not supported by this feature."
+}
