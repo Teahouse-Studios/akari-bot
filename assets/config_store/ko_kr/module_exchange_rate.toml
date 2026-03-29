@@ -1,0 +1,7 @@
+# https://toml.io/ko/v1.0.0
+# 주의: TOML은 Python이 아닙니다. 이곳에서 Python 구문을 사용하지 마십시오.
+# 예를 들어, TOML의 부울 값은 반드시 소문자로 표기해야 합니다.
+
+[module_exchange_rate_secret]
+# 모듈의 키 설정 섹션입니다. 이 값이 전송된 메시지에 실수로 나타날 경우 봇이 해당 메시지를 가로채려고 시도합니다. 하지만 이 값이 유출되지 않도록 각별히 주의해 주십시오.
+exchange_rate_api_key = "<Replace me with str value>" # ExchangeRate-API 的 API Key。（用于 exchange_rate 模块与计算汇率用）

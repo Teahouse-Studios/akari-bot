@@ -1,0 +1,7 @@
+# https://toml.io/ko/v1.0.0
+# 주의: TOML은 Python이 아닙니다. 이곳에서 Python 구문을 사용하지 마십시오.
+# 예를 들어, TOML의 부울 값은 반드시 소문자로 표기해야 합니다.
+
+[module_wordle]
+# 모듈의 구성 섹션입니다. 여기에 입력한 값은 메시지에 일반 텍스트로 표시됩니다. 민감한 정보는 이 섹션에 입력하지 마십시오.
+wordle_disable_image = false # wordle 模块是否禁用图片。

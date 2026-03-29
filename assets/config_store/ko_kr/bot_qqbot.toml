@@ -1,0 +1,15 @@
+# https://toml.io/ko/v1.0.0
+# 주의: TOML은 Python이 아닙니다. 이곳에서 Python 구문을 사용하지 마십시오.
+# 예를 들어, TOML의 부울 값은 반드시 소문자로 표기해야 합니다.
+
+[bot_qqbot]
+# 클라이언트 구성 섹션입니다. 여기에 입력한 값은 메시지에 일반 텍스트로 표시됩니다. 민감한 정보는 이 섹션에 입력하지 마십시오.
+enable = false # 이 플랫폼을 활성화할지 여부.
+qq_bot_appid = "<Replace me with (str, int) value>" # QQ 공식 봇의 AppID.
+qq_private_bot = false # QQ 공식 봇을 사용할 때 비공개 봇인지 여부.
+qq_bot_enable_send_url = false # QQ 공식 봇을 사용할 때 URL 전송 기능을 활성화할지 여부.
+qq_typing_emoji = 181 # QQ 관련 프로토콜을 사용할 때, 이는 메시지 처리 중에 메시지에 첨부되는 응답 이모티콘 ID를 의미합니다. 프로토콜 지원이 필요합니다. ID는 다음을 참조하십시오: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
+
+[bot_qqbot_secret]
+# 클라이언트 키 설정 섹션입니다. 이 값이 전송된 메시지에 실수로 나타날 경우 봇이 해당 메시지를 가로채려고 시도합니다. 하지만 이 값이 유출되지 않도록 각별히 주의해 주십시오.
+qq_bot_secret = "<Replace me with str value>" # QQ 공식 봇의 AppSecret.

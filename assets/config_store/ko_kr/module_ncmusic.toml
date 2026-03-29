@@ -1,0 +1,11 @@
+# https://toml.io/ko/v1.0.0
+# 주의: TOML은 Python이 아닙니다. 이곳에서 Python 구문을 사용하지 마십시오.
+# 예를 들어, TOML의 부울 값은 반드시 소문자로 표기해야 합니다.
+
+[module_ncmusic]
+# 모듈의 구성 섹션입니다. 여기에 입력한 값은 메시지에 일반 텍스트로 표시됩니다. 민감한 정보는 이 섹션에 입력하지 마십시오.
+ncmusic_enable_card = false # ncmusic 模块是否开启卡片消息。（仅在 QQ 客户端有效）
+
+[module_ncmusic_secret]
+# 모듈의 키 설정 섹션입니다. 이 값이 전송된 메시지에 실수로 나타날 경우 봇이 해당 메시지를 가로채려고 시도합니다. 하지만 이 값이 유출되지 않도록 각별히 주의해 주십시오.
+ncmusic_api = "<Replace me with str value>" # 网易云音乐 API 的 API 地址。（用于 ncmusic 模块）
