@@ -1,0 +1,9 @@
+{
+    "emojimix.help": "2 つの絵文字を 1 つの画像に組み合わせます。空白のままにしてランダムな組み合わせを作成します。",
+    "emojimix.help.list": "サポートされているすべての絵文字を一覧表示します。",
+    "emojimix.message.all_supported": "サポートされているすべての絵文字：",
+    "emojimix.message.combine_supported": "「${emoji}」をサポートする絵文字の組み合わせ：",
+    "emojimix.message.invalid": "絵文字が無効です。",
+    "emojimix.message.not_found": "この絵文字の組み合わせはサポートされていません。",
+    "emojimix.message.unsupported": "サポートされていない絵文字：${emoji}"
+}
