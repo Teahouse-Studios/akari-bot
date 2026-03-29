@@ -90,6 +90,8 @@ def load_locale_file() -> list[str]:
                         err_prompt.append(f"Failed to load {lang_file_path}: {e}")
 
     for lang in locale_dict:
+        locale_root.update_node(f"{lang}", None)
+
         for k in locale_dict[lang].keys():
             locale_root.update_node(f"{lang}.{k}", locale_dict[lang][k])
 
@@ -110,7 +112,7 @@ class Locale:
             fallback_lng = supported_locales.copy()
             fallback_lng.remove(locale)
         self.locale = locale
-        self.data: LocaleNode = locale_root.query_node(locale)
+        self.data: LocaleNode = locale_root.query_node(locale) or LocaleNode()
         self.fallback_lng = fallback_lng
 
     def __getitem__(self, key: str):
