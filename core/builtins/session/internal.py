@@ -799,7 +799,7 @@ class MessageSession:
             return str(number)
 
         # 根据地区选择合适的单位系统
-        if self.session_info.locale.locale in ["ko_kr", "ja_jp", "zh_cn", "zh_tw"]:
+        if self.session_info.locale.locale in ["ja_jp", "ko_kr", "zh_cn", "zh_tw"]:
             unit_info = _get_cjk_unit(Decimal(number))
         else:
             unit_info = _get_unit(Decimal(number))
