@@ -1,11 +1,11 @@
 # https://toml.io/ko/v1.0.0
-# 주의: TOML은 Python이 아닙니다. 이곳에서 Python 구문을 사용하지 마십시오.
-# 예를 들어, TOML의 부울 값은 반드시 소문자로 표기해야 합니다.
+# 주의: TOML은 Python이 아닙니다. Python 문법을 사용하지 마십시오.
+# 예: TOML의 불리언 값은 반드시 소문자로 작성해야 합니다.
 
 [webrender]
 # WebRender의 구성 섹션입니다. 여기에 입력된 값은 메시지에 일반 텍스트로 표시됩니다. 민감한 정보는 이 섹션에 입력하지 마십시오.
 enable_web_render = false # WebRender를 활성화할지 여부.
-browser_type = "chrome" # WebRender에서 사용하는 브라우저 유형. (“chrome” 및 “firefox” 지원)
-browser_executable_path = "<Replace me with str value>" # WebRender가 사용하는 브라우저 실행 파일의 경로입니다. 빈 값인 경우 playwright의 기본 설치 브라우저가 사용됩니다.
-remote_only = false # 원격 WebRender 서비스만 사용하도록 허용하지 여부.
+browser_type = "chrome" # WebRender에서 사용하는 브라우저 유형입니다. ("chrome" 및 "firefox" 지원)
+browser_executable_path = "<Replace me with str value>" # WebRender가 사용하는 브라우저 실행 파일의 경로입니다. 빈 값인 경우 Playwright에 설치된 기본 브라우저를 사용함니다.
+remote_only = false # 원격 WebRender만 사용 여부.
 remote_web_render_url = "<Replace me with str value>" # 원격 WebRender 서비스의 URL. 로컬 WebRender 렌더링이 실패할 경우 이 URL로 요청을 시도합니다.

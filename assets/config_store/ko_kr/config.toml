@@ -1,62 +1,63 @@
 # https://toml.io/ko/v1.0.0
-# 주의: TOML은 Python이 아닙니다. 이곳에서 Python 구문을 사용하지 마십시오.
-# 예를 들어, TOML의 부울 값은 반드시 소문자로 표기해야 합니다.
+# 주의: TOML은 Python이 아닙니다. Python 문법을 사용하지 마십시오.
+# 예: TOML의 불리언 값은 반드시 소문자로 작성해야 합니다.
 
-default_locale = "ko_kr" # 기본 세션 언어 환경.
-config_version = 2 # 버전 번호를 설정합니다. 기능 업데이트 시 자동으로 증가하므로, 일반적으로는 수정하지 마십시오.
+default_locale = "ko_kr" # 기본 세션 언어입니다.
+config_version = 2 # 버전 번호를 설정합니다. 기능 업데이트 시 자동으로 증가하므로, 일반적으로 수정하지 마십시오.
 
 [config]
 # 이 섹션에는 몇 가지 기본 구성 정보가 포함되어 있습니다. 여기에 입력한 값은 메시지에 일반 텍스트로 표시됩니다. 민감한 정보는 이 섹션에 입력하지 마십시오.
 debug = false # 디버그 모드를 활성화할지 여부. 활성화하면 더 많은 로그 정보가 출력됩니다.
 timezone_offset = "+8" # 봇의 기본 시간대 오프셋.
-allow_reload_base = false # 기본 모듈을 다시 로드할 수 있도록 허용할지 여부.
-allow_request_private_ip = false # 로봇이 로컬 사설 IP 주소를 요청하도록 허용할지 여부. (잠재적인 정보 유출을 방지하기 위해)
-slower_schedule = false # 더 느린 예약 작업 스케줄러를 활성화할지 여부. (요청 부하를 줄이기 위해)
+allow_reload_base = false # 기본 모듈 재로드 허용 여부.
+allow_request_private_ip = false # 봇이 로컬 사설 IP 주소를 요청하도록 허용할지 여부. (잠재적인 정보 유출을 방지하기 위해)
+slower_schedule = false # 저속 스케줄러 사용 여부. (부하 감소 목적)
 use_font_mirror = false # 웹 페이지를 렌더링할 때 글꼴 미러링을 사용할지 여부.
 use_secrets_random = false # secrets 라이브러리를 기반으로 한 난수 생성기를 사용할지 여부.
 base_superuser = ["QQ|2596322644"] # 봇의 기본 슈퍼 유저 목록입니다. 여기에 입력된 값은 봇이 시작될 때 데이터베이스에 로드됩니다.
 ignored_sender = ["QQ|2854196310"] # 무시할 사용자 목록. 이 목록에 포함된 사용자는 무시됩니다.
-report_targets = [] # 세션 목록을 보고합니다. 여기에 입력된 값은 보고 세션으로 인식됩니다. (예: 봇이 명령을 실행하는 과정에서 오류가 발생하면, 봇은 해당 세션으로 오류 메시지를 전송합니다.)
-command_prefix = ["~", "～"] # 명령어 접두사. 여기에 입력한 값은 명령어 접두사로 인식됩니다.
-confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # 확인 명령어의 키워드. 여기에 입력한 값이 확인 명령어로 인식됩니다.
-enable_module_invalid_prompt = false # 모듈이 존재하지 않을 때 알림 메시지를 표시할지 여부.
+report_targets = [] # 보고 대상 세션 목록입니다. 입력한 값이 보고 대상 세션으로 사용됩니다. (예: 봇이 명령을 실행하는 과정에서 오류가 발생하면, 봇은 해당 세션으로 오류 메시지를 전송합니다.)
+command_prefix = ["~", "～"] # 명령어 접두사입니다. 입력한 값이 명령어 접두사로 사용됩니다.
+confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # 확인 명령어 키워드입니다. 입력한 값이 확인 명령어로 인식됩니다.
+enable_module_invalid_prompt = false # 존재하지 않는 모듈 호출 시 알림 메시지 표시 여부.
 mention_required = false # 메시지 시작 부분에 봇이 언급된 메시지만 처리하도록 강제할지 여부.
-no_confirm = false # 발신자가 메시지를 확인한 후에야 명령을 실행해야 하는지 여부.
+no_confirm = false # 사용자의 확인 없이 명령을 직접 실행할지 여부.
 quick_confirm = true # 메시지에 대한 빠른 확인 기능을 활성화할지 여부.
 enable_analytics = true # 내장된 통계 기능을 활성화할지 여부.
-enable_commit_url = true # 버전 정보를 표시할 때 커밋 URL을 표시할지 여부.
-enable_dirty_check = false # 텍스트 필터링 검사를 활성화할지 여부. Alibaba Cloud 콘텐츠 보안 서비스의 AccessKey ID와 AccessKey Secret을 설정해야 합니다.
-check_use_textscan_v1 = false # 이전 버전의 Alibaba Cloud 콘텐츠 보안 Text Scan 1.0 서비스 API를 사용하는지 여부.
-enable_urlmanager = false # URLManager를 활성화할지 여부. URL 중계용으로 사용됩니다. (이 URL이 공식 링크가 아님을 알리는 등)
-auto_purge_crontab = "0 0 * * *" # 캐시를 자동으로 지우는 크론 표현식.
-typo_check_module_score = 0.6 # 모듈을 철자 검사에 허용되는 유사도입니다. 범위는 0에서 1 사이입니다.
-typo_check_command_score = 0.3 # 명령어 철자 검사에 허용되는 유사도입니다. 범위는 0에서 1 사이입니다.
-typo_check_args_score = 0.5 # 매개변수 철자 검사에 허용되는 유사도입니다. 범위는 0에서 1 사이입니다.
-typo_check_options_score = 0.3 # 옵션 철자 검사에 허용되는 유사도입니다. 범위는 0에서 1 사이입니다.
+enable_commit_url = true # 버전 정보 표시 시 커밋 URL 표시 여부.
+enable_dirty_check = false # 텍스트 필터링 활성화 여부. Alibaba Cloud 콘텐츠 보안 서비스의 AccessKey ID 및 AccessKey Secret이 필요합니다.
+check_use_textscan_v1 = false # 이전 버전의 Alibaba Cloud 콘텐츠 보안 Text Scan 1.0 API 사용 여부.
+enable_urlmanager = false # URLManager 활성화 여부. URL 중계용으로 사용됩니다. (이 URL이 공식 링크가 아님을 알리는 등)
+auto_purge_crontab = "0 0 * * *" # 캐시 자동 삭제를 위한 Cron 표현식.
+typo_check_module_score = 0.6 # 모듈 철자 검사 허용 유사도. 범위는 0에서 1 사이입니다.
+typo_check_command_score = 0.3 # 명령어 철자 검사 허용 유사도. 범위는 0에서 1 사이입니다.
+typo_check_args_score = 0.5 # 인수 철자 검사 허용 유사도. 범위는 0에서 1 사이입니다.
+typo_check_options_score = 0.3 # 옵션 철자 검사 허용 유사도. 범위는 0에서 1 사이입니다.
 enable_tos = true # 내장된 ToS 검사 규칙을 활성화할지 여부.
 tos_warning_counts = 5 # ToS 위반 시 최대 경고 횟수입니다.
 tos_temp_ban_time = 300 # ToS 위반 시 일시적인 차단 시간.
-enable_petal = false # 페탈(petal) 기능을 켤지 여부.
-enable_get_petal = false # 페탈(petal)을 획득 허용할지 여부.
+enable_petal = false # 페탈(petal) 기능 활성화 여부.
+enable_get_petal = false # 페탈(petal) 획득 허용 여부.
 petal_gained_limit = 0 # 하루에 획득할 수 있는 페탈(petal)의 최대 수.
 petal_lost_limit = 0 # 하루에 잃을 수 있는 페탈(petal)의 최대 수.
 petal_sign_limit = 5 # 하루에 출석하여 획득할 수 있는 페탈(petal)의 최대 수.
 petal_sign_rate = 0.5 # 출석 시 페탈(petal)을 획득할 확률. 범위는 0에서 1 사이의 값이며, 획득량은 지수적으로 감소합니다.
-enable_joke = true # 농담 모드를 활성화할지 여부. 활성화하면 서버 시간 기준 4월 1일에 적용됩니다.
+enable_joke = true # 농담 모드 활성화 여부. 활성화 시 서버 시간 기준 4월 1일에 적용됩니다.
 shuffle_rate = 0.1 # 농담이 발생할 확률. 범위는 0에서 1 사이입니다.
-enable_rickroll = true # 문자 필터링 탐지 실패 시, 사용자에게 릭롤(Rickroll)을 보낼지 여부.
-rickroll_msg = "https://b23.tv/vXaKjqJ" # 텍스트 필터링이 실패했을 때 릭롤(Rickroll) 메시지가 표시됩니다.
-bug_report_url = "https://s.wd-ljt.com/botreportbug" # 잘못된 URL을 신고하세요.
+enable_rickroll = true # 텍스트 필터링 실패 시 Rickroll 메시지 전송 여부.
+rickroll_msg = "https://b23.tv/vXaKjqJ" # 텍스트 필터링이 실패했을 때 Rickroll 메시지가 표시됩니다.
+bug_report_url = "https://s.wd-ljt.com/botreportbug" # 버그 신고 URL.
 donate_url = "http://afdian.com/a/teahouse" # 기부 URL.
 help_url = "https://bot.teahouse.team" # 도움말 문서 URL.
 help_page_url = "https://bot.teahouse.team/wiki/${module}" # 모듈 도움말 문서 URL.
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # 문제 신고 URL.
 locale_url = "https://www.crowdin.com/project/akari-bot" # 번역 프로젝트 URL.
 
+
 [secret]
 # 키 설정 섹션입니다. 이 값이 전송된 메시지에 실수로 나타날 경우 봇이 해당 메시지를 가로채려고 시도합니다. 하지만 이 값이 유출되지 않도록 각별히 주의해 주십시오.
-db_path = "sqlite://database/save.db" # 데이터베이스 연결 문자열. Tortoise ORM에서 지원하는 데이터베이스 연결 문자열 형식을 사용해 주십시오.
-proxy = "<Replace me with str value>" # 프록시 서비스 주소.
+db_path = "sqlite://database/save.db" # 데이터베이스 연결 문자열. Tortoise ORM에서 지원하는 데이터베이스 연결 문자열 형식을 사용하세요.
+proxy = "<Replace me with str value>" # 프록시 서버 주소.
 check_access_key_id = "<Replace me with str value>" # Alibaba Cloud 콘텐츠 보안 서비스의 AccessKey ID.
 check_access_key_secret = "<Replace me with str value>" # Alibaba Cloud 콘텐츠 보안 서비스의 AccessKey Secret.
 ff3_key = "<Replace me with str value>" # 用于加密敏感信息的密钥。（使用 ff3 算法进行加密，部分场景可能会使用到）

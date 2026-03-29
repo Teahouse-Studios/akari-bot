@@ -1,11 +1,11 @@
 # https://toml.io/ko/v1.0.0
-# 주의: TOML은 Python이 아닙니다. 이곳에서 Python 구문을 사용하지 마십시오.
-# 예를 들어, TOML의 부울 값은 반드시 소문자로 표기해야 합니다.
+# 주의: TOML은 Python이 아닙니다. Python 문법을 사용하지 마십시오.
+# 예: TOML의 불리언 값은 반드시 소문자로 작성해야 합니다.
 
 [bot_aiocqhttp]
 # 클라이언트 구성 섹션입니다. 여기에 입력한 값은 메시지에 일반 텍스트로 표시됩니다. 민감한 정보는 이 섹션에 입력하지 마십시오.
-enable = false # 이 플랫폼을 활성화할지 여부.
-qq_host = "127.0.0.1:8080" # Aiocqhttp WebSocket 메인 서버의 주소입니다. (Onebot 프로토콜 사용 시 리버스 WebSocket 방식으로 연결해 주십시오)
+enable = false # 플랫폼 활성화 여부.
+qq_host = "127.0.0.1:8080" # Aiocqhttp WebSocket 메인 서버의 주소입니다. (Onebot 프로토콜 사용 시 역방향 WebSocket 방식으로 연결해 주십시오)
 qq_enable_listening_self_message = false # Onebot 프로토콜을 사용할 때, 자체 메시지 수신 기능을 활성화할지 여부.
 qq_disable_temp_session = true # Onebot 프로토콜을 사용할 때 임시 세션을 활성화할지 여부.
 qq_allow_approve_friend = false # Onebot 프로토콜을 사용할 때 친구 요청을 자동으로 수락할지 여부.
