@@ -1,6 +1,6 @@
 {
     "bot_name": "아카리봇",
-    "check.redacted": "<편집됨:${reason}>",
+    "check.redacted": "[편집됨:${reason}]",
     "config.comments.allow_origins": "CORS를 허용하는 API 서비스의 오리진(Origin) 목록.",
     "config.comments.allow_reload_base": "기본 모듈 재로드 허용 여부.",
     "config.comments.allow_request_private_ip": "봇이 로컬 사설 IP 주소를 요청하도록 허용할지 여부. (잠재적인 정보 유출을 방지하기 위해)",
@@ -149,7 +149,7 @@
     "message.delimiter": ", ",
     "message.embed.author": "작성자: ",
     "message.end": ".",
-    "message.error": "오류 발생:",
+    "message.error": "오류 발생: ",
     "message.failed": "실패했습니다.",
     "message.id.init.sender.confirm": "해당 사용자가 존재하지 않습니다. 초기화하시겠습니까?",
     "message.id.init.target.confirm": "이 세션이 존재하지 않습니다. 초기화하시겠습니까?",
