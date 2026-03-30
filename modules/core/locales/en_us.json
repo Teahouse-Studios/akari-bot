@@ -5,7 +5,7 @@
     "core.help.admin.desc": "Commands available to bot administrators.",
     "core.help.admin.list": "View all bot administrators.",
     "core.help.admin.remove": "Remove a member from bot administrators.",
-    "core.help.admin.unban": "Unlimited the members to use the bot.",
+    "core.help.admin.unban": "Unlimit the members to use the bot.",
     "core.help.alias.add": "Add custom command alias.",
     "core.help.alias.list": "View custom command alias.",
     "core.help.alias.remove": "Remove custom command alias.",
