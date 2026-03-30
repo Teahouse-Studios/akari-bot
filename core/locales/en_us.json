@@ -118,7 +118,7 @@
     "error.message.chain.empty": "The bot attempted to send an empty message. Please contact the bot owner to resolve this issue.",
     "error.message.chain.unsafe": "The message contains insecure content and has been blocked.",
     "error.message.discord.dm.cannot_send": "This command does not support sending messages in private chat. Please contact the developer.",
-    "error.message.discord.thread.permission_denied": "Unable to send message. Probably because the bot does not have sufficient permissions in this channel (to create a sub-channel).",
+    "error.message.discord.thread.permission_denied": "Unable to send message. Probably because the bot does not have sufficient permissions (create threads) in this channel.",
     "error.message.limited": "Failed to send message. The message might be blocked. Please try again later.",
     "error.message.limited.msg2img": "The message has been blocked. Try sending by image: ",
     "error.message.paused": "Group message delivering was blocked by the server. Group message delivering is suspended. Use \"${prefix}resume\" to resume pushing.",
