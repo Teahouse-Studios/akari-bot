@@ -118,7 +118,7 @@
     "error.message.chain.empty": "機器人嘗試傳送空白訊息，請聯絡機器人擁有者解決問題。",
     "error.message.chain.unsafe": "訊息中含有不安全的內容，已被阻止。",
     "error.message.discord.dm.cannot_send": "此指令不支援在私訊下發送訊息，請聯絡開發人員處理。",
-    "error.message.discord.thread.permission_denied": "無法傳送訊息，可能是因為機器人在本頻道的權限不足（建立子區）。",
+    "error.message.discord.thread.permission_denied": "無法傳送訊息，可能是因為機器人在本頻道的權限（建立討論串）不足。",
     "error.message.limited": "訊息傳送失敗，可能被風控，請稍後再試。",
     "error.message.limited.msg2img": "訊息被風控，嘗試使用圖片傳送：",
     "error.message.paused": "傳送群訊息被伺服器攔截，已暫停傳送群訊息，使用「${prefix}resume」恢復傳送。",
