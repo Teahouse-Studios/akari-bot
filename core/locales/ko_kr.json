@@ -119,7 +119,7 @@
     "error.message.discord.thread.permission_denied": "메시지를 보낼 수 없습니다. 이 채널에서 봇의 권한이 (하위 채널 만들기) 부족하기 때문일 수 있습니다.",
     "error.message.limited": "메시지 전송에 실패했습니다. 잠시 후 다시 시도해 주세요.",
     "error.message.limited.msg2img": "메시지 전송이 제한되었습니다. 이미지를 사용하여 전송을 시도 중입니다:",
-    "error.message.paused": "그룹 메시지 전송이 서버에 의해 차단되어 그룹 메시지 전송이 일시 중지되었습니다. “${prefix}resume”을 사용하여 푸시를 재개하십시오.",
+    "error.message.paused": "그룹 메시지 전송이 서버에 의해 차단되어 그룹 메시지 전송이 일시 중지되었습니다. \"${prefix}resume\"을 사용하여 푸시를 재개하십시오.",
     "error.message.prompt": "명령 실행 중 오류가 발생했습니다:",
     "error.message.prompt.address": "오류 신고 주소: ${url}",
     "error.message.prompt.external": "이 문제는 외부 시스템에서 비롯된 것일 수 있습니다. 문제가 지속되면 봇 소유자에게 문의하십시오.",
