@@ -768,23 +768,23 @@ class MessageSession:
         """
 
         def _get_cjk_unit(number: Decimal) -> tuple[int, Decimal] | None:
-            # 中日韩文字数单位：万（10^4）百万（10^7）兆（10^11）
-            if number >= Decimal("10e11"):
-                return 3, Decimal("10e11")
-            if number >= Decimal("10e7"):
-                return 2, Decimal("10e7")
-            if number >= Decimal("10e3"):
-                return 1, Decimal("10e3")
+            # 中日韩文字数单位：万（10^4）亿（10^8）兆（10^12）
+            if number >= Decimal("1e12"):
+                return 3, Decimal("1e12")
+            if number >= Decimal("1e8"):
+                return 2, Decimal("1e8")
+            if number >= Decimal("1e4"):
+                return 1, Decimal("1e4")
             return None
 
         def _get_unit(number: Decimal) -> tuple[int, Decimal] | None:
-            # 英文单位：K（10^3）M（10^6）G（10^9）
-            if number >= Decimal("10e8"):
-                return 3, Decimal("10e8")
-            if number >= Decimal("10e5"):
-                return 2, Decimal("10e5")
-            if number >= Decimal("10e2"):
-                return 1, Decimal("10e2")
+            # 英文单位：k（10^3）M（10^6）G（10^9）
+            if number >= Decimal("1e9"):
+                return 3, Decimal("1e9")
+            if number >= Decimal("1e6"):
+                return 2, Decimal("1e6")
+            if number >= Decimal("1e3"):
+                return 1, Decimal("1e3")
             return None
 
         def _fmt_num(number: Decimal, precision: int) -> str:

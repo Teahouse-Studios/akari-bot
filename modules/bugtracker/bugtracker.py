@@ -1,6 +1,7 @@
 import orjson
 
 from core.builtins.message.internal import I18NContext, Plain
+from core.constants.exceptions import ExternalException
 from core.logger import Logger
 from core.utils.http import post_url, get_url
 from core.utils.image import cb64imglst
@@ -43,9 +44,11 @@ async def bugtracker_get(msg, mojira_id: str):
         load_json = orjson.loads(get_json).get("issues")[0]
     except IndexError:
         return I18NContext("bugtracker.message.get_failed"), None
-    except ValueError as e:
+    except ExternalException as e:
         if str(e).startswith("500"):
             return I18NContext("bugtracker.message.error.server"), None
+        raise e
+    except Exception as e:
         raise e
     if mojira_id not in spx_cache:
         get_spx = await get_url("https://spxx-db.teahouse.team/crowdin/zh-CN/zh_CN.json", 200)

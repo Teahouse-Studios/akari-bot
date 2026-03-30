@@ -81,10 +81,10 @@ async def get_analytics(request: Request, days: int = Query(1)):
     try:
         now = datetime.now()
         past = now - timedelta(days=days)
-        data = await AnalyticsData.get_values_by_times(now, past)
-        count = await AnalyticsData.get_count_by_times(now, past)
+        data = await AnalyticsData.get_values_by_times(now.timestamp(), past.timestamp())
+        count = await AnalyticsData.get_count_by_times(now.timestamp(), past.timestamp())
         past_past = now - timedelta(days=2 * days)
-        past_count = await AnalyticsData.get_count_by_times(past, past_past)
+        past_count = await AnalyticsData.get_count_by_times(past.timestamp(), past_past.timestamp())
         try:
             change_rate = round((count - past_count) / past_count, 2)
         except ZeroDivisionError:
