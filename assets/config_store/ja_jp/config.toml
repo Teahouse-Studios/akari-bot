@@ -1,51 +1,51 @@
 # https://toml.io/ja/v1.0.0
 # 注：TOML は Python ではありませんので、ここでは Python の文法を使用しないでください。
-# 例：TOML のブール値は小文字でなければならないです。
+# 例：TOML のブール値は小文字である必要があります。
 
 default_locale = "ja_jp" # デフォルトのセッション ロケール。
-config_version = 2 # バージョン番号。機能アップデートに伴い自動的に増加されるので、通常は変更しないでください。
+config_version = 2 # バージョン番号。機能アップデートに伴い自動的に更新されるので、通常は変更しないでください。
 
 [config]
 # 基本的な設定項目です。ここに入力された値は、メッセージ内にプレーンテキストで表示されます。この部分には機密情報を入力しないでください。
 debug = false # デバッグモードを有効にするかどうか。有効にすると、より多くのログ情報が出力されます。
 timezone_offset = "+8" # ボットのデフォルトのタイムゾーン オフセット。
 allow_reload_base = false # 基本モジュールのリロードを許可するかどうか。
-allow_request_private_ip = false # ボットがローカル プライベート IP アドレスをリクエストすることを許可するかどうか。（情報漏洩を防ぐため）
-slower_schedule = false # 低速のスケジュールタスクスケジューラを有効にするかどうか。（リクエストの負荷を軽減するため）
-use_font_mirror = false # ウェブページのをレンダリングするときにフォントのミラーリングを使用するかどうか。
+allow_request_private_ip = false # ボットがローカルのプライベート IP アドレスにリクエストを送信することを許可するかどうか。（情報漏洩を防ぐため）
+slower_schedule = false # 低速のタスクスケジューラを有効にするかどうか。（リクエストの負荷を軽減するため）
+use_font_mirror = false # ウェブページをレンダリングするときにフォントのミラーリングを使用するかどうか。
 use_secrets_random = false # secrets ライブラリに基づく乱数ジェネレータを使用するかどうか。
-base_superuser = ["QQ|2596322644"] # ボットの基本スーパーユーザー リスト。ここに入力された値はボットの起動時にデータベースに読み込まれます。
-ignored_sender = ["QQ|2854196310"] # 無視されるユーザーのリスト。このリストにマッチしたユーザーは無視されます。
-report_targets = [] # レポート セッション リスト。ここに入力された値がレポートセッションとして認識されます。（例：コマンド エラーを実行すると、ボットは対応するセッションにエラー情報を送信します）
+base_superuser = ["QQ|2596322644"] # ボットの基本スーパーユーザー リスト。ここに入力された値はボットの起動時にデータベースにロードされます。
+ignored_sender = ["QQ|2854196310"] # 無視されるユーザーのリスト。このリストに合致するユーザーは無視されます。
+report_targets = [] # レポート セッション リスト。ここに入力された値がレポートセッションとして認識されます。（例：コマンドの実行エラーが発生すると、ボットは対応するセッションにエラー情報を送信します）
 command_prefix = ["~", "～"] # コマンドのプレフィックス。ここに入力された値はコマンドのプレフィックスとして認識されます。
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # コマンド確認用のキーワード。ここに入力された値はコマンド確認用の単語として認識されます。
-enable_module_invalid_prompt = false # モジュールが存在しない場合にプロンプ​​ト メッセージを有効にするかどうか。
-mention_required = false # メッセージの冒頭にロボットについて言及したメッセージのみを処理することを強制しますか。
+enable_module_invalid_prompt = false # モジュールが存在しない場合にプロンプト メッセージ表示を有効にするかどうか。
+mention_required = false # メッセージの冒頭にボットをメンションしたメッセージのみを処理することを強制するかどうか。
 no_confirm = false # 送信者がメッセージを確認せずにコマンドを実行するかどうか。
 quick_confirm = true # メッセージのクイック確認を有効にするかどうか。
 enable_analytics = true # 組み込みの統計機能を有効にするかどうか。
 enable_commit_url = true # バージョン情報を表示する時にコミット URL を表示するかどうか。
-enable_dirty_check = false # テキスト フィルタ リング検出を有効にするかどうか。Alibaba Cloud コンテンツ セキュリティ サービスの AccessKey ID と AccessKey Secret を設定する必要があります。
+enable_dirty_check = false # テキスト フィルタリング検出を有効にするかどうか。Alibaba Cloud コンテンツ セキュリティ サービスの AccessKey ID と AccessKey Secret を設定する必要があります。
 check_use_textscan_v1 = false # Alibaba Cloud コンテンツ セキュリティ サービスの Text Scan 1.0 レガシー API を使用するかどうか。
 enable_urlmanager = false # URL スプリングボードの URLManager を有効にするかどうか。（URL が公式リンクではないことを宣言するなど）
-auto_purge_crontab = "0 0 * * *" # 自動キャッシュ パージの Cron 式。
-typo_check_module_score = 0.6 # モジュールのスペルチェックで類似度を許可します。範囲は 0 ～ 1 です。
-typo_check_command_score = 0.3 # コマンドのスペルチェックで類似度を許可します。範囲は 0 ～ 1 です。
-typo_check_args_score = 0.5 # 引数のスペルチェックで類似度を許可します。範囲は 0 ～ 1 です。
-typo_check_options_score = 0.3 # オプションのスペルチェックで類似度を許可します。範囲は 0 ～ 1 です。
+auto_purge_crontab = "0 0 * * *" # 自動キャッシュ パージ用の Cron 式。
+typo_check_module_score = 0.6 # モジュールのスペルチェックにおける類似度を許容スコア。範囲は 0 ～ 1 です。
+typo_check_command_score = 0.3 # コマンドのスペルチェックにおける類似度を許容スコア。範囲は 0 ～ 1 です。
+typo_check_args_score = 0.5 # 引数のスペルチェックにおける類似度を許容スコア。範囲は 0 ～ 1 です。
+typo_check_options_score = 0.3 # オプションのスペルチェックにおける類似度を許容スコア。範囲は 0 ～ 1 です。
 enable_tos = true # 組み込みの ToS（利用規約）チェック ルールを有効にするかどうか。
 tos_warning_counts = 5 # 利用規約違反に対する警告の最大数。
 tos_temp_ban_time = 300 # 利用規約違反時の一時的な禁止時間。
 enable_petal = false # ペタル機能を有効にするかどうか。
 enable_get_petal = false # ペタルの取得を許可するかどうか。
-petal_gained_limit = 0 # 1日に獲得できるペタルの最大数。
-petal_lost_limit = 0 # 1日に失われたペタルの最大数。
-petal_sign_limit = 5 # 1日にサインインすることで獲得できるペタルの最大数。
+petal_gained_limit = 0 # 1 日に獲得できるペタルの最大数。
+petal_lost_limit = 0 # 1 日に失われるペタルの最大数。
+petal_sign_limit = 5 # 1 日にサインインすることで獲得できるペタルの最大数。
 petal_sign_rate = 0.5 # サインインすることでペタルを獲得できる確率、範囲は 0 ～ 1 で、獲得できるペタルの数は指数関数的に減少します。
-enable_joke = true # ジョークを有効にするかどうか。有効にすると、サーバー時間の 4 月 1 日（エイプリルフール）に実行されます。
+enable_joke = true # ジョークを有効にするかどうか。有効にすると、サーバー時刻の 4 月 1 日に発動します。
 shuffle_rate = 0.1 # ジョークのランダム発生率。範囲は 0 ～ 1 です。
 enable_rickroll = true # テキスト フィルタの検出に失敗したときに、ユーザーをリックロールするかどうか。
-rickroll_msg = "https://b23.tv/vXaKjqJ" # テキスト フィルタ リング検出に失敗したときのリックロール メッセージ。
+rickroll_msg = "https://b23.tv/vXaKjqJ" # テキスト フィルタリング検出に失敗したときのリックロール メッセージ。
 bug_report_url = "https://s.wd-ljt.com/botreportbug" # エラーを報告するための URL。
 donate_url = "http://afdian.com/a/teahouse" # 寄付の URL。
 help_url = "https://bot.teahouse.team" # ドキュメントの URL。

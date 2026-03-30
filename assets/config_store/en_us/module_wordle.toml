@@ -3,5 +3,5 @@
 # EXAMPLE: Boolean values in TOML must be lowercase.
 
 [module_wordle]
-# The basic config section of the module. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.
+# The basic config section of the module. The values ​​entered here can be displayed in the message. Please do not enter sensitive information in this section.
 wordle_disable_image = false # Whether to disable images of wordle module.
