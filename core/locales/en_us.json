@@ -145,7 +145,7 @@
     "loader.load.success": "Successfully loaded all modules.",
     "message": "Message",
     "message.brackets": " (${msg})",
-    "message.collapse": "…show only the first ${amount} items.",
+    "message.collapse": "… show only the first ${amount} items.",
     "message.colon": ": ",
     "message.cooldown": "You need to wait ${time} second(s) before executing this command again.",
     "message.cooldown.manual": "This session has been set to wait ${time} second(s) before executing the commands again.",
