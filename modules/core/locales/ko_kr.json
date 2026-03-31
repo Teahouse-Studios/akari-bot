@@ -1,6 +1,6 @@
 {
     "core.help.admin.add": "회원을 봇 관리자로 지정합니다. 이미 세션 관리자인 경우 이 항목을 설정할 필요가 없습니다.",
-    "core.help.admin.ban": "회원의 봇 사용을 제한합니다.",
+    "core.help.admin.ban": "회원의 봇 사용을 차단합니다.",
     "core.help.admin.ban.list": "봇 사용이 제한된 모든 회원을 확인합니다.",
     "core.help.admin.desc": "일부 봇 관리자가 사용할 수 있는 명령어입니다.",
     "core.help.admin.list": "모든 봇 관리자를 확인합니다.",
@@ -92,7 +92,7 @@
     "core.message.help.command_count": "${count}개의 명령어",
     "core.message.help.detail": "자세한 내용은 \"${prefix}help <모듈 이름>\"을 사용하여 확인하십시오.",
     "core.message.help.document": "온라인 문서를 참고하여 도움을 받을 수도 있습니다: ${url}",
-    "core.message.help.donate": "경제적 여유가 있으시다면, 아이들에게 후원해 주시면 감사하겠습니다: ${url}",
+    "core.message.help.donate": "경제적 여유가 있으시다면 후원해 주시면 감사하겠습니다: ${url}",
     "core.message.help.helpdoc.address": "온라인 모듈 문서: ${url}",
     "core.message.help.legacy.availables": "현재 사용 가능한 모듈: ",
     "core.message.help.legacy.availables.none": "현재 사용 가능한 모듈이 없습니다.",
