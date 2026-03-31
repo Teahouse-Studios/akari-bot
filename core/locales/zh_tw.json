@@ -114,7 +114,7 @@
     "error.config.invalid": "組態參數無效或未找到，請檢查組態檔。",
     "error.config.secret.not_found": "未找到金鑰組態參數，請檢查組態檔。",
     "error.config.webrender.invalid": "未設定 WebRender，無法使用此指令。",
-    "error.i18n.fallback": "（如果你看到了這個佔位符，說明我們又搞砸了什麼！請回報此問題以便快速解決。）",
+    "error.i18n.fallback": "（如果你看到了這個預留位置，說明我們又搞砸了什麼！請回報此問題以便快速解決。）",
     "error.message.chain.empty": "機器人嘗試傳送空白訊息，請聯絡機器人擁有者解決問題。",
     "error.message.chain.unsafe": "訊息中含有不安全的內容，已被阻止。",
     "error.message.discord.dm.cannot_send": "此指令不支援在私訊下發送訊息，請聯絡開發人員處理。",
