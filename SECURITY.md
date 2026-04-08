@@ -4,14 +4,14 @@
 
 We actively provide security updates for the following versions. We recommend all users upgrade to a supported version as soon as possible.
 
-| Version           | Supported          |
+| Version | Supported |
 | ----------------- | ------------------ |
-| v5.x.x            | :o: |
-| nightly     | :o: |
-| v4 and below | :x:                |
+| `nightly` | :o: |
+| `v5.x.x` | :o: |
+| `v4` and below | :x: |
 
 > [!IMPORTANT]
-> Versions v4 and older are no longer supported and will not receive security patches.
+> Versions `v4` and older are no longer supported and will not receive security patches.
 
 ## Security Scope
 We define the security scope based on the direct impact on our service infrastructure and operational integrity.
