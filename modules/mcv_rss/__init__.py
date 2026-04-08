@@ -159,8 +159,8 @@ async def _():
                         I18NContext(
                             "mcv_rss.message.mcv_rss.release",
                             version=release,
-                            record_time=FormattedTime(time_release),
-                            posted_time=FormattedTime(datetime.now().timestamp()),
+                            record_time=FormattedTime(time_release, iso=True),
+                            posted_time=FormattedTime(datetime.now().timestamp(), iso=True),
                         ),
                     ]
                 ),
@@ -194,8 +194,8 @@ async def _():
                         I18NContext(
                             "mcv_rss.message.mcv_rss.snapshot",
                             version=file["latest"]["snapshot"],
-                            record_time=FormattedTime(time_snapshot),
-                            posted_time=FormattedTime(datetime.now().timestamp()),
+                            record_time=FormattedTime(time_snapshot, iso=True),
+                            posted_time=FormattedTime(datetime.now().timestamp(), iso=True),
                         ),
                     ]
                 ),
@@ -246,7 +246,6 @@ async def _():
 
 
 """
-
 @Scheduler.scheduled_job(IntervalTrigger(seconds=trigger_times))
 async def mcv_jira_rss():
     try:
@@ -322,64 +321,3 @@ async def mcbv_jira_rss():
     except Exception:
         if Config("debug", False):
             Logger.exception()
-
-
-@Scheduler.scheduled_job(IntervalTrigger(seconds=trigger_times))
-async def mcdv_rss():
-    try:
-        url = "https://bugs.mojang.com/rest/api/2/project/11901/versions"
-        verlist = await get_stored_list(bot, "mcdv_rss")
-        file = orjson.loads(await get_url(url, 200, attempt=1, logging_err_resp=False))
-        releases = []
-        for v in file:
-            if not v["archived"]:
-                releases.append(v["name"])
-            else:
-                if v["name"] not in verlist:
-                    verlist.append(v["name"])
-        for release in releases:
-            if release not in verlist:
-                Logger.info(f"Huh, we find {release}.")
-
-                await JobQueue.trigger_hook_all(
-                    "mcdv_rss",
-                    message=MessageChain.assign(
-                        [I18NContext("mcv_rss.message.mcdv_rss", version=release)]
-                    ),
-                )
-                verlist.append(release)
-                await update_stored_list(bot,, "mcdv_rss", verlist)
-    except Exception:
-        if Config("debug", False):
-            Logger.exception()
-
-
-@Scheduler.scheduled_job(IntervalTrigger(seconds=trigger_times))
-async def mclgv_rss():
-    try:
-        url = "https://bugs.mojang.com/rest/api/2/project/12200/versions"
-        verlist = await get_stored_list(bot, "mclgv_rss")
-        file = orjson.loads(await get_url(url, 200, attempt=1, logging_err_resp=False))
-        releases = []
-        for v in file:
-            if not v["archived"]:
-                releases.append(v["name"])
-            else:
-                if v["name"] not in verlist:
-                    verlist.append(v["name"])
-        for release in releases:
-            if release not in verlist:
-                Logger.info(f"Huh, we find {release}.")
-
-                await JobQueue.trigger_hook_all(
-                    "mclgv_rss",
-                    message=MessageChain.assign(
-                        [I18NContext("mcv_rss.message.mclgv_rss", version=release)]
-                    ),
-                )
-                verlist.append(release)
-                await update_stored_list(bot,, "mclgv_rss", verlist)
-    except Exception:
-        if Config("debug", False):
-            Logger.exception()
-"""
