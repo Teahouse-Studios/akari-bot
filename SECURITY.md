@@ -6,8 +6,8 @@ We actively provide security updates for the following versions. We recommend al
 
 | Version           | Supported          |
 | ----------------- | ------------------ |
-| v5.x.x            | :white_check_mark: |
-| nightly-xxxxxxxx     | :white_check_mark: |
+| v5.x.x            | :o: |
+| nightly-xxxxxxxx     | :o: |
 | v4 and below | :x:                |
 
 > [!IMPORTANT]
@@ -17,11 +17,11 @@ We actively provide security updates for the following versions. We recommend al
 
 We take the security of our project seriously. If you believe you have found a security vulnerability, please report it to us using one of the following methods:
 
-### 1. Email
-You can report vulnerabilities directly via email. You can find the maintainer's contact email address in the `pyproject.toml` file located in the root of this repository.
-
-### 2. Instant Messaging (QQ)
+### 1. Instant Messaging (QQ)
 Alternatively, you may contact the developers directly via QQ **Private Message** for a more immediate discussion regarding the vulnerability.
+
+### 2. Email
+You can report vulnerabilities directly via email. You can find the maintainer's contact email address in the `pyproject.toml` file located in the root of this repository.
 
 ### What to Expect
 * **Acknowledgement:** You will receive an acknowledgement of your report within 24–72 hours.
