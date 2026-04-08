@@ -7,7 +7,7 @@ We actively provide security updates for the following versions. We recommend al
 | Version           | Supported          |
 | ----------------- | ------------------ |
 | v5.x.x            | :o: |
-| nightly-xxxxxxxx     | :o: |
+| nightly     | :o: |
 | v4 and below | :x:                |
 
 > [!IMPORTANT]
