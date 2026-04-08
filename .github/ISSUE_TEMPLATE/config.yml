@@ -5,7 +5,7 @@ contact_links:
     about: 需要使用机器人的帮助？欢迎查询文档。
   - name: 本地化
     url: https://crowdin.com/project/akari-bot
-    about: 本地化问题（简体中文除外）请前往 Crowdin 处理。
+    about: 本地化问题（简体中文除外）请前往 Crowdin 反馈。
   - name: 公共实例测试群
     url: https://qm.qq.com/q/ZMUTRaa3ao
     about: 加入 QQ 社群，可以更快捷地获取开发者的帮助。
