@@ -132,12 +132,12 @@ pre-commit install
 分支的命名必须使用英文。建议采用简短的描述或直接使用 Issue 编号。
 
 ### 提交规范
-Commit message 必须使用中文或英文描述，除此之外没有硬性要求。
+Commit message 必须使用英文或简体中文描述，除此之外没有硬性要求。
 
 能够遵循 Conventional Commits 规范则更佳。
 
 ### PR 描述
-PR 标题必须使用英文，正文可使用中文或英文简要描述更改内容。
+PR 标题请参考 [Commit message](#提交规范)，正文请根据 PR 模板完善对应内容。
 
 建议在描述中[关联 Issue](#提出建议)，输入 `#<编号>` 即可关联。
 
@@ -332,14 +332,13 @@ Branch names must be in English. Short descriptive names or Issue numbers (e.g. 
 
 ### Commit Message Convention
 
-Commit messages should be written in Chinese or English. No other strict requirements.
+Commit messages should be written in English or Simplified Chinese. No other strict requirements.
 
 Following [Conventional Commits](https://www.conventionalcommits.org/) is appreciated but not mandatory.
 
 ### Pull Request Description
 
-Pull request titles must be in English.  
-The body can be in Chinese or English — just briefly describe the changes.
+Pull request titles refer to the [commit message](#commit-message-convention). The body text according to the template.
 
 It is recommended to [reference related issues](#suggesting-features) in the description by writing `#<number>`.
 
