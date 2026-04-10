@@ -9,7 +9,8 @@
         {
             "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
             "enabledManagers": ["pep621"],
-            "automerge": false
+            "automerge": true
         }
-    ]
+    ],
+    "schedule": ["monthly"]
 }
