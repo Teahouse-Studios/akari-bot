@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from typing import Optional
 
 import orjson
 from bs4 import BeautifulSoup
@@ -83,36 +84,31 @@ mclgv_rss = module(
     rss=True,
 )
 
+SNAPSHOT_PATTERN = re.compile(r'^(?P<major>[\d.]+)-snapshot-?(?P<patch>\d)+$')
+OLD_SNAPSHOT_PATTERN = re.compile(r'^(1\d)|(2[0-5])[w|W]\d{2}[A-Fa-f]$')
+PRERELEASE_PATTERN = re.compile(r'^(?P<major>[\d.]+)-pre-?(?P<patch>\d)+$')
+RELEASE_CANDIDATE_PATTERN = re.compile(r'^(?P<major>[\d.]+)-rc-?(?P<patch>\d)+$')
+RELEASE_PATTERN = re.compile(r'^\d{1,2}\.\d+(\.\d+)?$')
+
+CHANGELOG_URL_PREFIX = "https://www.minecraft.net/en-us/article/minecraft"
+
+def get_changelog_url(version: str) -> Optional[str]:
+    """Generate changelog url of the given minecraft version id"""
+    if m := re.match(SNAPSHOT_PATTERN, version):
+        return f"{CHANGELOG_URL_PREFIX}-{m.group("major").replace('.', '-')}{m.group('patch')}"
+    if m := re.match(PRERELEASE_PATTERN, version):
+        return f"{CHANGELOG_URL_PREFIX}-{m.group("major").replace('.', '-')}-pre-release-{m.group('patch')}"
+    if m := re.match(RELEASE_CANDIDATE_PATTERN, version):
+        return f"{CHANGELOG_URL_PREFIX}-{m.group("major").replace('.', '-')}-release-candidate-{m.group('patch')}"
+    if re.match(RELEASE_PATTERN, version):
+        return f"{CHANGELOG_URL_PREFIX}-java-edition-{version.replace('.', '-')}"
+    if re.match(OLD_SNAPSHOT_PATTERN, version):
+        return f"{CHANGELOG_URL_PREFIX}-snapshot-{version}"
+    return None
+
 
 async def get_article(version):
-    match_snapshot = re.match(r".*?w.*", version)
-    link = False
-    if match_snapshot:
-        link = "https://www.minecraft.net/en-us/article/minecraft-snapshot-" + version
-    match_prerelease1 = re.match(r"(.*?)-pre(.*[0-9])", version)
-    match_prerelease2 = re.match(r"(.*?) Pre-Release (.*[0-9])", version)
-    if match_prerelease1:
-        match_prerelease = match_prerelease1
-    elif match_prerelease2:
-        match_prerelease = match_prerelease2
-    else:
-        match_prerelease = False
-    if match_prerelease:
-        link = (
-            "https://www.minecraft.net/en-us/article/minecraft-"
-            + re.sub("\\.", "-", match_prerelease.group(1))
-            + f"-pre-release-{match_prerelease.group(2)}"
-        )
-    match_release_candidate = re.match(r"(.*?)-rc(.*[0-9])", version)
-    if match_release_candidate:
-        link = (
-            "https://www.minecraft.net/en-us/article/minecraft-"
-            + re.sub("\\.", "-", match_release_candidate.group(1))
-            + f"-release-candidate-{match_release_candidate.group(2)}"
-        )
-    if not link:
-        link = "https://www.minecraft.net/en-us/article/minecraft-java-edition-" + re.sub("\\.", "-", version)
-
+    link = get_changelog_url(version)
     try:
         if link:
             html = await web_render.source(SourceOptions(url=str(link)))
