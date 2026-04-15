@@ -45,32 +45,37 @@ async def get_latest_version() -> tuple[str, str] | None:
         return None
 
 
+startup_mute = True
+
+
 @arcaea_rss.schedule(IntervalTrigger(seconds=trigger_times))
 async def _():
+    global startup_mute
     try:
         result = await get_latest_version()
         if not result:
             return
 
         version, download_url = result
-        verlist = await get_stored_list(Bot, "arcaea_rss")
-
+        verlist = await get_stored_list(Bot.Info.client_name, "arcaea_rss")
         if version not in verlist:
             Logger.info(f"Huh, we found Arcaea {version}.")
-            await Bot.post_message(
-                "arcaea_rss",
-                message=MessageChain.assign(
-                    [
-                        I18NContext(
-                            "arcaea_rss.message.updated",
-                            version=version,
-                            url=download_url,
-                        )
-                    ]
-                ),
-            )
+            if not startup_mute:
+                await Bot.post_message(
+                    "arcaea_rss",
+                    message=MessageChain.assign(
+                        [
+                            I18NContext(
+                                "arcaea_rss.message.updated",
+                                version=version,
+                                url=download_url,
+                            )
+                        ]
+                    ),
+                )
             verlist.append(version)
-            await update_stored_list(Bot, "arcaea_rss", verlist)
+            await update_stored_list(Bot.Info.client_name, "arcaea_rss", verlist)
+        startup_mute = False
     except Exception:
         if Config("debug", False):
             Logger.exception()
