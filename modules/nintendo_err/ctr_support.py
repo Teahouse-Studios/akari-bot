@@ -316,6 +316,7 @@ browser2 = Module(
         1222: ResultInfo(
             "Displayed during a maintenance period of the browser filter service on Japanese consoles. (Known to be the 15th and 19th JST, separately, of each month.)"
         ),
+        420: ResultInfo("浏览器发生未知错误，尝试通过这个方法修复：", "https://stray-soul.com/fix-browser.html"),
         1820: ResultInfo("于你想访问一个危险的网站时出现。如果你是秋名山车神就直接确认。"),
     },
 )
