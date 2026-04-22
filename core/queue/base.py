@@ -118,7 +118,7 @@ class JobQueueBase:
     pause_event.set()
 
     @classmethod
-    async def add_job(cls, target_client: str, action, args, wait=True):
+    async def add_job(cls, target_client: str, action, args, wait=True) -> str | None:
         """向队列添加新的任务。
 
         该方法将任务信息保存到数据库，可选择等待任务完成或立即返回。
@@ -145,7 +145,7 @@ class JobQueueBase:
         return task_id
 
     @staticmethod
-    async def return_val(tsk: JobQueuesTable, value: dict, status: str = "done"):
+    async def return_val(tsk: JobQueuesTable, value: dict, status: str = "done") -> QueueFinished:
         """保存任务执行结果并更新任务状态。
 
         该方法将结果写入数据库，并返回 QueueFinished 对象表示任务完成。

@@ -6,7 +6,7 @@ from typing import Callable
 
 from core.builtins.message.chain import MessageChain
 from core.builtins.session.info import SessionInfo
-from core.builtins.types import MessageElement, MultimodalElement
+from core.builtins.types import MessageElement, MultimediaElement
 
 
 class Expectation:
@@ -291,7 +291,7 @@ class Exist(Expectation):
     :param func: 自定义函数
     """
 
-    def __init__(self, element: type[MultimodalElement], func: Callable | None = None):
+    def __init__(self, element: type[MultimediaElement], func: Callable | None = None):
         self.element = element
         self.func = func
 
@@ -328,7 +328,7 @@ class Count(Expectation):
     """
 
     def __init__(
-        self, element: type[MultimodalElement], eq: int | None = None, ge: int | None = None, le: int | None = None
+        self, element: type[MultimediaElement], eq: int | None = None, ge: int | None = None, le: int | None = None
     ):
         self.element = element
         self.eq = eq
@@ -372,7 +372,7 @@ class InOrder(Expectation):
 
     def __init__(
         self,
-        *elements: type[MultimodalElement] | list[type[MultimodalElement]] | tuple[type[MultimodalElement], ...],
+        *elements: type[MultimediaElement] | list[type[MultimediaElement]] | tuple[type[MultimediaElement], ...],
         consecutive: bool = False,
     ):
         if len(elements) == 1 and isinstance(elements[0], (list, tuple)):
@@ -426,7 +426,7 @@ class StructureEqual(Expectation):
     """
 
     def __init__(
-        self, *elements: type[MultimodalElement] | list[type[MultimodalElement]] | tuple[type[MultimodalElement], ...]
+        self, *elements: type[MultimediaElement] | list[type[MultimediaElement]] | tuple[type[MultimediaElement], ...]
     ):
         if len(elements) == 1 and isinstance(elements[0], (list, tuple)):
             elements = tuple(elements[0])

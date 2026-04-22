@@ -235,7 +235,7 @@ async def config_modules(msg: Bot.MessageSession):
             await msg.send_message(msglist)
     if recommend_modules_help_doc_list:
         if await msg.wait_confirm(
-            [I18NContext("core.message.module.recommends", modules="\n".join(recommend_modules_list)), Plain("\n")]
+            [I18NContext("core.message.module.recommends", modules="\n".join(recommend_modules_list))]
             + recommend_modules_help_doc_list
         ):
             if await msg.session_info.target_info.config_module(recommend_modules_list, True):
