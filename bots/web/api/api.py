@@ -56,7 +56,7 @@ async def server_info(request: Request):
             "boot_time": psutil.boot_time(),
         },
         "bot": {
-            "running_time": (datetime.now() - started_time).total_seconds(),
+            "started_time": started_time.timestamp(),
             "python_version": platform.python_version(),
             "version": await JobQueueClient.get_bot_version(),
             "web_render_status": await JobQueueClient.get_web_render_status(),
