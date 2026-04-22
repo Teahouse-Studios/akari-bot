@@ -29,7 +29,7 @@ aiosqlite==0.22.1
     # via tortoise-orm
 akari-bot-webrender==0.5.13
     # via akari-bot
-akari-bot-webui==0.3.8
+akari-bot-webui==0.3.10
     # via akari-bot
 annotated-doc==0.0.4
     # via fastapi
@@ -102,7 +102,7 @@ contourpy==1.3.3
     # via matplotlib
 coverage==7.13.4
     # via akari-bot
-cryptography==46.0.5
+cryptography==46.0.7
     # via
     #   akari-bot
     #   pyjwt
@@ -243,7 +243,7 @@ matplotlib==3.10.8
     # via akari-bot
 matrix-nio==0.25.2
     # via akari-bot
-mcstatus==12.2.1
+mcstatus==13.0.0
     # via akari-bot
 more-itertools==10.8.0
     # via wolframalpha
@@ -254,7 +254,7 @@ multidict==6.7.1
     #   yarl
 nodeenv==1.10.0
     # via pre-commit
-numpy==2.4.2
+numpy==2.4.4
     # via
     #   akari-bot
     #   contourpy
@@ -273,7 +273,7 @@ packaging==26.0
     #   matplotlib
 pandas==3.0.0
     # via akari-bot
-pillow==12.1.1
+pillow==12.2.0
     # via
     #   akari-bot
     #   matplotlib
@@ -334,11 +334,11 @@ python-dateutil==2.9.0.post0
     #   matplotlib
     #   pandas
     #   python-whois
-python-dotenv==1.2.1
+python-dotenv==1.2.2
     # via
     #   akari-bot
     #   uvicorn
-python-multipart==0.0.22
+python-multipart==0.0.26
     # via akari-bot
 python-socks==2.8.0
     # via aiohttp-socks
@@ -355,7 +355,7 @@ qq-botpy==1.2.1
     # via akari-bot
 quart==0.20.0
     # via aiocqhttp
-rdkit==2025.9.4
+rdkit==2026.3.1
     # via akari-bot
 referencing==0.37.0
     # via
