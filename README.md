@@ -15,7 +15,7 @@ _多功能、跨平台、可自由扩展的异步聊天机器人助手_
 ![GitHub Repo stars](https://img.shields.io/github/stars/Teahouse-Studios/akari-bot?style=social)
 <br>
 ![Python](https://img.shields.io/badge/Python-3.12+-blue)
-![OneBot v11](https://img.shields.io/badge/OneBot-v11-black)
+![OneBot 11](https://img.shields.io/badge/OneBot-11-black)
 [![License](https://img.shields.io/github/license/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/blob/master/LICENSE)
 </div>
 
