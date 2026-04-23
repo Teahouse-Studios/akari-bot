@@ -65,7 +65,7 @@
     "config.comments.qq_bot_appid": "The QQ official robot AppID.",
     "config.comments.qq_bot_enable_send_url": "Whether to enable sending URLs when using QQ official robot.",
     "config.comments.qq_bot_secret": "The QQ official robot AppSecret.",
-    "config.comments.qq_enable_temp_session "Whether to enable temp sessions when using the OneBot Protocol.",
+    "config.comments.qq_enable_temp_session": "Whether to enable temp sessions when using the OneBot Protocol.",
     "config.comments.qq_enable_listening_self_message": "Whether to enable self-message monitoring when using the OneBot protocol.",
     "config.comments.qq_host": "The address of Aiocqhttp WebSocket main server. (The Onebot protocol client should use the reverse Websocket method to connect)",
     "config.comments.qq_initiative_msg_cooldown": "Cooldown in seconds for sending proactive messages via Aiocqhttp.",

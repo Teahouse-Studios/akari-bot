@@ -7,7 +7,7 @@
 enable = false # 플랫폼 활성화 여부.
 qq_host = "127.0.0.1:8080" # Aiocqhttp WebSocket 메인 서버의 주소입니다. (OneBot 프로토콜 사용 시 역방향 WebSocket 방식으로 연결해 주십시오)
 qq_enable_listening_self_message = false # OneBot 프로토콜을 사용할 때, 자체 메시지 수신 기능을 활성화할지 여부.
-qq_enable_temp_session = true # OneBot 프로토콜을 사용할 때 임시 세션을 활성화할지 여부.
+qq_enable_temp_session = false # OneBot 프로토콜을 사용할 때 임시 세션을 활성화할지 여부.
 qq_allow_approve_friend = false # OneBot 프로토콜을 사용할 때 친구 요청을 자동으로 수락할지 여부.
 qq_allow_approve_group_invite = false # OneBot 프로토콜을 사용할 때 그룹 초대를 자동으로 수락할지 여부.
 qq_typing_emoji = 181 # QQ 관련 프로토콜을 사용할 때, 이는 메시지 처리 중에 메시지에 첨부되는 응답 이모티콘 ID를 의미합니다. 프로토콜 지원이 필요합니다. ID는 다음을 참조하십시오: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji

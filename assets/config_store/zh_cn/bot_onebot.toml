@@ -7,7 +7,7 @@
 enable = false # 是否开启此平台。
 qq_host = "127.0.0.1:8080" # Aiocqhttp WebSocket 主服务器的地址。（OneBot 协议端请使用反向 WebSocket 方式进行连接）
 qq_enable_listening_self_message = false # 使用 OneBot 协议时，是否开启自身消息监听。
-qq_enable_temp_session = true # 使用 OneBot 协议时，是否开启临时会话。
+qq_enable_temp_session = false # 使用 OneBot 协议时，是否开启临时会话。
 qq_allow_approve_friend = false # 使用 OneBot 协议时，是否自动同意好友请求。
 qq_allow_approve_group_invite = false # 使用 OneBot 协议时，是否自动同意群邀请。
 qq_typing_emoji = 181 # 使用 QQ 相关协议端时，正在处理消息时向消息挂上的回应表情 ID，需协议端支持。ID 详见：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
