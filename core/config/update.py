@@ -1,3 +1,4 @@
+import re
 import shutil
 from time import sleep
 
@@ -349,6 +350,39 @@ if config["config_version"] < config_version:
             f.write(toml_dumps(config))
         with open(cfg_file_path, "r", encoding="utf-8") as cfg_file:
             config = toml_parser(cfg_file.read())  # Reload the config file after regeneration
+
+    if config["config_version"] < 3:
+        bot_renames = {"bot_aiocqhttp": "bot_onebot", "bot_aiogram": "bot_telegram"}
+
+        for old_name, new_name in bot_renames.items():
+            old_file = config_path / f"{old_name}.toml"
+            new_file = config_path / f"{new_name}.toml"
+
+            if old_file.exists():
+                with open(old_file, "r", encoding="utf-8") as f:
+                    bot_cfg = toml_parser(f.read())
+
+                if old_name in bot_cfg:
+                    bot_cfg[new_name] = bot_cfg.pop(old_name)
+
+                if f"{old_name}_secret" in bot_cfg:
+                    bot_cfg[f"{new_name}_secret"] = bot_cfg.pop(f"{old_name}_secret")
+
+                if new_name == "bot_onebot" and new_name in bot_cfg:
+                    target_table = bot_cfg[new_name]
+                    if "qq_disable_temp_session" in target_table:
+                        old_val = target_table.pop("qq_disable_temp_session")
+                        target_table["qq_enable_temp_session"] = not old_val
+
+                content = toml_dumps(bot_cfg)
+                content = re.sub(r"(#.*?\n)\n+", r"\1\n", content)
+                with open(new_file, "w", encoding="utf-8") as f:
+                    f.write(content)
+                old_file.unlink()
+
+        config["config_version"] = 3
+        with open(cfg_file_path, "w", encoding="utf-8") as f:
+            f.write(toml_dumps(config))
 
     logger.success("Config file updated successfully.")
     sleep(3)

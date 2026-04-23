@@ -3,9 +3,9 @@ from datetime import datetime, timedelta
 from aiogram import types
 from aiogram.types import ChatPermissions, FSInputFile
 
-from bots.aiogram.client import aiogram_bot
-from bots.aiogram.features import Features
-from bots.aiogram.info import client_name
+from bots.telegram.client import aiogram_bot
+from bots.telegram.features import Features
+from bots.telegram.info import client_name
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
 from core.builtins.session.context import ContextManager
@@ -14,7 +14,7 @@ from core.logger import Logger
 from core.utils.image import msgnode2image, image_split
 
 
-class AiogramContextManager(ContextManager):
+class TelegramContextManager(ContextManager):
     context: dict[str, types.Message] = {}
     features: type[Features] | None = Features
 
@@ -270,5 +270,5 @@ class AiogramContextManager(ContextManager):
         pass
 
 
-class AiogramFetchedContextManager(AiogramContextManager):
+class TelegramFetchedContextManager(TelegramContextManager):
     pass

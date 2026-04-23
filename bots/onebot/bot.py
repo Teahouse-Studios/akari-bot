@@ -8,10 +8,10 @@ import orjson
 from aiocqhttp import Event
 from hypercorn import Config as HyperConfig
 
-from bots.aiocqhttp.client import aiocqhttp_bot
-from bots.aiocqhttp.context import AIOCQContextManager, AIOCQFetchedContextManager
-from bots.aiocqhttp.info import *
-from bots.aiocqhttp.utils import to_message_chain, get_onebot_implementation
+from bots.onebot.client import aiocqhttp_bot
+from bots.onebot.context import OneBotContextManager, OneBotFetchedContextManager
+from bots.onebot.info import *
+from bots.onebot.utils import to_message_chain, get_onebot_implementation
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain
@@ -27,8 +27,8 @@ from core.logger import Logger
 from core.tos import tos_report
 
 Bot.register_bot(client_name=client_name)
-ctx_id = Bot.register_context_manager(AIOCQContextManager)
-Bot.register_context_manager(AIOCQFetchedContextManager, fetch_session=True)
+ctx_id = Bot.register_context_manager(OneBotContextManager)
+Bot.register_context_manager(OneBotFetchedContextManager, fetch_session=True)
 
 dirty_word_check = Config("enable_dirty_check", False)
 default_locale = Config("default_locale", cfg_type=str)
@@ -37,14 +37,14 @@ enable_tos = Config("enable_tos", True)
 mention_required = Config("mention_required", False)
 quick_confirm = Config("quick_confirm", True)
 use_url_manager = Config("enable_urlmanager", False)
-disable_temp_session = Config("qq_disable_temp_session", True, table_name="bot_aiocqhttp")
-enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name="bot_aiocqhttp")
+enable_temp_session = Config("qq_enable_temp_session", True, table_name="bot_onebot")
+enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name="bot_onebot")
 
 
 @aiocqhttp_bot.on_startup
 async def startup():
     await client_init(target_prefix_list, sender_prefix_list)
-    asyncio.create_task(AIOCQFetchedContextManager.process_tasks())
+    asyncio.create_task(OneBotFetchedContextManager.process_tasks())
     aiocqhttp_bot.logger.setLevel(logging.WARNING)
 
 
@@ -58,7 +58,7 @@ async def _(event: Event):
 
 
 async def message_handler(event: Event):
-    if event.detail_type == "private" and event.sub_type == "group" and disable_temp_session:
+    if event.detail_type == "private" and event.sub_type == "group" and not enable_temp_session:
         return
 
     if event.group_id:
@@ -212,7 +212,7 @@ async def _(event: Event):
     sender_info = await SenderInfo.get_by_sender_id(sender_id)
     if sender_info.superuser or sender_info.trusted:
         return {"approve": True}
-    if Config("qq_allow_approve_friend", False, table_name="bot_aiocqhttp"):
+    if Config("qq_allow_approve_friend", False, table_name="bot_onebot"):
         if sender_info.blocked:
             return {"approve": False}
         return {"approve": True}
@@ -227,7 +227,7 @@ async def _(event: Event):
     target_info = await TargetInfo.get_by_target_id(target_id)
     if sender_info.superuser or sender_info.trusted:
         return {"approve": True}
-    if Config("qq_allow_approve_group_invite", False, table_name="bot_aiocqhttp"):
+    if Config("qq_allow_approve_group_invite", False, table_name="bot_onebot"):
         if target_info.blocked:
             return {"approve": False}
         return {"approve": True}
@@ -291,8 +291,8 @@ async def _(event: Event):
             await aiocqhttp_bot.call_action("set_group_leave", group_id=event.group_id)
 
 
-qq_host = Config("qq_host", default=qq_host_default, table_name="bot_aiocqhttp")
-if Config("enable", False, table_name="bot_aiocqhttp"):
+qq_host = Config("qq_host", default=qq_host_default, table_name="bot_onebot")
+if Config("enable", False, table_name="bot_onebot"):
     HyperConfig.startup_timeout = 120
     host, port = qq_host.split(":")
     aiocqhttp_bot.run(host=host, port=port, debug=False)
