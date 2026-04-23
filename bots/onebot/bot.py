@@ -37,8 +37,8 @@ enable_tos = Config("enable_tos", True)
 mention_required = Config("mention_required", False)
 quick_confirm = Config("quick_confirm", True)
 use_url_manager = Config("enable_urlmanager", False)
-disable_temp_session = Config("qq_disable_temp_session", True, table_name="bot_aiocqhttp")
-enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name="bot_aiocqhttp")
+disable_temp_session = Config("qq_enable_temp_session", True, table_name="bot_onebot")
+enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name="bot_onebot")
 
 
 @aiocqhttp_bot.on_startup
@@ -212,7 +212,7 @@ async def _(event: Event):
     sender_info = await SenderInfo.get_by_sender_id(sender_id)
     if sender_info.superuser or sender_info.trusted:
         return {"approve": True}
-    if Config("qq_allow_approve_friend", False, table_name="bot_aiocqhttp"):
+    if Config("qq_allow_approve_friend", False, table_name="bot_onebot"):
         if sender_info.blocked:
             return {"approve": False}
         return {"approve": True}
@@ -227,7 +227,7 @@ async def _(event: Event):
     target_info = await TargetInfo.get_by_target_id(target_id)
     if sender_info.superuser or sender_info.trusted:
         return {"approve": True}
-    if Config("qq_allow_approve_group_invite", False, table_name="bot_aiocqhttp"):
+    if Config("qq_allow_approve_group_invite", False, table_name="bot_onebot"):
         if target_info.blocked:
             return {"approve": False}
         return {"approve": True}
@@ -291,8 +291,8 @@ async def _(event: Event):
             await aiocqhttp_bot.call_action("set_group_leave", group_id=event.group_id)
 
 
-qq_host = Config("qq_host", default=qq_host_default, table_name="bot_aiocqhttp")
-if Config("enable", False, table_name="bot_aiocqhttp"):
+qq_host = Config("qq_host", default=qq_host_default, table_name="bot_onebot")
+if Config("enable", False, table_name="bot_onebot"):
     HyperConfig.startup_timeout = 120
     host, port = qq_host.split(":")
     aiocqhttp_bot.run(host=host, port=port, debug=False)

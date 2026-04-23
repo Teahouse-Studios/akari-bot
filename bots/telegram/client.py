@@ -4,8 +4,8 @@ from aiogram.client.telegram import TelegramAPIServer
 
 from core.config import Config
 
-api_url = Config("telegram_api_url", cfg_type=str, table_name="bot_aiogram")
-token = Config("telegram_token", cfg_type=str, secret=True, table_name="bot_aiogram")
+api_url = Config("telegram_api_url", cfg_type=str, table_name="bot_telegram")
+token = Config("telegram_token", cfg_type=str, secret=True, table_name="bot_telegram")
 proxy = Config("proxy", cfg_type=str, secret=True)
 
 if api_url and proxy:

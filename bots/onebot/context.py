@@ -22,9 +22,9 @@ from core.logger import Logger
 from core.utils.image import msgchain2image
 from .features import Features
 
-qq_typing_emoji = str(Config("qq_typing_emoji", 181, (str, int), table_name="bot_aiocqhttp"))
-qq_limited_emoji = str(Config("qq_limited_emoji", 10060, (str, int), table_name="bot_aiocqhttp"))
-qq_initiative_msg_cooldown = Config("qq_initiative_msg_cooldown", 10, int, table_name="bot_aiocqhttp")
+qq_typing_emoji = str(Config("qq_typing_emoji", 181, (str, int), table_name="bot_onebot"))
+qq_limited_emoji = str(Config("qq_limited_emoji", 10060, (str, int), table_name="bot_onebot"))
+qq_initiative_msg_cooldown = Config("qq_initiative_msg_cooldown", 10, int, table_name="bot_onebot")
 last_send_typing_time = {}
 
 

@@ -63,7 +63,7 @@
     "config.comments.qq_bot_appid": "QQ 공식 봇의 AppID.",
     "config.comments.qq_bot_enable_send_url": "QQ 공식 봇을 사용할 때 URL 전송 기능을 활성화할지 여부.",
     "config.comments.qq_bot_secret": "QQ 공식 봇의 AppSecret.",
-    "config.comments.qq_disable_temp_session": "OneBot 프로토콜을 사용할 때 임시 세션을 활성화할지 여부.",
+    "config.comments.qq_enable_temp_session: "OneBot 프로토콜을 사용할 때 임시 세션을 활성화할지 여부.",
     "config.comments.qq_enable_listening_self_message": "OneBot 프로토콜을 사용할 때, 자체 메시지 수신 기능을 활성화할지 여부.",
     "config.comments.qq_host": "Aiocqhttp WebSocket 메인 서버의 주소입니다. (OneBot 프로토콜 사용 시 역방향 WebSocket 방식으로 연결해 주십시오)",
     "config.comments.qq_initiative_msg_cooldown": "Aiocqhttp의 능동 메시지 전송 대기 시간을 제한합니다. 단위는 초입니다.",

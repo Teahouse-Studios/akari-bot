@@ -65,7 +65,7 @@
     "config.comments.qq_bot_appid": "QQ 机器人（官方）的 AppID。",
     "config.comments.qq_bot_enable_send_url": "使用 QQ 机器人（官方）时，是否开启发送 URL。",
     "config.comments.qq_bot_secret": "QQ 机器人（官方）的 AppSecret。",
-    "config.comments.qq_disable_temp_session": "使用 OneBot 协议时，是否开启临时会话。",
+    "config.comments.qq_enable_temp_session: "使用 OneBot 协议时，是否开启临时会话。",
     "config.comments.qq_enable_listening_self_message": "使用 OneBot 协议时，是否开启自身消息监听。",
     "config.comments.qq_host": "Aiocqhttp WebSocket 主服务器的地址。（OneBot 协议端请使用反向 WebSocket 方式进行连接）",
     "config.comments.qq_initiative_msg_cooldown": "限制 Aiocqhttp 主动消息发送的冷却时间，单位为秒。",

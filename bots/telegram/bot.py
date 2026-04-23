@@ -118,6 +118,6 @@ async def on_startup():
     await client_init(target_prefix_list, sender_prefix_list)
 
 
-if Config("enable", False, table_name="bot_aiogram"):
+if Config("enable", False, table_name="bot_telegram"):
     dp.startup.register(on_startup)
     asyncio.run(dp.start_polling(aiogram_bot))
