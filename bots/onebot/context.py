@@ -8,9 +8,9 @@ import aiocqhttp
 from aiocqhttp import Event, MessageSegment
 from tenacity import retry, stop_after_attempt, wait_fixed
 
-from bots.aiocqhttp.client import aiocqhttp_bot
-from bots.aiocqhttp.info import target_private_prefix, target_group_prefix, client_name
-from bots.aiocqhttp.utils import CQCodeHandler
+from bots.onebot.client import aiocqhttp_bot
+from bots.onebot.info import target_private_prefix, target_group_prefix, client_name
+from bots.onebot.utils import CQCodeHandler
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
 from core.builtins.message.internal import I18NContext
@@ -22,9 +22,9 @@ from core.logger import Logger
 from core.utils.image import msgchain2image
 from .features import Features
 
-qq_typing_emoji = str(Config("qq_typing_emoji", 181, (str, int), table_name="bot_aiocqhttp"))
-qq_limited_emoji = str(Config("qq_limited_emoji", 10060, (str, int), table_name="bot_aiocqhttp"))
-qq_initiative_msg_cooldown = Config("qq_initiative_msg_cooldown", 10, int, table_name="bot_aiocqhttp")
+qq_typing_emoji = str(Config("qq_typing_emoji", 181, (str, int), table_name="bot_onebot"))
+qq_limited_emoji = str(Config("qq_limited_emoji", 10060, (str, int), table_name="bot_onebot"))
+qq_initiative_msg_cooldown = Config("qq_initiative_msg_cooldown", 10, int, table_name="bot_onebot")
 last_send_typing_time = {}
 
 
@@ -99,7 +99,7 @@ async def get_avaliable_private_list():
     return private_list
 
 
-class AIOCQContextManager(ContextManager):
+class OneBotContextManager(ContextManager):
     context: dict[str, Event] = {}
     features: type[Features] | None = Features
 
@@ -529,7 +529,7 @@ _tasks_high_priority = []
 _tasks = []
 
 
-class AIOCQFetchedContextManager(AIOCQContextManager):
+class OneBotFetchedContextManager(OneBotContextManager):
     @classmethod
     async def send_message(
         cls,
@@ -559,14 +559,14 @@ class AIOCQFetchedContextManager(AIOCQContextManager):
                 await task
                 cd = random.randint(1, 5)
                 Logger.info(
-                    f"Processed a high-priority task in AIOCQFetchedContextManager, waiting cooldown for {cd}s..."
+                    f"Processed a high-priority task in OneBotFetchedContextManager, waiting cooldown for {cd}s..."
                 )
                 await asyncio.sleep(cd)
             elif _tasks:
                 task = _tasks.pop(0)
                 await task
                 cd = random.randint(5, qq_initiative_msg_cooldown)
-                Logger.info(f"Processed a task in AIOCQFetchedContextManager, waiting cooldown for {cd}s...")
+                Logger.info(f"Processed a task in OneBotFetchedContextManager, waiting cooldown for {cd}s...")
                 await asyncio.sleep(cd)
             else:
                 await asyncio.sleep(1)

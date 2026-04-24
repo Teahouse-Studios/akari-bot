@@ -63,6 +63,7 @@
     "config.comments.qq_bot_appid": "QQ ロボット（公式）の AppID。",
     "config.comments.qq_bot_enable_send_url": "QQ ロボット（公式）使用時に、URL 送信を有効にするかどうか。",
     "config.comments.qq_bot_secret": "QQ ロボット（公式）の AppSecret。",
+    "config.comments.qq_enble_temp_session": "OneBot プロトコルを使用するときに、一時セッションを有効にするかどうか。",
     "config.comments.qq_enable_listening_self_message": "OneBot プロトコルを使用するときに、自己メッセージの監視を有効にするかどうか。",
     "config.comments.qq_host": "Aiocqhttp WebSocket メインサーバーのアドレス。（OneBot プロトコル側はリバース WebSocket 方式を使用して接続する必要があります）",
     "config.comments.qq_initiative_msg_cooldown": "Aiocqhttp アクティブ メッセージ送信のクールダウン時間を制限します。単位は秒です。",

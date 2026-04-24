@@ -3,9 +3,9 @@ import asyncio
 from aiogram import types
 from aiogram.enums import MessageEntityType
 
-from bots.aiogram.client import dp, aiogram_bot, token
-from bots.aiogram.context import AiogramContextManager, AiogramFetchedContextManager
-from bots.aiogram.info import *
+from bots.telegram.client import dp, aiogram_bot, token
+from bots.telegram.context import TelegramContextManager, TelegramFetchedContextManager
+from bots.telegram.info import *
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Voice, Image, Plain
@@ -18,8 +18,8 @@ from core.utils.http import download
 
 Bot.register_bot(client_name=client_name)
 
-ctx_id = Bot.register_context_manager(AiogramContextManager)
-Bot.register_context_manager(AiogramFetchedContextManager, fetch_session=True)
+ctx_id = Bot.register_context_manager(TelegramContextManager)
+Bot.register_context_manager(TelegramFetchedContextManager, fetch_session=True)
 
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 mention_required = Config("mention_required", False)
@@ -118,6 +118,6 @@ async def on_startup():
     await client_init(target_prefix_list, sender_prefix_list)
 
 
-if Config("enable", False, table_name="bot_aiogram"):
+if Config("enable", False, table_name="bot_telegram"):
     dp.startup.register(on_startup)
     asyncio.run(dp.start_polling(aiogram_bot))

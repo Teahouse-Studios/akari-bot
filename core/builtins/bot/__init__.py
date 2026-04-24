@@ -6,7 +6,7 @@
 """
 
 import asyncio
-from typing import Any, TYPE_CHECKING
+from typing import Any, TypeAlias, TYPE_CHECKING
 
 from core.builtins.message.chain import *
 from core.builtins.session.context import ContextManager
@@ -41,10 +41,10 @@ class Bot:
 
     # ========== 核心类型引用 ==========
     # 消息会话类型 - 用于处理常规消息
-    MessageSession: type[MessageSession] = MessageSession
+    MessageSession: TypeAlias = MessageSession
 
     # 抓取消息会话类型 - 用于主动获取和发送消息
-    FetchedMessageSession: type[FetchedMessageSession] = FetchedMessageSession
+    FetchedMessageSession: TypeAlias = FetchedMessageSession
 
     # 模块钩子上下文类型 - 用于模块钩子函数的参数传递
     ModuleHookContext = ModuleHookContext

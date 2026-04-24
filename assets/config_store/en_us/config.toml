@@ -3,7 +3,7 @@
 # EXAMPLE: Boolean values in TOML must be lowercase.
 
 default_locale = "en_us" # Default session language environment.
-config_version = 2 # Config version number, which will be automatically updated with the new features and generally does not need to be modified.
+config_version = 3 # Config version number, which will be automatically updated with the new features and generally does not need to be modified.
 
 [config]
 # The basic config section. The values ​​entered here can be displayed in the message. Please do not enter sensitive information in this section.
