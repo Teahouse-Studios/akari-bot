@@ -290,7 +290,7 @@ requires-dist = [
     { name = "loguru", specifier = ">=0.7.0,<1.0.0" },
     { name = "matplotlib", specifier = ">=3.6.3,<4.0.0" },
     { name = "matrix-nio", specifier = ">=0.25.0,<1.0.0" },
-    { name = "mcstatus", specifier = ">=13.0.0,<13.1.0" },
+    { name = "mcstatus", specifier = ">=13.1.0,<13.2.0" },
     { name = "numpy", specifier = "<2.4.5" },
     { name = "openai", specifier = ">=2.0.0,<3.0.0" },
     { name = "orjson", specifier = ">=3.10.9,<4.0.0" },
@@ -1797,15 +1797,15 @@ wheels = [
 
 [[package]]
 name = "mcstatus"
-version = "13.0.0"
+version = "13.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "asyncio-dgram" },
     { name = "dnspython" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9b/cd/010c447b0ebf33f63ca4c8f5dc4156c363dbe1cb2fd81dd99d4dd7acd48b/mcstatus-13.0.0.tar.gz", hash = "sha256:b5ed745c5e05b1211332aae619a778e60b1240c23fcd7cf2e9c394c751b1d271", size = 151276, upload-time = "2026-03-05T09:28:07.623Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3b/11/75ade1d6e86e45b8233ef17fc09188dbf29a427856664c33c9097958166e/mcstatus-13.1.0.tar.gz", hash = "sha256:491f27afd384c8b3dee21fe88d6c0119d2f12f7c8c6b58f44e41afb65b0a8369", size = 162572, upload-time = "2026-04-20T16:59:35.921Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5c/0d/9322fc3b42efe5a5df5f5196a08a9f58248e78acef41271ffcb905a248fb/mcstatus-13.0.0-py3-none-any.whl", hash = "sha256:e41eceb924f48141a0fde9e57593dfeb85d4fb924fc98cbfe0a0aa85cbc63d9f", size = 56132, upload-time = "2026-03-05T09:28:05.984Z" },
+    { url = "https://files.pythonhosted.org/packages/15/90/285ae8ab8e4deed57e4c81e021d8d6a9d76fd9cbc8bff04803e77e06a28b/mcstatus-13.1.0-py3-none-any.whl", hash = "sha256:76dfaedcdfbadb105c2483a6bba1dd7e5fa9ea3dee8698fe89e4a7651b6d9a21", size = 61064, upload-time = "2026-04-20T16:59:34.085Z" },
 ]
 
 [[package]]
