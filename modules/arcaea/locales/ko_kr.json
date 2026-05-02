@@ -1,1 +1,10 @@
-{}
+{
+    "arcaea.help.calc": "점수와 채보 상수를 바탕으로 해당 보면별 포텐셜을 산출합니다.",
+    "arcaea.help.desc": "Arcaea 관련 내용을 검색합니다.",
+    "arcaea.help.download": "최신 버전(중국판) 게임 APK를 다운로드합니다.",
+    "arcaea.help.random": "노래를 무작위로 선택합니다.",
+    "arcaea.help.rank.free": "현재 무료 곡 플레이 순위를 확인합니다.",
+    "arcaea.help.rank.paid": "현재 유료 곡 플레이 순위를 확인합니다.",
+    "arcaea.message.download": "현재 최신 버전: ${version}\n다운로드 주소: ${url}",
+    "arcaea.message.get_failed": "검색에 실패했습니다."
+}
