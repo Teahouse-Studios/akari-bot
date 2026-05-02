@@ -1,1 +1,4 @@
-{}
+{
+    "arcaea_rss.help.desc": "Arcaea（中国版）のアップデート情報を追跡し、更新通知を配信します。",
+    "arcaea_rss.message.updated": "新しい Arcaea バージョン ${version} が発見されました。\nダウンロード：${url}"
+}
