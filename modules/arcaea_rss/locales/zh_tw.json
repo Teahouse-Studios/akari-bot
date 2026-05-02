@@ -1,4 +1,4 @@
 {
     "arcaea_rss.help.desc": "追蹤 Arcaea 版本更新並推送更新訊息。",
-    "arcaea_rss.message.updated": "發現新的 Arcaea 版本：${version}。\n下載網址：${url}"
+    "arcaea_rss.message.updated": "發現新的 Arcaea 版本：${version}\n下載網址：${url}"
 }
