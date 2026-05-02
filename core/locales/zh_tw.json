@@ -65,6 +65,7 @@
     "config.comments.qq_bot_appid": "QQ 機器人（官方）的 AppID。",
     "config.comments.qq_bot_enable_send_url": "使用 QQ 機器人（官方）時，是否啟用傳送 URL。",
     "config.comments.qq_bot_secret": "QQ 機器人（官方）的 AppSecret。",
+    "config.comments.qq_enable_temp_session": "使用 OneBot 協定時，是否啟用臨時會話。",
     "config.comments.qq_enable_listening_self_message": "使用 OneBot 協定時，是否啟用自身訊息監聽。",
     "config.comments.qq_host": "Aiocqhttp WebSocket 主伺服器的位址。（OneBot 協定端請使用反向 WebSocket 方式連線）",
     "config.comments.qq_initiative_msg_cooldown": "限制 Aiocqhttp 主動訊息傳送的冷卻時間，單位為秒。",
