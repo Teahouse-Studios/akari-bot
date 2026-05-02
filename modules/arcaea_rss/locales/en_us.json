@@ -1,0 +1,4 @@
+{
+    "arcaea_rss.help.desc": "Track Arcaea (China) version updates and push update messages.",
+    "arcaea_rss.message.updated": "Found new Arcaea version: ${version}\nDownload: ${url}"
+}

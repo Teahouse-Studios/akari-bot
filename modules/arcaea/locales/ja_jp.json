@@ -1,1 +1,10 @@
-{}
+{
+    "arcaea.help.calc": "スコアと譜面定数を基に、対応する譜面別ポテンシャルを算出します。",
+    "arcaea.help.desc": "Arcaea に関する情報を検索しています。",
+    "arcaea.help.download": "ゲームの最新版（中国版）APK を入手します。",
+    "arcaea.help.random": "曲をランダムに選択します。",
+    "arcaea.help.rank.free": "現在無料の楽曲の人気ランキングを表示します。",
+    "arcaea.help.rank.paid": "現在有料の楽曲の人気ランキングを表示します。",
+    "arcaea.message.download": "現在の最新バージョン：${version}\nダウンロード：${url}",
+    "arcaea.message.get_failed": "取得に失敗しました。"
+}
