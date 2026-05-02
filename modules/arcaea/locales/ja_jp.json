@@ -1,1 +1,4 @@
-{}
+{
+    "arcaea.message.download": "現在の最新バージョン：${version}\nダウンロード：${url}",
+    "arcaea.message.get_failed": "取得に失敗しました。"
+}
