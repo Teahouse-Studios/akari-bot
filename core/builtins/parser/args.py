@@ -7,6 +7,7 @@
 
 import re
 import traceback
+import itertools
 
 from core.constants.exceptions import InvalidTemplatePattern, InvalidCommandFormatError
 
@@ -157,14 +158,14 @@ class MatchedResult:
         return self.__str__()
 
 
-def split_multi_arguments(lst: list):
+def split_multi_arguments(lst: list[str]) -> list[str]:
     """
     分割包含多个选项的参数字符串。
 
     该函数处理形如 "hello(world|everyone)" 的字符串，将其展开为多个变体：
     ["hello world", "hello everyone"]
 
-    支持嵌套的括号和多个选择组。使用递归处理多层嵌套。
+    支持嵌套的括号和多个选择组。
 
     示例:
     ```
@@ -177,53 +178,26 @@ def split_multi_arguments(lst: list):
     :param lst: 包含参数字符串的列表，字符串中可能包含 (option1|option2) 形式的选择组
     :return: 展开后的参数列表，每个变体为一个独立的字符串
     """
+    patn = re.compile(r"\((.*?)\)")
     new_lst = []
 
-    # 处理列表中的每一个字符串
-    for x in lst:
-        # 使用正则表达式分割括号部分
-        # (\(.*?\)) 用于匹配最短的括号内容（非贪婪匹配）
-        spl = list(filter(None, re.split(r"(\(.*?\))", x)))
+    for item in lst:
+        # 将 "hello(world|earth)foo(a|b)" 拆分为文本块和选项列表
+        # 例如: ["hello", "world|earth", "foo", "a|b", ""]
+        parts = patn.split(item)
 
-        # 如果分割后有多个部分（包含括号）
-        if len(spl) > 1:
-            # 遍历每个部分
-            for y in spl:
-                index_y = spl.index(y)
-                # 检查该部分是否是括号内的选择
-                mat = re.match(r"\((.*?)\)", y)
-                if mat:
-                    # 提取括号内的内容并按 | 分割
-                    spl1 = mat.group(1).split("|")
-                    # 为每个选项创建一个完整的变体
-                    for s in spl1:
-                        cspl = spl.copy()
-                        cspl.insert(index_y, s)
-                        del cspl[index_y + 1]
-                        new_lst.append("".join(cspl))
-        else:
-            # 只有一个部分的情况
-            mat = re.match(r"\((.*?)\)", spl[0])
-            if mat:
-                # 括号内的选择
-                spl1 = mat.group(1).split("|")
-                for s in spl1:
-                    new_lst.append(s)
+        # 将选项块按 "|" 分割转换为列表，纯文本直接作为单元素列表
+        choices = []
+        for i, part in enumerate(parts):
+            if i % 2 != 0:
+                choices.append(part.split("|"))
             else:
-                # 没有括号，直接添加
-                new_lst.append(spl[0])
+                choices.append([part])
 
-    # 检查是否还有未处理的括号（嵌套情况）
-    split_more = False
-    for n in new_lst:
-        if re.match(r"\((.*?)\)", n):
-            split_more = True
+        # 使用笛卡尔积生成所有组合
+        for combination in itertools.product(*choices):
+            new_lst.append("".join(combination))
 
-    # 如果还有括号，递归处理
-    if split_more:
-        return split_multi_arguments(new_lst)
-
-    # 返回去重后的列表
     return list(set(new_lst))
 
 
