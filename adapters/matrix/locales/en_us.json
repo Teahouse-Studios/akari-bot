@@ -1,0 +1,8 @@
+{
+    "config.comments.config.adapter_matrix.device_id": "Matrix bot device ID.",
+    "config.comments.config.adapter_matrix.device_name": "Matrix bot device name, which can be set to any value.",
+    "config.comments.config.adapter_matrix.homeserver": "Matrix bot homeserver.",
+    "config.comments.config.adapter_matrix.megolm_backup_passphrase": "Matrix bot's Megolm backup passphrase.",
+    "config.comments.config.adapter_matrix.token": "Matrix bot token.",
+    "config.comments.config.adapter_matrix.user": "Matrix bot fully-qualified user ID."
+}

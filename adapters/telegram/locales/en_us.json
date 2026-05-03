@@ -1,0 +1,4 @@
+{
+    "config.comments.config.adapter_telegram.api_url": "Telegram custom API URL.",
+    "config.comments.config.adapter_telegram.token": "Telegram bot token."
+}

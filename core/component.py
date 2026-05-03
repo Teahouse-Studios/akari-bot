@@ -1,5 +1,6 @@
 import inspect
 import re
+from deprecated import deprecated
 from pathlib import Path
 from typing import overload
 
@@ -12,15 +13,15 @@ from core.builtins.parser.args import parse_template
 from core.config.decorator import _process_class
 from core.constants.exceptions import InvalidTemplatePattern
 from core.builtins.types import MessageElement
-from core.loader import ModulesManager
-from core.types import Module
-from core.types.module.component_meta import *
+from core.loader import PluginsManager
+from core.types import Plugin
+from core.types.plugin.component_meta import *
 
 
 class Bind:
-    class Module:
-        def __init__(self, module_name: str):
-            self.module_name = module_name
+    class Plugin:
+        def __init__(self, plugin_name: str):
+            self.plugin_name = plugin_name
 
         def command(
             self,
@@ -49,8 +50,8 @@ class Bind:
                 except InvalidTemplatePattern:
                     return
 
-                ModulesManager.bind_to_module(
-                    self.module_name,
+                PluginsManager.bind_to_plugin(
+                    self.plugin_name,
                     CommandMeta(
                         function=function,
                         command_template=command_template,
@@ -86,8 +87,8 @@ class Bind:
             element_filter: tuple[MessageElement, ...] | None = None,
         ):
             def decorator(function):
-                ModulesManager.bind_to_module(
-                    self.module_name,
+                PluginsManager.bind_to_plugin(
+                    self.plugin_name,
                     RegexMeta(
                         function=function,
                         pattern=pattern,
@@ -115,14 +116,14 @@ class Bind:
             trigger: AndTrigger | OrTrigger | DateTrigger | CronTrigger | IntervalTrigger,
         ):
             def decorator(function):
-                ModulesManager.bind_to_module(self.module_name, ScheduleMeta(function=function, trigger=trigger))
+                PluginsManager.bind_to_plugin(self.plugin_name, ScheduleMeta(function=function, trigger=trigger))
                 return function
 
             return decorator
 
         def hook(self, name: str = None):
             def decorator(function):
-                ModulesManager.bind_to_module(self.module_name, HookMeta(function=function, name=name))
+                PluginsManager.bind_to_plugin(self.plugin_name, HookMeta(function=function, name=name))
                 return function
 
             return decorator
@@ -185,18 +186,57 @@ class Bind:
         def config(self, cls=None, secret: bool = False):
 
             def wrap(cls):
-                return _process_class(cls, "module_" + self.module_name, secret=secret)
+                return _process_class(cls, "module_" + self.plugin_name, secret=secret)
 
             if cls is None:
                 return wrap
             return wrap(cls)
 
 
+@deprecated(reason="Use `plugin` instead.")
 def module(
-    module_name: str,
+    plugin_name: str,
     alias: str | list | tuple | dict | None = None,
     desc: str | None = None,
-    recommend_modules: str | list | tuple | None = None,
+    recommend_plugins: str | list | tuple | None = None,
+    developers: str | list | tuple | None = None,
+    required_admin: bool = False,
+    base: bool = False,
+    doc: bool = False,
+    hidden: bool = False,
+    load: bool = True,
+    rss: bool = False,
+    required_superuser: bool = False,
+    required_base_superuser: bool = False,
+    available_for: str | list | tuple = "*",
+    exclude_from: str | list | tuple = "",
+    support_languages: str | list | tuple | None = None,
+):
+    plugin(
+        plugin_name,
+        alias,
+        desc,
+        recommend_plugins,
+        developers,
+        required_admin,
+        base,
+        doc,
+        hidden,
+        load,
+        rss,
+        required_superuser,
+        required_base_superuser,
+        available_for,
+        exclude_from,
+        support_languages,
+    )
+
+
+def plugin(
+    plugin_name: str,
+    alias: str | list | tuple | dict | None = None,
+    desc: str | None = None,
+    recommend_plugins: str | list | tuple | None = None,
     developers: str | list | tuple | None = None,
     required_admin: bool = False,
     base: bool = False,
@@ -211,14 +251,14 @@ def module(
     support_languages: str | list | tuple | None = None,
 ):
     """
-    绑定一个模块。
+    绑定一个插件。
 
-    :param module_name: 绑定的命令前缀。
+    :param plugin_name: 绑定的命令前缀。
     :param alias: 此命令的别名。
     同时被用作命令解析，当此项不为空时将会尝试解析其中的语法并储存结果在 MessageSession.parsed_msg 中。
     :param desc: 此命令的简介。
-    :param recommend_modules: 推荐打开的其他模块。
-    :param developers: 模块作者。
+    :param recommend_plugins: 推荐打开的其他插件。
+    :param developers: 插件作者。
     :param required_admin: 此命令是否需要群组管理员权限。
     :param base: 将此命令设为基础命令。设为基础命令后此命令将被强制开启。（默认为False）
     :param doc: 此命令是否存在线上说明文件。（默认为False）
@@ -239,16 +279,16 @@ def module(
     if caller_file:
         path = Path(caller_file).resolve()
         try:
-            modules_idx = path.parts.index("modules")
-            py_module_name = path.parts[modules_idx + 1]
+            plugins_idx = path.parts.index("plugins")
+            py_module_name = path.parts[plugins_idx + 1]
         except (ValueError, IndexError):
             py_module_name = ""
 
-    module = Module.assign(
-        module_name=module_name,
+    plugin = Plugin.assign(
+        plugin_name=plugin_name,
         alias=alias,
         desc=desc,
-        recommend_modules=recommend_modules,
+        recommend_plugins=recommend_plugins,
         developers=developers,
         base=base,
         doc=doc,
@@ -265,5 +305,5 @@ def module(
         _db_load=True,
     )
     frame = inspect.currentframe()
-    ModulesManager.add_module(module, frame.f_back.f_globals["__name__"])
-    return Bind.Module(module_name)
+    PluginsManager.add_plugin(plugin, frame.f_back.f_globals["__name__"])
+    return Bind.Plugin(plugin_name)

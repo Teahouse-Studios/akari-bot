@@ -1,0 +1,8 @@
+pyproject.toml
+src/__init__.py
+src/mcv.py
+src/akari_bot_plugin_mcv.egg-info/PKG-INFO
+src/akari_bot_plugin_mcv.egg-info/SOURCES.txt
+src/akari_bot_plugin_mcv.egg-info/dependency_links.txt
+src/akari_bot_plugin_mcv.egg-info/requires.txt
+src/akari_bot_plugin_mcv.egg-info/top_level.txt

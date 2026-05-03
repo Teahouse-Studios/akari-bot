@@ -70,13 +70,13 @@ class JobQueueClient(JobQueueBase):
         )
 
     @classmethod
-    async def trigger_hook(cls, module_or_hook_name: str, session_info: SessionInfo | None = "", wait=False, **kwargs):
+    async def trigger_hook(cls, plugin_or_hook_name: str, session_info: SessionInfo | None = "", wait=False, **kwargs):
         """触发服务器上的钩子函数或模块事件。
 
         用于客户端主动触发服务器上注册的钩子函数，并可选择等待执行结果。
         支持将 MessageChain 对象自动转换为列表形式传递。
 
-        :param module_or_hook_name: 要触发的钩子函数或模块名称
+        :param plugin_or_hook_name: 要触发的钩子函数或模块名称
         :param session_info: 关联的会话信息，用于提供操作上下文（可选）
         :param wait: 是否等待钩子执行完成（默认False）
         :param **kwargs: 传递给钩子函数的自定义参数
@@ -92,7 +92,7 @@ class JobQueueClient(JobQueueBase):
             "Server",
             "trigger_hook",
             {
-                "module_or_hook_name": module_or_hook_name,
+                "plugin_or_hook_name": plugin_or_hook_name,
                 "session_info": converter.unstructure(session_info) if session_info else "",
                 "args": kwargs,
             },
@@ -121,55 +121,55 @@ class JobQueueClient(JobQueueBase):
         return ret["web_render_status"]
 
     @classmethod
-    async def get_modules_list(cls):
+    async def get_plugins_list(cls):
         """获取已加载的所有模块名称列表。
 
         :return: 模块名称列表，不包括禁用或基础模块
         """
-        ret = await cls.add_job("Server", "get_modules_list", {})
-        return ret["modules_list"]
+        ret = await cls.add_job("Server", "get_plugins_list", {})
+        return ret["plugins_list"]
 
     @classmethod
-    async def get_modules_info(cls, locale: str = "zh_cn"):
+    async def get_plugins_info(cls, locale: str = "zh_cn"):
         """获取所有模块的详细信息。
 
         :param locale: 本地化语言代码（默认"zh_cn"）
 
         :return: 模块信息字典，包含模块名称、描述等，按指定语言本地化
         """
-        ret = await cls.add_job("Server", "get_modules_info", {"locale": locale})
-        return ret["modules"]
+        ret = await cls.add_job("Server", "get_plugins_info", {"locale": locale})
+        return ret["plugins"]
 
     @classmethod
-    async def get_module_helpdoc(cls, module: str, locale: str = "zh_cn"):
+    async def get_plugin_helpdoc(cls, plugin: str, locale: str = "zh_cn"):
         """获取指定模块的帮助文档。
 
         返回的帮助文档包括命令列表和正则表达式规则。
 
-        :param module: 模块名称
+        :param plugin: 模块名称
         :param locale: 本地化语言代码（默认"zh_cn"）
 
         :return: 帮助文档字典，包含模块名称、描述、命令列表和正则规则
         """
-        ret = await cls.add_job("Server", "get_module_helpdoc", {"module": module, "locale": locale})
+        ret = await cls.add_job("Server", "get_plugin_helpdoc", {"plugin": plugin, "locale": locale})
         return ret["help_doc"]
 
     @classmethod
-    async def get_module_related(cls, module: str):
+    async def get_plugin_related(cls, plugin: str):
         """获取与指定模块相关的其他模块列表。
 
-        :param module: 模块名称
+        :param plugin: 模块名称
 
         :return: 相关模块名称列表
         """
-        ret = await cls.add_job("Server", "get_module_related", {"module": module})
-        return ret["modules_list"]
+        ret = await cls.add_job("Server", "get_plugin_related", {"plugin": plugin})
+        return ret["plugins_list"]
 
     @classmethod
-    async def post_module_action(cls, module: str, action: str):
+    async def post_plugin_action(cls, plugin: str, action: str):
         """对模块执行操作（加载、卸载、重新加载）。
 
-        :param module: 模块名称
+        :param plugin: 模块名称
         :param action: 操作类型
 
             - "load": 加载模块
@@ -178,7 +178,7 @@ class JobQueueClient(JobQueueBase):
 
         :return: 布尔值，表示操作是否成功
         """
-        ret = await cls.add_job("Server", "post_module_action", {"module": module, "action": action})
+        ret = await cls.add_job("Server", "post_plugin_action", {"plugin": plugin, "action": action})
         return ret["success"]
 
 

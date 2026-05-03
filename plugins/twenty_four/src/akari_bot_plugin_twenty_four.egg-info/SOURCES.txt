@@ -1,0 +1,7 @@
+pyproject.toml
+src/__init__.py
+src/akari_bot_plugin_twenty_four.egg-info/PKG-INFO
+src/akari_bot_plugin_twenty_four.egg-info/SOURCES.txt
+src/akari_bot_plugin_twenty_four.egg-info/dependency_links.txt
+src/akari_bot_plugin_twenty_four.egg-info/requires.txt
+src/akari_bot_plugin_twenty_four.egg-info/top_level.txt

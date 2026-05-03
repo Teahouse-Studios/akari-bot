@@ -1,0 +1,11 @@
+[project]
+name = "akari-bot-adapter-web"
+version = "0.1.0"
+dependencies = [
+    "argon2-cffi>=25.0.0,<26.0.0",
+    "fastapi>=0.120.0,<1.0.0",
+    "pyjwt[crypto]>=2.8.0,<3.0.0",
+    "slowapi>=0.1.9,<1.0.0",
+    "urllib3>=2.6.3",
+    "uvicorn[standard]>=0.38.0,<1.0.0",
+]

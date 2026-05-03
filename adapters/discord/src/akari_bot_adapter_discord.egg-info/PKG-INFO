@@ -1,0 +1,4 @@
+Metadata-Version: 2.4
+Name: akari-bot-adapter-discord
+Version: 0.1.0
+Requires-Dist: py-cord @ git+https://github.com/Pycord-Development/pycord

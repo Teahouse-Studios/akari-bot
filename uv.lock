@@ -10,6 +10,63 @@ resolution-markers = [
     "python_full_version < '3.14' and sys_platform != 'emscripten' and sys_platform != 'win32'",
 ]
 
+[manifest]
+members = [
+    "akari-bot",
+    "akari-bot-adapter-discord",
+    "akari-bot-adapter-kook",
+    "akari-bot-adapter-matrix",
+    "akari-bot-adapter-onebot",
+    "akari-bot-adapter-qqbot",
+    "akari-bot-adapter-telegram",
+    "akari-bot-adapter-web",
+    "akari-bot-plugin-ai",
+    "akari-bot-plugin-arcaea",
+    "akari-bot-plugin-arcaea-rss",
+    "akari-bot-plugin-bilibili",
+    "akari-bot-plugin-bugtracker",
+    "akari-bot-plugin-chemical-code",
+    "akari-bot-plugin-coin",
+    "akari-bot-plugin-color",
+    "akari-bot-plugin-convert",
+    "akari-bot-plugin-core",
+    "akari-bot-plugin-cytoid",
+    "akari-bot-plugin-dice",
+    "akari-bot-plugin-emojimix",
+    "akari-bot-plugin-exchange-rate",
+    "akari-bot-plugin-github",
+    "akari-bot-plugin-hitokoto",
+    "akari-bot-plugin-idlist",
+    "akari-bot-plugin-image",
+    "akari-bot-plugin-ip",
+    "akari-bot-plugin-langconv",
+    "akari-bot-plugin-maimai",
+    "akari-bot-plugin-mcmod",
+    "akari-bot-plugin-mcplayer",
+    "akari-bot-plugin-mcserver",
+    "akari-bot-plugin-mcv",
+    "akari-bot-plugin-mcv-rss",
+    "akari-bot-plugin-minecraft-news",
+    "akari-bot-plugin-mkey",
+    "akari-bot-plugin-mod-dl",
+    "akari-bot-plugin-nbnhhsh",
+    "akari-bot-plugin-ncmusic",
+    "akari-bot-plugin-nintendo-error",
+    "akari-bot-plugin-oba",
+    "akari-bot-plugin-phigros",
+    "akari-bot-plugin-random",
+    "akari-bot-plugin-threedsdb",
+    "akari-bot-plugin-tweet",
+    "akari-bot-plugin-twenty-four",
+    "akari-bot-plugin-weekly",
+    "akari-bot-plugin-weekly-rss",
+    "akari-bot-plugin-whois",
+    "akari-bot-plugin-wiki",
+    "akari-bot-plugin-wikilog",
+    "akari-bot-plugin-wolframalpha",
+    "akari-bot-plugin-wordle",
+]
+
 [[package]]
 name = "aiocqhttp"
 version = "1.4.4"
@@ -192,65 +249,65 @@ name = "akari-bot"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
-    { name = "aiocqhttp" },
     { name = "aiofile" },
-    { name = "aiogram" },
+    { name = "akari-bot-plugin-core" },
     { name = "akari-bot-webrender" },
     { name = "akari-bot-webui" },
     { name = "apscheduler" },
-    { name = "argon2-cffi" },
     { name = "attrs" },
-    { name = "beautifulsoup4" },
     { name = "cattrs" },
     { name = "coverage" },
     { name = "cryptography" },
     { name = "defusedxml" },
     { name = "deprecated" },
-    { name = "emoji" },
-    { name = "fastapi" },
-    { name = "feedparser" },
     { name = "ff3" },
-    { name = "ffmpy" },
     { name = "filetype" },
-    { name = "google-play-scraper" },
-    { name = "gql" },
     { name = "httpx" },
     { name = "japanera" },
     { name = "jinja2" },
-    { name = "khl-py" },
-    { name = "langconv" },
     { name = "loguru" },
-    { name = "matplotlib" },
-    { name = "matrix-nio" },
-    { name = "mcstatus" },
-    { name = "numpy" },
-    { name = "openai" },
     { name = "orjson" },
-    { name = "pandas" },
     { name = "pillow" },
-    { name = "pint" },
     { name = "pre-commit" },
     { name = "psutil" },
-    { name = "py-cord" },
-    { name = "py-cpuinfo" },
     { name = "pycryptodome" },
-    { name = "pyjwt", extra = ["crypto"] },
     { name = "python-dotenv" },
     { name = "python-multipart" },
-    { name = "python-whois" },
     { name = "pywin32", marker = "sys_platform == 'win32'" },
-    { name = "qq-botpy" },
-    { name = "rdkit" },
-    { name = "simpleeval" },
-    { name = "slowapi" },
     { name = "tabulate" },
     { name = "tenacity" },
     { name = "tomlkit" },
     { name = "tortoise-orm", extra = ["asyncmy"] },
-    { name = "urllib3" },
-    { name = "uvicorn", extra = ["standard"] },
-    { name = "webcolors" },
-    { name = "wolframalpha" },
+]
+
+[package.optional-dependencies]
+all-plugins = [
+    { name = "akari-bot-adapter-discord" },
+    { name = "akari-bot-adapter-kook" },
+    { name = "akari-bot-adapter-matrix" },
+    { name = "akari-bot-adapter-onebot" },
+    { name = "akari-bot-adapter-qqbot" },
+    { name = "akari-bot-adapter-telegram" },
+    { name = "akari-bot-adapter-web" },
+    { name = "akari-bot-plugin-ai" },
+    { name = "akari-bot-plugin-chemical-code" },
+    { name = "akari-bot-plugin-color" },
+    { name = "akari-bot-plugin-convert" },
+    { name = "akari-bot-plugin-cytoid" },
+    { name = "akari-bot-plugin-dice" },
+    { name = "akari-bot-plugin-emojimix" },
+    { name = "akari-bot-plugin-hitokoto" },
+    { name = "akari-bot-plugin-langconv" },
+    { name = "akari-bot-plugin-maimai" },
+    { name = "akari-bot-plugin-mcmod" },
+    { name = "akari-bot-plugin-mcserver" },
+    { name = "akari-bot-plugin-mcv" },
+    { name = "akari-bot-plugin-mcv-rss" },
+    { name = "akari-bot-plugin-twenty-four" },
+    { name = "akari-bot-plugin-weekly" },
+    { name = "akari-bot-plugin-whois" },
+    { name = "akari-bot-plugin-wiki" },
+    { name = "akari-bot-plugin-wolframalpha" },
 ]
 
 [package.dev-dependencies]
@@ -260,69 +317,524 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aiocqhttp", specifier = ">=1.4.3,<2.0.0" },
     { name = "aiofile", specifier = ">=3.8.1,<4.0.0" },
-    { name = "aiogram", specifier = ">=3.4.1,<4.0.0" },
+    { name = "akari-bot-adapter-discord", marker = "extra == 'all-plugins'", editable = "adapters/discord" },
+    { name = "akari-bot-adapter-kook", marker = "extra == 'all-plugins'", editable = "adapters/kook" },
+    { name = "akari-bot-adapter-matrix", marker = "extra == 'all-plugins'", editable = "adapters/matrix" },
+    { name = "akari-bot-adapter-onebot", marker = "extra == 'all-plugins'", editable = "adapters/onebot" },
+    { name = "akari-bot-adapter-qqbot", marker = "extra == 'all-plugins'", editable = "adapters/qqbot" },
+    { name = "akari-bot-adapter-telegram", marker = "extra == 'all-plugins'", editable = "adapters/telegram" },
+    { name = "akari-bot-adapter-web", marker = "extra == 'all-plugins'", editable = "adapters/web" },
+    { name = "akari-bot-plugin-ai", marker = "extra == 'all-plugins'", editable = "plugins/ai" },
+    { name = "akari-bot-plugin-chemical-code", marker = "extra == 'all-plugins'", editable = "plugins/chemical_code" },
+    { name = "akari-bot-plugin-color", marker = "extra == 'all-plugins'", editable = "plugins/color" },
+    { name = "akari-bot-plugin-convert", marker = "extra == 'all-plugins'", editable = "plugins/convert" },
+    { name = "akari-bot-plugin-core", editable = "plugins/core" },
+    { name = "akari-bot-plugin-cytoid", marker = "extra == 'all-plugins'", editable = "plugins/cytoid" },
+    { name = "akari-bot-plugin-dice", marker = "extra == 'all-plugins'", editable = "plugins/dice" },
+    { name = "akari-bot-plugin-emojimix", marker = "extra == 'all-plugins'", editable = "plugins/emojimix" },
+    { name = "akari-bot-plugin-hitokoto", marker = "extra == 'all-plugins'", editable = "plugins/hitokoto" },
+    { name = "akari-bot-plugin-langconv", marker = "extra == 'all-plugins'", editable = "plugins/langconv" },
+    { name = "akari-bot-plugin-maimai", marker = "extra == 'all-plugins'", editable = "plugins/maimai" },
+    { name = "akari-bot-plugin-mcmod", marker = "extra == 'all-plugins'", editable = "plugins/mcmod" },
+    { name = "akari-bot-plugin-mcserver", marker = "extra == 'all-plugins'", editable = "plugins/mcserver" },
+    { name = "akari-bot-plugin-mcv", marker = "extra == 'all-plugins'", editable = "plugins/mcv" },
+    { name = "akari-bot-plugin-mcv-rss", marker = "extra == 'all-plugins'", editable = "plugins/mcv_rss" },
+    { name = "akari-bot-plugin-twenty-four", marker = "extra == 'all-plugins'", editable = "plugins/twenty_four" },
+    { name = "akari-bot-plugin-weekly", marker = "extra == 'all-plugins'", editable = "plugins/weekly" },
+    { name = "akari-bot-plugin-whois", marker = "extra == 'all-plugins'", editable = "plugins/whois" },
+    { name = "akari-bot-plugin-wiki", marker = "extra == 'all-plugins'", editable = "plugins/wiki" },
+    { name = "akari-bot-plugin-wolframalpha", marker = "extra == 'all-plugins'", editable = "plugins/wolframalpha" },
     { name = "akari-bot-webrender", specifier = "==0.5.13" },
     { name = "akari-bot-webui", specifier = "==0.3.10" },
     { name = "apscheduler", specifier = ">=3.9.1.post0,<4.0.0.0" },
-    { name = "argon2-cffi", specifier = ">=25.0.0,<26.0.0" },
     { name = "attrs", specifier = ">=25.0.0,<26.0.0" },
-    { name = "beautifulsoup4", specifier = ">=4.11.1,<5.0.0" },
     { name = "cattrs", specifier = ">=26.1.0,<26.2.0" },
     { name = "coverage", specifier = ">=7.9.1,<8.0.0" },
     { name = "cryptography", specifier = ">=46.0.0,<47.0.0" },
     { name = "defusedxml", specifier = ">=0.7.1" },
     { name = "deprecated", specifier = ">=1.2.18,<2.0.0" },
-    { name = "emoji", specifier = ">=2.12.1,<3.0.0" },
-    { name = "fastapi", specifier = ">=0.120.0,<1.0.0" },
-    { name = "feedparser", specifier = ">=6.0.10,<7.0.0" },
     { name = "ff3", specifier = ">=1.0.2,<2.0.0" },
-    { name = "ffmpy", specifier = ">=1.0.0,<2.0.0" },
     { name = "filetype", specifier = ">=1.2.0,<2.0.0" },
-    { name = "google-play-scraper", specifier = ">=1.2.2,<2.0.0" },
-    { name = "gql", specifier = ">=4.0.0,<5.0.0" },
     { name = "httpx", specifier = ">=0.28.1,<1.0.0" },
     { name = "japanera", specifier = ">=2.1.3,<3.0.0" },
     { name = "jinja2", specifier = ">=3.1.6,<4.0.0" },
-    { name = "khl-py", specifier = ">=0.3.16,<1.0.0" },
-    { name = "langconv", git = "https://github.com/Teahouse-Studios/langconv.py.git" },
     { name = "loguru", specifier = ">=0.7.0,<1.0.0" },
-    { name = "matplotlib", specifier = ">=3.6.3,<4.0.0" },
-    { name = "matrix-nio", specifier = ">=0.25.0,<1.0.0" },
-    { name = "mcstatus", specifier = ">=13.1.0,<13.2.0" },
-    { name = "numpy", specifier = "<2.4.5" },
-    { name = "openai", specifier = ">=2.0.0,<3.0.0" },
     { name = "orjson", specifier = ">=3.10.9,<4.0.0" },
-    { name = "pandas", specifier = ">=3.0.0,<4.0.0" },
     { name = "pillow", specifier = ">=12.0.0,<13.0.0" },
-    { name = "pint", specifier = ">=0.25.0,<1.0.0" },
     { name = "pre-commit", specifier = ">=4.0.0,<5.0.0" },
     { name = "psutil", specifier = ">=7.0.0,<8.0.0" },
-    { name = "py-cord", git = "https://github.com/Pycord-Development/pycord" },
-    { name = "py-cpuinfo", specifier = ">=9.0.0,<10.0.0" },
     { name = "pycryptodome", specifier = ">=3.18.0,<4.0.0" },
-    { name = "pyjwt", extras = ["crypto"], specifier = ">=2.8.0,<3.0.0" },
     { name = "python-dotenv", specifier = ">=1.2.1,<2.0.0" },
     { name = "python-multipart", specifier = ">=0.0.22,<1.0.0" },
-    { name = "python-whois", specifier = ">=0.9.0,<1.0.0" },
     { name = "pywin32", marker = "sys_platform == 'win32'", specifier = ">=311,<312" },
-    { name = "qq-botpy", specifier = ">=1.2.1,<2.0.0" },
-    { name = "rdkit", specifier = ">=2026.3.1,<2026.4.0" },
-    { name = "simpleeval", specifier = ">=1.0.0,<2.0.0" },
-    { name = "slowapi", specifier = ">=0.1.9,<1.0.0" },
     { name = "tabulate", specifier = ">=0.9.0,<1.0.0" },
     { name = "tenacity", specifier = ">=9.0.0,<10.0.0" },
     { name = "tomlkit", specifier = ">=0.14.0,<1.0.0" },
     { name = "tortoise-orm", extras = ["asyncmy"], specifier = ">=1.1.2,<1.2.0" },
-    { name = "urllib3", specifier = ">=2.6.3" },
-    { name = "uvicorn", extras = ["standard"], specifier = ">=0.38.0,<1.0.0" },
-    { name = "webcolors", specifier = ">=25.0.0,<26.0.0" },
-    { name = "wolframalpha", specifier = ">=5.0.0,<6.0.0" },
 ]
+provides-extras = ["all-plugins"]
 
 [package.metadata.requires-dev]
 dev = [{ name = "ruff", specifier = ">=0.15.1" }]
+
+[[package]]
+name = "akari-bot-adapter-discord"
+version = "0.1.0"
+source = { editable = "adapters/discord" }
+dependencies = [
+    { name = "py-cord" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "py-cord", git = "https://github.com/Pycord-Development/pycord" }]
+
+[[package]]
+name = "akari-bot-adapter-kook"
+version = "0.1.0"
+source = { editable = "adapters/kook" }
+dependencies = [
+    { name = "khl-py" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "khl-py", specifier = ">=0.3.16,<1.0.0" }]
+
+[[package]]
+name = "akari-bot-adapter-matrix"
+version = "0.1.0"
+source = { editable = "adapters/matrix" }
+dependencies = [
+    { name = "matrix-nio" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "matrix-nio", specifier = ">=0.25.0,<1.0.0" }]
+
+[[package]]
+name = "akari-bot-adapter-onebot"
+version = "0.1.0"
+source = { editable = "adapters/onebot" }
+dependencies = [
+    { name = "aiocqhttp" },
+    { name = "ffmpy" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aiocqhttp", specifier = ">=1.4.3,<2.0.0" },
+    { name = "ffmpy", specifier = ">=1.0.0,<2.0.0" },
+]
+
+[[package]]
+name = "akari-bot-adapter-qqbot"
+version = "0.1.0"
+source = { editable = "adapters/qqbot" }
+dependencies = [
+    { name = "qq-botpy" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "qq-botpy", specifier = ">=1.2.1,<2.0.0" }]
+
+[[package]]
+name = "akari-bot-adapter-telegram"
+version = "0.1.0"
+source = { editable = "adapters/telegram" }
+dependencies = [
+    { name = "aiogram" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "aiogram", specifier = ">=3.4.1,<4.0.0" }]
+
+[[package]]
+name = "akari-bot-adapter-web"
+version = "0.1.0"
+source = { editable = "adapters/web" }
+dependencies = [
+    { name = "argon2-cffi" },
+    { name = "fastapi" },
+    { name = "pyjwt", extra = ["crypto"] },
+    { name = "slowapi" },
+    { name = "urllib3" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "argon2-cffi", specifier = ">=25.0.0,<26.0.0" },
+    { name = "fastapi", specifier = ">=0.120.0,<1.0.0" },
+    { name = "pyjwt", extras = ["crypto"], specifier = ">=2.8.0,<3.0.0" },
+    { name = "slowapi", specifier = ">=0.1.9,<1.0.0" },
+    { name = "urllib3", specifier = ">=2.6.3" },
+    { name = "uvicorn", extras = ["standard"], specifier = ">=0.38.0,<1.0.0" },
+]
+
+[[package]]
+name = "akari-bot-plugin-ai"
+version = "0.1.0"
+source = { editable = "plugins/ai" }
+dependencies = [
+    { name = "openai" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "openai", specifier = ">=2.0.0,<3.0.0" }]
+
+[[package]]
+name = "akari-bot-plugin-arcaea"
+version = "0.1.0"
+source = { virtual = "plugins/arcaea" }
+
+[[package]]
+name = "akari-bot-plugin-arcaea-rss"
+version = "0.1.0"
+source = { virtual = "plugins/arcaea_rss" }
+
+[[package]]
+name = "akari-bot-plugin-bilibili"
+version = "0.1.0"
+source = { virtual = "plugins/bilibili" }
+
+[[package]]
+name = "akari-bot-plugin-bugtracker"
+version = "0.1.0"
+source = { virtual = "plugins/bugtracker" }
+
+[[package]]
+name = "akari-bot-plugin-chemical-code"
+version = "0.1.0"
+source = { editable = "plugins/chemical_code" }
+dependencies = [
+    { name = "rdkit" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "rdkit", specifier = ">=2026.3.1,<2026.4.0" }]
+
+[[package]]
+name = "akari-bot-plugin-coin"
+version = "0.1.0"
+source = { virtual = "plugins/coin" }
+
+[[package]]
+name = "akari-bot-plugin-color"
+version = "0.1.0"
+source = { editable = "plugins/color" }
+dependencies = [
+    { name = "numpy" },
+    { name = "webcolors" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "numpy", specifier = "<2.4.5" },
+    { name = "webcolors", specifier = ">=25.0.0,<26.0.0" },
+]
+
+[[package]]
+name = "akari-bot-plugin-convert"
+version = "0.1.0"
+source = { editable = "plugins/convert" }
+dependencies = [
+    { name = "pint" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "pint", specifier = ">=0.25.0,<1.0.0" }]
+
+[[package]]
+name = "akari-bot-plugin-core"
+version = "0.1.0"
+source = { editable = "plugins/core" }
+dependencies = [
+    { name = "matplotlib" },
+    { name = "py-cpuinfo" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "matplotlib", specifier = ">=3.6.3,<4.0.0" },
+    { name = "py-cpuinfo", specifier = ">=9.0.0,<10.0.0" },
+]
+
+[[package]]
+name = "akari-bot-plugin-cytoid"
+version = "0.1.0"
+source = { editable = "plugins/cytoid" }
+dependencies = [
+    { name = "gql" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "gql", specifier = ">=4.0.0,<5.0.0" }]
+
+[[package]]
+name = "akari-bot-plugin-dice"
+version = "0.1.0"
+source = { editable = "plugins/dice" }
+dependencies = [
+    { name = "numpy" },
+    { name = "simpleeval" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "numpy", specifier = "<2.4.5" },
+    { name = "simpleeval", specifier = ">=1.0.0,<2.0.0" },
+]
+
+[[package]]
+name = "akari-bot-plugin-emojimix"
+version = "0.1.0"
+source = { editable = "plugins/emojimix" }
+dependencies = [
+    { name = "emoji" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "emoji", specifier = ">=2.12.1,<3.0.0" }]
+
+[[package]]
+name = "akari-bot-plugin-exchange-rate"
+version = "0.1.0"
+source = { virtual = "plugins/exchange_rate" }
+
+[[package]]
+name = "akari-bot-plugin-github"
+version = "0.1.0"
+source = { virtual = "plugins/github" }
+
+[[package]]
+name = "akari-bot-plugin-hitokoto"
+version = "0.1.0"
+source = { editable = "plugins/hitokoto" }
+dependencies = [
+    { name = "langconv" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "langconv", git = "https://github.com/Teahouse-Studios/langconv.py.git" }]
+
+[[package]]
+name = "akari-bot-plugin-idlist"
+version = "0.1.0"
+source = { virtual = "plugins/idlist" }
+
+[[package]]
+name = "akari-bot-plugin-image"
+version = "0.1.0"
+source = { virtual = "plugins/image" }
+
+[[package]]
+name = "akari-bot-plugin-ip"
+version = "0.1.0"
+source = { virtual = "plugins/ip" }
+
+[[package]]
+name = "akari-bot-plugin-langconv"
+version = "0.1.0"
+source = { editable = "plugins/langconv" }
+dependencies = [
+    { name = "langconv" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "langconv", git = "https://github.com/Teahouse-Studios/langconv.py.git" }]
+
+[[package]]
+name = "akari-bot-plugin-maimai"
+version = "0.1.0"
+source = { editable = "plugins/maimai" }
+dependencies = [
+    { name = "langconv" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "langconv", git = "https://github.com/Teahouse-Studios/langconv.py.git" }]
+
+[[package]]
+name = "akari-bot-plugin-mcmod"
+version = "0.1.0"
+source = { editable = "plugins/mcmod" }
+dependencies = [
+    { name = "beautifulsoup4" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "beautifulsoup4", specifier = ">=4.11.1,<5.0.0" }]
+
+[[package]]
+name = "akari-bot-plugin-mcplayer"
+version = "0.1.0"
+source = { virtual = "plugins/mcplayer" }
+
+[[package]]
+name = "akari-bot-plugin-mcserver"
+version = "0.1.0"
+source = { editable = "plugins/mcserver" }
+dependencies = [
+    { name = "mcstatus" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "mcstatus", specifier = ">=13.1.0,<13.2.0" }]
+
+[[package]]
+name = "akari-bot-plugin-mcv"
+version = "0.1.0"
+source = { editable = "plugins/mcv" }
+dependencies = [
+    { name = "google-play-scraper" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "google-play-scraper", specifier = ">=1.2.2,<2.0.0" }]
+
+[[package]]
+name = "akari-bot-plugin-mcv-rss"
+version = "0.1.0"
+source = { editable = "plugins/mcv_rss" }
+dependencies = [
+    { name = "beautifulsoup4" },
+    { name = "google-play-scraper" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "beautifulsoup4", specifier = ">=4.11.1,<5.0.0" },
+    { name = "google-play-scraper", specifier = ">=1.2.2,<2.0.0" },
+]
+
+[[package]]
+name = "akari-bot-plugin-minecraft-news"
+version = "0.1.0"
+source = { virtual = "plugins/minecraft_news" }
+
+[[package]]
+name = "akari-bot-plugin-mkey"
+version = "0.1.0"
+source = { virtual = "plugins/mkey" }
+
+[[package]]
+name = "akari-bot-plugin-mod-dl"
+version = "0.1.0"
+source = { virtual = "plugins/mod_dl" }
+
+[[package]]
+name = "akari-bot-plugin-nbnhhsh"
+version = "0.1.0"
+source = { virtual = "plugins/nbnhhsh" }
+
+[[package]]
+name = "akari-bot-plugin-ncmusic"
+version = "0.1.0"
+source = { virtual = "plugins/ncmusic" }
+
+[[package]]
+name = "akari-bot-plugin-nintendo-error"
+version = "0.1.0"
+source = { virtual = "plugins/nintendo_err" }
+
+[[package]]
+name = "akari-bot-plugin-oba"
+version = "0.1.0"
+source = { virtual = "plugins/oba" }
+
+[[package]]
+name = "akari-bot-plugin-phigros"
+version = "0.1.0"
+source = { virtual = "plugins/phigros" }
+
+[[package]]
+name = "akari-bot-plugin-random"
+version = "0.1.0"
+source = { virtual = "plugins/random" }
+
+[[package]]
+name = "akari-bot-plugin-threedsdb"
+version = "0.1.0"
+source = { virtual = "plugins/threedsdb" }
+
+[[package]]
+name = "akari-bot-plugin-tweet"
+version = "0.1.0"
+source = { virtual = "plugins/tweet" }
+
+[[package]]
+name = "akari-bot-plugin-twenty-four"
+version = "0.1.0"
+source = { editable = "plugins/twenty_four" }
+dependencies = [
+    { name = "simpleeval" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "simpleeval", specifier = ">=1.0.0,<2.0.0" }]
+
+[[package]]
+name = "akari-bot-plugin-weekly"
+version = "0.1.0"
+source = { editable = "plugins/weekly" }
+dependencies = [
+    { name = "beautifulsoup4" },
+    { name = "feedparser" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "beautifulsoup4", specifier = ">=4.11.1,<5.0.0" },
+    { name = "feedparser", specifier = ">=6.0.10,<7.0.0" },
+]
+
+[[package]]
+name = "akari-bot-plugin-weekly-rss"
+version = "0.1.0"
+source = { virtual = "plugins/weekly_rss" }
+
+[[package]]
+name = "akari-bot-plugin-whois"
+version = "0.1.0"
+source = { editable = "plugins/whois" }
+dependencies = [
+    { name = "python-whois" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "python-whois", specifier = ">=0.9.0,<1.0.0" }]
+
+[[package]]
+name = "akari-bot-plugin-wiki"
+version = "0.1.0"
+source = { editable = "plugins/wiki" }
+dependencies = [
+    { name = "beautifulsoup4" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "beautifulsoup4", specifier = ">=4.11.1,<5.0.0" }]
+
+[[package]]
+name = "akari-bot-plugin-wikilog"
+version = "0.1.0"
+source = { virtual = "plugins/wikilog" }
+
+[[package]]
+name = "akari-bot-plugin-wolframalpha"
+version = "0.1.0"
+source = { editable = "plugins/wolframalpha" }
+dependencies = [
+    { name = "wolframalpha" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "wolframalpha", specifier = ">=5.0.0,<6.0.0" }]
+
+[[package]]
+name = "akari-bot-plugin-wordle"
+version = "0.1.0"
+source = { virtual = "plugins/wordle" }
 
 [[package]]
 name = "akari-bot-webrender"
@@ -2065,58 +2577,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/65/ee/299d360cdc32edc7d2cf530f3accf79c4fca01e96ffc950d8a52213bd8e4/packaging-26.0.tar.gz", hash = "sha256:00243ae351a257117b6a241061796684b084ed1c516a08c48a3f7e147a9d80b4", size = 143416, upload-time = "2026-01-21T20:50:39.064Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b7/b9/c538f279a4e237a006a2c98387d081e9eb060d203d8ed34467cc0f0b9b53/packaging-26.0-py3-none-any.whl", hash = "sha256:b36f1fef9334a5588b4166f8bcd26a14e521f2b55e6b9de3aaa80d3ff7a37529", size = 74366, upload-time = "2026-01-21T20:50:37.788Z" },
-]
-
-[[package]]
-name = "pandas"
-version = "3.0.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "numpy" },
-    { name = "python-dateutil" },
-    { name = "tzdata", marker = "sys_platform == 'emscripten' or sys_platform == 'win32'" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/de/da/b1dc0481ab8d55d0f46e343cfe67d4551a0e14fcee52bd38ca1bd73258d8/pandas-3.0.0.tar.gz", hash = "sha256:0facf7e87d38f721f0af46fe70d97373a37701b1c09f7ed7aeeb292ade5c050f", size = 4633005, upload-time = "2026-01-21T15:52:04.726Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/0b/38/db33686f4b5fa64d7af40d96361f6a4615b8c6c8f1b3d334eee46ae6160e/pandas-3.0.0-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:9803b31f5039b3c3b10cc858c5e40054adb4b29b4d81cb2fd789f4121c8efbcd", size = 10334013, upload-time = "2026-01-21T15:50:34.771Z" },
-    { url = "https://files.pythonhosted.org/packages/a5/7b/9254310594e9774906bacdd4e732415e1f86ab7dbb4b377ef9ede58cd8ec/pandas-3.0.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:14c2a4099cd38a1d18ff108168ea417909b2dea3bd1ebff2ccf28ddb6a74d740", size = 9874154, upload-time = "2026-01-21T15:50:36.67Z" },
-    { url = "https://files.pythonhosted.org/packages/63/d4/726c5a67a13bc66643e66d2e9ff115cead482a44fc56991d0c4014f15aaf/pandas-3.0.0-cp312-cp312-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:d257699b9a9960e6125686098d5714ac59d05222bef7a5e6af7a7fd87c650801", size = 10384433, upload-time = "2026-01-21T15:50:39.132Z" },
-    { url = "https://files.pythonhosted.org/packages/bf/2e/9211f09bedb04f9832122942de8b051804b31a39cfbad199a819bb88d9f3/pandas-3.0.0-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:69780c98f286076dcafca38d8b8eee1676adf220199c0a39f0ecbf976b68151a", size = 10864519, upload-time = "2026-01-21T15:50:41.043Z" },
-    { url = "https://files.pythonhosted.org/packages/00/8d/50858522cdc46ac88b9afdc3015e298959a70a08cd21e008a44e9520180c/pandas-3.0.0-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:4a66384f017240f3858a4c8a7cf21b0591c3ac885cddb7758a589f0f71e87ebb", size = 11394124, upload-time = "2026-01-21T15:50:43.377Z" },
-    { url = "https://files.pythonhosted.org/packages/86/3f/83b2577db02503cd93d8e95b0f794ad9d4be0ba7cb6c8bcdcac964a34a42/pandas-3.0.0-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:be8c515c9bc33989d97b89db66ea0cececb0f6e3c2a87fcc8b69443a6923e95f", size = 11920444, upload-time = "2026-01-21T15:50:45.932Z" },
-    { url = "https://files.pythonhosted.org/packages/64/2d/4f8a2f192ed12c90a0aab47f5557ece0e56b0370c49de9454a09de7381b2/pandas-3.0.0-cp312-cp312-win_amd64.whl", hash = "sha256:a453aad8c4f4e9f166436994a33884442ea62aa8b27d007311e87521b97246e1", size = 9730970, upload-time = "2026-01-21T15:50:47.962Z" },
-    { url = "https://files.pythonhosted.org/packages/d4/64/ff571be435cf1e643ca98d0945d76732c0b4e9c37191a89c8550b105eed1/pandas-3.0.0-cp312-cp312-win_arm64.whl", hash = "sha256:da768007b5a33057f6d9053563d6b74dd6d029c337d93c6d0d22a763a5c2ecc0", size = 9041950, upload-time = "2026-01-21T15:50:50.422Z" },
-    { url = "https://files.pythonhosted.org/packages/6f/fa/7f0ac4ca8877c57537aaff2a842f8760e630d8e824b730eb2e859ffe96ca/pandas-3.0.0-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:b78d646249b9a2bc191040988c7bb524c92fa8534fb0898a0741d7e6f2ffafa6", size = 10307129, upload-time = "2026-01-21T15:50:52.877Z" },
-    { url = "https://files.pythonhosted.org/packages/6f/11/28a221815dcea4c0c9414dfc845e34a84a6a7dabc6da3194498ed5ba4361/pandas-3.0.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:bc9cba7b355cb4162442a88ce495e01cb605f17ac1e27d6596ac963504e0305f", size = 9850201, upload-time = "2026-01-21T15:50:54.807Z" },
-    { url = "https://files.pythonhosted.org/packages/ba/da/53bbc8c5363b7e5bd10f9ae59ab250fc7a382ea6ba08e4d06d8694370354/pandas-3.0.0-cp313-cp313-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:3c9a1a149aed3b6c9bf246033ff91e1b02d529546c5d6fb6b74a28fea0cf4c70", size = 10354031, upload-time = "2026-01-21T15:50:57.463Z" },
-    { url = "https://files.pythonhosted.org/packages/f7/a3/51e02ebc2a14974170d51e2410dfdab58870ea9bcd37cda15bd553d24dc4/pandas-3.0.0-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:95683af6175d884ee89471842acfca29172a85031fccdabc35e50c0984470a0e", size = 10861165, upload-time = "2026-01-21T15:50:59.32Z" },
-    { url = "https://files.pythonhosted.org/packages/a5/fe/05a51e3cac11d161472b8297bd41723ea98013384dd6d76d115ce3482f9b/pandas-3.0.0-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:1fbbb5a7288719e36b76b4f18d46ede46e7f916b6c8d9915b756b0a6c3f792b3", size = 11359359, upload-time = "2026-01-21T15:51:02.014Z" },
-    { url = "https://files.pythonhosted.org/packages/ee/56/ba620583225f9b85a4d3e69c01df3e3870659cc525f67929b60e9f21dcd1/pandas-3.0.0-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:8e8b9808590fa364416b49b2a35c1f4cf2785a6c156935879e57f826df22038e", size = 11912907, upload-time = "2026-01-21T15:51:05.175Z" },
-    { url = "https://files.pythonhosted.org/packages/c9/8c/c6638d9f67e45e07656b3826405c5cc5f57f6fd07c8b2572ade328c86e22/pandas-3.0.0-cp313-cp313-win_amd64.whl", hash = "sha256:98212a38a709feb90ae658cb6227ea3657c22ba8157d4b8f913cd4c950de5e7e", size = 9732138, upload-time = "2026-01-21T15:51:07.569Z" },
-    { url = "https://files.pythonhosted.org/packages/7b/bf/bd1335c3bf1770b6d8fed2799993b11c4971af93bb1b729b9ebbc02ca2ec/pandas-3.0.0-cp313-cp313-win_arm64.whl", hash = "sha256:177d9df10b3f43b70307a149d7ec49a1229a653f907aa60a48f1877d0e6be3be", size = 9033568, upload-time = "2026-01-21T15:51:09.484Z" },
-    { url = "https://files.pythonhosted.org/packages/8e/c6/f5e2171914d5e29b9171d495344097d54e3ffe41d2d85d8115baba4dc483/pandas-3.0.0-cp313-cp313t-macosx_10_13_x86_64.whl", hash = "sha256:2713810ad3806767b89ad3b7b69ba153e1c6ff6d9c20f9c2140379b2a98b6c98", size = 10741936, upload-time = "2026-01-21T15:51:11.693Z" },
-    { url = "https://files.pythonhosted.org/packages/51/88/9a0164f99510a1acb9f548691f022c756c2314aad0d8330a24616c14c462/pandas-3.0.0-cp313-cp313t-macosx_11_0_arm64.whl", hash = "sha256:15d59f885ee5011daf8335dff47dcb8a912a27b4ad7826dc6cbe809fd145d327", size = 10393884, upload-time = "2026-01-21T15:51:14.197Z" },
-    { url = "https://files.pythonhosted.org/packages/e0/53/b34d78084d88d8ae2b848591229da8826d1e65aacf00b3abe34023467648/pandas-3.0.0-cp313-cp313t-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:24e6547fb64d2c92665dd2adbfa4e85fa4fd70a9c070e7cfb03b629a0bbab5eb", size = 10310740, upload-time = "2026-01-21T15:51:16.093Z" },
-    { url = "https://files.pythonhosted.org/packages/5b/d3/bee792e7c3d6930b74468d990604325701412e55d7aaf47460a22311d1a5/pandas-3.0.0-cp313-cp313t-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:48ee04b90e2505c693d3f8e8f524dab8cb8aaf7ddcab52c92afa535e717c4812", size = 10700014, upload-time = "2026-01-21T15:51:18.818Z" },
-    { url = "https://files.pythonhosted.org/packages/55/db/2570bc40fb13aaed1cbc3fbd725c3a60ee162477982123c3adc8971e7ac1/pandas-3.0.0-cp313-cp313t-musllinux_1_2_aarch64.whl", hash = "sha256:66f72fb172959af42a459e27a8d8d2c7e311ff4c1f7db6deb3b643dbc382ae08", size = 11323737, upload-time = "2026-01-21T15:51:20.784Z" },
-    { url = "https://files.pythonhosted.org/packages/bc/2e/297ac7f21c8181b62a4cccebad0a70caf679adf3ae5e83cb676194c8acc3/pandas-3.0.0-cp313-cp313t-musllinux_1_2_x86_64.whl", hash = "sha256:4a4a400ca18230976724a5066f20878af785f36c6756e498e94c2a5e5d57779c", size = 11771558, upload-time = "2026-01-21T15:51:22.977Z" },
-    { url = "https://files.pythonhosted.org/packages/0a/46/e1c6876d71c14332be70239acce9ad435975a80541086e5ffba2f249bcf6/pandas-3.0.0-cp313-cp313t-win_amd64.whl", hash = "sha256:940eebffe55528074341a5a36515f3e4c5e25e958ebbc764c9502cfc35ba3faa", size = 10473771, upload-time = "2026-01-21T15:51:25.285Z" },
-    { url = "https://files.pythonhosted.org/packages/c0/db/0270ad9d13c344b7a36fa77f5f8344a46501abf413803e885d22864d10bf/pandas-3.0.0-cp314-cp314-macosx_10_15_x86_64.whl", hash = "sha256:597c08fb9fef0edf1e4fa2f9828dd27f3d78f9b8c9b4a748d435ffc55732310b", size = 10312075, upload-time = "2026-01-21T15:51:28.5Z" },
-    { url = "https://files.pythonhosted.org/packages/09/9f/c176f5e9717f7c91becfe0f55a52ae445d3f7326b4a2cf355978c51b7913/pandas-3.0.0-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:447b2d68ac5edcbf94655fe909113a6dba6ef09ad7f9f60c80477825b6c489fe", size = 9900213, upload-time = "2026-01-21T15:51:30.955Z" },
-    { url = "https://files.pythonhosted.org/packages/d9/e7/63ad4cc10b257b143e0a5ebb04304ad806b4e1a61c5da25f55896d2ca0f4/pandas-3.0.0-cp314-cp314-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:debb95c77ff3ed3ba0d9aa20c3a2f19165cc7956362f9873fce1ba0a53819d70", size = 10428768, upload-time = "2026-01-21T15:51:33.018Z" },
-    { url = "https://files.pythonhosted.org/packages/9e/0e/4e4c2d8210f20149fd2248ef3fff26623604922bd564d915f935a06dd63d/pandas-3.0.0-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:fedabf175e7cd82b69b74c30adbaa616de301291a5231138d7242596fc296a8d", size = 10882954, upload-time = "2026-01-21T15:51:35.287Z" },
-    { url = "https://files.pythonhosted.org/packages/c6/60/c9de8ac906ba1f4d2250f8a951abe5135b404227a55858a75ad26f84db47/pandas-3.0.0-cp314-cp314-musllinux_1_2_aarch64.whl", hash = "sha256:412d1a89aab46889f3033a386912efcdfa0f1131c5705ff5b668dda88305e986", size = 11430293, upload-time = "2026-01-21T15:51:37.57Z" },
-    { url = "https://files.pythonhosted.org/packages/a1/69/806e6637c70920e5787a6d6896fd707f8134c2c55cd761e7249a97b7dc5a/pandas-3.0.0-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:e979d22316f9350c516479dd3a92252be2937a9531ed3a26ec324198a99cdd49", size = 11952452, upload-time = "2026-01-21T15:51:39.618Z" },
-    { url = "https://files.pythonhosted.org/packages/cb/de/918621e46af55164c400ab0ef389c9d969ab85a43d59ad1207d4ddbe30a5/pandas-3.0.0-cp314-cp314-win_amd64.whl", hash = "sha256:083b11415b9970b6e7888800c43c82e81a06cd6b06755d84804444f0007d6bb7", size = 9851081, upload-time = "2026-01-21T15:51:41.758Z" },
-    { url = "https://files.pythonhosted.org/packages/91/a1/3562a18dd0bd8c73344bfa26ff90c53c72f827df119d6d6b1dacc84d13e3/pandas-3.0.0-cp314-cp314-win_arm64.whl", hash = "sha256:5db1e62cb99e739fa78a28047e861b256d17f88463c76b8dafc7c1338086dca8", size = 9174610, upload-time = "2026-01-21T15:51:44.312Z" },
-    { url = "https://files.pythonhosted.org/packages/ce/26/430d91257eaf366f1737d7a1c158677caaf6267f338ec74e3a1ec444111c/pandas-3.0.0-cp314-cp314t-macosx_10_15_x86_64.whl", hash = "sha256:697b8f7d346c68274b1b93a170a70974cdc7d7354429894d5927c1effdcccd73", size = 10761999, upload-time = "2026-01-21T15:51:46.899Z" },
-    { url = "https://files.pythonhosted.org/packages/ec/1a/954eb47736c2b7f7fe6a9d56b0cb6987773c00faa3c6451a43db4beb3254/pandas-3.0.0-cp314-cp314t-macosx_11_0_arm64.whl", hash = "sha256:8cb3120f0d9467ed95e77f67a75e030b67545bcfa08964e349252d674171def2", size = 10410279, upload-time = "2026-01-21T15:51:48.89Z" },
-    { url = "https://files.pythonhosted.org/packages/20/fc/b96f3a5a28b250cd1b366eb0108df2501c0f38314a00847242abab71bb3a/pandas-3.0.0-cp314-cp314t-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:33fd3e6baa72899746b820c31e4b9688c8e1b7864d7aec2de7ab5035c285277a", size = 10330198, upload-time = "2026-01-21T15:51:51.015Z" },
-    { url = "https://files.pythonhosted.org/packages/90/b3/d0e2952f103b4fbef1ef22d0c2e314e74fc9064b51cee30890b5e3286ee6/pandas-3.0.0-cp314-cp314t-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:a8942e333dc67ceda1095227ad0febb05a3b36535e520154085db632c40ad084", size = 10728513, upload-time = "2026-01-21T15:51:53.387Z" },
-    { url = "https://files.pythonhosted.org/packages/76/81/832894f286df828993dc5fd61c63b231b0fb73377e99f6c6c369174cf97e/pandas-3.0.0-cp314-cp314t-musllinux_1_2_aarch64.whl", hash = "sha256:783ac35c4d0fe0effdb0d67161859078618b1b6587a1af15928137525217a721", size = 11345550, upload-time = "2026-01-21T15:51:55.329Z" },
-    { url = "https://files.pythonhosted.org/packages/34/a0/ed160a00fb4f37d806406bc0a79a8b62fe67f29d00950f8d16203ff3409b/pandas-3.0.0-cp314-cp314t-musllinux_1_2_x86_64.whl", hash = "sha256:125eb901e233f155b268bbef9abd9afb5819db74f0e677e89a61b246228c71ac", size = 11799386, upload-time = "2026-01-21T15:51:57.457Z" },
-    { url = "https://files.pythonhosted.org/packages/36/c8/2ac00d7255252c5e3cf61b35ca92ca25704b0188f7454ca4aec08a33cece/pandas-3.0.0-cp314-cp314t-win_amd64.whl", hash = "sha256:b86d113b6c109df3ce0ad5abbc259fe86a1bd4adfd4a31a89da42f84f65509bb", size = 10873041, upload-time = "2026-01-21T15:52:00.034Z" },
-    { url = "https://files.pythonhosted.org/packages/e6/3f/a80ac00acbc6b35166b42850e98a4f466e2c0d9c64054161ba9620f95680/pandas-3.0.0-cp314-cp314t-win_arm64.whl", hash = "sha256:1c39eab3ad38f2d7a249095f0a3d8f8c22cc0f847e98ccf5bbe732b272e2d9fa", size = 9441003, upload-time = "2026-01-21T15:52:02.281Z" },
 ]
 
 [[package]]

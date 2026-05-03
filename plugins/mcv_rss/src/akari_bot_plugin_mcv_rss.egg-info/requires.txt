@@ -1,0 +1,2 @@
+beautifulsoup4<5.0.0,>=4.11.1
+google-play-scraper<2.0.0,>=1.2.2

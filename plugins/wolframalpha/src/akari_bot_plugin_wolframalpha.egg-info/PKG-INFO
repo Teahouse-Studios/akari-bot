@@ -1,0 +1,4 @@
+Metadata-Version: 2.4
+Name: akari-bot-plugin-wolframalpha
+Version: 0.1.0
+Requires-Dist: wolframalpha<6.0.0,>=5.0.0

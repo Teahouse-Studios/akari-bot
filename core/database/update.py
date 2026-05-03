@@ -42,7 +42,7 @@ async def update_database():
 
                     CREATE TABLE _new_analytics_data (
                         id INTEGER PRIMARY KEY,
-                        module_name VARCHAR(512) NOT NULL,
+                        plugin_name VARCHAR(512) NOT NULL,
                         module_type VARCHAR(512) NOT NULL,
                         target_id VARCHAR(512) NOT NULL,
                         sender_id VARCHAR(512),
@@ -50,8 +50,8 @@ async def update_database():
                         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
                     );
 
-                    INSERT INTO _new_analytics_data (id, module_name, module_type, target_id, sender_id, command, timestamp)
-                    SELECT id, module_name, module_type, target_id, sender_id, command, timestamp FROM analytics_data;
+                    INSERT INTO _new_analytics_data (id, plugin_name, module_type, target_id, sender_id, command, timestamp)
+                    SELECT id, plugin_name, module_type, target_id, sender_id, command, timestamp FROM analytics_data;
 
                     DROP TABLE analytics_data;
                     ALTER TABLE _new_analytics_data RENAME TO analytics_data;

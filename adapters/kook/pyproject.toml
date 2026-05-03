@@ -1,0 +1,6 @@
+[project]
+name = "akari-bot-adapter-kook"
+version = "0.1.0"
+dependencies = [
+    "khl-py>=0.3.16,<1.0.0"
+]

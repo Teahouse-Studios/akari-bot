@@ -1,0 +1,8 @@
+{
+    "config.comments.config.adapter_qqbot.bot_appid": "QQ 机器人（官方）的 AppID。",
+    "config.comments.config.adapter_qqbot.bot_enable_send_url": "使用 QQ 机器人（官方）时，是否开启发送 URL。",
+    "config.comments.config.adapter_qqbot.bot_secret": "QQ 机器人（官方）的 AppSecret。",
+    "config.comments.config.adapter_qqbot.limited_emoji": "使用 QQ 机器人（官方）时，消息处理失败时向消息挂上的回应表情 ID。ID 详见：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji",
+    "config.comments.config.adapter_qqbot.private_bot": "使用 QQ 机器人（官方）时，是否为私域机器人。",
+    "config.comments.config.adapter_qqbot.typing_emoji": "使用 QQ 机器人（官方）时，正在处理消息时向消息挂上的回应表情 ID。ID 详见：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji"
+}

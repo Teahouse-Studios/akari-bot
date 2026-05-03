@@ -1,0 +1,6 @@
+[project]
+name = "akari-bot-plugin-emojimix"
+version = "0.1.0"
+dependencies = [
+    "emoji>=2.12.1,<3.0.0",
+]

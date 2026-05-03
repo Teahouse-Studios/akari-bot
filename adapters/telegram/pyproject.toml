@@ -1,0 +1,6 @@
+[project]
+name = "akari-bot-adapter-telegram"
+version = "0.1.0"
+dependencies = [
+    "aiogram>=3.4.1,<4.0.0",
+]

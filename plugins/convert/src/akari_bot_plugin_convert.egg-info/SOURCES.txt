@@ -1,0 +1,7 @@
+pyproject.toml
+src/__init__.py
+src/akari_bot_plugin_convert.egg-info/PKG-INFO
+src/akari_bot_plugin_convert.egg-info/SOURCES.txt
+src/akari_bot_plugin_convert.egg-info/dependency_links.txt
+src/akari_bot_plugin_convert.egg-info/requires.txt
+src/akari_bot_plugin_convert.egg-info/top_level.txt

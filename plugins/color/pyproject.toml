@@ -1,0 +1,7 @@
+[project]
+name = "akari-bot-plugin-color"
+version = "0.1.0"
+dependencies = [
+    "numpy<2.4.5",
+    "webcolors>=25.0.0,<26.0.0",
+]

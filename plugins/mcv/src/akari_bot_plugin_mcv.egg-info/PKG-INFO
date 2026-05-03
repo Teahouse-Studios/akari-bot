@@ -1,0 +1,4 @@
+Metadata-Version: 2.4
+Name: akari-bot-plugin-mcv
+Version: 0.1.0
+Requires-Dist: google-play-scraper<2.0.0,>=1.2.2

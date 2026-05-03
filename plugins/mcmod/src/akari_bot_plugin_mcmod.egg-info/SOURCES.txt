@@ -1,0 +1,8 @@
+pyproject.toml
+src/__init__.py
+src/mcmod.py
+src/akari_bot_plugin_mcmod.egg-info/PKG-INFO
+src/akari_bot_plugin_mcmod.egg-info/SOURCES.txt
+src/akari_bot_plugin_mcmod.egg-info/dependency_links.txt
+src/akari_bot_plugin_mcmod.egg-info/requires.txt
+src/akari_bot_plugin_mcmod.egg-info/top_level.txt

@@ -1,0 +1,6 @@
+[project]
+name = "akari-bot-plugin-wolframalpha"
+version = "0.1.0"
+dependencies = [
+    "wolframalpha>=5.0.0,<6.0.0",
+]

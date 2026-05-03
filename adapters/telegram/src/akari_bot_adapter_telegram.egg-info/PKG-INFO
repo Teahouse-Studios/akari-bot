@@ -1,0 +1,4 @@
+Metadata-Version: 2.4
+Name: akari-bot-adapter-telegram
+Version: 0.1.0
+Requires-Dist: aiogram<4.0.0,>=3.4.1

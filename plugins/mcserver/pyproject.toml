@@ -1,0 +1,6 @@
+[project]
+name = "akari-bot-plugin-mcserver"
+version = "0.1.0"
+dependencies = [
+    "mcstatus>=13.1.0,<13.2.0",
+]

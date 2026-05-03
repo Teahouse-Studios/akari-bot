@@ -1,0 +1,5 @@
+Metadata-Version: 2.4
+Name: akari-bot-plugin-weekly
+Version: 0.1.0
+Requires-Dist: beautifulsoup4<5.0.0,>=4.11.1
+Requires-Dist: feedparser<7.0.0,>=6.0.10

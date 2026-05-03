@@ -1,0 +1,4 @@
+Metadata-Version: 2.4
+Name: akari-bot-plugin-chemical-code
+Version: 0.1.0
+Requires-Dist: rdkit<2026.4.0,>=2026.3.1

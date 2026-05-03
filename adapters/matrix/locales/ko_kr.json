@@ -1,0 +1,8 @@
+{
+    "config.comments.config.adapter_matrix.device_id": "Matrix 봇 기기 ID.",
+    "config.comments.config.adapter_matrix.device_name": "Matrix 봇의 기기 이름. 원하는 대로 입력할 수 있습니다.",
+    "config.comments.config.adapter_matrix.homeserver": "Matrix 봇의 홈 서버.",
+    "config.comments.config.adapter_matrix.megolm_backup_passphrase": "Matrix 봇의 Megolm 백업 암호.",
+    "config.comments.config.adapter_matrix.token": "Matrix 봇 토큰.",
+    "config.comments.config.adapter_matrix.user": "Matrix 봇의 전체 사용자 ID."
+}

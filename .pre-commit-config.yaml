@@ -3,7 +3,7 @@ repos:
       rev: 0.10.2
       hooks:
           - id: uv-export
-            args: ["--no-hashes", "--output-file=requirements.txt"]
+            args: ["--no-hashes", "--all-extras", "--output-file=requirements.txt"]
 
     - repo: https://github.com/astral-sh/ruff-pre-commit
       rev: v0.15.0

@@ -1,0 +1,13 @@
+README.md
+pyproject.toml
+src/__init__.py
+src/config.py
+src/formatting.py
+src/llm.py
+src/petal.py
+src/setting.py
+src/akari_bot_plugin_ai.egg-info/PKG-INFO
+src/akari_bot_plugin_ai.egg-info/SOURCES.txt
+src/akari_bot_plugin_ai.egg-info/dependency_links.txt
+src/akari_bot_plugin_ai.egg-info/requires.txt
+src/akari_bot_plugin_ai.egg-info/top_level.txt

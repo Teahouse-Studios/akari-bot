@@ -31,7 +31,7 @@ from ..builtins.session.info import SessionInfo
 from ..database.models import JobQueuesTable
 from ..exports import exports, add_export
 from ..i18n import Locale
-from ..loader import ModulesManager
+from ..loader import PluginsManager
 from ..logger import Logger
 
 if TYPE_CHECKING:
@@ -401,7 +401,7 @@ async def _(tsk: JobQueuesTable, args: dict):
     在服务器上执行指定的钩子函数，并返回其执行结果。这允许客户端远程触发服务器上的事件和逻辑。
 
     :param tsk: 任务对象
-    :param args: 操作参数，包含 module_or_hook_name、session_info 和 args
+    :param args: 操作参数，包含 plugin_or_hook_name、session_info 和 args
 
     :return: 包含 result 的字典，其中 result 是钩子函数的返回值
     """
@@ -410,9 +410,9 @@ async def _(tsk: JobQueuesTable, args: dict):
     if args["session_info"]:
         session_info = converter.structure(args["session_info"], SessionInfo)
         await session_info.refresh_info()
-    _val = await bot.Hook.trigger(args["module_or_hook_name"], session_info=session_info, args=args["args"])
+    _val = await bot.Hook.trigger(args["plugin_or_hook_name"], session_info=session_info, args=args["args"])
     Logger.trace(
-        f"Trigger hook {args['module_or_hook_name']} with args {args['args']}, result: {_val}, type: {type(_val)}"
+        f"Trigger hook {args['plugin_or_hook_name']} with args {args['args']}, result: {_val}, type: {type(_val)}"
     )
     await JobQueueServer.return_val(tsk, {"result": _val})
 
@@ -479,8 +479,8 @@ async def get_web_render_status(tsk: JobQueuesTable, args: dict):
     return {"web_render_status": await web_render.browser.check_status()}
 
 
-@JobQueueServer.action("get_modules_list")
-async def get_module_list(tsk: JobQueuesTable, args: dict):
+@JobQueueServer.action("get_plugins_list")
+async def get_plugin_list(tsk: JobQueuesTable, args: dict):
     """获取模块列表处理器。
 
     获取所有已加载且启用的模块名称列表（不包括基础模块）。
@@ -488,18 +488,18 @@ async def get_module_list(tsk: JobQueuesTable, args: dict):
     :param tsk: 任务对象（未使用）
     :param args: 操作参数（未使用）
 
-    :return: 包含 modules_list 的字典
+    :return: 包含 plugins_list 的字典
     """
-    modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list(use_cache=False).items()}
-    modules = {k: v for k, v in modules.items() if v.get("load", True) and not v.get("base", False)}
-    module_list = []
-    for module in modules.values():
-        module_list.append(module["module_name"])
-    return {"modules_list": module_list}
+    plugins = {k: v.to_dict() for k, v in PluginsManager.return_plugins_list(use_cache=False).items()}
+    plugins = {k: v for k, v in plugins.items() if v.get("load", True) and not v.get("base", False)}
+    plugin_list = []
+    for plugin in plugins.values():
+        plugin_list.append(plugin["plugin_name"])
+    return {"plugins_list": plugin_list}
 
 
-@JobQueueServer.action("get_modules_info")
-async def get_modules_info(tsk: JobQueuesTable, args: dict):
+@JobQueueServer.action("get_plugins_info")
+async def get_plugins_info(tsk: JobQueuesTable, args: dict):
     """获取所有模块的详细信息处理器。
 
     获取所有模块的信息并按指定语言进行本地化处理。
@@ -507,45 +507,45 @@ async def get_modules_info(tsk: JobQueuesTable, args: dict):
     :param tsk: 任务对象（未使用）
     :param args: 操作参数，包含 locale（本地化语言）
 
-    :return: 包含 modules 的字典，modules 为模块信息字典
+    :return: 包含 plugins 的字典，plugins 为模块信息字典
     """
-    modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list(use_cache=False).items()}
-    modules = {k: v for k, v in modules.items() if v.get("load", True)}
+    plugins = {k: v.to_dict() for k, v in PluginsManager.return_plugins_list(use_cache=False).items()}
+    plugins = {k: v for k, v in plugins.items() if v.get("load", True)}
 
-    for module in modules.values():
-        if "desc" in module and module.get("desc"):
-            module["desc"] = Locale(args["locale"]).t_str(module["desc"])
+    for plugin in plugins.values():
+        if "desc" in plugin and plugin.get("desc"):
+            plugin["desc"] = Locale(args["locale"]).t_str(plugin["desc"])
 
-    return {"modules": modules}
+    return {"plugins": plugins}
 
 
-@JobQueueServer.action("get_module_helpdoc")
-async def get_module_helpdoc(tsk: JobQueuesTable, args: dict):
+@JobQueueServer.action("get_plugin_helpdoc")
+async def get_plugin_helpdoc(tsk: JobQueuesTable, args: dict):
     """获取模块帮助文档处理器。
 
     获取指定模块的详细帮助文档，包括所有命令和正则表达式规则，
     并按指定语言进行本地化。
 
     :param tsk: 任务对象（未使用）
-    :param args: 操作参数，包含 module 和 locale
+    :param args: 操作参数，包含 plugin 和 locale
 
     :return: 包含 help_doc 的字典，help_doc 包含模块名称、描述、命令和正则规则
     """
-    module = ModulesManager.modules.get(args["module"], None)
+    plugin = PluginsManager.plugins.get(args["plugin"], None)
     help_doc = {}
-    if module:
-        help_doc["module_name"] = module.module_name
-        module_ = module.to_dict()
-        if "desc" in module_ and module_.get("desc"):
-            help_doc["desc"] = Locale(args["locale"]).t_str(module_["desc"])
+    if plugin:
+        help_doc["plugin_name"] = plugin.plugin_name
+        plugin_ = plugin.to_dict()
+        if "desc" in plugin_ and plugin_.get("desc"):
+            help_doc["desc"] = Locale(args["locale"]).t_str(plugin_["desc"])
 
         help_ = CommandParser(
-            module, module_name=module.module_name, command_prefixes=[command_prefix[0]], is_superuser=True
+            plugin, plugin_name=plugin.plugin_name, command_prefixes=[command_prefix[0]], is_superuser=True
         )
         help_doc["commands"] = help_.return_json_help_doc(args["locale"])
 
         regex_ = []
-        regex_list = module.regex_list.get(show_required_superuser=True)
+        regex_list = plugin.regex_list.get(show_required_superuser=True)
         if regex_list:
             for regex in regex_list:
                 pattern = None
@@ -565,28 +565,28 @@ async def get_module_helpdoc(tsk: JobQueuesTable, args: dict):
     return {"help_doc": help_doc}
 
 
-@JobQueueServer.action("get_module_related")
-async def get_module_related(tsk: JobQueuesTable, args: dict):
+@JobQueueServer.action("get_plugin_related")
+async def get_plugin_related(tsk: JobQueuesTable, args: dict):
     """获取相关模块处理器。
 
     查找与指定模块相关的其他模块（基于模块的依赖关系）。
 
     :param tsk: 任务对象（未使用）
-    :param args: 操作参数，包含 module
+    :param args: 操作参数，包含 plugin
 
-    :return: 包含 modules_list 的字典
+    :return: 包含 plugins_list 的字典
     """
-    return {"modules_list": ModulesManager.search_related_module(args["module"], include_self=False)}
+    return {"plugins_list": PluginsManager.search_related_plugin(args["plugin"], include_self=False)}
 
 
-@JobQueueServer.action("post_module_action")
-async def post_module_action(tsk: JobQueuesTable, args: dict):
+@JobQueueServer.action("post_plugin_action")
+async def post_plugin_action(tsk: JobQueuesTable, args: dict):
     """执行模块操作处理器。
 
     对模块执行操作：加载、卸载或重新加载。
 
     :param tsk: 任务对象（未使用）
-    :param args: 操作参数，包含 module 和 action
+    :param args: 操作参数，包含 plugin 和 action
 
         - action: "load"（加载）、"unload"（卸载）或"reload"（重新加载）
 
@@ -594,11 +594,11 @@ async def post_module_action(tsk: JobQueuesTable, args: dict):
     """
     match args["action"]:
         case "reload":
-            status, _ = await ModulesManager.reload_module(args["module"])
+            status, _ = await PluginsManager.reload_plugin(args["plugin"])
         case "load":
-            status = await ModulesManager.load_module(args["module"])
+            status = await PluginsManager.load_plugin(args["plugin"])
         case "unload":
-            status = await ModulesManager.unload_module(args["module"])
+            status = await PluginsManager.unload_plugin(args["plugin"])
         case _:
             status = False
     return {"success": status}

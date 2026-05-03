@@ -1,0 +1,6 @@
+[project]
+name = "akari-bot-adapter-matrix"
+version = "0.1.0"
+dependencies = [
+    "matrix-nio>=0.25.0,<1.0.0",
+]

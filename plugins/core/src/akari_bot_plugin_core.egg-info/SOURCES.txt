@@ -1,0 +1,16 @@
+pyproject.toml
+src/__init__.py
+src/alias.py
+src/analytics.py
+src/dev.py
+src/help.py
+src/modules.py
+src/petal.py
+src/prefix.py
+src/su_utils.py
+src/utils.py
+src/akari_bot_plugin_core.egg-info/PKG-INFO
+src/akari_bot_plugin_core.egg-info/SOURCES.txt
+src/akari_bot_plugin_core.egg-info/dependency_links.txt
+src/akari_bot_plugin_core.egg-info/requires.txt
+src/akari_bot_plugin_core.egg-info/top_level.txt

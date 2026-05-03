@@ -20,7 +20,7 @@ from core.constants.info import Info
 from core.constants.path import PrivateAssets, assets_path
 from core.database.models import TargetInfo, AnalyticsData
 from core.exports import add_export, exports
-from core.loader import ModulesManager
+from core.loader import PluginsManager
 from core.logger import Logger
 
 if TYPE_CHECKING:
@@ -189,7 +189,7 @@ class Bot:
     @classmethod
     async def post_message(
         cls,
-        module_name: str,
+        plugin_name: str,
         message: Chainable,
         session_list: list[FetchedSessionInfo] | None = None,
         **kwargs: dict[str, Any],
@@ -199,7 +199,7 @@ class Bot:
 
         支持向多个会话发送消息，并可根据不同客户端类型发送不同格式的消息。
 
-        :param module_name: 模块名称（用于权限检查和分析统计，"*" 表示全局）
+        :param plugin_name: 模块名称（用于权限检查和分析统计，"*" 表示全局）
         :param message: 消息内容，支持字符串或字典
                        如果是字典，键为客户端名称，值为对应的消息内容
                        会使用 "default" 键作为默认消息
@@ -209,7 +209,7 @@ class Bot:
         """
         # 如果未指定会话列表，获取开启了此模块的所有目标
         if session_list is None:
-            session_list = await Bot.get_enabled_this_module(module_name)
+            session_list = await Bot.get_enabled_this_module(plugin_name)
 
         # 对每个会话发送消息
         for session_ in session_list:
@@ -233,12 +233,12 @@ class Bot:
             await queue_server.client_send_message(session_, post_message)
 
             # 如果启用分析功能，记录统计数据
-            if enable_analytics and module_name:
+            if enable_analytics and plugin_name:
                 await AnalyticsData.create(
                     target_id=session_.target_id,
                     sender_id=session_.sender_id,
                     command="",
-                    module_name=module_name,
+                    plugin_name=plugin_name,
                     module_type="schedule",
                 )
 
@@ -405,7 +405,7 @@ class Bot:
             # 处理模块钩子
             if not hook_mode:
                 if module_or_hook_name:
-                    modules = ModulesManager.modules
+                    modules = PluginsManager.modules
                     # 检查模块是否存在且已加载
                     if module_or_hook_name in modules:
                         if not modules[module_or_hook_name]._db_load:
@@ -420,8 +420,8 @@ class Bot:
 
             # 处理自定义钩子
             if module_or_hook_name:
-                if module_or_hook_name in ModulesManager.modules_hooks:
-                    return await ModulesManager.modules_hooks[module_or_hook_name](
+                if module_or_hook_name in PluginsManager.modules_hooks:
+                    return await PluginsManager.modules_hooks[module_or_hook_name](
                         ModuleHookContext(args, session_info=session_info)
                     )
             raise ValueError(f"Invalid hook name {module_or_hook_name}")

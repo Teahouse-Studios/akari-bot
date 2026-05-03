@@ -132,14 +132,14 @@ class TargetInfo(DBModel):
     class Meta:
         table = "target_info"
 
-    async def config_module(self, module_name: str | list | tuple, enable: bool = True) -> bool:
+    async def config_module(self, plugin_name: str | list | tuple, enable: bool = True) -> bool:
         """
         设置会话内可用模块。
 
-        :param module_name: 指定的模块名称。
+        :param plugin_name: 指定的模块名称。
         :param enable: 是否要开启模块，若 False 则关闭模块。
         """
-        module_names = convert_list(module_name)
+        module_names = convert_list(plugin_name)
         for mname in module_names:
             if enable:
                 if mname not in self.modules:
@@ -222,22 +222,22 @@ class TargetInfo(DBModel):
 
     @classmethod
     async def get_target_list_by_module(
-        cls, module_name: str | list[str] | tuple[str, ...] | None, id_prefix: str | None = None
+        cls, plugin_name: str | list[str] | tuple[str, ...] | None, id_prefix: str | None = None
     ) -> list[TargetInfo]:
         """
         获取开启此模块的所有会话列表。
 
-        :param module_name: 指定的模块名称。
+        :param plugin_name: 指定的模块名称。
         :param id_prefix: 指定的 ID 前缀。
         :return: 符合要求的会话 ID 列表。
         """
         all_targets = await cls.filter(target_id__startswith=id_prefix or "")
 
-        if module_name:
+        if plugin_name:
             result = []
             for target in all_targets:
                 modules = target.modules or []
-                if any(mod in modules for mod in convert_list(module_name)):
+                if any(mod in modules for mod in convert_list(plugin_name)):
                     result.append(target)
             return result
 
@@ -268,7 +268,7 @@ class AnalyticsData(DBModel):
     """
     统计数据。
 
-    :param module_name: 模块名称。
+    :param plugin_name: 模块名称。
     :param module_type: 模块类型。
     :param target_id: 会话 ID。
     :param sender_id: 用户 ID。
@@ -277,7 +277,7 @@ class AnalyticsData(DBModel):
     """
 
     id = fields.IntField(primary_key=True)
-    module_name = fields.CharField(max_length=512)
+    plugin_name = fields.CharField(max_length=512)
     module_type = fields.CharField(max_length=512)
     target_id = fields.CharField(max_length=512)
     sender_id = fields.CharField(max_length=512, null=True, default=None)
@@ -288,30 +288,30 @@ class AnalyticsData(DBModel):
         table = "analytics_data"
 
     @classmethod
-    async def get_data_by_times(cls, new, old, module_name=None):
+    async def get_data_by_times(cls, new, old, plugin_name=None):
         query = cls.filter(timestamp__gte=old, timestamp__lte=new)
-        if module_name is not None:
-            query = query.filter(module_name=module_name)
+        if plugin_name is not None:
+            query = query.filter(plugin_name=plugin_name)
         return await query.all()
 
     @classmethod
-    async def get_values_by_times(cls, new, old, module_name=None):
+    async def get_values_by_times(cls, new, old, plugin_name=None):
         query = cls.filter(timestamp__gte=old, timestamp__lte=new)
-        if module_name is not None:
-            query = query.filter(module_name=module_name)
+        if plugin_name is not None:
+            query = query.filter(plugin_name=plugin_name)
         return await query.values()
 
     @classmethod
-    async def get_count_by_times(cls, new, old, module_name=None):
+    async def get_count_by_times(cls, new, old, plugin_name=None):
         query = cls.filter(timestamp__gte=old, timestamp__lte=new)
-        if module_name is not None:
-            query = query.filter(module_name=module_name)
+        if plugin_name is not None:
+            query = query.filter(plugin_name=plugin_name)
         return await query.count()
 
     @classmethod
     async def get_modules_count(cls):
-        analytics = await cls.all().values("module_name")
-        module_counter = Counter([entry["module_name"] for entry in analytics])
+        analytics = await cls.all().values("plugin_name")
+        module_counter = Counter([entry["plugin_name"] for entry in analytics])
         return dict(module_counter)
 
 
@@ -319,11 +319,11 @@ class ModuleStatus(DBModel):
     """
     模块状态。
 
-    :param module_name: 模块名称。
+    :param plugin_name: 模块名称。
     :param load: 是否已加载。
     """
 
-    module_name = fields.CharField(primary_key=True, max_length=255, unique=True)
+    plugin_name = fields.CharField(primary_key=True, max_length=255, unique=True)
     load = fields.BooleanField(default=False)
 
     class Meta:
@@ -332,7 +332,7 @@ class ModuleStatus(DBModel):
     @classmethod
     async def init_modules(cls, modules_list: list[str]):
         async with in_transaction("default"):
-            existing = await cls.all().values_list("module_name", flat=True)
+            existing = await cls.all().values_list("plugin_name", flat=True)
             existing_set = set(existing)
             input_set = set(modules_list)
 
@@ -340,31 +340,31 @@ class ModuleStatus(DBModel):
             to_remove = existing_set.difference(input_set)
 
             if to_add:
-                await cls.bulk_create([cls(module_name=m, load=True) for m in to_add])
+                await cls.bulk_create([cls(plugin_name=m, load=True) for m in to_add])
 
             if to_remove:
                 await cls.filter(module_name__in=to_remove).delete()
 
     @classmethod
-    async def set_module_loaded(cls, module_name: str, load: bool = True):
-        module = await cls.filter(module_name=module_name).first()
+    async def set_module_loaded(cls, plugin_name: str, load: bool = True):
+        module = await cls.filter(plugin_name=plugin_name).first()
         if module:
             module.load = load
             await module.save()
         else:
-            raise ValueError(f"Module '{module_name}' not found")
+            raise ValueError(f"Plugin '{plugin_name}' not found")
 
     @classmethod
     async def get_all_modules(cls) -> list[str]:
-        return await cls.all().values_list("module_name", flat=True)
+        return await cls.all().values_list("plugin_name", flat=True)
 
     @classmethod
     async def get_loaded_modules(cls) -> list[str]:
-        return await cls.filter(load=True).values_list("module_name", flat=True)
+        return await cls.filter(load=True).values_list("plugin_name", flat=True)
 
     @classmethod
     async def get_unloaded_modules(cls) -> list[str]:
-        return await cls.filter(load=False).values_list("module_name", flat=True)
+        return await cls.filter(load=False).values_list("plugin_name", flat=True)
 
 
 class DBVersion(DBModel):

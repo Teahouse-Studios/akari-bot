@@ -41,11 +41,11 @@ from core.constants.exceptions import (
 from core.constants.info import Info
 from core.database.models import AnalyticsData
 from core.exports import exports
-from core.loader import ModulesManager
+from core.loader import PluginsManager
 from core.logger import Logger
 from core.tos import TOS_TEMPBAN_TIME, temp_ban_counter, abuse_warn_target, remove_temp_ban
-from core.types import Module, Param
-from core.types.module.component_meta import CommandMeta
+from core.types import Plugin, Param
+from core.types.plugin.component_meta import CommandMeta
 from core.utils.func import normalize_space
 from core.utils.container import ExpiringTempDict, TokenBucket
 
@@ -143,7 +143,7 @@ async def parser(msg: "Bot.MessageSession"):
         await SessionTaskManager.check(msg)
 
         # 获取该平台和客户端的所有可用模块
-        modules = ModulesManager.return_modules_list(msg.session_info.target_from, msg.session_info.client_name)
+        modules = PluginsManager.return_plugins_list(msg.session_info.target_from, msg.session_info.client_name)
 
         # 将消息转换为易读的显示格式
         msg.trigger_msg = normalize_space(msg.as_display())
@@ -386,16 +386,16 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
     # ========== 步骤 2: 检查是否为实际模块名 ==========
     not_alias = False
     cm = ""
-    for module_name in modules:
-        if command_split[0] == module_name:
+    for plugin_name in modules:
+        if command_split[0] == plugin_name:
             # 找到了匹配的模块，标记为非别名
             not_alias = True
-            cm = module_name
+            cm = plugin_name
             break
 
     # ========== 步骤 3: 收集可能匹配的别名 ==========
     alias_list = []
-    for alias, _ in ModulesManager.modules_aliases.items():
+    for alias, _ in PluginsManager.modules_aliases.items():
         alias_words = alias.split(" ")
         cmd_words = command.split(" ")
 
@@ -414,7 +414,7 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
         # 选择最长的别名（避免短别名误匹配）
         max_alias = str(max(alias_list, key=len))
         # 获取别名对应的实际模块名
-        real_name = ModulesManager.modules_aliases[max_alias]
+        real_name = PluginsManager.modules_aliases[max_alias]
 
         # 重构命令：实际模块名 + 别名后的剩余参数
         command_words = command.split(" ")
@@ -463,7 +463,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
             await _tos_temp_ban(msg)
 
         # ========== 步骤 3: 获取模块并检查是否有可用命令 ==========
-        module: Module = modules[command_first_word]
+        module: Plugin = modules[command_first_word]
         if not module.command_list.set:
             # 模块没有可用的命令，展示模块简介
             if module.rss and not msg.session_info.support_rss:
@@ -598,7 +598,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                 target_id=msg.session_info.target_id,
                 sender_id=msg.session_info.sender_id,
                 command=msg.trigger_msg,
-                module_name=command_first_word,
+                plugin_name=command_first_word,
                 module_type="normal",
             )
 
@@ -661,7 +661,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
         try:
             # ========== 步骤 1: 检查模块是否已启用且有正则表达式 ==========
             if m in msg.session_info.enabled_modules and modules[m].regex_list.set:
-                regex_module: Module = modules[m]
+                regex_module: Plugin = modules[m]
 
                 # ========== 步骤 2: 权限检查 ==========
                 if regex_module.required_base_superuser:
@@ -801,7 +801,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                                 target_id=msg.session_info.target_id,
                                 sender_id=msg.session_info.sender_id,
                                 command=msg.trigger_msg,
-                                module_name=m,
+                                plugin_name=m,
                                 module_type="regex",
                             )
                         continue
@@ -988,7 +988,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
     try:
         # ========== 步骤 1: 解析命令参数 ==========
         command_parser = CommandParser(
-            module, msg=msg, module_name=command_first_word, command_prefixes=msg.session_info.prefixes
+            module, msg=msg, plugin_name=command_first_word, command_prefixes=msg.session_info.prefixes
         )
         try:
             parsed_msg = command_parser.parse(msg.trigger_msg)  # 解析模块的子功能命令
@@ -1309,7 +1309,7 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
     if match_close_module:
         # 找到了相似的模块
         Logger.debug(f"Match module: {command_first_word} -> {match_close_module[0]}")
-        module: Module = modules[match_close_module[0]]
+        module: Plugin = modules[match_close_module[0]]
 
         # ========== 步骤 4: 检查模块是否有命令模板 ==========
         none_template = True

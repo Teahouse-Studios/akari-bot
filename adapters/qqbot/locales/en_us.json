@@ -1,0 +1,8 @@
+{
+    "config.comments.config.adapter_qqbot.bot_appid": "The QQ official robot AppID.",
+    "config.comments.config.adapter_qqbot.bot_enable_send_url": "Whether to enable sending URLs when using QQ official robot.",
+    "config.comments.config.adapter_qqbot.bot_secret": "The QQ official robot AppSecret.",
+    "config.comments.config.adapter_qqbot.limited_emoji": "When using QQ official robot, the response emoji ID attached to the message when message processing fails. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji",
+    "config.comments.config.adapter_qqbot.private_bot": "Whether it is a private bot when using the QQ official bot.",
+    "config.comments.config.adapter_qqbot.typing_emoji": "When using QQ official robot, the response emoji ID attached to the message when processing the message. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji"
+}

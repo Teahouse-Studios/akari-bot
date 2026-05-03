@@ -1,0 +1,1 @@
+langconv @ git+https://github.com/Teahouse-Studios/langconv.py.git

@@ -22,7 +22,7 @@ from core.builtins.session.info import SessionInfo
 from core.config import CFGManager
 from core.constants import Info, PrivateAssets, Secret
 from core.database import init_db
-from core.loader import load_modules, ModulesManager
+from core.loader import load_plugins, PluginsManager
 from core.logger import Logger
 from core.scheduler import Scheduler
 from core.utils.bash import run_sys_command
@@ -65,9 +65,9 @@ async def init_async(start_scheduler=True) -> None:
         Logger.success("Database initialized successfully.")
 
     # 加载所有模块
-    await load_modules()
+    await load_plugins()
     gather_list = []
-    modules = ModulesManager.return_modules_list()
+    modules = PluginsManager.return_plugins_list()
 
     # 为各模块配置的定时任务添加到调度器
     for x in modules:

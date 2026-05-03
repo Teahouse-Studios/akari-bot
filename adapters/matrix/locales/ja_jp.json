@@ -1,0 +1,8 @@
+{
+    "config.comments.config.adapter_matrix.device_id": "Matrix ボットのデバイス ID。",
+    "config.comments.config.adapter_matrix.device_name": "Matrix ボットのデバイス名。任意の設定が可能です。",
+    "config.comments.config.adapter_matrix.homeserver": "Matrix ボットのホームサーバー。",
+    "config.comments.config.adapter_matrix.megolm_backup_passphrase": "Matrix ボットの Megolm バックアップ パスフレーズ。",
+    "config.comments.config.adapter_matrix.token": "Matrix ボットのトークン。",
+    "config.comments.config.adapter_matrix.user": "Matrix ボットの完全修飾ユーザー ID。"
+}

@@ -1,0 +1,9 @@
+pyproject.toml
+src/__init__.py
+src/check.py
+src/config.py
+src/akari_bot_plugin_wolframalpha.egg-info/PKG-INFO
+src/akari_bot_plugin_wolframalpha.egg-info/SOURCES.txt
+src/akari_bot_plugin_wolframalpha.egg-info/dependency_links.txt
+src/akari_bot_plugin_wolframalpha.egg-info/requires.txt
+src/akari_bot_plugin_wolframalpha.egg-info/top_level.txt

@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: akari-bot-adapter-web
+Version: 0.1.0
+Requires-Dist: argon2-cffi<26.0.0,>=25.0.0
+Requires-Dist: fastapi<1.0.0,>=0.120.0
+Requires-Dist: pyjwt[crypto]<3.0.0,>=2.8.0
+Requires-Dist: slowapi<1.0.0,>=0.1.9
+Requires-Dist: urllib3>=2.6.3
+Requires-Dist: uvicorn[standard]<1.0.0,>=0.38.0

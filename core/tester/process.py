@@ -10,7 +10,7 @@ from core.database.models import SenderInfo, TargetInfo
 from core.tester.mock.session import MockMessageSession
 from core.tester.mock.parser import parser
 from core.tester.mock.database import init_db, close_db
-from core.tester.mock.loader import load_modules
+from core.tester.mock.loader import load_plugins
 from core.tester.mock.random import Random
 from core.logger import Logger
 from core.utils.container import ExpiringTempDict
@@ -28,7 +28,7 @@ async def run_case_entry(entry: dict, is_ci: bool = False) -> list[dict]:
         return []
 
     try:
-        await load_modules(show_logs=False, monkey_patches={"Random": Random()})
+        await load_plugins(show_logs=False, monkey_patches={"Random": Random()})
     except Exception:
         Logger.exception("Failed to load modules for tests:")
 
@@ -58,7 +58,7 @@ async def run_function_entry(fn: Callable, is_ci: bool = False) -> dict[str, Any
         return {"skipped": True}
 
     try:
-        await load_modules(show_logs=False, monkey_patches={"Random": Random()})
+        await load_plugins(show_logs=False, monkey_patches={"Random": Random()})
     except Exception:
         Logger.exception("Failed to load modules for tests:")
 

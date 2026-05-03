@@ -1,0 +1,10 @@
+pyproject.toml
+src/__init__.py
+src/config.py
+src/dice.py
+src/process.py
+src/akari_bot_plugin_dice.egg-info/PKG-INFO
+src/akari_bot_plugin_dice.egg-info/SOURCES.txt
+src/akari_bot_plugin_dice.egg-info/dependency_links.txt
+src/akari_bot_plugin_dice.egg-info/requires.txt
+src/akari_bot_plugin_dice.egg-info/top_level.txt

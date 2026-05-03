@@ -1,0 +1,4 @@
+Metadata-Version: 2.4
+Name: akari-bot-plugin-mcserver
+Version: 0.1.0
+Requires-Dist: mcstatus<13.2.0,>=13.1.0

@@ -1,0 +1,7 @@
+[project]
+name = "akari-bot-plugin-mcv-rss"
+version = "0.1.0"
+dependencies = [
+    "beautifulsoup4>=4.11.1,<5.0.0",
+    "google-play-scraper>=1.2.2,<2.0.0",
+]

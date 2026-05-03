@@ -1,0 +1,8 @@
+pyproject.toml
+src/__init__.py
+src/teahouse.py
+src/akari_bot_plugin_weekly.egg-info/PKG-INFO
+src/akari_bot_plugin_weekly.egg-info/SOURCES.txt
+src/akari_bot_plugin_weekly.egg-info/dependency_links.txt
+src/akari_bot_plugin_weekly.egg-info/requires.txt
+src/akari_bot_plugin_weekly.egg-info/top_level.txt

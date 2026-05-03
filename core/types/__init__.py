@@ -1,2 +1,2 @@
 from .command import *
-from .module import *
+from .plugin import *

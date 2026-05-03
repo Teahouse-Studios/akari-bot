@@ -7,10 +7,10 @@ from core.builtins.parser.command import CommandParser
 from core.builtins.session.tasks import SessionTaskManager
 from core.constants.exceptions import InvalidCommandFormatError, SessionFinished
 from core.exports import exports
-from core.loader import ModulesManager
+from core.loader import PluginsManager
 from core.logger import Logger
-from core.types import Module, Param
-from core.types.module.component_meta import CommandMeta
+from core.types import Plugin, Param
+from core.types.plugin.component_meta import CommandMeta
 from core.utils.func import normalize_space
 
 if TYPE_CHECKING:
@@ -21,7 +21,7 @@ async def parser(msg: "Bot.MessageSession"):
     await msg.session_info.refresh_info()
 
     await SessionTaskManager.check(msg)
-    modules = ModulesManager.return_modules_list()
+    modules = PluginsManager.return_plugins_list()
 
     msg.trigger_msg = normalize_space(msg.as_display())
     if len(msg.trigger_msg) == 0:
@@ -78,14 +78,14 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
 
     not_alias = False
     cm = ""
-    for module_name in modules:
-        if command_split[0] == module_name:  # 判断此命令是否匹配一个实际的模块
+    for plugin_name in modules:
+        if command_split[0] == plugin_name:  # 判断此命令是否匹配一个实际的模块
             not_alias = True
-            cm = module_name
+            cm = plugin_name
             break
 
     alias_list = []
-    for alias, _ in ModulesManager.modules_aliases.items():
+    for alias, _ in PluginsManager.modules_aliases.items():
         alias_words = alias.split(" ")
         cmd_words = command.split(" ")
 
@@ -99,7 +99,7 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
 
     if alias_list:
         max_alias = str(max(alias_list, key=len))
-        real_name = ModulesManager.modules_aliases[max_alias]
+        real_name = PluginsManager.modules_aliases[max_alias]
         command_words = command.split(" ")
         command_words = real_name.split(" ") + command_words[len(max_alias.split(" ")) :]
         command = " ".join(command_words)
@@ -109,7 +109,7 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
 
 
 async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word):
-    module: Module = modules[command_first_word]
+    module: Plugin = modules[command_first_word]
     if not module.command_list.set:  # 如果没有可用的命令，则展示模块简介
         if module.rss and not msg.session_info.support_rss:
             return
@@ -149,7 +149,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
 async def _execute_regex(msg: "Bot.MessageSession", modules):
     for m in modules:  # 遍历模块
         if modules[m].regex_list.set:
-            regex_module: Module = modules[m]
+            regex_module: Plugin = modules[m]
 
             for rfunc in regex_module.regex_list.set:  # 遍历正则模块的表达式
                 matched = False
@@ -173,7 +173,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules):
 async def _execute_module_command(msg: "Bot.MessageSession", module, command_first_word):
     bot: "Bot" = exports["Bot"]
     command_parser = CommandParser(
-        module, msg=msg, module_name=command_first_word, command_prefixes=msg.session_info.prefixes
+        module, msg=msg, plugin_name=command_first_word, command_prefixes=msg.session_info.prefixes
     )
     parsed_msg = command_parser.parse(msg.trigger_msg)  # 解析模块的子功能命令
     command: CommandMeta = parsed_msg[0]

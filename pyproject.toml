@@ -18,6 +18,7 @@ dependencies = [
     # akari-bot-service
     "akari-bot-webrender==0.5.13",
     "akari-bot-webui==0.3.10",
+    "akari-bot-plugin-core",
     # lib
     "coverage>=7.9.1,<8.0.0",
     "cryptography>=46.0.0,<47.0.0",
@@ -27,20 +28,6 @@ dependencies = [
     "python-dotenv>=1.2.1,<2.0.0",
     "python-multipart>=0.0.22,<1.0.0",
     "pywin32>=311,<312; platform_system == 'Windows'",
-    # bots
-    "aiocqhttp>=1.4.3,<2.0.0",
-    "aiogram>=3.4.1,<4.0.0",
-    "argon2-cffi>=25.0.0,<26.0.0",
-    "fastapi>=0.120.0,<1.0.0",
-    "ffmpy>=1.0.0,<2.0.0",
-    "khl-py>=0.3.16,<1.0.0",
-    "matrix-nio>=0.25.0,<1.0.0",
-    "py-cord @ git+https://github.com/Pycord-Development/pycord",
-    "pyjwt[crypto]>=2.8.0,<3.0.0",
-    "qq-botpy>=1.2.1,<2.0.0",
-    "slowapi>=0.1.9,<1.0.0",
-    "urllib3>=2.6.3",
-    "uvicorn[standard]>=0.38.0,<1.0.0",
     # core
     "cattrs>=26.1.0,<26.2.0",
     "filetype>=1.2.0,<2.0.0",
@@ -67,27 +54,39 @@ dependencies = [
     "tabulate>=0.9.0,<1.0.0",
     # core.scheduler
     "APScheduler>=3.9.1-post.0,<4.0.0.0",
-    # modules.core
-    "matplotlib>=3.6.3,<4.0.0",
-    "py-cpuinfo>=9.0.0,<10.0.0",
-    # modules
-    "beautifulsoup4>=4.11.1,<5.0.0",
-    "emoji>=2.12.1,<3.0.0",
-    "feedparser>=6.0.10,<7.0.0",
-    "google-play-scraper>=1.2.2,<2.0.0",
-    "gql>=4.0.0,<5.0.0",
-    "langconv @ git+https://github.com/Teahouse-Studios/langconv.py.git",
-    "mcstatus>=13.1.0,<13.2.0",
-    "numpy<2.4.5",
-    "openai>=2.0.0,<3.0.0",
-    "pandas>=3.0.0,<4.0.0",
-    "pint>=0.25.0,<1.0.0",
-    "python-whois>=0.9.0,<1.0.0",
-    "rdkit>=2026.3.1,<2026.4.0",
-    "simpleeval>=1.0.0,<2.0.0",
-    "webcolors>=25.0.0,<26.0.0",
-    "wolframalpha>=5.0.0,<6.0.0",
     # uncategorized
+]
+
+[project.optional-dependencies]
+all-plugins = [
+    # adapers
+    "akari-bot-adapter-discord",
+    "akari-bot-adapter-kook",
+    "akari-bot-adapter-matrix",
+    "akari-bot-adapter-onebot",
+    "akari-bot-adapter-qqbot",
+    "akari-bot-adapter-telegram",
+    "akari-bot-adapter-web",
+    # plugins
+    "akari-bot-plugin-ai",
+    "akari-bot-plugin-chemical-code",
+    "akari-bot-plugin-color",
+    "akari-bot-plugin-convert",
+    "akari-bot-plugin-cytoid",
+    "akari-bot-plugin-dice",
+    "akari-bot-plugin-emojimix",
+    "akari-bot-plugin-hitokoto",
+    "akari-bot-plugin-langconv",
+    "akari-bot-plugin-maimai",
+    "akari-bot-plugin-mcmod",
+    "akari-bot-plugin-mcserver",
+    "akari-bot-plugin-mcv",
+    "akari-bot-plugin-mcv-rss",
+    "akari-bot-plugin-twenty-four",
+    "akari-bot-plugin-weekly",
+    "akari-bot-plugin-whois",
+    "akari-bot-plugin-wiki",
+    "akari-bot-plugin-wolframalpha",
 ]
 
 [project.urls]
@@ -108,3 +107,35 @@ quote-style = "double"
 
 [tool.pyright]
 reportUndefinedVariable = "error"
+
+[tool.uv.sources]
+akari-bot-adapter-discord = { workspace = true, editable = true }
+akari-bot-adapter-kook = { workspace = true, editable = true }
+akari-bot-adapter-matrix = { workspace = true, editable = true }
+akari-bot-adapter-onebot = { workspace = true, editable = true }
+akari-bot-adapter-qqbot = { workspace = true, editable = true }
+akari-bot-adapter-telegram = { workspace = true, editable = true }
+akari-bot-adapter-web = { workspace = true, editable = true }
+akari-bot-plugin-ai = { workspace = true, editable = true }
+akari-bot-plugin-chemical-code = { workspace = true, editable = true }
+akari-bot-plugin-color = { workspace = true, editable = true }
+akari-bot-plugin-convert = { workspace = true, editable = true }
+akari-bot-plugin-core = { workspace = true, editable = true }
+akari-bot-plugin-cytoid = { workspace = true, editable = true }
+akari-bot-plugin-dice = { workspace = true, editable = true }
+akari-bot-plugin-emojimix = { workspace = true, editable = true }
+akari-bot-plugin-hitokoto = { workspace = true, editable = true }
+akari-bot-plugin-langconv = { workspace = true, editable = true }
+akari-bot-plugin-maimai = { workspace = true, editable = true }
+akari-bot-plugin-mcmod = { workspace = true, editable = true }
+akari-bot-plugin-mcserver = { workspace = true, editable = true }
+akari-bot-plugin-mcv = { workspace = true, editable = true }
+akari-bot-plugin-mcv-rss = { workspace = true, editable = true }
+akari-bot-plugin-twenty-four = { workspace = true, editable = true }
+akari-bot-plugin-weekly = { workspace = true, editable = true }
+akari-bot-plugin-whois = { workspace = true, editable = true }
+akari-bot-plugin-wiki = { workspace = true, editable = true }
+akari-bot-plugin-wolframalpha = { workspace = true, editable = true }
+
+[tool.uv.workspace]
+members = ["adapters/*", "plugins/*"]

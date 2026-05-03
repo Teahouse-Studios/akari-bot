@@ -19,7 +19,7 @@ from core.tester.decorator import get_registry
 from core.tester.expectations import Expectation
 from core.tester.junit import JUnitReport, JUnitTestSuite, JUnitTestCase
 from core.tester.mock.database import init_db, close_db
-from core.tester.mock.loader import load_modules
+from core.tester.mock.loader import load_plugins
 from core.tester.mock.random import Random
 from core.tester.process import run_case_entry, run_function_entry
 
@@ -54,7 +54,7 @@ async def _run_registry_entry(semaphore: asyncio.Semaphore, entry: dict, test_nu
             return {"test_number": test_number, "skipped": True, "note": note}
 
         try:
-            await load_modules(show_logs=False, monkey_patches={"Random": Random()})
+            await load_plugins(show_logs=False, monkey_patches={"Random": Random()})
         except Exception:
             Logger.exception("Failed to load modules for tests:")
 
@@ -82,7 +82,7 @@ async def main():
         await close_db()
         return
     try:
-        await load_modules(monkey_patches={"Random": Random()})
+        await load_plugins(monkey_patches={"Random": Random()})
     except Exception:
         Logger.exception("Failed to load modules for tests:")
 

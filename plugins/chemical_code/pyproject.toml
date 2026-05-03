@@ -1,0 +1,6 @@
+[project]
+name = "akari-bot-plugin-chemical-code"
+version = "0.1.0"
+dependencies = [
+    "rdkit>=2026.3.1,<2026.4.0",
+]

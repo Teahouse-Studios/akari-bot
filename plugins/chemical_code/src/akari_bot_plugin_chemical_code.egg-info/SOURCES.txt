@@ -1,0 +1,8 @@
+pyproject.toml
+src/__init__.py
+src/coloring.py
+src/akari_bot_plugin_chemical_code.egg-info/PKG-INFO
+src/akari_bot_plugin_chemical_code.egg-info/SOURCES.txt
+src/akari_bot_plugin_chemical_code.egg-info/dependency_links.txt
+src/akari_bot_plugin_chemical_code.egg-info/requires.txt
+src/akari_bot_plugin_chemical_code.egg-info/top_level.txt

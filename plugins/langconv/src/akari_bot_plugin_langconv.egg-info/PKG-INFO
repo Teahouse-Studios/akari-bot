@@ -1,0 +1,4 @@
+Metadata-Version: 2.4
+Name: akari-bot-plugin-langconv
+Version: 0.1.0
+Requires-Dist: langconv @ git+https://github.com/Teahouse-Studios/langconv.py.git

@@ -1,0 +1,6 @@
+[project]
+name = "akari-bot-plugin-twenty-four"
+version = "0.1.0"
+dependencies = [
+    "simpleeval>=1.0.0,<2.0.0",
+]

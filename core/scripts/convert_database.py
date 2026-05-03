@@ -532,7 +532,7 @@ async def convert_database():
         try:
             await AnalyticsData.create(
                 id=r.id,
-                module_name=r.moduleName,
+                plugin_name=r.moduleName,
                 module_type=r.moduleType,
                 target_id=r.targetId,
                 sender_id=r.senderId,

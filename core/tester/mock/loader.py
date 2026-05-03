@@ -2,7 +2,7 @@ import importlib
 import pkgutil
 
 from core.i18n import load_locale_file
-from core.loader import ModulesManager
+from core.loader import PluginsManager
 from core.logger import Logger
 
 
@@ -15,7 +15,7 @@ def apply_monkey_patch(module, monkey_patches: dict[str, object] | None):
             setattr(module, name, mock_obj)
 
 
-async def load_modules(show_logs=True, monkey_patches: dict[str, object] | None = None):
+async def load_plugins(show_logs=True, monkey_patches: dict[str, object] | None = None):
     import modules
 
     err_prompt = []
@@ -46,7 +46,7 @@ async def load_modules(show_logs=True, monkey_patches: dict[str, object] | None 
                     Logger.debug(f"Successfully loaded {module_py_name}'s config definition!")
             except ModuleNotFoundError:
                 if show_logs:
-                    Logger.debug(f"Module {module_py_name}'s config definition not found, skipped.")
+                    Logger.debug(f"Plugin {module_py_name}'s config definition not found, skipped.")
 
         except Exception:
             if show_logs:
@@ -54,4 +54,4 @@ async def load_modules(show_logs=True, monkey_patches: dict[str, object] | None 
 
     if show_logs:
         Logger.success("All modules loaded.")
-    ModulesManager.refresh()
+    PluginsManager.refresh()

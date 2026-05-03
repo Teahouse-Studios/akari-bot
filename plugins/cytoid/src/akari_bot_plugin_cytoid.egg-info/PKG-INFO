@@ -1,0 +1,4 @@
+Metadata-Version: 2.4
+Name: akari-bot-plugin-cytoid
+Version: 0.1.0
+Requires-Dist: gql<5.0.0,>=4.0.0

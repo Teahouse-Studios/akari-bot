@@ -1,0 +1,7 @@
+[project]
+name = "akari-bot-plugin-weekly"
+version = "0.1.0"
+dependencies = [
+    "beautifulsoup4>=4.11.1,<5.0.0",
+    "feedparser>=6.0.10,<7.0.0",
+]

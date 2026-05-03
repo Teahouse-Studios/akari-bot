@@ -1,0 +1,8 @@
+{
+    "config.comments.config.adapter_matrix.device_id": "Matrix 机器人设备 ID。",
+    "config.comments.config.adapter_matrix.device_name": "Matrix 机器人的设备名称，可随意填写。",
+    "config.comments.config.adapter_matrix.homeserver": "Matrix 机器人的家服务器。",
+    "config.comments.config.adapter_matrix.megolm_backup_passphrase": "Matrix 机器人的 Megolm 备份密码短语。",
+    "config.comments.config.adapter_matrix.token": "Matrix 机器人令牌。",
+    "config.comments.config.adapter_matrix.user": "Matrix 机器人的完全限定用户 ID。"
+}

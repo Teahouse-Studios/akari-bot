@@ -1,0 +1,6 @@
+[project]
+name = "akari-bot-plugin-wiki"
+version = "0.1.0"
+dependencies = [
+    "beautifulsoup4>=4.11.1,<5.0.0",
+]

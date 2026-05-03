@@ -20,7 +20,7 @@ from core.config import Config
 from core.constants.exceptions import InvalidCommandFormatError
 from core.i18n import Locale
 from core.logger import Logger
-from core.types import Module
+from core.types import Plugin
 from .args import parse_argv, Template, templates_to_str, DescPattern
 
 # 默认地区设置
@@ -36,7 +36,7 @@ class CommandParser:
 
     属性说明:
         command_prefixes: 命令前缀列表
-        module_name: 模块名称
+        plugin_name: 模块名称
         origin_template: 原始命令模板
         msg: 消息会话对象（可选）
         args: 命令模板字典
@@ -45,9 +45,9 @@ class CommandParser:
 
     def __init__(
         self,
-        args: Module,
+        args: Plugin,
         command_prefixes: list,
-        module_name=None,
+        plugin_name=None,
         msg: "Bot.MessageSession | None" = None,
         is_superuser: bool | None = None,
     ):
@@ -56,7 +56,7 @@ class CommandParser:
 
         :param args: 模块对象，包含命令定义
         :param command_prefixes: 命令前缀列表
-        :param module_name: 模块名称
+        :param plugin_name: 模块名称
         :param msg: 消息会话对象（用于权限检查）
         :param is_superuser: 是否为超级用户（如为 None 则从会话自动检测）
         """
@@ -67,7 +67,7 @@ class CommandParser:
         self.command_prefixes = command_prefixes
 
         # 存储模块名称
-        self.module_name = module_name
+        self.plugin_name = plugin_name
 
         # 存储原始的模块模板定义
         self.origin_template = args
@@ -150,7 +150,7 @@ class CommandParser:
         args_lst = []
         for x in format_args:
             x = locale.t_str(x, fallback_failed_prompt=False)
-            x = f"{self.command_prefixes[0]}{self.module_name} {x}"
+            x = f"{self.command_prefixes[0]}{self.plugin_name} {x}"
             args_lst.append(x)
         args = "\n".join(y for y in args_lst)
 
@@ -232,7 +232,7 @@ class CommandParser:
                     desc = locale.t_str(match.group(1), fallback_failed_prompt=False)
 
             # 添加命令和描述到列表
-            args_list.append({"args": f"{self.command_prefixes[0]}{self.module_name} {x}", "desc": desc})
+            args_list.append({"args": f"{self.command_prefixes[0]}{self.plugin_name} {x}", "desc": desc})
 
         # ========== 步骤 3: 处理选项描述 ==========
         options_desc_fmtted = []

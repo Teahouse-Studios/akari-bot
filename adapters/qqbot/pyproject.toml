@@ -1,0 +1,6 @@
+[project]
+name = "akari-bot-adapter-qqbot"
+version = "0.1.0"
+dependencies = [
+    "qq-botpy>=1.2.1,<2.0.0",
+]

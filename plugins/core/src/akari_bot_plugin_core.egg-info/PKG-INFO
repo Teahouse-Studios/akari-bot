@@ -1,0 +1,5 @@
+Metadata-Version: 2.4
+Name: akari-bot-plugin-core
+Version: 0.1.0
+Requires-Dist: matplotlib<4.0.0,>=3.6.3
+Requires-Dist: py-cpuinfo<10.0.0,>=9.0.0

@@ -1,0 +1,11 @@
+{
+    "config.comments.config.adapter_onebot.access_token": "OneBot プロトコルを使用するときに、WebSocket サーバーに接続するための Access Token。",
+    "config.comments.config.adapter_onebot.allow_approve_friend": "OneBot プロトコルを使用するときに、友達リクエストを自動的に承認するかどうか。",
+    "config.comments.config.adapter_onebot.allow_approve_group_invite": "OneBot プロトコルを使用するときに、グループの招待を自動的に受け入れるかどうか。",
+    "config.comments.config.adapter_onebot.enable_temp_session": "OneBot プロトコルを使用するときに、一時セッションを有効にするかどうか。",
+    "config.comments.config.adapter_onebot.enable_listening_self_message": "OneBot プロトコルを使用するときに、自己メッセージの監視を有効にするかどうか。",
+    "config.comments.config.adapter_onebot.host": "Aiocqhttp WebSocket メインサーバーのアドレス。（OneBot プロトコル側はリバース WebSocket 方式を使用して接続する必要があります）",
+    "config.comments.config.adapter_onebot.initiative_msg_cooldown": "メッセージ送信のクールダウン時間を制限します。単位は秒です。",
+    "config.comments.config.adapter_onebot.limited_emoji": "OneBot プロトコルでメッセージ処理に失敗した際にメッセージに付加される応答絵文字の ID。ID の詳細について：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji をご覧ください。",
+    "config.comments.config.adapter_onebot.typing_emoji": "OneBot プロトコルでメッセージを処理するときにメッセージに添付される応答絵文字の ID。ID の詳細について：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji をご覧ください。"
+}

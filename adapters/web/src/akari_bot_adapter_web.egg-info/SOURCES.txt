@@ -1,0 +1,17 @@
+pyproject.toml
+src/__init__.py
+src/client.py
+src/config.py
+src/context.py
+src/features.py
+src/info.py
+src/akari_bot_adapter_web.egg-info/PKG-INFO
+src/akari_bot_adapter_web.egg-info/SOURCES.txt
+src/akari_bot_adapter_web.egg-info/dependency_links.txt
+src/akari_bot_adapter_web.egg-info/requires.txt
+src/akari_bot_adapter_web.egg-info/top_level.txt
+src/api/__init__.py
+src/api/api.py
+src/api/auth.py
+src/api/dev.py
+src/api/websocket.py

@@ -1,0 +1,6 @@
+[project]
+name = "akari-bot-adapter-discord"
+version = "0.1.0"
+dependencies = [
+    "py-cord @ git+https://github.com/Pycord-Development/pycord"
+]
