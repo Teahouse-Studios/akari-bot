@@ -5,9 +5,9 @@
 参数模式、可选模式、模板等，是命令解析系统的基础。
 """
 
+import itertools
 import re
 import traceback
-import itertools
 
 from core.constants.exceptions import InvalidTemplatePattern, InvalidCommandFormatError
 
