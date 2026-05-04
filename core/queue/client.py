@@ -47,7 +47,7 @@ class JobQueueClient(JobQueueBase):
 
     @classmethod
     async def send_keepalive_signal_to_server(
-        cls, client_name: str, target_prefix_list: list = None, sender_prefix_list: list = None
+        cls, client_name: str, target_prefix_list: list | None = None, sender_prefix_list: list | None = None
     ):
         """向服务器发送保活信号。
 

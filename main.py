@@ -155,7 +155,7 @@ def go(adapter_name: str, subprocess: bool = False, binary_mode: bool = False):
     Info.binary_mode = binary_mode
 
     try:
-        importlib.import_module(f"bots.{adapter_name}.src")
+        importlib.import_module(f"adapters.{adapter_name}.src")
     except ModuleNotFoundError:
         Logger.exception(f"[{adapter_name}] ???, entry not found.")
 
@@ -205,14 +205,14 @@ async def run_adapter():
     adapters_list = [p.name for p in adapters_path.iterdir() if p.is_dir() and not p.name.startswith("_")]
 
     for t in CFGManager.values:
-        if t.startswith("adapter_") and not t.endswith("_secret") and t[8:] in adapters_list:
+        if t.startswith("bot_") and not t.endswith("_secret") and t[8:] in adapters_list:
             if "enable" in CFGManager.values[t][t]:
                 if not CFGManager.values[t][t]["enable"]:
-                    disabled_adapters.append(t[8:])
-                    Logger.warning(f"Adapter {t[8:]} is disabled in config, skip to launch.")
+                    disabled_adapters.append(t[4:])
+                    Logger.warning(f"Adapter {t[4:]} is disabled in config, skip to launch.")
             else:
-                Logger.warning(f'Adapter {t[8:]} cannot found config "enable".')
-                disabled_adapters.append(t[8:])
+                Logger.warning(f'Adapter {t[4:]} cannot found config "enable".')
+                disabled_adapters.append(t[4:])
 
     for ad in adapters_list:
         if ad in disabled_adapters:
@@ -256,7 +256,7 @@ async def run_adapter():
         if not processes:
             break
         await asyncio.sleep(1)
-    Logger.critical("All bots exited unexpectedly, please check the output.")
+    Logger.critical("All processes exited unexpectedly, please check the output.")
     sys.exit(1)
 
 

@@ -143,7 +143,7 @@ async def parser(msg: "Bot.MessageSession"):
         await SessionTaskManager.check(msg)
 
         # 获取该平台和客户端的所有可用模块
-        modules = PluginsManager.return_plugins_list(msg.session_info.target_from, msg.session_info.client_name)
+        plugins = PluginsManager.return_plugins_list(msg.session_info.target_from, msg.session_info.client_name)
 
         # 将消息转换为易读的显示格式
         msg.trigger_msg = normalize_space(msg.as_display())
@@ -169,7 +169,7 @@ async def parser(msg: "Bot.MessageSession"):
 
         if in_prefix_list or disable_prefix:  # 检查消息前缀
             Logger.info(f"{identify_str} -> [Bot]: {msg.trigger_msg}")
-            command_first_word = await _process_command(msg, modules, disable_prefix, in_prefix_list)
+            command_first_word = await _process_command(msg, plugins, disable_prefix, in_prefix_list)
             if command_first_word:
                 if not ExecutionLockList.check(msg):  # 加锁
                     ExecutionLockList.add(msg)
@@ -180,16 +180,16 @@ async def parser(msg: "Bot.MessageSession"):
             if msg.session_info.muted and command_first_word != "mute":  # 检查机器人在会话中是否被禁言
                 return
 
-            if command_first_word in modules:  # 检查触发命令是否在模块列表中
-                if modules[command_first_word]._db_load:  # 检查模块是否已加载
-                    await _execute_module(msg, modules, command_first_word, identify_str)
+            if command_first_word in plugins:  # 检查触发命令是否在模块列表中
+                if plugins[command_first_word]._db_load:  # 检查模块是否已加载
+                    await _execute_module(msg, plugins, command_first_word, identify_str)
                 else:
                     await msg.send_message(I18NContext("parser.module.unloaded", module=command_first_word))
             elif msg.session_info.sender_info.sender_data.get("typo_check", True):
-                new_msg, new_command_first_word, confirmed = await _command_typo_check(msg, modules, command_first_word)
+                new_msg, new_command_first_word, confirmed = await _command_typo_check(msg, plugins, command_first_word)
                 if new_msg:
-                    if modules[new_command_first_word]._db_load:  # 检查模块是否已加载
-                        await _execute_module(new_msg, modules, new_command_first_word, identify_str)
+                    if plugins[new_command_first_word]._db_load:  # 检查模块是否已加载
+                        await _execute_module(new_msg, plugins, new_command_first_word, identify_str)
                     else:
                         await msg.send_message(I18NContext("parser.module.unloaded", module=new_command_first_word))
                 elif enable_module_invalid_prompt and not confirmed:
@@ -211,7 +211,7 @@ async def parser(msg: "Bot.MessageSession"):
                 if ExecutionLockList.check(msg):
                     return await msg.send_message(I18NContext("parser.command.running.prompt2"))
 
-        await _execute_regex(msg, modules, identify_str)
+        await _execute_regex(msg, plugins, identify_str)
         return msg
 
     except WaitCancelException:  # 出现于等待被取消的情况
@@ -351,7 +351,7 @@ def _get_prefixes(msg: "Bot.MessageSession"):
     return disable_prefix, in_prefix_list
 
 
-async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, in_prefix_list):
+async def _process_command(msg: "Bot.MessageSession", plugins, disable_prefix, in_prefix_list):
     """
     处理和解析命令字符串。
 
@@ -367,7 +367,7 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
     - 如果命令已经是实际模块名，只匹配该模块下的别名
 
     :param msg: 消息会话对象
-    :param modules: 可用的模块字典
+    :param plugins: 可用的模块字典
     :param disable_prefix: 是否禁用前缀
     :param in_prefix_list: 消息是否以前缀开头
     :return: 命令的第一个词（模块名）
@@ -386,7 +386,7 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
     # ========== 步骤 2: 检查是否为实际模块名 ==========
     not_alias = False
     cm = ""
-    for plugin_name in modules:
+    for plugin_name in plugins:
         if command_split[0] == plugin_name:
             # 找到了匹配的模块，标记为非别名
             not_alias = True
@@ -395,7 +395,7 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
 
     # ========== 步骤 3: 收集可能匹配的别名 ==========
     alias_list = []
-    for alias, _ in PluginsManager.modules_aliases.items():
+    for alias, _ in PluginsManager.plugins_aliases.items():
         alias_words = alias.split(" ")
         cmd_words = command.split(" ")
 
@@ -414,7 +414,7 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
         # 选择最长的别名（避免短别名误匹配）
         max_alias = str(max(alias_list, key=len))
         # 获取别名对应的实际模块名
-        real_name = PluginsManager.modules_aliases[max_alias]
+        real_name = PluginsManager.plugins_aliases[max_alias]
 
         # 重构命令：实际模块名 + 别名后的剩余参数
         command_words = command.split(" ")
@@ -428,7 +428,7 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
     return command.split(" ")[0]
 
 
-async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word, identify_str):
+async def _execute_module(msg: "Bot.MessageSession", plugins, command_first_word, identify_str):
     """
     执行模块的命令处理逻辑。
 
@@ -446,7 +446,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
     - 普通用户
 
     :param msg: 消息会话对象
-    :param modules: 可用的模块字典
+    :param plugins: 可用的模块字典
     :param command_first_word: 命令的第一个词（模块名）
     :param identify_str: 用于日志的标识字符串
     """
@@ -463,7 +463,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
             await _tos_temp_ban(msg)
 
         # ========== 步骤 3: 获取模块并检查是否有可用命令 ==========
-        module: Plugin = modules[command_first_word]
+        module: Plugin = plugins[command_first_word]
         if not module.command_list.set:
             # 模块没有可用的命令，展示模块简介
             if module.rss and not msg.session_info.support_rss:
@@ -565,11 +565,11 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
         # ========== 步骤 8: 错字检查 ==========
         if msg.session_info.sender_info.sender_data.get("typo_check", True):
             # 用户启用了错字检查，尝试纠正命令
-            new_msg, new_command_first_word, confirmed = await _command_typo_check(msg, modules, command_first_word)
+            new_msg, new_command_first_word, confirmed = await _command_typo_check(msg, plugins, command_first_word)
             if new_msg:
                 # 找到了可能的正确命令
-                if modules[new_command_first_word]._db_load:  # 检查模块是否已加载
-                    await _execute_module(new_msg, modules, new_command_first_word, identify_str)
+                if plugins[new_command_first_word]._db_load:  # 检查模块是否已加载
+                    await _execute_module(new_msg, plugins, new_command_first_word, identify_str)
                 else:
                     await msg.send_message(I18NContext("parser.module.unloaded", module=new_command_first_word))
             elif not confirmed:
@@ -631,7 +631,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
         ExecutionLockList.remove(msg)
 
 
-async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
+async def _execute_regex(msg: "Bot.MessageSession", plugins, identify_str):
     """
     执行正则表达式匹配的模块。
 
@@ -647,21 +647,21 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
     6. 执行匹配成功的模块函数
 
     :param msg: 消息会话对象
-    :param modules: 可用的模块字典
+    :param plugins: 可用的模块字典
     :param identify_str: 用于日志的标识字符串
     """
     bot: "Bot" = exports["Bot"]
 
     # ========== 遍历所有模块 ==========
-    for m in modules:
+    for m in plugins:
         # 跳过未加载的模块
-        if not modules[m]._db_load:
+        if not plugins[m]._db_load:
             continue
 
         try:
             # ========== 步骤 1: 检查模块是否已启用且有正则表达式 ==========
-            if m in msg.session_info.enabled_modules and modules[m].regex_list.set:
-                regex_module: Plugin = modules[m]
+            if m in msg.session_info.enabled_modules and plugins[m].regex_list.set:
+                regex_module: Plugin = plugins[m]
 
                 # ========== 步骤 2: 权限检查 ==========
                 if regex_module.required_base_superuser:
@@ -1251,7 +1251,7 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
                 )
 
 
-async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_word):
+async def _command_typo_check(msg: "Bot.MessageSession", plugins, command_first_word):
     """
     命令错字检查和纠正。
 
@@ -1272,7 +1272,7 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
     - 参数阈值：typo_check_args_score (默认 0.5)
 
     :param msg: 消息会话对象
-    :param modules: 可用的模块字典
+    :param plugins: 可用的模块字典
     :param command_first_word: 用户输入的命令第一个词
     :return: (新消息会话, 新命令词, 是否已确认) 元组
              - 如果纠正成功且用户确认，返回新的消息会话
@@ -1286,17 +1286,17 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
 
     # ========== 步骤 2: 收集用户可用的模块列表 ==========
     available_modules = []
-    for x in modules:
+    for x in plugins:
         # 筛选条件：基础模块或已启用的模块
-        if modules[x].base or (x in msg.session_info.enabled_modules):
+        if plugins[x].base or (x in msg.session_info.enabled_modules):
             # 跳过隐藏模块
-            if modules[x].hidden:
+            if plugins[x].hidden:
                 continue
             # 跳过需要超级用户权限的模块（如果用户不是超级用户）
-            if modules[x].required_superuser and not is_superuser:
+            if plugins[x].required_superuser and not is_superuser:
                 continue
             # 跳过需要基础超级用户权限的模块
-            if modules[x].required_base_superuser and not is_base_superuser:
+            if plugins[x].required_base_superuser and not is_base_superuser:
                 continue
             available_modules.append(x)
 
@@ -1309,7 +1309,7 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
     if match_close_module:
         # 找到了相似的模块
         Logger.debug(f"Match module: {command_first_word} -> {match_close_module[0]}")
-        module: Plugin = modules[match_close_module[0]]
+        module: Plugin = plugins[match_close_module[0]]
 
         # ========== 步骤 4: 检查模块是否有命令模板 ==========
         none_template = True
