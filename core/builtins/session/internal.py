@@ -52,7 +52,7 @@ class MessageSession:
     """
 
     # 会话信息 - 存储会话的所有基本信息
-    session_info: type[SessionInfo]
+    session_info: SessionInfo
 
     # 已发送消息列表 - 用于跟踪和管理已发送的消息
     sent: list[MessageChain] = []
