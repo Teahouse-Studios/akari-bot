@@ -6,8 +6,8 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Plain, Url
 from core.dirty_check import check
 from core.logger import Logger
-from modules.wiki.utils.utils import strptime2ts
-from modules.wiki.utils.wikilib import WikiLib, WikiInfo
+from ..utils.utils import strptime2ts
+from ..utils.wikilib import WikiLib, WikiInfo
 
 RC_LIMIT = 10
 

@@ -1,7 +1,7 @@
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Image
 from core.component import plugin
-from modules.cytoid.database.models import CytoidBindInfo
+from .database.models import CytoidBindInfo
 from .profile import cytoid_profile
 from .rating import get_rating
 from .utils import get_profile_name

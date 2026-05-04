@@ -1,7 +1,7 @@
 import discord
 
-from bots.discord.client import discord_bot
-from bots.discord.slash_parser import slash_parser, ctx_to_session
+from ..client import discord_bot
+from ..slash_parser import slash_parser, ctx_to_session
 from core.queue.client import JobQueueClient
 
 

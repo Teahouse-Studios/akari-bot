@@ -7,7 +7,7 @@ from core.i18n import Locale
 from core.logger import Logger
 from core.scheduler import CronTrigger
 from core.utils.image import msgchain2image
-from modules.weekly import get_weekly, get_teahouse_rss
+from plugins.weekly.src import get_weekly, get_teahouse_rss
 
 weekly_rss = plugin(
     "weekly_rss",

@@ -27,7 +27,7 @@ if __name__ == "__main__":
     sys.path.append(os.getcwd())
 
 from core.constants.version import database_version
-from core.database import fetch_module_db
+from core.database import fetch_plugins_db
 from core.database.link import get_db_link
 from core.database.models import *
 from core.logger import Logger
@@ -340,7 +340,7 @@ class WikiLogTargetSetInfoL(Model):
         table = "_old_module_wikilog_WikiLogTargetSetInfo"
 
 
-database_list = fetch_module_db()
+database_list = fetch_plugins_db()
 
 
 async def rename_old_tables():

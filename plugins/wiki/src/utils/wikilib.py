@@ -18,8 +18,8 @@ from core.i18n import Locale
 from core.logger import Logger
 from core.utils.http import get_url
 from core.web_render import web_render, SourceOptions
-from modules.wiki.database.models import WikiSiteInfo, WikiAllowList, WikiBlockList
-from modules.wiki.utils.bot import BotAccount
+from ..database.models import WikiSiteInfo, WikiAllowList, WikiBlockList
+from ..utils.bot import BotAccount
 from .mapping import *
 
 default_locale = Config("default_locale", cfg_type=str)

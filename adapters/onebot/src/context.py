@@ -8,9 +8,9 @@ import aiocqhttp
 from aiocqhttp import Event, MessageSegment
 from tenacity import retry, stop_after_attempt, wait_fixed
 
-from bots.onebot.client import aiocqhttp_bot
-from bots.onebot.info import target_private_prefix, target_group_prefix, client_name
-from bots.onebot.utils import CQCodeHandler
+from .client import aiocqhttp_bot
+from .info import target_private_prefix, target_group_prefix, client_name
+from .utils import CQCodeHandler
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
 from core.builtins.message.internal import I18NContext

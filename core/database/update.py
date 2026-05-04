@@ -1,10 +1,10 @@
 from tortoise import Tortoise
 
-from core.database import fetch_module_db
+from core.database import fetch_plugins_db
 from core.database.link import db_type, get_db_link
 from core.database.models import DBVersion
 
-database_list = fetch_module_db()
+database_list = fetch_plugins_db()
 
 
 async def update_database():

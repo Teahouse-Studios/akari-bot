@@ -6,7 +6,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain, Image
 from core.component import plugin
 from core.constants import dev_mode, NoReportException
-from core.database import fetch_module_db, get_model_fields, get_model_names
+from core.database import fetch_plugins_db, get_model_fields, get_model_names
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.func import is_int
 
@@ -28,14 +28,14 @@ db = plugin("database", alias="db", required_superuser=True, base=True, doc=True
 
 @db.command("model")
 async def _(msg: Bot.MessageSession):
-    models_path = ["core.database.models"] + fetch_module_db()
+    models_path = ["core.database.models"] + fetch_plugins_db()
     table_lst = sorted(get_model_names(models_path))
     await msg.finish([I18NContext("core.message.database.list")] + table_lst)
 
 
 @db.command("field <model> [--legacy]")
 async def _(msg: Bot.MessageSession, model: str):
-    models_path = ["core.database.models"] + fetch_module_db()
+    models_path = ["core.database.models"] + fetch_plugins_db()
     result = get_model_fields(models_path, model)
 
     if not result:

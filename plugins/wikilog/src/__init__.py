@@ -10,9 +10,9 @@ from core.component import plugin
 from core.config import Config
 from core.logger import Logger
 from core.scheduler import IntervalTrigger
-from modules.wiki.utils.ab import convert_ab_to_detailed_format
-from modules.wiki.utils.rc import convert_rc_to_detailed_format
-from modules.wiki.utils.wikilib import WikiLib
+from plugins.wiki.src.utils.ab import convert_ab_to_detailed_format
+from plugins.wiki.src.utils.rc import convert_rc_to_detailed_format
+from plugins.wiki.src.utils.wikilib import WikiLib
 from .database.models import WikiLogTargetSetInfo
 from .utils import convert_data_to_text
 

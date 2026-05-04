@@ -3,9 +3,9 @@ import re
 
 from khl import Bot as khlBot, EventTypes, Event, Message, MessageTypes
 
-from bots.kook.client import bot
-from bots.kook.context import KOOKContextManager, KOOKFetchedContextManager
-from bots.kook.info import *
+from .client import bot
+from .context import KOOKContextManager, KOOKFetchedContextManager
+from .info import *
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, Image, Voice

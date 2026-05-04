@@ -1,7 +1,7 @@
 import httpx
 
 from core.logger import Logger
-from modules.wiki.database.models import WikiBotAccountList
+from ..database.models import WikiBotAccountList
 
 
 class LoginFailed(Exception):

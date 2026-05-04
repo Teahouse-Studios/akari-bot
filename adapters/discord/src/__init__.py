@@ -8,11 +8,11 @@ from pathlib import Path
 import discord
 import filetype
 
-import bots.discord.slash as slash_modules
-from bots.discord.client import discord_bot
-from bots.discord.context import DiscordContextManager, DiscordFetchedContextManager
-from bots.discord.info import *
-from bots.discord.slash_context import DiscordSlashContextManager
+import adapters.discord.src.slash as slash_modules
+from .client import discord_bot
+from .context import DiscordContextManager, DiscordFetchedContextManager
+from .info import *
+from .slash_context import DiscordSlashContextManager
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, Image, Voice

@@ -4,8 +4,8 @@ import re
 import botpy
 from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 
-from bots.qqbot.context import QQBotContextManager
-from bots.qqbot.info import *
+from .context import QQBotContextManager
+from .info import *
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.session.info import SessionInfo

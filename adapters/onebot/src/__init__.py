@@ -8,10 +8,10 @@ import orjson
 from aiocqhttp import Event
 from hypercorn import Config as HyperConfig
 
-from bots.onebot.client import aiocqhttp_bot
-from bots.onebot.context import OneBotContextManager, OneBotFetchedContextManager
-from bots.onebot.info import *
-from bots.onebot.utils import to_message_chain, get_onebot_implementation
+from .client import aiocqhttp_bot
+from .context import OneBotContextManager, OneBotFetchedContextManager
+from .info import *
+from .utils import to_message_chain, get_onebot_implementation
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain

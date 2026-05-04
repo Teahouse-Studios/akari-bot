@@ -9,7 +9,7 @@ from typing import Any
 import orjson
 
 from core.constants.default import lang_list
-from core.constants.path import locales_path, modules_locales_path
+from core.constants.path import locales_path, plugins_locales_path
 from core.utils.func import flatten_dict as flatten
 
 # Load all locale files into memory
@@ -74,7 +74,7 @@ def load_locale_file() -> list[str]:
         traceback.print_exc()
         err_prompt.append(str(e))
 
-    for modules_locales_file in glob.glob(modules_locales_path):
+    for modules_locales_file in glob.glob(plugins_locales_path):
         if Path(modules_locales_file).is_dir():
             locales_m = [c.name for c in Path(modules_locales_file).iterdir()]
             for lang_file in locales_m:

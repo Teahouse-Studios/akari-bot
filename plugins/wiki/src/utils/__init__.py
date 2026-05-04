@@ -7,7 +7,7 @@ from core.builtins.message.internal import I18NContext
 from core.component import plugin
 from core.logger import Logger
 from core.utils.forward import check_enable_forward_msg
-from modules.wiki.database.models import WikiTargetInfo
+from ..database.models import WikiTargetInfo
 from .ab import get_ab
 from .ab_qq import get_ab_qq
 from .newbie import get_newbie

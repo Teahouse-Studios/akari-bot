@@ -6,8 +6,8 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Plain, Url
 from core.dirty_check import check_bool, rickroll
 from core.logger import Logger
-from modules.wiki.utils.utils import strptime2ts
-from modules.wiki.utils.wikilib import WikiLib
+from ..utils.utils import strptime2ts
+from ..utils.wikilib import WikiLib
 
 
 async def get_user_info(msg: Bot.MessageSession, username, wikiurl, headers=None):

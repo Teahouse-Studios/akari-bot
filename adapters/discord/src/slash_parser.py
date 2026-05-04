@@ -1,7 +1,7 @@
 import discord
 
-from bots.discord.info import *
-from bots.discord.slash_context import DiscordSlashContextManager
+from .info import *
+from .slash_context import DiscordSlashContextManager
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.session.info import SessionInfo

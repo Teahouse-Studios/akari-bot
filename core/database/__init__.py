@@ -1,13 +1,14 @@
 import asyncio
 import importlib.util
 import inspect
-import pkgutil
+import sys
 from typing import Any
 
 from tortoise import Tortoise
 from tortoise.exceptions import DBConnectionError
 
 from core.builtins.temp import Temp
+from core.constants.path import plugins_path
 from core.logger import Logger
 from .link import get_db_link
 from .local import DB_LINK
@@ -16,17 +17,45 @@ from .models import DBModel
 _reload_lock = asyncio.Lock()
 
 
-def fetch_module_db():
-    import modules
-
+def fetch_plugins_db():
     database_list = []
-    for m in pkgutil.iter_modules(modules.__path__):
-        try:
-            database_list.append(importlib.util.find_spec(f"modules.{m.name}.database.models").name)
-        except Exception:
-            pass
 
-    Logger.debug(f"Database list: {database_list}")
+    if not plugins_path.exists():
+        Logger.warning("Plugins directory not found.")
+        return database_list
+
+    for plugin_folder in plugins_path.iterdir():
+        if not plugin_folder.is_dir():
+            continue
+
+        plugin_name = plugin_folder.name
+        db_models_path = plugin_folder / "src" / "database" / "models"
+        target_path = db_models_path / "__init__.py"
+
+        if not target_path.exists():
+            target_path = db_models_path.with_suffix(".py")
+            if not target_path.exists():
+                continue
+
+        try:
+            virtual_module_name = f"raw_db_model_{plugin_name}"
+
+            if virtual_module_name in sys.modules:
+                module = sys.modules[virtual_module_name]
+            else:
+                spec = importlib.util.spec_from_file_location(virtual_module_name, str(target_path))
+                if spec and spec.loader:
+                    module = importlib.util.module_from_spec(spec)
+                    sys.modules[virtual_module_name] = module
+                    spec.loader.exec_module(module)
+
+            database_list.append(virtual_module_name)
+            Logger.debug(f"Loaded database models for: {plugin_name}")
+
+        except Exception as e:
+            Logger.error(f"Failed to load {plugin_name} models: {e}")
+            continue
+
     return database_list
 
 
@@ -63,9 +92,9 @@ def get_model_fields(models_path: list[str], table_name: str) -> list[dict[str, 
     return []
 
 
-async def init_db(load_module_db: bool = True, db_models: list[str] | None = None) -> bool:
+async def init_db(load_plugins_db: bool = True, db_models: list[str] | None = None) -> bool:
     try:
-        database_list = fetch_module_db() if load_module_db else []
+        database_list = fetch_plugins_db() if load_plugins_db else []
         database_list += db_models if db_models else []
         await Tortoise.init(
             config={
@@ -109,7 +138,7 @@ async def reload_db(db_models: list[str] | None = None):
                 return True
         except DBConnectionError:
             Logger.error("Failed to reload database, fallbacking...")
-            return await init_db(load_module_db=False, db_models=old_modules_db_list)
+            return await init_db(load_plugins_db=False, db_models=old_modules_db_list)
         finally:
             JobQueueServer.pause_event.set()
 

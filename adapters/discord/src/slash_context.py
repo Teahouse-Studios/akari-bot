@@ -2,10 +2,10 @@ import asyncio
 
 import discord
 
-from bots.discord.context import DiscordContextManager
-from bots.discord.features import Features
-from bots.discord.info import client_name, target_channel_prefix
-from bots.discord.utils import convert_embed
+from .context import DiscordContextManager
+from .features import Features
+from .info import client_name, target_channel_prefix
+from .utils import convert_embed
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement, EmbedElement
 from core.builtins.session.info import SessionInfo

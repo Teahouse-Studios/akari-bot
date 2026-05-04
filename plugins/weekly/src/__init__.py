@@ -13,8 +13,8 @@ from core.component import plugin
 from core.i18n import Locale
 from core.utils.http import get_url
 from core.utils.image import msgchain2image
-from modules.wiki.utils.screenshot_image import generate_screenshot_v2
-from modules.wiki.utils.wikilib import WikiLib
+from plugins.wiki.src.utils.screenshot_image import generate_screenshot_v2
+from plugins.wiki.src.utils.wikilib import WikiLib
 from .teahouse import get_rss as get_teahouse_rss
 
 

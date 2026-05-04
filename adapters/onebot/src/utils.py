@@ -4,7 +4,7 @@ from typing import Any
 
 import orjson
 
-from bots.onebot.info import sender_prefix
+from .info import sender_prefix
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, Image, Voice, Raw
 from core.builtins.temp import Temp

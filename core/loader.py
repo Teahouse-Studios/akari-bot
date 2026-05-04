@@ -1,11 +1,10 @@
 import importlib
-import pkgutil
 import re
 import sys
 import traceback
 from typing import Callable
 
-from core.constants import PrivateAssets
+from core.constants import plugins_path, PrivateAssets
 from core.database import reload_db
 from core.database.models import ModuleStatus
 from core.i18n import load_locale_file
@@ -20,48 +19,79 @@ from core.types.plugin.component_meta import (
 
 
 async def load_plugins():
-    import modules  # TODO: 修改路径
-
     err_prompt = []
     locale_loaded_err = load_locale_file()
     if locale_loaded_err:
         err_prompt.append("I18N loaded failed:")
         err_prompt.append("\n".join(locale_loaded_err))
 
-    Logger.info("Attempting to load modules...")
+    Logger.info("Attempting to load plugins...")
 
-    for subm in pkgutil.iter_modules(modules.__path__):
-        module_py_name = f"{modules.__name__}.{subm.name}"
+    if not plugins_path.exists():
+        Logger.warning("Plugins directory not found.")
+        return
+
+    for plugin_folder in plugins_path.iterdir():
+        if not plugin_folder.is_dir():
+            continue
+
+        plugin_name = plugin_folder.name
+        src_path = plugin_folder / "src"
+
+        # 检查是否存在 src 目录以及 __init__.py (确保它是一个合法的包)
+        if not src_path.exists() or not (src_path / "__init__.py").exists():
+            Logger.debug(f"Skipping {plugin_name}: 'src/__init__.py' not found.")
+            continue
+
         try:
-            Logger.debug(f"Loading {module_py_name}...")
+            Logger.debug(f"Loading {plugin_name}...")
 
-            importlib.import_module(module_py_name)
-            Logger.debug(f"Successfully loaded {module_py_name}!")
+            import importlib.util
 
+            spec = importlib.util.spec_from_file_location(plugin_name, str(src_path / "__init__.py"))
+            module = importlib.util.module_from_spec(spec)
+
+            # 将该模块注册到 sys.modules 中，防止重复加载并允许相对导入
+            sys.modules[plugin_name] = module
+            spec.loader.exec_module(module)
+
+            Logger.debug(f"Successfully loaded {plugin_name}!")
+
+            # 3. 尝试加载插件内部的 config.py (位于 src/config.py)
             try:
-                importlib.import_module(f"{module_py_name}.config")
-                Logger.debug(f"Successfully loaded {module_py_name}'s config definition!")
-            except ModuleNotFoundError:
-                Logger.debug(f"Plugin {module_py_name}'s config definition not found, skipped.")
+                config_spec = importlib.util.spec_from_file_location(
+                    f"{plugin_name}.config", str(src_path / "config.py")
+                )
+                if config_spec:
+                    config_module = importlib.util.module_from_spec(config_spec)
+                    config_spec.loader.exec_module(config_module)
+                    Logger.debug(f"Successfully loaded {plugin_name}'s config definition!")
+            except Exception:
+                Logger.debug(f"Plugin {plugin_name}'s config definition not found or failed, skipped.")
 
         except Exception:
-            errmsg = f"Failed to load {module_py_name}: \n{traceback.format_exc()}"
+            errmsg = f"Failed to load {plugin_name}: \n{traceback.format_exc()}"
             Logger.error(errmsg)
             err_prompt.append(errmsg)
 
-    await ModuleStatus.init_modules(list(PluginsManager.modules.keys()))
-    for plugin_name, module in PluginsManager.modules.items():
-        module_status = await ModuleStatus.filter(plugin_name=plugin_name).first()
-        if module_status and not module_status.load or not module.load:
-            module._db_load = False
+        # 4. 插件状态初始化与数据库同步
+    await ModuleStatus.init_modules(list(PluginsManager.plugins.keys()))
+    for plugin_name, plugin in PluginsManager.plugins.items():
+        plugin_status = await ModuleStatus.filter(module_name=plugin_name).first()
+        # 注意：原逻辑中 module.load 的判断取决于你 PluginsManager 如何存储模块
+        if plugin_status and not plugin_status.load or not getattr(plugin, "load", True):
+            plugin._db_load = False
 
-    Logger.success("All modules loaded.")
+    Logger.success("All plugins loaded.")
 
+    # 5. 错误缓存写入
     loader_cache = PrivateAssets.path / ".cache_loader"
-    with open(loader_cache, "w") as open_loader_cache:
+    with open(loader_cache, "w", encoding="utf-8") as open_loader_cache:
         if err_prompt:
-            err_prompt = re.sub(r"  File \"<frozen importlib.*?>\", .*?\n", "", "\n".join(err_prompt))
-            open_loader_cache.write(err_prompt)
+            combined_err = "\n".join(err_prompt)
+            # 清理 importlib 的冗余回溯信息
+            clean_err = re.sub(r'  File "<frozen importlib.*?>", .*?\n', "", combined_err)
+            open_loader_cache.write(clean_err)
         else:
             open_loader_cache.write("")
 

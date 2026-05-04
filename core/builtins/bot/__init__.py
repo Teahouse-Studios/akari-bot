@@ -420,8 +420,8 @@ class Bot:
 
             # 处理自定义钩子
             if module_or_hook_name:
-                if module_or_hook_name in PluginsManager.modules_hooks:
-                    return await PluginsManager.modules_hooks[module_or_hook_name](
+                if module_or_hook_name in PluginsManager.plugins_hooks:
+                    return await PluginsManager.plugins_hooks[module_or_hook_name](
                         ModuleHookContext(args, session_info=session_info)
                     )
             raise ValueError(f"Invalid hook name {module_or_hook_name}")

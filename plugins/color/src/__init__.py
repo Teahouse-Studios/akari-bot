@@ -1,5 +1,6 @@
 import colorsys
 import re
+from pathlib import Path
 
 import numpy as np
 import orjson
@@ -9,7 +10,7 @@ from PIL import Image, ImageDraw, ImageFont
 from core.builtins.bot import Bot
 from core.builtins.message.internal import Embed, EmbedField, Image as BImage, I18NContext
 from core.component import plugin
-from core.constants.path import assets_path, noto_sans_demilight_path
+from core.constants.path import noto_sans_demilight_path
 
 c = plugin(
     "color",
@@ -19,7 +20,7 @@ c = plugin(
     doc=True,
 )
 
-md_color_path = assets_path / "modules" / "color" / "material_colors.json"
+md_color_path = Path(__file__).parent.parent / "assets" / "material_colors.json"
 
 font = ImageFont.truetype(noto_sans_demilight_path, 40)
 with open(md_color_path, "rb") as f:

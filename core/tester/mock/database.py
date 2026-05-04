@@ -1,12 +1,12 @@
 from tortoise import Tortoise
 
-from core.database import fetch_module_db, close_db
+from core.database import fetch_plugins_db, close_db
 from core.logger import Logger
 
 
 async def init_db(load_module_db: bool = True) -> bool:
     try:
-        database_list = fetch_module_db() if load_module_db else []
+        database_list = fetch_plugins_db() if load_module_db else []
         await Tortoise.init(
             config={
                 "connections": {

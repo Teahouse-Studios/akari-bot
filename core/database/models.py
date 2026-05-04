@@ -319,11 +319,11 @@ class ModuleStatus(DBModel):
     """
     模块状态。
 
-    :param plugin_name: 模块名称。
+    :param module_name: 模块名称。
     :param load: 是否已加载。
     """
 
-    plugin_name = fields.CharField(primary_key=True, max_length=255, unique=True)
+    module_name = fields.CharField(primary_key=True, max_length=255, unique=True)
     load = fields.BooleanField(default=False)
 
     class Meta:
@@ -332,7 +332,7 @@ class ModuleStatus(DBModel):
     @classmethod
     async def init_modules(cls, modules_list: list[str]):
         async with in_transaction("default"):
-            existing = await cls.all().values_list("plugin_name", flat=True)
+            existing = await cls.all().values_list("module_name", flat=True)
             existing_set = set(existing)
             input_set = set(modules_list)
 
@@ -340,31 +340,31 @@ class ModuleStatus(DBModel):
             to_remove = existing_set.difference(input_set)
 
             if to_add:
-                await cls.bulk_create([cls(plugin_name=m, load=True) for m in to_add])
+                await cls.bulk_create([cls(module_name=m, load=True) for m in to_add])
 
             if to_remove:
                 await cls.filter(module_name__in=to_remove).delete()
 
     @classmethod
-    async def set_module_loaded(cls, plugin_name: str, load: bool = True):
-        module = await cls.filter(plugin_name=plugin_name).first()
+    async def set_module_loaded(cls, module_name: str, load: bool = True):
+        module = await cls.filter(module_name=module_name).first()
         if module:
             module.load = load
             await module.save()
         else:
-            raise ValueError(f"Plugin '{plugin_name}' not found")
+            raise ValueError(f"Plugin '{module_name}' not found")
 
     @classmethod
     async def get_all_modules(cls) -> list[str]:
-        return await cls.all().values_list("plugin_name", flat=True)
+        return await cls.all().values_list("module_name", flat=True)
 
     @classmethod
     async def get_loaded_modules(cls) -> list[str]:
-        return await cls.filter(load=True).values_list("plugin_name", flat=True)
+        return await cls.filter(load=True).values_list("module_name", flat=True)
 
     @classmethod
     async def get_unloaded_modules(cls) -> list[str]:
-        return await cls.filter(load=False).values_list("plugin_name", flat=True)
+        return await cls.filter(load=False).values_list("module_name", flat=True)
 
 
 class DBVersion(DBModel):

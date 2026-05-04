@@ -21,7 +21,7 @@ from dotenv import load_dotenv
 from loguru import logger
 from tortoise import Tortoise, run_async
 
-from core.constants import ascii_art, bots_path, logs_path  # skipcq
+from core.constants import ascii_art, adapters_path, logs_path  # skipcq
 from core.database import close_db
 
 
@@ -70,12 +70,12 @@ Logger.add(
 )
 
 
-class RestartBot(Exception):
+class RestartAdapter(Exception):
     pass
 
 
 failed_to_start_attempts = {}
-disabled_bots = []
+disabled_adapters = []
 processes: list[multiprocessing.Process] = []
 
 
@@ -146,18 +146,18 @@ def multiprocess_run_until_complete(func):
     terminate_process(p)
 
 
-def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
+def go(adapter_name: str, subprocess: bool = False, binary_mode: bool = False):
     from core.constants import Info
     from core.logger import Logger
 
-    Logger.info(f"[{bot_name}] Here we go!")
+    Logger.info(f"[{adapter_name}] Here we go!")
     Info.subprocess = subprocess
     Info.binary_mode = binary_mode
 
     try:
-        importlib.import_module(f"bots.{bot_name}.bot")
+        importlib.import_module(f"bots.{adapter_name}.src")
     except ModuleNotFoundError:
-        Logger.exception(f"[{bot_name}] ???, entry not found.")
+        Logger.exception(f"[{adapter_name}] ???, entry not found.")
 
         sys.exit(1)
 
@@ -170,54 +170,54 @@ async def cleanup_tasks():
 binary_mode = not sys.argv[0].endswith(".py")
 
 
-async def run_bot():
+async def run_adapter():
     from core.config import CFGManager
     from core.server.run import run_async as server_run_async
 
-    def restart_bot_process(bot_name: str):
+    def restart_adapter_process(adapter_name: str):
         if (
-            bot_name not in failed_to_start_attempts
-            or time.time() - failed_to_start_attempts[bot_name]["timestamp"] > 60
+            adapter_name not in failed_to_start_attempts
+            or time.time() - failed_to_start_attempts[adapter_name]["timestamp"] > 60
         ):
-            failed_to_start_attempts[bot_name] = {}
-            failed_to_start_attempts[bot_name]["count"] = 0
-            failed_to_start_attempts[bot_name]["timestamp"] = time.time()
-        failed_to_start_attempts[bot_name]["count"] += 1
-        failed_to_start_attempts[bot_name]["timestamp"] = time.time()
-        if failed_to_start_attempts[bot_name]["count"] >= 3:
-            Logger.error(f"Bot {bot_name} failed to start 3 times, abort to restart, please check the log.")
+            failed_to_start_attempts[adapter_name] = {}
+            failed_to_start_attempts[adapter_name]["count"] = 0
+            failed_to_start_attempts[adapter_name]["timestamp"] = time.time()
+        failed_to_start_attempts[adapter_name]["count"] += 1
+        failed_to_start_attempts[adapter_name]["timestamp"] = time.time()
+        if failed_to_start_attempts[adapter_name]["count"] >= 3:
+            Logger.error(f"Adapter {adapter_name} failed to start 3 times, abort to restart, please check the log.")
             return
 
-        Logger.warning(f"Restarting bot {bot_name}...")
+        Logger.warning(f"Restarting adapter {adapter_name}...")
         p = multiprocessing.Process(
             target=go,
             args=(
-                bot_name,
+                adapter_name,
                 True,
                 binary_mode,
             ),
-            name=bot_name,
+            name=adapter_name,
             daemon=True,
         )
         p.start()
         processes.append(p)
 
-    bots_list = [p.name for p in bots_path.iterdir() if p.is_dir() and not p.name.startswith("_")]
+    adapters_list = [p.name for p in adapters_path.iterdir() if p.is_dir() and not p.name.startswith("_")]
 
     for t in CFGManager.values:
-        if t.startswith("bot_") and not t.endswith("_secret") and t[4:] in bots_list:
+        if t.startswith("adapter_") and not t.endswith("_secret") and t[8:] in adapters_list:
             if "enable" in CFGManager.values[t][t]:
                 if not CFGManager.values[t][t]["enable"]:
-                    disabled_bots.append(t[4:])
-                    Logger.warning(f"Bot {t[4:]} is disabled in config, skip to launch.")
+                    disabled_adapters.append(t[8:])
+                    Logger.warning(f"Adapter {t[8:]} is disabled in config, skip to launch.")
             else:
-                Logger.warning(f'Bot {t[4:]} cannot found config "enable".')
-                disabled_bots.append(t[4:])
+                Logger.warning(f'Adapter {t[8:]} cannot found config "enable".')
+                disabled_adapters.append(t[8:])
 
-    for bl in bots_list:
-        if bl in disabled_bots:
+    for ad in adapters_list:
+        if ad in disabled_adapters:
             continue
-        p = multiprocessing.Process(target=go, args=(bl, True, binary_mode), name=bl, daemon=True)
+        p = multiprocessing.Process(target=go, args=(ad, True, binary_mode), name=ad, daemon=True)
         p.start()
         processes.append(p)
 
@@ -237,7 +237,7 @@ async def run_bot():
                     sys.exit(0)
                 if p.exitcode == 233:
                     Logger.warning(f"Process {p.pid} (server) exited with code 233, restart all bots.")
-                    raise RestartBot
+                    raise RestartAdapter
                 Logger.critical(f"Process {p.pid} (server) exited with code {p.exitcode}, please check the log.")
                 sys.exit(p.exitcode)
             if p.exitcode == 0:
@@ -247,11 +247,11 @@ async def run_bot():
                 break
             if p.exitcode == 233:
                 Logger.warning(f"Process {p.pid} ({p.name}) exited with code 233, restart all bots.")
-                raise RestartBot
+                raise RestartAdapter
             Logger.critical(f"Process {p.pid} ({p.name}) exited with code {p.exitcode}, please check the log.")
             processes.remove(p)
             terminate_process(p)
-            restart_bot_process(p.name)
+            restart_adapter_process(p.name)
             break
         if not processes:
             break
@@ -269,8 +269,8 @@ def terminate_process(process: multiprocessing.Process):
 async def main_async():
     try:
         multiprocess_run_until_complete(pre_init)
-        await run_bot()  # Process will block here so
-    except RestartBot as e:
+        await run_adapter()  # Process will block here so
+    except RestartAdapter as e:
         for ps in processes:
             Logger.warning(f"Terminating process {ps.pid} ({ps.name})...")
             terminate_process(ps)
@@ -293,7 +293,7 @@ def main():
     while True:
         try:
             asyncio.run(main_async())
-        except RestartBot:
+        except RestartAdapter:
             clear_import_cache()
             continue
         except (KeyboardInterrupt, SystemExit):

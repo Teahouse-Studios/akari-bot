@@ -4,10 +4,10 @@ from datetime import datetime, timedelta
 import discord
 from discord import Message
 
-from bots.discord.client import discord_bot
-from bots.discord.features import Features
-from bots.discord.info import client_name, target_channel_prefix
-from bots.discord.utils import get_channel_id, get_sender_id, convert_embed
+from .client import discord_bot
+from .features import Features
+from .info import client_name, target_channel_prefix
+from .utils import get_channel_id, get_sender_id, convert_embed
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement, EmbedElement
 from core.builtins.session.context import ContextManager

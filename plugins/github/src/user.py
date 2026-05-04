@@ -2,7 +2,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain, Url
 from core.dirty_check import rickroll
 from core.utils.http import get_url
-from modules.github.utils import time_diff, dirty_check, dark_check
+from .utils import time_diff, dirty_check, dark_check
 
 
 async def user(msg: Bot.MessageSession, name: str, pat: str):

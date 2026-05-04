@@ -6,9 +6,9 @@ from uuid import uuid4
 import nio
 
 from bots.matrix import client
-from bots.matrix.client import matrix_bot
-from bots.matrix.context import MatrixContextManager, MatrixFetchedContextManager
-from bots.matrix.info import *
+from .client import matrix_bot
+from .context import MatrixContextManager, MatrixFetchedContextManager
+from .info import *
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, Image, Voice

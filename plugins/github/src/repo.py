@@ -4,7 +4,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Image, Plain, Url
 from core.dirty_check import rickroll
 from core.utils.http import download, get_url
-from modules.github.utils import time_diff, dirty_check, dark_check
+from .utils import time_diff, dirty_check, dark_check
 
 
 async def repo(msg: Bot.MessageSession, name: str, pat: str):

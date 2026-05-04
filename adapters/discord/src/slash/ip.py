@@ -1,7 +1,7 @@
 import discord
 
-from bots.discord.client import discord_bot
-from bots.discord.slash_parser import slash_parser
+from ..client import discord_bot
+from ..slash_parser import slash_parser
 
 
 @discord_bot.slash_command(name="ip", description="Query the information of IP.")

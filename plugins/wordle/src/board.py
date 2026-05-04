@@ -1,15 +1,16 @@
 from collections import Counter
 from enum import Enum
+from pathlib import Path
 
 import unicodedata
 from PIL import Image, ImageDraw, ImageFont
 from attrs import define, field
 
-from core.constants.path import assets_path, noto_sans_bold_path
+from core.constants.path import noto_sans_bold_path
 from core.utils.random import Random
 
-words_txt = assets_path / "modules" / "wordle" / "words.txt"
-answers_txt = assets_path / "modules" / "wordle" / "answers.txt"
+words_txt = Path(__file__).parent.parent / "assets" / "words.txt"
+answers_txt = Path(__file__).parent.parent / "assets" / "answers.txt"
 with open(words_txt, encoding="utf8") as handle:
     word_list = handle.read().splitlines()
 with open(answers_txt, encoding="utf8") as handle:

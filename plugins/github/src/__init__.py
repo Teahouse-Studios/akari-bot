@@ -2,7 +2,7 @@ from core.builtins.bot import Bot
 from core.component import plugin
 from core.config import Config
 
-from modules.github import repo, user, search
+from . import repo, user, search
 
 pat = Config("github_pat", cfg_type=str, secret=True, table_name="module_github")
 
