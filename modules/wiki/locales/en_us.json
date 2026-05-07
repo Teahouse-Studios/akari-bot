@@ -186,6 +186,5 @@
     "wiki.message.wiki_bot.login.already": "Login failed: Wiki bot account already exists, please logout first.",
     "wiki.message.wiki_bot.toggle.disable": "Disabled to use wiki bot account.",
     "wiki.message.wiki_bot.toggle.enable": "Enabled to use wiki bot account.",
-    "wiki.message.wiki_inline.flies": "This page includes the following files:\n${file}",
-    "config.comments.wiki_whitelist_url": "Wiki whitelist application URL."
+    "wiki.message.wiki_inline.flies": "This page includes the following files:\n${file}"
 }
