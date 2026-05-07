@@ -1,12 +1,13 @@
+from pathlib import Path
+
 import orjson
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
-from core.constants.path import assets_path
 
 
-data_path = assets_path / "modules" / "threedsdb"
+data_path = Path(__file__).parent / "data"
 
 
 threedsdb = module("3dsdb", desc="{I18N:threedsdb.help.desc}", developers=["OasisAkari"])

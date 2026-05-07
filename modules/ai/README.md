@@ -1,6 +1,6 @@
-在使用本模块前，请确保在 `assets/modules/ai` 目录下创建 `llm_api_list.json` 配置文件，否则模块将无法正常运行。
+在使用本模块前，请确保在 `modules/ai/assets` 目录下创建 `llm_api_list.json` 配置文件，否则模块将无法正常运行。
 
-Before using this module, please make sure to create `llm_api_list.json` configuration file in the `assets/modules/ai`
+Before using this module, please make sure to create `llm_api_list.json` configuration file in the `modules/ai/assets`
 directory. Otherwise, the module will not function properly.
 
 ---
