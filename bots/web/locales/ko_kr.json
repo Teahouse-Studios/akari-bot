@@ -1,1 +1,11 @@
-{}
+{
+    "config.comments.bot_web.enable_https": "HTTPS 프로토콜 보안 기능을 활성화할지 여부.",
+    "config.comments.bot_web.web_host": "Web 서비스의 호스트 주소. 0.0.0.0으로 설정하면 모든 주소를 수신 대기합니다.",
+    "config.comments.bot_web.web_port": "Web 서비스의 포트 번호. 0으로 설정하면 서비스가 비활성화됩니다.",
+    "config.comments.bot_web.login_max_attempt": "로그인 시도 최대 횟수.",
+    "config.comments.bot_web.heartbeat_attempt": "하트비트 메시지를 전송하려는 시도 횟수.",
+    "config.comments.bot_web.heartbeat_interval": "하트비트 메시지를 전송하는 간격.",
+    "config.comments.bot_web.heartbeat_timeout": "하트비트 응답 타임아웃 시간.",
+    "config.comments.bot_web_secret.allow_origins": "CORS를 허용하는 API 서비스의 오리진(Origin) 목록.",
+    "config.comments.bot_web_secret.jwt_secret": "내장된 API의 인증 키. 서명 및 유효성 검사에 사용됩니다."
+}
