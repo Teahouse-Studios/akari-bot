@@ -1,5 +1,4 @@
 {
-    "config.comments.bot_onebot.qq_access_token": "OneBot 프로토콜을 사용할 때 WebSocket 서버에 연결하는 데 사용되는 액세스 토큰.",
     "config.comments.bot_onebot.qq_allow_approve_friend": "OneBot 프로토콜을 사용할 때 친구 요청을 자동으로 수락할지 여부.",
     "config.comments.bot_onebot.qq_allow_approve_group_invite": "OneBot 프로토콜을 사용할 때 그룹 초대를 자동으로 수락할지 여부.",
     "config.comments.bot_onebot.qq_enable_temp_session": "OneBot 프로토콜을 사용할 때 임시 세션을 활성화할지 여부.",
