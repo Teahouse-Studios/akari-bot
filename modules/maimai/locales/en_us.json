@@ -3,6 +3,7 @@
     "chunithm.message.b30.text_prompt": "Here is the Best 30 list of ${user} (Rating ${rating}):",
     "chunithm.message.song": "Artist: ${artist}\nGenre: ${genre}\nBPM: ${bpm}\nVersion: ${version}\nLevel: ${level}",
     "chunithm.message.song.worlds_end": "Artist: ${artist}\nGenre: ${genre}\nBPM: ${bpm}\nVersion: ${version}",
+    "config.comments.module_maimai_secret.diving_fish_developer_token": "Developer token for Diving Fish prober. (For maimai module)",
     "maimai.help.alias": "Query the alias of the song.",
     "maimai.help.b50": "Query the Best 50 list of Maimai player.",
     "maimai.help.base": "Search for songs by chart constant or range of the constants.",
