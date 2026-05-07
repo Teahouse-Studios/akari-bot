@@ -736,9 +736,6 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                             Logger.debug("Matched hash:" + str(matched_hash))
 
                             # ========== 循环匹配检测 ==========
-                            # 获取冷却时间设置
-                            cooldown_time = int(msg.session_info.target_info.target_data.get("cooldown_time", 0) or 3)
-
                             # 检查是否重复匹配
                             if rfunc.logging and matched_hash in match_hash_cache[msg.session_info.target_id]:
                                 Logger.warning("Match loop detected, skipping...")
@@ -746,7 +743,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
 
                             # 记录匹配哈希到缓存
                             match_hash_cache[msg.session_info.target_id][matched_hash] = ExpiringTempDict(
-                                exp=cooldown_time, root=False
+                                exp=1, root=False
                             )
 
                             # ========== ToS 和冷却检查 ==========

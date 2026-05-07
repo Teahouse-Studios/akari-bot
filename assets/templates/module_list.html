@@ -46,7 +46,7 @@
 
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
         }
 
         .grid-item {
@@ -56,14 +56,17 @@
             align-items: center;
             padding: 3px;
             border-radius: var(--mdui-shape-corner-large);
-            height: 75px;
-            width: 100px;
+            height: 90px;
+            width: 120px;
             text-align: center;
             overflow: hidden;
             justify-content: center;
             font-weight: bolder;
             font-size: 10px;
             margin: 5px 0;
+            word-wrap: break-word;
+            word-break: break-all;
+            white-space: normal;
             background-color: transparent;
             /* box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.2); */
             }
@@ -98,10 +101,6 @@
         .module-name {
             font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
             font-size: 12px;
-            white-space: nowrap;
-            overflow: hidden;
-            display: block;
-            width: 100%;
         }
 
         .footer {
@@ -151,20 +150,4 @@
         </div>
     </div>
 </body>
-<script>
-function fitText(el, minFontSize = 6) {
-    let fontSize = parseFloat(window.getComputedStyle(el).fontSize);
-
-    while (el.scrollWidth > el.clientWidth && fontSize > minFontSize) {
-        fontSize -= 0.5;
-        el.style.fontSize = fontSize + 'px';
-    }
-}
-
-window.addEventListener('load', () => {
-    document.querySelectorAll('.module-name').forEach(el => {
-        fitText(el);
-    });
-});
-</script>
 </html>

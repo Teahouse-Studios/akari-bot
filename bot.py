@@ -228,7 +228,7 @@ async def run_bot():
     server_process.start()
     processes.append(server_process)
 
-    while True:
+    while len(processes) > 1:
         for p in processes:
             if p.is_alive():
                 continue
@@ -252,8 +252,6 @@ async def run_bot():
             processes.remove(p)
             terminate_process(p)
             restart_bot_process(p.name)
-            break
-        if not processes:
             break
         await asyncio.sleep(1)
     Logger.critical("All bots exited unexpectedly, please check the output.")
