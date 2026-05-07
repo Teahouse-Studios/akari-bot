@@ -1,1 +1,8 @@
-{}
+{
+    "config.comments.bot_qqbot.qq_limited_emoji": "使用 QQ 機器人（官方）時，訊息處理失敗時向訊息掛上的回應表情 ID。 ID 詳見：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji",
+    "config.comments.bot_qqbot.qq_bot_appid": "QQ 機器人（官方）的 AppID。",
+    "config.comments.bot_qqbot.qq_bot_enable_send_url": "使用 QQ 機器人（官方）時，是否啟用傳送 URL。",
+    "config.comments.bot_qqbot_secret.qq_bot_secret": "QQ 機器人（官方）的 AppSecret。",
+    "config.comments.bot_qqbot.qq_private_bot": "使用 QQ 機器人（官方）時，是否為私域機器人。",
+    "config.comments.bot_qqbot.qq_typing_emoji": "使用 QQ 機器人（官方）時，正在處理訊息時向訊息掛上的回應表情 ID。 ID 詳見：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji"
+}
