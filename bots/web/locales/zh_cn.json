@@ -1,0 +1,11 @@
+{
+    "config.comments.bot_web.enable_https": "是否开启 HTTPS 协议安全措施。",
+    "config.comments.bot_web.web_host": "Web 服务的主机地址，设为 0.0.0.0 则监听所有地址。",
+    "config.comments.bot_web.web_port": "Web 服务的端口号，设为 0 则禁用服务。",
+    "config.comments.bot_web.login_max_attempt": "登录请求最大次数限制。",
+    "config.comments.bot_web.heartbeat_attempt": "心跳消息发送尝试次数。",
+    "config.comments.bot_web.heartbeat_interval": "心跳信息发送时间间隔。",
+    "config.comments.bot_web.heartbeat_timeout": "心跳消息回应超时时间。",
+    "config.comments.bot_web_secret.allow_origins": "API 服务允许 CORS 的源列表。",
+    "config.comments.bot_web_secret.jwt_secret": "内置 API 的身份认证密钥，用于签名和验证有效性。"
+}
