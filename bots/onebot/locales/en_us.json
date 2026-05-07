@@ -1,1 +1,11 @@
-{}
+{
+    "config.comments.bot_onebot.qq_access_token": "Access Token for connecting to the WebSocket server when using the OneBot protocol.",
+    "config.comments.bot_onebot.qq_allow_approve_friend": "Whether to automatically approve friend requests when using the OneBot protocol.",
+    "config.comments.bot_onebot.qq_allow_approve_group_invite": "Whether to automatically accept group invitations when using the OneBot protocol.",
+    "config.comments.bot_onebot.qq_enable_temp_session": "Whether to enable temp sessions when using the OneBot Protocol.",
+    "config.comments.bot_onebot.qq_enable_listening_self_message": "Whether to enable self-message monitoring when using the OneBot protocol.",
+    "config.comments.bot_onebot.qq_host": "The address of WebSocket main server. (The Onebot protocol client should use the reverse Websocket method to connect)",
+    "config.comments.bot_onebot.qq_initiative_msg_cooldown": "Cooldown in seconds for sending proactive messages.",
+    "config.comments.bot_onebot.qq_limited_emoji": "When using the OneBot Protocol, the response emoji ID attached to the message when message processing fails. It needs to be supported by the protocol terminal. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji",
+    "config.comments.bot_onebot.qq_typing_emoji": "When using the OneBot Protocol, the response emoji ID attached to the message when processing the message. It needs to be supported by the protocol terminal. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji"
+}
