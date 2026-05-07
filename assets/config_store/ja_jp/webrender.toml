@@ -4,7 +4,7 @@
 
 [webrender]
 # WebRender の設定項目です。ここに入力された値は、メッセージ内にプレーンテキストで表示されます。この部分には機密情報を入力しないでください。
-enable_web_render = false # WebRender を有効にするかどうか。
+enable = false # WebRender を有効にするかどうか。
 browser_type = "chrome" # WebRender が使用しているブラウザの種類。（「chrome」と「firefox」をサポート）
 browser_executable_path = "<Replace me with str value>" # WebRender が使用するブラウザ実行ファイルのパス。空の場合は、Playwright によってインストールされたデフォルトのブラウザが使用されます。
 remote_only = false # リモート WebRender サービスのみの使用を許可するかどうか。

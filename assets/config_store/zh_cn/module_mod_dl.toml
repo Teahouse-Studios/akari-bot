@@ -4,4 +4,4 @@
 
 [module_mod_dl_secret]
 # 模块的密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
-curseforge_api_key = "<Replace me with str value>" # CurseForge 的 API Key。（用于 mod_dl 模块）
+curseforge_api_key = "<Replace me with str value>" # CurseForge 的 API Key。

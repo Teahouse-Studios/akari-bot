@@ -4,4 +4,4 @@
 
 [module_wolframalpha_secret]
 # The secret config section of the module. The bot will try to intercept if the values here accidentally appears in the message sent, but be careful to prevent leakage.
-wolfram_alpha_appid = "<Replace me with str value>" # WolframAlpha AppID. (For wolframalpha module)
+wolfram_alpha_appid = "<Replace me with str value>" # WolframAlpha AppID.

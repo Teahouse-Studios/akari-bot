@@ -4,7 +4,7 @@
 
 [webrender]
 # WebRender의 구성 섹션입니다. 여기에 입력된 값은 메시지에 일반 텍스트로 표시됩니다. 민감한 정보는 이 섹션에 입력하지 마십시오.
-enable_web_render = false # WebRender를 활성화할지 여부.
+enable = false # WebRender를 활성화할지 여부.
 browser_type = "chrome" # WebRender에서 사용하는 브라우저 유형입니다. ("chrome" 및 "firefox" 지원)
 browser_executable_path = "<Replace me with str value>" # WebRender가 사용하는 브라우저 실행 파일의 경로입니다. 빈 값인 경우 Playwright에 설치된 기본 브라우저를 사용함니다.
 remote_only = false # 원격 WebRender만 사용 여부.
