@@ -8,5 +8,5 @@
     "github.message.search": "搜尋結果：",
     "github.message.search.not_found": "未找到結果。",
     "github.message.user.not_found": "未找到使用者，請校對輸入。",
-    "config.comments.github_pat": "GitHub 的 Personal Access Token。（用於提高 API 請求速率限制）"
+    "config.comments.module_github_secret.github_pat": "GitHub 的 Personal Access Token。（用於提高 API 請求速率限制）"
 }

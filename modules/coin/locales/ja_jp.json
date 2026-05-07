@@ -17,8 +17,8 @@
     "coin.message.single.prompt": "コインをひっくり投げて…",
     "coin.message.single.stand": "…立ち上がった！",
     "coin.message.single.tail": "…裏です！",
-    "config.comments.coin_facedown_weight": "coin モジュールは、コインを投げたときの裏の重さ。",
-    "config.comments.coin_faceup_weight": "coin モジュールは、コインを投げたときの表の重さ。",
-    "config.comments.coin_limit": "coin モジュールは、コイン投げの上限数。",
-    "config.comments.coin_stand_weight": "coin モジュールは、コインを投げたときに立ち上がるの重さ。"
+    "config.comments.module_coin.coin_facedown_weight": "coin モジュールは、コインを投げたときの裏の重さ。",
+    "config.comments.module_coin.coin_faceup_weight": "coin モジュールは、コインを投げたときの表の重さ。",
+    "config.comments.module_coin.coin_limit": "coin モジュールは、コイン投げの上限数。",
+    "config.comments.module_coin.coin_stand_weight": "coin モジュールは、コインを投げたときに立ち上がるの重さ。"
 }

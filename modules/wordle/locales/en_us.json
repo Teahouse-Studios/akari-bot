@@ -1,5 +1,5 @@
 {
-    "config.comments.wordle_disable_image": "Whether to disable images of wordle module.",
+    "config.comments.module_wordle.wordle_disable_image": "Whether to disable images of wordle module.",
     "wordle.help": "Start a new game.",
     "wordle.help.desc": "Play Wordle.",
     "wordle.help.option.hard": "Use hard mode.",

@@ -102,7 +102,7 @@ class ConfigReorganizer:
         except KeyAlreadyPresent:
             self.configs[cfg_name][table][key] = self.config[c_target][key]
 
-        qc = f"config.comments.{key}"
+        qc = f"config.comments.{table}.{key}"
         localed_comment = self.locale.t(qc, fallback_failed_prompt=False)
         if localed_comment != qc:
             self.configs[cfg_name][table].value.item(key).comment(localed_comment)
@@ -123,7 +123,7 @@ class ConfigReorganizer:
         except KeyAlreadyPresent:
             self.configs[cfg_name][cfg_name]["enable"] = True
 
-        qc = "config.comments.enable"
+        qc = "config.comments.bot.enable"
         localed_comment = self.locale.t(qc, fallback_failed_prompt=False)
         if localed_comment != qc:
             self.configs[cfg_name][cfg_name].value.item("enable").comment(localed_comment)
@@ -227,7 +227,7 @@ if "config_version" not in config:
     if "cfg" in config:
         for k, v in config["cfg"].items():
             configs["config"]["config"][k] = v
-            qc = "config.comments." + k
+            qc = f"config.comments.config.{k}"
             localed_comment = old_locale.t(qc, fallback_failed_prompt=False)
             if localed_comment != qc:
                 configs["config"]["config"].value.item(k).comment(localed_comment)
@@ -238,7 +238,7 @@ if "config_version" not in config:
     if "secret" in config:
         for k, v in config["secret"].items():
             configs["config"]["secret"][k] = v
-            qc = "config.comments." + k
+            qc = f"config.comments.secret.{k}"
             localed_comment = old_locale.t(qc, fallback_failed_prompt=False)
             if localed_comment != qc:
                 configs["config"]["secret"].value.item(k).comment(localed_comment)

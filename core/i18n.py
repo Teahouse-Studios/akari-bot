@@ -9,7 +9,7 @@ from typing import Any
 import orjson
 
 from core.constants.default import lang_list
-from core.constants.path import locales_path, modules_locales_path
+from core.constants.path import locales_path, bots_locales_path, modules_locales_path
 from core.utils.func import flatten_dict as flatten
 
 # Load all locale files into memory
@@ -74,11 +74,13 @@ def load_locale_file() -> list[str]:
         traceback.print_exc()
         err_prompt.append(str(e))
 
-    for modules_locales_file in glob.glob(modules_locales_path):
-        if Path(modules_locales_file).is_dir():
-            locales_m = [c.name for c in Path(modules_locales_file).iterdir()]
+    locales_files = glob.glob(str(modules_locales_path)) + glob.glob(str(bots_locales_path))
+
+    for locales_file in locales_files:
+        if Path(locales_file).is_dir():
+            locales_m = [c.name for c in Path(locales_file).iterdir()]
             for lang_file in locales_m:
-                lang_file_path = Path(modules_locales_file) / lang_file
+                lang_file_path = Path(locales_file) / lang_file
                 with open(lang_file_path, "rb") as f:
                     try:
                         if lang_file.removesuffix(".json") in locale_dict:

@@ -377,7 +377,10 @@ class CFGManager:
             except KeyAlreadyPresent:
                 cls.values[cfg_name][target][q] = value
             finally:
-                qc = f"config.comments.{q}"
+                if target.startswith("bot_") and not target.endswith("_secret") and q == "enable":
+                    qc = "config.comments.bot.enable"
+                else:
+                    qc = f"config.comments.{target}.{q}"
                 # get the comment for the key from locale
                 localed_comment = get_locale.t(qc, fallback_failed_prompt=False)
                 if localed_comment != qc:

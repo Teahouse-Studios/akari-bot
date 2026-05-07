@@ -1,5 +1,5 @@
 {
-    "config.comments.wordle_disable_image": "wordle 模組是否停用圖片。",
+    "config.comments.module_wordle.wordle_disable_image": "wordle 模組是否停用圖片。",
     "wordle.help": "開始新遊戲。",
     "wordle.help.desc": "玩 Wordle。",
     "wordle.help.option.hard": "使用困難模式。",
