@@ -8,5 +8,11 @@
     "ai.message.list": "The following are the available LLM(s):",
     "ai.message.list.prompt": "Use \"${prefix}ai set <LLM>\" to switch LLMs.",
     "ai.message.llm.invalid": "Invalid LLM.",
-    "ai.message.text2img.error": "(An error occurred: Unable to correctly convert the following content into the image:\n${text}) "
+    "ai.message.text2img.error": "(An error occurred: Unable to correctly convert the following content into the image:\n${text}) ",
+    "config.comments.module_ai.ai_default_llm": "The LLM used by default.",
+    "config.comments.module_ai.llm_frequency_penalty": "The frequency penalty of the LLM, ranging from -2 to 2.",
+    "config.comments.module_ai.llm_max_tokens": "Limit the maximum number of tokens for LLMs.",
+    "config.comments.module_ai.llm_presence_penalty": "The presence penalty of the LLM, ranging from -2 to 2.",
+    "config.comments.module_ai.llm_temperature": "The temperature sampling of the LLMs, ranging from 0 to 2. It is not recommended to modify it at the same time as top_p.",
+    "config.comments.module_ai.llm_top_p": "The nucleus sampling of the LLM, ranging from 0 to 1. It is not recommended to modify it at the same time as temperature."
 }
