@@ -261,6 +261,7 @@ class ExpiringTempDict:
             if v.is_expired():
                 v.clear()
                 v.refresh()
+                return False
             return True
 
         if self.is_expired():

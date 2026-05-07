@@ -7,7 +7,7 @@
 enable = false # このプラットフォームを有効にするかどうか。
 qq_host = "127.0.0.1:8080" # Aiocqhttp WebSocket メインサーバーのアドレス。（OneBot プロトコル側はリバース WebSocket 方式を使用して接続する必要があります）
 qq_enable_listening_self_message = false # OneBot プロトコルを使用するときに、自己メッセージの監視を有効にするかどうか。
-qq_enable_temp_session = false # 使用 OneBot 协议时，是否开启临时会话。
+qq_enable_temp_session = false # OneBot プロトコルを使用するときに、一時セッションを有効にするかどうか。
 qq_allow_approve_friend = false # OneBot プロトコルを使用するときに、友達リクエストを自動的に承認するかどうか。
 qq_allow_approve_group_invite = false # OneBot プロトコルを使用するときに、グループの招待を自動的に受け入れるかどうか。
 qq_typing_emoji = 181 # QQ 関連プロトコル側でメッセージを処理するときにメッセージに添付される応答絵文字の ID。プロトコルのサポートが必要です。ID の詳細について：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji をご覧ください。

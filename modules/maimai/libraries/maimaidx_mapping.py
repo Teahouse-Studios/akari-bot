@@ -1,5 +1,6 @@
+from pathlib import Path
+
 from core.config import Config
-from core.constants.path import assets_path
 
 DF_DEVELOPER_TOKEN = Config("diving_fish_developer_token", cfg_type=str, secret=True, table_name="module_maimai")
 LX_DEVELOPER_TOKEN = Config("lxns_developer_token", cfg_type=str, secret=True, table_name="module_maimai")
@@ -8,7 +9,7 @@ SONGS_NEED_IMG = 10
 
 default_source = "lxns" if LX_DEVELOPER_TOKEN else "diving-fish"
 
-mai_assets_path = assets_path / "modules" / "maimai"
+mai_assets_path = Path(__file__).parent.parent / "assets"
 mai_cover_path = mai_assets_path / "static" / "mai" / "cover"
 mai_alias_path = mai_assets_path / "mai_song_alias.json"
 mai_grade_info_path = mai_assets_path / "mai_grade_info.json"

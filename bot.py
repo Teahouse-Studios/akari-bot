@@ -155,7 +155,7 @@ def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
     Info.binary_mode = binary_mode
 
     try:
-        importlib.import_module(f"bots.{bot_name}.bot")
+        importlib.import_module(f"bots.{bot_name}")
     except ModuleNotFoundError:
         Logger.exception(f"[{bot_name}] ???, entry not found.")
 
@@ -228,7 +228,7 @@ async def run_bot():
     server_process.start()
     processes.append(server_process)
 
-    while True:
+    while len(processes) > 1:
         for p in processes:
             if p.is_alive():
                 continue
@@ -252,8 +252,6 @@ async def run_bot():
             processes.remove(p)
             terminate_process(p)
             restart_bot_process(p.name)
-            break
-        if not processes:
             break
         await asyncio.sleep(1)
     Logger.critical("All bots exited unexpectedly, please check the output.")

@@ -19,8 +19,9 @@
 
 from __future__ import print_function
 
-from datetime import date
 import struct
+from datetime import date
+from pathlib import Path
 
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA256, HMAC
@@ -28,7 +29,6 @@ from Crypto.Util import Counter
 from Crypto.Util.number import bytes_to_long
 from Crypto.Util.strxor import strxor
 
-from core.constants.path import assets_path
 from core.utils.func import is_int
 
 
@@ -97,7 +97,7 @@ class MkeyGenerator:
     def __init__(self, debug=False):
         self._dbg = debug
 
-        self._data_path = assets_path / "modules" / "mkey" / "data"
+        self._data_path = Path(__file__).parent / "data"
 
     # Read AES key (v2).
     def _read_aes_key(self, file_name):

@@ -1,12 +1,13 @@
+from pathlib import Path
+
 import orjson
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import Image as BImage, Plain, I18NContext
 from core.component import module
-from core.constants.path import assets_path
 from core.web_render import web_render, SourceOptions
 
-arc_assets_path = assets_path / "modules" / "arcaea"
+arc_assets_path = Path(__file__).parent / "assets" / "arcaea"
 
 arc = module(
     "arcaea",

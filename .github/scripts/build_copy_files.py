@@ -11,17 +11,6 @@ if __name__ == "__main__":
     shutil.copytree("core/locales", output_dir / "core" / "locales")
     shutil.copytree("modules", output_dir / "modules")
 
-    def remove_py_files(path: Path):
-        for file in path.rglob("*"):
-            if file.suffix in [".py", ".pyc", ".pyo", ".pyd", ".pyw"]:
-                file.unlink()
-
-        for pycache in path.rglob("__pycache__"):
-            if pycache.is_dir():
-                shutil.rmtree(pycache)
-
-    remove_py_files(output_dir / "modules")
-
     build_paths = [Path("wrapper-build")]
     for build_path in build_paths:
         if build_path.exists():

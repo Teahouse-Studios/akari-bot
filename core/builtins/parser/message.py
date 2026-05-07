@@ -12,11 +12,12 @@
 """
 
 import copy
-import difflib
 import inspect
 import re
 import time
 import traceback
+
+from rapidfuzz import process
 from string import Template as stringTemplate
 from typing import TYPE_CHECKING
 
@@ -735,9 +736,6 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                             Logger.debug("Matched hash:" + str(matched_hash))
 
                             # ========== 循环匹配检测 ==========
-                            # 获取冷却时间设置
-                            cooldown_time = int(msg.session_info.target_info.target_data.get("cooldown_time", 0) or 3)
-
                             # 检查是否重复匹配
                             if rfunc.logging and matched_hash in match_hash_cache[msg.session_info.target_id]:
                                 Logger.warning("Match loop detected, skipping...")
@@ -745,7 +743,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
 
                             # 记录匹配哈希到缓存
                             match_hash_cache[msg.session_info.target_id][matched_hash] = ExpiringTempDict(
-                                exp=cooldown_time, root=False
+                                exp=1, root=False
                             )
 
                             # ========== ToS 和冷却检查 ==========
@@ -1251,6 +1249,39 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
                 )
 
 
+def __get_close_matches(
+    word: str, possibilities: list[str], n: int = 3, cutoff: float = 0.6, return_scores: bool = False
+) -> list[str] | list[tuple]:
+    """使用 RapidFuzz 查找最接近的匹配项
+
+    :param word: 目标搜索字符串。
+    :type word: str
+    :param possibilities: 候选字符串列表。
+    :type possibilities: List[str]
+    :param n: 最大返回结果数量，默认为 3。
+    :type n: int
+    :param cutoff: 相似度阈值 (0.0-1.0)，低于此值的结果将被忽略，默认为 0.6。
+    :type cutoff: float
+    :param return_scores: 若为 True，返回包含分数的元组列表；否则仅返回字符串列表。
+    :type return_scores: bool
+
+    :return: 匹配结果列表。若 return_scores 为 False，返回 List[str]；
+             否则返回 List[Tuple[str, float]]，其中分数已归一化为 0.0-1.0。
+    :rtype: Union[List[str], List[tuple]]
+    """
+    if not 0.0 <= cutoff <= 1.0:
+        raise ValueError("cutoff must be between 0.0 and 1.0")
+
+    # RapidFuzz 使用 0-100 分制，需转换 cutoff
+    matches = process.extract(query=word, choices=possibilities, limit=n, score_cutoff=cutoff * 100)
+
+    if return_scores:
+        # 将分数归一化回 0.0-1.0
+        return [(m[0], m[1] / 100.0) for m in matches]
+
+    return [m[0] for m in matches]
+
+
 async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_word):
     """
     命令错字检查和纠正。
@@ -1301,10 +1332,8 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
             available_modules.append(x)
 
     # ========== 步骤 3: 模块名相似度匹配 ==========
-    # 使用 difflib 找出最接近的模块名
-    match_close_module: list = difflib.get_close_matches(
-        command_first_word, available_modules, 1, typo_check_module_score
-    )
+    # 使用 rapidfuzz 找出最接近的模块名
+    match_close_module: list = __get_close_matches(command_first_word, available_modules, 1, typo_check_module_score)
 
     if match_close_module:
         # 找到了相似的模块
@@ -1353,7 +1382,7 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
                     ]
 
             # ========== 步骤 7: 命令字符串相似度匹配 ==========
-            match_close_command: list = difflib.get_close_matches(
+            match_close_command: list = __get_close_matches(
                 " ".join(command_split[1:]), templates_to_str(select_templates), 1, typo_check_command_score
             )
 
@@ -1372,7 +1401,7 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
                     if m_.startswith("["):  # 如果是可选参数
                         m_split = m_.split(" ")  # 切割可选参数中的空格（说明存在多个子必须参数）
                         if len(m_split) > 1:
-                            match_close_options = difflib.get_close_matches(
+                            match_close_options = __get_close_matches(
                                 m_split[0][1:], old_command_split, 1, typo_check_options_score
                             )  # 进一步匹配可选参数
                             if match_close_options:
@@ -1395,7 +1424,7 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
                                     new_command_split.append(old_command_split[0])
                                     del old_command_split[0]
                                 else:
-                                    match_close_args = difflib.get_close_matches(
+                                    match_close_args = __get_close_matches(
                                         old_command_split[0], [mm], 1, typo_check_args_score
                                     )  # 进一步匹配参数
                                     if match_close_args:

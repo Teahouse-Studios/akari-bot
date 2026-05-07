@@ -1,6 +1,7 @@
 import asyncio
 import time
 from datetime import datetime
+from pathlib import Path
 
 import orjson
 from PIL import Image, ImageEnhance, ImageFont, ImageDraw, ImageOps
@@ -11,7 +12,6 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
 from core.config import Config
 from core.constants.path import (
-    assets_path,
     cache_path,
     noto_sans_demilight_path,
 )
@@ -22,7 +22,7 @@ from core.utils.html2text import html2text
 from core.utils.http import get_url, download
 from core.utils.image import get_fontsize
 
-ctd_assets_path = assets_path / "modules" / "cytoid"
+ctd_assets_path = Path(__file__).parent / "assets"
 nunito_light_path = ctd_assets_path / "Nunito Light.ttf"
 nunito_regular_path = ctd_assets_path / "Nunito Regular.ttf"
 
