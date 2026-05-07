@@ -11,7 +11,7 @@
     "config.comments.config.check_use_textscan_v1": "Alibaba Cloud コンテンツ セキュリティ サービスの Text Scan 1.0 レガシー API を使用するかどうか。",
     "config.comments.config.command_prefix": "コマンドのプレフィックス。ここに入力された値はコマンドのプレフィックスとして認識されます。",
     "config.comments.config.confirm_command": "コマンド確認用のキーワード。ここに入力された値はコマンド確認用の単語として認識されます。",
-    "config.comments.config.debug": "デバッグモードにをオンにすると、より詳細なログ情報が出力されます。",
+    "config.comments.config.debug": "デバッグモードを有効にするかどうか。有効にすると、より多くのログ情報が出力されます。",
     "config.comments.config.donate_url": "寄付の URL。",
     "config.comments.config.enable_analytics": "組み込みの統計機能を有効にするかどうか。",
     "config.comments.config.enable_commit_url": "バージョン情報を表示する時にコミット URL を表示するかどうか。",
@@ -55,7 +55,6 @@
     "config.comments.secret.proxy": "プロキシ サービスのアドレス。",
     "config.comments.webrender.browser_executable_path": "WebRender が使用するブラウザ実行ファイルのパス。空の場合は、Playwright によってインストールされたデフォルトのブラウザが使用されます。",
     "config.comments.webrender.browser_type": "WebRender が使用しているブラウザの種類。（「chrome」と「firefox」をサポート）",
-    "config.comments.webrender.enable_web_render": "WebRender を有効にするかどうか。",
     "config.comments.webrender.remote_only": "リモート WebRender サービスのみの使用を許可するかどうか。",
     "config.comments.webrender.remote_web_render_url": "リモート WebRender サービスの URL。ローカル WebRender レンダリングが失敗した場合にリクエストを試行します。",
     "config.header.line.1": "https://toml.io/ja/v1.0.0",
@@ -179,5 +178,6 @@
     "tos.message.warning": "警告：\n利用規約に基づいて、あなたは行動規範に違反しています。",
     "tos.message.warning.count": "これは ${current_warns} 回目の警告です。",
     "tos.message.warning.last": "これは最後の警告です。",
-    "tos.message.warning.prompt": "${warn_counts} 回以上の警告を受けた場合、アカウントはブロックされます。"
+    "tos.message.warning.prompt": "${warn_counts} 回以上の警告を受けた場合、アカウントはブロックされます。",
+    "config.comments.webrender.enable": "WebRender を有効にするかどうか。"
 }
