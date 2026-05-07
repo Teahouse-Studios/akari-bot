@@ -6,5 +6,5 @@
     "exchange_rate.message.invalid.unit": "无效的货币单位：${unit}",
     "exchange_rate.message.invalid.non_digital": "无效的金额，必须为数字。",
     "exchange_rate.message.invalid.non_positive": "金额必须为正数。",
-    "config.comments.module_exchange_rate_secret.exchange_rate_api_key": "ExchangeRate-API 的 API Key。（用于 exchange_rate 模块与计算汇率用）"
+    "config.comments.module_exchange_rate_secret.exchange_rate_api_key": "ExchangeRate-API 的 API Key。"
 }
