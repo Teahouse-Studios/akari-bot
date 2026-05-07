@@ -4,7 +4,7 @@
 
 [bot_telegram]
 # 클라이언트 구성 섹션입니다. 여기에 입력한 값은 메시지에 일반 텍스트로 표시됩니다. 민감한 정보는 이 섹션에 입력하지 마십시오.
-enable = false # 플랫폼 활성화 여부.
+enable = false # 이 클라이언트를 활성화할지 여부.
 telegram_api_url = "<Replace me with str value>" # Telegram 사용자 지정 API URL.
 
 [bot_telegram_secret]

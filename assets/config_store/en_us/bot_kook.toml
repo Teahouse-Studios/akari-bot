@@ -4,7 +4,7 @@
 
 [bot_kook]
 # The basic config section of the client. The values ​​entered here can be displayed in the message. Please do not enter sensitive information in this section.
-enable = false # Whether to enable this platform.
+enable = false # Whether to enable this client.
 
 [bot_kook_secret]
 # The secret config section of the client. The bot will try to intercept if the values here accidentally appears in the message sent, but be careful to prevent leakage.

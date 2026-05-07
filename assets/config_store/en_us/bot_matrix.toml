@@ -4,7 +4,7 @@
 
 [bot_matrix]
 # The basic config section of the client. The values ​​entered here can be displayed in the message. Please do not enter sensitive information in this section.
-enable = false # Whether to enable this platform.
+enable = false # Whether to enable this client.
 matrix_homeserver = "https://matrix.org" # Matrix bot homeserver.
 matrix_user = "@akaribot:matrix.org" # Matrix bot fully-qualified user ID.
 matrix_device_name = "<Replace me with str value>" # Matrix bot device name, which can be set to any value.

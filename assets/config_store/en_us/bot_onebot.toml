@@ -4,16 +4,16 @@
 
 [bot_onebot]
 # The basic config section of the client. The values ​​entered here can be displayed in the message. Please do not enter sensitive information in this section.
-enable = false # Whether to enable this platform.
-qq_host = "127.0.0.1:8080" # The address of Aiocqhttp WebSocket main server. (The Onebot protocol client should use the reverse Websocket method to connect)
+enable = false # Whether to enable this client.
+qq_host = "127.0.0.1:8080" # The address of WebSocket main server. (The Onebot protocol client should use the reverse Websocket method to connect)
 qq_enable_listening_self_message = false # Whether to enable self-message monitoring when using the OneBot protocol.
 qq_enable_temp_session = false # Whether to enable temp sessions when using the OneBot Protocol.
 qq_allow_approve_friend = false # Whether to automatically approve friend requests when using the OneBot protocol.
 qq_allow_approve_group_invite = false # Whether to automatically accept group invitations when using the OneBot protocol.
-qq_typing_emoji = 181 # When using QQ related protocol terminals, the response emoji ID attached to the message when processing the message. It needs to be supported by the protocol terminal. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
-qq_limited_emoji = 10060 # When using QQ related protocol terminals, the response emoji ID attached to the message when message processing fails. It needs to be supported by the protocol terminal. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
-qq_initiative_msg_cooldown = 10 # Cooldown in seconds for sending proactive messages via Aiocqhttp.
+qq_typing_emoji = 181 # When using the OneBot Protocol, the response emoji ID attached to the message when processing the message. It needs to be supported by the protocol terminal. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
+qq_limited_emoji = 10060 # When using the OneBot Protocol, the response emoji ID attached to the message when message processing fails. It needs to be supported by the protocol terminal. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
+qq_initiative_msg_cooldown = 10 # Cooldown in seconds for sending proactive messages.
 
 [bot_onebot_secret]
 # The secret config section of the client. The bot will try to intercept if the values here accidentally appears in the message sent, but be careful to prevent leakage.
-qq_access_token = "<Replace me with str value>" # Access Token for connecting to the WebSocket server when using the OneBot protocol.
+qq_access_token = "<Replace me with str value>" # {I18N:config.comments.bot_onebot_secret.qq_access_token}

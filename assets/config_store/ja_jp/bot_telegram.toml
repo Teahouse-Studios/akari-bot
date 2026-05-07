@@ -4,7 +4,7 @@
 
 [bot_telegram]
 # クライアントの設定項目です。ここに入力された値は、メッセージ内にプレーンテキストで表示されます。この部分には機密情報を入力しないでください。
-enable = false # このプラットフォームを有効にするかどうか。
+enable = false # このクライアントを有効にするかどうか。
 telegram_api_url = "<Replace me with str value>" # Telegram カスタム API URL。
 
 [bot_telegram_secret]

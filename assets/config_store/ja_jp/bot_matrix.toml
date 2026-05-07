@@ -4,7 +4,7 @@
 
 [bot_matrix]
 # クライアントの設定項目です。ここに入力された値は、メッセージ内にプレーンテキストで表示されます。この部分には機密情報を入力しないでください。
-enable = false # このプラットフォームを有効にするかどうか。
+enable = false # このクライアントを有効にするかどうか。
 matrix_homeserver = "https://matrix.org" # Matrix ボットのホームサーバー。
 matrix_user = "@akaribot:matrix.org" # Matrix ボットの完全修飾ユーザー ID。
 matrix_device_name = "<Replace me with str value>" # Matrix ボットのデバイス名。任意の設定が可能です。

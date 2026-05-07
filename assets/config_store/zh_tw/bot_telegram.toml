@@ -4,7 +4,7 @@
 
 [bot_telegram]
 # 用戶端的組態部分，此處填寫的值可在訊息中以明文顯示。請不要在此部分填寫敏感資訊。
-enable = false # 是否啟用此平台。
+enable = false # 是否啟用此用户端。
 telegram_api_url = "<Replace me with str value>" # Telegram 自訂 API URL。
 
 [bot_telegram_secret]
