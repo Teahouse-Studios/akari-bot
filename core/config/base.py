@@ -92,7 +92,7 @@ class SecretConfig:
 
 @on_config("webrender")
 class WebRenderConfig:
-    enable_web_render: bool = False
+    enable: bool = False
     browser_type: str = "chrome"
     browser_executable_path: str = ""
     remote_only: bool = False
