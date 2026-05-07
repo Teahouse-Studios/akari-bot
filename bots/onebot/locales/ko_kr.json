@@ -1,0 +1,11 @@
+{
+    "config.comments.bot_onebot.qq_access_token": "OneBot 프로토콜을 사용할 때 WebSocket 서버에 연결하는 데 사용되는 액세스 토큰.",
+    "config.comments.bot_onebot.qq_allow_approve_friend": "OneBot 프로토콜을 사용할 때 친구 요청을 자동으로 수락할지 여부.",
+    "config.comments.bot_onebot.qq_allow_approve_group_invite": "OneBot 프로토콜을 사용할 때 그룹 초대를 자동으로 수락할지 여부.",
+    "config.comments.bot_onebot.qq_enable_temp_session": "OneBot 프로토콜을 사용할 때 임시 세션을 활성화할지 여부.",
+    "config.comments.bot_onebot.qq_enable_listening_self_message": "OneBot 프로토콜을 사용할 때, 자체 메시지 수신 기능을 활성화할지 여부.",
+    "config.comments.bot_onebot.qq_host": "WebSocket 메인 서버의 주소입니다. (OneBot 프로토콜 사용 시 역방향 WebSocket 방식으로 연결해 주십시오)",
+    "config.comments.bot_onebot.qq_initiative_msg_cooldown": "능동 메시지 전송 대기 시간을 제한합니다. 단위는 초입니다.",
+    "config.comments.bot_onebot.qq_limited_emoji": "OneBot 프로토콜을 사용할 때, 메시지 처리가 실패하면 메시지에 추가되는 응답 이모티콘 ID입니다. 프로토콜 지원이 필요합니다. ID는 다음을 참조하십시오: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji",
+    "config.comments.bot_onebot.qq_typing_emoji": "OneBot 프로토콜을 사용할 때, 이는 메시지 처리 중에 메시지에 첨부되는 응답 이모티콘 ID를 의미합니다. 프로토콜 지원이 필요합니다. ID는 다음을 참조하십시오: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji"
+}

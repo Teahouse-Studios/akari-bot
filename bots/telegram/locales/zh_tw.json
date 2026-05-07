@@ -1,0 +1,4 @@
+{
+    "config.comments.bot_telegram_secret.telegram_token": "Telegram 機器人令牌。",
+    "config.comments.bot_telegram.telegram_api_url": "Telegram 自訂 API URL。"
+}

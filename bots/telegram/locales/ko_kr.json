@@ -1,0 +1,4 @@
+{
+    "config.comments.bot_telegram_secret.telegram_token": "Telegram 봇 토큰.",
+    "config.comments.bot_telegram.telegram_api_url": "Telegram 사용자 지정 API URL."
+}

@@ -1,0 +1,11 @@
+{
+    "config.comments.bot_onebot.qq_access_token": "使用 OneBot 協定時，連結 WebSocket 伺服器的 Access Token。",
+    "config.comments.bot_onebot.qq_allow_approve_friend": "使用 OneBot 協定時，是否自動同意好友請求。",
+    "config.comments.bot_onebot.qq_allow_approve_group_invite": "使用 OneBot 協定時，是否自動同意群組邀請。",
+    "config.comments.bot_onebot.qq_enable_temp_session": "使用 OneBot 協定時，是否啟用臨時會話。",
+    "config.comments.bot_onebot.qq_enable_listening_self_message": "使用 OneBot 協定時，是否啟用自身訊息監聽。",
+    "config.comments.bot_onebot.qq_host": "WebSocket 主伺服器的位址。（OneBot 協定端請使用反向 WebSocket 方式連線）",
+    "config.comments.bot_onebot.qq_initiative_msg_cooldown": "限制主動訊息傳送的冷卻時間，單位為秒。",
+    "config.comments.bot_onebot.qq_limited_emoji": "使用 OneBot 協定時，訊息處理失敗時向訊息掛上的回應表情 ID，需協定端支援。 ID 詳見：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji",
+    "config.comments.bot_onebot.qq_typing_emoji": "使用 OneBot 協定時，正在處理訊息時向訊息掛上的回應表情 ID，需協定端支援。 ID 詳見：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji"
+}
