@@ -155,7 +155,7 @@ def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
     Info.binary_mode = binary_mode
 
     try:
-        importlib.import_module(f"bots.{bot_name}")
+        importlib.import_module(f"bots.{bot_name}.bot")
     except ModuleNotFoundError:
         Logger.exception(f"[{bot_name}] ???, entry not found.")
 
