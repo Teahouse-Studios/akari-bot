@@ -1,4 +1,11 @@
 {
+    "config.comments.module_dice.dice_count_limit": "The maximum number of items in dice expressions of dice module.",
+    "config.comments.module_dice.dice_detail_count": "The total number of dice rolled n times of dice module, it will no longer show details when this value is exceeded.",
+    "config.comments.module_dice.dice_limit": "The maximum number of dice rolled at one time of dice module.",
+    "config.comments.module_dice.dice_output_count": "The maximum amount of information output of dice module.",
+    "config.comments.module_dice.dice_output_digit": "The maximum digits of information output of dice module, exceeding which an exponent of 10 is used.",
+    "config.comments.module_dice.dice_output_len": "The maximum length output of dice module.",
+    "config.comments.module_dice.dice_roll_limit": "The maximum number of dice rolled per command of dice module.",
     "dice.help": "Roll the specified dice.",
     "dice.help.desc": "Random dice. You can specify the number of dice rolls and DC check.",
     "dice.help.rule": "Modify the check rule of DC.",
