@@ -1,1 +1,8 @@
-{}
+{
+    "config.comments.bot_qqbot.qq_limited_emoji": "QQ 공식 봇을 사용할 때, 메시지 처리가 실패하면 메시지에 추가되는 응답 이모티콘 ID입니다. ID는 다음을 참조하십시오: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji",
+    "config.comments.bot_qqbot.qq_bot_appid": "QQ 공식 봇의 AppID.",
+    "config.comments.bot_qqbot.qq_bot_enable_send_url": "QQ 공식 봇을 사용할 때 URL 전송 기능을 활성화할지 여부.",
+    "config.comments.bot_qqbot_secret.qq_bot_secret": "QQ 공식 봇의 AppSecret.",
+    "config.comments.bot_qqbot.qq_private_bot": "QQ 공식 봇을 사용할 때 비공개 봇인지 여부.",
+    "config.comments.bot_qqbot.qq_typing_emoji": "QQ 공식 봇을 사용할 때, 이는 메시지 처리 중에 메시지에 첨부되는 응답 이모티콘 ID를 의미합니다. 프로토콜 지원이 필요합니다. ID는 다음을 참조하십시오: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji"
+}
