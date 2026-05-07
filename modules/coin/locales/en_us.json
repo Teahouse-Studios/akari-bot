@@ -16,5 +16,9 @@
     "coin.message.single.head": "It is heads!",
     "coin.message.single.prompt": "You toss a coin…",
     "coin.message.single.stand": "It is standing up!",
-    "coin.message.single.tail": "It is tails!"
+    "coin.message.single.tail": "It is tails!",
+    "config.comments.module_coin.coin_facedown_weight": "The weight of tails of the coins tossed of coin module.",
+    "config.comments.module_coin.coin_faceup_weight": "The weight of heads of the coins tossed of coin module.",
+    "config.comments.module_coin.coin_limit": "The maximum number of coins tossed of coin module.",
+    "config.comments.module_coin.coin_stand_weight": "The weight of stands of the coins tossed of coin module."
 }
