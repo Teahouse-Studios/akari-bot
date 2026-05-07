@@ -41,7 +41,7 @@
     "config.comments.config.slower_schedule": "是否啟用更慢的排程任務調度器。（減少請求壓力用）",
     "config.comments.config.timezone_offset": "機器人的預設時區偏移量。",
     "config.comments.config.tos_temp_ban_time": "違反 ToS 時的暫時封鎖時間。",
-    "config.comments.config.tos_warning_counts": "違反 ToS 時的警告次數。",
+    "config.comments.config.tos_warning_counts": "違反 ToS 時的最大警告次數。",
     "config.comments.config.typo_check_args_score": "參數拼字檢查容許相似度，範圍 0 到 1 之間。",
     "config.comments.config.typo_check_command_score": "指令拼字檢查容許相似度，範圍 0 到 1 之間。",
     "config.comments.config.typo_check_module_score": "模組拼字檢查容許相似度，範圍 0 到 1 之間。",
@@ -52,12 +52,11 @@
     "config.comments.secret.check_access_key_id": "阿里雲內容安全服務的 AccessKey ID。",
     "config.comments.secret.check_access_key_secret": "阿里雲內容安全服務的 AccessKey Secret。",
     "config.comments.secret.db_path": "資料庫連結字串，請使用 Tortoise ORM 支援的連結字串格式。",
-    "config.comments.secret.ff3_key": "用於加密敏感資訊的金鑰（使用 ff3 演算法進行加密，部分場景可能會使用）",
+    "config.comments.secret.ff3_key": "用於加密敏感資訊的金鑰。（使用 ff3 演算法進行加密，部分場景可能會使用）",
     "config.comments.secret.ff3_tweak": "用於加密敏感資訊的金鑰微調量。",
     "config.comments.secret.proxy": "代理服務位址。",
     "config.comments.webrender.browser_executable_path": "WebRender 使用的瀏覽器可執行檔案路徑，若為空白則使用 Playwright 預設安裝之瀏覽器。",
     "config.comments.webrender.browser_type": "WebRender 所使用的瀏覽器類型。（支援「chrome」與「firefox」）",
-    "config.comments.webrender.enable_web_render": "是否啟用 Webrender。",
     "config.comments.webrender.remote_only": "是否僅允許使用遠端 WebRender 服務。",
     "config.comments.webrender.remote_web_render_url": "遠端 WebRender 服務的 URL，在本機 WebRender 成像失敗時會嘗試請求。",
     "config.header.line.1": "https://toml.io/cn/v1.0.0",
@@ -181,5 +180,6 @@
     "tos.message.warning": "警告：\n依據使用條款，你已違反我們的行為準則。",
     "tos.message.warning.count": "這是第 ${current_warns} 次警告。",
     "tos.message.warning.last": "這是最後一次警告。",
-    "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。"
+    "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。",
+    "config.comments.webrender.enable": "是否啟用 Webrender。"
 }

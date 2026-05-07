@@ -3,5 +3,5 @@
     "wolframalpha.help.ask": "Answer the question via WolframAlpha.",
     "wolframalpha.help.desc": "Use WolframAlpha.",
     "wolframalpha.message.incomprehensible": "WolframAlpha can't understand your question.",
-    "config.comments.module_wolframalpha_secret.wolfram_alpha_appid": "WolframAlpha AppID. (For wolframalpha module)"
+    "config.comments.module_wolframalpha_secret.wolfram_alpha_appid": "WolframAlpha AppID."
 }

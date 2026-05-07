@@ -1,5 +1,4 @@
 {
-    "config.comments.bot_onebot.qq_access_token": "Access Token for connecting to the WebSocket server when using the OneBot protocol.",
     "config.comments.bot_onebot.qq_allow_approve_friend": "Whether to automatically approve friend requests when using the OneBot protocol.",
     "config.comments.bot_onebot.qq_allow_approve_group_invite": "Whether to automatically accept group invitations when using the OneBot protocol.",
     "config.comments.bot_onebot.qq_enable_temp_session": "Whether to enable temp sessions when using the OneBot Protocol.",
