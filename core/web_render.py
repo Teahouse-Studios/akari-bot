@@ -14,7 +14,7 @@ from core.constants.path import logs_path
 from core.logger import Logger
 
 
-enable_web_render = Config("enable_web_render", False, table_name="webrender")
+enable_web_render = Config("enable", False, table_name="webrender")
 remote_web_render_url = Config("remote_web_render_url", cfg_type=str, table_name="webrender", get_url=True)
 web_render_browser = Config("browser_type", "chrome", table_name="webrender")
 browser_executable_path = Config("browser_executable_path", cfg_type=str, table_name="webrender")
