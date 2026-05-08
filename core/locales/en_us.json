@@ -41,7 +41,6 @@
     "config.comments.config.slower_schedule": "Whether to enable a slower task scheduler. (To reduce request pressure)",
     "config.comments.config.timezone_offset": "The bot's default timezone offset.",
     "config.comments.config.tos_temp_ban_time": "Temporary ban duration for ToS violations.",
-    "config.comments.config.tos_warning_counts": "Maximum number of warnings for ToS violations.",
     "config.comments.config.typo_check_args_score": "The allowed similarity score for argument spelling check, ranging from 0 to 1.",
     "config.comments.config.typo_check_command_score": "The allowed similarity score for command spelling check, ranging from 0 to 1.",
     "config.comments.config.typo_check_module_score": "The allowed similarity score for module spelling check, ranging from 0 to 1.",
@@ -180,6 +179,5 @@
     "tos.message.warning": "Warning:\nYou have violated our Code of Conduct according to our Terms of Service.",
     "tos.message.warning.count": "You have received ${current_warns} warnings.",
     "tos.message.warning.last": "This is the last warning.",
-    "tos.message.warning.prompt": "Your account will be blocked if you receive more than ${warn_counts} warnings.",
-    "config.comments.webrender.enable": "Whether to enable WebRender."
+    "tos.message.warning.prompt": "Your account will be blocked if you receive more than ${warn_counts} warnings."
 }
