@@ -41,7 +41,6 @@
     "config.comments.config.slower_schedule": "低速のタスクスケジューラを有効にするかどうか。（リクエストの負荷を軽減するため）",
     "config.comments.config.timezone_offset": "ボットのデフォルトのタイムゾーン オフセット。",
     "config.comments.config.tos_temp_ban_time": "利用規約違反時の一時的な禁止時間。",
-    "config.comments.config.tos_warning_counts": "利用規約違反に対する警告の最大数。",
     "config.comments.config.typo_check_args_score": "引数のスペルチェックにおける類似度を許容スコア。範囲は 0 ～ 1 です。",
     "config.comments.config.typo_check_command_score": "コマンドのスペルチェックにおける類似度を許容スコア。範囲は 0 ～ 1 です。",
     "config.comments.config.typo_check_module_score": "モジュールのスペルチェックにおける類似度を許容スコア。範囲は 0 ～ 1 です。",
@@ -178,6 +177,5 @@
     "tos.message.warning": "警告：\n利用規約に基づいて、あなたは行動規範に違反しています。",
     "tos.message.warning.count": "これは ${current_warns} 回目の警告です。",
     "tos.message.warning.last": "これは最後の警告です。",
-    "tos.message.warning.prompt": "${warn_counts} 回以上の警告を受けた場合、アカウントはブロックされます。",
-    "config.comments.webrender.enable": "WebRender を有効にするかどうか。"
+    "tos.message.warning.prompt": "${warn_counts} 回以上の警告を受けた場合、アカウントはブロックされます。"
 }
