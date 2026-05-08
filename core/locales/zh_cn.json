@@ -57,7 +57,7 @@
     "config.comments.secret.proxy": "代理服务地址。",
     "config.comments.webrender.browser_executable_path": "WebRender 使用的浏览器可执行文件路径，若空则使用 Playwright 默认安装浏览器。",
     "config.comments.webrender.browser_type": "WebRender 使用的浏览器类型。（支持“chrome”与“firefox”）",
-    "config.comments.webrender.enable_web_render": "是否开启 WebRender。",
+    "config.comments.webrender.enable": "是否开启 WebRender。",
     "config.comments.webrender.remote_only": "是否仅允许使用远程 WebRender 服务。",
     "config.comments.webrender.remote_web_render_url": "远程 WebRender 服务的 URL，在本地 WebRender 渲染失败时尝试请求。",
     "config.header.line.1": "https://toml.io/cn/v1.0.0",
