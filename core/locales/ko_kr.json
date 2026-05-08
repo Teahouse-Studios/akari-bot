@@ -41,7 +41,6 @@
     "config.comments.config.slower_schedule": "저속 스케줄러 사용 여부. (부하 감소 목적)",
     "config.comments.config.timezone_offset": "봇의 기본 시간대 오프셋.",
     "config.comments.config.tos_temp_ban_time": "ToS 위반 시 일시적인 차단 시간.",
-    "config.comments.config.tos_warning_counts": "ToS 위반 시 최대 경고 횟수입니다.",
     "config.comments.config.typo_check_args_score": "인수 철자 검사 허용 유사도. 범위는 0에서 1 사이입니다.",
     "config.comments.config.typo_check_command_score": "명령어 철자 검사 허용 유사도. 범위는 0에서 1 사이입니다.",
     "config.comments.config.typo_check_module_score": "모듈 철자 검사 허용 유사도. 범위는 0에서 1 사이입니다.\n",
@@ -178,6 +177,5 @@
     "tos.message.warning": "경고:\n이용 약관에 따라 귀하는 당사의 행동 강령을 위반했습니다.",
     "tos.message.warning.count": "이번이 ${current_warns}번째 경고입니다.",
     "tos.message.warning.last": "이번이 마지막 경고입니다.",
-    "tos.message.warning.prompt": "경고가 ${warn_counts}회를 초과할 경우, 귀하의 계정을 정지할 것입니다.",
-    "config.comments.webrender.enable": "WebRender를 활성화할지 여부."
+    "tos.message.warning.prompt": "경고가 ${warn_counts}회를 초과할 경우, 귀하의 계정을 정지할 것입니다."
 }
