@@ -41,7 +41,6 @@
     "config.comments.config.slower_schedule": "是否啟用更慢的排程任務調度器。（減少請求壓力用）",
     "config.comments.config.timezone_offset": "機器人的預設時區偏移量。",
     "config.comments.config.tos_temp_ban_time": "違反 ToS 時的暫時封鎖時間。",
-    "config.comments.config.tos_warning_counts": "違反 ToS 時的最大警告次數。",
     "config.comments.config.typo_check_args_score": "參數拼字檢查容許相似度，範圍 0 到 1 之間。",
     "config.comments.config.typo_check_command_score": "指令拼字檢查容許相似度，範圍 0 到 1 之間。",
     "config.comments.config.typo_check_module_score": "模組拼字檢查容許相似度，範圍 0 到 1 之間。",
@@ -180,6 +179,5 @@
     "tos.message.warning": "警告：\n依據使用條款，你已違反我們的行為準則。",
     "tos.message.warning.count": "這是第 ${current_warns} 次警告。",
     "tos.message.warning.last": "這是最後一次警告。",
-    "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。",
-    "config.comments.webrender.enable": "是否啟用 Webrender。"
+    "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。"
 }
