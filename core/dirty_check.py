@@ -72,7 +72,7 @@ def parse_data(original_content: str, result: dict, confidence: float = 60, addi
                             return any(start < p_end and end > p_start for p_start, p_end in placeholders)
 
                         for word in risk_words:
-                            word = word.strip()
+                            word = str(word).strip()
                             for match in re.finditer(re.escape(word), content):
                                 start, end = match.start(), match.end()
                                 if not is_in_placeholder(start, end):
@@ -181,7 +181,8 @@ async def check(
                             content = item["content"]
                             for n in call_api_list[content]:
                                 query_list[n][content] = parse_data(content, item, confidence, additional_text)
-                            await DirtyWordCache.create(desc=content, result=item)
+                            hash_id = hashlib.sha256(content.encode("utf-8")).hexdigest()
+                            await DirtyWordCache.create(hash_id=hash_id, desc=content, result=item)
                     else:
                         raise ValueError(result["msg"])
                 else:
@@ -227,7 +228,8 @@ async def check(
                         if result["Code"] == 200:
                             for n in call_api_list[x]:
                                 query_list[n][x] = parse_data(x, result["Data"], confidence, additional_text)
-                            await DirtyWordCache.create(desc=x, result=result["Data"])
+                            hash_id = hashlib.sha256(x.encode("utf-8")).hexdigest()
+                            await DirtyWordCache.create(hash_id=hash_id, desc=x, result=result["Data"])
                         else:
                             raise ValueError(result["Message"])
                     else:
