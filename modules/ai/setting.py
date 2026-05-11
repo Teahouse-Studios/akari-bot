@@ -36,5 +36,5 @@ for llm in llm_api_list:
 
 llm_api_list = _llm_api_list
 
-llm_list = [llm["name"] for llm in llm_api_list if not llm.get("superuser", False)]
-llm_su_list = [llm["name"] for llm in llm_api_list if llm.get("superuser", False)]
+llm_list = [llm["name"].lower() for llm in llm_api_list if not llm.get("superuser", False)]
+llm_su_list = [llm["name"].lower() for llm in llm_api_list if llm.get("superuser", False)]
