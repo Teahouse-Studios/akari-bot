@@ -27,6 +27,8 @@ aiosignal==1.4.0
     # via aiohttp
 aiosqlite==0.22.1
     # via tortoise-orm
+akari-bot-i18n==0.0.2
+    # via akari-bot
 akari-bot-webrender==0.5.13
     # via akari-bot
 akari-bot-webui==0.3.10
@@ -243,7 +245,7 @@ matplotlib==3.10.8
     # via akari-bot
 matrix-nio==0.25.2
     # via akari-bot
-mcstatus==13.0.0
+mcstatus==13.1.0
     # via akari-bot
 more-itertools==10.8.0
     # via wolframalpha
@@ -266,6 +268,7 @@ openai==2.20.0
 orjson==3.11.7
     # via
     #   akari-bot
+    #   akari-bot-i18n
     #   akari-bot-webrender
 packaging==26.0
     # via
@@ -338,7 +341,7 @@ python-dotenv==1.2.2
     # via
     #   akari-bot
     #   uvicorn
-python-multipart==0.0.26
+python-multipart==0.0.27
     # via akari-bot
 python-socks==2.8.0
     # via aiohttp-socks
@@ -355,6 +358,8 @@ qq-botpy==1.2.1
     # via akari-bot
 quart==0.20.0
     # via aiocqhttp
+rapidfuzz==3.14.5
+    # via akari-bot
 rdkit==2026.3.1
     # via akari-bot
 referencing==0.37.0

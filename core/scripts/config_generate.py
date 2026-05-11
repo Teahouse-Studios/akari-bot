@@ -46,7 +46,7 @@ def generate_config(dir_path: Path, language: str):
     :param language: 语言代码（如"zh_cn"、"en_us"等）
     """
     # 加载本地化语言文件
-    load_locale_file()
+    load_locale_file(list(lang_list.keys()), all_locales_path)
 
     # 创建目录（如果不存在则创建，包括父目录）
     dir_path.mkdir(parents=True, exist_ok=True)
