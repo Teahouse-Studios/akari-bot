@@ -29,7 +29,7 @@ async def _(msg: Bot.MessageSession, prompt: str):
 
     llm_info = None
     if selected_llm in avaliable_llms:
-        llm_info = next((llm for llm in llm_api_list if llm["name"] == selected_llm), None)
+        llm_info = next((llm for llm in llm_api_list if llm["name"].lower() == selected_llm), None)
 
     if llm_info:
         if not is_superuser and not precount_petal(msg, llm_info["price_in"], llm_info["price_out"]):
