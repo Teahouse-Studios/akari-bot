@@ -444,8 +444,10 @@ async def wait_for_restart(msg: Bot.MessageSession):
         await msg.send_message(I18NContext("core.message.restart.timeout"))
 
 
-@rst.command()
+@rst.command("[--force]")
 async def _(msg: Bot.MessageSession):
+    if msg.parsed_msg.get("--force", False):
+        await restart()
     if await msg.wait_confirm(append_instruction=False):
         restart_time.append(time.time())
         await wait_for_restart(msg)
@@ -466,8 +468,12 @@ upds = module(
 )
 
 
-@upds.command()
+@upds.command("[--force]")
 async def _(msg: Bot.MessageSession):
+    if msg.parsed_msg.get("--force", False):
+        if Bot.Info.version and Bot.Info.version.startswith("git:"):
+            await pull_repo()
+        await restart()
     if not Bot.Info.binary_mode:
         if await msg.wait_confirm(append_instruction=False):
             restart_time.append(time.time())
