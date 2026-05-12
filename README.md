@@ -76,6 +76,7 @@ _多功能、跨平台、可自由扩展的异步聊天机器人助手_
 [![Star Chart](https://starchart.cc/Teahouse-Studios/akari-bot.svg?variant=adaptive)](https://starchart.cc/Teahouse-Studios/akari-bot)
 
 ## 相关项目
+- [`AkariBot I18N`](https://github.com/Teahouse-Studios/akari-bot-i18n)
 - [`AkariBot WebRender`](https://github.com/Teahouse-Studios/akari-bot-webrender)
 - [`AkariBot WebUI`](https://github.com/Teahouse-Studios/akari-bot-webui)
 
