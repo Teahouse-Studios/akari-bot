@@ -6,6 +6,7 @@
     "ai.help.set": "設定會話內預設大語言模型。",
     "ai.message.list.none": "找不到可用的大語言模型，請聯絡機器人所有者新增。",
     "ai.message.list": "以下為可用的大語言模型：",
+    "ai.message.list.prompt": "使用「${prefix}ai llm set <模型名稱>」切換模型。",
     "ai.message.llm.invalid": "無效的大語言模型。",
     "ai.message.text2img.error": "（發生錯誤：無法正確將以下內容轉換為圖片：\n${text}）",
     "config.comments.module_ai.ai_default_llm": "預設使用的大語言模型。",
