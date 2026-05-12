@@ -406,9 +406,10 @@ async def update_dependencies():
     return "..." + pip_install[-500:] if len(pip_install) > 500 else pip_install
 
 
+@upd.command()
 @upd.command("[--force]")
 async def _(msg: Bot.MessageSession):
-    if msg.parsed_msg.get("--force", False) and not Bot.Info.binary_mode:
+    if msg.parsed_msg and msg.parsed_msg.get("--force", False) and not Bot.Info.binary_mode:
         await pull_repo()
         await update_dependencies()
         return
@@ -449,9 +450,10 @@ async def wait_for_restart(msg: Bot.MessageSession):
         await msg.send_message(I18NContext("core.message.restart.timeout"))
 
 
+@rst.command()
 @rst.command("[--force]")
 async def _(msg: Bot.MessageSession):
-    if msg.parsed_msg.get("--force", False):
+    if msg.parsed_msg and msg.parsed_msg.get("--force", False):
         await restart()
     try:
         if not await msg.wait_confirm(append_instruction=False):
@@ -481,9 +483,10 @@ upds = module(
 )
 
 
+@upds.command()
 @upds.command("[--force]")
 async def _(msg: Bot.MessageSession):
-    if msg.parsed_msg.get("--force", False):
+    if msg.parsed_msg and msg.parsed_msg.get("--force", False):
         if Bot.Info.version and Bot.Info.version.startswith("git:"):
             await pull_repo()
         await restart()
