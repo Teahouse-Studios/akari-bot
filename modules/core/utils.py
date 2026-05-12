@@ -8,9 +8,8 @@ from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, FormattedTime, I18NContext, Url
 from core.component import module
-from core.constants import lang_list, all_locales_path
 from core.config import Config
-from core.i18n import get_available_locales, Locale, load_locale_file
+from core.i18n import get_available_locales, Locale
 from core.utils.bash import run_sys_command
 
 ver = module("version", base=True, doc=True)
@@ -204,7 +203,7 @@ async def _(msg: Bot.MessageSession, lang: str):
 
 @locale.command("reload", required_superuser=True)
 async def _(msg: Bot.MessageSession):
-    err = load_locale_file(list(lang_list.keys()), all_locales_path)
+    err = msg.session_info.locale.reload()
     if len(err) == 0:
         await msg.finish(I18NContext("message.success"))
     else:

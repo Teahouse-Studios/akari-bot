@@ -298,7 +298,7 @@ class MessageChain:
                         x.kwargs[k] = locale.t_str(v)
 
                 # 执行多语言翻译
-                t_value = locale.t(x.key, **x.kwargs)
+                t_value = locale.t(x.key, x.fallback, x.locale_failed_prompt, **x.kwargs)
                 if isinstance(t_value, str):
                     value.append(PlainElement.assign(t_value, disable_joke=x.disable_joke))
                 else:
@@ -838,6 +838,28 @@ def _extract_kecode_blocks(text):
     return result
 
 
+def _parse_bool_flag(value: str | int | bool | None, default: bool) -> bool:
+    """
+    将 0/1、true/false 等转换为 bool。
+    None 时返回 default。
+    """
+    if value is None:
+        return default
+
+    if isinstance(value, bool):
+        return value
+
+    value = str(value).strip().lower()
+
+    if value in {"1", "true", "yes", "on"}:
+        return True
+
+    if value in {"0", "false", "no", "off"}:
+        return False
+
+    return default
+
+
 def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
     """
     解析 KE 码格式的文本并转换为消息链。
@@ -867,122 +889,128 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
     # ========== 步骤 1: 提取 KE 码块 ==========
     split_all = _extract_kecode_blocks(text)
     split_all = [x for x in split_all if x]
+
     elements = MessageChain.assign()
 
     # ========== 步骤 2: 解析每个块 ==========
     for e in split_all:
         # 尝试匹配 KE 码格式
         match = re.match(r"\[KE:([^\s,\]]+)(?:,(.*))?\]$", e, re.DOTALL)
+
         if not match:
             # 不是 KECode，作为普通文本处理
             if e != "":
                 elements.append(PlainElement.assign(e, disable_joke=disable_joke))
-        else:
-            # ========== 提取 KE 码类型和参数 ==========
-            element_type = match.group(1).lower()
-            param_str = match.group(2) or ""
+            continue
+        # ========== 提取 KE 码类型和参数 ==========
 
-            # ========== 解析参数 ==========
-            # 处理嵌套的括号和逗号分隔
-            params = []
-            buf = ""
-            stack = []
-            for ch in param_str:
-                if ch == "," and not stack:
-                    # 顶层的逗号，分隔参数
-                    params.append(buf)
-                    buf = ""
-                else:
-                    buf += ch
-                    if ch in "[{(<":
-                        stack.append(ch)
-                    elif ch in "]})>":
-                        if stack:
-                            stack.pop()
-            if buf:
+        element_type = match.group(1).lower()
+        param_str = match.group(2) or ""
+
+        # ========== 解析参数 ==========
+        # 处理嵌套的括号和逗号分隔
+        params = []
+        buf = ""
+        stack = []
+
+        for ch in param_str:
+            if ch == "," and not stack:
+                # 顶层的逗号，分隔参数
                 params.append(buf)
+                buf = ""
+            else:
+                buf += ch
 
-            # ========== 根据元素类型创建对应的消息元素 ==========
-            if element_type == "plain":
-                # 纯文本元素
-                for a in params:
-                    ma = re.match(r"(.*?)=(.*)", a)
-                    if ma:
-                        if ma.group(1) == "text":
-                            ua = html.unescape(ma.group(2))
-                            elements.append(PlainElement.assign(ua, disable_joke=disable_joke))
-                        else:
-                            a = html.unescape(a)
-                            elements.append(PlainElement.assign(a, disable_joke=disable_joke))
-                    else:
-                        a = html.unescape(a)
-                        elements.append(PlainElement.assign(a, disable_joke=disable_joke))
+                if ch in "[{(<":
+                    stack.append(ch)
+                elif ch in "]})>":
+                    if stack:
+                        stack.pop()
 
-            elif element_type == "image":
-                # 图片元素
-                for a in params:
-                    ma = re.match(r"(.*?)=(.*)", a)
-                    if ma:
-                        img = None
-                        if ma.group(1) == "path":
-                            parse_url = urlparse(ma.group(2))
-                            if parse_url[0] == "file" or url_pattern.match(parse_url[1]):
-                                img = ImageElement.assign(path=ma.group(2))
-                        if ma.group(1) == "headers" and img:
-                            img.headers = orjson.loads(str(base64.b64decode(ma.group(2)), "UTF-8"))
-                        if img:
-                            elements.append(img)
-                        else:
-                            a = html.unescape(a)
-                            elements.append(ImageElement.assign(a))
-                    else:
-                        a = html.unescape(a)
-                        elements.append(ImageElement.assign(a))
+        if buf:
+            params.append(buf)
 
-            elif element_type == "voice":
-                # 语音元素
-                for a in params:
-                    ma = re.match(r"(.*?)=(.*)", a)
-                    if ma:
-                        if ma.group(1) == "path":
-                            parse_url = urlparse(ma.group(2))
-                            if parse_url[0] == "file" or url_pattern.match(parse_url[1]):
-                                elements.append(VoiceElement.assign(ma.group(2)))
-                        else:
-                            a = html.unescape(a)
-                            elements.append(VoiceElement.assign(a))
-                    else:
-                        a = html.unescape(a)
-                        elements.append(VoiceElement.assign(a))
+        # ========= 转 dict =========
+        parsed_params = {}
 
-            elif element_type == "i18n":
-                # 多语言元素
-                i18nkey = None
-                kwargs = {}
-                for a in params:
-                    ma = re.match(r"(.*?)=(.*)", a)
-                    if ma:
-                        if ma.group(1) == "i18nkey":
-                            i18nkey = html.unescape(ma.group(2))
-                        else:
-                            kwargs[ma.group(1)] = html.unescape(ma.group(2))
-                if i18nkey:
-                    elements.append(I18NContextElement.assign(i18nkey, disable_joke, **kwargs))
+        for a in params:
+            ma = re.match(r"(.*?)=(.*)", a, re.DOTALL)
 
-            elif element_type == "mention":
-                # 提及元素
-                for a in params:
-                    ma = re.match(r"(.*?)=(.*)", a)
-                    if ma:
-                        if ma.group(1) == "userid":
-                            ua = html.unescape(ma.group(2))
-                            elements.append(MentionElement.assign(ua))
-                        else:
-                            a = html.unescape(a)
-                            elements.append(MentionElement.assign(a))
-                    else:
-                        a = html.unescape(a)
-                        elements.append(MentionElement.assign(a))
+            if ma:
+                key = ma.group(1).strip()
+                value = html.unescape(ma.group(2))
+
+                parsed_params[key] = value
+
+        # ========= 纯文本 =========
+        if element_type == "plain":
+            text_value = parsed_params.get("text", "")
+
+            local_disable_joke = _parse_bool_flag(parsed_params.get("disable_joke"), disable_joke)
+
+            elements.append(PlainElement.assign(text_value, disable_joke=local_disable_joke))
+
+        # ========= 图片 =========
+        elif element_type == "image":
+            path = parsed_params.get("path")
+
+            if path:
+                parse_url = urlparse(path)
+
+                if parse_url[0] == "file" or url_pattern.match(parse_url[1]):
+                    img = ImageElement.assign(path=path)
+
+                    headers = parsed_params.get("headers")
+
+                    if headers:
+                        img.headers = orjson.loads(str(base64.b64decode(headers), "UTF-8"))
+
+                    elements.append(img)
+                else:
+                    elements.append(ImageElement.assign(path))
+
+        # ========= 语音 =========
+        elif element_type == "voice":
+            path = parsed_params.get("path")
+
+            if path:
+                parse_url = urlparse(path)
+
+                if parse_url[0] == "file" or url_pattern.match(parse_url[1]):
+                    elements.append(VoiceElement.assign(path))
+                else:
+                    elements.append(VoiceElement.assign(path))
+
+        # ========= 多语言 =========
+        elif element_type == "i18n":
+            i18nkey = parsed_params.get("i18nkey")
+
+            if i18nkey:
+                local_disable_joke = _parse_bool_flag(parsed_params.pop("disable_joke", None), disable_joke)
+
+                fallback = _parse_bool_flag(parsed_params.pop("fallback", None), True)
+
+                locale_failed_prompt = _parse_bool_flag(parsed_params.pop("locale_failed_prompt", None), True)
+
+                # 删除非 kwargs 参数
+                parsed_params.pop("i18nkey", None)
+
+                elements.append(
+                    I18NContextElement.assign(
+                        i18nkey,
+                        disable_joke=local_disable_joke,
+                        fallback=fallback,
+                        locale_failed_prompt=locale_failed_prompt,
+                        **parsed_params,
+                    )
+                )
+
+        # ========= 提及 =========
+        elif element_type == "mention":
+            userid = parsed_params.get("userid")
+
+            if userid:
+                elements.append(MentionElement.assign(userid))
 
     return elements
 

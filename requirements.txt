@@ -27,7 +27,7 @@ aiosignal==1.4.0
     # via aiohttp
 aiosqlite==0.22.1
     # via tortoise-orm
-akari-bot-i18n==0.0.3
+akari-bot-i18n==0.0.4
     # via akari-bot
 akari-bot-webrender==0.5.13
     # via akari-bot

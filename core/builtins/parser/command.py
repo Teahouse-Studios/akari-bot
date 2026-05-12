@@ -149,7 +149,7 @@ class CommandParser:
 
         args_lst = []
         for x in format_args:
-            x = locale.t_str(x, fallback_failed_prompt=False)
+            x = locale.t_str(x, locale_failed_prompt=False)
             x = f"{self.command_prefixes[0]}{self.module_name} {x}"
             args_lst.append(x)
         args = "\n".join(y for y in args_lst)
@@ -157,7 +157,7 @@ class CommandParser:
         if self.options_desc:
             options_desc_fmtted = []
             for m, desc in self.options_desc.items():
-                desc = locale.t_str(desc, fallback_failed_prompt=False)
+                desc = locale.t_str(desc, locale_failed_prompt=False)
                 options_desc_fmtted.append(f"{m} - {desc}")
             args += f"\n{locale.t('core.help.options')}\n" + "\n".join(options_desc_fmtted)
         return args
@@ -222,14 +222,14 @@ class CommandParser:
             if match:
                 # 纯描述，没有命令部分
                 x = ""
-                desc = locale.t_str(match.group(1), fallback_failed_prompt=False)
+                desc = locale.t_str(match.group(1), locale_failed_prompt=False)
             else:
                 # 尝试匹配命令 + 描述格式: "command - {I18N:...}"
                 match = re.search(r" - (\{I18N:.*?\})$", x)
                 if match:
                     # 提取描述部分
                     x = x[: match.start()]
-                    desc = locale.t_str(match.group(1), fallback_failed_prompt=False)
+                    desc = locale.t_str(match.group(1), locale_failed_prompt=False)
 
             # 添加命令和描述到列表
             args_list.append({"args": f"{self.command_prefixes[0]}{self.module_name} {x}", "desc": desc})
@@ -239,7 +239,7 @@ class CommandParser:
         if self.options_desc:
             for m, desc in self.options_desc.items():
                 # 翻译选项描述
-                desc = locale.t_str(desc, fallback_failed_prompt=False)
+                desc = locale.t_str(desc, locale_failed_prompt=False)
                 options_desc_fmtted.append({m: desc})
 
         # ========== 步骤 4: 返回结构化的 JSON 数据 ==========
