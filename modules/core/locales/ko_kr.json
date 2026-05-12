@@ -88,7 +88,7 @@
     "core.message.database.pages": "(페이지 ${page} / ${total_pages} | 총 ${data_count})",
     "core.message.database.success": "${rows}개의 데이터가 성공적으로 수정되었습니다.",
     "core.message.echo.prompt": "반복하고 싶은 메시지를 보내주세요.",
-    "core.message.help.all_modules": "\"${prefix}module list\" 명령어를 사용하여 사용 가능한 모든 모듈을 확인합니다.",
+    "core.message.help.all_modules": "\"${prefix}module list\" 명령어를 사용하여 사용 가능한 모든 모듈을 확인하십시오.",
     "core.message.help.command_count": "${count}개의 명령어",
     "core.message.help.detail": "자세한 내용은 \"${prefix}help <모듈 이름>\"을 사용하여 확인하십시오.",
     "core.message.help.document": "온라인 문서를 참고하여 도움을 받을 수도 있습니다: ${url}",
