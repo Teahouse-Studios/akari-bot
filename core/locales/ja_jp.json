@@ -55,6 +55,7 @@
     "config.comments.secret.proxy": "プロキシ サービスのアドレス。",
     "config.comments.webrender.browser_executable_path": "WebRender が使用するブラウザ実行ファイルのパス。空の場合は、Playwright によってインストールされたデフォルトのブラウザが使用されます。",
     "config.comments.webrender.browser_type": "WebRender が使用しているブラウザの種類。（「chrome」と「firefox」をサポート）",
+    "config.comments.webrender.enable": "WebRender を有効にするかどうか。",
     "config.comments.webrender.remote_only": "リモート WebRender サービスのみの使用を許可するかどうか。",
     "config.comments.webrender.remote_web_render_url": "リモート WebRender サービスの URL。ローカル WebRender レンダリングが失敗した場合にリクエストを試行します。",
     "config.header.line.1": "https://toml.io/ja/v1.0.0",
@@ -178,6 +179,5 @@
     "tos.message.warning": "警告：\n利用規約に基づいて、あなたは行動規範に違反しています。",
     "tos.message.warning.count": "これは ${current_warns} 回目の警告です。",
     "tos.message.warning.last": "これは最後の警告です。",
-    "tos.message.warning.prompt": "${warn_counts} 回以上の警告を受けた場合、アカウントはブロックされます。",
-    "config.comments.webrender.enable": "WebRender を有効にするかどうか。"
+    "tos.message.warning.prompt": "${warn_counts} 回以上の警告を受けた場合、アカウントはブロックされます。"
 }

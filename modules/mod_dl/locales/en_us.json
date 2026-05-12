@@ -13,5 +13,6 @@
     "mod_dl.message.prompt": "Please reply the corresponding number to select the Mod.",
     "mod_dl.message.version": "This Mod has the following version(s):",
     "mod_dl.message.version.not_found": "The specified version was not found.",
-    "mod_dl.message.version.prompt": "Please reply the version code to select the version."
+    "mod_dl.message.version.prompt": "Please reply the version code to select the version.",
+    "config.comments.module_mod_dl_secret.curseforge_api_key": "CurseForge API key."
 }

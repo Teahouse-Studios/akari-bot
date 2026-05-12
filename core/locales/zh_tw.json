@@ -57,6 +57,7 @@
     "config.comments.secret.proxy": "代理服務位址。",
     "config.comments.webrender.browser_executable_path": "WebRender 使用的瀏覽器可執行檔案路徑，若為空白則使用 Playwright 預設安裝之瀏覽器。",
     "config.comments.webrender.browser_type": "WebRender 所使用的瀏覽器類型。（支援「chrome」與「firefox」）",
+    "config.comments.webrender.enable": "是否啟用 Webrender。",
     "config.comments.webrender.remote_only": "是否僅允許使用遠端 WebRender 服務。",
     "config.comments.webrender.remote_web_render_url": "遠端 WebRender 服務的 URL，在本機 WebRender 成像失敗時會嘗試請求。",
     "config.header.line.1": "https://toml.io/cn/v1.0.0",
@@ -180,6 +181,5 @@
     "tos.message.warning": "警告：\n依據使用條款，你已違反我們的行為準則。",
     "tos.message.warning.count": "這是第 ${current_warns} 次警告。",
     "tos.message.warning.last": "這是最後一次警告。",
-    "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。",
-    "config.comments.webrender.enable": "是否啟用 Webrender。"
+    "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。"
 }

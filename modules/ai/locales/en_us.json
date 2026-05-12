@@ -6,7 +6,7 @@
     "ai.help.set": "Set the default LLM in session.",
     "ai.message.list.none": "Cannot find any available LLMs. Please contact the bot owner to add one.",
     "ai.message.list": "The following are the available LLM(s):",
-    "ai.message.list.prompt": "Use \"${prefix}ai set <LLM>\" to switch LLMs.",
+    "ai.message.list.prompt": "Use \"${prefix}ai llm set <LLM>\" to switch LLMs.",
     "ai.message.llm.invalid": "Invalid LLM.",
     "ai.message.text2img.error": "(An error occurred: Unable to correctly convert the following content into the image:\n${text}) ",
     "config.comments.module_ai.ai_default_llm": "The LLM used by default.",
