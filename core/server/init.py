@@ -12,6 +12,7 @@ import asyncio
 import logging
 
 import orjson
+from akari_bot_i18n.i18n import load_locale_file
 from apscheduler.schedulers import SchedulerAlreadyRunningError
 
 from core.builtins.bot import Bot
@@ -20,7 +21,7 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, I18NContext
 from core.builtins.session.info import SessionInfo
 from core.config import CFGManager
-from core.constants import Info, PrivateAssets, Secret
+from core.constants import Info, PrivateAssets, Secret, lang_list, all_locales_path
 from core.database import init_db
 from core.loader import load_modules, ModulesManager
 from core.logger import Logger
@@ -59,6 +60,7 @@ async def init_async(start_scheduler=True) -> None:
         else:
             Logger.warning("Failed to get Git commit hash, is it a Git repository?")
 
+    locale_loaded_err = load_locale_file(list(lang_list.keys()), all_locales_path)
     # 初始化数据库
     Logger.info("Initializing database...")
     if await init_db():
@@ -98,7 +100,7 @@ async def init_async(start_scheduler=True) -> None:
     # 加载密钥和启动提示
     await load_secret()
     Logger.info(f"Hello, {Info.client_name}!")
-    await load_prompt()
+    await load_prompt(locale_loaded_err)
 
 
 async def load_secret():
@@ -119,7 +121,7 @@ async def load_secret():
                             Secret.update(w)
 
 
-async def load_prompt() -> None:
+async def load_prompt(locale_load_error) -> None:
     """加载并发送启动提示信息。
 
     如果存在缓存的发送重启命令的对象信息，发送加载成功或失败的提示。
@@ -132,9 +134,12 @@ async def load_prompt() -> None:
             author_session = converter.structure(orjson.loads(open_author_cache.read()), SessionInfo)
             await author_session.refresh_info()
             with open(loader_cache, "r", encoding="utf-8") as open_loader_cache:
+                message = []
                 if (read := open_loader_cache.read()) != "":
-                    message = [I18NContext("loader.load.failed"), Plain(read.strip(), disable_joke=True)]
-                else:
+                    message += [I18NContext("loader.load.failed"), Plain(read.strip(), disable_joke=True)]
+                if locale_load_error:
+                    message += [Plain("\n".join(locale_load_error), disable_joke=True)]
+                if not message:
                     message = I18NContext("loader.load.success")
                 message = MessageChain.assign(message)
                 await Bot.send_direct_message(author_session, message)

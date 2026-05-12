@@ -2,6 +2,7 @@ import asyncio
 import importlib.util
 import inspect
 import pkgutil
+import traceback
 from typing import Any
 
 from tortoise import Tortoise
@@ -23,7 +24,10 @@ def fetch_module_db():
     for m in pkgutil.iter_modules(modules.__path__):
         try:
             database_list.append(importlib.util.find_spec(f"modules.{m.name}.database.models").name)
+        except ModuleNotFoundError:
+            pass
         except Exception:
+            Logger.exception(traceback.format_exc())
             pass
 
     Logger.debug(f"Database list: {database_list}")

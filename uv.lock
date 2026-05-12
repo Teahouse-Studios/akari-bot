@@ -265,7 +265,7 @@ requires-dist = [
     { name = "aiocqhttp", specifier = ">=1.4.3,<2.0.0" },
     { name = "aiofile", specifier = ">=3.8.1,<4.0.0" },
     { name = "aiogram", specifier = ">=3.4.1,<4.0.0" },
-    { name = "akari-bot-i18n", specifier = "==0.0.2" },
+    { name = "akari-bot-i18n", specifier = "==0.0.3" },
     { name = "akari-bot-webrender", specifier = "==0.5.13" },
     { name = "akari-bot-webui", specifier = "==0.3.10" },
     { name = "apscheduler", specifier = ">=3.9.1.post0,<4.0.0.0" },
@@ -302,7 +302,7 @@ requires-dist = [
     { name = "pint", specifier = ">=0.25.0,<1.0.0" },
     { name = "pre-commit", specifier = ">=4.0.0,<5.0.0" },
     { name = "psutil", specifier = ">=7.0.0,<8.0.0" },
-    { name = "py-cord", git = "https://github.com/Pycord-Development/pycord" },
+    { name = "py-cord", specifier = ">=2.7.2" },
     { name = "py-cpuinfo", specifier = ">=9.0.0,<10.0.0" },
     { name = "pycryptodome", specifier = ">=3.18.0,<4.0.0" },
     { name = "pyjwt", extras = ["crypto"], specifier = ">=2.8.0,<3.0.0" },
@@ -330,14 +330,14 @@ dev = [{ name = "ruff", specifier = ">=0.15.1" }]
 
 [[package]]
 name = "akari-bot-i18n"
-version = "0.0.2"
+version = "0.0.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "orjson" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/71/01/6cd44816ef6dd859a53aee4aac0000220e63d06c5f1c4cdc1ebb792fb971/akari_bot_i18n-0.0.2.tar.gz", hash = "sha256:9e571212f8ed168a03f72b603d1795ef4f306b3b049472b28a9681fbb4774e1a", size = 3838, upload-time = "2026-05-11T16:10:43.726Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/49/52/aae18e93f81c3b171ca50386ef3e1562b239b542d206399059e88a65a160/akari_bot_i18n-0.0.3.tar.gz", hash = "sha256:b7c6ee40f038c23872de337104c45230a504a304aff62335236b4f772071dde5", size = 3866, upload-time = "2026-05-12T07:14:58.553Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/46/5b/eaf858bd38f0c0c89c2ceadaae238a40edecacfc891bb3e35c17d70b85d1/akari_bot_i18n-0.0.2-py3-none-any.whl", hash = "sha256:29e935ba79c433b125add7205be25bc7de450ccca93449f4d8cfa954079f0c0f", size = 4577, upload-time = "2026-05-11T16:10:42.673Z" },
+    { url = "https://files.pythonhosted.org/packages/82/b9/fdc1028f793ef608658989597fa5b6fc9cd01a768ae804c56d2ba284551d/akari_bot_i18n-0.0.3-py3-none-any.whl", hash = "sha256:786885e4301c095d39b6e9703fe7a056e08982a6e033e9300b216e37fe44dd0f", size = 4617, upload-time = "2026-05-12T07:14:57.363Z" },
 ]
 
 [[package]]
@@ -2386,11 +2386,15 @@ wheels = [
 
 [[package]]
 name = "py-cord"
-version = "2.7.1.dev40+g13f9bbcd6"
-source = { git = "https://github.com/Pycord-Development/pycord#13f9bbcd6b80f242556ede630de99301a123b834" }
+version = "2.7.2"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
     { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/43/75/5b510b4f30c0fe9ae0c440d968e32df1d8857562e49cc652e4f491871384/py_cord-2.7.2.tar.gz", hash = "sha256:86d2172c5b0de33d3aa5611d940dd98acfb1b95adfa10ae7b749e6aaf923ffff", size = 1132471, upload-time = "2026-04-14T11:21:20.481Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6f/4c/1d623000e5a91236895d89bfc2a2947db328182715ac2d7e7ef727938e77/py_cord-2.7.2-py3-none-any.whl", hash = "sha256:e25e5e9392f297b3d8fb8f9f31e57989276c1e2b12ebed5a7b1040dd5891d972", size = 1208198, upload-time = "2026-04-14T11:21:18.741Z" },
 ]
 
 [[package]]

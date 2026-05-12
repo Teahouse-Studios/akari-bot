@@ -27,7 +27,7 @@ aiosignal==1.4.0
     # via aiohttp
 aiosqlite==0.22.1
     # via tortoise-orm
-akari-bot-i18n==0.0.2
+akari-bot-i18n==0.0.3
     # via akari-bot
 akari-bot-webrender==0.5.13
     # via akari-bot
@@ -303,7 +303,7 @@ propcache==0.4.1
     #   yarl
 psutil==7.2.2
     # via akari-bot
-py-cord @ git+https://github.com/Pycord-Development/pycord@13f9bbcd6b80f242556ede630de99301a123b834
+py-cord==2.7.2
     # via akari-bot
 py-cpuinfo==9.0.0
     # via akari-bot
@@ -429,7 +429,7 @@ tzlocal==5.3.1
     # via apscheduler
 unpaddedbase64==2.1.0
     # via matrix-nio
-urllib3==2.6.3
+urllib3==2.7.0
     # via akari-bot
 uvicorn==0.40.0
     # via

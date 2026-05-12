@@ -5,10 +5,9 @@ import sys
 import traceback
 from typing import Callable
 
-from core.constants import PrivateAssets, all_locales_path, lang_list
+from core.constants import PrivateAssets
 from core.database import reload_db
 from core.database.models import ModuleStatus
-from core.i18n import load_locale_file
 from core.logger import Logger
 from core.types import Module
 from core.types.module.component_meta import (
@@ -23,10 +22,6 @@ async def load_modules():
     import modules
 
     err_prompt = []
-    locale_loaded_err = load_locale_file(list(lang_list.keys()), all_locales_path)
-    if locale_loaded_err:
-        err_prompt.append("I18N loaded failed:")
-        err_prompt.append("\n".join(locale_loaded_err))
 
     Logger.info("Attempting to load modules...")
 

@@ -340,9 +340,6 @@ class WikiLogTargetSetInfoL(Model):
         table = "_old_module_wikilog_WikiLogTargetSetInfo"
 
 
-database_list = fetch_module_db()
-
-
 async def rename_old_tables():
     """重命名旧数据库表，为新表让位。
 
@@ -410,6 +407,8 @@ async def convert_database():
     过程中会记录详细的进度和错误信息。
     """
     Logger.warning("Start converting old database...")
+
+    database_list = fetch_module_db()
 
     # 第一步：重命名旧表
     await rename_old_tables()

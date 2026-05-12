@@ -4,10 +4,9 @@ from core.database import fetch_module_db
 from core.database.link import db_type, get_db_link
 from core.database.models import DBVersion
 
-database_list = fetch_module_db()
-
 
 async def update_database():
+    database_list = fetch_module_db()
     await Tortoise.init(db_url=get_db_link(), modules={"models": ["core.database.models"] + database_list})
 
     await Tortoise.generate_schemas(safe=True)

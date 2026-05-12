@@ -16,7 +16,7 @@ readme = "README.md"
 requires-python = ">=3.12.0,<4.0.0"
 dependencies = [
     # akari-bot-service
-    "akari-bot-i18n==0.0.2",
+    "akari-bot-i18n==0.0.3",
     "akari-bot-webrender==0.5.13",
     "akari-bot-webui==0.3.10",
     # lib
@@ -36,7 +36,6 @@ dependencies = [
     "ffmpy>=1.0.0,<2.0.0",
     "khl-py>=0.3.16,<1.0.0",
     "matrix-nio>=0.25.0,<1.0.0",
-    "py-cord @ git+https://github.com/Pycord-Development/pycord",
     "pyjwt[crypto]>=2.8.0,<3.0.0",
     "qq-botpy>=1.2.1,<2.0.0",
     "slowapi>=0.1.9,<1.0.0",
@@ -90,6 +89,7 @@ dependencies = [
     "webcolors>=25.0.0,<26.0.0",
     "wolframalpha>=5.0.0,<6.0.0",
     # uncategorized
+    "py-cord>=2.7.2",
 ]
 
 [project.urls]
