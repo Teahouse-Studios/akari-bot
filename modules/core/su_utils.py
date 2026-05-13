@@ -407,9 +407,9 @@ async def update_dependencies():
 
 
 @upd.command()
-@upd.command("[--force]")
+@upd.command("[--force-im-sure-what-i-am-doing]")
 async def _(msg: Bot.MessageSession):
-    if msg.parsed_msg and msg.parsed_msg.get("--force", False) and not Bot.Info.binary_mode:
+    if msg.parsed_msg and msg.parsed_msg.get("--force-im-sure-what-i-am-doing", False) and not Bot.Info.binary_mode:
         await pull_repo()
         await update_dependencies()
         return
@@ -451,9 +451,9 @@ async def wait_for_restart(msg: Bot.MessageSession):
 
 
 @rst.command()
-@rst.command("[--force]")
+@rst.command("[--force-im-sure-what-i-am-doing]")
 async def _(msg: Bot.MessageSession):
-    if msg.parsed_msg and msg.parsed_msg.get("--force", False):
+    if msg.parsed_msg and msg.parsed_msg.get("--force-im-sure-what-i-am-doing", False):
         await restart()
     try:
         if not await msg.wait_confirm(append_instruction=False):
@@ -484,9 +484,9 @@ upds = module(
 
 
 @upds.command()
-@upds.command("[--force]")
+@upds.command("[--force-im-sure-what-i-am-doing]")
 async def _(msg: Bot.MessageSession):
-    if msg.parsed_msg and msg.parsed_msg.get("--force", False):
+    if msg.parsed_msg and msg.parsed_msg.get("--force-im-sure-what-i-am-doing", False):
         if Bot.Info.version and Bot.Info.version.startswith("git:"):
             await pull_repo()
         await restart()
