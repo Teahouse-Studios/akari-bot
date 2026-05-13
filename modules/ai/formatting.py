@@ -97,15 +97,18 @@ async def generate_code_snippet(code: str, language: str):
 
 
 async def generate_md_table(table: str):
+    def process_redacted(text: str) -> str:
+        return re.sub(r"\{I18N:check\.redacted,reason=(.*?)\}", r"[REDACTED:\1]", text)
+
     lines = table.strip().split("\n")
     if len(lines) < 2:
         raise ValueError("Invalid Markdown table format.")
 
-    headers = [h.strip() for h in lines[0].split("|") if h.strip()]
-    data = []
+    headers = [process_redacted(h.strip()) for h in lines[0].split("|") if h.strip()]
 
+    data = []
     for line in lines[2:]:
-        row = [cell.strip() for cell in line.split("|") if cell.strip()]
+        row = [process_redacted(cell.strip()) for cell in line.split("|") if cell.strip()]
         if row:
             data.append(row)
 
@@ -114,9 +117,8 @@ async def generate_md_table(table: str):
 
     image_table = ImageTable(data=data, headers=headers)
     imgs = await image_table_render(image_table)
+
     if imgs:
-        img_lst = []
-        for img in imgs:
-            img_lst.append(img)
-        return img_lst
+        return list(imgs)
+
     raise RuntimeError("Generation failed.")

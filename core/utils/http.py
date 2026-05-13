@@ -150,7 +150,7 @@ async def get_url(
     logging_err_resp: bool = True,
     cookies: dict[str, Any] | None = None,
 ) -> Any:
-    """ 发送 GET 请求。
+    """发送 GET 请求。
 
     :param url: 需要获取的 URL。
     :param status_code: 指定请求到的状态码，若不符则抛出 ValueError。

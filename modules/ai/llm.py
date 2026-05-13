@@ -1,46 +1,71 @@
 import io
 
+from openai import AsyncOpenAI, APITimeoutError
 from PIL import Image as PILImage
-from openai import AsyncOpenAI
 
 from core.builtins.message.internal import I18NContext, Image, Plain
 from core.builtins.session.internal import MessageSession
 from core.config import Config
+from core.constants.exceptions import ExternalException
 from core.dirty_check import check
 from core.logger import Logger
 from .formatting import parse_markdown, generate_code_snippet, generate_latex, generate_md_table
 from .setting import INSTRUCTIONS
+from .tools import TOOLS, execute_tool_calls
 
 max_tokens = Config("llm_max_tokens", 4096, table_name="module_ai")
+timeout = Config("llm_timeout", 60, cfg_type=float, table_name="module_ai")
 temperature = Config("llm_temperature", 1, cfg_type=float, table_name="module_ai")
 top_p = Config("llm_top_p", 1, cfg_type=float, table_name="module_ai")
 frequency_penalty = Config("llm_frequency_penalty", 0, cfg_type=float, table_name="module_ai")
 presence_penalty = Config("llm_presence_penalty", 0, cfg_type=float, table_name="module_ai")
+
+MAX_ITERATIONS = 5
 
 
 async def ask_llm(
     prompt: str, model_name: str, api_url: str, api_key: str, session: MessageSession
 ) -> tuple[list, int, int]:
     client = AsyncOpenAI(base_url=api_url, api_key=api_key)
-    completion = await client.chat.completions.create(
-        model=model_name,
-        messages=[{"role": "system", "content": INSTRUCTIONS}, {"role": "user", "content": prompt}],
-        max_completion_tokens=max_tokens,
-        temperature=temperature,
-        top_p=top_p,
-        frequency_penalty=frequency_penalty,
-        presence_penalty=presence_penalty,
-    )
+    messages = [{"role": "system", "content": INSTRUCTIONS}, {"role": "user", "content": prompt}]
+    total_input_tokens = 0
+    total_output_tokens = 0
 
-    if "reasoning_content" in completion.choices[0].message.model_extra:
-        reasoning = completion.choices[0].message.model_extra["reasoning_content"]
-        Logger.info(f"Thought: {reasoning}")
-    res = completion.choices[0].message.content
-    Logger.info(res)
-    input_tokens = completion.usage.prompt_tokens
-    output_tokens = completion.usage.completion_tokens
+    iterations = 0
+    while iterations < MAX_ITERATIONS:
+        try:
+            completion = await client.chat.completions.create(
+                model=model_name,
+                messages=messages,
+                tool_choice="auto",
+                tools=TOOLS,
+                max_completion_tokens=max_tokens,
+                temperature=temperature,
+                top_p=top_p,
+                frequency_penalty=frequency_penalty,
+                presence_penalty=presence_penalty,
+                timeout=timeout,
+            )
+        except APITimeoutError as e:
+            raise ExternalException(e)
+        except Exception as e:
+            raise e
 
-    res = await check(res, session=session)
+        res_msg = completion.choices[0].message
+        total_input_tokens += completion.usage.prompt_tokens
+        total_output_tokens += completion.usage.completion_tokens
+
+        messages.append(res_msg)
+        if res_msg.tool_calls:
+            messages = await execute_tool_calls(res_msg.tool_calls, messages)
+            iterations += 1
+            continue
+        else:
+            break
+    else:
+        Logger.warning("LLM tool calling reached maximum iterations.")
+
+    res = await check(res_msg.content, session=session)
     resm = "".join(m["content"] for m in res)
     blocks = parse_markdown(resm)
 
@@ -72,4 +97,4 @@ async def ask_llm(
             except Exception:
                 chain.append(I18NContext("ai.message.text2img.error", text=content))
 
-    return chain, input_tokens, output_tokens
+    return chain, total_input_tokens, total_output_tokens

@@ -12,6 +12,7 @@
     "config.comments.module_ai.ai_default_llm": "默认使用的大语言模型。",
     "config.comments.module_ai.llm_frequency_penalty": "大语言模型的频率惩罚，范围 -2 到 2 之间。",
     "config.comments.module_ai.llm_max_tokens": "限制大语言模型的最大 Token 数。",
+    "config.comments.module_ai.llm_timeout": "大语言模型的超时时间。",
     "config.comments.module_ai.llm_presence_penalty": "大语言模型的存在惩罚，范围 -2 到 2 之间。",
     "config.comments.module_ai.llm_temperature": "大语言模型的温度采样，范围 0 到 2 之间。不建议与 top_p 同时修改。",
     "config.comments.module_ai.llm_top_p": "大语言模型的核采样，范围 0 到 1 之间。不建议与 temperature 同时修改。"
