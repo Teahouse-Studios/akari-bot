@@ -38,26 +38,32 @@ def parse_data(original_content: str, result: dict, confidence: float = 60, addi
     content = original_content
 
     if use_textscan_v1:
-        for itemResult in result["results"]:
-            if float(itemResult["rate"]) >= confidence and itemResult["suggestion"] == "block":
-                for itemDetail in itemResult["details"]:
-                    if "contexts" in itemDetail:
-                        for itemContext in itemDetail["contexts"]:
-                            _offset = 0
-                            if "positions" in itemContext:
-                                for pos in itemContext["positions"]:
-                                    filter_words_length = pos["endPos"] - pos["startPos"]
-                                    reason = str(I18NContext("check.redacted", reason=itemDetail["label"]))
-                                    content = (
-                                        content[: pos["startPos"] + _offset]
-                                        + reason
-                                        + content[pos["endPos"] + _offset :]
-                                    )
-                                    _offset += len(reason) - filter_words_length
-                            else:
-                                content = str(I18NContext("check.redacted", reason=itemDetail["label"]))
-                    else:
-                        content = str(I18NContext("check.redacted", reason=itemDetail["label"]))
+        all_positions = []
+        for itemResult in result.get("results", []):
+            if float(itemResult.get("rate", 0)) >= confidence and itemResult.get("suggestion") == "block":
+                for itemDetail in itemResult.get("details", []):
+                    reason = str(I18NContext("check.redacted", reason=itemDetail["label"]))
+
+                    if "contexts" not in itemDetail:
+                        content = reason
+                        continue
+
+                    for itemContext in itemDetail["contexts"]:
+                        if "positions" in itemContext:
+                            for pos in itemContext["positions"]:
+                                all_positions.append({"start": pos["startPos"], "end": pos["endPos"], "reason": reason})
+                        else:
+                            content = reason
+
+        if all_positions:
+            all_positions.sort(key=lambda x: (x["start"], x["end"]), reverse=True)
+
+            last_start = len(content) + 1
+            for pos in all_positions:
+                if pos["end"] > last_start:
+                    continue
+                content = content[: pos["start"]] + pos["reason"] + content[pos["end"] :]
+                last_start = pos["start"]
     else:
         if result["RiskLevel"] == "high":
             for itemDetail in result["Result"]:
