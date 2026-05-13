@@ -21,7 +21,7 @@ from core.constants.exceptions import InvalidCommandFormatError
 from core.i18n import Locale
 from core.logger import Logger
 from core.types import Module
-from .args import parse_argv, Template, templates_to_str, DescPattern
+from .args import parse_argv, Template, templates_to_str, ArgumentPattern, DescPattern
 
 # 默认地区设置
 default_locale = Config("default_locale", cfg_type=str)
@@ -110,6 +110,10 @@ class CommandParser:
             if match.command_template:
                 for m in match.command_template:
                     command_templates[m] = {"priority": match.priority, "meta": match}
+                    if not any(isinstance(arg, ArgumentPattern) for arg in m.args) and not command_templates.get(
+                        "", False
+                    ):
+                        command_templates[""] = {"priority": match.priority, "meta": match}
             else:
                 # 空模板（默认命令）
                 command_templates[""] = {"priority": match.priority, "meta": match}

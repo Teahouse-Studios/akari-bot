@@ -406,7 +406,6 @@ async def update_dependencies():
     return "..." + pip_install[-500:] if len(pip_install) > 500 else pip_install
 
 
-@upd.command()
 @upd.command("[--force-im-sure-what-i-am-doing]")
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg and msg.parsed_msg.get("--force-im-sure-what-i-am-doing", False) and not Bot.Info.binary_mode:
@@ -450,7 +449,6 @@ async def wait_for_restart(msg: Bot.MessageSession):
         await msg.send_message(I18NContext("core.message.restart.timeout"))
 
 
-@rst.command()
 @rst.command("[--force-im-sure-what-i-am-doing]")
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg and msg.parsed_msg.get("--force-im-sure-what-i-am-doing", False):
@@ -483,7 +481,6 @@ upds = module(
 )
 
 
-@upds.command()
 @upds.command("[--force-im-sure-what-i-am-doing]")
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg and msg.parsed_msg.get("--force-im-sure-what-i-am-doing", False):
@@ -624,7 +621,6 @@ async def _(msg: Bot.MessageSession, display_msg: str):
 rse = module("raise", required_superuser=True, base=True, doc=True)
 
 
-@rse.command()
 @rse.command("[<args>]")
 async def _(msg: Bot.MessageSession, args: str = None):
     e = args or "{I18N:core.message.raise}"

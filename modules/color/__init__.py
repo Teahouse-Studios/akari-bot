@@ -38,7 +38,6 @@ css_hex_to_names = {
 }
 
 
-@c.command()
 @c.command("[<color>] {{I18N:color.help}}")
 async def _(msg: Bot.MessageSession, color: str = None):
     if not color:

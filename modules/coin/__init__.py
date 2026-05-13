@@ -13,7 +13,6 @@ STAND_WEIGHT = Config("coin_stand_weight", 6, table_name="module_coin")
 coin = module("coin", developers=["Light-Beacon"], desc="{I18N:coin.help.desc}", doc=True)
 
 
-@coin.command()
 @coin.command("[<amount>] {{I18N:coin.help}}")
 async def _(msg: Bot.MessageSession, amount: int = 1):
     await msg.finish(await flip_coins(amount))

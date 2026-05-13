@@ -43,7 +43,6 @@ def search_cluster(clusterList: dict, key: str, value: str):
     return result
 
 
-@oba.command()
 @oba.command("status {{I18N:oba.help.status}}")
 async def _(msg: Bot.MessageSession):
     dashboard = await get_url(f"{API}/metric/dashboard", fmt="json")
