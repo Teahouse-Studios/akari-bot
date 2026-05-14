@@ -7,6 +7,28 @@ from core.config import Config
 
 proxy = Config("proxy", cfg_type=str, secret=True)
 
+search_web_desc = {
+    "type": "function",
+    "function": {
+        "name": "search_web",
+        "description": "Search the web for up-to-date information.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "Search keywords."},
+                "search_results": {
+                    "type": "integer",
+                    "description": "Number of search results.",
+                    "default": 5,
+                    "minimum": 1,
+                    "maximum": 10,
+                },
+            },
+            "required": ["query"],
+        },
+    },
+}
+
 
 async def search_web(query: str, search_results: int = 5):
     try:
@@ -35,4 +57,4 @@ async def search_web(query: str, search_results: int = 5):
         return "Unable to use search engine. please let user contact the developer."
 
 
-__all__ = ["search_web"]
+__all__ = ["search_web", "search_web_desc"]

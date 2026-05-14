@@ -1,6 +1,6 @@
 import io
 
-from openai import AsyncOpenAI, APITimeoutError
+from openai import AsyncOpenAI, APITimeoutError, RateLimitError
 from PIL import Image as PILImage
 
 from core.builtins.message.internal import I18NContext, Image, Plain
@@ -13,14 +13,14 @@ from .formatting import parse_markdown, generate_code_snippet, generate_latex, g
 from .setting import INSTRUCTIONS
 from .tools import TOOLS, execute_tool_calls
 
-max_tokens = Config("llm_max_tokens", 4096, table_name="module_ai")
+max_tokens = Config("llm_max_tokens", 2048, table_name="module_ai")
 timeout = Config("llm_timeout", 60, cfg_type=float, table_name="module_ai")
 temperature = Config("llm_temperature", 1, cfg_type=float, table_name="module_ai")
 top_p = Config("llm_top_p", 1, cfg_type=float, table_name="module_ai")
 frequency_penalty = Config("llm_frequency_penalty", 0, cfg_type=float, table_name="module_ai")
 presence_penalty = Config("llm_presence_penalty", 0, cfg_type=float, table_name="module_ai")
 
-MAX_ITERATIONS = 5
+MAX_ITERATIONS = 6
 
 
 async def ask_llm(
@@ -30,14 +30,23 @@ async def ask_llm(
     messages = [{"role": "system", "content": INSTRUCTIONS}, {"role": "user", "content": prompt}]
     total_input_tokens = 0
     total_output_tokens = 0
+    content_pieces = []
 
     iterations = 0
-    while iterations < MAX_ITERATIONS:
+    while iterations <= MAX_ITERATIONS:
+        is_final_attempt = iterations == MAX_ITERATIONS
+        if is_final_attempt:
+            messages.append(
+                {
+                    "role": "system",
+                    "content": "Warning: Iteration limit reached. Provide the final answer based on the available information and do not attempt to call functions again.",
+                }
+            )
         try:
             completion = await client.chat.completions.create(
                 model=model_name,
                 messages=messages,
-                tool_choice="auto",
+                tool_choice="none" if is_final_attempt else "auto",
                 tools=TOOLS,
                 max_completion_tokens=max_tokens,
                 temperature=temperature,
@@ -46,7 +55,7 @@ async def ask_llm(
                 presence_penalty=presence_penalty,
                 timeout=timeout,
             )
-        except APITimeoutError as e:
+        except (APITimeoutError, RateLimitError) as e:
             raise ExternalException(e)
         except Exception as e:
             raise e
@@ -56,16 +65,18 @@ async def ask_llm(
         total_output_tokens += completion.usage.completion_tokens
 
         messages.append(res_msg)
-        if res_msg.tool_calls:
+        if res_msg.content:
+            content_pieces.append(res_msg.content)
+        if res_msg.tool_calls and not is_final_attempt:
             messages = await execute_tool_calls(res_msg.tool_calls, messages)
             iterations += 1
             continue
         else:
             break
     else:
-        Logger.warning("LLM tool calling reached maximum iterations.")
+        Logger.warning("LLM function calling reached maximum iterations.")
 
-    res = await check(res_msg.content, session=session)
+    res = await check("\n".join(content_pieces), session=session)
     resm = "".join(m["content"] for m in res)
     blocks = parse_markdown(resm)
 

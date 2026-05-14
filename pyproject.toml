@@ -75,6 +75,7 @@ dependencies = [
     # modules
     "beautifulsoup4>=4.11.1,<5.0.0",
     "ddgs>=9.14.2",
+    "e2b-code-interpreter>=2.6.2",
     "emoji>=2.12.1,<3.0.0",
     "feedparser>=6.0.10,<7.0.0",
     "google-play-scraper>=1.2.2,<2.0.0",

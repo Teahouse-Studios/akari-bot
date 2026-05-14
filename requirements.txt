@@ -63,6 +63,8 @@ attrs==25.4.0
     #   aiohttp
     #   akari-bot
     #   cattrs
+    #   e2b
+    #   e2b-code-interpreter
     #   jsonschema
     #   langconv
     #   referencing
@@ -76,6 +78,8 @@ blinker==1.9.0
     # via
     #   flask
     #   quart
+bracex==2.6
+    # via wcmatch
 caio==0.9.25
     # via aiofile
 cattrs==26.1.0
@@ -136,6 +140,12 @@ distro==1.9.0
     # via openai
 dnspython==2.8.0
     # via mcstatus
+dockerfile-parse==2.0.1
+    # via e2b
+e2b==2.21.0
+    # via e2b-code-interpreter
+e2b-code-interpreter==2.6.2
+    # via akari-bot
 emoji==2.15.0
     # via akari-bot
 fake-http-header==0.3.5
@@ -183,6 +193,7 @@ h11==0.16.0
     #   wsproto
 h2==4.3.0
     # via
+    #   e2b
     #   hypercorn
     #   matrix-nio
 hpack==4.1.0
@@ -190,7 +201,9 @@ hpack==4.1.0
 htmldate==1.9.4
     # via trafilatura
 httpcore==1.0.9
-    # via httpx
+    # via
+    #   e2b
+    #   httpx
 httptools==0.7.1
     # via uvicorn
 httpx==0.28.1
@@ -198,6 +211,8 @@ httpx==0.28.1
     #   aiocqhttp
     #   akari-bot
     #   akari-bot-webrender
+    #   e2b
+    #   e2b-code-interpreter
     #   openai
     #   wolframalpha
 hypercorn==0.18.0
@@ -262,6 +277,8 @@ lxml-html-clean==0.4.4
     # via lxml
 magic-filter==1.0.12
     # via aiogram
+markdown-it-py==4.2.0
+    # via rich
 markupsafe==3.0.3
     # via
     #   flask
@@ -274,6 +291,8 @@ matrix-nio==0.25.2
     # via akari-bot
 mcstatus==13.1.0
     # via akari-bot
+mdurl==0.1.2
+    # via markdown-it-py
 more-itertools==10.8.0
     # via wolframalpha
 multidict==6.7.1
@@ -299,6 +318,7 @@ orjson==3.11.7
     #   akari-bot-webrender
 packaging==26.0
     # via
+    #   e2b
     #   limits
     #   matplotlib
 pandas==3.0.0
@@ -330,6 +350,8 @@ propcache==0.4.1
     # via
     #   aiohttp
     #   yarl
+protobuf==7.34.1
+    # via e2b
 psutil==7.2.2
     # via akari-bot
 py-cord==2.7.2
@@ -355,6 +377,8 @@ pydantic-core==2.41.5
     # via pydantic
 pyee==13.0.0
     # via playwright
+pygments==2.20.0
+    # via rich
 pyjwt==2.12.1
     # via akari-bot
 pyparsing==3.3.2
@@ -364,6 +388,7 @@ pypika-tortoise==0.6.3
 python-dateutil==2.9.0.post0
     # via
     #   dateparser
+    #   e2b
     #   htmldate
     #   matplotlib
     #   pandas
@@ -401,6 +426,8 @@ referencing==0.37.0
     #   jsonschema-specifications
 regex==2026.5.9
     # via dateparser
+rich==15.0.0
+    # via e2b
 rpds-py==0.30.0
     # via
     #   jsonschema
@@ -443,6 +470,7 @@ typing-extensions==4.15.0
     #   anyio
     #   beautifulsoup4
     #   cattrs
+    #   e2b
     #   fastapi
     #   flexcache
     #   flexparser
@@ -486,6 +514,8 @@ virtualenv==20.36.1
     # via pre-commit
 watchfiles==1.1.1
     # via uvicorn
+wcmatch==10.1
+    # via e2b
 webcolors==25.10.0
     # via akari-bot
 websockets==16.0

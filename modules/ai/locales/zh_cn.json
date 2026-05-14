@@ -9,6 +9,7 @@
     "ai.message.list.prompt": "使用“${prefix}ai llm set <模型名称>”切换模型。",
     "ai.message.llm.invalid": "无效的大语言模型。",
     "ai.message.text2img.error": "（发生错误：无法正确将以下内容转换为图片：\n${text}）",
+    "config.comments.module_ai_secret.e2b_api_key": "E2B 的 API key。",
     "config.comments.module_ai.ai_default_llm": "默认使用的大语言模型。",
     "config.comments.module_ai.llm_frequency_penalty": "大语言模型的频率惩罚，范围 -2 到 2 之间。",
     "config.comments.module_ai.llm_max_tokens": "限制大语言模型的最大 Token 数。",
