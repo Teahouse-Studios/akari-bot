@@ -457,6 +457,8 @@ async def _(msg: Bot.MessageSession):
         if not await msg.wait_confirm(append_instruction=False):
             await msg.finish()
         else:
+            if not restart_time:
+                restart_time.append(time.time())
             await wait_for_restart(msg)
     except Exception:
         Logger.critical("Failed to send restart confirmation message, perhaps bug? Force restart...")
@@ -492,6 +494,8 @@ async def _(msg: Bot.MessageSession):
             if not await msg.wait_confirm(append_instruction=False):
                 await msg.finish()
             else:
+                if not restart_time:
+                    restart_time.append(time.time())
                 await wait_for_restart(msg)
         except Exception:
             Logger.critical("Failed to send restart confirmation message, perhaps bug? Force restart...")
