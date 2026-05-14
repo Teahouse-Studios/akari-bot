@@ -78,34 +78,37 @@ async def ask_llm(
 
     res = await check("\n".join(content_pieces), session=session)
     resm = "".join(m["content"] for m in res)
-    blocks = parse_markdown(resm)
 
-    chain = []
-    for block in blocks:
-        if block["type"] == "text":
-            chain.append(Plain(block["content"]))
-        elif block["type"] == "latex":
-            content = block["content"]
-            try:
-                path = generate_latex(content)
-                chain.append(Image(path))
-            except Exception:
-                chain.append(I18NContext("ai.message.text2img.error", text=content))
-        elif block["type"] == "code":
-            content = block["content"]["code"]
-            try:
-                content = await generate_code_snippet(content, block["content"]["language"])
-                img = PILImage.open(io.BytesIO(content))
-                chain.append(Image(img))
-            except Exception:
-                chain.append(I18NContext("ai.message.text2img.error", text=content))
-        elif block["type"] == "table":
-            content = block["content"]
-            try:
-                path_lst = await generate_md_table(content)
-                for path in path_lst:
+    if session.session_info.support_image:
+        blocks = parse_markdown(resm)
+        chain = []
+        for block in blocks:
+            if block["type"] == "text":
+                chain.append(Plain(block["content"]))
+            elif block["type"] == "latex":
+                content = block["content"]
+                try:
+                    path = generate_latex(content)
                     chain.append(Image(path))
-            except Exception:
-                chain.append(I18NContext("ai.message.text2img.error", text=content))
-
+                except Exception:
+                    chain.append(Plain(content))
+            elif block["type"] == "code":
+                content = block["content"]["code"]
+                try:
+                    content = await generate_code_snippet(content, block["content"]["language"])
+                    img = PILImage.open(io.BytesIO(content))
+                    chain.append(Image(img))
+                except Exception:
+                    chain.append(Plain(content))
+            elif block["type"] == "table":
+                content = block["content"]
+                try:
+                    path_lst = await generate_md_table(content)
+                    for path in path_lst:
+                        chain.append(Image(path))
+                except Exception:
+                    chain.append(Plain(content))
+    else:
+        chain = [Plain(resm)]
+        
     return chain, total_input_tokens, total_output_tokens

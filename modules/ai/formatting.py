@@ -58,6 +58,10 @@ def parse_markdown(md: str) -> list[dict[str, str]]:
     return blocks
 
 
+def process_redacted(text: str) -> str:
+    return re.sub(r"\{I18N:check\.redacted,reason=(.*?)\}", r"[REDACTED:\1]", text)
+
+
 def generate_latex(formula: str):
     fig, ax = plt.subplots()
     text = ax.text(0.5, 0.5, f"${formula}$", fontsize=20, ha="center", va="center")
@@ -85,7 +89,7 @@ async def generate_code_snippet(code: str, language: str):
         url="https://carbonara.solopov.dev/api/cook",
         data=orjson.dumps(
             {
-                "code": code,
+                "code": process_redacted(code),
                 "backgroundColor": "rgba(255, 255, 255, 0)",
                 "language": language,
                 "theme": "night-owl",
@@ -97,9 +101,6 @@ async def generate_code_snippet(code: str, language: str):
 
 
 async def generate_md_table(table: str):
-    def process_redacted(text: str) -> str:
-        return re.sub(r"\{I18N:check\.redacted,reason=(.*?)\}", r"[REDACTED:\1]", text)
-
     lines = table.strip().split("\n")
     if len(lines) < 2:
         raise ValueError("Invalid Markdown table format.")
