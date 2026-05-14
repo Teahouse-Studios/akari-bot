@@ -197,7 +197,9 @@ async def check(
             root = "https://green-cip.cn-shanghai.aliyuncs.com"
             sem = asyncio.Semaphore(10)
 
-            async def call_api(x: str):
+            split_results = {x: [] for x in call_api_list_}
+
+            async def call_api(original_text: str, sub_text: str, index: int):
                 async with sem:
                     date = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
                     params = {
@@ -210,7 +212,9 @@ async def check(
                         "SignatureNonce": str(uuid.uuid4()),
                         "Action": "TextModerationPlus",
                         "Service": "comment_detection_pro",
-                        "ServiceParameters": orjson.dumps({"dataId": str(uuid.uuid4()), "content": x}).decode("utf-8"),
+                        "ServiceParameters": orjson.dumps({"dataId": str(uuid.uuid4()), "content": sub_text}).decode(
+                            "utf-8"
+                        ),
                     }
 
                     sorted_params = sorted(params.items(), key=lambda k: k[0])
@@ -232,17 +236,37 @@ async def check(
                         result = resp.json()
                         Logger.debug(result)
                         if result["Code"] == 200:
-                            for n in call_api_list[x]:
-                                query_list[n][x] = parse_data(x, result["Data"], confidence, additional_text)
-                            hash_id = hashlib.sha256(x.encode("utf-8")).hexdigest()
-                            await DirtyWordCache.create(hash_id=hash_id, desc=x, result=result["Data"])
+                            parsed_sub = parse_data(sub_text, result["Data"], confidence, additional_text)
+                            split_results[original_text].append((index, parsed_sub, result["Data"]))
                         else:
                             raise ValueError(result["Message"])
                     else:
                         raise ValueError(resp.text)
 
             async with httpx.AsyncClient() as client:
-                await asyncio.gather(*(call_api(x) for x in call_api_list_))
+                tasks = []
+                for x in call_api_list_:
+                    chunks = [x[i : i + 600] for i in range(0, len(x), 600)]
+                    for idx, chunk in enumerate(chunks):
+                        tasks.append(call_api(x, chunk, idx))
+
+                await asyncio.gather(*tasks)
+
+            for x, res_list in split_results.items():
+                res_list.sort(key=lambda item: item[0])
+
+                merged_content = "".join([r[1]["content"] for r in res_list])
+                merged_status = all([r[1]["status"] for r in res_list])
+
+                final_parse_result = {"content": merged_content, "status": merged_status, "original": x}
+
+                for n in call_api_list[x]:
+                    query_list[n][x] = final_parse_result
+
+                if res_list:
+                    hash_id = hashlib.sha256(x.encode("utf-8")).hexdigest()
+                    last_api_data = res_list[-1][2]
+                    await DirtyWordCache.create(hash_id=hash_id, desc=x, result=last_api_data)
 
     results = []
     Logger.debug(query_list)
