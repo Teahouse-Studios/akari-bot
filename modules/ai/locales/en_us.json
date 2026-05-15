@@ -19,5 +19,5 @@
     "config.comments.module_ai.llm_timeout": "Timeout for the LLMs.",
     "config.comments.module_ai.llm_presence_penalty": "The presence penalty of the LLMs, ranging from -2 to 2.",
     "config.comments.module_ai.llm_temperature": "The temperature sampling of the LLMs, ranging from 0 to 2. It is not recommended to modify it at the same time as top_p.",
-    "config.comments.module_ai.llm_top_p": "The kernel sampling of the LLMs, ranging from 0 to 1. It is not recommended to modify it at the same time as temperature."
+    "config.comments.module_ai.llm_top_p": "The nucleus sampling of the LLMs, ranging from 0 to 1. It is not recommended to modify it at the same time as temperature."
 }
