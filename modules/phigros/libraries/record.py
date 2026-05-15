@@ -1,5 +1,6 @@
 import shutil
 import struct
+from pathlib import Path
 
 import orjson
 from Crypto.Cipher import AES
@@ -7,12 +8,12 @@ from Crypto.Util.Padding import unpad
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
-from core.constants.path import assets_path, cache_path
+from core.constants.path import cache_path
 from core.logger import Logger
 from core.utils.http import get_url, download
 from .update import p_headers, remove_punctuations
 
-pgr_assets_path = assets_path / "modules" / "phigros"
+pgr_assets_path = Path(__file__).parent.parent / "assets"
 
 
 levels = {

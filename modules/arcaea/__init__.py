@@ -7,7 +7,7 @@ from core.builtins.message.internal import Image as BImage, Plain, I18NContext
 from core.component import module
 from core.web_render import web_render, SourceOptions
 
-arc_assets_path = Path(__file__).parent / "assets" / "arcaea"
+arc_assets_path = Path(__file__).parent / "assets"
 
 arc = module(
     "arcaea",

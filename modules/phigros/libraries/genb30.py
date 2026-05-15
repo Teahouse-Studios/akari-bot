@@ -1,13 +1,15 @@
+from pathlib import Path
+
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 
 from core.builtins.bot import Bot
-from core.constants.path import assets_path, noto_sans_demilight_path, noto_sans_bold_path
+from core.constants.path import noto_sans_demilight_path, noto_sans_bold_path
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.func import truncate_text
 from .record import get_game_record
 
-pgr_assets_path = assets_path / "modules" / "phigros"
+pgr_assets_path = Path(__file__).parent.parent / "assets"
 
 saira_regular_path = pgr_assets_path / "Saira Regular.ttf"
 

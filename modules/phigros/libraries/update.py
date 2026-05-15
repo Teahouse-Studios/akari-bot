@@ -3,6 +3,7 @@ import re
 import shutil
 import string
 from io import StringIO
+from pathlib import Path
 
 import orjson
 
@@ -11,7 +12,7 @@ from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.http import get_url, download
 
-pgr_assets_path = assets_path / "modules" / "phigros"
+pgr_assets_path = Path(__file__).parent.parent / "assets"
 song_info_path = pgr_assets_path / "song_info.json"
 json_url = "https://raw.githubusercontent.com/ssmzhn/Phigros/main/Phigros.json"
 

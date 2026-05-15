@@ -1,10 +1,11 @@
+from pathlib import Path
+
 import orjson
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Image, I18NContext, Plain
 from core.component import module
-from core.constants.path import assets_path
 from core.utils.http import get_url
 from core.utils.random import Random
 from .database.models import PhigrosBindInfo
@@ -12,7 +13,7 @@ from .libraries.genb30 import get_b30
 from .libraries.update import remove_punctuations, update_assets, p_headers
 from .libraries.record import get_game_record
 
-pgr_assets_path = assets_path / "modules" / "phigros"
+pgr_assets_path = Path(__file__).parent / "assets"
 song_info_path = pgr_assets_path / "song_info.json"
 
 phi = module(
@@ -70,7 +71,7 @@ async def _(msg: Bot.MessageSession):
     if not bind_info:
         await msg.finish(I18NContext("phigros.message.user_unbound", prefix=msg.session_info.prefixes[0]))
     if not song_info_path.exists():
-        await msg.finish(I18NContext("phigros.message.file_not_found"))
+        await msg.finish(I18NContext("phigros.message.file_not_found", prefix=msg.session_info.prefixes[0]))
 
     img = await get_b30(msg, bind_info.username, bind_info.session_token)
     if img:
@@ -100,7 +101,7 @@ def get_rank(score: int, full_combo: bool) -> str:
 @phi.command("random {{I18N:phigros.help.random}}")
 async def _(msg: Bot.MessageSession):
     if not song_info_path.exists():
-        await msg.finish(I18NContext("phigros.message.file_not_found"))
+        await msg.finish(I18NContext("phigros.message.file_not_found", prefix=msg.session_info.prefixes[0]))
 
     msg_chain = MessageChain.assign()
     with open(song_info_path, "rb") as f:
@@ -123,7 +124,7 @@ async def _(msg: Bot.MessageSession, song_name: str):
     if not bind_info:
         await msg.finish(I18NContext("phigros.message.user_unbound", prefix=msg.session_info.prefixes[0]))
     if not song_info_path.exists():
-        await msg.finish(I18NContext("phigros.message.file_not_found"))
+        await msg.finish(I18NContext("phigros.message.file_not_found", prefix=msg.session_info.prefixes[0]))
 
     msg_chain = MessageChain.assign()
     game_records: dict = await get_game_record(msg, bind_info.session_token)
