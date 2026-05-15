@@ -15,10 +15,10 @@ default_llm = default_llm if default_llm in llm_list else None
 ai = module("ai", developers=["DoroWolf", "Dianliang233"], desc="{I18N:ai.help.desc}", doc=True, exclude_from="QQBot")
 
 
-@ai.command("<prompt> [--llm <llm>] [--no-tools] {{I18N:ai.help}}",
-            options_desc={
-                "--llm": "{I18N:ai.help.option.llm}",
-                "--no-tools": "{I18N:ai.help.option.no_tools}"})
+@ai.command(
+    "<prompt> [--llm <llm>] [--no-tools] {{I18N:ai.help}}",
+    options_desc={"--llm": "{I18N:ai.help.option.llm}", "--no-tools": "{I18N:ai.help.option.no_tools}"},
+)
 async def _(msg: Bot.MessageSession, prompt: str):
     get_llm = msg.parsed_msg.get("--llm", False)
     selected_llm = get_llm["<llm>"].lower() if get_llm else None
@@ -46,7 +46,7 @@ async def _(msg: Bot.MessageSession, prompt: str):
         c = qc.check()
         if c == 0 or is_superuser:
             chain, input_tokens, output_tokens = await ask_llm(
-                msg, 
+                msg,
                 prompt,
                 llm_info["model_name"],
                 llm_info["api_url"],

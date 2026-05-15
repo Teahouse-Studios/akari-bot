@@ -59,6 +59,6 @@ async def execute_python_code(code: str):
             return orjson.dumps(result).decode("utf-8")
         except TimeoutException:
             return "Request timeout"
-        except Exception as e:
+        except Exception:
             traceback.print_exc()
             return "Unable to execute Python code, let user connect bot owner."
