@@ -4,4 +4,4 @@
 
 [module_mod_dl_secret]
 # The secret config section of the module. The bot will try to intercept if the values here accidentally appears in the message sent, but be careful to prevent leakage.
-curseforge_api_key = "<Replace me with str value>" # CurseForge 的 API Key。
+curseforge_api_key = "<Replace me with str value>" # CurseForge API key.

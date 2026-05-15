@@ -341,15 +341,9 @@ class CFGManager:
             get_locale = Locale(Config("default_locale", default_locale, str))
             if cfg_name not in cls.values:  # if the target table is not found, create a new table
                 cls.values[cfg_name] = toml_document()
-                cls.values[cfg_name].add(
-                    toml_comment(get_locale.t("config.header.line.1", fallback_failed_prompt=False))
-                )
-                cls.values[cfg_name].add(
-                    toml_comment(get_locale.t("config.header.line.2", fallback_failed_prompt=False))
-                )
-                cls.values[cfg_name].add(
-                    toml_comment(get_locale.t("config.header.line.3", fallback_failed_prompt=False))
-                )
+                cls.values[cfg_name].add(toml_comment(get_locale.t("config.header.line.1", locale_failed_prompt=False)))
+                cls.values[cfg_name].add(toml_comment(get_locale.t("config.header.line.2", locale_failed_prompt=False)))
+                cls.values[cfg_name].add(toml_comment(get_locale.t("config.header.line.3", locale_failed_prompt=False)))
             if target not in cls.values[cfg_name]:  # assume the child table name is the same as the parent table name
                 if target == "config":
                     table_comment_key = "config.table.config"  # i18n comment
@@ -369,7 +363,7 @@ class CFGManager:
                 cls.values[cfg_name].add(nl())
                 cls.values[cfg_name].add(target, toml_document())
                 cls.values[cfg_name][target].add(
-                    toml_comment(get_locale.t(table_comment_key, fallback_failed_prompt=False))
+                    toml_comment(get_locale.t(table_comment_key, locale_failed_prompt=False))
                 )
 
             try:
@@ -382,7 +376,7 @@ class CFGManager:
                 else:
                     qc = f"config.comments.{target}.{q}"
                 # get the comment for the key from locale
-                localed_comment = get_locale.t(qc, fallback_failed_prompt=False)
+                localed_comment = get_locale.t(qc, locale_failed_prompt=False)
                 if localed_comment != qc:
                     cls.values[cfg_name][target].value.item(q).comment(localed_comment)
 

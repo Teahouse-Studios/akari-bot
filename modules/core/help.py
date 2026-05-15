@@ -175,7 +175,6 @@ async def _(msg: Bot.MessageSession, module: str):
             await msg.finish(I18NContext("core.message.help.not_found"))
 
 
-@hlp.command()
 @hlp.command("[--legacy] {{I18N:core.help.help}}", options_desc={"--legacy": "{I18N:help.option.legacy}"})
 async def _(msg: Bot.MessageSession):
     legacy_help = True

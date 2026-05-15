@@ -21,7 +21,7 @@ from core.constants.exceptions import InvalidCommandFormatError
 from core.i18n import Locale
 from core.logger import Logger
 from core.types import Module
-from .args import parse_argv, Template, templates_to_str, DescPattern
+from .args import parse_argv, Template, templates_to_str, ArgumentPattern, DescPattern
 
 # 默认地区设置
 default_locale = Config("default_locale", cfg_type=str)
@@ -110,6 +110,10 @@ class CommandParser:
             if match.command_template:
                 for m in match.command_template:
                     command_templates[m] = {"priority": match.priority, "meta": match}
+                    if not any(isinstance(arg, ArgumentPattern) for arg in m.args) and not command_templates.get(
+                        "", False
+                    ):
+                        command_templates[""] = {"priority": match.priority, "meta": match}
             else:
                 # 空模板（默认命令）
                 command_templates[""] = {"priority": match.priority, "meta": match}
@@ -149,7 +153,7 @@ class CommandParser:
 
         args_lst = []
         for x in format_args:
-            x = locale.t_str(x, fallback_failed_prompt=False)
+            x = locale.t_str(x, locale_failed_prompt=False)
             x = f"{self.command_prefixes[0]}{self.module_name} {x}"
             args_lst.append(x)
         args = "\n".join(y for y in args_lst)
@@ -157,7 +161,7 @@ class CommandParser:
         if self.options_desc:
             options_desc_fmtted = []
             for m, desc in self.options_desc.items():
-                desc = locale.t_str(desc, fallback_failed_prompt=False)
+                desc = locale.t_str(desc, locale_failed_prompt=False)
                 options_desc_fmtted.append(f"{m} - {desc}")
             args += f"\n{locale.t('core.help.options')}\n" + "\n".join(options_desc_fmtted)
         return args
@@ -222,14 +226,14 @@ class CommandParser:
             if match:
                 # 纯描述，没有命令部分
                 x = ""
-                desc = locale.t_str(match.group(1), fallback_failed_prompt=False)
+                desc = locale.t_str(match.group(1), locale_failed_prompt=False)
             else:
                 # 尝试匹配命令 + 描述格式: "command - {I18N:...}"
                 match = re.search(r" - (\{I18N:.*?\})$", x)
                 if match:
                     # 提取描述部分
                     x = x[: match.start()]
-                    desc = locale.t_str(match.group(1), fallback_failed_prompt=False)
+                    desc = locale.t_str(match.group(1), locale_failed_prompt=False)
 
             # 添加命令和描述到列表
             args_list.append({"args": f"{self.command_prefixes[0]}{self.module_name} {x}", "desc": desc})
@@ -239,7 +243,7 @@ class CommandParser:
         if self.options_desc:
             for m, desc in self.options_desc.items():
                 # 翻译选项描述
-                desc = locale.t_str(desc, fallback_failed_prompt=False)
+                desc = locale.t_str(desc, locale_failed_prompt=False)
                 options_desc_fmtted.append({m: desc})
 
         # ========== 步骤 4: 返回结构化的 JSON 数据 ==========

@@ -1,6 +1,7 @@
 import re
 import shutil
 import time
+import traceback
 
 from akari_bot_webrender.functions.options import StatusOptions
 
@@ -405,8 +406,12 @@ async def update_dependencies():
     return "..." + pip_install[-500:] if len(pip_install) > 500 else pip_install
 
 
-@upd.command()
+@upd.command("[--force-im-sure-what-i-am-doing]")
 async def _(msg: Bot.MessageSession):
+    if msg.parsed_msg and msg.parsed_msg.get("--force-im-sure-what-i-am-doing", False) and not Bot.Info.binary_mode:
+        await pull_repo()
+        await update_dependencies()
+        return
     if not Bot.Info.binary_mode:
         if Bot.Info.version and Bot.Info.version.startswith("git:"):
             pull_repo_result = await pull_repo()
@@ -444,15 +449,27 @@ async def wait_for_restart(msg: Bot.MessageSession):
         await msg.send_message(I18NContext("core.message.restart.timeout"))
 
 
-@rst.command()
+@rst.command("[--force-im-sure-what-i-am-doing]")
 async def _(msg: Bot.MessageSession):
-    if await msg.wait_confirm(append_instruction=False):
-        restart_time.append(time.time())
-        await wait_for_restart(msg)
-        write_restart_cache(msg)
+    if msg.parsed_msg and msg.parsed_msg.get("--force-im-sure-what-i-am-doing", False):
         await restart()
-    else:
-        await msg.finish()
+    try:
+        if not await msg.wait_confirm(append_instruction=False):
+            await msg.finish()
+        else:
+            if not restart_time:
+                restart_time.append(time.time())
+            await wait_for_restart(msg)
+    except Exception:
+        Logger.critical("Failed to send restart confirmation message, perhaps bug? Force restart...")
+        Logger.critical(traceback.format_exc())
+    try:
+        restart_time.append(time.time())
+        write_restart_cache(msg)
+    except Exception:
+        Logger.critical("Failed to write restart info cache, perhaps bug? Continue...")
+        Logger.critical(traceback.format_exc())
+    await restart()
 
 
 upds = module(
@@ -466,22 +483,44 @@ upds = module(
 )
 
 
-@upds.command()
+@upds.command("[--force-im-sure-what-i-am-doing]")
 async def _(msg: Bot.MessageSession):
+    if msg.parsed_msg and msg.parsed_msg.get("--force-im-sure-what-i-am-doing", False):
+        if Bot.Info.version and Bot.Info.version.startswith("git:"):
+            await pull_repo()
+        await restart()
     if not Bot.Info.binary_mode:
-        if await msg.wait_confirm(append_instruction=False):
+        try:
+            if not await msg.wait_confirm(append_instruction=False):
+                await msg.finish()
+            else:
+                if not restart_time:
+                    restart_time.append(time.time())
+                await wait_for_restart(msg)
+        except Exception:
+            Logger.critical("Failed to send restart confirmation message, perhaps bug? Force restart...")
+            Logger.critical(traceback.format_exc())
+        try:
             restart_time.append(time.time())
-            await wait_for_restart(msg)
             write_restart_cache(msg)
-            if Bot.Info.version and Bot.Info.version.startswith("git:"):
+        except Exception:
+            Logger.critical("Failed to write restart info cache, perhaps bug? Continue...")
+            Logger.critical(traceback.format_exc())
+        if Bot.Info.version and Bot.Info.version.startswith("git:"):
+            try:
                 pull_repo_result = await pull_repo()
                 if pull_repo_result:
                     await msg.send_message(Plain(pull_repo_result, disable_joke=True))
+            except Exception:
+                Logger.critical("Failed to send pull result message, perhaps bug? Continue...")
+                Logger.critical(traceback.format_exc())
+        try:
             update_dependencies_result = await update_dependencies()
             await msg.send_message(Plain(update_dependencies_result, disable_joke=True))
-            await restart()
-        else:
-            await msg.finish()
+        except Exception:
+            Logger.critical("Failed to send update dependencies result message, perhaps bug? Continue...")
+            Logger.critical(traceback.format_exc())
+        await restart()
     else:
         await msg.finish(I18NContext("core.message.update.binary_mode"))
 
@@ -586,7 +625,6 @@ async def _(msg: Bot.MessageSession, display_msg: str):
 rse = module("raise", required_superuser=True, base=True, doc=True)
 
 
-@rse.command()
 @rse.command("[<args>]")
 async def _(msg: Bot.MessageSession, args: str = None):
     e = args or "{I18N:core.message.raise}"

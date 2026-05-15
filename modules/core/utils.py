@@ -201,15 +201,14 @@ async def _(msg: Bot.MessageSession, lang: str):
         )
 
 
-"""
 @locale.command("reload", required_superuser=True)
 async def _(msg: Bot.MessageSession):
-    err = load_locale_file()
+    err = msg.session_info.locale.reload()
     if len(err) == 0:
         await msg.finish(I18NContext("message.success"))
     else:
         await msg.finish([I18NContext("core.message.locale.reload.failed"), Plain("\n".join(err), disable_joke=True)])
-"""
+
 
 whoami = module("whoami", base=True, doc=True)
 

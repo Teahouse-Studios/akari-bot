@@ -16,4 +16,4 @@ qq_initiative_msg_cooldown = 10 # Cooldown in seconds for sending proactive mess
 
 [bot_onebot_secret]
 # The secret config section of the client. The bot will try to intercept if the values here accidentally appears in the message sent, but be careful to prevent leakage.
-qq_access_token = "<Replace me with str value>" # 使用 OneBot 协议时，连接 WebSocket 服务器的 Access Token。
+qq_access_token = "<Replace me with str value>" # Access Token for connecting to the WebSocket server when using the OneBot protocol.

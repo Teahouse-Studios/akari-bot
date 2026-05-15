@@ -5,10 +5,8 @@ from core.builtins.message.internal import I18NContext, Plain
 from core.builtins.parser.command import CommandParser
 from core.component import module
 from core.config import Config
-from core.constants import lang_list, all_locales_path
 from core.constants.exceptions import InvalidHelpDocTypeError
 from core.database.models import ModuleStatus
-from core.i18n import load_locale_file
 from core.loader import ModulesManager
 from .help import modules_list_help
 
@@ -203,11 +201,6 @@ async def config_modules(msg: Bot.MessageSession):
                     ):
                         await msg.finish()
                 msglist.append(await module_reload(module_, extra_reload_modules, base_module))
-
-        locale_err = load_locale_file(list(lang_list.keys()), all_locales_path)
-        if len(locale_err) != 0:
-            msglist.append(I18NContext("core.message.locale.reload.failed"))
-            msglist.append(Plain("\n".join(locale_err), disable_joke=True))
     elif msg.parsed_msg.get("load", False):
         for module_ in wait_config_list:
             if module_ not in await ModuleStatus.get_unloaded_modules():

@@ -134,6 +134,9 @@ class PlainElement(BaseElement):
 
         :return: KE 码格式的字符串
         """
+        if self.disable_joke:
+            # 有参数，将其拼接到 KE 码中
+            return f"[KE:plain,text={self.text},disable_joke=1]"
         return f"[KE:plain,text={self.text}]"
 
     def __str__(self):
@@ -406,20 +409,54 @@ class I18NContextElement(BaseElement):
     """
 
     key: str
-    disable_joke: bool
     kwargs: dict[str, Any]
+    fallback: bool = True
+    locale_failed_prompt: bool = True
+    disable_joke: bool = False
 
     @classmethod
-    def assign(cls, key: str, disable_joke: bool = False, **kwargs: Any):
+    def assign(
+        cls,
+        key: str,
+        fallback: bool = True,
+        locale_failed_prompt: bool = True,
+        disable_joke: bool = False,
+        **kwargs: Any,
+    ):
         """
         创建多语言消息元素的工厂方法。
 
         :param key: 多语言的键名（如 "message.list" -> "消息列表"）
+        :param fallback: 是否启用 fallback。（默认为 True）
+        :param locale_failed_prompt: 是否添加本地化失败提示。（默认为 True）
         :param disable_joke: 是否禁用玩笑功能（默认为 False）
         :param kwargs: 多语言字符串中的变量（如 name="Alice", count=5）
         :return: I18NContextElement 实例
         """
-        return deepcopy(cls(key=key, disable_joke=disable_joke, kwargs=kwargs))
+        return deepcopy(
+            cls(
+                key=key,
+                fallback=fallback,
+                locale_failed_prompt=locale_failed_prompt,
+                disable_joke=disable_joke,
+                kwargs=kwargs,
+            )
+        )
+
+    def _get_combined_params(self) -> dict[str, Any]:
+        full_params = {}
+        # 处理布尔开关
+        if not self.fallback:
+            full_params["fallback"] = 0
+        if not self.locale_failed_prompt:
+            full_params["locale_failed_prompt"] = 0
+        if self.disable_joke:
+            full_params["disable_joke"] = 1
+        # 复制自定义参数
+        if self.kwargs:
+            full_params |= self.kwargs.copy()
+
+        return full_params
 
     def kecode(self):
         """
@@ -429,10 +466,10 @@ class I18NContextElement(BaseElement):
 
         :return: KE 码格式的字符串
         """
-        if self.kwargs:
-            # 有参数，将其拼接到 KE 码中
-            params = ",".join(f"{k}={v}" for k, v in self.kwargs.items())
-            return f"[KE:i18n,i18nkey={self.key},{params}]"
+        combined = self._get_combined_params()
+        if combined:
+            params_str = ",".join(f"{k}={v}" for k, v in combined.items())
+            return f"[KE:i18n,i18nkey={self.key},{params_str}]"
         return f"[KE:i18n,i18nkey={self.key}]"
 
     def __str__(self):
@@ -470,8 +507,8 @@ class ImageElement(BaseElement):
     """
 
     path: str
-    need_get: bool = False
     headers: dict[str, Any] | None = None
+    need_get: bool = False
     cached_b64: str | None = None
 
     @classmethod
@@ -516,7 +553,7 @@ class ImageElement(BaseElement):
                 img_file.write(img_data)
             path = save
 
-        return deepcopy(cls(str(path), need_get, headers))
+        return deepcopy(cls(str(path), headers, need_get))
 
     async def get(self) -> str:
         """

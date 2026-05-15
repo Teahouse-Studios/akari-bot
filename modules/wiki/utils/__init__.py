@@ -18,7 +18,6 @@ from .user import get_user_info
 rc_ = module("rc", developers=["OasisAkari"], recommend_modules="wiki", doc=True)
 
 
-@rc_.command()
 @rc_.command(
     "[--legacy] {{I18N:wiki.help.rc}}",
     options_desc={"--legacy": "{I18N:help.option.legacy}"},
@@ -79,7 +78,6 @@ async def _(msg: Bot.MessageSession):
 ab_ = module("ab", developers=["OasisAkari"], recommend_modules="wiki", doc=True)
 
 
-@ab_.command()
 @ab_.command(
     "[--legacy] {{I18N:wiki.help.ab}}",
     options_desc={"--legacy": "{I18N:help.option.legacy}"},

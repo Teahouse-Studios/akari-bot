@@ -18,7 +18,6 @@ wordle = module(
 )
 
 
-@wordle.command()
 @wordle.command(
     "[--hard] [--trial] {{I18N:wordle.help}}",
     options_desc={"--hard": "{I18N:wordle.help.option.hard}", "--trial": "{I18N:wordle.help.option.trial}"},

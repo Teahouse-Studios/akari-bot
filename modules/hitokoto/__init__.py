@@ -19,7 +19,6 @@ hitokoto = module(
 )
 
 
-@hitokoto.command()
 @hitokoto.command("[<msg_type>] {{I18N:hitokoto.help.type}}")
 async def _(msg: Bot.MessageSession, msg_type: str = None):
     api = "https://v1.hitokoto.cn/"

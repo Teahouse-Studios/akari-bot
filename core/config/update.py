@@ -67,15 +67,9 @@ class ConfigReorganizer:
     def _init_file(self, cfg_name):
         if cfg_name not in self.configs:
             self.configs[cfg_name] = toml_document()
-            self.configs[cfg_name].add(
-                toml_comment(self.locale.t("config.header.line.1", fallback_failed_prompt=False))
-            )
-            self.configs[cfg_name].add(
-                toml_comment(self.locale.t("config.header.line.2", fallback_failed_prompt=False))
-            )
-            self.configs[cfg_name].add(
-                toml_comment(self.locale.t("config.header.line.3", fallback_failed_prompt=False))
-            )
+            self.configs[cfg_name].add(toml_comment(self.locale.t("config.header.line.1", locale_failed_prompt=False)))
+            self.configs[cfg_name].add(toml_comment(self.locale.t("config.header.line.2", locale_failed_prompt=False)))
+            self.configs[cfg_name].add(toml_comment(self.locale.t("config.header.line.3", locale_failed_prompt=False)))
 
     def reorganize_key(self, key, secret=False):
         cfg_name = self.prefix + self.table
@@ -95,7 +89,7 @@ class ConfigReorganizer:
                     qk = f"config.table.secret_{self.prefix.rstrip('_')}"
                 else:
                     qk = f"config.table.config_{self.prefix.rstrip('_')}"
-                self.configs[cfg_name][table].add(toml_comment(self.locale.t(qk, fallback_failed_prompt=False)))
+                self.configs[cfg_name][table].add(toml_comment(self.locale.t(qk, locale_failed_prompt=False)))
 
         try:
             self.configs[cfg_name][table].add(key, self.config[c_target][key])
@@ -103,7 +97,7 @@ class ConfigReorganizer:
             self.configs[cfg_name][table][key] = self.config[c_target][key]
 
         qc = f"config.comments.{table}.{key}"
-        localed_comment = self.locale.t(qc, fallback_failed_prompt=False)
+        localed_comment = self.locale.t(qc, locale_failed_prompt=False)
         if localed_comment != qc:
             self.configs[cfg_name][table].value.item(key).comment(localed_comment)
 
@@ -116,7 +110,7 @@ class ConfigReorganizer:
             self.configs[cfg_name].add(nl())
             self.configs[cfg_name].add(cfg_name, toml_document())
             self.configs[cfg_name][cfg_name].add(
-                toml_comment(self.locale.t("config.table.config_bot", fallback_failed_prompt=False))
+                toml_comment(self.locale.t("config.table.config_bot", locale_failed_prompt=False))
             )
         try:
             self.configs[cfg_name][cfg_name].add("enable", True)
@@ -124,7 +118,7 @@ class ConfigReorganizer:
             self.configs[cfg_name][cfg_name]["enable"] = True
 
         qc = "config.comments.bot.enable"
-        localed_comment = self.locale.t(qc, fallback_failed_prompt=False)
+        localed_comment = self.locale.t(qc, locale_failed_prompt=False)
         if localed_comment != qc:
             self.configs[cfg_name][cfg_name].value.item("enable").comment(localed_comment)
 
@@ -150,19 +144,19 @@ if "config_version" not in config:
     else:
         get_old_locale = "zh_cn"
     old_locale = Locale(get_old_locale)
-    configs["config"].add(toml_comment(old_locale.t("config.header.line.1", fallback_failed_prompt=False)))
-    configs["config"].add(toml_comment(old_locale.t("config.header.line.2", fallback_failed_prompt=False)))
-    configs["config"].add(toml_comment(old_locale.t("config.header.line.3", fallback_failed_prompt=False)))
+    configs["config"].add(toml_comment(old_locale.t("config.header.line.1", locale_failed_prompt=False)))
+    configs["config"].add(toml_comment(old_locale.t("config.header.line.2", locale_failed_prompt=False)))
+    configs["config"].add(toml_comment(old_locale.t("config.header.line.3", locale_failed_prompt=False)))
     configs["config"].add(nl())
 
     configs["config"].add("default_locale", get_old_locale)
     configs["config"].item("default_locale").comment(
-        old_locale.t("config.comments.default_locale", fallback_failed_prompt=False)
+        old_locale.t("config.comments.default_locale", locale_failed_prompt=False)
     )
 
     configs["config"].add("config_version", 0)
     configs["config"].item("config_version").comment(
-        old_locale.t("config.comments.default_locale", fallback_failed_prompt=False)
+        old_locale.t("config.comments.default_locale", locale_failed_prompt=False)
     )
     configs["config"].add(nl())
 
@@ -228,7 +222,7 @@ if "config_version" not in config:
         for k, v in config["cfg"].items():
             configs["config"]["config"][k] = v
             qc = f"config.comments.config.{k}"
-            localed_comment = old_locale.t(qc, fallback_failed_prompt=False)
+            localed_comment = old_locale.t(qc, locale_failed_prompt=False)
             if localed_comment != qc:
                 configs["config"]["config"].value.item(k).comment(localed_comment)
     configs["config"].add(nl())
@@ -239,7 +233,7 @@ if "config_version" not in config:
         for k, v in config["secret"].items():
             configs["config"]["secret"][k] = v
             qc = f"config.comments.secret.{k}"
-            localed_comment = old_locale.t(qc, fallback_failed_prompt=False)
+            localed_comment = old_locale.t(qc, locale_failed_prompt=False)
             if localed_comment != qc:
                 configs["config"]["secret"].value.item(k).comment(localed_comment)
 

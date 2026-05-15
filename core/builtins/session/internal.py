@@ -809,7 +809,7 @@ class MessageSession:
 
         unit, scale = unit_info
         fmted_num = _fmt_num(number / scale, precision)
-        return self.session_info.locale.t_str(f"{fmted_num} {{I18N:i18n.unit.{unit}}}", fallback_failed_prompt=True)
+        return self.session_info.locale.t_str(f"{fmted_num} {{I18N:i18n.unit.{unit}}}", locale_failed_prompt=True)
 
     def __hash__(self):
         return hash(self.session_info.session_id)
