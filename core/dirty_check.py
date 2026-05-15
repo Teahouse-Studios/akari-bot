@@ -37,63 +37,82 @@ def hash_hmac(key, code):
 def parse_data(original_content: str, result: dict, confidence: float = 60, additional_text=None) -> dict:
     content = original_content
 
+    replace_tasks = []
+    block_all_due_to_empty_context = False
+    global_reason_label = None
+
     if use_textscan_v1:
-        all_positions = []
         for itemResult in result.get("results", []):
-            if float(itemResult.get("rate", 0)) >= confidence and itemResult.get("suggestion") == "block":
-                for itemDetail in itemResult.get("details", []):
-                    reason = str(I18NContext("check.redacted", reason=itemDetail["label"]))
+            if float(itemResult.get("rate", 0)) < confidence:
+                continue
 
-                    if "contexts" not in itemDetail:
-                        content = reason
-                        continue
+            for itemDetail in itemResult.get("details", []):
+                label = itemDetail.get("label")
+                contexts = itemDetail.get("contexts", [])
 
-                    for itemContext in itemDetail["contexts"]:
-                        if "positions" in itemContext:
-                            for pos in itemContext["positions"]:
-                                all_positions.append({"start": pos["startPos"], "end": pos["endPos"], "reason": reason})
-                        else:
-                            content = reason
+                if not contexts:
+                    block_all_due_to_empty_context = True
+                    global_reason_label = label
+                    break
 
-        if all_positions:
-            all_positions.sort(key=lambda x: (x["start"], x["end"]), reverse=True)
-
-            last_start = len(content) + 1
-            for pos in all_positions:
-                if pos["end"] > last_start:
-                    continue
-                content = content[: pos["start"]] + pos["reason"] + content[pos["end"] :]
-                last_start = pos["start"]
+                for itemContext in contexts:
+                    keyword = itemContext.get("context")
+                    if keyword:
+                        replace_tasks.append((str(keyword).strip(), label))
+            if block_all_due_to_empty_context:
+                break
     else:
-        if result["RiskLevel"] == "high":
-            for itemDetail in result["Result"]:
-                if float(itemDetail["Confidence"]) >= confidence:
+        if result.get("RiskLevel") == "high":
+            for itemDetail in result.get("Result", []):
+                if float(itemDetail.get("Confidence", 0)) >= confidence:
                     risk_words = itemDetail.get("RiskWords")
+                    label = itemDetail.get("Label")
+
                     if risk_words:
-                        risk_words = sorted(risk_words.split(","), key=len, reverse=True)
-                        i18ncode_pattern = re.compile(r"\{I18N:[^}]*\}")
-                        placeholders = [(m.start(), m.end()) for m in i18ncode_pattern.finditer(content)]
-
-                        def is_in_placeholder(start, end):
-                            return any(start < p_end and end > p_start for p_start, p_end in placeholders)
-
-                        for word in risk_words:
-                            word = str(word).strip()
-                            for match in re.finditer(re.escape(word), content):
-                                start, end = match.start(), match.end()
-                                if not is_in_placeholder(start, end):
-                                    reason = str(I18NContext("check.redacted", reason=itemDetail["Label"]))
-                                    content = content[:start] + reason + content[end:]
-                                    shift = len(reason) - len(word)
-                                    placeholders = [
-                                        (s + shift if s > start else s, e + shift if e > start else e)
-                                        for s, e in placeholders
-                                    ]
+                        for word in risk_words.split(","):
+                            if word:
+                                replace_tasks.append((str(word).strip(), label))
                     else:
-                        content = str(I18NContext("check.redacted", reason=itemDetail["Label"]))
+                        block_all_due_to_empty_context = True
+                        global_reason_label = label
+                        break
+
+    if block_all_due_to_empty_context:
+        content = str(I18NContext("check.redacted", reason=global_reason_label))
+    elif replace_tasks:
+        replace_tasks = sorted(replace_tasks, key=lambda x: len(x[0]), reverse=True)
+
+        i18ncode_pattern = re.compile(r"\{I18N:[^}]*\}")
+        placeholders = [(m.start(), m.end()) for m in i18ncode_pattern.finditer(content)]
+
+        def is_in_placeholder(start, end):
+            return any(start < p_end and end > p_start for p_start, p_end in placeholders)
+
+        matches_to_replace = []
+        replaced_intervals = []
+
+        for word, label in replace_tasks:
+            reason = str(I18NContext("check.redacted", reason=label))
+            for match in re.finditer(re.escape(word), content):
+                start, end = match.start(), match.end()
+
+                # 检查是否在占位符内，或者是否与已知高优先级长词的替换区间重叠
+                if is_in_placeholder(start, end):
+                    continue
+                if any(start < re_end and end > re_start for re_start, re_end in replaced_intervals):
+                    continue
+
+                matches_to_replace.append((start, end, reason))
+                replaced_intervals.append((start, end))
+
+        matches_to_replace = sorted(matches_to_replace, key=lambda x: x[0], reverse=True)
+
+        for start, end, reason in matches_to_replace:
+            content = content[:start] + reason + content[end:]
 
     if additional_text:
         content += "\n" + additional_text + "\n"
+
     return {"content": content, "status": content == original_content, "original": original_content}
 
 
