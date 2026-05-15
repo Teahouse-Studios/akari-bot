@@ -1,3 +1,23 @@
 {
-    "ai.help": "大規模言語モデルによる質問応答。"
+    "ai.help": "LLM とチャットします。",
+    "ai.help.desc": "アカリボットに聞いてみよう！",
+    "ai.help.llm.instruct": "LLM 向けのカスタム指示を設定します。",
+    "ai.help.llm.list": "対応している LLM の一覧をご確認します。",
+    "ai.help.llm.set": "セッション内でデフォルトの LLM を設定します。",
+    "ai.help.option.llm": "使用する LLM を指定します。",
+    "ai.help.option.no_tools": "LLM を呼び出すツールを無効にするかどうか。",
+    "ai.message.llm.instruct.clear.success": "カスタム指示が削除されました。",
+    "ai.message.llm.instruct.set.success": "カスタム指示が設定されました。",
+    "ai.message.llm.list.none": "利用可能な LLM が見つかりません。追加するには、ボットの所有者にご連絡ください。",
+    "ai.message.llm.list": "利用可能な LLM は以下の通りです：",
+    "ai.message.llm.list.prompt": "LLM を切り替えるには、「${prefix}ai llm set <LLM>」を使用します。",
+    "ai.message.llm.invalid": "無効な LLM 名です。",
+    "config.comments.module_ai_secret.e2b_api_key": "E2B API キー。",
+    "config.comments.module_ai.ai_default_llm": "デフォルトで使用される LLM。",
+    "config.comments.module_ai.llm_frequency_penalty": "LLM の周波数ペナルティ。範囲は -2 ～ 2 です。",
+    "config.comments.module_ai.llm_max_tokens": "LLM のトークン数の上限を設定します。",
+    "config.comments.module_ai.llm_timeout": "LLM のタイムアウト。",
+    "config.comments.module_ai.llm_presence_penalty": "LLM の存在ペナルティ。範囲は -2 ～ 2 です。",
+    "config.comments.module_ai.llm_temperature": "LLM の温度サンプリング。範囲は 0 ～ 2 です。top_p と同時に変更することは推奨されません。",
+    "config.comments.module_ai.llm_top_p": "LLM のカーネルサンプリング。範囲は 0 ～ 1 です。temperature と同時に変更することは推奨されません。"
 }

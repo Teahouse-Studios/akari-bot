@@ -1,11 +1,11 @@
 {
-    "ai.help": "通过大语言模型回答问题。",
+    "ai.help": "与大语言模型聊天。",
     "ai.help.desc": "有事为什么不问问小可呢？",
     "ai.help.llm.instruct": "设置大语言模型的自定义命令。",
     "ai.help.llm.list": "查看支持的大语言模型列表。",
     "ai.help.llm.set": "设置会话内默认大语言模型。",
     "ai.help.option.llm": "指定使用的大语言模型。",
-    "ai.help.option.no_tools": "是否让大语言模型禁用工具。",
+    "ai.help.option.no_tools": "是否禁止大语言模型使用工具。",
     "ai.message.llm.instruct.clear.success": "已清除自定义命令。",
     "ai.message.llm.instruct.set.success": "已设置自定义命令。",
     "ai.message.llm.list.none": "找不到可用的大语言模型，请联系机器人拥有者添加。",
