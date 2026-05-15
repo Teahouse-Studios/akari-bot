@@ -1,1 +1,17 @@
-{}
+{
+    "ai.help.desc": "아카리봇에게 물어보자!",
+    "ai.help.llm.instruct": "LLM에 대한 맞춤형 지침을 설정합니다.",
+    "ai.help.llm.list": "지원되는 LLM 목록을 확인해 보겠습니다.",
+    "ai.help.llm.set": "세션 내에서 기본 LLM을 설정합니다.",
+    "ai.help.option.llm": "사용할 LLM을 지정합니다.",
+    "ai.message.llm.instruct.clear.success": "맞춤형 지침이 삭제되었습니다.",
+    "ai.message.llm.instruct.set.success": "맞춤형 지침이 설정되었습니다.",
+    "ai.message.llm.list.none": "사용 가능한 LLM을 찾을 수 없습니다. 추가하려면 봇 소유자에게 문의하세요.",
+    "ai.message.llm.list": "사용 가능한 LLM은 다음과 같습니다: ",
+    "ai.message.llm.list.prompt": "LLM을 전환하려면 \"${prefix}ai llm set <LLM>\"을 사용합니다.",
+    "ai.message.llm.invalid": "유효하지 않은 LLM 이름입니다.",
+    "config.comments.module_ai_secret.e2b_api_key": "E2B API 키.",
+    "config.comments.module_ai.ai_default_llm": "기본으로 사용되는 LLM.",
+    "config.comments.module_ai.llm_max_tokens": "LLM의 토큰 수 상한을 설정합니다.",
+    "config.comments.module_ai.llm_timeout": "LLM 시간 초과."
+}
