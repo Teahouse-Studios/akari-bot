@@ -1,5 +1,5 @@
 {
-    "ai.help": "与 LLM 聊天。",
+    "ai.help": "与大语言模型聊天。",
     "ai.help.desc": "有事为什么不问问小可呢？",
     "ai.help.llm.instruct": "设置大语言模型的自定义命令。",
     "ai.help.llm.list": "查看支持的大语言模型列表。",
