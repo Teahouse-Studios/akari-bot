@@ -902,116 +902,119 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
             if e != "":
                 elements.append(PlainElement.assign(e, disable_joke=disable_joke))
             continue
-        # ========== 提取 KE 码类型和参数 ==========
 
-        element_type = match.group(1).lower()
-        param_str = match.group(2) or ""
+        try:
+            # ========== 提取 KE 码类型和参数 ==========
+            element_type = match.group(1).lower()
+            param_str = match.group(2) or ""
 
-        # ========== 解析参数 ==========
-        # 处理嵌套的括号和逗号分隔
-        params = []
-        buf = ""
-        stack = []
+            # ========== 解析参数 ==========
+            # 处理嵌套的括号和逗号分隔
+            params = []
+            buf = ""
+            stack = []
 
-        for ch in param_str:
-            if ch == "," and not stack:
-                # 顶层的逗号，分隔参数
+            for ch in param_str:
+                if ch == "," and not stack:
+                    # 顶层的逗号，分隔参数
+                    params.append(buf)
+                    buf = ""
+                else:
+                    buf += ch
+
+                    if ch in "[{(<":
+                        stack.append(ch)
+                    elif ch in "]})>":
+                        if stack:
+                            stack.pop()
+
+            if buf:
                 params.append(buf)
-                buf = ""
-            else:
-                buf += ch
 
-                if ch in "[{(<":
-                    stack.append(ch)
-                elif ch in "]})>":
-                    if stack:
-                        stack.pop()
+            # ========= 转 dict =========
+            parsed_params = {}
 
-        if buf:
-            params.append(buf)
+            for a in params:
+                ma = re.match(r"(.*?)=(.*)", a, re.DOTALL)
 
-        # ========= 转 dict =========
-        parsed_params = {}
+                if ma:
+                    key = ma.group(1).strip()
+                    value = html.unescape(ma.group(2))
 
-        for a in params:
-            ma = re.match(r"(.*?)=(.*)", a, re.DOTALL)
+                    parsed_params[key] = value
 
-            if ma:
-                key = ma.group(1).strip()
-                value = html.unescape(ma.group(2))
+            # ========= 纯文本 =========
+            if element_type == "plain":
+                text_value = parsed_params.get("text", "")
 
-                parsed_params[key] = value
+                local_disable_joke = _parse_bool_flag(parsed_params.get("disable_joke"), disable_joke)
 
-        # ========= 纯文本 =========
-        if element_type == "plain":
-            text_value = parsed_params.get("text", "")
+                elements.append(PlainElement.assign(text_value, disable_joke=local_disable_joke))
 
-            local_disable_joke = _parse_bool_flag(parsed_params.get("disable_joke"), disable_joke)
+            # ========= 图片 =========
+            elif element_type == "image":
+                path = parsed_params.get("path")
 
-            elements.append(PlainElement.assign(text_value, disable_joke=local_disable_joke))
+                if path:
+                    parse_url = urlparse(path)
 
-        # ========= 图片 =========
-        elif element_type == "image":
-            path = parsed_params.get("path")
+                    if parse_url[0] == "file" or url_pattern.match(parse_url[1]):
+                        img = ImageElement.assign(path=path)
 
-            if path:
-                parse_url = urlparse(path)
+                        headers = parsed_params.get("headers")
 
-                if parse_url[0] == "file" or url_pattern.match(parse_url[1]):
-                    img = ImageElement.assign(path=path)
+                        if headers:
+                            img.headers = orjson.loads(str(base64.b64decode(headers), "UTF-8"))
 
-                    headers = parsed_params.get("headers")
+                        elements.append(img)
+                    else:
+                        elements.append(ImageElement.assign(path))
 
-                    if headers:
-                        img.headers = orjson.loads(str(base64.b64decode(headers), "UTF-8"))
+            # ========= 语音 =========
+            elif element_type == "voice":
+                path = parsed_params.get("path")
 
-                    elements.append(img)
-                else:
-                    elements.append(ImageElement.assign(path))
+                if path:
+                    parse_url = urlparse(path)
 
-        # ========= 语音 =========
-        elif element_type == "voice":
-            path = parsed_params.get("path")
+                    if parse_url[0] == "file" or url_pattern.match(parse_url[1]):
+                        elements.append(VoiceElement.assign(path))
+                    else:
+                        elements.append(VoiceElement.assign(path))
 
-            if path:
-                parse_url = urlparse(path)
+            # ========= 多语言 =========
+            elif element_type == "i18n":
+                i18nkey = parsed_params.get("i18nkey")
 
-                if parse_url[0] == "file" or url_pattern.match(parse_url[1]):
-                    elements.append(VoiceElement.assign(path))
-                else:
-                    elements.append(VoiceElement.assign(path))
+                if i18nkey:
+                    local_disable_joke = _parse_bool_flag(parsed_params.pop("disable_joke", None), disable_joke)
 
-        # ========= 多语言 =========
-        elif element_type == "i18n":
-            i18nkey = parsed_params.get("i18nkey")
+                    fallback = _parse_bool_flag(parsed_params.pop("fallback", None), True)
 
-            if i18nkey:
-                local_disable_joke = _parse_bool_flag(parsed_params.pop("disable_joke", None), disable_joke)
+                    locale_failed_prompt = _parse_bool_flag(parsed_params.pop("locale_failed_prompt", None), True)
 
-                fallback = _parse_bool_flag(parsed_params.pop("fallback", None), True)
+                    # 删除非 kwargs 参数
+                    parsed_params.pop("i18nkey", None)
 
-                locale_failed_prompt = _parse_bool_flag(parsed_params.pop("locale_failed_prompt", None), True)
-
-                # 删除非 kwargs 参数
-                parsed_params.pop("i18nkey", None)
-
-                elements.append(
-                    I18NContextElement.assign(
-                        i18nkey,
-                        disable_joke=local_disable_joke,
-                        fallback=fallback,
-                        locale_failed_prompt=locale_failed_prompt,
-                        **parsed_params,
+                    elements.append(
+                        I18NContextElement.assign(
+                            i18nkey,
+                            disable_joke=local_disable_joke,
+                            fallback=fallback,
+                            locale_failed_prompt=locale_failed_prompt,
+                            **parsed_params,
+                        )
                     )
-                )
 
-        # ========= 提及 =========
-        elif element_type == "mention":
-            userid = parsed_params.get("userid")
+            # ========= 提及 =========
+            elif element_type == "mention":
+                userid = parsed_params.get("userid")
 
-            if userid:
-                elements.append(MentionElement.assign(userid))
+                if userid:
+                    elements.append(MentionElement.assign(userid))
 
+        except Exception:
+            elements.append(PlainElement.assign(e, disable_joke=disable_joke))
     return elements
 
 
