@@ -54,7 +54,7 @@ async def search_web(query: str, search_results: int = 5):
         return orjson.dumps(results).decode("utf-8")
     except Exception:
         traceback.print_exc()
-        return "Unable to use search engine. please let user contact the developer."
+        return "Unable to use search engine. please let user contact the developers."
 
 
 __all__ = ["search_web", "search_web_desc"]

@@ -1,7 +1,9 @@
 import base64
+import traceback
 
 import orjson
 from e2b_code_interpreter import AsyncSandbox
+from e2b_code_interpreter.exceptions import TimeoutException
 
 from core.config import Config
 from core.utils.cache import random_cache_path
@@ -32,25 +34,31 @@ else:
 
 async def execute_python_code(code: str):
     async with await AsyncSandbox.create(api_key=api_key, allow_internet_access=False) as sandbox:
-        execution = await sandbox.run_code(code, timeout=10)
+        try:
+            execution = await sandbox.run_code(code, timeout=10)
 
-        if execution.error:
-            return execution.error.traceback
+            if execution.error:
+                return execution.error.traceback
 
-        returns = []
-        for res in execution.results:
-            if res.png:
-                path = f"{random_cache_path()}.png"
-                with open(path, "wb") as f:
-                    f.write(base64.b64decode(res.png))
-                returns.append(f"[KE:image,path={path}]")
-            if res.jpeg:
-                path = f"{random_cache_path()}.jpg"
-                with open(path, "wb") as f:
-                    f.write(base64.b64decode(res.jpeg))
-                returns.append(f"[KE:image,path={path}]")
-            if res.text:
-                returns.append(res.text)
+            returns = []
+            for res in execution.results:
+                if res.png:
+                    path = f"{random_cache_path()}.png"
+                    with open(path, "wb") as f:
+                        f.write(base64.b64decode(res.png))
+                    returns.append(f"[KE:image,path={path}]")
+                if res.jpeg:
+                    path = f"{random_cache_path()}.jpg"
+                    with open(path, "wb") as f:
+                        f.write(base64.b64decode(res.jpeg))
+                    returns.append(f"[KE:image,path={path}]")
+                if res.text:
+                    returns.append(res.text)
 
-        result = {"returns": returns, "stdout": execution.logs.stdout + execution.logs.stderr}
-        return orjson.dumps(result).decode("utf-8")
+            result = {"returns": returns, "stdout": execution.logs.stdout + execution.logs.stderr}
+            return orjson.dumps(result).decode("utf-8")
+        except TimeoutException:
+            return "Request timeout"
+        except Exception as e:
+            traceback.print_exc()
+            return "Unable to execute Python code, please let user connect the developers."
