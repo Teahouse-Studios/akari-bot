@@ -1,9 +1,11 @@
 {
+    "ai.help": "LLM とチャットします。",
     "ai.help.desc": "アカリボットに聞いてみよう！",
     "ai.help.llm.instruct": "LLM 向けのカスタム指示を設定します。",
     "ai.help.llm.list": "対応している LLM の一覧をご確認します。",
     "ai.help.llm.set": "セッション内でデフォルトの LLM を設定します。",
     "ai.help.option.llm": "使用する LLM を指定します。",
+    "ai.help.option.no_tools": "LLM を呼び出すツールを無効にするかどうか。",
     "ai.message.llm.instruct.clear.success": "カスタム指示が削除されました。",
     "ai.message.llm.instruct.set.success": "カスタム指示が設定されました。",
     "ai.message.llm.list.none": "利用可能な LLM が見つかりません。追加するには、ボットの所有者にご連絡ください。",
