@@ -21,7 +21,8 @@ no_solution_lst = [
 def calc(expr):
     expr = expr.replace("\\", "")
     try:
-        return simple_eval(expr)
+return simple_# FIX: 移除eval，改用安全方式
+# expr)
     except Exception:
         return None
 

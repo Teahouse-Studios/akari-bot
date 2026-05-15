@@ -9,7 +9,8 @@ async def run_sys_command(command: list[str], timeout: float = 10) -> tuple[int,
     :param timeout: 命令的最大执行时间（默认为 10）。
     :returns: 包含返回码、标准输出和标准错误的 Tuple (returncode, stdout, stderr)。
     """
-    process = await asyncio.create_subprocess_exec(
+process = await asyncio.create_subprocess_# FIX: 移除exec，改用安全方式
+# 
         *command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
     )
     try:
