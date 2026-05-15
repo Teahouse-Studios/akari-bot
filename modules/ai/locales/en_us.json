@@ -1,12 +1,21 @@
 {
-    "ai.help": "Answer your question via LLMs.",
     "ai.help.desc": "Ask AkariBot anything!",
+    "ai.help.llm.instruct": "Set custom instructions for the LLMs.",
+    "ai.help.llm.list": "Check the list of supported LLMs.",
+    "ai.help.llm.set": "Set the default LLM in session.",
     "ai.help.option.llm": "Specify the LLM to use.",
-    "ai.message.llm.invalid": "Invalid LLM.",
+    "ai.message.llm.instruct.clear.success": "Custom instructions have been cleared.",
+    "ai.message.llm.instruct.set.success": "Custom instructions have been set.",
+    "ai.message.llm.list.none": "Cannot find any available LLMs. Please contact the bot owner to add one.",
+    "ai.message.llm.list": "The following are the available LLM(s): ",
+    "ai.message.llm.list.prompt": "Use \"${prefix}ai llm set <LLM>\" to switch LLMs.",
+    "ai.message.llm.invalid": "Invalid LLM name.",
+    "config.comments.module_ai_secret.e2b_api_key": "E2B API key.",
     "config.comments.module_ai.ai_default_llm": "The LLM used by default.",
-    "config.comments.module_ai.llm_frequency_penalty": "The frequency penalty of the LLM, ranging from -2 to 2.",
-    "config.comments.module_ai.llm_max_tokens": "Limit the maximum number of tokens for LLMs.",
-    "config.comments.module_ai.llm_presence_penalty": "The presence penalty of the LLM, ranging from -2 to 2.",
+    "config.comments.module_ai.llm_frequency_penalty": "The frequency penalty of the LLMs, ranging from -2 to 2.",
+    "config.comments.module_ai.llm_max_tokens": "Limit the maximum number of tokens for the LLMs.",
+    "config.comments.module_ai.llm_timeout": "Timeout for the LLMs.",
+    "config.comments.module_ai.llm_presence_penalty": "The presence penalty of the LLMs, ranging from -2 to 2.",
     "config.comments.module_ai.llm_temperature": "The temperature sampling of the LLMs, ranging from 0 to 2. It is not recommended to modify it at the same time as top_p.",
-    "config.comments.module_ai.llm_top_p": "The nucleus sampling of the LLM, ranging from 0 to 1. It is not recommended to modify it at the same time as temperature."
+    "config.comments.module_ai.llm_top_p": "The kernel sampling of the LLMs, ranging from 0 to 1. It is not recommended to modify it at the same time as temperature."
 }
