@@ -1,4 +1,5 @@
 import io
+from datetime import datetime, timezone
 
 from openai import AsyncOpenAI, APITimeoutError, RateLimitError
 from PIL import Image as PILImage
@@ -9,6 +10,7 @@ from core.config import Config
 from core.constants.exceptions import ExternalException
 from core.dirty_check import check
 from core.logger import Logger
+from core.utils.func import parse_time_string
 from .formatting import parse_markdown, generate_code_snippet, generate_latex, generate_md_table
 from .setting import INSTRUCTIONS
 from .tools import TOOLS, tool_function_calls
@@ -33,10 +35,18 @@ async def ask_llm(
 ) -> tuple[list, int, int]:
     client = AsyncOpenAI(base_url=api_url, api_key=api_key)
 
-    messages = [{"role": "system", "content": INSTRUCTIONS}, {"role": "user", "content": prompt}]
+    tz_ = session.session_info.target_info.target_data.get("timezone_offset", Config("timezone_offset", "+8"))
+    now_tz = datetime.now(timezone(parse_time_string(tz_)))
+    fmt_now = now_tz.strftime("%Y-%m-%d %H:%M:%S %A") + f"(UTC{tz_})" if tz_ != "+0" else "(UTC)"
+
+    messages = [
+        {"role": "system", "content": INSTRUCTIONS},
+        {"role": "system", "content": f"Current datetime: {fmt_now}"},
+        {"role": "user", "content": prompt},
+    ]
     custom_instructions = session.session_info.sender_info.sender_data.get("ai_custom_instructions")
     if custom_instructions:
-        messages.insert(1, {"role": "system", "content": custom_instructions})
+        messages.insert(2, {"role": "system", "content": custom_instructions})
 
     total_input_tokens = 0
     total_output_tokens = 0

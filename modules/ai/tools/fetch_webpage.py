@@ -3,7 +3,7 @@ import trafilatura
 
 from core.web_render import web_render, SourceOptions
 
-MAX_LENGTH = 4000
+MAX_LENGTH = 4096
 
 
 fetch_webpage_desc = {

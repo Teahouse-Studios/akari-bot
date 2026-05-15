@@ -3,12 +3,11 @@ from typing import Any
 import orjson
 
 from core.logger import Logger
-from .current_datetime import *
 from .execute_python_code import *
 from .fetch_webpage import *
 from .search_web import *
 
-_tools = [current_datetime_desc, execute_python_code_desc, fetch_webpage_desc, search_web_desc]
+_tools = [execute_python_code_desc, fetch_webpage_desc, search_web_desc]
 TOOLS = [fnd for fnd in _tools if fnd]
 
 
@@ -20,8 +19,6 @@ async def tool_function_calls(tool_calls, messages: list[dict[str, Any]]):
         result = ""
         Logger.info(f"Calling function: {fn_name} with args: {args}")
 
-        if fn_name == "current_datetime":
-            result = current_datetime(args.get("timezone", "UTC"))
         if fn_name == "execute_python_code":
             result = await execute_python_code(args["code"])
         elif fn_name == "fetch_webpage":
