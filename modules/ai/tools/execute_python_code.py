@@ -61,4 +61,4 @@ async def execute_python_code(code: str):
             return "Request timeout"
         except Exception as e:
             traceback.print_exc()
-            return "Unable to execute Python code, please let user connect the developers."
+            return "Unable to execute Python code, let user connect bot owner."

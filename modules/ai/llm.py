@@ -3,15 +3,15 @@ import io
 from openai import AsyncOpenAI, APITimeoutError, RateLimitError
 from PIL import Image as PILImage
 
+from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Image, Plain
-from core.builtins.session.internal import MessageSession
 from core.config import Config
 from core.constants.exceptions import ExternalException
 from core.dirty_check import check
 from core.logger import Logger
 from .formatting import parse_markdown, generate_code_snippet, generate_latex, generate_md_table
 from .setting import INSTRUCTIONS
-from .tools import TOOLS, execute_tool_calls
+from .tools import TOOLS, tool_function_calls
 
 max_tokens = Config("llm_max_tokens", 2048, table_name="module_ai")
 timeout = Config("llm_timeout", 60, cfg_type=float, table_name="module_ai")
@@ -24,13 +24,24 @@ MAX_ITERATIONS = 6
 
 
 async def ask_llm(
-    prompt: str, model_name: str, api_url: str, api_key: str, session: MessageSession
+    session: Bot.MessageSession,
+    prompt: str,
+    model_name: str,
+    api_url: str,
+    api_key: str, 
+    use_tools: bool = True,
 ) -> tuple[list, int, int]:
     client = AsyncOpenAI(base_url=api_url, api_key=api_key)
+
     messages = [{"role": "system", "content": INSTRUCTIONS}, {"role": "user", "content": prompt}]
+    custom_instructions = session.session_info.sender_info.sender_data.get("ai_custom_instructions")
+    if custom_instructions:
+        messages.insert(1, {"role": "system", "content": custom_instructions})
+        
     total_input_tokens = 0
     total_output_tokens = 0
     content_pieces = []
+    tool_choice = "auto" if use_tools else "none"
 
     iterations = 0
     while iterations <= MAX_ITERATIONS:
@@ -42,11 +53,12 @@ async def ask_llm(
                     "content": "Warning: Iteration limit reached. Provide the final answer based on the available information and do not attempt to call functions again.",
                 }
             )
+            tool_choice = "none"
         try:
             completion = await client.chat.completions.create(
                 model=model_name,
                 messages=messages,
-                tool_choice="none" if is_final_attempt else "auto",
+                tool_choice=tool_choice,
                 tools=TOOLS,
                 max_completion_tokens=max_tokens,
                 temperature=temperature,
@@ -68,7 +80,7 @@ async def ask_llm(
         if res_msg.content:
             content_pieces.append(res_msg.content)
         if res_msg.tool_calls and not is_final_attempt:
-            messages = await execute_tool_calls(res_msg.tool_calls, messages)
+            messages = await tool_function_calls(res_msg.tool_calls, messages)
             iterations += 1
             continue
         else:
@@ -76,7 +88,7 @@ async def ask_llm(
     else:
         Logger.warning("LLM function calling reached maximum iterations.")
 
-    res = await check("\n".join(content_pieces), session=session)
+    res = await check("\n\n".join(content_pieces), session=session)
     resm = "".join(m["content"] for m in res)
 
     if session.session_info.support_image:

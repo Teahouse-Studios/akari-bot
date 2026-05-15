@@ -12,7 +12,7 @@ _tools = [current_datetime_desc, execute_python_code_desc, fetch_webpage_desc, s
 TOOLS = [fnd for fnd in _tools if fnd]
 
 
-async def execute_tool_calls(tool_calls, messages: list[dict[str, Any]]):
+async def tool_function_calls(tool_calls, messages: list[dict[str, Any]]):
     for tool_call in tool_calls:
         fn_name = tool_call.function.name
         args = orjson.loads(tool_call.function.arguments)
