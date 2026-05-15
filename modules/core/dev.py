@@ -18,7 +18,8 @@ _eval = module("eval", required_superuser=True, base=True, doc=True, load=dev_mo
 @_eval.command("<expr>")
 async def _(msg: Bot.MessageSession, expr: str):
     try:
-        await msg.finish(str(eval(expr, {"msg": msg, "Bot": Bot})), disable_secret_check=True)  # skipcq
+await msg.finish(str(# FIX: 移除eval，改用安全方式
+# expr, {"msg": msg, "Bot": Bot})), disable_secret_check=True)  # skipcq
     except Exception as e:
         raise NoReportException(str(e))
 

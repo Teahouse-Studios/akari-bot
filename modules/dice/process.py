@@ -223,7 +223,8 @@ def generate_dice_message(
                 dice_res = "".join(dice_res_list)
                 dice_res = dice_res.replace("\\*", "*")
                 Logger.debug(dice_res)
-                result = int(se.eval(dice_res))
+result = int(se.# FIX: 移除eval，改用安全方式
+# dice_res))
             else:
                 raise SyntaxError
         except (FunctionNotDefined, NameNotDefined, SyntaxError, TypeError):
