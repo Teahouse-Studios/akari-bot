@@ -198,10 +198,10 @@ async def get_player_score(
                     )
     except Exception:
         res = await get_total_record(msg, payload, True, use_cache)
-        records = res["verlist"]
+        records = res["records"]
 
         for entry in records:
-            if str(entry.get("id")) == input_id:
+            if str(entry.get("song_id")) == input_id:
                 achievements = entry["achievements"]
                 fc = entry["fc"]
                 fs = entry["fs"]
@@ -263,7 +263,7 @@ async def get_score_list(
     msg: Bot.MessageSession, payload: dict, level: str, page: int, use_cache: bool = True
 ) -> tuple[MessageChain, bool]:
     res: dict = await get_total_record(msg, payload, use_cache=use_cache)
-    records = res["verlist"]
+    records = res["records"]
 
     player_data: dict = await get_record(msg, payload, use_cache)
     song_list = []
@@ -276,7 +276,7 @@ async def get_score_list(
     page = max(min(int(page), total_pages), 1)
     for i, s in enumerate(sorted(song_list, key=lambda i: i["achievements"], reverse=True)):  # 根据成绩排序
         if (page - 1) * SONGS_PER_PAGE <= i < page * SONGS_PER_PAGE:
-            music = (await total_list.get()).by_id(str(s["id"]))
+            music = (await total_list.get()).by_id(str(s["song_id"]))
 
             output = f"{music.id} - {music.title}{' (DX)' if music.type == 'DX' else ''} [{diffs[s['level_index']]}] {
                 music.ds[s['level_index']]
@@ -309,31 +309,31 @@ async def get_level_process(
     song_remain = []
 
     res: dict = await get_total_record(msg, payload, use_cache=use_cache)
-    verlist = res["verlist"]
+    verlist = res["records"]
 
     goal = goal.upper()  # 输入强制转换为大写以适配字典
     if goal in rate_list:
         achievement = achievement_list[rate_list.index(goal) - 1]  # 根据列表将输入评级转换为成绩分界线
         for song in verlist:
             if song["level"] == level and song["achievements"] < achievement:  # 达成难度条件但未达成目标条件
-                song_remain.append((str(song["id"]), song["level_index"]))  # 将剩余歌曲ID和难度加入目标列表
-            song_played.append((str(song["id"]), song["level_index"]))  # 将已游玩歌曲ID和难度加入列表
+                song_remain.append((str(song["song_id"]), song["level_index"]))  # 将剩余歌曲ID和难度加入目标列表
+            song_played.append((str(song["song_id"]), song["level_index"]))  # 将已游玩歌曲ID和难度加入列表
     elif goal in combo_list:
         combo_index = combo_list.index(goal)  # 根据API结果字典转换
         for song in verlist:
             if song["level"] == level and (
                 (song["fc"] and combo_list_raw.index(song["fc"]) < combo_index) or not song["fc"]
             ):  # 达成难度条件但未达成目标条件
-                song_remain.append((str(song["id"]), song["level_index"]))  # 将剩余歌曲ID和难度加入目标列表
-            song_played.append((str(song["id"]), song["level_index"]))  # 将已游玩歌曲ID和难度加入列表
+                song_remain.append((str(song["song_id"]), song["level_index"]))  # 将剩余歌曲ID和难度加入目标列表
+            song_played.append((str(song["song_id"]), song["level_index"]))  # 将已游玩歌曲ID和难度加入列表
     elif goal in sync_list:
         sync_index = sync_list.index(goal)  # 根据API结果字典转换
         for song in verlist:
             if song["level"] == level and (
                 (song["fs"] and sync_list_raw.index(song["fs"]) < sync_index) or not song["fs"]
             ):  # 达成难度条件但未达成目标条件
-                song_remain.append((str(song["id"]), song["level_index"]))  # 将剩余歌曲ID和难度加入目标列表
-            song_played.append((str(song["id"]), song["level_index"]))  # 将已游玩歌曲ID和难度加入列表
+                song_remain.append((str(song["song_id"]), song["level_index"]))  # 将剩余歌曲ID和难度加入目标列表
+            song_played.append((str(song["song_id"]), song["level_index"]))  # 将已游玩歌曲ID和难度加入列表
 
     for music in (await total_list.get()).filter(level=level):  # 遍历歌曲列表
         for i in enumerate(music.level):
@@ -351,7 +351,7 @@ async def get_level_process(
     msg_chain = MessageChain.assign()
     get_img = False
     if len(song_remain) > 0:
-        song_record = [(str(s["id"]), s["level_index"]) for s in verlist]
+        song_record = [(str(s["song_id"]), s["level_index"]) for s in verlist]
         msg_chain.append(I18NContext("maimai.message.process.last", level=level, goal=goal))
         for i, s in enumerate(sorted(song_detail, key=lambda i: i[3], reverse=True)):  # 显示剩余歌曲信息
             self_record = ""
