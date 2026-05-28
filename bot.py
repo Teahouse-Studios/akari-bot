@@ -29,6 +29,7 @@ load_dotenv()
 os.environ.setdefault("PYTHONIOENCODING", "UTF-8")
 os.environ.setdefault("PYTHONPATH", str(Path(".").resolve()))
 
+
 # Basic logger setup
 try:
     logger.remove(0)
@@ -127,7 +128,8 @@ def pre_init():
 
 
 def multiprocess_run_until_complete(func):
-    p = multiprocessing.Process(target=func, daemon=True)
+    mp = multiprocessing.get_context("spawn")
+    p = mp.Process(target=func, daemon=True)
     p.start()
 
     while True:
@@ -165,6 +167,8 @@ async def run_bot():
     from core.config import CFGManager
     from core.server.run import run_async as server_run_async
 
+    mp = multiprocessing.get_context("spawn")
+
     def restart_bot_process(bot_name: str):
         if (
             bot_name not in failed_to_start_attempts
@@ -180,7 +184,7 @@ async def run_bot():
             return
 
         Logger.warning(f"Restarting bot {bot_name}...")
-        p = multiprocessing.Process(
+        p = mp.Process(
             target=go,
             args=(
                 bot_name,
@@ -208,14 +212,13 @@ async def run_bot():
     for bl in bots_list:
         if bl in disabled_bots:
             continue
-        p = multiprocessing.Process(target=go, args=(bl, True, binary_mode), name=bl, daemon=True)
+        p = mp.Process(target=go, args=(bl, True, binary_mode), name=bl, daemon=True)
         p.start()
         processes.append(p)
 
     # run the server process
-    server_process = multiprocessing.Process(
-        target=server_run_async, args=(True, binary_mode), name="server", daemon=True
-    )
+    server_process = mp.Process(target=server_run_async, args=(True, binary_mode), name="server", daemon=True)
+
     server_process.start()
     processes.append(server_process)
 
