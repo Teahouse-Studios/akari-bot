@@ -9,7 +9,7 @@ aiofiles==24.1.0
     #   aiogram
     #   matrix-nio
     #   quart
-aiogram==3.25.0
+aiogram==3.28.2
     # via akari-bot
 aiohappyeyeballs==2.6.1
     # via aiohttp
