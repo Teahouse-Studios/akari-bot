@@ -1,5 +1,3 @@
-import asyncio
-
 from aiogram import types
 from aiogram.enums import MessageEntityType
 
@@ -120,4 +118,4 @@ async def on_startup():
 
 if Config("enable", False, table_name="bot_telegram"):
     dp.startup.register(on_startup)
-    asyncio.run(dp.start_polling(aiogram_bot))
+    dp.run_polling(aiogram_bot)

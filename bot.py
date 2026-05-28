@@ -29,9 +29,6 @@ load_dotenv()
 os.environ.setdefault("PYTHONIOENCODING", "UTF-8")
 os.environ.setdefault("PYTHONPATH", str(Path(".").resolve()))
 
-# Capture the base import lists to avoid clearing essential modules when restarting
-base_import_lists = list(sys.modules)
-
 # Basic logger setup
 try:
     logger.remove(0)
@@ -127,12 +124,6 @@ def pre_init():
             Logger.warning("The base superuser is not found, please setup it in the config file.")
 
     run_async(update_db())
-
-
-def clear_import_cache():
-    for m in list(sys.modules):
-        if m not in base_import_lists:
-            del sys.modules[m]
 
 
 def multiprocess_run_until_complete(func):
@@ -288,6 +279,14 @@ async def main_async():
 
 
 def main():
+    # Capture the base import lists to avoid clearing essential modules when restarting
+    def clear_import_cache():
+        for m in list(sys.modules):
+            if m not in base_import_lists:
+                del sys.modules[m]
+
+    base_import_lists = list(sys.modules)
+
     while True:
         try:
             asyncio.run(main_async())
