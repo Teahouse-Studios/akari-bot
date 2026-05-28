@@ -128,7 +128,7 @@ def pre_init():
 
 
 def multiprocess_run_until_complete(func):
-    mp = multiprocessing.get_context("spawn")
+    mp = multiprocessing.get_context("spawn" if sys.platform in ["win32", "darwin"] else "forkserver")
     p = mp.Process(target=func, daemon=True)
     p.start()
 
@@ -167,7 +167,7 @@ async def run_bot():
     from core.config import CFGManager
     from core.server.run import run_async as server_run_async
 
-    mp = multiprocessing.get_context("spawn")
+    mp = multiprocessing.get_context("spawn" if sys.platform in ["win32", "darwin"] else "forkserver")
 
     def restart_bot_process(bot_name: str):
         if (
