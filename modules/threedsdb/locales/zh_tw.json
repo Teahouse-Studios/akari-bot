@@ -1,1 +1,6 @@
-{}
+{
+    "threedsdb.message.no_results": "沒有找到結果。",
+    "threedsdb.message.limited_results": "結果過多，請提供更具體的關鍵詞以縮小搜索範圍。",
+    "threedsdb.help.desc": "根據 3DSDB 搜索程式訊息。",
+    "threedsdb.help.command": "使用關鍵詞查找，可以是程式名稱或 Title ID。"
+}
