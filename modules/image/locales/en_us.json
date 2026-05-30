@@ -1,1 +1,4 @@
-{}
+{
+    "image.fillwhite.send.a.image": "Please send an image.",
+    "image.fillwhite.no.image.found": "No image found, aborted."
+}
