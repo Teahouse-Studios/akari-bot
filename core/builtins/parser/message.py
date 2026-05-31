@@ -46,7 +46,7 @@ from core.loader import ModulesManager
 from core.logger import Logger
 from core.tos import TOS_TEMPBAN_TIME, temp_ban_counter, abuse_warn_target, remove_temp_ban
 from core.types import Module, Param
-from core.types.module.component_meta import CommandMeta
+from core.types.module.component_meta import CommandMeta, RegexMode
 from core.utils.func import normalize_space
 from core.utils.container import ExpiringTempDict, TokenBucket
 
@@ -701,20 +701,30 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
 
                         # 获取要匹配的消息文本（可能只包含纯文本或过滤特定元素）
                         trigger_msg = msg.as_display(text_only=rfunc.text_only, element_filter=rfunc.element_filter)
-
+                        mode = rfunc.mode
                         # ========== 步骤 5: 执行正则表达式匹配 ==========
-                        if rfunc.mode.upper() in ["M", "MATCH"]:
-                            # 使用 re.match（从字符串开头匹配）
-                            msg.matched_msg = re.match(rfunc.pattern, trigger_msg, flags=rfunc.flags)
-                            if msg.matched_msg:
-                                matched = True
-                                matched_hash = hash(msg.matched_msg.groups())
-                        elif rfunc.mode.upper() in ["A", "FINDALL"]:
-                            # 使用 re.findall（查找所有匹配）
+
+                        if mode in [RegexMode.USERCHOOSE, RegexMode.FINDALL]:
                             msg.matched_msg = tuple(set(re.findall(rfunc.pattern, trigger_msg, flags=rfunc.flags)))
-                            if msg.matched_msg:
-                                matched = True
+                        elif mode == RegexMode.MATCH:
+                            msg.matched_msg = tuple((re.match(rfunc.pattern, trigger_msg, flags=rfunc.flags),))
+
+                        if msg.matched_msg and len(msg.matched_msg) > 0:
+                            matched = True
+                            if mode == RegexMode.USERCHOOSE:
+                                # 由用户决定选择何种匹配方式
+                                if len(msg.matched_msg) > 1:
+                                    if await msg.wait_confirm(I18NContext("parser.regex.mode.confirm")):
+                                        mode = RegexMode.FINDALL
+                                    else:
+                                        mode = RegexMode.MATCH
+                                else:
+                                    mode = RegexMode.MATCH
+                            if mode == RegexMode.FINDALL:
                                 matched_hash = hash(msg.matched_msg)
+                            elif mode==RegexMode.MATCH:
+                                msg.matched_msg = msg.matched_msg[0] # 向前兼容性考虑
+                                matched_hash = hash(msg.matched_msg.groups())
 
                         # ========== 步骤 6: 处理匹配成功的情况 ==========
                         if (

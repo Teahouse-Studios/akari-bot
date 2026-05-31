@@ -71,7 +71,7 @@ class Bind:
         def regex(
             self,
             pattern: str | re.Pattern,
-            mode: str = "M",
+            mode: RegexMode | str = "M",
             flags: re.RegexFlag = re.NOFLAG,
             desc: str | None = None,
             required_admin: bool = False,
@@ -91,7 +91,7 @@ class Bind:
                     RegexMeta(
                         function=function,
                         pattern=pattern,
-                        mode=mode,
+                        mode=RegexMode.fromstr(mode),
                         flags=flags,
                         desc=desc,
                         required_admin=required_admin,
