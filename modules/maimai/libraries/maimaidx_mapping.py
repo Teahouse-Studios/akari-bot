@@ -270,6 +270,7 @@ versions = [
     "maimai でらっくす FESTiVAL",
     "maimai でらっくす BUDDiES",
     "maimai でらっくす PRiSM",
+    "maimai でらっくす PRiSM PLUS",
 ]
 
 sd_plate_mapping = {
@@ -300,7 +301,7 @@ dx_plate_mapping = {
     "双": "maimai でらっくす BUDDiES",
     "宴": "maimai でらっくす BUDDiES",
     "鏡": "maimai でらっくす PRiSM",
-    "彩": "maimai でらっくす PRiSM",
+    "彩": "maimai でらっくす PRiSM PLUS",
 }
 
 plate_mapping = sd_plate_mapping | dx_plate_mapping

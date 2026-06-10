@@ -521,6 +521,35 @@
     "title": "[耐]Space Harrier Main Theme [Reborn]",
     "type": "DX"
   },
+  "110121": {
+    "artist": "ろん×Junky",
+    "bpm": 123,
+    "charts": [
+      {
+        "notes": [
+          303,
+          43,
+          21,
+          18,
+          47
+        ]
+      }
+    ],
+    "comment": "そんな「甘い魔法」",
+    "id": "110121",
+    "level": [
+      "12?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM PLUS",
+    "title": "[甘]スイートマジック",
+    "type": "DX"
+  },
   "110227": {
     "artist": "t+pazolite",
     "bpm": 256,
@@ -881,43 +910,33 @@
     "title": "[協]太陽系デスコ",
     "type": "DX"
   },
-  "111156": {
-    "artist": "キノシタ feat. そらみこ (ホロライブ ときのそら＆さくらみこ)",
-    "bpm": 183,
+  "111113": {
+    "artist": "ハムちゃんず [covered by 光吉猛修]",
+    "bpm": 140,
     "charts": [
       {
         "notes": [
-          505,
-          49,
-          123,
-          35,
-          49
-        ]
-      },
-      {
-        "notes": [
-          482,
-          54,
-          93,
-          34,
-          66
+          421,
+          78,
+          81,
+          36,
+          58
         ]
       }
     ],
-    "comment": "一緒に！舞舞タイム！",
-    "id": "111156",
+    "comment": "まわると　うれしいね",
+    "id": "111113",
     "level": [
-      "12+?"
+      "13?"
     ],
     "referrals_num": {
-      "mode": "buddy_normal",
+      "mode": "normal",
       "player": [
-        1,
         1
       ]
     },
-    "release_ver_code": "maimai でらっくす PRiSM",
-    "title": "[奏]マイオドレ！舞舞タイム",
+    "release_ver_code": "maimai でらっくす PRiSM PLUS",
+    "title": "[回]ハム太郎とっとこうた",
     "type": "DX"
   },
   "111222": {
@@ -1161,6 +1180,35 @@
     },
     "release_ver_code": "maimai でらっくす PRiSM",
     "title": "[奏]アンビバレンス",
+    "type": "DX"
+  },
+  "111388": {
+    "artist": "Frums",
+    "bpm": 180,
+    "charts": [
+      {
+        "notes": [
+          263,
+          0,
+          202,
+          0,
+          9
+        ]
+      }
+    ],
+    "comment": "実際はBPM360らしいので…",
+    "id": "111388",
+    "level": [
+      "13?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM PLUS",
+    "title": "[即]チューリングの跡",
     "type": "DX"
   },
   "111429": {
@@ -1444,45 +1492,6 @@
     "title": "[息]ノンブレス・オブリージュ",
     "type": "DX"
   },
-  "111634": {
-    "artist": "結束バンド",
-    "bpm": 120,
-    "charts": [
-      {
-        "notes": [
-          1435,
-          111,
-          11,
-          77,
-          145
-        ]
-      },
-      {
-        "notes": [
-          1421,
-          221,
-          20,
-          68,
-          60
-        ]
-      }
-    ],
-    "comment": "バンドメンバーを集めて挑め！（ヒーロー級）",
-    "id": "111634",
-    "level": [
-      "14+?"
-    ],
-    "referrals_num": {
-      "mode": "buddy_normal",
-      "player": [
-        2,
-        2
-      ]
-    },
-    "release_ver_code": "maimai でらっくす BUDDiES",
-    "title": "[協]青春コンプレックス",
-    "type": "DX"
-  },
   "111636": {
     "artist": "さくゆい",
     "bpm": 160,
@@ -1520,6 +1529,45 @@
     },
     "release_ver_code": "maimai でらっくす BUDDiES PLUS",
     "title": "[奏]さくゆいたいそう",
+    "type": "DX"
+  },
+  "111714": {
+    "artist": "ピノキオピー",
+    "bpm": 140,
+    "charts": [
+      {
+        "notes": [
+          347,
+          59,
+          48,
+          7,
+          14
+        ]
+      },
+      {
+        "notes": [
+          549,
+          0,
+          60,
+          45,
+          2
+        ]
+      }
+    ],
+    "comment": "本日はインタビューよろしくお願いいたします",
+    "id": "111714",
+    "level": [
+      "13+?"
+    ],
+    "referrals_num": {
+      "mode": "buddy_normal",
+      "player": [
+        1,
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM PLUS",
+    "title": "[匿]匿名M",
     "type": "DX"
   },
   "111715": {
@@ -1580,6 +1628,45 @@
     "title": "[宴]人マニア",
     "type": "DX"
   },
+  "111838": {
+    "artist": "サツキ feat.初音ミク・重音テト",
+    "bpm": 185,
+    "charts": [
+      {
+        "notes": [
+          652,
+          124,
+          151,
+          132,
+          21
+        ]
+      },
+      {
+        "notes": [
+          578,
+          148,
+          2,
+          47,
+          188
+        ]
+      }
+    ],
+    "comment": "誰か、助けてね(^^♪",
+    "id": "111838",
+    "level": [
+      "13+?"
+    ],
+    "referrals_num": {
+      "mode": "buddy_normal",
+      "player": [
+        1,
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM PLUS",
+    "title": "[助]メズマライザー",
+    "type": "DX"
+  },
   "120227": {
     "artist": "t+pazolite",
     "bpm": 256,
@@ -1608,45 +1695,6 @@
     "release_ver_code": "maimai MURASAKi",
     "title": "[r]Garakuta Doll Play",
     "type": "SD"
-  },
-  "121634": {
-    "artist": "結束バンド",
-    "bpm": 120,
-    "charts": [
-      {
-        "notes": [
-          1197,
-          105,
-          4,
-          13,
-          130
-        ]
-      },
-      {
-        "notes": [
-          978,
-          219,
-          26,
-          13,
-          71
-        ]
-      }
-    ],
-    "comment": "バンドメンバーを集めて楽しもう！（入門編）",
-    "id": "121634",
-    "level": [
-      "13?"
-    ],
-    "referrals_num": {
-      "mode": "buddy_normal",
-      "player": [
-        2,
-        2
-      ]
-    },
-    "release_ver_code": "maimai でらっくす BUDDiES",
-    "title": "[協]青春コンプレックス",
-    "type": "DX"
   },
   "130227": {
     "artist": "t+pazolite",
