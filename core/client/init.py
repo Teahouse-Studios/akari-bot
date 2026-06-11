@@ -24,13 +24,23 @@ async def client_init(
     if queue:
         asyncio.create_task(check_queue())
     await JobQueueClient.send_keepalive_signal_to_server(
-        Info.client_name, target_prefix_list=target_prefix_list, sender_prefix_list=sender_prefix_list
+        Info.client_name,
+        target_prefix_list=target_prefix_list,
+        sender_prefix_list=sender_prefix_list,
+        require_check_dirty_words=Info.dirty_word_check,
+        use_url_manager=Info.use_url_manager,
+        use_url_md_format=Info.use_url_md_format,
     )
 
     @Scheduler.scheduled_job(IntervalTrigger(seconds=60))
     async def bg():
         await JobQueueClient.send_keepalive_signal_to_server(
-            Info.client_name, target_prefix_list=target_prefix_list, sender_prefix_list=sender_prefix_list
+            Info.client_name,
+            target_prefix_list=target_prefix_list,
+            sender_prefix_list=sender_prefix_list,
+            require_check_dirty_words=Info.dirty_word_check,
+            use_url_manager=Info.use_url_manager,
+            use_url_md_format=Info.use_url_md_format,
         )
 
     try:

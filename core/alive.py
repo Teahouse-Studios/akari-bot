@@ -5,13 +5,23 @@ class Alive:
     values = {}
 
     @classmethod
-    def refresh_alive(cls, client_name: str, target_prefix_list: list = None, sender_prefix_list: list = None):
-        cls.values[client_name] = {}
-        cls.values[client_name]["ts"] = datetime.now()
-        if target_prefix_list:
-            cls.values[client_name]["target_prefix_list"] = target_prefix_list
-        if sender_prefix_list:
-            cls.values[client_name]["sender_prefix_list"] = sender_prefix_list
+    def refresh_alive(
+        cls,
+        client_name: str,
+        target_prefix_list: list = None,
+        sender_prefix_list: list = None,
+        require_check_dirty_words: bool = False,
+        use_url_manager: bool = False,
+        use_url_md_format: bool = False,
+    ):
+        cls.values[client_name] = {
+            "target_prefix_list": target_prefix_list,
+            "sender_prefix_list": sender_prefix_list,
+            "require_check_dirty_words": require_check_dirty_words,
+            "use_url_manager": use_url_manager,
+            "use_url_md_format": use_url_md_format,
+            "ts": datetime.now(),
+        }
 
     @classmethod
     def get_alive(cls):
@@ -66,3 +76,10 @@ class Alive:
                 if id.startswith(prefix + "|") or id == prefix:
                     return client_name
         return None
+
+    @classmethod
+    def get_params(cls, client_name: str):
+        for cl, data in cls.get_alive().items():
+            if cl == client_name:
+                return data
+        return {}

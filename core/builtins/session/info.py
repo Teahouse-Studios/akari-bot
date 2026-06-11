@@ -131,6 +131,10 @@ class SessionInfo:
         prefixes = target_info.target_data.get("command_prefix", []) + command_prefix.copy() + (prefixes or [])
         if fetch:
             ctx_slot = 999
+            get_params = Alive.get_params(client_name)
+            require_check_dirty_words = get_params.get("require_check_dirty_words", False)
+            use_url_manager = get_params.get("use_url_manager", False)
+            use_url_md_format = get_params.get("use_url_md_format", False)
 
         tmp = tmp or {}
 
