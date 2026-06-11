@@ -138,11 +138,8 @@ async def check(
     if isinstance(text, (list, MessageChain)):
         text = [str(x) for x in text]
 
-    if not access_key_id or not access_key_secret:
+    if not access_key_id or not access_key_secret or not (session and session.session_info.require_check_dirty_words):
         Logger.warning("Dirty words filter was disabled, skip.")
-        return [{"content": t, "status": True, "original": t} for t in text]
-    if session and not session.session_info.require_check_dirty_words:
-        Logger.warning("Dirty words filter was disabled by session, skip.")
         return [{"content": t, "status": True, "original": t} for t in text]
 
     if not text:
@@ -155,13 +152,10 @@ async def check(
     for q in query_list:
         for pq in query_list[q]:
             if not query_list[q][pq]:
-                try:
-                    cache = await DirtyWordCache.check(pq)
-                    if cache:
-                        query_list[q][pq] = parse_data(pq, cache.result, confidence, additional_text)
-                except Exception:
-                    Logger.warning("Failed to get cache, skip.")
-                    Logger.exception()
+                cache = await DirtyWordCache.check(pq)
+                if cache:
+                    query_list[q][pq] = parse_data(pq, cache.result, confidence, additional_text)
+
     call_api_list = {}
     for q in query_list:
         for pq in query_list[q]:
@@ -289,13 +283,10 @@ async def check(
                     query_list[n][x] = final_parse_result
 
                 if res_list:
-                    try:
-                        hash_id = hashlib.sha256(x.encode("utf-8")).hexdigest()
-                        last_api_data = res_list[-1][2]
-                        await DirtyWordCache.create(hash_id=hash_id, desc=x, result=last_api_data)
-                    except Exception:
-                        Logger.warning("Failed to create dirty word cache, skip.")
-                        Logger.exception()
+                    hash_id = hashlib.sha256(x.encode("utf-8")).hexdigest()
+                    last_api_data = res_list[-1][2]
+                    await DirtyWordCache.create(hash_id=hash_id, desc=x, result=last_api_data)
+
     results = []
     Logger.debug(query_list)
     for q in query_list.values():

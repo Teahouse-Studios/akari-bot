@@ -21,6 +21,7 @@ rc_ = module("rc", developers=["OasisAkari"], recommend_modules="wiki", doc=True
 @rc_.command(
     "[--legacy] {{I18N:wiki.help.rc}}",
     options_desc={"--legacy": "{I18N:help.option.legacy}"},
+    available_for=["QQ|Group", "QQ|Private"],
 )
 async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
@@ -59,12 +60,28 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(I18NContext("wiki.message.error.fetch_log"))
 
 
+@rc_.command("{{I18N:wiki.help.rc}}", exclude_from=["QQ|Group", "QQ|Private"])
+async def _(msg: Bot.MessageSession):
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
+    start_wiki = target.api_link
+    headers = target.headers
+    if not start_wiki:
+        await msg.finish(I18NContext("wiki.message.not_set"))
+    try:
+        res = await get_rc(msg, start_wiki, headers)
+        await msg.finish(res)
+    except Exception:
+        Logger.exception()
+        await msg.finish(I18NContext("wiki.message.error.fetch_log"))
+
+
 ab_ = module("ab", developers=["OasisAkari"], recommend_modules="wiki", doc=True)
 
 
 @ab_.command(
     "[--legacy] {{I18N:wiki.help.ab}}",
     options_desc={"--legacy": "{I18N:help.option.legacy}"},
+    available_for=["QQ|Group", "QQ|Private"],
 )
 async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
@@ -101,6 +118,21 @@ async def _(msg: Bot.MessageSession):
         except Exception:
             Logger.exception()
             await msg.finish(I18NContext("wiki.message.error.fetch_log"))
+
+
+@ab_.command("{{I18N:wiki.help.ab}}", exclude_from=["QQ|Group", "QQ|Private"])
+async def _(msg: Bot.MessageSession):
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
+    start_wiki = target.api_link
+    headers = target.headers
+    if not start_wiki:
+        await msg.finish(I18NContext("wiki.message.not_set"))
+    try:
+        res = await get_ab(msg, start_wiki, headers)
+        await msg.finish(res)
+    except Exception:
+        Logger.exception()
+        await msg.finish(I18NContext("wiki.message.error.fetch_log"))
 
 
 new = module("newbie", developers=["OasisAkari"], recommend_modules="wiki", doc=True)

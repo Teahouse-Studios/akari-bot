@@ -66,7 +66,6 @@
     "wiki.message.ntqq.forward.timeout": "若长时间未发送消息，请尝试使用“--legacy”选项重新获取。",
     "wiki.message.prefix.reset.success": "已重置请求时所使用的前缀。",
     "wiki.message.prefix.set.success": "已更新请求时所使用的前缀：${wiki_prefix}",
-    "wiki.message.rc.action.actionhidden": "${user} 隐藏了编辑的可见性： ${comment}",
     "wiki.message.rc.action.abusefilter.create": "${user} 建立了 ${title}",
     "wiki.message.rc.action.abusefilter.modify": "${user} 修改了 ${title}",
     "wiki.message.rc.action.block": "${user} 封禁了 ${title}",

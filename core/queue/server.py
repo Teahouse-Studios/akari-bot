@@ -390,9 +390,6 @@ async def client_keepalive(tsk: JobQueuesTable, args: dict):
         tsk.args["client_name"],
         target_prefix_list=tsk.args.get("target_prefix_list"),
         sender_prefix_list=tsk.args.get("sender_prefix_list"),
-        require_check_dirty_words=tsk.args.get("require_check_dirty_words"),
-        use_url_manager=tsk.args.get("use_url_manager"),
-        use_url_md_format=tsk.args.get("use_url_md_format"),
     )
     return {"success": True}
 

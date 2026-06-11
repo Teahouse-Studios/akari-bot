@@ -25,7 +25,6 @@ async def get_rc(msg: Bot.MessageSession, wiki_url, headers=None):
     pageurl = wiki.wiki_info.articlepath.replace("$1", "Special:RecentChanges")
     d = []
     for x in query["query"]["recentchanges"]:
-        Logger.trace(x)
         title = x.get("title", "Unknown")
         user = x.get("user", "Unknown")
 
@@ -44,11 +43,7 @@ async def get_rc(msg: Bot.MessageSession, wiki_url, headers=None):
                 comment = str(I18NContext("message.brackets", msg=replace_brackets(x["comment"])))
                 d.append(comment)
         if x["type"] == "log":
-            if "actionhidden" in x:
-                log = msg.session_info.locale.t(
-                    "wiki.message.rc.action.actionhidden", user=user, comment=x.get("comment", "")
-                )
-            elif x["logtype"] == x["logaction"]:
+            if x["logtype"] == x["logaction"]:
                 log = msg.session_info.locale.t(f"wiki.message.rc.action.{x['logtype']}", user=user, title=title)
             else:
                 log = msg.session_info.locale.t(
@@ -60,7 +55,7 @@ async def get_rc(msg: Bot.MessageSession, wiki_url, headers=None):
                 else:
                     log = f"{user} {x['logaction']} {x['logtype']} {title}"
             d.append(f"•{msg.format_time(strptime2ts(x['timestamp']), iso=True, timezone=False)} - {log}")
-            params = x.get("params", {})
+            params = x["logparams"]
             if "suppressredirect" in params:
                 d.append(str(I18NContext("wiki.message.rc.params.suppress_redirect")))
             if "oldgroups" and "newgroups" in params:
