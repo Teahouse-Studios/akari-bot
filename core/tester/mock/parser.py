@@ -10,7 +10,7 @@ from core.exports import exports
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.types import Module, Param
-from core.types.module.component_meta import CommandMeta
+from core.types.module.component_meta import CommandMeta, RegexMode
 from core.utils.func import normalize_space
 
 if TYPE_CHECKING:
@@ -150,18 +150,28 @@ async def _execute_regex(msg: "Bot.MessageSession", modules):
     for m in modules:  # 遍历模块
         if modules[m].regex_list.set:
             regex_module: Module = modules[m]
-
             for rfunc in regex_module.regex_list.set:  # 遍历正则模块的表达式
                 matched = False
                 trigger_msg = msg.as_display(text_only=rfunc.text_only, element_filter=rfunc.element_filter)
-                if rfunc.mode.upper() in ["M", "MATCH"]:
-                    msg.matched_msg = re.match(rfunc.pattern, trigger_msg, flags=rfunc.flags)
-                    if msg.matched_msg:
-                        matched = True
-                elif rfunc.mode.upper() in ["A", "FINDALL"]:
+                mode = rfunc.mode
+                if mode in [RegexMode.USERCHOOSE, RegexMode.FINDALL]:
                     msg.matched_msg = tuple(set(re.findall(rfunc.pattern, trigger_msg, flags=rfunc.flags)))
-                    if msg.matched_msg:
-                        matched = True
+                elif mode == RegexMode.MATCH:
+                    msg.matched_msg = tuple((re.match(rfunc.pattern, trigger_msg, flags=rfunc.flags),))
+                if msg.matched_msg and len(msg.matched_msg) > 0:
+                    matched = True
+                    if mode == RegexMode.USERCHOOSE:
+                        # 由用户决定选择何种匹配方式
+                        if len(msg.matched_msg) > 1:
+                            if await msg.wait_confirm(I18NContext("parser.regex.mode.confirm")):
+                                mode = RegexMode.FINDALL
+                            else: 
+                                mode = RegexMode.MATCH
+                                msg.matched_msg = (msg.matched_msg[0],)
+                        else:
+                            mode = RegexMode.MATCH
+                    if mode == RegexMode.MATCH:
+                        msg.matched_msg = msg.matched_msg[0] # 向前兼容性考虑
 
                 if matched:  # 如果匹配成功
                     if hasattr(msg, "_casetest_target") and rfunc.function is not msg._casetest_target:
