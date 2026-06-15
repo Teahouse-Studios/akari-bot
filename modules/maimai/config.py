@@ -1,4 +1,4 @@
-from .maimai import mai
+from .maimaidx import mai
 
 
 @mai.config(secret=True)

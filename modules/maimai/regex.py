@@ -10,7 +10,7 @@ from .libraries.maimaidx_apidata import get_info, search_by_alias
 from .libraries.maimaidx_mapping import *
 from .libraries.maimaidx_music import TotalList
 from .libraries.maimaidx_utils import get_diff, get_grade_info
-from .maimai import query_alias, query_plate, query_song_score, query_process
+from .maimaidx import query_alias, query_plate, query_song_score, query_process
 
 total_list = TotalList()
 
@@ -75,7 +75,7 @@ async def _(msg: Bot.MessageSession):
                 artist=music["basic_info"]["artist"],
                 genre=genre_i18n_mapping.get(music["basic_info"]["genre"], music["basic_info"]["genre"]),
                 bpm=music["basic_info"]["bpm"],
-                version=music["basic_info"]["from"],
+                version=version_fixup_mapping.get(music["basic_info"]["from"], music["basic_info"]["from"]),
                 level="/".join((str(ds) for ds in music["ds"])),
             )
         )

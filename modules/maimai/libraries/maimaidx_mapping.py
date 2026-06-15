@@ -188,6 +188,8 @@ genre_i18n_mapping = {
     "宴会场": "宴會場",
 }
 
+version_fixup_mapping = {"MiLK PLUS": "maimai MiLK PLUS"}
+
 mai_plate_remaster_required = [
     "17",
     "22",

@@ -14,6 +14,7 @@ from .libraries.maimaidx_best50 import generate as generate_b50
 from .libraries.maimaidx_platelist import generate as generate_plate
 from .libraries.maimaidx_scoreline import draw_scoreline_table
 from .libraries.maimaidx_scorelist import generate as generate_process
+from .libraries.maimaidx_mapping import *
 from .libraries.maimaidx_utils import *
 
 total_list = TotalList()
@@ -403,7 +404,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                 artist=music["basic_info"]["artist"],
                 genre=genre_i18n_mapping.get(music["basic_info"]["genre"], music["basic_info"]["genre"]),
                 bpm=music["basic_info"]["bpm"],
-                version=music["basic_info"]["from"],
+                version=version_fixup_mapping.get(music["basic_info"]["from"], music["basic_info"]["from"]),
                 level="/".join((str(ds) for ds in music["ds"])),
             )
         )
