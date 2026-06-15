@@ -111,14 +111,20 @@ async def _(msg: Bot.MessageSession):
 
 @mai_regex.regex(r"(.?)([極极将將舞神者]舞?)[进進]度", desc="{I18N:maimai.help.maimai_regex.plate}")
 async def _(msg: Bot.MessageSession):
-    plate = msg.matched_msg.groups()[0] + msg.matched_msg.groups()[1]
-    await query_plate(msg, plate, get_list=False)
+    version = msg.matched_msg.groups()[0]
+    goal = msg.matched_msg.groups()[1]
+    if version and goal:
+        plate = version + goal
+        await query_plate(msg, plate, get_list=False)
 
 
 @mai_regex.regex(r"(.?)([極极将將舞神者]舞?)完成表", desc="{I18N:maimai.help.maimai_regex.plate.list}")
 async def _(msg: Bot.MessageSession):
-    plate = msg.matched_msg.groups()[0] + msg.matched_msg.groups()[1]
-    await query_plate(msg, plate, get_list=True)
+    version = msg.matched_msg.groups()[0]
+    goal = msg.matched_msg.groups()[1]
+    if version and goal:
+        plate = version + goal
+        await query_plate(msg, plate, get_list=True)
 
 
 @mai_regex.regex(
