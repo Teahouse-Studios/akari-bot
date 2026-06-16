@@ -30,7 +30,7 @@ def check_valid(expr):
     expr = expr.replace(" ", "")
 
     operators = {"+", "-", "*", "/"}
-    num_numbers = 0
+    num_counts = 0
     open_parens = 0
     prev_char = ""
 
@@ -40,20 +40,21 @@ def check_valid(expr):
         if is_int(char):
             while i < len(expr) and is_int(expr[i]):
                 i += 1
-            num_numbers += 1
-            prev_char = "num"
+            num_counts += 1
+            prev_char = "X"
             continue
         if char in operators:
             if char == "-" and prev_char in ("", "("):
+                prev_char = "~"
                 i += 1
                 continue
-            if prev_char in operators or prev_char in ("", "("):
+            if prev_char in operators or prev_char in ("", "(", "~"):
                 return False
             prev_char = char
             i += 1
             continue
         if char == "(":
-            if prev_char in ("num", ")"):
+            if prev_char in ("X", ")"):
                 return False
             open_parens += 1
             prev_char = char
@@ -66,14 +67,14 @@ def check_valid(expr):
             prev_char = char
             i += 1
             continue
-        if char == "\\":
+        if char == "\\":  # expr maybe additional escape chars
             i += 1
             continue
         return False
 
     if open_parens != 0:
         return False
-    if num_numbers > 9:
+    if num_counts > 4:
         return False
     if prev_char in operators:
         return False
