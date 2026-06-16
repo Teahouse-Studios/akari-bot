@@ -67,19 +67,39 @@ def check_valid(expr):
             prev_char = char
             i += 1
             continue
-        if char == "\\":  # expr maybe additional escape chars
+        if char == "\\":  # expr may have additional escape chars
             i += 1
             continue
         return False
 
     if open_parens != 0:
         return False
-    if num_counts > 4:
-        return False
     if prev_char in operators:
         return False
 
     return True
+
+
+def contains_all_numbers(expr, numbers):
+    used_numbers = [str(num) for num in numbers]
+    used_count = {str(num): 0 for num in numbers}
+    i = 0
+    while i < len(expr):
+        char = expr[i]
+        if is_int(char):
+            number = char
+            while i + 1 < len(expr) and is_int(expr[i + 1]):
+                number += expr[i + 1]
+                i += 1
+            if number in used_numbers:
+                used_count[number] += 1
+                if used_count[number] > numbers.count(int(number)):
+                    return False
+            else:
+                return False
+        i += 1
+
+    return bool(all(used_count[str(num)] == numbers.count(num) for num in numbers))
 
 
 def find_solution(numbers):
@@ -133,28 +153,6 @@ def find_solution(numbers):
     dfs(numbers, [(str(x), 3) for x in numbers])
 
     return list(results) if results else None
-
-
-def contains_all_numbers(expr, numbers):
-    used_numbers = [str(num) for num in numbers]
-    used_count = {str(num): 0 for num in numbers}
-    i = 0
-    while i < len(expr):
-        char = expr[i]
-        if is_int(char):
-            number = char
-            while i + 1 < len(expr) and is_int(expr[i + 1]):
-                number += expr[i + 1]
-                i += 1
-            if number in used_numbers:
-                used_count[number] += 1
-                if used_count[number] > numbers.count(int(number)):
-                    return False
-            else:
-                return False
-        i += 1
-
-    return bool(all(used_count[str(num)] == numbers.count(num) for num in numbers))
 
 
 tf = module(
