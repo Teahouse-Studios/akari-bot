@@ -194,7 +194,7 @@ async def _(msg: Bot.MessageSession):
             await answer.finish(send)
         if check_valid(expr):
             result = calc(expr)
-            if not result:
+            if result is None:
                 await answer.finish(I18NContext("twenty_four.message.incorrect.invalid"))
             elif abs(result - 24) < 1e-10 and contains_all_numbers(expr, numbers):
                 send = [I18NContext("twenty_four.message.correct")]
