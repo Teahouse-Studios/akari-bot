@@ -196,7 +196,7 @@ async def _(msg: Bot.MessageSession):
             result = calc(expr)
             if not result:
                 await answer.finish(I18NContext("twenty_four.message.incorrect.invalid"))
-            elif (result == 24 or 0 < 24 - result < 1e-13) and contains_all_numbers(expr, numbers):
+            elif abs(result - 24) < 1e-10 and contains_all_numbers(expr, numbers):
                 send = [I18NContext("twenty_four.message.correct")]
                 if g_msg := await gained_petal(msg, 1):
                     send.append(g_msg)
