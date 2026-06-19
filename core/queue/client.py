@@ -204,6 +204,9 @@ async def get_session(args: dict):
         ctx_manager = bot.ContextSlots[session_info.ctx_slot]
     else:
         ctx_manager = bot.ContextSlots[bot.fetched_session_ctx_slot]
+
+    bot.init_session_features(session_info, ctx_manager.features)
+
     return session_info, bot, ctx_manager, _args
 
 
