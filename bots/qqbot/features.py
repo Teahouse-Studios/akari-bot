@@ -1,17 +1,26 @@
 from core.builtins.session.features import Features as FeaturesBase
+from core.config import Config
+from attrs import define
 
 
+dirty_word_check = Config("enable_dirty_check", False)
+use_url_manager = Config("enable_urlmanager", False)
+
+
+@define
 class Features(FeaturesBase):
-    image = True
-    voice = False
-    mention = True
-    embed = False
-    forward = False
-    delete = True
-    manage = False
-    markdown = False
-    reaction = False
-    quote = True
-    rss = False
-    typing = False
-    wait = False
+    support_image: bool = True
+    support_voice: bool = False
+    support_mention: bool = True
+    support_embed: bool = False
+    support_forward: bool = False
+    support_delete: bool = True
+    support_manage: bool = False
+    support_markdown: bool = False
+    support_reaction: bool = False
+    support_quote: bool = True
+    support_rss: bool = False
+    support_typing: bool = False
+    support_wait: bool = False
+    require_check_dirty_words: bool = dirty_word_check
+    use_url_manager: bool = use_url_manager

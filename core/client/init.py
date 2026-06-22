@@ -4,6 +4,7 @@ import logging
 from akari_bot_i18n.i18n import load_locale_file
 from apscheduler.schedulers import SchedulerAlreadyRunningError
 
+from core.builtins.bot import Bot
 from core.constants import Info, lang_list, all_locales_path
 from core.database import init_db
 from core.logger import Logger
@@ -24,13 +25,21 @@ async def client_init(
     if queue:
         asyncio.create_task(check_queue())
     await JobQueueClient.send_keepalive_signal_to_server(
-        Info.client_name, target_prefix_list=target_prefix_list, sender_prefix_list=sender_prefix_list
+        Info.client_name,
+        target_prefix_list=target_prefix_list,
+        sender_prefix_list=sender_prefix_list,
+        ctx_slot_index=Bot.fetched_session_ctx_slot,
+        features=Bot.ContextSlots[Bot.fetched_session_ctx_slot].features,
     )
 
     @Scheduler.scheduled_job(IntervalTrigger(seconds=60))
     async def bg():
         await JobQueueClient.send_keepalive_signal_to_server(
-            Info.client_name, target_prefix_list=target_prefix_list, sender_prefix_list=sender_prefix_list
+            Info.client_name,
+            target_prefix_list=target_prefix_list,
+            sender_prefix_list=sender_prefix_list,
+            ctx_slot_index=Bot.fetched_session_ctx_slot,
+            features=Bot.ContextSlots[Bot.fetched_session_ctx_slot].features,
         )
 
     try:

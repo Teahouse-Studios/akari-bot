@@ -207,7 +207,7 @@ async def parser(msg: "Bot.MessageSession"):
         # 检查正则
         if msg.session_info.muted:
             return
-        if msg.session_info.running_mention:
+        if msg.session_info.use_running_mention:
             if msg.trigger_msg.lower().find(msg.session_info.bot_name.lower()) != -1:
                 if ExecutionLockList.check(msg):
                     return await msg.send_message(I18NContext("parser.command.running.prompt2"))

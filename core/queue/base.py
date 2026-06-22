@@ -135,6 +135,7 @@ class JobQueueBase:
         :return wait=False: 返回任务 ID 字符串
         :return target_client 为 None: 返回 None
         """
+        # Logger.debug(f"Adding job to queue {cls.name}, target client: {target_client}, action: {action}, args: {args}, wait: {wait}")
         if target_client:
             task_id = await JobQueuesTable.add_task(target_client, action, args)
         else:

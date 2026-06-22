@@ -11,12 +11,11 @@ from core.builtins.session.context import ContextManager
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
 from core.logger import Logger
-from core.utils.image import msgnode2image
 
 
 class WebContextManager(ContextManager):
     context: dict[str, dict] = {}
-    features: type[Features] | None = Features
+    features: Features = Features()
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
@@ -35,7 +34,7 @@ class WebContextManager(ContextManager):
         sends = []
 
         if isinstance(message, MessageNodes):
-            message = MessageChain.assign(await msgnode2image(message))
+            Logger.error("This session does not support message nodes, check if bug exists.")
 
         for x in message.as_sendable(session_info, parse_message=enable_parse_message):
             if isinstance(x, PlainElement):

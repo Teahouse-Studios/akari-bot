@@ -11,13 +11,11 @@ from bots.qqbot.features import Features
 from bots.qqbot.info import client_name, target_group_prefix, target_guild_prefix
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, MentionElement
-from core.builtins.message.internal import Image, I18NContext
 from core.builtins.session.context import ContextManager
 from core.builtins.session.info import SessionInfo
 from core.config import Config
 from core.logger import Logger
 from core.utils.http import url_pattern
-from core.utils.image import msgchain2image, msgnode2image
 
 qq_typing_emoji = str(Config("qq_typing_emoji", 181, (str, int), table_name="bot_qqbot"))
 qq_limited_emoji = str(Config("qq_limited_emoji", 10060, (str, int), table_name="bot_qqbot"))
@@ -65,7 +63,7 @@ class ModdedBotAPI(BotAPI):
 
 class QQBotContextManager(ContextManager):
     context: dict[str, BaseMessage] = {}
-    features: type[Features] | None = Features
+    features: Features = Features()
 
     @classmethod
     def add_context(cls, session_info: SessionInfo, context: BaseMessage):
@@ -111,7 +109,7 @@ class QQBotContextManager(ContextManager):
         msg_ids = []
 
         if isinstance(message, MessageNodes):
-            message = MessageChain.assign(await msgnode2image(message))
+            Logger.error("This session does not support message nodes, check if bug exists.")
 
         plains: list[PlainElement] = []
         images: list[ImageElement] = []
@@ -235,14 +233,18 @@ class QQBotContextManager(ContextManager):
                             msg_ids.append(send["id"])
                             seq += 1
                     except ServerError:
-                        img_chain = filtered_msg
-                        img_chain.insert(0, I18NContext("error.message.limited.msg2img"))
-                        if image_1:
-                            img_chain.append(image_1)
-                        imgs = await msgchain2image(img_chain, session_info)
-                        if imgs:
-                            imgs = [Image(img) for img in imgs]
-                            images = imgs + images
+                        try:
+                            send = await ctx.reply(
+                                content=session_info.locale.t("error.message.limited"),
+                                msg_type=0,
+                                msg_seq=seq,
+                            )
+                            Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
+                            if send:
+                                msg_ids.append(send["id"])
+                                seq += 1
+                        except ServerError:
+                            pass
                     if images:
                         for img in images:
                             send_img = await ctx._api.post_group_file(
@@ -281,14 +283,18 @@ class QQBotContextManager(ContextManager):
                             msg_ids.append(send["id"])
                             seq += 1
                     except ServerError:
-                        img_chain = filtered_msg
-                        img_chain.insert(0, I18NContext("error.message.limited.msg2img"))
-                        if image_1:
-                            img_chain.append(image_1)
-                        imgs = await msgchain2image(img_chain, session_info)
-                        if imgs:
-                            imgs = [Image(img) for img in imgs]
-                            images = imgs + images
+                        try:
+                            send = await ctx.reply(
+                                content=session_info.locale.t("error.message.limited"),
+                                msg_type=0,
+                                msg_seq=seq,
+                            )
+                            Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
+                            if send:
+                                msg_ids.append(send["id"])
+                                seq += 1
+                        except ServerError:
+                            pass
                     if images:
                         for img in images:
                             send_img = await ctx._api.post_c2c_file(

@@ -10,6 +10,7 @@ from typing import Any, TypeAlias, TYPE_CHECKING
 
 from core.builtins.message.chain import *
 from core.builtins.session.context import ContextManager
+from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo, FetchedSessionInfo, ModuleHookContext
 from core.builtins.session.internal import MessageSession, FetchedMessageSession
 from core.builtins.session.lock import ExecutionLockList
@@ -22,6 +23,7 @@ from core.database.models import TargetInfo, AnalyticsData
 from core.exports import add_export, exports
 from core.loader import ModulesManager
 from core.logger import Logger
+from core.utils.session import inject_features
 
 if TYPE_CHECKING:
     from core.queue.client import JobQueueClient
@@ -73,7 +75,7 @@ class Bot:
         base_superuser_list = [base_superuser_list]
 
     @classmethod
-    async def process_message(cls, session_info: SessionInfo, ctx: Any):
+    async def process_message(cls, session_info: SessionInfo, ctx: Any, features_override: Features | None = None):
         """
         处理接收到的消息。
 
@@ -82,6 +84,7 @@ class Bot:
 
         :param session_info: 会话信息对象，包含消息、用户、平台等信息
         :param ctx: 平台特定的上下文对象（如 QQ 机器人实例）
+        :param features_override: 可选的功能特性覆盖对象，用于替代平台默认特性
         :raises TypeError: 如果 session_info 不是 SessionInfo 类型
         """
         # 验证 session_info 的类型
@@ -92,22 +95,10 @@ class Bot:
         ctx_manager = cls.ContextSlots[session_info.ctx_slot]
 
         # 从上下文管理器获取平台支持的功能特性
-        features = ctx_manager.features
+        features = ctx_manager.features if not features_override else features_override
 
         # 将各项功能特性标志设置到会话信息中
-        session_info.support_image = features.image
-        session_info.support_voice = features.voice
-        session_info.support_mention = features.mention
-        session_info.support_embed = features.embed
-        session_info.support_forward = features.forward
-        session_info.support_delete = features.delete
-        session_info.support_manage = features.manage
-        session_info.support_markdown = features.markdown
-        session_info.support_quote = features.quote
-        session_info.support_rss = features.rss
-        session_info.support_typing = features.typing
-        session_info.support_wait = features.wait
-        session_info.support_reaction = features.reaction
+        session_info = inject_features(session_info, features)
 
         async def _process_msg():
             """内部异步处理函数 - 管理消息处理的生命周期"""

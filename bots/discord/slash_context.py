@@ -3,7 +3,7 @@ import asyncio
 import discord
 
 from bots.discord.context import DiscordContextManager
-from bots.discord.features import Features
+from bots.discord.features import SlashFeatures, Features
 from bots.discord.info import client_name, target_channel_prefix
 from bots.discord.utils import convert_embed
 from core.builtins.message.chain import MessageChain
@@ -14,7 +14,7 @@ from core.logger import Logger
 
 class DiscordSlashContextManager(DiscordContextManager):
     context: dict[str, discord.ApplicationContext] = {}
-    features: type[Features] | None = Features
+    features: Features = SlashFeatures()
     typing_flags: dict[str, asyncio.Event] = {}
 
     @classmethod

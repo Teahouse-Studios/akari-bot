@@ -30,13 +30,12 @@ Bot.register_bot(client_name=client_name)
 ctx_id = Bot.register_context_manager(OneBotContextManager)
 Bot.register_context_manager(OneBotFetchedContextManager, fetch_session=True)
 
-dirty_word_check = Config("enable_dirty_check", False)
 default_locale = Config("default_locale", cfg_type=str)
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 enable_tos = Config("enable_tos", True)
 mention_required = Config("mention_required", False)
 quick_confirm = Config("quick_confirm", True)
-use_url_manager = Config("enable_urlmanager", False)
+
 enable_temp_session = Config("qq_enable_temp_session", True, table_name="bot_onebot")
 enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name="bot_onebot")
 
@@ -138,8 +137,6 @@ async def message_handler(event: Event):
         reply_id=str(reply_id),
         messages=msg_chain,
         ctx_slot=ctx_id,
-        use_url_manager=use_url_manager,
-        require_check_dirty_words=dirty_word_check,
         tmp=Temp.data.copy(),
     )
 

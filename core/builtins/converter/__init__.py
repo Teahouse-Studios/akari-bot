@@ -95,4 +95,5 @@ converter.register_structure_hook(Locale, lambda o, _: Locale(o["locale"]))
 # 从字典恢复为 timedelta 对象，使用保存的秒数值
 converter.register_structure_hook(timedelta, lambda o, _: timedelta(seconds=o["seconds"]))
 
+
 __all__ = ["converter"]

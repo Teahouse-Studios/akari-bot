@@ -28,12 +28,14 @@ from core.builtins.message.elements import (
     VoiceElement,
     MentionElement,
 )
+
 from core.constants import Secret, default_locale
-from core.exports import add_export
+from core.exports import add_export, exports
 from core.i18n import Locale
 
 if TYPE_CHECKING:
     from core.builtins.session.info import SessionInfo
+    from core.builtins.session.internal import MessageSession
 
 from core.builtins.types import MessageElement
 from core.builtins.converter import converter
@@ -213,7 +215,7 @@ class MessageChain:
         # 所有检查通过，消息链安全
         return True
 
-    def as_sendable(self, session_info: SessionInfo = None, parse_message: bool = True) -> list:
+    def as_sendable(self, session_info: SessionInfo | MessageSession = None, parse_message: bool = True) -> list:
         """
         将消息链转换为可发送的格式。
 
@@ -239,6 +241,9 @@ class MessageChain:
 
         # ========== 检查平台是否支持 Embed 消息 ==========
         if session_info:
+            if isinstance(session_info, exports.get("MessageSession")):
+                session_info = session_info.session_info
+
             support_embed = session_info.support_embed
 
         # ========== 处理每个消息元素 ==========
@@ -716,7 +721,7 @@ class MessageNodes:
         return all(chain.is_safe for chain in self.values)
 
 
-Chainable = (
+type Chainable = (
     MessageChain
     | I18NMessageChain
     | PlatformMessageChain

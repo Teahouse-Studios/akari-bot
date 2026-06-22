@@ -27,6 +27,7 @@ from ..alive import Alive
 from .base import JobQueueBase
 from ..builtins.converter import converter
 from ..builtins.message.chain import MessageChain, MessageNodes
+from ..builtins.session.features import Features
 from ..builtins.session.info import SessionInfo
 from ..database.models import JobQueuesTable
 from ..exports import exports, add_export
@@ -390,6 +391,8 @@ async def client_keepalive(tsk: JobQueuesTable, args: dict):
         tsk.args["client_name"],
         target_prefix_list=tsk.args.get("target_prefix_list"),
         sender_prefix_list=tsk.args.get("sender_prefix_list"),
+        ctx_slot_index=tsk.args.get("ctx_slot_index"),
+        features=converter.structure(tsk.args.get("features", {}), Features),
     )
     return {"success": True}
 

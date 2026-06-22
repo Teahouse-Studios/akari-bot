@@ -8,7 +8,7 @@ from core.builtins.message.elements import PlainElement, ImageElement, VoiceElem
 from core.builtins.session.context import ContextManager
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
-from core.utils.image import msgnode2image, image_split
+from core.utils.image import image_split
 from .client import matrix_bot, homeserver_host
 from .features import Features
 from .info import client_name
@@ -16,7 +16,7 @@ from .info import client_name
 
 class MatrixContextManager(ContextManager):
     context: dict[str, tuple[nio.MatrixRoom, nio.RoomMessageFormatted]] = {}
-    features: type[Features] | None = Features
+    features: Features = Features()
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
@@ -87,7 +87,7 @@ class MatrixContextManager(ContextManager):
         if ctx:
             room, event = ctx
         if isinstance(message, MessageNodes):
-            message = MessageChain.assign(await msgnode2image(message))
+            Logger.error("This session does not support message nodes, check if bug exists.")
         for x in message.as_sendable(session_info, parse_message=enable_parse_message):
 
             async def _send_msg(content):

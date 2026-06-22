@@ -5,6 +5,7 @@ import botpy
 from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 
 from bots.qqbot.context import QQBotContextManager
+from bots.qqbot.features import Features
 from bots.qqbot.info import *
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
@@ -20,8 +21,6 @@ ctx_id = Bot.register_context_manager(QQBotContextManager)
 qqbot_appid = str(Config("qq_bot_appid", cfg_type=(int, str), table_name="bot_qqbot"))
 qqbot_secret = Config("qq_bot_secret", cfg_type=str, secret=True, table_name="bot_qqbot")
 ignored_sender = Config("ignored_sender", ignored_sender_default)
-dirty_word_check = Config("enable_dirty_check", False)
-use_url_manager = Config("enable_urlmanager", False)
 
 
 class MyClient(botpy.Client):
@@ -64,12 +63,11 @@ class MyClient(botpy.Client):
             messages=msg_chain,
             ctx_slot=ctx_id,
             prefixes=prefixes,
-            require_enable_modules=require_enable_modules,
-            require_check_dirty_words=dirty_word_check,
-            use_url_manager=use_url_manager,
         )
 
-        await Bot.process_message(session, message)
+        _feat = Features.override(require_enable_modules=require_enable_modules)
+
+        await Bot.process_message(session, message, _feat)
 
     @staticmethod
     async def on_message_create(message: Message):
@@ -106,10 +104,9 @@ class MyClient(botpy.Client):
             messages=msg_chain,
             ctx_slot=ctx_id,
             prefixes=prefixes,
-            require_enable_modules=require_enable_modules,
-            require_check_dirty_words=dirty_word_check,
-            use_url_manager=use_url_manager,
         )
+
+        _feat = Features.override(require_enable_modules=require_enable_modules)
 
         await Bot.process_message(session, message)
 
@@ -149,12 +146,10 @@ class MyClient(botpy.Client):
             messages=msg_chain,
             ctx_slot=ctx_id,
             prefixes=prefixes,
-            require_enable_modules=require_enable_modules,
-            require_check_dirty_words=dirty_word_check,
-            use_url_manager=use_url_manager,
         )
+        _feat = Features.override(require_enable_modules=require_enable_modules)
 
-        await Bot.process_message(session, message)
+        await Bot.process_message(session, message, _feat)
 
     @staticmethod
     async def on_direct_message_create(message: DirectMessage):
@@ -188,12 +183,11 @@ class MyClient(botpy.Client):
             messages=msg_chain,
             ctx_slot=ctx_id,
             prefixes=prefixes,
-            require_enable_modules=require_enable_modules,
-            require_check_dirty_words=dirty_word_check,
-            use_url_manager=use_url_manager,
         )
 
-        await Bot.process_message(session, message)
+        _feat = Features.override(require_enable_modules=require_enable_modules)
+
+        await Bot.process_message(session, message, _feat)
 
     @staticmethod
     async def on_c2c_message_create(message: C2CMessage):
@@ -227,12 +221,11 @@ class MyClient(botpy.Client):
             messages=msg_chain,
             ctx_slot=ctx_id,
             prefixes=prefixes,
-            require_enable_modules=require_enable_modules,
-            require_check_dirty_words=dirty_word_check,
-            use_url_manager=use_url_manager,
         )
 
-        await Bot.process_message(session, message)
+        _feat = Features.override(require_enable_modules=require_enable_modules)
+
+        await Bot.process_message(session, message, _feat)
 
 
 intents = botpy.Intents.none()

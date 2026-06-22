@@ -11,12 +11,12 @@ from core.builtins.message.elements import PlainElement, ImageElement, VoiceElem
 from core.builtins.session.context import ContextManager
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
-from core.utils.image import msgnode2image, image_split
+from core.utils.image import image_split
 
 
 class TelegramContextManager(ContextManager):
     context: dict[str, types.Message] = {}
-    features: type[Features] | None = Features
+    features: Features = Features()
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
@@ -64,7 +64,7 @@ class TelegramContextManager(ContextManager):
                 buffer_text = []
 
         if isinstance(message, MessageNodes):
-            message = MessageChain.assign(await msgnode2image(message))
+            Logger.error("This session does not support message nodes, check if bug exists.")
 
         count = 0
         for x in message.as_sendable(session_info, parse_message=enable_parse_message):

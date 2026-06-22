@@ -16,6 +16,7 @@ from copy import deepcopy
 from typing import TYPE_CHECKING
 
 from core.builtins.session.info import SessionInfo
+from core.builtins.session.features import Features
 from .base import JobQueueBase
 from ..builtins.converter import converter
 from ..builtins.message.chain import MessageChain, MessageNodes
@@ -47,7 +48,12 @@ class JobQueueClient(JobQueueBase):
 
     @classmethod
     async def send_keepalive_signal_to_server(
-        cls, client_name: str, target_prefix_list: list = None, sender_prefix_list: list = None
+        cls,
+        client_name: str,
+        target_prefix_list: list = None,
+        sender_prefix_list: list = None,
+        ctx_slot_index: int = None,
+        features: Features | None = None,
     ):
         """向服务器发送保活信号。
 
@@ -57,7 +63,10 @@ class JobQueueClient(JobQueueBase):
         :param client_name: 客户端的名称标识
         :param target_prefix_list: 可选的目标前缀列表，用于过滤接收消息的频道
         :param sender_prefix_list: 可选的发送者前缀列表，用于过滤消息来源
+        :param ctx_slot_index: 主动消息会话的上下文管理器index
+        :param features: 可选的特性支持列表，用于获取主动消息会话下支持的特性
         """
+
         await cls.add_job(
             "Server",
             "client_keepalive",
@@ -65,6 +74,8 @@ class JobQueueClient(JobQueueBase):
                 "client_name": client_name,
                 "target_prefix_list": target_prefix_list or [],
                 "sender_prefix_list": sender_prefix_list or [],
+                "ctx_slot_index": ctx_slot_index or None,
+                "features": converter.unstructure(features, Features) if features else None,
             },
             wait=False,
         )
