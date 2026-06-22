@@ -10,7 +10,6 @@ from typing import Any, TypeAlias, TYPE_CHECKING
 
 from core.builtins.message.chain import *
 from core.builtins.session.context import ContextManager
-from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo, FetchedSessionInfo, ModuleHookContext
 from core.builtins.session.internal import MessageSession, FetchedMessageSession
 from core.builtins.session.lock import ExecutionLockList
@@ -91,8 +90,24 @@ class Bot:
 
         # 获取该会话对应的上下文管理器
         ctx_manager = cls.ContextSlots[session_info.ctx_slot]
-        # 从上下文管理器获取平台支持的功能特性并初始化到会话
-        cls.init_session_features(session_info, ctx_manager.features)
+
+        # 从上下文管理器获取平台支持的功能特性
+        features = ctx_manager.features
+
+        # 将各项功能特性标志设置到会话信息中
+        session_info.support_image = features.image
+        session_info.support_voice = features.voice
+        session_info.support_mention = features.mention
+        session_info.support_embed = features.embed
+        session_info.support_forward = features.forward
+        session_info.support_delete = features.delete
+        session_info.support_manage = features.manage
+        session_info.support_markdown = features.markdown
+        session_info.support_quote = features.quote
+        session_info.support_rss = features.rss
+        session_info.support_typing = features.typing
+        session_info.support_wait = features.wait
+        session_info.support_reaction = features.reaction
 
         async def _process_msg():
             """内部异步处理函数 - 管理消息处理的生命周期"""
@@ -111,36 +126,6 @@ class Bot:
 
         # 创建异步任务处理消息
         asyncio.create_task(_process_msg())
-
-    @staticmethod
-    def init_session_features(
-        session_info: SessionInfo,
-        features: Features | None,
-    ) -> None:
-        """
-        将平台功能特性标志同步到会话信息对象。
-        该方法从上下文管理器的 Features 类中读取平台支持的能力，
-        并设置到 session_info 的各个 support_* 属性上。
-        无论是用户消息触发的会话还是主动抓取的会话，
-        都应调用此方法以确保 session_info 持有正确的平台能力信息。
-
-        :param session_info: 需要初始化特性的会话信息对象
-        :param features: 平台特性类（如 OneBot Features），为 None 时跳过
-        """
-        if features:
-            session_info.support_image = features.image
-            session_info.support_voice = features.voice
-            session_info.support_mention = features.mention
-            session_info.support_embed = features.embed
-            session_info.support_forward = features.forward
-            session_info.support_delete = features.delete
-            session_info.support_manage = features.manage
-            session_info.support_markdown = features.markdown
-            session_info.support_quote = features.quote
-            session_info.support_rss = features.rss
-            session_info.support_typing = features.typing
-            session_info.support_wait = features.wait
-            session_info.support_reaction = features.reaction
 
     @staticmethod
     async def post_global_message(
