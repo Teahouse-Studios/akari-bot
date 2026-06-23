@@ -37,7 +37,7 @@ async def get_ab(msg: Bot.MessageSession | Bot.FetchedMessageSession, wiki_url, 
                 )
             }"
         )
-    y = await check(d, session=msg, force=True)
+    y = await check(d, session=msg)
 
     g = MessageChain.assign([Url(pageurl, use_mm=msg.session_info.use_url_manager and not wiki.wiki_info.in_allowlist)])
     g += MessageChain.assign([Plain(z["content"]) for z in y])
@@ -63,14 +63,14 @@ async def convert_ab_to_detailed_format(msg: Bot.MessageSession | Bot.FetchedMes
         if "user" in x:
             userlist.append(x.get("user"))
     text_status = True
-    checked_userlist = await check(userlist, session=msg, force=True)
+    checked_userlist = await check(userlist, session=msg)
     user_checked_map = {}
     for u in checked_userlist:
         if not u["status"]:
             text_status = False
         user_checked = u["content"]
         user_checked_map[u["original"]] = user_checked
-    checked_titlelist = await check(titlelist, session=msg, force=True)
+    checked_titlelist = await check(titlelist, session=msg)
     title_checked_map = {}
     for t in checked_titlelist:
         title_checked = t["content"]
