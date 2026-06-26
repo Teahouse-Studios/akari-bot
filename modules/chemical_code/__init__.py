@@ -174,8 +174,11 @@ async def search_pubchem(id: int | None = None):
     Logger.info(f"PubChem CID: {answer_id}")
     get = await get_url(f"{pubchem_link}/compound/cid/{answer_id}/property/SMILES/JSON", 200, fmt="json")
     if get:
-        compound_info = get["PropertyTable"]["Properties"][0]
-        smiles = compound_info["SMILES"]
+        properties = get.get("PropertyTable", {}).get("Properties", [])
+        if not properties:
+            return None
+        compound_info = properties[0]
+        smiles = compound_info.get("SMILES", "")
         mol = Chem.MolFromSmiles(smiles)
         formula = rdMolDescriptors.CalcMolFormula(mol)
         elements = parse_elements(formula)

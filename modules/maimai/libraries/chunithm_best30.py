@@ -335,13 +335,16 @@ async def generate(
         resp = await get_record_lx(msg, token, use_cache)
     else:
         resp = await get_record_df(msg, token, use_cache)
+    if not resp:
+        return None
     best = BestList(30)
     new = BestList(20)
-    b30: list[dict] = resp["records"]["b30"]
-    n20: list[dict] = resp["records"]["n20"]
+    records = resp.get("records", {})
+    b30: list[dict] = records.get("b30", [])
+    n20: list[dict] = records.get("n20", [])
     for c in b30:
         best.push(await ChartInfo.from_json(c))
     for c in n20:
         new.push(await ChartInfo.from_json(c))
-    pic = DrawBest(best, new, resp["nickname"], resp["rating"], source).get_dir()
+    pic = DrawBest(best, new, resp.get("nickname", ""), resp.get("rating", 0), source).get_dir()
     return pic

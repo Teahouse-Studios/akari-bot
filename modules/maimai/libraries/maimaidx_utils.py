@@ -117,10 +117,10 @@ async def get_rank(msg: Bot.MessageSession, payload: dict, use_cache: bool = Tru
 
     url = "https://www.diving-fish.com/api/maimaidxprober/rating_ranking"
     rank_data = await get_url(url, 200, fmt="json")
-    rank_data = sorted(rank_data, key=lambda x: x["ra"], reverse=True)  # 根据rating排名并倒序
+    rank_data = sorted(rank_data, key=lambda x: x.get("ra", 0), reverse=True)  # 根据rating排名并倒序
 
     player_data: dict = await get_record(msg, payload, use_cache)
-    username = player_data["username"]
+    username = player_data.get("username", "")
 
     rating = 0
     rank = None

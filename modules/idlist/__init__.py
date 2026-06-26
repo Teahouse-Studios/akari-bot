@@ -18,20 +18,22 @@ async def _(msg: Bot.MessageSession, query: str):
     query_options = {"q": query, "limit": f"{SEARCH_LIMIT + 1}"}
     query_url = f"{API}?{urllib.parse.urlencode(query_options)}"
     resp = await get_url(query_url, 200, fmt="json")
-    result = resp["data"]["result"]
+    data = resp.get("data", {})
+    result = data.get("result", [])
     msg_chain = MessageChain.assign()
     if result:
         for x in result[0:SEARCH_LIMIT]:
-            v = x["value"].split("\n")[0]
-            msg_chain.append(f"{x['enumName']}：{x['key']} -> {v}")
-        if resp["data"]["count"] > SEARCH_LIMIT:
+            value = x.get("value", "")
+            v = value.split("\n")[0] if value else ""
+            msg_chain.append(f"{x.get('enumName', '')}：{x.get('key', '')} -> {v}")
+        if data.get("count", 0) > SEARCH_LIMIT:
             msg_chain.append(
                 Plain(
                     str(I18NContext("message.collapse", amount=SEARCH_LIMIT))
                     + str(I18NContext("idlist.message.collapse"))
                 )
             )
-            msg_chain.append(Url(f"https://idlist.projectxero.top/{resp['data']['hash']}", use_mm=False))
+            msg_chain.append(Url(f"https://idlist.projectxero.top/{data.get('hash', '')}", use_mm=False))
         await msg.finish(msg_chain)
     else:
         await msg.finish(I18NContext("idlist.message.none"))

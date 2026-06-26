@@ -16,37 +16,37 @@ async def repo(msg: Bot.MessageSession, name: str, pat: str):
             headers={"Authorization": f"Bearer {pat}"} if pat else {},
         )
         rlicense = "Unknown"
-        if "license" in result and result["license"]:
+        if "license" in result and result.get("license"):
             if "spdx_id" in result["license"]:
                 rlicense = result["license"]["spdx_id"]
-        is_fork = result["fork"]
+        is_fork = result.get("fork", False)
         parent = False
 
-        if result["homepage"]:
+        if result.get("homepage"):
             website = str(Url(result["homepage"])) + "\n"
         else:
             website = ""
 
-        if result["mirror_url"]:
+        if result.get("mirror_url"):
             mirror = f" (This is a mirror of {str(Url(result['mirror_url']))})"
         else:
             mirror = ""
 
         if is_fork:
-            parent_name = result["parent"]["name"]
+            parent_name = result.get("parent", {}).get("name", "")
             parent = f" (This is a fork of {parent_name})"
 
-        desc = result["description"]
+        desc = result.get("description")
         if not desc:
             desc = ""
         else:
-            desc = "\n" + result["description"]
+            desc = "\n" + desc
 
-        message = f"""{result["full_name"]} ({result["id"]}){desc}
-Fork · {result["forks_count"]} | Star · {result["stargazers_count"]} | Watch · {result["subscribers_count"]}
-Language: {result["language"]} | License: {rlicense}
-Created {time_diff(result["created_at"])} ago | Updated {time_diff(result["updated_at"])} ago
-{website}{str(Url(result["html_url"]))}"""
+        message = f"""{result.get("full_name", "")} ({result.get("id", "")}){desc}
+Fork · {result.get("forks_count", 0)} | Star · {result.get("stargazers_count", 0)} | Watch · {result.get("subscribers_count", 0)}
+Language: {result.get("language", "")} | License: {rlicense}
+Created {time_diff(result.get("created_at", ""))} ago | Updated {time_diff(result.get("updated_at", ""))} ago
+{website}{str(Url(result.get("html_url", "")))}"""
 
         if mirror:
             message += "\n" + mirror
@@ -54,7 +54,7 @@ Created {time_diff(result["created_at"])} ago | Updated {time_diff(result["updat
         if parent:
             message += "\n" + parent
 
-        is_dirty = await dirty_check(msg, message, result["owner"]["login"]) or dark_check(message)
+        is_dirty = await dirty_check(msg, message, result.get("owner", {}).get("login", "")) or dark_check(message)
         if is_dirty:
             await msg.finish(rickroll())
         else:

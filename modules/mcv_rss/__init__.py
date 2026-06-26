@@ -109,15 +109,16 @@ async def _():
     try:
         verlist = await get_stored_list(Bot.Info.client_name, "mcv_rss")
         file = orjson.loads(await get_url(url, attempt=1, logging_err_resp=False))
-        release = file["latest"]["release"]
-        snapshot = file["latest"]["snapshot"]
+        latest = file.get("latest", {})
+        release = latest.get("release", "")
+        snapshot = latest.get("snapshot", "")
         time_release = 0
         time_snapshot = 0
-        for v in file["versions"]:
-            if v["id"] == release:
-                time_release = datetime.fromisoformat(v["releaseTime"]).timestamp()
-            if v["id"] == snapshot:
-                time_snapshot = datetime.fromisoformat(v["releaseTime"]).timestamp()
+        for v in file.get("versions", []):
+            if v.get("id") == release:
+                time_release = datetime.fromisoformat(v.get("releaseTime", "")).timestamp()
+            if v.get("id") == snapshot:
+                time_snapshot = datetime.fromisoformat(v.get("releaseTime", "")).timestamp()
 
         if release not in verlist:
             Logger.info(f"Huh, we found {release}.")
