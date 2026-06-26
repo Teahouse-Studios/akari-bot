@@ -9,7 +9,7 @@ aiofiles==24.1.0
     #   aiogram
     #   matrix-nio
     #   quart
-aiogram==3.29.0
+aiogram==3.28.2
     # via akari-bot
 aiohappyeyeballs==2.6.1
     # via aiohttp
@@ -20,7 +20,7 @@ aiohttp==3.13.3
     #   khl-py
     #   matrix-nio
     #   py-cord
-    #   ymbotpy
+    #   qq-botpy
 aiohttp-socks==0.11.0
     # via matrix-nio
 aiosignal==1.4.0
@@ -49,7 +49,7 @@ apscheduler==3.11.2
     # via
     #   akari-bot
     #   khl-py
-    #   ymbotpy
+    #   qq-botpy
 argon2-cffi==25.1.0
     # via akari-bot
 argon2-cffi-bindings==25.1.0
@@ -118,11 +118,10 @@ courlan==1.3.2
     # via trafilatura
 coverage==7.13.4
     # via akari-bot
-cryptography==48.0.1
+cryptography==46.0.7
     # via
     #   akari-bot
     #   pyjwt
-    #   ymbotpy
 cycler==0.12.1
     # via matplotlib
 dateparser==1.4.0
@@ -155,7 +154,6 @@ fastapi==0.129.0
     # via
     #   akari-bot
     #   akari-bot-webrender
-    #   ymbotpy
 feedparser==6.0.12
     # via akari-bot
 ff3==1.0.3
@@ -302,10 +300,9 @@ multidict==6.7.1
     #   aiohttp
     #   wolframalpha
     #   yarl
-    #   ymbotpy
 nodeenv==1.10.0
     # via pre-commit
-numpy==2.4.6
+numpy==2.4.4
     # via
     #   akari-bot
     #   contourpy
@@ -382,7 +379,7 @@ pyee==13.0.0
     # via playwright
 pygments==2.20.0
     # via rich
-pyjwt==2.13.0
+pyjwt==2.12.1
     # via akari-bot
 pyparsing==3.3.2
     # via matplotlib
@@ -400,7 +397,7 @@ python-dotenv==1.2.2
     # via
     #   akari-bot
     #   uvicorn
-python-multipart==0.0.32
+python-multipart==0.0.27
     # via akari-bot
 python-socks==2.8.0
     # via aiohttp-socks
@@ -408,13 +405,15 @@ python-whois==0.9.6
     # via akari-bot
 pytz==2026.2
     # via dateparser
-pywin32==312 ; sys_platform == 'win32'
+pywin32==311 ; sys_platform == 'win32'
     # via akari-bot
 pyyaml==6.0.3
     # via
     #   pre-commit
+    #   qq-botpy
     #   uvicorn
-    #   ymbotpy
+qq-botpy==1.2.1
+    # via akari-bot
 quart==0.20.0
     # via aiocqhttp
 rapidfuzz==3.14.5
@@ -509,7 +508,6 @@ uvicorn==0.40.0
     # via
     #   akari-bot
     #   akari-bot-webrender
-    #   ymbotpy
 uvloop==0.22.1 ; platform_python_implementation != 'PyPy' and sys_platform != 'cygwin' and sys_platform != 'win32'
     # via uvicorn
 virtualenv==20.36.1
@@ -540,5 +538,3 @@ yarl==1.22.0
     # via
     #   aiohttp
     #   gql
-ymbotpy @ git+https://github.com/HG-ha/ymbotpy.git@d21c09c1082544832e85ed37250838d4737727e9
-    # via akari-bot
