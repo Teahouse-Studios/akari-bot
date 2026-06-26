@@ -716,7 +716,8 @@ decry = module("decrypt", required_superuser=True, base=True, doc=True)
 
 @decry.command("<display_msg>")
 async def _(msg: Bot.MessageSession):
-    dec = decrypt_string(msg.as_display().split(" ", 1)[1])
+    parts = msg.as_display().split(" ", 1)
+    dec = decrypt_string(parts[1]) if len(parts) > 1 else None
     if dec:
         await msg.finish(dec)
     else:

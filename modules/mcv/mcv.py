@@ -56,7 +56,8 @@ async def mcbv(msg: Bot.MessageSession):
             },
         )
         if fetch_:
-            ms_store_version = re.findall(r".*Microsoft.MinecraftUWP_(.*?)_.*", fetch_, re.M | re.I)[0]
+            matches = re.findall(r".*Microsoft.MinecraftUWP_(.*?)_.*", fetch_, re.M | re.I)
+            ms_store_version = matches[0] if matches else None
     except Exception:
         pass
     return (

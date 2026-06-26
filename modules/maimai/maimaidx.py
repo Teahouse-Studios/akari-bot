@@ -57,17 +57,17 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
         data = (await total_list.get()).filter(ds=constant)
         msg_chain = MessageChain.assign(I18NContext("maimai.message.base", constant=round(constant, 1)))
 
-    for music in sorted(data, key=lambda i: int(i["id"])):
+    for music in sorted(data, key=lambda i: int(i.get("id", 0))):
         for i in music.diff:
-            if int(music["id"]) < 100000:  # 过滤宴谱
+            if int(music.get("id", 0)) < 100000:  # 过滤宴谱
                 result_set.append(
                     (
-                        music["id"],
-                        music["title"],
-                        music["ds"][i],
+                        music.get("id", ""),
+                        music.get("title", ""),
+                        music.get("ds", [])[i] if i < len(music.get("ds", [])) else 0,
                         diff_list[i],
-                        music["level"][i],
-                        music["type"],
+                        music.get("level", [])[i] if i < len(music.get("level", [])) else "",
+                        music.get("type", ""),
                     )
                 )
 
@@ -101,17 +101,17 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
 async def _(msg: Bot.MessageSession, level: str):
     result_set = []
     data = (await total_list.get()).filter(level=level)
-    for music in sorted(data, key=lambda i: int(i["id"])):
+    for music in sorted(data, key=lambda i: int(i.get("id", 0))):
         for i in music.diff:
-            if int(music["id"]) < 100000:  # 过滤宴谱
+            if int(music.get("id", 0)) < 100000:  # 过滤宴谱
                 result_set.append(
                     (
-                        music["id"],
-                        music["title"],
-                        music["ds"][i],
+                        music.get("id", ""),
+                        music.get("title", ""),
+                        music.get("ds", [])[i] if i < len(music.get("ds", [])) else 0,
                         diff_list[i],
-                        music["level"][i],
-                        music["type"],
+                        music.get("level", [])[i] if i < len(music.get("level", [])) else "",
+                        music.get("type", ""),
                     )
                 )
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
@@ -144,8 +144,8 @@ async def _(msg: Bot.MessageSession):
     result_set = []
     data = (await total_list.get()).new()
 
-    for music in sorted(data, key=lambda i: int(i["id"])):
-        result_set.append((music["id"], music["title"], music["type"]))
+    for music in sorted(data, key=lambda i: int(i.get("id", 0))):
+        result_set.append((music.get("id", ""), music.get("title", ""), music.get("type", "")))
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
     get_page = msg.parsed_msg.get("-p", False)
     page = max(min(int(get_page["<page>"]), total_pages), 1) if get_page and is_int(get_page["<page>"]) else 1
@@ -180,8 +180,8 @@ async def _(msg: Bot.MessageSession, keyword: str):
     if len(data) == 0:
         await msg.finish(I18NContext("maimai.message.music_not_found"))
 
-    for music in sorted(data, key=lambda i: int(i["id"])):
-        result_set.append((music["id"], music["title"], music["type"]))
+    for music in sorted(data, key=lambda i: int(i.get("id", 0))):
+        result_set.append((music.get("id", ""), music.get("title", ""), music.get("type", "")))
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
     get_page = msg.parsed_msg.get("-p", False)
     page = max(min(int(get_page["<page>"]), total_pages), 1) if get_page and is_int(get_page["<page>"]) else 1
@@ -217,7 +217,7 @@ async def query_alias(msg, sid):
     if not music:
         await msg.finish(I18NContext("maimai.message.music_not_found"))
 
-    title = f"{music['id']} - {music['title']}{' (DX)' if music['type'] == 'DX' else ''}"
+    title = f"{music.get('id', '')} - {music.get('title', '')}{' (DX)' if music.get('type') == 'DX' else ''}"
     alias = await get_alias(msg, sid)
     if len(alias) == 0:
         await msg.finish(I18NContext("maimai.message.alias.alias_not_found"))
@@ -254,7 +254,9 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
                 if s:
-                    msg_chain.append(Plain(f"{s['id']} - {s['title']}{' (DX)' if s['type'] == 'DX' else ''}"))
+                    msg_chain.append(
+                        Plain(f"{s.get('id', '')} - {s.get('title', '')}{' (DX)' if s.get('type') == 'DX' else ''}")
+                    )
             msg_chain.append(
                 I18NContext("maimai.message.disambiguation.chart.prompt", prefix=msg.session_info.prefixes[0])
             )
@@ -272,80 +274,91 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
             utage_data = orjson.loads(file.read())
 
         if utage_data:
+            utage_song = utage_data.get(sid, {})
             try:
-                msg_chain.append(Plain(f"「{utage_data[sid]['comment']}」"))
+                msg_chain.append(Plain(f"「{utage_song.get('comment', '')}」"))
             except KeyError:
                 msg_chain.append(Plain("「Let's party!」"))
-        if utage_data[sid]["referrals_num"]["mode"] == "normal":
-            chart = utage_data[sid]["charts"][0]
-            msg_chain.append(
-                I18NContext(
-                    "maimai.message.chart.utage",
-                    level=utage_data[sid]["level"][0],
-                    player=utage_data[sid]["referrals_num"]["player"][0],
-                    tap=chart["notes"][0],
-                    hold=chart["notes"][1],
-                    slide=chart["notes"][2],
-                    touch=chart["notes"][3],
-                    brk=chart["notes"][4],
+            referrals = utage_song.get("referrals_num", {})
+            if referrals.get("mode") == "normal":
+                charts = utage_song.get("charts", [])
+                chart = charts[0] if charts else {}
+                notes = chart.get("notes", [0, 0, 0, 0, 0])
+                msg_chain.append(
+                    I18NContext(
+                        "maimai.message.chart.utage",
+                        level=utage_song.get("level", [""])[0] if utage_song.get("level") else "",
+                        player=referrals.get("player", [""])[0] if referrals.get("player") else "",
+                        tap=notes[0] if len(notes) > 0 else 0,
+                        hold=notes[1] if len(notes) > 1 else 0,
+                        slide=notes[2] if len(notes) > 2 else 0,
+                        touch=notes[3] if len(notes) > 3 else 0,
+                        brk=notes[4] if len(notes) > 4 else 0,
+                    )
                 )
-            )
-        else:
-            chartL = utage_data[sid]["charts"][0]
-            chartR = utage_data[sid]["charts"][1]
-            players = utage_data[sid]["referrals_num"]["player"]
-            msg_chain.append(
-                I18NContext(
-                    "maimai.message.chart.utage.buddy",
-                    level=utage_data[sid]["level"][0],
-                    playerL=players[0],
-                    playerR=players[1],
-                    tapL=chartL["notes"][0],
-                    tapR=chartR["notes"][0],
-                    holdL=chartL["notes"][1],
-                    holdR=chartR["notes"][1],
-                    slideL=chartL["notes"][2],
-                    slideR=chartR["notes"][2],
-                    touchL=chartL["notes"][3],
-                    touchR=chartR["notes"][3],
-                    brkL=chartL["notes"][4],
-                    brkR=chartR["notes"][4],
+            else:
+                charts = utage_song.get("charts", [])
+                chartL = charts[0] if len(charts) > 0 else {}
+                chartR = charts[1] if len(charts) > 1 else {}
+                players = referrals.get("player", ["", ""])
+                notesL = chartL.get("notes", [0, 0, 0, 0, 0])
+                notesR = chartR.get("notes", [0, 0, 0, 0, 0])
+                msg_chain.append(
+                    I18NContext(
+                        "maimai.message.chart.utage.buddy",
+                        level=utage_song.get("level", [""])[0] if utage_song.get("level") else "",
+                        playerL=players[0] if len(players) > 0 else "",
+                        playerR=players[1] if len(players) > 1 else "",
+                        tapL=notesL[0] if len(notesL) > 0 else 0,
+                        tapR=notesR[0] if len(notesR) > 0 else 0,
+                        holdL=notesL[1] if len(notesL) > 1 else 0,
+                        holdR=notesR[1] if len(notesR) > 1 else 0,
+                        slideL=notesL[2] if len(notesL) > 2 else 0,
+                        slideR=notesR[2] if len(notesR) > 2 else 0,
+                        touchL=notesL[3] if len(notesL) > 3 else 0,
+                        touchR=notesR[3] if len(notesR) > 3 else 0,
+                        brkL=notesL[4] if len(notesL) > 4 else 0,
+                        brkR=notesR[4] if len(notesR) > 4 else 0,
+                    )
                 )
-            )
     else:
-        for diff, ds in enumerate(music["ds"]):
-            chart = music["charts"][diff]
-            if len(chart["notes"]) == 4:
+        music_ds = music.get("ds", [])
+        music_charts = music.get("charts", [])
+        music_level = music.get("level", [])
+        for diff, ds in enumerate(music_ds):
+            chart = music_charts[diff] if diff < len(music_charts) else {}
+            notes = chart.get("notes", [])
+            if len(notes) == 4:
                 msg_chain.append(
                     I18NContext(
                         "maimai.message.chart.sd",
                         diff=diff_list[diff],
-                        level=music["level"][diff],
+                        level=music_level[diff] if diff < len(music_level) else "",
                         ds=ds,
-                        tap=chart["notes"][0],
-                        hold=chart["notes"][1],
-                        slide=chart["notes"][2],
-                        brk=chart["notes"][3],
+                        tap=notes[0] if len(notes) > 0 else 0,
+                        hold=notes[1] if len(notes) > 1 else 0,
+                        slide=notes[2] if len(notes) > 2 else 0,
+                        brk=notes[3] if len(notes) > 3 else 0,
                     )
                 )
                 if diff >= 2:
-                    msg_chain.append(Plain(str(I18NContext("maimai.message.chart.charter")) + chart["charter"]))
+                    msg_chain.append(Plain(str(I18NContext("maimai.message.chart.charter")) + chart.get("charter", "")))
             else:
                 msg_chain.append(
                     I18NContext(
                         "maimai.message.chart.dx",
                         diff=diff_list[diff],
-                        level=music["level"][diff],
+                        level=music_level[diff] if diff < len(music_level) else "",
                         ds=ds,
-                        tap=chart["notes"][0],
-                        hold=chart["notes"][1],
-                        slide=chart["notes"][2],
-                        touch=chart["notes"][3],
-                        brk=chart["notes"][4],
+                        tap=notes[0] if len(notes) > 0 else 0,
+                        hold=notes[1] if len(notes) > 1 else 0,
+                        slide=notes[2] if len(notes) > 2 else 0,
+                        touch=notes[3] if len(notes) > 3 else 0,
+                        brk=notes[4] if len(notes) > 4 else 0,
                     )
                 )
                 if diff >= 2:
-                    msg_chain.append(Plain(str(I18NContext("maimai.message.chart.charter")) + chart["charter"]))
+                    msg_chain.append(Plain(str(I18NContext("maimai.message.chart.charter")) + chart.get("charter", "")))
 
     await msg.finish(await get_info(music, msg_chain))
 
@@ -366,7 +379,9 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
                 if s:
-                    msg_chain.append(Plain(f"{s['id']} - {s['title']}{' (DX)' if s['type'] == 'DX' else ''}"))
+                    msg_chain.append(
+                        Plain(f"{s.get('id', '')} - {s.get('title', '')}{' (DX)' if s.get('type') == 'DX' else ''}")
+                    )
             msg_chain.append(
                 I18NContext("maimai.message.disambiguation.song.prompt", prefix=msg.session_info.prefixes[0])
             )
@@ -471,7 +486,9 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str):
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
                 if s:
-                    msg_chain.append(Plain(f"{s['id']} - {s['title']}{' (DX)' if s['type'] == 'DX' else ''}"))
+                    msg_chain.append(
+                        Plain(f"{s.get('id', '')} - {s.get('title', '')}{' (DX)' if s.get('type') == 'DX' else ''}")
+                    )
             msg_chain.append(
                 I18NContext("maimai.message.disambiguation.scoreline.prompt", prefix=msg.session_info.prefixes[0])
             )
@@ -561,7 +578,9 @@ async def query_song_score(msg, query):
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
                 if s:
-                    msg_chain.append(Plain(f"{s['id']} - {s['title']}{' (DX)' if s['type'] == 'DX' else ''}"))
+                    msg_chain.append(
+                        Plain(f"{s.get('id', '')} - {s.get('title', '')}{' (DX)' if s.get('type') == 'DX' else ''}")
+                    )
             msg_chain.append(
                 I18NContext("maimai.message.disambiguation.score.prompt", prefix=msg.session_info.prefixes[0])
             )

@@ -57,21 +57,23 @@ class ChartInfo:
 
     @classmethod
     async def from_json(cls, data):
-        music = (await total_list.get()).by_id(str(data["song_id"]))
-        dx_score_max = sum(music["charts"][data["level_index"]]["notes"]) * 3
+        music = (await total_list.get()).by_id(str(data.get("song_id", "")))
+        level_index = data.get("level_index", 0)
+        charts = music.get("charts", [])
+        dx_score_max = sum(charts[level_index].get("notes", [0])) * 3 if level_index < len(charts) else 0
         return cls(
-            song_id=data["song_id"],
-            title=data["title"],
-            diff=data["level_index"],
-            ds=data["ds"],
-            dx_score=data["dxScore"],
+            song_id=data.get("song_id", ""),
+            title=data.get("title", ""),
+            diff=level_index,
+            ds=data.get("ds", 0),
+            dx_score=data.get("dxScore", 0),
             dx_score_max=dx_score_max,
-            combo=combo_mapping.get(data["fc"], ""),
-            sync=sync_mapping.get(data["fs"], ""),
-            rate=rate_mapping.get(data["rate"], ""),
-            level=data["level"],
-            achievement=data["achievements"],
-            chart_type=data["type"],
+            combo=combo_mapping.get(data.get("fc", ""), ""),
+            sync=sync_mapping.get(data.get("fs", ""), ""),
+            rate=rate_mapping.get(data.get("rate", ""), ""),
+            level=data.get("level", ""),
+            achievement=data.get("achievements", 0),
+            chart_type=data.get("type", ""),
         )
 
 
@@ -409,13 +411,16 @@ class DrawBest:
 
 async def generate(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> Image.Image | None:
     resp = await get_record(msg, payload, use_cache)
+    if not resp:
+        return None
     sd_best = BestList(35)
     dx_best = BestList(15)
-    dx: list[dict] = resp["charts"]["dx"]
-    sd: list[dict] = resp["charts"]["sd"]
+    charts = resp.get("charts", {})
+    dx: list[dict] = charts.get("dx", [])
+    sd: list[dict] = charts.get("sd", [])
     for c in sd:
         sd_best.push(await ChartInfo.from_json(c))
     for c in dx:
         dx_best.push(await ChartInfo.from_json(c))
-    pic = DrawBest(sd_best, dx_best, resp["nickname"]).get_dir()
+    pic = DrawBest(sd_best, dx_best, resp.get("nickname", "")).get_dir()
     return pic

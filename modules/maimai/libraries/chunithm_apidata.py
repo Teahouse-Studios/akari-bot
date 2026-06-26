@@ -132,41 +132,46 @@ async def get_record_lx(msg: Bot.MessageSession, friend_code: str, use_cache: bo
             )
 
             async def process_lxdata(profile_data, record_data):
-                nickname = unicodedata.normalize("NFKC", profile_data["data"]["name"])
-                rating = profile_data["data"]["rating"]
+                profile = profile_data.get("data", {})
+                nickname = unicodedata.normalize("NFKC", profile.get("name", ""))
+                rating = profile.get("rating", 0)
 
-                record = record_data["data"]
-                origin_bests = record["bests"]
-                origin_new_bests = record["new_bests"]
+                record = record_data.get("data", {})
+                origin_bests = record.get("bests", [])
+                origin_new_bests = record.get("new_bests", [])
 
                 new_bests = []
                 for item in origin_bests:
-                    music = (await total_list.get()).by_id(item["id"])
+                    music = (await total_list.get()).by_id(str(item.get("id", "")))
+                    level_index = item.get("level_index", 0)
+                    ds = music.ds[level_index] if music and level_index < len(music.ds) else 0
                     new_bests.append(
                         {
-                            "mid": item["id"],
-                            "title": item["song_name"],
-                            "level": item["level"],
-                            "level_index": item["level_index"],
-                            "ds": music.ds[item["level_index"]],
-                            "score": item["score"],
-                            "ra": item["rating"],
-                            "fc": item["full_combo"],
+                            "mid": item.get("id", ""),
+                            "title": item.get("song_name", ""),
+                            "level": item.get("level", ""),
+                            "level_index": level_index,
+                            "ds": ds,
+                            "score": item.get("score", 0),
+                            "ra": item.get("rating", 0),
+                            "fc": item.get("full_combo", ""),
                         }
                     )
                 new_new_bests = []
                 for item in origin_new_bests:
-                    music = (await total_list.get()).by_id(item["id"])
+                    music = (await total_list.get()).by_id(str(item.get("id", "")))
+                    level_index = item.get("level_index", 0)
+                    ds = music.ds[level_index] if music and level_index < len(music.ds) else 0
                     new_new_bests.append(
                         {
-                            "mid": item["id"],
-                            "title": item["song_name"],
-                            "level": item["level"],
-                            "level_index": item["level_index"],
-                            "ds": music.ds[item["level_index"]],
-                            "score": item["score"],
-                            "ra": item["rating"],
-                            "fc": item["full_combo"],
+                            "mid": item.get("id", ""),
+                            "title": item.get("song_name", ""),
+                            "level": item.get("level", ""),
+                            "level_index": level_index,
+                            "ds": ds,
+                            "score": item.get("score", 0),
+                            "ra": item.get("rating", 0),
+                            "fc": item.get("full_combo", ""),
                         }
                     )
 

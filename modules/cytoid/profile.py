@@ -22,16 +22,17 @@ async def cytoid_profile(msg: Bot.MessageSession, username):
             await msg.finish(I18NContext("cytoid.message.user_not_found"))
         else:
             raise e
-    uid = profile["user"]["uid"]
-    nick = profile["user"]["name"]
-    avatar = profile["user"]["avatar"]["large"]
-    basic_exp = profile["exp"]["basicExp"]
-    level_exp = profile["exp"]["levelExp"]
-    total_exp = profile["exp"]["totalExp"]
-    current_level = profile["exp"]["currentLevel"]
-    next_level_exp = profile["exp"]["nextLevelExp"]
-    rating = profile["rating"]
-    grade: dict = profile["grade"]
+    uid = profile.get("user", {}).get("uid", "")
+    nick = profile.get("user", {}).get("name", "")
+    avatar = profile.get("user", {}).get("avatar", {}).get("large", "")
+    exp = profile.get("exp", {})
+    basic_exp = exp.get("basicExp", 0)
+    level_exp = exp.get("levelExp", 0)
+    total_exp = exp.get("totalExp", 0)
+    current_level = exp.get("currentLevel", 0)
+    next_level_exp = exp.get("nextLevelExp", 0)
+    rating = profile.get("rating", 0)
+    grade: dict = profile.get("grade", {})
     grade_t = []
     max_ = grade.get("MAX")
     if max_:

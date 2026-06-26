@@ -30,24 +30,30 @@ async def _(msg: Bot.MessageSession, keyword: str):
         raise ConfigValueError("{I18N:error.config.secret.not_found}")
     url = f"{API}/search?keywords={keyword}"
     result = await get_url(url, 200, fmt="json")
-    song_count = result["result"]["songCount"]
+    result_data = result.get("result", {})
+    song_count = result_data.get("songCount", 0)
     legacy = True
 
     if song_count == 0:
         await msg.finish(I18NContext("ncmusic.message.search.not_found"))
 
-    songs = result["result"]["songs"][:SEARCH_LIMIT]
+    songs = result_data.get("songs", [])[:SEARCH_LIMIT]
 
     send_msg = MessageChain.assign(I18NContext("ncmusic.message.search.result"))
     if not msg.parsed_msg.get("--legacy", False) and msg.session_info.support_image:
         data = [
             [
                 str(i),
-                song["name"] + (f" ({' / '.join(song['transNames'])})" if "transNames" in song else ""),
-                f"{' / '.join(artist['name'] for artist in song['artists'])}",
-                f"{song['album']['name']}"
-                + (f" ({' / '.join(song['album']['transNames'])})" if "transNames" in song["album"] else ""),
-                f"{song['id']}",
+                song.get("name", "")
+                + (f" ({' / '.join(song.get('transNames', []))})" if song.get("transNames") else ""),
+                f"{' / '.join(artist.get('name', '') for artist in song.get('artists', []))}",
+                f"{song.get('album', {}).get('name', '')}"
+                + (
+                    f" ({' / '.join(song.get('album', {}).get('transNames', []))})"
+                    if song.get("album", {}).get("transNames")
+                    else ""
+                ),
+                f"{song.get('id', '')}",
             ]
             for i, song in enumerate(songs, start=1)
         ]
@@ -76,7 +82,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
         if song_count == 1:
             send_msg.append(I18NContext("ncmusic.message.search.confirm"))
             if await msg.wait_confirm(send_msg, delete=False):
-                sid = result["result"]["songs"][0]["id"]
+                sid = result_data.get("songs", [{}])[0].get("id") if result_data.get("songs") else None
             else:
                 await msg.finish()
 
@@ -90,7 +96,8 @@ async def _(msg: Bot.MessageSession, keyword: str):
                 if not query or query > song_count:
                     await msg.finish(I18NContext("mod_dl.message.invalid.out_of_range"))
                 else:
-                    sid = result["result"]["songs"][query - 1]["id"]
+                    songs_list = result_data.get("songs", [])
+                    sid = songs_list[query - 1].get("id") if query - 1 < len(songs_list) else None
             else:
                 await msg.finish(I18NContext("ncmusic.message.search.invalid.non_digital"))
 
@@ -98,15 +105,15 @@ async def _(msg: Bot.MessageSession, keyword: str):
 
     if legacy:
         for i, song in enumerate(songs, start=1):
-            song_msg = f"{i} - {song['name']}"
-            if "transNames" in song:
+            song_msg = f"{i} - {song.get('name', '')}"
+            if song.get("transNames"):
                 song_msg += f"（{' / '.join(song['transNames'])}）"
-            song_msg += f"——{' / '.join(artist['name'] for artist in song['artists'])}"
-            if song["album"]["name"]:
+            song_msg += f"——{' / '.join(artist.get('name', '') for artist in song.get('artists', []))}"
+            if song.get("album", {}).get("name"):
                 song_msg += f"《{song['album']['name']}》"
-            if "transNames" in song["album"]:
+            if song.get("album", {}).get("transNames"):
                 song_msg += f"（{' / '.join(song['album']['transNames'])}）"
-            song_msg += f"（{song['id']}）"
+            song_msg += f"（{song.get('id', '')}）"
             send_msg.append(Plain(song_msg))
 
         if song_count > SEARCH_LIMIT:
@@ -116,7 +123,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
         if song_count == 1:
             send_msg.append(I18NContext("ncmusic.message.search.confirm"))
             if await msg.wait_confirm(send_msg, delete=False):
-                sid = result["result"]["songs"][0]["id"]
+                sid = result_data.get("songs", [{}])[0].get("id") if result_data.get("songs") else None
             else:
                 await msg.finish()
         else:
@@ -129,7 +136,8 @@ async def _(msg: Bot.MessageSession, keyword: str):
                 if query > song_count:
                     await msg.finish(I18NContext("mod_dl.message.invalid.out_of_range"))
                 else:
-                    sid = result["result"]["songs"][query - 1]["id"]
+                    songs_list = result_data.get("songs", [])
+                    sid = songs_list[query - 1].get("id") if query - 1 < len(songs_list) else None
             else:
                 await msg.finish(I18NContext("ncmusic.message.search.invalid.non_digital"))
 
@@ -158,22 +166,24 @@ async def info(msg: Bot.MessageSession, sid: int):
     url = f"{API}/song/detail?ids={sid}"
     result = await get_url(url, 200, fmt="json")
 
-    if result["songs"]:
-        info = result["songs"][0]
-        artist = " / ".join([ar["name"] for ar in info["ar"]])
-        song_url = f"https://music.163.com/#/song?id={info['id']}"
+    songs = result.get("songs", [])
+    if songs:
+        info = songs[0]
+        artist = " / ".join([ar.get("name", "") for ar in info.get("ar", [])])
+        song_url = f"https://music.163.com/#/song?id={info.get('id', '')}"
+        al = info.get("al", {})
 
         await msg.finish(
             [
-                Image(info["al"]["picUrl"]),
+                Image(al.get("picUrl", "")),
                 Url(song_url, use_mm=False),
                 I18NContext(
                     "ncmusic.message.info",
-                    name=info["name"],
-                    id=info["id"],
+                    name=info.get("name", ""),
+                    id=info.get("id", ""),
                     artists=artist,
-                    album=info["al"]["name"],
-                    album_id=info["al"]["id"],
+                    album=al.get("name", ""),
+                    album_id=al.get("id", ""),
                 ),
             ]
         )

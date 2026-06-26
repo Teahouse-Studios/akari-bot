@@ -308,7 +308,7 @@ class JobQueueServer(JobQueueBase):
             "check_session_native_permission",
             {"session_info": converter.unstructure(session_info)},
         )
-        return v["value"]
+        return v.get("value", False)
 
     @classmethod
     async def client_hold_context(cls, session_info: SessionInfo):
@@ -371,7 +371,9 @@ async def receive_message_from_client(tsk: JobQueuesTable, args: dict):
     :return: 包含 success 标志的字典
     """
     await parser(
-        await exports["Bot"].MessageSession.from_session_info(converter.structure(args["session_info"], SessionInfo))
+        await exports["Bot"].MessageSession.from_session_info(
+            converter.structure(args.get("session_info", {}), SessionInfo)
+        )
     )
     return {"success": True}
 
@@ -410,12 +412,14 @@ async def _(tsk: JobQueuesTable, args: dict):
     """
     bot: "Bot" = exports["Bot"]
     session_info: SessionInfo | None = None
-    if args["session_info"]:
+    if args.get("session_info"):
         session_info = converter.structure(args["session_info"], SessionInfo)
         await session_info.refresh_info()
-    _val = await bot.Hook.trigger(args["module_or_hook_name"], session_info=session_info, args=args["args"])
+    _val = await bot.Hook.trigger(
+        args.get("module_or_hook_name", ""), session_info=session_info, args=args.get("args", {})
+    )
     Logger.trace(
-        f"Trigger hook {args['module_or_hook_name']} with args {args['args']}, result: {_val}, type: {type(_val)}"
+        f"Trigger hook {args.get('module_or_hook_name', '')} with args {args.get('args', {})}, result: {_val}, type: {type(_val)}"
     )
     await JobQueueServer.return_val(tsk, {"result": _val})
 
@@ -432,14 +436,14 @@ async def client_direct_message(tsk: JobQueuesTable, args: dict):
     :return: 包含 success 标志的字典
     """
     bot: "Bot" = exports["Bot"]
-    session_info = converter.structure(args["session_info"], SessionInfo)
+    session_info = converter.structure(args.get("session_info", {}), SessionInfo)
     await session_info.refresh_info()
-    message = converter.structure(args["message"], MessageChain | MessageNodes)
+    message = converter.structure(args.get("message", {}), MessageChain | MessageNodes)
     await bot.send_direct_message(
         session_info,
         message,
-        disable_secret_check=args["disable_secret_check"],
-        enable_parse_message=args["enable_parse_message"],
+        disable_secret_check=args.get("disable_secret_check", False),
+        enable_parse_message=args.get("enable_parse_message", True),
     )
     return {"success": True}
 
@@ -517,7 +521,7 @@ async def get_modules_info(tsk: JobQueuesTable, args: dict):
 
     for module in modules.values():
         if "desc" in module and module.get("desc"):
-            module["desc"] = Locale(args["locale"]).t_str(module["desc"])
+            module["desc"] = Locale(args.get("locale", "zh_cn")).t_str(module["desc"])
 
     return {"modules": modules}
 
@@ -534,18 +538,18 @@ async def get_module_helpdoc(tsk: JobQueuesTable, args: dict):
 
     :return: 包含 help_doc 的字典，help_doc 包含模块名称、描述、命令和正则规则
     """
-    module = ModulesManager.modules.get(args["module"], None)
+    module = ModulesManager.modules.get(args.get("module", ""), None)
     help_doc = {}
     if module:
         help_doc["module_name"] = module.module_name
         module_ = module.to_dict()
         if "desc" in module_ and module_.get("desc"):
-            help_doc["desc"] = Locale(args["locale"]).t_str(module_["desc"])
+            help_doc["desc"] = Locale(args.get("locale", "zh_cn")).t_str(module_["desc"])
 
         help_ = CommandParser(
             module, module_name=module.module_name, command_prefixes=[command_prefix[0]], is_superuser=True
         )
-        help_doc["commands"] = help_.return_json_help_doc(args["locale"])
+        help_doc["commands"] = help_.return_json_help_doc(args.get("locale", "zh_cn"))
 
         regex_ = []
         regex_list = module.regex_list.get(show_required_superuser=True)
@@ -560,7 +564,7 @@ async def get_module_helpdoc(tsk: JobQueuesTable, args: dict):
                 if pattern:
                     rdesc = regex.desc
                     if rdesc:
-                        rdesc = Locale(args["locale"]).t_str(rdesc)
+                        rdesc = Locale(args.get("locale", "zh_cn")).t_str(rdesc)
 
                     regex_.append({"pattern": pattern, "desc": rdesc})
         help_doc["regexp"] = regex_
@@ -579,7 +583,7 @@ async def get_module_related(tsk: JobQueuesTable, args: dict):
 
     :return: 包含 modules_list 的字典
     """
-    return {"modules_list": ModulesManager.search_related_module(args["module"], include_self=False)}
+    return {"modules_list": ModulesManager.search_related_module(args.get("module", ""), include_self=False)}
 
 
 @JobQueueServer.action("post_module_action")
@@ -595,13 +599,13 @@ async def post_module_action(tsk: JobQueuesTable, args: dict):
 
     :return: 包含 success 标志的字典
     """
-    match args["action"]:
+    match args.get("action", ""):
         case "reload":
-            status, _ = await ModulesManager.reload_module(args["module"])
+            status, _ = await ModulesManager.reload_module(args.get("module", ""))
         case "load":
-            status = await ModulesManager.load_module(args["module"])
+            status = await ModulesManager.load_module(args.get("module", ""))
         case "unload":
-            status = await ModulesManager.unload_module(args["module"])
+            status = await ModulesManager.unload_module(args.get("module", ""))
         case _:
             status = False
     return {"success": status}

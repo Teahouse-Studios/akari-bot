@@ -43,27 +43,29 @@ async def _(msg: Bot.MessageSession, base: str, target: str):
 async def exchange(msg: Bot.MessageSession, base_currency, target_currency, amount):
     url = f"https://v6.exchangerate-api.com/v6/{api_key}/codes"
     data = await get_url(url, 200, fmt="json")
-    supported_currencies = data["supported_codes"]
+    if not data or data.get("result") != "success":
+        await msg.finish(I18NContext("exchange_rate.message.invalid.unit", unit=base_currency))
+        return
+    supported_currencies = data.get("supported_codes", [])
     unsupported_currencies = []
-    if data and data["result"] == "success":
-        for currencie_names in supported_currencies:
-            if base_currency in currencie_names:
-                break
-        else:
-            unsupported_currencies.append(base_currency)
-        for currencie_names in supported_currencies:
-            if target_currency in currencie_names:
-                break
-        else:
-            unsupported_currencies.append(target_currency)
-        if unsupported_currencies:
-            await msg.finish(I18NContext("exchange_rate.message.invalid.unit", unit=", ".join(unsupported_currencies)))
+    for currencie_names in supported_currencies:
+        if base_currency in currencie_names:
+            break
+    else:
+        unsupported_currencies.append(base_currency)
+    for currencie_names in supported_currencies:
+        if target_currency in currencie_names:
+            break
+    else:
+        unsupported_currencies.append(target_currency)
+    if unsupported_currencies:
+        await msg.finish(I18NContext("exchange_rate.message.invalid.unit", unit=", ".join(unsupported_currencies)))
 
     url = f"https://v6.exchangerate-api.com/v6/{api_key}/pair/{base_currency}/{target_currency}/{amount}"
     data = await get_url(url, 200, fmt="json")
     time_ = msg.format_time(time.time(), time=False, timezone=False)
-    if data and data["result"] == "success":
-        exchange_rate = data["conversion_result"]
+    if data and data.get("result") == "success":
+        exchange_rate = data.get("conversion_result", 0)
         await msg.finish(
             I18NContext(
                 "exchange_rate.message",

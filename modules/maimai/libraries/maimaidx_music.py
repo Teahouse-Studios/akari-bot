@@ -70,20 +70,21 @@ class Chart(dict):
     dxscore: int | None = None
 
     def __getattribute__(self, item):
+        notes = self.get("notes", [])
         if item == "tap":
-            return self["notes"][0]
+            return notes[0] if len(notes) > 0 else 0
         if item == "hold":
-            return self["notes"][1]
+            return notes[1] if len(notes) > 1 else 0
         if item == "slide":
-            return self["notes"][2]
+            return notes[2] if len(notes) > 2 else 0
         if item == "touch":
-            return self["notes"][3] if len(self["notes"]) == 5 else 0
+            return notes[3] if len(notes) == 5 else 0
         if item == "brk":
-            return self["notes"][-1]
+            return notes[-1] if notes else 0
         if item == "dxscore":
-            return sum(self["charter"]) * 3
+            return sum(self.get("charter", [])) * 3
         if item == "charter":
-            return self["charter"]
+            return self.get("charter", "")
         return super().__getattribute__(item)
 
 
@@ -105,8 +106,8 @@ class Music(dict):
     def __getattribute__(self, item):
         if item in {"genre", "artist", "release_date", "bpm", "version", "is_new"}:
             if item == "version":
-                return self["basic_info"]["from"]
-            return self["basic_info"][item]
+                return self.get("basic_info", {}).get("from", "")
+            return self.get("basic_info", {}).get(item, "")
         if item in self:
             return self[item]
         return super().__getattribute__(item)
