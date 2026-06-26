@@ -151,6 +151,7 @@
     "parser.module.disabled.prompt": "“${module}”模块未开启，请使用“${prefix}enable ${module}”开启此模块。",
     "parser.module.disabled.to_enable": "是否开启模块并继续执行此命令？",
     "parser.module.unloaded": "“${module}”模块当前未加载，请联系开发者处理。",
+    "parser.regex.mode.confirm": "该消息正则匹配了多个结果，是否想输出全部匹配结果（否则为输出第一个结果）？",
     "parser.superuser.permission.denied": "你没有使用该命令的权限。",
     "petal.message.cost": "（使用了 ${amount} 片花瓣）",
     "petal.message.cost.not_enough": "你的花瓣不足。",
