@@ -38,7 +38,6 @@ dependencies = [
     "matrix-nio>=0.25.0,<1.0.0",
     "py-cord>=2.7.2",
     "pyjwt[crypto]>=2.8.0,<3.0.0",
-    "qq-botpy>=1.2.1,<2.0.0",
     "slowapi>=0.1.9,<1.0.0",
     "urllib3>=2.6.3",
     "uvicorn[standard]>=0.38.0,<1.0.0",
@@ -93,6 +92,7 @@ dependencies = [
     "webcolors>=25.0.0,<26.0.0",
     "wolframalpha>=5.0.0,<6.0.0",
     # uncategorized
+    "ymbotpy",
 ]
 
 [project.urls]
@@ -113,3 +113,6 @@ quote-style = "double"
 
 [tool.pyright]
 reportUndefinedVariable = "error"
+
+[tool.uv.sources]
+ymbotpy = { git = "https://github.com/HG-ha/ymbotpy.git" }

@@ -1,11 +1,11 @@
 import asyncio
 import html
 
-from botpy.api import BotAPI
-from botpy.errors import ServerError
-from botpy.http import Route
-from botpy.message import BaseMessage, C2CMessage, DirectMessage, GroupMessage, Message
-from botpy.types.message import Media, Reference
+from ymbotpy.api import BotAPI
+from ymbotpy.errors import ServerError
+from ymbotpy.http import Route
+from ymbotpy.message import BaseMessage, C2CMessage, DirectMessage, GroupMessage, Message
+from ymbotpy.types.message import Media, Reference
 
 from bots.qqbot.features import Features
 from bots.qqbot.info import client_name, target_group_prefix, target_guild_prefix

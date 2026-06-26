@@ -1,8 +1,8 @@
 import asyncio
 import re
 
-import botpy
-from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
+import ymbotpy
+from ymbotpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 
 from bots.qqbot.context import QQBotContextManager
 from bots.qqbot.features import Features
@@ -23,7 +23,7 @@ qqbot_secret = Config("qq_bot_secret", cfg_type=str, secret=True, table_name="bo
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 
 
-class MyClient(botpy.Client):
+class MyClient(ymbotpy.Client):
     async def on_ready(self):
         await client_init(target_prefix_list, sender_prefix_list)
 
@@ -228,7 +228,7 @@ class MyClient(botpy.Client):
         await Bot.process_message(session, message, _feat)
 
 
-intents = botpy.Intents.none()
+intents = ymbotpy.Intents.none()
 intents.public_guild_messages = True
 intents.public_messages = True
 intents.direct_message = True
