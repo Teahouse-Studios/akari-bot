@@ -76,13 +76,18 @@ async def message_handler(event: Event):
         match_json = re.match(r"\[CQ:json,data=(.*?)\]", event.message, re.MULTILINE | re.DOTALL)
         if match_json:
             load_json = orjson.loads(html.unescape(match_json.group(1)))
-            if load_json["app"] == "com.tencent.multimsg":
-                event.message = f"[CQ:forward,id={load_json['meta']['detail']['resid']}]"
+            if load_json.get("app") == "com.tencent.multimsg":
+                event.message = f"[CQ:forward,id={load_json.get('meta', {}).get('detail', {}).get('resid', '')}]"
     else:
-        if event.message[0]["type"] == "json":
+        if event.message and event.message[0]["type"] == "json":
             load_json = orjson.loads(event.message[0]["data"]["data"])
-            if load_json["app"] == "com.tencent.multimsg":
-                event.message = [{"type": "forward", "data": {"id": f"{load_json['meta']['detail']['resid']}"}}]
+            if load_json.get("app") == "com.tencent.multimsg":
+                event.message = [
+                    {
+                        "type": "forward",
+                        "data": {"id": f"{load_json.get('meta', {}).get('detail', {}).get('resid', '')}"},
+                    }
+                ]
 
     reply_id = None
     if string_post:
@@ -90,7 +95,7 @@ async def message_handler(event: Event):
         if match_reply:
             reply_id = int(match_reply.group(1))
     else:
-        if event.message[0]["type"] == "reply":
+        if event.message and event.message[0]["type"] == "reply":
             reply_id = int(event.message[0]["data"]["id"])
 
     at_message = False
@@ -104,7 +109,7 @@ async def message_handler(event: Event):
             else:
                 return
     else:
-        if event.message[0]["type"] == "at":
+        if event.message and event.message[0]["type"] == "at":
             if event.message[0]["data"]["qq"] == str(event.self_id):
                 at_message = True
                 event.message = event.message[1:]

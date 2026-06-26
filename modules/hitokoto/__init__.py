@@ -34,12 +34,12 @@ async def _(msg: Bot.MessageSession, msg_type: str = None):
         data = {
             k: (LanguageConverter.from_language(zh_tw).convert(v) if isinstance(v, str) else v) for k, v in data.items()
         }
-    from_who = data["from_who"] or ""
-    tp = str(I18NContext("hitokoto.message.type")) + str(I18NContext(f"hitokoto.message.type.{data['type']}"))
+    from_who = data.get("from_who") or ""
+    tp = str(I18NContext("hitokoto.message.type")) + str(I18NContext(f"hitokoto.message.type.{data.get('type', '')}"))
     msg_chain = MessageChain.assign(
         [
-            Plain(f"{data['hitokoto']}\n——{from_who}「{data['from']}」\n{tp}"),
-            Url(f"https://hitokoto.cn?id={data['id']}", use_mm=False),
+            Plain(f"{data.get('hitokoto', '')}\n——{from_who}「{data.get('from', '')}」\n{tp}"),
+            Url(f"https://hitokoto.cn?id={data.get('id', '')}", use_mm=False),
         ]
     )
     await msg.finish(msg_chain)

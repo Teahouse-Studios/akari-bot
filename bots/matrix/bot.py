@@ -59,12 +59,12 @@ async def on_room_member(room: nio.MatrixRoom, event: nio.RoomMemberEvent):
 async def to_message_chain(event: nio.RoomMessageFormatted, reply_id: str = None, target_id: str = None):
     if not event.source:
         return MessageChain.assign([])
-    content = event.source["content"]
-    msgtype = content["msgtype"]
+    content = event.source.get("content", {})
+    msgtype = content.get("msgtype", "")
     if msgtype == "m.emote":
         msgtype = "m.text"
     if msgtype == "m.text":  # compatible with py38
-        text = str(content["body"])
+        text = str(content.get("body", ""))
         if reply_id:
             # redact the fallback line for rich reply
             # https://spec.matrix.org/v1.9/client-server-api/#fallbacks-for-rich-replies
@@ -83,7 +83,10 @@ async def to_message_chain(event: nio.RoomMessageFormatted, reply_id: str = None
             Logger.error(f"Got invalid m.image message from {target_id}")
         return MessageChain.assign(Image(await matrix_bot.mxc_to_http(url)))
     if msgtype == "m.audio":
-        url = str(content["url"])
+        url = content.get("url")
+        if not url:
+            Logger.error(f"Got m.audio message without url from {target_id}")
+            return MessageChain.assign([])
         return MessageChain.assign(Voice(await matrix_bot.mxc_to_http(url)))
     Logger.error(f"Got unknown msgtype: {msgtype}")
     return MessageChain.assign([])
@@ -96,7 +99,7 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
                 continue
             matrix_bot.verify_device(olm_device)
             Logger.info(f"Trust olm device for device id: {event.sender} -> {device_id}")
-    if event.source["content"]["msgtype"] == "m.notice":
+    if event.source.get("content", {}).get("msgtype") == "m.notice":
         # https://spec.matrix.org/v1.9/client-server-api/#mnotice
         return
     target_id = f"{target_prefix}|{room.room_id}"
@@ -104,10 +107,11 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
     if sender_id in ignored_sender:
         return
     reply_id = None
-    if "m.relates_to" in event.source["content"]:
-        relatesTo = event.source["content"]["m.relates_to"]
+    event_content = event.source.get("content", {})
+    if "m.relates_to" in event_content:
+        relatesTo = event_content.get("m.relates_to", {})
         if "m.in_reply_to" in relatesTo:  # rich reply
-            reply_id = relatesTo["m.in_reply_to"]["event_id"]
+            reply_id = relatesTo.get("m.in_reply_to", {}).get("event_id")
         if "rel_type" in relatesTo:
             relType = relatesTo["rel_type"]
             if relType == "m.replace":  # skip edited message
@@ -198,7 +202,7 @@ async def on_in_room_verify(room: nio.MatrixRoom, event: nio.RoomMessageUnknown)
             nio.ToDeviceMessage(
                 type="m.key.verification.cancel",
                 recipient=event.sender,
-                recipient_device=event.content["from_device"],
+                recipient_device=event.content.get("from_device", ""),
                 content={
                     "code": "m.invalid_message",
                     "reason": msg,

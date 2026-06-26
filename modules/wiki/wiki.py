@@ -486,7 +486,8 @@ async def query_pages(
                             )
                         )
                     if r.before_page_property == "template":
-                        if r.before_title.split(":")[1].isupper():
+                        title_parts = r.before_title.split(":")
+                        if len(title_parts) > 1 and title_parts[1].isupper():
                             plain_slice.append(session.session_info.locale.t("wiki.message.magic_word"))
                     if plain_slice:
                         msg_list.append(Plain("\n".join(plain_slice)))

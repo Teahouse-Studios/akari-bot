@@ -7,11 +7,13 @@ from core.builtins.session.info import SessionInfo
 
 
 def get_channel_id(session_info: SessionInfo) -> str:
-    return session_info.target_id.split(session_info.target_from + "|")[1]
+    parts = session_info.target_id.split(session_info.target_from + "|")
+    return parts[1] if len(parts) > 1 else ""
 
 
 def get_sender_id(session_info: SessionInfo) -> str:
-    return session_info.sender_id.split(session_info.sender_from + "|")[1]
+    parts = session_info.sender_id.split(session_info.sender_from + "|")
+    return parts[1] if len(parts) > 1 else ""
 
 
 async def convert_embed(embed: EmbedElement, session_info: SessionInfo):
