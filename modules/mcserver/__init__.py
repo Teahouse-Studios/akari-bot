@@ -27,19 +27,20 @@ async def _(msg: Bot.MessageSession):
     if check_local_address(server_address):
         await msg.finish(I18NContext("server.message.local_address"))
 
-    java_info, bedrock_info = await asyncio.gather(
-        query_java_server(server_address, raw, showplayer),
-        query_bedrock_server(server_address, raw),
-    )
+    java_task = asyncio.create_task(query_java_server(server_address, raw, showplayer))
+    bedrock_task = asyncio.create_task(query_bedrock_server(server_address, raw))
 
-    sendmsg = [java_info, bedrock_info]
-    if sendmsg == ["", ""]:
+    sent = False
+    for coro in asyncio.as_completed([java_task, bedrock_task]):
+        result = await coro
+        if result:
+            checked = await check(result.split("\n"), session=msg)
+            content = "\n".join(x["content"] for x in checked)
+            await msg.send_message(content.strip())
+            sent = True
+
+    if not sent:
         await msg.finish(I18NContext("server.message.not_found"))
-    else:
-        sendmsg = "\n".join(sendmsg).split("\n")
-        sendmsg = await check(sendmsg, session=msg)
-        t = "\n".join(x["content"] for x in sendmsg)
-        await msg.finish(t.strip())
 
 
 def check_local_address(server_address):
