@@ -722,9 +722,10 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                                     mode = RegexMode.MATCH
                             if mode == RegexMode.FINDALL:
                                 matched_hash = hash(msg.matched_msg)
-                            elif mode==RegexMode.MATCH:
-                                msg.matched_msg = msg.matched_msg[0] # 向前兼容性考虑
-                                matched_hash = hash(msg.matched_msg.groups())
+                            elif mode == RegexMode.MATCH:
+                                msg.matched_msg = msg.matched_msg[0]  # 向前兼容性考虑
+                                if msg.matched_msg:
+                                    matched_hash = hash(msg.matched_msg.groups())
 
                         # ========== 步骤 6: 处理匹配成功的情况 ==========
                         if (
