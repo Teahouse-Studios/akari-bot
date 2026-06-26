@@ -87,7 +87,7 @@ async def msg_handler(message: Message):
 
 @bot.on_event(EventTypes.ADDED_REACTION)
 async def add_reaction(b: khlBot, event: Event):
-    body = event.get("extra", {}).get("body", {})
+    body = event.extra.get("body", {})
     if body.get("user_id") == b.client.me.id:
         return
     sender_id = f"{sender_prefix}|{body.get('user_id', '')}"
@@ -100,7 +100,7 @@ async def add_reaction(b: khlBot, event: Event):
         target_from=target_group_prefix,
         sender_from=sender_prefix,
         client_name=client_name,
-        message_id=str(event.get("id", "")),
+        message_id=str(event.id),
         reply_id=body.get("msg_id"),
         messages=MessageChain.assign([Plain(body.get("emoji", {}).get("id", ""))]),
         ctx_slot=ctx_id,
@@ -111,7 +111,7 @@ async def add_reaction(b: khlBot, event: Event):
 
 @bot.on_event(EventTypes.PRIVATE_ADDED_REACTION)
 async def private_add_reaction(b: khlBot, event: Event):
-    body = event.get("extra", {}).get("body", {})
+    body = event.extra.get("body", {})
     if body.get("user_id") == b.client.me.id:
         return
     sender_id = f"{sender_prefix}|{body.get('user_id', '')}"
@@ -124,7 +124,7 @@ async def private_add_reaction(b: khlBot, event: Event):
         target_from=target_person_prefix,
         sender_from=sender_prefix,
         client_name=client_name,
-        message_id=str(event.get("id", "")),
+        message_id=str(event.id),
         reply_id=body.get("msg_id"),
         messages=MessageChain.assign([Plain(body.get("emoji", {}).get("id", ""))]),
         ctx_slot=ctx_id,
