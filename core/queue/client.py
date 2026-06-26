@@ -15,8 +15,8 @@
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
-from core.builtins.session.info import SessionInfo
 from core.builtins.session.features import Features
+from core.builtins.session.info import SessionInfo
 from .base import JobQueueBase
 from ..builtins.converter import converter
 from ..builtins.message.chain import MessageChain, MessageNodes

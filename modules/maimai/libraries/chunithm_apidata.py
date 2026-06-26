@@ -1,6 +1,5 @@
-import unicodedata
-
 import orjson
+import unicodedata
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain

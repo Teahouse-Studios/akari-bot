@@ -16,10 +16,10 @@ import inspect
 import re
 import time
 import traceback
-
-from rapidfuzz import process
 from string import Template as stringTemplate
 from typing import TYPE_CHECKING
+
+from rapidfuzz import process
 
 from core.builtins.message.chain import MessageChain, match_kecode
 from core.builtins.message.internal import Plain, I18NContext
@@ -47,8 +47,8 @@ from core.logger import Logger
 from core.tos import TOS_TEMPBAN_TIME, temp_ban_counter, abuse_warn_target, remove_temp_ban
 from core.types import Module, Param
 from core.types.module.component_meta import CommandMeta
-from core.utils.func import normalize_space
 from core.utils.container import ExpiringTempDict, TokenBucket
+from core.utils.func import normalize_space
 
 if TYPE_CHECKING:
     from core.builtins.bot import Bot

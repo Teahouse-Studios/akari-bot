@@ -8,12 +8,11 @@ from langconv.language.zh import zh_cn
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Image, Plain
-from core.config import Config
 from core.constants.exceptions import ConfigValueError
 from core.constants.path import cache_path
 from core.logger import Logger
-from core.utils.http import download, get_url, post_url
 from core.utils.func import is_int
+from core.utils.http import download, get_url, post_url
 from .maimaidx_mapping import *
 from .maimaidx_music import get_cover_len5_id, Music, TotalList
 

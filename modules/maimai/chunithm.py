@@ -1,13 +1,10 @@
-from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Plain, I18NContext, Image as BImage
+from core.builtins.message.internal import Plain, Image as BImage
 from core.component import module
-from core.utils.image import msgchain2image
 from core.utils.func import is_int
-from .database.models import DivingProberBindInfo, LxnsProberBindInfo
+from core.utils.image import msgchain2image
 from .libraries.chunithm_apidata import get_info, get_record_df, get_record_lx, update_cover
 from .libraries.chunithm_best30 import generate as generate_b30
-from .libraries.chunithm_mapping import diff_list, default_source
 from .libraries.chunithm_music import TotalList
 from .libraries.chunithm_utils import *
 

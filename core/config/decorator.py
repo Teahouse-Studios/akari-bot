@@ -12,9 +12,8 @@
 """
 
 import inspect
-from typing import Any, Literal, TypeVar, get_args
 from types import UnionType
-
+from typing import Any, Literal, TypeVar, get_args
 
 from core.exports import add_export
 from . import CFGManager, ALLOWED_TYPES

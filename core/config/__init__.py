@@ -1,7 +1,7 @@
 import datetime
 import re
-from time import sleep
 from pathlib import Path
+from time import sleep
 from typing import Any
 
 import orjson

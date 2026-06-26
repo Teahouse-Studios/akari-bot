@@ -7,8 +7,8 @@ from core.builtins.message.internal import I18NContext, Plain, Image
 from core.component import module
 from core.constants import dev_mode, NoReportException
 from core.database import fetch_module_db, get_model_fields, get_model_names
-from core.utils.image_table import image_table_render, ImageTable
 from core.utils.func import is_int
+from core.utils.image_table import image_table_render, ImageTable
 
 DBDATA_PER_PAGE = 10
 

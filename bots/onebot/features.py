@@ -1,6 +1,7 @@
+from attrs import define
+
 from core.builtins.session.features import Features as FeaturesBase
 from core.config import Config
-from attrs import define
 
 use_url_manager = Config("enable_urlmanager", False)
 dirty_word_check = Config("enable_dirty_check", False)

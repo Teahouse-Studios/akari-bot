@@ -20,6 +20,7 @@ from core.config import Config
 from core.constants.exceptions import ExternalException
 from core.constants.path import cache_path
 from core.logger import Logger
+from core.tester.mock.http import HTTPMock
 
 logging_resp = False
 debug = Config("debug", False)
@@ -85,6 +86,26 @@ async def request_url(
     # Default User-Agent
     if "User-Agent" not in headers:
         headers["User-Agent"] = "AkariBot/1.0 (+https://github.com/Teahouse-Studios/akari-bot)"
+
+    # HTTPMock: check for cached mock response before making real request
+    if HTTPMock.is_enabled():
+        mock_resp = HTTPMock.get_response(url)
+        if mock_resp is not None:
+            if status_code and mock_resp.status_code != status_code:
+                error_fmt = (
+                    f"{str(mock_resp.status_code)}[KE:Image,path=https://http.cat/{str(mock_resp.status_code)}.jpg]"
+                )
+                if 500 <= mock_resp.status_code < 600:
+                    raise ExternalException(error_fmt)
+                raise ValueError(error_fmt)
+            if fmt:
+                if hasattr(mock_resp, fmt):
+                    attr = getattr(mock_resp, fmt)
+                    if callable(attr):
+                        return attr()
+                    return attr
+                raise ValueError(f"No such method: {fmt}")
+            return mock_resp.text
 
     @retry(stop=stop_after_attempt(attempt), wait=wait_fixed(3), reraise=True)
     async def _request():

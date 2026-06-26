@@ -3,20 +3,18 @@ from __future__ import annotations
 import base64
 from io import BytesIO
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from PIL import Image as PILImage
 from jinja2 import FileSystemLoader, Environment
 
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import PlainElement, ImageElement, EmbedElement
-
 from core.config import Config
 from core.constants.path import templates_path
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.web_render import web_render, ElementScreenshotOptions
-
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from core.builtins.session.internal import MessageSession

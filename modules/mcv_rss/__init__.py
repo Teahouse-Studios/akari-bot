@@ -17,7 +17,6 @@ from core.utils.http import get_url
 from core.utils.storedata import get_stored_list, update_stored_list
 from core.web_render import web_render, SourceOptions
 
-
 SNAPSHOT_PATTERN = re.compile(r"^(?P<major>[\d.]+)-snapshot-?(?P<patch>\d)+$")
 OLD_SNAPSHOT_PATTERN = re.compile(r"^(1\d)|(2[0-5])[w|W]\d{2}[A-Fa-f]$")
 PRERELEASE_PATTERN = re.compile(r"^(?P<major>[\d.]+)-pre-?(?P<patch>\d)+$")

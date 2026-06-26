@@ -1,0 +1,201 @@
+{
+  "url": "https://zh.minecraft.wiki/api.php?action=query&meta=siteinfo&siprop=general&format=json",
+  "status_code": 200,
+  "text": "{\"batchcomplete\": \"\", \"query\": {\"general\": {\"mainpage\": \"Minecraft Wiki\", \"base\": \"https://zh.minecraft.wiki/\", \"sitename\": \"Minecraft Wiki\", \"mainpageisdomainroot\": \"\", \"logo\": \"https://zh.minecraft.wiki/images/Wiki.png\", \"generator\": \"MediaWiki 1.45.3\", \"phpversion\": \"8.2.31\", \"phpsapi\": \"fpm-fcgi\", \"dbtype\": \"mysql\", \"dbversion\": \"8.0.41-google\", \"imagewhitelistenabled\": \"\", \"langconversion\": \"\", \"linkconversion\": \"\", \"titleconversion\": \"\", \"linkprefixcharset\": \"\", \"linkprefix\": \"\", \"linktrail\": \"/^()(.*)$/sD\", \"legaltitlechars\": \" %!\\\"$&'()*,\\\\-.\\\\/0-9:;=?@A-Z\\\\\\\\^_`a-z~\\\\x80-\\\\xFF+\", \"invalidusernamechars\": \"@:>=#~\", \"git-hash\": \"c1cb0aaf8266ee38f51a0738a0aca59f2fe43454\", \"git-branch\": \"master\", \"case\": \"first-letter\", \"lang\": \"zh\", \"fallback\": [{\"code\": \"zh-hans\"}, {\"code\": \"zh-hant\"}, {\"code\": \"zh-cn\"}, {\"code\": \"zh-tw\"}, {\"code\": \"zh-hk\"}, {\"code\": \"en\"}], \"variants\": [{\"code\": \"zh\", \"name\": \"不转换\"}, {\"code\": \"zh-hans\", \"name\": \"简体\"}, {\"code\": \"zh-hant\", \"name\": \"繁體\"}, {\"code\": \"zh-cn\", \"name\": \"大陆简体\"}, {\"code\": \"zh-hk\", \"name\": \"香港繁體\"}, {\"code\": \"zh-tw\", \"name\": \"臺灣正體\"}], \"fallback8bitEncoding\": \"windows-936\", \"writeapi\": \"\", \"maxarticlesize\": 8388608, \"timezone\": \"UTC\", \"timeoffset\": 0, \"articlepath\": \"/w/$1\", \"scriptpath\": \"\", \"script\": \"/\", \"variantarticlepath\": false, \"server\": \"https://zh.minecraft.wiki\", \"servername\": \"zh.minecraft.wiki\", \"wikiid\": \"zh_mcwiki\", \"time\": \"2026-06-24T08:14:25Z\", \"uploadsenabled\": \"\", \"maxuploadsize\": 104857600, \"minuploadchunksize\": 1024, \"galleryoptions\": {\"imagesPerRow\": 0, \"imageWidth\": 120, \"imageHeight\": 120, \"captionLength\": \"\", \"showBytes\": \"\", \"showDimensions\": \"\", \"mode\": \"traditional\"}, \"thumblimits\": [120, 150, 180, 200, 250, 300], \"imagelimits\": [{\"width\": 320, \"height\": 240}, {\"width\": 640, \"height\": 480}, {\"width\": 800, \"height\": 600}, {\"width\": 1024, \"height\": 768}, {\"width\": 1280, \"height\": 1024}, {\"width\": 2560, \"height\": 2048}], \"favicon\": \"https://zh.minecraft.wiki/images/Favicon.ico\", \"centralidlookupprovider\": \"local\", \"allcentralidlookupproviders\": [\"local\"], \"interwikimagic\": \"\", \"magiclinks\": [], \"categorycollation\": \"uppercase\", \"nofollowlinks\": \"\", \"nofollownsexceptions\": [], \"nofollowdomainexceptions\": [\"balatrowiki.org\", \"brightershoreswiki.org\", \"gta.wiki\", \"hytalewiki.org\", \"leagueoflegends.com\", \"minecraft.wiki\", \"play2xko.com\", \"playvalorant.com\", \"runescape.wiki\", \"smite2.com\", \"subnautica.com\", \"survivors.wiki\", \"warframe.com\", \"weirdgloop.org\"], \"externallinktarget\": \"_blank\", \"citeresponsivereferences\": \"\", \"max-page-id\": 203945, \"mobileserver\": \"https://zh.minecraft.wiki\", \"linter\": {\"high\": [\"deletable-table-tag\", \"duplicate-ids\", \"html5-misnesting\", \"misc-tidy-replacement-issues\", \"multiline-html-table-in-list\", \"multiple-unclosed-formatting-tags\", \"pwrap-bug-workaround\", \"self-closed-tag\", \"tidy-font-bug\", \"tidy-whitespace-bug\", \"unclosed-quotes-in-heading\"], \"medium\": [\"bogus-image-options\", \"fostered\", \"misnested-tag\", \"multi-colon-escape\", \"wikilink-in-extlink\"], \"low\": [\"empty-heading\", \"missing-end-tag\", \"missing-end-tag-in-heading\", \"night-mode-unaware-background-color\", \"obsolete-tag\", \"stripped-tag\"]}}}}",
+  "headers": {},
+  "json_data": {
+    "batchcomplete": "",
+    "query": {
+      "general": {
+        "mainpage": "Minecraft Wiki",
+        "base": "https://zh.minecraft.wiki/",
+        "sitename": "Minecraft Wiki",
+        "mainpageisdomainroot": "",
+        "logo": "https://zh.minecraft.wiki/images/Wiki.png",
+        "generator": "MediaWiki 1.45.3",
+        "phpversion": "8.2.31",
+        "phpsapi": "fpm-fcgi",
+        "dbtype": "mysql",
+        "dbversion": "8.0.41-google",
+        "imagewhitelistenabled": "",
+        "langconversion": "",
+        "linkconversion": "",
+        "titleconversion": "",
+        "linkprefixcharset": "",
+        "linkprefix": "",
+        "linktrail": "/^()(.*)$/sD",
+        "legaltitlechars": " %!\"$&'()*,\\-.\\/0-9:;=?@A-Z\\\\^_`a-z~\\x80-\\xFF+",
+        "invalidusernamechars": "@:>=#~",
+        "git-hash": "c1cb0aaf8266ee38f51a0738a0aca59f2fe43454",
+        "git-branch": "master",
+        "case": "first-letter",
+        "lang": "zh",
+        "fallback": [
+          {
+            "code": "zh-hans"
+          },
+          {
+            "code": "zh-hant"
+          },
+          {
+            "code": "zh-cn"
+          },
+          {
+            "code": "zh-tw"
+          },
+          {
+            "code": "zh-hk"
+          },
+          {
+            "code": "en"
+          }
+        ],
+        "variants": [
+          {
+            "code": "zh",
+            "name": "不转换"
+          },
+          {
+            "code": "zh-hans",
+            "name": "简体"
+          },
+          {
+            "code": "zh-hant",
+            "name": "繁體"
+          },
+          {
+            "code": "zh-cn",
+            "name": "大陆简体"
+          },
+          {
+            "code": "zh-hk",
+            "name": "香港繁體"
+          },
+          {
+            "code": "zh-tw",
+            "name": "臺灣正體"
+          }
+        ],
+        "fallback8bitEncoding": "windows-936",
+        "writeapi": "",
+        "maxarticlesize": 8388608,
+        "timezone": "UTC",
+        "timeoffset": 0,
+        "articlepath": "/w/$1",
+        "scriptpath": "",
+        "script": "/",
+        "variantarticlepath": false,
+        "server": "https://zh.minecraft.wiki",
+        "servername": "zh.minecraft.wiki",
+        "wikiid": "zh_mcwiki",
+        "time": "2026-06-24T08:14:25Z",
+        "uploadsenabled": "",
+        "maxuploadsize": 104857600,
+        "minuploadchunksize": 1024,
+        "galleryoptions": {
+          "imagesPerRow": 0,
+          "imageWidth": 120,
+          "imageHeight": 120,
+          "captionLength": "",
+          "showBytes": "",
+          "showDimensions": "",
+          "mode": "traditional"
+        },
+        "thumblimits": [
+          120,
+          150,
+          180,
+          200,
+          250,
+          300
+        ],
+        "imagelimits": [
+          {
+            "width": 320,
+            "height": 240
+          },
+          {
+            "width": 640,
+            "height": 480
+          },
+          {
+            "width": 800,
+            "height": 600
+          },
+          {
+            "width": 1024,
+            "height": 768
+          },
+          {
+            "width": 1280,
+            "height": 1024
+          },
+          {
+            "width": 2560,
+            "height": 2048
+          }
+        ],
+        "favicon": "https://zh.minecraft.wiki/images/Favicon.ico",
+        "centralidlookupprovider": "local",
+        "allcentralidlookupproviders": [
+          "local"
+        ],
+        "interwikimagic": "",
+        "magiclinks": [],
+        "categorycollation": "uppercase",
+        "nofollowlinks": "",
+        "nofollownsexceptions": [],
+        "nofollowdomainexceptions": [
+          "balatrowiki.org",
+          "brightershoreswiki.org",
+          "gta.wiki",
+          "hytalewiki.org",
+          "leagueoflegends.com",
+          "minecraft.wiki",
+          "play2xko.com",
+          "playvalorant.com",
+          "runescape.wiki",
+          "smite2.com",
+          "subnautica.com",
+          "survivors.wiki",
+          "warframe.com",
+          "weirdgloop.org"
+        ],
+        "externallinktarget": "_blank",
+        "citeresponsivereferences": "",
+        "max-page-id": 203945,
+        "mobileserver": "https://zh.minecraft.wiki",
+        "linter": {
+          "high": [
+            "deletable-table-tag",
+            "duplicate-ids",
+            "html5-misnesting",
+            "misc-tidy-replacement-issues",
+            "multiline-html-table-in-list",
+            "multiple-unclosed-formatting-tags",
+            "pwrap-bug-workaround",
+            "self-closed-tag",
+            "tidy-font-bug",
+            "tidy-whitespace-bug",
+            "unclosed-quotes-in-heading"
+          ],
+          "medium": [
+            "bogus-image-options",
+            "fostered",
+            "misnested-tag",
+            "multi-colon-escape",
+            "wikilink-in-extlink"
+          ],
+          "low": [
+            "empty-heading",
+            "missing-end-tag",
+            "missing-end-tag-in-heading",
+            "night-mode-unaware-background-color",
+            "obsolete-tag",
+            "stripped-tag"
+          ]
+        }
+      }
+    }
+  }
+}

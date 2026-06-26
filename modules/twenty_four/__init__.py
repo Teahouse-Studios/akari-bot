@@ -4,9 +4,9 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
 from core.game import PlayState, GAME_EXPIRED
+from core.utils.func import is_int
 from core.utils.petal import cost_petal, gained_petal, lost_petal
 from core.utils.random import Random
-from core.utils.func import is_int
 
 no_solution_lst = [
     "无解",

@@ -1,5 +1,6 @@
 import inspect
 
+from core.logger import Logger
 from .expectations import Expectation
 from .process import run_test_case
 
@@ -10,6 +11,50 @@ class Tester:
         self._entries: list[dict] = []
         self._results: list[dict] = []
         self.is_ci: bool = False
+
+    async def test(
+        self,
+        func: callable,
+        note: str | None = None,
+    ):
+        """
+        运行纯函数测试，不需要命令占位符。
+
+        :param func: 测试函数或 Predicate，返回 True 表示通过，False 表示失败。
+        :param note: 额外说明。
+        :returns: 测试结果字典。
+        """
+        import asyncio
+
+        Logger.trace(f"[{self.name}] test: {note or func.__name__}")
+
+        frame = inspect.stack()[1]
+        entry_meta = {
+            "input": "(pure function test)",
+            "expected": func,
+            "note": note,
+            "timeout": None,
+            "file": frame.filename,
+            "line": frame.lineno,
+        }
+        self._entries.append(entry_meta)
+
+        if asyncio.iscoroutinefunction(func):
+            result = await func()
+        else:
+            result = func()
+
+        passed = bool(result)
+        final = {
+            "input": "(pure function test)",
+            "output": None,
+            "action": [],
+            "expected": func,
+            "match": passed,
+            "note": note,
+        }
+        self._results.append(final)
+        return final
 
     async def expect(
         self,
@@ -26,6 +71,8 @@ class Tester:
         :param note: 额外说明。
         :param timeout: 超时时间（秒），若为 None 则无超时限制。
         """
+        Logger.trace(f"[{self.name}] expect: {input_} - {note or ''}")
+
         frame = inspect.stack()[1]
         entry_meta = {
             "input": input_,
