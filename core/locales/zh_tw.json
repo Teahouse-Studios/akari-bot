@@ -151,7 +151,6 @@
     "parser.module.disabled.prompt": "「${module}」模組未啟用，請使用「${prefix}enable ${module}」啟用此模組。",
     "parser.module.disabled.to_enable": "是否啟用模組並繼續執行此指令？",
     "parser.module.unloaded": "「${module}」模組當前未載入，請聯絡開發人員處理。",
-    "parser.regex.mode.confirm": "該訊息的正規表示式匹配到多個結果，是否要輸出全部匹配結果（否則只輸出第一個結果）？",
     "parser.superuser.permission.denied": "你沒有使用此指令的權限。",
     "petal.message.cost": "（使用了 ${amount} 片花瓣）",
     "petal.message.cost.not_enough": "你的花瓣不足。",

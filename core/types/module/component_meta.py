@@ -1,5 +1,4 @@
 import re
-from enum import Enum
 from typing import Callable
 
 from apscheduler.triggers.combining import AndTrigger, OrTrigger
@@ -31,29 +30,11 @@ class CommandMeta(ModuleMeta):
     priority: int = 1
 
 
-class RegexMode(Enum):
-    USERCHOOSE = "U"
-    MATCH = "M"
-    FINDALL = "A"
-
-    @classmethod
-    def fromstr(cls, string: "RegexMode | str"):
-        if isinstance(string, RegexMode):
-            return string
-        string = string.upper()
-        if string in ["U", "USERCHOOSE"]:
-            return cls.USERCHOOSE
-        if string in ["M", "MATCH"]:
-            return cls.MATCH
-        if string in ["A", "FINDALL"]:
-            return cls.FINDALL
-        raise ValueError()
-
 @define
 class RegexMeta(ModuleMeta):
     function: Callable | None = None
     pattern: str | re.Pattern | None = None
-    mode: RegexMode | None = None
+    mode: str | None = None
     desc: str | None = None
     required_admin: bool = False
     required_superuser: bool = False
@@ -80,4 +61,4 @@ class HookMeta(ModuleMeta):
     name: str | None = None
 
 
-__all__ = ["ModuleMeta", "CommandMeta", "RegexMeta", "ScheduleMeta", "HookMeta", "RegexMode"]
+__all__ = ["ModuleMeta", "CommandMeta", "RegexMeta", "ScheduleMeta", "HookMeta"]

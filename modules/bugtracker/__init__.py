@@ -32,8 +32,8 @@ async def _(msg: Bot.MessageSession, mojiraid: str):
 
 @bug.regex(
     r"^\s*(?:https://bugs\.mojang\.com/browse/[A-Z]+/issues/)?\[?((?:BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-\d+)\]?",
-    mode="U",
-    flags= re.I | re.M,
+    mode="A",
+    flags=re.I,
     desc="{I18N:bugtracker.help.regex.desc}",
 )
 async def _(msg: Bot.MessageSession):
