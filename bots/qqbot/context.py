@@ -89,7 +89,10 @@ class QQBotContextManager(ContextManager):
             elif isinstance(ctx, DirectMessage):
                 return True
             elif isinstance(ctx, GroupMessage):
-                ...  # 群组好像无法获取成员权限信息...
+                if ctx.author.member_role in ["admin", "owner"]:
+                    return True
+                else:
+                    return False
             elif isinstance(ctx, C2CMessage):
                 return True
         return False
@@ -142,7 +145,7 @@ class QQBotContextManager(ContextManager):
                         return ".".join(parts)
 
                     line = url_pattern.sub(process_url, line)
-                elif url_pattern.findall(line):
+                elif session_info.tmp.get("message_type") != "group_direct" and url_pattern.findall(line):
                     continue
                 filtered_msg.append(line)
             msg = "\n".join(filtered_msg).strip()
@@ -208,24 +211,48 @@ class QQBotContextManager(ContextManager):
                                 msg_ids.append(send["id"])
                 elif isinstance(ctx, GroupMessage):
                     seq = ctx.msg_seq if ctx.msg_seq else 1
-                    if images:
-                        image_1 = images[0]
-                        images.pop(0)
-                        send_img = await ctx._api.post_group_file(
-                            group_openid=ctx.group_openid,
-                            file_type=1,
-                            file_data=await image_1.get_base64(),
+
+                    msg_quote = (
+                        Reference(
+                            message_id=ctx.id,
+                            ignore_get_message_error=False,
                         )
-                    if msg and ctx.id:
+                        if quote and not send_img
+                        else None
+                    )
+                    if msg and ctx.id and session_info.tmp.get("message_type") != "group_direct":
                         msg = "\n" + msg
                     msg = "" if not msg else msg
                     try:
+                        # if msg and ctx.id and session_info.tmp.get('message_type') != 'group_direct':
+                        if images:
+                            image_1 = images[0]
+                            images.pop(0)
+                            send_img = await ctx._api.post_group_file(
+                                group_openid=ctx.group_openid,
+                                file_type=1,
+                                file_data=await image_1.get_base64(),
+                            )
                         send = await ctx.reply(
                             content=msg,
                             msg_type=7 if send_img else 0,
                             media=send_img,
                             msg_seq=seq,
+                            message_reference=msg_quote,
                         )
+                        # else:
+                        #     md = {
+                        #       "markdown": {
+                        #         "content": msg
+                        #       }
+                        #     }
+                        #     Logger.debug(md)
+                        #     send = await ctx.reply(
+                        #         markdown=md,
+                        #         msg_type=2,
+                        #         msg_seq=seq,
+                        #         message_reference = msg_quote
+                        #     )
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
                         if image_1:
                             Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")

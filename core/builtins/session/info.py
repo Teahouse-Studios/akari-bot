@@ -127,7 +127,7 @@ class SessionInfo:
         locale = Locale(target_info.locale)
         bot_name = locale.t("bot_name")
         _tz_offset = target_info.target_data.get("tz_offset", Config("timezone_offset", "+8"))
-        prefixes = target_info.target_data.get("command_prefix", []) + command_prefix.copy() + (prefixes or [])
+        prefixes = prefixes or (target_info.target_data.get("command_prefix", []) + command_prefix.copy())
 
         tmp = tmp or {}
 

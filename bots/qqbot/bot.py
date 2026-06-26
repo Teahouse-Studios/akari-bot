@@ -14,11 +14,13 @@ from core.builtins.utils import command_prefix
 from core.client.init import client_init
 from core.config import Config
 from core.constants.default import ignored_sender_default
+from core.logger import Logger
 
 Bot.register_bot(client_name=client_name)
 ctx_id = Bot.register_context_manager(QQBotContextManager)
 
 qqbot_appid = str(Config("qq_bot_appid", cfg_type=(int, str), table_name="bot_qqbot"))
+qqbot_openid = str(Config("qq_bot_openid", cfg_type=str, default="", table_name="bot_qqbot"))
 qqbot_secret = Config("qq_bot_secret", cfg_type=str, secret=True, table_name="bot_qqbot")
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 
@@ -41,13 +43,16 @@ class MyClient(botpy.Client):
         if message.message_reference:
             reply_id = message.message_reference.message_id
 
-        message.content = re.sub(r"<@(.*?)>", "", message.content).strip()
+        if qqbot_openid:
+            message.content = re.sub(r"<@" + qqbot_openid + ">", "", message.content).strip()
+        else:
+            message.content = re.sub(r"<@(.*?)>", "", message.content).strip()
         if not message.content:
             message.content = f"{command_prefix[0]}help"
 
-        if message.content.strip().startswith("/"):
-            prefixes = ["/"]
-            require_enable_modules = False
+        # if message.content.strip().startswith("/"):
+        #     prefixes = ["/"]
+        #     require_enable_modules = False
 
         msg_chain = MessageChain.assign(re.sub(r"<@(.*?)>", rf"{sender_tiny_prefix}|\1", message.content))
 
@@ -110,6 +115,44 @@ class MyClient(botpy.Client):
 
         await Bot.process_message(session, message)
 
+    async def on_message_group_create(self, message: GroupMessage):
+        prefixes = ["/"]
+        Logger.debug(message)
+        target_id = f"{target_group_prefix}|{message.group_openid}"
+        sender_id = f"{sender_prefix}|{message.author.member_openid}"
+        if sender_id in ignored_sender:
+            return
+
+        reply_id = None
+
+        if qqbot_openid:
+            message.content = re.sub(r"<@" + qqbot_openid + ">", "", message.content).strip()
+        else:
+            message.content = re.sub(r"<@(.*?)>", "", message.content).strip()
+        if message.message_reference:
+            reply_id = message.message_reference.message_id
+
+        msg_chain = MessageChain.assign(message.content)
+
+        session = await SessionInfo.assign(
+            target_id=target_id,
+            sender_id=sender_id,
+            sender_name=message.author.member_openid[:6],
+            target_from=target_group_prefix,
+            sender_from=sender_prefix,
+            client_name=client_name,
+            message_id=str(message.id),
+            reply_id=reply_id,
+            messages=msg_chain,
+            ctx_slot=ctx_id,
+            prefixes=prefixes,
+            tmp={"message_type": "group_direct"},
+        )
+
+        _feat = Features.override(use_url_manager=False)
+
+        await Bot.process_message(session, message, _feat)
+
     @staticmethod
     async def on_group_at_message_create(message: GroupMessage):
         prefixes = None
@@ -127,10 +170,10 @@ class MyClient(botpy.Client):
         message.content = re.sub(r"<@(.*?)>", "", message.content).strip()
         if not message.content:
             message.content = f"{command_prefix[0]}help"
-
-        if message.content.strip().startswith("/"):
-            prefixes = ["/"]
-            require_enable_modules = False
+        #
+        # if message.content.strip().startswith("/"):
+        #     prefixes = ["/"]
+        #     require_enable_modules = False
 
         msg_chain = MessageChain.assign(re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", message.content))
 

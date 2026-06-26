@@ -192,7 +192,7 @@ class URLElement(BaseElement):
         # ========== 步骤 1: 应用链接跳板（如果需要）==========
         if use_mm:
             # 使用 mm.teahouse.team 的跳板服务，用于隐藏原始链接
-            mm_url = "https://mm.teahouse.team/?source=akaribot&rot13=%s"
+            mm_url = "https://mm.teahouse.team/index.html?source=akaribot&rot13=%s"
             # 创建 ROT13 转换表（字母表循环移位 13 位）
             rot13 = str.maketrans(
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",

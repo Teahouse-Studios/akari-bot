@@ -8,6 +8,7 @@ class QQBotConfig:
     qq_private_bot: bool = False
     qq_bot_enable_send_url: bool = False
     qq_typing_emoji: int = 181
+    qq_bot_openid: str = ""
 
 
 @on_config("qqbot", "bot", True)
