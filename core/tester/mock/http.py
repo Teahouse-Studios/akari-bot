@@ -5,6 +5,8 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from core.constants.info import Info
+
 
 class MockHTTPResponse:
     """模拟 HTTP 响应。"""
@@ -50,7 +52,6 @@ class HTTPMock:
     """
 
     _responses: list[tuple[re.Pattern, MockHTTPResponse]] = []
-    _enabled: bool = False
 
     @classmethod
     def register(cls, url_pattern: str, response: MockHTTPResponse):
@@ -80,17 +81,17 @@ class HTTPMock:
     @classmethod
     def enable(cls):
         """启用 HTTP mock。"""
-        cls._enabled = True
+        Info.http_mock_enabled = True
 
     @classmethod
     def disable(cls):
         """禁用 HTTP mock。"""
-        cls._enabled = False
+        Info.http_mock_enabled = False
 
     @classmethod
     def is_enabled(cls) -> bool:
         """检查 mock 是否启用。"""
-        return cls._enabled
+        return Info.http_mock_enabled
 
     @classmethod
     def get_response(cls, url: str) -> MockHTTPResponse | None:

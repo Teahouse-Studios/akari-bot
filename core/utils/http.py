@@ -19,8 +19,8 @@ from tenacity import retry, wait_fixed, stop_after_attempt
 from core.config import Config
 from core.constants.exceptions import ExternalException
 from core.constants.path import cache_path
+from core.constants.info import Info
 from core.logger import Logger
-from core.tester.mock.http import HTTPMock
 
 logging_resp = False
 debug = Config("debug", False)
@@ -88,7 +88,9 @@ async def request_url(
         headers["User-Agent"] = "AkariBot/1.0 (+https://github.com/Teahouse-Studios/akari-bot)"
 
     # HTTPMock: check for cached mock response before making real request
-    if HTTPMock.is_enabled():
+    if Info.http_mock_enabled:
+        from core.tester.mock.http import HTTPMock
+
         mock_resp = HTTPMock.get_response(url)
         if mock_resp is not None:
             if status_code and mock_resp.status_code != status_code:
