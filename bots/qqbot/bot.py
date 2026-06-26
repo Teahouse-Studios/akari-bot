@@ -14,7 +14,6 @@ from core.builtins.utils import command_prefix
 from core.client.init import client_init
 from core.config import Config
 from core.constants.default import ignored_sender_default
-from core.logger import Logger
 
 Bot.register_bot(client_name=client_name)
 ctx_id = Bot.register_context_manager(QQBotContextManager)
@@ -69,11 +68,6 @@ class MyClient(botpy.Client):
         _feat = Features.override(require_enable_modules=require_enable_modules)
 
         await Bot.process_message(session, message, _feat)
-
-    @staticmethod
-    async def on_group_message_create(message: Message):
-        Logger.debug("messageLog:")
-        Logger.debug(message)
 
     @staticmethod
     async def on_message_create(message: Message):
