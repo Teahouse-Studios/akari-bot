@@ -162,6 +162,7 @@ async def parser(msg: "Bot.MessageSession"):
         if bots_id:
             for b in bots_id:
                 if msg.session_info.sender_id == b:
+                    Logger.debug("Ignored message from other clients: " + msg.trigger_msg)
                     return
 
         # ========== 步骤 2: 权限检查 ==========
