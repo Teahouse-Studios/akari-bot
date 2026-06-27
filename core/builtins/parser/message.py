@@ -11,6 +11,7 @@
 包含了复杂的权限检查、速率限制、错误报告等功能。
 """
 
+import asyncio
 import copy
 import inspect
 import re
@@ -107,6 +108,9 @@ target_cooldown_counter = ExpiringTempDict()
 match_hash_cache = ExpiringTempDict()
 
 
+session_msg_cache = {}
+
+
 async def parser(msg: "Bot.MessageSession"):
     """
     消息处理的主入口函数。
@@ -153,6 +157,13 @@ async def parser(msg: "Bot.MessageSession"):
         if len(msg.trigger_msg) == 0:
             return
 
+        # 获取会话内已记录的其它 bot id，屏蔽 bot 的消息
+        bots_id = msg.session_info.target_info.target_data.get("bots_id", [])
+        if bots_id:
+            for b in bots_id:
+                if msg.session_info.sender_id == b:
+                    return
+
         # ========== 步骤 2: 权限检查 ==========
         # 检查发送者是否被被机器人屏蔽（机器人黑名单）
         if msg.session_info.sender_info.blocked and not (
@@ -170,6 +181,11 @@ async def parser(msg: "Bot.MessageSession"):
 
         if in_prefix_list or disable_prefix:  # 检查消息前缀
             Logger.info(f"{identify_str} -> [Bot]: {msg.trigger_msg}")
+
+            # 执行前检查是否为重复会话
+            if await _check_duplicate_msg(msg):
+                return
+
             command_first_word = await _process_command(msg, modules, disable_prefix, in_prefix_list)
             if command_first_word:
                 if not ExecutionLockList.check(msg):  # 加锁
@@ -223,6 +239,27 @@ async def parser(msg: "Bot.MessageSession"):
     finally:
         ExecutionLockList.remove(msg)
         Info.message_parsed += 1
+
+
+async def _check_duplicate_msg(msg: "Bot.MessageSession"):
+    # 获取已连接的会话列表（用于会话内存在多个由本进程启动的bot避让用）
+    connected_session = msg.session_info.target_info.target_data.get("connected_session", [])
+    if connected_session:
+        for c in connected_session:
+            if session_msg_cache.get(f"{msg.trigger_msg}_{c}"):
+                Logger.debug("Ignored duplicate session message from other client: " + msg.trigger_msg)
+                return True  # 收到了重复的消息，进行避让处理
+
+        msg_token = f"{msg.trigger_msg}_{msg.session_info.target_id}"
+        session_msg_cache.update({msg_token: True})
+
+        async def _remove_cache(m):
+            await asyncio.sleep(30)
+            if m in session_msg_cache:
+                del session_msg_cache[m]
+
+        asyncio.create_task(_remove_cache(msg_token))
+    return False
 
 
 def _transform_alias(msg, command: str):
@@ -734,6 +771,10 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                             if rfunc.logging:
                                 Logger.info(f"{identify_str} -> [Bot]: {msg.trigger_msg}")
                             Logger.debug("Matched hash:" + str(matched_hash))
+
+                            # 执行前检查是否为重复会话
+                            if await _check_duplicate_msg(msg):
+                                return
 
                             # ========== 循环匹配检测 ==========
                             # 检查是否重复匹配

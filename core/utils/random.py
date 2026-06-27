@@ -161,3 +161,16 @@ class Random:
         else:
             pyrandom.shuffle(seq)
         return seq
+
+    @classmethod
+    def randstr(cls, length: int, chars: str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") -> str:
+        """
+        生成指定长度的随机字符串。
+
+        :param length: 字符串长度。
+        :param chars: 可选的字符集，默认为大小写字母和数字。
+        :return: 随机生成的字符串。
+        """
+        if cls.use_secrets:
+            return "".join(secrets.choice(chars) for _ in range(length))
+        return "".join(pyrandom.choice(chars) for _ in range(length))
