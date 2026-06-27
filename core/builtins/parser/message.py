@@ -180,14 +180,15 @@ async def parser(msg: "Bot.MessageSession"):
         # 检查消息是否以命令前缀开头
         disable_prefix, in_prefix_list = _get_prefixes(msg)
 
-        if in_prefix_list or disable_prefix:  # 检查消息前缀
+        if in_prefix_list or disable_prefix:  # 检查消息前缀，注意此时 log 的 msg.trigger_msg 是带前缀的
             Logger.info(f"{identify_str} -> [Bot]: {msg.trigger_msg}")
 
-            # 执行前检查是否为重复会话
+            command_first_word = await _process_command(msg, modules, disable_prefix, in_prefix_list)
+
+            # 执行前检查是否为重复会话，_process_command 会去掉 trigger_msg 的前缀
             if await _check_duplicate_msg(msg):
                 return
 
-            command_first_word = await _process_command(msg, modules, disable_prefix, in_prefix_list)
             if command_first_word:
                 if not ExecutionLockList.check(msg):  # 加锁
                     ExecutionLockList.add(msg)

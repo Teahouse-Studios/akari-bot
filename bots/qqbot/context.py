@@ -134,7 +134,7 @@ class QQBotContextManager(ContextManager):
             filtered_msg = []
             lines = msg.split("\n")
             for line in lines:
-                if enable_send_url:
+                if enable_send_url and session_info.tmp.get("message_type") != "group_direct":
 
                     def process_url(match):
                         url_ = match.group(0)
