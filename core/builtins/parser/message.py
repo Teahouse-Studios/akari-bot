@@ -13,6 +13,7 @@
 
 import asyncio
 import copy
+import functools
 import inspect
 import re
 import time
@@ -447,7 +448,7 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
     alias_list = []
     for alias, _ in ModulesManager.modules_aliases.items():
         alias_words = alias.split(" ")
-        cmd_words = command.split(" ")
+        cmd_words = command_split
 
         if not not_alias:
             # 如果第一个词不是模块名，检查所有别名
@@ -460,6 +461,7 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
                     alias_list.append(alias)
 
     # ========== 步骤 4: 应用最长匹配的别名 ==========
+    first_word = command_split[0]
     if alias_list:
         # 选择最长的别名（避免短别名误匹配）
         max_alias = str(max(alias_list, key=len))
@@ -467,15 +469,15 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
         real_name = ModulesManager.modules_aliases[max_alias]
 
         # 重构命令：实际模块名 + 别名后的剩余参数
-        command_words = command.split(" ")
-        command_words = real_name.split(" ") + command_words[len(max_alias.split(" ")) :]
+        command_words = real_name.split(" ") + command_split[len(max_alias.split(" ")) :]
         command = " ".join(command_words)
+        first_word = real_name.split(" ")[0]
 
     # 更新消息的触发命令
     msg.trigger_msg = command
 
     # 返回命令的第一个词（模块名）
-    return command.split(" ")[0]
+    return first_word
 
 
 async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word, identify_str):
@@ -766,19 +768,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                                 matched_hash = hash(msg.matched_msg)
 
                         # ========== 步骤 6: 处理匹配成功的情况 ==========
-                        if (
-                            matched
-                            and regex_module.load
-                            and not (
-                                msg.session_info.target_from in regex_module.exclude_from
-                                or msg.session_info.client_name in regex_module.exclude_from
-                                or (
-                                    "*" not in regex_module.available_for
-                                    and msg.session_info.target_from not in regex_module.available_for
-                                    and msg.session_info.client_name not in regex_module.available_for
-                                )
-                            )
-                        ):
+                        if matched:
                             # 记录日志
                             if rfunc.logging:
                                 Logger.info(f"{identify_str} -> [Bot]: {msg.trigger_msg}")
@@ -1018,6 +1008,12 @@ async def _tos_msg_counter(msg: "Bot.MessageSession", command: str):
         raise AbuseWarning("{I18N:tos.message.reason.abuse}")
 
 
+@functools.lru_cache(maxsize=256)
+def _get_cached_signature(func):
+    """缓存 inspect.signature 的结果，避免每次命令执行都做内省。"""
+    return inspect.signature(func)
+
+
 async def _execute_module_command(msg: "Bot.MessageSession", module, command_first_word):
     """
     执行模块的命令解析和处理。
@@ -1079,7 +1075,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
             # ========== 步骤 4: 构建函数参数 ==========
             # 根据命令函数的签名，准备调用参数
             kwargs = {}
-            func_params = inspect.signature(command.function).parameters
+            func_params = _get_cached_signature(command.function).parameters
 
             if len(func_params) > 1 and msg.parsed_msg:
                 # 函数有多个参数，需要映射解析后的参数
