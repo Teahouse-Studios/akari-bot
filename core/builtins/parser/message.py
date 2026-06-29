@@ -254,16 +254,18 @@ async def parser(msg: "Bot.MessageSession"):
         Info.message_parsed += 1
 
 
-async def _check_duplicate_msg(msg: "Bot.MessageSession"):
+async def _check_duplicate_msg(msg: "Bot.MessageSession", display=None):
     # 获取已连接的会话列表（用于会话内存在多个由本进程启动的bot避让用）
+    if not display:
+        display = msg.trigger_msg
     connected_session = msg.session_info.target_info.target_data.get("connected_session", [])
     if connected_session:
         for c in connected_session:
-            if session_msg_cache.get(f"{msg.trigger_msg}_{c}"):
-                Logger.debug("Ignored duplicate session message from other client: " + msg.trigger_msg)
+            if session_msg_cache.get(f"{display}_{c}"):
+                Logger.debug("Ignored duplicate session message from other client: " + display)
                 return True  # 收到了重复的消息，进行避让处理
 
-        msg_token = f"{msg.trigger_msg}_{msg.session_info.target_id}"
+        msg_token = f"{display}_{msg.session_info.target_id}"
         session_msg_cache.update({msg_token: True})
 
         async def _remove_cache(m):
@@ -775,8 +777,8 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                             Logger.debug("Matched hash:" + str(matched_hash))
 
                             # 执行前检查是否为重复会话
-                            if await _check_duplicate_msg(msg):
-                                return
+                            if await _check_duplicate_msg(msg, str(matched_hash)):
+                                continue
 
                             # ========== 循环匹配检测 ==========
                             # 检查是否重复匹配
