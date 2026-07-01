@@ -1,8 +1,6 @@
 import asyncio
 import os
 
-from PIL import Image as PILImage
-
 from core.builtins.message.chain import get_message_chain, MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement, MentionElement, BaseElement
 from core.builtins.session.info import SessionInfo
@@ -54,10 +52,6 @@ class MockMessageSession(MessageSession):
             if isinstance(x, PlainElement):
                 self.action.append(x.text)
             elif isinstance(x, ImageElement):
-                image_path = await x.get()
-                if not self.is_ci:
-                    img = PILImage.open(image_path)
-                    img.show()
                 self.action.append(str(x))
             elif isinstance(x, MentionElement):
                 self.action.append(f"<@{x.client}|{str(x.id)}>")
@@ -216,8 +210,8 @@ class MockMessageSession(MessageSession):
                 if delete:
                     await self.delete()
                 new_msg = MockMessageSession(parent_session=self, is_ci=self.is_ci)
+                # 新消息共享同一个脚本列表引用，不清空原始会话的脚本
                 new_msg._script = self._script
-                self._script = []
                 await new_msg.async_init(result)
                 return new_msg
 
@@ -258,8 +252,8 @@ class MockMessageSession(MessageSession):
                 if delete:
                     await self.delete()
                 new_msg = MockMessageSession(parent_session=self, is_ci=self.is_ci)
+                # 新消息共享同一个脚本列表引用，不清空原始会话的脚本
                 new_msg._script = self._script
-                self._script = []
                 await new_msg.async_init(result)
                 return new_msg
 
@@ -303,8 +297,8 @@ class MockMessageSession(MessageSession):
                 if delete:
                     await self.delete()
                 new_msg = MockMessageSession(parent_session=self, is_ci=self.is_ci)
+                # 新消息共享同一个脚本列表引用，不清空原始会话的脚本
                 new_msg._script = self._script
-                self._script = []
                 await new_msg.async_init(result)
                 return new_msg
 
@@ -334,6 +328,9 @@ class MockMessageSession(MessageSession):
         pass
 
     def __eq__(self, other):
+        if isinstance(other, MockMessageSession):
+            return self.session_info.session_id == other.session_info.session_id
         return False
 
-    __hash__ = None
+    def __hash__(self):
+        return hash(self.session_info.session_id)

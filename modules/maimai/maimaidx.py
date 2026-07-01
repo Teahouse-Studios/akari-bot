@@ -1,20 +1,14 @@
-import orjson
-
-from core.builtins.bot import Bot
-from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Image as BImage
 from core.component import module
-from core.utils.image import msgchain2image
 from core.logger import Logger
 from core.scheduler import CronTrigger
 from core.utils.func import is_int
-from .database.models import DivingProberBindInfo
+from core.utils.image import msgchain2image
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_cover
 from .libraries.maimaidx_best50 import generate as generate_b50
 from .libraries.maimaidx_platelist import generate as generate_plate
 from .libraries.maimaidx_scoreline import draw_scoreline_table
 from .libraries.maimaidx_scorelist import generate as generate_process
-from .libraries.maimaidx_mapping import *
 from .libraries.maimaidx_utils import *
 
 total_list = TotalList()

@@ -19,7 +19,6 @@
 import os
 import sys
 
-import orjson
 from tortoise import run_async, Tortoise
 from tortoise.models import Model
 

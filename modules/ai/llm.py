@@ -1,8 +1,8 @@
 import io
 from datetime import datetime, timezone
 
-from openai import AsyncOpenAI, APITimeoutError, RateLimitError
 from PIL import Image as PILImage
+from openai import AsyncOpenAI, APITimeoutError, RateLimitError
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import Image, Plain

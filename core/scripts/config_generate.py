@@ -22,7 +22,6 @@ import pkgutil
 import shutil
 import sys
 import traceback
-from pathlib import Path
 from time import sleep
 
 if __name__ == "__main__":

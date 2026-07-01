@@ -55,3 +55,4 @@ class Info:
     web_render_status = False
     use_url_manager = False
     use_url_md_format = False
+    http_mock_enabled = False
