@@ -19,8 +19,7 @@ class Features(FeaturesBase):
     support_markdown: bool = False
     support_reaction: bool = False
     support_quote: bool = True
-    support_rss: bool = False
+    support_rss: bool = True
     support_typing: bool = False
     support_wait: bool = False
     require_check_dirty_words: bool = dirty_word_check
-    use_url_manager: bool = use_url_manager

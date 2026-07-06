@@ -12,7 +12,6 @@ import asyncio
 import logging
 
 import orjson
-from akari_bot_i18n.i18n import load_locale_file
 from apscheduler.schedulers import SchedulerAlreadyRunningError
 
 from core.builtins.bot import Bot
@@ -21,13 +20,14 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, I18NContext
 from core.builtins.session.info import SessionInfo
 from core.config import CFGManager
-from core.constants import Info, PrivateAssets, Secret, lang_list, all_locales_path
+from core.constants import Info, PrivateAssets, Secret
 from core.database import init_db
 from core.loader import load_modules, ModulesManager
 from core.logger import Logger
 from core.scheduler import Scheduler
 from core.utils.bash import run_sys_command
 from .background_tasks import init_background_task
+from ..i18n import locale_loaded_err
 
 
 async def init_async(start_scheduler=True) -> None:
@@ -59,8 +59,6 @@ async def init_async(start_scheduler=True) -> None:
             Info.version = f"git:{commit_hash}"
         else:
             Logger.warning("Failed to get Git commit hash, is it a Git repository?")
-
-    locale_loaded_err = load_locale_file(list(lang_list.keys()), all_locales_path)
     # 初始化数据库
     Logger.info("Initializing database...")
     if await init_db():

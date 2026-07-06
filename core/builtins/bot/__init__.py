@@ -107,6 +107,7 @@ class Bot:
 
             # 获取消息队列客户端并发送消息给服务器处理
             queue_client: "JobQueueClient" = exports["JobQueueClient"]
+
             await queue_client.send_message_to_server(session_info)
 
             # 等待 1 秒后清理上下文（防止删除过快导致的错误）
