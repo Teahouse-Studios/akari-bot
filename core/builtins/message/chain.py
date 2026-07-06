@@ -301,14 +301,13 @@ class MessageChain:
                 for k, v in x.kwargs.items():
                     if isinstance(v, str):
                         x.kwargs[k] = locale.t_str(v)
+                    if isinstance(v, MessageChain):
+                        # 传入 i18n 模块后 MessageChain 会被 Template.safe_substitute 强制转义为字符串... 思考了很久怎么处理比较好，决定暂时用 kecode 处理
+                        x.kwargs[k] = v.to_kecode()
 
                 # 执行多语言翻译
                 t_value = locale.t(x.key, x.fallback, x.locale_failed_prompt, **x.kwargs)
-                if isinstance(t_value, str):
-                    value.append(PlainElement.assign(t_value, disable_joke=x.disable_joke))
-                else:
-                    # 如果翻译结果是消息链，递归处理
-                    value += MessageChain.assign(t_value).as_sendable(session_info)
+                value += MessageChain.assign(t_value).as_sendable(session_info)
 
             # ========== 处理 URL 元素 ==========
             elif isinstance(x, URLElement):
@@ -394,6 +393,12 @@ class MessageChain:
         ```
         """
         return [converter.unstructure(x, MessageElement) for x in self.values]
+
+    def to_kecode(self) -> str:
+        _t = ""
+        for x in self.values:
+            _t += x.kecode()
+        return _t
 
     @classmethod
     def from_list(cls, lst: list) -> MessageChain:
