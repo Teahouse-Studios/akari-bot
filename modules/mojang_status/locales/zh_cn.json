@@ -1,7 +1,7 @@
 {
     "mojang_status.help.desc": "检查 Mojang 和 Minecraft 后端各服务的实时在线情况",
 
-    "mojang_status.message.status": "当前 Mojang 各服务状态：\n${statuses}",
+    "mojang_status.message.status": "当前 Mojang 各服务状态：\n",
     "mojang_status.message.status.each": "${api}：${status}",
     "mojang_status.message.failed": "获取失败，请稍后重试。",
 
