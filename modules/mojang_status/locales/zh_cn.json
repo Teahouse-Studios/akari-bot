@@ -1,0 +1,20 @@
+{
+    "mojang_status.help.desc": "检查 Mojang 和 Minecraft 后端各服务的实时在线情况",
+
+    "mojang_status.message.status": "当前 Mojang 各服务状态：\n",
+    "mojang_status.message.status.each": "${api}：${status}",
+    "mojang_status.message.failed": "获取失败，请稍后重试。",
+
+    "mojang_status.service.sessions": "会话服务器",
+    "mojang_status.service.sessions.desc": "多人游戏身份验证",
+    "mojang_status.service.api": "Mojang API",
+    "mojang_status.service.api.desc": "查询玩家或名字",
+    "mojang_status.service.textures": "纹理",
+    "mojang_status.service.textures.desc": "皮肤和披风",
+    "mojang_status.service.website": "Minecraft.net",
+    "mojang_status.service.website.desc": "网站",
+    "mojang_status.service.accounts": "账户",
+    "mojang_status.service.accounts.desc": "账户管理",
+    "mojang_status.service.microsoft": "Microsoft 身份验证",
+    "mojang_status.service.microsoft.desc": "使用 Microsoft 登录（新登录系统）"
+}
