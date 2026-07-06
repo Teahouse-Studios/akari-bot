@@ -108,6 +108,7 @@ async def query_pages(
     if title:
         if isinstance(title, str):
             title = [title]
+        title = list(set(title))
         if len(title) > 15:
             raise AbuseWarning("{I18N:tos.message.reason.wiki_abuse}")
         query_task = {start_wiki: {"query": [], "iw_prefix": ""}}

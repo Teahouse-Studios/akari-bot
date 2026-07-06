@@ -12,7 +12,7 @@ import html
 import random
 import re
 from copy import deepcopy
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, TypeVar
 from urllib.parse import urlparse
 
 import orjson
@@ -721,15 +721,16 @@ class MessageNodes:
         return all(chain.is_safe for chain in self.values)
 
 
-type Chainable = (
-    MessageChain
-    | I18NMessageChain
-    | PlatformMessageChain
-    | str
-    | list[str]
-    | list[MessageElement]
-    | MessageElement
-    | MessageNodes
+Chainable = TypeVar(
+    "Chainable",
+    MessageChain,
+    I18NMessageChain,
+    PlatformMessageChain,
+    str,
+    list[str],
+    list[MessageElement],
+    MessageElement,
+    MessageNodes,
 )
 
 
