@@ -26,7 +26,6 @@ from core.database.models import JobQueuesTable
 from core.exports import exports
 from core.logger import Logger
 
-
 if TYPE_CHECKING:
     from core.builtins.bot import Bot
 

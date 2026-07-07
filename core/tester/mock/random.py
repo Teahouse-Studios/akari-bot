@@ -1,5 +1,6 @@
-import random as pyrandom  # skipcq
 from typing import Sequence, MutableSequence, TypeVar
+
+import random as pyrandom  # skipcq
 
 T = TypeVar("T")
 

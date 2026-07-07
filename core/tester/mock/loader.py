@@ -15,13 +15,25 @@ def apply_monkey_patch(module, monkey_patches: dict[str, object] | None):
             setattr(module, name, mock_obj)
 
 
-async def load_modules(show_logs=True, monkey_patches: dict[str, object] | None = None):
+async def load_modules(show_logs=True, monkey_patches: dict[str, object] | None = None, load_fixtures: bool = True):
     import modules
 
     err_prompt = []
     if locale_loaded_err:
         err_prompt.append("I18N loaded failed:")
         err_prompt.append("\n".join(locale_loaded_err))
+
+    # Load HTTP fixtures if available
+    if load_fixtures:
+        try:
+            from core.tester.mock.fixtures import load_http_fixtures
+
+            count = load_http_fixtures()
+            if count > 0 and show_logs:
+                Logger.info(f"Loaded {count} HTTP fixtures.")
+        except Exception:
+            if show_logs:
+                Logger.exception("Failed to load HTTP fixtures:")
 
     if show_logs:
         Logger.info("Attempting to load modules...")
