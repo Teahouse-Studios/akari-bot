@@ -4,6 +4,7 @@ from core.builtins.session.features import Features as FeaturesBase
 from core.config import Config
 
 use_url_manager = Config("enable_urlmanager", False)
+dirty_word_check = Config("enable_dirty_check", False)
 
 
 @define
@@ -21,5 +22,6 @@ class Features(FeaturesBase):
     support_rss: bool = True
     support_typing: bool = True
     support_wait: bool = True
-    use_url_manager: bool = use_url_manager
     use_url_md_format: bool = True
+    use_url_manager: bool = use_url_manager
+    require_check_dirty_words: bool = dirty_word_check
