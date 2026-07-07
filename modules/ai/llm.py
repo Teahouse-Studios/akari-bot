@@ -1,8 +1,8 @@
 import io
 from datetime import datetime, timezone
 
-from PIL import Image as PILImage
 from openai import AsyncOpenAI, APITimeoutError, RateLimitError
+from PIL import Image as PILImage
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import Image, Plain
@@ -22,7 +22,7 @@ top_p = Config("llm_top_p", 1, cfg_type=float, table_name="module_ai")
 frequency_penalty = Config("llm_frequency_penalty", 0, cfg_type=float, table_name="module_ai")
 presence_penalty = Config("llm_presence_penalty", 0, cfg_type=float, table_name="module_ai")
 
-MAX_ITERATIONS = 6
+MAX_ITERATIONS = 5
 
 
 async def ask_llm(
@@ -55,15 +55,6 @@ async def ask_llm(
 
     iterations = 0
     while iterations <= MAX_ITERATIONS:
-        is_final_attempt = iterations == MAX_ITERATIONS
-        if is_final_attempt:
-            messages.append(
-                {
-                    "role": "system",
-                    "content": "Warning: Iteration limit reached. Provide the final answer based on the available information and do not attempt to call functions again.",
-                }
-            )
-            tool_choice = "none"
         try:
             completion = await client.chat.completions.create(
                 model=model_name,
@@ -89,9 +80,19 @@ async def ask_llm(
         messages.append(res_msg)
         if res_msg.content:
             content_pieces.append(res_msg.content)
-        if res_msg.tool_calls and not is_final_attempt:
-            messages = await tool_function_calls(res_msg.tool_calls, messages)
+
+        if res_msg.tool_calls:
             iterations += 1
+            messages = await tool_function_calls(res_msg.tool_calls, messages)
+
+            if iterations == MAX_ITERATIONS:
+                messages.append(
+                    {
+                        "role": "system",
+                        "content": "Warning: Iteration limit reached. Provide the final answer based on the available information and do not attempt to call functions again.",
+                    }
+                )
+                tool_choice = "none"
             continue
         else:
             break
