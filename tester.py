@@ -173,7 +173,6 @@ async def main():
             total += 1
             inp = r.get("input")
             tcost = r.get("time_cost", 0.0)
-
             test_case_name = f"TEST{test_number}_{total}"
             junit_testcase = JUnitTestCase(
                 name=test_case_name, classname=f"RegistryTest.{test_number}", time=tcost if tcost else 0.0
@@ -362,20 +361,26 @@ async def main():
             func_error_msg = ""
             for r_idx, r in enumerate(results):
                 Logger.trace(f"main() processing result {r_idx}/{len(results)} for {fn.__name__}")
+                type_ = r.get("type")
                 note = r.get("note")
                 inp = r.get("input")
 
                 if "timeout" in r:
-                    Logger.error(f"INPUT: {inp}")
+                    if type_ == "integration":
+                        Logger.error(f"INPUT: {inp}")
                     if note:
                         Logger.error(f"NOTE: {note}")
                     Logger.error("RESULT: FAIL (timeout)")
                     func_pass = False
-                    func_error_msg = f"Test timeout for input: {inp}"
+                    if type_ == "integration":
+                        func_error_msg = f"Test timeout for input: {inp}"
+                    else:
+                        func_error_msg = "Test timeout"
                     break
 
                 if "traceback" in r:
-                    Logger.error(f"INPUT: {inp}")
+                    if type_ == "integration":
+                        Logger.error(f"INPUT: {inp}")
                     if note:
                         Logger.error(f"NOTE: {note}")
                     Logger.error("ERROR during execution:")
@@ -389,10 +394,12 @@ async def main():
                 fmted_output = "\n".join(action) if action else "[NO OUTPUT]"
 
                 Logger.trace(f"main() checking result: expected={expected}, match={r.get('match')}")
-                Logger.info(f"INPUT: {inp}")
+                if type_ == "integration":
+                    Logger.info(f"INPUT: {inp}")
                 if note:
                     Logger.info(f"NOTE: {note}")
-                Logger.info(f"OUTPUT:\n{fmted_output}")
+                if type_ == "integration":
+                    Logger.info(f"OUTPUT:\n{fmted_output}")
 
                 if expected is not None:
                     Logger.info(f"EXPECT: {expected}")

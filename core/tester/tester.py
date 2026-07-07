@@ -30,7 +30,7 @@ class Tester:
 
         frame = inspect.stack()[1]
         entry_meta = {
-            "input": "(pure function test)",
+            "type": "unit",
             "expected": func,
             "note": note,
             "timeout": None,
@@ -46,7 +46,8 @@ class Tester:
 
         passed = bool(result)
         final = {
-            "input": "(pure function test)",
+            "type": "unit",
+            "input": None,
             "output": None,
             "action": [],
             "expected": func,
@@ -56,7 +57,7 @@ class Tester:
         self._results.append(final)
         return final
 
-    async def expect(
+    async def integrate(
         self,
         input_: str | list[str] | tuple[str, ...],
         expected: Expectation | None = None,
@@ -64,7 +65,7 @@ class Tester:
         timeout: float | None = None,
     ):
         """
-        注册一个测试案例。
+        注册一个交互测试案例。
 
         :param input_: 预期输入。
         :param expected: 预期输出，传入期望匹配器，若为 None 则手动复核。
@@ -75,6 +76,7 @@ class Tester:
 
         frame = inspect.stack()[1]
         entry_meta = {
+            "type": "integration",
             "input": input_,
             "expected": expected,
             "note": note,
@@ -100,6 +102,7 @@ class Tester:
             match = await expected.match(result)
 
         final = {
+            "type": "integration",
             "input": input_,
             "output": output,
             "action": action,

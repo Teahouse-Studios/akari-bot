@@ -118,6 +118,8 @@ def load_http_fixtures(fixture_dir: Path | None = None) -> int:
                 try:
                     response._json = json.loads(data["text"])
                 except (json.JSONDecodeError, TypeError):
+                    # text 不是合法 JSON（或类型不匹配）时，保持 _json 未设置；
+                    # 调用方仍可通过 text/content 使用响应内容。
                     pass
 
             HTTPMock.register_exact(url, response)

@@ -32,7 +32,8 @@ async def load_modules(show_logs=True, monkey_patches: dict[str, object] | None 
             if count > 0 and show_logs:
                 Logger.info(f"Loaded {count} HTTP fixtures.")
         except Exception:
-            pass
+            if show_logs:
+                Logger.exception("Failed to load HTTP fixtures:")
 
     if show_logs:
         Logger.info("Attempting to load modules...")
