@@ -17,23 +17,23 @@
 import re
 from typing import TYPE_CHECKING
 
+from core.alive import Alive
+from core.builtins.converter import converter
+from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.parser.command import CommandParser
 from core.builtins.parser.message import parser
+from core.builtins.session.features import Features
+from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
 from core.constants.path import PrivateAssets
+from core.database.models import JobQueuesTable
+from core.exports import exports, add_export
+from core.i18n import Locale
+from core.loader import ModulesManager
+from core.logger import Logger
 from core.utils.bash import run_sys_command
 from core.web_render import web_render
-from ..alive import Alive
 from .base import JobQueueBase
-from ..builtins.converter import converter
-from ..builtins.message.chain import MessageChain, MessageNodes
-from ..builtins.session.features import Features
-from ..builtins.session.info import SessionInfo
-from ..database.models import JobQueuesTable
-from ..exports import exports, add_export
-from ..i18n import Locale
-from ..loader import ModulesManager
-from ..logger import Logger
 
 if TYPE_CHECKING:
     from core.builtins.bot import Bot

@@ -11,12 +11,15 @@ import base64
 import html
 import random
 import re
+from attrs import define
 from copy import deepcopy
 from typing import Any, TYPE_CHECKING, TypeVar
 from urllib.parse import urlparse
 
 import orjson
 
+from core.builtins.types import MessageElement
+from core.builtins.converter import converter
 from core.builtins.message.elements import (
     BaseElement,
     PlainElement,
@@ -28,22 +31,17 @@ from core.builtins.message.elements import (
     VoiceElement,
     MentionElement,
 )
-
 from core.constants import Secret, default_locale
 from core.exports import add_export, exports
 from core.i18n import Locale
+from core.joke import shuffle_joke as joke
+from core.logger import Logger
+from core.utils.func import convert_bool
+from core.utils.http import url_pattern
 
 if TYPE_CHECKING:
     from core.builtins.session.info import SessionInfo
     from core.builtins.session.internal import MessageSession
-
-from core.builtins.types import MessageElement
-from core.builtins.converter import converter
-from core.joke import shuffle_joke as joke
-from core.logger import Logger
-from core.utils.http import url_pattern
-
-from attrs import define
 
 
 @define
@@ -849,28 +847,6 @@ def _extract_kecode_blocks(text):
     return result
 
 
-def _parse_bool_flag(value: str | int | bool | None, default: bool) -> bool:
-    """
-    将 0/1、true/false 等转换为 bool。
-    None 时返回 default。
-    """
-    if value is None:
-        return default
-
-    if isinstance(value, bool):
-        return value
-
-    value = str(value).strip().lower()
-
-    if value in {"1", "true", "yes", "on"}:
-        return True
-
-    if value in {"0", "false", "no", "off"}:
-        return False
-
-    return default
-
-
 def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
     """
     解析 KE 码格式的文本并转换为消息链。
@@ -958,7 +934,7 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
             if element_type == "plain":
                 text_value = parsed_params.get("text", "")
 
-                local_disable_joke = _parse_bool_flag(parsed_params.get("disable_joke"), disable_joke)
+                local_disable_joke = convert_bool(parsed_params.get("disable_joke"), disable_joke)
 
                 elements.append(PlainElement.assign(text_value, disable_joke=local_disable_joke))
 
@@ -998,11 +974,11 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
                 i18nkey = parsed_params.get("i18nkey")
 
                 if i18nkey:
-                    local_disable_joke = _parse_bool_flag(parsed_params.pop("disable_joke", None), disable_joke)
+                    local_disable_joke = convert_bool(parsed_params.pop("disable_joke", None), disable_joke)
 
-                    fallback = _parse_bool_flag(parsed_params.pop("fallback", None), True)
+                    fallback = convert_bool(parsed_params.pop("fallback", None), True)
 
-                    locale_failed_prompt = _parse_bool_flag(parsed_params.pop("locale_failed_prompt", None), True)
+                    locale_failed_prompt = convert_bool(parsed_params.pop("locale_failed_prompt", None), True)
 
                     # 删除非 kwargs 参数
                     parsed_params.pop("i18nkey", None)

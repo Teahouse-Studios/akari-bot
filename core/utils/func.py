@@ -6,6 +6,26 @@ from typing import Any, Iterable, Generator
 import orjson
 
 
+def convert_bool(v: Any, default: bool = False) -> bool:
+    """将常见真值/假值转为布尔值，无法识别时返回默认值。"""
+    TRUTHY = {"true", "yes", "y", "on", "t"}
+    FALSEY = {"false", "no", "n", "off", "f"}
+    if v is None:
+        return default
+    if isinstance(v, bool):
+        return v
+    if isinstance(v, (int, float)):
+        return bool(v)
+    text = str(v).strip().lower()
+    if is_float(text):
+        return bool(v)
+    if text in TRUTHY:
+        return True
+    if text in FALSEY:
+        return False
+    return default
+
+
 def convert_list(v: Any) -> list:
     """将其他类型转为列表。"""
     if v is None:

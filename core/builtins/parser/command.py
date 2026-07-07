@@ -10,17 +10,16 @@ import shlex
 import traceback
 from typing import TYPE_CHECKING
 
-from ...exports import exports
-
-if TYPE_CHECKING:
-    from core.builtins.bot import Bot
-
 from core.config import Config
 from core.constants.exceptions import InvalidCommandFormatError
+from core.exports import exports
 from core.i18n import Locale
 from core.logger import Logger
 from core.types import Module
 from .args import parse_argv, Template, templates_to_str, ArgumentPattern, DescPattern
+
+if TYPE_CHECKING:
+    from core.builtins.bot import Bot
 
 # 默认地区设置
 default_locale = Config("default_locale", cfg_type=str)
