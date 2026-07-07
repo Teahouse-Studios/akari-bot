@@ -27,7 +27,11 @@ async def _(msg: Bot.MessageSession):
     except Exception:
         await msg.finish(I18NContext("arcaea.message.get_failed"))
     await msg.finish(
-        I18NContext("arcaea.message.download", version=load_json["value"]["version"], url=load_json["value"]["url"])
+        I18NContext(
+            "arcaea.message.download",
+            version=load_json.get("value", {}).get("version", ""),
+            url=load_json.get("value", {}).get("url", ""),
+        )
     )
 
 
@@ -39,9 +43,14 @@ async def _(msg: Bot.MessageSession):
         load_json = orjson.loads(resp)
     except Exception:
         await msg.finish(I18NContext("arcaea.message.get_failed"))
-    value = load_json["value"][0]
-    image = arc_assets_path / "jacket" / f"{value['song_id']}.jpg"
-    result = [Plain(value["title"]["en"])]
+    value_list = load_json.get("value", [])
+    if not value_list:
+        await msg.finish(I18NContext("arcaea.message.get_failed"))
+        return
+    value = value_list[0]
+    image = arc_assets_path / "jacket" / f"{value.get('song_id', '')}.jpg"
+    title = value.get("title", {})
+    result = [Plain(title.get("en", ""))]
     if image.exists():
         result.append(BImage(path=image))
     await msg.finish(result)
@@ -61,9 +70,10 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("arcaea.message.get_failed"))
     r = []
     rank = 0
-    for x in load_json["value"]:
+    for x in load_json.get("value", []):
         rank += 1
-        r.append(Plain(f"{rank}. {x['title']['en']} ({x['status']})"))
+        title = x.get("title", {})
+        r.append(Plain(f"{rank}. {title.get('en', '')} ({x.get('status', '')})"))
     await msg.finish(r)
 
 

@@ -27,21 +27,21 @@ async def user(msg: Bot.MessageSession, name: str, pat: str):
         if "location" in result and result["location"]:
             optional.append("Location · " + result["location"])
 
-        bio = result["bio"]
+        bio = result.get("bio")
         if not bio:
             bio = ""
         else:
-            bio = "\n" + result["bio"]
+            bio = "\n" + bio
 
         optional_text = "\n" + " | ".join(optional) if optional else ""
-        message = f"""{result["login"]} aka {result["name"]} ({result["id"]}){bio}
-Type · {result["type"]} | Follower · {result["followers"]} | Following · {result["following"]}
-Repo · {result["public_repos"]} | Gist · {result["public_gists"]}{optional_text}
-Account Created {time_diff(result["created_at"])} ago
-Latest activity {time_diff(result["updated_at"])} ago
-{str(Url(result["html_url"]))}"""
+        message = f"""{result.get("login", "")} aka {result.get("name", "")} ({result.get("id", "")}){bio}
+Type · {result.get("type", "")} | Follower · {result.get("followers", 0)} | Following · {result.get("following", 0)}
+Repo · {result.get("public_repos", 0)} | Gist · {result.get("public_gists", 0)}{optional_text}
+Account Created {time_diff(result.get("created_at", ""))} ago
+Latest activity {time_diff(result.get("updated_at", ""))} ago
+{str(Url(result.get("html_url", "")))}"""
 
-        is_dirty = await dirty_check(msg, message, result["login"]) or dark_check(message)
+        is_dirty = await dirty_check(msg, message, result.get("login", "")) or dark_check(message)
         if is_dirty:
             await msg.finish(rickroll())
 

@@ -6,3 +6,4 @@ from .petal import *
 from .prefix import *
 from .su_utils import *
 from .utils import *
+from .bot_connect import *

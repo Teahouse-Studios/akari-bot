@@ -9,6 +9,7 @@ qq_bot_appid = "<Replace me with (str, int) value>" # QQ 공식 봇의 AppID.
 qq_private_bot = false # QQ 공식 봇을 사용할 때 비공개 봇인지 여부.
 qq_bot_enable_send_url = false # QQ 공식 봇을 사용할 때 URL 전송 기능을 활성화할지 여부.
 qq_typing_emoji = 181 # QQ 공식 봇을 사용할 때, 이는 메시지 처리 중에 메시지에 첨부되는 응답 이모티콘 ID를 의미합니다. 프로토콜 지원이 필요합니다. ID는 다음을 참조하십시오: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
+qq_bot_openid = "<Replace me with str value>" # QQ 机器人（官方）的 OpenID，配置后机器人可确认消息中的@用户是否是自己。
 
 [bot_qqbot_secret]
 # 클라이언트 키 설정 섹션입니다. 이 값이 전송된 메시지에 실수로 나타날 경우 봇이 해당 메시지를 가로채려고 시도합니다. 하지만 이 값이 유출되지 않도록 각별히 주의해 주십시오.

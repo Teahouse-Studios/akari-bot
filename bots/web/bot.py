@@ -31,13 +31,14 @@ async def websocket_chat(websocket: WebSocket):
                 try:
                     message = orjson.loads(rmessage)
 
-                    if message["action"] == "heartbeat" and message["message"] == "ping!":
+                    action = message.get("action")
+                    if action == "heartbeat" and message.get("message") == "ping!":
                         Logger.debug("Heartbeat received.")
                         resp = {"action": "heartbeat", "message": "pong!"}
                         await websocket.send_text(orjson.dumps(resp).decode())
                         continue
 
-                    if message["action"] == "reaction" and message["add"]:
+                    if action == "reaction" and message.get("add"):
                         session = await SessionInfo.assign(
                             target_id=target_id,
                             sender_id=sender_id,
@@ -45,15 +46,17 @@ async def websocket_chat(websocket: WebSocket):
                             target_from=target_prefix,
                             sender_from=sender_prefix,
                             client_name=client_name,
-                            reply_id=message["id"],
+                            reply_id=message.get("id"),
                             message_id=str(uuid.uuid4()),
-                            messages=MessageChain.assign(message["emoji"]),
+                            messages=MessageChain.assign(message.get("emoji", "")),
                             ctx_slot=ctx_id,
                         )
 
                         await Bot.process_message(session, message)
-                    elif message["action"] == "send":
-                        msg_chain = MessageChain.assign(message["message"][0]["content"])
+                    elif action == "send":
+                        msg_list = message.get("message", [])
+                        content = msg_list[0].get("content", "") if msg_list else ""
+                        msg_chain = MessageChain.assign(content)
                         session = await SessionInfo.assign(
                             target_id=target_id,
                             sender_id=sender_id,
@@ -61,7 +64,7 @@ async def websocket_chat(websocket: WebSocket):
                             target_from=target_prefix,
                             sender_from=sender_prefix,
                             client_name=client_name,
-                            message_id=message["id"],
+                            message_id=message.get("id", ""),
                             messages=msg_chain,
                             ctx_slot=ctx_id,
                         )

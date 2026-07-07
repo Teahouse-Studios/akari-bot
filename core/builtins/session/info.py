@@ -99,11 +99,11 @@ class SessionInfo:
         message_id: str | None = None,
         reply_id: str | None = None,
         messages: MessageChain | None = None,
-        prefixes: list[str] | None = None,
+        prefixes: list[str] | None = [],
         ctx_slot: int = 0,
         fetch: bool = False,
         create: bool = True,
-        features: type[Features] | None = None,
+        features: Features | None = None,
         tmp: dict[str, str] | None = None,
     ) -> SessionInfo:
         """
@@ -127,7 +127,11 @@ class SessionInfo:
         locale = Locale(target_info.locale)
         bot_name = locale.t("bot_name")
         _tz_offset = target_info.target_data.get("tz_offset", Config("timezone_offset", "+8"))
-        prefixes = target_info.target_data.get("command_prefix", []) + command_prefix.copy() + (prefixes or [])
+        prefixes = (
+            (prefixes + (target_info.target_data.get("command_prefix", []) + command_prefix.copy()))
+            if prefixes is not None
+            else []
+        )
 
         tmp = tmp or {}
 

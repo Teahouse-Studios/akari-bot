@@ -1,8 +1,7 @@
 import importlib
 import pkgutil
 
-from core.constants import lang_list, all_locales_path
-from core.i18n import load_locale_file
+from core.i18n import locale_loaded_err
 from core.loader import ModulesManager
 from core.logger import Logger
 
@@ -20,7 +19,6 @@ async def load_modules(show_logs=True, monkey_patches: dict[str, object] | None 
     import modules
 
     err_prompt = []
-    locale_loaded_err = load_locale_file(list(lang_list.keys()), all_locales_path)
     if locale_loaded_err:
         err_prompt.append("I18N loaded failed:")
         err_prompt.append("\n".join(locale_loaded_err))

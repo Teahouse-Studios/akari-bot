@@ -15,13 +15,13 @@
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
-from core.builtins.session.features import Features
+from core.builtins.converter import converter
+from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.session.info import SessionInfo
+from core.builtins.session.features import Features
+from core.database.models import JobQueuesTable
+from core.exports import exports, add_export
 from .base import JobQueueBase
-from ..builtins.converter import converter
-from ..builtins.message.chain import MessageChain, MessageNodes
-from ..database.models import JobQueuesTable
-from ..exports import exports, add_export
 
 if TYPE_CHECKING:
     from core.builtins.bot import Bot
@@ -110,7 +110,7 @@ class JobQueueClient(JobQueueBase):
             wait=wait,
         )
         if wait:
-            return ret["result"]
+            return ret.get("result")
         return None
 
     @classmethod
@@ -120,7 +120,7 @@ class JobQueueClient(JobQueueBase):
         :return: 版本字符串，格式为版本号或"git:<提交哈希>"
         """
         ret = await cls.add_job("Server", "get_bot_version", {})
-        return ret["version"]
+        return ret.get("version", "")
 
     @classmethod
     async def get_web_render_status(cls):
@@ -129,7 +129,7 @@ class JobQueueClient(JobQueueBase):
         :return: 布尔值或状态字典，表示 WebRender 服务是否可用
         """
         ret = await cls.add_job("Server", "get_web_render_status", {})
-        return ret["web_render_status"]
+        return ret.get("web_render_status")
 
     @classmethod
     async def get_modules_list(cls):
@@ -138,7 +138,7 @@ class JobQueueClient(JobQueueBase):
         :return: 模块名称列表，不包括禁用或基础模块
         """
         ret = await cls.add_job("Server", "get_modules_list", {})
-        return ret["modules_list"]
+        return ret.get("modules_list", [])
 
     @classmethod
     async def get_modules_info(cls, locale: str = "zh_cn"):
@@ -149,7 +149,7 @@ class JobQueueClient(JobQueueBase):
         :return: 模块信息字典，包含模块名称、描述等，按指定语言本地化
         """
         ret = await cls.add_job("Server", "get_modules_info", {"locale": locale})
-        return ret["modules"]
+        return ret.get("modules", {})
 
     @classmethod
     async def get_module_helpdoc(cls, module: str, locale: str = "zh_cn"):
@@ -163,7 +163,7 @@ class JobQueueClient(JobQueueBase):
         :return: 帮助文档字典，包含模块名称、描述、命令列表和正则规则
         """
         ret = await cls.add_job("Server", "get_module_helpdoc", {"module": module, "locale": locale})
-        return ret["help_doc"]
+        return ret.get("help_doc", {})
 
     @classmethod
     async def get_module_related(cls, module: str):
@@ -174,7 +174,7 @@ class JobQueueClient(JobQueueBase):
         :return: 相关模块名称列表
         """
         ret = await cls.add_job("Server", "get_module_related", {"module": module})
-        return ret["modules_list"]
+        return ret.get("modules_list", [])
 
     @classmethod
     async def post_module_action(cls, module: str, action: str):
@@ -190,7 +190,7 @@ class JobQueueClient(JobQueueBase):
         :return: 布尔值，表示操作是否成功
         """
         ret = await cls.add_job("Server", "post_module_action", {"module": module, "action": action})
-        return ret["success"]
+        return ret.get("success", False)
 
 
 async def get_session(args: dict):
@@ -208,7 +208,7 @@ async def get_session(args: dict):
         - ctx_manager: 该会话对应的上下文管理器
     """
     _args = deepcopy(args)
-    session_info: SessionInfo = converter.structure(_args["session_info"], SessionInfo)
+    session_info: SessionInfo = converter.structure(_args.get("session_info", {}), SessionInfo)
     await session_info.refresh_info()
     bot: "Bot" = exports["Bot"]
     if not session_info.fetch:
@@ -238,10 +238,10 @@ async def _(tsk: JobQueuesTable, args: dict):
     session_info, bot, ctx_manager, _args = await get_session(args)
     send = await ctx_manager.send_message(
         session_info,
-        converter.structure(_args["message"], MessageChain | MessageNodes),
-        quote=_args["quote"],
-        enable_parse_message=_args["enable_parse_message"],
-        enable_split_image=_args["enable_split_image"],
+        converter.structure(_args.get("message", {}), MessageChain | MessageNodes),
+        quote=_args.get("quote", True),
+        enable_parse_message=_args.get("enable_parse_message", True),
+        enable_split_image=_args.get("enable_split_image", True),
     )
     return {"message_id": send}
 
@@ -253,7 +253,7 @@ async def _(tsk: JobQueuesTable, args: dict):
     删除指定的消息，可指定删除原因。
     """
     session_info, _, ctx_manager, _args = await get_session(args)
-    await ctx_manager.delete_message(session_info, _args["message_id"], _args["reason"])
+    await ctx_manager.delete_message(session_info, _args.get("message_id"), _args.get("reason"))
     return {"success": True}
 
 
@@ -264,7 +264,7 @@ async def _(tsk: JobQueuesTable, args: dict):
     限制（禁言）指定的成员，可设置限制时长和原因。
     """
     session_info, _, ctx_manager, _args = await get_session(args)
-    await ctx_manager.restrict_member(session_info, _args["user_id"], _args["duration"], _args["reason"])
+    await ctx_manager.restrict_member(session_info, _args.get("user_id"), _args.get("duration", 0), _args.get("reason"))
 
 
 @JobQueueClient.action("unrestrict_member")
@@ -274,7 +274,7 @@ async def _(tsk: JobQueuesTable, args: dict):
     取消对指定成员的限制（解除禁言）。
     """
     session_info, _, ctx_manager, _args = await get_session(args)
-    await ctx_manager.unrestrict_member(session_info, _args["user_id"])
+    await ctx_manager.unrestrict_member(session_info, _args.get("user_id"))
 
 
 @JobQueueClient.action("kick_member")
@@ -284,7 +284,7 @@ async def _(tsk: JobQueuesTable, args: dict):
     将指定的成员从群组 / 频道中踢出，可指定踢出原因。
     """
     session_info, _, ctx_manager, _args = await get_session(args)
-    await ctx_manager.kick_member(session_info, _args["user_id"], _args["reason"])
+    await ctx_manager.kick_member(session_info, _args.get("user_id"), _args.get("reason"))
 
 
 @JobQueueClient.action("ban_member")
@@ -294,7 +294,7 @@ async def _(tsk: JobQueuesTable, args: dict):
     永久封禁指定的成员，可指定封禁原因。
     """
     session_info, _, ctx_manager, _args = await get_session(args)
-    await ctx_manager.ban_member(session_info, _args["user_id"], _args["reason"])
+    await ctx_manager.ban_member(session_info, _args.get("user_id"), _args.get("reason"))
 
 
 @JobQueueClient.action("unban_member")
@@ -304,7 +304,7 @@ async def _(tsk: JobQueuesTable, args: dict):
     取消对指定成员的永久封禁。
     """
     session_info, _, ctx_manager, _args = await get_session(args)
-    await ctx_manager.unban_member(session_info, _args["user_id"])
+    await ctx_manager.unban_member(session_info, _args.get("user_id"))
 
 
 @JobQueueClient.action("add_reaction")
@@ -314,7 +314,7 @@ async def _(tsk: JobQueuesTable, args: dict):
     向消息添加表情反应。
     """
     session_info, _, ctx_manager, _args = await get_session(args)
-    await ctx_manager.add_reaction(session_info, _args["message_id"], _args["emoji"])
+    await ctx_manager.add_reaction(session_info, _args.get("message_id"), _args.get("emoji", ""))
 
 
 @JobQueueClient.action("remove_reaction")
@@ -324,7 +324,7 @@ async def _(tsk: JobQueuesTable, args: dict):
     移除消息上的表情反应。
     """
     session_info, _, ctx_manager, _args = await get_session(args)
-    await ctx_manager.remove_reaction(session_info, _args["message_id"], _args["emoji"])
+    await ctx_manager.remove_reaction(session_info, _args.get("message_id"), _args.get("emoji", ""))
 
 
 @JobQueueClient.action("start_typing")
@@ -393,7 +393,7 @@ async def _(tsk: JobQueuesTable, args: dict):
     _, _, ctx_manager, _args = await get_session(args)
     get_ = getattr(ctx_manager, "call_onebot_api", None)
     if get_:
-        g = await get_(_args["api_name"], **_args["args"])
+        g = await get_(_args.get("api_name", ""), **_args.get("args", {}))
         return g
     return {"success": False, "error": "OneBot API not supported in this context"}
 

@@ -42,21 +42,21 @@ class ChartInfo:
     @classmethod
     async def from_json(cls, data):
         for sr, r in score_to_rate.items():
-            if sr[0] <= data["score"] <= sr[1]:
+            if sr[0] <= data.get("score", 0) <= sr[1]:
                 rate = r
                 break
         else:
             rate = ""
 
         return cls(
-            mid=data["mid"],
-            title=data["title"],
-            diff=data["level_index"],
-            ds=data["ds"],
-            ra=data["ra"],
-            fc=combo_mapping.get(data["fc"], ""),
-            level=data["level"],
-            score=data["score"],
+            mid=data.get("mid", ""),
+            title=data.get("title", ""),
+            diff=data.get("level_index", 0),
+            ds=data.get("ds", 0),
+            ra=data.get("ra", 0),
+            fc=combo_mapping.get(data.get("fc", ""), ""),
+            level=data.get("level", ""),
+            score=data.get("score", 0),
             rate=rate,
         )
 
@@ -335,13 +335,16 @@ async def generate(
         resp = await get_record_lx(msg, token, use_cache)
     else:
         resp = await get_record_df(msg, token, use_cache)
+    if not resp:
+        return None
     best = BestList(30)
     new = BestList(20)
-    b30: list[dict] = resp["records"]["b30"]
-    n20: list[dict] = resp["records"]["n20"]
+    records = resp.get("records", {})
+    b30: list[dict] = records.get("b30", [])
+    n20: list[dict] = records.get("n20", [])
     for c in b30:
         best.push(await ChartInfo.from_json(c))
     for c in n20:
         new.push(await ChartInfo.from_json(c))
-    pic = DrawBest(best, new, resp["nickname"], resp["rating"], source).get_dir()
+    pic = DrawBest(best, new, resp.get("nickname", ""), resp.get("rating", 0), source).get_dir()
     return pic

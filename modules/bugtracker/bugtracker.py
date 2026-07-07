@@ -41,7 +41,8 @@ async def bugtracker_get(msg, mojira_id: str):
             201,
             headers={"Content-Type": "application/json"},
         )
-        load_json = orjson.loads(get_json).get("issues")[0]
+        issues = orjson.loads(get_json).get("issues", [])
+        load_json = issues[0] if issues else None
     except IndexError:
         return I18NContext("bugtracker.message.get_failed"), None
     except ExternalException as e:

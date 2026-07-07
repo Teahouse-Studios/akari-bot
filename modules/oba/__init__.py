@@ -25,7 +25,9 @@ def size_convert(value):
 async def latest_version():
     try:
         version = await get_url(f"{API}/metric/version", fmt="json")
-        return f"{version.get('version')}@{version.get('_resolved').split('#')[1][:7]}"
+        resolved = version.get("_resolved", "")
+        commit = resolved.split("#")[1][:7] if "#" in resolved else ""
+        return f"{version.get('version', '')}@{commit}"
     except Exception:
         return None
 
@@ -35,10 +37,13 @@ def search_cluster(clusterList: dict, key: str, value: str):
     regex = re.compile(value, re.IGNORECASE)
 
     for rank, node in enumerate(clusterList, 1):
-        if regex.search(node.get(key)):
+        node_name = node.get(key, "")
+        if node_name and regex.search(node_name):
             result.append((rank, node))
-        elif "sponsor" in node and regex.search(node.get("sponsor").get(key)):
-            result.append((rank, node))
+        elif "sponsor" in node:
+            sponsor_name = node.get("sponsor", {}).get(key, "")
+            if sponsor_name and regex.search(sponsor_name):
+                result.append((rank, node))
 
     return result
 
@@ -77,12 +82,16 @@ async def _(msg: Bot.MessageSession, rank: int = 1):
     if rank < 1:
         await msg.finish(I18NContext("oba.message.node.invalid"))
     rank_list = await get_url(f"{API}/metric/rank", fmt="json")
+    if rank - 1 >= len(rank_list):
+        await msg.finish(I18NContext("oba.message.node.invalid"))
+        return
     node = rank_list[rank - 1]
     status = "🟩" if node.get("isEnabled") else "🟥"
-    name = node.get("name")
-    _id = node.get("_id")
-    hits = node.get("metric").get("hits")
-    size = size_convert(node.get("metric").get("bytes"))
+    name = node.get("name", "")
+    _id = node.get("_id", "")
+    metric = node.get("metric", {})
+    hits = metric.get("hits", 0)
+    size = size_convert(metric.get("bytes", 0))
 
     msg_chain = MessageChain.assign(
         [Plain(status), I18NContext("oba.message.node", name=name, id=_id, hits=hits, size=size)]
@@ -112,20 +121,21 @@ async def _(msg: Bot.MessageSession, rank: int = 1):
     rank = 1 if rank <= 0 else rank
 
     node_list = []
-    for i in range(rank - 1, rank - 1 + TOP_LIMIT):
+    for i in range(rank - 1, min(rank - 1 + TOP_LIMIT, len(rank_list))):
         node = rank_list[i]
-        sponsor = node.get("sponsor", str(I18NContext("message.unknown")))
+        sponsor = node.get("sponsor")
         try:
-            sponsor_name = sponsor.get("name")
+            sponsor_name = sponsor.get("name", "") if sponsor else str(I18NContext("message.unknown"))
         except AttributeError:
             sponsor_name = str(I18NContext("message.unknown"))
 
         try:
             status = "🟩" if node.get("isEnabled") else "🟥"
-            name = node.get("name")
-            _id = node.get("_id")
-            hits = node.get("metric").get("hits")
-            size = size_convert(node.get("metric").get("bytes"))
+            name = node.get("name", "")
+            _id = node.get("_id", "")
+            metric = node.get("metric", {})
+            hits = metric.get("hits", 0)
+            size = size_convert(metric.get("bytes", 0))
             node_list.append(
                 Plain(
                     f"{status} | {
@@ -158,18 +168,19 @@ async def _(msg: Bot.MessageSession, keyword: str):
 
     node_list = []
     for rank, node in match_list:
-        sponsor = node.get("sponsor", str(I18NContext("message.unknown")))
+        sponsor = node.get("sponsor")
         try:
-            sponsor_name = sponsor.get("name")
+            sponsor_name = sponsor.get("name", "") if sponsor else str(I18NContext("message.unknown"))
         except AttributeError:
             sponsor_name = str(I18NContext("message.unknown"))
 
         try:
             status = "🟩" if node.get("isEnabled") else "🟥"
-            name = node.get("name")
-            _id = node.get("_id")
-            hits = node.get("metric").get("hits")
-            size = size_convert(node.get("metric").get("bytes"))
+            name = node.get("name", "")
+            _id = node.get("_id", "")
+            metric = node.get("metric", {})
+            hits = metric.get("hits", 0)
+            size = size_convert(metric.get("bytes", 0))
             node_list.append(
                 Plain(
                     f"{status} | {
@@ -202,9 +213,9 @@ async def _(msg: Bot.MessageSession, keyword: str):
 @oba.command("sponsor {{I18N:oba.help.sponsor}}")
 async def _(msg: Bot.MessageSession):
     sponsor = await get_url(f"{API}/sponsor", fmt="json")
-    cluster = await get_url(f"{API}/sponsor/{str(sponsor['_id'])}", fmt="json")
-    name = cluster.get("name")
-    url = cluster.get("url")
+    cluster = await get_url(f"{API}/sponsor/{str(sponsor.get('_id', ''))}", fmt="json")
+    name = cluster.get("name", "")
+    url = cluster.get("url", "")
     banner = cluster.get("banner")
     send_msg = I18NContext("oba.message.sponsor", name=name, url=url)
     try:

@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from attrs import asdict
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from core.builtins.session.info import SessionInfo

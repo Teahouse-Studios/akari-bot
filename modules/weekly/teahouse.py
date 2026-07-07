@@ -13,7 +13,11 @@ async def get_rss():
         status_code=200,
         fmt="text",
     )
-    feed = feedparser.parse(url)["entries"][-1]
-    title = feed["title"]
-    summary = html2text(feed["summary"], baseurl="https://lakeus.xyz")
+    feed_data = feedparser.parse(url)
+    entries = feed_data.get("entries", [])
+    if not entries:
+        return ""
+    feed = entries[-1]
+    title = feed.get("title", "")
+    summary = html2text(feed.get("summary", ""), baseurl="https://lakeus.xyz")
     return title + "\n" + summary

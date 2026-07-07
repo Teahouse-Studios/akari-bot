@@ -35,7 +35,7 @@ async def get_lxns_prober_bind_info(msg: Bot.MessageSession):
                     },
                     fmt="json",
                 )
-                return str(profile_data["data"]["friend_code"])
+                return str(profile_data.get("data", {}).get("friend_code", ""))
             except Exception as e:
                 if str(e).startswith(("400", "404")):
                     await msg.finish(I18NContext("maimai.message.user_not_found.lx"))
