@@ -48,6 +48,7 @@ jobs:
 
       - name: Generate test report
         uses: dorny/test-reporter@v3
+        if: always()
         with:
           name: Test report
           path: junit.xml
