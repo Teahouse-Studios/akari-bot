@@ -4,4 +4,4 @@
 
 [module_wolframalpha_secret]
 # 模块的密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
-wolfram_alpha_appid = "<Replace me with str value>" # WolframAlpha 的 AppID。（用于 wolframalpha 模块）
+wolfram_alpha_appid = "<Replace me with str value>" # WolframAlpha 的 AppID。

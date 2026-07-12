@@ -6,10 +6,9 @@
 # The basic config section of the client. The values ​​entered here can be displayed in the message. Please do not enter sensitive information in this section.
 enable = false # Whether to enable this client.
 qq_bot_appid = "<Replace me with (str, int) value>" # The QQ official robot AppID.
-qq_private_bot = false # Whether it is a private bot when using the QQ official bot.
-qq_bot_enable_send_url = false # Whether to enable sending URLs when using QQ official robot.
-qq_typing_emoji = 181 # When using the QQ official bot, the response emoji ID attached to the message when processing the message. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
 qq_bot_openid = "<Replace me with str value>" # QQ 机器人（官方）的 OpenID。
+qq_private_bot = false # Whether it is a private bot when using the QQ official bot.
+qq_typing_emoji = 181 # When using the QQ official bot, the response emoji ID attached to the message when processing the message. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
 
 [bot_qqbot_secret]
 # The secret config section of the client. The bot will try to intercept if the values here accidentally appears in the message sent, but be careful to prevent leakage.
