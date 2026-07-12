@@ -3,5 +3,5 @@
     "wolframalpha.help.ask": "通过 WolframAlpha 回答问题。",
     "wolframalpha.help.desc": "使用 WolframAlpha。",
     "wolframalpha.message.incomprehensible": "WolframAlpha 无法理解你的问题，请尝试使用英语提问。",
-    "config.comments.module_wolframalpha_secret.wolfram_alpha_appid": "WolframAlpha 的 AppID。（用于 wolframalpha 模块）"
+    "config.comments.module_wolframalpha_secret.wolfram_alpha_appid": "WolframAlpha 的 AppID。"
 }

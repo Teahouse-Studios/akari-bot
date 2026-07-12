@@ -1,10 +1,8 @@
 {
     "mojang_status.help.desc": "Inspect the real-time status of Mojang and Minecraft backend services.",
-
     "mojang_status.message.status": "Real-time Mojang Statuses: ",
     "mojang_status.message.status.each": "${api}: ${status}",
     "mojang_status.message.failed": "Fail to fetch, try again later.",
-
     "mojang_status.service.sessions": "Session Server",
     "mojang_status.service.sessions.desc": "Multiplayer authentication",
     "mojang_status.service.api": "Mojang API",
