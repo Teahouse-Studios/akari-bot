@@ -10,6 +10,9 @@
     "core.help.alias.list": "查看自定义命令别名列表。",
     "core.help.alias.remove": "移除自定义命令别名。",
     "core.help.alias.reset": "重置自定义命令别名。",
+    "core.help.connect.clear": "清除会话绑定关系。",
+    "core.help.connect.desc": "跨会话绑定群组/服务器内的其他机器人。",
+    "core.help.connect.link": "开始会话绑定流程。",
     "core.help.help": "查看帮助列表。",
     "core.help.help.detail": "查看一个模块的详细信息。",
     "core.help.leave": "使机器人离开群聊。",
@@ -83,6 +86,11 @@
     "core.message.analytics.none": "机器人数据库为空，正在初始化……",
     "core.message.analytics.year": "最近一年的“${module}”命令调用次数统计（自 ${first_record} 开始统计）：",
     "core.message.analytics.year.total": "最近一年的所有命令调用次数统计（自 ${first_record} 开始统计）：",
+    "core.message.connect.bind.success": "成功绑定会话：${target_a} -> ${target_b}",
+    "core.message.connect.clear.confirm": "你正在清除会话绑定关系，是否继续？",
+    "core.message.connect.clear.success": "成功清除所有会话绑定关系。",
+    "core.message.connect.link.confirm": "本命令将尝试绑定当前群组/服务器的其他机器人。是否继续？",
+    "core.message.connect.link.timeout": "等待超时，绑定会话失败。",
     "core.message.database.list": "数据库中所有支持操作的模型：",
     "core.message.database.no_result": "无结果。",
     "core.message.database.pages": "（第 ${page} 页，共 ${total_pages} 页，共 ${data_count} 条）",
@@ -209,10 +217,5 @@
     "core.message.whoami": "你的 ID：${sender}\n本会话的 ID：${target}",
     "core.message.whoami.admin": "（你拥有本会话的管理员权限）",
     "core.message.whoami.botadmin": "（你拥有本会话的机器人管理员权限）",
-    "core.message.whoami.superuser": "（你拥有本机器人的超级用户权限）",
-    "core.message.connect.link.confirm": "本命令将会尝试绑定会话内的机器人，确认继续吗？",
-    "core.message.connect.link.timeout": "等待已超时，绑定会话失败。",
-    "core.message.connect.bind.success": "已成功绑定会话：${target_a} -> ${target_b}",
-    "core.message.connect.clear.confirm": "你正在清除会话绑定关系，确认继续吗？",
-    "core.message.connect.clear.success": "已成功清除会话绑定关系。"
+    "core.message.whoami.superuser": "（你拥有本机器人的超级用户权限）"
 }

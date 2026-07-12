@@ -51,6 +51,8 @@ class Config:
     typo_check_command_score: float = 0.3
     typo_check_args_score: float = 0.5
     typo_check_options_score: float = 0.3
+    typo_check_module_diff_ratio: float = 0.5
+    typo_check_args_diff_ratio: float = 0.5
 
     # TOS
     enable_tos: bool = True

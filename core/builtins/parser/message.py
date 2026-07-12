@@ -95,12 +95,12 @@ typo_check_options_score = Config("typo_check_options_score", 0.3)
 # 命令参数数量差异阈值：当用户输入的参数数量与匹配到的模板参数数量差异比例超过此值时，
 # 跳过命令模板匹配（避免字数差异过大时的错误推荐）
 # 例如：用户输入10个参数但模板只有2个参数 → 2/10=0.2 < 0.5 → 跳过匹配
-typo_check_max_word_diff_ratio = Config("typo_check_max_word_diff_ratio", 0.5)
+typo_check_args_diff_ratio = Config("typo_check_args_diff_ratio", 0.5)
 
 # 模块名字符长度差异阈值：当匹配到的模块名长度与用户输入长度差异比例超过此值时，
 # 跳过模块名匹配（避免如 ~p → ~decrypt 的错误推荐）
 # 例如：输入"p"(1字符) 匹配到 "decrypt"(7字符) → 1/7≈0.14 < 0.5 → 跳过匹配
-typo_check_max_module_char_diff_ratio = Config("typo_check_max_module_char_diff_ratio", 0.5)
+typo_check_module_diff_ratio = Config("typo_check_module_diff_ratio", 0.5)
 
 # ========== 频率限制相关 ==========
 
@@ -1427,11 +1427,11 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
         if input_len != match_len:
             max_len = max(input_len, match_len)
             min_len = min(input_len, match_len)
-            if min_len / max_len < typo_check_max_module_char_diff_ratio:
+            if min_len / max_len < typo_check_module_diff_ratio:
                 Logger.debug(
                     f"Module name length difference too large: "
                     f"input='{command_first_word}'({input_len}), match='{match_close_module[0]}'({match_len}), "
-                    f"ratio={min_len / max_len:.2f} < {typo_check_max_module_char_diff_ratio}"
+                    f"ratio={min_len / max_len:.2f} < {typo_check_module_diff_ratio}"
                 )
                 match_close_module = []
 
@@ -1487,10 +1487,10 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
             max_count = max(user_arg_count, selected_arg_count)
             min_count = min(user_arg_count, selected_arg_count)
 
-            if max_count > 0 and min_count / max_count < typo_check_max_word_diff_ratio:
+            if max_count > 0 and min_count / max_count < typo_check_args_diff_ratio:
                 Logger.debug(
                     f"Word count difference too large: user={user_arg_count}, template={selected_arg_count}, "
-                    f"ratio={min_count / max_count:.2f} < {typo_check_max_word_diff_ratio}"
+                    f"ratio={min_count / max_count:.2f} < {typo_check_args_diff_ratio}"
                 )
                 match_close_command = []
             else:

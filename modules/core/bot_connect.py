@@ -1,21 +1,23 @@
+import asyncio
+
 from core.builtins.bot import Bot
-from core.builtins.message.internal import I18NContext
+from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
 from core.utils.random import Random
 
-import asyncio
-
-bc = module("connect", base=True)
 bind_tokens = {}
 
+bc = module("connect", desc="{I18N:core.help.connect.desc}", base=True, available_for=["QQ|Group", "QQBot|Group"])
 
-@bc.command("link", required_admin=True, available_for=["QQ|Group"])
+
+@bc.command("link {{I18N:core.help.connect.link}}", required_admin=True)
 async def _(msg: Bot.MessageSession):
     if await msg.wait_confirm(I18NContext("core.message.connect.link.confirm")):
         bk = Random.randstr(20)
         bv = Random.randstr(20)
         bind_tokens[bk] = {"v": bv, "a_msg": msg}
-        await msg.send_message(f"{msg.session_info.prefixes[0]}connect token {bk}")
+        command = f"{msg.session_info.prefixes[0]}connect token {bk}"
+        await msg.send_message(Plain(command))
         await msg.hold()
 
         async def timeout_session():
@@ -33,7 +35,8 @@ async def _(msg: Bot.MessageSession):
     if (t := msg.parsed_msg.get("<t>")) in bind_tokens:
         bind_tokens[t]["b_msg"] = msg
         bind_tokens[t]["a_in_b_client_id"] = msg.session_info.sender_id
-        await msg.send_message(f"{msg.session_info.prefixes[0]}connect bind {bind_tokens[t].get('v')}")
+        command = f"{msg.session_info.prefixes[0]}connect bind {bind_tokens[t].get('v')}"
+        await msg.send_message(Plain(command))
         await msg.hold()
 
 
@@ -83,7 +86,7 @@ async def _(msg: Bot.MessageSession):
                 await b_msg.release()
 
 
-@bc.command("clear")
+@bc.command("clear {{I18N:core.help.connect.clear}}")
 async def _(msg: Bot.MessageSession):
     if await msg.wait_confirm(I18NContext("core.message.connect.clear.confirm")):
         await msg.session_info.target_info.edit_target_data("connected_session", [])
