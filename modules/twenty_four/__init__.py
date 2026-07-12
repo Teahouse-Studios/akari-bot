@@ -4,9 +4,9 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
 from core.game import PlayState, GAME_EXPIRED
+from core.utils.func import is_int
 from core.utils.petal import cost_petal, gained_petal, lost_petal
 from core.utils.random import Random
-from core.utils.func import is_int
 
 no_solution_lst = [
     "无解",
@@ -30,7 +30,7 @@ def check_valid(expr):
     expr = expr.replace(" ", "")
 
     operators = {"+", "-", "*", "/"}
-    num_numbers = 0
+    num_counts = 0
     open_parens = 0
     prev_char = ""
 
@@ -40,20 +40,21 @@ def check_valid(expr):
         if is_int(char):
             while i < len(expr) and is_int(expr[i]):
                 i += 1
-            num_numbers += 1
-            prev_char = "num"
+            num_counts += 1
+            prev_char = "X"
             continue
         if char in operators:
             if char == "-" and prev_char in ("", "("):
+                prev_char = "~"
                 i += 1
                 continue
-            if prev_char in operators or prev_char in ("", "("):
+            if prev_char in operators or prev_char in ("", "(", "~"):
                 return False
             prev_char = char
             i += 1
             continue
         if char == "(":
-            if prev_char in ("num", ")"):
+            if prev_char in ("X", ")"):
                 return False
             open_parens += 1
             prev_char = char
@@ -66,19 +67,39 @@ def check_valid(expr):
             prev_char = char
             i += 1
             continue
-        if char == "\\":
+        if char == "\\":  # expr may have additional escape chars
             i += 1
             continue
         return False
 
     if open_parens != 0:
         return False
-    if num_numbers > 9:
-        return False
     if prev_char in operators:
         return False
 
     return True
+
+
+def contains_all_numbers(expr, numbers):
+    used_numbers = [str(num) for num in numbers]
+    used_count = {str(num): 0 for num in numbers}
+    i = 0
+    while i < len(expr):
+        char = expr[i]
+        if is_int(char):
+            number = char
+            while i + 1 < len(expr) and is_int(expr[i + 1]):
+                number += expr[i + 1]
+                i += 1
+            if number in used_numbers:
+                used_count[number] += 1
+                if used_count[number] > numbers.count(int(number)):
+                    return False
+            else:
+                return False
+        i += 1
+
+    return bool(all(used_count[str(num)] == numbers.count(num) for num in numbers))
 
 
 def find_solution(numbers):
@@ -134,28 +155,6 @@ def find_solution(numbers):
     return list(results) if results else None
 
 
-def contains_all_numbers(expr, numbers):
-    used_numbers = [str(num) for num in numbers]
-    used_count = {str(num): 0 for num in numbers}
-    i = 0
-    while i < len(expr):
-        char = expr[i]
-        if is_int(char):
-            number = char
-            while i + 1 < len(expr) and is_int(expr[i + 1]):
-                number += expr[i + 1]
-                i += 1
-            if number in used_numbers:
-                used_count[number] += 1
-                if used_count[number] > numbers.count(int(number)):
-                    return False
-            else:
-                return False
-        i += 1
-
-    return bool(all(used_count[str(num)] == numbers.count(num) for num in numbers))
-
-
 tf = module(
     "twenty_four",
     alias=["twentyfour", "24"],
@@ -195,9 +194,9 @@ async def _(msg: Bot.MessageSession):
             await answer.finish(send)
         if check_valid(expr):
             result = calc(expr)
-            if not result:
+            if result is None:
                 await answer.finish(I18NContext("twenty_four.message.incorrect.invalid"))
-            elif (result == 24 or 0 < 24 - result < 1e-13) and contains_all_numbers(expr, numbers):
+            elif abs(result - 24) < 1e-10 and contains_all_numbers(expr, numbers):
                 send = [I18NContext("twenty_four.message.correct")]
                 if g_msg := await gained_petal(msg, 1):
                     send.append(g_msg)

@@ -15,6 +15,7 @@ from core.builtins.types import MessageElement
 from core.database.models import TargetInfo, SenderInfo
 from core.i18n import Locale
 from core.logger import Logger
+from core.exports import exports
 
 # 创建类型转换器实例
 converter = Converter()
@@ -29,6 +30,12 @@ def elements_to_kwargs(kwargs):
     for k in kwargs:
         if isinstance(kwargs[k], MessageElement):
             kwargs[k] = {"_type": type(kwargs[k]).__name__, "element": converter.unstructure(kwargs[k])}
+            continue
+        if msg_chain := exports.get("MessageChain"):
+            if isinstance(kwargs[k], msg_chain):
+                kwargs[k] = {"_type": type(kwargs[k]).__name__, "element": converter.unstructure(kwargs[k])}
+                continue
+
     Logger.trace(f"kwargs after unstructured: {kwargs}")
     return kwargs
 
@@ -44,6 +51,7 @@ converter.register_unstructure_hook(
         ),
     },
 )
+
 
 # 会话信息的反结构化处理
 # 将 TargetInfo 对象转换为字典，由于序列化需要从数据库重新异步获取，只保留 _type 和 target_id 字段
@@ -70,8 +78,19 @@ def kwargs_to_elements(o):
     Logger.trace(f"kwargs before structure: {o}")
     if o["_type"] == "I18NContextElement":
         for k in o["kwargs"]:
-            if isinstance(o["kwargs"][k], dict) and (g := getattr(elements, o["kwargs"][k]["_type"])):
+            if (
+                isinstance(o["kwargs"][k], dict)
+                and hasattr(elements, o["kwargs"][k]["_type"])
+                and (g := getattr(elements, o["kwargs"][k]["_type"]))
+            ):
                 o["kwargs"][k] = converter.structure(o["kwargs"][k]["element"], g)
+            if (
+                isinstance(o["kwargs"][k], dict)
+                and (o["kwargs"][k].get("_type") == "MessageChain")
+                and (msg_chain := exports.get("MessageChain"))
+            ):
+                o["kwargs"][k] = converter.structure(o["kwargs"][k]["element"], msg_chain)
+
     s = converter.structure(o, getattr(elements, o["_type"]))
     Logger.trace(f"kwargs after structure: {s}")
     return s
@@ -94,5 +113,6 @@ converter.register_structure_hook(Locale, lambda o, _: Locale(o["locale"]))
 # 时间间隔的结构化处理
 # 从字典恢复为 timedelta 对象，使用保存的秒数值
 converter.register_structure_hook(timedelta, lambda o, _: timedelta(seconds=o["seconds"]))
+
 
 __all__ = ["converter"]

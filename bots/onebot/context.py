@@ -13,13 +13,11 @@ from bots.onebot.info import target_private_prefix, target_group_prefix, client_
 from bots.onebot.utils import CQCodeHandler
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
-from core.builtins.message.internal import I18NContext
 from core.builtins.session.context import ContextManager
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
 from core.config import Config
 from core.logger import Logger
-from core.utils.image import msgchain2image
 from .features import Features
 
 qq_typing_emoji = str(Config("qq_typing_emoji", 181, (str, int), table_name="bot_onebot"))
@@ -77,7 +75,7 @@ async def get_avaliable_group_list():
     try:
         groups = await aiocqhttp_bot.call_action("get_group_list")
         for group in groups:
-            group_list.append(group["group_id"])
+            group_list.append(group.get("group_id"))
     except aiocqhttp.exceptions.ActionFailed as e:
         Logger.error(f"Failed to get group list: {e}")
     return group_list
@@ -93,7 +91,7 @@ async def get_avaliable_private_list():
     try:
         friends = await aiocqhttp_bot.call_action("get_friend_list")
         for friend in friends:
-            private_list.append(friend["user_id"])
+            private_list.append(friend.get("user_id"))
     except aiocqhttp.exceptions.ActionFailed as e:
         Logger.error(f"Failed to get private list: {e}")
     return private_list
@@ -101,7 +99,7 @@ async def get_avaliable_private_list():
 
 class OneBotContextManager(ContextManager):
     context: dict[str, Event] = {}
-    features: type[Features] | None = Features
+    features: Features = Features()
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
@@ -117,7 +115,7 @@ class OneBotContextManager(ContextManager):
                     group_id=int(session_info.get_common_target_id()),
                     user_id=int(session_info.get_common_sender_id()),
                 )
-                if get_member_info["role"] in ["owner", "admin"]:
+                if get_member_info.get("role") in ["owner", "admin"]:
                     return True
             return False
 
@@ -235,19 +233,11 @@ class OneBotContextManager(ContextManager):
                         message=MessageSegment.text(session_info.locale.t("error.message.timeout")),
                     )
                 except aiocqhttp.exceptions.ActionFailed:
-                    img_chain = message.copy()
-                    img_chain.insert(0, I18NContext("error.message.limited.msg2img"))
-                    imgs = await msgchain2image(img_chain, session_info)
-                    msgsgm = MessageSegment.text("")
-                    if imgs:
-                        for img in imgs:
-                            msgsgm = msgsgm + MessageSegment.image("base64://" + await img.get_base64())
-                        try:
-                            send = await aiocqhttp_bot.send_group_msg(
-                                group_id=int(session_info.get_common_target_id()), message=msgsgm
-                            )
-                        except aiocqhttp.exceptions.ActionFailed:
-                            Logger.exception("Failed to send message: ")
+                    send = await aiocqhttp_bot.send_group_msg(
+                        group_id=int(session_info.get_common_target_id()),
+                        message=MessageSegment.text(session_info.locale.t("error.message.limited")),
+                    )
+                    Logger.exception("Failed to send message: ")
 
             else:
                 try:

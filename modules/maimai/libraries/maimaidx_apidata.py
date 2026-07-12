@@ -8,12 +8,11 @@ from langconv.language.zh import zh_cn
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Image, Plain
-from core.config import Config
 from core.constants.exceptions import ConfigValueError
 from core.constants.path import cache_path
 from core.logger import Logger
-from core.utils.http import download, get_url, post_url
 from core.utils.func import is_int
+from core.utils.http import download, get_url, post_url
 from .maimaidx_mapping import *
 from .maimaidx_music import get_cover_len5_id, Music, TotalList
 
@@ -55,10 +54,10 @@ async def update_alias() -> bool:
         try:
             yuzuchan_data = await get_url("https://www.yuzuchan.moe/api/maimaidx/maimaidxalias", 200, fmt="json")
 
-            for song in yuzuchan_data["content"]:
-                song_id = str(song["SongID"])
-                name = song["Name"]
-                alias_list = [a for a in song["Alias"] if a.lower() != name.lower()]
+            for song in yuzuchan_data.get("content", []):
+                song_id = str(song.get("SongID", ""))
+                name = song.get("Name", "")
+                alias_list = [a for a in song.get("Alias", []) if a.lower() != name.lower()]
                 alias_map[song_id]["song_id"] = song_id
                 alias_map[song_id]["name"] = name
                 alias_map[song_id]["alias"].update(alias_list)
@@ -262,7 +261,7 @@ async def get_total_record(
                 with open(cache_dir, "wb") as f:
                     f.write(orjson.dumps(data))
             if not utage:
-                data = {"records": [d for d in data["records"] if int(d.get("id", 0)) < 100000]}  # 过滤宴谱
+                data = {"records": [d for d in data.get("records", []) if int(d.get("id", 0)) < 100000]}  # 过滤宴谱
             return data
         except Exception as e:
             if str(e).startswith("400"):
@@ -283,7 +282,7 @@ async def get_total_record(
                         data = orjson.loads(f.read())
                     await msg.send_message(I18NContext("maimai.message.use_cache"))
                     if not utage:
-                        data = {"records": [d for d in data["records"] if d.get("id", 0) < 100000]}  # 过滤宴谱
+                        data = {"records": [d for d in data.get("records", []) if d.get("id", 0) < 100000]}  # 过滤宴谱
                     return data
                 except Exception:
                     raise e
@@ -308,7 +307,7 @@ async def get_plate(msg: Bot.MessageSession, payload: dict, version: str, use_ca
                 headers={"Content-Type": "application/json", "accept": "*/*", "Developer-Token": DF_DEVELOPER_TOKEN},
                 fmt="json",
             )
-            data = {"verlist": [d for d in data["verlist"] if int(d.get("id", 0)) < 100000]}  # 过滤宴谱
+            data = {"verlist": [d for d in data.get("verlist", []) if int(d.get("id", 0)) < 100000]}  # 过滤宴谱
             if use_cache and data:
                 with open(cache_dir, "wb") as f:
                     f.write(orjson.dumps(data))

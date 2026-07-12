@@ -27,7 +27,7 @@ async def get_weekly(with_img=False, zh_tw=False):
             200,
         )
     )
-    b_result = BeautifulSoup(result["parse"]["text"]["*"], "html.parser")
+    b_result = BeautifulSoup(result.get("parse", {}).get("text", {}).get("*", ""), "html.parser")
     html = b_result.find("div", class_="mp-section")
     el = html.find("div").find_all("div")
     content = el[1]

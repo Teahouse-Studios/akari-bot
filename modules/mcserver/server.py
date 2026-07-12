@@ -29,9 +29,7 @@ async def query_java_server(address: str, raw: bool = False, showplayer: bool = 
             query_msg.append(description.get("text", ""))
             query_msg.append("".join(extra.get("text", "") for extra in description.get("extra", [])))
 
-        onlinesplayer = (
-            f"{str(I18NContext('server.message.player'))}{status['players']['online']} / {status['players']['max']}"
-        )
+        onlinesplayer = f"{str(I18NContext('server.message.player'))}{status.get('players', {}).get('online', 0)} / {status.get('players', {}).get('max', 0)}"
         query_msg.append(onlinesplayer)
 
         if showplayer:
@@ -72,11 +70,12 @@ async def query_bedrock_server(address, raw=False) -> str:
             port = (address.rsplit(":", 1) + [None])[1]
             url = f"http://motd.wd-api.com/v1/bedrock?host={host}&port={port if port else 19132}"
             raw_data = json.loads(await get_url(url, 200, logging_err_resp=False))
+            data_str = raw_data.get("data", "")
             status: dict = {
                 key: value
                 for key, value in zip(
                     ["edition", "motd_1", "_", "version", "players_online", "players_max", "__", "motd_2", "gamemode"],
-                    raw_data["data"].split(";"),
+                    data_str.split(";"),
                 )
             }
             Logger.debug(str(status))
@@ -85,9 +84,7 @@ async def query_bedrock_server(address, raw=False) -> str:
         query_msg.append("[BE]")
         query_msg.append(status["motd"])
 
-        player_count = (
-            f"{str(I18NContext('server.message.player'))}{status['players_online']} / {status['players_max']}"
-        )
+        player_count = f"{str(I18NContext('server.message.player'))}{status.get('players_online', 0)} / {status.get('players_max', 0)}"
         query_msg.append(player_count)
 
         if status.get("version") and status.get("version", {}).get("name"):

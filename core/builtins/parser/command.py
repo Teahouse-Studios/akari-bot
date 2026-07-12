@@ -5,26 +5,27 @@
 匹配命令模板，生成帮助文档等功能。
 """
 
-import copy
 import re
 import shlex
 import traceback
 from typing import TYPE_CHECKING
 
-from ...exports import exports
-
-if TYPE_CHECKING:
-    from core.builtins.bot import Bot
-
 from core.config import Config
 from core.constants.exceptions import InvalidCommandFormatError
+from core.exports import exports
 from core.i18n import Locale
 from core.logger import Logger
 from core.types import Module
 from .args import parse_argv, Template, templates_to_str, ArgumentPattern, DescPattern
 
+if TYPE_CHECKING:
+    from core.builtins.bot import Bot
+
 # 默认地区设置
 default_locale = Config("default_locale", cfg_type=str)
+
+# 预编译正则：匹配中文引号（避免每次 parse 重新编译）
+_CN_QUOTE_PATTERN = re.compile(r"[“”]")
 
 
 class CommandParser:
@@ -60,16 +61,13 @@ class CommandParser:
         :param msg: 消息会话对象（用于权限检查）
         :param is_superuser: 是否为超级用户（如为 None 则从会话自动检测）
         """
-        # 深拷贝模块定义，避免修改原始对象
-        args = copy.deepcopy(args)
-
         # 存储命令前缀列表（如 ["~", "!"]）
         self.command_prefixes = command_prefixes
 
         # 存储模块名称
         self.module_name = module_name
 
-        # 存储原始的模块模板定义
+        # 存储原始模块模板定义（只读使用，无需拷贝）
         self.origin_template = args
 
         # 存储消息会话对象（用于权限检查和获取地区设置）
@@ -136,6 +134,9 @@ class CommandParser:
                 seen_values.add(v)
         self.options_desc = deduped_options_desc
 
+        # 预计算过滤后的 args 列表（排除空字符串占位符），避免每次 parse 重建
+        self._filtered_args = [a for a in self.args if a != ""]
+
     def return_formatted_help_doc(self, locale=None) -> str:
         """
         生成格式化的帮助文档字符串。
@@ -149,7 +150,7 @@ class CommandParser:
         else:
             locale = self.lang
 
-        format_args = templates_to_str([args for args in self.args if args != ""], with_desc=True)
+        format_args = templates_to_str(self._filtered_args, with_desc=True)
 
         args_lst = []
         for x in format_args:
@@ -213,7 +214,7 @@ class CommandParser:
             locale = self.lang
 
         # ========== 步骤 1: 获取命令模板字符串 ==========
-        format_args = templates_to_str([args for args in self.args if args != ""], with_desc=True)
+        format_args = templates_to_str(self._filtered_args, with_desc=True)
 
         args_list = []
 
@@ -284,7 +285,7 @@ class CommandParser:
 
         # ========== 步骤 2: 规范化命令字符串 ==========
         # 替换中文引号为英文引号（兼容中文输入法）
-        command = re.sub(r"[“”]", '"', command)
+        command = _CN_QUOTE_PATTERN.sub('"', command)
 
         # ========== 步骤 3: 分割命令字符串 ==========
         try:
@@ -324,7 +325,7 @@ class CommandParser:
                 # ========== 步骤 5: 参数匹配 ==========
                 # 使用参数解析器匹配命令参数
                 # split_command[1:] 是除去命令名之外的所有参数
-                base_match = parse_argv(split_command[1:], [args for args in self.args if args != ""])
+                base_match = parse_argv(split_command[1:], self._filtered_args)
 
                 # ========== 步骤 6: 返回匹配结果 ==========
                 return (

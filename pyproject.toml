@@ -21,16 +21,16 @@ dependencies = [
     "akari-bot-webui==0.3.10",
     # lib
     "coverage>=7.9.1,<8.0.0",
-    "cryptography>=46.0.0,<47.0.0",
+    "cryptography>=48.0.0,<48.1.0",
     "deprecated>=1.2.18,<2.0.0",
     "pre-commit>=4.0.0,<5.0.0",
     "pycryptodome>=3.18.0,<4.0.0",
     "python-dotenv>=1.2.1,<2.0.0",
     "python-multipart>=0.0.22,<1.0.0",
-    "pywin32>=311,<312; platform_system == 'Windows'",
+    "pywin32>=312,<313; platform_system == 'Windows'",
     # bots
     "aiocqhttp>=1.4.3,<2.0.0",
-    "aiogram==3.28.2",
+    "aiogram==3.29.0",
     "argon2-cffi>=25.0.0,<26.0.0",
     "fastapi>=0.120.0,<1.0.0",
     "ffmpy>=1.0.0,<2.0.0",
@@ -38,7 +38,6 @@ dependencies = [
     "matrix-nio>=0.25.0,<1.0.0",
     "py-cord>=2.7.2",
     "pyjwt[crypto]>=2.8.0,<3.0.0",
-    "qq-botpy>=1.2.1,<2.0.0",
     "slowapi>=0.1.9,<1.0.0",
     "urllib3>=2.6.3",
     "uvicorn[standard]>=0.38.0,<1.0.0",
@@ -82,7 +81,7 @@ dependencies = [
     "gql>=4.0.0,<5.0.0",
     "langconv @ git+https://github.com/Teahouse-Studios/langconv.py.git",
     "mcstatus>=13.1.0,<13.2.0",
-    "numpy<2.4.5",
+    "numpy<2.5.1",
     "openai>=2.0.0,<3.0.0",
     "pandas>=3.0.0,<4.0.0",
     "pint>=0.25.0,<1.0.0",
@@ -92,7 +91,7 @@ dependencies = [
     "trafilatura>=2.0.0",
     "webcolors>=25.0.0,<26.0.0",
     "wolframalpha>=5.0.0,<6.0.0",
-    # uncategorized
+    "botpy",
 ]
 
 [project.urls]
@@ -113,3 +112,6 @@ quote-style = "double"
 
 [tool.pyright]
 reportUndefinedVariable = "error"
+
+[tool.uv.sources]
+botpy = { git = "https://github.com/Teahouse-Studios/botpy.git" }

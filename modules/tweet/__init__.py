@@ -4,9 +4,9 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Url
 from core.component import module
 from core.dirty_check import check_bool, rickroll
+from core.utils.func import is_int
 from core.utils.http import get_url
 from core.utils.image import cb64imglst
-from core.utils.func import is_int
 from core.web_render import web_render, ElementScreenshotOptions
 
 t = module(
@@ -45,10 +45,10 @@ async def get_tweet(msg: Bot.MessageSession, tweet_id: int):
             raise e
 
     res_json = orjson.loads(res)
+    data = res_json.get("data", {})
+    user = data.get("user", {})
     if await check_bool(
-        "\n".join(
-            [res_json["data"]["text"], res_json["data"]["user"]["name"], res_json["data"]["user"]["screen_name"]]
-        ),
+        "\n".join([data.get("text", ""), user.get("name", ""), user.get("screen_name", "")]),
         msg,
     ):
         await msg.finish(rickroll())
@@ -92,5 +92,5 @@ async def get_tweet(msg: Bot.MessageSession, tweet_id: int):
         )
     )
     img_lst = cb64imglst(load_img, bot_img=True)
-    img_lst.append(Url(f"https://x.com/{res_json['data']['user']['screen_name']}/status/{tweet_id}"))
+    img_lst.append(Url(f"https://x.com/{user.get('screen_name', 'i')}/status/{tweet_id}"))
     await msg.finish(img_lst)

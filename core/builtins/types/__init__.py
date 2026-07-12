@@ -18,18 +18,20 @@ from core.builtins.message.elements import (
     RawElement,
 )
 
+from typing import Union
+
 # 多媒体元素类型联合体 - 包含纯文本、图片、语音、原始格式消息
-MultimediaElement = PlainElement | ImageElement | VoiceElement | RawElement
+MultimediaElement = Union[PlainElement, ImageElement, VoiceElement, RawElement]
 
 # 完整的消息元素类型联合体 - 包含所有支持的消息元素类型
-MessageElement = (
-    MultimediaElement
-    | URLElement
-    | FormattedTimeElement
-    | I18NContextElement
-    | EmbedFieldElement
-    | EmbedElement
-    | MentionElement
-)
+MessageElement = Union[
+    MultimediaElement,
+    URLElement,
+    FormattedTimeElement,
+    I18NContextElement,
+    EmbedFieldElement,
+    EmbedElement,
+    MentionElement,
+]
 
 __all__ = ["MessageElement", "MultimediaElement"]

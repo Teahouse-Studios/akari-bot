@@ -1,19 +1,25 @@
+from __future__ import annotations
+
 import base64
 from io import BytesIO
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from PIL import Image as PILImage
 from jinja2 import FileSystemLoader, Environment
 
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import PlainElement, ImageElement, EmbedElement
-from core.builtins.session.info import SessionInfo, FetchedSessionInfo
-from core.builtins.session.internal import MessageSession
 from core.config import Config
 from core.constants.path import templates_path
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.web_render import web_render, ElementScreenshotOptions
+
+if TYPE_CHECKING:
+    from core.builtins.session.internal import MessageSession
+    from core.builtins.session.info import SessionInfo, FetchedSessionInfo
+
 
 env = Environment(loader=FileSystemLoader(templates_path), autoescape=True, enable_async=True)
 use_font_mirror = Config("use_font_mirror", False, bool)
@@ -86,8 +92,6 @@ async def msgchain2image(
     if isinstance(message_chain, list):
         message_chain = MessageChain.assign(message_chain)
 
-    if isinstance(session, MessageSession):
-        session = session.session_info
     message_list = message_chain.as_sendable(session)
     for m in message_list:
         if isinstance(m, ImageElement):

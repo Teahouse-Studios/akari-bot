@@ -24,7 +24,7 @@ class BotAccount:
             resp = await client.get(lgtoken_url)
             if resp.status_code != 200:
                 raise LoginFailed(resp.text)
-            PARAMS_1["lgtoken"] = resp.json()["query"]["tokens"]["logintoken"]
+            PARAMS_1["lgtoken"] = resp.json().get("query", {}).get("tokens", {}).get("logintoken", "")
 
             resp = await client.post(api_link, data=PARAMS_1)
             if resp.status_code != 200:

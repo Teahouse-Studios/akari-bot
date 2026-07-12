@@ -16,7 +16,7 @@ from attrs import define
 from deprecated import deprecated
 from japanera import EraDate
 
-from core.builtins.message.chain import MessageChain, get_message_chain, Chainable
+from core.builtins.message.chain import MessageChain, get_message_chain, Chainable, MessageNodes
 from core.builtins.message.internal import I18NContext
 from core.builtins.session.info import SessionInfo, FetchedSessionInfo
 from core.builtins.session.lock import ExecutionLockList
@@ -27,6 +27,7 @@ from core.config import Config
 from core.constants import SessionFinished, WaitCancelException
 from core.exports import add_export, exports
 from core.utils.func import is_int
+from core.utils.image import msgnode2image
 
 if TYPE_CHECKING:
     from core.queue.server import JobQueueServer
@@ -124,6 +125,9 @@ class MessageSession:
         # ========== 步骤 1: 转换消息链格式 ==========
         # 根据平台和会话信息选择合适的消息链格式
         message_chain = get_message_chain(self.session_info, chain=message_chain)
+
+        if isinstance(message_chain, MessageNodes) and not self.session_info.support_handle_message_nodes:
+            message_chain = MessageChain.assign(await msgnode2image(message_chain, session=self.session_info))
 
         # ========== 步骤 2: 安全检查 ==========
         # 检查消息是否包含敏感信息（如 API 密钥、密码等）
@@ -895,4 +899,4 @@ class FetchedMessageSession(MessageSession):
 add_export(MessageSession)
 add_export(FinishedSession)
 
-__all__ = ["SessionInfo", "FetchedMessageSession"]
+__all__ = ["SessionInfo", "MessageSession", "FetchedMessageSession"]

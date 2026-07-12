@@ -11,15 +11,17 @@
 包含了复杂的权限检查、速率限制、错误报告等功能。
 """
 
+import asyncio
 import copy
+import functools
 import inspect
 import re
 import time
 import traceback
-
-from rapidfuzz import process
 from string import Template as stringTemplate
 from typing import TYPE_CHECKING
+
+from rapidfuzz import process
 
 from core.builtins.message.chain import MessageChain, match_kecode
 from core.builtins.message.internal import Plain, I18NContext
@@ -47,8 +49,8 @@ from core.logger import Logger
 from core.tos import TOS_TEMPBAN_TIME, temp_ban_counter, abuse_warn_target, remove_temp_ban
 from core.types import Module, Param
 from core.types.module.component_meta import CommandMeta
-from core.utils.func import normalize_space
 from core.utils.container import ExpiringTempDict, TokenBucket
+from core.utils.func import normalize_space
 
 if TYPE_CHECKING:
     from core.builtins.bot import Bot
@@ -90,6 +92,16 @@ typo_check_args_score = Config("typo_check_args_score", 0.5)
 # 选项的相似度阈值
 typo_check_options_score = Config("typo_check_options_score", 0.3)
 
+# 命令参数数量差异阈值：当用户输入的参数数量与匹配到的模板参数数量差异比例超过此值时，
+# 跳过命令模板匹配（避免字数差异过大时的错误推荐）
+# 例如：用户输入10个参数但模板只有2个参数 → 2/10=0.2 < 0.5 → 跳过匹配
+typo_check_args_diff_ratio = Config("typo_check_args_diff_ratio", 0.5)
+
+# 模块名字符长度差异阈值：当匹配到的模块名长度与用户输入长度差异比例超过此值时，
+# 跳过模块名匹配（避免如 ~p → ~decrypt 的错误推荐）
+# 例如：输入"p"(1字符) 匹配到 "decrypt"(7字符) → 1/7≈0.14 < 0.5 → 跳过匹配
+typo_check_module_diff_ratio = Config("typo_check_module_diff_ratio", 0.5)
+
 # ========== 频率限制相关 ==========
 
 # 命令使用次数计数（重复使用单一命令）
@@ -105,6 +117,9 @@ target_cooldown_counter = ExpiringTempDict()
 
 # 匹配哈希缓存 - 缓存消息与模块的匹配结果，加速处理
 match_hash_cache = ExpiringTempDict()
+
+
+session_msg_cache = {}
 
 
 async def parser(msg: "Bot.MessageSession"):
@@ -153,6 +168,14 @@ async def parser(msg: "Bot.MessageSession"):
         if len(msg.trigger_msg) == 0:
             return
 
+        # 获取会话内已记录的其它 bot id，屏蔽 bot 的消息
+        bots_id = msg.session_info.target_info.target_data.get("bots_id", [])
+        if bots_id:
+            for b in bots_id:
+                if msg.session_info.sender_id == b:
+                    Logger.debug("Ignored message from other clients: " + msg.trigger_msg)
+                    return
+
         # ========== 步骤 2: 权限检查 ==========
         # 检查发送者是否被被机器人屏蔽（机器人黑名单）
         if msg.session_info.sender_info.blocked and not (
@@ -168,9 +191,15 @@ async def parser(msg: "Bot.MessageSession"):
         # 检查消息是否以命令前缀开头
         disable_prefix, in_prefix_list = _get_prefixes(msg)
 
-        if in_prefix_list or disable_prefix:  # 检查消息前缀
+        if in_prefix_list or disable_prefix:  # 检查消息前缀，注意此时 log 的 msg.trigger_msg 是带前缀的
             Logger.info(f"{identify_str} -> [Bot]: {msg.trigger_msg}")
+
             command_first_word = await _process_command(msg, modules, disable_prefix, in_prefix_list)
+
+            # 执行前检查是否为重复会话，_process_command 会去掉 trigger_msg 的前缀
+            if await _check_duplicate_msg(msg):
+                return
+
             if command_first_word:
                 if not ExecutionLockList.check(msg):  # 加锁
                     ExecutionLockList.add(msg)
@@ -207,7 +236,7 @@ async def parser(msg: "Bot.MessageSession"):
         # 检查正则
         if msg.session_info.muted:
             return
-        if msg.session_info.running_mention:
+        if msg.session_info.use_running_mention:
             if msg.trigger_msg.lower().find(msg.session_info.bot_name.lower()) != -1:
                 if ExecutionLockList.check(msg):
                     return await msg.send_message(I18NContext("parser.command.running.prompt2"))
@@ -223,6 +252,29 @@ async def parser(msg: "Bot.MessageSession"):
     finally:
         ExecutionLockList.remove(msg)
         Info.message_parsed += 1
+
+
+async def _check_duplicate_msg(msg: "Bot.MessageSession", display=None):
+    # 获取已连接的会话列表（用于会话内存在多个由本进程启动的bot避让用）
+    if not display:
+        display = msg.trigger_msg
+    connected_session = msg.session_info.target_info.target_data.get("connected_session", [])
+    if connected_session:
+        for c in connected_session:
+            if session_msg_cache.get(f"{display}_{c}"):
+                Logger.debug("Ignored duplicate session message from other client: " + display)
+                return True  # 收到了重复的消息，进行避让处理
+
+        msg_token = f"{display}_{msg.session_info.target_id}"
+        session_msg_cache.update({msg_token: True})
+
+        async def _remove_cache(m):
+            await asyncio.sleep(30)
+            if m in session_msg_cache:
+                del session_msg_cache[m]
+
+        asyncio.create_task(_remove_cache(msg_token))
+    return False
 
 
 def _transform_alias(msg, command: str):
@@ -398,7 +450,7 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
     alias_list = []
     for alias, _ in ModulesManager.modules_aliases.items():
         alias_words = alias.split(" ")
-        cmd_words = command.split(" ")
+        cmd_words = command_split
 
         if not not_alias:
             # 如果第一个词不是模块名，检查所有别名
@@ -411,6 +463,7 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
                     alias_list.append(alias)
 
     # ========== 步骤 4: 应用最长匹配的别名 ==========
+    first_word = command_split[0]
     if alias_list:
         # 选择最长的别名（避免短别名误匹配）
         max_alias = str(max(alias_list, key=len))
@@ -418,15 +471,15 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
         real_name = ModulesManager.modules_aliases[max_alias]
 
         # 重构命令：实际模块名 + 别名后的剩余参数
-        command_words = command.split(" ")
-        command_words = real_name.split(" ") + command_words[len(max_alias.split(" ")) :]
+        command_words = real_name.split(" ") + command_split[len(max_alias.split(" ")) :]
         command = " ".join(command_words)
+        first_word = real_name.split(" ")[0]
 
     # 更新消息的触发命令
     msg.trigger_msg = command
 
     # 返回命令的第一个词（模块名）
-    return command.split(" ")[0]
+    return first_word
 
 
 async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word, identify_str):
@@ -717,23 +770,15 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                                 matched_hash = hash(msg.matched_msg)
 
                         # ========== 步骤 6: 处理匹配成功的情况 ==========
-                        if (
-                            matched
-                            and regex_module.load
-                            and not (
-                                msg.session_info.target_from in regex_module.exclude_from
-                                or msg.session_info.client_name in regex_module.exclude_from
-                                or (
-                                    "*" not in regex_module.available_for
-                                    and msg.session_info.target_from not in regex_module.available_for
-                                    and msg.session_info.client_name not in regex_module.available_for
-                                )
-                            )
-                        ):
+                        if matched:
                             # 记录日志
                             if rfunc.logging:
                                 Logger.info(f"{identify_str} -> [Bot]: {msg.trigger_msg}")
                             Logger.debug("Matched hash:" + str(matched_hash))
+
+                            # 执行前检查是否为重复会话
+                            if await _check_duplicate_msg(msg, str(matched_hash)):
+                                continue
 
                             # ========== 循环匹配检测 ==========
                             # 检查是否重复匹配
@@ -965,6 +1010,12 @@ async def _tos_msg_counter(msg: "Bot.MessageSession", command: str):
         raise AbuseWarning("{I18N:tos.message.reason.abuse}")
 
 
+@functools.lru_cache(maxsize=256)
+def _get_cached_signature(func):
+    """缓存 inspect.signature 的结果，避免每次命令执行都做内省。"""
+    return inspect.signature(func)
+
+
 async def _execute_module_command(msg: "Bot.MessageSession", module, command_first_word):
     """
     执行模块的命令解析和处理。
@@ -1026,7 +1077,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
             # ========== 步骤 4: 构建函数参数 ==========
             # 根据命令函数的签名，准备调用参数
             kwargs = {}
-            func_params = inspect.signature(command.function).parameters
+            func_params = _get_cached_signature(command.function).parameters
 
             if len(func_params) > 1 and msg.parsed_msg:
                 # 函数有多个参数，需要映射解析后的参数
@@ -1282,6 +1333,33 @@ def __get_close_matches(
     return [m[0] for m in matches]
 
 
+async def _typo_confirm(
+    msg: "Bot.MessageSession", new_command_display: str, new_command_first_word: str, new_trigger_msg: str
+):
+    """询问用户确认错字纠正。
+
+    :param msg: 消息会话对象
+    :param new_command_display: 用于展示给用户的纠正后命令（不含前缀）
+    :param new_command_first_word: 纠正后的模块名
+    :param new_trigger_msg: 确认后设置到 msg.trigger_msg 的值
+    :return: (msg, command_first_word, True) 若用户确认；
+             (None, None, True) 若用户拒绝；
+             None 若纠正后的命令与原命令相同（无需确认）
+    """
+    if new_command_display == msg.trigger_msg:
+        return None
+    wait_confirm = await msg.wait_confirm(
+        I18NContext(
+            "parser.command.fixup.confirm",
+            command=f"{msg.session_info.prefixes[0]}{new_command_display}",
+        )
+    )
+    if wait_confirm:
+        msg.trigger_msg = new_trigger_msg
+        return msg, new_command_first_word, True
+    return None, None, True
+
+
 async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_word):
     """
     命令错字检查和纠正。
@@ -1329,6 +1407,9 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
             # 跳过需要基础超级用户权限的模块
             if modules[x].required_base_superuser and not is_base_superuser:
                 continue
+            # 跳过当前平台没有可用命令的模块（如仅含 regex 的模块，不能作为命令调用）
+            if not modules[x].command_list.get(msg.session_info.target_from):
+                continue
             available_modules.append(x)
 
     # ========== 步骤 3: 模块名相似度匹配 ==========
@@ -1338,6 +1419,23 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
     if match_close_module:
         # 找到了相似的模块
         Logger.debug(f"Match module: {command_first_word} -> {match_close_module[0]}")
+
+        # ========== 步骤 3.5: 模块名字符长度差异检查 ==========
+        # 避免短输入匹配到过长的模块名（如 ~p → ~decrypt）
+        input_len = len(command_first_word)
+        match_len = len(match_close_module[0])
+        if input_len != match_len:
+            max_len = max(input_len, match_len)
+            min_len = min(input_len, match_len)
+            if min_len / max_len < typo_check_module_diff_ratio:
+                Logger.debug(
+                    f"Module name length difference too large: "
+                    f"input='{command_first_word}'({input_len}), match='{match_close_module[0]}'({match_len}), "
+                    f"ratio={min_len / max_len:.2f} < {typo_check_module_diff_ratio}"
+                )
+                match_close_module = []
+
+    if match_close_module:
         module: Module = modules[match_close_module[0]]
 
         # ========== 步骤 4: 检查模块是否有命令模板 ==========
@@ -1368,30 +1466,45 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
                         command_templates[len_args].append(ct)
 
             # ========== 步骤 6: 选择最合适的命令模板组 ==========
-            if len_command_split - 1 > len(command_templates):
+            max_template_args = max(command_templates.keys())
+            if len_command_split - 1 > max_template_args:
                 # 用户输入的参数比所有模板都多，选择参数最多的模板
-                select_templates = command_templates[max(command_templates)]
+                select_templates = command_templates[max_template_args]
             else:
                 try:
                     # 选择参数数量刚好匹配的模板组
                     select_templates = command_templates[len_command_split - 1]
                 except KeyError:
-                    # 没有精确匹配，找一个最接近的
+                    # 没有精确匹配，找一个最接近的（参数数量差距最小）
                     select_templates = command_templates[
-                        max(command_templates.keys(), key=lambda k: min(abs(k - (len_command_split - 1)), k))
+                        min(command_templates.keys(), key=lambda k: abs(k - (len_command_split - 1)))
                     ]
 
-            # ========== 步骤 7: 命令字符串相似度匹配 ==========
-            match_close_command: list = __get_close_matches(
-                " ".join(command_split[1:]), templates_to_str(select_templates), 1, typo_check_command_score
-            )
+            # ========== 步骤 7: 参数数量差异检查 ==========
+            # 如果用户输入的参数数量与模板参数数量差异过大，跳过命令匹配
+            selected_arg_count = len(select_templates[0].args)
+            user_arg_count = len_command_split - 1
+            max_count = max(user_arg_count, selected_arg_count)
+            min_count = min(user_arg_count, selected_arg_count)
+
+            if max_count > 0 and min_count / max_count < typo_check_args_diff_ratio:
+                Logger.debug(
+                    f"Word count difference too large: user={user_arg_count}, template={selected_arg_count}, "
+                    f"ratio={min_count / max_count:.2f} < {typo_check_args_diff_ratio}"
+                )
+                match_close_command = []
+            else:
+                # ========== 步骤 8: 命令字符串相似度匹配 ==========
+                match_close_command: list = __get_close_matches(
+                    " ".join(command_split[1:]), templates_to_str(select_templates), 1, typo_check_command_score
+                )
 
             if match_close_command:
                 # 找到了相似的命令
                 Logger.debug(f"Match command: {' '.join(command_split[1:])} -> {match_close_command[0]}")
                 match_split = match_close_command[0]
 
-                # ========== 步骤 8: 分离可选参数 ==========
+                # ========== 步骤 9: 分离可选参数 ==========
                 # 切割可选参数（[...]）和必需参数
                 m_split_options = filter(None, re.split(r"(\[.*?\])", match_split))
                 old_command_split = command_split.copy()
@@ -1412,8 +1525,9 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
                                 del old_command_split[position : position + len(m_split)]  # 删除原命令列表中的可选参数
                         else:
                             if m_split[0][1] == "<":
-                                new_command_split.append(old_command_split[0])
-                                del old_command_split[0]
+                                if old_command_split:
+                                    new_command_split.append(old_command_split[0])
+                                    del old_command_split[0]
                             else:
                                 new_command_split.append(m_split[0][1:-1])
                     else:
@@ -1424,13 +1538,12 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
                                     new_command_split.append(old_command_split[0])
                                     del old_command_split[0]
                                 else:
-                                    match_close_args = __get_close_matches(
-                                        old_command_split[0], [mm], 1, typo_check_args_score
-                                    )  # 进一步匹配参数
-                                    if match_close_args:
-                                        Logger.debug(
-                                            f"Match close args: {old_command_split[0]} -> {match_close_args[0]}"
-                                        )
+                                    # 直接检查相似度是否超过阈值（避免对单元素列表做完整 extract）
+                                    match_result = process.extractOne(
+                                        old_command_split[0], [mm], score_cutoff=typo_check_args_score * 100
+                                    )
+                                    if match_result:
+                                        Logger.debug(f"Match close args: {old_command_split[0]} -> {match_result[0]}")
                                         new_command_split.append(mm)
                                         del old_command_split[0]
                                     else:
@@ -1439,48 +1552,29 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
                             else:
                                 new_command_split.append(mm)
                 new_command_display = " ".join(new_command_split)
-                if new_command_display != msg.trigger_msg:
-                    wait_confirm = await msg.wait_confirm(
-                        I18NContext(
-                            "parser.command.fixup.confirm",
-                            command=f"{msg.session_info.prefixes[0]}{new_command_display}",
-                        )
-                    )
-                    if wait_confirm:
-                        command_first_word = new_command_split[0]
-                        msg.trigger_msg = " ".join(new_command_split)
-                        return msg, command_first_word, True
-                    return None, None, True
+                result = await _typo_confirm(
+                    msg, new_command_display, new_command_split[0], " ".join(new_command_split)
+                )
+                if result:
+                    return result
             else:
                 if len_command_split - 1 == 1:
                     new_command_display = f"{match_close_module[0]} {' '.join(command_split[1:])}"
-                    if new_command_display != msg.trigger_msg:
-                        wait_confirm = await msg.wait_confirm(
-                            I18NContext(
-                                "parser.command.fixup.confirm",
-                                command=f"{msg.session_info.prefixes[0]}{new_command_display}",
-                            )
-                        )
-                        if wait_confirm:
-                            command_first_word = match_close_module[0]
-                            msg.trigger_msg = " ".join([match_close_module[0]] + command_split[1:])
-                            return msg, command_first_word, True
-                        return None, None, True
-        else:
-            new_command_display = (
-                f"{match_close_module[0] + (' ' + ' '.join(command_split[1:]) if len(command_split) > 1 else '')}"
-            )
-            if new_command_display != msg.trigger_msg:
-                wait_confirm = await msg.wait_confirm(
-                    I18NContext(
-                        "parser.command.fixup.confirm", command=f"{msg.session_info.prefixes[0]}{new_command_display}"
+                    result = await _typo_confirm(
+                        msg,
+                        new_command_display,
+                        match_close_module[0],
+                        " ".join([match_close_module[0]] + command_split[1:]),
                     )
-                )
-                if wait_confirm:
-                    command_first_word = match_close_module[0]
-                    msg.trigger_msg = match_close_module[0]
-                    return msg, command_first_word, True
-                return None, None, True
+                    if result:
+                        return result
+        else:
+            new_trigger_msg = match_close_module[0] + (
+                " " + " ".join(command_split[1:]) if len(command_split) > 1 else ""
+            )
+            result = await _typo_confirm(msg, new_trigger_msg, match_close_module[0], new_trigger_msg)
+            if result:
+                return result
     return None, None, False
 
 

@@ -7,7 +7,6 @@ from core.builtins.message.elements import PlainElement, ImageElement, VoiceElem
 from core.builtins.session.context import ContextManager
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
-from core.utils.image import msgnode2image
 from .client import bot
 from .client import token as kook_token
 from .features import Features
@@ -44,7 +43,7 @@ async def get_channel(session_info: SessionInfo) -> PublicChannel | User | None:
 
 class KOOKContextManager(ContextManager):
     context: dict[str, Message] = {}
-    features: type[Features] | None = Features
+    features: Features = Features()
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
@@ -88,7 +87,7 @@ class KOOKContextManager(ContextManager):
 
         msg_ids = []
         if isinstance(message, MessageNodes):
-            message = MessageChain.assign(await msgnode2image(message))
+            Logger.error("This session does not support message nodes, check if bug exists.")
 
         for x in message.as_sendable(session_info, parse_message=enable_parse_message):
             if isinstance(x, PlainElement):
@@ -103,7 +102,7 @@ class KOOKContextManager(ContextManager):
                 else:
                     send_ = await _channel.send(x.text)
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
-                msg_ids.append(str(send_["msg_id"]))
+                msg_ids.append(str(send_.get("msg_id", "")))
             if isinstance(x, ImageElement):
                 url = await bot.create_asset(open(await x.get(), "rb"))  # skipcq
                 if ctx:
@@ -118,7 +117,7 @@ class KOOKContextManager(ContextManager):
                         type=MessageTypes.IMG,
                     )
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(x.path)}")
-                msg_ids.append(str(send_["msg_id"]))
+                msg_ids.append(str(send_.get("msg_id", "")))
             if isinstance(x, VoiceElement):
                 url = await bot.create_asset(open(x.path, "rb"))  # skipcq
                 if ctx:
@@ -133,7 +132,7 @@ class KOOKContextManager(ContextManager):
                         type=MessageTypes.AUDIO,
                     )
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Voice: {str(x.__dict__)}")
-                msg_ids.append(str(send_["msg_id"]))
+                msg_ids.append(str(send_.get("msg_id", "")))
             if isinstance(x, MentionElement):
                 if x.client == client_name and session_info.target_from == target_group_prefix:
                     if ctx:
@@ -146,7 +145,7 @@ class KOOKContextManager(ContextManager):
                             f"(met){x.id}(met)",
                         )
                     Logger.info(f"[Bot] -> [{session_info.target_id}]: Mention: {x.client}|{str(x.id)}")
-                    msg_ids.append(str(send_["msg_id"]))
+                    msg_ids.append(str(send_.get("msg_id", "")))
 
         return msg_ids
 

@@ -188,6 +188,8 @@ genre_i18n_mapping = {
     "宴会场": "宴會場",
 }
 
+version_fixup_mapping = {"MiLK PLUS": "maimai MiLK PLUS"}
+
 mai_plate_remaster_required = [
     "17",
     "22",
@@ -270,6 +272,7 @@ versions = [
     "maimai でらっくす FESTiVAL",
     "maimai でらっくす BUDDiES",
     "maimai でらっくす PRiSM",
+    "maimai でらっくす PRiSM PLUS",
 ]
 
 sd_plate_mapping = {
@@ -300,7 +303,7 @@ dx_plate_mapping = {
     "双": "maimai でらっくす BUDDiES",
     "宴": "maimai でらっくす BUDDiES",
     "鏡": "maimai でらっくす PRiSM",
-    "彩": "maimai でらっくす PRiSM",
+    "彩": "maimai でらっくす PRiSM PLUS",
 }
 
 plate_mapping = sd_plate_mapping | dx_plate_mapping

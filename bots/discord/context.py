@@ -13,12 +13,11 @@ from core.builtins.message.elements import PlainElement, ImageElement, VoiceElem
 from core.builtins.session.context import ContextManager
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
-from core.utils.image import msgnode2image
 
 
 class DiscordContextManager(ContextManager):
     context: dict[str, Message] = {}
-    features: type[Features] | None = Features
+    features: Features | None = Features()
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
@@ -62,11 +61,10 @@ class DiscordContextManager(ContextManager):
             channel = await discord_bot.fetch_channel(int(get_channel_id(session_info)))
 
         if isinstance(message, MessageNodes):
-            message = MessageChain.assign(await msgnode2image(message))
+            Logger.error("This session does not support message nodes, check if bug exists.")
 
         msg_ids = []
         for x in message.as_sendable(session_info, parse_message=enable_parse_message):
-            send_ = None
             if isinstance(x, PlainElement):
                 if enable_parse_message:
                     x.text = match_atcode(x.text, client_name, "<@{uid}>")
@@ -127,7 +125,7 @@ class DiscordContextManager(ContextManager):
                 channel = await discord_bot.fetch_channel(int(get_channel_id(session_info)))
                 message = await channel.fetch_message(int(msg_id))
                 if message:
-                    await message.delete(reason=reason)
+                    await message.support_delete(reason=reason)
                     Logger.info(f"Deleted message {msg_id} in session {session_info.session_id}")
             except discord.NotFound:
                 Logger.warning(f"Message {msg_id} not found in session {session_info.session_id}")

@@ -4,19 +4,19 @@
             "charts": [
                 {
                     "level_index": 0,
-                    "id": "11558"
+                    "id": "10256"
                 },
                 {
                     "level_index": 0,
-                    "id": "11086"
+                    "id": "11052"
                 },
                 {
                     "level_index": 0,
-                    "id": "404"
+                    "id": "10319"
                 },
                 {
                     "level_index": 0,
-                    "id": "628"
+                    "id": "617"
                 }
             ],
             "condition": [
@@ -31,19 +31,19 @@
             "charts": [
                 {
                     "level_index": 1,
-                    "id": "11115"
+                    "id": "11764"
                 },
                 {
                     "level_index": 1,
-                    "id": "11437"
+                    "id": "11136"
                 },
                 {
                     "level_index": 1,
-                    "id": "11447"
+                    "id": "11265"
                 },
                 {
                     "level_index": 1,
-                    "id": "11185"
+                    "id": "11697"
                 }
             ],
             "condition": [
@@ -58,19 +58,19 @@
             "charts": [
                 {
                     "level_index": 1,
-                    "id": "11325"
+                    "id": "11701"
                 },
                 {
                     "level_index": 1,
-                    "id": "647"
+                    "id": "11411"
                 },
                 {
                     "level_index": 1,
-                    "id": "11578"
+                    "id": "11491"
                 },
                 {
                     "level_index": 1,
-                    "id": "11472"
+                    "id": "11638"
                 }
             ],
             "condition": [
@@ -85,19 +85,19 @@
             "charts": [
                 {
                     "level_index": 2,
-                    "id": "11188"
+                    "id": "11698"
                 },
                 {
                     "level_index": 2,
-                    "id": "11558"
+                    "id": "11276"
                 },
                 {
                     "level_index": 2,
-                    "id": "11137"
+                    "id": "10535"
                 },
                 {
                     "level_index": 2,
-                    "id": "11488"
+                    "id": "417"
                 }
             ],
             "condition": [
@@ -112,11 +112,11 @@
             "charts": [
                 {
                     "level_index": 2,
-                    "id": "418"
+                    "id": "579"
                 },
                 {
                     "level_index": 2,
-                    "id": "11608"
+                    "id": "11003"
                 },
                 {
                     "level_index": 2,
@@ -124,7 +124,7 @@
                 },
                 {
                     "level_index": 2,
-                    "id": "548"
+                    "id": "11770"
                 }
             ],
             "condition": [
@@ -139,15 +139,15 @@
             "charts": [
                 {
                     "level_index": 2,
-                    "id": "11591"
+                    "id": "838"
                 },
                 {
                     "level_index": 2,
-                    "id": "681"
+                    "id": "11405"
                 },
                 {
                     "level_index": 2,
-                    "id": "11596"
+                    "id": "432"
                 },
                 {
                     "level_index": 3,
@@ -170,15 +170,15 @@
                 },
                 {
                     "level_index": 3,
-                    "id": "11009"
+                    "id": "634"
                 },
                 {
                     "level_index": 3,
-                    "id": "782"
+                    "id": "11580"
                 },
                 {
                     "level_index": 3,
-                    "id": "11609"
+                    "id": "11767"
                 }
             ],
             "condition": [
@@ -193,19 +193,19 @@
             "charts": [
                 {
                     "level_index": 3,
-                    "id": "11161"
+                    "id": "11017"
                 },
                 {
                     "level_index": 3,
-                    "id": "11499"
+                    "id": "11048"
                 },
                 {
                     "level_index": 3,
-                    "id": "11465"
+                    "id": "11615"
                 },
                 {
                     "level_index": 3,
-                    "id": "11447"
+                    "id": "11512"
                 }
             ],
             "condition": [
@@ -220,19 +220,19 @@
             "charts": [
                 {
                     "level_index": 3,
-                    "id": "11383"
+                    "id": "11699"
                 },
                 {
                     "level_index": 3,
-                    "id": "464"
+                    "id": "11141"
                 },
                 {
                     "level_index": 3,
-                    "id": "11514"
+                    "id": "798"
                 },
                 {
                     "level_index": 3,
-                    "id": "11455"
+                    "id": "11496"
                 }
             ],
             "condition": [
@@ -251,15 +251,15 @@
                 },
                 {
                     "level_index": 3,
-                    "id": "11541"
+                    "id": "11207"
                 },
                 {
                     "level_index": 3,
-                    "id": "11575"
+                    "id": "11412"
                 },
                 {
                     "level_index": 3,
-                    "id": "379"
+                    "id": "227"
                 }
             ],
             "condition": [
@@ -280,11 +280,11 @@
                 },
                 {
                     "level_index": 3,
-                    "id": "11008"
+                    "id": "11133"
                 },
                 {
                     "level_index": 3,
-                    "id": "586"
+                    "id": "759"
                 },
                 {
                     "level_index": 2,
@@ -307,15 +307,15 @@
                 },
                 {
                     "level_index": 3,
-                    "id": "11572"
+                    "id": "11199"
                 },
                 {
                     "level_index": 2,
-                    "id": "11472"
+                    "id": "191"
                 },
                 {
                     "level_index": 3,
-                    "id": "832"
+                    "id": "11532"
                 }
             ],
             "condition": [
@@ -330,11 +330,11 @@
             "charts": [
                 {
                     "level_index": 3,
-                    "id": "11500"
+                    "id": "11599"
                 },
                 {
                     "level_index": 3,
-                    "id": "11226"
+                    "id": "794"
                 },
                 {
                     "level_index": 2,
@@ -342,7 +342,7 @@
                 },
                 {
                     "level_index": 3,
-                    "id": "11608"
+                    "id": "709"
                 }
             ],
             "condition": [
@@ -357,7 +357,7 @@
             "charts": [
                 {
                     "level_index": 3,
-                    "id": "11435"
+                    "id": "11715"
                 },
                 {
                     "level_index": 2,
@@ -365,7 +365,7 @@
                 },
                 {
                     "level_index": 3,
-                    "id": "11555"
+                    "id": "204"
                 },
                 {
                     "level_index": 3,
@@ -384,19 +384,19 @@
             "charts": [
                 {
                     "level_index": 3,
-                    "id": "11427"
+                    "id": "11583"
                 },
                 {
                     "level_index": 3,
-                    "id": "218"
+                    "id": "11653"
                 },
                 {
                     "level_index": 3,
-                    "id": "11214"
+                    "id": "448"
                 },
                 {
                     "level_index": 3,
-                    "id": "299"
+                    "id": "673"
                 }
             ],
             "condition": [
@@ -411,19 +411,19 @@
             "charts": [
                 {
                     "level_index": 3,
-                    "id": "800"
+                    "id": "11316"
                 },
                 {
                     "level_index": 3,
-                    "id": "11616"
+                    "id": "11710"
+                },
+                {
+                    "level_index": 4,
+                    "id": "11177"
                 },
                 {
                     "level_index": 3,
-                    "id": "11204"
-                },
-                {
-                    "level_index": 3,
-                    "id": "11296"
+                    "id": "700"
                 }
             ],
             "condition": [
@@ -438,19 +438,19 @@
             "charts": [
                 {
                     "level_index": 3,
-                    "id": "11211"
+                    "id": "11460"
                 },
                 {
                     "level_index": 3,
-                    "id": "701"
+                    "id": "11208"
                 },
                 {
                     "level_index": 3,
-                    "id": "11140"
+                    "id": "451"
                 },
                 {
                     "level_index": 3,
-                    "id": "740"
+                    "id": "11413"
                 }
             ],
             "condition": [
@@ -464,20 +464,20 @@
         "tgrade8": {
             "charts": [
                 {
+                    "level_index": 3,
+                    "id": "766"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11213"
+                },
+                {
                     "level_index": 4,
                     "id": "24"
                 },
                 {
                     "level_index": 3,
-                    "id": "11509"
-                },
-                {
-                    "level_index": 3,
-                    "id": "446"
-                },
-                {
-                    "level_index": 3,
-                    "id": "803"
+                    "id": "556"
                 }
             ],
             "condition": [
@@ -491,20 +491,20 @@
         "tgrade9": {
             "charts": [
                 {
+                    "level_index": 3,
+                    "id": "11675"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11618"
+                },
+                {
                     "level_index": 4,
-                    "id": "301"
+                    "id": "589"
                 },
                 {
                     "level_index": 3,
-                    "id": "11386"
-                },
-                {
-                    "level_index": 3,
-                    "id": "11300"
-                },
-                {
-                    "level_index": 3,
-                    "id": "11378"
+                    "id": "11687"
                 }
             ],
             "condition": [
@@ -519,19 +519,19 @@
             "charts": [
                 {
                     "level_index": 3,
-                    "id": "365"
+                    "id": "11295"
                 },
                 {
                     "level_index": 3,
-                    "id": "11307"
+                    "id": "11720"
                 },
                 {
                     "level_index": 3,
-                    "id": "11374"
+                    "id": "11470"
                 },
                 {
                     "level_index": 3,
-                    "id": "643"
+                    "id": "11619"
                 }
             ],
             "condition": [
@@ -546,19 +546,19 @@
             "charts": [
                 {
                     "level_index": 3,
-                    "id": "11165"
+                    "id": "11223"
                 },
                 {
                     "level_index": 3,
-                    "id": "11537"
+                    "id": "11745"
                 },
                 {
                     "level_index": 3,
-                    "id": "11394"
+                    "id": "11311"
                 },
                 {
                     "level_index": 3,
-                    "id": "11379"
+                    "id": "11753"
                 }
             ],
             "condition": [

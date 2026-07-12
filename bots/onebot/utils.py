@@ -128,18 +128,20 @@ async def to_message_chain(message: str | list[dict[str, Any]]) -> MessageChain:
                 lst.append(Plain(s))
     else:
         for item in message:
-            if item["type"] == "text":
-                lst.append(Plain(item["data"]["text"]))
-            elif item["type"] == "image":
+            item_type = item.get("type", "")
+            item_data = item.get("data", {})
+            if item_type == "text":
+                lst.append(Plain(item_data.get("text", "")))
+            elif item_type == "image":
                 obi = Temp.data.get("onebot_impl")
                 if obi == "lagrange":
-                    lst.append(Image(item["data"]["file"]))
+                    lst.append(Image(item_data.get("file", "")))
                 else:
-                    lst.append(Image(item["data"]["url"]))
-            elif item["type"] == "record":
-                lst.append(Voice(item["data"]["file"]))
-            elif item["type"] == "at":
-                lst.append(Plain(f"{sender_prefix}|{item['data'].get('qq')}"))
+                    lst.append(Image(item_data.get("url", "")))
+            elif item_type == "record":
+                lst.append(Voice(item_data.get("file", "")))
+            elif item_type == "at":
+                lst.append(Plain(f"{sender_prefix}|{item_data.get('qq', '')}"))
             else:
                 lst.append(Raw(CQCodeHandler.generate_cq(item)))
 

@@ -14,11 +14,13 @@ from attrs import define
 
 from core.alive import Alive
 from core.builtins.message.chain import MessageChain
+from core.builtins.session.features import Features
 from core.builtins.utils import command_prefix
 from core.config import Config
 from core.database.models import TargetInfo, SenderInfo
 from core.i18n import Locale
 from core.utils.func import parse_time_string
+from core.utils.session import inject_features
 
 
 @define
@@ -61,6 +63,7 @@ class SessionInfo:
     support_rss: bool = False
     support_typing: bool = False
     support_wait: bool = False
+    support_handle_message_nodes: bool = False
     timestamp: float | None = None
     session_id: str | None = None
     target_info: TargetInfo | None = None
@@ -81,7 +84,7 @@ class SessionInfo:
     require_check_dirty_words: bool = False
     use_url_manager: bool = False
     use_url_md_format: bool = False
-    running_mention: bool = True
+    use_running_mention: bool = True
     tmp: dict[str, str] | None = {}
 
     @classmethod
@@ -96,15 +99,11 @@ class SessionInfo:
         message_id: str | None = None,
         reply_id: str | None = None,
         messages: MessageChain | None = None,
-        prefixes: list[str] | None = None,
+        prefixes: list[str] | None = [],
         ctx_slot: int = 0,
         fetch: bool = False,
         create: bool = True,
-        require_enable_modules: bool = True,
-        require_check_dirty_words: bool = False,
-        use_url_manager: bool = False,
-        use_url_md_format: bool = False,
-        running_mention: bool = True,
+        features: Features | None = None,
         tmp: dict[str, str] | None = None,
     ) -> SessionInfo:
         """
@@ -128,13 +127,15 @@ class SessionInfo:
         locale = Locale(target_info.locale)
         bot_name = locale.t("bot_name")
         _tz_offset = target_info.target_data.get("tz_offset", Config("timezone_offset", "+8"))
-        prefixes = target_info.target_data.get("command_prefix", []) + command_prefix.copy() + (prefixes or [])
-        if fetch:
-            ctx_slot = 999
+        prefixes = (
+            (prefixes + (target_info.target_data.get("command_prefix", []) + command_prefix.copy()))
+            if prefixes is not None
+            else []
+        )
 
         tmp = tmp or {}
 
-        return cls(
+        _c = cls(
             target_id=target_id,
             target_from=target_from,
             client_name=client_name,
@@ -160,13 +161,21 @@ class SessionInfo:
             prefixes=prefixes,
             ctx_slot=ctx_slot,
             fetch=fetch,
-            require_enable_modules=require_enable_modules,
-            require_check_dirty_words=require_check_dirty_words,
-            use_url_manager=use_url_manager,
-            use_url_md_format=use_url_md_format,
-            running_mention=running_mention,
             tmp=tmp,
         )
+
+        if features:
+            _c = inject_features(session=_c, features=features)
+
+        if fetch:
+            get_params = Alive.get_infos(client_name)
+            if get_params:
+                _c.ctx_slot = get_params.get("ctx_slot_index", 999)
+                features = get_params.get("features", None)
+                if features:
+                    _c = inject_features(session=_c, features=features)
+
+        return _c
 
     async def refresh_info(self):
         self.sender_info = await SenderInfo.get_by_sender_id(self.sender_id) if self.sender_id else None

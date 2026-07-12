@@ -30,13 +30,12 @@ Bot.register_bot(client_name=client_name)
 ctx_id = Bot.register_context_manager(OneBotContextManager)
 Bot.register_context_manager(OneBotFetchedContextManager, fetch_session=True)
 
-dirty_word_check = Config("enable_dirty_check", False)
 default_locale = Config("default_locale", cfg_type=str)
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 enable_tos = Config("enable_tos", True)
 mention_required = Config("mention_required", False)
 quick_confirm = Config("quick_confirm", True)
-use_url_manager = Config("enable_urlmanager", False)
+
 enable_temp_session = Config("qq_enable_temp_session", True, table_name="bot_onebot")
 enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name="bot_onebot")
 
@@ -77,13 +76,18 @@ async def message_handler(event: Event):
         match_json = re.match(r"\[CQ:json,data=(.*?)\]", event.message, re.MULTILINE | re.DOTALL)
         if match_json:
             load_json = orjson.loads(html.unescape(match_json.group(1)))
-            if load_json["app"] == "com.tencent.multimsg":
-                event.message = f"[CQ:forward,id={load_json['meta']['detail']['resid']}]"
+            if load_json.get("app") == "com.tencent.multimsg":
+                event.message = f"[CQ:forward,id={load_json.get('meta', {}).get('detail', {}).get('resid', '')}]"
     else:
-        if event.message[0]["type"] == "json":
+        if event.message and event.message[0]["type"] == "json":
             load_json = orjson.loads(event.message[0]["data"]["data"])
-            if load_json["app"] == "com.tencent.multimsg":
-                event.message = [{"type": "forward", "data": {"id": f"{load_json['meta']['detail']['resid']}"}}]
+            if load_json.get("app") == "com.tencent.multimsg":
+                event.message = [
+                    {
+                        "type": "forward",
+                        "data": {"id": f"{load_json.get('meta', {}).get('detail', {}).get('resid', '')}"},
+                    }
+                ]
 
     reply_id = None
     if string_post:
@@ -91,7 +95,7 @@ async def message_handler(event: Event):
         if match_reply:
             reply_id = int(match_reply.group(1))
     else:
-        if event.message[0]["type"] == "reply":
+        if event.message and event.message[0]["type"] == "reply":
             reply_id = int(event.message[0]["data"]["id"])
 
     at_message = False
@@ -105,7 +109,7 @@ async def message_handler(event: Event):
             else:
                 return
     else:
-        if event.message[0]["type"] == "at":
+        if event.message and event.message[0]["type"] == "at":
             if event.message[0]["data"]["qq"] == str(event.self_id):
                 at_message = True
                 event.message = event.message[1:]
@@ -138,8 +142,6 @@ async def message_handler(event: Event):
         reply_id=str(reply_id),
         messages=msg_chain,
         ctx_slot=ctx_id,
-        use_url_manager=use_url_manager,
-        require_check_dirty_words=dirty_word_check,
         tmp=Temp.data.copy(),
     )
 

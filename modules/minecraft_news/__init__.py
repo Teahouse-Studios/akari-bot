@@ -125,13 +125,11 @@ async def _():
                 logging_err_resp=False,
             )
             res = orjson.loads(get)
-            articles = []
-            for i in res["articles"]:
-                articles.append(i)
+            articles = res.get("articles", [])
             for article in articles:
-                if article["name"] not in alist:
-                    name = article["name"]
-                    link = article["html_url"]
+                name = article.get("name", "")
+                if name and name not in alist:
+                    link = article.get("html_url", "")
                     Logger.info(f"Huh, we find {name}.")
                     await Bot.post_message(
                         "feedback_news",

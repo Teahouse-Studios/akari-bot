@@ -1,8 +1,8 @@
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
-from core.cooldown import CoolDown
 from core.config import Config
+from core.cooldown import CoolDown
 from core.dirty_check import check_bool, rickroll
 from core.logger import Logger
 from .llm import ask_llm

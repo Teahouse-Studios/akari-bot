@@ -146,7 +146,10 @@ async def get_game_record(msg: Bot.MessageSession, session_token: str, use_cache
     headers["X-LC-Session"] = session_token
     try:
         get_save_url = await get_url(save_url, headers=headers, fmt="json")
-        save_url = get_save_url["results"][0]["gameFile"]["url"]
+        results = get_save_url.get("results", [])
+        if not results:
+            raise ValueError("No game save found")
+        save_url = results[0].get("gameFile", {}).get("url", "")
 
         dl = await download(save_url, f"{save_filename}.zip", pgr_cache_path)
         shutil.unpack_archive(dl, save_dir)

@@ -10,7 +10,7 @@ from .libraries.maimaidx_apidata import get_info, search_by_alias
 from .libraries.maimaidx_mapping import *
 from .libraries.maimaidx_music import TotalList
 from .libraries.maimaidx_utils import get_diff, get_grade_info
-from .maimai import query_alias, query_plate, query_song_score, query_process
+from .maimaidx import query_alias, query_plate, query_song_score, query_process
 
 total_list = TotalList()
 
@@ -75,7 +75,7 @@ async def _(msg: Bot.MessageSession):
                 artist=music["basic_info"]["artist"],
                 genre=genre_i18n_mapping.get(music["basic_info"]["genre"], music["basic_info"]["genre"]),
                 bpm=music["basic_info"]["bpm"],
-                version=music["basic_info"]["from"],
+                version=version_fixup_mapping.get(music["basic_info"]["from"], music["basic_info"]["from"]),
                 level="/".join((str(ds) for ds in music["ds"])),
             )
         )
@@ -111,14 +111,20 @@ async def _(msg: Bot.MessageSession):
 
 @mai_regex.regex(r"(.?)([極极将將舞神者]舞?)[进進]度", desc="{I18N:maimai.help.maimai_regex.plate}")
 async def _(msg: Bot.MessageSession):
-    plate = msg.matched_msg.groups()[0] + msg.matched_msg.groups()[1]
-    await query_plate(msg, plate, get_list=False)
+    version = msg.matched_msg.groups()[0]
+    goal = msg.matched_msg.groups()[1]
+    if version and goal:
+        plate = version + goal
+        await query_plate(msg, plate, get_list=False)
 
 
 @mai_regex.regex(r"(.?)([極极将將舞神者]舞?)完成表", desc="{I18N:maimai.help.maimai_regex.plate.list}")
 async def _(msg: Bot.MessageSession):
-    plate = msg.matched_msg.groups()[0] + msg.matched_msg.groups()[1]
-    await query_plate(msg, plate, get_list=True)
+    version = msg.matched_msg.groups()[0]
+    goal = msg.matched_msg.groups()[1]
+    if version and goal:
+        plate = version + goal
+        await query_plate(msg, plate, get_list=True)
 
 
 @mai_regex.regex(

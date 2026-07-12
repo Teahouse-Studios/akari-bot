@@ -11,10 +11,10 @@ from core.component import module
 from core.config import Config
 from core.constants.exceptions import AbuseWarning
 from core.logger import Logger
+from core.utils.func import is_int
 from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
-from core.utils.func import is_int
 from .database.models import WikiTargetInfo
 from .utils.mapping import generate_screenshot_v2_blocklist
 from .utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
@@ -108,6 +108,7 @@ async def query_pages(
     if title:
         if isinstance(title, str):
             title = [title]
+        title = list(set(title))
         if len(title) > 15:
             raise AbuseWarning("{I18N:tos.message.reason.wiki_abuse}")
         query_task = {start_wiki: {"query": [], "iw_prefix": ""}}
@@ -486,7 +487,8 @@ async def query_pages(
                             )
                         )
                     if r.before_page_property == "template":
-                        if r.before_title.split(":")[1].isupper():
+                        title_parts = r.before_title.split(":")
+                        if len(title_parts) > 1 and title_parts[1].isupper():
                             plain_slice.append(session.session_info.locale.t("wiki.message.magic_word"))
                     if plain_slice:
                         msg_list.append(Plain("\n".join(plain_slice)))

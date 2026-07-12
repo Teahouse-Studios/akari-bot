@@ -3,9 +3,8 @@ import shutil
 import time
 import traceback
 
-from akari_bot_webrender.functions.options import StatusOptions
-
 import orjson
+from akari_bot_webrender.functions.options import StatusOptions
 
 from core.alive import Alive
 from core.builtins.bot import Bot
@@ -716,7 +715,8 @@ decry = module("decrypt", required_superuser=True, base=True, doc=True)
 
 @decry.command("<display_msg>")
 async def _(msg: Bot.MessageSession):
-    dec = decrypt_string(msg.as_display().split(" ", 1)[1])
+    parts = msg.as_display().split(" ", 1)
+    dec = decrypt_string(parts[1]) if len(parts) > 1 else None
     if dec:
         await msg.finish(dec)
     else:

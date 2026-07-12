@@ -1,3 +1,3 @@
 from .chunithm import *
-from .maimai import *
+from .maimaidx import *
 from .regex import *

@@ -25,6 +25,7 @@ async def get_rc(msg: Bot.MessageSession, wiki_url, headers=None):
     pageurl = wiki.wiki_info.articlepath.replace("$1", "Special:RecentChanges")
     d = []
     for x in query["query"]["recentchanges"]:
+        Logger.trace(x)
         title = x.get("title", "Unknown")
         user = x.get("user", "Unknown")
 
@@ -43,7 +44,11 @@ async def get_rc(msg: Bot.MessageSession, wiki_url, headers=None):
                 comment = str(I18NContext("message.brackets", msg=replace_brackets(x["comment"])))
                 d.append(comment)
         if x["type"] == "log":
-            if x["logtype"] == x["logaction"]:
+            if "actionhidden" in x:
+                log = msg.session_info.locale.t(
+                    "wiki.message.rc.action.actionhidden", user=user, comment=x.get("comment", "")
+                )
+            elif x["logtype"] == x["logaction"]:
                 log = msg.session_info.locale.t(f"wiki.message.rc.action.{x['logtype']}", user=user, title=title)
             else:
                 log = msg.session_info.locale.t(
@@ -55,7 +60,7 @@ async def get_rc(msg: Bot.MessageSession, wiki_url, headers=None):
                 else:
                     log = f"{user} {x['logaction']} {x['logtype']} {title}"
             d.append(f"•{msg.format_time(strptime2ts(x['timestamp']), iso=True, timezone=False)} - {log}")
-            params = x["logparams"]
+            params = x.get("params", {})
             if "suppressredirect" in params:
                 d.append(str(I18NContext("wiki.message.rc.params.suppress_redirect")))
             if "oldgroups" and "newgroups" in params:
@@ -75,7 +80,7 @@ async def get_rc(msg: Bot.MessageSession, wiki_url, headers=None):
             if x["comment"]:
                 comment = str(I18NContext("message.brackets", msg=replace_brackets(x["comment"])))
                 d.append(comment)
-    y = await check(d, session=msg)
+    y = await check(d, session=msg, force=True)
 
     g = MessageChain.assign([Url(pageurl, use_mm=msg.session_info.use_url_manager and not wiki.wiki_info.in_allowlist)])
     g += MessageChain.assign([Plain(z["content"]) for z in y])
@@ -122,7 +127,7 @@ async def convert_rc_to_detailed_format(msg: Bot.MessageSession, rc: list, wiki_
     userlist = list(set(userlist))
     titlelist = list(set(titlelist))
     commentlist = list(set(commentlist))
-    checked_userlist = await check(userlist, session=msg)
+    checked_userlist = await check(userlist, session=msg, force=True)
     user_checked_map = {}
     text_status = True
     for u in checked_userlist:
@@ -130,14 +135,14 @@ async def convert_rc_to_detailed_format(msg: Bot.MessageSession, rc: list, wiki_
         if not u["status"]:
             text_status = False
         user_checked_map[u["original"]] = user_checked
-    checked_titlelist = await check(titlelist, session=msg)
+    checked_titlelist = await check(titlelist, session=msg, force=True)
     title_checked_map = {}
     for t in checked_titlelist:
         title_checked = t["content"]
         if not t["status"]:
             text_status = False
         title_checked_map[t["original"]] = title_checked
-    checked_commentlist = await check(commentlist, session=msg)
+    checked_commentlist = await check(commentlist, session=msg, force=True)
     comment_checked_map = {}
     for c in checked_commentlist:
         comment_checked = c["content"]
@@ -177,7 +182,11 @@ async def convert_rc_to_detailed_format(msg: Bot.MessageSession, rc: list, wiki_
             if comment:
                 t.append(comment)
         if x["type"] == "log":
-            if x["logtype"] == x["logaction"]:
+            if "actionhidden" in x:
+                log = msg.session_info.locale.t(
+                    "wiki.message.rc.action.actionhidden", user=user, comment=x.get("comment", "")
+                )
+            elif x["logtype"] == x["logaction"]:
                 log = msg.session_info.locale.t(f"wiki.message.rc.action.{x['logtype']}", user=user, title=title)
             else:
                 log = msg.session_info.locale.t(
@@ -189,7 +198,7 @@ async def convert_rc_to_detailed_format(msg: Bot.MessageSession, rc: list, wiki_
                 else:
                     log = f"{user} {x['logaction']} {x['logtype']} {title}"
             t.append(log)
-            params = x["logparams"]
+            params = x.get("params", {})
             if "suppressredirect" in params:
                 t.append(str(I18NContext("wiki.message.rc.params.suppress_redirect")))
             if "oldgroups" and "newgroups" in params:
@@ -208,7 +217,7 @@ async def convert_rc_to_detailed_format(msg: Bot.MessageSession, rc: list, wiki_
                 t.append(str(I18NContext("wiki.message.rc.params.target_title")) + params["target_title"])
             if comment:
                 t.append(comment)
-            if x["revid"] != 0:
+            if x.get("revid", 0) != 0:
                 t.append(wiki_info.articlepath.replace("$1", f"{urllib.parse.quote(title_checked_map[x['title']])}"))
         time = msg.format_time(strptime2ts(x["timestamp"]), iso=True)
         t.append(time)

@@ -5,8 +5,8 @@ from core.config.decorator import on_config
 class QQBotConfig:
     enable: bool = False
     qq_bot_appid: str | int = ""
+    qq_bot_openid: str = ""
     qq_private_bot: bool = False
-    qq_bot_enable_send_url: bool = False
     qq_typing_emoji: int = 181
 
 

@@ -6,20 +6,20 @@ from core.constants.path import noto_sans_demilight_path
 def draw_scoreline_table(tap: int = 0, hold: int = 0, slide: int = 0, touch: int = 0, brk: int = 0, mode: str = "0+"):
     total_notes = tap + 2 * hold + 3 * slide + touch + 5 * brk
     if total_notes == 0:
-        base_fixup = None
+        base_fixup = 0
     else:
         base_fixup = 100 / total_notes
 
     if brk == 0:
-        bonus_fixup = None
+        bonus_fixup = 0
     else:
         bonus_fixup = 1 / brk
 
-    YELLOW = "#FFC107"
-    ORANGE = "#FF9800"
-    PINK = "#EC407A"
-    GREEN = "#4CAF50"
-    GREY = "#9E9E9E"
+    CRITICAL = "#FFC107"
+    PERFECT = "#FF9800"
+    GREAT = "#EC407A"
+    GOOD = "#4CAF50"
+    MISS = "#9E9E9E"
 
     header1 = ["TAP", "HOLD", "SLIDE", "TOUCH", "BREAK"]
     header2 = ["PERFECT", "GREAT", "GOOD", "MISS"]
@@ -65,7 +65,7 @@ def draw_scoreline_table(tap: int = 0, hold: int = 0, slide: int = 0, touch: int
     for i, text in enumerate(header2):
         x = padding + (i + 1) * cell_w
         y = offset_y
-        color = [ORANGE, PINK, GREEN, GREY][i]
+        color = [PERFECT, GREAT, GOOD, MISS][i]
         draw.rectangle([x, y, x + cell_w, y + cell_h], fill=color, outline=(0, 0, 0), width=2)
         bbox = draw.textbbox((0, 0), text, font=font)
         w = bbox[2] - bbox[0]
@@ -101,7 +101,7 @@ def draw_scoreline_table(tap: int = 0, hold: int = 0, slide: int = 0, touch: int
                     y_start = offset_y + 5 * cell_h
                     y_end = offset_y + 8 * cell_h
                     draw.rectangle(
-                        [x, y_start, x + cell_w, y_end], fill=[GREEN, GREY][col - 2], outline=(0, 0, 0), width=2
+                        [x, y_start, x + cell_w, y_end], fill=[GOOD, MISS][col - 2], outline=(0, 0, 0), width=2
                     )
 
                     if brk == 0:
@@ -133,9 +133,9 @@ def draw_scoreline_table(tap: int = 0, hold: int = 0, slide: int = 0, touch: int
                     )
                 continue
 
-            color = [ORANGE, PINK, GREEN, GREY][col]
+            color = [PERFECT, GREAT, GOOD, MISS][col]
             if col == 0 and row == 4:
-                color = YELLOW
+                color = CRITICAL
             draw.rectangle([x, y, x + cell_w, y + cell_h], fill=color, outline=(0, 0, 0), width=2)
 
             if row < 5 and note_counts[row] == 0:

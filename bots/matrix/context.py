@@ -8,7 +8,7 @@ from core.builtins.message.elements import PlainElement, ImageElement, VoiceElem
 from core.builtins.session.context import ContextManager
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
-from core.utils.image import msgnode2image, image_split
+from core.utils.image import image_split
 from .client import matrix_bot, homeserver_host
 from .features import Features
 from .info import client_name
@@ -16,7 +16,7 @@ from .info import client_name
 
 class MatrixContextManager(ContextManager):
     context: dict[str, tuple[nio.MatrixRoom, nio.RoomMessageFormatted]] = {}
-    features: type[Features] | None = Features
+    features: Features = Features()
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
@@ -60,11 +60,8 @@ class MatrixContextManager(ContextManager):
 
         # https://spec.matrix.org/v1.9/client-server-api/#permissions
         power_levels = (await matrix_bot.room_get_state_event(room_id, "m.room.power_levels")).content
-        level = (
-            power_levels["users"][sender_mxid]
-            if sender_mxid in power_levels["users"]
-            else power_levels["users_default"]
-        )
+        users = power_levels.get("users", {})
+        level = users.get(sender_mxid) if sender_mxid in users else power_levels.get("users_default", 0)
         if level and int(level) >= 50:
             return True
         return False
@@ -87,7 +84,7 @@ class MatrixContextManager(ContextManager):
         if ctx:
             room, event = ctx
         if isinstance(message, MessageNodes):
-            message = MessageChain.assign(await msgnode2image(message))
+            Logger.error("This session does not support message nodes, check if bug exists.")
         for x in message.as_sendable(session_info, parse_message=enable_parse_message):
 
             async def _send_msg(content):
@@ -102,12 +99,13 @@ class MatrixContextManager(ContextManager):
                     content["m.relates_to"] = {"m.in_reply_to": {"event_id": reply_to}}
                     # mention target user
                     content["m.mentions"] = {"user_ids": [reply_to_user]}
-                    if content["msgtype"] == "m.notice" and event:
+                    if content.get("msgtype") == "m.notice" and event:
                         # https://spec.matrix.org/v1.9/client-server-api/#fallbacks-for-rich-replies
                         # todo: standardize fallback for m.image, m.video, m.audio, and m.file
-                        reply_to_type = event.source["content"]["msgtype"]
+                        event_content = event.source.get("content", {})
+                        reply_to_type = event_content.get("msgtype", "")
                         content["body"] = f">{' *' if reply_to_type == 'm.emote' else ''} <{event.sender}> {
-                            event.source['content']['body']
+                            event_content.get('body', '')
                         }\n\n{x.text}"
                         content["format"] = "org.matrix.custom.html"
                         html_text = x.text
@@ -118,14 +116,14 @@ class MatrixContextManager(ContextManager):
                         }/{reply_to}?via={homeserver_host}">In reply to</a>{
                             " *" if reply_to_type == "m.emote" else ""
                         } <a href="https://matrix.to/#/{event.sender}">{event.sender}</a><br/>{
-                            event.source["content"]["body"]
+                            event.source.get("content", {}).get("body", "")
                         }</blockquote></mx-reply>{html_text}'
 
-                if event and "m.relates_to" in event.source["content"]:
-                    relates_to = event.source["content"]["m.relates_to"]
-                    if "rel_type" in relates_to and relates_to["rel_type"] == "m.thread":
+                if event and "m.relates_to" in event.source.get("content", {}):
+                    relates_to = event.source["content"].get("m.relates_to", {})
+                    if "rel_type" in relates_to and relates_to.get("rel_type") == "m.thread":
                         # replying in thread
-                        thread_root = relates_to["event_id"]
+                        thread_root = relates_to.get("event_id")
                         if reply_to:
                             # reply to msg replying in thread
                             content["m.relates_to"] = {
@@ -382,7 +380,7 @@ class MatrixFetchedContextManager(MatrixContextManager):
                     resp = await matrix_bot.room_get_state_event(room.room_id, "m.room.member", target_id)
                     if resp is nio.ErrorResponse:
                         pass
-                    elif resp.content["membership"] in ["join", "leave", "invite"]:
+                    elif resp.content.get("membership") in ["join", "leave", "invite"]:
                         return room
             Logger.info(f"Could not find any exist private room for {target_id}, trying to create one.")
             try:

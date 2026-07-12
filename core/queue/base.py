@@ -26,7 +26,6 @@ from core.database.models import JobQueuesTable
 from core.exports import exports
 from core.logger import Logger
 
-
 if TYPE_CHECKING:
     from core.builtins.bot import Bot
 
@@ -118,7 +117,7 @@ class JobQueueBase:
     pause_event.set()
 
     @classmethod
-    async def add_job(cls, target_client: str, action, args, wait=True) -> str | None:
+    async def add_job(cls, target_client: str, action, args, wait=True) -> str | dict | None:
         """向队列添加新的任务。
 
         该方法将任务信息保存到数据库，可选择等待任务完成或立即返回。
@@ -135,6 +134,7 @@ class JobQueueBase:
         :return wait=False: 返回任务 ID 字符串
         :return target_client 为 None: 返回 None
         """
+        # Logger.debug(f"Adding job to queue {cls.name}, target client: {target_client}, action: {action}, args: {args}, wait: {wait}")
         if target_client:
             task_id = await JobQueuesTable.add_task(target_client, action, args)
         else:

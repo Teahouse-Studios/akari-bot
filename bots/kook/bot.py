@@ -21,7 +21,6 @@ ctx_id = Bot.register_context_manager(KOOKContextManager)
 Bot.register_context_manager(KOOKFetchedContextManager, fetch_session=True)
 
 ignored_sender = Config("ignored_sender", ignored_sender_default)
-use_url_manager = Config("enable_urlmanager", False)
 mention_required = Config("mention_required", False)
 
 
@@ -52,7 +51,7 @@ async def msg_handler(message: Message):
 
     reply_id = None
     if "quote" in message.extra:
-        reply_id = message.extra["quote"]["rong_id"]
+        reply_id = message.extra.get("quote", {}).get("rong_id")
 
     at_message = False
     match_at = re.match(r"^\(met\)(\d+)\(met\)", message.content)
@@ -81,8 +80,6 @@ async def msg_handler(message: Message):
         reply_id=reply_id,
         messages=msg_chain,
         ctx_slot=ctx_id,
-        use_url_manager=use_url_manager,
-        use_url_md_format=True,
     )
 
     await Bot.process_message(session, message)
@@ -90,21 +87,22 @@ async def msg_handler(message: Message):
 
 @bot.on_event(EventTypes.ADDED_REACTION)
 async def add_reaction(b: khlBot, event: Event):
-    if event.extra["body"]["user_id"] == b.client.me.id:
+    body = event.extra.get("body", {})
+    if body.get("user_id") == b.client.me.id:
         return
-    sender_id = f"{sender_prefix}|{event.extra['body']['user_id']}"
+    sender_id = f"{sender_prefix}|{body.get('user_id', '')}"
     if sender_id in ignored_sender:
         return
 
     session = await SessionInfo.assign(
-        target_id=f"{target_group_prefix}|{event.extra['body']['channel_id']}",
+        target_id=f"{target_group_prefix}|{body.get('channel_id', '')}",
         sender_id=sender_id,
         target_from=target_group_prefix,
         sender_from=sender_prefix,
         client_name=client_name,
         message_id=str(event.id),
-        reply_id=event.extra["body"]["msg_id"],
-        messages=MessageChain.assign([Plain(event.extra["body"]["emoji"]["id"])]),
+        reply_id=body.get("msg_id"),
+        messages=MessageChain.assign([Plain(body.get("emoji", {}).get("id", ""))]),
         ctx_slot=ctx_id,
     )
 
@@ -113,21 +111,22 @@ async def add_reaction(b: khlBot, event: Event):
 
 @bot.on_event(EventTypes.PRIVATE_ADDED_REACTION)
 async def private_add_reaction(b: khlBot, event: Event):
-    if event.extra["body"]["user_id"] == b.client.me.id:
+    body = event.extra.get("body", {})
+    if body.get("user_id") == b.client.me.id:
         return
-    sender_id = f"{sender_prefix}|{event.extra['body']['user_id']}"
+    sender_id = f"{sender_prefix}|{body.get('user_id', '')}"
     if sender_id in ignored_sender:
         return
 
     session = await SessionInfo.assign(
-        target_id=f"{target_person_prefix}|{event.extra['body']['user_id']}",
+        target_id=f"{target_person_prefix}|{body.get('user_id', '')}",
         sender_id=sender_id,
         target_from=target_person_prefix,
         sender_from=sender_prefix,
         client_name=client_name,
         message_id=str(event.id),
-        reply_id=event.extra["body"]["msg_id"],
-        messages=MessageChain.assign([Plain(event.extra["body"]["emoji"]["id"])]),
+        reply_id=body.get("msg_id"),
+        messages=MessageChain.assign([Plain(body.get("emoji", {}).get("id", ""))]),
         ctx_slot=ctx_id,
     )
 

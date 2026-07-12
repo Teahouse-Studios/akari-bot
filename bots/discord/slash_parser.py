@@ -36,7 +36,6 @@ async def ctx_to_session(ctx: discord.ApplicationContext | discord.AutocompleteC
         messages=msg_chain,
         ctx_slot=slash_ctx_id,
         prefixes=["~", "/"],
-        require_enable_modules=False,
     )
 
     return session
