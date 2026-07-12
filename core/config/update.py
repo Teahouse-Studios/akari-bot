@@ -201,7 +201,6 @@ if "config_version" not in config:
     reorganizer.add_enable_flag()
     reorganizer.reorganize_key("qq_bot_appid")
     reorganizer.reorganize_key("qq_private_bot")
-    reorganizer.reorganize_key("qq_bot_enable_send_url")
     reorganizer.reorganize_key("qq_typing_emoji")
     reorganizer.reorganize_key("qq_bot_secret", True)
 

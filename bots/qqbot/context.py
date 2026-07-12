@@ -18,7 +18,6 @@ from core.logger import Logger
 
 qq_typing_emoji = str(Config("qq_typing_emoji", 181, (str, int), table_name="bot_qqbot"))
 qq_limited_emoji = str(Config("qq_limited_emoji", 10060, (str, int), table_name="bot_qqbot"))
-enable_send_url = Config("qq_bot_enable_send_url", False, table_name="bot_qqbot")
 
 
 # 额外添加平台接口支持但 SDK 不支持的方法
@@ -129,25 +128,6 @@ class QQBotContextManager(ContextManager):
                     plains.append(PlainElement(text=f"<@{x.id}>"))
         if len(plains + images) != 0:
             msg = "\n".join([x.text for x in plains]).strip()
-            #
-            # filtered_msg = []
-            # lines = msg.split("\n")
-            # for line in lines:
-            #     if enable_send_url and session_info.tmp.get("message_type") != "group_direct":
-            #
-            #         def process_url(match):
-            #             url_ = match.group(0)
-            #             parts = url_.split(".")
-            #             for i in range(1, len(parts)):
-            #                 if parts[i] and parts[i][0].isalpha():
-            #                     parts[i] = parts[i][0].upper() + parts[i][1:]
-            #             return ".".join(parts)
-            #
-            #         line = url_pattern.sub(process_url, line)
-            #     elif session_info.tmp.get("message_type") != "group_direct" and url_pattern.findall(line):
-            #         continue
-            #     filtered_msg.append(line)
-            # msg = "\n".join(filtered_msg).strip()
             image_1 = None
             send_img = None
 
