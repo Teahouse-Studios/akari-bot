@@ -36,7 +36,6 @@ _多功能、跨平台、可自由扩展的异步聊天机器人助手_
 
 #### QQ
 ##### 官方机器人
-支持添加到频道与消息列表。由于技术问题暂时不开放入群。
 <div align="left">
   <img width="200" src="./assets/qqbot_qr_guild.png" alt="guild qr">
   <img width="200" src="./assets/qqbot_qr_group.png" alt="group qr">
