@@ -71,13 +71,12 @@ async def query_bedrock_server(address, raw=False) -> str:
             url = f"http://motd.wd-api.com/v1/bedrock?host={host}&port={port if port else 19132}"
             raw_data = json.loads(await get_url(url, 200, logging_err_resp=False))
             data_str = raw_data.get("data", "")
-            status: dict = {
-                key: value
-                for key, value in zip(
+            status = dict(
+                zip(
                     ["edition", "motd_1", "_", "version", "players_online", "players_max", "__", "motd_2", "gamemode"],
                     data_str.split(";"),
                 )
-            }
+            )
             Logger.debug(str(status))
             status["motd"] = status["motd_1"] + " - " + status.get("motd_2", "")
         Logger.debug(str(status))

@@ -176,7 +176,7 @@ async def search_pubchem(id: int | None = None):
     if get:
         properties = get.get("PropertyTable", {}).get("Properties", [])
         if not properties:
-            raise
+            raise ValueError
         compound_info = properties[0]
         smiles = compound_info.get("SMILES", "")
         mol = Chem.MolFromSmiles(smiles)

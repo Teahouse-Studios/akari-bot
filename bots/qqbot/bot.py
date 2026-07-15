@@ -101,7 +101,8 @@ class MyClient(botpy.Client):
 
         await Bot.process_message(session, message)
 
-    async def on_message_group_create(self, message: GroupMessage):
+    @staticmethod
+    async def on_message_group_create(message: GroupMessage):
         Logger.debug(message)
         target_id = f"{target_group_prefix}|{message.group_openid}"
         sender_id = f"{sender_prefix}|{message.author.member_openid}"

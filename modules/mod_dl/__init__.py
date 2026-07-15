@@ -148,7 +148,7 @@ async def _(msg: Bot.MessageSession, mod_name: str, version: str = None):
         else:
             await msg.finish(I18NContext("mod_dl.message.invalid.non_digital"))
 
-        if mod_info[0] == "modrinth":  # modrinth mod
+        if mod_info and mod_info[0] == "modrinth":  # modrinth mod
             if not ver:
                 reply2 = await msg.wait_reply(
                     f"{msg.session_info.locale.t('mod_dl.message.version')}\n"

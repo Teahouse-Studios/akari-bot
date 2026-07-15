@@ -127,8 +127,8 @@ def find_solution(numbers):
                 expr_a, prec_a = exprs[i]
                 expr_b, prec_b = exprs[j]
 
-                rest_nums = [nums[k] for k in range(len(nums)) if k != i and k != j]
-                rest_exprs = [exprs[k] for k in range(len(nums)) if k != i and k != j]
+                rest_nums = [nums[k] for k in range(len(nums)) if k not in (i, j)]
+                rest_exprs = [exprs[k] for k in range(len(nums)) if k not in (i, j)]
 
                 for op, (func, prec) in ops.items():
                     if op in ["+", "*"] and j < i:

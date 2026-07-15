@@ -26,13 +26,13 @@ async def _(msg: Bot.MessageSession, prompt: str):
     target_default_llm = msg.session_info.target_info.target_data.get("ai_default_llm")
     is_superuser = msg.check_super_user()
 
-    avaliable_llms = llm_list + (llm_su_list if is_superuser else [])
+    available_llms = llm_list + (llm_su_list if is_superuser else [])
 
     if not selected_llm:
         selected_llm = target_default_llm if target_default_llm else default_llm
 
     llm_info = None
-    if selected_llm in avaliable_llms:
+    if selected_llm in available_llms:
         llm_info = next((llm for llm in llm_api_list if llm["name"].lower() == selected_llm), None)
 
     if llm_info:
@@ -93,13 +93,13 @@ async def _(msg: Bot.MessageSession, llm: str):
 
 @ai.command("llm list {{I18N:ai.help.llm.list}}")
 async def _(msg: Bot.MessageSession):
-    avaliable_llms = llm_list + (llm_su_list if msg.check_super_user() else [])
+    available_llms = llm_list + (llm_su_list if msg.check_super_user() else [])
 
-    if avaliable_llms:
+    if available_llms:
         await msg.finish(
             [
                 I18NContext("ai.message.llm.list"),
-                Plain("\n".join(sorted(avaliable_llms))),
+                Plain("\n".join(sorted(available_llms))),
                 I18NContext("ai.message.llm.list.prompt", prefix=msg.session_info.prefixes[0]),
             ]
         )

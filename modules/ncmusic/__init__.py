@@ -98,10 +98,10 @@ async def _(msg: Bot.MessageSession, keyword: str):
                 else:
                     songs_list = result_data.get("songs", [])
                     sid = songs_list[query - 1].get("id") if query - 1 < len(songs_list) else None
+                    if sid:
+                        await info(msg, sid)
             else:
                 await msg.finish(I18NContext("ncmusic.message.search.invalid.non_digital"))
-
-        await info(msg, sid)
 
     if legacy:
         for i, song in enumerate(songs, start=1):
@@ -138,13 +138,13 @@ async def _(msg: Bot.MessageSession, keyword: str):
                 else:
                     songs_list = result_data.get("songs", [])
                     sid = songs_list[query - 1].get("id") if query - 1 < len(songs_list) else None
+                    if sid:
+                        await info(msg, sid)
             else:
                 await msg.finish(I18NContext("ncmusic.message.search.invalid.non_digital"))
 
         if msg.session_info.client_name == "QQ" and enable_card:
             await msg.finish(f"[CQ:music,type=163,id={sid}]", quote=False)
-        else:
-            await info(msg, sid)
 
 
 @ncmusic.command("<sid> {{I18N:ncmusic.help}}", available_for=["QQ|Group", "QQ|Private"])
