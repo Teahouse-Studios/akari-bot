@@ -99,7 +99,7 @@ class SessionInfo:
         message_id: str | None = None,
         reply_id: str | None = None,
         messages: MessageChain | None = None,
-        prefixes: list[str] | None = None,
+        prefixes: list[str] | None = [],  # skipcq
         ctx_slot: int = 0,
         fetch: bool = False,
         create: bool = True,
