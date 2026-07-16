@@ -2,7 +2,7 @@
 # NOTE: TOML is not like Python. Do not use Python syntax here.
 # EXAMPLE: Boolean values in TOML must be lowercase.
 
-default_locale = "en_us" # Default session language environment.
+default_locale = "en_us" # Default language environment.
 config_version = 3 # Config version number, which will be automatically updated with the new features and generally does not need to be modified.
 
 [config]
@@ -16,7 +16,7 @@ use_font_mirror = false # Whether to use font mirrors when rendering web pages.
 use_secrets_random = false # Whether to use the random number generator based on the secrets library.
 base_superuser = ["QQ|2596322644"] # The bot's base superuser list. The values entered here will be loaded into the database when the bot starts.
 ignored_sender = ["QQ|2854196310"] # Ignored user list. Users matching this list will be ignored.
-report_targets = [] # List of reporting sessions. The value filled in here will be identified as the reporting session. (e.g., when the bot encounters a command error, the bot will send the error information to the corresponding session)
+report_targets = [] # List of reporting contexts. The value filled in here will be identified as the reporting context. (e.g., when the bot encounters a command error, the bot will send the error information to the corresponding context)
 command_prefix = ["~", "～"] # Command prefix. The value entered here will be recognized as the command prefix.
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # The keyword for the confirmation command. The value entered here will be recognized as the confirmation command.
 enable_module_invalid_prompt = false # Whether to enable the prompt message when the module does not exist.

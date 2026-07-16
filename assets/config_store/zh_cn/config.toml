@@ -2,7 +2,7 @@
 # 注意：TOML 不是 Python。请不要在此处使用 Python 语法。
 # 例如：TOML 中的布尔值必须是小写。
 
-default_locale = "zh_cn" # 默认的会话语言环境。
+default_locale = "zh_cn" # 默认的语言环境。
 config_version = 3 # 配置版本号，将会随功能更新自增，一般情况请勿修改。
 
 [config]
@@ -16,7 +16,7 @@ use_font_mirror = false # 渲染网页时是否使用字体镜像。
 use_secrets_random = false # 是否使用基于 secrets 库的随机数生成器。
 base_superuser = ["QQ|2596322644"] # 机器人的基础超级用户列表，此处填写的值将会在机器人启动时被加载进入数据库。
 ignored_sender = ["QQ|2854196310"] # 无视的用户列表，匹配到此列表中的用户将会被忽略。
-report_targets = [] # 上报会话列表，此处填写的值将会被识别为上报会话。（如：在机器人执行命令出错时，机器人将会把错误信息发送至对应会话）
+report_targets = [] # 上报场景列表，此处填写的值将会被识别为上报场景。（如：在机器人执行命令出错时，机器人将会把错误信息发送至对应场景）
 command_prefix = ["~", "～"] # 命令前缀，此处填写的值将会被识别为命令前缀。
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # 确认命令的关键词，此处填写的值将会被识别为确认命令。
 enable_module_invalid_prompt = false # 是否开启模块不存在的提示消息。
