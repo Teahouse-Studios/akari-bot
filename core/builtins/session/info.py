@@ -2,7 +2,7 @@
 会话信息模块 - 定义和管理消息会话的信息和上下文。
 
 该模块定义了 SessionInfo 类，用于承载一个消息会话的所有相关信息，
-包括目标、发送者、平台特性、权限信息等。
+包括场景、用户、平台特性、权限信息等。
 """
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ class SessionInfo:
     会话信息类 - 承载一个消息会话的完整信息。
 
     该类使用 attrs 装饰器，存储了一个消息会话所需的所有信息，
-    包括目标和发送者信息、消息内容、平台特性、权限和配置等。
+    包括场景和用户信息、消息内容、平台特性、权限和配置等。
 
     属性分类说明:
     - 基本信息: target_id, target_from, client_name, sender_id, sender_from 等
@@ -189,7 +189,7 @@ class SessionInfo:
 
     def get_common_sender_id(self) -> str:
         """
-        获取发送者的常用 ID。
+        获取用户的常用 ID。
         """
         if self.sender_id:
             return self.sender_id.split("|")[-1]

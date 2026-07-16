@@ -42,10 +42,10 @@ from modules.wikilog.database.models import *
 
 
 class SenderInfoL(Model):
-    """旧版本的发送者信息表。
+    """旧版本的用户信息表。
 
     Attributes:
-        id: 发送者的唯一标识
+        id: 用户的唯一标识
         isInBlockList: 是否在黑名单中
         isInAllowList: 是否在白名单中
         isSuperUser: 是否为超级用户
@@ -67,12 +67,12 @@ class SenderInfoL(Model):
 
 
 class TargetInfoL(Model):
-    """旧版本的目标（群组/频道）信息表。
+    """旧版本的场景信息表。
 
     Attributes:
-        targetId: 目标的唯一标识
+        targetId: 场景的唯一标识
         enabledModules: 启用的模块列表
-        options: 目标选项设置
+        options: 场景选项设置
         customAdmins: 自定义管理员列表
         muted: 是否被禁言
         locale: 本地化语言设置
@@ -93,7 +93,7 @@ class GroupBlockList(Model):
     """旧版本的群组黑名单表。
 
     Attributes:
-        targetId: 被阻止的目标ID
+        targetId: 被阻止的场景ID
     """
 
     targetId = fields.CharField(max_length=512, primary_key=True)
@@ -128,7 +128,7 @@ class Analytics(Model):
         id: 记录唯一标识
         moduleName: 模块名称
         moduleType: 模块类型
-        targetId: 目标ID
+        targetId: 场景 ID
         senderId: 发送者ID
         command: 执行的命令
         timestamp: 执行时间
@@ -153,7 +153,7 @@ class UnfriendlyActionsTable(Model):
 
     Attributes:
         id: 记录唯一标识
-        targetId: 目标ID
+        targetId: 场景 ID
         senderId: 发送者ID
         action: 不当行为类型
         detail: 行为详情
@@ -228,12 +228,12 @@ class PhigrosBindInfoL(Model):
 
 
 class WikiTargetInfoL(Model):
-    """Wiki 模块的目标设置表（旧版）。
+    """Wiki 模块的场景设置表（旧版）。
 
     存储各会话 Wiki 模块的个性化设置。
 
     Attributes:
-        targetId: 会话 ID
+        targetId: 场景 ID
         link: Wiki API 链接
         iws: 跨 Wiki 链接映射
         headers: HTTP 请求头
@@ -323,12 +323,12 @@ class WikiBotAccountListL(Model):
 
 
 class WikiLogTargetSetInfoL(Model):
-    """WikiLog 模块的目标设置表（旧版）。
+    """WikiLog 模块的场景设置表（旧版）。
 
-    存储 WikiLog 功能的目标特定配置。
+    存储 WikiLog 功能的场景特定配置。
 
     Attributes:
-        targetId: 目标 ID
+        targetId: 场景 ID
         infos: 配置信息（JSON 格式）
     """
 
@@ -453,7 +453,7 @@ async def convert_database():
 
     Logger.info("Converting TargetInfo...")
 
-    # 获取所有目标信息和黑名单信息
+    # 获取所有场景信息和黑名单信息
     target_info_records = await TargetInfoL.all()
     group_block_records = await GroupBlockList.all()
     # 创建黑名单 ID 集合，便于后续查询
@@ -464,7 +464,7 @@ async def convert_database():
         if i % 1000 == 0:
             Logger.info(f"Converting TargetInfo {i}/{len(target_info_records)}...")
         try:
-            # 将旧格式的目标信息转换为新格式
+            # 将旧格式的场景信息转换为新格式
             await TargetInfo.create(
                 target_id=r.targetId,
                 blocked=False,
@@ -478,7 +478,7 @@ async def convert_database():
             Logger.error(f"Failed to convert TargetInfo: {r.targetId}, error: {e}")
             Logger.error(f"TargetInfo record: {r.__dict__}")
 
-        # 如果目标在黑名单中，更新其 blocked 字段
+        # 如果场景在黑名单中，更新其 blocked 字段
         if r.targetId in blocked_target_ids:
             try:
                 target_info_record = await TargetInfo.get_by_target_id(r.targetId, create=False)
@@ -677,7 +677,7 @@ async def convert_database():
 
     Logger.info("Converting WikiLogTargetSetInfo...")
 
-    # WikiLog 目标设置转换
+    # WikiLog 场景设置转换
     wikilog_target_set_info_record = await WikiLogTargetSetInfoL.all()
     for r in wikilog_target_set_info_record:
         try:

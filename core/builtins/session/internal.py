@@ -99,7 +99,7 @@ class MessageSession:
         callback: Any | None = None,
     ) -> FinishedSession:
         """
-        用于向消息发送者返回消息。
+        用于向消息用户返回消息。
 
         该方法将消息发送给触发消息的用户，并返回一个 FinishedSession 对象
         用于进一步操作（如删除消息、添加反应等）。
@@ -164,7 +164,7 @@ class MessageSession:
         callback: Coroutine | None = None,
     ) -> NoReturn:
         """
-        用于向消息发送者返回消息并终结会话（模块后续代码不再执行）。
+        用于向消息用户返回消息并终结会话（模块后续代码不再执行）。
 
         该方法是处理消息并终止的最终操作。调用此方法后，会抛出 SessionFinished 异常
         来终止当前会话的处理流程，后续代码不会执行。
@@ -206,7 +206,7 @@ class MessageSession:
         callback: Coroutine | None = None,
     ):
         """
-        用于向消息发送者直接发送消息。
+        用于向消息用户直接发送消息。
 
         与 send_message 不同，直接发送消息不会等待消息队列的处理结果，
         消息会以后台任务的形式发送。
@@ -338,7 +338,7 @@ class MessageSession:
 
     async def check_native_permission(self) -> bool:
         """
-        用于检查消息发送者原本在聊天平台中是否具有管理员权限。
+        用于检查消息用户原本在聊天平台中是否具有管理员权限。
 
         这检查的是原生平台权限（如 QQ 群管理员），而非 AkariBot 的权限。
 
@@ -654,7 +654,7 @@ class MessageSession:
 
     def check_super_user(self) -> bool:
         """
-        用于检查消息发送者是否为超级用户。
+        用于检查消息用户是否为超级用户。
 
         :return: 如果用户是超级用户返回 True，否则返回 False
         """
@@ -662,7 +662,7 @@ class MessageSession:
 
     async def check_permission(self) -> bool:
         """
-        用于检查消息发送者在对话内的权限。
+        用于检查消息用户在对话内的权限。
 
         检查用户是否拥有管理员权限（包括自定义管理员和平台原生管理员）。
 

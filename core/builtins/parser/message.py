@@ -57,7 +57,7 @@ if TYPE_CHECKING:
 
 # ========== 全局配置项 ==========
 
-# 忽略的发送者列表 - 这些用户的消息不会被处理
+# 忽略的用户列表 - 这些用户的消息不会被处理
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 
 # ========== 功能开关 ==========
@@ -68,7 +68,7 @@ enable_tos = Config("enable_tos", True)
 # 是否启用分析统计（记录命令执行情况）
 enable_analytics = Config("enable_analytics", True)
 
-# 错误报告的目标列表（将错误信息发送给这些用户）
+# 错误报告的场景列表（将错误信息发送给这些场景）
 report_targets = Config("report_targets", [])
 
 # 是否启用模块无效提示（用户输入错误的模块名时是否提示）
@@ -134,7 +134,7 @@ async def parser(msg: "Bot.MessageSession"):
     5. 错误处理和用户反馈
 
     工作流程：
-    1. 刷新用户和目标信息（从数据库）
+    1. 刷新用户和场景信息（从数据库）
     2. 检查黑名单和权限
     3. 提取消息前缀，判断是否为命令
     4. 若是命令，进行命令解析和执行
@@ -149,7 +149,7 @@ async def parser(msg: "Bot.MessageSession"):
     # 创建标识字符串用于日志记录
     identify_str = f"[{msg.session_info.sender_id} ({msg.session_info.target_id})]"
 
-    # 检查发送者是否在忽略列表中
+    # 检查用户是否在忽略列表中
     if msg.session_info.sender_id in ignored_sender:
         return
 
@@ -177,13 +177,13 @@ async def parser(msg: "Bot.MessageSession"):
                     return
 
         # ========== 步骤 2: 权限检查 ==========
-        # 检查发送者是否被被机器人屏蔽（机器人黑名单）
+        # 检查用户是否被被机器人屏蔽（机器人黑名单）
         if msg.session_info.sender_info.blocked and not (
             msg.session_info.sender_info.trusted or msg.session_info.sender_info.superuser
         ):
             return
 
-        # 检查发送者是否在会话的屏蔽用户列表中（会话黑名单）
+        # 检查用户是否在会话的屏蔽用户列表中（会话黑名单）
         if msg.session_info.sender_id in msg.session_info.banned_users and not msg.session_info.superuser:
             return
 
@@ -291,7 +291,7 @@ def _transform_alias(msg, command: str):
     :param command: 原始命令字符串
     :return: 转换后的命令字符串（如果没有匹配的别名，返回原命令）
     """
-    # 从目标信息中获取自定义别名字典
+    # 从场景信息中获取自定义别名字典
     aliases = dict(msg.session_info.target_info.target_data.get("command_alias", {}).items())
 
     # 存储所有匹配的别名模板，格式: (占位符数量, 模式, 替换, 占位符列表, 匹配对象)
@@ -509,7 +509,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
     _typing = False  # 标记是否正在显示“正在输入……”状态
     try:
         # ========== 步骤 1: 冷却检查 ==========
-        # 检查目标是否在冷却期内（被临时禁止）
+        # 检查场景是否在冷却期内（被临时禁止）
         await _check_target_cooldown(msg)
 
         # ========== 步骤 2: ToS 临时封禁检查 ==========
@@ -875,10 +875,10 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
 
 async def _check_target_cooldown(msg: "Bot.MessageSession"):
     """
-    检查目标是否在冷却期内。
+    检查场景是否在冷却期内。
 
     该函数实现了命令冷却机制，防止用户过于频繁地使用命令。
-    冷却时间可在目标配置中设置，管理员和超级用户不受限制。
+    冷却时间可在场景配置中设置，管理员和超级用户不受限制。
 
     工作流程：
     1. 获取冷却时间配置
@@ -889,17 +889,17 @@ async def _check_target_cooldown(msg: "Bot.MessageSession"):
     :param msg: 消息会话对象
     :raises NoReportException: 如果用户在冷却期内
     """
-    # 获取目标配置的冷却时间（秒）
+    # 获取场景配置的冷却时间（秒）
     cooldown_time = int(msg.session_info.target_info.target_data.get("cooldown_time", 0))
 
     # 如果没有配置冷却时间或用户有管理权限，直接返回
     if not cooldown_time or await msg.check_permission():
         return
 
-    # 获取该目标的冷却记录
+    # 获取该场景的冷却记录
     target_record = target_cooldown_counter[msg.session_info.target_id]
 
-    # 获取该发送者的冷却记录
+    # 获取该用户的冷却记录
     sender_record = target_record.get(msg.session_info.sender_id)
 
     # 如果不存在，则创建并跳过冷却提示
@@ -1022,7 +1022,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
 
     该函数是带命令模板的模块的执行入口，负责：
     1. 使用 CommandParser 解析命令参数
-    2. 验证发送者权限（超级用户、管理员等）
+    2. 验证用户权限（超级用户、管理员等）
     3. 检查命令在当前会话中的有效性（平台限制等）
     4. 根据命令函数的参数签名构建调用参数
     5. 显示“正在输入……”状态（如果用户启用）
@@ -1045,7 +1045,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
             msg.parsed_msg = parsed_msg[1]  # 使用命令模板解析后的消息
             Logger.trace("Parsed message: " + str(msg.parsed_msg))
 
-            # ========== 步骤 2: 验证发送者权限 ==========
+            # ========== 步骤 2: 验证用户权限 ==========
 
             if command.required_base_superuser:
                 if msg.session_info.sender_id not in bot.base_superuser_list:
@@ -1258,7 +1258,7 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
     处理流程：
     1. 记录完整的错误堆栈到日志
     2. 向用户发送错误消息和报告提示
-    3. 如果配置了报告目标，发送详细错误报告给管理员
+    3. 如果配置了报告场景，发送详细错误报告给管理员
 
     :param msg: 消息会话对象
     :param e: 异常对象
@@ -1286,7 +1286,7 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
     # ========== 发送错误报告给管理员 ==========
     if report_targets:
         for target in report_targets:
-            # 获取报告目标
+            # 获取报告场景
             if f := await bot.fetch_target(target):
                 # 发送详细的错误报告
                 await bot.send_direct_message(
@@ -1305,7 +1305,7 @@ def __get_close_matches(
 ) -> list[str] | list[tuple]:
     """使用 RapidFuzz 查找最接近的匹配项
 
-    :param word: 目标搜索字符串。
+    :param word: 场景搜索字符串。
     :type word: str
     :param possibilities: 候选字符串列表。
     :type possibilities: List[str]

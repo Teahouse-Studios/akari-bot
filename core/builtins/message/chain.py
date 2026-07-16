@@ -662,7 +662,7 @@ class MessageNodes:
     消息节点列表 - 用于表示转发消息。
 
     该类用于创建转发消息（合并转发），包含多个消息链作为节点。
-    每个节点可以有不同的发送者和内容。
+    每个节点可以有不同的用户和内容。
 
     属性：
         values: 消息链列表，每个元素是一个独立的消息节点
@@ -1050,19 +1050,19 @@ def match_atcode(text: str, client: str, pattern: str) -> str:
 
 def convert_senderid_to_atcode(text: str, sender_prefix: str) -> str:
     """
-    将发送者 ID 转换为 AT 码格式。
+    将用户 ID 转换为 AT 码格式。
 
-    该函数用于将文本中的发送者 ID 引用转换为统一的 AT 码格式。
+    该函数用于将文本中的用户 ID 引用转换为统一的 AT 码格式。
     主要用于在消息中自动识别和转换用户 ID 引用。
 
     处理流程：
     1. 转义 sender_prefix 中的特殊字符
-    2. 查找所有匹配的发送者 ID
+    2. 查找所有匹配的用户 ID
     3. 将其包装为 `<AT:...>` 格式
 
-    :param text: 包含发送者 ID 的文本
-    :param sender_prefix: 发送者 ID 的前缀（如 "QQ|"）
-    :return: 转换后的文本，发送者 ID 被包装为 AT 码
+    :param text: 包含用户 ID 的文本
+    :param sender_prefix: 用户 ID 的前缀（如 "QQ|"）
+    :return: 转换后的文本，用户 ID 被包装为 AT 码
 
     示例：
         > text = "User QQ|123456 said hello"
@@ -1072,7 +1072,7 @@ def convert_senderid_to_atcode(text: str, sender_prefix: str) -> str:
     # 转义前缀中的特殊字符（如 `|`）
     sender_prefix = sender_prefix.replace("|", "\\|")
 
-    # 使用正则表达式查找并包装发送者 ID
+    # 使用正则表达式查找并包装用户 ID
     # 负向后瞻断言确保不会重复包装已有的 AT 码
     # \g<0> 引用整个匹配的字符串
     return re.sub(rf"(?<!<AT:)(?<!<@:){sender_prefix}\|\w+", r"<AT:\g<0>>", text).replace("\\", "")

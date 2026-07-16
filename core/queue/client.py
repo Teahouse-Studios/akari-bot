@@ -40,7 +40,7 @@ class JobQueueClient(JobQueueBase):
 
         用于客户端将接收到的消息转发给服务器进行处理（如触发命令、模块等）。
 
-        :param session_info: 包含消息的会话信息，包括发送者、目标频道等
+        :param session_info: 包含消息的会话信息，包括用户、场景等
         """
         await cls.add_job(
             "Server", "receive_message_from_client", {"session_info": converter.unstructure(session_info)}
@@ -62,7 +62,7 @@ class JobQueueClient(JobQueueBase):
 
         :param client_name: 客户端的名称标识
         :param target_prefix_list: 可选的目标前缀列表，用于过滤接收消息的频道
-        :param sender_prefix_list: 可选的发送者前缀列表，用于过滤消息来源
+        :param sender_prefix_list: 可选的用户前缀列表，用于过滤消息来源
         :param ctx_slot_index: 主动消息会话的上下文管理器index
         :param features: 可选的特性支持列表，用于获取主动消息会话下支持的特性
         """
