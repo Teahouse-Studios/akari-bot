@@ -1,7 +1,7 @@
 {
-    "config.comments.bot_qqbot.qq_limited_emoji": "When using the QQ official bot, the response emoji ID attached to the message when message processing fails. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji",
-    "config.comments.bot_qqbot.qq_bot_appid": "The QQ official robot AppID.",
     "config.comments.bot_qqbot_secret.qq_bot_secret": "The QQ official robot AppSecret.",
+    "config.comments.bot_qqbot.qq_bot_appid": "The QQ official robot AppID.",
+    "config.comments.bot_qqbot.qq_limited_emoji": "When using the QQ official bot, the response emoji ID attached to the message when message processing fails. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji",
     "config.comments.bot_qqbot.qq_private_bot": "Whether it is a private bot when using the QQ official bot.",
     "config.comments.bot_qqbot.qq_typing_emoji": "When using the QQ official bot, the response emoji ID attached to the message when processing the message. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji"
 }
