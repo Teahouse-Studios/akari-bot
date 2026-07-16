@@ -4,7 +4,7 @@ import re
 import botpy
 from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 
-from bots.qqbot.context import QQBotContextManager
+from bots.qqbot.context import QQBotContextManager, QQBotFetchedContextManager
 from bots.qqbot.info import *
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
@@ -17,9 +17,10 @@ from core.logger import Logger
 
 Bot.register_bot(client_name=client_name)
 ctx_id = Bot.register_context_manager(QQBotContextManager)
+Bot.register_context_manager(QQBotFetchedContextManager, fetch_session=True)
 
 qqbot_appid = str(Config("qq_bot_appid", cfg_type=(int, str), table_name="bot_qqbot"))
-qqbot_openid = str(Config("qq_bot_openid", cfg_type=str, default="", table_name="bot_qqbot"))
+qqbot_openid = str(Config("qq_bot_openid", default="", table_name="bot_qqbot"))
 qqbot_secret = Config("qq_bot_secret", cfg_type=str, secret=True, table_name="bot_qqbot")
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 
@@ -30,8 +31,6 @@ class MyClient(botpy.Client):
 
     @staticmethod
     async def on_at_message_create(message: Message):
-        prefixes = None
-
         target_id = f"{target_guild_prefix}|{message.guild_id}|{message.channel_id}"
         sender_id = f"{sender_tiny_prefix}|{message.author.id}"
         if sender_id in ignored_sender:
@@ -41,15 +40,9 @@ class MyClient(botpy.Client):
         if message.message_reference:
             reply_id = message.message_reference.message_id
 
-        if qqbot_openid:
-            message.content = re.sub(r"<@" + qqbot_openid + ">", "", message.content).strip()
-        else:
-            message.content = re.sub(r"<@(.*?)>", "", message.content).strip()
+        message.content = re.sub(r"<@(.*?)>", "", message.content).strip()
         if not message.content:
             message.content = f"{command_prefix[0]}help"
-
-        if message.content.strip().startswith("/"):
-            prefixes = ["/"]
 
         msg_chain = MessageChain.assign(re.sub(r"<@(.*?)>", rf"{sender_tiny_prefix}|\1", message.content))
 
@@ -64,7 +57,8 @@ class MyClient(botpy.Client):
             reply_id=reply_id,
             messages=msg_chain,
             ctx_slot=ctx_id,
-            prefixes=prefixes,
+            prefixes=["/"],
+            tmp={"message_type": "guild_at"},
         )
 
         await Bot.process_message(session, message)
@@ -80,6 +74,8 @@ class MyClient(botpy.Client):
         if message.message_reference:
             reply_id = message.message_reference.message_id
 
+        if qqbot_openid:
+            message.content = re.sub(r"<@" + qqbot_openid + ">", "", message.content).strip()
         if not message.content.strip():
             message.content = f"{command_prefix[0]}help"
 
@@ -97,6 +93,7 @@ class MyClient(botpy.Client):
             messages=msg_chain,
             ctx_slot=ctx_id,
             prefixes=["/"],
+            tmp={"message_type": "guild_direct"},
         )
 
         await Bot.process_message(session, message)
@@ -110,14 +107,11 @@ class MyClient(botpy.Client):
             return
 
         reply_id = None
-
-        if qqbot_openid:
-            message.content = re.sub(r"<@" + qqbot_openid + ">", "", message.content).strip()
-        else:
-            message.content = re.sub(r"<@(.*?)>", "", message.content).strip()
         if message.message_reference:
             reply_id = message.message_reference.message_id
 
+        if qqbot_openid:
+            message.content = re.sub(r"<@" + qqbot_openid + ">", "", message.content).strip()
         msg_chain = MessageChain.assign(message.content)
 
         session = await SessionInfo.assign(
@@ -167,6 +161,7 @@ class MyClient(botpy.Client):
             messages=msg_chain,
             ctx_slot=ctx_id,
             prefixes=["/"],
+            tmp={"message_type": "group_at"},
         )
 
         await Bot.process_message(session, message)
