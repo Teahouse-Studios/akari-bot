@@ -314,8 +314,6 @@ class QQBotContextManager(ContextManager):
                     Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
                     if image_1:
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
-                    if send:
-                        msg_ids.append(send["id"])
                     if images:
                         for img in images:
                             send_img = await img.get()
@@ -323,8 +321,6 @@ class QQBotContextManager(ContextManager):
                                 channel_id=session_info.get_common_target_id(), file_image=send_img
                             )
                             Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
-                            if send:
-                                msg_ids.append(send["id"])
                 elif session_info.target_from == target_direct_prefix:
                     if images:
                         image_1 = images[0]
@@ -337,8 +333,6 @@ class QQBotContextManager(ContextManager):
                     Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
                     if image_1:
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
-                    if send:
-                        msg_ids.append(send["id"])
                     if images:
                         for img in images:
                             send_img = await img.get()
@@ -346,8 +340,6 @@ class QQBotContextManager(ContextManager):
                                 guild_id=session_info.get_common_target_id(), file_image=send_img
                             )
                             Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
-                            if send:
-                                msg_ids.append(send["id"])
                 elif session_info.target_from == target_group_prefix:
                     seq = 1
 
@@ -378,7 +370,6 @@ class QQBotContextManager(ContextManager):
                     if image_1:
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
                     if send:
-                        msg_ids.append(send["id"])
                         seq += 1
                     if images:
                         for img in images:
@@ -395,7 +386,6 @@ class QQBotContextManager(ContextManager):
                             )
                             Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
                             if send:
-                                msg_ids.append(send["id"])
                                 seq += 1
                 elif session_info.target_from == target_c2c_prefix:
                     seq = 1
@@ -426,7 +416,6 @@ class QQBotContextManager(ContextManager):
                     if image_1:
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
                     if send:
-                        msg_ids.append(send["id"])
                         seq += 1
                     if images:
                         for img in images:
@@ -440,7 +429,6 @@ class QQBotContextManager(ContextManager):
                             )
                             Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
                             if send:
-                                msg_ids.append(send["id"])
                                 seq += 1
 
         return msg_ids
@@ -589,3 +577,7 @@ class QQBotContextManager(ContextManager):
                 emoji_type=emoji_type,
                 emoji_id=qq_limited_emoji,
             )
+
+
+class QQBotFetchedContextManager(QQBotContextManager):
+    pass

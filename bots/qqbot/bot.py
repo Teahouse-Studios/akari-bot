@@ -4,7 +4,7 @@ import re
 import botpy
 from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 
-from bots.qqbot.context import QQBotContextManager
+from bots.qqbot.context import QQBotContextManager, QQBotFetchedContextManager
 from bots.qqbot.info import *
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
@@ -17,6 +17,7 @@ from core.logger import Logger
 
 Bot.register_bot(client_name=client_name)
 ctx_id = Bot.register_context_manager(QQBotContextManager)
+Bot.register_context_manager(QQBotFetchedContextManager, fetch_session=True)
 
 qqbot_appid = str(Config("qq_bot_appid", cfg_type=(int, str), table_name="bot_qqbot"))
 qqbot_openid = str(Config("qq_bot_openid", cfg_type=str, default="", table_name="bot_qqbot"))
