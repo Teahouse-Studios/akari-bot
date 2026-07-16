@@ -18,7 +18,7 @@ dependencies = [
     # akari-bot-service
     "akari-bot-i18n==0.0.4",
     "akari-bot-webrender==0.5.13",
-    "akari-bot-webui==0.3.10",
+    "akari-bot-webui==0.3.11",
     # lib
     "coverage>=7.9.1,<8.0.0",
     "cryptography>=48.0.0,<48.1.0",
@@ -30,7 +30,7 @@ dependencies = [
     "pywin32>=312,<313; platform_system == 'Windows'",
     # bots
     "aiocqhttp>=1.4.3,<2.0.0",
-    "aiogram==3.29.0",
+    "aiogram==3.29.1",
     "argon2-cffi>=25.0.0,<26.0.0",
     "fastapi>=0.120.0,<1.0.0",
     "ffmpy>=1.0.0,<2.0.0",
