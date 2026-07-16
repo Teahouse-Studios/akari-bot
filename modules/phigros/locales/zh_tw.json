@@ -7,7 +7,7 @@
     "phigros.help.unbind": "解除綁定使用者。",
     "phigros.message.bind.failed": "綁定失敗，請校對輸入。",
     "phigros.message.bind.success": "綁定成功：${usernane}",
-    "phigros.message.bind.warning": "警告：你正在公共會話中綁定使用者，這有可能會使你的雲端存檔資料被他人竄改。請盡可能在私訊中綁定使用者以避免這種情況。\n你可以透過重新登入來重設 SessionToken。",
+    "phigros.message.bind.warning": "警告：你正在公共場景中綁定使用者，這有可能會使你的雲端存檔資料被他人竄改。請盡可能在私訊中綁定使用者以避免這種情況。\n你可以透過重新登入來重設 SessionToken。",
     "phigros.message.music_not_found": "未找到符合要求的歌曲。",
     "phigros.message.score.no_record": "未遊玩過此難度",
     "phigros.message.unbind.success": "解除綁定成功。",

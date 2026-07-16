@@ -102,7 +102,7 @@ class JobQueueBase:
     Attributes:
         name: 队列的唯一标识名称，默认使用"Internal|UUID"格式
         queue_actions: 字典，注册的操作处理器，键为操作名称，值为异步处理函数
-        report_targets: 错误报告的目标列表，当任务失败时发送错误信息到这些目标
+        report_targets: 错误报告的场景列表，当任务失败时发送错误信息到这些场景
         is_running: 布尔值，表示队列检查循环是否正在运行
         TASK_TIMEOUT_SECONDS: 任务超时时间（秒），超过此时间的任务会被标记为超时
         pause_event: asyncio.Event，用于暂停/恢复队列处理
@@ -122,7 +122,7 @@ class JobQueueBase:
 
         该方法将任务信息保存到数据库，可选择等待任务完成或立即返回。
 
-        :param target_client: 目标客户端名称，用于将任务路由到特定客户端
+        :param target_client: 场景客户端名称，用于将任务路由到特定客户端
         :param action: 操作名称，对应queue_actions中的处理器
         :param args: 操作参数，会被传递给处理器
         :param wait: 是否等待任务完成（默认True）。
@@ -210,7 +210,7 @@ class JobQueueBase:
             Logger.error(f)
             await cls.return_val(tsk, {"traceback": f}, status="failed")
             try:
-                # 向报告目标发送错误信息
+                # 向报告场景发送错误信息
                 for target in cls.report_targets:
                     if ft := await bot.fetch_target(target):
                         await cls.client_direct_message(
@@ -237,7 +237,7 @@ class JobQueueBase:
         2. 从数据库中获取待处理和正在处理的任务
         3. 为每个待处理任务创建异步处理任务
 
-        :param target_client: 可选的目标客户端过滤，如果为 None 则获取当前客户端的任务
+        :param target_client: 可选的场景客户端过滤，如果为 None 则获取当前客户端的任务
         """
         # Logger.debug(f"Checking job queue for {cls.name}, target client: {target_client if target_client else "all"}")
         # 检查并设置已完成的任务结果
@@ -266,7 +266,7 @@ class JobQueueBase:
         该方法以 100 毫秒的间隔持续检查队列中的任务，直到遇到异常或被外部停止。
         使用 pause_event 来支持队列的暂停/恢复功能。
 
-        :param target_client: 可选的目标客户端过滤
+        :param target_client: 可选的场景客户端过滤
         :raise QueueAlreadyRunning: 如果队列检查循环已经在运行
         """
         if cls.is_running:
@@ -321,7 +321,7 @@ class JobQueueBase:
 
         该方法通过队列系统异步发送消息，不等待消息发送完成。
 
-        :param session_info: 会话信息对象，包含目标客户端和频道等信息
+        :param session_info: 会话信息对象，包含场景客户端和频道等信息
         :param message: 要发送的消息链对象
         :param enable_parse_message: 是否解析消息中的特殊标记（默认 False）
         :param disable_secret_check: 是否禁用密钥检查（默认 True）

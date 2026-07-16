@@ -3,7 +3,7 @@
     "ai.help.desc": "有問題為什麽不問小可呢？",
     "ai.help.llm.instruct": "設定大語言模型的自訂指令。",
     "ai.help.llm.list": "檢視已支援的大語言模型列表。",
-    "ai.help.llm.set": "設定會話內預設大語言模型。",
+    "ai.help.llm.set": "設定場景內預設大語言模型。",
     "ai.help.option.llm": "指定使用的大語言模型。",
     "ai.help.option.no_tools": "是否禁止大語言模型使用工具。",
     "ai.message.llm.instruct.clear.success": "已移除自訂指令。",

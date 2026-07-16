@@ -57,7 +57,7 @@ converter.register_unstructure_hook(
 # 将 TargetInfo 对象转换为字典，由于序列化需要从数据库重新异步获取，只保留 _type 和 target_id 字段
 converter.register_unstructure_hook(TargetInfo, lambda obj: {"_type": type(obj).__name__, "target_id": obj.target_id})
 
-# 发送者信息的反结构化处理
+# 用户信息的反结构化处理
 # 将 SenderInfo 对象转换为字典，由于序列化需要从数据库重新异步获取，只保留 _type 和 sender_id 字段
 converter.register_unstructure_hook(SenderInfo, lambda obj: {"_type": type(obj).__name__, "sender_id": obj.sender_id})
 
@@ -98,11 +98,11 @@ def kwargs_to_elements(o):
 
 converter.register_structure_hook(MessageElement, lambda o, _: kwargs_to_elements(o))
 
-# 目标信息的结构化处理
+# 场景信息的结构化处理
 # 从字典恢复为 TargetInfo 对象（由于需要从数据库异步获取信息，这里实际只返回一个类本身用于占位，信息会在某个流程重新被刷新）
 converter.register_structure_hook(TargetInfo, lambda o, _: TargetInfo)
 
-# 发送者信息的结构化处理
+# 用户信息的结构化处理
 # 从字典恢复为 SenderInfo 对象（由于需要从数据库异步获取信息，这里实际只返回一个类本身用于占位，信息会在某个流程重新被刷新）
 converter.register_structure_hook(SenderInfo, lambda o, _: SenderInfo)
 

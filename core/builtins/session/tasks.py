@@ -49,7 +49,7 @@ class SessionTaskManager:
     ```
     """
 
-    # 存储活跃任务的字典，按会话 ID、发送者 ID、消息会话层次组织
+    # 存储活跃任务的字典，按场景 ID、用户 ID、消息会话层次组织
     _task_list = {}
 
     # 存储待执行回调的字典，按消息 ID 索引
@@ -71,12 +71,12 @@ class SessionTaskManager:
 
         :param msg: 消息会话对象
         :param flag: 用于同步的 asyncio.Event 对象，任务完成时将被触发
-        :param all_: 如果为 True，任务对所有发送者生效；否则只对当前发送者生效
+        :param all_: 如果为 True，任务对所有用户生效；否则只对当前用户生效
         :param reply: 期望的回复消息 ID（可以是整数、字符串或列表）
                      如果为 None，表示等待任何回复；否则只等待特定 ID 的回复
         :param timeout: 任务超时时间（秒），默认 120 秒
         """
-        # 确定任务的发送者 ID（如果 all_ 为 True，则为 "all"）
+        # 确定任务的用户 ID（如果 all_ 为 True，则为 "all"）
         sender = msg.session_info.sender_id
         # 根据是否指定了回复 ID 来确定任务类型
         task_type = "reply" if reply else "wait"
@@ -195,14 +195,14 @@ class SessionTaskManager:
         """
         # 检查是否有任务在等待此消息
         if session.session_info.target_id in cls._task_list:
-            # 收集所有相关的发送者（该用户 + "all" 广播）
+            # 收集所有相关的用户（该用户 + "all" 广播）
             senders = []
             if session.session_info.sender_id in cls._task_list[session.session_info.target_id]:
                 senders.append(session.session_info.sender_id)
             if "all" in cls._task_list[session.session_info.target_id]:
                 senders.append("all")
 
-            # 对每个相关发送者的每个任务进行检查
+            # 对每个相关用户的每个任务进行检查
             if senders:
                 for sender in senders:
                     for s in cls._task_list[session.session_info.target_id][sender]:

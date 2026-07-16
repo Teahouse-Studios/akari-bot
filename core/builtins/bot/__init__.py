@@ -139,12 +139,12 @@ class Bot:
         cls, target_id: str, sender_id: str | None = None, create: bool = False
     ) -> FetchedSessionInfo | None:
         """
-        根据目标 ID 获取消息会话信息。
+        根据场景 ID 获取消息会话信息。
 
         用于主动获取和向特定目标发送消息。
 
-        :param target_id: 目标 ID（可以是用户、群组等）
-        :param sender_id: 发送者 ID（可选）
+        :param target_id: 场景 ID
+        :param sender_id: 用户 ID（可选）
         :param create: 如果目标不存在是否创建
         :return: 抓取的会话信息，或 None（获取失败）
         """
@@ -164,7 +164,7 @@ class Bot:
         """
         批量获取多个目标的会话信息。
 
-        :param target_list: 目标 ID 列表
+        :param target_list: 场景 ID 列表
         :param create: 如果目标不存在是否创建
         :return: 成功获取的会话列表
         """
@@ -314,15 +314,15 @@ class Bot:
         enable_split_image: bool = True,
     ):
         """
-        发送直接消息到目标。
+        发送直接消息到场景。
 
-        :param target: 目标会话或目标 ID
+        :param target: 场景会话或场景 ID
         :param message: 消息内容
         :param disable_secret_check: 是否禁用敏感内容检查
         :param enable_parse_message: 是否允许解析消息（平台兼容）
         :param enable_split_image: 是否允许拆分图片（平台兼容）
         """
-        # 如果传入的是目标 ID 字符串，先抓取会话
+        # 如果传入的是场景 ID 字符串，先抓取会话
         if isinstance(target, str):
             target = await cls.fetch_target(target)
 
@@ -356,7 +356,7 @@ class Bot:
         :param module: 模块名称
         :return: 开启了该模块的会话列表
         """
-        # 从数据库获取开启此模块的所有目标 ID
+        # 从数据库获取开启此模块的所有场景 ID
         lst = await TargetInfo.get_target_list_by_module(module)
         fetched = []
 

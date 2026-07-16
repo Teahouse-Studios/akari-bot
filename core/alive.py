@@ -36,9 +36,9 @@ class Alive:
     @classmethod
     def determine_target_from(cls, target_id: str):
         """
-        确定会话 ID 前缀。
+        确定场景 ID 前缀。
 
-        :param target_id: 会话 ID
+        :param target_id: 场景 ID
         :return: 前缀
         """
         for _, data in cls.get_alive().items():
@@ -66,7 +66,7 @@ class Alive:
         """
         确定客户端名称。
 
-        :param id: 会话 ID 或用户 ID
+        :param id: 场景 ID 或用户 ID
         :return: 客户端名称
         """
         for client_name, data in cls.get_alive().items():

@@ -9,7 +9,7 @@ class DivingProberBindInfo(DBModel):
     """
     maimai 水鱼绑定信息表。
 
-    :param sender_id: 发送者 ID
+    :param sender_id: 用户 ID
     :param username: 用户名
     """
 
@@ -40,7 +40,7 @@ class LxnsProberBindInfo(DBModel):
     """
     maimai 落雪绑定信息表。
 
-    :param sender_id: 发送者 ID
+    :param sender_id: 用户 ID
     :param friend_code: 好友码
     """
 

@@ -63,8 +63,8 @@ body:
   - type: input
     id: group-id
     attributes:
-      label: 会话 ID
-      description: 你的会话 ID，可使用 `whoami` 命令查看。
+      label: 场景 ID
+      description: 你的场景 ID，可使用 `whoami` 命令查看。
       placeholder: e.g. QQ|Group|1000000
     validations:
       required: true

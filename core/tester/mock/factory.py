@@ -18,9 +18,9 @@ class TestDataFactory:
         petal: int = 0,
         sender_data: dict | None = None,
     ) -> SenderInfo:
-        """确保发送者数据存在，不存在则创建。
+        """确保用户数据存在，不存在则创建。
 
-        :param sender_id: 发送者 ID
+        :param sender_id: 用户 ID
         :param superuser: 是否为超级用户
         :param blocked: 是否被封禁
         :param trusted: 是否被信任
@@ -53,9 +53,9 @@ class TestDataFactory:
         banned_users: list[str] | None = None,
         target_data: dict | None = None,
     ) -> TargetInfo:
-        """确保目标数据存在，不存在则创建。
+        """确保场景数据存在，不存在则创建。
 
-        :param target_id: 目标 ID
+        :param target_id: 场景 ID
         :param blocked: 是否被封禁
         :param muted: 是否被禁言
         :param locale: 语言设置
@@ -81,7 +81,7 @@ class TestDataFactory:
 
     @staticmethod
     async def setup_default_test_env():
-        """设置默认测试环境（创建默认发送者和目标）。
+        """设置默认测试环境（创建默认用户和场景）。
 
         :returns: (sender_info, target_info) 元组
         """

@@ -81,7 +81,7 @@ async def _test_abuse_warn_target_sends_message():
 
 
 async def _test_tos_report_no_targets():
-    """tos_report: 无报告目标时不报错"""
+    """tos_report: 无报告场景时不报错"""
     try:
         with patch("core.tos.report_targets", []):
             from core.tos import tos_report
@@ -127,6 +127,6 @@ async def test_tos(tester: Tester):
     await tester.test(_test_check_temp_ban_expired, "check_temp_ban 过期封禁测试")
     await tester.test(_test_remove_temp_ban, "remove_temp_ban 测试")
     await tester.test(_test_abuse_warn_target_sends_message, "abuse_warn_target 发送消息测试")
-    await tester.test(_test_tos_report_no_targets, "tos_report 无目标测试")
+    await tester.test(_test_tos_report_no_targets, "tos_report 无场景测试")
     await tester.test(_test_temp_ban_counter_type, "temp_ban_counter 类型测试")
     return tester

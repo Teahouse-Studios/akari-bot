@@ -14,7 +14,7 @@ class WikiTargetInfo(DBModel):
     """
     会话内 Wiki 绑定信息表。
 
-    :param target_id: 会话 ID
+    :param target_id: 场景 ID
     :param api_link: API 链接
     :param interwikis: 自定义 iw 信息
     :param headers: 自定义请求头
