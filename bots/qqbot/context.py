@@ -308,7 +308,7 @@ class QQBotContextManager(ContextManager):
                         images.pop(0)
                     send_img = await image_1.get() if image_1 else None
                     msg = "" if not msg else msg
-                    send = await client.api.post_message(
+                    await client.api.post_message(
                         channel_id=session_info.get_common_target_id(),
                         content=msg,
                         file_image=send_img,
@@ -319,7 +319,7 @@ class QQBotContextManager(ContextManager):
                     if images:
                         for img in images:
                             send_img = await img.get()
-                            send = await client.api.post_message(
+                            await client.api.post_message(
                                 channel_id=session_info.get_common_target_id(), file_image=send_img
                             )
                             Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
@@ -329,7 +329,7 @@ class QQBotContextManager(ContextManager):
                         images.pop(0)
                     send_img = await image_1.get() if image_1 else None
                     msg = "" if not msg else msg
-                    send = await client.api.post_dms(
+                    await client.api.post_dms(
                         guild_id=session_info.get_common_target_id(), content=msg, file_image=send_img
                     )
                     Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
@@ -338,9 +338,7 @@ class QQBotContextManager(ContextManager):
                     if images:
                         for img in images:
                             send_img = await img.get()
-                            send = await client.api.post_dms(
-                                guild_id=session_info.get_common_target_id(), file_image=send_img
-                            )
+                            await client.api.post_dms(guild_id=session_info.get_common_target_id(), file_image=send_img)
                             Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
                 elif session_info.target_from == target_group_prefix:
                     seq = 1
