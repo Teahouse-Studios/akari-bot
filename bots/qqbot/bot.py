@@ -24,10 +24,16 @@ qqbot_openid = str(Config("qq_bot_openid", default="", table_name="bot_qqbot"))
 qqbot_secret = Config("qq_bot_secret", cfg_type=str, secret=True, table_name="bot_qqbot")
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 
+initialized = False
+
 
 class MyClient(botpy.Client):
     async def on_ready(self):
-        await client_init(target_prefix_list, sender_prefix_list)
+        global initialized
+        if not initialized:
+            await client_init(target_prefix_list, sender_prefix_list)
+            asyncio.create_task(QQBotFetchedContextManager.process_tasks())
+            initialized = True
 
     @staticmethod
     async def on_at_message_create(message: Message):

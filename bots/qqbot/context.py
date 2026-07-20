@@ -582,5 +582,51 @@ class QQBotContextManager(ContextManager):
             )
 
 
+_tasks_high_priority = []
+_tasks = []
+
+
 class QQBotFetchedContextManager(QQBotContextManager):
-    pass
+    @classmethod
+    async def send_message(
+        cls,
+        session_info: SessionInfo,
+        message: MessageChain | MessageNodes,
+        quote: bool = True,
+        enable_parse_message=True,
+        enable_split_image=True,
+    ) -> None:
+        append_tsk = (
+            _tasks_high_priority if session_info.target_info.target_data.get("in_post_whitelist", False) else _tasks
+        )
+        append_tsk.append(
+            super().send_message(
+                session_info,
+                message,
+                quote=quote,
+                enable_parse_message=enable_parse_message,
+            )
+        )
+
+    @staticmethod
+    async def process_tasks():
+        # https://bot.q.qq.com/wiki/develop/api-v2/server-inter/message/send-receive/send.html
+        # 60 qpm
+
+        while True:
+            if _tasks_high_priority:
+                task = _tasks_high_priority.pop(0)
+                await task
+                cd = 1
+                Logger.info(
+                    f"Processed a high-priority task in QQBotFetchedContextManager, waiting cooldown for {cd}s..."
+                )
+                await asyncio.sleep(cd)
+            elif _tasks:
+                task = _tasks.pop(0)
+                await task
+                cd = 2
+                Logger.info(f"Processed a task in QQBotFetchedContextManager, waiting cooldown for {cd}s...")
+                await asyncio.sleep(cd)
+            else:
+                await asyncio.sleep(1)
