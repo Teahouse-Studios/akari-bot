@@ -63,5 +63,6 @@
     "maimai.message.unbind.success": "Unbound successfully.",
     "maimai.message.use_cache": "Failed to get player scores, cached data has been used.",
     "maimai.message.user_not_found.lx": "No user found, please check if the friend code exists.",
+    "maimai.message.user_unbound": "Unbound user. Please bind user by \"${prefix}maimai bind\".",
     "maimai.message.user_unbound.qq": "User not bound. Please visit the Prober site and bind your QQ number.\nProber URL: https://www.diving-fish.com/maimaidx/prober"
 }
