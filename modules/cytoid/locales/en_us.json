@@ -9,5 +9,6 @@
     "cytoid.message.bind.success": "Binding successful: ${username}",
     "cytoid.message.unbind.success": "Unbinding successful.",
     "cytoid.message.user_not_found": "User not found.",
-    "cytoid.message.user_unbound": "The user is not bound. Please bind user by \"${prefix}cytoid bind\"."
+    "cytoid.message.user_unbound": "The user is not bound. Please bind user by \"${prefix}cytoid bind\".",
+    "cytoid.message.fetch_failed": "Failed to fetch information."
 }
