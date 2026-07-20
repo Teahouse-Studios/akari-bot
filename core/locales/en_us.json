@@ -46,6 +46,7 @@
     "config.comments.config.typo_check_command_score": "The allowed similarity score for command spelling check, ranging from 0 to 1.",
     "config.comments.config.typo_check_module_score": "The allowed similarity score for module spelling check, ranging from 0 to 1.",
     "config.comments.config.typo_check_options_score": "The allowed similarity score for option spelling check, ranging from 0 to 1.",
+    "config.comments.config.typo_check_module_diff_ratio": "Module name character length difference threshold: Skip matching when the difference ratio between the matched module name length and the user input length exceeds this value, range is between 0 and 1.",
     "config.comments.config.use_font_mirror": "Whether to use font mirrors when rendering web pages.",
     "config.comments.config.use_secrets_random": "Whether to use the random number generator based on the secrets library.",
     "config.comments.default_locale": "Default language environment.",
