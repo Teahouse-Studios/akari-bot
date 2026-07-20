@@ -8,6 +8,10 @@
     "phigros.message.bind.failed": "Binding failed. Please check the input.",
     "phigros.message.bind.success": "Bound successfully: ${username}",
     "phigros.message.bind.warning": "Warning: you are binding user data in PUBLIC SESSIONS, which may lead to DATA CORRUPTION of your Cloud Save since your token is LEAKED here. Please bind user data in private chats to avoid this.\nYou can reset your SessionToken by logging out and then logging back in again.",
+    "phigros.message.music_not_found": "No matching songs were found.",
+    "phigros.message.score.no_record": "No playing record in this difficulty",
     "phigros.message.unbind.success": "Unbound successfully.",
+    "phigros.message.file_not_found": "Failed to find song information files. Please use \"${prefix} phigros update\" to initialize.",
+    "phigros.message.use_cache": "Failed to fetch playback records. Cache data has been used.",
     "phigros.message.user_unbound": "The user is not bound. Please bind user by \"${prefix}phigros bind\"."
 }
