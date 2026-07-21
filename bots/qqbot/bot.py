@@ -260,7 +260,7 @@ class MyClient(botpy.Client):
         if interaction.data.resolved.button_data == "confirm_yes":
             send_msg = confirm_command_default[0]
         elif interaction.data.resolved.button_data == "confirm_no":
-            send_msg = confirm_command_default[1]
+            send_msg = "no"
         else:
             send_msg = interaction.data.resolved.button_data
 
