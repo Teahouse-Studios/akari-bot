@@ -445,7 +445,8 @@ class MessageSession:
 
         :raises WaitCancelException: 如果超时或用户未确认
         """
-        send = None
+        self.session_info.tmp["wait_type"] = "wait_confirm"
+        self.session_info.tmp["wait_active"] = "yes"
         ExecutionLockList.remove(self)
         await self.end_typing()
         if Config("no_confirm", False):
@@ -464,6 +465,7 @@ class MessageSession:
                 message_chain.append(I18NContext("message.wait.confirm.prompt"))
         send = await self.send_message(message_chain, quote)
         await asyncio.sleep(0.1)
+        self.session_info.tmp["wait_active"] = "no"
         if quick_confirm:
             await self._add_confirm_reaction(send.message_id)
         flag = asyncio.Event()
@@ -512,6 +514,8 @@ class MessageSession:
 
         :raises WaitCancelException: 如果超时或出错
         """
+        self.session_info.tmp["wait_type"] = "wait_next_message"
+        self.session_info.tmp["wait_active"] = "yes"
         send = None
         ExecutionLockList.remove(self)
         await self.end_typing()
@@ -521,7 +525,7 @@ class MessageSession:
                 message_chain.append(I18NContext("message.wait.next_message.prompt"))
             send = await self.send_message(message_chain, quote)
         await asyncio.sleep(0.1)
-
+        self.session_info.tmp["wait_active"] = "no"
         flag = asyncio.Event()
         SessionTaskManager.add_task(self, flag, timeout=timeout)
         try:
@@ -557,6 +561,8 @@ class MessageSession:
 
         :raises WaitCancelException: 如果超时或出错
         """
+        self.session_info.tmp["wait_type"] = "wait_anyone"
+        self.session_info.tmp["wait_active"] = "yes"
         send = None
         ExecutionLockList.remove(self)
         await self.end_typing()
@@ -564,6 +570,7 @@ class MessageSession:
             message_chain = get_message_chain(self.session_info, message_chain)
             send = await self.send_message(message_chain, quote)
         await asyncio.sleep(0.1)
+        self.session_info.tmp["wait_active"] = "no"
         flag = asyncio.Event()
         SessionTaskManager.add_task(self, flag, all_=True, timeout=timeout)
         try:
@@ -612,6 +619,8 @@ class MessageSession:
 
         :raises WaitCancelException: 如果超时或出错
         """
+        self.session_info.tmp["wait_type"] = "wait_reply"
+        self.session_info.tmp["wait_active"] = "yes"
         if not self.session_info.support_quote:
             message_chain = get_message_chain(self.session_info, message_chain)
             if append_instruction:
@@ -620,7 +629,6 @@ class MessageSession:
                 return await self.wait_anyone(message_chain, False, delete, timeout)
             return await self.wait_next_message(message_chain, False, delete, timeout, False)
 
-        send = None
         ExecutionLockList.remove(self)
         await self.end_typing()
         message_chain = get_message_chain(self.session_info, message_chain)
@@ -628,6 +636,7 @@ class MessageSession:
             message_chain.append(I18NContext("message.reply.prompt"))
         send = await self.send_message(message_chain, quote)
         await asyncio.sleep(0.1)
+        self.session_info.tmp["wait_active"] = "no"
         flag = asyncio.Event()
         SessionTaskManager.add_task(self, flag, reply=send.message_id, all_=all_, timeout=timeout)
         try:

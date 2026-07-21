@@ -78,6 +78,12 @@ blinker==1.9.0
     # via
     #   flask
     #   quart
+boto3==1.43.52
+    # via akari-bot
+botocore==1.43.52
+    # via
+    #   boto3
+    #   s3transfer
 botpy @ git+https://github.com/Teahouse-Studios/botpy.git@b4d6a58ba7daab99d18f2aa64c8e24e0e643a8ce
     # via akari-bot
 bracex==2.6
@@ -248,6 +254,10 @@ jinja2==3.1.6
     #   quart
 jiter==0.13.0
     # via openai
+jmespath==1.1.0
+    # via
+    #   boto3
+    #   botocore
 jsonschema==4.26.0
     # via matrix-nio
 jsonschema-specifications==2025.9.1
@@ -325,7 +335,7 @@ packaging==26.0
     #   matplotlib
 pandas==3.0.0
     # via akari-bot
-pillow==12.2.0
+pillow==12.3.0
     # via
     #   akari-bot
     #   matplotlib
@@ -390,6 +400,7 @@ pypika-tortoise==0.6.3
     # via tortoise-orm
 python-dateutil==2.9.0.post0
     # via
+    #   botocore
     #   dateparser
     #   e2b
     #   htmldate
@@ -434,6 +445,8 @@ rpds-py==0.30.0
     #   jsonschema
     #   referencing
 ruff==0.15.1
+s3transfer==0.19.1
+    # via boto3
 sgmllib3k==1.0.0
     # via feedparser
 simpleeval==1.0.6
@@ -502,6 +515,7 @@ unpaddedbase64==2.1.0
 urllib3==2.7.0
     # via
     #   akari-bot
+    #   botocore
     #   courlan
     #   htmldate
     #   trafilatura

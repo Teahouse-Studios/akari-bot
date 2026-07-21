@@ -99,3 +99,19 @@ class WebRenderConfig:
     browser_executable_path: str = ""
     remote_only: bool = False
     remote_web_render_url: str = ""
+
+
+@on_config("s3")
+class S3Config:
+    s3_endpoint_url: str
+    s3_bucket: str
+    s3_region: str = "us-east-1"
+    s3_public_endpoint: str | None = None
+    s3_internal_endpoint: str | None = None
+    s3_temp_max_count: int = 20
+
+
+@on_config("s3", secret=True)
+class S3SecretConfig:
+    s3_access_key: str
+    s3_secret_key: str

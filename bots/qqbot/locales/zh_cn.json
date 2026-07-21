@@ -5,5 +5,7 @@
     "config.comments.bot_qqbot.qq_bot_openid": "QQ 机器人（官方）的 OpenID。",
     "config.comments.bot_qqbot.qq_limited_emoji": "使用 QQ 机器人（官方）时，消息处理失败时向消息挂上的回应表情 ID。ID 详见：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji",
     "config.comments.bot_qqbot.qq_private_bot": "使用 QQ 机器人（官方）时，是否为私域机器人。",
-    "config.comments.bot_qqbot.qq_typing_emoji": "使用 QQ 机器人（官方）时，正在处理消息时向消息挂上的回应表情 ID。ID 详见：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji"
+    "config.comments.bot_qqbot.qq_typing_emoji": "使用 QQ 机器人（官方）时，正在处理消息时向消息挂上的回应表情 ID。ID 详见：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji",
+    "config.comments.bot_qqbot.qq_use_markdown": "使用 QQ 机器人（官方）时，是否使用 Markdown 格式消息（需配置 s3 兼容 API 存储图片）。"
+
 }

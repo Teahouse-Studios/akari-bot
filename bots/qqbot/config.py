@@ -8,6 +8,7 @@ class QQBotConfig:
     qq_bot_openid: str = ""
     qq_private_bot: bool = False
     qq_typing_emoji: int = 181
+    qq_use_markdown: bool = False
 
 
 @on_config("qqbot", "bot", True)

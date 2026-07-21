@@ -642,6 +642,7 @@ class ImageElement(BaseElement):
         # 保存处理后的图片
         save = f"{random_cache_path()}.png"
         image.save(save)
+        image.close()
         return ImageElement.assign(save)
 
     def kecode(self):
@@ -664,14 +665,18 @@ class ImageElement(BaseElement):
 
         :return: PIL Image 对象
         """
-        path = self.path
-        if self.need_get:
-            path = await self.get_image()
-        return PILImage.open(path)
+        return PILImage.open(await self.get())
 
     def __str__(self):
         """返回 KE 码格式"""
         return self.kecode()
+
+    async def get_wh(self):
+        """获取图片的宽度和高度"""
+        image = await self.to_PIL_image()
+        width, height = image.size
+        image.close()
+        return width, height
 
 
 @define

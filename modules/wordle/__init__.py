@@ -1,5 +1,5 @@
 from core.builtins.bot import Bot
-from core.builtins.message.internal import I18NContext, Image as BImage, Plain
+from core.builtins.message.internal import I18NContext, Image as BImage, Plain, Url
 from core.component import module
 from core.config import Config
 from core.cooldown import CoolDown
@@ -87,7 +87,10 @@ async def _(msg: Bot.MessageSession):
     if board.is_game_over():
         play_state.disable()
         attempt = board.get_trials() - 1
-        g_msg = [I18NContext("wordle.message.finish", answer=board.word)]
+        g_msg = [
+            I18NContext("wordle.message.finish"),
+            Url("https://dictionary.cambridge.org/dictionary/english/" + board.word),
+        ]
         if board.board[-1] == board.word:
             g_msg = [I18NContext("wordle.message.finish.success", attempt=attempt)]
             if trial:
@@ -107,7 +110,12 @@ async def _(msg: Bot.MessageSession):
     if play_state.check():
         play_state.disable()
         CoolDown("wordle", msg, 180).reset()
-        await msg.finish(I18NContext("wordle.message.stop", answer=play_state.get("answer")))
+        await msg.finish(
+            [
+                I18NContext("wordle.message.stop"),
+                Url("https://dictionary.cambridge.org/dictionary/english/" + play_state.get("answer")),
+            ]
+        )
     await msg.finish(I18NContext("game.message.stop.none"))
 
 

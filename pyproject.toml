@@ -63,6 +63,7 @@ dependencies = [
     # core.tester
     "defusedxml>=0.7.1",
     # core.utils
+    "boto3>=1.35.0,<2.0.0",
     "ff3>=1.0.2,<2.0.0",
     "psutil>=7.0.0,<8.0.0",
     "tabulate>=0.9.0,<1.0.0",

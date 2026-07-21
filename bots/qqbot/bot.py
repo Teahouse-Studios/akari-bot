@@ -2,17 +2,19 @@ import asyncio
 import re
 
 import botpy
+from botpy.interaction import Interaction
 from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 
 from bots.qqbot.context import QQBotContextManager, QQBotFetchedContextManager
 from bots.qqbot.info import *
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import Plain
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
 from core.client.init import client_init
 from core.config import Config
-from core.constants.default import ignored_sender_default
+from core.constants.default import ignored_sender_default, confirm_command_default
 from core.logger import Logger
 
 Bot.register_bot(client_name=client_name)
@@ -230,6 +232,49 @@ class MyClient(botpy.Client):
         )
 
         await Bot.process_message(session, message)
+
+    @staticmethod
+    async def on_interaction_create(interaction: Interaction):
+        Logger.debug(interaction)
+        await client.api.on_interaction_result(interaction.id, 0)
+        if interaction.chat_type == 0:
+            target_id = f"{target_guild_prefix}|{interaction.guild_id}|{interaction.channel_id}"
+            sender_id = f"{sender_tiny_prefix}|{interaction.user_openid}"
+            target_from = target_guild_prefix
+            sender_from = sender_tiny_prefix
+        elif interaction.chat_type == 1:
+            target_id = f"{target_group_prefix}|{interaction.group_openid}"
+            sender_id = f"{sender_prefix}|{interaction.group_member_openid}"
+            target_from = target_group_prefix
+            sender_from = sender_prefix
+        elif interaction.chat_type == 2:
+            target_id = f"{target_c2c_prefix}|{interaction.user_openid}"
+            sender_id = f"{sender_prefix}|{interaction.user_openid}"
+            target_from = target_c2c_prefix
+            sender_from = sender_prefix
+        else:
+            Logger.warning(f"Unknown interactions: {interaction}")
+            return
+        if sender_id in ignored_sender:
+            return
+        if interaction.data.resolved.button_data == "confirm_yes":
+            send_msg = confirm_command_default[0]
+        elif interaction.data.resolved.button_data == "confirm_no":
+            send_msg = confirm_command_default[1]
+        else:
+            send_msg = interaction.data.resolved.button_data
+
+        session = await SessionInfo.assign(
+            target_id=target_id,
+            sender_id=sender_id,
+            target_from=target_from,
+            sender_from=sender_from,
+            client_name=client_name,
+            reply_id=interaction.data.resolved.message_id,
+            messages=MessageChain.assign([Plain(send_msg)]),
+            ctx_slot=ctx_id,
+        )
+        await Bot.process_message(session, interaction)
 
 
 intents = botpy.Intents.none()
