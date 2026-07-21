@@ -22,6 +22,6 @@ class Features(FeaturesBase):
     support_quote: bool = True
     support_rss: bool = True
     support_typing: bool = False
-    support_wait: bool = False
+    support_wait: bool = True
     require_check_dirty_words: bool = dirty_word_check
     use_url_md_format: bool = qq_use_markdown
