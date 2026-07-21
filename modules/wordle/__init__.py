@@ -88,7 +88,7 @@ async def _(msg: Bot.MessageSession):
         play_state.disable()
         attempt = board.get_trials() - 1
         g_msg = [
-            I18NContext("wordle.message.finish"),
+            I18NContext("wordle.message.finish", answer=board.word),
             Url("https://dictionary.cambridge.org/dictionary/english/" + board.word),
         ]
         if board.board[-1] == board.word:
@@ -112,7 +112,7 @@ async def _(msg: Bot.MessageSession):
         CoolDown("wordle", msg, 180).reset()
         await msg.finish(
             [
-                I18NContext("wordle.message.stop"),
+                I18NContext("wordle.message.stop", answer=play_state.get("answer")),
                 Url("https://dictionary.cambridge.org/dictionary/english/" + play_state.get("answer")),
             ]
         )
