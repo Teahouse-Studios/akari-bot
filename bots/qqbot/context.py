@@ -462,10 +462,7 @@ class QQBotContextManager(ContextManager):
                         if upload and "public_url" in upload:
                             w, h = await x.get_wh()
                             max_w = 256
-                            max_h = 256
-                            fit_scale_w = max_w / w if w > max_w else 1
-                            fit_scale_h = max_h / h if h > max_h else 1
-                            fin_scale = min(fit_scale_w, fit_scale_h)
+                            fin_scale = max_w / w if w > max_w else 1
                             fin_w = w * fin_scale
                             fin_h = h * fin_scale
                             texts.append(f"![text #{int(fin_w)}px #{int(fin_h)}px]({upload['public_url']})")
