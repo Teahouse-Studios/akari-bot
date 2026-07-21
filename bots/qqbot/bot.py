@@ -281,6 +281,7 @@ intents = botpy.Intents.none()
 intents.public_guild_messages = True
 intents.public_messages = True
 intents.direct_message = True
+intents.interaction = True
 if Config("qq_private_bot", False, table_name="bot_qqbot"):
     intents.guild_messages = True
 
