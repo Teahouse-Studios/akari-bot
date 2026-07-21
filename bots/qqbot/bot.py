@@ -277,10 +277,7 @@ class MyClient(botpy.Client):
         await Bot.process_message(session, interaction)
 
 
-intents = botpy.Intents.none()
-intents.public_guild_messages = True
-intents.public_messages = True
-intents.direct_message = True
+intents = botpy.Intents.all()
 if Config("qq_private_bot", False, table_name="bot_qqbot"):
     intents.guild_messages = True
 
