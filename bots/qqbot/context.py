@@ -5,6 +5,8 @@ from botpy.api import BotAPI
 from botpy.http import Route
 from botpy.message import BaseMessage, C2CMessage, DirectMessage, GroupMessage, Message
 from botpy.types.message import Media, Reference
+from tenacity import retry, wait_fixed, stop_after_attempt
+
 # from botpy.types.message import MarkdownPayload
 
 from bots.qqbot.features import Features
@@ -103,6 +105,7 @@ class QQBotContextManager(ContextManager):
         return False
 
     @classmethod
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
     async def send_message(
         cls,
         session_info: SessionInfo,
@@ -616,7 +619,10 @@ class QQBotFetchedContextManager(QQBotContextManager):
         while True:
             if _tasks_high_priority:
                 task = _tasks_high_priority.pop(0)
-                await task
+                try:
+                    await task
+                except Exception as e:
+                    Logger.error(f"Error occurred while processing high-priority task: {e}")
                 cd = 1
                 Logger.info(
                     f"Processed a high-priority task in QQBotFetchedContextManager, waiting cooldown for {cd}s..."
@@ -624,7 +630,10 @@ class QQBotFetchedContextManager(QQBotContextManager):
                 await asyncio.sleep(cd)
             elif _tasks:
                 task = _tasks.pop(0)
-                await task
+                try:
+                    await task
+                except Exception as e:
+                    Logger.error(f"Error occurred while processing task: {e}")
                 cd = 2
                 Logger.info(f"Processed a task in QQBotFetchedContextManager, waiting cooldown for {cd}s...")
                 await asyncio.sleep(cd)

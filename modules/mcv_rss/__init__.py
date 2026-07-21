@@ -29,7 +29,7 @@ CHANGELOG_URL_PREFIX = "https://www.minecraft.net/en-us/article/minecraft"
 def get_changelog_url(version: str) -> str | None:
     """Generate changelog url of the given minecraft version id"""
     if m := re.match(SNAPSHOT_PATTERN, version):
-        return f"{CHANGELOG_URL_PREFIX}-{m.group('major').replace('.', '-')}{m.group('patch')}"
+        return f"{CHANGELOG_URL_PREFIX}-{m.group('major').replace('.', '-')}-snapshot-{m.group('patch')}"
     if m := re.match(PRERELEASE_PATTERN, version):
         return f"{CHANGELOG_URL_PREFIX}-{m.group('major').replace('.', '-')}-pre-release-{m.group('patch')}"
     if m := re.match(RELEASE_CANDIDATE_PATTERN, version):
