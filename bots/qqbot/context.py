@@ -211,8 +211,6 @@ class QQBotContextManager(ContextManager):
                                 if send:
                                     msg_ids.append(send["id"])
                     elif isinstance(ctx, GroupMessage):
-                        ctx.msg_seq = global_seq
-
                         msg_quote = (
                             Reference(
                                 message_id=ctx.id,
@@ -236,7 +234,7 @@ class QQBotContextManager(ContextManager):
                             content=msg,
                             msg_type=7 if send_img else 0,
                             media=send_img,
-                            msg_seq=ctx.msg_seq,
+                            msg_seq=global_seq,
                             message_reference=msg_quote,
                         )
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
@@ -252,13 +250,12 @@ class QQBotContextManager(ContextManager):
                                     file_type=1,
                                     file_data=await img.get_base64(),
                                 )
-                                send = await ctx.reply(msg_type=7, media=send_img, msg_seq=ctx.msg_seq)
+                                send = await ctx.reply(msg_type=7, media=send_img, msg_seq=global_seq)
                                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
                                 if send:
                                     msg_ids.append(send["id"])
                                     global_seq += 1
                     elif isinstance(ctx, C2CMessage):
-                        ctx.msg_seq = global_seq
                         if images:
                             image_1 = images[0]
                             images.pop(0)
@@ -272,7 +269,7 @@ class QQBotContextManager(ContextManager):
                             content=msg,
                             msg_type=7 if send_img else 0,
                             media=send_img,
-                            msg_seq=ctx.msg_seq,
+                            msg_seq=global_seq,
                         )
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
                         if image_1:
@@ -287,7 +284,7 @@ class QQBotContextManager(ContextManager):
                                     file_type=1,
                                     file_data=await img.get_base64(),
                                 )
-                                send = await ctx.reply(msg_type=7, media=send_img, msg_seq=ctx.msg_seq)
+                                send = await ctx.reply(msg_type=7, media=send_img, msg_seq=global_seq)
                                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
                                 if send:
                                     msg_ids.append(send["id"])
@@ -340,8 +337,6 @@ class QQBotContextManager(ContextManager):
                                 )
                                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
                     elif session_info.target_from == target_group_prefix:
-                        seq = global_seq
-
                         msg = "" if not msg else msg
                         if images:
                             image_1 = images[0]
@@ -356,7 +351,7 @@ class QQBotContextManager(ContextManager):
                             content=msg,
                             msg_type=7 if send_img else 0,
                             media=send_img,
-                            msg_seq=seq,
+                            msg_seq=global_seq,
                         )
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
                         if image_1:
@@ -374,13 +369,12 @@ class QQBotContextManager(ContextManager):
                                     group_openid=session_info.get_common_target_id(),
                                     msg_type=7,
                                     media=send_img,
-                                    msg_seq=seq,
+                                    msg_seq=global_seq,
                                 )
                                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
                                 if send:
                                     global_seq += 1
                     elif session_info.target_from == target_c2c_prefix:
-                        seq = global_seq
                         if images:
                             image_1 = images[0]
                             images.pop(0)
@@ -395,7 +389,7 @@ class QQBotContextManager(ContextManager):
                             content=msg,
                             msg_type=7 if send_img else 0,
                             media=send_img,
-                            msg_seq=seq,
+                            msg_seq=global_seq,
                         )
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
                         if image_1:
@@ -413,7 +407,7 @@ class QQBotContextManager(ContextManager):
                                     openid=session_info.get_common_target_id(),
                                     msg_type=7,
                                     media=send_img,
-                                    msg_seq=seq,
+                                    msg_seq=global_seq,
                                 )
                                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
                                 if send:
@@ -522,12 +516,11 @@ class QQBotContextManager(ContextManager):
                 md = MarkdownPayload(content=msg)
 
                 if ctx and not isinstance(ctx, Interaction):
-                    ctx.msg_seq = global_seq
                     if isinstance(ctx, (Message, DirectMessage, GroupMessage, C2CMessage)):
                         send = await ctx.reply(
                             markdown=md,
                             msg_type=2,
-                            msg_seq=ctx.msg_seq,
+                            msg_seq=global_seq,
                             keyboard=keyboard,
                         )
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
@@ -555,13 +548,11 @@ class QQBotContextManager(ContextManager):
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
 
                     elif session_info.target_from == target_group_prefix:
-                        seq = global_seq
-
                         send = await client.api.post_group_message(
                             group_openid=session_info.get_common_target_id(),
                             markdown=md,
                             msg_type=2,
-                            msg_seq=seq,
+                            msg_seq=global_seq,
                         )
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
                         if send:
@@ -569,13 +560,11 @@ class QQBotContextManager(ContextManager):
                         msg_ids.append(send["id"])
 
                     elif session_info.target_from == target_c2c_prefix:
-                        seq = global_seq
-
                         send = await client.api.post_c2c_message(
                             openid=session_info.get_common_target_id(),
                             markdown=md,
                             msg_type=2,
-                            msg_seq=seq,
+                            msg_seq=global_seq,
                         )
                         if send:
                             global_seq += 1
