@@ -453,42 +453,40 @@ class QQBotContextManager(ContextManager):
 
                 keyboard = KeyboardPayload(content=Keyboard(rows=[KeyboardRow(buttons=[button_yes, button_no])]))
 
+            possibly_choices: list[dict[str, str]] = []
+            if session_info.tmp.get("button_data"):
+                possibly_choices: list[dict[str, str]] = orjson.loads(session_info.tmp.get("button_data", ""))
             if (
                 session_info.tmp.get("wait_type") == "wait_next_message"
                 and session_info.tmp.get("wait_active") == "yes"
-            ) or session_info.tmp.get("button_data"):
-                if session_info.tmp.get("button_data"):
-                    possibly_choices: list[dict[str, str]] = orjson.loads(session_info.tmp.get("button_data", ""))
-                else:
-                    possibly_choices: list[dict[str, str]] = orjson.loads(
-                        session_info.tmp.get("wait_possibly_choices", "")
-                    )
-                if len(possibly_choices) > 0:
-                    rows = []
-                    i = 0
-                    for r in possibly_choices:
-                        buttons = []
+            ):
+                possibly_choices: list[dict[str, str]] = orjson.loads(session_info.tmp.get("wait_possibly_choices", ""))
+            if len(possibly_choices) > 0:
+                rows = []
+                i = 0
+                for r in possibly_choices:
+                    buttons = []
 
-                        for label, data in r.items():
-                            i += 1
-                            button = Button(
-                                id=str(i),
-                                render_data=RenderData(label=label, visited_label=f"已选择: {label}", style=0),
-                                action=Action(
-                                    type=1,
-                                    permission=Permission(
-                                        type=0,
-                                        specify_user_ids=[session_info.get_common_sender_id()],
-                                        specify_role_ids=["1"],
-                                    ),
-                                    click_limit=1,
-                                    data=data,
-                                    at_bot_show_channel_list=False,
+                    for label, data in r.items():
+                        i += 1
+                        button = Button(
+                            id=str(i),
+                            render_data=RenderData(label=label, visited_label=f"已选择: {label}", style=0),
+                            action=Action(
+                                type=1,
+                                permission=Permission(
+                                    type=0,
+                                    specify_user_ids=[session_info.get_common_sender_id()],
+                                    specify_role_ids=["1"],
                                 ),
-                            )
-                            buttons.append(button)
-                        rows.append(KeyboardRow(buttons=buttons))
-                    keyboard = KeyboardPayload(content=Keyboard(rows=rows))
+                                click_limit=1,
+                                data=data,
+                                at_bot_show_channel_list=False,
+                            ),
+                        )
+                        buttons.append(button)
+                    rows.append(KeyboardRow(buttons=buttons))
+                keyboard = KeyboardPayload(content=Keyboard(rows=rows))
             pure_text_msg = True
             for x in message.as_sendable(session_info, parse_message=enable_parse_message):
                 if isinstance(x, PlainElement):
