@@ -257,12 +257,17 @@ class MyClient(botpy.Client):
             return
         if sender_id in ignored_sender:
             return
-        if interaction.data.resolved.button_data == "confirm_yes":
+        send_msg = interaction.data.resolved.button_data
+        quote_msg = None
+        match_quote = re.match(r"<q:(.*?)>(.*)", send_msg)
+
+        if match_quote:
+            quote_msg = match_quote.group(1)
+            send_msg = match_quote.group(2)
+        if send_msg == "confirm_yes":
             send_msg = confirm_command_default[0]
-        elif interaction.data.resolved.button_data == "confirm_no":
+        elif send_msg == "confirm_no":
             send_msg = "no"
-        else:
-            send_msg = interaction.data.resolved.button_data
 
         session = await SessionInfo.assign(
             target_id=target_id,
@@ -270,7 +275,7 @@ class MyClient(botpy.Client):
             target_from=target_from,
             sender_from=sender_from,
             client_name=client_name,
-            reply_id=interaction.data.resolved.message_id,
+            reply_id=interaction.data.resolved.message_id if quote_msg is None else quote_msg,
             messages=MessageChain.assign([Plain(send_msg)]),
             ctx_slot=ctx_id,
         )

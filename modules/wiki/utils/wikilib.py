@@ -493,7 +493,7 @@ class WikiLib:
                     if tdi == 0:
                         if td.find("a"):
                             parsed_data[label]["data"].append(td.find("a").text)
-                            parsed_data[label]["text"] = page_name + "/" + td.find("a").text
+                            parsed_data[label]["text"] = td.find("a").attrs["title"]
                         else:
                             parsed_data[label]["data"].append(td.text)
                     else:

@@ -15,6 +15,7 @@ from typing import Any, Coroutine, Match, NoReturn, TYPE_CHECKING
 from attrs import define
 from deprecated import deprecated
 from japanera import EraDate
+from orjson import orjson
 
 from core.builtins.message.chain import MessageChain, get_message_chain, Chainable, MessageNodes
 from core.builtins.message.internal import I18NContext
@@ -97,6 +98,8 @@ class MessageSession:
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
         callback: Any | None = None,
+        callback_id: str = None,
+        button_data: list[dict[str, str]] = None,
     ) -> FinishedSession:
         """
         用于向消息用户返回消息。
@@ -116,6 +119,8 @@ class MessageSession:
         :param enable_parse_message: 是否允许解析消息（此参数作接口兼容用，仅 QQ 平台使用，默认为 True）
         :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅 Telegram 平台使用，默认为 True）
         :param callback: 回调函数，在消息发送完成后执行（可选）
+        :param callback_id: 回调函数的唯一标识符，若设定则 callback 将不基于 reply 消息触发（可选）
+        :param button_data: 用于扩展按钮提示（可选）
         :return: FinishedSession 对象，包含消息 ID，可用于后续操作
 
         :raises SessionFinished: 如果发送过程中抛出异常
@@ -137,6 +142,10 @@ class MessageSession:
 
         # ========== 步骤 3: 发送消息 ==========
         # 通过消息队列发送消息，并阻塞等待返回包含消息 ID 的字典
+
+        # 如果提供了 button_data，则将其序列化为 JSON 并存储在会话的临时数据中
+        self.session_info.tmp["button_data"] = orjson.dumps(button_data or {}).decode("utf-8")
+
         return_val = await _queue_server.client_send_message(
             self.session_info,
             message_chain,
@@ -145,11 +154,15 @@ class MessageSession:
             enable_split_image=enable_split_image,
         )
 
+        # 清空 button_data 以防止会话的后续消息一直出现 button_data
+
+        self.session_info.tmp["button_data"] = "[]"
+
         # ========== 步骤 4: 处理回调 ==========
         if "message_id" in return_val:
             # 消息发送成功，如果有回调函数则注册
             if callback:
-                SessionTaskManager.add_callback(return_val["message_id"], callback)
+                SessionTaskManager.add_callback(return_val["message_id"] if not callback_id else callback_id, callback)
 
             return FinishedSession(self.session_info, return_val["message_id"])
         return FinishedSession(self.session_info, [])
@@ -492,6 +505,7 @@ class MessageSession:
         delete: bool = False,
         timeout: float | None = 120,
         append_instruction: bool = True,
+        possibly_choices: list[dict[str, str]] = None,
     ) -> MessageSession:
         """
         一次性模板，用于等待对象的下一条消息。
@@ -510,12 +524,14 @@ class MessageSession:
         :param delete: 是否在触发后删除消息（默认为 False）
         :param timeout: 超时时间（秒），默认为 120 秒
         :param append_instruction: 是否在发送的消息中附加提示（默认为 True）
+        :param possibly_choices: 可能的选项，用于可能的扩展按钮提示。
         :return: 用户下一条消息的 MessageSession 对象
 
         :raises WaitCancelException: 如果超时或出错
         """
         self.session_info.tmp["wait_type"] = "wait_next_message"
         self.session_info.tmp["wait_active"] = "yes"
+        self.session_info.tmp["wait_possibly_choices"] = orjson.dumps(possibly_choices or {}).decode("utf-8")
         send = None
         ExecutionLockList.remove(self)
         await self.end_typing()

@@ -1,8 +1,11 @@
 import asyncio
 import html
+import re
 
+import orjson
 from botpy.api import BotAPI
 from botpy.http import Route
+from botpy.interaction import Interaction
 from botpy.message import BaseMessage, C2CMessage, DirectMessage, GroupMessage, Message
 from botpy.types.message import Media, Reference, MarkdownPayload, KeyboardPayload
 from botpy.types.inline import Keyboard, Button, KeyboardRow, RenderData, Action, Permission
@@ -128,7 +131,7 @@ class QQBotContextManager(ContextManager):
             plains: list[PlainElement] = []
             images: list[ImageElement] = []
 
-            for x in message.as_sendable(session_info, parse_message=enable_parse_message):
+            for x in message.as_sendable(session_info, parse_message=enable_parse_message, disable_markdown=True):
                 if isinstance(x, PlainElement):
                     x.text = html.unescape(x.text)
                     if enable_parse_message:
@@ -144,7 +147,7 @@ class QQBotContextManager(ContextManager):
                 image_1 = None
                 send_img = None
 
-                if ctx:
+                if ctx and not isinstance(ctx, Interaction):
                     if isinstance(ctx, Message):
                         if images:
                             image_1 = images[0]
@@ -450,6 +453,43 @@ class QQBotContextManager(ContextManager):
 
                 keyboard = KeyboardPayload(content=Keyboard(rows=[KeyboardRow(buttons=[button_yes, button_no])]))
 
+            if (
+                session_info.tmp.get("wait_type") == "wait_next_message"
+                and session_info.tmp.get("wait_active") == "yes"
+            ) or session_info.tmp.get("button_data"):
+                if session_info.tmp.get("button_data"):
+                    possibly_choices: list[dict[str, str]] = orjson.loads(session_info.tmp.get("button_data", ""))
+                else:
+                    possibly_choices: list[dict[str, str]] = orjson.loads(
+                        session_info.tmp.get("wait_possibly_choices", "")
+                    )
+                if len(possibly_choices) > 0:
+                    rows = []
+                    i = 0
+                    for r in possibly_choices:
+                        buttons = []
+
+                        for label, data in r.items():
+                            i += 1
+                            button = Button(
+                                id=str(i),
+                                render_data=RenderData(label=label, visited_label=f"已选择: {label}", style=0),
+                                action=Action(
+                                    type=1,
+                                    permission=Permission(
+                                        type=0,
+                                        specify_user_ids=[session_info.get_common_sender_id()],
+                                        specify_role_ids=["1"],
+                                    ),
+                                    click_limit=1,
+                                    data=data,
+                                    at_bot_show_channel_list=False,
+                                ),
+                            )
+                            buttons.append(button)
+                        rows.append(KeyboardRow(buttons=buttons))
+                    keyboard = KeyboardPayload(content=Keyboard(rows=rows))
+            pure_text_msg = True
             for x in message.as_sendable(session_info, parse_message=enable_parse_message):
                 if isinstance(x, PlainElement):
                     x.text = html.unescape(x.text)
@@ -466,14 +506,20 @@ class QQBotContextManager(ContextManager):
                             fin_w = w * fin_scale
                             fin_h = h * fin_scale
                             texts.append(f"![text #{int(fin_w)}px #{int(fin_h)}px]({upload['public_url']})")
+                    pure_text_msg = False
                 elif isinstance(x, MentionElement):
                     if x.client == client_name and session_info.target_from == target_guild_prefix:
                         texts.append(f'<qqbot-at-user id="{x.id}" />')
+                    pure_text_msg = False
             if len(texts) != 0:
                 msg = "\n".join(texts)
+                if pure_text_msg and not keyboard and not re.findall("(\[.*?]\(.*?\))", msg):
+                    Logger.debug("Message is pure text, sending as plain message instead of markdown.")
+                    return await send_msg()
+
                 md = MarkdownPayload(content=msg)
 
-                if ctx:
+                if ctx and not isinstance(ctx, Interaction):
                     ctx.msg_seq = ctx.msg_seq if ctx.msg_seq else 1
                     if isinstance(ctx, (Message, DirectMessage, GroupMessage, C2CMessage)):
                         send = await ctx.reply(

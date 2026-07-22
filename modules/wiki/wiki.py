@@ -1,5 +1,6 @@
 import asyncio
 import re
+import uuid
 
 import filetype
 
@@ -320,6 +321,27 @@ async def query_pages(
                                 and r.sections
                             ):
                                 i_msg_lst = []
+                                button_data_ = []
+                                callback_id = None
+                                if (
+                                    session.session_info.client_name == "QQBot"
+                                    and session.session_info.support_markdown
+                                ):
+                                    callback_id = str(uuid.uuid4())
+                                    for i in range(len(r.sections)):
+                                        button_data_.append({str(i + 1): f"<q:{callback_id}>{str(i + 1)}"})
+                                Logger.debug(button_data_)
+                                button_data = []
+                                rb = {}
+                                for b in button_data_[0:25]:
+                                    rb.update(b)
+                                    if len(rb.keys()) >= 5:
+                                        button_data.append(rb.copy())
+                                        rb.clear()
+                                if rb:
+                                    button_data.append(rb)
+
+                                Logger.debug(button_data)
                                 session_data = [[str(i + 1), r.sections[i]] for i in range(len(r.sections))]
                                 i_msg_lst.append(
                                     I18NContext(
@@ -347,8 +369,18 @@ async def query_pages(
                                         )
                                     )
                                 ]
-                                i_msg_lst.append(I18NContext("wiki.message.invalid_section.select"))
-                                i_msg_lst.append(I18NContext("message.reply.prompt"))
+
+                                if not (
+                                    session.session_info.client_name == "QQBot"
+                                    and session.session_info.support_markdown
+                                ):
+                                    i_msg_lst.append(I18NContext("wiki.message.invalid_section.select"))
+                                    i_msg_lst.append(I18NContext("message.reply.prompt"))
+                                else:
+                                    if len(button_data_) > 25:
+                                        i_msg_lst.append(
+                                            I18NContext("wiki.message.invalid_section.select.button.limit")
+                                        )
 
                                 async def _callback(msg: Bot.MessageSession):
                                     display = msg.as_display(text_only=True)
@@ -362,7 +394,10 @@ async def query_pages(
                                                 start_wiki_api=r.info.api,
                                             )
 
-                                await session.send_message(i_msg_lst, callback=_callback)
+                                await session.send_message(
+                                    i_msg_lst, callback=_callback, button_data=button_data, callback_id=callback_id
+                                )
+
                             else:
                                 if r.invalid_section and (
                                     r.info.in_allowlist
@@ -378,17 +413,49 @@ async def query_pages(
                                 forum_data = r.forum_data
                                 img_table_data = []
                                 img_table_headers = ["#"]
+                                button_data = []
+
+                                callback_id = None
+                                if (
+                                    session.session_info.client_name == "QQBot"
+                                    and session.session_info.support_markdown
+                                ):
+                                    callback_id = str(uuid.uuid4())
                                 for x in forum_data:
                                     if x == "#":
                                         img_table_headers += forum_data[x]["data"]
                                     else:
                                         img_table_data.append([x] + forum_data[x]["data"])
+                                rb = {}
+                                bi = 1
+                                for b in forum_data:
+                                    if b != "#":
+                                        rb.update({b: f"<q:{callback_id}>{b}"})
+                                        if len(rb.keys()) >= 5:
+                                            button_data.append(rb.copy())
+                                            rb.clear()
+                                    if bi == 25:
+                                        break
+                                    bi += 1
+                                if rb:
+                                    button_data.append(rb)
+                                Logger.debug("Button data: {}".format(button_data))
                                 img_table = ImageTable(img_table_data, img_table_headers)
                                 i_msg_lst = []
                                 i_msg_lst.append(I18NContext("wiki.message.forum.prompt"))
                                 i_msg_lst += [Image(ii) for ii in await image_table_render(img_table)]
-                                i_msg_lst.append(I18NContext("wiki.message.invalid_section.select"))
-                                i_msg_lst.append(I18NContext("message.reply.prompt"))
+                                if not (
+                                    session.session_info.client_name == "QQBot"
+                                    and session.session_info.support_markdown
+                                ):
+                                    i_msg_lst.append(I18NContext("wiki.message.invalid_section.select"))
+                                    i_msg_lst.append(I18NContext("message.reply.prompt"))
+                                else:
+                                    i_msg_lst.append(I18NContext("wiki.message.invalid_section.select.button"))
+                                    if len(forum_data) > 25:
+                                        i_msg_lst.append(
+                                            I18NContext("wiki.message.invalid_section.select.button.limit")
+                                        )
 
                                 async def _callback(msg: Bot.MessageSession):
                                     display = msg.as_display(text_only=True)
@@ -399,7 +466,9 @@ async def query_pages(
                                             start_wiki_api=r.info.api,
                                         )
 
-                                await session.send_message(i_msg_lst, callback=_callback)
+                                await session.send_message(
+                                    i_msg_lst, callback=_callback, button_data=button_data, callback_id=callback_id
+                                )
 
                 else:
                     plain_slice = []
@@ -418,18 +487,33 @@ async def query_pages(
                                     for p in r.possible_research_title:
                                         pi += 1
                                         wait_plain_slice.append(f"{pi}. {p}")
-                                    wait_plain_slice.append(
-                                        session.session_info.locale.t(
-                                            "wiki.message.not_found.autofix.choice.prompt",
-                                            number=str(r.possible_research_title.index(display_title) + 1),
+                                    if (
+                                        session.session_info.client_name == "QQBot"
+                                        and session.session_info.support_markdown
+                                    ):
+                                        wait_plain_slice.append(
+                                            session.session_info.locale.t(
+                                                "wiki.message.not_found.autofix.choice.prompt.button",
+                                                number=str(r.possible_research_title.index(display_title) + 1),
+                                            )
                                         )
-                                    )
+                                    else:
+                                        wait_plain_slice.append(
+                                            session.session_info.locale.t(
+                                                "wiki.message.not_found.autofix.choice.prompt",
+                                                number=str(r.possible_research_title.index(display_title) + 1),
+                                            )
+                                        )
                                     wait_possible_list.append(
                                         {display_before_title: {display_title: r.possible_research_title}}
                                     )
-                                    wait_plain_slice.append(
-                                        session.session_info.locale.t("message.wait.next_message.prompt")
-                                    )
+                                    if not (
+                                        session.session_info.client_name == "QQBot"
+                                        and session.session_info.support_markdown
+                                    ):
+                                        wait_plain_slice.append(
+                                            session.session_info.locale.t("message.wait.next_message.prompt")
+                                        )
                                 else:
                                     wait_plain_slice.append(
                                         session.session_info.locale.t(
@@ -446,6 +530,8 @@ async def query_pages(
                                     ):
                                         if session.session_info.client_name == "QQ":
                                             _t = "message.wait.confirm.prompt.qq"
+                                        elif session.session_info.client_name == "QQBot":
+                                            _t = "message.wait.confirm.prompt.button"
                                         else:
                                             _t = "message.wait.confirm.prompt.reaction"
                                     wait_plain_slice.append(session.session_info.locale.t(_t))
@@ -607,7 +693,37 @@ async def query_pages(
 
         async def wait_confirm():
             if wait_msg_list and session.session_info.support_wait:
-                confirm = await session.wait_next_message(wait_msg_list, delete=True, append_instruction=False)
+                possibly_choices = []
+                Logger.debug(wait_possible_list)
+                Logger.debug(wait_list)
+                wi = 1
+                if len(wait_list) == 1:
+                    possibly_choices.append(
+                        {
+                            session.session_info.locale.t("message.yes"): confirm_command[0],
+                            session.session_info.locale.t("message.no"): "no",
+                        }
+                    )
+                elif len(wait_list) > 1:
+                    choices_ = {}
+                    for w in wait_list:
+                        choices_[w] = str(wi)
+                        wi += 1
+                    possibly_choices.append(choices_)
+                if wait_possible_list:
+                    choices_ = {}
+                    # [{a: {b: [c,d,e]}}]
+                    for w in wait_possible_list:
+                        for ww in w:
+                            for www in w[ww]:
+                                for wwww in w[ww][www]:
+                                    choices_[wwww] = str(wi)
+                                    wi += 1
+                    possibly_choices.append(choices_)
+
+                confirm = await session.wait_next_message(
+                    wait_msg_list, delete=True, append_instruction=False, possibly_choices=possibly_choices
+                )
                 auto_index = False
                 index = 0
                 if confirm.as_display(text_only=True) in confirm_command:
@@ -663,13 +779,16 @@ async def query_pages(
                         lang=lang,
                     )
 
-        await session.hold()
+        try:
+            await session.hold()
 
-        async def _bgtask():
-            await asyncio.gather(image_and_voice(), wait_confirm(), infobox(), section())
-            await session.release()
+            async def _bgtask():
+                await asyncio.gather(image_and_voice(), wait_confirm(), infobox(), section())
+                await session.release()
 
-        asyncio.create_task(_bgtask())
+            asyncio.create_task(_bgtask())
+        except ValueError:
+            Logger.debug("Error occurred while holding session, skip.")
 
     else:
         return {

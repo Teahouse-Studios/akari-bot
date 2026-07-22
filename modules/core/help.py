@@ -5,7 +5,7 @@ from jinja2 import FileSystemLoader, Environment
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import I18NContext, Plain
+from core.builtins.message.internal import I18NContext, Plain, Url
 from core.builtins.parser.command import CommandParser
 from core.component import module
 from core.config import Config
@@ -108,11 +108,16 @@ async def _(msg: Bot.MessageSession, module: str):
                 if help_page_url := Config("help_page_url", cfg_type=str):
                     wiki_msg = str(
                         I18NContext(
-                            "core.message.help.helpdoc.address", url=help_page_url.replace("${module}", help_name)
+                            "core.message.help.helpdoc.address",
+                            url=MessageChain.assign(Url(help_page_url.replace("${module}", help_name))),
                         )
                     )
                 elif help_url:
-                    wiki_msg = str(I18NContext("core.message.help.helpdoc.address", url=help_url + help_name))
+                    wiki_msg = str(
+                        I18NContext(
+                            "core.message.help.helpdoc.address", url=MessageChain.assign(Url(help_url + help_name))
+                        )
+                    )
                 else:
                     wiki_msg = ""
             else:
@@ -187,9 +192,9 @@ async def _(msg: Bot.MessageSession):
                 I18NContext("core.message.help.all_modules", prefix=msg.session_info.prefixes[0])
             )
             if help_url:
-                help_msg_list.append(I18NContext("core.message.help.document", url=help_url))
+                help_msg_list.append(I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url))))
             if donate_url:
-                help_msg_list.append(I18NContext("core.message.help.donate", url=donate_url))
+                help_msg_list.append(I18NContext("core.message.help.donate", url=MessageChain.assign(Url(donate_url))))
             await msg.finish(imgs + help_msg_list)
     if legacy_help:
         is_base_superuser = msg.session_info.sender_id in Bot.base_superuser_list
@@ -228,9 +233,9 @@ async def _(msg: Bot.MessageSession):
         help_msg.append(I18NContext("core.message.help.detail", prefix=msg.session_info.prefixes[0]))
         help_msg.append(I18NContext("core.message.help.all_modules", prefix=msg.session_info.prefixes[0]))
         if help_url:
-            help_msg.append(I18NContext("core.message.help.document", url=help_url))
+            help_msg.append(I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url))))
         if donate_url:
-            help_msg.append(I18NContext("core.message.help.donate", url=donate_url))
+            help_msg.append(I18NContext("core.message.help.donate", url=MessageChain.assign(Url(donate_url))))
         await msg.finish(help_msg)
 
 
@@ -242,7 +247,7 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
             legacy_help = False
             help_msg = MessageChain.assign()
             if help_url:
-                help_msg.append(I18NContext("core.message.help.document", url=help_url))
+                help_msg.append(I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url))))
             await msg.finish(imgs + help_msg)
     if legacy_help:
         module_list = ModulesManager.return_modules_list(
@@ -269,7 +274,7 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
             help_msg = MessageChain.assign(I18NContext("core.message.help.legacy.availables.none"))
         help_msg.append(I18NContext("core.message.help.detail", prefix=msg.session_info.prefixes[0]))
         if help_url:
-            help_msg.append(I18NContext("core.message.help.document", url=help_url))
+            help_msg.append(I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url))))
         await msg.finish(help_msg)
 
 

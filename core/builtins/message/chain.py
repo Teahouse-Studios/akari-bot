@@ -213,7 +213,9 @@ class MessageChain:
         # 所有检查通过，消息链安全
         return True
 
-    def as_sendable(self, session_info: SessionInfo | MessageSession = None, parse_message: bool = True) -> list:
+    def as_sendable(
+        self, session_info: SessionInfo | MessageSession = None, parse_message: bool = True, disable_markdown=False
+    ) -> list:
         """
         将消息链转换为可发送的格式。
 
@@ -226,6 +228,7 @@ class MessageChain:
 
         :param session_info: 会话信息，用于本地化和平台特定的处理
         :param parse_message: 是否解析消息中的特殊格式（如 KE 码、多语言标记等）
+        :param disable_markdown: 是否禁用 markdown 格式转换
         :return: 可发送的消息元素列表
 
         示例：
@@ -265,7 +268,9 @@ class MessageChain:
                             element_chain = match_kecode(x.text, x.disable_joke)
                             # 递归处理解析出的元素
                             for elem in element_chain.values:
-                                elem = MessageChain.assign(elem).as_sendable(session_info, parse_message=False)
+                                elem = MessageChain.assign(elem).as_sendable(
+                                    session_info, parse_message=False, disable_markdown=disable_markdown
+                                )
                                 if isinstance(elem, PlainElement):
                                     elem.text = session_info.locale.t_str(elem.text)
                                 value += elem
@@ -305,7 +310,7 @@ class MessageChain:
 
                 # 执行多语言翻译
                 t_value = locale.t(x.key, x.fallback, x.locale_failed_prompt, **x.kwargs)
-                value += MessageChain.assign(t_value).as_sendable(session_info)
+                value += MessageChain.assign(t_value).as_sendable(session_info, disable_markdown=disable_markdown)
 
             # ========== 处理 URL 元素 ==========
             elif isinstance(x, URLElement):
@@ -313,7 +318,11 @@ class MessageChain:
                 if session_info and (session_info.use_url_manager and x.applied_mm is None):
                     x = URLElement.assign(x.url, use_mm=True, md_format_name=x.md_format_name)
                 # 应用 Markdown 格式（如果需要）
-                if session_info and session_info.use_url_md_format and not x.applied_md_format:
+                if (
+                    session_info
+                    and (session_info.use_url_md_format and not x.applied_md_format)
+                    and not disable_markdown
+                ):
                     x = URLElement.assign(x.url, md_format=True, md_format_name=x.md_format_name)
 
                 value.append(PlainElement.assign(x.url, disable_joke=True))

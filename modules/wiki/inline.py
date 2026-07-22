@@ -23,6 +23,8 @@ from .utils.utils import check_svg
 from .utils.wikilib import WikiLib
 from .wiki import query_pages
 
+import uuid
+
 wiki_inline = module(
     "wiki_inline",
     desc="{I18N:wiki.help.wiki_inline.desc}",
@@ -202,15 +204,36 @@ async def _(msg: Bot.MessageSession):
                         ):
                             i_msg_lst = []
                             if get_page.sections:
+                                button_data_ = []
+                                callback_id = None
+                                if msg.session_info.client_name == "QQBot" and msg.session_info.support_markdown:
+                                    callback_id = str(uuid.uuid4())
+                                    for i in range(len(get_page.sections)):
+                                        button_data_.append({str(i + 1): f"<q:{callback_id}>{str(i + 1)}"})
+                                Logger.debug(button_data_)
+                                button_data = []
+                                rb = {}
+                                for b in button_data_[0:25]:
+                                    rb.update(b)
+                                    if len(rb.keys()) >= 5:
+                                        button_data.append(rb.copy())
+                                        rb.clear()
+                                if rb:
+                                    button_data.append(rb)
+
+                                Logger.debug(button_data)
                                 session_data = [
                                     [str(i + 1), get_page.sections[i]] for i in range(len(get_page.sections))
                                 ]
                                 i_msg_lst.append(
                                     I18NContext(
                                         "wiki.message.invalid_section.prompt"
-                                        if (
-                                            get_page.invalid_section
-                                            and (wiki_.wiki_info.in_allowlist or not msg.session_info.use_url_manager)
+                                        if get_page.invalid_section
+                                        and (
+                                            get_page.info.in_allowlist
+                                            or not (
+                                                isinstance(msg, Bot.MessageSession) and msg.session_info.use_url_manager
+                                            )
                                         )
                                         else "wiki.message.talk_page.prompt"
                                     )
@@ -221,46 +244,78 @@ async def _(msg: Bot.MessageSession):
                                         ImageTable(
                                             session_data,
                                             [
-                                                "{I18N:wiki.message.table.header.id}",
-                                                "{I18N:wiki.message.table.header.section}",
+                                                msg.session_info.locale.t("wiki.message.table.header.id"),
+                                                msg.session_info.locale.t("wiki.message.table.header.section"),
                                             ],
-                                            msg.session_info,
                                         )
                                     )
                                 ]
-                                i_msg_lst.append(I18NContext("wiki.message.invalid_section.select"))
-                                i_msg_lst.append(I18NContext("message.reply.prompt"))
+
+                                if not (msg.session_info.client_name == "QQBot" and msg.session_info.support_markdown):
+                                    i_msg_lst.append(I18NContext("wiki.message.invalid_section.select"))
+                                    i_msg_lst.append(I18NContext("message.reply.prompt"))
+                                else:
+                                    if len(button_data_) > 25:
+                                        i_msg_lst.append(
+                                            I18NContext("wiki.message.invalid_section.select.button.limit")
+                                        )
 
                                 async def _callback(msg: Bot.MessageSession):
                                     display = msg.as_display(text_only=True)
                                     if is_int(display):
                                         display = int(display)
                                         if display <= len(get_page.sections):
-                                            get_page.selected_section = display - 1
+                                            get_page.selected_section = str(display - 1)
                                             await query_pages(
                                                 msg,
                                                 title=get_page.title + "#" + get_page.sections[display - 1],
                                                 start_wiki_api=get_page.info.api,
                                             )
 
-                                await msg.send_message(i_msg_lst, callback=_callback)
+                                await msg.send_message(
+                                    i_msg_lst, callback=_callback, button_data=button_data, callback_id=callback_id
+                                )
                             else:
                                 await msg.send_message(I18NContext("wiki.message.invalid_section"))
                         if get_page.is_forum:
                             forum_data = get_page.forum_data
                             img_table_data = []
                             img_table_headers = ["#"]
+                            button_data = []
+
+                            callback_id = None
+                            if msg.session_info.client_name == "QQBot" and msg.session_info.support_markdown:
+                                callback_id = str(uuid.uuid4())
                             for x in forum_data:
                                 if x == "#":
                                     img_table_headers += forum_data[x]["data"]
                                 else:
                                     img_table_data.append([x] + forum_data[x]["data"])
+                            rb = {}
+                            bi = 1
+                            for b in forum_data:
+                                if b != "#":
+                                    rb.update({b: f"<q:{callback_id}>{b}"})
+                                    if len(rb.keys()) >= 5:
+                                        button_data.append(rb.copy())
+                                        rb.clear()
+                                if bi == 25:
+                                    break
+                                bi += 1
+                            if rb:
+                                button_data.append(rb)
+                            Logger.debug("Button data: {}".format(button_data))
                             img_table = ImageTable(img_table_data, img_table_headers)
                             i_msg_lst = []
                             i_msg_lst.append(I18NContext("wiki.message.forum.prompt"))
                             i_msg_lst += [Image(ii) for ii in await image_table_render(img_table)]
-                            i_msg_lst.append(I18NContext("wiki.message.invalid_section.select"))
-                            i_msg_lst.append(I18NContext("message.reply.prompt"))
+                            if not (msg.session_info.client_name == "QQBot" and msg.session_info.support_markdown):
+                                i_msg_lst.append(I18NContext("wiki.message.invalid_section.select"))
+                                i_msg_lst.append(I18NContext("message.reply.prompt"))
+                            else:
+                                i_msg_lst.append(I18NContext("wiki.message.invalid_section.select.button"))
+                                if len(forum_data) > 25:
+                                    i_msg_lst.append(I18NContext("wiki.message.invalid_section.select.button.limit"))
 
                             async def _callback(msg: Bot.MessageSession):
                                 display = msg.as_display(text_only=True)
@@ -271,7 +326,9 @@ async def _(msg: Bot.MessageSession):
                                         start_wiki_api=get_page.info.api,
                                     )
 
-                            await msg.send_message(i_msg_lst, callback=_callback)
+                            await msg.send_message(
+                                i_msg_lst, callback=_callback, button_data=button_data, callback_id=callback_id
+                            )
             if len(query_list) == 1 and img_send:
                 return
             if msg.session_info.support_image:
