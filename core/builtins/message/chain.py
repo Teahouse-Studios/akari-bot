@@ -1008,6 +1008,9 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
 
                 if userid:
                     elements.append(MentionElement.assign(userid))
+            elif element_type == "url":
+                text = parsed_params.get("text")
+                elements.append(URLElement.assign(text))
 
         except Exception:
             elements.append(PlainElement.assign(e, disable_joke=disable_joke))

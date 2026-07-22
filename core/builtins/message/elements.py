@@ -216,7 +216,7 @@ class URLElement(BaseElement):
 
         :return: KE 码格式的字符串
         """
-        return f"[KE:plain,text={self.url}]"
+        return f"[KE:url,text={self.url}]"
 
     def __str__(self):
         """返回 URL 地址或转换后的链接"""
