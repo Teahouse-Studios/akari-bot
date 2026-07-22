@@ -74,6 +74,7 @@ class SessionInfo:
     _tz_offset: str | None = None
     timezone_offset: timedelta | None = None
     bot_name: str | None = None
+    bot_id: str | None = None
     muted: bool | None = None
     enabled_modules: list | None = None
     petal: int | None = None
@@ -94,6 +95,7 @@ class SessionInfo:
         client_name: str | None = None,
         target_from: str | None = None,
         sender_id: str | None = None,
+        bot_id: str | None = None,
         sender_from: str | None = None,
         sender_name: str | None = None,
         message_id: str | None = None,
@@ -144,6 +146,7 @@ class SessionInfo:
             sender_name=sender_name,
             message_id=message_id,
             reply_id=reply_id,
+            bot_id=bot_id,
             messages=messages,
             banned_users=target_info.banned_users if target_info else [],
             custom_admins=target_info.custom_admins if target_info else [],

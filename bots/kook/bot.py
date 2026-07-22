@@ -80,6 +80,7 @@ async def msg_handler(message: Message):
         reply_id=reply_id,
         messages=msg_chain,
         ctx_slot=ctx_id,
+        bot_id=bot.me.id,
     )
 
     await Bot.process_message(session, message)
@@ -104,6 +105,7 @@ async def add_reaction(b: khlBot, event: Event):
         reply_id=body.get("msg_id"),
         messages=MessageChain.assign([Plain(body.get("emoji", {}).get("id", ""))]),
         ctx_slot=ctx_id,
+        bot_id=bot.me.id,
     )
 
     await Bot.process_message(session, event)
@@ -128,6 +130,7 @@ async def private_add_reaction(b: khlBot, event: Event):
         reply_id=body.get("msg_id"),
         messages=MessageChain.assign([Plain(body.get("emoji", {}).get("id", ""))]),
         ctx_slot=ctx_id,
+        bot_id=bot.me.id,
     )
 
     await Bot.process_message(session, event)

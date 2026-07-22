@@ -67,6 +67,7 @@ class MyClient(botpy.Client):
             ctx_slot=ctx_id,
             prefixes=["/"],
             tmp={"message_type": "guild_at"},
+            bot_id=qqbot_openid,
         )
 
         await Bot.process_message(session, message)
@@ -101,6 +102,7 @@ class MyClient(botpy.Client):
             messages=msg_chain,
             ctx_slot=ctx_id,
             prefixes=["/"],
+            bot_id=qqbot_openid,
             tmp={"message_type": "guild_direct"},
         )
 
@@ -115,8 +117,8 @@ class MyClient(botpy.Client):
             return
 
         reply_id = None
-        if message.message_reference:
-            reply_id = message.message_reference.message_id
+        if message.mentions:
+            reply_id = message.mentions[0].id
 
         if qqbot_openid:
             message.content = re.sub(r"<@" + qqbot_openid + ">", "", message.content).strip()
@@ -134,6 +136,7 @@ class MyClient(botpy.Client):
             messages=msg_chain,
             ctx_slot=ctx_id,
             prefixes=["/"],
+            bot_id=qqbot_openid,
             tmp={"message_type": "group_direct"},
         )
 
@@ -169,6 +172,7 @@ class MyClient(botpy.Client):
             messages=msg_chain,
             ctx_slot=ctx_id,
             prefixes=["/"],
+            bot_id=qqbot_openid,
             tmp={"message_type": "group_at"},
         )
 
@@ -200,6 +204,7 @@ class MyClient(botpy.Client):
             messages=msg_chain,
             ctx_slot=ctx_id,
             prefixes=["/"],
+            bot_id=qqbot_openid,
         )
 
         await Bot.process_message(session, message)
@@ -229,6 +234,7 @@ class MyClient(botpy.Client):
             messages=msg_chain,
             ctx_slot=ctx_id,
             prefixes=["/"],
+            bot_id=qqbot_openid,
         )
 
         await Bot.process_message(session, message)
@@ -278,6 +284,7 @@ class MyClient(botpy.Client):
             reply_id=interaction.data.resolved.message_id if quote_msg is None else quote_msg,
             messages=MessageChain.assign([Plain(send_msg)]),
             ctx_slot=ctx_id,
+            bot_id=qqbot_openid,
         )
         await Bot.process_message(session, interaction)
 

@@ -38,6 +38,7 @@ quick_confirm = Config("quick_confirm", True)
 
 enable_temp_session = Config("qq_enable_temp_session", True, table_name="bot_onebot")
 enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name="bot_onebot")
+qq_account = None
 
 
 @aiocqhttp_bot.on_startup
@@ -50,6 +51,7 @@ async def startup():
 @aiocqhttp_bot.on_websocket_connection
 async def _(event: Event):
     qq_login_info = await aiocqhttp_bot.call_action("get_login_info")
+    global qq_account
     qq_account = qq_login_info.get("user_id")
     Temp.data["qq_account"] = str(qq_account)
     Temp.data["qq_nickname"] = qq_login_info.get("nickname")
@@ -143,6 +145,7 @@ async def message_handler(event: Event):
         messages=msg_chain,
         ctx_slot=ctx_id,
         tmp=Temp.data.copy(),
+        bot_id=str(qq_account),
     )
 
     await Bot.process_message(session, event)
@@ -203,6 +206,7 @@ async def _(event: Event):
             reply_id=str(event.message_id),
             messages=MessageChain.assign([Plain(emoji_)]),
             ctx_slot=ctx_id,
+            bot_id=str(qq_account),
         )
 
         await Bot.process_message(session, event)

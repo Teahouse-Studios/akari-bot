@@ -384,6 +384,7 @@ async def query_pages(
 
                                 async def _callback(msg: Bot.MessageSession):
                                     display = msg.as_display(text_only=True)
+
                                     if is_int(display):
                                         display = int(display)
                                         if display <= len(r.sections):
@@ -459,6 +460,7 @@ async def query_pages(
 
                                 async def _callback(msg: Bot.MessageSession):
                                     display = msg.as_display(text_only=True)
+                                    Logger.debug("callback: {}".format(display))
                                     if is_int(display) and int(display) <= len(forum_data) - 1:
                                         await query_pages(
                                             session,

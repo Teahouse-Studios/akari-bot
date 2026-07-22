@@ -81,7 +81,6 @@ class MockMessageSession(MessageSession):
         disable_secret_check=False,
         enable_parse_message=True,
         enable_split_image=True,
-        callback=None,
     ):
         await self.send_message(message_chain)
 

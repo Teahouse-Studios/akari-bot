@@ -119,7 +119,7 @@ class MessageSession:
         :param enable_parse_message: 是否允许解析消息（此参数作接口兼容用，仅 QQ 平台使用，默认为 True）
         :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅 Telegram 平台使用，默认为 True）
         :param callback: 回调函数，在消息发送完成后执行（可选）
-        :param callback_id: 回调函数的唯一标识符，若设定则 callback 将不基于 reply 消息触发（可选）
+        :param callback_id: 回调函数的唯一标识符，用于特殊场景（QQ 平台的按钮）（可选）
         :param button_data: 用于扩展按钮提示（可选）
         :return: FinishedSession 对象，包含消息 ID，可用于后续操作
 
@@ -162,7 +162,19 @@ class MessageSession:
         if "message_id" in return_val:
             # 消息发送成功，如果有回调函数则注册
             if callback:
-                SessionTaskManager.add_callback(return_val["message_id"] if not callback_id else callback_id, callback)
+                if isinstance(return_val["message_id"], str):
+                    return_val["message_id"] = [return_val["message_id"]]
+                if isinstance(return_val["message_id"], int):
+                    return_val["message_id"] = [str(return_val["message_id"])]
+                if callback_id:
+                    return_val["message_id"].append(callback_id)
+
+                # 将 sender_id 添加到 message_id 中以处理 fallback 行为（目标会话不支持引用回复的 message_id）
+
+                if self.session_info.bot_id:
+                    SessionTaskManager.add_callback([self.session_info.bot_id], callback)
+
+                SessionTaskManager.add_callback(return_val["message_id"], callback)
 
             return FinishedSession(self.session_info, return_val["message_id"])
         return FinishedSession(self.session_info, [])
@@ -175,6 +187,8 @@ class MessageSession:
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
         callback: Coroutine | None = None,
+        callback_id: str = None,
+        button_data: list[dict[str, str]] = [],
     ) -> NoReturn:
         """
         用于向消息用户返回消息并终结会话（模块后续代码不再执行）。
@@ -192,6 +206,8 @@ class MessageSession:
         :param enable_parse_message: 是否允许解析消息（此参数作接口兼容用，仅 QQ 平台使用，默认为 True）
         :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅 Telegram 平台使用，默认为 True）
         :param callback: 回调函数，在消息发送完成后执行（可选）
+        :param callback_id: 回调函数的唯一标识符，用于特殊场景（QQ 平台的按钮）（可选）
+        :param button_data: 用于扩展按钮提示（可选）
 
         :raises SessionFinished: 总是抛出此异常来终止会话处理
         """
@@ -205,6 +221,8 @@ class MessageSession:
                 enable_parse_message=enable_parse_message,
                 enable_split_image=enable_split_image,
                 callback=callback,
+                callback_id=callback_id,
+                button_data=button_data,
             )
         # ========== 终止会话 ==========
         # 抛出 SessionFinished 异常，包含已发送消息的信息
@@ -216,7 +234,6 @@ class MessageSession:
         disable_secret_check: bool = False,
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
-        callback: Coroutine | None = None,
     ):
         """
         用于向消息用户直接发送消息。
@@ -235,7 +252,6 @@ class MessageSession:
         :param disable_secret_check: 是否禁用消息安全检查（默认为 False）
         :param enable_parse_message: 是否允许解析消息（此参数作接口兼容用，仅 QQ 平台使用，默认为 True）
         :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅 Telegram 平台使用，默认为 True）
-        :param callback: 回调函数，在消息发送完成后执行（可选）
         """
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
 

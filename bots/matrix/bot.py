@@ -149,6 +149,7 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
         reply_id=reply_id,
         messages=msg_chain,
         ctx_slot=ctx_id,
+        bot_id=matrix_bot.user_id,
     )
 
     await Bot.process_message(session, (room, event))
@@ -168,6 +169,7 @@ async def on_reaction(room: nio.MatrixRoom, event: nio.ReactionEvent):
         reply_id=event.reacts_to,
         messages=MessageChain.assign(Plain(relates_to.get("key"))),
         ctx_slot=ctx_id,
+        bot_id=matrix_bot.user_id,
     )
     await Bot.process_message(session, (room, event))
 
