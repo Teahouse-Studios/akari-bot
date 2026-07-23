@@ -5,6 +5,7 @@ from jinja2 import FileSystemLoader, Environment
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
+from core.builtins.message.elements import ImageElement
 from core.builtins.message.internal import I18NContext, Plain, Url
 from core.builtins.parser.command import CommandParser
 from core.component import module
@@ -106,18 +107,16 @@ async def _(msg: Bot.MessageSession, module: str):
 
             if module_.doc:
                 if help_page_url := Config("help_page_url", cfg_type=str):
-                    wiki_msg = str(
-                        I18NContext(
-                            "core.message.help.helpdoc.address",
-                            url=MessageChain.assign(Url(help_page_url.replace("${module}", help_name))),
-                        )
+                    wiki_msg = I18NContext(
+                        "core.message.help.helpdoc.address",
+                        url=MessageChain.assign(Url(help_page_url.replace("${module}", help_name))),
                     )
+
                 elif help_url:
-                    wiki_msg = str(
-                        I18NContext(
-                            "core.message.help.helpdoc.address", url=MessageChain.assign(Url(help_url + help_name))
-                        )
+                    wiki_msg = I18NContext(
+                        "core.message.help.helpdoc.address", url=MessageChain.assign(Url(help_url + help_name))
                     )
+
                 else:
                     wiki_msg = ""
             else:
@@ -159,15 +158,17 @@ async def _(msg: Bot.MessageSession, module: str):
                             ElementScreenshotOptions(content=html_content, element=[".botbox"])
                         )
 
-                        msgchain = MessageChain.assign(cb64imglst(images, bot_img=True))
+                        cb: list[ImageElement] = cb64imglst(images, bot_img=True)
+
+                        msgchain = MessageChain.assign(cb)
                         if wiki_msg:
-                            msgchain.append(Plain(wiki_msg.strip()))
+                            msgchain.append(wiki_msg)
                         await msg.finish(msgchain)
                     except Exception:
                         Logger.exception()
 
                 if wiki_msg:
-                    await msg.finish(wiki_msg.strip())
+                    await msg.finish(wiki_msg)
                 else:
                     await msg.finish(I18NContext("core.help.info.none"))
 

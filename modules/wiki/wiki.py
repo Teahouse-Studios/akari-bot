@@ -278,7 +278,20 @@ async def query_pages(
 
                     if r.file:
                         dl_list.append(r.file)
-                        plain_slice.append(session.session_info.locale.t("wiki.message.flies") + r.file)
+                        plain_slice.append(
+                            session.session_info.locale.t("wiki.message.flies")
+                            + str(
+                                Url(
+                                    r.file,
+                                    use_mm=not r.info.in_allowlist
+                                    and (
+                                        isinstance(session, Bot.MessageSession) and session.session_info.use_url_manager
+                                    ),
+                                    md_format=isinstance(session, Bot.MessageSession)
+                                    and session.session_info.use_url_md_format,
+                                )
+                            )
+                        )
                     else:
                         if r.link and not r.selected_section:
                             render_infobox_list.append(

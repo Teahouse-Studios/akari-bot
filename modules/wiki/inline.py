@@ -5,7 +5,8 @@ import urllib.parse
 import filetype
 
 from core.builtins.bot import Bot
-from core.builtins.message.internal import I18NContext, Image, Voice
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import I18NContext, Image, Voice, Url
 from core.component import module
 from core.dirty_check import check
 from core.logger import Logger
@@ -121,7 +122,7 @@ async def _(msg: Bot.MessageSession):
                                         [
                                             I18NContext(
                                                 "wiki.message.wiki_inline.flies",
-                                                file=get_page.file,
+                                                file=MessageChain.assign(Url(get_page.file)),
                                             ),
                                             Image(dl),
                                         ],
@@ -140,7 +141,7 @@ async def _(msg: Bot.MessageSession):
                                         [
                                             I18NContext(
                                                 "wiki.message.wiki_inline.flies",
-                                                file=get_page.file,
+                                                file=MessageChain.assign(Url(get_page.file)),
                                             ),
                                             Voice(dl),
                                         ],
@@ -152,7 +153,7 @@ async def _(msg: Bot.MessageSession):
                                 chain = [
                                     I18NContext(
                                         "wiki.message.wiki_inline.flies",
-                                        file=get_page.file,
+                                        file=MessageChain.assign(Url(get_page.file)),
                                     ),
                                 ] + rd
                                 await msg.send_message(chain, quote=False)
