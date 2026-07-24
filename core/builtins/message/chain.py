@@ -60,6 +60,14 @@ class MessageChain:
     values: list[MessageElement]
 
     @classmethod
+    def create(cls):
+        """
+        创建一个空的消息链实例。
+        """
+
+        return cls(values=[])
+
+    @classmethod
     def assign(
         cls,
         elements: str | list[MessageElement] | tuple[MessageElement, ...] | MessageElement | MessageChain | None = None,
@@ -217,7 +225,7 @@ class MessageChain:
 
     def as_sendable(
         self, session_info: SessionInfo | MessageSession = None, parse_message: bool = True, disable_markdown=False
-    ) -> list:
+    ) -> ConvertedMessageChain:
         """
         将消息链转换为可发送的格式。
 
@@ -270,12 +278,15 @@ class MessageChain:
                             element_chain = match_kecode(x.text, x.disable_joke)
                             # 递归处理解析出的元素
                             for elem in element_chain.values:
-                                elem = MessageChain.assign(elem).as_sendable(
-                                    session_info, parse_message=False, disable_markdown=disable_markdown
+                                elem_ = (
+                                    MessageChain.assign(elem)
+                                    .as_sendable(session_info, parse_message=False, disable_markdown=disable_markdown)
+                                    .values
                                 )
-                                if isinstance(elem, PlainElement):
-                                    elem.text = session_info.locale.t_str(elem.text)
-                                value += elem
+                                for el in elem_:
+                                    if isinstance(el, PlainElement):
+                                        elem.text = session_info.locale.t_str(el.text)
+                                value += elem_
                             continue
                     else:
                         # 空文本，使用默认错误消息
@@ -312,7 +323,9 @@ class MessageChain:
 
                 # 执行多语言翻译
                 t_value = locale.t(x.key, x.fallback, x.locale_failed_prompt, **x.kwargs)
-                value += MessageChain.assign(t_value).as_sendable(session_info, disable_markdown=disable_markdown)
+                value += (
+                    MessageChain.assign(t_value).as_sendable(session_info, disable_markdown=disable_markdown).values
+                )
 
             # ========== 处理 URL 元素 ==========
             elif isinstance(x, URLElement):
@@ -343,7 +356,7 @@ class MessageChain:
             if isinstance(x, PlainElement) and not x.disable_joke:
                 x.text = joke(x.text)
 
-        return value
+        return ConvertedMessageChain.assign(value)
 
     def to_str(
         self, text_only=True, element_filter: tuple[MessageElement, ...] | None = None, connector: str = "\n"
@@ -491,6 +504,21 @@ class MessageChain:
         """
         return MessageChain.assign(self.values.copy())
 
+    def contains(self, types: type[MessageElement] | tuple[MessageElement]) -> bool:
+        for x in self.values:
+            if isinstance(x, types):
+                return True
+        return False
+
+    def only(self, types: type[MessageElement] | tuple[MessageElement]) -> bool:
+        for x in self.values:
+            if not isinstance(x, types):
+                return False
+        return True
+
+    def extend(self, other: MessageChain):
+        return self.__iadd__(other)
+
     def __str__(self):
         """返回消息链的字符串表示（用于调试）"""
         return f"[{', '.join([x.__repr__() for x in self.values])}]"
@@ -550,6 +578,16 @@ class MessageChain:
         else:
             raise TypeError(f'Unsupported operand type(s) for +=: "MessageChain" and "{type(other).__name__}"')
         return self
+
+    def __contains__(self, item):
+        for x in self.values:
+            if isinstance(x, item):
+                return True
+        return False
+
+
+class ConvertedMessageChain(MessageChain):
+    pass
 
 
 @define

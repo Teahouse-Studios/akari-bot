@@ -214,9 +214,9 @@ async def _(msg: Bot.MessageSession):
                                 Logger.debug(button_data_)
                                 button_data = []
                                 rb = {}
-                                for b in button_data_[0:25]:
+                                for b in button_data_[0:50]:
                                     rb.update(b)
-                                    if len(rb.keys()) >= 5:
+                                    if len(rb.keys()) >= 10:
                                         button_data.append(rb.copy())
                                         rb.clear()
                                 if rb:
@@ -256,7 +256,7 @@ async def _(msg: Bot.MessageSession):
                                     i_msg_lst.append(I18NContext("wiki.message.invalid_section.select"))
                                     i_msg_lst.append(I18NContext("message.reply.prompt"))
                                 else:
-                                    if len(button_data_) > 25:
+                                    if len(button_data_) > 50:
                                         i_msg_lst.append(
                                             I18NContext("wiki.message.invalid_section.select.button.limit")
                                         )

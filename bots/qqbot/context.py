@@ -1,6 +1,5 @@
 import asyncio
 import html
-import re
 
 import orjson
 from botpy.api import BotAPI
@@ -115,7 +114,7 @@ class QQBotContextManager(ContextManager):
     async def send_message(
         cls,
         session_info: SessionInfo,
-        message: MessageChain | MessageNodes,
+        message: MessageChain,
         quote: bool = True,
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
@@ -129,6 +128,7 @@ class QQBotContextManager(ContextManager):
 
         if isinstance(message, MessageNodes):
             Logger.error("This session does not support message nodes, check if bug exists.")
+            return msg_ids
 
         retry_attempt = stop_after_attempt(0)
         retry_wait = wait_fixed(0)
@@ -502,8 +502,23 @@ class QQBotContextManager(ContextManager):
                         buttons.append(button)
                     rows.append(KeyboardRow(buttons=buttons))
                 keyboard = KeyboardPayload(content=Keyboard(rows=rows))
-            pure_text_msg = True
-            for x in message.as_sendable(session_info, parse_message=enable_parse_message):
+
+            converted_message = message.as_sendable(session_info, parse_message=enable_parse_message)
+            _use_markdown = True
+
+            if converted_message.only(PlainElement):
+                _use_markdown = False
+            if converted_message.only(ImageElement) and len(converted_message) == 1:
+                _use_markdown = False
+
+            if keyboard:
+                _use_markdown = True
+
+            if not _use_markdown:
+                Logger.debug("MessageElements do not require markdown, sending as plain message instead of markdown.")
+                return await send_msg()
+
+            for x in converted_message:
                 if isinstance(x, PlainElement):
                     x.text = html.unescape(x.text)
                     if enable_parse_message:
@@ -519,17 +534,11 @@ class QQBotContextManager(ContextManager):
                             fin_w = w * fin_scale
                             fin_h = h * fin_scale
                             texts.append(f"![text #{int(fin_w)}px #{int(fin_h)}px]({upload['public_url']})")
-                    pure_text_msg = False
                 elif isinstance(x, MentionElement):
                     if x.client == client_name and session_info.target_from == target_guild_prefix:
                         texts.append(f'<qqbot-at-user id="{x.id}" />')
-                    pure_text_msg = False
             if len(texts) != 0:
                 msg = "\n".join(texts)
-                if pure_text_msg and not keyboard and not re.findall("(\[.*?]\(.*?\))", msg):
-                    Logger.debug("Message is pure text, sending as plain message instead of markdown.")
-                    return await send_msg()
-
                 md = MarkdownPayload(content=msg)
 
                 if ctx and not isinstance(ctx, Interaction):
