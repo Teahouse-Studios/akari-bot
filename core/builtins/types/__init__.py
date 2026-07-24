@@ -32,6 +32,7 @@ MessageElement = Union[
     EmbedFieldElement,
     EmbedElement,
     MentionElement,
+    None,
 ]
 
 __all__ = ["MessageElement", "MultimediaElement"]

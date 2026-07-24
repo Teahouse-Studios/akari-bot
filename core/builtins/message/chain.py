@@ -115,6 +115,8 @@ class MessageChain:
         if isinstance(elements, (list, tuple)):
             for e in elements:
                 # 字符串转换为 PlainElement（忽略空字符串）
+                if e is None:
+                    continue
                 if isinstance(e, str) and e:
                     values.append(PlainElement.assign(e))
                 # 字典中的元素进行结构化处理
@@ -399,7 +401,7 @@ class MessageChain:
             [{'_type': 'PlainElement', 'text': 'Hello', 'disable_joke': False}]
         ```
         """
-        return [converter.unstructure(x, MessageElement) for x in self.values]
+        return [converter.unstructure(x, MessageElement) for x in self.values if x is not None]
 
     def to_kecode(self) -> str:
         _t = ""

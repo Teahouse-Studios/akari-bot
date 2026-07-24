@@ -1,6 +1,7 @@
 import orjson
 
 from core.builtins.bot import Bot
+from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Image, Plain, Url
 from core.config import Config
 from core.utils.image_table import image_table_render, ImageTable
@@ -26,20 +27,24 @@ async def _(msg: Bot.MessageSession, wikiurl: str):
             if check.value.in_blocklist and not in_allowlist:
                 await msg.finish(I18NContext("wiki.message.invalid.blocked", name=wiki_name))
         result = await target.add_start_wiki(check.value.api)
+        prompts = [I18NContext("wiki.message.set.success", name=wiki_name)]
         if result and enable_urlmanager and not in_allowlist:
-            prompt = "\n" + msg.session_info.locale.t("wiki.message.wiki_audit.untrust")
+            prompts.append(I18NContext("wiki.message.wiki_audit.untrust"))
             if wiki_whitelist_url:
-                prompt += "\n" + msg.session_info.locale.t(
-                    "wiki.message.wiki_audit.untrust.address", url=wiki_whitelist_url
+                prompts.append(
+                    I18NContext(
+                        "wiki.message.wiki_audit.untrust.address", url=MessageChain.assign(Url(wiki_whitelist_url))
+                    )
                 )
-        else:
-            prompt = ""
-        await msg.finish(msg.session_info.locale.t("wiki.message.set.success", name=wiki_name) + prompt)
+
+        await msg.finish(prompts)
     else:
-        result = msg.session_info.locale.t("wiki.message.error.add") + (
-            "\n" + msg.session_info.locale.t("wiki.message.error.info") + check.message if check.message != "" else ""
-        )
-        await msg.finish(result)
+        prompts = [
+            I18NContext("wiki.message.error.add"),
+            I18NContext("wiki.message.error.info"),
+            Plain(check.message) if check.message != "" else None,
+        ]
+        await msg.finish(MessageChain.assign(prompts))
 
 
 @wiki.command("iw add <interwiki> <wikiurl> {{I18N:wiki.help.iw.add}}", required_admin=True)
@@ -53,23 +58,24 @@ async def _(msg: Bot.MessageSession, interwiki: str, wikiurl: str):
         if Bot.Info.use_url_manager and check.value.in_blocklist and not check.value.in_allowlist:
             await msg.finish(msg.session_info.locale.t("wiki.message.invalid.blocked", name=wiki_name))
         result = await target.config_interwikis(interwiki, check.value.api)
+        prompts = [I18NContext("wiki.message.iw.add.success", iw=interwiki, name=wiki_name)]
         if result and enable_urlmanager and not check.value.in_allowlist:
-            prompt = "\n" + msg.session_info.locale.t("wiki.message.wiki_audit.untrust")
+            prompts.append(I18NContext("wiki.message.wiki_audit.untrust"))
             if wiki_whitelist_url:
-                prompt += "\n" + msg.session_info.locale.t(
-                    "wiki.message.wiki_audit.untrust.address", url=wiki_whitelist_url
+                prompts.append(
+                    I18NContext(
+                        "wiki.message.wiki_audit.untrust.address", url=MessageChain.assign(Url(wiki_whitelist_url))
+                    )
                 )
 
-        else:
-            prompt = ""
-        await msg.finish(
-            msg.session_info.locale.t("wiki.message.iw.add.success", iw=interwiki, name=wiki_name) + prompt
-        )
+        await msg.finish(prompts)
     else:
-        result = msg.session_info.locale.t("wiki.message.error.add") + (
-            "\n" + msg.session_info.locale.t("wiki.message.error.info") + check.message if check.message != "" else ""
-        )
-        await msg.finish(result)
+        prompts = [
+            I18NContext("wiki.message.error.add"),
+            I18NContext("wiki.message.error.info"),
+            Plain(check.message) if check.message != "" else None,
+        ]
+        await msg.finish(MessageChain.assign(prompts))
 
 
 @wiki.command("iw remove <interwiki> {{I18N:wiki.help.iw.remove}}", required_admin=True)
@@ -106,7 +112,7 @@ async def _(msg: Bot.MessageSession):
             img_list = [Image(ii) for ii in imgs]
             mt = [I18NContext("wiki.message.iw.list", prefix=msg.session_info.prefixes[0])]
             if base_interwiki_link:
-                mt.append(I18NContext("wiki.message.iw.list.prompt", url=Url(base_interwiki_link)))
+                mt.append(I18NContext("wiki.message.iw.list.prompt", url=MessageChain.assign(Url(base_interwiki_link))))
             await msg.finish(img_list + mt)
         else:
             result.append(I18NContext("wiki.message.iw.list.legacy"))
@@ -115,7 +121,7 @@ async def _(msg: Bot.MessageSession):
     else:
         result.append(I18NContext("wiki.message.iw.list.none", prefix=msg.session_info.prefixes[0]))
     if base_interwiki_link:
-        result.append(I18NContext("wiki.message.iw.list.prompt", url=Url(base_interwiki_link)))
+        result.append(I18NContext("wiki.message.iw.list.prompt", url=MessageChain.assign(Url(base_interwiki_link))))
     await msg.finish(result)
 
 
