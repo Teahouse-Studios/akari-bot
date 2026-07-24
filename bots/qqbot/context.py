@@ -22,6 +22,7 @@ from bots.qqbot.info import (
 from bots.qqbot.utils import url_filter
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, MentionElement
+from core.builtins.message.internal import I18NContext
 from core.builtins.session.context import ContextManager
 from core.builtins.session.info import SessionInfo
 from core.config import Config
@@ -721,7 +722,7 @@ class QQBotContextManager(ContextManager):
                         if _t >= 5:
                             try:
                                 typing_msg = await cls.send_message(
-                                    session, MessageChain.assign("正在输入中..."), _ignore_retries=True
+                                    session, MessageChain.assign(I18NContext("message.typing")), _ignore_retries=True
                                 )
                                 Logger.debug("typing message sent:" + str(typing_msg))
                             except Exception:

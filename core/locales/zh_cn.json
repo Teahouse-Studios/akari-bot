@@ -144,6 +144,7 @@
     "message.reply.prompt": "（请使用指定的词语引用回复本条消息）",
     "message.success": "成功。",
     "message.unknown": "未知",
+    "message.typing": "正在输入中……",
     "message.wait.confirm.prompt": "（发送“是”等符合确认条件的词语来确认）",
     "message.wait.confirm.prompt.qq": "（发送“是”等符合确认条件的词语，点击表情反应或戳一戳来确认）",
     "message.wait.confirm.prompt.reaction": "（发送“是”等符合确认条件的词语或点击表情反应来确认）",
