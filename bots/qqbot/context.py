@@ -118,6 +118,7 @@ class QQBotContextManager(ContextManager):
         quote: bool = True,
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
+        _ignore_retries: bool = False,
     ) -> list[str]:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
@@ -128,7 +129,13 @@ class QQBotContextManager(ContextManager):
         if isinstance(message, MessageNodes):
             Logger.error("This session does not support message nodes, check if bug exists.")
 
-        @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
+        retry_attempt = stop_after_attempt(0)
+        retry_wait = wait_fixed(0)
+        if not _ignore_retries:
+            retry_attempt = stop_after_attempt(3)
+            retry_wait = wait_fixed(3)
+
+        @retry(stop=retry_attempt, wait=retry_wait, reraise=True)
         async def send_msg():
             global global_seq
 
@@ -230,6 +237,7 @@ class QQBotContextManager(ContextManager):
                                 file_type=1,
                                 file_data=await image_1.get_base64(),
                             )
+                        global_seq += 1
                         send = await ctx.reply(
                             content=msg,
                             msg_type=7 if send_img else 0,
@@ -242,7 +250,7 @@ class QQBotContextManager(ContextManager):
                             Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
                         if send:
                             msg_ids.append(send["id"])
-                            global_seq += 1
+
                         if images:
                             for img in images:
                                 send_img = await ctx._api.post_group_file(
@@ -250,11 +258,12 @@ class QQBotContextManager(ContextManager):
                                     file_type=1,
                                     file_data=await img.get_base64(),
                                 )
+                                global_seq += 1
                                 send = await ctx.reply(msg_type=7, media=send_img, msg_seq=global_seq)
                                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
                                 if send:
                                     msg_ids.append(send["id"])
-                                    global_seq += 1
+
                     elif isinstance(ctx, C2CMessage):
                         if images:
                             image_1 = images[0]
@@ -265,6 +274,7 @@ class QQBotContextManager(ContextManager):
                                 file_data=await image_1.get_base64(),
                             )
                         msg = "" if not msg else msg
+                        global_seq += 1
                         send = await ctx.reply(
                             content=msg,
                             msg_type=7 if send_img else 0,
@@ -276,7 +286,7 @@ class QQBotContextManager(ContextManager):
                             Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
                         if send:
                             msg_ids.append(send["id"])
-                            global_seq += 1
+
                         if images:
                             for img in images:
                                 send_img = await ctx._api.post_c2c_file(
@@ -284,11 +294,11 @@ class QQBotContextManager(ContextManager):
                                     file_type=1,
                                     file_data=await img.get_base64(),
                                 )
+                                global_seq += 1
                                 send = await ctx.reply(msg_type=7, media=send_img, msg_seq=global_seq)
                                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
                                 if send:
                                     msg_ids.append(send["id"])
-                                    global_seq += 1
                 else:
                     from bots.qqbot.bot import client
 
@@ -346,6 +356,7 @@ class QQBotContextManager(ContextManager):
                                 file_type=1,
                                 file_data=await image_1.get_base64(),
                             )
+                        global_seq += 1
                         send = await client.api.post_group_message(
                             group_openid=session_info.get_common_target_id(),
                             content=msg,
@@ -357,7 +368,8 @@ class QQBotContextManager(ContextManager):
                         if image_1:
                             Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
                         if send:
-                            global_seq += 1
+                            msg_ids.append(send["id"])
+
                         if images:
                             for img in images:
                                 send_img = await client.api.post_group_file(
@@ -365,6 +377,7 @@ class QQBotContextManager(ContextManager):
                                     file_type=1,
                                     file_data=await img.get_base64(),
                                 )
+                                global_seq += 1
                                 send = await client.api.post_group_message(
                                     group_openid=session_info.get_common_target_id(),
                                     msg_type=7,
@@ -373,7 +386,8 @@ class QQBotContextManager(ContextManager):
                                 )
                                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
                                 if send:
-                                    global_seq += 1
+                                    msg_ids.append(send["id"])
+
                     elif session_info.target_from == target_c2c_prefix:
                         if images:
                             image_1 = images[0]
@@ -384,6 +398,7 @@ class QQBotContextManager(ContextManager):
                                 file_data=await image_1.get_base64(),
                             )
                         msg = "" if not msg else msg
+                        global_seq += 1
                         send = await client.api.post_c2c_message(
                             openid=session_info.get_common_target_id(),
                             content=msg,
@@ -395,7 +410,7 @@ class QQBotContextManager(ContextManager):
                         if image_1:
                             Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
                         if send:
-                            global_seq += 1
+                            msg_ids.append(send["id"])
                         if images:
                             for img in images:
                                 send_img = await client.api.post_c2c_file(
@@ -403,6 +418,7 @@ class QQBotContextManager(ContextManager):
                                     file_type=1,
                                     file_data=await img.get_base64(),
                                 )
+                                global_seq += 1
                                 send = await client.api.post_c2c_message(
                                     openid=session_info.get_common_target_id(),
                                     msg_type=7,
@@ -411,9 +427,9 @@ class QQBotContextManager(ContextManager):
                                 )
                                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
                                 if send:
-                                    global_seq += 1
+                                    msg_ids.append(send["id"])
 
-        @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
+        @retry(stop=retry_attempt, wait=retry_wait, reraise=True)
         async def send_msg_markdown():
             global global_seq
             texts = []
@@ -497,7 +513,7 @@ class QQBotContextManager(ContextManager):
                         upload = await S3Storage.upload_temp(await x.get())
                         if upload and "public_url" in upload:
                             w, h = await x.get_wh()
-                            max_w = 256
+                            max_w = 128
                             fin_scale = max_w / w if w > max_w else 1
                             fin_w = w * fin_scale
                             fin_h = h * fin_scale
@@ -517,6 +533,7 @@ class QQBotContextManager(ContextManager):
 
                 if ctx and not isinstance(ctx, Interaction):
                     if isinstance(ctx, (Message, DirectMessage, GroupMessage, C2CMessage)):
+                        global_seq += 1
                         send = await ctx.reply(
                             markdown=md,
                             msg_type=2,
@@ -526,7 +543,7 @@ class QQBotContextManager(ContextManager):
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
                         if send:
                             msg_ids.append(send["id"])
-                            global_seq += 1
+
                 else:
                     from bots.qqbot.bot import client
 
@@ -537,17 +554,21 @@ class QQBotContextManager(ContextManager):
                             channel_id=session_info.get_common_target_id(),
                             markdown=md,
                         )
-                        msg_ids.append(send["id"])
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
+                        if send:
+                            msg_ids.append(send["id"])
+
                     elif session_info.target_from == target_direct_prefix:
                         send = await client.api.post_dms(
                             guild_id=session_info.get_common_target_id(),
                             markdown=md,
                         )
-                        msg_ids.append(send["id"])
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
+                        if send:
+                            msg_ids.append(send["id"])
 
                     elif session_info.target_from == target_group_prefix:
+                        global_seq += 1
                         send = await client.api.post_group_message(
                             group_openid=session_info.get_common_target_id(),
                             markdown=md,
@@ -556,20 +577,19 @@ class QQBotContextManager(ContextManager):
                         )
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
                         if send:
-                            global_seq += 1
-                        msg_ids.append(send["id"])
+                            msg_ids.append(send["id"])
 
                     elif session_info.target_from == target_c2c_prefix:
+                        global_seq += 1
                         send = await client.api.post_c2c_message(
                             openid=session_info.get_common_target_id(),
                             markdown=md,
                             msg_type=2,
                             msg_seq=global_seq,
                         )
-                        if send:
-                            global_seq += 1
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
-                        msg_ids.append(send["id"])
+                        if send:
+                            msg_ids.append(send["id"])
 
         if not qq_use_markdown:
             await send_msg()
@@ -688,10 +708,35 @@ class QQBotContextManager(ContextManager):
                     emoji_type=emoji_type,
                     emoji_id=qq_typing_emoji,
                 )
+            resolved = False
+            if session_info.target_from == target_group_prefix:
+
+                async def _send_group_typing(session: SessionInfo) -> None:
+                    _t = 0
+                    global typing_msg
+                    typing_msg = None
+                    while not resolved:
+                        await asyncio.sleep(1)
+                        _t += 1
+                        if _t >= 5:
+                            try:
+                                typing_msg = await cls.send_message(
+                                    session, MessageChain.assign("正在输入中..."), _ignore_retries=True
+                                )
+                                Logger.debug("typing message sent:" + str(typing_msg))
+                            except Exception:
+                                Logger.exception("Failed to send group typing message")
+                            break
+
+                asyncio.create_task(_send_group_typing(session_info))
 
             flag = asyncio.Event()
             cls.typing_flags[session_info.session_id] = flag
             await flag.wait()
+            resolved = True
+            await asyncio.sleep(1)
+            if typing_msg:
+                await cls.delete_message(session_info, typing_msg)
 
         asyncio.create_task(_typing())
 
@@ -737,6 +782,7 @@ class QQBotFetchedContextManager(QQBotContextManager):
         quote: bool = True,
         enable_parse_message=True,
         enable_split_image=True,
+        _ignore_retries: bool = False,
     ) -> None:
         append_tsk = (
             _tasks_high_priority if session_info.target_info.target_data.get("in_post_whitelist", False) else _tasks
@@ -747,6 +793,7 @@ class QQBotFetchedContextManager(QQBotContextManager):
                 message,
                 quote=quote,
                 enable_parse_message=enable_parse_message,
+                _ignore_retries=_ignore_retries,
             )
         )
 
