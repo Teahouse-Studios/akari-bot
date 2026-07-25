@@ -83,12 +83,18 @@ class MyClient(botpy.Client):
         if message.message_reference:
             reply_id = message.message_reference.message_id
 
+        match_atme = False
+
         if qqbot_openid:
-            message.content = re.sub(r"<@" + qqbot_openid + ">", "", message.content).strip()
-        if not message.content.strip():
-            message.content = f"{command_prefix[0]}help"
+            if m := re.match(r"<@(.*?)>(.*)", message.content):
+                if m.group(1) == qqbot_openid:
+                    match_atme = True
+                    message.content = m.group(2).strip()
+                    if not message.content:
+                        message.content = f"{command_prefix[0]}help"
 
         msg_chain = MessageChain.assign(re.sub(r"<@(.*?)>", rf"{sender_tiny_prefix}|\1", message.content))
+        prefixes = [] if not match_atme else ["/"]
 
         session = await SessionInfo.assign(
             target_id=target_id,
@@ -101,7 +107,7 @@ class MyClient(botpy.Client):
             reply_id=reply_id,
             messages=msg_chain,
             ctx_slot=ctx_id,
-            prefixes=["/"],
+            prefixes=prefixes,
             bot_id=qqbot_openid,
             tmp={"message_type": "guild_direct"},
         )
@@ -120,10 +126,17 @@ class MyClient(botpy.Client):
         if message.mentions:
             reply_id = message.mentions[0].id
 
-        if qqbot_openid:
-            message.content = re.sub(r"<@" + qqbot_openid + ">", "", message.content).strip()
-        msg_chain = MessageChain.assign(message.content)
+        match_atme = False
 
+        if qqbot_openid:
+            if m := re.match(r"<@(.*?)>(.*)", message.content):
+                if m.group(1) == qqbot_openid:
+                    match_atme = True
+                    message.content = m.group(2).strip()
+                    if not message.content:
+                        message.content = f"{command_prefix[0]}help"
+        msg_chain = MessageChain.assign(message.content)
+        prefixes = [] if not match_atme else ["/"]
         session = await SessionInfo.assign(
             target_id=target_id,
             sender_id=sender_id,
@@ -135,7 +148,7 @@ class MyClient(botpy.Client):
             reply_id=reply_id,
             messages=msg_chain,
             ctx_slot=ctx_id,
-            prefixes=["/"],
+            prefixes=prefixes,
             bot_id=qqbot_openid,
             tmp={"message_type": "group_direct"},
         )
