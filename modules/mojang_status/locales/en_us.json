@@ -1,18 +1,16 @@
 {
     "mojang_status.help.desc": "Inspect the real-time status of Mojang and Minecraft backend services.",
-    "mojang_status.message.status": "Real-time Mojang Statuses: ",
-    "mojang_status.message.status.each": "${api}: ${status}",
+
+    "mojang_status.message.title": "Real-time Mojang Statuses: ",
+    "mojang_status.message.entry": "${api}: ${status}",
     "mojang_status.message.failed": "Fail to fetch, try again later.",
-    "mojang_status.service.sessions": "Session Server",
-    "mojang_status.service.sessions.desc": "Multiplayer authentication",
-    "mojang_status.service.api": "Mojang API",
-    "mojang_status.service.api.desc": "Player & name lookup",
-    "mojang_status.service.textures": "Textures",
-    "mojang_status.service.textures.desc": "Skins & capes",
-    "mojang_status.service.website": "Minecraft.net",
-    "mojang_status.service.website.desc": "Main website",
-    "mojang_status.service.accounts": "Accounts",
-    "mojang_status.service.accounts.desc": "Account management",
-    "mojang_status.service.microsoft": "Microsoft Auth",
-    "mojang_status.service.microsoft.desc": "Microsoft login (new auth)"
+
+    "mojang_status.service.account": "Player Info",
+    "mojang_status.service.session": "Session Server",
+    "mojang_status.service.services": "Mojang Services",
+
+    "mojang_status.status.unknown": "Unknown",
+    "mojang_status.status.online": "Online",
+    "mojang_status.status.offline": "Offline",
+    "mojang_status.status.empty": "Empty (Please contact the module developer to fix this issue)"
 }
