@@ -270,7 +270,7 @@ requires-dist = [
     { name = "aiofile", specifier = ">=3.8.1,<4.0.0" },
     { name = "aiogram", specifier = "==3.29.1" },
     { name = "akari-bot-i18n", specifier = "==0.0.4" },
-    { name = "akari-bot-webrender", specifier = "==0.5.13" },
+    { name = "akari-bot-webrender", specifier = "==0.5.14" },
     { name = "akari-bot-webui", specifier = "==0.3.11" },
     { name = "apscheduler", specifier = ">=3.9.1.post0,<4.0.0.0" },
     { name = "argon2-cffi", specifier = ">=25.0.0,<26.0.0" },
@@ -350,7 +350,7 @@ wheels = [
 
 [[package]]
 name = "akari-bot-webrender"
-version = "0.5.13"
+version = "0.5.14"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fastapi" },
@@ -364,9 +364,9 @@ dependencies = [
     { name = "tf-playwright-stealth" },
     { name = "uvicorn" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b4/d3/06d7da3cc982bb38948f5dca0b7ad4c057dde43a0362dfd5a46bc748ab71/akari_bot_webrender-0.5.13.tar.gz", hash = "sha256:7282573d739e7e5dcacff9ce7cc0e476b3e873e1014d3293752bdd7d7694df90", size = 14037, upload-time = "2026-02-08T19:25:39.705Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/cb/af/01c76212ee4950841440d20cd770c7cd2000032f0193b66881e132e0410a/akari_bot_webrender-0.5.14.tar.gz", hash = "sha256:7c5795c6d9c03dc796ed78fe2d0c1103977ff54430eb4c1893a03ccd2d68fbb3", size = 13463, upload-time = "2026-07-25T18:21:32.138Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/03/bc/e847bb11134605dbd185503fd2cb430bcea47456a1ddbe0460ae1987c1e6/akari_bot_webrender-0.5.13-py3-none-any.whl", hash = "sha256:0a914dc8dc80af095b0cb0da28a70626ec1f4c41a7b4003e803b88b8faf7e1cc", size = 17188, upload-time = "2026-02-08T19:25:37.931Z" },
+    { url = "https://files.pythonhosted.org/packages/c5/a9/2f566237d4f22df5bc61854f92e7727316dcb83be22f21583790a6edcc96/akari_bot_webrender-0.5.14-py3-none-any.whl", hash = "sha256:c8dd8d19d1c8af7a0b49b010959b77d5a22887dd11e812ead9cfac741ad42cee", size = 17284, upload-time = "2026-07-25T18:21:30.884Z" },
 ]
 
 [[package]]

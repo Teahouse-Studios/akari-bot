@@ -25,6 +25,7 @@ from filetype import filetype
 from japanera import EraDate
 from tenacity import retry, stop_after_attempt
 
+from core.logger import Logger
 from core.utils.cache import random_cache_path
 
 if TYPE_CHECKING:
@@ -544,14 +545,22 @@ class ImageElement(BaseElement):
         # ========== 处理 Base64 编码数据 ==========
         elif "base64" in path:
             # 提取 Base64 编码的图片数据
-            _, encoded_img = path.split(",", 1)
-            img_data = base64.b64decode(encoded_img)
+            if path.startswith("base64://"):
+                img_data = base64.b64decode(path[len("base64://") :])
+
+            elif path.startswith("data:"):
+                _, encoded_img = path.split(",", 1)
+                img_data = base64.b64decode(encoded_img)
+            else:
+                Logger.error("Cannot match format for Base64 image data.")
+                img_data = None
 
             # 将解码后的数据保存为本地文件
-            save = random_cache_path("png")
-            with open(save, "wb") as img_file:
-                img_file.write(img_data)
-            path = save
+            if img_data:
+                save = random_cache_path("png")
+                with open(save, "wb") as img_file:
+                    img_file.write(img_data)
+                path = save
 
         return deepcopy(cls(str(path), headers, need_get))
 

@@ -7,6 +7,7 @@ from akari_bot_webrender.functions.options import (
     SourceOptions,
     SectionScreenshotOptions,
     LegacyScreenshotOptions,
+    RawOptions,
 )
 
 from core.config import Config
@@ -31,7 +32,7 @@ web_render = WebRender(
 async def init_web_render():
     if enable_web_render:
         return await web_render.browser_init(
-            browse_type=web_render_browser,
+            browser_type=web_render_browser,
             executable_path=Path(browser_executable_path) if browser_executable_path else None,
         )
     Logger.info("WebRender is disabled in the configuration.")
@@ -52,4 +53,5 @@ __all__ = [
     "SourceOptions",
     "SectionScreenshotOptions",
     "LegacyScreenshotOptions",
+    "RawOptions",
 ]

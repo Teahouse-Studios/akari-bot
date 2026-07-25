@@ -2,13 +2,13 @@ import orjson
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import I18NContext, Url
+from core.builtins.message.internal import I18NContext, Url, Image
 from core.component import module
 from core.logger import Logger
 from core.scheduler import IntervalTrigger
 from core.utils.http import get_url
 from core.utils.storedata import get_stored_list, update_stored_list
-from core.web_render import web_render, SourceOptions
+from core.web_render import web_render, SourceOptions, RawOptions
 
 minecraft_news = module(
     "minecraft_news",
@@ -61,11 +61,11 @@ startup_mute = (
 )
 
 
-@minecraft_news.schedule(IntervalTrigger(seconds=600))
+@minecraft_news.schedule(IntervalTrigger(seconds=60))
 async def _():
-    # baseurl = "https://www.minecraft.net"
+    baseurl = "https://www.minecraft.net"
     global startup_mute
-    url = "https://net-secondary.web.minecraft-services.net/api/v1.0/en-us/search?pageSize=24&sortType=Recent&category=News&newsOnly=true&geography=SG"
+    url = "https://www.minecraft.net/content/minecraftnet/language-masters/en-us/jcr:content/root/container/image_grid_a_copy_64.articles.page-1.json"
     try:
         getpage = await web_render.source(SourceOptions(url=url, raw_text=True))
         if not getpage:
@@ -74,14 +74,20 @@ async def _():
         if getpage:
             alist = await get_stored_list(Bot.Info.client_name, "mcnews")
             o_json = orjson.loads(getpage)
-            o_nws = o_json["result"]["results"]
+            o_nws = o_json["article_grid"]
             for o_article in o_nws:
-                title = o_article["title"]
-                desc = o_article["description"]
-                link = o_article["url"]
+                title = o_article["default_tile"]["title"]
+                desc = o_article["default_tile"]["sub_header"]
+                link = baseurl + o_article["article_url"]
+                image = baseurl + o_article["default_tile"]["image"]["imageURL"]
                 if title not in alist:
                     Logger.info(f"New Minecraft news found: {title} - {desc} - {link}")
                     if not startup_mute:
+                        try:
+                            imgb64 = "base64://" + (await web_render.get_raw(RawOptions(url=image)))["data"]
+                        except Exception:
+                            Logger.exception("Failed to fetch Minecraft news image.")
+                            imgb64 = None
                         await Bot.post_message(
                             "minecraft_news",
                             message=MessageChain.assign(
@@ -92,6 +98,7 @@ async def _():
                                         desc=desc,
                                     ),
                                     Url(link, use_mm=False),
+                                    Image(imgb64) if imgb64 else None,
                                 ]
                             ),
                         )

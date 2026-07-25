@@ -119,7 +119,8 @@ async def config_modules(msg: Bot.MessageSession):
                         command_prefixes=msg.session_info.prefixes,
                         is_superuser=is_superuser,
                     ).return_formatted_help_doc()
-                    recommend_modules_help_doc_list.append(Plain(hdoc))
+                    if hdoc:
+                        recommend_modules_help_doc_list.append(Plain(hdoc))
                 except InvalidHelpDocTypeError:
                     pass
     elif msg.parsed_msg.get("disable", False):
