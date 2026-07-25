@@ -1,1 +1,5 @@
-{}
+{
+    "image.fillwhite.send.a.image": "請發送圖片。",
+    "image.fillwhite.no.image.found": "未找到圖片，已終止操作。",
+    "image.fillwhite.cannot.detect.alpha.channel": "無法檢測到圖片的透明通道，已終止操作，請檢查是否已勾選原圖發送。"
+}

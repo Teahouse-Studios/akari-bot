@@ -3,7 +3,7 @@
     "ai.help.desc": "아카리봇에게 물어보자!",
     "ai.help.llm.instruct": "LLM에 대한 맞춤형 지침을 설정합니다.",
     "ai.help.llm.list": "지원되는 LLM 목록을 확인해 보겠습니다.",
-    "ai.help.llm.set": "세션 내에서 기본 LLM을 설정합니다.",
+    "ai.help.llm.set": "장면 내에서 기본 LLM을 설정합니다.",
     "ai.help.option.llm": "사용할 LLM을 지정합니다.",
     "ai.help.option.no_tools": "LLM을 호출하는 도구를 비활성화할지 여부.",
     "ai.message.llm.instruct.clear.success": "맞춤형 지침이 삭제되었습니다.",

@@ -2,7 +2,7 @@
 会话信息模块 - 定义和管理消息会话的信息和上下文。
 
 该模块定义了 SessionInfo 类，用于承载一个消息会话的所有相关信息，
-包括目标、发送者、平台特性、权限信息等。
+包括场景、用户、平台特性、权限信息等。
 """
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ class SessionInfo:
     会话信息类 - 承载一个消息会话的完整信息。
 
     该类使用 attrs 装饰器，存储了一个消息会话所需的所有信息，
-    包括目标和发送者信息、消息内容、平台特性、权限和配置等。
+    包括场景和用户信息、消息内容、平台特性、权限和配置等。
 
     属性分类说明:
     - 基本信息: target_id, target_from, client_name, sender_id, sender_from 等
@@ -74,6 +74,7 @@ class SessionInfo:
     _tz_offset: str | None = None
     timezone_offset: timedelta | None = None
     bot_name: str | None = None
+    bot_id: str | None = None
     muted: bool | None = None
     enabled_modules: list | None = None
     petal: int | None = None
@@ -94,12 +95,13 @@ class SessionInfo:
         client_name: str | None = None,
         target_from: str | None = None,
         sender_id: str | None = None,
+        bot_id: str | None = None,
         sender_from: str | None = None,
         sender_name: str | None = None,
         message_id: str | None = None,
         reply_id: str | None = None,
         messages: MessageChain | None = None,
-        prefixes: list[str] | None = [],
+        prefixes: list[str] | None = [],  # skipcq
         ctx_slot: int = 0,
         fetch: bool = False,
         create: bool = True,
@@ -127,7 +129,11 @@ class SessionInfo:
         locale = Locale(target_info.locale)
         bot_name = locale.t("bot_name")
         _tz_offset = target_info.target_data.get("tz_offset", Config("timezone_offset", "+8"))
-        prefixes = prefixes + (target_info.target_data.get("command_prefix", []) + command_prefix.copy())
+        prefixes = (
+            (prefixes + (target_info.target_data.get("command_prefix", []) + command_prefix.copy()))
+            if prefixes is not None
+            else []
+        )
 
         tmp = tmp or {}
 
@@ -140,6 +146,7 @@ class SessionInfo:
             sender_name=sender_name,
             message_id=message_id,
             reply_id=reply_id,
+            bot_id=bot_id,
             messages=messages,
             banned_users=target_info.banned_users if target_info else [],
             custom_admins=target_info.custom_admins if target_info else [],
@@ -185,7 +192,7 @@ class SessionInfo:
 
     def get_common_sender_id(self) -> str:
         """
-        获取发送者的常用 ID。
+        获取用户的常用 ID。
         """
         if self.sender_id:
             return self.sender_id.split("|")[-1]

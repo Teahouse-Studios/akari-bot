@@ -65,7 +65,7 @@ def convert_msg_nodes(
     return node_list
 
 
-async def get_avaliable_group_list():
+async def get_available_group_list():
     """
     获取可用的群组列表。
 
@@ -81,7 +81,7 @@ async def get_avaliable_group_list():
     return group_list
 
 
-async def get_avaliable_private_list():
+async def get_available_private_list():
     """
     获取可用的私聊列表。
 
@@ -137,13 +137,13 @@ class OneBotContextManager(ContextManager):
         send = None
         if session_info.sender_id is None:
             if session_info.target_from == target_group_prefix:
-                group_list = await get_avaliable_group_list()
+                group_list = await get_available_group_list()
                 if group_list:
                     if int(session_info.get_common_target_id()) not in group_list:
                         Logger.warning("Group not found in group list, skipping message send.")
                         return []
             if session_info.target_from == target_private_prefix:
-                private_list = await get_avaliable_private_list()
+                private_list = await get_available_private_list()
                 if private_list:
                     if int(session_info.get_common_target_id()) not in private_list:
                         Logger.warning("Private chat not found in private list, skipping message send.")

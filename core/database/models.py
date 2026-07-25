@@ -108,9 +108,9 @@ class SenderInfo(DBModel):
 
 class TargetInfo(DBModel):
     """
-    会话信息。
+    场景信息。
 
-    :param target_id: 会话 ID。
+    :param target_id: 场景 ID。
     :param blocked: 是否为黑名单会话。
     :param muted: 是否禁用机器人。
     :param locale: 会话语言。
@@ -134,7 +134,7 @@ class TargetInfo(DBModel):
 
     async def config_module(self, module_name: str | list | tuple, enable: bool = True) -> bool:
         """
-        设置会话内可用模块。
+        设置场景内可用模块。
 
         :param module_name: 指定的模块名称。
         :param enable: 是否要开启模块，若 False 则关闭模块。
@@ -153,7 +153,7 @@ class TargetInfo(DBModel):
 
     async def switch_mute(self) -> bool:
         """
-        切换是否在会话中禁用机器人。
+        切换是否在场景中禁用机器人。
 
         :return: 机器人是否被禁用。
         """
@@ -163,7 +163,7 @@ class TargetInfo(DBModel):
 
     async def edit_target_data(self, key: str, value: Any | None = None) -> bool:
         """
-        设置会话数据。
+        设置场景数据。
 
         :param key: 键名。
         :param value: 值，若留空则删除该键值对。
@@ -179,10 +179,10 @@ class TargetInfo(DBModel):
 
     async def config_custom_admin(self, sender_id: str, enable: bool = True) -> bool:
         """
-        设置会话内管理员。
+        设置场景内管理员。
 
         :param sender_id: 指定的用户 ID。
-        :param enable: 是否要设置用户为会话内管理员，若 False 则移除管理员。
+        :param enable: 是否要设置用户为场景内管理员，若 False 则移除管理员。
         """
         custom_admins = self.custom_admins
         if enable:
@@ -199,10 +199,10 @@ class TargetInfo(DBModel):
 
     async def config_banned_user(self, sender_id: str, enable: bool = True) -> bool:
         """
-        设置会话内被限制用户。
+        设置场景内被限制用户。
 
         :param sender_id: 指定的用户 ID。
-        :param enable: 是否要设置会话内用户限制使用机器人，若 False 则取消限制。
+        :param enable: 是否要设置场景内用户限制使用机器人，若 False 则取消限制。
         """
         banned_users = self.banned_users
         if enable:
@@ -225,11 +225,11 @@ class TargetInfo(DBModel):
         cls, module_name: str | list[str] | tuple[str, ...] | None, id_prefix: str | None = None
     ) -> list[TargetInfo]:
         """
-        获取开启此模块的所有会话列表。
+        获取开启此模块的所有场景列表。
 
         :param module_name: 指定的模块名称。
         :param id_prefix: 指定的 ID 前缀。
-        :return: 符合要求的会话 ID 列表。
+        :return: 符合要求的场景 ID 列表。
         """
         all_targets = await cls.filter(target_id__startswith=id_prefix or "")
 
@@ -270,7 +270,7 @@ class AnalyticsData(DBModel):
 
     :param module_name: 模块名称。
     :param module_type: 模块类型。
-    :param target_id: 会话 ID。
+    :param target_id: 场景 ID。
     :param sender_id: 用户 ID。
     :param command: 命令。
     :param timestamp: 时间戳。
@@ -384,7 +384,7 @@ class UnfriendlyActionRecords(DBModel):
     """
     不友好行为记录。
 
-    :param target_id: 会话 ID。
+    :param target_id: 场景 ID。
     :param sender_id: 用户 ID。
     :param action: 行为类型。
     :param detail: 行为详情。

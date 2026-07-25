@@ -5,8 +5,8 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import Plain, I18NContext
 from core.component import module
 from core.config import Config
-from core.utils.http import get_url
 from core.utils.func import is_int
+from core.utils.http import get_url
 
 mod_dl = module(
     module_name="mod_dl",
@@ -148,7 +148,7 @@ async def _(msg: Bot.MessageSession, mod_name: str, version: str = None):
         else:
             await msg.finish(I18NContext("mod_dl.message.invalid.non_digital"))
 
-        if mod_info[0] == "modrinth":  # modrinth mod
+        if mod_info and mod_info[0] == "modrinth":  # modrinth mod
             if not ver:
                 reply2 = await msg.wait_reply(
                     f"{msg.session_info.locale.t('mod_dl.message.version')}\n"

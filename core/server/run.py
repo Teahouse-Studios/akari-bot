@@ -16,7 +16,6 @@ from core.queue.server import JobQueueServer
 from core.server.init import init_async
 from core.server.terminate import cleanup_sessions
 
-
 stop_event = asyncio.Event()
 
 

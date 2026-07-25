@@ -1,11 +1,10 @@
 import asyncio
 import logging
 
-from akari_bot_i18n.i18n import load_locale_file
 from apscheduler.schedulers import SchedulerAlreadyRunningError
 
 from core.builtins.bot import Bot
-from core.constants import Info, lang_list, all_locales_path
+from core.constants import Info
 from core.database import init_db
 from core.logger import Logger
 from core.queue.client import JobQueueClient
@@ -20,7 +19,6 @@ async def client_init(
     target_prefix_list: list = None, sender_prefix_list: list = None, queue=True, load_module_db=False
 ) -> None:
     Logger.rename(Info.client_name)
-    load_locale_file(list(lang_list.keys()), all_locales_path)
     await init_db(load_module_db=load_module_db)
     if queue:
         asyncio.create_task(check_queue())

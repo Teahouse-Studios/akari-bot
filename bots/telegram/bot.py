@@ -65,11 +65,10 @@ async def msg_handler(message: types.Message):
     text = message.text or ""
     at_message = False
     entities = message.entities or []
-
+    bot_id = (await message.bot.get_me()).id
     if entities and entities[0].offset == 0:
         first = entities[0]
         if first.type == MessageEntityType.TEXT_MENTION:
-            bot_id = (await message.bot.get_me()).id
             if first.user.id != bot_id:
                 return
 
@@ -107,6 +106,7 @@ async def msg_handler(message: types.Message):
         reply_id=reply_id,
         messages=msg_chain,
         ctx_slot=ctx_id,
+        bot_id=str(bot_id),
     )
 
     await Bot.process_message(session, message)

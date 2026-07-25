@@ -1,4 +1,7 @@
 {
     "nintendo_err.help": "解析任天堂系列主機的報錯碼並給出原因。",
-    "nintendo_err.message.invalid": "您輸入的代碼是無效的，或是此功能不支援您使用的主機。"
+    "nintendo_err.message.invalid": "您輸入的代碼是無效的，或是此功能不支援您使用的主機。",
+    "nintendo_err.message.meme.0xdeadbeef": "都壞掉了，不能吃了。",
+    "nintendo_err.message.meme.0xdeadbabe": "我覺得你有問題。",
+    "nintendo_err.message.meme.0xbadf00d": "記得垃圾分類。"
 }

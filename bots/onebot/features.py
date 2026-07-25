@@ -1,6 +1,7 @@
+from attrs import define
+
 from core.builtins.session.features import Features as FeaturesBase
 from core.config import Config
-from attrs import define
 
 use_url_manager = Config("enable_urlmanager", False)
 dirty_word_check = Config("enable_dirty_check", False)
@@ -22,3 +23,5 @@ class Features(FeaturesBase):
     support_typing: bool = True
     support_wait: bool = True
     support_handle_message_nodes: bool = True
+    use_url_manager: bool = use_url_manager
+    require_check_dirty_words: bool = dirty_word_check

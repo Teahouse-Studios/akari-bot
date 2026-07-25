@@ -3,11 +3,10 @@ from typing import TYPE_CHECKING
 from tortoise.exceptions import DoesNotExist
 
 from core.database.models import StoredData
+from core.exports import exports
 
 if TYPE_CHECKING:
     from core.builtins.bot import Bot
-
-from core.exports import exports
 
 
 async def get_stored_list(bot: type["Bot"] | str, name: str) -> list:

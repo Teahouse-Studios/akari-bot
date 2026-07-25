@@ -3,6 +3,7 @@
     "phigros.help.bind": "Use the SessionToken of the Cloud Save to bind user data. Usage via private chat is recommended.",
     "phigros.help.desc": "Query about Phigros.",
     "phigros.help.random": "Random a song.",
+    "phigros.help.score": "Query song's relevant results.",
     "phigros.help.unbind": "Unbind user.",
     "phigros.message.bind.failed": "Binding failed. Please check the input.",
     "phigros.message.bind.success": "Bound successfully: ${username}",

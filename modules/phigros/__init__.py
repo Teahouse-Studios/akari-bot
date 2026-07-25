@@ -10,8 +10,8 @@ from core.utils.http import get_url
 from core.utils.random import Random
 from .database.models import PhigrosBindInfo
 from .libraries.genb30 import get_b30
-from .libraries.update import remove_punctuations, update_assets, p_headers
 from .libraries.record import get_game_record
+from .libraries.update import remove_punctuations, update_assets, p_headers
 
 pgr_assets_path = Path(__file__).parent / "assets"
 song_info_path = pgr_assets_path / "song_info.json"

@@ -15,6 +15,7 @@ from core.builtins.types import MessageElement
 from core.database.models import TargetInfo, SenderInfo
 from core.i18n import Locale
 from core.logger import Logger
+from core.exports import exports
 
 # 创建类型转换器实例
 converter = Converter()
@@ -29,6 +30,12 @@ def elements_to_kwargs(kwargs):
     for k in kwargs:
         if isinstance(kwargs[k], MessageElement):
             kwargs[k] = {"_type": type(kwargs[k]).__name__, "element": converter.unstructure(kwargs[k])}
+            continue
+        if msg_chain := exports.get("MessageChain"):
+            if isinstance(kwargs[k], msg_chain):
+                kwargs[k] = {"_type": type(kwargs[k]).__name__, "element": converter.unstructure(kwargs[k])}
+                continue
+
     Logger.trace(f"kwargs after unstructured: {kwargs}")
     return kwargs
 
@@ -50,7 +57,7 @@ converter.register_unstructure_hook(
 # 将 TargetInfo 对象转换为字典，由于序列化需要从数据库重新异步获取，只保留 _type 和 target_id 字段
 converter.register_unstructure_hook(TargetInfo, lambda obj: {"_type": type(obj).__name__, "target_id": obj.target_id})
 
-# 发送者信息的反结构化处理
+# 用户信息的反结构化处理
 # 将 SenderInfo 对象转换为字典，由于序列化需要从数据库重新异步获取，只保留 _type 和 sender_id 字段
 converter.register_unstructure_hook(SenderInfo, lambda obj: {"_type": type(obj).__name__, "sender_id": obj.sender_id})
 
@@ -71,8 +78,19 @@ def kwargs_to_elements(o):
     Logger.trace(f"kwargs before structure: {o}")
     if o["_type"] == "I18NContextElement":
         for k in o["kwargs"]:
-            if isinstance(o["kwargs"][k], dict) and (g := getattr(elements, o["kwargs"][k]["_type"])):
+            if (
+                isinstance(o["kwargs"][k], dict)
+                and hasattr(elements, o["kwargs"][k]["_type"])
+                and (g := getattr(elements, o["kwargs"][k]["_type"]))
+            ):
                 o["kwargs"][k] = converter.structure(o["kwargs"][k]["element"], g)
+            if (
+                isinstance(o["kwargs"][k], dict)
+                and (o["kwargs"][k].get("_type") == "MessageChain")
+                and (msg_chain := exports.get("MessageChain"))
+            ):
+                o["kwargs"][k] = converter.structure(o["kwargs"][k]["element"], msg_chain)
+
     s = converter.structure(o, getattr(elements, o["_type"]))
     Logger.trace(f"kwargs after structure: {s}")
     return s
@@ -80,11 +98,11 @@ def kwargs_to_elements(o):
 
 converter.register_structure_hook(MessageElement, lambda o, _: kwargs_to_elements(o))
 
-# 目标信息的结构化处理
+# 场景信息的结构化处理
 # 从字典恢复为 TargetInfo 对象（由于需要从数据库异步获取信息，这里实际只返回一个类本身用于占位，信息会在某个流程重新被刷新）
 converter.register_structure_hook(TargetInfo, lambda o, _: TargetInfo)
 
-# 发送者信息的结构化处理
+# 用户信息的结构化处理
 # 从字典恢复为 SenderInfo 对象（由于需要从数据库异步获取信息，这里实际只返回一个类本身用于占位，信息会在某个流程重新被刷新）
 converter.register_structure_hook(SenderInfo, lambda o, _: SenderInfo)
 

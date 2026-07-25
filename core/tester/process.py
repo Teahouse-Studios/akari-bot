@@ -7,12 +7,12 @@ from core.builtins.message.chain import MessageChain, match_kecode
 from core.builtins.message.elements import PlainElement
 from core.constants.exceptions import SessionFinished
 from core.database.models import SenderInfo, TargetInfo
-from core.tester.mock.session import MockMessageSession
-from core.tester.mock.parser import parser
+from core.logger import Logger
 from core.tester.mock.database import init_db, close_db
 from core.tester.mock.loader import load_modules
+from core.tester.mock.parser import parser
 from core.tester.mock.random import Random
-from core.logger import Logger
+from core.tester.mock.session import MockMessageSession
 from core.utils.container import ExpiringTempDict
 from .expectations import Expectation
 

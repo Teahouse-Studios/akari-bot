@@ -2,8 +2,8 @@ import urllib3
 from nio import AsyncClient, AsyncClientConfig
 
 from core.config import Config
-from core.constants.path import assets_path
 from core.constants.default import matrix_homeserver_default, matrix_user_default
+from core.constants.path import assets_path
 from core.logger import Logger
 
 homeserver = Config("matrix_homeserver", matrix_homeserver_default, table_name="bot_matrix")

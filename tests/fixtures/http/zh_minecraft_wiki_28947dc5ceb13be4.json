@@ -1,0 +1,2989 @@
+{
+  "url": "https://zh.minecraft.wiki/api.php?action=query&meta=siteinfo&siprop=general%7Cnamespaces%7Cnamespacealiases%7Cinterwikimap%7Cextensions&format=json",
+  "status_code": 200,
+  "text": "{\"batchcomplete\": \"\", \"query\": {\"general\": {\"mainpage\": \"Minecraft Wiki\", \"base\": \"https://zh.minecraft.wiki/\", \"sitename\": \"Minecraft Wiki\", \"mainpageisdomainroot\": \"\", \"logo\": \"https://zh.minecraft.wiki/images/Wiki.png\", \"generator\": \"MediaWiki 1.45.3\", \"phpversion\": \"8.2.31\", \"phpsapi\": \"fpm-fcgi\", \"dbtype\": \"mysql\", \"dbversion\": \"8.0.41-google\", \"imagewhitelistenabled\": \"\", \"langconversion\": \"\", \"linkconversion\": \"\", \"titleconversion\": \"\", \"linkprefixcharset\": \"\", \"linkprefix\": \"\", \"linktrail\": \"/^()(.*)$/sD\", \"legaltitlechars\": \" %!\\\"$&'()*,\\\\-.\\\\/0-9:;=?@A-Z\\\\\\\\^_`a-z~\\\\x80-\\\\xFF+\", \"invalidusernamechars\": \"@:>=#~\", \"git-hash\": \"c1cb0aaf8266ee38f51a0738a0aca59f2fe43454\", \"git-branch\": \"master\", \"case\": \"first-letter\", \"lang\": \"zh\", \"fallback\": [{\"code\": \"zh-hans\"}, {\"code\": \"zh-hant\"}, {\"code\": \"zh-cn\"}, {\"code\": \"zh-tw\"}, {\"code\": \"zh-hk\"}, {\"code\": \"en\"}], \"variants\": [{\"code\": \"zh\", \"name\": \"不转换\"}, {\"code\": \"zh-hans\", \"name\": \"简体\"}, {\"code\": \"zh-hant\", \"name\": \"繁體\"}, {\"code\": \"zh-cn\", \"name\": \"大陆简体\"}, {\"code\": \"zh-hk\", \"name\": \"香港繁體\"}, {\"code\": \"zh-tw\", \"name\": \"臺灣正體\"}], \"fallback8bitEncoding\": \"windows-936\", \"writeapi\": \"\", \"maxarticlesize\": 8388608, \"timezone\": \"UTC\", \"timeoffset\": 0, \"articlepath\": \"/w/$1\", \"scriptpath\": \"\", \"script\": \"/\", \"variantarticlepath\": false, \"server\": \"https://zh.minecraft.wiki\", \"servername\": \"zh.minecraft.wiki\", \"wikiid\": \"zh_mcwiki\", \"time\": \"2026-06-24T08:14:24Z\", \"uploadsenabled\": \"\", \"maxuploadsize\": 104857600, \"minuploadchunksize\": 1024, \"galleryoptions\": {\"imagesPerRow\": 0, \"imageWidth\": 120, \"imageHeight\": 120, \"captionLength\": \"\", \"showBytes\": \"\", \"showDimensions\": \"\", \"mode\": \"traditional\"}, \"thumblimits\": [120, 150, 180, 200, 250, 300], \"imagelimits\": [{\"width\": 320, \"height\": 240}, {\"width\": 640, \"height\": 480}, {\"width\": 800, \"height\": 600}, {\"width\": 1024, \"height\": 768}, {\"width\": 1280, \"height\": 1024}, {\"width\": 2560, \"height\": 2048}], \"favicon\": \"https://zh.minecraft.wiki/images/Favicon.ico\", \"centralidlookupprovider\": \"local\", \"allcentralidlookupproviders\": [\"local\"], \"interwikimagic\": \"\", \"magiclinks\": [], \"categorycollation\": \"uppercase\", \"nofollowlinks\": \"\", \"nofollownsexceptions\": [], \"nofollowdomainexceptions\": [\"balatrowiki.org\", \"brightershoreswiki.org\", \"gta.wiki\", \"hytalewiki.org\", \"leagueoflegends.com\", \"minecraft.wiki\", \"play2xko.com\", \"playvalorant.com\", \"runescape.wiki\", \"smite2.com\", \"subnautica.com\", \"survivors.wiki\", \"warframe.com\", \"weirdgloop.org\"], \"externallinktarget\": \"_blank\", \"citeresponsivereferences\": \"\", \"max-page-id\": 203945, \"mobileserver\": \"https://zh.minecraft.wiki\", \"linter\": {\"high\": [\"deletable-table-tag\", \"duplicate-ids\", \"html5-misnesting\", \"misc-tidy-replacement-issues\", \"multiline-html-table-in-list\", \"multiple-unclosed-formatting-tags\", \"pwrap-bug-workaround\", \"self-closed-tag\", \"tidy-font-bug\", \"tidy-whitespace-bug\", \"unclosed-quotes-in-heading\"], \"medium\": [\"bogus-image-options\", \"fostered\", \"misnested-tag\", \"multi-colon-escape\", \"wikilink-in-extlink\"], \"low\": [\"empty-heading\", \"missing-end-tag\", \"missing-end-tag-in-heading\", \"night-mode-unaware-background-color\", \"obsolete-tag\", \"stripped-tag\"]}}, \"namespaces\": {\"-2\": {\"id\": -2, \"case\": \"first-letter\", \"canonical\": \"Media\", \"*\": \"Media\"}, \"-1\": {\"id\": -1, \"case\": \"first-letter\", \"canonical\": \"Special\", \"*\": \"Special\"}, \"0\": {\"id\": 0, \"case\": \"first-letter\", \"subpages\": \"\", \"content\": \"\", \"*\": \"\"}, \"1\": {\"id\": 1, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Talk\", \"*\": \"Talk\"}, \"2\": {\"id\": 2, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"User\", \"*\": \"User\"}, \"3\": {\"id\": 3, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"User talk\", \"*\": \"User talk\"}, \"4\": {\"id\": 4, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Project\", \"*\": \"Minecraft Wiki\"}, \"5\": {\"id\": 5, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Project talk\", \"*\": \"Minecraft Wiki talk\"}, \"6\": {\"id\": 6, \"case\": \"first-letter\", \"canonical\": \"File\", \"*\": \"File\"}, \"7\": {\"id\": 7, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"File talk\", \"*\": \"File talk\"}, \"8\": {\"id\": 8, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"MediaWiki\", \"namespaceprotection\": \"editinterface\", \"*\": \"MediaWiki\"}, \"9\": {\"id\": 9, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"MediaWiki talk\", \"*\": \"MediaWiki talk\"}, \"10\": {\"id\": 10, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Template\", \"namespaceprotection\": \"editsemiprotected\", \"*\": \"Template\"}, \"11\": {\"id\": 11, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Template talk\", \"*\": \"Template talk\"}, \"12\": {\"id\": 12, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Help\", \"*\": \"Help\"}, \"13\": {\"id\": 13, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Help talk\", \"*\": \"Help talk\"}, \"14\": {\"id\": 14, \"case\": \"first-letter\", \"canonical\": \"Category\", \"*\": \"Category\"}, \"15\": {\"id\": 15, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Category talk\", \"*\": \"Category talk\"}, \"828\": {\"id\": 828, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Module\", \"namespaceprotection\": \"editsemiprotected\", \"*\": \"Module\"}, \"829\": {\"id\": 829, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Module talk\", \"*\": \"Module talk\"}, \"9592\": {\"id\": 9592, \"case\": \"first-letter\", \"canonical\": \"Bucket\", \"namespaceprotection\": \"editbucket\", \"defaultcontentmodel\": \"json\", \"*\": \"Bucket\"}, \"9593\": {\"id\": 9593, \"case\": \"first-letter\", \"canonical\": \"Bucket talk\", \"*\": \"Bucket talk\"}, \"9994\": {\"id\": 9994, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Legends tutorial\", \"content\": \"\", \"*\": \"Legends tutorial\"}, \"9995\": {\"id\": 9995, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Legends tutorial talk\", \"*\": \"Legends tutorial talk\"}, \"9996\": {\"id\": 9996, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Dungeons tutorial\", \"content\": \"\", \"*\": \"Dungeons tutorial\"}, \"9997\": {\"id\": 9997, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Dungeons tutorial talk\", \"*\": \"Dungeons tutorial talk\"}, \"9998\": {\"id\": 9998, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Tutorial\", \"content\": \"\", \"*\": \"Tutorial\"}, \"9999\": {\"id\": 9999, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Tutorial talk\", \"*\": \"Tutorial talk\"}, \"10000\": {\"id\": 10000, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Dungeons\", \"content\": \"\", \"*\": \"Dungeons\"}, \"10001\": {\"id\": 10001, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Dungeons talk\", \"*\": \"Dungeons talk\"}, \"10002\": {\"id\": 10002, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Earth\", \"content\": \"\", \"*\": \"Earth\"}, \"10003\": {\"id\": 10003, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Earth talk\", \"*\": \"Earth talk\"}, \"10004\": {\"id\": 10004, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Story Mode\", \"content\": \"\", \"*\": \"Story Mode\"}, \"10005\": {\"id\": 10005, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Story Mode talk\", \"*\": \"Story Mode talk\"}, \"10006\": {\"id\": 10006, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Legends\", \"content\": \"\", \"*\": \"Legends\"}, \"10007\": {\"id\": 10007, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Legends talk\", \"*\": \"Legends talk\"}, \"10008\": {\"id\": 10008, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Forum\", \"*\": \"Forum\"}, \"10009\": {\"id\": 10009, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Forum talk\", \"*\": \"Forum talk\"}, \"10010\": {\"id\": 10010, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"China Edition\", \"content\": \"\", \"*\": \"China Edition\"}, \"10011\": {\"id\": 10011, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"China Edition talk\", \"*\": \"China Edition talk\"}, \"10012\": {\"id\": 10012, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Draft\", \"*\": \"Draft\"}, \"10013\": {\"id\": 10013, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Draft talk\", \"*\": \"Draft talk\"}, \"10014\": {\"id\": 10014, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Dungeons II\", \"content\": \"\", \"*\": \"Dungeons II\"}, \"10015\": {\"id\": 10015, \"case\": \"first-letter\", \"subpages\": \"\", \"canonical\": \"Dungeons II talk\", \"*\": \"Dungeons II talk\"}}, \"namespacealiases\": [{\"id\": -2, \"*\": \"媒体\"}, {\"id\": -2, \"*\": \"媒体文件\"}, {\"id\": -2, \"*\": \"媒体档案\"}, {\"id\": -2, \"*\": \"媒體\"}, {\"id\": -2, \"*\": \"媒體文件\"}, {\"id\": -2, \"*\": \"媒體檔案\"}, {\"id\": -1, \"*\": \"特殊\"}, {\"id\": 1, \"*\": \"对话\"}, {\"id\": 1, \"*\": \"對話\"}, {\"id\": 1, \"*\": \"討論\"}, {\"id\": 1, \"*\": \"讨论\"}, {\"id\": 2, \"*\": \"使用者\"}, {\"id\": 2, \"*\": \"用戶\"}, {\"id\": 2, \"*\": \"用户\"}, {\"id\": 3, \"*\": \"使用者对话\"}, {\"id\": 3, \"*\": \"使用者對話\"}, {\"id\": 3, \"*\": \"使用者討論\"}, {\"id\": 3, \"*\": \"使用者讨论\"}, {\"id\": 3, \"*\": \"用戶對話\"}, {\"id\": 3, \"*\": \"用戶討論\"}, {\"id\": 3, \"*\": \"用户对话\"}, {\"id\": 3, \"*\": \"用户讨论\"}, {\"id\": 4, \"*\": \"MCW\"}, {\"id\": 4, \"*\": \"Minecraft Wiki\"}, {\"id\": 4, \"*\": \"专案\"}, {\"id\": 4, \"*\": \"專案\"}, {\"id\": 5, \"*\": \"MCT\"}, {\"id\": 5, \"*\": \"Minecraft Wiki对话\"}, {\"id\": 5, \"*\": \"Minecraft Wiki對話\"}, {\"id\": 5, \"*\": \"Minecraft Wiki討論\"}, {\"id\": 5, \"*\": \"Minecraft Wiki討論\"}, {\"id\": 5, \"*\": \"Minecraft Wiki讨论\"}, {\"id\": 5, \"*\": \"Minecraft Wiki讨论\"}, {\"id\": 5, \"*\": \"专案讨论\"}, {\"id\": 5, \"*\": \"專案討論\"}, {\"id\": 6, \"*\": \"Image\"}, {\"id\": 6, \"*\": \"图像\"}, {\"id\": 6, \"*\": \"图片\"}, {\"id\": 6, \"*\": \"圖像\"}, {\"id\": 6, \"*\": \"圖片\"}, {\"id\": 6, \"*\": \"文件\"}, {\"id\": 6, \"*\": \"档案\"}, {\"id\": 6, \"*\": \"檔案\"}, {\"id\": 7, \"*\": \"Image talk\"}, {\"id\": 7, \"*\": \"图像对话\"}, {\"id\": 7, \"*\": \"图像讨论\"}, {\"id\": 7, \"*\": \"图片讨论\"}, {\"id\": 7, \"*\": \"圖像對話\"}, {\"id\": 7, \"*\": \"圖像討論\"}, {\"id\": 7, \"*\": \"圖片討論\"}, {\"id\": 7, \"*\": \"文件对话\"}, {\"id\": 7, \"*\": \"文件對話\"}, {\"id\": 7, \"*\": \"文件討論\"}, {\"id\": 7, \"*\": \"文件讨论\"}, {\"id\": 7, \"*\": \"档案对话\"}, {\"id\": 7, \"*\": \"档案讨论\"}, {\"id\": 7, \"*\": \"檔案對話\"}, {\"id\": 7, \"*\": \"檔案討論\"}, {\"id\": 9, \"*\": \"MediaWiki討論\"}, {\"id\": 9, \"*\": \"MediaWiki讨论\"}, {\"id\": 10, \"*\": \"样板\"}, {\"id\": 10, \"*\": \"模板\"}, {\"id\": 10, \"*\": \"樣板\"}, {\"id\": 11, \"*\": \"样板对话\"}, {\"id\": 11, \"*\": \"样板讨论\"}, {\"id\": 11, \"*\": \"模板对话\"}, {\"id\": 11, \"*\": \"模板對話\"}, {\"id\": 11, \"*\": \"模板討論\"}, {\"id\": 11, \"*\": \"模板讨论\"}, {\"id\": 11, \"*\": \"樣板對話\"}, {\"id\": 11, \"*\": \"樣板討論\"}, {\"id\": 12, \"*\": \"使用說明\"}, {\"id\": 12, \"*\": \"使用说明\"}, {\"id\": 12, \"*\": \"帮助\"}, {\"id\": 12, \"*\": \"幫助\"}, {\"id\": 12, \"*\": \"說明\"}, {\"id\": 12, \"*\": \"说明\"}, {\"id\": 13, \"*\": \"使用說明討論\"}, {\"id\": 13, \"*\": \"使用说明讨论\"}, {\"id\": 13, \"*\": \"帮助对话\"}, {\"id\": 13, \"*\": \"帮助讨论\"}, {\"id\": 13, \"*\": \"幫助對話\"}, {\"id\": 13, \"*\": \"幫助討論\"}, {\"id\": 13, \"*\": \"說明討論\"}, {\"id\": 13, \"*\": \"说明讨论\"}, {\"id\": 14, \"*\": \"分类\"}, {\"id\": 14, \"*\": \"分類\"}, {\"id\": 15, \"*\": \"分类对话\"}, {\"id\": 15, \"*\": \"分类讨论\"}, {\"id\": 15, \"*\": \"分類對話\"}, {\"id\": 15, \"*\": \"分類討論\"}, {\"id\": 828, \"*\": \"模块\"}, {\"id\": 828, \"*\": \"模塊\"}, {\"id\": 828, \"*\": \"模組\"}, {\"id\": 828, \"*\": \"模组\"}, {\"id\": 829, \"*\": \"模块对话\"}, {\"id\": 829, \"*\": \"模块讨论\"}, {\"id\": 829, \"*\": \"模塊對話\"}, {\"id\": 829, \"*\": \"模塊討論\"}, {\"id\": 829, \"*\": \"模組對話\"}, {\"id\": 829, \"*\": \"模組討論\"}, {\"id\": 829, \"*\": \"模组对话\"}, {\"id\": 829, \"*\": \"模组讨论\"}, {\"id\": 9592, \"*\": \"存储桶\"}, {\"id\": 9592, \"*\": \"存儲桶\"}, {\"id\": 9592, \"*\": \"貯體\"}, {\"id\": 9592, \"*\": \"贮体\"}, {\"id\": 9593, \"*\": \"存储桶讨论\"}, {\"id\": 9593, \"*\": \"存儲桶討論\"}, {\"id\": 9593, \"*\": \"貯體討論\"}, {\"id\": 9593, \"*\": \"贮体讨论\"}, {\"id\": 9994, \"*\": \"Legends教学\"}, {\"id\": 9994, \"*\": \"Legends教學\"}, {\"id\": 9994, \"*\": \"Legends教程\"}, {\"id\": 9994, \"*\": \"MCL tutorial\"}, {\"id\": 9994, \"*\": \"MCLG tutorial\"}, {\"id\": 9994, \"*\": \"MCLG教学\"}, {\"id\": 9994, \"*\": \"MCLG教學\"}, {\"id\": 9994, \"*\": \"MCLG教程\"}, {\"id\": 9994, \"*\": \"MCL教学\"}, {\"id\": 9994, \"*\": \"MCL教學\"}, {\"id\": 9994, \"*\": \"MCL教程\"}, {\"id\": 9994, \"*\": \"Minecraft Legends tutorial\"}, {\"id\": 9994, \"*\": \"Minecraft Legends 教学\"}, {\"id\": 9994, \"*\": \"Minecraft Legends 教學\"}, {\"id\": 9994, \"*\": \"Minecraft Legends 教程\"}, {\"id\": 9994, \"*\": \"Minecraft Legends教学\"}, {\"id\": 9994, \"*\": \"Minecraft Legends教學\"}, {\"id\": 9994, \"*\": \"Minecraft Legends教程\"}, {\"id\": 9994, \"*\": \"传奇教学\"}, {\"id\": 9994, \"*\": \"传奇教程\"}, {\"id\": 9994, \"*\": \"傳奇教學\"}, {\"id\": 9995, \"*\": \"Legends教学讨论\"}, {\"id\": 9995, \"*\": \"Legends教學討論\"}, {\"id\": 9995, \"*\": \"Legends教程讨论\"}, {\"id\": 9995, \"*\": \"MCL tutorial talk\"}, {\"id\": 9995, \"*\": \"MCLG tutorial talk\"}, {\"id\": 9995, \"*\": \"MCLG教学讨论\"}, {\"id\": 9995, \"*\": \"MCLG教學討論\"}, {\"id\": 9995, \"*\": \"MCLG教程讨论\"}, {\"id\": 9995, \"*\": \"MCL教学讨论\"}, {\"id\": 9995, \"*\": \"MCL教學討論\"}, {\"id\": 9995, \"*\": \"MCL教程讨论\"}, {\"id\": 9995, \"*\": \"Minecraft Legends tutorial talk\"}, {\"id\": 9995, \"*\": \"Minecraft Legends 教学讨论\"}, {\"id\": 9995, \"*\": \"Minecraft Legends 教學討論\"}, {\"id\": 9995, \"*\": \"Minecraft Legends 教程讨论\"}, {\"id\": 9995, \"*\": \"Minecraft Legends教学讨论\"}, {\"id\": 9995, \"*\": \"Minecraft Legends教學討論\"}, {\"id\": 9995, \"*\": \"Minecraft Legends教程讨论\"}, {\"id\": 9995, \"*\": \"传奇教学讨论\"}, {\"id\": 9995, \"*\": \"传奇教程讨论\"}, {\"id\": 9995, \"*\": \"傳奇教學討論\"}, {\"id\": 9996, \"*\": \"Dungeons教学\"}, {\"id\": 9996, \"*\": \"Dungeons教學\"}, {\"id\": 9996, \"*\": \"Dungeons教程\"}, {\"id\": 9996, \"*\": \"MCD tutorial\"}, {\"id\": 9996, \"*\": \"MCD教学\"}, {\"id\": 9996, \"*\": \"MCD教學\"}, {\"id\": 9996, \"*\": \"MCD教程\"}, {\"id\": 9996, \"*\": \"Minecraft Dungeons tutorial\"}, {\"id\": 9996, \"*\": \"Minecraft Dungeons 教学\"}, {\"id\": 9996, \"*\": \"Minecraft Dungeons 教學\"}, {\"id\": 9996, \"*\": \"Minecraft Dungeons 教程\"}, {\"id\": 9996, \"*\": \"Minecraft Dungeons教学\"}, {\"id\": 9996, \"*\": \"Minecraft Dungeons教學\"}, {\"id\": 9996, \"*\": \"Minecraft Dungeons教程\"}, {\"id\": 9996, \"*\": \"地下城教学\"}, {\"id\": 9996, \"*\": \"地下城教學\"}, {\"id\": 9996, \"*\": \"地下城教程\"}, {\"id\": 9997, \"*\": \"Dungeons教学讨论\"}, {\"id\": 9997, \"*\": \"Dungeons教學討論\"}, {\"id\": 9997, \"*\": \"Dungeons教程讨论\"}, {\"id\": 9997, \"*\": \"MCD tutorial talk\"}, {\"id\": 9997, \"*\": \"MCD教学讨论\"}, {\"id\": 9997, \"*\": \"MCD教學討論\"}, {\"id\": 9997, \"*\": \"MCD教程讨论\"}, {\"id\": 9997, \"*\": \"Minecraft Dungeons tutorial talk\"}, {\"id\": 9997, \"*\": \"Minecraft Dungeons 教学讨论\"}, {\"id\": 9997, \"*\": \"Minecraft Dungeons 教學討論\"}, {\"id\": 9997, \"*\": \"Minecraft Dungeons 教程讨论\"}, {\"id\": 9997, \"*\": \"Minecraft Dungeons教学讨论\"}, {\"id\": 9997, \"*\": \"Minecraft Dungeons教學討論\"}, {\"id\": 9997, \"*\": \"Minecraft Dungeons教程讨论\"}, {\"id\": 9997, \"*\": \"地下城教学讨论\"}, {\"id\": 9997, \"*\": \"地下城教學討論\"}, {\"id\": 9997, \"*\": \"地下城教程讨论\"}, {\"id\": 9998, \"*\": \"教学\"}, {\"id\": 9998, \"*\": \"教學\"}, {\"id\": 9998, \"*\": \"教程\"}, {\"id\": 9999, \"*\": \"教学讨论\"}, {\"id\": 9999, \"*\": \"教學討論\"}, {\"id\": 9999, \"*\": \"教程讨论\"}, {\"id\": 10000, \"*\": \"MCD\"}, {\"id\": 10000, \"*\": \"Minecraft Dungeons\"}, {\"id\": 10000, \"*\": \"地下城\"}, {\"id\": 10001, \"*\": \"Dungeons討論\"}, {\"id\": 10001, \"*\": \"Dungeons讨论\"}, {\"id\": 10001, \"*\": \"MCDT\"}, {\"id\": 10001, \"*\": \"Minecraft Dungeons talk\"}, {\"id\": 10001, \"*\": \"地下城討論\"}, {\"id\": 10001, \"*\": \"地下城讨论\"}, {\"id\": 10002, \"*\": \"MCE\"}, {\"id\": 10002, \"*\": \"Minecraft Earth\"}, {\"id\": 10002, \"*\": \"地球\"}, {\"id\": 10003, \"*\": \"Earth討論\"}, {\"id\": 10003, \"*\": \"Earth讨论\"}, {\"id\": 10003, \"*\": \"MCET\"}, {\"id\": 10003, \"*\": \"Minecraft Earth talk\"}, {\"id\": 10003, \"*\": \"地球討論\"}, {\"id\": 10003, \"*\": \"地球讨论\"}, {\"id\": 10004, \"*\": \"MCSM\"}, {\"id\": 10004, \"*\": \"Minecraft Story Mode\"}, {\"id\": 10004, \"*\": \"Story Mode\"}, {\"id\": 10004, \"*\": \"故事模式\"}, {\"id\": 10005, \"*\": \"MCSMT\"}, {\"id\": 10005, \"*\": \"Minecraft Story Mode talk\"}, {\"id\": 10005, \"*\": \"Story Mode討論\"}, {\"id\": 10005, \"*\": \"Story Mode讨论\"}, {\"id\": 10005, \"*\": \"故事模式討論\"}, {\"id\": 10005, \"*\": \"故事模式讨论\"}, {\"id\": 10006, \"*\": \"MCL\"}, {\"id\": 10006, \"*\": \"MCLG\"}, {\"id\": 10006, \"*\": \"Minecraft Legends\"}, {\"id\": 10006, \"*\": \"传奇\"}, {\"id\": 10006, \"*\": \"傳奇\"}, {\"id\": 10007, \"*\": \"Legends討論\"}, {\"id\": 10007, \"*\": \"Legends讨论\"}, {\"id\": 10007, \"*\": \"MCLGT\"}, {\"id\": 10007, \"*\": \"MCLT\"}, {\"id\": 10007, \"*\": \"Minecraft Legends talk\"}, {\"id\": 10007, \"*\": \"传奇讨论\"}, {\"id\": 10007, \"*\": \"傳奇討論\"}, {\"id\": 10008, \"*\": \"F\"}, {\"id\": 10008, \"*\": \"論壇\"}, {\"id\": 10008, \"*\": \"论坛\"}, {\"id\": 10009, \"*\": \"FT\"}, {\"id\": 10009, \"*\": \"論壇討論\"}, {\"id\": 10009, \"*\": \"论坛讨论\"}, {\"id\": 10010, \"*\": \"MCCN\"}, {\"id\": 10010, \"*\": \"Minecraft China Edition\"}, {\"id\": 10010, \"*\": \"中国版\"}, {\"id\": 10010, \"*\": \"中國版\"}, {\"id\": 10011, \"*\": \"MCCNT\"}, {\"id\": 10011, \"*\": \"Minecraft China Edition talk\"}, {\"id\": 10011, \"*\": \"中国版讨论\"}, {\"id\": 10011, \"*\": \"中國版討論\"}, {\"id\": 10012, \"*\": \"草稿\"}, {\"id\": 10013, \"*\": \"草稿討論\"}, {\"id\": 10013, \"*\": \"草稿讨论\"}, {\"id\": 10014, \"*\": \"Dungeons 2\"}, {\"id\": 10014, \"*\": \"Dungeons II\"}, {\"id\": 10014, \"*\": \"MCD2\"}, {\"id\": 10014, \"*\": \"Minecraft Dungeons 2\"}, {\"id\": 10014, \"*\": \"Minecraft Dungeons II\"}, {\"id\": 10014, \"*\": \"地下城2\"}, {\"id\": 10014, \"*\": \"地下城II\"}, {\"id\": 10015, \"*\": \"Dungeons II討論\"}, {\"id\": 10015, \"*\": \"Dungeons II討論\"}, {\"id\": 10015, \"*\": \"Dungeons II讨论\"}, {\"id\": 10015, \"*\": \"Dungeons II讨论\"}, {\"id\": 10015, \"*\": \"Minecraft Dungeons II talk\"}, {\"id\": 10015, \"*\": \"Minecraft Dungeons II討論\"}, {\"id\": 10015, \"*\": \"Minecraft Dungeons II讨论\"}, {\"id\": 10015, \"*\": \"地下城2討論\"}, {\"id\": 10015, \"*\": \"地下城2讨论\"}], \"interwikimap\": [{\"prefix\": \"aether\", \"url\": \"https://aether.fandom.com/wiki/$1\"}, {\"prefix\": \"bedev\", \"url\": \"https://wiki.mcbe-dev.net/p/$1\"}, {\"prefix\": \"bugtracker\", \"url\": \"https://bugs.mojang.com/browse/$1\"}, {\"prefix\": \"commons\", \"url\": \"https://commons.wikimedia.org/wiki/$1\"}, {\"prefix\": \"cs\", \"local\": \"\", \"language\": \"čeština\", \"bcp47\": \"cs\", \"url\": \"https://cs.minecraft.wiki/w/$1\"}, {\"prefix\": \"de\", \"local\": \"\", \"language\": \"Deutsch\", \"bcp47\": \"de\", \"url\": \"https://de.minecraft.wiki/w/$1\"}, {\"prefix\": \"dinnerbonetweet\", \"url\": \"https://twitter.com/Dinnerbone/status/$1\"}, {\"prefix\": \"el\", \"local\": \"\", \"language\": \"Ελληνικά\", \"bcp47\": \"el\", \"url\": \"https://el.minecraft.wiki/w/$1\"}, {\"prefix\": \"en\", \"local\": \"\", \"language\": \"English\", \"bcp47\": \"en\", \"url\": \"https://minecraft.wiki/w/$1\"}, {\"prefix\": \"es\", \"local\": \"\", \"language\": \"español\", \"bcp47\": \"es\", \"url\": \"https://es.minecraft.wiki/w/$1\"}, {\"prefix\": \"fr\", \"local\": \"\", \"language\": \"français\", \"bcp47\": \"fr\", \"url\": \"https://fr.minecraft.wiki/w/$1\"}, {\"prefix\": \"ftb\", \"url\": \"https://ftb.fandom.com/wiki/$1\"}, {\"prefix\": \"google\", \"url\": \"https://www.google.com/search?q=$1\"}, {\"prefix\": \"gpcommons\", \"url\": \"https://commons.fandom.com/wiki/$1\"}, {\"prefix\": \"gphelp\", \"url\": \"https://help.fandom.com/wiki/$1\"}, {\"prefix\": \"gphelpzh\", \"url\": \"https://help.fandom.com/zh/wiki/$1\"}, {\"prefix\": \"hu\", \"local\": \"\", \"language\": \"magyar\", \"bcp47\": \"hu\", \"url\": \"https://hu.minecraft.wiki/w/$1\"}, {\"prefix\": \"id\", \"local\": \"\", \"language\": \"Bahasa Indonesia\", \"bcp47\": \"id\", \"url\": \"https://id.minecraft.wiki/w/$1\"}, {\"prefix\": \"it\", \"local\": \"\", \"language\": \"italiano\", \"bcp47\": \"it\", \"url\": \"https://it.minecraft.wiki/w/$1\"}, {\"prefix\": \"ja\", \"local\": \"\", \"language\": \"日本語\", \"bcp47\": \"ja\", \"url\": \"https://ja.minecraft.wiki/w/$1\"}, {\"prefix\": \"jebtweet\", \"url\": \"https://twitter.com/jeb_/status/$1\"}, {\"prefix\": \"klpbbs\", \"url\": \"https://klpbbs.com/$1\"}, {\"prefix\": \"ko\", \"local\": \"\", \"language\": \"한국어\", \"bcp47\": \"ko\", \"url\": \"https://ko.minecraft.wiki/w/$1\"}, {\"prefix\": \"lzh\", \"local\": \"\", \"language\": \"文言\", \"bcp47\": \"lzh\", \"url\": \"https://lzh.minecraft.wiki/w/$1\"}, {\"prefix\": \"mcf\", \"url\": \"https://www.minecraftforum.net/forums/$1\"}, {\"prefix\": \"mcfnews\", \"url\": \"https://www.minecraftforum.net/news/$1\"}, {\"prefix\": \"mcftopic\", \"url\": \"https://www.minecraftforum.net/topic/$1\"}, {\"prefix\": \"mcservers\", \"url\": \"https://minecraftservers.fandom.com/wiki/$1\"}, {\"prefix\": \"mediazilla\", \"url\": \"https://bugzilla.wikimedia.org/$1\"}, {\"prefix\": \"metawikipedia\", \"url\": \"https://meta.wikimedia.org/wiki/$1\"}, {\"prefix\": \"minebbs\", \"url\": \"https://www.minebbs.com/$1\"}, {\"prefix\": \"moe\", \"url\": \"https://zh.moegirl.org.cn/$1\"}, {\"prefix\": \"mojira\", \"url\": \"https://bugs.mojang.com/browse/$1\"}, {\"prefix\": \"mwbug\", \"url\": \"https://bugzilla.wikimedia.org/show_bug.cgi?id=$1\"}, {\"prefix\": \"mwphab\", \"url\": \"https://phabricator.wikimedia.org/$1\"}, {\"prefix\": \"nl\", \"local\": \"\", \"language\": \"Nederlands\", \"bcp47\": \"nl\", \"url\": \"https://nl.minecraft.wiki/w/$1\"}, {\"prefix\": \"notchtweet\", \"url\": \"https://twitter.com/notch/status/$1\"}, {\"prefix\": \"patwiki\", \"url\": \"http://gauss.ffii.org/$1\"}, {\"prefix\": \"phab\", \"url\": \"https://phabricator.wikimedia.org/$1\"}, {\"prefix\": \"pl\", \"local\": \"\", \"language\": \"polski\", \"bcp47\": \"pl\", \"url\": \"https://pl.minecraft.wiki/w/$1\"}, {\"prefix\": \"pmid\", \"url\": \"https://www.ncbi.nlm.nih.gov/pubmed/$1?dopt=Abstract\"}, {\"prefix\": \"pt\", \"local\": \"\", \"language\": \"português\", \"bcp47\": \"pt\", \"url\": \"https://pt.minecraft.wiki/w/$1\"}, {\"prefix\": \"pt-br\", \"local\": \"\", \"language\": \"português do Brasil\", \"bcp47\": \"pt-BR\", \"url\": \"https://pt.minecraft.wiki/w/$1\"}, {\"prefix\": \"rfc\", \"url\": \"https://tools.ietf.org/html/rfc$1\"}, {\"prefix\": \"ru\", \"local\": \"\", \"language\": \"русский\", \"bcp47\": \"ru\", \"url\": \"https://ru.minecraft.wiki/w/$1\"}, {\"prefix\": \"th\", \"local\": \"\", \"language\": \"ไทย\", \"bcp47\": \"th\", \"url\": \"https://th.minecraft.wiki/w/$1\"}, {\"prefix\": \"thewordofnotch\", \"url\": \"https://web.archive.org/web/0/https://notch.tumblr.com/post/$1\"}, {\"prefix\": \"tr\", \"local\": \"\", \"language\": \"Türkçe\", \"bcp47\": \"tr\", \"url\": \"https://tr.minecraft.wiki/w/$1\"}, {\"prefix\": \"twitter\", \"url\": \"https://twitter.com/$1/\"}, {\"prefix\": \"uk\", \"local\": \"\", \"language\": \"українська\", \"bcp47\": \"uk\", \"url\": \"https://uk.minecraft.wiki/w/$1\"}, {\"prefix\": \"wikia\", \"url\": \"https://community.fandom.com/w:c:$1\"}, {\"prefix\": \"wikimedia\", \"url\": \"https://wikimediafoundation.org/wiki/$1\"}, {\"prefix\": \"wikipedia\", \"url\": \"https://en.wikipedia.org/wiki/$1\"}, {\"prefix\": \"wikipediazh\", \"url\": \"https://zh.wikipedia.org/wiki/$1\"}, {\"prefix\": \"wikisource\", \"url\": \"https://wikisource.org/wiki/$1\"}, {\"prefix\": \"wiktionary\", \"url\": \"https://en.wiktionary.org/wiki/$1\"}, {\"prefix\": \"wordofnotch\", \"url\": \"https://web.archive.org/web/0/https://notch.tumblr.com/post/$1\"}, {\"prefix\": \"wphelp\", \"url\": \"https://en.wikipedia.org/wiki/Help:$1\"}, {\"prefix\": \"wphelpzh\", \"url\": \"https://zh.wikipedia.org/wiki/Help:$1\"}, {\"prefix\": \"wzh\", \"url\": \"https://zh.wikipedia.org/wiki/$1\"}, {\"prefix\": \"zh\", \"local\": \"\", \"language\": \"中文\", \"bcp47\": \"zh\", \"localinterwiki\": \"\", \"url\": \"https://zh.minecraft.wiki/w/$1\"}, {\"prefix\": \"zhcommunity\", \"url\": \"https://community.fandom.com/zh/wiki/$1\"}], \"extensions\": [{\"type\": \"other\", \"name\": \"Speedscope\", \"descriptionmsg\": \"speedscope-desc\", \"author\": \"SomeRandomDeveloper\", \"url\": \"https://www.mediawiki.org/wiki/Special:MyLanguage/Extension:Speedscope\", \"version\": \"1.0.0\", \"vcs-system\": \"git\", \"vcs-version\": \"391ffe39cf6b91acaa55c2c748d1f97b66770631\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-Speedscope/commit/391ffe39cf6b91acaa55c2c748d1f97b66770631\", \"vcs-date\": \"2026-05-20T21:24:09Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/Speedscope\"}, {\"type\": \"other\", \"name\": \"GCS\", \"descriptionmsg\": \"gcs-desc\", \"author\": \"Tyler Romeo, Daniel Friesen @ Redwerks, Edward Chernenko, David Haslip\", \"url\": \"https://www.mediawiki.org/wiki/Extension:GCS\", \"version\": \"0.11.0\", \"vcs-system\": \"git\", \"vcs-version\": \"abaa6a695389c146970b0d2ccd8d02259422fb2c\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-GCS/commit/abaa6a695389c146970b0d2ccd8d02259422fb2c\", \"vcs-date\": \"2026-01-08T05:11:28Z\", \"license-name\": \"GPL-2.0+\", \"license\": \"/w/Special:Version/License/GCS\"}, {\"type\": \"other\", \"name\": \"Bucket\", \"descriptionmsg\": \"bucket-desc\", \"author\": \"Jonathan Lee, TehKittyCat, Mudscape, [https://github.com/jayktaylor Jayden Bailey]\", \"url\": \"https://github.com/weirdgloop/mediawiki-extensions-Bucket\", \"version\": \"2.1.1\", \"vcs-system\": \"git\", \"vcs-version\": \"36ca7ff40461ba75f7b53a492d297dfa720b69a0\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-Bucket/commit/36ca7ff40461ba75f7b53a492d297dfa720b69a0\", \"vcs-date\": \"2026-04-06T13:35:13Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/Bucket\"}, {\"type\": \"other\", \"name\": \"MessageCachePerformance\", \"description\": \"Avoid redundant MessageCache lookups\", \"author\": \"Fandom, Inc.\", \"url\": \"https://github.com/Wikia/MessageCachePerformance\", \"vcs-system\": \"git\", \"vcs-version\": \"fecbb4e5b921bc2502b7f4054b03194e55ed13ea\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-MessageCachePerformance/commit/fecbb4e5b921bc2502b7f4054b03194e55ed13ea\", \"vcs-date\": \"2025-07-04T22:24:26Z\", \"license-name\": \"Apache-2.0\", \"license\": \"/w/Special:Version/License/MessageCachePerformance\"}, {\"type\": \"other\", \"name\": \"MultimediaViewer\", \"descriptionmsg\": \"multimediaviewer-desc\", \"author\": \"Gergő Tisza, Gilles Dubuc, Mark Holmquist, Simon Legner, Ed Sanders, Pau Giner, James D. Forrester, Željko Filipin, fomafix, Volker E, Kunal Mehta, Umherirrender, Timo Tijhof, Aaron Arcos, Thiemo Kreuz, Matthias Mullie, Jon Robson, Derk-Jan Hartman, Chris McMahon, Bartosz Dziewoński\", \"url\": \"https://www.mediawiki.org/wiki/Extension:MultimediaViewer\", \"vcs-system\": \"git\", \"vcs-version\": \"44da537122819e792b27bfe3a5ac01c3938f4bf8\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-MultimediaViewer/commit/44da537122819e792b27bfe3a5ac01c3938f4bf8\", \"vcs-date\": \"2026-03-11T22:30:04Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/MultimediaViewer\", \"credits\": \"/w/Special:Version/Credits/MultimediaViewer\"}, {\"type\": \"other\", \"name\": \"DismissableSiteNotice\", \"namemsg\": \"sitenotice-extensionname\", \"descriptionmsg\": \"sitenotice-desc\", \"author\": \"Brion Vibber, Kevin Israel, Dror S.\", \"url\": \"https://www.mediawiki.org/wiki/Extension:DismissableSiteNotice\", \"version\": \"1.0.1\", \"vcs-system\": \"git\", \"vcs-version\": \"9ef6716dfcbcc01be6afe379b4d112162a333304\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-DismissableSiteNotice/commit/9ef6716dfcbcc01be6afe379b4d112162a333304\", \"vcs-date\": \"2026-04-03T16:48:01Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/DismissableSiteNotice\"}, {\"type\": \"other\", \"name\": \"VariablesLua\", \"descriptionmsg\": \"variableslua-desc\", \"author\": \"[https://fo-nttax.de Alex Winkler]\", \"url\": \"https://www.mediawiki.org/wiki/Extension:VariablesLua\", \"version\": \"1.6.0\", \"vcs-system\": \"git\", \"vcs-version\": \"64a5776f055b33c38602e8a94f7237a6b8cb4c79\", \"vcs-url\": \"https://github.com/Liquipedia/VariablesLua/commit/64a5776f055b33c38602e8a94f7237a6b8cb4c79\", \"vcs-date\": \"2024-07-24T12:17:13Z\", \"license-name\": \"MIT\", \"license\": \"/w/Special:Version/License/VariablesLua\"}, {\"type\": \"other\", \"name\": \"LinkSuggest\", \"descriptionmsg\": \"linksuggest-desc\", \"author\": \"Inez Korczyński, Bartek Łapiński, Łukasz Garczewski, Maciej Brencz, Jesús Martínez Novo, Jack Phoenix, Jayden Bailey\", \"url\": \"https://www.mediawiki.org/wiki/Extension:LinkSuggest\", \"version\": \"2.2.0\", \"vcs-system\": \"git\", \"vcs-version\": \"0fbbb9e4b0bb1884c5c046311d22814dcdb0c17f\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-LinkSuggest/commit/0fbbb9e4b0bb1884c5c046311d22814dcdb0c17f\", \"vcs-date\": \"2026-04-17T08:10:56Z\"}, {\"type\": \"other\", \"name\": \"Gadgets\", \"descriptionmsg\": \"gadgets-desc\", \"author\": \"Daniel Kinzler, Max Semenik, Timo Tijhof, Siddharth VP\", \"url\": \"https://www.mediawiki.org/wiki/Extension:Gadgets\", \"vcs-system\": \"git\", \"vcs-version\": \"10f05e1df173b8eeae88ff6f0114cb1fcffa89de\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-Gadgets/commit/10f05e1df173b8eeae88ff6f0114cb1fcffa89de\", \"vcs-date\": \"2026-05-28T05:39:13Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/Gadgets\"}, {\"type\": \"other\", \"name\": \"RevisionSlider\", \"namemsg\": \"revisionslider\", \"descriptionmsg\": \"revisionslider-desc\", \"author\": \"[https://meta.wikimedia.org/wiki/WMDE_Technical_Wishes Wikimedia Deutschland Technical Wishes Team], Addshore, Leszek Manicki, Jakob Warkotsch, Tobias Gritschacher, Christoph Jauera\", \"url\": \"https://www.mediawiki.org/wiki/Extension:RevisionSlider\", \"vcs-system\": \"git\", \"vcs-version\": \"038b7864a2fb09308527e7c493ee5301d60f1990\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-RevisionSlider/commit/038b7864a2fb09308527e7c493ee5301d60f1990\", \"vcs-date\": \"2026-03-06T00:13:05Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/RevisionSlider\"}, {\"type\": \"other\", \"name\": \"OATHAuth\", \"descriptionmsg\": \"oathauth-desc\", \"author\": \"Ryan Lane, Robert Vogel <vogel@hallowelt.com>, Dejan Savuljesku <savuljesku@hallowelt.com>, Taavi Väänänen\", \"url\": \"https://www.mediawiki.org/wiki/Extension:OATHAuth\", \"vcs-system\": \"git\", \"vcs-version\": \"a59057b3121ddde665a172944527296804db7ff6\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-OATHAuth/commit/a59057b3121ddde665a172944527296804db7ff6\", \"vcs-date\": \"2026-04-20T16:04:04Z\", \"license-name\": \"GPL-2.0-or-later AND GPL-3.0-or-later\", \"license\": \"/w/Special:Version/License/OATHAuth\"}, {\"type\": \"other\", \"name\": \"Discord\", \"descriptionmsg\": \"discord-desc\", \"author\": \"[https://github.com/jayktaylor Jayden Bailey]\", \"url\": \"https://github.com/jayktaylor/mw-discord\", \"version\": \"1.2\", \"vcs-system\": \"git\", \"vcs-version\": \"d81d1e6cd1885d02d7858d031fbbe854e1db3a8b\", \"vcs-url\": \"https://github.com/jayktaylor/mw-discord/commit/d81d1e6cd1885d02d7858d031fbbe854e1db3a8b\", \"vcs-date\": \"2026-02-06T21:12:16Z\", \"license-name\": \"MIT\", \"license\": \"/w/Special:Version/License/Discord\"}, {\"type\": \"other\", \"name\": \"Elastica\", \"descriptionmsg\": \"elastica-desc\", \"author\": \"Nik Everett, Chad Horohoe\", \"url\": \"https://www.mediawiki.org/wiki/Extension:Elastica\", \"version\": \"6.2.0\", \"vcs-system\": \"git\", \"vcs-version\": \"8ee2c285217fd37690d977d9e655ddedf4c5910d\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-Elastica/commit/8ee2c285217fd37690d977d9e655ddedf4c5910d\", \"vcs-date\": \"2026-04-17T01:52:21Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/Elastica\"}, {\"type\": \"other\", \"name\": \"CirrusSearch\", \"descriptionmsg\": \"cirrussearch-desc\", \"author\": \"Nik Everett, Chad Horohoe, Erik Bernhardson\", \"url\": \"https://www.mediawiki.org/wiki/Extension:CirrusSearch\", \"vcs-system\": \"git\", \"vcs-version\": \"1fe9151166ab2b26b0b00ea4583f1a2131ea9567\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-CirrusSearch/commit/1fe9151166ab2b26b0b00ea4583f1a2131ea9567\", \"vcs-date\": \"2026-03-06T14:43:47Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/CirrusSearch\", \"credits\": \"/w/Special:Version/Credits/CirrusSearch\"}, {\"type\": \"other\", \"name\": \"InternalExternalLinks\", \"namemsg\": \"internalExternalLinks\", \"descriptionmsg\": \"internalExternalLinks-desc\", \"author\": \"[https://runescape.wiki/w/User:TyA TyA <tyler@faceyspacies.com>]\", \"url\": \"\", \"version\": \"1\", \"vcs-system\": \"git\", \"vcs-version\": \"e65e2816cc8d237959330ef86fd0e9211bde2262\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-InternalExternalLinks/commit/e65e2816cc8d237959330ef86fd0e9211bde2262\", \"vcs-date\": \"2026-04-29T14:24:25Z\", \"license-name\": \"MIT\", \"license\": \"/w/Special:Version/License/InternalExternalLinks\"}, {\"type\": \"other\", \"name\": \"Parsoid\", \"description\": \"The Parsoid extension enables the REST API for Parsoid. This is needed to support VisualEditor.\", \"url\": \"https://www.mediawiki.org/wiki/Parsoid/PHP\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/Parsoid\"}, {\"type\": \"other\", \"name\": \"GloopTweaks\", \"descriptionmsg\": \"glooptweaks-desc\", \"author\": \"[https://github.com/jayktaylor Jayden Bailey], TehKittyCat, ...\", \"url\": \"https://weirdgloop.org\", \"version\": \"1.2.0\", \"vcs-system\": \"git\", \"vcs-version\": \"f76a9669cdb370756fcc8f4e6ec4b64a07d35366\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-GloopTweaks/commit/f76a9669cdb370756fcc8f4e6ec4b64a07d35366\", \"vcs-date\": \"2026-06-10T02:13:19Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/GloopTweaks\"}, {\"type\": \"other\", \"name\": \"Thanks\", \"descriptionmsg\": \"thanks-desc\", \"author\": \"Ryan Kaldari, Benjamin Chen, Wctaiwan\", \"url\": \"https://www.mediawiki.org/wiki/Extension:Thanks\", \"version\": \"1.2.0\", \"vcs-system\": \"git\", \"vcs-version\": \"597b76a6bd1975cb47f64753e9f9721c01f939d0\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-Thanks/commit/597b76a6bd1975cb47f64753e9f9721c01f939d0\", \"vcs-date\": \"2026-03-06T04:43:01Z\", \"license-name\": \"MIT\", \"license\": \"/w/Special:Version/License/Thanks\"}, {\"type\": \"other\", \"name\": \"LoginNotify\", \"descriptionmsg\": \"loginnotify-desc\", \"author\": \"Brian Wolff\", \"url\": \"https://www.mediawiki.org/wiki/Extension:LoginNotify\", \"version\": \"0.1\", \"vcs-system\": \"git\", \"vcs-version\": \"80828b9d76eee51f0953827b159e0c2589808daa\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-LoginNotify/commit/80828b9d76eee51f0953827b159e0c2589808daa\", \"vcs-date\": \"2026-03-05T05:05:19Z\", \"license-name\": \"MIT\", \"license\": \"/w/Special:Version/License/LoginNotify\"}, {\"type\": \"other\", \"name\": \"MobileFrontend\", \"descriptionmsg\": \"mobile-frontend-desc\", \"author\": \"Patrick Reilly, Max Semenik, Jon Robson, Arthur Richards, Brion Vibber, Juliusz Gonera, Ryan Kaldari, Florian Schmidt, Rob Moen, Sam Smith\", \"url\": \"https://www.mediawiki.org/wiki/Extension:MobileFrontend\", \"version\": \"2.4.1\", \"vcs-system\": \"git\", \"vcs-version\": \"49f87d7970c14c6ec8783a34fdad2c6f45432d3d\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-MobileFrontend/commit/49f87d7970c14c6ec8783a34fdad2c6f45432d3d\", \"vcs-date\": \"2026-03-12T02:15:41Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/MobileFrontend\", \"credits\": \"/w/Special:Version/Credits/MobileFrontend\"}, {\"type\": \"other\", \"name\": \"TextExtracts\", \"descriptionmsg\": \"textextracts-desc\", \"author\": \"Max Semenik\", \"url\": \"https://www.mediawiki.org/wiki/Extension:TextExtracts\", \"vcs-system\": \"git\", \"vcs-version\": \"81328335f266511bd889a70f8227e01c1ed0f322\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-TextExtracts/commit/81328335f266511bd889a70f8227e01c1ed0f322\", \"vcs-date\": \"2026-02-26T19:23:24Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/TextExtracts\"}, {\"type\": \"other\", \"name\": \"Description2\", \"descriptionmsg\": \"description2-desc\", \"author\": \"[http://danf.ca/mw/ Daniel Friesen]\", \"url\": \"https://www.mediawiki.org/wiki/Extension:Description2\", \"version\": \"0.4.1\", \"vcs-system\": \"git\", \"vcs-version\": \"45f9ea56545f0dc71bf5a0ff3818dd6db48b53c6\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-Description2/commit/45f9ea56545f0dc71bf5a0ff3818dd6db48b53c6\", \"vcs-date\": \"2026-03-12T02:14:56Z\"}, {\"type\": \"other\", \"name\": \"GlobalBlocking\", \"descriptionmsg\": \"globalblocking-desc\", \"author\": \"Andrew Garrett\", \"url\": \"https://www.mediawiki.org/wiki/Extension:GlobalBlocking\", \"vcs-system\": \"git\", \"vcs-version\": \"df90ebfd88fa904dd60a2a837eaeb69bda4d061a\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-GlobalBlocking/commit/df90ebfd88fa904dd60a2a837eaeb69bda4d061a\", \"vcs-date\": \"2026-03-05T05:04:26Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/GlobalBlocking\"}, {\"type\": \"other\", \"name\": \"SearchDigest\", \"descriptionmsg\": \"searchdigest-desc\", \"author\": \"[https://github.com/jayktaylor Jayden Bailey], ...\", \"url\": \"https://github.com/weirdgloop/mediawiki-extensions-SearchDigest\", \"version\": \"1.5.1\", \"vcs-system\": \"git\", \"vcs-version\": \"c5372584edf260a1c505703bc81ac4b7e9688516\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-SearchDigest/commit/c5372584edf260a1c505703bc81ac4b7e9688516\", \"vcs-date\": \"2026-04-29T14:55:20Z\", \"license-name\": \"GPL-3.0+\", \"license\": \"/w/Special:Version/License/SearchDigest\"}, {\"type\": \"other\", \"name\": \"OAuth\", \"descriptionmsg\": \"mwoauth-desc\", \"author\": \"Aaron Schulz, Chris Steipp, Brad Jorsch, Robert Vogel, Dejan Savuljesku\", \"url\": \"https://www.mediawiki.org/wiki/Extension:OAuth\", \"version\": \"1.1.0\", \"vcs-system\": \"git\", \"vcs-version\": \"e69a28c43526eed5ad4e16732ae4d42f3c44d6d9\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-OAuth/commit/e69a28c43526eed5ad4e16732ae4d42f3c44d6d9\", \"vcs-date\": \"2026-03-05T05:06:19Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/OAuth\"}, {\"type\": \"other\", \"name\": \"GloopControl\", \"descriptionmsg\": \"gloopcontrol-desc\", \"author\": \"[https://github.com/jayktaylor Jayden Bailey], ...\", \"url\": \"https://weirdgloop.org\", \"version\": \"0.1\", \"vcs-system\": \"git\", \"vcs-version\": \"e55097c6add2f464bcbb05debf961afae90ea09f\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-GloopControl/commit/e55097c6add2f464bcbb05debf961afae90ea09f\", \"vcs-date\": \"2026-06-11T20:44:18Z\"}, {\"type\": \"other\", \"name\": \"AdvancedSearch\", \"descriptionmsg\": \"advancedsearch-desc\", \"author\": \"[https://meta.wikimedia.org/wiki/WMDE_Technical_Wishes Wikimedia Deutschland Technical Wishes Team], Thiemo Kreuz, Gabriel Birke, Tonina Zhelyazkova, Christoph Jauera, Kai Nissen, Tim Eulitz\", \"url\": \"https://www.mediawiki.org/wiki/Extension:AdvancedSearch\", \"vcs-system\": \"git\", \"vcs-version\": \"7667d30d7a89f03f68aa7533dcddd9c170e60c1d\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-AdvancedSearch/commit/7667d30d7a89f03f68aa7533dcddd9c170e60c1d\", \"vcs-date\": \"2026-03-05T05:00:31Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/AdvancedSearch\"}, {\"type\": \"other\", \"name\": \"TemplateWizard\", \"descriptionmsg\": \"templatewizard-desc\", \"author\": \"Sam Wilson\", \"url\": \"https://www.mediawiki.org/wiki/Extension:TemplateWizard\", \"version\": \"0.1.0\", \"vcs-system\": \"git\", \"vcs-version\": \"7251549e2ad4036b5b57e6a7087605e7efd9300b\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-TemplateWizard/commit/7251549e2ad4036b5b57e6a7087605e7efd9300b\", \"vcs-date\": \"2026-03-05T05:07:29Z\", \"license-name\": \"MIT\", \"license\": \"/w/Special:Version/License/TemplateWizard\"}, {\"type\": \"other\", \"name\": \"SecurePoll\", \"descriptionmsg\": \"securepoll-desc\", \"author\": \"Tim Starling, ...\", \"url\": \"https://www.mediawiki.org/wiki/Extension:SecurePoll\", \"version\": \"3.0.0\", \"vcs-system\": \"git\", \"vcs-version\": \"364d3270974b3c78151dcf2f57b6802ed79b3df6\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-SecurePoll/commit/364d3270974b3c78151dcf2f57b6802ed79b3df6\", \"vcs-date\": \"2026-03-05T05:07:08Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/SecurePoll\"}, {\"type\": \"other\", \"name\": \"TempUserWordNames\", \"descriptionmsg\": \"tempuserwordnames-desc\", \"author\": \"[https://github.com/jayktaylor Jayden Bailey], ...\", \"url\": \"https://weirdgloop.org\", \"version\": \"0.1\", \"vcs-system\": \"git\", \"vcs-version\": \"556d5067c29a696e6b2af5d86ac6bdc214a20de6\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-TempUserWordNames/commit/556d5067c29a696e6b2af5d86ac6bdc214a20de6\", \"vcs-date\": \"2026-02-06T18:00:22Z\"}, {\"type\": \"other\", \"name\": \"Popups\", \"namemsg\": \"popups-message\", \"descriptionmsg\": \"popups-desc\", \"author\": \"Prateek Saxena, [https://www.mediawiki.org/wiki/Reading/Web/Team Readers Web Team], Yair Rand\", \"url\": \"https://www.mediawiki.org/wiki/Extension:Popups\", \"vcs-system\": \"git\", \"vcs-version\": \"ab4f4f80ed994edfb46c867827d09c1927483bac\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-Popups/commit/ab4f4f80ed994edfb46c867827d09c1927483bac\", \"vcs-date\": \"2026-03-12T02:15:54Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/Popups\"}, {\"type\": \"other\", \"name\": \"Disambiguator\", \"descriptionmsg\": \"disambig-desc\", \"author\": \"Ryan Kaldari\", \"url\": \"https://www.mediawiki.org/wiki/Extension:Disambiguator\", \"version\": \"1.4\", \"vcs-system\": \"git\", \"vcs-version\": \"6ddeb5d4ab3b0e47fcf1fc3cd9c239284f261564\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-Disambiguator/commit/6ddeb5d4ab3b0e47fcf1fc3cd9c239284f261564\", \"vcs-date\": \"2026-04-17T00:53:27Z\", \"license-name\": \"MIT\", \"license\": \"/w/Special:Version/License/Disambiguator\"}, {\"type\": \"other\", \"name\": \"DiscussionTools\", \"namemsg\": \"discussiontools\", \"descriptionmsg\": \"discussiontools-desc\", \"author\": \"Bartosz Dziewoński, Ed Sanders, David Lynch\", \"url\": \"https://www.mediawiki.org/wiki/Extension:DiscussionTools\", \"version\": \"0.0.0\", \"vcs-system\": \"git\", \"vcs-version\": \"fd96e0066095819885da5b07944287fd7e70fc0f\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-DiscussionTools/commit/fd96e0066095819885da5b07944287fd7e70fc0f\", \"vcs-date\": \"2026-03-05T07:57:25Z\", \"license-name\": \"MIT\", \"license\": \"/w/Special:Version/License/DiscussionTools\"}, {\"type\": \"skin\", \"name\": \"Vector\", \"namemsg\": \"vector-specialversion-name\", \"descriptionmsg\": \"vector-skin-desc\", \"author\": \"[https://www.mediawiki.org/wiki/Readers/Web/Team Readers Web Team], Trevor Parscal, Roan Kattouw, Alex Hollender, Bernard Wang, Clare Ming, Jan Drewniak, Jon Robson, Nick Ray, Sam Smith, Stephen Niedzielski, Volker E.\", \"url\": \"https://www.mediawiki.org/wiki/Skin:Vector\", \"version\": \"1.0.0\", \"vcs-system\": \"git\", \"vcs-version\": \"f948b5d2fd6cd9c9726b24126a683009e66fe688\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-skins-Vector/commit/f948b5d2fd6cd9c9726b24126a683009e66fe688\", \"vcs-date\": \"2026-03-25T23:33:06Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/Vector\"}, {\"type\": \"skin\", \"name\": \"MinervaNeue\", \"namemsg\": \"skinname-minerva\", \"descriptionmsg\": \"minerva-skin-desc\", \"author\": \"[https://www.mediawiki.org/wiki/Readers/Web/Team Readers Web Team], Alex Hollender, Bahodir Mansurov, Florian Schmidt, Jan Drewniak, Joaquin Hernandez, Jon Robson, Juliusz Gonera, Piotr Miazga, Ryan Kaldari, Nick Ray, Sam Smith, Stephen Niedzielski, Volker E.\", \"url\": \"https://www.mediawiki.org/wiki/Skin:MinervaNeue\", \"vcs-system\": \"git\", \"vcs-version\": \"983cd6ed39ab565788e8a64e5a82199de8e0d0eb\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-skins-MinervaNeue/commit/983cd6ed39ab565788e8a64e5a82199de8e0d0eb\", \"vcs-date\": \"2026-03-12T02:16:53Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/MinervaNeue\"}, {\"type\": \"parserhook\", \"name\": \"ParserFunctions\", \"descriptionmsg\": \"pfunc_desc\", \"author\": \"Tim Starling, Robert Rohde, Ross McClure, Juraj Simlovic\", \"url\": \"https://www.mediawiki.org/wiki/Extension:ParserFunctions\", \"version\": \"1.6.1\", \"vcs-system\": \"git\", \"vcs-version\": \"b52376a98d444e5c9f55dd9bd47a7e76d5db4fa0\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-ParserFunctions/commit/b52376a98d444e5c9f55dd9bd47a7e76d5db4fa0\", \"vcs-date\": \"2026-02-26T04:56:49Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/ParserFunctions\"}, {\"type\": \"parserhook\", \"name\": \"Scribunto\", \"descriptionmsg\": \"scribunto-desc\", \"author\": \"Victor Vasiliev, Tim Starling, Brad Jorsch\", \"url\": \"https://www.mediawiki.org/wiki/Extension:Scribunto\", \"vcs-system\": \"git\", \"vcs-version\": \"bb4709f1fb3f9c028ce06cea22277c34a2f4e563\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-Scribunto/commit/bb4709f1fb3f9c028ce06cea22277c34a2f4e563\", \"vcs-date\": \"2026-06-05T17:33:15Z\", \"license-name\": \"GPL-2.0-or-later AND MIT\", \"license\": \"/w/Special:Version/License/Scribunto\"}, {\"type\": \"parserhook\", \"name\": \"Cite\", \"descriptionmsg\": \"cite-desc\", \"author\": \"Ævar Arnfjörð Bjarmason, Andrew Garrett, Brion Vibber, Ed Sanders, Marius Hoch, Steve Sanbeg, Trevor Parscal, ...\", \"url\": \"https://www.mediawiki.org/wiki/Extension:Cite\", \"vcs-system\": \"git\", \"vcs-version\": \"5ff8a362e88b17c9028b8a1792a4a5dd622802b7\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-Cite/commit/5ff8a362e88b17c9028b8a1792a4a5dd622802b7\", \"vcs-date\": \"2026-03-05T06:30:06Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/Cite\", \"credits\": \"/w/Special:Version/Credits/Cite\"}, {\"type\": \"parserhook\", \"name\": \"RandomSelection\", \"descriptionmsg\": \"randomselection-desc\", \"author\": \"Ross McClure, Jack Phoenix, ...\", \"url\": \"https://www.mediawiki.org/wiki/Extension:RandomSelection\", \"version\": \"2.3.0\", \"vcs-system\": \"git\", \"vcs-version\": \"7a8223baca58b1c4f95c7b652eb4762f564de833\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-RandomSelection/commit/7a8223baca58b1c4f95c7b652eb4762f564de833\", \"vcs-date\": \"2026-03-16T12:27:25Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/RandomSelection\"}, {\"type\": \"parserhook\", \"name\": \"Variables\", \"descriptionmsg\": \"variables-desc\", \"author\": \"Rob Adams, Tom Hempel, Xiloynaha, [https://www.mediawiki.org/wiki/User:Danwe Daniel Werner], [https://www.mediawiki.org/wiki/User:MGChecker MGChecker], ...\", \"url\": \"https://www.mediawiki.org/wiki/Extension:Variables\", \"version\": \"2.6.0-beta\", \"vcs-system\": \"git\", \"vcs-version\": \"68d7b7e13c344dd3f4e604538e0b9b34dc510420\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-Variables/commit/68d7b7e13c344dd3f4e604538e0b9b34dc510420\", \"vcs-date\": \"2026-02-26T23:56:21Z\", \"license-name\": \"ISC\", \"license\": \"/w/Special:Version/License/Variables\"}, {\"type\": \"parserhook\", \"name\": \"SyntaxHighlight\", \"descriptionmsg\": \"syntaxhighlight-desc\", \"author\": \"Brion Vibber, Tim Starling, Rob Church, Niklas Laxström, Ori Livneh, Ed Sanders\", \"url\": \"https://www.mediawiki.org/wiki/Extension:SyntaxHighlight\", \"version\": \"2.0\", \"vcs-system\": \"git\", \"vcs-version\": \"8101aa27bcd55bf365be0026cac0c21df0c0e795\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-SyntaxHighlight_GeSHi/commit/8101aa27bcd55bf365be0026cac0c21df0c0e795\", \"vcs-date\": \"2026-02-28T11:02:35Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/SyntaxHighlight\"}, {\"type\": \"parserhook\", \"name\": \"Poem\", \"descriptionmsg\": \"poem-desc\", \"author\": \"Nikola Smolenski, Brion Vibber, Steve Sanbeg\", \"url\": \"https://www.mediawiki.org/wiki/Extension:Poem\", \"vcs-system\": \"git\", \"vcs-version\": \"21a4c1785f433520bfd7634187d07c942fc19ca7\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-Poem/commit/21a4c1785f433520bfd7634187d07c942fc19ca7\", \"vcs-date\": \"2026-02-26T00:12:34Z\", \"license-name\": \"CC0-1.0\", \"license\": \"/w/Special:Version/License/Poem\"}, {\"type\": \"parserhook\", \"name\": \"InputBox\", \"descriptionmsg\": \"inputbox-desc\", \"author\": \"Erik Moeller, Leonardo Pimenta, Rob Church, Trevor Parscal, DaSch\", \"url\": \"https://www.mediawiki.org/wiki/Extension:InputBox\", \"version\": \"0.3.0\", \"vcs-system\": \"git\", \"vcs-version\": \"fa8ba0f86746ece97cee8152ed773e6304b51958\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-InputBox/commit/fa8ba0f86746ece97cee8152ed773e6304b51958\", \"vcs-date\": \"2026-04-17T06:47:57Z\", \"license-name\": \"MIT\", \"license\": \"/w/Special:Version/License/InputBox\"}, {\"type\": \"parserhook\", \"name\": \"AJAX Poll\", \"descriptionmsg\": \"ajaxpoll-desc\", \"author\": \"Dariusz Siedlecki, Jack Phoenix, Thomas Gries\", \"url\": \"https://www.mediawiki.org/wiki/Extension:AJAX_Poll\", \"version\": \"2.3\", \"vcs-system\": \"git\", \"vcs-version\": \"cb945d7f8370b385150bb0ec329e8094fb9164c3\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-AJAXPoll/commit/cb945d7f8370b385150bb0ec329e8094fb9164c3\", \"vcs-date\": \"2026-06-03T21:38:35Z\", \"license-name\": \"GFDL-1.2\", \"license\": \"/w/Special:Version/License/AJAX_Poll\"}, {\"type\": \"parserhook\", \"name\": \"Tabber\", \"descriptionmsg\": \"tabber-desc\", \"author\": \"Eric Fortin, Alexia E. Smith\", \"url\": \"https://www.mediawiki.org/wiki/Extension:Tabber\", \"version\": \"2.4.5\", \"vcs-system\": \"git\", \"vcs-version\": \"625756015a33ae89f6d1357a52b59e450148a603\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-Tabber/commit/625756015a33ae89f6d1357a52b59e450148a603\", \"vcs-date\": \"2026-04-06T18:07:26Z\", \"license-name\": \"GPL-3.0-only\", \"license\": \"/w/Special:Version/License/Tabber\"}, {\"type\": \"parserhook\", \"name\": \"ImageMap\", \"descriptionmsg\": \"imagemap_desc\", \"author\": \"Tim Starling, Arlo Breault\", \"url\": \"https://www.mediawiki.org/wiki/Extension:ImageMap\", \"vcs-system\": \"git\", \"vcs-version\": \"b9eba128a32890e8ecc082c054450b4060bb7ce4\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-ImageMap/commit/b9eba128a32890e8ecc082c054450b4060bb7ce4\", \"vcs-date\": \"2026-02-28T04:35:29Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/ImageMap\"}, {\"type\": \"parserhook\", \"name\": \"DynamicPageList4\", \"descriptionmsg\": \"dpl-desc\", \"author\": \"Universal Omega, ...\", \"url\": \"https://www.mediawiki.org/wiki/Extension:DynamicPageList4\", \"version\": \"4.0.5\", \"vcs-system\": \"git\", \"vcs-version\": \"a44a183f615a4819f56b5a5631163cdaceec2511\", \"vcs-url\": \"https://github.com/Universal-Omega/DynamicPageList4/commit/a44a183f615a4819f56b5a5631163cdaceec2511\", \"vcs-date\": \"2026-04-06T12:12:20Z\", \"credits\": \"/w/Special:Version/Credits/DynamicPageList4\"}, {\"type\": \"parserhook\", \"name\": \"Math\", \"descriptionmsg\": \"math-desc\", \"author\": \"Tomasz Wegrzanowski, Brion Vibber, Moritz Schubotz, Derk-Jan Hartman, André Greiner-Petter, Johannes Stegmüller, Frederik Hennecke\", \"url\": \"https://www.mediawiki.org/wiki/Extension:Math\", \"vcs-system\": \"git\", \"vcs-version\": \"f7a6a58481840569c743244cc0405152cf18b352\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-Math/commit/f7a6a58481840569c743244cc0405152cf18b352\", \"vcs-date\": \"2026-03-05T05:05:47Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/Math\"}, {\"type\": \"parserhook\", \"name\": \"EmbedVideo\", \"descriptionmsg\": \"embedvideo-description\", \"author\": \"[https://www.mediawiki.org/wiki/User:Octfx Octfx], [https://www.mediawiki.org/wiki/User:Alistair3149 Alistair3149], Jim R. Wilson, Andrew Whitworth, Alexia E. Smith, Cameron M. Chunn\", \"url\": \"https://github.com/StarCitizenWiki/mediawiki-extensions-EmbedVideo\", \"version\": \"4.0.0\", \"vcs-system\": \"git\", \"vcs-version\": \"86bbf18eece780ecd178af5211f4605a8f13e4f8\", \"vcs-url\": \"https://github.com/StarCitizenWiki/mediawiki-extensions-EmbedVideo/commit/86bbf18eece780ecd178af5211f4605a8f13e4f8\", \"vcs-date\": \"2026-06-16T17:09:35Z\", \"license-name\": \"MIT\", \"license\": \"/w/Special:Version/License/EmbedVideo\"}, {\"type\": \"parserhook\", \"name\": \"TemplateData\", \"descriptionmsg\": \"templatedata-desc\", \"author\": \"Timo Tijhof, Moriel Schottlender, James D. Forrester, Trevor Parscal, Bartosz Dziewoński, Marielle Volz, Sam Wilson, [https://www.mediawiki.org/wiki/User:TheresNoTime-WMF Sammy Fox], ...\", \"url\": \"https://www.mediawiki.org/wiki/Extension:TemplateData\", \"version\": \"0.2.0\", \"vcs-system\": \"git\", \"vcs-version\": \"7eb3a23b0997a9fda2c6e15578ec57dc62d69287\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-TemplateData/commit/7eb3a23b0997a9fda2c6e15578ec57dc62d69287\", \"vcs-date\": \"2026-03-06T04:10:10Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/TemplateData\"}, {\"type\": \"parserhook\", \"name\": \"EasyTimeline\", \"descriptionmsg\": \"timeline-desc\", \"author\": \"Erik Zachte\", \"url\": \"https://www.mediawiki.org/wiki/Extension:EasyTimeline\", \"vcs-system\": \"git\", \"vcs-version\": \"d8e7e4ecbe6a68e5156c4db9ef056faff3f06677\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-timeline/commit/d8e7e4ecbe6a68e5156c4db9ef056faff3f06677\", \"vcs-date\": \"2026-02-28T14:53:01Z\", \"license-name\": \"GPL-2.0-only\", \"license\": \"/w/Special:Version/License/EasyTimeline\"}, {\"type\": \"parserhook\", \"name\": \"TemplateStyles\", \"namemsg\": \"templatestyles\", \"descriptionmsg\": \"templatestyles-desc\", \"author\": \"Brad Jorsch, Marc A. Pelletier\", \"url\": \"https://www.mediawiki.org/wiki/Extension:TemplateStyles\", \"version\": \"1.0\", \"vcs-system\": \"git\", \"vcs-version\": \"938ddecd60ff82188fbca55d11e20298852d7904\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-TemplateStyles/commit/938ddecd60ff82188fbca55d11e20298852d7904\", \"vcs-date\": \"2026-05-28T05:42:25Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/TemplateStyles\"}, {\"type\": \"parserhook\", \"name\": \"TemplateStylesExtender\", \"descriptionmsg\": \"ext-templatestylesextender-desc\", \"author\": \"[https://www.mediawiki.org/wiki/User:Octfx Octfx], [https://www.mediawiki.org/wiki/User:Alistair3149 Alistair3149]\", \"url\": \"https://github.com/octfx/mediawiki-extensions-TemplateStylesExtender\", \"version\": \"2.1.0\", \"vcs-system\": \"git\", \"vcs-version\": \"c76337fd857a24a44f910d9356a05bf2210a70fd\", \"vcs-url\": \"https://github.com/octfx/mediawiki-extensions-TemplateStylesExtender/commit/c76337fd857a24a44f910d9356a05bf2210a70fd\", \"vcs-date\": \"2026-02-18T02:29:47Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/TemplateStylesExtender\"}, {\"type\": \"parserhook\", \"name\": \"CategoryTree\", \"descriptionmsg\": \"categorytree-desc\", \"author\": \"Daniel Kinzler\", \"url\": \"https://www.mediawiki.org/wiki/Extension:CategoryTree\", \"vcs-system\": \"git\", \"vcs-version\": \"f0e2e07ad93cae70b2b63b21d0e6da0950a693bc\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-CategoryTree/commit/f0e2e07ad93cae70b2b63b21d0e6da0950a693bc\", \"vcs-date\": \"2026-03-05T05:01:31Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/CategoryTree\"}, {\"type\": \"parserhook\", \"name\": \"LabeledSectionTransclusion\", \"namemsg\": \"lst-extensionname\", \"descriptionmsg\": \"lst-desc\", \"author\": \"Steve Sanbeg\", \"url\": \"https://www.mediawiki.org/wiki/Extension:Labeled_Section_Transclusion\", \"vcs-system\": \"git\", \"vcs-version\": \"dc1224ac98c2a34f6c9258ecadcc5959c2e98313\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-LabeledSectionTransclusion/commit/dc1224ac98c2a34f6c9258ecadcc5959c2e98313\", \"vcs-date\": \"2026-02-25T01:53:23Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/LabeledSectionTransclusion\"}, {\"type\": \"parserhook\", \"name\": \"Loops\", \"descriptionmsg\": \"loops-desc\", \"author\": \"David M. Sledge, [https://www.mediawiki.org/wiki/User:Danwe Daniel Werner]\", \"url\": \"https://www.mediawiki.org/wiki/Extension:Loops\", \"version\": \"1.0.0-beta\", \"vcs-system\": \"git\", \"vcs-version\": \"0020e6f49fdbdb28f7ece64dcd047b8572194994\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-Loops/commit/0020e6f49fdbdb28f7ece64dcd047b8572194994\", \"vcs-date\": \"2026-02-25T04:07:50Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/Loops\"}, {\"type\": \"parserhook\", \"name\": \"CharInsert\", \"descriptionmsg\": \"charinsert-desc\", \"author\": \"Brion Vibber\", \"url\": \"https://www.mediawiki.org/wiki/Extension:CharInsert\", \"vcs-system\": \"git\", \"vcs-version\": \"04aee843b35c7b9e37c9f08b6b9b55d0dfcb56c9\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-CharInsert/commit/04aee843b35c7b9e37c9f08b6b9b55d0dfcb56c9\", \"vcs-date\": \"2026-02-23T04:26:32Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/CharInsert\"}, {\"type\": \"editor\", \"name\": \"WikiEditor\", \"descriptionmsg\": \"wikieditor-desc\", \"author\": \"Derk-Jan Hartman, Trevor Parscal, Roan Kattouw, Nimish Gautam, Adam Miller\", \"url\": \"https://www.mediawiki.org/wiki/Extension:WikiEditor\", \"version\": \"0.5.4\", \"vcs-system\": \"git\", \"vcs-version\": \"7969479f1f1204cbd4cbf6972e3d0856dd75974a\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-WikiEditor/commit/7969479f1f1204cbd4cbf6972e3d0856dd75974a\", \"vcs-date\": \"2026-06-04T05:32:39Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/WikiEditor\"}, {\"type\": \"editor\", \"name\": \"CodeEditor\", \"descriptionmsg\": \"codeeditor-desc\", \"author\": \"Brion Vibber, Derk-Jan Hartman\", \"url\": \"https://www.mediawiki.org/wiki/Extension:CodeEditor\", \"vcs-system\": \"git\", \"vcs-version\": \"225fdb96d9a201c34304ce36e10895b858273a61\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-CodeEditor/commit/225fdb96d9a201c34304ce36e10895b858273a61\", \"vcs-date\": \"2026-06-05T01:14:33Z\", \"license-name\": \"GPL-2.0-or-later AND BSD-3-Clause\", \"license\": \"/w/Special:Version/License/CodeEditor\"}, {\"type\": \"editor\", \"name\": \"VisualEditor\", \"descriptionmsg\": \"visualeditor-desc\", \"author\": \"Alex Monk, Bartosz Dziewoński, C. Scott Ananian, Christian Williams, David Lynch, Ed Sanders, Inez Korczyński, James D. Forrester, Moriel Schottlender, Roan Kattouw, Rob Moen, Subramanya Sastry, Thalia Chan, Timo Tijhof, Trevor Parscal, ...\", \"url\": \"https://www.mediawiki.org/wiki/Extension:VisualEditor\", \"vcs-system\": \"git\", \"vcs-version\": \"c1e9466a204849fcdf3dd0f0c26321e15a8e744c\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-VisualEditor/commit/c1e9466a204849fcdf3dd0f0c26321e15a8e744c\", \"vcs-date\": \"2026-03-12T02:16:35Z\", \"license-name\": \"MIT\", \"license\": \"/w/Special:Version/License/VisualEditor\", \"credits\": \"/w/Special:Version/Credits/VisualEditor\"}, {\"type\": \"editor\", \"name\": \"CodeMirror\", \"descriptionmsg\": \"codemirror-desc\", \"author\": \"[https://www.mediawiki.org/wiki/User:Pastakhov Pavel Astakhov], Marijn Haverbeke, MusikAnimal, Bhsd, [https://www.mediawiki.org/wiki/User:Florianschmidtwelzow Florian Schmidt]\", \"url\": \"https://www.mediawiki.org/wiki/Extension:CodeMirror\", \"version\": \"6.0.0\", \"vcs-system\": \"git\", \"vcs-version\": \"a6728aec82916d0b9189b29c0869310d0ccee76e\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-CodeMirror/commit/a6728aec82916d0b9189b29c0869310d0ccee76e\", \"vcs-date\": \"2026-06-11T01:26:11Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/CodeMirror\"}, {\"type\": \"specialpage\", \"name\": \"SimpleBatchUpload\", \"namemsg\": \"simplebatchupload-name\", \"descriptionmsg\": \"simplebatchupload-desc\", \"author\": \"[https://www.mediawiki.org/wiki/User:F.trott Stephan Gambke], [https://professional.wiki/ Professional Wiki], ...\", \"url\": \"https://professional.wiki/en/extension/simplebatchupload\", \"version\": \"3.0.0\", \"vcs-system\": \"git\", \"vcs-version\": \"87ca90fa04ef8b977228909a6d924542a877aeaa\", \"vcs-url\": \"https://github.com/ProfessionalWiki/SimpleBatchUpload/commit/87ca90fa04ef8b977228909a6d924542a877aeaa\", \"vcs-date\": \"2026-01-29T12:12:24Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/SimpleBatchUpload\"}, {\"type\": \"specialpage\", \"name\": \"Echo\", \"descriptionmsg\": \"echo-desc\", \"author\": \"Andrew Garrett, Ryan Kaldari, Benny Situ, Luke Welling, Kunal Mehta, Moriel Schottlender, Jon Robson, Roan Kattouw\", \"url\": \"https://www.mediawiki.org/wiki/Extension:Echo\", \"vcs-system\": \"git\", \"vcs-version\": \"ed3242d7b716b1ad9205503d323c15dab29be589\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-Echo/commit/ed3242d7b716b1ad9205503d323c15dab29be589\", \"vcs-date\": \"2026-04-10T15:28:39Z\", \"license-name\": \"MIT\", \"license\": \"/w/Special:Version/License/Echo\"}, {\"type\": \"specialpage\", \"name\": \"GlobalUserrights\", \"descriptionmsg\": \"gur-desc\", \"author\": \"Nathaniel Herman, Mainframe98\", \"url\": \"https://www.mediawiki.org/wiki/Extension:GlobalUserrights\", \"version\": \"1.5.3\", \"vcs-system\": \"git\", \"vcs-version\": \"614fdb9312b7244d57595d05eebc961378547c04\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-GlobalUserrights/commit/614fdb9312b7244d57595d05eebc961378547c04\", \"vcs-date\": \"2026-03-12T02:15:16Z\"}, {\"type\": \"specialpage\", \"name\": \"ContactPage\", \"descriptionmsg\": \"contactpage-desc\", \"author\": \"Daniel Kinzler, Sam Reed\", \"url\": \"https://www.mediawiki.org/wiki/Extension:ContactPage\", \"version\": \"2.3\", \"vcs-system\": \"git\", \"vcs-version\": \"7fbc319d872c2953003c42319655b41ef65baa93\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-ContactPage/commit/7fbc319d872c2953003c42319655b41ef65baa93\", \"vcs-date\": \"2026-03-05T05:02:14Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/ContactPage\"}, {\"type\": \"specialpage\", \"name\": \"Editcount\", \"descriptionmsg\": \"editcount-desc\", \"author\": \"Ævar Arnfjörð Bjarmason, [[mw:User:Evelyn Marie|Evelyn Marie]]\", \"url\": \"https://www.mediawiki.org/wiki/Extension:Editcount\", \"vcs-system\": \"git\", \"vcs-version\": \"d2e18b15c5a16d371f1a02fb7ba151333b99668d\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-Editcount/commit/d2e18b15c5a16d371f1a02fb7ba151333b99668d\", \"vcs-date\": \"2026-02-23T22:14:41Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/Editcount\"}, {\"type\": \"specialpage\", \"name\": \"CheckUser\", \"descriptionmsg\": \"checkuser-desc\", \"author\": \"Tim Starling, Aaron Schulz, Dreamy Jazz\", \"url\": \"https://www.mediawiki.org/wiki/Extension:CheckUser\", \"version\": \"2.5\", \"vcs-system\": \"git\", \"vcs-version\": \"09ad2d2a201deb228ae64ccc55c89cbdbf75a2c3\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-CheckUser/commit/09ad2d2a201deb228ae64ccc55c89cbdbf75a2c3\", \"vcs-date\": \"2026-03-05T05:01:40Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/CheckUser\"}, {\"type\": \"specialpage\", \"name\": \"Protect Site\", \"descriptionmsg\": \"protectsite-desc\", \"author\": \"[http://en.uncyclopedia.co/wiki/User:Dawg Eric Johnston], Chris Stafford, Jack Phoenix, Martyna Nowicka\", \"url\": \"https://www.mediawiki.org/wiki/Extension:ProtectSite\", \"version\": \"0.5.3\", \"vcs-system\": \"git\", \"vcs-version\": \"0e1bf8f8e89157702d912ff9bbb0eb816c1f2c52\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-ProtectSite/commit/0e1bf8f8e89157702d912ff9bbb0eb816c1f2c52\", \"vcs-date\": \"2026-04-28T22:20:56Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/Protect_Site\"}, {\"type\": \"specialpage\", \"name\": \"TemplateSandbox\", \"descriptionmsg\": \"templatesandbox-desc\", \"author\": \"Brad Jorsch\", \"url\": \"https://www.mediawiki.org/wiki/Extension:TemplateSandbox\", \"version\": \"1.1.0\", \"vcs-system\": \"git\", \"vcs-version\": \"6765e579e760da3fdc662bd9f5f612d8865239ae\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-TemplateSandbox/commit/6765e579e760da3fdc662bd9f5f612d8865239ae\", \"vcs-date\": \"2026-03-05T05:07:27Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/TemplateSandbox\"}, {\"type\": \"specialpage\", \"name\": \"GloopAnalytics\", \"descriptionmsg\": \"gloopanalytics-desc\", \"author\": \"[https://github.com/jayktaylor Jayden Bailey], ...\", \"url\": \"https://weirdgloop.org\", \"version\": \"1.0\", \"vcs-system\": \"git\", \"vcs-version\": \"7e45f47bfb09e72c177ddca347b5f1995b2deea7\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-GloopAnalytics/commit/7e45f47bfb09e72c177ddca347b5f1995b2deea7\", \"vcs-date\": \"2026-01-07T19:34:04Z\"}, {\"type\": \"specialpage\", \"name\": \"MigrateUserAccount\", \"descriptionmsg\": \"migrateuseraccount-desc\", \"author\": \"[https://github.com/jayktaylor Jayden Bailey], ...\", \"url\": \"https://github.com/weirdgloop/mediawiki-extensions-MigrateUserAccount\", \"version\": \"1.3.0\", \"vcs-system\": \"git\", \"vcs-version\": \"a5374ad1adcec96576e4f5c215c663c9ead2bc23\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-MigrateUserAccount/commit/a5374ad1adcec96576e4f5c215c663c9ead2bc23\", \"vcs-date\": \"2026-04-24T16:14:38Z\", \"license-name\": \"GPL-3.0-or-later\", \"license\": \"/w/Special:Version/License/MigrateUserAccount\"}, {\"type\": \"specialpage\", \"name\": \"Global Usage\", \"descriptionmsg\": \"globalusage-desc\", \"author\": \"Bryan Tong Minh\", \"url\": \"https://www.mediawiki.org/wiki/Extension:GlobalUsage\", \"version\": \"2.2.0\", \"vcs-system\": \"git\", \"vcs-version\": \"9f1dc847cd8fb2ca3860391858b08971c798e21e\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-GlobalUsage/commit/9f1dc847cd8fb2ca3860391858b08971c798e21e\", \"vcs-date\": \"2026-03-05T05:04:39Z\", \"license-name\": \"MIT\", \"license\": \"/w/Special:Version/License/Global_Usage\"}, {\"type\": \"specialpage\", \"name\": \"Linter\", \"descriptionmsg\": \"linter-desc\", \"author\": \"Kunal Mehta, Arlo Breault, Subramanya Sastry\", \"url\": \"https://www.mediawiki.org/wiki/Extension:Linter\", \"vcs-system\": \"git\", \"vcs-version\": \"c1e2e8806d3ee6196d02fa93076e05a2ed2ae58e\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-Linter/commit/c1e2e8806d3ee6196d02fa93076e05a2ed2ae58e\", \"vcs-date\": \"2026-04-17T08:49:24Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/Linter\"}, {\"type\": \"media\", \"name\": \"TimedMediaHandler\", \"namemsg\": \"timedmediahandler-extensionname\", \"descriptionmsg\": \"timedmediahandler-desc\", \"author\": \"[https://github.com/jayktaylor Jayden Bailey], Michael Dale, Jan Gerber, Derk-Jan Hartman, Brooke Vibber, Tim Starling, ...\", \"url\": \"https://github.com/weirdgloop/mediawiki-extensions-TimedMediaHandler\", \"version\": \"0.6.0\", \"vcs-system\": \"git\", \"vcs-version\": \"21c4568282871f7168ca234ea97a70d9903f196c\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-TimedMediaHandler/commit/21c4568282871f7168ca234ea97a70d9903f196c\", \"vcs-date\": \"2026-06-15T10:55:39Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/TimedMediaHandler\"}, {\"type\": \"api\", \"name\": \"PageImages\", \"descriptionmsg\": \"pageimages-desc\", \"author\": \"Max Semenik\", \"url\": \"https://www.mediawiki.org/wiki/Extension:PageImages\", \"vcs-system\": \"git\", \"vcs-version\": \"5834f99f5e3462cf75b1782a3b03b1af38e5b784\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-PageImages/commit/5834f99f5e3462cf75b1782a3b03b1af38e5b784\", \"vcs-date\": \"2026-06-06T02:07:53Z\", \"license-name\": \"WTFPL\", \"license\": \"/w/Special:Version/License/PageImages\"}, {\"type\": \"antispam\", \"name\": \"AntiSpoof\", \"descriptionmsg\": \"antispoof-desc\", \"author\": \"Brion Vibber\", \"url\": \"https://www.mediawiki.org/wiki/Extension:AntiSpoof\", \"vcs-system\": \"git\", \"vcs-version\": \"5b5451821ef9b703e4825e127dffc537845eeadd\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-AntiSpoof/commit/5b5451821ef9b703e4825e127dffc537845eeadd\", \"vcs-date\": \"2026-02-23T01:44:43Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/AntiSpoof\"}, {\"type\": \"antispam\", \"name\": \"Abuse Filter\", \"descriptionmsg\": \"abusefilter-desc\", \"author\": \"Andrew Garrett, [https://www.mediawiki.org/wiki/User:Daimona_Eaytoy Daimona Eaytoy], Marius Hoch, River Tarnell, Victor Vasiliev\", \"url\": \"https://www.mediawiki.org/wiki/Extension:AbuseFilter\", \"vcs-system\": \"git\", \"vcs-version\": \"7b2c70fcd6baab6c0e7d47183e3caa8f83fc3fcf\", \"vcs-url\": \"https://github.com/weirdgloop/mediawiki-extensions-AbuseFilter/commit/7b2c70fcd6baab6c0e7d47183e3caa8f83fc3fcf\", \"vcs-date\": \"2026-06-15T05:12:47Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/Abuse_Filter\"}, {\"type\": \"antispam\", \"name\": \"TitleBlacklist\", \"descriptionmsg\": \"titleblacklist-desc\", \"author\": \"Victor Vasiliev, Fran Rogers\", \"url\": \"https://www.mediawiki.org/wiki/Extension:TitleBlacklist\", \"version\": \"1.5.0\", \"vcs-system\": \"git\", \"vcs-version\": \"0f5139572de97a63a40afa2501885505c8fc3d53\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-TitleBlacklist/commit/0f5139572de97a63a40afa2501885505c8fc3d53\", \"vcs-date\": \"2026-05-03T23:32:40Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/TitleBlacklist\"}, {\"type\": \"antispam\", \"name\": \"SpamBlacklist\", \"descriptionmsg\": \"spam-blacklist-desc\", \"author\": \"Tim Starling, John Du Hart, Daniel Kinzler\", \"url\": \"https://www.mediawiki.org/wiki/Extension:SpamBlacklist\", \"vcs-system\": \"git\", \"vcs-version\": \"58e71f637d98bad0a64242f905a0dc67ba28685f\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-SpamBlacklist/commit/58e71f637d98bad0a64242f905a0dc67ba28685f\", \"vcs-date\": \"2026-03-05T05:07:14Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/SpamBlacklist\"}, {\"type\": \"antispam\", \"name\": \"TorBlock\", \"descriptionmsg\": \"torblock-desc\", \"author\": \"Andrew Garrett\", \"url\": \"https://www.mediawiki.org/wiki/Extension:TorBlock\", \"version\": \"1.1.0\", \"vcs-system\": \"git\", \"vcs-version\": \"e26adf9d29c0500d8cde0314155d6f4c7a12dcab\", \"vcs-url\": \"https://github.com/wikimedia/mediawiki-extensions-TorBlock/commit/e26adf9d29c0500d8cde0314155d6f4c7a12dcab\", \"vcs-date\": \"2026-02-28T11:37:14Z\", \"license-name\": \"GPL-2.0-or-later\", \"license\": \"/w/Special:Version/License/TorBlock\"}]}}",
+  "headers": {},
+  "json_data": {
+    "batchcomplete": "",
+    "query": {
+      "general": {
+        "mainpage": "Minecraft Wiki",
+        "base": "https://zh.minecraft.wiki/",
+        "sitename": "Minecraft Wiki",
+        "mainpageisdomainroot": "",
+        "logo": "https://zh.minecraft.wiki/images/Wiki.png",
+        "generator": "MediaWiki 1.45.3",
+        "phpversion": "8.2.31",
+        "phpsapi": "fpm-fcgi",
+        "dbtype": "mysql",
+        "dbversion": "8.0.41-google",
+        "imagewhitelistenabled": "",
+        "langconversion": "",
+        "linkconversion": "",
+        "titleconversion": "",
+        "linkprefixcharset": "",
+        "linkprefix": "",
+        "linktrail": "/^()(.*)$/sD",
+        "legaltitlechars": " %!\"$&'()*,\\-.\\/0-9:;=?@A-Z\\\\^_`a-z~\\x80-\\xFF+",
+        "invalidusernamechars": "@:>=#~",
+        "git-hash": "c1cb0aaf8266ee38f51a0738a0aca59f2fe43454",
+        "git-branch": "master",
+        "case": "first-letter",
+        "lang": "zh",
+        "fallback": [
+          {
+            "code": "zh-hans"
+          },
+          {
+            "code": "zh-hant"
+          },
+          {
+            "code": "zh-cn"
+          },
+          {
+            "code": "zh-tw"
+          },
+          {
+            "code": "zh-hk"
+          },
+          {
+            "code": "en"
+          }
+        ],
+        "variants": [
+          {
+            "code": "zh",
+            "name": "不转换"
+          },
+          {
+            "code": "zh-hans",
+            "name": "简体"
+          },
+          {
+            "code": "zh-hant",
+            "name": "繁體"
+          },
+          {
+            "code": "zh-cn",
+            "name": "大陆简体"
+          },
+          {
+            "code": "zh-hk",
+            "name": "香港繁體"
+          },
+          {
+            "code": "zh-tw",
+            "name": "臺灣正體"
+          }
+        ],
+        "fallback8bitEncoding": "windows-936",
+        "writeapi": "",
+        "maxarticlesize": 8388608,
+        "timezone": "UTC",
+        "timeoffset": 0,
+        "articlepath": "/w/$1",
+        "scriptpath": "",
+        "script": "/",
+        "variantarticlepath": false,
+        "server": "https://zh.minecraft.wiki",
+        "servername": "zh.minecraft.wiki",
+        "wikiid": "zh_mcwiki",
+        "time": "2026-06-24T08:14:24Z",
+        "uploadsenabled": "",
+        "maxuploadsize": 104857600,
+        "minuploadchunksize": 1024,
+        "galleryoptions": {
+          "imagesPerRow": 0,
+          "imageWidth": 120,
+          "imageHeight": 120,
+          "captionLength": "",
+          "showBytes": "",
+          "showDimensions": "",
+          "mode": "traditional"
+        },
+        "thumblimits": [
+          120,
+          150,
+          180,
+          200,
+          250,
+          300
+        ],
+        "imagelimits": [
+          {
+            "width": 320,
+            "height": 240
+          },
+          {
+            "width": 640,
+            "height": 480
+          },
+          {
+            "width": 800,
+            "height": 600
+          },
+          {
+            "width": 1024,
+            "height": 768
+          },
+          {
+            "width": 1280,
+            "height": 1024
+          },
+          {
+            "width": 2560,
+            "height": 2048
+          }
+        ],
+        "favicon": "https://zh.minecraft.wiki/images/Favicon.ico",
+        "centralidlookupprovider": "local",
+        "allcentralidlookupproviders": [
+          "local"
+        ],
+        "interwikimagic": "",
+        "magiclinks": [],
+        "categorycollation": "uppercase",
+        "nofollowlinks": "",
+        "nofollownsexceptions": [],
+        "nofollowdomainexceptions": [
+          "balatrowiki.org",
+          "brightershoreswiki.org",
+          "gta.wiki",
+          "hytalewiki.org",
+          "leagueoflegends.com",
+          "minecraft.wiki",
+          "play2xko.com",
+          "playvalorant.com",
+          "runescape.wiki",
+          "smite2.com",
+          "subnautica.com",
+          "survivors.wiki",
+          "warframe.com",
+          "weirdgloop.org"
+        ],
+        "externallinktarget": "_blank",
+        "citeresponsivereferences": "",
+        "max-page-id": 203945,
+        "mobileserver": "https://zh.minecraft.wiki",
+        "linter": {
+          "high": [
+            "deletable-table-tag",
+            "duplicate-ids",
+            "html5-misnesting",
+            "misc-tidy-replacement-issues",
+            "multiline-html-table-in-list",
+            "multiple-unclosed-formatting-tags",
+            "pwrap-bug-workaround",
+            "self-closed-tag",
+            "tidy-font-bug",
+            "tidy-whitespace-bug",
+            "unclosed-quotes-in-heading"
+          ],
+          "medium": [
+            "bogus-image-options",
+            "fostered",
+            "misnested-tag",
+            "multi-colon-escape",
+            "wikilink-in-extlink"
+          ],
+          "low": [
+            "empty-heading",
+            "missing-end-tag",
+            "missing-end-tag-in-heading",
+            "night-mode-unaware-background-color",
+            "obsolete-tag",
+            "stripped-tag"
+          ]
+        }
+      },
+      "namespaces": {
+        "-2": {
+          "id": -2,
+          "case": "first-letter",
+          "canonical": "Media",
+          "*": "Media"
+        },
+        "-1": {
+          "id": -1,
+          "case": "first-letter",
+          "canonical": "Special",
+          "*": "Special"
+        },
+        "0": {
+          "id": 0,
+          "case": "first-letter",
+          "subpages": "",
+          "content": "",
+          "*": ""
+        },
+        "1": {
+          "id": 1,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Talk",
+          "*": "Talk"
+        },
+        "2": {
+          "id": 2,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "User",
+          "*": "User"
+        },
+        "3": {
+          "id": 3,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "User talk",
+          "*": "User talk"
+        },
+        "4": {
+          "id": 4,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Project",
+          "*": "Minecraft Wiki"
+        },
+        "5": {
+          "id": 5,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Project talk",
+          "*": "Minecraft Wiki talk"
+        },
+        "6": {
+          "id": 6,
+          "case": "first-letter",
+          "canonical": "File",
+          "*": "File"
+        },
+        "7": {
+          "id": 7,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "File talk",
+          "*": "File talk"
+        },
+        "8": {
+          "id": 8,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "MediaWiki",
+          "namespaceprotection": "editinterface",
+          "*": "MediaWiki"
+        },
+        "9": {
+          "id": 9,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "MediaWiki talk",
+          "*": "MediaWiki talk"
+        },
+        "10": {
+          "id": 10,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Template",
+          "namespaceprotection": "editsemiprotected",
+          "*": "Template"
+        },
+        "11": {
+          "id": 11,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Template talk",
+          "*": "Template talk"
+        },
+        "12": {
+          "id": 12,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Help",
+          "*": "Help"
+        },
+        "13": {
+          "id": 13,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Help talk",
+          "*": "Help talk"
+        },
+        "14": {
+          "id": 14,
+          "case": "first-letter",
+          "canonical": "Category",
+          "*": "Category"
+        },
+        "15": {
+          "id": 15,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Category talk",
+          "*": "Category talk"
+        },
+        "828": {
+          "id": 828,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Module",
+          "namespaceprotection": "editsemiprotected",
+          "*": "Module"
+        },
+        "829": {
+          "id": 829,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Module talk",
+          "*": "Module talk"
+        },
+        "9592": {
+          "id": 9592,
+          "case": "first-letter",
+          "canonical": "Bucket",
+          "namespaceprotection": "editbucket",
+          "defaultcontentmodel": "json",
+          "*": "Bucket"
+        },
+        "9593": {
+          "id": 9593,
+          "case": "first-letter",
+          "canonical": "Bucket talk",
+          "*": "Bucket talk"
+        },
+        "9994": {
+          "id": 9994,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Legends tutorial",
+          "content": "",
+          "*": "Legends tutorial"
+        },
+        "9995": {
+          "id": 9995,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Legends tutorial talk",
+          "*": "Legends tutorial talk"
+        },
+        "9996": {
+          "id": 9996,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Dungeons tutorial",
+          "content": "",
+          "*": "Dungeons tutorial"
+        },
+        "9997": {
+          "id": 9997,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Dungeons tutorial talk",
+          "*": "Dungeons tutorial talk"
+        },
+        "9998": {
+          "id": 9998,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Tutorial",
+          "content": "",
+          "*": "Tutorial"
+        },
+        "9999": {
+          "id": 9999,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Tutorial talk",
+          "*": "Tutorial talk"
+        },
+        "10000": {
+          "id": 10000,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Dungeons",
+          "content": "",
+          "*": "Dungeons"
+        },
+        "10001": {
+          "id": 10001,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Dungeons talk",
+          "*": "Dungeons talk"
+        },
+        "10002": {
+          "id": 10002,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Earth",
+          "content": "",
+          "*": "Earth"
+        },
+        "10003": {
+          "id": 10003,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Earth talk",
+          "*": "Earth talk"
+        },
+        "10004": {
+          "id": 10004,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Story Mode",
+          "content": "",
+          "*": "Story Mode"
+        },
+        "10005": {
+          "id": 10005,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Story Mode talk",
+          "*": "Story Mode talk"
+        },
+        "10006": {
+          "id": 10006,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Legends",
+          "content": "",
+          "*": "Legends"
+        },
+        "10007": {
+          "id": 10007,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Legends talk",
+          "*": "Legends talk"
+        },
+        "10008": {
+          "id": 10008,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Forum",
+          "*": "Forum"
+        },
+        "10009": {
+          "id": 10009,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Forum talk",
+          "*": "Forum talk"
+        },
+        "10010": {
+          "id": 10010,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "China Edition",
+          "content": "",
+          "*": "China Edition"
+        },
+        "10011": {
+          "id": 10011,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "China Edition talk",
+          "*": "China Edition talk"
+        },
+        "10012": {
+          "id": 10012,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Draft",
+          "*": "Draft"
+        },
+        "10013": {
+          "id": 10013,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Draft talk",
+          "*": "Draft talk"
+        },
+        "10014": {
+          "id": 10014,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Dungeons II",
+          "content": "",
+          "*": "Dungeons II"
+        },
+        "10015": {
+          "id": 10015,
+          "case": "first-letter",
+          "subpages": "",
+          "canonical": "Dungeons II talk",
+          "*": "Dungeons II talk"
+        }
+      },
+      "namespacealiases": [
+        {
+          "id": -2,
+          "*": "媒体"
+        },
+        {
+          "id": -2,
+          "*": "媒体文件"
+        },
+        {
+          "id": -2,
+          "*": "媒体档案"
+        },
+        {
+          "id": -2,
+          "*": "媒體"
+        },
+        {
+          "id": -2,
+          "*": "媒體文件"
+        },
+        {
+          "id": -2,
+          "*": "媒體檔案"
+        },
+        {
+          "id": -1,
+          "*": "特殊"
+        },
+        {
+          "id": 1,
+          "*": "对话"
+        },
+        {
+          "id": 1,
+          "*": "對話"
+        },
+        {
+          "id": 1,
+          "*": "討論"
+        },
+        {
+          "id": 1,
+          "*": "讨论"
+        },
+        {
+          "id": 2,
+          "*": "使用者"
+        },
+        {
+          "id": 2,
+          "*": "用戶"
+        },
+        {
+          "id": 2,
+          "*": "用户"
+        },
+        {
+          "id": 3,
+          "*": "使用者对话"
+        },
+        {
+          "id": 3,
+          "*": "使用者對話"
+        },
+        {
+          "id": 3,
+          "*": "使用者討論"
+        },
+        {
+          "id": 3,
+          "*": "使用者讨论"
+        },
+        {
+          "id": 3,
+          "*": "用戶對話"
+        },
+        {
+          "id": 3,
+          "*": "用戶討論"
+        },
+        {
+          "id": 3,
+          "*": "用户对话"
+        },
+        {
+          "id": 3,
+          "*": "用户讨论"
+        },
+        {
+          "id": 4,
+          "*": "MCW"
+        },
+        {
+          "id": 4,
+          "*": "Minecraft Wiki"
+        },
+        {
+          "id": 4,
+          "*": "专案"
+        },
+        {
+          "id": 4,
+          "*": "專案"
+        },
+        {
+          "id": 5,
+          "*": "MCT"
+        },
+        {
+          "id": 5,
+          "*": "Minecraft Wiki对话"
+        },
+        {
+          "id": 5,
+          "*": "Minecraft Wiki對話"
+        },
+        {
+          "id": 5,
+          "*": "Minecraft Wiki討論"
+        },
+        {
+          "id": 5,
+          "*": "Minecraft Wiki討論"
+        },
+        {
+          "id": 5,
+          "*": "Minecraft Wiki讨论"
+        },
+        {
+          "id": 5,
+          "*": "Minecraft Wiki讨论"
+        },
+        {
+          "id": 5,
+          "*": "专案讨论"
+        },
+        {
+          "id": 5,
+          "*": "專案討論"
+        },
+        {
+          "id": 6,
+          "*": "Image"
+        },
+        {
+          "id": 6,
+          "*": "图像"
+        },
+        {
+          "id": 6,
+          "*": "图片"
+        },
+        {
+          "id": 6,
+          "*": "圖像"
+        },
+        {
+          "id": 6,
+          "*": "圖片"
+        },
+        {
+          "id": 6,
+          "*": "文件"
+        },
+        {
+          "id": 6,
+          "*": "档案"
+        },
+        {
+          "id": 6,
+          "*": "檔案"
+        },
+        {
+          "id": 7,
+          "*": "Image talk"
+        },
+        {
+          "id": 7,
+          "*": "图像对话"
+        },
+        {
+          "id": 7,
+          "*": "图像讨论"
+        },
+        {
+          "id": 7,
+          "*": "图片讨论"
+        },
+        {
+          "id": 7,
+          "*": "圖像對話"
+        },
+        {
+          "id": 7,
+          "*": "圖像討論"
+        },
+        {
+          "id": 7,
+          "*": "圖片討論"
+        },
+        {
+          "id": 7,
+          "*": "文件对话"
+        },
+        {
+          "id": 7,
+          "*": "文件對話"
+        },
+        {
+          "id": 7,
+          "*": "文件討論"
+        },
+        {
+          "id": 7,
+          "*": "文件讨论"
+        },
+        {
+          "id": 7,
+          "*": "档案对话"
+        },
+        {
+          "id": 7,
+          "*": "档案讨论"
+        },
+        {
+          "id": 7,
+          "*": "檔案對話"
+        },
+        {
+          "id": 7,
+          "*": "檔案討論"
+        },
+        {
+          "id": 9,
+          "*": "MediaWiki討論"
+        },
+        {
+          "id": 9,
+          "*": "MediaWiki讨论"
+        },
+        {
+          "id": 10,
+          "*": "样板"
+        },
+        {
+          "id": 10,
+          "*": "模板"
+        },
+        {
+          "id": 10,
+          "*": "樣板"
+        },
+        {
+          "id": 11,
+          "*": "样板对话"
+        },
+        {
+          "id": 11,
+          "*": "样板讨论"
+        },
+        {
+          "id": 11,
+          "*": "模板对话"
+        },
+        {
+          "id": 11,
+          "*": "模板對話"
+        },
+        {
+          "id": 11,
+          "*": "模板討論"
+        },
+        {
+          "id": 11,
+          "*": "模板讨论"
+        },
+        {
+          "id": 11,
+          "*": "樣板對話"
+        },
+        {
+          "id": 11,
+          "*": "樣板討論"
+        },
+        {
+          "id": 12,
+          "*": "使用說明"
+        },
+        {
+          "id": 12,
+          "*": "使用说明"
+        },
+        {
+          "id": 12,
+          "*": "帮助"
+        },
+        {
+          "id": 12,
+          "*": "幫助"
+        },
+        {
+          "id": 12,
+          "*": "說明"
+        },
+        {
+          "id": 12,
+          "*": "说明"
+        },
+        {
+          "id": 13,
+          "*": "使用說明討論"
+        },
+        {
+          "id": 13,
+          "*": "使用说明讨论"
+        },
+        {
+          "id": 13,
+          "*": "帮助对话"
+        },
+        {
+          "id": 13,
+          "*": "帮助讨论"
+        },
+        {
+          "id": 13,
+          "*": "幫助對話"
+        },
+        {
+          "id": 13,
+          "*": "幫助討論"
+        },
+        {
+          "id": 13,
+          "*": "說明討論"
+        },
+        {
+          "id": 13,
+          "*": "说明讨论"
+        },
+        {
+          "id": 14,
+          "*": "分类"
+        },
+        {
+          "id": 14,
+          "*": "分類"
+        },
+        {
+          "id": 15,
+          "*": "分类对话"
+        },
+        {
+          "id": 15,
+          "*": "分类讨论"
+        },
+        {
+          "id": 15,
+          "*": "分類對話"
+        },
+        {
+          "id": 15,
+          "*": "分類討論"
+        },
+        {
+          "id": 828,
+          "*": "模块"
+        },
+        {
+          "id": 828,
+          "*": "模塊"
+        },
+        {
+          "id": 828,
+          "*": "模組"
+        },
+        {
+          "id": 828,
+          "*": "模组"
+        },
+        {
+          "id": 829,
+          "*": "模块对话"
+        },
+        {
+          "id": 829,
+          "*": "模块讨论"
+        },
+        {
+          "id": 829,
+          "*": "模塊對話"
+        },
+        {
+          "id": 829,
+          "*": "模塊討論"
+        },
+        {
+          "id": 829,
+          "*": "模組對話"
+        },
+        {
+          "id": 829,
+          "*": "模組討論"
+        },
+        {
+          "id": 829,
+          "*": "模组对话"
+        },
+        {
+          "id": 829,
+          "*": "模组讨论"
+        },
+        {
+          "id": 9592,
+          "*": "存储桶"
+        },
+        {
+          "id": 9592,
+          "*": "存儲桶"
+        },
+        {
+          "id": 9592,
+          "*": "貯體"
+        },
+        {
+          "id": 9592,
+          "*": "贮体"
+        },
+        {
+          "id": 9593,
+          "*": "存储桶讨论"
+        },
+        {
+          "id": 9593,
+          "*": "存儲桶討論"
+        },
+        {
+          "id": 9593,
+          "*": "貯體討論"
+        },
+        {
+          "id": 9593,
+          "*": "贮体讨论"
+        },
+        {
+          "id": 9994,
+          "*": "Legends教学"
+        },
+        {
+          "id": 9994,
+          "*": "Legends教學"
+        },
+        {
+          "id": 9994,
+          "*": "Legends教程"
+        },
+        {
+          "id": 9994,
+          "*": "MCL tutorial"
+        },
+        {
+          "id": 9994,
+          "*": "MCLG tutorial"
+        },
+        {
+          "id": 9994,
+          "*": "MCLG教学"
+        },
+        {
+          "id": 9994,
+          "*": "MCLG教學"
+        },
+        {
+          "id": 9994,
+          "*": "MCLG教程"
+        },
+        {
+          "id": 9994,
+          "*": "MCL教学"
+        },
+        {
+          "id": 9994,
+          "*": "MCL教學"
+        },
+        {
+          "id": 9994,
+          "*": "MCL教程"
+        },
+        {
+          "id": 9994,
+          "*": "Minecraft Legends tutorial"
+        },
+        {
+          "id": 9994,
+          "*": "Minecraft Legends 教学"
+        },
+        {
+          "id": 9994,
+          "*": "Minecraft Legends 教學"
+        },
+        {
+          "id": 9994,
+          "*": "Minecraft Legends 教程"
+        },
+        {
+          "id": 9994,
+          "*": "Minecraft Legends教学"
+        },
+        {
+          "id": 9994,
+          "*": "Minecraft Legends教學"
+        },
+        {
+          "id": 9994,
+          "*": "Minecraft Legends教程"
+        },
+        {
+          "id": 9994,
+          "*": "传奇教学"
+        },
+        {
+          "id": 9994,
+          "*": "传奇教程"
+        },
+        {
+          "id": 9994,
+          "*": "傳奇教學"
+        },
+        {
+          "id": 9995,
+          "*": "Legends教学讨论"
+        },
+        {
+          "id": 9995,
+          "*": "Legends教學討論"
+        },
+        {
+          "id": 9995,
+          "*": "Legends教程讨论"
+        },
+        {
+          "id": 9995,
+          "*": "MCL tutorial talk"
+        },
+        {
+          "id": 9995,
+          "*": "MCLG tutorial talk"
+        },
+        {
+          "id": 9995,
+          "*": "MCLG教学讨论"
+        },
+        {
+          "id": 9995,
+          "*": "MCLG教學討論"
+        },
+        {
+          "id": 9995,
+          "*": "MCLG教程讨论"
+        },
+        {
+          "id": 9995,
+          "*": "MCL教学讨论"
+        },
+        {
+          "id": 9995,
+          "*": "MCL教學討論"
+        },
+        {
+          "id": 9995,
+          "*": "MCL教程讨论"
+        },
+        {
+          "id": 9995,
+          "*": "Minecraft Legends tutorial talk"
+        },
+        {
+          "id": 9995,
+          "*": "Minecraft Legends 教学讨论"
+        },
+        {
+          "id": 9995,
+          "*": "Minecraft Legends 教學討論"
+        },
+        {
+          "id": 9995,
+          "*": "Minecraft Legends 教程讨论"
+        },
+        {
+          "id": 9995,
+          "*": "Minecraft Legends教学讨论"
+        },
+        {
+          "id": 9995,
+          "*": "Minecraft Legends教學討論"
+        },
+        {
+          "id": 9995,
+          "*": "Minecraft Legends教程讨论"
+        },
+        {
+          "id": 9995,
+          "*": "传奇教学讨论"
+        },
+        {
+          "id": 9995,
+          "*": "传奇教程讨论"
+        },
+        {
+          "id": 9995,
+          "*": "傳奇教學討論"
+        },
+        {
+          "id": 9996,
+          "*": "Dungeons教学"
+        },
+        {
+          "id": 9996,
+          "*": "Dungeons教學"
+        },
+        {
+          "id": 9996,
+          "*": "Dungeons教程"
+        },
+        {
+          "id": 9996,
+          "*": "MCD tutorial"
+        },
+        {
+          "id": 9996,
+          "*": "MCD教学"
+        },
+        {
+          "id": 9996,
+          "*": "MCD教學"
+        },
+        {
+          "id": 9996,
+          "*": "MCD教程"
+        },
+        {
+          "id": 9996,
+          "*": "Minecraft Dungeons tutorial"
+        },
+        {
+          "id": 9996,
+          "*": "Minecraft Dungeons 教学"
+        },
+        {
+          "id": 9996,
+          "*": "Minecraft Dungeons 教學"
+        },
+        {
+          "id": 9996,
+          "*": "Minecraft Dungeons 教程"
+        },
+        {
+          "id": 9996,
+          "*": "Minecraft Dungeons教学"
+        },
+        {
+          "id": 9996,
+          "*": "Minecraft Dungeons教學"
+        },
+        {
+          "id": 9996,
+          "*": "Minecraft Dungeons教程"
+        },
+        {
+          "id": 9996,
+          "*": "地下城教学"
+        },
+        {
+          "id": 9996,
+          "*": "地下城教學"
+        },
+        {
+          "id": 9996,
+          "*": "地下城教程"
+        },
+        {
+          "id": 9997,
+          "*": "Dungeons教学讨论"
+        },
+        {
+          "id": 9997,
+          "*": "Dungeons教學討論"
+        },
+        {
+          "id": 9997,
+          "*": "Dungeons教程讨论"
+        },
+        {
+          "id": 9997,
+          "*": "MCD tutorial talk"
+        },
+        {
+          "id": 9997,
+          "*": "MCD教学讨论"
+        },
+        {
+          "id": 9997,
+          "*": "MCD教學討論"
+        },
+        {
+          "id": 9997,
+          "*": "MCD教程讨论"
+        },
+        {
+          "id": 9997,
+          "*": "Minecraft Dungeons tutorial talk"
+        },
+        {
+          "id": 9997,
+          "*": "Minecraft Dungeons 教学讨论"
+        },
+        {
+          "id": 9997,
+          "*": "Minecraft Dungeons 教學討論"
+        },
+        {
+          "id": 9997,
+          "*": "Minecraft Dungeons 教程讨论"
+        },
+        {
+          "id": 9997,
+          "*": "Minecraft Dungeons教学讨论"
+        },
+        {
+          "id": 9997,
+          "*": "Minecraft Dungeons教學討論"
+        },
+        {
+          "id": 9997,
+          "*": "Minecraft Dungeons教程讨论"
+        },
+        {
+          "id": 9997,
+          "*": "地下城教学讨论"
+        },
+        {
+          "id": 9997,
+          "*": "地下城教學討論"
+        },
+        {
+          "id": 9997,
+          "*": "地下城教程讨论"
+        },
+        {
+          "id": 9998,
+          "*": "教学"
+        },
+        {
+          "id": 9998,
+          "*": "教學"
+        },
+        {
+          "id": 9998,
+          "*": "教程"
+        },
+        {
+          "id": 9999,
+          "*": "教学讨论"
+        },
+        {
+          "id": 9999,
+          "*": "教學討論"
+        },
+        {
+          "id": 9999,
+          "*": "教程讨论"
+        },
+        {
+          "id": 10000,
+          "*": "MCD"
+        },
+        {
+          "id": 10000,
+          "*": "Minecraft Dungeons"
+        },
+        {
+          "id": 10000,
+          "*": "地下城"
+        },
+        {
+          "id": 10001,
+          "*": "Dungeons討論"
+        },
+        {
+          "id": 10001,
+          "*": "Dungeons讨论"
+        },
+        {
+          "id": 10001,
+          "*": "MCDT"
+        },
+        {
+          "id": 10001,
+          "*": "Minecraft Dungeons talk"
+        },
+        {
+          "id": 10001,
+          "*": "地下城討論"
+        },
+        {
+          "id": 10001,
+          "*": "地下城讨论"
+        },
+        {
+          "id": 10002,
+          "*": "MCE"
+        },
+        {
+          "id": 10002,
+          "*": "Minecraft Earth"
+        },
+        {
+          "id": 10002,
+          "*": "地球"
+        },
+        {
+          "id": 10003,
+          "*": "Earth討論"
+        },
+        {
+          "id": 10003,
+          "*": "Earth讨论"
+        },
+        {
+          "id": 10003,
+          "*": "MCET"
+        },
+        {
+          "id": 10003,
+          "*": "Minecraft Earth talk"
+        },
+        {
+          "id": 10003,
+          "*": "地球討論"
+        },
+        {
+          "id": 10003,
+          "*": "地球讨论"
+        },
+        {
+          "id": 10004,
+          "*": "MCSM"
+        },
+        {
+          "id": 10004,
+          "*": "Minecraft Story Mode"
+        },
+        {
+          "id": 10004,
+          "*": "Story Mode"
+        },
+        {
+          "id": 10004,
+          "*": "故事模式"
+        },
+        {
+          "id": 10005,
+          "*": "MCSMT"
+        },
+        {
+          "id": 10005,
+          "*": "Minecraft Story Mode talk"
+        },
+        {
+          "id": 10005,
+          "*": "Story Mode討論"
+        },
+        {
+          "id": 10005,
+          "*": "Story Mode讨论"
+        },
+        {
+          "id": 10005,
+          "*": "故事模式討論"
+        },
+        {
+          "id": 10005,
+          "*": "故事模式讨论"
+        },
+        {
+          "id": 10006,
+          "*": "MCL"
+        },
+        {
+          "id": 10006,
+          "*": "MCLG"
+        },
+        {
+          "id": 10006,
+          "*": "Minecraft Legends"
+        },
+        {
+          "id": 10006,
+          "*": "传奇"
+        },
+        {
+          "id": 10006,
+          "*": "傳奇"
+        },
+        {
+          "id": 10007,
+          "*": "Legends討論"
+        },
+        {
+          "id": 10007,
+          "*": "Legends讨论"
+        },
+        {
+          "id": 10007,
+          "*": "MCLGT"
+        },
+        {
+          "id": 10007,
+          "*": "MCLT"
+        },
+        {
+          "id": 10007,
+          "*": "Minecraft Legends talk"
+        },
+        {
+          "id": 10007,
+          "*": "传奇讨论"
+        },
+        {
+          "id": 10007,
+          "*": "傳奇討論"
+        },
+        {
+          "id": 10008,
+          "*": "F"
+        },
+        {
+          "id": 10008,
+          "*": "論壇"
+        },
+        {
+          "id": 10008,
+          "*": "论坛"
+        },
+        {
+          "id": 10009,
+          "*": "FT"
+        },
+        {
+          "id": 10009,
+          "*": "論壇討論"
+        },
+        {
+          "id": 10009,
+          "*": "论坛讨论"
+        },
+        {
+          "id": 10010,
+          "*": "MCCN"
+        },
+        {
+          "id": 10010,
+          "*": "Minecraft China Edition"
+        },
+        {
+          "id": 10010,
+          "*": "中国版"
+        },
+        {
+          "id": 10010,
+          "*": "中國版"
+        },
+        {
+          "id": 10011,
+          "*": "MCCNT"
+        },
+        {
+          "id": 10011,
+          "*": "Minecraft China Edition talk"
+        },
+        {
+          "id": 10011,
+          "*": "中国版讨论"
+        },
+        {
+          "id": 10011,
+          "*": "中國版討論"
+        },
+        {
+          "id": 10012,
+          "*": "草稿"
+        },
+        {
+          "id": 10013,
+          "*": "草稿討論"
+        },
+        {
+          "id": 10013,
+          "*": "草稿讨论"
+        },
+        {
+          "id": 10014,
+          "*": "Dungeons 2"
+        },
+        {
+          "id": 10014,
+          "*": "Dungeons II"
+        },
+        {
+          "id": 10014,
+          "*": "MCD2"
+        },
+        {
+          "id": 10014,
+          "*": "Minecraft Dungeons 2"
+        },
+        {
+          "id": 10014,
+          "*": "Minecraft Dungeons II"
+        },
+        {
+          "id": 10014,
+          "*": "地下城2"
+        },
+        {
+          "id": 10014,
+          "*": "地下城II"
+        },
+        {
+          "id": 10015,
+          "*": "Dungeons II討論"
+        },
+        {
+          "id": 10015,
+          "*": "Dungeons II討論"
+        },
+        {
+          "id": 10015,
+          "*": "Dungeons II讨论"
+        },
+        {
+          "id": 10015,
+          "*": "Dungeons II讨论"
+        },
+        {
+          "id": 10015,
+          "*": "Minecraft Dungeons II talk"
+        },
+        {
+          "id": 10015,
+          "*": "Minecraft Dungeons II討論"
+        },
+        {
+          "id": 10015,
+          "*": "Minecraft Dungeons II讨论"
+        },
+        {
+          "id": 10015,
+          "*": "地下城2討論"
+        },
+        {
+          "id": 10015,
+          "*": "地下城2讨论"
+        }
+      ],
+      "interwikimap": [
+        {
+          "prefix": "aether",
+          "url": "https://aether.fandom.com/wiki/$1"
+        },
+        {
+          "prefix": "bedev",
+          "url": "https://wiki.mcbe-dev.net/p/$1"
+        },
+        {
+          "prefix": "bugtracker",
+          "url": "https://bugs.mojang.com/browse/$1"
+        },
+        {
+          "prefix": "commons",
+          "url": "https://commons.wikimedia.org/wiki/$1"
+        },
+        {
+          "prefix": "cs",
+          "local": "",
+          "language": "čeština",
+          "bcp47": "cs",
+          "url": "https://cs.minecraft.wiki/w/$1"
+        },
+        {
+          "prefix": "de",
+          "local": "",
+          "language": "Deutsch",
+          "bcp47": "de",
+          "url": "https://de.minecraft.wiki/w/$1"
+        },
+        {
+          "prefix": "dinnerbonetweet",
+          "url": "https://twitter.com/Dinnerbone/status/$1"
+        },
+        {
+          "prefix": "el",
+          "local": "",
+          "language": "Ελληνικά",
+          "bcp47": "el",
+          "url": "https://el.minecraft.wiki/w/$1"
+        },
+        {
+          "prefix": "en",
+          "local": "",
+          "language": "English",
+          "bcp47": "en",
+          "url": "https://minecraft.wiki/w/$1"
+        },
+        {
+          "prefix": "es",
+          "local": "",
+          "language": "español",
+          "bcp47": "es",
+          "url": "https://es.minecraft.wiki/w/$1"
+        },
+        {
+          "prefix": "fr",
+          "local": "",
+          "language": "français",
+          "bcp47": "fr",
+          "url": "https://fr.minecraft.wiki/w/$1"
+        },
+        {
+          "prefix": "ftb",
+          "url": "https://ftb.fandom.com/wiki/$1"
+        },
+        {
+          "prefix": "google",
+          "url": "https://www.google.com/search?q=$1"
+        },
+        {
+          "prefix": "gpcommons",
+          "url": "https://commons.fandom.com/wiki/$1"
+        },
+        {
+          "prefix": "gphelp",
+          "url": "https://help.fandom.com/wiki/$1"
+        },
+        {
+          "prefix": "gphelpzh",
+          "url": "https://help.fandom.com/zh/wiki/$1"
+        },
+        {
+          "prefix": "hu",
+          "local": "",
+          "language": "magyar",
+          "bcp47": "hu",
+          "url": "https://hu.minecraft.wiki/w/$1"
+        },
+        {
+          "prefix": "id",
+          "local": "",
+          "language": "Bahasa Indonesia",
+          "bcp47": "id",
+          "url": "https://id.minecraft.wiki/w/$1"
+        },
+        {
+          "prefix": "it",
+          "local": "",
+          "language": "italiano",
+          "bcp47": "it",
+          "url": "https://it.minecraft.wiki/w/$1"
+        },
+        {
+          "prefix": "ja",
+          "local": "",
+          "language": "日本語",
+          "bcp47": "ja",
+          "url": "https://ja.minecraft.wiki/w/$1"
+        },
+        {
+          "prefix": "jebtweet",
+          "url": "https://twitter.com/jeb_/status/$1"
+        },
+        {
+          "prefix": "klpbbs",
+          "url": "https://klpbbs.com/$1"
+        },
+        {
+          "prefix": "ko",
+          "local": "",
+          "language": "한국어",
+          "bcp47": "ko",
+          "url": "https://ko.minecraft.wiki/w/$1"
+        },
+        {
+          "prefix": "lzh",
+          "local": "",
+          "language": "文言",
+          "bcp47": "lzh",
+          "url": "https://lzh.minecraft.wiki/w/$1"
+        },
+        {
+          "prefix": "mcf",
+          "url": "https://www.minecraftforum.net/forums/$1"
+        },
+        {
+          "prefix": "mcfnews",
+          "url": "https://www.minecraftforum.net/news/$1"
+        },
+        {
+          "prefix": "mcftopic",
+          "url": "https://www.minecraftforum.net/topic/$1"
+        },
+        {
+          "prefix": "mcservers",
+          "url": "https://minecraftservers.fandom.com/wiki/$1"
+        },
+        {
+          "prefix": "mediazilla",
+          "url": "https://bugzilla.wikimedia.org/$1"
+        },
+        {
+          "prefix": "metawikipedia",
+          "url": "https://meta.wikimedia.org/wiki/$1"
+        },
+        {
+          "prefix": "minebbs",
+          "url": "https://www.minebbs.com/$1"
+        },
+        {
+          "prefix": "moe",
+          "url": "https://zh.moegirl.org.cn/$1"
+        },
+        {
+          "prefix": "mojira",
+          "url": "https://bugs.mojang.com/browse/$1"
+        },
+        {
+          "prefix": "mwbug",
+          "url": "https://bugzilla.wikimedia.org/show_bug.cgi?id=$1"
+        },
+        {
+          "prefix": "mwphab",
+          "url": "https://phabricator.wikimedia.org/$1"
+        },
+        {
+          "prefix": "nl",
+          "local": "",
+          "language": "Nederlands",
+          "bcp47": "nl",
+          "url": "https://nl.minecraft.wiki/w/$1"
+        },
+        {
+          "prefix": "notchtweet",
+          "url": "https://twitter.com/notch/status/$1"
+        },
+        {
+          "prefix": "patwiki",
+          "url": "http://gauss.ffii.org/$1"
+        },
+        {
+          "prefix": "phab",
+          "url": "https://phabricator.wikimedia.org/$1"
+        },
+        {
+          "prefix": "pl",
+          "local": "",
+          "language": "polski",
+          "bcp47": "pl",
+          "url": "https://pl.minecraft.wiki/w/$1"
+        },
+        {
+          "prefix": "pmid",
+          "url": "https://www.ncbi.nlm.nih.gov/pubmed/$1?dopt=Abstract"
+        },
+        {
+          "prefix": "pt",
+          "local": "",
+          "language": "português",
+          "bcp47": "pt",
+          "url": "https://pt.minecraft.wiki/w/$1"
+        },
+        {
+          "prefix": "pt-br",
+          "local": "",
+          "language": "português do Brasil",
+          "bcp47": "pt-BR",
+          "url": "https://pt.minecraft.wiki/w/$1"
+        },
+        {
+          "prefix": "rfc",
+          "url": "https://tools.ietf.org/html/rfc$1"
+        },
+        {
+          "prefix": "ru",
+          "local": "",
+          "language": "русский",
+          "bcp47": "ru",
+          "url": "https://ru.minecraft.wiki/w/$1"
+        },
+        {
+          "prefix": "th",
+          "local": "",
+          "language": "ไทย",
+          "bcp47": "th",
+          "url": "https://th.minecraft.wiki/w/$1"
+        },
+        {
+          "prefix": "thewordofnotch",
+          "url": "https://web.archive.org/web/0/https://notch.tumblr.com/post/$1"
+        },
+        {
+          "prefix": "tr",
+          "local": "",
+          "language": "Türkçe",
+          "bcp47": "tr",
+          "url": "https://tr.minecraft.wiki/w/$1"
+        },
+        {
+          "prefix": "twitter",
+          "url": "https://twitter.com/$1/"
+        },
+        {
+          "prefix": "uk",
+          "local": "",
+          "language": "українська",
+          "bcp47": "uk",
+          "url": "https://uk.minecraft.wiki/w/$1"
+        },
+        {
+          "prefix": "wikia",
+          "url": "https://community.fandom.com/w:c:$1"
+        },
+        {
+          "prefix": "wikimedia",
+          "url": "https://wikimediafoundation.org/wiki/$1"
+        },
+        {
+          "prefix": "wikipedia",
+          "url": "https://en.wikipedia.org/wiki/$1"
+        },
+        {
+          "prefix": "wikipediazh",
+          "url": "https://zh.wikipedia.org/wiki/$1"
+        },
+        {
+          "prefix": "wikisource",
+          "url": "https://wikisource.org/wiki/$1"
+        },
+        {
+          "prefix": "wiktionary",
+          "url": "https://en.wiktionary.org/wiki/$1"
+        },
+        {
+          "prefix": "wordofnotch",
+          "url": "https://web.archive.org/web/0/https://notch.tumblr.com/post/$1"
+        },
+        {
+          "prefix": "wphelp",
+          "url": "https://en.wikipedia.org/wiki/Help:$1"
+        },
+        {
+          "prefix": "wphelpzh",
+          "url": "https://zh.wikipedia.org/wiki/Help:$1"
+        },
+        {
+          "prefix": "wzh",
+          "url": "https://zh.wikipedia.org/wiki/$1"
+        },
+        {
+          "prefix": "zh",
+          "local": "",
+          "language": "中文",
+          "bcp47": "zh",
+          "localinterwiki": "",
+          "url": "https://zh.minecraft.wiki/w/$1"
+        },
+        {
+          "prefix": "zhcommunity",
+          "url": "https://community.fandom.com/zh/wiki/$1"
+        }
+      ],
+      "extensions": [
+        {
+          "type": "other",
+          "name": "Speedscope",
+          "descriptionmsg": "speedscope-desc",
+          "author": "SomeRandomDeveloper",
+          "url": "https://www.mediawiki.org/wiki/Special:MyLanguage/Extension:Speedscope",
+          "version": "1.0.0",
+          "vcs-system": "git",
+          "vcs-version": "391ffe39cf6b91acaa55c2c748d1f97b66770631",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-Speedscope/commit/391ffe39cf6b91acaa55c2c748d1f97b66770631",
+          "vcs-date": "2026-05-20T21:24:09Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/Speedscope"
+        },
+        {
+          "type": "other",
+          "name": "GCS",
+          "descriptionmsg": "gcs-desc",
+          "author": "Tyler Romeo, Daniel Friesen @ Redwerks, Edward Chernenko, David Haslip",
+          "url": "https://www.mediawiki.org/wiki/Extension:GCS",
+          "version": "0.11.0",
+          "vcs-system": "git",
+          "vcs-version": "abaa6a695389c146970b0d2ccd8d02259422fb2c",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-GCS/commit/abaa6a695389c146970b0d2ccd8d02259422fb2c",
+          "vcs-date": "2026-01-08T05:11:28Z",
+          "license-name": "GPL-2.0+",
+          "license": "/w/Special:Version/License/GCS"
+        },
+        {
+          "type": "other",
+          "name": "Bucket",
+          "descriptionmsg": "bucket-desc",
+          "author": "Jonathan Lee, TehKittyCat, Mudscape, [https://github.com/jayktaylor Jayden Bailey]",
+          "url": "https://github.com/weirdgloop/mediawiki-extensions-Bucket",
+          "version": "2.1.1",
+          "vcs-system": "git",
+          "vcs-version": "36ca7ff40461ba75f7b53a492d297dfa720b69a0",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-Bucket/commit/36ca7ff40461ba75f7b53a492d297dfa720b69a0",
+          "vcs-date": "2026-04-06T13:35:13Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/Bucket"
+        },
+        {
+          "type": "other",
+          "name": "MessageCachePerformance",
+          "description": "Avoid redundant MessageCache lookups",
+          "author": "Fandom, Inc.",
+          "url": "https://github.com/Wikia/MessageCachePerformance",
+          "vcs-system": "git",
+          "vcs-version": "fecbb4e5b921bc2502b7f4054b03194e55ed13ea",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-MessageCachePerformance/commit/fecbb4e5b921bc2502b7f4054b03194e55ed13ea",
+          "vcs-date": "2025-07-04T22:24:26Z",
+          "license-name": "Apache-2.0",
+          "license": "/w/Special:Version/License/MessageCachePerformance"
+        },
+        {
+          "type": "other",
+          "name": "MultimediaViewer",
+          "descriptionmsg": "multimediaviewer-desc",
+          "author": "Gergő Tisza, Gilles Dubuc, Mark Holmquist, Simon Legner, Ed Sanders, Pau Giner, James D. Forrester, Željko Filipin, fomafix, Volker E, Kunal Mehta, Umherirrender, Timo Tijhof, Aaron Arcos, Thiemo Kreuz, Matthias Mullie, Jon Robson, Derk-Jan Hartman, Chris McMahon, Bartosz Dziewoński",
+          "url": "https://www.mediawiki.org/wiki/Extension:MultimediaViewer",
+          "vcs-system": "git",
+          "vcs-version": "44da537122819e792b27bfe3a5ac01c3938f4bf8",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-MultimediaViewer/commit/44da537122819e792b27bfe3a5ac01c3938f4bf8",
+          "vcs-date": "2026-03-11T22:30:04Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/MultimediaViewer",
+          "credits": "/w/Special:Version/Credits/MultimediaViewer"
+        },
+        {
+          "type": "other",
+          "name": "DismissableSiteNotice",
+          "namemsg": "sitenotice-extensionname",
+          "descriptionmsg": "sitenotice-desc",
+          "author": "Brion Vibber, Kevin Israel, Dror S.",
+          "url": "https://www.mediawiki.org/wiki/Extension:DismissableSiteNotice",
+          "version": "1.0.1",
+          "vcs-system": "git",
+          "vcs-version": "9ef6716dfcbcc01be6afe379b4d112162a333304",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-DismissableSiteNotice/commit/9ef6716dfcbcc01be6afe379b4d112162a333304",
+          "vcs-date": "2026-04-03T16:48:01Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/DismissableSiteNotice"
+        },
+        {
+          "type": "other",
+          "name": "VariablesLua",
+          "descriptionmsg": "variableslua-desc",
+          "author": "[https://fo-nttax.de Alex Winkler]",
+          "url": "https://www.mediawiki.org/wiki/Extension:VariablesLua",
+          "version": "1.6.0",
+          "vcs-system": "git",
+          "vcs-version": "64a5776f055b33c38602e8a94f7237a6b8cb4c79",
+          "vcs-url": "https://github.com/Liquipedia/VariablesLua/commit/64a5776f055b33c38602e8a94f7237a6b8cb4c79",
+          "vcs-date": "2024-07-24T12:17:13Z",
+          "license-name": "MIT",
+          "license": "/w/Special:Version/License/VariablesLua"
+        },
+        {
+          "type": "other",
+          "name": "LinkSuggest",
+          "descriptionmsg": "linksuggest-desc",
+          "author": "Inez Korczyński, Bartek Łapiński, Łukasz Garczewski, Maciej Brencz, Jesús Martínez Novo, Jack Phoenix, Jayden Bailey",
+          "url": "https://www.mediawiki.org/wiki/Extension:LinkSuggest",
+          "version": "2.2.0",
+          "vcs-system": "git",
+          "vcs-version": "0fbbb9e4b0bb1884c5c046311d22814dcdb0c17f",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-LinkSuggest/commit/0fbbb9e4b0bb1884c5c046311d22814dcdb0c17f",
+          "vcs-date": "2026-04-17T08:10:56Z"
+        },
+        {
+          "type": "other",
+          "name": "Gadgets",
+          "descriptionmsg": "gadgets-desc",
+          "author": "Daniel Kinzler, Max Semenik, Timo Tijhof, Siddharth VP",
+          "url": "https://www.mediawiki.org/wiki/Extension:Gadgets",
+          "vcs-system": "git",
+          "vcs-version": "10f05e1df173b8eeae88ff6f0114cb1fcffa89de",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-Gadgets/commit/10f05e1df173b8eeae88ff6f0114cb1fcffa89de",
+          "vcs-date": "2026-05-28T05:39:13Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/Gadgets"
+        },
+        {
+          "type": "other",
+          "name": "RevisionSlider",
+          "namemsg": "revisionslider",
+          "descriptionmsg": "revisionslider-desc",
+          "author": "[https://meta.wikimedia.org/wiki/WMDE_Technical_Wishes Wikimedia Deutschland Technical Wishes Team], Addshore, Leszek Manicki, Jakob Warkotsch, Tobias Gritschacher, Christoph Jauera",
+          "url": "https://www.mediawiki.org/wiki/Extension:RevisionSlider",
+          "vcs-system": "git",
+          "vcs-version": "038b7864a2fb09308527e7c493ee5301d60f1990",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-RevisionSlider/commit/038b7864a2fb09308527e7c493ee5301d60f1990",
+          "vcs-date": "2026-03-06T00:13:05Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/RevisionSlider"
+        },
+        {
+          "type": "other",
+          "name": "OATHAuth",
+          "descriptionmsg": "oathauth-desc",
+          "author": "Ryan Lane, Robert Vogel <vogel@hallowelt.com>, Dejan Savuljesku <savuljesku@hallowelt.com>, Taavi Väänänen",
+          "url": "https://www.mediawiki.org/wiki/Extension:OATHAuth",
+          "vcs-system": "git",
+          "vcs-version": "a59057b3121ddde665a172944527296804db7ff6",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-OATHAuth/commit/a59057b3121ddde665a172944527296804db7ff6",
+          "vcs-date": "2026-04-20T16:04:04Z",
+          "license-name": "GPL-2.0-or-later AND GPL-3.0-or-later",
+          "license": "/w/Special:Version/License/OATHAuth"
+        },
+        {
+          "type": "other",
+          "name": "Discord",
+          "descriptionmsg": "discord-desc",
+          "author": "[https://github.com/jayktaylor Jayden Bailey]",
+          "url": "https://github.com/jayktaylor/mw-discord",
+          "version": "1.2",
+          "vcs-system": "git",
+          "vcs-version": "d81d1e6cd1885d02d7858d031fbbe854e1db3a8b",
+          "vcs-url": "https://github.com/jayktaylor/mw-discord/commit/d81d1e6cd1885d02d7858d031fbbe854e1db3a8b",
+          "vcs-date": "2026-02-06T21:12:16Z",
+          "license-name": "MIT",
+          "license": "/w/Special:Version/License/Discord"
+        },
+        {
+          "type": "other",
+          "name": "Elastica",
+          "descriptionmsg": "elastica-desc",
+          "author": "Nik Everett, Chad Horohoe",
+          "url": "https://www.mediawiki.org/wiki/Extension:Elastica",
+          "version": "6.2.0",
+          "vcs-system": "git",
+          "vcs-version": "8ee2c285217fd37690d977d9e655ddedf4c5910d",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-Elastica/commit/8ee2c285217fd37690d977d9e655ddedf4c5910d",
+          "vcs-date": "2026-04-17T01:52:21Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/Elastica"
+        },
+        {
+          "type": "other",
+          "name": "CirrusSearch",
+          "descriptionmsg": "cirrussearch-desc",
+          "author": "Nik Everett, Chad Horohoe, Erik Bernhardson",
+          "url": "https://www.mediawiki.org/wiki/Extension:CirrusSearch",
+          "vcs-system": "git",
+          "vcs-version": "1fe9151166ab2b26b0b00ea4583f1a2131ea9567",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-CirrusSearch/commit/1fe9151166ab2b26b0b00ea4583f1a2131ea9567",
+          "vcs-date": "2026-03-06T14:43:47Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/CirrusSearch",
+          "credits": "/w/Special:Version/Credits/CirrusSearch"
+        },
+        {
+          "type": "other",
+          "name": "InternalExternalLinks",
+          "namemsg": "internalExternalLinks",
+          "descriptionmsg": "internalExternalLinks-desc",
+          "author": "[https://runescape.wiki/w/User:TyA TyA <tyler@faceyspacies.com>]",
+          "url": "",
+          "version": "1",
+          "vcs-system": "git",
+          "vcs-version": "e65e2816cc8d237959330ef86fd0e9211bde2262",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-InternalExternalLinks/commit/e65e2816cc8d237959330ef86fd0e9211bde2262",
+          "vcs-date": "2026-04-29T14:24:25Z",
+          "license-name": "MIT",
+          "license": "/w/Special:Version/License/InternalExternalLinks"
+        },
+        {
+          "type": "other",
+          "name": "Parsoid",
+          "description": "The Parsoid extension enables the REST API for Parsoid. This is needed to support VisualEditor.",
+          "url": "https://www.mediawiki.org/wiki/Parsoid/PHP",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/Parsoid"
+        },
+        {
+          "type": "other",
+          "name": "GloopTweaks",
+          "descriptionmsg": "glooptweaks-desc",
+          "author": "[https://github.com/jayktaylor Jayden Bailey], TehKittyCat, ...",
+          "url": "https://weirdgloop.org",
+          "version": "1.2.0",
+          "vcs-system": "git",
+          "vcs-version": "f76a9669cdb370756fcc8f4e6ec4b64a07d35366",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-GloopTweaks/commit/f76a9669cdb370756fcc8f4e6ec4b64a07d35366",
+          "vcs-date": "2026-06-10T02:13:19Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/GloopTweaks"
+        },
+        {
+          "type": "other",
+          "name": "Thanks",
+          "descriptionmsg": "thanks-desc",
+          "author": "Ryan Kaldari, Benjamin Chen, Wctaiwan",
+          "url": "https://www.mediawiki.org/wiki/Extension:Thanks",
+          "version": "1.2.0",
+          "vcs-system": "git",
+          "vcs-version": "597b76a6bd1975cb47f64753e9f9721c01f939d0",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-Thanks/commit/597b76a6bd1975cb47f64753e9f9721c01f939d0",
+          "vcs-date": "2026-03-06T04:43:01Z",
+          "license-name": "MIT",
+          "license": "/w/Special:Version/License/Thanks"
+        },
+        {
+          "type": "other",
+          "name": "LoginNotify",
+          "descriptionmsg": "loginnotify-desc",
+          "author": "Brian Wolff",
+          "url": "https://www.mediawiki.org/wiki/Extension:LoginNotify",
+          "version": "0.1",
+          "vcs-system": "git",
+          "vcs-version": "80828b9d76eee51f0953827b159e0c2589808daa",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-LoginNotify/commit/80828b9d76eee51f0953827b159e0c2589808daa",
+          "vcs-date": "2026-03-05T05:05:19Z",
+          "license-name": "MIT",
+          "license": "/w/Special:Version/License/LoginNotify"
+        },
+        {
+          "type": "other",
+          "name": "MobileFrontend",
+          "descriptionmsg": "mobile-frontend-desc",
+          "author": "Patrick Reilly, Max Semenik, Jon Robson, Arthur Richards, Brion Vibber, Juliusz Gonera, Ryan Kaldari, Florian Schmidt, Rob Moen, Sam Smith",
+          "url": "https://www.mediawiki.org/wiki/Extension:MobileFrontend",
+          "version": "2.4.1",
+          "vcs-system": "git",
+          "vcs-version": "49f87d7970c14c6ec8783a34fdad2c6f45432d3d",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-MobileFrontend/commit/49f87d7970c14c6ec8783a34fdad2c6f45432d3d",
+          "vcs-date": "2026-03-12T02:15:41Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/MobileFrontend",
+          "credits": "/w/Special:Version/Credits/MobileFrontend"
+        },
+        {
+          "type": "other",
+          "name": "TextExtracts",
+          "descriptionmsg": "textextracts-desc",
+          "author": "Max Semenik",
+          "url": "https://www.mediawiki.org/wiki/Extension:TextExtracts",
+          "vcs-system": "git",
+          "vcs-version": "81328335f266511bd889a70f8227e01c1ed0f322",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-TextExtracts/commit/81328335f266511bd889a70f8227e01c1ed0f322",
+          "vcs-date": "2026-02-26T19:23:24Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/TextExtracts"
+        },
+        {
+          "type": "other",
+          "name": "Description2",
+          "descriptionmsg": "description2-desc",
+          "author": "[http://danf.ca/mw/ Daniel Friesen]",
+          "url": "https://www.mediawiki.org/wiki/Extension:Description2",
+          "version": "0.4.1",
+          "vcs-system": "git",
+          "vcs-version": "45f9ea56545f0dc71bf5a0ff3818dd6db48b53c6",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-Description2/commit/45f9ea56545f0dc71bf5a0ff3818dd6db48b53c6",
+          "vcs-date": "2026-03-12T02:14:56Z"
+        },
+        {
+          "type": "other",
+          "name": "GlobalBlocking",
+          "descriptionmsg": "globalblocking-desc",
+          "author": "Andrew Garrett",
+          "url": "https://www.mediawiki.org/wiki/Extension:GlobalBlocking",
+          "vcs-system": "git",
+          "vcs-version": "df90ebfd88fa904dd60a2a837eaeb69bda4d061a",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-GlobalBlocking/commit/df90ebfd88fa904dd60a2a837eaeb69bda4d061a",
+          "vcs-date": "2026-03-05T05:04:26Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/GlobalBlocking"
+        },
+        {
+          "type": "other",
+          "name": "SearchDigest",
+          "descriptionmsg": "searchdigest-desc",
+          "author": "[https://github.com/jayktaylor Jayden Bailey], ...",
+          "url": "https://github.com/weirdgloop/mediawiki-extensions-SearchDigest",
+          "version": "1.5.1",
+          "vcs-system": "git",
+          "vcs-version": "c5372584edf260a1c505703bc81ac4b7e9688516",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-SearchDigest/commit/c5372584edf260a1c505703bc81ac4b7e9688516",
+          "vcs-date": "2026-04-29T14:55:20Z",
+          "license-name": "GPL-3.0+",
+          "license": "/w/Special:Version/License/SearchDigest"
+        },
+        {
+          "type": "other",
+          "name": "OAuth",
+          "descriptionmsg": "mwoauth-desc",
+          "author": "Aaron Schulz, Chris Steipp, Brad Jorsch, Robert Vogel, Dejan Savuljesku",
+          "url": "https://www.mediawiki.org/wiki/Extension:OAuth",
+          "version": "1.1.0",
+          "vcs-system": "git",
+          "vcs-version": "e69a28c43526eed5ad4e16732ae4d42f3c44d6d9",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-OAuth/commit/e69a28c43526eed5ad4e16732ae4d42f3c44d6d9",
+          "vcs-date": "2026-03-05T05:06:19Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/OAuth"
+        },
+        {
+          "type": "other",
+          "name": "GloopControl",
+          "descriptionmsg": "gloopcontrol-desc",
+          "author": "[https://github.com/jayktaylor Jayden Bailey], ...",
+          "url": "https://weirdgloop.org",
+          "version": "0.1",
+          "vcs-system": "git",
+          "vcs-version": "e55097c6add2f464bcbb05debf961afae90ea09f",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-GloopControl/commit/e55097c6add2f464bcbb05debf961afae90ea09f",
+          "vcs-date": "2026-06-11T20:44:18Z"
+        },
+        {
+          "type": "other",
+          "name": "AdvancedSearch",
+          "descriptionmsg": "advancedsearch-desc",
+          "author": "[https://meta.wikimedia.org/wiki/WMDE_Technical_Wishes Wikimedia Deutschland Technical Wishes Team], Thiemo Kreuz, Gabriel Birke, Tonina Zhelyazkova, Christoph Jauera, Kai Nissen, Tim Eulitz",
+          "url": "https://www.mediawiki.org/wiki/Extension:AdvancedSearch",
+          "vcs-system": "git",
+          "vcs-version": "7667d30d7a89f03f68aa7533dcddd9c170e60c1d",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-AdvancedSearch/commit/7667d30d7a89f03f68aa7533dcddd9c170e60c1d",
+          "vcs-date": "2026-03-05T05:00:31Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/AdvancedSearch"
+        },
+        {
+          "type": "other",
+          "name": "TemplateWizard",
+          "descriptionmsg": "templatewizard-desc",
+          "author": "Sam Wilson",
+          "url": "https://www.mediawiki.org/wiki/Extension:TemplateWizard",
+          "version": "0.1.0",
+          "vcs-system": "git",
+          "vcs-version": "7251549e2ad4036b5b57e6a7087605e7efd9300b",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-TemplateWizard/commit/7251549e2ad4036b5b57e6a7087605e7efd9300b",
+          "vcs-date": "2026-03-05T05:07:29Z",
+          "license-name": "MIT",
+          "license": "/w/Special:Version/License/TemplateWizard"
+        },
+        {
+          "type": "other",
+          "name": "SecurePoll",
+          "descriptionmsg": "securepoll-desc",
+          "author": "Tim Starling, ...",
+          "url": "https://www.mediawiki.org/wiki/Extension:SecurePoll",
+          "version": "3.0.0",
+          "vcs-system": "git",
+          "vcs-version": "364d3270974b3c78151dcf2f57b6802ed79b3df6",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-SecurePoll/commit/364d3270974b3c78151dcf2f57b6802ed79b3df6",
+          "vcs-date": "2026-03-05T05:07:08Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/SecurePoll"
+        },
+        {
+          "type": "other",
+          "name": "TempUserWordNames",
+          "descriptionmsg": "tempuserwordnames-desc",
+          "author": "[https://github.com/jayktaylor Jayden Bailey], ...",
+          "url": "https://weirdgloop.org",
+          "version": "0.1",
+          "vcs-system": "git",
+          "vcs-version": "556d5067c29a696e6b2af5d86ac6bdc214a20de6",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-TempUserWordNames/commit/556d5067c29a696e6b2af5d86ac6bdc214a20de6",
+          "vcs-date": "2026-02-06T18:00:22Z"
+        },
+        {
+          "type": "other",
+          "name": "Popups",
+          "namemsg": "popups-message",
+          "descriptionmsg": "popups-desc",
+          "author": "Prateek Saxena, [https://www.mediawiki.org/wiki/Reading/Web/Team Readers Web Team], Yair Rand",
+          "url": "https://www.mediawiki.org/wiki/Extension:Popups",
+          "vcs-system": "git",
+          "vcs-version": "ab4f4f80ed994edfb46c867827d09c1927483bac",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-Popups/commit/ab4f4f80ed994edfb46c867827d09c1927483bac",
+          "vcs-date": "2026-03-12T02:15:54Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/Popups"
+        },
+        {
+          "type": "other",
+          "name": "Disambiguator",
+          "descriptionmsg": "disambig-desc",
+          "author": "Ryan Kaldari",
+          "url": "https://www.mediawiki.org/wiki/Extension:Disambiguator",
+          "version": "1.4",
+          "vcs-system": "git",
+          "vcs-version": "6ddeb5d4ab3b0e47fcf1fc3cd9c239284f261564",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-Disambiguator/commit/6ddeb5d4ab3b0e47fcf1fc3cd9c239284f261564",
+          "vcs-date": "2026-04-17T00:53:27Z",
+          "license-name": "MIT",
+          "license": "/w/Special:Version/License/Disambiguator"
+        },
+        {
+          "type": "other",
+          "name": "DiscussionTools",
+          "namemsg": "discussiontools",
+          "descriptionmsg": "discussiontools-desc",
+          "author": "Bartosz Dziewoński, Ed Sanders, David Lynch",
+          "url": "https://www.mediawiki.org/wiki/Extension:DiscussionTools",
+          "version": "0.0.0",
+          "vcs-system": "git",
+          "vcs-version": "fd96e0066095819885da5b07944287fd7e70fc0f",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-DiscussionTools/commit/fd96e0066095819885da5b07944287fd7e70fc0f",
+          "vcs-date": "2026-03-05T07:57:25Z",
+          "license-name": "MIT",
+          "license": "/w/Special:Version/License/DiscussionTools"
+        },
+        {
+          "type": "skin",
+          "name": "Vector",
+          "namemsg": "vector-specialversion-name",
+          "descriptionmsg": "vector-skin-desc",
+          "author": "[https://www.mediawiki.org/wiki/Readers/Web/Team Readers Web Team], Trevor Parscal, Roan Kattouw, Alex Hollender, Bernard Wang, Clare Ming, Jan Drewniak, Jon Robson, Nick Ray, Sam Smith, Stephen Niedzielski, Volker E.",
+          "url": "https://www.mediawiki.org/wiki/Skin:Vector",
+          "version": "1.0.0",
+          "vcs-system": "git",
+          "vcs-version": "f948b5d2fd6cd9c9726b24126a683009e66fe688",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-skins-Vector/commit/f948b5d2fd6cd9c9726b24126a683009e66fe688",
+          "vcs-date": "2026-03-25T23:33:06Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/Vector"
+        },
+        {
+          "type": "skin",
+          "name": "MinervaNeue",
+          "namemsg": "skinname-minerva",
+          "descriptionmsg": "minerva-skin-desc",
+          "author": "[https://www.mediawiki.org/wiki/Readers/Web/Team Readers Web Team], Alex Hollender, Bahodir Mansurov, Florian Schmidt, Jan Drewniak, Joaquin Hernandez, Jon Robson, Juliusz Gonera, Piotr Miazga, Ryan Kaldari, Nick Ray, Sam Smith, Stephen Niedzielski, Volker E.",
+          "url": "https://www.mediawiki.org/wiki/Skin:MinervaNeue",
+          "vcs-system": "git",
+          "vcs-version": "983cd6ed39ab565788e8a64e5a82199de8e0d0eb",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-skins-MinervaNeue/commit/983cd6ed39ab565788e8a64e5a82199de8e0d0eb",
+          "vcs-date": "2026-03-12T02:16:53Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/MinervaNeue"
+        },
+        {
+          "type": "parserhook",
+          "name": "ParserFunctions",
+          "descriptionmsg": "pfunc_desc",
+          "author": "Tim Starling, Robert Rohde, Ross McClure, Juraj Simlovic",
+          "url": "https://www.mediawiki.org/wiki/Extension:ParserFunctions",
+          "version": "1.6.1",
+          "vcs-system": "git",
+          "vcs-version": "b52376a98d444e5c9f55dd9bd47a7e76d5db4fa0",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-ParserFunctions/commit/b52376a98d444e5c9f55dd9bd47a7e76d5db4fa0",
+          "vcs-date": "2026-02-26T04:56:49Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/ParserFunctions"
+        },
+        {
+          "type": "parserhook",
+          "name": "Scribunto",
+          "descriptionmsg": "scribunto-desc",
+          "author": "Victor Vasiliev, Tim Starling, Brad Jorsch",
+          "url": "https://www.mediawiki.org/wiki/Extension:Scribunto",
+          "vcs-system": "git",
+          "vcs-version": "bb4709f1fb3f9c028ce06cea22277c34a2f4e563",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-Scribunto/commit/bb4709f1fb3f9c028ce06cea22277c34a2f4e563",
+          "vcs-date": "2026-06-05T17:33:15Z",
+          "license-name": "GPL-2.0-or-later AND MIT",
+          "license": "/w/Special:Version/License/Scribunto"
+        },
+        {
+          "type": "parserhook",
+          "name": "Cite",
+          "descriptionmsg": "cite-desc",
+          "author": "Ævar Arnfjörð Bjarmason, Andrew Garrett, Brion Vibber, Ed Sanders, Marius Hoch, Steve Sanbeg, Trevor Parscal, ...",
+          "url": "https://www.mediawiki.org/wiki/Extension:Cite",
+          "vcs-system": "git",
+          "vcs-version": "5ff8a362e88b17c9028b8a1792a4a5dd622802b7",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-Cite/commit/5ff8a362e88b17c9028b8a1792a4a5dd622802b7",
+          "vcs-date": "2026-03-05T06:30:06Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/Cite",
+          "credits": "/w/Special:Version/Credits/Cite"
+        },
+        {
+          "type": "parserhook",
+          "name": "RandomSelection",
+          "descriptionmsg": "randomselection-desc",
+          "author": "Ross McClure, Jack Phoenix, ...",
+          "url": "https://www.mediawiki.org/wiki/Extension:RandomSelection",
+          "version": "2.3.0",
+          "vcs-system": "git",
+          "vcs-version": "7a8223baca58b1c4f95c7b652eb4762f564de833",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-RandomSelection/commit/7a8223baca58b1c4f95c7b652eb4762f564de833",
+          "vcs-date": "2026-03-16T12:27:25Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/RandomSelection"
+        },
+        {
+          "type": "parserhook",
+          "name": "Variables",
+          "descriptionmsg": "variables-desc",
+          "author": "Rob Adams, Tom Hempel, Xiloynaha, [https://www.mediawiki.org/wiki/User:Danwe Daniel Werner], [https://www.mediawiki.org/wiki/User:MGChecker MGChecker], ...",
+          "url": "https://www.mediawiki.org/wiki/Extension:Variables",
+          "version": "2.6.0-beta",
+          "vcs-system": "git",
+          "vcs-version": "68d7b7e13c344dd3f4e604538e0b9b34dc510420",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-Variables/commit/68d7b7e13c344dd3f4e604538e0b9b34dc510420",
+          "vcs-date": "2026-02-26T23:56:21Z",
+          "license-name": "ISC",
+          "license": "/w/Special:Version/License/Variables"
+        },
+        {
+          "type": "parserhook",
+          "name": "SyntaxHighlight",
+          "descriptionmsg": "syntaxhighlight-desc",
+          "author": "Brion Vibber, Tim Starling, Rob Church, Niklas Laxström, Ori Livneh, Ed Sanders",
+          "url": "https://www.mediawiki.org/wiki/Extension:SyntaxHighlight",
+          "version": "2.0",
+          "vcs-system": "git",
+          "vcs-version": "8101aa27bcd55bf365be0026cac0c21df0c0e795",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-SyntaxHighlight_GeSHi/commit/8101aa27bcd55bf365be0026cac0c21df0c0e795",
+          "vcs-date": "2026-02-28T11:02:35Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/SyntaxHighlight"
+        },
+        {
+          "type": "parserhook",
+          "name": "Poem",
+          "descriptionmsg": "poem-desc",
+          "author": "Nikola Smolenski, Brion Vibber, Steve Sanbeg",
+          "url": "https://www.mediawiki.org/wiki/Extension:Poem",
+          "vcs-system": "git",
+          "vcs-version": "21a4c1785f433520bfd7634187d07c942fc19ca7",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-Poem/commit/21a4c1785f433520bfd7634187d07c942fc19ca7",
+          "vcs-date": "2026-02-26T00:12:34Z",
+          "license-name": "CC0-1.0",
+          "license": "/w/Special:Version/License/Poem"
+        },
+        {
+          "type": "parserhook",
+          "name": "InputBox",
+          "descriptionmsg": "inputbox-desc",
+          "author": "Erik Moeller, Leonardo Pimenta, Rob Church, Trevor Parscal, DaSch",
+          "url": "https://www.mediawiki.org/wiki/Extension:InputBox",
+          "version": "0.3.0",
+          "vcs-system": "git",
+          "vcs-version": "fa8ba0f86746ece97cee8152ed773e6304b51958",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-InputBox/commit/fa8ba0f86746ece97cee8152ed773e6304b51958",
+          "vcs-date": "2026-04-17T06:47:57Z",
+          "license-name": "MIT",
+          "license": "/w/Special:Version/License/InputBox"
+        },
+        {
+          "type": "parserhook",
+          "name": "AJAX Poll",
+          "descriptionmsg": "ajaxpoll-desc",
+          "author": "Dariusz Siedlecki, Jack Phoenix, Thomas Gries",
+          "url": "https://www.mediawiki.org/wiki/Extension:AJAX_Poll",
+          "version": "2.3",
+          "vcs-system": "git",
+          "vcs-version": "cb945d7f8370b385150bb0ec329e8094fb9164c3",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-AJAXPoll/commit/cb945d7f8370b385150bb0ec329e8094fb9164c3",
+          "vcs-date": "2026-06-03T21:38:35Z",
+          "license-name": "GFDL-1.2",
+          "license": "/w/Special:Version/License/AJAX_Poll"
+        },
+        {
+          "type": "parserhook",
+          "name": "Tabber",
+          "descriptionmsg": "tabber-desc",
+          "author": "Eric Fortin, Alexia E. Smith",
+          "url": "https://www.mediawiki.org/wiki/Extension:Tabber",
+          "version": "2.4.5",
+          "vcs-system": "git",
+          "vcs-version": "625756015a33ae89f6d1357a52b59e450148a603",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-Tabber/commit/625756015a33ae89f6d1357a52b59e450148a603",
+          "vcs-date": "2026-04-06T18:07:26Z",
+          "license-name": "GPL-3.0-only",
+          "license": "/w/Special:Version/License/Tabber"
+        },
+        {
+          "type": "parserhook",
+          "name": "ImageMap",
+          "descriptionmsg": "imagemap_desc",
+          "author": "Tim Starling, Arlo Breault",
+          "url": "https://www.mediawiki.org/wiki/Extension:ImageMap",
+          "vcs-system": "git",
+          "vcs-version": "b9eba128a32890e8ecc082c054450b4060bb7ce4",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-ImageMap/commit/b9eba128a32890e8ecc082c054450b4060bb7ce4",
+          "vcs-date": "2026-02-28T04:35:29Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/ImageMap"
+        },
+        {
+          "type": "parserhook",
+          "name": "DynamicPageList4",
+          "descriptionmsg": "dpl-desc",
+          "author": "Universal Omega, ...",
+          "url": "https://www.mediawiki.org/wiki/Extension:DynamicPageList4",
+          "version": "4.0.5",
+          "vcs-system": "git",
+          "vcs-version": "a44a183f615a4819f56b5a5631163cdaceec2511",
+          "vcs-url": "https://github.com/Universal-Omega/DynamicPageList4/commit/a44a183f615a4819f56b5a5631163cdaceec2511",
+          "vcs-date": "2026-04-06T12:12:20Z",
+          "credits": "/w/Special:Version/Credits/DynamicPageList4"
+        },
+        {
+          "type": "parserhook",
+          "name": "Math",
+          "descriptionmsg": "math-desc",
+          "author": "Tomasz Wegrzanowski, Brion Vibber, Moritz Schubotz, Derk-Jan Hartman, André Greiner-Petter, Johannes Stegmüller, Frederik Hennecke",
+          "url": "https://www.mediawiki.org/wiki/Extension:Math",
+          "vcs-system": "git",
+          "vcs-version": "f7a6a58481840569c743244cc0405152cf18b352",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-Math/commit/f7a6a58481840569c743244cc0405152cf18b352",
+          "vcs-date": "2026-03-05T05:05:47Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/Math"
+        },
+        {
+          "type": "parserhook",
+          "name": "EmbedVideo",
+          "descriptionmsg": "embedvideo-description",
+          "author": "[https://www.mediawiki.org/wiki/User:Octfx Octfx], [https://www.mediawiki.org/wiki/User:Alistair3149 Alistair3149], Jim R. Wilson, Andrew Whitworth, Alexia E. Smith, Cameron M. Chunn",
+          "url": "https://github.com/StarCitizenWiki/mediawiki-extensions-EmbedVideo",
+          "version": "4.0.0",
+          "vcs-system": "git",
+          "vcs-version": "86bbf18eece780ecd178af5211f4605a8f13e4f8",
+          "vcs-url": "https://github.com/StarCitizenWiki/mediawiki-extensions-EmbedVideo/commit/86bbf18eece780ecd178af5211f4605a8f13e4f8",
+          "vcs-date": "2026-06-16T17:09:35Z",
+          "license-name": "MIT",
+          "license": "/w/Special:Version/License/EmbedVideo"
+        },
+        {
+          "type": "parserhook",
+          "name": "TemplateData",
+          "descriptionmsg": "templatedata-desc",
+          "author": "Timo Tijhof, Moriel Schottlender, James D. Forrester, Trevor Parscal, Bartosz Dziewoński, Marielle Volz, Sam Wilson, [https://www.mediawiki.org/wiki/User:TheresNoTime-WMF Sammy Fox], ...",
+          "url": "https://www.mediawiki.org/wiki/Extension:TemplateData",
+          "version": "0.2.0",
+          "vcs-system": "git",
+          "vcs-version": "7eb3a23b0997a9fda2c6e15578ec57dc62d69287",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-TemplateData/commit/7eb3a23b0997a9fda2c6e15578ec57dc62d69287",
+          "vcs-date": "2026-03-06T04:10:10Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/TemplateData"
+        },
+        {
+          "type": "parserhook",
+          "name": "EasyTimeline",
+          "descriptionmsg": "timeline-desc",
+          "author": "Erik Zachte",
+          "url": "https://www.mediawiki.org/wiki/Extension:EasyTimeline",
+          "vcs-system": "git",
+          "vcs-version": "d8e7e4ecbe6a68e5156c4db9ef056faff3f06677",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-timeline/commit/d8e7e4ecbe6a68e5156c4db9ef056faff3f06677",
+          "vcs-date": "2026-02-28T14:53:01Z",
+          "license-name": "GPL-2.0-only",
+          "license": "/w/Special:Version/License/EasyTimeline"
+        },
+        {
+          "type": "parserhook",
+          "name": "TemplateStyles",
+          "namemsg": "templatestyles",
+          "descriptionmsg": "templatestyles-desc",
+          "author": "Brad Jorsch, Marc A. Pelletier",
+          "url": "https://www.mediawiki.org/wiki/Extension:TemplateStyles",
+          "version": "1.0",
+          "vcs-system": "git",
+          "vcs-version": "938ddecd60ff82188fbca55d11e20298852d7904",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-TemplateStyles/commit/938ddecd60ff82188fbca55d11e20298852d7904",
+          "vcs-date": "2026-05-28T05:42:25Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/TemplateStyles"
+        },
+        {
+          "type": "parserhook",
+          "name": "TemplateStylesExtender",
+          "descriptionmsg": "ext-templatestylesextender-desc",
+          "author": "[https://www.mediawiki.org/wiki/User:Octfx Octfx], [https://www.mediawiki.org/wiki/User:Alistair3149 Alistair3149]",
+          "url": "https://github.com/octfx/mediawiki-extensions-TemplateStylesExtender",
+          "version": "2.1.0",
+          "vcs-system": "git",
+          "vcs-version": "c76337fd857a24a44f910d9356a05bf2210a70fd",
+          "vcs-url": "https://github.com/octfx/mediawiki-extensions-TemplateStylesExtender/commit/c76337fd857a24a44f910d9356a05bf2210a70fd",
+          "vcs-date": "2026-02-18T02:29:47Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/TemplateStylesExtender"
+        },
+        {
+          "type": "parserhook",
+          "name": "CategoryTree",
+          "descriptionmsg": "categorytree-desc",
+          "author": "Daniel Kinzler",
+          "url": "https://www.mediawiki.org/wiki/Extension:CategoryTree",
+          "vcs-system": "git",
+          "vcs-version": "f0e2e07ad93cae70b2b63b21d0e6da0950a693bc",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-CategoryTree/commit/f0e2e07ad93cae70b2b63b21d0e6da0950a693bc",
+          "vcs-date": "2026-03-05T05:01:31Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/CategoryTree"
+        },
+        {
+          "type": "parserhook",
+          "name": "LabeledSectionTransclusion",
+          "namemsg": "lst-extensionname",
+          "descriptionmsg": "lst-desc",
+          "author": "Steve Sanbeg",
+          "url": "https://www.mediawiki.org/wiki/Extension:Labeled_Section_Transclusion",
+          "vcs-system": "git",
+          "vcs-version": "dc1224ac98c2a34f6c9258ecadcc5959c2e98313",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-LabeledSectionTransclusion/commit/dc1224ac98c2a34f6c9258ecadcc5959c2e98313",
+          "vcs-date": "2026-02-25T01:53:23Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/LabeledSectionTransclusion"
+        },
+        {
+          "type": "parserhook",
+          "name": "Loops",
+          "descriptionmsg": "loops-desc",
+          "author": "David M. Sledge, [https://www.mediawiki.org/wiki/User:Danwe Daniel Werner]",
+          "url": "https://www.mediawiki.org/wiki/Extension:Loops",
+          "version": "1.0.0-beta",
+          "vcs-system": "git",
+          "vcs-version": "0020e6f49fdbdb28f7ece64dcd047b8572194994",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-Loops/commit/0020e6f49fdbdb28f7ece64dcd047b8572194994",
+          "vcs-date": "2026-02-25T04:07:50Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/Loops"
+        },
+        {
+          "type": "parserhook",
+          "name": "CharInsert",
+          "descriptionmsg": "charinsert-desc",
+          "author": "Brion Vibber",
+          "url": "https://www.mediawiki.org/wiki/Extension:CharInsert",
+          "vcs-system": "git",
+          "vcs-version": "04aee843b35c7b9e37c9f08b6b9b55d0dfcb56c9",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-CharInsert/commit/04aee843b35c7b9e37c9f08b6b9b55d0dfcb56c9",
+          "vcs-date": "2026-02-23T04:26:32Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/CharInsert"
+        },
+        {
+          "type": "editor",
+          "name": "WikiEditor",
+          "descriptionmsg": "wikieditor-desc",
+          "author": "Derk-Jan Hartman, Trevor Parscal, Roan Kattouw, Nimish Gautam, Adam Miller",
+          "url": "https://www.mediawiki.org/wiki/Extension:WikiEditor",
+          "version": "0.5.4",
+          "vcs-system": "git",
+          "vcs-version": "7969479f1f1204cbd4cbf6972e3d0856dd75974a",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-WikiEditor/commit/7969479f1f1204cbd4cbf6972e3d0856dd75974a",
+          "vcs-date": "2026-06-04T05:32:39Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/WikiEditor"
+        },
+        {
+          "type": "editor",
+          "name": "CodeEditor",
+          "descriptionmsg": "codeeditor-desc",
+          "author": "Brion Vibber, Derk-Jan Hartman",
+          "url": "https://www.mediawiki.org/wiki/Extension:CodeEditor",
+          "vcs-system": "git",
+          "vcs-version": "225fdb96d9a201c34304ce36e10895b858273a61",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-CodeEditor/commit/225fdb96d9a201c34304ce36e10895b858273a61",
+          "vcs-date": "2026-06-05T01:14:33Z",
+          "license-name": "GPL-2.0-or-later AND BSD-3-Clause",
+          "license": "/w/Special:Version/License/CodeEditor"
+        },
+        {
+          "type": "editor",
+          "name": "VisualEditor",
+          "descriptionmsg": "visualeditor-desc",
+          "author": "Alex Monk, Bartosz Dziewoński, C. Scott Ananian, Christian Williams, David Lynch, Ed Sanders, Inez Korczyński, James D. Forrester, Moriel Schottlender, Roan Kattouw, Rob Moen, Subramanya Sastry, Thalia Chan, Timo Tijhof, Trevor Parscal, ...",
+          "url": "https://www.mediawiki.org/wiki/Extension:VisualEditor",
+          "vcs-system": "git",
+          "vcs-version": "c1e9466a204849fcdf3dd0f0c26321e15a8e744c",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-VisualEditor/commit/c1e9466a204849fcdf3dd0f0c26321e15a8e744c",
+          "vcs-date": "2026-03-12T02:16:35Z",
+          "license-name": "MIT",
+          "license": "/w/Special:Version/License/VisualEditor",
+          "credits": "/w/Special:Version/Credits/VisualEditor"
+        },
+        {
+          "type": "editor",
+          "name": "CodeMirror",
+          "descriptionmsg": "codemirror-desc",
+          "author": "[https://www.mediawiki.org/wiki/User:Pastakhov Pavel Astakhov], Marijn Haverbeke, MusikAnimal, Bhsd, [https://www.mediawiki.org/wiki/User:Florianschmidtwelzow Florian Schmidt]",
+          "url": "https://www.mediawiki.org/wiki/Extension:CodeMirror",
+          "version": "6.0.0",
+          "vcs-system": "git",
+          "vcs-version": "a6728aec82916d0b9189b29c0869310d0ccee76e",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-CodeMirror/commit/a6728aec82916d0b9189b29c0869310d0ccee76e",
+          "vcs-date": "2026-06-11T01:26:11Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/CodeMirror"
+        },
+        {
+          "type": "specialpage",
+          "name": "SimpleBatchUpload",
+          "namemsg": "simplebatchupload-name",
+          "descriptionmsg": "simplebatchupload-desc",
+          "author": "[https://www.mediawiki.org/wiki/User:F.trott Stephan Gambke], [https://professional.wiki/ Professional Wiki], ...",
+          "url": "https://professional.wiki/en/extension/simplebatchupload",
+          "version": "3.0.0",
+          "vcs-system": "git",
+          "vcs-version": "87ca90fa04ef8b977228909a6d924542a877aeaa",
+          "vcs-url": "https://github.com/ProfessionalWiki/SimpleBatchUpload/commit/87ca90fa04ef8b977228909a6d924542a877aeaa",
+          "vcs-date": "2026-01-29T12:12:24Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/SimpleBatchUpload"
+        },
+        {
+          "type": "specialpage",
+          "name": "Echo",
+          "descriptionmsg": "echo-desc",
+          "author": "Andrew Garrett, Ryan Kaldari, Benny Situ, Luke Welling, Kunal Mehta, Moriel Schottlender, Jon Robson, Roan Kattouw",
+          "url": "https://www.mediawiki.org/wiki/Extension:Echo",
+          "vcs-system": "git",
+          "vcs-version": "ed3242d7b716b1ad9205503d323c15dab29be589",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-Echo/commit/ed3242d7b716b1ad9205503d323c15dab29be589",
+          "vcs-date": "2026-04-10T15:28:39Z",
+          "license-name": "MIT",
+          "license": "/w/Special:Version/License/Echo"
+        },
+        {
+          "type": "specialpage",
+          "name": "GlobalUserrights",
+          "descriptionmsg": "gur-desc",
+          "author": "Nathaniel Herman, Mainframe98",
+          "url": "https://www.mediawiki.org/wiki/Extension:GlobalUserrights",
+          "version": "1.5.3",
+          "vcs-system": "git",
+          "vcs-version": "614fdb9312b7244d57595d05eebc961378547c04",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-GlobalUserrights/commit/614fdb9312b7244d57595d05eebc961378547c04",
+          "vcs-date": "2026-03-12T02:15:16Z"
+        },
+        {
+          "type": "specialpage",
+          "name": "ContactPage",
+          "descriptionmsg": "contactpage-desc",
+          "author": "Daniel Kinzler, Sam Reed",
+          "url": "https://www.mediawiki.org/wiki/Extension:ContactPage",
+          "version": "2.3",
+          "vcs-system": "git",
+          "vcs-version": "7fbc319d872c2953003c42319655b41ef65baa93",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-ContactPage/commit/7fbc319d872c2953003c42319655b41ef65baa93",
+          "vcs-date": "2026-03-05T05:02:14Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/ContactPage"
+        },
+        {
+          "type": "specialpage",
+          "name": "Editcount",
+          "descriptionmsg": "editcount-desc",
+          "author": "Ævar Arnfjörð Bjarmason, [[mw:User:Evelyn Marie|Evelyn Marie]]",
+          "url": "https://www.mediawiki.org/wiki/Extension:Editcount",
+          "vcs-system": "git",
+          "vcs-version": "d2e18b15c5a16d371f1a02fb7ba151333b99668d",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-Editcount/commit/d2e18b15c5a16d371f1a02fb7ba151333b99668d",
+          "vcs-date": "2026-02-23T22:14:41Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/Editcount"
+        },
+        {
+          "type": "specialpage",
+          "name": "CheckUser",
+          "descriptionmsg": "checkuser-desc",
+          "author": "Tim Starling, Aaron Schulz, Dreamy Jazz",
+          "url": "https://www.mediawiki.org/wiki/Extension:CheckUser",
+          "version": "2.5",
+          "vcs-system": "git",
+          "vcs-version": "09ad2d2a201deb228ae64ccc55c89cbdbf75a2c3",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-CheckUser/commit/09ad2d2a201deb228ae64ccc55c89cbdbf75a2c3",
+          "vcs-date": "2026-03-05T05:01:40Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/CheckUser"
+        },
+        {
+          "type": "specialpage",
+          "name": "Protect Site",
+          "descriptionmsg": "protectsite-desc",
+          "author": "[http://en.uncyclopedia.co/wiki/User:Dawg Eric Johnston], Chris Stafford, Jack Phoenix, Martyna Nowicka",
+          "url": "https://www.mediawiki.org/wiki/Extension:ProtectSite",
+          "version": "0.5.3",
+          "vcs-system": "git",
+          "vcs-version": "0e1bf8f8e89157702d912ff9bbb0eb816c1f2c52",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-ProtectSite/commit/0e1bf8f8e89157702d912ff9bbb0eb816c1f2c52",
+          "vcs-date": "2026-04-28T22:20:56Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/Protect_Site"
+        },
+        {
+          "type": "specialpage",
+          "name": "TemplateSandbox",
+          "descriptionmsg": "templatesandbox-desc",
+          "author": "Brad Jorsch",
+          "url": "https://www.mediawiki.org/wiki/Extension:TemplateSandbox",
+          "version": "1.1.0",
+          "vcs-system": "git",
+          "vcs-version": "6765e579e760da3fdc662bd9f5f612d8865239ae",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-TemplateSandbox/commit/6765e579e760da3fdc662bd9f5f612d8865239ae",
+          "vcs-date": "2026-03-05T05:07:27Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/TemplateSandbox"
+        },
+        {
+          "type": "specialpage",
+          "name": "GloopAnalytics",
+          "descriptionmsg": "gloopanalytics-desc",
+          "author": "[https://github.com/jayktaylor Jayden Bailey], ...",
+          "url": "https://weirdgloop.org",
+          "version": "1.0",
+          "vcs-system": "git",
+          "vcs-version": "7e45f47bfb09e72c177ddca347b5f1995b2deea7",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-GloopAnalytics/commit/7e45f47bfb09e72c177ddca347b5f1995b2deea7",
+          "vcs-date": "2026-01-07T19:34:04Z"
+        },
+        {
+          "type": "specialpage",
+          "name": "MigrateUserAccount",
+          "descriptionmsg": "migrateuseraccount-desc",
+          "author": "[https://github.com/jayktaylor Jayden Bailey], ...",
+          "url": "https://github.com/weirdgloop/mediawiki-extensions-MigrateUserAccount",
+          "version": "1.3.0",
+          "vcs-system": "git",
+          "vcs-version": "a5374ad1adcec96576e4f5c215c663c9ead2bc23",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-MigrateUserAccount/commit/a5374ad1adcec96576e4f5c215c663c9ead2bc23",
+          "vcs-date": "2026-04-24T16:14:38Z",
+          "license-name": "GPL-3.0-or-later",
+          "license": "/w/Special:Version/License/MigrateUserAccount"
+        },
+        {
+          "type": "specialpage",
+          "name": "Global Usage",
+          "descriptionmsg": "globalusage-desc",
+          "author": "Bryan Tong Minh",
+          "url": "https://www.mediawiki.org/wiki/Extension:GlobalUsage",
+          "version": "2.2.0",
+          "vcs-system": "git",
+          "vcs-version": "9f1dc847cd8fb2ca3860391858b08971c798e21e",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-GlobalUsage/commit/9f1dc847cd8fb2ca3860391858b08971c798e21e",
+          "vcs-date": "2026-03-05T05:04:39Z",
+          "license-name": "MIT",
+          "license": "/w/Special:Version/License/Global_Usage"
+        },
+        {
+          "type": "specialpage",
+          "name": "Linter",
+          "descriptionmsg": "linter-desc",
+          "author": "Kunal Mehta, Arlo Breault, Subramanya Sastry",
+          "url": "https://www.mediawiki.org/wiki/Extension:Linter",
+          "vcs-system": "git",
+          "vcs-version": "c1e2e8806d3ee6196d02fa93076e05a2ed2ae58e",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-Linter/commit/c1e2e8806d3ee6196d02fa93076e05a2ed2ae58e",
+          "vcs-date": "2026-04-17T08:49:24Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/Linter"
+        },
+        {
+          "type": "media",
+          "name": "TimedMediaHandler",
+          "namemsg": "timedmediahandler-extensionname",
+          "descriptionmsg": "timedmediahandler-desc",
+          "author": "[https://github.com/jayktaylor Jayden Bailey], Michael Dale, Jan Gerber, Derk-Jan Hartman, Brooke Vibber, Tim Starling, ...",
+          "url": "https://github.com/weirdgloop/mediawiki-extensions-TimedMediaHandler",
+          "version": "0.6.0",
+          "vcs-system": "git",
+          "vcs-version": "21c4568282871f7168ca234ea97a70d9903f196c",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-TimedMediaHandler/commit/21c4568282871f7168ca234ea97a70d9903f196c",
+          "vcs-date": "2026-06-15T10:55:39Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/TimedMediaHandler"
+        },
+        {
+          "type": "api",
+          "name": "PageImages",
+          "descriptionmsg": "pageimages-desc",
+          "author": "Max Semenik",
+          "url": "https://www.mediawiki.org/wiki/Extension:PageImages",
+          "vcs-system": "git",
+          "vcs-version": "5834f99f5e3462cf75b1782a3b03b1af38e5b784",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-PageImages/commit/5834f99f5e3462cf75b1782a3b03b1af38e5b784",
+          "vcs-date": "2026-06-06T02:07:53Z",
+          "license-name": "WTFPL",
+          "license": "/w/Special:Version/License/PageImages"
+        },
+        {
+          "type": "antispam",
+          "name": "AntiSpoof",
+          "descriptionmsg": "antispoof-desc",
+          "author": "Brion Vibber",
+          "url": "https://www.mediawiki.org/wiki/Extension:AntiSpoof",
+          "vcs-system": "git",
+          "vcs-version": "5b5451821ef9b703e4825e127dffc537845eeadd",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-AntiSpoof/commit/5b5451821ef9b703e4825e127dffc537845eeadd",
+          "vcs-date": "2026-02-23T01:44:43Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/AntiSpoof"
+        },
+        {
+          "type": "antispam",
+          "name": "Abuse Filter",
+          "descriptionmsg": "abusefilter-desc",
+          "author": "Andrew Garrett, [https://www.mediawiki.org/wiki/User:Daimona_Eaytoy Daimona Eaytoy], Marius Hoch, River Tarnell, Victor Vasiliev",
+          "url": "https://www.mediawiki.org/wiki/Extension:AbuseFilter",
+          "vcs-system": "git",
+          "vcs-version": "7b2c70fcd6baab6c0e7d47183e3caa8f83fc3fcf",
+          "vcs-url": "https://github.com/weirdgloop/mediawiki-extensions-AbuseFilter/commit/7b2c70fcd6baab6c0e7d47183e3caa8f83fc3fcf",
+          "vcs-date": "2026-06-15T05:12:47Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/Abuse_Filter"
+        },
+        {
+          "type": "antispam",
+          "name": "TitleBlacklist",
+          "descriptionmsg": "titleblacklist-desc",
+          "author": "Victor Vasiliev, Fran Rogers",
+          "url": "https://www.mediawiki.org/wiki/Extension:TitleBlacklist",
+          "version": "1.5.0",
+          "vcs-system": "git",
+          "vcs-version": "0f5139572de97a63a40afa2501885505c8fc3d53",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-TitleBlacklist/commit/0f5139572de97a63a40afa2501885505c8fc3d53",
+          "vcs-date": "2026-05-03T23:32:40Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/TitleBlacklist"
+        },
+        {
+          "type": "antispam",
+          "name": "SpamBlacklist",
+          "descriptionmsg": "spam-blacklist-desc",
+          "author": "Tim Starling, John Du Hart, Daniel Kinzler",
+          "url": "https://www.mediawiki.org/wiki/Extension:SpamBlacklist",
+          "vcs-system": "git",
+          "vcs-version": "58e71f637d98bad0a64242f905a0dc67ba28685f",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-SpamBlacklist/commit/58e71f637d98bad0a64242f905a0dc67ba28685f",
+          "vcs-date": "2026-03-05T05:07:14Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/SpamBlacklist"
+        },
+        {
+          "type": "antispam",
+          "name": "TorBlock",
+          "descriptionmsg": "torblock-desc",
+          "author": "Andrew Garrett",
+          "url": "https://www.mediawiki.org/wiki/Extension:TorBlock",
+          "version": "1.1.0",
+          "vcs-system": "git",
+          "vcs-version": "e26adf9d29c0500d8cde0314155d6f4c7a12dcab",
+          "vcs-url": "https://github.com/wikimedia/mediawiki-extensions-TorBlock/commit/e26adf9d29c0500d8cde0314155d6f4c7a12dcab",
+          "vcs-date": "2026-02-28T11:37:14Z",
+          "license-name": "GPL-2.0-or-later",
+          "license": "/w/Special:Version/License/TorBlock"
+        }
+      ]
+    }
+  }
+}

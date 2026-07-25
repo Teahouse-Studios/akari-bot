@@ -28,7 +28,6 @@ def fetch_module_db():
             pass
         except Exception:
             Logger.exception(traceback.format_exc())
-            pass
 
     Logger.debug(f"Database list: {database_list}")
     return database_list

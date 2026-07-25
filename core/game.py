@@ -1,4 +1,5 @@
 from typing import Any
+
 from core.builtins.session.internal import MessageSession
 from core.logger import Logger
 from core.utils.container import ExpiringTempDict
@@ -24,7 +25,7 @@ class PlayState:
 
     def _get_ps_dict(self) -> ExpiringTempDict:
         """
-        获取目标的游戏事件字典，如果不存在则自动创建。
+        获取场景的游戏事件字典，如果不存在则自动创建。
         """
         target_dict = _ps_dict[self.target_id]
         return target_dict[self.game]

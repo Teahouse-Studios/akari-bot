@@ -51,6 +51,8 @@ class Config:
     typo_check_command_score: float = 0.3
     typo_check_args_score: float = 0.5
     typo_check_options_score: float = 0.3
+    typo_check_module_diff_ratio: float = 0.5
+    typo_check_args_diff_ratio: float = 0.5
 
     # TOS
     enable_tos: bool = True
@@ -97,3 +99,19 @@ class WebRenderConfig:
     browser_executable_path: str = ""
     remote_only: bool = False
     remote_web_render_url: str = ""
+
+
+@on_config("s3")
+class S3Config:
+    s3_endpoint_url: str
+    s3_bucket: str
+    s3_region: str = "us-east-1"
+    s3_public_endpoint: str | None = None
+    s3_internal_endpoint: str | None = None
+    s3_temp_max_count: int = 20
+
+
+@on_config("s3", secret=True)
+class S3SecretConfig:
+    s3_access_key: str
+    s3_secret_key: str

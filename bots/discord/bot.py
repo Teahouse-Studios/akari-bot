@@ -131,6 +131,7 @@ async def on_message(message: discord.Message):
         reply_id=str(reply_id),
         messages=msg_chain,
         ctx_slot=ctx_id,
+        bot_id=discord_bot.user.id,
     )
 
     await Bot.process_message(session, message)
@@ -157,6 +158,7 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
         reply_id=str(payload.message_id),
         messages=MessageChain.assign([Plain(payload.emoji.name)]),
         ctx_slot=ctx_id,
+        bot_id=discord_bot.user.id,
     )
     await Bot.process_message(session, payload)
 

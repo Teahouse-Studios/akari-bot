@@ -4,9 +4,9 @@ from core.builtins.message.internal import Plain, I18NContext, Image, Url
 from core.component import module
 from core.config import Config
 from core.constants.exceptions import ConfigValueError
+from core.utils.func import is_int
 from core.utils.http import get_url
 from core.utils.image_table import image_table_render, ImageTable
-from core.utils.func import is_int
 
 enable_card = Config("ncmusic_enable_card", False, table_name="module_ncmusic")
 API = Config("ncmusic_api", cfg_type=str, secret=True, table_name="module_ncmusic")
@@ -98,10 +98,10 @@ async def _(msg: Bot.MessageSession, keyword: str):
                 else:
                     songs_list = result_data.get("songs", [])
                     sid = songs_list[query - 1].get("id") if query - 1 < len(songs_list) else None
+                    if sid:
+                        await info(msg, sid)
             else:
                 await msg.finish(I18NContext("ncmusic.message.search.invalid.non_digital"))
-
-        await info(msg, sid)
 
     if legacy:
         for i, song in enumerate(songs, start=1):
@@ -138,13 +138,13 @@ async def _(msg: Bot.MessageSession, keyword: str):
                 else:
                     songs_list = result_data.get("songs", [])
                     sid = songs_list[query - 1].get("id") if query - 1 < len(songs_list) else None
+                    if sid:
+                        await info(msg, sid)
             else:
                 await msg.finish(I18NContext("ncmusic.message.search.invalid.non_digital"))
 
         if msg.session_info.client_name == "QQ" and enable_card:
             await msg.finish(f"[CQ:music,type=163,id={sid}]", quote=False)
-        else:
-            await info(msg, sid)
 
 
 @ncmusic.command("<sid> {{I18N:ncmusic.help}}", available_for=["QQ|Group", "QQ|Private"])

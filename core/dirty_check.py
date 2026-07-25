@@ -282,7 +282,7 @@ async def check(
                 res_list.sort(key=lambda item: item[0])
 
                 merged_content = "".join([r[1]["content"] for r in res_list])
-                merged_status = all([r[1]["status"] for r in res_list])
+                merged_status = all(r[1]["status"] for r in res_list)
 
                 final_parse_result = {"content": merged_content, "status": merged_status, "original": x}
 

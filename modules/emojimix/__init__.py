@@ -8,8 +8,8 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Image, I18NContext, Plain
 from core.component import module
 from core.logger import Logger
-from core.utils.random import Random
 from core.utils.func import chunk_list
+from core.utils.random import Random
 
 data_path = Path(__file__).parent / "assets" / "emoji_data.json"
 API = "https://www.gstatic.com/android/keyboard/emojikitchen"

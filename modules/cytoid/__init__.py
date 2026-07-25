@@ -37,11 +37,13 @@ async def _(msg: Bot.MessageSession, username: str = None):
         query_id = bind_info.username
     if query:
         img = await get_rating(msg, query_id, query)
-        if img and img["status"]:
-            if "path" in img:
-                await msg.finish(Image(path=img["path"]))
+        if img:
+            if img["status"]:
+                if "path" in img:
+                    await msg.finish(Image(path=img["path"]))
             elif "text" in img:
                 await msg.finish(img["text"])
+    await msg.finish(I18NContext("cytoid.message.fetch_failed"))
 
 
 @ctd.command("bind <username> {{I18N:cytoid.help.bind}}")

@@ -11,12 +11,15 @@ import base64
 import html
 import random
 import re
+from attrs import define
 from copy import deepcopy
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, TypeVar
 from urllib.parse import urlparse
 
 import orjson
 
+from core.builtins.types import MessageElement
+from core.builtins.converter import converter
 from core.builtins.message.elements import (
     BaseElement,
     PlainElement,
@@ -28,22 +31,17 @@ from core.builtins.message.elements import (
     VoiceElement,
     MentionElement,
 )
-
 from core.constants import Secret, default_locale
 from core.exports import add_export, exports
 from core.i18n import Locale
+from core.joke import shuffle_joke as joke
+from core.logger import Logger
+from core.utils.func import convert_bool
+from core.utils.http import url_pattern
 
 if TYPE_CHECKING:
     from core.builtins.session.info import SessionInfo
     from core.builtins.session.internal import MessageSession
-
-from core.builtins.types import MessageElement
-from core.builtins.converter import converter
-from core.joke import shuffle_joke as joke
-from core.logger import Logger
-from core.utils.http import url_pattern
-
-from attrs import define
 
 
 @define
@@ -60,6 +58,14 @@ class MessageChain:
 
     # 消息元素列表
     values: list[MessageElement]
+
+    @classmethod
+    def create(cls):
+        """
+        创建一个空的消息链实例。
+        """
+
+        return cls(values=[])
 
     @classmethod
     def assign(
@@ -117,6 +123,8 @@ class MessageChain:
         if isinstance(elements, (list, tuple)):
             for e in elements:
                 # 字符串转换为 PlainElement（忽略空字符串）
+                if e is None:
+                    continue
                 if isinstance(e, str) and e:
                     values.append(PlainElement.assign(e))
                 # 字典中的元素进行结构化处理
@@ -215,7 +223,9 @@ class MessageChain:
         # 所有检查通过，消息链安全
         return True
 
-    def as_sendable(self, session_info: SessionInfo | MessageSession = None, parse_message: bool = True) -> list:
+    def as_sendable(
+        self, session_info: SessionInfo | MessageSession = None, parse_message: bool = True, disable_markdown=False
+    ) -> ConvertedMessageChain:
         """
         将消息链转换为可发送的格式。
 
@@ -228,6 +238,7 @@ class MessageChain:
 
         :param session_info: 会话信息，用于本地化和平台特定的处理
         :param parse_message: 是否解析消息中的特殊格式（如 KE 码、多语言标记等）
+        :param disable_markdown: 是否禁用 markdown 格式转换
         :return: 可发送的消息元素列表
 
         示例：
@@ -267,10 +278,15 @@ class MessageChain:
                             element_chain = match_kecode(x.text, x.disable_joke)
                             # 递归处理解析出的元素
                             for elem in element_chain.values:
-                                elem = MessageChain.assign(elem).as_sendable(session_info, parse_message=False)
-                                if isinstance(elem, PlainElement):
-                                    elem.text = session_info.locale.t_str(elem.text)
-                                value += elem
+                                elem_ = (
+                                    MessageChain.assign(elem)
+                                    .as_sendable(session_info, parse_message=False, disable_markdown=disable_markdown)
+                                    .values
+                                )
+                                for el in elem_:
+                                    if isinstance(el, PlainElement):
+                                        elem.text = session_info.locale.t_str(el.text)
+                                value += elem_
                             continue
                     else:
                         # 空文本，使用默认错误消息
@@ -301,14 +317,15 @@ class MessageChain:
                 for k, v in x.kwargs.items():
                     if isinstance(v, str):
                         x.kwargs[k] = locale.t_str(v)
+                    if isinstance(v, MessageChain):
+                        # 传入 i18n 模块后 MessageChain 会被 Template.safe_substitute 强制转义为字符串... 思考了很久怎么处理比较好，决定暂时用 kecode 处理
+                        x.kwargs[k] = v.to_kecode()
 
                 # 执行多语言翻译
                 t_value = locale.t(x.key, x.fallback, x.locale_failed_prompt, **x.kwargs)
-                if isinstance(t_value, str):
-                    value.append(PlainElement.assign(t_value, disable_joke=x.disable_joke))
-                else:
-                    # 如果翻译结果是消息链，递归处理
-                    value += MessageChain.assign(t_value).as_sendable(session_info)
+                value += (
+                    MessageChain.assign(t_value).as_sendable(session_info, disable_markdown=disable_markdown).values
+                )
 
             # ========== 处理 URL 元素 ==========
             elif isinstance(x, URLElement):
@@ -316,7 +333,11 @@ class MessageChain:
                 if session_info and (session_info.use_url_manager and x.applied_mm is None):
                     x = URLElement.assign(x.url, use_mm=True, md_format_name=x.md_format_name)
                 # 应用 Markdown 格式（如果需要）
-                if session_info and session_info.use_url_md_format and not x.applied_md_format:
+                if (
+                    session_info
+                    and (session_info.use_url_md_format and not x.applied_md_format)
+                    and not disable_markdown
+                ):
                     x = URLElement.assign(x.url, md_format=True, md_format_name=x.md_format_name)
 
                 value.append(PlainElement.assign(x.url, disable_joke=True))
@@ -335,7 +356,7 @@ class MessageChain:
             if isinstance(x, PlainElement) and not x.disable_joke:
                 x.text = joke(x.text)
 
-        return value
+        return ConvertedMessageChain.assign(value)
 
     def to_str(
         self, text_only=True, element_filter: tuple[MessageElement, ...] | None = None, connector: str = "\n"
@@ -393,7 +414,13 @@ class MessageChain:
             [{'_type': 'PlainElement', 'text': 'Hello', 'disable_joke': False}]
         ```
         """
-        return [converter.unstructure(x, MessageElement) for x in self.values]
+        return [converter.unstructure(x, MessageElement) for x in self.values if x is not None]
+
+    def to_kecode(self) -> str:
+        _t = ""
+        for x in self.values:
+            _t += x.kecode()
+        return _t
 
     @classmethod
     def from_list(cls, lst: list) -> MessageChain:
@@ -477,6 +504,21 @@ class MessageChain:
         """
         return MessageChain.assign(self.values.copy())
 
+    def contains(self, types: type[MessageElement] | tuple[MessageElement]) -> bool:
+        for x in self.values:
+            if isinstance(x, types):
+                return True
+        return False
+
+    def only(self, types: type[MessageElement] | tuple[MessageElement]) -> bool:
+        for x in self.values:
+            if not isinstance(x, types):
+                return False
+        return True
+
+    def extend(self, other: MessageChain):
+        return self.__iadd__(other)
+
     def __str__(self):
         """返回消息链的字符串表示（用于调试）"""
         return f"[{', '.join([x.__repr__() for x in self.values])}]"
@@ -536,6 +578,16 @@ class MessageChain:
         else:
             raise TypeError(f'Unsupported operand type(s) for +=: "MessageChain" and "{type(other).__name__}"')
         return self
+
+    def __contains__(self, item):
+        for x in self.values:
+            if isinstance(x, item):
+                return True
+        return False
+
+
+class ConvertedMessageChain(MessageChain):
+    pass
 
 
 @define
@@ -659,7 +711,7 @@ class MessageNodes:
     消息节点列表 - 用于表示转发消息。
 
     该类用于创建转发消息（合并转发），包含多个消息链作为节点。
-    每个节点可以有不同的发送者和内容。
+    每个节点可以有不同的用户和内容。
 
     属性：
         values: 消息链列表，每个元素是一个独立的消息节点
@@ -721,15 +773,16 @@ class MessageNodes:
         return all(chain.is_safe for chain in self.values)
 
 
-type Chainable = (
-    MessageChain
-    | I18NMessageChain
-    | PlatformMessageChain
-    | str
-    | list[str]
-    | list[MessageElement]
-    | MessageElement
-    | MessageNodes
+Chainable = TypeVar(
+    "Chainable",
+    MessageChain,
+    I18NMessageChain,
+    PlatformMessageChain,
+    str,
+    list[str],
+    list[MessageElement],
+    MessageElement,
+    MessageNodes,
 )
 
 
@@ -843,28 +896,6 @@ def _extract_kecode_blocks(text):
     return result
 
 
-def _parse_bool_flag(value: str | int | bool | None, default: bool) -> bool:
-    """
-    将 0/1、true/false 等转换为 bool。
-    None 时返回 default。
-    """
-    if value is None:
-        return default
-
-    if isinstance(value, bool):
-        return value
-
-    value = str(value).strip().lower()
-
-    if value in {"1", "true", "yes", "on"}:
-        return True
-
-    if value in {"0", "false", "no", "off"}:
-        return False
-
-    return default
-
-
 def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
     """
     解析 KE 码格式的文本并转换为消息链。
@@ -952,7 +983,7 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
             if element_type == "plain":
                 text_value = parsed_params.get("text", "")
 
-                local_disable_joke = _parse_bool_flag(parsed_params.get("disable_joke"), disable_joke)
+                local_disable_joke = convert_bool(parsed_params.get("disable_joke"), disable_joke)
 
                 elements.append(PlainElement.assign(text_value, disable_joke=local_disable_joke))
 
@@ -992,11 +1023,11 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
                 i18nkey = parsed_params.get("i18nkey")
 
                 if i18nkey:
-                    local_disable_joke = _parse_bool_flag(parsed_params.pop("disable_joke", None), disable_joke)
+                    local_disable_joke = convert_bool(parsed_params.pop("disable_joke", None), disable_joke)
 
-                    fallback = _parse_bool_flag(parsed_params.pop("fallback", None), True)
+                    fallback = convert_bool(parsed_params.pop("fallback", None), True)
 
-                    locale_failed_prompt = _parse_bool_flag(parsed_params.pop("locale_failed_prompt", None), True)
+                    locale_failed_prompt = convert_bool(parsed_params.pop("locale_failed_prompt", None), True)
 
                     # 删除非 kwargs 参数
                     parsed_params.pop("i18nkey", None)
@@ -1017,6 +1048,9 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
 
                 if userid:
                     elements.append(MentionElement.assign(userid))
+            elif element_type == "url":
+                text = parsed_params.get("text")
+                elements.append(URLElement.assign(text))
 
         except Exception:
             elements.append(PlainElement.assign(e, disable_joke=disable_joke))
@@ -1068,19 +1102,19 @@ def match_atcode(text: str, client: str, pattern: str) -> str:
 
 def convert_senderid_to_atcode(text: str, sender_prefix: str) -> str:
     """
-    将发送者 ID 转换为 AT 码格式。
+    将用户 ID 转换为 AT 码格式。
 
-    该函数用于将文本中的发送者 ID 引用转换为统一的 AT 码格式。
+    该函数用于将文本中的用户 ID 引用转换为统一的 AT 码格式。
     主要用于在消息中自动识别和转换用户 ID 引用。
 
     处理流程：
     1. 转义 sender_prefix 中的特殊字符
-    2. 查找所有匹配的发送者 ID
+    2. 查找所有匹配的用户 ID
     3. 将其包装为 `<AT:...>` 格式
 
-    :param text: 包含发送者 ID 的文本
-    :param sender_prefix: 发送者 ID 的前缀（如 "QQ|"）
-    :return: 转换后的文本，发送者 ID 被包装为 AT 码
+    :param text: 包含用户 ID 的文本
+    :param sender_prefix: 用户 ID 的前缀（如 "QQ|"）
+    :return: 转换后的文本，用户 ID 被包装为 AT 码
 
     示例：
         > text = "User QQ|123456 said hello"
@@ -1090,7 +1124,7 @@ def convert_senderid_to_atcode(text: str, sender_prefix: str) -> str:
     # 转义前缀中的特殊字符（如 `|`）
     sender_prefix = sender_prefix.replace("|", "\\|")
 
-    # 使用正则表达式查找并包装发送者 ID
+    # 使用正则表达式查找并包装用户 ID
     # 负向后瞻断言确保不会重复包装已有的 AT 码
     # \g<0> 引用整个匹配的字符串
     return re.sub(rf"(?<!<AT:)(?<!<@:){sender_prefix}\|\w+", r"<AT:\g<0>>", text).replace("\\", "")

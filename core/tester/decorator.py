@@ -3,7 +3,6 @@ from typing import Callable
 
 from .expectations import Expectation
 
-
 _REGISTRY: list[dict] = []
 
 

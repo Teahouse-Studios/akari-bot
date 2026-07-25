@@ -2,7 +2,7 @@
 # 注意：TOML 不是 Python。請不要在此處使用 Python 語法。
 # 例如：TOML 中的布林值必須是小寫。
 
-default_locale = "zh_tw" # 預設的會話語言環境。
+default_locale = "zh_tw" # 預設的語言環境。
 config_version = 3 # 組態檔版本號，將會隨功能更新自動增加，一般情況下請勿修改。
 
 [config]
@@ -16,7 +16,7 @@ use_font_mirror = false # 網頁成像時是否使用字體鏡像。
 use_secrets_random = false # 是否使用基於 secrets 庫的隨機數產生器。
 base_superuser = ["QQ|2596322644"] # 機器人的基礎超級使用者列表，此處填寫的值將會在機器人啟動時載入資料庫。
 ignored_sender = ["QQ|2854196310"] # 無視的使用者列表，匹配到此列表中的使用者將會被忽略。
-report_targets = [] # 上報會話列表，此處填寫的值將會被辨識為上報會話。（如：當機器人執行指令出錯時，機器人會將報錯訊息傳送至對應會話）
+report_targets = [] # 上報場景列表，此處填寫的值將會被辨識為上報場景。（如：當機器人執行指令出錯時，機器人會將報錯訊息傳送至對應場景）
 command_prefix = ["~", "～"] # 指令前綴，此處填入的值將會被辨識為指令前綴。
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # 確認指令的關鍵字，此處填入的值將會被辨識為確認指令。
 enable_module_invalid_prompt = false # 是否啟用模組不存在的提示訊息。
@@ -33,6 +33,8 @@ typo_check_module_score = 0.6 # 模組拼字檢查容許相似度，範圍 0 到
 typo_check_command_score = 0.3 # 指令拼字檢查容許相似度，範圍 0 到 1 之間。
 typo_check_args_score = 0.5 # 參數拼字檢查容許相似度，範圍 0 到 1 之間。
 typo_check_options_score = 0.3 # 選項拼字檢查容許相似度，範圍 0 到 1 之間。
+typo_check_module_diff_ratio = 0.5 # 模块名字符长度差异阈值：匹配到的模块名长度与用户输入长度差异比例超过此值时跳过匹配，范围 0 到 1 之间。
+typo_check_args_diff_ratio = 0.5 # 命令参数数量差异阈值：用户输入的参数数量与模板参数数量差异比例超过此值时跳过命令匹配，范围 0 到 1 之间。
 enable_tos = true # 是否啟用內建的 ToS 檢查規則。
 tos_warning_counts = 5 # 違反 ToS 時的最大警告次數。
 tos_temp_ban_time = 300 # 違反 ToS 時的暫時封鎖時間。

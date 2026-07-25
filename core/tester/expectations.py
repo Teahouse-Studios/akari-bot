@@ -505,3 +505,187 @@ class Predicate(Expectation):
 
     def __str__(self):
         return f"Predicate({self.func.__name__})"
+
+
+class AnyOutput(Expectation):
+    """
+    是否有任意输出（非空）。
+
+    如果输出包含错误信息（如"执行命令时发生错误"），则匹配失败。
+    """
+
+    # 错误信息关键词列表
+    ERROR_KEYWORDS = ["执行命令时发生错误"]
+
+    async def match(self, result):
+        output = result.get("output")
+        if not output:
+            return False
+
+        # 检查是否包含错误信息
+        output_str = MessageChain.assign(output).to_str()
+        for keyword in self.ERROR_KEYWORDS:
+            if keyword in output_str:
+                return False
+
+        return True
+
+    def __str__(self):
+        return "AnyOutput()"
+
+
+class OutputCount(Expectation):
+    """
+    输出 action 条目数量。
+
+    :param eq: 预期精确数量
+    :param ge: 预期最小数量
+    :param le: 预期最大数量
+    """
+
+    def __init__(self, eq: int | None = None, ge: int | None = None, le: int | None = None):
+        self.eq = eq
+        self.ge = ge
+        self.le = le
+
+    async def match(self, result):
+        action = result.get("action") or []
+        count = len(action)
+
+        if self.eq is not None and count != self.eq:
+            return False
+        if self.ge is not None and count < self.ge:
+            return False
+        if self.le is not None and count > self.le:
+            return False
+        return True
+
+    def __str__(self):
+        parts = []
+        if self.eq is not None:
+            parts.append(f"eq={self.eq}")
+        if self.ge is not None:
+            parts.append(f"ge={self.ge}")
+        if self.le is not None:
+            parts.append(f"le={self.le}")
+        return f"OutputCount({', '.join(parts)})"
+
+
+class ContainsAll(Expectation):
+    """
+    输出中包含所有指定文本。
+
+    :param texts: 需要全部包含的文本列表
+    :param case_sensitive: 是否大小写敏感，默认 False
+    """
+
+    def __init__(self, *texts: str, case_sensitive: bool = False):
+        self.texts = texts
+        self.case_sensitive = case_sensitive
+
+    async def match(self, result):
+        output = MessageChain.assign(result.get("output")).to_str()
+        for text in self.texts:
+            t = text
+            o = output
+            if not self.case_sensitive:
+                t = t.lower()
+                o = o.lower()
+            if t not in o:
+                return False
+        return True
+
+    def __str__(self):
+        return f"ContainsAll({', '.join(repr(t) for t in self.texts)}, case_sensitive={self.case_sensitive})"
+
+
+class ContainsAny(Expectation):
+    """
+    输出中包含任一指定文本。
+
+    :param texts: 需要至少包含一个的文本列表
+    :param case_sensitive: 是否大小写敏感，默认 False
+    """
+
+    def __init__(self, *texts: str, case_sensitive: bool = False):
+        self.texts = texts
+        self.case_sensitive = case_sensitive
+
+    async def match(self, result):
+        output = MessageChain.assign(result.get("output")).to_str()
+        for text in self.texts:
+            t = text
+            o = output
+            if not self.case_sensitive:
+                t = t.lower()
+                o = o.lower()
+            if t in o:
+                return True
+        return False
+
+    def __str__(self):
+        return f"ContainsAny({', '.join(repr(t) for t in self.texts)}, case_sensitive={self.case_sensitive})"
+
+
+class NoException(Expectation):
+    """
+    执行过程中无异常。
+
+    检查以下条件：
+    1. 结果中无 exception 字段
+    2. 结果中无 traceback 字段
+    3. 输出中不包含错误信息关键词
+    """
+
+    # 错误信息关键词列表
+    ERROR_KEYWORDS = ["执行命令时发生错误"]
+
+    async def match(self, result):
+        # 检查是否有异常
+        if "exception" in result:
+            return False
+
+        # 检查是否有 traceback
+        if "traceback" in result:
+            return False
+
+        # 检查输出是否包含错误信息
+        output = result.get("output")
+        if output:
+            output_str = MessageChain.assign(output).to_str()
+            for keyword in self.ERROR_KEYWORDS:
+                if keyword in output_str:
+                    return False
+
+        return True
+
+    def __str__(self):
+        return "NoException()"
+
+
+class ActionContains(Expectation):
+    """
+    action 列表中包含特定文本。
+
+    :param text: 需要包含的文本
+    :param case_sensitive: 是否大小写敏感，默认 False
+    """
+
+    def __init__(self, text: str, case_sensitive: bool = False):
+        self.text = text
+        self.case_sensitive = case_sensitive
+
+    async def match(self, result):
+        action = result.get("action") or []
+        for item in action:
+            a = str(item)
+            t = self.text
+            if not self.case_sensitive:
+                a = a.lower()
+                t = t.lower()
+            if t in a:
+                return True
+        return False
+
+    def __str__(self):
+        return f"ActionContains({self.text!r}, case_sensitive={self.case_sensitive})"

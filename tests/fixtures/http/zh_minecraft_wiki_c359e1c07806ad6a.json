@@ -1,0 +1,130 @@
+{
+  "url": "https://zh.minecraft.wiki/api.php?action=query&prop=info%7Cimageinfo%7Clanglinks%7Ctemplates%7Cextracts%7Cpageprops&llprop=url&inprop=url&iiprop=url&redirects=true&converttitles=true&titles=Minecraft+Wiki&ppprop=description%7Cdisplaytitle%7Cdisambiguation%7Cinfoboxes&explaintext=true&exsectionformat=plain&exchars=200&format=json",
+  "status_code": 200,
+  "text": "{\"continue\": {\"llcontinue\": \"5|ko\", \"tlcontinue\": \"5|10|FPv\", \"continue\": \"||info|imageinfo|extracts|pageprops\"}, \"query\": {\"pages\": {\"5\": {\"pageid\": 5, \"ns\": 0, \"title\": \"Minecraft Wiki\", \"contentmodel\": \"wikitext\", \"pagelanguage\": \"zh\", \"pagelanguagehtmlcode\": \"zh\", \"pagelanguagedir\": \"ltr\", \"touched\": \"2026-06-24T08:13:18Z\", \"lastrevid\": 1387282, \"length\": 8597, \"fullurl\": \"https://zh.minecraft.wiki/\", \"editurl\": \"https://zh.minecraft.wiki/?action=edit\", \"canonicalurl\": \"https://zh.minecraft.wiki/\", \"langlinks\": [{\"lang\": \"cs\", \"url\": \"https://cs.minecraft.wiki/w/Minecraft_Wiki\", \"*\": \"Minecraft Wiki\"}, {\"lang\": \"de\", \"url\": \"https://de.minecraft.wiki/w/Minecraft_Wiki\", \"*\": \"Minecraft Wiki\"}, {\"lang\": \"el\", \"url\": \"https://el.minecraft.wiki/w/Minecraft_Wiki\", \"*\": \"Minecraft Wiki\"}, {\"lang\": \"en\", \"url\": \"https://minecraft.wiki/w/Minecraft_Wiki\", \"*\": \"Minecraft Wiki\"}, {\"lang\": \"es\", \"url\": \"https://es.minecraft.wiki/w/Minecraft_Wiki\", \"*\": \"Minecraft Wiki\"}, {\"lang\": \"fr\", \"url\": \"https://fr.minecraft.wiki/w/Minecraft_Wiki\", \"*\": \"Minecraft Wiki\"}, {\"lang\": \"hu\", \"url\": \"https://hu.minecraft.wiki/w/Minecraft_Wiki\", \"*\": \"Minecraft Wiki\"}, {\"lang\": \"id\", \"url\": \"https://id.minecraft.wiki/w/Minecraft_Wiki\", \"*\": \"Minecraft Wiki\"}, {\"lang\": \"it\", \"url\": \"https://it.minecraft.wiki/w/Minecraft_Wiki\", \"*\": \"Minecraft Wiki\"}, {\"lang\": \"ja\", \"url\": \"https://ja.minecraft.wiki/w/Minecraft_Wiki\", \"*\": \"Minecraft Wiki\"}], \"templates\": [{\"ns\": 0, \"title\": \"Minecraft Wiki/styles.css\"}, {\"ns\": 4, \"title\": \"Minecraft Wiki:特色条目/Minecraft\"}, {\"ns\": 4, \"title\": \"Minecraft Wiki:特色条目/Minecraft/2026\"}, {\"ns\": 10, \"title\": \"Template:Article other\"}, {\"ns\": 10, \"title\": \"Template:BiomeLink\"}, {\"ns\": 10, \"title\": \"Template:BlockLink\"}, {\"ns\": 10, \"title\": \"Template:Control\"}, {\"ns\": 10, \"title\": \"Template:Ctrl\"}, {\"ns\": 10, \"title\": \"Template:EntityLink\"}, {\"ns\": 10, \"title\": \"Template:EnvLink\"}], \"extract\": \"\", \"pageprops\": {\"description\": \"欢迎来到这个完全公开、可自由编辑的Wiki，中文Minecraft Wiki。这里致力于收集一切和Minecraft有关的信息。任何人都可以为Wiki作出贡献！\"}}}}}",
+  "headers": {},
+  "json_data": {
+    "continue": {
+      "llcontinue": "5|ko",
+      "tlcontinue": "5|10|FPv",
+      "continue": "||info|imageinfo|extracts|pageprops"
+    },
+    "query": {
+      "pages": {
+        "5": {
+          "pageid": 5,
+          "ns": 0,
+          "title": "Minecraft Wiki",
+          "contentmodel": "wikitext",
+          "pagelanguage": "zh",
+          "pagelanguagehtmlcode": "zh",
+          "pagelanguagedir": "ltr",
+          "touched": "2026-06-24T08:13:18Z",
+          "lastrevid": 1387282,
+          "length": 8597,
+          "fullurl": "https://zh.minecraft.wiki/",
+          "editurl": "https://zh.minecraft.wiki/?action=edit",
+          "canonicalurl": "https://zh.minecraft.wiki/",
+          "langlinks": [
+            {
+              "lang": "cs",
+              "url": "https://cs.minecraft.wiki/w/Minecraft_Wiki",
+              "*": "Minecraft Wiki"
+            },
+            {
+              "lang": "de",
+              "url": "https://de.minecraft.wiki/w/Minecraft_Wiki",
+              "*": "Minecraft Wiki"
+            },
+            {
+              "lang": "el",
+              "url": "https://el.minecraft.wiki/w/Minecraft_Wiki",
+              "*": "Minecraft Wiki"
+            },
+            {
+              "lang": "en",
+              "url": "https://minecraft.wiki/w/Minecraft_Wiki",
+              "*": "Minecraft Wiki"
+            },
+            {
+              "lang": "es",
+              "url": "https://es.minecraft.wiki/w/Minecraft_Wiki",
+              "*": "Minecraft Wiki"
+            },
+            {
+              "lang": "fr",
+              "url": "https://fr.minecraft.wiki/w/Minecraft_Wiki",
+              "*": "Minecraft Wiki"
+            },
+            {
+              "lang": "hu",
+              "url": "https://hu.minecraft.wiki/w/Minecraft_Wiki",
+              "*": "Minecraft Wiki"
+            },
+            {
+              "lang": "id",
+              "url": "https://id.minecraft.wiki/w/Minecraft_Wiki",
+              "*": "Minecraft Wiki"
+            },
+            {
+              "lang": "it",
+              "url": "https://it.minecraft.wiki/w/Minecraft_Wiki",
+              "*": "Minecraft Wiki"
+            },
+            {
+              "lang": "ja",
+              "url": "https://ja.minecraft.wiki/w/Minecraft_Wiki",
+              "*": "Minecraft Wiki"
+            }
+          ],
+          "templates": [
+            {
+              "ns": 0,
+              "title": "Minecraft Wiki/styles.css"
+            },
+            {
+              "ns": 4,
+              "title": "Minecraft Wiki:特色条目/Minecraft"
+            },
+            {
+              "ns": 4,
+              "title": "Minecraft Wiki:特色条目/Minecraft/2026"
+            },
+            {
+              "ns": 10,
+              "title": "Template:Article other"
+            },
+            {
+              "ns": 10,
+              "title": "Template:BiomeLink"
+            },
+            {
+              "ns": 10,
+              "title": "Template:BlockLink"
+            },
+            {
+              "ns": 10,
+              "title": "Template:Control"
+            },
+            {
+              "ns": 10,
+              "title": "Template:Ctrl"
+            },
+            {
+              "ns": 10,
+              "title": "Template:EntityLink"
+            },
+            {
+              "ns": 10,
+              "title": "Template:EnvLink"
+            }
+          ],
+          "extract": "",
+          "pageprops": {
+            "description": "欢迎来到这个完全公开、可自由编辑的Wiki，中文Minecraft Wiki。这里致力于收集一切和Minecraft有关的信息。任何人都可以为Wiki作出贡献！"
+          }
+        }
+      }
+    }
+  }
+}

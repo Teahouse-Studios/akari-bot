@@ -119,8 +119,10 @@ def pre_init():
         if base_superuser:
             if isinstance(base_superuser, str):
                 base_superuser = [base_superuser]
+            await Tortoise.init(db_url=get_db_link(), modules={"models": ["core.database.models"]})
             for bu in base_superuser:
                 await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id=bu)
+            await close_db()
         else:
             Logger.warning("The base superuser is not found, please setup it in the config file.")
 

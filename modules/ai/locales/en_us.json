@@ -3,7 +3,7 @@
     "ai.help.desc": "Ask AkariBot anything!",
     "ai.help.llm.instruct": "Set custom instructions for the LLMs.",
     "ai.help.llm.list": "Check the list of supported LLMs.",
-    "ai.help.llm.set": "Set the default LLM in session.",
+    "ai.help.llm.set": "Set the default LLM in context.",
     "ai.help.option.llm": "Specify the LLM to use.",
     "ai.help.option.no_tools": "Whether to disable the tool calling for the LLMs.",
     "ai.message.llm.instruct.clear.success": "Custom instructions have been cleared.",

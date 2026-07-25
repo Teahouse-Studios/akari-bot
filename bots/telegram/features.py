@@ -1,6 +1,6 @@
-from core.builtins.session.features import Features as FeaturesBase
-
 from attrs import define
+
+from core.builtins.session.features import Features as FeaturesBase
 
 
 @define

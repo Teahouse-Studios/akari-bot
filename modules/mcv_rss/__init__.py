@@ -17,7 +17,6 @@ from core.utils.http import get_url
 from core.utils.storedata import get_stored_list, update_stored_list
 from core.web_render import web_render, SourceOptions
 
-
 SNAPSHOT_PATTERN = re.compile(r"^(?P<major>[\d.]+)-snapshot-?(?P<patch>\d)+$")
 OLD_SNAPSHOT_PATTERN = re.compile(r"^(1\d)|(2[0-5])[w|W]\d{2}[A-Fa-f]$")
 PRERELEASE_PATTERN = re.compile(r"^(?P<major>[\d.]+)-pre-?(?P<patch>\d)+$")
@@ -30,7 +29,7 @@ CHANGELOG_URL_PREFIX = "https://www.minecraft.net/en-us/article/minecraft"
 def get_changelog_url(version: str) -> str | None:
     """Generate changelog url of the given minecraft version id"""
     if m := re.match(SNAPSHOT_PATTERN, version):
-        return f"{CHANGELOG_URL_PREFIX}-{m.group('major').replace('.', '-')}{m.group('patch')}"
+        return f"{CHANGELOG_URL_PREFIX}-{m.group('major').replace('.', '-')}-snapshot-{m.group('patch')}"
     if m := re.match(PRERELEASE_PATTERN, version):
         return f"{CHANGELOG_URL_PREFIX}-{m.group('major').replace('.', '-')}-pre-release-{m.group('patch')}"
     if m := re.match(RELEASE_CANDIDATE_PATTERN, version):

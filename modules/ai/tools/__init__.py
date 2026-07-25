@@ -1,7 +1,5 @@
 from typing import Any
 
-import orjson
-
 from core.logger import Logger
 from .execute_python_code import *
 from .fetch_webpage import *

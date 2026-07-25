@@ -1,24 +1,38 @@
 import asyncio
 import html
 
+import orjson
 from botpy.api import BotAPI
-from botpy.errors import ServerError
 from botpy.http import Route
+from botpy.interaction import Interaction
 from botpy.message import BaseMessage, C2CMessage, DirectMessage, GroupMessage, Message
-from botpy.types.message import Media, Reference
+from botpy.types.message import Media, Reference, MarkdownPayload, KeyboardPayload
+from botpy.types.inline import Keyboard, Button, KeyboardRow, RenderData, Action, Permission
+from tenacity import retry, wait_fixed, stop_after_attempt
 
 from bots.qqbot.features import Features
-from bots.qqbot.info import client_name, target_group_prefix, target_guild_prefix
+from bots.qqbot.info import (
+    client_name,
+    target_group_prefix,
+    target_direct_prefix,
+    target_guild_prefix,
+    target_c2c_prefix,
+)
+from bots.qqbot.utils import url_filter
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, MentionElement
+from core.builtins.message.internal import I18NContext
 from core.builtins.session.context import ContextManager
 from core.builtins.session.info import SessionInfo
 from core.config import Config
 from core.logger import Logger
+from core.utils.s3 import S3Storage
 
 qq_typing_emoji = str(Config("qq_typing_emoji", 181, (str, int), table_name="bot_qqbot"))
 qq_limited_emoji = str(Config("qq_limited_emoji", 10060, (str, int), table_name="bot_qqbot"))
-enable_send_url = Config("qq_bot_enable_send_url", False, table_name="bot_qqbot")
+qq_use_markdown = Config("qq_use_markdown", False, bool, table_name="bot_qqbot")
+
+global_seq = 1
 
 
 # 额外添加平台接口支持但 SDK 不支持的方法
@@ -100,130 +114,122 @@ class QQBotContextManager(ContextManager):
     async def send_message(
         cls,
         session_info: SessionInfo,
-        message: MessageChain | MessageNodes,
+        message: MessageChain,
         quote: bool = True,
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
+        _ignore_retries: bool = False,
     ) -> list[str]:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         ctx: BaseMessage = cls.context.get(session_info.session_id)
         msg_ids = []
+        global global_seq
 
         if isinstance(message, MessageNodes):
             Logger.error("This session does not support message nodes, check if bug exists.")
+            return msg_ids
 
-        plains: list[PlainElement] = []
-        images: list[ImageElement] = []
+        retry_attempt = stop_after_attempt(0)
+        retry_wait = wait_fixed(0)
+        if not _ignore_retries:
+            retry_attempt = stop_after_attempt(3)
+            retry_wait = wait_fixed(3)
 
-        for x in message.as_sendable(session_info, parse_message=enable_parse_message):
-            if isinstance(x, PlainElement):
-                x.text = html.unescape(x.text)
-                if enable_parse_message:
-                    x.text = match_atcode(x.text, client_name, "<@{uid}>")
-                plains.append(x)
-            elif isinstance(x, ImageElement):
-                images.append(x)
-            elif isinstance(x, MentionElement):
-                if x.client == client_name and session_info.target_from == target_guild_prefix:
-                    plains.append(PlainElement(text=f"<@{x.id}>"))
-        if len(plains + images) != 0:
-            msg = "\n".join([x.text for x in plains]).strip()
-            #
-            # filtered_msg = []
-            # lines = msg.split("\n")
-            # for line in lines:
-            #     if enable_send_url and session_info.tmp.get("message_type") != "group_direct":
-            #
-            #         def process_url(match):
-            #             url_ = match.group(0)
-            #             parts = url_.split(".")
-            #             for i in range(1, len(parts)):
-            #                 if parts[i] and parts[i][0].isalpha():
-            #                     parts[i] = parts[i][0].upper() + parts[i][1:]
-            #             return ".".join(parts)
-            #
-            #         line = url_pattern.sub(process_url, line)
-            #     elif session_info.tmp.get("message_type") != "group_direct" and url_pattern.findall(line):
-            #         continue
-            #     filtered_msg.append(line)
-            # msg = "\n".join(filtered_msg).strip()
-            image_1 = None
-            send_img = None
+        @retry(stop=retry_attempt, wait=retry_wait, reraise=True)
+        async def send_msg():
+            global global_seq
 
-            if ctx:
-                if isinstance(ctx, Message):
-                    if images:
-                        image_1 = images[0]
-                        images.pop(0)
-                    send_img = await image_1.get() if image_1 else None
-                    msg_quote = (
-                        Reference(
-                            message_id=ctx.id,
-                            ignore_get_message_error=False,
+            plains: list[PlainElement] = []
+            images: list[ImageElement] = []
+
+            for x in message.as_sendable(session_info, parse_message=enable_parse_message, disable_markdown=True):
+                if isinstance(x, PlainElement):
+                    x.text = html.unescape(x.text)
+                    if enable_parse_message:
+                        x.text = match_atcode(x.text, client_name, "<@{uid}>")
+                    plains.append(x)
+                elif isinstance(x, ImageElement):
+                    images.append(x)
+                elif isinstance(x, MentionElement):
+                    if x.client == client_name and session_info.target_from == target_guild_prefix:
+                        plains.append(PlainElement(text=f"<@{x.id}>"))
+            if len(plains + images) != 0:
+                msg = "\n".join([x.text for x in plains]).strip()
+                image_1 = None
+                send_img = None
+
+                if ctx and not isinstance(ctx, Interaction):
+                    if isinstance(ctx, Message):
+                        if images:
+                            image_1 = images[0]
+                            images.pop(0)
+                        send_img = await image_1.get() if image_1 else None
+                        msg_quote = (
+                            Reference(
+                                message_id=ctx.id,
+                                ignore_get_message_error=False,
+                            )
+                            if quote and not send_img
+                            else None
                         )
-                        if quote and not send_img
-                        else None
-                    )
-                    if not msg_quote and quote:
-                        msg = f"<@{ctx.author.id}> \n" + msg
-                    msg = "" if not msg else msg
-                    send = await ctx.reply(content=msg, file_image=send_img, message_reference=msg_quote)
-                    Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
-                    if image_1:
-                        Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
-                    if send:
-                        msg_ids.append(send["id"])
-                    if images:
-                        for img in images:
-                            send_img = await img.get()
-                            send = await ctx.reply(file_image=send_img)
-                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
-                            if send:
-                                msg_ids.append(send["id"])
-                elif isinstance(ctx, DirectMessage):
-                    if images:
-                        image_1 = images[0]
-                        images.pop(0)
-                    send_img = await image_1.get() if image_1 else None
-                    msg_quote = (
-                        Reference(
-                            message_id=ctx.id,
-                            ignore_get_message_error=False,
+                        msg = url_filter(msg)
+                        if not msg_quote and quote:
+                            msg = f"<@{ctx.author.id}> \n" + msg
+                        msg = "" if not msg else msg
+                        send = await ctx.reply(content=msg, file_image=send_img, message_reference=msg_quote)
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
+                        if image_1:
+                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
+                        if send:
+                            msg_ids.append(send["id"])
+                        if images:
+                            for img in images:
+                                send_img = await img.get()
+                                send = await ctx.reply(file_image=send_img)
+                                Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
+                                if send:
+                                    msg_ids.append(send["id"])
+                    elif isinstance(ctx, DirectMessage):
+                        if images:
+                            image_1 = images[0]
+                            images.pop(0)
+                        send_img = await image_1.get() if image_1 else None
+                        msg_quote = (
+                            Reference(
+                                message_id=ctx.id,
+                                ignore_get_message_error=False,
+                            )
+                            if quote and not send_img
+                            else None
                         )
-                        if quote and not send_img
-                        else None
-                    )
-                    msg = "" if not msg else msg
-                    send = await ctx.reply(content=msg, file_image=send_img, message_reference=msg_quote)
-                    Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
-                    if image_1:
-                        Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
-                    if send:
-                        msg_ids.append(send["id"])
-                    if images:
-                        for img in images:
-                            send_img = await img.get()
-                            send = await ctx.reply(file_image=send_img)
-                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
-                            if send:
-                                msg_ids.append(send["id"])
-                elif isinstance(ctx, GroupMessage):
-                    seq = ctx.msg_seq if ctx.msg_seq else 1
-
-                    msg_quote = (
-                        Reference(
-                            message_id=ctx.id,
-                            ignore_get_message_error=False,
+                        msg = url_filter(msg)
+                        msg = "" if not msg else msg
+                        send = await ctx.reply(content=msg, file_image=send_img, message_reference=msg_quote)
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
+                        if image_1:
+                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
+                        if send:
+                            msg_ids.append(send["id"])
+                        if images:
+                            for img in images:
+                                send_img = await img.get()
+                                send = await ctx.reply(file_image=send_img)
+                                Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
+                                if send:
+                                    msg_ids.append(send["id"])
+                    elif isinstance(ctx, GroupMessage):
+                        msg_quote = (
+                            Reference(
+                                message_id=ctx.id,
+                                ignore_get_message_error=False,
+                            )
+                            if quote and not send_img
+                            else None
                         )
-                        if quote and not send_img
-                        else None
-                    )
-                    if msg and ctx.id and session_info.tmp.get("message_type") != "group_direct":
-                        msg = "\n" + msg
-                    msg = "" if not msg else msg
-                    try:
-                        # if msg and ctx.id and session_info.tmp.get('message_type') != 'group_direct':
+                        if msg and ctx.id and session_info.tmp.get("message_type") == "group_at":
+                            msg = "\n" + msg
+                        msg = "" if not msg else msg
                         if images:
                             image_1 = images[0]
                             images.pop(0)
@@ -232,108 +238,373 @@ class QQBotContextManager(ContextManager):
                                 file_type=1,
                                 file_data=await image_1.get_base64(),
                             )
+                        global_seq += 1
                         send = await ctx.reply(
                             content=msg,
                             msg_type=7 if send_img else 0,
                             media=send_img,
-                            msg_seq=seq,
+                            msg_seq=global_seq,
                             message_reference=msg_quote,
                         )
-                        # else:
-                        #     md = {
-                        #       "markdown": {
-                        #         "content": msg
-                        #       }
-                        #     }
-                        #     Logger.debug(md)
-                        #     send = await ctx.reply(
-                        #         markdown=md,
-                        #         msg_type=2,
-                        #         msg_seq=seq,
-                        #         message_reference = msg_quote
-                        #     )
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
                         if image_1:
                             Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
                         if send:
                             msg_ids.append(send["id"])
-                            seq += 1
-                    except ServerError:
-                        try:
-                            send = await ctx.reply(
-                                content=session_info.locale.t("error.message.limited"),
-                                msg_type=0,
-                                msg_seq=seq,
-                            )
-                            Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
-                            if send:
-                                msg_ids.append(send["id"])
-                                seq += 1
-                        except ServerError:
-                            pass
-                    if images:
-                        for img in images:
-                            send_img = await ctx._api.post_group_file(
-                                group_openid=ctx.group_openid,
-                                file_type=1,
-                                file_data=await img.get_base64(),
-                            )
-                            send = await ctx.reply(msg_type=7, media=send_img, msg_seq=seq)
-                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
-                            if send:
-                                msg_ids.append(send["id"])
-                                seq += 1
-                    ctx.msg_seq = seq
-                elif isinstance(ctx, C2CMessage):
-                    seq = ctx.msg_seq if ctx.msg_seq else 1
-                    if images:
-                        image_1 = images[0]
-                        images.pop(0)
-                        send_img = await ctx._api.post_c2c_file(
-                            openid=ctx.author.user_openid,
-                            file_type=1,
-                            file_data=await image_1.get_base64(),
-                        )
-                    msg = "" if not msg else msg
-                    try:
-                        send = await ctx.reply(
-                            content=msg,
-                            msg_type=7 if send_img else 0,
-                            media=send_img,
-                            msg_seq=seq,
-                        )
-                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
-                        if image_1:
-                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
-                        if send:
-                            msg_ids.append(send["id"])
-                            seq += 1
-                    except ServerError:
-                        try:
-                            send = await ctx.reply(
-                                content=session_info.locale.t("error.message.limited"),
-                                msg_type=0,
-                                msg_seq=seq,
-                            )
-                            Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
-                            if send:
-                                msg_ids.append(send["id"])
-                                seq += 1
-                        except ServerError:
-                            pass
-                    if images:
-                        for img in images:
+
+                        if images:
+                            for img in images:
+                                send_img = await ctx._api.post_group_file(
+                                    group_openid=ctx.group_openid,
+                                    file_type=1,
+                                    file_data=await img.get_base64(),
+                                )
+                                global_seq += 1
+                                send = await ctx.reply(msg_type=7, media=send_img, msg_seq=global_seq)
+                                Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
+                                if send:
+                                    msg_ids.append(send["id"])
+
+                    elif isinstance(ctx, C2CMessage):
+                        if images:
+                            image_1 = images[0]
+                            images.pop(0)
                             send_img = await ctx._api.post_c2c_file(
                                 openid=ctx.author.user_openid,
                                 file_type=1,
-                                file_data=await img.get_base64(),
+                                file_data=await image_1.get_base64(),
                             )
-                            send = await ctx.reply(msg_type=7, media=send_img, msg_seq=seq)
-                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
-                            if send:
-                                msg_ids.append(send["id"])
-                                seq += 1
-                    ctx.msg_seq = seq
+                        msg = "" if not msg else msg
+                        global_seq += 1
+                        send = await ctx.reply(
+                            content=msg,
+                            msg_type=7 if send_img else 0,
+                            media=send_img,
+                            msg_seq=global_seq,
+                        )
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
+                        if image_1:
+                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
+                        if send:
+                            msg_ids.append(send["id"])
+
+                        if images:
+                            for img in images:
+                                send_img = await ctx._api.post_c2c_file(
+                                    openid=ctx.author.user_openid,
+                                    file_type=1,
+                                    file_data=await img.get_base64(),
+                                )
+                                global_seq += 1
+                                send = await ctx.reply(msg_type=7, media=send_img, msg_seq=global_seq)
+                                Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
+                                if send:
+                                    msg_ids.append(send["id"])
+                else:
+                    from bots.qqbot.bot import client
+
+                    client.api = ModdedBotAPI(http=client.http)
+
+                    if session_info.target_from == target_guild_prefix:
+                        if images:
+                            image_1 = images[0]
+                            images.pop(0)
+                        send_img = await image_1.get() if image_1 else None
+                        msg = url_filter(msg)
+                        msg = "" if not msg else msg
+                        await client.api.post_message(
+                            channel_id=session_info.get_common_target_id(),
+                            content=msg,
+                            file_image=send_img,
+                        )
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
+                        if image_1:
+                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
+                        if images:
+                            for img in images:
+                                send_img = await img.get()
+                                await client.api.post_message(
+                                    channel_id=session_info.get_common_target_id(), file_image=send_img
+                                )
+                                Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
+                    elif session_info.target_from == target_direct_prefix:
+                        if images:
+                            image_1 = images[0]
+                            images.pop(0)
+                        send_img = await image_1.get() if image_1 else None
+                        msg = url_filter(msg)
+                        msg = "" if not msg else msg
+                        await client.api.post_dms(
+                            guild_id=session_info.get_common_target_id(), content=msg, file_image=send_img
+                        )
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
+                        if image_1:
+                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
+                        if images:
+                            for img in images:
+                                send_img = await img.get()
+                                await client.api.post_dms(
+                                    guild_id=session_info.get_common_target_id(), file_image=send_img
+                                )
+                                Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
+                    elif session_info.target_from == target_group_prefix:
+                        msg = "" if not msg else msg
+                        if images:
+                            image_1 = images[0]
+                            images.pop(0)
+                            send_img = await client.api.post_group_file(
+                                group_openid=session_info.get_common_target_id(),
+                                file_type=1,
+                                file_data=await image_1.get_base64(),
+                            )
+                        global_seq += 1
+                        send = await client.api.post_group_message(
+                            group_openid=session_info.get_common_target_id(),
+                            content=msg,
+                            msg_type=7 if send_img else 0,
+                            media=send_img,
+                            msg_seq=global_seq,
+                        )
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
+                        if image_1:
+                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
+                        if send:
+                            msg_ids.append(send["id"])
+
+                        if images:
+                            for img in images:
+                                send_img = await client.api.post_group_file(
+                                    group_openid=session_info.get_common_target_id(),
+                                    file_type=1,
+                                    file_data=await img.get_base64(),
+                                )
+                                global_seq += 1
+                                send = await client.api.post_group_message(
+                                    group_openid=session_info.get_common_target_id(),
+                                    msg_type=7,
+                                    media=send_img,
+                                    msg_seq=global_seq,
+                                )
+                                Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
+                                if send:
+                                    msg_ids.append(send["id"])
+
+                    elif session_info.target_from == target_c2c_prefix:
+                        if images:
+                            image_1 = images[0]
+                            images.pop(0)
+                            send_img = await client.api.post_c2c_file(
+                                openid=session_info.get_common_target_id(),
+                                file_type=1,
+                                file_data=await image_1.get_base64(),
+                            )
+                        msg = "" if not msg else msg
+                        global_seq += 1
+                        send = await client.api.post_c2c_message(
+                            openid=session_info.get_common_target_id(),
+                            content=msg,
+                            msg_type=7 if send_img else 0,
+                            media=send_img,
+                            msg_seq=global_seq,
+                        )
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
+                        if image_1:
+                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
+                        if send:
+                            msg_ids.append(send["id"])
+                        if images:
+                            for img in images:
+                                send_img = await client.api.post_c2c_file(
+                                    openid=session_info.get_common_target_id(),
+                                    file_type=1,
+                                    file_data=await img.get_base64(),
+                                )
+                                global_seq += 1
+                                send = await client.api.post_c2c_message(
+                                    openid=session_info.get_common_target_id(),
+                                    msg_type=7,
+                                    media=send_img,
+                                    msg_seq=global_seq,
+                                )
+                                Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
+                                if send:
+                                    msg_ids.append(send["id"])
+
+        @retry(stop=retry_attempt, wait=retry_wait, reraise=True)
+        async def send_msg_markdown():
+            global global_seq
+            texts = []
+
+            if quote and isinstance(ctx, (Message, GroupMessage)):
+                texts.append(f'<qqbot-at-user id="{session_info.get_common_sender_id()}" />')
+            keyboard = None
+            if session_info.tmp.get("wait_type") == "wait_confirm" and session_info.tmp.get("wait_active") == "yes":
+                button_yes = Button(
+                    id="1",
+                    render_data=RenderData(label="是", visited_label="已确认", style=0),
+                    action=Action(
+                        type=1,
+                        permission=Permission(
+                            type=0, specify_user_ids=[session_info.get_common_sender_id()], specify_role_ids=["1"]
+                        ),
+                        click_limit=1,
+                        data="confirm_yes",
+                        at_bot_show_channel_list=False,
+                    ),
+                )
+                button_no = Button(
+                    id="2",
+                    render_data=RenderData(label="否", visited_label="已取消", style=0),
+                    action=Action(
+                        type=1,
+                        permission=Permission(
+                            type=0, specify_user_ids=[session_info.get_common_sender_id()], specify_role_ids=["1"]
+                        ),
+                        click_limit=1,
+                        data="confirm_no",
+                        at_bot_show_channel_list=False,
+                    ),
+                )
+
+                keyboard = KeyboardPayload(content=Keyboard(rows=[KeyboardRow(buttons=[button_yes, button_no])]))
+
+            possibly_choices: list[dict[str, str]] = []
+            if session_info.tmp.get("button_data"):
+                possibly_choices: list[dict[str, str]] = orjson.loads(session_info.tmp.get("button_data", ""))
+            if (
+                session_info.tmp.get("wait_type") == "wait_next_message"
+                and session_info.tmp.get("wait_active") == "yes"
+            ):
+                possibly_choices: list[dict[str, str]] = orjson.loads(session_info.tmp.get("wait_possibly_choices", ""))
+            if len(possibly_choices) > 0:
+                rows = []
+                i = 0
+                for r in possibly_choices:
+                    buttons = []
+
+                    for label, data in r.items():
+                        i += 1
+                        button = Button(
+                            id=str(i),
+                            render_data=RenderData(label=label, visited_label=f"已选择: {label}", style=0),
+                            action=Action(
+                                type=1,
+                                permission=Permission(
+                                    type=0,
+                                    specify_user_ids=[session_info.get_common_sender_id()],
+                                    specify_role_ids=["1"],
+                                ),
+                                click_limit=1,
+                                data=data,
+                                at_bot_show_channel_list=False,
+                            ),
+                        )
+                        buttons.append(button)
+                    rows.append(KeyboardRow(buttons=buttons))
+                keyboard = KeyboardPayload(content=Keyboard(rows=rows))
+
+            converted_message = message.as_sendable(session_info, parse_message=enable_parse_message)
+            _use_markdown = True
+
+            if converted_message.only(PlainElement):
+                _use_markdown = False
+            if converted_message.only(ImageElement) and len(converted_message) == 1:
+                _use_markdown = False
+
+            if keyboard:
+                _use_markdown = True
+
+            if not _use_markdown:
+                Logger.debug("MessageElements do not require markdown, sending as plain message instead of markdown.")
+                return await send_msg()
+
+            for x in converted_message:
+                if isinstance(x, PlainElement):
+                    x.text = html.unescape(x.text)
+                    if enable_parse_message:
+                        x.text = match_atcode(x.text, client_name, "<@{uid}>")
+                    texts.append(x.text)
+                elif isinstance(x, ImageElement):
+                    if S3Storage is not None:
+                        upload = await S3Storage.upload_temp(await x.get())
+                        if upload and "public_url" in upload:
+                            w, h = await x.get_wh()
+                            max_w = 128
+                            fin_scale = max_w / w if w > max_w else 1
+                            fin_w = w * fin_scale
+                            fin_h = h * fin_scale
+                            texts.append(f"![text #{int(fin_w)}px #{int(fin_h)}px]({upload['public_url']})")
+                elif isinstance(x, MentionElement):
+                    if x.client == client_name and session_info.target_from == target_guild_prefix:
+                        texts.append(f'<qqbot-at-user id="{x.id}" />')
+            if len(texts) != 0:
+                msg = "\n".join(texts)
+                md = MarkdownPayload(content=msg)
+
+                if ctx and not isinstance(ctx, Interaction):
+                    if isinstance(ctx, (Message, DirectMessage, GroupMessage, C2CMessage)):
+                        global_seq += 1
+                        send = await ctx.reply(
+                            markdown=md,
+                            msg_type=2,
+                            msg_seq=global_seq,
+                            keyboard=keyboard,
+                        )
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
+                        if send:
+                            msg_ids.append(send["id"])
+
+                else:
+                    from bots.qqbot.bot import client
+
+                    client.api = ModdedBotAPI(http=client.http)
+
+                    if session_info.target_from == target_guild_prefix:
+                        send = await client.api.post_message(
+                            channel_id=session_info.get_common_target_id(),
+                            markdown=md,
+                        )
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
+                        if send:
+                            msg_ids.append(send["id"])
+
+                    elif session_info.target_from == target_direct_prefix:
+                        send = await client.api.post_dms(
+                            guild_id=session_info.get_common_target_id(),
+                            markdown=md,
+                        )
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
+                        if send:
+                            msg_ids.append(send["id"])
+
+                    elif session_info.target_from == target_group_prefix:
+                        global_seq += 1
+                        send = await client.api.post_group_message(
+                            group_openid=session_info.get_common_target_id(),
+                            markdown=md,
+                            msg_type=2,
+                            msg_seq=global_seq,
+                        )
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
+                        if send:
+                            msg_ids.append(send["id"])
+
+                    elif session_info.target_from == target_c2c_prefix:
+                        global_seq += 1
+                        send = await client.api.post_c2c_message(
+                            openid=session_info.get_common_target_id(),
+                            markdown=md,
+                            msg_type=2,
+                            msg_seq=global_seq,
+                        )
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
+                        if send:
+                            msg_ids.append(send["id"])
+
+        if not qq_use_markdown:
+            await send_msg()
+        else:
+            await send_msg_markdown()
 
         return msg_ids
 
@@ -447,10 +718,35 @@ class QQBotContextManager(ContextManager):
                     emoji_type=emoji_type,
                     emoji_id=qq_typing_emoji,
                 )
+            resolved = False
+            if session_info.target_from == target_group_prefix:
+
+                async def _send_group_typing(session: SessionInfo) -> None:
+                    _t = 0
+                    global typing_msg
+                    typing_msg = None
+                    while not resolved:
+                        await asyncio.sleep(1)
+                        _t += 1
+                        if _t >= 5:
+                            try:
+                                typing_msg = await cls.send_message(
+                                    session, MessageChain.assign(I18NContext("message.typing")), _ignore_retries=True
+                                )
+                                Logger.debug("typing message sent:" + str(typing_msg))
+                            except Exception:
+                                Logger.exception("Failed to send group typing message")
+                            break
+
+                asyncio.create_task(_send_group_typing(session_info))
 
             flag = asyncio.Event()
             cls.typing_flags[session_info.session_id] = flag
             await flag.wait()
+            resolved = True
+            await asyncio.sleep(1)
+            if typing_msg:
+                await cls.delete_message(session_info, typing_msg)
 
         asyncio.create_task(_typing())
 
@@ -481,3 +777,61 @@ class QQBotContextManager(ContextManager):
                 emoji_type=emoji_type,
                 emoji_id=qq_limited_emoji,
             )
+
+
+_tasks_high_priority = []
+_tasks = []
+
+
+class QQBotFetchedContextManager(QQBotContextManager):
+    @classmethod
+    async def send_message(
+        cls,
+        session_info: SessionInfo,
+        message: MessageChain | MessageNodes,
+        quote: bool = True,
+        enable_parse_message=True,
+        enable_split_image=True,
+        _ignore_retries: bool = False,
+    ) -> None:
+        append_tsk = (
+            _tasks_high_priority if session_info.target_info.target_data.get("in_post_whitelist", False) else _tasks
+        )
+        append_tsk.append(
+            super().send_message(
+                session_info,
+                message,
+                quote=quote,
+                enable_parse_message=enable_parse_message,
+                _ignore_retries=_ignore_retries,
+            )
+        )
+
+    @staticmethod
+    async def process_tasks():
+        # https://bot.q.qq.com/wiki/develop/api-v2/server-inter/message/send-receive/send.html
+        # 60 qpm
+
+        while True:
+            if _tasks_high_priority:
+                task = _tasks_high_priority.pop(0)
+                try:
+                    await task
+                except Exception as e:
+                    Logger.error(f"Error occurred while processing high-priority task: {e}")
+                cd = 1
+                Logger.info(
+                    f"Processed a high-priority task in QQBotFetchedContextManager, waiting cooldown for {cd}s..."
+                )
+                await asyncio.sleep(cd)
+            elif _tasks:
+                task = _tasks.pop(0)
+                try:
+                    await task
+                except Exception as e:
+                    Logger.error(f"Error occurred while processing task: {e}")
+                cd = 1.5
+                Logger.info(f"Processed a task in QQBotFetchedContextManager, waiting cooldown for {cd}s...")
+                await asyncio.sleep(cd)
+            else:
+                await asyncio.sleep(1)

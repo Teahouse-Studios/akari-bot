@@ -5,7 +5,7 @@
     "wordle.help.option.hard": "使用困難模式。",
     "wordle.help.option.trial": "使用挑戰模式。",
     "wordle.help.theme": "設定是否使用深色主題。",
-    "wordle.message.occupied": "此會話內有遊戲正在進行。",
+    "wordle.message.occupied": "此場景內有遊戲正在進行。",
     "wordle.message.finish": "遊戲結束，答案為：${answer}。\n查詢辭典：https://dictionary.cambridge.org/dictionary/english/${answer}",
     "wordle.message.finish.success": "祝賀！你在 ${attempt} 回合內完成了遊戲。",
     "wordle.message.hard.not_matched": "輸入的單詞不符合要求。",

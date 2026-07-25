@@ -9,9 +9,9 @@ from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
 from core.builtins.parser.args import parse_template
+from core.builtins.types import MessageElement
 from core.config.decorator import _process_class
 from core.constants.exceptions import InvalidTemplatePattern
-from core.builtins.types import MessageElement
 from core.loader import ModulesManager
 from core.types import Module
 from core.types.module.component_meta import *

@@ -1,0 +1,6 @@
+{
+  "url": "https://api.mojang.com/users/profiles/minecraft/Notch",
+  "status_code": 200,
+  "text": "{\n  \"id\" : \"069a79f444e94726a5befca90e38aaf5\",\n  \"name\" : \"Notch\"\n}",
+  "headers": {}
+}

@@ -26,7 +26,7 @@ class CoolDown:
     def _get_cd_dict(self) -> ExpiringTempDict:
         """
         获取或创建冷却事件字典。
-        对于单个发送者，返回 sender_id -> key 的结构。
+        对于单个用户，返回 sender_id -> key 的结构。
         对于 whole_target，返回 target_id -> key 的结构。
         """
         target_dict = _cd_dict[self.target_id]

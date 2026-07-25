@@ -4,9 +4,9 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
 from core.game import PlayState, GAME_EXPIRED
+from core.utils.func import is_int
 from core.utils.petal import cost_petal, gained_petal, lost_petal
 from core.utils.random import Random
-from core.utils.func import is_int
 
 no_solution_lst = [
     "无解",
@@ -127,8 +127,8 @@ def find_solution(numbers):
                 expr_a, prec_a = exprs[i]
                 expr_b, prec_b = exprs[j]
 
-                rest_nums = [nums[k] for k in range(len(nums)) if k != i and k != j]
-                rest_exprs = [exprs[k] for k in range(len(nums)) if k != i and k != j]
+                rest_nums = [nums[k] for k in range(len(nums)) if k not in (i, j)]
+                rest_exprs = [exprs[k] for k in range(len(nums)) if k not in (i, j)]
 
                 for op, (func, prec) in ops.items():
                     if op in ["+", "*"] and j < i:

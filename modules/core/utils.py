@@ -175,11 +175,11 @@ locale = module("locale", base=True, desc="{I18N:core.help.locale.desc}", alias=
 
 @locale.command()
 async def _(msg: Bot.MessageSession):
-    avaliable_lang = "{I18N:message.delimiter}".join(get_available_locales())
+    available_lang = "{I18N:message.delimiter}".join(get_available_locales())
     res = [
         I18NContext("core.message.locale.prompt", lang="{I18N:language}"),
         I18NContext("core.message.locale.set.prompt", prefix=msg.session_info.prefixes[0]),
-        I18NContext("core.message.locale.langlist", langlist=avaliable_lang),
+        I18NContext("core.message.locale.langlist", langlist=available_lang),
     ]
 
     if locale_url := Config("locale_url", cfg_type=str):
@@ -192,11 +192,11 @@ async def _(msg: Bot.MessageSession, lang: str):
     if lang in get_available_locales() and await msg.session_info.target_info.edit_attr("locale", lang):
         await msg.finish(Locale(lang).t("message.success"))
     else:
-        avaliable_lang = "{I18N:message.delimiter}".join(get_available_locales())
+        available_lang = "{I18N:message.delimiter}".join(get_available_locales())
         await msg.finish(
             [
                 I18NContext("core.message.locale.set.invalid"),
-                I18NContext("core.message.locale.langlist", langlist=avaliable_lang),
+                I18NContext("core.message.locale.langlist", langlist=available_lang),
             ]
         )
 
