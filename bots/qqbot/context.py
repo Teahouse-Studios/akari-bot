@@ -445,7 +445,9 @@ class QQBotContextManager(ContextManager):
                     action=Action(
                         type=1,
                         permission=Permission(
-                            type=0, specify_user_ids=[session_info.get_common_sender_id()], specify_role_ids=["1"]
+                            type=0 if not isinstance(ctx, C2CMessage) else 2,
+                            specify_user_ids=[session_info.get_common_sender_id()],
+                            specify_role_ids=["1"],
                         ),
                         click_limit=1,
                         data="confirm_yes",
@@ -458,7 +460,9 @@ class QQBotContextManager(ContextManager):
                     action=Action(
                         type=1,
                         permission=Permission(
-                            type=0, specify_user_ids=[session_info.get_common_sender_id()], specify_role_ids=["1"]
+                            type=0 if not isinstance(ctx, C2CMessage) else 2,
+                            specify_user_ids=[session_info.get_common_sender_id()],
+                            specify_role_ids=["1"],
                         ),
                         click_limit=1,
                         data="confirm_no",
@@ -725,10 +729,11 @@ class QQBotContextManager(ContextManager):
                     _t = 0
                     global typing_msg
                     typing_msg = None
+                    sended = False
                     while not resolved:
                         await asyncio.sleep(1)
                         _t += 1
-                        if _t >= 5:
+                        if _t >= 5 and not sended:
                             try:
                                 typing_msg = await cls.send_message(
                                     session, MessageChain.assign(I18NContext("message.typing")), _ignore_retries=True
@@ -736,7 +741,10 @@ class QQBotContextManager(ContextManager):
                                 Logger.debug("typing message sent:" + str(typing_msg))
                             except Exception:
                                 Logger.exception("Failed to send group typing message")
-                            break
+                            sended = True
+
+                    if typing_msg:
+                        await cls.delete_message(session_info, typing_msg)
 
                 asyncio.create_task(_send_group_typing(session_info))
 
@@ -744,9 +752,6 @@ class QQBotContextManager(ContextManager):
             cls.typing_flags[session_info.session_id] = flag
             await flag.wait()
             resolved = True
-            await asyncio.sleep(1)
-            if typing_msg:
-                await cls.delete_message(session_info, typing_msg)
 
         asyncio.create_task(_typing())
 
