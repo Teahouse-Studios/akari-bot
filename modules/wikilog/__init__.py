@@ -353,7 +353,38 @@ async def _(msg: Bot.MessageSession):
             )
             + "\n"
         )
+        if "note" in infos[apilink] and infos[apilink]["note"]:
+            text += msg.session_info.locale.t("wikilog.message.note") + infos[apilink]["note"] + "\n"
     await msg.finish(text)
+
+
+@wikilog.command(
+    "note set <apilink> ... {{I18N:wikilog.help.note.set}}",
+    "note remove <apilink> {{I18N:wikilog.help.note.remove}}",
+)
+async def _(msg: Bot.MessageSession, apilink: str):
+    records = await WikiLogTargetSetInfo.get_by_target_id(msg)
+    infos = records.infos
+    wiki_info = WikiLib(apilink)
+    status = await wiki_info.check_wiki_available()
+    if status.available:
+        wiki_name = status.value.name
+        if status.value.lang:
+            wiki_name += f" ({status.value.lang})"
+        if status.value.api in infos:
+            if "remove" in msg.parsed_msg:
+                note = ""
+            else:
+                note = " ".join(msg.parsed_msg.get("...", []))
+            r = await records.conf_note(status.value.api, note)
+            if r:
+                await msg.finish(I18NContext("wikilog.message.note.success", wiki=wiki_name, note=note))
+            else:
+                await msg.finish(I18NContext("wikilog.message.note.failed"))
+        else:
+            await msg.finish(I18NContext("wikilog.message.filter.set.failed"))
+    else:
+        await msg.finish(I18NContext("wikilog.message.config.wiki.failed", message=status.message))
 
 
 @wikilog.hook("keepalive")
@@ -495,9 +526,13 @@ async def _():
             for wiki in matched[id_]:
                 try:
                     wiki_info = (await WikiLib(wiki).check_wiki_available()).value
-                    wiki_name = f"({wiki_info.name}) "
-                    if wiki_info.wikiid:
-                        wiki_name = f"({wiki_info.wikiid}) "
+                    note = fetches[id_][wiki].get("note")
+                    if note:
+                        wiki_name = f"({note}) "
+                    else:
+                        wiki_name = f"({wiki_info.name}) "
+                        if wiki_info.wikiid:
+                            wiki_name = f"({wiki_info.wikiid}) "
                 except Exception:
                     continue
 

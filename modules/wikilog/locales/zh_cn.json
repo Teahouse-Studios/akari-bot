@@ -40,6 +40,11 @@
   "wikilog.help.keepalive.disable": "禁用机器人登录状态检查。",
   "wikilog.message.untrust.wiki": "失败：此 Wiki 当前没有加入机器人的白名单列表中。",
   "wikilog.message.keepalive.logged.as": "[Keep alive] 以 ${name} 的身份登录：${wiki}",
-  "wikilog.message.keepalive.failed": "[Keep alive] 登录状态检查失败：${link}"
+  "wikilog.message.keepalive.failed": "[Keep alive] 登录状态检查失败：${link}",
+  "wikilog.help.note.set": "设置一条 Wiki 的备注，监控消息中将用备注替换 Wiki 名称。",
+  "wikilog.help.note.remove": "移除一条 Wiki 的备注。",
+  "wikilog.message.note.success": "成功为 ${wiki} 设置了备注：${note}",
+  "wikilog.message.note.failed": "操作失败，请检查此 Wiki 是否已被添加进列表。",
+  "wikilog.message.note": "备注："
 
 }

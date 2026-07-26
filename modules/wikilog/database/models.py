@@ -24,6 +24,7 @@ class WikiLogTargetSetInfo(DBModel):
                 )
                 infos[api_link].setdefault("use_bot", False)
                 infos[api_link].setdefault("keep_alive", False)
+                infos[api_link].setdefault("note", "")
                 await self.save()
                 return True
         else:
@@ -100,6 +101,14 @@ class WikiLogTargetSetInfo(DBModel):
         infos = self.infos
         if api_link in infos:
             return infos[api_link].get("keep_alive")
+        return False
+
+    async def conf_note(self, api_link: str, note: str):
+        infos = self.infos
+        if api_link in infos:
+            infos[api_link]["note"] = note
+            await self.save()
+            return True
         return False
 
     @classmethod
