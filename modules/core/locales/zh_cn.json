@@ -217,5 +217,16 @@
     "core.message.whoami": "你的 ID：${sender}\n本场景的 ID：${target}",
     "core.message.whoami.admin": "（你拥有本场景的管理员权限）",
     "core.message.whoami.botadmin": "（你拥有本场景的机器人管理员权限）",
-    "core.message.whoami.superuser": "（你拥有本机器人的超级用户权限）"
+    "core.message.whoami.superuser": "（你拥有本机器人的超级用户权限）",
+    "core.help.auth.add": "授权一个用户使用指定的需要超级管理员权限的模块。",
+    "core.help.auth.remove": "取消一个用户使用指定模块的授权。",
+    "core.help.auth.list": "查看指定用户的所有模块授权记录。",
+    "core.message.auth.module_not_found": "模块“${module}”不存在。",
+    "core.message.auth.module_not_required_superuser": "模块“${module}”不需要超级管理员权限。",
+    "core.message.auth.add.success": "成功授权 ${user} 使用模块 ${module}。",
+    "core.message.auth.add.already": "${user} 已被你授权使用模块 ${module}。",
+    "core.message.auth.remove.success": "已取消 ${user} 使用模块 ${module} 的授权。",
+    "core.message.auth.remove.not_found": "未找到 ${user} 由你授权的 ${module} 记录。",
+    "core.message.auth.list.entry": "${user} 被 ${authorized_by} 授权使用模块 ${module}",
+    "core.message.auth.list.empty": "暂无任何授权记录。"
 }

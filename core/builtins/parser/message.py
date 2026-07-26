@@ -42,7 +42,7 @@ from core.constants.exceptions import (
     WaitCancelException,
 )
 from core.constants.info import Info
-from core.database.models import AnalyticsData
+from core.database.models import AnalyticsData, SenderInfo
 from core.exports import exports
 from core.loader import ModulesManager
 from core.logger import Logger
@@ -482,6 +482,28 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
     return first_word
 
 
+async def _check_superuser_or_authorized(msg: "Bot.MessageSession", module_name: str) -> bool:
+    """
+    检查用户是否有使用该模块的权限，支持模块授权。
+
+    先检查是否为超级用户，若不是则检查 sender_data 中的 module_auth 授权列表。
+    授权需同时验证授权者仍为超级用户。
+
+    :param msg: 消息会话对象
+    :param module_name: 模块名称
+    :return: 如果用户有权限返回 True
+    """
+    if msg.check_super_user():
+        return True
+    auth_list = msg.session_info.sender_info.sender_data.get("module_auth", [])
+    for entry in auth_list:
+        if entry.get("module") == module_name:
+            authorizer = await SenderInfo.get_by_sender_id(entry["authorized_by"], create=False)
+            if authorizer and authorizer.superuser:
+                return True
+    return False
+
+
 async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word, identify_str):
     """
     执行模块的命令处理逻辑。
@@ -549,8 +571,8 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                 return
         elif module.required_superuser:
             # 需要超级用户权限
-            if not msg.check_super_user():
-                await msg.send_message(I18NContext("parser.superuser.permission.denied"))
+            if not await _check_superuser_or_authorized(msg, command_first_word):
+                await msg.send_message(I18NContext("parser.superuser.permission.denied.auth"))
                 return
         elif not module.base:
             # 普通模块，检查是否已启用
@@ -724,7 +746,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                         continue
                 elif regex_module.required_superuser:
                     # 需要超级用户权限
-                    if not msg.check_super_user():
+                    if not await _check_superuser_or_authorized(msg, m):
                         continue
                 elif regex_module.required_admin:
                     # 需要管理员权限
@@ -799,7 +821,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
 
                             # ========== 正则表达式级别的权限检查 ==========
                             if rfunc.required_superuser:
-                                if not msg.check_super_user():
+                                if not await _check_superuser_or_authorized(msg, m):
                                     continue
                             elif rfunc.required_admin:
                                 if not await msg.check_permission():
@@ -1052,8 +1074,8 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
                     await msg.send_message(I18NContext("parser.superuser.permission.denied"))
                     return
             elif command.required_superuser:
-                if not msg.check_super_user():
-                    await msg.send_message(I18NContext("parser.superuser.permission.denied"))
+                if not await _check_superuser_or_authorized(msg, command_first_word):
+                    await msg.send_message(I18NContext("parser.superuser.permission.denied.auth"))
                     return
             elif command.required_admin:
                 if not await msg.check_permission():
@@ -1154,12 +1176,13 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
             # 如果函数没有使用 msg.finish，手动结束会话
             raise SessionFinished(msg.sent)
         except InvalidCommandFormatError:
-            if not msg.session_info.sender_info.sender_data.get("typo_check", True):
-                await msg.send_message(
-                    I18NContext(
-                        "parser.command.invalid.syntax", module=command_first_word, prefix=msg.session_info.prefixes[0]
-                    )
+            # if not msg.session_info.sender_info.sender_data.get("typo_check", True):
+            # TODO: ? 如果是命令级别的语法错误，这个逻辑到这里有问题，这个语句会导致机器人什么都不发送而不是进行错字检查
+            await msg.send_message(
+                I18NContext(
+                    "parser.command.invalid.syntax", module=command_first_word, prefix=msg.session_info.prefixes[0]
                 )
+            )
             return
         except Exception as e:
             raise e

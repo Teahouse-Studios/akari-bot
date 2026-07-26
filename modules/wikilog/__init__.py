@@ -355,6 +355,8 @@ async def _(msg: Bot.MessageSession):
         )
         if "note" in infos[apilink] and infos[apilink]["note"]:
             text += msg.session_info.locale.t("wikilog.message.note") + infos[apilink]["note"] + "\n"
+    if not text:
+        text += msg.session_info.locale.t("message.none")
     await msg.finish(text)
 
 
