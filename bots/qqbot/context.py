@@ -822,8 +822,8 @@ class QQBotFetchedContextManager(QQBotContextManager):
                 task = _tasks_high_priority.pop(0)
                 try:
                     await task
-                except Exception as e:
-                    Logger.exception(f"Error occurred while processing high-priority task: {e}")
+                except Exception:
+                    Logger.exception("Error occurred while processing high-priority task: ")
                 cd = 1
                 Logger.info(
                     f"Processed a high-priority task in QQBotFetchedContextManager, waiting cooldown for {cd}s..."
@@ -833,8 +833,8 @@ class QQBotFetchedContextManager(QQBotContextManager):
                 task = _tasks.pop(0)
                 try:
                     await task
-                except Exception as e:
-                    Logger.exception(f"Error occurred while processing task: {e}")
+                except Exception:
+                    Logger.exception("Error occurred while processing task: ")
                 cd = 1.5
                 Logger.info(f"Processed a task in QQBotFetchedContextManager, waiting cooldown for {cd}s...")
                 await asyncio.sleep(cd)
