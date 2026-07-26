@@ -727,7 +727,6 @@ class QQBotContextManager(ContextManager):
 
                 async def _send_group_typing(session: SessionInfo) -> None:
                     _t = 0
-                    global typing_msg
                     typing_msg = None
                     sended = False
                     while not resolved:
