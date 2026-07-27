@@ -246,6 +246,24 @@ async def _(tsk: JobQueuesTable, args: dict):
     return {"message_id": send}
 
 
+@JobQueueClient.action("send_private_message")
+async def _(tsk: JobQueuesTable, args: dict):
+    """发送私聊消息处理器。
+
+    将消息以私聊形式单独发送给指定用户，而非发往会话所在的场景。
+    返回发送的消息 ID，为空列表表示发送失败。
+    """
+    session_info, bot, ctx_manager, _args = await get_session(args)
+    send = await ctx_manager.send_private_msg(
+        session_info,
+        _args.get("user_id", ""),
+        converter.structure(_args.get("message", {}), MessageChain | MessageNodes),
+        enable_parse_message=_args.get("enable_parse_message", True),
+        enable_split_image=_args.get("enable_split_image", True),
+    )
+    return {"message_id": send}
+
+
 @JobQueueClient.action("delete_message")
 async def _(tsk: JobQueuesTable, args: dict):
     """删除消息处理器。

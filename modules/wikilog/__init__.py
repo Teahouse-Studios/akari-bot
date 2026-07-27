@@ -8,6 +8,7 @@ from core.builtins.message.internal import I18NContext
 from core.builtins.session.internal import FetchedMessageSession
 from core.component import module
 from core.config import Config
+from core.database.models import TargetInfo
 from core.logger import Logger
 from core.scheduler import IntervalTrigger
 from modules.wiki.utils.ab import convert_ab_to_detailed_format
@@ -392,27 +393,32 @@ async def _(msg: Bot.MessageSession, apilink: str):
 @wikilog.hook("keepalive")
 async def _(ctx: Bot.ModuleHookContext):
     data_ = await WikiLogTargetSetInfo.return_all_data()
-    for target in data_:
-        for wiki in data_[target]:
-            if "keep_alive" in data_[target][wiki] and data_[target][wiki]["keep_alive"]:
-                fetch_target = await Bot.fetch_target(target)
-                if fetch_target:
-                    session = await FetchedMessageSession.from_session_info(fetch_target)
-                    try:
-                        wiki_ = WikiLib(wiki)
-                        await wiki_.fixup_wiki_info()
-                        get_user_info = await wiki_.get_json(action="query", meta="userinfo")
-                        if n := get_user_info["query"]["userinfo"]["name"]:
-                            await session.send_direct_message(
-                                I18NContext(
-                                    "wikilog.message.keepalive.logged.as",
-                                    name=n,
-                                    wiki=wiki_.wiki_info.name,
+    for union_id in data_:
+        # 配置挂在 union 上，推送需展开为该 union 下的全部平台会话。
+        targets = await TargetInfo.list_ids_by_union(union_id)
+        for wiki in data_[union_id]:
+            if "keep_alive" in data_[union_id][wiki] and data_[union_id][wiki]["keep_alive"]:
+                for target in targets:
+                    fetch_target = await Bot.fetch_target(target)
+                    if fetch_target:
+                        session = await FetchedMessageSession.from_session_info(fetch_target)
+                        try:
+                            wiki_ = WikiLib(wiki)
+                            await wiki_.fixup_wiki_info()
+                            get_user_info = await wiki_.get_json(action="query", meta="userinfo")
+                            if n := get_user_info["query"]["userinfo"]["name"]:
+                                await session.send_direct_message(
+                                    I18NContext(
+                                        "wikilog.message.keepalive.logged.as",
+                                        name=n,
+                                        wiki=wiki_.wiki_info.name,
+                                    )
                                 )
+                        except Exception as e:
+                            Logger.error(f"Keep alive failed: {e}")
+                            await session.send_direct_message(
+                                I18NContext("wikilog.message.keepalive.failed", link=wiki)
                             )
-                    except Exception as e:
-                        Logger.error(f"Keep alive failed: {e}")
-                        await session.send_direct_message(I18NContext("wikilog.message.keepalive.failed", link=wiki))
 
 
 fetch_cache = {}
@@ -522,28 +528,32 @@ async def _():
     matched = matched_logs
 
     for id_ in matched:
-        ft = await Bot.fetch_target(id_)
-        if ft:
-            ft_session = await FetchedMessageSession.from_session_info(ft)
-            for wiki in matched[id_]:
-                try:
-                    wiki_info = (await WikiLib(wiki).check_wiki_available()).value
-                    note = fetches[id_][wiki].get("note")
-                    if note:
-                        wiki_name = f"({note}) "
-                    else:
-                        wiki_name = f"({wiki_info.name}) "
-                        if wiki_info.wikiid:
-                            wiki_name = f"({wiki_info.wikiid}) "
-                except Exception:
-                    continue
+        # 拉取按 union 去重，推送则展开到该 union 下的全部平台会话。
+        for target_id in await TargetInfo.list_ids_by_union(id_):
+            ft = await Bot.fetch_target(target_id)
+            if ft:
+                ft_session = await FetchedMessageSession.from_session_info(ft)
+                for wiki in matched[id_]:
+                    try:
+                        wiki_info = (await WikiLib(wiki).check_wiki_available()).value
+                        note = fetches[id_][wiki].get("note")
+                        if note:
+                            wiki_name = f"({note}) "
+                        else:
+                            wiki_name = f"({wiki_info.name}) "
+                            if wiki_info.wikiid:
+                                wiki_name = f"({wiki_info.wikiid}) "
+                    except Exception:
+                        continue
 
-                if matched[id_][wiki]["AbuseLog"]:
-                    ab = await convert_ab_to_detailed_format(ft_session, matched[id_][wiki]["AbuseLog"])
-                    for x in ab:
-                        await ft_session.send_direct_message(f"{wiki_name}{x}" if len(matched[id_]) > 1 else x)
-                if matched[id_][wiki]["RecentChanges"]:
-                    rc = await convert_rc_to_detailed_format(ft_session, matched[id_][wiki]["RecentChanges"], wiki_info)
+                    if matched[id_][wiki]["AbuseLog"]:
+                        ab = await convert_ab_to_detailed_format(ft_session, matched[id_][wiki]["AbuseLog"])
+                        for x in ab:
+                            await ft_session.send_direct_message(f"{wiki_name}{x}" if len(matched[id_]) > 1 else x)
+                    if matched[id_][wiki]["RecentChanges"]:
+                        rc = await convert_rc_to_detailed_format(
+                            ft_session, matched[id_][wiki]["RecentChanges"], wiki_info
+                        )
 
-                    for x in rc:
-                        await ft_session.send_direct_message(f"{wiki_name}{x}" if len(matched[id_]) > 1 else x)
+                        for x in rc:
+                            await ft_session.send_direct_message(f"{wiki_name}{x}" if len(matched[id_]) > 1 else x)

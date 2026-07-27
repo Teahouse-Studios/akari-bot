@@ -18,3 +18,4 @@ class Features(FeaturesBase):
     support_rss: bool = True
     support_typing: bool = False
     support_wait: bool = True
+    support_private_msg: bool = True

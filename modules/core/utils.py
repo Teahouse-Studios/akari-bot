@@ -9,6 +9,7 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, FormattedTime, I18NContext, Url
 from core.component import module
 from core.config import Config
+from core.database.models import SenderInfo
 from core.i18n import get_available_locales, Locale
 from core.utils.bash import run_sys_command
 
@@ -109,6 +110,26 @@ admin = module(
 )
 
 
+async def _display_union_list(msg: Bot.MessageSession, union_ids: list[str]) -> list[str]:
+    """
+    将权限列表中的 union ID 展开为其下绑定的平台账号 ID 用于展示，一行对应一个 union。
+    """
+    delimiter = msg.session_info.locale.t("message.delimiter")
+    lines = []
+    for union_id in union_ids:
+        bound_ids = await SenderInfo.list_ids_by_union(union_id)
+        lines.append(delimiter.join(bound_ids) if bound_ids else union_id)
+    return lines
+
+
+async def _resolve_union_id(user: str, create: bool = True) -> str:
+    """
+    将平台账号 ID 解析为写入权限列表的 union ID，未绑定任何 union 时退回原 ID。
+    """
+    sender_info = await SenderInfo.resolve_union(user, create)
+    return sender_info.union_id if sender_info else user
+
+
 @admin.command(
     "add <user> {{I18N:core.help.admin.add}}",
     "remove <user> {{I18N:core.help.admin.remove}}",
@@ -117,7 +138,10 @@ admin = module(
 async def _(msg: Bot.MessageSession):
     if "list" in msg.parsed_msg:
         if msg.session_info.custom_admins:
-            await msg.finish([I18NContext("core.message.admin.list")] + msg.session_info.custom_admins)
+            await msg.finish(
+                [I18NContext("core.message.admin.list")]
+                + await _display_union_list(msg, msg.session_info.custom_admins)
+            )
         else:
             await msg.finish(I18NContext("core.message.admin.list.none"))
     user = msg.parsed_msg["<user>"]
@@ -128,15 +152,17 @@ async def _(msg: Bot.MessageSession):
             )
         )
     if "add" in msg.parsed_msg:
-        if user in msg.session_info.custom_admins:
+        union_id = await _resolve_union_id(user)
+        if union_id in msg.session_info.custom_admins:
             await msg.finish(I18NContext("core.message.admin.add.already"))
-        if await msg.session_info.target_info.config_custom_admin(user):
+        if await msg.session_info.target_info.config_custom_admin(union_id):
             await msg.finish(I18NContext("core.message.admin.add.success", sender=user))
     if "remove" in msg.parsed_msg:
-        if user == msg.session_info.sender_id:
+        union_id = await _resolve_union_id(user, create=False)
+        if union_id == msg.session_info.sender_union_id:
             if not await msg.wait_confirm(I18NContext("core.message.admin.remove.confirm")):
                 await msg.finish()
-        if await msg.session_info.target_info.config_custom_admin(user, enable=False):
+        if await msg.session_info.target_info.config_custom_admin(union_id, enable=False):
             await msg.finish(I18NContext("core.message.admin.remove.success", sender=user))
 
 
@@ -148,7 +174,10 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     if "list" in msg.parsed_msg:
         if msg.session_info.banned_users:
-            await msg.finish([I18NContext("core.message.admin.ban.list")] + msg.session_info.banned_users)
+            await msg.finish(
+                [I18NContext("core.message.admin.ban.list")]
+                + await _display_union_list(msg, msg.session_info.banned_users)
+            )
         else:
             await msg.finish(I18NContext("core.message.admin.ban.list.none"))
     user = msg.parsed_msg["<user>"]
@@ -159,14 +188,16 @@ async def _(msg: Bot.MessageSession):
             )
         )
     if "ban" in msg.parsed_msg:
-        if user == msg.session_info.sender_id:
+        union_id = await _resolve_union_id(user)
+        if union_id == msg.session_info.sender_union_id:
             await msg.finish(I18NContext("core.message.admin.ban.self"))
-        if user in msg.session_info.banned_users:
+        if union_id in msg.session_info.banned_users:
             await msg.finish(I18NContext("core.message.admin.ban.already"))
-        await msg.session_info.target_info.config_banned_user(user)
+        await msg.session_info.target_info.config_banned_user(union_id)
         await msg.finish(I18NContext("core.message.admin.ban.success", sender=user))
     if "unban" in msg.parsed_msg:
-        if await msg.session_info.target_info.config_banned_user(user, enable=False):
+        union_id = await _resolve_union_id(user, create=False)
+        if await msg.session_info.target_info.config_banned_user(union_id, enable=False):
             await msg.finish(I18NContext("core.message.admin.unban.success", sender=user))
 
 
@@ -222,6 +253,12 @@ async def _(msg: Bot.MessageSession):
         perm.append(I18NContext("core.message.whoami.botadmin"))
     if msg.check_super_user():
         perm.append(I18NContext("core.message.whoami.superuser"))
+
+    sender_info = msg.session_info.sender_info
+    target_info = msg.session_info.target_info
+    sender_bound_ids = await sender_info.list_bound_ids()
+    target_bound_ids = await target_info.list_bound_ids()
+
     await msg.finish(
         [
             I18NContext(
@@ -232,6 +269,17 @@ async def _(msg: Bot.MessageSession):
             )
         ]
         + perm
+        + [
+            I18NContext("core.message.whoami.union", id=sender_info.union_id, disable_joke=True),
+            I18NContext("core.message.whoami.union.bound", count=len(sender_bound_ids)),
+        ]
+        # ID 是原样回显的数据，不能参与文本替换
+        + [Plain(i, disable_joke=True) for i in sender_bound_ids]
+        + [
+            I18NContext("core.message.whoami.target.union", id=target_info.union_id, disable_joke=True),
+            I18NContext("core.message.whoami.target.union.bound", count=len(target_bound_ids)),
+        ]
+        + [Plain(i, disable_joke=True) for i in target_bound_ids]
     )
 
 

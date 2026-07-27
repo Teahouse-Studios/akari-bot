@@ -2,7 +2,80 @@ from tortoise import Tortoise
 
 from core.database import fetch_module_db
 from core.database.link import db_type, get_db_link
-from core.database.models import DBVersion
+from core.database.models import DBVersion, backfill_union_binds
+
+# v3：原本以平台 ID 为主键的表改挂 union，旧数据的 union ID 直接沿用原 ID，因此只需重命名主键列。
+UNION_RENAME_TABLES = {
+    "sender_id": [
+        "sender_info",
+        "module_cytoid_bind_info",
+        "module_maimai_diving_prober_bind_info",
+        "module_maimai_lxns_prober_bind_info",
+        "module_phigros_bind_info",
+    ],
+    "target_id": [
+        "target_info",
+        "module_wiki_target_set_info",
+        "module_wikilog_target_set_info",
+    ],
+}
+
+# v3：统计与审计表保留原始 ID，另增 union 列用于聚合。
+UNION_RECORD_TABLES = ["analytics_data", "unfriendly_actions"]
+
+
+async def has_column(conn, table: str, column: str) -> bool:
+    """
+    判断某张表中是否存在指定列，表不存在时同样返回 False。
+
+    :param conn: 数据库连接。
+    :param table: 表名。
+    :param column: 列名。
+    """
+    if db_type == "sqlite":
+        rows = await conn.execute_query_dict(f'PRAGMA table_info("{table}");')
+        return any(row["name"] == column for row in rows)
+    rows = await conn.execute_query_dict(
+        "SELECT COLUMN_NAME FROM information_schema.COLUMNS "
+        "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s AND COLUMN_NAME = %s;",
+        [table, column],
+    )
+    return bool(rows)
+
+
+async def update_database_to_v3(conn):
+    """
+    将数据库升级至 v3：平台 ID 与数据解耦，数据改挂 union。
+
+    :param conn: 数据库连接。
+    """
+    # 主键列改名。表由 generate_schemas() 新建时已是 union_id，此时旧列不存在，跳过即可。
+    for old_column, tables in UNION_RENAME_TABLES.items():
+        for table in tables:
+            if not await has_column(conn, table, old_column):
+                continue
+            if db_type == "sqlite":
+                await conn.execute_query(f'ALTER TABLE "{table}" RENAME COLUMN "{old_column}" TO "union_id";')
+            else:
+                # CHANGE COLUMN 兼容 MySQL 8.0 以下版本。
+                await conn.execute_query(
+                    f"ALTER TABLE `{table}` CHANGE COLUMN `{old_column}` `union_id` VARCHAR(512) NOT NULL;"
+                )
+
+    # 补建映射行。旧数据的 union ID 与原 ID 相同，直接按原值一一对应即可。
+    # 账号级封禁保持关闭，原有的封禁状态已记在 union 上。
+    await backfill_union_binds()
+
+    # 统计与审计表增列并回填，历史记录的原始 ID 保持不动。
+    for table in UNION_RECORD_TABLES:
+        for column, source in (("target_union_id", "target_id"), ("sender_union_id", "sender_id")):
+            if await has_column(conn, table, column):
+                continue
+            if db_type == "sqlite":
+                await conn.execute_query(f'ALTER TABLE "{table}" ADD COLUMN "{column}" VARCHAR(512) NULL;')
+            else:
+                await conn.execute_query(f"ALTER TABLE `{table}` ADD COLUMN `{column}` VARCHAR(512) NULL;")
+            await conn.execute_query(f"UPDATE {table} SET {column} = {source} WHERE {column} IS NULL;")
 
 
 async def update_database():
@@ -78,10 +151,12 @@ async def update_database():
 
             await query_dbver.delete()
             await DBVersion.create(version=2)
-        # if db_version < 3:
-        #     query_dbver = await DBVersion.first()
-        #    ...
-        #     await query_dbver.delete()
-        #     await DBVersion.create(version=3)
+        if db_version < 3:
+            query_dbver = await DBVersion.first()
+
+            await update_database_to_v3(conn)
+
+            await query_dbver.delete()
+            await DBVersion.create(version=3)
 
     await Tortoise.close_connections()

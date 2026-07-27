@@ -270,6 +270,52 @@ class MessageSession:
             enable_split_image=enable_split_image,
         )
 
+    async def send_private_message(
+        self,
+        message_chain: Chainable,
+        user_id: str | None = None,
+        disable_secret_check: bool = False,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> list[str]:
+        """
+        用于向指定用户单独发送私聊消息。
+
+        与 send_message 不同，消息不会发到当前会话所在的场景，而是私信给某个用户，
+        适用于绑定码一类不宜出现在公开场景的内容。
+
+        :param message_chain: 消息链，若传入 str 则自动创建一条带有 PlainElement 的消息链
+        :param user_id: 目标用户 ID（带平台前缀），留空则发给触发本会话的用户
+        :param disable_secret_check: 是否禁用消息安全检查（默认为 False）
+        :param enable_parse_message: 是否允许解析消息（此参数作接口兼容用，仅 QQ 平台使用，默认为 True）
+        :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅 Telegram 平台使用，默认为 True）
+        :return: 消息 ID 列表，为空表示发送失败（如平台不支持私信、对方未与机器人建立私聊等）
+        """
+        user_id = user_id or self.session_info.sender_id
+        if not user_id:
+            return []
+
+        # 平台不支持私信时不必走一趟队列，直接判定失败
+        if not self.session_info.support_private_msg:
+            return []
+
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+
+        message_chain = get_message_chain(self.session_info, chain=message_chain)
+        if isinstance(message_chain, MessageNodes):
+            message_chain = MessageChain.assign(await msgnode2image(message_chain, session=self.session_info))
+        if not message_chain.is_safe and not disable_secret_check:
+            message_chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
+
+        return_val = await _queue_server.client_send_private_message(
+            self.session_info,
+            user_id,
+            message_chain,
+            enable_parse_message=enable_parse_message,
+            enable_split_image=enable_split_image,
+        )
+        return return_val.get("message_id") or []
+
     def as_display(
         self, text_only: bool = False, element_filter: tuple[MessageElement, ...] = None, connector: str = "\n"
     ) -> str:
@@ -709,7 +755,10 @@ class MessageSession:
 
         :return: 如果用户拥有管理员权限返回 True，否则返回 False
         """
-        if self.session_info.sender_id in self.session_info.custom_admins or self.session_info.sender_info.superuser:
+        if (
+            self.session_info.sender_union_id in self.session_info.custom_admins
+            or self.session_info.sender_info.superuser
+        ):
             return True
         return await self.check_native_permission()
 

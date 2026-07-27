@@ -29,17 +29,14 @@ class TestDataFactory:
         :param sender_data: 自定义数据
         :returns: SenderInfo 实例
         """
-        obj, _ = await SenderInfo.get_or_create(
-            defaults={
-                "superuser": superuser,
-                "blocked": blocked,
-                "trusted": trusted,
-                "warns": warns,
-                "petal": petal,
-                "sender_data": sender_data or {},
-            },
-            sender_id=sender_id,
-        )
+        obj = await SenderInfo.resolve_union(sender_id)
+        obj.superuser = superuser
+        obj.blocked = blocked
+        obj.trusted = trusted
+        obj.warns = warns
+        obj.petal = petal
+        obj.sender_data = sender_data or {}
+        await obj.save()
         return obj
 
     @staticmethod
@@ -65,18 +62,15 @@ class TestDataFactory:
         :param target_data: 自定义数据
         :returns: TargetInfo 实例
         """
-        obj, _ = await TargetInfo.get_or_create(
-            defaults={
-                "blocked": blocked,
-                "muted": muted,
-                "locale": locale,
-                "modules": modules or [],
-                "custom_admins": custom_admins or [],
-                "banned_users": banned_users or [],
-                "target_data": target_data or {},
-            },
-            target_id=target_id,
-        )
+        obj = await TargetInfo.resolve_union(target_id)
+        obj.blocked = blocked
+        obj.muted = muted
+        obj.locale = locale
+        obj.modules = modules or []
+        obj.custom_admins = custom_admins or []
+        obj.banned_users = banned_users or []
+        obj.target_data = target_data or {}
+        await obj.save()
         return obj
 
     @staticmethod

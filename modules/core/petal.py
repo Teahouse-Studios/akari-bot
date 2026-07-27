@@ -89,7 +89,7 @@ async def _(msg: Bot.MessageSession):
             if not sender_info:
                 if not await msg.wait_confirm(I18NContext("message.id.init.sender.confirm"), append_instruction=False):
                     await msg.finish()
-                await SenderInfo.create(sender_id=user)
+                sender_info = await SenderInfo.resolve_union(user)
             await sender_info.clear_petal()
             await msg.finish(I18NContext("core.message.petal.clear", sender=user))
         else:
@@ -103,7 +103,7 @@ async def _(msg: Bot.MessageSession):
             if not sender_info:
                 if not await msg.wait_confirm(I18NContext("message.id.init.sender.confirm"), append_instruction=False):
                     await msg.finish()
-                await SenderInfo.create(sender_id=user)
+                sender_info = await SenderInfo.resolve_union(user)
             await msg.finish(I18NContext("core.message.petal", sender=user, petal=sender_info.petal))
         else:
             await msg.finish(I18NContext("core.message.petal.self", petal=msg.session_info.petal))

@@ -292,13 +292,13 @@ async def _(msg: Bot.MessageSession):
 @chu.command("bind df <username> {{I18N:maimai.help.bind.df}}")
 async def _(msg: Bot.MessageSession, username: str):
     if await get_record_df(msg, {"username": username}, use_cache=False):
-        await DivingProberBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, username=username)
+        await DivingProberBindInfo.set_bind_info(union_id=msg.session_info.sender_union_id, username=username)
         await msg.finish(msg.session_info.locale.t("maimai.message.bind.success") + username)
 
 
 @chu.command("unbind df {{I18N:maimai.help.unbind}}")
 async def _(msg: Bot.MessageSession):
-    await DivingProberBindInfo.remove_bind_info(sender_id=msg.session_info.sender_id)
+    await DivingProberBindInfo.remove_bind_info(union_id=msg.session_info.sender_union_id)
     await msg.finish(I18NContext("maimai.message.unbind.success"))
 
 
@@ -317,12 +317,12 @@ if LX_DEVELOPER_TOKEN:
     async def _(msg: Bot.MessageSession, friendcode: str):
         data = await get_record_lx(msg, friendcode, use_cache=False)
         if data:
-            await LxnsProberBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, friend_code=friendcode)
+            await LxnsProberBindInfo.set_bind_info(union_id=msg.session_info.sender_union_id, friend_code=friendcode)
             await msg.finish(msg.session_info.locale.t("maimai.message.bind.success") + data["nickname"])
 
     @chu.command("unbind lx {{I18N:maimai.help.unbind}}")
     async def _(msg: Bot.MessageSession):
-        await LxnsProberBindInfo.remove_bind_info(sender_id=msg.session_info.sender_id)
+        await LxnsProberBindInfo.remove_bind_info(union_id=msg.session_info.sender_union_id)
         await msg.finish(I18NContext("maimai.message.unbind.success"))
 
 

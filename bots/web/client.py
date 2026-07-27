@@ -64,7 +64,8 @@ def _webui_message():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await client_init(target_prefix_list, sender_prefix_list)
-    await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id=f"{sender_prefix}|0")
+    sender_info = await SenderInfo.resolve_union(f"{sender_prefix}|0")
+    await sender_info.edit_attr("superuser", True)
     if dist_path.exists():
         Logger.info(_webui_message())
     yield

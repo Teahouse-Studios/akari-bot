@@ -23,5 +23,6 @@ class Features(FeaturesBase):
     support_rss: bool = True
     support_typing: bool = False
     support_wait: bool = True
+    support_private_msg: bool = True
     require_check_dirty_words: bool = dirty_word_check
     use_url_md_format: bool = qq_use_markdown

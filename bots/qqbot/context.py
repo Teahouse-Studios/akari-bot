@@ -13,6 +13,7 @@ from tenacity import retry, wait_fixed, stop_after_attempt
 from bots.qqbot.features import Features
 from bots.qqbot.info import (
     client_name,
+    sender_tiny_prefix,
     target_group_prefix,
     target_direct_prefix,
     target_guild_prefix,
@@ -312,7 +313,7 @@ class QQBotContextManager(ContextManager):
                         send_img = await image_1.get() if image_1 else None
                         msg = url_filter(msg)
                         msg = "" if not msg else msg
-                        await client.api.post_message(
+                        send = await client.api.post_message(
                             channel_id=session_info.get_common_target_id(),
                             content=msg,
                             file_image=send_img,
@@ -320,13 +321,17 @@ class QQBotContextManager(ContextManager):
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
                         if image_1:
                             Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
+                        if send:
+                            msg_ids.append(send["id"])
                         if images:
                             for img in images:
                                 send_img = await img.get()
-                                await client.api.post_message(
+                                send = await client.api.post_message(
                                     channel_id=session_info.get_common_target_id(), file_image=send_img
                                 )
                                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
+                                if send:
+                                    msg_ids.append(send["id"])
                     elif session_info.target_from == target_direct_prefix:
                         if images:
                             image_1 = images[0]
@@ -334,19 +339,23 @@ class QQBotContextManager(ContextManager):
                         send_img = await image_1.get() if image_1 else None
                         msg = url_filter(msg)
                         msg = "" if not msg else msg
-                        await client.api.post_dms(
+                        send = await client.api.post_dms(
                             guild_id=session_info.get_common_target_id(), content=msg, file_image=send_img
                         )
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
                         if image_1:
                             Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
+                        if send:
+                            msg_ids.append(send["id"])
                         if images:
                             for img in images:
                                 send_img = await img.get()
-                                await client.api.post_dms(
+                                send = await client.api.post_dms(
                                     guild_id=session_info.get_common_target_id(), file_image=send_img
                                 )
                                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
+                                if send:
+                                    msg_ids.append(send["id"])
                     elif session_info.target_from == target_group_prefix:
                         msg = "" if not msg else msg
                         if images:
@@ -611,6 +620,47 @@ class QQBotContextManager(ContextManager):
             await send_msg_markdown()
 
         return msg_ids
+
+    @classmethod
+    async def send_private_msg(
+        cls,
+        session_info: SessionInfo,
+        user_id: str,
+        message: MessageChain | MessageNodes,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> list[str]:
+        from bots.qqbot.bot import client
+
+        client.api = ModdedBotAPI(http=client.http)
+        uid = user_id.split("|")[-1]
+
+        try:
+            if session_info.target_from == target_direct_prefix:
+                # 本就在私信会话里，不必再开一条
+                target_id, target_from = session_info.target_id, target_direct_prefix
+            elif user_id.startswith(sender_tiny_prefix):
+                # 频道用户的私信需要先以来源频道创建私信会话，拿到专用的 guild_id 后才能发送
+                guild_id = session_info.target_id.split("|")[2]
+                dms = await client.api.create_dms(guild_id=guild_id, user_id=uid)
+                target_id = f"{target_direct_prefix}|{dms['guild_id']}"
+                target_from = target_direct_prefix
+            else:
+                # 群成员与单聊用户共用同一个 openid，直接走单聊通道
+                target_id = f"{target_c2c_prefix}|{uid}"
+                target_from = target_c2c_prefix
+
+            # 显式指定基类：主动消息用的子类会把发送塞进冷却队列并返回 None，拿不到消息 ID
+            return await QQBotContextManager.send_message(
+                cls.derive_private_session(session_info, target_id, target_from),
+                message,
+                quote=False,
+                enable_parse_message=enable_parse_message,
+                enable_split_image=enable_split_image,
+            )
+        except Exception:
+            Logger.exception(f"Failed to send private message to {user_id}: ")
+            return []
 
     @classmethod
     async def delete_message(

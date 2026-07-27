@@ -183,8 +183,8 @@ async def parser(msg: "Bot.MessageSession"):
         ):
             return
 
-        # 检查用户是否在会话的屏蔽用户列表中（会话黑名单）
-        if msg.session_info.sender_id in msg.session_info.banned_users and not msg.session_info.superuser:
+        # 检查用户是否在会话的屏蔽用户列表中（会话黑名单，按 union 记录，换绑同一 union 的其他账号同样受限）
+        if msg.session_info.sender_union_id in msg.session_info.banned_users and not msg.session_info.superuser:
             return
 
         # ========== 步骤 3: 命令匹配 ==========
@@ -673,6 +673,8 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
             await AnalyticsData.create(
                 target_id=msg.session_info.target_id,
                 sender_id=msg.session_info.sender_id,
+                target_union_id=msg.session_info.target_union_id,
+                sender_union_id=msg.session_info.sender_union_id,
                 command=msg.trigger_msg,
                 module_name=command_first_word,
                 module_type="normal",
@@ -865,6 +867,8 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                             await AnalyticsData.create(
                                 target_id=msg.session_info.target_id,
                                 sender_id=msg.session_info.sender_id,
+                                target_union_id=msg.session_info.target_union_id,
+                                sender_union_id=msg.session_info.sender_union_id,
                                 command=msg.trigger_msg,
                                 module_name=m,
                                 module_type="regex",

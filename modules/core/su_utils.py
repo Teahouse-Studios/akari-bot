@@ -42,7 +42,7 @@ async def _(msg: Bot.MessageSession, user: str):
     if not sender_info:
         if not await msg.wait_confirm(I18NContext("message.id.init.sender.confirm"), append_instruction=False):
             await msg.finish()
-        sender_info = await SenderInfo.create(sender_id=user)
+        sender_info = await SenderInfo.resolve_union(user)
     if await sender_info.edit_attr("superuser", True):
         await msg.finish(I18NContext("core.message.superuser.add.success", sender=user))
 
@@ -58,7 +58,7 @@ async def _(msg: Bot.MessageSession, user: str):
     if not sender_info:
         if not await msg.wait_confirm(I18NContext("message.id.init.sender.confirm"), append_instruction=False):
             await msg.finish()
-        sender_info = await SenderInfo.create(sender_id=user)
+        sender_info = await SenderInfo.resolve_union(user)
     if await sender_info.edit_attr("superuser", False):
         await msg.finish(I18NContext("core.message.superuser.remove.success", sender=user))
 
@@ -103,7 +103,7 @@ async def _(msg: Bot.MessageSession, target: str):
     if not target_info:
         if not await msg.wait_confirm(I18NContext("message.id.init.target.confirm"), append_instruction=False):
             await msg.finish()
-        target_info = await TargetInfo.create(target_id=target)
+        target_info = await TargetInfo.resolve_union(target)
     if "enable" in msg.parsed_msg:
         modules = [
             m
@@ -141,7 +141,7 @@ async def _(msg: Bot.MessageSession, target: str):
     if not target_info:
         if not await msg.wait_confirm(I18NContext("message.id.init.target.confirm"), append_instruction=False):
             await msg.finish()
-        target_info = await TargetInfo.create(target_id=target)
+        target_info = await TargetInfo.resolve_union(target)
     if "get" in msg.parsed_msg:
         k = msg.parsed_msg.get("<k>", None)
         if k:
@@ -180,7 +180,7 @@ async def _(msg: Bot.MessageSession, user: str):
     if not sender_info:
         if not await msg.wait_confirm(I18NContext("message.id.init.sender.confirm"), append_instruction=False):
             await msg.finish()
-        sender_info = await SenderInfo.create(sender_id=user)
+        sender_info = await SenderInfo.resolve_union(user)
     if "get" in msg.parsed_msg:
         k = msg.parsed_msg.get("<k>", None)
         if k:
@@ -222,7 +222,7 @@ async def _(msg: Bot.MessageSession, group_id: str):
     if not target_info:
         if not await msg.wait_confirm(I18NContext("message.id.init.target.confirm"), append_instruction=False):
             await msg.finish()
-        target_info = await TargetInfo.create(target_id=group_id)
+        target_info = await TargetInfo.resolve_union(group_id)
 
     k = "in_post_whitelist"
     v = not target_info.target_data.get(k, False)
@@ -241,7 +241,7 @@ async def _(msg: Bot.MessageSession, user: str):
     if not sender_info:
         if not await msg.wait_confirm(I18NContext("message.id.init.sender.confirm"), append_instruction=False):
             await msg.finish()
-        sender_info = await SenderInfo.create(sender_id=user)
+        sender_info = await SenderInfo.resolve_union(user)
     warns = sender_info.warns
     temp_banned_time = await check_temp_ban(user)
     stat = []
@@ -262,7 +262,7 @@ async def _(msg: Bot.MessageSession, user: str, count: int = 1):
     if not sender_info:
         if not await msg.wait_confirm(I18NContext("message.id.init.sender.confirm"), append_instruction=False):
             await msg.finish()
-        sender_info = await SenderInfo.create(sender_id=user)
+        sender_info = await SenderInfo.resolve_union(user)
     await sender_info.warn_user(count)
     if sender_info.warns > WARNING_COUNTS >= 1 and not sender_info.trusted:
         await sender_info.switch_identity(trust=False)
@@ -279,7 +279,7 @@ async def _(msg: Bot.MessageSession, user: str, count: int = 1):
     if not sender_info:
         if not await msg.wait_confirm(I18NContext("message.id.init.sender.confirm"), append_instruction=False):
             await msg.finish()
-        sender_info = await SenderInfo.create(sender_id=user)
+        sender_info = await SenderInfo.resolve_union(user)
     await sender_info.warn_user(-count)
     await msg.finish(
         I18NContext("core.message.abuse.revoke.success", sender=user, count=count, warn_count=sender_info.warns)
@@ -294,7 +294,7 @@ async def _(msg: Bot.MessageSession, user: str):
     if not sender_info:
         if not await msg.wait_confirm(I18NContext("message.id.init.sender.confirm"), append_instruction=False):
             await msg.finish()
-        sender_info = await SenderInfo.create(sender_id=user)
+        sender_info = await SenderInfo.resolve_union(user)
     await sender_info.edit_attr("warns", 0)
     await msg.finish(I18NContext("core.message.abuse.clear.success", sender=user))
 
@@ -315,7 +315,7 @@ async def _(msg: Bot.MessageSession, user: str):
     if not sender_info:
         if not await msg.wait_confirm(I18NContext("message.id.init.sender.confirm"), append_instruction=False):
             await msg.finish()
-        sender_info = await SenderInfo.create(sender_id=user)
+        sender_info = await SenderInfo.resolve_union(user)
     if await sender_info.switch_identity(trust=False, enable=True):
         await msg.finish(I18NContext("core.message.abuse.ban.success", sender=user))
 
@@ -328,7 +328,7 @@ async def _(msg: Bot.MessageSession, user: str):
     if not sender_info:
         if not await msg.wait_confirm(I18NContext("message.id.init.sender.confirm"), append_instruction=False):
             await msg.finish()
-        sender_info = await SenderInfo.create(sender_id=user)
+        sender_info = await SenderInfo.resolve_union(user)
     if await sender_info.switch_identity(trust=False, enable=False):
         await msg.finish(I18NContext("core.message.abuse.unban.success", sender=user))
 
@@ -341,7 +341,7 @@ async def _(msg: Bot.MessageSession, user: str):
     if not sender_info:
         if not await msg.wait_confirm(I18NContext("message.id.init.sender.confirm"), append_instruction=False):
             await msg.finish()
-        sender_info = await SenderInfo.create(sender_id=user)
+        sender_info = await SenderInfo.resolve_union(user)
     if await sender_info.switch_identity(trust=True, enable=True):
         await msg.finish(I18NContext("core.message.abuse.trust.success", sender=user))
 
@@ -354,7 +354,7 @@ async def _(msg: Bot.MessageSession, user: str):
     if not sender_info:
         if not await msg.wait_confirm(I18NContext("message.id.init.sender.confirm"), append_instruction=False):
             await msg.finish()
-        sender_info = await SenderInfo.create(sender_id=user)
+        sender_info = await SenderInfo.resolve_union(user)
     if await sender_info.switch_identity(trust=True, enable=False):
         await msg.finish(I18NContext("core.message.abuse.distrust.success", sender=user))
 
@@ -369,7 +369,7 @@ async def _(msg: Bot.MessageSession, target: str):
     if not target_info:
         if not await msg.wait_confirm(I18NContext("message.id.init.target.confirm"), append_instruction=False):
             await msg.finish()
-        target_info = await TargetInfo.create(target_id=target)
+        target_info = await TargetInfo.resolve_union(target)
     if await target_info.edit_attr("blocked", True):
         await msg.finish(I18NContext("core.message.abuse.block.success", target=target))
 
@@ -382,7 +382,7 @@ async def _(msg: Bot.MessageSession, target: str):
     if not target_info:
         if not await msg.wait_confirm(I18NContext("message.id.init.target.confirm"), append_instruction=False):
             await msg.finish()
-        target_info = await TargetInfo.create(target_id=target)
+        target_info = await TargetInfo.resolve_union(target)
     if await target_info.edit_attr("blocked", False):
         await msg.finish(I18NContext("core.message.abuse.unblock.success", target=target))
 
@@ -789,7 +789,7 @@ async def _(msg: Bot.MessageSession, user: str, module: str):
     if not sender_info:
         if not await msg.wait_confirm(I18NContext("message.id.init.sender.confirm"), append_instruction=False):
             await msg.finish()
-        sender_info = await SenderInfo.create(sender_id=user)
+        sender_info = await SenderInfo.resolve_union(user)
     auth_list = _get_authorizations(sender_info)
     if "add" in msg.parsed_msg:
         for entry in auth_list:

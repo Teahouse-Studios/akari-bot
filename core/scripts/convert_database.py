@@ -435,9 +435,9 @@ async def convert_database():
         if i % 1000 == 0:
             Logger.info(f"Converting SenderInfo {i}/{len(sender_info_records)}...")
         try:
-            # 将旧格式的发送者信息转换为新格式
+            # 将旧格式的发送者信息转换为新格式。旧的平台 ID 直接作为 union ID，映射行在最后统一补建。
             await SenderInfo.create(
-                sender_id=r.id,
+                union_id=r.id,
                 blocked=r.isInBlockList,
                 trusted=r.isInAllowList,
                 superuser=r.isSuperUser,
@@ -464,9 +464,9 @@ async def convert_database():
         if i % 1000 == 0:
             Logger.info(f"Converting TargetInfo {i}/{len(target_info_records)}...")
         try:
-            # 将旧格式的场景信息转换为新格式
+            # 将旧格式的场景信息转换为新格式。旧的平台 ID 直接作为 union ID，映射行在最后统一补建。
             await TargetInfo.create(
-                target_id=r.targetId,
+                union_id=r.targetId,
                 blocked=False,
                 muted=r.muted,
                 locale=r.locale,
@@ -486,7 +486,7 @@ async def convert_database():
                     target_info_record.blocked = True
                     await target_info_record.save()
                 else:
-                    await TargetInfo.create(target_id=r.targetId, blocked=True)
+                    await TargetInfo.create(union_id=r.targetId, blocked=True)
             except Exception as e:
                 Logger.error(f"Failed to convert TargetInfo: {r.targetId}, error: {e}")
                 Logger.error(f"TargetInfo record: {r.__dict__}")
@@ -534,6 +534,8 @@ async def convert_database():
                 module_type=r.moduleType,
                 target_id=r.targetId,
                 sender_id=r.senderId,
+                target_union_id=r.targetId,
+                sender_union_id=r.senderId,
                 command=r.command,
                 timestamp=r.timestamp,
             )
@@ -552,6 +554,8 @@ async def convert_database():
                 id=r.id,
                 target_id=r.targetId,
                 sender_id=r.senderId,
+                target_union_id=r.targetId,
+                sender_union_id=r.senderId,
                 timestamp=r.timestamp,
                 action=r.action,
                 detail=r.detail,
@@ -570,7 +574,7 @@ async def convert_database():
     for r in cytoid_bind_record:
         try:
             await CytoidBindInfo.create(
-                sender_id=r.targetId,
+                union_id=r.targetId,
                 username=r.username,
             )
         except Exception as e:
@@ -585,7 +589,7 @@ async def convert_database():
     for r in maimai_bind_record:
         try:
             await DivingProberBindInfo.create(
-                sender_id=r.targetId,
+                union_id=r.targetId,
                 username=r.username,
             )
         except Exception as e:
@@ -600,7 +604,7 @@ async def convert_database():
     for r in phigros_bind_record:
         try:
             await PhigrosBindInfo.create(
-                sender_id=r.targetId,
+                union_id=r.targetId,
                 session_token=r.sessiontoken,
                 username=r.username,
             )
@@ -616,7 +620,7 @@ async def convert_database():
     for r in wiki_target_info_record:
         try:
             await WikiTargetInfo.create(
-                target_id=r.targetId,
+                union_id=r.targetId,
                 api_link=r.link,
                 interwikis=r.iws,
                 headers=r.headers,
@@ -681,11 +685,16 @@ async def convert_database():
     wikilog_target_set_info_record = await WikiLogTargetSetInfoL.all()
     for r in wikilog_target_set_info_record:
         try:
-            await WikiLogTargetSetInfo.create(target_id=r.targetId, infos=orjson.loads(r.infos))
+            await WikiLogTargetSetInfo.create(union_id=r.targetId, infos=orjson.loads(r.infos))
         except Exception as e:
             Logger.error(f"Failed to convert WikiLogTargetSetInfo: {r.targetId}, error: {e}")
             Logger.error(f"WikiLogTargetSetInfo record: {r.__dict__}")
     await conn.execute_query("DROP TABLE IF EXISTS _old_module_wikilog_WikiLogTargetSetInfo;")
+
+    Logger.info("Building union binds...")
+
+    # 旧库中数据与平台 ID 一一对应，转换后 union ID 即为原 ID，据此补建映射行。
+    await backfill_union_binds()
 
     Logger.info("Converting DBVersion...")
 

@@ -64,10 +64,13 @@ class SessionInfo:
     support_typing: bool = False
     support_wait: bool = False
     support_handle_message_nodes: bool = False
+    support_private_msg: bool = False
     timestamp: float | None = None
     session_id: str | None = None
     target_info: TargetInfo | None = None
     sender_info: SenderInfo | None = None
+    target_union_id: str | None = None
+    sender_union_id: str | None = None
     banned_users: list | None = None
     custom_admins: list | None = None
     locale: Locale | None = None
@@ -154,6 +157,8 @@ class SessionInfo:
             session_id=session_id,
             target_info=target_info,
             sender_info=sender_info,
+            target_union_id=target_info.union_id,
+            sender_union_id=sender_info.union_id if sender_info else None,
             locale=locale,
             muted=target_info.muted,
             bot_name=bot_name,
@@ -183,6 +188,8 @@ class SessionInfo:
     async def refresh_info(self):
         self.sender_info = await SenderInfo.get_by_sender_id(self.sender_id) if self.sender_id else None
         self.target_info = await TargetInfo.get_by_target_id(self.target_id) if self.target_id else None
+        self.sender_union_id = self.sender_info.union_id if self.sender_info else None
+        self.target_union_id = self.target_info.union_id if self.target_info else None
 
     def get_common_target_id(self) -> str:
         """

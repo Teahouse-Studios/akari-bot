@@ -53,6 +53,24 @@ class WebContextManager(ContextManager):
         return []
 
     @classmethod
+    async def send_private_msg(
+        cls,
+        session_info: SessionInfo,
+        user_id: str,
+        message: MessageChain | MessageNodes,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> list[str]:
+        # 控制台本身只服务于当前这一位用户，无所谓公屏，私信与普通发送等价
+        return await cls.send_message(
+            session_info,
+            message,
+            quote=False,
+            enable_parse_message=enable_parse_message,
+            enable_split_image=enable_split_image,
+        )
+
+    @classmethod
     async def delete_message(
         cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None
     ) -> None:

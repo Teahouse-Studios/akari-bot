@@ -251,6 +251,39 @@ class OneBotContextManager(ContextManager):
         return []
 
     @classmethod
+    async def send_private_msg(
+        cls,
+        session_info: SessionInfo,
+        user_id: str,
+        message: MessageChain | MessageNodes,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> list[str]:
+        uid = user_id.split("|")[-1]
+        if not uid.isdigit():
+            Logger.warning(f"Invalid user id {user_id}, cannot send private message.")
+            return []
+
+        # 未加机器人为好友时私聊必然发不出去，先查好友列表避免白发一次请求
+        private_list = await get_available_private_list()
+        if private_list and int(uid) not in private_list:
+            Logger.warning(f"User {uid} not found in private list, skipping private message send.")
+            return []
+
+        try:
+            # 显式指定基类：主动消息用的子类会把发送塞进冷却队列并返回 None，拿不到消息 ID
+            return await OneBotContextManager.send_message(
+                cls.derive_private_session(session_info, f"{target_private_prefix}|{uid}", target_private_prefix),
+                message,
+                quote=False,
+                enable_parse_message=enable_parse_message,
+                enable_split_image=enable_split_image,
+            )
+        except Exception:
+            Logger.exception(f"Failed to send private message to {user_id}: ")
+            return []
+
+    @classmethod
     async def delete_message(
         cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None
     ) -> None:

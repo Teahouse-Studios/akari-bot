@@ -54,12 +54,12 @@ converter.register_unstructure_hook(
 
 
 # 会话信息的反结构化处理
-# 将 TargetInfo 对象转换为字典，由于序列化需要从数据库重新异步获取，只保留 _type 和 target_id 字段
-converter.register_unstructure_hook(TargetInfo, lambda obj: {"_type": type(obj).__name__, "target_id": obj.target_id})
+# 将 TargetInfo 对象转换为字典，由于序列化需要从数据库重新异步获取，只保留 _type 和 union_id 字段
+converter.register_unstructure_hook(TargetInfo, lambda obj: {"_type": type(obj).__name__, "union_id": obj.union_id})
 
 # 用户信息的反结构化处理
-# 将 SenderInfo 对象转换为字典，由于序列化需要从数据库重新异步获取，只保留 _type 和 sender_id 字段
-converter.register_unstructure_hook(SenderInfo, lambda obj: {"_type": type(obj).__name__, "sender_id": obj.sender_id})
+# 将 SenderInfo 对象转换为字典，由于序列化需要从数据库重新异步获取，只保留 _type 和 union_id 字段
+converter.register_unstructure_hook(SenderInfo, lambda obj: {"_type": type(obj).__name__, "union_id": obj.union_id})
 
 # 地区 / 语言信息的反结构化处理
 # 将 Locale 对象转换为字典，保存其 locale 字符串值

@@ -60,6 +60,9 @@ class Features:
     # 处理消息节点支持 - 会话是否有独立处理消息节点的能力
     support_handle_message_nodes: bool = False
 
+    # 私聊消息支持 - 会话是否支持向指定用户单独发送私聊消息
+    support_private_msg: bool = False
+
     # URL Markdown 格式支持 - 是否将 URL 自动转换为 Markdown 格式的链接
     use_url_md_format: bool = False
 

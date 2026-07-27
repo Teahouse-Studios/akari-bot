@@ -85,6 +85,44 @@ class JobQueueServer(JobQueueBase):
         return value
 
     @classmethod
+    async def client_send_private_message(
+        cls,
+        session_info: SessionInfo,
+        user_id: str,
+        message: MessageChain | MessageNodes,
+        wait: bool = True,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ):
+        """向指定用户单独发送私聊消息。
+
+        通过队列系统让客户端把消息以私聊形式投递给某个用户，消息不会发往 session_info 所指的场景。
+
+        :param session_info: 发起私信的会话信息，用于确定客户端与消息渲染上下文
+        :param user_id: 目标用户 ID（带平台前缀，如 `QQ|10000`）
+        :param message: 要发送的消息链对象
+        :param wait: 是否等待消息发送完成（默认 True，取回消息 ID 需要等待）
+        :param enable_parse_message: 是否解析消息中的特殊标记（默认 True）
+        :param enable_split_image: 是否将大图片拆分成多条消息发送（默认 True）
+
+        :return wait=True: 返回发送结果字典（包含 message_id，为空列表表示发送失败）
+        :return wait=False: 返回任务 ID
+        """
+        value = await cls.add_job(
+            session_info.client_name,
+            "send_private_message",
+            {
+                "session_info": converter.unstructure(session_info),
+                "user_id": user_id,
+                "message": converter.unstructure(message, MessageChain | MessageNodes),
+                "enable_parse_message": enable_parse_message,
+                "enable_split_image": enable_split_image,
+            },
+            wait=wait,
+        )
+        return value
+
+    @classmethod
     async def client_delete_message(
         cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None
     ):

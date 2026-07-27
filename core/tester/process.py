@@ -91,8 +91,9 @@ async def run_test_case(
 ):
     async def _run_test():
         try:
-            await TargetInfo.update_or_create(defaults={}, target_id="TEST|Console|0")
-            await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id="TEST|0")
+            await TargetInfo.resolve_union("TEST|Console|0")
+            sender_info = await SenderInfo.resolve_union("TEST|0")
+            await sender_info.edit_attr("superuser", True)
         except Exception:
             pass
 

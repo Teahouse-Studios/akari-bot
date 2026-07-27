@@ -84,6 +84,19 @@ class MockMessageSession(MessageSession):
     ):
         await self.send_message(message_chain)
 
+    async def send_private_message(
+        self,
+        message_chain,
+        user_id=None,
+        disable_secret_check=False,
+        enable_parse_message=True,
+        enable_split_image=True,
+    ):
+        user_id = user_id or self.session_info.sender_id
+        self.action.append(f"(private message to {user_id})")
+        await self.send_message(message_chain)
+        return ["0"]
+
     async def delete(self, reason=None):
         self.action.append(f"(delete message{f': {reason}' if reason else ''})")
 

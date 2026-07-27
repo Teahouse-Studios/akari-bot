@@ -6,7 +6,7 @@ from discord import Message
 
 from bots.discord.client import discord_bot
 from bots.discord.features import Features
-from bots.discord.info import client_name, target_channel_prefix
+from bots.discord.info import client_name, target_channel_prefix, target_dm_channel_prefix
 from bots.discord.utils import get_channel_id, get_sender_id, convert_embed
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement, EmbedElement
@@ -107,6 +107,38 @@ class DiscordContextManager(ContextManager):
                 msg_ids.append(str(send_.id))
 
         return msg_ids
+
+    @classmethod
+    async def send_private_msg(
+        cls,
+        session_info: SessionInfo,
+        user_id: str,
+        message: MessageChain | MessageNodes,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> list[str]:
+        uid = user_id.split("|")[-1]
+        if not uid.isdigit():
+            Logger.warning(f"Invalid user id {user_id}, cannot send private message.")
+            return []
+
+        try:
+            user = await discord_bot.fetch_user(int(uid))
+            # 私信频道要先建立才有 ID，对方关闭私信时 create_dm 会抛 Forbidden
+            dm_channel = user.dm_channel or await user.create_dm()
+            # 显式指定基类：Slash 子类只能回应交互，无法向任意频道发消息
+            return await DiscordContextManager.send_message(
+                cls.derive_private_session(
+                    session_info, f"{target_dm_channel_prefix}|{dm_channel.id}", target_dm_channel_prefix
+                ),
+                message,
+                quote=False,
+                enable_parse_message=enable_parse_message,
+                enable_split_image=enable_split_image,
+            )
+        except Exception:
+            Logger.exception(f"Failed to send private message to {user_id}: ")
+            return []
 
     @classmethod
     async def delete_message(

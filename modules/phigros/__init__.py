@@ -50,7 +50,7 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
         if get_user_info:
             username = get_user_info.get("nickname", "Guest")
             await PhigrosBindInfo.set_bind_info(
-                sender_id=msg.session_info.sender_id, session_token=sessiontoken, username=username
+                union_id=msg.session_info.sender_union_id, session_token=sessiontoken, username=username
             )
             await msg.finish(I18NContext("phigros.message.bind.success", username=username), quote=False)
         else:
@@ -61,7 +61,7 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
 
 @phi.command("unbind {{I18N:phigros.help.unbind}}")
 async def _(msg: Bot.MessageSession):
-    await PhigrosBindInfo.remove_bind_info(sender_id=msg.session_info.sender_id)
+    await PhigrosBindInfo.remove_bind_info(union_id=msg.session_info.sender_union_id)
     await msg.finish(I18NContext("phigros.message.unbind.success"))
 
 

@@ -14,7 +14,7 @@ from core.builtins.utils import command_prefix
 from core.config import Config
 from core.constants import config_filename
 from core.constants.path import config_path
-from core.database.models import AnalyticsData, SenderInfo, TargetInfo
+from core.database.models import AnalyticsData, SenderInfo, SenderUnionBind, TargetInfo, TargetUnionBind
 from core.logger import Logger
 from core.queue.client import JobQueueClient
 from .auth import verify_jwt
@@ -23,6 +23,104 @@ started_time = datetime.now()
 
 
 default_locale = Config("default_locale", cfg_type=str)
+
+
+async def filter_by_bound_id(bind_model, prefix: str | None, id: str | None) -> Q | None:
+    """
+    把按平台 ID 的筛选条件转换为对 union 的筛选条件。
+
+    数据现在挂在 union 上，平台 ID 只存在于映射表中，因此需要先查映射表再按 union 过滤。
+
+    :param bind_model: 映射表模型。
+    :param prefix: 平台前缀。
+    :param id: 平台 ID 的部分内容。
+    :return: 针对 union 的筛选条件，无需筛选时为 None。
+    """
+    if not prefix and not id:
+        return None
+    id_field = bind_model._meta.pk_attr
+    bind_filters = Q()
+    if prefix:
+        bind_filters &= Q(**{f"{id_field}__startswith": f"{prefix}|"})
+    if id:
+        bind_filters &= Q(**{f"{id_field}__icontains": id})
+    union_ids = await bind_model.filter(bind_filters).values_list("union_id", flat=True)
+    return Q(union_id__in=list(set(union_ids)))
+
+
+async def map_bound_ids(bind_model, union_ids: list[str]) -> dict[str, list[str]]:
+    """
+    批量获取每个 union 下绑定的全部平台 ID。
+
+    :param bind_model: 映射表模型。
+    :param union_ids: union ID 列表。
+    """
+    id_field = bind_model._meta.pk_attr
+    mapping = {u: [] for u in union_ids}
+    if not union_ids:
+        return mapping
+    for row in await bind_model.filter(union_id__in=union_ids).values(id_field, "union_id"):
+        mapping.setdefault(row["union_id"], []).append(row[id_field])
+    return mapping
+
+
+def pick_display_id(union_id: str, bound_ids: list[str], prefix: str | None = None) -> str:
+    """
+    从 union 下的平台 ID 中挑一个用于展示，尽量与筛选前缀一致。
+    """
+    if prefix:
+        for i in bound_ids:
+            if i.startswith(f"{prefix}|"):
+                return i
+    return bound_ids[0] if bound_ids else union_id
+
+
+def dump_target(target: TargetInfo, bound_ids: list[str], display_id: str) -> dict:
+    """
+    序列化场景信息。``target_id`` 保持向后兼容，另附 union ID 与全部已绑定的平台 ID。
+    """
+    return {
+        "target_id": display_id,
+        "union_id": target.union_id,
+        "bound_ids": bound_ids,
+        "blocked": target.blocked,
+        "muted": target.muted,
+        "locale": target.locale,
+        "modules": target.modules,
+        "custom_admins": target.custom_admins,
+        "banned_users": target.banned_users,
+        "target_data": target.target_data,
+    }
+
+
+def dump_sender(sender: SenderInfo, bound_ids: list[str], display_id: str) -> dict:
+    """
+    序列化用户信息。``sender_id`` 保持向后兼容，另附 union ID 与全部已绑定的平台 ID。
+    """
+    return {
+        "sender_id": display_id,
+        "union_id": sender.union_id,
+        "bound_ids": bound_ids,
+        "blocked": sender.blocked,
+        "trusted": sender.trusted,
+        "superuser": sender.superuser,
+        "warns": sender.warns,
+        "petal": sender.petal,
+        "sender_data": sender.sender_data,
+    }
+
+
+async def resolve_sender_unions(ids: list[str]) -> list[str]:
+    """
+    把权限列表中的平台账号 ID 解析为 union ID，已经是 union ID 的原样保留。
+
+    ``custom_admins`` / ``banned_users`` 存的是 union ID，但控制台可能直接填入平台账号 ID。
+    """
+    resolved = []
+    for i in ids:
+        bind = await SenderUnionBind.get_or_none(sender_id=i)
+        resolved.append(bind.union_id if bind else i)
+    return list(dict.fromkeys(resolved))
 
 
 @app.get("/api")
@@ -180,20 +278,27 @@ async def get_target_list(
 
         query = TargetInfo.all()
         filters = Q()
-        if prefix:
-            filters &= Q(target_id__startswith=f"{prefix}|")
         if status == "muted":
             filters &= Q(muted=True)
         if status == "blocked":
             filters &= Q(blocked=True)
-        if id:
-            filters &= Q(target_id__icontains=id)
+        bound_filters = await filter_by_bound_id(TargetUnionBind, prefix, id)
+        if bound_filters:
+            filters &= bound_filters
 
         query = query.filter(filters)
         total = await query.count()
         results = await query.offset((page - 1) * size).limit(size)
 
-        return {"target_list": results, "total": total}
+        bound_map = await map_bound_ids(TargetUnionBind, [t.union_id for t in results])
+        target_list = [
+            dump_target(
+                t, bound_map.get(t.union_id, []), pick_display_id(t.union_id, bound_map.get(t.union_id, []), prefix)
+            )
+            for t in results
+        ]
+
+        return {"target_list": target_list, "total": total}
     except HTTPException as e:
         raise e
     except Exception:
@@ -208,7 +313,8 @@ async def get_target_info(request: Request, target_id: str):
         target_info = await TargetInfo.get_by_target_id(target_id, create=False)
         if not target_info:
             raise HTTPException(status_code=404, detail="Not found")
-        return {"target_info": target_info}
+        bound_ids = await target_info.list_bound_ids()
+        return {"target_info": dump_target(target_info, bound_ids, target_id)}
     except HTTPException as e:
         raise e
     except Exception:
@@ -247,21 +353,23 @@ async def edit_target_info(request: Request, target_id: str):
         if target_data is not None and not isinstance(target_data, dict):
             raise HTTPException(status_code=400, detail='"target_data" must be dict')
 
-        if blocked is not None:
-            target_info.blocked = blocked
         if muted is not None:
             target_info.muted = muted
         if locale is not None:
             target_info.locale = locale
         if modules is not None:
             target_info.modules = modules
+        # 权限名单存的是 union ID，控制台可能直接填平台账号 ID，这里统一解析一遍。
         if custom_admins is not None:
-            target_info.custom_admins = custom_admins
+            target_info.custom_admins = await resolve_sender_unions(custom_admins)
         if banned_users is not None:
-            target_info.banned_users = banned_users
+            target_info.banned_users = await resolve_sender_unions(banned_users)
         if target_data is not None:
             target_info.target_data = target_data
         await target_info.save()
+        if blocked is not None:
+            # 解封需要连带清除会话级封禁，因此走 edit_attr() 而非直接赋值。
+            await target_info.edit_attr("blocked", blocked)
 
         Logger.info(f"[WebUI] {ip} has edited the session data: {target_id}")
         return Response(status_code=204)
@@ -280,6 +388,8 @@ async def delete_target_info(request: Request, target_id: str):
 
         target_info = await TargetInfo.get_by_target_id(target_id, create=False)
         if target_info:
+            # 删除 union 的同时清掉其下全部映射，否则残留映射会指向不存在的 union。
+            await TargetUnionBind.filter(union_id=target_info.union_id).delete()
             await target_info.delete()
 
         Logger.info(f"[WebUI] {ip} has deleted the session data: {target_id}")
@@ -305,22 +415,29 @@ async def get_sender_list(
 
         query = SenderInfo.all()
         filters = Q()
-        if prefix:
-            filters &= Q(sender_id__startswith=f"{prefix}|")
         if status == "superuser":
             filters &= Q(superuser=True)
         elif status == "trusted":
             filters &= Q(trusted=True)
         elif status == "blocked":
             filters &= Q(blocked=True)
-        if id:
-            filters &= Q(sender_id__icontains=id)
+        bound_filters = await filter_by_bound_id(SenderUnionBind, prefix, id)
+        if bound_filters:
+            filters &= bound_filters
 
         query = query.filter(filters)
         total = await query.count()
         results = await query.offset((page - 1) * size).limit(size)
 
-        return {"sender_list": results, "total": total}
+        bound_map = await map_bound_ids(SenderUnionBind, [s.union_id for s in results])
+        sender_list = [
+            dump_sender(
+                s, bound_map.get(s.union_id, []), pick_display_id(s.union_id, bound_map.get(s.union_id, []), prefix)
+            )
+            for s in results
+        ]
+
+        return {"sender_list": sender_list, "total": total}
     except HTTPException as e:
         raise e
     except Exception:
@@ -335,7 +452,8 @@ async def get_sender_info(request: Request, sender_id: str):
         sender_info = await SenderInfo.get_by_sender_id(sender_id, create=False)
         if not sender_info:
             raise HTTPException(status_code=404, detail="Not found")
-        return {"sender_info": sender_info}
+        bound_ids = await sender_info.list_bound_ids()
+        return {"sender_info": dump_sender(sender_info, bound_ids, sender_id)}
     except HTTPException as e:
         raise e
     except Exception:
@@ -375,8 +493,6 @@ async def edit_sender_info(request: Request, sender_id: str):
             sender_info.superuser = superuser
         if trusted is not None:
             sender_info.trusted = trusted
-        if blocked is not None:
-            sender_info.blocked = blocked
         if warns is not None:
             sender_info.warns = warns
         if petal is not None:
@@ -384,6 +500,9 @@ async def edit_sender_info(request: Request, sender_id: str):
         if sender_data is not None:
             sender_info.sender_data = sender_data
         await sender_info.save()
+        if blocked is not None:
+            # 解封需要连带清除账号级封禁，因此走 edit_attr() 而非直接赋值。
+            await sender_info.edit_attr("blocked", blocked)
 
         Logger.info(f"[WebUI] {ip} has edited the user data: {sender_id}")
         return Response(status_code=204)
@@ -402,6 +521,8 @@ async def delete_sender_info(request: Request, sender_id: str):
 
         sender_info = await SenderInfo.get_by_sender_id(sender_id, create=False)
         if sender_info:
+            # 删除 union 的同时清掉其下全部映射，否则残留映射会指向不存在的 union。
+            await SenderUnionBind.filter(union_id=sender_info.union_id).delete()
             await sender_info.delete()
         Logger.info(f"[WebUI] {ip} has deleted the user data: {sender_id}")
         return Response(status_code=204)

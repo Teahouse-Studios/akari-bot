@@ -229,6 +229,8 @@ class Bot:
                 await AnalyticsData.create(
                     target_id=session_.target_id,
                     sender_id=session_.sender_id,
+                    target_union_id=session_.target_union_id,
+                    sender_union_id=session_.sender_union_id,
                     command="",
                     module_name=module_name,
                     module_type="schedule",
@@ -349,6 +351,52 @@ class Bot:
         )
 
     @classmethod
+    async def send_private_message(
+        cls,
+        session_info: SessionInfo,
+        message: Chainable,
+        user_id: str | None = None,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> list[str]:
+        """
+        向指定用户单独发送私聊消息。
+
+        消息不会发往 session_info 所指的场景，该会话仅用于确定平台与消息渲染上下文。
+
+        :param session_info: 会话信息
+        :param message: 消息内容
+        :param user_id: 目标用户 ID（带平台前缀），留空则发给该会话的用户
+        :param enable_parse_message: 是否允许解析消息（平台兼容）
+        :param enable_split_image: 是否允许拆分图片（平台兼容）
+        :return: 消息 ID 列表，为空表示发送失败
+        :raises TypeError: 如果 session_info 不是 SessionInfo 类型
+        """
+        if not isinstance(session_info, SessionInfo):
+            raise TypeError("session_info must be a SessionInfo")
+
+        user_id = user_id or session_info.sender_id
+        if not user_id:
+            return []
+
+        # 平台不支持私信时不必走一趟队列，直接判定失败
+        if not session_info.support_private_msg:
+            Logger.warning(f"Client {session_info.client_name} does not support private message.")
+            return []
+
+        queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        message = get_message_chain(session_info, message)
+
+        return_val = await queue_server.client_send_private_message(
+            session_info,
+            user_id,
+            message,
+            enable_parse_message=enable_parse_message,
+            enable_split_image=enable_split_image,
+        )
+        return return_val.get("message_id") or []
+
+    @classmethod
     async def get_enabled_this_module(cls, module: str) -> list[FetchedSessionInfo]:
         """
         获取开启了指定模块的所有目标会话列表。
@@ -356,13 +404,13 @@ class Bot:
         :param module: 模块名称
         :return: 开启了该模块的会话列表
         """
-        # 从数据库获取开启此模块的所有场景 ID
-        lst = await TargetInfo.get_target_list_by_module(module)
+        # 从数据库获取开启此模块的所有场景 ID（一个 union 下绑定的全部会话都要展开）
+        lst = await TargetInfo.get_target_id_list_by_module(module)
         fetched = []
 
         # 逐个抓取这些目标的会话信息
-        for x in lst:
-            x = await cls.fetch_target(x.target_id)
+        for target_id in lst:
+            x = await cls.fetch_target(target_id)
             if isinstance(x, FetchedSessionInfo):
                 fetched.append(x)
         return fetched

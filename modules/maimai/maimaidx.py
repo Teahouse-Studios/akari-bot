@@ -536,13 +536,13 @@ async def _(msg: Bot.MessageSession, base: float, score: float):
 @mai.command("bind <username> {{I18N:maimai.help.bind.lx}}")
 async def _(msg: Bot.MessageSession, username: str):
     if await get_record(msg, {"username": username}, use_cache=False):
-        await DivingProberBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, username=username)
+        await DivingProberBindInfo.set_bind_info(union_id=msg.session_info.sender_union_id, username=username)
         await msg.finish(str(I18NContext("maimai.message.bind.success")) + username)
 
 
 @mai.command("unbind {{I18N:maimai.help.unbind}}")
 async def _(msg: Bot.MessageSession):
-    await DivingProberBindInfo.remove_bind_info(sender_id=msg.session_info.sender_id)
+    await DivingProberBindInfo.remove_bind_info(union_id=msg.session_info.sender_union_id)
     await msg.finish(I18NContext("maimai.message.unbind.success"))
 
 

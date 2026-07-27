@@ -125,6 +125,31 @@ class TelegramContextManager(ContextManager):
         return msg_ids
 
     @classmethod
+    async def send_private_msg(
+        cls,
+        session_info: SessionInfo,
+        user_id: str,
+        message: MessageChain | MessageNodes,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> list[str]:
+        # Telegram 中用户的私聊 chat_id 即其用户 ID，直接当作私聊场景发送即可
+        uid = user_id.split("|")[-1]
+        try:
+            msg_ids = await TelegramContextManager.send_message(
+                cls.derive_private_session(session_info, f"{client_name}|Private|{uid}", f"{client_name}|Private"),
+                message,
+                quote=False,
+                enable_parse_message=enable_parse_message,
+                enable_split_image=enable_split_image,
+            )
+            return [str(msg_id) for msg_id in msg_ids]
+        except Exception:
+            # 对方没有先私聊过机器人时 aiogram 会抛错，此处一律视为发送失败
+            Logger.exception(f"Failed to send private message to {user_id}: ")
+            return []
+
+    @classmethod
     async def delete_message(
         cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None
     ) -> None:
