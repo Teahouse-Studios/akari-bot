@@ -33,7 +33,6 @@ qq_limited_emoji = str(Config("qq_limited_emoji", 10060, (str, int), table_name=
 qq_use_markdown = Config("qq_use_markdown", False, bool, table_name="bot_qqbot")
 
 global_seq = 1
-send_lock = asyncio.Lock()
 
 
 # 额外添加平台接口支持但 SDK 不支持的方法
@@ -115,7 +114,7 @@ class QQBotContextManager(ContextManager):
     async def send_message(
         cls,
         session_info: SessionInfo,
-        message: MessageChain | MessageNodes,
+        message: MessageChain,
         quote: bool = True,
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
@@ -606,11 +605,10 @@ class QQBotContextManager(ContextManager):
                         if send:
                             msg_ids.append(send["id"])
 
-        async with send_lock:
-            if not qq_use_markdown:
-                await send_msg()
-            else:
-                await send_msg_markdown()
+        if not qq_use_markdown:
+            await send_msg()
+        else:
+            await send_msg_markdown()
 
         return msg_ids
 
