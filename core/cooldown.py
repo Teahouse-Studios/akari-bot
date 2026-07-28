@@ -20,16 +20,18 @@ class CoolDown:
         self.msg = msg
         self.delay = delay
         self.whole_target = whole_target
-        self.target_union_id = self.msg.session_info.target_union_id
+        # 场景维度按消息通道划分：仅共享 union 而通道号不同的会话是不同的现实会话，
+        # 不应共用一份冷却。用户维度只按 union，同一个人换平台账号仍受同一份冷却约束。
+        self.channel_key = self.msg.session_info.channel_key
         self.sender_union_id = self.msg.session_info.sender_union_id
 
     def _get_cd_dict(self) -> ExpiringTempDict:
         """
         获取或创建冷却事件字典。
         对于单个用户，返回 sender_union_id -> key 的结构。
-        对于 whole_target，返回 target_union_id -> key 的结构。
+        对于 whole_target，返回 channel_key -> key 的结构。
         """
-        target_dict = _cd_dict[self.target_union_id]
+        target_dict = _cd_dict[self.channel_key]
 
         if self.whole_target:
             if self.key not in target_dict:

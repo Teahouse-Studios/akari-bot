@@ -7,6 +7,11 @@ from core.config.base import CoreConfig
 from core.utils.random import Random
 from core.utils.storedata import get_stored_list, update_stored_list
 
+# 花瓣余额挂在 union 上，日额度也须随之跨平台共享，因此存储不再按客户端分桶，
+# 桶内亦按 union 而非平台账号索引；否则一个人绑几个平台就能领几倍的每日上限。
+# 花瓣属于用户而非场景，不涉及消息通道维度。
+PETAL_STORE_SCOPE = "Union"
+
 
 async def gained_petal(msg: Bot.MessageSession, amount: int) -> I18NContextElement | None:
     """增加花瓣。
@@ -18,27 +23,28 @@ async def gained_petal(msg: Bot.MessageSession, amount: int) -> I18NContextEleme
     if CoreConfig.enable_petal and CoreConfig.enable_get_petal:
         limit = CoreConfig.petal_gained_limit
         amount = limit if amount > limit > 0 else amount
-        p = await get_stored_list(msg.session_info.client_name, "gainedpetal") or [{}]
+        union_id = msg.session_info.sender_union_id
+        p = await get_stored_list(PETAL_STORE_SCOPE, "gainedpetal") or [{}]
         p = p[0]
         now = datetime.now()
         expired = datetime.combine((now + timedelta(days=1)).date(), datetime.min.time())
-        if msg.session_info.sender_id not in p or now.timestamp() > p[msg.session_info.sender_id]["expired"]:
-            p[msg.session_info.sender_id] = {
+        if union_id not in p or now.timestamp() > p[union_id]["expired"]:
+            p[union_id] = {
                 "time": now.timestamp(),
                 "expired": expired.timestamp(),
                 "amount": amount,
             }
             await msg.session_info.sender_info.modify_petal(amount)
-            await update_stored_list(msg.session_info.client_name, "gainedpetal", [p])
+            await update_stored_list(PETAL_STORE_SCOPE, "gainedpetal", [p])
             return I18NContext("petal.message.gained.success", amount=amount)
         if limit > 0:
-            if p[msg.session_info.sender_id]["amount"] >= limit:
+            if p[union_id]["amount"] >= limit:
                 return I18NContext("petal.message.gained.limit")
-            if p[msg.session_info.sender_id]["amount"] + amount > limit:
-                amount = limit - p[msg.session_info.sender_id]["amount"]
-        p[msg.session_info.sender_id]["amount"] += amount
+            if p[union_id]["amount"] + amount > limit:
+                amount = limit - p[union_id]["amount"]
+        p[union_id]["amount"] += amount
         await msg.session_info.sender_info.modify_petal(amount)
-        await update_stored_list(msg.session_info.client_name, "gainedpetal", [p])
+        await update_stored_list(PETAL_STORE_SCOPE, "gainedpetal", [p])
         return I18NContext("petal.message.gained.success", amount=amount)
 
 
@@ -52,27 +58,28 @@ async def lost_petal(msg: Bot.MessageSession, amount: int) -> I18NContextElement
     if CoreConfig.enable_petal and CoreConfig.enable_get_petal:
         limit = CoreConfig.petal_lost_limit
         amount = limit if amount > limit > 0 else amount
-        p = await get_stored_list(msg.session_info.client_name, "lostpetal") or [{}]
+        union_id = msg.session_info.sender_union_id
+        p = await get_stored_list(PETAL_STORE_SCOPE, "lostpetal") or [{}]
         p = p[0]
         now = datetime.now()
         expired = datetime.combine((now + timedelta(days=1)).date(), datetime.min.time())
-        if msg.session_info.sender_id not in p or now.timestamp() > p[msg.session_info.sender_id]["expired"]:
-            p[msg.session_info.sender_id] = {
+        if union_id not in p or now.timestamp() > p[union_id]["expired"]:
+            p[union_id] = {
                 "time": now.timestamp(),
                 "expired": expired.timestamp(),
                 "amount": amount,
             }
             await msg.session_info.sender_info.modify_petal(-amount)
-            await update_stored_list(msg.session_info.client_name, "lostpetal", [p])
+            await update_stored_list(PETAL_STORE_SCOPE, "lostpetal", [p])
             return I18NContext("petal.message.lost.success", amount=amount)
         if limit > 0:
-            if p[msg.session_info.sender_id]["amount"] >= limit:
+            if p[union_id]["amount"] >= limit:
                 return I18NContext("petal.message.lost.limit")
-            if p[msg.session_info.sender_id]["amount"] + amount > limit:
-                amount = limit - p[msg.session_info.sender_id]["amount"]
-        p[msg.session_info.sender_id]["amount"] += amount
+            if p[union_id]["amount"] + amount > limit:
+                amount = limit - p[union_id]["amount"]
+        p[union_id]["amount"] += amount
         await msg.session_info.sender_info.modify_petal(-amount)
-        await update_stored_list(msg.session_info.client_name, "lostpetal", [p])
+        await update_stored_list(PETAL_STORE_SCOPE, "lostpetal", [p])
         return I18NContext("petal.message.lost.success", amount=amount)
 
 
@@ -109,18 +116,19 @@ async def sign_get_petal(msg: Bot.MessageSession) -> int | None:
             return petal
 
         amount = _draw_petals()
-        p = await get_stored_list(msg.session_info.client_name, "signgetpetal") or [{}]
+        union_id = msg.session_info.sender_union_id
+        p = await get_stored_list(PETAL_STORE_SCOPE, "signgetpetal") or [{}]
         p = p[0]
         now = datetime.now()
         expired = datetime.combine((now + timedelta(days=1)).date(), datetime.min.time())
-        if msg.session_info.sender_id not in p or now.timestamp() > p[msg.session_info.sender_id]["expired"]:
-            p[msg.session_info.sender_id] = {
+        if union_id not in p or now.timestamp() > p[union_id]["expired"]:
+            p[union_id] = {
                 "time": now.timestamp(),
                 "expired": expired.timestamp(),
                 "amount": amount,
             }
             await msg.session_info.sender_info.modify_petal(amount)
-            await update_stored_list(msg.session_info.client_name, "signgetpetal", [p])
+            await update_stored_list(PETAL_STORE_SCOPE, "signgetpetal", [p])
             return amount
 
         return 0

@@ -150,10 +150,15 @@ async def _test_task_add_and_get():
         SessionTaskManager.add_task(msg, flag, timeout=60)
 
         task_list = SessionTaskManager.get()
+        session_info = msg.session_info
 
-        if "TEST|Console|0" not in task_list:
+        # 任务按消息通道建键：同一现实会话下的多个平台会话共用一份等待任务，
+        # 用户在哪个平台回复都能命中；仅共享 union 而通道号不同的会话则各管各的。
+        if session_info.channel_key not in task_list:
             return False
-        if "TEST|0" not in task_list["TEST|Console|0"]:
+        if session_info.sender_union_id not in task_list[session_info.channel_key]:
+            return False
+        if session_info.target_id in task_list or session_info.target_union_id in task_list:
             return False
 
         SessionTaskManager._task_list.clear()
@@ -197,7 +202,8 @@ async def _test_task_bg_check_timeout():
         await SessionTaskManager.bg_check()
 
         task_list = SessionTaskManager.get()
-        task_info = task_list["TEST|Console|0"]["TEST|0"][msg]
+        session_info = msg.session_info
+        task_info = task_list[session_info.channel_key][session_info.sender_union_id][msg]
         if task_info["active"]:
             return False
 

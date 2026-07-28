@@ -207,6 +207,21 @@ class SessionInfo:
             return self.sender_id.split("|")[-1]
         return ""
 
+    @property
+    def channel_key(self) -> str:
+        """
+        现实会话的标识，形如 ``UTID|8B1F...|1``。
+
+        union 只表示若干平台会话共享同一份数据，并不等于它们是现实中的同一个会话；
+        组内 ``channel_id`` 相同才是，而默认各占一号即默认谁也不与谁合并。
+        冷却、游戏状态、等待任务这类「同一个现实会话内共享」的内存态须按此建键：
+        只按 union 建键会把仅仅共享配置、实为不同场景的会话错误地并作一处。
+
+        :return: union ID 与消息通道号拼成的键。
+        """
+        bind = getattr(self.target_info, "_bind", None)
+        return f"{self.target_union_id}|{bind.channel_id if bind else 1}"
+
 
 @define
 class FetchedSessionInfo(SessionInfo):
