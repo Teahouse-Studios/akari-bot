@@ -5,7 +5,6 @@ from bots.qqbot.config import QQBotConfig
 from core.config.base import CoreConfig
 
 dirty_word_check = CoreConfig.enable_dirty_check
-use_url_manager = CoreConfig.enable_urlmanager
 qq_use_markdown = QQBotConfig.qq_use_markdown
 
 
