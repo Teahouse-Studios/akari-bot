@@ -89,7 +89,9 @@ def _process_class(cls: type[T], table_name, secret=False) -> type[T]:
             # 跳过私有属性（以 `__` 开头的属性）
             if not attr_name.startswith("__"):
                 # 从类定义中获取该属性的默认值
-                __attr = getattr(cls, attr_name)
+                # 仅有类型标注而无赋值，表示该项必填且无默认值：此处取 None 交由下游处理，
+                # 生成时将填入 <Replace me with ...> 占位符，在用户填写之前读取该项一律返回 None
+                __attr = getattr(cls, attr_name, None)
                 __attr_type = attr_type
 
                 # 检查类型是否在允许列表中
@@ -100,16 +102,17 @@ def _process_class(cls: type[T], table_name, secret=False) -> type[T]:
                 ):
                     __attr_type = None
 
-                # 检查配置项是否已存在于 CFGManager 中
-                # 如果不存在，则创建新的配置项
-                if attr_name not in CFGManager.values:
-                    # 从持久化存储中加载现有配置
-                    CFGManager.load()
+                # 检查配置项是否已存在于目标表中，不存在时才补写
+                # 注意不可用 attr_name 与 CFGManager.values 比较：后者的键为配置文件名而非配置项键名，
+                # 二者不存在交集，该判据将恒为真，使每个属性都触发一次全量重写
+                if not CFGManager.has(attr_name, secret, table_name):
                     # 创建新的配置项
                     CFGManager.get(
                         attr_name,
                         __attr if __attr != "" else None,  # 默认值：使用类属性值或None
-                        get_args(__attr_type) if isinstance(__attr_type, UnionType) else attr_type,  # 类型信息
+                        # 须传入已规整的 __attr_type：含不受支持成员的联合类型（如 str | None）在上方已被置空，
+                        # 此处若回退为原始的 attr_type，下游将取得不具有 __name__ 的 UnionType 而报错
+                        get_args(__attr_type) if isinstance(__attr_type, UnionType) else __attr_type,  # 类型信息
                         secret,  # 敏感信息标志
                         table_name,  # 配置表名
                         _generate=True,  # 生成模式标志
