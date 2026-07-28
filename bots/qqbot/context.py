@@ -637,20 +637,20 @@ class QQBotContextManager(ContextManager):
 
         try:
             if session_info.target_from == target_direct_prefix:
-                # 本就在私信会话里，不必再开一条
+                # 当前已处于私信会话中，无需另行创建
                 target_id, target_from = session_info.target_id, target_direct_prefix
             elif user_id.startswith(sender_tiny_prefix):
-                # 频道用户的私信需要先以来源频道创建私信会话，拿到专用的 guild_id 后才能发送
+                # 频道用户的私信须先以来源频道创建私信会话，取得专用的 guild_id 后方可发送
                 guild_id = session_info.target_id.split("|")[2]
                 dms = await client.api.create_dms(guild_id=guild_id, user_id=uid)
                 target_id = f"{target_direct_prefix}|{dms['guild_id']}"
                 target_from = target_direct_prefix
             else:
-                # 群成员与单聊用户共用同一个 openid，直接走单聊通道
+                # 群成员与单聊用户共用同一个 openid，直接经由单聊通道发送
                 target_id = f"{target_c2c_prefix}|{uid}"
                 target_from = target_c2c_prefix
 
-            # 显式指定基类：主动消息用的子类会把发送塞进冷却队列并返回 None，拿不到消息 ID
+            # 显式指定基类：主动消息所用的子类会将发送放入冷却队列并返回 None，无法取得消息 ID
             return await QQBotContextManager.send_message(
                 cls.derive_private_session(session_info, target_id, target_from),
                 message,
@@ -847,19 +847,32 @@ class QQBotFetchedContextManager(QQBotContextManager):
         enable_parse_message=True,
         enable_split_image=True,
         _ignore_retries: bool = False,
-    ) -> None:
+    ) -> list[str]:
+        # 主动消息须按冷却排队发出，但调用方需要取得真实的消息 ID 才能判断本跳是否送达，
+        # 因此入队的是「任务 + future」，待实际发送完成后再回传结果。
+        future = asyncio.get_running_loop().create_future()
         append_tsk = (
             _tasks_high_priority if session_info.target_info.target_data.get("in_post_whitelist", False) else _tasks
         )
-        append_tsk.append(
-            super().send_message(
+        append_tsk.append((future, session_info, message, quote, enable_parse_message, _ignore_retries))
+        return await future
+
+    @staticmethod
+    async def _run_task(task: tuple) -> None:
+        future, session_info, message, quote, enable_parse_message, _ignore_retries = task
+        try:
+            result = await QQBotContextManager.send_message(
                 session_info,
                 message,
                 quote=quote,
                 enable_parse_message=enable_parse_message,
                 _ignore_retries=_ignore_retries,
             )
-        )
+        except Exception:
+            Logger.exception(f"Failed to post message to {session_info.target_id}: ")
+            result = []
+        if not future.done():
+            future.set_result(result)
 
     @staticmethod
     async def process_tasks():
@@ -868,22 +881,14 @@ class QQBotFetchedContextManager(QQBotContextManager):
 
         while True:
             if _tasks_high_priority:
-                task = _tasks_high_priority.pop(0)
-                try:
-                    await task
-                except Exception:
-                    Logger.exception("Error occurred while processing high-priority task: ")
+                await QQBotFetchedContextManager._run_task(_tasks_high_priority.pop(0))
                 cd = 1
                 Logger.info(
                     f"Processed a high-priority task in QQBotFetchedContextManager, waiting cooldown for {cd}s..."
                 )
                 await asyncio.sleep(cd)
             elif _tasks:
-                task = _tasks.pop(0)
-                try:
-                    await task
-                except Exception:
-                    Logger.exception("Error occurred while processing task: ")
+                await QQBotFetchedContextManager._run_task(_tasks.pop(0))
                 cd = 1.5
                 Logger.info(f"Processed a task in QQBotFetchedContextManager, waiting cooldown for {cd}s...")
                 await asyncio.sleep(cd)

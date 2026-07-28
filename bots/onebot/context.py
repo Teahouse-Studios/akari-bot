@@ -264,14 +264,14 @@ class OneBotContextManager(ContextManager):
             Logger.warning(f"Invalid user id {user_id}, cannot send private message.")
             return []
 
-        # 未加机器人为好友时私聊必然发不出去，先查好友列表避免白发一次请求
+        # 未添加机器人为好友时私聊必然无法送达，先查询好友列表以避免无效请求
         private_list = await get_available_private_list()
         if private_list and int(uid) not in private_list:
             Logger.warning(f"User {uid} not found in private list, skipping private message send.")
             return []
 
         try:
-            # 显式指定基类：主动消息用的子类会把发送塞进冷却队列并返回 None，拿不到消息 ID
+            # 显式指定基类：主动消息所用的子类会将发送放入冷却队列并返回 None，无法取得消息 ID
             return await OneBotContextManager.send_message(
                 cls.derive_private_session(session_info, f"{target_private_prefix}|{uid}", target_private_prefix),
                 message,
@@ -561,33 +561,45 @@ class OneBotFetchedContextManager(OneBotContextManager):
         quote: bool = True,
         enable_parse_message=True,
         enable_split_image=True,
-    ) -> None:
+    ) -> list[str]:
+        # 主动消息须按冷却排队发出，但调用方需要取得真实的消息 ID 才能判断本跳是否送达，
+        # 因此入队的是「任务 + future」，待实际发送完成后再回传结果。
+        future = asyncio.get_running_loop().create_future()
         append_tsk = (
             _tasks_high_priority if session_info.target_info.target_data.get("in_post_whitelist", False) else _tasks
         )
-        append_tsk.append(
-            super().send_message(
+        append_tsk.append((future, session_info, message, quote, enable_parse_message, enable_split_image))
+        return await future
+
+    @staticmethod
+    async def _run_task(task: tuple) -> None:
+        future, session_info, message, quote, enable_parse_message, enable_split_image = task
+        try:
+            result = await OneBotContextManager.send_message(
                 session_info,
                 message,
                 quote=quote,
                 enable_parse_message=enable_parse_message,
+                enable_split_image=enable_split_image,
             )
-        )
+        except Exception:
+            Logger.exception(f"Failed to post message to {session_info.target_id}: ")
+            result = []
+        if not future.done():
+            future.set_result(result)
 
     @staticmethod
     async def process_tasks():
         while True:
             if _tasks_high_priority:
-                task = _tasks_high_priority.pop(0)
-                await task
+                await OneBotFetchedContextManager._run_task(_tasks_high_priority.pop(0))
                 cd = random.randint(1, 5)
                 Logger.info(
                     f"Processed a high-priority task in OneBotFetchedContextManager, waiting cooldown for {cd}s..."
                 )
                 await asyncio.sleep(cd)
             elif _tasks:
-                task = _tasks.pop(0)
-                await task
+                await OneBotFetchedContextManager._run_task(_tasks.pop(0))
                 cd = random.randint(5, qq_initiative_msg_cooldown)
                 Logger.info(f"Processed a task in OneBotFetchedContextManager, waiting cooldown for {cd}s...")
                 await asyncio.sleep(cd)

@@ -308,7 +308,7 @@ class MatrixContextManager(ContextManager):
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
     ) -> list[str]:
-        # Matrix 没有独立的私聊通道，私信实为一间仅有双方的房间，先找出（或建出）这间房
+        # Matrix 没有独立的私聊通道，私信实为仅含双方的房间，此处先查找该房间，不存在则创建
         mxid = user_id.split("|")[-1]
         if not mxid.startswith("@"):
             mxid = f"@{mxid}"

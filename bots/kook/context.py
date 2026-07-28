@@ -158,7 +158,7 @@ class KOOKContextManager(ContextManager):
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
     ) -> list[str]:
-        # KOOK 的私聊场景以用户为频道，get_channel 会据此取到 User 对象
+        # KOOK 的私聊场景以用户为频道，get_channel 据此取得 User 对象
         uid = user_id.split("|")[-1]
         try:
             msg_ids = await KOOKContextManager.send_message(
@@ -168,7 +168,7 @@ class KOOKContextManager(ContextManager):
                 enable_parse_message=enable_parse_message,
                 enable_split_image=enable_split_image,
             )
-            # 接口没给回 msg_id 时上游会填空串，滤掉以免把失败当成成功
+            # 接口未返回 msg_id 时上游会填入空串，此处过滤以免将失败判定为成功
             return [msg_id for msg_id in msg_ids if msg_id]
         except Exception:
             Logger.exception(f"Failed to send private message to {user_id}: ")

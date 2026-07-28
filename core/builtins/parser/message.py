@@ -11,9 +11,9 @@
 包含了复杂的权限检查、速率限制、错误报告等功能。
 """
 
-import asyncio
 import copy
 import functools
+import hashlib
 import inspect
 import re
 import time
@@ -42,7 +42,7 @@ from core.constants.exceptions import (
     WaitCancelException,
 )
 from core.constants.info import Info
-from core.database.models import AnalyticsData, SenderInfo
+from core.database.models import AnalyticsData, SenderInfo, TargetInfo
 from core.exports import exports
 from core.loader import ModulesManager
 from core.logger import Logger
@@ -118,8 +118,12 @@ target_cooldown_counter = ExpiringTempDict()
 # 匹配哈希缓存 - 缓存消息与模块的匹配结果，加速处理
 match_hash_cache = ExpiringTempDict()
 
+# 同一条消息在不同平台被接收的时间差上限（秒）
+# 跨平台的消息 ID 无法互通，只能依据「内容一致且接收时间相近」判定是否为同一条消息
+CHANNEL_DEDUP_WINDOW = 10
 
-session_msg_cache = {}
+# 消息通道认领记录 - 键为 union|通道号|文本哈希，由最先写入的会话负责执行
+channel_claim_cache = ExpiringTempDict()
 
 
 async def parser(msg: "Bot.MessageSession"):
@@ -168,13 +172,10 @@ async def parser(msg: "Bot.MessageSession"):
         if len(msg.trigger_msg) == 0:
             return
 
-        # 获取会话内已记录的其它 bot id，屏蔽 bot 的消息
-        bots_id = msg.session_info.target_info.target_data.get("bots_id", [])
-        if bots_id:
-            for b in bots_id:
-                if msg.session_info.sender_id == b:
-                    Logger.debug("Ignored message from other clients: " + msg.trigger_msg)
-                    return
+        # 屏蔽同一个现实会话里其它机器人发的消息，避免把对方的输出当成用户输入去执行
+        if msg.session_info.sender_id in msg.session_info.target_info.list_peer_bots(msg.session_info.target_id):
+            Logger.debug("Ignored message from other clients: " + msg.trigger_msg)
+            return
 
         # ========== 步骤 2: 权限检查 ==========
         # 检查用户是否被被机器人屏蔽（机器人黑名单）
@@ -196,8 +197,8 @@ async def parser(msg: "Bot.MessageSession"):
 
             command_first_word = await _process_command(msg, modules, disable_prefix, in_prefix_list)
 
-            # 执行前检查是否为重复会话，_process_command 会去掉 trigger_msg 的前缀
-            if await _check_duplicate_msg(msg):
+            # 执行前先认领消息通道，同通道内已有会话认领则避让，_process_command 会去掉 trigger_msg 的前缀
+            if await _claim_channel_message(msg):
                 return
 
             if command_first_word:
@@ -254,26 +255,43 @@ async def parser(msg: "Bot.MessageSession"):
         Info.message_parsed += 1
 
 
-async def _check_duplicate_msg(msg: "Bot.MessageSession", display=None):
-    # 获取已连接的会话列表（用于会话内存在多个由本进程启动的bot避让用）
-    if not display:
+async def _claim_channel_message(msg: "Bot.MessageSession", display: str | None = None) -> bool:
+    """
+    认领一条消息，并判断它是否已被同一消息通道内的另一个会话处理。
+
+    跨平台的消息 ID 无法互通，判定「同一条消息」只能依据内容与时间：纯文本一致，
+    且两次接收的时间相差不超过 :data:`CHANNEL_DEDUP_WINDOW` 秒。
+
+    :param msg: 消息会话。
+    :param display: 参与判定的文本，留空则取命令文本。
+    :return: True 表示已被其它会话认领，当前会话应当避让。
+    """
+    bind = getattr(msg.session_info.target_info, "_bind", None)
+    if not bind:
+        return False
+
+    channels = await TargetInfo.list_channels_by_union(bind.union_id)
+    # 通道内仅有自身时不存在重复执行的可能，绝大多数会话经由此快路径返回。
+    if sum(1 for channel_id in channels.values() if channel_id == bind.channel_id) <= 1:
+        return False
+
+    if display is None:
         display = msg.trigger_msg
-    connected_session = msg.session_info.target_info.target_data.get("connected_session", [])
-    if connected_session:
-        for c in connected_session:
-            if session_msg_cache.get(f"{display}_{c}"):
-                Logger.debug("Ignored duplicate session message from other client: " + display)
-                return True  # 收到了重复的消息，进行避让处理
+    token = f"{bind.union_id}|{bind.channel_id}|{hashlib.sha256(display.encode('utf-8')).hexdigest()}"
+    now = time.time()
 
-        msg_token = f"{display}_{msg.session_info.target_id}"
-        session_msg_cache.update({msg_token: True})
+    # 以下查表与写入之间不得出现 await：在单线程事件循环下该段方为原子操作，认领才不会被并发打断。
+    claimed = channel_claim_cache.get(token)
+    claimed_at = claimed.get("timestamp") if claimed else None
+    if claimed_at and abs(now - claimed_at) <= CHANNEL_DEDUP_WINDOW:
+        Logger.debug(f"Ignored duplicate message claimed by {claimed.get('target_id')}: {display}")
+        return True
 
-        async def _remove_cache(m):
-            await asyncio.sleep(30)
-            if m in session_msg_cache:
-                del session_msg_cache[m]
-
-        asyncio.create_task(_remove_cache(msg_token))
+    channel_claim_cache[token] = ExpiringTempDict(
+        exp=CHANNEL_DEDUP_WINDOW * 3,
+        data={"timestamp": now, "target_id": msg.session_info.target_id},
+        root=False,
+    )
     return False
 
 
@@ -800,8 +818,8 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                                 Logger.info(f"{identify_str} -> [Bot]: {msg.trigger_msg}")
                             Logger.debug("Matched hash:" + str(matched_hash))
 
-                            # 执行前检查是否为重复会话
-                            if await _check_duplicate_msg(msg, str(matched_hash)):
+                            # 执行前先认领消息通道，同通道内已有会话认领则避让
+                            if await _claim_channel_message(msg, str(matched_hash)):
                                 continue
 
                             # ========== 循环匹配检测 ==========

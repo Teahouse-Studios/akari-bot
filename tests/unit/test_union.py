@@ -36,7 +36,7 @@ async def _test_new_union_id_prefixed():
             if not union_id.startswith(prefix) or union_id != union_id.upper():
                 return False
 
-        # 解绑拆出的 union 同样要带前缀。
+        # 解绑拆出的 union 同样须带前缀。
         await sender.bind_id("UNIONTEST|prefix|2")
         split = await sender.unbind_id("UNIONTEST|prefix|2")
         return bool(split) and split.union_id.startswith("USID|") and split.union_id == split.union_id.upper()
@@ -138,6 +138,27 @@ async def _test_switch_identity_clears_account_level():
         return False
 
 
+async def _test_merge_union_creates_new_union():
+    """测试 merge_union - 合并生成全新的组，两个旧组一并作废"""
+    try:
+        first = await SenderInfo.resolve_union("UNIONTEST|newid|1")
+        second = await SenderInfo.resolve_union("UNIONTEST|newid|2")
+
+        merged = await first.merge_union(second)
+        if not merged:
+            return False
+        # 不沿用任何一方的组 ID，合并方向才不存在歧义。
+        if merged.union_id in (first.union_id, second.union_id):
+            return False
+        if await SenderInfo.exists(union_id=first.union_id) or await SenderInfo.exists(union_id=second.union_id):
+            return False
+
+        return sorted(await merged.list_bound_ids()) == ["UNIONTEST|newid|1", "UNIONTEST|newid|2"]
+
+    except Exception:
+        return False
+
+
 async def _test_merge_union_merges_data():
     """测试 merge_union - 花瓣累加、警告取最大、数据逐键合并"""
     try:
@@ -154,17 +175,17 @@ async def _test_merge_union_merges_data():
         drop.sender_data = {"shared": "drop", "only_drop": 2}
         await drop.save()
 
-        await keep.merge_union(drop)
+        merged = await keep.merge_union(drop)
 
-        if keep.petal != 15 or keep.warns != 3 or not keep.superuser:
+        if merged.petal != 15 or merged.warns != 3 or not merged.superuser:
             return False
         # 键冲突保留发起方，不冲突的键则一并带过来。
-        if keep.sender_data != {"shared": "keep", "only_keep": 1, "only_drop": 2}:
+        if merged.sender_data != {"shared": "keep", "only_keep": 1, "only_drop": 2}:
             return False
         if await SenderInfo.exists(union_id=drop.union_id):
             return False
 
-        bound = sorted(await keep.list_bound_ids())
+        bound = sorted(await merged.list_bound_ids())
         return bound == ["UNIONTEST|merge|1", "UNIONTEST|merge|2"]
 
     except Exception:
@@ -179,20 +200,21 @@ async def _test_merge_union_rewrites_permission_refs():
 
         target = await TargetInfo.resolve_union("UNIONTEST|Group|refs")
         target.custom_admins = [drop.union_id]
-        target.banned_users = [drop.union_id]
+        target.banned_users = [keep.union_id]
         await target.save()
 
-        await keep.merge_union(drop)
+        merged = await keep.merge_union(drop)
 
+        # 两侧的旧 ID 均须改写至新组，遗漏任何一侧都会导致管理员身份丢失。
         after = await TargetInfo.resolve_union("UNIONTEST|Group|refs")
-        return after.custom_admins == [keep.union_id] and after.banned_users == [keep.union_id]
+        return after.custom_admins == [merged.union_id] and after.banned_users == [merged.union_id]
 
     except Exception:
         return False
 
 
 async def _test_merge_union_moves_module_rows():
-    """测试 merge_union - 模块表随之改挂目标 union"""
+    """测试 merge_union - 模块表随之改挂新 union"""
     try:
         from modules.phigros.database.models import PhigrosBindInfo
 
@@ -200,10 +222,10 @@ async def _test_merge_union_moves_module_rows():
         drop = await SenderInfo.resolve_union("UNIONTEST|modmove|2")
         await PhigrosBindInfo.create(union_id=drop.union_id, session_token="tok", username="mover")
 
-        await keep.merge_union(drop)
+        merged = await keep.merge_union(drop)
 
-        # union_id 是模块表主键，改挂只能靠重建行，各列值都得原样带过来。
-        moved = await PhigrosBindInfo.get_or_none(union_id=keep.union_id)
+        # union_id 为模块表主键，改挂只能通过重建行完成，各列值须原样保留。
+        moved = await PhigrosBindInfo.get_or_none(union_id=merged.union_id)
         if not moved or moved.username != "mover" or moved.session_token != "tok":
             return False
         return not await PhigrosBindInfo.exists(union_id=drop.union_id)
@@ -222,9 +244,9 @@ async def _test_merge_union_module_conflict_keeps_self():
         await PhigrosBindInfo.create(union_id=keep.union_id, session_token="mine", username="mine")
         await PhigrosBindInfo.create(union_id=drop.union_id, session_token="theirs", username="theirs")
 
-        await keep.merge_union(drop)
+        merged = await keep.merge_union(drop)
 
-        row = await PhigrosBindInfo.get_or_none(union_id=keep.union_id)
+        row = await PhigrosBindInfo.get_or_none(union_id=merged.union_id)
         if not row or row.username != "mine":
             return False
         return not await PhigrosBindInfo.exists(union_id=drop.union_id)
@@ -243,9 +265,9 @@ async def _test_merge_union_module_conflict_keeps_other():
         await PhigrosBindInfo.create(union_id=keep.union_id, session_token="mine", username="mine")
         await PhigrosBindInfo.create(union_id=drop.union_id, session_token="theirs", username="theirs")
 
-        await keep.merge_union(drop, {"module_phigros_bind_info"})
+        merged = await keep.merge_union(drop, {"module_phigros_bind_info"})
 
-        row = await PhigrosBindInfo.get_or_none(union_id=keep.union_id)
+        row = await PhigrosBindInfo.get_or_none(union_id=merged.union_id)
         if not row or row.username != "theirs":
             return False
         return not await PhigrosBindInfo.exists(union_id=drop.union_id)
@@ -267,12 +289,12 @@ async def _test_merge_target_union_moves_module_rows():
             interwikis={"foo": "https://foo.example/"},
         )
 
-        await keep.merge_union(drop)
+        merged = await keep.merge_union(drop)
 
-        moved = await WikiTargetInfo.get_or_none(union_id=keep.union_id)
+        moved = await WikiTargetInfo.get_or_none(union_id=merged.union_id)
         if not moved or moved.api_link != "https://example.org/api.php":
             return False
-        # JSON 列在重建时容易被写成字符串，这里确认取回来仍是字典。
+        # JSON 列在重建时可能被写为字符串，此处确认取回后仍为字典。
         if moved.interwikis != {"foo": "https://foo.example/"}:
             return False
         return not await WikiTargetInfo.exists(union_id=drop.union_id)
@@ -281,8 +303,43 @@ async def _test_merge_target_union_moves_module_rows():
         return False
 
 
+async def _test_channel_id_increments_within_union():
+    """测试消息通道 - 组内逐个递增，默认各占一号"""
+    try:
+        union = await TargetInfo.resolve_union("UNIONTEST|Group|chan1")
+        await union.bind_id("UNIONTEST|Group|chan2")
+        await union.bind_id("UNIONTEST|Group|chan3")
+
+        channels = await TargetInfo.list_channels_by_union(union.union_id)
+        # 默认每个会话各占一号，即默认互不参与去重。
+        return sorted(channels.values()) == [1, 2, 3]
+
+    except Exception:
+        return False
+
+
+async def _test_merge_union_renumbers_channels():
+    """测试消息通道 - 合并时并入方重新编号，不与自身一侧重号"""
+    try:
+        first = await TargetInfo.resolve_union("UNIONTEST|Group|mix1")
+        await first.bind_id("UNIONTEST|Group|mix2")
+        second = await TargetInfo.resolve_union("UNIONTEST|Group|mix3")
+        await second.bind_id("UNIONTEST|Group|mix4")
+
+        merged = await first.merge_union(second)
+        channels = await TargetInfo.list_channels_by_union(merged.union_id)
+
+        # 两侧均自 1 起编号，直接合表会使四个互不相关的会话被归为两条通道。
+        if sorted(channels.values()) != [1, 2, 3, 4]:
+            return False
+        return channels["UNIONTEST|Group|mix1"] != channels["UNIONTEST|Group|mix3"]
+
+    except Exception:
+        return False
+
+
 async def _test_unbind_id_splits_account():
-    """测试 unbind_id - 拆出的账号数据归零但保留处罚"""
+    """测试 unbind_id - 拆出的账号数据归零，处罚状态予以保留"""
     try:
         union = await SenderInfo.resolve_union("UNIONTEST|unbind|1")
         await union.bind_id("UNIONTEST|unbind|2")
@@ -293,7 +350,7 @@ async def _test_unbind_id_splits_account():
         new_union = await union.unbind_id("UNIONTEST|unbind|2")
         if not new_union or new_union.union_id == union.union_id:
             return False
-        # 花瓣留在原 union，警告次数随账号带走，避免解绑洗掉处罚。
+        # 花瓣保留在原 union，警告次数随账号转移，避免通过解绑规避处罚。
         if new_union.petal != 0 or new_union.warns != 2:
             return False
 
@@ -375,12 +432,15 @@ async def test_union(tester: Tester):
     await tester.test(_test_blocked_any_account, "封禁任一为真测试")
     await tester.test(_test_unblock_clears_account_level, "解封清除账号级封禁测试")
     await tester.test(_test_switch_identity_clears_account_level, "switch_identity 解封测试")
+    await tester.test(_test_merge_union_creates_new_union, "merge_union 生成新组测试")
     await tester.test(_test_merge_union_merges_data, "merge_union 数据合并测试")
     await tester.test(_test_merge_union_rewrites_permission_refs, "merge_union 权限名单改写测试")
     await tester.test(_test_merge_union_moves_module_rows, "merge_union 模块表改挂测试")
     await tester.test(_test_merge_union_module_conflict_keeps_self, "merge_union 模块表冲突保留自身测试")
     await tester.test(_test_merge_union_module_conflict_keeps_other, "merge_union 模块表冲突保留对方测试")
     await tester.test(_test_merge_target_union_moves_module_rows, "merge_union 场景模块表改挂测试")
+    await tester.test(_test_channel_id_increments_within_union, "消息通道组内递增测试")
+    await tester.test(_test_merge_union_renumbers_channels, "消息通道合并重新编号测试")
     await tester.test(_test_unbind_id_splits_account, "unbind_id 拆分账号测试")
     await tester.test(_test_unbind_id_rejects_last, "unbind_id 拒绝解绑最后一个测试")
     await tester.test(_test_target_union_shares_modules, "场景 union 模块开关互通测试")

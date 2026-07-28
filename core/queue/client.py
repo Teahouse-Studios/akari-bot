@@ -21,6 +21,7 @@ from core.builtins.session.info import SessionInfo
 from core.builtins.session.features import Features
 from core.database.models import JobQueuesTable
 from core.exports import exports, add_export
+from core.logger import Logger
 from .base import JobQueueBase
 
 if TYPE_CHECKING:
@@ -244,6 +245,43 @@ async def _(tsk: JobQueuesTable, args: dict):
         enable_split_image=_args.get("enable_split_image", True),
     )
     return {"message_id": send}
+
+
+@JobQueueClient.action("post_message")
+async def _(tsk: JobQueuesTable, args: dict):
+    """主动推送消息处理器。
+
+    与 send_message 的区别在于失败时的处理：未取得消息 ID 即表示本跳未送达，
+    此时将剩余的下一跳交回服务端改由其它场景重发。同一条消息通道只需有一处送达，
+    不应在每个场景各发一次。
+    """
+    session_info, bot, ctx_manager, _args = await get_session(args)
+    send = await ctx_manager.send_message(
+        session_info,
+        converter.structure(_args.get("message", {}), MessageChain | MessageNodes),
+        quote=False,
+    )
+    if send:
+        Logger.info(f"Posted message to {session_info.target_id}: {send}")
+        return {"message_id": send}
+
+    next_hops = list(session_info.next_hops or [])
+    if not next_hops:
+        Logger.warning(f"Failed to post message to {session_info.target_id}, no next hop left.")
+        return {"message_id": []}
+
+    Logger.warning(f"Failed to post message to {session_info.target_id}, handing over to the next hop.")
+    await JobQueueClient.add_job(
+        "Server",
+        "post_next_hop",
+        {
+            "next_hops": next_hops,
+            "message": _args.get("message", {}),
+            "module_name": _args.get("module_name", ""),
+        },
+        wait=False,
+    )
+    return {"message_id": []}
 
 
 @JobQueueClient.action("send_private_message")

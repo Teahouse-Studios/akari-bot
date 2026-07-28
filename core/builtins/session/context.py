@@ -156,8 +156,8 @@ class ContextManager(ABC):
         """
         由当前会话派生出一份指向私聊场景的会话信息，供 :meth:`send_private_msg` 复用发送逻辑。
 
-        派生出的会话不沿用原会话的 session_id 与 message_id：前者会让上下文查找命中原场景的
-        消息实例，把“私信”回复到原场景；后者会让私信引用一条不存在于私聊里的消息。
+        派生出的会话不沿用原会话的 session_id 与 message_id：前者会使上下文查找命中原场景的
+        消息实例，从而将私信回复至原场景；后者会使私信引用一条并不存在于私聊中的消息。
 
         :param session_info: 当前会话信息
         :param target_id: 私聊场景 ID
@@ -188,7 +188,7 @@ class ContextManager(ABC):
         与 :meth:`send_message` 不同，消息不会发往 ``session_info`` 所指的场景，
         ``session_info`` 仅用于取用语言、平台能力等上下文。
 
-        实现必须吞掉平台侧的发送异常并返回空列表，调用方以“是否拿到消息 ID”判定成败。
+        实现须捕获平台侧的发送异常并返回空列表，调用方以是否取得消息 ID 判定成败。
 
         :param session_info: 会话信息
         :param user_id: 目标用户 ID（带平台前缀，如 ``QQ|10000``）

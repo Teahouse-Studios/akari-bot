@@ -2,7 +2,7 @@ from tortoise import Tortoise
 
 from core.database import fetch_module_db
 from core.database.link import db_type, get_db_link
-from core.database.models import DBVersion, backfill_union_binds
+from core.database.models import DBVersion, TargetInfo, TargetUnionBind, backfill_union_binds
 
 # v3：原本以平台 ID 为主键的表改挂 union，旧数据的 union ID 直接沿用原 ID，因此只需重命名主键列。
 UNION_RENAME_TABLES = {
@@ -65,6 +65,29 @@ async def update_database_to_v3(conn):
     # 补建映射行。旧数据的 union ID 与原 ID 相同，直接按原值一一对应即可。
     # 账号级封禁保持关闭，原有的封禁状态已记在 union 上。
     await backfill_union_binds()
+
+    # 消息通道号。target_union_bind 由 generate_schemas() 新建时已包含该列，正常升级路径不会执行此段；
+    # 保留该段是为了让开发期已升级至 v3、其后才引入通道功能的数据库可将版本号退回 2 重跑一次修复。
+    if not await has_column(conn, "target_union_bind", "channel_id"):
+        if db_type == "sqlite":
+            await conn.execute_query('ALTER TABLE "target_union_bind" ADD COLUMN "channel_id" INT NOT NULL DEFAULT 1;')
+        else:
+            await conn.execute_query("ALTER TABLE `target_union_bind` ADD COLUMN `channel_id` INT NOT NULL DEFAULT 1;")
+
+    # 通道号须在组内逐个顺延。若一律保留默认值 1，同一组下的全部会话会被判定为同一条消息通道，
+    # 命令与推送将相互去重，导致会话不再有消息送达。
+    for union_id in set(await TargetUnionBind.all().values_list("union_id", flat=True)):
+        binds = await TargetUnionBind.filter(union_id=union_id).order_by("bound_at")
+        for channel_id, bind in enumerate(binds, start=1):
+            bind.channel_id = channel_id
+            await bind.save()
+
+    # 旧版 connect 将机器人互认记录存为扁平列表，无法反查某条记录属于哪个会话，解绑时也就无从删除。
+    # 该结构已改为两级字典，旧值直接清除，重新执行一次 bind auto 即可。
+    for target in await TargetInfo.all():
+        if isinstance(target.target_data.get("bots_id"), list):
+            target.target_data.pop("bots_id")
+            await target.save()
 
     # 统计与审计表增列并回填，历史记录的原始 ID 保持不动。
     for table in UNION_RECORD_TABLES:

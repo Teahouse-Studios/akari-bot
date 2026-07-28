@@ -18,8 +18,8 @@ from ..logger import Logger
 UNION_SCOPE_SENDER = "sender"
 UNION_SCOPE_TARGET = "target"
 
-# 新建 union ID 的域前缀。升级与转换脚本会把旧数据的平台 ID 原样当作 union ID 沿用，
-# 加上前缀后新生成的 ID 不会与平台 ID 混淆，也能一眼看出是账号组还是会话组。
+# 新建 union ID 的域前缀。升级与转换脚本会将旧数据的平台 ID 直接沿用为 union ID，
+# 加上前缀后新生成的 ID 不会与平台 ID 混淆，并可直接区分账号组与会话组。
 UNION_ID_PREFIXES = {
     UNION_SCOPE_SENDER: "USID",
     UNION_SCOPE_TARGET: "UTID",
@@ -89,8 +89,8 @@ async def move_union_rows(model: type, from_union: str, to_union: str) -> None:
     """
     将某张模块表中挂在 ``from_union`` 下的行改挂到 ``to_union``。
 
-    模块表多以 ``union_id`` 作主键，而 Tortoise 不允许用 ``update()`` 改主键，
-    因此这类表只能照抄各列后重建行；``union_id`` 不是主键的表直接改列即可。
+    模块表多以 ``union_id`` 作主键，而 Tortoise 不允许通过 ``update()`` 修改主键，
+    因此这类表只能复制各列后重建行；``union_id`` 非主键的表直接修改该列即可。
 
     :param model: 模块表模型。
     :param from_union: 来源 union ID。
@@ -111,8 +111,8 @@ async def move_union_rows(model: type, from_union: str, to_union: str) -> None:
         data["union_id"] = to_union
         moved.append(model(**data))
 
-    # 删除与重建之间若中断，绑定数据会凭空消失，因此放进同一个事务。
-    # 模块表可能挂在 local 连接上，事务要跟着表走，不能一律用 default。
+    # 删除与重建之间若中断，绑定数据将全部丢失，因此置于同一个事务内。
+    # 模块表可能挂在 local 连接上，事务须与表所在的连接一致，不能一律使用 default。
     async with in_transaction(model._meta.default_connection):
         await model.filter(union_id=from_union).delete()
         await model.bulk_create(moved)
@@ -150,7 +150,7 @@ async def rewrite_sender_union_refs(from_union: str, to_union: str) -> None:
     把会话权限列表中对某个用户 union 的引用改写到另一个 union 上。
 
     ``custom_admins`` / ``banned_users`` 存的是用户 union ID，合并后若不改写，
-    管理员身份会凭空消失，限制名单也能被换绑绕过。
+    管理员身份将会丢失，限制名单也可通过换绑绕过。
     """
     for target in await TargetInfo.all():
         changed = False
@@ -165,7 +165,7 @@ async def rewrite_sender_union_refs(from_union: str, to_union: str) -> None:
 
 async def inherit_banned_union_refs(from_union: str, to_union: str) -> None:
     """
-    让新拆出的用户 union 继承原 union 的会话限制名单，避免通过解绑洗掉封禁。
+    使新拆出的用户 union 继承原 union 的会话限制名单，避免通过解绑规避封禁。
     """
     for target in await TargetInfo.all():
         banned_users = target.banned_users or []
@@ -196,6 +196,25 @@ async def backfill_union_binds() -> None:
         missing = union_ids - set(await bind_model.all().values_list(id_field, flat=True))
         if missing:
             await bind_model.bulk_create([bind_model(**{id_field: i, "union_id": i}) for i in missing])
+
+
+def normalize_peer_bots(value: Any) -> dict[str, dict[str, str]]:
+    """
+    规整机器人互认记录，形如 ``{观察方会话 ID: {对端会话 ID: 对端机器人在观察方平台的账号}}``。
+
+    记录须按「观察方 - 对端」两级存放：机器人账号以观察方所在平台的命名空间记录，
+    若扁平存为一个列表，则无法反查某条记录属于哪个会话，解绑时也就无从删除。
+    旧版本使用的正是扁平列表，此处一律丢弃，重新执行一次 ``bind auto`` 即可。
+
+    :param value: ``target_data["bots_id"]`` 的原始值。
+    """
+    if not isinstance(value, dict):
+        return {}
+    return {
+        observer: {peer: bot_id for peer, bot_id in entries.items() if bot_id}
+        for observer, entries in value.items()
+        if isinstance(entries, dict)
+    }
 
 
 def attach_bind(union: Any, bind: Any) -> Any:
@@ -235,12 +254,14 @@ class TargetUnionBind(DBModel):
 
     :param target_id: 场景 ID（平台会话）。
     :param union_id: 所属 union ID。
+    :param channel_id: 所属消息通道号，同组内同号的会话被视为同一个现实会话。
     :param blocked: 该场景是否被单独封禁。
     :param bound_at: 绑定时间。
     """
 
     target_id = fields.CharField(max_length=512, primary_key=True)
     union_id = fields.CharField(max_length=512, db_index=True)
+    channel_id = fields.IntField(default=1)
     blocked = fields.BooleanField(default=False)
     bound_at = fields.DatetimeField(auto_now_add=True)
 
@@ -421,7 +442,7 @@ class SenderInfo(DBModel):
         """
         将一个平台账号从该 union 中拆出，数据留在原 union，该账号从零开始。
 
-        惩罚性状态（封禁、警告次数、会话限制名单）会随账号一并带走，避免通过解绑洗掉处罚。
+        惩罚性状态（封禁、警告次数、会话限制名单）随账号一并转移，避免通过解绑规避处罚。
 
         :param sender_id: 平台账号 ID。
         :return: 拆出后该账号所属的新 union，若无法解绑则为 None。
@@ -437,29 +458,40 @@ class SenderInfo(DBModel):
         await inherit_banned_union_refs(self.union_id, union.union_id)
         return union
 
-    async def merge_union(self, other: "SenderInfo", keep_other_tables: set[str] | None = None) -> bool:
+    async def merge_union(self, other: "SenderInfo", keep_other_tables: set[str] | None = None) -> "SenderInfo | None":
         """
-        将另一 union 并入该 union，随后删除被并入的 union。
+        把两个 union 合并成一个全新的 union，随后删除原有的两个。
 
-        :param other: 被并入的 union。
-        :param keep_other_tables: 模块表冲突时以被并入方为准的表名集合，其余情况保留自身。
+        不沿用任何一方的 union ID，以消除合并方向上的歧义：合并之后双方的旧组 ID 一律失效。
+
+        :param other: 参与合并的另一方。
+        :param keep_other_tables: 模块表冲突时以 ``other`` 为准的表名集合，其余情况保留自身。
+        :return: 合并后的新 union，两侧本就同组时为 None。
         """
         if other.union_id == self.union_id:
-            return False
+            return None
 
-        self.petal += other.petal
-        self.warns = max(self.warns, other.warns)
-        self.blocked = self.blocked or other.blocked
-        self.trusted = self.trusted or other.trusted
-        self.superuser = self.superuser or other.superuser
-        self.sender_data = {**other.sender_data, **self.sender_data}
-        await self.save()
+        merged = await SenderInfo.create(
+            union_id=new_union_id(UNION_SCOPE_SENDER),
+            blocked=self.blocked or other.blocked,
+            trusted=self.trusted or other.trusted,
+            superuser=self.superuser or other.superuser,
+            warns=max(self.warns, other.warns),
+            petal=self.petal + other.petal,
+            sender_data={**other.sender_data, **self.sender_data},
+        )
 
+        # 先按冲突取舍将两侧模块数据归拢至一处，再整体改挂到新组；新组为空，第二步不会再产生冲突。
         await migrate_union_tables(other.union_id, self.union_id, keep_other_tables, scope=UNION_SCOPE_SENDER)
-        await rewrite_sender_union_refs(other.union_id, self.union_id)
-        await SenderUnionBind.filter(union_id=other.union_id).update(union_id=self.union_id)
+        await migrate_union_tables(self.union_id, merged.union_id, scope=UNION_SCOPE_SENDER)
+
+        for old_union in (self.union_id, other.union_id):
+            await rewrite_sender_union_refs(old_union, merged.union_id)
+            await SenderUnionBind.filter(union_id=old_union).update(union_id=merged.union_id)
+
+        await self.delete()
         await other.delete()
-        return True
+        return merged
 
 
 class TargetInfo(DBModel):
@@ -535,6 +567,63 @@ class TargetInfo(DBModel):
             await TargetUnionBind.filter(union_id__in=convert_list(union_id)).values_list("target_id", flat=True)
         )
 
+    def list_peer_bots(self, target_id: str) -> list[str]:
+        """
+        取某个平台会话眼中、同一个现实会话里其它机器人的账号。
+
+        :param target_id: 观察方的平台会话 ID。
+        """
+        return list(normalize_peer_bots(self.target_data.get("bots_id")).get(target_id, {}).values())
+
+    async def link_peer_bots(self, links: dict[str, dict[str, str]]) -> None:
+        """
+        登记机器人互认记录。
+
+        :param links: ``{观察方会话 ID: {对端会话 ID: 对端机器人在观察方平台的账号}}``。
+        """
+        peers = normalize_peer_bots(self.target_data.get("bots_id"))
+        for observer, entries in links.items():
+            peers.setdefault(observer, {}).update({peer: bot_id for peer, bot_id in entries.items() if bot_id})
+        await self.edit_target_data("bots_id", peers)
+
+    async def forget_peer_bots(self, target_id: str) -> None:
+        """
+        将某个平台会话从机器人互认记录中完全移除，包含它自身的记录与其它会话对它的记录。
+
+        解绑或变更通道后双方不再对应同一个现实会话，保留记录会使双方持续互相屏蔽；
+        而重新配对所用的握手口令正是由机器人发出的命令，屏蔽一旦残留，双方将无法重新建立关联。
+
+        :param target_id: 要移除的平台会话 ID。
+        """
+        peers = normalize_peer_bots(self.target_data.get("bots_id"))
+        peers.pop(target_id, None)
+        for entries in peers.values():
+            entries.pop(target_id, None)
+        await self.edit_target_data("bots_id", {observer: e for observer, e in peers.items() if e})
+
+    @staticmethod
+    async def next_channel_id(union_id: str) -> int:
+        """
+        取该 union 下一个可用的消息通道号。
+
+        通道号仅在组内有意义（消息去重只发生在组内），因此组内自 1 起顺次递增即可。
+        默认每个会话各占一号，即默认互不视为同一条消息通道。
+
+        :param union_id: 场景 union ID。
+        """
+        channels = await TargetUnionBind.filter(union_id=union_id).values_list("channel_id", flat=True)
+        return max(channels) + 1 if channels else 1
+
+    @staticmethod
+    async def list_channels_by_union(union_id: str) -> dict[str, int]:
+        """
+        取该 union 下「平台会话 ID → 消息通道号」的映射。
+
+        :param union_id: 场景 union ID。
+        """
+        binds = await TargetUnionBind.filter(union_id=union_id).values_list("target_id", "channel_id")
+        return {target_id: channel_id for target_id, channel_id in binds}
+
     async def bind_id(self, target_id: str) -> bool:
         """
         将一个平台会话绑定到该 union。
@@ -545,7 +634,9 @@ class TargetInfo(DBModel):
         bind = await TargetUnionBind.get_or_none(target_id=target_id)
         if bind:
             return bind.union_id == self.union_id
-        await TargetUnionBind.create(target_id=target_id, union_id=self.union_id)
+        await TargetUnionBind.create(
+            target_id=target_id, union_id=self.union_id, channel_id=await self.next_channel_id(self.union_id)
+        )
         return True
 
     async def unbind_id(self, target_id: str) -> "TargetInfo | None":
@@ -561,33 +652,64 @@ class TargetInfo(DBModel):
         bind = await TargetUnionBind.get_or_none(target_id=target_id)
         blocked = self.blocked or (bind.blocked if bind else False)
         await TargetUnionBind.filter(target_id=target_id).delete()
-        # 封禁状态随会话一并带走，避免通过解绑洗掉处罚。
+        # 封禁状态随会话一并转移，避免通过解绑规避处罚。
         union = await TargetInfo.create(union_id=new_union_id(UNION_SCOPE_TARGET), blocked=blocked, locale=self.locale)
         await TargetUnionBind.create(target_id=target_id, union_id=union.union_id, blocked=blocked)
+        # 拆出的会话与原组内的机器人不再对应同一个现实会话，互认记录须一并清除。
+        # 新组的 target_data 本为空，只需清理保留的一侧。
+        await self.forget_peer_bots(target_id)
         return union
 
-    async def merge_union(self, other: "TargetInfo", keep_other_tables: set[str] | None = None) -> bool:
+    async def merge_union(self, other: "TargetInfo", keep_other_tables: set[str] | None = None) -> "TargetInfo | None":
         """
-        将另一 union 并入该 union，随后删除被并入的 union。
+        把两个 union 合并成一个全新的 union，随后删除原有的两个。
 
-        :param other: 被并入的 union。
-        :param keep_other_tables: 模块表冲突时以被并入方为准的表名集合，其余情况保留自身。
+        不沿用任何一方的 union ID，以消除合并方向上的歧义：合并之后双方的旧组 ID 一律失效。
+
+        :param other: 参与合并的另一方。
+        :param keep_other_tables: 模块表冲突时以 ``other`` 为准的表名集合，其余情况保留自身。
+        :return: 合并后的新 union，两侧本就同组时为 None。
         """
         if other.union_id == self.union_id:
-            return False
+            return None
 
-        self.blocked = self.blocked or other.blocked
-        self.muted = self.muted or other.muted
-        self.modules = list(set(self.modules) | set(other.modules))
-        self.custom_admins = list(set(self.custom_admins) | set(other.custom_admins))
-        self.banned_users = list(set(self.banned_users) | set(other.banned_users))
-        self.target_data = {**other.target_data, **self.target_data}
-        await self.save()
+        # bots_id 为两级结构，随 target_data 浅合并会使 other 一侧的互认记录被整体覆盖，
+        # 因此单独取并集。
+        peer_bots = normalize_peer_bots(other.target_data.get("bots_id"))
+        for observer, entries in normalize_peer_bots(self.target_data.get("bots_id")).items():
+            peer_bots.setdefault(observer, {}).update(entries)
 
+        merged = await TargetInfo.create(
+            union_id=new_union_id(UNION_SCOPE_TARGET),
+            blocked=self.blocked or other.blocked,
+            muted=self.muted or other.muted,
+            locale=self.locale,
+            modules=list(set(self.modules) | set(other.modules)),
+            custom_admins=list(set(self.custom_admins) | set(other.custom_admins)),
+            banned_users=list(set(self.banned_users) | set(other.banned_users)),
+            target_data={**other.target_data, **self.target_data, "bots_id": peer_bots},
+        )
+
+        # 先按冲突取舍将两侧模块数据归拢至一处，再整体改挂到新组；新组为空，第二步不会再产生冲突。
         await migrate_union_tables(other.union_id, self.union_id, keep_other_tables, scope=UNION_SCOPE_TARGET)
-        await TargetUnionBind.filter(union_id=other.union_id).update(union_id=self.union_id)
+        await migrate_union_tables(self.union_id, merged.union_id, scope=UNION_SCOPE_TARGET)
+
+        # 自身一侧的通道号保持不变，并入方整体平移：双方均自 1 开始编号，
+        # 直接合表会使两个互不相关的会话同为 1 号，进而被误判为同一条消息通道。
+        # 平移须按原通道号建立映射，不能逐条分配新号——并入方内部原本同号的会话必须保持同号，
+        # 否则已配对的会话会在合并时被拆开。
+        await TargetUnionBind.filter(union_id=self.union_id).update(union_id=merged.union_id)
+        moved_channels: dict[int, int] = {}
+        for bind in await TargetUnionBind.filter(union_id=other.union_id).order_by("bound_at"):
+            if bind.channel_id not in moved_channels:
+                moved_channels[bind.channel_id] = await self.next_channel_id(merged.union_id)
+            bind.union_id = merged.union_id
+            bind.channel_id = moved_channels[bind.channel_id]
+            await bind.save()
+
+        await self.delete()
         await other.delete()
-        return True
+        return merged
 
     async def config_module(self, module_name: str | list | tuple, enable: bool = True) -> bool:
         """

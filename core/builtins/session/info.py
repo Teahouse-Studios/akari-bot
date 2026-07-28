@@ -82,6 +82,8 @@ class SessionInfo:
     enabled_modules: list | None = None
     petal: int | None = None
     prefixes: list[str] = []
+    # 主动推送的下一跳场景 ID 列表：本跳发送失败时，由客户端回调服务端改用列表中的下一个场景重发
+    next_hops: list[str] = []
     ctx_slot: int | None = 0
     fetch: bool = False
     require_enable_modules: bool = True

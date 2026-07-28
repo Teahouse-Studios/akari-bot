@@ -34,6 +34,18 @@ class Alive:
         return value
 
     @classmethod
+    def is_alive(cls, client_name: str) -> bool:
+        """
+        判断某个客户端是否仍在线。
+
+        客户端每 60 秒上报一次保活信号，超过 120 秒未收到即视为掉线。
+
+        :param client_name: 客户端名称
+        :return: 是否在线
+        """
+        return client_name in cls.get_alive()
+
+    @classmethod
     def determine_target_from(cls, target_id: str):
         """
         确定场景 ID 前缀。

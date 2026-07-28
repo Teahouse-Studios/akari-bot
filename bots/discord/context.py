@@ -124,9 +124,9 @@ class DiscordContextManager(ContextManager):
 
         try:
             user = await discord_bot.fetch_user(int(uid))
-            # 私信频道要先建立才有 ID，对方关闭私信时 create_dm 会抛 Forbidden
+            # 私信频道须先建立才具有 ID，对方关闭私信时 create_dm 会抛出 Forbidden
             dm_channel = user.dm_channel or await user.create_dm()
-            # 显式指定基类：Slash 子类只能回应交互，无法向任意频道发消息
+            # 显式指定基类：Slash 子类只能回应交互，无法向任意频道发送消息
             return await DiscordContextManager.send_message(
                 cls.derive_private_session(
                     session_info, f"{target_dm_channel_prefix}|{dm_channel.id}", target_dm_channel_prefix
@@ -313,12 +313,13 @@ class DiscordContextManager(ContextManager):
             ctx = cls.context[session_info.session_id]
             if ctx:
                 async with ctx.channel.typing():
+                    # session_info.tmp["session_typed"] = 'y'
                     Logger.debug(f"Start typing in session: {session_info.session_id}")
                     # 这里可以添加开始输入状态的逻辑
-                    flag = asyncio.Event()
-                    cls.typing_flags[session_info.session_id] = flag
-                    await flag.wait()
-                    del cls.typing_flags[session_info.session_id]
+                    # flag = asyncio.Event()
+                    # cls.typing_flags[session_info.session_id] = flag
+                    # await flag.wait()
+                    # del cls.typing_flags[session_info.session_id]
 
             # 这里可以添加开始输入状态的逻辑
 
@@ -329,7 +330,7 @@ class DiscordContextManager(ContextManager):
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         if session_info.session_id in cls.typing_flags:
-            cls.typing_flags[session_info.session_id].set()
+            # cls.typing_flags[session_info.session_id].set()
             # 这里可以添加结束输入状态的逻辑
             Logger.debug(f"End typing in session: {session_info.session_id}")
 

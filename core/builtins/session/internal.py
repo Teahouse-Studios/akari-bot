@@ -295,7 +295,7 @@ class MessageSession:
         if not user_id:
             return []
 
-        # 平台不支持私信时不必走一趟队列，直接判定失败
+        # 平台不支持私信时无需经过队列，直接判定失败
         if not self.session_info.support_private_msg:
             return []
 

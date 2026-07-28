@@ -8,6 +8,7 @@
 import asyncio
 from typing import Any, TYPE_CHECKING
 
+from core.alive import Alive
 from core.builtins.message.chain import *
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
@@ -19,7 +20,7 @@ from core.config import Config
 from core.constants import base_superuser_default
 from core.constants.info import Info
 from core.constants.path import PrivateAssets, assets_path
-from core.database.models import TargetInfo, AnalyticsData
+from core.database.models import AnalyticsData, TargetInfo
 from core.exports import add_export, exports
 from core.loader import ModulesManager
 from core.logger import Logger
@@ -178,6 +179,33 @@ class Bot:
                 fetched.append(x)
         return fetched
 
+    @staticmethod
+    async def group_sessions_by_channel(
+        session_list: list[FetchedSessionInfo],
+    ) -> list[list[FetchedSessionInfo]]:
+        """
+        将待推送的会话按「场景组 + 消息通道」归拢。
+
+        同组同通道的会话对应同一个现实会话（例如一个群内同时存在 OneBot 与 QQ 官方机器人），
+        逐个推送会使该会话收到多条重复消息。归拢后每组仅推送一次。
+
+        :param session_list: 待推送的会话列表
+        :return: 分组后的会话列表，每组内部保持原有顺序
+        """
+        channel_maps: dict[str, dict[str, int]] = {}
+        groups: dict[tuple[str, Any], list[FetchedSessionInfo]] = {}
+
+        for session_ in session_list:
+            union_id = session_.target_union_id
+            if union_id and union_id not in channel_maps:
+                channel_maps[union_id] = await TargetInfo.list_channels_by_union(union_id)
+            channel_id = channel_maps.get(union_id, {}).get(session_.target_id) if union_id else None
+            # 查不到通道号即表示该会话没有绑定行，按独立会话处理，不与其它会话归为一组。
+            key = (union_id, channel_id) if union_id and channel_id else ("", session_.target_id)
+            groups.setdefault(key, []).append(session_)
+
+        return list(groups.values())
+
     @classmethod
     async def post_message(
         cls,
@@ -190,6 +218,7 @@ class Bot:
         发送消息到开启此模块的指定会话。
 
         支持向多个会话发送消息，并可根据不同客户端类型发送不同格式的消息。
+        同一条消息通道内的会话仅推送一次：先推送队首，队首发送失败时由客户端回调服务端换用下一跳。
 
         :param module_name: 模块名称（用于权限检查和分析统计，"*" 表示全局）
         :param message: 消息内容，支持字符串或字典
@@ -203,28 +232,37 @@ class Bot:
         if session_list is None:
             session_list = await Bot.get_enabled_this_module(module_name)
 
-        # 对每个会话发送消息
-        for session_ in session_list:
-            # 获取消息队列服务器
-            queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        # 获取消息队列服务器
+        queue_server: "JobQueueServer" = exports["JobQueueServer"]
+
+        # 同一条消息通道仅推送一次，其余会话作为发送失败时的后备
+        for hops in await cls.group_sessions_by_channel(session_list):
+            # 掉线客户端的任务无人认领，换跳也就无从触发，整条通道将不再有消息送达，因此预先将其剔出跳表
+            hops = [hop for hop in hops if Alive.is_alive(hop.client_name)]
+            if not hops:
+                Logger.warning("Every client of this channel is offline, skipped posting message.")
+                continue
+
+            session_ = hops[0]
+            session_.next_hops = [hop.target_id for hop in hops[1:]]
 
             # 将消息转换为该会话支持的消息链格式
-            message = get_message_chain(session_, message)
+            chain = get_message_chain(session_, message)
 
             # 选择正确格式的消息（根据客户端类型）
-            if isinstance(message, dict):
+            if isinstance(chain, dict):
                 # 优先使用客户端特定的消息，否则使用默认消息
-                if session_.client_name in message:
-                    post_message = message[session_.client_name]
+                if session_.client_name in chain:
+                    post_message = chain[session_.client_name]
                 else:
-                    post_message = message["default"]
+                    post_message = chain["default"]
             else:
-                post_message = message
+                post_message = chain
 
             # 发送消息
-            await queue_server.client_send_message(session_, post_message)
+            await queue_server.client_post_message(session_, post_message, module_name)
 
-            # 如果启用分析功能，记录统计数据
+            # 如果启用分析功能，记录统计数据。一条消息通道计为一次推送，因此每组仅记录一条
             if enable_analytics and module_name:
                 await AnalyticsData.create(
                     target_id=session_.target_id,
@@ -379,7 +417,7 @@ class Bot:
         if not user_id:
             return []
 
-        # 平台不支持私信时不必走一趟队列，直接判定失败
+        # 平台不支持私信时无需经过队列，直接判定失败
         if not session_info.support_private_msg:
             Logger.warning(f"Client {session_info.client_name} does not support private message.")
             return []
