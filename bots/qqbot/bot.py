@@ -13,18 +13,19 @@ from core.builtins.message.internal import Plain
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
 from core.client.init import client_init
-from core.config import Config
-from core.constants.default import ignored_sender_default, confirm_command_default
+from bots.qqbot.config import QQBotConfig, QQBotSecretConfig
+from core.config.base import CoreConfig
+from core.constants.default import confirm_command_default
 from core.logger import Logger
 
 Bot.register_bot(client_name=client_name)
 ctx_id = Bot.register_context_manager(QQBotContextManager)
 Bot.register_context_manager(QQBotFetchedContextManager, fetch_session=True)
 
-qqbot_appid = str(Config("qq_bot_appid", cfg_type=(int, str), table_name="bot_qqbot"))
-qqbot_openid = str(Config("qq_bot_openid", default="", table_name="bot_qqbot"))
-qqbot_secret = Config("qq_bot_secret", cfg_type=str, secret=True, table_name="bot_qqbot")
-ignored_sender = Config("ignored_sender", ignored_sender_default)
+qqbot_appid = str(QQBotConfig.qq_bot_appid)
+qqbot_openid = str(QQBotConfig.qq_bot_openid)
+qqbot_secret = QQBotSecretConfig.qq_bot_secret
+ignored_sender = CoreConfig.ignored_sender
 
 initialized = False
 
@@ -307,11 +308,11 @@ intents.public_guild_messages = True
 intents.public_messages = True
 intents.direct_message = True
 intents.interaction = True
-if Config("qq_private_bot", False, table_name="bot_qqbot"):
+if QQBotConfig.qq_private_bot:
     intents.guild_messages = True
 
 client = MyClient(intents=intents, bot_log=None)
 
-if Config("enable", False, table_name="bot_qqbot"):
+if QQBotConfig.enable:
     loop = asyncio.get_event_loop()
     loop.run_until_complete(client.start(appid=qqbot_appid, secret=qqbot_secret))

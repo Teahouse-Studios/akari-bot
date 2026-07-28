@@ -16,8 +16,7 @@ from core.builtins.session.info import SessionInfo, FetchedSessionInfo, ModuleHo
 from core.builtins.session.internal import MessageSession, FetchedMessageSession
 from core.builtins.session.lock import ExecutionLockList
 from core.builtins.temp import *
-from core.config import Config
-from core.constants import base_superuser_default
+from core.config.base import CoreConfig
 from core.constants.info import Info
 from core.constants.path import PrivateAssets, assets_path
 from core.database.models import AnalyticsData, TargetInfo
@@ -30,7 +29,7 @@ if TYPE_CHECKING:
     from core.queue.client import JobQueueClient
     from core.queue.server import JobQueueServer
 
-enable_analytics = Config("enable_analytics", True)
+enable_analytics = CoreConfig.enable_analytics
 
 
 class Bot:
@@ -71,7 +70,7 @@ class Bot:
     fetched_session_ctx_slot = 0
 
     # 超级用户列表 - 拥有最高权限的用户 ID 列表
-    base_superuser_list = Config("base_superuser", base_superuser_default, cfg_type=(str, list))
+    base_superuser_list = CoreConfig.base_superuser
     if isinstance(base_superuser_list, str):
         base_superuser_list = [base_superuser_list]
 

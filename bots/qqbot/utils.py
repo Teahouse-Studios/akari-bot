@@ -1,7 +1,7 @@
-from core.config import Config
+from bots.qqbot.config import QQBotConfig
 from core.utils.http import url_pattern
 
-enable_send_url = Config("qq_bot_enable_send_url", False, table_name="bot_qqbot")
+enable_send_url = QQBotConfig.qq_bot_enable_send_url
 
 
 def url_filter(msg: str):

@@ -19,8 +19,9 @@ from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
 from core.builtins.utils import command_prefix
 from core.client.init import client_init
-from core.config import Config
-from core.constants.default import confirm_command_default, ignored_sender_default, qq_host_default
+from bots.onebot.config import AiocqhttpConfig
+from core.config.base import BaseConfig, CoreConfig
+from core.constants.default import confirm_command_default
 from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords
 from core.i18n import Locale
 from core.logger import Logger
@@ -30,14 +31,14 @@ Bot.register_bot(client_name=client_name)
 ctx_id = Bot.register_context_manager(OneBotContextManager)
 Bot.register_context_manager(OneBotFetchedContextManager, fetch_session=True)
 
-default_locale = Config("default_locale", cfg_type=str)
-ignored_sender = Config("ignored_sender", ignored_sender_default)
-enable_tos = Config("enable_tos", True)
-mention_required = Config("mention_required", False)
-quick_confirm = Config("quick_confirm", True)
+default_locale = BaseConfig.default_locale
+ignored_sender = CoreConfig.ignored_sender
+enable_tos = CoreConfig.enable_tos
+mention_required = CoreConfig.mention_required
+quick_confirm = CoreConfig.quick_confirm
 
-enable_temp_session = Config("qq_enable_temp_session", True, table_name="bot_onebot")
-enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name="bot_onebot")
+enable_temp_session = AiocqhttpConfig.qq_enable_temp_session
+enable_listening_self_message = AiocqhttpConfig.qq_enable_listening_self_message
 qq_account = None
 
 
@@ -218,7 +219,7 @@ async def _(event: Event):
     sender_info = await SenderInfo.get_by_sender_id(sender_id)
     if sender_info.superuser or sender_info.trusted:
         return {"approve": True}
-    if Config("qq_allow_approve_friend", False, table_name="bot_onebot"):
+    if AiocqhttpConfig.qq_allow_approve_friend:
         if sender_info.blocked:
             return {"approve": False}
         return {"approve": True}
@@ -233,7 +234,7 @@ async def _(event: Event):
     target_info = await TargetInfo.get_by_target_id(target_id)
     if sender_info.superuser or sender_info.trusted:
         return {"approve": True}
-    if Config("qq_allow_approve_group_invite", False, table_name="bot_onebot"):
+    if AiocqhttpConfig.qq_allow_approve_group_invite:
         if target_info.blocked:
             return {"approve": False}
         return {"approve": True}
@@ -303,14 +304,14 @@ async def _(event: Event):
         target_info = await TargetInfo.get_by_target_id(target_id, create=False)
         if target_info and target_info.blocked:
             res = Locale(default_locale).t("tos.message.in_group_blocklist")
-            if issue_url := Config("issue_url", cfg_type=str):
+            if issue_url := CoreConfig.issue_url:
                 res += "\n" + Locale(default_locale).t("tos.message.appeal", issue_url=issue_url)
             await aiocqhttp_bot.send(event=event, message=res)
             await aiocqhttp_bot.call_action("set_group_leave", group_id=event.group_id)
 
 
-qq_host = Config("qq_host", default=qq_host_default, table_name="bot_onebot")
-if Config("enable", False, table_name="bot_onebot"):
+qq_host = AiocqhttpConfig.qq_host
+if AiocqhttpConfig.enable:
     HyperConfig.startup_timeout = 120
     host, port = qq_host.split(":")
     aiocqhttp_bot.run(host=host, port=port, debug=False)

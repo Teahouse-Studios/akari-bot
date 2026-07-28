@@ -10,7 +10,7 @@ from gql.transport.httpx import HTTPXAsyncTransport
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
-from core.config import Config
+from core.config.base import CoreConfig
 from core.constants.path import (
     cache_path,
     noto_sans_demilight_path,
@@ -116,7 +116,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
             details = x["details"]
             _date = datetime.strptime(x["date"], "%Y-%m-%dT%H:%M:%S.%fZ")
             local_time = _date + parse_time_string(
-                msg.session_info.target_info.target_data.get("timezone_offset", Config("timezone_offset", "+8"))
+                msg.session_info.target_info.target_data.get("timezone_offset", CoreConfig.timezone_offset)
             )
             playtime = local_time.timestamp()
             nowtime = time.time()

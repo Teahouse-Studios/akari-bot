@@ -24,7 +24,7 @@ from core.builtins.session.lock import ExecutionLockList
 from core.builtins.session.tasks import SessionTaskManager
 from core.builtins.types import MessageElement
 from core.builtins.utils import confirm_command
-from core.config import Config
+from core.config.base import CoreConfig
 from core.constants import SessionFinished, WaitCancelException
 from core.exports import add_export, exports
 from core.utils.func import is_int
@@ -34,7 +34,7 @@ if TYPE_CHECKING:
     from core.queue.server import JobQueueServer
 
 # 快速确认模式 - 允许用户快速确认操作
-quick_confirm = Config("quick_confirm", True)
+quick_confirm = CoreConfig.quick_confirm
 
 
 @define
@@ -524,7 +524,7 @@ class MessageSession:
         self.session_info.tmp["wait_active"] = "yes"
         ExecutionLockList.remove(self)
         await self.end_typing()
-        if Config("no_confirm", False):
+        if CoreConfig.no_confirm:
             return no_confirm_action
         if message_chain:
             message_chain = get_message_chain(self.session_info, message_chain)

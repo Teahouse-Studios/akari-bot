@@ -1,7 +1,7 @@
-from core.config.decorator import on_config
+from core.config.decorator import on_bot_config
 
 
-@on_config("web", "bot", False)
+@on_bot_config("web")
 class WebConfig:
     enable: bool = True
     enable_https: bool = False
@@ -13,7 +13,7 @@ class WebConfig:
     heartbeat_timeout: int = 5
 
 
-@on_config("web", "bot", True)
+@on_bot_config("web", secret=True)
 class WebSecretConfig:
     allow_origins: list = []
     jwt_secret: str = ""

@@ -16,13 +16,13 @@ from core.builtins.message.elements import PlainElement, ImageElement, VoiceElem
 from core.builtins.session.context import ContextManager
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
-from core.config import Config
+from bots.onebot.config import AiocqhttpConfig
 from core.logger import Logger
 from .features import Features
 
-qq_typing_emoji = str(Config("qq_typing_emoji", 181, (str, int), table_name="bot_onebot"))
-qq_limited_emoji = str(Config("qq_limited_emoji", 10060, (str, int), table_name="bot_onebot"))
-qq_initiative_msg_cooldown = Config("qq_initiative_msg_cooldown", 10, int, table_name="bot_onebot")
+qq_typing_emoji = str(AiocqhttpConfig.qq_typing_emoji)
+qq_limited_emoji = str(AiocqhttpConfig.qq_limited_emoji)
+qq_initiative_msg_cooldown = AiocqhttpConfig.qq_initiative_msg_cooldown
 last_send_typing_time = {}
 
 

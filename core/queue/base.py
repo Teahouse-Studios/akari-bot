@@ -20,7 +20,7 @@ from core.builtins.converter import converter
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.internal import I18NContext, Plain
 from core.builtins.session.info import SessionInfo
-from core.config import Config
+from core.config.base import CoreConfig
 from core.constants import QueueAlreadyRunning
 from core.database.models import JobQueuesTable
 from core.exports import exports
@@ -110,7 +110,7 @@ class JobQueueBase:
 
     name = "Internal|" + str(uuid4())
     queue_actions = {}
-    report_targets = Config("report_targets", [])
+    report_targets = CoreConfig.report_targets
     is_running = False
     TASK_TIMEOUT_SECONDS = 7200  # 2小时
     pause_event = asyncio.Event()

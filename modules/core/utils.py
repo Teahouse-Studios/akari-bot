@@ -8,7 +8,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, FormattedTime, I18NContext, Url
 from core.component import module
-from core.config import Config
+from core.config.base import CoreConfig
 from core.database.models import SenderInfo
 from core.i18n import get_available_locales, Locale
 from core.utils.bash import run_sys_command
@@ -22,7 +22,7 @@ async def _(msg: Bot.MessageSession):
         if str(Bot.Info.version).startswith("git:"):
             commit = Bot.Info.version[4:11]
             send_msgs = MessageChain.assign(I18NContext("core.message.version", version=commit, disable_joke=True))
-            if Config("enable_commit_url", True):
+            if CoreConfig.enable_commit_url:
                 returncode, repo_url, _ = await run_sys_command(["git", "config", "--get", "remote.origin.url"])
                 if returncode == 0:
                     repo_url = repo_url.strip().replace(".git", "")
@@ -31,7 +31,7 @@ async def _(msg: Bot.MessageSession):
         else:
             version = Bot.Info.version
             send_msgs = MessageChain.assign(I18NContext("core.message.version", version=version, disable_joke=True))
-            if Config("enable_commit_url", True):
+            if CoreConfig.enable_commit_url:
                 version = "nightly" if version.startswith("nightly") else version
                 returncode, repo_url, _ = await run_sys_command(["git", "config", "--get", "remote.origin.url"])
                 if returncode == 0:
@@ -213,7 +213,7 @@ async def _(msg: Bot.MessageSession):
         I18NContext("core.message.locale.langlist", langlist=available_lang),
     ]
 
-    if locale_url := Config("locale_url", cfg_type=str):
+    if locale_url := CoreConfig.locale_url:
         res.append(I18NContext("core.message.locale.contribute", url=locale_url))
     await msg.finish(res)
 
@@ -306,7 +306,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("core.message.setup.check.disable"))
 
 
-@setup.command("sign {{I18N:core.help.setup.sign}}", required_admin=True, load=Config("enable_petal", False))
+@setup.command("sign {{I18N:core.help.setup.sign}}", required_admin=True, load=CoreConfig.enable_petal)
 async def _(msg: Bot.MessageSession):
     if not msg.session_info.target_info.target_data.get("petal_sign", True):
         await msg.session_info.target_info.edit_target_data("petal_sign", True)

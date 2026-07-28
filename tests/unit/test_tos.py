@@ -64,12 +64,13 @@ async def _test_abuse_warn_target_sends_message():
         msg.session_info.sender_info.warns = 0
         msg.session_info.sender_info.trusted = False
 
-        with patch("core.tos.Config") as mock_config:
-            mock_config.side_effect = lambda k, *a, **kw: {
-                "issue_url": "https://github.com/test/issues",
-                "tos_warning_counts": 5,
-                "report_targets": [],
-            }.get(k, a[0] if a else None)
+        class MockConfig:
+            """替换 CoreConfig 的桩。tos_warning_counts 与 report_targets 在导入时即已取值，
+            此处仅提供 abuse_warn_target 内部实时读取的字段。"""
+
+            issue_url = "https://github.com/test/issues"
+
+        with patch("core.tos.CoreConfig", MockConfig):
             with patch("core.tos.tos_report", new_callable=AsyncMock):
                 from core.tos import abuse_warn_target
 

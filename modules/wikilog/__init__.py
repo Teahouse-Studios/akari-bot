@@ -7,7 +7,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
 from core.builtins.session.internal import FetchedMessageSession
 from core.component import module
-from core.config import Config
+from modules.wiki.config import WikiConfig
 from core.database.models import TargetInfo
 from core.logger import Logger
 from core.scheduler import IntervalTrigger
@@ -17,7 +17,7 @@ from modules.wiki.utils.wikilib import WikiLib
 from .database.models import WikiLogTargetSetInfo
 from .utils import convert_data_to_text
 
-wiki_whitelist_url = Config("wiki_whitelist_url", cfg_type=str, table_name="module_wiki")
+wiki_whitelist_url = WikiConfig.wiki_whitelist_url
 
 type_map = {
     "abuselog": "AbuseLog",

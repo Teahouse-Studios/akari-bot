@@ -9,7 +9,7 @@ from core.builtins.message.elements import ImageElement
 from core.builtins.message.internal import I18NContext, Plain, Url
 from core.builtins.parser.command import CommandParser
 from core.component import module
-from core.config import Config
+from core.config.base import CoreConfig
 from core.constants.path import templates_path
 from core.loader import ModulesManager
 from core.logger import Logger
@@ -18,9 +18,9 @@ from core.utils.image import cb64imglst
 from core.web_render import web_render, ElementScreenshotOptions
 
 env = Environment(loader=FileSystemLoader(templates_path), autoescape=True, enable_async=True)
-help_url = Config("help_url", cfg_type=str)
-donate_url = Config("donate_url", cfg_type=str)
-use_font_mirror = Config("use_font_mirror", False, bool)
+help_url = CoreConfig.help_url
+donate_url = CoreConfig.donate_url
+use_font_mirror = CoreConfig.use_font_mirror
 
 hlp = module("help", base=True, doc=True)
 
@@ -106,7 +106,7 @@ async def _(msg: Bot.MessageSession, module: str):
                     devs_msg = ""
 
             if module_.doc:
-                if help_page_url := Config("help_page_url", cfg_type=str):
+                if help_page_url := CoreConfig.help_page_url:
                     wiki_msg = I18NContext(
                         "core.message.help.helpdoc.address",
                         url=MessageChain.assign(Url(help_page_url.replace("${module}", help_name))),

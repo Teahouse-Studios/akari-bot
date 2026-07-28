@@ -4,7 +4,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
 from core.builtins.parser.command import CommandParser
 from core.component import module
-from core.config import Config
+from core.config.base import CoreConfig
 from core.constants.exceptions import InvalidHelpDocTypeError
 from core.database.models import ModuleStatus
 from core.loader import ModulesManager
@@ -184,7 +184,7 @@ async def config_modules(msg: Bot.MessageSession):
             else:
                 extra_reload_modules = ModulesManager.search_related_module(module_, False)
                 if modules_[module_].base:
-                    if Config("allow_reload_base", False):
+                    if CoreConfig.allow_reload_base:
                         if await msg.wait_confirm(
                             I18NContext("core.message.module.reload.base.confirm"),
                             append_instruction=False,

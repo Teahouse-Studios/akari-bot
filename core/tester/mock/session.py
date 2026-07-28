@@ -6,7 +6,7 @@ from core.builtins.message.elements import PlainElement, ImageElement, MentionEl
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession, I18NContext
 from core.builtins.utils import confirm_command
-from core.config import Config
+from core.config.base import CoreConfig
 from core.constants.exceptions import SessionFinished
 
 
@@ -164,7 +164,7 @@ class MockMessageSession(MessageSession):
     async def wait_confirm(
         self, message_chain=None, quote=True, delete=True, timeout=120, append_instruction=True, no_confirm_action=True
     ):
-        if Config("no_confirm", False):
+        if CoreConfig.no_confirm:
             return no_confirm_action
 
         if message_chain:

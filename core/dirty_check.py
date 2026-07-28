@@ -20,13 +20,13 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext
 from core.builtins.session.internal import MessageSession
 from core.builtins.types import MessageElement
-from core.config import Config
+from core.config.base import CoreConfig, CoreSecretConfig
 from core.database.local import DirtyWordCache
 from core.logger import Logger
 
-access_key_id = Config("check_access_key_id", cfg_type=str, secret=True)
-access_key_secret = Config("check_access_key_secret", cfg_type=str, secret=True)
-use_textscan_v1 = Config("check_use_textscan_v1", cfg_type=bool, default=False)
+access_key_id = CoreSecretConfig.check_access_key_id
+access_key_secret = CoreSecretConfig.check_access_key_secret
+use_textscan_v1 = CoreConfig.check_use_textscan_v1
 
 
 def hash_hmac(key, code):
@@ -327,8 +327,8 @@ def rickroll() -> str:
 
     :returns: Rickroll消息。
     """
-    rickroll_msg = Config("rickroll_msg", cfg_type=str)
-    if Config("enable_rickroll", True) and rickroll_msg:
+    rickroll_msg = CoreConfig.rickroll_msg
+    if CoreConfig.enable_rickroll and rickroll_msg:
         return rickroll_msg
     return "{I18N:error.message.chain.unsafe}"
 

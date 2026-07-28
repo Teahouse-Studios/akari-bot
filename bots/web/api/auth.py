@@ -8,7 +8,7 @@ from fastapi.responses import Response
 from jwt.exceptions import ExpiredSignatureError
 
 from bots.web.client import app, limiter, ph, jwt_secret
-from core.config import Config
+from bots.web.config import WebConfig
 from core.constants.path import assets_path
 from core.database.models import MaliciousLoginRecords
 from core.logger import Logger
@@ -17,7 +17,7 @@ PASSWORD_PATH = assets_path / "private" / "web" / ".password"
 LOGIN_BLOCK_DURATION = 3600
 
 login_failed_attempts = defaultdict(list)
-login_max_attempt = Config("login_max_attempt", default=5, table_name="bot_web")
+login_max_attempt = WebConfig.login_max_attempt
 
 
 def verify_jwt(request: Request):

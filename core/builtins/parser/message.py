@@ -29,8 +29,7 @@ from core.builtins.parser.args import ArgumentPattern, Template as argsTemplate,
 from core.builtins.parser.command import CommandParser
 from core.builtins.session.lock import ExecutionLockList
 from core.builtins.session.tasks import SessionTaskManager
-from core.config import Config
-from core.constants.default import bug_report_url_default, ignored_sender_default
+from core.config.base import CoreConfig
 from core.constants.exceptions import (
     AbuseWarning,
     ExternalException,
@@ -58,49 +57,49 @@ if TYPE_CHECKING:
 # ========== 全局配置项 ==========
 
 # 忽略的用户列表 - 这些用户的消息不会被处理
-ignored_sender = Config("ignored_sender", ignored_sender_default)
+ignored_sender = CoreConfig.ignored_sender
 
 # ========== 功能开关 ==========
 
 # 是否启用服务条款检查（检查用户是否同意 ToS）
-enable_tos = Config("enable_tos", True)
+enable_tos = CoreConfig.enable_tos
 
 # 是否启用分析统计（记录命令执行情况）
-enable_analytics = Config("enable_analytics", True)
+enable_analytics = CoreConfig.enable_analytics
 
 # 错误报告的场景列表（将错误信息发送给这些场景）
-report_targets = Config("report_targets", [])
+report_targets = CoreConfig.report_targets
 
 # 是否启用模块无效提示（用户输入错误的模块名时是否提示）
-enable_module_invalid_prompt = Config("enable_module_invalid_prompt", False)
+enable_module_invalid_prompt = CoreConfig.enable_module_invalid_prompt
 
 # Bug 报告的 URL
-bug_report_url = Config("bug_report_url", bug_report_url_default)
+bug_report_url = CoreConfig.bug_report_url
 
 # ========== 错字检查的分数阈值 ==========
 # 这些阈值用于模糊匹配（当用户输入可能有错字时）
 
 # 模块名的相似度阈值
-typo_check_module_score = Config("typo_check_module_score", 0.6)
+typo_check_module_score = CoreConfig.typo_check_module_score
 
 # 命令名的相似度阈值
-typo_check_command_score = Config("typo_check_command_score", 0.3)
+typo_check_command_score = CoreConfig.typo_check_command_score
 
 # 参数的相似度阈值
-typo_check_args_score = Config("typo_check_args_score", 0.5)
+typo_check_args_score = CoreConfig.typo_check_args_score
 
 # 选项的相似度阈值
-typo_check_options_score = Config("typo_check_options_score", 0.3)
+typo_check_options_score = CoreConfig.typo_check_options_score
 
 # 命令参数数量差异阈值：当用户输入的参数数量与匹配到的模板参数数量差异比例超过此值时，
 # 跳过命令模板匹配（避免字数差异过大时的错误推荐）
 # 例如：用户输入10个参数但模板只有2个参数 → 2/10=0.2 < 0.5 → 跳过匹配
-typo_check_args_diff_ratio = Config("typo_check_args_diff_ratio", 0.5)
+typo_check_args_diff_ratio = CoreConfig.typo_check_args_diff_ratio
 
 # 模块名字符长度差异阈值：当匹配到的模块名长度与用户输入长度差异比例超过此值时，
 # 跳过模块名匹配（避免如 ~p → ~decrypt 的错误推荐）
 # 例如：输入"p"(1字符) 匹配到 "decrypt"(7字符) → 1/7≈0.14 < 0.5 → 跳过匹配
-typo_check_module_diff_ratio = Config("typo_check_module_diff_ratio", 0.5)
+typo_check_module_diff_ratio = CoreConfig.typo_check_module_diff_ratio
 
 # ========== 频率限制相关 ==========
 
@@ -1230,7 +1229,7 @@ async def _process_tos_abuse_warning(msg: "Bot.MessageSession", e: AbuseWarning)
     :param msg: 消息会话对象
     :param e: 滥用警告异常对象
     """
-    if enable_tos and Config("tos_warning_counts", 5) >= 1 and not msg.check_super_user():
+    if enable_tos and CoreConfig.tos_warning_counts >= 1 and not msg.check_super_user():
         await abuse_warn_target(msg, str(e))
         temp_ban_counter[msg.session_info.sender_id] = {"count": 1, "ts": time.time()}
     else:

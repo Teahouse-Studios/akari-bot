@@ -1,7 +1,7 @@
-from .maimaidx import mai
+from core.config.decorator import on_module_config
 
 
-@mai.config(secret=True)
+@on_module_config("maimai", secret=True)
 class MaimaiSecretConfig:
     diving_fish_developer_token: str = ""
     lxns_developer_token: str = ""

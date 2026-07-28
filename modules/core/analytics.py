@@ -7,12 +7,12 @@ from tortoise.exceptions import DoesNotExist
 from core.builtins.bot import Bot
 from core.builtins.message.internal import Image, I18NContext, FormattedTime
 from core.component import module
-from core.config import Config
+from core.config.base import CoreConfig
 from core.database.models import AnalyticsData
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 
-enable_analytics = Config("enable_analytics", True)
+enable_analytics = CoreConfig.enable_analytics
 
 
 async def get_first_record():

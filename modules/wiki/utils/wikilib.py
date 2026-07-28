@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 import core.utils.html2text as html2text
 from core.builtins.message.internal import Url
 from core.builtins.session.internal import MessageSession
-from core.config import Config
+from core.config.base import BaseConfig, CoreConfig
 from core.constants.exceptions import AbuseWarning, NoReportException
 from core.dirty_check import check
 from core.i18n import Locale
@@ -22,8 +22,8 @@ from modules.wiki.database.models import WikiSiteInfo, WikiAllowList, WikiBlockL
 from modules.wiki.utils.bot import BotAccount
 from .mapping import *
 
-default_locale = Config("default_locale", cfg_type=str)
-enable_tos = Config("enable_tos", True)
+default_locale = BaseConfig.default_locale
+enable_tos = CoreConfig.enable_tos
 
 
 class InvalidWikiError(Exception):
@@ -278,7 +278,7 @@ class WikiLib:
                 siprop="general|namespaces|namespacealiases|interwikimap|extensions",
             )
         except Exception as e:
-            if Config("debug", False):
+            if CoreConfig.debug:
                 Logger.exception()
             message = self.locale.t("wiki.message.utils.wikilib.get_failed.api") + str(e)
             if self.url.find("moegirl.org.cn") != -1:
@@ -789,7 +789,7 @@ class WikiLib:
                                             invalid_namespace = research[1]
                                         return research
                                     except Exception:
-                                        if Config("debug", False):
+                                        if CoreConfig.debug:
                                             Logger.exception()
                                         return None, False
 

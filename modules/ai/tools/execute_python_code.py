@@ -5,10 +5,10 @@ import orjson
 from e2b_code_interpreter import AsyncSandbox
 from e2b_code_interpreter.exceptions import TimeoutException
 
-from core.config import Config
+from modules.ai.config import AiConfigSecret
 from core.utils.cache import random_cache_path
 
-api_key = Config("e2b_api_key", cfg_type=str, secret=True, table_name="module_ai")
+api_key = AiConfigSecret.e2b_api_key
 
 if api_key:
     execute_python_code_desc = {

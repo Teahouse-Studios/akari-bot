@@ -1,10 +1,10 @@
 from core.builtins.bot import Bot
 from core.component import module
-from core.config import Config
+from modules.github.config import GithubConfig
 
 from modules.github import repo, user, search
 
-pat = Config("github_pat", cfg_type=str, secret=True, table_name="module_github")
+pat = GithubConfig.github_pat
 
 github = module(
     "github",

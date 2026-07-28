@@ -11,7 +11,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
-from core.config import Config
+from bots.web.config import WebConfig
 
 Bot.register_bot(client_name=client_name)
 
@@ -82,7 +82,7 @@ async def websocket_chat(websocket: WebSocket):
             del Temp.data["web_chat_websocket"]
 
 
-if Config("enable", True, table_name="bot_web"):
+if WebConfig.enable:
     if available_web_port == 0:
         Logger.error("API port is disabled.")
         sys.exit(0)

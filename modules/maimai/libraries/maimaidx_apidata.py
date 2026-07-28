@@ -15,6 +15,7 @@ from core.utils.func import is_int
 from core.utils.http import download, get_url, post_url
 from .maimaidx_mapping import *
 from .maimaidx_music import get_cover_len5_id, Music, TotalList
+from core.config.base import CoreConfig
 
 total_list = TotalList()
 
@@ -40,7 +41,7 @@ async def update_cover() -> bool:
                 Logger.debug(f"Successfully download {id}.png")
             except Exception as e:
                 if str(e).startswith("404"):
-                    if Config("debug", False):
+                    if CoreConfig.debug:
                         Logger.error(f"Failed to download {id}.png")
                     continue
                 Logger.exception()

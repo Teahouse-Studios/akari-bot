@@ -9,7 +9,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, FormattedTime
 from core.component import module
-from core.config import Config
+from core.config.base import CoreConfig
 from core.constants import Secret
 from core.logger import Logger
 from core.scheduler import IntervalTrigger
@@ -55,12 +55,12 @@ async def get_article(version):
             if title:
                 return link, title.text
     except Exception:
-        if Config("debug", False):
+        if CoreConfig.debug:
             Logger.exception()
     return "", ""
 
 
-trigger_times = 60 if not Config("slower_schedule", False) else 180
+trigger_times = 60 if not CoreConfig.slower_schedule else 180
 
 startup_mute = [True, True]
 
@@ -196,7 +196,7 @@ async def _():
                     await update_stored_list(Bot.Info.client_name, "mcnews", get_stored_news_title)
         startup_mute[0] = False
     except Exception:
-        if Config("debug", False):
+        if CoreConfig.debug:
             Logger.exception()
 
 
@@ -219,5 +219,5 @@ async def _():
             await update_stored_list(Bot.Info.client_name, "mcbv_rss", verlist)
         startup_mute[1] = False
     except Exception:
-        if Config("debug", False):
+        if CoreConfig.debug:
             Logger.exception()

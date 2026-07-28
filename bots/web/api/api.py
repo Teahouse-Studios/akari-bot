@@ -11,7 +11,8 @@ from tortoise.expressions import Q
 
 from bots.web.client import app, limiter, enable_https
 from core.builtins.utils import command_prefix
-from core.config import Config
+from bots.web.config import WebConfig
+from core.config.base import BaseConfig, CoreConfig
 from core.constants import config_filename
 from core.constants.path import config_path
 from core.database.models import AnalyticsData, SenderInfo, SenderUnionBind, TargetInfo, TargetUnionBind
@@ -22,7 +23,7 @@ from .auth import verify_jwt
 started_time = datetime.now()
 
 
-default_locale = Config("default_locale", cfg_type=str)
+default_locale = BaseConfig.default_locale
 
 
 async def filter_by_bound_id(bind_model, prefix: str | None, id: str | None) -> Q | None:
@@ -135,11 +136,11 @@ async def get_config(request: Request):
     return {
         "enable_https": enable_https,
         "command_prefix": command_prefix[0],
-        "help_url": Config("help_url", cfg_type=str),
-        "locale": Config("default_locale", cfg_type=str),
-        "heartbeat_interval": Config("heartbeat_interval", 30, table_name="bot_web"),
-        "heartbeat_timeout": Config("heartbeat_timeout", 5, table_name="bot_web"),
-        "heartbeat_attempt": Config("heartbeat_attempt", 3, table_name="bot_web"),
+        "help_url": CoreConfig.help_url,
+        "locale": BaseConfig.default_locale,
+        "heartbeat_interval": WebConfig.heartbeat_interval,
+        "heartbeat_timeout": WebConfig.heartbeat_timeout,
+        "heartbeat_attempt": WebConfig.heartbeat_attempt,
     }
 
 

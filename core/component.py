@@ -183,6 +183,16 @@ class Bind:
             return self.command(*args, **kwargs)
 
         def config(self, cls=None, secret: bool = False):
+            """声明模块的配置模板。
+
+            .. deprecated::
+                请改用 :func:`core.config.decorator.on_module_config`。
+                本方法要求配置模板反向导入模块对象（``from . import <模块变量>``），
+                同包内任何文件在顶层读取该模板都会与包的初始化互相等待而形成循环导入。
+
+            :param cls: 要装饰的配置类，为 None 时返回装饰器。
+            :param secret: 是否将该配置的值视为敏感信息进行加密存储。
+            """
 
             def wrap(cls):
                 return _process_class(cls, "module_" + self.module_name, secret=secret)

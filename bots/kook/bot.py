@@ -12,16 +12,16 @@ from core.builtins.message.internal import Plain, Image, Voice
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
 from core.client.init import client_init
-from core.config import Config
-from core.constants.default import ignored_sender_default
+from bots.kook.config import KookConfig
+from core.config.base import CoreConfig
 
 Bot.register_bot(client_name=client_name)
 
 ctx_id = Bot.register_context_manager(KOOKContextManager)
 Bot.register_context_manager(KOOKFetchedContextManager, fetch_session=True)
 
-ignored_sender = Config("ignored_sender", ignored_sender_default)
-mention_required = Config("mention_required", False)
+ignored_sender = CoreConfig.ignored_sender
+mention_required = CoreConfig.mention_required
 
 
 async def to_message_chain(message: Message):
@@ -141,6 +141,6 @@ async def _(b: khlBot):
     await client_init(target_prefix_list, sender_prefix_list)
 
 
-if Config("enable", False, table_name="bot_kook"):
+if KookConfig.enable:
     loop = asyncio.get_event_loop()
     loop.run_until_complete(bot.start())

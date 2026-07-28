@@ -5,7 +5,7 @@ from datetime import datetime, UTC
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
-from core.config import Config
+from core.config.base import CoreConfig
 from core.database.models import (
     UNION_SCOPE_SENDER,
     UNION_SCOPE_TARGET,
@@ -200,7 +200,7 @@ async def _merge_sender_unions(
         *_id_lines(current_ids),
         I18NContext("core.bind.message.self.confirm.inherit"),
     ]
-    if Config("enable_petal", False):
+    if CoreConfig.enable_petal:
         confirm_msg.append(
             I18NContext(
                 "core.bind.message.self.confirm.petal",

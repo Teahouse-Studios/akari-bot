@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from core.config import Config
+from modules.maimai.config import MaimaiSecretConfig
 
-DF_DEVELOPER_TOKEN = Config("diving_fish_developer_token", cfg_type=str, secret=True, table_name="module_maimai")
-LX_DEVELOPER_TOKEN = Config("lxns_developer_token", cfg_type=str, secret=True, table_name="module_maimai")
+DF_DEVELOPER_TOKEN = MaimaiSecretConfig.diving_fish_developer_token
+LX_DEVELOPER_TOKEN = MaimaiSecretConfig.lxns_developer_token
 SONGS_PER_PAGE = 30
 SONGS_NEED_IMG = 10
 

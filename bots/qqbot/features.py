@@ -1,11 +1,12 @@
 from attrs import define
 
 from core.builtins.session.features import Features as FeaturesBase
-from core.config import Config
+from bots.qqbot.config import QQBotConfig
+from core.config.base import CoreConfig
 
-dirty_word_check = Config("enable_dirty_check", False)
-use_url_manager = Config("enable_urlmanager", False)
-qq_use_markdown = Config("qq_use_markdown", False, bool, table_name="bot_qqbot")
+dirty_word_check = CoreConfig.enable_dirty_check
+use_url_manager = CoreConfig.enable_urlmanager
+qq_use_markdown = QQBotConfig.qq_use_markdown
 
 
 @define

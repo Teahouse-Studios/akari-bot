@@ -1,6 +1,6 @@
-from . import mod_dl
+from core.config.decorator import on_module_config
 
 
-@mod_dl.config(secret=True)
+@on_module_config("mod_dl", secret=True)
 class ModDlConfig:
     curseforge_api_key: str = ""

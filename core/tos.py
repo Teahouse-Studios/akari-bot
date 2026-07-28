@@ -3,13 +3,13 @@ import time
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext
-from core.config import Config
+from core.config.base import CoreConfig
 from core.logger import Logger
 from core.utils.container import ExpiringTempDict
 
-report_targets = Config("report_targets", [])
-WARNING_COUNTS = Config("tos_warning_counts", 5)
-TOS_TEMPBAN_TIME = Config("tos_temp_ban_time", 300) if Config("tos_temp_ban_time", 300) > 0 else 300
+report_targets = CoreConfig.report_targets
+WARNING_COUNTS = CoreConfig.tos_warning_counts
+TOS_TEMPBAN_TIME = CoreConfig.tos_temp_ban_time if CoreConfig.tos_temp_ban_time > 0 else 300
 
 temp_ban_counter = ExpiringTempDict(exp=TOS_TEMPBAN_TIME)  # 临时封禁计数
 
@@ -28,7 +28,7 @@ async def remove_temp_ban(target):
 
 
 async def abuse_warn_target(msg: Bot.MessageSession, reason: str):
-    issue_url = Config("issue_url", cfg_type=str)
+    issue_url = CoreConfig.issue_url
     if WARNING_COUNTS >= 1 and not msg.check_super_user():
         await msg.session_info.sender_info.warn_user()
         warn_template = MessageChain.assign(

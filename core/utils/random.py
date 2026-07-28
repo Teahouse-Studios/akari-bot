@@ -8,7 +8,7 @@ import random as pyrandom
 import secrets
 from typing import Sequence, MutableSequence, TypeVar
 
-from core.config import Config
+from core.config.base import CoreConfig
 
 INF = 2**53
 T = TypeVar("T")
@@ -17,7 +17,7 @@ T = TypeVar("T")
 class Random:
     """随机生成工具。"""
 
-    use_secrets = Config("use_secrets_random", False)
+    use_secrets = CoreConfig.use_secrets_random
 
     @classmethod
     def random(cls) -> float:

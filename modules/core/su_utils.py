@@ -12,7 +12,8 @@ from core.builtins.converter import converter
 from core.builtins.message.chain import MessageChain, convert_senderid_to_atcode, match_kecode
 from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
-from core.config import Config, CFGManager
+from core.config import CFGManager
+from core.config.base import CoreConfig
 from core.constants.exceptions import NoReportException, TestException
 from core.constants.path import cache_path
 from core.database.models import SenderInfo, TargetInfo, JobQueuesTable
@@ -28,7 +29,7 @@ from core.utils.func import is_float, is_int
 from core.utils.storedata import get_stored_list, update_stored_list
 from core.web_render import web_render, close_web_render, init_web_render
 
-auto_purge_crontab = Config("auto_purge_crontab", "0 0 * * *")
+auto_purge_crontab = CoreConfig.auto_purge_crontab
 
 
 su = module("superuser", alias="su", required_superuser=True, base=True, doc=True)
@@ -689,13 +690,13 @@ async def _(msg: Bot.MessageSession, k: str, v: str, table_name: str = None):
     if (not table_name and secret) or (table_name and table_name.lower() == "secret"):
         table_name = "config"
         secret = True
-    CFGManager.write(k, v, secret=secret, table_name=table_name)
+    CFGManager.edit_write(k, v, secret=secret, table_name=table_name)
     await msg.finish(I18NContext("message.success"))
 
 
 @cfg_.command("delete <k> [<table_name>]")
 async def _(msg: Bot.MessageSession, k: str, table_name: str = None):
-    if CFGManager.delete(k, table_name):
+    if CFGManager.edit_delete(k, table_name):
         await msg.finish(I18NContext("message.success"))
     else:
         await msg.finish(I18NContext("message.failed"))

@@ -1,9 +1,9 @@
 from attrs import define
 
 from core.builtins.session.features import Features as FeaturesBase
-from core.config import Config
+from core.config.base import CoreConfig
 
-dirty_word_check = Config("enable_dirty_check", False)
+dirty_word_check = CoreConfig.enable_dirty_check
 
 
 @define

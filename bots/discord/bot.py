@@ -19,8 +19,8 @@ from core.builtins.message.internal import Plain, Image, Voice
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
 from core.client.init import client_init
-from core.config import Config
-from core.constants.default import ignored_sender_default
+from bots.discord.config import DiscordConfig, DiscordSecretConfig
+from core.config.base import CoreConfig
 from core.logger import Logger
 from core.utils.http import download
 
@@ -29,9 +29,9 @@ Bot.register_bot(client_name=client_name)
 ctx_id = Bot.register_context_manager(DiscordContextManager)
 Bot.register_context_manager(DiscordFetchedContextManager, fetch_session=True)
 
-dc_token = Config("discord_token", cfg_type=str, secret=True, table_name="bot_discord")
-ignored_sender = Config("ignored_sender", ignored_sender_default)
-mention_required = Config("mention_required", False)
+dc_token = DiscordSecretConfig.discord_token
+ignored_sender = CoreConfig.ignored_sender
+mention_required = CoreConfig.mention_required
 
 
 count = 0
@@ -163,5 +163,5 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
     await Bot.process_message(session, payload)
 
 
-if Config("enable", False, table_name="bot_discord"):
+if DiscordConfig.enable:
     discord_bot.run(dc_token)

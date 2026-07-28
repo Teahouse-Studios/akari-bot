@@ -1,7 +1,7 @@
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
-from core.config import Config
+from modules.ai.config import AiConfig
 from core.cooldown import CoolDown
 from core.dirty_check import check_bool, rickroll
 from core.logger import Logger
@@ -9,7 +9,7 @@ from .llm import ask_llm
 from .petal import precount_petal, count_token_petal
 from .setting import llm_api_list, llm_list, llm_su_list
 
-default_llm = Config("ai_default_llm", cfg_type=str, table_name="module_ai")
+default_llm = AiConfig.ai_default_llm
 default_llm = default_llm if default_llm in llm_list else None
 
 ai = module("ai", developers=["DoroWolf", "Dianliang233"], desc="{I18N:ai.help.desc}", doc=True, exclude_from="QQBot")

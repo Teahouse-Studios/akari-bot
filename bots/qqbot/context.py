@@ -25,13 +25,13 @@ from core.builtins.message.elements import PlainElement, ImageElement, MentionEl
 from core.builtins.message.internal import I18NContext
 from core.builtins.session.context import ContextManager
 from core.builtins.session.info import SessionInfo
-from core.config import Config
+from bots.qqbot.config import QQBotConfig
 from core.logger import Logger
 from core.utils.s3 import S3Storage
 
-qq_typing_emoji = str(Config("qq_typing_emoji", 181, (str, int), table_name="bot_qqbot"))
-qq_limited_emoji = str(Config("qq_limited_emoji", 10060, (str, int), table_name="bot_qqbot"))
-qq_use_markdown = Config("qq_use_markdown", False, bool, table_name="bot_qqbot")
+qq_typing_emoji = str(QQBotConfig.qq_typing_emoji)
+qq_limited_emoji = str(QQBotConfig.qq_limited_emoji)
+qq_use_markdown = QQBotConfig.qq_use_markdown
 
 global_seq = 1
 

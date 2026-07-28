@@ -11,7 +11,8 @@ from slowapi.util import get_remote_address
 
 from bots.web.info import *
 from core.client.init import client_init
-from core.config import Config, CFGManager
+from core.config import CFGManager
+from bots.web.config import WebConfig, WebSecretConfig
 from core.constants.path import assets_path, webui_path
 from core.database.models import SenderInfo
 from core.logger import Logger
@@ -27,21 +28,22 @@ else:
         dist_path = Path()
 
 
-enable_https = Config("enable_https", default=False, table_name="bot_web")
+enable_https = WebConfig.enable_https
 protocol = "https" if enable_https else "http"
 
-web_host = Config("web_host", "127.0.0.1", table_name="bot_web")
-web_port = Config("web_port", 6485, table_name="bot_web")
+web_host = WebConfig.web_host
+web_port = WebConfig.web_port
 
 available_web_port = find_available_port(web_port)
 
-allow_origins = Config("allow_origins", default=[], secret=True, table_name="bot_web")
+allow_origins = WebSecretConfig.allow_origins
 
 
-jwt_secret = Config("jwt_secret", cfg_type=str, secret=True, table_name="bot_web")
+jwt_secret = WebSecretConfig.jwt_secret
 if not jwt_secret:
-    CFGManager.write("jwt_secret", Random.randbytes(32).hex(), secret=True, table_name="bot_web")
-    jwt_secret = Config("jwt_secret", cfg_type=str, secret=True, table_name="bot_web")
+    # jwt_secret 须在 web 子进程首次启动时随机生成并持久化，属只读进程中的合法写入
+    CFGManager.edit_write("jwt_secret", Random.randbytes(32).hex(), secret=True, table_name="bot_web")
+    jwt_secret = WebSecretConfig.jwt_secret
 
 
 def _webui_message():

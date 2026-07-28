@@ -16,15 +16,15 @@ import httpx
 from aiofile import async_open
 from tenacity import retry, wait_fixed, stop_after_attempt
 
-from core.config import Config
+from core.config.base import CoreConfig, CoreSecretConfig
 from core.constants.exceptions import ExternalException
 from core.constants.path import cache_path
 from core.constants.info import Info
 from core.logger import Logger
 
 logging_resp = False
-debug = Config("debug", False)
-proxy = Config("proxy", cfg_type=str, secret=True)
+debug = CoreConfig.debug
+proxy = CoreSecretConfig.proxy if CoreSecretConfig.proxy else None
 
 url_pattern = re.compile(
     r"\b(?:http[s]?:\/\/)?(?:[a-zA-Z0-9\-\:_@]+\.)+[a-zA-Z]{2,}(?:\/[a-zA-Z0-9-._~:\/?#[\]@!$&\'()*+,;=%]*)?\b"
@@ -113,7 +113,7 @@ async def request_url(
     async def _request():
         Logger.debug(f"[{method}] {url}")
 
-        if not Config("allow_request_private_ip", False) and not request_private_ip:
+        if not CoreConfig.allow_request_private_ip and not request_private_ip:
             private_ip_check(url)
 
         async with httpx.AsyncClient(headers=headers, proxy=proxy, verify=not debug) as client:

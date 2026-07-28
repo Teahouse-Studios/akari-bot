@@ -2,14 +2,14 @@ from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, I18NContext, Image, Url
 from core.component import module
-from core.config import Config
+from modules.ncmusic.config import NcmusicConfig, NcmusicSecretConfig
 from core.constants.exceptions import ConfigValueError
 from core.utils.func import is_int
 from core.utils.http import get_url
 from core.utils.image_table import image_table_render, ImageTable
 
-enable_card = Config("ncmusic_enable_card", False, table_name="module_ncmusic")
-API = Config("ncmusic_api", cfg_type=str, secret=True, table_name="module_ncmusic")
+enable_card = NcmusicConfig.ncmusic_enable_card
+API = NcmusicSecretConfig.ncmusic_api
 SEARCH_LIMIT = 10
 
 ncmusic = module(

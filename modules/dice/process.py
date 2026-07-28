@@ -7,16 +7,15 @@ from core.builtins.message.internal import Plain
 from core.constants.exceptions import ConfigValueError
 from core.logger import Logger
 from .dice import *
+from modules.dice.config import DiceConfig
 
 # 配置常量
-MAX_DICE_COUNT = Config("dice_limit", 100, table_name="module_dice")  # 一次摇动最多的骰子数量
-MAX_ROLL_TIMES = Config("dice_roll_limit", 10, table_name="module_dice")  # 一次命令最多的摇动次数
-MAX_OUTPUT_CNT = Config("dice_output_count", 50, table_name="module_dice")  # 输出的最多数据量
-MAX_OUTPUT_LEN = Config("dice_output_len", 200, table_name="module_dice")  # 输出的最大长度
-MAX_DETAIL_CNT = Config(
-    "dice_detail_count", 5, table_name="module_dice"
-)  # n次投掷的骰子的总量超过该值时将不再显示详细信息
-MAX_ITEM_COUNT = Config("dice_count_limit", 10, table_name="module_dice")  # 骰子表达式最多的项数
+MAX_DICE_COUNT = DiceConfig.dice_limit  # 一次摇动最多的骰子数量
+MAX_ROLL_TIMES = DiceConfig.dice_roll_limit  # 一次命令最多的摇动次数
+MAX_OUTPUT_CNT = DiceConfig.dice_output_count  # 输出的最多数据量
+MAX_OUTPUT_LEN = DiceConfig.dice_output_len  # 输出的最大长度
+MAX_DETAIL_CNT = DiceConfig.dice_detail_count  # n次投掷的骰子的总量超过该值时将不再显示详细信息
+MAX_ITEM_COUNT = DiceConfig.dice_count_limit  # 骰子表达式最多的项数
 
 dice_patterns = [
     r"(\d+A\d+(?:[KQM]?\d*)?(?:[KQM]?\d*)?(?:[KQM]?\d*)?)",  # WOD骰子

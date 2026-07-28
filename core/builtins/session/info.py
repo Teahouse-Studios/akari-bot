@@ -16,7 +16,7 @@ from core.alive import Alive
 from core.builtins.message.chain import MessageChain
 from core.builtins.session.features import Features
 from core.builtins.utils import command_prefix
-from core.config import Config
+from core.config.base import CoreConfig
 from core.database.models import TargetInfo, SenderInfo
 from core.i18n import Locale
 from core.utils.func import parse_time_string
@@ -133,7 +133,7 @@ class SessionInfo:
         session_id = str(uuid.uuid4())
         locale = Locale(target_info.locale)
         bot_name = locale.t("bot_name")
-        _tz_offset = target_info.target_data.get("tz_offset", Config("timezone_offset", "+8"))
+        _tz_offset = target_info.target_data.get("tz_offset", CoreConfig.timezone_offset)
         prefixes = (
             (prefixes + (target_info.target_data.get("command_prefix", []) + command_prefix.copy()))
             if prefixes is not None

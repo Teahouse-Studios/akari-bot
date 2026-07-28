@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from core.builtins.bot import Bot
 from core.builtins.message.elements import I18NContextElement
 from core.builtins.message.internal import I18NContext
-from core.config import Config
+from core.config.base import CoreConfig
 from core.utils.random import Random
 from core.utils.storedata import get_stored_list, update_stored_list
 
@@ -15,8 +15,8 @@ async def gained_petal(msg: Bot.MessageSession, amount: int) -> I18NContextEleme
     :param amount: 增加的花瓣数量。
     :returns: 增加花瓣的提示消息。
     """
-    if Config("enable_petal", False) and Config("enable_get_petal", False):
-        limit = Config("petal_gained_limit", 0)
+    if CoreConfig.enable_petal and CoreConfig.enable_get_petal:
+        limit = CoreConfig.petal_gained_limit
         amount = limit if amount > limit > 0 else amount
         p = await get_stored_list(msg.session_info.client_name, "gainedpetal") or [{}]
         p = p[0]
@@ -49,8 +49,8 @@ async def lost_petal(msg: Bot.MessageSession, amount: int) -> I18NContextElement
     :param amount: 减少的花瓣数量。
     :returns: 减少花瓣的提示消息。
     """
-    if Config("enable_petal", False) and Config("enable_get_petal", False):
-        limit = Config("petal_lost_limit", 0)
+    if CoreConfig.enable_petal and CoreConfig.enable_get_petal:
+        limit = CoreConfig.petal_lost_limit
         amount = limit if amount > limit > 0 else amount
         p = await get_stored_list(msg.session_info.client_name, "lostpetal") or [{}]
         p = p[0]
@@ -84,7 +84,7 @@ async def cost_petal(msg: Bot.MessageSession, amount: int, send_prompt: bool = T
     :param send_prompt: 花瓣不足时是否显示提示消息。（默认True）
     :returns: 是否成功处理。
     """
-    if Config("enable_petal", False):
+    if CoreConfig.enable_petal:
         if amount > msg.session_info.petal:
             if send_prompt:
                 await msg.send_message(I18NContext("petal.message.cost.not_enough"))
@@ -94,13 +94,13 @@ async def cost_petal(msg: Bot.MessageSession, amount: int, send_prompt: bool = T
 
 
 async def sign_get_petal(msg: Bot.MessageSession) -> int | None:
-    if Config("enable_petal", False):
+    if CoreConfig.enable_petal:
 
         def _draw_petals() -> int:
             petal = 1
-            limit = Config("petal_sign_limit", 5)
+            limit = CoreConfig.petal_sign_limit
             limit = limit if limit > 0 else 5
-            rate = Config("petal_sign_rate", 0.5)
+            rate = CoreConfig.petal_sign_rate
             for _ in range(limit - 1):  # 指数衰减
                 if Random.random() < rate:
                     petal += 1

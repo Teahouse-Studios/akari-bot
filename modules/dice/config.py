@@ -1,7 +1,7 @@
-from . import dice
+from core.config.decorator import on_module_config
 
 
-@dice.config()
+@on_module_config("dice")
 class DiceConfig:
     dice_limit: int = 100
     dice_roll_limit: int = 10

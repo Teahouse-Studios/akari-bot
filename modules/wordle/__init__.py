@@ -1,14 +1,14 @@
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Image as BImage, Plain, Url
 from core.component import module
-from core.config import Config
+from modules.wordle.config import WordleConfig
 from core.cooldown import CoolDown
 from core.game import PlayState, GAME_EXPIRED
 from core.logger import Logger
 from core.utils.petal import gained_petal
 from .board import WordleBoard, WordleBoardImage
 
-text_mode = Config("wordle_disable_image", False, table_name="module_wordle")
+text_mode = WordleConfig.wordle_disable_image
 
 wordle = module(
     "wordle",

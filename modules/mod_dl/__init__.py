@@ -4,7 +4,7 @@ import re
 from core.builtins.bot import Bot
 from core.builtins.message.internal import Plain, I18NContext
 from core.component import module
-from core.config import Config
+from modules.mod_dl.config import ModDlConfig
 from core.utils.func import is_int
 from core.utils.http import get_url
 
@@ -17,7 +17,7 @@ mod_dl = module(
     alias="moddl",
 )
 
-x_api_key = Config("curseforge_api_key", cfg_type=str, secret=True, table_name="module_mod_dl")
+x_api_key = ModDlConfig.curseforge_api_key
 enable_mirror = bool(
     not x_api_key
 )  # CurseForge API Key 未配置，使用镜像 https://mcim.z0z0r4.top ...(z0z0r4 不想解析网页)

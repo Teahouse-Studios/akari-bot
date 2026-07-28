@@ -1,4 +1,5 @@
 import datetime
+import multiprocessing
 import os
 import re
 import time
@@ -20,7 +21,17 @@ from tomlkit import (
 from tomlkit.exceptions import KeyAlreadyPresent
 from tomlkit.items import Table
 
-import core.config.update  # noqa
+# 环境变量名。守护进程在 spawn 子进程之前置位，spawn 会继承环境。
+# 该闸门须赶在 core.config 被导入之前生效：core/config/update.py 的版本迁移是导入期执行的，
+# 而 go() 中的 Info.subprocess = True 置位过迟：其前一行的 core.logger 已导入 core.config。
+CONFIG_READONLY_ENV = "AKARI_CONFIG_READONLY"
+CONFIG_READONLY = bool(os.environ.get(CONFIG_READONLY_ENV))
+
+# 配置版本迁移只应发生在 pre_init 中。core.config.update 全仓仅此一处导入且为纯副作用导入，
+# 跳过该导入即可，无需改动其内部的顶层代码。
+if not CONFIG_READONLY:
+    import core.config.update  # noqa
+
 from core.constants.default import default_locale
 from core.constants.exceptions import ConfigValueError, ConfigOperationError
 from core.constants.path import config_path as default_config_path
@@ -37,6 +48,11 @@ class CFGManager:
     _tss: dict[str, float] = {}
     _watch_lock = False
     _lock_depth = 0
+
+    # 本进程是否只读。运行期一律读这个类属性而非模块级常量，测试可直接改写。
+    readonly: bool = CONFIG_READONLY
+    # 授权写入的嵌套深度。用计数而非布尔：write() 内部会调用 save()，两层都须放行。
+    _allow_write_depth = 0
 
     # 等待进入临界区的上限（秒）
     LOCK_TIMEOUT = 10.0
@@ -91,6 +107,41 @@ class CFGManager:
             lock_path.unlink(missing_ok=True)
 
     @classmethod
+    @contextmanager
+    def _writable(cls):
+        """临时解除只读限制，仅供 edit_* 使用。可重入。"""
+        cls._allow_write_depth += 1
+        try:
+            yield
+        finally:
+            cls._allow_write_depth -= 1
+
+    @classmethod
+    def _ensure_writable(cls, q: str | None = None, table_name: str | None = None, secret: bool = False):
+        """在只读进程中拒绝写入。
+
+        配置的生成统一由 bot.py 的 pre_init() 完成，bot 与 server 子进程一律只读，
+        以免同一批配置项被多个进程重复补写。交互式编辑须经 edit_write() / edit_delete()。
+
+        :param q: 配置项键名，仅用于组装错误信息。
+        :param table_name: 配置项表名，仅用于组装错误信息。
+        :param secret: 是否为密钥配置项，仅用于组装错误信息。
+        :raises ConfigOperationError: 当前进程只读，且不处于授权写入的作用域内。
+        """
+        if not cls.readonly or cls._allow_write_depth:
+            return
+        process_name = multiprocessing.current_process().name
+        if q:
+            target = table_name or ("secret" if secret else "config")
+            detail = f'write "{q}" to table "{target}"'
+        else:
+            detail = "save config files"
+        raise ConfigOperationError(
+            f"Config is read-only in process {process_name!r}, cannot {detail}. "
+            "Missing keys must be generated in pre_init."
+        )
+
+    @classmethod
     def load(cls):  # Load the config file
         with cls._exclusive():
             try:
@@ -113,6 +164,7 @@ class CFGManager:
 
     @classmethod
     def save(cls):  # Save the config files
+        cls._ensure_writable()
         with cls._exclusive():
             try:
                 for cfg in cls.values:
@@ -277,6 +329,13 @@ class CFGManager:
                         break
         else:
             table_name = table_name.lower()
+            # 与 has() 和 write() 保持一致的表名归一化。缺少这一步时，table_name="secret"
+            # 会被当作一个名为 secret.toml 的独立配置文件去查找，取不到值而一律回退至默认值。
+            if table_name == "secret":
+                table_name, secret = "config", True
+            if table_name.endswith("_secret"):
+                table_name, secret = table_name.removesuffix("_secret"), True
+
             # if table_name is provided, write the value to the specified table
             if table_name != "config":
                 target = f"{table_name}{'_secret' if secret else ''}"
@@ -386,6 +445,10 @@ class CFGManager:
             else:  # if the value is None, skip to autofill
                 logger.debug(f"[Config] Config {q} has no default value, skipped to auto fill.")
                 return
+
+        # 守卫置于此处而非方法体最前：无默认值的读取以 value=None 进入上方分支并提前返回，
+        # 不涉及写入，不应抛出异常。
+        cls._ensure_writable(q, table_name, secret)
 
         # 「重新加载 → 修改 → 保存」须在同一个临界区内完整完成。
         # 否则本进程会以过时的内存副本整体覆盖磁盘，致使其它进程期间写入的配置项丢失。
@@ -523,6 +586,7 @@ class CFGManager:
         """
         cls.watch()
         q = q.lower()
+        cls._ensure_writable(q, table_name)
         found = False
         table_name = "config" if not table_name else table_name.lower()
         try:
@@ -541,6 +605,40 @@ class CFGManager:
         return True
 
     @classmethod
+    def edit_write(
+        cls,
+        q: str,
+        value: Any | None,
+        cfg_type: type | tuple | None = None,
+        secret: bool = False,
+        table_name: str | None = None,
+    ):
+        """授权写入，供交互式编辑命令与启动期的密钥自举使用。
+
+        这是只读进程中唯一合法的写入途径。命名为 edit_* 而非给 write() 加参数，
+        是为了使全部合法写入点均可经检索穷举。
+
+        :param q: 配置项键名。
+        :param value: 修改值。
+        :param cfg_type: 配置项类型。
+        :param secret: 是否为密钥配置项。（默认为False）
+        :param table_name: 配置项表名。
+        """
+        with cls._writable():
+            cls.write(q, value, cfg_type, secret, table_name)
+
+    @classmethod
+    def edit_delete(cls, q: str, table_name: str | None = None) -> bool:
+        """授权删除，供交互式编辑命令使用。
+
+        :param q: 配置项键名。
+        :param table_name: 配置项表名。
+        :return: 配置项是否被删除。
+        """
+        with cls._writable():
+            return cls.delete(q, table_name)
+
+    @classmethod
     def switch_config_path(cls, path: "Path"):
         cls.config_path = path.resolve()
         cls._tss = {}
@@ -551,6 +649,24 @@ class CFGManager:
 
 
 CFGManager.load()
+
+
+def format_url(v: Any | None) -> Any | None:
+    """
+    将配置项中的地址补全为可直接请求的 URL。
+
+    缺少协议头时补上 ``http://``，并确保以斜杠结尾。空值原样返回。
+
+    :param v: 配置项的原始值。
+    :return: 补全后的 URL。
+    """
+    if not v:
+        return v
+    if not re.match(r"^[a-zA-Z][a-zA-Z\d+\-.]*://", v):
+        v = "http://" + v
+    if v[-1] != "/":
+        v += "/"
+    return v
 
 
 def Config(
@@ -577,12 +693,7 @@ def Config(
     :return: 配置文件中对应配置项的值。
     """
     if get_url:
-        v = CFGManager.get(q, default, str, secret, table_name, _global, _generate)
-        if v:
-            if not re.match(r"^[a-zA-Z][a-zA-Z\d+\-.]*://", v):
-                v = "http://" + v
-            if v[-1] != "/":
-                v += "/"
+        v = format_url(CFGManager.get(q, default, str, secret, table_name, _global, _generate))
     else:
         v = CFGManager.get(q, default, cfg_type, secret, table_name, _global, _generate)
     return v

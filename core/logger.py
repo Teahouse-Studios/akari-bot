@@ -6,7 +6,7 @@ import traceback
 
 from loguru import logger
 
-from core.config import Config
+from core.config.base import CoreConfig
 from core.constants.path import logs_path
 
 logs_path.mkdir(parents=True, exist_ok=True)
@@ -56,7 +56,7 @@ class LoggingLogger:
         self.log.add(
             sys.stdout,
             format=basic_logger_format(name),
-            level="TRACE" if Config("debug", False) else "INFO",
+            level="TRACE" if CoreConfig.debug else "INFO",
             colorize=True,
             filter=lambda record: record["extra"].get("name") == name,
         )
