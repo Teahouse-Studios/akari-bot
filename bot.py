@@ -87,7 +87,7 @@ def pre_init():
         shutil.rmtree(cache_path)
     cache_path.mkdir(parents=True, exist_ok=True)
 
-    Logger.info("Verifying config...")
+    Logger.info("Generating config...")
 
     # CoreConfig 的导入须留在函数内：multiprocessing 以 spawn / forkserver 启动子进程时
     # 会以 __mp_main__ 重新导入主模块，置于顶层将使每个子进程再次触发配置模板的生成。

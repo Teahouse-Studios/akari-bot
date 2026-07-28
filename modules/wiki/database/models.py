@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, UTC
 from urllib.parse import urlparse
 
 import orjson
@@ -91,10 +91,10 @@ class WikiSiteInfo(DBModel):
         try:
             query = await WikiSiteInfo.get(api_link=self.api_link)
             query.site_info = orjson.dumps(info)
-            query.timestamp = datetime.now()
+            query.timestamp = datetime.now(UTC)
             await query.save()
         except DoesNotExist:
-            await WikiSiteInfo.create(api_link=self.api_link, site_info=orjson.dumps(info), timestamp=datetime.now())
+            await WikiSiteInfo.create(api_link=self.api_link, site_info=orjson.dumps(info), timestamp=datetime.now(UTC))
 
         return True
 

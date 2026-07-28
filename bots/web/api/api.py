@@ -1,7 +1,7 @@
 import asyncio
 import os
 import platform
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 
 import psutil
 from cpuinfo import get_cpu_info
@@ -178,12 +178,15 @@ async def server_info(request: Request):
 async def get_analytics(request: Request, days: int = Query(1)):
     verify_jwt(request)
     try:
-        now = datetime.now()
+        # 时间窗口须以带时区的 datetime 传入：AnalyticsData.timestamp 是 DatetimeField，
+        # 传 Unix 时间戳会被原样绑定成数字与日期时间比较，任何记录都落不进区间；
+        # 传不带时区的本地时间则会被当作 UTC 处理，窗口整体偏移一个时区差。
+        now = datetime.now(UTC)
         past = now - timedelta(days=days)
-        data = await AnalyticsData.get_values_by_times(now.timestamp(), past.timestamp())
-        count = await AnalyticsData.get_count_by_times(now.timestamp(), past.timestamp())
+        data = await AnalyticsData.get_values_by_times(now, past)
+        count = await AnalyticsData.get_count_by_times(now, past)
         past_past = now - timedelta(days=2 * days)
-        past_count = await AnalyticsData.get_count_by_times(past.timestamp(), past_past.timestamp())
+        past_count = await AnalyticsData.get_count_by_times(past, past_past)
         try:
             change_rate = round((count - past_count) / past_count, 2)
         except ZeroDivisionError:
