@@ -1,0 +1,17 @@
+# https://toml.io/cn/v1.0.0
+# 注意：TOML 不是 Python。请不要在此处使用 Python 语法。
+# 例如：TOML 中的布尔值必须是小写。
+
+[s3]
+# {I18N:config.table.config_s3}
+s3_endpoint_url = "<Replace me with str value>" # S3 兼容 API 的 Endpoint URL。
+s3_bucket = "<Replace me with str value>" # S3 兼容 API 的 Bucket 名。
+s3_region = "us-east-1" # S3 兼容 API 的地域名。
+s3_public_endpoint = "<Replace me with str value>" # S3 兼容 API 的公网访问 URL。
+s3_internal_endpoint = "<Replace me with str value>" # S3 兼容 API 的内网访问 URL。
+s3_temp_max_count = 20 # S3 兼容 API 的临时文件最大数量。
+
+[s3_secret]
+# {I18N:config.table.secret_s3}
+s3_access_key = "<Replace me with str value>" # {I18N:config.comments.s3_secret.s3_access_key}
+s3_secret_key = "<Replace me with str value>" # {I18N:config.comments.s3_secret.s3_secret_key}

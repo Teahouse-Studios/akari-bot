@@ -1,0 +1,7 @@
+# https://toml.io/cn/v1.0.0
+# 注意：TOML 不是 Python。请不要在此处使用 Python 语法。
+# 例如：TOML 中的布尔值必须是小写。
+
+[module_github_secret]
+# 模块的密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
+github_pat = "<Replace me with str value>" # GitHub 的 Personal Access Token。（用于提高 API 请求速率限制）
