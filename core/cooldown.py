@@ -20,23 +20,23 @@ class CoolDown:
         self.msg = msg
         self.delay = delay
         self.whole_target = whole_target
-        self.target_id = self.msg.session_info.target_id
-        self.sender_id = self.msg.session_info.sender_id
+        self.target_union_id = self.msg.session_info.target_union_id
+        self.sender_union_id = self.msg.session_info.sender_union_id
 
     def _get_cd_dict(self) -> ExpiringTempDict:
         """
         获取或创建冷却事件字典。
-        对于单个用户，返回 sender_id -> key 的结构。
-        对于 whole_target，返回 target_id -> key 的结构。
+        对于单个用户，返回 sender_union_id -> key 的结构。
+        对于 whole_target，返回 target_union_id -> key 的结构。
         """
-        target_dict = _cd_dict[self.target_id]
+        target_dict = _cd_dict[self.target_union_id]
 
         if self.whole_target:
             if self.key not in target_dict:
                 target_dict[self.key] = ExpiringTempDict(exp=self.delay)
             return target_dict[self.key]
 
-        sender_dict = target_dict[self.sender_id]
+        sender_dict = target_dict[self.sender_union_id]
         if self.key not in sender_dict:
             sender_dict[self.key] = ExpiringTempDict(exp=self.delay)
         return sender_dict[self.key]

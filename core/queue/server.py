@@ -12,8 +12,10 @@
 - 接收客户端的消息并进行处理
 - 获取和管理模块信息
 - 调用OneBot标准API
+- 广播语言文件重载
 """
 
+import asyncio
 import re
 from typing import TYPE_CHECKING
 
@@ -45,7 +47,13 @@ class JobQueueServer(JobQueueBase):
 
     提供服务器向客户端发送各类操作请求的接口方法。这些方法将任务添加到队列，
     由客户端处理后将结果返回给服务器。
+
+    Attributes:
+        RELOAD_LOCALE_TIMEOUT: 等待客户端重载语言文件的秒数上限。保活信号只能证明客户端进程还在，
+                               不能证明它还在取走队列任务，无上限地等下去会使发起重载的会话一直挂着
     """
+
+    RELOAD_LOCALE_TIMEOUT = 30
 
     @classmethod
     async def add_job(cls, target_client: str, action, args, wait=True) -> str | dict | None:
@@ -429,6 +437,46 @@ class JobQueueServer(JobQueueBase):
             session_info.client_name, "release_context", {"session_info": converter.unstructure(session_info)}
         )
         return value
+
+    @classmethod
+    async def client_reload_locale(cls, client_name: str, timeout: float | None = None) -> list[str]:
+        """通知单个客户端重载语言文件。
+
+        :param client_name: 目标客户端名称
+        :param timeout: 等待客户端返回结果的秒数上限，默认为 `RELOAD_LOCALE_TIMEOUT`
+        :return: 重载过程中产生的错误信息，客户端掉线时为空列表
+        """
+        try:
+            ret = await asyncio.wait_for(
+                cls.add_job(client_name, "reload_locale", {}),
+                timeout=timeout if timeout else cls.RELOAD_LOCALE_TIMEOUT,
+            )
+        except asyncio.TimeoutError:
+            Logger.error(f"Timed out waiting for client {client_name} to reload locale.")
+            return [f"Timed out waiting for client {client_name} to reload locale."]
+        return list(ret.get("err", [])) if ret else []
+
+    @classmethod
+    async def client_reload_locale_all(cls) -> list[str]:
+        """通知全部在线客户端重载语言文件。
+
+        语言文件在服务端重载后仅对服务端生效，而消息中的 I18NContext 元素是在客户端进程内渲染的，
+        因此须逐一通知客户端一并重载，否则实际发出的消息仍为旧文案。
+
+        各客户端读取的是同一批语言文件，产生的错误通常完全一致，因此重复的条目只保留一条。
+
+        :return: 各客户端返回的错误信息
+        """
+        clients = [client for client in Alive.get_alive() if client != Info.client_name]
+        if not clients:
+            return []
+        results = await asyncio.gather(*[cls.client_reload_locale(client) for client in clients])
+        errs = []
+        for client_errs in results:
+            for err in client_errs:
+                if err not in errs:
+                    errs.append(err)
+        return errs
 
     @classmethod
     async def call_onebot_api(cls, session_info: SessionInfo, api_name: str, **kwargs: dict):

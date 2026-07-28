@@ -20,14 +20,14 @@ class PlayState:
     def __init__(self, game: str, msg: MessageSession):
         self.game = game
         self.msg = msg
-        self.target_id = self.msg.session_info.target_id
-        self.sender_id = self.msg.session_info.sender_id
+        self.target_union_id = self.msg.session_info.target_union_id
+        self.sender_union_id = self.msg.session_info.sender_union_id
 
     def _get_ps_dict(self) -> ExpiringTempDict:
         """
         获取场景的游戏事件字典，如果不存在则自动创建。
         """
-        target_dict = _ps_dict[self.target_id]
+        target_dict = _ps_dict[self.target_union_id]
         return target_dict[self.game]
 
     def enable(self) -> None:
@@ -37,18 +37,18 @@ class PlayState:
         playstate_dict = self._get_ps_dict()
         playstate_dict["_status"] = True
         playstate_dict.refresh()
-        Logger.info(f"[{self.target_id}]: Enabled {self.game} by {self.sender_id}.")
+        Logger.info(f"[{self.target_union_id}]: Enabled {self.game} by {self.sender_union_id}.")
 
     def disable(self) -> None:
         """
         关闭游戏事件。
         """
-        if self.target_id not in _ps_dict:
+        if self.target_union_id not in _ps_dict:
             return
-        playstate_dict = _ps_dict[self.target_id].get(self.game)
+        playstate_dict = _ps_dict[self.target_union_id].get(self.game)
         if playstate_dict and playstate_dict.get("_status"):
             playstate_dict["_status"] = False
-            Logger.info(f"[{self.target_id}]: Disabled {self.game} by {self.sender_id}.")
+            Logger.info(f"[{self.target_union_id}]: Disabled {self.game} by {self.sender_union_id}.")
 
     def update(self, **kwargs) -> None:
         """
@@ -57,7 +57,7 @@ class PlayState:
         playstate_dict = self._get_ps_dict()
         for k, v in kwargs.items():
             playstate_dict[k] = v
-        Logger.debug(f"[{self.game}]: Updated {kwargs} at {self.target_id}.")
+        Logger.debug(f"[{self.game}]: Updated {kwargs} at {self.target_union_id}.")
 
     def check(self) -> bool:
         """

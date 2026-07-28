@@ -11,6 +11,7 @@ from core.component import module
 from core.config.base import CoreConfig
 from core.database.models import SenderInfo
 from core.i18n import get_available_locales, Locale
+from core.queue.server import JobQueueServer
 from core.utils.bash import run_sys_command
 
 ver = module("version", base=True, doc=True)
@@ -235,6 +236,8 @@ async def _(msg: Bot.MessageSession, lang: str):
 @locale.command("reload", required_superuser=True)
 async def _(msg: Bot.MessageSession):
     err = msg.session_info.locale.reload()
+    # I18NContext 元素在客户端进程内渲染，只重载服务端的话实际发出的消息仍为旧文案。
+    err += [e for e in await JobQueueServer.client_reload_locale_all() if e not in err]
     if len(err) == 0:
         await msg.finish(I18NContext("message.success"))
     else:

@@ -25,8 +25,8 @@ class SessionTaskManager:
     数据结构说明:
     ```
         _task_list: {
-            target_id: {
-                sender_id: {
+            target_union_id: {
+                sender_union_id: {
                     message_session: {
                         'flag': asyncio.Event,  # 用于同步的事件标志
                         'active': bool,          # 任务是否活跃
@@ -77,17 +77,17 @@ class SessionTaskManager:
         :param timeout: 任务超时时间（秒），默认 120 秒
         """
         # 确定任务的用户 ID（如果 all_ 为 True，则为 "all"）
-        sender = msg.session_info.sender_id
+        sender = msg.session_info.sender_union_id
         # 根据是否指定了回复 ID 来确定任务类型
         task_type = "reply" if reply else "wait"
         if all_:
             sender = "all"
 
         # 创建必要的嵌套字典结构
-        if msg.session_info.target_id not in cls._task_list:
-            cls._task_list[msg.session_info.target_id] = {}
-        if sender not in cls._task_list[msg.session_info.target_id]:
-            cls._task_list[msg.session_info.target_id][sender] = {}
+        if msg.session_info.target_union_id not in cls._task_list:
+            cls._task_list[msg.session_info.target_union_id] = {}
+        if sender not in cls._task_list[msg.session_info.target_union_id]:
+            cls._task_list[msg.session_info.target_union_id][sender] = {}
 
         # 将回复 ID 列表转换为逗号分隔的字符串
         if isinstance(reply, list):
@@ -96,7 +96,7 @@ class SessionTaskManager:
             reply = str(reply)
 
         # 存储任务信息
-        cls._task_list[msg.session_info.target_id][sender][msg] = {
+        cls._task_list[msg.session_info.target_union_id][sender][msg] = {
             "flag": flag,  # 同步事件标志
             "active": True,  # 任务初始为活跃状态
             "type": task_type,  # 任务类型
@@ -141,8 +141,8 @@ class SessionTaskManager:
         :return: 任务完成后的结果（通常是一个 MessageSession 对象），如果没有结果则返回 None
         """
         # 检查是否存在任务结果
-        if "result" in cls._task_list[msg.session_info.target_id][msg.session_info.sender_id][msg]:
-            return cls._task_list[msg.session_info.target_id][msg.session_info.sender_id][msg]["result"]
+        if "result" in cls._task_list[msg.session_info.target_union_id][msg.session_info.sender_union_id][msg]:
+            return cls._task_list[msg.session_info.target_union_id][msg.session_info.sender_union_id][msg]["result"]
         return None
 
     @classmethod
@@ -194,19 +194,19 @@ class SessionTaskManager:
         :param session: 新收到的消息会话
         """
         # 检查是否有任务在等待此消息
-        if session.session_info.target_id in cls._task_list:
+        if session.session_info.target_union_id in cls._task_list:
             # 收集所有相关的用户（该用户 + "all" 广播）
             senders = []
-            if session.session_info.sender_id in cls._task_list[session.session_info.target_id]:
-                senders.append(session.session_info.sender_id)
-            if "all" in cls._task_list[session.session_info.target_id]:
+            if session.session_info.sender_union_id in cls._task_list[session.session_info.target_union_id]:
+                senders.append(session.session_info.sender_union_id)
+            if "all" in cls._task_list[session.session_info.target_union_id]:
                 senders.append("all")
 
             # 对每个相关用户的每个任务进行检查
             if senders:
                 for sender in senders:
-                    for s in cls._task_list[session.session_info.target_id][sender]:
-                        task_info = cls._task_list[session.session_info.target_id][sender][s]
+                    for s in cls._task_list[session.session_info.target_union_id][sender]:
+                        task_info = cls._task_list[session.session_info.target_union_id][sender][s]
 
                         # 如果是 "wait" 类型任务，任何回复都会触发
                         if task_info["type"] == "wait":
