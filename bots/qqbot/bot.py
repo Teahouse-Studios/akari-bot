@@ -135,7 +135,7 @@ class MyClient(botpy.Client):
                     message.content = m.group(2).strip()
                     if not message.content:
                         message.content = f"{command_prefix[0]}help"
-        msg_chain = MessageChain.assign(message.content)
+        msg_chain = MessageChain.assign(re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", message.content))
         prefixes = [] if not match_atme else ["/"]
         session = await SessionInfo.assign(
             target_id=target_id,
