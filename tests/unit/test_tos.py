@@ -57,28 +57,28 @@ async def _test_remove_temp_ban():
 
 async def _test_abuse_warn_target_sends_message():
     """abuse_warn_target: 应向用户发送警告消息"""
-    try:
-        await TestDataFactory.setup_default_test_env()
-        msg = MockMessageSession("~test")
-        await msg.async_init("~test")
-        msg.session_info.sender_info.warns = 0
-        msg.session_info.sender_info.trusted = False
+    await TestDataFactory.setup_default_test_env()
+    msg = MockMessageSession("~test")
+    await msg.async_init("~test")
+    msg.session_info.sender_info.warns = 0
+    msg.session_info.sender_info.trusted = False
 
-        class MockConfig:
-            """替换 CoreConfig 的桩。tos_warning_counts 与 report_targets 在导入时即已取值，
-            此处仅提供 abuse_warn_target 内部实时读取的字段。"""
+    class MockConfig:
+        """替换 CoreConfig 的桩。tos_warning_counts 与 report_targets 在导入时即已取值，
+        此处仅提供 abuse_warn_target 内部实时读取的字段。"""
 
-            issue_url = "https://github.com/test/issues"
+        issue_url = "https://github.com/test/issues"
 
+    # 默认测试环境将发送者置为超级用户，而 abuse_warn_target 对超级用户直接跳过警告，
+    # 若不覆写该判定，本用例断言的发送行为永远不会发生。
+    with patch.object(MockMessageSession, "check_super_user", lambda self: False):
         with patch("core.tos.CoreConfig", MockConfig):
             with patch("core.tos.tos_report", new_callable=AsyncMock):
                 from core.tos import abuse_warn_target
 
                 await abuse_warn_target(msg, "test_reason")
 
-        return len(msg.sent) > 0
-    except Exception:
-        return False
+    return len(msg.sent) > 0
 
 
 async def _test_tos_report_no_targets():

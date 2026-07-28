@@ -5,17 +5,17 @@ from bots.discord.slash_parser import slash_parser, ctx_to_session
 from core.queue.client import JobQueueClient
 
 
-@discord_bot.slash_command(description="Get recent abuse logs for the default wiki.")
+@discord_bot.slash_command(name="ab", description="Get recent abuse logs for the default wiki.")
 async def _(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
 
-@discord_bot.slash_command(description="Get recent newbie logs for the default wiki.")
+@discord_bot.slash_command(name="newbie", description="Get recent newbie logs for the default wiki.")
 async def _(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
 
-@discord_bot.slash_command(description="Get recent changes for the default wiki.")
+@discord_bot.slash_command(name="rc", description="Get recent changes for the default wiki.")
 async def _(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 

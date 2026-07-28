@@ -91,7 +91,7 @@ async def request_url(
     if Info.http_mock_enabled:
         from core.tester.mock.http import HTTPMock
 
-        mock_resp = HTTPMock.get_response(url)
+        mock_resp = HTTPMock.get_response(url, method=method, data=data)
         if mock_resp is not None:
             if status_code and mock_resp.status_code != status_code:
                 error_fmt = (
@@ -108,6 +108,8 @@ async def request_url(
                     return attr
                 raise ValueError(f"No such method: {fmt}")
             return mock_resp.text
+        if Info.http_mock_strict:
+            raise ExternalException(f"No HTTP fixture recorded for [{method}] {url}")
 
     @retry(stop=stop_after_attempt(attempt), wait=wait_fixed(3), reraise=True)
     async def _request():

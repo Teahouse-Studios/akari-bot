@@ -56,3 +56,6 @@ class Info:
     use_url_manager = False
     use_url_md_format = False
     http_mock_enabled = False
+    # 启用后，mock 未命中的请求直接失败，而不是回落到真实网络。
+    # 回落会带上重试与超时（默认 3 次 × 20 秒），足以让单个未录制的 URL 拖慢测试逾一分钟。
+    http_mock_strict = False

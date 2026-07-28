@@ -9,6 +9,22 @@ from core.builtins.session.info import SessionInfo
 from core.builtins.types import MessageElement, MultimediaElement
 
 
+def _searchable_texts(result: dict) -> tuple[str, ...]:
+    """取出用于文本搜索的候选串。
+
+    先给出仅含文本元素的渲染，再给出包含全部元素的渲染。图片、语音等非文本元素
+    在 `to_str()` 的默认模式下会被丢弃，若只比对前者，形如 `Contains("KE:image")`
+    的断言将永远无法命中。
+
+    :param result: 测试结果字典。
+    :return: 去重后的候选字符串元组，按匹配优先级排列。
+    """
+    output = result.get("output")
+    text_only = MessageChain.assign(output).to_str()
+    full = MessageChain.assign(output).to_str(text_only=False)
+    return (text_only,) if text_only == full else (text_only, full)
+
+
 class Expectation:
     """
     所有期望匹配器的基类。
@@ -16,6 +32,10 @@ class Expectation:
 
     async def match(self, result: dict) -> bool:
         raise NotImplementedError
+
+    def __repr__(self) -> str:
+        # 失败日志与 JUnit 报告直接展示期望对象，缺少 __repr__ 时只能看到内存地址。
+        return self.__str__()
 
     def __and__(self, other: "Expectation") -> "Expectation":
         return All(self, other)
@@ -169,12 +189,13 @@ class Contains(Expectation):
         self.case_sensitive = case_sensitive
 
     async def match(self, result):
-        text = self.text
-        output = MessageChain.assign(result.get("output")).to_str()
-        if not self.case_sensitive:
-            text = text.lower()
-            output = output.lower()
-        return text in output
+        text = self.text if self.case_sensitive else self.text.lower()
+        for output in _searchable_texts(result):
+            if not self.case_sensitive:
+                output = output.lower()
+            if text in output:
+                return True
+        return False
 
     def __str__(self):
         return f"Contains({self.text!r}, case_sensitive={self.case_sensitive})"
@@ -240,8 +261,7 @@ class Regex(Expectation):
         self.pattern = re.compile(pattern, flags) if isinstance(pattern, str) else pattern
 
     async def match(self, result):
-        output = MessageChain.assign(result.get("output")).to_str()
-        return bool(self.pattern.search(output))
+        return any(self.pattern.search(output) for output in _searchable_texts(result))
 
     def __str__(self):
         return f"Regex({self.pattern.pattern!r})"
@@ -584,14 +604,10 @@ class ContainsAll(Expectation):
         self.case_sensitive = case_sensitive
 
     async def match(self, result):
-        output = MessageChain.assign(result.get("output")).to_str()
+        candidates = _searchable_texts(result)
         for text in self.texts:
-            t = text
-            o = output
-            if not self.case_sensitive:
-                t = t.lower()
-                o = o.lower()
-            if t not in o:
+            t = text if self.case_sensitive else text.lower()
+            if not any(t in (o if self.case_sensitive else o.lower()) for o in candidates):
                 return False
         return True
 
@@ -612,14 +628,10 @@ class ContainsAny(Expectation):
         self.case_sensitive = case_sensitive
 
     async def match(self, result):
-        output = MessageChain.assign(result.get("output")).to_str()
+        candidates = _searchable_texts(result)
         for text in self.texts:
-            t = text
-            o = output
-            if not self.case_sensitive:
-                t = t.lower()
-                o = o.lower()
-            if t in o:
+            t = text if self.case_sensitive else text.lower()
+            if any(t in (o if self.case_sensitive else o.lower()) for o in candidates):
                 return True
         return False
 

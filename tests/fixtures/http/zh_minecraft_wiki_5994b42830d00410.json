@@ -1,0 +1,1 @@
+{"url": "https://zh.minecraft.wiki/api.php?action=query&list=search&srsearch=Nonexistent+page+xyz+12345&srnamespace=%2A&srwhat=nearmatch&srlimit=1&srenablerewrites=True&format=json", "status_code": 200, "headers": {}, "method": "GET", "json_data": {"batchcomplete": "", "query": {"search": []}}}
