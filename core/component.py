@@ -84,6 +84,7 @@ class Bind:
             show_typing: bool = True,
             text_only: bool = True,
             element_filter: tuple[MessageElement, ...] | None = None,
+            trigger_once_startup: bool = False,
         ):
             def decorator(function):
                 ModulesManager.bind_to_module(
@@ -105,6 +106,7 @@ class Bind:
                         show_typing=show_typing,
                         text_only=text_only,
                         element_filter=element_filter or [],
+                        trigger_once_startup=trigger_once_startup,
                     ),
                 )
                 return function
@@ -217,6 +219,7 @@ def module(
     rss: bool = False,
     required_superuser: bool = False,
     required_base_superuser: bool = False,
+    suppress_invalid_prompt: bool = False,
     available_for: str | list | tuple = "*",
     exclude_from: str | list | tuple = "",
     support_languages: str | list | tuple | None = None,
@@ -238,6 +241,8 @@ def module(
     :param rss: 将此命令设为 RSS 命令。（默认为False）
     :param required_superuser: 将此命令设为机器人的超级管理员才可执行。（默认为False）
     :param required_base_superuser: 将此命令设为机器人的基础超级管理员才可执行。（默认为False）
+    :param suppress_invalid_prompt: 命令未能匹配任何模板时是否抑制语法错误提示。
+    适用于命令按平台分流、匹配不上属于预期结果的模块。（默认为False）
     :param available_for: 此命令支持的平台列表。（默认为`*`）
     :param exclude_from: 此命令排除的平台列表。
     :param support_languages: 此命令支持的语言列表。
@@ -269,6 +274,7 @@ def module(
         required_admin=required_admin,
         required_superuser=required_superuser,
         required_base_superuser=required_base_superuser,
+        suppress_invalid_prompt=suppress_invalid_prompt,
         available_for=available_for,
         exclude_from=exclude_from,
         support_languages=support_languages,

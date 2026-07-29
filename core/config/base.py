@@ -39,6 +39,7 @@ class CoreConfig:
     base_superuser: list = base_superuser_default
     ignored_sender: list = ignored_sender_default
     report_targets: list = []
+    retired_clients: list = []
 
     # 命令交互
     command_prefix: list = command_prefix_default

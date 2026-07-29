@@ -45,6 +45,7 @@ from core.database.models import AnalyticsData, SenderUnionInfo, TargetUnionBind
 from core.exports import exports
 from core.loader import ModulesManager
 from core.logger import Logger
+from core.retired import is_module_allowed_when_retired, is_retired_client, should_yield_channel
 from core.tos import TOS_TEMPBAN_TIME, temp_ban_counter, abuse_warn_target, remove_temp_ban
 from core.types import Module, Param
 from core.types.module.component_meta import CommandMeta
@@ -124,6 +125,10 @@ CHANNEL_DEDUP_WINDOW = 10
 # 消息通道认领记录 - 键为 union|通道号|文本哈希，由最先写入的会话负责执行
 channel_claim_cache = ExpiringTempDict()
 
+# 标记为单次触发的正则，其「模块名 + 正则序号 + 会话 ID」在此登记，登记后不再参与匹配。
+# 仅存于进程内存，重启即清空；条目数上限为「触发过的会话数 × 单次触发正则条数」，有界。
+regex_once_cache: set[tuple[str, int, str]] = set()
+
 
 async def parser(msg: "Bot.MessageSession"):
     """
@@ -196,14 +201,21 @@ async def parser(msg: "Bot.MessageSession"):
 
             command_first_word = await _process_command(msg, modules, disable_prefix, in_prefix_list)
 
+            # 退役客户端仅保留白名单模块。此处须早于通道认领：若退役会话先认领再因退役不执行，
+            # 同通道的其他会话会因避让而放弃处理，该会话内将无人响应。
+            if (
+                is_retired_client(msg.session_info.client_name)
+                and not is_module_allowed_when_retired(command_first_word)
+                and not msg.check_super_user()
+            ):
+                return
+
             # 执行前先认领消息通道，同通道内已有会话认领则避让，_process_command 会去掉 trigger_msg 的前缀
             if await _claim_channel_message(msg):
                 return
 
             if command_first_word:
-                if not ExecutionLockList.check(msg):  # 加锁
-                    ExecutionLockList.add(msg)
-                else:
+                if not try_acquire_execution_lock(msg):
                     await msg.send_message(I18NContext("parser.command.running.prompt"))
                     return
 
@@ -274,6 +286,11 @@ async def _claim_channel_message(msg: "Bot.MessageSession", display: str | None 
     # 通道内仅有自身时不存在重复执行的可能，绝大多数会话经由此快路径返回。
     if sum(1 for cid in channels.values() if cid == channel_id) <= 1:
         return False
+
+    # 退役会话不执行白名单之外的命令，由它认领会导致同通道的其他会话避让而无人响应。
+    if should_yield_channel(msg.session_info.target_id, channels, channel_id):
+        Logger.debug(f"Retired session {msg.session_info.target_id} yielded the channel.")
+        return True
 
     if display is None:
         display = msg.trigger_msg
@@ -727,6 +744,100 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
         ExecutionLockList.remove(msg)
 
 
+def regex_once_triggered(module_name: str, index: int, target_id: str) -> bool:
+    """
+    判断一条标记为单次触发的正则是否已在该会话中跑过。
+
+    :param module_name: 所属模块名称。
+    :param index: 该正则在模块 ``regex_list`` 中的序号。
+    :param target_id: 场景 ID。
+    :return: 是否已触发过。
+    """
+    return (module_name, index, target_id) in regex_once_cache
+
+
+def mark_regex_once(module_name: str, index: int, target_id: str) -> None:
+    """
+    登记一条单次触发的正则已在该会话中跑过。
+
+    :param module_name: 所属模块名称。
+    :param index: 该正则在模块 ``regex_list`` 中的序号。
+    :param target_id: 场景 ID。
+    """
+    regex_once_cache.add((module_name, index, target_id))
+
+
+def regex_module_enabled(module: "Module", module_name: str, enabled_modules: list | None) -> bool:
+    """
+    判断一个模块的正则处理函数是否应当参与匹配。
+
+    base 模块无须在会话中启用即可生效，与命令路径 :func:`_execute_module` 的判定保持一致。
+    此前该豁免仅存在于命令路径，导致 base 模块注册的正则永远不会触发。
+
+    :param module: 待判定的模块。
+    :param module_name: 模块名称。
+    :param enabled_modules: 当前会话已启用的模块列表。
+    :return: 是否参与匹配。
+    """
+    if module.base:
+        return True
+    return bool(enabled_modules) and module_name in enabled_modules
+
+
+def try_acquire_execution_lock(msg: "Bot.MessageSession") -> bool:
+    """
+    尝试为当前会话获取执行锁。
+
+    获取失败表示该会话已有命令在执行。指令路径应就此告知用户，正则路径则应静默跳过：
+    正则由消息内容隐式触发，用户并未主动请求，提示对其纯属噪音。
+
+    :param msg: 消息会话。
+    :return: 是否成功获取。
+    """
+    if ExecutionLockList.check(msg):
+        return False
+    ExecutionLockList.add(msg)
+    return True
+
+
+def regex_func_available(rfunc, target_from: str, client_name: str) -> bool:
+    """
+    判断一条正则处理函数在当前平台上是否可用。
+
+    判据与 :meth:`RegexMatches.get` 一致。此前 :func:`_execute_regex` 直接遍历 ``regex_list.set``，
+    只校验模块级的 ``available_for``，正则级的平台声明因而从未生效——注册时写下的
+    ``@module.regex(available_for=...)`` 形同虚设。
+
+    :param rfunc: 正则处理函数的元数据。
+    :param target_from: 当前会话的场景前缀。
+    :param client_name: 当前会话的客户端名称。
+    :return: 是否可用。
+    """
+    if not rfunc.load:
+        return False
+    if target_from in rfunc.exclude_from or client_name in rfunc.exclude_from:
+        return False
+    return "*" in rfunc.available_for or target_from in rfunc.available_for or client_name in rfunc.available_for
+
+
+async def regex_func_permitted(msg: "Bot.MessageSession", rfunc, module_name: str) -> bool:
+    """
+    判断一条正则处理函数在当前会话中是否有权执行。
+
+    该判定与消息内容无关，须在执行正则匹配之前完成，避免为无权使用的处理函数白付匹配开销。
+
+    :param msg: 消息会话。
+    :param rfunc: 正则处理函数的元数据。
+    :param module_name: 所属模块名称。
+    :return: 是否有权执行。
+    """
+    if rfunc.required_superuser:
+        return await _check_superuser_or_authorized(msg, module_name)
+    if rfunc.required_admin:
+        return await msg.check_permission()
+    return True
+
+
 async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
     """
     执行正则表达式匹配的模块。
@@ -764,9 +875,13 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
         if not modules[m]._db_load:
             continue
 
+        # 退役客户端仅保留白名单模块，其余模块的正则一律不参与匹配。
+        if is_retired_client(msg.session_info.client_name) and not is_module_allowed_when_retired(m):
+            continue
+
         try:
             # ========== 步骤 1: 检查模块是否已启用且有正则表达式 ==========
-            if m in msg.session_info.enabled_modules and modules[m].regex_list.set:
+            if regex_module_enabled(modules[m], m, msg.session_info.enabled_modules) and modules[m].regex_list.set:
                 regex_module: Module = modules[m]
 
                 # ========== 步骤 2: 权限检查 ==========
@@ -797,7 +912,21 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                     continue
 
                 # ========== 步骤 4: 遍历模块的所有正则表达式 ==========
-                for rfunc in regex_module.regex_list.set:
+                for index, rfunc in enumerate(regex_module.regex_list.set):
+                    # 正则级的平台声明，与命令级的 available_for / exclude_from 对称。
+                    # 步骤 3 校验的是模块级声明，两者互不覆盖。
+                    if not regex_func_available(rfunc, msg.session_info.target_from, msg.session_info.client_name):
+                        continue
+
+                    # 单次触发的正则在该会话跑过之后不再参与匹配，避免每条消息都付出
+                    # 通道认领的数据库查询与统计插入。
+                    if rfunc.trigger_once_startup and regex_once_triggered(m, index, msg.session_info.target_id):
+                        continue
+
+                    # 权限与消息内容无关，先筛选后匹配，避免为无权使用的处理函数白付正则开销。
+                    if not await regex_func_permitted(msg, rfunc, m):
+                        continue
+
                     time_start = time.perf_counter()
                     matched = False  # 标记是否匹配成功
                     _typing = False  # 标记是否显示“正在输入……”
@@ -850,14 +979,6 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                             if rfunc.show_typing:
                                 await _check_target_cooldown(msg)
 
-                            # ========== 正则表达式级别的权限检查 ==========
-                            if rfunc.required_superuser:
-                                if not await _check_superuser_or_authorized(msg, m):
-                                    continue
-                            elif rfunc.required_admin:
-                                if not await msg.check_permission():
-                                    continue
-
                             # ========== ToS 消息计数 ==========
                             if not regex_module.base:
                                 if enable_tos and rfunc.show_typing:
@@ -867,10 +988,16 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                                         "Tos is disabled, check the configuration if it is not work as expected."
                                     )
 
-                            if not ExecutionLockList.check(msg):
-                                ExecutionLockList.add(msg)
-                            else:
-                                return await msg.send_message(I18NContext("parser.command.running.prompt"))
+                            # 正则由消息内容隐式触发，锁被占用时静默跳过；
+                            # 此处若发出提示并 return，还会连带中断后续模块的正则遍历。
+                            if not try_acquire_execution_lock(msg):
+                                continue
+
+                            # 标记须在调用处理函数之前落下：处理函数为协程，其执行期间同一会话的
+                            # 下条消息若到达，标记尚未设置便会重复触发。抛异常时同样保留标记——
+                            # 下游链路本就有问题，再次触发只是白费开销。
+                            if rfunc.trigger_once_startup:
+                                mark_regex_once(m, index, msg.session_info.target_id)
 
                             if rfunc.show_typing and msg.session_info.sender_union_info.sender_data.get(
                                 "typing_prompt", True
@@ -1211,6 +1338,9 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
         except InvalidCommandFormatError:
             # if not msg.session_info.sender_union_info.sender_data.get("typo_check", True):
             # TODO: ? 如果是命令级别的语法错误，这个逻辑到这里有问题，这个语句会导致机器人什么都不发送而不是进行错字检查
+            # 命令按平台分流的模块，匹配不上是预期结果，不应报语法错误。
+            if module.suppress_invalid_prompt:
+                return
             await msg.send_message(
                 I18NContext(
                     "parser.command.invalid.syntax", module=command_first_word, prefix=msg.session_info.prefixes[0]

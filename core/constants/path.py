@@ -16,6 +16,7 @@ webui_path = Path("./webui").resolve()
 # assets 子路径
 fonts_path = assets_path / "fonts"
 templates_path = assets_path / "templates"
+retired_path = assets_path / "retired"
 
 # 字体文件路径
 noto_sans_bold_path = fonts_path / "Noto Sans CJK Bold.otf"

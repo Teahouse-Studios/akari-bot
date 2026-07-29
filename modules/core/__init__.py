@@ -7,3 +7,4 @@ from .prefix import *
 from .su_utils import *
 from .utils import *
 from .bind import *
+from .merge import *

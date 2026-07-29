@@ -23,6 +23,7 @@ from core.database.models import AnalyticsData, TargetUnionBind, TargetUnionInfo
 from core.exports import add_export, exports
 from core.loader import ModulesManager
 from core.logger import Logger
+from core.retired import filter_retired_targets
 from core.utils.session import inject_features
 
 if TYPE_CHECKING:
@@ -445,6 +446,8 @@ class Bot:
         """
         # 从数据库获取开启此模块的所有场景 ID（一个 union 下绑定的全部会话都要展开）
         lst = await TargetUnionInfo.get_target_id_list_by_module(module)
+        # 退役客户端停止一切主动推送。
+        lst = filter_retired_targets(lst)
         fetched = []
 
         # 逐个抓取这些目标的会话信息

@@ -36,6 +36,7 @@ class Module:
     rss: bool = False
     required_superuser: bool = False
     required_base_superuser: bool = False
+    suppress_invalid_prompt: bool = False
     command_list: CommandMatches = field(factory=CommandMatches.init)
     regex_list: RegexMatches = field(factory=RegexMatches.init)
     schedule_list: ScheduleMatches = field(factory=ScheduleMatches.init)
@@ -68,6 +69,7 @@ class Module:
             "rss": self.rss,
             "required_superuser": self.required_superuser,
             "required_base_superuser": self.required_base_superuser,
+            "suppress_invalid_prompt": self.suppress_invalid_prompt,
             "commands": len(self.command_list.set),
             "regexp": len(self.regex_list.set),
             "_py_module_name": self._py_module_name,

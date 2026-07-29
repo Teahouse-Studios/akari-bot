@@ -48,6 +48,7 @@ class RegexMeta(ModuleMeta):
     show_typing: bool = True
     text_only: bool = True
     element_filter: tuple[MessageElement, ...] | None = None
+    trigger_once_startup: bool = False
     # 注册期编译好的模式，避免每条消息都去 re 模块的全局缓存里查一次
     compiled: re.Pattern | None = field(default=None, init=False, repr=False, eq=False)
 
