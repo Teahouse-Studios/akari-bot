@@ -1,183 +1,82 @@
-import shutil
-import struct
 from pathlib import Path
 
 import orjson
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import unpad
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
-from core.constants.path import cache_path
+from core.constants.path import PrivateAssets
 from core.logger import Logger
-from core.utils.http import get_url, download
-from .update import p_headers, remove_punctuations
 
-pgr_assets_path = Path(__file__).parent.parent / "assets"
-
-
-levels = {
-    "EZ": 1,
-    "HD": 2,
-    "IN": 4,
-    "AT": 8,
-}
-secret = bytes(
-    [
-        232,
-        150,
-        154,
-        210,
-        165,
-        64,
-        37,
-        155,
-        151,
-        145,
-        144,
-        139,
-        136,
-        230,
-        191,
-        3,
-        30,
-        109,
-        33,
-        149,
-        110,
-        250,
-        214,
-        138,
-        80,
-        221,
-        85,
-        214,
-        122,
-        176,
-        146,
-        75,
-    ]
-)
-iv = bytes([42, 79, 240, 138, 200, 13, 99, 7, 0, 87, 197, 149, 24, 200, 50, 83])
+from .PhiCloudActionAsync.ActionLib import countRks, decryptSave, unzipFile
+from .assets import load_song_info, to_difficulty_table
+from .client import phigros_cloud
 
 
-def decrypt_bytes(encrypted):
-    cipher = AES.new(key=secret, mode=AES.MODE_CBC, IV=iv)
-    decrypted = cipher.decrypt(encrypted[1:])
-    return unpad(decrypted, AES.block_size)
+def cache_files(union_id: str) -> tuple[Path, Path]:
+    """取指定用户的存档缓存路径与元数据路径。
+
+    存放于 PrivateAssets 而非 cache 目录：后者在每次启动时会被整体删除，
+    置于其下的回退副本仅在单次运行内有效。
+
+    :param union_id: 用户联合 ID。
+    """
+    directory = PrivateAssets.path / "phigros" / "saves"
+    directory.mkdir(parents=True, exist_ok=True)
+    safe = union_id.replace("|", "_")
+    return directory / f"{safe}.zip", directory / f"{safe}.json"
 
 
-def parse_game_record(rd_path):
-    with open(pgr_assets_path / "song_info.json", "rb") as f:
-        song_info = orjson.loads(f.read())
-    decrypted_data = {}
-    with open(rd_path / "gameRecord", "rb+") as rd:  # skipcq
-        data = decrypt_bytes(rd.read())
-        pos = int(data[0] < 0) + 1
-        while pos < len(data):
-            name_length = data[pos]
-            pos += 1
-            if name_length == 1:
-                continue
-            song_id = data[pos : (pos + name_length)]
-            song_id = song_id.decode("utf-8").removesuffix(".0").lower()
-            sid_split = song_id.split(".", 1)
-            if len(sid_split) == 2:
-                song_id = f"{remove_punctuations(sid_split[0])}.{remove_punctuations(sid_split[1])}"
-            else:
-                song_id = remove_punctuations(sid_split[0])
+def parse_part(save_data: bytes, part: str) -> dict:
+    """只解析存档中的指定文件。
 
-            pos += name_length
-            score_length = data[pos]
-            pos += 1
+    整包解析会让任一文件的结构版本更新波及全部命令，故按需解析。
 
-            score = data[pos : (pos + score_length)]
-            pos += score_length
-
-            has_score = score[0]
-            full_combo = score[1]
-            score_pos = 2
-
-            record = {}
-
-            for diff, digit in levels.items():
-                if (has_score & digit) == digit:
-                    record[diff] = {
-                        "score": int.from_bytes(
-                            score[score_pos : (score_pos + 4)],
-                            byteorder="little",
-                            signed=True,
-                        ),
-                        "accuracy": struct.unpack("<f", score[(score_pos + 4) : (score_pos + 8)])[0],
-                        "full_combo": (full_combo & digit) == digit,
-                    }
-                    if song_id in song_info and diff in song_info[song_id]["diff"]:
-                        record[diff]["base_rks"] = float(song_info[song_id]["diff"][diff])
-                        if record[diff]["score"] == 1000000:
-                            record[diff]["rks"] = float(song_info[song_id]["diff"][diff])
-                        elif record[diff]["accuracy"] < 70:
-                            record[diff]["rks"] = 0
-                        else:
-                            record[diff]["rks"] = (((record[diff]["accuracy"] - 55) / 45) ** 2) * float(
-                                song_info[song_id]["diff"][diff]
-                            )
-                    else:
-                        del record[diff]
-                    score_pos += 8
-            if not decrypted_data.get(song_id):
-                decrypted_data[song_id] = {}
-            if song_info.get(song_id) and song_info[song_id]["name"]:
-                decrypted_data[song_id]["name"] = song_info[song_id]["name"]
-            else:
-                decrypted_data[song_id]["name"] = song_id.split(".")[0]
-            decrypted_data[song_id]["diff"] = record
-    return decrypted_data
+    :param save_data: 存档压缩包数据。
+    :param part: 存档内的文件名，如 gameRecord、gameProgress、settings、gameKey、user。
+    """
+    return decryptSave(unzipFile(save_data, part))[part]
 
 
-async def get_game_record(msg: Bot.MessageSession, session_token: str, use_cache: bool = True):
-    pgr_cache_path = cache_path / "phigros-record"
-    pgr_cache_path.mkdir(parents=True, exist_ok=True)
-    cache_dir = pgr_cache_path / f"{msg.session_info.sender_id.replace('|', '_')}_phigros_song_record.json"
-    save_filename = f"{msg.session_info.sender_id.replace('|', '_')}_phigros_gamesave"
-    save_dir = pgr_cache_path / save_filename
+def get_records(save_data: bytes, song_info: dict | None = None) -> dict:
+    """解析成绩并附上定数与等效 rks。
 
-    save_url = "https://rak3ffdi.cloud.tds1.tapapis.cn/1.1/classes/_GameSave"
-    headers = p_headers.copy()
-    headers["X-LC-Session"] = session_token
+    :param save_data: 存档压缩包数据。
+    :param song_info: 曲目信息结构，留空则从磁盘读取。
+    """
+    if song_info is None:
+        song_info = load_song_info()
+    return countRks(parse_part(save_data, "gameRecord"), to_difficulty_table(song_info))
+
+
+async def get_save(msg: Bot.MessageSession, bind_info) -> tuple[bytes, dict]:
+    """取存档原始数据与 summary，云端不可用时回落到缓存。
+
+    :param msg: 消息会话，用于在使用缓存时告知用户。
+    :param bind_info: 绑定信息记录。
+    :return: 存档压缩包数据与 summary。
+    """
+    zip_file, meta_file = cache_files(bind_info.union_id)
     try:
-        get_save_url = await get_url(save_url, headers=headers, fmt="json")
-        results = get_save_url.get("results", [])
-        if not results:
-            raise ValueError("No game save found")
-        save_url = results[0].get("gameFile", {}).get("url", "")
+        async with phigros_cloud(bind_info.session_token, bind_info.is_international) as cloud:
+            summary = await cloud.getSummary()
+            if zip_file.exists() and meta_file.exists():
+                meta = orjson.loads(meta_file.read_bytes())
+                if meta.get("checksum") == summary["checksum"]:
+                    Logger.debug("Phigros save checksum unchanged, reusing local copy.")
+                    return zip_file.read_bytes(), summary
+            save_data = await cloud.getSave(summary["url"], summary["checksum"])
 
-        dl = await download(save_url, f"{save_filename}.zip", pgr_cache_path)
-        shutil.unpack_archive(dl, save_dir)
-        data = parse_game_record(save_dir)
-        (pgr_cache_path / f"{save_filename}.zip").unlink()
+        zip_file.write_bytes(save_data)
+        meta_file.write_bytes(orjson.dumps({"checksum": summary["checksum"], "summary": summary}))
+        return save_data, summary
 
-        if use_cache and data:
-            if cache_dir.exists():
-                with open(cache_dir, "rb") as f:
-                    try:
-                        backup_data = orjson.loads(f.read())
-                    except Exception:
-                        backup_data = {}
-            else:
-                backup_data = {}
-            backup_data.update(data)
-            with open(cache_dir, "wb") as f:
-                f.write(orjson.dumps(backup_data))
-        return data
-    except Exception as e:
+    except Exception:
         Logger.exception()
-        if use_cache and cache_dir.exists():
+        if zip_file.exists() and meta_file.exists():
             try:
-                with open(cache_dir, "rb") as f:
-                    data = orjson.loads(f.read())
+                meta = orjson.loads(meta_file.read_bytes())
                 await msg.send_message(I18NContext("phigros.message.use_cache"))
-                return data
+                return zip_file.read_bytes(), meta["summary"]
             except Exception:
-                raise e
-        else:
-            raise e
+                Logger.exception()
+        raise

@@ -93,7 +93,6 @@ async def update_database_to_v3(conn):
     await backfill_union_binds()
 
     # 消息通道号。target_union_bind 由 generate_schemas() 新建时已包含该列，正常升级路径不会执行此段；
-    # 保留该段是为了让开发期已升级至 v3、其后才引入通道功能的数据库可将版本号退回 2 重跑一次修复。
     if not await has_column(conn, "target_union_bind", "channel_id"):
         if db_type == "sqlite":
             await conn.execute_query('ALTER TABLE "target_union_bind" ADD COLUMN "channel_id" INT NOT NULL DEFAULT 1;')
@@ -142,6 +141,16 @@ async def update_database_to_v3(conn):
         else:
             columns = "`target_client`, `status`" if table == "job_queues" else f"`{column}`"
             await conn.execute_query(f"CREATE INDEX `{index_name}` ON `{table}` ({columns});")
+
+    if not await has_column(conn, "module_phigros_bind_info", "is_international"):
+        if db_type == "sqlite":
+            await conn.execute_query(
+                'ALTER TABLE "module_phigros_bind_info" ADD COLUMN "is_international" INT NOT NULL DEFAULT 0;'
+            )
+        else:
+            await conn.execute_query(
+                "ALTER TABLE `module_phigros_bind_info` ADD COLUMN `is_international` BOOL NOT NULL DEFAULT 0;"
+            )
 
 
 async def update_database():
