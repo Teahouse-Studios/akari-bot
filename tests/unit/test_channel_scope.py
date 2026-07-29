@@ -8,7 +8,7 @@ from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
 from core.builtins.session.tasks import SessionTaskManager
 from core.cooldown import CoolDown, _cd_dict
-from core.database.models import SenderInfo, StoredData, TargetInfo, TargetUnionBind
+from core.database.models import SenderUnionInfo, StoredData, TargetUnionInfo, TargetUnionBind
 from core.game import PlayState
 from core.tester import func_case, Tester
 
@@ -54,7 +54,7 @@ async def _states_shared(prefix: str) -> tuple[bool, bool, bool]:
 async def _test_states_isolated_across_channels():
     """测试作用域 - 同 union 但通道号不同的会话不应共用内存态"""
     try:
-        union = await TargetInfo.resolve_union("CHA1|Group|x")
+        union = await TargetUnionInfo.resolve_union("CHA1|Group|x")
         await union.bind_id("CHA2|Group|y")
         # 绑定后默认各占一号，即默认谁也不与谁合并，此时只是共享配置而非同一个现实会话
         return await _states_shared("CHA") == (False, False, False)
@@ -66,7 +66,7 @@ async def _test_states_isolated_across_channels():
 async def _test_states_shared_within_channel():
     """测试作用域 - 并入同一消息通道后应共用内存态"""
     try:
-        union = await TargetInfo.resolve_union("CHB1|Group|x")
+        union = await TargetUnionInfo.resolve_union("CHB1|Group|x")
         await union.bind_id("CHB2|Group|y")
         await TargetUnionBind.filter(target_id="CHB2|Group|y").update(channel_id=1)
         return await _states_shared("CHB") == (True, True, True)
@@ -77,17 +77,17 @@ async def _test_states_shared_within_channel():
 
 async def _test_petal_quota_shared_across_platforms():
     """测试作用域 - 花瓣每日额度按 union 共享，不随平台账号翻倍"""
-    union = await SenderInfo.resolve_union("PETALA|1")
+    union = await SenderUnionInfo.resolve_union("PETALA|1")
     await union.bind_id("PETALB|2")
 
     async def gain(sender_id: str, amount: int):
         session_info = await SessionInfo.assign(
             target_id="PETALA|Group|1", target_from="PETALA|Group", client_name="PETALA", create=True
         )
-        sender_info = await SenderInfo.resolve_union(sender_id)
+        sender_union_info = await SenderUnionInfo.resolve_union(sender_id)
         session_info.sender_id = sender_id
-        session_info.sender_info = sender_info
-        session_info.sender_union_id = sender_info.union_id
+        session_info.sender_union_info = sender_union_info
+        session_info.sender_union_id = sender_union_info.union_id
         return await petal_module.gained_petal(MessageSession(session_info=session_info), amount)
 
     config = type("Config", (), {"enable_petal": True, "enable_get_petal": True, "petal_gained_limit": 5})
@@ -96,7 +96,7 @@ async def _test_petal_quota_shared_across_platforms():
             await gain("PETALA|1", 5)
             # 花瓣余额挂在 union 上，日额度若仍按平台账号记账，绑几个平台就能领几倍
             reached_limit = "limit" in str(await gain("PETALB|2", 5))
-        return reached_limit and (await SenderInfo.resolve_union("PETALA|1")).petal == 5
+        return reached_limit and (await SenderUnionInfo.resolve_union("PETALA|1")).petal == 5
 
     except Exception:
         return False

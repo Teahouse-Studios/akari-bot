@@ -41,7 +41,7 @@ from core.constants.exceptions import (
     WaitCancelException,
 )
 from core.constants.info import Info
-from core.database.models import AnalyticsData, SenderInfo, TargetInfo
+from core.database.models import AnalyticsData, SenderUnionInfo, TargetUnionBind
 from core.exports import exports
 from core.loader import ModulesManager
 from core.logger import Logger
@@ -172,14 +172,14 @@ async def parser(msg: "Bot.MessageSession"):
             return
 
         # 屏蔽同一个现实会话里其它机器人发的消息，避免把对方的输出当成用户输入去执行
-        if msg.session_info.sender_id in msg.session_info.target_info.list_peer_bots(msg.session_info.target_id):
+        if msg.session_info.sender_id in msg.session_info.target_union_info.list_peer_bots(msg.session_info.target_id):
             Logger.debug("Ignored message from other clients: " + msg.trigger_msg)
             return
 
         # ========== 步骤 2: 权限检查 ==========
         # 检查用户是否被被机器人屏蔽（机器人黑名单）
-        if msg.session_info.sender_info.blocked and not (
-            msg.session_info.sender_info.trusted or msg.session_info.sender_info.superuser
+        if msg.session_info.sender_union_info.blocked and not (
+            msg.session_info.sender_union_info.trusted or msg.session_info.sender_union_info.superuser
         ):
             return
 
@@ -215,7 +215,7 @@ async def parser(msg: "Bot.MessageSession"):
                     await _execute_module(msg, modules, command_first_word, identify_str)
                 else:
                     await msg.send_message(I18NContext("parser.module.unloaded", module=command_first_word))
-            elif msg.session_info.sender_info.sender_data.get("typo_check", True):
+            elif msg.session_info.sender_union_info.sender_data.get("typo_check", True):
                 new_msg, new_command_first_word, confirmed = await _command_typo_check(msg, modules, command_first_word)
                 if new_msg:
                     if modules[new_command_first_word]._db_load:  # 检查模块是否已加载
@@ -265,18 +265,19 @@ async def _claim_channel_message(msg: "Bot.MessageSession", display: str | None 
     :param display: 参与判定的文本，留空则取命令文本。
     :return: True 表示已被其它会话认领，当前会话应当避让。
     """
-    bind = getattr(msg.session_info.target_info, "_bind", None)
-    if not bind:
+    union_id = msg.session_info.target_union_id
+    if not union_id:
         return False
+    channel_id = msg.session_info.target_channel_id
 
-    channels = await TargetInfo.list_channels_by_union(bind.union_id)
+    channels = await TargetUnionBind.list_channels(union_id)
     # 通道内仅有自身时不存在重复执行的可能，绝大多数会话经由此快路径返回。
-    if sum(1 for channel_id in channels.values() if channel_id == bind.channel_id) <= 1:
+    if sum(1 for cid in channels.values() if cid == channel_id) <= 1:
         return False
 
     if display is None:
         display = msg.trigger_msg
-    token = f"{bind.union_id}|{bind.channel_id}|{hashlib.sha256(display.encode('utf-8')).hexdigest()}"
+    token = f"{union_id}|{channel_id}|{hashlib.sha256(display.encode('utf-8')).hexdigest()}"
     now = time.time()
 
     # 以下查表与写入之间不得出现 await：在单线程事件循环下该段方为原子操作，认领才不会被并发打断。
@@ -309,7 +310,7 @@ def _transform_alias(msg, command: str):
     :return: 转换后的命令字符串（如果没有匹配的别名，返回原命令）
     """
     # 从场景信息中获取自定义别名字典
-    aliases = dict(msg.session_info.target_info.target_data.get("command_alias", {}).items())
+    aliases = dict(msg.session_info.target_union_info.target_data.get("command_alias", {}).items())
 
     # 存储所有匹配的别名模板，格式: (占位符数量, 模式, 替换, 占位符列表, 匹配对象)
     matched_aliases = []
@@ -385,7 +386,7 @@ def _get_prefixes(msg: "Bot.MessageSession"):
              - in_prefix_list: 消息是否以某个前缀开头
     """
     # ========== 步骤 1: 处理自定义别名 ==========
-    if msg.session_info.target_info.target_data.get("command_alias"):
+    if msg.session_info.target_union_info.target_data.get("command_alias"):
         # 将自定义别名替换为实际命令
         msg.trigger_msg = _transform_alias(msg, msg.trigger_msg)
 
@@ -512,10 +513,10 @@ async def _check_superuser_or_authorized(msg: "Bot.MessageSession", module_name:
     """
     if msg.check_super_user():
         return True
-    auth_list = msg.session_info.sender_info.sender_data.get("module_auth", [])
+    auth_list = msg.session_info.sender_union_info.sender_data.get("module_auth", [])
     for entry in auth_list:
         if entry.get("module") == module_name:
-            authorizer = await SenderInfo.get_by_sender_id(entry["authorized_by"], create=False)
+            authorizer = await SenderUnionInfo.get_by_sender_id(entry["authorized_by"], create=False)
             if authorizer and authorizer.superuser:
                 return True
     return False
@@ -606,7 +607,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                     )
                     if await msg.wait_confirm(I18NContext("parser.module.disabled.to_enable"), no_confirm_action=False):
                         # 用户确认启用
-                        await msg.session_info.target_info.config_module(command_first_word)
+                        await msg.session_info.target_union_info.config_module(command_first_word)
                         await msg.send_message(
                             I18NContext("core.message.module.enable.success", module=command_first_word)
                         )
@@ -648,7 +649,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
         for func in module.command_list.set:
             if not func.command_template:
                 # 显示“正在输入……”状态（如果用户启用）
-                if msg.session_info.sender_info.sender_data.get("typing_prompt", True):
+                if msg.session_info.sender_union_info.sender_data.get("typing_prompt", True):
                     await msg.start_typing()
                     _typing = True
                 # 执行模块函数
@@ -656,7 +657,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                 raise SessionFinished(msg.sent)
 
         # ========== 步骤 8: 错字检查 ==========
-        if msg.session_info.sender_info.sender_data.get("typo_check", True):
+        if msg.session_info.sender_union_info.sender_data.get("typo_check", True):
             # 用户启用了错字检查，尝试纠正命令
             new_msg, new_command_first_word, confirmed = await _command_typo_check(msg, modules, command_first_word)
             if new_msg:
@@ -871,7 +872,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                             else:
                                 return await msg.send_message(I18NContext("parser.command.running.prompt"))
 
-                            if rfunc.show_typing and msg.session_info.sender_info.sender_data.get(
+                            if rfunc.show_typing and msg.session_info.sender_union_info.sender_data.get(
                                 "typing_prompt", True
                             ):
                                 await msg.start_typing()
@@ -944,7 +945,7 @@ async def _check_target_cooldown(msg: "Bot.MessageSession"):
     :raises NoReportException: 如果用户在冷却期内
     """
     # 获取场景配置的冷却时间（秒）
-    cooldown_time = int(msg.session_info.target_info.target_data.get("cooldown_time", 0))
+    cooldown_time = int(msg.session_info.target_union_info.target_data.get("cooldown_time", 0))
 
     # 如果没有配置冷却时间或用户有管理权限，直接返回
     if not cooldown_time or await msg.check_permission():
@@ -1198,7 +1199,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
                 kwargs[func_params[list(func_params.keys())[0]].name] = msg
 
             # ========== 步骤 5: 显示“正在输入……”状态 ==========
-            if msg.session_info.target_info.target_data.get("typing_prompt", True):
+            if msg.session_info.target_union_info.target_data.get("typing_prompt", True):
                 await msg.start_typing()
                 _typing = True
 
@@ -1208,7 +1209,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
             # 如果函数没有使用 msg.finish，手动结束会话
             raise SessionFinished(msg.sent)
         except InvalidCommandFormatError:
-            # if not msg.session_info.sender_info.sender_data.get("typo_check", True):
+            # if not msg.session_info.sender_union_info.sender_data.get("typo_check", True):
             # TODO: ? 如果是命令级别的语法错误，这个逻辑到这里有问题，这个语句会导致机器人什么都不发送而不是进行错字检查
             await msg.send_message(
                 I18NContext(

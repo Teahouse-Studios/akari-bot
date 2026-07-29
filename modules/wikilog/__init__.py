@@ -8,7 +8,7 @@ from core.builtins.message.internal import I18NContext
 from core.builtins.session.internal import FetchedMessageSession
 from core.component import module
 from modules.wiki.config import WikiConfig
-from core.database.models import TargetInfo
+from core.database.models import TargetUnionBind
 from core.logger import Logger
 from core.scheduler import IntervalTrigger
 from modules.wiki.utils.ab import convert_ab_to_detailed_format
@@ -395,7 +395,7 @@ async def _(ctx: Bot.ModuleHookContext):
     data_ = await WikiLogTargetSetInfo.return_all_data()
     for union_id in data_:
         # 配置挂在 union 上，推送需展开为该 union 下的全部平台会话。
-        targets = await TargetInfo.list_ids_by_union(union_id)
+        targets = await TargetUnionBind.list_ids(union_id)
         for wiki in data_[union_id]:
             if "keep_alive" in data_[union_id][wiki] and data_[union_id][wiki]["keep_alive"]:
                 for target in targets:
@@ -529,7 +529,7 @@ async def _():
 
     for id_ in matched:
         # 拉取按 union 去重，推送则展开到该 union 下的全部平台会话。
-        for target_id in await TargetInfo.list_ids_by_union(id_):
+        for target_id in await TargetUnionBind.list_ids(id_):
             ft = await Bot.fetch_target(target_id)
             if ft:
                 ft_session = await FetchedMessageSession.from_session_info(ft)

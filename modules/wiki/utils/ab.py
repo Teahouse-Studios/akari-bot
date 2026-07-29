@@ -14,7 +14,7 @@ async def get_ab(msg: Bot.MessageSession | Bot.FetchedMessageSession, wiki_url, 
         action="query",
         list="abuselog",
         aflprop="user|title|action|result|filter|timestamp",
-        _no_login=not msg.session_info.target_info.target_data.get("use_bot_account", False),
+        _no_login=not msg.session_info.target_union_info.target_data.get("use_bot_account", False),
     )
     pageurl = wiki.wiki_info.articlepath.replace("$1", "Special:AbuseLog")
     d = []

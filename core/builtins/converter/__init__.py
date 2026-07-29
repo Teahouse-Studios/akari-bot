@@ -12,7 +12,7 @@ from cattrs import Converter
 import core.builtins.message.elements as elements
 from core.builtins.message.elements import I18NContextElement
 from core.builtins.types import MessageElement
-from core.database.models import TargetInfo, SenderInfo
+from core.database.models import TargetUnionInfo, SenderUnionInfo
 from core.i18n import Locale
 from core.logger import Logger
 from core.exports import exports
@@ -54,12 +54,16 @@ converter.register_unstructure_hook(
 
 
 # 会话信息的反结构化处理
-# 将 TargetInfo 对象转换为字典，由于序列化需要从数据库重新异步获取，只保留 _type 和 union_id 字段
-converter.register_unstructure_hook(TargetInfo, lambda obj: {"_type": type(obj).__name__, "union_id": obj.union_id})
+# 将 TargetUnionInfo 对象转换为字典，由于序列化需要从数据库重新异步获取，只保留 _type 和 union_id 字段
+converter.register_unstructure_hook(
+    TargetUnionInfo, lambda obj: {"_type": type(obj).__name__, "union_id": obj.union_id}
+)
 
 # 用户信息的反结构化处理
-# 将 SenderInfo 对象转换为字典，由于序列化需要从数据库重新异步获取，只保留 _type 和 union_id 字段
-converter.register_unstructure_hook(SenderInfo, lambda obj: {"_type": type(obj).__name__, "union_id": obj.union_id})
+# 将 SenderUnionInfo 对象转换为字典，由于序列化需要从数据库重新异步获取，只保留 _type 和 union_id 字段
+converter.register_unstructure_hook(
+    SenderUnionInfo, lambda obj: {"_type": type(obj).__name__, "union_id": obj.union_id}
+)
 
 # 地区 / 语言信息的反结构化处理
 # 将 Locale 对象转换为字典，保存其 locale 字符串值
@@ -99,12 +103,12 @@ def kwargs_to_elements(o):
 converter.register_structure_hook(MessageElement, lambda o, _: kwargs_to_elements(o))
 
 # 场景信息的结构化处理
-# 从字典恢复为 TargetInfo 对象（由于需要从数据库异步获取信息，这里实际只返回一个类本身用于占位，信息会在某个流程重新被刷新）
-converter.register_structure_hook(TargetInfo, lambda o, _: TargetInfo)
+# 从字典恢复为 TargetUnionInfo 对象（由于需要从数据库异步获取信息，这里实际只返回一个类本身用于占位，信息会在某个流程重新被刷新）
+converter.register_structure_hook(TargetUnionInfo, lambda o, _: TargetUnionInfo)
 
 # 用户信息的结构化处理
-# 从字典恢复为 SenderInfo 对象（由于需要从数据库异步获取信息，这里实际只返回一个类本身用于占位，信息会在某个流程重新被刷新）
-converter.register_structure_hook(SenderInfo, lambda o, _: SenderInfo)
+# 从字典恢复为 SenderUnionInfo 对象（由于需要从数据库异步获取信息，这里实际只返回一个类本身用于占位，信息会在某个流程重新被刷新）
+converter.register_structure_hook(SenderUnionInfo, lambda o, _: SenderUnionInfo)
 
 # 地区/语言信息的结构化处理
 # 从字典恢复为 Locale 对象，使用保存的 locale 字符串

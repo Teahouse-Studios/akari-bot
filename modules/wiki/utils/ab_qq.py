@@ -12,7 +12,7 @@ async def get_ab_qq(msg: MessageSession, wiki_url, headers=None):
         list="abuselog",
         aflprop="user|title|action|result|filter|timestamp",
         afllimit=99,
-        _no_login=not msg.session_info.target_info.target_data.get("use_bot_account", False),
+        _no_login=not msg.session_info.target_union_info.target_data.get("use_bot_account", False),
     )
     pageurl = wiki.wiki_info.articlepath.replace("$1", "Special:AbuseLog")
     msgchain_lst = [

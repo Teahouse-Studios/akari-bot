@@ -19,7 +19,7 @@ from core.builtins.temp import *
 from core.config.base import CoreConfig
 from core.constants.info import Info
 from core.constants.path import PrivateAssets, assets_path
-from core.database.models import AnalyticsData, TargetInfo
+from core.database.models import AnalyticsData, TargetUnionBind, TargetUnionInfo
 from core.exports import add_export, exports
 from core.loader import ModulesManager
 from core.logger import Logger
@@ -199,7 +199,7 @@ class Bot:
         for session_ in session_list:
             union_id = session_.target_union_id
             if union_id and union_id not in channel_maps:
-                channel_maps[union_id] = await TargetInfo.list_channels_by_union(union_id)
+                channel_maps[union_id] = await TargetUnionBind.list_channels(union_id)
             channel_id = channel_maps.get(union_id, {}).get(session_.target_id) if union_id else None
             # 查不到通道号即表示该会话没有绑定行，按独立会话处理，不与其它会话归为一组。
             key = (union_id, channel_id) if union_id and channel_id else ("", session_.target_id)
@@ -444,7 +444,7 @@ class Bot:
         :return: 开启了该模块的会话列表
         """
         # 从数据库获取开启此模块的所有场景 ID（一个 union 下绑定的全部会话都要展开）
-        lst = await TargetInfo.get_target_id_list_by_module(module)
+        lst = await TargetUnionInfo.get_target_id_list_by_module(module)
         fetched = []
 
         # 逐个抓取这些目标的会话信息

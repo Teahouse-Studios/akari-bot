@@ -8,9 +8,9 @@ if TYPE_CHECKING:
     from core.builtins.bot import Bot
 
 
-def _extract_id(value, attr: str) -> str | None:
+def extract_session_id(value, attr: str) -> str | None:
     """
-    从字符串或会话对象中取出 ID。
+    从字符串或会话对象中取出平台 ID。
 
     :param value: ID 字符串或 MessageSession / FetchedMessageSession 实例。
     :param attr: 要读取的 SessionInfo 属性名。
@@ -37,26 +37,26 @@ class DBModel(Model):
         cls, target_id: "Bot.MessageSession | Bot.FetchedMessageSession | str", create: bool = True
     ) -> Self | None:
         """
-        Get a model by target_id.
+        Get a row of this module table by the platform target_id it belongs to.
 
-        The target_id is resolved into its union_id first, so all data is keyed by union rather than by platform id.
+        The target_id is resolved into its union_id through TargetUnionInfo.resolve_union() first, so module data is
+        keyed by union rather than by platform id. TargetUnionInfo itself overrides this method to return the union
+        row directly.
 
         :param target_id: The target_id to search for.
         :param create: Whether to create a new model if it doesn't exist.
         :return: The model instance. If create is True and the model doesn't exist, a new instance will be created, otherwise None.
 
         """
-        from .models import TargetInfo
+        from .models import TargetUnionInfo
 
-        t = _extract_id(target_id, "target_id")
+        t = extract_session_id(target_id, "target_id")
         if not t:
             raise ValueError(
                 "target_id must be a str or a MessageSession/FetchedMessageSession instance, or exports are unavailable."
             )
-        if cls is TargetInfo:
-            return await TargetInfo.resolve_union(t, create)
 
-        union = await TargetInfo.resolve_union(t, create)
+        union = await TargetUnionInfo.resolve_union(t, create)
         if not union:
             return None
         if create:
@@ -68,25 +68,25 @@ class DBModel(Model):
         cls, sender_id: "Bot.MessageSession | Bot.FetchedMessageSession | str", create: bool = True
     ) -> Self | None:
         """
-        Get a model by sender_id.
+        Get a row of this module table by the platform sender_id it belongs to.
 
-        The sender_id is resolved into its union_id first, so all data is keyed by union rather than by platform id.
+        The sender_id is resolved into its union_id through SenderUnionInfo.resolve_union() first, so module data is
+        keyed by union rather than by platform id. SenderUnionInfo itself overrides this method to return the union
+        row directly.
 
         :param sender_id: The sender_id to search for.
         :param create: Whether to create a new model if it doesn't exist.
         :return: The model instance. If create is True and the model doesn't exist, a new instance will be created, otherwise None.
         """
-        from .models import SenderInfo
+        from .models import SenderUnionInfo
 
-        t = _extract_id(sender_id, "sender_id")
+        t = extract_session_id(sender_id, "sender_id")
         if not t:
             raise ValueError(
                 "sender_id must be a str or a MessageSession/FetchedMessageSession instance, or exports are unavailable."
             )
-        if cls is SenderInfo:
-            return await SenderInfo.resolve_union(t, create)
 
-        union = await SenderInfo.resolve_union(t, create)
+        union = await SenderUnionInfo.resolve_union(t, create)
         if not union:
             return None
         if create:

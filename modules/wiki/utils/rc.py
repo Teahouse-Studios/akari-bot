@@ -20,7 +20,7 @@ async def get_rc(msg: Bot.MessageSession, wiki_url, headers=None):
         rcprop="title|user|timestamp|loginfo|comment|sizes",
         rclimit=RC_LIMIT,
         rctype="edit|new|log",
-        _no_login=not msg.session_info.target_info.target_data.get("use_bot_account", False),
+        _no_login=not msg.session_info.target_union_info.target_data.get("use_bot_account", False),
     )
     pageurl = wiki.wiki_info.articlepath.replace("$1", "Special:RecentChanges")
     d = []

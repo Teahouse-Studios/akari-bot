@@ -22,7 +22,7 @@ from core.client.init import client_init
 from bots.onebot.config import AiocqhttpConfig
 from core.config.base import BaseConfig, CoreConfig
 from core.constants.default import confirm_command_default
-from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords
+from core.database.models import SenderUnionInfo, TargetUnionInfo, UnfriendlyActionRecords
 from core.i18n import Locale
 from core.logger import Logger
 from core.tos import tos_report
@@ -218,11 +218,11 @@ async def _(event: Event):
 @aiocqhttp_bot.on("request.friend")
 async def _(event: Event):
     sender_id = f"{sender_prefix}|{event.user_id}"
-    sender_info = await SenderInfo.get_by_sender_id(sender_id)
-    if sender_info.superuser or sender_info.trusted:
+    sender_union_info = await SenderUnionInfo.get_by_sender_id(sender_id)
+    if sender_union_info.superuser or sender_union_info.trusted:
         return {"approve": True}
     if AiocqhttpConfig.qq_allow_approve_friend:
-        if sender_info.blocked:
+        if sender_union_info.blocked:
             return {"approve": False}
         return {"approve": True}
     return {"approve": False}
@@ -231,13 +231,13 @@ async def _(event: Event):
 @aiocqhttp_bot.on("request.group.invite")
 async def _(event: Event):
     sender_id = f"{sender_prefix}|{event.user_id}"
-    sender_info = await SenderInfo.get_by_sender_id(sender_id)
+    sender_union_info = await SenderUnionInfo.get_by_sender_id(sender_id)
     target_id = f"{target_group_prefix}|{event.group_id}"
-    target_info = await TargetInfo.get_by_target_id(target_id)
-    if sender_info.superuser or sender_info.trusted:
+    target_union_info = await TargetUnionInfo.get_by_target_id(target_id)
+    if sender_union_info.superuser or sender_union_info.trusted:
         return {"approve": True}
     if AiocqhttpConfig.qq_allow_approve_group_invite:
-        if target_info.blocked:
+        if target_union_info.blocked:
             return {"approve": False}
         return {"approve": True}
 
@@ -246,15 +246,15 @@ async def _(event: Event):
 async def _(event: Event):
     if enable_tos and event.sub_type == "ban" and event.user_id == int(event.self_id):
         sender_id = f"{sender_prefix}|{event.operator_id}"
-        sender_info = await SenderInfo.get_by_sender_id(sender_id)
+        sender_union_info = await SenderUnionInfo.get_by_sender_id(sender_id)
         target_id = f"{target_group_prefix}|{event.group_id}"
-        target_info = await TargetInfo.get_by_target_id(target_id)
+        target_union_info = await TargetUnionInfo.get_by_target_id(target_id)
         if event.duration > 0:
             await UnfriendlyActionRecords.create(
                 target_id=target_id,
                 sender_id=sender_id,
-                target_union_id=target_info.union_id,
-                sender_union_id=sender_info.union_id,
+                target_union_id=target_union_info.union_id,
+                sender_union_id=sender_union_info.union_id,
                 action="restrict",
                 detail=str(event.duration),
             )
@@ -262,14 +262,14 @@ async def _(event: Event):
         result = await UnfriendlyActionRecords.check_mute(target_id=target_id)
         if event.duration >= 259200:  # 3 days
             result = True
-        if result and not sender_info.superuser:
+        if result and not sender_union_info.superuser:
             Logger.info(f"Ban {sender_id} ({target_id}) by ToS: restrict")
             Logger.info(f"Block {target_id} by ToS: restrict")
             reason = Locale(default_locale).t("tos.message.reason.restrict")
             await tos_report(sender_id, target_id, reason, banned=True)
-            await target_info.edit_attr("blocked", True)
+            await target_union_info.edit_attr("blocked", True)
             await aiocqhttp_bot.call_action("set_group_leave", group_id=event.group_id)
-            await sender_info.switch_identity(trust=False)
+            await sender_union_info.switch_identity(trust=False)
             await aiocqhttp_bot.call_action("delete_friend", friend_id=event.operator_id)
 
 
@@ -277,25 +277,25 @@ async def _(event: Event):
 async def _(event: Event):
     if enable_tos and event.sub_type == "kick_me":
         sender_id = f"{sender_prefix}|{event.operator_id}"
-        sender_info = await SenderInfo.get_by_sender_id(sender_id)
+        sender_union_info = await SenderUnionInfo.get_by_sender_id(sender_id)
         target_id = f"{target_group_prefix}|{event.group_id}"
-        target_info = await TargetInfo.get_by_target_id(target_id)
+        target_union_info = await TargetUnionInfo.get_by_target_id(target_id)
         await UnfriendlyActionRecords.create(
             target_id=target_id,
             sender_id=sender_id,
-            target_union_id=target_info.union_id,
-            sender_union_id=sender_info.union_id,
+            target_union_id=target_union_info.union_id,
+            sender_union_id=sender_union_info.union_id,
             action="kick",
             detail="",
         )
         Logger.info("Unfriendly action detected: kick")
-        if not sender_info.superuser:
+        if not sender_union_info.superuser:
             Logger.info(f"Ban {sender_id} ({target_id}) by ToS: kick")
             Logger.info(f"Block {target_id} by ToS: kick")
             reason = Locale(default_locale).t("tos.message.reason.kick")
             await tos_report(sender_id, target_id, reason, banned=True)
-            await target_info.edit_attr("blocked", True)
-            await sender_info.switch_identity(trust=False)
+            await target_union_info.edit_attr("blocked", True)
+            await sender_union_info.switch_identity(trust=False)
             await aiocqhttp_bot.call_action("delete_friend", friend_id=event.operator_id)
 
 
@@ -303,8 +303,8 @@ async def _(event: Event):
 async def _(event: Event):
     if enable_tos:
         target_id = f"{target_group_prefix}|{event.group_id}"
-        target_info = await TargetInfo.get_by_target_id(target_id, create=False)
-        if target_info and target_info.blocked:
+        target_union_info = await TargetUnionInfo.get_by_target_id(target_id, create=False)
+        if target_union_info and target_union_info.blocked:
             res = Locale(default_locale).t("tos.message.in_group_blocklist")
             if issue_url := CoreConfig.issue_url:
                 res += "\n" + Locale(default_locale).t("tos.message.appeal", issue_url=issue_url)

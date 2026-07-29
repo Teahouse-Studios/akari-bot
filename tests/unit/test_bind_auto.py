@@ -6,7 +6,7 @@ import re
 from core.builtins.message.chain import MessageChain
 from core.builtins.session.info import SessionInfo
 from core.constants.exceptions import SessionFinished
-from core.database.models import TargetInfo, TargetUnionBind
+from core.database.models import TargetUnionInfo, TargetUnionBind
 from core.tester import func_case, Tester
 from core.tester.mock.parser import parser
 from core.tester.mock.session import MockMessageSession
@@ -97,7 +97,9 @@ async def _orphan_unions() -> int:
     统计没有任何会话指向的场景组。重复合并会遗留此类孤儿组，写入其中的数据将无法被读取。
     """
     bound = set(await TargetUnionBind.all().values_list("union_id", flat=True))
-    return sum(1 for union_id in await TargetInfo.all().values_list("union_id", flat=True) if union_id not in bound)
+    return sum(
+        1 for union_id in await TargetUnionInfo.all().values_list("union_id", flat=True) if union_id not in bound
+    )
 
 
 async def _test_only_one_round_survives():
@@ -120,8 +122,8 @@ async def _test_concurrent_completion_merges_once():
     """测试 bind auto - 两轮握手同时闭合时仅合并一次"""
     try:
         a, b = "RACE1|Group|1", "RACE2|Group|1"
-        await TargetInfo.resolve_union(a)
-        await TargetInfo.resolve_union(b)
+        await TargetUnionInfo.resolve_union(a)
+        await TargetUnionInfo.resolve_union(b)
         before = await _orphan_unions()
 
         # 绕过让位机制直接构造两轮，模拟让位未生效（如某一平台的 probe 投递延迟）的最坏情况。
@@ -137,8 +139,8 @@ async def _test_concurrent_completion_merges_once():
             )
         await asyncio.gather(*(_complete_channel_handshake(entry) for entry in rounds))
 
-        target_a = await TargetInfo.resolve_union(a)
-        target_b = await TargetInfo.resolve_union(b)
+        target_a = await TargetUnionInfo.resolve_union(a)
+        target_b = await TargetUnionInfo.resolve_union(b)
         if target_a.union_id != target_b.union_id:
             return False
         # 若各建一个新组，后建的那个组不会有任何会话指向它。
@@ -158,7 +160,7 @@ async def _test_concurrent_auto_records_bots_id():
 
         # 重复合并会将互认记录写入没有任何会话指向的孤儿组，等同于未写入。
         # 双方各记录一条对方的账号，按各自平台的命名空间存放。
-        target = await TargetInfo.resolve_union(a)
+        target = await TargetUnionInfo.resolve_union(a)
         bots_id = target.list_peer_bots(a) + target.list_peer_bots(b)
         return sorted(bots_id) == ["BOTSIDA|peer_bot", "BOTSIDB|peer_bot"]
 
@@ -170,7 +172,7 @@ async def _test_unbind_forgets_peer_bots():
     """测试 bind auto - 解绑后互认记录被清除，可重新建立关联"""
     try:
         a, b = await _handshake("FORGET")
-        target = await TargetInfo.resolve_union(a)
+        target = await TargetUnionInfo.resolve_union(a)
         if not target.list_peer_bots(a):
             return False
 
@@ -178,8 +180,8 @@ async def _test_unbind_forgets_peer_bots():
 
         # parser 即依据这份名单屏蔽对端机器人。保留的一侧若仍记录着对方，
         # 重新配对所用的 probe / confirm 会被直接丢弃，握手无法闭合，双方也就无法重新建立关联。
-        stayed = await TargetInfo.resolve_union(a)
-        left = await TargetInfo.resolve_union(b)
+        stayed = await TargetUnionInfo.resolve_union(a)
+        left = await TargetUnionInfo.resolve_union(b)
         return not stayed.list_peer_bots(a) and not left.list_peer_bots(b)
 
     except Exception:
@@ -194,13 +196,13 @@ async def _test_rebind_after_unbind():
     """
     try:
         a, b = await _handshake("REBIND")
-        target = await TargetInfo.resolve_union(a)
+        target = await TargetUnionInfo.resolve_union(a)
         await target.unbind_id(b)
 
         await _handshake("REBIND")
 
-        rebound_a = await TargetInfo.resolve_union(a)
-        rebound_b = await TargetInfo.resolve_union(b)
+        rebound_a = await TargetUnionInfo.resolve_union(a)
+        rebound_b = await TargetUnionInfo.resolve_union(b)
         if rebound_a.union_id != rebound_b.union_id:
             return False
         return sorted(rebound_a.list_peer_bots(a) + rebound_a.list_peer_bots(b)) == [
@@ -216,7 +218,7 @@ async def _test_peer_bots_scoped_per_target():
     """测试 bind auto - 互认记录按观察方分开存放，各自只读取本方的记录"""
     try:
         a, b = await _handshake("SCOPE")
-        target = await TargetInfo.resolve_union(a)
+        target = await TargetUnionInfo.resolve_union(a)
 
         # 账号按观察方所在平台的命名空间记录，若混在一个扁平列表中将无法区分归属。
         return target.list_peer_bots(a) == ["SCOPEA|peer_bot"] and target.list_peer_bots(b) == ["SCOPEB|peer_bot"]
@@ -229,14 +231,14 @@ async def _test_second_handshake_is_noop():
     """测试 bind auto - 已处于同组同通道时重复执行不会再次合并"""
     try:
         a, b = await _handshake("REPEAT")
-        before = await TargetInfo.resolve_union(a)
+        before = await TargetUnionInfo.resolve_union(a)
 
         await _handshake("REPEAT")
 
-        after = await TargetInfo.resolve_union(a)
+        after = await TargetUnionInfo.resolve_union(a)
         if after.union_id != before.union_id:
             return False
-        return (await TargetInfo.resolve_union(b)).union_id == after.union_id
+        return (await TargetUnionInfo.resolve_union(b)).union_id == after.union_id
 
     except Exception:
         return False

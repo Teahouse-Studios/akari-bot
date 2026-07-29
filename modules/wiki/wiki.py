@@ -477,7 +477,7 @@ async def query_pages(
                     wait_plain_slice = MessageChain.create()
                     if display_title and display_before_title:
                         if isinstance(session, Bot.MessageSession) and session.session_info.support_wait:
-                            if not session.session_info.target_info.target_data.get("wiki_redlink", False):
+                            if not session.session_info.target_union_info.target_data.get("wiki_redlink", False):
                                 if len(r.possible_research_title) > 1:
                                     wait_plain_slice.append(
                                         I18NContext(

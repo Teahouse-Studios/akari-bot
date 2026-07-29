@@ -3,17 +3,21 @@
 from types import SimpleNamespace
 
 from core.builtins.parser.message import CHANNEL_DEDUP_WINDOW, _claim_channel_message, channel_claim_cache
-from core.database.models import TargetInfo, TargetUnionBind
+from core.database.models import TargetUnionInfo, TargetUnionBind
 from core.tester import func_case, Tester
 
 
 async def _fake_msg(target_id: str, trigger: str):
     """
-    构造一个满足 _claim_channel_message 所需的最小会话：该函数仅读取场景绑定与命令文本。
+    构造一个满足 _claim_channel_message 所需的最小会话：该函数仅读取场景组、通道号与命令文本。
     """
-    target_info = await TargetInfo.resolve_union(target_id)
+    target_union_info = await TargetUnionInfo.resolve_union(target_id)
     return SimpleNamespace(
-        session_info=SimpleNamespace(target_id=target_id, target_info=target_info),
+        session_info=SimpleNamespace(
+            target_id=target_id,
+            target_union_id=target_union_info.union_id,
+            target_channel_id=target_union_info.bind.channel_id,
+        ),
         trigger_msg=trigger,
     )
 
@@ -32,7 +36,7 @@ async def _test_alone_in_channel_never_claims():
 async def _test_same_channel_claims_once():
     """测试消息通道 - 同通道内由先到者认领，后到者避让"""
     try:
-        union = await TargetInfo.resolve_union("CHANTEST|Group|dup1")
+        union = await TargetUnionInfo.resolve_union("CHANTEST|Group|dup1")
         await union.bind_id("CHANTEST|Group|dup2")
         await TargetUnionBind.filter(union_id=union.union_id).update(channel_id=1)
 
@@ -48,7 +52,7 @@ async def _test_same_channel_claims_once():
 async def _test_outside_window_not_duplicate():
     """测试消息通道 - 超出时间窗的相同文本不判定为重复"""
     try:
-        union = await TargetInfo.resolve_union("CHANTEST|Group|win1")
+        union = await TargetUnionInfo.resolve_union("CHANTEST|Group|win1")
         await union.bind_id("CHANTEST|Group|win2")
         await TargetUnionBind.filter(union_id=union.union_id).update(channel_id=1)
 
@@ -72,7 +76,7 @@ async def _test_outside_window_not_duplicate():
 async def _test_different_channel_not_duplicate():
     """测试消息通道 - 同组但不同通道互不干扰"""
     try:
-        union = await TargetInfo.resolve_union("CHANTEST|Group|sep1")
+        union = await TargetUnionInfo.resolve_union("CHANTEST|Group|sep1")
         await union.bind_id("CHANTEST|Group|sep2")
 
         first = await _fake_msg("CHANTEST|Group|sep1", "version")

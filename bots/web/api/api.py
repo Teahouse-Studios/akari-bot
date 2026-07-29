@@ -15,7 +15,7 @@ from bots.web.config import WebConfig
 from core.config.base import BaseConfig, CoreConfig
 from core.constants import config_filename
 from core.constants.path import config_path
-from core.database.models import AnalyticsData, SenderInfo, SenderUnionBind, TargetInfo, TargetUnionBind
+from core.database.models import AnalyticsData, SenderUnionInfo, SenderUnionBind, TargetUnionInfo, TargetUnionBind
 from core.logger import Logger
 from core.queue.client import JobQueueClient
 from .auth import verify_jwt
@@ -76,7 +76,7 @@ def pick_display_id(union_id: str, bound_ids: list[str], prefix: str | None = No
     return bound_ids[0] if bound_ids else union_id
 
 
-def dump_target(target: TargetInfo, bound_ids: list[str], display_id: str) -> dict:
+def dump_target(target: TargetUnionInfo, bound_ids: list[str], display_id: str) -> dict:
     """
     序列化场景信息。``target_id`` 保持向后兼容，另附 union ID 与全部已绑定的平台 ID。
     """
@@ -94,7 +94,7 @@ def dump_target(target: TargetInfo, bound_ids: list[str], display_id: str) -> di
     }
 
 
-def dump_sender(sender: SenderInfo, bound_ids: list[str], display_id: str) -> dict:
+def dump_sender(sender: SenderUnionInfo, bound_ids: list[str], display_id: str) -> dict:
     """
     序列化用户信息。``sender_id`` 保持向后兼容，另附 union ID 与全部已绑定的平台 ID。
     """
@@ -280,7 +280,7 @@ async def get_target_list(
     try:
         verify_jwt(request)
 
-        query = TargetInfo.all()
+        query = TargetUnionInfo.all()
         filters = Q()
         if status == "muted":
             filters &= Q(muted=True)
@@ -314,11 +314,11 @@ async def get_target_list(
 async def get_target_info(request: Request, target_id: str):
     try:
         verify_jwt(request)
-        target_info = await TargetInfo.get_by_target_id(target_id, create=False)
-        if not target_info:
+        target_union_info = await TargetUnionInfo.get_by_target_id(target_id, create=False)
+        if not target_union_info:
             raise HTTPException(status_code=404, detail="Not found")
-        bound_ids = await target_info.list_bound_ids()
-        return {"target_info": dump_target(target_info, bound_ids, target_id)}
+        bound_ids = await target_union_info.list_bound_ids()
+        return {"target_info": dump_target(target_union_info, bound_ids, target_id)}
     except HTTPException as e:
         raise e
     except Exception:
@@ -332,7 +332,7 @@ async def edit_target_info(request: Request, target_id: str):
     try:
         verify_jwt(request)
 
-        target_info = await TargetInfo.get_by_target_id(target_id)
+        target_union_info = await TargetUnionInfo.get_by_target_id(target_id)
         body = await request.json()
         muted = body.get("muted")
         locale = body.get("locale")
@@ -358,22 +358,21 @@ async def edit_target_info(request: Request, target_id: str):
             raise HTTPException(status_code=400, detail='"target_data" must be dict')
 
         if muted is not None:
-            target_info.muted = muted
+            target_union_info.muted = muted
         if locale is not None:
-            target_info.locale = locale
+            target_union_info.locale = locale
         if modules is not None:
-            target_info.modules = modules
+            target_union_info.modules = modules
         # 权限名单存的是 union ID，控制台可能直接填平台账号 ID，这里统一解析一遍。
         if custom_admins is not None:
-            target_info.custom_admins = await resolve_sender_unions(custom_admins)
+            target_union_info.custom_admins = await resolve_sender_unions(custom_admins)
         if banned_users is not None:
-            target_info.banned_users = await resolve_sender_unions(banned_users)
+            target_union_info.banned_users = await resolve_sender_unions(banned_users)
         if target_data is not None:
-            target_info.target_data = target_data
-        await target_info.save()
+            target_union_info.target_data = target_data
+        await target_union_info.save()
         if blocked is not None:
-            # 解封需要连带清除会话级封禁，因此走 edit_attr() 而非直接赋值。
-            await target_info.edit_attr("blocked", blocked)
+            await target_union_info.edit_attr("blocked", blocked)
 
         Logger.info(f"[WebUI] {ip} has edited the session data: {target_id}")
         return Response(status_code=204)
@@ -390,11 +389,11 @@ async def delete_target_info(request: Request, target_id: str):
     try:
         verify_jwt(request)
 
-        target_info = await TargetInfo.get_by_target_id(target_id, create=False)
-        if target_info:
+        target_union_info = await TargetUnionInfo.get_by_target_id(target_id, create=False)
+        if target_union_info:
             # 删除 union 的同时清掉其下全部映射，否则残留映射会指向不存在的 union。
-            await TargetUnionBind.filter(union_id=target_info.union_id).delete()
-            await target_info.delete()
+            await TargetUnionBind.filter(union_id=target_union_info.union_id).delete()
+            await target_union_info.delete()
 
         Logger.info(f"[WebUI] {ip} has deleted the session data: {target_id}")
         return Response(status_code=204)
@@ -417,7 +416,7 @@ async def get_sender_list(
     try:
         verify_jwt(request)
 
-        query = SenderInfo.all()
+        query = SenderUnionInfo.all()
         filters = Q()
         if status == "superuser":
             filters &= Q(superuser=True)
@@ -453,11 +452,11 @@ async def get_sender_list(
 async def get_sender_info(request: Request, sender_id: str):
     try:
         verify_jwt(request)
-        sender_info = await SenderInfo.get_by_sender_id(sender_id, create=False)
-        if not sender_info:
+        sender_union_info = await SenderUnionInfo.get_by_sender_id(sender_id, create=False)
+        if not sender_union_info:
             raise HTTPException(status_code=404, detail="Not found")
-        bound_ids = await sender_info.list_bound_ids()
-        return {"sender_info": dump_sender(sender_info, bound_ids, sender_id)}
+        bound_ids = await sender_union_info.list_bound_ids()
+        return {"sender_info": dump_sender(sender_union_info, bound_ids, sender_id)}
     except HTTPException as e:
         raise e
     except Exception:
@@ -471,7 +470,7 @@ async def edit_sender_info(request: Request, sender_id: str):
     try:
         verify_jwt(request)
 
-        sender_info = await SenderInfo.get_by_sender_id(sender_id)
+        sender_union_info = await SenderUnionInfo.get_by_sender_id(sender_id)
         body = await request.json()
         superuser = body.get("superuser")
         trusted = body.get("trusted")
@@ -494,19 +493,18 @@ async def edit_sender_info(request: Request, sender_id: str):
             raise HTTPException(status_code=400, detail='"sender_data" must be dict')
 
         if superuser is not None:
-            sender_info.superuser = superuser
+            sender_union_info.superuser = superuser
         if trusted is not None:
-            sender_info.trusted = trusted
+            sender_union_info.trusted = trusted
         if warns is not None:
-            sender_info.warns = warns
+            sender_union_info.warns = warns
         if petal is not None:
-            sender_info.petal = petal
+            sender_union_info.petal = petal
         if sender_data is not None:
-            sender_info.sender_data = sender_data
-        await sender_info.save()
+            sender_union_info.sender_data = sender_data
+        await sender_union_info.save()
         if blocked is not None:
-            # 解封需要连带清除账号级封禁，因此走 edit_attr() 而非直接赋值。
-            await sender_info.edit_attr("blocked", blocked)
+            await sender_union_info.edit_attr("blocked", blocked)
 
         Logger.info(f"[WebUI] {ip} has edited the user data: {sender_id}")
         return Response(status_code=204)
@@ -523,11 +521,11 @@ async def delete_sender_info(request: Request, sender_id: str):
     try:
         verify_jwt(request)
 
-        sender_info = await SenderInfo.get_by_sender_id(sender_id, create=False)
-        if sender_info:
+        sender_union_info = await SenderUnionInfo.get_by_sender_id(sender_id, create=False)
+        if sender_union_info:
             # 删除 union 的同时清掉其下全部映射，否则残留映射会指向不存在的 union。
-            await SenderUnionBind.filter(union_id=sender_info.union_id).delete()
-            await sender_info.delete()
+            await SenderUnionBind.filter(union_id=sender_union_info.union_id).delete()
+            await sender_union_info.delete()
         Logger.info(f"[WebUI] {ip} has deleted the user data: {sender_id}")
         return Response(status_code=204)
     except HTTPException as e:

@@ -896,7 +896,9 @@ class QQBotFetchedContextManager(QQBotContextManager):
         # 因此入队的是「任务 + future」，待实际发送完成后再回传结果。
         future = asyncio.get_running_loop().create_future()
         append_tsk = (
-            _tasks_high_priority if session_info.target_info.target_data.get("in_post_whitelist", False) else _tasks
+            _tasks_high_priority
+            if session_info.target_union_info.target_data.get("in_post_whitelist", False)
+            else _tasks
         )
         append_tsk.append((future, session_info, message, quote, enable_parse_message, _ignore_retries))
         return await future

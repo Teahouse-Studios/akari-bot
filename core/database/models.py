@@ -4,14 +4,14 @@ import uuid
 from collections import Counter
 from datetime import datetime, UTC, timedelta
 from decimal import Decimal
-from typing import Any
+from typing import Any, Self
 
 from tortoise import fields
 from tortoise.transactions import in_transaction
 
 from core.constants.default import default_locale
 from core.utils.func import convert_list
-from .base import DBModel
+from .base import DBModel, extract_session_id
 from ..logger import Logger
 
 
@@ -50,12 +50,13 @@ def iter_union_models(scope: str | None = None) -> list[type]:
 
     统计与审计表使用 ``sender_union_id`` / ``target_union_id``，不会被纳入，因此合并 union 时不会篡改历史记录。
 
-    :param scope: 限定 union 域（``sender`` / ``target``）。模块表以类属性 ``union_scope`` 声明自身所属域，
-                  未声明的表在两个域中都会被处理，以免合并后残留无人认领的数据。
+    :param scope: 限定 union 域（``sender`` / ``target``）。模块表**必须**以类属性 ``union_scope`` 声明自身所属域，
+                  未声明者一律跳过并告警：无从判断表里存的是账号数据还是场景数据，
+                  两个域都处理会把用户绑定与会话配置互相搬走，比漏迁一张表更难修复。
     """
     from tortoise import Tortoise
 
-    core_models = {SenderInfo, TargetInfo, SenderUnionBind, TargetUnionBind}
+    core_models = {SenderUnionInfo, TargetUnionInfo, SenderUnionBind, TargetUnionBind}
     result = []
     for app in Tortoise.apps.values():
         for model in app.values():
@@ -64,7 +65,14 @@ def iter_union_models(scope: str | None = None) -> list[type]:
             if "union_id" not in getattr(model._meta, "fields_map", {}):
                 continue
             model_scope = getattr(model, "union_scope", None)
-            if scope and model_scope and model_scope != scope:
+            if not model_scope:
+                Logger.warning(
+                    f"Table {get_table_name(model)} is keyed by union_id but declares no union_scope, "
+                    "so it is excluded from union merge and backfill. "
+                    "Declare union_scope = UNION_SCOPE_SENDER or UNION_SCOPE_TARGET on the model."
+                )
+                continue
+            if scope and model_scope != scope:
                 continue
             result.append(model)
     return result
@@ -152,7 +160,7 @@ async def rewrite_sender_union_refs(from_union: str, to_union: str) -> None:
     ``custom_admins`` / ``banned_users`` 存的是用户 union ID，合并后若不改写，
     管理员身份将会丢失，限制名单也可通过换绑绕过。
     """
-    for target in await TargetInfo.all():
+    for target in await TargetUnionInfo.all():
         changed = False
         for field in ("custom_admins", "banned_users"):
             value = getattr(target, field) or []
@@ -167,7 +175,7 @@ async def inherit_banned_union_refs(from_union: str, to_union: str) -> None:
     """
     使新拆出的用户 union 继承原 union 的会话限制名单，避免通过解绑规避封禁。
     """
-    for target in await TargetInfo.all():
+    for target in await TargetUnionInfo.all():
         banned_users = target.banned_users or []
         if from_union in banned_users and to_union not in banned_users:
             target.banned_users = banned_users + [to_union]
@@ -182,20 +190,17 @@ async def backfill_union_binds() -> None:
     直接当作平台 ID 建立映射。模块表可能引用核心表里没有的 ID（旧版本的模块绑定不会顺带建用户行），
     这些 ID 同样要补上映射，否则下次解析会另建一个空 union，模块绑定就此悬空。
     """
-    for info_model, bind_model, id_field, scope in (
-        (SenderInfo, SenderUnionBind, "sender_id", UNION_SCOPE_SENDER),
-        (TargetInfo, TargetUnionBind, "target_id", UNION_SCOPE_TARGET),
-    ):
+    for info_model in (SenderUnionInfo, TargetUnionInfo):
+        bind_model = info_model.bind_model
         union_ids = set(await info_model.all().values_list("union_id", flat=True))
-        for model in iter_union_models(scope):
-            # 仅采纳明确声明了所属域的模块表，避免把场景 ID 误当作用户 ID 建行。
-            if getattr(model, "union_scope", None) != scope:
-                continue
+        # iter_union_models 已按 union_scope 过滤，此处取到的必然是同域的表，
+        # 不会把场景 ID 误当作用户 ID 建行。
+        for model in iter_union_models(info_model.union_scope):
             union_ids |= set(await model.all().values_list("union_id", flat=True))
 
-        missing = union_ids - set(await bind_model.all().values_list(id_field, flat=True))
+        missing = union_ids - set(await bind_model.all().values_list(bind_model.id_field, flat=True))
         if missing:
-            await bind_model.bulk_create([bind_model(**{id_field: i, "union_id": i}) for i in missing])
+            await bind_model.bulk_create([bind_model(**{bind_model.id_field: i, "union_id": i}) for i in missing])
 
 
 def normalize_peer_bots(value: Any) -> dict[str, dict[str, str]]:
@@ -217,56 +222,92 @@ def normalize_peer_bots(value: Any) -> dict[str, dict[str, str]]:
     }
 
 
-def attach_bind(union: Any, bind: Any) -> Any:
+class UnionBind(DBModel):
     """
-    将映射行挂到 union 实例上，并把账号级封禁合成到 union 的 ``blocked`` 上。
+    平台 ID 与 union 的映射关系基类。
 
-    合成结果只存在于内存中，用于实现「union 下任一账号被封则整体视为封禁」。
+    子类须自行定义作为主键的平台 ID 列，并以类属性 :attr:`id_field` 指明该列的列名。
+
+    此表只回答「这个平台 ID 属于哪个 union」，不承载任何状态。封禁一类的判定一律挂在
+    :class:`UnionInfo` 上：union 表示同一个人（或同一个现实会话）的多个身份，
+    状态若下放到单个 ID，换用组内另一个 ID 即可绕过。
+
+    :param union_id: 所属 union ID。
+    :param bound_at: 绑定时间。
     """
-    union._bind = bind
-    if bind.blocked:
-        union.blocked = True
-    return union
+
+    # 子类中作为主键的平台 ID 列名，供按域泛化的查询与补建逻辑使用
+    id_field: str
+
+    union_id = fields.CharField(max_length=512, db_index=True)
+    bound_at = fields.DatetimeField(auto_now_add=True)
+
+    class Meta:
+        abstract = True
+
+    @classmethod
+    async def list_ids(cls, union_id: str | list[str] | tuple[str, ...]) -> list[str]:
+        """
+        将 union ID 展开为其下绑定的全部平台 ID。
+
+        :param union_id: 单个或多个 union ID。
+        """
+        return list(await cls.filter(union_id__in=convert_list(union_id)).values_list(cls.id_field, flat=True))
 
 
-class SenderUnionBind(DBModel):
+class SenderUnionBind(UnionBind):
     """
     用户 ID 与 union 的映射关系。
 
     :param sender_id: 用户 ID（平台账号）。
-    :param union_id: 所属 union ID。
-    :param blocked: 该账号是否被单独封禁。
-    :param bound_at: 绑定时间。
     """
 
+    id_field = "sender_id"
+
     sender_id = fields.CharField(max_length=512, primary_key=True)
-    union_id = fields.CharField(max_length=512, db_index=True)
-    blocked = fields.BooleanField(default=False)
-    bound_at = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
         table = "sender_union_bind"
 
 
-class TargetUnionBind(DBModel):
+class TargetUnionBind(UnionBind):
     """
     场景 ID 与 union 的映射关系。
 
     :param target_id: 场景 ID（平台会话）。
-    :param union_id: 所属 union ID。
     :param channel_id: 所属消息通道号，同组内同号的会话被视为同一个现实会话。
-    :param blocked: 该场景是否被单独封禁。
-    :param bound_at: 绑定时间。
     """
 
+    id_field = "target_id"
+
     target_id = fields.CharField(max_length=512, primary_key=True)
-    union_id = fields.CharField(max_length=512, db_index=True)
     channel_id = fields.IntField(default=1)
-    blocked = fields.BooleanField(default=False)
-    bound_at = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
         table = "target_union_bind"
+
+    @classmethod
+    async def next_channel_id(cls, union_id: str) -> int:
+        """
+        取该 union 下一个可用的消息通道号。
+
+        通道号仅在组内有意义（消息去重只发生在组内），因此组内自 1 起顺次递增即可。
+        默认每个会话各占一号，即默认互不视为同一条消息通道。
+
+        :param union_id: 场景 union ID。
+        """
+        channels = await cls.filter(union_id=union_id).values_list("channel_id", flat=True)
+        return max(channels) + 1 if channels else 1
+
+    @classmethod
+    async def list_channels(cls, union_id: str) -> dict[str, int]:
+        """
+        取该 union 下「平台会话 ID → 消息通道号」的映射。
+
+        :param union_id: 场景 union ID。
+        """
+        binds = await cls.filter(union_id=union_id).values_list("target_id", "channel_id")
+        return {target_id: channel_id for target_id, channel_id in binds}
 
 
 def new_union_id(scope: str) -> str:
@@ -278,11 +319,104 @@ def new_union_id(scope: str) -> str:
     return f"{UNION_ID_PREFIXES[scope]}|{uuid.uuid4().hex.upper()}"
 
 
-class SenderInfo(DBModel):
+class UnionInfo(DBModel):
+    """
+    以 union ID 为主键的核心信息表基类。
+
+    数据挂载在 union 上而非平台 ID 上，多个平台 ID 可通过对应的 :class:`UnionBind` 子表绑定到同一 union 以共享数据。
+
+    子类须声明所属域 :attr:`union_scope` 与配套的映射表 :attr:`bind_model`。
+    """
+
+    # 所属 union 域（``sender`` / ``target``）
+    union_scope: str
+    # 配套的 ID 映射表
+    bind_model: type[UnionBind]
+
+    # 由 resolve_union() 挂上的映射行，非数据库字段。
+    # 未经解析直接查询（如 all() / filter()）得到的实例上为 None。
+    bind: UnionBind | None = None
+
+    union_id = fields.CharField(max_length=512, primary_key=True)
+    # 封禁状态只此一处。union 下的全部平台 ID 共享此行，因而封禁天然对组内所有 ID 生效，
+    # 不需要再往映射行上放一份标记——那反而会引出「组封了但某 ID 没封」这类无法自洽的状态。
+    blocked = fields.BooleanField(default=False)
+
+    class Meta:
+        abstract = True
+
+    @classmethod
+    async def resolve_union(cls, platform_id: str, create: bool = True) -> Self | None:
+        """
+        将平台 ID 解析为其所属的 union 信息，并把映射行挂到 :attr:`bind` 上。
+
+        这是 union 的唯一解析入口；:meth:`DBModel.get_by_target_id` 等按会话取行的方法内部同样走这里。
+
+        只有从未出现过的平台 ID 才会被分配新 union；已有映射行的 ID 永远解析回原组，
+        因此被封禁的 ID 无法借由重新解析脱离封禁。
+
+        :param platform_id: 平台账号 ID 或平台会话 ID。
+        :param create: 若尚未绑定任何 union，是否新建。
+        :return: union 信息，若 create 为 False 且不存在则返回 None。
+        """
+        bind_model = cls.bind_model
+        bind = await bind_model.get_or_none(**{bind_model.id_field: platform_id})
+        if not bind:
+            # 自愈：允许存在 union_id 与平台 ID 相同、但缺少映射行的历史数据。
+            exist = await cls.get_or_none(union_id=platform_id)
+            if exist:
+                bind = await bind_model.create(**{bind_model.id_field: platform_id}, union_id=platform_id)
+            elif create:
+                bind = await bind_model.create(
+                    **{bind_model.id_field: platform_id}, union_id=new_union_id(cls.union_scope)
+                )
+            else:
+                return None
+
+        union = await cls.get_or_none(union_id=bind.union_id)
+        if not union:
+            if not create:
+                return None
+            union = await cls.create(union_id=bind.union_id)
+
+        union.bind = bind
+        return union
+
+    async def list_bound_ids(self) -> list[str]:
+        """
+        获取该 union 下已绑定的全部平台 ID。
+        """
+        return await self.bind_model.list_ids(self.union_id)
+
+    @classmethod
+    async def _resolve_session(cls, value: Any, create: bool = True) -> Self | None:
+        """
+        从平台 ID 字符串或会话对象解析出 union 信息，供按会话取行的入口复用。
+
+        :param value: 平台 ID，或 MessageSession / FetchedMessageSession 实例。
+        :param create: 若尚未绑定任何 union，是否新建。
+        """
+        id_field = cls.bind_model.id_field
+        platform_id = extract_session_id(value, id_field)
+        if not platform_id:
+            raise ValueError(
+                f"{id_field} must be a str or a MessageSession/FetchedMessageSession instance, "
+                "or exports are unavailable."
+            )
+        return await cls.resolve_union(platform_id, create)
+
+    async def edit_attr(self, key: str, value: Any) -> bool:
+        setattr(self, key, value)
+        await self.save()
+        return True
+
+
+class SenderUnionInfo(UnionInfo):
     """
     用户信息。
 
     数据挂载在 union 上而非平台账号上，多个平台账号可通过 :class:`SenderUnionBind` 绑定到同一 union 以共享数据。
+    平台账号 ID 与 union 的解析见 :meth:`UnionInfo.resolve_union`。
 
     :param union_id: 用户 union ID。
     :param blocked: 是否为黑名单用户。
@@ -293,8 +427,9 @@ class SenderInfo(DBModel):
     :param sender_data: 用户数据。
     """
 
-    union_id = fields.CharField(max_length=512, primary_key=True)
-    blocked = fields.BooleanField(default=False)
+    union_scope = UNION_SCOPE_SENDER
+    bind_model = SenderUnionBind
+
     trusted = fields.BooleanField(default=False)
     superuser = fields.BooleanField(default=False)
     warns = fields.IntField(default=0)
@@ -302,52 +437,15 @@ class SenderInfo(DBModel):
     sender_data = fields.JSONField(default={})
 
     class Meta:
-        table = "sender_info"
+        table = "sender_union_info"
 
     @classmethod
-    async def resolve_union(cls, sender_id: str, create: bool = True) -> "SenderInfo | None":
+    async def get_by_sender_id(cls, sender_id: Any, create: bool = True) -> "SenderUnionInfo | None":
         """
-        将平台账号 ID 解析为其所属的 union 信息。
-
-        :param sender_id: 平台账号 ID。
-        :param create: 若尚未绑定任何 union，是否新建。
-        :return: union 信息，若 create 为 False 且不存在则返回 None。
+        取平台账号所属的 union 行，是 :meth:`UnionInfo.resolve_union` 的会话友好包装：
+        额外接受 MessageSession / FetchedMessageSession，从中取出 ``sender_id``。
         """
-        bind = await SenderUnionBind.get_or_none(sender_id=sender_id)
-        if not bind:
-            # 自愈：允许存在 union_id 与 sender_id 相同、但缺少映射行的历史数据。
-            exist = await cls.get_or_none(union_id=sender_id)
-            if exist:
-                bind = await SenderUnionBind.create(sender_id=sender_id, union_id=sender_id, blocked=exist.blocked)
-            elif create:
-                bind = await SenderUnionBind.create(sender_id=sender_id, union_id=new_union_id(UNION_SCOPE_SENDER))
-            else:
-                return None
-
-        union = await cls.get_or_none(union_id=bind.union_id)
-        if not union:
-            if not create:
-                return None
-            union = await cls.create(union_id=bind.union_id)
-
-        return attach_bind(union, bind)
-
-    async def list_bound_ids(self) -> list[str]:
-        """
-        获取该 union 下已绑定的全部平台账号 ID。
-        """
-        return await self.list_ids_by_union(self.union_id)
-
-    @staticmethod
-    async def list_ids_by_union(union_id: str | list[str] | tuple[str, ...]) -> list[str]:
-        """
-        将 union ID 展开为其下绑定的全部平台账号 ID。
-
-        :param union_id: 单个或多个 union ID。
-        """
-        return list(
-            await SenderUnionBind.filter(union_id__in=convert_list(union_id)).values_list("sender_id", flat=True)
-        )
+        return await cls._resolve_session(sender_id, create)
 
     async def switch_identity(self, trust: bool, enable: bool = True) -> bool:
         """
@@ -364,11 +462,6 @@ class SenderInfo(DBModel):
             self.blocked = False
 
         await self.save()
-        if not self.blocked:
-            # 解封时同时清除账号级封禁，否则下次解析仍会被合成为封禁状态。
-            await SenderUnionBind.filter(union_id=self.union_id).update(blocked=False)
-            if bind := getattr(self, "_bind", None):
-                bind.blocked = False
         return True
 
     async def warn_user(self, amount: int = 1) -> bool:
@@ -415,16 +508,6 @@ class SenderInfo(DBModel):
         await self.save()
         return True
 
-    async def edit_attr(self, key: str, value: Any) -> bool:
-        setattr(self, key, value)
-        await self.save()
-        if key == "blocked" and not value:
-            # 解封时同时清除账号级封禁，否则下次解析仍会被合成为封禁状态。
-            await SenderUnionBind.filter(union_id=self.union_id).update(blocked=False)
-            if bind := getattr(self, "_bind", None):
-                bind.blocked = False
-        return True
-
     async def bind_id(self, sender_id: str) -> bool:
         """
         将一个平台账号绑定到该 union。
@@ -438,7 +521,7 @@ class SenderInfo(DBModel):
         await SenderUnionBind.create(sender_id=sender_id, union_id=self.union_id)
         return True
 
-    async def unbind_id(self, sender_id: str) -> "SenderInfo | None":
+    async def unbind_id(self, sender_id: str) -> "SenderUnionInfo | None":
         """
         将一个平台账号从该 union 中拆出，数据留在原 union，该账号从零开始。
 
@@ -450,15 +533,19 @@ class SenderInfo(DBModel):
         binds = await self.list_bound_ids()
         if sender_id not in binds or len(binds) <= 1:
             return None
-        bind = await SenderUnionBind.get_or_none(sender_id=sender_id)
-        blocked = self.blocked or (bind.blocked if bind else False)
-        await SenderUnionBind.filter(sender_id=sender_id).delete()
-        union = await SenderInfo.create(union_id=new_union_id(UNION_SCOPE_SENDER), blocked=blocked, warns=self.warns)
-        await SenderUnionBind.create(sender_id=sender_id, union_id=union.union_id, blocked=blocked)
+        union = await SenderUnionInfo.create(
+            union_id=new_union_id(UNION_SCOPE_SENDER), blocked=self.blocked, warns=self.warns
+        )
+        # 先建新组再改挂映射行，全程不出现「该账号没有映射行」的中间态：
+        # 该状态下若中断，下次解析会把这个账号当作从未见过的新账号，另建一个干净的 union，
+        # 封禁与警告次数就此清零。union_id 不是主键，单条 UPDATE 即可改挂。
+        await SenderUnionBind.filter(sender_id=sender_id).update(union_id=union.union_id)
         await inherit_banned_union_refs(self.union_id, union.union_id)
         return union
 
-    async def merge_union(self, other: "SenderInfo", keep_other_tables: set[str] | None = None) -> "SenderInfo | None":
+    async def merge_union(
+        self, other: "SenderUnionInfo", keep_other_tables: set[str] | None = None
+    ) -> "SenderUnionInfo | None":
         """
         把两个 union 合并成一个全新的 union，随后删除原有的两个。
 
@@ -471,7 +558,7 @@ class SenderInfo(DBModel):
         if other.union_id == self.union_id:
             return None
 
-        merged = await SenderInfo.create(
+        merged = await SenderUnionInfo.create(
             union_id=new_union_id(UNION_SCOPE_SENDER),
             blocked=self.blocked or other.blocked,
             trusted=self.trusted or other.trusted,
@@ -494,11 +581,12 @@ class SenderInfo(DBModel):
         return merged
 
 
-class TargetInfo(DBModel):
+class TargetUnionInfo(UnionInfo):
     """
     场景信息。
 
     数据挂载在 union 上而非平台会话上，多个平台会话可通过 :class:`TargetUnionBind` 绑定到同一 union 以共享数据。
+    平台会话 ID 与 union 的解析见 :meth:`UnionInfo.resolve_union`。
 
     :param union_id: 场景 union ID。
     :param blocked: 是否为黑名单会话。
@@ -510,8 +598,9 @@ class TargetInfo(DBModel):
     :param target_data: 会话数据。
     """
 
-    union_id = fields.CharField(max_length=512, primary_key=True)
-    blocked = fields.BooleanField(default=False)
+    union_scope = UNION_SCOPE_TARGET
+    bind_model = TargetUnionBind
+
     muted = fields.BooleanField(default=False)
     locale = fields.CharField(max_length=32, default=default_locale)
     modules = fields.JSONField(default=[])
@@ -520,52 +609,15 @@ class TargetInfo(DBModel):
     target_data = fields.JSONField(default={})
 
     class Meta:
-        table = "target_info"
+        table = "target_union_info"
 
     @classmethod
-    async def resolve_union(cls, target_id: str, create: bool = True) -> "TargetInfo | None":
+    async def get_by_target_id(cls, target_id: Any, create: bool = True) -> "TargetUnionInfo | None":
         """
-        将平台会话 ID 解析为其所属的 union 信息。
-
-        :param target_id: 平台会话 ID。
-        :param create: 若尚未绑定任何 union，是否新建。
-        :return: union 信息，若 create 为 False 且不存在则返回 None。
+        取平台会话所属的 union 行，是 :meth:`UnionInfo.resolve_union` 的会话友好包装：
+        额外接受 MessageSession / FetchedMessageSession，从中取出 ``target_id``。
         """
-        bind = await TargetUnionBind.get_or_none(target_id=target_id)
-        if not bind:
-            # 自愈：允许存在 union_id 与 target_id 相同、但缺少映射行的历史数据。
-            exist = await cls.get_or_none(union_id=target_id)
-            if exist:
-                bind = await TargetUnionBind.create(target_id=target_id, union_id=target_id, blocked=exist.blocked)
-            elif create:
-                bind = await TargetUnionBind.create(target_id=target_id, union_id=new_union_id(UNION_SCOPE_TARGET))
-            else:
-                return None
-
-        union = await cls.get_or_none(union_id=bind.union_id)
-        if not union:
-            if not create:
-                return None
-            union = await cls.create(union_id=bind.union_id)
-
-        return attach_bind(union, bind)
-
-    async def list_bound_ids(self) -> list[str]:
-        """
-        获取该 union 下已绑定的全部平台会话 ID。
-        """
-        return await self.list_ids_by_union(self.union_id)
-
-    @staticmethod
-    async def list_ids_by_union(union_id: str | list[str] | tuple[str, ...]) -> list[str]:
-        """
-        将 union ID 展开为其下绑定的全部平台会话 ID。
-
-        :param union_id: 单个或多个 union ID。
-        """
-        return list(
-            await TargetUnionBind.filter(union_id__in=convert_list(union_id)).values_list("target_id", flat=True)
-        )
+        return await cls._resolve_session(target_id, create)
 
     def list_peer_bots(self, target_id: str) -> list[str]:
         """
@@ -601,29 +653,6 @@ class TargetInfo(DBModel):
             entries.pop(target_id, None)
         await self.edit_target_data("bots_id", {observer: e for observer, e in peers.items() if e})
 
-    @staticmethod
-    async def next_channel_id(union_id: str) -> int:
-        """
-        取该 union 下一个可用的消息通道号。
-
-        通道号仅在组内有意义（消息去重只发生在组内），因此组内自 1 起顺次递增即可。
-        默认每个会话各占一号，即默认互不视为同一条消息通道。
-
-        :param union_id: 场景 union ID。
-        """
-        channels = await TargetUnionBind.filter(union_id=union_id).values_list("channel_id", flat=True)
-        return max(channels) + 1 if channels else 1
-
-    @staticmethod
-    async def list_channels_by_union(union_id: str) -> dict[str, int]:
-        """
-        取该 union 下「平台会话 ID → 消息通道号」的映射。
-
-        :param union_id: 场景 union ID。
-        """
-        binds = await TargetUnionBind.filter(union_id=union_id).values_list("target_id", "channel_id")
-        return {target_id: channel_id for target_id, channel_id in binds}
-
     async def bind_id(self, target_id: str) -> bool:
         """
         将一个平台会话绑定到该 union。
@@ -635,11 +664,13 @@ class TargetInfo(DBModel):
         if bind:
             return bind.union_id == self.union_id
         await TargetUnionBind.create(
-            target_id=target_id, union_id=self.union_id, channel_id=await self.next_channel_id(self.union_id)
+            target_id=target_id,
+            union_id=self.union_id,
+            channel_id=await TargetUnionBind.next_channel_id(self.union_id),
         )
         return True
 
-    async def unbind_id(self, target_id: str) -> "TargetInfo | None":
+    async def unbind_id(self, target_id: str) -> "TargetUnionInfo | None":
         """
         将一个平台会话从该 union 中拆出，数据留在原 union，该会话从零开始。
 
@@ -649,18 +680,22 @@ class TargetInfo(DBModel):
         binds = await self.list_bound_ids()
         if target_id not in binds or len(binds) <= 1:
             return None
-        bind = await TargetUnionBind.get_or_none(target_id=target_id)
-        blocked = self.blocked or (bind.blocked if bind else False)
-        await TargetUnionBind.filter(target_id=target_id).delete()
         # 封禁状态随会话一并转移，避免通过解绑规避处罚。
-        union = await TargetInfo.create(union_id=new_union_id(UNION_SCOPE_TARGET), blocked=blocked, locale=self.locale)
-        await TargetUnionBind.create(target_id=target_id, union_id=union.union_id, blocked=blocked)
+        union = await TargetUnionInfo.create(
+            union_id=new_union_id(UNION_SCOPE_TARGET), blocked=self.blocked, locale=self.locale
+        )
+        # 先建新组再改挂映射行，全程不出现「该会话没有映射行」的中间态：
+        # 该状态下若中断，下次解析会把这个会话当作从未见过的新会话，另建一个干净的 union，
+        # 封禁就此清零。新组内只此一个会话，通道号复位为 1。
+        await TargetUnionBind.filter(target_id=target_id).update(union_id=union.union_id, channel_id=1)
         # 拆出的会话与原组内的机器人不再对应同一个现实会话，互认记录须一并清除。
         # 新组的 target_data 本为空，只需清理保留的一侧。
         await self.forget_peer_bots(target_id)
         return union
 
-    async def merge_union(self, other: "TargetInfo", keep_other_tables: set[str] | None = None) -> "TargetInfo | None":
+    async def merge_union(
+        self, other: "TargetUnionInfo", keep_other_tables: set[str] | None = None
+    ) -> "TargetUnionInfo | None":
         """
         把两个 union 合并成一个全新的 union，随后删除原有的两个。
 
@@ -679,7 +714,7 @@ class TargetInfo(DBModel):
         for observer, entries in normalize_peer_bots(self.target_data.get("bots_id")).items():
             peer_bots.setdefault(observer, {}).update(entries)
 
-        merged = await TargetInfo.create(
+        merged = await TargetUnionInfo.create(
             union_id=new_union_id(UNION_SCOPE_TARGET),
             blocked=self.blocked or other.blocked,
             muted=self.muted or other.muted,
@@ -702,7 +737,7 @@ class TargetInfo(DBModel):
         moved_channels: dict[int, int] = {}
         for bind in await TargetUnionBind.filter(union_id=other.union_id).order_by("bound_at"):
             if bind.channel_id not in moved_channels:
-                moved_channels[bind.channel_id] = await self.next_channel_id(merged.union_id)
+                moved_channels[bind.channel_id] = await TargetUnionBind.next_channel_id(merged.union_id)
             bind.union_id = merged.union_id
             bind.channel_id = moved_channels[bind.channel_id]
             await bind.save()
@@ -802,7 +837,7 @@ class TargetInfo(DBModel):
     @classmethod
     async def get_target_list_by_module(
         cls, module_name: str | list[str] | tuple[str, ...] | None, id_prefix: str | None = None
-    ) -> list[TargetInfo]:
+    ) -> list[TargetUnionInfo]:
         """
         获取开启此模块的所有场景列表。
 
@@ -847,16 +882,6 @@ class TargetInfo(DBModel):
         if id_prefix:
             query = query.filter(target_id__startswith=id_prefix)
         return list(await query.values_list("target_id", flat=True))
-
-    async def edit_attr(self, key: str, value: Any) -> bool:
-        setattr(self, key, value)
-        await self.save()
-        if key == "blocked" and not value:
-            # 解封时同时清除会话级封禁，否则下次解析仍会被合成为封禁状态。
-            await TargetUnionBind.filter(union_id=self.union_id).update(blocked=False)
-            if bind := getattr(self, "_bind", None):
-                bind.blocked = False
-        return True
 
 
 class StoredData(DBModel):
@@ -1033,9 +1058,9 @@ class UnfriendlyActionRecords(DBModel):
 
         则返回 True。
         """
-        target_info = await TargetInfo.resolve_union(target_id, create=False)
-        if target_info:
-            records = await cls.filter(target_union_id=target_info.union_id, action="mute").all()
+        target_union_info = await TargetUnionInfo.resolve_union(target_id, create=False)
+        if target_union_info:
+            records = await cls.filter(target_union_id=target_union_info.union_id, action="mute").all()
         else:
             records = await cls.filter(target_id=target_id, action="mute").all()
         unfriendly_list = [

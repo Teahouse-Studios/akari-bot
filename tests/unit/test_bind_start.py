@@ -7,7 +7,7 @@ import modules.core.bind as bind
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
 from core.constants.exceptions import SessionFinished
-from core.database.models import SenderInfo, TargetInfo
+from core.database.models import SenderUnionInfo, TargetUnionInfo
 from core.tester import func_case, Tester
 
 
@@ -29,9 +29,9 @@ def _issue_private_code(msg: MessageSession) -> dict:
     """
     code = bind._generate_code(
         bind._sender_bind_codes,
-        msg.session_info.sender_info.union_id,
+        msg.session_info.sender_union_info.union_id,
         msg.session_info.sender_id,
-        {"target_union_id": msg.session_info.target_info.union_id, "is_private": True},
+        {"target_union_id": msg.session_info.target_union_info.union_id, "is_private": True},
     )
     return bind._take_code(code)[1]
 
@@ -55,8 +55,8 @@ async def _test_private_binds_both_unions():
             pass
 
         # 私聊里「这个账号」与「这段私聊」是同一回事，只并其一会让另一半数据留在原处
-        senders = [(await SenderInfo.resolve_union(f"{p}|1")).union_id for p in ("BINDA", "BINDB")]
-        targets = [(await TargetInfo.resolve_union(f"{p}|X|1")).union_id for p in ("BINDA", "BINDB")]
+        senders = [(await SenderUnionInfo.resolve_union(f"{p}|1")).union_id for p in ("BINDA", "BINDB")]
+        targets = [(await TargetUnionInfo.resolve_union(f"{p}|X|1")).union_id for p in ("BINDA", "BINDB")]
         return senders[0] == senders[1] and targets[0] == targets[1]
 
     except Exception:
@@ -69,10 +69,10 @@ async def _test_cancel_leaves_nothing_bound():
         initiator = await _session("BINDC", True)
         current = await _session("BINDD", True)
         before = (
-            initiator.session_info.sender_info.union_id,
-            initiator.session_info.target_info.union_id,
-            current.session_info.sender_info.union_id,
-            current.session_info.target_info.union_id,
+            initiator.session_info.sender_union_info.union_id,
+            initiator.session_info.target_union_info.union_id,
+            current.session_info.sender_union_info.union_id,
+            current.session_info.target_union_info.union_id,
         )
         entry = _issue_private_code(initiator)
         try:
@@ -83,10 +83,10 @@ async def _test_cancel_leaves_nothing_bound():
 
         # 两次合并共用一次确认，取消后不该停在只绑一半的状态
         after = (
-            (await SenderInfo.resolve_union("BINDC|1")).union_id,
-            (await TargetInfo.resolve_union("BINDC|X|1")).union_id,
-            (await SenderInfo.resolve_union("BINDD|1")).union_id,
-            (await TargetInfo.resolve_union("BINDD|X|1")).union_id,
+            (await SenderUnionInfo.resolve_union("BINDC|1")).union_id,
+            (await TargetUnionInfo.resolve_union("BINDC|X|1")).union_id,
+            (await SenderUnionInfo.resolve_union("BINDD|1")).union_id,
+            (await TargetUnionInfo.resolve_union("BINDD|X|1")).union_id,
         )
         return before == after
 

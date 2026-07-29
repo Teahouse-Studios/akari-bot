@@ -4,7 +4,7 @@ from core.alive import Alive
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.session.info import FetchedSessionInfo
-from core.database.models import JobQueuesTable, TargetInfo, TargetUnionBind
+from core.database.models import JobQueuesTable, TargetUnionInfo, TargetUnionBind
 from core.queue.server import JobQueueServer
 from core.tester import func_case, Tester
 
@@ -13,7 +13,7 @@ async def _build_channel(prefix: str) -> list[FetchedSessionInfo]:
     """
     构造一组「同一条消息通道、分属两个平台」的会话。
     """
-    union = await TargetInfo.resolve_union(f"{prefix}1|Group|a")
+    union = await TargetUnionInfo.resolve_union(f"{prefix}1|Group|a")
     await union.bind_id(f"{prefix}2|Group|b")
     await TargetUnionBind.filter(union_id=union.union_id).update(channel_id=1)
 

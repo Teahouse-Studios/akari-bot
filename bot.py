@@ -95,7 +95,7 @@ def pre_init():
     from core.config.scan import scan_config_templates
     from core.constants.version import database_version
     from core.database.link import get_db_link
-    from core.database.models import SenderInfo, DBVersion
+    from core.database.models import SenderUnionInfo, DBVersion
 
     # 配置的生成集中在此完成：子进程一律只读，此处遗漏的键将在子进程读取时抛出异常，
     # 因此任何模板加载失败均须中止启动，而非延至运行期才暴露。
@@ -141,7 +141,7 @@ def pre_init():
                 base_superuser = [base_superuser]
             await Tortoise.init(db_url=get_db_link(), modules={"models": ["core.database.models"]})
             for bu in base_superuser:
-                sender_info = await SenderInfo.resolve_union(bu)
+                sender_info = await SenderUnionInfo.resolve_union(bu)
                 await sender_info.edit_attr("superuser", True)
             await close_db()
             Logger.success("Base superuser permission granted successfully!")

@@ -306,11 +306,11 @@ if LX_DEVELOPER_TOKEN:
 
     @chu.command("switch {{I18N:chunithm.help.switch}}")
     async def _(msg: Bot.MessageSession):
-        if msg.session_info.sender_info.sender_data.get("chunithum_record_source", default_source) == "lxns":
-            await msg.session_info.sender_info.edit_sender_data("chunithum_record_source", "diving-fish")
+        if msg.session_info.sender_union_info.sender_data.get("chunithum_record_source", default_source) == "lxns":
+            await msg.session_info.sender_union_info.edit_sender_data("chunithum_record_source", "diving-fish")
             await msg.finish(I18NContext("maimai.message.switch.df"))
         else:
-            await msg.session_info.sender_info.edit_sender_data("chunithum_record_source", "lxns")
+            await msg.session_info.sender_union_info.edit_sender_data("chunithum_record_source", "lxns")
             await msg.finish(I18NContext("maimai.message.switch.lx"))
 
     @chu.command("bind lx <friendcode> {{I18N:maimai.help.bind.lx}}")
@@ -328,7 +328,7 @@ if LX_DEVELOPER_TOKEN:
 
 @chu.command("b30 {{I18N:chunithm.help.b30}}")
 async def _(msg: Bot.MessageSession):
-    if msg.session_info.sender_info.sender_data.get("chunithum_record_source", default_source) == "lxns":
+    if msg.session_info.sender_union_info.sender_data.get("chunithum_record_source", default_source) == "lxns":
         token = await get_lxns_prober_bind_info(msg)
         source = "Lxns"
     else:

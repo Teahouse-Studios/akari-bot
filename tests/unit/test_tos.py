@@ -60,8 +60,8 @@ async def _test_abuse_warn_target_sends_message():
     await TestDataFactory.setup_default_test_env()
     msg = MockMessageSession("~test")
     await msg.async_init("~test")
-    msg.session_info.sender_info.warns = 0
-    msg.session_info.sender_info.trusted = False
+    msg.session_info.sender_union_info.warns = 0
+    msg.session_info.sender_union_info.trusted = False
 
     class MockConfig:
         """替换 CoreConfig 的桩。tos_warning_counts 与 report_targets 在导入时即已取值，

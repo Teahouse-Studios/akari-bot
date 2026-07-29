@@ -2,19 +2,26 @@ from tortoise import Tortoise
 
 from core.database import fetch_module_db
 from core.database.link import db_type, get_db_link
-from core.database.models import DBVersion, TargetInfo, TargetUnionBind, backfill_union_binds
+from core.database.models import DBVersion, TargetUnionInfo, TargetUnionBind, backfill_union_binds
+
+# v3：原本以平台 ID 为主键的两张核心表改挂 union，表名一并对齐模型名，
+# 以免「target_info」这类旧名继续读作「平台会话信息」。
+UNION_RENAME_CORE_TABLES = {
+    "sender_info": "sender_union_info",
+    "target_info": "target_union_info",
+}
 
 # v3：原本以平台 ID 为主键的表改挂 union，旧数据的 union ID 直接沿用原 ID，因此只需重命名主键列。
 UNION_RENAME_TABLES = {
     "sender_id": [
-        "sender_info",
+        "sender_union_info",
         "module_cytoid_bind_info",
         "module_maimai_diving_prober_bind_info",
         "module_maimai_lxns_prober_bind_info",
         "module_phigros_bind_info",
     ],
     "target_id": [
-        "target_info",
+        "target_union_info",
         "module_wiki_target_set_info",
         "module_wikilog_target_set_info",
     ],
@@ -22,6 +29,25 @@ UNION_RENAME_TABLES = {
 
 # v3：统计与审计表保留原始 ID，另增 union 列用于聚合。
 UNION_RECORD_TABLES = ["analytics_data", "unfriendly_actions"]
+
+
+async def has_table(conn, table: str) -> bool:
+    """
+    判断某张表是否存在。
+
+    :param conn: 数据库连接。
+    :param table: 表名。
+    """
+    if db_type == "sqlite":
+        rows = await conn.execute_query_dict(
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?;", [table]
+        )
+    else:
+        rows = await conn.execute_query_dict(
+            "SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s;",
+            [table],
+        )
+    return bool(rows)
 
 
 async def has_column(conn, table: str, column: str) -> bool:
@@ -69,12 +95,33 @@ async def has_index(conn, table: str, column: str) -> bool:
     return bool(rows)
 
 
+def quote_ident(name: str) -> str:
+    """
+    按当前数据库类型给标识符加引号。
+
+    :param name: 表名或列名。
+    """
+    return f'"{name}"' if db_type == "sqlite" else f"`{name}`"
+
+
 async def update_database_to_v3(conn):
     """
     将数据库升级至 v3：平台 ID 与数据解耦，数据改挂 union。
 
     :param conn: 数据库连接。
     """
+    # 核心表改名。update_database() 已先跑过 generate_schemas()，按新模型建出的目标表此刻为空表，
+    # 须先移除再改名，否则改名会与之冲突。目标表若已有数据，说明改名早已完成，跳过即可。
+    for old_table, new_table in UNION_RENAME_CORE_TABLES.items():
+        if not await has_table(conn, old_table):
+            continue
+        if await has_table(conn, new_table):
+            rows = await conn.execute_query_dict(f"SELECT COUNT(*) AS cnt FROM {quote_ident(new_table)};")
+            if rows and rows[0]["cnt"]:
+                continue
+            await conn.execute_query(f"DROP TABLE {quote_ident(new_table)};")
+        await conn.execute_query(f"ALTER TABLE {quote_ident(old_table)} RENAME TO {quote_ident(new_table)};")
+
     # 主键列改名。表由 generate_schemas() 新建时已是 union_id，此时旧列不存在，跳过即可。
     for old_column, tables in UNION_RENAME_TABLES.items():
         for table in tables:
@@ -109,7 +156,7 @@ async def update_database_to_v3(conn):
 
     # 旧版 connect 将机器人互认记录存为扁平列表，无法反查某条记录属于哪个会话，解绑时也就无从删除。
     # 该结构已改为两级字典，旧值直接清除，重新执行一次 bind auto 即可。
-    for target in await TargetInfo.all():
+    for target in await TargetUnionInfo.all():
         if isinstance(target.target_data.get("bots_id"), list):
             target.target_data.pop("bots_id")
             await target.save()

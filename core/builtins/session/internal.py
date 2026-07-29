@@ -745,7 +745,7 @@ class MessageSession:
 
         :return: 如果用户是超级用户返回 True，否则返回 False
         """
-        return bool(self.session_info.sender_info.superuser)
+        return bool(self.session_info.sender_union_info.superuser)
 
     async def check_permission(self) -> bool:
         """
@@ -757,7 +757,7 @@ class MessageSession:
         """
         if (
             self.session_info.sender_union_id in self.session_info.custom_admins
-            or self.session_info.sender_info.superuser
+            or self.session_info.sender_union_info.superuser
         ):
             return True
         return await self.check_native_permission()

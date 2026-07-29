@@ -116,7 +116,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
             details = x["details"]
             _date = datetime.strptime(x["date"], "%Y-%m-%dT%H:%M:%S.%fZ")
             local_time = _date + parse_time_string(
-                msg.session_info.target_info.target_data.get("timezone_offset", CoreConfig.timezone_offset)
+                msg.session_info.target_union_info.target_data.get("timezone_offset", CoreConfig.timezone_offset)
             )
             playtime = local_time.timestamp()
             nowtime = time.time()

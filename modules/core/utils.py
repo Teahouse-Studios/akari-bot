@@ -11,7 +11,7 @@ from core.builtins.message.internal import Plain, FormattedTime, I18NContext, Ur
 from core.builtins.session.features import Features
 from core.component import module
 from core.config.base import CoreConfig
-from core.database.models import SenderInfo
+from core.database.models import SenderUnionBind, SenderUnionInfo
 from core.i18n import get_available_locales, Locale
 from core.queue.server import JobQueueServer
 from core.utils.bash import run_sys_command
@@ -120,7 +120,7 @@ async def _display_union_list(msg: Bot.MessageSession, union_ids: list[str]) -> 
     delimiter = msg.session_info.locale.t("message.delimiter")
     lines = []
     for union_id in union_ids:
-        bound_ids = await SenderInfo.list_ids_by_union(union_id)
+        bound_ids = await SenderUnionBind.list_ids(union_id)
         lines.append(delimiter.join(bound_ids) if bound_ids else union_id)
     return lines
 
@@ -129,8 +129,8 @@ async def _resolve_union_id(user: str, create: bool = True) -> str:
     """
     将平台账号 ID 解析为写入权限列表的 union ID，未绑定任何 union 时退回原 ID。
     """
-    sender_info = await SenderInfo.resolve_union(user, create)
-    return sender_info.union_id if sender_info else user
+    sender_union_info = await SenderUnionInfo.resolve_union(user, create)
+    return sender_union_info.union_id if sender_union_info else user
 
 
 @admin.command(
@@ -158,14 +158,14 @@ async def _(msg: Bot.MessageSession):
         union_id = await _resolve_union_id(user)
         if union_id in msg.session_info.custom_admins:
             await msg.finish(I18NContext("core.message.admin.add.already"))
-        if await msg.session_info.target_info.config_custom_admin(union_id):
+        if await msg.session_info.target_union_info.config_custom_admin(union_id):
             await msg.finish(I18NContext("core.message.admin.add.success", sender=user))
     if "remove" in msg.parsed_msg:
         union_id = await _resolve_union_id(user, create=False)
         if union_id == msg.session_info.sender_union_id:
             if not await msg.wait_confirm(I18NContext("core.message.admin.remove.confirm")):
                 await msg.finish()
-        if await msg.session_info.target_info.config_custom_admin(union_id, enable=False):
+        if await msg.session_info.target_union_info.config_custom_admin(union_id, enable=False):
             await msg.finish(I18NContext("core.message.admin.remove.success", sender=user))
 
 
@@ -196,11 +196,11 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(I18NContext("core.message.admin.ban.self"))
         if union_id in msg.session_info.banned_users:
             await msg.finish(I18NContext("core.message.admin.ban.already"))
-        await msg.session_info.target_info.config_banned_user(union_id)
+        await msg.session_info.target_union_info.config_banned_user(union_id)
         await msg.finish(I18NContext("core.message.admin.ban.success", sender=user))
     if "unban" in msg.parsed_msg:
         union_id = await _resolve_union_id(user, create=False)
-        if await msg.session_info.target_info.config_banned_user(union_id, enable=False):
+        if await msg.session_info.target_union_info.config_banned_user(union_id, enable=False):
             await msg.finish(I18NContext("core.message.admin.unban.success", sender=user))
 
 
@@ -223,7 +223,7 @@ async def _(msg: Bot.MessageSession):
 
 @locale.command("[<lang>] {{I18N:core.help.locale.set}}", required_admin=True)
 async def _(msg: Bot.MessageSession, lang: str):
-    if lang in get_available_locales() and await msg.session_info.target_info.edit_attr("locale", lang):
+    if lang in get_available_locales() and await msg.session_info.target_union_info.edit_attr("locale", lang):
         await msg.finish(Locale(lang).t("message.success"))
     else:
         available_lang = "{I18N:message.delimiter}".join(get_available_locales())
@@ -259,10 +259,10 @@ async def _(msg: Bot.MessageSession):
     if msg.check_super_user():
         perm.append(I18NContext("core.message.whoami.superuser"))
 
-    sender_info = msg.session_info.sender_info
-    target_info = msg.session_info.target_info
-    sender_bound_ids = await sender_info.list_bound_ids()
-    target_bound_ids = await target_info.list_bound_ids()
+    sender_union_info = msg.session_info.sender_union_info
+    target_union_info = msg.session_info.target_union_info
+    sender_bound_ids = await sender_union_info.list_bound_ids()
+    target_bound_ids = await target_union_info.list_bound_ids()
 
     await msg.finish(
         [
@@ -275,13 +275,13 @@ async def _(msg: Bot.MessageSession):
         ]
         + perm
         + [
-            I18NContext("core.message.whoami.union", id=sender_info.union_id, disable_joke=True),
+            I18NContext("core.message.whoami.union", id=sender_union_info.union_id, disable_joke=True),
             I18NContext("core.message.whoami.union.bound", count=len(sender_bound_ids)),
         ]
         # ID 是原样回显的数据，不能参与文本替换
         + [Plain(i, disable_joke=True) for i in sender_bound_ids]
         + [
-            I18NContext("core.message.whoami.target.union", id=target_info.union_id, disable_joke=True),
+            I18NContext("core.message.whoami.target.union", id=target_union_info.union_id, disable_joke=True),
             I18NContext("core.message.whoami.target.union.bound", count=len(target_bound_ids)),
         ]
         + [Plain(i, disable_joke=True) for i in target_bound_ids]
@@ -333,31 +333,31 @@ setup = module("setup", base=True, desc="{I18N:core.help.setup.desc}", doc=True,
 
 @setup.command("typing {{I18N:core.help.setup.typing}}")
 async def _(msg: Bot.MessageSession):
-    if not msg.session_info.sender_info.sender_data.get("typing_prompt", True):
-        await msg.session_info.sender_info.edit_sender_data("typing_prompt", True)
+    if not msg.session_info.sender_union_info.sender_data.get("typing_prompt", True):
+        await msg.session_info.sender_union_info.edit_sender_data("typing_prompt", True)
         await msg.finish(I18NContext("core.message.setup.typing.enable"))
     else:
-        await msg.session_info.sender_info.edit_sender_data("typing_prompt", False)
+        await msg.session_info.sender_union_info.edit_sender_data("typing_prompt", False)
         await msg.finish(I18NContext("core.message.setup.typing.disable"))
 
 
 @setup.command("check {{I18N:core.help.setup.check}}")
 async def _(msg: Bot.MessageSession):
-    if not msg.session_info.sender_info.sender_data.get("typo_check", True):
-        await msg.session_info.sender_info.edit_sender_data("typo_check", True)
+    if not msg.session_info.sender_union_info.sender_data.get("typo_check", True):
+        await msg.session_info.sender_union_info.edit_sender_data("typo_check", True)
         await msg.finish(I18NContext("core.message.setup.check.enable"))
     else:
-        await msg.session_info.sender_info.edit_sender_data("typo_check", False)
+        await msg.session_info.sender_union_info.edit_sender_data("typo_check", False)
         await msg.finish(I18NContext("core.message.setup.check.disable"))
 
 
 @setup.command("sign {{I18N:core.help.setup.sign}}", required_admin=True, load=CoreConfig.enable_petal)
 async def _(msg: Bot.MessageSession):
-    if not msg.session_info.target_info.target_data.get("petal_sign", True):
-        await msg.session_info.target_info.edit_target_data("petal_sign", True)
+    if not msg.session_info.target_union_info.target_data.get("petal_sign", True):
+        await msg.session_info.target_union_info.edit_target_data("petal_sign", True)
         await msg.finish(I18NContext("core.message.setup.sign.enable"))
     else:
-        await msg.session_info.target_info.edit_target_data("petal_sign", False)
+        await msg.session_info.target_union_info.edit_target_data("petal_sign", False)
         await msg.finish(I18NContext("core.message.setup.sign.disable"))
 
 
@@ -372,14 +372,14 @@ async def _(msg: Bot.MessageSession, offset: str):
         offset = f"{hour:+}" if minute == 0 else f"{hour:+}:{abs(minute):02d}"
     except ValueError:
         await msg.finish(I18NContext("core.message.setup.timeoffset.invalid"))
-    await msg.session_info.target_info.edit_target_data("timezone_offset", offset)
+    await msg.session_info.target_union_info.edit_target_data("timezone_offset", offset)
     await msg.finish(I18NContext("core.message.setup.timeoffset.success", offset="" if offset == "+0" else offset))
 
 
 @setup.command("cooldown <second> {{I18N:core.help.setup.cooldown}}", required_admin=True)
 async def _(msg: Bot.MessageSession, second: int):
     second = 0 if second < 0 else second
-    await msg.session_info.target_info.edit_target_data("cooldown_time", second)
+    await msg.session_info.target_union_info.edit_target_data("cooldown_time", second)
     await msg.finish(I18NContext("core.message.setup.cooldown.success", time=second))
 
 
@@ -388,7 +388,7 @@ mute = module("mute", base=True, doc=True, required_admin=True)
 
 @mute.command("{{I18N:core.help.mute}}")
 async def _(msg: Bot.MessageSession):
-    state = await msg.session_info.target_info.switch_mute()
+    state = await msg.session_info.target_union_info.switch_mute()
     if state:
         await msg.finish(I18NContext("core.message.mute.enable"))
     else:

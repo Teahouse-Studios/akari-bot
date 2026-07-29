@@ -14,7 +14,7 @@ from core.client.init import client_init
 from core.config import CFGManager
 from bots.web.config import WebConfig, WebSecretConfig
 from core.constants.path import assets_path, webui_path
-from core.database.models import SenderInfo
+from core.database.models import SenderUnionInfo
 from core.logger import Logger
 from core.utils.random import Random
 from core.utils.socket import find_available_port, get_local_ip
@@ -66,8 +66,8 @@ def _webui_message():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await client_init(target_prefix_list, sender_prefix_list)
-    sender_info = await SenderInfo.resolve_union(f"{sender_prefix}|0")
-    await sender_info.edit_attr("superuser", True)
+    sender_union_info = await SenderUnionInfo.resolve_union(f"{sender_prefix}|0")
+    await sender_union_info.edit_attr("superuser", True)
     if dist_path.exists():
         Logger.info(_webui_message())
     yield

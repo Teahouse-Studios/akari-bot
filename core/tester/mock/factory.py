@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from core.database.models import SenderInfo, TargetInfo
+from core.database.models import SenderUnionInfo, TargetUnionInfo
 
 
 class TestDataFactory:
@@ -17,7 +17,7 @@ class TestDataFactory:
         warns: int = 0,
         petal: int = 0,
         sender_data: dict | None = None,
-    ) -> SenderInfo:
+    ) -> SenderUnionInfo:
         """确保用户数据存在，不存在则创建。
 
         :param sender_id: 用户 ID
@@ -27,9 +27,9 @@ class TestDataFactory:
         :param warns: 警告次数
         :param petal: 花瓣数量
         :param sender_data: 自定义数据
-        :returns: SenderInfo 实例
+        :returns: SenderUnionInfo 实例
         """
-        obj = await SenderInfo.resolve_union(sender_id)
+        obj = await SenderUnionInfo.resolve_union(sender_id)
         obj.superuser = superuser
         obj.blocked = blocked
         obj.trusted = trusted
@@ -49,7 +49,7 @@ class TestDataFactory:
         custom_admins: list[str] | None = None,
         banned_users: list[str] | None = None,
         target_data: dict | None = None,
-    ) -> TargetInfo:
+    ) -> TargetUnionInfo:
         """确保场景数据存在，不存在则创建。
 
         :param target_id: 场景 ID
@@ -60,9 +60,9 @@ class TestDataFactory:
         :param custom_admins: 自定义管理员列表
         :param banned_users: 被封禁用户列表
         :param target_data: 自定义数据
-        :returns: TargetInfo 实例
+        :returns: TargetUnionInfo 实例
         """
-        obj = await TargetInfo.resolve_union(target_id)
+        obj = await TargetUnionInfo.resolve_union(target_id)
         obj.blocked = blocked
         obj.muted = muted
         obj.locale = locale
@@ -77,7 +77,7 @@ class TestDataFactory:
     async def setup_default_test_env():
         """设置默认测试环境（创建默认用户和场景）。
 
-        :returns: (sender_info, target_info) 元组
+        :returns: (sender_union_info, target_union_info) 元组
         """
         sender = await TestDataFactory.ensure_sender()
         target = await TestDataFactory.ensure_target()
@@ -87,7 +87,7 @@ class TestDataFactory:
     async def setup_superuser_env():
         """设置超级用户测试环境。
 
-        :returns: (sender_info, target_info) 元组
+        :returns: (sender_union_info, target_union_info) 元组
         """
         sender = await TestDataFactory.ensure_sender(superuser=True)
         target = await TestDataFactory.ensure_target()
@@ -97,7 +97,7 @@ class TestDataFactory:
     async def setup_normal_user_env():
         """设置普通用户测试环境。
 
-        :returns: (sender_info, target_info) 元组
+        :returns: (sender_union_info, target_union_info) 元组
         """
         sender = await TestDataFactory.ensure_sender(superuser=False)
         target = await TestDataFactory.ensure_target()
