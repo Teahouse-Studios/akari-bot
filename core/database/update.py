@@ -43,6 +43,32 @@ async def has_column(conn, table: str, column: str) -> bool:
     return bool(rows)
 
 
+async def has_index(conn, table: str, column: str) -> bool:
+    """
+    判断某张表的指定列上是否已有索引（作为任意索引的首列即算）。
+
+    按列而非按索引名判断：新建的库由 ``generate_schemas`` 依模型声明建索引，索引名由 ORM 生成，
+    与迁移里显式指定的名字不同；若按名字判断，已有索引的库会被重复建一份。
+
+    :param conn: 数据库连接。
+    :param table: 表名。
+    :param column: 列名。
+    """
+    if db_type == "sqlite":
+        indexes = await conn.execute_query_dict(f'PRAGMA index_list("{table}");')
+        for index in indexes:
+            columns = await conn.execute_query_dict(f'PRAGMA index_info("{index["name"]}");')
+            if columns and columns[0]["name"] == column:
+                return True
+        return False
+    rows = await conn.execute_query_dict(
+        "SELECT INDEX_NAME FROM information_schema.STATISTICS "
+        "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s AND COLUMN_NAME = %s AND SEQ_IN_INDEX = 1;",
+        [table, column],
+    )
+    return bool(rows)
+
+
 async def update_database_to_v3(conn):
     """
     将数据库升级至 v3：平台 ID 与数据解耦，数据改挂 union。
@@ -99,6 +125,23 @@ async def update_database_to_v3(conn):
             else:
                 await conn.execute_query(f"ALTER TABLE `{table}` ADD COLUMN `{column}` VARCHAR(512) NULL;")
             await conn.execute_query(f"UPDATE {table} SET {column} = {source} WHERE {column} IS NULL;")
+
+    # 轮询与区间统计所需的索引。job_queues 每 100 毫秒被每个进程轮询一次，analytics_data 则要
+    # 按时间区间反复聚合，两者都随行数增长退化为全表扫描。表由 generate_schemas() 新建时已依模型
+    # 声明建好索引，此处只补既有库；与上面的 channel_id 一样，开发期已升级至 v3 的数据库需将版本号
+    # 退回 2 重跑一次方能补上。
+    for table, column, index_name in (
+        ("job_queues", "target_client", "idx_job_queues_client_status"),
+        ("analytics_data", "timestamp", "idx_analytics_data_timestamp"),
+    ):
+        if await has_index(conn, table, column):
+            continue
+        if db_type == "sqlite":
+            columns = '"target_client", "status"' if table == "job_queues" else f'"{column}"'
+            await conn.execute_query(f'CREATE INDEX "{index_name}" ON "{table}" ({columns});')
+        else:
+            columns = "`target_client`, `status`" if table == "job_queues" else f"`{column}`"
+            await conn.execute_query(f"CREATE INDEX `{index_name}` ON `{table}` ({columns});")
 
 
 async def update_database():

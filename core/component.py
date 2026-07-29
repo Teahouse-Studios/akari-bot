@@ -91,7 +91,8 @@ class Bind:
                     RegexMeta(
                         function=function,
                         pattern=pattern,
-                        mode=mode,
+                        # 注册期归一化，匹配时不必对每条正则再 upper() 一次
+                        mode=mode.upper(),
                         flags=flags,
                         desc=desc,
                         required_admin=required_admin,

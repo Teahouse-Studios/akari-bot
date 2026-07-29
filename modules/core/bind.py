@@ -339,7 +339,7 @@ async def _channel_lines(msg: Bot.MessageSession) -> list:
     ]
 
 
-b = module("bind", base=True, desc="{I18N:core.bind.help.desc}", doc=True, alias="uid")
+b = module("bind", base=True, desc="{I18N:core.bind.help.desc}", doc=True, alias={"connect": "bind auto"})
 
 
 @b.command("{{I18N:core.bind.help}}")

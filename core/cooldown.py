@@ -33,14 +33,15 @@ class CoolDown:
         """
         target_dict = _cd_dict[self.channel_key]
 
+        # 这些容器嵌在 _cd_dict 之下，清理由根容器递归下来，不必各自登记为根
         if self.whole_target:
             if self.key not in target_dict:
-                target_dict[self.key] = ExpiringTempDict(exp=self.delay)
+                target_dict[self.key] = ExpiringTempDict(exp=self.delay, root=False)
             return target_dict[self.key]
 
         sender_dict = target_dict[self.sender_union_id]
         if self.key not in sender_dict:
-            sender_dict[self.key] = ExpiringTempDict(exp=self.delay)
+            sender_dict[self.key] = ExpiringTempDict(exp=self.delay, root=False)
         return sender_dict[self.key]
 
     def check(self) -> float:

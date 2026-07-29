@@ -10,7 +10,7 @@ import shlex
 import traceback
 from typing import TYPE_CHECKING
 
-from core.config.base import BaseConfig
+from core.config.base import BaseConfig, CoreConfig
 from core.constants.exceptions import InvalidCommandFormatError
 from core.exports import exports
 from core.i18n import Locale
@@ -335,5 +335,6 @@ class CommandParser:
 
         except InvalidCommandFormatError:
             # 记录异常堆栈用于调试
-            traceback.print_exc()
+            if CoreConfig.debug:
+                traceback.print_exc()
             raise InvalidCommandFormatError

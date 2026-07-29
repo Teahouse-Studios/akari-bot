@@ -747,6 +747,16 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
     """
     bot: "Bot" = exports["Bot"]
 
+    # 同一条消息会被所有模块的正则轮流匹配，而渲染结果只由这两个参数决定，
+    # 按参数缓存一次，避免每条正则都把消息链重新走一遍
+    display_cache: dict[tuple[bool, tuple], str] = {}
+
+    def get_trigger_msg(text_only: bool, element_filter) -> str:
+        cache_key = (text_only, tuple(element_filter or ()))
+        if cache_key not in display_cache:
+            display_cache[cache_key] = msg.as_display(text_only=text_only, element_filter=element_filter)
+        return display_cache[cache_key]
+
     # ========== 遍历所有模块 ==========
     for m in modules:
         # 跳过未加载的模块
@@ -794,18 +804,19 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                         matched_hash = 0  # 用于检测重复匹配
 
                         # 获取要匹配的消息文本（可能只包含纯文本或过滤特定元素）
-                        trigger_msg = msg.as_display(text_only=rfunc.text_only, element_filter=rfunc.element_filter)
+                        trigger_msg = get_trigger_msg(rfunc.text_only, rfunc.element_filter)
 
                         # ========== 步骤 5: 执行正则表达式匹配 ==========
-                        if rfunc.mode.upper() in ["M", "MATCH"]:
-                            # 使用 re.match（从字符串开头匹配）
-                            msg.matched_msg = re.match(rfunc.pattern, trigger_msg, flags=rfunc.flags)
+                        # mode 与模式均在注册期归一化/编译，此处直接用
+                        if rfunc.mode in ("M", "MATCH"):
+                            # 使用 match（从字符串开头匹配）
+                            msg.matched_msg = rfunc.compiled.match(trigger_msg)
                             if msg.matched_msg:
                                 matched = True
                                 matched_hash = hash(msg.matched_msg.groups())
-                        elif rfunc.mode.upper() in ["A", "FINDALL"]:
-                            # 使用 re.findall（查找所有匹配）
-                            msg.matched_msg = tuple(set(re.findall(rfunc.pattern, trigger_msg, flags=rfunc.flags)))
+                        elif rfunc.mode in ("A", "FINDALL"):
+                            # 使用 findall（查找所有匹配）
+                            msg.matched_msg = tuple(set(rfunc.compiled.findall(trigger_msg)))
                             if msg.matched_msg:
                                 matched = True
                                 matched_hash = hash(msg.matched_msg)

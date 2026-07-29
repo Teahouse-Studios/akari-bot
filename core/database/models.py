@@ -896,7 +896,8 @@ class AnalyticsData(DBModel):
     target_union_id = fields.CharField(max_length=512, null=True, default=None)
     sender_union_id = fields.CharField(max_length=512, null=True, default=None)
     command = fields.TextField()
-    timestamp = fields.DatetimeField(auto_now_add=True)
+    # 统计命令按时间区间反复聚合，无索引时每次都是全表扫描
+    timestamp = fields.DatetimeField(auto_now_add=True, db_index=True)
 
     class Meta:
         table = "analytics_data"
@@ -1081,6 +1082,8 @@ class JobQueuesTable(DBModel):
 
     class Meta:
         table = "job_queues"
+        # 每个进程每 100 毫秒按这两列轮询一次，无索引时开销随表内行数线性增长
+        indexes = (("target_client", "status"),)
 
     @classmethod
     async def add_task(cls, target_client: str, action: str, args: dict) -> str:

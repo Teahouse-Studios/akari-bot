@@ -47,6 +47,9 @@ class CFGManager:
     values: dict[str, TOMLDocument] = {}
     _tss: dict[str, float] = {}
     _watch_lock = False
+    # 两次检查配置文件改动之间的最小间隔（秒）
+    WATCH_INTERVAL = 1.0
+    _last_watch = 0.0
     _lock_depth = 0
 
     # 本进程是否只读。运行期一律读这个类属性而非模块级常量，测试可直接改写。
@@ -207,18 +210,32 @@ class CFGManager:
     def watch(cls):  # Watch for changes in the config file and reload if necessary
         if cls._watch_lock:
             return
+        # 每次配置读取都去 stat 一遍全部配置文件的话，一次属性访问就要几十次系统调用，
+        # 代价与「读一个已在内存里的值」完全不成比例。配置改动晚至多 WATCH_INTERVAL 秒生效即可。
+        now = time.monotonic()
+        if now - cls._last_watch < cls.WATCH_INTERVAL:
+            return
+        cls._last_watch = now
+
         cls._watch_lock = True
         try:
+            # 用一次目录扫描代替逐文件 exists() + stat()：DirEntry 自带的元数据来自目录项本身，
+            # 不必为每个文件再走一次文件系统查询。
+            try:
+                mtimes = {
+                    entry.name: entry.stat().st_mtime
+                    for entry in os.scandir(cls.config_path)
+                    if entry.is_file() and entry.name.endswith(".toml")
+                }
+            except OSError:
+                return
+
             for cfg in cls.values:
-                cfg_file = cfg
-                if not cfg_file.endswith(".toml"):
-                    cfg_file += ".toml"
-                file_path = cls.config_path / cfg_file
-                if file_path.exists():
-                    if file_path.stat().st_mtime != cls._tss.get(cfg):
-                        logger.warning("[Config] Config file has been modified, reloading...")
-                        cls.load()
-                        break
+                cfg_file = cfg if cfg.endswith(".toml") else f"{cfg}.toml"
+                if cfg_file in mtimes and mtimes[cfg_file] != cls._tss.get(cfg):
+                    logger.warning("[Config] Config file has been modified, reloading...")
+                    cls.load()
+                    break
         finally:
             # 若不置于 finally 中，一旦加载抛出异常，此后 watch() 将永久空转，磁盘上的改动无法再被读取。
             cls._watch_lock = False
@@ -645,6 +662,8 @@ class CFGManager:
         cls.config_file_list = [cfg.name for cfg in cls.config_path.glob("*.toml")]
         cls.values = {}
         cls._watch_lock = False
+        # 切换目录后必须立刻重新检查，不能让上一份目录的节流状态把首次检查挡掉
+        cls._last_watch = 0.0
         cls.load()
 
 

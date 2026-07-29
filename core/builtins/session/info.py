@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import uuid
 from datetime import timedelta, datetime
 
@@ -21,6 +22,13 @@ from core.database.models import TargetInfo, SenderInfo
 from core.i18n import Locale
 from core.utils.func import parse_time_string
 from core.utils.session import inject_features
+
+
+async def _none():
+    """
+    并发解析时用于占位的空协程，使 gather 的两路返回值位置保持固定。
+    """
+    return None
 
 
 @define
@@ -120,11 +128,14 @@ class SessionInfo:
         """
         if target_from is None:
             target_from = Alive.determine_target_from(target_id)
-        target_info = await TargetInfo.get_by_target_id(target_id, create)
+        # 场景与用户的 union 解析互不依赖，并发发出可省去一半的往返等待；
+        # 主库在远端时这一项按每次往返的网络延迟计。
+        target_info, sender_info = await asyncio.gather(
+            TargetInfo.get_by_target_id(target_id, create),
+            SenderInfo.get_by_sender_id(sender_id, create) if sender_id else _none(),
+        )
         if target_info is None:
             raise ValueError(f"TargetInfo not found for target_id: {target_id}")
-
-        sender_info = await SenderInfo.get_by_sender_id(sender_id, create) if sender_id else None
         if sender_from is None and sender_id:
             sender_from = Alive.determine_sender_from(sender_id)
         if not client_name:
@@ -188,8 +199,11 @@ class SessionInfo:
         return _c
 
     async def refresh_info(self):
-        self.sender_info = await SenderInfo.get_by_sender_id(self.sender_id) if self.sender_id else None
-        self.target_info = await TargetInfo.get_by_target_id(self.target_id) if self.target_id else None
+        # 同 assign()：两次解析互不依赖，并发发出
+        self.sender_info, self.target_info = await asyncio.gather(
+            SenderInfo.get_by_sender_id(self.sender_id) if self.sender_id else _none(),
+            TargetInfo.get_by_target_id(self.target_id) if self.target_id else _none(),
+        )
         self.sender_union_id = self.sender_info.union_id if self.sender_info else None
         self.target_union_id = self.target_info.union_id if self.target_info else None
 

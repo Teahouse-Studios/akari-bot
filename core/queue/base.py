@@ -240,11 +240,14 @@ class JobQueueBase:
         :param target_client: 可选的场景客户端过滤，如果为 None 则获取当前客户端的任务
         """
         # Logger.debug(f"Checking job queue for {cls.name}, target client: {target_client if target_client else "all"}")
-        # 检查并设置已完成的任务结果
-        for task_id in QueueTaskManager.tasks.copy():
-            tsk = await JobQueuesTable.get_or_none(task_id=task_id)
-            if tsk and tsk.status not in ["pending", "processing"]:
-                await QueueTaskManager.set_result(task_id, tsk.result)
+        # 检查并设置已完成的任务结果。
+        # 该轮询每 100 毫秒执行一次，逐个任务查询会让同时等待的任务数直接乘上查询次数，
+        # 故一次取回全部待查任务。
+        waiting = list(QueueTaskManager.tasks)
+        if waiting:
+            for tsk in await JobQueuesTable.filter(task_id__in=waiting):
+                if tsk.status not in ["pending", "processing"]:
+                    await QueueTaskManager.set_result(str(tsk.task_id), tsk.result)
         # Logger.debug([cls.name, target_client if target_client else exports["Bot"].Info.client_name])
 
         # 获取待处理的任务列表

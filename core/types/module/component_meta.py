@@ -9,6 +9,7 @@ from attrs import define, field
 
 from core.builtins.parser.args import Template
 from core.builtins.types import MessageElement
+from core.logger import Logger
 from core.utils.func import convert_list
 
 
@@ -47,6 +48,17 @@ class RegexMeta(ModuleMeta):
     show_typing: bool = True
     text_only: bool = True
     element_filter: tuple[MessageElement, ...] | None = None
+    # 注册期编译好的模式，避免每条消息都去 re 模块的全局缓存里查一次
+    compiled: re.Pattern | None = field(default=None, init=False, repr=False, eq=False)
+
+    def __attrs_post_init__(self):
+        if isinstance(self.pattern, re.Pattern):
+            if self.flags:
+                # 已编译的模式无法再附加 flags，此前每次匹配都会因此抛错
+                Logger.warning(f"Regex {self.pattern.pattern} is already compiled, the given flags are ignored.")
+            self.compiled = self.pattern
+        elif self.pattern is not None:
+            self.compiled = re.compile(self.pattern, self.flags)
 
 
 @define

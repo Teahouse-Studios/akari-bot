@@ -45,9 +45,10 @@ async def load_modules():
             err_prompt.append(errmsg)
 
     await ModuleStatus.init_modules(list(ModulesManager.modules.keys()))
+    # 一次取回全部状态：逐模块查询会退化成 N 次往返，模块多或主库在远端时开销可观
+    module_status = dict(await ModuleStatus.all().values_list("module_name", "load"))
     for module_name, module in ModulesManager.modules.items():
-        module_status = await ModuleStatus.filter(module_name=module_name).first()
-        if module_status and not module_status.load or not module.load:
+        if (module_name in module_status and not module_status[module_name]) or not module.load:
             module._db_load = False
 
     Logger.success("All modules loaded.")
@@ -152,8 +153,11 @@ class ModulesManager:
     def return_modules_list(
         cls, target_from: str | None = None, client_name: str | None = None, use_cache: bool = True
     ) -> dict[str, Module]:
-        if target_from and target_from in cls._return_cache and use_cache:
-            return cls._return_cache[target_from]
+        # 过滤结果同时取决于 target_from 与 client_name，缓存键必须两者都带上：
+        # 只按 target_from 建键时，同一场景前缀配上不同的客户端名会取到上一次的结果。
+        cache_key = (target_from, client_name)
+        if target_from and use_cache and cache_key in cls._return_cache:
+            return cls._return_cache[cache_key]
         modules = {module_name: cls.modules[module_name] for module_name in sorted(cls.modules)}
 
         if target_from:
@@ -173,7 +177,7 @@ class ModulesManager:
                         continue
                     if target_from in available or client_name in available or "*" in available:
                         returns.update({m: modules[m]})
-            cls._return_cache.update({target_from: returns})
+            cls._return_cache[cache_key] = returns
             return returns
         return modules
 

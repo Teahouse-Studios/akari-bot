@@ -3,12 +3,13 @@ import html
 
 import orjson
 from botpy.api import BotAPI
+from botpy.errors import ServerError
 from botpy.http import Route
 from botpy.interaction import Interaction
 from botpy.message import BaseMessage, C2CMessage, DirectMessage, GroupMessage, Message
 from botpy.types.message import Media, Reference, MarkdownPayload, KeyboardPayload
 from botpy.types.inline import Keyboard, Button, KeyboardRow, RenderData, Action, Permission
-from tenacity import retry, wait_fixed, stop_after_attempt
+from tenacity import retry, retry_if_exception, wait_fixed, stop_after_attempt
 
 from bots.qqbot.features import Features
 from bots.qqbot.info import (
@@ -34,6 +35,22 @@ qq_limited_emoji = str(QQBotConfig.qq_limited_emoji)
 qq_use_markdown = QQBotConfig.qq_use_markdown
 
 global_seq = 1
+
+# 平台判定同一 msg_seq 重复投递时的报错文案
+MSG_DEDUP_ERROR = "消息被去重，请检查请求msgseq"
+
+
+def is_msg_dedup_error(e: BaseException) -> bool:
+    """
+    判断异常是否为平台的消息去重报错。
+
+    仅此一种错误值得重试：每次发送前 ``global_seq`` 都会自增，换一个序号重发即可成功。
+    其余 ServerError（如参数非法、频率限制、权限不足）重试同样会失败，
+    应当原样抛出交由上层处理，既不该重试，也不该被静默吞掉。
+
+    :param e: 待判断的异常。
+    """
+    return isinstance(e, ServerError) and e.msgs == MSG_DEDUP_ERROR
 
 
 # 额外添加平台接口支持但 SDK 不支持的方法
@@ -78,6 +95,7 @@ class ModdedBotAPI(BotAPI):
 class QQBotContextManager(ContextManager):
     context: dict[str, BaseMessage] = {}
     features: Features = Features()
+    _tmp = {}
 
     @classmethod
     def add_context(cls, session_info: SessionInfo, context: BaseMessage):
@@ -85,6 +103,25 @@ class QQBotContextManager(ContextManager):
 
         context._api = ModdedBotAPI(http=client.http)
         cls.context[session_info.session_id] = context
+        cls._tmp[session_info.session_id] = {}
+
+    @classmethod
+    def del_context(cls, session_info: SessionInfo):
+        """
+        删除会话的上下文。
+
+        只有当上下文未被标记为保持时才会删除。如果上下文被保持，则跳过删除。
+
+        :param session_info: 会话信息对象
+        """
+        # 检查上下文是否存在且未被保持
+        if session_info.session_id in cls.context and session_info.session_id not in cls.context_marks_hold:
+            del cls.context[session_info.session_id]
+            del cls._tmp[session_info.session_id]
+            Logger.trace(f"Context for session {session_info.session_id} deleted.")
+        # 如果上下文被保持，记录日志但不删除
+        if session_info.session_id in cls.context_marks_hold:
+            Logger.trace(f"Context for session {session_info.session_id} is held, skipping deletion.")
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
@@ -124,6 +161,8 @@ class QQBotContextManager(ContextManager):
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         ctx: BaseMessage = cls.context.get(session_info.session_id)
+        _tmp = cls._tmp.get(session_info.session_id)
+        _tmp["send_message_called"] = True
         msg_ids = []
         global global_seq
 
@@ -137,7 +176,7 @@ class QQBotContextManager(ContextManager):
             retry_attempt = stop_after_attempt(3)
             retry_wait = wait_fixed(3)
 
-        @retry(stop=retry_attempt, wait=retry_wait, reraise=True)
+        @retry(stop=retry_attempt, wait=retry_wait, retry=retry_if_exception(is_msg_dedup_error), reraise=True)
         async def send_msg():
             global global_seq
 
@@ -439,7 +478,7 @@ class QQBotContextManager(ContextManager):
                                 if send:
                                     msg_ids.append(send["id"])
 
-        @retry(stop=retry_attempt, wait=retry_wait, reraise=True)
+        @retry(stop=retry_attempt, wait=retry_wait, retry=retry_if_exception(is_msg_dedup_error), reraise=True)
         async def send_msg_markdown():
             global global_seq
             texts = []
@@ -782,14 +821,18 @@ class QQBotContextManager(ContextManager):
                     while not resolved:
                         await asyncio.sleep(1)
                         _t += 1
+                        _tmp = cls._tmp.get(session.session_id)
                         if _t >= 5 and not sended:
-                            try:
-                                typing_msg = await cls.send_message(
-                                    session, MessageChain.assign(I18NContext("message.typing")), _ignore_retries=True
-                                )
-                                Logger.debug("typing message sent:" + str(typing_msg))
-                            except Exception:
-                                Logger.exception("Failed to send group typing message")
+                            if "send_message_called" not in _tmp:
+                                try:
+                                    typing_msg = await cls.send_message(
+                                        session,
+                                        MessageChain.assign(I18NContext("message.typing")),
+                                        _ignore_retries=True,
+                                    )
+                                    Logger.debug("typing message sent:" + str(typing_msg))
+                                except Exception:
+                                    Logger.exception("Failed to send group typing message")
                             sended = True
 
                     if typing_msg:
