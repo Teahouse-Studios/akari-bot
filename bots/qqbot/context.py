@@ -162,7 +162,8 @@ class QQBotContextManager(ContextManager):
         #     raise ValueError("Session not found in context")
         ctx: BaseMessage = cls.context.get(session_info.session_id)
         _tmp = cls._tmp.get(session_info.session_id)
-        _tmp["send_message_called"] = True
+        if _tmp:
+            _tmp["send_message_called"] = True
         msg_ids = []
         global global_seq
 

@@ -38,13 +38,14 @@ _channel_handshakes = {}
 _handshake_lock = asyncio.Lock()
 
 
-def _generate_code(store: ExpiringTempDict, union_id: str, holder_id: str) -> str:
+def _generate_code(store: ExpiringTempDict, union_id: str, holder_id: str, extra: dict | None = None) -> str:
     """
     为发起方生成一枚绑定码，同一组同时只保留最新的一枚。
 
     :param store: 绑定码存储。
     :param union_id: 发起方所属的组 ID。
     :param holder_id: 发起方的平台 ID，用于向对方展示绑定来源。
+    :param extra: 随绑定码一并留存的附加信息。
     :return: 绑定码。
     """
     for old_code in [code for code, entry in store.items() if entry.get("union_id") == union_id]:
@@ -56,7 +57,7 @@ def _generate_code(store: ExpiringTempDict, union_id: str, holder_id: str) -> st
 
     store[code] = ExpiringTempDict(
         exp=BIND_CODE_EXPIRED,
-        data={"union_id": union_id, "holder_id": holder_id},
+        data={"union_id": union_id, "holder_id": holder_id, **(extra or {})},
         root=False,
     )
     return code
@@ -76,14 +77,24 @@ def _take_code(code: str) -> tuple[str, dict] | None:
     for scope, store in ((UNION_SCOPE_SENDER, _sender_bind_codes), (UNION_SCOPE_TARGET, _target_bind_codes)):
         entry = store.get(code)
         if entry and "union_id" in entry:
-            info = {"union_id": entry.get("union_id"), "holder_id": entry.get("holder_id")}
+            info = {
+                "union_id": entry.get("union_id"),
+                "holder_id": entry.get("holder_id"),
+                "target_union_id": entry.get("target_union_id"),
+                "is_private": entry.get("is_private", False),
+            }
             store.pop(code)
             return scope, info
     return None
 
 
 async def _issue_bind_code(
-    msg: Bot.MessageSession, store: ExpiringTempDict, union_id: str, holder_id: str, prompt_key: str
+    msg: Bot.MessageSession,
+    store: ExpiringTempDict,
+    union_id: str,
+    holder_id: str,
+    prompt_key: str,
+    extra: dict | None = None,
 ) -> None:
     """
     生成绑定码并私信给发起方，随后在当前会话中给出提示。
@@ -95,11 +106,12 @@ async def _issue_bind_code(
     :param union_id: 发起方所属的组 ID。
     :param holder_id: 发起方的平台 ID。
     :param prompt_key: 私信中绑定用法提示的 i18n 键。
+    :param extra: 随绑定码一并留存的附加信息。
     """
     if not msg.session_info.support_private_msg:
         await msg.finish(I18NContext("core.bind.message.code.private.unsupported"))
 
-    generated = _generate_code(store, union_id, holder_id)
+    generated = _generate_code(store, union_id, holder_id, extra)
     sent = await msg.send_private_message(
         [
             I18NContext("core.bind.message.code", code=generated, disable_joke=True),
@@ -178,21 +190,22 @@ def _conflict_lines(conflicts: list[type]) -> list:
     ]
 
 
-async def _merge_sender_unions(
-    msg: Bot.MessageSession, initiator: SenderInfo, current: SenderInfo
-) -> SenderInfo | None:
+async def _plan_sender_merge(initiator: SenderInfo, current: SenderInfo) -> dict:
     """
-    走完一次账号组合并：展示继承关系 → 确认 → 逐个处理冲突 → 记录快照 → 合并。
+    收集一次账号组合并所需的信息：双方 ID、冲突模块与待确认的文案。
+
+    与执行分离，是为了让私聊下的「账号组 + 会话组」两次合并能共用一次确认：
+    先展示两侧的全部变更再一并执行，避免用户在第二次确认时取消而停在只绑一半的状态。
 
     :param initiator: 生成绑定码的一方。
     :param current: 输入绑定码的一方。
-    :return: 合并后的新账号组，用户取消时为 None。
+    :return: 合并计划。
     """
     initiator_ids = await initiator.list_bound_ids()
     current_ids = await current.list_bound_ids()
     conflicts = await collect_union_conflicts(current.union_id, initiator.union_id, scope=UNION_SCOPE_SENDER)
 
-    confirm_msg = [
+    lines = [
         I18NContext("core.bind.message.self.confirm"),
         I18NContext("core.bind.message.self.confirm.initiator", count=len(initiator_ids)),
         *_id_lines(initiator_ids),
@@ -201,7 +214,7 @@ async def _merge_sender_unions(
         I18NContext("core.bind.message.self.confirm.inherit"),
     ]
     if CoreConfig.enable_petal:
-        confirm_msg.append(
+        lines.append(
             I18NContext(
                 "core.bind.message.self.confirm.petal",
                 initiator=initiator.petal,
@@ -209,15 +222,31 @@ async def _merge_sender_unions(
                 total=initiator.petal + current.petal,
             )
         )
-    confirm_msg += _conflict_lines(conflicts)
+    lines += _conflict_lines(conflicts)
 
-    if not await msg.wait_confirm(confirm_msg):
-        return None
+    return {
+        "initiator": initiator,
+        "current": current,
+        "initiator_ids": initiator_ids,
+        "current_ids": current_ids,
+        "conflicts": conflicts,
+        "lines": lines,
+    }
 
-    keep_other_tables = await _choose_conflicts(msg, conflicts)
+
+async def _apply_sender_merge(plan: dict, keep_other_tables: set[str]) -> SenderInfo | None:
+    """
+    按计划执行账号组合并并记录快照。
+
+    :param plan: :func:`_plan_sender_merge` 产出的合并计划。
+    :param keep_other_tables: 需要保留发起方数据的表名集合。
+    :return: 合并后的新账号组。
+    """
+    initiator: SenderInfo = plan["initiator"]
+    current: SenderInfo = plan["current"]
     snapshot = {
-        "keep_ids": initiator_ids,
-        "drop_ids": current_ids,
+        "keep_ids": plan["initiator_ids"],
+        "drop_ids": plan["current_ids"],
         "keep_data": {
             "union_id": initiator.union_id,
             "petal": initiator.petal,
@@ -241,26 +270,41 @@ async def _merge_sender_unions(
     return merged
 
 
-async def _merge_target_unions(
-    msg: Bot.MessageSession,
+async def _merge_sender_unions(
+    msg: Bot.MessageSession, initiator: SenderInfo, current: SenderInfo
+) -> SenderInfo | None:
+    """
+    走完一次账号组合并：展示继承关系 → 确认 → 逐个处理冲突 → 记录快照 → 合并。
+
+    :param initiator: 生成绑定码的一方。
+    :param current: 输入绑定码的一方。
+    :return: 合并后的新账号组，用户取消时为 None。
+    """
+    plan = await _plan_sender_merge(initiator, current)
+    if not await msg.wait_confirm(plan["lines"]):
+        return None
+    return await _apply_sender_merge(plan, await _choose_conflicts(msg, plan["conflicts"]))
+
+
+async def _plan_target_merge(
     initiator: TargetInfo,
     current: TargetInfo,
     inherit_key: str = "core.bind.message.target.confirm.inherit",
-) -> TargetInfo | None:
+) -> dict:
     """
-    走完一次会话组合并：展示继承关系 → 确认 → 逐个处理冲突 → 记录快照 → 合并。
+    收集一次会话组合并所需的信息：双方 ID、冲突模块与待确认的文案。
 
     :param initiator: 发起方（生成绑定码或发起通道握手的一方）。
     :param current: 另一方。
     :param inherit_key: 继承说明的 i18n 键。绑定码流程仅合并会话组，消息通道保持独立；
                         ``bind auto`` 会同时将双方并入同一条消息通道，两者的说明需分开。
-    :return: 合并后的新会话组，用户取消时为 None。
+    :return: 合并计划。
     """
     initiator_ids = await initiator.list_bound_ids()
     current_ids = await current.list_bound_ids()
     conflicts = await collect_union_conflicts(current.union_id, initiator.union_id, scope=UNION_SCOPE_TARGET)
 
-    confirm_msg = [
+    lines = [
         I18NContext("core.bind.message.target.confirm"),
         I18NContext("core.bind.message.target.confirm.initiator", count=len(initiator_ids)),
         *_id_lines(initiator_ids),
@@ -268,15 +312,31 @@ async def _merge_target_unions(
         *_id_lines(current_ids),
         I18NContext(inherit_key),
     ]
-    confirm_msg += _conflict_lines(conflicts)
+    lines += _conflict_lines(conflicts)
 
-    if not await msg.wait_confirm(confirm_msg):
-        return None
+    return {
+        "initiator": initiator,
+        "current": current,
+        "initiator_ids": initiator_ids,
+        "current_ids": current_ids,
+        "conflicts": conflicts,
+        "lines": lines,
+    }
 
-    keep_other_tables = await _choose_conflicts(msg, conflicts)
+
+async def _apply_target_merge(plan: dict, keep_other_tables: set[str]) -> TargetInfo | None:
+    """
+    按计划执行会话组合并并记录快照。
+
+    :param plan: :func:`_plan_target_merge` 产出的合并计划。
+    :param keep_other_tables: 需要保留发起方数据的表名集合。
+    :return: 合并后的新会话组。
+    """
+    initiator: TargetInfo = plan["initiator"]
+    current: TargetInfo = plan["current"]
     snapshot = {
-        "keep_ids": initiator_ids,
-        "drop_ids": current_ids,
+        "keep_ids": plan["initiator_ids"],
+        "drop_ids": plan["current_ids"],
         "keep_data": {
             "union_id": initiator.union_id,
             "locale": initiator.locale,
@@ -298,6 +358,26 @@ async def _merge_target_unions(
     if merged:
         await _write_merge_log(merged.union_id, UNION_SCOPE_TARGET, snapshot)
     return merged
+
+
+async def _merge_target_unions(
+    msg: Bot.MessageSession,
+    initiator: TargetInfo,
+    current: TargetInfo,
+    inherit_key: str = "core.bind.message.target.confirm.inherit",
+) -> TargetInfo | None:
+    """
+    走完一次会话组合并：展示继承关系 → 确认 → 逐个处理冲突 → 记录快照 → 合并。
+
+    :param initiator: 发起方（生成绑定码或发起通道握手的一方）。
+    :param current: 另一方。
+    :param inherit_key: 继承说明的 i18n 键。
+    :return: 合并后的新会话组，用户取消时为 None。
+    """
+    plan = await _plan_target_merge(initiator, current, inherit_key)
+    if not await msg.wait_confirm(plan["lines"]):
+        return None
+    return await _apply_target_merge(plan, await _choose_conflicts(msg, plan["conflicts"]))
 
 
 async def _target_lines(union_id: str, ids: list[str]) -> list:
@@ -375,14 +455,30 @@ async def _(msg: Bot.MessageSession):
     )
 
 
-@b.command("self start {{I18N:core.bind.help.self.start}}")
+@b.command("start {{I18N:core.bind.help.start}}")
 async def _(msg: Bot.MessageSession):
+    session_info = msg.session_info
+    if session_info.is_private:
+        # 私聊里「这个账号」与「这段私聊」是同一回事，两者一并绑定，
+        # 否则换个平台私聊机器人时数据仍是两份。
+        await _issue_bind_code(
+            msg,
+            _sender_bind_codes,
+            session_info.sender_info.union_id,
+            session_info.sender_id,
+            "core.bind.message.start.private.prompt",
+            extra={"target_union_id": session_info.target_info.union_id, "is_private": True},
+        )
+    # 会话组绑定会改动整个会话的数据，需要管理员权限；私聊则无此顾虑，故在此处而非命令级校验。
+    if not await msg.check_permission():
+        await msg.finish(I18NContext("parser.admin.permission.denied.command"))
     await _issue_bind_code(
         msg,
-        _sender_bind_codes,
-        msg.session_info.sender_info.union_id,
-        msg.session_info.sender_id,
-        "core.bind.message.self.code.prompt",
+        _target_bind_codes,
+        session_info.target_info.union_id,
+        session_info.target_id,
+        "core.bind.message.target.code.prompt",
+        extra={"is_private": False},
     )
 
 
@@ -415,17 +511,6 @@ async def _(msg: Bot.MessageSession):
     )
 
 
-@b.command("target start {{I18N:core.bind.help.target.start}}", required_admin=True)
-async def _(msg: Bot.MessageSession):
-    await _issue_bind_code(
-        msg,
-        _target_bind_codes,
-        msg.session_info.target_info.union_id,
-        msg.session_info.target_id,
-        "core.bind.message.target.code.prompt",
-    )
-
-
 @b.command("target remove <target> {{I18N:core.bind.help.target.remove}}", required_admin=True)
 async def _(msg: Bot.MessageSession, target: str):
     target_info = msg.session_info.target_info
@@ -442,6 +527,72 @@ async def _(msg: Bot.MessageSession, target: str):
     await msg.finish(I18NContext("core.bind.message.target.remove.success", id=target, disable_joke=True))
 
 
+async def _bind_private(msg: Bot.MessageSession, entry: dict) -> None:
+    """
+    完成一次私聊绑定：账号组与会话组一并合并。
+
+    私聊里「这个账号」与「这段私聊」指的是同一件事，只并其一会让另一半的数据留在原处。
+    两者共用一次确认后一起执行，避免用户在第二次确认时取消而停在只绑一半的状态。
+
+    :param entry: 绑定码携带的发起方信息。
+    """
+    session_info = msg.session_info
+    sender_current = session_info.sender_info
+    target_current = session_info.target_info
+
+    # 生成绑定码的一方为发起方，冲突数据默认以发起方为准。
+    sender_initiator = await SenderInfo.get_or_none(union_id=entry["union_id"])
+    target_initiator = await TargetInfo.get_or_none(union_id=entry["target_union_id"])
+    if not sender_initiator or not target_initiator:
+        await msg.finish(I18NContext("core.bind.message.code.invalid"))
+
+    # 任一侧已同组则只并另一侧；两侧都已同组说明这枚码来自本方，无需绑定。
+    sender_plan = (
+        await _plan_sender_merge(sender_initiator, sender_current)
+        if sender_initiator.union_id != sender_current.union_id
+        else None
+    )
+    target_plan = (
+        await _plan_target_merge(target_initiator, target_current)
+        if target_initiator.union_id != target_current.union_id
+        else None
+    )
+    if not sender_plan and not target_plan:
+        await msg.finish(I18NContext("core.bind.message.self.same"))
+
+    lines = [I18NContext("core.bind.message.start.private.confirm")]
+    for plan in (sender_plan, target_plan):
+        if plan:
+            lines += plan["lines"]
+    if not await msg.wait_confirm(lines):
+        await msg.finish()
+
+    # 冲突选择按域分别询问，两域的模块表互不相交，各自的选择不会互相影响
+    sender_keep = await _choose_conflicts(msg, sender_plan["conflicts"]) if sender_plan else set()
+    target_keep = await _choose_conflicts(msg, target_plan["conflicts"]) if target_plan else set()
+
+    merged_sender = await _apply_sender_merge(sender_plan, sender_keep) if sender_plan else sender_current
+    merged_target = await _apply_target_merge(target_plan, target_keep) if target_plan else target_current
+    if not merged_sender or not merged_target:
+        await msg.finish(I18NContext("core.bind.message.start.private.failed"))
+
+    await session_info.refresh_info()
+    sender_ids = await merged_sender.list_bound_ids()
+    target_ids = await merged_target.list_bound_ids()
+    await msg.finish(
+        [
+            I18NContext("core.bind.message.self.success", id=merged_sender.union_id, disable_joke=True),
+            I18NContext("core.bind.message.self.info.bound", count=len(sender_ids)),
+        ]
+        + _id_lines(sender_ids)
+        + [
+            I18NContext("core.bind.message.target.success", id=merged_target.union_id, disable_joke=True),
+            I18NContext("core.bind.message.target.info.bound", count=len(target_ids)),
+        ]
+        + await _target_lines(merged_target.union_id, target_ids)
+    )
+
+
 @b.command("token <code> {{I18N:core.bind.help.token}}")
 async def _(msg: Bot.MessageSession, code: str):
     taken = _take_code(code)
@@ -449,29 +600,15 @@ async def _(msg: Bot.MessageSession, code: str):
         await msg.finish(I18NContext("core.bind.message.code.invalid"))
     scope, entry = taken
 
+    # 绑定码的生成与使用须处于同类场景：私聊码带着发起方的会话组，若在群里兑换，
+    # 会把一个群的数据并进对方的私聊；群码在私聊里兑换同理。
+    if entry["is_private"] != msg.session_info.is_private:
+        await msg.finish(I18NContext("core.bind.message.code.scene.mismatch"))
+
     if scope == UNION_SCOPE_SENDER:
-        current = msg.session_info.sender_info
-        if entry["union_id"] == current.union_id:
-            await msg.finish(I18NContext("core.bind.message.self.same"))
-        # 生成绑定码的一方为发起方，冲突数据默认以发起方为准。
-        initiator = await SenderInfo.get_or_none(union_id=entry["union_id"])
-        if not initiator:
-            await msg.finish(I18NContext("core.bind.message.code.invalid"))
+        await _bind_private(msg, entry)
 
-        merged = await _merge_sender_unions(msg, initiator, current)
-        if not merged:
-            await msg.finish()
-        await msg.session_info.refresh_info()
-        bound_ids = await merged.list_bound_ids()
-        await msg.finish(
-            [
-                I18NContext("core.bind.message.self.success", id=merged.union_id, disable_joke=True),
-                I18NContext("core.bind.message.self.info.bound", count=len(bound_ids)),
-            ]
-            + _id_lines(bound_ids)
-        )
-
-    # 会话组绑定会改动整个会话的数据，与 target start 一样需要管理员权限。
+    # 会话组绑定会改动整个会话的数据，与 bind start 一样需要管理员权限。
     if not await msg.check_permission():
         await msg.finish(I18NContext("parser.admin.permission.denied.command"))
 

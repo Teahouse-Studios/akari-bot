@@ -100,6 +100,7 @@ async def msg_handler(message: types.Message):
         sender_id=sender_id,
         sender_name=message.from_user.username,
         target_from=target_from,
+        is_private=message.chat.type == "private",
         sender_from=sender_prefix,
         client_name=client_name,
         message_id=str(message.message_id),

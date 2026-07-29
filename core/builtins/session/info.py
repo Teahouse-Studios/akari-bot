@@ -94,6 +94,9 @@ class SessionInfo:
     next_hops: list[str] = []
     ctx_slot: int | None = 0
     fetch: bool = False
+    # 是否为私聊场景。由平台适配器在构造会话时判定，各平台对「私聊」的表达互不相同
+    # （QQ 为 Private、Discord 为 DM 频道、QQ 官方分 C2C 与频道私信等），核心不作推断。
+    is_private: bool = False
     require_enable_modules: bool = True
     require_check_dirty_words: bool = False
     use_url_manager: bool = False
@@ -117,6 +120,7 @@ class SessionInfo:
         prefixes: list[str] | None = [],  # skipcq
         ctx_slot: int = 0,
         fetch: bool = False,
+        is_private: bool = False,
         create: bool = True,
         features: Features | None = None,
         tmp: dict[str, str] | None = None,
@@ -182,6 +186,7 @@ class SessionInfo:
             prefixes=prefixes,
             ctx_slot=ctx_slot,
             fetch=fetch,
+            is_private=is_private,
             tmp=tmp,
         )
 

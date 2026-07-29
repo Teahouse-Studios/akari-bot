@@ -136,7 +136,7 @@ class Bot:
 
     @classmethod
     async def fetch_target(
-        cls, target_id: str, sender_id: str | None = None, create: bool = False
+        cls, target_id: str, sender_id: str | None = None, create: bool = False, is_private: bool = False
     ) -> FetchedSessionInfo | None:
         """
         根据场景 ID 获取消息会话信息。
@@ -146,13 +146,15 @@ class Bot:
         :param target_id: 场景 ID
         :param sender_id: 用户 ID（可选）
         :param create: 如果目标不存在是否创建
+        :param is_private: 该场景是否为私聊。主动获取的会话没有平台事件可依据，
+                           核心也不掌握各平台对私聊前缀的表达，故须由调用方指明，缺省按非私聊处理
         :return: 抓取的会话信息，或 None（获取失败）
         """
         try:
             Logger.trace(f"Fetching target {target_id}")
             # 创建抓取的会话信息
             session = await FetchedSessionInfo.assign(
-                target_id=target_id, sender_id=sender_id, fetch=True, create=create
+                target_id=target_id, sender_id=sender_id, fetch=True, create=create, is_private=is_private
             )
         except Exception:
             return None
