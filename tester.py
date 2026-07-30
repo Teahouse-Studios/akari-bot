@@ -2,13 +2,57 @@ from core import check_python_version  # skipcq
 
 check_python_version()  # noqa
 
+import atexit
+import os
+import shutil
+import tempfile
+from pathlib import Path
+
+import tomlkit
+
+# ========== 测试配置引导 ==========
+TEST_CONFIG_PATH_ENV = "AKARI_CONFIG_PATH"  # 须与 core.constants.path.CONFIG_PATH_ENV 一致
+TEST_CONFIG_TEMPLATE_PATH = Path("assets/config_store/zh_cn")
+
+# 测试所需的配置覆盖项，格式为 (文件名, 表名, 键名, 值)。
+# 每加一项都须写明缘由：此处改的是全体用例共享的前提。
+TEST_CONFIG_OVERRIDES: list[tuple[str, str, str, object]] = [
+    # 模板默认关闭花瓣功能。关闭时 petal 模块在生产环境根本不会加载，
+    # 而测试用的 mock parser 不看 load 声明，命令仍会匹配，回执便落到「今日已经签到了」。
+    ("config.toml", "config", "enable_petal", True),
+]
+
+
+def _install_test_config() -> Path:
+    """
+    铺好一份测试专用配置，并令其后的导入一律指向它。
+
+    :return: 临时配置目录的路径。
+    """
+    path = Path(tempfile.mkdtemp(prefix="akari_test_config_"))
+    if TEST_CONFIG_TEMPLATE_PATH.is_dir():
+        shutil.copytree(TEST_CONFIG_TEMPLATE_PATH, path, dirs_exist_ok=True)
+
+    for filename, table, key, value in TEST_CONFIG_OVERRIDES:
+        file_path = path / filename
+        document = tomlkit.parse(file_path.read_text(encoding="utf-8")) if file_path.is_file() else tomlkit.document()
+        if table not in document:
+            document[table] = tomlkit.table()
+        document[table][key] = value
+        file_path.write_text(tomlkit.dumps(document), encoding="utf-8")
+
+    os.environ[TEST_CONFIG_PATH_ENV] = str(path)
+    atexit.register(lambda: shutil.rmtree(path, ignore_errors=True))
+    return path
+
+
+test_config_path = _install_test_config()
+
 import asyncio
 import glob
 import importlib.util
 import inspect
-import os
 import sys
-from pathlib import Path
 from types import FunctionType
 from typing import TypedDict
 

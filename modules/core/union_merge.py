@@ -1,20 +1,25 @@
+import os
 import string
 from datetime import datetime, UTC
+from pathlib import Path
+
+import orjson
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
 from core.config.base import CoreConfig
+from core.constants.path import union_merge_logs_path
 from core.database.models import (
     UNION_SCOPE_SENDER,
     UNION_SCOPE_TARGET,
     SenderUnionInfo,
-    StoredData,
     TargetUnionInfo,
     TargetUnionBind,
     collect_union_conflicts,
     get_table_name,
     get_union_module_name,
 )
+from core.logger import Logger
 from core.utils.container import ExpiringTempDict
 from core.utils.random import Random
 
@@ -125,26 +130,79 @@ def id_lines(ids: list[str]) -> list:
     return [Plain(i, disable_joke=True) for i in ids]
 
 
-async def write_merge_log(new_union: str, scope: str, snapshot: dict) -> None:
+def merge_log_filename(timestamp: datetime, new_union: str) -> str:
     """
-    把合并前的快照写入存储，便于人工回溯。
+    拼出一次合并所用的日志文件名。
+
+    时间置于开头，目录按文件名排序即为时间顺序；微秒一并带上，同一秒内的两次合并不会撞名。
+    union ID 中的 ``|`` 须换成 ``-``：Windows 不接受文件名中的该字符。
+
+    :param timestamp: 合并发生的时间。
+    :param new_union: 合并后新建的组 ID。
+    :return: 文件名。
+    """
+    return f"{timestamp.strftime('%Y%m%d-%H%M%S-%f')}_{new_union.replace('|', '-')}.json"
+
+
+def read_merge_logs(directory: Path | None = None) -> list:
+    """
+    读取目录下的全部合并日志，按文件名（即时间顺序）排列。
+
+    单份文件缺失、无法读取或内容已损坏时跳过该份即可，不牵连其余记录。
+
+    :param directory: 日志目录，缺省为 :data:`union_merge_logs_path`。测试可传入临时目录。
+    :return: 日志记录列表。
+    """
+    logs_dir = directory or union_merge_logs_path
+    if not logs_dir.is_dir():
+        return []
+
+    logs = []
+    for log_path in sorted(logs_dir.glob("*.json")):
+        try:
+            logs.append(orjson.loads(log_path.read_bytes()))
+        except (OSError, orjson.JSONDecodeError):
+            Logger.exception(f"Failed to read union merge log from {log_path}: ")
+    return logs
+
+
+def write_merge_log(new_union: str, scope: str, snapshot: dict, directory: Path | None = None) -> None:
+    """
+    把合并前的快照单独写成一份日志文件，便于人工回溯。
+
+    记录写入 assets 下的 JSON 文件而非 ``StoredData``：这类快照只供人工翻阅，
+    存进数据库既要连库才能查看，又会与各模块的正常存储挤在同一张表里。
+
+    每次合并各留一份文件，而非共用一份累积的清单：单份文件写坏只损失那一次记录，
+    并发的两次合并也不必争抢同一份文件。
 
     :param new_union: 合并后新建的组 ID。
     :param scope: union 域。
     :param snapshot: 合并前的双方数据快照。
+    :param directory: 日志目录，缺省为 :data:`union_merge_logs_path`。测试可传入临时目录。
     """
-    stored, _ = await StoredData.get_or_create(stored_key=f"union_merge_log:{new_union}", defaults={"value": []})
-    logs = stored.value if isinstance(stored.value, list) else []
-    logs.append(
-        {
-            "timestamp": datetime.now(UTC).isoformat(),
-            "new_union": new_union,
-            "scope": scope,
-            **snapshot,
-        }
-    )
-    stored.value = logs
-    await stored.save()
+    logs_dir = directory or union_merge_logs_path
+    timestamp = datetime.now(UTC)
+    # 文件内容自带这几项，日志文件即便被改名或移走仍可辨认。
+    record = {
+        "timestamp": timestamp.isoformat(),
+        "new_union": new_union,
+        "scope": scope,
+        **snapshot,
+    }
+
+    log_path = logs_dir / merge_log_filename(timestamp, new_union)
+    # 先写临时文件再原子替换：直接落盘若在中途被强制结束，留下的是一份半截内容的日志，
+    # 读取时才发现损坏；经此一步，该文件要么完整要么不存在。
+    tmp_path = log_path.with_name(f"{log_path.name}.{os.getpid()}.tmp")
+    try:
+        logs_dir.mkdir(parents=True, exist_ok=True)
+        tmp_path.write_bytes(orjson.dumps(record, option=orjson.OPT_INDENT_2))
+        os.replace(tmp_path, log_path)
+    except OSError:
+        Logger.exception(f"Failed to write union merge log to {log_path}: ")
+    finally:
+        tmp_path.unlink(missing_ok=True)
 
 
 async def choose_conflicts(msg: Bot.MessageSession, conflicts: list[type]) -> set[str]:
@@ -253,7 +311,7 @@ async def apply_sender_merge(plan: dict, keep_other_tables: set[str]) -> SenderU
     }
     merged = await initiator.merge_union(current, keep_other_tables)
     if merged:
-        await write_merge_log(merged.union_id, UNION_SCOPE_SENDER, snapshot)
+        write_merge_log(merged.union_id, UNION_SCOPE_SENDER, snapshot)
     return merged
 
 
@@ -343,7 +401,7 @@ async def apply_target_merge(plan: dict, keep_other_tables: set[str]) -> TargetU
     }
     merged = await initiator.merge_union(current, keep_other_tables)
     if merged:
-        await write_merge_log(merged.union_id, UNION_SCOPE_TARGET, snapshot)
+        write_merge_log(merged.union_id, UNION_SCOPE_TARGET, snapshot)
     return merged
 
 
