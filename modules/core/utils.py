@@ -261,8 +261,6 @@ async def _(msg: Bot.MessageSession):
 
     sender_union_info = msg.session_info.sender_union_info
     target_union_info = msg.session_info.target_union_info
-    sender_bound_ids = await sender_union_info.list_bound_ids()
-    target_bound_ids = await target_union_info.list_bound_ids()
 
     await msg.finish(
         [
@@ -273,18 +271,13 @@ async def _(msg: Bot.MessageSession):
                 disable_joke=True,
             )
         ]
-        + perm
         + [
             I18NContext("core.message.whoami.union", id=sender_union_info.union_id, disable_joke=True),
-            I18NContext("core.message.whoami.union.bound", count=len(sender_bound_ids)),
         ]
-        # ID 是原样回显的数据，不能参与文本替换
-        + [Plain(i, disable_joke=True) for i in sender_bound_ids]
         + [
             I18NContext("core.message.whoami.target.union", id=target_union_info.union_id, disable_joke=True),
-            I18NContext("core.message.whoami.target.union.bound", count=len(target_bound_ids)),
         ]
-        + [Plain(i, disable_joke=True) for i in target_bound_ids]
+        + perm
     )
 
 

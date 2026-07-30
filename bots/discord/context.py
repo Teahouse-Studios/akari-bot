@@ -159,7 +159,7 @@ class DiscordContextManager(ContextManager):
                 channel = await discord_bot.fetch_channel(int(get_channel_id(session_info)))
                 message = await channel.fetch_message(int(msg_id))
                 if message:
-                    await message.support_delete(reason=reason)
+                    await message.delete(reason=reason)
                     Logger.info(f"Deleted message {msg_id} in session {session_info.session_id}")
             except discord.NotFound:
                 Logger.warning(f"Message {msg_id} not found in session {session_info.session_id}")
