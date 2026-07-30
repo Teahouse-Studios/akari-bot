@@ -261,10 +261,12 @@ class MessageSession:
             chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
 
         # ========== 步骤 2: 以后台任务方式发送消息 ==========
-        # wait=False 表示不等待返回，消息会异步发送
+        # wait=False 表示不等待返回，消息会异步发送。
+        # 须发送已归一化并通过安全检查的 chain，而非原始入参：后者可能是 bare 元素或字符串，
+        # 经队列的 MessageChain | MessageNodes 反序列化时会因缺少 values 而失败。
         await _queue_server.client_send_message(
             self.session_info,
-            message_chain,
+            chain,
             wait=False,
             enable_parse_message=enable_parse_message,
             enable_split_image=enable_split_image,
