@@ -49,6 +49,26 @@ async def _test_same_channel_claims_once():
         return False
 
 
+async def _test_repeat_from_same_session_not_duplicate():
+    """测试消息通道 - 同一会话在时间窗内重发不判定为重复"""
+    try:
+        union = await TargetUnionInfo.resolve_union("CHANTEST|Group|rep1")
+        await union.bind_id("CHANTEST|Group|rep2")
+        await TargetUnionBind.filter(union_id=union.union_id).update(channel_id=1)
+
+        first = await _fake_msg("CHANTEST|Group|rep1", "echo")
+        peer = await _fake_msg("CHANTEST|Group|rep2", "echo")
+
+        # 认领键只由通道与内容组成，不含发起方，重发的消息会撞上自身上一条留下的认领。
+        if await _claim_channel_message(first) or await _claim_channel_message(first):
+            return False
+        # 重发之后同通道的其它会话仍应避让，否则同一条消息会被响应两次。
+        return await _claim_channel_message(peer)
+
+    except Exception:
+        return False
+
+
 async def _test_outside_window_not_duplicate():
     """测试消息通道 - 超出时间窗的相同文本不判定为重复"""
     try:
@@ -94,6 +114,7 @@ async def test_channel_dedup(tester: Tester):
     """core.builtins.parser.message: 消息通道去重测试"""
     await tester.test(_test_alone_in_channel_never_claims, "单会话不认领测试")
     await tester.test(_test_same_channel_claims_once, "同通道抢占测试")
+    await tester.test(_test_repeat_from_same_session_not_duplicate, "同会话重发测试")
     await tester.test(_test_outside_window_not_duplicate, "超出时间窗测试")
     await tester.test(_test_different_channel_not_duplicate, "不同通道互不干扰测试")
 

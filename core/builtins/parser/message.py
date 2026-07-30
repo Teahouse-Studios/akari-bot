@@ -271,8 +271,8 @@ async def _claim_channel_message(msg: "Bot.MessageSession", display: str | None 
     """
     认领一条消息，并判断它是否已被同一消息通道内的另一个会话处理。
 
-    跨平台的消息 ID 无法互通，判定「同一条消息」只能依据内容与时间：纯文本一致，
-    且两次接收的时间相差不超过 :data:`CHANNEL_DEDUP_WINDOW` 秒。
+    跨平台的消息 ID 无法互通，判定「同一条消息」只能依据来源、内容与时间：出自通道内的另一个会话，
+    纯文本一致，且两次接收的时间相差不超过 :data:`CHANNEL_DEDUP_WINDOW` 秒。
 
     :param msg: 消息会话。
     :param display: 参与判定的文本，留空则取命令文本。
@@ -301,8 +301,12 @@ async def _claim_channel_message(msg: "Bot.MessageSession", display: str | None 
     # 以下查表与写入之间不得出现 await：在单线程事件循环下该段方为原子操作，认领才不会被并发打断。
     claimed = channel_claim_cache.get(token)
     claimed_at = claimed.get("timestamp") if claimed else None
-    if claimed_at and abs(now - claimed_at) <= CHANNEL_DEDUP_WINDOW:
-        Logger.debug(f"Ignored duplicate message claimed by {claimed.get('target_id')}: {display}")
+    claimed_by = claimed.get("target_id") if claimed else None
+    # 认领方须与自身不同方可判定为重复。认领键只由通道与内容组成，不含发起方，
+    # 若不加这一判据，用户在时间窗内重复发送同样的内容会撞上自己上一条留下的认领，该条消息将无人响应。
+    # 此情形照常落至下方改写认领记录，同通道的其它会话因而仍按最新一次到达的时间避让。
+    if claimed_at and claimed_by != msg.session_info.target_id and abs(now - claimed_at) <= CHANNEL_DEDUP_WINDOW:
+        Logger.debug(f"Ignored duplicate message claimed by {claimed_by}: {display}")
         return True
 
     channel_claim_cache[token] = ExpiringTempDict(
