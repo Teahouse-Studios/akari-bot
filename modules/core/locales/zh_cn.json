@@ -16,7 +16,7 @@
     "core.bind.message.auto.confirm.inherit": "数据的继承方式：语言沿用发起方；模块开关、管理员名单、限制名单取两侧并集；会话设置逐项合并，同名项以发起方为准；模块数据仅一侧有则直接带过来，两侧都有会逐个询问保留哪一份。两个会话还会被标记为同一条消息通道：此后同一条命令只由其中一个机器人执行，推送也只发送一次，双方并会记下对方的机器人账号，不再把对方发出的消息当成命令解析。合并后无法撤销。",
     "core.bind.message.auto.success": "已与当前会话内的其他机器人合并：会话组 ${id}，消息通道 ${channel} 号。此后同一条命令只会由其中一个机器人执行，推送也只会发送一次。",
     "core.bind.message.auto.timeout": "等待超时，未在当前会话内找到其他机器人。",
-    "core.bind.message.channel.hint": "标注为同一条消息通道的会话会被当作现实中的同一个会话（例如一个群里同时有两个机器人）：同一条命令只由其中一个执行，推送也只发送一次。默认每个会话各占一条通道，互不影响。\n需要合并请用“bind auto”自动配对，或用“bind channel set”手动指定同一个通道号。",
+    "core.bind.message.channel.hint": "标注为同一条消息通道的会话会被当作现实中的同一个会话（例如一个群里同时有两个机器人）：同一条命令只由其中一个执行，推送也只发送一次。默认每个会话各占一条通道，互不影响。\n需要合并消息通道请用“bind auto”自动配对，或用“bind channel set”手动指定同一个通道号。",
     "core.bind.message.channel.info": "当前会话的消息通道：${channel} 号",
     "core.bind.message.channel.info.shared": "同通道的会话共 ${count} 个：",
     "core.bind.message.channel.reset.success": "已让当前会话脱离原有通道，现单独占用 ${channel} 号通道。",
