@@ -4,6 +4,7 @@ import asyncio
 from unittest.mock import patch
 
 import modules.core.bind as bind
+from modules.core.union_merge import generate_code
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
 from core.constants.exceptions import SessionFinished
@@ -27,7 +28,7 @@ def _issue_private_code(msg: MessageSession) -> dict:
     """
     以私聊身份生成一枚绑定码并立即取出，返回绑定码携带的信息。
     """
-    code = bind._generate_code(
+    code = generate_code(
         bind._sender_bind_codes,
         msg.session_info.sender_union_info.union_id,
         msg.session_info.sender_id,

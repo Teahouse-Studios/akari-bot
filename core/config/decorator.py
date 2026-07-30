@@ -58,9 +58,8 @@ def _process_class(cls: type[T], table_name, secret=False) -> type[T]:
     :param secret: 是否将该配置的值视为敏感信息进行加密存储（默认 False）
     :return: 处理后的类对象，具有自动生成的初始化和字符串表示方法
     """
-    # 获取类的所有类型注解（排除私有属性）
     cls_annotations = {k: v for k, v in inspect.get_annotations(cls).items() if not k.startswith("__")}
-    # 如果没有注解，则使用类属性本身作为注解
+    # 未写类型标注时退回类属性本身，使无标注的模板仍能生成配置项
     if not cls_annotations:
         cls_annotations = {k: Any for k, _ in vars(cls).items() if not k.startswith("__")}
 
@@ -77,50 +76,26 @@ def _process_class(cls: type[T], table_name, secret=False) -> type[T]:
         for field_name, field in config_fields.items():
             # 默认值须取自字段登记表。cls_annotations 存放的是类型标注而非默认值，
             # 此前从中取值会使实例属性得到类型对象本身（如 <class 'int'>）而非 181
-            __value = kwargs.get(field_name, field["default"])
-            # 将值设置为对象的属性
-            setattr(self, field_name, __value)
+            setattr(self, field_name, kwargs.get(field_name, field["default"]))
 
     def __repr__(self):
-        """自动生成的字符串表示方法。
-
-        返回一个形如"ClassName(field1=value1, field2=value2, ...)"的字符串，
-        便于调试和日志记录。
+        """自动生成的字符串表示方法，形如 ``ClassName(field1=value1, ...)``。
 
         :return: 对象的字符串表示
         """
-        # 遍历所有字段，构建"field=value"的字符串列表
-        # 使用 `repr()`` 函数获取值的完整字符串表示（包括引号）
         fields_str = ", ".join(f"{name}={getattr(self, name)!r}" for name in cls_annotations)
-        # 返回标准的 Python 对象表示格式：ClassName(...)
         return f"{cls.__name__}({fields_str})"
 
     def __generate_config_file():
-        """生成配置文件。
-
-        遍历所有类字段，为每个字段在配置文件中创建对应的配置项。
-        该函数会：
-        1. 检查字段类型是否为允许的类型
-        2. 从现有配置中加载数据
-        3. 如果配置项不存在，则创建新的配置项
-        4. 保存配置文件
-
-        处理的类型包括：
-        - ALLOWED_TYPES 中定义的基本类型
-        - Union 类型（只要所有分支都在 ALLOWED_TYPES 中）
-        """
+        """登记全部字段，并为配置文件中缺失的项补写默认值。"""
         for attr_name, attr_type in cls_annotations.items():
-            # 跳过私有属性（以 `__` 开头的属性）
             if not attr_name.startswith("__"):
-                # 从类定义中获取该属性的默认值
                 # 仅有类型标注而无赋值，表示该项必填且无默认值：此处取 None 交由下游处理，
                 # 生成时将填入 <Replace me with ...> 占位符，在用户填写之前读取该项一律返回 None
                 __attr = getattr(cls, attr_name, None)
                 __attr_type = attr_type
 
-                # 检查类型是否在允许列表中
-                # 对于 Union 类型（如 str | int），需要检查其所有分支是否都被允许
-                # 如果类型不被允许，则将其设置为 None
+                # 含不受支持成员的联合类型（如 str | None）一律置空，下游据此填入通用占位符
                 if __attr_type not in ALLOWED_TYPES and (
                     isinstance(__attr_type, UnionType) and any(k not in ALLOWED_TYPES for k in get_args(__attr_type))
                 ):

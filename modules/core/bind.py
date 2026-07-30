@@ -15,25 +15,18 @@ from core.utils.func import is_int
 from core.utils.random import Random
 
 # union 合并的通用逻辑抽至 union_merge，与 merge 模块共用。
-# 此处沿用下划线别名，使既有测试对 bind 私有名的引用保持可用。
 from .union_merge import (
-    BIND_CODE_ALPHABET,  # noqa: F401  # 供既有测试引用
     BIND_CODE_EXPIRED,
-    BIND_CODE_LENGTH,  # noqa: F401  # 供既有测试引用
     apply_sender_merge as _apply_sender_merge,
     apply_target_merge as _apply_target_merge,
     choose_conflicts as _choose_conflicts,
-    conflict_lines as _conflict_lines,  # noqa: F401  # 供既有测试引用
-    generate_code as _generate_code,  # noqa: F401  # 供既有测试引用
     id_lines as _id_lines,
     issue_code,
-    merge_sender_unions as _merge_sender_unions,  # noqa: F401  # 供既有测试引用
     merge_target_unions as _merge_target_unions,
     plan_sender_merge as _plan_sender_merge,
     plan_target_merge as _plan_target_merge,
     take_code,
     target_lines as _target_lines,
-    write_merge_log as _write_merge_log,  # noqa: F401  # 供既有测试引用
 )
 
 HANDSHAKE_EXPIRED = 30  # 通道握手超时（秒）

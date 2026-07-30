@@ -130,20 +130,6 @@ def id_lines(ids: list[str]) -> list:
     return [Plain(i, disable_joke=True) for i in ids]
 
 
-def merge_log_filename(timestamp: datetime, new_union: str) -> str:
-    """
-    拼出一次合并所用的日志文件名。
-
-    时间置于开头，目录按文件名排序即为时间顺序；微秒一并带上，同一秒内的两次合并不会撞名。
-    union ID 中的 ``|`` 须换成 ``-``：Windows 不接受文件名中的该字符。
-
-    :param timestamp: 合并发生的时间。
-    :param new_union: 合并后新建的组 ID。
-    :return: 文件名。
-    """
-    return f"{timestamp.strftime('%Y%m%d-%H%M%S-%f')}_{new_union.replace('|', '-')}.json"
-
-
 def read_merge_logs(directory: Path | None = None) -> list:
     """
     读取目录下的全部合并日志，按文件名（即时间顺序）排列。
@@ -191,7 +177,9 @@ def write_merge_log(new_union: str, scope: str, snapshot: dict, directory: Path 
         **snapshot,
     }
 
-    log_path = logs_dir / merge_log_filename(timestamp, new_union)
+    # 时间置于文件名开头，目录按名称排序即为时间顺序；微秒一并带上，同一秒内的两次合并不会撞名。
+    # union ID 中的 "|" 须换成 "-"：Windows 不接受该字符出现在文件名中。
+    log_path = logs_dir / f"{timestamp.strftime('%Y%m%d-%H%M%S-%f')}_{new_union.replace('|', '-')}.json"
     # 先写临时文件再原子替换：直接落盘若在中途被强制结束，留下的是一份半截内容的日志，
     # 读取时才发现损坏；经此一步，该文件要么完整要么不存在。
     tmp_path = log_path.with_name(f"{log_path.name}.{os.getpid()}.tmp")
