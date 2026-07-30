@@ -1,4 +1,4 @@
-from typing import Self, TYPE_CHECKING
+from typing import Literal, Self, TYPE_CHECKING, overload
 
 from tortoise.models import Model
 
@@ -32,6 +32,18 @@ class DBModel(Model):
     class Meta:
         abstract = True
 
+    @overload
+    @classmethod
+    async def get_by_target_id(
+        cls, target_id: "Bot.MessageSession | Bot.FetchedMessageSession | str", create: Literal[True] = True
+    ) -> Self: ...
+
+    @overload
+    @classmethod
+    async def get_by_target_id(
+        cls, target_id: "Bot.MessageSession | Bot.FetchedMessageSession | str", create: bool
+    ) -> Self | None: ...
+
     @classmethod
     async def get_by_target_id(
         cls, target_id: "Bot.MessageSession | Bot.FetchedMessageSession | str", create: bool = True
@@ -62,6 +74,18 @@ class DBModel(Model):
         if create:
             return (await cls.get_or_create(union_id=union.union_id))[0]
         return await cls.get_or_none(union_id=union.union_id)
+
+    @overload
+    @classmethod
+    async def get_by_sender_id(
+        cls, sender_id: "Bot.MessageSession | Bot.FetchedMessageSession | str", create: Literal[True] = True
+    ) -> Self: ...
+
+    @overload
+    @classmethod
+    async def get_by_sender_id(
+        cls, sender_id: "Bot.MessageSession | Bot.FetchedMessageSession | str", create: bool
+    ) -> Self | None: ...
 
     @classmethod
     async def get_by_sender_id(

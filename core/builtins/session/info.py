@@ -10,14 +10,16 @@ from __future__ import annotations
 import asyncio
 import uuid
 from datetime import timedelta, datetime
+from typing import Self
 
-from attrs import define
+from attrs import define, field
 
 from core.alive import Alive
 from core.builtins.message.chain import MessageChain
 from core.builtins.session.features import Features
 from core.builtins.utils import command_prefix
 from core.config.base import CoreConfig
+from core.constants.default import default_locale
 from core.database.models import TargetUnionInfo, SenderUnionInfo
 from core.i18n import Locale
 from core.utils.func import parse_time_string
@@ -75,15 +77,19 @@ class SessionInfo:
     support_private_msg: bool = False
     timestamp: float | None = None
     session_id: str | None = None
-    target_union_info: TargetUnionInfo | None = None
+    # 场景 union 由 assign() 解析，解析不出即抛错，故此后必定有值；
+    # 用户 union 则不同，没有 sender_id 的会话（如主动推送）本就没有它。
+    target_union_info: TargetUnionInfo = field(default=None)
     sender_union_info: SenderUnionInfo | None = None
-    target_union_id: str | None = None
+    target_union_id: str = ""
     sender_union_id: str | None = None
     # 本会话在其场景组内的消息通道号，同组同号即现实中的同一个会话，详见 channel_key
     target_channel_id: int = 1
     banned_users: list | None = None
     custom_admins: list | None = None
-    locale: Locale | None = None
+    # 会话一律经 assign() 建立，其中必定按场景语言赋值；此处的默认值仅用于
+    # 反序列化等缺省场景，故声明为非可选，免去各调用点无谓的判空。
+    locale: Locale = field(factory=lambda: Locale(default_locale))
     _tz_offset: str | None = None
     timezone_offset: timedelta | None = None
     bot_name: str | None = None
@@ -91,9 +97,9 @@ class SessionInfo:
     muted: bool | None = None
     enabled_modules: list | None = None
     petal: int | None = None
-    prefixes: list[str] = []
+    prefixes: list[str] = field(factory=list)
     # 主动推送的下一跳场景 ID 列表：本跳发送失败时，由客户端回调服务端改用列表中的下一个场景重发
-    next_hops: list[str] = []
+    next_hops: list[str] = field(factory=list)
     ctx_slot: int | None = 0
     fetch: bool = False
     # 是否为私聊场景。由平台适配器在构造会话时判定，各平台对「私聊」的表达互不相同
@@ -104,7 +110,8 @@ class SessionInfo:
     use_url_manager: bool = False
     use_url_md_format: bool = False
     use_running_mention: bool = True
-    tmp: dict[str, str] | None = {}
+    # 单次处理内的临时数据，assign() 必定赋值，且会被就地写入，故须逐实例新建
+    tmp: dict[str, str] = field(factory=dict)
 
     @classmethod
     async def assign(
@@ -126,7 +133,7 @@ class SessionInfo:
         create: bool = True,
         features: Features | None = None,
         tmp: dict[str, str] | None = None,
-    ) -> SessionInfo:
+    ) -> Self:
         """
         用于将参数传入 SessionInfo 对象中。
 
@@ -208,12 +215,16 @@ class SessionInfo:
 
     async def refresh_info(self):
         # 同 assign()：两次解析互不依赖，并发发出
-        self.sender_union_info, self.target_union_info = await asyncio.gather(
+        sender_union_info, target_union_info = await asyncio.gather(
             SenderUnionInfo.get_by_sender_id(self.sender_id) if self.sender_id else _none(),
             TargetUnionInfo.get_by_target_id(self.target_id) if self.target_id else _none(),
         )
-        self.sender_union_id = self.sender_union_info.union_id if self.sender_union_info else None
-        self.target_union_id = self.target_union_info.union_id if self.target_union_info else None
+        self.sender_union_info = sender_union_info
+        self.sender_union_id = sender_union_info.union_id if sender_union_info else None
+        # 场景 union 解析不出时保留原值，置空只会把问题推迟到后续访问处才暴露
+        if target_union_info:
+            self.target_union_info = target_union_info
+            self.target_union_id = target_union_info.union_id
         bind = self.target_union_info.bind if self.target_union_info else None
         self.target_channel_id = bind.channel_id if bind else 1
 

@@ -123,7 +123,7 @@ class Bind:
 
             return decorator
 
-        def hook(self, name: str = None):
+        def hook(self, name: str | None = None):
             def decorator(function):
                 ModulesManager.bind_to_module(self.module_name, HookMeta(function=function, name=name))
                 return function

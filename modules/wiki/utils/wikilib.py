@@ -5,7 +5,7 @@ from copy import deepcopy
 from datetime import datetime, UTC
 
 import orjson
-from attrs import define
+from attrs import define, field
 from bs4 import BeautifulSoup
 
 import core.utils.html2text as html2text
@@ -33,9 +33,11 @@ class InvalidWikiError(Exception):
 @define
 class QueryInfo:
     api: str
-    headers: dict[str, str] = {"accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"}
+    headers: dict[str, str] = field(
+        factory=lambda: {"accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"}
+    )
     prefix: str = ""
-    locale: Locale = Locale(default_locale)
+    locale: Locale = field(factory=lambda: Locale(default_locale))
 
     @classmethod
     def assign(
@@ -52,13 +54,13 @@ class QueryInfo:
 class WikiInfo:
     api: str = ""
     articlepath: str = ""
-    extensions: list[str] = []
-    interwiki: dict[str, str] = {}
+    extensions: list[str] = field(factory=list)
+    interwiki: dict[str, str] = field(factory=dict)
     realurl: str = ""
     name: str = ""
-    namespaces: dict[str, int] = {}
-    namespaces_local: dict[str, str] = {}
-    namespacealiases: dict[str, str] = {}
+    namespaces: dict[str, int] = field(factory=dict)
+    namespaces_local: dict[str, str] = field(factory=dict)
+    namespacealiases: dict[str, str] = field(factory=dict)
     in_allowlist: bool = False
     in_blocklist: bool = False
     script: str = ""
@@ -100,7 +102,7 @@ class PageInfo:
     is_talk_page: bool = False
     is_forum: bool = False
     is_forum_topic: bool = False
-    forum_data: dict = {}
+    forum_data: dict = field(factory=dict)
 
 
 class WikiLib:
@@ -510,8 +512,8 @@ class WikiLib:
 
     async def parse_page_info(
         self,
-        title: str = None,
-        pageid: int = None,
+        title: str | None = None,
+        pageid: int | None = None,
         inline=False,
         lang=None,
         _doc=False,
@@ -519,7 +521,7 @@ class WikiLib:
         _prefix="",
         _iw=False,
         _search=False,
-        session: MessageSession = None,
+        session: MessageSession | None = None,
     ) -> PageInfo:
         """
         :param title: 页面标题，如果为None，则使用pageid。

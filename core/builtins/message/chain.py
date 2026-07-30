@@ -224,7 +224,10 @@ class MessageChain:
         return True
 
     def as_sendable(
-        self, session_info: SessionInfo | MessageSession = None, parse_message: bool = True, disable_markdown=False
+        self,
+        session_info: SessionInfo | MessageSession | None = None,
+        parse_message: bool = True,
+        disable_markdown=False,
     ) -> ConvertedMessageChain:
         """
         将消息链转换为可发送的格式。
@@ -545,6 +548,8 @@ class MessageChain:
             return MessageChain.assign(self.values + other.values)
         if isinstance(other, list):
             return MessageChain.assign(self.values + other)
+        if isinstance(other, MessageElement):
+            return MessageChain.assign(self.values + [other])
         raise TypeError(f'Unsupported operand type(s) for +: "MessageChain" and "{type(other).__name__}"')
 
     def __radd__(self, other):
@@ -559,6 +564,8 @@ class MessageChain:
             return MessageChain.assign(other.values + self.values)
         if isinstance(other, list):
             return MessageChain.assign(other + self.values)
+        if isinstance(other, MessageElement):
+            return MessageChain.assign(self.values + [other])
         raise TypeError(f'Unsupported operand type(s) for +: "{type(other).__name__}" and "MessageChain"')
 
     def __iadd__(self, other):
@@ -575,6 +582,8 @@ class MessageChain:
             self.values += other.values
         elif isinstance(other, list):
             self.values += other
+        elif isinstance(other, MessageElement):
+            self.values += [other]
         else:
             raise TypeError(f'Unsupported operand type(s) for +=: "MessageChain" and "{type(other).__name__}"')
         return self

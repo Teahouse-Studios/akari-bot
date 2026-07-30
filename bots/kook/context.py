@@ -53,8 +53,8 @@ class KOOKContextManager(ContextManager):
             channel = await bot.client.fetch_public_channel(session_info.get_common_target_id())
             author = session_info.get_common_sender_id()
         else:
-            ctx: Message = cls.context.get(session_info.session_id)
-            Logger.warning(str(ctx.ctx.channel.id))
+            ctx: Message = cls.context[session_info.session_id]
+            Logger.info("Identifying for channel: " + str(ctx.ctx.channel.id))
             channel = await bot.client.fetch_public_channel(ctx.ctx.channel.id)
             author = ctx.author.id
         guild = await bot.client.fetch_guild(channel.guild_id)
@@ -78,7 +78,7 @@ class KOOKContextManager(ContextManager):
     ) -> list[str]:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
-        ctx: Message = cls.context.get(session_info.session_id)
+        ctx: Message | None = cls.context.get(session_info.session_id)
         _channel = None
         if not ctx:
             _channel = await get_channel(session_info)
@@ -88,6 +88,7 @@ class KOOKContextManager(ContextManager):
         msg_ids = []
         if isinstance(message, MessageNodes):
             Logger.error("This session does not support message nodes, check if bug exists.")
+            return []
 
         for x in message.as_sendable(session_info, parse_message=enable_parse_message):
             if isinstance(x, PlainElement):

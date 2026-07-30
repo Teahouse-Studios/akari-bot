@@ -192,7 +192,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @ana.command("modules [<rank>]")
-async def _(msg: Bot.MessageSession, rank: int = None):
+async def _(msg: Bot.MessageSession, rank: int | None = None):
     rank = rank if rank and rank > 0 else 30
     if enable_analytics:
         try:

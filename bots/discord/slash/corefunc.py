@@ -19,7 +19,7 @@ async def _(ctx: discord.ApplicationContext, module: str):
 
 @discord_bot.slash_command(name="locale", description="Set the bot running languages.")
 @discord.option(name="lang", description="Supported language codes.", autocomplete=auto_get_lang)
-async def _(ctx: discord.ApplicationContext, lang: str = None):
+async def _(ctx: discord.ApplicationContext, lang: str | None = None):
     if lang:
         await slash_parser(ctx, lang)
     else:

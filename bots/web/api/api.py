@@ -9,7 +9,7 @@ from fastapi import HTTPException, Request, Query
 from fastapi.responses import Response
 from tortoise.expressions import Q
 
-from bots.web.client import app, limiter, enable_https
+from bots.web.client import app, limiter, enable_https, get_client_ip
 from core.builtins.utils import command_prefix
 from bots.web.config import WebConfig
 from core.config.base import BaseConfig, CoreConfig
@@ -242,7 +242,7 @@ async def get_config_file(request: Request, cfg_filename: str):
 
 @app.put("/api/config/{cfg_filename}")
 async def edit_config_file(request: Request, cfg_filename: str):
-    ip = request.client.host
+    ip = get_client_ip(request)
     try:
         verify_jwt(request)
 
@@ -328,7 +328,7 @@ async def get_target_info(request: Request, target_id: str):
 
 @app.patch("/api/target/{target_id}")
 async def edit_target_info(request: Request, target_id: str):
-    ip = request.client.host
+    ip = get_client_ip(request)
     try:
         verify_jwt(request)
 
@@ -385,7 +385,7 @@ async def edit_target_info(request: Request, target_id: str):
 
 @app.delete("/api/target/{target_id}")
 async def delete_target_info(request: Request, target_id: str):
-    ip = request.client.host
+    ip = get_client_ip(request)
     try:
         verify_jwt(request)
 
@@ -466,7 +466,7 @@ async def get_sender_info(request: Request, sender_id: str):
 
 @app.patch("/api/sender/{sender_id}")
 async def edit_sender_info(request: Request, sender_id: str):
-    ip = request.client.host
+    ip = get_client_ip(request)
     try:
         verify_jwt(request)
 
@@ -517,7 +517,7 @@ async def edit_sender_info(request: Request, sender_id: str):
 
 @app.delete("/api/sender/{sender_id}")
 async def delete_sender_info(request: Request, sender_id: str):
-    ip = request.client.host
+    ip = get_client_ip(request)
     try:
         verify_jwt(request)
 
@@ -592,7 +592,7 @@ async def get_module_helpdoc(request: Request, module_name: str, locale: str = Q
 
 @app.post("/api/module/{module_name}/reload")
 async def reload_module(request: Request, module_name: str):
-    ip = request.client.host
+    ip = get_client_ip(request)
     try:
         verify_jwt(request)
         status = await JobQueueClient.post_module_action(module=module_name, action="reload")
@@ -610,7 +610,7 @@ async def reload_module(request: Request, module_name: str):
 
 @app.post("/api/module/{module_name}/load")
 async def load_module(request: Request, module_name: str):
-    ip = request.client.host
+    ip = get_client_ip(request)
     try:
         verify_jwt(request)
         status = await JobQueueClient.post_module_action(module=module_name, action="load")
@@ -629,7 +629,7 @@ async def load_module(request: Request, module_name: str):
 
 @app.post("/api/module/{module_name}/unload")
 async def unload_module(request: Request, module_name: str):
-    ip = request.client.host
+    ip = get_client_ip(request)
     try:
         verify_jwt(request)
         status = await JobQueueClient.post_module_action(module=module_name, action="unload")
@@ -652,7 +652,7 @@ async def restart():
 
 @app.post("/api/restart")
 async def restart_bot(request: Request):
-    ip = request.client.host
+    ip = get_client_ip(request)
     verify_jwt(request)
     Logger.info(f"[WebUI] {ip} restarted bot.")
     asyncio.create_task(restart())

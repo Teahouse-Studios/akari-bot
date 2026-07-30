@@ -128,7 +128,7 @@ class QQBotContextManager(ContextManager):
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         # 这里可以添加权限检查的逻辑
-        ctx: BaseMessage = cls.context.get(session_info.session_id)
+        ctx: BaseMessage | None = cls.context.get(session_info.session_id)
 
         if ctx:
             if isinstance(ctx, Message):
@@ -152,7 +152,7 @@ class QQBotContextManager(ContextManager):
     async def send_message(
         cls,
         session_info: SessionInfo,
-        message: MessageChain,
+        message: MessageChain | MessageNodes,
         quote: bool = True,
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
@@ -160,7 +160,7 @@ class QQBotContextManager(ContextManager):
     ) -> list[str]:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
-        ctx: BaseMessage = cls.context.get(session_info.session_id)
+        ctx: BaseMessage | None = cls.context.get(session_info.session_id)
         _tmp = cls._tmp.get(session_info.session_id)
         if _tmp:
             _tmp["send_message_called"] = True

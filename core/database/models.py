@@ -4,7 +4,7 @@ import uuid
 from collections import Counter
 from datetime import datetime, UTC, timedelta
 from decimal import Decimal
-from typing import Any, Self
+from typing import Any, Literal, Self, overload
 
 from tortoise import fields
 from tortoise.transactions import in_transaction
@@ -345,6 +345,14 @@ class UnionInfo(DBModel):
     class Meta:
         abstract = True
 
+    @overload
+    @classmethod
+    async def resolve_union(cls, platform_id: str, create: Literal[True] = True) -> Self: ...
+
+    @overload
+    @classmethod
+    async def resolve_union(cls, platform_id: str, create: bool) -> Self | None: ...
+
     @classmethod
     async def resolve_union(cls, platform_id: str, create: bool = True) -> Self | None:
         """
@@ -387,6 +395,14 @@ class UnionInfo(DBModel):
         获取该 union 下已绑定的全部平台 ID。
         """
         return await self.bind_model.list_ids(self.union_id)
+
+    @overload
+    @classmethod
+    async def _resolve_session(cls, value: Any, create: Literal[True] = True) -> Self: ...
+
+    @overload
+    @classmethod
+    async def _resolve_session(cls, value: Any, create: bool) -> Self | None: ...
 
     @classmethod
     async def _resolve_session(cls, value: Any, create: bool = True) -> Self | None:
@@ -438,6 +454,14 @@ class SenderUnionInfo(UnionInfo):
 
     class Meta:
         table = "sender_union_info"
+
+    @overload
+    @classmethod
+    async def get_by_sender_id(cls, sender_id: Any, create: Literal[True] = True) -> "SenderUnionInfo": ...
+
+    @overload
+    @classmethod
+    async def get_by_sender_id(cls, sender_id: Any, create: bool) -> "SenderUnionInfo | None": ...
 
     @classmethod
     async def get_by_sender_id(cls, sender_id: Any, create: bool = True) -> "SenderUnionInfo | None":
@@ -610,6 +634,14 @@ class TargetUnionInfo(UnionInfo):
 
     class Meta:
         table = "target_union_info"
+
+    @overload
+    @classmethod
+    async def get_by_target_id(cls, target_id: Any, create: Literal[True] = True) -> "TargetUnionInfo": ...
+
+    @overload
+    @classmethod
+    async def get_by_target_id(cls, target_id: Any, create: bool) -> "TargetUnionInfo | None": ...
 
     @classmethod
     async def get_by_target_id(cls, target_id: Any, create: bool = True) -> "TargetUnionInfo | None":

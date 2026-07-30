@@ -327,7 +327,7 @@ class Bot:
         return slot_num
 
     @classmethod
-    def register_bot(cls, client_name: str = None, private_assets_path: str = None):
+    def register_bot(cls, client_name: str | None = None, private_assets_path: str | None = None):
         """
         注册机器人实例。
 

@@ -78,7 +78,7 @@ async def query_pages(
     pageid: str | None = None,
     iw: str | None = None,
     lang: str | None = None,
-    preset_message: MessageChain = None,
+    preset_message: MessageChain | None = None,
     start_wiki_api: str | None = None,
     template: bool = False,
     mediawiki: bool = False,
@@ -579,9 +579,9 @@ async def query_pages(
                         wait_msg_list.extend(wait_plain_slice)
         except InvalidWikiError as e:
             if isinstance(session, Bot.MessageSession):
-                await session.send_message(I18NContext("message.error") + str(e))
+                await session.send_message(MessageChain.assign([I18NContext("message.error")]) + e)
             else:
-                msg_list.append(I18NContext("message.error") + str(e))
+                msg_list.append(MessageChain.assign([I18NContext("message.error")]) + e)
     if isinstance(session, Bot.MessageSession):
         if msg_list:
             if all(

@@ -19,7 +19,8 @@ import re
 import time
 import traceback
 from string import Template as stringTemplate
-from typing import TYPE_CHECKING
+from types import UnionType
+from typing import TYPE_CHECKING, Union, get_args, get_origin
 
 from rapidfuzz import process
 
@@ -1198,6 +1199,22 @@ def _get_cached_signature(func):
     return inspect.signature(func)
 
 
+def _unwrap_optional(annotation):
+    """取出 ``X | None`` 或 ``Optional[X]`` 中的实际类型。
+
+    可选参数标注为 ``int | None`` 时仍应按 ``int`` 做类型转换，
+    否则值会以原始字符串形式传入命令函数。
+
+    :param annotation: 参数的类型注解。
+    :return: 剥去 None 后的类型；非 Optional 标注则原样返回。
+    """
+    if get_origin(annotation) in (Union, UnionType):
+        args = [arg for arg in get_args(annotation) if arg is not type(None)]
+        if len(args) == 1:
+            return args[0]
+    return annotation
+
+
 async def _execute_module_command(msg: "Bot.MessageSession", module, command_first_word):
     """
     执行模块的命令解析和处理。
@@ -1296,12 +1313,13 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
                         # 参数在解析结果中
                         kwargs[param_name] = parsed_msg_[param_name_]
                         try:
-                            # 尝试根据类型注解进行类型转换
-                            if param_obj.annotation == int:
+                            # 尝试根据类型注解进行类型转换，可选参数按其非 None 类型处理
+                            annotation = _unwrap_optional(param_obj.annotation)
+                            if annotation == int:
                                 kwargs[param_name] = int(parsed_msg_[param_name_])
-                            elif param_obj.annotation == float:
+                            elif annotation == float:
                                 kwargs[param_name] = float(parsed_msg_[param_name_])
-                            elif param_obj.annotation == bool:
+                            elif annotation == bool:
                                 kwargs[param_name] = bool(parsed_msg_[param_name_])
                             del parsed_msg_[param_name_]
                         except (KeyError, ValueError):

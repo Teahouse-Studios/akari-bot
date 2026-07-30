@@ -23,7 +23,7 @@ class TelegramContextManager(ContextManager):
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         # 这里可以添加权限检查的逻辑
-        ctx: types.Message = cls.context.get(session_info.session_id)
+        ctx: types.Message | None = cls.context.get(session_info.session_id)
         if not ctx:
             chat = await aiogram_bot.get_chat(session_info.get_common_target_id())
         else:
@@ -31,7 +31,7 @@ class TelegramContextManager(ContextManager):
         if chat.type == "private":
             return True
         admins = [member.user.id for member in await aiogram_bot.get_chat_administrators(chat.id)]
-        if ctx.from_user and ctx.from_user.id in admins:
+        if ctx and ctx.from_user and ctx.from_user.id in admins:
             return True
         return False
 
@@ -46,7 +46,7 @@ class TelegramContextManager(ContextManager):
     ) -> list[str]:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
-        msg_ids = []
+        msg_ids: list[str] = []
         buffer_text = []
 
         async def send_buffer_text():
@@ -56,15 +56,16 @@ class TelegramContextManager(ContextManager):
                     session_info.get_common_target_id(),
                     "\n".join(buffer_text),
                     reply_to_message_id=(
-                        session_info.message_id if quote and not msg_ids and session_info.message_id else None
+                        int(session_info.message_id) if quote and not msg_ids and session_info.message_id else None
                     ),
                     parse_mode="HTML",
                 )
-                msg_ids.append(send_.message_id)
+                msg_ids.append(str(send_.message_id))
                 buffer_text = []
 
         if isinstance(message, MessageNodes):
             Logger.error("This session does not support message nodes, check if bug exists.")
+            return []
 
         count = 0
         for x in message.as_sendable(session_info, parse_message=enable_parse_message):
@@ -83,21 +84,23 @@ class TelegramContextManager(ContextManager):
                             session_info.get_common_target_id(),
                             FSInputFile(await xs.get()),
                             reply_to_message_id=(
-                                session_info.message_id if quote and not msg_ids and session_info.message_id else None
+                                int(session_info.message_id)
+                                if quote and not msg_ids and session_info.message_id
+                                else None
                             ),
                         )
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(xs)}")
-                        msg_ids.append(send_.message_id)
+                        msg_ids.append(str(send_.message_id))
                 else:
                     send_ = await aiogram_bot.send_photo(
                         session_info.get_common_target_id(),
                         FSInputFile(await x.get()),
                         reply_to_message_id=(
-                            session_info.message_id if quote and not msg_ids and session_info.message_id else None
+                            int(session_info.message_id) if quote and not msg_ids and session_info.message_id else None
                         ),
                     )
                     Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(x)}")
-                    msg_ids.append(send_.message_id)
+                    msg_ids.append(str(send_.message_id))
                 count += 1
             elif isinstance(x, VoiceElement):
                 await send_buffer_text()
@@ -105,11 +108,11 @@ class TelegramContextManager(ContextManager):
                     session_info.get_common_target_id(),
                     FSInputFile(x.path),
                     reply_to_message_id=(
-                        session_info.message_id if quote and not msg_ids and session_info.message_id else None
+                        int(session_info.message_id) if quote and not msg_ids and session_info.message_id else None
                     ),
                 )
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Voice: {str(x)}")
-                msg_ids.append(send_.message_id)
+                msg_ids.append(str(send_.message_id))
                 count += 1
             elif isinstance(x, MentionElement):
                 if x.client == client_name and session_info.target_from in [

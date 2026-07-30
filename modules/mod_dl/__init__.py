@@ -24,7 +24,7 @@ enable_mirror = bool(
 
 
 @mod_dl.command("<mod_name> [<version>] {{I18N:mod_dl.help}}")
-async def _(msg: Bot.MessageSession, mod_name: str, version: str = None):
+async def _(msg: Bot.MessageSession, mod_name: str, version: str | None = None):
     ver = version
     if version:
         match_ver = re.match(r"^\d+\.\d+\.\d+$|^\d+\.\d+$|\d+w\d+[abcd]", version)

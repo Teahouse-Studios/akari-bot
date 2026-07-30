@@ -628,7 +628,7 @@ rse = module("raise", required_superuser=True, base=True, doc=True)
 
 
 @rse.command("[<args>]")
-async def _(msg: Bot.MessageSession, args: str = None):
+async def _(msg: Bot.MessageSession, args: str | None = None):
     e = args or "{I18N:core.message.raise}"
     raise TestException(str(e))
 
@@ -667,12 +667,12 @@ cfg_ = module("config", required_superuser=True, alias="cfg", base=True, doc=Tru
 
 
 @cfg_.command("get <k> [<table_name>]")
-async def _(msg: Bot.MessageSession, k: str, table_name: str = None):
+async def _(msg: Bot.MessageSession, k: str, table_name: str | None = None):
     await msg.finish(str(CFGManager.get(k, table_name=table_name)))
 
 
 @cfg_.command("write <k> <v> [<table_name>] [-s]")
-async def _(msg: Bot.MessageSession, k: str, v: str, table_name: str = None):
+async def _(msg: Bot.MessageSession, k: str, v: str, table_name: str | None = None):
     secret = bool(msg.parsed_msg["-s"])
     if v.lower() == "true":
         v = True
@@ -697,7 +697,7 @@ async def _(msg: Bot.MessageSession, k: str, v: str, table_name: str = None):
 
 
 @cfg_.command("delete <k> [<table_name>]")
-async def _(msg: Bot.MessageSession, k: str, table_name: str = None):
+async def _(msg: Bot.MessageSession, k: str, table_name: str | None = None):
     if CFGManager.edit_delete(k, table_name):
         await msg.finish(I18NContext("message.success"))
     else:

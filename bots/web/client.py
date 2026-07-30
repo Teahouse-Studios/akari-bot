@@ -3,11 +3,10 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from argon2 import PasswordHasher
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
 from slowapi import Limiter
-from slowapi.util import get_remote_address
 
 from bots.web.info import *
 from core.client.init import client_init
@@ -37,6 +36,25 @@ web_port = WebConfig.web_port
 available_web_port = find_available_port(web_port)
 
 allow_origins = WebSecretConfig.allow_origins
+
+# 反向代理场景下 request.client 记录的是代理自身的地址，真实地址由 uvicorn 的
+# ProxyHeadersMiddleware 依 forwarded_allow_ips 判定来源可信后，从 X-Forwarded-For 解析并回填。
+forwarded_allow_ips = [ip.strip() for ip in WebConfig.forwarded_allow_ips.split(",") if ip.strip()]
+
+# 无法判定来源的请求统一归入该标识。不回退为 127.0.0.1，以免被误当作本机的受信任访问。
+UNKNOWN_CLIENT_IP = "unknown"
+
+
+def get_client_ip(request: Request) -> str:
+    """
+    取请求方地址，用于限流、封禁与访问记录。
+
+    :param request: 当前请求。
+    :return: 请求方地址；ASGI 传输未提供来源信息时返回 ``unknown``。
+    """
+    if request.client and request.client.host:
+        return request.client.host
+    return UNKNOWN_CLIENT_IP
 
 
 jwt_secret = WebSecretConfig.jwt_secret
@@ -75,7 +93,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-limiter = Limiter(key_func=get_remote_address)
+limiter = Limiter(key_func=get_client_ip)
 ph = PasswordHasher()
 
 app.add_middleware(

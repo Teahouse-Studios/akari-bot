@@ -179,7 +179,7 @@ class MusicList(list[Music]):
         title_search: str | None = None,
         genre: str | list[str] | None = None,
         bpm: float | list[float] | tuple[float, float] | None = None,
-        diff: list[int] = None,
+        diff: list[int] | None = None,
     ):
         new_list = MusicList()
         for music in self:

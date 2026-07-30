@@ -4,7 +4,7 @@ import uuid
 import uvicorn
 
 from bots.web.api import *
-from bots.web.client import web_host, available_web_port
+from bots.web.client import web_host, available_web_port, forwarded_allow_ips
 from bots.web.context import WebContextManager
 from bots.web.info import *
 from core.builtins.bot import Bot
@@ -91,4 +91,11 @@ if WebConfig.enable:
     if not enable_https:
         Logger.warning("HTTPS is disabled. HTTP mode is insecure and should only be used in trusted environments.")
 
-    uvicorn.run(app, host=web_host, port=available_web_port, log_level="info", access_log=False)
+    uvicorn.run(
+        app,
+        host=web_host,
+        port=available_web_port,
+        log_level="info",
+        access_log=False,
+        forwarded_allow_ips=forwarded_allow_ips,
+    )

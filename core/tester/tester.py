@@ -1,4 +1,5 @@
 import inspect
+from collections.abc import Callable
 
 from core.logger import Logger
 from .expectations import Expectation
@@ -14,7 +15,7 @@ class Tester:
 
     async def test(
         self,
-        func: callable,
+        func: Callable,
         note: str | None = None,
     ):
         """
@@ -26,7 +27,8 @@ class Tester:
         """
         import asyncio
 
-        Logger.trace(f"[{self.name}] test: {note or func.__name__}")
+        # Predicate 等可调用对象没有 __name__，回退到其类名
+        Logger.trace(f"[{self.name}] test: {note or getattr(func, '__name__', type(func).__name__)}")
 
         frame = inspect.stack()[1]
         entry_meta = {

@@ -18,7 +18,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @dice.command("<dices> [<dc>] {{I18N:dice.help}}")
-async def _(msg: Bot.MessageSession, dices: str, dc: int = None):
+async def _(msg: Bot.MessageSession, dices: str, dc: int | None = None):
     await msg.finish(await process_expression(msg, dices, dc))
 
 

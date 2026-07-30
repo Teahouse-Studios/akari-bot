@@ -56,7 +56,7 @@ async def on_room_member(room: nio.MatrixRoom, event: nio.RoomMemberEvent):
             Logger.info(f"Left empty room: {room.room_id}")
 
 
-async def to_message_chain(event: nio.RoomMessageFormatted, reply_id: str = None, target_id: str = None):
+async def to_message_chain(event: nio.RoomMessageFormatted, reply_id: str | None = None, target_id: str | None = None):
     if not event.source:
         return MessageChain.assign([])
     content = event.source.get("content", {})

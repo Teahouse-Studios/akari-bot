@@ -52,9 +52,9 @@ class JobQueueClient(JobQueueBase):
     async def send_keepalive_signal_to_server(
         cls,
         client_name: str,
-        target_prefix_list: list = None,
-        sender_prefix_list: list = None,
-        ctx_slot_index: int = None,
+        target_prefix_list: list | None = None,
+        sender_prefix_list: list | None = None,
+        ctx_slot_index: int | None = None,
         features: Features | None = None,
     ):
         """向服务器发送保活信号。
@@ -83,7 +83,9 @@ class JobQueueClient(JobQueueBase):
         )
 
     @classmethod
-    async def trigger_hook(cls, module_or_hook_name: str, session_info: SessionInfo | None = "", wait=False, **kwargs):
+    async def trigger_hook(
+        cls, module_or_hook_name: str, session_info: SessionInfo | None = None, wait=False, **kwargs
+    ):
         """触发服务器上的钩子函数或模块事件。
 
         用于客户端主动触发服务器上注册的钩子函数，并可选择等待执行结果。

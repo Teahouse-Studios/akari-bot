@@ -25,7 +25,7 @@ class DiscordContextManager(ContextManager):
         #     raise ValueError("Session not found in context")
         # 这里可以添加权限检查的逻辑
 
-        ctx: Message = cls.context.get(session_info.session_id)
+        ctx: Message | None = cls.context.get(session_info.session_id)
 
         Logger.debug(f"Checking permissions for session: {session_info.session_id}")
 
@@ -54,7 +54,7 @@ class DiscordContextManager(ContextManager):
 
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
-        ctx: Message = cls.context.get(session_info.session_id)
+        ctx: Message | None = cls.context.get(session_info.session_id)
         if ctx:
             channel = ctx.channel
         else:
@@ -62,6 +62,7 @@ class DiscordContextManager(ContextManager):
 
         if isinstance(message, MessageNodes):
             Logger.error("This session does not support message nodes, check if bug exists.")
+            return []
 
         msg_ids = []
         for x in message.as_sendable(session_info, parse_message=enable_parse_message):

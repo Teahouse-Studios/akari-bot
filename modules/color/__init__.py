@@ -39,54 +39,55 @@ css_hex_to_names = {
 
 
 @c.command("[<color>] {{I18N:color.help}}")
-async def _(msg: Bot.MessageSession, color: str = None):
+async def _(msg: Bot.MessageSession, color: str | None = None):
     if not color:
-        color = webcolors.HTML5SimpleColor(*(np.random.randint(0, 256, 3)))
+        parsed = webcolors.HTML5SimpleColor(*(np.random.randint(0, 256, 3)))
     elif css_names_to_hex.get(color):
-        color = webcolors.html5_parse_simple_color(css_names_to_hex[color])
+        parsed = webcolors.html5_parse_simple_color(css_names_to_hex[color])
     elif material_colors_names_to_hex.get(color):
-        color = webcolors.html5_parse_simple_color(material_colors_names_to_hex[color])
+        parsed = webcolors.html5_parse_simple_color(material_colors_names_to_hex[color])
     elif re.match(r"^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$", color):
         # add hash if missing
         if color[0] != "#":
             color = "#" + color
         if len(color) == 4:
             color = "#" + color[1] * 2 + color[2] * 2 + color[3] * 2
-        color = webcolors.html5_parse_simple_color(color)
+        parsed = webcolors.html5_parse_simple_color(color)
     elif re.match(r"^rgb\(\d{1,3},\s?\d{1,3},\s?\d{1,3}\)$", color):
-        color = color[4:-1].split(",")
-        color = webcolors.HTML5SimpleColor(*(int(x.strip()) for x in color))
+        parts = color[4:-1].split(",")
+        parsed = webcolors.HTML5SimpleColor(*(int(x.strip()) for x in parts))
     elif re.match(r"^rgb\(\d{1,3}%,\s?\d{1,3}%,\s?\d{1,3}%\)$", color):
-        color = color[4:-1].split(",")
-        color = webcolors.HTML5SimpleColor(*(int(x.strip()[:-1]) * 255 / 100 for x in color))
+        parts = color[4:-1].split(",")
+        # 百分比换算结果须取整，色值保持整数才能供后续的十六进制格式化使用
+        parsed = webcolors.HTML5SimpleColor(*(int(int(x.strip()[:-1]) * 255 / 100) for x in parts))
     elif re.match(r"^hsl\(\d{1,3},\s?\d{1,3}%,\s?\d{1,3}%\)$", color):
-        color = color[4:-1].split(",")
-        color = colorsys.hls_to_rgb(
-            int(color[0].strip()) / 360,
-            int(color[2].strip()[:-1]) / 100,
-            int(color[1].strip()[:-1]) / 100,
+        parts = color[4:-1].split(",")
+        rgb = colorsys.hls_to_rgb(
+            int(parts[0].strip()) / 360,
+            int(parts[2].strip()[:-1]) / 100,
+            int(parts[1].strip()[:-1]) / 100,
         )
-        color = webcolors.HTML5SimpleColor(*(int(x * 255) for x in color))
+        parsed = webcolors.HTML5SimpleColor(*(int(x * 255) for x in rgb))
     elif re.match(r"^hsl\(\d{1,3}deg,\s?\d{1,3}%,\s?\d{1,3}%\)$", color):
-        color = color[4:-1].split(",")
-        color = colorsys.hls_to_rgb(
-            int(color[0].strip()[:-3]) / 360,
-            int(color[2].strip()[:-1]) / 100,
-            int(color[1].strip()[:-1]) / 100,
+        parts = color[4:-1].split(",")
+        rgb = colorsys.hls_to_rgb(
+            int(parts[0].strip()[:-3]) / 360,
+            int(parts[2].strip()[:-1]) / 100,
+            int(parts[1].strip()[:-1]) / 100,
         )
-        color = webcolors.HTML5SimpleColor(*(int(x * 255) for x in color))
+        parsed = webcolors.HTML5SimpleColor(*(int(x * 255) for x in rgb))
     else:
         await msg.finish(I18NContext("color.message.invalid"))
 
-    color_hex = f"#{color[0]:02x}{color[1]:02x}{color[2]:02x}"
-    color_rgb = f"rgb({color[0]}, {color[1]}, {color[2]})"
-    color_hsl = colorsys.rgb_to_hls(color[0] / 255, color[1] / 255, color[2] / 255)
-    color_hsl = f"hsl({color_hsl[0] * 360:.0f}, {color_hsl[2] * 100:.0f}%, {color_hsl[1] * 100:.0f}%)"
-    luminance = get_luminance(color)
+    color_hex = f"#{parsed[0]:02x}{parsed[1]:02x}{parsed[2]:02x}"
+    color_rgb = f"rgb({parsed[0]}, {parsed[1]}, {parsed[2]})"
+    hsl_values = colorsys.rgb_to_hls(parsed[0] / 255, parsed[1] / 255, parsed[2] / 255)
+    color_hsl = f"hsl({hsl_values[0] * 360:.0f}, {hsl_values[2] * 100:.0f}%, {hsl_values[1] * 100:.0f}%)"
+    luminance = get_luminance(parsed)
 
     contrast = (0, 0, 0) if luminance > 140 else (255, 255, 255)
 
-    img = Image.new("RGB", (1000, 500), color=color)
+    img = Image.new("RGB", (1000, 500), color=parsed)
     draw = ImageDraw.Draw(img)
 
     draw.multiline_text(
@@ -99,7 +100,7 @@ async def _(msg: Bot.MessageSession, color: str = None):
         spacing=20,
     )
 
-    css_color_name_raw = get_color_name(color, css_hex_to_names)
+    css_color_name_raw = get_color_name(parsed, css_hex_to_names)
     css_color_name = ""
     if css_color_name_raw[1]:
         css_color_name = str(I18NContext("color.message.embed.css"))
@@ -121,7 +122,7 @@ async def _(msg: Bot.MessageSession, color: str = None):
     )
     img.paste(img_css, (500, 0))
 
-    material_color_name_raw = get_color_name(color, material_colors_hex_to_names)
+    material_color_name_raw = get_color_name(parsed, material_colors_hex_to_names)
     material_color_name = ""
     if material_color_name_raw[1]:
         material_color_name = str(I18NContext("color.message.embed.md"))
@@ -164,12 +165,13 @@ def get_luminance(color: webcolors.HTML5SimpleColor):
     return color.red * 0.2126 + color.green * 0.7152 + color.blue * 0.0722
 
 
-def get_color_name(color: webcolors.HTML5SimpleColor, name_dict) -> tuple[str | None, bool]:
+def get_color_name(color: webcolors.HTML5SimpleColor, name_dict) -> tuple[str, bool]:
     # check exact match
     hex_name = webcolors.rgb_to_hex(color)
     if hex_name in name_dict:
         return name_dict[hex_name], True
-    color_name = None
+    # 颜色名表非空，下方循环必定取到近似名；空串仅为表意外为空时的兜底
+    color_name = ""
     min_dist = 1000000
     for name, value in name_dict.items():
         dist = np.linalg.norm(np.array(color) - np.array(webcolors.html5_parse_simple_color(name)))

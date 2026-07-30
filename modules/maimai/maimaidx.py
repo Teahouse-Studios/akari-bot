@@ -28,7 +28,7 @@ mai = module(
     "base <constant> [<constant_max>] [-p <page>] {{I18N:maimai.help.base}}",
     options_desc={"-p": "{I18N:maimai.help.option.p}"},
 )
-async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None):
+async def _(msg: Bot.MessageSession, constant: float, constant_max: float | None = None):
     result_set = []
     if constant <= 0:
         await msg.finish(I18NContext("maimai.message.level_invalid"))
@@ -421,7 +421,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
 
 
 @mai.command("random <diff+level> [<dx_type>] {{I18N:maimai.help.random.filter}}")
-async def _(msg: Bot.MessageSession, dx_type: str = None):
+async def _(msg: Bot.MessageSession, dx_type: str | None = None):
     condit = msg.parsed_msg["<diff+level>"]
     level = ""
     diff = ""

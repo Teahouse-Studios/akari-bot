@@ -12,10 +12,10 @@ from datetime import datetime, UTC
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Coroutine, Match, NoReturn, TYPE_CHECKING
 
-from attrs import define
+from attrs import define, field
+import orjson
 from deprecated import deprecated
 from japanera import EraDate
-from orjson import orjson
 
 from core.builtins.message.chain import MessageChain, get_message_chain, Chainable, MessageNodes
 from core.builtins.message.internal import I18NContext
@@ -57,7 +57,7 @@ class MessageSession:
     session_info: SessionInfo
 
     # 已发送消息列表 - 用于跟踪和管理已发送的消息
-    sent: list[MessageChain] = []
+    sent: list[MessageChain] = field(factory=list)
 
     # 触发消息 - 原始的触发消息文本内容
     trigger_msg: str = ""
@@ -66,7 +66,7 @@ class MessageSession:
     matched_msg: Match[str] | tuple[Any, ...] | None = None
 
     # 解析后的消息 - 命令参数等解析结果
-    parsed_msg: dict = {}
+    parsed_msg: dict = field(factory=dict)
 
     @property
     @deprecated(reason="Use `session_info` instead.")
@@ -98,8 +98,8 @@ class MessageSession:
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
         callback: Any | None = None,
-        callback_id: str = None,
-        button_data: list[dict[str, str]] = None,
+        callback_id: str | None = None,
+        button_data: list[dict[str, str]] | None = None,
     ) -> FinishedSession:
         """
         用于向消息用户返回消息。
@@ -187,7 +187,7 @@ class MessageSession:
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
         callback: Coroutine | None = None,
-        callback_id: str = None,
+        callback_id: str | None = None,
         button_data: list[dict[str, str]] = [],
     ) -> NoReturn:
         """
@@ -317,7 +317,7 @@ class MessageSession:
         return return_val.get("message_id") or []
 
     def as_display(
-        self, text_only: bool = False, element_filter: tuple[MessageElement, ...] = None, connector: str = "\n"
+        self, text_only: bool = False, element_filter: tuple[MessageElement, ...] | None = None, connector: str = "\n"
     ) -> str:
         """
         用于将消息转换为一般文本格式。
@@ -567,7 +567,7 @@ class MessageSession:
         delete: bool = False,
         timeout: float | None = 120,
         append_instruction: bool = True,
-        possibly_choices: list[dict[str, str]] = None,
+        possibly_choices: list[dict[str, str]] | None = None,
     ) -> MessageSession:
         """
         一次性模板，用于等待对象的下一条消息。

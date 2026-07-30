@@ -9,7 +9,7 @@ from bots.discord.slash_parser import slash_parser
     name="color",
     description="Color information. Support for Hex, RGB, HSL color code, or name in CSS and Material Design.",
 )
-async def _(ctx: discord.ApplicationContext, color: str = None):
+async def _(ctx: discord.ApplicationContext, color: str | None = None):
     if color:
         await slash_parser(ctx, color)
     else:

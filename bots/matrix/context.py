@@ -23,7 +23,7 @@ class MatrixContextManager(ContextManager):
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         # 这里可以添加权限检查的逻辑
-        ctx: tuple[nio.MatrixRoom, nio.RoomMessageFormatted] = cls.context.get(session_info.session_id)
+        ctx: tuple[nio.MatrixRoom, nio.RoomMessageFormatted] | None = cls.context.get(session_info.session_id)
         if ctx:
             room, event = ctx
             room_id = room.room_id if room else session_info.get_common_target_id()
@@ -79,12 +79,13 @@ class MatrixContextManager(ContextManager):
         #     raise ValueError("Session not found in context")
 
         msg_ids = []
-        ctx: tuple[nio.MatrixRoom, nio.RoomMessageFormatted] = cls.context.get(session_info.session_id)
+        ctx: tuple[nio.MatrixRoom, nio.RoomMessageFormatted] | None = cls.context.get(session_info.session_id)
         room, event = None, None
         if ctx:
             room, event = ctx
         if isinstance(message, MessageNodes):
             Logger.error("This session does not support message nodes, check if bug exists.")
+            return []
         for x in message.as_sendable(session_info, parse_message=enable_parse_message):
 
             async def _send_msg(content):

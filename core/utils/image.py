@@ -3,7 +3,7 @@ from __future__ import annotations
 import base64
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal, overload
 
 from PIL import Image as PILImage
 from jinja2 import FileSystemLoader, Environment
@@ -12,6 +12,7 @@ from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import PlainElement, ImageElement, EmbedElement
 from core.config.base import CoreConfig
 from core.constants.path import templates_path
+from core.exports import exports
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.web_render import web_render, ElementScreenshotOptions
@@ -26,10 +27,10 @@ use_font_mirror = CoreConfig.use_font_mirror
 
 
 async def image_split(i: ImageElement) -> list[ImageElement]:
-    i = PILImage.open(await i.get())
-    iw, ih = i.size
+    img = PILImage.open(await i.get())
+    iw, ih = img.size
     if ih <= 1500:
-        return [ImageElement.assign(i)]
+        return [ImageElement.assign(img)]
     _h = 0
     i_list = []
     for _ in range((ih // 1500) + 1):
@@ -37,7 +38,7 @@ async def image_split(i: ImageElement) -> list[ImageElement]:
             crop_h = ih
         else:
             crop_h = _h + 1500
-        i_list.append(ImageElement.assign(i.crop((0, _h, iw, crop_h))))
+        i_list.append(ImageElement.assign(img.crop((0, _h, iw, crop_h))))
         _h = crop_h
     return i_list
 
@@ -47,7 +48,15 @@ def get_fontsize(font, text):
     return right - left, bottom - top
 
 
-def cb64imglst(b64imglst: list[str], bot_img=False) -> list[PILImage.Image | ImageElement]:
+@overload
+def cb64imglst(b64imglst: list[str], bot_img: Literal[False] = False) -> list[PILImage.Image]: ...
+
+
+@overload
+def cb64imglst(b64imglst: list[str], bot_img: Literal[True]) -> list[ImageElement]: ...
+
+
+def cb64imglst(b64imglst: list[str], bot_img: bool = False) -> list[PILImage.Image] | list[ImageElement]:
     """转换base64编码的图片列表。
 
     :param b64imglst: base64编码的图片列表。
@@ -92,6 +101,10 @@ async def msgchain2image(
     if isinstance(message_chain, list):
         message_chain = MessageChain.assign(message_chain)
 
+    # MessageSession 本身不持有 locale，需先取出其 session_info
+    if isinstance(session, exports.get("MessageSession")):
+        session = session.session_info
+
     message_list = message_chain.as_sendable(session)
     for m in message_list:
         if isinstance(m, ImageElement):
@@ -100,7 +113,7 @@ async def msgchain2image(
             if m.image is not None:
                 await m.image.get_base64(mime=True)
     title = "Message List"
-    if session:
+    if session and session.locale:
         title = session.locale.t("message.list")
 
     html_content = await env.get_template("msgchain_to_image.html").render_async(

@@ -10,10 +10,10 @@ class Alive:
     def refresh_alive(
         cls,
         client_name: str,
-        target_prefix_list: list = None,
-        sender_prefix_list: list = None,
-        ctx_slot_index: int = None,
-        features: type[Features] = None,
+        target_prefix_list: list | None = None,
+        sender_prefix_list: list | None = None,
+        ctx_slot_index: int | None = None,
+        features: type[Features] | None = None,
     ):
         cls.values[client_name] = {
             "target_prefix_list": target_prefix_list,
