@@ -63,8 +63,6 @@
     "config.comments.webrender.enable": "是否开启 WebRender。",
     "config.comments.webrender.remote_only": "是否仅允许使用远程 WebRender 服务。",
     "config.comments.webrender.remote_web_render_url": "远程 WebRender 服务的 URL，在本地 WebRender 渲染失败时尝试请求。",
-    "config.comments.s3.s3_access_key": "S3 兼容 API 的 AccessKey。",
-    "config.comments.s3.s3_secret_key": "S3 兼容 API 的 SecretKey。",
     "config.comments.s3.s3_bucket": "S3 兼容 API 的 Bucket 名。",
     "config.comments.s3.s3_endpoint_url": "S3 兼容 API 的 Endpoint URL。",
     "config.comments.s3.s3_region": "S3 兼容 API 的地域名。",
@@ -196,5 +194,9 @@
     "tos.message.warning": "警告：\n根据服务条款，你已违反我们的行为准则。",
     "tos.message.warning.count": "这是第 ${current_warns} 次警告。",
     "tos.message.warning.last": "这是最后一次警告。",
-    "tos.message.warning.prompt": "如超过 ${warn_counts} 次警告，我们将会封禁你的账户。"
+    "tos.message.warning.prompt": "如超过 ${warn_counts} 次警告，我们将会封禁你的账户。",
+    "config.table.config_s3": "S3 兼容 API 的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。",
+    "config.table.secret_s3": "S3 兼容 API 的密钥部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。",
+    "config.comments.s3_secret.s3_access_key": "S3 兼容 API 的 AccessKey。",
+    "config.comments.s3_secret.s3_secret_key": "S3 兼容 API 的 SecretKey。"
 }

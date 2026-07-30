@@ -18,6 +18,7 @@ assets/modules/arcaea*
 assets/modules/maimai*
 assets/modules/phigros*
 assets/private*
+assets/retired/*
 bots/test/*
 junit.xml
 modules/test/*
