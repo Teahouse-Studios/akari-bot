@@ -18,8 +18,8 @@ NOTIFIED_STORED_KEY = "retired_notified"
 
 # 公告延迟推送的区间（秒）。随机取值以错峰：多个会话常在同一时段活跃，
 # 固定延迟会让公告集中在同一瞬间涌出，撞上平台频控。
-RETIRED_NOTIFY_DELAY_MIN = 3
-RETIRED_NOTIFY_DELAY_MAX = 18
+RETIRED_NOTIFY_DELAY_MIN = 300
+RETIRED_NOTIFY_DELAY_MAX = 86400
 
 # 已排入延时队列、尚未推送的会话。防止用户在等待期间连发消息导致重复排队。
 # 仅存于进程内存，重启即清空；因已发送记录只在推送成功后落库，重启后会自然重排。
