@@ -1,6 +1,7 @@
 import asyncio
 import time
 import traceback
+from types import FunctionType
 from typing import Any, Callable
 
 from core.builtins.message.chain import MessageChain, match_kecode
@@ -14,10 +15,11 @@ from core.tester.mock.parser import parser
 from core.tester.mock.random import Random
 from core.tester.mock.session import MockMessageSession
 from core.utils.container import ExpiringTempDict
+from .decorator import CaseEntry
 from .expectations import Expectation
 
 
-async def run_case_entry(entry: dict, is_ci: bool = False) -> list[dict]:
+async def run_case_entry(entry: CaseEntry, is_ci: bool = False) -> list[dict]:
     try:
         await close_db()
     except Exception:
@@ -47,7 +49,7 @@ async def run_case_entry(entry: dict, is_ci: bool = False) -> list[dict]:
     return [result]
 
 
-async def run_function_entry(fn: Callable, is_ci: bool = False) -> dict[str, Any]:
+async def run_function_entry(fn: FunctionType, is_ci: bool = False) -> dict[str, Any]:
     try:
         await close_db()
     except Exception:

@@ -7,6 +7,7 @@ from decimal import Decimal
 from typing import Any, Literal, Self, overload
 
 from tortoise import fields
+from tortoise.models import Model
 from tortoise.transactions import in_transaction
 
 from core.constants.default import default_locale
@@ -26,7 +27,7 @@ UNION_ID_PREFIXES = {
 }
 
 
-def get_table_name(model: type) -> str:
+def get_table_name(model: type[Model]) -> str:
     """
     获取模型对应的数据表名。
     """
@@ -34,7 +35,7 @@ def get_table_name(model: type) -> str:
     return getattr(meta, "table", None) or model.__name__
 
 
-def get_union_module_name(model: type) -> str:
+def get_union_module_name(model: type[Model]) -> str:
     """
     获取模块表所属的模块名，用于向用户展示，无法判断时退回表名。
     """
@@ -44,7 +45,7 @@ def get_union_module_name(model: type) -> str:
     return get_table_name(model)
 
 
-def iter_union_models(scope: str | None = None) -> list[type]:
+def iter_union_models(scope: str | None = None) -> list[type[Model]]:
     """
     遍历所有以 ``union_id`` 为键的模块表，不含核心表与映射表。
 
@@ -78,7 +79,7 @@ def iter_union_models(scope: str | None = None) -> list[type]:
     return result
 
 
-async def collect_union_conflicts(from_union: str, to_union: str, scope: str | None = None) -> list[type]:
+async def collect_union_conflicts(from_union: str, to_union: str, scope: str | None = None) -> list[type[Model]]:
     """
     列出两个 union 在模块表上互相冲突（双方都有数据）的模型。
 
@@ -93,7 +94,7 @@ async def collect_union_conflicts(from_union: str, to_union: str, scope: str | N
     return conflicts
 
 
-async def move_union_rows(model: type, from_union: str, to_union: str) -> None:
+async def move_union_rows(model: type[Model], from_union: str, to_union: str) -> None:
     """
     将某张模块表中挂在 ``from_union`` 下的行改挂到 ``to_union``。
 

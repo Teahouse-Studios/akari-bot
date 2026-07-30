@@ -29,39 +29,38 @@ async def remove_temp_ban(target):
 
 async def abuse_warn_target(msg: Bot.MessageSession, reason: str):
     issue_url = CoreConfig.issue_url
-    if WARNING_COUNTS >= 1 and not msg.check_super_user():
-        await msg.session_info.sender_union_info.warn_user()
+    # 没有用户 union 的会话（如主动推送）不存在可警告的对象，直接跳过
+    sender_union_info = msg.session_info.sender_union_info
+    sender_id = msg.session_info.sender_id
+    if WARNING_COUNTS >= 1 and not msg.check_super_user() and sender_union_info and sender_id:
+        await sender_union_info.warn_user()
         warn_template = MessageChain.assign(
             [I18NContext("tos.message.warning"), I18NContext("tos.message.reason", reason=reason)]
         )
 
         # Logs
         identify_str = f"[{msg.session_info.sender_id} ({msg.session_info.target_id})]"
-        if msg.session_info.sender_union_info.warns <= WARNING_COUNTS:
-            Logger.info(
-                f"Warn {identify_str} by ToS: abuse ({msg.session_info.sender_union_info.warns}/{WARNING_COUNTS})"
-            )
-        elif msg.session_info.sender_union_info.warns > WARNING_COUNTS:
+        if sender_union_info.warns <= WARNING_COUNTS:
+            Logger.info(f"Warn {identify_str} by ToS: abuse ({sender_union_info.warns}/{WARNING_COUNTS})")
+        elif sender_union_info.warns > WARNING_COUNTS:
             Logger.info(f"Ban {identify_str} by ToS: abuse")
         else:
             Logger.info(f"Warn {identify_str} by ToS: abuse")
 
         # Send warns
-        if msg.session_info.sender_union_info.warns < WARNING_COUNTS or msg.session_info.sender_union_info.trusted:
-            await tos_report(msg.session_info.sender_id, msg.session_info.target_id, reason)
-            warn_template.append(
-                I18NContext("tos.message.warning.count", current_warns=msg.session_info.sender_union_info.warns)
-            )
-            if not msg.session_info.sender_union_info.trusted:
+        if sender_union_info.warns < WARNING_COUNTS or sender_union_info.trusted:
+            await tos_report(sender_id, msg.session_info.target_id, reason)
+            warn_template.append(I18NContext("tos.message.warning.count", current_warns=sender_union_info.warns))
+            if not sender_union_info.trusted:
                 warn_template.append(I18NContext("tos.message.warning.prompt", warn_counts=WARNING_COUNTS))
-            if msg.session_info.sender_union_info.warns <= 2 and issue_url:
+            if sender_union_info.warns <= 2 and issue_url:
                 warn_template.append(I18NContext("tos.message.appeal", issue_url=issue_url))
-        elif msg.session_info.sender_union_info.warns == WARNING_COUNTS:
-            await tos_report(msg.session_info.sender_id, msg.session_info.target_id, reason)
+        elif sender_union_info.warns == WARNING_COUNTS:
+            await tos_report(sender_id, msg.session_info.target_id, reason)
             warn_template.append(I18NContext("tos.message.warning.last"))
-        elif msg.session_info.sender_union_info.warns > WARNING_COUNTS:
-            await msg.session_info.sender_union_info.switch_identity(trust=False)
-            await tos_report(msg.session_info.sender_id, msg.session_info.target_id, reason, banned=True)
+        elif sender_union_info.warns > WARNING_COUNTS:
+            await sender_union_info.switch_identity(trust=False)
+            await tos_report(sender_id, msg.session_info.target_id, reason, banned=True)
             warn_template.append(I18NContext("tos.message.banned"))
             if issue_url:
                 warn_template.append(I18NContext("tos.message.appeal", issue_url=issue_url))

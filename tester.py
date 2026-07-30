@@ -9,13 +9,15 @@ import inspect
 import os
 import sys
 from pathlib import Path
+from types import FunctionType
+from typing import TypedDict
 
 from dotenv import load_dotenv
 
 from core.builtins.utils import confirm_command
 from core.constants import ascii_art, cache_path, tests_path
 from core.logger import Logger
-from core.tester.decorator import get_registry
+from core.tester.decorator import CaseEntry, get_registry
 from core.tester.expectations import Expectation
 from core.tester.junit import JUnitReport, JUnitTestSuite, JUnitTestCase
 from core.tester.mock.database import init_db, close_db
@@ -61,7 +63,7 @@ junit_registry_suite = JUnitTestSuite("Registry Tests")
 junit_func_suite = JUnitTestSuite("Function Tests")
 
 
-async def _run_registry_entry(semaphore: asyncio.Semaphore, entry: dict, test_number: int) -> dict:
+async def _run_registry_entry(semaphore: asyncio.Semaphore, entry: CaseEntry, test_number: int) -> dict:
     Logger.trace(f"_run_registry_entry START: TEST{test_number}")
     async with semaphore:
         Logger.trace(f"_run_registry_entry ACQUIRED semaphore: TEST{test_number}")
@@ -94,7 +96,15 @@ async def _run_registry_entry(semaphore: asyncio.Semaphore, entry: dict, test_nu
         return {"test_number": test_number, "results": results, "note": note}
 
 
-async def _run_func_test(fn, path) -> dict:
+class FuncTestResult(TypedDict):
+    """单个 @func_case 测试的运行结果。"""
+
+    fn: FunctionType
+    path: str
+    res: dict
+
+
+async def _run_func_test(fn: FunctionType, path: str) -> FuncTestResult:
     Logger.trace(f"_run_func_test START: {fn.__name__} ({path})")
     res = await run_function_entry(fn, IS_CI)
     Logger.trace(f"_run_func_test DONE: {fn.__name__}")
@@ -265,13 +275,16 @@ async def main():
     if os.path.isdir(tests_path):
         pyfiles = sorted(glob.glob(os.path.join(tests_path, "**", "*.py"), recursive=True))
         Logger.trace(f"main() found {len(pyfiles)} test files")
-        func_tasks = []
+        func_tasks: list[tuple[FunctionType, str]] = []
         func_info_list = []
 
         for path in pyfiles:
             name = os.path.splitext(os.path.basename(path))[0]
             Logger.trace(f"main() importing {path}")
             spec = importlib.util.spec_from_file_location(f"tests_{name}", path)
+            if not spec or not spec.loader:
+                Logger.error(f"Failed resolving tests file {path}, skipped.")
+                continue
             mod = importlib.util.module_from_spec(spec)
             try:
                 sys.modules[spec.name] = mod
@@ -312,8 +325,8 @@ async def main():
                 Logger.trace(f"main() non-dict func result at index {idx}")
                 continue
 
-            fn = func_result.get("fn")
-            path = func_result.get("path")
+            fn = func_result["fn"]
+            path = func_result["path"]
             res = func_result.get("res", {})
 
             test_number = len(registry) + idx + 1

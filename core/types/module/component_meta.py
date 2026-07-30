@@ -19,9 +19,10 @@ class ModuleMeta:
 
 @define
 class CommandMeta(ModuleMeta):
-    function: Callable = None
+    # 注册组件时必定传入处理函数，默认值仅为满足 attrs 的字段顺序要求
+    function: Callable = field(default=None)
     command_template: list[Template] = field(default=[], converter=convert_list)
-    options_desc: dict = None
+    options_desc: dict | None = None
     required_admin: bool = False
     required_superuser: bool = False
     required_base_superuser: bool = False
@@ -33,7 +34,7 @@ class CommandMeta(ModuleMeta):
 
 @define
 class RegexMeta(ModuleMeta):
-    function: Callable | None = None
+    function: Callable = field(default=None)
     pattern: str | re.Pattern | None = None
     mode: str | None = None
     desc: str | None = None
@@ -65,12 +66,12 @@ class RegexMeta(ModuleMeta):
 @define
 class ScheduleMeta(ModuleMeta):
     trigger: AndTrigger | OrTrigger | DateTrigger | CronTrigger | IntervalTrigger
-    function: Callable | None = None
+    function: Callable = field(default=None)
 
 
 @define
 class HookMeta(ModuleMeta):
-    function: Callable | None = None
+    function: Callable = field(default=None)
     name: str | None = None
 
 

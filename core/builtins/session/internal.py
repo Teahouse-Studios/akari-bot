@@ -129,16 +129,16 @@ class MessageSession:
 
         # ========== 步骤 1: 转换消息链格式 ==========
         # 根据平台和会话信息选择合适的消息链格式
-        message_chain = get_message_chain(self.session_info, chain=message_chain)
+        chain = get_message_chain(self.session_info, chain=message_chain)
 
-        if isinstance(message_chain, MessageNodes) and not self.session_info.support_handle_message_nodes:
-            message_chain = MessageChain.assign(await msgnode2image(message_chain, session=self.session_info))
+        if isinstance(chain, MessageNodes) and not self.session_info.support_handle_message_nodes:
+            chain = MessageChain.assign(await msgnode2image(chain, session=self.session_info))
 
         # ========== 步骤 2: 安全检查 ==========
         # 检查消息是否包含敏感信息（如 API 密钥、密码等）
-        if not message_chain.is_safe and not disable_secret_check:
+        if not chain.is_safe and not disable_secret_check:
             # 包含敏感信息，替换为安全提示消息
-            message_chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
+            chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
 
         # ========== 步骤 3: 发送消息 ==========
         # 通过消息队列发送消息，并阻塞等待返回包含消息 ID 的字典
@@ -148,7 +148,7 @@ class MessageSession:
 
         return_val = await _queue_server.client_send_message(
             self.session_info,
-            message_chain,
+            chain,
             quote=quote,
             enable_parse_message=enable_parse_message,
             enable_split_image=enable_split_image,
@@ -256,9 +256,9 @@ class MessageSession:
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
 
         # ========== 步骤 1: 转换和检查消息 ==========
-        message_chain = get_message_chain(session=self.session_info, chain=message_chain)
-        if not message_chain.is_safe and not disable_secret_check:
-            message_chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
+        chain = get_message_chain(session=self.session_info, chain=message_chain)
+        if not chain.is_safe and not disable_secret_check:
+            chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
 
         # ========== 步骤 2: 以后台任务方式发送消息 ==========
         # wait=False 表示不等待返回，消息会异步发送
@@ -301,16 +301,16 @@ class MessageSession:
 
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
 
-        message_chain = get_message_chain(self.session_info, chain=message_chain)
-        if isinstance(message_chain, MessageNodes):
-            message_chain = MessageChain.assign(await msgnode2image(message_chain, session=self.session_info))
-        if not message_chain.is_safe and not disable_secret_check:
-            message_chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
+        chain = get_message_chain(self.session_info, chain=message_chain)
+        if isinstance(chain, MessageNodes):
+            chain = MessageChain.assign(await msgnode2image(chain, session=self.session_info))
+        if not chain.is_safe and not disable_secret_check:
+            chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
 
         return_val = await _queue_server.client_send_private_message(
             self.session_info,
             user_id,
-            message_chain,
+            chain,
             enable_parse_message=enable_parse_message,
             enable_split_image=enable_split_image,
         )
@@ -527,18 +527,19 @@ class MessageSession:
         if CoreConfig.no_confirm:
             return no_confirm_action
         if message_chain:
-            message_chain = get_message_chain(self.session_info, message_chain)
+            chain = get_message_chain(self.session_info, message_chain)
         else:
-            message_chain = MessageChain.assign(I18NContext("core.message.confirm"))
-        if append_instruction:
+            chain = MessageChain.assign(I18NContext("core.message.confirm"))
+        # 合并转发消息无从追加提示行，此时略过
+        if append_instruction and isinstance(chain, MessageChain):
             if self.session_info.support_reaction and quick_confirm:
                 if self.session_info.client_name == "QQ":
-                    message_chain.append(I18NContext("message.wait.confirm.prompt.qq"))
+                    chain.append(I18NContext("message.wait.confirm.prompt.qq"))
                 else:
-                    message_chain.append(I18NContext("message.wait.confirm.prompt.reaction"))
+                    chain.append(I18NContext("message.wait.confirm.prompt.reaction"))
             else:
-                message_chain.append(I18NContext("message.wait.confirm.prompt"))
-        send = await self.send_message(message_chain, quote)
+                chain.append(I18NContext("message.wait.confirm.prompt"))
+        send = await self.send_message(chain, quote)
         await asyncio.sleep(0.1)
         self.session_info.tmp["wait_active"] = "no"
         if quick_confirm:
@@ -598,10 +599,11 @@ class MessageSession:
         ExecutionLockList.remove(self)
         await self.end_typing()
         if message_chain:
-            message_chain = get_message_chain(self.session_info, message_chain)
-            if append_instruction:
-                message_chain.append(I18NContext("message.wait.next_message.prompt"))
-            send = await self.send_message(message_chain, quote)
+            chain = get_message_chain(self.session_info, message_chain)
+            # 合并转发消息无从追加提示行，此时略过
+            if append_instruction and isinstance(chain, MessageChain):
+                chain.append(I18NContext("message.wait.next_message.prompt"))
+            send = await self.send_message(chain, quote)
         await asyncio.sleep(0.1)
         self.session_info.tmp["wait_active"] = "no"
         flag = asyncio.Event()
@@ -645,8 +647,8 @@ class MessageSession:
         ExecutionLockList.remove(self)
         await self.end_typing()
         if message_chain:
-            message_chain = get_message_chain(self.session_info, message_chain)
-            send = await self.send_message(message_chain, quote)
+            chain = get_message_chain(self.session_info, message_chain)
+            send = await self.send_message(chain, quote)
         await asyncio.sleep(0.1)
         self.session_info.tmp["wait_active"] = "no"
         flag = asyncio.Event()
@@ -700,19 +702,21 @@ class MessageSession:
         self.session_info.tmp["wait_type"] = "wait_reply"
         self.session_info.tmp["wait_active"] = "yes"
         if not self.session_info.support_quote:
-            message_chain = get_message_chain(self.session_info, message_chain)
-            if append_instruction:
-                message_chain.append(I18NContext("message.wait.next_message.prompt"))
+            chain = get_message_chain(self.session_info, message_chain)
+            # 合并转发消息无从追加提示行，此时略过
+            if append_instruction and isinstance(chain, MessageChain):
+                chain.append(I18NContext("message.wait.next_message.prompt"))
             if all_:
-                return await self.wait_anyone(message_chain, False, delete, timeout)
-            return await self.wait_next_message(message_chain, False, delete, timeout, False)
+                return await self.wait_anyone(chain, False, delete, timeout)
+            return await self.wait_next_message(chain, False, delete, timeout, False)
 
         ExecutionLockList.remove(self)
         await self.end_typing()
-        message_chain = get_message_chain(self.session_info, message_chain)
-        if append_instruction:
-            message_chain.append(I18NContext("message.reply.prompt"))
-        send = await self.send_message(message_chain, quote)
+        chain = get_message_chain(self.session_info, message_chain)
+        # 合并转发消息无从追加提示行，此时略过
+        if append_instruction and isinstance(chain, MessageChain):
+            chain.append(I18NContext("message.reply.prompt"))
+        send = await self.send_message(chain, quote)
         await asyncio.sleep(0.1)
         self.session_info.tmp["wait_active"] = "no"
         flag = asyncio.Event()

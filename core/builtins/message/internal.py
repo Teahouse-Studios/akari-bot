@@ -5,7 +5,6 @@
 使得在代码中可以方便地使用这些元素，并将其导出供系统使用。
 """
 
-from core.exports import add_export
 from .elements import *
 
 # ========== 消息元素别名定义 ==========
@@ -40,30 +39,6 @@ Mention = mention = MentionElement.assign
 
 # 原始格式元素 - 用于发送原始格式的消息内容
 Raw = raw = RawElement.assign
-
-# ========== 导出所有别名 ==========
-# 将别名导出到系统的导出列表中，供其他模块使用
-
-add_export(Plain)
-add_export(Image)
-add_export(Voice)
-add_export(Embed)
-add_export(EmbedField)
-add_export(Url)
-add_export(FormattedTime)
-add_export(I18NContext)
-add_export(Mention)
-add_export(Raw)
-add_export(plain)
-add_export(image)
-add_export(voice)
-add_export(embed)
-add_export(embed_field)
-add_export(url)
-add_export(formatted_time)
-add_export(i18n_context)
-add_export(mention)
-add_export(raw)
 
 __all__ = [
     "Plain",

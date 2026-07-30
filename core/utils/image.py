@@ -12,7 +12,6 @@ from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import PlainElement, ImageElement, EmbedElement
 from core.config.base import CoreConfig
 from core.constants.path import templates_path
-from core.exports import exports
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.web_render import web_render, ElementScreenshotOptions
@@ -101,9 +100,9 @@ async def msgchain2image(
     if isinstance(message_chain, list):
         message_chain = MessageChain.assign(message_chain)
 
-    # MessageSession 本身不持有 locale，需先取出其 session_info
-    if isinstance(session, exports.get("MessageSession")):
-        session = session.session_info
+    # MessageSession 本身不持有 locale，需先取出其 session_info；
+    # SessionInfo 没有该属性，原样返回
+    session = getattr(session, "session_info", session)
 
     message_list = message_chain.as_sendable(session)
     for m in message_list:
