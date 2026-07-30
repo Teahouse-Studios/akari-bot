@@ -27,15 +27,28 @@ def _features_sources() -> dict[str, str]:
     return sources
 
 
-def _dead_module_level_names(source: str) -> list[str]:
+def _reads_config(node: ast.AST) -> bool:
     """
-    找出模块顶层赋值了却从未被读取的名字。
+    判断表达式中是否存在对配置模板的属性访问，如 ``CoreConfig.enable_dirty_check``。
+    """
+    return any(
+        isinstance(sub, ast.Attribute) and isinstance(sub.value, ast.Name) and sub.value.id.endswith("Config")
+        for sub in ast.walk(node)
+    )
+
+
+def _dead_config_names(source: str) -> list[str]:
+    """
+    找出模块顶层由配置取值、却从未被读取的名字。
+
+    只看由配置取值的赋值，而非全部顶层赋值：模块自身导出的能力实例也是一个顶层赋值，
+    它在本文件内无人读取属于正常，一并计入会把每个平台都误判为存在哑变量。
     """
     tree = ast.parse(source)
     assigned = {
         target.id
         for node in tree.body
-        if isinstance(node, ast.Assign)
+        if isinstance(node, ast.Assign) and _reads_config(node.value)
         for target in node.targets
         if isinstance(target, ast.Name)
     }
@@ -46,11 +59,9 @@ def _dead_module_level_names(source: str) -> list[str]:
 def _test_no_dead_config_read_in_features():
     """测试平台能力 - features 模块不得存在读了配置却没落到字段上的哑变量"""
     try:
-        # onebot 曾在顶层算出 dirty_word_check 与 use_url_manager 却没写进类体，
+        # onebot 曾在顶层算出 dirty_word_check 与 use_url_manager 却没传给 Features，
         # 两个字段静默沿用基类的 False，该平台的文字过滤与 URLManager 因此整体失效。
-        return not {
-            name: dead for name, source in _features_sources().items() if (dead := _dead_module_level_names(source))
-        }
+        return not {name: dead for name, source in _features_sources().items() if (dead := _dead_config_names(source))}
 
     except Exception:
         return False

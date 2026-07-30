@@ -5,11 +5,12 @@ from khl import Message, MessageTypes, PublicChannel, User
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
 from core.builtins.session.context import ContextManager
+from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 from .client import bot
 from .client import token as kook_token
-from .features import Features
+from .features import features as kook_features
 from .info import client_name, target_group_prefix, target_person_prefix
 
 kook_base = "https://www.kookapp.cn"
@@ -43,7 +44,7 @@ async def get_channel(session_info: SessionInfo) -> PublicChannel | User | None:
 
 class KOOKContextManager(ContextManager):
     context: dict[str, Message] = {}
-    features: Features = Features()
+    features: Features = kook_features
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:

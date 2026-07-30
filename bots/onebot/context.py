@@ -14,11 +14,12 @@ from bots.onebot.utils import CQCodeHandler
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
 from core.builtins.session.context import ContextManager
+from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
 from bots.onebot.config import AiocqhttpConfig
 from core.logger import Logger
-from .features import Features
+from .features import features as onebot_features
 
 qq_typing_emoji = str(AiocqhttpConfig.qq_typing_emoji)
 qq_limited_emoji = str(AiocqhttpConfig.qq_limited_emoji)
@@ -99,7 +100,7 @@ async def get_available_private_list():
 
 class OneBotContextManager(ContextManager):
     context: dict[str, Event] = {}
-    features: Features = Features()
+    features: Features = onebot_features
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:

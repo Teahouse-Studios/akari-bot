@@ -4,11 +4,12 @@ from aiogram import types
 from aiogram.types import ChatPermissions, FSInputFile
 
 from bots.telegram.client import aiogram_bot
-from bots.telegram.features import Features
+from bots.telegram.features import features as telegram_features
 from bots.telegram.info import client_name
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
 from core.builtins.session.context import ContextManager
+from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 from core.utils.image import image_split
@@ -16,7 +17,7 @@ from core.utils.image import image_split
 
 class TelegramContextManager(ContextManager):
     context: dict[str, types.Message] = {}
-    features: Features = Features()
+    features: Features = telegram_features
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:

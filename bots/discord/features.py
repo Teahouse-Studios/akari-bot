@@ -1,27 +1,23 @@
-from attrs import define
+from attrs import evolve
 
-from core.builtins.session.features import Features as FeaturesBase
+from core.builtins.session.features import Features
 
+features = Features(
+    support_image=True,
+    support_voice=True,
+    support_mention=True,
+    support_embed=True,
+    support_forward=False,
+    support_delete=True,
+    support_manage=True,
+    support_markdown=True,
+    support_reaction=True,
+    support_quote=True,
+    support_rss=True,
+    support_typing=True,
+    support_wait=True,
+    support_private_msg=True,
+    use_url_md_format=False,
+)
 
-@define
-class Features(FeaturesBase):
-    support_image: bool = True
-    support_voice: bool = True
-    support_mention: bool = True
-    support_embed: bool = True
-    support_forward: bool = False
-    support_delete: bool = True
-    support_manage: bool = True
-    support_markdown: bool = True
-    support_reaction: bool = True
-    support_quote: bool = True
-    support_rss: bool = True
-    support_typing: bool = True
-    support_wait: bool = True
-    support_private_msg: bool = True
-    use_url_md_format: bool = False
-
-
-@define
-class SlashFeatures(Features):
-    require_enable_modules: bool = False
+slash_features = evolve(features, require_enable_modules=False)

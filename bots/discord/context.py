@@ -5,7 +5,8 @@ import discord
 from discord import Message
 
 from bots.discord.client import discord_bot
-from bots.discord.features import Features
+from bots.discord.features import features as discord_features
+from core.builtins.session.features import Features
 from bots.discord.info import client_name, target_channel_prefix, target_dm_channel_prefix
 from bots.discord.utils import get_channel_id, get_sender_id, convert_embed
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
@@ -17,7 +18,7 @@ from core.logger import Logger
 
 class DiscordContextManager(ContextManager):
     context: dict[str, Message] = {}
-    features: Features | None = Features()
+    features: Features = discord_features
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:

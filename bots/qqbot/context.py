@@ -11,7 +11,7 @@ from botpy.types.message import Media, Reference, MarkdownPayload, KeyboardPaylo
 from botpy.types.inline import Keyboard, Button, KeyboardRow, RenderData, Action, Permission
 from tenacity import retry, retry_if_exception, wait_fixed, stop_after_attempt
 
-from bots.qqbot.features import Features
+from bots.qqbot.features import features as qqbot_features
 from bots.qqbot.info import (
     client_name,
     sender_tiny_prefix,
@@ -25,6 +25,7 @@ from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, MentionElement
 from core.builtins.message.internal import I18NContext
 from core.builtins.session.context import ContextManager
+from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from bots.qqbot.config import QQBotConfig
 from core.logger import Logger
@@ -94,7 +95,7 @@ class ModdedBotAPI(BotAPI):
 
 class QQBotContextManager(ContextManager):
     context: dict[str, BaseMessage] = {}
-    features: Features = Features()
+    features: Features = qqbot_features
     _tmp = {}
 
     @classmethod

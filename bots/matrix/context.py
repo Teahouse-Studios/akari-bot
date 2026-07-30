@@ -6,17 +6,18 @@ import nio
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
 from core.builtins.session.context import ContextManager
+from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 from core.utils.image import image_split
 from .client import matrix_bot, homeserver_host
-from .features import Features
+from .features import features as matrix_features
 from .info import client_name, target_prefix
 
 
 class MatrixContextManager(ContextManager):
     context: dict[str, tuple[nio.MatrixRoom, nio.RoomMessageFormatted]] = {}
-    features: Features = Features()
+    features: Features = matrix_features
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:

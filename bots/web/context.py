@@ -4,10 +4,11 @@ import uuid
 import orjson
 from fastapi import WebSocket
 
-from bots.web.features import Features
+from bots.web.features import features as web_features
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import PlainElement, ImageElement
 from core.builtins.session.context import ContextManager
+from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
 from core.logger import Logger
@@ -15,7 +16,7 @@ from core.logger import Logger
 
 class WebContextManager(ContextManager):
     context: dict[str, dict] = {}
-    features: Features = Features()
+    features: Features = web_features
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:

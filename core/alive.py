@@ -13,7 +13,8 @@ class Alive:
         target_prefix_list: list | None = None,
         sender_prefix_list: list | None = None,
         ctx_slot_index: int | None = None,
-        features: type[Features] | None = None,
+        # 传入的是平台声明其能力的 Features 实例而非类
+        features: Features | None = None,
     ):
         cls.values[client_name] = {
             "target_prefix_list": target_prefix_list,
