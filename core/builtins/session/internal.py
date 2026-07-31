@@ -661,11 +661,11 @@ class MessageSession:
             if send and delete:
                 await send.delete()
             raise WaitCancelException
-        result = SessionTaskManager.get()[self.session_info.target_id]["all"][self]
+        result = SessionTaskManager.get()[self.session_info.channel_key]["all"][self]
         if "result" in result:
             if send and delete:
                 await send.delete()
-            return SessionTaskManager.get()[self.session_info.target_id]["all"][self]["result"]
+            return SessionTaskManager.get()[self.session_info.channel_key]["all"][self]["result"]
         raise WaitCancelException
 
     async def wait_reply(
