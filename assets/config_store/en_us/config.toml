@@ -17,6 +17,7 @@ use_secrets_random = false # Whether to use the random number generator based on
 base_superuser = ["QQ|2596322644"] # The bot's base superuser list. The values entered here will be loaded into the database when the bot starts.
 ignored_sender = ["QQ|2854196310"] # Ignored user list. Users matching this list will be ignored.
 report_targets = [] # List of reporting contexts. The value filled in here will be identified as the reporting context. (e.g., when the bot encounters a command error, the bot will send the error information to the corresponding context)
+retired_clients = [] # 已退役的客户端及其数据迁移去处，每项格式为“源客户端 -> 目标客户端”（如“QQ -> QQBot”）。退役的客户端仅保留数据迁移功能，其余命令与主动推送一律停止；只填写源客户端时表示不提供迁移去处。
 command_prefix = ["~", "～"] # Command prefix. The value entered here will be recognized as the command prefix.
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # The keyword for the confirmation command. The value entered here will be recognized as the confirmation command.
 enable_module_invalid_prompt = false # Whether to enable the prompt message when the module does not exist.

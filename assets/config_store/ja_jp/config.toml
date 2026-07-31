@@ -17,6 +17,7 @@ use_secrets_random = false # secrets ライブラリに基づく乱数ジェネ�
 base_superuser = ["QQ|2596322644"] # ボットの基本スーパーユーザー リスト。ここに入力された値はボットの起動時にデータベースにロードされます。
 ignored_sender = ["QQ|2854196310"] # 無視されるユーザーのリスト。このリストに合致するユーザーは無視されます。
 report_targets = [] # レポート コンテクスト リスト。ここに入力された値がレポートコンテクストとして認識されます。（例：コマンドの実行エラーが発生すると、ボットは対応するコンテクストにエラー情報を送信します）
+retired_clients = [] # 已退役的客户端及其数据迁移去处，每项格式为“源客户端 -> 目标客户端”（如“QQ -> QQBot”）。退役的客户端仅保留数据迁移功能，其余命令与主动推送一律停止；只填写源客户端时表示不提供迁移去处。
 command_prefix = ["~", "～"] # コマンドのプレフィックス。ここに入力された値はコマンドのプレフィックスとして認識されます。
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # コマンド確認用のキーワード。ここに入力された値はコマンド確認用の単語として認識されます。
 enable_module_invalid_prompt = false # モジュールが存在しない場合にプロンプト メッセージ表示を有効にするかどうか。
@@ -26,6 +27,7 @@ quick_confirm = true # メッセージのクイック確認を有効にするか
 enable_analytics = true # 組み込みの統計機能を有効にするかどうか。
 enable_commit_url = true # バージョン情報を表示する時にコミット URL を表示するかどうか。
 enable_dirty_check = false # テキスト フィルタリング検出を有効にするかどうか。Alibaba Cloud コンテンツ セキュリティ サービスの AccessKey ID と AccessKey Secret を設定する必要があります。
+
 check_use_textscan_v1 = false # Alibaba Cloud コンテンツ セキュリティ サービスの Text Scan 1.0 レガシー API を使用するかどうか。
 enable_urlmanager = false # URL スプリングボードの URLManager を有効にするかどうか。（URL が公式リンクではないことを宣言するなど）
 auto_purge_crontab = "0 0 * * *" # 自動キャッシュ パージ用の Cron 式。
@@ -54,7 +56,6 @@ help_url = "https://bot.teahouse.team" # ドキュメントの URL。
 help_page_url = "https://bot.teahouse.team/wiki/${module}" # モジュールのヘルプ情報の URL。
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # フィードバックの URL。
 locale_url = "https://www.crowdin.com/project/akari-bot" # 翻訳プロジェクトの URL。
-
 
 [secret]
 # キーの設定項目です。ここに入力された値は、送信メッセージに誤って含まれた場合、ボットはそれを傍受しようとします。ただし、漏洩を防ぐよう注意してください。

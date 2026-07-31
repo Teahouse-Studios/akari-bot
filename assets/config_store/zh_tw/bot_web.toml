@@ -8,6 +8,7 @@ enable = true # 是否啟用此用户端。
 enable_https = false # 是否啟用 HTTPS 協定安全措施。
 web_host = "127.0.0.1" # Web 服務的主機位址，設為 0.0.0.0 則監聽所有位址。
 web_port = 6485 # Web 服務的連接埠號，設為 0 則停用服務。
+forwarded_allow_ips = "127.0.0.1" # 信任的反向代理来源地址，多个地址以英文逗号分隔，设为 * 表示信任所有来源。仅当来源受信任时才会采用 X-Forwarded-For 等请求头中的真实地址。
 login_max_attempt = 5 # 登入請求最大次數限制。
 heartbeat_attempt = 3 # 心跳訊息傳送嘗試次數。
 heartbeat_interval = 30 # 心跳訊息傳送時間間隔。

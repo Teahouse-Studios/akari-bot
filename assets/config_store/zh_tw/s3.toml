@@ -3,7 +3,7 @@
 # 例如：TOML 中的布林值必須是小寫。
 
 [s3]
-# {I18N:config.table.config_s3}
+# S3 兼容 API 的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
 s3_endpoint_url = "<Replace me with str value>" # S3 兼容 API 的 Endpoint URL。
 s3_bucket = "<Replace me with str value>" # S3 兼容 API 的 Bucket 名。
 s3_region = "us-east-1" # S3 兼容 API 的地域名。
@@ -12,6 +12,6 @@ s3_internal_endpoint = "<Replace me with str value>" # S3 兼容 API 的内网�
 s3_temp_max_count = 20 # S3 兼容 API 的临时文件最大数量。
 
 [s3_secret]
-# {I18N:config.table.secret_s3}
-s3_access_key = "<Replace me with str value>" # {I18N:config.comments.s3_secret.s3_access_key}
-s3_secret_key = "<Replace me with str value>" # {I18N:config.comments.s3_secret.s3_secret_key}
+# S3 兼容 API 的密钥部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
+s3_access_key = "<Replace me with str value>" # S3 兼容 API 的 AccessKey。
+s3_secret_key = "<Replace me with str value>" # S3 兼容 API 的 SecretKey。

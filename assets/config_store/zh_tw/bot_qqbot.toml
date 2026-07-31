@@ -7,8 +7,10 @@
 enable = false # 是否啟用此用户端。
 qq_bot_appid = "<Replace me with (str, int) value>" # QQ 機器人（官方）的 AppID。
 qq_bot_openid = "<Replace me with str value>" # QQ 机器人（官方）的 OpenID。
+qq_bot_enable_send_url = false # 使用 QQ 機器人（官方）時，是否啟用傳送 URL。
 qq_private_bot = false # 使用 QQ 機器人（官方）時，是否為私域機器人。
 qq_typing_emoji = 181 # 使用 QQ 機器人（官方）時，正在處理訊息時向訊息掛上的回應表情 ID。ID 詳見：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
+qq_limited_emoji = 10060 # 使用 QQ 機器人（官方）時，訊息處理失敗時向訊息掛上的回應表情 ID。ID 詳見：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
 qq_use_markdown = false # 使用 QQ 机器人（官方）时，是否使用 Markdown 格式消息（需配置 s3 兼容 API 存储图片）。
 
 [bot_qqbot_secret]

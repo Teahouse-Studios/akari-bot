@@ -8,6 +8,7 @@ enable = true # Whether to enable this client.
 enable_https = false # Whether to enable HTTPS protocol security measures.
 web_host = "127.0.0.1" # The host address of the Web service. Setting to 0.0.0.0 will listen to all addresses.
 web_port = 6485 # The port number of the Web service. Setting to 0 will disable the service.
+forwarded_allow_ips = "127.0.0.1" # 信任的反向代理来源地址，多个地址以英文逗号分隔，设为 * 表示信任所有来源。仅当来源受信任时才会采用 X-Forwarded-For 等请求头中的真实地址。
 login_max_attempt = 5 # Maximum number of login requests limit.
 heartbeat_attempt = 3 # The number of attempts to send heartbeat messages.
 heartbeat_interval = 30 # The interval for sending heartbeat messages.
