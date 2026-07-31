@@ -11,12 +11,14 @@ async def _test_cooldown_init():
         msg = MockMessageSession("~test")
         await msg.async_init("~test")
         cd = CoolDown("test_cmd", msg, delay=60)
+        # 场景维度按消息通道，用户维度按 union：换个平台账号仍受同一份冷却约束，
+        # 但仅共享 union 而通道号不同的会话不该互相牵连。
         return (
             cd.key == "test_cmd"
             and cd.delay == 60
             and cd.whole_target is False
-            and cd.target_id == msg.session_info.target_id
-            and cd.sender_id == msg.session_info.sender_id
+            and cd.channel_key == msg.session_info.channel_key
+            and cd.sender_union_id == msg.session_info.sender_union_id
         )
     except Exception:
         return False

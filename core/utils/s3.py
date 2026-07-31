@@ -12,7 +12,7 @@ from botocore.config import Config as BotoConfig
 from botocore.exceptions import ClientError
 
 from core.logger import Logger
-from core.config import Config
+from core.config.base import S3Config, S3SecretConfig
 
 
 class S3StorageAPI:
@@ -303,11 +303,11 @@ class S3StorageAPI:
         return urlunparse(parsed._replace(netloc=target_netloc))
 
 
-s3_access_key = Config("s3_access_key", cfg_type=str, table_name="s3", secret=True)
-s3_secret_key = Config("s3_secret_key", cfg_type=str, table_name="s3", secret=True)
-endpoint_url = Config("s3_endpoint_url", cfg_type=str, table_name="s3")
-bucket = Config("s3_bucket", cfg_type=str, table_name="s3")
-region = Config("s3_region", cfg_type=str, table_name="s3")
+s3_access_key = S3SecretConfig.s3_access_key
+s3_secret_key = S3SecretConfig.s3_secret_key
+endpoint_url = S3Config.s3_endpoint_url
+bucket = S3Config.s3_bucket
+region = S3Config.s3_region
 
 
 if s3_access_key and s3_secret_key and endpoint_url and bucket and region:
@@ -317,9 +317,9 @@ if s3_access_key and s3_secret_key and endpoint_url and bucket and region:
         secret_key=s3_secret_key,
         bucket=bucket,
         region=region,
-        public_endpoint=Config("s3_public_endpoint", cfg_type=str, table_name="s3", default=None),
-        internal_endpoint=Config("s3_internal_endpoint", cfg_type=str, table_name="s3", default=None),
-        temp_max_count=Config("s3_temp_max_count", cfg_type=int, table_name="s3", default=20),
+        public_endpoint=S3Config.s3_public_endpoint,
+        internal_endpoint=S3Config.s3_internal_endpoint,
+        temp_max_count=S3Config.s3_temp_max_count,
     )
 else:
     Logger.warning("[S3] S3 configuration is incomplete. S3Storage will not be initialized.")

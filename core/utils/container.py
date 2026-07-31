@@ -1,6 +1,7 @@
 import asyncio
 import threading
 import time
+import weakref
 from typing import Any, ClassVar
 
 
@@ -45,8 +46,10 @@ class TokenBucket:
 
 
 class ExpiringTempDict:
-    __slots__ = ("exp", "ts", "data", "_lock")
+    __slots__ = ("exp", "ts", "data", "_lock", "__weakref__")
 
+    # 存弱引用：登记表只为定期清理服务，若持强引用则任何登记过的容器都永远无法被回收，
+    # 冷却、绑定码这类按「会话 × 键」不断新建的容器会让它无上限增长。
     _registry: ClassVar[list] = []
     _registry_lock: ClassVar[threading.Lock] = threading.Lock()
     _clear_lock: ClassVar[asyncio.Lock] = asyncio.Lock()
@@ -60,7 +63,7 @@ class ExpiringTempDict:
         self._lock = threading.RLock()
         if root:
             with self._registry_lock:
-                self._registry.append(self)
+                self._registry.append(weakref.ref(self))
 
     def __reversed__(self):
         return reversed(self.data)
@@ -129,7 +132,11 @@ class ExpiringTempDict:
         now = now or time.time()
 
         async with cls._clear_lock:
-            root_objs = list(cls._registry)
+            with cls._registry_lock:
+                # 顺带剔除已失效的弱引用，否则登记表仍会随新建容器不断变长
+                alive = [ref for ref in cls._registry if ref() is not None]
+                cls._registry[:] = alive
+            root_objs = [obj for obj in (ref() for ref in alive) if obj is not None]
             await asyncio.to_thread(cls._sync_clear_all, root_objs, now)
 
     @staticmethod

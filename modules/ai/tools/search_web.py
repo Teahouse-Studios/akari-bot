@@ -3,9 +3,9 @@ import traceback
 import orjson
 from ddgs import DDGS
 
-from core.config import Config
+from core.config.base import CoreSecretConfig
 
-proxy = Config("proxy", cfg_type=str, secret=True)
+proxy = CoreSecretConfig.proxy
 
 search_web_desc = {
     "type": "function",

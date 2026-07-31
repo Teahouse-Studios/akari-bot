@@ -52,15 +52,14 @@ async def _test_gained_petal_with_mock():
         msg = MockMessageSession("~test")
         await msg.async_init("~test")
 
-        def mock_config(key, default=None):
-            config_map = {
-                "enable_petal": True,
-                "enable_get_petal": True,
-                "petal_gained_limit": 100,
-            }
-            return config_map.get(key, default)
+        class MockConfig:
+            """替换 CoreConfig 的桩，仅提供被测代码读取的字段。"""
 
-        with patch("core.utils.petal.Config", side_effect=mock_config):
+            enable_petal = True
+            enable_get_petal = True
+            petal_gained_limit = 100
+
+        with patch("core.utils.petal.CoreConfig", MockConfig):
             result = await gained_petal(msg, 10)
             if result is None:
                 return False
@@ -79,13 +78,12 @@ async def _test_cost_petal_insufficient_with_mock():
         msg = MockMessageSession("~test")
         await msg.async_init("~test")
 
-        def mock_config(key, default=None):
-            config_map = {
-                "enable_petal": True,
-            }
-            return config_map.get(key, default)
+        class MockConfig:
+            """替换 CoreConfig 的桩，仅提供被测代码读取的字段。"""
 
-        with patch("core.utils.petal.Config", side_effect=mock_config):
+            enable_petal = True
+
+        with patch("core.utils.petal.CoreConfig", MockConfig):
             result = await cost_petal(msg, 100, send_prompt=False)
             if result is not False:
                 return False

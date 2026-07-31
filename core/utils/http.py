@@ -16,15 +16,15 @@ import httpx
 from aiofile import async_open
 from tenacity import retry, wait_fixed, stop_after_attempt
 
-from core.config import Config
+from core.config.base import CoreConfig, CoreSecretConfig
 from core.constants.exceptions import ExternalException
 from core.constants.path import cache_path
 from core.constants.info import Info
 from core.logger import Logger
 
 logging_resp = False
-debug = Config("debug", False)
-proxy = Config("proxy", cfg_type=str, secret=True)
+debug = CoreConfig.debug
+proxy = CoreSecretConfig.proxy if CoreSecretConfig.proxy else None
 
 url_pattern = re.compile(
     r"\b(?:http[s]?:\/\/)?(?:[a-zA-Z0-9\-\:_@]+\.)+[a-zA-Z]{2,}(?:\/[a-zA-Z0-9-._~:\/?#[\]@!$&\'()*+,;=%]*)?\b"
@@ -91,7 +91,7 @@ async def request_url(
     if Info.http_mock_enabled:
         from core.tester.mock.http import HTTPMock
 
-        mock_resp = HTTPMock.get_response(url)
+        mock_resp = HTTPMock.get_response(url, method=method, data=data)
         if mock_resp is not None:
             if status_code and mock_resp.status_code != status_code:
                 error_fmt = (
@@ -108,12 +108,14 @@ async def request_url(
                     return attr
                 raise ValueError(f"No such method: {fmt}")
             return mock_resp.text
+        if Info.http_mock_strict:
+            raise ExternalException(f"No HTTP fixture recorded for [{method}] {url}")
 
     @retry(stop=stop_after_attempt(attempt), wait=wait_fixed(3), reraise=True)
     async def _request():
         Logger.debug(f"[{method}] {url}")
 
-        if not Config("allow_request_private_ip", False) and not request_private_ip:
+        if not CoreConfig.allow_request_private_ip and not request_private_ip:
             private_ip_check(url)
 
         async with httpx.AsyncClient(headers=headers, proxy=proxy, verify=not debug) as client:

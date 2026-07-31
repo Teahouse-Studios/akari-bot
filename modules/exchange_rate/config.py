@@ -1,6 +1,6 @@
-from . import excr
+from core.config.decorator import on_module_config
 
 
-@excr.config(secret=True)
+@on_module_config("exchange_rate", secret=True)
 class ExchangeRateConfig:
     exchange_rate_api_key: str = ""

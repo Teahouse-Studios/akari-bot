@@ -1,8 +1,8 @@
-from core.config import Config
+from modules.maimai.config import MaimaiSecretConfig
 from .maimaidx_mapping import mai_assets_path
 
-DF_DEVELOPER_TOKEN = Config("diving_fish_developer_token", cfg_type=str, secret=True, table_name="module_maimai")
-LX_DEVELOPER_TOKEN = Config("lxns_developer_token", cfg_type=str, secret=True, table_name="module_maimai")
+DF_DEVELOPER_TOKEN = MaimaiSecretConfig.diving_fish_developer_token
+LX_DEVELOPER_TOKEN = MaimaiSecretConfig.lxns_developer_token
 SONGS_PER_PAGE = 30
 
 default_source = "lxns" if LX_DEVELOPER_TOKEN else "diving-fish"

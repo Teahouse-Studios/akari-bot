@@ -12,8 +12,10 @@
 - 接收客户端的消息并进行处理
 - 获取和管理模块信息
 - 调用OneBot标准API
+- 广播语言文件重载
 """
 
+import asyncio
 import re
 from typing import TYPE_CHECKING
 
@@ -25,6 +27,7 @@ from core.builtins.parser.message import parser
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
+from core.constants.info import Info
 from core.constants.path import PrivateAssets
 from core.database.models import JobQueuesTable
 from core.exports import exports, add_export
@@ -44,7 +47,35 @@ class JobQueueServer(JobQueueBase):
 
     提供服务器向客户端发送各类操作请求的接口方法。这些方法将任务添加到队列，
     由客户端处理后将结果返回给服务器。
+
+    Attributes:
+        RELOAD_LOCALE_TIMEOUT: 等待客户端重载语言文件的秒数上限。保活信号只能证明客户端进程还在，
+                               不能证明它还在取走队列任务，无上限地等下去会使发起重载的会话一直挂着
     """
+
+    RELOAD_LOCALE_TIMEOUT = 30
+
+    @classmethod
+    async def add_job(cls, target_client: str, action, args, wait=True) -> str | dict | None:
+        """向队列添加新的任务，目标客户端掉线时直接放弃。
+
+        队列任务须由目标客户端轮询取走，客户端不在线时任务将长期滞留于库中无人认领：
+        ``wait=True`` 的调用会就此永久阻塞（所等待的 Event 不会再被置位），
+        ``wait=False`` 的调用则只是徒增一条无效记录。因此先查询保活状态，掉线时直接判定失败。
+
+        :param target_client: 场景客户端名称
+        :param action: 操作名称
+        :param args: 操作参数
+        :param wait: 是否等待任务完成（默认 True）
+
+        :return: 同 :meth:`JobQueueBase.add_job`；目标客户端掉线时 ``wait=True`` 返回空字典、
+                 ``wait=False`` 返回 None，调用方按「没拿到结果」处理即可
+        """
+        # 发往自身的任务（如错误上报）无需查询保活状态，服务端不会向自身发送保活信号。
+        if target_client and target_client != Info.client_name and not Alive.is_alive(target_client):
+            Logger.warning(f"Client {target_client} is offline, skipped action {action}.")
+            return {} if wait else None
+        return await super().add_job(target_client, action, args, wait=wait)
 
     @classmethod
     async def client_send_message(
@@ -77,6 +108,75 @@ class JobQueueServer(JobQueueBase):
                 "session_info": converter.unstructure(session_info),
                 "message": converter.unstructure(message, MessageChain | MessageNodes),
                 "quote": quote,
+                "enable_parse_message": enable_parse_message,
+                "enable_split_image": enable_split_image,
+            },
+            wait=wait,
+        )
+        return value
+
+    @classmethod
+    async def client_post_message(
+        cls,
+        session_info: SessionInfo,
+        message: MessageChain | MessageNodes,
+        module_name: str = "",
+    ):
+        """向客户端投递一条主动推送消息。
+
+        与 :meth:`client_send_message` 的区别在于不等待发送结果，并将 `session_info.next_hops`
+        一并传递：本跳发送失败时由客户端回调 `post_next_hop`，改由同一条消息通道内的下一个场景重发，
+        以保证一条消息通道最终仅送达一次。
+
+        :param session_info: 本跳的目标会话信息，其 `next_hops` 为后备场景 ID 列表
+        :param message: 要发送的消息链对象
+        :param module_name: 触发推送的模块名称，换跳时需要一并带走
+
+        :return: 任务 ID
+        """
+        value = await cls.add_job(
+            session_info.client_name,
+            "post_message",
+            {
+                "session_info": converter.unstructure(session_info),
+                "message": converter.unstructure(message, MessageChain | MessageNodes),
+                "module_name": module_name,
+            },
+            wait=False,
+        )
+        return value
+
+    @classmethod
+    async def client_send_private_message(
+        cls,
+        session_info: SessionInfo,
+        user_id: str,
+        message: MessageChain | MessageNodes,
+        wait: bool = True,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ):
+        """向指定用户单独发送私聊消息。
+
+        通过队列系统让客户端把消息以私聊形式投递给某个用户，消息不会发往 session_info 所指的场景。
+
+        :param session_info: 发起私信的会话信息，用于确定客户端与消息渲染上下文
+        :param user_id: 目标用户 ID（带平台前缀，如 `QQ|10000`）
+        :param message: 要发送的消息链对象
+        :param wait: 是否等待消息发送完成（默认 True，取回消息 ID 需要等待）
+        :param enable_parse_message: 是否解析消息中的特殊标记（默认 True）
+        :param enable_split_image: 是否将大图片拆分成多条消息发送（默认 True）
+
+        :return wait=True: 返回发送结果字典（包含 message_id，为空列表表示发送失败）
+        :return wait=False: 返回任务 ID
+        """
+        value = await cls.add_job(
+            session_info.client_name,
+            "send_private_message",
+            {
+                "session_info": converter.unstructure(session_info),
+                "user_id": user_id,
+                "message": converter.unstructure(message, MessageChain | MessageNodes),
                 "enable_parse_message": enable_parse_message,
                 "enable_split_image": enable_split_image,
             },
@@ -339,6 +439,46 @@ class JobQueueServer(JobQueueBase):
         return value
 
     @classmethod
+    async def client_reload_locale(cls, client_name: str, timeout: float | None = None) -> list[str]:
+        """通知单个客户端重载语言文件。
+
+        :param client_name: 目标客户端名称
+        :param timeout: 等待客户端返回结果的秒数上限，默认为 `RELOAD_LOCALE_TIMEOUT`
+        :return: 重载过程中产生的错误信息，客户端掉线时为空列表
+        """
+        try:
+            ret = await asyncio.wait_for(
+                cls.add_job(client_name, "reload_locale", {}),
+                timeout=timeout if timeout else cls.RELOAD_LOCALE_TIMEOUT,
+            )
+        except asyncio.TimeoutError:
+            Logger.error(f"Timed out waiting for client {client_name} to reload locale.")
+            return [f"Timed out waiting for client {client_name} to reload locale."]
+        return list(ret.get("err", [])) if ret else []
+
+    @classmethod
+    async def client_reload_locale_all(cls) -> list[str]:
+        """通知全部在线客户端重载语言文件。
+
+        语言文件在服务端重载后仅对服务端生效，而消息中的 I18NContext 元素是在客户端进程内渲染的，
+        因此须逐一通知客户端一并重载，否则实际发出的消息仍为旧文案。
+
+        各客户端读取的是同一批语言文件，产生的错误通常完全一致，因此重复的条目只保留一条。
+
+        :return: 各客户端返回的错误信息
+        """
+        clients = [client for client in Alive.get_alive() if client != Info.client_name]
+        if not clients:
+            return []
+        results = await asyncio.gather(*[cls.client_reload_locale(client) for client in clients])
+        errs = []
+        for client_errs in results:
+            for err in client_errs:
+                if err not in errs:
+                    errs.append(err)
+        return errs
+
+    @classmethod
     async def call_onebot_api(cls, session_info: SessionInfo, api_name: str, **kwargs: dict):
         """调用 OneBot 标准 API。
 
@@ -356,6 +496,42 @@ class JobQueueServer(JobQueueBase):
             {"session_info": converter.unstructure(session_info), "api_name": api_name, "args": kwargs},
         )
         return value
+
+
+@JobQueueServer.action("post_next_hop")
+async def post_next_hop(tsk: JobQueuesTable, args: dict):
+    """主动推送换下一跳。
+
+    客户端投递失败后回调至此。下一跳可能属于另一个平台，只有服务端能够解析其会话信息，
+    因此换跳须在服务端进行。跳表长度单调递减，不会形成环路。
+
+    :param tsk: 任务对象（未使用）
+    :param args: 操作参数，包含 next_hops、message 与 module_name
+
+    :return: 包含 success 标志的字典，跳表耗尽时为 False
+    """
+    bot: "Bot" = exports["Bot"]
+    next_hops = list(args.get("next_hops", []))
+    message = converter.structure(args.get("message", {}), MessageChain | MessageNodes)
+    module_name = args.get("module_name", "")
+
+    while next_hops:
+        target_id = next_hops.pop(0)
+        session_info = await bot.fetch_target(target_id)
+        if not session_info:
+            Logger.warning(f"Failed to fetch next hop {target_id}, skipping to the one after it.")
+            continue
+        # 掉线客户端无法接收任务，也就不会继续换跳，选中它将导致整条通道就此中断。
+        if not Alive.is_alive(session_info.client_name):
+            Logger.warning(f"Client {session_info.client_name} is offline, skipping next hop {target_id}.")
+            continue
+        session_info.next_hops = next_hops
+        Logger.info(f"Post message failed, falling back to next hop {target_id}.")
+        await JobQueueServer.client_post_message(session_info, message, module_name)
+        return {"success": True}
+
+    Logger.warning("Post message failed on every hop of the channel.")
+    return {"success": False}
 
 
 @JobQueueServer.action("receive_message_from_client")

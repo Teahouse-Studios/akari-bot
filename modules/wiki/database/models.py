@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, UTC
 from urllib.parse import urlparse
 
 import orjson
@@ -6,6 +6,7 @@ from tortoise import fields
 from tortoise.exceptions import DoesNotExist
 
 from core.database.base import DBModel
+from core.database.models import UNION_SCOPE_TARGET
 
 table_prefix = "module_wiki_"
 
@@ -14,14 +15,15 @@ class WikiTargetInfo(DBModel):
     """
     会话内 Wiki 绑定信息表。
 
-    :param target_id: 场景 ID
+    :param union_id: 场景联合 ID
     :param api_link: API 链接
     :param interwikis: 自定义 iw 信息
     :param headers: 自定义请求头
     :param prefix: 自定义请求前缀
     """
 
-    target_id = fields.CharField(max_length=512, primary_key=True)
+    union_scope = UNION_SCOPE_TARGET
+    union_id = fields.CharField(max_length=512, primary_key=True)
     api_link = fields.CharField(max_length=512, null=True)
     interwikis = fields.JSONField(default={})
     headers = fields.JSONField(default={"accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"})
@@ -89,10 +91,10 @@ class WikiSiteInfo(DBModel):
         try:
             query = await WikiSiteInfo.get(api_link=self.api_link)
             query.site_info = orjson.dumps(info)
-            query.timestamp = datetime.now()
+            query.timestamp = datetime.now(UTC)
             await query.save()
         except DoesNotExist:
-            await WikiSiteInfo.create(api_link=self.api_link, site_info=orjson.dumps(info), timestamp=datetime.now())
+            await WikiSiteInfo.create(api_link=self.api_link, site_info=orjson.dumps(info), timestamp=datetime.now(UTC))
 
         return True
 

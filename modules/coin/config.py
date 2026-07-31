@@ -1,7 +1,7 @@
-from . import coin
+from core.config.decorator import on_module_config
 
 
-@coin.config()
+@on_module_config("coin")
 class CoinConfig:
     coin_limit: int = 10000
     coin_faceup_weight: int = 4997

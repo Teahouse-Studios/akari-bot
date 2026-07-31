@@ -10,7 +10,7 @@ import shlex
 import traceback
 from typing import TYPE_CHECKING
 
-from core.config import Config
+from core.config.base import BaseConfig, CoreConfig
 from core.constants.exceptions import InvalidCommandFormatError
 from core.exports import exports
 from core.i18n import Locale
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from core.builtins.bot import Bot
 
 # 默认地区设置
-default_locale = Config("default_locale", cfg_type=str)
+default_locale = BaseConfig.default_locale
 
 # 预编译正则：匹配中文引号（避免每次 parse 重新编译）
 _CN_QUOTE_PATTERN = re.compile(r"[“”]")
@@ -335,5 +335,6 @@ class CommandParser:
 
         except InvalidCommandFormatError:
             # 记录异常堆栈用于调试
-            traceback.print_exc()
+            if CoreConfig.debug:
+                traceback.print_exc()
             raise InvalidCommandFormatError

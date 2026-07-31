@@ -10,7 +10,7 @@ from core.builtins.message.internal import I18NContext, Plain, Image, Voice, Url
 from core.builtins.session.internal import MessageSession
 from core.builtins.utils import confirm_command
 from core.component import module
-from core.config import Config
+from core.config.base import CoreConfig
 from core.constants.exceptions import AbuseWarning
 from core.logger import Logger
 from core.utils.func import is_int
@@ -78,7 +78,7 @@ async def query_pages(
     pageid: str | None = None,
     iw: str | None = None,
     lang: str | None = None,
-    preset_message: MessageChain = None,
+    preset_message: MessageChain | None = None,
     start_wiki_api: str | None = None,
     template: bool = False,
     mediawiki: bool = False,
@@ -477,7 +477,7 @@ async def query_pages(
                     wait_plain_slice = MessageChain.create()
                     if display_title and display_before_title:
                         if isinstance(session, Bot.MessageSession) and session.session_info.support_wait:
-                            if not session.session_info.target_info.target_data.get("wiki_redlink", False):
+                            if not session.session_info.target_union_info.target_data.get("wiki_redlink", False):
                                 if len(r.possible_research_title) > 1:
                                     wait_plain_slice.append(
                                         I18NContext(
@@ -526,7 +526,7 @@ async def query_pages(
                                     if (
                                         isinstance(session, Bot.MessageSession)
                                         and session.session_info.support_reaction
-                                        and Config("quick_confirm", True)
+                                        and CoreConfig.quick_confirm
                                     ):
                                         if session.session_info.client_name == "QQ":
                                             _t = "message.wait.confirm.prompt.qq"
@@ -579,9 +579,9 @@ async def query_pages(
                         wait_msg_list.extend(wait_plain_slice)
         except InvalidWikiError as e:
             if isinstance(session, Bot.MessageSession):
-                await session.send_message(I18NContext("message.error") + str(e))
+                await session.send_message(MessageChain.assign([I18NContext("message.error")]) + e)
             else:
-                msg_list.append(I18NContext("message.error") + str(e))
+                msg_list.append(MessageChain.assign([I18NContext("message.error")]) + e)
     if isinstance(session, Bot.MessageSession):
         if msg_list:
             if all(

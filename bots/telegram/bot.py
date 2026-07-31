@@ -10,8 +10,8 @@ from core.builtins.message.internal import Voice, Image, Plain
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
 from core.client.init import client_init
-from core.config import Config
-from core.constants.default import ignored_sender_default
+from bots.telegram.config import AiogramConfig
+from core.config.base import CoreConfig
 from core.utils.http import download
 
 Bot.register_bot(client_name=client_name)
@@ -19,8 +19,8 @@ Bot.register_bot(client_name=client_name)
 ctx_id = Bot.register_context_manager(TelegramContextManager)
 Bot.register_context_manager(TelegramFetchedContextManager, fetch_session=True)
 
-ignored_sender = Config("ignored_sender", ignored_sender_default)
-mention_required = Config("mention_required", False)
+ignored_sender = CoreConfig.ignored_sender
+mention_required = CoreConfig.mention_required
 
 
 async def to_message_chain(msg: types.Message):
@@ -100,6 +100,7 @@ async def msg_handler(message: types.Message):
         sender_id=sender_id,
         sender_name=message.from_user.username,
         target_from=target_from,
+        is_private=message.chat.type == "private",
         sender_from=sender_prefix,
         client_name=client_name,
         message_id=str(message.message_id),
@@ -116,6 +117,6 @@ async def on_startup():
     await client_init(target_prefix_list, sender_prefix_list)
 
 
-if Config("enable", False, table_name="bot_telegram"):
+if AiogramConfig.enable:
     dp.startup.register(on_startup)
     dp.run_polling(aiogram_bot)

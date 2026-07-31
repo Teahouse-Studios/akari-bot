@@ -24,7 +24,7 @@ chu = module(
     "base <constant> [<constant_max>] [-p <page>] {{I18N:maimai.help.base}}",
     options_desc={"-p": "{I18N:maimai.help.option.p}"},
 )
-async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None):
+async def _(msg: Bot.MessageSession, constant: float, constant_max: float | None = None):
     result_set = []
     if constant <= 0:
         await msg.finish(I18NContext("maimai.message.level_invalid"))
@@ -292,13 +292,13 @@ async def _(msg: Bot.MessageSession):
 @chu.command("bind df <username> {{I18N:maimai.help.bind.df}}")
 async def _(msg: Bot.MessageSession, username: str):
     if await get_record_df(msg, {"username": username}, use_cache=False):
-        await DivingProberBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, username=username)
+        await DivingProberBindInfo.set_bind_info(union_id=msg.session_info.sender_union_id, username=username)
         await msg.finish(msg.session_info.locale.t("maimai.message.bind.success") + username)
 
 
 @chu.command("unbind df {{I18N:maimai.help.unbind}}")
 async def _(msg: Bot.MessageSession):
-    await DivingProberBindInfo.remove_bind_info(sender_id=msg.session_info.sender_id)
+    await DivingProberBindInfo.remove_bind_info(union_id=msg.session_info.sender_union_id)
     await msg.finish(I18NContext("maimai.message.unbind.success"))
 
 
@@ -306,29 +306,29 @@ if LX_DEVELOPER_TOKEN:
 
     @chu.command("switch {{I18N:chunithm.help.switch}}")
     async def _(msg: Bot.MessageSession):
-        if msg.session_info.sender_info.sender_data.get("chunithum_record_source", default_source) == "lxns":
-            await msg.session_info.sender_info.edit_sender_data("chunithum_record_source", "diving-fish")
+        if msg.session_info.sender_union_info.sender_data.get("chunithum_record_source", default_source) == "lxns":
+            await msg.session_info.sender_union_info.edit_sender_data("chunithum_record_source", "diving-fish")
             await msg.finish(I18NContext("maimai.message.switch.df"))
         else:
-            await msg.session_info.sender_info.edit_sender_data("chunithum_record_source", "lxns")
+            await msg.session_info.sender_union_info.edit_sender_data("chunithum_record_source", "lxns")
             await msg.finish(I18NContext("maimai.message.switch.lx"))
 
     @chu.command("bind lx <friendcode> {{I18N:maimai.help.bind.lx}}")
     async def _(msg: Bot.MessageSession, friendcode: str):
         data = await get_record_lx(msg, friendcode, use_cache=False)
         if data:
-            await LxnsProberBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, friend_code=friendcode)
+            await LxnsProberBindInfo.set_bind_info(union_id=msg.session_info.sender_union_id, friend_code=friendcode)
             await msg.finish(msg.session_info.locale.t("maimai.message.bind.success") + data["nickname"])
 
     @chu.command("unbind lx {{I18N:maimai.help.unbind}}")
     async def _(msg: Bot.MessageSession):
-        await LxnsProberBindInfo.remove_bind_info(sender_id=msg.session_info.sender_id)
+        await LxnsProberBindInfo.remove_bind_info(union_id=msg.session_info.sender_union_id)
         await msg.finish(I18NContext("maimai.message.unbind.success"))
 
 
 @chu.command("b30 {{I18N:chunithm.help.b30}}")
 async def _(msg: Bot.MessageSession):
-    if msg.session_info.sender_info.sender_data.get("chunithum_record_source", default_source) == "lxns":
+    if msg.session_info.sender_union_info.sender_data.get("chunithum_record_source", default_source) == "lxns":
         token = await get_lxns_prober_bind_info(msg)
         source = "Lxns"
     else:

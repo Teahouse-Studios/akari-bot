@@ -2,16 +2,16 @@ import asyncio
 import re
 import urllib.parse
 from copy import deepcopy
-from datetime import datetime
+from datetime import datetime, UTC
 
 import orjson
-from attrs import define
+from attrs import define, field
 from bs4 import BeautifulSoup
 
 import core.utils.html2text as html2text
 from core.builtins.message.internal import Url
 from core.builtins.session.internal import MessageSession
-from core.config import Config
+from core.config.base import BaseConfig, CoreConfig
 from core.constants.exceptions import AbuseWarning, NoReportException
 from core.dirty_check import check
 from core.i18n import Locale
@@ -22,8 +22,8 @@ from modules.wiki.database.models import WikiSiteInfo, WikiAllowList, WikiBlockL
 from modules.wiki.utils.bot import BotAccount
 from .mapping import *
 
-default_locale = Config("default_locale", cfg_type=str)
-enable_tos = Config("enable_tos", True)
+default_locale = BaseConfig.default_locale
+enable_tos = CoreConfig.enable_tos
 
 
 class InvalidWikiError(Exception):
@@ -33,9 +33,11 @@ class InvalidWikiError(Exception):
 @define
 class QueryInfo:
     api: str
-    headers: dict[str, str] = {"accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"}
+    headers: dict[str, str] = field(
+        factory=lambda: {"accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"}
+    )
     prefix: str = ""
-    locale: Locale = Locale(default_locale)
+    locale: Locale = field(factory=lambda: Locale(default_locale))
 
     @classmethod
     def assign(
@@ -52,13 +54,13 @@ class QueryInfo:
 class WikiInfo:
     api: str = ""
     articlepath: str = ""
-    extensions: list[str] = []
-    interwiki: dict[str, str] = {}
+    extensions: list[str] = field(factory=list)
+    interwiki: dict[str, str] = field(factory=dict)
     realurl: str = ""
     name: str = ""
-    namespaces: dict[str, int] = {}
-    namespaces_local: dict[str, str] = {}
-    namespacealiases: dict[str, str] = {}
+    namespaces: dict[str, int] = field(factory=dict)
+    namespaces_local: dict[str, str] = field(factory=dict)
+    namespacealiases: dict[str, str] = field(factory=dict)
     in_allowlist: bool = False
     in_blocklist: bool = False
     script: str = ""
@@ -100,7 +102,7 @@ class PageInfo:
     is_talk_page: bool = False
     is_forum: bool = False
     is_forum_topic: bool = False
-    forum_data: dict = {}
+    forum_data: dict = field(factory=dict)
 
 
 class WikiLib:
@@ -262,7 +264,10 @@ class WikiLib:
             wiki_api_link = redirect_list[wiki_api_link]
         get_cache_info = await WikiSiteInfo.get_or_none(api_link=wiki_api_link)
         if get_cache_info:
-            if get_cache_info.site_info and datetime.now().timestamp() - get_cache_info.timestamp.timestamp() < 43200:
+            if (
+                get_cache_info.site_info
+                and datetime.now(UTC).timestamp() - get_cache_info.timestamp.timestamp() < 43200
+            ):
                 return WikiStatus(
                     available=True,
                     value=await self.rearrange_siteinfo(get_cache_info.site_info, wiki_api_link),
@@ -278,14 +283,16 @@ class WikiLib:
                 siprop="general|namespaces|namespacealiases|interwikimap|extensions",
             )
         except Exception as e:
-            if Config("debug", False):
+            if CoreConfig.debug:
                 Logger.exception()
             message = self.locale.t("wiki.message.utils.wikilib.get_failed.api") + str(e)
             if self.url.find("moegirl.org.cn") != -1:
                 message += "\n" + self.locale.t("wiki.message.utils.wikilib.get_failed.moegirl")
             return WikiStatus(available=False, value=False, message=message)
         get_cache_info.site_info = get_json
-        get_cache_info.timestamp = datetime.now()
+        # 须带时区：不带时区的时间会被 Tortoise 当作 UTC 存入，缓存时间凭空提前一个时区差，
+        # 上面的 43200 秒过期判断会因此多留缓存整整一个时区差的时长
+        get_cache_info.timestamp = datetime.now(UTC)
         await get_cache_info.save()
         info = await self.rearrange_siteinfo(get_json, wiki_api_link)
         return WikiStatus(
@@ -505,8 +512,8 @@ class WikiLib:
 
     async def parse_page_info(
         self,
-        title: str = None,
-        pageid: int = None,
+        title: str | None = None,
+        pageid: int | None = None,
         inline=False,
         lang=None,
         _doc=False,
@@ -514,7 +521,7 @@ class WikiLib:
         _prefix="",
         _iw=False,
         _search=False,
-        session: MessageSession = None,
+        session: MessageSession | None = None,
     ) -> PageInfo:
         """
         :param title: 页面标题，如果为None，则使用pageid。
@@ -789,7 +796,7 @@ class WikiLib:
                                             invalid_namespace = research[1]
                                         return research
                                     except Exception:
-                                        if Config("debug", False):
+                                        if CoreConfig.debug:
                                             Logger.exception()
                                         return None, False
 

@@ -7,8 +7,8 @@ from fastapi import HTTPException, Request
 from fastapi.responses import Response
 from jwt.exceptions import ExpiredSignatureError
 
-from bots.web.client import app, limiter, ph, jwt_secret
-from core.config import Config
+from bots.web.client import app, limiter, ph, jwt_secret, get_client_ip
+from bots.web.config import WebConfig
 from core.constants.path import assets_path
 from core.database.models import MaliciousLoginRecords
 from core.logger import Logger
@@ -17,7 +17,7 @@ PASSWORD_PATH = assets_path / "private" / "web" / ".password"
 LOGIN_BLOCK_DURATION = 3600
 
 login_failed_attempts = defaultdict(list)
-login_max_attempt = Config("login_max_attempt", default=5, table_name="bot_web")
+login_max_attempt = WebConfig.login_max_attempt
 
 
 def verify_jwt(request: Request):
@@ -51,7 +51,7 @@ async def verify_token(request: Request):
 
 @app.post("/api/login")
 async def auth(request: Request):
-    ip = request.client.host
+    ip = get_client_ip(request)
     if await MaliciousLoginRecords.check_blocked(ip):
         raise HTTPException(status_code=429, detail="This IP has been blocked")
 
@@ -111,7 +111,7 @@ async def auth(request: Request):
 
 @app.put("/api/password")
 async def change_password(request: Request, response: Response):
-    ip = request.client.host
+    ip = get_client_ip(request)
     try:
         verify_jwt(request)
 
@@ -157,7 +157,7 @@ async def change_password(request: Request, response: Response):
 
 @app.delete("/api/password")
 async def clear_password(request: Request):
-    ip = request.client.host
+    ip = get_client_ip(request)
     try:
         verify_jwt(request)
 

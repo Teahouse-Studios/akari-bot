@@ -4,10 +4,11 @@ import uuid
 import orjson
 from fastapi import WebSocket
 
-from bots.web.features import Features
+from bots.web.features import features as web_features
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import PlainElement, ImageElement
 from core.builtins.session.context import ContextManager
+from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
 from core.logger import Logger
@@ -15,7 +16,7 @@ from core.logger import Logger
 
 class WebContextManager(ContextManager):
     context: dict[str, dict] = {}
-    features: Features = Features()
+    features: Features = web_features
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
@@ -35,6 +36,7 @@ class WebContextManager(ContextManager):
 
         if isinstance(message, MessageNodes):
             Logger.error("This session does not support message nodes, check if bug exists.")
+            return []
 
         for x in message.as_sendable(session_info, parse_message=enable_parse_message):
             if isinstance(x, PlainElement):
@@ -51,6 +53,24 @@ class WebContextManager(ContextManager):
             await websocket.send_text(orjson.dumps(resp).decode())
             return [msg_id]
         return []
+
+    @classmethod
+    async def send_private_msg(
+        cls,
+        session_info: SessionInfo,
+        user_id: str,
+        message: MessageChain | MessageNodes,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> list[str]:
+        # 控制台仅服务于当前一位用户，不存在公开会话，私信与普通发送等价
+        return await cls.send_message(
+            session_info,
+            message,
+            quote=False,
+            enable_parse_message=enable_parse_message,
+            enable_split_image=enable_split_image,
+        )
 
     @classmethod
     async def delete_message(

@@ -1,27 +1,24 @@
-from attrs import define
+from core.builtins.session.features import Features
+from core.config.base import CoreConfig
 
-from core.builtins.session.features import Features as FeaturesBase
-from core.config import Config
+dirty_word_check = CoreConfig.enable_dirty_check
 
-use_url_manager = Config("enable_urlmanager", False)
-dirty_word_check = Config("enable_dirty_check", False)
-
-
-@define
-class Features(FeaturesBase):
-    support_image: bool = True
-    support_voice: bool = True
-    support_mention: bool = True
-    support_embed: bool = False
-    support_forward: bool = False
-    support_delete: bool = True
-    support_manage: bool = False
-    support_markdown: bool = True
-    support_reaction: bool = True
-    support_quote: bool = True
-    support_rss: bool = True
-    support_typing: bool = True
-    support_wait: bool = True
-    use_url_md_format: bool = True
-    use_url_manager: bool = use_url_manager
-    require_check_dirty_words: bool = dirty_word_check
+features = Features(
+    support_image=True,
+    support_voice=True,
+    support_mention=True,
+    support_embed=False,
+    support_forward=False,
+    support_delete=True,
+    support_manage=False,
+    support_markdown=True,
+    support_reaction=True,
+    support_quote=True,
+    support_rss=True,
+    support_typing=True,
+    support_wait=True,
+    support_private_msg=True,
+    use_url_md_format=True,
+    use_url_manager=False,
+    require_check_dirty_words=dirty_word_check,
+)

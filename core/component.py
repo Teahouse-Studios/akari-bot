@@ -84,6 +84,7 @@ class Bind:
             show_typing: bool = True,
             text_only: bool = True,
             element_filter: tuple[MessageElement, ...] | None = None,
+            trigger_once_startup: bool = False,
         ):
             def decorator(function):
                 ModulesManager.bind_to_module(
@@ -91,7 +92,8 @@ class Bind:
                     RegexMeta(
                         function=function,
                         pattern=pattern,
-                        mode=mode,
+                        # 注册期归一化，匹配时不必对每条正则再 upper() 一次
+                        mode=mode.upper(),
                         flags=flags,
                         desc=desc,
                         required_admin=required_admin,
@@ -104,6 +106,7 @@ class Bind:
                         show_typing=show_typing,
                         text_only=text_only,
                         element_filter=element_filter or [],
+                        trigger_once_startup=trigger_once_startup,
                     ),
                 )
                 return function
@@ -120,7 +123,7 @@ class Bind:
 
             return decorator
 
-        def hook(self, name: str = None):
+        def hook(self, name: str | None = None):
             def decorator(function):
                 ModulesManager.bind_to_module(self.module_name, HookMeta(function=function, name=name))
                 return function
@@ -183,6 +186,16 @@ class Bind:
             return self.command(*args, **kwargs)
 
         def config(self, cls=None, secret: bool = False):
+            """声明模块的配置模板。
+
+            .. deprecated::
+                请改用 :func:`core.config.decorator.on_module_config`。
+                本方法要求配置模板反向导入模块对象（``from . import <模块变量>``），
+                同包内任何文件在顶层读取该模板都会与包的初始化互相等待而形成循环导入。
+
+            :param cls: 要装饰的配置类，为 None 时返回装饰器。
+            :param secret: 是否将该配置的值视为敏感信息进行加密存储。
+            """
 
             def wrap(cls):
                 return _process_class(cls, "module_" + self.module_name, secret=secret)
@@ -206,6 +219,7 @@ def module(
     rss: bool = False,
     required_superuser: bool = False,
     required_base_superuser: bool = False,
+    suppress_invalid_prompt: bool = False,
     available_for: str | list | tuple = "*",
     exclude_from: str | list | tuple = "",
     support_languages: str | list | tuple | None = None,
@@ -227,6 +241,8 @@ def module(
     :param rss: 将此命令设为 RSS 命令。（默认为False）
     :param required_superuser: 将此命令设为机器人的超级管理员才可执行。（默认为False）
     :param required_base_superuser: 将此命令设为机器人的基础超级管理员才可执行。（默认为False）
+    :param suppress_invalid_prompt: 命令未能匹配任何模板时是否抑制语法错误提示。
+    适用于命令按平台分流、匹配不上属于预期结果的模块。（默认为False）
     :param available_for: 此命令支持的平台列表。（默认为`*`）
     :param exclude_from: 此命令排除的平台列表。
     :param support_languages: 此命令支持的语言列表。
@@ -258,6 +274,7 @@ def module(
         required_admin=required_admin,
         required_superuser=required_superuser,
         required_base_superuser=required_base_superuser,
+        suppress_invalid_prompt=suppress_invalid_prompt,
         available_for=available_for,
         exclude_from=exclude_from,
         support_languages=support_languages,

@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from core.builtins.message.internal import I18NContext
 from core.builtins.parser.command import CommandParser
+from core.builtins.parser.message import _unwrap_optional
 from core.builtins.session.tasks import SessionTaskManager
 from core.constants.exceptions import InvalidCommandFormatError, SessionFinished
 from core.exports import exports
@@ -140,7 +141,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
         if not func.command_template:
             if hasattr(msg, "_casetest_target") and func.function is not msg._casetest_target:
                 continue
-            if msg.session_info.sender_info.sender_data.get("typing_prompt", True):
+            if msg.session_info.sender_union_info.sender_data.get("typing_prompt", True):
                 await msg.start_typing()
             await func.function(msg)  # 将msg传入下游模块
             raise SessionFinished  # if not using msg.finish
@@ -209,11 +210,12 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
             if param_name_ in parsed_msg_:
                 kwargs[param_name] = parsed_msg_[param_name_]
                 try:
-                    if param_obj.annotation == int:
+                    annotation = _unwrap_optional(param_obj.annotation)
+                    if annotation == int:
                         kwargs[param_name] = int(parsed_msg_[param_name_])
-                    elif param_obj.annotation == float:
+                    elif annotation == float:
                         kwargs[param_name] = float(parsed_msg_[param_name_])
-                    elif param_obj.annotation == bool:
+                    elif annotation == bool:
                         kwargs[param_name] = bool(parsed_msg_[param_name_])
                     del parsed_msg_[param_name_]
                 except (KeyError, ValueError):

@@ -1,12 +1,13 @@
 import asyncio
 import time
 import traceback
+from types import FunctionType
 from typing import Any, Callable
 
 from core.builtins.message.chain import MessageChain, match_kecode
 from core.builtins.message.elements import PlainElement
 from core.constants.exceptions import SessionFinished
-from core.database.models import SenderInfo, TargetInfo
+from core.database.models import SenderUnionInfo, TargetUnionInfo
 from core.logger import Logger
 from core.tester.mock.database import init_db, close_db
 from core.tester.mock.loader import load_modules
@@ -14,10 +15,11 @@ from core.tester.mock.parser import parser
 from core.tester.mock.random import Random
 from core.tester.mock.session import MockMessageSession
 from core.utils.container import ExpiringTempDict
+from .decorator import CaseEntry
 from .expectations import Expectation
 
 
-async def run_case_entry(entry: dict, is_ci: bool = False) -> list[dict]:
+async def run_case_entry(entry: CaseEntry, is_ci: bool = False) -> list[dict]:
     try:
         await close_db()
     except Exception:
@@ -47,7 +49,7 @@ async def run_case_entry(entry: dict, is_ci: bool = False) -> list[dict]:
     return [result]
 
 
-async def run_function_entry(fn: Callable, is_ci: bool = False) -> dict[str, Any]:
+async def run_function_entry(fn: FunctionType, is_ci: bool = False) -> dict[str, Any]:
     try:
         await close_db()
     except Exception:
@@ -91,8 +93,9 @@ async def run_test_case(
 ):
     async def _run_test():
         try:
-            await TargetInfo.update_or_create(defaults={}, target_id="TEST|Console|0")
-            await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id="TEST|0")
+            await TargetUnionInfo.resolve_union("TEST|Console|0")
+            sender_union_info = await SenderUnionInfo.resolve_union("TEST|0")
+            await sender_union_info.edit_attr("superuser", True)
         except Exception:
             pass
 

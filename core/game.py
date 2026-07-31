@@ -20,14 +20,16 @@ class PlayState:
     def __init__(self, game: str, msg: MessageSession):
         self.game = game
         self.msg = msg
-        self.target_id = self.msg.session_info.target_id
-        self.sender_id = self.msg.session_info.sender_id
+        # 按消息通道而非 union 建键：同一 union 下通道号不同的会话是不同的现实会话，
+        # 各自的对局互不相干，并作一处会让一边开局把另一边也带进游戏中。
+        self.channel_key = self.msg.session_info.channel_key
+        self.sender_union_id = self.msg.session_info.sender_union_id
 
     def _get_ps_dict(self) -> ExpiringTempDict:
         """
         获取场景的游戏事件字典，如果不存在则自动创建。
         """
-        target_dict = _ps_dict[self.target_id]
+        target_dict = _ps_dict[self.channel_key]
         return target_dict[self.game]
 
     def enable(self) -> None:
@@ -37,18 +39,18 @@ class PlayState:
         playstate_dict = self._get_ps_dict()
         playstate_dict["_status"] = True
         playstate_dict.refresh()
-        Logger.info(f"[{self.target_id}]: Enabled {self.game} by {self.sender_id}.")
+        Logger.info(f"[{self.channel_key}]: Enabled {self.game} by {self.sender_union_id}.")
 
     def disable(self) -> None:
         """
         关闭游戏事件。
         """
-        if self.target_id not in _ps_dict:
+        if self.channel_key not in _ps_dict:
             return
-        playstate_dict = _ps_dict[self.target_id].get(self.game)
+        playstate_dict = _ps_dict[self.channel_key].get(self.game)
         if playstate_dict and playstate_dict.get("_status"):
             playstate_dict["_status"] = False
-            Logger.info(f"[{self.target_id}]: Disabled {self.game} by {self.sender_id}.")
+            Logger.info(f"[{self.channel_key}]: Disabled {self.game} by {self.sender_union_id}.")
 
     def update(self, **kwargs) -> None:
         """
@@ -57,7 +59,7 @@ class PlayState:
         playstate_dict = self._get_ps_dict()
         for k, v in kwargs.items():
             playstate_dict[k] = v
-        Logger.debug(f"[{self.game}]: Updated {kwargs} at {self.target_id}.")
+        Logger.debug(f"[{self.game}]: Updated {kwargs} at {self.channel_key}.")
 
     def check(self) -> bool:
         """

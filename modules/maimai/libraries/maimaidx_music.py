@@ -147,7 +147,7 @@ class MusicList(list[Music]):
         genre: str | list[str] | None = None,
         bpm: float | list[float] | tuple[float, float] | None = None,
         dxtype: str | list[str] | None = None,
-        diff: list[int] = None,
+        diff: list[int] | None = None,
     ):
         new_list = MusicList()
         for music in self:

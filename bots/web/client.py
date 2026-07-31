@@ -3,17 +3,17 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from argon2 import PasswordHasher
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
 from slowapi import Limiter
-from slowapi.util import get_remote_address
 
 from bots.web.info import *
 from core.client.init import client_init
-from core.config import Config, CFGManager
+from core.config import CFGManager
+from bots.web.config import WebConfig, WebSecretConfig
 from core.constants.path import assets_path, webui_path
-from core.database.models import SenderInfo
+from core.database.models import SenderUnionInfo
 from core.logger import Logger
 from core.utils.random import Random
 from core.utils.socket import find_available_port, get_local_ip
@@ -27,21 +27,41 @@ else:
         dist_path = Path()
 
 
-enable_https = Config("enable_https", default=False, table_name="bot_web")
+enable_https = WebConfig.enable_https
 protocol = "https" if enable_https else "http"
 
-web_host = Config("web_host", "127.0.0.1", table_name="bot_web")
-web_port = Config("web_port", 6485, table_name="bot_web")
+web_host = WebConfig.web_host
+web_port = WebConfig.web_port
 
 available_web_port = find_available_port(web_port)
 
-allow_origins = Config("allow_origins", default=[], secret=True, table_name="bot_web")
+allow_origins = WebSecretConfig.allow_origins
+
+# 反向代理场景下 request.client 记录的是代理自身的地址，真实地址由 uvicorn 的
+# ProxyHeadersMiddleware 依 forwarded_allow_ips 判定来源可信后，从 X-Forwarded-For 解析并回填。
+forwarded_allow_ips = [ip.strip() for ip in WebConfig.forwarded_allow_ips.split(",") if ip.strip()]
+
+# 无法判定来源的请求统一归入该标识。不回退为 127.0.0.1，以免被误当作本机的受信任访问。
+UNKNOWN_CLIENT_IP = "unknown"
 
 
-jwt_secret = Config("jwt_secret", cfg_type=str, secret=True, table_name="bot_web")
+def get_client_ip(request: Request) -> str:
+    """
+    取请求方地址，用于限流、封禁与访问记录。
+
+    :param request: 当前请求。
+    :return: 请求方地址；ASGI 传输未提供来源信息时返回 ``unknown``。
+    """
+    if request.client and request.client.host:
+        return request.client.host
+    return UNKNOWN_CLIENT_IP
+
+
+jwt_secret = WebSecretConfig.jwt_secret
 if not jwt_secret:
-    CFGManager.write("jwt_secret", Random.randbytes(32).hex(), secret=True, table_name="bot_web")
-    jwt_secret = Config("jwt_secret", cfg_type=str, secret=True, table_name="bot_web")
+    # jwt_secret 须在 web 子进程首次启动时随机生成并持久化，属只读进程中的合法写入
+    CFGManager.edit_write("jwt_secret", Random.randbytes(32).hex(), secret=True, table_name="bot_web")
+    jwt_secret = WebSecretConfig.jwt_secret
 
 
 def _webui_message():
@@ -64,7 +84,8 @@ def _webui_message():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await client_init(target_prefix_list, sender_prefix_list)
-    await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id=f"{sender_prefix}|0")
+    sender_union_info = await SenderUnionInfo.resolve_union(f"{sender_prefix}|0")
+    await sender_union_info.edit_attr("superuser", True)
     if dist_path.exists():
         Logger.info(_webui_message())
     yield
@@ -72,7 +93,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-limiter = Limiter(key_func=get_remote_address)
+limiter = Limiter(key_func=get_client_ip)
 ph = PasswordHasher()
 
 app.add_middleware(

@@ -1,6 +1,6 @@
-from . import w
+from core.config.decorator import on_module_config
 
 
-@w.config(secret=True)
+@on_module_config("wolframalpha", secret=True)
 class WolframalphaConfig:
     wolfram_alpha_appid: str = ""

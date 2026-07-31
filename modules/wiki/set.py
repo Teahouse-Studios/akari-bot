@@ -3,14 +3,15 @@ import orjson
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Image, Plain, Url
-from core.config import Config
+from core.config.base import CoreConfig
+from modules.wiki.config import WikiConfig
 from core.utils.image_table import image_table_render, ImageTable
 from . import wiki
 from .database.models import WikiTargetInfo
 from .utils.wikilib import WikiLib
 
-enable_urlmanager = Config("enable_urlmanager", False)
-wiki_whitelist_url = Config("wiki_whitelist_url", cfg_type=str, table_name="module_wiki")
+enable_urlmanager = CoreConfig.enable_urlmanager
+wiki_whitelist_url = WikiConfig.wiki_whitelist_url
 
 
 @wiki.command("set <wikiurl> {{I18N:wiki.help.set}}", required_admin=True)
@@ -194,11 +195,11 @@ async def _(msg: Bot.MessageSession):
 
 @wiki.command("redlink {{I18N:wiki.help.redlink}}", required_admin=True)
 async def _(msg: Bot.MessageSession):
-    redlink_state = msg.session_info.target_info.target_data.get("wiki_redlink")
+    redlink_state = msg.session_info.target_union_info.target_data.get("wiki_redlink")
 
     if redlink_state:
-        await msg.session_info.target_info.edit_target_data("wiki_redlink", False)
+        await msg.session_info.target_union_info.edit_target_data("wiki_redlink", False)
         await msg.finish(I18NContext("wiki.message.redlink.disable"))
     else:
-        await msg.session_info.target_info.edit_target_data("wiki_redlink", True)
+        await msg.session_info.target_union_info.edit_target_data("wiki_redlink", True)
         await msg.finish(I18NContext("wiki.message.redlink.enable"))

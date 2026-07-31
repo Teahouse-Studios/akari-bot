@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from core.config import Config
-from core.constants import db_path_default, database_path
+from core.config.base import CoreSecretConfig
+from core.constants import database_path
 
-db_link = Config("db_path", default=db_path_default, secret=True)
+db_link = CoreSecretConfig.db_path
 db_parts = db_link.split("://")
 db_type = db_parts[0].split("+")[0] if db_parts else "sqlite"
 db_path = database_path

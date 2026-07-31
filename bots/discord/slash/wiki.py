@@ -5,17 +5,17 @@ from bots.discord.slash_parser import slash_parser, ctx_to_session
 from core.queue.client import JobQueueClient
 
 
-@discord_bot.slash_command(description="Get recent abuse logs for the default wiki.")
+@discord_bot.slash_command(name="ab", description="Get recent abuse logs for the default wiki.")
 async def _(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
 
-@discord_bot.slash_command(description="Get recent newbie logs for the default wiki.")
+@discord_bot.slash_command(name="newbie", description="Get recent newbie logs for the default wiki.")
 async def _(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
 
-@discord_bot.slash_command(description="Get recent changes for the default wiki.")
+@discord_bot.slash_command(name="rc", description="Get recent changes for the default wiki.")
 async def _(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
@@ -43,7 +43,7 @@ async def auto_search(ctx: discord.AutocompleteContext):
 @wiki.command(name="query", description="Query a wiki page.")
 @discord.option(name="pagename", description="The title of wiki page.", autocomplete=auto_search)
 @discord.option(name="lang", description="Find the corresponding language version of this page.")
-async def _(ctx: discord.ApplicationContext, pagename: str, lang: str = None):
+async def _(ctx: discord.ApplicationContext, pagename: str, lang: str | None = None):
     if lang:
         await slash_parser(ctx, f"{pagename} -l {lang}")
     else:
@@ -53,7 +53,7 @@ async def _(ctx: discord.ApplicationContext, pagename: str, lang: str = None):
 @wiki.command(name="id", description="Query a Wiki page based on page ID.")
 @discord.option(name="pageid", description="The wiki page ID.")
 @discord.option(name="lang", description="Find the corresponding language version of this page.")
-async def _(ctx: discord.ApplicationContext, pageid: str, lang: str = None):
+async def _(ctx: discord.ApplicationContext, pageid: str, lang: str | None = None):
     if lang:
         await slash_parser(ctx, f"id {pageid} -l {lang}")
     else:

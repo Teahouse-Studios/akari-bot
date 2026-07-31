@@ -5,8 +5,9 @@ import discord
 from discord import Message
 
 from bots.discord.client import discord_bot
-from bots.discord.features import Features
-from bots.discord.info import client_name, target_channel_prefix
+from bots.discord.features import features as discord_features
+from core.builtins.session.features import Features
+from bots.discord.info import client_name, target_channel_prefix, target_dm_channel_prefix
 from bots.discord.utils import get_channel_id, get_sender_id, convert_embed
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement, EmbedElement
@@ -17,7 +18,7 @@ from core.logger import Logger
 
 class DiscordContextManager(ContextManager):
     context: dict[str, Message] = {}
-    features: Features | None = Features()
+    features: Features = discord_features
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
@@ -25,7 +26,7 @@ class DiscordContextManager(ContextManager):
         #     raise ValueError("Session not found in context")
         # 这里可以添加权限检查的逻辑
 
-        ctx: Message = cls.context.get(session_info.session_id)
+        ctx: Message | None = cls.context.get(session_info.session_id)
 
         Logger.debug(f"Checking permissions for session: {session_info.session_id}")
 
@@ -54,7 +55,7 @@ class DiscordContextManager(ContextManager):
 
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
-        ctx: Message = cls.context.get(session_info.session_id)
+        ctx: Message | None = cls.context.get(session_info.session_id)
         if ctx:
             channel = ctx.channel
         else:
@@ -62,6 +63,7 @@ class DiscordContextManager(ContextManager):
 
         if isinstance(message, MessageNodes):
             Logger.error("This session does not support message nodes, check if bug exists.")
+            return []
 
         msg_ids = []
         for x in message.as_sendable(session_info, parse_message=enable_parse_message):
@@ -109,6 +111,38 @@ class DiscordContextManager(ContextManager):
         return msg_ids
 
     @classmethod
+    async def send_private_msg(
+        cls,
+        session_info: SessionInfo,
+        user_id: str,
+        message: MessageChain | MessageNodes,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> list[str]:
+        uid = user_id.split("|")[-1]
+        if not uid.isdigit():
+            Logger.warning(f"Invalid user id {user_id}, cannot send private message.")
+            return []
+
+        try:
+            user = await discord_bot.fetch_user(int(uid))
+            # 私信频道须先建立才具有 ID，对方关闭私信时 create_dm 会抛出 Forbidden
+            dm_channel = user.dm_channel or await user.create_dm()
+            # 显式指定基类：Slash 子类只能回应交互，无法向任意频道发送消息
+            return await DiscordContextManager.send_message(
+                cls.derive_private_session(
+                    session_info, f"{target_dm_channel_prefix}|{dm_channel.id}", target_dm_channel_prefix
+                ),
+                message,
+                quote=False,
+                enable_parse_message=enable_parse_message,
+                enable_split_image=enable_split_image,
+            )
+        except Exception:
+            Logger.exception(f"Failed to send private message to {user_id}: ")
+            return []
+
+    @classmethod
     async def delete_message(
         cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None
     ) -> None:
@@ -125,7 +159,7 @@ class DiscordContextManager(ContextManager):
                 channel = await discord_bot.fetch_channel(int(get_channel_id(session_info)))
                 message = await channel.fetch_message(int(msg_id))
                 if message:
-                    await message.support_delete(reason=reason)
+                    await message.delete(reason=reason)
                     Logger.info(f"Deleted message {msg_id} in session {session_info.session_id}")
             except discord.NotFound:
                 Logger.warning(f"Message {msg_id} not found in session {session_info.session_id}")
@@ -281,12 +315,13 @@ class DiscordContextManager(ContextManager):
             ctx = cls.context[session_info.session_id]
             if ctx:
                 async with ctx.channel.typing():
+                    # session_info.tmp["session_typed"] = 'y'
                     Logger.debug(f"Start typing in session: {session_info.session_id}")
                     # 这里可以添加开始输入状态的逻辑
-                    flag = asyncio.Event()
-                    cls.typing_flags[session_info.session_id] = flag
-                    await flag.wait()
-                    del cls.typing_flags[session_info.session_id]
+                    # flag = asyncio.Event()
+                    # cls.typing_flags[session_info.session_id] = flag
+                    # await flag.wait()
+                    # del cls.typing_flags[session_info.session_id]
 
             # 这里可以添加开始输入状态的逻辑
 
@@ -297,7 +332,7 @@ class DiscordContextManager(ContextManager):
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         if session_info.session_id in cls.typing_flags:
-            cls.typing_flags[session_info.session_id].set()
+            # cls.typing_flags[session_info.session_id].set()
             # 这里可以添加结束输入状态的逻辑
             Logger.debug(f"End typing in session: {session_info.session_id}")
 

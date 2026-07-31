@@ -6,7 +6,8 @@ from PIL import Image as PILImage
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import Image, Plain
-from core.config import Config
+from core.config.base import CoreConfig
+from modules.ai.config import AiConfig
 from core.constants.exceptions import ExternalException
 from core.dirty_check import check
 from core.logger import Logger
@@ -15,12 +16,12 @@ from .formatting import parse_markdown, generate_code_snippet, generate_latex, g
 from .setting import INSTRUCTIONS
 from .tools import TOOLS, tool_function_calls
 
-max_tokens = Config("llm_max_tokens", 2048, table_name="module_ai")
-timeout = Config("llm_timeout", 60, cfg_type=float, table_name="module_ai")
-temperature = Config("llm_temperature", 1, cfg_type=float, table_name="module_ai")
-top_p = Config("llm_top_p", 1, cfg_type=float, table_name="module_ai")
-frequency_penalty = Config("llm_frequency_penalty", 0, cfg_type=float, table_name="module_ai")
-presence_penalty = Config("llm_presence_penalty", 0, cfg_type=float, table_name="module_ai")
+max_tokens = AiConfig.llm_max_tokens
+timeout = AiConfig.llm_timeout
+temperature = AiConfig.llm_temperature
+top_p = AiConfig.llm_top_p
+frequency_penalty = AiConfig.llm_frequency_penalty
+presence_penalty = AiConfig.llm_presence_penalty
 
 MAX_ITERATIONS = 5
 
@@ -35,7 +36,7 @@ async def ask_llm(
 ) -> tuple[list, int, int]:
     client = AsyncOpenAI(base_url=api_url, api_key=api_key)
 
-    tz_ = session.session_info.target_info.target_data.get("timezone_offset", Config("timezone_offset", "+8"))
+    tz_ = session.session_info.target_union_info.target_data.get("timezone_offset", CoreConfig.timezone_offset)
     now_tz = datetime.now(timezone(parse_time_string(tz_)))
     fmt_now = now_tz.strftime("%Y-%m-%d %H:%M:%S %A") + f"(UTC{tz_})" if tz_ != "+0" else "(UTC)"
 
@@ -44,7 +45,7 @@ async def ask_llm(
         {"role": "system", "content": f"Current datetime: {fmt_now}"},
         {"role": "user", "content": prompt},
     ]
-    custom_instructions = session.session_info.sender_info.sender_data.get("ai_custom_instructions")
+    custom_instructions = session.session_info.sender_union_info.sender_data.get("ai_custom_instructions")
     if custom_instructions:
         messages.insert(2, {"role": "system", "content": custom_instructions})
 

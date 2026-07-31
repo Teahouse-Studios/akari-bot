@@ -346,8 +346,8 @@ async def rename_old_tables():
     这一步是必要的，因为我们需要同时保留旧数据和创建新架构。
 
     表重命名映射：
-    - SenderInfo -> _old_SenderInfo
-    - TargetInfo -> _old_TargetInfo
+    - SenderUnionInfo -> _old_SenderInfo
+    - TargetUnionInfo -> _old_TargetInfo
     - GroupBlockList -> _old_GroupBlockList
     - StoredData -> _old_StoredData
     - Analytics -> _old_Analytics
@@ -362,8 +362,8 @@ async def rename_old_tables():
     # 重命名旧表以避免冲突
     # 使用"_old"前缀排序在列表末尾，便于管理
     try:
-        await conn.execute_query("ALTER TABLE SenderInfo RENAME TO _old_SenderInfo;")
-        await conn.execute_query("ALTER TABLE TargetInfo RENAME TO _old_TargetInfo;")
+        await conn.execute_query("ALTER TABLE SenderUnionInfo RENAME TO _old_SenderInfo;")
+        await conn.execute_query("ALTER TABLE TargetUnionInfo RENAME TO _old_TargetInfo;")
         await conn.execute_query("ALTER TABLE GroupBlockList RENAME TO _old_GroupBlockList;")
         await conn.execute_query("ALTER TABLE StoredData RENAME TO _old_StoredData;")
         await conn.execute_query("ALTER TABLE Analytics RENAME TO _old_Analytics;")
@@ -426,18 +426,18 @@ async def convert_database():
 
     # ========== 转换核心表数据 ==========
 
-    Logger.info("Converting SenderInfo...")
+    Logger.info("Converting SenderUnionInfo...")
     sender_info_records = await SenderInfoL.all()
     i = 0
     for r in sender_info_records:
         i += 1
         # 每处理 1000 条记录显示一次进度
         if i % 1000 == 0:
-            Logger.info(f"Converting SenderInfo {i}/{len(sender_info_records)}...")
+            Logger.info(f"Converting SenderUnionInfo {i}/{len(sender_info_records)}...")
         try:
-            # 将旧格式的发送者信息转换为新格式
-            await SenderInfo.create(
-                sender_id=r.id,
+            # 将旧格式的发送者信息转换为新格式。旧的平台 ID 直接作为 union ID，映射行在最后统一补建。
+            await SenderUnionInfo.create(
+                union_id=r.id,
                 blocked=r.isInBlockList,
                 trusted=r.isInAllowList,
                 superuser=r.isSuperUser,
@@ -446,12 +446,12 @@ async def convert_database():
                 sender_data={"typing_prompt": not r.disableTyping},
             )
         except Exception as e:
-            Logger.error(f"Failed to convert SenderInfo: {r.id}, error: {e}")
-            Logger.error(f"SenderInfo record: {r.__dict__}")
+            Logger.error(f"Failed to convert SenderUnionInfo: {r.id}, error: {e}")
+            Logger.error(f"SenderUnionInfo record: {r.__dict__}")
     # 删除旧表
     await conn.execute_query("DROP TABLE IF EXISTS _old_SenderInfo;")
 
-    Logger.info("Converting TargetInfo...")
+    Logger.info("Converting TargetUnionInfo...")
 
     # 获取所有场景信息和黑名单信息
     target_info_records = await TargetInfoL.all()
@@ -462,11 +462,11 @@ async def convert_database():
     for r in target_info_records:
         i += 1
         if i % 1000 == 0:
-            Logger.info(f"Converting TargetInfo {i}/{len(target_info_records)}...")
+            Logger.info(f"Converting TargetUnionInfo {i}/{len(target_info_records)}...")
         try:
-            # 将旧格式的场景信息转换为新格式
-            await TargetInfo.create(
-                target_id=r.targetId,
+            # 将旧格式的场景信息转换为新格式。旧的平台 ID 直接作为 union ID，映射行在最后统一补建。
+            await TargetUnionInfo.create(
+                union_id=r.targetId,
                 blocked=False,
                 muted=r.muted,
                 locale=r.locale,
@@ -475,21 +475,21 @@ async def convert_database():
                 target_data=r.options,
             )
         except Exception as e:
-            Logger.error(f"Failed to convert TargetInfo: {r.targetId}, error: {e}")
-            Logger.error(f"TargetInfo record: {r.__dict__}")
+            Logger.error(f"Failed to convert TargetUnionInfo: {r.targetId}, error: {e}")
+            Logger.error(f"TargetUnionInfo record: {r.__dict__}")
 
         # 如果场景在黑名单中，更新其 blocked 字段
         if r.targetId in blocked_target_ids:
             try:
-                target_info_record = await TargetInfo.get_by_target_id(r.targetId, create=False)
+                target_info_record = await TargetUnionInfo.get_by_target_id(r.targetId, create=False)
                 if target_info_record:
                     target_info_record.blocked = True
                     await target_info_record.save()
                 else:
-                    await TargetInfo.create(target_id=r.targetId, blocked=True)
+                    await TargetUnionInfo.create(union_id=r.targetId, blocked=True)
             except Exception as e:
-                Logger.error(f"Failed to convert TargetInfo: {r.targetId}, error: {e}")
-                Logger.error(f"TargetInfo record: {r.__dict__}")
+                Logger.error(f"Failed to convert TargetUnionInfo: {r.targetId}, error: {e}")
+                Logger.error(f"TargetUnionInfo record: {r.__dict__}")
     # 删除旧表
     await conn.execute_query("DROP TABLE IF EXISTS _old_GroupBlockList;")
 
@@ -534,6 +534,8 @@ async def convert_database():
                 module_type=r.moduleType,
                 target_id=r.targetId,
                 sender_id=r.senderId,
+                target_union_id=r.targetId,
+                sender_union_id=r.senderId,
                 command=r.command,
                 timestamp=r.timestamp,
             )
@@ -552,6 +554,8 @@ async def convert_database():
                 id=r.id,
                 target_id=r.targetId,
                 sender_id=r.senderId,
+                target_union_id=r.targetId,
+                sender_union_id=r.senderId,
                 timestamp=r.timestamp,
                 action=r.action,
                 detail=r.detail,
@@ -570,7 +574,7 @@ async def convert_database():
     for r in cytoid_bind_record:
         try:
             await CytoidBindInfo.create(
-                sender_id=r.targetId,
+                union_id=r.targetId,
                 username=r.username,
             )
         except Exception as e:
@@ -585,7 +589,7 @@ async def convert_database():
     for r in maimai_bind_record:
         try:
             await DivingProberBindInfo.create(
-                sender_id=r.targetId,
+                union_id=r.targetId,
                 username=r.username,
             )
         except Exception as e:
@@ -600,7 +604,7 @@ async def convert_database():
     for r in phigros_bind_record:
         try:
             await PhigrosBindInfo.create(
-                sender_id=r.targetId,
+                union_id=r.targetId,
                 session_token=r.sessiontoken,
                 username=r.username,
             )
@@ -616,7 +620,7 @@ async def convert_database():
     for r in wiki_target_info_record:
         try:
             await WikiTargetInfo.create(
-                target_id=r.targetId,
+                union_id=r.targetId,
                 api_link=r.link,
                 interwikis=r.iws,
                 headers=r.headers,
@@ -681,11 +685,16 @@ async def convert_database():
     wikilog_target_set_info_record = await WikiLogTargetSetInfoL.all()
     for r in wikilog_target_set_info_record:
         try:
-            await WikiLogTargetSetInfo.create(target_id=r.targetId, infos=orjson.loads(r.infos))
+            await WikiLogTargetSetInfo.create(union_id=r.targetId, infos=orjson.loads(r.infos))
         except Exception as e:
             Logger.error(f"Failed to convert WikiLogTargetSetInfo: {r.targetId}, error: {e}")
             Logger.error(f"WikiLogTargetSetInfo record: {r.__dict__}")
     await conn.execute_query("DROP TABLE IF EXISTS _old_module_wikilog_WikiLogTargetSetInfo;")
+
+    Logger.info("Building union binds...")
+
+    # 旧库中数据与平台 ID 一一对应，转换后 union ID 即为原 ID，据此补建映射行。
+    await backfill_union_binds()
 
     Logger.info("Converting DBVersion...")
 

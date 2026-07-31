@@ -7,20 +7,30 @@
 
 from __future__ import annotations
 
+import asyncio
 import uuid
 from datetime import timedelta, datetime
+from typing import Self
 
-from attrs import define
+from attrs import define, field
 
 from core.alive import Alive
 from core.builtins.message.chain import MessageChain
 from core.builtins.session.features import Features
 from core.builtins.utils import command_prefix
-from core.config import Config
-from core.database.models import TargetInfo, SenderInfo
+from core.config.base import CoreConfig
+from core.constants.default import default_locale
+from core.database.models import TargetUnionInfo, SenderUnionInfo
 from core.i18n import Locale
 from core.utils.func import parse_time_string
 from core.utils.session import inject_features
+
+
+async def _none():
+    """
+    并发解析时用于占位的空协程，使 gather 的两路返回值位置保持固定。
+    """
+    return None
 
 
 @define
@@ -36,7 +46,7 @@ class SessionInfo:
     - 消息信息: message_id, reply_id, messages 等
     - 平台能力: support_* 系列标志
     - 用户权限: superuser, banned_users, custom_admins 等
-    - 数据库模型: target_info, sender_info
+    - 数据库模型: target_union_info, sender_union_info
     - 系统配置: locale, prefixes, ctx_slot 等
     """
 
@@ -64,13 +74,22 @@ class SessionInfo:
     support_typing: bool = False
     support_wait: bool = False
     support_handle_message_nodes: bool = False
+    support_private_msg: bool = False
     timestamp: float | None = None
     session_id: str | None = None
-    target_info: TargetInfo | None = None
-    sender_info: SenderInfo | None = None
+    # 场景 union 由 assign() 解析，解析不出即抛错，故此后必定有值；
+    # 用户 union 则不同，没有 sender_id 的会话（如主动推送）本就没有它。
+    target_union_info: TargetUnionInfo = field(default=None)
+    sender_union_info: SenderUnionInfo | None = None
+    target_union_id: str = ""
+    sender_union_id: str | None = None
+    # 本会话在其场景组内的消息通道号，同组同号即现实中的同一个会话，详见 channel_key
+    target_channel_id: int = 1
     banned_users: list | None = None
     custom_admins: list | None = None
-    locale: Locale | None = None
+    # 会话一律经 assign() 建立，其中必定按场景语言赋值；此处的默认值仅用于
+    # 反序列化等缺省场景，故声明为非可选，免去各调用点无谓的判空。
+    locale: Locale = field(factory=lambda: Locale(default_locale))
     _tz_offset: str | None = None
     timezone_offset: timedelta | None = None
     bot_name: str | None = None
@@ -78,15 +97,21 @@ class SessionInfo:
     muted: bool | None = None
     enabled_modules: list | None = None
     petal: int | None = None
-    prefixes: list[str] = []
+    prefixes: list[str] = field(factory=list)
+    # 主动推送的下一跳场景 ID 列表：本跳发送失败时，由客户端回调服务端改用列表中的下一个场景重发
+    next_hops: list[str] = field(factory=list)
     ctx_slot: int | None = 0
     fetch: bool = False
+    # 是否为私聊场景。由平台适配器在构造会话时判定，各平台对「私聊」的表达互不相同
+    # （QQ 为 Private、Discord 为 DM 频道、QQ 官方分 C2C 与频道私信等），核心不作推断。
+    is_private: bool = False
     require_enable_modules: bool = True
     require_check_dirty_words: bool = False
     use_url_manager: bool = False
     use_url_md_format: bool = False
     use_running_mention: bool = True
-    tmp: dict[str, str] | None = {}
+    # 单次处理内的临时数据，assign() 必定赋值，且会被就地写入，故须逐实例新建
+    tmp: dict[str, str] = field(factory=dict)
 
     @classmethod
     async def assign(
@@ -104,10 +129,11 @@ class SessionInfo:
         prefixes: list[str] | None = [],  # skipcq
         ctx_slot: int = 0,
         fetch: bool = False,
+        is_private: bool = False,
         create: bool = True,
         features: Features | None = None,
         tmp: dict[str, str] | None = None,
-    ) -> SessionInfo:
+    ) -> Self:
         """
         用于将参数传入 SessionInfo 对象中。
 
@@ -115,22 +141,25 @@ class SessionInfo:
         """
         if target_from is None:
             target_from = Alive.determine_target_from(target_id)
-        target_info = await TargetInfo.get_by_target_id(target_id, create)
-        if target_info is None:
-            raise ValueError(f"TargetInfo not found for target_id: {target_id}")
-
-        sender_info = await SenderInfo.get_by_sender_id(sender_id, create) if sender_id else None
+        # 场景与用户的 union 解析互不依赖，并发发出可省去一半的往返等待；
+        # 主库在远端时这一项按每次往返的网络延迟计。
+        target_union_info, sender_union_info = await asyncio.gather(
+            TargetUnionInfo.get_by_target_id(target_id, create),
+            SenderUnionInfo.get_by_sender_id(sender_id, create) if sender_id else _none(),
+        )
+        if target_union_info is None:
+            raise ValueError(f"TargetUnionInfo not found for target_id: {target_id}")
         if sender_from is None and sender_id:
             sender_from = Alive.determine_sender_from(sender_id)
         if not client_name:
             client_name = Alive.determine_client(target_from)
         timestamp = datetime.now().timestamp()
         session_id = str(uuid.uuid4())
-        locale = Locale(target_info.locale)
+        locale = Locale(target_union_info.locale)
         bot_name = locale.t("bot_name")
-        _tz_offset = target_info.target_data.get("tz_offset", Config("timezone_offset", "+8"))
+        _tz_offset = target_union_info.target_data.get("tz_offset", CoreConfig.timezone_offset)
         prefixes = (
-            (prefixes + (target_info.target_data.get("command_prefix", []) + command_prefix.copy()))
+            (prefixes + (target_union_info.target_data.get("command_prefix", []) + command_prefix.copy()))
             if prefixes is not None
             else []
         )
@@ -148,22 +177,26 @@ class SessionInfo:
             reply_id=reply_id,
             bot_id=bot_id,
             messages=messages,
-            banned_users=target_info.banned_users if target_info else [],
-            custom_admins=target_info.custom_admins if target_info else [],
+            banned_users=target_union_info.banned_users,
+            custom_admins=target_union_info.custom_admins,
             timestamp=timestamp,
             session_id=session_id,
-            target_info=target_info,
-            sender_info=sender_info,
+            target_union_info=target_union_info,
+            sender_union_info=sender_union_info,
+            target_union_id=target_union_info.union_id,
+            sender_union_id=sender_union_info.union_id if sender_union_info else None,
+            target_channel_id=target_union_info.bind.channel_id if target_union_info.bind else 1,
             locale=locale,
-            muted=target_info.muted,
+            muted=target_union_info.muted,
             bot_name=bot_name,
             tz_offset=_tz_offset,
-            enabled_modules=target_info.modules,
+            enabled_modules=target_union_info.modules,
             timezone_offset=parse_time_string(_tz_offset),
-            petal=sender_info.petal if sender_info else None,
+            petal=sender_union_info.petal if sender_union_info else None,
             prefixes=prefixes,
             ctx_slot=ctx_slot,
             fetch=fetch,
+            is_private=is_private,
             tmp=tmp,
         )
 
@@ -181,8 +214,19 @@ class SessionInfo:
         return _c
 
     async def refresh_info(self):
-        self.sender_info = await SenderInfo.get_by_sender_id(self.sender_id) if self.sender_id else None
-        self.target_info = await TargetInfo.get_by_target_id(self.target_id) if self.target_id else None
+        # 同 assign()：两次解析互不依赖，并发发出
+        sender_union_info, target_union_info = await asyncio.gather(
+            SenderUnionInfo.get_by_sender_id(self.sender_id) if self.sender_id else _none(),
+            TargetUnionInfo.get_by_target_id(self.target_id) if self.target_id else _none(),
+        )
+        self.sender_union_info = sender_union_info
+        self.sender_union_id = sender_union_info.union_id if sender_union_info else None
+        # 场景 union 解析不出时保留原值，置空只会把问题推迟到后续访问处才暴露
+        if target_union_info:
+            self.target_union_info = target_union_info
+            self.target_union_id = target_union_info.union_id
+        bind = self.target_union_info.bind if self.target_union_info else None
+        self.target_channel_id = bind.channel_id if bind else 1
 
     def get_common_target_id(self) -> str:
         """
@@ -197,6 +241,20 @@ class SessionInfo:
         if self.sender_id:
             return self.sender_id.split("|")[-1]
         return ""
+
+    @property
+    def channel_key(self) -> str:
+        """
+        现实会话的标识，形如 ``UTID|8B1F...|1``。
+
+        union 只表示若干平台会话共享同一份数据，并不等于它们是现实中的同一个会话；
+        组内 ``target_channel_id`` 相同才是，而默认各占一号即默认谁也不与谁合并。
+        冷却、游戏状态、等待任务这类「同一个现实会话内共享」的内存态须按此建键：
+        只按 union 建键会把仅仅共享配置、实为不同场景的会话错误地并作一处。
+
+        :return: union ID 与消息通道号拼成的键。
+        """
+        return f"{self.target_union_id}|{self.target_channel_id}"
 
 
 @define

@@ -21,6 +21,8 @@ from core.builtins.session.info import SessionInfo
 from core.builtins.session.features import Features
 from core.database.models import JobQueuesTable
 from core.exports import exports, add_export
+from core.i18n import Locale
+from core.logger import Logger
 from .base import JobQueueBase
 
 if TYPE_CHECKING:
@@ -50,9 +52,9 @@ class JobQueueClient(JobQueueBase):
     async def send_keepalive_signal_to_server(
         cls,
         client_name: str,
-        target_prefix_list: list = None,
-        sender_prefix_list: list = None,
-        ctx_slot_index: int = None,
+        target_prefix_list: list | None = None,
+        sender_prefix_list: list | None = None,
+        ctx_slot_index: int | None = None,
         features: Features | None = None,
     ):
         """向服务器发送保活信号。
@@ -81,7 +83,9 @@ class JobQueueClient(JobQueueBase):
         )
 
     @classmethod
-    async def trigger_hook(cls, module_or_hook_name: str, session_info: SessionInfo | None = "", wait=False, **kwargs):
+    async def trigger_hook(
+        cls, module_or_hook_name: str, session_info: SessionInfo | None = None, wait=False, **kwargs
+    ):
         """触发服务器上的钩子函数或模块事件。
 
         用于客户端主动触发服务器上注册的钩子函数，并可选择等待执行结果。
@@ -246,6 +250,61 @@ async def _(tsk: JobQueuesTable, args: dict):
     return {"message_id": send}
 
 
+@JobQueueClient.action("post_message")
+async def _(tsk: JobQueuesTable, args: dict):
+    """主动推送消息处理器。
+
+    与 send_message 的区别在于失败时的处理：未取得消息 ID 即表示本跳未送达，
+    此时将剩余的下一跳交回服务端改由其它场景重发。同一条消息通道只需有一处送达，
+    不应在每个场景各发一次。
+    """
+    session_info, bot, ctx_manager, _args = await get_session(args)
+    send = await ctx_manager.send_message(
+        session_info,
+        converter.structure(_args.get("message", {}), MessageChain | MessageNodes),
+        quote=False,
+    )
+    if send:
+        Logger.info(f"Posted message to {session_info.target_id}: {send}")
+        return {"message_id": send}
+
+    next_hops = list(session_info.next_hops or [])
+    if not next_hops:
+        Logger.warning(f"Failed to post message to {session_info.target_id}, no next hop left.")
+        return {"message_id": []}
+
+    Logger.warning(f"Failed to post message to {session_info.target_id}, handing over to the next hop.")
+    await JobQueueClient.add_job(
+        "Server",
+        "post_next_hop",
+        {
+            "next_hops": next_hops,
+            "message": _args.get("message", {}),
+            "module_name": _args.get("module_name", ""),
+        },
+        wait=False,
+    )
+    return {"message_id": []}
+
+
+@JobQueueClient.action("send_private_message")
+async def _(tsk: JobQueuesTable, args: dict):
+    """发送私聊消息处理器。
+
+    将消息以私聊形式单独发送给指定用户，而非发往会话所在的场景。
+    返回发送的消息 ID，为空列表表示发送失败。
+    """
+    session_info, bot, ctx_manager, _args = await get_session(args)
+    send = await ctx_manager.send_private_msg(
+        session_info,
+        _args.get("user_id", ""),
+        converter.structure(_args.get("message", {}), MessageChain | MessageNodes),
+        enable_parse_message=_args.get("enable_parse_message", True),
+        enable_split_image=_args.get("enable_split_image", True),
+    )
+    return {"message_id": send}
+
+
 @JobQueueClient.action("delete_message")
 async def _(tsk: JobQueuesTable, args: dict):
     """删除消息处理器。
@@ -396,6 +455,23 @@ async def _(tsk: JobQueuesTable, args: dict):
         g = await get_(_args.get("api_name", ""), **_args.get("args", {}))
         return g
     return {"success": False, "error": "OneBot API not supported in this context"}
+
+
+@JobQueueClient.action("reload_locale")
+async def _(tsk: JobQueuesTable, args: dict):
+    """重载语言文件处理器。
+
+    消息中的 I18NContext 元素是在客户端进程内渲染的，服务端重载语言文件只对自身生效，
+    须由服务端广播至各客户端一并重载，否则实际发出的消息仍为旧文案。
+
+    :return: 包含 err 的字典，err 为重载过程中产生的错误信息列表
+    """
+    err = Locale.reload()
+    if err:
+        Logger.error(f"Failed to reload locale files: {'; '.join(err)}")
+    else:
+        Logger.success("Locale files reloaded.")
+    return {"err": err}
 
 
 add_export(JobQueueClient)

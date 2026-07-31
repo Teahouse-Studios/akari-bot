@@ -8,6 +8,7 @@
 import asyncio
 from typing import Any, TYPE_CHECKING
 
+from core.alive import Alive
 from core.builtins.message.chain import *
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
@@ -15,21 +16,21 @@ from core.builtins.session.info import SessionInfo, FetchedSessionInfo, ModuleHo
 from core.builtins.session.internal import MessageSession, FetchedMessageSession
 from core.builtins.session.lock import ExecutionLockList
 from core.builtins.temp import *
-from core.config import Config
-from core.constants import base_superuser_default
+from core.config.base import CoreConfig
 from core.constants.info import Info
 from core.constants.path import PrivateAssets, assets_path
-from core.database.models import TargetInfo, AnalyticsData
+from core.database.models import AnalyticsData, TargetUnionBind, TargetUnionInfo
 from core.exports import add_export, exports
 from core.loader import ModulesManager
 from core.logger import Logger
+from core.retired import filter_retired_targets
 from core.utils.session import inject_features
 
 if TYPE_CHECKING:
     from core.queue.client import JobQueueClient
     from core.queue.server import JobQueueServer
 
-enable_analytics = Config("enable_analytics", True)
+enable_analytics = CoreConfig.enable_analytics
 
 
 class Bot:
@@ -70,7 +71,7 @@ class Bot:
     fetched_session_ctx_slot = 0
 
     # 超级用户列表 - 拥有最高权限的用户 ID 列表
-    base_superuser_list = Config("base_superuser", base_superuser_default, cfg_type=(str, list))
+    base_superuser_list = CoreConfig.base_superuser
     if isinstance(base_superuser_list, str):
         base_superuser_list = [base_superuser_list]
 
@@ -136,7 +137,7 @@ class Bot:
 
     @classmethod
     async def fetch_target(
-        cls, target_id: str, sender_id: str | None = None, create: bool = False
+        cls, target_id: str, sender_id: str | None = None, create: bool = False, is_private: bool = False
     ) -> FetchedSessionInfo | None:
         """
         根据场景 ID 获取消息会话信息。
@@ -146,13 +147,15 @@ class Bot:
         :param target_id: 场景 ID
         :param sender_id: 用户 ID（可选）
         :param create: 如果目标不存在是否创建
+        :param is_private: 该场景是否为私聊。主动获取的会话没有平台事件可依据，
+                           核心也不掌握各平台对私聊前缀的表达，故须由调用方指明，缺省按非私聊处理
         :return: 抓取的会话信息，或 None（获取失败）
         """
         try:
             Logger.trace(f"Fetching target {target_id}")
             # 创建抓取的会话信息
             session = await FetchedSessionInfo.assign(
-                target_id=target_id, sender_id=sender_id, fetch=True, create=create
+                target_id=target_id, sender_id=sender_id, fetch=True, create=create, is_private=is_private
             )
         except Exception:
             return None
@@ -178,6 +181,33 @@ class Bot:
                 fetched.append(x)
         return fetched
 
+    @staticmethod
+    async def group_sessions_by_channel(
+        session_list: list[FetchedSessionInfo],
+    ) -> list[list[FetchedSessionInfo]]:
+        """
+        将待推送的会话按「场景组 + 消息通道」归拢。
+
+        同组同通道的会话对应同一个现实会话（例如一个群内同时存在 OneBot 与 QQ 官方机器人），
+        逐个推送会使该会话收到多条重复消息。归拢后每组仅推送一次。
+
+        :param session_list: 待推送的会话列表
+        :return: 分组后的会话列表，每组内部保持原有顺序
+        """
+        channel_maps: dict[str, dict[str, int]] = {}
+        groups: dict[tuple[str, Any], list[FetchedSessionInfo]] = {}
+
+        for session_ in session_list:
+            union_id = session_.target_union_id
+            if union_id and union_id not in channel_maps:
+                channel_maps[union_id] = await TargetUnionBind.list_channels(union_id)
+            channel_id = channel_maps.get(union_id, {}).get(session_.target_id) if union_id else None
+            # 查不到通道号即表示该会话没有绑定行，按独立会话处理，不与其它会话归为一组。
+            key = (union_id, channel_id) if union_id and channel_id else ("", session_.target_id)
+            groups.setdefault(key, []).append(session_)
+
+        return list(groups.values())
+
     @classmethod
     async def post_message(
         cls,
@@ -190,6 +220,7 @@ class Bot:
         发送消息到开启此模块的指定会话。
 
         支持向多个会话发送消息，并可根据不同客户端类型发送不同格式的消息。
+        同一条消息通道内的会话仅推送一次：先推送队首，队首发送失败时由客户端回调服务端换用下一跳。
 
         :param module_name: 模块名称（用于权限检查和分析统计，"*" 表示全局）
         :param message: 消息内容，支持字符串或字典
@@ -203,32 +234,43 @@ class Bot:
         if session_list is None:
             session_list = await Bot.get_enabled_this_module(module_name)
 
-        # 对每个会话发送消息
-        for session_ in session_list:
-            # 获取消息队列服务器
-            queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        # 获取消息队列服务器
+        queue_server: "JobQueueServer" = exports["JobQueueServer"]
+
+        # 同一条消息通道仅推送一次，其余会话作为发送失败时的后备
+        for hops in await cls.group_sessions_by_channel(session_list):
+            # 掉线客户端的任务无人认领，换跳也就无从触发，整条通道将不再有消息送达，因此预先将其剔出跳表
+            hops = [hop for hop in hops if Alive.is_alive(hop.client_name)]
+            if not hops:
+                Logger.warning("Every client of this channel is offline, skipped posting message.")
+                continue
+
+            session_ = hops[0]
+            session_.next_hops = [hop.target_id for hop in hops[1:]]
 
             # 将消息转换为该会话支持的消息链格式
-            message = get_message_chain(session_, message)
+            chain = get_message_chain(session_, message)
 
             # 选择正确格式的消息（根据客户端类型）
-            if isinstance(message, dict):
+            if isinstance(chain, dict):
                 # 优先使用客户端特定的消息，否则使用默认消息
-                if session_.client_name in message:
-                    post_message = message[session_.client_name]
+                if session_.client_name in chain:
+                    post_message = chain[session_.client_name]
                 else:
-                    post_message = message["default"]
+                    post_message = chain["default"]
             else:
-                post_message = message
+                post_message = chain
 
             # 发送消息
-            await queue_server.client_send_message(session_, post_message)
+            await queue_server.client_post_message(session_, post_message, module_name)
 
-            # 如果启用分析功能，记录统计数据
+            # 如果启用分析功能，记录统计数据。一条消息通道计为一次推送，因此每组仅记录一条
             if enable_analytics and module_name:
                 await AnalyticsData.create(
                     target_id=session_.target_id,
                     sender_id=session_.sender_id,
+                    target_union_id=session_.target_union_id,
+                    sender_union_id=session_.sender_union_id,
                     command="",
                     module_name=module_name,
                     module_type="schedule",
@@ -285,7 +327,7 @@ class Bot:
         return slot_num
 
     @classmethod
-    def register_bot(cls, client_name: str = None, private_assets_path: str = None):
+    def register_bot(cls, client_name: str | None = None, private_assets_path: str | None = None):
         """
         注册机器人实例。
 
@@ -349,6 +391,52 @@ class Bot:
         )
 
     @classmethod
+    async def send_private_message(
+        cls,
+        session_info: SessionInfo,
+        message: Chainable,
+        user_id: str | None = None,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> list[str]:
+        """
+        向指定用户单独发送私聊消息。
+
+        消息不会发往 session_info 所指的场景，该会话仅用于确定平台与消息渲染上下文。
+
+        :param session_info: 会话信息
+        :param message: 消息内容
+        :param user_id: 目标用户 ID（带平台前缀），留空则发给该会话的用户
+        :param enable_parse_message: 是否允许解析消息（平台兼容）
+        :param enable_split_image: 是否允许拆分图片（平台兼容）
+        :return: 消息 ID 列表，为空表示发送失败
+        :raises TypeError: 如果 session_info 不是 SessionInfo 类型
+        """
+        if not isinstance(session_info, SessionInfo):
+            raise TypeError("session_info must be a SessionInfo")
+
+        user_id = user_id or session_info.sender_id
+        if not user_id:
+            return []
+
+        # 平台不支持私信时无需经过队列，直接判定失败
+        if not session_info.support_private_msg:
+            Logger.warning(f"Client {session_info.client_name} does not support private message.")
+            return []
+
+        queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        message = get_message_chain(session_info, message)
+
+        return_val = await queue_server.client_send_private_message(
+            session_info,
+            user_id,
+            message,
+            enable_parse_message=enable_parse_message,
+            enable_split_image=enable_split_image,
+        )
+        return return_val.get("message_id") or []
+
+    @classmethod
     async def get_enabled_this_module(cls, module: str) -> list[FetchedSessionInfo]:
         """
         获取开启了指定模块的所有目标会话列表。
@@ -356,13 +444,15 @@ class Bot:
         :param module: 模块名称
         :return: 开启了该模块的会话列表
         """
-        # 从数据库获取开启此模块的所有场景 ID
-        lst = await TargetInfo.get_target_list_by_module(module)
+        # 从数据库获取开启此模块的所有场景 ID（一个 union 下绑定的全部会话都要展开）
+        lst = await TargetUnionInfo.get_target_id_list_by_module(module)
+        # 退役客户端停止一切主动推送。
+        lst = filter_retired_targets(lst)
         fetched = []
 
         # 逐个抓取这些目标的会话信息
-        for x in lst:
-            x = await cls.fetch_target(x.target_id)
+        for target_id in lst:
+            x = await cls.fetch_target(target_id)
             if isinstance(x, FetchedSessionInfo):
                 fetched.append(x)
         return fetched

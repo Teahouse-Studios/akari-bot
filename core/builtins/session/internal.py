@@ -12,10 +12,10 @@ from datetime import datetime, UTC
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Coroutine, Match, NoReturn, TYPE_CHECKING
 
-from attrs import define
+from attrs import define, field
+import orjson
 from deprecated import deprecated
 from japanera import EraDate
-from orjson import orjson
 
 from core.builtins.message.chain import MessageChain, get_message_chain, Chainable, MessageNodes
 from core.builtins.message.internal import I18NContext
@@ -24,7 +24,7 @@ from core.builtins.session.lock import ExecutionLockList
 from core.builtins.session.tasks import SessionTaskManager
 from core.builtins.types import MessageElement
 from core.builtins.utils import confirm_command
-from core.config import Config
+from core.config.base import CoreConfig
 from core.constants import SessionFinished, WaitCancelException
 from core.exports import add_export, exports
 from core.utils.func import is_int
@@ -34,7 +34,7 @@ if TYPE_CHECKING:
     from core.queue.server import JobQueueServer
 
 # 快速确认模式 - 允许用户快速确认操作
-quick_confirm = Config("quick_confirm", True)
+quick_confirm = CoreConfig.quick_confirm
 
 
 @define
@@ -57,7 +57,7 @@ class MessageSession:
     session_info: SessionInfo
 
     # 已发送消息列表 - 用于跟踪和管理已发送的消息
-    sent: list[MessageChain] = []
+    sent: list[MessageChain] = field(factory=list)
 
     # 触发消息 - 原始的触发消息文本内容
     trigger_msg: str = ""
@@ -66,7 +66,7 @@ class MessageSession:
     matched_msg: Match[str] | tuple[Any, ...] | None = None
 
     # 解析后的消息 - 命令参数等解析结果
-    parsed_msg: dict = {}
+    parsed_msg: dict = field(factory=dict)
 
     @property
     @deprecated(reason="Use `session_info` instead.")
@@ -98,8 +98,8 @@ class MessageSession:
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
         callback: Any | None = None,
-        callback_id: str = None,
-        button_data: list[dict[str, str]] = None,
+        callback_id: str | None = None,
+        button_data: list[dict[str, str]] | None = None,
     ) -> FinishedSession:
         """
         用于向消息用户返回消息。
@@ -129,16 +129,16 @@ class MessageSession:
 
         # ========== 步骤 1: 转换消息链格式 ==========
         # 根据平台和会话信息选择合适的消息链格式
-        message_chain = get_message_chain(self.session_info, chain=message_chain)
+        chain = get_message_chain(self.session_info, chain=message_chain)
 
-        if isinstance(message_chain, MessageNodes) and not self.session_info.support_handle_message_nodes:
-            message_chain = MessageChain.assign(await msgnode2image(message_chain, session=self.session_info))
+        if isinstance(chain, MessageNodes) and not self.session_info.support_handle_message_nodes:
+            chain = MessageChain.assign(await msgnode2image(chain, session=self.session_info))
 
         # ========== 步骤 2: 安全检查 ==========
         # 检查消息是否包含敏感信息（如 API 密钥、密码等）
-        if not message_chain.is_safe and not disable_secret_check:
+        if not chain.is_safe and not disable_secret_check:
             # 包含敏感信息，替换为安全提示消息
-            message_chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
+            chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
 
         # ========== 步骤 3: 发送消息 ==========
         # 通过消息队列发送消息，并阻塞等待返回包含消息 ID 的字典
@@ -148,7 +148,7 @@ class MessageSession:
 
         return_val = await _queue_server.client_send_message(
             self.session_info,
-            message_chain,
+            chain,
             quote=quote,
             enable_parse_message=enable_parse_message,
             enable_split_image=enable_split_image,
@@ -187,7 +187,7 @@ class MessageSession:
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
         callback: Coroutine | None = None,
-        callback_id: str = None,
+        callback_id: str | None = None,
         button_data: list[dict[str, str]] = [],
     ) -> NoReturn:
         """
@@ -256,22 +256,70 @@ class MessageSession:
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
 
         # ========== 步骤 1: 转换和检查消息 ==========
-        message_chain = get_message_chain(session=self.session_info, chain=message_chain)
-        if not message_chain.is_safe and not disable_secret_check:
-            message_chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
+        chain = get_message_chain(session=self.session_info, chain=message_chain)
+        if not chain.is_safe and not disable_secret_check:
+            chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
 
         # ========== 步骤 2: 以后台任务方式发送消息 ==========
-        # wait=False 表示不等待返回，消息会异步发送
+        # wait=False 表示不等待返回，消息会异步发送。
+        # 须发送已归一化并通过安全检查的 chain，而非原始入参：后者可能是 bare 元素或字符串，
+        # 经队列的 MessageChain | MessageNodes 反序列化时会因缺少 values 而失败。
         await _queue_server.client_send_message(
             self.session_info,
-            message_chain,
+            chain,
             wait=False,
             enable_parse_message=enable_parse_message,
             enable_split_image=enable_split_image,
         )
 
+    async def send_private_message(
+        self,
+        message_chain: Chainable,
+        user_id: str | None = None,
+        disable_secret_check: bool = False,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> list[str]:
+        """
+        用于向指定用户单独发送私聊消息。
+
+        与 send_message 不同，消息不会发到当前会话所在的场景，而是私信给某个用户，
+        适用于绑定码一类不宜出现在公开场景的内容。
+
+        :param message_chain: 消息链，若传入 str 则自动创建一条带有 PlainElement 的消息链
+        :param user_id: 目标用户 ID（带平台前缀），留空则发给触发本会话的用户
+        :param disable_secret_check: 是否禁用消息安全检查（默认为 False）
+        :param enable_parse_message: 是否允许解析消息（此参数作接口兼容用，仅 QQ 平台使用，默认为 True）
+        :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅 Telegram 平台使用，默认为 True）
+        :return: 消息 ID 列表，为空表示发送失败（如平台不支持私信、对方未与机器人建立私聊等）
+        """
+        user_id = user_id or self.session_info.sender_id
+        if not user_id:
+            return []
+
+        # 平台不支持私信时无需经过队列，直接判定失败
+        if not self.session_info.support_private_msg:
+            return []
+
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+
+        chain = get_message_chain(self.session_info, chain=message_chain)
+        if isinstance(chain, MessageNodes):
+            chain = MessageChain.assign(await msgnode2image(chain, session=self.session_info))
+        if not chain.is_safe and not disable_secret_check:
+            chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
+
+        return_val = await _queue_server.client_send_private_message(
+            self.session_info,
+            user_id,
+            chain,
+            enable_parse_message=enable_parse_message,
+            enable_split_image=enable_split_image,
+        )
+        return return_val.get("message_id") or []
+
     def as_display(
-        self, text_only: bool = False, element_filter: tuple[MessageElement, ...] = None, connector: str = "\n"
+        self, text_only: bool = False, element_filter: tuple[MessageElement, ...] | None = None, connector: str = "\n"
     ) -> str:
         """
         用于将消息转换为一般文本格式。
@@ -478,21 +526,22 @@ class MessageSession:
         self.session_info.tmp["wait_active"] = "yes"
         ExecutionLockList.remove(self)
         await self.end_typing()
-        if Config("no_confirm", False):
+        if CoreConfig.no_confirm:
             return no_confirm_action
         if message_chain:
-            message_chain = get_message_chain(self.session_info, message_chain)
+            chain = get_message_chain(self.session_info, message_chain)
         else:
-            message_chain = MessageChain.assign(I18NContext("core.message.confirm"))
-        if append_instruction:
+            chain = MessageChain.assign(I18NContext("core.message.confirm"))
+        # 合并转发消息无从追加提示行，此时略过
+        if append_instruction and isinstance(chain, MessageChain):
             if self.session_info.support_reaction and quick_confirm:
                 if self.session_info.client_name == "QQ":
-                    message_chain.append(I18NContext("message.wait.confirm.prompt.qq"))
+                    chain.append(I18NContext("message.wait.confirm.prompt.qq"))
                 else:
-                    message_chain.append(I18NContext("message.wait.confirm.prompt.reaction"))
+                    chain.append(I18NContext("message.wait.confirm.prompt.reaction"))
             else:
-                message_chain.append(I18NContext("message.wait.confirm.prompt"))
-        send = await self.send_message(message_chain, quote)
+                chain.append(I18NContext("message.wait.confirm.prompt"))
+        send = await self.send_message(chain, quote)
         await asyncio.sleep(0.1)
         self.session_info.tmp["wait_active"] = "no"
         if quick_confirm:
@@ -521,7 +570,7 @@ class MessageSession:
         delete: bool = False,
         timeout: float | None = 120,
         append_instruction: bool = True,
-        possibly_choices: list[dict[str, str]] = None,
+        possibly_choices: list[dict[str, str]] | None = None,
     ) -> MessageSession:
         """
         一次性模板，用于等待对象的下一条消息。
@@ -552,10 +601,11 @@ class MessageSession:
         ExecutionLockList.remove(self)
         await self.end_typing()
         if message_chain:
-            message_chain = get_message_chain(self.session_info, message_chain)
-            if append_instruction:
-                message_chain.append(I18NContext("message.wait.next_message.prompt"))
-            send = await self.send_message(message_chain, quote)
+            chain = get_message_chain(self.session_info, message_chain)
+            # 合并转发消息无从追加提示行，此时略过
+            if append_instruction and isinstance(chain, MessageChain):
+                chain.append(I18NContext("message.wait.next_message.prompt"))
+            send = await self.send_message(chain, quote)
         await asyncio.sleep(0.1)
         self.session_info.tmp["wait_active"] = "no"
         flag = asyncio.Event()
@@ -599,8 +649,8 @@ class MessageSession:
         ExecutionLockList.remove(self)
         await self.end_typing()
         if message_chain:
-            message_chain = get_message_chain(self.session_info, message_chain)
-            send = await self.send_message(message_chain, quote)
+            chain = get_message_chain(self.session_info, message_chain)
+            send = await self.send_message(chain, quote)
         await asyncio.sleep(0.1)
         self.session_info.tmp["wait_active"] = "no"
         flag = asyncio.Event()
@@ -654,19 +704,21 @@ class MessageSession:
         self.session_info.tmp["wait_type"] = "wait_reply"
         self.session_info.tmp["wait_active"] = "yes"
         if not self.session_info.support_quote:
-            message_chain = get_message_chain(self.session_info, message_chain)
-            if append_instruction:
-                message_chain.append(I18NContext("message.wait.next_message.prompt"))
+            chain = get_message_chain(self.session_info, message_chain)
+            # 合并转发消息无从追加提示行，此时略过
+            if append_instruction and isinstance(chain, MessageChain):
+                chain.append(I18NContext("message.wait.next_message.prompt"))
             if all_:
-                return await self.wait_anyone(message_chain, False, delete, timeout)
-            return await self.wait_next_message(message_chain, False, delete, timeout, False)
+                return await self.wait_anyone(chain, False, delete, timeout)
+            return await self.wait_next_message(chain, False, delete, timeout, False)
 
         ExecutionLockList.remove(self)
         await self.end_typing()
-        message_chain = get_message_chain(self.session_info, message_chain)
-        if append_instruction:
-            message_chain.append(I18NContext("message.reply.prompt"))
-        send = await self.send_message(message_chain, quote)
+        chain = get_message_chain(self.session_info, message_chain)
+        # 合并转发消息无从追加提示行，此时略过
+        if append_instruction and isinstance(chain, MessageChain):
+            chain.append(I18NContext("message.reply.prompt"))
+        send = await self.send_message(chain, quote)
         await asyncio.sleep(0.1)
         self.session_info.tmp["wait_active"] = "no"
         flag = asyncio.Event()
@@ -699,7 +751,7 @@ class MessageSession:
 
         :return: 如果用户是超级用户返回 True，否则返回 False
         """
-        return bool(self.session_info.sender_info.superuser)
+        return bool(self.session_info.sender_union_info.superuser)
 
     async def check_permission(self) -> bool:
         """
@@ -709,7 +761,10 @@ class MessageSession:
 
         :return: 如果用户拥有管理员权限返回 True，否则返回 False
         """
-        if self.session_info.sender_id in self.session_info.custom_admins or self.session_info.sender_info.superuser:
+        if (
+            self.session_info.sender_union_id in self.session_info.custom_admins
+            or self.session_info.sender_union_info.superuser
+        ):
             return True
         return await self.check_native_permission()
 

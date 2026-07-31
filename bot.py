@@ -23,6 +23,7 @@ from tortoise import Tortoise, run_async
 
 from core.constants import ascii_art, bots_path, logs_path  # skipcq
 from core.database import close_db
+from core.config import CONFIG_READONLY_ENV
 
 
 load_dotenv()
@@ -78,28 +79,44 @@ processes: list[multiprocessing.Process] = []
 
 
 def pre_init():
+    Logger.info(ascii_art)
+    Logger.info("Akaribot is launching...")
     from core.constants.path import cache_path
 
     if cache_path.exists():
         shutil.rmtree(cache_path)
     cache_path.mkdir(parents=True, exist_ok=True)
 
-    from core.config import Config
-    from core.constants.default import base_superuser_default
+    Logger.info("Generating config...")
+
+    # CoreConfig 的导入须留在函数内：multiprocessing 以 spawn / forkserver 启动子进程时
+    # 会以 __mp_main__ 重新导入主模块，置于顶层将使每个子进程再次触发配置模板的生成。
+    from core.config.base import CoreConfig
+    from core.config.scan import scan_config_templates
     from core.constants.version import database_version
     from core.database.link import get_db_link
-    from core.database.models import SenderInfo, DBVersion
+    from core.database.models import SenderUnionInfo, DBVersion
 
-    Logger.info(ascii_art)
-    if Config("debug", False):
+    # 配置的生成集中在此完成：子进程一律只读，此处遗漏的键将在子进程读取时抛出异常，
+    # 因此任何模板加载失败均须中止启动，而非延至运行期才暴露。
+    failed_templates = scan_config_templates()
+    if failed_templates:
+        Logger.critical(f"Failed to load config templates: {failed_templates}. Aborting.")
+        sys.exit(1)
+
+    if CoreConfig.debug:
         Logger.debug("Debug mode is enabled.")
 
     async def update_db():
+        Logger.info("Checking database...")
         await Tortoise.init(db_url=get_db_link(), modules={"models": ["core.database.models"]})
         await Tortoise.generate_schemas(safe=True)
 
+        Logger.info("Verifying database version...")
+
         query_dbver = await DBVersion.all().first()
         if not query_dbver:
+            Logger.warning("Database version not found, converting old database...")
             from core.scripts.convert_database import convert_database
 
             await close_db()
@@ -115,22 +132,30 @@ def pre_init():
         else:
             await close_db()
 
-        base_superuser = Config("base_superuser", base_superuser_default, cfg_type=(str, list))
+        Logger.success("Database check completed successfully!")
+
+        Logger.info("Granting base superuser permission...")
+        base_superuser = CoreConfig.base_superuser
         if base_superuser:
             if isinstance(base_superuser, str):
                 base_superuser = [base_superuser]
             await Tortoise.init(db_url=get_db_link(), modules={"models": ["core.database.models"]})
             for bu in base_superuser:
-                await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id=bu)
+                sender_info = await SenderUnionInfo.resolve_union(bu)
+                await sender_info.edit_attr("superuser", True)
             await close_db()
+            Logger.success("Base superuser permission granted successfully!")
         else:
             Logger.warning("The base superuser is not found, please setup it in the config file.")
 
     run_async(update_db())
+    Logger.success("Pre-init completed successfully!")
 
 
 def multiprocess_run_until_complete(func):
     mp = multiprocessing.get_context("spawn" if sys.platform in ["win32", "darwin"] else "forkserver")
+    # pre_init 是唯一被允许写入配置的进程，须清除 RestartBot 重启循环中残留的只读标记
+    os.environ.pop(CONFIG_READONLY_ENV, None)
     p = mp.Process(target=func, daemon=True)
     p.start()
 
@@ -138,7 +163,12 @@ def multiprocess_run_until_complete(func):
         if not p.is_alive():
             break
         time.sleep(1)
+    # Process.close() 之后再访问 exitcode 会抛 ValueError，故须在 terminate_process 之前取值
+    exitcode = p.exitcode
     terminate_process(p)
+    if exitcode != 0:
+        Logger.critical(f"Pre-init failed with exit code {exitcode}, aborting.")
+        sys.exit(exitcode)
 
 
 def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
@@ -168,6 +198,10 @@ binary_mode = not sys.argv[0].endswith(".py")
 async def run_bot():
     from core.config import CFGManager
     from core.server.run import run_async as server_run_async
+
+    # 自此起 spawn 出的子进程一律只读：配置的生成已在 pre_init 中完成。
+    # 须在任何 mp.Process 之前置位，spawn 会继承环境；restart_bot_process() 后续重启子进程时同样适用。
+    os.environ[CONFIG_READONLY_ENV] = "1"
 
     mp = multiprocessing.get_context("spawn" if sys.platform in ["win32", "darwin"] else "forkserver")
 

@@ -1,19 +1,20 @@
-from core.config.decorator import on_config
+from core.config.decorator import on_bot_config
 
 
-@on_config("web", "bot", False)
+@on_bot_config("web")
 class WebConfig:
     enable: bool = True
     enable_https: bool = False
     web_host: str = "127.0.0.1"
     web_port: int = 6485
+    forwarded_allow_ips: str = "127.0.0.1"
     login_max_attempt: int = 5
     heartbeat_attempt: int = 3
     heartbeat_interval: int = 30
     heartbeat_timeout: int = 5
 
 
-@on_config("web", "bot", True)
+@on_bot_config("web", secret=True)
 class WebSecretConfig:
     allow_origins: list = []
     jwt_secret: str = ""

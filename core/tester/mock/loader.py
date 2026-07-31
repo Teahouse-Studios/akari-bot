@@ -18,6 +18,11 @@ def apply_monkey_patch(module, monkey_patches: dict[str, object] | None):
 async def load_modules(show_logs=True, monkey_patches: dict[str, object] | None = None, load_fixtures: bool = True):
     import modules
 
+    # Bot.post_message 等主动推送路径通过 exports["JobQueueServer"] 取用队列服务，
+    # 而该导出是在 core.queue.server 导入时注册的。生产环境由 server 进程负责导入，
+    # 测试环境若不显式导入，所有触发推送的代码路径都会以 KeyError 失败。
+    import core.queue.server  # noqa: F401
+
     err_prompt = []
     if locale_loaded_err:
         err_prompt.append("I18N loaded failed:")
@@ -34,6 +39,16 @@ async def load_modules(show_logs=True, monkey_patches: dict[str, object] | None 
         except Exception:
             if show_logs:
                 Logger.exception("Failed to load HTTP fixtures:")
+
+        try:
+            from core.tester.mock.webrender import load_webrender_fixtures
+
+            count = load_webrender_fixtures()
+            if count > 0 and show_logs:
+                Logger.info(f"Loaded {count} WebRender fixtures.")
+        except Exception:
+            if show_logs:
+                Logger.exception("Failed to load WebRender fixtures:")
 
     if show_logs:
         Logger.info("Attempting to load modules...")

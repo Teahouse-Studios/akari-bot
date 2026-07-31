@@ -13,7 +13,7 @@ async def _(
     month: int,
     day: int,
     inquiry_num: str,
-    device_id: str = None,
+    device_id: str | None = None,
 ):
     device_codes = {
         "3ds": "CTR",

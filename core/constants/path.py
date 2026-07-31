@@ -1,11 +1,18 @@
 import glob
+import os
 from pathlib import Path
+
+# 配置目录的环境变量名。测试引导据此把整个进程指向一份临时配置，
+# 从而不依赖、也不改动开发者本机的 config/。
+# 该名称在 tester.py 中以字面量重复了一次：此处的取值发生在导入期，
+# 而导入 core.constants 本身就会触发取值，引导代码因而无从先行导入本模块取得它。
+CONFIG_PATH_ENV = "AKARI_CONFIG_PATH"
 
 # 基本路径
 assets_path = Path("./assets").resolve()
 bots_path = Path("./bots").resolve()
 cache_path = Path("./cache").resolve()
-config_path = Path("./config").resolve()
+config_path = Path(os.environ.get(CONFIG_PATH_ENV) or "./config").resolve()
 database_path = Path("./database").resolve()
 base_locales_path = Path("./core/locales").resolve()
 logs_path = Path("./logs").resolve()
@@ -16,6 +23,8 @@ webui_path = Path("./webui").resolve()
 # assets 子路径
 fonts_path = assets_path / "fonts"
 templates_path = assets_path / "templates"
+retired_path = assets_path / "retired"
+union_merge_logs_path = assets_path / "union_merge_logs"
 
 # 字体文件路径
 noto_sans_bold_path = fonts_path / "Noto Sans CJK Bold.otf"

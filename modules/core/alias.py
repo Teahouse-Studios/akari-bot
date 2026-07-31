@@ -21,7 +21,7 @@ ali = module("alias", base=True, doc=True)
     required_admin=True,
 )
 async def _(msg: Bot.MessageSession):
-    aliases = msg.session_info.target_info.target_data.get("command_alias")
+    aliases = msg.session_info.target_union_info.target_data.get("command_alias")
     alias = msg.parsed_msg.get("<alias>", False)
     command = msg.parsed_msg.get("<command>", False)
     if not aliases:
@@ -53,7 +53,7 @@ async def _(msg: Bot.MessageSession):
             if not has_prefix:
                 await msg.finish(I18NContext("core.message.alias.add.invalid_prefix"))
             aliases[alias] = command[1:]
-            await msg.session_info.target_info.edit_target_data("command_alias", aliases)
+            await msg.session_info.target_union_info.edit_target_data("command_alias", aliases)
             await msg.finish(I18NContext("core.message.alias.add.success", alias=alias, command=command))
         else:
             await msg.finish(I18NContext("core.message.alias.add.already", alias=alias))
@@ -67,12 +67,12 @@ async def _(msg: Bot.MessageSession):
         )
         if alias in aliases:
             del aliases[alias]
-            await msg.session_info.target_info.edit_target_data("command_alias", aliases)
+            await msg.session_info.target_union_info.edit_target_data("command_alias", aliases)
             await msg.finish(I18NContext("core.message.alias.remove.success", alias=alias))
         else:
             await msg.finish(I18NContext("core.message.alias.not_found", alias=alias))
     elif "reset" in msg.parsed_msg:
-        await msg.session_info.target_info.edit_target_data("command_alias", {})
+        await msg.session_info.target_union_info.edit_target_data("command_alias", {})
         await msg.finish(I18NContext("core.message.alias.reset.success"))
     elif "list" in msg.parsed_msg:
         legacy = True

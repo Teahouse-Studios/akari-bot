@@ -1,7 +1,7 @@
 import asyncio
 import os
 import platform
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 
 import psutil
 from cpuinfo import get_cpu_info
@@ -9,12 +9,13 @@ from fastapi import HTTPException, Request, Query
 from fastapi.responses import Response
 from tortoise.expressions import Q
 
-from bots.web.client import app, limiter, enable_https
+from bots.web.client import app, limiter, enable_https, get_client_ip
 from core.builtins.utils import command_prefix
-from core.config import Config
+from bots.web.config import WebConfig
+from core.config.base import BaseConfig, CoreConfig
 from core.constants import config_filename
 from core.constants.path import config_path
-from core.database.models import AnalyticsData, SenderInfo, TargetInfo
+from core.database.models import AnalyticsData, SenderUnionInfo, SenderUnionBind, TargetUnionInfo, TargetUnionBind
 from core.logger import Logger
 from core.queue.client import JobQueueClient
 from .auth import verify_jwt
@@ -22,7 +23,105 @@ from .auth import verify_jwt
 started_time = datetime.now()
 
 
-default_locale = Config("default_locale", cfg_type=str)
+default_locale = BaseConfig.default_locale
+
+
+async def filter_by_bound_id(bind_model, prefix: str | None, id: str | None) -> Q | None:
+    """
+    把按平台 ID 的筛选条件转换为对 union 的筛选条件。
+
+    数据现在挂在 union 上，平台 ID 只存在于映射表中，因此需要先查映射表再按 union 过滤。
+
+    :param bind_model: 映射表模型。
+    :param prefix: 平台前缀。
+    :param id: 平台 ID 的部分内容。
+    :return: 针对 union 的筛选条件，无需筛选时为 None。
+    """
+    if not prefix and not id:
+        return None
+    id_field = bind_model._meta.pk_attr
+    bind_filters = Q()
+    if prefix:
+        bind_filters &= Q(**{f"{id_field}__startswith": f"{prefix}|"})
+    if id:
+        bind_filters &= Q(**{f"{id_field}__icontains": id})
+    union_ids = await bind_model.filter(bind_filters).values_list("union_id", flat=True)
+    return Q(union_id__in=list(set(union_ids)))
+
+
+async def map_bound_ids(bind_model, union_ids: list[str]) -> dict[str, list[str]]:
+    """
+    批量获取每个 union 下绑定的全部平台 ID。
+
+    :param bind_model: 映射表模型。
+    :param union_ids: union ID 列表。
+    """
+    id_field = bind_model._meta.pk_attr
+    mapping = {u: [] for u in union_ids}
+    if not union_ids:
+        return mapping
+    for row in await bind_model.filter(union_id__in=union_ids).values(id_field, "union_id"):
+        mapping.setdefault(row["union_id"], []).append(row[id_field])
+    return mapping
+
+
+def pick_display_id(union_id: str, bound_ids: list[str], prefix: str | None = None) -> str:
+    """
+    从 union 下的平台 ID 中挑一个用于展示，尽量与筛选前缀一致。
+    """
+    if prefix:
+        for i in bound_ids:
+            if i.startswith(f"{prefix}|"):
+                return i
+    return bound_ids[0] if bound_ids else union_id
+
+
+def dump_target(target: TargetUnionInfo, bound_ids: list[str], display_id: str) -> dict:
+    """
+    序列化场景信息。``target_id`` 保持向后兼容，另附 union ID 与全部已绑定的平台 ID。
+    """
+    return {
+        "target_id": display_id,
+        "union_id": target.union_id,
+        "bound_ids": bound_ids,
+        "blocked": target.blocked,
+        "muted": target.muted,
+        "locale": target.locale,
+        "modules": target.modules,
+        "custom_admins": target.custom_admins,
+        "banned_users": target.banned_users,
+        "target_data": target.target_data,
+    }
+
+
+def dump_sender(sender: SenderUnionInfo, bound_ids: list[str], display_id: str) -> dict:
+    """
+    序列化用户信息。``sender_id`` 保持向后兼容，另附 union ID 与全部已绑定的平台 ID。
+    """
+    return {
+        "sender_id": display_id,
+        "union_id": sender.union_id,
+        "bound_ids": bound_ids,
+        "blocked": sender.blocked,
+        "trusted": sender.trusted,
+        "superuser": sender.superuser,
+        "warns": sender.warns,
+        "petal": sender.petal,
+        "sender_data": sender.sender_data,
+    }
+
+
+async def resolve_sender_unions(ids: list[str]) -> list[str]:
+    """
+    把权限列表中的平台账号 ID 解析为 union ID，已经是 union ID 的原样保留。
+
+    ``custom_admins`` / ``banned_users`` 存的是 union ID，但控制台可能直接填入平台账号 ID。
+    """
+    resolved = []
+    for i in ids:
+        bind = await SenderUnionBind.get_or_none(sender_id=i)
+        resolved.append(bind.union_id if bind else i)
+    return list(dict.fromkeys(resolved))
 
 
 @app.get("/api")
@@ -37,11 +136,11 @@ async def get_config(request: Request):
     return {
         "enable_https": enable_https,
         "command_prefix": command_prefix[0],
-        "help_url": Config("help_url", cfg_type=str),
-        "locale": Config("default_locale", cfg_type=str),
-        "heartbeat_interval": Config("heartbeat_interval", 30, table_name="bot_web"),
-        "heartbeat_timeout": Config("heartbeat_timeout", 5, table_name="bot_web"),
-        "heartbeat_attempt": Config("heartbeat_attempt", 3, table_name="bot_web"),
+        "help_url": CoreConfig.help_url,
+        "locale": BaseConfig.default_locale,
+        "heartbeat_interval": WebConfig.heartbeat_interval,
+        "heartbeat_timeout": WebConfig.heartbeat_timeout,
+        "heartbeat_attempt": WebConfig.heartbeat_attempt,
     }
 
 
@@ -79,12 +178,15 @@ async def server_info(request: Request):
 async def get_analytics(request: Request, days: int = Query(1)):
     verify_jwt(request)
     try:
-        now = datetime.now()
+        # 时间窗口须以带时区的 datetime 传入：AnalyticsData.timestamp 是 DatetimeField，
+        # 传 Unix 时间戳会被原样绑定成数字与日期时间比较，任何记录都落不进区间；
+        # 传不带时区的本地时间则会被当作 UTC 处理，窗口整体偏移一个时区差。
+        now = datetime.now(UTC)
         past = now - timedelta(days=days)
-        data = await AnalyticsData.get_values_by_times(now.timestamp(), past.timestamp())
-        count = await AnalyticsData.get_count_by_times(now.timestamp(), past.timestamp())
+        data = await AnalyticsData.get_values_by_times(now, past)
+        count = await AnalyticsData.get_count_by_times(now, past)
         past_past = now - timedelta(days=2 * days)
-        past_count = await AnalyticsData.get_count_by_times(past.timestamp(), past_past.timestamp())
+        past_count = await AnalyticsData.get_count_by_times(past, past_past)
         try:
             change_rate = round((count - past_count) / past_count, 2)
         except ZeroDivisionError:
@@ -140,7 +242,7 @@ async def get_config_file(request: Request, cfg_filename: str):
 
 @app.put("/api/config/{cfg_filename}")
 async def edit_config_file(request: Request, cfg_filename: str):
-    ip = request.client.host
+    ip = get_client_ip(request)
     try:
         verify_jwt(request)
 
@@ -178,22 +280,29 @@ async def get_target_list(
     try:
         verify_jwt(request)
 
-        query = TargetInfo.all()
+        query = TargetUnionInfo.all()
         filters = Q()
-        if prefix:
-            filters &= Q(target_id__startswith=f"{prefix}|")
         if status == "muted":
             filters &= Q(muted=True)
         if status == "blocked":
             filters &= Q(blocked=True)
-        if id:
-            filters &= Q(target_id__icontains=id)
+        bound_filters = await filter_by_bound_id(TargetUnionBind, prefix, id)
+        if bound_filters:
+            filters &= bound_filters
 
         query = query.filter(filters)
         total = await query.count()
         results = await query.offset((page - 1) * size).limit(size)
 
-        return {"target_list": results, "total": total}
+        bound_map = await map_bound_ids(TargetUnionBind, [t.union_id for t in results])
+        target_list = [
+            dump_target(
+                t, bound_map.get(t.union_id, []), pick_display_id(t.union_id, bound_map.get(t.union_id, []), prefix)
+            )
+            for t in results
+        ]
+
+        return {"target_list": target_list, "total": total}
     except HTTPException as e:
         raise e
     except Exception:
@@ -205,10 +314,11 @@ async def get_target_list(
 async def get_target_info(request: Request, target_id: str):
     try:
         verify_jwt(request)
-        target_info = await TargetInfo.get_by_target_id(target_id, create=False)
-        if not target_info:
+        target_union_info = await TargetUnionInfo.get_by_target_id(target_id, create=False)
+        if not target_union_info:
             raise HTTPException(status_code=404, detail="Not found")
-        return {"target_info": target_info}
+        bound_ids = await target_union_info.list_bound_ids()
+        return {"target_info": dump_target(target_union_info, bound_ids, target_id)}
     except HTTPException as e:
         raise e
     except Exception:
@@ -218,11 +328,11 @@ async def get_target_info(request: Request, target_id: str):
 
 @app.patch("/api/target/{target_id}")
 async def edit_target_info(request: Request, target_id: str):
-    ip = request.client.host
+    ip = get_client_ip(request)
     try:
         verify_jwt(request)
 
-        target_info = await TargetInfo.get_by_target_id(target_id)
+        target_union_info = await TargetUnionInfo.get_by_target_id(target_id)
         body = await request.json()
         muted = body.get("muted")
         locale = body.get("locale")
@@ -247,21 +357,22 @@ async def edit_target_info(request: Request, target_id: str):
         if target_data is not None and not isinstance(target_data, dict):
             raise HTTPException(status_code=400, detail='"target_data" must be dict')
 
-        if blocked is not None:
-            target_info.blocked = blocked
         if muted is not None:
-            target_info.muted = muted
+            target_union_info.muted = muted
         if locale is not None:
-            target_info.locale = locale
+            target_union_info.locale = locale
         if modules is not None:
-            target_info.modules = modules
+            target_union_info.modules = modules
+        # 权限名单存的是 union ID，控制台可能直接填平台账号 ID，这里统一解析一遍。
         if custom_admins is not None:
-            target_info.custom_admins = custom_admins
+            target_union_info.custom_admins = await resolve_sender_unions(custom_admins)
         if banned_users is not None:
-            target_info.banned_users = banned_users
+            target_union_info.banned_users = await resolve_sender_unions(banned_users)
         if target_data is not None:
-            target_info.target_data = target_data
-        await target_info.save()
+            target_union_info.target_data = target_data
+        await target_union_info.save()
+        if blocked is not None:
+            await target_union_info.edit_attr("blocked", blocked)
 
         Logger.info(f"[WebUI] {ip} has edited the session data: {target_id}")
         return Response(status_code=204)
@@ -274,13 +385,15 @@ async def edit_target_info(request: Request, target_id: str):
 
 @app.delete("/api/target/{target_id}")
 async def delete_target_info(request: Request, target_id: str):
-    ip = request.client.host
+    ip = get_client_ip(request)
     try:
         verify_jwt(request)
 
-        target_info = await TargetInfo.get_by_target_id(target_id, create=False)
-        if target_info:
-            await target_info.delete()
+        target_union_info = await TargetUnionInfo.get_by_target_id(target_id, create=False)
+        if target_union_info:
+            # 删除 union 的同时清掉其下全部映射，否则残留映射会指向不存在的 union。
+            await TargetUnionBind.filter(union_id=target_union_info.union_id).delete()
+            await target_union_info.delete()
 
         Logger.info(f"[WebUI] {ip} has deleted the session data: {target_id}")
         return Response(status_code=204)
@@ -303,24 +416,31 @@ async def get_sender_list(
     try:
         verify_jwt(request)
 
-        query = SenderInfo.all()
+        query = SenderUnionInfo.all()
         filters = Q()
-        if prefix:
-            filters &= Q(sender_id__startswith=f"{prefix}|")
         if status == "superuser":
             filters &= Q(superuser=True)
         elif status == "trusted":
             filters &= Q(trusted=True)
         elif status == "blocked":
             filters &= Q(blocked=True)
-        if id:
-            filters &= Q(sender_id__icontains=id)
+        bound_filters = await filter_by_bound_id(SenderUnionBind, prefix, id)
+        if bound_filters:
+            filters &= bound_filters
 
         query = query.filter(filters)
         total = await query.count()
         results = await query.offset((page - 1) * size).limit(size)
 
-        return {"sender_list": results, "total": total}
+        bound_map = await map_bound_ids(SenderUnionBind, [s.union_id for s in results])
+        sender_list = [
+            dump_sender(
+                s, bound_map.get(s.union_id, []), pick_display_id(s.union_id, bound_map.get(s.union_id, []), prefix)
+            )
+            for s in results
+        ]
+
+        return {"sender_list": sender_list, "total": total}
     except HTTPException as e:
         raise e
     except Exception:
@@ -332,10 +452,11 @@ async def get_sender_list(
 async def get_sender_info(request: Request, sender_id: str):
     try:
         verify_jwt(request)
-        sender_info = await SenderInfo.get_by_sender_id(sender_id, create=False)
-        if not sender_info:
+        sender_union_info = await SenderUnionInfo.get_by_sender_id(sender_id, create=False)
+        if not sender_union_info:
             raise HTTPException(status_code=404, detail="Not found")
-        return {"sender_info": sender_info}
+        bound_ids = await sender_union_info.list_bound_ids()
+        return {"sender_info": dump_sender(sender_union_info, bound_ids, sender_id)}
     except HTTPException as e:
         raise e
     except Exception:
@@ -345,11 +466,11 @@ async def get_sender_info(request: Request, sender_id: str):
 
 @app.patch("/api/sender/{sender_id}")
 async def edit_sender_info(request: Request, sender_id: str):
-    ip = request.client.host
+    ip = get_client_ip(request)
     try:
         verify_jwt(request)
 
-        sender_info = await SenderInfo.get_by_sender_id(sender_id)
+        sender_union_info = await SenderUnionInfo.get_by_sender_id(sender_id)
         body = await request.json()
         superuser = body.get("superuser")
         trusted = body.get("trusted")
@@ -372,18 +493,18 @@ async def edit_sender_info(request: Request, sender_id: str):
             raise HTTPException(status_code=400, detail='"sender_data" must be dict')
 
         if superuser is not None:
-            sender_info.superuser = superuser
+            sender_union_info.superuser = superuser
         if trusted is not None:
-            sender_info.trusted = trusted
-        if blocked is not None:
-            sender_info.blocked = blocked
+            sender_union_info.trusted = trusted
         if warns is not None:
-            sender_info.warns = warns
+            sender_union_info.warns = warns
         if petal is not None:
-            sender_info.petal = petal
+            sender_union_info.petal = petal
         if sender_data is not None:
-            sender_info.sender_data = sender_data
-        await sender_info.save()
+            sender_union_info.sender_data = sender_data
+        await sender_union_info.save()
+        if blocked is not None:
+            await sender_union_info.edit_attr("blocked", blocked)
 
         Logger.info(f"[WebUI] {ip} has edited the user data: {sender_id}")
         return Response(status_code=204)
@@ -396,13 +517,15 @@ async def edit_sender_info(request: Request, sender_id: str):
 
 @app.delete("/api/sender/{sender_id}")
 async def delete_sender_info(request: Request, sender_id: str):
-    ip = request.client.host
+    ip = get_client_ip(request)
     try:
         verify_jwt(request)
 
-        sender_info = await SenderInfo.get_by_sender_id(sender_id, create=False)
-        if sender_info:
-            await sender_info.delete()
+        sender_union_info = await SenderUnionInfo.get_by_sender_id(sender_id, create=False)
+        if sender_union_info:
+            # 删除 union 的同时清掉其下全部映射，否则残留映射会指向不存在的 union。
+            await SenderUnionBind.filter(union_id=sender_union_info.union_id).delete()
+            await sender_union_info.delete()
         Logger.info(f"[WebUI] {ip} has deleted the user data: {sender_id}")
         return Response(status_code=204)
     except HTTPException as e:
@@ -469,7 +592,7 @@ async def get_module_helpdoc(request: Request, module_name: str, locale: str = Q
 
 @app.post("/api/module/{module_name}/reload")
 async def reload_module(request: Request, module_name: str):
-    ip = request.client.host
+    ip = get_client_ip(request)
     try:
         verify_jwt(request)
         status = await JobQueueClient.post_module_action(module=module_name, action="reload")
@@ -487,7 +610,7 @@ async def reload_module(request: Request, module_name: str):
 
 @app.post("/api/module/{module_name}/load")
 async def load_module(request: Request, module_name: str):
-    ip = request.client.host
+    ip = get_client_ip(request)
     try:
         verify_jwt(request)
         status = await JobQueueClient.post_module_action(module=module_name, action="load")
@@ -506,7 +629,7 @@ async def load_module(request: Request, module_name: str):
 
 @app.post("/api/module/{module_name}/unload")
 async def unload_module(request: Request, module_name: str):
-    ip = request.client.host
+    ip = get_client_ip(request)
     try:
         verify_jwt(request)
         status = await JobQueueClient.post_module_action(module=module_name, action="unload")
@@ -529,7 +652,7 @@ async def restart():
 
 @app.post("/api/restart")
 async def restart_bot(request: Request):
-    ip = request.client.host
+    ip = get_client_ip(request)
     verify_jwt(request)
     Logger.info(f"[WebUI] {ip} restarted bot.")
     asyncio.create_task(restart())

@@ -6,13 +6,13 @@ from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext
 from core.component import module
-from core.config import Config
+from core.config.base import CoreConfig
 from core.logger import Logger
 from core.scheduler import IntervalTrigger
 from core.utils.http import get_url
 from core.utils.storedata import get_stored_list, update_stored_list
 
-trigger_times = 60 if not Config("slower_schedule", False) else 180
+trigger_times = 60 if not CoreConfig.slower_schedule else 180
 
 arcaea_rss = module(
     "arcaea_rss",
@@ -77,5 +77,5 @@ async def _():
             await update_stored_list(Bot.Info.client_name, "arcaea_rss", verlist)
         startup_mute = False
     except Exception:
-        if Config("debug", False):
+        if CoreConfig.debug:
             Logger.exception()

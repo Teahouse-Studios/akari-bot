@@ -1,20 +1,23 @@
-from pathlib import Path
-
-import orjson
-
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Image, I18NContext, Plain
+from core.builtins.message.internal import Image, I18NContext
 from core.component import module
-from core.utils.http import get_url
+from core.logger import Logger
 from core.utils.random import Random
-from .database.models import PhigrosBindInfo
-from .libraries.genb30 import get_b30
-from .libraries.record import get_game_record
-from .libraries.update import remove_punctuations, update_assets, p_headers
 
-pgr_assets_path = Path(__file__).parent / "assets"
-song_info_path = pgr_assets_path / "song_info.json"
+from .database.models import PhigrosBindInfo
+from .libraries.assets import (
+    DIFF_NAMES,
+    illustration_path,
+    load_song_info,
+    match_song,
+    song_info_exists,
+    update_assets,
+)
+from .libraries.client import check_session_token, is_token_invalid, phigros_cloud
+from .libraries.format import settings_lines, summary_lines, unlock_lines
+from .libraries.genb30 import get_b30, get_song_rank
+from .libraries.record import get_records, get_save, parse_part
 
 phi = module(
     "phigros",
@@ -24,138 +27,241 @@ phi = module(
     doc=True,
 )
 
+# 在这些场景绑定会使会话令牌暴露给他人，须先行告警并撤回。
+PUBLIC_TARGETS = [
+    "Discord|Channel",
+    "KOOK|Group",
+    "Matrix|Room",
+    "QQ|Group",
+    "QQBot|Group",
+    "QQBot|Guild",
+    "Telegram|Group",
+    "Telegram|Supergroup",
+]
 
-@phi.command("bind <sessiontoken> {{I18N:phigros.help.bind}}")
+
+async def _require_bind(msg: Bot.MessageSession):
+    """取绑定信息，未绑定则终止命令。
+
+    :param msg: 消息会话。
+    """
+    bind_info = await PhigrosBindInfo.get_by_sender_id(msg, create=False)
+    if not bind_info:
+        await msg.finish(I18NContext("phigros.message.user_unbound", prefix=msg.session_info.prefixes[0]))
+    return bind_info
+
+
+async def _require_song_info(msg: Bot.MessageSession) -> dict:
+    """读取曲目信息，尚未初始化则终止命令。
+
+    :param msg: 消息会话。
+    """
+    if not song_info_exists():
+        await msg.finish(I18NContext("phigros.message.file_not_found", prefix=msg.session_info.prefixes[0]))
+    return load_song_info()
+
+
+async def _fetch_save(msg: Bot.MessageSession, bind_info):
+    """取存档，令牌失效时给出可操作的提示。
+
+    :param msg: 消息会话。
+    :param bind_info: 绑定信息记录。
+    """
+    try:
+        return await get_save(msg, bind_info)
+    except Exception as e:
+        Logger.exception()
+        if is_token_invalid(e):
+            await msg.finish(I18NContext("phigros.message.token_invalid", prefix=msg.session_info.prefixes[0]))
+        await msg.finish(I18NContext("phigros.message.fetch_failed"))
+
+
+def _song_chain(song_id: str, info: dict) -> MessageChain:
+    """组装曲目资料。
+
+    :param song_id: 曲目 id。
+    :param info: 该曲目的信息结构。
+    """
+    chain = MessageChain.assign()
+    illustration = illustration_path(song_id)
+    if illustration:
+        chain.append(Image(illustration))
+    chain.append(I18NContext("phigros.message.song.title", name=info["name"], artist=info.get("artist", "")))
+    if info.get("illustrator"):
+        chain.append(I18NContext("phigros.message.song.illustrator", illustrator=info["illustrator"]))
+    for level in DIFF_NAMES:
+        if level not in info.get("diff", {}):
+            continue
+        chain.append(
+            I18NContext(
+                "phigros.message.song.chart",
+                difficulty=level,
+                constant=info["diff"][level],
+                charter=info.get("charter", {}).get(level, "-"),
+            )
+        )
+    return chain
+
+
+@phi.command(
+    "bind <sessiontoken> [-i] {{I18N:phigros.help.bind}}",
+    options_desc={"-i": "{I18N:phigros.help.option.i}"},
+)
 async def _(msg: Bot.MessageSession, sessiontoken: str):
-    if msg.session_info.target_from in [
-        "Discord|Channel",
-        "KOOK|Group",
-        "Matrix|Room",
-        "QQ|Group",
-        "QQBot|Group",
-        "QQBot|Guild",
-        "Telegram|Group",
-        "Telegram|Supergroup",
-    ]:
+    if msg.session_info.target_from in PUBLIC_TARGETS:
         await msg.send_message(I18NContext("phigros.message.bind.warning"), quote=False)
         await msg.delete()
-    headers = p_headers.copy()
-    headers["X-LC-Session"] = sessiontoken
+    if not check_session_token(sessiontoken):
+        await msg.finish(I18NContext("phigros.message.bind.invalid_token"), quote=False)
+
+    is_international = bool(msg.parsed_msg.get("-i", False))
     try:
-        get_user_info = await get_url(
-            "https://rak3ffdi.cloud.tds1.tapapis.cn/1.1/users/me",
-            headers=headers,
-            fmt="json",
-        )
-        if get_user_info:
-            username = get_user_info.get("nickname", "Guest")
-            await PhigrosBindInfo.set_bind_info(
-                sender_id=msg.session_info.sender_id, session_token=sessiontoken, username=username
-            )
-            await msg.finish(I18NContext("phigros.message.bind.success", username=username), quote=False)
-        else:
-            await msg.finish(I18NContext("phigros.message.bind.failed"), quote=False)
-    except ValueError:
+        async with phigros_cloud(sessiontoken, is_international) as cloud:
+            username = await cloud.getNickname()
+    except Exception:
+        Logger.exception()
         await msg.finish(I18NContext("phigros.message.bind.failed"), quote=False)
+
+    await PhigrosBindInfo.set_bind_info(
+        union_id=msg.session_info.sender_union_id,
+        session_token=sessiontoken,
+        username=username or "Guest",
+        is_international=is_international,
+    )
+    await msg.finish(I18NContext("phigros.message.bind.success", username=username), quote=False)
 
 
 @phi.command("unbind {{I18N:phigros.help.unbind}}")
 async def _(msg: Bot.MessageSession):
-    await PhigrosBindInfo.remove_bind_info(sender_id=msg.session_info.sender_id)
+    await PhigrosBindInfo.remove_bind_info(union_id=msg.session_info.sender_union_id)
     await msg.finish(I18NContext("phigros.message.unbind.success"))
+
+
+@phi.command("refresh {{I18N:phigros.help.refresh}}")
+async def _(msg: Bot.MessageSession):
+    bind_info = await _require_bind(msg)
+    try:
+        async with phigros_cloud(bind_info.session_token, bind_info.is_international) as cloud:
+            new_token = await cloud.refreshSessionToken()
+    except Exception:
+        Logger.exception()
+        await msg.finish(I18NContext("phigros.message.refresh.failed"))
+
+    await PhigrosBindInfo.set_bind_info(
+        union_id=msg.session_info.sender_union_id,
+        session_token=new_token,
+        username=bind_info.username,
+        is_international=bind_info.is_international,
+    )
+    # 新令牌不回显，避免在公开场景再次泄露。
+    await msg.finish(I18NContext("phigros.message.refresh.success"), quote=False)
 
 
 @phi.command("b30 {{I18N:phigros.help.b30}}")
 async def _(msg: Bot.MessageSession):
-    bind_info = await PhigrosBindInfo.get_by_sender_id(msg, create=False)
-    if not bind_info:
-        await msg.finish(I18NContext("phigros.message.user_unbound", prefix=msg.session_info.prefixes[0]))
-    if not song_info_path.exists():
-        await msg.finish(I18NContext("phigros.message.file_not_found", prefix=msg.session_info.prefixes[0]))
-
-    img = await get_b30(msg, bind_info.username, bind_info.session_token)
+    bind_info = await _require_bind(msg)
+    await _require_song_info(msg)
+    img = await get_b30(msg, bind_info)
     if img:
         await msg.finish(Image(img))
+    await msg.finish(I18NContext("phigros.message.fetch_failed"))
 
 
-def get_rank(score: int, full_combo: bool) -> str:
-    if score == 1000000:
-        return "φ"
-    if full_combo:
-        return "ν"
-    if 960000 <= score <= 999999:
-        return "V"
-    if 920000 <= score <= 959999:
-        return "S"
-    if 880000 <= score <= 919999:
-        return "A"
-    if 820000 <= score <= 879999:
-        return "B"
-    if 700000 <= score <= 819999:
-        return "C"
-    if 0 <= score <= 699999:
-        return "F"
-    return ""
-
-
-@phi.command("random {{I18N:phigros.help.random}}")
+@phi.command("info {{I18N:phigros.help.info}}")
 async def _(msg: Bot.MessageSession):
-    if not song_info_path.exists():
-        await msg.finish(I18NContext("phigros.message.file_not_found", prefix=msg.session_info.prefixes[0]))
+    bind_info = await _require_bind(msg)
+    save_data, summary = await _fetch_save(msg, bind_info)
+    try:
+        progress = parse_part(save_data, "gameProgress")
+    except Exception:
+        # gameProgress 的结构版本更新只应影响 Data 值一项，其余信息照常输出。
+        Logger.exception()
+        progress = None
+    await msg.finish(
+        [I18NContext("phigros.message.info.player", username=bind_info.username)] + summary_lines(summary, progress)
+    )
 
-    msg_chain = MessageChain.assign()
-    with open(song_info_path, "rb") as f:
-        song_info = orjson.loads(f.read())
-    sid, sinfo = Random.choice(list(song_info.items()))
-    illustration_path = pgr_assets_path / "illustration" / f"{sid.split('.')[0]}.png"
-    if illustration_path.exists():
-        msg_chain.append(Image(illustration_path))
 
-    msg_chain.append(Plain(sinfo["name"]))
-    diff_lst = ["EZ", "HD", "IN", "AT"]
-    diffs = [sinfo["diff"][d] for d in diff_lst if d in sinfo["diff"]]
-    msg_chain.append(Plain("/".join(diffs)))
-    await msg.finish(msg_chain)
+@phi.command("unlock {{I18N:phigros.help.unlock}}")
+async def _(msg: Bot.MessageSession):
+    bind_info = await _require_bind(msg)
+    save_data, _ = await _fetch_save(msg, bind_info)
+    try:
+        progress = parse_part(save_data, "gameProgress")
+        game_key = parse_part(save_data, "gameKey")
+    except Exception:
+        Logger.exception()
+        await msg.finish(I18NContext("phigros.message.parse_failed"))
+    await msg.finish(unlock_lines(progress, game_key))
+
+
+@phi.command("settings {{I18N:phigros.help.settings}}")
+async def _(msg: Bot.MessageSession):
+    bind_info = await _require_bind(msg)
+    save_data, _ = await _fetch_save(msg, bind_info)
+    try:
+        settings = parse_part(save_data, "settings")
+    except Exception:
+        Logger.exception()
+        await msg.finish(I18NContext("phigros.message.parse_failed"))
+    await msg.finish(settings_lines(settings))
 
 
 @phi.command("score <song_name> {{I18N:phigros.help.score}}")
 async def _(msg: Bot.MessageSession, song_name: str):
-    bind_info = await PhigrosBindInfo.get_by_sender_id(msg, create=False)
-    if not bind_info:
-        await msg.finish(I18NContext("phigros.message.user_unbound", prefix=msg.session_info.prefixes[0]))
-    if not song_info_path.exists():
-        await msg.finish(I18NContext("phigros.message.file_not_found", prefix=msg.session_info.prefixes[0]))
+    bind_info = await _require_bind(msg)
+    song_info = await _require_song_info(msg)
+    matched = match_song(song_info, song_name)
+    if not matched:
+        await msg.finish(I18NContext("phigros.message.music_not_found"))
+    song_id, info = matched
 
-    msg_chain = MessageChain.assign()
-    game_records: dict = await get_game_record(msg, bind_info.session_token)
-    for sid, record in game_records.items():
-        if remove_punctuations(record.get("name").lower()) == remove_punctuations(song_name.lower()):
-            illustration_path = pgr_assets_path / "illustration" / f"{sid.split('.')[0]}.png"
-            if illustration_path.exists():
-                msg_chain.append(Image(illustration_path))
+    save_data, _ = await _fetch_save(msg, bind_info)
+    records = get_records(save_data, song_info).get(song_id, {})
 
-            msg_chain.append(Plain(record.get("name")))
-            with open(song_info_path, "rb") as f:
-                song_info = orjson.loads(f.read())
-            diff_info = song_info.get(sid, {}).get("diff", {})
+    chain = MessageChain.assign()
+    illustration = illustration_path(song_id)
+    if illustration:
+        chain.append(Image(illustration))
+    chain.append(I18NContext("phigros.message.song.title", name=info["name"], artist=info.get("artist", "")))
+    for level in DIFF_NAMES:
+        if level not in info.get("diff", {}):
+            continue
+        record = records.get(level)
+        if not record:
+            chain.append(I18NContext("phigros.message.score.no_record", difficulty=level, constant=info["diff"][level]))
+            continue
+        rank = get_song_rank(record["score"], bool(record["fc"]))[0]
+        chain.append(
+            I18NContext(
+                "phigros.message.score.record",
+                difficulty=level,
+                constant=info["diff"][level],
+                score=record["score"],
+                acc=f"{record['acc']:.2f}",
+                rank=rank,
+                rks=f"{record['rks']:.2f}",
+            )
+        )
+    await msg.finish(chain)
 
-            for diff, diff_data in diff_info.items():
-                msg_chain.append(Plain(f"{diff} {diff_info[diff]}"))
 
-                diff_data = record.get("diff", {}).get(diff)
-                if not diff_data:
-                    msg_chain.append(I18NContext("phigros.message.score.no_record"))
-                else:
-                    score = diff_data["score"]
-                    acc = diff_data["accuracy"]
-                    full_combo = diff_data["full_combo"]
-                    rank = get_rank(score, full_combo)
-                    msg_chain.append(Plain(f"{score} {acc:.2f}% {rank}"))
-            await msg.finish(msg_chain)
-    await msg.finish(I18NContext("phigros.message.music_not_found"))
+@phi.command("song <song_name> {{I18N:phigros.help.song}}")
+async def _(msg: Bot.MessageSession, song_name: str):
+    song_info = await _require_song_info(msg)
+    matched = match_song(song_info, song_name)
+    if not matched:
+        await msg.finish(I18NContext("phigros.message.music_not_found"))
+    await msg.finish(_song_chain(*matched))
 
 
-@phi.command("update [--no-illus]", required_superuser=True)
+@phi.command("random {{I18N:phigros.help.random}}")
+async def _(msg: Bot.MessageSession):
+    song_info = await _require_song_info(msg)
+    await msg.finish(_song_chain(*Random.choice(list(song_info.items()))))
+
+
+@phi.command("update [--no-illus] {{I18N:phigros.help.update}}", required_superuser=True)
 async def _(msg: Bot.MessageSession):
     if await update_assets(not msg.parsed_msg.get("--no-illus", False)):
         await msg.finish(I18NContext("message.success"))

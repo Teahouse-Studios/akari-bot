@@ -1,9 +1,23 @@
 import inspect
-from typing import Callable
+from types import FunctionType
+from typing import Callable, TypedDict
 
 from .expectations import Expectation
 
-_REGISTRY: list[dict] = []
+
+class CaseEntry(TypedDict):
+    """由 :func:`case` 注册的测试项。"""
+
+    func: FunctionType
+    input: str | list[str] | tuple[str, ...]
+    expected: Expectation | None
+    note: str | None
+    timeout: float | None
+    file: str | None
+    line: int
+
+
+_REGISTRY: list[CaseEntry] = []
 
 
 def case(
@@ -30,8 +44,8 @@ def case(
     :param timeout: 超时时间（秒），若为 None 则无超时限制。
     """
 
-    def _decorator(fn: Callable):
-        entry = {
+    def _decorator(fn: FunctionType):
+        entry: CaseEntry = {
             "func": fn,
             "input": input_,
             "expected": expected,
@@ -49,7 +63,7 @@ def case(
     return _decorator
 
 
-def get_registry():
+def get_registry() -> list[CaseEntry]:
     return list(_REGISTRY)
 
 
@@ -59,4 +73,4 @@ def func_case(fn: Callable):
     return fn
 
 
-__all__ = ["case", "func_case", "get_registry"]
+__all__ = ["case", "func_case", "get_registry", "CaseEntry"]

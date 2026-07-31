@@ -4,14 +4,14 @@ import uuid
 import uvicorn
 
 from bots.web.api import *
-from bots.web.client import web_host, available_web_port
+from bots.web.client import web_host, available_web_port, forwarded_allow_ips
 from bots.web.context import WebContextManager
 from bots.web.info import *
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
-from core.config import Config
+from bots.web.config import WebConfig
 
 Bot.register_bot(client_name=client_name)
 
@@ -44,6 +44,7 @@ async def websocket_chat(websocket: WebSocket):
                             sender_id=sender_id,
                             sender_name="Console",
                             target_from=target_prefix,
+                            is_private=True,
                             sender_from=sender_prefix,
                             client_name=client_name,
                             reply_id=message.get("id"),
@@ -62,6 +63,7 @@ async def websocket_chat(websocket: WebSocket):
                             sender_id=sender_id,
                             sender_name="Console",
                             target_from=target_prefix,
+                            is_private=True,
                             sender_from=sender_prefix,
                             client_name=client_name,
                             message_id=message.get("id", ""),
@@ -82,11 +84,18 @@ async def websocket_chat(websocket: WebSocket):
             del Temp.data["web_chat_websocket"]
 
 
-if Config("enable", True, table_name="bot_web"):
+if WebConfig.enable:
     if available_web_port == 0:
         Logger.error("API port is disabled.")
         sys.exit(0)
     if not enable_https:
         Logger.warning("HTTPS is disabled. HTTP mode is insecure and should only be used in trusted environments.")
 
-    uvicorn.run(app, host=web_host, port=available_web_port, log_level="info", access_log=False)
+    uvicorn.run(
+        app,
+        host=web_host,
+        port=available_web_port,
+        log_level="info",
+        access_log=False,
+        forwarded_allow_ips=forwarded_allow_ips,
+    )

@@ -36,6 +36,7 @@
     "config.comments.config.petal_sign_rate": "签到获取花瓣概率，范围 0 到 1 之间，获取数量呈指数衰减。",
     "config.comments.config.quick_confirm": "是否开启消息快速确认。",
     "config.comments.config.report_targets": "上报场景列表，此处填写的值将会被识别为上报场景。（如：在机器人执行命令出错时，机器人将会把错误信息发送至对应场景）",
+    "config.comments.config.retired_clients": "已退役的客户端及其数据迁移去处，每项格式为“源客户端 -> 目标客户端”（如“QQ -> QQBot”）。退役的客户端仅保留数据迁移功能，其余命令与主动推送一律停止；只填写源客户端时表示不提供迁移去处。",
     "config.comments.config.rickroll_msg": "文字过滤检测失败时的 Rickroll 消息。",
     "config.comments.config.shuffle_rate": "玩笑的随机发生率，范围 0 到 1 之间。",
     "config.comments.config.slower_schedule": "是否开启更慢的计划任务调度器。（减少请求压力用）",
@@ -62,8 +63,6 @@
     "config.comments.webrender.enable": "是否开启 WebRender。",
     "config.comments.webrender.remote_only": "是否仅允许使用远程 WebRender 服务。",
     "config.comments.webrender.remote_web_render_url": "远程 WebRender 服务的 URL，在本地 WebRender 渲染失败时尝试请求。",
-    "config.comments.s3.s3_access_key": "S3 兼容 API 的 AccessKey。",
-    "config.comments.s3.s3_secret_key": "S3 兼容 API 的 SecretKey。",
     "config.comments.s3.s3_bucket": "S3 兼容 API 的 Bucket 名。",
     "config.comments.s3.s3_endpoint_url": "S3 兼容 API 的 Endpoint URL。",
     "config.comments.s3.s3_region": "S3 兼容 API 的地域名。",
@@ -163,6 +162,7 @@
     "parser.module.disabled.prompt": "“${module}”模块未开启，请使用“${prefix}enable ${module}”开启此模块。",
     "parser.module.disabled.to_enable": "是否开启模块并继续执行此命令？",
     "parser.module.unloaded": "“${module}”模块当前未加载，请联系开发者处理。",
+    "parser.retired.prompt": "本平台的官方实例已停止提供服务，仅保留数据迁移功能。\n请使用“${prefix}merge”将数据迁移至新的平台。",
     "parser.superuser.permission.denied": "你没有使用该命令的权限。",
     "parser.superuser.permission.denied.auth": "你没有使用该命令的权限。请联系超级管理员授权你使用此模块。",
     "petal.message.cost": "（使用了 ${amount} 片花瓣）",
@@ -194,5 +194,9 @@
     "tos.message.warning": "警告：\n根据服务条款，你已违反我们的行为准则。",
     "tos.message.warning.count": "这是第 ${current_warns} 次警告。",
     "tos.message.warning.last": "这是最后一次警告。",
-    "tos.message.warning.prompt": "如超过 ${warn_counts} 次警告，我们将会封禁你的账户。"
+    "tos.message.warning.prompt": "如超过 ${warn_counts} 次警告，我们将会封禁你的账户。",
+    "config.table.config_s3": "S3 兼容 API 的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。",
+    "config.table.secret_s3": "S3 兼容 API 的密钥部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。",
+    "config.comments.s3_secret.s3_access_key": "S3 兼容 API 的 AccessKey。",
+    "config.comments.s3_secret.s3_secret_key": "S3 兼容 API 的 SecretKey。"
 }

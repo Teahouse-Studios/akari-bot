@@ -4,9 +4,9 @@ from typing import Any
 from aiocqhttp import CQHttp
 from aiocqhttp.event import Event
 
-from core.config import Config
+from bots.onebot.config import AiocqhttpSecretConfig
 
-access_token = Config("qq_access_token", cfg_type=str, secret=True, table_name="bot_onebot")
+access_token = AiocqhttpSecretConfig.qq_access_token
 
 
 class EventModded(Event):

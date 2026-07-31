@@ -47,12 +47,12 @@ async def _(msg: Bot.MessageSession, apilink: str):
 
 @wb.command("toggle")
 async def _(msg: Bot.MessageSession):
-    use_bot_account = msg.session_info.target_info.target_data.get("use_bot_account")
+    use_bot_account = msg.session_info.target_union_info.target_data.get("use_bot_account")
     if use_bot_account:
-        await msg.session_info.target_info.edit_target_data("use_bot_account", False)
+        await msg.session_info.target_union_info.edit_target_data("use_bot_account", False)
         await msg.finish(I18NContext("wiki.message.wiki_bot.toggle.disable"))
     else:
-        await msg.session_info.target_info.edit_target_data("use_bot_account", True)
+        await msg.session_info.target_union_info.edit_target_data("use_bot_account", True)
         await msg.finish(I18NContext("wiki.message.wiki_bot.toggle.enable"))
 
 

@@ -4,7 +4,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
 from core.builtins.parser.command import CommandParser
 from core.component import module
-from core.config import Config
+from core.config.base import CoreConfig
 from core.constants.exceptions import InvalidHelpDocTypeError
 from core.database.models import ModuleStatus
 from core.loader import ModulesManager
@@ -50,7 +50,7 @@ async def config_modules(msg: Bot.MessageSession):
     modules_ = ModulesManager.return_modules_list(
         target_from=msg.session_info.target_from, client_name=msg.session_info.client_name
     )
-    enabled_modules_list = deepcopy(msg.session_info.target_info.modules)
+    enabled_modules_list = deepcopy(msg.session_info.target_union_info.modules)
     wait_config = [msg.parsed_msg.get("<module>")] + msg.parsed_msg.get("...", [])
     wait_config_list = []
     for module_ in wait_config:
@@ -95,7 +95,7 @@ async def config_modules(msg: Bot.MessageSession):
                             for r in recommend:
                                 if r not in enable_list and r not in enabled_modules_list:
                                     recommend_modules_list.append(r)
-        if await msg.session_info.target_info.config_module(enable_list, True):
+        if await msg.session_info.target_union_info.config_module(enable_list, True):
             for x in enable_list:
                 if x in enabled_modules_list:
                     msglist.append(I18NContext("core.message.module.enable.already", module=x))
@@ -146,7 +146,7 @@ async def config_modules(msg: Bot.MessageSession):
                     else:
                         disable_list.append(module_)
 
-        if await msg.session_info.target_info.config_module(disable_list, False):
+        if await msg.session_info.target_union_info.config_module(disable_list, False):
             for x in disable_list:
                 if x not in enabled_modules_list:
                     msglist.append(I18NContext("core.message.module.disable.already", module=x))
@@ -184,7 +184,7 @@ async def config_modules(msg: Bot.MessageSession):
             else:
                 extra_reload_modules = ModulesManager.search_related_module(module_, False)
                 if modules_[module_].base:
-                    if Config("allow_reload_base", False):
+                    if CoreConfig.allow_reload_base:
                         if await msg.wait_confirm(
                             I18NContext("core.message.module.reload.base.confirm"),
                             append_instruction=False,
@@ -233,7 +233,7 @@ async def config_modules(msg: Bot.MessageSession):
             [I18NContext("core.message.module.recommends", modules="\n".join(recommend_modules_list))]
             + recommend_modules_help_doc_list
         ):
-            if await msg.session_info.target_info.config_module(recommend_modules_list, True):
+            if await msg.session_info.target_union_info.config_module(recommend_modules_list, True):
                 msglist = []
                 for x in recommend_modules_list:
                     msglist.append(I18NContext("core.message.module.enable.success", module=x))

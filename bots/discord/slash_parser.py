@@ -30,6 +30,7 @@ async def ctx_to_session(ctx: discord.ApplicationContext | discord.AutocompleteC
         sender_id=sender_id,
         sender_name=(ctx.author.name if isinstance(ctx, discord.ApplicationContext) else ctx.interaction.user.name),
         target_from=target_from,
+        is_private=target_from == target_dm_channel_prefix,
         sender_from=sender_prefix,
         client_name=client_name,
         message_id=str(ctx.command.id),

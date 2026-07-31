@@ -1,21 +1,19 @@
-from attrs import define
+from core.builtins.session.features import Features
 
-from core.builtins.session.features import Features as FeaturesBase
-
-
-@define
-class Features(FeaturesBase):
-    support_image: bool = True
-    support_voice: bool = False
-    support_mention: bool = False
-    support_embed: bool = False
-    support_forward: bool = False
-    support_delete: bool = True
-    support_manage: bool = False
-    support_markdown: bool = True
-    support_reaction: bool = True
-    support_quote: bool = False
-    support_rss: bool = False
-    support_typing: bool = True
-    support_wait: bool = True
-    use_url_md_format: bool = True
+features = Features(
+    support_image=True,
+    support_voice=False,
+    support_mention=False,
+    support_embed=False,
+    support_forward=False,
+    support_delete=True,
+    support_manage=False,
+    support_markdown=True,
+    support_reaction=True,
+    support_quote=False,
+    support_rss=False,
+    support_typing=True,
+    support_wait=True,
+    support_private_msg=True,
+    use_url_md_format=True,
+)

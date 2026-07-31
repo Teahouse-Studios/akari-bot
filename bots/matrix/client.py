@@ -1,23 +1,18 @@
 import urllib3
 from nio import AsyncClient, AsyncClientConfig
 
-from core.config import Config
-from core.constants.default import matrix_homeserver_default, matrix_user_default
+from bots.matrix.config import MatrixConfig, MatrixSecretConfig
+from core.config.base import CoreSecretConfig
 from core.constants.path import assets_path
 from core.logger import Logger
 
-homeserver = Config("matrix_homeserver", matrix_homeserver_default, table_name="bot_matrix")
-user = Config("matrix_user", matrix_user_default, table_name="bot_matrix")
-device_id = Config("matrix_device_id", cfg_type=str, secret=True, table_name="bot_matrix")
-device_name = Config("matrix_device_name", cfg_type=str, table_name="bot_matrix")
-token = Config("matrix_token", cfg_type=str, secret=True, table_name="bot_matrix")
-megolm_backup_passphrase = Config(
-    "matrix_megolm_backup_passphrase",
-    cfg_type=str,
-    secret=True,
-    table_name="bot_matrix",
-)
-proxy = Config("proxy", cfg_type=str, secret=True)
+homeserver = MatrixConfig.matrix_homeserver
+user = MatrixConfig.matrix_user
+device_id = MatrixSecretConfig.matrix_device_id
+device_name = MatrixConfig.matrix_device_name
+token = MatrixSecretConfig.matrix_token
+megolm_backup_passphrase = MatrixSecretConfig.matrix_megolm_backup_passphrase
+proxy = CoreSecretConfig.proxy
 
 store_path = assets_path / "private" / "matrix" / "matrix_store"
 store_path_nio = store_path / "nio"

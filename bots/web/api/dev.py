@@ -11,7 +11,7 @@ from fastapi.responses import Response, FileResponse, PlainTextResponse
 from tortoise import Tortoise
 from tortoise.exceptions import OperationalError
 
-from bots.web.client import app
+from bots.web.client import app, get_client_ip
 from core.constants import dev_mode
 from core.database import fetch_module_db, get_model_fields, get_model_names
 from core.logger import Logger
@@ -58,7 +58,7 @@ if dev_mode:
 
     @app.post("/api/dev/database/exec")
     async def exec_sql(request: Request):
-        ip = request.client.host
+        ip = get_client_ip(request)
         try:
             verify_jwt(request)
 
@@ -122,7 +122,7 @@ if dev_mode:
 
     @app.get("/api/dev/files/download")
     def download_file(request: Request, path: str):
-        ip = request.client.host
+        ip = get_client_ip(request)
         try:
             verify_jwt(request)
 
@@ -150,7 +150,7 @@ if dev_mode:
 
     @app.delete("/api/dev/files/delete")
     def delete_file(request: Request, path: str):
-        ip = request.client.host
+        ip = get_client_ip(request)
         try:
             verify_jwt(request)
 
@@ -177,7 +177,7 @@ if dev_mode:
 
     @app.post("/api/dev/files/rename")
     async def rename_file(request: Request):
-        ip = request.client.host
+        ip = get_client_ip(request)
         try:
             verify_jwt(request)
 
@@ -212,7 +212,7 @@ if dev_mode:
 
     @app.post("/api/dev/files/upload")
     def upload_file(request: Request, path: str = Form(""), file: UploadFile = File(...)):
-        ip = request.client.host
+        ip = get_client_ip(request)
         try:
             verify_jwt(request)
 
@@ -241,7 +241,7 @@ if dev_mode:
 
     @app.post("/api/dev/files/create")
     def create_file_or_dir(request: Request, path: str = "", name: str = "", filetype: str = ""):
-        ip = request.client.host
+        ip = get_client_ip(request)
         try:
             verify_jwt(request)
 

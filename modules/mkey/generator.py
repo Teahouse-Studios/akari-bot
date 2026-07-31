@@ -99,6 +99,15 @@ class MkeyGenerator:
 
         self._data_path = Path(__file__).parent / "data"
 
+    # Dump bytes as hex, for debug output only.
+    def _hexdump(self, data: bytes, width: int = 16) -> None:
+        for offset in range(0, len(data), width):
+            chunk = data[offset : offset + width]
+            hex_part = " ".join(f"{b:02X}" for b in chunk)
+            ascii_part = "".join(chr(b) if 0x20 <= b < 0x7F else "." for b in chunk)
+            print(f"  {offset:04X}  {hex_part:<{width * 3 - 1}}  {ascii_part}")
+        print("")
+
     # Read AES key (v2).
     def _read_aes_key(self, file_name):
         file_path = self._data_path / file_name

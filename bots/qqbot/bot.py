@@ -13,18 +13,19 @@ from core.builtins.message.internal import Plain
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
 from core.client.init import client_init
-from core.config import Config
-from core.constants.default import ignored_sender_default, confirm_command_default
+from bots.qqbot.config import QQBotConfig, QQBotSecretConfig
+from core.config.base import CoreConfig
+from core.constants.default import confirm_command_default
 from core.logger import Logger
 
 Bot.register_bot(client_name=client_name)
 ctx_id = Bot.register_context_manager(QQBotContextManager)
 Bot.register_context_manager(QQBotFetchedContextManager, fetch_session=True)
 
-qqbot_appid = str(Config("qq_bot_appid", cfg_type=(int, str), table_name="bot_qqbot"))
-qqbot_openid = str(Config("qq_bot_openid", default="", table_name="bot_qqbot"))
-qqbot_secret = Config("qq_bot_secret", cfg_type=str, secret=True, table_name="bot_qqbot")
-ignored_sender = Config("ignored_sender", ignored_sender_default)
+qqbot_appid = str(QQBotConfig.qq_bot_appid)
+qqbot_openid = str(QQBotConfig.qq_bot_openid)
+qqbot_secret = QQBotSecretConfig.qq_bot_secret
+ignored_sender = CoreConfig.ignored_sender
 
 initialized = False
 
@@ -135,7 +136,7 @@ class MyClient(botpy.Client):
                     message.content = m.group(2).strip()
                     if not message.content:
                         message.content = f"{command_prefix[0]}help"
-        msg_chain = MessageChain.assign(message.content)
+        msg_chain = MessageChain.assign(re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", message.content))
         prefixes = [] if not match_atme else ["/"]
         session = await SessionInfo.assign(
             target_id=target_id,
@@ -210,6 +211,7 @@ class MyClient(botpy.Client):
             sender_id=sender_id,
             sender_name=message.author.username,
             target_from=target_direct_prefix,
+            is_private=True,
             sender_from=sender_tiny_prefix,
             client_name=client_name,
             message_id=str(message.id),
@@ -240,6 +242,7 @@ class MyClient(botpy.Client):
             sender_id=sender_id,
             sender_name=message.author.user_openid[:6],
             target_from=target_c2c_prefix,
+            is_private=True,
             sender_from=sender_prefix,
             client_name=client_name,
             message_id=str(message.id),
@@ -292,6 +295,7 @@ class MyClient(botpy.Client):
             target_id=target_id,
             sender_id=sender_id,
             target_from=target_from,
+            is_private=target_from in (target_c2c_prefix, target_direct_prefix),
             sender_from=sender_from,
             client_name=client_name,
             reply_id=interaction.data.resolved.message_id if quote_msg is None else quote_msg,
@@ -307,11 +311,11 @@ intents.public_guild_messages = True
 intents.public_messages = True
 intents.direct_message = True
 intents.interaction = True
-if Config("qq_private_bot", False, table_name="bot_qqbot"):
+if QQBotConfig.qq_private_bot:
     intents.guild_messages = True
 
 client = MyClient(intents=intents, bot_log=None)
 
-if Config("enable", False, table_name="bot_qqbot"):
+if QQBotConfig.enable:
     loop = asyncio.get_event_loop()
     loop.run_until_complete(client.start(appid=qqbot_appid, secret=qqbot_secret))

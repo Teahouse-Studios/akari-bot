@@ -2,11 +2,12 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.client.telegram import TelegramAPIServer
 
-from core.config import Config
+from bots.telegram.config import AiogramConfig, AiogramSecretConfig
+from core.config.base import CoreSecretConfig
 
-api_url = Config("telegram_api_url", cfg_type=str, table_name="bot_telegram")
-token = Config("telegram_token", cfg_type=str, secret=True, table_name="bot_telegram")
-proxy = Config("proxy", cfg_type=str, secret=True)
+api_url = AiogramConfig.telegram_api_url
+token = AiogramSecretConfig.telegram_token
+proxy = CoreSecretConfig.proxy
 
 if api_url and proxy:
     session = AiohttpSession(api=TelegramAPIServer.from_base(api_url), proxy=proxy)

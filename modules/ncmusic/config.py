@@ -1,11 +1,11 @@
-from . import ncmusic
+from core.config.decorator import on_module_config
 
 
-@ncmusic.config()
+@on_module_config("ncmusic")
 class NcmusicConfig:
-    ncmusic_enable_card: bool = True
+    ncmusic_enable_card: bool = False
 
 
-@ncmusic.config(secret=True)
+@on_module_config("ncmusic", secret=True)
 class NcmusicSecretConfig:
     ncmusic_api: str = ""

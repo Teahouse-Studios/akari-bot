@@ -1,7 +1,7 @@
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
-from core.config import Config
+from modules.ai.config import AiConfig
 from core.cooldown import CoolDown
 from core.dirty_check import check_bool, rickroll
 from core.logger import Logger
@@ -9,7 +9,7 @@ from .llm import ask_llm
 from .petal import precount_petal, count_token_petal
 from .setting import llm_api_list, llm_list, llm_su_list
 
-default_llm = Config("ai_default_llm", cfg_type=str, table_name="module_ai")
+default_llm = AiConfig.ai_default_llm
 default_llm = default_llm if default_llm in llm_list else None
 
 ai = module("ai", developers=["DoroWolf", "Dianliang233"], desc="{I18N:ai.help.desc}", doc=True, exclude_from="QQBot")
@@ -23,7 +23,7 @@ async def _(msg: Bot.MessageSession, prompt: str):
     get_llm = msg.parsed_msg.get("--llm", False)
     selected_llm = get_llm["<llm>"].lower() if get_llm else None
     use_tools = not msg.parsed_msg.get("--no-tools", False)
-    target_default_llm = msg.session_info.target_info.target_data.get("ai_default_llm")
+    target_default_llm = msg.session_info.target_union_info.target_data.get("ai_default_llm")
     is_superuser = msg.check_super_user()
 
     available_llms = llm_list + (llm_su_list if is_superuser else [])
@@ -74,7 +74,7 @@ async def _(msg: Bot.MessageSession, prompt: str):
 @ai.command("llm instruct [<instructions>] {{I18N:ai.help.llm.instruct}}")
 async def _(msg: Bot.MessageSession, llm: str):
     instructions = msg.parsed_msg.get("<instructions>")
-    await msg.session_info.sender_info.edit_sender_data("ai_custom_instructions", instructions)
+    await msg.session_info.sender_union_info.edit_sender_data("ai_custom_instructions", instructions)
     if instructions:
         await msg.finish(I18NContext("ai.message.llm.instruct.set.success"))
     else:
@@ -85,7 +85,7 @@ async def _(msg: Bot.MessageSession, llm: str):
 async def _(msg: Bot.MessageSession, llm: str):
     llm = llm.lower()
     if llm in llm_list:
-        await msg.session_info.target_info.edit_target_data("ai_default_llm", llm)
+        await msg.session_info.target_union_info.edit_target_data("ai_default_llm", llm)
         await msg.finish(I18NContext("message.success"))
     else:
         await msg.finish(I18NContext("ai.message.llm.invalid"))

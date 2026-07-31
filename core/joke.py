@@ -1,6 +1,6 @@
 import time
 
-from core.config import Config
+from core.config.base import CoreConfig
 from core.logger import Logger
 from core.utils.http import url_pattern
 from core.utils.random import Random
@@ -8,13 +8,13 @@ from core.utils.random import Random
 
 def check_apr_fools() -> bool:
     current_time = time.localtime()
-    enable_joke = Config("enable_joke", True)
+    enable_joke = CoreConfig.enable_joke
 
     return enable_joke and current_time.tm_mon == 4 and current_time.tm_mday == 1
 
 
 def shuffle_joke(text: str) -> str:
-    shuffle_rate = Config("shuffle_rate", 0.1)
+    shuffle_rate = CoreConfig.shuffle_rate
 
     if check_apr_fools():
         Logger.info(f"Raw: {text}")

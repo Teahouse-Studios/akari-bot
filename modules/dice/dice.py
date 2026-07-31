@@ -3,14 +3,14 @@ import re
 import numpy as np
 
 from core.builtins.message.internal import I18NContext
-from core.config import Config
+from modules.dice.config import DiceConfig
 from core.utils.func import is_int
 from core.utils.random import Random
 
-MAX_DICE_COUNT = Config("dice_limit", 100, table_name="module_dice")  # 一次摇动最多的骰子数量
-MAX_OUTPUT_CNT = Config("dice_output_count", 50, table_name="module_dice")  # 输出的最多数据量
-MAX_OUTPUT_LEN = Config("dice_output_len", 200, table_name="module_dice")  # 输出的最大长度
-MAX_OUTPUT_EXP = Config("dice_output_digit", 9, table_name="module_dice")  # 输出的最大位数
+MAX_DICE_COUNT = DiceConfig.dice_limit  # 一次摇动最多的骰子数量
+MAX_OUTPUT_CNT = DiceConfig.dice_output_count  # 输出的最多数据量
+MAX_OUTPUT_LEN = DiceConfig.dice_output_len  # 输出的最大长度
+MAX_OUTPUT_EXP = DiceConfig.dice_output_digit  # 输出的最大位数
 
 
 def fmt_num(num: int, sep: bool = False):

@@ -16,7 +16,7 @@ p = module("prefix", base=True, doc=True)
     required_admin=True,
 )
 async def _(msg: Bot.MessageSession):
-    prefixes = msg.session_info.target_info.target_data.get("command_prefix")
+    prefixes = msg.session_info.target_union_info.target_data.get("command_prefix")
     prefix = msg.parsed_msg.get("<prefix>", False)
     if not prefixes:
         prefixes = []
@@ -24,7 +24,7 @@ async def _(msg: Bot.MessageSession):
         if prefix:
             if prefix not in prefixes:
                 prefixes.append(prefix)
-                await msg.session_info.target_info.edit_target_data("command_prefix", prefixes)
+                await msg.session_info.target_union_info.edit_target_data("command_prefix", prefixes)
                 await msg.finish(I18NContext("core.message.prefix.add.success", prefix=prefix))
             else:
                 await msg.finish(I18NContext("core.message.prefix.add.already"))
@@ -32,12 +32,12 @@ async def _(msg: Bot.MessageSession):
         if prefix:
             if prefix in prefixes:
                 prefixes.remove(prefix)
-                await msg.session_info.target_info.edit_target_data("command_prefix", prefixes)
+                await msg.session_info.target_union_info.edit_target_data("command_prefix", prefixes)
                 await msg.finish(I18NContext("core.message.prefix.remove.success", prefix=prefix))
             else:
                 await msg.finish(I18NContext("core.message.prefix.remove.not_found"))
     elif "reset" in msg.parsed_msg:
-        await msg.session_info.target_info.edit_target_data("command_prefix", [])
+        await msg.session_info.target_union_info.edit_target_data("command_prefix", [])
         await msg.finish(I18NContext("core.message.prefix.reset"))
     elif "list" in msg.parsed_msg:
         default_msg = I18NContext("core.message.prefix.list.default", prefixes=", ".join(command_prefix))

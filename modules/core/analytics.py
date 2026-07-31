@@ -7,12 +7,12 @@ from tortoise.exceptions import DoesNotExist
 from core.builtins.bot import Bot
 from core.builtins.message.internal import Image, I18NContext, FormattedTime
 from core.component import module
-from core.config import Config
+from core.config.base import CoreConfig
 from core.database.models import AnalyticsData
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 
-enable_analytics = Config("enable_analytics", True)
+enable_analytics = CoreConfig.enable_analytics
 
 
 async def get_first_record():
@@ -26,6 +26,55 @@ async def get_first_record():
         Logger.exception()
 
 
+def local_midnight() -> datetime:
+    """
+    取本地时区的今日零点，且带上时区信息。
+
+    统计窗口按运行机器的本地日历切分。Tortoise 启用了时区支持，不带时区的时间会被一律
+    当作 UTC 处理：既触发 RuntimeWarning，也会让整个窗口偏移一个时区差，落在偏移量内的
+    记录会被算进相邻的一天。因此这里必须显式附上本地时区，微秒也要一并清零。
+
+    :return: 带本地时区的今日零点。
+    """
+    return datetime.now().astimezone().replace(hour=0, minute=0, second=0, microsecond=0)
+
+
+def annotate_points(data_x: list[str], data_y: list[int]) -> None:
+    """
+    在折线的各数据点上方标注数值，并按需抬高 y 轴上限。
+
+    标注按相对数据点的像素偏移放置，这类标注不参与坐标轴的自动缩放，默认 5% 的上边距
+    放不下最高点的标注，标注会顶出坐标区。故在绘制后量出标注实际向上占用的像素高度，
+    再据此反推 y 轴上限应抬到何处，这样与数据量级、图幅大小均无关。
+
+    :param data_x: 横轴刻度。
+    :param data_y: 纵轴数值。
+    """
+    ax = plt.gca()
+    annotations = [
+        ax.annotate(y, (x, y), textcoords="offset points", xytext=(0, 10), ha="center") for x, y in zip(data_x, data_y)
+    ]
+    figure = ax.get_figure()
+    figure.canvas.draw()
+
+    axes_height = ax.get_window_extent().height
+    # 标注相对其数据点向上占去的像素高度，另留 4 磅间距避免标注正好贴住顶边框
+    headroom = (
+        max(
+            annotation.get_window_extent().y1 - ax.transData.transform((0, y))[1]
+            for annotation, y in zip(annotations, data_y)
+        )
+        + 4 * figure.dpi / 72
+    )
+    if headroom >= axes_height:
+        return
+
+    bottom, top = ax.get_ylim()
+    # 令最高点落在「坐标区顶端往下 headroom 像素」处；取较大者以保证只抬高、不压缩
+    needed_top = bottom + (max(data_y) - bottom) * axes_height / (axes_height - headroom)
+    ax.set_ylim(bottom, max(top, needed_top))
+
+
 ana = module("analytics", alias="ana", required_superuser=True, base=True, doc=True)
 
 
@@ -37,8 +86,8 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(I18NContext("core.message.analytics.none"))
         get_counts = await AnalyticsData.all().count()
 
-        new = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1)
-        old = datetime.now().replace(hour=0, minute=0, second=0)
+        old = local_midnight()
+        new = old + timedelta(days=1)
         get_counts_today = await AnalyticsData.get_count_by_times(new, old)
 
         await msg.finish(
@@ -69,9 +118,11 @@ async def _(msg: Bot.MessageSession):
                 first_record=first_record,
             )
         data_ = {}
+        # 零点在循环外取一次：逐次取会在跨零点时把前后两天的边界混在一起
+        midnight = local_midnight()
         for d in range(30):
-            new = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1) - timedelta(days=30 - d - 1)
-            old = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1) - timedelta(days=30 - d)
+            old = midnight - timedelta(days=29 - d)
+            new = old + timedelta(days=1)
             get_ = await AnalyticsData.get_count_by_times(new, old, module_)
             data_[old.day] = get_
         data_x = []
@@ -86,14 +137,7 @@ async def _(msg: Bot.MessageSession):
         plt.tick_params(axis="x", labelrotation=45, which="major", labelsize=10)
 
         plt.gca().yaxis.get_major_locator().set_params(integer=True)
-        for xitem, yitem in zip(data_x, data_y):
-            plt.annotate(
-                yitem,
-                (xitem, yitem),
-                textcoords="offset points",
-                xytext=(0, 10),
-                ha="center",
-            )
+        annotate_points(data_x, data_y)
         path = f"{random_cache_path()}.png"
         plt.savefig(path)
         plt.close()
@@ -119,17 +163,11 @@ async def _(msg: Bot.MessageSession):
                 first_record=first_record,
             )
         data_ = {}
+        # 本月一日在循环外取一次：逐次取会在跨零点时把前后两个月的边界混在一起
+        first_day = local_midnight().replace(day=1)
         for m in range(12):
-            new = (
-                datetime.now().replace(day=1, hour=0, minute=0, second=0)
-                + relativedelta(months=1)
-                - relativedelta(months=12 - m - 1)
-            )
-            old = (
-                datetime.now().replace(day=1, hour=0, minute=0, second=0)
-                + relativedelta(months=1)
-                - relativedelta(months=12 - m)
-            )
+            old = first_day - relativedelta(months=11 - m)
+            new = old + relativedelta(months=1)
             get_ = await AnalyticsData.get_count_by_times(new, old, module_)
             data_[old.month] = get_
         data_x = []
@@ -144,14 +182,7 @@ async def _(msg: Bot.MessageSession):
         plt.tick_params(axis="x", labelrotation=45, which="major", labelsize=10)
 
         plt.gca().yaxis.get_major_locator().set_params(integer=True)
-        for xitem, yitem in zip(data_x, data_y):
-            plt.annotate(
-                yitem,
-                (xitem, yitem),
-                textcoords="offset points",
-                xytext=(0, 10),
-                ha="center",
-            )
+        annotate_points(data_x, data_y)
         path = f"{random_cache_path()}.png"
         plt.savefig(path)
         plt.close()
@@ -161,7 +192,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @ana.command("modules [<rank>]")
-async def _(msg: Bot.MessageSession, rank: int = None):
+async def _(msg: Bot.MessageSession, rank: int | None = None):
     rank = rank if rank and rank > 0 else 30
     if enable_analytics:
         try:

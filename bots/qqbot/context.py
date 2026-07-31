@@ -3,16 +3,18 @@ import html
 
 import orjson
 from botpy.api import BotAPI
+from botpy.errors import ServerError
 from botpy.http import Route
 from botpy.interaction import Interaction
 from botpy.message import BaseMessage, C2CMessage, DirectMessage, GroupMessage, Message
 from botpy.types.message import Media, Reference, MarkdownPayload, KeyboardPayload
 from botpy.types.inline import Keyboard, Button, KeyboardRow, RenderData, Action, Permission
-from tenacity import retry, wait_fixed, stop_after_attempt
+from tenacity import retry, retry_if_exception, wait_fixed, stop_after_attempt
 
-from bots.qqbot.features import Features
+from bots.qqbot.features import features as qqbot_features
 from bots.qqbot.info import (
     client_name,
+    sender_tiny_prefix,
     target_group_prefix,
     target_direct_prefix,
     target_guild_prefix,
@@ -23,16 +25,33 @@ from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, MentionElement
 from core.builtins.message.internal import I18NContext
 from core.builtins.session.context import ContextManager
+from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
-from core.config import Config
+from bots.qqbot.config import QQBotConfig
 from core.logger import Logger
 from core.utils.s3 import S3Storage
 
-qq_typing_emoji = str(Config("qq_typing_emoji", 181, (str, int), table_name="bot_qqbot"))
-qq_limited_emoji = str(Config("qq_limited_emoji", 10060, (str, int), table_name="bot_qqbot"))
-qq_use_markdown = Config("qq_use_markdown", False, bool, table_name="bot_qqbot")
+qq_typing_emoji = str(QQBotConfig.qq_typing_emoji)
+qq_limited_emoji = str(QQBotConfig.qq_limited_emoji)
+qq_use_markdown = QQBotConfig.qq_use_markdown
 
 global_seq = 1
+
+# 平台判定同一 msg_seq 重复投递时的报错文案
+MSG_DEDUP_ERROR = "消息被去重，请检查请求msgseq"
+
+
+def is_msg_dedup_error(e: BaseException) -> bool:
+    """
+    判断异常是否为平台的消息去重报错。
+
+    仅此一种错误值得重试：每次发送前 ``global_seq`` 都会自增，换一个序号重发即可成功。
+    其余 ServerError（如参数非法、频率限制、权限不足）重试同样会失败，
+    应当原样抛出交由上层处理，既不该重试，也不该被静默吞掉。
+
+    :param e: 待判断的异常。
+    """
+    return isinstance(e, ServerError) and e.msgs == MSG_DEDUP_ERROR
 
 
 # 额外添加平台接口支持但 SDK 不支持的方法
@@ -76,7 +95,8 @@ class ModdedBotAPI(BotAPI):
 
 class QQBotContextManager(ContextManager):
     context: dict[str, BaseMessage] = {}
-    features: Features = Features()
+    features: Features = qqbot_features
+    _tmp = {}
 
     @classmethod
     def add_context(cls, session_info: SessionInfo, context: BaseMessage):
@@ -84,13 +104,32 @@ class QQBotContextManager(ContextManager):
 
         context._api = ModdedBotAPI(http=client.http)
         cls.context[session_info.session_id] = context
+        cls._tmp[session_info.session_id] = {}
+
+    @classmethod
+    def del_context(cls, session_info: SessionInfo):
+        """
+        删除会话的上下文。
+
+        只有当上下文未被标记为保持时才会删除。如果上下文被保持，则跳过删除。
+
+        :param session_info: 会话信息对象
+        """
+        # 检查上下文是否存在且未被保持
+        if session_info.session_id in cls.context and session_info.session_id not in cls.context_marks_hold:
+            del cls.context[session_info.session_id]
+            del cls._tmp[session_info.session_id]
+            Logger.trace(f"Context for session {session_info.session_id} deleted.")
+        # 如果上下文被保持，记录日志但不删除
+        if session_info.session_id in cls.context_marks_hold:
+            Logger.trace(f"Context for session {session_info.session_id} is held, skipping deletion.")
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         # 这里可以添加权限检查的逻辑
-        ctx: BaseMessage = cls.context.get(session_info.session_id)
+        ctx: BaseMessage | None = cls.context.get(session_info.session_id)
 
         if ctx:
             if isinstance(ctx, Message):
@@ -114,7 +153,7 @@ class QQBotContextManager(ContextManager):
     async def send_message(
         cls,
         session_info: SessionInfo,
-        message: MessageChain,
+        message: MessageChain | MessageNodes,
         quote: bool = True,
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
@@ -122,7 +161,10 @@ class QQBotContextManager(ContextManager):
     ) -> list[str]:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
-        ctx: BaseMessage = cls.context.get(session_info.session_id)
+        ctx: BaseMessage | None = cls.context.get(session_info.session_id)
+        _tmp = cls._tmp.get(session_info.session_id)
+        if _tmp:
+            _tmp["send_message_called"] = True
         msg_ids = []
         global global_seq
 
@@ -136,7 +178,7 @@ class QQBotContextManager(ContextManager):
             retry_attempt = stop_after_attempt(3)
             retry_wait = wait_fixed(3)
 
-        @retry(stop=retry_attempt, wait=retry_wait, reraise=True)
+        @retry(stop=retry_attempt, wait=retry_wait, retry=retry_if_exception(is_msg_dedup_error), reraise=True)
         async def send_msg():
             global global_seq
 
@@ -312,7 +354,7 @@ class QQBotContextManager(ContextManager):
                         send_img = await image_1.get() if image_1 else None
                         msg = url_filter(msg)
                         msg = "" if not msg else msg
-                        await client.api.post_message(
+                        send = await client.api.post_message(
                             channel_id=session_info.get_common_target_id(),
                             content=msg,
                             file_image=send_img,
@@ -320,13 +362,17 @@ class QQBotContextManager(ContextManager):
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
                         if image_1:
                             Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
+                        if send:
+                            msg_ids.append(send["id"])
                         if images:
                             for img in images:
                                 send_img = await img.get()
-                                await client.api.post_message(
+                                send = await client.api.post_message(
                                     channel_id=session_info.get_common_target_id(), file_image=send_img
                                 )
                                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
+                                if send:
+                                    msg_ids.append(send["id"])
                     elif session_info.target_from == target_direct_prefix:
                         if images:
                             image_1 = images[0]
@@ -334,19 +380,23 @@ class QQBotContextManager(ContextManager):
                         send_img = await image_1.get() if image_1 else None
                         msg = url_filter(msg)
                         msg = "" if not msg else msg
-                        await client.api.post_dms(
+                        send = await client.api.post_dms(
                             guild_id=session_info.get_common_target_id(), content=msg, file_image=send_img
                         )
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
                         if image_1:
                             Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
+                        if send:
+                            msg_ids.append(send["id"])
                         if images:
                             for img in images:
                                 send_img = await img.get()
-                                await client.api.post_dms(
+                                send = await client.api.post_dms(
                                     guild_id=session_info.get_common_target_id(), file_image=send_img
                                 )
                                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
+                                if send:
+                                    msg_ids.append(send["id"])
                     elif session_info.target_from == target_group_prefix:
                         msg = "" if not msg else msg
                         if images:
@@ -430,7 +480,7 @@ class QQBotContextManager(ContextManager):
                                 if send:
                                     msg_ids.append(send["id"])
 
-        @retry(stop=retry_attempt, wait=retry_wait, reraise=True)
+        @retry(stop=retry_attempt, wait=retry_wait, retry=retry_if_exception(is_msg_dedup_error), reraise=True)
         async def send_msg_markdown():
             global global_seq
             texts = []
@@ -613,6 +663,47 @@ class QQBotContextManager(ContextManager):
         return msg_ids
 
     @classmethod
+    async def send_private_msg(
+        cls,
+        session_info: SessionInfo,
+        user_id: str,
+        message: MessageChain | MessageNodes,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> list[str]:
+        from bots.qqbot.bot import client
+
+        client.api = ModdedBotAPI(http=client.http)
+        uid = user_id.split("|")[-1]
+
+        try:
+            if session_info.target_from == target_direct_prefix:
+                # 当前已处于私信会话中，无需另行创建
+                target_id, target_from = session_info.target_id, target_direct_prefix
+            elif user_id.startswith(sender_tiny_prefix):
+                # 频道用户的私信须先以来源频道创建私信会话，取得专用的 guild_id 后方可发送
+                guild_id = session_info.target_id.split("|")[2]
+                dms = await client.api.create_dms(guild_id=guild_id, user_id=uid)
+                target_id = f"{target_direct_prefix}|{dms['guild_id']}"
+                target_from = target_direct_prefix
+            else:
+                # 群成员与单聊用户共用同一个 openid，直接经由单聊通道发送
+                target_id = f"{target_c2c_prefix}|{uid}"
+                target_from = target_c2c_prefix
+
+            # 显式指定基类：主动消息所用的子类会将发送放入冷却队列并返回 None，无法取得消息 ID
+            return await QQBotContextManager.send_message(
+                cls.derive_private_session(session_info, target_id, target_from),
+                message,
+                quote=False,
+                enable_parse_message=enable_parse_message,
+                enable_split_image=enable_split_image,
+            )
+        except Exception:
+            Logger.exception(f"Failed to send private message to {user_id}: ")
+            return []
+
+    @classmethod
     async def delete_message(
         cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None
     ) -> None:
@@ -732,14 +823,18 @@ class QQBotContextManager(ContextManager):
                     while not resolved:
                         await asyncio.sleep(1)
                         _t += 1
+                        _tmp = cls._tmp.get(session.session_id)
                         if _t >= 5 and not sended:
-                            try:
-                                typing_msg = await cls.send_message(
-                                    session, MessageChain.assign(I18NContext("message.typing")), _ignore_retries=True
-                                )
-                                Logger.debug("typing message sent:" + str(typing_msg))
-                            except Exception:
-                                Logger.exception("Failed to send group typing message")
+                            if "send_message_called" not in _tmp:
+                                try:
+                                    typing_msg = await cls.send_message(
+                                        session,
+                                        MessageChain.assign(I18NContext("message.typing")),
+                                        _ignore_retries=True,
+                                    )
+                                    Logger.debug("typing message sent:" + str(typing_msg))
+                                except Exception:
+                                    Logger.exception("Failed to send group typing message")
                             sended = True
 
                     if typing_msg:
@@ -797,19 +892,34 @@ class QQBotFetchedContextManager(QQBotContextManager):
         enable_parse_message=True,
         enable_split_image=True,
         _ignore_retries: bool = False,
-    ) -> None:
+    ) -> list[str]:
+        # 主动消息须按冷却排队发出，但调用方需要取得真实的消息 ID 才能判断本跳是否送达，
+        # 因此入队的是「任务 + future」，待实际发送完成后再回传结果。
+        future = asyncio.get_running_loop().create_future()
         append_tsk = (
-            _tasks_high_priority if session_info.target_info.target_data.get("in_post_whitelist", False) else _tasks
+            _tasks_high_priority
+            if session_info.target_union_info.target_data.get("in_post_whitelist", False)
+            else _tasks
         )
-        append_tsk.append(
-            super().send_message(
+        append_tsk.append((future, session_info, message, quote, enable_parse_message, _ignore_retries))
+        return await future
+
+    @staticmethod
+    async def _run_task(task: tuple) -> None:
+        future, session_info, message, quote, enable_parse_message, _ignore_retries = task
+        try:
+            result = await QQBotContextManager.send_message(
                 session_info,
                 message,
                 quote=quote,
                 enable_parse_message=enable_parse_message,
                 _ignore_retries=_ignore_retries,
             )
-        )
+        except Exception:
+            Logger.exception(f"Failed to post message to {session_info.target_id}: ")
+            result = []
+        if not future.done():
+            future.set_result(result)
 
     @staticmethod
     async def process_tasks():
@@ -818,22 +928,14 @@ class QQBotFetchedContextManager(QQBotContextManager):
 
         while True:
             if _tasks_high_priority:
-                task = _tasks_high_priority.pop(0)
-                try:
-                    await task
-                except Exception:
-                    Logger.exception("Error occurred while processing high-priority task: ")
+                await QQBotFetchedContextManager._run_task(_tasks_high_priority.pop(0))
                 cd = 1
                 Logger.info(
                     f"Processed a high-priority task in QQBotFetchedContextManager, waiting cooldown for {cd}s..."
                 )
                 await asyncio.sleep(cd)
             elif _tasks:
-                task = _tasks.pop(0)
-                try:
-                    await task
-                except Exception:
-                    Logger.exception("Error occurred while processing task: ")
+                await QQBotFetchedContextManager._run_task(_tasks.pop(0))
                 cd = 1.5
                 Logger.info(f"Processed a task in QQBotFetchedContextManager, waiting cooldown for {cd}s...")
                 await asyncio.sleep(cd)

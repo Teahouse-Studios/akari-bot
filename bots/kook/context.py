@@ -5,11 +5,12 @@ from khl import Message, MessageTypes, PublicChannel, User
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
 from core.builtins.session.context import ContextManager
+from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 from .client import bot
 from .client import token as kook_token
-from .features import Features
+from .features import features as kook_features
 from .info import client_name, target_group_prefix, target_person_prefix
 
 kook_base = "https://www.kookapp.cn"
@@ -43,7 +44,7 @@ async def get_channel(session_info: SessionInfo) -> PublicChannel | User | None:
 
 class KOOKContextManager(ContextManager):
     context: dict[str, Message] = {}
-    features: Features = Features()
+    features: Features = kook_features
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
@@ -53,8 +54,8 @@ class KOOKContextManager(ContextManager):
             channel = await bot.client.fetch_public_channel(session_info.get_common_target_id())
             author = session_info.get_common_sender_id()
         else:
-            ctx: Message = cls.context.get(session_info.session_id)
-            Logger.warning(str(ctx.ctx.channel.id))
+            ctx: Message = cls.context[session_info.session_id]
+            Logger.info("Identifying for channel: " + str(ctx.ctx.channel.id))
             channel = await bot.client.fetch_public_channel(ctx.ctx.channel.id)
             author = ctx.author.id
         guild = await bot.client.fetch_guild(channel.guild_id)
@@ -78,7 +79,7 @@ class KOOKContextManager(ContextManager):
     ) -> list[str]:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
-        ctx: Message = cls.context.get(session_info.session_id)
+        ctx: Message | None = cls.context.get(session_info.session_id)
         _channel = None
         if not ctx:
             _channel = await get_channel(session_info)
@@ -88,6 +89,7 @@ class KOOKContextManager(ContextManager):
         msg_ids = []
         if isinstance(message, MessageNodes):
             Logger.error("This session does not support message nodes, check if bug exists.")
+            return []
 
         for x in message.as_sendable(session_info, parse_message=enable_parse_message):
             if isinstance(x, PlainElement):
@@ -148,6 +150,31 @@ class KOOKContextManager(ContextManager):
                     msg_ids.append(str(send_.get("msg_id", "")))
 
         return msg_ids
+
+    @classmethod
+    async def send_private_msg(
+        cls,
+        session_info: SessionInfo,
+        user_id: str,
+        message: MessageChain | MessageNodes,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> list[str]:
+        # KOOK 的私聊场景以用户为频道，get_channel 据此取得 User 对象
+        uid = user_id.split("|")[-1]
+        try:
+            msg_ids = await KOOKContextManager.send_message(
+                cls.derive_private_session(session_info, f"{target_person_prefix}|{uid}", target_person_prefix),
+                message,
+                quote=False,
+                enable_parse_message=enable_parse_message,
+                enable_split_image=enable_split_image,
+            )
+            # 接口未返回 msg_id 时上游会填入空串，此处过滤以免将失败判定为成功
+            return [msg_id for msg_id in msg_ids if msg_id]
+        except Exception:
+            Logger.exception(f"Failed to send private message to {user_id}: ")
+            return []
 
     @classmethod
     async def delete_message(

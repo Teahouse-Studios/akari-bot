@@ -124,7 +124,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @emojimix.command("<emoji1> [<emoji2>] {{I18N:emojimix.help}}")
-async def _(msg: Bot.MessageSession, emoji1: str, emoji2: str = None):
+async def _(msg: Bot.MessageSession, emoji1: str, emoji2: str | None = None):
     # 兼容性处理
     if "+" in emoji1:
         emojis = emoji1.split("+", 1)
@@ -165,7 +165,7 @@ async def _(msg: Bot.MessageSession, emoji1: str, emoji2: str = None):
 
 
 @emojimix.command("list [<emoji>] {{I18N:emojimix.help.list}}")
-async def _(msg: Bot.MessageSession, emoji: str = None):
+async def _(msg: Bot.MessageSession, emoji: str | None = None):
     supported_emojis = mixer.list_supported_emojis(emoji)
     if emoji:
         if supported_emojis:

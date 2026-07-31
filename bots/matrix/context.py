@@ -6,24 +6,25 @@ import nio
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
 from core.builtins.session.context import ContextManager
+from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 from core.utils.image import image_split
 from .client import matrix_bot, homeserver_host
-from .features import Features
-from .info import client_name
+from .features import features as matrix_features
+from .info import client_name, target_prefix
 
 
 class MatrixContextManager(ContextManager):
     context: dict[str, tuple[nio.MatrixRoom, nio.RoomMessageFormatted]] = {}
-    features: Features = Features()
+    features: Features = matrix_features
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         # 这里可以添加权限检查的逻辑
-        ctx: tuple[nio.MatrixRoom, nio.RoomMessageFormatted] = cls.context.get(session_info.session_id)
+        ctx: tuple[nio.MatrixRoom, nio.RoomMessageFormatted] | None = cls.context.get(session_info.session_id)
         if ctx:
             room, event = ctx
             room_id = room.room_id if room else session_info.get_common_target_id()
@@ -79,12 +80,13 @@ class MatrixContextManager(ContextManager):
         #     raise ValueError("Session not found in context")
 
         msg_ids = []
-        ctx: tuple[nio.MatrixRoom, nio.RoomMessageFormatted] = cls.context.get(session_info.session_id)
+        ctx: tuple[nio.MatrixRoom, nio.RoomMessageFormatted] | None = cls.context.get(session_info.session_id)
         room, event = None, None
         if ctx:
             room, event = ctx
         if isinstance(message, MessageNodes):
             Logger.error("This session does not support message nodes, check if bug exists.")
+            return []
         for x in message.as_sendable(session_info, parse_message=enable_parse_message):
 
             async def _send_msg(content):
@@ -268,6 +270,70 @@ class MatrixContextManager(ContextManager):
                     await _send_msg(content)
         return msg_ids
 
+    @staticmethod
+    async def _resolve_matrix_room_(session_info: SessionInfo) -> nio.MatrixRoom | None:
+        target_id: str = session_info.get_common_target_id()
+        if target_id.startswith("@"):
+            # find private messaging room
+            for room in matrix_bot.rooms:
+                room = matrix_bot.rooms[room]
+                if room.join_rule == "invite" and (
+                    (room.member_count == 2 and target_id in room.users)
+                    or (room.member_count == 1 and target_id in room.invited_users)
+                ):
+                    resp = await matrix_bot.room_get_state_event(room.room_id, "m.room.member", target_id)
+                    if resp is nio.ErrorResponse:
+                        pass
+                    elif resp.content.get("membership") in ["join", "leave", "invite"]:
+                        return room
+            Logger.info(f"Could not find any exist private room for {target_id}, trying to create one.")
+            try:
+                resp = await matrix_bot.room_create(
+                    visibility=nio.RoomVisibility.private,
+                    is_direct=True,
+                    preset=nio.RoomPreset.trusted_private_chat,
+                    invite=[target_id],
+                )
+                room = resp.room_id
+                Logger.info(f"Created private messaging room for {target_id}: {room}")
+                return matrix_bot.rooms[room]
+            except Exception as e:
+                Logger.error(f"Failed to create room for {target_id}: {e}")
+                return None
+
+    @classmethod
+    async def send_private_msg(
+        cls,
+        session_info: SessionInfo,
+        user_id: str,
+        message: MessageChain | MessageNodes,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> list[str]:
+        # Matrix 没有独立的私聊通道，私信实为仅含双方的房间，此处先查找该房间，不存在则创建
+        mxid = user_id.split("|")[-1]
+        if not mxid.startswith("@"):
+            mxid = f"@{mxid}"
+
+        try:
+            room = await cls._resolve_matrix_room_(
+                cls.derive_private_session(session_info, f"{target_prefix}|{mxid}", target_prefix)
+            )
+            if not room:
+                Logger.warning(f"Could not resolve private room for {user_id}, skipping private message send.")
+                return []
+
+            return await MatrixContextManager.send_message(
+                cls.derive_private_session(session_info, f"{target_prefix}|{room.room_id}", target_prefix),
+                message,
+                quote=False,
+                enable_parse_message=enable_parse_message,
+                enable_split_image=enable_split_image,
+            )
+        except Exception:
+            Logger.exception(f"Failed to send private message to {user_id}: ")
+            return []
+
     @classmethod
     async def delete_message(
         cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None
@@ -365,37 +431,6 @@ class MatrixFetchedContextManager(MatrixContextManager):
     用于获取会话信息的上下文管理器。
     该管理器在处理消息时会自动获取会话信息。
     """
-
-    @staticmethod
-    async def _resolve_matrix_room_(session_info: SessionInfo) -> nio.MatrixRoom | None:
-        target_id: str = session_info.get_common_target_id()
-        if target_id.startswith("@"):
-            # find private messaging room
-            for room in matrix_bot.rooms:
-                room = matrix_bot.rooms[room]
-                if room.join_rule == "invite" and (
-                    (room.member_count == 2 and target_id in room.users)
-                    or (room.member_count == 1 and target_id in room.invited_users)
-                ):
-                    resp = await matrix_bot.room_get_state_event(room.room_id, "m.room.member", target_id)
-                    if resp is nio.ErrorResponse:
-                        pass
-                    elif resp.content.get("membership") in ["join", "leave", "invite"]:
-                        return room
-            Logger.info(f"Could not find any exist private room for {target_id}, trying to create one.")
-            try:
-                resp = await matrix_bot.room_create(
-                    visibility=nio.RoomVisibility.private,
-                    is_direct=True,
-                    preset=nio.RoomPreset.trusted_private_chat,
-                    invite=[target_id],
-                )
-                room = resp.room_id
-                Logger.info(f"Created private messaging room for {target_id}: {room}")
-                return matrix_bot.rooms[room]
-            except Exception as e:
-                Logger.error(f"Failed to create room for {target_id}: {e}")
-                return None
 
     @classmethod
     async def send_message(

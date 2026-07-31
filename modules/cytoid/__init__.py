@@ -16,12 +16,12 @@ ctd = module(
 
 
 @ctd.command("profile [<username>] {{I18N:cytoid.help.profile}}")
-async def _(msg: Bot.MessageSession, username: str = None):
+async def _(msg: Bot.MessageSession, username: str | None = None):
     await cytoid_profile(msg, username)
 
 
 @ctd.command("b30 [<username>] {{I18N:cytoid.help.b30}}", "r10 [<username>] {{I18N:cytoid.help.r10}}")
-async def _(msg: Bot.MessageSession, username: str = None):
+async def _(msg: Bot.MessageSession, username: str | None = None):
     if "b30" in msg.parsed_msg:
         query = "b30"
     elif "r10" in msg.parsed_msg:
@@ -51,7 +51,7 @@ async def _(msg: Bot.MessageSession, username: str):
     code: str = username.lower()
     getcode = await get_profile_name(code)
     if getcode:
-        await CytoidBindInfo.set_bind_info(msg.session_info.sender_id, getcode[0])
+        await CytoidBindInfo.set_bind_info(msg.session_info.sender_union_id, getcode[0])
         if getcode[1]:
             m = f"{getcode[1]}({getcode[0]})"
         else:
@@ -63,5 +63,5 @@ async def _(msg: Bot.MessageSession, username: str):
 
 @ctd.command("unbind {{I18N:cytoid.help.unbind}}")
 async def _(msg: Bot.MessageSession):
-    await CytoidBindInfo.remove_bind_info(msg.session_info.sender_id)
+    await CytoidBindInfo.remove_bind_info(msg.session_info.sender_union_id)
     await msg.finish(I18NContext("cytoid.message.unbind.success"))

@@ -1,8 +1,8 @@
 import discord
 
-from core.config import Config
+from core.config.base import CoreSecretConfig
 
-proxy = Config("proxy", cfg_type=str, secret=True)
+proxy = CoreSecretConfig.proxy
 
 intents = discord.Intents.default()
 intents.members = True

@@ -6,7 +6,7 @@ from core.builtins.message.elements import PlainElement, ImageElement, MentionEl
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession, I18NContext
 from core.builtins.utils import confirm_command
-from core.config import Config
+from core.config.base import CoreConfig
 from core.constants.exceptions import SessionFinished
 
 
@@ -23,6 +23,8 @@ class MockMessageSession(MessageSession):
         self.matched_msg = None
         self.sent = []
         self.action = []
+        # 记录随消息下发的按钮数据，供测试断言使用；不计入 action 以免影响数量类断言。
+        self.buttons = []
         self.parent_session = parent_session
 
     async def async_init(self, msg):
@@ -44,7 +46,12 @@ class MockMessageSession(MessageSession):
         enable_parse_message=True,
         enable_split_image=True,
         callback=None,
+        callback_id=None,
+        button_data=None,
     ):
+        if button_data:
+            self.buttons.extend(button_data)
+
         message = get_message_chain(self.session_info, chain=message_chain)
 
         for x in message.as_sendable(self.session_info, parse_message=enable_parse_message):
@@ -70,9 +77,13 @@ class MockMessageSession(MessageSession):
         enable_parse_message=True,
         enable_split_image=True,
         callback=None,
+        callback_id=None,
+        button_data=None,
     ):
         if message_chain:
-            await self.send_message(message_chain)
+            await self.send_message(message_chain, button_data=button_data)
+        elif button_data:
+            self.buttons.extend(button_data)
         raise SessionFinished
 
     async def send_direct_message(
@@ -83,6 +94,19 @@ class MockMessageSession(MessageSession):
         enable_split_image=True,
     ):
         await self.send_message(message_chain)
+
+    async def send_private_message(
+        self,
+        message_chain,
+        user_id=None,
+        disable_secret_check=False,
+        enable_parse_message=True,
+        enable_split_image=True,
+    ):
+        user_id = user_id or self.session_info.sender_id
+        self.action.append(f"(private message to {user_id})")
+        await self.send_message(message_chain)
+        return ["0"]
 
     async def delete(self, reason=None):
         self.action.append(f"(delete message{f': {reason}' if reason else ''})")
@@ -151,7 +175,7 @@ class MockMessageSession(MessageSession):
     async def wait_confirm(
         self, message_chain=None, quote=True, delete=True, timeout=120, append_instruction=True, no_confirm_action=True
     ):
-        if Config("no_confirm", False):
+        if CoreConfig.no_confirm:
             return no_confirm_action
 
         if message_chain:
@@ -193,6 +217,7 @@ class MockMessageSession(MessageSession):
         delete=False,
         timeout=120,
         append_instruction=True,
+        possibly_choices=None,
     ):
         confirm_prompt = None
         if message_chain:

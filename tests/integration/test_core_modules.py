@@ -93,6 +93,9 @@ async def test_whoami(tester: Tester):
     """whoami 命令测试"""
     await tester.integrate("~whoami", Contains("ID"), "whoami 应显示用户 ID")
     await tester.integrate("~whoami", Contains("TEST|0"), "whoami 应显示 TEST|0")
+    await tester.integrate("~whoami", Contains("账号组"), "whoami 应显示所属账号组")
+    await tester.integrate("~whoami", Contains("会话组"), "whoami 应显示所属会话组")
+    await tester.integrate("~whoami", Contains("TEST|Console|0"), "whoami 应列出账号组内已绑定的会话")
 
     return tester
 

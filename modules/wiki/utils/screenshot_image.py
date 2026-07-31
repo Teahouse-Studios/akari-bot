@@ -16,7 +16,7 @@ from .mapping import infobox_elements
 
 async def generate_screenshot_v2(
     page_link: str,
-    section: str = None,
+    section: str | None = None,
     allow_special_page=False,
     content_mode=False,
     element=None,

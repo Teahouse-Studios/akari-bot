@@ -74,7 +74,7 @@ Only Nintendo Switch XXXX-YYYY formatted error codes are supported."
         return True
 
     @staticmethod
-    def check_meme(err: str) -> str:
+    def check_meme(err: str) -> str | None:
         memes = {
             "0xdeadbeef": "nintendo_err.message.meme.0xdeadbeef",
             "0xdeadbabe": "nintendo_err.message.meme.0xdeadbabe",

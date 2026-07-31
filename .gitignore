@@ -13,11 +13,13 @@ assets/bots_list.json
 assets/discord_slash_list.json
 assets/modules_list.json
 assets/schedulers_list.json
+assets/union_merge_logs/*
 assets/modules/ai*
 assets/modules/arcaea*
 assets/modules/maimai*
 assets/modules/phigros*
 assets/private*
+assets/retired/*
 bots/test/*
 junit.xml
 modules/test/*
@@ -42,3 +44,4 @@ generated_docs/*
 .mimocode/*
 .claude/*
 .claude/skills/akaribot-dev/SKILL.md
+CLAUDE.md

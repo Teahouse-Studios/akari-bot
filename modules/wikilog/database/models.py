@@ -1,12 +1,14 @@
 from tortoise import fields
 
 from core.database.base import DBModel
+from core.database.models import UNION_SCOPE_TARGET
 
 table_prefix = "module_wikilog_"
 
 
 class WikiLogTargetSetInfo(DBModel):
-    target_id = fields.CharField(max_length=512, primary_key=True)
+    union_scope = UNION_SCOPE_TARGET
+    union_id = fields.CharField(max_length=512, primary_key=True)
     infos = fields.JSONField(default={})
 
     class Meta:
@@ -113,6 +115,9 @@ class WikiLogTargetSetInfo(DBModel):
 
     @classmethod
     async def return_all_data(cls):
+        """
+        返回全部配置，键为场景 union ID（推送时需展开为该 union 下的全部平台会话 ID）。
+        """
         all_data = await cls.all()
-        data_d = {x.target_id: x.infos for x in all_data}
+        data_d = {x.union_id: x.infos for x in all_data}
         return data_d

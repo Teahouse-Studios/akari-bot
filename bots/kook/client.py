@@ -1,7 +1,7 @@
 from khl import Bot
 
-from core.config import Config
+from bots.kook.config import KookSecretConfig
 
-token = Config("kook_token", cfg_type=str, secret=True, table_name="bot_kook")
+token = KookSecretConfig.kook_token
 
 bot = Bot(token=token)

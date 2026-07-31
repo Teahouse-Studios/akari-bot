@@ -3,32 +3,37 @@ import asyncio
 import discord
 
 from bots.discord.context import DiscordContextManager
-from bots.discord.features import SlashFeatures, Features
+from bots.discord.features import slash_features
 from bots.discord.info import client_name, target_channel_prefix
 from bots.discord.utils import convert_embed
-from core.builtins.message.chain import MessageChain
+from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement, EmbedElement
+from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 
 
 class DiscordSlashContextManager(DiscordContextManager):
     context: dict[str, discord.ApplicationContext] = {}
-    features: Features = SlashFeatures()
+    features: Features = slash_features
     typing_flags: dict[str, asyncio.Event] = {}
 
     @classmethod
     async def send_message(
         cls,
         session_info: SessionInfo,
-        message: MessageChain,
+        message: MessageChain | MessageNodes,
         quote: bool = True,
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
-    ):
+    ) -> list[str]:
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
-        ctx: discord.ApplicationContext = cls.context.get(session_info.session_id)
+        ctx: discord.ApplicationContext = cls.context[session_info.session_id]
+
+        if isinstance(message, MessageNodes):
+            Logger.error("This session does not support message nodes, check if bug exists.")
+            return []
 
         count = 0
         msg_ids = []

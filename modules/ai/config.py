@@ -1,7 +1,7 @@
-from . import ai
+from core.config.decorator import on_module_config
 
 
-@ai.config()
+@on_module_config("ai")
 class AiConfig:
     ai_default_llm: str = ""
     llm_timeout: float = 60
@@ -12,6 +12,6 @@ class AiConfig:
     llm_presence_penalty: float = 0.0
 
 
-@ai.config(secret=True)
+@on_module_config("ai", secret=True)
 class AiConfigSecret:
     e2b_api_key: str = ""

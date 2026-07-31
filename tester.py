@@ -2,20 +2,66 @@ from core import check_python_version  # skipcq
 
 check_python_version()  # noqa
 
+import atexit
+import os
+import shutil
+import tempfile
+from pathlib import Path
+
+import tomlkit
+
+# ========== 测试配置引导 ==========
+TEST_CONFIG_PATH_ENV = "AKARI_CONFIG_PATH"  # 须与 core.constants.path.CONFIG_PATH_ENV 一致
+TEST_CONFIG_TEMPLATE_PATH = Path("assets/config_store/zh_cn")
+
+# 测试所需的配置覆盖项，格式为 (文件名, 表名, 键名, 值)。
+# 每加一项都须写明缘由：此处改的是全体用例共享的前提。
+TEST_CONFIG_OVERRIDES: list[tuple[str, str, str, object]] = [
+    # 模板默认关闭花瓣功能。关闭时 petal 模块在生产环境根本不会加载，
+    # 而测试用的 mock parser 不看 load 声明，命令仍会匹配，回执便落到「今日已经签到了」。
+    ("config.toml", "config", "enable_petal", True),
+]
+
+
+def _install_test_config() -> Path:
+    """
+    铺好一份测试专用配置，并令其后的导入一律指向它。
+
+    :return: 临时配置目录的路径。
+    """
+    path = Path(tempfile.mkdtemp(prefix="akari_test_config_"))
+    if TEST_CONFIG_TEMPLATE_PATH.is_dir():
+        shutil.copytree(TEST_CONFIG_TEMPLATE_PATH, path, dirs_exist_ok=True)
+
+    for filename, table, key, value in TEST_CONFIG_OVERRIDES:
+        file_path = path / filename
+        document = tomlkit.parse(file_path.read_text(encoding="utf-8")) if file_path.is_file() else tomlkit.document()
+        if table not in document:
+            document[table] = tomlkit.table()
+        document[table][key] = value
+        file_path.write_text(tomlkit.dumps(document), encoding="utf-8")
+
+    os.environ[TEST_CONFIG_PATH_ENV] = str(path)
+    atexit.register(lambda: shutil.rmtree(path, ignore_errors=True))
+    return path
+
+
+test_config_path = _install_test_config()
+
 import asyncio
 import glob
 import importlib.util
 import inspect
-import os
 import sys
-from pathlib import Path
+from types import FunctionType
+from typing import TypedDict
 
 from dotenv import load_dotenv
 
 from core.builtins.utils import confirm_command
 from core.constants import ascii_art, cache_path, tests_path
 from core.logger import Logger
-from core.tester.decorator import get_registry
+from core.tester.decorator import CaseEntry, get_registry
 from core.tester.expectations import Expectation
 from core.tester.junit import JUnitReport, JUnitTestSuite, JUnitTestCase
 from core.tester.mock.database import init_db, close_db
@@ -61,7 +107,7 @@ junit_registry_suite = JUnitTestSuite("Registry Tests")
 junit_func_suite = JUnitTestSuite("Function Tests")
 
 
-async def _run_registry_entry(semaphore: asyncio.Semaphore, entry: dict, test_number: int) -> dict:
+async def _run_registry_entry(semaphore: asyncio.Semaphore, entry: CaseEntry, test_number: int) -> dict:
     Logger.trace(f"_run_registry_entry START: TEST{test_number}")
     async with semaphore:
         Logger.trace(f"_run_registry_entry ACQUIRED semaphore: TEST{test_number}")
@@ -94,7 +140,15 @@ async def _run_registry_entry(semaphore: asyncio.Semaphore, entry: dict, test_nu
         return {"test_number": test_number, "results": results, "note": note}
 
 
-async def _run_func_test(fn, path) -> dict:
+class FuncTestResult(TypedDict):
+    """单个 @func_case 测试的运行结果。"""
+
+    fn: FunctionType
+    path: str
+    res: dict
+
+
+async def _run_func_test(fn: FunctionType, path: str) -> FuncTestResult:
     Logger.trace(f"_run_func_test START: {fn.__name__} ({path})")
     res = await run_function_entry(fn, IS_CI)
     Logger.trace(f"_run_func_test DONE: {fn.__name__}")
@@ -265,13 +319,16 @@ async def main():
     if os.path.isdir(tests_path):
         pyfiles = sorted(glob.glob(os.path.join(tests_path, "**", "*.py"), recursive=True))
         Logger.trace(f"main() found {len(pyfiles)} test files")
-        func_tasks = []
+        func_tasks: list[tuple[FunctionType, str]] = []
         func_info_list = []
 
         for path in pyfiles:
             name = os.path.splitext(os.path.basename(path))[0]
             Logger.trace(f"main() importing {path}")
             spec = importlib.util.spec_from_file_location(f"tests_{name}", path)
+            if not spec or not spec.loader:
+                Logger.error(f"Failed resolving tests file {path}, skipped.")
+                continue
             mod = importlib.util.module_from_spec(spec)
             try:
                 sys.modules[spec.name] = mod
@@ -312,8 +369,8 @@ async def main():
                 Logger.trace(f"main() non-dict func result at index {idx}")
                 continue
 
-            fn = func_result.get("fn")
-            path = func_result.get("path")
+            fn = func_result["fn"]
+            path = func_result["path"]
             res = func_result.get("res", {})
 
             test_number = len(registry) + idx + 1

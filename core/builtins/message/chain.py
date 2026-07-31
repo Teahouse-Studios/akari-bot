@@ -13,7 +13,7 @@ import random
 import re
 from attrs import define
 from copy import deepcopy
-from typing import Any, TYPE_CHECKING, TypeVar
+from typing import Any, TYPE_CHECKING
 from urllib.parse import urlparse
 
 import orjson
@@ -32,7 +32,7 @@ from core.builtins.message.elements import (
     MentionElement,
 )
 from core.constants import Secret, default_locale
-from core.exports import add_export, exports
+from core.exports import add_export
 from core.i18n import Locale
 from core.joke import shuffle_joke as joke
 from core.logger import Logger
@@ -113,10 +113,9 @@ class MessageChain:
             elements = [elements]
 
         # ========== 步骤 4: 处理字典输入 ==========
-        # 如果是字典，从字典中提取元素并进行结构化处理
+        # 单个字典即 to_list() 产出的一个元素（含 _type 判别键），整体还原为消息元素
         if isinstance(elements, dict):
-            for key in elements:
-                elements = converter.structure(elements[key], MessageElement)
+            elements = [converter.structure(elements, MessageElement)]
 
         # ========== 步骤 5: 处理列表或元组输入 ==========
         # 逐个处理元素，根据类型进行相应的转换
@@ -224,7 +223,10 @@ class MessageChain:
         return True
 
     def as_sendable(
-        self, session_info: SessionInfo | MessageSession = None, parse_message: bool = True, disable_markdown=False
+        self,
+        session_info: SessionInfo | MessageSession | None = None,
+        parse_message: bool = True,
+        disable_markdown=False,
     ) -> ConvertedMessageChain:
         """
         将消息链转换为可发送的格式。
@@ -252,8 +254,9 @@ class MessageChain:
 
         # ========== 检查平台是否支持 Embed 消息 ==========
         if session_info:
-            if isinstance(session_info, exports.get("MessageSession")):
-                session_info = session_info.session_info
+            # 传入 MessageSession 时取出其 session_info；SessionInfo 自身没有该属性，原样返回。
+            # 不经 exports 判类型，以免受注册时机影响。
+            session_info = getattr(session_info, "session_info", session_info)
 
             support_embed = session_info.support_embed
 
@@ -438,10 +441,9 @@ class MessageChain:
             > chain = MessageChain.from_list(data)
         ```
         """
-        converted = []
-        for x in lst:
-            for elem in x:
-                converted.append(converter.structure(elem, MessageElement))
+        # 列表中每一项都是一个完整的元素字典，须整体交给 converter 还原，
+        # 逐键遍历只会把键名当作元素传入
+        converted = [converter.structure(x, MessageElement) for x in lst]
         return deepcopy(cls(converted))
 
     def append(self, element):
@@ -545,6 +547,8 @@ class MessageChain:
             return MessageChain.assign(self.values + other.values)
         if isinstance(other, list):
             return MessageChain.assign(self.values + other)
+        if isinstance(other, MessageElement):
+            return MessageChain.assign(self.values + [other])
         raise TypeError(f'Unsupported operand type(s) for +: "MessageChain" and "{type(other).__name__}"')
 
     def __radd__(self, other):
@@ -559,6 +563,8 @@ class MessageChain:
             return MessageChain.assign(other.values + self.values)
         if isinstance(other, list):
             return MessageChain.assign(other + self.values)
+        if isinstance(other, MessageElement):
+            return MessageChain.assign(self.values + [other])
         raise TypeError(f'Unsupported operand type(s) for +: "{type(other).__name__}" and "MessageChain"')
 
     def __iadd__(self, other):
@@ -575,6 +581,8 @@ class MessageChain:
             self.values += other.values
         elif isinstance(other, list):
             self.values += other
+        elif isinstance(other, MessageElement):
+            self.values += [other]
         else:
             raise TypeError(f'Unsupported operand type(s) for +=: "MessageChain" and "{type(other).__name__}"')
         return self
@@ -773,20 +781,22 @@ class MessageNodes:
         return all(chain.is_safe for chain in self.values)
 
 
-Chainable = TypeVar(
-    "Chainable",
-    MessageChain,
-    I18NMessageChain,
-    PlatformMessageChain,
-    str,
-    list[str],
-    list[MessageElement],
-    MessageElement,
-    MessageNodes,
+# 可作为消息发送的入参类型。仅用于约束参数，不存在输入与输出的类型绑定，
+# 故取联合类型而非 TypeVar：后者是取值受限的类型变量，会拒绝 MessageChain | MessageNodes
+# 这类联合，使 get_message_chain() 的结果无法回传给 send_message()。
+Chainable = (
+    MessageChain
+    | I18NMessageChain
+    | PlatformMessageChain
+    | str
+    | list[str]
+    | list[MessageElement]
+    | MessageElement
+    | MessageNodes
 )
 
 
-def get_message_chain(session: SessionInfo, chain: Chainable) -> MessageChain:
+def get_message_chain(session: SessionInfo, chain: Chainable) -> MessageChain | MessageNodes:
     """
     根据会话信息获取合适的消息链。
 
@@ -800,7 +810,7 @@ def get_message_chain(session: SessionInfo, chain: Chainable) -> MessageChain:
 
     :param session: 会话信息，包含平台、语言等配置
     :param chain: 可链接的消息对象（支持多种类型）
-    :return: 处理后的 MessageChain 实例
+    :return: 处理后的 MessageChain 实例；传入合并转发消息时原样返回 MessageNodes
     :raises TypeError: 如果传入不支持的链类型
 
     示例：
@@ -812,29 +822,32 @@ def get_message_chain(session: SessionInfo, chain: Chainable) -> MessageChain:
         > result = get_message_chain(session, platform_chain)
     ```
     """
+    # 本函数的职责即是把多种入参归一化，过程中类型会逐步收敛，故以 Any 承接
+    resolved: Any = chain
+
     # ========== 处理平台消息链 ==========
-    if isinstance(chain, PlatformMessageChain):
+    if isinstance(resolved, PlatformMessageChain):
         # 根据会话的平台选择对应的消息链，如果没有则使用默认
-        chain = chain.values.get(session.target_from, chain.values.get("default", MessageChain.assign("")))
+        resolved = resolved.values.get(session.target_from, resolved.values.get("default", MessageChain.assign("")))
 
     # ========== 处理多语言消息链 ==========
-    if isinstance(chain, I18NMessageChain):
+    if isinstance(resolved, I18NMessageChain):
         # 根据会话的语言设置选择对应的消息链，如果没有则使用默认
-        chain = chain.values.get(session.locale.locale, chain.values.get("default", MessageChain.assign("")))
+        resolved = resolved.values.get(session.locale.locale, resolved.values.get("default", MessageChain.assign("")))
 
     # ========== 处理基本类型 ==========
-    if isinstance(chain, (str, list, MessageElement)):
+    if isinstance(resolved, (str, list, MessageElement)):
         # 字符串、列表或单个元素，转换为消息链
-        chain = MessageChain.assign(chain)
+        resolved = MessageChain.assign(resolved)
 
     # ========== 验证最终类型 ==========
-    if isinstance(chain, (MessageChain, MessageNodes)):
-        return chain
+    if isinstance(resolved, (MessageChain, MessageNodes)):
+        return resolved
 
     # 不支持的类型，抛出异常
     raise TypeError(
         f"Unsupported chain type: {
-            type(chain).__name__
+            type(resolved).__name__
         }, expected MessageChain, MessageNodes, I18NMessageChain, or PlatformMessageChain."
     )
 
