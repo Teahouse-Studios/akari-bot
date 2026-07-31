@@ -207,7 +207,7 @@ async def parser(msg: "Bot.MessageSession"):
             if (
                 is_retired_client(msg.session_info.client_name)
                 and not is_module_allowed_when_retired(command_first_word)
-                and not msg.check_super_user()
+                # and not msg.check_super_user()
             ):
                 return
 
