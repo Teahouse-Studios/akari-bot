@@ -137,6 +137,31 @@ async def _test_message_factory_may_skip():
         return False
 
 
+async def _test_report_targets_dedup():
+    """测试报错回传 - 同一现实会话即便配了多个上报场景也只收到一份"""
+    try:
+        await _bind("report", ("UPUSHA", 1), ("UPUSHB", 1))
+        # 上报场景按平台会话 ID 配置，同一个现实会话的两个平台都被填了进来
+        targets = ["UPUSHA|Group|report", "UPUSHB|Group|report"]
+        sent = []
+
+        async def _record(target, message, **kwargs):
+            sent.append(target.target_id)
+
+        with (
+            patch("core.tos.report_targets", targets),
+            patch.object(Alive, "get_alive", return_value=_ALIVE),
+            patch.object(Bot, "send_direct_message", _record),
+        ):
+            from core.tos import tos_report
+
+            await tos_report("UPUSHA|1", "UPUSHA|Group|report", "reason")
+        return sent == ["UPUSHA|Group|report"]
+
+    except Exception:
+        return False
+
+
 @func_case
 async def test_union_push(tester: Tester):
     """core.builtins.bot: 按消息通道去重的组内推送测试"""
@@ -145,5 +170,6 @@ async def test_union_push(tester: Tester):
     await tester.test(_test_skips_offline_channel, "掉线通道跳过测试")
     await tester.test(_test_message_factory_receives_session, "消息工厂取到队首测试")
     await tester.test(_test_message_factory_may_skip, "消息工厂跳过发送测试")
+    await tester.test(_test_report_targets_dedup, "报错回传去重测试")
 
     return tester

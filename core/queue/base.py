@@ -211,19 +211,19 @@ class JobQueueBase:
             await cls.return_val(tsk, {"traceback": f}, status="failed")
             try:
                 # 向报告场景发送错误信息
-                for target in cls.report_targets:
-                    if ft := await bot.fetch_target(target):
-                        await cls.client_direct_message(
-                            ft,
-                            MessageChain.assign(
-                                [
-                                    I18NContext("error.message.report", command=tsk.action),
-                                    Plain(f.strip(), disable_joke=True),
-                                ]
-                            ),
-                            enable_parse_message=False,
-                            disable_secret_check=True,
-                        )
+                # 上报场景按平台会话 ID 配置，其中若有若干个同属一个现实会话，只应由其中一个收到回传
+                for ft in await bot.pick_channel_heads(await bot.fetch_target_list(cls.report_targets)):
+                    await cls.client_direct_message(
+                        ft,
+                        MessageChain.assign(
+                            [
+                                I18NContext("error.message.report", command=tsk.action),
+                                Plain(f.strip(), disable_joke=True),
+                            ]
+                        ),
+                        enable_parse_message=False,
+                        disable_secret_check=True,
+                    )
             except Exception:
                 Logger.exception()
             return

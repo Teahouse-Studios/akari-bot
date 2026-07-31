@@ -209,6 +209,31 @@ class Bot:
         return list(groups.values())
 
     @classmethod
+    async def pick_channel_heads(cls, session_list: list[FetchedSessionInfo]) -> list[FetchedSessionInfo]:
+        """
+        按消息通道归拢一批会话，取出各通道实际承担发送的那一个。
+
+        同组同通道的会话对应同一个现实会话，只应由其中一个承担发送，其余写入队首的 ``next_hops``，
+        供队首发送失败时由客户端回调服务端换用下一跳。凡是拿着一批会话逐个发送的去处，都应当先
+        经此归拢，否则同一个现实会话会收到多条重复消息。
+
+        :param session_list: 待发送的会话列表。
+        :return: 各通道的队首会话，全员掉线的通道不在其中。
+        """
+        heads = []
+        for hops in await cls.group_sessions_by_channel(session_list):
+            # 掉线客户端的任务无人认领，换跳也就无从触发，整条通道将不再有消息送达，因此预先将其剔出跳表
+            hops = [hop for hop in hops if Alive.is_alive(hop.client_name)]
+            if not hops:
+                Logger.warning("Every client of this channel is offline, skipped sending message.")
+                continue
+
+            head = hops[0]
+            head.next_hops = [hop.target_id for hop in hops[1:]]
+            heads.append(head)
+        return heads
+
+    @classmethod
     async def post_message(
         cls,
         module_name: str,
@@ -238,16 +263,7 @@ class Bot:
         queue_server: "JobQueueServer" = exports["JobQueueServer"]
 
         # 同一条消息通道仅推送一次，其余会话作为发送失败时的后备
-        for hops in await cls.group_sessions_by_channel(session_list):
-            # 掉线客户端的任务无人认领，换跳也就无从触发，整条通道将不再有消息送达，因此预先将其剔出跳表
-            hops = [hop for hop in hops if Alive.is_alive(hop.client_name)]
-            if not hops:
-                Logger.warning("Every client of this channel is offline, skipped posting message.")
-                continue
-
-            session_ = hops[0]
-            session_.next_hops = [hop.target_id for hop in hops[1:]]
-
+        for session_ in await cls.pick_channel_heads(session_list):
             # 将消息转换为该会话支持的消息链格式
             chain = get_message_chain(session_, message)
 
@@ -421,15 +437,7 @@ class Bot:
         if not target_ids:
             return
 
-        for hops in await cls.group_sessions_by_channel(await cls.fetch_target_list(target_ids)):
-            # 掉线客户端的任务无人认领，换跳也就无从触发，整条通道将不再有消息送达，因此预先将其剔出跳表
-            hops = [hop for hop in hops if Alive.is_alive(hop.client_name)]
-            if not hops:
-                Logger.warning("Every client of this channel is offline, skipped sending message.")
-                continue
-
-            session = hops[0]
-            session.next_hops = [hop.target_id for hop in hops[1:]]
+        for session in await cls.pick_channel_heads(await cls.fetch_target_list(target_ids)):
             # 消息链类型均无 __call__，可据此与消息工厂相区分
             chain = await message(session) if callable(message) else message
             if chain is None:

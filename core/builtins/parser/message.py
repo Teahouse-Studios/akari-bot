@@ -1506,19 +1506,18 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
 
     # ========== 发送错误报告给管理员 ==========
     if report_targets:
-        for target in report_targets:
-            # 获取报告场景
-            if f := await bot.fetch_target(target):
-                # 发送详细的错误报告
-                await bot.send_direct_message(
-                    f,
-                    [
-                        I18NContext("error.message.report", command=msg.trigger_msg),
-                        Plain(tb.strip(), disable_joke=True),
-                    ],
-                    enable_parse_message=False,
-                    disable_secret_check=True,
-                )
+        # 上报场景按平台会话 ID 配置，其中若有若干个同属一个现实会话，只应由其中一个收到回传
+        for f in await bot.pick_channel_heads(await bot.fetch_target_list(report_targets)):
+            # 发送详细的错误报告
+            await bot.send_direct_message(
+                f,
+                [
+                    I18NContext("error.message.report", command=msg.trigger_msg),
+                    Plain(tb.strip(), disable_joke=True),
+                ],
+                enable_parse_message=False,
+                disable_secret_check=True,
+            )
 
 
 def __get_close_matches(

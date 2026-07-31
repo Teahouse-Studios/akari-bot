@@ -77,6 +77,6 @@ async def tos_report(sender: str, target: str, reason: str, banned: bool = False
             action = "{I18N:tos.message.action.warning}"
         warn_template.append(I18NContext("tos.message.action", action=action, disable_joke=True))
 
-        for target_ in report_targets:
-            if f := await Bot.fetch_target(target_):
-                await Bot.send_direct_message(f, warn_template)
+        # 上报场景按平台会话 ID 配置，其中若有若干个同属一个现实会话，只应由其中一个收到回传
+        for f in await Bot.pick_channel_heads(await Bot.fetch_target_list(report_targets)):
+            await Bot.send_direct_message(f, warn_template)
