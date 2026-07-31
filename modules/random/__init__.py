@@ -1,7 +1,9 @@
 import uuid
 
 from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext
 from core.component import module
+from core.dirty_check import check_bool
 from core.utils.random import Random
 
 r = module(
@@ -26,7 +28,11 @@ async def _(msg: Bot.MessageSession, minimum: int, maximum: int):
 @r.command("choice <choices> ... {{I18N:random.help.choice}}")
 async def _(msg: Bot.MessageSession):
     choices = [msg.parsed_msg.get("<choices>")] + msg.parsed_msg.get("...", [])
-    await msg.finish(Random.choice(choices))
+    c = Random.choice(choices)
+    if await check_bool(c):
+        await msg.finish(c)
+    else:
+        await msg.finish(I18NContext("random.message.idk"))
 
 
 @r.command("shuffle <cards> ... {{I18N:random.help.shuffle}}")
