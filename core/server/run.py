@@ -11,9 +11,10 @@ import asyncio
 import signal
 
 from core.constants import Info
+from core.i18n import locale_loaded_err
 from core.logger import Logger
 from core.queue.server import JobQueueServer
-from core.server.init import init_async
+from core.server.init import init_async, load_prompt
 from core.server.terminate import cleanup_sessions
 
 stop_event = asyncio.Event()
@@ -35,12 +36,16 @@ async def main():
     执行流程：
     1. 初始化服务器
     2. 启动队列处理任务
-    3. 持续监听停止事件
-    4. 收到停止信号后执行清理
+    3. 发送重启提示
+    4. 持续监听停止事件
+    5. 收到停止信号后执行清理
     """
     Logger.info("Starting AkariBot Server...")
-    await init_async()
+    await init_async(send_prompt=False)
     asyncio.create_task(JobQueueServer.check_job_queue())
+    # 重启提示须等发起者所在客户端重新上报保活，而保活信号经队列轮询取回，
+    # 故置于轮询启动之后；先于轮询发送只会被当作客户端掉线而丢弃。
+    await load_prompt(locale_loaded_err)
     while not stop_event.is_set():
         await asyncio.sleep(1)
     if stop_event.is_set():

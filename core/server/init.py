@@ -14,6 +14,7 @@ import logging
 import orjson
 from apscheduler.schedulers import SchedulerAlreadyRunningError
 
+from core.alive import Alive
 from core.builtins.bot import Bot
 from core.builtins.converter import converter
 from core.builtins.message.chain import MessageChain
@@ -29,8 +30,12 @@ from core.utils.bash import run_sys_command
 from .background_tasks import init_background_task
 from ..i18n import locale_loaded_err
 
+# 等待发起重启的客户端重新上报保活的秒数上限。server 与各 bot 子进程一同重启，
+# 提示投递时客户端往往尚未就绪；但重启提示并非关键路径，客户端确已掉线时不应无限等待。
+RESTART_PROMPT_TIMEOUT = 60
 
-async def init_async(start_scheduler=True) -> None:
+
+async def init_async(start_scheduler=True, send_prompt=True) -> None:
     """初始化服务器。
 
     执行服务器启动的所有初始化步骤：
@@ -43,6 +48,8 @@ async def init_async(start_scheduler=True) -> None:
 
     Args:
         start_scheduler: 是否启动定时任务（默认True）
+        send_prompt: 是否发送重启提示（默认True）。提示须等目标客户端重新上报保活方能投递，
+                     而保活信号经队列轮询取回，故由调用方在轮询启动后自行调用 `load_prompt`
     """
     # 设置客户端信息为 "Server"
     Info.client_name = "Server"
@@ -98,7 +105,8 @@ async def init_async(start_scheduler=True) -> None:
     # 加载密钥和启动提示
     await load_secret()
     Logger.info(f"Hello, {Info.client_name}!")
-    await load_prompt(locale_loaded_err)
+    if send_prompt:
+        await load_prompt(locale_loaded_err)
 
 
 async def load_secret():
@@ -119,29 +127,62 @@ async def load_secret():
                             Secret.update(w)
 
 
-async def load_prompt(locale_load_error) -> None:
+async def _wait_for_client_online(client_name: str, timeout: float) -> bool:
+    """等待客户端重新上报保活。
+
+    :param client_name: 目标客户端名称
+    :param timeout: 等待的秒数上限
+    :return: 客户端是否已上线
+    """
+
+    async def _poll():
+        while not Alive.is_alive(client_name):
+            await asyncio.sleep(0.5)
+
+    try:
+        await asyncio.wait_for(_poll(), timeout=timeout)
+    except asyncio.TimeoutError:
+        return False
+    return True
+
+
+async def load_prompt(locale_load_error, timeout: float | None = None) -> None:
     """加载并发送启动提示信息。
 
     如果存在缓存的发送重启命令的对象信息，发送加载成功或失败的提示。
     清理缓存文件。
+
+    保活表随 server 进程内存一并清空，重启后须等目标客户端重新上报保活方能投递提示，
+    否则 `JobQueueServer.add_job` 会以「客户端掉线」为由将其丢弃。
+
+    :param locale_load_error: 语言文件加载过程中产生的错误信息
+    :param timeout: 等待目标客户端上线的秒数上限，默认为 `RESTART_PROMPT_TIMEOUT`
     """
     author_cache = PrivateAssets.path / ".cache_restart_author"
     loader_cache = PrivateAssets.path / ".cache_loader"
     if author_cache.exists():
         with open(author_cache, "r", encoding="utf-8") as open_author_cache:
             author_session = converter.structure(orjson.loads(open_author_cache.read()), SessionInfo)
-            await author_session.refresh_info()
-            with open(loader_cache, "r", encoding="utf-8") as open_loader_cache:
-                message = []
-                if (read := open_loader_cache.read()) != "":
-                    message += [I18NContext("loader.load.failed"), Plain(read.strip(), disable_joke=True)]
-                if locale_load_error:
-                    message += [Plain("\n".join(locale_load_error), disable_joke=True)]
-                if not message:
-                    message = I18NContext("loader.load.success")
-                message = MessageChain.assign(message)
-                await Bot.send_direct_message(author_session, message)
+        # 缓存须无条件清理：客户端始终不上线时若将其留下，下次启动会重复投递
         author_cache.unlink()
+
+        if not await _wait_for_client_online(
+            author_session.client_name, timeout if timeout else RESTART_PROMPT_TIMEOUT
+        ):
+            Logger.warning(f"Client {author_session.client_name} did not come online in time, skipped restart prompt.")
+            return
+
+        await author_session.refresh_info()
+        with open(loader_cache, "r", encoding="utf-8") as open_loader_cache:
+            message = []
+            if (read := open_loader_cache.read()) != "":
+                message += [I18NContext("loader.load.failed"), Plain(read.strip(), disable_joke=True)]
+            if locale_load_error:
+                message += [Plain("\n".join(locale_load_error), disable_joke=True)]
+            if not message:
+                message = I18NContext("loader.load.success")
+            message = MessageChain.assign(message)
+            await Bot.send_direct_message(author_session, message)
 
 
 __all__ = ["init_async", "load_prompt"]
