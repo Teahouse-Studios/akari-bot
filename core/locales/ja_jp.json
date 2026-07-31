@@ -35,7 +35,6 @@
     "config.comments.config.petal_sign_limit": "1 日にサインインすることで獲得できるペタルの最大数。",
     "config.comments.config.petal_sign_rate": "サインインすることでペタルを獲得できる確率、範囲は 0 ～ 1 で、獲得できるペタルの数は指数関数的に減少します。",
     "config.comments.config.quick_confirm": "メッセージのクイック確認を有効にするかどうか。",
-    "config.comments.config.report_targets": "レポート コンテクスト リスト。ここに入力された値がレポートコンテクストとして認識されます。（例：コマンドの実行エラーが発生すると、ボットは対応するコンテクストにエラー情報を送信します）",
     "config.comments.config.rickroll_msg": "テキスト フィルタリング検出に失敗したときのリックロール メッセージ。",
     "config.comments.config.shuffle_rate": "ジョークのランダム発生率。範囲は 0 ～ 1 です。",
     "config.comments.config.slower_schedule": "低速のタスクスケジューラを有効にするかどうか。（リクエストの負荷を軽減するため）",
