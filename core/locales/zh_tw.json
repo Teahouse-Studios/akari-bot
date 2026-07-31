@@ -35,7 +35,6 @@
     "config.comments.config.petal_sign_limit": "單日簽到取得花瓣上限。",
     "config.comments.config.petal_sign_rate": "簽到取得花瓣機率，範圍 0 到 1 之間，取得數量呈指數衰減。",
     "config.comments.config.quick_confirm": "是否啟用訊息快速確認。",
-    "config.comments.config.report_targets": "上報場景列表，此處填寫的值將會被辨識為上報場景。（如：當機器人執行指令出錯時，機器人會將報錯訊息傳送至對應場景）",
     "config.comments.config.rickroll_msg": "文字過濾偵測失敗時的 Rickroll 訊息。",
     "config.comments.config.shuffle_rate": "玩笑的隨機發生率，範圍 0 到 1 之間。",
     "config.comments.config.slower_schedule": "是否啟用更慢的排程任務調度器。（減少請求壓力用）",
