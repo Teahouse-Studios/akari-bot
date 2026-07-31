@@ -35,7 +35,6 @@
     "config.comments.config.petal_sign_limit": "The maximum number of petals users can get from signing in per day.",
     "config.comments.config.petal_sign_rate": "The probability of getting petals by signing in, ranging from 0 to 1, with an exponential decay in the number of petals to be obtained.",
     "config.comments.config.quick_confirm": "Whether to enable quick confirmation of message.",
-    "config.comments.config.report_targets": "List of reporting contexts. The value filled in here will be identified as the reporting context. (e.g., when the bot encounters a command error, the bot will send the error information to the corresponding context)",
     "config.comments.config.rickroll_msg": "Rickroll message when text filter check fails.",
     "config.comments.config.shuffle_rate": "The random occurrence rate of jokes, ranging from 0 to 1.",
     "config.comments.config.slower_schedule": "Whether to enable a slower task scheduler. (To reduce request pressure)",
