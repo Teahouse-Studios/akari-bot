@@ -35,7 +35,7 @@
     "config.comments.config.petal_sign_limit": "单日签到获取花瓣上限。",
     "config.comments.config.petal_sign_rate": "签到获取花瓣概率，范围 0 到 1 之间，获取数量呈指数衰减。",
     "config.comments.config.quick_confirm": "是否开启消息快速确认。",
-    "config.comments.config.report_targets": "上报场景列表，此处填写的值将会被识别为上报场景。（如：在机器人执行命令出错时，机器人将会把错误信息发送至对应场景）",
+    "config.comments.config.report_targets": "上报场景列表，此处填写的值将会被识别为上报场景。（如：在机器人执行命令出错时，机器人将会把错误信息发送至对应场景），参数为会话组 ID",
     "config.comments.config.retired_clients": "已退役的客户端及其数据迁移去处，每项格式为“源客户端 -> 目标客户端”（如“QQ -> QQBot”）。退役的客户端仅保留数据迁移功能，其余命令与主动推送一律停止；只填写源客户端时表示不提供迁移去处。",
     "config.comments.config.rickroll_msg": "文字过滤检测失败时的 Rickroll 消息。",
     "config.comments.config.shuffle_rate": "玩笑的随机发生率，范围 0 到 1 之间。",
