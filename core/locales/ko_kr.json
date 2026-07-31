@@ -35,7 +35,6 @@
     "config.comments.config.petal_sign_limit": "하루에 출석하여 획득할 수 있는 페탈(petal)의 최대 수.",
     "config.comments.config.petal_sign_rate": "출석 시 페탈(petal)을 획득할 확률. 범위는 0에서 1 사이의 값이며, 획득량은 지수적으로 감소합니다.",
     "config.comments.config.quick_confirm": "메시지에 대한 빠른 확인 기능을 활성화할지 여부.",
-    "config.comments.config.report_targets": "보고 대상 장면 목록입니다. 입력한 값이 보고 대상 세션으로 사용됩니다. (예: 봇이 명령을 실행하는 과정에서 오류가 발생하면, 봇은 해당 세션으로 오류 메시지를 전송합니다.)",
     "config.comments.config.rickroll_msg": "텍스트 필터링이 실패했을 때 Rickroll 메시지가 표시됩니다.",
     "config.comments.config.shuffle_rate": "농담이 발생할 확률. 범위는 0에서 1 사이입니다.",
     "config.comments.config.slower_schedule": "저속 스케줄러 사용 여부. (부하 감소 목적)",
