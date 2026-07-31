@@ -6,7 +6,7 @@
 """
 
 import asyncio
-from typing import Any, TYPE_CHECKING
+from typing import Any, Awaitable, Callable, TYPE_CHECKING
 
 from core.alive import Alive
 from core.builtins.message.chain import *
@@ -389,6 +389,58 @@ class Bot:
             enable_parse_message=enable_parse_message,
             enable_split_image=enable_split_image,
         )
+
+    @classmethod
+    async def send_direct_message_to_union_target(
+        cls,
+        union_id: str | list[str],
+        message: Chainable | Callable[[FetchedSessionInfo], Awaitable[Chainable | None]],
+        disable_secret_check: bool = False,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> None:
+        """
+        向一个场景组绑定的会话发送消息，同一条消息通道只发一次。
+
+        union 只表示若干平台会话共享同一份数据，其中通道号相同的才是现实中的同一个会话
+        （例如一个群内同时接入了 OneBot 与 QQ 官方机器人）。逐个会话发送会使该会话收到多条
+        重复消息，故此处按通道归拢，仅由队首承担推送，其余会话降为发送失败时的下一跳。
+
+        消息内容取决于目标会话时（如须按会话渲染 i18n 或做敏感词检查），传入接受会话、返回
+        消息的异步工厂：归拢选出队首之后才会调用它，每条通道各算一次。工厂返回 None 即本条
+        通道不发送，须发多条消息的调用方可借此在工厂内自行发送，不必为每条消息重跑一遍归拢。
+
+        :param union_id: 场景组的 union ID，可一次传入多个。
+        :param message: 消息内容，或接受队首会话、返回消息内容的异步工厂，工厂返回 None 表示不发送。
+        :param disable_secret_check: 是否禁用敏感内容检查。
+        :param enable_parse_message: 是否允许解析消息（平台兼容）。
+        :param enable_split_image: 是否允许拆分图片（平台兼容）。
+        """
+        # 退役客户端停止一切主动推送，与 get_enabled_this_module() 取同一判据
+        target_ids = filter_retired_targets(await TargetUnionBind.list_ids(union_id))
+        if not target_ids:
+            return
+
+        for hops in await cls.group_sessions_by_channel(await cls.fetch_target_list(target_ids)):
+            # 掉线客户端的任务无人认领，换跳也就无从触发，整条通道将不再有消息送达，因此预先将其剔出跳表
+            hops = [hop for hop in hops if Alive.is_alive(hop.client_name)]
+            if not hops:
+                Logger.warning("Every client of this channel is offline, skipped sending message.")
+                continue
+
+            session = hops[0]
+            session.next_hops = [hop.target_id for hop in hops[1:]]
+            # 消息链类型均无 __call__，可据此与消息工厂相区分
+            chain = await message(session) if callable(message) else message
+            if chain is None:
+                continue
+            await cls.send_direct_message(
+                session,
+                chain,
+                disable_secret_check=disable_secret_check,
+                enable_parse_message=enable_parse_message,
+                enable_split_image=enable_split_image,
+            )
 
     @classmethod
     async def send_private_message(

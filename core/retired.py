@@ -5,7 +5,7 @@ from pathlib import Path
 from core.builtins.message.internal import I18NContext, Plain
 from core.config.base import CoreConfig
 from core.constants.path import retired_path
-from core.database.models import StoredData
+from core.database.models import StoredData, TargetUnionBind
 from core.exports import exports
 from core.logger import Logger
 from core.utils.random import Random
@@ -178,6 +178,24 @@ def should_yield_channel(target_id: str, channels: dict[str, int], channel_id: i
     if not is_retired_target(target_id):
         return False
     return any(cid == channel_id and tid != target_id and not is_retired_target(tid) for tid, cid in channels.items())
+
+
+async def is_yielding_retired_session(target_id: str, union_id: str, channel_id: int) -> bool:
+    """
+    判断一个会话是否为正在让位的退役会话。
+
+    :func:`should_yield_channel` 的查库版本，供手边没有通道映射的介入点调用。非退役会话
+    占绝大多数，故先按场景 ID 短路，免得为每条消息白查一次库。
+
+    :param target_id: 当前会话的场景 ID。
+    :param union_id: 当前会话所属的场景 union ID。
+    :param channel_id: 当前会话的通道号。
+    :return: 是否为正在让位的退役会话。
+    """
+    if not is_retired_target(target_id) or not union_id:
+        return False
+    channels = await TargetUnionBind.list_channels(union_id)
+    return should_yield_channel(target_id, channels, channel_id)
 
 
 async def _load_notified() -> dict[str, str]:

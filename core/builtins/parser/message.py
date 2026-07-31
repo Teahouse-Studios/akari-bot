@@ -46,7 +46,12 @@ from core.database.models import AnalyticsData, SenderUnionInfo, TargetUnionBind
 from core.exports import exports
 from core.loader import ModulesManager
 from core.logger import Logger
-from core.retired import is_module_allowed_when_retired, is_retired_client, should_yield_channel
+from core.retired import (
+    is_module_allowed_when_retired,
+    is_retired_client,
+    is_yielding_retired_session,
+    should_yield_channel,
+)
 from core.tos import TOS_TEMPBAN_TIME, temp_ban_counter, abuse_warn_target, remove_temp_ban
 from core.types import Module, Param
 from core.types.module.component_meta import CommandMeta
@@ -165,7 +170,15 @@ async def parser(msg: "Bot.MessageSession"):
     try:
         # ========== 步骤 1: 检查任务队列 ==========
         # 检查是否有等待此消息的任务（如等待用户回复）
-        await SessionTaskManager.check(msg)
+        # 等待任务按消息通道建键，同通道内的会话共享。退役会话若在此抢先命中，存活会话挂起的
+        # 等待便由它的消息触发，模块拿到的结果也随之出自退役平台。故此处须与通道认领同判据，
+        # 且早于任务检查：认领只拦命令与正则两条路径，拦不到等待。
+        if not await is_yielding_retired_session(
+            msg.session_info.target_id,
+            msg.session_info.target_union_id,
+            msg.session_info.target_channel_id,
+        ):
+            await SessionTaskManager.check(msg)
 
         # 获取该平台和客户端的所有可用模块
         modules = ModulesManager.return_modules_list(msg.session_info.target_from, msg.session_info.client_name)

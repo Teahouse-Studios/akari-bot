@@ -3,9 +3,24 @@
 本文件集中放置所有改动 ``CoreConfig.retired_clients`` 的用例：``tester.py`` 并发执行各个
 func_case，而该配置与 ``RETIRED_ROUTES`` 是进程级全局状态，分散在多个文件中改动会互相覆盖。
 同一 func_case 内部则是串行的，因此集中于此即可避免竞争。
+
+末尾的等待任务用例须要数据库与已加载的模块，因为它们经由真实的 ``parser()`` 求证介入点的位置，
+而非只验判据本身。
 """
 
+import asyncio
+from unittest.mock import patch
+
+from core.alive import Alive
+from core.builtins.bot import Bot
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import Plain
+from core.builtins.parser.message import parser
+from core.builtins.session.info import SessionInfo
+from core.builtins.session.internal import MessageSession
+from core.builtins.session.tasks import SessionTaskManager
 from core.config.base import CoreConfig
+from core.database.models import TargetUnionBind, TargetUnionInfo
 from core.retired import (
     RETIRED_ALLOWED_MODULES,
     filter_retired_targets,
@@ -283,6 +298,112 @@ async def _test_alive_never_yields():
         _restore_routes(original)
 
 
+async def _session(target_id: str, client: str) -> MessageSession:
+    """建一个消息内容为空的会话，用于只跑到 parser 的任务检查一段。"""
+    session_info = await SessionInfo.assign(
+        target_id=target_id,
+        target_from=f"{client}|Group",
+        client_name=client,
+        sender_id=f"{client}|1",
+        messages=MessageChain.assign(Plain("")),
+        create=True,
+    )
+    return MessageSession(session_info=session_info)
+
+
+async def _probe_wait_task(prefix: str, with_alive: bool) -> bool:
+    """
+    令退役会话的一条消息走一遍真实的 ``parser()``，观察同通道内挂起的等待任务是否被它触发。
+
+    等待任务按消息通道共享，故须由 ``parser()`` 而非判据函数本身求证：判据即便正确，
+    介入点排在任务检查之后仍拦不下这条路径。空消息在任务检查之后随即返回，恰好只跑到待测的这一段。
+
+    :param prefix: 客户端名前缀，各用例互不相同以免共用 union。
+    :param with_alive: 通道内是否另有存活会话。
+    :return: 等待任务是否被退役会话的消息触发。
+    """
+    retired_client = f"{prefix}R"
+    retired_target = f"{retired_client}|Group|x"
+    _use_routes([f"{retired_client} -> {prefix}A"])
+
+    union = await TargetUnionInfo.resolve_union(retired_target)
+    holder_target = retired_target
+    if with_alive:
+        # 并入同一通道号，两个平台会话自此指向同一个现实会话，等待任务随之共享
+        holder_target = f"{prefix}A|Group|y"
+        await union.bind_id(holder_target)
+        await TargetUnionBind.filter(target_id=holder_target).update(channel_id=1)
+
+    holder = await _session(holder_target, f"{prefix}A" if with_alive else retired_client)
+    retired = await _session(retired_target, retired_client)
+
+    SessionTaskManager._task_list.clear()
+    try:
+        # all_ 的任务只按消息通道建键，最能直击同一频道键内的抢占
+        SessionTaskManager.add_task(holder, asyncio.Event(), all_=True, timeout=60)
+        await parser(retired)
+        return SessionTaskManager.get()[holder.session_info.channel_key]["all"][holder]["active"] is False
+
+    finally:
+        SessionTaskManager._task_list.clear()
+
+
+async def _test_retired_yields_wait_task():
+    """测试等待任务 - 同通道存在存活会话时，退役会话的消息不触发挂起的等待任务"""
+    original = CoreConfig.retired_clients
+    try:
+        return not await _probe_wait_task("WTA", with_alive=True)
+
+    except Exception:
+        return False
+
+    finally:
+        _restore_routes(original)
+
+
+async def _test_retired_keeps_wait_task_when_alone():
+    """测试等待任务 - 通道内只剩退役会话时照常触发，迁移流程的确认不致中断"""
+    original = CoreConfig.retired_clients
+    try:
+        return await _probe_wait_task("WTB", with_alive=False)
+
+    except Exception:
+        return False
+
+    finally:
+        _restore_routes(original)
+
+
+async def _test_union_push_skips_retired():
+    """测试组内推送 - 退役平台的会话不参与组内推送，队首落到存活会话"""
+    original = CoreConfig.retired_clients
+    try:
+        _use_routes(["RPUSHR -> RPUSHA"])
+        union = await TargetUnionInfo.resolve_union("RPUSHR|Group|p")
+        await union.bind_id("RPUSHA|Group|p")
+        # 并入同一通道：退役会话若不被滤除，便会以组内首位的身份抢到队首
+        await TargetUnionBind.filter(target_id__in=["RPUSHR|Group|p", "RPUSHA|Group|p"]).update(channel_id=1)
+
+        sent = []
+
+        async def _record(target, message, **kwargs):
+            sent.append(target.target_id)
+
+        alive = {c: {"target_prefix_list": [c]} for c in ("RPUSHR", "RPUSHA")}
+        with (
+            patch.object(Alive, "get_alive", return_value=alive),
+            patch.object(Bot, "send_direct_message", _record),
+        ):
+            await Bot.send_direct_message_to_union_target(union.union_id, Plain("x"))
+        return sent == ["RPUSHA|Group|p"]
+
+    except Exception:
+        return False
+
+    finally:
+        _restore_routes(original)
+
+
 @func_case
 async def test_retired_gate(tester: Tester):
     """core.retired: 迁移关系、退役判定与介入点测试"""
@@ -304,5 +425,8 @@ async def test_retired_gate(tester: Tester):
     await tester.test(_test_retired_alone_does_not_yield, "独占通道不让位测试")
     await tester.test(_test_different_channel_does_not_yield, "跨通道不让位测试")
     await tester.test(_test_alive_never_yields, "非退役不让位测试")
+    await tester.test(_test_retired_yields_wait_task, "退役让出等待任务测试")
+    await tester.test(_test_retired_keeps_wait_task_when_alone, "独占通道保留等待任务测试")
+    await tester.test(_test_union_push_skips_retired, "组内推送滤除退役测试")
 
     return tester

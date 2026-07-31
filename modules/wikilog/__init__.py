@@ -8,7 +8,6 @@ from core.builtins.message.internal import I18NContext
 from core.builtins.session.internal import FetchedMessageSession
 from core.component import module
 from modules.wiki.config import WikiConfig
-from core.database.models import TargetUnionBind
 from core.logger import Logger
 from core.scheduler import IntervalTrigger
 from modules.wiki.utils.ab import convert_ab_to_detailed_format
@@ -394,31 +393,21 @@ async def _(msg: Bot.MessageSession, apilink: str):
 async def _(ctx: Bot.ModuleHookContext):
     data_ = await WikiLogTargetSetInfo.return_all_data()
     for union_id in data_:
-        # 配置挂在 union 上，推送需展开为该 union 下的全部平台会话。
-        targets = await TargetUnionBind.list_ids(union_id)
         for wiki in data_[union_id]:
-            if "keep_alive" in data_[union_id][wiki] and data_[union_id][wiki]["keep_alive"]:
-                for target in targets:
-                    fetch_target = await Bot.fetch_target(target)
-                    if fetch_target:
-                        session = await FetchedMessageSession.from_session_info(fetch_target)
-                        try:
-                            wiki_ = WikiLib(wiki)
-                            await wiki_.fixup_wiki_info()
-                            get_user_info = await wiki_.get_json(action="query", meta="userinfo")
-                            if n := get_user_info["query"]["userinfo"]["name"]:
-                                await session.send_direct_message(
-                                    I18NContext(
-                                        "wikilog.message.keepalive.logged.as",
-                                        name=n,
-                                        wiki=wiki_.wiki_info.name,
-                                    )
-                                )
-                        except Exception as e:
-                            Logger.error(f"Keep alive failed: {e}")
-                            await session.send_direct_message(
-                                I18NContext("wikilog.message.keepalive.failed", link=wiki)
-                            )
+            if not data_[union_id][wiki].get("keep_alive"):
+                continue
+            # 保活结果与目标会话无关，每个 wiki 只查一次，再交由组内推送按通道分发
+            try:
+                wiki_ = WikiLib(wiki)
+                await wiki_.fixup_wiki_info()
+                get_user_info = await wiki_.get_json(action="query", meta="userinfo")
+                if not (n := get_user_info["query"]["userinfo"]["name"]):
+                    continue
+                message = I18NContext("wikilog.message.keepalive.logged.as", name=n, wiki=wiki_.wiki_info.name)
+            except Exception as e:
+                Logger.error(f"Keep alive failed: {e}")
+                message = I18NContext("wikilog.message.keepalive.failed", link=wiki)
+            await Bot.send_direct_message_to_union_target(union_id, message)
 
 
 fetch_cache = {}
@@ -528,32 +517,38 @@ async def _():
     matched = matched_logs
 
     for id_ in matched:
-        # 拉取按 union 去重，推送则展开到该 union 下的全部平台会话。
-        for target_id in await TargetUnionBind.list_ids(id_):
-            ft = await Bot.fetch_target(target_id)
-            if ft:
-                ft_session = await FetchedMessageSession.from_session_info(ft)
-                for wiki in matched[id_]:
-                    try:
-                        wiki_info = (await WikiLib(wiki).check_wiki_available()).value
-                        note = fetches[id_][wiki].get("note")
-                        if note:
-                            wiki_name = f"({note}) "
-                        else:
-                            wiki_name = f"({wiki_info.name}) "
-                            if wiki_info.wikiid:
-                                wiki_name = f"({wiki_info.wikiid}) "
-                    except Exception:
-                        continue
 
-                    if matched[id_][wiki]["AbuseLog"]:
-                        ab = await convert_ab_to_detailed_format(ft_session, matched[id_][wiki]["AbuseLog"])
-                        for x in ab:
-                            await ft_session.send_direct_message(f"{wiki_name}{x}" if len(matched[id_]) > 1 else x)
-                    if matched[id_][wiki]["RecentChanges"]:
-                        rc = await convert_rc_to_detailed_format(
-                            ft_session, matched[id_][wiki]["RecentChanges"], wiki_info
-                        )
+        async def _send_logs(session_info, id_=id_):
+            """
+            在承担推送的会话上算出并逐条发出该组的日志。
 
-                        for x in rc:
-                            await ft_session.send_direct_message(f"{wiki_name}{x}" if len(matched[id_]) > 1 else x)
+            日志文本须按目标会话现算：敏感词检查取决于该会话所在平台是否要求，同组的不同平台
+            未必一致。逐条发送故在此处完成，工厂随即返回 None，不再交由外层发送。
+            """
+            session = await FetchedMessageSession.from_session_info(session_info)
+            for wiki in matched[id_]:
+                try:
+                    wiki_info = (await WikiLib(wiki).check_wiki_available()).value
+                    note = fetches[id_][wiki].get("note")
+                    if note:
+                        wiki_name = f"({note}) "
+                    else:
+                        wiki_name = f"({wiki_info.name}) "
+                        if wiki_info.wikiid:
+                            wiki_name = f"({wiki_info.wikiid}) "
+                except Exception:
+                    continue
+
+                if matched[id_][wiki]["AbuseLog"]:
+                    ab = await convert_ab_to_detailed_format(session, matched[id_][wiki]["AbuseLog"])
+                    for x in ab:
+                        await session.send_direct_message(f"{wiki_name}{x}" if len(matched[id_]) > 1 else x)
+                if matched[id_][wiki]["RecentChanges"]:
+                    rc = await convert_rc_to_detailed_format(session, matched[id_][wiki]["RecentChanges"], wiki_info)
+
+                    for x in rc:
+                        await session.send_direct_message(f"{wiki_name}{x}" if len(matched[id_]) > 1 else x)
+            return None
+
+        # 拉取按 union 去重，推送再按消息通道去重，同一个现实会话只收一份
+        await Bot.send_direct_message_to_union_target(id_, _send_logs)
