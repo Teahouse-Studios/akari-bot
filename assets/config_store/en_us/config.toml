@@ -54,7 +54,6 @@ donate_url = "http://afdian.com/a/teahouse" # Donate URL.
 help_url = "https://bot.teahouse.team" # Help document URL.
 help_page_url = "https://bot.teahouse.team/wiki/${module}" # Module help document URL.
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # Issue feedback URL.
-locale_url = "https://www.crowdin.com/project/akari-bot" # Localized project URL.
 
 [secret]
 # The secret config section. The bot will try to intercept if the values here accidentally appears in the message sent, but be careful to prevent leakage.

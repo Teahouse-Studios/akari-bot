@@ -55,7 +55,6 @@ donate_url = "http://afdian.com/a/teahouse" # 기부 URL.
 help_url = "https://bot.teahouse.team" # 도움말 문서 URL.
 help_page_url = "https://bot.teahouse.team/wiki/${module}" # 모듈 도움말 문서 URL.
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # 문제 신고 URL.
-locale_url = "https://www.crowdin.com/project/akari-bot" # 번역 프로젝트 URL.
 
 [secret]
 # 키 설정 섹션입니다. 이 값이 전송된 메시지에 실수로 나타날 경우 봇이 해당 메시지를 가로채려고 시도합니다. 하지만 이 값이 유출되지 않도록 각별히 주의해 주십시오.
