@@ -440,7 +440,7 @@ async def query_pages(
                                     bi += 1
                                 if rb:
                                     button_data.append(rb)
-                                Logger.debug("Button data: {}".format(button_data))
+                                Logger.debug(f"Button data: {button_data}")
                                 img_table = ImageTable(img_table_data, img_table_headers)
                                 i_msg_lst = []
                                 i_msg_lst.append(I18NContext("wiki.message.forum.prompt"))
@@ -460,7 +460,7 @@ async def query_pages(
 
                                 async def _callback(msg: Bot.MessageSession):
                                     display = msg.as_display(text_only=True)
-                                    Logger.debug("callback: {}".format(display))
+                                    Logger.debug(f"callback: {display}")
                                     if is_int(display) and int(display) <= len(forum_data) - 1:
                                         await query_pages(
                                             session,

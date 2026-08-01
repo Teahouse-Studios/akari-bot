@@ -1,6 +1,8 @@
 # ----------------------- 导入 -----------------------
+import ast
 from struct import unpack, pack
 from typing import Any, Dict, Optional, Union
+
 from ..logger import logger
 
 # ---------------------- 定义 ----------------------
@@ -85,7 +87,7 @@ class Bits(dataTypeAbstract):
         返回:
             (bytearray): 更新后的数据序列
         """
-        _value: type = eval(value)
+        _value = ast.literal_eval(value)
 
         if not isinstance(_value, list):
             raise TypeError(f'传入的值无法解析为 list，而被解析为："{_value.__class__.__name__}"')
@@ -142,7 +144,7 @@ class _Bits(dataTypeAbstract):
         返回:
             (bytearray): 更新后的数据序列
         """
-        _value: type = eval(value)
+        _value = ast.literal_eval(value)
 
         if not isinstance(_value, list):
             raise TypeError(f'传入的值无法解析为 list，而被解析为："{_value.__class__.__name__}"')
@@ -416,10 +418,10 @@ class GameKey(dataTypeAbstract):
 
         for keys in value.items():
             writer.type_write(String, keys[0])
-            writer.type_write(Byte, len(eval(keys[1]["flag"])) + 1)
+            writer.type_write(Byte, len(ast.literal_eval(keys[1]["flag"])) + 1)
             writer.type_write(Bits, keys[1]["type"])
 
-            for flag in eval(keys[1]["flag"]):
+            for flag in ast.literal_eval(keys[1]["flag"]):
                 writer.type_write(Byte, flag)
 
         return writer.get_data()
@@ -497,8 +499,8 @@ class GameRecord(dataTypeAbstract):
             # 长度字段必须先于成绩数据写入，其值为：每个难度 4 字节分数加 4 字节 acc，
             # 再加 unlock 与 fc 各 1 字节
             writer.type_write(VarInt, len(song) * (4 + 4) + 1 + 1)
-            unlock = eval(Bits.read(b"\x00", 0)[0])
-            fc = eval(Bits.read(b"\x00", 0)[0])
+            unlock = ast.literal_eval(Bits.read(b"\x00", 0)[0])
+            fc = ast.literal_eval(Bits.read(b"\x00", 0)[0])
             record_writer = Writer()
             for diff, index in diff_list.items():
                 if song.get(diff) is not None:

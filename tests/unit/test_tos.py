@@ -71,12 +71,14 @@ async def _test_abuse_warn_target_sends_message():
 
     # 默认测试环境将发送者置为超级用户，而 abuse_warn_target 对超级用户直接跳过警告，
     # 若不覆写该判定，本用例断言的发送行为永远不会发生。
-    with patch.object(MockMessageSession, "check_super_user", lambda self: False):
-        with patch("core.tos.CoreConfig", MockConfig):
-            with patch("core.tos.tos_report", new_callable=AsyncMock):
-                from core.tos import abuse_warn_target
+    with (
+        patch.object(MockMessageSession, "check_super_user", lambda self: False),
+        patch("core.tos.CoreConfig", MockConfig),
+        patch("core.tos.tos_report", new_callable=AsyncMock),
+    ):
+        from core.tos import abuse_warn_target
 
-                await abuse_warn_target(msg, "test_reason")
+        await abuse_warn_target(msg, "test_reason")
 
     return len(msg.sent) > 0
 

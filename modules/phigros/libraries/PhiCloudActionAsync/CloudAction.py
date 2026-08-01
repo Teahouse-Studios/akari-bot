@@ -312,7 +312,7 @@ class PhigrosCloud:
             logger.error("云存档可能已丢失，请重新将本地存档同步至云端。")
             raise ValueError(f"获取到的云存档大小不足 30 字节，当前大小：{len(save_data)}")
 
-        save_md5 = md5()
+        save_md5 = md5(usedforsecurity=False)
         save_md5.update(save_data)
         actual_checksum = save_md5.hexdigest()
         if checksum != actual_checksum:

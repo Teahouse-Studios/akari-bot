@@ -31,6 +31,15 @@ UNION_RENAME_TABLES = {
 UNION_RECORD_TABLES = ["analytics_data", "unfriendly_actions"]
 
 
+def quote_ident(name: str) -> str:
+    """
+    按当前数据库类型给标识符加引号。
+
+    :param name: 表名或列名。
+    """
+    return f'"{name}"' if db_type == "sqlite" else f"`{name}`"
+
+
 async def has_table(conn, table: str) -> bool:
     """
     判断某张表是否存在。
@@ -59,7 +68,7 @@ async def has_column(conn, table: str, column: str) -> bool:
     :param column: 列名。
     """
     if db_type == "sqlite":
-        rows = await conn.execute_query_dict(f'PRAGMA table_info("{table}");')
+        rows = await conn.execute_query_dict(f"PRAGMA table_info({quote_ident(table)});")
         return any(row["name"] == column for row in rows)
     rows = await conn.execute_query_dict(
         "SELECT COLUMN_NAME FROM information_schema.COLUMNS "
@@ -81,9 +90,9 @@ async def has_index(conn, table: str, column: str) -> bool:
     :param column: 列名。
     """
     if db_type == "sqlite":
-        indexes = await conn.execute_query_dict(f'PRAGMA index_list("{table}");')
+        indexes = await conn.execute_query_dict(f"PRAGMA index_list({quote_ident(table)});")
         for index in indexes:
-            columns = await conn.execute_query_dict(f'PRAGMA index_info("{index["name"]}");')
+            columns = await conn.execute_query_dict(f"PRAGMA index_info({quote_ident(index['name'])});")
             if columns and columns[0]["name"] == column:
                 return True
         return False
@@ -93,15 +102,6 @@ async def has_index(conn, table: str, column: str) -> bool:
         [table, column],
     )
     return bool(rows)
-
-
-def quote_ident(name: str) -> str:
-    """
-    按当前数据库类型给标识符加引号。
-
-    :param name: 表名或列名。
-    """
-    return f'"{name}"' if db_type == "sqlite" else f"`{name}`"
 
 
 async def update_database_to_v3(conn):
@@ -128,11 +128,13 @@ async def update_database_to_v3(conn):
             if not await has_column(conn, table, old_column):
                 continue
             if db_type == "sqlite":
-                await conn.execute_query(f'ALTER TABLE "{table}" RENAME COLUMN "{old_column}" TO "union_id";')
+                await conn.execute_query(
+                    f"ALTER TABLE {quote_ident(table)} RENAME COLUMN {quote_ident(old_column)} TO 'union_id';"
+                )
             else:
                 # CHANGE COLUMN 兼容 MySQL 8.0 以下版本。
                 await conn.execute_query(
-                    f"ALTER TABLE `{table}` CHANGE COLUMN `{old_column}` `union_id` VARCHAR(512) NOT NULL;"
+                    f"ALTER TABLE {quote_ident(table)} CHANGE COLUMN {quote_ident(old_column)} {quote_ident('union_id')} VARCHAR(512) NOT NULL;"
                 )
 
     # 补建映射行。旧数据的 union ID 与原 ID 相同，直接按原值一一对应即可。
@@ -167,10 +169,16 @@ async def update_database_to_v3(conn):
             if await has_column(conn, table, column):
                 continue
             if db_type == "sqlite":
-                await conn.execute_query(f'ALTER TABLE "{table}" ADD COLUMN "{column}" VARCHAR(512) NULL;')
+                await conn.execute_query(
+                    f"ALTER TABLE {quote_ident(table)} ADD COLUMN {quote_ident(column)} VARCHAR(512) NULL;"
+                )
             else:
-                await conn.execute_query(f"ALTER TABLE `{table}` ADD COLUMN `{column}` VARCHAR(512) NULL;")
-            await conn.execute_query(f"UPDATE {table} SET {column} = {source} WHERE {column} IS NULL;")
+                await conn.execute_query(
+                    f"ALTER TABLE {quote_ident(table)} ADD COLUMN {quote_ident(column)} VARCHAR(512) NULL;"
+                )
+            await conn.execute_query(
+                f"UPDATE {quote_ident(table)} SET {quote_ident(column)} = {quote_ident(source)} WHERE {quote_ident(column)} IS NULL;"
+            )
 
     # 轮询与区间统计所需的索引。job_queues 每 100 毫秒被每个进程轮询一次，analytics_data 则要
     # 按时间区间反复聚合，两者都随行数增长退化为全表扫描。表由 generate_schemas() 新建时已依模型
@@ -183,20 +191,28 @@ async def update_database_to_v3(conn):
         if await has_index(conn, table, column):
             continue
         if db_type == "sqlite":
-            columns = '"target_client", "status"' if table == "job_queues" else f'"{column}"'
-            await conn.execute_query(f'CREATE INDEX "{index_name}" ON "{table}" ({columns});')
+            columns = (
+                f"{quote_ident('target_client')}, {quote_ident('status')}"
+                if table == "job_queues"
+                else quote_ident(column)
+            )
+            await conn.execute_query(f"CREATE INDEX {quote_ident(index_name)} ON {quote_ident(table)} ({columns});")
         else:
-            columns = "`target_client`, `status`" if table == "job_queues" else f"`{column}`"
-            await conn.execute_query(f"CREATE INDEX `{index_name}` ON `{table}` ({columns});")
+            columns = (
+                f"{quote_ident('target_client')}, {quote_ident('status')}"
+                if table == "job_queues"
+                else quote_ident(column)
+            )
+            await conn.execute_query(f"CREATE INDEX {quote_ident(index_name)} ON {quote_ident(table)} ({columns});")
 
     if not await has_column(conn, "module_phigros_bind_info", "is_international"):
         if db_type == "sqlite":
             await conn.execute_query(
-                'ALTER TABLE "module_phigros_bind_info" ADD COLUMN "is_international" INT NOT NULL DEFAULT 0;'
+                f"ALTER TABLE {quote_ident('module_phigros_bind_info')} ADD COLUMN {quote_ident('is_international')} INT NOT NULL DEFAULT 0;"
             )
         else:
             await conn.execute_query(
-                "ALTER TABLE `module_phigros_bind_info` ADD COLUMN `is_international` BOOL NOT NULL DEFAULT 0;"
+                f"ALTER TABLE {quote_ident('module_phigros_bind_info')} ADD COLUMN {quote_ident('is_international')} BOOL NOT NULL DEFAULT 0;"
             )
 
 

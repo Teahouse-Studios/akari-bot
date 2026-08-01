@@ -100,7 +100,8 @@ class MkeyGenerator:
         self._data_path = Path(__file__).parent / "data"
 
     # Dump bytes as hex, for debug output only.
-    def _hexdump(self, data: bytes, width: int = 16) -> None:
+    @staticmethod
+    def _hexdump(data: bytes, width: int = 16) -> None:
         for offset in range(0, len(data), width):
             chunk = data[offset : offset + width]
             hex_part = " ".join(f"{b:02X}" for b in chunk)

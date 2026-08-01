@@ -60,7 +60,8 @@ class S3StorageAPI:
             except ClientError as e:
                 Logger.warning(f"[S3] Failed to ensure folder {key}: {e}")
 
-    async def _run_sync(self, func, *args, **kwargs):
+    @staticmethod
+    async def _run_sync(func, *args, **kwargs):
         return await asyncio.to_thread(func, *args, **kwargs)
 
     async def upload_persist(self, file_path: str | Path, object_key: str | None = None, expires: int = 3600) -> dict:
@@ -136,7 +137,8 @@ class S3StorageAPI:
 
     # --- manifest helpers ---
 
-    def _manifest_key(self, prefix: str) -> str:
+    @staticmethod
+    def _manifest_key(prefix: str) -> str:
         return f"{prefix}/.manifest.json"
 
     def _read_manifest_sync(self, prefix: str) -> list[dict]:
