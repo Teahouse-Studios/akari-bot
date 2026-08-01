@@ -1,5 +1,4 @@
 import os
-import string
 from datetime import datetime, UTC
 from pathlib import Path
 
@@ -25,7 +24,7 @@ from core.utils.random import Random
 
 BIND_CODE_EXPIRED = 300  # 绑定码有效期（秒）
 BIND_CODE_LENGTH = 6
-BIND_CODE_ALPHABET = (string.ascii_uppercase + string.digits).translate(str.maketrans("", "", "IO"))
+BIND_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ1234567890"
 
 
 def generate_code(store: ExpiringTempDict, union_id: str, holder_id: str, extra: dict | None = None) -> str:

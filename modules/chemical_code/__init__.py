@@ -267,7 +267,7 @@ async def chemical_code(msg: Bot.MessageSession, id: int | None = None, random_m
 
     drawer = Draw.rdMolDraw2D.MolDraw2DCairo(size, size)
     options = drawer.drawOptions()
-    options.padding = min(0.2 * (10 / num_atoms), 0.2)
+    options.padding = min(0.2 * (10 / max(num_atoms, 1)), 0.2)
     options.setAtomPalette(element_colors)
     drawer.SetDrawOptions(options)
     drawer.DrawMolecule(mol)
