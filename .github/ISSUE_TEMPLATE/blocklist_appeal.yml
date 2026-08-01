@@ -46,7 +46,7 @@ body:
       label: 聊天平台
       description: 你的账号所在平台。
       options:
-        - QQ（Onebot）
+#        - QQ（Onebot）
         - QQ（官方）
         - Discord
         - Telegram

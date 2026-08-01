@@ -35,17 +35,17 @@ _多功能、跨平台、可自由扩展的异步聊天机器人助手_
 茶馆工作室和问谛居共同提供小可的公共实例。
 
 #### QQ
-##### 官方机器人
+<!--##### 官方机器人-->
 <div align="left">
   <img width="200" src="./assets/qqbot_qr_guild.png" alt="guild qr">
   <img width="200" src="./assets/qqbot_qr_group.png" alt="group qr">
 </div>
-
+<!--
 ##### 第三方协议
 由于腾讯风控问题，请[在此提交](https://github.com/Teahouse-Studios/akari-bot/issues/new?assignees=OasisAkari&labels=New&template=add_new_group.yaml&title=%5BNEW%5D%3A+)入群申请。
+-->
 
 你也可以加入我们的 QQ 公共实例测试群：[738829671](https://qm.qq.com/q/Rmuo5ORYgq)
-
 #### Discord
 
 邀请链接：<https://discord.com/oauth2/authorize?client_id=879379218209861712&scope=bot&permissions=71605695277126>
