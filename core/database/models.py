@@ -308,7 +308,7 @@ class TargetUnionBind(UnionBind):
         :param union_id: 场景 union ID。
         """
         binds = await cls.filter(union_id=union_id).values_list("target_id", "channel_id")
-        return {target_id: channel_id for target_id, channel_id in binds}
+        return dict(binds)
 
 
 def new_union_id(scope: str) -> str:

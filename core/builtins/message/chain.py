@@ -507,16 +507,10 @@ class MessageChain:
         return MessageChain.assign(self.values.copy())
 
     def contains(self, types: type[MessageElement] | tuple[MessageElement]) -> bool:
-        for x in self.values:
-            if isinstance(x, types):
-                return True
-        return False
+        return any(isinstance(x, types) for x in self.values)
 
     def only(self, types: type[MessageElement] | tuple[MessageElement]) -> bool:
-        for x in self.values:
-            if not isinstance(x, types):
-                return False
-        return True
+        return all(isinstance(x, types) for x in self.values)
 
     def extend(self, other: MessageChain):
         return self.__iadd__(other)
@@ -1024,12 +1018,7 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
                 path = parsed_params.get("path")
 
                 if path:
-                    parse_url = urlparse(path)
-
-                    if parse_url[0] == "file" or url_pattern.match(parse_url[1]):
-                        elements.append(VoiceElement.assign(path))
-                    else:
-                        elements.append(VoiceElement.assign(path))
+                    elements.append(VoiceElement.assign(path))
 
             # ========= 多语言 =========
             elif element_type == "i18n":

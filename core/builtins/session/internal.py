@@ -188,7 +188,7 @@ class MessageSession:
         enable_split_image: bool = True,
         callback: Coroutine | None = None,
         callback_id: str | None = None,
-        button_data: list[dict[str, str]] = [],
+        button_data: list[dict[str, str]] = [],  # skipcq
     ) -> NoReturn:
         """
         用于向消息用户返回消息并终结会话（模块后续代码不再执行）。

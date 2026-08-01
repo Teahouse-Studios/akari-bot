@@ -143,8 +143,7 @@ class QQBotContextManager(ContextManager):
             elif isinstance(ctx, GroupMessage):
                 if ctx.author.member_role in ["admin", "owner"]:
                     return True
-                else:
-                    return False
+                return False
             elif isinstance(ctx, C2CMessage):
                 return True
         return False

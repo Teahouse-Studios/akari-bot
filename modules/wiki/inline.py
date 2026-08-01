@@ -305,7 +305,7 @@ async def _(msg: Bot.MessageSession):
                                 bi += 1
                             if rb:
                                 button_data.append(rb)
-                            Logger.debug("Button data: {}".format(button_data))
+                            Logger.debug(f"Button data: {button_data}")
                             img_table = ImageTable(img_table_data, img_table_headers)
                             i_msg_lst = []
                             i_msg_lst.append(I18NContext("wiki.message.forum.prompt"))

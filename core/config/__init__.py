@@ -305,10 +305,8 @@ class CFGManager:
             if not _global:  # if table_name is not provided, search for the value in config.toml tables
                 for t in cls.values["config"].keys():
                     if isinstance(cls.values["config"][t], Table):
-                        """
-                        [config]
-                        foo = bar  <- get the value inside the table
-                        """
+                        # [config]
+                        # foo = bar  <- get the value inside the table
                         if secret:
                             if "secret" in cls.values["config"]:
                                 value = cls.values["config"]["secret"].get(q)
@@ -320,11 +318,9 @@ class CFGManager:
                                 if value is not None:
                                     break
                     else:
-                        """
-                        foo = bar <- if the item is not a table, assume it is a key-value pair outside the table
-                        [config]
-                        foo = bar
-                        """
+                        # foo = bar <- if the item is not a table, assume it is a key-value pair outside the table
+                        # [config]
+                        # foo = bar
                         if t == q:
                             value = cls.values["config"][t]
                             break
@@ -477,10 +473,9 @@ class CFGManager:
             if not table_name:  # if table_name is not provided, search for the value in config.toml tables
                 for t in cls.values["config"].keys():
                     if isinstance(cls.values["config"][t], Table):
-                        """
-                        [config]
-                        foo = bar  <- get the value inside the table
-                        """
+                        # [config]
+                        # foo = bar  <- get the value inside the table
+
                         if secret:
                             if "secret" in cls.values["config"]:
                                 if q in cls.values["config"]["secret"]:
@@ -494,11 +489,9 @@ class CFGManager:
                                     found = True
                                     break
                     else:
-                        """
-                        foo = bar <- if the item is not a table, assume it"s a key-value pair outside the table
-                        [config]
-                        foo = bar
-                        """
+                        # foo = bar <- if the item is not a table, assume it"s a key-value pair outside the table
+                        # [config]
+                        # foo = bar
                         if t == q:
                             cls.values["config"][t] = value
                             found = True

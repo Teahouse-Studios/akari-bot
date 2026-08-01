@@ -43,7 +43,7 @@ def _test_private_ip_check_blocks_private():
         try:
             private_ip_check("http://127.0.0.1/test")
             return False
-        except (ValueError, Exception):
+        except Exception:
             return True
     except Exception:
         return False

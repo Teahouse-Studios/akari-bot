@@ -139,6 +139,7 @@ async def _(msg: Bot.MessageSession, mod_name: str, version: str | None = None):
         replied = reply.as_display(text_only=True)
 
         # 查找 Mod
+        mod_info = None
         if is_int(replied):
             replied = int(replied)
             if not replied or replied > len(cache_result):

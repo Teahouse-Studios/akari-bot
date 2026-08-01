@@ -714,7 +714,7 @@ async def get_module_helpdoc(tsk: JobQueuesTable, args: dict):
 
     :return: 包含 help_doc 的字典，help_doc 包含模块名称、描述、命令和正则规则
     """
-    module = ModulesManager.modules.get(args.get("module", ""), None)
+    module = ModulesManager.modules.get(args.get("module", ""))
     help_doc = {}
     if module:
         help_doc["module_name"] = module.module_name
