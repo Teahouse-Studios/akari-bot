@@ -6,6 +6,7 @@ from core.builtins.message.internal import I18NContext, Plain
 from core.logger import Logger
 from core.utils.func import is_int
 from .database.models import WikiTargetInfo
+from .utils.recommend import finish_with_start_wiki_not_set
 from .utils.wikilib import WikiLib
 from .wiki import wiki, query_pages
 import uuid
@@ -23,7 +24,7 @@ async def search_pages(msg: Bot.MessageSession, title: str | list | tuple, use_p
     headers = target.headers
     prefix = target.prefix
     if not start_wiki:
-        await msg.finish(I18NContext("wiki.message.set.not_set", prefix=msg.session_info.prefixes[0]))
+        await finish_with_start_wiki_not_set(msg)
     if isinstance(title, str):
         title = [title]
     query_task = {start_wiki: {"query": [], "iw_prefix": ""}}

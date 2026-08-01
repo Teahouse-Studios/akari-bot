@@ -75,6 +75,35 @@ def _test_rickroll():
         return False
 
 
+async def _test_check_bool_clean_is_false():
+    """check_bool: 内容合规时返回 False
+
+    该函数回答的是「是否含有不合规内容」，与 check() 的 status 字段正好相反，
+    调用方曾据其旧有的文档把两个分支写反，故在此把语义钉住。
+    """
+    try:
+        with patch("core.dirty_check.access_key_id", ""), patch("core.dirty_check.access_key_secret", ""):
+            from core.dirty_check import check_bool
+
+            return (await check_bool("Hello World")) is False
+    except Exception:
+        return False
+
+
+async def _test_check_bool_dirty_is_true():
+    """check_bool: 含有不合规内容时返回 True"""
+    try:
+        from core.dirty_check import check_bool
+
+        async def _redacted(*args, **kwargs):
+            return [{"content": "<ALL REDACTED:test>", "status": False, "original": "test"}]
+
+        with patch("core.dirty_check.check", _redacted):
+            return (await check_bool("test")) is True
+    except Exception:
+        return False
+
+
 @func_case
 async def test_dirty_check(tester: Tester):
     """core.dirty_check: 内容审核系统测试"""
@@ -84,4 +113,6 @@ async def test_dirty_check(tester: Tester):
     await tester.test(_test_check_no_keys, "check 无密钥跳过测试")
     await tester.test(_test_check_empty_text, "check 空文本测试")
     await tester.test(_test_rickroll, "rickroll 测试")
+    await tester.test(_test_check_bool_clean_is_false, "check_bool 合规返回假测试")
+    await tester.test(_test_check_bool_dirty_is_true, "check_bool 不合规返回真测试")
     return tester

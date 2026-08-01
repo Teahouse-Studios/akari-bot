@@ -60,3 +60,15 @@ async def test_wiki_not_found(tester: Tester):
     await tester.integrate(START_WIKI, Contains("成功设置起始 Wiki"), "设置 Wiki")
     await tester.integrate("~wiki nonexistent_page_xyz_12345", Contains("未找到"), "不存在的页面应提示未找到")
     return tester
+
+
+@func_case
+async def test_wiki_start_wiki_not_set(tester: Tester):
+    """未设置起始 Wiki 提示测试
+
+    推荐绑定的按钮只在 QQ 官方机器人上附加，测试会话的客户端名恒为 TEST，
+    故此处只求证提示本身照常发出，按钮相关的判据见 tests/unit/test_wiki_recommend.py。
+    """
+    await tester.integrate("~wiki Minecraft", Contains("没有设置起始 Wiki"), "wiki 查询应提示未设置")
+    await tester.integrate("~wiki search Minecraft", Contains("没有设置起始 Wiki"), "wiki search 应提示未设置")
+    return tester

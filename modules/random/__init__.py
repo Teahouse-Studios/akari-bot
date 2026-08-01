@@ -30,9 +30,9 @@ async def _(msg: Bot.MessageSession):
     choices = [msg.parsed_msg.get("<choices>")] + msg.parsed_msg.get("...", [])
     c = Random.choice(choices)
     if await check_bool(c):
-        await msg.finish(c)
-    else:
         await msg.finish(I18NContext("random.message.idk"))
+    else:
+        await msg.finish(c)
 
 
 @r.command("shuffle <cards> ... {{I18N:random.help.shuffle}}")

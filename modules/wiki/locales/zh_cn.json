@@ -125,6 +125,7 @@
     "wiki.message.search.prompt.button": "点击按钮以查询对应的页面。",
     "wiki.message.section.rendering": "（章节渲染中……）",
     "wiki.message.set.not_set": "没有设置起始 Wiki，使用“${prefix}wiki set”设置自定义起始 Wiki。",
+    "wiki.message.set.not_set.recommend": "或点击下方按钮，绑定推荐的 Wiki。",
     "wiki.message.set.success": "成功设置起始 Wiki：${name}",
     "wiki.message.table.header.id": "编号",
     "wiki.message.table.header.section": "章节",

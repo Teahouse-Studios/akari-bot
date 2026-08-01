@@ -310,10 +310,10 @@ async def check_bool(
     session: MessageSession | None = None,
     confidence: float = 60,
 ) -> bool:
-    """检查字符串是否合规。
+    """检查字符串是否含有不合规内容。
 
     :param text: 字符串（List/Union）。
-    :returns: 字符串是否合规。
+    :returns: 是否含有不合规内容，含有时为`True`。
     """
     chk = await check(text, session, confidence)
     for x in chk:

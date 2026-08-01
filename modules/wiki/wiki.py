@@ -19,6 +19,7 @@ from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
 from .database.models import WikiTargetInfo
 from .utils.mapping import generate_screenshot_v2_blocklist
+from .utils.recommend import finish_with_start_wiki_not_set
 from .utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
 from .utils.utils import check_svg
 from .utils.wikilib import WikiLib, PageInfo, InvalidWikiError, QueryInfo
@@ -103,7 +104,7 @@ async def query_pages(
 
     if not start_wiki:
         if isinstance(session, MessageSession):
-            await session.finish(I18NContext("wiki.message.set.not_set", prefix=session.session_info.prefixes[0]))
+            await finish_with_start_wiki_not_set(session)
     # if lang in interwiki_list:
     #     start_wiki = interwiki_list[lang]
     #     lang = None
