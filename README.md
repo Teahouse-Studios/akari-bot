@@ -11,7 +11,6 @@ _多功能、跨平台、可自由扩展的异步聊天机器人助手_
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/pulls)
 [![GitHub releases](https://img.shields.io/github/v/release/Teahouse-Studios/akari-bot
 )](https://github.com/Teahouse-Studios/akari-bot/releases)
-[![Crowdin](https://badges.crowdin.net/akari-bot/localized.svg)](https://crowdin.com/project/akari-bot)
 ![GitHub Repo stars](https://img.shields.io/github/stars/Teahouse-Studios/akari-bot?style=social)
 <br>
 ![Python](https://img.shields.io/badge/Python-3.12+-blue)
