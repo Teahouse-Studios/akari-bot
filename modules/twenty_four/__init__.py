@@ -118,8 +118,8 @@ def find_solution(numbers):
                 results.add(exprs[0][0])
             return
 
-        for i in range(len(nums)):
-            for j in range(len(nums)):
+        for i in enumerate(nums):
+            for j in enumerate(nums):
                 if i == j:
                     continue
 
