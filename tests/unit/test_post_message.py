@@ -49,7 +49,7 @@ async def _test_channel_posts_once_with_next_hops():
         await Bot.post_message("", MessageChain.assign("hello"), sessions)
         posted = await _take_posted()
 
-        # 同一条通道对应同一个现实会话，推送两次即发出两条重复消息。
+        # 同一条通道对应同一个现实场景，推送两次即发出两条重复消息。
         return posted == [("POSTA1|Group|a", ["POSTA2|Group|b"])]
 
     except Exception:

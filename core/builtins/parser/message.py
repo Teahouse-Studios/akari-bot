@@ -128,11 +128,11 @@ match_hash_cache = ExpiringTempDict()
 # 跨平台的消息 ID 无法互通，只能依据「内容一致且接收时间相近」判定是否为同一条消息
 CHANNEL_DEDUP_WINDOW = 10
 
-# 消息通道认领记录 - 键为 union|通道号|文本哈希，由最先写入的会话负责执行
+# 消息通道认领记录 - 键为 union|通道号|文本哈希，由最先写入的场景负责执行
 channel_claim_cache = ExpiringTempDict()
 
-# 标记为单次触发的正则，其「模块名 + 正则序号 + 会话 ID」在此登记，登记后不再参与匹配。
-# 仅存于进程内存，重启即清空；条目数上限为「触发过的会话数 × 单次触发正则条数」，有界。
+# 标记为单次触发的正则，其「模块名 + 正则序号 + 场景 ID」在此登记，登记后不再参与匹配。
+# 仅存于进程内存，重启即清空；条目数上限为「触发过的场景数 × 单次触发正则条数」，有界。
 regex_once_cache: set[tuple[str, int, str]] = set()
 
 
@@ -170,7 +170,7 @@ async def parser(msg: "Bot.MessageSession"):
     try:
         # ========== 步骤 1: 检查任务队列 ==========
         # 检查是否有等待此消息的任务（如等待用户回复）
-        # 等待任务按消息通道建键，同通道内的会话共享。退役会话若在此抢先命中，存活会话挂起的
+        # 等待任务按消息通道建键，同通道内的场景共享。退役场景若在此抢先命中，存活场景挂起的
         # 等待便由它的消息触发，模块拿到的结果也随之出自退役平台。故此处须与通道认领同判据，
         # 且早于任务检查：认领只拦命令与正则两条路径，拦不到等待。
         if not await is_yielding_retired_session(
@@ -190,7 +190,7 @@ async def parser(msg: "Bot.MessageSession"):
         if len(msg.trigger_msg) == 0:
             return
 
-        # 屏蔽同一个现实会话里其它机器人发的消息，避免把对方的输出当成用户输入去执行
+        # 屏蔽同一个现实场景里其它机器人发的消息，避免把对方的输出当成用户输入去执行
         if msg.session_info.sender_id in msg.session_info.target_union_info.list_peer_bots(msg.session_info.target_id):
             Logger.debug("Ignored message from other clients: " + msg.trigger_msg)
             return
@@ -202,7 +202,7 @@ async def parser(msg: "Bot.MessageSession"):
         ):
             return
 
-        # 检查用户是否在会话的屏蔽用户列表中（会话黑名单，按 union 记录，换绑同一 union 的其他账号同样受限）
+        # 检查用户是否在场景的屏蔽用户列表中（场景黑名单，按 union 记录，换绑同一 union 的其他账号同样受限）
         if msg.session_info.sender_union_id in msg.session_info.banned_users and not msg.session_info.superuser:
             return
 
@@ -215,8 +215,8 @@ async def parser(msg: "Bot.MessageSession"):
 
             command_first_word = await _process_command(msg, modules, disable_prefix, in_prefix_list)
 
-            # 退役客户端仅保留白名单模块。此处须早于通道认领：若退役会话先认领再因退役不执行，
-            # 同通道的其他会话会因避让而放弃处理，该会话内将无人响应。
+            # 退役客户端仅保留白名单模块。此处须早于通道认领：若退役场景先认领再因退役不执行，
+            # 同通道的其他场景会因避让而放弃处理，该场景内将无人响应。
             if (
                 is_retired_client(msg.session_info.client_name)
                 and not is_module_allowed_when_retired(command_first_word)
@@ -224,7 +224,7 @@ async def parser(msg: "Bot.MessageSession"):
             ):
                 return
 
-            # 执行前先认领消息通道，同通道内已有会话认领则避让，_process_command 会去掉 trigger_msg 的前缀
+            # 执行前先认领消息通道，同通道内已有场景认领则避让，_process_command 会去掉 trigger_msg 的前缀
             if await _claim_channel_message(msg):
                 return
 
@@ -233,7 +233,7 @@ async def parser(msg: "Bot.MessageSession"):
                     await msg.send_message(I18NContext("parser.command.running.prompt"))
                     return
 
-            if msg.session_info.muted and command_first_word != "mute":  # 检查机器人在会话中是否被禁言
+            if msg.session_info.muted and command_first_word != "mute":  # 检查机器人在场景中是否被禁言
                 return
 
             if command_first_word in modules:  # 检查触发命令是否在模块列表中
@@ -282,14 +282,14 @@ async def parser(msg: "Bot.MessageSession"):
 
 async def _claim_channel_message(msg: "Bot.MessageSession", display: str | None = None) -> bool:
     """
-    认领一条消息，并判断它是否已被同一消息通道内的另一个会话处理。
+    认领一条消息，并判断它是否已被同一消息通道内的另一个场景处理。
 
-    跨平台的消息 ID 无法互通，判定「同一条消息」只能依据来源、内容与时间：出自通道内的另一个会话，
+    跨平台的消息 ID 无法互通，判定「同一条消息」只能依据来源、内容与时间：出自通道内的另一个场景，
     纯文本一致，且两次接收的时间相差不超过 :data:`CHANNEL_DEDUP_WINDOW` 秒。
 
     :param msg: 消息会话。
     :param display: 参与判定的文本，留空则取命令文本。
-    :return: True 表示已被其它会话认领，当前会话应当避让。
+    :return: True 表示已被其它场景认领，当前场景应当避让。
     """
     union_id = msg.session_info.target_union_id
     if not union_id:
@@ -297,13 +297,13 @@ async def _claim_channel_message(msg: "Bot.MessageSession", display: str | None 
     channel_id = msg.session_info.target_channel_id
 
     channels = await TargetUnionBind.list_channels(union_id)
-    # 通道内仅有自身时不存在重复执行的可能，绝大多数会话经由此快路径返回。
+    # 通道内仅有自身时不存在重复执行的可能，绝大多数场景经由此快路径返回。
     if sum(1 for cid in channels.values() if cid == channel_id) <= 1:
         return False
 
-    # 退役会话不执行白名单之外的命令，由它认领会导致同通道的其他会话避让而无人响应。
+    # 退役场景不执行白名单之外的命令，由它认领会导致同通道的其他场景避让而无人响应。
     if should_yield_channel(msg.session_info.target_id, channels, channel_id):
-        Logger.debug(f"Retired session {msg.session_info.target_id} yielded the channel.")
+        Logger.debug(f"Retired context {msg.session_info.target_id} yielded the channel.")
         return True
 
     if display is None:
@@ -317,7 +317,7 @@ async def _claim_channel_message(msg: "Bot.MessageSession", display: str | None 
     claimed_by = claimed.get("target_id") if claimed else None
     # 认领方须与自身不同方可判定为重复。认领键只由通道与内容组成，不含发起方，
     # 若不加这一判据，用户在时间窗内重复发送同样的内容会撞上自己上一条留下的认领，该条消息将无人响应。
-    # 此情形照常落至下方改写认领记录，同通道的其它会话因而仍按最新一次到达的时间避让。
+    # 此情形照常落至下方改写认领记录，同通道的其它场景因而仍按最新一次到达的时间避让。
     if claimed_at and claimed_by != msg.session_info.target_id and abs(now - claimed_at) <= CHANNEL_DEDUP_WINDOW:
         Logger.debug(f"Ignored duplicate message claimed by {claimed_by}: {display}")
         return True
@@ -764,7 +764,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
 
 def regex_once_triggered(module_name: str, index: int, target_id: str) -> bool:
     """
-    判断一条标记为单次触发的正则是否已在该会话中跑过。
+    判断一条标记为单次触发的正则是否已在该场景中跑过。
 
     :param module_name: 所属模块名称。
     :param index: 该正则在模块 ``regex_list`` 中的序号。
@@ -776,7 +776,7 @@ def regex_once_triggered(module_name: str, index: int, target_id: str) -> bool:
 
 def mark_regex_once(module_name: str, index: int, target_id: str) -> None:
     """
-    登记一条单次触发的正则已在该会话中跑过。
+    登记一条单次触发的正则已在该场景中跑过。
 
     :param module_name: 所属模块名称。
     :param index: 该正则在模块 ``regex_list`` 中的序号。
@@ -789,12 +789,12 @@ def regex_module_enabled(module: "Module", module_name: str, enabled_modules: li
     """
     判断一个模块的正则处理函数是否应当参与匹配。
 
-    base 模块无须在会话中启用即可生效，与命令路径 :func:`_execute_module` 的判定保持一致。
+    base 模块无须在场景中启用即可生效，与命令路径 :func:`_execute_module` 的判定保持一致。
     此前该豁免仅存在于命令路径，导致 base 模块注册的正则永远不会触发。
 
     :param module: 待判定的模块。
     :param module_name: 模块名称。
-    :param enabled_modules: 当前会话已启用的模块列表。
+    :param enabled_modules: 当前场景已启用的模块列表。
     :return: 是否参与匹配。
     """
     if module.base:
@@ -827,8 +827,8 @@ def regex_func_available(rfunc, target_from: str, client_name: str) -> bool:
     ``@module.regex(available_for=...)`` 形同虚设。
 
     :param rfunc: 正则处理函数的元数据。
-    :param target_from: 当前会话的场景前缀。
-    :param client_name: 当前会话的客户端名称。
+    :param target_from: 当前场景的前缀。
+    :param client_name: 当前客户端名称。
     :return: 是否可用。
     """
     if not rfunc.load:
@@ -936,7 +936,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                     if not regex_func_available(rfunc, msg.session_info.target_from, msg.session_info.client_name):
                         continue
 
-                    # 单次触发的正则在该会话跑过之后不再参与匹配，避免每条消息都付出
+                    # 单次触发的正则在该场景跑过之后不再参与匹配，避免每条消息都付出
                     # 通道认领的数据库查询与统计插入。
                     if rfunc.trigger_once_startup and regex_once_triggered(m, index, msg.session_info.target_id):
                         continue
@@ -976,7 +976,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                                 Logger.info(f"{identify_str} -> [Bot]: {msg.trigger_msg}")
                             Logger.debug("Matched hash:" + str(matched_hash))
 
-                            # 执行前先认领消息通道，同通道内已有会话认领则避让
+                            # 执行前先认领消息通道，同通道内已有场景认领则避让
                             if await _claim_channel_message(msg, str(matched_hash)):
                                 continue
 
@@ -1011,7 +1011,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                             if not try_acquire_execution_lock(msg):
                                 continue
 
-                            # 标记须在调用处理函数之前落下：处理函数为协程，其执行期间同一会话的
+                            # 标记须在调用处理函数之前落下：处理函数为协程，其执行期间同一场景的
                             # 下条消息若到达，标记尚未设置便会重复触发。抛异常时同样保留标记——
                             # 下游链路本就有问题，再次触发只是白费开销。
                             if rfunc.trigger_once_startup:
@@ -1239,7 +1239,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
     该函数是带命令模板的模块的执行入口，负责：
     1. 使用 CommandParser 解析命令参数
     2. 验证用户权限（超级用户、管理员等）
-    3. 检查命令在当前会话中的有效性（平台限制等）
+    3. 检查命令在当前场景中的有效性（平台限制等）
     4. 根据命令函数的参数签名构建调用参数
     5. 显示“正在输入……”状态（如果用户启用）
     6. 执行命令函数
@@ -1276,7 +1276,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
                     await msg.send_message(I18NContext("parser.admin.permission.denied.command"))
                     return
 
-            # ========== 步骤 3: 检查命令是否在会话内有效 ==========
+            # ========== 步骤 3: 检查命令是否在场景内有效 ==========
 
             if (
                 not command.load
@@ -1506,7 +1506,7 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
 
     # ========== 发送错误报告给管理员 ==========
     if report_targets:
-        # 上报场景按平台会话 ID 配置，其中若有若干个同属一个现实会话，只应由其中一个收到回传
+        # 上报场景按平台场景 ID 配置，其中若有若干个同属一个现实场景，只应由其中一个收到回传
         for f in await bot.pick_channel_heads(await bot.fetch_target_list(report_targets)):
             # 发送详细的错误报告
             await bot.send_direct_message(
@@ -1525,7 +1525,7 @@ def __get_close_matches(
 ) -> list[str] | list[tuple]:
     """使用 RapidFuzz 查找最接近的匹配项
 
-    :param word: 场景搜索字符串。
+    :param word: 待搜索的字符串。
     :type word: str
     :param possibilities: 候选字符串列表。
     :type possibilities: List[str]

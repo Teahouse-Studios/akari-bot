@@ -45,7 +45,7 @@ def _answer_confirm(result: bool):
 
 
 async def _test_private_binds_both_unions():
-    """测试 bind start - 私聊绑定须同时并入账号组与会话组"""
+    """测试 bind start - 私聊绑定须同时并入账号组与场景组"""
     try:
         initiator = await _session("BINDA", True)
         entry = _issue_private_code(initiator)
@@ -99,7 +99,7 @@ async def _test_scene_mismatch_rejected():
     """测试 bind start - 私聊码与群组码不得跨场景兑换"""
     try:
         entry = _issue_private_code(await _session("BINDE", True))
-        # 群组会话兑换私聊码会把整个群的数据并进对方的私聊，必须拦下
+        # 群组场景兑换私聊码会把整个群的数据并进对方的私聊，必须拦下
         group = await _session("BINDF", False)
         return entry["is_private"] != group.session_info.is_private
 

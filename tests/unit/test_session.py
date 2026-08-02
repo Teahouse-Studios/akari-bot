@@ -152,8 +152,8 @@ async def _test_task_add_and_get():
         task_list = SessionTaskManager.get()
         session_info = msg.session_info
 
-        # 任务按消息通道建键：同一现实会话下的多个平台会话共用一份等待任务，
-        # 用户在哪个平台回复都能命中；仅共享 union 而通道号不同的会话则各管各的。
+        # 任务按消息通道建键：同一现实场景下的多个平台场景共用一份等待任务，
+        # 用户在哪个平台回复都能命中；仅共享 union 而通道号不同的场景则各管各的。
         if session_info.channel_key not in task_list:
             return False
         if session_info.sender_union_id not in task_list[session_info.channel_key]:

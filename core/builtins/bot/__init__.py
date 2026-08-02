@@ -127,10 +127,10 @@ class Bot:
         **kwargs: dict[str, Any],
     ):
         """
-        发送全局消息到所有会话。
+        发送全局消息到所有场景。
 
         :param message: 消息内容
-        :param session_list: 目标会话列表（None 表示所有开启此模块的目标）
+        :param session_list: 目标会话列表（None 表示所有开启此模块的场景）
         :param kwargs: 其他参数（传递给 post_message）
         """
         await Bot.post_message("*", message=message, session_list=session_list, **kwargs)
@@ -142,11 +142,11 @@ class Bot:
         """
         根据场景 ID 获取消息会话信息。
 
-        用于主动获取和向特定目标发送消息。
+        用于主动获取和向特定场景发送消息。
 
         :param target_id: 场景 ID
         :param sender_id: 用户 ID（可选）
-        :param create: 如果目标不存在是否创建
+        :param create: 如果场景不存在是否创建
         :param is_private: 该场景是否为私聊。主动获取的会话没有平台事件可依据，
                            核心也不掌握各平台对私聊前缀的表达，故须由调用方指明，缺省按非私聊处理
         :return: 抓取的会话信息，或 None（获取失败）
@@ -165,10 +165,10 @@ class Bot:
     @classmethod
     async def fetch_target_list(cls, target_list: list[str], create: bool = False) -> list[FetchedSessionInfo]:
         """
-        批量获取多个目标的会话信息。
+        批量获取多个场景的会话信息。
 
         :param target_list: 场景 ID 列表
-        :param create: 如果目标不存在是否创建
+        :param create: 如果场景不存在是否创建
         :return: 成功获取的会话列表
         """
         fetched = []
@@ -188,8 +188,8 @@ class Bot:
         """
         将待推送的会话按「场景组 + 消息通道」归拢。
 
-        同组同通道的会话对应同一个现实会话（例如一个群内同时存在 OneBot 与 QQ 官方机器人），
-        逐个推送会使该会话收到多条重复消息。归拢后每组仅推送一次。
+        同组同通道的会话对应同一个现实场景（例如一个群内同时存在 OneBot 与 QQ 官方机器人），
+        逐个推送会使该场景收到多条重复消息。归拢后每组仅推送一次。
 
         :param session_list: 待推送的会话列表
         :return: 分组后的会话列表，每组内部保持原有顺序
@@ -202,7 +202,7 @@ class Bot:
             if union_id and union_id not in channel_maps:
                 channel_maps[union_id] = await TargetUnionBind.list_channels(union_id)
             channel_id = channel_maps.get(union_id, {}).get(session_.target_id) if union_id else None
-            # 查不到通道号即表示该会话没有绑定行，按独立会话处理，不与其它会话归为一组。
+            # 查不到通道号即表示该场景没有绑定行，按独立场景处理，不与其它场景归为一组。
             key = (union_id, channel_id) if union_id and channel_id else ("", session_.target_id)
             groups.setdefault(key, []).append(session_)
 
@@ -213,9 +213,9 @@ class Bot:
         """
         按消息通道归拢一批会话，取出各通道实际承担发送的那一个。
 
-        同组同通道的会话对应同一个现实会话，只应由其中一个承担发送，其余写入队首的 ``next_hops``，
+        同组同通道的会话对应同一个现实场景，只应由其中一个承担发送，其余写入队首的 ``next_hops``，
         供队首发送失败时由客户端回调服务端换用下一跳。凡是拿着一批会话逐个发送的去处，都应当先
-        经此归拢，否则同一个现实会话会收到多条重复消息。
+        经此归拢，否则同一个现实场景会收到多条重复消息。
 
         :param session_list: 待发送的会话列表。
         :return: 各通道的队首会话，全员掉线的通道不在其中。
@@ -242,7 +242,7 @@ class Bot:
         **kwargs: dict[str, Any],
     ):
         """
-        发送消息到开启此模块的指定会话。
+        发送消息到开启此模块的场景。
 
         支持向多个会话发送消息，并可根据不同客户端类型发送不同格式的消息。
         同一条消息通道内的会话仅推送一次：先推送队首，队首发送失败时由客户端回调服务端换用下一跳。
@@ -252,10 +252,10 @@ class Bot:
                        如果是字典，键为客户端名称，值为对应的消息内容
                        会使用 "default" 键作为默认消息
         :param session_list: 目标会话列表
-                           如果为 None，自动获取开启了该模块的所有目标
+                           如果为 None，自动获取开启了该模块的所有场景
         :param kwargs: 其他参数（保留用）
         """
-        # 如果未指定会话列表，获取开启了此模块的所有目标
+        # 如果未指定会话列表，获取开启了此模块的所有场景
         if session_list is None:
             session_list = await Bot.get_enabled_this_module(module_name)
 
@@ -374,7 +374,7 @@ class Bot:
         """
         发送直接消息到场景。
 
-        :param target: 场景会话或场景 ID
+        :param target: 会话信息或场景 ID
         :param message: 消息内容
         :param disable_secret_check: 是否禁用敏感内容检查
         :param enable_parse_message: 是否允许解析消息（平台兼容）
@@ -418,8 +418,8 @@ class Bot:
         """
         向一个场景组绑定的会话发送消息，同一条消息通道只发一次。
 
-        union 只表示若干平台会话共享同一份数据，其中通道号相同的才是现实中的同一个会话
-        （例如一个群内同时接入了 OneBot 与 QQ 官方机器人）。逐个会话发送会使该会话收到多条
+        union 只表示若干平台场景共享同一份数据，其中通道号相同的才是现实中的同一个场景
+        （例如一个群内同时接入了 OneBot 与 QQ 官方机器人）。逐个会话发送会使该场景收到多条
         重复消息，故此处按通道归拢，仅由队首承担推送，其余会话降为发送失败时的下一跳。
 
         消息内容取决于目标会话时（如须按会话渲染 i18n 或做敏感词检查），传入接受会话、返回
@@ -499,18 +499,18 @@ class Bot:
     @classmethod
     async def get_enabled_this_module(cls, module: str) -> list[FetchedSessionInfo]:
         """
-        获取开启了指定模块的所有目标会话列表。
+        获取开启了指定模块的所有场景的会话列表。
 
         :param module: 模块名称
         :return: 开启了该模块的会话列表
         """
-        # 从数据库获取开启此模块的所有场景 ID（一个 union 下绑定的全部会话都要展开）
+        # 从数据库获取开启此模块的所有场景 ID（一个 union 下绑定的全部平台场景都要展开）
         lst = await TargetUnionInfo.get_target_id_list_by_module(module)
         # 退役客户端停止一切主动推送。
         lst = filter_retired_targets(lst)
         fetched = []
 
-        # 逐个抓取这些目标的会话信息
+        # 逐个抓取这些场景的会话信息
         for target_id in lst:
             x = await cls.fetch_target(target_id)
             if isinstance(x, FetchedSessionInfo):

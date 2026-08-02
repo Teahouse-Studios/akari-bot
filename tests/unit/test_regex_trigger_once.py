@@ -26,7 +26,7 @@ async def _test_triggered_after_mark():
 
 
 async def _test_other_target_unaffected():
-    """测试单次触发 - 标记不影响其他会话"""
+    """测试单次触发 - 标记不影响其他场景"""
     try:
         regex_once_cache.clear()
         mark_regex_once("merge", 0, "QQ|Group|1")
@@ -52,7 +52,7 @@ async def test_regex_trigger_once(tester: Tester):
     """core.builtins.parser.message: 正则单次触发标记测试"""
     await tester.test(_test_not_triggered_before_mark, "标记前未触发测试")
     await tester.test(_test_triggered_after_mark, "标记后已触发测试")
-    await tester.test(_test_other_target_unaffected, "会话间互不影响测试")
+    await tester.test(_test_other_target_unaffected, "场景间互不影响测试")
     await tester.test(_test_other_index_unaffected, "同模块多正则互不影响测试")
 
     return tester

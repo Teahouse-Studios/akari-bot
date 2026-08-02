@@ -89,9 +89,9 @@ async def issue_code(
     code_key: str = "core.bind.message.code",
 ) -> None:
     """
-    生成绑定码并私信给发起方，随后在当前会话中给出提示。
+    生成绑定码并私信给发起方，随后在当前场景中给出提示。
 
-    绑定码若出现在公开会话中可能被他人取用，因此仅通过私信发送；私信发送失败时连同绑定码一并作废，
+    绑定码若出现在公开场景中可能被他人取用，因此仅通过私信发送；私信发送失败时连同绑定码一并作废，
     避免其在有效期内被他人试出。
 
     :param store: 绑定码存储。
@@ -228,7 +228,7 @@ async def plan_sender_merge(initiator: SenderUnionInfo, current: SenderUnionInfo
     """
     收集一次账号组合并所需的信息：双方 ID、冲突模块与待确认的文案。
 
-    与执行分离，是为了让私聊下的「账号组 + 会话组」两次合并能共用一次确认：
+    与执行分离，是为了让私聊下的「账号组 + 场景组」两次合并能共用一次确认：
     先展示两侧的全部变更再一并执行，避免用户在第二次确认时取消而停在只绑一半的状态。
 
     :param initiator: 生成绑定码的一方。
@@ -326,11 +326,11 @@ async def plan_target_merge(
     inherit_key: str = "core.bind.message.target.confirm.inherit",
 ) -> dict:
     """
-    收集一次会话组合并所需的信息：双方 ID、冲突模块与待确认的文案。
+    收集一次场景组合并所需的信息：双方 ID、冲突模块与待确认的文案。
 
     :param initiator: 发起方（生成绑定码或发起通道握手的一方）。
     :param current: 另一方。
-    :param inherit_key: 继承说明的 i18n 键。绑定码流程仅合并会话组，消息通道保持独立；
+    :param inherit_key: 继承说明的 i18n 键。绑定码流程仅合并场景组，消息通道保持独立；
                         ``bind auto`` 会同时将双方并入同一条消息通道，两者的说明需分开。
     :return: 合并计划。
     """
@@ -360,11 +360,11 @@ async def plan_target_merge(
 
 async def apply_target_merge(plan: dict, keep_other_tables: set[str]) -> TargetUnionInfo | None:
     """
-    按计划执行会话组合并并记录快照。
+    按计划执行场景组合并并记录快照。
 
     :param plan: :func:`plan_target_merge` 产出的合并计划。
     :param keep_other_tables: 需要保留发起方数据的表名集合。
-    :return: 合并后的新会话组。
+    :return: 合并后的新场景组。
     """
     initiator: TargetUnionInfo = plan["initiator"]
     current: TargetUnionInfo = plan["current"]
@@ -401,12 +401,12 @@ async def merge_target_unions(
     inherit_key: str = "core.bind.message.target.confirm.inherit",
 ) -> TargetUnionInfo | None:
     """
-    走完一次会话组合并：展示继承关系 → 确认 → 逐个处理冲突 → 记录快照 → 合并。
+    走完一次场景组合并：展示继承关系 → 确认 → 逐个处理冲突 → 记录快照 → 合并。
 
     :param initiator: 发起方（生成绑定码或发起通道握手的一方）。
     :param current: 另一方。
     :param inherit_key: 继承说明的 i18n 键。
-    :return: 合并后的新会话组，用户取消时为 None。
+    :return: 合并后的新场景组，用户取消时为 None。
     """
     plan = await plan_target_merge(initiator, current, inherit_key)
     if not await msg.wait_confirm(plan["lines"]):
@@ -432,17 +432,17 @@ def channel_hint_lines() -> list:
 
 async def target_lines(union_id: str, ids: list[str]) -> list:
     """
-    将会话 ID 逐行展示，每行标注所在的消息通道，末尾附通道含义说明。
+    将场景 ID 逐行展示，每行标注所在的消息通道，末尾附通道含义说明。
 
-    :param union_id: 这些会话所属的组 ID。
-    :param ids: 组内的平台会话 ID。
+    :param union_id: 这些场景所属的组 ID。
+    :param ids: 组内的平台场景 ID。
     """
     channels = await TargetUnionBind.list_channels(union_id)
     lines = []
     for target_id in ids:
         channel_id = channels.get(target_id)
         if channel_id is None:
-            # 缺少绑定行的会话理论上不会出现在此处，此分支仅作兜底，避免展示流程中断。
+            # 缺少绑定行的场景理论上不会出现在此处，此分支仅作兜底，避免展示流程中断。
             lines.append(Plain(target_id, disable_joke=True))
         else:
             lines.append(

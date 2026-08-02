@@ -80,7 +80,7 @@ class Features:
     # 消息过滤支持 - 是否需要将消息内容进行敏感词过滤
     require_check_dirty_words: bool = False
 
-    # 是否需要启用模块功能 - 是否需要在会话中启用模块才可使用功能
+    # 是否需要启用模块功能 - 是否需要在场景中启用模块才可使用功能
     require_enable_modules: bool = True
 
     @classmethod

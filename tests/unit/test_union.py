@@ -352,7 +352,7 @@ async def _test_channel_id_increments_within_union():
         await union.bind_id("UNIONTEST|Group|chan3")
 
         channels = await TargetUnionBind.list_channels(union.union_id)
-        # 默认每个会话各占一号，即默认互不参与去重。
+        # 默认每个场景各占一号，即默认互不参与去重。
         return sorted(channels.values()) == [1, 2, 3]
 
     except Exception:
@@ -370,7 +370,7 @@ async def _test_merge_union_renumbers_channels():
         merged = await first.merge_union(second)
         channels = await TargetUnionBind.list_channels(merged.union_id)
 
-        # 两侧均自 1 起编号，直接合表会使四个互不相关的会话被归为两条通道。
+        # 两侧均自 1 起编号，直接合表会使四个互不相关的场景被归为两条通道。
         if sorted(channels.values()) != [1, 2, 3, 4]:
             return False
         return channels["UNIONTEST|Group|mix1"] != channels["UNIONTEST|Group|mix3"]
@@ -430,7 +430,7 @@ async def _test_target_union_shares_modules():
 
 
 async def _test_target_id_list_expands_union():
-    """测试 get_target_id_list_by_module - 推送展开为全部平台会话"""
+    """测试 get_target_id_list_by_module - 推送展开为全部平台场景"""
     try:
         first = await TargetUnionInfo.resolve_union("UNIONTEST|Group|push1")
         await first.bind_id("UNIONTEST|Group|push2")
@@ -487,7 +487,7 @@ async def test_union(tester: Tester):
     await tester.test(_test_unbind_id_splits_account, "unbind_id 拆分账号测试")
     await tester.test(_test_unbind_id_rejects_last, "unbind_id 拒绝解绑最后一个测试")
     await tester.test(_test_target_union_shares_modules, "场景 union 模块开关互通测试")
-    await tester.test(_test_target_id_list_expands_union, "推送展开为全部平台会话测试")
+    await tester.test(_test_target_id_list_expands_union, "推送展开为全部平台场景测试")
     await tester.test(_test_list_ids_accepts_multiple, "list_ids 多 union 测试")
 
     return tester

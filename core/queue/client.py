@@ -224,9 +224,9 @@ async def get_session(args: dict):
 
 @JobQueueClient.action("check_session_native_permission")
 async def _(tsk: JobQueuesTable, args: dict):
-    """检查会话权限处理器。
+    """检查原生权限处理器。
 
-    检查指定会话是否拥有原生权限（如管理员权限等）。
+    检查发送者在该场景中是否拥有原生权限（如管理员权限等）。
     """
     session_info, bot, ctx_manager, _args = await get_session(args)
     return {"value": await ctx_manager.check_native_permission(session_info)}
@@ -236,7 +236,7 @@ async def _(tsk: JobQueuesTable, args: dict):
 async def _(tsk: JobQueuesTable, args: dict):
     """发送消息处理器。
 
-    将消息发送到指定的会话，支持消息解析和图片分割等选项。
+    将消息发送到会话所在的场景，支持消息解析和图片分割等选项。
     返回发送的消息 ID。
     """
     session_info, bot, ctx_manager, _args = await get_session(args)
@@ -340,7 +340,7 @@ async def _(tsk: JobQueuesTable, args: dict):
 async def _(tsk: JobQueuesTable, args: dict):
     """踢出成员处理器。
 
-    将指定的成员从群组 / 频道中踢出，可指定踢出原因。
+    将指定的成员从场景中踢出，可指定踢出原因。
     """
     session_info, _, ctx_manager, _args = await get_session(args)
     await ctx_manager.kick_member(session_info, _args.get("user_id"), _args.get("reason"))

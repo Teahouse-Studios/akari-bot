@@ -63,7 +63,7 @@ class WebContextManager(ContextManager):
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
     ) -> list[str]:
-        # 控制台仅服务于当前一位用户，不存在公开会话，私信与普通发送等价
+        # 控制台仅服务于当前一位用户，不存在公开场景，私信与普通发送等价
         return await cls.send_message(
             session_info,
             message,

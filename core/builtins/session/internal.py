@@ -72,7 +72,7 @@ class MessageSession:
     @deprecated(reason="Use `session_info` instead.")
     def target(self) -> SessionInfo:
         """
-        (已弃用) 获取会话的目标信息。
+        (已弃用) 获取会话信息。
 
         使用 session_info 替代此属性。
 
@@ -119,7 +119,7 @@ class MessageSession:
         :param enable_parse_message: 是否允许解析消息（此参数作接口兼容用，仅 QQ 平台使用，默认为 True）
         :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅 Telegram 平台使用，默认为 True）
         :param callback: 回调函数，在消息发送完成后执行（可选）
-        :param callback_id: 回调函数的唯一标识符，用于特殊场景（QQ 平台的按钮）（可选）
+        :param callback_id: 回调函数的唯一标识符，用于特殊情形（QQ 平台的按钮）（可选）
         :param button_data: 用于扩展按钮提示（可选）
         :return: FinishedSession 对象，包含消息 ID，可用于后续操作
 
@@ -206,7 +206,7 @@ class MessageSession:
         :param enable_parse_message: 是否允许解析消息（此参数作接口兼容用，仅 QQ 平台使用，默认为 True）
         :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅 Telegram 平台使用，默认为 True）
         :param callback: 回调函数，在消息发送完成后执行（可选）
-        :param callback_id: 回调函数的唯一标识符，用于特殊场景（QQ 平台的按钮）（可选）
+        :param callback_id: 回调函数的唯一标识符，用于特殊情形（QQ 平台的按钮）（可选）
         :param button_data: 用于扩展按钮提示（可选）
 
         :raises SessionFinished: 总是抛出此异常来终止会话处理
@@ -342,7 +342,7 @@ class MessageSession:
 
     async def restrict_member(self, user_id: str | list[str], duration: int | None = None, reason: str | None = None):
         """
-        用于禁言会话内成员，可能需要该会话的管理员权限。
+        用于禁言场景内成员，可能需要该场景的管理员权限。
 
         该方法可以禁言单个或多个用户，禁言时长以秒为单位。
 
@@ -355,7 +355,7 @@ class MessageSession:
 
     async def unrestrict_member(self, user_id: str | list[str]):
         """
-        用于解除禁言成员，可能需要该会话的管理员权限。
+        用于解除禁言成员，可能需要该场景的管理员权限。
 
         :param user_id: 用户 ID 或 ID 列表
         """
@@ -364,7 +364,7 @@ class MessageSession:
 
     async def kick_member(self, user_id: str | list[str], reason: str | None = None):
         """
-        用于踢出成员，可能需要该会话的管理员权限。
+        用于踢出成员，可能需要该场景的管理员权限。
 
         :param user_id: 用户 ID 或 ID 列表
         :param reason: 踢出原因（可选）
@@ -374,7 +374,7 @@ class MessageSession:
 
     async def ban_member(self, user_id: str | list[str], reason: str | None = None):
         """
-        用于封禁成员，可能需要该会话的管理员权限。
+        用于封禁成员，可能需要该场景的管理员权限。
 
         :param user_id: 用户 ID 或 ID 列表
         :param reason: 封禁原因（可选）
@@ -384,7 +384,7 @@ class MessageSession:
 
     async def unban_member(self, user_id: str | list[str]):
         """
-        用于解除封禁成员，可能需要该会话的管理员权限。
+        用于解除封禁成员，可能需要该场景的管理员权限。
 
         :param user_id: 用户 ID 或 ID 列表
         """
@@ -631,9 +631,9 @@ class MessageSession:
         timeout: float | None = 120,
     ) -> MessageSession:
         """
-        一次性模板，用于等待触发对象所属对话内任意成员的消息。
+        一次性模板，用于等待触发对象所属场景内任意成员的消息。
 
-        该方法会发送一条消息并等待该会话中的任何用户（不仅仅是原始触发者）发送消息。
+        该方法会发送一条消息并等待该场景中的任何用户（不仅仅是原始触发者）发送消息。
 
         :param message_chain: 需要发送的消息，可不填
         :param quote: 是否引用原始消息（默认为 False）
@@ -755,7 +755,7 @@ class MessageSession:
 
     async def check_permission(self) -> bool:
         """
-        用于检查消息用户在对话内的权限。
+        用于检查消息用户在场景内的权限。
 
         检查用户是否拥有管理员权限（包括自定义管理员和平台原生管理员）。
 

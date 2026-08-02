@@ -12,7 +12,7 @@ async def _test_cooldown_init():
         await msg.async_init("~test")
         cd = CoolDown("test_cmd", msg, delay=60)
         # 场景维度按消息通道，用户维度按 union：换个平台账号仍受同一份冷却约束，
-        # 但仅共享 union 而通道号不同的会话不该互相牵连。
+        # 但仅共享 union 而通道号不同的场景不该互相牵连。
         return (
             cd.key == "test_cmd"
             and cd.delay == 60

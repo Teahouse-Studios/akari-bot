@@ -13,9 +13,9 @@ table_prefix = "module_wiki_"
 
 class WikiTargetInfo(DBModel):
     """
-    会话内 Wiki 绑定信息表。
+    场景内 Wiki 绑定信息表。
 
-    :param union_id: 场景联合 ID
+    :param union_id: 场景 union ID
     :param api_link: API 链接
     :param interwikis: 自定义 iw 信息
     :param headers: 自定义请求头

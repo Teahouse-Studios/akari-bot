@@ -550,5 +550,5 @@ async def _():
                         await session.send_direct_message(f"{wiki_name}{x}" if len(matched[id_]) > 1 else x)
             return None
 
-        # 拉取按 union 去重，推送再按消息通道去重，同一个现实会话只收一份
+        # 拉取按 union 去重，推送再按消息通道去重，同一个现实场景只收一份
         await Bot.send_direct_message_to_union_target(id_, _send_logs)

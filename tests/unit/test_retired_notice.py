@@ -80,7 +80,7 @@ async def _test_notice_missing_returns_none():
 
 
 async def _test_notified_starts_false():
-    """测试已发记录 - 未记录的会话判定为未发送"""
+    """测试已发记录 - 未记录的场景判定为未发送"""
     try:
         await StoredData.filter(stored_key=NOTIFIED_STORED_KEY).delete()
         reset_notified_cache()
@@ -145,7 +145,7 @@ async def _test_delay_within_range():
 
 
 async def _test_enqueue_skips_notified():
-    """测试公告排队 - 已发送过的会话不再排队"""
+    """测试公告排队 - 已发送过的场景不再排队"""
     try:
         await StoredData.filter(stored_key=NOTIFIED_STORED_KEY).delete()
         reset_notified_cache()
@@ -158,7 +158,7 @@ async def _test_enqueue_skips_notified():
 
 
 async def _test_enqueue_skips_pending():
-    """测试公告排队 - 已在队列中的会话不重复排队"""
+    """测试公告排队 - 已在队列中的场景不重复排队"""
     try:
         await StoredData.filter(stored_key=NOTIFIED_STORED_KEY).delete()
         reset_notified_cache()
@@ -175,7 +175,7 @@ async def _test_enqueue_skips_pending():
 
 
 async def _test_enqueue_allows_fresh_target():
-    """测试公告排队 - 未发送且未排队的会话允许排队"""
+    """测试公告排队 - 未发送且未排队的场景允许排队"""
     try:
         await StoredData.filter(stored_key=NOTIFIED_STORED_KEY).delete()
         reset_notified_cache()
@@ -200,6 +200,6 @@ async def test_retired_notice(tester: Tester):
     await tester.test(_test_delay_within_range, "随机延迟区间测试")
     await tester.test(_test_enqueue_skips_notified, "已发送不排队测试")
     await tester.test(_test_enqueue_skips_pending, "已排队不重复测试")
-    await tester.test(_test_enqueue_allows_fresh_target, "新会话允许排队测试")
+    await tester.test(_test_enqueue_allows_fresh_target, "新场景允许排队测试")
 
     return tester

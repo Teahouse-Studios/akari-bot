@@ -37,7 +37,7 @@ available_web_port = find_available_port(web_port)
 
 allow_origins = WebSecretConfig.allow_origins
 
-# 反向代理场景下 request.client 记录的是代理自身的地址，真实地址由 uvicorn 的
+# 反向代理下 request.client 记录的是代理自身的地址，真实地址由 uvicorn 的
 # ProxyHeadersMiddleware 依 forwarded_allow_ips 判定来源可信后，从 X-Forwarded-For 解析并回填。
 forwarded_allow_ips = [ip.strip() for ip in WebConfig.forwarded_allow_ips.split(",") if ip.strip()]
 

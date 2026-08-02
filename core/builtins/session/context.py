@@ -136,7 +136,7 @@ class ContextManager(ABC):
         enable_split_image: bool = True,
     ) -> list[str]:
         """
-        发送消息到指定的会话。
+        向会话所在的场景发送消息。
 
         :param session_info: 会话信息
         :param message: 消息内容，可以是 MessageChain 或字符串
@@ -205,7 +205,7 @@ class ContextManager(ABC):
         cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None
     ) -> None:
         """
-        删除指定会话中的消息，可能需要该会话的管理员权限。
+        删除指定场景中的消息，可能需要该场景的管理员权限。
 
         :param session_info: 会话信息
         :param message_id: 消息 ID 列表（为最大兼容，请将元素转换为 str，若实现需要传入其他类型再在下方另行实现）
@@ -227,7 +227,7 @@ class ContextManager(ABC):
         cls, session_info: SessionInfo, user_id: str | list[str], duration: int | None = None, reason: str | None = None
     ) -> None:
         """
-        禁言指定会话中的成员，可能需要该会话的管理员权限。
+        禁言指定场景中的成员，可能需要该场景的管理员权限。
 
         :param session_info: 会话信息
         :param user_id: 用户 ID
@@ -248,7 +248,7 @@ class ContextManager(ABC):
     @abstractmethod
     async def unrestrict_member(cls, session_info: SessionInfo, user_id: str | list[str]) -> None:
         """
-        解除禁言指定会话中的成员，可能需要该会话的管理员权限。
+        解除禁言指定场景中的成员，可能需要该场景的管理员权限。
 
         :param session_info: 会话信息
         :param user_id: 用户 ID
@@ -267,7 +267,7 @@ class ContextManager(ABC):
     @abstractmethod
     async def kick_member(cls, session_info: SessionInfo, user_id: str | list[str], reason: str | None = None) -> None:
         """
-        踢出指定会话中的成员，可能需要该会话的管理员权限。
+        踢出指定场景中的成员，可能需要该场景的管理员权限。
 
         :param session_info: 会话信息
         :param user_id: 用户 ID
@@ -287,7 +287,7 @@ class ContextManager(ABC):
     @abstractmethod
     async def ban_member(cls, session_info: SessionInfo, user_id: str | list[str], reason: str | None = None) -> None:
         """
-        封禁指定会话中的成员，可能需要该会话的管理员权限。
+        封禁指定场景中的成员，可能需要该场景的管理员权限。
 
         :param session_info: 会话信息
         :param user_id: 用户 ID
@@ -307,7 +307,7 @@ class ContextManager(ABC):
     @abstractmethod
     async def unban_member(cls, session_info: SessionInfo, user_id: str | list[str]) -> None:
         """
-        解除封禁指定会话中的成员，可能需要该会话的管理员权限。
+        解除封禁指定场景中的成员，可能需要该场景的管理员权限。
 
         :param session_info: 会话信息
         :param user_id: 用户 ID

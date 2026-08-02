@@ -20,7 +20,7 @@ class PlayState:
     def __init__(self, game: str, msg: MessageSession):
         self.game = game
         self.msg = msg
-        # 按消息通道而非 union 建键：同一 union 下通道号不同的会话是不同的现实会话，
+        # 按消息通道而非 union 建键：同一 union 下通道号不同的场景是不同的现实场景，
         # 各自的对局互不相干，并作一处会让一边开局把另一边也带进游戏中。
         self.channel_key = self.msg.session_info.channel_key
         self.sender_union_id = self.msg.session_info.sender_union_id

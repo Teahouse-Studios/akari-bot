@@ -83,12 +83,12 @@ class SessionInfo:
     sender_union_info: SenderUnionInfo | None = None
     target_union_id: str = ""
     sender_union_id: str | None = None
-    # 本会话在其场景组内的消息通道号，同组同号即现实中的同一个会话，详见 channel_key
+    # 本场景在其场景组内的消息通道号，同组同号即现实中的同一个场景，详见 channel_key
     target_channel_id: int = 1
     banned_users: list | None = None
     custom_admins: list | None = None
     # 会话一律经 assign() 建立，其中必定按场景语言赋值；此处的默认值仅用于
-    # 反序列化等缺省场景，故声明为非可选，免去各调用点无谓的判空。
+    # 反序列化等缺省情形，故声明为非可选，免去各调用点无谓的判空。
     locale: Locale = field(factory=lambda: Locale(default_locale))
     _tz_offset: str | None = None
     timezone_offset: timedelta | None = None
@@ -230,7 +230,7 @@ class SessionInfo:
 
     def get_common_target_id(self) -> str:
         """
-        获取会话的常用 ID。
+        获取场景的常用 ID。
         """
         return self.target_id.split("|")[-1]
 
@@ -245,12 +245,12 @@ class SessionInfo:
     @property
     def channel_key(self) -> str:
         """
-        现实会话的标识，形如 ``UTID|8B1F...|1``。
+        现实场景的标识，形如 ``UTID|8B1F...|1``。
 
-        union 只表示若干平台会话共享同一份数据，并不等于它们是现实中的同一个会话；
+        union 只表示若干平台场景共享同一份数据，并不等于它们是现实中的同一个场景；
         组内 ``target_channel_id`` 相同才是，而默认各占一号即默认谁也不与谁合并。
-        冷却、游戏状态、等待任务这类「同一个现实会话内共享」的内存态须按此建键：
-        只按 union 建键会把仅仅共享配置、实为不同场景的会话错误地并作一处。
+        冷却、游戏状态、等待任务这类「同一个现实场景内共享」的内存态须按此建键：
+        只按 union 建键会把仅仅共享配置、实为不同现实场景的双方错误地并作一处。
 
         :return: union ID 与消息通道号拼成的键。
         """

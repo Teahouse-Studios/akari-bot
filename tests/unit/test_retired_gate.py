@@ -202,7 +202,7 @@ async def _test_other_module_blocked():
 
 
 async def _test_push_filters_retired_target():
-    """测试推送过滤 - 退役平台的会话被滤除，其余保留"""
+    """测试推送过滤 - 退役平台的场景被滤除，其余保留"""
     original = CoreConfig.retired_clients
     try:
         _use_routes(["RETIRETEST -> ALIVETEST"])
@@ -224,7 +224,7 @@ async def _test_push_filters_retired_target():
 
 
 async def _test_push_filter_keeps_all_when_unconfigured():
-    """测试推送过滤 - 未配置迁移关系时不滤除任何会话"""
+    """测试推送过滤 - 未配置迁移关系时不滤除任何场景"""
     original = CoreConfig.retired_clients
     try:
         _use_routes([])
@@ -239,7 +239,7 @@ async def _test_push_filter_keeps_all_when_unconfigured():
 
 
 async def _test_retired_yields_to_alive():
-    """测试通道让位 - 同通道存在非退役会话时退役会话让位"""
+    """测试通道让位 - 同通道存在非退役场景时退役场景让位"""
     original = CoreConfig.retired_clients
     try:
         _use_routes(["RETIRETEST -> ALIVETEST"])
@@ -254,7 +254,7 @@ async def _test_retired_yields_to_alive():
 
 
 async def _test_retired_alone_does_not_yield():
-    """测试通道让位 - 通道内只剩退役会话时照常认领"""
+    """测试通道让位 - 通道内只剩退役场景时照常认领"""
     original = CoreConfig.retired_clients
     try:
         _use_routes(["RETIRETEST -> ALIVETEST"])
@@ -269,7 +269,7 @@ async def _test_retired_alone_does_not_yield():
 
 
 async def _test_different_channel_does_not_yield():
-    """测试通道让位 - 非退役会话位于其他通道时不让位"""
+    """测试通道让位 - 非退役场景位于其他通道时不让位"""
     original = CoreConfig.retired_clients
     try:
         _use_routes(["RETIRETEST -> ALIVETEST"])
@@ -284,7 +284,7 @@ async def _test_different_channel_does_not_yield():
 
 
 async def _test_alive_never_yields():
-    """测试通道让位 - 非退役会话自身不适用让位规则"""
+    """测试通道让位 - 非退役场景自身不适用让位规则"""
     original = CoreConfig.retired_clients
     try:
         _use_routes(["RETIRETEST -> ALIVETEST"])
@@ -313,14 +313,14 @@ async def _session(target_id: str, client: str) -> MessageSession:
 
 async def _probe_wait_task(prefix: str, with_alive: bool) -> bool:
     """
-    令退役会话的一条消息走一遍真实的 ``parser()``，观察同通道内挂起的等待任务是否被它触发。
+    令退役场景的一条消息走一遍真实的 ``parser()``，观察同通道内挂起的等待任务是否被它触发。
 
     等待任务按消息通道共享，故须由 ``parser()`` 而非判据函数本身求证：判据即便正确，
     介入点排在任务检查之后仍拦不下这条路径。空消息在任务检查之后随即返回，恰好只跑到待测的这一段。
 
     :param prefix: 客户端名前缀，各用例互不相同以免共用 union。
-    :param with_alive: 通道内是否另有存活会话。
-    :return: 等待任务是否被退役会话的消息触发。
+    :param with_alive: 通道内是否另有存活场景。
+    :return: 等待任务是否被退役场景的消息触发。
     """
     retired_client = f"{prefix}R"
     retired_target = f"{retired_client}|Group|x"
@@ -329,7 +329,7 @@ async def _probe_wait_task(prefix: str, with_alive: bool) -> bool:
     union = await TargetUnionInfo.resolve_union(retired_target)
     holder_target = retired_target
     if with_alive:
-        # 并入同一通道号，两个平台会话自此指向同一个现实会话，等待任务随之共享
+        # 并入同一通道号，两个平台场景自此指向同一个现实场景，等待任务随之共享
         holder_target = f"{prefix}A|Group|y"
         await union.bind_id(holder_target)
         await TargetUnionBind.filter(target_id=holder_target).update(channel_id=1)
@@ -349,7 +349,7 @@ async def _probe_wait_task(prefix: str, with_alive: bool) -> bool:
 
 
 async def _test_retired_yields_wait_task():
-    """测试等待任务 - 同通道存在存活会话时，退役会话的消息不触发挂起的等待任务"""
+    """测试等待任务 - 同通道存在存活场景时，退役场景的消息不触发挂起的等待任务"""
     original = CoreConfig.retired_clients
     try:
         return not await _probe_wait_task("WTA", with_alive=True)
@@ -362,7 +362,7 @@ async def _test_retired_yields_wait_task():
 
 
 async def _test_retired_keeps_wait_task_when_alone():
-    """测试等待任务 - 通道内只剩退役会话时照常触发，迁移流程的确认不致中断"""
+    """测试等待任务 - 通道内只剩退役场景时照常触发，迁移流程的确认不致中断"""
     original = CoreConfig.retired_clients
     try:
         return await _probe_wait_task("WTB", with_alive=False)
@@ -375,13 +375,13 @@ async def _test_retired_keeps_wait_task_when_alone():
 
 
 async def _test_union_push_skips_retired():
-    """测试组内推送 - 退役平台的会话不参与组内推送，队首落到存活会话"""
+    """测试组内推送 - 退役平台的场景不参与组内推送，队首落到存活场景"""
     original = CoreConfig.retired_clients
     try:
         _use_routes(["RPUSHR -> RPUSHA"])
         union = await TargetUnionInfo.resolve_union("RPUSHR|Group|p")
         await union.bind_id("RPUSHA|Group|p")
-        # 并入同一通道：退役会话若不被滤除，便会以组内首位的身份抢到队首
+        # 并入同一通道：退役场景若不被滤除，便会以组内首位的身份抢到队首
         await TargetUnionBind.filter(target_id__in=["RPUSHR|Group|p", "RPUSHA|Group|p"]).update(channel_id=1)
 
         sent = []

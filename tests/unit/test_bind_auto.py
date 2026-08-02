@@ -21,7 +21,7 @@ PROBE_PATTERN = re.compile(r"bind channel (probe|confirm) (\S+)")
 
 async def _session(target_id: str, text: str = "", sender: str = "admin") -> MockMessageSession:
     """
-    构造一条指定会话的消息，模拟同一个现实会话中来自不同平台的机器人。
+    构造一条指定场景的消息，模拟同一个现实场景中来自不同平台的机器人。
 
     :param sender: 消息的发送者。握手口令由对方机器人发出，而非管理员发出，
                    而机器人账号仅在接收方所在平台的命名空间内有意义，故前缀取接收方的。
@@ -51,7 +51,7 @@ async def _session(target_id: str, text: str = "", sender: str = "admin") -> Moc
 
 async def _run(target_id: str, handler, *args, sender: str = "admin") -> list[str]:
     """
-    以指定会话执行一步握手，返回该会话产生的输出行。
+    以指定场景执行一步握手，返回该场景产生的输出行。
 
     此处直接调用握手函数而不经 parser：自动配对默认关闭，其命令并未注册，
     经 parser 触发将取决于配置，而本组用例考察的是握手本身的收敛与防重放。
@@ -84,7 +84,7 @@ async def _handshake(prefix: str) -> tuple[str, str]:
     完整执行一遍两个机器人同时响应 ``~bind auto`` 的过程，返回双方的 target_id。
 
     实际情形即是如此：绑定尚未建立，通道去重与互认记录均未生效，
-    同一会话内的每个机器人都会将该命令视作发给自己的，于是各自发起一轮握手。
+    同一场景内的每个机器人都会将该命令视作发给自己的，于是各自发起一轮握手。
     """
     a, b = f"{prefix}A|Group|1", f"{prefix}B|Group|1"
 
@@ -104,7 +104,7 @@ async def _handshake(prefix: str) -> tuple[str, str]:
 
 async def _orphan_unions() -> int:
     """
-    统计没有任何会话指向的场景组。重复合并会遗留此类孤儿组，写入其中的数据将无法被读取。
+    统计没有任何场景指向的场景组。重复合并会遗留此类孤儿组，写入其中的数据将无法被读取。
     """
     bound = set(await TargetUnionBind.all().values_list("union_id", flat=True))
     return sum(
@@ -119,7 +119,7 @@ async def _test_only_one_round_survives():
         token_a = _tokens(await _run(a, _start_handshake), "probe")[0]
         token_b = _tokens(await _run(b, _start_handshake), "probe")[0]
 
-        # 若不让位，双方都会应答对方，产生两个 confirm，同一对会话将被合并两次。
+        # 若不让位，双方都会应答对方，产生两个 confirm，同一对场景将被合并两次。
         confirms = _tokens(await _run(b, _respond_probe, token_a, sender="peer_bot"), "confirm")
         confirms += _tokens(await _run(a, _respond_probe, token_b, sender="peer_bot"), "confirm")
         return len(confirms) == 1
@@ -153,7 +153,7 @@ async def _test_concurrent_completion_merges_once():
         target_b = await TargetUnionInfo.resolve_union(b)
         if target_a.union_id != target_b.union_id:
             return False
-        # 若各建一个新组，后建的那个组不会有任何会话指向它。
+        # 若各建一个新组，后建的那个组不会有任何场景指向它。
         if await _orphan_unions() != before:
             return False
         # 互认记录须写入实际生效的那个组，写入孤儿组等同于未写入。
@@ -168,7 +168,7 @@ async def _test_concurrent_auto_records_bots_id():
     try:
         a, b = await _handshake("BOTSID")
 
-        # 重复合并会将互认记录写入没有任何会话指向的孤儿组，等同于未写入。
+        # 重复合并会将互认记录写入没有任何场景指向的孤儿组，等同于未写入。
         # 双方各记录一条对方的账号，按各自平台的命名空间存放。
         target = await TargetUnionInfo.resolve_union(a)
         bots_id = target.list_peer_bots(a) + target.list_peer_bots(b)
@@ -262,7 +262,7 @@ async def _test_probe_token_single_use():
 
         # 对端机器人正常认领，换出一枚 confirm 口令。
         claimed = _tokens(await _run(b, _respond_probe, token_a, sender="peer_bot"), "confirm")
-        # 用户照抄会话中出现的同一条命令粘贴。口令若仍被受理，此人将被记作对端机器人。
+        # 用户照抄场景中出现的同一条命令粘贴。口令若仍被受理，此人将被记作对端机器人。
         replayed = _tokens(await _run(b, _respond_probe, token_a, sender="human"), "confirm")
         return len(claimed) == 1 and not replayed
 
@@ -271,18 +271,18 @@ async def _test_probe_token_single_use():
 
 
 async def _test_confirm_rejects_other_session():
-    """测试 bind auto - confirm 口令转贴至其它会话不予受理"""
+    """测试 bind auto - confirm 口令转贴至其它场景不予受理"""
     try:
         a, b, outsider = "XSESS1|Group|1", "XSESS2|Group|1", "XSESS1|Group|2"
         token_a = _tokens(await _run(a, _start_handshake), "probe")[0]
         confirm_token = _tokens(await _run(b, _respond_probe, token_a, sender="peer_bot"), "confirm")[0]
 
-        # 口令被转贴到另一个会话。响应方发出的口令必然落在双方共处的那个会话里，出现在别处即不作数。
+        # 口令被转贴到另一个场景。响应方发出的口令必然落在双方共处的那个场景里，出现在别处即不作数。
         await _run(outsider, _close_handshake, confirm_token, sender="human")
         if (await TargetUnionInfo.resolve_union(a)).union_id == (await TargetUnionInfo.resolve_union(b)).union_id:
             return False
 
-        # 同一枚口令由发起会话收到时仍应正常闭合。
+        # 同一枚口令由发起场景收到时仍应正常闭合。
         await _run(a, _close_handshake, confirm_token, sender="peer_bot")
         return (await TargetUnionInfo.resolve_union(a)).union_id == (await TargetUnionInfo.resolve_union(b)).union_id
 
@@ -298,7 +298,7 @@ async def _test_replayed_token_not_recorded_as_bot():
         confirm_token = _tokens(await _run(b, _respond_probe, token_a, sender="peer_bot"), "confirm")[0]
         await _run(a, _close_handshake, confirm_token, sender="peer_bot")
 
-        # 两条口令命令都以明文出现在会话中，用户原样复制粘贴。
+        # 两条口令命令都以明文出现在场景中，用户原样复制粘贴。
         await _run(b, _respond_probe, token_a, sender="human")
         await _run(a, _close_handshake, confirm_token, sender="human")
 
@@ -317,12 +317,12 @@ async def test_bind_auto(tester: Tester):
     await tester.test(_test_only_one_round_survives, "握手让位测试")
     await tester.test(_test_concurrent_completion_merges_once, "并发闭合只合并一次测试")
     await tester.test(_test_concurrent_auto_records_bots_id, "机器人账号落库测试")
-    await tester.test(_test_peer_bots_scoped_per_target, "互认记录按会话分开测试")
+    await tester.test(_test_peer_bots_scoped_per_target, "互认记录按场景分开测试")
     await tester.test(_test_unbind_forgets_peer_bots, "解绑摘除互认记录测试")
     await tester.test(_test_rebind_after_unbind, "解绑后重新绑定测试")
     await tester.test(_test_second_handshake_is_noop, "重复握手空转测试")
     await tester.test(_test_probe_token_single_use, "probe 口令一次性测试")
-    await tester.test(_test_confirm_rejects_other_session, "confirm 口令跨会话拒绝测试")
+    await tester.test(_test_confirm_rejects_other_session, "confirm 口令跨场景拒绝测试")
     await tester.test(_test_replayed_token_not_recorded_as_bot, "口令重放不误记机器人测试")
 
     return tester

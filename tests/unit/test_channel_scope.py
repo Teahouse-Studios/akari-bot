@@ -26,7 +26,7 @@ async def _session(target_id: str, client: str) -> MessageSession:
 
 async def _states_shared(prefix: str) -> tuple[bool, bool, bool]:
     """
-    判断同一 union 下的两个平台会话是否共用冷却、游戏状态与等待任务。
+    判断同一 union 下的两个平台场景是否共用冷却、游戏状态与等待任务。
     """
     first = await _session(f"{prefix}1|Group|x", f"{prefix}1")
     second = await _session(f"{prefix}2|Group|y", f"{prefix}2")
@@ -52,11 +52,11 @@ async def _states_shared(prefix: str) -> tuple[bool, bool, bool]:
 
 
 async def _test_states_isolated_across_channels():
-    """测试作用域 - 同 union 但通道号不同的会话不应共用内存态"""
+    """测试作用域 - 同 union 但通道号不同的场景不应共用内存态"""
     try:
         union = await TargetUnionInfo.resolve_union("CHA1|Group|x")
         await union.bind_id("CHA2|Group|y")
-        # 绑定后默认各占一号，即默认谁也不与谁合并，此时只是共享配置而非同一个现实会话
+        # 绑定后默认各占一号，即默认谁也不与谁合并，此时只是共享配置而非同一个现实场景
         return await _states_shared("CHA") == (False, False, False)
 
     except Exception:
