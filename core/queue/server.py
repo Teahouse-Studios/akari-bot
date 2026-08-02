@@ -15,6 +15,7 @@
 - 广播语言文件重载
 """
 
+import aiofiles
 import asyncio
 import re
 from typing import TYPE_CHECKING
@@ -638,7 +639,7 @@ async def get_bot_version(tsk: JobQueuesTable, args: dict):
     version = None
     version_path = PrivateAssets.path / ".version"
     if version_path.exists():
-        with open(version_path, "r") as f:
+        async with aiofiles.open(version_path, "r") as f:
             version = f.read()
     else:
         returncode, commit_hash, _ = await run_sys_command(["git", "rev-parse", "HEAD"])

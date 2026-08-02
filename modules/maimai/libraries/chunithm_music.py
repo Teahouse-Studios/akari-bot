@@ -1,3 +1,4 @@
+import aiofiles
 from copy import deepcopy
 from typing import Any
 
@@ -234,13 +235,13 @@ class TotalList:
             data = await get_url(url, 200, headers={"User-Agent": "AkariBot/1.0"}, fmt="json")
             if data:
                 data = process_lxns_to_diving_fish(data)
-                with open(chu_song_info_path, "wb") as f:
+                async with aiofiles.open(chu_song_info_path, "wb") as f:
                     f.write(orjson.dumps(data, option=orjson.OPT_INDENT_2))
             return data
         except Exception:
             Logger.exception()
             try:
-                with open(chu_song_info_path, "rb") as f:
+                async with aiofiles.open(chu_song_info_path, "rb") as f:
                     data = orjson.loads(f.read())
                 return data
             except Exception:

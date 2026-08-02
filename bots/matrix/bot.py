@@ -1,3 +1,4 @@
+import aiofiles
 import asyncio
 import re
 from time import strftime
@@ -30,7 +31,7 @@ mention_required = CoreConfig.mention_required
 
 
 async def on_sync(resp: nio.SyncResponse):
-    with open(client.store_path_next_batch, "w") as fp:
+    async with aiofiles.open(client.store_path_next_batch, "w") as fp:
         fp.write(resp.next_batch)
 
 
@@ -223,7 +224,7 @@ async def start():
     # if sync is nio.SyncError:
     #     Logger.error(f"Failed in first sync: {sync.status_code} - {sync.message}")
     try:
-        with open(client.store_path_next_batch, "r", encoding="utf-8") as fp:
+        async with aiofiles.open(client.store_path_next_batch, "r", encoding="utf-8") as fp:
             matrix_bot.next_batch = fp.read()
             Logger.info(f"Loaded next sync batch from storage: {matrix_bot.next_batch}")
     except FileNotFoundError:
@@ -268,7 +269,7 @@ async def start():
                 Logger.error(f"Passphrase file {pass_path} not found.")
                 return
             Logger.info(f"Importing megolm keys backup from {megolm_backup_path}")
-            with open(pass_path) as f:
+            async with aiofiles.open(pass_path) as f:
                 passphrase = f.read()
             await matrix_bot.import_keys(megolm_backup_path, passphrase)
             Logger.info("Megolm backup imported.")

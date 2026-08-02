@@ -1,3 +1,4 @@
+import aiofiles
 import re
 import shutil
 import string
@@ -116,9 +117,9 @@ def song_info_exists() -> bool:
     return song_info_path.exists()
 
 
-def load_song_info() -> dict[str, dict]:
+async def load_song_info() -> dict[str, dict]:
     """读取曲目信息文件。"""
-    with open(song_info_path, "rb") as f:
+    async with aiofiles.open(song_info_path, "rb") as f:
         return orjson.loads(f.read())
 
 
@@ -208,7 +209,7 @@ async def update_assets(update_illustration: bool = True) -> bool:
     # 以便修复上次中断留下的缺口。
     if remote_version and remote_version == _local_version() and song_info_exists():
         Logger.info(f"Phigros resource already at version {remote_version}, skipping metadata rebuild.")
-        song_info = load_song_info()
+        song_info = await load_song_info()
     else:
         try:
             info_text = await get_url(INFO_TSV_URL, 200)
@@ -224,7 +225,7 @@ async def update_assets(update_illustration: bool = True) -> bool:
 
         pgr_assets_path.mkdir(parents=True, exist_ok=True)
         temp_path = f"{random_cache_path()}.json"
-        with open(temp_path, "wb") as f:
+        async with aiofiles.open(temp_path, "wb") as f:
             f.write(orjson.dumps(song_info, option=orjson.OPT_INDENT_2))
         shutil.move(temp_path, song_info_path)
 

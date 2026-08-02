@@ -2,10 +2,10 @@
 from base64 import b64decode, b64encode
 from datetime import datetime, timezone
 from hashlib import md5
-from json import dumps
 from typing import Optional, Union
 from urllib.parse import urlencode
 
+import orjson
 from httpx import AsyncClient, Response
 
 from .ActionLib import DEFAULT_TIMEOUT, checkSessionToken
@@ -215,7 +215,7 @@ class PhigrosCloud:
             {
                 "skip": "0",
                 "limit": "100",
-                "where": dumps(
+                "where": orjson.dumps(
                     {
                         "user": {
                             "__type": "Pointer",
@@ -223,7 +223,6 @@ class PhigrosCloud:
                             "objectId": userObjectId,
                         }
                     },
-                    separators=(",", ":"),
                 ),
             }
         )
@@ -359,7 +358,7 @@ class PhigrosCloud:
 
         await self.request.put(
             url=self.baseUrl + f"users/{userObjectId}",
-            content=dumps({"nickname": name}),
+            content=orjson.dumps({"nickname": name}),
             headers={
                 **self.request.headers,
                 "Content-Type": "application/json",
@@ -402,7 +401,7 @@ class PhigrosCloud:
 
         await self.request.put(
             url=self.baseUrl + f"classes/_GameSave/{objectId}",
-            content=dumps(
+            content=orjson.dumps(
                 {
                     "summary": _summary,
                     "modifiedAt": {

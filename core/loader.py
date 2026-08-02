@@ -1,3 +1,4 @@
+import aiofiles
 import importlib
 import pkgutil
 import re
@@ -54,7 +55,7 @@ async def load_modules():
     Logger.success("All modules loaded.")
 
     loader_cache = PrivateAssets.path / ".cache_loader"
-    with open(loader_cache, "w") as open_loader_cache:
+    async with aiofiles.open(loader_cache, "w") as open_loader_cache:
         if err_prompt:
             err_prompt = re.sub(r"  File \"<frozen importlib.*?>\", .*?\n", "", "\n".join(err_prompt))
             open_loader_cache.write(err_prompt)

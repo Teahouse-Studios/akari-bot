@@ -1,3 +1,4 @@
+import aiofiles
 import re
 from html import escape
 from typing import Any
@@ -96,7 +97,7 @@ async def image_table_render(
             }</style>"""
         if save_source:
             fname = f"{random_cache_path()}.html"
-            with open(fname, "w", encoding="utf-8") as fi:
+            async with aiofiles.open(fname, "w", encoding="utf-8") as fi:
                 fi.write(tblst + css)
         image_list = await web_render.legacy_screenshot(
             LegacyScreenshotOptions(content=tblst + css, width=w, mw=False, counttime=False)

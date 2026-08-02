@@ -1,3 +1,4 @@
+import aiofiles
 import re
 from html import escape
 
@@ -151,7 +152,7 @@ async def _(msg: Bot.MessageSession, module: str):
                         )
 
                         # fname = f"{random_cache_path()}.html"
-                        # with open(fname, "w", encoding="utf-8") as fi:
+                        # async with aiofiles.open(fname, "w", encoding="utf-8") as fi:
                         #     fi.write(html_content)
 
                         images = await web_render.element_screenshot(
@@ -340,7 +341,7 @@ async def help_generator(
         use_font_mirror=use_font_mirror,
     )
     fname = f"{random_cache_path()}.html"
-    with open(fname, "w", encoding="utf-8") as fi:
+    async with aiofiles.open(fname, "w", encoding="utf-8") as fi:
         fi.write(html_content)
 
     images = await web_render.element_screenshot(ElementScreenshotOptions(content=html_content, element=[".botbox"]))

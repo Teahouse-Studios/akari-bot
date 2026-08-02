@@ -106,7 +106,27 @@ dev = ["ruff>=0.15.1"]
 line-length = 120
 
 [tool.ruff.lint]
+select = ["TID"]
 ignore = ["E402", "F405", "F403", "E741", "E721"]
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"requests" = { msg = "Use httpx instead" }
+"urllib.request" = { msg = "Use httpx instead" }
+"http.client" = { msg = "Use httpx instead" }
+"time.sleep" = { msg = "Use asyncio.sleep instead" }
+"pymysql" = { msg = "Use asyncmy instead" }
+"sqlite3" = { msg = "Use aiosqlite instead" }
+"subprocess" = { msg = "Use asyncio instead" }
+"threading" = { msg = "Use asyncio instead" }
+"logging" = { msg = "Use loguru instead" }
+"json" = { msg = "Use orjson instead" }
+
+[tool.ruff.lint.per-file-ignores]
+".github/**/*.py" = ["TID251"]
+"example/**/*.py" = ["TID251"]
+"tests/**/*.py" = ["TID251"]
+"bot.py" = ["TID251"]
+"tester.py" = ["TID251"]
 
 [tool.ruff.format]
 quote-style = "double"

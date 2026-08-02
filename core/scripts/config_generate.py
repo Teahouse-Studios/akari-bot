@@ -22,7 +22,7 @@ import pkgutil
 import shutil
 import sys
 import traceback
-from time import sleep
+from time import sleep  # noqa
 
 if __name__ == "__main__":
     sys.path.append(os.getcwd())

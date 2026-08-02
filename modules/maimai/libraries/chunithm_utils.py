@@ -2,8 +2,8 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
 from core.constants.exceptions import ConfigValueError
 from core.utils.http import get_url
+from modules.maimai.database.models import DivingProberBindInfo, LxnsProberBindInfo
 from .chunithm_mapping import *
-from ..database.models import DivingProberBindInfo, LxnsProberBindInfo
 
 
 async def get_diving_prober_bind_info(msg: Bot.MessageSession, **kwargs):

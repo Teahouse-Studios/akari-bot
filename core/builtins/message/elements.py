@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+import aiofiles
 import base64
 import mimetypes
 import random
@@ -596,7 +597,7 @@ class ImageElement(BaseElement):
             ft = filetype.match(raw).extension
             # 保存到缓存目录
             img_path = random_cache_path(ft)
-            with open(img_path, "wb+") as image_cache:
+            async with aiofiles.open(img_path, "wb+") as image_cache:
                 image_cache.write(raw)
             return img_path
 
@@ -613,7 +614,7 @@ class ImageElement(BaseElement):
         file = await self.get()
 
         # 读取文件并进行 Base64 编码
-        with open(file, "rb") as f:
+        async with aiofiles.open(file, "rb") as f:
             img_b64 = base64.b64encode(f.read()).decode("UTF-8")
         self.cached_b64 = img_b64
         # Logger.debug(f"ImageElement: Cached base64 for {file}")

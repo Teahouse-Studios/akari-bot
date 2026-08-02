@@ -1,3 +1,4 @@
+import aiofiles
 import re
 
 import orjson
@@ -50,7 +51,7 @@ async def _(msg: Bot.MessageSession):
 
     msg_chain = MessageChain.assign()
     if int(sid) > 100000:
-        with open(mai_utage_info_path, "rb") as file:
+        async with aiofiles.open(mai_utage_info_path, "rb") as file:
             utage_data = orjson.loads(file.read())
         if utage_data:
             try:

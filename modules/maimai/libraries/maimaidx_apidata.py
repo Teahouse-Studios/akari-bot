@@ -1,3 +1,4 @@
+import aiofiles
 from collections import defaultdict
 from urllib.parse import urlencode
 
@@ -79,7 +80,7 @@ async def update_alias() -> bool:
 
             alias_data.append(fmt_data)
 
-        with open(mai_alias_path, "wb") as file:
+        async with aiofiles.open(mai_alias_path, "wb") as file:
             file.write(orjson.dumps(alias_data, option=orjson.OPT_INDENT_2))
 
         return True
@@ -108,7 +109,7 @@ async def get_info(music: Music, details: str | MessageChain) -> MessageChain:
 async def get_alias(msg: Bot.MessageSession, sid: str) -> list:
     if not mai_alias_path.exists():
         await msg.finish(I18NContext("maimai.message.alias.file_not_found", prefix=msg.session_info.prefixes[0]))
-    with open(mai_alias_path, "rb") as file:
+    async with aiofiles.open(mai_alias_path, "rb") as file:
         data = orjson.loads(file.read())
 
     result = []
@@ -136,7 +137,7 @@ async def search_by_alias(input_: str) -> list:
     if not mai_alias_path.exists():
         return list(set(result))
 
-    with open(mai_alias_path, "rb") as file:
+    async with aiofiles.open(mai_alias_path, "rb") as file:
         data = orjson.loads(file.read())
 
     for song in data:
@@ -161,7 +162,7 @@ async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = T
             fmt="json",
         )
         if use_cache and data:
-            with open(cache_dir, "wb") as f:
+            async with aiofiles.open(cache_dir, "wb") as f:
                 f.write(orjson.dumps(data))
         return data
     except Exception as e:
@@ -179,7 +180,7 @@ async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = T
             Logger.exception()
         if use_cache and cache_dir.exists():
             try:
-                with open(cache_dir, "rb") as f:
+                async with aiofiles.open(cache_dir, "rb") as f:
                     data = orjson.loads(f.read())
                 await msg.send_message(I18NContext("maimai.message.use_cache"))
                 return data
@@ -211,7 +212,7 @@ async def get_song_record(
             )
             if use_cache and data:
                 if cache_dir.exists():
-                    with open(cache_dir, "rb") as f:
+                    async with aiofiles.open(cache_dir, "rb") as f:
                         try:
                             backup_data = orjson.loads(f.read())
                         except Exception:
@@ -219,7 +220,7 @@ async def get_song_record(
                 else:
                     backup_data = {}
                 backup_data.update(data)
-                with open(cache_dir, "wb") as f:
+                async with aiofiles.open(cache_dir, "wb") as f:
                     f.write(orjson.dumps(backup_data))
             return data
         except Exception as e:
@@ -228,7 +229,7 @@ async def get_song_record(
             Logger.exception()
             if use_cache and cache_dir.exists():
                 try:
-                    with open(cache_dir, "rb") as f:
+                    async with aiofiles.open(cache_dir, "rb") as f:
                         data = orjson.loads(f.read())
                     await msg.send_message(I18NContext("maimai.message.use_cache"))
                     return data
@@ -259,7 +260,7 @@ async def get_total_record(
                 fmt="json",
             )
             if use_cache and data:
-                with open(cache_dir, "wb") as f:
+                async with aiofiles.open(cache_dir, "wb") as f:
                     f.write(orjson.dumps(data))
             if not utage:
                 data = {"records": [d for d in data.get("records", []) if int(d.get("id", 0)) < 100000]}  # 过滤宴谱
@@ -279,7 +280,7 @@ async def get_total_record(
                 Logger.exception()
             if use_cache and cache_dir.exists():
                 try:
-                    with open(cache_dir, "rb") as f:
+                    async with aiofiles.open(cache_dir, "rb") as f:
                         data = orjson.loads(f.read())
                     await msg.send_message(I18NContext("maimai.message.use_cache"))
                     if not utage:
@@ -310,7 +311,7 @@ async def get_plate(msg: Bot.MessageSession, payload: dict, version: str, use_ca
             )
             data = {"verlist": [d for d in data.get("verlist", []) if int(d.get("id", 0)) < 100000]}  # 过滤宴谱
             if use_cache and data:
-                with open(cache_dir, "wb") as f:
+                async with aiofiles.open(cache_dir, "wb") as f:
                     f.write(orjson.dumps(data))
             return data
         except Exception as e:
@@ -328,7 +329,7 @@ async def get_plate(msg: Bot.MessageSession, payload: dict, version: str, use_ca
                 Logger.exception()
             if use_cache and cache_dir.exists():
                 try:
-                    with open(cache_dir, "rb") as f:
+                    async with aiofiles.open(cache_dir, "rb") as f:
                         data = orjson.loads(f.read())
                     await msg.send_message(I18NContext("maimai.message.use_cache"))
                     return data

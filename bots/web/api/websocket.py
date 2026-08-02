@@ -1,3 +1,4 @@
+import aiofiles
 import asyncio
 import os
 import re
@@ -58,7 +59,7 @@ async def websocket_logs(websocket: WebSocket):
                     if log_file not in last_file_pos:
                         last_file_pos[log_file] = 0
 
-                    with open(log_file, "r", encoding="utf-8") as f:
+                    async with aiofiles.open(log_file, "r", encoding="utf-8") as f:
                         f.seek(last_file_pos[log_file])
                         new_data = f.read()
                         last_file_pos[log_file] = f.tell()

@@ -1,3 +1,5 @@
+import aiofiles
+
 import orjson
 import unicodedata
 
@@ -71,7 +73,7 @@ async def get_record_df(msg: Bot.MessageSession, payload: dict, use_cache: bool 
             fmt="json",
         )
         if use_cache and data:
-            with open(cache_dir, "wb") as f:
+            async with aiofiles.open(cache_dir, "wb") as f:
                 f.write(orjson.dumps(data))
         return data
     except Exception as e:
@@ -89,7 +91,7 @@ async def get_record_df(msg: Bot.MessageSession, payload: dict, use_cache: bool 
             Logger.exception()
         if use_cache and cache_dir.exists():
             try:
-                with open(cache_dir, "rb") as f:
+                async with aiofiles.open(cache_dir, "rb") as f:
                     data = orjson.loads(f.read())
                 await msg.send_message(I18NContext("maimai.message.use_cache"))
                 return data
@@ -179,7 +181,7 @@ async def get_record_lx(msg: Bot.MessageSession, friend_code: str, use_cache: bo
 
             data = await process_lxdata(profile_data, record_data)
             if use_cache and data:
-                with open(cache_dir, "wb") as f:
+                async with aiofiles.open(cache_dir, "wb") as f:
                     f.write(orjson.dumps(data))
             return data
         except Exception as e:
@@ -193,7 +195,7 @@ async def get_record_lx(msg: Bot.MessageSession, friend_code: str, use_cache: bo
                 Logger.exception()
             if use_cache and cache_dir.exists():
                 try:
-                    with open(cache_dir, "rb") as f:
+                    async with aiofiles.open(cache_dir, "rb") as f:
                         data = orjson.loads(f.read())
                     await msg.send_message(I18NContext("maimai.message.use_cache"))
                     return data

@@ -1,3 +1,5 @@
+import aiofiles
+
 from core.builtins.message.internal import Image as BImage
 from core.component import module
 from core.logger import Logger
@@ -264,7 +266,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
 
     msg_chain = MessageChain.assign()
     if int(sid) > 100000:
-        with open(mai_utage_info_path, "rb") as file:
+        async with aiofiles.open(mai_utage_info_path, "rb") as file:
             utage_data = orjson.loads(file.read())
 
         if utage_data:
@@ -388,7 +390,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
 
     msg_chain = MessageChain.assign()
     if int(sid) > 100000:
-        with open(mai_utage_info_path, "rb") as file:
+        async with aiofiles.open(mai_utage_info_path, "rb") as file:
             utage_data = orjson.loads(file.read())
         if utage_data:
             try:

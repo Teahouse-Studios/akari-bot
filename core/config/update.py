@@ -1,6 +1,6 @@
 import re
 import shutil
-from time import sleep
+from time import sleep  # noqa
 
 from loguru import logger
 from tomlkit import parse as toml_parser, dumps as toml_dumps, document as toml_document, comment as toml_comment, nl

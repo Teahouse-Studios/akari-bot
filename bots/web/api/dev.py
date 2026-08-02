@@ -22,7 +22,7 @@ ROOT_DIR = Path(__file__).parent.parent.parent.parent
 
 @app.get("/api/dev")
 async def is_dev(request: Request):
-    verify_jwt(request)
+    await verify_jwt(request)
     return {"is_dev": dev_mode}
 
 
@@ -31,7 +31,7 @@ if dev_mode:
     @app.get("/api/dev/database/list")
     async def get_db_model_list(request: Request):
         try:
-            verify_jwt(request)
+            await verify_jwt(request)
 
             models_path = ["core.database.models"] + fetch_module_db()
             table_lst = sorted(get_model_names(models_path))
@@ -45,7 +45,7 @@ if dev_mode:
     @app.get("/api/dev/database/field/{model}")
     async def get_db_model_fields(request: Request, model: str):
         try:
-            verify_jwt(request)
+            await verify_jwt(request)
 
             models_path = ["core.database.models"] + fetch_module_db()
             result = get_model_fields(models_path, model)
@@ -60,7 +60,7 @@ if dev_mode:
     async def exec_sql(request: Request):
         ip = get_client_ip(request)
         try:
-            verify_jwt(request)
+            await verify_jwt(request)
 
             body = await request.json()
             sql = body.get("sql", "")
@@ -103,9 +103,9 @@ if dev_mode:
         }
 
     @app.get("/api/dev/files/list")
-    def list_files(request: Request, path: str = ""):
+    async def list_files(request: Request, path: str = ""):
         try:
-            verify_jwt(request)
+            await verify_jwt(request)
 
             target, _ = _secure_path(path)
             if not target.exists() or not target.is_dir():
@@ -121,10 +121,10 @@ if dev_mode:
             raise HTTPException(status_code=400, detail="Bad request")
 
     @app.get("/api/dev/files/download")
-    def download_file(request: Request, path: str):
+    async def download_file(request: Request, path: str):
         ip = get_client_ip(request)
         try:
-            verify_jwt(request)
+            await verify_jwt(request)
 
             target, display_path = _secure_path(path)
             if not target.exists():
@@ -149,10 +149,10 @@ if dev_mode:
             raise HTTPException(status_code=400, detail="Bad request")
 
     @app.delete("/api/dev/files/delete")
-    def delete_file(request: Request, path: str):
+    async def delete_file(request: Request, path: str):
         ip = get_client_ip(request)
         try:
-            verify_jwt(request)
+            await verify_jwt(request)
 
             target, display_path = _secure_path(path)
             if target == ROOT_DIR:
@@ -179,7 +179,7 @@ if dev_mode:
     async def rename_file(request: Request):
         ip = get_client_ip(request)
         try:
-            verify_jwt(request)
+            await verify_jwt(request)
 
             body = await request.json()
             new_name = body.get("new_name", "")
@@ -211,10 +211,10 @@ if dev_mode:
             raise HTTPException(status_code=400, detail="Bad request")
 
     @app.post("/api/dev/files/upload")
-    def upload_file(request: Request, path: str = Form(""), file: UploadFile = File(...)):
+    async def upload_file(request: Request, path: str = Form(""), file: UploadFile = File(...)):
         ip = get_client_ip(request)
         try:
-            verify_jwt(request)
+            await verify_jwt(request)
 
             target_dir, display_path = _secure_path(path)
             if not target_dir.exists():
@@ -240,10 +240,10 @@ if dev_mode:
             raise HTTPException(status_code=400, detail="Bad request")
 
     @app.post("/api/dev/files/create")
-    def create_file_or_dir(request: Request, path: str = "", name: str = "", filetype: str = ""):
+    async def create_file_or_dir(request: Request, path: str = "", name: str = "", filetype: str = ""):
         ip = get_client_ip(request)
         try:
-            verify_jwt(request)
+            await verify_jwt(request)
 
             target, display_path = _secure_path((Path(path) / name).as_posix())
             if filetype == "dir":
@@ -261,9 +261,9 @@ if dev_mode:
             raise HTTPException(status_code=400, detail="Bad request")
 
     @app.get("/api/dev/files/preview")
-    def preview_file(request: Request, path: str):
+    async def preview_file(request: Request, path: str):
         try:
-            verify_jwt(request)
+            await verify_jwt(request)
 
             target, _ = _secure_path(path)
             if not target.is_file():

@@ -1,3 +1,4 @@
+import aiofiles
 import asyncio
 import os
 import platform
@@ -146,7 +147,7 @@ async def get_config(request: Request):
 
 @app.get("/api/server-info")
 async def server_info(request: Request):
-    verify_jwt(request)
+    await verify_jwt(request)
     return {
         "os": {
             "system": platform.system(),
@@ -176,7 +177,7 @@ async def server_info(request: Request):
 
 @app.get("/api/analytics")
 async def get_analytics(request: Request, days: int = Query(1)):
-    verify_jwt(request)
+    await verify_jwt(request)
     try:
         # 时间窗口须以带时区的 datetime 传入：AnalyticsData.timestamp 是 DatetimeField，
         # 传 Unix 时间戳会被原样绑定成数字与日期时间比较，任何记录都落不进区间；
@@ -201,7 +202,7 @@ async def get_analytics(request: Request, days: int = Query(1)):
 
 @app.get("/api/config")
 async def get_config_list(request: Request):
-    verify_jwt(request)
+    await verify_jwt(request)
     try:
         files = [c.name for c in config_path.iterdir()]
         cfg_files = sorted([f for f in files if f.endswith(".toml")])
@@ -220,7 +221,7 @@ async def get_config_list(request: Request):
 
 @app.get("/api/config/{cfg_filename}")
 async def get_config_file(request: Request, cfg_filename: str):
-    verify_jwt(request)
+    await verify_jwt(request)
     if not config_path.exists():
         raise HTTPException(status_code=404, detail="Not found")
     cfg_file_path = config_path / cfg_filename
@@ -230,7 +231,7 @@ async def get_config_file(request: Request, cfg_filename: str):
         raise HTTPException(status_code=400, detail="Bad request")
 
     try:
-        with open(cfg_file_path, "r", encoding="UTF-8") as f:
+        async with aiofiles.open(cfg_file_path, "r", encoding="UTF-8") as f:
             content = f.read()
         return {"content": content}
     except FileNotFoundError:
@@ -244,7 +245,7 @@ async def get_config_file(request: Request, cfg_filename: str):
 async def edit_config_file(request: Request, cfg_filename: str):
     ip = get_client_ip(request)
     try:
-        verify_jwt(request)
+        await verify_jwt(request)
 
         if not config_path.exists():
             raise HTTPException(status_code=404, detail="Not found")
@@ -256,7 +257,7 @@ async def edit_config_file(request: Request, cfg_filename: str):
 
         body = await request.json()
         content = body["content"]
-        with open(cfg_file_path, "w", encoding="UTF-8") as f:
+        async with aiofiles.open(cfg_file_path, "w", encoding="UTF-8") as f:
             f.write(content)
         Logger.info(f"[WebUI] {ip} has edited the config file: {cfg_filename}")
         return Response(status_code=204)
@@ -278,7 +279,7 @@ async def get_target_list(
     size: int = Query(20, gt=0, le=100),
 ):
     try:
-        verify_jwt(request)
+        await verify_jwt(request)
 
         query = TargetUnionInfo.all()
         filters = Q()
@@ -313,7 +314,7 @@ async def get_target_list(
 @app.get("/api/target/{target_id}")
 async def get_target_info(request: Request, target_id: str):
     try:
-        verify_jwt(request)
+        await verify_jwt(request)
         target_union_info = await TargetUnionInfo.get_by_target_id(target_id, create=False)
         if not target_union_info:
             raise HTTPException(status_code=404, detail="Not found")
@@ -330,7 +331,7 @@ async def get_target_info(request: Request, target_id: str):
 async def edit_target_info(request: Request, target_id: str):
     ip = get_client_ip(request)
     try:
-        verify_jwt(request)
+        await verify_jwt(request)
 
         target_union_info = await TargetUnionInfo.get_by_target_id(target_id)
         body = await request.json()
@@ -387,7 +388,7 @@ async def edit_target_info(request: Request, target_id: str):
 async def delete_target_info(request: Request, target_id: str):
     ip = get_client_ip(request)
     try:
-        verify_jwt(request)
+        await verify_jwt(request)
 
         target_union_info = await TargetUnionInfo.get_by_target_id(target_id, create=False)
         if target_union_info:
@@ -414,7 +415,7 @@ async def get_sender_list(
     size: int = Query(20, gt=0, le=100),
 ):
     try:
-        verify_jwt(request)
+        await verify_jwt(request)
 
         query = SenderUnionInfo.all()
         filters = Q()
@@ -451,7 +452,7 @@ async def get_sender_list(
 @app.get("/api/sender/{sender_id}")
 async def get_sender_info(request: Request, sender_id: str):
     try:
-        verify_jwt(request)
+        await verify_jwt(request)
         sender_union_info = await SenderUnionInfo.get_by_sender_id(sender_id, create=False)
         if not sender_union_info:
             raise HTTPException(status_code=404, detail="Not found")
@@ -468,7 +469,7 @@ async def get_sender_info(request: Request, sender_id: str):
 async def edit_sender_info(request: Request, sender_id: str):
     ip = get_client_ip(request)
     try:
-        verify_jwt(request)
+        await verify_jwt(request)
 
         sender_union_info = await SenderUnionInfo.get_by_sender_id(sender_id)
         body = await request.json()
@@ -519,7 +520,7 @@ async def edit_sender_info(request: Request, sender_id: str):
 async def delete_sender_info(request: Request, sender_id: str):
     ip = get_client_ip(request)
     try:
-        verify_jwt(request)
+        await verify_jwt(request)
 
         sender_union_info = await SenderUnionInfo.get_by_sender_id(sender_id, create=False)
         if sender_union_info:
@@ -538,7 +539,7 @@ async def delete_sender_info(request: Request, sender_id: str):
 @app.get("/api/modules_list")
 async def get_modules_list(request: Request):
     try:
-        verify_jwt(request)
+        await verify_jwt(request)
         modules_list = await JobQueueClient.get_modules_list()
         return {"modules": modules_list}
     except HTTPException as e:
@@ -551,7 +552,7 @@ async def get_modules_list(request: Request):
 @app.get("/api/modules")
 async def get_modules_info(request: Request, locale: str = Query(default_locale)):
     try:
-        verify_jwt(request)
+        await verify_jwt(request)
         modules = await JobQueueClient.get_modules_info(locale=locale)
 
         return {"modules": modules}
@@ -565,7 +566,7 @@ async def get_modules_info(request: Request, locale: str = Query(default_locale)
 @app.get("/api/module/{module_name}/related")
 async def search_related_module(request: Request, module_name: str):
     try:
-        verify_jwt(request)
+        await verify_jwt(request)
         modules = await JobQueueClient.get_module_related(module=module_name)
         return {"modules": modules}
     except HTTPException as e:
@@ -578,7 +579,7 @@ async def search_related_module(request: Request, module_name: str):
 @app.get("/api/module/{module_name}/helpdoc")
 async def get_module_helpdoc(request: Request, module_name: str, locale: str = Query(default_locale)):
     try:
-        verify_jwt(request)
+        await verify_jwt(request)
         help_doc = await JobQueueClient.get_module_helpdoc(module=module_name, locale=locale)
         if not help_doc:
             raise HTTPException(status_code=404, detail="Not found")
@@ -594,7 +595,7 @@ async def get_module_helpdoc(request: Request, module_name: str, locale: str = Q
 async def reload_module(request: Request, module_name: str):
     ip = get_client_ip(request)
     try:
-        verify_jwt(request)
+        await verify_jwt(request)
         status = await JobQueueClient.post_module_action(module=module_name, action="reload")
         if not status:
             Logger.warning(f"[WebUI] {ip} failed to reload module: {module_name}")
@@ -612,7 +613,7 @@ async def reload_module(request: Request, module_name: str):
 async def load_module(request: Request, module_name: str):
     ip = get_client_ip(request)
     try:
-        verify_jwt(request)
+        await verify_jwt(request)
         status = await JobQueueClient.post_module_action(module=module_name, action="load")
         if not status:
             Logger.warning(f"[WebUI] {ip} failed to load module: {module_name}")
@@ -631,7 +632,7 @@ async def load_module(request: Request, module_name: str):
 async def unload_module(request: Request, module_name: str):
     ip = get_client_ip(request)
     try:
-        verify_jwt(request)
+        await verify_jwt(request)
         status = await JobQueueClient.post_module_action(module=module_name, action="unload")
         if not status:
             Logger.warning(f"[WebUI] {ip} failed to unload module: {module_name}")
@@ -653,7 +654,7 @@ async def restart():
 @app.post("/api/restart")
 async def restart_bot(request: Request):
     ip = get_client_ip(request)
-    verify_jwt(request)
+    await verify_jwt(request)
     Logger.info(f"[WebUI] {ip} restarted bot.")
     asyncio.create_task(restart())
     return Response(status_code=202)

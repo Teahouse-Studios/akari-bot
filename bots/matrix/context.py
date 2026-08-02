@@ -1,3 +1,4 @@
+import aiofiles
 import mimetypes
 from pathlib import Path
 
@@ -168,7 +169,7 @@ class MatrixContextManager(ContextManager):
                     split = await image_split(x)
                 for xs in split:
                     path = await xs.get()
-                    with open(path, "rb") as image:
+                    async with aiofiles.open(path, "rb") as image:
                         filename = Path(path).name
                         filesize = Path(path).stat().st_size
                         (content_type, content_encoding) = mimetypes.guess_type(path)
@@ -225,7 +226,7 @@ class MatrixContextManager(ContextManager):
                 mimetype = f"{content_type}/{content_encoding}"
 
                 encrypted = session_info.get_common_target_id() in matrix_bot.encrypted_rooms
-                with open(path, "rb") as audio:
+                async with aiofiles.open(path, "rb") as audio:
                     (upload, upload_encryption) = await matrix_bot.upload(
                         audio,
                         content_type=mimetype,

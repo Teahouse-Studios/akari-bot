@@ -8,8 +8,9 @@
 - 密钥和提示信息加载
 """
 
+import aiofiles
 import asyncio
-import logging
+import logging  # noqa
 
 import orjson
 from apscheduler.schedulers import SchedulerAlreadyRunningError
@@ -23,12 +24,12 @@ from core.builtins.session.info import SessionInfo
 from core.config import CFGManager
 from core.constants import Info, PrivateAssets, Secret
 from core.database import init_db
+from core.i18n import locale_loaded_err
 from core.loader import load_modules, ModulesManager
 from core.logger import Logger
 from core.scheduler import Scheduler
 from core.utils.bash import run_sys_command
 from .background_tasks import init_background_task
-from ..i18n import locale_loaded_err
 
 # 等待发起重启的客户端重新上报保活的秒数上限。server 与各 bot 子进程一同重启，
 # 提示投递时客户端往往尚未就绪；但重启提示并非关键路径，客户端确已掉线时不应无限等待。
@@ -58,7 +59,7 @@ async def init_async(start_scheduler=True, send_prompt=True) -> None:
     # 读取版本信息
     version_path = PrivateAssets.path / ".version"
     if version_path.exists():
-        with open(version_path, "r") as f:
+        async with aiofiles.open(version_path, "r") as f:
             Info.version = f.read()
     else:
         returncode, commit_hash, _ = await run_sys_command(["git", "rev-parse", "HEAD"])
@@ -161,7 +162,7 @@ async def load_prompt(locale_load_error, timeout: float | None = None) -> None:
     author_cache = PrivateAssets.path / ".cache_restart_author"
     loader_cache = PrivateAssets.path / ".cache_loader"
     if author_cache.exists():
-        with open(author_cache, "r", encoding="utf-8") as open_author_cache:
+        async with aiofiles.open(author_cache, "r", encoding="utf-8") as open_author_cache:
             author_session = converter.structure(orjson.loads(open_author_cache.read()), SessionInfo)
         # 缓存须无条件清理：客户端始终不上线时若将其留下，下次启动会重复投递
         author_cache.unlink()
@@ -173,7 +174,7 @@ async def load_prompt(locale_load_error, timeout: float | None = None) -> None:
             return
 
         await author_session.refresh_info()
-        with open(loader_cache, "r", encoding="utf-8") as open_loader_cache:
+        async with aiofiles.open(loader_cache, "r", encoding="utf-8") as open_loader_cache:
             message = []
             if (read := open_loader_cache.read()) != "":
                 message += [I18NContext("loader.load.failed"), Plain(read.strip(), disable_joke=True)]

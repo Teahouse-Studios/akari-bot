@@ -5,7 +5,7 @@ import re
 import time
 from contextlib import contextmanager
 from pathlib import Path
-from time import sleep
+from time import sleep  # noqa
 from typing import Any
 
 import orjson

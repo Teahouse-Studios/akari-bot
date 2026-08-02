@@ -1,3 +1,4 @@
+import aiofiles
 from collections import defaultdict
 from datetime import datetime, timedelta, UTC
 
@@ -20,7 +21,7 @@ login_failed_attempts = defaultdict(list)
 login_max_attempt = WebConfig.login_max_attempt
 
 
-def verify_jwt(request: Request):
+async def verify_jwt(request: Request):
     auth = request.headers.get("authorization")
     if not auth or not auth[:7] == "Bearer ":
         raise HTTPException(status_code=401)
@@ -29,7 +30,7 @@ def verify_jwt(request: Request):
     try:
         payload = jwt.decode(auth_token, jwt_secret, algorithms=["HS256"])
         if PASSWORD_PATH.exists():
-            with open(PASSWORD_PATH, "rb") as f:
+            async with aiofiles.open(PASSWORD_PATH, "rb") as f:
                 last_updated = orjson.loads(f.read()).get("last_updated")
 
             if last_updated and payload["iat"] < last_updated:
@@ -46,7 +47,7 @@ def verify_jwt(request: Request):
 @app.get("/api/verify")
 @limiter.limit("10/second")
 async def verify_token(request: Request):
-    return verify_jwt(request)
+    return await verify_jwt(request)
 
 
 @app.post("/api/login")
@@ -73,7 +74,7 @@ async def auth(request: Request):
         if len(password) == 0:
             raise HTTPException(status_code=401, detail="Require password")
 
-        with open(PASSWORD_PATH, "rb") as file:
+        async with aiofiles.open(PASSWORD_PATH, "rb") as file:
             password_data = orjson.loads(file.read())
 
         try:
@@ -113,7 +114,7 @@ async def auth(request: Request):
 async def change_password(request: Request, response: Response):
     ip = get_client_ip(request)
     try:
-        verify_jwt(request)
+        await verify_jwt(request)
 
         body = await request.json()
         new_password = body.get("new_password", "")
@@ -126,12 +127,12 @@ async def change_password(request: Request, response: Response):
             PASSWORD_PATH.parent.mkdir(parents=True, exist_ok=True)
 
             password_data = {"password": ph.hash(new_password), "last_updated": datetime.now().timestamp()}
-            with open(PASSWORD_PATH, "wb") as file:
+            async with aiofiles.open(PASSWORD_PATH, "wb") as file:
                 file.write(orjson.dumps(password_data))
             response.delete_cookie("deviceToken")
             return Response(status_code=205)
 
-        with open(PASSWORD_PATH, "rb") as file:
+        async with aiofiles.open(PASSWORD_PATH, "rb") as file:
             password_data = orjson.loads(file.read())
 
         try:
@@ -142,7 +143,7 @@ async def change_password(request: Request, response: Response):
         password_data["password"] = ph.hash(new_password)
         password_data["last_updated"] = datetime.now().timestamp()
 
-        with open(PASSWORD_PATH, "wb") as file:
+        async with aiofiles.open(PASSWORD_PATH, "wb") as file:
             file.write(orjson.dumps(password_data))
 
         # TODO 签的jwt存db, 改密码时删掉
@@ -159,7 +160,7 @@ async def change_password(request: Request, response: Response):
 async def clear_password(request: Request):
     ip = get_client_ip(request)
     try:
-        verify_jwt(request)
+        await verify_jwt(request)
 
         body = await request.json()
         password = body.get("password", "")
@@ -167,7 +168,7 @@ async def clear_password(request: Request):
         if not PASSWORD_PATH.exists():
             raise HTTPException(status_code=404, detail="Password not set")
 
-        with open(PASSWORD_PATH, "rb") as file:
+        async with aiofiles.open(PASSWORD_PATH, "rb") as file:
             password_data = orjson.loads(file.read())
 
         try:

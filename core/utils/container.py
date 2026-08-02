@@ -1,5 +1,5 @@
 import asyncio
-import threading
+import threading  # noqa
 import time
 import weakref
 from typing import Any, ClassVar

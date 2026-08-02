@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import aiofiles
 import base64
 from io import BytesIO
 from pathlib import Path
@@ -125,7 +126,7 @@ async def msgchain2image(
         use_font_mirror=use_font_mirror,
     )
     fname = f"{random_cache_path()}.html"
-    with open(fname, "w", encoding="utf-8") as fi:
+    async with aiofiles.open(fname, "w", encoding="utf-8") as fi:
         fi.write(html_content)
 
     Logger.info("[WebRender] Converting message chain...")
@@ -144,7 +145,7 @@ async def svg_render(file_path: str | Path) -> list[ImageElement] | bool:
     :return: 机器人 Image 对象。
     """
 
-    with open(file_path, "r", encoding="utf-8") as file:
+    async with aiofiles.open(file_path, "r", encoding="utf-8") as file:
         svg_content = file.read()
 
     html_content = await env.get_template("svg_template.html").render_async(
@@ -152,7 +153,7 @@ async def svg_render(file_path: str | Path) -> list[ImageElement] | bool:
     )
 
     fname = f"{random_cache_path()}.html"
-    with open(fname, "w", encoding="utf-8") as fi:
+    async with aiofiles.open(fname, "w", encoding="utf-8") as fi:
         fi.write(html_content)
 
     pic_list = await web_render.element_screenshot(

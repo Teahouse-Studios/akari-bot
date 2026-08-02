@@ -20,10 +20,11 @@ from __future__ import annotations
 
 import base64
 import hashlib
-import json
 import os
 from pathlib import Path
 from typing import Any
+
+import orjson
 
 from core.tester.mock.http import HTTPMock, MockHTTPResponse, digest_request_body
 
@@ -95,11 +96,11 @@ def save_fixture(
 
     # text 与 json_data 对 JSON 接口而言是同一份内容的两种形态，同时落盘会让
     # 大响应的语料体积翻倍。此时只保留 json_data，读取时再还原出 text。
-    if json_data is None or text != json.dumps(json_data, ensure_ascii=False):
+    if json_data is None or text != orjson.dumps(json_data):
         data["text"] = text
 
-    with open(filepath, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False)
+    with open(filepath, "wb", encoding="utf-8") as f:
+        f.write(orjson.dumps(data))
 
     return filepath
 
@@ -119,8 +120,8 @@ def load_http_fixtures(fixture_dir: Path | None = None) -> int:
     count = 0
     for filepath in fixture_dir.glob("*.json"):
         try:
-            with open(filepath, "r", encoding="utf-8") as f:
-                data = json.load(f)
+            with open(filepath, "rb", encoding="utf-8") as f:
+                data = orjson.loads(f.read())
 
             url = data.get("url", "")
             if not url:
@@ -134,7 +135,7 @@ def load_http_fixtures(fixture_dir: Path | None = None) -> int:
             if text is None and "json_data" in data:
                 # 保存时省略了与 json_data 重复的 text，此处还原，
                 # 以便直接读取响应正文的调用方仍能取到内容。
-                text = json.dumps(data["json_data"], ensure_ascii=False)
+                text = orjson.dumps(data["json_data"])
 
             response = MockHTTPResponse(
                 status_code=data.get("status_code", 200),
@@ -148,8 +149,8 @@ def load_http_fixtures(fixture_dir: Path | None = None) -> int:
                 response._json = data["json_data"]
             elif data.get("text"):
                 try:
-                    response._json = json.loads(data["text"])
-                except (json.JSONDecodeError, TypeError):
+                    response._json = orjson.loads(data["text"])
+                except (orjson.JSONDecodeError, TypeError):
                     # text 不是合法 JSON（或类型不匹配）时，保持 _json 未设置；
                     # 调用方仍可通过 text/content 使用响应内容。
                     pass
@@ -185,8 +186,8 @@ def list_fixtures(fixture_dir: Path | None = None) -> list[dict]:
     fixtures = []
     for filepath in sorted(fixture_dir.glob("*.json")):
         try:
-            with open(filepath, "r", encoding="utf-8") as f:
-                data = json.load(f)
+            with open(filepath, "rb", encoding="utf-8") as f:
+                data = orjson.loads(f.read())
             fixtures.append(
                 {
                     "file": filepath.name,

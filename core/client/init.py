@@ -1,5 +1,5 @@
 import asyncio
-import logging
+import logging  # noqa
 
 from apscheduler.schedulers import SchedulerAlreadyRunningError
 

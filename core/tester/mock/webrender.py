@@ -18,9 +18,10 @@ from __future__ import annotations
 
 import base64
 import hashlib
-import json
 from pathlib import Path
 from urllib.parse import urlparse
+
+import orjson
 
 from core.logger import Logger
 
@@ -50,8 +51,8 @@ def save_webrender_fixture(url: str, text: str) -> Path:
     """
     FIXTURE_DIR.mkdir(parents=True, exist_ok=True)
     filepath = FIXTURE_DIR / _url_to_filename(url)
-    with open(filepath, "w", encoding="utf-8") as f:
-        json.dump({"url": url, "text": text}, f, ensure_ascii=False, indent=2)
+    with open(filepath, "wb", encoding="utf-8") as f:
+        f.write(orjson.dumps({"url": url, "text": text}, option=orjson.OPT_INDENT_2))
     return filepath
 
 
@@ -168,8 +169,8 @@ def load_webrender_fixtures(fixture_dir: Path | None = None) -> int:
     count = 0
     for filepath in fixture_dir.glob("*.json"):
         try:
-            with open(filepath, "r", encoding="utf-8") as f:
-                data = json.load(f)
+            with open(filepath, "rb", encoding="utf-8") as f:
+                data = orjson.loads(f.read())
             url = data.get("url")
             if not url:
                 continue

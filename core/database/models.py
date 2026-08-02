@@ -11,9 +11,9 @@ from tortoise.models import Model
 from tortoise.transactions import in_transaction
 
 from core.constants.default import default_locale
+from core.logger import Logger
 from core.utils.func import convert_list
 from .base import DBModel, extract_session_id
-from ..logger import Logger
 
 
 UNION_SCOPE_SENDER = "sender"

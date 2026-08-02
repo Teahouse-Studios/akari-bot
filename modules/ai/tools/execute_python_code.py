@@ -1,3 +1,4 @@
+import aiofiles
 import base64
 import traceback
 
@@ -44,12 +45,12 @@ async def execute_python_code(code: str):
             for res in execution.results:
                 if res.png:
                     path = f"{random_cache_path()}.png"
-                    with open(path, "wb") as f:
+                    async with aiofiles.open(path, "wb") as f:
                         f.write(base64.b64decode(res.png))
                     returns.append(f"[KE:image,path={path}]")
                 if res.jpeg:
                     path = f"{random_cache_path()}.jpg"
-                    with open(path, "wb") as f:
+                    async with aiofiles.open(path, "wb") as f:
                         f.write(base64.b64decode(res.jpeg))
                     returns.append(f"[KE:image,path={path}]")
                 if res.text:

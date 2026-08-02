@@ -1,3 +1,4 @@
+import aiofiles
 import re
 import uuid
 from urllib.parse import urljoin
@@ -79,7 +80,7 @@ async def generate_screenshot_v1(
             target = " ".join(targetlist)
             return target
 
-        with open(url, "a", encoding="utf-8") as open_file:
+        async with aiofiles.open(url, "a", encoding="utf-8") as open_file:
             open_file.write("<!DOCTYPE html>\n")
             for x in soup.find_all("html"):
                 fl = []
@@ -233,7 +234,7 @@ async def generate_screenshot_v1(
                         bl.append(str(b))
                 open_file.write("".join(bl))
 
-        with open(url, "r", encoding="utf-8") as open_file:
+        async with aiofiles.open(url, "r", encoding="utf-8") as open_file:
             soup = BeautifulSoup(open_file.read(), "html.parser")
 
         for x in soup.find_all(["a", "img", "span"]):
@@ -251,12 +252,12 @@ async def generate_screenshot_v1(
                 x.attrs["class"] = "image"
                 x.attrs["src"] = x.attrs["data-src"]
 
-        with open(url, "w", encoding="utf-8") as open_file:
+        async with aiofiles.open(url, "w", encoding="utf-8") as open_file:
             open_file.write(str(soup))
             w = 1000
             open_file.write("</div></body>")
 
-        with open(url, "r", encoding="utf-8") as read_file:
+        async with aiofiles.open(url, "r", encoding="utf-8") as read_file:
             html = {"content": read_file.read(), "width": w, "mw": True}
 
         Logger.info("Start rendering...")
