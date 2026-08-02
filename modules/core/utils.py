@@ -216,8 +216,8 @@ async def _(msg: Bot.MessageSession):
         I18NContext("core.message.locale.langlist", langlist=available_lang),
     ]
 
-    #    if locale_url := CoreConfig.locale_url:
-    #        res.append(I18NContext("core.message.locale.contribute", url=locale_url))
+    if locale_url := CoreConfig.locale_url:
+        res.append(I18NContext("core.message.locale.contribute", url=locale_url))
     await msg.finish(res)
 
 
