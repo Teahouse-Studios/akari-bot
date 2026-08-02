@@ -11,6 +11,7 @@ _多功能、跨平台、可自由扩展的异步聊天机器人助手_
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/pulls)
 [![GitHub releases](https://img.shields.io/github/v/release/Teahouse-Studios/akari-bot
 )](https://github.com/Teahouse-Studios/akari-bot/releases)
+[![Weblate translation](https://hosted.weblate.org/widget/akaribot/svg-badge.svg)](https://hosted.weblate.org/engage/akaribot/)
 ![GitHub Repo stars](https://img.shields.io/github/stars/Teahouse-Studios/akari-bot?style=social)
 <br>
 ![Python](https://img.shields.io/badge/Python-3.12+-blue)
@@ -66,6 +67,9 @@ _多功能、跨平台、可自由扩展的异步聊天机器人助手_
 你可以参考[此处](https://bot.teahouse.team/wiki/%E8%87%AA%E6%90%AD%E5%BB%BA)（[镜像](https://github.com/Teahouse-Studios/akari-bot/wiki/%E8%87%AA%E6%90%AD%E5%BB%BA%E6%8C%87%E5%8D%97)）来尝试搭建。
 
 若遇到问题，可以通过 [Issue](https://github.com/Teahouse-Studios/akari-bot/issues/new) 或其他方式咨询开发者。
+
+### 本地化
+本项目的本地化内容由 Weblate 托管，你可以前往[这里](https://hosted.weblate.org/engage/akaribot)参与翻译改进。
 
 ### 贡献
 如你想为我们做出贡献，可以看看[这里](/CONTRIBUTING.md)。

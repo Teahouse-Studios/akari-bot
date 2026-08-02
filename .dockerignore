@@ -4,7 +4,6 @@
 .editorconfig
 .gitignore
 .pre-commit-config.yaml
-crowdin.yml
 requirements.txt
 renovate.json
 start

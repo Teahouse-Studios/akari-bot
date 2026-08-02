@@ -76,13 +76,11 @@
 如果你已经完成了对应功能的开发，仍建议先提交 Issue 进行讨论，再创建 PR，以便充分沟通。
 
 ### 本地化
-本项目的多语言内容由 Crowdin 托管，并由机器人定期同步本地化文件。
-
-你可以前往[这里](https://crowdin.com/project/akari-bot)参与翻译改进。
+本项目的多语言内容由 Weblate 托管，你可以前往[这里](https://hosted.weblate.org/engage/akaribot)参与翻译改进。
 
 为避免不必要的 Issue 堆积，除简体中文外，不建议在 Issue 中提交翻译相关问题。
 
-如果你没有 Crowdin 账号，可以联系开发者代为提交翻译内容。
+如果你没有 Weblate 账号，可以联系开发者代为提交翻译内容。
 
 ## 提交代码更改
 如果你希望提交更“硬核”的贡献……
@@ -263,13 +261,11 @@ Even if you have already implemented the feature, we still recommend opening an 
 
 ### Localization
 
-Internationalization content for this project is hosted on Crowdin and periodically synced by the automated account.
+Internationalization content for this project is hosted on Weblate. You can participate in translation and improvement [here](https://hosted.weblate.org/engage/akaribot).
 
-You can participate in translation and improvement [here](https://crowdin.com/project/akari-bot).
+To avoid unnecessary issues clutter, we prefer that translation-related discussions (except for Simplified Chinese) happen on Weblate rather than in issues.
 
-To avoid unnecessary issues clutter, we prefer that translation-related discussions (except for Simplified Chinese) happen on Crowdin rather than in issues.
-
-If you do not have a Crowdin account, feel free to contact the developers and we can submit the translations on your behalf.
+If you do not have a Weblate account, feel free to contact the developers and we can submit the translations on your behalf.
 
 ## Submitting Code Changes
 

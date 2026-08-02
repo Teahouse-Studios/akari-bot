@@ -11,6 +11,7 @@ from core.constants.default import (
     help_page_url_default,
     ignored_sender_default,
     issue_url_default,
+    locale_url_default,
 )
 from core.constants.version import config_version as config_version_default
 
@@ -89,9 +90,7 @@ class CoreConfig:
     help_url: str = help_url_default
     help_page_url: str = help_page_url_default
     issue_url: str = issue_url_default
-
-
-#    locale_url: str = locale_url_default
+    locale_url: str = locale_url_default
 
 
 # 密钥项写在 config.toml 的 [secret] 表内，故表名为 config、以 secret 标志区分，
