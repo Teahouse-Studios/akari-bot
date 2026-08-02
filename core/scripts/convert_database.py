@@ -10,7 +10,7 @@
 4. 支持多个模块的数据迁移
 5. 清理临时表
 
-使用场景：
+使用情形：
 - 从 v4 更新至 v5 时进行数据迁移
 - 保留所有历史数据不丢失
 - 自动处理格式差异和类型转换
@@ -93,7 +93,7 @@ class GroupBlockList(Model):
     """旧版本的群组黑名单表。
 
     Attributes:
-        targetId: 被阻止的场景ID
+        targetId: 被阻止的场景 ID
     """
 
     targetId = fields.CharField(max_length=512, primary_key=True)
@@ -230,7 +230,7 @@ class PhigrosBindInfoL(Model):
 class WikiTargetInfoL(Model):
     """Wiki 模块的场景设置表（旧版）。
 
-    存储各会话 Wiki 模块的个性化设置。
+    存储各场景 Wiki 模块的个性化设置。
 
     Attributes:
         targetId: 场景 ID
@@ -615,7 +615,7 @@ async def convert_database():
 
     Logger.info("Converting WikiTargetInfo...")
 
-    # Wiki 模块：会话设置转换
+    # Wiki 模块：场景设置转换
     wiki_target_info_record = await WikiTargetInfoL.all()
     for r in wiki_target_info_record:
         try:

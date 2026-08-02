@@ -7,7 +7,7 @@ from modules.core.union_merge import generate_code
 
 
 async def _test_target_code_roundtrip():
-    """测试迁移码 - 会话码可被取出并带回发起方信息"""
+    """测试迁移码 - 场景码可被取出并带回发起方信息"""
     try:
         code = generate_code(
             merge._target_merge_codes,
@@ -29,7 +29,7 @@ async def _test_target_code_roundtrip():
 
 
 async def _test_sender_code_roundtrip():
-    """测试迁移码 - 账号码同时带回会话组与私聊标志"""
+    """测试迁移码 - 账号码同时带回场景组与私聊标志"""
     try:
         code = generate_code(
             merge._sender_merge_codes,
@@ -90,7 +90,7 @@ async def _test_bind_code_not_consumable():
 
 
 async def _test_unify_channel_merges_two_sessions():
-    """测试通道统一 - 迁移完成后两侧会话共用同一通道号"""
+    """测试通道统一 - 迁移完成后两侧场景共用同一通道号"""
     try:
         union = await TargetUnionInfo.resolve_union("MERGETEST|Group|ch1")
         await union.bind_id("MERGETEST2|Group|ch1")
@@ -120,7 +120,7 @@ async def _test_unify_channel_missing_bind_is_safe():
 @func_case
 async def test_merge_code(tester: Tester):
     """modules.core.merge: 迁移码签发与消费测试"""
-    await tester.test(_test_target_code_roundtrip, "会话码往返测试")
+    await tester.test(_test_target_code_roundtrip, "场景码往返测试")
     await tester.test(_test_sender_code_roundtrip, "账号码往返测试")
     await tester.test(_test_code_consumed_once, "一次性消费测试")
     await tester.test(_test_invalid_code_returns_none, "无效码测试")

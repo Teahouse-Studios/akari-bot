@@ -20,7 +20,7 @@ UNION_SCOPE_SENDER = "sender"
 UNION_SCOPE_TARGET = "target"
 
 # 新建 union ID 的域前缀。升级与转换脚本会将旧数据的平台 ID 直接沿用为 union ID，
-# 加上前缀后新生成的 ID 不会与平台 ID 混淆，并可直接区分账号组与会话组。
+# 加上前缀后新生成的 ID 不会与平台 ID 混淆，并可直接区分账号组与场景组。
 UNION_ID_PREFIXES = {
     UNION_SCOPE_SENDER: "USID",
     UNION_SCOPE_TARGET: "UTID",
@@ -53,7 +53,7 @@ def iter_union_models(scope: str | None = None) -> list[type[Model]]:
 
     :param scope: 限定 union 域（``sender`` / ``target``）。模块表**必须**以类属性 ``union_scope`` 声明自身所属域，
                   未声明者一律跳过并告警：无从判断表里存的是账号数据还是场景数据，
-                  两个域都处理会把用户绑定与会话配置互相搬走，比漏迁一张表更难修复。
+                  两个域都处理会把用户绑定与场景配置互相搬走，比漏迁一张表更难修复。
     """
     from tortoise import Tortoise
 
@@ -156,7 +156,7 @@ async def migrate_union_tables(
 
 async def rewrite_sender_union_refs(from_union: str, to_union: str) -> None:
     """
-    把会话权限列表中对某个用户 union 的引用改写到另一个 union 上。
+    把场景权限列表中对某个用户 union 的引用改写到另一个 union 上。
 
     ``custom_admins`` / ``banned_users`` 存的是用户 union ID，合并后若不改写，
     管理员身份将会丢失，限制名单也可通过换绑绕过。
@@ -174,7 +174,7 @@ async def rewrite_sender_union_refs(from_union: str, to_union: str) -> None:
 
 async def inherit_banned_union_refs(from_union: str, to_union: str) -> None:
     """
-    使新拆出的用户 union 继承原 union 的会话限制名单，避免通过解绑规避封禁。
+    使新拆出的用户 union 继承原 union 的场景限制名单，避免通过解绑规避封禁。
     """
     for target in await TargetUnionInfo.all():
         banned_users = target.banned_users or []
@@ -206,10 +206,10 @@ async def backfill_union_binds() -> None:
 
 def normalize_peer_bots(value: Any) -> dict[str, dict[str, str]]:
     """
-    规整机器人互认记录，形如 ``{观察方会话 ID: {对端会话 ID: 对端机器人在观察方平台的账号}}``。
+    规整机器人互认记录，形如 ``{观察方场景 ID: {对端场景 ID: 对端机器人在观察方平台的账号}}``。
 
     记录须按「观察方 - 对端」两级存放：机器人账号以观察方所在平台的命名空间记录，
-    若扁平存为一个列表，则无法反查某条记录属于哪个会话，解绑时也就无从删除。
+    若扁平存为一个列表，则无法反查某条记录属于哪个场景，解绑时也就无从删除。
     旧版本使用的正是扁平列表，此处一律丢弃，重新执行一次 ``bind auto`` 即可。
 
     :param value: ``target_data["bots_id"]`` 的原始值。
@@ -230,7 +230,7 @@ class UnionBind(DBModel):
     子类须自行定义作为主键的平台 ID 列，并以类属性 :attr:`id_field` 指明该列的列名。
 
     此表只回答「这个平台 ID 属于哪个 union」，不承载任何状态。封禁一类的判定一律挂在
-    :class:`UnionInfo` 上：union 表示同一个人（或同一个现实会话）的多个身份，
+    :class:`UnionInfo` 上：union 表示同一个人（或同一个现实场景）的多个身份，
     状态若下放到单个 ID，换用组内另一个 ID 即可绕过。
 
     :param union_id: 所属 union ID。
@@ -275,8 +275,8 @@ class TargetUnionBind(UnionBind):
     """
     场景 ID 与 union 的映射关系。
 
-    :param target_id: 场景 ID（平台会话）。
-    :param channel_id: 所属消息通道号，同组内同号的会话被视为同一个现实会话。
+    :param target_id: 场景 ID。
+    :param channel_id: 所属消息通道号，同组内同号的场景被视为同一个现实场景。
     """
 
     id_field = "target_id"
@@ -293,7 +293,7 @@ class TargetUnionBind(UnionBind):
         取该 union 下一个可用的消息通道号。
 
         通道号仅在组内有意义（消息去重只发生在组内），因此组内自 1 起顺次递增即可。
-        默认每个会话各占一号，即默认互不视为同一条消息通道。
+        默认每个场景各占一号，即默认互不视为同一条消息通道。
 
         :param union_id: 场景 union ID。
         """
@@ -303,7 +303,7 @@ class TargetUnionBind(UnionBind):
     @classmethod
     async def list_channels(cls, union_id: str) -> dict[str, int]:
         """
-        取该 union 下「平台会话 ID → 消息通道号」的映射。
+        取该 union 下「平台场景 ID → 消息通道号」的映射。
 
         :param union_id: 场景 union ID。
         """
@@ -364,7 +364,7 @@ class UnionInfo(DBModel):
         只有从未出现过的平台 ID 才会被分配新 union；已有映射行的 ID 永远解析回原组，
         因此被封禁的 ID 无法借由重新解析脱离封禁。
 
-        :param platform_id: 平台账号 ID 或平台会话 ID。
+        :param platform_id: 平台账号 ID 或平台场景 ID。
         :param create: 若尚未绑定任何 union，是否新建。
         :return: union 信息，若 create 为 False 且不存在则返回 None。
         """
@@ -550,7 +550,7 @@ class SenderUnionInfo(UnionInfo):
         """
         将一个平台账号从该 union 中拆出，数据留在原 union，该账号从零开始。
 
-        惩罚性状态（封禁、警告次数、会话限制名单）随账号一并转移，避免通过解绑规避处罚。
+        惩罚性状态（封禁、警告次数、场景限制名单）随账号一并转移，避免通过解绑规避处罚。
 
         :param sender_id: 平台账号 ID。
         :return: 拆出后该账号所属的新 union，若无法解绑则为 None。
@@ -610,17 +610,17 @@ class TargetUnionInfo(UnionInfo):
     """
     场景信息。
 
-    数据挂载在 union 上而非平台会话上，多个平台会话可通过 :class:`TargetUnionBind` 绑定到同一 union 以共享数据。
-    平台会话 ID 与 union 的解析见 :meth:`UnionInfo.resolve_union`。
+    数据挂载在 union 上而非平台场景上，多个平台场景可通过 :class:`TargetUnionBind` 绑定到同一 union 以共享数据。
+    平台场景 ID 与 union 的解析见 :meth:`UnionInfo.resolve_union`。
 
     :param union_id: 场景 union ID。
-    :param blocked: 是否为黑名单会话。
+    :param blocked: 是否为黑名单场景。
     :param muted: 是否禁用机器人。
-    :param locale: 会话语言。
-    :param modules: 会话内可用模块。
-    :param custom_admins: 会话内自定义管理员列表（存 union ID）。
-    :param banned_users: 会话内已限制用户（存 union ID）。
-    :param target_data: 会话数据。
+    :param locale: 场景语言。
+    :param modules: 场景内可用模块。
+    :param custom_admins: 场景内自定义管理员列表（存 union ID）。
+    :param banned_users: 场景内已限制用户（存 union ID）。
+    :param target_data: 场景数据。
     """
 
     union_scope = UNION_SCOPE_TARGET
@@ -647,16 +647,16 @@ class TargetUnionInfo(UnionInfo):
     @classmethod
     async def get_by_target_id(cls, target_id: Any, create: bool = True) -> "TargetUnionInfo | None":
         """
-        取平台会话所属的 union 行，是 :meth:`UnionInfo.resolve_union` 的会话友好包装：
+        取平台场景所属的 union 行，是 :meth:`UnionInfo.resolve_union` 的会话友好包装：
         额外接受 MessageSession / FetchedMessageSession，从中取出 ``target_id``。
         """
         return await cls._resolve_session(target_id, create)
 
     def list_peer_bots(self, target_id: str) -> list[str]:
         """
-        取某个平台会话眼中、同一个现实会话里其它机器人的账号。
+        取某个平台场景眼中、同一个现实场景里其它机器人的账号。
 
-        :param target_id: 观察方的平台会话 ID。
+        :param target_id: 观察方的平台场景 ID。
         """
         return list(normalize_peer_bots(self.target_data.get("bots_id")).get(target_id, {}).values())
 
@@ -664,7 +664,7 @@ class TargetUnionInfo(UnionInfo):
         """
         登记机器人互认记录。
 
-        :param links: ``{观察方会话 ID: {对端会话 ID: 对端机器人在观察方平台的账号}}``。
+        :param links: ``{观察方场景 ID: {对端场景 ID: 对端机器人在观察方平台的账号}}``。
         """
         peers = normalize_peer_bots(self.target_data.get("bots_id"))
         for observer, entries in links.items():
@@ -673,12 +673,12 @@ class TargetUnionInfo(UnionInfo):
 
     async def forget_peer_bots(self, target_id: str) -> None:
         """
-        将某个平台会话从机器人互认记录中完全移除，包含它自身的记录与其它会话对它的记录。
+        将某个平台场景从机器人互认记录中完全移除，包含它自身的记录与其它场景对它的记录。
 
-        解绑或变更通道后双方不再对应同一个现实会话，保留记录会使双方持续互相屏蔽；
+        解绑或变更通道后双方不再对应同一个现实场景，保留记录会使双方持续互相屏蔽；
         而重新配对所用的握手口令正是由机器人发出的命令，屏蔽一旦残留，双方将无法重新建立关联。
 
-        :param target_id: 要移除的平台会话 ID。
+        :param target_id: 要移除的平台场景 ID。
         """
         peers = normalize_peer_bots(self.target_data.get("bots_id"))
         peers.pop(target_id, None)
@@ -688,10 +688,10 @@ class TargetUnionInfo(UnionInfo):
 
     async def bind_id(self, target_id: str) -> bool:
         """
-        将一个平台会话绑定到该 union。
+        将一个平台场景绑定到该 union。
 
-        :param target_id: 平台会话 ID。
-        :return: 是否绑定成功，若该会话已绑定至其他 union 则为 False。
+        :param target_id: 平台场景 ID。
+        :return: 是否绑定成功，若该场景已绑定至其他 union 则为 False。
         """
         bind = await TargetUnionBind.get_or_none(target_id=target_id)
         if bind:
@@ -705,23 +705,23 @@ class TargetUnionInfo(UnionInfo):
 
     async def unbind_id(self, target_id: str) -> "TargetUnionInfo | None":
         """
-        将一个平台会话从该 union 中拆出，数据留在原 union，该会话从零开始。
+        将一个平台场景从该 union 中拆出，数据留在原 union，该场景从零开始。
 
-        :param target_id: 平台会话 ID。
-        :return: 拆出后该会话所属的新 union，若无法解绑则为 None。
+        :param target_id: 平台场景 ID。
+        :return: 拆出后该场景所属的新 union，若无法解绑则为 None。
         """
         binds = await self.list_bound_ids()
         if target_id not in binds or len(binds) <= 1:
             return None
-        # 封禁状态随会话一并转移，避免通过解绑规避处罚。
+        # 封禁状态随场景一并转移，避免通过解绑规避处罚。
         union = await TargetUnionInfo.create(
             union_id=new_union_id(UNION_SCOPE_TARGET), blocked=self.blocked, locale=self.locale
         )
-        # 先建新组再改挂映射行，全程不出现「该会话没有映射行」的中间态：
-        # 该状态下若中断，下次解析会把这个会话当作从未见过的新会话，另建一个干净的 union，
-        # 封禁就此清零。新组内只此一个会话，通道号复位为 1。
+        # 先建新组再改挂映射行，全程不出现「该场景没有映射行」的中间态：
+        # 该状态下若中断，下次解析会把这个场景当作从未见过的新场景，另建一个干净的 union，
+        # 封禁就此清零。新组内只此一个场景，通道号复位为 1。
         await TargetUnionBind.filter(target_id=target_id).update(union_id=union.union_id, channel_id=1)
-        # 拆出的会话与原组内的机器人不再对应同一个现实会话，互认记录须一并清除。
+        # 拆出的场景与原组内的机器人不再对应同一个现实场景，互认记录须一并清除。
         # 新组的 target_data 本为空，只需清理保留的一侧。
         await self.forget_peer_bots(target_id)
         return union
@@ -763,9 +763,9 @@ class TargetUnionInfo(UnionInfo):
         await migrate_union_tables(self.union_id, merged.union_id, scope=UNION_SCOPE_TARGET)
 
         # 自身一侧的通道号保持不变，并入方整体平移：双方均自 1 开始编号，
-        # 直接合表会使两个互不相关的会话同为 1 号，进而被误判为同一条消息通道。
-        # 平移须按原通道号建立映射，不能逐条分配新号——并入方内部原本同号的会话必须保持同号，
-        # 否则已配对的会话会在合并时被拆开。
+        # 直接合表会使两个互不相关的场景同为 1 号，进而被误判为同一条消息通道。
+        # 平移须按原通道号建立映射，不能逐条分配新号——并入方内部原本同号的场景必须保持同号，
+        # 否则已配对的场景会在合并时被拆开。
         await TargetUnionBind.filter(union_id=self.union_id).update(union_id=merged.union_id)
         moved_channels: dict[int, int] = {}
         for bind in await TargetUnionBind.filter(union_id=other.union_id).order_by("bound_at"):
@@ -875,7 +875,7 @@ class TargetUnionInfo(UnionInfo):
         获取开启此模块的所有场景列表。
 
         :param module_name: 指定的模块名称。
-        :param id_prefix: 指定的 ID 前缀，按 union 下绑定的平台会话 ID 匹配。
+        :param id_prefix: 指定的 ID 前缀，按 union 下绑定的平台场景 ID 匹配。
         :return: 符合要求的场景 union 列表。
         """
         if id_prefix:
@@ -899,14 +899,14 @@ class TargetUnionInfo(UnionInfo):
         cls, module_name: str | list[str] | tuple[str, ...] | None, id_prefix: str | None = None
     ) -> list[str]:
         """
-        获取开启此模块的所有平台会话 ID 列表。
+        获取开启此模块的所有平台场景 ID 列表。
 
-        与 :meth:`get_target_list_by_module` 的区别在于会把每个 union 展开成其下绑定的全部平台会话 ID，
-        用于需要逐个会话推送的场景。
+        与 :meth:`get_target_list_by_module` 的区别在于会把每个 union 展开成其下绑定的全部平台场景 ID，
+        用于需要逐个场景推送的情形。
 
         :param module_name: 指定的模块名称。
         :param id_prefix: 指定的 ID 前缀。
-        :return: 符合要求的平台会话 ID 列表。
+        :return: 符合要求的平台场景 ID 列表。
         """
         unions = await cls.get_target_list_by_module(module_name, id_prefix)
         if not unions:
@@ -1080,14 +1080,14 @@ class UnfriendlyActionRecords(DBModel):
 
     @classmethod
     async def check_mute(cls, target_id) -> bool:
-        """检查会话的禁言行为记录。
+        """检查场景的禁言行为记录。
 
         统计按 union 聚合，因此换用同一 union 下的其他账号不会绕过此检查。
 
         :return: 如果：
-        - 会话在过去 5 天内有超过 5 条记录
-        - 会话内某一用户的记录（在过去 1 天内）超过 3 次
-        - 会话内的不同用户的记录（在过去 1 天内）有 3 个以上
+        - 场景在过去 5 天内有超过 5 条记录
+        - 场景内某一用户的记录（在过去 1 天内）超过 3 次
+        - 场景内的不同用户的记录（在过去 1 天内）有 3 个以上
 
         则返回 True。
         """
@@ -1185,7 +1185,7 @@ class MaliciousLoginRecords(DBModel):
     """
     恶意登录行为记录。
 
-    :param id: 会话 ID。
+    :param id: 记录 ID。
     :param ip_address: IP 地址。
     :param blocked_until: 被封禁的截止时间。
     :param created_date: 创建日期。

@@ -49,7 +49,7 @@ class ExpiringTempDict:
     __slots__ = ("exp", "ts", "data", "_lock", "__weakref__")
 
     # 存弱引用：登记表只为定期清理服务，若持强引用则任何登记过的容器都永远无法被回收，
-    # 冷却、绑定码这类按「会话 × 键」不断新建的容器会让它无上限增长。
+    # 冷却、绑定码这类按「场景 × 键」不断新建的容器会让它无上限增长。
     _registry: ClassVar[list] = []
     _registry_lock: ClassVar[threading.Lock] = threading.Lock()
     _clear_lock: ClassVar[asyncio.Lock] = asyncio.Lock()

@@ -49,9 +49,9 @@ def _take_merge_code(code: str) -> tuple[str, dict] | None:
 
 async def _unify_channel(initiator_target_id: str, current_target_id: str) -> int:
     """
-    把两个会话并入同一条消息通道。
+    把两个场景并入同一条消息通道。
 
-    迁移完成后二者对应同一个现实会话，统一通道号可使命令执行与消息推送只由其中一方承担。
+    迁移完成后二者对应同一个现实场景，统一通道号可使命令执行与消息推送只由其中一方承担。
     若日后取消退役、两个机器人回到共作状态，不同通道会让通道认领的快路径判定「通道内仅有自身」
     而双双放行，同一条命令因此被响应两次；统一通道是那条回退路径唯一的保险。
 
@@ -100,7 +100,7 @@ async def _(msg: Bot.MessageSession):
             },
             code_key="core.merge.message.code",
         )
-    # 会话迁移会改动整个会话的数据，需要管理员权限；私聊则无此顾虑，故在此处而非命令级校验。
+    # 场景迁移会改动整个场景的数据，需要管理员权限；私聊则无此顾虑，故在此处而非命令级校验。
     if not await msg.check_permission():
         await msg.finish(I18NContext("parser.admin.permission.denied.command"))
     await issue_code(
@@ -116,7 +116,7 @@ async def _(msg: Bot.MessageSession):
 
 async def _merge_private(msg: Bot.MessageSession, entry: dict) -> None:
     """
-    完成一次私聊迁移：账号数据与私聊会话数据一并合并。
+    完成一次私聊迁移：账号数据与私聊场景数据一并合并。
 
     私聊里「这个账号」与「这段私聊」指的是同一件事，只并其一会让另一半的数据留在退役实例上。
     两者共用一次确认后一起执行，避免用户在第二次确认时取消而停在只迁一半的状态。
@@ -193,15 +193,15 @@ async def _(msg: Bot.MessageSession, code: str):
     if not is_merge_route_allowed(entry.get("source_client"), msg.session_info.client_name):
         await msg.finish(I18NContext("core.merge.message.route.mismatch"))
 
-    # 迁移码的签发与使用须处于同类场景：私聊码带着发起方的会话组，若在群里兑换，
-    # 会把一段私聊的数据并进群会话；群码在私聊里兑换同理。
+    # 迁移码的签发与使用须处于同类场景：私聊码带着发起方的场景组，若在群里兑换，
+    # 会把一段私聊的数据并进群场景；群码在私聊里兑换同理。
     if entry["is_private"] != msg.session_info.is_private:
         await msg.finish(I18NContext("core.merge.message.scene.mismatch"))
 
     if scope == UNION_SCOPE_SENDER:
         await _merge_private(msg, entry)
 
-    # 会话迁移会改动整个会话的数据，与签发迁移码时一样需要管理员权限。
+    # 场景迁移会改动整个场景的数据，与签发迁移码时一样需要管理员权限。
     if not await msg.check_permission():
         await msg.finish(I18NContext("parser.admin.permission.denied.command"))
 
@@ -242,9 +242,9 @@ async def _(msg: Bot.MessageSession):
     """
     退役公告的触发器。
 
-    只做排队，不向会话发送任何内容：公告由延时任务在数分钟后主动推送，与命令是否被拦截无关。
-    若挂在命令拦截上，退役后用户不再发命令，该会话便永远收不到公告；而群内聊天是持续的。
+    只做排队，不向场景发送任何内容：公告由延时任务在数分钟后主动推送，与命令是否被拦截无关。
+    若挂在命令拦截上，退役后用户不再发命令，该场景便永远收不到公告；而群内聊天是持续的。
 
-    标记为单次触发，使其对每个会话只跑一次，避免每条消息都付出通道认领的数据库查询与统计插入。
+    标记为单次触发，使其对每个场景只跑一次，避免每条消息都付出通道认领的数据库查询与统计插入。
     """
     await enqueue_notice(msg.session_info)

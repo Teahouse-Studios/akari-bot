@@ -12,7 +12,7 @@ def _fake_module(base: bool):
 
 
 async def _test_base_module_enabled_without_enabling():
-    """测试 regex 启用判定 - base 模块无须在会话中启用"""
+    """测试 regex 启用判定 - base 模块无须在场景中启用"""
     try:
         return regex_module_enabled(_fake_module(True), "merge", [])
 
@@ -21,7 +21,7 @@ async def _test_base_module_enabled_without_enabling():
 
 
 async def _test_normal_module_requires_enabling():
-    """测试 regex 启用判定 - 非 base 模块仍须在会话中启用"""
+    """测试 regex 启用判定 - 非 base 模块仍须在场景中启用"""
     try:
         disabled = regex_module_enabled(_fake_module(False), "wiki", [])
         enabled = regex_module_enabled(_fake_module(False), "wiki", ["wiki"])

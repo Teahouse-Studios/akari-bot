@@ -677,10 +677,10 @@ class QQBotContextManager(ContextManager):
 
         try:
             if session_info.target_from == target_direct_prefix:
-                # 当前已处于私信会话中，无需另行创建
+                # 当前已处于私信场景中，无需另行创建
                 target_id, target_from = session_info.target_id, target_direct_prefix
             elif user_id.startswith(sender_tiny_prefix):
-                # 频道用户的私信须先以来源频道创建私信会话，取得专用的 guild_id 后方可发送
+                # 频道用户的私信须先以来源频道创建私信场景，取得专用的 guild_id 后方可发送
                 guild_id = session_info.target_id.split("|")[2]
                 dms = await client.api.create_dms(guild_id=guild_id, user_id=uid)
                 target_id = f"{target_direct_prefix}|{dms['guild_id']}"

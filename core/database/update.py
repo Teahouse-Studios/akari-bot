@@ -5,7 +5,7 @@ from core.database.link import db_type, get_db_link
 from core.database.models import DBVersion, TargetUnionInfo, TargetUnionBind, backfill_union_binds
 
 # v3：原本以平台 ID 为主键的两张核心表改挂 union，表名一并对齐模型名，
-# 以免「target_info」这类旧名继续读作「平台会话信息」。
+# 以免「target_info」这类旧名继续读作「平台场景信息」。
 UNION_RENAME_CORE_TABLES = {
     "sender_info": "sender_union_info",
     "target_info": "target_union_info",
@@ -148,15 +148,15 @@ async def update_database_to_v3(conn):
         else:
             await conn.execute_query("ALTER TABLE `target_union_bind` ADD COLUMN `channel_id` INT NOT NULL DEFAULT 1;")
 
-    # 通道号须在组内逐个顺延。若一律保留默认值 1，同一组下的全部会话会被判定为同一条消息通道，
-    # 命令与推送将相互去重，导致会话不再有消息送达。
+    # 通道号须在组内逐个顺延。若一律保留默认值 1，同一组下的全部场景会被判定为同一条消息通道，
+    # 命令与推送将相互去重，导致场景不再有消息送达。
     for union_id in set(await TargetUnionBind.all().values_list("union_id", flat=True)):
         binds = await TargetUnionBind.filter(union_id=union_id).order_by("bound_at")
         for channel_id, bind in enumerate(binds, start=1):
             bind.channel_id = channel_id
             await bind.save()
 
-    # 旧版 connect 将机器人互认记录存为扁平列表，无法反查某条记录属于哪个会话，解绑时也就无从删除。
+    # 旧版 connect 将机器人互认记录存为扁平列表，无法反查某条记录属于哪个场景，解绑时也就无从删除。
     # 该结构已改为两级字典，旧值直接清除，重新执行一次 bind auto 即可。
     for target in await TargetUnionInfo.all():
         if isinstance(target.target_data.get("bots_id"), list):

@@ -1,6 +1,6 @@
 """Bot.send_direct_message_to_union_target 单元测试 - 按消息通道去重的组内推送。
 
-退役会话的滤除一并由本方法承担，但那条用例改动 ``CoreConfig.retired_clients``，
+退役场景的滤除一并由本方法承担，但那条用例改动 ``CoreConfig.retired_clients``，
 按既有约定归入 ``test_retired_gate.py``。
 """
 
@@ -43,10 +43,10 @@ async def _push(union_id: str, message, alive: dict | None = None) -> list[tuple
 
 async def _bind(prefix: str, *targets: tuple[str, int]) -> str:
     """
-    建一个场景组并按给定的通道号绑定若干平台会话。
+    建一个场景组并按给定的通道号绑定若干平台场景。
 
     :param prefix: 场景 ID 的尾段前缀，各用例互不相同以免共用 union。
-    :param targets: ``(客户端名, 通道号)`` 序列，首项为组内的第一个会话。
+    :param targets: ``(客户端名, 通道号)`` 序列，首项为组内的第一个场景。
     :return: 该组的 union ID。
     """
     head_client, head_channel = targets[0]
@@ -138,10 +138,10 @@ async def _test_message_factory_may_skip():
 
 
 async def _test_report_targets_dedup():
-    """测试报错回传 - 同一现实会话即便配了多个上报场景也只收到一份"""
+    """测试报错回传 - 同一现实场景即便配了多个上报场景也只收到一份"""
     try:
         await _bind("report", ("UPUSHA", 1), ("UPUSHB", 1))
-        # 上报场景按平台会话 ID 配置，同一个现实会话的两个平台都被填了进来
+        # 上报场景按平台场景 ID 配置，同一个现实场景的两个平台都被填了进来
         targets = ["UPUSHA|Group|report", "UPUSHB|Group|report"]
         sent = []
 

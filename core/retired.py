@@ -13,20 +13,20 @@ from core.utils.random import Random
 # 公告文案的基础语言。当前语言缺失时优先回退至此。
 NOTICE_FALLBACK_LOCALE = "zh_cn"
 
-# 已发送公告的会话记录，单键存放，避免为每个会话建行而污染存储表。
+# 已发送公告的场景记录，单键存放，避免为每个场景建行而污染存储表。
 NOTIFIED_STORED_KEY = "retired_notified"
 
-# 公告延迟推送的区间（秒）。随机取值以错峰：多个会话常在同一时段活跃，
+# 公告延迟推送的区间（秒）。随机取值以错峰：多个场景常在同一时段活跃，
 # 固定延迟会让公告集中在同一瞬间涌出，撞上平台频控。
 RETIRED_NOTIFY_DELAY_MIN = 300
 RETIRED_NOTIFY_DELAY_MAX = 86400
 
-# 已排入延时队列、尚未推送的会话。防止用户在等待期间连发消息导致重复排队。
+# 已排入延时队列、尚未推送的场景。防止用户在等待期间连发消息导致重复排队。
 # 仅存于进程内存，重启即清空；因已发送记录只在推送成功后落库，重启后会自然重排。
 pending_notices: set[str] = set()
 
 # 内存态是唯一真相源：判断与写入均走内存，落库时全量覆盖。
-# 若改为逐次读库-追加-写回，两个会话并发触发时先写的记录会被覆盖，对应会话将重复收到公告。
+# 若改为逐次读库-追加-写回，两个场景并发触发时先写的记录会被覆盖，对应场景将重复收到公告。
 _notified: dict[str, str] | None = None
 _notified_lock = asyncio.Lock()
 
@@ -151,28 +151,28 @@ def is_merge_route_allowed(source_client: str | None, current_client: str | None
 
 def filter_retired_targets(target_ids: list[str]) -> list[str]:
     """
-    从推送目标列表中滤除属于已退役客户端的会话。
+    从推送目标列表中滤除属于已退役客户端的场景。
 
     退役客户端停止一切主动推送。在推送目标解析处统一滤除，即可覆盖 RSS、wikilog、schedule
     等全部推送模块，无须逐个模块改动。
 
     :param target_ids: 待推送的场景 ID 列表。
-    :return: 滤除退役会话后的列表。
+    :return: 滤除退役场景后的列表。
     """
     return [target_id for target_id in target_ids if not is_retired_target(target_id)]
 
 
 def should_yield_channel(target_id: str, channels: dict[str, int], channel_id: int) -> bool:
     """
-    判断一个退役会话是否应当把消息让给同通道内的其他会话处理。
+    判断一个退役场景是否应当把消息让给同通道内的其他场景处理。
 
-    退役会话不执行白名单之外的命令，若由它抢到认领，同通道的其他会话会因避让而放弃处理，
-    该会话内将无人响应。故只要同通道存在非退役会话，退役会话一律让位。
+    退役场景不执行白名单之外的命令，若由它抢到认领，同通道的其他场景会因避让而放弃处理，
+    该场景内将无人响应。故只要同通道存在非退役场景，退役场景一律让位。
     通道内只剩自身时照常认领，迁移路径不致中断。
 
-    :param target_id: 当前会话的场景 ID。
+    :param target_id: 当前场景 ID。
     :param channels: 同组内「场景 ID → 通道号」的映射。
-    :param channel_id: 当前会话的通道号。
+    :param channel_id: 当前场景的通道号。
     :return: 是否应当让位。
     """
     if not is_retired_target(target_id):
@@ -182,15 +182,15 @@ def should_yield_channel(target_id: str, channels: dict[str, int], channel_id: i
 
 async def is_yielding_retired_session(target_id: str, union_id: str, channel_id: int) -> bool:
     """
-    判断一个会话是否为正在让位的退役会话。
+    判断一个场景是否为正在让位的退役场景。
 
-    :func:`should_yield_channel` 的查库版本，供手边没有通道映射的介入点调用。非退役会话
+    :func:`should_yield_channel` 的查库版本，供手边没有通道映射的介入点调用。非退役场景
     占绝大多数，故先按场景 ID 短路，免得为每条消息白查一次库。
 
-    :param target_id: 当前会话的场景 ID。
-    :param union_id: 当前会话所属的场景 union ID。
-    :param channel_id: 当前会话的通道号。
-    :return: 是否为正在让位的退役会话。
+    :param target_id: 当前场景 ID。
+    :param union_id: 当前场景所属的 union ID。
+    :param channel_id: 当前场景的通道号。
+    :return: 是否为正在让位的退役场景。
     """
     if not is_retired_target(target_id) or not union_id:
         return False
@@ -200,9 +200,9 @@ async def is_yielding_retired_session(target_id: str, union_id: str, channel_id:
 
 async def _load_notified() -> dict[str, str]:
     """
-    加载已发送公告的会话记录，首次调用时从存储读入并转为字典。
+    加载已发送公告的场景记录，首次调用时从存储读入并转为字典。
 
-    :return: ``会话 ID → 发送时间`` 的映射。
+    :return: ``场景 ID → 发送时间`` 的映射。
     """
     global _notified
     if _notified is not None:
@@ -231,7 +231,7 @@ def reset_notified_cache() -> None:
 
 async def has_notified(target_id: str) -> bool:
     """
-    判断某个会话是否已收到过退役公告。
+    判断某个场景是否已收到过退役公告。
 
     :param target_id: 场景 ID。
     :return: 是否已发送过。
@@ -241,7 +241,7 @@ async def has_notified(target_id: str) -> bool:
 
 async def mark_notified(target_id: str) -> None:
     """
-    记录某个会话已收到退役公告，并将内存记录全量写回存储。
+    记录某个场景已收到退役公告，并将内存记录全量写回存储。
 
     :param target_id: 场景 ID。
     """
@@ -304,7 +304,7 @@ def pick_notice_delay() -> int:
 
 async def should_enqueue_notice(target_id: str) -> bool:
     """
-    判断某个会话此刻是否应当排入公告队列。
+    判断某个场景此刻是否应当排入公告队列。
 
     :param target_id: 场景 ID。
     :return: 已发送过或已在队列中时为 False。
@@ -334,10 +334,10 @@ def build_notice(client_name: str, locale: str, prefix: str) -> list:
 
 async def _deliver_notice(session_info, delay: int) -> None:
     """
-    等待指定时长后向会话推送退役公告。
+    等待指定时长后向场景推送退役公告。
 
-    推送成功才记录已发送：失败多半意味着会话已永久失效（群解散、机器人被移出），
-    此时不重试，留待进程重启后由该会话的下条消息重新排队。
+    推送成功才记录已发送：失败多半意味着场景已永久失效（群解散、机器人被移出），
+    此时不重试，留待进程重启后由该场景的下条消息重新排队。
 
     :param session_info: 目标会话信息。
     :param delay: 延迟秒数。
@@ -364,7 +364,7 @@ async def _deliver_notice(session_info, delay: int) -> None:
 
 async def enqueue_notice(session_info) -> bool:
     """
-    为一个会话排入退役公告的延时推送。
+    为一个场景排入退役公告的延时推送。
 
     :param session_info: 触发排队的会话信息。
     :return: 是否新排入队列。

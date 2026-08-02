@@ -8,7 +8,7 @@
 - 向客户端发送消息、删除消息
 - 成员管理操作（限制、踢出、封禁等）
 - 消息反应操作（添加/移除emoji反应）
-- 上下文管理（保持/释放会话)
+- 上下文管理（保持 / 释放会话上下文）
 - 接收客户端的消息并进行处理
 - 获取和管理模块信息
 - 调用OneBot标准API
@@ -63,7 +63,7 @@ class JobQueueServer(JobQueueBase):
         ``wait=True`` 的调用会就此永久阻塞（所等待的 Event 不会再被置位），
         ``wait=False`` 的调用则只是徒增一条无效记录。因此先查询保活状态，掉线时直接判定失败。
 
-        :param target_client: 场景客户端名称
+        :param target_client: 目标客户端名称
         :param action: 操作名称
         :param args: 操作参数
         :param wait: 是否等待任务完成（默认 True）
@@ -212,11 +212,11 @@ class JobQueueServer(JobQueueBase):
     async def client_restrict_member(
         cls, session_info: SessionInfo, user_id: str | list[str], duration: int | None = None, reason: str | None = None
     ):
-        """限制群组成员（禁言）。
+        """限制场景成员（禁言）。
 
         通过队列系统对指定的成员进行禁言处理。这是一个非阻塞操作。
 
-        :param session_info: 場景的会话信息
+        :param session_info: 会话信息
         :param user_id: 要限制的成员 ID 或 ID 列表
         :param duration: 限制时长（秒），None 表示永久
         :param reason: 限制原因（可选）
@@ -242,7 +242,7 @@ class JobQueueServer(JobQueueBase):
 
         通过队列系统取消之前对成员的限制。这是一个非阻塞操作。
 
-        :param session_info: 場景的会话信息
+        :param session_info: 会话信息
         :param user_id: 要解除限制的成员 ID 或 ID 列表
 
         :return: 任务ID或返回值
@@ -257,11 +257,11 @@ class JobQueueServer(JobQueueBase):
 
     @classmethod
     async def client_kick_member(cls, session_info: SessionInfo, user_id: str | list[str], reason: str | None = None):
-        """踢出群组成员。
+        """踢出场景成员。
 
-        通过队列系统将指定的成员从群组 / 频道中踢出。这是一个非阻塞操作。
+        通过队列系统将指定的成员从场景中踢出。这是一个非阻塞操作。
 
-        :param session_info: 場景的会话信息
+        :param session_info: 会话信息
         :param user_id: 要踢出的成员 ID 或 ID 列表
         :param reason: 踢出原因（可选）
 
@@ -277,11 +277,11 @@ class JobQueueServer(JobQueueBase):
 
     @classmethod
     async def client_ban_member(cls, session_info: SessionInfo, user_id: str | list[str], reason: str | None = None):
-        """永久封禁群组成员。
+        """永久封禁场景成员。
 
         通过队列系统永久封禁指定的成员。这是一个非阻塞操作。
 
-        :param session_info: 場景的会话信息
+        :param session_info: 会话信息
         :param user_id: 要封禁的成员 ID 或 ID 列表
         :param reason: 封禁原因（可选）
 
@@ -301,7 +301,7 @@ class JobQueueServer(JobQueueBase):
 
         通过队列系统取消之前对成员的永久封禁。这是一个非阻塞操作。
 
-        :param session_info: 場景的会话信息
+        :param session_info: 会话信息
         :param user_id: 要解除封禁的成员 ID 或 ID 列表
 
         :return: 任务 ID 或返回值
@@ -321,7 +321,7 @@ class JobQueueServer(JobQueueBase):
         通过队列系统在指定的消息上添加表情反应。
 
         :param session_info: 消息所在的会话信息
-        :param message_id: 场景消息 ID 或 ID 列表
+        :param message_id: 消息 ID 或 ID 列表
         :param emoji: 要添加的表情代码
 
         :return: 任务结果字典
@@ -340,7 +340,7 @@ class JobQueueServer(JobQueueBase):
         通过队列系统移除指定消息上的表情反应。
 
         :param session_info: 消息所在的会话信息
-        :param message_id: 场景消息 ID 或 ID 列表
+        :param message_id: 消息 ID 或 ID 列表
         :param emoji: 要添加的表情代码
 
         :return: 任务结果字典
@@ -358,7 +358,7 @@ class JobQueueServer(JobQueueBase):
 
         通过队列系统向指定会话发送“正在输入……”的状态指示。
 
-        :param session_info: 场景会话信息
+        :param session_info: 会话信息
         :return: 任务结果字典
         """
         value = await cls.add_job(
@@ -372,7 +372,7 @@ class JobQueueServer(JobQueueBase):
 
         通过队列系统隐藏指定会话的“正在输入……”状态指示。
 
-        :param session_info: 场景会话信息
+        :param session_info: 会话信息
         :return: 任务结果字典
         """
         value = await cls.add_job(
@@ -386,7 +386,7 @@ class JobQueueServer(JobQueueBase):
 
         通过队列系统向指定会话发送错误通知。这是一个非阻塞操作。
 
-        :param session_info: 场景会话信息
+        :param session_info: 会话信息
         :return: 任务ID或返回值
         """
         value = await cls.add_job(
@@ -396,11 +396,11 @@ class JobQueueServer(JobQueueBase):
 
     @classmethod
     async def client_check_native_permission(cls, session_info: SessionInfo):
-        """检查客户端会话的原生权限。
+        """检查客户端的原生权限。
 
-        通过队列系统检查指定会话是否拥有原生权限（如管理员权限等）。
+        通过队列系统检查发送者在该场景中是否拥有原生权限（如管理员权限等）。
 
-        :param session_info: 场景会话信息
+        :param session_info: 会话信息
         :return: 布尔值，表示是否拥有权限
         """
         v = await cls.add_job(
@@ -416,7 +416,7 @@ class JobQueueServer(JobQueueBase):
 
         通过队列系统保持指定会话的上下文，防止其被自动清理。
 
-        :param session_info: 场景会话信息
+        :param session_info: 会话信息
         :return: 任务结果字典
         """
         value = await cls.add_job(
@@ -430,7 +430,7 @@ class JobQueueServer(JobQueueBase):
 
         通过队列系统释放之前保持的会话上下文，允许其被自动清理。
 
-        :param session_info: 场景会话信息
+        :param session_info: 会话信息
         :return: 任务结果字典
         """
         value = await cls.add_job(
@@ -484,7 +484,7 @@ class JobQueueServer(JobQueueBase):
 
         通过队列系统在客户端调用 OneBot 标准 API（如获取群信息、获取群成员列表等）。
 
-        :param session_info: 场景会话信息
+        :param session_info: 会话信息
         :param api_name: OneBot API 名称
         :param **kwargs: 传递给 API 的参数
 
