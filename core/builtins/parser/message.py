@@ -303,7 +303,7 @@ async def _claim_channel_message(msg: "Bot.MessageSession", display: str | None 
 
     # 退役场景不执行白名单之外的命令，由它认领会导致同通道的其他场景避让而无人响应。
     if should_yield_channel(msg.session_info.target_id, channels, channel_id):
-        Logger.debug(f"Retired session {msg.session_info.target_id} yielded the channel.")
+        Logger.debug(f"Retired context {msg.session_info.target_id} yielded the channel.")
         return True
 
     if display is None:
