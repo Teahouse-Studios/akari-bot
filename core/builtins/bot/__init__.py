@@ -202,7 +202,7 @@ class Bot:
             if union_id and union_id not in channel_maps:
                 channel_maps[union_id] = await TargetUnionBind.list_channels(union_id)
             channel_id = channel_maps.get(union_id, {}).get(session_.target_id) if union_id else None
-            # 查不到通道号即表示该场景没有绑定行，按独立场景处理，不与其它会话归为一组。
+            # 查不到通道号即表示该场景没有绑定行，按独立场景处理，不与其它场景归为一组。
             key = (union_id, channel_id) if union_id and channel_id else ("", session_.target_id)
             groups.setdefault(key, []).append(session_)
 
