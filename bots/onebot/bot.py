@@ -25,6 +25,7 @@ from core.constants.default import confirm_command_default
 from core.database.models import SenderUnionInfo, TargetUnionInfo, UnfriendlyActionRecords
 from core.i18n import Locale
 from core.logger import Logger
+from core.retired import is_retired_client
 from core.tos import tos_report
 
 Bot.register_bot(client_name=client_name)
@@ -36,6 +37,11 @@ ignored_sender = CoreConfig.ignored_sender
 enable_tos = CoreConfig.enable_tos
 mention_required = CoreConfig.mention_required
 quick_confirm = CoreConfig.quick_confirm
+
+# 本平台退役后不再追究针对机器人自身的不友好行为。退役实例已停止服务，将机器人禁言或移出群聊
+# 是管理员的正常处置，不应据此追责；且迁移完成后两侧的账号与场景同属一个 union，在此处封禁会
+# 连带波及用户在新平台上的身份，把一次合理的清退变成对已迁移用户的误封。
+client_retired = is_retired_client(client_name)
 
 enable_temp_session = AiocqhttpConfig.qq_enable_temp_session
 enable_listening_self_message = AiocqhttpConfig.qq_enable_listening_self_message
@@ -244,7 +250,7 @@ async def _(event: Event):
 
 @aiocqhttp_bot.on_notice("group_ban")
 async def _(event: Event):
-    if enable_tos and event.sub_type == "ban" and event.user_id == int(event.self_id):
+    if enable_tos and not client_retired and event.sub_type == "ban" and event.user_id == int(event.self_id):
         sender_id = f"{sender_prefix}|{event.operator_id}"
         sender_union_info = await SenderUnionInfo.get_by_sender_id(sender_id)
         target_id = f"{target_group_prefix}|{event.group_id}"
@@ -275,7 +281,7 @@ async def _(event: Event):
 
 @aiocqhttp_bot.on_notice("group_decrease")
 async def _(event: Event):
-    if enable_tos and event.sub_type == "kick_me":
+    if enable_tos and not client_retired and event.sub_type == "kick_me":
         sender_id = f"{sender_prefix}|{event.operator_id}"
         sender_union_info = await SenderUnionInfo.get_by_sender_id(sender_id)
         target_id = f"{target_group_prefix}|{event.group_id}"
