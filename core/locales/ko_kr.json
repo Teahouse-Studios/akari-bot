@@ -44,7 +44,7 @@
     "config.comments.config.tos_warning_counts": "ToS 위반 시 최대 경고 횟수입니다.",
     "config.comments.config.typo_check_args_score": "인수 철자 검사 허용 유사도. 범위는 0에서 1 사이입니다.",
     "config.comments.config.typo_check_command_score": "명령어 철자 검사 허용 유사도. 범위는 0에서 1 사이입니다.",
-    "config.comments.config.typo_check_module_score": "모듈 철자 검사 허용 유사도. 범위는 0에서 1 사이입니다.\n",
+    "config.comments.config.typo_check_module_score": "모듈 철자 검사 허용 유사도. 범위는 0에서 1 사이입니다.",
     "config.comments.config.typo_check_options_score": "옵션 철자 검사 허용 유사도. 범위는 0에서 1 사이입니다.",
     "config.comments.config.use_font_mirror": "웹 페이지를 렌더링할 때 글꼴 미러링을 사용할지 여부.",
     "config.comments.config.use_secrets_random": "secrets 라이브러리를 기반으로 한 난수 생성기를 사용할지 여부.",

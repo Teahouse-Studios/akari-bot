@@ -15,7 +15,7 @@
     "config.comments.config.donate_url": "寄付の URL。",
     "config.comments.config.enable_analytics": "組み込みの統計機能を有効にするかどうか。",
     "config.comments.config.enable_commit_url": "バージョン情報を表示する時にコミット URL を表示するかどうか。",
-    "config.comments.config.enable_dirty_check": "テキスト フィルタリング検出を有効にするかどうか。Alibaba Cloud コンテンツ セキュリティ サービスの AccessKey ID と AccessKey Secret を設定する必要があります。\n",
+    "config.comments.config.enable_dirty_check": "テキスト フィルタリング検出を有効にするかどうか。Alibaba Cloud コンテンツ セキュリティ サービスの AccessKey ID と AccessKey Secret を設定する必要があります。",
     "config.comments.config.enable_get_petal": "ペタルの取得を許可するかどうか。",
     "config.comments.config.enable_joke": "ジョークを有効にするかどうか。有効にすると、サーバー時刻の 4 月 1 日に発動します。",
     "config.comments.config.enable_module_invalid_prompt": "モジュールが存在しない場合にプロンプト メッセージ表示を有効にするかどうか。",
