@@ -1,4 +1,4 @@
-"""modules.core.bind 单元测试 - bind auto 握手的并发收敛（需要数据库）。"""
+"""modules.core.bind 单元测试 - bind auto 握手的并发收敛与口令防重放（需要数据库）。"""
 
 import asyncio
 import re
@@ -8,9 +8,13 @@ from core.builtins.session.info import SessionInfo
 from core.constants.exceptions import SessionFinished
 from core.database.models import TargetUnionInfo, TargetUnionBind
 from core.tester import func_case, Tester
-from core.tester.mock.parser import parser
 from core.tester.mock.session import MockMessageSession
-from modules.core.bind import _complete_channel_handshake
+from modules.core.bind import (
+    _close_handshake,
+    _complete_channel_handshake,
+    _respond_probe,
+    _start_handshake,
+)
 
 PROBE_PATTERN = re.compile(r"bind channel (probe|confirm) (\S+)")
 
@@ -45,13 +49,19 @@ async def _session(target_id: str, text: str = "", sender: str = "admin") -> Moc
     return msg
 
 
-async def _run(target_id: str, text: str, sender: str = "admin") -> list[str]:
+async def _run(target_id: str, handler, *args, sender: str = "admin") -> list[str]:
     """
-    以指定会话执行一条命令，返回该会话产生的输出行。
+    以指定会话执行一步握手，返回该会话产生的输出行。
+
+    此处直接调用握手函数而不经 parser：自动配对默认关闭，其命令并未注册，
+    经 parser 触发将取决于配置，而本组用例考察的是握手本身的收敛与防重放。
+
+    :param handler: 握手函数，形如 ``handler(msg, *args)``。
+    :param sender: 消息的发送者，用于区分对端机器人与照抄口令的用户。
     """
-    msg = await _session(target_id, text, sender)
+    msg = await _session(target_id, sender=sender)
     try:
-        await parser(msg)
+        await handler(msg, *args)
     except SessionFinished:
         pass
     return msg.action
@@ -78,17 +88,17 @@ async def _handshake(prefix: str) -> tuple[str, str]:
     """
     a, b = f"{prefix}A|Group|1", f"{prefix}B|Group|1"
 
-    token_a = _tokens(await _run(a, "~bind auto"), "probe")[0]
-    token_b = _tokens(await _run(b, "~bind auto"), "probe")[0]
+    token_a = _tokens(await _run(a, _start_handshake), "probe")[0]
+    token_b = _tokens(await _run(b, _start_handshake), "probe")[0]
 
     # 两轮 probe 交叉送达；让位机制应使其中一轮退出，仅剩一轮进入 confirm。
-    confirms = [(b, t) for t in _tokens(await _run(b, f"~bind channel probe {token_a}", sender="peer_bot"), "confirm")]
-    confirms += [(a, t) for t in _tokens(await _run(a, f"~bind channel probe {token_b}", sender="peer_bot"), "confirm")]
+    confirms = [(b, t) for t in _tokens(await _run(b, _respond_probe, token_a, sender="peer_bot"), "confirm")]
+    confirms += [(a, t) for t in _tokens(await _run(a, _respond_probe, token_b, sender="peer_bot"), "confirm")]
 
     for responder, confirm_token in confirms:
         # confirm 由发起方一侧接收，另一侧即为其发出方。
         initiator = a if responder == b else b
-        await _run(initiator, f"~bind channel confirm {confirm_token}", sender="peer_bot")
+        await _run(initiator, _close_handshake, confirm_token, sender="peer_bot")
     return a, b
 
 
@@ -106,12 +116,12 @@ async def _test_only_one_round_survives():
     """测试 bind auto - 两轮握手交叉时仅有一轮进入 confirm"""
     try:
         a, b = "ONEROUND1|Group|1", "ONEROUND2|Group|1"
-        token_a = _tokens(await _run(a, "~bind auto"), "probe")[0]
-        token_b = _tokens(await _run(b, "~bind auto"), "probe")[0]
+        token_a = _tokens(await _run(a, _start_handshake), "probe")[0]
+        token_b = _tokens(await _run(b, _start_handshake), "probe")[0]
 
         # 若不让位，双方都会应答对方，产生两个 confirm，同一对会话将被合并两次。
-        confirms = _tokens(await _run(b, f"~bind channel probe {token_a}", sender="peer_bot"), "confirm")
-        confirms += _tokens(await _run(a, f"~bind channel probe {token_b}", sender="peer_bot"), "confirm")
+        confirms = _tokens(await _run(b, _respond_probe, token_a, sender="peer_bot"), "confirm")
+        confirms += _tokens(await _run(a, _respond_probe, token_b, sender="peer_bot"), "confirm")
         return len(confirms) == 1
 
     except Exception:
@@ -244,6 +254,63 @@ async def _test_second_handshake_is_noop():
         return False
 
 
+async def _test_probe_token_single_use():
+    """测试 bind auto - probe 口令认领后即作废，重复发送不再换出口令"""
+    try:
+        a, b = "REPLAY1|Group|1", "REPLAY2|Group|1"
+        token_a = _tokens(await _run(a, _start_handshake), "probe")[0]
+
+        # 对端机器人正常认领，换出一枚 confirm 口令。
+        claimed = _tokens(await _run(b, _respond_probe, token_a, sender="peer_bot"), "confirm")
+        # 用户照抄会话中出现的同一条命令粘贴。口令若仍被受理，此人将被记作对端机器人。
+        replayed = _tokens(await _run(b, _respond_probe, token_a, sender="human"), "confirm")
+        return len(claimed) == 1 and not replayed
+
+    except Exception:
+        return False
+
+
+async def _test_confirm_rejects_other_session():
+    """测试 bind auto - confirm 口令转贴至其它会话不予受理"""
+    try:
+        a, b, outsider = "XSESS1|Group|1", "XSESS2|Group|1", "XSESS1|Group|2"
+        token_a = _tokens(await _run(a, _start_handshake), "probe")[0]
+        confirm_token = _tokens(await _run(b, _respond_probe, token_a, sender="peer_bot"), "confirm")[0]
+
+        # 口令被转贴到另一个会话。响应方发出的口令必然落在双方共处的那个会话里，出现在别处即不作数。
+        await _run(outsider, _close_handshake, confirm_token, sender="human")
+        if (await TargetUnionInfo.resolve_union(a)).union_id == (await TargetUnionInfo.resolve_union(b)).union_id:
+            return False
+
+        # 同一枚口令由发起会话收到时仍应正常闭合。
+        await _run(a, _close_handshake, confirm_token, sender="peer_bot")
+        return (await TargetUnionInfo.resolve_union(a)).union_id == (await TargetUnionInfo.resolve_union(b)).union_id
+
+    except Exception:
+        return False
+
+
+async def _test_replayed_token_not_recorded_as_bot():
+    """测试 bind auto - 照抄握手口令的用户不会被记作机器人"""
+    try:
+        a, b = "IMPOST1|Group|1", "IMPOST2|Group|1"
+        token_a = _tokens(await _run(a, _start_handshake), "probe")[0]
+        confirm_token = _tokens(await _run(b, _respond_probe, token_a, sender="peer_bot"), "confirm")[0]
+        await _run(a, _close_handshake, confirm_token, sender="peer_bot")
+
+        # 两条口令命令都以明文出现在会话中，用户原样复制粘贴。
+        await _run(b, _respond_probe, token_a, sender="human")
+        await _run(a, _close_handshake, confirm_token, sender="human")
+
+        # 互认名单即 parser 的屏蔽依据，粘贴口令的用户一旦混入，其发言将被整个忽略。
+        target = await TargetUnionInfo.resolve_union(a)
+        recorded = target.list_peer_bots(a) + target.list_peer_bots(b)
+        return sorted(recorded) == ["IMPOST1|peer_bot", "IMPOST2|peer_bot"]
+
+    except Exception:
+        return False
+
+
 @func_case
 async def test_bind_auto(tester: Tester):
     """modules.core.bind: bind auto 握手测试"""
@@ -254,5 +321,8 @@ async def test_bind_auto(tester: Tester):
     await tester.test(_test_unbind_forgets_peer_bots, "解绑摘除互认记录测试")
     await tester.test(_test_rebind_after_unbind, "解绑后重新绑定测试")
     await tester.test(_test_second_handshake_is_noop, "重复握手空转测试")
+    await tester.test(_test_probe_token_single_use, "probe 口令一次性测试")
+    await tester.test(_test_confirm_rejects_other_session, "confirm 口令跨会话拒绝测试")
+    await tester.test(_test_replayed_token_not_recorded_as_bot, "口令重放不误记机器人测试")
 
     return tester

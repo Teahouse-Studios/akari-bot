@@ -22,6 +22,8 @@ from core.logger import Logger
 from core.utils.container import ExpiringTempDict
 from core.utils.random import Random
 
+from .config import BindConfig
+
 BIND_CODE_EXPIRED = 300  # 绑定码有效期（秒）
 BIND_CODE_LENGTH = 6
 BIND_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ1234567890"
@@ -412,6 +414,22 @@ async def merge_target_unions(
     return await apply_target_merge(plan, await choose_conflicts(msg, plan["conflicts"]))
 
 
+def channel_hint_lines() -> list:
+    """
+    消息通道含义的说明，末尾附合并通道的途径。
+
+    ``bind auto`` 未启用时其命令并未注册，提示中不再提及，以免指向一条不存在的命令。
+    """
+    return [
+        I18NContext("core.bind.message.channel.hint"),
+        I18NContext(
+            "core.bind.message.channel.hint.auto"
+            if BindConfig.enable_bind_auto
+            else "core.bind.message.channel.hint.manual"
+        ),
+    ]
+
+
 async def target_lines(union_id: str, ids: list[str]) -> list:
     """
     将会话 ID 逐行展示，每行标注所在的消息通道，末尾附通道含义说明。
@@ -430,4 +448,4 @@ async def target_lines(union_id: str, ids: list[str]) -> list:
             lines.append(
                 I18NContext("core.bind.message.target.info.entry", id=target_id, channel=channel_id, disable_joke=True)
             )
-    return lines + [I18NContext("core.bind.message.channel.hint")]
+    return lines + channel_hint_lines()

@@ -15,10 +15,12 @@ from core.utils.func import is_int
 from core.utils.random import Random
 
 # union 合并的通用逻辑抽至 union_merge，与 merge 模块共用。
+from .config import BindConfig
 from .union_merge import (
     BIND_CODE_EXPIRED,
     apply_sender_merge as _apply_sender_merge,
     apply_target_merge as _apply_target_merge,
+    channel_hint_lines as _channel_hint_lines,
     choose_conflicts as _choose_conflicts,
     id_lines as _id_lines,
     issue_code,
@@ -32,11 +34,18 @@ from .union_merge import (
 HANDSHAKE_EXPIRED = 30  # 通道握手超时（秒）
 HANDSHAKE_TOKEN_LENGTH = 20
 
+# 自动配对为多个机器人共处同一会话的场景预留，默认关闭。命令是否注册在导入时即已确定，
+# 因此取一份快照，改动配置须重启机器人方能生效。
+ENABLE_BIND_AUTO = BindConfig.enable_bind_auto
+
 # 绑定码与握手状态仅保存在 server 进程内存中，重启即失效。
 # 各平台的 bot 子进程共用同一个 server 进程，因此跨平台握手无需落库。
 _sender_bind_codes = ExpiringTempDict(exp=BIND_CODE_EXPIRED)
 _target_bind_codes = ExpiringTempDict(exp=BIND_CODE_EXPIRED)
-_channel_handshakes = {}
+# 握手分两段登记：待认领的 probe 与待闭合的 confirm。口令一经发出即出现在会话中，
+# 任何人都能原样复制，故两段各自的口令都只能被消费一次。
+_pending_probes = {}
+_pending_confirms = {}
 # 握手闭合串行执行。若让位机制未生效（如某一平台的 probe 投递延迟），
 # 两轮并发执行至「是否同组」判定时会同时读到合并前的数据，各自新建一个组，合并即告失败。
 _handshake_lock = asyncio.Lock()
@@ -70,11 +79,17 @@ async def _channel_lines(msg: Bot.MessageSession) -> list:
         I18NContext("core.bind.message.channel.info", channel=channel_id),
         I18NContext("core.bind.message.channel.info.shared", count=len(siblings)),
         *_id_lines(siblings),
-        I18NContext("core.bind.message.channel.hint"),
+        *_channel_hint_lines(),
     ]
 
 
-b = module("bind", base=True, desc="{I18N:core.bind.help.desc}", doc=True, alias={"connect": "bind auto"})
+b = module(
+    "bind",
+    base=True,
+    desc="{I18N:core.bind.help.desc}",
+    doc=True,
+    alias={"connect": "bind auto"} if ENABLE_BIND_AUTO else None,
+)
 
 
 @b.command("{{I18N:core.bind.help}}")
@@ -321,33 +336,58 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(I18NContext("core.bind.message.channel.reset.success", channel=channel_id))
 
 
-@b.command("auto {{I18N:core.bind.help.auto}}", required_admin=True)
-async def _(msg: Bot.MessageSession):
-    # 此处不作二次确认：双方尚未关联，通道去重与互认记录均未生效，
-    # 同一会话内的每个机器人都会各自解析该命令，确认提示会被重复发出。
-    # 需要管理员确认的是握手闭合后的合并提示，该提示已完整说明数据的继承方式。
+async def _start_handshake(msg: Bot.MessageSession) -> None:
+    """
+    发起一轮通道握手：登记一枚待认领的 probe 口令并在会话中发出。
+
+    此处不作二次确认：双方尚未关联，通道去重与互认记录均未生效，
+    同一会话内的每个机器人都会各自解析该命令，确认提示会被重复发出。
+    需要管理员确认的是握手闭合后的合并提示，该提示已完整说明数据的继承方式。
+    """
     probe_token = Random.randstr(HANDSHAKE_TOKEN_LENGTH)
-    confirm_token = Random.randstr(HANDSHAKE_TOKEN_LENGTH)
-    _channel_handshakes[probe_token] = {"confirm_token": confirm_token, "initiator": msg}
+    _pending_probes[probe_token] = {"initiator": msg}
 
     # 该命令仅由同一会话内的其它机器人识别，对用户而言只是一串无意义的口令。
     await msg.send_message(Plain(f"{msg.session_info.prefixes[0]}bind channel probe {probe_token}"))
     await msg.hold()
 
-    async def _timeout():
-        await asyncio.sleep(HANDSHAKE_EXPIRED)
-        entry = _channel_handshakes.pop(probe_token, None)
-        if entry and not entry.get("done"):
-            await msg.send_message(I18NContext("core.bind.message.auto.timeout"))
-            await msg.release()
-
-    asyncio.create_task(_timeout())
+    asyncio.create_task(_expire_handshake(probe_token, msg))
 
 
-@b.command("channel probe <token> {{I18N:core.bind.help.channel.internal}}")
-async def _(msg: Bot.MessageSession, token: str):
-    entry = _channel_handshakes.get(token)
-    if not entry:
+async def _expire_handshake(probe_token: str, initiator: Bot.MessageSession) -> None:
+    """
+    口令过期后收回本轮握手的全部登记。
+
+    :param probe_token: 本轮的 probe 口令。
+    :param initiator: 发起本轮握手的会话。
+    """
+    await asyncio.sleep(HANDSHAKE_EXPIRED)
+    if not _pending_probes.pop(probe_token, None):
+        # 本轮已让位或已闭合，上下文在各自的路径中释放，此处不再重复处理。
+        return
+
+    # probe 口令既已过期，由它换来的 confirm 口令不应继续有效。
+    for confirm_token, pending in _pending_confirms.copy().items():
+        if pending["probe_token"] == probe_token:
+            _pending_confirms.pop(confirm_token, None)
+            await pending["responder"].release()
+
+    await initiator.send_message(I18NContext("core.bind.message.auto.timeout"))
+    await initiator.release()
+
+
+async def _respond_probe(msg: Bot.MessageSession, token: str) -> None:
+    """
+    认领一枚 probe 口令，并换发一枚仅对本次配对有效的 confirm 口令。
+
+    口令在会话中以明文出现，任何人都能原样复制，因此认领是一次性的：口令一经认领即作废，
+    其后携带同一串口令的消息一律丢弃。否则复制粘贴该命令的用户会被当作对端机器人记录下来，
+    此后其发言都将被视为另一个机器人的输出而遭忽略。
+
+    :param token: 对方发出的 probe 口令。
+    """
+    entry = _pending_probes.get(token)
+    if not entry or entry.get("claimed"):
         await msg.finish()
     initiator: Bot.MessageSession = entry["initiator"]
     # 部分平台会将机器人自身发出的消息回送，遇到自身发起的握手直接忽略。
@@ -360,7 +400,7 @@ async def _(msg: Bot.MessageSession, token: str):
     mine = next(
         (
             probe_token
-            for probe_token, pending in _channel_handshakes.items()
+            for probe_token, pending in _pending_probes.items()
             if pending["initiator"].session_info.target_id == msg.session_info.target_id
         ),
         None,
@@ -369,27 +409,65 @@ async def _(msg: Bot.MessageSession, token: str):
         if mine < token:
             # 自身这一轮口令更小，由对方响应本轮即可，不再应答对方。
             await msg.finish()
-        yielded = _channel_handshakes.pop(mine, None)
+        if _pending_probes[mine].get("claimed"):
+            # 自身这一轮已被对方认领并等待闭合，无须再另起一轮。
+            await msg.finish()
+        yielded = _pending_probes.pop(mine, None)
         if yielded:
             await yielded["initiator"].release()
 
-    entry["responder"] = msg
-    entry["initiator_bot_id"] = msg.session_info.sender_id
-    await msg.send_message(Plain(f"{msg.session_info.prefixes[0]}bind channel confirm {entry['confirm_token']}"))
+    # 让位过程中让出过控制权，其间该口令可能已被另一个机器人认领，认领前须再确认一次。
+    if entry.get("claimed"):
+        await msg.finish()
+    entry["claimed"] = True
+
+    # confirm 口令至此才生成，因而每一次配对各持一枚，且只有本次的响应方知晓：
+    # 发起方广播出去的那一枚 probe 口令不足以推出它，旁观者也就无从抢先应答。
+    confirm_token = Random.randstr(HANDSHAKE_TOKEN_LENGTH)
+    _pending_confirms[confirm_token] = {
+        "probe_token": token,
+        "initiator": initiator,
+        "responder": msg,
+        "initiator_bot_id": msg.session_info.sender_id,
+    }
+    await msg.send_message(Plain(f"{msg.session_info.prefixes[0]}bind channel confirm {confirm_token}"))
     await msg.hold()
 
 
-@b.command("channel confirm <token> {{I18N:core.bind.help.channel.internal}}")
+async def _close_handshake(msg: Bot.MessageSession, token: str) -> None:
+    """
+    闭合一轮握手。
+
+    confirm 口令同样只能消费一次，且只在发起会话中生效：响应方发出的口令必然落在双方共处的
+    那个会话里，出现在别处即说明它是被转贴过去的，据此可拒绝跨会话的冒认。
+
+    :param token: 对方发出的 confirm 口令。
+    """
+    entry = _pending_confirms.get(token)
+    if not entry:
+        await msg.finish()
+    if entry["initiator"].session_info.target_id != msg.session_info.target_id:
+        await msg.finish()
+
+    _pending_confirms.pop(token, None)
+    _pending_probes.pop(entry["probe_token"], None)
+    entry["responder_bot_id"] = msg.session_info.sender_id
+    await _complete_channel_handshake(entry)
+
+
+@b.command("auto {{I18N:core.bind.help.auto}}", required_admin=True, load=ENABLE_BIND_AUTO)
+async def _(msg: Bot.MessageSession):
+    await _start_handshake(msg)
+
+
+@b.command("channel probe <token> {{I18N:core.bind.help.channel.internal}}", load=ENABLE_BIND_AUTO)
 async def _(msg: Bot.MessageSession, token: str):
-    for probe_token, entry in _channel_handshakes.copy().items():
-        if entry.get("confirm_token") != token or not entry.get("responder"):
-            continue
-        entry["done"] = True
-        _channel_handshakes.pop(probe_token, None)
-        entry["responder_bot_id"] = msg.session_info.sender_id
-        await _complete_channel_handshake(entry)
-        return
-    await msg.finish()
+    await _respond_probe(msg, token)
+
+
+@b.command("channel confirm <token> {{I18N:core.bind.help.channel.internal}}", load=ENABLE_BIND_AUTO)
+async def _(msg: Bot.MessageSession, token: str):
+    await _close_handshake(msg, token)
 
 
 async def _complete_channel_handshake(entry: dict) -> None:
