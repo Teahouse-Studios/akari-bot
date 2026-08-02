@@ -3,7 +3,7 @@
 # EXAMPLE: Boolean values in TOML must be lowercase.
 
 [bot_qqbot]
-# The basic config section of the client. The values ​​entered here can be displayed in the message. Please do not enter sensitive information in this section.
+# The basic config section of the client. The values entered here can be displayed in the message. Please do not enter sensitive information in this section.
 enable = false # Whether to enable this client.
 qq_bot_appid = "<Replace me with (str, int) value>" # The QQ official robot AppID.
 qq_bot_openid = "<Replace me with str value>" # QQ 机器人（官方）的 OpenID。

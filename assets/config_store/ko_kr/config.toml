@@ -31,7 +31,6 @@ check_use_textscan_v1 = false # 이전 버전의 Alibaba Cloud 콘텐츠 보안 
 enable_urlmanager = false # URLManager 활성화 여부. URL 중계용으로 사용됩니다. (이 URL이 공식 링크가 아님을 알리는 등)
 auto_purge_crontab = "0 0 * * *" # 캐시 자동 삭제를 위한 Cron 표현식.
 typo_check_module_score = 0.6 # 모듈 철자 검사 허용 유사도. 범위는 0에서 1 사이입니다.
-
 typo_check_command_score = 0.3 # 명령어 철자 검사 허용 유사도. 범위는 0에서 1 사이입니다.
 typo_check_args_score = 0.5 # 인수 철자 검사 허용 유사도. 범위는 0에서 1 사이입니다.
 typo_check_options_score = 0.3 # 옵션 철자 검사 허용 유사도. 범위는 0에서 1 사이입니다.
@@ -55,6 +54,7 @@ donate_url = "http://afdian.com/a/teahouse" # 기부 URL.
 help_url = "https://bot.teahouse.team" # 도움말 문서 URL.
 help_page_url = "https://bot.teahouse.team/wiki/${module}" # 모듈 도움말 문서 URL.
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # 문제 신고 URL.
+locale_url = "https://hosted.weblate.org/engage/akaribot" # 번역 프로젝트 URL.
 
 [secret]
 # 키 설정 섹션입니다. 이 값이 전송된 메시지에 실수로 나타날 경우 봇이 해당 메시지를 가로채려고 시도합니다. 하지만 이 값이 유출되지 않도록 각별히 주의해 주십시오.

@@ -3,7 +3,7 @@
 # EXAMPLE: Boolean values in TOML must be lowercase.
 
 [module_ncmusic]
-# The basic config section of the module. The values ​​entered here can be displayed in the message. Please do not enter sensitive information in this section.
+# The basic config section of the module. The values entered here can be displayed in the message. Please do not enter sensitive information in this section.
 ncmusic_enable_card = false # Whether enables card messages of ncmusic module. (Only valid on QQ client)
 
 [module_ncmusic_secret]

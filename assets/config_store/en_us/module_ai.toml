@@ -3,7 +3,7 @@
 # EXAMPLE: Boolean values in TOML must be lowercase.
 
 [module_ai]
-# The basic config section of the module. The values ​​entered here can be displayed in the message. Please do not enter sensitive information in this section.
+# The basic config section of the module. The values entered here can be displayed in the message. Please do not enter sensitive information in this section.
 ai_default_llm = "<Replace me with str value>" # The LLM used by default.
 llm_timeout = 60 # Timeout for the LLMs.
 llm_max_tokens = 2048 # Limit the maximum number of tokens for the LLMs.

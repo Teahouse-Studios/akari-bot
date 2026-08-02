@@ -2,6 +2,6 @@
 # NOTE: TOML is not like Python. Do not use Python syntax here.
 # EXAMPLE: Boolean values in TOML must be lowercase.
 
-[module_wordle]
+[module_bind]
 # The basic config section of the module. The values entered here can be displayed in the message. Please do not enter sensitive information in this section.
-wordle_disable_image = false # Whether to disable images of wordle module.
+enable_bind_auto = false # 是否开启“bind auto”自动配对同一场景内的其他机器人。此功能为多个机器人共处同一场景的情形预留，关闭后相关命令与提示均不出现。

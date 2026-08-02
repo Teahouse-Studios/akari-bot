@@ -3,7 +3,7 @@
 # EXAMPLE: Boolean values in TOML must be lowercase.
 
 [webrender]
-# The basic config section of WebRender. The values ​​entered here can be displayed in the message. Please do not enter sensitive information in this section.
+# The basic config section of WebRender. The values entered here can be displayed in the message. Please do not enter sensitive information in this section.
 enable = false # Whether to enable WebRender.
 browser_type = "chrome" # The browser type used by WebRender. (Supports "chrome" and "firefox")
 browser_executable_path = "<Replace me with str value>" # The browser executable file path used by WebRender. If empty, the default browser installed by Playwright is used.
