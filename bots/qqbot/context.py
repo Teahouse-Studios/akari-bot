@@ -98,9 +98,9 @@ def _render_action_text(element: ActionTextElement) -> str:
     return f"<qqbot-cmd-input {' '.join(attrs)} />"
 
 
-# 节点表格的高度上限，按「编号行 + 内容行」计对。帮助的表格取十行，节点内容却动辄数行且
-# 长得多，十对摞起来过高，故此处另设一值：取一对即全部节点横向铺开。
-MESSAGE_NODES_MAX_ROWS = 1
+# 节点表格的高度上限，按「编号行 + 内容行」计对。过宽的表格平台会渲染失败，故此值宜小不宜大：
+# 每多一对，列数减半、单行长度随之减半。帮助的表格另有自己的上限，两者不共用。
+MESSAGE_NODES_MAX_ROWS = 2
 
 
 def nodes_to_table(session_info: SessionInfo, nodes: MessageNodes) -> str:
