@@ -15,8 +15,8 @@ from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 from core.tester import func_case, Tester
+from core.utils.table import TABLE_MAX_ROWS
 from modules.core.help import (
-    MODULE_TABLE_MAX_ROWS,
     build_clickable_modules,
     build_command_table,
     build_module_table,
@@ -326,8 +326,8 @@ async def _test_table_never_exceeds_max_rows():
         lines = [
             line for line in _render_lines(session_info, build_module_table(msg, [(TABLE_TITLE_KEY, names)])) if line
         ]
-        if len(lines) - 2 > MODULE_TABLE_MAX_ROWS:
-            Logger.error(f"{count} modules produced {len(lines) - 2} rows, over the limit of {MODULE_TABLE_MAX_ROWS}")
+        if len(lines) - 2 > TABLE_MAX_ROWS:
+            Logger.error(f"{count} modules produced {len(lines) - 2} rows, over the limit of {TABLE_MAX_ROWS}")
             return False
     return True
 
@@ -475,8 +475,8 @@ async def _test_command_table_expands_columns():
         doc = {"args": [{"args": f"~m c{i}", "desc": f"说明{i}"} for i in range(count)], "options": []}
         lines = [line for line in _render_lines(session_info, build_command_table(msg, doc, [])) if line]
         rows = len(lines) - 2
-        if rows > MODULE_TABLE_MAX_ROWS:
-            Logger.error(f"{count} commands produced {rows} rows, over the limit of {MODULE_TABLE_MAX_ROWS}")
+        if rows > TABLE_MAX_ROWS:
+            Logger.error(f"{count} commands produced {rows} rows, over the limit of {TABLE_MAX_ROWS}")
             return False
         if lines[1] != "|" + "---|" * (pairs * 2):
             Logger.error(f"{count} commands should render {pairs} command/desc pairs, got {lines[1]!r}")

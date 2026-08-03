@@ -31,6 +31,7 @@ from core.builtins.session.info import SessionInfo
 from bots.qqbot.config import QQBotConfig
 from core.logger import Logger
 from core.utils.s3 import S3Storage
+from core.utils.table import escape_table_cell, resolve_table_columns
 
 qq_typing_emoji = str(QQBotConfig.qq_typing_emoji)
 qq_limited_emoji = str(QQBotConfig.qq_limited_emoji)
@@ -95,6 +96,41 @@ def _render_action_text(element: ActionTextElement) -> str:
         attrs.append(f'show="{quote(_truncate_action_text(show, "show"), safe="")}"')
     attrs.append(f'reference="{"true" if element.reference else "false"}"')
     return f"<qqbot-cmd-input {' '.join(attrs)} />"
+
+
+# 节点表格的高度上限，按「编号行 + 内容行」计对。帮助的表格取十行，节点内容却动辄数行且
+# 长得多，十对摞起来过高，故此处另设一值：取一对即全部节点横向铺开。
+MESSAGE_NODES_MAX_ROWS = 1
+
+
+def nodes_to_table(session_info: SessionInfo, nodes: MessageNodes) -> str:
+    """
+    把消息节点摊平为一张 markdown 表。
+
+
+    :param session_info: 会话信息，用于把各节点的消息链转为可发送形态。
+    :param nodes: 消息节点。
+    :return: 整张表格的 markdown 文本；无节点时返回节点组名称。
+    """
+    cells = []
+    for node in nodes.values:
+        pieces = [x.text for x in node.as_sendable(session_info, disable_markdown=True) if isinstance(x, PlainElement)]
+        cells.append(escape_table_cell("\n".join(pieces)))
+    if not cells:
+        return escape_table_cell(nodes.name)
+
+    columns = resolve_table_columns([len(cells)], minimum=1, max_rows=MESSAGE_NODES_MAX_ROWS)
+    lines = [
+        f"| {escape_table_cell(nodes.name)} |" + " |" * (columns - 1),
+        "|" + "---|" * columns,
+    ]
+    for start in range(0, len(cells), columns):
+        chunk = cells[start : start + columns]
+        # 末对补空单元格，markdown 要求各行的列数一致
+        padding = [""] * (columns - len(chunk))
+        lines.append("| " + " | ".join([str(start + offset + 1) for offset in range(len(chunk))] + padding) + " |")
+        lines.append("| " + " | ".join(chunk + padding) + " |")
+    return "\n".join(lines)
 
 
 # 额外添加平台接口支持但 SDK 不支持的方法
@@ -226,9 +262,13 @@ class QQBotContextManager(ContextManager):
         msg_ids = []
         global global_seq
 
+        # 消息节点在此摊平为一张 markdown 表：平台没有合并转发，逐条发出又会刷屏。
+        # 表格只在 markdown 路径上成立，故须强制走该路径——摊平后的表格是纯文本，
+        # 否则会被 send_msg_markdown() 判为「不需要 markdown」而退回纯文本，标记原样露出。
+        force_markdown = False
         if isinstance(message, MessageNodes):
-            Logger.error("This session does not support message nodes, check if bug exists.")
-            return msg_ids
+            message = MessageChain.assign(PlainElement.assign(nodes_to_table(session_info, message), disable_joke=True))
+            force_markdown = True
 
         retry_attempt = stop_after_attempt(0)
         retry_wait = wait_fixed(0)
@@ -632,6 +672,8 @@ class QQBotContextManager(ContextManager):
                 _use_markdown = False
 
             if keyboard:
+                _use_markdown = True
+            if force_markdown:
                 _use_markdown = True
 
             if not _use_markdown:

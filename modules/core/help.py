@@ -1,4 +1,3 @@
-import math
 import re
 from html import escape
 
@@ -18,6 +17,7 @@ from core.logger import Logger
 from core.utils.button import arrange_buttons
 from core.utils.cache import random_cache_path
 from core.utils.image import cb64imglst
+from core.utils.table import escape_table_cell, resolve_table_columns
 from core.web_render import web_render, ElementScreenshotOptions
 
 env = Environment(loader=FileSystemLoader(templates_path), autoescape=True, enable_async=True)
@@ -80,54 +80,12 @@ def end_inline_run(chain: MessageChain) -> None:
     chain.append(Plain(" ", disable_joke=True))
 
 
-# 模块表格的高度上限。模块数增长时由列数吸收，使表格至多这么高。
-MODULE_TABLE_MAX_ROWS = 10
-
-# 模块表格的最少列数。模块寥寥时若仍按高度上限反算列数会得到一两列的竖长条，
-# 该下限只会让表更矮更宽，不会反过来撑高。
-MODULE_TABLE_MIN_COLUMNS = 3
-
-
-def escape_table_cell(text: str) -> str:
-    """
-    转义单元格文本中的竖线。
-
-    竖线是 markdown 表格的列分隔符，单元格内出现未转义的竖线会把该行拆出多余的列，
-    整张表随即错位。
-
-    :param text: 原始文本。
-    :return: 可安全放入单元格的文本。
-    """
-    return text.replace("|", "\\|")
-
-
-def resolve_table_columns(sizes: list[int], separators: int = 0, minimum: int = MODULE_TABLE_MIN_COLUMNS) -> int:
-    """
-    按高度上限反算表格的列数。
-
-    自最少列数起逐步加宽，直到各节行数与区隔行之和落进高度上限；条目实在太多时以最大的
-    一节为界收手，不再无谓加宽——再宽也塞不下更多，只会白白拉长每一行。
-
-    :param sizes: 各节的条目数量，均大于零。
-    :param separators: 区隔行的数量，一并计入高度。
-    :param minimum: 列数下限。
-    :return: 列数。
-    """
-    widest = max(sizes)
-    columns = minimum
-    while columns < widest:
-        if sum(math.ceil(size / columns) for size in sizes) + separators <= MODULE_TABLE_MAX_ROWS:
-            break
-        columns += 1
-    return min(columns, widest)
-
-
 def build_module_table(msg: Bot.MessageSession, groups: list[tuple[str, list[str]]]) -> list:
     """
     把若干组模块名排成一张 markdown 表。
 
     各组同处一张表，组与组之间以一行只填组名的区隔行分开；首组的组名即表头。表格至多
-    :data:`MODULE_TABLE_MAX_ROWS` 行、至少 :data:`MODULE_TABLE_MIN_COLUMNS` 列，
+    :data:`~core.utils.table.TABLE_MAX_ROWS` 行、至少 :data:`~core.utils.table.TABLE_MIN_COLUMNS` 列，
     模块数的增长由列数吸收。末行不足处补空单元格 —— markdown 要求各行的列数一致。
 
     模块名做成指令操作，点击即把 ``<前缀>help <模块名>`` 填入输入框。标签之所以能落在单元格

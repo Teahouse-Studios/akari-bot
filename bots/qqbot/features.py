@@ -26,6 +26,7 @@ features = Features(
     support_rss=True,
     support_typing=False,
     support_wait=True,
+    support_handle_message_nodes=qq_use_markdown,
     support_private_msg=True,
     support_action_text=qq_use_markdown,
     support_button=qq_use_markdown,
