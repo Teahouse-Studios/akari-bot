@@ -579,10 +579,12 @@ async def query_pages(
                     if wait_plain_slice:
                         wait_msg_list.extend(wait_plain_slice)
         except InvalidWikiError as e:
+            # 异常自身不是消息元素，须先取其文本再并入消息链。
+            error_message = MessageChain.assign([I18NContext("message.error"), Plain(str(e))])
             if isinstance(session, Bot.MessageSession):
-                await session.send_message(MessageChain.assign([I18NContext("message.error")]) + e)
+                await session.send_message(error_message)
             else:
-                msg_list.append(MessageChain.assign([I18NContext("message.error")]) + e)
+                msg_list.extend(error_message)
     if isinstance(session, Bot.MessageSession):
         if msg_list:
             if all(

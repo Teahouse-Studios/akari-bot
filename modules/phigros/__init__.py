@@ -9,6 +9,7 @@ from .database.models import PhigrosBindInfo
 from .libraries.assets import (
     DIFF_NAMES,
     illustration_path,
+    is_legacy_song_info,
     load_song_info,
     match_song,
     song_info_exists,
@@ -58,7 +59,7 @@ async def _require_bind(msg: Bot.MessageSession):
 
 
 async def _require_song_info(msg: Bot.MessageSession) -> dict:
-    """读取曲目信息，尚未初始化则终止命令。
+    """读取曲目信息，尚未初始化或格式过时则终止命令。
 
     :param msg: 消息会话。
     """
@@ -70,7 +71,16 @@ async def _require_song_info(msg: Bot.MessageSession) -> dict:
                 cmd=ActionText(f"{msg.session_info.prefixes[0]}phigros update"),
             )
         )
-    return load_song_info()
+    song_info = load_song_info()
+    # 旧版曲目 id 与存档中的原始 id 无法对应，放行只会得出全空的成绩，故一并拦下。
+    if is_legacy_song_info(song_info):
+        await msg.finish(
+            I18NContext(
+                "phigros.message.file_outdated",
+                cmd=ActionText(f"{msg.session_info.prefixes[0]}phigros update"),
+            )
+        )
+    return song_info
 
 
 async def _fetch_save(msg: Bot.MessageSession, bind_info):

@@ -122,6 +122,36 @@ def load_song_info() -> dict[str, dict]:
         return orjson.loads(f.read())
 
 
+def _as_constant(value) -> float:
+    """将定数取值转为浮点数，无法解析者视作该难度缺失。
+
+    5.1 之前的曲目信息将定数原样保留为字符串，缺失的难度写作 "-"，直接转换会中断整表构建。
+
+    :param value: 定数取值。
+    """
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def is_legacy_song_info(song_info: dict) -> bool:
+    """判断曲目信息是否为 5.1 之前的旧版结构。
+
+    旧版以归一化后的小写曲目 id 为键，与存档中的原始 id 无法对应，即便定数容错也只会
+    得出全空的成绩，故须在使用前识别并要求重建。判据取旧版独有的 composer 字段与
+    字符串定数两项，命中其一即可认定。
+
+    :param song_info: 曲目信息结构。
+    """
+    for info in song_info.values():
+        if "composer" in info:
+            return True
+        if any(not isinstance(value, (int, float)) for value in info.get("diff", {}).values()):
+            return True
+    return False
+
+
 def to_difficulty_table(song_info: dict) -> dict[str, list[float]]:
     """转换为 countRks 所需的定数表。
 
@@ -133,7 +163,7 @@ def to_difficulty_table(song_info: dict) -> dict[str, list[float]]:
     table = {}
     for song_id, info in song_info.items():
         diff = info.get("diff", {})
-        table[song_id] = [float(diff.get(name, 0.0)) for name in DIFF_NAMES] + [0.0]
+        table[song_id] = [_as_constant(diff.get(name, 0.0)) for name in DIFF_NAMES] + [0.0]
     return table
 
 

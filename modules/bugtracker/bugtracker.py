@@ -42,9 +42,10 @@ async def bugtracker_get(msg, mojira_id: str):
             headers={"Content-Type": "application/json"},
         )
         issues = orjson.loads(get_json).get("issues", [])
-        load_json = issues[0] if issues else None
-    except IndexError:
-        return I18NContext("bugtracker.message.get_failed"), None
+        # 项目或漏洞不存在时接口返回空列表，须就地转为提示，否则空值会流入下方的字段解析。
+        if not issues:
+            return I18NContext("bugtracker.message.get_failed"), None
+        load_json = issues[0]
     except ExternalException as e:
         if str(e).startswith("500"):
             return I18NContext("bugtracker.message.error.server"), None

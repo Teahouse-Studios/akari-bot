@@ -18,6 +18,7 @@
     "phigros.message.bind.warning": "警告：你正在公开场景中绑定用户，这有可能会使你的云存档数据被他人篡改。请尽可能私聊绑定用户以避免这种情况。\n你可以通过重新登录来重置 SessionToken。",
     "phigros.message.fetch_failed": "获取云存档失败，请稍后再试。",
     "phigros.message.file_not_found": "未找到歌曲信息文件，请使用“${cmd}”初始化。",
+    "phigros.message.file_outdated": "歌曲信息文件的格式已过时，请使用“${cmd}”重新生成。",
     "phigros.message.info.challenge": "课题分：${rank}-${score}",
     "phigros.message.info.data": "Data：${data}",
     "phigros.message.info.difficulty_stat": "${difficulty}：已通过 ${cleared}，Full Combo ${full_combo}，Phi ${phi}",
