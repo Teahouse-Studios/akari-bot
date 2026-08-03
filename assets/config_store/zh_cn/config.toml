@@ -3,7 +3,7 @@
 # 例如：TOML 中的布尔值必须是小写。
 
 default_locale = "zh_cn" # 默认的语言环境。
-config_version = 3 # 配置版本号，将会随功能更新自增，一般情况请勿修改。
+config_version = 3 # 配置版本号，将会随功能更新自增，一般情况请勿手动修改。
 
 [config]
 # 一些基础的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
@@ -16,15 +16,15 @@ use_font_mirror = false # 渲染网页时是否使用字体镜像。
 use_secrets_random = false # 是否使用基于 secrets 库的随机数生成器。
 base_superuser = ["QQ|2596322644"] # 机器人的基础超级用户列表，此处填写的值将会在机器人启动时被加载进入数据库。
 ignored_sender = ["QQ|2854196310"] # 无视的用户列表，匹配到此列表中的用户将会被忽略。
-report_targets = [] # 上报场景列表，此处填写的值将会被识别为上报场景。（如：在机器人执行命令出错时，机器人将会把错误信息发送至对应场景），参数为场景组 ID
-retired_clients = [] # 已退役的客户端及其数据迁移去处，每项格式为“源客户端 -> 目标客户端”（如“QQ -> QQBot”）。退役的客户端仅保留数据迁移功能，其余命令与主动推送一律停止；只填写源客户端时表示不提供迁移去处。
+report_targets = [] # 上报场景列表，此处填写的值将会被识别为上报场景，可填场景组 ID 或平台场景 ID，两者均会展开为所属场景组下的全部场景。（如：在机器人执行命令出错时，机器人将会把错误信息发送至对应场景）
+retired_clients = [] # 已退役的客户端及其数据迁移目标，格式为“<源客户端> -> <目标客户端>”（例：“QQ -> QQBot”）。只填写源客户端时表示不提供迁移。
 command_prefix = ["~", "～"] # 命令前缀，此处填写的值将会被识别为命令前缀。
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # 确认命令的关键词，此处填写的值将会被识别为确认命令。
-enable_module_invalid_prompt = false # 是否开启模块不存在的提示消息。
 mention_required = false # 是否强制仅处理在消息开头提及机器人的消息。
 no_confirm = false # 是否无需发送者确认消息后再执行命令。
 quick_confirm = true # 是否开启消息快速确认。
 enable_analytics = true # 是否开启内置的统计功能。
+enable_bind_auto = false # 是否开启“bind auto”命令以自动配对同一场景内的其他实例。
 enable_commit_url = true # 是否在展示版本信息时显示 commit URL。
 enable_dirty_check = false # 是否开启文字过滤检测，需要配置阿里云内容安全服务的 AccessKey ID 与 AccessKey Secret。
 check_use_textscan_v1 = false # 是否使用旧版阿里云内容安全 1.0 服务接口。
