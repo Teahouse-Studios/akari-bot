@@ -1,3 +1,4 @@
+import math
 import re
 from html import escape
 
@@ -77,6 +78,51 @@ def end_inline_run(chain: MessageChain) -> None:
     :param chain: 待收尾的消息链，就地修改。
     """
     chain.append(Plain(" ", disable_joke=True))
+
+
+# 模块表格的高度上限。模块数增长时由列数吸收，使表格恒为「至多五行、按需加宽」。
+MODULE_TABLE_MAX_ROWS = 5
+
+# 模块表格的最少列数。模块寥寥时若仍按高度上限反算列数会得到单列竖排，与宽表的用意相悖。
+MODULE_TABLE_MIN_COLUMNS = 3
+
+
+def build_module_table(msg: Bot.MessageSession, title_key: str, names: list[str]) -> list:
+    """
+    把模块名排成一张 markdown 宽表。
+
+    表格至多 :data:`MODULE_TABLE_MAX_ROWS` 行，模块数的增长由列数吸收，使消息高度大体恒定。
+    末行不足处补空单元格 —— markdown 要求各行的列数一致。
+
+    模块名做成指令操作，点击即把 ``<前缀>help <模块名>`` 填入输入框。标签之所以能落在单元格
+    中间，靠的正是适配器把指令操作及其后的文本一并并入上一项的行为（见
+    ``bots/qqbot/context.py`` 的 ``inline_pending``）：整张表因此累积成一个文本块，
+    竖线与换行均由此处显式写出。也正因如此，本函数的产出只在同时支持 markdown 与指令操作的
+    平台上成立，纯文本平台会把表格标记原样读出，调用点须自行把关。
+
+    :param msg: 消息会话。
+    :param title_key: 表头首格的多语言键。
+    :param names: 模块名列表，为空时返回空片段，空态文案由调用方负责。
+    :return: 消息元素列表。
+    """
+    if not names:
+        return []
+    prefix = msg.session_info.prefixes[0]
+    columns = max(math.ceil(len(names) / MODULE_TABLE_MAX_ROWS), min(len(names), MODULE_TABLE_MIN_COLUMNS))
+    title = msg.session_info.locale.t(title_key)
+
+    # 表头与分隔行自带换行：表格的排版全由文本承载，不能交给适配器按元素换行
+    parts = [Plain(f"| {title} |{' |' * (columns - 1)}\n|{'---|' * columns}\n| ", disable_joke=True)]
+    for index, name in enumerate(names):
+        parts.append(ActionText(f"{prefix}help {name}", show=name))
+        if index + 1 == len(names):
+            padding = (columns - (index + 1) % columns) % columns
+            parts.append(Plain(" |" * (padding + 1) + "\n", disable_joke=True))
+        elif (index + 1) % columns == 0:
+            parts.append(Plain(" |\n| ", disable_joke=True))
+        else:
+            parts.append(Plain(" | ", disable_joke=True))
+    return parts
 
 
 def get_setup_button_data(msg: Bot.MessageSession) -> list[dict[str, str]]:
@@ -262,10 +308,12 @@ async def _(msg: Bot.MessageSession, module: str):
 async def _(msg: Bot.MessageSession):
     # 具备指令操作能力时，文字版的模块名可以点击直达详情，其价值高于图片排版，
     # 故优先于图片版。显式要求 --legacy 者仍得到最朴素的那一版。
-    use_clickable = not msg.parsed_msg and msg.session_info.support_action_text
+    # 同时支持 markdown 的平台再进一步排成宽表：模块数增长由列数吸收，消息高度大体恒定。
+    use_table = not msg.parsed_msg and msg.session_info.support_markdown and msg.session_info.support_action_text
+    use_clickable = not use_table and not msg.parsed_msg and msg.session_info.support_action_text
 
     legacy_help = True
-    if not use_clickable and not msg.parsed_msg and msg.session_info.support_image:
+    if not use_clickable and not use_table and not msg.parsed_msg and msg.session_info.support_image:
         imgs = await help_generator(msg)
         if imgs:
             legacy_help = False
@@ -311,7 +359,13 @@ async def _(msg: Bot.MessageSession):
                 module_.append(key)
         module_ = [m for m in module_ if m in target_enabled_list]
 
-        if use_clickable:
+        if use_table:
+            # 表格以纯文本收尾，其后的提示语不会被并入，无须 end_inline_run()
+            help_msg = MessageChain.assign(
+                build_module_table(msg, "core.message.help.table.base", essential)
+                + build_module_table(msg, "core.message.help.table.external", module_)
+            )
+        elif use_clickable:
             help_msg = MessageChain.assign(
                 build_clickable_modules(
                     msg,

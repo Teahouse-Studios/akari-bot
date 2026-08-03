@@ -15,7 +15,10 @@ from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 from core.tester import func_case, Tester
-from modules.core.help import build_clickable_modules, end_inline_run
+from modules.core.help import build_clickable_modules, build_module_table, end_inline_run
+
+# 表格测试所用的表头键，取任一既有文案即可，此处不校验其内容
+TABLE_TITLE_KEY = "core.message.help.table.base"
 
 
 def _render_lines(session_info, parts) -> list[str]:
@@ -273,6 +276,97 @@ async def _test_hint_not_glued_to_module_list():
     return True
 
 
+async def _test_table_shape():
+    """测试宽表的行列数：高度封顶，宽度随模块数增长"""
+    session_info = await _session("help_table_shape")
+    msg = _FakeSession(session_info)
+    cases = {
+        # 模块数: (列数, 行数)。列数取「按高度上限反算」与「最少列数」之较大者
+        1: (1, 1),
+        3: (3, 1),
+        4: (3, 2),
+        13: (3, 5),
+        25: (5, 5),
+        53: (11, 5),
+    }
+    for count, (columns, rows) in cases.items():
+        names = [f"m{i}" for i in range(count)]
+        lines = [line for line in _render_lines(session_info, build_module_table(msg, TABLE_TITLE_KEY, names)) if line]
+        # 首行为表头、次行为分隔行，其余为数据行
+        if len(lines) != rows + 2:
+            Logger.error(f"{count} modules should render {rows} data rows, got {len(lines) - 2}: {lines}")
+            return False
+        if lines[1] != "|" + "---|" * columns:
+            Logger.error(f"{count} modules should render {columns} columns, got {lines[1]!r}")
+            return False
+    return True
+
+
+async def _test_table_rows_are_uniform():
+    """测试各行列数一致，末行不足处补空单元格
+
+    markdown 要求整张表的列数齐平，末行漏补会使该行连同表格一并渲染失败。
+    """
+    session_info = await _session("help_table_pad")
+    msg = _FakeSession(session_info)
+    for count in range(1, 30):
+        names = [f"m{i}" for i in range(count)]
+        lines = [line for line in _render_lines(session_info, build_module_table(msg, TABLE_TITLE_KEY, names)) if line]
+        widths = {line.count("|") for line in lines}
+        if len(widths) != 1:
+            Logger.error(f"{count} modules produced ragged rows: {lines}")
+            return False
+    return True
+
+
+async def _test_table_cells_are_clickable():
+    """测试单元格里的模块名是可点击标签，且填入的命令正确
+
+    标签能落在单元格中间，靠的是适配器把指令操作及其后的文本并入同一项；这一条同时守住
+    表格未被拆成多个元素——一旦拆开，竖线与标签会各自成行，表格随即散架。
+    """
+    session_info = await _session("help_table_click")
+    msg = _FakeSession(session_info)
+    parts = build_module_table(msg, TABLE_TITLE_KEY, ["wiki", "dice", "coin"])
+    actions = [p for p in parts if isinstance(p, ActionTextElement)]
+    if len(actions) != 3:
+        Logger.error(f"Every module name should be an action text, got {len(actions)}")
+        return False
+    if actions[0].text.text != f"{session_info.prefixes[0]}help wiki" or actions[0].show.text != "wiki":
+        Logger.error(f"A cell should fill in the help command for its module, got {actions[0]}")
+        return False
+    lines = [line for line in _render_lines(session_info, parts) if line]
+    if lines[2] != "| [wiki] | [dice] | [coin] |":
+        Logger.error(f"The three modules should share one row, got {lines[2]!r}")
+        return False
+    return True
+
+
+async def _test_table_empty_returns_nothing():
+    """测试传入空列表时返回空片段，空态文案由调用方负责"""
+    msg = _FakeSession(await _session("help_table_empty"))
+    if build_module_table(msg, TABLE_TITLE_KEY, []) != []:
+        Logger.error("An empty module list should produce no table at all")
+        return False
+    return True
+
+
+async def _test_table_does_not_end_inline():
+    """测试表格以纯文本收尾
+
+    收尾若是指令操作，调用方随后追加的提示语会被并入最后一个单元格所在的行。
+    """
+    msg = _FakeSession(await _session("help_table_tail"))
+    parts = build_module_table(msg, TABLE_TITLE_KEY, ["wiki", "dice"])
+    if isinstance(parts[-1], ActionTextElement):
+        Logger.error("The table must not end with an action text, or the following hint would be glued to it")
+        return False
+    if not parts[-1].text.endswith("\n"):
+        Logger.error(f"The table should end with a newline, got {parts[-1].text!r}")
+        return False
+    return True
+
+
 async def _test_empty_group_skipped():
     """测试模块名为空的组被整组跳过，不留下孤零零的标题"""
     try:
@@ -307,6 +401,11 @@ async def test_clickable_modules(tester: Tester):
     await tester.test(_test_rendered_layout, "渲染后分行测试")
     await tester.test(_test_multi_group_separation, "组间换行测试")
     await tester.test(_test_hint_not_glued_to_module_list, "提示语不粘连测试")
+    await tester.test(_test_table_shape, "宽表行列数测试")
+    await tester.test(_test_table_rows_are_uniform, "宽表列数齐平测试")
+    await tester.test(_test_table_cells_are_clickable, "宽表单元格可点击测试")
+    await tester.test(_test_table_empty_returns_nothing, "宽表空列表测试")
+    await tester.test(_test_table_does_not_end_inline, "宽表纯文本收尾测试")
     await tester.test(_test_empty_group_skipped, "空组跳过测试")
     await tester.test(_test_degraded_keeps_module_names, "降级保留模块名测试")
 
