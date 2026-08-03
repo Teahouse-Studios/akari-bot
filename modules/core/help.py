@@ -8,11 +8,13 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import ImageElement
 from core.builtins.message.internal import ActionText, I18NContext, Plain, Url
 from core.builtins.parser.command import CommandParser
+from core.builtins.utils import command_prefix
 from core.component import module
 from core.config.base import CoreConfig
 from core.constants.path import templates_path
 from core.loader import ModulesManager
 from core.logger import Logger
+from core.utils.button import arrange_buttons
 from core.utils.cache import random_cache_path
 from core.utils.image import cb64imglst
 from core.web_render import web_render, ElementScreenshotOptions
@@ -55,6 +57,49 @@ def build_clickable_modules(msg: Bot.MessageSession, groups: list[tuple[str, lis
                 parts.append(Plain(" | ", disable_joke=True))
             parts.append(ActionText(f"{prefix}help {name}", show=name))
     return parts
+
+
+def end_inline_run(chain: MessageChain) -> None:
+    """
+    终止行内连排，使其后追加的元素能各自成行。
+
+    可点击的模块列表以指令操作收尾，而适配器会把紧随指令操作之后的文本并入同一行
+    （见 ``bots/qqbot/context.py`` 中 send_msg_markdown() 的 ``inline_pending``）。
+    该规则本是为「文字 + 标签 + 收尾文字」这类同出一句话的场合而设，跨消息元素时却会
+    把调用方随后追加的提示语粘在最后一个模块名之后。补一个纯文本片段即可断开连排。
+
+    片段取一个空格而非空串：消息链会把空文本换成错误提示（见
+    ``core/builtins/message/chain.py`` 对空文本的处理）。换行同样不可取——适配器随后
+    仍会按元素补一次换行，两者叠加会多出一个空行。
+
+    本函数只在具备指令操作能力的平台上有意义，调用点均已由 ``use_clickable`` 把关。
+
+    :param chain: 待收尾的消息链，就地修改。
+    """
+    chain.append(Plain(" ", disable_joke=True))
+
+
+def get_setup_button_data(msg: Bot.MessageSession) -> list[dict[str, str]]:
+    """
+    构造帮助菜单底部直达设置面板的按钮。
+
+    按钮点击后经 interaction 事件另行建立会话，该会话的可用前缀取自全局配置，
+    并不包含各平台在常规消息入口所用的前缀，故此处须使用 command_prefix。
+
+    文案取自面板专设的按钮键，而非面板标题：后者带有分隔用的方括号，套进按钮里并不好看。
+
+    :param msg: 消息会话。
+    :return: 按钮数据；会话不具备按钮能力时为空列表。
+    """
+    if not msg.session_info.support_button:
+        return []
+    locale = msg.session_info.locale
+    return arrange_buttons(
+        [
+            (locale.t("core.message.setup.list.button.target"), f"{command_prefix[0]}setup list target"),
+            (locale.t("core.message.setup.list.button.sender"), f"{command_prefix[0]}setup list sender"),
+        ]
+    )
 
 
 @hlp.command(
@@ -236,7 +281,7 @@ async def _(msg: Bot.MessageSession):
                 help_msg_list.append(I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url))))
             if donate_url:
                 help_msg_list.append(I18NContext("core.message.help.donate", url=MessageChain.assign(Url(donate_url))))
-            await msg.finish(imgs + help_msg_list)
+            await msg.finish(imgs + help_msg_list, button_data=get_setup_button_data(msg))
     if legacy_help:
         is_base_superuser = msg.session_info.sender_id in Bot.base_superuser_list
         is_superuser = msg.check_super_user()
@@ -276,6 +321,7 @@ async def _(msg: Bot.MessageSession):
                     ],
                 )
             )
+            end_inline_run(help_msg)
         else:
             help_msg = MessageChain.assign(I18NContext("core.message.help.legacy.base"))
             help_msg.append(Plain(" | ".join(essential), disable_joke=True))
@@ -300,7 +346,7 @@ async def _(msg: Bot.MessageSession):
             help_msg.append(I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url))))
         if donate_url:
             help_msg.append(I18NContext("core.message.help.donate", url=MessageChain.assign(Url(donate_url))))
-        await msg.finish(help_msg)
+        await msg.finish(help_msg, button_data=get_setup_button_data(msg))
 
 
 async def modules_list_help(msg: Bot.MessageSession, legacy):
@@ -339,6 +385,7 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
             help_msg = MessageChain.assign(
                 build_clickable_modules(msg, [("core.message.help.legacy.availables", module_)])
             )
+            end_inline_run(help_msg)
         else:
             help_msg = MessageChain.assign(
                 [I18NContext("core.message.help.legacy.availables"), Plain(" | ".join(module_), disable_joke=True)]

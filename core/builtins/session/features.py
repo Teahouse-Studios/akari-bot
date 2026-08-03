@@ -74,6 +74,9 @@ class Features:
     # 按钮支持 - 会话是否支持在消息下方附带可点击的按钮
     support_button: bool = False
 
+    # markdown 开关支持 - 平台是否允许用户自行关闭 markdown 消息
+    support_markdown_toggle: bool = False
+
     # URL Markdown 格式支持 - 是否将 URL 自动转换为 Markdown 格式的链接
     use_url_md_format: bool = False
 

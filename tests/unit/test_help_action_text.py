@@ -10,10 +10,42 @@
 
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import ActionTextElement, PlainElement
+from core.builtins.message.internal import ActionText, I18NContext
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
+from core.logger import Logger
 from core.tester import func_case, Tester
-from modules.core.help import build_clickable_modules
+from modules.core.help import build_clickable_modules, end_inline_run
+
+
+def _render_lines(session_info, parts) -> list[str]:
+    """把元素列表按适配器的规则折成行。
+
+    复刻 ``bots/qqbot/context.py`` 中 send_msg_markdown() 的拼接：指令操作并入上一项，
+    且其后紧随的文本同样并入上一项，最后以换行连接各项。该函数绑在平台 SDK 上，
+    测试无从直接调用，故按同样的规则建模。
+
+    :param session_info: 会话信息，用于将消息链转为可发送形态。
+    :param parts: 待折行的消息元素。
+    :return: 折行后的文本行，不过滤空行。
+    """
+    texts, inline_pending = [], False
+    for x in MessageChain.assign(parts).as_sendable(session_info).values:
+        if isinstance(x, ActionTextElement):
+            # show 为选填，缺省时平台取 text 展示
+            tag = f"[{x.show.text if x.show else x.text.text}]"
+            if texts:
+                texts[-1] += tag
+            else:
+                texts.append(tag)
+            inline_pending = True
+        else:
+            if inline_pending and texts:
+                texts[-1] += x.text
+            else:
+                texts.append(x.text)
+            inline_pending = False
+    return "\n".join(texts).split("\n")
 
 
 async def _session(target_suffix: str, support_action_text: bool = True):
@@ -140,27 +172,8 @@ async def _test_rendered_layout():
         session_info = await _session("help_layout")
         msg = _FakeSession(session_info)
         parts = build_clickable_modules(msg, [("core.message.help.legacy.base", ["wiki", "maimai"])])
-        sendable = MessageChain.assign(parts).as_sendable(session_info)
 
-        # 复刻 send_msg_markdown() 的拼接逻辑
-        texts, inline_pending = [], False
-        for x in sendable.values:
-            if isinstance(x, ActionTextElement):
-                tag = f"[{x.show.text}]"
-                if texts:
-                    texts[-1] += tag
-                else:
-                    texts.append(tag)
-                inline_pending = True
-            else:
-                if inline_pending and texts:
-                    texts[-1] += x.text
-                else:
-                    texts.append(x.text)
-                inline_pending = False
-        rendered = "\n".join(texts)
-
-        lines = [line for line in rendered.split("\n") if line]
+        lines = [line for line in _render_lines(session_info, parts) if line]
         if len(lines) != 2:
             return False
         if lines[1] != "[wiki] | [maimai]":
@@ -213,23 +226,7 @@ async def _test_multi_group_separation():
             return False
 
         # 渲染后应为四行：两个标题各一行、两组列表各一行
-        sendable = MessageChain.assign(parts).as_sendable(session_info)
-        texts, inline_pending = [], False
-        for x in sendable.values:
-            if isinstance(x, ActionTextElement):
-                tag = f"[{x.show.text}]"
-                if texts:
-                    texts[-1] += tag
-                else:
-                    texts.append(tag)
-                inline_pending = True
-            else:
-                if inline_pending and texts:
-                    texts[-1] += x.text
-                else:
-                    texts.append(x.text)
-                inline_pending = False
-        lines = [line for line in "\n".join(texts).split("\n") if line]
+        lines = [line for line in _render_lines(session_info, parts) if line]
         if len(lines) != 4:
             return False
         if lines[1] != "[help]" or lines[3] != "[wiki]":
@@ -237,6 +234,43 @@ async def _test_multi_group_separation():
         return True
     except Exception:
         return False
+
+
+async def _test_hint_not_glued_to_module_list():
+    """测试列表之后追加的提示语不会被粘在最后一个模块名后面
+
+    可点击列表以指令操作收尾，适配器会把紧随其后的文本并入同一行。~help 与 ~module list
+    都会在列表之后追加「使用……查看详细信息」一类的提示，不加收尾就会挤成一行。
+    """
+    session_info = await _session("help_hint")
+    msg = _FakeSession(session_info)
+    prefix = session_info.prefixes[0]
+    help_msg = MessageChain.assign(
+        build_clickable_modules(
+            msg,
+            [
+                ("core.message.help.legacy.base", ["help"]),
+                ("core.message.help.legacy.external", ["wiki", "dice"]),
+            ],
+        )
+    )
+    end_inline_run(help_msg)
+    help_msg.append(I18NContext("core.message.help.detail", prefix=prefix, cmd=ActionText(f"{prefix}help ")))
+    help_msg.append(I18NContext("core.message.help.all_modules", prefix=prefix, cmd=ActionText(f"{prefix}module list")))
+
+    lines = [line for line in _render_lines(session_info, help_msg.values) if line.strip()]
+    # 两个标题各一行、两组列表各一行、两条提示各一行
+    if len(lines) != 6:
+        Logger.error(f"Help should render 6 lines, got {len(lines)}: {lines}")
+        return False
+    # 模块列表所在行不得掺入提示语
+    if lines[3].strip() != "[wiki] | [dice]":
+        Logger.error(f"The module list line should carry modules only, got {lines[3]!r}")
+        return False
+    if "查看详细信息" not in lines[4] or "查看所有的可用模块" not in lines[5]:
+        Logger.error(f"Both hints should stand on their own lines, got {lines[4]!r} and {lines[5]!r}")
+        return False
+    return True
 
 
 async def _test_empty_group_skipped():
@@ -272,6 +306,7 @@ async def test_clickable_modules(tester: Tester):
     await tester.test(_test_disable_joke, "禁用玩笑替换测试")
     await tester.test(_test_rendered_layout, "渲染后分行测试")
     await tester.test(_test_multi_group_separation, "组间换行测试")
+    await tester.test(_test_hint_not_glued_to_module_list, "提示语不粘连测试")
     await tester.test(_test_empty_group_skipped, "空组跳过测试")
     await tester.test(_test_degraded_keeps_module_names, "降级保留模块名测试")
 

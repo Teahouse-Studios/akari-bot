@@ -13,6 +13,7 @@ import json
 import os
 import re
 
+from core.logger import Logger
 from core.tester import func_case, Tester
 
 # 以键名作为参数传入、由被调方统一补上 cmd 的调用点。
@@ -26,7 +27,7 @@ KNOWN_INDIRECT_KEYS = {
 }
 
 # 上述键的 cmd 实际由该文件中的 issue_code() 补上
-INDIRECT_PROVIDER = "modules/core/union_merge.py"
+INDIRECT_PROVIDER = "core/union_merge.py"
 
 
 def _iter_call_args(source: str, key: str):
@@ -108,20 +109,27 @@ def _test_indirect_keys_have_provider():
 
     白名单会掩盖真实的漏传，故要求其对应的补参代码仍然在位：
     issue_code() 一旦不再构造 ActionText，此处即失守。
+
+    此处逐条报明缘由而不笼统吞掉异常：INDIRECT_PROVIDER 曾随文件迁移而失效，
+    读不到文件的报错被 except 收成了断言不成立，看上去与「补参代码不在位」别无二致，
+    白名单就此形同虚设却无人察觉。
     """
     try:
         with open(INDIRECT_PROVIDER, encoding="utf-8") as f:
             provider = f.read()
-        if "cmd=ActionText(" not in provider:
-            return False
-        # 白名单中的键须确实作为 prompt_key 流向该函数，而非无人问津
-        sources = _collect_sources()
-        for key in KNOWN_INDIRECT_KEYS:
-            if not any(f'"{key}"' in source for source in sources.values()):
-                return False
-        return True
-    except Exception:
+    except OSError:
+        Logger.error(f"{INDIRECT_PROVIDER} is unreadable; point INDIRECT_PROVIDER at where issue_code() now lives")
         return False
+    if "cmd=ActionText(" not in provider:
+        Logger.error(f"{INDIRECT_PROVIDER} no longer builds cmd=ActionText(); the whitelist would mask real omissions")
+        return False
+    # 白名单中的键须确实作为 prompt_key 流向该函数，而非无人问津
+    sources = _collect_sources()
+    for key in KNOWN_INDIRECT_KEYS:
+        if not any(f'"{key}"' in source for source in sources.values()):
+            Logger.error(f"Whitelisted key {key} is referenced nowhere; drop it from KNOWN_INDIRECT_KEYS")
+            return False
+    return True
 
 
 def _test_no_stale_cmd_placeholder():

@@ -741,7 +741,9 @@ class QQBotContextManager(ContextManager):
                         if send:
                             msg_ids.append(send["id"])
 
-        if not qq_use_markdown:
+        # 会话的 support_markdown 由 resolve_features() 按用户偏好置定，用户关闭 markdown 后
+        # 走纯文本路径；全局配置关闭时同样如此。
+        if not qq_use_markdown or not session_info.support_markdown:
             await send_msg()
         else:
             await send_msg_markdown()

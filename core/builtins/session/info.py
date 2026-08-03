@@ -77,6 +77,7 @@ class SessionInfo:
     support_private_msg: bool = False
     support_action_text: bool = False
     support_button: bool = False
+    support_markdown_toggle: bool = False
     timestamp: float | None = None
     session_id: str | None = None
     # 场景 union 由 assign() 解析，解析不出即抛错，故此后必定有值；
@@ -160,7 +161,7 @@ class SessionInfo:
         session_id = str(uuid.uuid4())
         locale = Locale(target_union_info.locale)
         bot_name = locale.t("bot_name")
-        _tz_offset = target_union_info.target_data.get("tz_offset", CoreConfig.timezone_offset)
+        _tz_offset = target_union_info.target_data.get("timezone_offset", CoreConfig.timezone_offset)
         prefixes = (
             (prefixes + (target_union_info.target_data.get("command_prefix", []) + command_prefix.copy()))
             if prefixes is not None
@@ -268,6 +269,14 @@ class SessionInfo:
         if not self.sender_union_info:
             return False
         return self.sender_union_info.sender_data.get("typing_prompt", True)
+
+    @property
+    def invalid_module_prompt_enabled(self) -> bool:
+        """本会话是否应提示所输入的模块不存在。
+
+        :return: 是否发出提示；场景未设置过时默认发出。
+        """
+        return self.target_union_info.target_data.get("invalid_module_prompt", True)
 
 
 @define

@@ -13,8 +13,8 @@ from core.builtins.session.internal import MessageSession
 from core.builtins.utils import command_prefix
 from core.constants.exceptions import SessionFinished
 from core.tester import func_case, Tester
+from core.utils.button import DEFAULT_BUTTONS_PER_ROW
 from modules.wiki.utils.recommend import (
-    MAX_BUTTONS_PER_ROW,
     RECOMMENDED_WIKIS,
     finish_with_start_wiki_not_set,
     get_recommend_button_data,
@@ -74,12 +74,18 @@ async def _test_button_data_shape():
 
 
 async def _test_button_rows_are_split():
-    """测试按钮数据 - 条目数超过单行上限时按上限分行"""
+    """测试按钮数据 - 条目数超过单行上限时按可读性上限分行并均分
+
+    分行已收归 core.utils.button，此处只验证 wiki 侧确实经由该工具产出，
+    具体的均分规则由 tests/unit/test_button_arrange.py 把关。
+    """
     try:
-        wikis = [(f"Wiki {i}", f"https://example{i}.invalid/api.php") for i in range(MAX_BUTTONS_PER_ROW + 2)]
+        count = DEFAULT_BUTTONS_PER_ROW * 2 + 1
+        wikis = [(f"Wiki {i}", f"https://example{i}.invalid/api.php") for i in range(count)]
         with patch("modules.wiki.utils.recommend.RECOMMENDED_WIKIS", wikis):
             rows = get_recommend_button_data()
-        return len(rows) == 2 and len(rows[0]) == MAX_BUTTONS_PER_ROW and len(rows[1]) == 2
+        # 7 个按钮在上限 3 之下分作三行，余数均摊到首行
+        return [len(row) for row in rows] == [3, 2, 2]
 
     except Exception:
         return False

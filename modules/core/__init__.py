@@ -6,6 +6,7 @@ from .help import *
 from .modules import *
 from .petal import *
 from .prefix import *
+from .setup import *
 from .su_utils import *
 from .utils import *
 from .merge import *

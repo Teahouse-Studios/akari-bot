@@ -331,61 +331,6 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(result)
 
 
-setup = module("setup", base=True, desc="{I18N:core.help.setup.desc}", doc=True, alias="toggle")
-
-
-@setup.command("typing {{I18N:core.help.setup.typing}}")
-async def _(msg: Bot.MessageSession):
-    if not msg.session_info.sender_union_info.sender_data.get("typing_prompt", True):
-        await msg.session_info.sender_union_info.edit_sender_data("typing_prompt", True)
-        await msg.finish(I18NContext("core.message.setup.typing.enable"))
-    else:
-        await msg.session_info.sender_union_info.edit_sender_data("typing_prompt", False)
-        await msg.finish(I18NContext("core.message.setup.typing.disable"))
-
-
-@setup.command("check {{I18N:core.help.setup.check}}")
-async def _(msg: Bot.MessageSession):
-    if not msg.session_info.sender_union_info.sender_data.get("typo_check", True):
-        await msg.session_info.sender_union_info.edit_sender_data("typo_check", True)
-        await msg.finish(I18NContext("core.message.setup.check.enable"))
-    else:
-        await msg.session_info.sender_union_info.edit_sender_data("typo_check", False)
-        await msg.finish(I18NContext("core.message.setup.check.disable"))
-
-
-@setup.command("sign {{I18N:core.help.setup.sign}}", required_admin=True, load=CoreConfig.enable_petal)
-async def _(msg: Bot.MessageSession):
-    if not msg.session_info.target_union_info.target_data.get("petal_sign", True):
-        await msg.session_info.target_union_info.edit_target_data("petal_sign", True)
-        await msg.finish(I18NContext("core.message.setup.sign.enable"))
-    else:
-        await msg.session_info.target_union_info.edit_target_data("petal_sign", False)
-        await msg.finish(I18NContext("core.message.setup.sign.disable"))
-
-
-@setup.command("timeoffset <offset> {{I18N:core.help.setup.timeoffset}}", required_admin=True)
-async def _(msg: Bot.MessageSession, offset: str):
-    try:
-        tstr_split = [int(part) for part in offset.split(":")]
-        hour = tstr_split[0]
-        minute = tstr_split[1] if len(tstr_split) > 1 else 0
-        if hour > 12 or minute >= 60:
-            raise ValueError
-        offset = f"{hour:+}" if minute == 0 else f"{hour:+}:{abs(minute):02d}"
-    except ValueError:
-        await msg.finish(I18NContext("core.message.setup.timeoffset.invalid"))
-    await msg.session_info.target_union_info.edit_target_data("timezone_offset", offset)
-    await msg.finish(I18NContext("core.message.setup.timeoffset.success", offset="" if offset == "+0" else offset))
-
-
-@setup.command("cooldown <second> {{I18N:core.help.setup.cooldown}}", required_admin=True)
-async def _(msg: Bot.MessageSession, second: int):
-    second = 0 if second < 0 else second
-    await msg.session_info.target_union_info.edit_target_data("cooldown_time", second)
-    await msg.finish(I18NContext("core.message.setup.cooldown.success", time=second))
-
-
 mute = module("mute", base=True, doc=True, required_admin=True)
 
 

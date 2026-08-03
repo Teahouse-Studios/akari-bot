@@ -3,14 +3,12 @@ from typing import NoReturn
 from core.builtins.bot import Bot
 from core.builtins.message.internal import ActionText, I18NContext
 from core.builtins.utils import command_prefix
+from core.utils.button import arrange_buttons
 
 # 未设置起始 Wiki 时向用户推荐的 Wiki，元素为（显示名称，API 端点地址）。
 RECOMMENDED_WIKIS: list[tuple[str, str]] = [
     ("Minecraft Wiki", "https://zh.minecraft.wiki/api.php"),
 ]
-
-# QQ 官方机器人单行按钮数量的上限。
-MAX_BUTTONS_PER_ROW = 5
 
 
 def get_recommend_button_data() -> list[dict[str, str]]:
@@ -23,10 +21,7 @@ def get_recommend_button_data() -> list[dict[str, str]]:
 
     :return: 按钮数据，键为按钮文本，值为点击后发出的命令。
     """
-    return [
-        {name: f"{command_prefix[0]}wiki set {url}" for name, url in RECOMMENDED_WIKIS[i : i + MAX_BUTTONS_PER_ROW]}
-        for i in range(0, len(RECOMMENDED_WIKIS), MAX_BUTTONS_PER_ROW)
-    ]
+    return arrange_buttons([(name, f"{command_prefix[0]}wiki set {url}") for name, url in RECOMMENDED_WIKIS])
 
 
 async def finish_with_start_wiki_not_set(msg: Bot.MessageSession) -> NoReturn:
