@@ -17,7 +17,7 @@
     "phigros.message.bind.success": "绑定成功：${username}",
     "phigros.message.bind.warning": "警告：你正在公开场景中绑定用户，这有可能会使你的云存档数据被他人篡改。请尽可能私聊绑定用户以避免这种情况。\n你可以通过重新登录来重置 SessionToken。",
     "phigros.message.fetch_failed": "获取云存档失败，请稍后再试。",
-    "phigros.message.file_not_found": "未找到歌曲信息文件，请使用“${prefix}phigros update”初始化。",
+    "phigros.message.file_not_found": "未找到歌曲信息文件，请使用“${cmd}”初始化。",
     "phigros.message.info.challenge": "课题分：${rank}-${score}",
     "phigros.message.info.data": "Data：${data}",
     "phigros.message.info.difficulty_stat": "${difficulty}：已通过 ${cleared}，Full Combo ${full_combo}，Phi ${phi}",
@@ -46,7 +46,7 @@
     "phigros.message.song.chart": "${difficulty} ${constant}｜谱师：${charter}",
     "phigros.message.song.illustrator": "画师：${illustrator}",
     "phigros.message.song.title": "${name} － ${artist}",
-    "phigros.message.token_invalid": "SessionToken 已失效，请使用“${prefix}phigros bind”重新绑定。",
+    "phigros.message.token_invalid": "SessionToken 已失效，请使用“${cmd}”重新绑定。",
     "phigros.message.unbind.success": "解绑成功。",
     "phigros.message.unlock.avatar": "头像：${count}",
     "phigros.message.unlock.background": "背景：${count}",
@@ -55,5 +55,5 @@
     "phigros.message.unlock.collection_read": "已阅读收藏品：${count}",
     "phigros.message.unlock.single": "已解锁曲目：${count}",
     "phigros.message.use_cache": "获取游玩记录失败，已使用缓存数据。",
-    "phigros.message.user_unbound": "未绑定用户，请使用“${prefix}phigros bind”绑定一个用户。"
+    "phigros.message.user_unbound": "未绑定用户，请使用“${cmd}”绑定一个用户。"
 }

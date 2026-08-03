@@ -7,6 +7,7 @@ from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 
 from bots.qqbot.context import QQBotContextManager, QQBotFetchedContextManager
 from bots.qqbot.info import *
+from bots.qqbot.features import group_disable_read_all_message_features
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain
@@ -190,7 +191,7 @@ class MyClient(botpy.Client):
             tmp={"message_type": "group_at"},
         )
 
-        await Bot.process_message(session, message)
+        await Bot.process_message(session, message, group_disable_read_all_message_features)
 
     @staticmethod
     async def on_direct_message_create(message: DirectMessage):

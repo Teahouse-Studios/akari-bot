@@ -7,7 +7,7 @@ from cpuinfo import get_cpu_info
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Plain, FormattedTime, I18NContext, Url
+from core.builtins.message.internal import ActionText, Plain, FormattedTime, I18NContext, Url
 from core.builtins.session.features import Features
 from core.component import module
 from core.config.base import CoreConfig
@@ -151,7 +151,10 @@ async def _(msg: Bot.MessageSession):
     if not user.startswith(f"{msg.session_info.sender_from}|"):
         await msg.finish(
             I18NContext(
-                "core.message.admin.invalid", sender=msg.session_info.sender_from, prefix=msg.session_info.prefixes[0]
+                "core.message.admin.invalid",
+                sender=msg.session_info.sender_from,
+                prefix=msg.session_info.prefixes[0],
+                cmd=ActionText(f"{msg.session_info.prefixes[0]}whoami"),
             )
         )
     if "add" in msg.parsed_msg:
@@ -187,7 +190,10 @@ async def _(msg: Bot.MessageSession):
     if not user.startswith(f"{msg.session_info.sender_from}|"):
         await msg.finish(
             I18NContext(
-                "core.message.admin.invalid", sender=msg.session_info.sender_from, prefix=msg.session_info.prefixes[0]
+                "core.message.admin.invalid",
+                sender=msg.session_info.sender_from,
+                prefix=msg.session_info.prefixes[0],
+                cmd=ActionText(f"{msg.session_info.prefixes[0]}whoami"),
             )
         )
     if "ban" in msg.parsed_msg:
@@ -212,7 +218,11 @@ async def _(msg: Bot.MessageSession):
     available_lang = "{I18N:message.delimiter}".join(get_available_locales())
     res = [
         I18NContext("core.message.locale.prompt", lang="{I18N:language}"),
-        I18NContext("core.message.locale.set.prompt", prefix=msg.session_info.prefixes[0]),
+        I18NContext(
+            "core.message.locale.set.prompt",
+            prefix=msg.session_info.prefixes[0],
+            cmd=ActionText(f"{msg.session_info.prefixes[0]}locale "),
+        ),
         I18NContext("core.message.locale.langlist", langlist=available_lang),
     ]
 

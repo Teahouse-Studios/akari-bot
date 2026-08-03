@@ -1,5 +1,6 @@
 import asyncio
 import html
+from urllib.parse import quote
 
 import orjson
 from botpy.api import BotAPI
@@ -22,7 +23,7 @@ from bots.qqbot.info import (
 )
 from bots.qqbot.utils import url_filter
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
-from core.builtins.message.elements import PlainElement, ImageElement, MentionElement
+from core.builtins.message.elements import ActionTextElement, PlainElement, ImageElement, MentionElement
 from core.builtins.message.internal import I18NContext
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
@@ -52,6 +53,48 @@ def is_msg_dedup_error(e: BaseException) -> bool:
     :param e: 待判断的异常。
     """
     return isinstance(e, ServerError) and e.msgs == MSG_DEDUP_ERROR
+
+
+# 平台对指令操作标签内文本的字符数上限，按 urlencode 前的原文计算
+ACTION_TEXT_MAX_LENGTH = 100
+
+
+def _truncate_action_text(value: str, field: str) -> str:
+    """
+    按平台上限截断指令操作的文本。
+
+    截断后的 text 会使用户点击标签得到残缺命令，故记录截断前的长度以便排查。
+
+    :param value: 原始文本。
+    :param field: 字段名，仅用于日志。
+    :return: 截断后的文本。
+    """
+    if len(value) <= ACTION_TEXT_MAX_LENGTH:
+        return value
+    Logger.warning(f"ActionText {field} exceeds {ACTION_TEXT_MAX_LENGTH} characters ({len(value)}), truncated.")
+    return value[:ACTION_TEXT_MAX_LENGTH]
+
+
+def _render_action_text(element: ActionTextElement) -> str:
+    """
+    将指令操作元素渲染为平台的参数指令标签。
+
+    此处的 urlencode 与 KE 码中的 urlencode 互不相干：前者满足平台传值要求，
+    后者规避 KE 码分隔符冲突。元素既可能经 KE 码路径抵达，也可能直接放入消息链，
+    故两处各自编码。
+
+    :param element: 内层文案已解析的指令操作元素。
+    :return: 标签字符串；text 为空时返回空字符串。
+    """
+    text = element.text.text if element.text else ""
+    if not text:
+        return ""
+    attrs = [f'text="{quote(_truncate_action_text(text, "text"), safe="")}"']
+    show = element.show.text if element.show else ""
+    if show:
+        attrs.append(f'show="{quote(_truncate_action_text(show, "show"), safe="")}"')
+    attrs.append(f'reference="{"true" if element.reference else "false"}"')
+    return f"<qqbot-cmd-input {' '.join(attrs)} />"
 
 
 # 额外添加平台接口支持但 SDK 不支持的方法
@@ -595,12 +638,20 @@ class QQBotContextManager(ContextManager):
                 Logger.debug("MessageElements do not require markdown, sending as plain message instead of markdown.")
                 return await send_msg()
 
+            # 指令操作是行内元素：它自身与紧随其后的文本都须并入上一项，
+            # 否则 "\n".join(texts) 会把同属一句话的收尾文本甩到下一行
+            inline_pending = False
+
             for x in converted_message:
                 if isinstance(x, PlainElement):
                     x.text = html.unescape(x.text)
                     if enable_parse_message:
                         x.text = match_atcode(x.text, client_name, "<@{uid}>")
-                    texts.append(x.text)
+                    if inline_pending and texts:
+                        texts[-1] += x.text
+                    else:
+                        texts.append(x.text)
+                    inline_pending = False
                 elif isinstance(x, ImageElement):
                     if S3Storage is not None:
                         upload = await S3Storage.upload_temp(await x.get())
@@ -611,9 +662,19 @@ class QQBotContextManager(ContextManager):
                             fin_w = w * fin_scale
                             fin_h = h * fin_scale
                             texts.append(f"![text #{int(fin_w)}px #{int(fin_h)}px]({upload['public_url']})")
+                    inline_pending = False
                 elif isinstance(x, MentionElement):
                     if x.client == client_name and session_info.target_from == target_guild_prefix:
                         texts.append(f'<qqbot-at-user id="{x.id}" />')
+                    inline_pending = False
+                elif isinstance(x, ActionTextElement):
+                    tag = _render_action_text(x)
+                    if tag:
+                        if texts:
+                            texts[-1] += tag
+                        else:
+                            texts.append(tag)
+                    inline_pending = True
             if len(texts) != 0:
                 msg = "\n".join(texts)
                 md = MarkdownPayload(content=msg)

@@ -2,7 +2,7 @@ import orjson
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import I18NContext, Image, Plain, Url
+from core.builtins.message.internal import ActionText, I18NContext, Image, Plain, Url
 from core.config.base import CoreConfig
 from modules.wiki.config import WikiConfig
 from core.utils.image_table import image_table_render, ImageTable
@@ -111,7 +111,13 @@ async def _(msg: Bot.MessageSession):
             imgs = None
         if imgs:
             img_list = [Image(ii) for ii in imgs]
-            mt = [I18NContext("wiki.message.iw.list", prefix=msg.session_info.prefixes[0])]
+            mt = [
+                I18NContext(
+                    "wiki.message.iw.list",
+                    prefix=msg.session_info.prefixes[0],
+                    cmd=ActionText(f"{msg.session_info.prefixes[0]}wiki iw get "),
+                )
+            ]
             if base_interwiki_link:
                 mt.append(I18NContext("wiki.message.iw.list.prompt", url=MessageChain.assign(Url(base_interwiki_link))))
             await msg.finish(img_list + mt)
@@ -120,7 +126,13 @@ async def _(msg: Bot.MessageSession):
             for x in query:
                 result.append(Plain(f"{x}: {query[x]}"))
     else:
-        result.append(I18NContext("wiki.message.iw.list.none", prefix=msg.session_info.prefixes[0]))
+        result.append(
+            I18NContext(
+                "wiki.message.iw.list.none",
+                prefix=msg.session_info.prefixes[0],
+                cmd=ActionText(f"{msg.session_info.prefixes[0]}wiki iw add"),
+            )
+        )
     if base_interwiki_link:
         result.append(I18NContext("wiki.message.iw.list.prompt", url=MessageChain.assign(Url(base_interwiki_link))))
     await msg.finish(result)
@@ -136,7 +148,13 @@ async def _(msg: Bot.MessageSession, interwiki: str):
         else:
             await msg.finish(I18NContext("wiki.message.iw.get.not_found", iw=interwiki))
     else:
-        await msg.finish(I18NContext("wiki.message.iw.list.none", prefix=msg.session_info.prefixes[0]))
+        await msg.finish(
+            I18NContext(
+                "wiki.message.iw.list.none",
+                prefix=msg.session_info.prefixes[0],
+                cmd=ActionText(f"{msg.session_info.prefixes[0]}wiki iw add"),
+            )
+        )
 
 
 @wiki.command("headers show {{I18N:wiki.help.headers.show}}")
@@ -147,6 +165,7 @@ async def _(msg: Bot.MessageSession):
             "wiki.message.headers.show",
             headers=orjson.dumps(target.headers).decode(),
             prefix=msg.session_info.prefixes[0],
+            cmd=ActionText(f"{msg.session_info.prefixes[0]}wiki headers add"),
         )
     )
 

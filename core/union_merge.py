@@ -5,7 +5,7 @@ from pathlib import Path
 import orjson
 
 from core.builtins.bot import Bot
-from core.builtins.message.internal import I18NContext, Plain
+from core.builtins.message.internal import ActionText, I18NContext, Plain
 from core.config.base import CoreConfig
 from core.constants.path import union_merge_logs_path
 from core.database.models import (
@@ -85,6 +85,7 @@ async def issue_code(
     prompt_key: str,
     extra: dict | None = None,
     code_key: str = "core.bind.message.code",
+    command: str = "bind token",
 ) -> None:
     """
     生成绑定码并私信给发起方，随后在当前场景中给出提示。
@@ -98,11 +99,13 @@ async def issue_code(
     :param prompt_key: 私信中绑定用法提示的 i18n 键。
     :param extra: 随绑定码一并留存的附加信息。
     :param code_key: 展示绑定码本身的 i18n 键。
+    :param command: 提示中待用户发送的命令，绑定码会拼接于其后。
     """
     if not msg.session_info.support_private_msg:
         await msg.finish(I18NContext("core.bind.message.code.private.unsupported"))
 
     generated = generate_code(store, union_id, holder_id, extra)
+    full_command = f"{msg.session_info.prefixes[0]}{command} {generated}"
     sent = await msg.send_private_message(
         [
             I18NContext(code_key, code=generated, disable_joke=True),
@@ -111,6 +114,15 @@ async def issue_code(
                 minute=BIND_CODE_EXPIRED // 60,
                 prefix=msg.session_info.prefixes[0],
                 code=generated,
+                # 标签上仍要显示命令本身，用户须知道自己将要发送什么，操作提示只是附注；
+                # 该提示离开可点击的平台便无意义，故不随降级带往其他平台。引号同理，
+                # 可点击的标签自带视觉边界，仅降级后的命令原文才需要它
+                cmd=ActionText(
+                    full_command,
+                    show=I18NContext("message.action_text.hint", cmd=full_command),
+                    show_on_fallback=False,
+                    quote_on_fallback=True,
+                ),
                 disable_joke=True,
             ),
         ]

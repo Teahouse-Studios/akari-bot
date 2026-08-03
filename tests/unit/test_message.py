@@ -1,12 +1,13 @@
 """core.builtins.message 消息系统单元测试。"""
 
-from core.builtins.message.chain import MessageChain
+from core.builtins.message.chain import MessageChain, match_kecode
 from core.builtins.message.elements import (
     PlainElement,
     URLElement,
     ImageElement,
     MentionElement,
     EmbedElement,
+    FormattedTimeElement,
 )
 from core.builtins.message.internal import (
     Plain,
@@ -253,6 +254,87 @@ def _test_url_element_assign():
         return False
 
 
+def _test_plain_kecode_roundtrip_separators():
+    """测试含 KE 码分隔符的纯文本能原样往返
+
+    KE 码按顶层逗号切分参数、按方括号判定块边界。写入侧不编码时，含逗号的文本
+    会被切成两段而后半段因缺少等号被静默丢弃，含右方括号的文本则提前结束块。
+    """
+    try:
+        for raw in ("a,b c", "见 [1] 条", "x=1,y=2", "100% 完成", "混合 a,b] c=d"):
+            elem = PlainElement.assign(raw)
+            chain = match_kecode(elem.kecode())
+            if len(chain.values) != 1:
+                return False
+            if chain.values[0].text != raw:
+                return False
+        return True
+    except Exception:
+        return False
+
+
+def _test_plain_kecode_roundtrip_disable_joke():
+    """测试 disable_joke 在含分隔符时仍能正确往返"""
+    try:
+        elem = PlainElement.assign("a,b]c", disable_joke=True)
+        restored = match_kecode(elem.kecode()).values[0]
+        if restored.text != "a,b]c":
+            return False
+        if restored.disable_joke is not True:
+            return False
+        return True
+    except Exception:
+        return False
+
+
+def _test_formatted_time_kecode_roundtrip():
+    """测试格式化时间的 KE 码往返
+
+    时间文案形如「February 14, 2009 07:31:30 (UTC+8)」，本身就含逗号，
+    是该缺陷必然触发的场景：未编码时往返后只剩「February 14」。
+    """
+    try:
+        elem = FormattedTimeElement.assign(1234567890.0)
+        expected = elem.to_str()
+        restored = match_kecode(elem.kecode()).values[0]
+        if restored.text != expected:
+            return False
+        # 逗号后的部分不应丢失
+        if "," in expected and restored.text == expected.split(",")[0]:
+            return False
+        return True
+    except Exception:
+        return False
+
+
+def _test_url_kecode_roundtrip():
+    """测试含逗号的 URL 能原样往返"""
+    try:
+        raw = "https://example.com/a?x=1,2&y=3"
+        elem = URLElement.assign(raw)
+        restored = match_kecode(elem.kecode()).values[0]
+        if str(restored) != raw:
+            return False
+        return True
+    except Exception:
+        return False
+
+
+def _test_url_kecode_missing_text():
+    """测试 url 的 KE 码缺少 text 参数时不产出元素
+
+    此前该分支未作判空，会以 None 构造 URLElement 并在后续字符串化时出错。
+    """
+    try:
+        chain = match_kecode("[KE:url]")
+        for value in chain.values:
+            if isinstance(value, URLElement):
+                return False
+        return True
+    except Exception:
+        return False
+
+
 def _test_url_element_str():
     """测试 URLElement.__str__()"""
     try:
@@ -330,6 +412,18 @@ async def test_message_elements(tester: Tester):
     await tester.test(_test_plain_element_kecode_disable_joke, "PlainElement.kecode() 禁用玩笑")
     await tester.test(_test_url_element_assign, "URLElement.assign()")
     await tester.test(_test_url_element_str, "URLElement.__str__()")
+
+    return tester
+
+
+@func_case
+async def test_kecode_roundtrip(tester: Tester):
+    """core.builtins.message: KE 码转义往返测试"""
+    await tester.test(_test_plain_kecode_roundtrip_separators, "纯文本含分隔符往返测试")
+    await tester.test(_test_plain_kecode_roundtrip_disable_joke, "含分隔符时 disable_joke 往返测试")
+    await tester.test(_test_formatted_time_kecode_roundtrip, "格式化时间往返测试")
+    await tester.test(_test_url_kecode_roundtrip, "URL 含逗号往返测试")
+    await tester.test(_test_url_kecode_missing_text, "url 缺少 text 参数测试")
 
     return tester
 

@@ -2,7 +2,7 @@ import asyncio
 from datetime import datetime, UTC
 from pathlib import Path
 
-from core.builtins.message.internal import I18NContext, Plain
+from core.builtins.message.internal import ActionText, I18NContext, Plain
 from core.config.base import CoreConfig
 from core.constants.path import retired_path
 from core.database.models import StoredData, TargetUnionBind
@@ -328,7 +328,9 @@ def build_notice(client_name: str, locale: str, prefix: str) -> list:
     """
     content = read_notice(client_name, locale)
     if not content:
-        return [I18NContext("parser.retired.prompt", prefix=prefix, disable_joke=True)]
+        return [
+            I18NContext("parser.retired.prompt", prefix=prefix, cmd=ActionText(f"{prefix}merge"), disable_joke=True)
+        ]
     return [Plain(content, disable_joke=True)]
 
 

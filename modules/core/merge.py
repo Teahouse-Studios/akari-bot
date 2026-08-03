@@ -1,7 +1,7 @@
 import re
 
 from core.builtins.bot import Bot
-from core.builtins.message.internal import I18NContext
+from core.builtins.message.internal import ActionText, I18NContext
 from core.component import module
 from core.config.base import CoreConfig
 from core.database.models import (
@@ -98,6 +98,7 @@ async def _(msg: Bot.MessageSession):
                 **origin,
             },
             code_key="core.merge.message.code",
+            command="merge token",
         )
     # 场景迁移会改动整个场景的数据，需要管理员权限；私聊则无此顾虑，故在此处而非命令级校验。
     if not await msg.check_permission():
@@ -110,6 +111,7 @@ async def _(msg: Bot.MessageSession):
         "core.merge.message.start.prompt",
         extra={"is_private": False, **origin},
         code_key="core.merge.message.code",
+        command="merge token",
     )
 
 
@@ -130,7 +132,13 @@ async def _merge_private(msg: Bot.MessageSession, entry: dict) -> None:
     sender_initiator = await SenderUnionInfo.get_or_none(union_id=entry["union_id"])
     target_initiator = await TargetUnionInfo.get_or_none(union_id=entry["target_union_id"])
     if not sender_initiator or not target_initiator:
-        await msg.finish(I18NContext("core.merge.message.code.invalid", prefix=session_info.prefixes[0]))
+        await msg.finish(
+            I18NContext(
+                "core.merge.message.code.invalid",
+                prefix=session_info.prefixes[0],
+                cmd=ActionText(f"{session_info.prefixes[0]}merge"),
+            )
+        )
 
     sender_plan = (
         await plan_sender_merge(sender_initiator, sender_current)
@@ -184,7 +192,13 @@ async def _merge_private(msg: Bot.MessageSession, entry: dict) -> None:
 async def _(msg: Bot.MessageSession, code: str):
     taken = _take_merge_code(code)
     if not taken:
-        await msg.finish(I18NContext("core.merge.message.code.invalid", prefix=msg.session_info.prefixes[0]))
+        await msg.finish(
+            I18NContext(
+                "core.merge.message.code.invalid",
+                prefix=msg.session_info.prefixes[0],
+                cmd=ActionText(f"{msg.session_info.prefixes[0]}merge"),
+            )
+        )
     scope, entry = taken
 
     # 迁移码只能在其所属迁移关系的目标平台兑换。命令级 available_for 只能表明本平台是
@@ -209,7 +223,13 @@ async def _(msg: Bot.MessageSession, code: str):
         await msg.finish(I18NContext("core.merge.message.same"))
     initiator = await TargetUnionInfo.get_or_none(union_id=entry["union_id"])
     if not initiator:
-        await msg.finish(I18NContext("core.merge.message.code.invalid", prefix=msg.session_info.prefixes[0]))
+        await msg.finish(
+            I18NContext(
+                "core.merge.message.code.invalid",
+                prefix=msg.session_info.prefixes[0],
+                cmd=ActionText(f"{msg.session_info.prefixes[0]}merge"),
+            )
+        )
 
     merged = await merge_target_unions(msg, initiator, current, "core.merge.message.target.confirm.inherit")
     if not merged:

@@ -40,6 +40,9 @@ Mention = mention = MentionElement.assign
 # 原始格式元素 - 用于发送原始格式的消息内容
 Raw = raw = RawElement.assign
 
+# 指令操作元素 - 用于嵌入可点击的命令入口，点击后文本填入输入框
+ActionText = action_text = ActionTextElement.assign
+
 __all__ = [
     "Plain",
     "Image",
@@ -51,6 +54,7 @@ __all__ = [
     "I18NContext",
     "Mention",
     "Raw",
+    "ActionText",
     "plain",
     "image",
     "voice",
@@ -61,4 +65,5 @@ __all__ = [
     "i18n_context",
     "mention",
     "raw",
+    "action_text",
 ]

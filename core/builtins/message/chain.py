@@ -14,7 +14,7 @@ import re
 from attrs import define
 from copy import deepcopy
 from typing import Any, TYPE_CHECKING
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 import orjson
 
@@ -30,6 +30,7 @@ from core.builtins.message.elements import (
     ImageElement,
     VoiceElement,
     MentionElement,
+    ActionTextElement,
 )
 from core.constants import Secret, default_locale
 from core.exports import add_export
@@ -279,6 +280,12 @@ class MessageChain:
                             x.text = session_info.locale.t_str(x.text)
                             # 解析 KE 码格式的消息
                             element_chain = match_kecode(x.text, x.disable_joke)
+                            # 指令操作是行内元素：它自身的产物、以及紧随其后的纯文本，
+                            # 都须并入上一行，否则同出一个字符串的一句话会被平台的
+                            # 换行拼接拆成数行。其余元素照旧各自追加，以免破坏
+                            # MessageChain([Plain("a"), Plain("b")]) 经 KE 码往返后
+                            # 仍应是两个元素的既有约定。
+                            inline_pending = False
                             # 递归处理解析出的元素
                             for elem in element_chain.values:
                                 elem_ = (
@@ -286,10 +293,18 @@ class MessageChain:
                                     .as_sendable(session_info, parse_message=False, disable_markdown=disable_markdown)
                                     .values
                                 )
+                                is_action_text = isinstance(elem, ActionTextElement)
                                 for el in elem_:
-                                    if isinstance(el, PlainElement):
+                                    # 该赋值原本假定 elem 是纯文本元素，指令操作降级后
+                                    # elem_ 中也会出现纯文本，不加判定会把元素改写为字符串
+                                    if isinstance(el, PlainElement) and isinstance(elem, PlainElement):
                                         elem.text = session_info.locale.t_str(el.text)
-                                value += elem_
+                                for el in elem_:
+                                    if (is_action_text or inline_pending) and isinstance(el, PlainElement):
+                                        _append_inline(value, el)
+                                    else:
+                                        value.append(el)
+                                inline_pending = is_action_text
                             continue
                     else:
                         # 空文本，使用默认错误消息
@@ -323,6 +338,10 @@ class MessageChain:
                     if isinstance(v, MessageChain):
                         # 传入 i18n 模块后 MessageChain 会被 Template.safe_substitute 强制转义为字符串... 思考了很久怎么处理比较好，决定暂时用 kecode 处理
                         x.kwargs[k] = v.to_kecode()
+                    if isinstance(v, ActionTextElement):
+                        # 同上，参数值会被强制转为字符串。此处先解析内层再转 KE 码，
+                        # 交由随后对翻译结果的再次转换经 match_kecode() 还原为元素
+                        x.kwargs[k] = v.resolve(session_info).kecode()
 
                 # 执行多语言翻译
                 t_value = locale.t(x.key, x.fallback, x.locale_failed_prompt, **x.kwargs)
@@ -344,6 +363,15 @@ class MessageChain:
                     x = URLElement.assign(x.url, md_format=True, md_format_name=x.md_format_name)
 
                 value.append(PlainElement.assign(x.url, disable_joke=True))
+
+            # ========== 处理指令操作元素 ==========
+            elif isinstance(x, ActionTextElement):
+                # 内层的多语言元素只有在此处才能确定会话语言，故转换阶段一次性解析
+                x = x.resolve(session_info)
+                if session_info and session_info.support_action_text and not disable_markdown and x.text.text:
+                    value.append(x)
+                else:
+                    _append_inline(value, x.to_plain(session_info))
 
             # ========== 其他元素类型 ==========
             else:
@@ -903,6 +931,23 @@ def _extract_kecode_blocks(text):
     return result
 
 
+def _append_inline(value: list, element: PlainElement) -> None:
+    """
+    将纯文本元素并入上一个纯文本元素，保持行内语义。
+
+    平台适配器多以换行拼接消息链中的各个元素，若不合并，一句话中的行内元素
+    会被拆到下一行。需要换行时，在前一个纯文本元素的末尾显式写入换行符即可，
+    与普通文本的行为一致。
+
+    :param value: 已转换的元素列表，就地修改。
+    :param element: 待并入的纯文本元素。
+    """
+    if value and isinstance(value[-1], PlainElement):
+        value[-1].text += element.text
+    else:
+        value.append(element)
+
+
 def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
     """
     解析 KE 码格式的文本并转换为消息链。
@@ -916,6 +961,7 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
     - `[KE:voice,path=...]`: 语音
     - `[KE:i18n,i18nkey=...,param1=val1,...]`: 多语言文本
     - `[KE:mention,userid=...]`: 提及用户
+    - `[KE:action_text,text=...,show=...,reference=0]`: 指令操作
 
     :param text: 包含 KE 码的文本字符串
     :param disable_joke: 是否禁用玩笑功能（默认为 False）
@@ -988,7 +1034,9 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
 
             # ========= 纯文本 =========
             if element_type == "plain":
-                text_value = parsed_params.get("text", "")
+                # 写入侧已 urlencode，此处解码还原。手写的 KE 码不含百分号转义时，
+                # 解码为恒等变换，故不影响既有的手写用法
+                text_value = unquote(parsed_params.get("text", ""))
 
                 local_disable_joke = convert_bool(parsed_params.get("disable_joke"), disable_joke)
 
@@ -1051,8 +1099,28 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
                 if userid:
                     elements.append(MentionElement.assign(userid))
             elif element_type == "url":
-                text = parsed_params.get("text")
-                elements.append(URLElement.assign(text))
+                # 不复用形参 text：覆写会污染其后各块的解析
+                url_value = parsed_params.get("text")
+
+                if url_value:
+                    elements.append(URLElement.assign(unquote(url_value)))
+
+            # ========= 指令操作 =========
+            elif element_type == "action_text":
+                action_text_value = parsed_params.get("text")
+
+                if action_text_value:
+                    action_show_value = parsed_params.get("show")
+
+                    elements.append(
+                        ActionTextElement.assign(
+                            unquote(action_text_value),
+                            unquote(action_show_value) if action_show_value is not None else None,
+                            convert_bool(parsed_params.get("reference"), False),
+                            convert_bool(parsed_params.get("show_on_fallback"), True),
+                            convert_bool(parsed_params.get("quote_on_fallback"), False),
+                        )
+                    )
 
         except Exception:
             elements.append(PlainElement.assign(e, disable_joke=disable_joke))

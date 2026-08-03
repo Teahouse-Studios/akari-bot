@@ -7,7 +7,7 @@ from langconv.language.zh import zh_cn
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import I18NContext, Image, Plain
+from core.builtins.message.internal import ActionText, I18NContext, Image, Plain
 from core.constants.exceptions import ConfigValueError
 from core.constants.path import cache_path
 from core.logger import Logger
@@ -107,7 +107,13 @@ async def get_info(music: Music, details: str | MessageChain) -> MessageChain:
 
 async def get_alias(msg: Bot.MessageSession, sid: str) -> list:
     if not mai_alias_path.exists():
-        await msg.finish(I18NContext("maimai.message.alias.file_not_found", prefix=msg.session_info.prefixes[0]))
+        await msg.finish(
+            I18NContext(
+                "maimai.message.alias.file_not_found",
+                prefix=msg.session_info.prefixes[0],
+                cmd=ActionText(f"{msg.session_info.prefixes[0]}maimai update"),
+            )
+        )
     with open(mai_alias_path, "rb") as file:
         data = orjson.loads(file.read())
 

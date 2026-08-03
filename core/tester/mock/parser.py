@@ -2,7 +2,7 @@ import inspect
 import re
 from typing import TYPE_CHECKING
 
-from core.builtins.message.internal import I18NContext
+from core.builtins.message.internal import ActionText, I18NContext
 from core.builtins.parser.command import CommandParser
 from core.builtins.parser.message import _unwrap_optional
 from core.builtins.session.tasks import SessionTaskManager
@@ -119,7 +119,10 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
             if command_first_word not in msg.session_info.enabled_modules:
                 desc.append(
                     I18NContext(
-                        "parser.module.disabled.prompt", module=command_first_word, prefix=msg.session_info.prefixes[0]
+                        "parser.module.disabled.prompt",
+                        module=command_first_word,
+                        prefix=msg.session_info.prefixes[0],
+                        cmd=ActionText(f"{msg.session_info.prefixes[0]}enable {command_first_word}"),
                     )
                 )
             await msg.send_message(desc)

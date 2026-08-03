@@ -1,3 +1,5 @@
+from attr import evolve
+
 from bots.qqbot.config import QQBotConfig
 from core.builtins.session.features import Features
 from core.config.base import CoreConfig
@@ -20,6 +22,11 @@ features = Features(
     support_typing=False,
     support_wait=True,
     support_private_msg=True,
+    # 指令操作标签只在 markdown 消息中生效，关闭 markdown 时平台确实不具备该能力。
+    # 此处若恒为真，模块侧会照常构造可点击的内容，发送时却走纯文本路径就地降级。
+    support_action_text=qq_use_markdown,
     require_check_dirty_words=dirty_word_check,
     use_url_md_format=qq_use_markdown,
 )
+
+group_disable_read_all_message_features = evolve(features, require_enable_modules=False)

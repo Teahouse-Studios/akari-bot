@@ -6,7 +6,7 @@ from jinja2 import FileSystemLoader, Environment
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import ImageElement
-from core.builtins.message.internal import I18NContext, Plain, Url
+from core.builtins.message.internal import ActionText, I18NContext, Plain, Url
 from core.builtins.parser.command import CommandParser
 from core.component import module
 from core.config.base import CoreConfig
@@ -23,6 +23,38 @@ donate_url = CoreConfig.donate_url
 use_font_mirror = CoreConfig.use_font_mirror
 
 hlp = module("help", base=True, doc=True)
+
+
+def build_clickable_modules(msg: Bot.MessageSession, groups: list[tuple[str, list[str]]]) -> list:
+    """
+    把若干组模块名构造成可点击的消息链片段。
+
+    每个模块名成为一个指令操作元素，点击后向输入框填入 `<前缀>help <模块名>`，
+    省去用户照着列表手动输入的一步。
+
+    标题以纯文本构造并自带换行，而非交由 I18NContext 延迟翻译：适配器渲染时会把
+    指令操作无条件拼入上一项，标题若不带换行，模块列表会被挤到标题同一行，
+    与既有的纯文本版排版不符。同理，第二组起的标题还须带前导换行，
+    否则会紧贴在上一组末尾的标签之后。
+
+    标题与分隔符均不参与玩笑替换 —— 模块名是标识符，被替换后就无法照着输入了。
+
+    :param msg: 消息会话。
+    :param groups: (标题多语言键, 模块名列表) 的序列，模块名为空的组会被跳过。
+    :return: 消息元素列表；所有组皆空时返回空片段，空态文案由调用方负责。
+    """
+    prefix = msg.session_info.prefixes[0]
+    parts = []
+    for title_key, names in groups:
+        if not names:
+            continue
+        leading = "\n" if parts else ""
+        parts.append(Plain(leading + msg.session_info.locale.t(title_key) + "\n", disable_joke=True))
+        for index, name in enumerate(names):
+            if index:
+                parts.append(Plain(" | ", disable_joke=True))
+            parts.append(ActionText(f"{prefix}help {name}", show=name))
+    return parts
 
 
 @hlp.command(
@@ -183,14 +215,22 @@ async def _(msg: Bot.MessageSession, module: str):
 
 @hlp.command("[--legacy] {{I18N:core.help.help}}", options_desc={"--legacy": "{I18N:help.option.legacy}"})
 async def _(msg: Bot.MessageSession):
+    # 具备指令操作能力时，文字版的模块名可以点击直达详情，其价值高于图片排版，
+    # 故优先于图片版。显式要求 --legacy 者仍得到最朴素的那一版。
+    use_clickable = not msg.parsed_msg and msg.session_info.support_action_text
+
     legacy_help = True
-    if not msg.parsed_msg and msg.session_info.support_image:
+    if not use_clickable and not msg.parsed_msg and msg.session_info.support_image:
         imgs = await help_generator(msg)
         if imgs:
             legacy_help = False
 
             help_msg_list = MessageChain.assign(
-                I18NContext("core.message.help.all_modules", prefix=msg.session_info.prefixes[0])
+                I18NContext(
+                    "core.message.help.all_modules",
+                    prefix=msg.session_info.prefixes[0],
+                    cmd=ActionText(f"{msg.session_info.prefixes[0]}module list"),
+                )
             )
             if help_url:
                 help_msg_list.append(I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url))))
@@ -226,13 +266,36 @@ async def _(msg: Bot.MessageSession):
                 module_.append(key)
         module_ = [m for m in module_ if m in target_enabled_list]
 
-        help_msg = MessageChain.assign(I18NContext("core.message.help.legacy.base"))
-        help_msg.append(Plain(" | ".join(essential), disable_joke=True))
-        if module_:
-            help_msg.append(I18NContext("core.message.help.legacy.external"))
-            help_msg.append(Plain(" | ".join(module_), disable_joke=True))
-        help_msg.append(I18NContext("core.message.help.detail", prefix=msg.session_info.prefixes[0]))
-        help_msg.append(I18NContext("core.message.help.all_modules", prefix=msg.session_info.prefixes[0]))
+        if use_clickable:
+            help_msg = MessageChain.assign(
+                build_clickable_modules(
+                    msg,
+                    [
+                        ("core.message.help.legacy.base", essential),
+                        ("core.message.help.legacy.external", module_),
+                    ],
+                )
+            )
+        else:
+            help_msg = MessageChain.assign(I18NContext("core.message.help.legacy.base"))
+            help_msg.append(Plain(" | ".join(essential), disable_joke=True))
+            if module_:
+                help_msg.append(I18NContext("core.message.help.legacy.external"))
+                help_msg.append(Plain(" | ".join(module_), disable_joke=True))
+        help_msg.append(
+            I18NContext(
+                "core.message.help.detail",
+                prefix=msg.session_info.prefixes[0],
+                cmd=ActionText(f"{msg.session_info.prefixes[0]}help "),
+            )
+        )
+        help_msg.append(
+            I18NContext(
+                "core.message.help.all_modules",
+                prefix=msg.session_info.prefixes[0],
+                cmd=ActionText(f"{msg.session_info.prefixes[0]}module list"),
+            )
+        )
         if help_url:
             help_msg.append(I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url))))
         if donate_url:
@@ -241,8 +304,11 @@ async def _(msg: Bot.MessageSession):
 
 
 async def modules_list_help(msg: Bot.MessageSession, legacy):
+    # 与 ~help 同理：可点击的模块名优先于图片排版
+    use_clickable = not legacy and msg.session_info.support_action_text
+
     legacy_help = True
-    if msg.session_info.support_image and not legacy:
+    if not use_clickable and msg.session_info.support_image and not legacy:
         imgs = await help_generator(msg, show_disabled_modules=True, show_base_modules=False, show_dev_modules=False)
         if imgs:
             legacy_help = False
@@ -267,13 +333,23 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
             ):
                 continue
             module_.append(module_list[x].module_name)
-        if module_:
+        if not module_:
+            help_msg = MessageChain.assign(I18NContext("core.message.help.legacy.availables.none"))
+        elif use_clickable:
+            help_msg = MessageChain.assign(
+                build_clickable_modules(msg, [("core.message.help.legacy.availables", module_)])
+            )
+        else:
             help_msg = MessageChain.assign(
                 [I18NContext("core.message.help.legacy.availables"), Plain(" | ".join(module_), disable_joke=True)]
             )
-        else:
-            help_msg = MessageChain.assign(I18NContext("core.message.help.legacy.availables.none"))
-        help_msg.append(I18NContext("core.message.help.detail", prefix=msg.session_info.prefixes[0]))
+        help_msg.append(
+            I18NContext(
+                "core.message.help.detail",
+                prefix=msg.session_info.prefixes[0],
+                cmd=ActionText(f"{msg.session_info.prefixes[0]}help "),
+            )
+        )
         if help_url:
             help_msg.append(I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url))))
         await msg.finish(help_msg)

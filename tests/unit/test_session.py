@@ -39,7 +39,30 @@ def _test_features_default():
             return False
         if features.support_wait is not False:
             return False
+        if features.support_action_text is not False:
+            return False
         return True
+    except Exception:
+        return False
+
+
+async def _test_features_inject_action_text():
+    """测试 support_action_text 能注入会话
+
+    inject_features() 以 asdict(features) 逐字段 setattr，SessionInfo 若缺少同名
+    字段会在注入时抛错，故新增能力标志必须两处同步声明。
+    """
+    try:
+        from core.builtins.session.info import SessionInfo
+
+        session_info = await SessionInfo.assign(
+            target_id="TEST|Group|action_text",
+            target_from="TEST|Group",
+            client_name="TEST",
+            sender_id="TEST|1",
+            features=Features(support_action_text=True),
+        )
+        return session_info.support_action_text is True
     except Exception:
         return False
 
@@ -222,6 +245,7 @@ async def test_features(tester: Tester):
     """core.builtins.session.features: Features 测试"""
     await tester.test(_test_features_default, "Features 默认值测试")
     await tester.test(_test_features_override, "Features.override() 测试")
+    await tester.test(_test_features_inject_action_text, "support_action_text 注入测试")
 
     return tester
 

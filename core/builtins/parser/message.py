@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING, Union, get_args, get_origin
 from rapidfuzz import process
 
 from core.builtins.message.chain import MessageChain, match_kecode
-from core.builtins.message.internal import Plain, I18NContext
+from core.builtins.message.internal import ActionText, Plain, I18NContext
 from core.builtins.parser.args import ArgumentPattern, Template as argsTemplate, templates_to_str
 from core.builtins.parser.command import CommandParser
 from core.builtins.session.lock import ExecutionLockList
@@ -247,11 +247,19 @@ async def parser(msg: "Bot.MessageSession"):
                         await msg.send_message(I18NContext("parser.module.unloaded", module=new_command_first_word))
                 elif not confirmed:
                     await msg.send_message(
-                        I18NContext("parser.command.invalid.module", prefix=msg.session_info.prefixes[0])
+                        I18NContext(
+                            "parser.command.invalid.module",
+                            prefix=msg.session_info.prefixes[0],
+                            cmd=ActionText(f"{msg.session_info.prefixes[0]}help"),
+                        )
                     )
             else:
                 await msg.send_message(
-                    I18NContext("parser.command.invalid.module", prefix=msg.session_info.prefixes[0])
+                    I18NContext(
+                        "parser.command.invalid.module",
+                        prefix=msg.session_info.prefixes[0],
+                        cmd=ActionText(f"{msg.session_info.prefixes[0]}help"),
+                    )
                 )
 
             return msg
@@ -605,6 +613,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                             "parser.module.disabled.prompt",
                             module=command_first_word,
                             prefix=msg.session_info.prefixes[0],
+                            cmd=ActionText(f"{msg.session_info.prefixes[0]}enable {command_first_word}"),
                         )
                     )
                 await msg.send_message(desc)
@@ -635,6 +644,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                             "parser.module.disabled.prompt",
                             module=command_first_word,
                             prefix=msg.session_info.prefixes[0],
+                            cmd=ActionText(f"{msg.session_info.prefixes[0]}enable {command_first_word}"),
                         )
                     )
                     if await msg.wait_confirm(I18NContext("parser.module.disabled.to_enable"), no_confirm_action=False):
@@ -702,7 +712,10 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                 # 没有找到匹配的命令，提示语法错误
                 await msg.send_message(
                     I18NContext(
-                        "parser.command.invalid.syntax", module=command_first_word, prefix=msg.session_info.prefixes[0]
+                        "parser.command.invalid.syntax",
+                        module=command_first_word,
+                        prefix=msg.session_info.prefixes[0],
+                        cmd=ActionText(f"{msg.session_info.prefixes[0]}help {command_first_word}"),
                     )
                 )
     except SendMessageFailed:
@@ -1373,7 +1386,10 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
                 return
             await msg.send_message(
                 I18NContext(
-                    "parser.command.invalid.syntax", module=command_first_word, prefix=msg.session_info.prefixes[0]
+                    "parser.command.invalid.syntax",
+                    module=command_first_word,
+                    prefix=msg.session_info.prefixes[0],
+                    cmd=ActionText(f"{msg.session_info.prefixes[0]}help {command_first_word}"),
                 )
             )
             return

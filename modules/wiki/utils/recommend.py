@@ -1,7 +1,7 @@
 from typing import NoReturn
 
 from core.builtins.bot import Bot
-from core.builtins.message.internal import I18NContext
+from core.builtins.message.internal import ActionText, I18NContext
 from core.builtins.utils import command_prefix
 
 # 未设置起始 Wiki 时向用户推荐的 Wiki，元素为（显示名称，API 端点地址）。
@@ -38,7 +38,13 @@ async def finish_with_start_wiki_not_set(msg: Bot.MessageSession) -> NoReturn:
 
     :param msg: 消息会话对象。
     """
-    prompts = [I18NContext("wiki.message.set.not_set", prefix=msg.session_info.prefixes[0])]
+    prompts = [
+        I18NContext(
+            "wiki.message.set.not_set",
+            prefix=msg.session_info.prefixes[0],
+            cmd=ActionText(f"{msg.session_info.prefixes[0]}wiki set"),
+        )
+    ]
     button_data = []
     if (
         RECOMMENDED_WIKIS

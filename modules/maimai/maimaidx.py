@@ -1,3 +1,4 @@
+from core.builtins.message.internal import ActionText
 from core.builtins.message.internal import Image as BImage
 from core.component import module
 from core.logger import Logger
@@ -252,7 +253,11 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                         Plain(f"{s.get('id', '')} - {s.get('title', '')}{' (DX)' if s.get('type') == 'DX' else ''}")
                     )
             msg_chain.append(
-                I18NContext("maimai.message.disambiguation.chart.prompt", prefix=msg.session_info.prefixes[0])
+                I18NContext(
+                    "maimai.message.disambiguation.chart.prompt",
+                    prefix=msg.session_info.prefixes[0],
+                    cmd=ActionText(f"{msg.session_info.prefixes[0]}maimai chart "),
+                )
             )
             await msg.finish(msg_chain)
         else:
@@ -377,7 +382,11 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                         Plain(f"{s.get('id', '')} - {s.get('title', '')}{' (DX)' if s.get('type') == 'DX' else ''}")
                     )
             msg_chain.append(
-                I18NContext("maimai.message.disambiguation.song.prompt", prefix=msg.session_info.prefixes[0])
+                I18NContext(
+                    "maimai.message.disambiguation.song.prompt",
+                    prefix=msg.session_info.prefixes[0],
+                    cmd=ActionText(f"{msg.session_info.prefixes[0]}maimai song "),
+                )
             )
             await msg.finish(msg_chain)
         else:
@@ -484,7 +493,11 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str):
                         Plain(f"{s.get('id', '')} - {s.get('title', '')}{' (DX)' if s.get('type') == 'DX' else ''}")
                     )
             msg_chain.append(
-                I18NContext("maimai.message.disambiguation.scoreline.prompt", prefix=msg.session_info.prefixes[0])
+                I18NContext(
+                    "maimai.message.disambiguation.scoreline.prompt",
+                    prefix=msg.session_info.prefixes[0],
+                    cmd=ActionText(f"{msg.session_info.prefixes[0]}maimai scoreline "),
+                )
             )
             await msg.finish(msg_chain)
         else:
@@ -576,7 +589,11 @@ async def query_song_score(msg, query):
                         Plain(f"{s.get('id', '')} - {s.get('title', '')}{' (DX)' if s.get('type') == 'DX' else ''}")
                     )
             msg_chain.append(
-                I18NContext("maimai.message.disambiguation.score.prompt", prefix=msg.session_info.prefixes[0])
+                I18NContext(
+                    "maimai.message.disambiguation.score.prompt",
+                    prefix=msg.session_info.prefixes[0],
+                    cmd=ActionText(f"{msg.session_info.prefixes[0]}maimai score "),
+                )
             )
             await msg.finish(msg_chain)
         else:

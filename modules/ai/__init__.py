@@ -1,5 +1,5 @@
 from core.builtins.bot import Bot
-from core.builtins.message.internal import I18NContext, Plain
+from core.builtins.message.internal import ActionText, I18NContext, Plain
 from core.component import module
 from modules.ai.config import AiConfig
 from core.cooldown import CoolDown
@@ -100,7 +100,11 @@ async def _(msg: Bot.MessageSession):
             [
                 I18NContext("ai.message.llm.list"),
                 Plain("\n".join(sorted(available_llms))),
-                I18NContext("ai.message.llm.list.prompt", prefix=msg.session_info.prefixes[0]),
+                I18NContext(
+                    "ai.message.llm.list.prompt",
+                    prefix=msg.session_info.prefixes[0],
+                    cmd=ActionText(f"{msg.session_info.prefixes[0]}ai llm set "),
+                ),
             ]
         )
     else:

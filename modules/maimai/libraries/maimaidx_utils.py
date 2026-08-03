@@ -5,7 +5,7 @@ import orjson
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import I18NContext, Plain
+from core.builtins.message.internal import ActionText, I18NContext, Plain
 from core.utils.http import get_url
 from core.utils.random import Random
 from .maimaidx_apidata import get_record, get_song_record, get_total_record, get_plate
@@ -21,7 +21,13 @@ async def get_diving_prober_bind_info(msg: Bot.MessageSession, **kwargs):
     if not bind_info:
         if msg.session_info.sender_from == "QQ":
             return {"qq": msg.session_info.get_common_sender_id()} | kwargs
-        await msg.finish(I18NContext("maimai.message.user_unbound", prefix=msg.session_info.prefixes[0]))
+        await msg.finish(
+            I18NContext(
+                "maimai.message.user_unbound",
+                prefix=msg.session_info.prefixes[0],
+                cmd=ActionText(f"{msg.session_info.prefixes[0]}maimai bind"),
+            )
+        )
     else:
         return {"username": bind_info.username} | kwargs
 

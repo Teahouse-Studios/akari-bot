@@ -1,6 +1,6 @@
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Image, I18NContext
+from core.builtins.message.internal import ActionText, Image, I18NContext
 from core.component import module
 from core.logger import Logger
 from core.utils.random import Random
@@ -47,7 +47,13 @@ async def _require_bind(msg: Bot.MessageSession):
     """
     bind_info = await PhigrosBindInfo.get_by_sender_id(msg, create=False)
     if not bind_info:
-        await msg.finish(I18NContext("phigros.message.user_unbound", prefix=msg.session_info.prefixes[0]))
+        await msg.finish(
+            I18NContext(
+                "phigros.message.user_unbound",
+                prefix=msg.session_info.prefixes[0],
+                cmd=ActionText(f"{msg.session_info.prefixes[0]}phigros bind"),
+            )
+        )
     return bind_info
 
 
@@ -57,7 +63,13 @@ async def _require_song_info(msg: Bot.MessageSession) -> dict:
     :param msg: 消息会话。
     """
     if not song_info_exists():
-        await msg.finish(I18NContext("phigros.message.file_not_found", prefix=msg.session_info.prefixes[0]))
+        await msg.finish(
+            I18NContext(
+                "phigros.message.file_not_found",
+                prefix=msg.session_info.prefixes[0],
+                cmd=ActionText(f"{msg.session_info.prefixes[0]}phigros update"),
+            )
+        )
     return load_song_info()
 
 
@@ -72,7 +84,13 @@ async def _fetch_save(msg: Bot.MessageSession, bind_info):
     except Exception as e:
         Logger.exception()
         if is_token_invalid(e):
-            await msg.finish(I18NContext("phigros.message.token_invalid", prefix=msg.session_info.prefixes[0]))
+            await msg.finish(
+                I18NContext(
+                    "phigros.message.token_invalid",
+                    prefix=msg.session_info.prefixes[0],
+                    cmd=ActionText(f"{msg.session_info.prefixes[0]}phigros bind"),
+                )
+            )
         await msg.finish(I18NContext("phigros.message.fetch_failed"))
 
 

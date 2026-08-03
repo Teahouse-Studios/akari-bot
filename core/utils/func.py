@@ -18,7 +18,8 @@ def convert_bool(v: Any, default: bool = False) -> bool:
         return bool(v)
     text = str(v).strip().lower()
     if is_float(text):
-        return bool(v)
+        # 取数值真假而非字符串真假：字符串 "0" 非空，bool() 会将其判为真
+        return bool(float(text))
     if text in TRUTHY:
         return True
     if text in FALSEY:

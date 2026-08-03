@@ -1,5 +1,5 @@
 from core.builtins.bot import Bot
-from core.builtins.message.internal import I18NContext
+from core.builtins.message.internal import ActionText, I18NContext
 from core.constants.exceptions import ConfigValueError
 from core.utils.http import get_url
 from .chunithm_mapping import *
@@ -11,7 +11,13 @@ async def get_diving_prober_bind_info(msg: Bot.MessageSession, **kwargs):
     if not bind_info:
         if msg.session_info.sender_from == "QQ":
             return {"qq": msg.session_info.get_common_sender_id()} | kwargs
-        await msg.finish(I18NContext("chunithm.message.user_unbound.df", prefix=msg.session_info.prefixes[0]))
+        await msg.finish(
+            I18NContext(
+                "chunithm.message.user_unbound.df",
+                prefix=msg.session_info.prefixes[0],
+                cmd=ActionText(f"{msg.session_info.prefixes[0]}chunithm bind df"),
+            )
+        )
     else:
         return {"username": bind_info.username} | kwargs
 
@@ -46,7 +52,13 @@ async def get_lxns_prober_bind_info(msg: Bot.MessageSession):
                 else:
                     raise e
         else:
-            await msg.finish(I18NContext("chunithm.message.user_unbound.lx", prefix=msg.session_info.prefixes[0]))
+            await msg.finish(
+                I18NContext(
+                    "chunithm.message.user_unbound.lx",
+                    prefix=msg.session_info.prefixes[0],
+                    cmd=ActionText(f"{msg.session_info.prefixes[0]}chunithm bind lx"),
+                )
+            )
     return bind_info.friend_code
 
 
