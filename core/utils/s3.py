@@ -15,6 +15,13 @@ from core.logger import Logger
 from core.config.base import S3Config, S3SecretConfig
 
 
+s3_access_key = S3SecretConfig.access_key
+s3_secret_key = S3SecretConfig.secret_key
+endpoint_url = S3Config.endpoint_url
+bucket = S3Config.bucket
+region = S3Config.region
+
+
 class S3StorageAPI:
     """S3 兼容对象存储客户端，提供持久文件和临时文件的上传、列出、删除及预签名链接生成。"""
 
@@ -305,13 +312,6 @@ class S3StorageAPI:
         return urlunparse(parsed._replace(netloc=target_netloc))
 
 
-s3_access_key = S3SecretConfig.s3_access_key
-s3_secret_key = S3SecretConfig.s3_secret_key
-endpoint_url = S3Config.s3_endpoint_url
-bucket = S3Config.s3_bucket
-region = S3Config.s3_region
-
-
 if s3_access_key and s3_secret_key and endpoint_url and bucket and region:
     S3Storage = S3StorageAPI(
         endpoint_url=endpoint_url,
@@ -319,9 +319,9 @@ if s3_access_key and s3_secret_key and endpoint_url and bucket and region:
         secret_key=s3_secret_key,
         bucket=bucket,
         region=region,
-        public_endpoint=S3Config.s3_public_endpoint,
-        internal_endpoint=S3Config.s3_internal_endpoint,
-        temp_max_count=S3Config.s3_temp_max_count,
+        public_endpoint=S3Config.public_endpoint,
+        internal_endpoint=S3Config.internal_endpoint,
+        temp_max_count=S3Config.temp_max_count,
     )
 else:
     Logger.warning("[S3] S3 configuration is incomplete. S3Storage will not be initialized.")

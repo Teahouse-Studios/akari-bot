@@ -51,6 +51,7 @@ class CoreConfig:
 
     # 通用功能
     enable_analytics: bool = True
+    enable_bind_auto: bool = False
     enable_commit_url: bool = True
     enable_dirty_check: bool = False
     check_use_textscan_v1: bool = False
@@ -117,15 +118,15 @@ class WebRenderConfig:
 
 @on_config("s3")
 class S3Config:
-    s3_endpoint_url: str = ""
-    s3_bucket: str = ""
-    s3_region: str = "us-east-1"
-    s3_public_endpoint: str = ""
-    s3_internal_endpoint: str = ""
-    s3_temp_max_count: int = 20
+    endpoint_url: str = ""
+    bucket: str = ""
+    region: str = "us-east-1"
+    public_endpoint: str = ""
+    internal_endpoint: str = ""
+    temp_max_count: int = 20
 
 
 @on_config("s3", secret=True)
 class S3SecretConfig:
-    s3_access_key: str = ""
-    s3_secret_key: str = ""
+    access_key: str = ""
+    secret_key: str = ""
