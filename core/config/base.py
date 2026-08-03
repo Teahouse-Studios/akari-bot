@@ -51,6 +51,7 @@ class CoreConfig:
 
     # 通用功能
     enable_analytics: bool = True
+    enable_bind_auto: bool = False
     enable_commit_url: bool = True
     enable_dirty_check: bool = False
     check_use_textscan_v1: bool = False

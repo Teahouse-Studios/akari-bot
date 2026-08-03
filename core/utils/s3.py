@@ -15,6 +15,13 @@ from core.logger import Logger
 from core.config.base import S3Config, S3SecretConfig
 
 
+s3_access_key = S3SecretConfig.s3_access_key
+s3_secret_key = S3SecretConfig.s3_secret_key
+endpoint_url = S3Config.s3_endpoint_url
+bucket = S3Config.s3_bucket
+region = S3Config.s3_region
+
+
 class S3StorageAPI:
     """S3 兼容对象存储客户端，提供持久文件和临时文件的上传、列出、删除及预签名链接生成。"""
 
@@ -303,13 +310,6 @@ class S3StorageAPI:
         parsed = urlparse(url)
         target_netloc = urlparse(target_endpoint).netloc
         return urlunparse(parsed._replace(netloc=target_netloc))
-
-
-s3_access_key = S3SecretConfig.s3_access_key
-s3_secret_key = S3SecretConfig.s3_secret_key
-endpoint_url = S3Config.s3_endpoint_url
-bucket = S3Config.s3_bucket
-region = S3Config.s3_region
 
 
 if s3_access_key and s3_secret_key and endpoint_url and bucket and region:

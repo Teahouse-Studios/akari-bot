@@ -2,6 +2,7 @@ import asyncio
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
+from core.config.base import CoreConfig
 from core.component import module
 from core.database.models import (
     UNION_SCOPE_SENDER,
@@ -13,10 +14,7 @@ from core.database.models import (
 from core.utils.container import ExpiringTempDict
 from core.utils.func import is_int
 from core.utils.random import Random
-
-# union 合并的通用逻辑抽至 union_merge，与 merge 模块共用。
-from .config import BindConfig
-from .union_merge import (
+from core.union_merge import (
     BIND_CODE_EXPIRED,
     apply_sender_merge as _apply_sender_merge,
     apply_target_merge as _apply_target_merge,
@@ -36,7 +34,7 @@ HANDSHAKE_TOKEN_LENGTH = 20
 
 # 自动配对为多个机器人共处同一场景的情形预留，默认关闭。命令是否注册在导入时即已确定，
 # 因此取一份快照，改动配置须重启机器人方能生效。
-ENABLE_BIND_AUTO = BindConfig.enable_bind_auto
+ENABLE_BIND_AUTO = CoreConfig.enable_bind_auto
 
 # 绑定码与握手状态仅保存在 server 进程内存中，重启即失效。
 # 各平台的 bot 子进程共用同一个 server 进程，因此跨平台握手无需落库。
@@ -108,7 +106,7 @@ async def _(msg: Bot.MessageSession):
             I18NContext("core.bind.message.target.info", id=target_union_info.union_id, disable_joke=True),
             I18NContext("core.bind.message.target.info.bound", count=len(target_ids)),
         ]
-        + await _target_lines(target_union_info.union_id, target_ids)
+        + await _target_lines(msg, target_union_info.union_id, target_ids)
     )
 
 
@@ -177,7 +175,7 @@ async def _(msg: Bot.MessageSession):
             I18NContext("core.bind.message.target.info", id=target_union_info.union_id, disable_joke=True),
             I18NContext("core.bind.message.target.info.bound", count=len(bound_ids)),
         ]
-        + await _target_lines(target_union_info.union_id, bound_ids)
+        + await _target_lines(msg, target_union_info.union_id, bound_ids)
     )
 
 
@@ -259,7 +257,7 @@ async def _bind_private(msg: Bot.MessageSession, entry: dict) -> None:
             I18NContext("core.bind.message.target.success", id=merged_target.union_id, disable_joke=True),
             I18NContext("core.bind.message.target.info.bound", count=len(target_ids)),
         ]
-        + await _target_lines(merged_target.union_id, target_ids)
+        + await _target_lines(msg, merged_target.union_id, target_ids)
     )
 
 
@@ -299,7 +297,7 @@ async def _(msg: Bot.MessageSession, code: str):
             I18NContext("core.bind.message.target.success", id=merged.union_id, disable_joke=True),
             I18NContext("core.bind.message.target.info.bound", count=len(bound_ids)),
         ]
-        + await _target_lines(merged.union_id, bound_ids)
+        + await _target_lines(msg, merged.union_id, bound_ids)
     )
 
 

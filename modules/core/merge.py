@@ -12,9 +12,7 @@ from core.database.models import (
     TargetUnionBind,
 )
 from core.retired import RETIRED_SOURCES, RETIRED_TARGETS, enqueue_notice, is_merge_route_allowed
-from core.utils.container import ExpiringTempDict
-
-from .union_merge import (
+from core.union_merge import (
     BIND_CODE_EXPIRED,
     apply_sender_merge,
     apply_target_merge,
@@ -27,6 +25,7 @@ from .union_merge import (
     take_code,
     target_lines,
 )
+from core.utils.container import ExpiringTempDict
 
 # 迁移码与 bind 的绑定码分开存放，两者不可互相消费：
 # 迁移码用于把退役实例上的数据搬到新实例，与常规的跨平台绑定不是同一件事。
@@ -177,7 +176,7 @@ async def _merge_private(msg: Bot.MessageSession, entry: dict) -> None:
             I18NContext("core.merge.message.target.success", id=merged_target.union_id, disable_joke=True),
             I18NContext("core.bind.message.target.info.bound", count=len(target_ids)),
         ]
-        + await target_lines(merged_target.union_id, target_ids)
+        + await target_lines(msg, merged_target.union_id, target_ids)
     )
 
 
@@ -225,7 +224,7 @@ async def _(msg: Bot.MessageSession, code: str):
             I18NContext("core.merge.message.target.success", id=merged.union_id, disable_joke=True),
             I18NContext("core.bind.message.target.info.bound", count=len(bound_ids)),
         ]
-        + await target_lines(merged.union_id, bound_ids)
+        + await target_lines(msg, merged.union_id, bound_ids)
         + [I18NContext("core.merge.message.channel.unified", channel=channel_id)]
     )
 

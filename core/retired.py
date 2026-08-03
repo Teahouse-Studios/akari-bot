@@ -328,7 +328,7 @@ def build_notice(client_name: str, locale: str, prefix: str) -> list:
     """
     content = read_notice(client_name, locale)
     if not content:
-        return [I18NContext("parser.retired.prompt", prefix=prefix)]
+        return [I18NContext("parser.retired.prompt", prefix=prefix, disable_joke=True)]
     return [Plain(content, disable_joke=True)]
 
 
