@@ -80,49 +80,216 @@ def end_inline_run(chain: MessageChain) -> None:
     chain.append(Plain(" ", disable_joke=True))
 
 
-# 模块表格的高度上限。模块数增长时由列数吸收，使表格恒为「至多五行、按需加宽」。
-MODULE_TABLE_MAX_ROWS = 5
+# 模块表格的高度上限。模块数增长时由列数吸收，使表格至多这么高。
+MODULE_TABLE_MAX_ROWS = 10
 
-# 模块表格的最少列数。模块寥寥时若仍按高度上限反算列数会得到单列竖排，与宽表的用意相悖。
+# 模块表格的最少列数。模块寥寥时若仍按高度上限反算列数会得到一两列的竖长条，
+# 该下限只会让表更矮更宽，不会反过来撑高。
 MODULE_TABLE_MIN_COLUMNS = 3
 
 
-def build_module_table(msg: Bot.MessageSession, title_key: str, names: list[str]) -> list:
+def escape_table_cell(text: str) -> str:
     """
-    把模块名排成一张 markdown 宽表。
+    转义单元格文本中的竖线。
 
-    表格至多 :data:`MODULE_TABLE_MAX_ROWS` 行，模块数的增长由列数吸收，使消息高度大体恒定。
-    末行不足处补空单元格 —— markdown 要求各行的列数一致。
+    竖线是 markdown 表格的列分隔符，单元格内出现未转义的竖线会把该行拆出多余的列，
+    整张表随即错位。
+
+    :param text: 原始文本。
+    :return: 可安全放入单元格的文本。
+    """
+    return text.replace("|", "\\|")
+
+
+def resolve_table_columns(sizes: list[int], separators: int = 0, minimum: int = MODULE_TABLE_MIN_COLUMNS) -> int:
+    """
+    按高度上限反算表格的列数。
+
+    自最少列数起逐步加宽，直到各节行数与区隔行之和落进高度上限；条目实在太多时以最大的
+    一节为界收手，不再无谓加宽——再宽也塞不下更多，只会白白拉长每一行。
+
+    :param sizes: 各节的条目数量，均大于零。
+    :param separators: 区隔行的数量，一并计入高度。
+    :param minimum: 列数下限。
+    :return: 列数。
+    """
+    widest = max(sizes)
+    columns = minimum
+    while columns < widest:
+        if sum(math.ceil(size / columns) for size in sizes) + separators <= MODULE_TABLE_MAX_ROWS:
+            break
+        columns += 1
+    return min(columns, widest)
+
+
+def build_module_table(msg: Bot.MessageSession, groups: list[tuple[str, list[str]]]) -> list:
+    """
+    把若干组模块名排成一张 markdown 表。
+
+    各组同处一张表，组与组之间以一行只填组名的区隔行分开；首组的组名即表头。表格至多
+    :data:`MODULE_TABLE_MAX_ROWS` 行、至少 :data:`MODULE_TABLE_MIN_COLUMNS` 列，
+    模块数的增长由列数吸收。末行不足处补空单元格 —— markdown 要求各行的列数一致。
 
     模块名做成指令操作，点击即把 ``<前缀>help <模块名>`` 填入输入框。标签之所以能落在单元格
     中间，靠的正是适配器把指令操作及其后的文本一并并入上一项的行为（见
     ``bots/qqbot/context.py`` 的 ``inline_pending``）：整张表因此累积成一个文本块，
-    竖线与换行均由此处显式写出。也正因如此，本函数的产出只在同时支持 markdown 与指令操作的
-    平台上成立，纯文本平台会把表格标记原样读出，调用点须自行把关。
+    竖线与换行均由此处显式写出。也正因如此，本函数产出的元素中**不得出现相邻的两个纯文本**
+    —— 适配器只在指令操作之后才做合并，两个纯文本之间会被补上换行，表格随即被劈成两半。
+    区隔行因此与上一组的收尾同处一个元素。
 
     :param msg: 消息会话。
-    :param title_key: 表头首格的多语言键。
-    :param names: 模块名列表，为空时返回空片段，空态文案由调用方负责。
-    :return: 消息元素列表。
+    :param groups: (组名多语言键, 模块名列表) 的序列，模块名为空的组会被跳过。
+    :return: 消息元素列表；所有组皆空时返回空片段，空态文案由调用方负责。
     """
-    if not names:
-        return []
+    locale = msg.session_info.locale
     prefix = msg.session_info.prefixes[0]
-    columns = max(math.ceil(len(names) / MODULE_TABLE_MAX_ROWS), min(len(names), MODULE_TABLE_MIN_COLUMNS))
-    title = msg.session_info.locale.t(title_key)
+    groups = [(locale.t(title_key), names) for title_key, names in groups if names]
+    if not groups:
+        return []
 
-    # 表头与分隔行自带换行：表格的排版全由文本承载，不能交给适配器按元素换行
-    parts = [Plain(f"| {title} |{' |' * (columns - 1)}\n|{'---|' * columns}\n| ", disable_joke=True)]
-    for index, name in enumerate(names):
-        parts.append(ActionText(f"{prefix}help {name}", show=name))
-        if index + 1 == len(names):
-            padding = (columns - (index + 1) % columns) % columns
-            parts.append(Plain(" |" * (padding + 1) + "\n", disable_joke=True))
-        elif (index + 1) % columns == 0:
-            parts.append(Plain(" |\n| ", disable_joke=True))
-        else:
-            parts.append(Plain(" | ", disable_joke=True))
+    columns = resolve_table_columns([len(names) for _, names in groups], separators=len(groups) - 1)
+    blanks = " |" * (columns - 1)
+    parts = []
+    # 表头与分隔线开头，随后各行的收尾、下一组的区隔行都并进同一个纯文本，
+    # 以免相邻纯文本之间被适配器补上换行
+    pending = f"| {escape_table_cell(groups[0][0])} |{blanks}\n|{'---|' * columns}\n"
+
+    for index, (title, names) in enumerate(groups):
+        if index:
+            pending += f"| {escape_table_cell(title)} |{blanks}\n"
+        for offset, name in enumerate(names):
+            parts.append(Plain(pending + "| " if not offset or offset % columns == 0 else pending, disable_joke=True))
+            parts.append(ActionText(f"{prefix}help {name}", show=name))
+            if offset + 1 == len(names):
+                padding = (columns - (offset + 1) % columns) % columns
+                pending = " |" * (padding + 1) + "\n"
+            elif (offset + 1) % columns == 0:
+                pending = " |\n"
+            else:
+                pending = " | "
+    # 末尾不留换行：其后若还有元素，适配器会按元素补上一次换行，两者叠加会多出一个空行
+    parts.append(Plain(pending.rstrip("\n"), disable_joke=True))
     return parts
+
+
+def strip_command_arguments(command: str) -> str:
+    """
+    去掉命令模板中的参数占位符，留下可以直接发出的命令主体。
+
+    模板中的参数有四种形态：``<必需>``、``[可选]``、``[-选项]`` 与变长的 ``...``，
+    其中可选项还会嵌套（如 ``~wiki <pagename> [-l <lang>]``、``~locale [<lang>]``），
+    故按括号深度逐字符剔除，而非用正则逐个匹配 —— 后者遇到嵌套会留下孤立的方括号。
+
+    原本带参数的命令保留一个尾随空格，点击填入后光标即落在参数位置，与既有的
+    ``ActionText(f"{prefix}locale ")`` 一类写法一致；不带参数的命令则原样返回，
+    点击后可直接发出。
+
+    :param command: 命令模板，如 ``~wiki <pagename> [-l <lang>]``。
+    :return: 去掉参数后的命令主体，如 ``~wiki ``。
+    """
+    kept = []
+    depth = 0
+    for char in command:
+        if char in "<[":
+            depth += 1
+        elif char in ">]":
+            depth = max(0, depth - 1)
+        elif depth == 0:
+            kept.append(char)
+    body = " ".join(word for word in "".join(kept).split() if word != "...")
+    return f"{body} " if body != command.strip() else body
+
+
+def build_command_table(msg: Bot.MessageSession, help_doc: dict, regex_rows: list[tuple[str, str]]) -> list:
+    """
+    把一个模块的命令、选项与正则排成一张 markdown 表。
+
+    与模块表格同一思路：高度封顶，条目变多时由列数吸收 —— 只是这里的一「列」是「命令 + 说明」
+    一对，故实际列数为对数的两倍。命令多的模块（如 maimai 有 22 条）因此从二十余行压到十行以内。
+
+    命令、选项、正则同处一张表，后两者各以一行区隔行引出。命令做成指令操作，展示的是完整模板，
+    填入输入框的却是去掉参数占位符后的主体 —— 占位符照原样填进去还得用户自行删掉，反倒碍事。
+    选项与正则不做成指令操作：前者不能单独成命令，后者本就不是命令。
+
+    与 :func:`build_module_table` 同理，产出的元素中不得出现相邻的两个纯文本，故区隔行与
+    上一行的收尾同处一个元素。
+
+    :param msg: 消息会话。
+    :param help_doc: :meth:`CommandParser.return_json_help_doc` 的产出。
+    :param regex_rows: (正则表达式, 说明) 序列。
+    :return: 消息元素列表；无任何内容时返回空片段。
+    """
+    locale = msg.session_info.locale
+    args = help_doc.get("args") or []
+    options = help_doc.get("options") or []
+
+    # 每节为 (区隔行文案, [(是否可点击, 首列, 次列), ...])；命令一节不带区隔行
+    sections = []
+    if args:
+        sections.append((None, [(True, item["args"], item.get("desc") or "") for item in args]))
+    if options:
+        rows = [(False, flag, desc) for option in options for flag, desc in option.items()]
+        sections.append((locale.t("core.message.help.table.options"), rows))
+    if regex_rows:
+        sections.append((locale.t("core.message.help.table.regex"), [(False, p, d) for p, d in regex_rows]))
+    if not sections:
+        return []
+
+    separators = sum(1 for title, _ in sections if title)
+    pairs = resolve_table_columns([len(rows) for _, rows in sections], separators=separators, minimum=1)
+    columns = pairs * 2
+    blanks = " |" * (columns - 1)
+    command_title = escape_table_cell(locale.t("core.message.help.table.command"))
+    desc_title = escape_table_cell(locale.t("core.message.help.table.desc"))
+
+    parts = []
+    pending = "|" + f" {command_title} | {desc_title} |" * pairs + f"\n|{'---|' * columns}\n"
+
+    for title, rows in sections:
+        if title:
+            pending += f"| {escape_table_cell(title)} |{blanks}\n"
+        for start in range(0, len(rows), pairs):
+            # 末行补空的成对单元格，markdown 要求各行的列数一致
+            chunk = rows[start : start + pairs]
+            chunk += [(False, "", "")] * (pairs - len(chunk))
+            pending += "| "
+            for clickable, first, second in chunk:
+                if clickable:
+                    parts.append(Plain(pending, disable_joke=True))
+                    parts.append(ActionText(strip_command_arguments(first), show=escape_table_cell(first)))
+                    pending = f" | {escape_table_cell(second)} | "
+                else:
+                    pending += f"{escape_table_cell(first)} | {escape_table_cell(second)} | "
+            pending = pending.rstrip() + "\n"
+    # 末尾不留换行：其后若还有元素，适配器会按元素补上一次换行，两者叠加会多出一个空行
+    parts.append(Plain(pending.rstrip("\n"), disable_joke=True))
+    return parts
+
+
+def get_help_link_buttons(msg: Bot.MessageSession) -> list[tuple[str, str]]:
+    """
+    构造帮助菜单底部的三个入口按钮：模块列表、在线文档、捐赠。
+
+    三者都是回调按钮，点击后由机器人回一条消息，故各自都须有命令可回流——后两者对应
+    ``help doc`` 与 ``help donate``。跳转按钮虽可直接打开链接，却要求域名在平台报备，
+    未报备的会被拦下，此处不采用。
+
+    按钮命令一律使用 command_prefix：按钮回流经 interaction 事件另建会话，其可用前缀
+    取自全局配置，不含各平台在常规消息入口所用的前缀。
+
+    :param msg: 消息会话。
+    :return: （标签, 命令）序列；会话不具备按钮能力时为空列表。
+    """
+    if not msg.session_info.support_button:
+        return []
+    locale = msg.session_info.locale
+    prefix = command_prefix[0]
+    buttons = [(locale.t("core.message.help.button.modules"), f"{prefix}module list")]
+    if help_url:
+        buttons.append((locale.t("core.message.help.button.document"), f"{prefix}help doc"))
+    if donate_url:
+        buttons.append((locale.t("core.message.help.button.donate"), f"{prefix}help donate"))
+    return buttons
 
 
 def get_setup_button_data(msg: Bot.MessageSession) -> list[dict[str, str]]:
@@ -148,6 +315,19 @@ def get_setup_button_data(msg: Bot.MessageSession) -> list[dict[str, str]]:
     )
 
 
+def get_help_button_data(msg: Bot.MessageSession) -> list[dict[str, str]]:
+    """
+    构造帮助菜单底部的全部按钮：设置面板一行，三个入口按钮另起一行。
+
+    两组各自排布再拼接，而非合并后交由 arrange_buttons 均分——后者会把五个按钮摊成
+    三、二两行，把入口按钮拆散。
+
+    :param msg: 消息会话。
+    :return: 按钮数据；会话不具备按钮能力时为空列表。
+    """
+    return get_setup_button_data(msg) + arrange_buttons(get_help_link_buttons(msg), per_row=3)
+
+
 @hlp.command(
     "<module> [--legacy] {{I18N:core.help.help.detail}}", options_desc={"--legacy": "{I18N:help.option.legacy}"}
 )
@@ -162,6 +342,8 @@ async def _(msg: Bot.MessageSession, module: str):
     if msg.parsed_msg:
         mdocs = []
         malias = []
+        # 表格版另需成对的（正则, 说明），与拼成一行的 mdocs 并行收集
+        regex_rows = []
 
         help_name = alias[module].split()[0] if module in alias else module.split()[0]
         if help_name in module_list:
@@ -217,6 +399,7 @@ async def _(msg: Bot.MessageSession, module: str):
                                 )
                             else:
                                 mdocs.append(f"{pattern}{str(I18NContext('core.message.help.regex.no_information'))}")
+                            regex_rows.append((pattern, rdesc or ""))
 
                 if module_.alias:
                     for a in module_.alias:
@@ -244,6 +427,24 @@ async def _(msg: Bot.MessageSession, module: str):
                     wiki_msg = ""
             else:
                 wiki_msg = ""
+
+            # 表格版优先于图片版：命令可点击填入，且与模块列表的排法一致
+            if (
+                not msg.parsed_msg.get("--legacy", False)
+                and msg.session_info.support_markdown
+                and msg.session_info.support_action_text
+            ):
+                table = build_command_table(msg, help_.return_json_help_doc(), regex_rows)
+                if table:
+                    detail = []
+                    if module_.desc:
+                        detail.append(Plain(msg.session_info.locale.t_str(module_.desc), disable_joke=True))
+                    detail += table
+                    if devs_msg:
+                        detail.append(Plain(devs_msg))
+                    if wiki_msg:
+                        detail.append(wiki_msg)
+                    await msg.finish(detail)
 
             if (
                 not msg.parsed_msg.get("--legacy", False)
@@ -360,12 +561,20 @@ async def _(msg: Bot.MessageSession):
         module_ = [m for m in module_ if m in target_enabled_list]
 
         if use_table:
-            # 表格以纯文本收尾，其后的提示语不会被并入，无须 end_inline_run()
+            # 基础与扩展同处一张表，以一行区隔行分开；表格以纯文本收尾，无须 end_inline_run()
             help_msg = MessageChain.assign(
-                build_module_table(msg, "core.message.help.table.base", essential)
-                + build_module_table(msg, "core.message.help.table.external", module_)
+                build_module_table(
+                    msg,
+                    [
+                        ("core.message.help.table.base", essential),
+                        ("core.message.help.table.external", module_),
+                    ],
+                )
             )
-        elif use_clickable:
+            # 模块名本身即可点击，「使用 ~help <模块名>」的提示便是多余；
+            # 其余三条提示改由底部按钮承担。
+            await msg.finish(help_msg, button_data=get_help_button_data(msg))
+        if use_clickable:
             help_msg = MessageChain.assign(
                 build_clickable_modules(
                     msg,
@@ -403,12 +612,23 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(help_msg, button_data=get_setup_button_data(msg))
 
 
+@hlp.command("doc {{I18N:core.help.help.doc}}", load=bool(help_url))
+async def _(msg: Bot.MessageSession):
+    await msg.finish(I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url))))
+
+
+@hlp.command("donate {{I18N:core.help.help.donate}}", load=bool(donate_url))
+async def _(msg: Bot.MessageSession):
+    await msg.finish(I18NContext("core.message.help.donate", url=MessageChain.assign(Url(donate_url))))
+
+
 async def modules_list_help(msg: Bot.MessageSession, legacy):
-    # 与 ~help 同理：可点击的模块名优先于图片排版
-    use_clickable = not legacy and msg.session_info.support_action_text
+    # 与 ~help 同理：可点击的模块名优先于图片排版，同时支持 markdown 时再进一步排成宽表
+    use_table = not legacy and msg.session_info.support_markdown and msg.session_info.support_action_text
+    use_clickable = not use_table and not legacy and msg.session_info.support_action_text
 
     legacy_help = True
-    if not use_clickable and msg.session_info.support_image and not legacy:
+    if not use_clickable and not use_table and msg.session_info.support_image and not legacy:
         imgs = await help_generator(msg, show_disabled_modules=True, show_base_modules=False, show_dev_modules=False)
         if imgs:
             legacy_help = False
@@ -435,6 +655,10 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
             module_.append(module_list[x].module_name)
         if not module_:
             help_msg = MessageChain.assign(I18NContext("core.message.help.legacy.availables.none"))
+        elif use_table:
+            # 与 ~help 同款表格，收尾同样是纯文本
+            help_msg = MessageChain.assign(build_module_table(msg, [("core.message.help.table.title", module_)]))
+            await msg.finish(help_msg, button_data=get_help_button_data(msg))
         elif use_clickable:
             help_msg = MessageChain.assign(
                 build_clickable_modules(msg, [("core.message.help.legacy.availables", module_)])

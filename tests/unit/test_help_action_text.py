@@ -15,10 +15,17 @@ from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 from core.tester import func_case, Tester
-from modules.core.help import build_clickable_modules, build_module_table, end_inline_run
+from modules.core.help import (
+    MODULE_TABLE_MAX_ROWS,
+    build_clickable_modules,
+    build_command_table,
+    build_module_table,
+    end_inline_run,
+    strip_command_arguments,
+)
 
-# 表格测试所用的表头键，取任一既有文案即可，此处不校验其内容
-TABLE_TITLE_KEY = "core.message.help.table.base"
+# 表格测试所用的表头键，此处不校验其内容，只借它走通渲染
+TABLE_TITLE_KEY = "core.message.help.table.title"
 
 
 def _render_lines(session_info, parts) -> list[str]:
@@ -277,27 +284,50 @@ async def _test_hint_not_glued_to_module_list():
 
 
 async def _test_table_shape():
-    """测试宽表的行列数：高度封顶，宽度随模块数增长"""
+    """测试表格的行列数：高度封顶，宽度随模块数增长"""
     session_info = await _session("help_table_shape")
     msg = _FakeSession(session_info)
     cases = {
         # 模块数: (列数, 行数)。列数取「按高度上限反算」与「最少列数」之较大者
         1: (1, 1),
+        2: (2, 1),
         3: (3, 1),
         4: (3, 2),
         13: (3, 5),
-        25: (5, 5),
-        53: (11, 5),
+        25: (3, 9),
+        30: (3, 10),
+        40: (4, 10),
+        66: (7, 10),
     }
     for count, (columns, rows) in cases.items():
         names = [f"m{i}" for i in range(count)]
-        lines = [line for line in _render_lines(session_info, build_module_table(msg, TABLE_TITLE_KEY, names)) if line]
+        lines = [
+            line for line in _render_lines(session_info, build_module_table(msg, [(TABLE_TITLE_KEY, names)])) if line
+        ]
         # 首行为表头、次行为分隔行，其余为数据行
         if len(lines) != rows + 2:
             Logger.error(f"{count} modules should render {rows} data rows, got {len(lines) - 2}: {lines}")
             return False
         if lines[1] != "|" + "---|" * columns:
             Logger.error(f"{count} modules should render {columns} columns, got {lines[1]!r}")
+            return False
+    return True
+
+
+async def _test_table_never_exceeds_max_rows():
+    """测试任何模块数下高度都不突破上限
+
+    高度失控正是上一版三列不限行被否掉的原因，此处守住不再复发。
+    """
+    session_info = await _session("help_table_height")
+    msg = _FakeSession(session_info)
+    for count in range(1, 200):
+        names = [f"m{i}" for i in range(count)]
+        lines = [
+            line for line in _render_lines(session_info, build_module_table(msg, [(TABLE_TITLE_KEY, names)])) if line
+        ]
+        if len(lines) - 2 > MODULE_TABLE_MAX_ROWS:
+            Logger.error(f"{count} modules produced {len(lines) - 2} rows, over the limit of {MODULE_TABLE_MAX_ROWS}")
             return False
     return True
 
@@ -311,7 +341,9 @@ async def _test_table_rows_are_uniform():
     msg = _FakeSession(session_info)
     for count in range(1, 30):
         names = [f"m{i}" for i in range(count)]
-        lines = [line for line in _render_lines(session_info, build_module_table(msg, TABLE_TITLE_KEY, names)) if line]
+        lines = [
+            line for line in _render_lines(session_info, build_module_table(msg, [(TABLE_TITLE_KEY, names)])) if line
+        ]
         widths = {line.count("|") for line in lines}
         if len(widths) != 1:
             Logger.error(f"{count} modules produced ragged rows: {lines}")
@@ -327,7 +359,7 @@ async def _test_table_cells_are_clickable():
     """
     session_info = await _session("help_table_click")
     msg = _FakeSession(session_info)
-    parts = build_module_table(msg, TABLE_TITLE_KEY, ["wiki", "dice", "coin"])
+    parts = build_module_table(msg, [(TABLE_TITLE_KEY, ["wiki", "dice", "coin"])])
     actions = [p for p in parts if isinstance(p, ActionTextElement)]
     if len(actions) != 3:
         Logger.error(f"Every module name should be an action text, got {len(actions)}")
@@ -345,25 +377,130 @@ async def _test_table_cells_are_clickable():
 async def _test_table_empty_returns_nothing():
     """测试传入空列表时返回空片段，空态文案由调用方负责"""
     msg = _FakeSession(await _session("help_table_empty"))
-    if build_module_table(msg, TABLE_TITLE_KEY, []) != []:
+    if build_module_table(msg, [(TABLE_TITLE_KEY, [])]) != []:
         Logger.error("An empty module list should produce no table at all")
         return False
     return True
 
 
 async def _test_table_does_not_end_inline():
-    """测试表格以纯文本收尾
+    """测试表格以纯文本收尾，且末尾不带换行
 
-    收尾若是指令操作，调用方随后追加的提示语会被并入最后一个单元格所在的行。
+    收尾若是指令操作，调用方随后追加的元素会被并入最后一个单元格所在的行。
+    末尾若留有换行，适配器又会按元素补上一次，两者叠加会在表格与后续内容之间多出一个空行。
     """
     msg = _FakeSession(await _session("help_table_tail"))
-    parts = build_module_table(msg, TABLE_TITLE_KEY, ["wiki", "dice"])
+    parts = build_module_table(msg, [(TABLE_TITLE_KEY, ["wiki", "dice"])])
     if isinstance(parts[-1], ActionTextElement):
-        Logger.error("The table must not end with an action text, or the following hint would be glued to it")
+        Logger.error("The table must not end with an action text, or the following element would be glued to it")
         return False
-    if not parts[-1].text.endswith("\n"):
-        Logger.error(f"The table should end with a newline, got {parts[-1].text!r}")
+    if parts[-1].text.endswith("\n"):
+        Logger.error(f"The table must not end with a newline, got {parts[-1].text!r}")
         return False
+    return True
+
+
+async def _test_strip_command_arguments():
+    """测试填入输入框的命令已去掉参数占位符
+
+    占位符照原样填进去还得用户自行删掉，反倒碍事。可选项会嵌套（如 [-l <lang>]、[<lang>]），
+    用正则逐个匹配会留下孤立的方括号，故按括号深度剔除。
+    """
+    cases = {
+        # 不带参数的原样返回，点击后可直接发出
+        "~setup list target": "~setup list target",
+        # 带参数的留一个尾随空格，光标即落在参数位置
+        "~3dsdb <keywords>": "~3dsdb ",
+        "~coin [<amount>]": "~coin ",
+        "~ab [--legacy]": "~ab ",
+        "~wordle [--hard] [--trial]": "~wordle ",
+        # 嵌套：选项自带参数
+        "~wiki <pagename> [-l <lang>]": "~wiki ",
+        "~chunithm base <constant> [<constant_max>] [-p <page>]": "~chunithm base ",
+        # 变长参数同样不该留下
+        "~image fillwhite ...": "~image fillwhite ",
+        "~module enable <module> ...": "~module enable ",
+    }
+    for template, expected in cases.items():
+        actual = strip_command_arguments(template)
+        if actual != expected:
+            Logger.error(f"{template!r} should strip to {expected!r}, got {actual!r}")
+            return False
+    return True
+
+
+async def _test_command_table_fills_stripped_command():
+    """测试表格里展示完整模板、填入的却是去掉参数后的主体"""
+    session_info = await _session("help_cmd_strip")
+    msg = _FakeSession(session_info)
+    doc = {"args": [{"args": "~wiki <pagename> [-l <lang>]", "desc": "查询页面"}], "options": []}
+    parts = build_command_table(msg, doc, [])
+    actions = [p for p in parts if isinstance(p, ActionTextElement)]
+    if len(actions) != 1:
+        Logger.error(f"The command row should carry exactly one action text, got {len(actions)}")
+        return False
+    if actions[0].text.text != "~wiki ":
+        Logger.error(f"The filled command should drop the placeholders, got {actions[0].text.text!r}")
+        return False
+    if actions[0].show.text != "~wiki <pagename> [-l <lang>]":
+        Logger.error(f"The displayed text should keep the full template, got {actions[0].show.text!r}")
+        return False
+    return True
+
+
+async def _test_command_table_escapes_pipes():
+    """测试单元格里的竖线被转义
+
+    正则中就有 ≺(.*?)≻\\|⧼(.*?)⧽ 这类内容，不转义会把该行拆出多余的列、整张表错位。
+    """
+    session_info = await _session("help_cmd_pipe")
+    msg = _FakeSession(session_info)
+    parts = build_command_table(msg, {"args": [], "options": []}, [("a|b", "说明|带竖线")])
+    text = "".join(p.text for p in parts if isinstance(p, PlainElement))
+    if "a\\|b" not in text or "说明\\|带竖线" not in text:
+        Logger.error(f"Pipes inside cells must be escaped, got {text!r}")
+        return False
+    return True
+
+
+async def _test_command_table_expands_columns():
+    """测试命令多时由列数吸收，高度不越界
+
+    一「列」是「命令 + 说明」一对，故实际列数为对数的两倍。命令多的模块若仍一行一条，
+    表格会长到二十余行。
+    """
+    session_info = await _session("help_cmd_wide")
+    msg = _FakeSession(session_info)
+    for count, pairs in ((5, 1), (10, 1), (11, 2), (22, 3)):
+        doc = {"args": [{"args": f"~m c{i}", "desc": f"说明{i}"} for i in range(count)], "options": []}
+        lines = [line for line in _render_lines(session_info, build_command_table(msg, doc, [])) if line]
+        rows = len(lines) - 2
+        if rows > MODULE_TABLE_MAX_ROWS:
+            Logger.error(f"{count} commands produced {rows} rows, over the limit of {MODULE_TABLE_MAX_ROWS}")
+            return False
+        if lines[1] != "|" + "---|" * (pairs * 2):
+            Logger.error(f"{count} commands should render {pairs} command/desc pairs, got {lines[1]!r}")
+            return False
+    return True
+
+
+async def _test_command_table_rows_are_uniform():
+    """测试各行列数一致，末行补空的成对单元格
+
+    区隔行同样要铺满整行的列数，否则该行连同表格一并渲染失败。
+    """
+    session_info = await _session("help_cmd_uniform")
+    msg = _FakeSession(session_info)
+    for count in (1, 3, 7, 12, 23):
+        doc = {
+            "args": [{"args": f"~m c{i}", "desc": f"说明{i}"} for i in range(count)],
+            "options": [{"-p": "页数"}],
+        }
+        lines = [line for line in _render_lines(session_info, build_command_table(msg, doc, [("a", "b")])) if line]
+        widths = {line.count("|") for line in lines}
+        if len(widths) != 1:
+            Logger.error(f"{count} commands produced ragged rows: {lines}")
+            return False
     return True
 
 
@@ -401,11 +538,17 @@ async def test_clickable_modules(tester: Tester):
     await tester.test(_test_rendered_layout, "渲染后分行测试")
     await tester.test(_test_multi_group_separation, "组间换行测试")
     await tester.test(_test_hint_not_glued_to_module_list, "提示语不粘连测试")
-    await tester.test(_test_table_shape, "宽表行列数测试")
-    await tester.test(_test_table_rows_are_uniform, "宽表列数齐平测试")
-    await tester.test(_test_table_cells_are_clickable, "宽表单元格可点击测试")
-    await tester.test(_test_table_empty_returns_nothing, "宽表空列表测试")
-    await tester.test(_test_table_does_not_end_inline, "宽表纯文本收尾测试")
+    await tester.test(_test_table_shape, "表格行列数测试")
+    await tester.test(_test_table_never_exceeds_max_rows, "表格高度封顶测试")
+    await tester.test(_test_table_rows_are_uniform, "表格列数齐平测试")
+    await tester.test(_test_table_cells_are_clickable, "表格单元格可点击测试")
+    await tester.test(_test_table_empty_returns_nothing, "表格空列表测试")
+    await tester.test(_test_table_does_not_end_inline, "表格纯文本收尾测试")
+    await tester.test(_test_strip_command_arguments, "命令参数剥离测试")
+    await tester.test(_test_command_table_fills_stripped_command, "命令表填入剥离后命令测试")
+    await tester.test(_test_command_table_escapes_pipes, "单元格竖线转义测试")
+    await tester.test(_test_command_table_expands_columns, "命令表列数扩展测试")
+    await tester.test(_test_command_table_rows_are_uniform, "命令表列数齐平测试")
     await tester.test(_test_empty_group_skipped, "空组跳过测试")
     await tester.test(_test_degraded_keeps_module_names, "降级保留模块名测试")
 
