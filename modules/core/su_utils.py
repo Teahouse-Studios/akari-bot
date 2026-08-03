@@ -675,24 +675,28 @@ async def _(msg: Bot.MessageSession, k: str, table_name: str | None = None):
 async def _(msg: Bot.MessageSession, k: str, v: str, table_name: str | None = None):
     secret = bool(msg.parsed_msg["-s"])
     if v.lower() == "true":
-        v = True
+        v_ = True
     elif v.lower() == "false":
-        v = False
+        v_ = False
     elif is_int(v):
-        v = int(v)
+        v_ = int(v)
     elif is_float(v):
-        v = float(v)
+        v_ = float(v)
     elif re.match(r"\[.*\]", v):
         try:
             v = v.replace("'", '"')
-            v = orjson.loads(v)
+            v_ = orjson.loads(v)
         except orjson.JSONDecodeError as e:
             Logger.error(str(e))
             await msg.finish(I18NContext("message.failed"))
+    else:
+        v_ = v
+
     if (not table_name and secret) or (table_name and table_name.lower() == "secret"):
         table_name = "config"
         secret = True
-    CFGManager.edit_write(k, v, secret=secret, table_name=table_name)
+
+    CFGManager.edit_write(k, v_, secret=secret, table_name=table_name)
     await msg.finish(I18NContext("message.success"))
 
 
