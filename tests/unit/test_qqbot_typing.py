@@ -3,18 +3,71 @@
 QQ 群没有原生输入状态能力，适配器以「先发一条提示消息、事后撤回」的方式模拟。
 提示消息一旦漏撤就会永久留在群里，且用户无从自行清理，因此其撤回必须对每条
 异常路径都成立——包括上下文已销毁、同一会话重复开启输入状态等情形。
+
+撤回由「机器人已发言」驱动，故该登记的落点亦在此一并把关：过早落下（如落在
+图片转换之前或发送失败时）会使提示先行消失，空窗反而暴露。
 """
 
 import asyncio
 
-from bots.qqbot.context import QQBotContextManager
+from botpy.message import GroupMessage
+
+from bots.qqbot.context import QQBotContextManager, _TypingState
 from bots.qqbot.info import target_group_prefix
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.elements import ImageElement, PlainElement
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 from core.tester import func_case, Tester
 
 # 压缩生产默认的等待秒数，使各用例得以在毫秒级跑完
 TEST_DELAY = 0.05
+
+
+class _FakeApi:
+    """替身 API，只提供发送路径上会用到的文件上传接口。"""
+
+    def __init__(self, on_upload=None):
+        self._on_upload = on_upload
+
+    async def post_group_file(self, **kwargs):
+        await asyncio.sleep(0.01)
+        if self._on_upload:
+            self._on_upload()
+        return {"file_info": "fake"}
+
+
+class _FakeGroupMessage(GroupMessage):
+    """替身群消息，绕过 SDK 的构造流程，仅保留发送路径依赖的属性。"""
+
+    def __init__(self, fail_times: int = 0, on_reply=None):
+        self.id = "source-message"
+        self.group_openid = "fake_group"
+        self._api = _FakeApi()
+        self._fail_times = fail_times
+        self._on_reply = on_reply
+        self.reply_calls = 0
+
+    async def reply(self, **kwargs):
+        self.reply_calls += 1
+        if self._on_reply:
+            self._on_reply()
+        if self.reply_calls <= self._fail_times:
+            raise ValueError("消息被去重，请检查请求msgseq")
+        return {"id": f"sent-{self.reply_calls}"}
+
+
+class _ProbingImage(ImageElement):
+    """转换耗时的图片，转换期间回调一次，用于观察当时的登记状态。"""
+
+    # 不加类型注解，避免被 attrs 当作字段处理
+    observer = None
+
+    async def get_base64(self, mime: bool = False) -> str:
+        await asyncio.sleep(0.01)
+        if _ProbingImage.observer:
+            _ProbingImage.observer()
+        return "ZmFrZQ=="
 
 
 def _make_session(session_id: str) -> SessionInfo:
@@ -213,6 +266,89 @@ async def _test_prompt_recalled_on_end_typing() -> bool:
             QQBotContextManager.context.pop(session.session_id, None)
 
 
+async def _send_via_context(session: SessionInfo, ctx: _FakeGroupMessage, message) -> tuple[_TypingState, bool]:
+    """在受控上下文中走一遍真实的发送流程。
+
+    :param session: 目标会话。
+    :param ctx: 替身群消息，充当平台上下文。
+    :param message: 待发送的消息链。
+    :return: 本轮的输入状态标志，以及发送是否成功。
+    """
+    sid = session.session_id
+    state = _TypingState()
+    QQBotContextManager.context[sid] = ctx
+    QQBotContextManager.typing_states[sid] = state
+    try:
+        await QQBotContextManager.send_message(session, message, quote=False, _ignore_retries=True)
+        return state, True
+    except Exception:
+        return state, False
+    finally:
+        QQBotContextManager.context.pop(sid, None)
+        QQBotContextManager.typing_states.pop(sid, None)
+
+
+async def _test_marked_after_send_succeeds() -> bool:
+    """发送成功后须登记为已发言，否则输入提示将失去撤回时机"""
+    session = _make_session("send-succeeds")
+    ctx = _FakeGroupMessage()
+    state, ok = await _send_via_context(session, ctx, MessageChain.assign(PlainElement.assign("hi")))
+
+    if not ok:
+        Logger.error("Sending should have succeeded in this case")
+        return False
+    if not state.spoken.is_set():
+        Logger.error("A successfully sent message must be registered as the bot having spoken")
+        return False
+    return True
+
+
+async def _test_not_marked_when_send_fails() -> bool:
+    """发送失败时不得登记为已发言，否则提示会赶在消息真正发出之前被撤回"""
+    session = _make_session("send-fails")
+    ctx = _FakeGroupMessage(fail_times=1)
+    state, ok = await _send_via_context(session, ctx, MessageChain.assign(PlainElement.assign("hi")))
+
+    if ok:
+        Logger.error("Sending should have failed in this case")
+        return False
+    if state.spoken.is_set():
+        Logger.error("A failed send must not be registered as the bot having spoken")
+        return False
+    return True
+
+
+async def _test_not_marked_while_converting_image() -> bool:
+    """图片转换期间不得登记为已发言，转换可能远慢于发送本身"""
+    session = _make_session("converting-image")
+    ctx = _FakeGroupMessage()
+    observed: list[bool] = []
+
+    _ProbingImage.observer = lambda: observed.append(
+        QQBotContextManager.typing_states[session.session_id].spoken.is_set()
+    )
+    try:
+        state, ok = await _send_via_context(
+            session, ctx, MessageChain.assign(_ProbingImage(path="fake.png", need_get=False))
+        )
+    finally:
+        _ProbingImage.observer = None
+
+    if not ok:
+        Logger.error("Sending should have succeeded in this case")
+        return False
+    if not observed:
+        Logger.error("The image was never converted, the test setup no longer matches the send path")
+        return False
+    if any(observed):
+        Logger.error("The bot must not be registered as having spoken while the image is still being converted")
+        return False
+    if not state.spoken.is_set():
+        Logger.error("A successfully sent message must be registered as the bot having spoken")
+        return False
+    return True
+
+
 @func_case
 async def test_qqbot_typing(tester: Tester):
     """bots.qqbot.context: 群聊输入提示的撤回时机测试"""
@@ -221,5 +357,8 @@ async def test_qqbot_typing(tester: Tester):
     await tester.test(_test_prompt_recalled_on_repeated_start, "重复开启输入状态撤回测试")
     await tester.test(_test_no_prompt_when_message_sent_early, "窗口内已发言不补发提示测试")
     await tester.test(_test_prompt_recalled_on_end_typing, "输入状态结束撤回提示测试")
+    await tester.test(_test_marked_after_send_succeeds, "发送成功后登记发言测试")
+    await tester.test(_test_not_marked_when_send_fails, "发送失败不登记发言测试")
+    await tester.test(_test_not_marked_while_converting_image, "图片转换期间不登记发言测试")
 
     return tester

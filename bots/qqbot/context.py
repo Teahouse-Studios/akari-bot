@@ -180,8 +180,6 @@ class QQBotContextManager(ContextManager):
         #     raise ValueError("Session not found in context")
         ctx: BaseMessage | None = cls.context.get(session_info.session_id)
         # 输入提示本身不计作机器人发言，否则它一发出就会立即满足自己的撤回条件
-        if not _typing_prompt:
-            cls._on_message_sent(session_info)
         msg_ids = []
         global global_seq
 
@@ -237,6 +235,8 @@ class QQBotContextManager(ContextManager):
                             msg = f"<@{ctx.author.id}> \n" + msg
                         msg = "" if not msg else msg
                         send = await ctx.reply(content=msg, file_image=send_img, message_reference=msg_quote)
+                        if not _typing_prompt:
+                            cls._on_message_sent(session_info)
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
                         if image_1:
                             Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
@@ -265,6 +265,8 @@ class QQBotContextManager(ContextManager):
                         msg = url_filter(msg)
                         msg = "" if not msg else msg
                         send = await ctx.reply(content=msg, file_image=send_img, message_reference=msg_quote)
+                        if not _typing_prompt:
+                            cls._on_message_sent(session_info)
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
                         if image_1:
                             Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
@@ -305,6 +307,8 @@ class QQBotContextManager(ContextManager):
                             msg_seq=global_seq,
                             message_reference=msg_quote,
                         )
+                        if not _typing_prompt:
+                            cls._on_message_sent(session_info)
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
                         if image_1:
                             Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
@@ -341,6 +345,8 @@ class QQBotContextManager(ContextManager):
                             media=send_img,
                             msg_seq=global_seq,
                         )
+                        if not _typing_prompt:
+                            cls._on_message_sent(session_info)
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
                         if image_1:
                             Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
@@ -621,6 +627,8 @@ class QQBotContextManager(ContextManager):
                             msg_seq=global_seq,
                             keyboard=keyboard,
                         )
+                        if not _typing_prompt:
+                            cls._on_message_sent(session_info)
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
                         if send:
                             msg_ids.append(send["id"])
@@ -976,6 +984,7 @@ class QQBotFetchedContextManager(QQBotContextManager):
         enable_parse_message=True,
         enable_split_image=True,
         _ignore_retries: bool = False,
+        _typing_prompt: bool = False,
     ) -> list[str]:
         # 主动消息须按冷却排队发出，但调用方需要取得真实的消息 ID 才能判断本跳是否送达，
         # 因此入队的是「任务 + future」，待实际发送完成后再回传结果。
@@ -985,12 +994,12 @@ class QQBotFetchedContextManager(QQBotContextManager):
             if session_info.target_union_info.target_data.get("in_post_whitelist", False)
             else _tasks
         )
-        append_tsk.append((future, session_info, message, quote, enable_parse_message, _ignore_retries))
+        append_tsk.append((future, session_info, message, quote, enable_parse_message, _ignore_retries, _typing_prompt))
         return await future
 
     @staticmethod
     async def _run_task(task: tuple) -> None:
-        future, session_info, message, quote, enable_parse_message, _ignore_retries = task
+        future, session_info, message, quote, enable_parse_message, _ignore_retries, _typing_prompt = task
         try:
             result = await QQBotContextManager.send_message(
                 session_info,
@@ -998,6 +1007,7 @@ class QQBotFetchedContextManager(QQBotContextManager):
                 quote=quote,
                 enable_parse_message=enable_parse_message,
                 _ignore_retries=_ignore_retries,
+                _typing_prompt=_typing_prompt,
             )
         except Exception:
             Logger.exception(f"Failed to post message to {session_info.target_id}: ")
