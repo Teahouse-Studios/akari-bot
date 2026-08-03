@@ -107,6 +107,7 @@ class SessionInfo:
     # （QQ 为 Private、Discord 为 DM 频道、QQ 官方分 C2C 与频道私信等），核心不作推断。
     is_private: bool = False
     require_enable_modules: bool = True
+    read_all_messages: bool = True
     require_check_dirty_words: bool = False
     use_url_manager: bool = False
     use_url_md_format: bool = False

@@ -22,6 +22,7 @@ mai_regex = module(
     alias="mai_regex",
     developers=["DoroWolf"],
     support_languages=["zh_cn", "zh_tw"],
+    regex=True,
 )
 
 

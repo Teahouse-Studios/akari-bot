@@ -29,4 +29,10 @@ features = Features(
     use_url_md_format=qq_use_markdown,
 )
 
-group_disable_read_all_message_features = evolve(features, require_enable_modules=False)
+# 群主未开启「读取全部消息」权限时，机器人只收到提及自身的消息。平台不提供查询主动推送
+# 权限的接口，而两类权限通常同批开通，故以此为判据一并关闭推送与正则模块。
+group_disable_read_all_message_features = evolve(
+    features,
+    support_rss=False,
+    read_all_messages=False,
+)

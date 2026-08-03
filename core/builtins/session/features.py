@@ -86,6 +86,9 @@ class Features:
     # 是否需要启用模块功能 - 是否需要在场景中启用模块才可使用功能
     require_enable_modules: bool = True
 
+    # 全部消息读取权限 - 机器人是否有权限读取场景内的全部消息，而非仅提及自身的消息
+    read_all_messages: bool = True
+
     @classmethod
     def override(cls, **kwargs) -> "Features":
         """

@@ -600,8 +600,8 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
         module: Module = modules[command_first_word]
         if not module.command_list.set:
             # 模块没有可用的命令，展示模块简介
-            if module.rss and not msg.session_info.support_rss:
-                # RSS 模块但平台不支持，直接返回
+            if module.unsupported_reason(msg.session_info):
+                # 模块受平台能力或权限所限，不展示简介
                 return
             if module.desc:
                 # 发送模块描述
@@ -795,20 +795,28 @@ def mark_regex_once(module_name: str, index: int, target_id: str) -> None:
     regex_once_cache.add((module_name, index, target_id))
 
 
-def regex_module_enabled(module: "Module", module_name: str, enabled_modules: list | None) -> bool:
+def regex_module_enabled(
+    module: "Module", module_name: str, enabled_modules: list | None, read_all_messages: bool = True
+) -> bool:
     """
     判断一个模块的正则处理函数是否应当参与匹配。
 
     base 模块无须在场景中启用即可生效，与命令路径 :func:`_execute_module` 的判定保持一致。
     此前该豁免仅存在于命令路径，导致 base 模块注册的正则永远不会触发。
 
+    权限判定置于启用判定之前：模块可能在权限开启期间被启用，其后权限又被关闭，此时
+    ``enabled_modules`` 中仍留有该模块，只拦截启用入口并不足够。
+
     :param module: 待判定的模块。
     :param module_name: 模块名称。
     :param enabled_modules: 当前场景已启用的模块列表。
+    :param read_all_messages: 机器人在该场景是否有权限读取全部消息。
     :return: 是否参与匹配。
     """
     if module.base:
         return True
+    if module.regex and not read_all_messages:
+        return False
     return bool(enabled_modules) and module_name in enabled_modules
 
 
@@ -909,7 +917,12 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
 
         try:
             # ========== 步骤 1: 检查模块是否已启用且有正则表达式 ==========
-            if regex_module_enabled(modules[m], m, msg.session_info.enabled_modules) and modules[m].regex_list.set:
+            if (
+                regex_module_enabled(
+                    modules[m], m, msg.session_info.enabled_modules, msg.session_info.read_all_messages
+                )
+                and modules[m].regex_list.set
+            ):
                 regex_module: Module = modules[m]
 
                 # ========== 步骤 2: 权限检查 ==========

@@ -17,6 +17,7 @@ excr = module(
     doc=True,
     alias=["exchangerate", "exchange", "excr"],
     developers=["DoroWolf"],
+    regex=True,
 )
 
 

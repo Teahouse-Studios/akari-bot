@@ -33,6 +33,7 @@ wiki_inline = module(
     recommend_modules=["wiki"],
     alias="wiki_regex",
     developers=["OasisAkari"],
+    regex=True,
 )
 
 

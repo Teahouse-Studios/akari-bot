@@ -6,9 +6,13 @@ from core.builtins.parser.message import regex_module_enabled
 from core.tester import func_case, Tester
 
 
-def _fake_module(base: bool):
-    """构造一个仅含 base 标志的模块替身，regex_module_enabled 只读取该字段。"""
-    return SimpleNamespace(base=base)
+def _fake_module(base: bool, regex: bool = False):
+    """构造模块替身，regex_module_enabled 只读取 base 与 regex 两个字段。
+
+    :param base: 是否为 base 模块。
+    :param regex: 是否为正则模块。
+    """
+    return SimpleNamespace(base=base, regex=regex)
 
 
 async def _test_base_module_enabled_without_enabling():

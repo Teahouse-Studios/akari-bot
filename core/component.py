@@ -217,6 +217,7 @@ def module(
     hidden: bool = False,
     load: bool = True,
     rss: bool = False,
+    regex: bool = False,
     required_superuser: bool = False,
     required_base_superuser: bool = False,
     suppress_invalid_prompt: bool = False,
@@ -239,6 +240,7 @@ def module(
     :param hidden: 将此命令设为隐藏命令。设为隐藏命令后此命令在帮助列表不可见。（默认为False）
     :param load: 将此命令设置是否加载。（默认为True）
     :param rss: 将此命令设为 RSS 命令。（默认为False）
+    :param regex: 将此命令设为正则命令。（默认为False）
     :param required_superuser: 将此命令设为机器人的超级管理员才可执行。（默认为False）
     :param required_base_superuser: 将此命令设为机器人的基础超级管理员才可执行。（默认为False）
     :param suppress_invalid_prompt: 命令未能匹配任何模板时是否抑制语法错误提示。
@@ -271,6 +273,7 @@ def module(
         hidden=hidden,
         load=load,
         rss=rss,
+        regex=regex,
         required_admin=required_admin,
         required_superuser=required_superuser,
         required_base_superuser=required_base_superuser,

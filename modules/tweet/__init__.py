@@ -15,6 +15,7 @@ t = module(
     desc="{I18N:tweet.help.desc}",
     doc=True,
     alias=["x"],
+    regex=True,
 )
 
 

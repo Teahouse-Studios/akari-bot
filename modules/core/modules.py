@@ -10,6 +10,12 @@ from core.database.models import ModuleStatus
 from core.loader import ModulesManager
 from .help import modules_list_help
 
+# 模块受限成因到提示文案的映射，键取自 Module.unsupported_reason() 的返回值。
+UNSUPPORTED_PROMPTS = {
+    "rss": "core.message.module.enable.unsupported_rss",
+    "regex": "core.message.module.enable.unsupported_regex",
+}
+
 m = module(
     "module",
     base=True,
@@ -72,7 +78,7 @@ async def config_modules(msg: Bot.MessageSession):
                     continue
                 if modules_[function].base or modules_[function].hidden or modules_[function].required_superuser:
                     continue
-                if modules_[function].rss and not msg.session_info.support_rss:
+                if modules_[function].unsupported_reason(msg.session_info):
                     continue
                 enable_list.append(function)
         else:
@@ -86,8 +92,8 @@ async def config_modules(msg: Bot.MessageSession):
                         msglist.append(I18NContext("parser.superuser.permission.denied"))
                     elif modules_[module_].base:
                         msglist.append(I18NContext("core.message.module.enable.already", module=module_))
-                    elif modules_[module_].rss and not msg.session_info.support_rss:
-                        msglist.append(I18NContext("core.message.module.enable.unsupported_rss"))
+                    elif reason := modules_[module_].unsupported_reason(msg.session_info):
+                        msglist.append(I18NContext(UNSUPPORTED_PROMPTS[reason]))
                     else:
                         enable_list.append(module_)
                         recommend = modules_[module_].recommend_modules

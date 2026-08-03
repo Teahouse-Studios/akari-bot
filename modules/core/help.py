@@ -104,7 +104,7 @@ async def _(msg: Bot.MessageSession, module: str):
                 module_.required_base_superuser and not is_base_superuser
             ):
                 pass
-            elif module_.rss and not msg.session_info.support_rss:
+            elif module_.unsupported_reason(msg.session_info):
                 pass
             else:
                 if regex_list:
@@ -163,7 +163,7 @@ async def _(msg: Bot.MessageSession, module: str):
                     module_.required_base_superuser and not is_base_superuser
                 ):
                     pass
-                elif module_.rss and not msg.session_info.support_rss:
+                elif module_.unsupported_reason(msg.session_info):
                     pass
                 elif any(
                     (module_.alias, module_.desc, module_.developers, help_.return_formatted_help_doc(), regex_list)
@@ -255,7 +255,7 @@ async def _(msg: Bot.MessageSession):
                 continue
             if value.hidden:
                 continue
-            if value.rss and not msg.session_info.support_rss:
+            if value.unsupported_reason(msg.session_info):
                 continue
             if not is_superuser and value.required_superuser or not is_base_superuser and value.required_base_superuser:
                 continue
@@ -379,7 +379,7 @@ async def help_generator(
             continue
         if value.hidden:
             continue
-        if value.rss and not msg.session_info.support_rss:
+        if value.unsupported_reason(msg.session_info):
             continue
         if not is_superuser and value.required_superuser or not is_base_superuser and value.required_base_superuser:
             continue

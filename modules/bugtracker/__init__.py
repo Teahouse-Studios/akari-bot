@@ -5,7 +5,7 @@ from core.builtins.message.internal import Url, I18NContext
 from core.component import module
 from .bugtracker import bugtracker_get, make_screenshot
 
-bug = module("bugtracker", alias="bug", developers=["OasisAkari"], doc=True)
+bug = module("bugtracker", alias="bug", developers=["OasisAkari"], doc=True, regex=True)
 
 
 async def query_bugtracker(msg: Bot.MessageSession, mojiraid: str):

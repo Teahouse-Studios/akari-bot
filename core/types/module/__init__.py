@@ -34,6 +34,7 @@ class Module:
     hidden: bool = False
     load: bool = True
     rss: bool = False
+    regex: bool = False
     required_superuser: bool = False
     required_base_superuser: bool = False
     suppress_invalid_prompt: bool = False
@@ -67,6 +68,7 @@ class Module:
             "hidden": self.hidden,
             "load": self.load,
             "rss": self.rss,
+            "regex": self.regex,
             "required_superuser": self.required_superuser,
             "required_base_superuser": self.required_base_superuser,
             "suppress_invalid_prompt": self.suppress_invalid_prompt,
@@ -75,6 +77,20 @@ class Module:
             "_py_module_name": self._py_module_name,
             "_db_load": self._db_load,
         }
+
+    def unsupported_reason(self, session_info) -> str | None:
+        """判断该模块在给定会话中是否受平台能力或权限所限。
+
+        返回成因标识而非文案键，以免此处依赖 modules/core 的本地化键名。
+
+        :param session_info: 会话信息，须具备 support_rss 与 read_all_messages 两项标志。
+        :return: 受限时返回成因（``rss`` 或 ``regex``），不受限时返回 None。
+        """
+        if self.rss and not session_info.support_rss:
+            return "rss"
+        if self.regex and not session_info.read_all_messages:
+            return "regex"
+        return None
 
 
 __all__ = [

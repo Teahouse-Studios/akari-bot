@@ -15,6 +15,7 @@ bili = module(
     desc="{I18N:bilibili.help.desc}",
     doc=True,
     support_languages=["zh_cn"],
+    regex=True,
 )
 
 
