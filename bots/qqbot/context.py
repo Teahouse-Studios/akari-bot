@@ -93,10 +93,29 @@ class ModdedBotAPI(BotAPI):
         return await self._http.request(route, json=payload)
 
 
+class _TypingState:
+    """一轮输入状态的生命周期标志。
+
+    群聊的输入提示是一条真实消息，撤回时机取决于两件事先发生哪一件：机器人发出了
+    自身消息，或输入状态被显式结束。两个标志各自对应其一，由等待方取先到者。
+    """
+
+    __slots__ = ("finished", "spoken")
+
+    def __init__(self):
+        self.finished = asyncio.Event()
+        self.spoken = asyncio.Event()
+
+
 class QQBotContextManager(ContextManager):
     context: dict[str, BaseMessage] = {}
     features: Features = qqbot_features
-    _tmp = {}
+    typing_states: dict[str, _TypingState] = {}
+
+    # 机器人沉默满此秒数后，才在群聊中补发输入提示
+    TYPING_PROMPT_DELAY = 5
+    # 输入提示的最长存活秒数，用于在结束信号丢失时兜底撤回，避免提示消息永久滞留
+    TYPING_PROMPT_MAX_LIFETIME = 60
 
     @classmethod
     def add_context(cls, session_info: SessionInfo, context: BaseMessage):
@@ -104,7 +123,6 @@ class QQBotContextManager(ContextManager):
 
         context._api = ModdedBotAPI(http=client.http)
         cls.context[session_info.session_id] = context
-        cls._tmp[session_info.session_id] = {}
 
     @classmethod
     def del_context(cls, session_info: SessionInfo):
@@ -118,7 +136,6 @@ class QQBotContextManager(ContextManager):
         # 检查上下文是否存在且未被保持
         if session_info.session_id in cls.context and session_info.session_id not in cls.context_marks_hold:
             del cls.context[session_info.session_id]
-            del cls._tmp[session_info.session_id]
             Logger.trace(f"Context for session {session_info.session_id} deleted.")
         # 如果上下文被保持，记录日志但不删除
         if session_info.session_id in cls.context_marks_hold:
@@ -157,13 +174,14 @@ class QQBotContextManager(ContextManager):
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
         _ignore_retries: bool = False,
+        _typing_prompt: bool = False,
     ) -> list[str]:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         ctx: BaseMessage | None = cls.context.get(session_info.session_id)
-        _tmp = cls._tmp.get(session_info.session_id)
-        if _tmp:
-            _tmp["send_message_called"] = True
+        # 输入提示本身不计作机器人发言，否则它一发出就会立即满足自己的撤回条件
+        if not _typing_prompt:
+            cls._on_message_sent(session_info)
         msg_ids = []
         global global_seq
 
@@ -795,67 +813,134 @@ class QQBotContextManager(ContextManager):
                 )
 
     @classmethod
-    async def start_typing(cls, session_info: SessionInfo) -> None:
-        async def _typing():
-            if session_info.session_id not in cls.context:
-                raise ValueError("Session not found in context")
-            Logger.debug(f"Start typing in session: {session_info.session_id}")
+    def _on_message_sent(cls, session_info: SessionInfo) -> None:
+        """登记机器人已在该会话中发言。
 
+        输入提示的意义是填补机器人迟迟不出声的空窗，机器人一经发言，提示便失去意义，
+        应尽快撤回，故此处以发送动作驱动撤回，而非等到输入状态结束。
+
+        :param session_info: 发出消息的会话。
+        """
+        state = cls.typing_states.get(session_info.session_id)
+        if state:
+            state.spoken.set()
+
+    @staticmethod
+    async def _wait_typing_over(state: _TypingState, timeout: float) -> bool:
+        """等待输入状态结束或机器人发言，取先到者。
+
+        :param state: 本轮输入状态的标志。
+        :param timeout: 最长等待秒数。
+        :return: 是否在超时之前等到了其中一个信号。
+        """
+        waiters = [
+            asyncio.ensure_future(state.finished.wait()),
+            asyncio.ensure_future(state.spoken.wait()),
+        ]
+        try:
+            done, _ = await asyncio.wait(waiters, timeout=timeout, return_when=asyncio.FIRST_COMPLETED)
+            return bool(done)
+        finally:
+            for waiter in waiters:
+                waiter.cancel()
+
+    @classmethod
+    async def _guild_typing(cls, session_info: SessionInfo, state: _TypingState) -> None:
+        """频道支持表情回应，直接以一枚回应表示正在处理。
+
+        :param session_info: 目标会话。
+        :param state: 本轮输入状态的标志。
+        """
+        from bots.qqbot.bot import client
+
+        emoji_type = 1 if int(qq_typing_emoji) < 9000 else 2
+        try:
+            await client.api.put_reaction(
+                channel_id=session_info.get_common_target_id(),
+                message_id=session_info.message_id,
+                emoji_type=emoji_type,
+                emoji_id=qq_typing_emoji,
+            )
+        except Exception:
+            Logger.exception(f"Failed to add typing reaction in session {session_info.session_id}: ")
+        await cls._wait_typing_over(state, cls.TYPING_PROMPT_MAX_LIFETIME)
+
+    @classmethod
+    async def _group_typing(cls, session_info: SessionInfo, state: _TypingState) -> None:
+        """群聊没有原生输入状态，改以一条提示消息模拟，并保证其终将被撤回。
+
+        :param session_info: 目标会话。
+        :param state: 本轮输入状态的标志。
+        """
+        typing_msg = None
+        try:
+            # 机器人若在等待窗口内就已发言，空窗并未出现，无须补发提示
+            if await cls._wait_typing_over(state, cls.TYPING_PROMPT_DELAY):
+                return
+
+            typing_msg = await cls.send_message(
+                session_info,
+                MessageChain.assign(I18NContext("message.typing")),
+                _ignore_retries=True,
+                _typing_prompt=True,
+            )
+            Logger.debug(f"Typing prompt sent in session {session_info.session_id}: {typing_msg}")
+
+            # 机器人发言或输入状态结束皆可撤回，另以最长存活兜底，防止结束信号丢失
+            await cls._wait_typing_over(state, cls.TYPING_PROMPT_MAX_LIFETIME)
+        except Exception:
+            Logger.exception(f"Failed to show typing prompt in session {session_info.session_id}: ")
+        finally:
+            # 撤回置于 finally：异常与任务取消同样不得使提示消息滞留于群中。
+            # 撤回自身再失败也只作记录，不使本轮任务带着异常收场。
+            if typing_msg:
+                try:
+                    await cls.delete_message(session_info, typing_msg)
+                except Exception:
+                    Logger.exception(f"Failed to recall typing prompt in session {session_info.session_id}: ")
+
+    @classmethod
+    async def _typing_lifecycle(cls, session_info: SessionInfo, state: _TypingState) -> None:
+        """按会话来源执行一轮输入状态，并在结束后回收其登记。
+
+        :param session_info: 目标会话。
+        :param state: 本轮输入状态的标志。
+        """
+        try:
             if session_info.target_from == target_guild_prefix:
-                emoji_type = 1 if int(qq_typing_emoji) < 9000 else 2
+                await cls._guild_typing(session_info, state)
+            elif session_info.target_from == target_group_prefix:
+                await cls._group_typing(session_info, state)
+            else:
+                await cls._wait_typing_over(state, cls.TYPING_PROMPT_MAX_LIFETIME)
+        finally:
+            # 结束信号若始终未至，状态不应长期滞留；仅回收本轮，避免误删后来者
+            if cls.typing_states.get(session_info.session_id) is state:
+                del cls.typing_states[session_info.session_id]
 
-                from bots.qqbot.bot import client
+    @classmethod
+    async def start_typing(cls, session_info: SessionInfo) -> None:
+        if session_info.session_id not in cls.context:
+            Logger.warning(f"Session {session_info.session_id} not found in context, skipped typing.")
+            return
+        Logger.debug(f"Start typing in session: {session_info.session_id}")
 
-                await client.api.put_reaction(
-                    channel_id=session_info.get_common_target_id(),
-                    message_id=session_info.message_id,
-                    emoji_type=emoji_type,
-                    emoji_id=qq_typing_emoji,
-                )
-            resolved = False
-            if session_info.target_from == target_group_prefix:
+        # 同一会话重复开启时先结束上一轮，否则其提示消息将失去撤回时机
+        previous = cls.typing_states.pop(session_info.session_id, None)
+        if previous:
+            previous.finished.set()
 
-                async def _send_group_typing(session: SessionInfo) -> None:
-                    _t = 0
-                    typing_msg = None
-                    sended = False
-                    while not resolved:
-                        await asyncio.sleep(1)
-                        _t += 1
-                        _tmp = cls._tmp.get(session.session_id)
-                        if _t >= 5 and not sended:
-                            if "send_message_called" not in _tmp:
-                                try:
-                                    typing_msg = await cls.send_message(
-                                        session,
-                                        MessageChain.assign(I18NContext("message.typing")),
-                                        _ignore_retries=True,
-                                    )
-                                    Logger.debug("typing message sent:" + str(typing_msg))
-                                except Exception:
-                                    Logger.exception("Failed to send group typing message")
-                            sended = True
-
-                    if typing_msg:
-                        await cls.delete_message(session_info, typing_msg)
-
-                asyncio.create_task(_send_group_typing(session_info))
-
-            flag = asyncio.Event()
-            cls.typing_flags[session_info.session_id] = flag
-            await flag.wait()
-            resolved = True
-
-        asyncio.create_task(_typing())
+        state = _TypingState()
+        cls.typing_states[session_info.session_id] = state
+        asyncio.create_task(cls._typing_lifecycle(session_info, state))
 
     @classmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
-        if session_info.session_id not in cls.context:
-            raise ValueError("Session not found in context")
-        if session_info.session_id in cls.typing_flags:
-            cls.typing_flags[session_info.session_id].set()
-            del cls.typing_flags[session_info.session_id]
-        # 这里可以添加结束输入状态的逻辑
+        # 结束输入状态属于清理动作，须幂等且容错：此时上下文可能已被回收，
+        # 若在此抛错，提示消息将连撤回的机会都没有。
+        state = cls.typing_states.pop(session_info.session_id, None)
+        if state:
+            state.finished.set()
         Logger.debug(f"End typing in session: {session_info.session_id}")
 
     @classmethod

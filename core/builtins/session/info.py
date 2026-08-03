@@ -256,6 +256,16 @@ class SessionInfo:
         """
         return f"{self.target_union_id}|{self.target_channel_id}"
 
+    @property
+    def typing_prompt_enabled(self) -> bool:
+        """本会话是否应显示「正在输入……」提示。
+
+        :return: 是否显示输入提示；无从得知用户偏好时不显示。
+        """
+        if not self.sender_union_info:
+            return False
+        return self.sender_union_info.sender_data.get("typing_prompt", True)
+
 
 @define
 class FetchedSessionInfo(SessionInfo):

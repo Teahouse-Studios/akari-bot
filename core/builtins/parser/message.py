@@ -684,7 +684,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
         for func in module.command_list.set:
             if not func.command_template:
                 # 显示“正在输入……”状态（如果用户启用）
-                if msg.session_info.sender_union_info.sender_data.get("typing_prompt", True):
+                if msg.session_info.typing_prompt_enabled:
                     await msg.start_typing()
                     _typing = True
                 # 执行模块函数
@@ -1017,9 +1017,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                             if rfunc.trigger_once_startup:
                                 mark_regex_once(m, index, msg.session_info.target_id)
 
-                            if rfunc.show_typing and msg.session_info.sender_union_info.sender_data.get(
-                                "typing_prompt", True
-                            ):
+                            if rfunc.show_typing and msg.session_info.typing_prompt_enabled:
                                 await msg.start_typing()
                                 _typing = True
                                 await rfunc.function(msg)  # 将msg传入下游模块
@@ -1361,7 +1359,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
                 kwargs[func_params[list(func_params.keys())[0]].name] = msg
 
             # ========== 步骤 5: 显示“正在输入……”状态 ==========
-            if msg.session_info.target_union_info.target_data.get("typing_prompt", True):
+            if msg.session_info.typing_prompt_enabled:
                 await msg.start_typing()
                 _typing = True
 

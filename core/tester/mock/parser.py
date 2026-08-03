@@ -141,7 +141,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
         if not func.command_template:
             if hasattr(msg, "_casetest_target") and func.function is not msg._casetest_target:
                 continue
-            if msg.session_info.sender_union_info.sender_data.get("typing_prompt", True):
+            if msg.session_info.typing_prompt_enabled:
                 await msg.start_typing()
             await func.function(msg)  # 将msg传入下游模块
             raise SessionFinished  # if not using msg.finish
