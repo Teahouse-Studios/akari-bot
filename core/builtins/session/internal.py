@@ -37,6 +37,21 @@ if TYPE_CHECKING:
 quick_confirm = CoreConfig.quick_confirm
 
 
+def confirm_prompt_key(session_info: SessionInfo) -> str:
+    """取确认提示的文案键，按会话实际具备的快速确认途径选择。
+
+    :param session_info: 会话信息。
+    :return: 提示文案的多语言键。
+    """
+    if session_info.support_button:
+        return "message.wait.confirm.prompt.button"
+    if session_info.support_reaction and quick_confirm:
+        if session_info.client_name == "QQ":
+            return "message.wait.confirm.prompt.qq"
+        return "message.wait.confirm.prompt.reaction"
+    return "message.wait.confirm.prompt"
+
+
 @define
 class MessageSession:
     """
@@ -534,13 +549,7 @@ class MessageSession:
             chain = MessageChain.assign(I18NContext("core.message.confirm"))
         # 合并转发消息无从追加提示行，此时略过
         if append_instruction and isinstance(chain, MessageChain):
-            if self.session_info.support_reaction and quick_confirm:
-                if self.session_info.client_name == "QQ":
-                    chain.append(I18NContext("message.wait.confirm.prompt.qq"))
-                else:
-                    chain.append(I18NContext("message.wait.confirm.prompt.reaction"))
-            else:
-                chain.append(I18NContext("message.wait.confirm.prompt"))
+            chain.append(I18NContext(confirm_prompt_key(self.session_info)))
         send = await self.send_message(chain, quote)
         await asyncio.sleep(0.1)
         self.session_info.tmp["wait_active"] = "no"

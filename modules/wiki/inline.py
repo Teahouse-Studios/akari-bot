@@ -208,7 +208,7 @@ async def _(msg: Bot.MessageSession):
                             if get_page.sections:
                                 button_data_ = []
                                 callback_id = None
-                                if msg.session_info.client_name == "QQBot" and msg.session_info.support_markdown:
+                                if msg.session_info.support_button:
                                     callback_id = str(uuid.uuid4())
                                     for i in range(len(get_page.sections)):
                                         button_data_.append({str(i + 1): f"<q:{callback_id}>{str(i + 1)}"})
@@ -253,7 +253,7 @@ async def _(msg: Bot.MessageSession):
                                     )
                                 ]
 
-                                if not (msg.session_info.client_name == "QQBot" and msg.session_info.support_markdown):
+                                if not msg.session_info.support_button:
                                     i_msg_lst.append(I18NContext("wiki.message.invalid_section.select"))
                                     i_msg_lst.append(I18NContext("message.reply.prompt"))
                                 else:
@@ -286,7 +286,7 @@ async def _(msg: Bot.MessageSession):
                             button_data = []
 
                             callback_id = None
-                            if msg.session_info.client_name == "QQBot" and msg.session_info.support_markdown:
+                            if msg.session_info.support_button:
                                 callback_id = str(uuid.uuid4())
                             for x in forum_data:
                                 if x == "#":
@@ -311,7 +311,7 @@ async def _(msg: Bot.MessageSession):
                             i_msg_lst = []
                             i_msg_lst.append(I18NContext("wiki.message.forum.prompt"))
                             i_msg_lst += [Image(ii) for ii in await image_table_render(img_table)]
-                            if not (msg.session_info.client_name == "QQBot" and msg.session_info.support_markdown):
+                            if not msg.session_info.support_button:
                                 i_msg_lst.append(I18NContext("wiki.message.invalid_section.select"))
                                 i_msg_lst.append(I18NContext("message.reply.prompt"))
                             else:

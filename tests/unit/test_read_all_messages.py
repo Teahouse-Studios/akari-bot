@@ -144,12 +144,16 @@ def _test_non_regex_module_unaffected():
 
 
 def _test_qqbot_override_closes_both():
-    """提及消息场景须同时关闭推送与全部消息读取，且不改动其余能力。"""
+    """提及消息场景须同时关闭推送与全部消息读取，且不改动其余能力。
+
+    该场景不豁免模块启用检查（require_enable_modules 保持默认的 True），命令路径因而
+    照常要求模块已启用。被拒绝启用的正则模块，其命令在此场景中一并不可用，此为有意为之。
+    """
     override = group_disable_read_all_message_features
     return (
         override.support_rss is False
         and override.read_all_messages is False
-        and override.require_enable_modules is False
+        and override.require_enable_modules is True
         and override.support_image is True
     )
 

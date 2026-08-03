@@ -7,10 +7,9 @@ import filetype
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Plain, Image, Voice, Url
-from core.builtins.session.internal import MessageSession
+from core.builtins.session.internal import MessageSession, confirm_prompt_key
 from core.builtins.utils import confirm_command
 from core.component import module
-from core.config.base import CoreConfig
 from core.constants.exceptions import AbuseWarning
 from core.logger import Logger
 from core.utils.func import is_int
@@ -326,10 +325,7 @@ async def query_pages(
                                 i_msg_lst = MessageChain.create()
                                 button_data_ = []
                                 callback_id = None
-                                if (
-                                    session.session_info.client_name == "QQBot"
-                                    and session.session_info.support_markdown
-                                ):
+                                if session.session_info.support_button:
                                     callback_id = str(uuid.uuid4())
                                     for i in range(len(r.sections)):
                                         button_data_.append({str(i + 1): f"<q:{callback_id}>{str(i + 1)}"})
@@ -373,10 +369,7 @@ async def query_pages(
                                     )
                                 ]
 
-                                if not (
-                                    session.session_info.client_name == "QQBot"
-                                    and session.session_info.support_markdown
-                                ):
+                                if not session.session_info.support_button:
                                     i_msg_lst.append(I18NContext("wiki.message.invalid_section.select"))
                                     i_msg_lst.append(I18NContext("message.reply.prompt"))
                                 else:
@@ -418,10 +411,7 @@ async def query_pages(
                                 button_data = []
 
                                 callback_id = None
-                                if (
-                                    session.session_info.client_name == "QQBot"
-                                    and session.session_info.support_markdown
-                                ):
+                                if session.session_info.support_button:
                                     callback_id = str(uuid.uuid4())
                                 for x in forum_data:
                                     if x == "#":
@@ -446,10 +436,7 @@ async def query_pages(
                                 i_msg_lst = []
                                 i_msg_lst.append(I18NContext("wiki.message.forum.prompt"))
                                 i_msg_lst += [Image(ii) for ii in await image_table_render(img_table)]
-                                if not (
-                                    session.session_info.client_name == "QQBot"
-                                    and session.session_info.support_markdown
-                                ):
+                                if not session.session_info.support_button:
                                     i_msg_lst.append(I18NContext("wiki.message.invalid_section.select"))
                                     i_msg_lst.append(I18NContext("message.reply.prompt"))
                                 else:
@@ -490,10 +477,7 @@ async def query_pages(
                                     for p in r.possible_research_title:
                                         pi += 1
                                         wait_plain_slice.append(f"{pi}. {p}")
-                                    if (
-                                        session.session_info.client_name == "QQBot"
-                                        and session.session_info.support_markdown
-                                    ):
+                                    if session.session_info.support_button:
                                         wait_plain_slice.append(
                                             I18NContext(
                                                 "wiki.message.not_found.autofix.choice.prompt.button",
@@ -510,10 +494,7 @@ async def query_pages(
                                     wait_possible_list.append(
                                         {display_before_title: {display_title: r.possible_research_title}}
                                     )
-                                    if not (
-                                        session.session_info.client_name == "QQBot"
-                                        and session.session_info.support_markdown
-                                    ):
+                                    if not session.session_info.support_button:
                                         wait_plain_slice.append(I18NContext("message.wait.next_message.prompt"))
                                 else:
                                     wait_plain_slice.append(
@@ -523,18 +504,10 @@ async def query_pages(
                                             redirected_title=display_title,
                                         )
                                     )
-                                    _t = "message.wait.confirm.prompt"
-                                    if (
-                                        isinstance(session, Bot.MessageSession)
-                                        and session.session_info.support_reaction
-                                        and CoreConfig.quick_confirm
-                                    ):
-                                        if session.session_info.client_name == "QQ":
-                                            _t = "message.wait.confirm.prompt.qq"
-                                        elif session.session_info.client_name == "QQBot":
-                                            _t = "message.wait.confirm.prompt.button"
-                                        else:
-                                            _t = "message.wait.confirm.prompt.reaction"
+                                    if isinstance(session, Bot.MessageSession):
+                                        _t = confirm_prompt_key(session.session_info)
+                                    else:
+                                        _t = "message.wait.confirm.prompt"
                                     wait_plain_slice.append(I18NContext(_t))
                             else:
                                 if r.edit_link:

@@ -71,6 +71,9 @@ class Features:
     # 指令操作支持 - 会话是否支持在消息中嵌入可点击的指令标签，点击后文本填入输入框
     support_action_text: bool = False
 
+    # 按钮支持 - 会话是否支持在消息下方附带可点击的按钮
+    support_button: bool = False
+
     # URL Markdown 格式支持 - 是否将 URL 自动转换为 Markdown 格式的链接
     use_url_md_format: bool = False
 

@@ -1,8 +1,8 @@
 """wiki 推荐绑定列表单元测试 - 按钮数据构造与发出门槛。
 
-按钮仅在 QQ 官方机器人上下发，而测试会话的客户端名恒为 TEST，集成测试覆盖不到该分支，
-故此处直接构造 QQBot 会话求证。按钮回流经 interaction 事件另建会话，其可用前缀与常规
-消息入口不同，前缀相关的用例即为守住这条不变量。
+按钮的下发门槛此前由「客户端名为 QQBot 且支持 Markdown」就地判定，现已摊平为
+support_button 一项，故用例改按该标志构造会话，客户端名不再参与判定。按钮回流经
+interaction 事件另建会话，其可用前缀与常规消息入口不同，前缀相关的用例即为守住这条不变量。
 """
 
 from unittest.mock import patch
@@ -21,13 +21,13 @@ from modules.wiki.utils.recommend import (
 )
 
 
-async def _probe(target_id: str, client_name: str, support_markdown: bool, is_admin: bool) -> dict:
+async def _probe(target_id: str, client_name: str, support_button: bool, is_admin: bool) -> dict:
     """
     跑一遍未设置起始 Wiki 的收尾流程，捕获它交给 finish 的消息与按钮数据。
 
     :param target_id: 场景 ID，各用例互不相同以免共用 union。
-    :param client_name: 客户端名。
-    :param support_markdown: 会话是否支持 Markdown。
+    :param client_name: 客户端名。判定已不再读取此项，保留仅为贴近真实会话。
+    :param support_button: 会话是否具备按钮能力。
     :param is_admin: 发送者是否具备管理权限。
     :return: 含 prompts 与 button_data 两个键的字典。
     """
@@ -36,7 +36,7 @@ async def _probe(target_id: str, client_name: str, support_markdown: bool, is_ad
         target_from=f"{client_name}|Group",
         client_name=client_name,
         sender_id=f"{client_name}|1",
-        features=Features(support_markdown=support_markdown),
+        features=Features(support_button=support_button),
     )
     msg = MessageSession(session_info=session_info)
     captured = {}
@@ -128,21 +128,30 @@ async def _test_non_admin_gets_no_buttons():
         return False
 
 
-async def _test_other_client_gets_no_buttons():
-    """测试发出门槛 - 其余平台的输出不受影响，管理员亦无按钮"""
+async def _test_other_client_gets_buttons():
+    """测试发出门槛 - 判定只看按钮能力，非 QQ 官方机器人声明后同样下发
+
+    这条守住摊平本身：新增支持按钮的平台只需在自己的 features.py 中声明，无须回头改动模块。
+    """
     try:
         captured = await _probe("TEST|Group|recommend_other", "TEST", True, True)
         keys = [element.key for element in captured["prompts"]]
-        return not captured["button_data"] and keys == ["wiki.message.set.not_set"]
+        return captured["button_data"] == get_recommend_button_data() and keys == [
+            "wiki.message.set.not_set",
+            "wiki.message.set.not_set.recommend",
+        ]
 
     except Exception:
         return False
 
 
-async def _test_markdown_off_gets_no_buttons():
-    """测试发出门槛 - 会话不支持 Markdown 时不下发按钮"""
+async def _test_button_unsupported_gets_no_buttons():
+    """测试发出门槛 - 会话不具备按钮能力时不下发按钮
+
+    对应 QQ 官方机器人关闭 qq_use_markdown 的情形：消息走纯文本路径，按钮无从附带。
+    """
     try:
-        captured = await _probe("QQBot|Group|recommend_nomd", "QQBot", False, True)
+        captured = await _probe("QQBot|Group|recommend_nobutton", "QQBot", False, True)
         keys = [element.key for element in captured["prompts"]]
         return not captured["button_data"] and keys == ["wiki.message.set.not_set"]
 
@@ -158,7 +167,7 @@ async def test_wiki_recommend(tester: Tester):
     await tester.test(_test_button_prefix_reachable_from_interaction, "按钮前缀可识别测试")
     await tester.test(_test_admin_gets_buttons, "管理员收到按钮测试")
     await tester.test(_test_non_admin_gets_no_buttons, "非管理员无按钮测试")
-    await tester.test(_test_other_client_gets_no_buttons, "其他平台无按钮测试")
-    await tester.test(_test_markdown_off_gets_no_buttons, "无 Markdown 无按钮测试")
+    await tester.test(_test_other_client_gets_buttons, "其他平台声明后有按钮测试")
+    await tester.test(_test_button_unsupported_gets_no_buttons, "无按钮能力时无按钮测试")
 
     return tester

@@ -76,6 +76,7 @@ class SessionInfo:
     support_handle_message_nodes: bool = False
     support_private_msg: bool = False
     support_action_text: bool = False
+    support_button: bool = False
     timestamp: float | None = None
     session_id: str | None = None
     # 场景 union 由 assign() 解析，解析不出即抛错，故此后必定有值；

@@ -46,12 +46,7 @@ async def finish_with_start_wiki_not_set(msg: Bot.MessageSession) -> NoReturn:
         )
     ]
     button_data = []
-    if (
-        RECOMMENDED_WIKIS
-        and msg.session_info.client_name == "QQBot"
-        and msg.session_info.support_markdown
-        and await msg.check_permission()
-    ):
+    if RECOMMENDED_WIKIS and msg.session_info.support_button and await msg.check_permission():
         prompts.append(I18NContext("wiki.message.set.not_set.recommend"))
         button_data = get_recommend_button_data()
     await msg.finish(prompts, button_data=button_data)
