@@ -18,7 +18,6 @@
     "config.comments.config.enable_dirty_check": "是否啟用文字過濾偵測，需要設定阿里雲內容安全服務的 AccessKey ID 與 AccessKey Secret。",
     "config.comments.config.enable_get_petal": "是否允許取得花瓣。",
     "config.comments.config.enable_joke": "是否啟用玩笑，啟用後將在伺服器時間 4 月 1 日時發生。",
-    "config.comments.config.enable_module_invalid_prompt": "是否啟用模組不存在的提示訊息。",
     "config.comments.config.enable_petal": "是否啟用花瓣功能。",
     "config.comments.config.enable_rickroll": "當文字過濾偵測失敗時，是否 Rickroll 使用者。",
     "config.comments.config.enable_tos": "是否啟用內建的 ToS 檢查規則。",

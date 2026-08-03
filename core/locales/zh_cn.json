@@ -19,7 +19,6 @@
     "config.comments.config.enable_dirty_check": "是否开启文字过滤检测，需要配置阿里云内容安全服务的 AccessKey ID 与 AccessKey Secret。",
     "config.comments.config.enable_get_petal": "是否允许获取花瓣。",
     "config.comments.config.enable_joke": "是否开启玩笑，启用后将在服务器时间 4 月 1 日时发生。",
-    "config.comments.config.enable_module_invalid_prompt": "是否开启模块不存在的提示消息。",
     "config.comments.config.enable_petal": "是否开启花瓣功能。",
     "config.comments.config.enable_rickroll": "当文字过滤检测失败时，是否 Rickroll 用户。",
     "config.comments.config.enable_tos": "是否开启内置的 ToS 检查规则。",

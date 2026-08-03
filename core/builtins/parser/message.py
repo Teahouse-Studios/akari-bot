@@ -77,9 +77,6 @@ enable_analytics = CoreConfig.enable_analytics
 # 错误报告的场景列表（将错误信息发送给这些场景）
 report_targets = CoreConfig.report_targets
 
-# 是否启用模块无效提示（用户输入错误的模块名时是否提示）
-enable_module_invalid_prompt = CoreConfig.enable_module_invalid_prompt
-
 # Bug 报告的 URL
 bug_report_url = CoreConfig.bug_report_url
 
@@ -248,11 +245,11 @@ async def parser(msg: "Bot.MessageSession"):
                         await _execute_module(new_msg, modules, new_command_first_word, identify_str)
                     else:
                         await msg.send_message(I18NContext("parser.module.unloaded", module=new_command_first_word))
-                elif enable_module_invalid_prompt and not confirmed:
+                elif not confirmed:
                     await msg.send_message(
                         I18NContext("parser.command.invalid.module", prefix=msg.session_info.prefixes[0])
                     )
-            elif enable_module_invalid_prompt:
+            else:
                 await msg.send_message(
                     I18NContext("parser.command.invalid.module", prefix=msg.session_info.prefixes[0])
                 )

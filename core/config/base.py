@@ -44,7 +44,6 @@ class CoreConfig:
     # 命令交互
     command_prefix: list = command_prefix_default
     confirm_command: list = confirm_command_default
-    enable_module_invalid_prompt: bool = False
     mention_required: bool = False
     no_confirm: bool = False
     quick_confirm: bool = True

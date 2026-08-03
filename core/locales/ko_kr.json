@@ -18,7 +18,6 @@
     "config.comments.config.enable_dirty_check": "텍스트 필터링 활성화 여부. Alibaba Cloud 콘텐츠 보안 서비스의 AccessKey ID 및 AccessKey Secret이 필요합니다.",
     "config.comments.config.enable_get_petal": "페탈(petal) 획득 허용 여부.",
     "config.comments.config.enable_joke": "농담 모드 활성화 여부. 활성화 시 서버 시간 기준 4월 1일에 적용됩니다.",
-    "config.comments.config.enable_module_invalid_prompt": "존재하지 않는 모듈 호출 시 알림 메시지 표시 여부.",
     "config.comments.config.enable_petal": "페탈(petal) 기능 활성화 여부.",
     "config.comments.config.enable_rickroll": "텍스트 필터링 실패 시 Rickroll 메시지 전송 여부.",
     "config.comments.config.enable_tos": "내장된 ToS 검사 규칙을 활성화할지 여부.",

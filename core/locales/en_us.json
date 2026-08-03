@@ -18,7 +18,6 @@
     "config.comments.config.enable_dirty_check": "Whether to enable text filtering detection, requires the AccessKey ID and AccessKey Secret of Alibaba Cloud Content Security Service.",
     "config.comments.config.enable_get_petal": "Whether to allow getting petals.",
     "config.comments.config.enable_joke": "Whether to enable the joke. It will occur on April 1st server time when enabled.",
-    "config.comments.config.enable_module_invalid_prompt": "Whether to enable the prompt message when the module does not exist.",
     "config.comments.config.enable_petal": "Whether to enable the petal feature.",
     "config.comments.config.enable_rickroll": "Whether to rickroll the user when text filter detection fails.",
     "config.comments.config.enable_tos": "Whether to enable built-in ToS checking rules.",
