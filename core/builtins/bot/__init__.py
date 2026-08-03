@@ -19,11 +19,18 @@ from core.builtins.temp import *
 from core.config.base import CoreConfig
 from core.constants.info import Info
 from core.constants.path import PrivateAssets, assets_path
-from core.database.models import AnalyticsData, TargetUnionBind, TargetUnionInfo
+from core.database.models import (
+    AnalyticsData,
+    UNION_ID_PREFIXES,
+    UNION_SCOPE_TARGET,
+    TargetUnionBind,
+    TargetUnionInfo,
+)
 from core.exports import add_export, exports
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.retired import filter_retired_targets
+from core.utils.func import convert_list
 from core.utils.session import inject_features
 
 if TYPE_CHECKING:
@@ -180,6 +187,49 @@ class Bot:
             if isinstance(x, FetchedSessionInfo):
                 fetched.append(x)
         return fetched
+
+    @classmethod
+    async def resolve_union_targets(cls, target_list: list[str]) -> list[str]:
+        """
+        将场景 ID 归一为其所属场景组的 union ID。
+
+        便于按场景组配置的去处（如上报）兼收两种写法：既可直接填场景组 ID，也可填组内任一
+        平台场景 ID。尚未登记 union 的场景无从解析，径直略去——这类场景同样取不到会话。
+
+        :param target_list: 场景组 ID 或平台场景 ID 的列表，两种写法可以混用。
+        :return: 去重后的场景组 ID 列表，保持传入顺序。
+        """
+        union_ids = []
+        for value in target_list:
+            if value.startswith(f"{UNION_ID_PREFIXES[UNION_SCOPE_TARGET]}|"):
+                # 场景组 ID 自身不是平台场景，不可交给 resolve_union：
+                # 其自愈分支会为组 ID 建出一条以自身为平台 ID 的映射行。
+                union_id = value
+            else:
+                union_info = await TargetUnionInfo.resolve_union(value, create=False)
+                union_id = union_info.union_id if union_info else None
+            if union_id and union_id not in union_ids:
+                union_ids.append(union_id)
+        return union_ids
+
+    @classmethod
+    async def fetch_union_target_list(
+        cls, target_list: str | list[str], create: bool = False
+    ) -> list[FetchedSessionInfo]:
+        """
+        将场景 ID 按场景组展开后，批量获取会话信息。
+
+        只取配置项所指的那一个平台场景，其所属场景组内的其余入口便不参与，该客户端掉线时
+        消息即无处可去。展开后交由 :meth:`pick_channel_heads` 归拢，同一通道内的成员互为后备。
+
+        :param target_list: 场景组 ID 或平台场景 ID，两种写法可以混用，可一次传入多个。
+        :param create: 如果场景不存在是否创建
+        :return: 成功获取的会话列表
+        """
+        union_ids = await cls.resolve_union_targets(convert_list(target_list))
+        # 退役客户端停止一切主动推送，与 get_enabled_this_module() 取同一判据
+        target_ids = filter_retired_targets(await TargetUnionBind.list_ids(union_ids))
+        return await cls.fetch_target_list(target_ids, create=create)
 
     @staticmethod
     async def group_sessions_by_channel(
@@ -432,12 +482,8 @@ class Bot:
         :param enable_parse_message: 是否允许解析消息（平台兼容）。
         :param enable_split_image: 是否允许拆分图片（平台兼容）。
         """
-        # 退役客户端停止一切主动推送，与 get_enabled_this_module() 取同一判据
-        target_ids = filter_retired_targets(await TargetUnionBind.list_ids(union_id))
-        if not target_ids:
-            return
-
-        for session in await cls.pick_channel_heads(await cls.fetch_target_list(target_ids)):
+        # 退役客户端停止一切主动推送，滤除与场景组展开一并由 fetch_union_target_list 承担
+        for session in await cls.pick_channel_heads(await cls.fetch_union_target_list(union_id)):
             # 消息链类型均无 __call__，可据此与消息工厂相区分
             chain = await message(session) if callable(message) else message
             if chain is None:

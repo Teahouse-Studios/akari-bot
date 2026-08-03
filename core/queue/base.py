@@ -211,8 +211,8 @@ class JobQueueBase:
             await cls.return_val(tsk, {"traceback": f}, status="failed")
             try:
                 # 向报告场景发送错误信息
-                # 上报场景按平台场景 ID 配置，其中若有若干个同属一个现实场景，只应由其中一个收到回传
-                for ft in await bot.pick_channel_heads(await bot.fetch_target_list(cls.report_targets)):
+                # 上报场景按场景组配置，展开后同一现实场景的多个平台入口只应由其中一个收到回传
+                for ft in await bot.pick_channel_heads(await bot.fetch_union_target_list(cls.report_targets)):
                     await cls.client_direct_message(
                         ft,
                         MessageChain.assign(

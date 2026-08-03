@@ -1517,8 +1517,8 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
 
     # ========== 发送错误报告给管理员 ==========
     if report_targets:
-        # 上报场景按平台场景 ID 配置，其中若有若干个同属一个现实场景，只应由其中一个收到回传
-        for f in await bot.pick_channel_heads(await bot.fetch_target_list(report_targets)):
+        # 上报场景按场景组配置，展开后同一现实场景的多个平台入口只应由其中一个收到回传
+        for f in await bot.pick_channel_heads(await bot.fetch_union_target_list(report_targets)):
             # 发送详细的错误报告
             await bot.send_direct_message(
                 f,
