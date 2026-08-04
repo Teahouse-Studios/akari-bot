@@ -1077,7 +1077,7 @@ class WikiLib:
                 if not x["status"]:
                     ban = True
         if ban:  # if content check failed, mark as banned
-            page_info.title = page_info.before_title = None
+            page_info.title = page_info.before_title = ""
             page_info.id = -1
             page_info.desc = ""
             page_info.link = str(
