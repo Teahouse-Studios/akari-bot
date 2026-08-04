@@ -594,7 +594,11 @@ class QQBotContextManager(ContextManager):
             if session_info.tmp.get("wait_type") == "wait_confirm" and session_info.tmp.get("wait_active") == "yes":
                 button_yes = Button(
                     id="1",
-                    render_data=RenderData(label="是", visited_label="已确认", style=0),
+                    render_data=RenderData(
+                        label=session_info.locale.t("message.yes"),
+                        visited_label=session_info.locale.t("message.confirmed"),
+                        style=0,
+                    ),
                     action=Action(
                         type=1,
                         permission=Permission(
@@ -609,7 +613,11 @@ class QQBotContextManager(ContextManager):
                 )
                 button_no = Button(
                     id="2",
-                    render_data=RenderData(label="否", visited_label="已取消", style=0),
+                    render_data=RenderData(
+                        label=session_info.locale.t("message.no"),
+                        visited_label=session_info.locale.t("message.cancelled"),
+                        style=0,
+                    ),
                     action=Action(
                         type=1,
                         permission=Permission(
@@ -643,7 +651,9 @@ class QQBotContextManager(ContextManager):
                         i += 1
                         button = Button(
                             id=str(i),
-                            render_data=RenderData(label=label, visited_label=f"已选择: {label}", style=0),
+                            render_data=RenderData(
+                                label=label, visited_label=session_info.locale.t("message.selected") + label, style=0
+                            ),
                             action=Action(
                                 type=1,
                                 permission=Permission(
