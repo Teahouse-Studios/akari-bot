@@ -17,7 +17,7 @@ from core.logger import Logger
 from core.utils.button import arrange_buttons
 from core.utils.cache import random_cache_path
 from core.utils.image import cb64imglst
-from core.utils.table import escape_table_cell, resolve_table_columns
+from core.utils.table import escape_table_cell, format_table_code, resolve_table_columns
 from core.web_render import web_render, ElementScreenshotOptions
 
 env = Environment(loader=FileSystemLoader(templates_path), autoescape=True, enable_async=True)
@@ -181,15 +181,19 @@ def build_command_table(msg: Bot.MessageSession, help_doc: dict, regex_rows: lis
     args = help_doc.get("args") or []
     options = help_doc.get("options") or []
 
-    # 每节为 (区隔行文案, [(是否可点击, 首列, 次列), ...])；命令一节不带区隔行
+    # 每节为 (区隔行文案, [(种类, 首列, 次列), ...])；命令一节不带区隔行。
+    # 种类决定首列如何落到单元格里：command 做成指令操作，code 已是成型的行内代码，
+    # text 则照常转义。
     sections = []
     if args:
-        sections.append((None, [(True, item["args"], item.get("desc") or "") for item in args]))
+        sections.append((None, [("command", item["args"], item.get("desc") or "") for item in args]))
     if options:
-        rows = [(False, flag, desc) for option in options for flag, desc in option.items()]
+        rows = [("text", flag, desc) for option in options for flag, desc in option.items()]
         sections.append((locale.t("core.message.help.table.options"), rows))
     if regex_rows:
-        sections.append((locale.t("core.message.help.table.regex"), [(False, p, d) for p, d in regex_rows]))
+        # 正则满是格式标记字符，包进行内代码原样呈现，不再逐字符转义
+        rows = [("code", format_table_code(pattern), desc) for pattern, desc in regex_rows]
+        sections.append((locale.t("core.message.help.table.regex"), rows))
     if not sections:
         return []
 
@@ -209,15 +213,17 @@ def build_command_table(msg: Bot.MessageSession, help_doc: dict, regex_rows: lis
         for start in range(0, len(rows), pairs):
             # 末行补空的成对单元格，markdown 要求各行的列数一致
             chunk = rows[start : start + pairs]
-            chunk += [(False, "", "")] * (pairs - len(chunk))
+            chunk += [("text", "", "")] * (pairs - len(chunk))
             pending += "| "
-            for clickable, first, second in chunk:
-                if clickable:
+            for kind, first, second in chunk:
+                if kind == "command":
                     parts.append(Plain(pending, disable_joke=True))
                     parts.append(ActionText(strip_command_arguments(first), show=escape_table_cell(first)))
                     pending = f" | {escape_table_cell(second)} | "
                 else:
-                    pending += f"{escape_table_cell(first)} | {escape_table_cell(second)} | "
+                    # code 已由 format_table_code() 处理妥当，再转义会把围栏内的反斜杠显示出来
+                    cell = first if kind == "code" else escape_table_cell(first)
+                    pending += f"{cell} | {escape_table_cell(second)} | "
             pending = pending.rstrip() + "\n"
     # 末尾不留换行：其后若还有元素，适配器会按元素补上一次换行，两者叠加会多出一个空行
     parts.append(Plain(pending.rstrip("\n"), disable_joke=True))
@@ -347,6 +353,9 @@ async def _(msg: Bot.MessageSession, module: str):
                         elif isinstance(regex.pattern, re.Pattern):
                             pattern = regex.pattern.pattern
                         if pattern:
+                            # 表格版把正则包进行内代码，不需要也不能要这层反斜杠转义，
+                            # 故在转义前先留一份原样的
+                            raw_pattern = pattern
                             if msg.session_info.support_markdown:
                                 pattern = re.sub(r"([\\`*_{}\[\]()#+\-.!>~|])", r"\\\1", pattern)
                             rdesc = regex.desc
@@ -357,7 +366,7 @@ async def _(msg: Bot.MessageSession, module: str):
                                 )
                             else:
                                 mdocs.append(f"{pattern}{str(I18NContext('core.message.help.regex.no_information'))}")
-                            regex_rows.append((pattern, rdesc or ""))
+                            regex_rows.append((raw_pattern, rdesc or ""))
 
                 if module_.alias:
                     for a in module_.alias:

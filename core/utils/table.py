@@ -7,6 +7,7 @@ Markdown 表格工具 - 单元格转义与「高度封顶、宽度按需」的�
 """
 
 import math
+import re
 
 # 表格的高度上限。条目增多时由列数吸收，使表格至多这么高。
 TABLE_MAX_ROWS = 10
@@ -24,6 +25,22 @@ def escape_table_cell(text: str) -> str:
     :return: 可安全放入单元格的文本。
     """
     return text.replace("|", "\\|").replace("\r\n", "\n").replace("\n", "<br>")
+
+
+def format_table_code(text: str) -> str:
+    """
+    把文本包成 markdown 行内代码，使其中的格式标记不被解析。
+
+    :param text: 原始文本。
+    :return: 可安全放入单元格的行内代码；文本为空时返回空串。
+    """
+    if not text:
+        return ""
+    body = text.replace("|", "\\|").replace("\r\n", "\n").replace("\n", " ")
+    longest = max((len(run) for run in re.findall(r"`+", body)), default=0)
+    fence = "`" * (longest + 1)
+    padding = " " if body.startswith("`") or body.endswith("`") else ""
+    return f"{fence}{padding}{body}{padding}{fence}"
 
 
 def resolve_table_columns(

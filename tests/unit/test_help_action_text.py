@@ -15,7 +15,7 @@ from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 from core.tester import func_case, Tester
-from core.utils.table import TABLE_MAX_ROWS
+from core.utils.table import TABLE_MAX_ROWS, format_table_code
 from modules.core.help import (
     build_clickable_modules,
     build_command_table,
@@ -504,6 +504,45 @@ async def _test_command_table_rows_are_uniform():
     return True
 
 
+async def _test_regex_is_wrapped_in_code():
+    """测试正则包进行内代码，且不再逐字符反斜杠转义
+
+    正则满是 * _ [] () 一类字符，直接放进单元格会被当作格式标记渲染。
+    """
+    session_info = await _session("help_regex_code")
+    msg = _FakeSession(session_info)
+    pattern = r"\[\[(.*?)\]\]"
+    parts = build_command_table(msg, {"args": [], "options": []}, [(pattern, "内联查询")])
+    text = "".join(p.text for p in parts if isinstance(p, PlainElement))
+    if f"`{pattern}`" not in text:
+        Logger.error(f"A regex should be wrapped in an inline code span, got {text!r}")
+        return False
+    return True
+
+
+def _test_format_table_code_edge_cases() -> bool:
+    """测试行内代码的三处边界：竖线、反引号、换行"""
+    cases = {
+        # 竖线仍须转义：表格先按竖线切分单元格，代码块拦不住它
+        "a|b": "`a\\|b`",
+        # 围栏须比内容里最长的一串反引号更长，否则会在中途被闭合
+        "a`b": "``a`b``",
+        "a``b": "```a``b```",
+        # 内容以反引号起止时两侧补空格，否则会被并入围栏
+        "`x`": "`` `x` ``",
+        # 换行在代码块内无从表达，折成空格
+        "a\nb": "`a b`",
+        # 空文本不产出空围栏
+        "": "",
+    }
+    for raw, expected in cases.items():
+        actual = format_table_code(raw)
+        if actual != expected:
+            Logger.error(f"{raw!r} should format to {expected!r}, got {actual!r}")
+            return False
+    return True
+
+
 async def _test_empty_group_skipped():
     """测试模块名为空的组被整组跳过，不留下孤零零的标题"""
     try:
@@ -549,6 +588,8 @@ async def test_clickable_modules(tester: Tester):
     await tester.test(_test_command_table_escapes_pipes, "单元格竖线转义测试")
     await tester.test(_test_command_table_expands_columns, "命令表列数扩展测试")
     await tester.test(_test_command_table_rows_are_uniform, "命令表列数齐平测试")
+    await tester.test(_test_regex_is_wrapped_in_code, "正则包进行内代码测试")
+    await tester.test(_test_format_table_code_edge_cases, "行内代码边界测试")
     await tester.test(_test_empty_group_skipped, "空组跳过测试")
     await tester.test(_test_degraded_keeps_module_names, "降级保留模块名测试")
 
