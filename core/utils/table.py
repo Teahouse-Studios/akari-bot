@@ -24,7 +24,7 @@ def escape_table_cell(text: str) -> str:
     :param text: 原始文本。
     :return: 可安全放入单元格的文本。
     """
-    return text.replace("|", "\\|").replace("\r\n", "\n").replace("\n", "<br>")
+    return text.replace("|", "\\|").replace("\r\n", "\n").replace("\n", "  <br>  ")
 
 
 def format_table_code(text: str) -> str:
