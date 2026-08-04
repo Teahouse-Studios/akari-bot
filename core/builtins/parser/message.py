@@ -133,23 +133,6 @@ channel_claim_cache = ExpiringTempDict()
 regex_once_cache: set[tuple[str, int, str]] = set()
 
 
-async def send_invalid_module_prompt(msg: "Bot.MessageSession"):
-    """
-    提示用户所输入的模块不存在。
-
-    :param msg: 消息会话。
-    """
-    if not msg.session_info.invalid_module_prompt_enabled:
-        return
-    await msg.send_message(
-        I18NContext(
-            "parser.command.invalid.module",
-            prefix=msg.session_info.prefixes[0],
-            cmd=ActionText(f"{msg.session_info.prefixes[0]}help"),
-        )
-    )
-
-
 async def parser(msg: "Bot.MessageSession"):
     """
     消息处理的主入口函数。
@@ -262,10 +245,22 @@ async def parser(msg: "Bot.MessageSession"):
                         await _execute_module(new_msg, modules, new_command_first_word, identify_str)
                     else:
                         await msg.send_message(I18NContext("parser.module.unloaded", module=new_command_first_word))
-                elif not confirmed:
-                    await send_invalid_module_prompt(msg)
-            else:
-                await send_invalid_module_prompt(msg)
+                elif not confirmed and msg.session_info.invalid_module_prompt_enabled:
+                    await msg.send_message(
+                        I18NContext(
+                            "parser.command.invalid.module",
+                            prefix=msg.session_info.prefixes[0],
+                            cmd=ActionText(f"{msg.session_info.prefixes[0]}help"),
+                        )
+                    )
+            elif msg.session_info.invalid_module_prompt_enabled:
+                await msg.send_message(
+                    I18NContext(
+                        "parser.command.invalid.module",
+                        prefix=msg.session_info.prefixes[0],
+                        cmd=ActionText(f"{msg.session_info.prefixes[0]}help"),
+                    )
+                )
 
             return msg
 

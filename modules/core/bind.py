@@ -77,7 +77,7 @@ async def _channel_lines(msg: Bot.MessageSession) -> list:
         I18NContext("core.bind.message.channel.info", channel=channel_id),
         I18NContext("core.bind.message.channel.info.shared", count=len(siblings)),
         *_id_lines(siblings),
-        *_channel_hint_lines(),
+        *_channel_hint_lines(msg),
     ]
 
 

@@ -125,9 +125,7 @@ def _toggle_row(locale: Locale, name_key: str, enabled: bool, command: str) -> S
         label=name,
         value=locale.t("core.message.setup.list.value.on" if enabled else "core.message.setup.list.value.off"),
         # 入口文案取当前状态之反：已开启时能做的是关闭
-        action=locale.t(
-            "core.message.setup.list.action.off" if enabled else "core.message.setup.list.action.on", name=name
-        ),
+        action=locale.t("core.message.setup.list.action.off" if enabled else "core.message.setup.list.action.on"),
         command=command,
     )
 
@@ -160,24 +158,20 @@ def build_target_rows(msg: Bot.MessageSession) -> list[SettingRow]:
             action=locale.t("core.message.setup.list.action.modify"),
             command=f"locale {target_union_info.locale}",
         ),
-        SettingRow(
-            label=locale.t("core.message.setup.list.item.mute"),
-            value=locale.t("core.message.setup.list.value.muted" if muted else "core.message.setup.list.value.unmuted"),
-            # 静音不套用通用的开启／关闭措辞，「开启静音」读来别扭
-            action=locale.t(
-                "core.message.setup.list.action.unmute" if muted else "core.message.setup.list.action.mute"
-            ),
-            command="mute",
+        _toggle_row(
+            locale,
+            "core.message.setup.list.item.mute",
+            muted,
+            "mute",
         ),
         SettingRow(
             label=locale.t("core.message.setup.list.item.prefix"),
             value=locale.t("message.delimiter").join(prefixes) or locale.t("message.none"),
-            action=locale.t("core.message.setup.list.action.modify"),
+            action=locale.t("core.message.setup.list.action.add"),
             command="prefix add ",
         ),
     ]
 
-    # 与 setup sign 的 load 判据保持一致：花瓣功能关闭时该命令根本不存在
     if CoreConfig.enable_petal:
         rows.append(
             _toggle_row(
@@ -236,24 +230,14 @@ def build_sender_rows(msg: Bot.MessageSession) -> list[SettingRow]:
             "setup check",
         ),
     ]
-    # 仅在平台允许用户自行关闭 markdown 时列出，其余平台改了也没有着落
     if msg.session_info.support_markdown_toggle:
-        use_markdown = sender_data.get("use_markdown", True)
-        # 措辞另设而不套用通用的「开启${name}」：该项名以拉丁字母起头，
-        # 套进模板会得到「关闭Markdown 消息」，中英文之间缺一个空格
         rows.append(
-            SettingRow(
-                label=locale.t("core.message.setup.list.item.markdown"),
-                value=locale.t(
-                    "core.message.setup.list.value.on" if use_markdown else "core.message.setup.list.value.off"
-                ),
-                action=locale.t(
-                    "core.message.setup.list.action.markdown.off"
-                    if use_markdown
-                    else "core.message.setup.list.action.markdown.on"
-                ),
-                command="setup markdown",
-            )
+            _toggle_row(
+                locale,
+                "core.message.setup.list.item.markdown",
+                sender_data.get("use_markdown", True),
+                "setup markdown",
+            ),
         )
     return rows
 
