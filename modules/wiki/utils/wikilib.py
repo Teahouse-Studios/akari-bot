@@ -642,7 +642,12 @@ class WikiLib:
 
         # if TextExtracts extension is available and no selected section, add extracts to query
         use_textextracts = "TextExtracts" in self.wiki_info.extensions
-        if use_textextracts and not selected_section:
+        # 模板文档页不走 TextExtracts：该扩展为条目而设，会把 documentation header、
+        # shortcut 与 TemplateData 一概视作非正文滤去，只剩「参见」一类的章节残留，
+        # 而文档页的说明往往正写在 TemplateData 里，须由本地解析取出
+        is_template_doc = _doc or title.endswith("/doc")
+        use_extracts = use_textextracts and not selected_section and not is_template_doc
+        if use_extracts:
             query_props += ["extracts", "pageprops"]
             query_string.update(
                 {
@@ -985,7 +990,7 @@ class WikiLib:
                                     page_info.before_page_property = page_info.page_property = "template"
                             # get description
                             if get_desc:
-                                if use_textextracts and not selected_section:
+                                if use_extracts:
                                     raw_desc = page_raw.get("extract")
                                     if raw_desc:
                                         page_desc = self.parse_text(raw_desc)

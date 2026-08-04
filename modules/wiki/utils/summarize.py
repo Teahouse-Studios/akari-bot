@@ -6,6 +6,7 @@ Wikitext 离线摘要提取。
 
 import re
 
+import orjson
 import wikitextparser as wtp
 
 from core.logger import Logger
@@ -54,6 +55,9 @@ _RESIDUAL_TAG = re.compile(r"</?[a-zA-Z][a-zA-Z0-9_:-]*(?:\s[^>]*?)?/?>")
 # 正文中不应残留的 Wikitext 结构标记。构造一旦不成对或不被识别，这些标记便会原样
 # 留在输出里；与其把半段源码充作摘要，不如舍去所在的行，没有正文时宁可不给摘要
 _UNPARSED_MARKUP = re.compile(r"\{\{|\}\}|\{\||\|\}|\[\[|\]\]")
+
+# TemplateData 扩展的标签，其内容为描述模板用法的 JSON
+_TEMPLATEDATA = re.compile(r"<templatedata\s*>(.*?)</templatedata\s*>", re.I | re.S)
 
 # 句末标点：中英文的句号、问号、叹号。英文标点须后随空白，以免小数点与缩写被误判
 _SENTENCE_END = r"(.*?(?:!\s|\?\s|\.\s|！|？|。)).*"
@@ -143,12 +147,76 @@ def _select_section(parsed: wtp.WikiText, section: str | None):
     return None
 
 
+def _templatedata_description(wikitext: str) -> str:
+    """
+    取出 TemplateData 中的模板说明。
+
+    模板文档页的说明常整个写在 <templatedata> 的 description 字段里，而其外层的
+    {{TemplateData|...}} 会被当作模板剥离，正文遂无从取得，摘要只剩「参见」一类的
+    章节残留。取回的说明仍是 Wikitext，须由调用方再行清理。
+
+    :param wikitext: 页面的原始 Wikitext。
+    :returns: description 字段的原文；无 TemplateData、JSON 不合法或无该字段时返回空字符串。
+    """
+    match = _TEMPLATEDATA.search(wikitext)
+    if not match:
+        return ""
+    try:
+        data = orjson.loads(match.group(1))
+    except orjson.JSONDecodeError:
+        # 页面上的 TemplateData 未必合法，解析不了便当作没有
+        return ""
+    if not isinstance(data, dict):
+        return ""
+    description = data.get("description")
+    return description if isinstance(description, str) else ""
+
+
+def _extract_section_text(wikitext: str, section: str | None) -> str:
+    """
+    解析 Wikitext 并取出指定章节的正文纯文本。
+
+    :param wikitext: 待解析的 Wikitext。
+    :param section: 章节名。为 None 时取引言段。
+    :returns: 清理后的纯文本；未匹配到章节时返回空字符串。
+    """
+    # 行为开关、模板类构造与语义属性链接须在解析前以文本处理：行为开关不构成任何
+    # 可识别的节点，模板类构造可能因内含裸花括号而不被识别，改写链接节点则会令其失效
+    cleaned = _BEHAVIOR_SWITCH.sub("", wikitext)
+    cleaned = _strip_braced(cleaned)
+    cleaned = _SEMANTIC_LINK.sub(r"\1", cleaned)
+    parsed = wtp.parse(cleaned)
+    # 倒序清除，避免靠前的节点被置空后导致靠后节点的 span 偏移
+    for tag in reversed(parsed.get_tags()):
+        if tag.name in NOISE_TAGS:
+            tag.string = ""
+    for table in reversed(parsed.get_tables()):
+        table.string = ""
+    for link in reversed(parsed.wikilinks):
+        # 带显示文本的一定是正文中的行内链接，plain_text() 已能正确还原
+        if link.text is None and _HIDDEN_LINK.match(link.title):
+            link.string = ""
+
+    target = _select_section(parsed, section)
+    if target is None:
+        return ""
+    # 滤去章节标题行与仍带结构标记的残留行，前者一并覆盖目标章节自身的标题
+    # 与其下的子章节标题
+    lines = [
+        line.strip()
+        for line in _RESIDUAL_TAG.sub("", target.plain_text()).split("\n")
+        if line.strip() and not _HEADING.match(line.strip()) and not _UNPARSED_MARKUP.search(line)
+    ]
+    return "\n".join(lines)
+
+
 def extract_summary(wikitext: str, section: str | None = None) -> str:
     """
     离线解析 Wikitext，取出指定章节的正文纯文本。
 
     模板、文件链接与格式标记由 plain_text() 剥离，表格与引用等噪音节点须在其之前
-    显式清除。返回空字符串表示无法离线取得正文，调用方应据此回退。
+    显式清除。引言取不到正文时改取 TemplateData 中的模板说明，模板文档页的正文
+    往往只写在那里。返回空字符串表示无法离线取得正文。
 
     :param wikitext: 页面的原始 Wikitext。
     :param section: 章节名。为 None 时取引言段。
@@ -157,34 +225,13 @@ def extract_summary(wikitext: str, section: str | None = None) -> str:
     if not wikitext:
         return ""
     try:
-        # 行为开关、模板类构造与语义属性链接须在解析前以文本处理：行为开关不构成任何
-        # 可识别的节点，模板类构造可能因内含裸花括号而不被识别，改写链接节点则会令其失效
-        cleaned = _BEHAVIOR_SWITCH.sub("", wikitext)
-        cleaned = _strip_braced(cleaned)
-        cleaned = _SEMANTIC_LINK.sub(r"\1", cleaned)
-        parsed = wtp.parse(cleaned)
-        # 倒序清除，避免靠前的节点被置空后导致靠后节点的 span 偏移
-        for tag in reversed(parsed.get_tags()):
-            if tag.name in NOISE_TAGS:
-                tag.string = ""
-        for table in reversed(parsed.get_tables()):
-            table.string = ""
-        for link in reversed(parsed.wikilinks):
-            # 带显示文本的一定是正文中的行内链接，plain_text() 已能正确还原
-            if link.text is None and _HIDDEN_LINK.match(link.title):
-                link.string = ""
-
-        target = _select_section(parsed, section)
-        if target is None:
-            return ""
-        # 滤去章节标题行与仍带结构标记的残留行，前者一并覆盖目标章节自身的标题
-        # 与其下的子章节标题
-        lines = [
-            line.strip()
-            for line in _RESIDUAL_TAG.sub("", target.plain_text()).split("\n")
-            if line.strip() and not _HEADING.match(line.strip()) and not _UNPARSED_MARKUP.search(line)
-        ]
-        return "\n".join(lines)
+        text = _extract_section_text(wikitext, section)
+        if not text and not section:
+            # TemplateData 只作补充：引言已有散文者以引言为准，指定章节时亦不越俎代庖
+            description = _templatedata_description(wikitext)
+            if description:
+                text = _extract_section_text(description, None)
+        return text
     except Exception:
         Logger.exception()
         return ""

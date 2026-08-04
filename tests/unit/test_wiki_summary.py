@@ -280,6 +280,57 @@ async def _test_all_residue_yields_no_summary():
         return False
 
 
+async def _test_templatedata_description_used_as_fallback():
+    """测试模板文档 - 正文写在 TemplateData 里时须能取到
+
+    模板文档页的说明常整个写在 <templatedata> 的 description 字段中，而其外层的
+    {{TemplateData|...}} 会被当作模板剥离，正文遂无从取得，摘要只剩「参见」一类的
+    章节残留。zh.minecraft.wiki 的 Template:Currently editing/doc 即属此形。
+    """
+    try:
+        src = (
+            "{{documentation header}}\n"
+            "{{shortcut|editing}}\n\n"
+            "{{TemplateData|<templatedata>\n"
+            '{\n\t"params": {},\n'
+            '\t"description": "此模板用于标记正在进行重大编辑的页面。目的是为了防止[[Help:编辑冲突|编辑冲突]]。"\n'
+            "}\n</templatedata>}}\n\n"
+            "== 参见 ==\n{{Maintenance see also}}"
+        )
+        return extract_summary(src) == "此模板用于标记正在进行重大编辑的页面。目的是为了防止编辑冲突。"
+
+    except Exception:
+        return False
+
+
+async def _test_templatedata_not_used_when_lead_present():
+    """测试模板文档 - 引言本身有正文时不取 TemplateData
+
+    TemplateData 只作补充，引言已有散文者以引言为准。
+    """
+    try:
+        src = (
+            "'''甲模板'''用于测试。\n\n"
+            "{{TemplateData|<templatedata>\n"
+            '{"description": "这是 TemplateData 里的说明。"}\n'
+            "</templatedata>}}"
+        )
+        return extract_summary(src) == "甲模板用于测试。"
+
+    except Exception:
+        return False
+
+
+async def _test_malformed_templatedata_yields_no_summary():
+    """测试模板文档 - TemplateData 不是合法 JSON 时不给摘要，也不得抛出异常"""
+    try:
+        src = "{{TemplateData|<templatedata>\n{ 这不是合法的 JSON\n</templatedata>}}"
+        return extract_summary(src) == ""
+
+    except Exception:
+        return False
+
+
 async def _test_empty_input_returns_empty():
     """测试边界 - 空输入返回空字符串"""
     try:
@@ -452,6 +503,9 @@ async def test_wiki_summary(tester: Tester):
     await tester.test(_test_unclosed_brace_does_not_swallow_text, "未闭合花括号不吞正文测试")
     await tester.test(_test_unparsed_markup_lines_dropped, "残留标记行滤除测试")
     await tester.test(_test_all_residue_yields_no_summary, "全为残留时无摘要测试")
+    await tester.test(_test_templatedata_description_used_as_fallback, "TemplateData 说明取用测试")
+    await tester.test(_test_templatedata_not_used_when_lead_present, "有引言时不取 TemplateData 测试")
+    await tester.test(_test_malformed_templatedata_yields_no_summary, "TemplateData 非法 JSON 测试")
     await tester.test(_test_empty_input_returns_empty, "空输入测试")
     await tester.test(_test_real_page_lead, "真实样本首句测试")
     await tester.test(_test_short_first_sentence_gets_second, "短首句补第二句测试")
