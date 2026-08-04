@@ -82,7 +82,9 @@ async def bugtracker_get(msg, mojira_id: str):
                     data["project"] = fields["project"]["name"]
                 if "resolution" in fields:
                     data["resolution"] = fields["resolution"]["name"] if fields["resolution"] else "Unresolved"
-                if "versions" in load_json["fields"]:
+                # 须判非空而非仅判键在：未关联版本的漏洞该字段为空列表，
+                # 空列表上取首尾元素会抛 IndexError
+                if fields.get("versions"):
                     versions = fields["versions"]
                     verlist = []
                     for item in versions[:]:

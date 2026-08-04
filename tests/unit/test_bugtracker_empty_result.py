@@ -17,6 +17,17 @@ from modules.bugtracker.bugtracker import bugtracker_get
 EMPTY_RESULT = '{"issues": []}'
 FOUND_RESULT = """{"issues": [{"key": "MC-1", "fields": {"summary": "Test issue",
     "issuetype": {"name": "Bug"}, "status": {"name": "Open"}, "project": {"name": "Minecraft"}}}]}"""
+# 未关联任何版本的漏洞：versions 键在而值为空列表。MC-310702 即属此形
+EMPTY_VERSIONS_RESULT = """{"issues": [{"key": "MC-310702", "fields": {"summary": "No version issue",
+    "issuetype": {"name": "Bug"}, "status": {"name": "Open"}, "project": {"name": "Minecraft"},
+    "versions": [], "fixVersions": []}}]}"""
+# 单一版本与跨版本区间，用以守住两种文案分支
+ONE_VERSION_RESULT = """{"issues": [{"key": "MC-2", "fields": {"summary": "One version",
+    "issuetype": {"name": "Bug"}, "status": {"name": "Open"}, "project": {"name": "Minecraft"},
+    "versions": [{"name": "1.21"}]}}]}"""
+MULTI_VERSION_RESULT = """{"issues": [{"key": "MC-3", "fields": {"summary": "Many versions",
+    "issuetype": {"name": "Bug"}, "status": {"name": "Open"}, "project": {"name": "Minecraft"},
+    "versions": [{"name": "1.20"}, {"name": "1.21"}]}}]}"""
 
 
 async def _build_session() -> MessageSession:
@@ -59,9 +70,35 @@ async def _test_found_result_still_parsed():
     return "[MC-1]" in text and "Test issue" in text and link == "https://bugs.mojang.com/browse/MC/issues/MC-1"
 
 
+async def _test_empty_versions_does_not_raise():
+    """测试版本字段 - 未关联版本的漏洞不得抛出异常
+
+    versions 键在而值为空列表时，旧实现直接取 verlist[0] 触发 IndexError。
+    同文件的 fixVersions 一向判过非空，此处漏判。
+    """
+    result, link = await _query(EMPTY_VERSIONS_RESULT, "MC-310702")
+    text = str(result)
+    return "MC-310702" in text and "Version" not in text
+
+
+async def _test_single_version_rendered():
+    """测试版本字段 - 只有一个版本时用单数文案"""
+    result, link = await _query(ONE_VERSION_RESULT, "MC-2")
+    return "Version: 1.21" in str(result)
+
+
+async def _test_version_range_rendered():
+    """测试版本字段 - 多个版本时给出首尾区间"""
+    result, link = await _query(MULTI_VERSION_RESULT, "MC-3")
+    return "Versions: 1.20 ~ 1.21" in str(result)
+
+
 @func_case
 async def test_bugtracker_empty_result(tester: Tester):
     """bugtracker: 查询结果为空时的处理"""
     await tester.test(_test_empty_result_returns_prompt, "空结果转为提示文案")
     await tester.test(_test_found_result_still_parsed, "有结果时解析不受影响")
+    await tester.test(_test_empty_versions_does_not_raise, "空版本列表不抛异常")
+    await tester.test(_test_single_version_rendered, "单一版本文案")
+    await tester.test(_test_version_range_rendered, "版本区间文案")
     return tester
