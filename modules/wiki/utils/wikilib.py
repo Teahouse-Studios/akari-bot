@@ -1080,9 +1080,7 @@ class WikiLib:
             page_info.title = page_info.before_title = ""
             page_info.id = -1
             page_info.desc = ""
-            page_info.link = str(
-                Url(page_info.link, trusted=False, md_format=session and session.session_info.use_url_md_format)
-            )
+            page_info.link = str(Url(page_info.link, trusted=False))
         return page_info
 
     async def random_page(self) -> PageInfo:
