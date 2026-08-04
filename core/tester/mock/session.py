@@ -48,7 +48,9 @@ class MockMessageSession(MessageSession):
         callback=None,
         callback_id=None,
         button_data=None,
+        force_markdown=False,
     ):
+        # force_markdown 只影响平台的发送路径，测试替身不作区分，签名对齐即可
         if button_data:
             self.buttons.extend(button_data)
 
@@ -79,9 +81,10 @@ class MockMessageSession(MessageSession):
         callback=None,
         callback_id=None,
         button_data=None,
+        force_markdown=False,
     ):
         if message_chain:
-            await self.send_message(message_chain, button_data=button_data)
+            await self.send_message(message_chain, button_data=button_data, force_markdown=force_markdown)
         elif button_data:
             self.buttons.extend(button_data)
         raise SessionFinished

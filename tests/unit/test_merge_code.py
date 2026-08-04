@@ -3,7 +3,7 @@
 from core.database.models import UNION_SCOPE_SENDER, UNION_SCOPE_TARGET, TargetUnionBind, TargetUnionInfo
 from core.tester import func_case, Tester
 from modules.core import merge
-from modules.core.union_merge import generate_code
+from core.union_merge import generate_code
 
 
 async def _test_target_code_roundtrip():

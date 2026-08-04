@@ -115,6 +115,7 @@ class MessageSession:
         callback: Any | None = None,
         callback_id: str | None = None,
         button_data: list[dict[str, str]] | None = None,
+        force_markdown: bool = False,
     ) -> FinishedSession:
         """
         用于向消息用户返回消息。
@@ -161,6 +162,9 @@ class MessageSession:
         # 如果提供了 button_data，则将其序列化为 JSON 并存储在会话的临时数据中
         self.session_info.tmp["button_data"] = orjson.dumps(button_data or {}).decode("utf-8")
 
+        # 设置强制使用 markdown 标记
+        self.session_info.tmp["force_markdown"] = "true" if force_markdown else ""
+
         return_val = await _queue_server.client_send_message(
             self.session_info,
             chain,
@@ -172,6 +176,7 @@ class MessageSession:
         # 清空 button_data 以防止会话的后续消息一直出现 button_data
 
         self.session_info.tmp["button_data"] = "[]"
+        self.session_info.tmp["force_markdown"] = ""
 
         # ========== 步骤 4: 处理回调 ==========
         if "message_id" in return_val:
@@ -204,6 +209,7 @@ class MessageSession:
         callback: Coroutine | None = None,
         callback_id: str | None = None,
         button_data: list[dict[str, str]] = [],  # skipcq
+        force_markdown: bool = False,
     ) -> NoReturn:
         """
         用于向消息用户返回消息并终结会话（模块后续代码不再执行）。
@@ -238,6 +244,7 @@ class MessageSession:
                 callback=callback,
                 callback_id=callback_id,
                 button_data=button_data,
+                force_markdown=force_markdown,
             )
         # ========== 终止会话 ==========
         # 抛出 SessionFinished 异常，包含已发送消息的信息

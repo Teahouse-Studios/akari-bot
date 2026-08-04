@@ -108,13 +108,29 @@ def _test_rows_are_uniform() -> bool:
 
 
 def _test_index_sits_above_content() -> bool:
-    """测试编号在上一行、内容在正下方那一行，且编号自 1 起递增"""
-    lines = nodes_to_table(_make_session(), _make_nodes(3)).split("\n")
-    if lines[2] != "| 1 | 2 | 3 |":
-        Logger.error(f"The index row should carry the numbers alone, got {lines[2]!r}")
-        return False
-    if lines[3] != "| 内容0 | 内容1 | 内容2 |":
-        Logger.error(f"The content row should sit right below the index row, got {lines[3]!r}")
+    """测试编号在上一行、内容在正下方那一行，且编号自 1 起随节点顺序递增
+
+    按结构遍历而非比对固定字符串：列数随高度上限而变，写死行内容会在调整上限时失效。
+    """
+    lines = nodes_to_table(_make_session(), _make_nodes(5)).split("\n")
+    data = lines[2:]
+    seen = 0
+    for start in range(0, len(data), 2):
+        numbers = [cell.strip() for cell in data[start].strip("|").split("|")]
+        contents = [cell.strip() for cell in data[start + 1].strip("|").split("|")]
+        for number, content in zip(numbers, contents):
+            if not number:
+                # 末对的空单元格，其下方亦须为空
+                if content:
+                    Logger.error(f"A padded index cell should sit above an empty content cell, got {content!r}")
+                    return False
+                continue
+            seen += 1
+            if number != str(seen) or content != f"内容{seen - 1}":
+                Logger.error(f"Expected {seen} above 内容{seen - 1}, got {number!r} above {content!r}")
+                return False
+    if seen != 5:
+        Logger.error(f"All five nodes should appear, got {seen}")
         return False
     return True
 
@@ -195,6 +211,37 @@ async def _test_nodes_force_markdown() -> bool:
     return True
 
 
+async def _test_force_markdown_flag_from_module() -> bool:
+    """测试模块经 force_markdown 声明后，全为纯文本的消息也走 markdown
+
+    纯正则模块的帮助表格里没有可点击命令，整条消息全是纯文本，平台默认会退回纯文本发送，
+    表格标记原样露出。该标志正是为此而设。
+    """
+    table = "| 正则 |  |\n|---|---|\n| a | b |"
+    for declared, expect_markdown in ((True, True), (False, False)):
+        session_id = f"force-md-{declared}"
+        session_info = _make_session()
+        session_info.session_id = session_id
+        session_info.tmp = {"force_markdown": "true" if declared else ""}
+        ctx = _FakeGroupMessage()
+        QQBotContextManager.context[session_id] = ctx
+        try:
+            with patch.object(qqbot_context, "qq_use_markdown", True):
+                await QQBotContextManager.send_message(session_info, MessageChain.assign(Plain(table)), quote=False)
+        finally:
+            QQBotContextManager.context.pop(session_id, None)
+        if not ctx.reply_kwargs:
+            Logger.error(f"Sending should reach the platform (declared={declared})")
+            return False
+        sent_markdown = "markdown" in ctx.reply_kwargs[0]
+        if sent_markdown is not expect_markdown:
+            Logger.error(
+                f"force_markdown={declared} should send as markdown={expect_markdown}, got {sorted(ctx.reply_kwargs[0])}"
+            )
+            return False
+    return True
+
+
 @func_case
 async def test_qqbot_message_nodes(tester: Tester):
     """bots.qqbot.context: 消息节点表格化测试"""
@@ -205,6 +252,7 @@ async def test_qqbot_message_nodes(tester: Tester):
     await tester.test(_test_name_is_the_header, "节点组名称占表头测试")
     await tester.test(_test_multiline_content_uses_br, "多行内容换行测试")
     await tester.test(_test_pipes_are_escaped, "内容竖线转义测试")
-    await tester.test(_test_nodes_force_markdown, "强制走 markdown 测试")
+    await tester.test(_test_nodes_force_markdown, "节点强制走 markdown 测试")
+    await tester.test(_test_force_markdown_flag_from_module, "模块声明强制 markdown 测试")
 
     return tester

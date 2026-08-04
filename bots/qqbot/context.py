@@ -262,10 +262,7 @@ class QQBotContextManager(ContextManager):
         msg_ids = []
         global global_seq
 
-        # 消息节点在此摊平为一张 markdown 表：平台没有合并转发，逐条发出又会刷屏。
-        # 表格只在 markdown 路径上成立，故须强制走该路径——摊平后的表格是纯文本，
-        # 否则会被 send_msg_markdown() 判为「不需要 markdown」而退回纯文本，标记原样露出。
-        force_markdown = False
+        force_markdown = session_info.tmp.get("force_markdown") == "true"
         if isinstance(message, MessageNodes):
             message = MessageChain.assign(PlainElement.assign(nodes_to_table(session_info, message), disable_joke=True))
             force_markdown = True

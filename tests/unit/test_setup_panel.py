@@ -110,8 +110,8 @@ def _test_sender_rows_follow_setting() -> bool:
     if not row:
         Logger.error("Sender panel should carry the typing switch")
         return False
-    if row.value != "已关闭" or row.action != "开启输入提示":
-        Logger.error(f"A disabled switch should read 已关闭 and offer 开启输入提示, got {row.value} / {row.action}")
+    if row.value != "已关闭" or row.action != "开启":
+        Logger.error(f"A disabled switch should read 已关闭 and offer 开启, got {row.value} / {row.action}")
         return False
     return True
 
@@ -141,14 +141,14 @@ def _test_target_prefix_and_cooldown_defaults() -> bool:
 
 
 def _test_mute_row_wording() -> bool:
-    """静音项的取值与入口文案不套用通用的开启／关闭措辞"""
+    """测试静音项与其余开关一致：取值为已开启／已关闭，入口文案取当前状态之反"""
     unmuted = _row_by_label(build_target_rows(_make_msg()), "静音")
     muted = _row_by_label(build_target_rows(_make_msg(muted=True)), "静音")
-    if not unmuted or unmuted.value != "未静音" or unmuted.action != "静音":
-        Logger.error(f"An unmuted target should read 未静音 and offer 静音, got {unmuted}")
+    if not unmuted or unmuted.value != "已关闭" or unmuted.action != "开启":
+        Logger.error(f"An unmuted target should read 已关闭 and offer 开启, got {unmuted}")
         return False
-    if not muted or muted.value != "已静音" or muted.action != "取消静音":
-        Logger.error(f"A muted target should read 已静音 and offer 取消静音, got {muted}")
+    if not muted or muted.value != "已开启" or muted.action != "关闭":
+        Logger.error(f"A muted target should read 已开启 and offer 关闭, got {muted}")
         return False
     return True
 
@@ -304,7 +304,7 @@ def _test_markdown_row_follows_capability() -> bool:
     if row.command != "setup markdown":
         Logger.error(f"The markdown row should point at setup markdown, got {row.command!r}")
         return False
-    if row.value != "已开启" or row.action != "关闭 Markdown":
+    if row.value != "已开启" or row.action != "关闭":
         Logger.error(f"An unset preference means markdown is on, got {row.value} / {row.action}")
         return False
     return True
@@ -314,7 +314,7 @@ def _test_markdown_row_follows_setting() -> bool:
     """关闭后取值与入口文案须同步反转"""
     msg = _make_msg(sender_data={"use_markdown": False}, support_markdown_toggle=True)
     row = _row_by_label(build_sender_rows(msg), "Markdown 消息")
-    if not row or row.value != "已关闭" or row.action != "开启 Markdown":
+    if not row or row.value != "已关闭" or row.action != "开启":
         Logger.error(f"A disabled markdown switch should offer to turn it back on, got {row}")
         return False
     return True
@@ -322,16 +322,14 @@ def _test_markdown_row_follows_setting() -> bool:
 
 def _test_invalid_prompt_row() -> bool:
     """「模块不存在」提示是场景域的开关，取值随场景设置反转"""
-    on = _row_by_label(build_target_rows(_make_msg()), "「模块不存在」提示")
-    if not on or on.command != "setup invalid":
+    on = _row_by_label(build_target_rows(_make_msg()), "“模块不存在”提示")
+    if not on or on.command != "setup invalid_module_prompt":
         Logger.error(f"The target panel should carry the invalid-module switch, got {on}")
         return False
     if on.value != "已开启":
         Logger.error(f"An unset switch means the prompt is on, got {on.value}")
         return False
-    off = _row_by_label(
-        build_target_rows(_make_msg(target_data={"invalid_module_prompt": False})), "「模块不存在」提示"
-    )
+    off = _row_by_label(build_target_rows(_make_msg(target_data={"invalid_module_prompt": False})), "“模块不存在”提示")
     if not off or off.value != "已关闭":
         Logger.error(f"A disabled switch should read 已关闭, got {off and off.value}")
         return False
