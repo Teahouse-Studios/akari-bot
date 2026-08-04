@@ -20,6 +20,7 @@ from core.utils.http import get_url
 from core.web_render import web_render, SourceOptions
 from modules.wiki.database.models import WikiSiteInfo, WikiAllowList, WikiBlockList
 from modules.wiki.utils.bot import BotAccount
+from modules.wiki.utils.summarize import extract_summary, truncate_summary
 from .mapping import *
 
 default_locale = BaseConfig.default_locale
@@ -357,39 +358,7 @@ class WikiLib:
         """
         parse text to get a short description
         """
-        try:
-            desc = text.split("\n")
-            desc_list = []
-            for x in desc:
-                if x != "":
-                    desc_list.append(x)
-            desc = "\n".join(desc_list)
-            desc_end = re.findall(r"(.*?(?:!\s|\?\s|\.\s|！|？|。)).*", desc, re.S | re.M)
-            if desc_end:
-                if re.findall(r"[({\[>\"\'《【‘“「（]", desc_end[0]):
-                    desc_end = re.findall(
-                        r"(.*?[)}\]>\"\'》】’”」）].*?(?:!\s|\?\s|\.\s|！|？|。)).*",
-                        desc,
-                        re.S | re.M,
-                    )
-                desc = desc_end[0]
-        except Exception:
-            Logger.exception()
-            desc = ""
-        if desc in ["...", "…"]:
-            desc = ""
-        ell = False
-        if len(desc) > 250:
-            desc = desc[0:250]
-            ell = True
-        split_desc = desc.split("\n")
-        for d in split_desc:
-            if not d:
-                split_desc.remove("")
-        if len(split_desc) > 5:
-            split_desc = split_desc[0:5]
-            ell = True
-        return "\n".join(split_desc) + ("..." if ell else "")
+        return truncate_summary(text)
 
     async def get_html_to_text(self, page_name, section=None):
         """
@@ -430,6 +399,26 @@ class WikiLib:
             Logger.exception()
             desc = ""
         return desc
+
+    @staticmethod
+    def _get_revision_content(page_raw: dict) -> str:
+        """
+        从查询结果中取出页面的 Wikitext。
+
+        MediaWiki 1.32 起内容置于 slots 结构下，更低版本直接置于 revision 上，
+        两种结构都要认。
+
+        :param page_raw: 查询结果中单个页面的原始数据。
+        :returns: 页面的 Wikitext；无修订内容时返回空字符串。
+        """
+        revisions = page_raw.get("revisions")
+        if not revisions:
+            return ""
+        revision = revisions[0]
+        slots = revision.get("slots")
+        if slots:
+            return slots.get("main", {}).get("*", "")
+        return revision.get("*", "")
 
     async def search_page(self, search_text, namespace="*", limit=10, srwhat="text"):
         await self.fixup_wiki_info()
@@ -661,7 +650,19 @@ class WikiLib:
                     "ppprop": "description|displaytitle|disambiguation|infoboxes",
                     "explaintext": "true",
                     "exsectionformat": "plain",
-                    "exchars": "200",
+                    "exchars": "300",
+                }
+            )
+        else:
+            # 摘要须由本地解析 Wikitext 得出。此处随主查询一并取回，无须额外请求。
+            # rvslots 自 MediaWiki 1.32 起提供，更低版本会忽略该参数并返回旧式结构，
+            # 故读取时两种结构都要认。
+            query_props += ["revisions"]
+            query_string.update(
+                {
+                    "prop": "|".join(query_props),
+                    "rvprop": "content",
+                    "rvslots": "main",
                 }
             )
 
@@ -984,12 +985,16 @@ class WikiLib:
                                     page_info.before_page_property = page_info.page_property = "template"
                             # get description
                             if get_desc:
-                                if use_textextracts and (not selected_section or page_info.invalid_section):
+                                if use_textextracts and not selected_section:
                                     raw_desc = page_raw.get("extract")
                                     if raw_desc:
                                         page_desc = self.parse_text(raw_desc)
                                 else:
-                                    page_desc = self.parse_text(await self.get_html_to_text(title, selected_section))
+                                    # 解析不出正文时不再回退至渲染 HTML：那条路径取回的是信息框、
+                                    # 导航栏一类的原始文本，充作摘要没有意义，宁可只给出链接
+                                    page_desc = self.parse_text(
+                                        extract_summary(self._get_revision_content(page_raw), selected_section)
+                                    )
                             full_url = page_raw["fullurl"] + page_info.args
                             file = None
                             if "imageinfo" in page_raw:

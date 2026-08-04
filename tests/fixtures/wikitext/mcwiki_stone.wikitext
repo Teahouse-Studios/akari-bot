@@ -1,0 +1,265 @@
+{{about|名为石头的方块||岩石|和|石}}
+{{Infobox block
+|image=Stone.png
+|invimage=Stone
+|light=0
+}}
+
+{{relevant tutorial|刷石机}}
+
+{{Quote|这种灰色的坚硬方块是Minecraft最初的几种方块之一，与泥土和木板一同于2009年5月16日加入，那时游戏还处于开发早期。实际上，它的辈分快赶上“Minecraft”这个名字本身了——在那天之前，这款游戏只是被简单地称为“Cave Game”，而在那之后变成了“Minecraft: Order of the Stone”。|[[Duncan Geere]]<ref>{{article|block-week-stone|Block of the Week: Stone |May 4, 2018}}</ref>||Duncan Geere Mojavatar.png}}
+
+'''石头（Stone）'''是在[[主世界]]中大量存在的方块。
+
+== 生成 ==
+=== 自然生成 ===
+[[File:Generated Stone in Plains.png|thumb|[[平原]]中石头的生成位置]]
+在主世界中，石头会在Y=0以上的高度生成。在Y=1到Y=7之间，石头会逐渐向[[深板岩]]过渡。在多数生物群系内，[[区块]]生成时会将石头布置在表层的方块（如[[草方块]]和[[泥土]]、[[沙子]]和[[砂岩]]等）之下。在有些生物群系，如[[山地]]，还能够看到暴露在外的石头。
+
+石头也会作为[[雪屋]]、主世界[[废弃传送门]]、[[古迹废墟]]、[[硫黄涌泉]]和{{in update|drop 3 2026|for=[[废弃营地]]}}的一部分，以及[[试炼密室]]中生成[[蜘蛛]]和[[洞穴蜘蛛]]的[[试炼刷怪笼]]旁自然生成。
+
+{{Block distribution}}
+
+=== 水与熔岩接触 ===
+[[File:Stone generator.png|thumb|简易的石头生成器]]
+{{main|熔岩#熔岩和水的互动}}
+
+当[[熔岩]]从上方流入[[水]]时，被流入的水会变成石头。
+
+== 获取 ==
+=== 箱子战利品 ===
+{{LootChestItem|stone}}
+
+=== 烧炼 ===
+{{Smelting
+|head=1
+|showname=1
+|Cobblestone
+|Stone
+|0.1
+|foot=1
+}}
+
+== 破坏 ==
+挖掘石头的合适工具是镐。石头需要木镐或品质更好的镐来挖掘，否则挖掘时间将延长且不会掉落。
+
+{{Breaking table}}
+
+没有被具有[[精准采集]]的工具挖掘破坏时，石头被破坏后会掉落1个[[圆石]]。
+
+被具有精准采集的工具挖掘破坏时，石头被破坏后会掉落自身。
+
+== 用途 ==
+=== 蠹虫 ===
+[[蠹虫]]能进入石头并在石头里隐藏起来，使石头变成[[虫蚀石头]]。
+
+=== 合成材料 ===
+{{crafting usage|Stone}}
+
+=== 烧炼材料 ===
+{{Smelting
+|head=1
+|showname=1
+|Stone
+|Smooth Stone
+|0.1
+|foot=1
+}}
+
+=== 切石 ===
+{{Stonecutting
+|head=1
+|showname=1
+|Stone
+|Stone Slab, 2; Stone Stairs; Stone Bricks; Stone Brick Slab, 2; Stone Brick Stairs; Stone Brick Wall; Chiseled Stone Bricks
+}}
+{{Stonecutting
+|Stone
+|Cobblestone; Cobblestone Slab, 2; Cobblestone Stairs; Cobblestone Wall
+|foot=1
+}}
+
+=== 酿造材料 ===
+{{Brewing
+|head=1
+|Stone
+|Mundane Potion
+|base=Water Bottle
+}}
+{{Brewing
+|Stone
+|Potion of Infestation
+|foot=1
+}}
+
+=== 交易 ===
+{{Trade uses}}
+
+=== 山羊冲撞 ===
+[[山羊]]在冲撞石头时会掉落[[山羊角]]。
+
+=== 转变 ===
+对上方为空气的[[苔藓块]]或[[苍白苔藓块]]{{ctrl|使用}}[[骨粉]]会使周围7×11×7范围内，最上方的石头转变为苔藓块或苍白苔藓块。
+
+== 音效 ==
+{{Sound table/Block/Stone}}
+
+== 数据值 ==
+=== ID ===
+{{edition|java}}：
+{{ID table
+|generatetranslationkeys=java
+|Stone
+|spritetype=block
+|nameid=stone
+|showblocktags=je
+|blocktags={{GameTag|block|stone}}
+|showitemtags=je
+|itemtags={{GameTag|item|stone}}
+|foot=1}}
+
+{{edition|bedrock}}：
+{{ID table
+|generatetranslationkeys=bedrock
+|Stone
+|spritetype=block
+|nameid=stone
+|translationkey=tile.stone.stone.name
+|showblocktags=be
+|blocktags={{GameTagBE|block|stone}}
+|showitemtags=be
+|itemtags={{GameTagBE|item|stone}}
+|foot=1
+}}
+
+=== 方块数据 ===
+{{see also|基岩版数据值}}
+{{in|be}}石头使用下列数据值：
+{{/DV}}
+
+=== 方块状态 ===
+{{see also|方块状态}}
+
+{{Block states table}}
+
+== 视频 ==
+{{bv|BV18U4y187qq}}
+
+== 历史 ==
+{{HistoryTable
+|{{HistoryLine|java pre-Classic}}
+|{{HistoryLine||rd-131655|[[File:Stone JE1.png|32px]] 加入了石头。
+|[[File:Stone JE1 (facing NWU).png|32px]] 石头的底部纹理映射是镜像翻转的。}}
+|{{HistoryLine||rd-20090515|[[File:Stone JE2 BE1.png|32px]] [[File:Stone JE2 (facing NWU).png|32px]] 更改了石头的纹理。}}
+|{{HistoryLine|java Classic}}
+|{{HistoryLine||0.26 SURVIVAL TEST|[[苦力怕]]的[[爆炸]]不再能够破坏石头或类似石头的方块。}}
+|{{HistoryLine||0.27 SURVIVAL TEST|挖掘石头现在会掉落[[圆石]]。}}
+|{{HistoryLine|java Indev}}
+|{{HistoryLine||0.31|dev=20100124-2119|[[Indev房子]]的[[箱子]]中现在包含石头。}}
+|{{HistoryLine|||dev=20100129-1447|Indev房子的箱子中现在不包含石头。}}
+|{{HistoryLine|||dev=20100201-2227|石头现在只能在用[[镐]]采集的情况下才会掉落物品。}}
+|{{HistoryLine||20100223|现在圆石可以在[[熔炉]]中烧制成为石头。}}
+|{{HistoryLine|java Alpha}}
+|{{HistoryLine||v1.0.1|现在石头可以合成石头压力板和石头按钮。}}
+|{{HistoryLine|java Beta}}
+|{{HistoryLine||1.3|石头现在可以用于合成[[平滑石头台阶|石台阶]]。
+|石头现在可用于合成[[红石中继器]]。
+|合成压力板现在只需要2块石头。}}
+|{{HistoryLine||1.8|dev=pre1|石头现在可以合成[[石砖]]。}}
+|{{HistoryLine|java}}
+|{{HistoryLine||1.0.0|dev=Beta 1.9-pre1|现在[[熔岩]]在[[水]]上流过会生成石头。}}
+|{{HistoryLine|||dev=Beta 1.9-pre5|[[File:Stone JE3 BE2.png|32px]] 更改了石头的纹理。}}
+|{{HistoryLine||1.4.2|dev=12w34b|合成石按钮现在只需要1块石头。}}
+|{{HistoryLine|||dev=12w38a|更改了放置、采集以及在石头上行走的音效。}}
+|{{HistoryLine||1.5|dev=13w01a|石头可以用来合成[[漏斗]]和[[红石比较器]]。}}
+|{{HistoryLine|||dev=13w02a|石头不再能够用来合成漏斗。}}
+|{{HistoryLine|||dev=14w27b|石头的纹理现在会随机旋转。}}
+|{{HistoryLine||1.9|dev=15w37a|石头现在可以作为[[虚空平台]]的一部分生成。}}
+|{{HistoryLine|||dev=15w43a|石头现在可以生成于[[雪屋]]的地下室中}}
+|{{HistoryLine||1.13|dev=17w47a|共享<code>stone</code>ID的几种方块被拆分，拥有了各自的ID。
+|在[[扁平化]]之前，石头方块的数字ID是1。}}
+|{{HistoryLine||1.14|dev=18w43a|[[File:Stone JE4.png|32px]] 更改了石头的纹理。
+|石头现在可以烧炼为[[平滑石头]]。
+|石头现在可以用于合成[[石头台阶|台阶]]和[[石头楼梯|楼梯]]。}}
+|{{HistoryLine||2018年8月30日||link={{tweet|jappa|1035085813619597314}}|[[File:Stone (pre-release).png|32px]] Jappa在推特上发布了石头的新纹理。}}
+|{{HistoryLine||1.14|dev=18w44a|[[File:Stone JE5 BE3.png|32px]] 更改了石头的纹理。}}
+|{{HistoryLine|||dev=18w50a|石头现在能用来合成高炉。}}
+|{{HistoryLine|||dev=19w04a|石头现在能用来合成切石机。}}
+|{{HistoryLine|||dev=19w04a|现在石匠村民会收购石头。}}
+|{{HistoryLine||1.19|dev=22w17a|现在山羊冲撞石头时会掉落山羊角。}}
+|{{HistoryLine||1.20|dev=23w12a|现在石头可以作为[[古迹废墟]]的一部分自然生成。}}
+|{{HistoryLine||1.20.3|dev=23w45a|exp=update_1_21|石头现在可以生成于[[试炼密室]]中生成[[蜘蛛]]和[[洞穴蜘蛛]]的[[试炼刷怪笼]]旁。}}
+|{{HistoryLine||1.20.5|dev=24w13a|现在石头可以用来酿造虫蚀药水。}}
+|{{HistoryLine|||exp=update_1_21|dev=pre1|用石头酿造虫蚀药水的功能现在属于[[实验性内容]]。<ref>{{bug|MC-269999|||Fixed}}</ref>}}
+|{{HistoryLine||1.21|dev=24w18a|23w45a和24w13a中的变更不再属于[[实验性内容]]。}}
+|{{HistoryLine||26.1|dev=snapshot-8|现在石头可在切石机中制成[[圆石]]及其台阶、楼梯和墙。}}
+|{{HistoryLine||26.2|dev=snapshot-6|现在石头会作为[[硫黄涌泉]]的一部分自然生成。}}
+|{{HistoryLine||26.3|dev=snapshot-1|加入了[[废弃营地]]，石头会作为其的一部分自然生成。}}
+|{{HistoryLine|pocket alpha}}
+|{{HistoryLine||Demo|[[File:Stone JE2 BE1.png|32px]] 加入了石头。}}
+|{{HistoryLine||0.2.0|[[File:Stone JE3 BE2.png|32px]] 更改了石头的纹理。}}
+|{{HistoryLine||0.3.0|石头现在可以制作[[平滑石头台阶|石台阶]]。}}
+|{{HistoryLine||0.4.0|石头现在可以做成[[石砖]]。}}
+|{{HistoryLine||0.12.1|dev=build 1|石头现在可以通过附有[[精准采集]]魔咒的[[镐]]挖掘获取。}}
+|{{HistoryLine||0.13.0|dev=build 1|石头现在用于合成石质[[按钮]]和[[压力板]]。}}
+|{{HistoryLine||0.14.0|dev=build 1|石头现在用于合成[[红石中继器]]和[[红石比较器]]。}}
+|{{HistoryLine|bedrock}}
+|{{HistoryLine||1.9.0|dev=1.9.0.0|现在能通过烧炼石头获取[[平滑石头]]。
+|石头现在能用来合成[[石头台阶|台阶]]和[[石头楼梯|楼梯]]。}}
+|{{HistoryLine||1.10.0|dev=1.10.0.3|石头现在能用来合成[[砂轮]]和[[切石机]]。
+|现在能和石匠村民交易石头了。
+|[[File:Stone JE5 BE3.png|32px]] 更改了石头的纹理。}}
+|{{HistoryLine||1.11.0|dev=1.11.0.1|石头现在可在村庄的石匠箱子内获得。}}
+|{{HistoryLine|||dev=1.11.0.4|更改了交易，学徒级别的石匠村民现在会购买石头。}}
+|{{HistoryLine||1.17.0|dev=1.17.0.52|石头不再可用于在[[铁砧]]上修复石质工具。}}
+|{{HistoryLine||1.19.80|dev=1.19.80.22|exg=next_major_update|现在石头会作为[[古迹废墟]]的一部分自然生成。}}
+|{{HistoryLine||1.20.0|dev=1.20.0.21|1.19.80.22中的变更不再属于[[实验性玩法]]。}}
+|{{HistoryLine||1.20.50|dev=1.20.50.20|拆分了石头的ID，石头仍使用<code>stone</code>作为ID，同时弃用了方块状态<code>stone_type</code>。}}
+|{{HistoryLine||1.20.60|dev=1.20.60.20|exg=updateAnnouncedLive2023|石头现在可以生成于[[试炼密室]]中生成[[蜘蛛]]和[[洞穴蜘蛛]]的[[试炼刷怪笼]]旁。}}
+|{{HistoryLine||1.21.0|dev=1.21.0.20|exg=updateAnnouncedLive2023|现在石头可以用来酿造虫蚀药水。}}
+|{{HistoryLine|||dev=1.21.0.22|1.20.60.20和1.21.0.20中的变更不再属于[[实验性玩法]]。}}
+|{{HistoryLine||26.10|dev=26.10.24|现在石头可在切石机中制成[[圆石]]及其台阶、楼梯和墙。}}
+|{{HistoryLine||26.30|dev=26.30.27|现在石头会作为[[硫黄涌泉]]的一部分自然生成。}}
+|{{HistoryLine||26.40|exg=y_2026_drop_3|dev=26.40.27|加入了废弃营地，石头会作为其的一部分自然生成。}}
+|{{HistoryLine||26.50|dev=26.50.22|26.40.27中的变更不再属于[[实验性玩法]]。}}
+|{{HistoryLine|console}}
+|{{HistoryLine||xbox=TU1|xbone=CU1|ps3=1.00|psvita=1.00|ps4=1.00|wiiu=Patch 1|switch=1.0.1|[[File:Stone JE3 BE2.png|32px]] 加入了石头。}}
+|{{HistoryLine||xbox=none|xbone=none|ps3=none|psvita=none|ps4=1.90|wiiu=none|switch=none|[[File:Stone JE5 BE3.png|32px]] 更改了石头的纹理。}}
+|{{HistoryLine|new 3ds}}
+|{{HistoryLine||0.1.0|[[File:Stone JE3 BE2.png|32px]] 加入了石头。}}
+}}
+
+== 你知道吗 ==
+* 虽然使用不具有[[精准采集]]的工具挖掘破坏石头会掉落[[圆石]]，但挖掘破坏[[石头台阶]]和[[石头楼梯]]只会掉落它们自身，而不会掉落[[圆石台阶]]和[[圆石楼梯]]，这是开发者有意为之的<ref>{{bug|MC-153244|||WAI}}</ref>。
+
+== 画廊 ==
+<gallery>
+File:Stone in Cave.png|一个[[洞穴]]的侧壁，由石头组成
+File:StoneVariants.png|几种不同类型的石头
+File:Natural Stone Generation.png|石头自然生成在[[风袭森林]]
+File:Transition between Stone and Deepslate.png|Y=0附近石头和[[深板岩]]的过渡
+</gallery>
+
+== 参考 ==
+{{Reflist}}
+
+== 导航 ==
+{{Navbox blocks|building blocks|natural blocks}}
+
+[[cs:Kámen]]
+[[de:Stein]]
+[[en:Stone]]
+[[es:Piedra]]
+[[fr:Roche]]
+[[hu:Kő]]
+[[it:Pietra]]
+[[ja:石]]
+[[ko:돌]]
+[[lzh:石]]
+[[nl:Steen]]
+[[pl:Kamień]]
+[[pt:Pedra]]
+[[ru:Камень]]
+[[th:หิน]]
+[[tr:Taş]]
+[[uk:Камінь]]

@@ -256,6 +256,7 @@ dependencies = [
     { name = "urllib3" },
     { name = "uvicorn", extra = ["standard"] },
     { name = "webcolors" },
+    { name = "wikitextparser" },
     { name = "wolframalpha" },
 ]
 
@@ -330,6 +331,7 @@ requires-dist = [
     { name = "urllib3", specifier = ">=2.6.3" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.38.0,<1.0.0" },
     { name = "webcolors", specifier = ">=25.0.0,<26.0.0" },
+    { name = "wikitextparser", specifier = ">=1.0.3" },
     { name = "wolframalpha", specifier = ">=5.0.0,<6.0.0" },
 ]
 
@@ -3880,6 +3882,15 @@ wheels = [
 ]
 
 [[package]]
+name = "wcwidth"
+version = "0.8.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/34/74/c6428f875774288bec1396f5bfcbc2d925700a4dad61727fd5f2b12f249d/wcwidth-0.8.2.tar.gz", hash = "sha256:91fbef97204b96a3d4d421609b80340b760cf33e26da123ff243d76b1fda8dda", size = 1466253, upload-time = "2026-06-29T18:11:11.601Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/96/42/3e5985a0a7e57de470b320c6d6a1a67c844f6737a587f3d44dd13d1819e7/wcwidth-0.8.2-py3-none-any.whl", hash = "sha256:d63947694a0539a1d51e01eda7caf800c291020e6cdd7e28ad7b14dd33ad4f85", size = 323166, upload-time = "2026-06-29T18:11:09.888Z" },
+]
+
+[[package]]
 name = "webcolors"
 version = "25.10.0"
 source = { registry = "https://pypi.org/simple" }
@@ -3943,6 +3954,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/5a/70/1469ef1d3542ae7c2c7b72bd5e3a4e6ee69d7978fa8a3af05a38eca5becf/werkzeug-3.1.5.tar.gz", hash = "sha256:6a548b0e88955dd07ccb25539d7d0cc97417ee9e179677d22c7041c8f078ce67", size = 864754, upload-time = "2026-01-08T17:49:23.247Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ad/e4/8d97cca767bcc1be76d16fb76951608305561c6e056811587f36cb1316a8/werkzeug-3.1.5-py3-none-any.whl", hash = "sha256:5111e36e91086ece91f93268bb39b4a35c1e6f1feac762c9c822ded0a4e322dc", size = 225025, upload-time = "2026-01-08T17:49:21.859Z" },
+]
+
+[[package]]
+name = "wikitextparser"
+version = "1.0.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "regex" },
+    { name = "wcwidth" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/bf/d0/3b3a5d2fc818ac4f03e0477ebaf0053814c58e854370de6247601faf777c/wikitextparser-1.0.3.tar.gz", hash = "sha256:613c60b1a383244cd5296434c5b258c5de50b58e329cdaa32b3bd149c5d384a6", size = 52133, upload-time = "2026-07-31T16:35:48.832Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b5/c7/9063283928842a644412696b08c49d10a7d710ba7485b279f38be96848ad/wikitextparser-1.0.3-py3-none-any.whl", hash = "sha256:65e7f45bcb8c16a0e3cf380bbde3e1dc0d60e4ce46601cc5f474ae630cf76231", size = 61529, upload-time = "2026-07-31T16:35:45.478Z" },
 ]
 
 [[package]]

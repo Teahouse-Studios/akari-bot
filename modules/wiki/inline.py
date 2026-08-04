@@ -365,12 +365,16 @@ async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     headers = target.headers
     for x in match_msg:
-        wiki_ = WikiLib(x)
-        if check_from_database := await wiki_.check_wiki_info_from_database_cache():
-            if check_from_database.available:
-                check_from_api = await wiki_.check_wiki_available()
-                if check_from_api.available:
-                    _query_list.append({x: check_from_api.value})
+        try:
+            wiki_ = WikiLib(x)
+            if check_from_database := await wiki_.check_wiki_info_from_database_cache():
+                if check_from_database.available:
+                    check_from_api = await wiki_.check_wiki_available()
+                    if check_from_api.available:
+                        _query_list.append({x: check_from_api.value})
+        except Exception:
+            Logger.exception("Error occurred while checking wiki info for query: ")
+
     if _query_list:
         await msg.hold()
         asyncio.create_task(bgtask(_query_list))

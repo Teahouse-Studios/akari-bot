@@ -437,7 +437,9 @@ referencing==0.37.0
     #   jsonschema
     #   jsonschema-specifications
 regex==2026.5.9
-    # via dateparser
+    # via
+    #   dateparser
+    #   wikitextparser
 rich==15.0.0
     # via e2b
 rpds-py==0.30.0
@@ -531,6 +533,8 @@ watchfiles==1.1.1
     # via uvicorn
 wcmatch==10.1
     # via e2b
+wcwidth==0.8.2
+    # via wikitextparser
 webcolors==25.10.0
     # via akari-bot
 websockets==16.0
@@ -539,6 +543,8 @@ werkzeug==3.1.5
     # via
     #   flask
     #   quart
+wikitextparser==1.0.3
+    # via akari-bot
 win32-setctime==1.2.0 ; sys_platform == 'win32'
     # via loguru
 wolframalpha==5.1.3
