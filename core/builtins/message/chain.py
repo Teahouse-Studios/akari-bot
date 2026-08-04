@@ -351,6 +351,18 @@ class MessageChain:
 
             # ========== 处理 URL 元素 ==========
             elif isinstance(x, URLElement):
+                # 链接须按未认证处理的两种来源：模块显式要求跳板，或会话启用了 URLManager
+                needs_guard = bool(
+                    session_info and (x.applied_mm or (session_info.use_url_manager and x.applied_mm is None))
+                )
+                if needs_guard and session_info.support_markdown and not disable_markdown:
+                    # 跳板地址经 ROT13 编码后无从辨识，且须经第三方页面中转。支持 markdown 的
+                    # 会话改以代码块呈现原始链接，供用户自行复制，警示则置于代码块的标题位置。
+                    # 此处取 original_url：显式要求跳板时 url 已被替换成跳板地址。
+                    title = session_info.locale.t("message.url.untrusted")
+                    value.append(PlainElement.assign(f"```{title}\n{x.original_url}\n```", disable_joke=True))
+                    continue
+
                 # 应用 URL 跳板（如果需要）
                 if session_info and (session_info.use_url_manager and x.applied_mm is None):
                     x = URLElement.assign(x.url, use_mm=True, md_format_name=x.md_format_name)

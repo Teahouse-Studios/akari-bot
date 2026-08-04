@@ -23,7 +23,7 @@ from bots.qqbot.info import (
 )
 from bots.qqbot.utils import url_filter
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
-from core.builtins.message.elements import ActionTextElement, PlainElement, ImageElement, MentionElement
+from core.builtins.message.elements import ActionTextElement, PlainElement, ImageElement, MentionElement, URLElement
 from core.builtins.message.internal import I18NContext
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
@@ -667,6 +667,8 @@ class QQBotContextManager(ContextManager):
                 _use_markdown = False
             if converted_message.only(ImageElement) and len(converted_message) == 1:
                 _use_markdown = False
+            if message.contains(URLElement):
+                _use_markdown = True
 
             if keyboard:
                 _use_markdown = True

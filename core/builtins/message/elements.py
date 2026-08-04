@@ -173,6 +173,7 @@ class URLElement(BaseElement):
     ```
     """
 
+    original_url: str
     url: str
     applied_mm: bool | None = None
     applied_md_format: bool = False
@@ -195,6 +196,7 @@ class URLElement(BaseElement):
         :param md_format_name: Markdown 格式的链接名称（默认为 None，使用 URL 本身）
         :return: URLElement 实例
         """
+        original_url = url
         # ========== 步骤 1: 应用链接跳板（如果需要）==========
         if use_mm:
             # 使用 mm.teahouse.team 的跳板服务，用于隐藏原始链接
@@ -212,7 +214,15 @@ class URLElement(BaseElement):
             # 将 URL 转换为 Markdown 链接格式 [名称](URL)
             url = f"[{md_format_name if md_format_name else url}]({url})"
 
-        return deepcopy(cls(url=url, applied_mm=use_mm, applied_md_format=md_format, md_format_name=md_format_name))
+        return deepcopy(
+            cls(
+                original_url=original_url,
+                url=url,
+                applied_mm=use_mm,
+                applied_md_format=md_format,
+                md_format_name=md_format_name,
+            )
+        )
 
     def kecode(self):
         """

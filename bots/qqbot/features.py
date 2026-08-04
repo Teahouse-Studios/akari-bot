@@ -33,6 +33,7 @@ features = Features(
     support_markdown_toggle=qq_use_markdown,
     require_check_dirty_words=dirty_word_check,
     use_url_md_format=qq_use_markdown,
+    use_url_manager=CoreConfig.enable_urlmanager,
 )
 
 # 群主未开启「读取全部消息」权限时，机器人只收到提及自身的消息。平台不提供查询主动推送

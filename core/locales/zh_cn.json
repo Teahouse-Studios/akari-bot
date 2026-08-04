@@ -150,6 +150,7 @@
     "message.success": "成功。",
     "message.typing": "正在输入中……",
     "message.unknown": "未知",
+    "message.url.untrusted": "此链接未经认证，请谨慎打开",
     "message.wait.confirm.prompt": "（发送“是”等符合确认条件的词语来确认）",
     "message.wait.confirm.prompt.button": "（发送“是”等符合确认条件的词语，或点击按钮来确认）",
     "message.wait.confirm.prompt.qq": "（发送“是”等符合确认条件的词语，点击表情反应或戳一戳来确认）",
