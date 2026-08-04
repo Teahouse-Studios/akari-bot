@@ -4,11 +4,11 @@ version = "0.1.0"
 description = ""
 authors = [
     { name = "OasisAkari", email = "oasisakari@gmail.com" },
-    { name = "Dianliang233", email = "me@dian.fyi" },
     { name = "DoroWolf", email = "dorowolf314@gmail.com" },
-    { name = "nullcat", email = "null@teahou.se" },
-    { name = "_LittleC_", email = "i@ltlec.com" },
     { name = "cloudw233", email = "cloudw233@outlook.com" },
+    { name = "Dianliang233", email = "me@dian.fyi" },
+    { name = "_LittleC_", email = "i@ltlec.com" },
+    { name = "nullcat", email = "null@teahou.se" },
 ]
 license = "AGPL-3.0"
 license-files = ["LICENSE", "**/LICENSE"]
@@ -18,7 +18,7 @@ dependencies = [
     # akari-bot-service
     "akari-bot-i18n==0.0.4",
     "akari-bot-webrender==0.5.14",
-    "akari-bot-webui==0.3.12",
+    "akari-bot-webui==0.3.13",
     # lib
     "coverage>=7.9.1,<8.0.0",
     "cryptography>=50.0.0,<50.1.0",
