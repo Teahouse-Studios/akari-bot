@@ -405,8 +405,6 @@ async def _(msg: Bot.MessageSession, module: str):
                 if table:
                     detail = []
                     if module_.desc:
-                        # 简介末尾的换行与适配器补的那次叠成空行，使表头另起一个块；
-                        # 少了它，表头会被并进简介所在的段落，表格根本不成立
                         detail.append(Plain(msg.session_info.locale.t_str(module_.desc) + "\n", disable_joke=True))
                     detail += table
                     if devs_msg:
