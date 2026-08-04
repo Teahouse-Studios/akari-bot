@@ -167,7 +167,7 @@
     "wiki.message.utils.wikilib.get_failed.timeout": "尝试建立连接超时。",
     "wiki.message.utils.wikilib.invalid.empty_title": "请求的页面标题为空，或只包含命名空间名称。",
     "wiki.message.utils.wikilib.invalid.invalid_character": "请求的页面标题包含无效字符：“${char}”。",
-    "wiki.message.utils.wikilib.no_textextracts": "提示：此 Wiki 没有开启 TextExtracts 扩展，摘要由机器人离线解析页面源代码生成，可能与页面实际渲染的内容存在出入，部分页面可能没有摘要。",
+    "wiki.message.utils.wikilib.no_textextracts": "提示：此 Wiki 没有开启 TextExtracts 扩展。摘要由机器人离线解析页面源代码生成，可能与页面实际渲染的内容存在出入，部分页面可能没有摘要。",
     "wiki.message.wiki_audit.add.failed": "失败：${api} 已存在于${list_name}中。",
     "wiki.message.wiki_audit.add.success": "成功加入${list_name}：${api}",
     "wiki.message.wiki_audit.list.allowlist": "现有白名单：",
