@@ -125,8 +125,8 @@ def build_module_table(msg: Bot.MessageSession, groups: list[tuple[str, list[str
                 pending = " |\n"
             else:
                 pending = " | "
-    # 末尾不留换行：其后若还有元素，适配器会按元素补上一次换行，两者叠加会多出一个空行
-    parts.append(Plain(pending.rstrip("\n"), disable_joke=True))
+
+    parts.append(Plain(pending, disable_joke=True))
     return parts
 
 
@@ -225,8 +225,8 @@ def build_command_table(msg: Bot.MessageSession, help_doc: dict, regex_rows: lis
                     cell = first if kind == "code" else escape_table_cell(first)
                     pending += f"{cell} | {escape_table_cell(second)} | "
             pending = pending.rstrip() + "\n"
-    # 末尾不留换行：其后若还有元素，适配器会按元素补上一次换行，两者叠加会多出一个空行
-    parts.append(Plain(pending.rstrip("\n"), disable_joke=True))
+    # 末尾保留换行，理由同 build_module_table()：表格靠空行终结
+    parts.append(Plain(pending, disable_joke=True))
     return parts
 
 
@@ -405,7 +405,9 @@ async def _(msg: Bot.MessageSession, module: str):
                 if table:
                     detail = []
                     if module_.desc:
-                        detail.append(Plain(msg.session_info.locale.t_str(module_.desc), disable_joke=True))
+                        # 简介末尾的换行与适配器补的那次叠成空行，使表头另起一个块；
+                        # 少了它，表头会被并进简介所在的段落，表格根本不成立
+                        detail.append(Plain(msg.session_info.locale.t_str(module_.desc) + "\n", disable_joke=True))
                     detail += table
                     if devs_msg:
                         detail.append(Plain(devs_msg))

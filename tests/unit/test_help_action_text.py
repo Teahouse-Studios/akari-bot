@@ -10,7 +10,7 @@
 
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import ActionTextElement, PlainElement
-from core.builtins.message.internal import ActionText, I18NContext
+from core.builtins.message.internal import ActionText, I18NContext, Plain
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
@@ -383,19 +383,47 @@ async def _test_table_empty_returns_nothing():
     return True
 
 
+async def _test_table_is_fenced_by_blank_lines():
+    """测试表格前后各有一个空行
+
+    markdown 表格靠空行终结：末尾少了它，其后的「模块作者」等行会被某些客户端的解析器
+    吸进表格；开头少了它，表头会被并进上一段，表格根本不成立。两侧的表现又随客户端而异，
+    正是本用例要钉死的东西。
+    """
+    session_info = await _session("help_table_fence")
+    msg = _FakeSession(session_info)
+    doc = {"args": [{"args": "~m c", "desc": "说明"}], "options": []}
+    # 复刻 ~help <模块> 的组装：简介、表格、作者
+    elements = [Plain("模块简介\n", disable_joke=True)]
+    elements += build_command_table(msg, doc, [])
+    elements.append(Plain("模块作者：someone"))
+
+    lines = _render_lines(session_info, elements)
+    if "模块简介" not in lines[0]:
+        Logger.error(f"The description should lead the message, got {lines[0]!r}")
+        return False
+    if lines[1].strip():
+        Logger.error(f"A blank line should separate the description from the table head, got {lines!r}")
+        return False
+    author = next(index for index, line in enumerate(lines) if "模块作者" in line)
+    if lines[author - 1].strip():
+        Logger.error(f"A blank line should terminate the table before the author line, got {lines!r}")
+        return False
+    return True
+
+
 async def _test_table_does_not_end_inline():
-    """测试表格以纯文本收尾，且末尾不带换行
+    """测试表格以纯文本收尾
 
     收尾若是指令操作，调用方随后追加的元素会被并入最后一个单元格所在的行。
-    末尾若留有换行，适配器又会按元素补上一次，两者叠加会在表格与后续内容之间多出一个空行。
     """
     msg = _FakeSession(await _session("help_table_tail"))
     parts = build_module_table(msg, [(TABLE_TITLE_KEY, ["wiki", "dice"])])
     if isinstance(parts[-1], ActionTextElement):
         Logger.error("The table must not end with an action text, or the following element would be glued to it")
         return False
-    if parts[-1].text.endswith("\n"):
-        Logger.error(f"The table must not end with a newline, got {parts[-1].text!r}")
+    if not parts[-1].text.endswith("\n"):
+        Logger.error(f"The table must end with a newline so a blank line terminates it, got {parts[-1].text!r}")
         return False
     return True
 
@@ -583,6 +611,7 @@ async def test_clickable_modules(tester: Tester):
     await tester.test(_test_table_cells_are_clickable, "表格单元格可点击测试")
     await tester.test(_test_table_empty_returns_nothing, "表格空列表测试")
     await tester.test(_test_table_does_not_end_inline, "表格纯文本收尾测试")
+    await tester.test(_test_table_is_fenced_by_blank_lines, "表格前后空行终结测试")
     await tester.test(_test_strip_command_arguments, "命令参数剥离测试")
     await tester.test(_test_command_table_fills_stripped_command, "命令表填入剥离后命令测试")
     await tester.test(_test_command_table_escapes_pipes, "单元格竖线转义测试")
