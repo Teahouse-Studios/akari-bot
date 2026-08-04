@@ -185,7 +185,7 @@ def build_target_rows(msg: Bot.MessageSession) -> list[SettingRow]:
     rows += [
         SettingRow(
             label=locale.t("core.message.setup.list.item.timeoffset"),
-            value=locale.t("core.message.setup.list.value.timeoffset", offset=tz_offset),
+            value=locale.t("core.message.setup.list.value.timeoffset", offset="" if tz_offset == "+0" else tz_offset),
             action=locale.t("core.message.setup.list.action.modify"),
             command=f"setup timeoffset {tz_offset}",
         ),
