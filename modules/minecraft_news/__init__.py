@@ -61,7 +61,7 @@ startup_mute = (
 )
 
 
-@minecraft_news.schedule(IntervalTrigger(seconds=60))
+@minecraft_news.schedule(IntervalTrigger(seconds=600))
 async def _():
     baseurl = "https://www.minecraft.net"
     global startup_mute
