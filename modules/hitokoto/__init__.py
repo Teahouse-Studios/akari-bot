@@ -39,7 +39,7 @@ async def _(msg: Bot.MessageSession, msg_type: str | None = None):
     msg_chain = MessageChain.assign(
         [
             Plain(f"{data.get('hitokoto', '')}\n——{from_who}「{data.get('from', '')}」\n{tp}"),
-            Url(f"https://hitokoto.cn?id={data.get('id', '')}", use_mm=False),
+            Url(f"https://hitokoto.cn?id={data.get('id', '')}", trusted=True),
         ]
     )
     await msg.finish(msg_chain)

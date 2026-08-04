@@ -109,7 +109,7 @@ class ConsoleErrorInfo:
 
 # Helper constants
 REPORT_DETAILS = "你应该向本模块的原仓库发起Issue来添加有关内容（请说英文）：" + str(
-    Url("https://github.com/nh-server/Kurisu/issues", use_mm=False)
+    Url("https://github.com/nh-server/Kurisu/issues", trusted=True)
 )
 
 UNKNOWN_MODULE = ResultInfo(f"无效/未知的module。请问你正确输入错误代码了吗？{REPORT_DETAILS}")

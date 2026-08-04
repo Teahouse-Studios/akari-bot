@@ -57,11 +57,12 @@ async def get_weekly(with_img=False, zh_tw=False):
             "weekly.message.link",
             img=MessageChain.assign(Url(imglink)) if imglink else locale.t("message.none"),
             article=MessageChain.assign(
-                Url(f"https://zh.minecraft.wiki{page[0]}") if page else locale.t("message.none")
+                Url(f"https://zh.minecraft.wiki{page[0]}", trusted=True) if page else locale.t("message.none")
             ),
             link=MessageChain.assign(
                 Url(
-                    f"https://zh.minecraft.wiki/w/Minecraft_Wiki:{parse.quote('特色条目/Minecraft/' + str(iso_year))}#{parse.quote('第' + str(iso_week) + '周')}"
+                    f"https://zh.minecraft.wiki/w/Minecraft_Wiki:{parse.quote('特色条目/Minecraft/' + str(iso_year))}#{parse.quote('第' + str(iso_week) + '周')}",
+                    trusted=True,
                 )
             ),
         )

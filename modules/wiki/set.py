@@ -144,7 +144,7 @@ async def _(msg: Bot.MessageSession, interwiki: str):
     query = target.interwikis
     if query != {}:
         if interwiki in query:
-            await msg.finish(Url(query[interwiki], use_mm=False))
+            await msg.finish(Url(query[interwiki], trusted=True))
         else:
             await msg.finish(I18NContext("wiki.message.iw.get.not_found", iw=interwiki))
     else:

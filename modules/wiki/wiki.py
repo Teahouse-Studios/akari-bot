@@ -263,24 +263,12 @@ async def query_pages(
                             plain_slice.append(Plain(r.desc))
 
                     if r.link:
-                        plain_slice.append(
-                            Url(
-                                r.link,
-                                use_mm=not r.info.in_allowlist
-                                and (isinstance(session, Bot.MessageSession) and session.session_info.use_url_manager),
-                            )
-                        )
+                        plain_slice.append(Url(r.link, trusted=True if r.info.in_allowlist else None))
 
                     if r.file:
                         dl_list.append(r.file)
                         plain_slice.append(I18NContext("wiki.message.flies"))
-                        plain_slice.append(
-                            Url(
-                                r.file,
-                                use_mm=not r.info.in_allowlist
-                                and (isinstance(session, Bot.MessageSession) and session.session_info.use_url_manager),
-                            )
-                        )
+                        plain_slice.append(Url(r.file, trusted=True if r.info.in_allowlist else None))
                     else:
                         if r.link and not r.selected_section:
                             render_infobox_list.append(

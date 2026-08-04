@@ -126,4 +126,4 @@ async def get_video_info(msg: Bot.MessageSession, query, get_detail=False, use_e
             desc=desc,
             time=time,
         )
-    return [Image(pic), Url(video_url, use_mm=False), output]
+    return [Image(pic), Url(video_url, trusted=True), output]

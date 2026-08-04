@@ -161,7 +161,7 @@ class URLElement(BaseElement):
 
     属性：
         url: URL 地址或已转换的链接
-        applied_mm: 是否应用了链接跳板（None 表示自动选择）
+        trusted: 链接是否已认证（None 表示未表态，由会话决定）
         applied_md_format: 是否使用 Markdown 格式
         md_format_name: Markdown 格式的链接显示名称
 
@@ -175,22 +175,22 @@ class URLElement(BaseElement):
 
     original_url: str
     url: str
-    applied_mm: bool | None = None
+    trusted: bool | None = None
     applied_md_format: bool = False
     md_format_name: str | None = None
 
     @classmethod
-    def assign(cls, url: str, use_mm: bool | None = None, md_format: bool = False, md_format_name: str | None = None):
+    def assign(cls, url: str, trusted: bool | None = None, md_format: bool = False, md_format_name: str | None = None):
         """
         创建 URL 元素的工厂方法。
 
         支持链接跳板和 Markdown 格式两种转换。
 
         :param url: URL 地址
-        :param use_mm: 是否使用链接跳板，覆盖全局设置
-                      None 表示根据客户端情况自动选择（默认）
-                      True 表示强制使用跳板
-                      False 表示不使用跳板
+        :param trusted: 链接是否已在代码中认证
+                       None 表示未表态，由会话的 URLManager 设置决定（默认）
+                       True 表示已认证，一律不作未认证处理
+                       False 表示显式不可信，强制作未认证处理
         :param md_format: 是否使用 Markdown 格式（默认为 False）
                          True 表示转换为 [名称](URL) 格式
         :param md_format_name: Markdown 格式的链接名称（默认为 None，使用 URL 本身）
@@ -198,7 +198,8 @@ class URLElement(BaseElement):
         """
         original_url = url
         # ========== 步骤 1: 应用链接跳板（如果需要）==========
-        if use_mm:
+        # 须判 is False：None 意为未表态，交由会话决定，不可在此就套上跳板
+        if trusted is False:
             # 使用 mm.teahouse.team 的跳板服务，用于隐藏原始链接
             mm_url = "https://mm.teahouse.team/index.html?source=akaribot&rot13=%s"
             # 创建 ROT13 转换表（字母表循环移位 13 位）
@@ -218,7 +219,7 @@ class URLElement(BaseElement):
             cls(
                 original_url=original_url,
                 url=url,
-                applied_mm=use_mm,
+                trusted=trusted,
                 applied_md_format=md_format,
                 md_format_name=md_format_name,
             )

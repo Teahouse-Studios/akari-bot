@@ -173,5 +173,5 @@ async def get_user_info(msg: Bot.MessageSession, username, wikiurl, headers=None
         msgs.append(Plain(str(I18NContext("wiki.message.user.blocked.reason")) + data["blocked_reason"]))
 
     if url := data.get("url", ""):
-        msgs.append(Url(url, use_mm=msg.session_info.use_url_manager and not wiki.wiki_info.in_allowlist))
+        msgs.append(Url(url, trusted=True if wiki.wiki_info.in_allowlist else None))
     return MessageChain.assign(msgs)

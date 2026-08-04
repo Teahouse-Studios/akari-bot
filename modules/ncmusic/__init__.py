@@ -176,7 +176,7 @@ async def info(msg: Bot.MessageSession, sid: int):
         await msg.finish(
             [
                 Image(al.get("picUrl", "")),
-                Url(song_url, use_mm=False),
+                Url(song_url, trusted=True),
                 I18NContext(
                     "ncmusic.message.info",
                     name=info.get("name", ""),

@@ -30,7 +30,7 @@ async def _(msg: Bot.MessageSession):
                 if returncode == 0:
                     repo_url = repo_url.strip().replace(".git", "")
                     commit_url = f"{repo_url}/commit/{commit}"
-                    send_msgs.append(Url(commit_url, use_mm=False))
+                    send_msgs.append(Url(commit_url, trusted=True))
         else:
             version = Bot.Info.version
             send_msgs = MessageChain.assign(I18NContext("core.message.version", version=version, disable_joke=True))
@@ -40,7 +40,7 @@ async def _(msg: Bot.MessageSession):
                 if returncode == 0:
                     repo_url = repo_url.strip().replace(".git", "")
                     commit_url = f"{repo_url}/releases/tag/{version}"
-                    send_msgs.append(Url(commit_url, use_mm=False))
+                    send_msgs.append(Url(commit_url, trusted=True))
         await msg.finish(send_msgs)
     else:
         await msg.finish(I18NContext("core.message.version.unknown"))

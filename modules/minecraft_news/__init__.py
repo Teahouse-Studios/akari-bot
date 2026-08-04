@@ -97,7 +97,7 @@ async def _():
                                         title=title,
                                         desc=desc,
                                     ),
-                                    Url(link, use_mm=False),
+                                    Url(link, trusted=True),
                                     Image(imgb64) if imgb64 else None,
                                 ]
                             ),
@@ -146,7 +146,7 @@ async def _():
                                     "minecraft_news.message.feedback_news",
                                     name=name,
                                 ),
-                                Url(link, use_mm=False),
+                                Url(link, trusted=True),
                             ]
                         ),
                     )

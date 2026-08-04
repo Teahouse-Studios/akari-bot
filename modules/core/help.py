@@ -382,12 +382,13 @@ async def _(msg: Bot.MessageSession, module: str):
                 if help_page_url := CoreConfig.help_page_url:
                     wiki_msg = I18NContext(
                         "core.message.help.helpdoc.address",
-                        url=MessageChain.assign(Url(help_page_url.replace("${module}", help_name))),
+                        url=MessageChain.assign(Url(help_page_url.replace("${module}", help_name), trusted=True)),
                     )
 
                 elif help_url:
                     wiki_msg = I18NContext(
-                        "core.message.help.helpdoc.address", url=MessageChain.assign(Url(help_url + help_name))
+                        "core.message.help.helpdoc.address",
+                        url=MessageChain.assign(Url(help_url + help_name, trusted=True)),
                     )
 
                 else:
@@ -496,9 +497,13 @@ async def _(msg: Bot.MessageSession):
                 )
             )
             if help_url:
-                help_msg_list.append(I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url))))
+                help_msg_list.append(
+                    I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url, trusted=True)))
+                )
             if donate_url:
-                help_msg_list.append(I18NContext("core.message.help.donate", url=MessageChain.assign(Url(donate_url))))
+                help_msg_list.append(
+                    I18NContext("core.message.help.donate", url=MessageChain.assign(Url(donate_url, trusted=True)))
+                )
             await msg.finish(imgs + help_msg_list, button_data=get_setup_button_data(msg))
     if legacy_help:
         is_base_superuser = msg.session_info.sender_id in Bot.base_superuser_list
@@ -575,20 +580,24 @@ async def _(msg: Bot.MessageSession):
             )
         )
         if help_url:
-            help_msg.append(I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url))))
+            help_msg.append(
+                I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url, trusted=True)))
+            )
         if donate_url:
-            help_msg.append(I18NContext("core.message.help.donate", url=MessageChain.assign(Url(donate_url))))
+            help_msg.append(
+                I18NContext("core.message.help.donate", url=MessageChain.assign(Url(donate_url, trusted=True)))
+            )
         await msg.finish(help_msg, button_data=get_setup_button_data(msg))
 
 
 @hlp.command("doc {{I18N:core.help.help.doc}}", load=bool(help_url))
 async def _(msg: Bot.MessageSession):
-    await msg.finish(I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url))))
+    await msg.finish(I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url, trusted=True))))
 
 
 @hlp.command("donate {{I18N:core.help.help.donate}}", load=bool(donate_url))
 async def _(msg: Bot.MessageSession):
-    await msg.finish(I18NContext("core.message.help.donate", url=MessageChain.assign(Url(donate_url))))
+    await msg.finish(I18NContext("core.message.help.donate", url=MessageChain.assign(Url(donate_url, trusted=True))))
 
 
 async def modules_list_help(msg: Bot.MessageSession, legacy):
@@ -603,7 +612,9 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
             legacy_help = False
             help_msg = MessageChain.assign()
             if help_url:
-                help_msg.append(I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url))))
+                help_msg.append(
+                    I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url, trusted=True)))
+                )
             await msg.finish(imgs + help_msg)
     if legacy_help:
         module_list = ModulesManager.return_modules_list(
@@ -646,7 +657,9 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
             )
         )
         if help_url:
-            help_msg.append(I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url))))
+            help_msg.append(
+                I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url, trusted=True)))
+            )
         await msg.finish(help_msg)
 
 

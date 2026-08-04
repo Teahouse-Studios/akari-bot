@@ -33,7 +33,7 @@ async def _(msg: Bot.MessageSession, query: str):
                     + str(I18NContext("idlist.message.collapse"))
                 )
             )
-            msg_chain.append(Url(f"https://idlist.projectxero.top/{data.get('hash', '')}", use_mm=False))
+            msg_chain.append(Url(f"https://idlist.projectxero.top/{data.get('hash', '')}", trusted=True))
         await msg.finish(msg_chain)
     else:
         await msg.finish(I18NContext("idlist.message.none"))

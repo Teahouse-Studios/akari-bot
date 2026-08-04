@@ -5,7 +5,7 @@ enable_urlmanager 开启时，未经认证的链接原本一律转为 ROT13 编�
 自行复制，同时保留未认证的警示；不支持 markdown 的会话（含用户自行关闭 markdown 者）
 仍走跳板。
 
-易错处有二：其一是取链接须用 original_url——模块显式传入 use_mm=True 时 url 字段已被
+易错处有二：其一是取链接须用 original_url——模块显式传入 trusted=False 时 url 字段已被
 替换成跳板地址；其二是代码块内不可再套 [名称](URL)，故该路径须跳过 markdown 格式转换。
 """
 
@@ -45,15 +45,15 @@ def _session(**kwargs) -> SessionInfo:
     )
 
 
-def _render(session_info: SessionInfo, use_mm: bool | None = None, disable_markdown: bool = False) -> str:
+def _render(session_info: SessionInfo, trusted: bool | None = None, disable_markdown: bool = False) -> str:
     """跑一遍消息链转换，取回最终文本。
 
     :param session_info: 会话信息。
-    :param use_mm: 传给 Url 的跳板开关；None 表示交由会话决定。
+    :param trusted: 传给 Url 的认证标记；None 表示不表态，交由会话决定。
     :param disable_markdown: 是否在转换时强制禁用 markdown。
     :return: 转换后各元素拼接成的文本。
     """
-    chain = MessageChain.assign([Url(_URL, use_mm=use_mm)])
+    chain = MessageChain.assign([Url(_URL, trusted=trusted)])
     return "".join(str(x) for x in chain.as_sendable(session_info, disable_markdown=disable_markdown))
 
 
@@ -80,19 +80,42 @@ async def _test_markdown_session_gets_code_block():
         return False
 
 
-async def _test_explicit_use_mm_also_guarded():
-    """测试代码块呈现 - 模块显式要求跳板的链接同样改以代码块呈现
+async def _test_explicit_untrusted_is_guarded():
+    """测试三态 - 显式标记为不可信者一律保护，纵使会话未启用 URLManager
 
-    modules/wiki 多处以 use_mm=... 显式传入。该路径下 applied_mm 已为真、url 已被替换
-    成跳板地址，须取 original_url 方能拿回原链接。
+    wikilib 在内容审查未通过时即以 trusted=False 传入，该场景须无视会话设置。
+    此路径下 url 字段已被替换成跳板地址，须取 original_url 方能拿回原链接。
     """
     try:
         session_info = _session(use_url_manager=False, support_markdown=True)
-        out = _render(session_info, use_mm=True)
+        out = _render(session_info, trusted=False)
         if out != _expected_block(session_info):
-            Logger.error(f"unexpected output for explicit use_mm: {out!r}")
+            Logger.error(f"unexpected output for explicit untrusted url: {out!r}")
             return False
         return True
+
+    except Exception:
+        return False
+
+
+async def _test_trusted_url_is_never_guarded():
+    """测试三态 - 已认证的链接不受保护，纵使会话启用了 URLManager"""
+    try:
+        out = _render(_session(use_url_manager=True, support_markdown=True), trusted=True)
+        if out != _URL:
+            Logger.error(f"trusted url should be left untouched, got: {out!r}")
+            return False
+        return True
+
+    except Exception:
+        return False
+
+
+async def _test_trusted_url_skips_springboard_without_markdown():
+    """测试三态 - 已认证的链接在不支持 markdown 的会话上也不套跳板"""
+    try:
+        out = _render(_session(use_url_manager=True, support_markdown=False), trusted=True)
+        return out == _URL and _MM_HOST not in out
 
     except Exception:
         return False
@@ -180,7 +203,9 @@ async def _test_markdown_toggle_keeps_url_manager():
 async def test_url_guard(tester: Tester):
     """未认证链接：代码块呈现与回退测试"""
     await tester.test(_test_markdown_session_gets_code_block, "支持 markdown 时给出代码块测试")
-    await tester.test(_test_explicit_use_mm_also_guarded, "显式要求跳板者同样走代码块测试")
+    await tester.test(_test_explicit_untrusted_is_guarded, "显式不可信者走代码块测试")
+    await tester.test(_test_trusted_url_is_never_guarded, "已认证链接不受保护测试")
+    await tester.test(_test_trusted_url_skips_springboard_without_markdown, "已认证链接不套跳板测试")
     await tester.test(_test_md_format_not_applied_inside_code_block, "代码块内不套链接格式测试")
     await tester.test(_test_markdown_off_falls_back_to_springboard, "不支持 markdown 时回退跳板测试")
     await tester.test(_test_disable_markdown_falls_back_to_springboard, "强制禁用 markdown 时回退跳板测试")
