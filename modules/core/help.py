@@ -540,7 +540,7 @@ async def _(msg: Bot.MessageSession):
                     ],
                 )
             )
-            # 模块名本身即可点击，「使用 ~help <模块名>」的提示便是多余；
+            help_msg += I18NContext("core.message.help.mdtable")
             # 其余三条提示改由底部按钮承担。
             await msg.finish(help_msg, button_data=get_help_button_data(msg), force_markdown=True)
         if use_clickable:
@@ -627,6 +627,7 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
         elif use_table:
             # 与 ~help 同款表格，收尾同样是纯文本
             help_msg = MessageChain.assign(build_module_table(msg, [("core.message.help.table.title", module_)]))
+            help_msg += I18NContext("core.message.help.mdtable")
             await msg.finish(help_msg, button_data=get_help_button_data(msg), force_markdown=True)
         elif use_clickable:
             help_msg = MessageChain.assign(
