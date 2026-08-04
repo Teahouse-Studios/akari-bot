@@ -356,9 +356,6 @@ class MessageChain:
                     session_info and x.trusted is not True and (x.trusted is False or session_info.use_url_manager)
                 )
                 if needs_guard and session_info.support_markdown and not disable_markdown:
-                    # 跳板地址经 ROT13 编码后无从辨识，且须经第三方页面中转。支持 markdown 的
-                    # 会话改以代码块呈现原始链接，供用户自行复制，警示则置于代码块的标题位置。
-                    # 此处取 original_url：显式要求跳板时 url 已被替换成跳板地址。
                     title = session_info.locale.t("message.url.untrusted")
                     value.append(PlainElement.assign(f"```{title}\n{x.original_url}\n```", disable_joke=True))
                     continue
@@ -1115,7 +1112,9 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
                 url_value = parsed_params.get("text")
 
                 if url_value:
-                    elements.append(URLElement.assign(unquote(url_value)))
+                    trusted_param = parsed_params.get("trusted")
+                    trusted = None if trusted_param is None else trusted_param == "1"
+                    elements.append(URLElement.assign(unquote(url_value), trusted=trusted))
 
             # ========= 指令操作 =========
             elif element_type == "action_text":

@@ -199,6 +199,57 @@ async def _test_markdown_toggle_keeps_url_manager():
         return False
 
 
+async def _test_trusted_survives_kecode_roundtrip():
+    """测试 KE 码往返 - 认证标记须原样保留
+
+    I18N 参数中的 MessageChain 会被转成 KE 码再解析回来（chain.py:340）。标记若在
+    这一趟丢失，已认证的链接会退化为未表态，进而被会话的 URLManager 套上跳板。
+    """
+    try:
+        session_info = _session(use_url_manager=True, support_markdown=False)
+        code = MessageChain.assign([Url(_URL, trusted=True)]).to_kecode()
+        out = "".join(str(x) for x in MessageChain.assign(code).as_sendable(session_info))
+        if out != _URL:
+            Logger.error(f"trusted lost across kecode roundtrip: {out!r}")
+            return False
+        return True
+
+    except Exception:
+        return False
+
+
+async def _test_untrusted_not_double_wrapped_by_kecode():
+    """测试 KE 码往返 - 已套跳板者不得再套一层
+
+    trusted 为 False 时 url 字段已是跳板地址，故 kecode 须编码 original_url；
+    若照搬 url，还原时会在跳板地址之上再套一层跳板。
+    """
+    try:
+        session_info = _session(use_url_manager=True, support_markdown=False)
+        code = MessageChain.assign([Url(_URL, trusted=False)]).to_kecode()
+        out = "".join(str(x) for x in MessageChain.assign(code).as_sendable(session_info))
+        expected = str(Url(_URL, trusted=False))
+        if out != expected:
+            Logger.error(f"springboard applied twice across kecode roundtrip: {out!r}")
+            return False
+        return True
+
+    except Exception:
+        return False
+
+
+async def _test_unmarked_url_still_follows_session_after_roundtrip():
+    """测试 KE 码往返 - 未表态者往返后仍随会话而定"""
+    try:
+        session_info = _session(use_url_manager=True, support_markdown=False)
+        code = MessageChain.assign([Url(_URL)]).to_kecode()
+        out = "".join(str(x) for x in MessageChain.assign(code).as_sendable(session_info))
+        return _MM_HOST in out
+
+    except Exception:
+        return False
+
+
 @func_case
 async def test_url_guard(tester: Tester):
     """未认证链接：代码块呈现与回退测试"""
@@ -210,6 +261,9 @@ async def test_url_guard(tester: Tester):
     await tester.test(_test_markdown_off_falls_back_to_springboard, "不支持 markdown 时回退跳板测试")
     await tester.test(_test_disable_markdown_falls_back_to_springboard, "强制禁用 markdown 时回退跳板测试")
     await tester.test(_test_manager_off_leaves_url_untouched, "未启用 URLManager 时原样输出测试")
+    await tester.test(_test_trusted_survives_kecode_roundtrip, "认证标记经 KE 码往返保留测试")
+    await tester.test(_test_untrusted_not_double_wrapped_by_kecode, "KE 码往返不重复套跳板测试")
+    await tester.test(_test_unmarked_url_still_follows_session_after_roundtrip, "未表态者往返后随会话测试")
     await tester.test(_test_qqbot_declares_url_manager, "qqbot 接入 URLManager 测试")
     await tester.test(_test_markdown_toggle_keeps_url_manager, "关闭 markdown 保留 URLManager 测试")
 

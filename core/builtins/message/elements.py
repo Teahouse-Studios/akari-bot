@@ -234,7 +234,10 @@ class URLElement(BaseElement):
 
         :return: KE 码格式的字符串
         """
-        return f"[KE:url,text={parse.quote(self.url, safe='')}]"
+        encoded = parse.quote(self.original_url, safe="")
+        if self.trusted is None:
+            return f"[KE:url,text={encoded}]"
+        return f"[KE:url,text={encoded},trusted={'1' if self.trusted else '0'}]"
 
     def __str__(self):
         """返回 URL 地址或转换后的链接"""
