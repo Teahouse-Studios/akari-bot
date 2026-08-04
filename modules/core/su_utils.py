@@ -781,8 +781,8 @@ async def _check_authorizer_still_superuser(authorized_by: str) -> bool:
 
 
 @auth.command(
-    "add <user> <module> {{I18N:core.help.auth.add}}",
-    "remove <user> <module> {{I18N:core.help.auth.remove}}",
+    "add <user> <module>",
+    "remove <user> <module>",
 )
 async def _(msg: Bot.MessageSession, user: str, module: str):
     if not Alive.determine_sender_from(user):
@@ -817,7 +817,7 @@ async def _(msg: Bot.MessageSession, user: str, module: str):
         await msg.finish(I18NContext("core.message.auth.remove.success", user=user, module=module))
 
 
-@auth.command("list <user> {{I18N:core.help.auth.list}}")
+@auth.command("list <user>")
 async def _(msg: Bot.MessageSession, user: str):
     if not Alive.determine_sender_from(user):
         await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
