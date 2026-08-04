@@ -483,9 +483,28 @@ class MessageChain:
         converted = [converter.structure(x, MessageElement) for x in lst]
         return deepcopy(cls(converted))
 
+    @staticmethod
+    def _normalize(element):
+        """
+        将单个入参归一化为消息元素。
+
+        :param element: 待归一化的对象。
+        :return: 对应的消息元素；空字符串与 None 返回 None，由调用方跳过。
+        """
+        if element is None:
+            return None
+        if isinstance(element, str):
+            return PlainElement.assign(element) if element else None
+        if isinstance(element, BaseElement):
+            return element
+        Logger.error(f"Unexpected message type: {element}")
+        return None
+
     def append(self, element):
         """
         添加一个消息元素到消息链末尾。
+
+        入参为字符串时转作文本元素，空字符串与 None 一律跳过。
 
         :param element: 要添加的消息元素
 
@@ -495,7 +514,9 @@ class MessageChain:
             > chain.append(PlainElement.assign("World"))
         ```
         """
-        self.values.append(element)
+        normalized = self._normalize(element)
+        if normalized is not None:
+            self.values.append(normalized)
 
     def remove(self, element):
         """
@@ -516,6 +537,8 @@ class MessageChain:
         """
         在指定位置插入一个消息元素。
 
+        入参为字符串时转作文本元素，空字符串与 None 一律跳过。
+
         :param index: 插入位置的索引
         :param element: 要插入的消息元素
 
@@ -525,7 +548,9 @@ class MessageChain:
             > chain.insert(0, PlainElement.assign("Hello"))
         ```
         """
-        self.values.insert(index, element)
+        normalized = self._normalize(element)
+        if normalized is not None:
+            self.values.insert(index, normalized)
 
     def copy(self):
         """
@@ -611,7 +636,8 @@ class MessageChain:
         if isinstance(other, MessageChain):
             self.values += other.values
         elif isinstance(other, list):
-            self.values += other
+            # 列表中的裸字符串一并归一化，与 assign() 的行为保持一致
+            self.values += [e for e in (self._normalize(x) for x in other) if e is not None]
         elif isinstance(other, MessageElement):
             self.values += [other]
         else:
