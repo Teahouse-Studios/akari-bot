@@ -53,7 +53,7 @@
     "core.bind.message.target.code.prompt": "请在 ${minute} 分钟内于另一个场景中发送“${cmd}”以完成绑定。绑定后双方数据将被合并且无法撤销，请勿将绑定码告知他人。",
     "core.bind.message.target.confirm": "即将把下面两个场景组合并成一个新的场景组，原有的两个组 ID 都会失效：",
     "core.bind.message.target.confirm.current": "当前场景组（${count} 个场景）：",
-    "core.bind.message.target.confirm.inherit": "数据的继承方式：语言沿用发起方；模块开关、管理员名单、限制名单取两侧并集；场景设置逐项合并，同名项以发起方为准；模块数据仅一侧有则直接带过来，两侧都有会逐个询问保留哪一份。消息通道不会自动合并，并入的场景会另行编号，需要合并请在绑定后使用“bind channel set”。合并后无法撤销。",
+    "core.bind.message.target.confirm.inherit": "数据的继承方式：语言沿用发起方；模块开关、管理员名单、限制名单取两侧并集；场景设置逐项合并，同名项以发起方为准；模块数据仅一侧有则直接带过来，两侧都有会逐个询问保留哪一份。消息通道不会自动合并，并入的场景会另行编号，需要合并请在绑定后使用“${prefix}bind channel set”。合并后无法撤销。",
     "core.bind.message.target.confirm.initiator": "发起方场景组（${count} 个场景）：",
     "core.bind.message.target.info": "当前场景所属的场景组：${id}",
     "core.bind.message.target.info.bound": "已绑定 ${count} 个场景：",

@@ -331,6 +331,7 @@ async def merge_sender_unions(
 
 
 async def plan_target_merge(
+    msg: Bot.MessageSession,
     initiator: TargetUnionInfo,
     current: TargetUnionInfo,
     inherit_key: str = "core.bind.message.target.confirm.inherit",
@@ -354,7 +355,7 @@ async def plan_target_merge(
         *id_lines(initiator_ids),
         I18NContext("core.bind.message.target.confirm.current", count=len(current_ids)),
         *id_lines(current_ids),
-        I18NContext(inherit_key),
+        I18NContext(inherit_key, prefix=msg.session_info.prefixes[0]),
     ]
     lines += conflict_lines(conflicts)
 
@@ -418,7 +419,7 @@ async def merge_target_unions(
     :param inherit_key: 继承说明的 i18n 键。
     :return: 合并后的新场景组，用户取消时为 None。
     """
-    plan = await plan_target_merge(initiator, current, inherit_key)
+    plan = await plan_target_merge(msg, initiator, current, inherit_key)
     if not await msg.wait_confirm(plan["lines"]):
         return None
     return await apply_target_merge(plan, await choose_conflicts(msg, plan["conflicts"]))
