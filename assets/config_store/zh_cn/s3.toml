@@ -4,8 +4,8 @@
 
 [s3]
 # S3 兼容 API 的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
-s3_endpoint_url = "<Replace me with str value>" # S3 兼容 API 的 Endpoint URL。
-s3_bucket = "<Replace me with str value>" # S3 兼容 API 的 Bucket 名。
+s3_endpoint_url = "<Replace me with str value>" # S3 兼容 API 的端点 URL。
+s3_bucket = "<Replace me with str value>" # S3 兼容 API 的桶名。
 s3_region = "us-east-1" # S3 兼容 API 的地域名。
 s3_public_endpoint = "<Replace me with str value>" # S3 兼容 API 的公网访问 URL。
 s3_internal_endpoint = "<Replace me with str value>" # S3 兼容 API 的内网访问 URL。

@@ -3,15 +3,15 @@
 # 例如：TOML 中的布林值必須是小寫。
 
 [s3]
-# S3 兼容 API 的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
-s3_endpoint_url = "<Replace me with str value>" # S3 兼容 API 的 Endpoint URL。
-s3_bucket = "<Replace me with str value>" # S3 兼容 API 的 Bucket 名。
-s3_region = "us-east-1" # S3 兼容 API 的地域名。
-s3_public_endpoint = "<Replace me with str value>" # S3 兼容 API 的公网访问 URL。
-s3_internal_endpoint = "<Replace me with str value>" # S3 兼容 API 的内网访问 URL。
-s3_temp_max_count = 20 # S3 兼容 API 的临时文件最大数量。
+# S3 相容 API 的組態部分，此處填寫的值可在訊息中以明文形式顯示。請不要在此部分填寫敏感資訊。
+s3_endpoint_url = "<Replace me with str value>" # S3 相容 API 的端點 URL。
+s3_bucket = "<Replace me with str value>" # S3 相容 API 的桶名。
+s3_region = "us-east-1" # S3 相容 API 的地域名。
+s3_public_endpoint = "<Replace me with str value>" # S3 相容 API 的公網存取 URL。
+s3_internal_endpoint = "<Replace me with str value>" # S3 相容 API 的內網存取 URL。
+s3_temp_max_count = 20 # S3 相容 API 的暫存檔案最大數量。
 
 [s3_secret]
-# S3 兼容 API 的密钥部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
-s3_access_key = "<Replace me with str value>" # S3 兼容 API 的 AccessKey。
-s3_secret_key = "<Replace me with str value>" # S3 兼容 API 的 SecretKey。
+# S3 相容 API 的金鑰組態部分，此處的值若意外出現在傳送的訊息中，機器人會嘗試攔截。但請務必提防洩漏。
+s3_access_key = "<Replace me with str value>" # S3 相容 API 的 AccessKey。
+s3_secret_key = "<Replace me with str value>" # S3 相容 API 的 SecretKey。
