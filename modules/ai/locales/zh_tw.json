@@ -10,7 +10,7 @@
     "ai.message.llm.instruct.set.success": "設定自訂指令前綴。",
     "ai.message.llm.list.none": "找不到可用的大語言模型，請聯絡機器人所有者新增。",
     "ai.message.llm.list": "以下為可用的大語言模型：",
-    "ai.message.llm.list.prompt": "使用「${prefix}ai llm set <模型名稱>」切換模型。",
+    "ai.message.llm.list.prompt": "使用「${cmd}<模型名稱>」切換模型。",
     "ai.message.llm.invalid": "無效的大語言模型。",
     "config.comments.module_ai_secret.e2b_api_key": "E2B 的 API key。",
     "config.comments.module_ai.ai_default_llm": "預設使用的大語言模型。",
