@@ -90,7 +90,7 @@
     "core.message.echo.prompt": "반복하고 싶은 메시지를 보내주세요.",
     "core.message.help.all_modules": "\"${prefix}module list\" 명령어를 사용하여 사용 가능한 모든 모듈을 확인하십시오.",
     "core.message.help.command_count": "${count}개의 명령어",
-    "core.message.help.detail": "자세한 내용은 \"${prefix}help <모듈 이름>\"을 사용하여 확인하십시오.",
+    "core.message.help.detail": "자세한 내용은 \"${cmd}<모듈 이름>\"을 사용하여 확인하십시오.",
     "core.message.help.document": "온라인 문서를 참고하여 도움을 받을 수도 있습니다: ${url}",
     "core.message.help.donate": "경제적 여유가 있으시다면 후원해 주시면 감사하겠습니다: ${url}",
     "core.message.help.helpdoc.address": "온라인 모듈 문서: ${url}",

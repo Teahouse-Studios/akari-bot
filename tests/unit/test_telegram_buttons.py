@@ -10,7 +10,13 @@ from bots.telegram.buttons import (
     get_telegram_context_chat_and_user,
     remove_selected_button,
 )
+from bots.telegram.action_text import (
+    build_action_text_inline_results,
+    can_use_inline_action_text,
+    is_own_inline_message,
+)
 from bots.telegram.features import features
+from core.builtins.message.internal import ActionText
 from core.tester import Tester, func_case
 from core.utils.button_runtime import BUTTON_TOKEN_PREFIX, _clear_button_registry
 
@@ -44,7 +50,55 @@ def _test_removing_last_button_returns_none():
 
 
 def _test_feature_enabled():
-    return features.support_button is True
+    return features.support_button is True and features.support_action_text is True
+
+
+def _test_action_text_uses_inline_query():
+    markup = build_telegram_button_markup(
+        [],
+        "Telegram|User|1",
+        action_texts=[ActionText("~help ", show="帮助")],
+        supports_inline_queries=True,
+    )
+    button = markup.inline_keyboard[0][0]
+    return button.text == "~help " and button.switch_inline_query_current_chat == "~help " and button.copy_text is None
+
+
+def _test_action_text_falls_back_to_copy():
+    markup = build_telegram_button_markup(
+        [],
+        "Telegram|User|1",
+        action_texts=[ActionText("~help ", show="帮助")],
+        supports_inline_queries=False,
+    )
+    button = markup.inline_keyboard[0][0]
+    return (
+        button.text == "~help "
+        and button.switch_inline_query_current_chat is None
+        and button.copy_text.text == "~help "
+    )
+
+
+def _test_inline_query_result_sends_edited_text():
+    results = build_action_text_inline_results("~help edited")
+    return (
+        len(results) == 1
+        and results[0].input_message_content.message_text == "~help edited"
+        and results[0].input_message_content.parse_mode is None
+    )
+
+
+def _test_own_inline_message_detection():
+    own = SimpleNamespace(via_bot=SimpleNamespace(id=1))
+    other = SimpleNamespace(via_bot=SimpleNamespace(id=2))
+    plain = SimpleNamespace(via_bot=None)
+    return is_own_inline_message(own, 1) and not is_own_inline_message(other, 1) and not is_own_inline_message(plain, 1)
+
+
+def _test_channel_uses_copy_fallback():
+    return can_use_inline_action_text("Telegram|Group", True) and not can_use_inline_action_text(
+        "Telegram|Channel", True
+    )
 
 
 def _test_callback_native_permission_uses_clicking_user():
@@ -132,6 +186,19 @@ async def _test_unrelated_callback_is_ignored():
     return callback.answer.await_count == 0 and process.await_count == 0
 
 
+async def _test_inline_query_handler_answers_personally_without_cache():
+    from bots.telegram.action_text import handle_action_text_inline_query
+
+    inline_query = SimpleNamespace(query="~help edited", answer=AsyncMock())
+    await handle_action_text_inline_query(inline_query)
+    kwargs = inline_query.answer.await_args.kwargs
+    results = inline_query.answer.await_args.args[0]
+    return (
+        kwargs == {"cache_time": 0, "is_personal": True}
+        and results[0].input_message_content.message_text == "~help edited"
+    )
+
+
 @func_case
 async def test_telegram_buttons(tester: Tester):
     """Telegram 按钮组件。"""
@@ -139,9 +206,15 @@ async def test_telegram_buttons(tester: Tester):
     await tester.test(_test_removes_only_selected_and_empty_row, "仅移除当前按钮并清理空行")
     await tester.test(_test_removing_last_button_returns_none, "移除最后按钮后清空键盘")
     await tester.test(_test_feature_enabled, "平台声明按钮能力")
+    await tester.test(_test_action_text_uses_inline_query, "ActionText 使用当前聊天 Inline Query")
+    await tester.test(_test_action_text_falls_back_to_copy, "未启用 Inline Mode 时复制命令")
+    await tester.test(_test_inline_query_result_sends_edited_text, "Inline Query 结果发送编辑后文本")
+    await tester.test(_test_own_inline_message_detection, "识别当前机器人代发消息")
+    await tester.test(_test_channel_uses_copy_fallback, "频道场景使用复制降级")
     await tester.test(_test_callback_native_permission_uses_clicking_user, "原生权限使用点击用户")
     await tester.test(_test_successful_callback_routes_message, "合法点击回流消息")
     await tester.test(_test_callback_without_message_is_rejected, "无聊天上下文时拒绝点击")
     await tester.test(_test_forbidden_callback_does_not_route_message, "无权限点击不回流消息")
     await tester.test(_test_unrelated_callback_is_ignored, "忽略非按钮回调")
+    await tester.test(_test_inline_query_handler_answers_personally_without_cache, "Inline Query 不缓存且仅用户可见")
     return tester

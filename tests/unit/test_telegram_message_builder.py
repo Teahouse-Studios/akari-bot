@@ -19,7 +19,7 @@ from bots.telegram.message_builder import (
     split_telegram_html,
 )
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Image, Mention, Plain, Voice
+from core.builtins.message.internal import ActionText, Image, Mention, Plain, Voice
 from core.builtins.session.info import SessionInfo
 from core.i18n import Locale
 from core.tester import Tester, func_case
@@ -79,6 +79,32 @@ async def _test_plain_atcode_is_converted():
         _session(), MessageChain.assign(Plain("hello <AT:Telegram|2>")), enable_split_image=False
     )
     return content.text == 'hello <a href="tg://user?id=2">@2</a>'
+
+
+async def _test_plain_html_is_escaped():
+    content = await collect_telegram_content(
+        _session(), MessageChain.assign(Plain("参数：<模块名称> & <b>粗体</b>")), enable_split_image=False
+    )
+    return content.text == "参数：&lt;模块名称&gt; &amp; &lt;b&gt;粗体&lt;/b&gt;"
+
+
+async def _test_atcode_keeps_surrounding_text_escaped():
+    content = await collect_telegram_content(
+        _session(), MessageChain.assign(Plain("<b>用户</b>：<AT:Telegram|2>")), enable_split_image=False
+    )
+    return content.text == '&lt;b&gt;用户&lt;/b&gt;：<a href="tg://user?id=2">@2</a>'
+
+
+async def _test_action_text_keeps_inline_fallback_and_metadata():
+    session = _session()
+    session.support_action_text = True
+    chain = MessageChain.assign([Plain("提示："), ActionText("~help ", show="帮助"), Plain("参数")])
+    content = await collect_telegram_content(session, chain, enable_split_image=False)
+    return (
+        content.text == "提示：帮助（~help ）参数"
+        and len(content.action_texts) == 1
+        and content.action_texts[0].text.text == "~help "
+    )
 
 
 async def _test_collects_text_mentions_and_media():
@@ -193,6 +219,9 @@ async def test_telegram_message_builder(tester: Tester):
     await tester.test(_test_entity_is_not_split, "HTML entity 不被拆开")
     await tester.test(_test_self_closing_tag_is_preserved, "HTML 自闭合标签不丢失")
     await tester.test(_test_plain_atcode_is_converted, "Plain 中的提及转换为 Telegram 格式")
+    await tester.test(_test_plain_html_is_escaped, "Plain 中的 HTML 特殊字符被转义")
+    await tester.test(_test_atcode_keeps_surrounding_text_escaped, "提及转换不放行周围 HTML")
+    await tester.test(_test_action_text_keeps_inline_fallback_and_metadata, "ActionText 保持行内降级并收集交互信息")
     await tester.test(_test_collects_text_mentions_and_media, "收集文本、提及与媒体")
     await tester.test(_test_single_photo_uses_caption, "单图片使用 caption")
     await tester.test(_test_media_groups_and_types, "媒体分组与类型隔离")

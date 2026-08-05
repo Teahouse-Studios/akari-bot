@@ -3,9 +3,15 @@
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
-from bots.discord.buttons import build_discord_button_view, disable_selected_button
+from bots.discord.buttons import (
+    DiscordActionTextButton,
+    DiscordActionTextSelect,
+    build_discord_button_view,
+    disable_selected_button,
+)
 from bots.discord.context import DiscordContextManager
 from bots.discord.features import features
+from core.builtins.message.internal import ActionText
 from core.builtins.session.info import SessionInfo
 from core.tester import Tester, func_case
 from core.utils.button_runtime import BUTTON_TOKEN_PREFIX, _clear_button_registry
@@ -41,7 +47,42 @@ def _test_platform_capacity():
 
 
 def _test_feature_enabled():
-    return features.support_button is True
+    return features.support_button is True and features.support_action_text is True
+
+
+def _test_action_text_uses_modal_button():
+    view = build_discord_button_view(
+        [],
+        "Discord|Client|1",
+        action_texts=[ActionText("~help ", show="帮助")],
+    )
+    button = view.children[0]
+    return isinstance(button, DiscordActionTextButton) and button.label == "~help "
+
+
+def _test_many_action_texts_use_select():
+    actions = [ActionText(f"~help {index}", show=str(index)) for index in range(6)]
+    view = build_discord_button_view([], "Discord|Client|1", action_texts=actions)
+    select = view.children[0]
+    return (
+        len(view.children) == 1
+        and isinstance(select, DiscordActionTextSelect)
+        and [option.label for option in select.options] == [f"~help {index}" for index in range(6)]
+    )
+
+
+async def _test_action_text_button_opens_prefilled_modal():
+    view = build_discord_button_view(
+        [],
+        "Discord|Client|1",
+        action_texts=[ActionText("~help ", show="帮助", reference=True)],
+        modal_title="编辑命令",
+        input_label="命令",
+    )
+    interaction = SimpleNamespace(message=SimpleNamespace(id=10), response=SimpleNamespace(send_modal=AsyncMock()))
+    await view.children[0].callback(interaction)
+    modal = interaction.response.send_modal.await_args.args[0]
+    return modal.command_input.value == "~help " and modal.reference is True and modal.origin_message.id == 10
 
 
 async def _test_interaction_native_permission_uses_clicking_user():
@@ -113,6 +154,36 @@ async def _test_invalid_click_does_not_route_message():
     return response.send_message.await_args.kwargs.get("ephemeral") is True and process.await_count == 0
 
 
+async def _test_action_text_submit_routes_edited_message():
+    from bots.discord.interactions import DiscordActionTextContext, handle_action_text_submit
+
+    response = SimpleNamespace(is_done=lambda: False, defer=AsyncMock())
+    origin = SimpleNamespace(id=10)
+    interaction = SimpleNamespace(
+        id=11,
+        user=SimpleNamespace(id=1, name="tester"),
+        channel=SimpleNamespace(id=20),
+        response=response,
+    )
+    assigned = SimpleNamespace()
+    with (
+        patch("bots.discord.interactions.SessionInfo.assign", new=AsyncMock(return_value=assigned)) as assign,
+        patch("bots.discord.interactions.Bot.process_message", new=AsyncMock()) as process,
+        patch("bots.discord.interactions._get_bot_id", return_value="30"),
+    ):
+        await handle_action_text_submit(interaction, "~help edited", True, origin)
+    kwargs = assign.await_args.kwargs
+    context = process.await_args.args[1]
+    return (
+        response.defer.await_count == 1
+        and kwargs["message_id"] == "11"
+        and kwargs["reply_id"] == "10"
+        and kwargs["messages"].to_str() == "~help edited"
+        and isinstance(context, DiscordActionTextContext)
+        and context.message is origin
+    )
+
+
 @func_case
 async def test_discord_buttons(tester: Tester):
     """Discord 按钮组件。"""
@@ -120,7 +191,11 @@ async def test_discord_buttons(tester: Tester):
     await tester.test(_test_disables_only_selected, "仅停用当前按钮")
     await tester.test(_test_platform_capacity, "平台容量限制")
     await tester.test(_test_feature_enabled, "平台声明按钮能力")
+    await tester.test(_test_action_text_uses_modal_button, "ActionText 使用 Modal 按钮")
+    await tester.test(_test_many_action_texts_use_select, "大量 ActionText 使用下拉菜单")
+    await tester.test(_test_action_text_button_opens_prefilled_modal, "Modal 预填命令并保留引用设置")
     await tester.test(_test_interaction_native_permission_uses_clicking_user, "原生权限使用点击用户")
     await tester.test(_test_successful_click_routes_message, "合法点击回流消息")
     await tester.test(_test_invalid_click_does_not_route_message, "无效点击不回流消息")
+    await tester.test(_test_action_text_submit_routes_edited_message, "Modal 提交编辑后的命令")
     return tester

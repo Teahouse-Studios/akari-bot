@@ -21,6 +21,7 @@ features = Features(
     support_delete=True,
     support_manage=False,
     support_markdown=True,
+    support_markdown_table=qq_use_markdown,
     support_reaction=False,
     support_quote=True,
     support_rss=True,
@@ -67,6 +68,7 @@ def resolve_features(session_info: "SessionInfo", base: Features = features) -> 
     return evolve(
         base,
         support_markdown=False,
+        support_markdown_table=False,
         support_action_text=False,
         support_button=False,
         use_url_md_format=False,

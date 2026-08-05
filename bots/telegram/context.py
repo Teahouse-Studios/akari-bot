@@ -4,6 +4,7 @@ from aiogram import types
 from aiogram.types import ChatPermissions
 
 from bots.telegram.buttons import build_telegram_button_markup, get_telegram_context_chat_and_user
+from bots.telegram.action_text import can_use_inline_action_text
 from bots.telegram.client import aiogram_bot
 from bots.telegram.features import features as telegram_features
 from bots.telegram.info import client_name
@@ -54,16 +55,28 @@ class TelegramContextManager(ContextManager):
             Logger.error("This session does not support message nodes, check if bug exists.")
             return []
 
-        markup = None
-        button_data = get_session_button_data(session_info)
-        if button_data:
-            markup = build_telegram_button_markup(button_data, session_info.sender_id)
-
         content = await collect_telegram_content(
             session_info,
             message,
             enable_parse_message=enable_parse_message,
             enable_split_image=enable_split_image,
+        )
+        button_data = get_session_button_data(session_info)
+        supports_inline_queries = True
+        if content.action_texts:
+            try:
+                supports_inline_queries = can_use_inline_action_text(
+                    session_info.target_from,
+                    bool((await aiogram_bot.me()).supports_inline_queries),
+                )
+            except Exception:
+                Logger.exception("Failed to detect Telegram Inline Mode support, using copy buttons: ")
+                supports_inline_queries = False
+        markup = build_telegram_button_markup(
+            button_data,
+            session_info.sender_id,
+            action_texts=content.action_texts,
+            supports_inline_queries=supports_inline_queries,
         )
         operations = build_telegram_operations(content, reply_markup=markup)
         reply_id = int(session_info.message_id) if quote and session_info.message_id else None

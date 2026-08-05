@@ -4,7 +4,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Embed, Image, Mention, Plain, Voice
+from core.builtins.message.internal import ActionText, Embed, Image, Mention, Plain, Voice
 from core.builtins.session.info import SessionInfo
 from core.i18n import Locale
 from core.tester import Tester, func_case
@@ -45,6 +45,18 @@ def _test_text_prefers_newline():
 async def _test_plain_atcode_is_converted():
     payloads = await build_discord_payloads(_session(), MessageChain.assign(Plain("hello <AT:Discord|2>")))
     return payloads[0].content == "hello <@2>"
+
+
+async def _test_action_text_keeps_inline_fallback_and_metadata():
+    session = _session()
+    session.support_action_text = True
+    chain = MessageChain.assign([Plain("提示："), ActionText("~help ", show="帮助"), Plain("参数")])
+    payloads = await build_discord_payloads(session, chain)
+    return (
+        payloads[0].content == "提示：帮助（~help ）参数"
+        and len(payloads[-1].action_texts) == 1
+        and payloads[-1].action_texts[0].text.text == "~help "
+    )
 
 
 async def _test_mixed_elements_fit_one_payload():
@@ -135,6 +147,7 @@ async def test_discord_message_builder(tester: Tester):
     await tester.test(_test_text_splits_at_2000, "文本按 2000 字符拆分")
     await tester.test(_test_text_prefers_newline, "文本优先在换行处分段")
     await tester.test(_test_plain_atcode_is_converted, "Plain 中的提及转换为 Discord 格式")
+    await tester.test(_test_action_text_keeps_inline_fallback_and_metadata, "ActionText 保持行内降级并收集交互信息")
     await tester.test(_test_mixed_elements_fit_one_payload, "混合元素合并为一个负载")
     await tester.test(_test_file_limit_creates_second_payload, "附件超过 10 个时拆包")
     await tester.test(_test_embed_limit_creates_second_payload, "Embed 超过 10 个时拆包")

@@ -37,6 +37,7 @@ SWITCH_KEY = "use_markdown"
 MARKDOWN_ON_BASE = evolve(
     qqbot_features,
     support_markdown=True,
+    support_markdown_table=True,
     support_action_text=True,
     support_button=True,
     support_markdown_toggle=True,
@@ -123,9 +124,15 @@ def _test_resolve_keeps_base_when_enabled() -> bool:
 
 
 def _test_resolve_disables_markdown_features() -> bool:
-    """偏好为假时关闭四项 markdown 相关能力"""
+    """偏好为假时关闭 markdown 相关能力"""
     resolved = _resolve({SWITCH_KEY: False})
-    for name in ("support_markdown", "support_action_text", "support_button", "use_url_md_format"):
+    for name in (
+        "support_markdown",
+        "support_markdown_table",
+        "support_action_text",
+        "support_button",
+        "use_url_md_format",
+    ):
         if getattr(resolved, name) is not False:
             Logger.error(f"{name} should be off for a user who disabled markdown")
             return False

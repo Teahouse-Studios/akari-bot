@@ -76,12 +76,17 @@ class DiscordContextManager(ContextManager):
             Logger.error("This session does not support message nodes, check if bug exists.")
             return []
 
-        view = None
-        button_data = get_session_button_data(session_info)
-        if button_data:
-            view = build_discord_button_view(button_data, session_info.sender_id)
-
         payloads = await build_discord_payloads(session_info, message, enable_parse_message)
+        action_texts = payloads[-1].action_texts if payloads else []
+        button_data = get_session_button_data(session_info)
+        view = build_discord_button_view(
+            button_data,
+            session_info.sender_id,
+            action_texts=action_texts,
+            modal_title=session_info.locale.t("message.action_text.modal.title"),
+            input_label=session_info.locale.t("message.action_text.modal.input"),
+            select_placeholder=session_info.locale.t("message.action_text.select"),
+        )
         reference = resolve_discord_reference(ctx, quote)
         sent_messages = await execute_discord_payloads(channel, payloads, reference=reference, view=view)
         for sent in sent_messages:

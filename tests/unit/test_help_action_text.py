@@ -1,4 +1,4 @@
-"""可点击模块列表的单元测试。
+"""帮助页布局与可点击模块列表的单元测试。
 
 `~help` 与 `~module list` 列出的模块名，在具备指令操作能力的平台上做成可点击标签，
 点击即把 `~help <模块名>` 填入输入框。此处把关三件事：元素序列的交错排布、标题
@@ -8,11 +8,15 @@
 模块列表会被挤到标题同一行，与既有的纯文本版排版不符。
 """
 
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, patch
+
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import ActionTextElement, PlainElement
-from core.builtins.message.internal import ActionText, I18NContext, Plain
+from core.builtins.message.elements import ActionTextElement, ImageElement, PlainElement
+from core.builtins.message.internal import ActionText, I18NContext, Image, Plain
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
+from core.constants.exceptions import SessionFinished
 from core.logger import Logger
 from core.tester import func_case, Tester
 from core.utils.table import TABLE_MAX_ROWS, format_table_code
@@ -21,6 +25,9 @@ from modules.core.help import (
     build_command_table,
     build_module_table,
     end_inline_run,
+    env,
+    help_overview,
+    modules_list_help,
     strip_command_arguments,
 )
 
@@ -79,6 +86,93 @@ class _FakeSession:
 
     def __init__(self, session_info):
         self.session_info = session_info
+
+
+class _ImageHelpSession(_FakeSession):
+    def __init__(self, session_info, parsed_msg=None):
+        super().__init__(session_info)
+        self.parsed_msg = parsed_msg or {}
+        self.finished_message = None
+
+    async def finish(self, message, **kwargs):
+        self.finished_message = MessageChain.assign(message)
+        raise SessionFinished
+
+
+async def _test_image_help_precedes_action_text_fallback():
+    """不支持 Markdown 表格时，即使支持 ActionText 也应优先生成图片帮助。"""
+    session_info = await SessionInfo.assign(
+        target_id="TEST|Group|help_image_priority",
+        target_from="TEST|Group",
+        client_name="TEST",
+        sender_id="TEST|1",
+        features=Features(
+            support_image=True,
+            support_action_text=True,
+            support_markdown_table=False,
+        ),
+    )
+    msg = _ImageHelpSession(session_info)
+    generated = [Image("help.png")]
+    try:
+        with patch("modules.core.help.help_generator", new=AsyncMock(return_value=generated)) as generator:
+            await modules_list_help(msg, legacy=False)
+    except SessionFinished:
+        pass
+    sendable = msg.finished_message.as_sendable(session_info).values if msg.finished_message else []
+    return (
+        generator.await_count == 1
+        and msg.finished_message is not None
+        and any(isinstance(element, ImageElement) for element in msg.finished_message.values)
+        and any(isinstance(element, ActionTextElement) and element.text.text == "~help " for element in sendable)
+    )
+
+
+async def _test_image_flag_overrides_markdown_table():
+    """--image 应在支持 Markdown 表格的平台上仍强制生成图片帮助。"""
+    session_info = await SessionInfo.assign(
+        target_id="TEST|Group|help_force_image",
+        target_from="TEST|Group",
+        client_name="TEST",
+        sender_id="TEST|1",
+        features=Features(
+            support_image=True,
+            support_action_text=True,
+            support_markdown_table=True,
+        ),
+    )
+    msg = _ImageHelpSession(session_info, parsed_msg={"--image": True})
+    generated = [Image("help.png")]
+    try:
+        with patch("modules.core.help.help_generator", new=AsyncMock(return_value=generated)) as generator:
+            await help_overview(msg)
+    except SessionFinished:
+        pass
+    sendable = msg.finished_message.as_sendable(session_info).values if msg.finished_message else []
+    return (
+        generator.await_count == 1
+        and msg.finished_message is not None
+        and any(isinstance(element, ImageElement) for element in msg.finished_message.values)
+        and any(isinstance(element, ActionTextElement) and element.text.text == "~help " for element in sendable)
+    )
+
+
+async def _test_image_template_omits_help_command():
+    """图片帮助页不再内嵌查看详情命令，该提示由图片外的 ActionText 承担。"""
+    locale = (await _session("help_image_template")).locale
+    rendered = await env.get_template("module_list.html").render_async(
+        msg=SimpleNamespace(session_info=SimpleNamespace(prefixes=["~"])),
+        locale=locale,
+        CommandParser=None,
+        is_base_superuser=False,
+        is_superuser=False,
+        len=len,
+        module_list={},
+        show_disabled_modules=False,
+        target_enabled_list=[],
+        use_font_mirror=False,
+    )
+    return "${cmd}" not in rendered and "~help " not in rendered and "模块名称" not in rendered
 
 
 async def _test_element_sequence():
@@ -596,6 +690,9 @@ async def _test_empty_group_skipped():
 @func_case
 async def test_clickable_modules(tester: Tester):
     """modules.core.help: 可点击模块列表测试"""
+    await tester.test(_test_image_help_precedes_action_text_fallback, "无表格能力时图片帮助优先测试")
+    await tester.test(_test_image_flag_overrides_markdown_table, "--image 强制图片帮助测试")
+    await tester.test(_test_image_template_omits_help_command, "图片内移除查看详情提示测试")
     await tester.test(_test_element_sequence, "元素交错排布测试")
     await tester.test(_test_title_ends_with_newline, "标题自带换行测试")
     await tester.test(_test_action_text_payload, "标签命令与展示文案测试")

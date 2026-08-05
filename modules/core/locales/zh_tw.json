@@ -93,7 +93,7 @@
     "core.message.forward_msg.enable": "已啟用轉發訊息。",
     "core.message.help.all_modules": "使用「${prefix}module list」檢視所有的可用模組。",
     "core.message.help.command_count": "${count} 條指令",
-    "core.message.help.detail": "使用「${prefix}help <模組名稱>」檢視詳細資訊。",
+    "core.message.help.detail": "使用「${cmd}<模組名稱>」檢視詳細資訊。",
     "core.message.help.document": "你也可以透過查閱線上文件取得說明：${url}",
     "core.message.help.donate": "若你有經濟實力，歡迎提供贊助：${url}",
     "core.message.help.helpdoc.address": "線上模組說明文件：${url}",

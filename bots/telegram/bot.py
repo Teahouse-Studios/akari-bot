@@ -3,6 +3,7 @@ from aiogram.enums import MessageEntityType
 
 from bots.telegram.client import dp, aiogram_bot, token
 from bots.telegram.context import TelegramContextManager, TelegramFetchedContextManager
+from bots.telegram.action_text import handle_action_text_inline_query, is_own_inline_message
 from bots.telegram.interactions import handle_button_callback
 from bots.telegram.info import *
 from core.builtins.bot import Bot
@@ -68,6 +69,8 @@ async def msg_handler(message: types.Message):
     at_message = False
     entities = message.entities or []
     bot_id = (await message.bot.get_me()).id
+    if is_own_inline_message(message, bot_id):
+        at_message = True
     if entities and entities[0].offset == 0:
         first = entities[0]
         if first.type == MessageEntityType.TEXT_MENTION:
@@ -118,6 +121,11 @@ async def msg_handler(message: types.Message):
 @dp.callback_query(F.data.startswith(BUTTON_TOKEN_PREFIX))
 async def callback_handler(callback: types.CallbackQuery):
     await handle_button_callback(callback, ctx_id)
+
+
+@dp.inline_query()
+async def inline_query_handler(inline_query: types.InlineQuery):
+    await handle_action_text_inline_query(inline_query)
 
 
 async def on_startup():

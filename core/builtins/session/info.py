@@ -68,6 +68,7 @@ class SessionInfo:
     support_delete: bool = False
     support_manage: bool = False
     support_markdown: bool = False
+    support_markdown_table: bool = False
     support_reaction: bool = False
     support_quote: bool = False
     support_rss: bool = False

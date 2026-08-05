@@ -1,6 +1,7 @@
 """Discord 按钮点击回流。"""
 
 import discord
+from attrs import define
 
 from bots.discord.buttons import disable_selected_button
 from bots.discord.client import discord_bot
@@ -20,6 +21,22 @@ _BUTTON_ERROR_KEYS = {
     ButtonConsumeStatus.FORBIDDEN: "message.button.forbidden",
     ButtonConsumeStatus.USED: "message.button.used",
 }
+
+
+@define(frozen=True)
+class DiscordActionTextContext:
+    """保留 Modal 操作用户，并按需携带原消息引用。"""
+
+    interaction: discord.Interaction
+    message: discord.Message | None = None
+
+    @property
+    def channel(self):
+        return self.interaction.channel
+
+    @property
+    def user(self):
+        return self.interaction.user
 
 
 def _get_bot_id() -> str:
@@ -65,3 +82,38 @@ async def handle_button_click(
         bot_id=_get_bot_id(),
     )
     await Bot.process_message(session, interaction)
+
+
+async def handle_action_text_submit(
+    interaction: discord.Interaction,
+    command: str,
+    reference: bool,
+    origin_message: discord.Message | None,
+    ctx_slot: int | None = None,
+) -> None:
+    """将 Discord Modal 中编辑后的命令作为用户输入重新进入消息流程。"""
+    if not interaction.response.is_done():
+        await interaction.response.defer()
+
+    target_from = (
+        target_dm_channel_prefix if isinstance(interaction.channel, discord.DMChannel) else target_channel_prefix
+    )
+    origin_message_id = str(origin_message.id) if origin_message else None
+    session = await SessionInfo.assign(
+        target_id=f"{target_from}|{interaction.channel.id}",
+        sender_id=f"{sender_prefix}|{interaction.user.id}",
+        sender_name=interaction.user.name,
+        target_from=target_from,
+        is_private=target_from == target_dm_channel_prefix,
+        sender_from=sender_prefix,
+        client_name=client_name,
+        message_id=str(interaction.id),
+        reply_id=origin_message_id if reference else None,
+        messages=MessageChain.assign([Plain(command)]),
+        ctx_slot=ctx_slot,
+        bot_id=_get_bot_id(),
+    )
+    await Bot.process_message(
+        session,
+        DiscordActionTextContext(interaction, origin_message if reference else None),
+    )

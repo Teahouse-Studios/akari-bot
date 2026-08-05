@@ -1,13 +1,15 @@
 """Telegram 消息聚合负载构建。"""
 
+import re
+from html import escape
 from html.parser import HTMLParser
 
 from aiogram.types import FSInputFile, InputMediaAudio, InputMediaPhoto
 from attrs import define, field
 
 from bots.telegram.info import client_name
-from core.builtins.message.chain import MessageChain, match_atcode
-from core.builtins.message.elements import ImageElement, MentionElement, PlainElement, VoiceElement
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.elements import ActionTextElement, ImageElement, MentionElement, PlainElement, VoiceElement
 from core.builtins.session.info import SessionInfo
 from core.utils.image import image_split
 
@@ -32,6 +34,7 @@ class TelegramContent:
     text: str = ""
     images: list = field(factory=list)
     audio: list = field(factory=list)
+    action_texts: list[ActionTextElement] = field(factory=list)
 
 
 @define
@@ -90,6 +93,28 @@ class _HTMLAtomParser(HTMLParser):
         self.atoms.append(_HTMLAtom(raw, tuple(self.contexts)))
 
 
+_AT_CODE_PATTERN = re.compile(r"<(?:AT|@):([^\|]+)\|(?:.*?\|)?([^\|>]+)>")
+
+
+def _escape_telegram_text(text: str, parse_mentions: bool = True) -> str:
+    """转义普通文本，仅将本平台 AT 码转换为受控的 Telegram HTML。"""
+    if not parse_mentions:
+        return escape(text)
+
+    result = []
+    start = 0
+    for match in _AT_CODE_PATTERN.finditer(text):
+        result.append(escape(text[start : match.start()]))
+        if match.group(1) == client_name:
+            user_id = escape(match.group(2), quote=True)
+            result.append(f'<a href="tg://user?id={user_id}">@{user_id}</a>')
+        else:
+            result.append(escape(match.group(0)))
+        start = match.end()
+    result.append(escape(text[start:]))
+    return "".join(result)
+
+
 def _render_html_atoms(atoms: list[_HTMLAtom]) -> str:
     result = []
     current: tuple[_HTMLContext, ...] = ()
@@ -137,26 +162,41 @@ async def collect_telegram_content(
     text_parts = []
     images = []
     audio = []
+    action_texts = []
+    inline_pending = False
     for element in message.as_sendable(session_info, parse_message=enable_parse_message):
         if isinstance(element, PlainElement):
-            text_parts.append(
-                match_atcode(element.text, client_name, '<a href="tg://user?id={uid}">@{uid}</a>')
-                if enable_parse_message
-                else element.text
-            )
+            text = _escape_telegram_text(element.text, parse_mentions=enable_parse_message)
+            if inline_pending and text_parts:
+                text_parts[-1] += text
+            else:
+                text_parts.append(text)
+            inline_pending = False
+        elif isinstance(element, ActionTextElement):
+            fallback = escape(element.to_plain(session_info).text)
+            if text_parts:
+                text_parts[-1] += fallback
+            else:
+                text_parts.append(fallback)
+            action_texts.append(element)
+            inline_pending = True
         elif isinstance(element, MentionElement):
             if element.client == client_name and session_info.target_from in [
                 f"{client_name}|Group",
                 f"{client_name}|Supergroup",
             ]:
-                text_parts.append(f'<a href="tg://user?id={element.id}">@{element.id}</a>')
+                user_id = escape(element.id, quote=True)
+                text_parts.append(f'<a href="tg://user?id={user_id}">@{user_id}</a>')
+            inline_pending = False
         elif isinstance(element, ImageElement):
             image_elements = await image_split(element) if enable_split_image else [element]
             for image in image_elements:
                 images.append(FSInputFile(await image.get()))
+            inline_pending = False
         elif isinstance(element, VoiceElement):
             audio.append(FSInputFile(element.path))
-    return TelegramContent(text="\n".join(text_parts), images=images, audio=audio)
+            inline_pending = False
+    return TelegramContent(text="\n".join(text_parts), images=images, audio=audio, action_texts=action_texts)
 
 
 def _group_media(items: list, media_type, caption: str | None = None) -> list:

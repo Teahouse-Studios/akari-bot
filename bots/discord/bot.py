@@ -10,8 +10,8 @@ import filetype
 
 import bots.discord.slash as slash_modules
 from bots.discord.client import discord_bot
-from bots.discord.buttons import set_button_click_handler
-from bots.discord.interactions import handle_button_click
+from bots.discord.buttons import set_action_text_submit_handler, set_button_click_handler
+from bots.discord.interactions import handle_action_text_submit, handle_button_click
 from bots.discord.context import DiscordContextManager, DiscordFetchedContextManager
 from bots.discord.info import *
 from bots.discord.slash_context import DiscordSlashContextManager
@@ -31,6 +31,15 @@ Bot.register_bot(client_name=client_name)
 ctx_id = Bot.register_context_manager(DiscordContextManager)
 Bot.register_context_manager(DiscordFetchedContextManager, fetch_session=True)
 set_button_click_handler(lambda interaction, button: handle_button_click(interaction, button, ctx_id))
+set_action_text_submit_handler(
+    lambda interaction, command, reference, origin_message: handle_action_text_submit(
+        interaction,
+        command,
+        reference,
+        origin_message,
+        ctx_id,
+    )
+)
 
 dc_token = DiscordSecretConfig.discord_token
 ignored_sender = CoreConfig.ignored_sender

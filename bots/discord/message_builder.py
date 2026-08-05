@@ -6,7 +6,14 @@ from attrs import define, field
 from bots.discord.info import client_name, target_channel_prefix
 from bots.discord.utils import convert_embed
 from core.builtins.message.chain import MessageChain, match_atcode
-from core.builtins.message.elements import EmbedElement, ImageElement, MentionElement, PlainElement, VoiceElement
+from core.builtins.message.elements import (
+    ActionTextElement,
+    EmbedElement,
+    ImageElement,
+    MentionElement,
+    PlainElement,
+    VoiceElement,
+)
 from core.builtins.session.info import SessionInfo
 
 
@@ -17,6 +24,7 @@ class DiscordPayload:
     content: str | None = None
     files: list[discord.File] = field(factory=list)
     embeds: list[discord.Embed] = field(factory=list)
+    action_texts: list[ActionTextElement] = field(factory=list)
 
 
 def split_discord_text(text: str, limit: int = 2000) -> list[str]:
@@ -42,24 +50,41 @@ async def build_discord_payloads(
     text_parts = []
     files = []
     embed_units = []
+    action_texts = []
     embed_index = 0
+    inline_pending = False
 
     for element in message.as_sendable(session_info, parse_message=enable_parse_message):
         if isinstance(element, PlainElement):
-            text_parts.append(
-                match_atcode(element.text, client_name, "<@{uid}>") if enable_parse_message else element.text
-            )
+            text = match_atcode(element.text, client_name, "<@{uid}>") if enable_parse_message else element.text
+            if inline_pending and text_parts:
+                text_parts[-1] += text
+            else:
+                text_parts.append(text)
+            inline_pending = False
+        elif isinstance(element, ActionTextElement):
+            fallback = element.to_plain(session_info).text
+            if text_parts:
+                text_parts[-1] += fallback
+            else:
+                text_parts.append(fallback)
+            action_texts.append(element)
+            inline_pending = True
         elif isinstance(element, MentionElement):
             if element.client == client_name and session_info.target_from == target_channel_prefix:
                 text_parts.append(f"<@{element.id}>")
+            inline_pending = False
         elif isinstance(element, ImageElement):
             files.append(discord.File(await element.get()))
+            inline_pending = False
         elif isinstance(element, VoiceElement):
             files.append(discord.File(element.path))
+            inline_pending = False
         elif isinstance(element, EmbedElement):
             embed, embed_files = await convert_embed(element, session_info, attachment_prefix=f"embed-{embed_index}")
             embed_index += 1
             embed_units.append((embed, embed_files))
+            inline_pending = False
 
     text_chunks = split_discord_text("\n".join(text_parts)) if text_parts else []
     payloads = []
@@ -91,6 +116,8 @@ async def build_discord_payloads(
         )
         if text_index < len(text_chunks):
             text_index += 1
+    if payloads:
+        payloads[-1].action_texts = action_texts
     return payloads
 
 

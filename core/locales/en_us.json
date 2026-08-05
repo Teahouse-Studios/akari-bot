@@ -103,6 +103,7 @@
     "game.message.running": "This game is currently in progress.",
     "game.message.stop": "Stopped.",
     "game.message.stop.none": "This game is not in progress.",
+    "help.option.image": "Force image mode.",
     "help.option.legacy": "Force text mode.",
     "i18n.unit.1": "k",
     "i18n.unit.2": "M",
