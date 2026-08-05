@@ -477,18 +477,18 @@ async def _(msg: Bot.MessageSession, module: str):
     },
 )
 async def _(msg: Bot.MessageSession):
-    if msg.parsed_msg.get("--doc", False) and bool(help_url):
+    if msg.parsed_msg and msg.parsed_msg.get("--doc", False) and bool(help_url):
         await msg.finish(
             I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url, trusted=True)))
         )
-    if msg.parsed_msg.get("--donate", False) and bool(donate_url):
+    if msg.parsed_msg and msg.parsed_msg.get("--donate", False) and bool(donate_url):
         await msg.finish(
             I18NContext("core.message.help.donate", url=MessageChain.assign(Url(donate_url, trusted=True)))
         )
 
     use_table = not msg.parsed_msg and msg.session_info.support_markdown and msg.session_info.support_action_text
     use_clickable = not use_table and not msg.parsed_msg and msg.session_info.support_action_text
-    force_legacy = msg.parsed_msg.get("--legacy", False)
+    force_legacy = bool(msg.parsed_msg and msg.parsed_msg.get("--legacy", False))
 
     legacy_help = True
     if not (use_clickable or use_table or msg.parsed_msg or force_legacy) and msg.session_info.support_image:
