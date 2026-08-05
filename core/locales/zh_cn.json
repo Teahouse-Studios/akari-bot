@@ -54,7 +54,7 @@
     "config.comments.default_locale": "默认的语言环境。",
     "config.comments.s3_secret.s3_access_key": "S3 兼容 API 的 AccessKey。",
     "config.comments.s3_secret.s3_secret_key": "S3 兼容 API 的 SecretKey。",
-    "config.comments.s3.s3_bucket": "S3 兼容 API 的 Bucket 名。",
+    "config.comments.s3.s3_bucket": "S3 兼容 API 的桶名。",
     "config.comments.s3.s3_endpoint_url": "S3 兼容 API 的端点 URL。",
     "config.comments.s3.s3_internal_endpoint": "S3 兼容 API 的内网访问 URL。",
     "config.comments.s3.s3_public_endpoint": "S3 兼容 API 的公网访问 URL。",
