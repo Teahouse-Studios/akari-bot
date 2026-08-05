@@ -226,7 +226,7 @@
     "core.bind.help.target.remove": "將指定場景移出目前場景群組。",
     "core.bind.help.token": "填入另一處產生的綁定碼以完成綁定。",
     "core.bind.message.auto.cancelled": "已取消，未做任何改動。",
-    "core.bind.message.auto.confirm.inherit": "資料的繼承方式：語言沿用發起方；模組開關、管理員名單、限制名單取兩側並集；場景設定逐項合併，同名項以發起方為準；模組資料僅一側有則直接帶過來，兩側都有會逐一詢問保留哪一份。兩個場景也會被標記為同一則訊息管道：此後同一指令只由其中一個機器人執行，推播只傳送一次，雙方並會記下對方的機器人帳號，不再把對方發出的訊息當成指令解析。合併後無法撤銷。",
+    "core.bind.message.auto.confirm.inherit": "資料的繼承方式：語言沿用發起方；模組開關、管理員名單、限制名單取兩側並集；場景設定逐項合併，同名項以發起方為準；模組資料僅一側存在則直接遷移，兩側皆存在則逐一詢問保留哪一份。兩個場景也會被標記為同一則訊息通道：此後同一指令只由其中一個機器人執行，推播只傳送一次，雙方並會記下對方的機器人帳號，不再把對方發出的訊息當成指令解析。合併後無法撤銷。",
     "core.bind.message.auto.success": "已與目前場景內的其他機器人合併：場景群組 ${id}，訊息管道 ${channel} 號。此後同一條指令只會由其中一個機器人執行，推播只會傳送一次。",
     "core.bind.message.auto.timeout": "等待超時，未在當前場景內找到其他機器人。",
     "core.bind.message.channel.hint": "標註為同一訊息管道的場景會被當作現實中的同一個場景（例如一個群組裡同時有兩個機器人）：同一指令只由其中一個執行，推播只傳送一次。",
@@ -355,5 +355,6 @@
     "core.message.whoami.target.union": "目前場景所屬的場景群組：${id}",
     "core.message.whoami.target.union.bound": "已綁定 ${count} 個場景：",
     "core.message.whoami.union": "目前使用者所屬的使用者群組：${id}",
-    "core.message.whoami.union.bound": "已綁定 ${count} 個使用者："
+    "core.message.whoami.union.bound": "已綁定 ${count} 個使用者：",
+    "core.bind.message.target.confirm.inherit": "資料的繼承方式：語言沿用發起方；模組開關、管理員名單、限制名單取兩側並集；場景設定逐項合併，同名項以發起方為準；模組資料僅一側存在則直接遷移，兩側皆存在則逐一詢問保留哪一份。訊息頻道不會自動合併，併入的場景會另行編號，需要合併請在綁定後使用「${prefix}bind channel set」。合併後無法撤銷。"
 }
