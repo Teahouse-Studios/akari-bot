@@ -205,6 +205,5 @@
     "message.typing": "正在輸入中……",
     "message.url.untrusted": "此連結未經認證，請謹慎開啟",
     "message.wait.confirm.prompt.button": "（傳送「是」等符合確認條件的詞語或點選按鈕確認）",
-    "parser.retired.prompt": "本平台的官方實例已停止提供服務，僅保留資料遷移功能。\n請使用「${cmd}」將資料遷移至新的平台。",
-    "parser.superuser.permission.denied.auth": "你沒有使用此指令的權限，請聯絡超級使用者授權使用此模組。"
+    "parser.retired.prompt": "本平台已停止提供服務，僅保留資料遷移功能。\n請使用「${cmd}」將資料遷移至新的平台。"
 }
