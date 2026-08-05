@@ -6,6 +6,7 @@
     "config.comments.bot_web.heartbeat_attempt": "하트비트 메시지를 전송하려는 시도 횟수.",
     "config.comments.bot_web.heartbeat_interval": "하트비트 메시지를 전송하는 간격.",
     "config.comments.bot_web.heartbeat_timeout": "하트비트 응답 타임아웃 시간.",
-    "config.comments.bot_web_secret.allow_origins": "CORS를 허용하는 API 서비스의 오리진(Origin) 목록.",
-    "config.comments.bot_web_secret.jwt_secret": "내장된 API의 인증 키. 서명 및 유효성 검사에 사용됩니다."
+    "config.comments.bot_web_secret.allow_origins": "API 서비스의 CORS를 허용하는 오리진(Origin) 목록. '*'로 설정하면 모든 오리진을 신뢰함을 의미합니다.",
+    "config.comments.bot_web_secret.jwt_secret": "내장된 API의 인증 키. 서명 및 유효성 검사에 사용됩니다.",
+    "config.comments.bot_web.forwarded_allow_ips": "신뢰할 수 있는 리버스 프록시 오리진(Reverse proxy origin) 목록. '*'로 설정하면 모든 오리진을 신뢰함을 의미합니다."
 }

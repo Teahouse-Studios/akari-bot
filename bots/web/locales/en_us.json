@@ -6,6 +6,7 @@
     "config.comments.bot_web.heartbeat_attempt": "The number of attempts to send heartbeat messages.",
     "config.comments.bot_web.heartbeat_interval": "The interval for sending heartbeat messages.",
     "config.comments.bot_web.heartbeat_timeout": "Heartbeat message response timeout.",
-    "config.comments.bot_web_secret.allow_origins": "The list of allowed CORS origins for the API service.",
-    "config.comments.bot_web_secret.jwt_secret": "The authentication key for the built-in API, for signing and verifying validity."
+    "config.comments.bot_web_secret.allow_origins": "The list of allowed CORS origins for the API service. Setting it to \"*\" indicates that all origins are trusted.",
+    "config.comments.bot_web_secret.jwt_secret": "The authentication key for the built-in API, for signing and verifying validity.",
+    "config.comments.bot_web.forwarded_allow_ips": "List of trusted reverse proxy sources. Setting it to \"*\" indicates that all origins are trusted."
 }
