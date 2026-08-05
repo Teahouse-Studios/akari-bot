@@ -206,7 +206,8 @@
     "core.message.update.failed": "GitHub から更新を取得しようとして失敗しました。",
     "core.message.version": "現在ボットのバージョン：${version}",
     "core.message.version.unknown": "バージョンを取得できません。このインスタンスは Git を使用してデプロイされていない可能性があります。",
-    "core.message.whoami": "あなたの ID：${sender}\nこのコンテクストの ID：${target}",
+    "core.message.whoami.sender": "あなたの ID：\n${id}",
+    "core.message.whoami.target": "このコンテクストの ID：\n${id}",
     "core.message.whoami.admin": "（このコンテクストでは管理者権限があります）",
     "core.message.whoami.botadmin": "（このコンテクストではボット管理者権限があります）",
     "core.message.whoami.superuser": "（ボットのスーパーユーザー権限があります）"

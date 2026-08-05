@@ -206,7 +206,8 @@
     "core.message.update.failed": "Failed to fetch update from GitHub.",
     "core.message.version": "Current bot version: ${version}",
     "core.message.version.unknown": "Unable to get version. This instance may not be deployed using Git.",
-    "core.message.whoami": "Your ID: ${sender}\nSession ID: ${target}",
+    "core.message.whoami.sender": "Your ID:\n${id}",
+    "core.message.whoami.target": "Session ID:\n${id}",
     "core.message.whoami.admin": "(You have admin permission for this context)",
     "core.message.whoami.botadmin": "(You have bot admin permission for this context)",
     "core.message.whoami.superuser": "(You have superuser permission)"
