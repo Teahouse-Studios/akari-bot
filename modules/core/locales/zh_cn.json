@@ -214,7 +214,7 @@
     "core.message.help.table.alias": "别名",
     "core.message.help.table.base": "基础模块",
     "core.message.help.table.command": "命令",
-    "core.message.help.table.desc": "介绍",
+    "core.message.help.table.desc": "描述",
     "core.message.help.table.external": "扩展模块",
     "core.message.help.table.options": "选项",
     "core.message.help.table.regex": "正则表达式",
