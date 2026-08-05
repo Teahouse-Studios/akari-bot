@@ -101,6 +101,7 @@
     "game.message.running": "현재 이 게임이 진행 중입니다.",
     "game.message.stop": "중단되었습니다.",
     "game.message.stop.none": "현재 진행 중인 게임이 없습니다.",
+    "help.option.image": "이미지 모드를 강제로 사용합니다.",
     "help.option.legacy": "텍스트 모드 강제 사용.",
     "i18n.unit.1": "만",
     "i18n.unit.2": "억",

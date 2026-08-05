@@ -469,14 +469,17 @@ async def _(msg: Bot.MessageSession, module: str):
 
 
 @hlp.command(
-    "[--legacy] [--doc] [--donate] {{I18N:core.help.help}}",
+    "[--legacy] [--doc] [--image] [--donate] {{I18N:core.help.help}}",
     options_desc={
         "--legacy": "{I18N:help.option.legacy}",
-        "-doc": "{I18N:core.help.option.doc}",
+        "--doc": "{I18N:core.help.option.doc}",
+        "--image": "{I18N:help.option.image}",
         "--donate": "{I18N:core.help.option.donate}",
     },
 )
-async def _(msg: Bot.MessageSession):
+async def help_overview(msg: Bot.MessageSession):
+    # 支持 Markdown 表格的平台优先排成宽表；其余平台保留图片帮助，图片生成失败后
+    # 再降级到可点击列表或纯文本。显式要求 --legacy 者始终得到最朴素的版本。
     if msg.parsed_msg and msg.parsed_msg.get("--doc", False) and bool(help_url):
         await msg.finish(
             I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url, trusted=True)))
@@ -485,18 +488,26 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(
             I18NContext("core.message.help.donate", url=MessageChain.assign(Url(donate_url, trusted=True)))
         )
-
-    use_table = not msg.parsed_msg and msg.session_info.support_markdown and msg.session_info.support_action_text
-    use_clickable = not use_table and not msg.parsed_msg and msg.session_info.support_action_text
-    force_legacy = bool(msg.parsed_msg and msg.parsed_msg.get("--legacy", False))
+    parsed_msg = msg.parsed_msg or {}
+    force_image = parsed_msg.get("--image", False)
+    force_legacy = parsed_msg.get("--legacy", False) and not force_image
+    use_table = not force_image and not force_legacy and msg.session_info.support_markdown_table
+    use_clickable = not use_table and not force_legacy and msg.session_info.support_action_text
 
     legacy_help = True
-    if not (use_clickable or use_table or msg.parsed_msg or force_legacy) and msg.session_info.support_image:
+    if not use_table and not force_legacy and msg.session_info.support_image:
         imgs = await help_generator(msg)
         if imgs:
             legacy_help = False
 
             help_msg_list = MessageChain.assign(
+                I18NContext(
+                    "core.message.help.detail",
+                    prefix=msg.session_info.prefixes[0],
+                    cmd=ActionText(f"{msg.session_info.prefixes[0]}help "),
+                )
+            )
+            help_msg_list.append(
                 I18NContext(
                     "core.message.help.all_modules",
                     prefix=msg.session_info.prefixes[0],
@@ -598,16 +609,22 @@ async def _(msg: Bot.MessageSession):
 
 
 async def modules_list_help(msg: Bot.MessageSession, legacy):
-    # 与 ~help 同理：可点击的模块名优先于图片排版，同时支持 markdown 时再进一步排成宽表
-    use_table = not legacy and msg.session_info.support_markdown and msg.session_info.support_action_text
+    # 与 ~help 同理：表格不可用时优先保留图片，图片生成失败后再降级到文字版
+    use_table = not legacy and msg.session_info.support_markdown_table
     use_clickable = not use_table and not legacy and msg.session_info.support_action_text
 
     legacy_help = True
-    if not use_clickable and not use_table and msg.session_info.support_image and not legacy:
+    if not use_table and msg.session_info.support_image and not legacy:
         imgs = await help_generator(msg, show_disabled_modules=True, show_base_modules=False, show_dev_modules=False)
         if imgs:
             legacy_help = False
-            help_msg = MessageChain.assign()
+            help_msg = MessageChain.assign(
+                I18NContext(
+                    "core.message.help.detail",
+                    prefix=msg.session_info.prefixes[0],
+                    cmd=ActionText(f"{msg.session_info.prefixes[0]}help "),
+                )
+            )
             if help_url:
                 help_msg.append(
                     I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url, trusted=True)))

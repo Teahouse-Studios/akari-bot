@@ -103,6 +103,7 @@
     "game.message.running": "當前此遊戲正在進行。",
     "game.message.stop": "已停止。",
     "game.message.stop.none": "當前此遊戲沒有在進行。",
+    "help.option.image": "強制使用圖片模式。",
     "help.option.legacy": "強制使用文本模式。",
     "i18n.unit.1": "萬",
     "i18n.unit.2": "億",

@@ -101,6 +101,7 @@
     "game.message.running": "現在このゲームは進行中です。",
     "game.message.stop": "停止しました。",
     "game.message.stop.none": "このゲームは進行していません。",
+    "help.option.image": "画像モードを強制します。",
     "help.option.legacy": "テキストモードを強制します。",
     "i18n.unit.1": "万",
     "i18n.unit.2": "億",

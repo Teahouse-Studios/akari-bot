@@ -9,8 +9,10 @@
 
 from attr import evolve
 
+from bots.discord.features import features as discord_features
 from bots.qqbot.config import QQBotConfig
 from bots.qqbot.features import features as qqbot_features
+from bots.telegram.features import features as telegram_features
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.tester import func_case, Tester
@@ -48,6 +50,16 @@ def _test_qqbot_follows_markdown_config():
     return qqbot_features.support_button is QQBotConfig.qq_use_markdown
 
 
+def _test_discord_enables_button():
+    """Discord 须声明原生按钮能力。"""
+    return discord_features.support_button is True
+
+
+def _test_telegram_enables_button():
+    """Telegram 须声明原生按钮能力。"""
+    return telegram_features.support_button is True
+
+
 @func_case
 async def test_support_button(tester: Tester):
     """core: support_button 特性"""
@@ -56,4 +68,6 @@ async def test_support_button(tester: Tester):
     await tester.test(_test_session_info_declares_field, "SessionInfo 声明该字段")
     await tester.test(_test_injects_into_session, "特性可注入会话")
     await tester.test(_test_qqbot_follows_markdown_config, "QQBot 跟随 Markdown 配置")
+    await tester.test(_test_discord_enables_button, "Discord 开启按钮能力")
+    await tester.test(_test_telegram_enables_button, "Telegram 开启按钮能力")
     return tester

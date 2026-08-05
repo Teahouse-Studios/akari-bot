@@ -47,6 +47,9 @@ class Features:
     # Markdown 语法支持 - 会话是否支持 Markdown 格式化文本
     support_markdown: bool = False
 
+    # Markdown 表格支持 - 会话是否支持以管道语法渲染表格
+    support_markdown_table: bool = False
+
     # 消息反应支持 - 会话是否支持对消息添加反应（如表情符号）
     support_reaction: bool = False
 

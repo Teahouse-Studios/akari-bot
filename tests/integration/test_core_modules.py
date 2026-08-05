@@ -20,6 +20,7 @@ async def test_version(tester: Tester):
 async def test_help(tester: Tester):
     """help 命令测试"""
     await tester.integrate("~help", Contains("基础模块"), "help 应显示基础模块列表")
+    await tester.integrate("~help help", Contains("--image"), "help 帮助应展示强制图片选项")
     await tester.integrate("~help version", Contains("version"), "help version 应显示版本帮助")
     await tester.integrate("~help version", Contains("版本号"), "help version 应包含版本号描述")
 
