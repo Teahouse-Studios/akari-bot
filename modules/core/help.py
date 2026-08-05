@@ -469,11 +469,12 @@ async def _(msg: Bot.MessageSession, module: str):
 
 
 @hlp.command(
-    "[--legacy] [--doc] [--image] {{I18N:core.help.help}}",
+    "[--legacy] [--doc] [--image] [--donate] {{I18N:core.help.help}}",
     options_desc={
         "--legacy": "{I18N:help.option.legacy}",
         "--doc": "{I18N:core.help.option.doc}",
         "--image": "{I18N:help.option.image}",
+        "--donate": "{I18N:core.help.option.donate}",
     },
 )
 async def help_overview(msg: Bot.MessageSession):
@@ -495,7 +496,6 @@ async def help_overview(msg: Bot.MessageSession):
 
     legacy_help = True
     if not use_table and not force_legacy and msg.session_info.support_image:
-
         imgs = await help_generator(msg)
         if imgs:
             legacy_help = False
