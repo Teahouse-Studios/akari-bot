@@ -5,7 +5,7 @@ import botpy
 from botpy.interaction import Interaction
 from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 
-from bots.qqbot.context import QQBotContextManager, QQBotFetchedContextManager
+from bots.qqbot.context import QQBotContextManager, QQBotFetchedContextManager, permission_cache
 from bots.qqbot.info import *
 from bots.qqbot.features import group_disable_read_all_message_features, resolve_features
 from core.builtins.bot import Bot
@@ -155,6 +155,8 @@ class MyClient(botpy.Client):
             tmp={"message_type": "group_direct"},
         )
 
+        permission_cache[f"{target_id}|{sender_id}"] = message.author.member_role in ["admin", "owner"]
+
         await Bot.process_message(session, message, resolve_features(session))
 
     @staticmethod
@@ -190,6 +192,8 @@ class MyClient(botpy.Client):
             bot_id=qqbot_openid,
             tmp={"message_type": "group_at"},
         )
+
+        permission_cache[f"{target_id}|{sender_id}"] = message.author.member_role in ["admin", "owner"]
 
         await Bot.process_message(session, message, resolve_features(session, group_disable_read_all_message_features))
 

@@ -133,6 +133,10 @@ def nodes_to_table(session_info: SessionInfo, nodes: MessageNodes) -> str:
     return "\n".join(lines)
 
 
+# 用户权限缓存，用于部分场景接口未返回群聊内身份使用
+permission_cache = {}
+
+
 # 额外添加平台接口支持但 SDK 不支持的方法
 # https://github.com/tencent-connect/botpy/pull/215
 class ModdedBotAPI(BotAPI):
@@ -242,6 +246,8 @@ class QQBotContextManager(ContextManager):
                 return False
             elif isinstance(ctx, C2CMessage):
                 return True
+            else:
+                return permission_cache.get(f"{session_info.target_id}|{session_info.sender_id}", False)
         return False
 
     @classmethod
