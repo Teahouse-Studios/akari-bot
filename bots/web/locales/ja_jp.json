@@ -6,6 +6,7 @@
     "config.comments.bot_web.heartbeat_attempt": "ハートビート メッセージを送信する試行回数。",
     "config.comments.bot_web.heartbeat_interval": "ハートビート メッセージを送信する間隔。",
     "config.comments.bot_web.heartbeat_timeout": "ハートビート メッセージ応答のタイムアウト。",
-    "config.comments.bot_web_secret.allow_origins": "API サービスで CORS が許可されるオリジンのリスト。",
-    "config.comments.bot_web_secret.jwt_secret": "組み込み API 認証のキー、署名と有効性検証のためのものです。"
+    "config.comments.bot_web_secret.allow_origins": "API サービスで CORS が許可されるオリジンのリスト。「*」に設定すると、すべてのオリジンを信頼することを意味します。",
+    "config.comments.bot_web_secret.jwt_secret": "組み込み API 認証のキー、署名と有効性検証のためのものです。",
+    "config.comments.bot_web.forwarded_allow_ips": "信頼できるリバース プロキシソースのリスト。「*」に設定すると、すべてのオリジンを信頼することを意味します。"
 }
