@@ -235,7 +235,7 @@ def get_help_link_buttons(msg: Bot.MessageSession) -> list[tuple[str, str]]:
     构造帮助菜单底部的三个入口按钮：模块列表、在线文档、捐赠。
 
     三者都是回调按钮，点击后由机器人回一条消息，故各自都须有命令可回流——后两者对应
-    ``help doc`` 与 ``help donate``。跳转按钮虽可直接打开链接，却要求域名在平台报备，
+    ``help --doc`` 与 ``help --donate``。跳转按钮虽可直接打开链接，却要求域名在平台报备，
     未报备的会被拦下，此处不采用。
 
     按钮命令一律使用 command_prefix：按钮回流经 interaction 事件另建会话，其可用前缀
@@ -250,9 +250,9 @@ def get_help_link_buttons(msg: Bot.MessageSession) -> list[tuple[str, str]]:
     prefix = command_prefix[0]
     buttons = [(locale.t("core.message.help.button.modules"), f"{prefix}module list")]
     if help_url:
-        buttons.append((locale.t("core.message.help.button.document"), f"{prefix}help doc"))
+        buttons.append((locale.t("core.message.help.button.document"), f"{prefix}help --doc"))
     if donate_url:
-        buttons.append((locale.t("core.message.help.button.donate"), f"{prefix}help donate"))
+        buttons.append((locale.t("core.message.help.button.donate"), f"{prefix}help --donate"))
     return buttons
 
 
@@ -302,6 +302,7 @@ async def _(msg: Bot.MessageSession, module: str):
         target_from=msg.session_info.target_from, client_name=msg.session_info.client_name
     )
     alias = ModulesManager.modules_aliases
+    force_legacy = msg.parsed_msg.get("--legacy", False)
 
     if msg.parsed_msg:
         mdocs = []
@@ -397,11 +398,7 @@ async def _(msg: Bot.MessageSession, module: str):
                 wiki_msg = ""
 
             # 表格版优先于图片版：命令可点击填入，且与模块列表的排法一致
-            if (
-                not msg.parsed_msg.get("--legacy", False)
-                and msg.session_info.support_markdown
-                and msg.session_info.support_action_text
-            ):
+            if not force_legacy and msg.session_info.support_markdown and msg.session_info.support_action_text:
                 table = build_command_table(msg, help_.return_json_help_doc(), regex_rows)
                 if table:
                     detail = []
@@ -416,11 +413,7 @@ async def _(msg: Bot.MessageSession, module: str):
                     # 不显式声明会被平台退回纯文本，表格标记原样露出
                     await msg.finish(detail, force_markdown=True)
 
-            if (
-                not msg.parsed_msg.get("--legacy", False)
-                and msg.session_info.support_image
-                and Bot.Info.web_render_status
-            ):
+            if not force_legacy and msg.session_info.support_image and Bot.Info.web_render_status:
                 if (module_.required_superuser and not is_superuser) or (
                     module_.required_base_superuser and not is_base_superuser
                 ):
@@ -475,16 +468,30 @@ async def _(msg: Bot.MessageSession, module: str):
             await msg.finish(I18NContext("core.message.help.not_found"))
 
 
-@hlp.command("[--legacy] {{I18N:core.help.help}}", options_desc={"--legacy": "{I18N:help.option.legacy}"})
+@hlp.command(
+    "[--legacy] [--doc] [--donate] {{I18N:core.help.help}}",
+    options_desc={
+        "--legacy": "{I18N:help.option.legacy}",
+        "-doc": "{I18N:core.help.option.doc}",
+        "--donate": "{I18N:core.help.option.donate}",
+    },
+)
 async def _(msg: Bot.MessageSession):
-    # 具备指令操作能力时，文字版的模块名可以点击直达详情，其价值高于图片排版，
-    # 故优先于图片版。显式要求 --legacy 者仍得到最朴素的那一版。
-    # 同时支持 markdown 的平台再进一步排成宽表：模块数增长由列数吸收，消息高度大体恒定。
+    if msg.parsed_msg.get("--doc", False) and bool(help_url):
+        await msg.finish(
+            I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url, trusted=True)))
+        )
+    if msg.parsed_msg.get("--donate", False) and bool(donate_url):
+        await msg.finish(
+            I18NContext("core.message.help.donate", url=MessageChain.assign(Url(donate_url, trusted=True)))
+        )
+
     use_table = not msg.parsed_msg and msg.session_info.support_markdown and msg.session_info.support_action_text
     use_clickable = not use_table and not msg.parsed_msg and msg.session_info.support_action_text
+    force_legacy = msg.parsed_msg.get("--legacy", False)
 
     legacy_help = True
-    if not use_clickable and not use_table and not msg.parsed_msg and msg.session_info.support_image:
+    if not (use_clickable or use_table or msg.parsed_msg or force_legacy) and msg.session_info.support_image:
         imgs = await help_generator(msg)
         if imgs:
             legacy_help = False
@@ -588,16 +595,6 @@ async def _(msg: Bot.MessageSession):
                 I18NContext("core.message.help.donate", url=MessageChain.assign(Url(donate_url, trusted=True)))
             )
         await msg.finish(help_msg, button_data=get_setup_button_data(msg))
-
-
-@hlp.command("doc {{I18N:core.help.help.doc}}", load=bool(help_url))
-async def _(msg: Bot.MessageSession):
-    await msg.finish(I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url, trusted=True))))
-
-
-@hlp.command("donate {{I18N:core.help.help.donate}}", load=bool(donate_url))
-async def _(msg: Bot.MessageSession):
-    await msg.finish(I18NContext("core.message.help.donate", url=MessageChain.assign(Url(donate_url, trusted=True))))
 
 
 async def modules_list_help(msg: Bot.MessageSession, legacy):
