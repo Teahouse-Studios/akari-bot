@@ -246,7 +246,7 @@
     "core.message.setup.invalid_module_prompt.disable": "\"Module does not exist\" prompt disabled.",
     "core.message.module.enable.unsupported_regex": "Failed: The regex module is not supported in this context. Please check if the corresponding permissions are enabled.",
     "core.message.help.table.title": "Avaliable Modules",
-    "core.message.help.table.regex": "Regexp",
+    "core.message.help.table.regex": "Regexps",
     "core.message.help.table.options": "Options",
     "core.message.help.table.external": "External Modules",
     "core.message.help.table.desc": "Descriptions",
