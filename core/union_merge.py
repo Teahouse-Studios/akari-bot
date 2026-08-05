@@ -118,10 +118,7 @@ async def issue_code(
                 # 该提示离开可点击的平台便无意义，故不随降级带往其他平台。引号同理，
                 # 可点击的标签自带视觉边界，仅降级后的命令原文才需要它
                 cmd=ActionText(
-                    full_command,
-                    show=I18NContext("message.action_text.hint", cmd=full_command),
-                    show_on_fallback=False,
-                    quote_on_fallback=True,
+                    full_command, show=I18NContext("message.action_text.hint", cmd=full_command), show_on_fallback=False
                 ),
                 disable_joke=True,
             ),
