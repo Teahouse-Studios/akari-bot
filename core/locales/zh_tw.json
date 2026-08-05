@@ -180,5 +180,16 @@
     "tos.message.warning": "警告：\n依據使用條款，你已違反我們的行為準則。",
     "tos.message.warning.count": "這是第 ${current_warns} 次警告。",
     "tos.message.warning.last": "這是最後一次警告。",
-    "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。"
+    "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。",
+    "config.comments.config.enable_bind_auto": "是否啟用「bind auto」指令以自動配對同一場景內的其他實例。",
+    "config.comments.config.retired_clients": "已退役的用戶端及其資料遷移目標，格式為「<來源用戶端> -> <目標用戶端>」（例：「QQ -> QQBot」）。只填寫來源用戶端時表示不提供遷移。",
+    "config.comments.config.typo_check_args_diff_ratio": "指令參數數量差異閾值：使用者輸入的參數數量與模板參數數量差異比例超過此值時跳過指令匹配，範圍 0 到 1 之間。",
+    "config.comments.config.typo_check_module_diff_ratio": "模組名稱數量差異閾值：匹配到的模組名稱長度與使用者輸入長度差異比例超過此值時跳過匹配，範圍 0 到 1 之間。",
+    "config.comments.s3_secret.s3_access_key": "S3 相容 API 的 AccessKey。",
+    "config.comments.s3_secret.s3_secret_key": "S3 相容 API 的 SecretKey。",
+    "config.comments.s3.s3_bucket": "S3 相容 API 的 Bucket 名。",
+    "config.comments.s3.s3_endpoint_url": "S3 相容 API 的端點 URL。",
+    "config.comments.s3.s3_internal_endpoint": "S3 相容 API 的內網存取 URL。",
+    "config.comments.s3.s3_public_endpoint": "S3 相容 API 的公網存取 URL。",
+    "config.comments.s3.s3_region": "S3 相容 API 的地域名。"
 }
