@@ -657,8 +657,8 @@ async def query_pages(
                 if len(wait_list) == 1:
                     possibly_choices.append(
                         {
-                            session.session_info.locale.t("message.yes"): confirm_command[0],
-                            session.session_info.locale.t("message.no"): "no",
+                            session.session_info.locale.t("message.button.yes"): confirm_command[0],
+                            session.session_info.locale.t("message.button.no"): "no",
                         }
                     )
                 elif len(wait_list) > 1:
