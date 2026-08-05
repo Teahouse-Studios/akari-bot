@@ -8,7 +8,7 @@ enable = true # 是否开启此客户端。
 enable_https = false # 是否开启 HTTPS 协议安全措施。
 web_host = "127.0.0.1" # Web 服务的主机地址，设为 0.0.0.0 则监听所有地址。
 web_port = 6485 # Web 服务的端口号，设为 0 则禁用服务。
-forwarded_allow_ips = "127.0.0.1" # 信任的反向代理来源地址，多个地址以英文逗号分隔，设为 * 表示信任所有来源。仅当来源受信任时才会采用 X-Forwarded-For 等请求头中的真实地址。
+forwarded_allow_ips = ["127.0.0.1"] # 信任的反向代理来源列表，设为“*”表示信任所有来源。
 login_max_attempt = 5 # 登录请求最大次数限制。
 heartbeat_attempt = 3 # 心跳消息发送尝试次数。
 heartbeat_interval = 30 # 心跳信息发送时间间隔。
@@ -16,5 +16,5 @@ heartbeat_timeout = 5 # 心跳消息回应超时时间。
 
 [bot_web_secret]
 # 客户端的密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
-allow_origins = [] # API 服务允许 CORS 的源列表。
+allow_origins = [] # API 服务允许 CORS 的来源列表，设为“*”表示信任所有来源。
 jwt_secret = "<Replace me with str value>" # 内置 API 的身份认证密钥，用于签名和验证有效性。

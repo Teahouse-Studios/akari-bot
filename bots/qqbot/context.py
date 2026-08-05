@@ -601,7 +601,7 @@ class QQBotContextManager(ContextManager):
                 button_yes = Button(
                     id="1",
                     render_data=RenderData(
-                        label=session_info.locale.t("message.yes"),
+                        label=session_info.locale.t("message.button.yes"),
                         visited_label=session_info.locale.t("message.confirmed"),
                         style=0,
                     ),
@@ -620,7 +620,7 @@ class QQBotContextManager(ContextManager):
                 button_no = Button(
                     id="2",
                     render_data=RenderData(
-                        label=session_info.locale.t("message.no"),
+                        label=session_info.locale.t("message.button.no"),
                         visited_label=session_info.locale.t("message.cancelled"),
                         style=0,
                     ),

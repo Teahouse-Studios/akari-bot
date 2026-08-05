@@ -631,7 +631,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
         elif module.required_superuser:
             # 需要超级用户权限
             if not await _check_superuser_or_authorized(msg, command_first_word):
-                await msg.send_message(I18NContext("parser.superuser.permission.denied.auth"))
+                await msg.send_message(I18NContext("parser.superuser.permission.denied"))
                 return
         elif not module.base:
             # 普通模块，检查是否已启用
@@ -1290,7 +1290,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
                     return
             elif command.required_superuser:
                 if not await _check_superuser_or_authorized(msg, command_first_word):
-                    await msg.send_message(I18NContext("parser.superuser.permission.denied.auth"))
+                    await msg.send_message(I18NContext("parser.superuser.permission.denied"))
                     return
             elif command.required_admin:
                 if not await msg.check_permission():
