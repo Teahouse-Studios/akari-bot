@@ -663,7 +663,7 @@ class QQBotContextManager(ContextManager):
                             action=Action(
                                 type=1,
                                 permission=Permission(
-                                    type=0,
+                                    type=0 if not isinstance(ctx, C2CMessage) else 2,
                                     specify_user_ids=[session_info.get_common_sender_id()],
                                     specify_role_ids=["1"],
                                 ),
