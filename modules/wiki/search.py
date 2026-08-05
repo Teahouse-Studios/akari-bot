@@ -68,7 +68,7 @@ async def search_pages(msg: Bot.MessageSession, title: str | list | tuple, use_p
     if len(wait_msg_list) != 0:
         msg_list.append(I18NContext("wiki.message.search"))
         i = 0
-        if msg.session_info.client_name != "QQBot":
+        if not msg.session_info.support_button:
             for w in wait_msg_list:
                 i += 1
                 msg_list.append(Plain(f"{i}. {w}"))

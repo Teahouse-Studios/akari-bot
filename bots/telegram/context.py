@@ -1,22 +1,27 @@
 from datetime import datetime, timedelta
 
 from aiogram import types
-from aiogram.types import ChatPermissions, FSInputFile
+from aiogram.types import ChatPermissions
 
+from bots.telegram.buttons import build_telegram_button_markup, get_telegram_context_chat_and_user
 from bots.telegram.client import aiogram_bot
 from bots.telegram.features import features as telegram_features
 from bots.telegram.info import client_name
-from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
-from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
+from bots.telegram.message_builder import (
+    build_telegram_operations,
+    collect_telegram_content,
+    execute_telegram_operations,
+)
+from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
-from core.utils.image import image_split
+from core.utils.button_runtime import get_session_button_data
 
 
 class TelegramContextManager(ContextManager):
-    context: dict[str, types.Message] = {}
+    context: dict[str, types.Message | types.CallbackQuery] = {}
     features: Features = telegram_features
 
     @classmethod
@@ -24,17 +29,17 @@ class TelegramContextManager(ContextManager):
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         # 这里可以添加权限检查的逻辑
-        ctx: types.Message | None = cls.context.get(session_info.session_id)
+        ctx: types.Message | types.CallbackQuery | None = cls.context.get(session_info.session_id)
         if not ctx:
             chat = await aiogram_bot.get_chat(session_info.get_common_target_id())
+            user_id = int(session_info.sender_id.split("|")[-1])
         else:
-            chat = ctx.chat
+            chat, user = get_telegram_context_chat_and_user(ctx)
+            user_id = user.id if user else None
         if chat.type == "private":
             return True
         admins = [member.user.id for member in await aiogram_bot.get_chat_administrators(chat.id)]
-        if ctx and ctx.from_user and ctx.from_user.id in admins:
-            return True
-        return False
+        return user_id in admins
 
     @classmethod
     async def send_message(
@@ -45,88 +50,33 @@ class TelegramContextManager(ContextManager):
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
     ) -> list[str]:
-        # if session_info.session_id not in cls.context:
-        #     raise ValueError("Session not found in context")
-        msg_ids: list[str] = []
-        buffer_text = []
-
-        async def send_buffer_text():
-            nonlocal buffer_text, msg_ids
-            if buffer_text:
-                send_ = await aiogram_bot.send_message(
-                    session_info.get_common_target_id(),
-                    "\n".join(buffer_text),
-                    reply_to_message_id=(
-                        int(session_info.message_id) if quote and not msg_ids and session_info.message_id else None
-                    ),
-                    parse_mode="HTML",
-                )
-                msg_ids.append(str(send_.message_id))
-                buffer_text = []
-
         if isinstance(message, MessageNodes):
             Logger.error("This session does not support message nodes, check if bug exists.")
             return []
 
-        count = 0
-        for x in message.as_sendable(session_info, parse_message=enable_parse_message):
-            if isinstance(x, PlainElement):
-                if enable_parse_message:
-                    x.text = match_atcode(x.text, client_name, '<a href="tg://user?id={uid}">@{uid}</a>')
-                buffer_text.append(x.text)
-                Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
-                count += 1
-            elif isinstance(x, ImageElement):
-                await send_buffer_text()
-                if enable_split_image:
-                    split = await image_split(x)
-                    for xs in split:
-                        send_ = await aiogram_bot.send_photo(
-                            session_info.get_common_target_id(),
-                            FSInputFile(await xs.get()),
-                            reply_to_message_id=(
-                                int(session_info.message_id)
-                                if quote and not msg_ids and session_info.message_id
-                                else None
-                            ),
-                        )
-                        Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(xs)}")
-                        msg_ids.append(str(send_.message_id))
-                else:
-                    send_ = await aiogram_bot.send_photo(
-                        session_info.get_common_target_id(),
-                        FSInputFile(await x.get()),
-                        reply_to_message_id=(
-                            int(session_info.message_id) if quote and not msg_ids and session_info.message_id else None
-                        ),
-                    )
-                    Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(x)}")
-                    msg_ids.append(str(send_.message_id))
-                count += 1
-            elif isinstance(x, VoiceElement):
-                await send_buffer_text()
-                send_ = await aiogram_bot.send_audio(
-                    session_info.get_common_target_id(),
-                    FSInputFile(x.path),
-                    reply_to_message_id=(
-                        int(session_info.message_id) if quote and not msg_ids and session_info.message_id else None
-                    ),
-                )
-                Logger.info(f"[Bot] -> [{session_info.target_id}]: Voice: {str(x)}")
-                msg_ids.append(str(send_.message_id))
-                count += 1
-            elif isinstance(x, MentionElement):
-                if x.client == client_name and session_info.target_from in [
-                    f"{client_name}|Group",
-                    f"{client_name}|Supergroup",
-                ]:
-                    buffer_text.append(f'<a href="tg://user?id={x.id}">@{x.id}</a>')
-                    Logger.info(f"[Bot] -> [{session_info.target_id}]: Mention: {x.client}|{x.id}")
-                count += 1
+        markup = None
+        button_data = get_session_button_data(session_info)
+        if button_data:
+            markup = build_telegram_button_markup(button_data, session_info.sender_id)
 
-            if count == len(message):
-                await send_buffer_text()
-        return msg_ids
+        content = await collect_telegram_content(
+            session_info,
+            message,
+            enable_parse_message=enable_parse_message,
+            enable_split_image=enable_split_image,
+        )
+        operations = build_telegram_operations(content, reply_markup=markup)
+        reply_id = int(session_info.message_id) if quote and session_info.message_id else None
+        sent_messages = await execute_telegram_operations(
+            aiogram_bot,
+            session_info.get_common_target_id(),
+            operations,
+            reply_to_message_id=reply_id,
+            reply_markup=markup,
+        )
+        for sent in sent_messages:
+            Logger.info(f"[Bot] -> [{session_info.target_id}]: Aggregated Telegram message {sent.message_id}")
+        return [str(sent.message_id) for sent in sent_messages]
 
     @classmethod
     async def send_private_msg(

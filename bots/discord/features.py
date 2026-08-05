@@ -17,6 +17,7 @@ features = Features(
     support_typing=True,
     support_wait=True,
     support_private_msg=True,
+    support_button=True,
     use_url_md_format=False,
 )
 

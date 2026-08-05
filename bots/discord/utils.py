@@ -16,7 +16,7 @@ def get_sender_id(session_info: SessionInfo) -> str:
     return parts[1] if len(parts) > 1 else ""
 
 
-async def convert_embed(embed: EmbedElement, session_info: SessionInfo):
+async def convert_embed(embed: EmbedElement, session_info: SessionInfo, attachment_prefix: str = "embed"):
     if isinstance(embed, EmbedElement):
         files = []
         embeds = discord.Embed(
@@ -27,13 +27,15 @@ async def convert_embed(embed: EmbedElement, session_info: SessionInfo):
             timestamp=datetime.fromtimestamp(embed.timestamp) if embed.timestamp else None,
         )
         if embed.image:
-            upload = discord.File(await embed.image.get(), filename="image.png")
+            image_name = f"{attachment_prefix}-image.png"
+            upload = discord.File(await embed.image.get(), filename=image_name)
             files.append(upload)
-            embeds.set_image(url="attachment://image.png")
+            embeds.set_image(url=f"attachment://{image_name}")
         if embed.thumbnail:
-            upload = discord.File(await embed.thumbnail.get(), filename="thumbnail.png")
+            thumbnail_name = f"{attachment_prefix}-thumbnail.png"
+            upload = discord.File(await embed.thumbnail.get(), filename=thumbnail_name)
             files.append(upload)
-            embeds.set_thumbnail(url="attachment://thumbnail.png")
+            embeds.set_thumbnail(url=f"attachment://{thumbnail_name}")
         if embed.author:
             embeds.set_author(name=session_info.locale.t_str(embed.author))
         if embed.footer:
