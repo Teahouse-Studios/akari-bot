@@ -51,8 +51,6 @@
     "config.comments.secret.check_access_key_id": "The AccessKey ID of Alibaba Cloud Content Security Service.",
     "config.comments.secret.check_access_key_secret": "The AccessKey Secret of Alibaba Cloud Content Security Service.",
     "config.comments.secret.db_path": "Database connection string, use the connection string format supported by Tortoise ORM.",
-    "config.comments.secret.ff3_key": "The key used to encrypt sensitive information. (Encrypted using the ff3 algorithm, which may be used in some scenarios)",
-    "config.comments.secret.ff3_tweak": "The key tweak used to encrypt sensitive information.",
     "config.comments.secret.proxy": "Proxy service address.",
     "config.comments.webrender.browser_executable_path": "The browser executable file path used by WebRender. If empty, the default browser installed by Playwright is used.",
     "config.comments.webrender.browser_type": "The browser type used by WebRender. (Supports \"chrome\" and \"firefox\")",

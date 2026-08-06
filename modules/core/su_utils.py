@@ -24,7 +24,6 @@ from core.server.terminate import restart
 from core.tos import WARNING_COUNTS, check_temp_ban, remove_temp_ban
 from core.types import Param
 from core.utils.bash import run_sys_command
-from core.utils.decrypt import decrypt_string
 from core.utils.func import is_float, is_int
 from core.utils.storedata import get_stored_list, update_stored_list
 from core.web_render import web_render, close_web_render, init_web_render
@@ -715,19 +714,6 @@ jobqueue = module("jobqueue", required_superuser=True, base=True)
 async def _(msg: Bot.MessageSession):
     await JobQueuesTable.clear_task(time=0)
     await msg.finish(I18NContext("message.success"))
-
-
-decry = module("decrypt", required_superuser=True, base=True, doc=True)
-
-
-@decry.command("<display_msg>")
-async def _(msg: Bot.MessageSession):
-    parts = msg.as_display().split(" ", 1)
-    dec = decrypt_string(parts[1]) if len(parts) > 1 else None
-    if dec:
-        await msg.finish(dec)
-    else:
-        await msg.finish(I18NContext("message.failed"))
 
 
 wr = module("webrender", required_superuser=True, base=True)

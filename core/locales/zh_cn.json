@@ -63,8 +63,6 @@
     "config.comments.secret.check_access_key_id": "阿里云内容安全服务的 AccessKey ID。",
     "config.comments.secret.check_access_key_secret": "阿里云内容安全服务的 AccessKey Secret。",
     "config.comments.secret.db_path": "数据库连接字符串，请使用 Tortoise ORM 支持的数据库连接字符串格式。",
-    "config.comments.secret.ff3_key": "用于加密敏感信息的密钥。（使用 ff3 算法进行加密，部分场景可能会使用到）",
-    "config.comments.secret.ff3_tweak": "用于加密敏感信息的密钥偏移量。",
     "config.comments.secret.proxy": "代理服务地址。",
     "config.comments.webrender.browser_executable_path": "WebRender 使用的浏览器可执行文件路径，若空则使用 Playwright 默认安装浏览器。",
     "config.comments.webrender.browser_type": "WebRender 使用的浏览器类型。（支持“chrome”与“firefox”）",
