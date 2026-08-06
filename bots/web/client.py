@@ -39,7 +39,7 @@ allow_origins = WebSecretConfig.allow_origins
 
 # 反向代理下 request.client 记录的是代理自身的地址，真实地址由 uvicorn 的
 # ProxyHeadersMiddleware 依 forwarded_allow_ips 判定来源可信后，从 X-Forwarded-For 解析并回填。
-forwarded_allow_ips = [ip.strip() for ip in WebConfig.forwarded_allow_ips.split(",") if ip.strip()]
+forwarded_allow_ips = WebSecretConfig.forwarded_allow_ips
 
 # 无法判定来源的请求统一归入该标识。不回退为 127.0.0.1，以免被误当作本机的受信任访问。
 UNKNOWN_CLIENT_IP = "unknown"
