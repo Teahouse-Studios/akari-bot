@@ -46,8 +46,8 @@ For immediate discussion, you may contact the developers directly via **QQ Direc
 ### 2. Email
 You can report vulnerabilities directly via email to the core team members:
 
-- **Project Founder:** OasisAkari (oasisakari@gmail.com)
-- **Active Contributor:** DoroWolf (dorowolf314@gmail.com)
+- **Project Founder:** OasisAkari <oasisakari@gmail.com>
+- **Active Contributor:** DoroWolf <dorowolf314@gmail.com>
 
 Please include the following information in your report:
 - Description of the vulnerability
@@ -58,7 +58,7 @@ Please include the following information in your report:
 > **Note:** The maintainers do not check email frequently. If possible, please drop us a quick message via instant messaging after sending your email to ensure it is noticed.
 
 ### What to Expect
-- **Acknowledgement:** You will receive an acknowledgement of your report within 24–72 hours. Please note that response times may occasionally be delayed due to unforeseen circumstances or force majeure.
+- **Acknowledgement:** You will receive an acknowledgement of your report within 24–72 hours. Please note that response times may occasionally be delayed due to *unforeseen circumstances* or *force majeure*.
 - **Validation**: We will investigate and notify you if the finding is valid.
 - **Disclosure:** We ask that you do not disclose the vulnerability publicly until we have had the opportunity to analyze and fix the issue. 
 - **Safe Harbor:** As long as you act in good faith, do not attempt to access other users' data, and do not disrupt our service, we will not pursue legal action against your research.
