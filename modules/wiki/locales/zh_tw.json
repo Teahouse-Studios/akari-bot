@@ -193,5 +193,5 @@
     "wiki.message.not_found.autofix.choice.prompt.button": "請點選對應的按鈕來取得內容，若回覆「是」，則預設選擇 ${number} 號內容，传送其他內容則代表取消操作。",
     "wiki.message.search.prompt.button": "點選按鈕以查詢對應的頁面。",
     "wiki.message.set.not_set.recommend": "或點選下方按鈕，綁定推薦的 Wiki。",
-    "wiki.message.rc.action.actionhidden": "${user} 更改了编辑的可见性： ${comment}"
+    "wiki.message.rc.action.actionhidden": "${user} 已更改修訂的可見性： ${comment}"
 }
