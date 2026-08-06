@@ -202,5 +202,15 @@
     "message.url.untrusted": "This link has not been verified. Please exercise caution when opening it.",
     "message.wait.confirm.prompt.button": "(Send a confirmation word such as \"Yes\" or press buttons to confirm)",
     "parser.retired.prompt": "This platform has ceased operations. Only the data migration feature remains available.\nPlease use \"${cmd}\" to migrate your data to the new platform.",
-    "config.comments.config.enable_bind_auto": "Whether to enable the \"bind auto\" command to automatically pair with other instances within the same context."
+    "config.comments.config.enable_bind_auto": "Whether to enable the \"bind auto\" command to automatically pair with other instances within the same context.",
+    "message.action_text.modal.input": "Command",
+    "message.action_text.modal.title": "Edit command",
+    "message.action_text.select": "Select the command to edit",
+    "message.action_text.send": "Send this command",
+    "message.button.expired": "This button has expired.",
+    "message.button.forbidden": "You cannot click other one's buttons.",
+    "message.button.invalid": "This button is no longer available.",
+    "message.button.used": "This button has already been used.",
+    "config.comments.config.typo_check_args_diff_ratio": "Threshold for the difference in the number of command parameters. Command matching is skipped when the ratio of the difference between the number of parameters entered by the user and the number of parameters in the template exceeds this value. Ranging from 0 to 1.",
+    "config.comments.config.typo_check_module_diff_ratio": "Threshold for the difference in module name length. If the ratio of the difference between the matched module name length and the user-entered length exceeds this value, the match is skipped. Rranging from 0 to 1."
 }

@@ -202,5 +202,15 @@
     "message.typing": "タイピング……",
     "message.url.untrusted": "このリンクは認証されていませんので、開く際はご注意ください",
     "message.wait.confirm.prompt.button": "（「Yes」などの確認語を送信するか、ボタンを押してください）",
-    "parser.retired.prompt": "このプラットフォームはサービスの提供を終了しており、データ移行機能のみが利用可能です。\n「${cmd}」を使用して、データを新しいプラットフォームに移行してください。"
+    "parser.retired.prompt": "このプラットフォームはサービスの提供を終了しており、データ移行機能のみが利用可能です。\n「${cmd}」を使用して、データを新しいプラットフォームに移行してください。",
+    "message.action_text.modal.input": "コマンド",
+    "message.action_text.modal.title": "編集コマンド",
+    "message.action_text.select": "編集するコマンドを選択してください",
+    "message.action_text.send": "このコマンドを送信する",
+    "message.button.expired": "このボタンは有効期限が切れました。",
+    "message.button.forbidden": "他人のボタンをクリックしてはいけません。",
+    "message.button.invalid": "このボタンは機能していません。",
+    "message.button.used": "このボタンは既に使用されています。",
+    "config.comments.config.typo_check_args_diff_ratio": "コマンドのパラメータ数に関する閾値です。ユーザーが入力したパラメータ数とテンプレート内のパラメータ数との差の比率がこの値を超えると、コマンドの照合はスキップされます。範囲は 0 ～ 1 です。",
+    "config.comments.config.typo_check_module_diff_ratio": "モジュール名の長さの差に関する閾値です。一致したモジュール名の長さとユーザーが入力した長さとの差の比率がこの値を超えた場合、その一致はスキップされます。範囲は 0 ～ 1 です。"
 }

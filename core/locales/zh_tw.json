@@ -204,5 +204,13 @@
     "message.typing": "正在輸入中……",
     "message.url.untrusted": "此連結未經認證，請謹慎開啟",
     "message.wait.confirm.prompt.button": "（傳送「是」等符合確認條件的詞語或點選按鈕確認）",
-    "parser.retired.prompt": "本平台已停止提供服務，僅保留資料遷移功能。\n請使用「${cmd}」將資料遷移至新的平台。"
+    "parser.retired.prompt": "本平台已停止提供服務，僅保留資料遷移功能。\n請使用「${cmd}」將資料遷移至新的平台。",
+    "message.action_text.modal.input": "指令",
+    "message.action_text.modal.title": "編輯指令",
+    "message.action_text.select": "選擇要編輯的指令",
+    "message.action_text.send": "傳送此指令",
+    "message.button.expired": "此按鈕已過期。",
+    "message.button.forbidden": "你不能點擊別人的按鈕。",
+    "message.button.invalid": "此按鈕已失效。",
+    "message.button.used": "此按鈕已經使用過了。"
 }
