@@ -1599,6 +1599,45 @@
     "title": "[嘘]ライアーダンサー",
     "type": "DX"
   },
+  "111770": {
+    "artist": "ぱらどっと",
+    "bpm": 200,
+    "charts": [
+      {
+        "notes": [
+          537,
+          166,
+          71,
+          164,
+          26
+        ]
+      },
+      {
+        "notes": [
+          640,
+          161,
+          98,
+          39,
+          41
+        ]
+      }
+    ],
+    "comment": "みんなでFull Flavor!",
+    "id": "111770",
+    "level": [
+      "13+?"
+    ],
+    "referrals_num": {
+      "mode": "buddy_normal",
+      "player": [
+        2,
+        2
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM PLUS",
+    "title": "[協]Ultimate taste",
+    "type": "DX"
+  },
   "111772": {
     "artist": "原口沙輔 feat.重音テト",
     "bpm": 150,
@@ -1667,6 +1706,35 @@
     "title": "[助]メズマライザー",
     "type": "DX"
   },
+  "111852": {
+    "artist": "ンバヂ",
+    "bpm": 160,
+    "charts": [
+      {
+        "notes": [
+          689,
+          61,
+          123,
+          28,
+          25
+        ]
+      }
+    ],
+    "comment": "好きな譜面発表Luxizhel",
+    "id": "111852",
+    "level": [
+      "14?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM PLUS",
+    "title": "[好]好きな惣菜発表ドラゴン",
+    "type": "DX"
+  },
   "120227": {
     "artist": "t+pazolite",
     "bpm": 256,
@@ -1695,6 +1763,35 @@
     "release_ver_code": "maimai MURASAKi",
     "title": "[r]Garakuta Doll Play",
     "type": "SD"
+  },
+  "121852": {
+    "artist": "ンバヂ",
+    "bpm": 160,
+    "charts": [
+      {
+        "notes": [
+          574,
+          51,
+          119,
+          32,
+          55
+        ]
+      }
+    ],
+    "comment": "好きな譜面発表サファ太",
+    "id": "121852",
+    "level": [
+      "14?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM PLUS",
+    "title": "[譜]好きな惣菜発表ドラゴン",
+    "type": "DX"
   },
   "130227": {
     "artist": "t+pazolite",
@@ -1725,6 +1822,35 @@
     "title": "[玉]Garakuta Doll Play",
     "type": "SD"
   },
+  "131852": {
+    "artist": "ンバヂ",
+    "bpm": 160,
+    "charts": [
+      {
+        "notes": [
+          533,
+          70,
+          115,
+          73,
+          69
+        ]
+      }
+    ],
+    "comment": "譜面発表鳩ホルダー",
+    "id": "131852",
+    "level": [
+      "14?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM PLUS",
+    "title": "[面]好きな惣菜発表ドラゴン",
+    "type": "DX"
+  },
   "140227": {
     "artist": "t+pazolite",
     "bpm": 256,
@@ -1753,5 +1879,92 @@
     "release_ver_code": "maimai MURASAKi",
     "title": "[某]Garakuta Doll Play",
     "type": "SD"
+  },
+  "141852": {
+    "artist": "ンバヂ",
+    "bpm": 160,
+    "charts": [
+      {
+        "notes": [
+          487,
+          52,
+          153,
+          5,
+          32
+        ]
+      }
+    ],
+    "comment": "好きな譜面発表メロンポップ",
+    "id": "141852",
+    "level": [
+      "13+?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM PLUS",
+    "title": "[発]好きな惣菜発表ドラゴン",
+    "type": "DX"
+  },
+  "151852": {
+    "artist": "ンバヂ",
+    "bpm": 160,
+    "charts": [
+      {
+        "notes": [
+          399,
+          75,
+          102,
+          79,
+          30
+        ]
+      }
+    ],
+    "comment": "好きな譜面発表きょむりん",
+    "id": "151852",
+    "level": [
+      "13+?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM PLUS",
+    "title": "[表]好きな惣菜発表ドラゴン",
+    "type": "DX"
+  },
+  "161852": {
+    "artist": "ンバヂ",
+    "bpm": 160,
+    "charts": [
+      {
+        "notes": [
+          545,
+          62,
+          80,
+          5,
+          15
+        ]
+      }
+    ],
+    "comment": "好きな譜面発表アマリリス",
+    "id": "161852",
+    "level": [
+      "13+?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM PLUS",
+    "title": "[龍]好きな惣菜発表ドラゴン",
+    "type": "DX"
   }
 }
