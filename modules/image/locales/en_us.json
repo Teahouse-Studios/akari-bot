@@ -1,4 +1,5 @@
 {
     "image.fillwhite.send.a.image": "Please send an image.",
-    "image.fillwhite.no.image.found": "No image found, aborted."
+    "image.fillwhite.no.image.found": "No image found, aborted.",
+    "image.fillwhite.cannot.detect.alpha.channel": "无法检测到图片的透明通道，已中止操作，请检查是否已勾选原图发送。"
 }
