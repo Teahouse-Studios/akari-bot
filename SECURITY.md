@@ -40,7 +40,10 @@ The following areas are explicitly excluded from our security response and will 
 
 We take the security of our project seriously. If you believe you have found a security vulnerability, please report it to us using one of the following methods. **DO NOT open a public issue for security vulnerabilities.**
 
-### 1. Email (Preferred)
+### 1. Instant Messaging (QQ)
+For immediate discussion, you may contact the developers directly via **QQ Direct Message** for a more immediate discussion regarding the vulnerability. Note that sensitive technical details should still ideally be sent via more secure way.
+
+### 2. Email
 You can report vulnerabilities directly via email. You can find the maintainers' contact email address in the `pyproject.toml` file located in the root of this repository.
 
 Please include the following information in your report:
@@ -49,9 +52,6 @@ Please include the following information in your report:
 - Steps to reproduce (PoC)
 - Potential impact
 - Suggested fix (if any)
-
-### 2. Instant Messaging (QQ)
-For immediate discussion, you may contact the developers directly via **QQ Direct Message** for a more immediate discussion regarding the vulnerability. Note that sensitive technical details should still ideally be sent via more secure channel.
 
 ### What to Expect
 
