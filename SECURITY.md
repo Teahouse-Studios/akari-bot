@@ -6,10 +6,10 @@ We actively provide security updates for the following versions. Unlike traditio
 
 | Version | Supported |
 | ----------------- | ------------------ |
-| Production (SaaS) | :o: |
-| `nightly` | :o: |
-| `v5.x.x` | :o: |
-| `v4` and below | :x: |
+| Production (SaaS) | ✅ |
+| `nightly` | ✅ |
+| `v5.x.x` | ✅ |
+| `v4` and below | ❌ |
 
 > [!IMPORTANT]
 > If you are self-hosting a legacy version (`v4` or below), please migrate to the latest release, as legacy versions are no longer supported and do not receive security backports.
