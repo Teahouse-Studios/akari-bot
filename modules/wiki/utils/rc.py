@@ -183,9 +183,7 @@ async def convert_rc_to_detailed_format(msg: Bot.MessageSession, rc: list, wiki_
                 t.append(comment)
         if x["type"] == "log":
             if "actionhidden" in x:
-                log = msg.session_info.locale.t(
-                    "wiki.message.rc.action.actionhidden", user=user, comment=x.get("comment", "")
-                )
+                log = msg.session_info.locale.t("wiki.message.rc.action.actionhidden", user=user)
             elif x["logtype"] == x["logaction"]:
                 log = msg.session_info.locale.t(f"wiki.message.rc.action.{x['logtype']}", user=user, title=title)
             else:
