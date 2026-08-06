@@ -90,7 +90,14 @@ async def update_alias() -> bool:
 
 async def get_info(music: Music, details: str | MessageChain) -> MessageChain:
     info = MessageChain.assign(Plain(f"{music.id} - {music.title}{' (DX)' if music['type'] == 'DX' else ''}"))
-    cover_path = mai_cover_path / f"{music.id}.png"
+
+    cover_id = str(music.id)
+    if int(cover_id) > 100000:
+        cover_id = str(cover_id)[2:]
+        if music["type"] == "DX":
+            cover_id = "1" + str(cover_id)
+
+    cover_path = mai_cover_path / f"{cover_id}.png"
     if cover_path.exists():
         info.append(Image(cover_path))
     else:
