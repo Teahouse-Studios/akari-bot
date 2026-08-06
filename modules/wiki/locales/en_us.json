@@ -187,5 +187,11 @@
     "wiki.message.wiki_bot.toggle.disable": "Disabled to use wiki bot account.",
     "wiki.message.wiki_bot.toggle.enable": "Enabled to use wiki bot account.",
     "wiki.message.wiki_inline.flies": "This page includes the following files:\n${file}",
-    "config.comments.module_wiki.wiki_whitelist_url": "Wiki whitelist application URL."
+    "config.comments.module_wiki.wiki_whitelist_url": "Wiki whitelist application URL.",
+    "wiki.message.not_found.autofix.choice.prompt.button": "请点击对应的按钮来获取内容，若回复“是”，则默认选择 ${number} 号内容，发送其他内容则代表取消操作。",
+    "wiki.message.invalid_section.select.button.limit": "由于限制，超过 50 的章节无法显示按钮，请手动回复选择章节。",
+    "wiki.message.search.prompt.button": "点击按钮以查询对应的页面。",
+    "wiki.message.set.not_set.recommend": "或点击下方按钮，绑定推荐的 Wiki。",
+    "wiki.message.rc.action.actionhidden": "${user} 更改了编辑的可见性： ${comment}",
+    "wiki.message.invalid_section.select.button": "点击按钮以选中对应的章节。"
 }
