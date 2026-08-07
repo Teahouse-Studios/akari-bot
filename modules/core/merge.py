@@ -146,7 +146,7 @@ async def _merge_private(msg: Bot.MessageSession, entry: dict) -> None:
         else None
     )
     target_plan = (
-        await plan_target_merge(target_initiator, target_current)
+        await plan_target_merge(msg, target_initiator, target_current)
         if target_initiator.union_id != target_current.union_id
         else None
     )
