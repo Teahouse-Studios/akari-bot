@@ -62,5 +62,5 @@ db_path = "sqlite://database/save.db" # 数据库连接字符串，请使用 Tor
 proxy = "<Replace me with str value>" # 代理服务地址。
 check_access_key_id = "<Replace me with str value>" # 阿里云内容安全服务的 AccessKey ID。
 check_access_key_secret = "<Replace me with str value>" # 阿里云内容安全服务的 AccessKey Secret。
-ff3_key = "<Replace me with str value>" # 用于加密敏感信息的密钥。（使用 ff3 算法进行加密，部分场景可能会使用到）
-ff3_tweak = "<Replace me with str value>" # 用于加密敏感信息的密钥偏移量。
+ff3_key = "<Replace me with str value>" # {I18N:config.comments.secret.ff3_key}
+ff3_tweak = "<Replace me with str value>" # {I18N:config.comments.secret.ff3_tweak}

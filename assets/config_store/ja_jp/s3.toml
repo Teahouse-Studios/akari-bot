@@ -3,15 +3,15 @@
 # 例：TOML のブール値は小文字である必要があります。
 
 [s3]
-# S3 兼容 API 的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
-s3_endpoint_url = "<Replace me with str value>" # S3 兼容 API 的端点 URL。
-s3_bucket = "<Replace me with str value>" # S3 兼容 API 的桶名。
-s3_region = "us-east-1" # S3 兼容 API 的地域名。
-s3_public_endpoint = "<Replace me with str value>" # S3 兼容 API 的公网访问 URL。
-s3_internal_endpoint = "<Replace me with str value>" # S3 兼容 API 的内网访问 URL。
-s3_temp_max_count = 20 # S3 兼容 API 的临时文件最大数量。
+# S3 互換 API の設定項目です。ここに入力された値は、メッセージ内にプレーンテキストで表示されます。この部分には機密情報を入力しないでください。
+s3_endpoint_url = "<Replace me with str value>" # S3 互換 API のエンドポイント URL。
+s3_bucket = "<Replace me with str value>" # S3 互換 API のバケット名。
+s3_region = "us-east-1" # S3 互換 API のリージョン名。
+s3_public_endpoint = "<Replace me with str value>" # S3 互換 API のパブリック アクセス URL。
+s3_internal_endpoint = "<Replace me with str value>" # S3 互換 API のイントラネット アクセス URL。
+s3_temp_max_count = 20 # S3 互換 API における一時ファイルの最大数。
 
 [s3_secret]
-# S3 兼容 API 的密钥部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
-s3_access_key = "<Replace me with str value>" # S3 兼容 API 的 AccessKey。
-s3_secret_key = "<Replace me with str value>" # S3 兼容 API 的 SecretKey。
+# S3 互換 API のキー設定項目です。ここに入力された値は、送信メッセージに誤って含まれた場合、ボットはそれを傍受しようとします。ただし、漏洩を防ぐよう注意してください。
+s3_access_key = "<Replace me with str value>" # S3 互換 API の AccessKey。
+s3_secret_key = "<Replace me with str value>" # S3 互換 API の SecretKey。
