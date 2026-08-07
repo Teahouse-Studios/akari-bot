@@ -221,7 +221,7 @@ async def _bind_private(msg: Bot.MessageSession, entry: dict) -> None:
         else None
     )
     target_plan = (
-        await _plan_target_merge(target_initiator, target_current)
+        await _plan_target_merge(msg, target_initiator, target_current)
         if target_initiator.union_id != target_current.union_id
         else None
     )
