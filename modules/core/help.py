@@ -564,6 +564,10 @@ async def help_overview(msg: Bot.MessageSession):
                 )
             )
             help_msg += I18NContext("core.message.help.mdtable")
+            if msg.session_info.client_name == "QQBot" and not (
+                msg.session_info.support_rss and msg.session_info.read_all_messages
+            ):
+                help_msg += I18NContext("core.message.help.qqbot.limited")
             # 其余三条提示改由底部按钮承担。
             await msg.finish(help_msg, button_data=get_help_button_data(msg), force_markdown=True)
         if use_clickable:
@@ -653,6 +657,10 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
             # 与 ~help 同款表格，收尾同样是纯文本
             help_msg = MessageChain.assign(build_module_table(msg, [("core.message.help.table.title", module_)]))
             help_msg += I18NContext("core.message.help.mdtable")
+            if msg.session_info.client_name == "QQBot" and not (
+                msg.session_info.support_rss and msg.session_info.read_all_messages
+            ):
+                help_msg += I18NContext("core.message.help.qqbot.limited")
             await msg.finish(help_msg, button_data=get_help_button_data(msg), force_markdown=True)
         elif use_clickable:
             help_msg = MessageChain.assign(
