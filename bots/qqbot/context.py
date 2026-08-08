@@ -268,6 +268,14 @@ class QQBotContextManager(ContextManager):
         msg_ids = []
         global global_seq
 
+        refid = None
+        if ctx is not None:
+            if ctx.message_scene is not None:
+                r = ctx.message_scene.get("ext")
+                if r:
+                    if r[0].startswith("msg_idx=REFIDX"):
+                        refid = r[0].replace("msg_idx=", "")
+
         force_markdown = session_info.tmp.get("force_markdown") == "true"
         if isinstance(message, MessageNodes):
             message = MessageChain.assign(PlainElement.assign(nodes_to_table(session_info, message), disable_joke=True))
@@ -310,10 +318,10 @@ class QQBotContextManager(ContextManager):
                         send_img = await image_1.get() if image_1 else None
                         msg_quote = (
                             Reference(
-                                message_id=ctx.id,
+                                message_id=refid,
                                 ignore_get_message_error=False,
                             )
-                            if quote and not send_img
+                            if quote and refid is not None and not send_img
                             else None
                         )
                         msg = url_filter(msg)
@@ -342,10 +350,10 @@ class QQBotContextManager(ContextManager):
                         send_img = await image_1.get() if image_1 else None
                         msg_quote = (
                             Reference(
-                                message_id=ctx.id,
+                                message_id=refid,
                                 ignore_get_message_error=False,
                             )
-                            if quote and not send_img
+                            if quote and refid is not None and not send_img
                             else None
                         )
                         msg = url_filter(msg)
@@ -368,10 +376,10 @@ class QQBotContextManager(ContextManager):
                     elif isinstance(ctx, GroupMessage):
                         msg_quote = (
                             Reference(
-                                message_id=ctx.id,
+                                message_id=refid,
                                 ignore_get_message_error=False,
                             )
-                            if quote and not send_img
+                            if quote and refid is not None and not send_img
                             else None
                         )
                         if msg and ctx.id and session_info.tmp.get("message_type") == "group_at":
@@ -1011,6 +1019,7 @@ class QQBotContextManager(ContextManager):
                 MessageChain.assign(I18NContext("message.typing")),
                 _ignore_retries=True,
                 _typing_prompt=True,
+                quote=False,
             )
             Logger.debug(f"Typing prompt sent in session {session_info.session_id}: {typing_msg}")
 
