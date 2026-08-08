@@ -53,4 +53,4 @@ jobs:
           name: Test report
           path: junit.xml
           reporter: java-junit
-          fail-on-error: 'false'
+          fail-on-error: 'true'

@@ -42,7 +42,7 @@ class TokenBucket:
         return f"{self.__class__.__name__}(capacity={self.capacity}, tokens={self.peek():.2f}, rate={self.rate:.2f}/s)"
 
     def __bool__(self):
-        return self.peek() > 0
+        return self.peek() >= 1
 
 
 class ExpiringTempDict:

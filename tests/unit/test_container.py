@@ -1,6 +1,7 @@
 """core.utils.container 纯函数单元测试 - TokenBucket / ExpiringTempDict。"""
 
 import time
+from unittest.mock import patch
 
 from core.tester import func_case, Tester
 from core.utils.container import TokenBucket, ExpiringTempDict
@@ -64,12 +65,16 @@ def _test_token_bucket_wait_time():
 def _test_token_bucket_bool():
     """测试 TokenBucket bool 转换"""
     try:
-        bucket = TokenBucket(capacity=10, refill_interval=10)
-        if bool(bucket) is not True:
-            return False
-        bucket.consume(10)
-        if bool(bucket) is not False:
-            return False
+        clock = iter([100.0, 100.0, 100.0, 100.000001, 101.0])
+        with patch("core.utils.container.time.time", side_effect=lambda: next(clock)):
+            bucket = TokenBucket(capacity=10, refill_interval=10)
+            if bool(bucket) is not True:
+                return False
+            bucket.consume(10)
+            if bool(bucket) is not False:
+                return False
+            if bool(bucket) is not True:
+                return False
         return True
     except Exception:
         return False
