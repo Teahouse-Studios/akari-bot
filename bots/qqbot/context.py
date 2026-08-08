@@ -269,7 +269,7 @@ class QQBotContextManager(ContextManager):
         global global_seq
 
         refid = None
-        if ctx is not None:
+        if ctx is not None and not isinstance(ctx, Interaction):
             if ctx.message_scene is not None:
                 r = ctx.message_scene.get("ext")
                 if r:

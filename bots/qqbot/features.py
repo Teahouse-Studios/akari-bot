@@ -43,7 +43,6 @@ group_disable_read_all_message_features = evolve(
     features,
     support_rss=False,
     read_all_messages=False,
-    support_button=False,
 )
 
 
