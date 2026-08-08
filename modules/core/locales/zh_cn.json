@@ -200,7 +200,7 @@
     "core.message.help.detail": "使用“${cmd}<模块名称>”查看详细信息。",
     "core.message.help.document": "你也可以通过查阅在线文档获取帮助：${url}",
     "core.message.help.donate": "若你有经济实力，欢迎给孩子们打钱：${url}",
-    "core.message.help.qqbot.limited": "当前群聊的机器人功能受限，仅可使用部分功能。如需使用推送类模块和正则类模块，请联系群主为机器人开启“获取群内全部消息”和“机器人主动在群聊内发言”权限。",
+    "core.message.help.qqbot.limited": "当前群聊的机器人功能受限，仅可使用部分功能。如需使用推送类模块和正则类模块，请联系群主为机器人开启“获取群内全部消息”和“机器人主动在群聊内发言”权限。\n（需最新版本手机 QQ，且仅群主可开启）",
     "core.message.help.helpdoc.address": "在线模块文档：${url}",
     "core.message.help.legacy.availables": "当前可用的模块有：",
     "core.message.help.legacy.availables.none": "当前没有可用的模块。",
