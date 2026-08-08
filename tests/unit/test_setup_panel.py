@@ -386,10 +386,10 @@ def _test_jump_buttons() -> bool:
     msg = _make_msg(support_button=True)
     to_sender = build_jump_buttons(msg, show_target=True, show_sender=False)
     to_target = build_jump_buttons(msg, show_target=False, show_sender=True)
-    if to_sender != [("个人设置", f"{command_prefix[0]}setup list sender")]:
+    if to_sender != [("💬 用户设置", f"{command_prefix[0]}setup list sender")]:
         Logger.error(f"Listing the target domain should offer a jump to the sender panel, got {to_sender}")
         return False
-    if to_target != [("场景设置", f"{command_prefix[0]}setup list target")]:
+    if to_target != [("👥 场景设置", f"{command_prefix[0]}setup list target")]:
         Logger.error(f"Listing the sender domain should offer a jump to the target panel, got {to_target}")
         return False
     if build_jump_buttons(msg, show_target=True, show_sender=True):
@@ -417,7 +417,7 @@ def _test_help_buttons_present() -> bool:
         return False
     # 文案须取自按钮专设的键：面板标题带有分隔用的方括号，套进按钮里并不好看
     labels = [label for row in rows for label in row]
-    if labels != ["场景设置", "个人设置"]:
+    if labels != ["👥 场景设置", "💬 用户设置"]:
         Logger.error(f"Help button labels should carry no bracket decoration, got {labels}")
         return False
     return True

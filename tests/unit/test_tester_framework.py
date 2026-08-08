@@ -11,6 +11,7 @@ import re
 from core.builtins.session.internal import MessageSession
 from core.tester import func_case, Tester
 from core.tester.expectations import Contains, ContainsAll, ContainsAny, Expectation, Regex
+from core.tester.junit import JUnitReport, JUnitTestCase, JUnitTestSuite
 from core.tester.mock.http import MockHTTPResponse
 from core.tester.mock.session import MockMessageSession
 from core.logger import Logger
@@ -86,6 +87,17 @@ def _test_expectation_has_repr():
     return repr(Contains("x")) == str(Contains("x")) and Expectation.__repr__ is not object.__repr__
 
 
+def _test_junit_coerces_error_details_to_text():
+    """JUnit 报告不得因异常详情不是字符串而整体生成失败"""
+    case = JUnitTestCase("error")
+    case.error = ("Test error", True)
+    suite = JUnitTestSuite("tester")
+    suite.add_testcase(case)
+    report = JUnitReport()
+    report.add_testsuite(suite)
+    return '<error message="Test error">True</error>' in report.to_xml_string()
+
+
 @func_case
 async def test_tester_framework(tester: Tester):
     """core.tester: 测试框架自身一致性测试"""
@@ -95,5 +107,6 @@ async def test_tester_framework(tester: Tester):
     await tester.test(_test_contains_matches_non_text_element, "文本断言命中非文本元素测试")
     await tester.test(_test_contains_still_rejects_absent_text, "文本断言不误报测试")
     await tester.test(_test_expectation_has_repr, "断言器可读表示测试")
+    await tester.test(_test_junit_coerces_error_details_to_text, "JUnit 异常详情文本化测试")
 
     return tester

@@ -43,6 +43,7 @@ class _FakeGroupMessage(GroupMessage):
     def __init__(self, fail_times: int = 0, on_reply=None):
         self.id = "source-message"
         self.group_openid = "fake_group"
+        self.message_scene = None
         self._api = _FakeApi()
         self._fail_times = fail_times
         self._on_reply = on_reply

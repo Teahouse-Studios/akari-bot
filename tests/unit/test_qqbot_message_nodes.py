@@ -151,7 +151,7 @@ def _test_multiline_content_uses_br() -> bool:
     """
     nodes = MessageNodes.assign([MessageChain.assign(Plain("第一行\n第二行"))], name="标题")
     table = nodes_to_table(_make_session(), nodes)
-    if "第一行<br>第二行" not in table:
+    if "第一行  <br>  第二行" not in table:
         Logger.error(f"Newlines inside a cell should become <br>, got {table!r}")
         return False
     # 表头、分隔行、编号行、内容行共四行
@@ -177,6 +177,7 @@ class _FakeGroupMessage(GroupMessage):
     def __init__(self):
         self.id = "source-message"
         self.group_openid = "fake_group"
+        self.message_scene = None
         self.reply_kwargs: list[dict] = []
 
     async def reply(self, **kwargs):

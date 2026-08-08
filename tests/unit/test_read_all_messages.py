@@ -15,6 +15,7 @@ from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
 from core.constants.exceptions import SessionFinished
 from core.loader import ModulesManager
+from core.logger import Logger
 from core.tester import func_case, Tester
 from core.types.module import Module
 from modules.core.modules import UNSUPPORTED_PROMPTS, config_modules
@@ -208,12 +209,22 @@ async def _enable_prompt(module_name: str) -> str:
 
 async def _test_enable_regex_module_is_rejected():
     """受限场景中启用正则模块应给出指向权限的提示。"""
-    return await _enable_prompt("wiki_inline") == "失败：此场景不支持正则模块，请检查是否开启了对应的权限。"
+    expected = "失败：此场景不支持正则模块，请检查是否开启对应的权限。"
+    actual = await _enable_prompt("wiki_inline")
+    if actual != expected:
+        Logger.error(f"Expected regex rejection prompt {expected!r}, got {actual!r}")
+        return False
+    return True
 
 
 async def _test_enable_rss_module_is_rejected():
     """受限场景中启用推送模块应给出指向权限的提示。"""
-    return await _enable_prompt("minecraft_news") == "失败：此场景不支持推送模块，请检查是否开启了对应的权限。"
+    expected = "失败：此场景不支持推送模块，请检查是否开启对应的权限。"
+    actual = await _enable_prompt("minecraft_news")
+    if actual != expected:
+        Logger.error(f"Expected RSS rejection prompt {expected!r}, got {actual!r}")
+        return False
+    return True
 
 
 async def _test_enable_plain_module_still_works():

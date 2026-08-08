@@ -191,6 +191,7 @@ class _FakeGroupMessage(GroupMessage):
     def __init__(self):
         self.id = "source-message"
         self.group_openid = "fake_group"
+        self.message_scene = None
         self.reply_kwargs: list[dict] = []
 
     async def reply(self, **kwargs):

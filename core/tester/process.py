@@ -75,8 +75,9 @@ async def run_function_entry(fn: FunctionType, is_ci: bool = False) -> dict[str,
         if isinstance(returned, TesterClass):
             tester = returned
     except Exception:
+        error = traceback.format_exc()
         Logger.exception(f"Error running test function {fn.__name__}:")
-        return {"error": True}
+        return {"error": error}
 
     elapsed = time.perf_counter() - start
     entries = tester.get_entries()

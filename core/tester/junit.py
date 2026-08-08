@@ -32,16 +32,16 @@ class JUnitTestCase:
 
         if self.error:
             error = ET.SubElement(tc, "error")
-            error.set("message", self.error[0])
-            error.text = self.error[1]
+            error.set("message", str(self.error[0]))
+            error.text = str(self.error[1])
         elif self.failure:
             failure = ET.SubElement(tc, "failure")
-            failure.set("message", self.failure[0])
-            failure.text = self.failure[1]
+            failure.set("message", str(self.failure[0]))
+            failure.text = str(self.failure[1])
         elif self.skipped is not None:
             skipped = ET.SubElement(tc, "skipped")
             if self.skipped:
-                skipped.set("message", self.skipped)
+                skipped.set("message", str(self.skipped))
 
         return tc
 
