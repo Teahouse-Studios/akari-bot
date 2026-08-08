@@ -692,7 +692,10 @@ class QQBotContextManager(ContextManager):
             if converted_message.only(ImageElement) and len(converted_message) == 1:
                 _use_markdown = False
             if message.contains(URLElement):
-                _use_markdown = True
+                for x in message.values:
+                    if isinstance(x, URLElement):
+                        if not x.trusted:
+                            _use_markdown = True
 
             if keyboard:
                 _use_markdown = True
