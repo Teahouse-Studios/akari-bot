@@ -72,7 +72,7 @@ class MyClient(botpy.Client):
             bot_id=qqbot_openid,
         )
 
-        await Bot.process_message(session, message, resolve_features(session))
+        await Bot.process_message(session, message, guild_features)
 
     @staticmethod
     async def on_message_create(message: Message):
