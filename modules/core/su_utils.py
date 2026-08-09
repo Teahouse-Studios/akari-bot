@@ -2,6 +2,7 @@ import re
 import shutil
 import time
 import traceback
+from attrs import fields as attrs_fields
 
 import orjson
 from akari_bot_webrender.functions.options import StatusOptions
@@ -11,6 +12,7 @@ from core.builtins.bot import Bot
 from core.builtins.converter import converter
 from core.builtins.message.chain import MessageChain, convert_senderid_to_atcode, match_kecode
 from core.builtins.message.internal import I18NContext, Plain
+from core.builtins.session.features import Features
 from core.component import module
 from core.config import CFGManager
 from core.config.base import CoreConfig
@@ -61,6 +63,44 @@ async def _(msg: Bot.MessageSession, user: str):
         sender_union_info = await SenderUnionInfo.resolve_union(user)
     if await sender_union_info.edit_attr("superuser", False):
         await msg.finish(I18NContext("core.message.superuser.remove.success", sender=user))
+
+
+features = module("features", required_superuser=True, base=True, doc=True)
+
+
+@features.command()
+async def _(msg: Bot.MessageSession):
+    fetched = await Bot.fetch_target(msg.session_info.target_id)
+
+    locale = msg.session_info.locale
+    yes = locale.t("message.yes")
+    no = locale.t("message.no")
+    unknown = locale.t("message.unknown")
+
+    lines = []
+    diff_count = 0
+    for field in attrs_fields(Features):
+        current = getattr(msg.session_info, field.name)
+        if fetched:
+            fetched_value = getattr(fetched, field.name)
+            differs = current != fetched_value
+            diff_count += differs
+            fetched_text = yes if fetched_value else no
+        else:
+            differs = False
+            fetched_text = unknown
+        # 差异项加星号标出，聊天窗口里没有颜色可用
+        lines.append(f"{'*' if differs else ''}{field.name}: {yes if current else no} / {fetched_text}")
+
+    result = [I18NContext("core.message.features.prompt", target=msg.session_info.target_id, disable_joke=True)]
+    if not fetched:
+        result.append(I18NContext("core.message.features.fetch.failed"))
+    # 特性名是代码标识符，不能参与文本替换
+    result.append(Plain("\n".join(lines), disable_joke=True))
+    if diff_count:
+        result.append(I18NContext("core.message.features.diff", count=diff_count))
+
+    await msg.finish(result)
 
 
 purge = module("purge", required_superuser=True, base=True, doc=True)

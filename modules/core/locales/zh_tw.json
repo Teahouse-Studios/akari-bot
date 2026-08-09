@@ -76,7 +76,6 @@
     "core.help.alias.list": "檢視自訂指令別名列表。",
     "core.help.alias.remove": "移除自訂指令別名。",
     "core.help.alias.reset": "重設自訂指令別名。",
-    "core.help.features": "查看目前會話的特性標誌。",
     "core.help.help": "檢視說明列表。",
     "core.help.help.detail": "檢視一個模組的詳細資訊。",
     "core.help.leave": "使機器人離開群組。",
