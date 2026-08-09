@@ -28,6 +28,15 @@ use_font_mirror = CoreConfig.use_font_mirror
 hlp = module("help", base=True, doc=True)
 
 
+def build_help_locale_header(msg: Bot.MessageSession) -> list:
+    """构造帮助菜单顶部的当前语言入口。"""
+    locale = msg.session_info.locale
+    label = f"🌐{locale.t('language')}{locale.t('message.colon')}"
+    if msg.session_info.support_action_text:
+        return [ActionText(f"{msg.session_info.prefixes[0]}locale ", show=label), Plain("\n", disable_joke=True)]
+    return [Plain(label + "\n", disable_joke=True)]
+
+
 def build_clickable_modules(msg: Bot.MessageSession, groups: list[tuple[str, list[str]]]) -> list:
     """
     把若干组模块名构造成可点击的消息链片段。
@@ -500,6 +509,7 @@ async def help_overview(msg: Bot.MessageSession):
         if imgs:
             legacy_help = False
 
+            locale_header = MessageChain.assign(build_help_locale_header(msg))
             help_msg_list = MessageChain.assign(
                 I18NContext(
                     "core.message.help.detail",
@@ -522,7 +532,7 @@ async def help_overview(msg: Bot.MessageSession):
                 help_msg_list.append(
                     I18NContext("core.message.help.donate", url=MessageChain.assign(Url(donate_url, trusted=True)))
                 )
-            await msg.finish(imgs + help_msg_list, button_data=get_setup_button_data(msg))
+            await msg.finish(locale_header + imgs + help_msg_list, button_data=get_setup_button_data(msg))
     if legacy_help:
         is_base_superuser = msg.session_info.sender_id in Bot.base_superuser_list
         is_superuser = msg.check_super_user()
@@ -555,7 +565,8 @@ async def help_overview(msg: Bot.MessageSession):
         if use_table:
             # 基础与扩展同处一张表，以一行区隔行分开；表格以纯文本收尾，无须 end_inline_run()
             help_msg = MessageChain.assign(
-                build_module_table(
+                build_help_locale_header(msg)
+                + build_module_table(
                     msg,
                     [
                         ("core.message.help.table.base", essential),
@@ -572,7 +583,8 @@ async def help_overview(msg: Bot.MessageSession):
             await msg.finish(help_msg, button_data=get_help_button_data(msg), force_markdown=True)
         if use_clickable:
             help_msg = MessageChain.assign(
-                build_clickable_modules(
+                build_help_locale_header(msg)
+                + build_clickable_modules(
                     msg,
                     [
                         ("core.message.help.legacy.base", essential),
@@ -582,7 +594,9 @@ async def help_overview(msg: Bot.MessageSession):
             )
             end_inline_run(help_msg)
         else:
-            help_msg = MessageChain.assign(I18NContext("core.message.help.legacy.base"))
+            help_msg = MessageChain.assign(
+                build_help_locale_header(msg) + [I18NContext("core.message.help.legacy.base")]
+            )
             help_msg.append(Plain(" | ".join(essential), disable_joke=True))
             if module_:
                 help_msg.append(I18NContext("core.message.help.legacy.external"))
