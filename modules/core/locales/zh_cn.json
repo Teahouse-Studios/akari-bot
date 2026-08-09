@@ -22,7 +22,6 @@
     "core.bind.message.channel.info": "当前场景的消息通道：${channel} 号",
     "core.bind.message.channel.info.shared": "同通道的场景共 ${count} 个：",
     "core.bind.message.channel.reset.success": "已让当前场景脱离原有通道，现单独占用 ${channel} 号通道。",
-    "core.bind.message.channel.set.invalid": "消息通道号需为大于 0 的整数。",
     "core.bind.message.channel.set.success": "已将当前场景的消息通道设为 ${channel} 号。同一号的场景会被视为现实中的同一个场景（例如一个频道里同时有两个机器人），命令只由其中一个机器人执行，推送只发送一次。",
     "core.bind.message.channel.unknown": "当前场景尚未建立绑定记录，无法查看消息通道。",
     "core.bind.message.code": "绑定码：${code}",

@@ -22,7 +22,6 @@
     "core.bind.message.channel.info": "目前場景的訊息管道：${channel} 號",
     "core.bind.message.channel.info.shared": "同管道的場景共 ${count} 個：",
     "core.bind.message.channel.reset.success": "已讓目前場景脫離原有管道，現單獨佔用 ${channel} 號管道。",
-    "core.bind.message.channel.set.invalid": "訊息管道號碼需為大於 0 的整數。",
     "core.bind.message.channel.set.success": "已將目前場景的訊息管道設為 ${channel} 號。同一號的場景會被視為現實中的同一個場景（例如一個頻道裡同時有兩個機器人），命令只由其中一個機器人執行，推播只傳送一次。",
     "core.bind.message.channel.unknown": "目前場景尚未建立綁定記錄，無法檢視訊息管道。",
     "core.bind.message.code": "綁定碼：${code}",

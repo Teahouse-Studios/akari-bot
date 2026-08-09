@@ -12,7 +12,6 @@ from core.database.models import (
     TargetUnionBind,
 )
 from core.utils.container import ExpiringTempDict
-from core.utils.func import is_int
 from core.utils.random import Random
 from core.union_merge import (
     BIND_CODE_EXPIRED,
@@ -307,9 +306,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @b.command("channel set <channel> {{I18N:core.bind.help.channel.set}}", required_admin=True)
-async def _(msg: Bot.MessageSession, channel: str):
-    if not is_int(channel) or int(channel) < 1:
-        await msg.finish(I18NContext("core.bind.message.channel.set.invalid"))
+async def _(msg: Bot.MessageSession, channel: int):
     if not msg.session_info.target_union_id:
         await msg.finish(I18NContext("core.bind.message.channel.unknown"))
 
