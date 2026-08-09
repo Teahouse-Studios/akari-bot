@@ -355,5 +355,6 @@
     "core.message.whoami.sender.union.bound": "已綁定 ${count} 個使用者：\n",
     "core.message.whoami.superuser": "（你擁有此機器人的超級使用者權限）",
     "core.message.whoami.target.union": "目前場景所屬的場景群組：\n${id}",
-    "core.message.whoami.target.union.bound": "已綁定 ${count} 個場景：\n"
+    "core.message.whoami.target.union.bound": "已綁定 ${count} 個場景：\n",
+    "core.message.help.qqbot.limited": "目前群組的機器人功能受限，僅可使用部分功能。如需使用推播類別模組和正規類別模組，請聯絡群主為機器人開啟「取得群組內全部訊息」和「機器人主動在群組聊天內發言」權限。\n（需最新版本手機 QQ，且僅群主可開啟）"
 }
