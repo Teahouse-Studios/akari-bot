@@ -45,6 +45,15 @@ group_disable_read_all_message_features = evolve(
     read_all_messages=False,
 )
 
+guild_features = evolve(
+    features,
+    support_markdown=False,
+    support_markdown_table=False,
+    support_action_text=False,
+    support_button=False,
+    use_url_md_format=False,
+)
+
 
 def resolve_features(session_info: "SessionInfo", base: Features = features) -> Features:
     """
