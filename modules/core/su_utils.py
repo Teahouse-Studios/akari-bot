@@ -756,7 +756,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(I18NContext("message.success"))
 
 
-wr = module("webrender", required_superuser=True, base=True)
+wr = module("webrender", required_superuser=True, base=True, doc=True)
 
 
 @wr.command("status")
