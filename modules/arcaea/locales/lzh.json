@@ -1,0 +1,10 @@
+{
+    "arcaea.help.calc": "據分數與譜面定數，算其譜面潛力值。",
+    "arcaea.help.desc": "詢 Arcaea 諸事。",
+    "arcaea.help.download": "取遊戲最新版 APK。",
+    "arcaea.help.random": "任取一曲。",
+    "arcaea.help.rank.free": "觀今免費曲遊玩之次。",
+    "arcaea.help.rank.paid": "觀今付費曲遊玩之次。",
+    "arcaea.message.download": "今最新版：${version}\n取之於：${url}",
+    "arcaea.message.get_failed": "取之不成。"
+}

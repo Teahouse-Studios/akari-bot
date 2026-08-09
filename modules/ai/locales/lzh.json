@@ -1,0 +1,23 @@
+{
+    "ai.help": "與大語言模型談。",
+    "ai.help.desc": "有疑何不問小可？",
+    "ai.help.llm.instruct": "設大語言模型自定之令。",
+    "ai.help.llm.list": "觀所容大語言模型之錄。",
+    "ai.help.llm.set": "設場景常用之大語言模型。",
+    "ai.help.option.llm": "指定所用之大語言模型。",
+    "ai.help.option.no_tools": "禁大語言模型用器否。",
+    "ai.message.llm.instruct.clear.success": "自定之令已滌。",
+    "ai.message.llm.instruct.set.success": "自定之令已設。",
+    "ai.message.llm.list.none": "無大語言模型可用，宜告機器人之主增之。",
+    "ai.message.llm.list": "可用之大語言模型如下：",
+    "ai.message.llm.list.prompt": "行“${cmd}<模型名稱>”以易模型。",
+    "ai.message.llm.invalid": "大語言模型謬。",
+    "config.comments.module_ai_secret.e2b_api_key": "E2B 之 API key。",
+    "config.comments.module_ai.ai_default_llm": "常用之大語言模型。",
+    "config.comments.module_ai.llm_frequency_penalty": "大語言模型頻率懲罰，在 -2、2 之間。",
+    "config.comments.module_ai.llm_max_tokens": "大語言模型 Token 之極數。",
+    "config.comments.module_ai.llm_timeout": "大語言模型逾時之限。",
+    "config.comments.module_ai.llm_presence_penalty": "大語言模型存在懲罰，在 -2、2 之間。",
+    "config.comments.module_ai.llm_temperature": "大語言模型溫度採樣，在 0、2 之間；不宜與 top_p 並改。",
+    "config.comments.module_ai.llm_top_p": "大語言模型核採樣，在 0、1 之間；不宜與 temperature 並改。"
+}

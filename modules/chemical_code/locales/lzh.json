@@ -1,0 +1,20 @@
+{
+    "chemical_code.help": "常式。",
+    "chemical_code.help.captcha": "驗證碼式。",
+    "chemical_code.help.pcid": "據 PubChem ID 設問。",
+    "chemical_code.help.desc": "答化學式之戲。",
+    "chemical_code.message": "於 ${times} 分鐘內答此化合物之分子式。（除 C、H 外，依字母表次，如 CHBrClF）",
+    "chemical_code.message.captcha": "答此化合物之分子式。（除 C、H 外，依字母表次，如 CHBrClF）",
+    "chemical_code.message.correct": "對矣。",
+    "chemical_code.message.pcid.invalid": "ID 謬。",
+    "chemical_code.message.error": "有舛：取題不成；或請求逾時，或 ID 謬。宜復行命令或檢所輸。",
+    "chemical_code.message.incorrect": "非也；正答為 ${answer}。",
+    "chemical_code.message.incorrect.remind1": "示：未中，復試。",
+    "chemical_code.message.incorrect.remind2": "示：${elements} 之數不合，宜檢之。",
+    "chemical_code.message.incorrect.remind3": "示：近之矣，復試。",
+    "chemical_code.message.incorrect.remind4": "示：或有元素見遺，宜檢之。",
+    "chemical_code.message.incorrect.remind5": "示：元素之次不合，宜檢之。",
+    "chemical_code.message.showid": "ID：${id}",
+    "chemical_code.message.timeup": "時盡矣；正答為 ${answer}。",
+    "chemical_code.stop.message": "已止；正答為 ${answer}。"
+}

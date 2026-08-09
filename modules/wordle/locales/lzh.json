@@ -1,0 +1,19 @@
+{
+    "config.comments.module_wordle.wordle_disable_image": "wordle 模組禁圖否。",
+    "wordle.help": "啟新局。",
+    "wordle.help.desc": "戲 Wordle。",
+    "wordle.help.option.hard": "用難式。",
+    "wordle.help.option.trial": "用挑戰式。",
+    "wordle.help.theme": "設用暗色之題否。",
+    "wordle.message.occupied": "此場景已有戲方作。",
+    "wordle.message.finish": "戲畢，答曰：${answer}。\n查諸詞典：",
+    "wordle.message.finish.success": "賀！爾以 ${attempt} 回合成此局。",
+    "wordle.message.hard.not_matched": "所輸之詞不合其約。",
+    "wordle.message.not_a_word": "此非有效之詞。",
+    "wordle.message.start": "戲始。爾當猜五字母之詞，凡六試。\n綠者，字與位皆是；黃者，字是而位非；灰者，此詞無是字。",
+    "wordle.message.start.hard": "前回合著色之字，後回合必見，且合其約。",
+    "wordle.message.start.trial": "今行挑戰式；成局則得花瓣。",
+    "wordle.message.stop": "戲止，答曰：${answer}。\n查諸詞典：",
+    "wordle.message.theme.disable": "暗色之題已閉。",
+    "wordle.message.theme.enable": "暗色之題已啟。"
+}

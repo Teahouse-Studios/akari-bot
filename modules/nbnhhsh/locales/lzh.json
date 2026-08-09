@@ -1,0 +1,6 @@
+{
+    "nbnhhsh.help.desc": "何不善言？拼音首字母縮語釋義之器。",
+    "nbnhhsh.help": "輸含首字母縮語之文，以求其義。",
+    "nbnhhsh.message.guess": "或曰：${term}",
+    "nbnhhsh.message.not_found": "未得相合之拼音首字母縮語。"
+}

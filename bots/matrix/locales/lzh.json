@@ -1,0 +1,8 @@
+{
+    "config.comments.bot_matrix_secret.matrix_device_id": "Matrix 機器人器物之 ID。",
+    "config.comments.bot_matrix_secret.matrix_megolm_backup_passphrase": "Matrix 機器人 Megolm 備份之密語。",
+    "config.comments.bot_matrix_secret.matrix_token": "Matrix 機器人之令牌。",
+    "config.comments.bot_matrix.matrix_device_name": "Matrix 機器人器物之名，任書之。",
+    "config.comments.bot_matrix.matrix_homeserver": "Matrix 機器人之家伺服器。",
+    "config.comments.bot_matrix.matrix_user": "Matrix 機器人之完全限定用者 ID。"
+}

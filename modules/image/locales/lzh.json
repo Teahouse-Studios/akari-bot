@@ -1,0 +1,5 @@
+{
+    "image.fillwhite.send.a.image": "請發一圖。",
+    "image.fillwhite.no.image.found": "未得其圖，事遂止。",
+    "image.fillwhite.cannot.detect.alpha.channel": "未察圖之透明通道，事遂止；宜驗其以原圖發之否。"
+}

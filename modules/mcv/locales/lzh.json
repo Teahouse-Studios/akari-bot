@@ -1,0 +1,16 @@
+{
+    "mcv.help.mcbv": "詢今 Minecraft 基岩版於 Mojira 所錄之最新版。",
+    "mcv.help.mcdv": "詢今 Minecraft Dungeons 於 Mojira 所錄之最新版。",
+    "mcv.help.mcev": "詢今 Minecraft：教育版於 Windows 版所錄之最新版。",
+    "mcv.help.mclgv": "詢今 Minecraft Legends 於 Mojira 所錄之最新版。",
+    "mcv.help.mcv": "詢今 Minecraft：Java 版於啟動器之最新版。",
+    "mcv.message.error.server": "伺服器有舛。",
+    "mcv.message.mcbv.get_failed": "取之不成",
+    "mcv.message.mcbv.ms_store": "今 Microsoft Store 最新正式版：",
+    "mcv.message.mcbv.play_store": "今 Google Play 商店最新正式版：",
+    "mcv.message.mcev": "最新版：${version}",
+    "mcv.message.mcv": "今啟動器最新版：\n${launcher_ver}",
+    "mcv.message.mcv.jira.failed": "取 Mojira 之詳不成。",
+    "mcv.message.mcv.launcher": "最新版：${release}\n發於：${release_time}\n最新快照：${snapshot}\n發於：${snapshot_time}",
+    "mcv.message.mcv.launcher.failed": "取 manifest.json 不成。"
+}

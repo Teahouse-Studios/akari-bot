@@ -1,0 +1,20 @@
+{
+    "ncmusic.help": "以 ID 取樂。",
+    "ncmusic.help.desc": "網易雲音樂諸器。",
+    "ncmusic.help.info": "取樂曲之詳。",
+    "ncmusic.help.search": "索網易雲音樂。",
+    "ncmusic.message.info": "曲名：${name}（${id}）\n歌者：${artists}\n專輯：${album}（${album_id}）",
+    "ncmusic.message.info.not_found": "未得其樂。",
+    "ncmusic.message.search.confirm": "觀此樂之詳乎？",
+    "ncmusic.message.search.invalid.non_digital": "編號謬，必為數。",
+    "ncmusic.message.search.invalid.out_of_range": "編號逾界。",
+    "ncmusic.message.search.not_found": "無所得。",
+    "ncmusic.message.search.prompt": "覆相應之序，以觀曲之詳。",
+    "ncmusic.message.search.result": "所得：",
+    "ncmusic.message.search.table.header.album": "專輯",
+    "ncmusic.message.search.table.header.artists": "歌者",
+    "ncmusic.message.search.table.header.id": "編號",
+    "ncmusic.message.search.table.header.name": "曲名",
+    "config.comments.module_ncmusic_secret.ncmusic_api": "網易雲音樂 API 之址，供 ncmusic 模組用。",
+    "config.comments.module_ncmusic.ncmusic_enable_card": "ncmusic 模組啟卡片訊息否；惟 QQ 客戶端有效。"
+}

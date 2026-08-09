@@ -1,0 +1,18 @@
+{
+    "mod_dl.help": "以 Mod 名取下載之址。",
+    "mod_dl.help.desc": "取 CurseForge、Modrinth 所載之 Mod。",
+    "mod_dl.message.curseforge.not_found": "CurseForge 所得：無",
+    "mod_dl.message.curseforge.result": "CurseForge 所得：",
+    "mod_dl.message.download_url": "下載之址：",
+    "mod_dl.message.filename": "檔名：",
+    "mod_dl.message.invalid.non_digital": "編號謬，必為數。",
+    "mod_dl.message.invalid.out_of_range": "編號逾界。",
+    "mod_dl.message.modrinth.not_found": "Modrinth 所得：無",
+    "mod_dl.message.modrinth.result": "Modrinth 所得：",
+    "mod_dl.message.not_found": "無所得。",
+    "mod_dl.message.prompt": "覆其編號以擇 Mod。",
+    "mod_dl.message.version": "此 Mod 有下列諸版：",
+    "mod_dl.message.version.not_found": "未得所指之版。",
+    "mod_dl.message.version.prompt": "覆版號以擇其版。",
+    "config.comments.module_mod_dl_secret.curseforge_api_key": "CurseForge 之 API Key。"
+}

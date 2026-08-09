@@ -1,0 +1,11 @@
+{
+    "server.help": "取 Minecraft：Java 版或基岩版伺服器 MOTD。",
+    "server.help.option.p": "列玩家。",
+    "server.help.option.r": "列原文。",
+    "server.message.local_address": "域名或 IP 址謬。",
+    "server.message.gamemode": "戲式：",
+    "server.message.not_found": "諸類 Minecraft 伺服器皆未得。",
+    "server.message.player": "在綫玩家：",
+    "server.message.player.current": "今在綫者：",
+    "server.message.version": "遊戲版本："
+}

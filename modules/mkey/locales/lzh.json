@@ -1,0 +1,9 @@
+{
+    "mkey.help.desc": "算任天堂諸機之監護萬能密碼。",
+    "mkey.message.error.date.month": "月謬。",
+    "mkey.message.error.date.day": "日謬。",
+    "mkey.message.error.inquiry_num": "確認碼謬。",
+    "mkey.message.error.device": "主機謬。",
+    "mkey.message.error.hal": "Switch 須指主機 ID。",
+    "mkey.message.result": "爾之萬能密碼曰：${result}。"
+}

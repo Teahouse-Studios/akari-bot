@@ -1,0 +1,16 @@
+{
+    "oba.help.desc": "取 OpenBMCLAPI 諸數。",
+    "oba.help.rank": "取 OpenBMCLAPI 節點之狀。",
+    "oba.help.search": "索所名 OpenBMCLAPI 節點之狀。",
+    "oba.help.sponsor": "任取一節點贊助者。",
+    "oba.help.status": "取 OpenBMCLAPI Dashboard 之數。",
+    "oba.help.top": "取 OpenBMCLAPI 節點次第。",
+    "oba.message.node.invalid": "節點謬。",
+    "oba.message.node": "節點名：${name}\n節點 ID：${id}\n今日流量：${size} | 今日請求：${hits}",
+    "oba.message.query_time": "詢時：${query_time}",
+    "oba.message.search.not_found": "無所得。",
+    "oba.message.sponsor": "節點贊助者：${name}\n其網站：${url}\n慎：此所列 OpenBMCLAPI 節點贊助者，與 Teahouse Studios 素無隸屬。",
+    "oba.message.status.detail": "今通節點：${current_nodes} 個\n五分鐘負載：${load}\n總帶寬：${bandwidth} Mbps\n今出網帶寬：${current_bandwidth} Mbps\n今日請求：${hits} 次\n今日全網流量：${size}",
+    "oba.message.status.version": "OpenBMCLAPI 最新版：${version}",
+    "oba.message.top": "${rank} | ${name} | ${id}\n${size} | ${hits}\n節點贊助者：${sponsor_name}"
+}

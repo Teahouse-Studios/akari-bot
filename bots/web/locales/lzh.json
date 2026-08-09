@@ -1,0 +1,12 @@
+{
+    "config.comments.bot_web_secret.allow_origins": "API 之役所許 CORS 來源之錄；設“*”則信諸來源。",
+    "config.comments.bot_web_secret.forwarded_allow_ips": "所信反向代理來源之錄；設“*”則信諸來源。",
+    "config.comments.bot_web_secret.jwt_secret": "內建 API 驗身之密鑰，以簽名并驗其真。",
+    "config.comments.bot_web.enable_https": "啟 HTTPS 協議之護否。",
+    "config.comments.bot_web.heartbeat_attempt": "心跳之訊試發之數。",
+    "config.comments.bot_web.heartbeat_interval": "心跳之訊發送相間之時。",
+    "config.comments.bot_web.heartbeat_timeout": "候心跳之應逾時之限。",
+    "config.comments.bot_web.login_max_attempt": "登入請求之極數。",
+    "config.comments.bot_web.web_host": "Web 之役主機之址；設 0.0.0.0 則聽諸址。",
+    "config.comments.bot_web.web_port": "Web 之役端口號；設 0 則禁其役。"
+}

@@ -1,0 +1,11 @@
+{
+    "config.comments.bot_onebot.qq_allow_approve_friend": "用 OneBot 協議時，自允好友之請否。",
+    "config.comments.bot_onebot.qq_allow_approve_group_invite": "用 OneBot 協議時，自允群邀否。",
+    "config.comments.bot_onebot.qq_enable_temp_session": "用 OneBot 協議時，啟臨時會話否。",
+    "config.comments.bot_onebot.qq_enable_listening_self_message": "用 OneBot 協議時，察己所發之訊否。",
+    "config.comments.bot_onebot.qq_host": "WebSocket 主伺服器之址；OneBot 協議端當以反向 WebSocket 連之。",
+    "config.comments.bot_onebot.qq_initiative_msg_cooldown": "主動發訊之冷卻限，以秒為度。",
+    "config.comments.bot_onebot.qq_limited_emoji": "用 OneBot 協議時，理訊不成則附於其訊之反應表情 ID，須協議端通之。ID 見：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji",
+    "config.comments.bot_onebot.qq_typing_emoji": "用 OneBot 協議時，方理訊則附於其訊之反應表情 ID，須協議端通之。ID 見：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji",
+    "config.comments.bot_onebot_secret.qq_access_token": "用 OneBot 協議時，連 WebSocket 伺服器之 Access Token。"
+}

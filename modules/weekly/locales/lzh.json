@@ -1,0 +1,9 @@
+{
+    "weekly.help": "取中文 Minecraft Wiki 每周之頁。",
+    "weekly.help.image": "取中文 Minecraft Wiki 每周之頁，以圖示之。",
+    "weekly.help.teahouse": "取茶館周報。",
+    "weekly.message.prompt": "本周之頁：${text}",
+    "weekly.message.expired": "告：本周之頁已過期，宜告中文 Minecraft Wiki 更新。",
+    "weekly.message.image": "圖：${img}",
+    "weekly.message.link": "\n圖：${img}\n\n頁址：${article}\n每周之頁：${link}"
+}

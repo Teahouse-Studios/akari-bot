@@ -1,0 +1,6 @@
+{
+    "weekly_rss.help.desc": "啟則訂中文 Minecraft Wiki 每周之頁。（每周一 9:00 更新）",
+    "weekly_rss.help.teahouse_weekly_rss.desc": "啟則訂茶館周報每周之頁。（每周一 9:30 更新）",
+    "weekly_rss.message": "欲取每周之頁正文及連結，可行“${prefix}weekly”。",
+    "weekly_rss.message.teahouse_weekly_rss": "欲取每周之頁正文及連結，可行“${prefix}weekly teahouse”。"
+}

@@ -1,0 +1,14 @@
+{
+    "cytoid.help.b30": "詢 Cytoid 用者 B30 之錄。",
+    "cytoid.help.bind": "繫 Cytoid 用者。",
+    "cytoid.help.desc": "詢 Cytoid 諸事。",
+    "cytoid.help.profile": "詢一用者之本詳。",
+    "cytoid.help.r10": "詢 Cytoid 用者 R10 之錄。",
+    "cytoid.help.unbind": "解所繫用者。",
+    "cytoid.message.bind.failed": "繫之不成，宜檢所輸。",
+    "cytoid.message.bind.success": "繫之成：${user}",
+    "cytoid.message.unbind.success": "解之成。",
+    "cytoid.message.user_not_found": "未得用者。",
+    "cytoid.message.user_unbound": "未繫用者，可行“${cmd}”繫一人。",
+    "cytoid.message.fetch_failed": "取其詳不成。"
+}

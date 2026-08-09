@@ -1,0 +1,4 @@
+{
+    "langconv.help": "簡繁相易。",
+    "langconv.message.unsupported_language": "此語不容。所容者：zh_cn、zh_tw、zh_hk"
+}
