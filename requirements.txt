@@ -84,7 +84,7 @@ botocore==1.43.52
     # via
     #   boto3
     #   s3transfer
-botpy @ git+https://github.com/Teahouse-Studios/botpy.git@ccad4006be16190d278dfb4483a9ec77bf1ee1a7
+botpy @ git+https://github.com/Teahouse-Studios/botpy.git@eb085aa35c0395478c291789b5208097e73e2223
     # via akari-bot
 bracex==2.6
     # via wcmatch

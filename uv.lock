@@ -278,7 +278,7 @@ requires-dist = [
     { name = "attrs", specifier = ">=25.0.0,<26.0.0" },
     { name = "beautifulsoup4", specifier = ">=4.11.1,<5.0.0" },
     { name = "boto3", specifier = ">=1.35.0,<2.0.0" },
-    { name = "botpy", git = "https://github.com/Teahouse-Studios/botpy.git?rev=ccad4006be16190d278dfb4483a9ec77bf1ee1a7" },
+    { name = "botpy", git = "https://github.com/Teahouse-Studios/botpy.git" },
     { name = "cattrs", specifier = ">=26.1.0,<26.2.0" },
     { name = "coverage", specifier = ">=7.9.1,<8.0.0" },
     { name = "cryptography", specifier = ">=50.0.0,<50.1.0" },
@@ -579,7 +579,7 @@ wheels = [
 [[package]]
 name = "botpy"
 version = "0.1.0"
-source = { git = "https://github.com/Teahouse-Studios/botpy.git?rev=ccad4006be16190d278dfb4483a9ec77bf1ee1a7#ccad4006be16190d278dfb4483a9ec77bf1ee1a7" }
+source = { git = "https://github.com/Teahouse-Studios/botpy.git#eb085aa35c0395478c291789b5208097e73e2223" }
 dependencies = [
     { name = "aiohttp" },
     { name = "apscheduler" },
