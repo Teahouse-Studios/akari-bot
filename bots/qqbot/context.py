@@ -22,7 +22,6 @@ from bots.qqbot.info import (
     target_guild_prefix,
     target_c2c_prefix,
 )
-from bots.qqbot.utils import url_filter
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import ActionTextElement, PlainElement, ImageElement, MentionElement, URLElement
 from core.builtins.message.internal import I18NContext
@@ -317,7 +316,6 @@ class QQBotContextManager(ContextManager):
                             if quote and not send_img
                             else None
                         )
-                        msg = url_filter(msg)
                         if not msg_quote and quote:
                             msg = f"<@{ctx.author.id}> \n" + msg
                         msg = "" if not msg else msg
@@ -349,7 +347,6 @@ class QQBotContextManager(ContextManager):
                             if quote and not send_img
                             else None
                         )
-                        msg = url_filter(msg)
                         msg = "" if not msg else msg
                         send = await ctx.reply(content=msg, file_image=send_img, message_reference=msg_quote)
                         if not _typing_prompt:
@@ -469,7 +466,6 @@ class QQBotContextManager(ContextManager):
                             image_1 = images[0]
                             images.pop(0)
                         send_img = await image_1.get() if image_1 else None
-                        msg = url_filter(msg)
                         msg = "" if not msg else msg
                         send = await client.api.post_message(
                             channel_id=session_info.get_common_target_id(),
@@ -495,7 +491,6 @@ class QQBotContextManager(ContextManager):
                             image_1 = images[0]
                             images.pop(0)
                         send_img = await image_1.get() if image_1 else None
-                        msg = url_filter(msg)
                         msg = "" if not msg else msg
                         send = await client.api.post_dms(
                             guild_id=session_info.get_common_target_id(), content=msg, file_image=send_img
