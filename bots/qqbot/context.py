@@ -750,12 +750,19 @@ class QQBotContextManager(ContextManager):
                 if ctx and not isinstance(ctx, Interaction):
                     if isinstance(ctx, (Message, DirectMessage, GroupMessage, C2CMessage)):
                         global_seq += 1
-                        send = await ctx.reply(
-                            markdown=md,
-                            msg_type=2,
-                            msg_seq=global_seq,
-                            keyboard=keyboard,
-                        )
+                        if isinstance(ctx, (GroupMessage, C2CMessage)):
+                            send = await ctx.reply(
+                                markdown=md,
+                                msg_type=2,
+                                msg_seq=global_seq,
+                                keyboard=keyboard,
+                            )
+                        else:
+                            send = await ctx.reply(
+                                markdown=md,
+                                msg_seq=global_seq,
+                                keyboard=keyboard,
+                            )
                         if not _typing_prompt:
                             cls._on_message_sent(session_info)
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
