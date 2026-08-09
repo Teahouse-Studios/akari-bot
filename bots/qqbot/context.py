@@ -760,7 +760,6 @@ class QQBotContextManager(ContextManager):
                         else:
                             send = await ctx.reply(
                                 markdown=md,
-                                msg_seq=global_seq,
                                 keyboard=keyboard,
                             )
                         if not _typing_prompt:
