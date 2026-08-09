@@ -155,6 +155,17 @@ class WikiLib:
     async def rearrange_siteinfo(self, info: dict | str | bytes, wiki_api_link) -> WikiInfo:
         if isinstance(info, (str, bytes)):
             info = orjson.loads(info)
+        if not isinstance(info, dict) or not isinstance(info.get("query"), dict):
+            error = info.get("error") if isinstance(info, dict) else None
+            if isinstance(error, dict):
+                code = error.get("code", "")
+                detail = error.get("info", "")
+                message = ": ".join(x for x in (code, detail) if x)
+            else:
+                message = ""
+            if not message:
+                message = orjson.dumps(info).decode()
+            raise InvalidWikiError(message)
         extensions = info["query"]["extensions"]
         ext_list = []
         for ext in extensions:
@@ -269,11 +280,17 @@ class WikiLib:
                 get_cache_info.site_info
                 and datetime.now(UTC).timestamp() - get_cache_info.timestamp.timestamp() < 43200
             ):
-                return WikiStatus(
-                    available=True,
-                    value=await self.rearrange_siteinfo(get_cache_info.site_info, wiki_api_link),
-                    message="",
-                )
+                try:
+                    cached_info = await self.rearrange_siteinfo(get_cache_info.site_info, wiki_api_link)
+                except (InvalidWikiError, KeyError, TypeError, orjson.JSONDecodeError):
+                    get_cache_info.site_info = {}
+                    await get_cache_info.save()
+                else:
+                    return WikiStatus(
+                        available=True,
+                        value=cached_info,
+                        message="",
+                    )
         else:
             get_cache_info = await WikiSiteInfo.create(api_link=wiki_api_link)
         try:
@@ -283,6 +300,7 @@ class WikiLib:
                 meta="siteinfo",
                 siprop="general|namespaces|namespacealiases|interwikimap|extensions",
             )
+            info = await self.rearrange_siteinfo(get_json, wiki_api_link)
         except Exception as e:
             if CoreConfig.debug:
                 Logger.exception()
@@ -295,7 +313,6 @@ class WikiLib:
         # 上面的 43200 秒过期判断会因此多留缓存整整一个时区差的时长
         get_cache_info.timestamp = datetime.now(UTC)
         await get_cache_info.save()
-        info = await self.rearrange_siteinfo(get_json, wiki_api_link)
         return WikiStatus(
             available=True,
             value=info,
