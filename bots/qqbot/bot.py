@@ -7,7 +7,7 @@ from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 
 from bots.qqbot.context import QQBotContextManager, QQBotFetchedContextManager, permission_cache
 from bots.qqbot.info import *
-from bots.qqbot.features import group_disable_read_all_message_features, resolve_features
+from bots.qqbot.features import group_disable_read_all_message_features, resolve_features, guild_features
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain
@@ -114,7 +114,7 @@ class MyClient(botpy.Client):
             tmp={"message_type": "guild_direct"},
         )
 
-        await Bot.process_message(session, message, resolve_features(session))
+        await Bot.process_message(session, message, guild_features)
 
     @staticmethod
     async def on_message_group_create(message: GroupMessage):
@@ -227,7 +227,7 @@ class MyClient(botpy.Client):
             bot_id=qqbot_openid,
         )
 
-        await Bot.process_message(session, message, resolve_features(session))
+        await Bot.process_message(session, message, guild_features)
 
     @staticmethod
     async def on_c2c_message_create(message: C2CMessage):
