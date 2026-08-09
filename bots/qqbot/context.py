@@ -1,5 +1,6 @@
 import asyncio
 import html
+from typing import Union
 from urllib.parse import quote
 
 import orjson
@@ -191,7 +192,7 @@ class _TypingState:
 
 
 class QQBotContextManager(ContextManager):
-    context: dict[str, BaseMessage] = {}
+    context: dict[str, Union[BaseMessage, Message]] = {}
     features: Features = qqbot_features
     typing_states: dict[str, _TypingState] = {}
 
@@ -268,14 +269,6 @@ class QQBotContextManager(ContextManager):
         msg_ids = []
         global global_seq
 
-        refid = None
-        if ctx is not None and not isinstance(ctx, Interaction):
-            if ctx.message_scene is not None:
-                r = ctx.message_scene.get("ext")
-                if r:
-                    if r[0].startswith("msg_idx=REFIDX"):
-                        refid = r[0].replace("msg_idx=", "")
-
         force_markdown = session_info.tmp.get("force_markdown") == "true"
         if isinstance(message, MessageNodes):
             message = MessageChain.assign(PlainElement.assign(nodes_to_table(session_info, message), disable_joke=True))
@@ -318,10 +311,10 @@ class QQBotContextManager(ContextManager):
                         send_img = await image_1.get() if image_1 else None
                         msg_quote = (
                             Reference(
-                                message_id=refid,
+                                message_id=ctx.id,
                                 ignore_get_message_error=False,
                             )
-                            if quote and refid is not None and not send_img
+                            if quote and not send_img
                             else None
                         )
                         msg = url_filter(msg)
@@ -350,10 +343,10 @@ class QQBotContextManager(ContextManager):
                         send_img = await image_1.get() if image_1 else None
                         msg_quote = (
                             Reference(
-                                message_id=refid,
+                                message_id=ctx.id,
                                 ignore_get_message_error=False,
                             )
-                            if quote and refid is not None and not send_img
+                            if quote and not send_img
                             else None
                         )
                         msg = url_filter(msg)
@@ -374,6 +367,13 @@ class QQBotContextManager(ContextManager):
                                 if send:
                                     msg_ids.append(send["id"])
                     elif isinstance(ctx, GroupMessage):
+                        refid = None
+                        if ctx is not None and isinstance(ctx, GroupMessage):
+                            if ctx.message_scene is not None:
+                                r = ctx.message_scene.get("ext")
+                                if r:
+                                    if r[0].startswith("msg_idx=REFIDX"):
+                                        refid = r[0].replace("msg_idx=", "")
                         msg_quote = (
                             Reference(
                                 message_id=refid,
