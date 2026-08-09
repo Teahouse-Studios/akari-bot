@@ -16,17 +16,17 @@ from core.utils.func import is_int
 from core.utils.random import Random
 from core.union_merge import (
     BIND_CODE_EXPIRED,
-    apply_sender_merge as _apply_sender_merge,
-    apply_target_merge as _apply_target_merge,
-    channel_hint_lines as _channel_hint_lines,
-    choose_conflicts as _choose_conflicts,
-    id_lines as _id_lines,
+    apply_sender_merge,
+    apply_target_merge,
+    channel_hint_lines,
+    choose_conflicts,
+    id_lines,
     issue_code,
-    merge_target_unions as _merge_target_unions,
-    plan_sender_merge as _plan_sender_merge,
-    plan_target_merge as _plan_target_merge,
+    merge_target_unions,
+    plan_sender_merge,
+    plan_target_merge,
     take_code,
-    target_lines as _target_lines,
+    target_lines,
 )
 
 HANDSHAKE_EXPIRED = 30  # 通道握手超时（秒）
@@ -76,8 +76,8 @@ async def _channel_lines(msg: Bot.MessageSession) -> list:
     return [
         I18NContext("core.bind.message.channel.info", channel=channel_id),
         I18NContext("core.bind.message.channel.info.shared", count=len(siblings)),
-        *_id_lines(siblings),
-        *_channel_hint_lines(msg),
+        *id_lines(siblings),
+        *channel_hint_lines(msg),
     ]
 
 
@@ -101,12 +101,12 @@ async def _(msg: Bot.MessageSession):
             I18NContext("core.bind.message.self.info", id=sender_union_info.union_id, disable_joke=True),
             I18NContext("core.bind.message.self.info.bound", count=len(sender_ids)),
         ]
-        + _id_lines(sender_ids)
+        + id_lines(sender_ids)
         + [
             I18NContext("core.bind.message.target.info", id=target_union_info.union_id, disable_joke=True),
             I18NContext("core.bind.message.target.info.bound", count=len(target_ids)),
         ]
-        + await _target_lines(msg, target_union_info.union_id, target_ids)
+        + await target_lines(msg, target_union_info.union_id, target_ids)
     )
 
 
@@ -119,7 +119,7 @@ async def _(msg: Bot.MessageSession):
             I18NContext("core.bind.message.self.info", id=sender_union_info.union_id, disable_joke=True),
             I18NContext("core.bind.message.self.info.bound", count=len(bound_ids)),
         ]
-        + _id_lines(bound_ids)
+        + id_lines(bound_ids)
     )
 
 
@@ -175,7 +175,7 @@ async def _(msg: Bot.MessageSession):
             I18NContext("core.bind.message.target.info", id=target_union_info.union_id, disable_joke=True),
             I18NContext("core.bind.message.target.info.bound", count=len(bound_ids)),
         ]
-        + await _target_lines(msg, target_union_info.union_id, bound_ids)
+        + await target_lines(msg, target_union_info.union_id, bound_ids)
     )
 
 
@@ -216,12 +216,12 @@ async def _bind_private(msg: Bot.MessageSession, entry: dict) -> None:
 
     # 任一侧已同组则只并另一侧；两侧都已同组说明这枚码来自本方，无需绑定。
     sender_plan = (
-        await _plan_sender_merge(sender_initiator, sender_current)
+        await plan_sender_merge(sender_initiator, sender_current)
         if sender_initiator.union_id != sender_current.union_id
         else None
     )
     target_plan = (
-        await _plan_target_merge(msg, target_initiator, target_current)
+        await plan_target_merge(msg, target_initiator, target_current)
         if target_initiator.union_id != target_current.union_id
         else None
     )
@@ -236,11 +236,11 @@ async def _bind_private(msg: Bot.MessageSession, entry: dict) -> None:
         await msg.finish()
 
     # 冲突选择按域分别询问，两域的模块表互不相交，各自的选择不会互相影响
-    sender_keep = await _choose_conflicts(msg, sender_plan["conflicts"]) if sender_plan else set()
-    target_keep = await _choose_conflicts(msg, target_plan["conflicts"]) if target_plan else set()
+    sender_keep = await choose_conflicts(msg, sender_plan["conflicts"]) if sender_plan else set()
+    target_keep = await choose_conflicts(msg, target_plan["conflicts"]) if target_plan else set()
 
-    merged_sender = await _apply_sender_merge(sender_plan, sender_keep) if sender_plan else sender_current
-    merged_target = await _apply_target_merge(target_plan, target_keep) if target_plan else target_current
+    merged_sender = await apply_sender_merge(sender_plan, sender_keep) if sender_plan else sender_current
+    merged_target = await apply_target_merge(target_plan, target_keep) if target_plan else target_current
     if not merged_sender or not merged_target:
         await msg.finish(I18NContext("core.bind.message.start.private.failed"))
 
@@ -252,12 +252,12 @@ async def _bind_private(msg: Bot.MessageSession, entry: dict) -> None:
             I18NContext("core.bind.message.self.success", id=merged_sender.union_id, disable_joke=True),
             I18NContext("core.bind.message.self.info.bound", count=len(sender_ids)),
         ]
-        + _id_lines(sender_ids)
+        + id_lines(sender_ids)
         + [
             I18NContext("core.bind.message.target.success", id=merged_target.union_id, disable_joke=True),
             I18NContext("core.bind.message.target.info.bound", count=len(target_ids)),
         ]
-        + await _target_lines(msg, merged_target.union_id, target_ids)
+        + await target_lines(msg, merged_target.union_id, target_ids)
     )
 
 
@@ -287,7 +287,7 @@ async def _(msg: Bot.MessageSession, code: str):
     if not initiator:
         await msg.finish(I18NContext("core.bind.message.code.invalid"))
 
-    merged = await _merge_target_unions(msg, initiator, current)
+    merged = await merge_target_unions(msg, initiator, current)
     if not merged:
         await msg.finish()
     await msg.session_info.refresh_info()
@@ -297,7 +297,7 @@ async def _(msg: Bot.MessageSession, code: str):
             I18NContext("core.bind.message.target.success", id=merged.union_id, disable_joke=True),
             I18NContext("core.bind.message.target.info.bound", count=len(bound_ids)),
         ]
-        + await _target_lines(msg, merged.union_id, bound_ids)
+        + await target_lines(msg, merged.union_id, bound_ids)
     )
 
 
@@ -514,7 +514,7 @@ async def _run_channel_handshake(entry: dict, initiator: Bot.MessageSession, res
     merged = initiator_target
     if initiator_target.union_id != responder_target.union_id:
         # 合并确认在发起侧进行：执行该命令的管理员位于发起侧。
-        merged = await _merge_target_unions(
+        merged = await merge_target_unions(
             initiator, initiator_target, responder_target, "core.bind.message.auto.confirm.inherit"
         )
         if not merged:
