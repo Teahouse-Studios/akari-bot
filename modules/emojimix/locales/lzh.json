@@ -1,9 +1,9 @@
 {
-    "emojimix.help": "合二 Emoji 為一圖；空則任合。",
-    "emojimix.help.list": "列所容諸 Emoji。",
-    "emojimix.message.all_supported": "所容諸 Emoji：",
-    "emojimix.message.combine_supported": "可與“${emoji}”相合之 Emoji：",
-    "emojimix.message.invalid": "Emoji 謬。",
-    "emojimix.message.not_found": "此 Emoji 之合不容。",
-    "emojimix.message.unsupported": "不容此 Emoji：${emoji}"
+    "emojimix.help": "合二表情符號為一圖；空則任合。",
+    "emojimix.help.list": "列所容諸表情符號。",
+    "emojimix.message.all_supported": "所容諸表情符號：",
+    "emojimix.message.combine_supported": "可與“${emoji}”相合之表情符號：",
+    "emojimix.message.invalid": "表情符號謬。",
+    "emojimix.message.not_found": "此表情符號之合不容。",
+    "emojimix.message.unsupported": "不容此表情符號：${emoji}"
 }

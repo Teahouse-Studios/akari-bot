@@ -1,4 +1,4 @@
 {
-    "arcaea_rss.help.desc": "察 Arcaea 版更，遇新則告。",
-    "arcaea_rss.message.updated": "得 Arcaea 新版：${version}\n取之於：${url}"
+    "arcaea_rss.help.desc": "察韻律源點版更，遇新則告。",
+    "arcaea_rss.message.updated": "得韻律源點新版：${version}\n取之於：${url}"
 }

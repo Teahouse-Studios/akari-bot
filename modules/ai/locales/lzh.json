@@ -12,12 +12,12 @@
     "ai.message.llm.list": "可用之大語言模型如下：",
     "ai.message.llm.list.prompt": "行“${cmd}<模型名稱>”以易模型。",
     "ai.message.llm.invalid": "大語言模型謬。",
-    "config.comments.module_ai_secret.e2b_api_key": "E2B 之 API key。",
+    "config.comments.module_ai_secret.e2b_api_key": "伊二比之介面密鑰。",
     "config.comments.module_ai.ai_default_llm": "常用之大語言模型。",
-    "config.comments.module_ai.llm_frequency_penalty": "大語言模型頻率懲罰，在 -2、2 之間。",
-    "config.comments.module_ai.llm_max_tokens": "大語言模型 Token 之極數。",
+    "config.comments.module_ai.llm_frequency_penalty": "大語言模型頻率懲罰，在負二、二之間。",
+    "config.comments.module_ai.llm_max_tokens": "大語言模型詞元之極數。",
     "config.comments.module_ai.llm_timeout": "大語言模型逾時之限。",
-    "config.comments.module_ai.llm_presence_penalty": "大語言模型存在懲罰，在 -2、2 之間。",
-    "config.comments.module_ai.llm_temperature": "大語言模型溫度採樣，在 0、2 之間；不宜與 top_p 並改。",
-    "config.comments.module_ai.llm_top_p": "大語言模型核採樣，在 0、1 之間；不宜與 temperature 並改。"
+    "config.comments.module_ai.llm_presence_penalty": "大語言模型存在懲罰，在負二、二之間。",
+    "config.comments.module_ai.llm_temperature": "大語言模型溫度採樣，在〇、二之間；不宜與核採樣值並改。",
+    "config.comments.module_ai.llm_top_p": "大語言模型核採樣，在〇、一之間；不宜與溫度值並改。"
 }

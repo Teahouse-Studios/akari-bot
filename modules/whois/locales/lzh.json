@@ -1,18 +1,18 @@
 {
-    "whois.help": "詢 WHOIS 之詳。",
+    "whois.help": "詢域名登記查詢之詳。",
     "whois.message.creation_date": "始註之日：",
-    "whois.message.dnssec": "DNSSEC：",
+    "whois.message.dnssec": "域名系統安全擴展：",
     "whois.message.domain_name": "域名：",
     "whois.message.email": "郵箱：",
     "whois.message.expiration_date": "止期：",
-    "whois.message.get_failed": "取 WHOIS 不成。",
+    "whois.message.get_failed": "取域名登記查詢不成。",
     "whois.message.location": "所在：",
     "whois.message.name": "名：",
-    "whois.message.name_servers": "DNS 伺服器：",
+    "whois.message.name_servers": "域名系統伺服器：",
     "whois.message.organization": "組織：",
     "whois.message.postal_code": "郵編：",
-    "whois.message.referral_url": "所本 URL：",
+    "whois.message.referral_url": "所本網址：",
     "whois.message.registrar": "註冊商：",
     "whois.message.updated_date": "更新之日：",
-    "whois.message.whois_server": "WHOIS 伺服器："
+    "whois.message.whois_server": "域名登記查詢伺服器："
 }

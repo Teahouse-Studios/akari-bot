@@ -1,7 +1,7 @@
 {
-    "bugtracker.help": "詢 Mojira 漏洞編號之詳。",
-    "bugtracker.help.regex.desc": "發 Mojira 漏洞編號，以詢其詳。",
+    "bugtracker.help": "詢莫吉拉漏洞編號之詳。",
+    "bugtracker.help.regex.desc": "發莫吉拉漏洞編號，以詢其詳。",
     "bugtracker.message.error.server": "伺服器有舛，少頃復試。",
     "bugtracker.message.get_failed": "取之不成；其漏洞或無，或設為私密。",
-    "bugtracker.message.invalid_mojira_id": "Mojira 編號謬。"
+    "bugtracker.message.invalid_mojira_id": "莫吉拉編號謬。"
 }

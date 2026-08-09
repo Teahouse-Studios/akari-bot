@@ -1,9 +1,9 @@
 {
-    "color.help": "陳色之詳。可用十六進制、RGB、HSL 色碼，或 CSS、Material Design 色名；空則任取一色。",
+    "color.help": "陳色之詳。可用十六進制、紅綠藍、色相飽和度明度色碼，或層疊樣式表、材質設計色名；空則任取一色。",
     "color.help.desc": "取色之詳。",
-    "color.message.embed.css": "CSS 色名",
-    "color.message.embed.css.approximate": "最肖之 CSS 色名",
-    "color.message.embed.md": "Material Design 色名",
-    "color.message.embed.md.approximate": "最肖之 Material Design 色名",
+    "color.message.embed.css": "層疊樣式表色名",
+    "color.message.embed.css.approximate": "最肖之層疊樣式表色名",
+    "color.message.embed.md": "材質設計色名",
+    "color.message.embed.md.approximate": "最肖之材質設計色名",
     "color.message.invalid": "色式不可識。"
 }

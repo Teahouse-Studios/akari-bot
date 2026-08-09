@@ -17,8 +17,8 @@
     "coin.message.single.prompt": "爾擲錢一枚……",
     "coin.message.single.stand": "……其立焉！",
     "coin.message.single.tail": "……背也！",
-    "config.comments.module_coin.coin_facedown_weight": "coin 模組擲錢時背之權。",
-    "config.comments.module_coin.coin_faceup_weight": "coin 模組擲錢時面之權。",
-    "config.comments.module_coin.coin_limit": "coin 模組可擲錢之極數。",
-    "config.comments.module_coin.coin_stand_weight": "coin 模組擲錢時立之權。"
+    "config.comments.module_coin.coin_facedown_weight": "擲錢模組擲錢時背之權。",
+    "config.comments.module_coin.coin_faceup_weight": "擲錢模組擲錢時面之權。",
+    "config.comments.module_coin.coin_limit": "擲錢模組可擲錢之極數。",
+    "config.comments.module_coin.coin_stand_weight": "擲錢模組擲錢時立之權。"
 }

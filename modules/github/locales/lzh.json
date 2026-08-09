@@ -1,12 +1,12 @@
 {
-    "github.help": "試自辨 repo 與 user。",
-    "github.help.desc": "GitHub 詢事之器。",
-    "github.help.repo": "取 GitHub 庫之詳。",
-    "github.help.search": "索 GitHub 諸庫。",
-    "github.help.user": "取 GitHub 用者或組織之詳。",
+    "github.help": "試自辨代碼庫與用者。",
+    "github.help.desc": "吉特樞紐詢事之器。",
+    "github.help.repo": "取吉特樞紐庫之詳。",
+    "github.help.search": "索吉特樞紐諸庫。",
+    "github.help.user": "取吉特樞紐用者或組織之詳。",
     "github.message.repo.not_found": "無此庫，宜檢所輸。",
     "github.message.search": "所得：",
     "github.message.search.not_found": "無所得。",
     "github.message.user.not_found": "查無此人，宜檢所輸。",
-    "config.comments.module_github_secret.github_pat": "GitHub Personal Access Token，用以寬 API 請求速限。"
+    "config.comments.module_github_secret.github_pat": "吉特樞紐個人存取令牌，用以寬介面請求速限。"
 }

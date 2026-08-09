@@ -5,7 +5,7 @@
     "twenty_four.message": "所與之數：${numbers}\n輸一式，使其得二十四。（若無解，書“無解”）",
     "twenty_four.message.correct": "對矣。",
     "twenty_four.message.solve.running": "今局方作，宜先止之。",
-    "twenty_four.message.solve.invalid": "數當在 1 至 13 間，宜檢所輸。",
+    "twenty_four.message.solve.invalid": "數當在一至十三間，宜檢所輸。",
     "twenty_four.message.solve.prompt": "數組 ${numbers} 之諸解：",
     "twenty_four.message.solve.no_solution": "數組 ${numbers} 無解。",
     "twenty_four.message.incorrect.have_solution": "非也：此組有解。\n一解曰：${solution}",

@@ -1,5 +1,5 @@
 {
-    "mcplayer.help": "以玩家名或 UUID 取玩家之詳。",
-    "mcplayer.help.desc": "自 Mojang API 取 Minecraft：Java 版玩家之詳。",
+    "mcplayer.help": "以玩家名或通用唯一標識取玩家之詳。",
+    "mcplayer.help.desc": "自魔贊介面取礦藝：爪哇版玩家之詳。",
     "mcplayer.message.not_found": "未得 ${player} 之詳。"
 }

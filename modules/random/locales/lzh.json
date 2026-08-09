@@ -3,6 +3,6 @@
     "random.help.desc": "隨機數生器。",
     "random.help.number": "生區間中之隨機整數。",
     "random.help.shuffle": "亂其錄之次。",
-    "random.help.uuid": "生隨機 UUID（v4）。",
+    "random.help.uuid": "生隨機第四版通用唯一標識。",
     "random.message.idk": "莫知。"
 }

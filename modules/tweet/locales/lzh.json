@@ -1,6 +1,6 @@
 {
-    "tweet.help": "以推文 ID 取其摘要圖。（P.S. 月費 $200 未納）",
+    "tweet.help": "以推文標識號取其摘要圖。（附言月費二百美元未納）",
     "tweet.help.desc": "取推文摘要。",
-    "tweet.help.regex.url": "以 URL 取推文摘要。",
+    "tweet.help.regex.url": "以網址取推文摘要。",
     "tweet.message.not_found": "未得推文；或受限，或本無之。"
 }

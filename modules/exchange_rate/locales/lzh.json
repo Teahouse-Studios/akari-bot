@@ -1,10 +1,10 @@
 {
     "exchange_rate.help": "據今日匯率易貨幣之值。",
     "exchange_rate.help.desc": "匯率換算之器。",
-    "exchange_rate.help.regex.desc": "[<acount>] <base>(兌|換)<target>，以易貨幣之值。",
+    "exchange_rate.help.regex.desc": "[<金額>] <原幣>(兌|換)<目標幣>，以易貨幣之值。",
     "exchange_rate.message": "${amount} ${base} = ${exchange_rate} ${target}\n（${time}，姑備參酌）",
     "exchange_rate.message.invalid.unit": "貨幣單位謬：${unit}",
     "exchange_rate.message.invalid.non_digital": "金額謬，必為數。",
     "exchange_rate.message.invalid.non_positive": "金額必正。",
-    "config.comments.module_exchange_rate_secret.exchange_rate_api_key": "ExchangeRate-API 之 API Key。"
+    "config.comments.module_exchange_rate_secret.exchange_rate_api_key": "匯率介面之介面密鑰。"
 }

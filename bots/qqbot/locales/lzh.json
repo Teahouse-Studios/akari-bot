@@ -1,10 +1,10 @@
 {
-    "config.comments.bot_qqbot_secret.qq_bot_secret": "QQ 官方機器人之 AppSecret。",
-    "config.comments.bot_qqbot.qq_bot_appid": "QQ 官方機器人之 AppID。",
-    "config.comments.bot_qqbot.qq_bot_enable_send_url": "用 QQ 官方機器人時，許發 URL 否。",
-    "config.comments.bot_qqbot.qq_bot_openid": "QQ 官方機器人之 OpenID。",
-    "config.comments.bot_qqbot.qq_limited_emoji": "用 QQ 官方機器人時，理訊不成則附於其訊之反應表情 ID。ID 見：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji",
-    "config.comments.bot_qqbot.qq_private_bot": "用 QQ 官方機器人時，為私域機器人否。",
-    "config.comments.bot_qqbot.qq_typing_emoji": "用 QQ 官方機器人時，方理訊則附於其訊之反應表情 ID。ID 見：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji",
-    "config.comments.bot_qqbot.qq_use_markdown": "用 QQ 官方機器人時，以 Markdown 式發訊否；須配置 S3 相容 API 以藏圖。"
+    "config.comments.bot_qqbot_secret.qq_bot_secret": "扣扣官版機器人之應用祕鑰。",
+    "config.comments.bot_qqbot.qq_bot_appid": "扣扣官版機器人之應用標識號。",
+    "config.comments.bot_qqbot.qq_bot_enable_send_url": "用扣扣官版機器人時，許發網址否。",
+    "config.comments.bot_qqbot.qq_bot_openid": "扣扣官版機器人之開放標識號。",
+    "config.comments.bot_qqbot.qq_limited_emoji": "用扣扣官版機器人時，理訊不成則附於其訊之反應表情標識號。標識號見：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji",
+    "config.comments.bot_qqbot.qq_private_bot": "用扣扣官版機器人時，為私域機器人否。",
+    "config.comments.bot_qqbot.qq_typing_emoji": "用扣扣官版機器人時，方理訊則附於其訊之反應表情標識號。標識號見：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji",
+    "config.comments.bot_qqbot.qq_use_markdown": "用扣扣官版機器人時，以標記文式發訊否；須配置簡易存儲服務相容介面以藏圖。"
 }

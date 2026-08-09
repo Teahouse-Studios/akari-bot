@@ -1,5 +1,5 @@
 {
-    "ncmusic.help": "以 ID 取樂。",
+    "ncmusic.help": "以標識號取樂。",
     "ncmusic.help.desc": "網易雲音樂諸器。",
     "ncmusic.help.info": "取樂曲之詳。",
     "ncmusic.help.search": "索網易雲音樂。",
@@ -15,6 +15,6 @@
     "ncmusic.message.search.table.header.artists": "歌者",
     "ncmusic.message.search.table.header.id": "編號",
     "ncmusic.message.search.table.header.name": "曲名",
-    "config.comments.module_ncmusic_secret.ncmusic_api": "網易雲音樂 API 之址，供 ncmusic 模組用。",
-    "config.comments.module_ncmusic.ncmusic_enable_card": "ncmusic 模組啟卡片訊息否；惟 QQ 客戶端有效。"
+    "config.comments.module_ncmusic_secret.ncmusic_api": "網易雲音樂介面之址，供網易雲音樂模組用。",
+    "config.comments.module_ncmusic.ncmusic_enable_card": "網易雲音樂模組啟卡片訊息否；惟扣扣客戶端有效。"
 }

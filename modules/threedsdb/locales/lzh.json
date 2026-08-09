@@ -1,6 +1,6 @@
 {
     "threedsdb.message.no_results": "無所得。",
     "threedsdb.message.limited_results": "所得過繁，宜具其辭以狹所索。",
-    "threedsdb.help.desc": "據 3DSDB 索應用之詳。",
-    "threedsdb.help.command": "以關鍵詞索之，可為應用名或 Title ID。"
+    "threedsdb.help.desc": "據三維掌機資料庫索應用之詳。",
+    "threedsdb.help.command": "以關鍵詞索之，可為應用名或標題標識號。"
 }

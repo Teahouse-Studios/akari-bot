@@ -1,7 +1,7 @@
 {
-    "config.comments.module_wordle.wordle_disable_image": "wordle 模組禁圖否。",
+    "config.comments.module_wordle.wordle_disable_image": "猜詞模組禁圖否。",
     "wordle.help": "啟新局。",
-    "wordle.help.desc": "戲 Wordle。",
+    "wordle.help.desc": "戲猜詞。",
     "wordle.help.option.hard": "用難式。",
     "wordle.help.option.trial": "用挑戰式。",
     "wordle.help.theme": "設用暗色之題否。",

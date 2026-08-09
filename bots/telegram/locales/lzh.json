@@ -1,4 +1,4 @@
 {
-    "config.comments.bot_telegram_secret.telegram_token": "Telegram 機器人之令牌。",
-    "config.comments.bot_telegram.telegram_api_url": "Telegram 自定 API URL。"
+    "config.comments.bot_telegram_secret.telegram_token": "電報機器人之令牌。",
+    "config.comments.bot_telegram.telegram_api_url": "電報自定介面網址。"
 }

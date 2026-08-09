@@ -1,6 +1,6 @@
 {
-    "mcmod.help.desc": "自 MC 百科取 Minecraft Mod 之詳。",
-    "mcmod.help.details": "以 Mod 內容之名取其略與連結；可用物品、方塊、實體之 ID 或確名。",
-    "mcmod.help.mod_name": "以 Mod 名取其略與連結；可用無歧縮名或確名。",
+    "mcmod.help.desc": "自礦藝百科取礦藝模組之詳。",
+    "mcmod.help.details": "以模組內容之名取其略與連結；可用物品、方塊、實體之標識號或確名。",
+    "mcmod.help.mod_name": "以模組名取其略與連結；可用無歧縮名或確名。",
     "mcmod.message.not_found": "無所得。"
 }

@@ -4,6 +4,6 @@
     "mkey.message.error.date.day": "日謬。",
     "mkey.message.error.inquiry_num": "確認碼謬。",
     "mkey.message.error.device": "主機謬。",
-    "mkey.message.error.hal": "Switch 須指主機 ID。",
+    "mkey.message.error.hal": "交換機須指主機標識號。",
     "mkey.message.result": "爾之萬能密碼曰：${result}。"
 }

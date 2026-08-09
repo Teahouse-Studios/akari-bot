@@ -1,7 +1,7 @@
 {
-    "wolframalpha.help": "輸問或式，以索 WolframAlpha。",
-    "wolframalpha.help.ask": "使 WolframAlpha 答問。",
-    "wolframalpha.help.desc": "用 WolframAlpha。",
-    "wolframalpha.message.incomprehensible": "WolframAlpha 不解爾問，試以英語問之。",
-    "config.comments.module_wolframalpha_secret.wolfram_alpha_appid": "WolframAlpha 之 AppID。"
+    "wolframalpha.help": "輸問或式，以索沃爾夫勒姆阿爾法。",
+    "wolframalpha.help.ask": "使沃爾夫勒姆阿爾法答問。",
+    "wolframalpha.help.desc": "用沃爾夫勒姆阿爾法。",
+    "wolframalpha.message.incomprehensible": "沃爾夫勒姆阿爾法不解爾問，試以英語問之。",
+    "config.comments.module_wolframalpha_secret.wolfram_alpha_appid": "沃爾夫勒姆阿爾法之應用標識號。"
 }
