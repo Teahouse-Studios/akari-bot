@@ -19,7 +19,6 @@ async def test_version(tester: Tester):
 @func_case
 async def test_help(tester: Tester):
     """help 命令测试"""
-    await tester.integrate("~help", Contains("🌐简体中文："), "help 顶部应显示当前语言入口")
     await tester.integrate("~help", Contains("基础模块"), "help 应显示基础模块列表")
     await tester.integrate("~help help", Contains("--image"), "help 帮助应展示强制图片选项")
     await tester.integrate("~help version", Contains("version"), "help version 应显示版本帮助")

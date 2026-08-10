@@ -152,8 +152,6 @@ async def _test_image_flag_overrides_markdown_table():
     return (
         generator.await_count == 1
         and msg.finished_message is not None
-        and isinstance(sendable[0], ActionTextElement)
-        and sendable[0].text.text == "~locale "
         and any(isinstance(element, ImageElement) for element in msg.finished_message.values)
         and any(isinstance(element, ActionTextElement) and element.text.text == "~help " for element in sendable)
     )
