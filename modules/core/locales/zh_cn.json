@@ -207,7 +207,7 @@
     "core.message.help.legacy.subscription": "订阅模块：",
     "core.message.help.mdtable": "向右滑动以查看所有模块。",
     "core.message.help.not_found": "此模块可能不存在，请检查输入。",
-    "core.message.help.prompt": "橙色为基础模块，蓝色为扩展模块，绿色的为订阅模块，灰色为未开启模块。\n标为斜体的模块仅能被该场景的管理员使用。",
+    "core.message.help.prompt": "橙色为基础模块，蓝色为扩展模块，绿色为订阅模块，灰色为未开启模块。\n标为斜体的模块仅能被该场景的管理员使用。",
     "core.message.help.regex_count": "${count} 条表达式",
     "core.message.help.regex.detail": "（${msg}）",
     "core.message.help.regex.no_information": "（无描述）",

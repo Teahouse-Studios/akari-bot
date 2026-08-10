@@ -264,11 +264,35 @@ async def change_password(request: Request, response: Response):
         # 2FA 启用时，需要验证 TOTP 码
         if _is_2fa_enabled(password_data):
             totp_code = body.get("totp_code", "")
-            if not totp_code:
-                raise HTTPException(status_code=400, detail="2FA code required")
-            totp = _get_totp(password_data)
-            if totp is None or not totp.verify(totp_code, valid_window=1):
-                raise HTTPException(status_code=400, detail="Invalid 2FA code")
+            recovery_code = body.get("recovery_code", "")
+
+            if recovery_code:
+                # 使用 recovery code 替代 TOTP 通过 2FA
+                if not _verify_recovery_code(password_data, recovery_code):
+                    now = datetime.now(UTC)
+                    login_failed_attempts[ip] = [
+                        t for t in login_failed_attempts[ip] if (now - t).total_seconds() < 600
+                    ]
+                    login_failed_attempts[ip].append(now)
+
+                    if len(login_failed_attempts[ip]) > login_max_attempt:
+                        await MaliciousLoginRecords.create(
+                            ip_address=ip, blocked_until=now + timedelta(seconds=LOGIN_BLOCK_DURATION)
+                        )
+                        login_failed_attempts[ip].clear()
+                        Logger.warning(f"[WebUI] {ip} has been blocked due to excessive login failures.")
+                        raise HTTPException(status_code=429, detail="This IP has been blocked")
+
+                    Logger.warning(f"[WebUI] {ip} login failed: invalid recovery code.")
+                    raise HTTPException(status_code=403, detail="Invalid recovery code")
+                # 持久化已消耗的 recovery code
+                _write_password_data(password_data)
+            else:
+                if not totp_code:
+                    raise HTTPException(status_code=400, detail="2FA code required")
+                totp = _get_totp(password_data)
+                if totp is None or not totp.verify(totp_code, valid_window=1):
+                    raise HTTPException(status_code=400, detail="Invalid 2FA code")
 
         password_data["password"] = ph.hash(new_password)
         password_data["last_updated"] = datetime.now().timestamp()
