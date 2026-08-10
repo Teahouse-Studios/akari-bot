@@ -254,6 +254,7 @@ dependencies = [
     { name = "py-cpuinfo" },
     { name = "pycryptodome" },
     { name = "pyjwt", extra = ["crypto"] },
+    { name = "pyotp" },
     { name = "python-dotenv" },
     { name = "python-multipart" },
     { name = "python-whois" },
@@ -329,6 +330,7 @@ requires-dist = [
     { name = "py-cpuinfo", specifier = ">=9.0.0,<10.0.0" },
     { name = "pycryptodome", specifier = ">=3.18.0,<4.0.0" },
     { name = "pyjwt", extras = ["crypto"], specifier = ">=2.8.0,<3.0.0" },
+    { name = "pyotp", specifier = ">=2.9.0,<3.0.0" },
     { name = "python-dotenv", specifier = ">=1.2.1,<2.0.0" },
     { name = "python-multipart", specifier = ">=0.0.22,<1.0.0" },
     { name = "python-whois", specifier = ">=0.9.0,<1.0.0" },
@@ -3023,6 +3025,15 @@ wheels = [
 [package.optional-dependencies]
 crypto = [
     { name = "cryptography" },
+]
+
+[[package]]
+name = "pyotp"
+version = "2.10.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/2d/c6/c5d96a86fd0bf6fa1bbb5c5c341ff3208638b692727a683c8289068d9a11/pyotp-2.10.0.tar.gz", hash = "sha256:d01e9703443616b03c57c700b5cbffd56a1f929c1b0f8f03131bc78c1fca9d3f", size = 18625, upload-time = "2026-06-14T03:48:49.221Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/65/33/7b83bde70eddaaaaef487751a9c3a5cc0c0be54620ded0e120ebdc401ff9/pyotp-2.10.0-py3-none-any.whl", hash = "sha256:1df2f6a1bcc3bb0716172a5215ddc2f8c7c7fd26a13df9927d52e1746934836c", size = 13768, upload-time = "2026-06-14T03:48:47.831Z" },
 ]
 
 [[package]]
