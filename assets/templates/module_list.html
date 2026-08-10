@@ -83,6 +83,13 @@
             box-shadow: var(--mdui-elevation-level1);
         }
 
+        .subscription {
+            border: 1px solid #66bb6a;
+            background-color: #e8f5e9;
+            color: #1b5e20;
+            box-shadow: var(--mdui-elevation-level1);
+        }
+
         .disabled {
             background-color: rgb(var(--mdui-color-surface-container));
             color: rgb(var(--mdui-color-on-surface));
@@ -124,11 +131,15 @@
         <div class="content-layout">
         <h2>{{ locale.t("core.message.module.list.header") }}</h2>
         <hr>
-        <div class="grid-container">
-            {% for key, value in module_list.items() %}
-            <div class="grid-item{{ ' dev' if value.required_superuser or value.required_base_superuser else '' }}{{ ' disabled' if show_disabled_modules and key not in target_enabled_list and not (value.base or value.required_superuser or value.required_base_superuser) else (' base' if value.base else ' external') }}">
+        {% for title_key, group_class, group_modules in module_groups %}
+        {% if group_modules %}
+        <section class="module-group {{ group_class }}-group">
+            <h3 class="module-group-title">{{ locale.t(title_key) }}</h3>
+            <div class="grid-container">
+            {% for key, value in group_modules.items() %}
+            <div class="grid-item {{ group_class }}{{ ' dev' if value.required_superuser or value.required_base_superuser else '' }}{{ ' disabled' if show_disabled_modules and key not in target_enabled_list and not (value.base or value.required_superuser or value.required_base_superuser) else '' }}">
                 <div class="{% if not (value.required_superuser or value.required_base_superuser) %}{{ 'admin' if value.required_admin else '' }}{% endif %}">
-                    {% set help_=CommandParser(module_list[key], msg=msg, module_name=module_list[key].module_name,
+                    {% set help_=CommandParser(value, msg=msg, module_name=value.module_name,
                                   command_prefixes=msg.session_info.prefixes, is_superuser=is_superuser) %}
                     {% set regex_list=value.regex_list.get(msg.session_info.target_from, show_required_superuser=is_superuser, show_required_base_superuser=is_base_superuser) %}
                     <div class="module-name">{{ value.module_name | e }}</div>
@@ -141,7 +152,10 @@
                 </div>
             </div>
             {%- endfor %}
-        </div>
+            </div>
+        </section>
+        {% endif %}
+        {% endfor %}
         <hr>
             <div class="footer">
                 {{ locale.t('core.message.help.prompt', prefix=msg.session_info.prefixes[0]) }}
