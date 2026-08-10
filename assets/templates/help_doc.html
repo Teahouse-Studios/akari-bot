@@ -53,6 +53,17 @@
             --theme-color-tertiary: #f8f4fc;
             --theme-color-highlight: #d6804a;
         }
+        {% elif module.rss %}
+        body {
+            background-color: white;
+            --theme-color-title: #2d5a27;
+            --theme-color-main: #7dab78;
+            --theme-color-main-2: #96be92;
+            --theme-color-main-3: #cddfc9;
+            --theme-color-secondary: #e8f5e9;
+            --theme-color-tertiary: #f8faf6;
+            --theme-color-highlight: #5a8f55;
+        }
         {% else %}
         body {
             background-color: white;

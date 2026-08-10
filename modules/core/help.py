@@ -302,7 +302,11 @@ def get_help_button_data(msg: Bot.MessageSession) -> list[dict[str, str]]:
 
 
 @hlp.command(
-    "<module> [--legacy] {{I18N:core.help.help.detail}}", options_desc={"--legacy": "{I18N:help.option.legacy}"}
+    "<module> [--legacy] [--image] {{I18N:core.help.help.detail}}",
+    options_desc={
+        "--legacy": "{I18N:help.option.legacy}",
+        "--image": "{I18N:help.option.image}",
+    },
 )
 async def _(msg: Bot.MessageSession, module: str):
     is_base_superuser = msg.session_info.sender_id in Bot.base_superuser_list
@@ -311,7 +315,8 @@ async def _(msg: Bot.MessageSession, module: str):
         target_from=msg.session_info.target_from, client_name=msg.session_info.client_name
     )
     alias = ModulesManager.modules_aliases
-    force_legacy = msg.parsed_msg.get("--legacy", False)
+    force_image = msg.parsed_msg.get("--image", False)
+    force_legacy = msg.parsed_msg.get("--legacy", False) and not force_image
 
     if msg.parsed_msg:
         mdocs = []
@@ -407,7 +412,12 @@ async def _(msg: Bot.MessageSession, module: str):
                 wiki_msg = ""
 
             # 表格版优先于图片版：命令可点击填入，且与模块列表的排法一致
-            if not force_legacy and msg.session_info.support_markdown and msg.session_info.support_action_text:
+            if (
+                not force_image
+                and not force_legacy
+                and msg.session_info.support_markdown
+                and msg.session_info.support_action_text
+            ):
                 table = build_command_table(msg, help_.return_json_help_doc(), regex_rows)
                 if table:
                     detail = []
@@ -627,9 +637,9 @@ async def help_overview(msg: Bot.MessageSession):
         await msg.finish(help_msg, button_data=get_setup_button_data(msg))
 
 
-async def modules_list_help(msg: Bot.MessageSession, legacy):
+async def modules_list_help(msg: Bot.MessageSession, legacy, force_image=False):
     # 与 ~help 同理：表格不可用时优先保留图片，图片生成失败后再降级到文字版
-    use_table = not legacy and msg.session_info.support_markdown_table
+    use_table = not force_image and not legacy and msg.session_info.support_markdown_table
     use_clickable = not use_table and not legacy and msg.session_info.support_action_text
 
     legacy_help = True

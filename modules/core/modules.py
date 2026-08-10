@@ -31,7 +31,13 @@ m = module(
 
 
 @m.command(["reload <module> ...", "load <module> ...", "unload <module> ..."], required_superuser=True)
-@m.command("list [--legacy] {{I18N:core.help.module.list}}", options_desc={"--legacy": "{I18N:help.option.legacy}"})
+@m.command(
+    "list [--legacy] [--image] {{I18N:core.help.module.list}}",
+    options_desc={
+        "--legacy": "{I18N:help.option.legacy}",
+        "--image": "{I18N:help.option.image}",
+    },
+)
 @m.command(
     [
         "enable <module>... {{I18N:core.help.module.enable}}",
@@ -43,10 +49,11 @@ m = module(
 )
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get("list", False):
+        force_image = msg.parsed_msg.get("--image", False)
         legacy = False
         if msg.parsed_msg.get("--legacy", False):
             legacy = True
-        await modules_list_help(msg, legacy)
+        await modules_list_help(msg, legacy, force_image)
     await config_modules(msg)
 
 
