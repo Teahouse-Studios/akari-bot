@@ -186,16 +186,26 @@ def _test_evolve_does_not_leak() -> bool:
 
 
 class _FakeGroupMessage(GroupMessage):
-    """替身群消息，绕过 SDK 的构造流程，仅记录发送时收到的参数。"""
+    """替身群消息，绕过 SDK 的构造流程，仅提供被动回复目标。"""
 
     def __init__(self):
         self.id = "source-message"
         self.group_openid = "fake_group"
         self.message_scene = None
-        self.reply_kwargs: list[dict] = []
 
-    async def reply(self, **kwargs):
-        self.reply_kwargs.append(kwargs)
+
+class _FakeClient:
+    """记录适配器交给 botpy 新高层发送接口的参数。"""
+
+    def __init__(self):
+        self.calls: list[dict] = []
+
+    async def send(self, target, **kwargs):
+        self.calls.append(kwargs)
+        return {"id": "sent-1"}
+
+    async def send_markdown(self, target, content, keyboard=None):
+        self.calls.append({"markdown": {"content": content}, "keyboard": keyboard})
         return {"id": "sent-1"}
 
 
@@ -225,9 +235,13 @@ async def _send_and_capture(support_markdown: bool) -> dict:
         support_action_text=True,
     )
     ctx = _FakeGroupMessage()
+    client = _FakeClient()
     QQBotContextManager.context[session_id] = ctx
     try:
-        with patch.object(qqbot_context, "qq_use_markdown", True):
+        with (
+            patch.object(qqbot_context, "qq_use_markdown", True),
+            patch.object(QQBotContextManager, "client", client),
+        ):
             await QQBotContextManager.send_message(
                 session_info,
                 MessageChain.assign([Plain("hello "), ActionText("~help", show="帮助")]),
@@ -235,7 +249,7 @@ async def _send_and_capture(support_markdown: bool) -> dict:
             )
     finally:
         QQBotContextManager.context.pop(session_id, None)
-    return ctx.reply_kwargs[0] if ctx.reply_kwargs else {}
+    return client.calls[0] if client.calls else {}
 
 
 async def _test_send_path_follows_session() -> bool:

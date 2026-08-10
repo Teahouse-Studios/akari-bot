@@ -13,7 +13,8 @@ import asyncio
 from botpy.message import GroupMessage
 
 from bots.qqbot.context import QQBotContextManager, _TypingState
-from bots.qqbot.info import target_group_prefix
+from bots.qqbot.features import features as qqbot_features
+from bots.qqbot.info import target_c2c_prefix, target_group_prefix
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import ImageElement, PlainElement
 from core.builtins.session.info import SessionInfo
@@ -24,38 +25,41 @@ from core.tester import func_case, Tester
 TEST_DELAY = 0.05
 
 
-class _FakeApi:
-    """替身 API，只提供发送路径上会用到的文件上传接口。"""
+class _FakeClient:
+    """替身 botpy Client，覆盖适配器使用的高层发送接口。"""
 
-    def __init__(self, on_upload=None):
-        self._on_upload = on_upload
+    def __init__(self, fail_times: int = 0):
+        self.fail_times = fail_times
+        self.send_calls = 0
+        self.image_kwargs = []
+        self.typing_targets = []
 
-    async def post_group_file(self, **kwargs):
-        await asyncio.sleep(0.01)
-        if self._on_upload:
-            self._on_upload()
-        return {"file_info": "fake"}
+    async def _send(self):
+        self.send_calls += 1
+        if self.send_calls <= self.fail_times:
+            raise ValueError("send failed")
+        return {"id": f"sent-{self.send_calls}"}
+
+    async def send(self, target, **kwargs):
+        return await self._send()
+
+    async def send_image(self, target, **kwargs):
+        self.image_kwargs.append(kwargs)
+        return await self._send()
+
+    async def send_typing(self, target, duration_seconds=60):
+        self.typing_targets.append(target)
+        return {"id": "typing-1"}
 
 
 class _FakeGroupMessage(GroupMessage):
     """替身群消息，绕过 SDK 的构造流程，仅保留发送路径依赖的属性。"""
 
-    def __init__(self, fail_times: int = 0, on_reply=None):
+    def __init__(self, fail_times: int = 0):
         self.id = "source-message"
         self.group_openid = "fake_group"
         self.message_scene = None
-        self._api = _FakeApi()
-        self._fail_times = fail_times
-        self._on_reply = on_reply
-        self.reply_calls = 0
-
-    async def reply(self, **kwargs):
-        self.reply_calls += 1
-        if self._on_reply:
-            self._on_reply()
-        if self.reply_calls <= self._fail_times:
-            raise ValueError("消息被去重，请检查请求msgseq")
-        return {"id": f"sent-{self.reply_calls}"}
+        self.client = _FakeClient(fail_times)
 
 
 class _ProbingImage(ImageElement):
@@ -64,11 +68,11 @@ class _ProbingImage(ImageElement):
     # 不加类型注解，避免被 attrs 当作字段处理
     observer = None
 
-    async def get_base64(self, mime: bool = False) -> str:
+    async def get(self) -> str:
         await asyncio.sleep(0.01)
         if _ProbingImage.observer:
             _ProbingImage.observer()
-        return "ZmFrZQ=="
+        return self.path
 
 
 def _make_session(session_id: str) -> SessionInfo:
@@ -279,14 +283,54 @@ async def _send_via_context(session: SessionInfo, ctx: _FakeGroupMessage, messag
     state = _TypingState()
     QQBotContextManager.context[sid] = ctx
     QQBotContextManager.typing_states[sid] = state
+    previous_client = QQBotContextManager.client
+    QQBotContextManager.client = ctx.client
     try:
         await QQBotContextManager.send_message(session, message, quote=False, _ignore_retries=True)
         return state, True
     except Exception:
         return state, False
     finally:
+        QQBotContextManager.client = previous_client
         QQBotContextManager.context.pop(sid, None)
         QQBotContextManager.typing_states.pop(sid, None)
+
+
+def _test_typing_feature_enabled() -> bool:
+    """新版 botpy 已覆盖适配器所需输入状态路径，能力应向核心层开放。"""
+    return qqbot_features.support_typing is True
+
+
+async def _test_c2c_uses_native_typing() -> bool:
+    """C2C 会话应调用 botpy 的原生输入状态接口，并带上入站消息 ID。"""
+    session = SessionInfo(
+        target_id=f"{target_c2c_prefix}|friend",
+        sender_id="QQBot|friend",
+        target_from=target_c2c_prefix,
+        client_name="QQBot",
+        session_id="typing-c2c",
+        message_id="source-message",
+    )
+    context = object()
+    client = _FakeClient()
+    state = _TypingState()
+    state.finished.set()
+    previous_client = QQBotContextManager.client
+    QQBotContextManager.client = client
+    QQBotContextManager.context[session.session_id] = context
+    try:
+        await QQBotContextManager._c2c_typing(session, state)
+    finally:
+        QQBotContextManager.client = previous_client
+        QQBotContextManager.context.pop(session.session_id, None)
+    if len(client.typing_targets) != 1:
+        Logger.error(f"C2C typing should call botpy once, got {len(client.typing_targets)}")
+        return False
+    target = client.typing_targets[0]
+    if target.scope != "c2c" or target.target_id != "friend" or target.message_id != "source-message":
+        Logger.error(f"Unexpected C2C typing target: {target}")
+        return False
+    return True
 
 
 async def _test_marked_after_send_succeeds() -> bool:
@@ -344,6 +388,9 @@ async def _test_not_marked_while_converting_image() -> bool:
     if any(observed):
         Logger.error("The bot must not be registered as having spoken while the image is still being converted")
         return False
+    if ctx.client.image_kwargs != [{"local_path": "fake.png", "content": None}]:
+        Logger.error(f"Image upload should use local_path, got {ctx.client.image_kwargs}")
+        return False
     if not state.spoken.is_set():
         Logger.error("A successfully sent message must be registered as the bot having spoken")
         return False
@@ -353,6 +400,8 @@ async def _test_not_marked_while_converting_image() -> bool:
 @func_case
 async def test_qqbot_typing(tester: Tester):
     """bots.qqbot.context: 群聊输入提示的撤回时机测试"""
+    await tester.test(_test_typing_feature_enabled, "输入状态能力启用测试")
+    await tester.test(_test_c2c_uses_native_typing, "C2C 原生输入状态测试")
     await tester.test(_test_prompt_recalled_after_bot_message, "机器人发言后撤回输入提示测试")
     await tester.test(_test_prompt_recalled_when_context_dropped, "上下文销毁后撤回输入提示测试")
     await tester.test(_test_prompt_recalled_on_repeated_start, "重复开启输入状态撤回测试")

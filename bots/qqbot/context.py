@@ -1,17 +1,15 @@
 import asyncio
 import html
+from collections.abc import Mapping
 from typing import Union
 from urllib.parse import quote
 
 import orjson
-from botpy.api import BotAPI
-from botpy.errors import ServerError
-from botpy.http import Route
 from botpy.interaction import Interaction
 from botpy.message import BaseMessage, C2CMessage, DirectMessage, GroupMessage, Message
-from botpy.types.message import Media, Reference, MarkdownPayload, KeyboardPayload
+from botpy.protocol import MediaSendResult, ReplyTarget
+from botpy.types.message import Reference, KeyboardPayload
 from botpy.types.inline import Keyboard, Button, KeyboardRow, RenderData, Action, Permission
-from tenacity import retry, retry_if_exception, wait_fixed, stop_after_attempt
 
 from bots.qqbot.features import features as qqbot_features
 from bots.qqbot.info import (
@@ -37,25 +35,6 @@ from core.utils.table import escape_table_cell, resolve_table_columns
 qq_typing_emoji = str(QQBotConfig.qq_typing_emoji)
 qq_limited_emoji = str(QQBotConfig.qq_limited_emoji)
 qq_use_markdown = QQBotConfig.qq_use_markdown
-
-global_seq = 1
-
-# 平台判定同一 msg_seq 重复投递时的报错文案
-MSG_DEDUP_ERROR = "消息被去重，请检查请求msgseq"
-
-
-def is_msg_dedup_error(e: BaseException) -> bool:
-    """
-    判断异常是否为平台的消息去重报错。
-
-    仅此一种错误值得重试：每次发送前 ``global_seq`` 都会自增，换一个序号重发即可成功。
-    其余 ServerError（如参数非法、频率限制、权限不足）重试同样会失败，
-    应当原样抛出交由上层处理，既不该重试，也不该被静默吞掉。
-
-    :param e: 待判断的异常。
-    """
-    return isinstance(e, ServerError) and e.msgs == MSG_DEDUP_ERROR
-
 
 # 平台对指令操作标签内文本的字符数上限，按 urlencode 前的原文计算
 ACTION_TEXT_MAX_LENGTH = 100
@@ -138,43 +117,33 @@ def nodes_to_table(session_info: SessionInfo, nodes: MessageNodes) -> str:
 permission_cache = {}
 
 
-# 额外添加平台接口支持但 SDK 不支持的方法
-# https://github.com/tencent-connect/botpy/pull/215
-class ModdedBotAPI(BotAPI):
-    async def recall_group_message(self, group_openid: str, message_id: str) -> str:
-        route = Route(
-            "DELETE",
-            "/v2/groups/{group_openid}/messages/{message_id}",
-            group_openid=group_openid,
-            message_id=message_id,
-        )
-        return await self._http.request(route)
+def _get_client():
+    if QQBotContextManager.client is None:
+        raise RuntimeError("QQBot client is not initialized")
+    return QQBotContextManager.client
 
-    async def post_group_file(
-        self,
-        group_openid: str,
-        file_type: int,
-        url: str | None = None,
-        srv_send_msg: bool = False,
-        file_data: str | None = None,
-    ) -> Media:
-        payload = locals()
-        payload.pop("self", None)
-        route = Route("POST", "/v2/groups/{group_openid}/files", group_openid=group_openid)
-        return await self._http.request(route, json=payload)
 
-    async def post_c2c_file(
-        self,
-        openid: str,
-        file_type: int,
-        url: str | None = None,
-        srv_send_msg: bool = False,
-        file_data: str | None = None,
-    ) -> Media:
-        payload = locals()
-        payload.pop("self", None)
-        route = Route("POST", "/v2/users/{openid}/files", openid=openid)
-        return await self._http.request(route, json=payload)
+def _reply_target(session_info: SessionInfo, context: BaseMessage | Interaction | None = None) -> ReplyTarget:
+    scope = {
+        target_c2c_prefix: "c2c",
+        target_group_prefix: "group",
+        target_guild_prefix: "channel",
+        target_direct_prefix: "dm",
+    }.get(session_info.target_from)
+    if scope is None:
+        raise ValueError(f"Unsupported QQBot target: {session_info.target_from}")
+    message_id = session_info.message_id if context is not None and not isinstance(context, Interaction) else None
+    return ReplyTarget(scope=scope, target_id=session_info.get_common_target_id(), message_id=message_id)
+
+
+def _message_ids(result) -> list[str]:
+    if isinstance(result, MediaSendResult):
+        return _message_ids(result.message)
+    if isinstance(result, list):
+        return [message_id for item in result for message_id in _message_ids(item)]
+    if isinstance(result, Mapping) and result.get("id"):
+        return [str(result["id"])]
+    return []
 
 
 class _TypingState:
@@ -192,9 +161,10 @@ class _TypingState:
 
 
 class QQBotContextManager(ContextManager):
-    context: dict[str, Union[BaseMessage, Message]] = {}
+    context: dict[str, Union[BaseMessage, Interaction]] = {}
     features: Features = qqbot_features
     typing_states: dict[str, _TypingState] = {}
+    client = None
 
     # 机器人沉默满此秒数后，才在群聊中补发输入提示
     TYPING_PROMPT_DELAY = 5
@@ -203,9 +173,6 @@ class QQBotContextManager(ContextManager):
 
     @classmethod
     def add_context(cls, session_info: SessionInfo, context: BaseMessage):
-        from bots.qqbot.bot import client
-
-        context._api = ModdedBotAPI(http=client.http)
         cls.context[session_info.session_id] = context
 
     @classmethod
@@ -262,28 +229,17 @@ class QQBotContextManager(ContextManager):
         _ignore_retries: bool = False,
         _typing_prompt: bool = False,
     ) -> list[str]:
-        # if session_info.session_id not in cls.context:
-        #     raise ValueError("Session not found in context")
-        ctx: BaseMessage | None = cls.context.get(session_info.session_id)
-        # 输入提示本身不计作机器人发言，否则它一发出就会立即满足自己的撤回条件
+        ctx: BaseMessage | Interaction | None = cls.context.get(session_info.session_id)
         msg_ids = []
-        global global_seq
+        client = _get_client()
+        target = _reply_target(session_info, ctx)
 
         force_markdown = session_info.tmp.get("force_markdown") == "true"
         if isinstance(message, MessageNodes):
             message = MessageChain.assign(PlainElement.assign(nodes_to_table(session_info, message), disable_joke=True))
             force_markdown = True
 
-        retry_attempt = stop_after_attempt(0)
-        retry_wait = wait_fixed(0)
-        if not _ignore_retries:
-            retry_attempt = stop_after_attempt(3)
-            retry_wait = wait_fixed(3)
-
-        @retry(stop=retry_attempt, wait=retry_wait, retry=retry_if_exception(is_msg_dedup_error), reraise=True)
         async def send_msg():
-            global global_seq
-
             plains: list[PlainElement] = []
             images: list[ImageElement] = []
 
@@ -298,311 +254,67 @@ class QQBotContextManager(ContextManager):
                 elif isinstance(x, MentionElement):
                     if x.client == client_name and session_info.target_from == target_guild_prefix:
                         plains.append(PlainElement(text=f"<@{x.id}>"))
-            if len(plains + images) != 0:
-                msg = "\n".join([x.text for x in plains]).strip()
-                image_1 = None
-                send_img = None
+            if not plains and not images:
+                return
 
-                if ctx and not isinstance(ctx, Interaction):
-                    if isinstance(ctx, Message):
-                        if images:
-                            image_1 = images[0]
-                            images.pop(0)
-                        send_img = await image_1.get() if image_1 else None
-                        msg_quote = (
-                            Reference(
-                                message_id=ctx.id,
-                                ignore_get_message_error=False,
-                            )
-                            if quote and not send_img
-                            else None
-                        )
-                        msg = url_filter(msg)
-                        if not msg_quote and quote:
-                            msg = f"<@{ctx.author.id}> \n" + msg
-                        msg = "" if not msg else msg
-                        send = await ctx.reply(content=msg, file_image=send_img, message_reference=msg_quote)
-                        if not _typing_prompt:
-                            cls._on_message_sent(session_info)
-                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
-                        if image_1:
-                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
-                        if send:
-                            msg_ids.append(send["id"])
-                        if images:
-                            for img in images:
-                                send_img = await img.get()
-                                send = await ctx.reply(file_image=send_img)
-                                Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
-                                if send:
-                                    msg_ids.append(send["id"])
-                    elif isinstance(ctx, DirectMessage):
-                        if images:
-                            image_1 = images[0]
-                            images.pop(0)
-                        send_img = await image_1.get() if image_1 else None
-                        msg_quote = (
-                            Reference(
-                                message_id=ctx.id,
-                                ignore_get_message_error=False,
-                            )
-                            if quote and not send_img
-                            else None
-                        )
-                        msg = url_filter(msg)
-                        msg = "" if not msg else msg
-                        send = await ctx.reply(content=msg, file_image=send_img, message_reference=msg_quote)
-                        if not _typing_prompt:
-                            cls._on_message_sent(session_info)
-                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
-                        if image_1:
-                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
-                        if send:
-                            msg_ids.append(send["id"])
-                        if images:
-                            for img in images:
-                                send_img = await img.get()
-                                send = await ctx.reply(file_image=send_img)
-                                Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
-                                if send:
-                                    msg_ids.append(send["id"])
-                    elif isinstance(ctx, GroupMessage):
-                        refid = None
-                        if ctx is not None and isinstance(ctx, GroupMessage):
-                            if ctx.message_scene is not None:
-                                r = ctx.message_scene.get("ext")
-                                if r:
-                                    if r[0].startswith("msg_idx=REFIDX"):
-                                        refid = r[0].replace("msg_idx=", "")
-                        msg_quote = (
-                            Reference(
-                                message_id=refid,
-                                ignore_get_message_error=False,
-                            )
-                            if quote and refid is not None and not send_img
-                            else None
-                        )
-                        if msg and ctx.id and session_info.tmp.get("message_type") == "group_at":
-                            msg = "\n" + msg
-                        msg = "" if not msg else msg
-                        if images:
-                            image_1 = images[0]
-                            images.pop(0)
-                            send_img = await ctx._api.post_group_file(
-                                group_openid=ctx.group_openid,
-                                file_type=1,
-                                file_data=await image_1.get_base64(),
-                            )
-                        global_seq += 1
-                        send = await ctx.reply(
-                            content=msg,
-                            msg_type=7 if send_img else 0,
-                            media=send_img,
-                            msg_seq=global_seq,
-                            message_reference=msg_quote,
-                        )
-                        if not _typing_prompt:
-                            cls._on_message_sent(session_info)
-                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
-                        if image_1:
-                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
-                        if send:
-                            msg_ids.append(send["id"])
+            msg = "\n".join(x.text for x in plains).strip()
+            if session_info.target_from in (target_guild_prefix, target_direct_prefix):
+                msg = url_filter(msg)
+            if msg and session_info.tmp.get("message_type") == "group_at":
+                msg = "\n" + msg
 
-                        if images:
-                            for img in images:
-                                send_img = await ctx._api.post_group_file(
-                                    group_openid=ctx.group_openid,
-                                    file_type=1,
-                                    file_data=await img.get_base64(),
-                                )
-                                global_seq += 1
-                                send = await ctx.reply(msg_type=7, media=send_img, msg_seq=global_seq)
-                                Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
-                                if send:
-                                    msg_ids.append(send["id"])
-
-                    elif isinstance(ctx, C2CMessage):
-                        if images:
-                            image_1 = images[0]
-                            images.pop(0)
-                            send_img = await ctx._api.post_c2c_file(
-                                openid=ctx.author.user_openid,
-                                file_type=1,
-                                file_data=await image_1.get_base64(),
-                            )
-                        msg = "" if not msg else msg
-                        global_seq += 1
-                        send = await ctx.reply(
-                            content=msg,
-                            msg_type=7 if send_img else 0,
-                            media=send_img,
-                            msg_seq=global_seq,
+            message_reference = None
+            if quote and not images:
+                if isinstance(ctx, (Message, DirectMessage)):
+                    message_reference = Reference(message_id=ctx.id, ignore_get_message_error=False)
+                elif isinstance(ctx, GroupMessage) and ctx.message_scene:
+                    ext = ctx.message_scene.get("ext") or []
+                    if ext and ext[0].startswith("msg_idx=REFIDX"):
+                        message_reference = Reference(
+                            message_id=ext[0].replace("msg_idx=", ""),
+                            ignore_get_message_error=False,
                         )
-                        if not _typing_prompt:
-                            cls._on_message_sent(session_info)
-                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
-                        if image_1:
-                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
-                        if send:
-                            msg_ids.append(send["id"])
 
-                        if images:
-                            for img in images:
-                                send_img = await ctx._api.post_c2c_file(
-                                    openid=ctx.author.user_openid,
-                                    file_type=1,
-                                    file_data=await img.get_base64(),
-                                )
-                                global_seq += 1
-                                send = await ctx.reply(msg_type=7, media=send_img, msg_seq=global_seq)
-                                Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
-                                if send:
-                                    msg_ids.append(send["id"])
+            if quote and images and isinstance(ctx, Message):
+                msg = f"<@{ctx.author.id}> \n{msg}"
+
+            async def record(result, image: ImageElement | None = None):
+                msg_ids.extend(_message_ids(result))
+                if not _typing_prompt:
+                    cls._on_message_sent(session_info)
+                if image:
+                    Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image)}")
+
+            if images:
+                image = images.pop(0)
+                image_path = await image.get()
+                if target.scope in ("group", "c2c"):
+                    result = await client.send_image(target, local_path=image_path, content=msg or None)
                 else:
-                    from bots.qqbot.bot import client
+                    result = await client.send(
+                        target,
+                        content=msg or None,
+                        message_reference=message_reference,
+                        extra={"file_image": image_path},
+                    )
+                await record(result, image)
+            else:
+                result = await client.send(target, content=msg, message_reference=message_reference)
+                await record(result)
 
-                    client.api = ModdedBotAPI(http=client.http)
+            Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
+            for image in images:
+                image_path = await image.get()
+                if target.scope in ("group", "c2c"):
+                    result = await client.send_image(target, local_path=image_path)
+                else:
+                    result = await client.send(target, extra={"file_image": image_path})
+                await record(result, image)
 
-                    if session_info.target_from == target_guild_prefix:
-                        if images:
-                            image_1 = images[0]
-                            images.pop(0)
-                        send_img = await image_1.get() if image_1 else None
-                        msg = url_filter(msg)
-                        msg = "" if not msg else msg
-                        send = await client.api.post_message(
-                            channel_id=session_info.get_common_target_id(),
-                            content=msg,
-                            file_image=send_img,
-                        )
-                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
-                        if image_1:
-                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
-                        if send:
-                            msg_ids.append(send["id"])
-                        if images:
-                            for img in images:
-                                send_img = await img.get()
-                                send = await client.api.post_message(
-                                    channel_id=session_info.get_common_target_id(), file_image=send_img
-                                )
-                                Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
-                                if send:
-                                    msg_ids.append(send["id"])
-                    elif session_info.target_from == target_direct_prefix:
-                        if images:
-                            image_1 = images[0]
-                            images.pop(0)
-                        send_img = await image_1.get() if image_1 else None
-                        msg = url_filter(msg)
-                        msg = "" if not msg else msg
-                        send = await client.api.post_dms(
-                            guild_id=session_info.get_common_target_id(), content=msg, file_image=send_img
-                        )
-                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
-                        if image_1:
-                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
-                        if send:
-                            msg_ids.append(send["id"])
-                        if images:
-                            for img in images:
-                                send_img = await img.get()
-                                send = await client.api.post_dms(
-                                    guild_id=session_info.get_common_target_id(), file_image=send_img
-                                )
-                                Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
-                                if send:
-                                    msg_ids.append(send["id"])
-                    elif session_info.target_from == target_group_prefix:
-                        msg = "" if not msg else msg
-                        if images:
-                            image_1 = images[0]
-                            images.pop(0)
-                            send_img = await client.api.post_group_file(
-                                group_openid=session_info.get_common_target_id(),
-                                file_type=1,
-                                file_data=await image_1.get_base64(),
-                            )
-                        global_seq += 1
-                        send = await client.api.post_group_message(
-                            group_openid=session_info.get_common_target_id(),
-                            content=msg,
-                            msg_type=7 if send_img else 0,
-                            media=send_img,
-                            msg_seq=global_seq,
-                        )
-                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
-                        if image_1:
-                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
-                        if send:
-                            msg_ids.append(send["id"])
-
-                        if images:
-                            for img in images:
-                                send_img = await client.api.post_group_file(
-                                    group_openid=session_info.get_common_target_id(),
-                                    file_type=1,
-                                    file_data=await img.get_base64(),
-                                )
-                                global_seq += 1
-                                send = await client.api.post_group_message(
-                                    group_openid=session_info.get_common_target_id(),
-                                    msg_type=7,
-                                    media=send_img,
-                                    msg_seq=global_seq,
-                                )
-                                Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
-                                if send:
-                                    msg_ids.append(send["id"])
-
-                    elif session_info.target_from == target_c2c_prefix:
-                        if images:
-                            image_1 = images[0]
-                            images.pop(0)
-                            send_img = await client.api.post_c2c_file(
-                                openid=session_info.get_common_target_id(),
-                                file_type=1,
-                                file_data=await image_1.get_base64(),
-                            )
-                        msg = "" if not msg else msg
-                        global_seq += 1
-                        send = await client.api.post_c2c_message(
-                            openid=session_info.get_common_target_id(),
-                            content=msg,
-                            msg_type=7 if send_img else 0,
-                            media=send_img,
-                            msg_seq=global_seq,
-                        )
-                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
-                        if image_1:
-                            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}")
-                        if send:
-                            msg_ids.append(send["id"])
-                        if images:
-                            for img in images:
-                                send_img = await client.api.post_c2c_file(
-                                    openid=session_info.get_common_target_id(),
-                                    file_type=1,
-                                    file_data=await img.get_base64(),
-                                )
-                                global_seq += 1
-                                send = await client.api.post_c2c_message(
-                                    openid=session_info.get_common_target_id(),
-                                    msg_type=7,
-                                    media=send_img,
-                                    msg_seq=global_seq,
-                                )
-                                Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}")
-                                if send:
-                                    msg_ids.append(send["id"])
-
-        @retry(stop=retry_attempt, wait=retry_wait, retry=retry_if_exception(is_msg_dedup_error), reraise=True)
         async def send_msg_markdown():
-            global global_seq
             texts = []
 
-            if quote and isinstance(ctx, (Message, GroupMessage)):
+            if quote and ctx and session_info.target_from in (target_guild_prefix, target_group_prefix):
                 texts.append(f'<qqbot-at-user id="{session_info.get_common_sender_id()}" />')
             keyboard = None
             if session_info.tmp.get("wait_type") == "wait_confirm" and session_info.tmp.get("wait_active") == "yes":
@@ -616,7 +328,7 @@ class QQBotContextManager(ContextManager):
                     action=Action(
                         type=1,
                         permission=Permission(
-                            type=0 if not isinstance(ctx, C2CMessage) else 2,
+                            type=2 if target.scope == "c2c" else 0,
                             specify_user_ids=[session_info.get_common_sender_id()],
                             specify_role_ids=["1"],
                         ),
@@ -635,7 +347,7 @@ class QQBotContextManager(ContextManager):
                     action=Action(
                         type=1,
                         permission=Permission(
-                            type=0 if not isinstance(ctx, C2CMessage) else 2,
+                            type=2 if target.scope == "c2c" else 0,
                             specify_user_ids=[session_info.get_common_sender_id()],
                             specify_role_ids=["1"],
                         ),
@@ -671,7 +383,7 @@ class QQBotContextManager(ContextManager):
                             action=Action(
                                 type=1,
                                 permission=Permission(
-                                    type=0 if not isinstance(ctx, C2CMessage) else 2,
+                                    type=2 if target.scope == "c2c" else 0,
                                     specify_user_ids=[session_info.get_common_sender_id()],
                                     specify_role_ids=["1"],
                                 ),
@@ -745,75 +457,11 @@ class QQBotContextManager(ContextManager):
                     inline_pending = True
             if len(texts) != 0:
                 msg = "\n".join(texts)
-                md = MarkdownPayload(content=msg)
-
-                if ctx and not isinstance(ctx, Interaction):
-                    if isinstance(ctx, (Message, DirectMessage, GroupMessage, C2CMessage)):
-                        global_seq += 1
-                        if isinstance(ctx, (GroupMessage, C2CMessage)):
-                            send = await ctx.reply(
-                                markdown=md,
-                                msg_type=2,
-                                msg_seq=global_seq,
-                                keyboard=keyboard,
-                            )
-                        else:
-                            send = await ctx.reply(
-                                markdown=md,
-                                keyboard=keyboard,
-                            )
-                        if not _typing_prompt:
-                            cls._on_message_sent(session_info)
-                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
-                        if send:
-                            msg_ids.append(send["id"])
-
-                else:
-                    from bots.qqbot.bot import client
-
-                    client.api = ModdedBotAPI(http=client.http)
-
-                    if session_info.target_from == target_guild_prefix:
-                        send = await client.api.post_message(
-                            channel_id=session_info.get_common_target_id(),
-                            markdown=md,
-                        )
-                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
-                        if send:
-                            msg_ids.append(send["id"])
-
-                    elif session_info.target_from == target_direct_prefix:
-                        send = await client.api.post_dms(
-                            guild_id=session_info.get_common_target_id(),
-                            markdown=md,
-                        )
-                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
-                        if send:
-                            msg_ids.append(send["id"])
-
-                    elif session_info.target_from == target_group_prefix:
-                        global_seq += 1
-                        send = await client.api.post_group_message(
-                            group_openid=session_info.get_common_target_id(),
-                            markdown=md,
-                            msg_type=2,
-                            msg_seq=global_seq,
-                        )
-                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
-                        if send:
-                            msg_ids.append(send["id"])
-
-                    elif session_info.target_from == target_c2c_prefix:
-                        global_seq += 1
-                        send = await client.api.post_c2c_message(
-                            openid=session_info.get_common_target_id(),
-                            markdown=md,
-                            msg_type=2,
-                            msg_seq=global_seq,
-                        )
-                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
-                        if send:
-                            msg_ids.append(send["id"])
+                result = await client.send_markdown(target, msg, keyboard=keyboard)
+                msg_ids.extend(_message_ids(result))
+                if not _typing_prompt:
+                    cls._on_message_sent(session_info)
+                Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
 
         # 会话的 support_markdown 由 resolve_features() 按用户偏好置定，用户关闭 markdown 后
         # 走纯文本路径；全局配置关闭时同样如此。
@@ -833,9 +481,7 @@ class QQBotContextManager(ContextManager):
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
     ) -> list[str]:
-        from bots.qqbot.bot import client
-
-        client.api = ModdedBotAPI(http=client.http)
+        client = _get_client()
         uid = user_id.split("|")[-1]
 
         try:
@@ -874,30 +520,16 @@ class QQBotContextManager(ContextManager):
         if not isinstance(message_id, list):
             raise TypeError("Message ID must be a list or str")
 
-        # if session_info.session_id not in cls.context:
-        #     raise ValueError("Session not found in context")
-
-        from bots.qqbot.bot import client
-
-        client.api = ModdedBotAPI(http=client.http)
-        if session_info.target_from == target_guild_prefix:
-            for msg_id in message_id:
-                try:
-                    await client.api.recall_message(
-                        channel_id=session_info.get_common_target_id(), message_id=msg_id, hidetip=True
-                    )
-                    Logger.info(f"Deleted message {msg_id} in session {session_info.session_id}")
-                except Exception:
-                    Logger.exception(f"Failed to delete message {msg_id} in session {session_info.session_id}: ")
-        elif session_info.target_from == target_group_prefix:
-            for msg_id in message_id:
-                try:
-                    await client.api.recall_group_message(
-                        group_openid=session_info.get_common_target_id(), message_id=msg_id
-                    )
-                    Logger.info(f"Deleted message {msg_id} in session {session_info.session_id}")
-                except Exception:
-                    Logger.exception(f"Failed to delete message {msg_id} in session {session_info.session_id}: ")
+        target = _reply_target(session_info)
+        if target.scope == "dm":
+            return
+        client = _get_client()
+        for msg_id in message_id:
+            try:
+                await client.recall_message(target, msg_id, hidetip=target.scope == "channel")
+                Logger.info(f"Deleted message {msg_id} in session {session_info.session_id}")
+            except Exception:
+                Logger.exception(f"Failed to delete message {msg_id} in session {session_info.session_id}: ")
 
     @classmethod
     async def add_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
@@ -911,8 +543,7 @@ class QQBotContextManager(ContextManager):
 
         if session_info.target_from == target_guild_prefix:
             emoji_type = 1 if int(qq_typing_emoji) < 9000 else 2
-
-            from bots.qqbot.bot import client
+            client = _get_client()
 
             try:
                 await client.api.put_reaction(
@@ -939,8 +570,7 @@ class QQBotContextManager(ContextManager):
 
         if session_info.target_from == target_guild_prefix:
             emoji_type = 1 if int(qq_typing_emoji) < 9000 else 2
-
-            from bots.qqbot.bot import client
+            client = _get_client()
 
             try:
                 await client.api.delete_reaction(
@@ -996,8 +626,7 @@ class QQBotContextManager(ContextManager):
         :param session_info: 目标会话。
         :param state: 本轮输入状态的标志。
         """
-        from bots.qqbot.bot import client
-
+        client = _get_client()
         emoji_type = 1 if int(qq_typing_emoji) < 9000 else 2
         try:
             await client.api.put_reaction(
@@ -1008,6 +637,20 @@ class QQBotContextManager(ContextManager):
             )
         except Exception:
             Logger.exception(f"Failed to add typing reaction in session {session_info.session_id}: ")
+        await cls._wait_typing_over(state, cls.TYPING_PROMPT_MAX_LIFETIME)
+
+    @classmethod
+    async def _c2c_typing(cls, session_info: SessionInfo, state: _TypingState) -> None:
+        """好友消息使用 botpy 提供的原生输入状态通知。"""
+        client = _get_client()
+        context = cls.context.get(session_info.session_id)
+        try:
+            await client.send_typing(
+                _reply_target(session_info, context),
+                duration_seconds=cls.TYPING_PROMPT_MAX_LIFETIME,
+            )
+        except Exception:
+            Logger.exception(f"Failed to send C2C typing state in session {session_info.session_id}: ")
         await cls._wait_typing_over(state, cls.TYPING_PROMPT_MAX_LIFETIME)
 
     @classmethod
@@ -1057,6 +700,8 @@ class QQBotContextManager(ContextManager):
                 await cls._guild_typing(session_info, state)
             elif session_info.target_from == target_group_prefix:
                 await cls._group_typing(session_info, state)
+            elif session_info.target_from == target_c2c_prefix:
+                await cls._c2c_typing(session_info, state)
             else:
                 await cls._wait_typing_over(state, cls.TYPING_PROMPT_MAX_LIFETIME)
         finally:
@@ -1097,8 +742,7 @@ class QQBotContextManager(ContextManager):
 
         if session_info.target_from == target_guild_prefix:
             emoji_type = 1 if int(qq_limited_emoji) < 9000 else 2
-
-            from bots.qqbot.bot import client
+            client = _get_client()
 
             await client.api.put_reaction(
                 channel_id=session_info.get_common_target_id(),

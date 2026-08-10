@@ -172,16 +172,26 @@ def _test_pipes_are_escaped() -> bool:
 
 
 class _FakeGroupMessage(GroupMessage):
-    """替身群消息，绕过 SDK 的构造流程，仅记录发送时收到的参数。"""
+    """替身群消息，绕过 SDK 的构造流程，仅提供被动回复目标。"""
 
     def __init__(self):
         self.id = "source-message"
         self.group_openid = "fake_group"
         self.message_scene = None
-        self.reply_kwargs: list[dict] = []
 
-    async def reply(self, **kwargs):
-        self.reply_kwargs.append(kwargs)
+
+class _FakeClient:
+    """记录适配器交给 botpy 新高层发送接口的参数。"""
+
+    def __init__(self):
+        self.calls: list[dict] = []
+
+    async def send(self, target, **kwargs):
+        self.calls.append(kwargs)
+        return {"id": "sent-1"}
+
+    async def send_markdown(self, target, content, keyboard=None):
+        self.calls.append({"markdown": {"content": content}, "keyboard": keyboard})
         return {"id": "sent-1"}
 
 
@@ -195,17 +205,21 @@ async def _test_nodes_force_markdown() -> bool:
     session_info = _make_session()
     session_info.session_id = session_id
     ctx = _FakeGroupMessage()
+    client = _FakeClient()
     QQBotContextManager.context[session_id] = ctx
     try:
-        with patch.object(qqbot_context, "qq_use_markdown", True):
+        with (
+            patch.object(qqbot_context, "qq_use_markdown", True),
+            patch.object(QQBotContextManager, "client", client),
+        ):
             await QQBotContextManager.send_message(session_info, _make_nodes(3), quote=False)
     finally:
         QQBotContextManager.context.pop(session_id, None)
 
-    if not ctx.reply_kwargs:
+    if not client.calls:
         Logger.error("Sending message nodes should reach the platform")
         return False
-    sent = ctx.reply_kwargs[0]
+    sent = client.calls[0]
     if "markdown" not in sent:
         Logger.error(f"A node table must be sent as markdown, got {sorted(sent)}")
         return False
@@ -225,19 +239,23 @@ async def _test_force_markdown_flag_from_module() -> bool:
         session_info.session_id = session_id
         session_info.tmp = {"force_markdown": "true" if declared else ""}
         ctx = _FakeGroupMessage()
+        client = _FakeClient()
         QQBotContextManager.context[session_id] = ctx
         try:
-            with patch.object(qqbot_context, "qq_use_markdown", True):
+            with (
+                patch.object(qqbot_context, "qq_use_markdown", True),
+                patch.object(QQBotContextManager, "client", client),
+            ):
                 await QQBotContextManager.send_message(session_info, MessageChain.assign(Plain(table)), quote=False)
         finally:
             QQBotContextManager.context.pop(session_id, None)
-        if not ctx.reply_kwargs:
+        if not client.calls:
             Logger.error(f"Sending should reach the platform (declared={declared})")
             return False
-        sent_markdown = "markdown" in ctx.reply_kwargs[0]
+        sent_markdown = "markdown" in client.calls[0]
         if sent_markdown is not expect_markdown:
             Logger.error(
-                f"force_markdown={declared} should send as markdown={expect_markdown}, got {sorted(ctx.reply_kwargs[0])}"
+                f"force_markdown={declared} should send as markdown={expect_markdown}, got {sorted(client.calls[0])}"
             )
             return False
     return True
