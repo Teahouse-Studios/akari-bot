@@ -433,10 +433,11 @@ async def reset_recovery_codes(request: Request):
 
     body = await request.json()
     password = body.get("password", "")
-    code = body.get("code", "")
+    totp_code = body.get("totp_code", "")
+    recovery_code = body.get("recovery_code", "")
 
-    if not password or not code:
-        raise HTTPException(status_code=400, detail="Password and TOTP code are required")
+    if not password or not (totp_code and recovery_code):
+        raise HTTPException(status_code=400, detail="Password is required, and provide TOTP code or a recovery code")
 
     # 验证密码
     try:
@@ -445,10 +446,15 @@ async def reset_recovery_codes(request: Request):
         raise HTTPException(status_code=401, detail="Invalid password")
 
     # 验证 TOTP
-    totp = _get_totp(password_data)
-    if totp is None or not totp.verify(code, valid_window=1):
-        Logger.warning(f"[WebUI] {ip} recovery codes reset failed: invalid TOTP code.")
-        raise HTTPException(status_code=400, detail="Invalid TOTP code")
+    if recovery_code:
+        if not _verify_recovery_code(password_data, recovery_code):
+            Logger.warning(f"[WebUI] {ip} ecovery codes reset failed: invalid recovery code.")
+            raise HTTPException(status_code=400, detail="Invalid recovery code")
+    else:
+        totp = _get_totp(password_data)
+        if totp is None or not totp.verify(totp_code, valid_window=1):
+            Logger.warning(f"[WebUI] {ip} recovery codes reset failed: invalid TOTP code.")
+            raise HTTPException(status_code=400, detail="Invalid TOTP code")
 
     # 生成新的 recovery codes
     recovery_codes = _generate_recovery_codes()
@@ -473,26 +479,14 @@ async def disable_2fa(request: Request):
     if not _is_2fa_enabled(password_data):
         raise HTTPException(status_code=400, detail="2FA is not enabled")
 
-    recovery_code = body.get("recovery_code", "")
-
-    # 方式2: 使用 recovery code 直接禁用 2FA
-    if recovery_code:
-        if not _verify_recovery_code(password_data, recovery_code):
-            Logger.warning(f"[WebUI] {ip} 2FA disable failed: invalid recovery code.")
-            raise HTTPException(status_code=400, detail="Invalid recovery code")
-        password_data.pop("totp_secret", None)
-        password_data.pop("totp_enabled", None)
-        _write_password_data(password_data)
-        Logger.info(f"[WebUI] {ip} disabled 2FA via recovery code.")
-        return {"message": "2FA disabled successfully"}
-
     # 方式1: 密码 + TOTP 码
     verify_jwt(request)
     password = body.get("password", "")
-    code = body.get("code", "")
+    totp_code = body.get("totp_code", "")
+    recovery_code = body.get("recovery_code", "")
 
-    if not password or not code:
-        raise HTTPException(status_code=400, detail="Password and TOTP code are required, or provide a recovery code")
+    if not password or not (totp_code and recovery_code):
+        raise HTTPException(status_code=400, detail="Password is required, and provide TOTP code or a recovery code")
 
     # 验证密码
     try:
@@ -501,10 +495,15 @@ async def disable_2fa(request: Request):
         raise HTTPException(status_code=401, detail="Invalid password")
 
     # 验证 TOTP
-    totp = _get_totp(password_data)
-    if totp is None or not totp.verify(code, valid_window=1):
-        Logger.warning(f"[WebUI] {ip} 2FA disable failed: invalid TOTP code.")
-        raise HTTPException(status_code=400, detail="Invalid TOTP code")
+    if recovery_code:
+        if not _verify_recovery_code(password_data, recovery_code):
+            Logger.warning(f"[WebUI] {ip} 2FA disable failed: invalid recovery code.")
+            raise HTTPException(status_code=400, detail="Invalid recovery code")
+    else:
+        totp = _get_totp(password_data)
+        if totp is None or not totp.verify(totp_code, valid_window=1):
+            Logger.warning(f"[WebUI] {ip} 2FA disable failed: invalid TOTP code.")
+            raise HTTPException(status_code=400, detail="Invalid TOTP code")
 
     # 移除 2FA 数据，保留密码
     password_data.pop("totp_secret", None)
