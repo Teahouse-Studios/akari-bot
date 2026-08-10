@@ -392,6 +392,8 @@ pygments==2.20.0
     # via rich
 pyjwt==2.13.0
     # via akari-bot
+pyotp==2.10.0
+    # via akari-bot
 pyparsing==3.3.2
     # via matplotlib
 pypika-tortoise==0.6.3
