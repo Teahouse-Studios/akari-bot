@@ -38,10 +38,10 @@ dependencies = [
     "matrix-nio>=0.25.0,<1.0.0",
     "py-cord>=2.7.2",
     "pyjwt[crypto]>=2.8.0,<3.0.0",
-    "qq-botpy-sdk @ git+https://github.com/Teahouse-Studios/qq-botpy-sdk.git",
     "slowapi>=0.1.9,<1.0.0",
     "urllib3>=2.6.3",
     "uvicorn[standard]>=0.38.0,<1.0.0",
+    "qq-botpy-sdk>=2.0.0",
     # core
     "cattrs>=26.1.0,<26.2.0",
     "filetype>=1.2.0,<2.0.0",
@@ -94,7 +94,6 @@ dependencies = [
     "webcolors>=25.0.0,<26.0.0",
     "wikitextparser>=1.0.3",
     "wolframalpha>=5.0.0,<6.0.0",
-    "qq-botpy-sdk>=2.0.0",
 ]
 
 [project.urls]
