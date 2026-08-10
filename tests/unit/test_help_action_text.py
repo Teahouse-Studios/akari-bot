@@ -23,7 +23,6 @@ from core.utils.table import TABLE_MAX_ROWS, format_table_code
 from modules.core.help import (
     build_clickable_modules,
     build_command_table,
-    build_help_locale_header,
     build_module_table,
     end_inline_run,
     env,
@@ -98,26 +97,6 @@ class _ImageHelpSession(_FakeSession):
     async def finish(self, message, **kwargs):
         self.finished_message = MessageChain.assign(message)
         raise SessionFinished
-
-
-async def _test_locale_header_action_text():
-    """帮助菜单顶部应显示当前语言，并可点击进入语言设置。"""
-    for locale_name in ("zh_cn", "zh_tw", "en_us", "ja_jp", "ko_kr"):
-        session_info = await _session(f"help_locale_header_{locale_name}")
-        session_info.locale = type(session_info.locale)(locale_name)
-        parts = build_help_locale_header(_FakeSession(session_info))
-        if len(parts) != 2 or not isinstance(parts[0], ActionTextElement):
-            return False
-        expected = f"🌐{session_info.locale.t('language')}{session_info.locale.t('message.colon')}"
-        if parts[0].text.text != f"{session_info.prefixes[0]}locale " or parts[0].show.text != expected:
-            return False
-        if not isinstance(parts[1], PlainElement) or parts[1].text != "\n":
-            return False
-
-    session_info = await _session("help_locale_header_fallback", support_action_text=False)
-    parts = build_help_locale_header(_FakeSession(session_info))
-    expected = f"🌐{session_info.locale.t('language')}{session_info.locale.t('message.colon')}\n"
-    return len(parts) == 1 and isinstance(parts[0], PlainElement) and parts[0].text == expected
 
 
 async def _test_image_help_precedes_action_text_fallback():
@@ -713,7 +692,6 @@ async def _test_empty_group_skipped():
 @func_case
 async def test_clickable_modules(tester: Tester):
     """modules.core.help: 可点击模块列表测试"""
-    await tester.test(_test_locale_header_action_text, "帮助菜单当前语言入口测试")
     await tester.test(_test_image_help_precedes_action_text_fallback, "无表格能力时图片帮助优先测试")
     await tester.test(_test_image_flag_overrides_markdown_table, "--image 强制图片帮助测试")
     await tester.test(_test_image_template_omits_help_command, "图片内移除查看详情提示测试")
