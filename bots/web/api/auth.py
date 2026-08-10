@@ -436,7 +436,7 @@ async def reset_recovery_codes(request: Request):
     totp_code = body.get("totp_code", "")
     recovery_code = body.get("recovery_code", "")
 
-    if not password or not (totp_code and recovery_code):
+    if not password and not (totp_code or recovery_code):
         raise HTTPException(status_code=400, detail="Password is required, and provide TOTP code or a recovery code")
 
     # 验证密码
@@ -485,7 +485,7 @@ async def disable_2fa(request: Request):
     totp_code = body.get("totp_code", "")
     recovery_code = body.get("recovery_code", "")
 
-    if not password or not (totp_code and recovery_code):
+    if not password and not (totp_code or recovery_code):
         raise HTTPException(status_code=400, detail="Password is required, and provide TOTP code or a recovery code")
 
     # 验证密码
