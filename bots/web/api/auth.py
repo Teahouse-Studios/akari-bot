@@ -172,25 +172,51 @@ async def auth(request: Request):
 
         if _is_2fa_enabled(password_data):
             totp_code = body.get("totp_code", "")
-            if not totp_code:
-                raise HTTPException(status_code=401, detail="2FA code required")
+            recovery_code = body.get("recovery_code", "")
 
-            totp = _get_totp(password_data)
-            if totp is None or not totp.verify(totp_code, valid_window=1):
-                now = datetime.now(UTC)
-                login_failed_attempts[ip] = [t for t in login_failed_attempts[ip] if (now - t).total_seconds() < 600]
-                login_failed_attempts[ip].append(now)
+            if recovery_code:
+                # 使用 recovery code 替代 TOTP 通过 2FA
+                if not _verify_recovery_code(password_data, recovery_code):
+                    now = datetime.now(UTC)
+                    login_failed_attempts[ip] = [
+                        t for t in login_failed_attempts[ip] if (now - t).total_seconds() < 600
+                    ]
+                    login_failed_attempts[ip].append(now)
 
-                if len(login_failed_attempts[ip]) > login_max_attempt:
-                    await MaliciousLoginRecords.create(
-                        ip_address=ip, blocked_until=now + timedelta(seconds=LOGIN_BLOCK_DURATION)
-                    )
-                    login_failed_attempts[ip].clear()
-                    Logger.warning(f"[WebUI] {ip} has been blocked due to excessive login failures.")
-                    raise HTTPException(status_code=429, detail="This IP has been blocked")
+                    if len(login_failed_attempts[ip]) > login_max_attempt:
+                        await MaliciousLoginRecords.create(
+                            ip_address=ip, blocked_until=now + timedelta(seconds=LOGIN_BLOCK_DURATION)
+                        )
+                        login_failed_attempts[ip].clear()
+                        Logger.warning(f"[WebUI] {ip} has been blocked due to excessive login failures.")
+                        raise HTTPException(status_code=429, detail="This IP has been blocked")
 
-                Logger.warning(f"[WebUI] {ip} 2FA verification failed.")
-                raise HTTPException(status_code=403, detail="Invalid 2FA code")
+                    Logger.warning(f"[WebUI] {ip} login failed: invalid recovery code.")
+                    raise HTTPException(status_code=403, detail="Invalid recovery code")
+                # 持久化已消耗的 recovery code
+                _write_password_data(password_data)
+            else:
+                if not totp_code:
+                    raise HTTPException(status_code=401, detail="2FA code required")
+
+                totp = _get_totp(password_data)
+                if totp is None or not totp.verify(totp_code, valid_window=1):
+                    now = datetime.now(UTC)
+                    login_failed_attempts[ip] = [
+                        t for t in login_failed_attempts[ip] if (now - t).total_seconds() < 600
+                    ]
+                    login_failed_attempts[ip].append(now)
+
+                    if len(login_failed_attempts[ip]) > login_max_attempt:
+                        await MaliciousLoginRecords.create(
+                            ip_address=ip, blocked_until=now + timedelta(seconds=LOGIN_BLOCK_DURATION)
+                        )
+                        login_failed_attempts[ip].clear()
+                        Logger.warning(f"[WebUI] {ip} has been blocked due to excessive login failures.")
+                        raise HTTPException(status_code=429, detail="This IP has been blocked")
+
+                    Logger.warning(f"[WebUI] {ip} 2FA verification failed.")
+                    raise HTTPException(status_code=403, detail="Invalid 2FA code")
 
         payload = {"exp": datetime.now(UTC) + timedelta(hours=24), "iat": datetime.now(UTC), "iss": "auth-api"}
         jwt_token = jwt.encode(payload, jwt_secret, algorithm="HS256")
@@ -362,6 +388,50 @@ async def enable_2fa(request: Request):
     _write_password_data(password_data)
 
     Logger.info(f"[WebUI] {ip} enabled 2FA.")
+    return {"message": "success", "recovery_codes": recovery_codes}
+
+
+@app.post("/api/2fa/recovery-codes/reset")
+@limiter.limit("5/minute")
+async def reset_recovery_codes(request: Request):
+    ip = get_client_ip(request)
+    verify_jwt(request)
+
+    if not PASSWORD_PATH.exists():
+        raise HTTPException(status_code=400, detail="Password not set")
+
+    password_data = _read_password_data()
+    if password_data is None:
+        raise HTTPException(status_code=400, detail="Password not set")
+
+    if not _is_2fa_enabled(password_data):
+        raise HTTPException(status_code=400, detail="2FA is not enabled")
+
+    body = await request.json()
+    password = body.get("password", "")
+    code = body.get("code", "")
+
+    if not password or not code:
+        raise HTTPException(status_code=400, detail="Password and TOTP code are required")
+
+    # 验证密码
+    try:
+        ph.verify(password_data.get("password", ""), password)
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid password")
+
+    # 验证 TOTP
+    totp = _get_totp(password_data)
+    if totp is None or not totp.verify(code, valid_window=1):
+        Logger.warning(f"[WebUI] {ip} recovery codes reset failed: invalid TOTP code.")
+        raise HTTPException(status_code=400, detail="Invalid TOTP code")
+
+    # 生成新的 recovery codes
+    recovery_codes = _generate_recovery_codes()
+    password_data["recovery_codes"] = [_hash_recovery_code(c) for c in recovery_codes]
+    _write_password_data(password_data)
+
+    Logger.info(f"[WebUI] {ip} reset recovery codes.")
     return {"message": "success", "recovery_codes": recovery_codes}
 
 
