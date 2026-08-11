@@ -1,6 +1,6 @@
-"""利用阿里云API检查字符串是否合规。
+"""检查字符串是否合规，支持阿里云内容安全与本地 Qwen3Guard。
 
-在使用前，请在配置文件中填写`check_access_key_id`和`check_access_key_secret`，以便进行鉴权。
+使用阿里云后端前，请在配置文件中填写`check_access_key_id`和`check_access_key_secret`以便鉴权。
 """
 
 import asyncio
@@ -22,11 +22,21 @@ from core.builtins.session.internal import MessageSession
 from core.builtins.types import MessageElement
 from core.config.base import CoreConfig, CoreSecretConfig
 from core.database.local import DirtyWordCache
+from core.local_dirty_check import moderate as moderate_with_local_model
 from core.logger import Logger
 
 access_key_id = CoreSecretConfig.check_access_key_id
 access_key_secret = CoreSecretConfig.check_access_key_secret
 use_textscan_v1 = CoreConfig.check_use_textscan_v1
+
+ALIYUN_BACKEND = "aliyun"
+LOCAL_BACKEND = "qwen3guard"
+BACKEND_ALIASES = {
+    "aliyun": ALIYUN_BACKEND,
+    "dirty_check": ALIYUN_BACKEND,
+    "local": LOCAL_BACKEND,
+    "qwen3guard": LOCAL_BACKEND,
+}
 
 
 def hash_hmac(key, code):
@@ -116,6 +126,55 @@ def parse_data(original_content: str, result: dict, confidence: float = 60, addi
     return {"content": content, "status": content == original_content, "original": original_content}
 
 
+def get_backend() -> str:
+    configured = CoreConfig.dirty_check_backend.strip().lower()
+    if configured not in BACKEND_ALIASES:
+        raise ValueError(f"Unknown dirty check backend: {configured}")
+    return BACKEND_ALIASES[configured]
+
+
+def parse_local_data(
+    original_content: str,
+    result: dict,
+    additional_text: str | None = None,
+    block_controversial: bool = True,
+) -> dict:
+    label = str(result.get("label", ""))
+    blocked = label.casefold() == "unsafe" or (block_controversial and label.casefold() == "controversial")
+    content = original_content
+
+    if blocked:
+        categories = [str(x) for x in result.get("categories", []) if str(x).casefold() != "none"]
+        reason = ", ".join(dict.fromkeys(categories)) or label
+        content = str(I18NContext("check.redacted", reason=reason))
+
+    if additional_text:
+        content += "\n" + additional_text + "\n"
+
+    return {"content": content, "status": content == original_content, "original": original_content}
+
+
+def merge_local_results(results: list[dict]) -> dict:
+    labels = [str(result.get("label", "")) for result in results]
+    if any(label.casefold() == "unsafe" for label in labels):
+        label = "Unsafe"
+    elif any(label.casefold() == "controversial" for label in labels):
+        label = "Controversial"
+    else:
+        label = "Safe"
+
+    categories = []
+    for result in results:
+        for category in result.get("categories", []):
+            if category not in categories:
+                categories.append(category)
+    return {"label": label, "categories": categories, "raw": [result.get("raw", "") for result in results]}
+
+
+def local_cache_namespace() -> str:
+    return f"{LOCAL_BACKEND}:{CoreConfig.dirty_check_local_model}"
+
+
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
 async def check(
     text: str | list[str] | list[MessageElement] | MessageElement | MessageChain,
@@ -139,7 +198,9 @@ async def check(
     if isinstance(text, (list, MessageChain)):
         text = [str(x) for x in text]
 
-    if not access_key_id or not access_key_secret:
+    backend = get_backend()
+
+    if backend == ALIYUN_BACKEND and (not access_key_id or not access_key_secret):
         Logger.warning("Dirty words filter was disabled, skip.")
         return [{"content": t, "status": True, "original": t} for t in text]
     if not force and (session and not session.session_info.require_check_dirty_words):
@@ -149,6 +210,8 @@ async def check(
     if not text:
         return []
 
+    cache_namespace = local_cache_namespace() if backend == LOCAL_BACKEND else ""
+
     query_list = {}
     for count, t in enumerate(text):
         query_list[count] = {t: {"content": t, "status": True, "original": t}} if t == "" else {t: False}
@@ -157,9 +220,17 @@ async def check(
         for pq in query_list[q]:
             if not query_list[q][pq]:
                 try:
-                    cache = await DirtyWordCache.check(pq)
+                    cache = await DirtyWordCache.check(pq, namespace=cache_namespace)
                     if cache:
-                        query_list[q][pq] = parse_data(pq, cache.result, confidence, additional_text)
+                        if backend == LOCAL_BACKEND:
+                            query_list[q][pq] = parse_local_data(
+                                pq,
+                                cache.result,
+                                additional_text,
+                                CoreConfig.dirty_check_local_block_controversial,
+                            )
+                        else:
+                            query_list[q][pq] = parse_data(pq, cache.result, confidence, additional_text)
                 except Exception:
                     Logger.warning("Failed to get cache, skip.")
                     Logger.exception()
@@ -174,7 +245,43 @@ async def check(
     Logger.debug(call_api_list_)
 
     if call_api_list_:
-        if use_textscan_v1:
+        if backend == LOCAL_BACKEND:
+            chunks = []
+            chunk_owners = []
+            for content in call_api_list_:
+                for chunk in [content[i : i + 600] for i in range(0, len(content), 600)]:
+                    chunks.append(chunk)
+                    chunk_owners.append(content)
+
+            local_results = await moderate_with_local_model(
+                chunks,
+                CoreConfig.dirty_check_local_model,
+                CoreConfig.dirty_check_local_max_new_tokens,
+            )
+            grouped_results = {content: [] for content in call_api_list_}
+            for owner, result in zip(chunk_owners, local_results, strict=True):
+                grouped_results[owner].append(result)
+
+            for content, result_list in grouped_results.items():
+                merged_result = merge_local_results(result_list)
+                parsed_result = parse_local_data(
+                    content,
+                    merged_result,
+                    additional_text,
+                    CoreConfig.dirty_check_local_block_controversial,
+                )
+                for n in call_api_list[content]:
+                    query_list[n][content] = parsed_result
+                try:
+                    hash_id = DirtyWordCache.make_hash(content, cache_namespace)
+                    await DirtyWordCache.update_or_create(
+                        hash_id=hash_id,
+                        defaults={"desc": content, "result": merged_result},
+                    )
+                except Exception:
+                    Logger.warning("Failed to create local dirty word cache, skip.")
+                    Logger.exception()
+        elif use_textscan_v1:
             url = "/green/text/scan"
             root = "https://green.cn-shanghai.aliyuncs.com"
             body = {

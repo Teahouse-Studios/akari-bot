@@ -21,12 +21,13 @@ class DirtyWordCache(DBModel):
         table = "dirty_word_cache"
 
     @staticmethod
-    def make_hash(text: str) -> str:
-        return hashlib.sha256(text.encode("utf-8")).hexdigest()
+    def make_hash(text: str, namespace: str = "") -> str:
+        cache_key = f"{namespace}\0{text}" if namespace else text
+        return hashlib.sha256(cache_key.encode("utf-8")).hexdigest()
 
     @classmethod
-    async def check(cls, query_word):
-        hash_id = cls.make_hash(query_word)
+    async def check(cls, query_word, namespace: str = ""):
+        hash_id = cls.make_hash(query_word, namespace)
         query = await cls.filter(hash_id=hash_id).first()
 
         if query and time.time() - query.timestamp.timestamp() > 86400:

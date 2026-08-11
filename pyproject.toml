@@ -97,6 +97,14 @@ dependencies = [
     "wolframalpha>=5.0.0,<6.0.0",
 ]
 
+[project.optional-dependencies]
+local-dirty-check = [
+    "accelerate>=1.10.0,<2.0.0",
+    "modelscope>=1.39.1,<2.0.0",
+    "torch>=2.6.0,<3.0.0",
+    "transformers>=4.51.0,<5.0.0",
+]
+
 [project.urls]
 Homepage = "https://github.com/Teahouse-Studios/akari-bot"
 Issues = "https://github.com/Teahouse-Studios/akari-bot/issues"
