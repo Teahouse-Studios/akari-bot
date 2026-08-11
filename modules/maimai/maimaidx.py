@@ -16,7 +16,7 @@ total_list = TotalList()
 
 mai = module(
     "maimai",
-    recommend_modules="maimai_regex",
+    recommend_modules="maimai-regex",
     developers=["mai-bot", "OasisAkari", "DoroWolf"],
     alias="mai",
     support_languages=["zh_cn"],

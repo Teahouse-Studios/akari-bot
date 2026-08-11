@@ -230,6 +230,13 @@ class SessionInfo:
         if target_union_info:
             self.target_union_info = target_union_info
             self.target_union_id = target_union_info.union_id
+            from core.loader import ModulesManager
+
+            enabled_modules = []
+            for module_name in target_union_info.modules or []:
+                related_names = ModulesManager.get_module_and_alias_first_words(module_name) or [module_name]
+                enabled_modules.extend(name for name in related_names if name not in enabled_modules)
+            self.enabled_modules = enabled_modules
         bind = self.target_union_info.bind if self.target_union_info else None
         self.target_channel_id = bind.channel_id if bind else 1
 

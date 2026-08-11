@@ -253,7 +253,9 @@ async def _(msg: Bot.MessageSession, user: str):
         await msg.finish(I18NContext("message.success"))
 
 
-post_whitelist = module("post_whitelist", required_superuser=True, base=True, doc=True, available_for="QQ")
+post_whitelist = module(
+    "post-whitelist", alias="post_whitelist", required_superuser=True, base=True, doc=True, available_for="QQ"
+)
 
 
 @post_whitelist.command("<group_id>")
@@ -613,7 +615,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(I18NContext("core.message.resume.clear"))
 
 
-forward_msg = module("forward_msg", required_superuser=True, base=True, doc=True)
+forward_msg = module("forward-msg", alias="forward_msg", required_superuser=True, base=True, doc=True)
 
 
 @forward_msg.command()

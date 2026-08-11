@@ -9,12 +9,12 @@ from core.utils.func import is_int
 from core.utils.http import get_url
 
 mod_dl = module(
-    module_name="mod_dl",
+    module_name="mod-dl",
     desc="{I18N:mod_dl.help.desc}",
     doc=True,
     developers=["HornCopper", "OasisAkari", "z0z0r4"],
     recommend_modules=["mcmod"],
-    alias="moddl",
+    alias=["mod_dl", "moddl"],
 )
 
 x_api_key = ModDlConfig.curseforge_api_key

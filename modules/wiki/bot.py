@@ -10,7 +10,7 @@ from .database.models import WikiBotAccountList
 from .utils.bot import BotAccount, LoginFailed
 from .utils.wikilib import WikiLib
 
-wb = module("wiki_bot", required_superuser=True, doc=True, alias="wbot")
+wb = module("wiki-bot", required_superuser=True, doc=True, alias=["wiki_bot", "wbot"])
 
 
 @wb.command("login <apilink> <account> <password>")

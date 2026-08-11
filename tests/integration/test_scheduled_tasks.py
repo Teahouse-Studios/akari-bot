@@ -59,50 +59,50 @@ def _no_error(results: list[dict]) -> bool:
 
 async def _test_arcaea_rss_posts_new_version():
     """arcaea_rss: 发现新版本时应推送"""
-    results = await _run("arcaea_rss", "modules.arcaea_rss", ("arcaea_rss",))
+    results = await _run("arcaea-rss", "modules.arcaea_rss", ("arcaea_rss",))
     return _no_error(results) and await _posted_count() >= 1
 
 
 async def _test_arcaea_rss_deduplicates():
     """arcaea_rss: 版本已记录时不应重复推送"""
-    await _run("arcaea_rss", "modules.arcaea_rss", ("arcaea_rss",))
+    await _run("arcaea-rss", "modules.arcaea_rss", ("arcaea_rss",))
     # 第二次不清空持久化列表，仅重置队列，验证去重生效。
     await _reset_queue()
     with strict_http():
-        results = await force_run_schedule("arcaea_rss", "modules.arcaea_rss", (), timeout=25)
+        results = await force_run_schedule("arcaea-rss", "modules.arcaea_rss", (), timeout=25)
     return _no_error(results) and await _posted_count() == 0
 
 
 async def _test_mcv_rss_posts_versions():
     """mcv_rss: 应推送最新正式版与快照版"""
-    results = await _run("mcv_rss", "modules.mcv_rss", ("mcv_rss", "mcnews"))
+    results = await _run("mcv-rss", "modules.mcv_rss", ("mcv_rss", "mcnews"))
     return _no_error(results) and await _posted_count() >= 2
 
 
 async def _test_minecraft_news_posts_articles():
     """minecraft_news: 应逐条推送未记录过的文章"""
-    results = await _run("minecraft_news", "modules.minecraft_news", ("mcnews",))
+    results = await _run("minecraft-news", "modules.minecraft_news", ("mcnews",))
     return _no_error(results) and await _posted_count() >= 1
 
 
 async def _test_minecraft_news_deduplicates():
     """minecraft_news: 已记录的文章不应重复推送"""
-    await _run("minecraft_news", "modules.minecraft_news", ("mcnews",))
+    await _run("minecraft-news", "modules.minecraft_news", ("mcnews",))
     await _reset_queue()
     with strict_http():
-        results = await force_run_schedule("minecraft_news", "modules.minecraft_news", (), timeout=25)
+        results = await force_run_schedule("minecraft-news", "modules.minecraft_news", (), timeout=25)
     return _no_error(results) and await _posted_count() == 0
 
 
 async def _test_feedback_news_posts_articles():
     """feedback_news: 应推送反馈站的新文章"""
-    results = await _run("feedback_news", "modules.minecraft_news", ("mcfeedbacknews",))
+    results = await _run("feedback-news", "modules.minecraft_news", ("mcfeedbacknews",))
     return _no_error(results) and await _posted_count() >= 1
 
 
 async def _test_teahouse_weekly_posts():
     """teahouse_weekly_rss: 应推送茶馆周报"""
-    results = await _run("teahouse_weekly_rss")
+    results = await _run("teahouse-weekly-rss")
     return _no_error(results) and await _posted_count() >= 1
 
 
@@ -179,7 +179,7 @@ async def _test_wiki_custom_iw_hook_returns_list():
 
 async def _test_wiki_bot_login_hook_accepts_cookies():
     """wiki_bot.login_wiki_bots: 应接受 cookies 参数并正常返回"""
-    result = await run_hook("wiki_bot.login_wiki_bots", {"cookies": {"session": "test"}})
+    result = await run_hook("wiki-bot.login_wiki_bots", {"cookies": {"session": "test"}})
     return result["success"]
 
 
@@ -189,7 +189,7 @@ def _test_all_named_hooks_are_reachable():
     expected = {
         "wiki.autosearch",
         "wiki.auto_get_custom_iw_list",
-        "wiki_bot.login_wiki_bots",
+        "wiki-bot.login_wiki_bots",
         "wikilog.keepalive",
     }
     return expected.issubset(set(hooks))

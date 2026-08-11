@@ -10,7 +10,7 @@ WebRender 依赖无头浏览器，录制阶段无法真正渲染，故以普通 
 
 使用方式：
     python tests/capture_schedule_fixtures.py                  # 录制全部可录制的任务
-    python tests/capture_schedule_fixtures.py arcaea_rss ...   # 只录制指定模块
+    python tests/capture_schedule_fixtures.py arcaea-rss ...   # 只录制指定模块
 """
 
 import asyncio
@@ -30,11 +30,11 @@ from core.tester.mock.webrender import save_webrender_fixture
 # 这些模块的定时任务无法在录制环境中产生有效语料，跳过以免徒劳等待。
 SKIPPED = {
     # 多页抓取叠加图片渲染，单次运行耗时过长，不适合纳入测试。
-    "weekly_rss": "抓取页数多且需图片渲染，耗时过长",
+    "weekly-rss": "抓取页数多且需图片渲染，耗时过长",
     # 依赖 Google Play 抓取，且在 ip_country 未配置时直接早退。
-    "mcbv_rss": "依赖 Google Play 抓取，测试环境直接早退",
+    "mcbv-rss": "依赖 Google Play 抓取，测试环境直接早退",
     # 需要真实 wiki 机器人账号凭据。
-    "wiki_bot": "需要真实 wiki 账号凭据",
+    "wiki-bot": "需要真实 wiki 账号凭据",
 }
 
 _http: dict[tuple, dict] = {}

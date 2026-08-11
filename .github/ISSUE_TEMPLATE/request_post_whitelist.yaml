@@ -11,7 +11,7 @@ body:
     attributes:
       label: 开始之前……
       options:
-        - label: 我确定本 QQ 群聊需要使用小可的 RSS 模块（如 `mcv_rss`、`minecraft_news` 等），且消息需要及时推送。
+        - label: 我确定本 QQ 群聊需要使用小可的 RSS 模块（如 `mcv-rss`、`minecraft-news` 等），且消息需要及时推送。
           required: true
   - type: input
     id: qq-id

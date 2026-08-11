@@ -44,7 +44,12 @@ async def load_modules():
             Logger.error(errmsg)
             err_prompt.append(errmsg)
 
-    await ModuleStatus.init_modules(list(ModulesManager.modules.keys()))
+    ModulesManager.refresh_modules_aliases()
+    module_names = list(ModulesManager.modules.keys())
+    module_aliases = {
+        module_name: ModulesManager.get_module_and_alias_first_words(module_name) for module_name in module_names
+    }
+    await ModuleStatus.init_modules(module_names, module_aliases)
     # 一次取回全部状态：逐模块查询会退化成 N 次往返，模块多或主库在远端时开销可观
     module_status = dict(await ModuleStatus.all().values_list("module_name", "load"))
     for module_name, module in ModulesManager.modules.items():

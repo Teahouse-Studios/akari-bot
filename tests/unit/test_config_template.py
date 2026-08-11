@@ -197,6 +197,18 @@ def _test_module_config_table_matches_module_name():
                     declared = _first_name_arg(node, "module")
                     if declared:
                         declared_module_names.add(declared)
+                        alias_node = next((kw.value for kw in node.keywords if kw.arg == "alias"), None)
+                        if alias_node:
+                            try:
+                                aliases = ast.literal_eval(alias_node)
+                            except (ValueError, TypeError):
+                                aliases = None
+                            if isinstance(aliases, str):
+                                declared_module_names.add(aliases.split(maxsplit=1)[0])
+                            elif isinstance(aliases, (list, tuple)):
+                                declared_module_names.update(alias.split(maxsplit=1)[0] for alias in aliases)
+                            elif isinstance(aliases, dict):
+                                declared_module_names.update(alias.split(maxsplit=1)[0] for alias in aliases)
 
         for node in ast.walk(ast.parse(config_path.read_text(encoding="utf-8"))):
             if not isinstance(node, ast.Call):

@@ -27,11 +27,11 @@ from .wiki import query_pages
 import uuid
 
 wiki_inline = module(
-    "wiki_inline",
+    "wiki-inline",
     desc="{I18N:wiki.help.wiki_inline.desc}",
     doc=True,
     recommend_modules=["wiki"],
-    alias="wiki_regex",
+    alias=["wiki_inline", "wiki_regex"],
     developers=["OasisAkari"],
     regex=True,
 )

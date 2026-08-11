@@ -27,6 +27,18 @@ UNION_ID_PREFIXES = {
 }
 
 
+def _get_module_and_alias_first_words(module_names: str | list[str] | tuple[str, ...]) -> list[str]:
+    from core.loader import ModulesManager
+
+    result = []
+    for module_name in convert_list(module_names):
+        related_names = ModulesManager.get_module_and_alias_first_words(module_name) or [module_name]
+        for related_name in related_names:
+            if related_name not in result:
+                result.append(related_name)
+    return result
+
+
 def get_table_name(model: type[Model]) -> str:
     """
     获取模型对应的数据表名。
@@ -786,15 +798,15 @@ class TargetUnionInfo(UnionInfo):
         :param module_name: 指定的模块名称。
         :param enable: 是否要开启模块，若 False 则关闭模块。
         """
-        module_names = convert_list(module_name)
-        for mname in module_names:
+        for mname in convert_list(module_name):
+            related_names = _get_module_and_alias_first_words(mname)
+            canonical_name = related_names[0]
             if enable:
-                if mname not in self.modules:
-                    self.modules.append(mname)
+                self.modules = [name for name in self.modules if name not in related_names]
+                self.modules.append(canonical_name)
             else:
-                if mname in self.modules:
-                    self.modules.remove(mname)
-        self.modules = list(set(self.modules))
+                self.modules = [name for name in self.modules if name not in related_names]
+        self.modules = list(dict.fromkeys(self.modules))
         await self.save()
         return True
 
@@ -885,10 +897,11 @@ class TargetUnionInfo(UnionInfo):
             all_targets = await cls.all()
 
         if module_name:
+            module_names = _get_module_and_alias_first_words(module_name)
             result = []
             for target in all_targets:
                 modules = target.modules or []
-                if any(mod in modules for mod in convert_list(module_name)):
+                if any(mod in modules for mod in module_names):
                     result.append(target)
             return result
 
@@ -1003,9 +1016,9 @@ class ModuleStatus(DBModel):
         table = "module_status"
 
     @classmethod
-    async def init_modules(cls, modules_list: list[str]):
+    async def init_modules(cls, modules_list: list[str], module_aliases: dict[str, list[str]] | None = None):
         async with in_transaction("default"):
-            existing = await cls.all().values_list("module_name", flat=True)
+            existing = dict(await cls.all().values_list("module_name", "load"))
             existing_set = set(existing)
             input_set = set(modules_list)
 
@@ -1013,7 +1026,13 @@ class ModuleStatus(DBModel):
             to_remove = existing_set.difference(input_set)
 
             if to_add:
-                await cls.bulk_create([cls(module_name=m, load=True) for m in to_add])
+                migrated_load = {}
+                for module_name in to_add:
+                    for alias in (module_aliases or {}).get(module_name, []):
+                        if alias in existing:
+                            migrated_load[module_name] = existing[alias]
+                            break
+                await cls.bulk_create([cls(module_name=m, load=migrated_load.get(m, True)) for m in to_add])
 
             if to_remove:
                 await cls.filter(module_name__in=to_remove).delete()

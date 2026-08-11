@@ -15,10 +15,10 @@ from core.utils.storedata import get_stored_list, update_stored_list
 trigger_times = 60 if not CoreConfig.slower_schedule else 180
 
 arcaea_rss = module(
-    "arcaea_rss",
+    "arcaea-rss",
     developers=["SkyEye_FAST"],
     desc="{I18N:arcaea_rss.help.desc}",
-    alias=["arc_rss"],
+    alias=["arcaea_rss", "arc_rss"],
     doc=True,
     rss=True,
 )
@@ -62,7 +62,7 @@ async def _():
             Logger.info(f"Huh, we found Arcaea {version}.")
             if not startup_mute:
                 await Bot.post_message(
-                    "arcaea_rss",
+                    "arcaea-rss",
                     message=MessageChain.assign(
                         [
                             I18NContext(

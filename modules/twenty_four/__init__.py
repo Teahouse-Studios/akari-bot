@@ -156,8 +156,8 @@ def find_solution(numbers):
 
 
 tf = module(
-    "twenty_four",
-    alias=["twentyfour", "24"],
+    "twenty-four",
+    alias=["twenty_four", "twentyfour", "24"],
     desc="{I18N:twenty_four.help.desc}",
     developers=["DoroWolf"],
     doc=True,

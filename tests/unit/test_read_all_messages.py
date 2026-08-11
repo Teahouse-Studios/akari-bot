@@ -210,7 +210,7 @@ async def _enable_prompt(module_name: str) -> str:
 async def _test_enable_regex_module_is_rejected():
     """受限场景中启用正则模块应给出指向权限的提示。"""
     expected = "失败：此场景不支持正则模块，请检查是否开启对应的权限。"
-    actual = await _enable_prompt("wiki_inline")
+    actual = await _enable_prompt("wiki-inline")
     if actual != expected:
         Logger.error(f"Expected regex rejection prompt {expected!r}, got {actual!r}")
         return False
@@ -220,7 +220,7 @@ async def _test_enable_regex_module_is_rejected():
 async def _test_enable_rss_module_is_rejected():
     """受限场景中启用推送模块应给出指向权限的提示。"""
     expected = "失败：此场景不支持推送模块，请检查是否开启对应的权限。"
-    actual = await _enable_prompt("minecraft_news")
+    actual = await _enable_prompt("minecraft-news")
     if actual != expected:
         Logger.error(f"Expected RSS rejection prompt {expected!r}, got {actual!r}")
         return False

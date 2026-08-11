@@ -63,7 +63,7 @@ async def config_modules(msg: Bot.MessageSession):
     modules_ = ModulesManager.return_modules_list(
         target_from=msg.session_info.target_from, client_name=msg.session_info.client_name
     )
-    enabled_modules_list = deepcopy(msg.session_info.target_union_info.modules)
+    enabled_modules_list = deepcopy(msg.session_info.enabled_modules or [])
     wait_config = [msg.parsed_msg.get("<module>")] + msg.parsed_msg.get("...", [])
     wait_config_list = []
     for module_ in wait_config:

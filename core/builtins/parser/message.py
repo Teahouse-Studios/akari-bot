@@ -553,9 +553,10 @@ async def _check_superuser_or_authorized(msg: "Bot.MessageSession", module_name:
     """
     if msg.check_super_user():
         return True
+    related_module_names = ModulesManager.get_module_and_alias_first_words(module_name) or [module_name]
     auth_list = msg.session_info.sender_union_info.sender_data.get("module_auth", [])
     for entry in auth_list:
-        if entry.get("module") == module_name:
+        if entry.get("module") in related_module_names:
             authorizer = await SenderUnionInfo.get_by_sender_id(entry["authorized_by"], create=False)
             if authorizer and authorizer.superuser:
                 return True

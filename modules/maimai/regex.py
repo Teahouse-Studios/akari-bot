@@ -15,11 +15,11 @@ from .maimaidx import query_alias, query_plate, query_song_score, query_process
 total_list = TotalList()
 
 mai_regex = module(
-    "maimai_regex",
+    "maimai-regex",
     desc="{I18N:maimai.help.maimai_regex.desc}",
     doc=True,
     recommend_modules=["maimai"],
-    alias="mai_regex",
+    alias=["maimai_regex", "mai_regex"],
     developers=["DoroWolf"],
     support_languages=["zh_cn", "zh_tw"],
     regex=True,

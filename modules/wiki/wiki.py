@@ -32,7 +32,7 @@ wiki = module(
         "wiki iw del": "wiki iw remove",
         "wiki iw delete": "wiki iw remove",
     },
-    recommend_modules="wiki_inline",
+    recommend_modules="wiki-inline",
     developers=["OasisAkari"],
     doc=True,
 )

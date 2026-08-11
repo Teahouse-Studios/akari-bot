@@ -5,7 +5,7 @@ from bots.discord.slash_parser import slash_parser
 
 
 @discord_bot.slash_command(
-    name="exchange_rate",
+    name="exchange-rate",
     description="Convert currency prices according to the exchange rate of the day.",
 )
 @discord.option(name="base", description="The base currency unit.")

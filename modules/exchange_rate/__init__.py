@@ -12,10 +12,10 @@ from core.utils.http import get_url
 api_key = ExchangeRateConfig.exchange_rate_api_key
 
 excr = module(
-    "exchange_rate",
+    "exchange-rate",
     desc="{I18N:exchange_rate.help.desc}",
     doc=True,
-    alias=["exchangerate", "exchange", "excr"],
+    alias=["exchange_rate", "exchangerate", "exchange", "excr"],
     developers=["DoroWolf"],
     regex=True,
 )

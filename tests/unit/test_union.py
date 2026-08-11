@@ -1,12 +1,15 @@
 """core.database.models 单元测试 - union 绑定（需要数据库）。"""
 
+from core.builtins.session.info import SessionInfo
 from core.database.models import (
     SenderUnionInfo,
     SenderUnionBind,
     TargetUnionInfo,
     TargetUnionBind,
 )
+from core.loader import ModulesManager
 from core.tester import func_case, Tester
+from core.types import Module
 
 
 async def _test_resolve_union_creates_bind():
@@ -446,6 +449,44 @@ async def _test_target_id_list_expands_union():
         return False
 
 
+async def _test_subscription_module_alias_migration():
+    """旧模块名订阅应匹配新主名，并在下次开关时惰性归一化。"""
+    new_name = "__test-subscription-new"
+    old_name = "__test_subscription_old"
+    target_id = "UNIONTEST|Group|subscription-alias"
+    test_module = Module.assign(
+        module_name=new_name,
+        alias=old_name,
+        recommend_modules=None,
+        developers=None,
+    )
+    try:
+        ModulesManager.add_module(test_module, "test.py")
+        ModulesManager.refresh_modules_aliases()
+        target = await TargetUnionInfo.resolve_union(target_id)
+        target.modules = [old_name]
+        await target.save()
+
+        ids = await TargetUnionInfo.get_target_id_list_by_module(new_name)
+        session = await SessionInfo.assign(target_id, target_from="UNIONTEST", client_name="UNIONTEST")
+        await session.refresh_info()
+        if target_id not in ids or new_name not in session.enabled_modules:
+            return False
+
+        await target.config_module(new_name, True)
+        if target.modules != [new_name]:
+            return False
+
+        target.modules = [old_name]
+        await target.save()
+        await target.config_module(new_name, False)
+        return target.modules == []
+    finally:
+        ModulesManager.modules.pop(new_name, None)
+        ModulesManager.modules_origin.pop(new_name, None)
+        ModulesManager.refresh()
+
+
 async def _test_list_ids_accepts_multiple():
     """测试 list_ids - 支持一次展开多个 union"""
     try:
@@ -488,6 +529,7 @@ async def test_union(tester: Tester):
     await tester.test(_test_unbind_id_rejects_last, "unbind_id 拒绝解绑最后一个测试")
     await tester.test(_test_target_union_shares_modules, "场景 union 模块开关互通测试")
     await tester.test(_test_target_id_list_expands_union, "推送展开为全部平台场景测试")
+    await tester.test(_test_subscription_module_alias_migration, "订阅模块旧主名无缝迁移测试")
     await tester.test(_test_list_ids_accepts_multiple, "list_ids 多 union 测试")
 
     return tester

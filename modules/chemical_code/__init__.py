@@ -191,18 +191,19 @@ async def search_pubchem(id: int | None = None):
 
 
 ccode = module(
-    "chemical_code",
+    "chemical-code",
     developers=["OasisAkari", "DoroWolf"],
     desc="{I18N:chemical_code.help.desc}",
     doc=True,
     alias={
-        "cc": "chemical_code",
-        "cca": "chemical_code captcha",
-        "chemicalcode": "chemical_code",
-        "chemical_captcha": "chemical_code captcha",
-        "chemicalcaptcha": "chemical_code captcha",
-        "ccode": "chemical_code",
-        "ccaptcha": "chemical_code captcha",
+        "chemical_code": "chemical-code",
+        "cc": "chemical-code",
+        "cca": "chemical-code captcha",
+        "chemicalcode": "chemical-code",
+        "chemical_captcha": "chemical-code captcha",
+        "chemicalcaptcha": "chemical-code captcha",
+        "ccode": "chemical-code",
+        "ccaptcha": "chemical-code captcha",
     },
 )
 

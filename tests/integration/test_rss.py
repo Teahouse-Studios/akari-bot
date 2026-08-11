@@ -8,7 +8,7 @@
 from core.loader import ModulesManager
 from core.tester import func_case, Tester
 
-RSS_MODULES = ("minecraft_news", "feedback_news")
+RSS_MODULES = ("minecraft-news", "feedback-news")
 
 
 def _module(name: str):

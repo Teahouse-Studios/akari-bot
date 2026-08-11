@@ -6,9 +6,9 @@ from .database.models import WikiAllowList, WikiBlockList
 from .utils.wikilib import WikiLib
 
 aud = module(
-    "wiki_audit",
+    "wiki-audit",
     required_superuser=True,
-    alias="wau",
+    alias=["wiki_audit", "wau"],
     doc=True,
 )
 

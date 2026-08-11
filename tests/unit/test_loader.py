@@ -1,9 +1,33 @@
 """core.loader 模块加载器单元测试。"""
 
+from core.database.models import ModuleStatus
 from core.loader import ModulesManager
 from core.tester import func_case, Tester
 from core.types import Module
 from core.types.module.component_meta import CommandMeta, RegexMeta
+
+
+RENAMED_MODULES = {
+    "arcaea-rss": "arcaea_rss",
+    "chemical-code": "chemical_code",
+    "exchange-rate": "exchange_rate",
+    "feedback-news": "feedback_news",
+    "forward-msg": "forward_msg",
+    "maimai-regex": "maimai_regex",
+    "mcbv-rss": "mcbv_rss",
+    "mcv-rss": "mcv_rss",
+    "minecraft-news": "minecraft_news",
+    "mod-dl": "mod_dl",
+    "mojang-status": "mojang_status",
+    "nintendo-err": "nintendo_err",
+    "post-whitelist": "post_whitelist",
+    "teahouse-weekly-rss": "teahouse_weekly_rss",
+    "twenty-four": "twenty_four",
+    "weekly-rss": "weekly_rss",
+    "wiki-audit": "wiki_audit",
+    "wiki-bot": "wiki_bot",
+    "wiki-inline": "wiki_inline",
+}
 
 
 def _test_add_module():
@@ -216,6 +240,32 @@ def _test_get_module_and_alias_first_words():
         ModulesManager.refresh_modules_aliases()
 
 
+def _test_renamed_modules_keep_legacy_aliases():
+    """带下划线的旧模块名应保留为新主名的命令别名。"""
+    return all(
+        new_name in ModulesManager.modules and ModulesManager.modules_aliases.get(old_name) == new_name
+        for new_name, old_name in RENAMED_MODULES.items()
+    )
+
+
+async def _test_module_status_alias_migration():
+    """ModuleStatus 应在主名迁移时保留旧模块的加载状态。"""
+    new_name = "__test-loader-status-new"
+    old_name = "__test_loader_status_old"
+    current_modules = await ModuleStatus.get_all_modules()
+    try:
+        await ModuleStatus.filter(module_name__in=[new_name, old_name]).delete()
+        await ModuleStatus.create(module_name=old_name, load=False)
+        await ModuleStatus.init_modules(
+            current_modules + [new_name],
+            {new_name: [new_name, old_name]},
+        )
+        migrated = await ModuleStatus.get_or_none(module_name=new_name)
+        return bool(migrated and not migrated.load and not await ModuleStatus.filter(module_name=old_name).exists())
+    finally:
+        await ModuleStatus.filter(module_name__in=[new_name, old_name]).delete()
+
+
 @func_case
 async def test_loader(tester: Tester):
     """core.loader: 模块加载器测试"""
@@ -233,4 +283,6 @@ async def test_loader(tester: Tester):
         _test_get_module_and_alias_first_words,
         "ModulesManager.get_module_and_alias_first_words 测试",
     )
+    await tester.test(_test_renamed_modules_keep_legacy_aliases, "模块主名连字符迁移别名测试")
+    await tester.test(_test_module_status_alias_migration, "ModuleStatus 旧主名加载状态迁移测试")
     return tester

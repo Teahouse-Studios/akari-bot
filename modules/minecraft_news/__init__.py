@@ -11,21 +11,21 @@ from core.utils.storedata import get_stored_list, update_stored_list
 from core.web_render import web_render, SourceOptions, RawOptions
 
 minecraft_news = module(
-    "minecraft_news",
+    "minecraft-news",
     developers=["_LittleC_", "OasisAkari", "Dianliang233"],
-    recommend_modules=["feedback_news"],
+    recommend_modules=["feedback-news"],
     desc="{I18N:minecraft_news.help.minecraft_news}",
-    alias=["minecraftnews", "mcnews"],
+    alias=["minecraft_news", "minecraftnews", "mcnews"],
     doc=True,
     rss=True,
 )
 
 feedback_news = module(
-    "feedback_news",
+    "feedback-news",
     developers=["Dianliang233"],
-    recommend_modules=["minecraft_news"],
+    recommend_modules=["minecraft-news"],
     desc="{I18N:minecraft_news.help.feedback_news}",
-    alias="feedbacknews",
+    alias=["feedback_news", "feedbacknews"],
     doc=True,
     rss=True,
 )
@@ -89,7 +89,7 @@ async def _():
                             Logger.exception("Failed to fetch Minecraft news image.")
                             imgb64 = None
                         await Bot.post_message(
-                            "minecraft_news",
+                            "minecraft-news",
                             message=MessageChain.assign(
                                 [
                                     I18NContext(
@@ -139,7 +139,7 @@ async def _():
                     link = article.get("html_url", "")
                     Logger.info(f"Huh, we find {name}.")
                     await Bot.post_message(
-                        "feedback_news",
+                        "feedback-news",
                         message=MessageChain.assign(
                             [
                                 I18NContext(

@@ -4,7 +4,10 @@ from core.component import module
 from core.utils.http import request_url
 
 mojang_status = module(
-    "mojang_status", desc="{I18N:mojang_status.help.desc}", alias=["mcstatus", "mjs", "mjsb"], developers=["Don_Trueno"]
+    "mojang-status",
+    desc="{I18N:mojang_status.help.desc}",
+    alias=["mojang_status", "mcstatus", "mjs", "mjsb"],
+    developers=["Don_Trueno"],
 )
 
 url = {

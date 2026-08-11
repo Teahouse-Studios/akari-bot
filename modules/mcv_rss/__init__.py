@@ -65,20 +65,20 @@ trigger_times = 60 if not CoreConfig.slower_schedule else 180
 startup_mute = [True, True]
 
 mcv_rss = module(
-    "mcv_rss",
+    "mcv-rss",
     developers=["OasisAkari", "Dianliang233"],
     # recommend_modules=["mcv_jira_rss"],
     desc="{I18N:mcv_rss.help.mcv_rss.desc}",
-    alias="mcvrss",
+    alias=["mcv_rss", "mcvrss"],
     doc=True,
     rss=True,
 )
 
 mcbv_rss = module(
-    "mcbv_rss",
+    "mcbv-rss",
     developers=["OasisAkari"],
     desc="{I18N:mcv_rss.help.mcbv_rss.desc}",
-    alias="mcbvrss",
+    alias=["mcbv_rss", "mcbvrss"],
     doc=True,
     rss=True,
 )
@@ -124,7 +124,7 @@ async def _():
 
             if not startup_mute[0]:
                 await Bot.post_message(
-                    "mcv_rss",
+                    "mcv-rss",
                     message=MessageChain.assign(
                         [
                             I18NContext(
@@ -144,7 +144,7 @@ async def _():
                 if article[1] not in get_stored_news_title:
                     if not startup_mute[0]:
                         await Bot.post_message(
-                            "minecraft_news",
+                            "minecraft-news",
                             message=MessageChain.assign(
                                 [
                                     I18NContext(
@@ -161,7 +161,7 @@ async def _():
             Logger.info(f"Huh, we found {snapshot}.")
             if not startup_mute[0]:
                 await Bot.post_message(
-                    "mcv_rss",
+                    "mcv-rss",
                     message=MessageChain.assign(
                         [
                             I18NContext(
@@ -181,7 +181,7 @@ async def _():
                 if article[1] not in get_stored_news_title:
                     if not startup_mute[0]:
                         await Bot.post_message(
-                            "minecraft_news",
+                            "minecraft-news",
                             message=MessageChain.assign(
                                 [
                                     I18NContext(
@@ -212,7 +212,7 @@ async def _():
             Logger.info(f"Huh, we found Bedrock {version}.")
             if not startup_mute[1]:
                 await Bot.post_message(
-                    "mcbv_rss",
+                    "mcbv-rss",
                     message=MessageChain.assign([I18NContext("mcv_rss.message.mcbv_rss", version=version)]),
                 )
                 verlist.append(version)

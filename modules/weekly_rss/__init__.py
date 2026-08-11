@@ -10,19 +10,19 @@ from core.utils.image import msgchain2image
 from modules.weekly import get_weekly, get_teahouse_rss
 
 weekly_rss = module(
-    "weekly_rss",
+    "weekly-rss",
     desc="{I18N:weekly_rss.help.desc}",
     developers=["Dianliang233"],
-    alias="weeklyrss",
+    alias=["weekly_rss", "weeklyrss"],
     doc=True,
     rss=True,
 )
 
 teahouse_weekly_rss = module(
-    "teahouse_weekly_rss",
+    "teahouse-weekly-rss",
     desc="{I18N:weekly_rss.help.teahouse_weekly_rss.desc}",
     developers=["OasisAkari"],
-    alias=["teahouseweeklyrss", "teahouserss"],
+    alias=["teahouse_weekly_rss", "teahouseweeklyrss", "teahouserss"],
     doc=True,
     rss=True,
 )
@@ -48,7 +48,7 @@ async def _():
             "default": weekly_cn_qq,
         }
     )
-    await Bot.post_message("weekly_rss", PlatformMessageChain.assign({"QQ": post_msg_qq, "default": post_msg}))
+    await Bot.post_message("weekly-rss", PlatformMessageChain.assign({"QQ": post_msg_qq, "default": post_msg}))
     Logger.success("Weekly checked.")
 
 
@@ -68,5 +68,5 @@ async def _():
     weekly_tw_qq = MessageChain.assign(await msgchain2image(weekly_tw))
     post_msg = I18NMessageChain.assign({"zh_cn": weekly_cn, "zh_tw": weekly_tw, "default": weekly_cn})
     post_msg_qq = I18NMessageChain.assign({"zh_cn": weekly_cn_qq, "zh_tw": weekly_tw_qq, "default": weekly_cn_qq})
-    await Bot.post_message("teahouse_weekly_rss", PlatformMessageChain.assign({"QQ": post_msg_qq, "default": post_msg}))
+    await Bot.post_message("teahouse-weekly-rss", PlatformMessageChain.assign({"QQ": post_msg_qq, "default": post_msg}))
     Logger.success("Teahouse Weekly checked.")

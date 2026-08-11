@@ -83,7 +83,7 @@ Only Nintendo Switch XXXX-YYYY formatted error codes are supported."
         return memes.get(err.casefold())
 
 
-e = module("nintendo_err", alias=["err"], developers=["OasisAkari", "kurisu"], doc=True)
+e = module("nintendo-err", alias=["nintendo_err", "err"], developers=["OasisAkari", "kurisu"], doc=True)
 
 
 @e.command("<err_code> {{I18N:nintendo_err.help}}")
