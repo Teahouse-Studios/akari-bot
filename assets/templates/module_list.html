@@ -46,7 +46,9 @@
 
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            grid-template-columns: repeat(5, 120px);
+            justify-content: start;
+            gap: 12px;
         }
 
         .grid-item {
@@ -55,7 +57,7 @@
             flex-direction: column;
             align-items: center;
             padding: 3px;
-            border-radius: var(--mdui-shape-corner-large);
+            border-radius: 16px;
             height: 90px;
             width: 120px;
             text-align: center;
@@ -68,36 +70,35 @@
             word-break: break-all;
             white-space: normal;
             background-color: transparent;
-            /* box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.2); */
             }
 
         .base {
-            background-color: rgb(var(--mdui-color-tertiary-container));
-            color: rgb(var(--mdui-color-tertiary));
-            box-shadow: var(--mdui-elevation-level1);
+            background-color: #ffe0cc;
+            color: #8c3a00;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
         }
 
         .external {
-            background-color: rgb(var(--mdui-color-secondary-container));
-            color: rgb(var(--mdui-color-secondary));
-            box-shadow: var(--mdui-elevation-level1);
+            background-color: #cce5ff;
+            color: #003d66;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
         }
 
         .subscription {
             background-color: #e8f5e9;
             color: #1b5e20;
-            box-shadow: var(--mdui-elevation-level1);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
         }
 
         .disabled {
-            background-color: rgb(var(--mdui-color-surface-container));
-            color: rgb(var(--mdui-color-on-surface));
-            box-shadow: var(--mdui-elevation-level1);
+            background-color: #d5d5d5;
+            color: #1c1c1c;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
         }
 
         .dev {
             font-style: italic;
-            border: 1px solid rgb(var(--mdui-color-outline));
+            border: 1px solid #74777f;
         }
 
         .admin {
