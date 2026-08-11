@@ -426,7 +426,7 @@ pyyaml==6.0.3
     #   pre-commit
     #   qq-botpy-sdk
     #   uvicorn
-qq-botpy-sdk @ git+https://github.com/Teahouse-Studios/qq-botpy-sdk.git@4b702c3587b6e2cda45495ec749dd63943b748a0
+qq-botpy-sdk==2.0.1
     # via akari-bot
 quart==0.20.0
     # via aiocqhttp
