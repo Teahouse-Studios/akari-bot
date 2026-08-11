@@ -352,164 +352,198 @@ async def has_password(request: Request):
     return {"have_password": PASSWORD_PATH.exists()}
 
 
-@app.get("/api/2fa/status")
-async def get_2fa_status(request: Request):
-    verify_jwt(request)
-    password_data = _read_password_data()
-    return {"enabled": _is_2fa_enabled(password_data)}
+@app.get("/api/totp")
+async def get_totp_status(request: Request):
+    try:
+        verify_jwt(request)
+        password_data = _read_password_data()
+        return {"enabled": _is_2fa_enabled(password_data)}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/api/2fa/setup")
+@app.post("/api/totp/setup")
 @limiter.limit("5/minute")
-async def setup_2fa(request: Request):
-    verify_jwt(request)
+async def setup_totp(request: Request):
+    try:
+        verify_jwt(request)
 
-    if not PASSWORD_PATH.exists():
-        raise HTTPException(status_code=400, detail="Password not set")
+        if not PASSWORD_PATH.exists():
+            raise HTTPException(status_code=400, detail="Password not set")
 
-    secret = pyotp.random_base32()
-    totp = pyotp.TOTP(secret)
-    uri = totp.provisioning_uri(name="AkariBot", issuer_name=TOTP_ISSUER)
+        secret = pyotp.random_base32()
+        totp = pyotp.TOTP(secret)
+        uri = totp.provisioning_uri(name="AkariBot", issuer_name=TOTP_ISSUER)
 
-    Logger.info(f"[WebUI] {get_client_ip(request)} requested 2FA setup.")
-    return {"secret": secret, "uri": uri}
+        Logger.info(f"[WebUI] {get_client_ip(request)} requested 2FA setup.")
+        return {"secret": secret, "uri": uri}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/api/2fa/enable")
+@app.post("/api/totp/enable")
 @limiter.limit("5/minute")
-async def enable_2fa(request: Request):
+async def enable_totp(request: Request):
     ip = get_client_ip(request)
-    verify_jwt(request)
+    try:
+        verify_jwt(request)
 
-    if not PASSWORD_PATH.exists():
-        raise HTTPException(status_code=400, detail="Password not set")
+        if not PASSWORD_PATH.exists():
+            raise HTTPException(status_code=400, detail="Password not set")
 
-    body = await request.json()
-    secret = body.get("secret", "")
-    code = body.get("code", "")
+        body = await request.json()
+        secret = body.get("secret", "")
+        code = body.get("code", "")
 
-    if not secret or not code:
-        raise HTTPException(status_code=400, detail="Secret and code are required")
+        if not secret or not code:
+            raise HTTPException(status_code=400, detail="Secret and code are required")
 
-    totp = pyotp.TOTP(secret)
-    if not totp.verify(code, valid_window=1):
-        Logger.warning(f"[WebUI] {ip} 2FA enable failed: invalid TOTP code.")
-        raise HTTPException(status_code=400, detail="Invalid TOTP code")
+        totp = pyotp.TOTP(secret)
+        if not totp.verify(code, valid_window=1):
+            Logger.warning(f"[WebUI] {ip} 2FA enable failed: invalid TOTP code.")
+            raise HTTPException(status_code=400, detail="Invalid TOTP code")
 
-    password_data = _read_password_data()
-    if password_data is None:
-        raise HTTPException(status_code=400, detail="Password not set")
+        password_data = _read_password_data()
+        if password_data is None:
+            raise HTTPException(status_code=400, detail="Password not set")
 
-    # 加密并存储 TOTP 密钥
-    encrypted_secret = _totp_cipher.encrypt(secret.encode()).decode()
-    password_data["totp_secret"] = encrypted_secret
-    password_data["totp_enabled"] = True
+        # 加密并存储 TOTP 密钥
+        encrypted_secret = _totp_cipher.encrypt(secret.encode()).decode()
+        password_data["totp_secret"] = encrypted_secret
+        password_data["totp_enabled"] = True
 
-    # 生成并存储 recovery codes
-    recovery_codes = _generate_recovery_codes()
-    password_data["recovery_codes"] = [_hash_recovery_code(c) for c in recovery_codes]
+        # 生成并存储 recovery codes
+        recovery_codes = _generate_recovery_codes()
+        password_data["recovery_codes"] = [_hash_recovery_code(c) for c in recovery_codes]
 
-    _write_password_data(password_data)
+        _write_password_data(password_data)
 
-    Logger.info(f"[WebUI] {ip} enabled 2FA.")
-    return {"message": "success", "recovery_codes": recovery_codes}
+        Logger.info(f"[WebUI] {ip} enabled 2FA.")
+        return {"message": "success", "recovery_codes": recovery_codes}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/api/2fa/recovery-codes/reset")
+@app.post("/api/totp/recovery-codes/reset")
 @limiter.limit("5/minute")
 async def reset_recovery_codes(request: Request):
     ip = get_client_ip(request)
-    verify_jwt(request)
-
-    if not PASSWORD_PATH.exists():
-        raise HTTPException(status_code=400, detail="Password not set")
-
-    password_data = _read_password_data()
-    if password_data is None:
-        raise HTTPException(status_code=400, detail="Password not set")
-
-    if not _is_2fa_enabled(password_data):
-        raise HTTPException(status_code=400, detail="2FA is not enabled")
-
-    body = await request.json()
-    password = body.get("password", "")
-    totp_code = body.get("totp_code", "")
-    recovery_code = body.get("recovery_code", "")
-
-    if not password and not (totp_code or recovery_code):
-        raise HTTPException(status_code=400, detail="Password is required, and provide TOTP code or a recovery code")
-
-    # 验证密码
     try:
-        ph.verify(password_data.get("password", ""), password)
+        verify_jwt(request)
+
+        if not PASSWORD_PATH.exists():
+            raise HTTPException(status_code=400, detail="Password not set")
+
+        password_data = _read_password_data()
+        if password_data is None:
+            raise HTTPException(status_code=400, detail="Password not set")
+
+        if not _is_2fa_enabled(password_data):
+            raise HTTPException(status_code=400, detail="2FA is not enabled")
+
+        body = await request.json()
+        password = body.get("password", "")
+        totp_code = body.get("totp_code", "")
+        recovery_code = body.get("recovery_code", "")
+
+        if not password and not (totp_code or recovery_code):
+            raise HTTPException(
+                status_code=400, detail="Password is required, and provide TOTP code or a recovery code"
+            )
+
+        # 验证密码
+        try:
+            ph.verify(password_data.get("password", ""), password)
+        except Exception:
+            raise HTTPException(status_code=401, detail="Invalid password")
+
+        # 验证 TOTP
+        if recovery_code:
+            if not _verify_recovery_code(password_data, recovery_code):
+                Logger.warning(f"[WebUI] {ip} ecovery codes reset failed: invalid recovery code.")
+                raise HTTPException(status_code=400, detail="Invalid recovery code")
+        else:
+            totp = _get_totp(password_data)
+            if totp is None or not totp.verify(totp_code, valid_window=1):
+                Logger.warning(f"[WebUI] {ip} recovery codes reset failed: invalid TOTP code.")
+                raise HTTPException(status_code=400, detail="Invalid TOTP code")
+
+        # 生成新的 recovery codes
+        recovery_codes = _generate_recovery_codes()
+        password_data["recovery_codes"] = [_hash_recovery_code(c) for c in recovery_codes]
+        _write_password_data(password_data)
+
+        Logger.info(f"[WebUI] {ip} reset recovery codes.")
+        return {"message": "success", "recovery_codes": recovery_codes}
+    except HTTPException as e:
+        raise e
     except Exception:
-        raise HTTPException(status_code=401, detail="Invalid password")
-
-    # 验证 TOTP
-    if recovery_code:
-        if not _verify_recovery_code(password_data, recovery_code):
-            Logger.warning(f"[WebUI] {ip} ecovery codes reset failed: invalid recovery code.")
-            raise HTTPException(status_code=400, detail="Invalid recovery code")
-    else:
-        totp = _get_totp(password_data)
-        if totp is None or not totp.verify(totp_code, valid_window=1):
-            Logger.warning(f"[WebUI] {ip} recovery codes reset failed: invalid TOTP code.")
-            raise HTTPException(status_code=400, detail="Invalid TOTP code")
-
-    # 生成新的 recovery codes
-    recovery_codes = _generate_recovery_codes()
-    password_data["recovery_codes"] = [_hash_recovery_code(c) for c in recovery_codes]
-    _write_password_data(password_data)
-
-    Logger.info(f"[WebUI] {ip} reset recovery codes.")
-    return {"message": "success", "recovery_codes": recovery_codes}
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/api/2fa/disable")
+@app.post("/api/totp/disable")
 @limiter.limit("5/minute")
-async def disable_2fa(request: Request):
+async def disable_totp(request: Request):
     ip = get_client_ip(request)
 
-    body = await request.json()
-
-    password_data = _read_password_data()
-    if password_data is None:
-        raise HTTPException(status_code=400, detail="Password not set")
-
-    if not _is_2fa_enabled(password_data):
-        raise HTTPException(status_code=400, detail="2FA is not enabled")
-
-    # 方式1: 密码 + TOTP 码
-    verify_jwt(request)
-    password = body.get("password", "")
-    totp_code = body.get("totp_code", "")
-    recovery_code = body.get("recovery_code", "")
-
-    if not password and not (totp_code or recovery_code):
-        raise HTTPException(status_code=400, detail="Password is required, and provide TOTP code or a recovery code")
-
-    # 验证密码
     try:
-        ph.verify(password_data.get("password", ""), password)
+        verify_jwt(request)
+
+        body = await request.json()
+
+        password_data = _read_password_data()
+        if password_data is None:
+            raise HTTPException(status_code=400, detail="Password not set")
+
+        if not _is_2fa_enabled(password_data):
+            raise HTTPException(status_code=400, detail="2FA is not enabled")
+
+        password = body.get("password", "")
+        totp_code = body.get("totp_code", "")
+        recovery_code = body.get("recovery_code", "")
+
+        if not password and not (totp_code or recovery_code):
+            raise HTTPException(
+                status_code=400, detail="Password is required, and provide TOTP code or a recovery code"
+            )
+
+        # 验证密码
+        try:
+            ph.verify(password_data.get("password", ""), password)
+        except Exception:
+            raise HTTPException(status_code=401, detail="Invalid password")
+
+        # 验证 TOTP
+        if recovery_code:
+            if not _verify_recovery_code(password_data, recovery_code):
+                Logger.warning(f"[WebUI] {ip} 2FA disable failed: invalid recovery code.")
+                raise HTTPException(status_code=400, detail="Invalid recovery code")
+        else:
+            totp = _get_totp(password_data)
+            if totp is None or not totp.verify(totp_code, valid_window=1):
+                Logger.warning(f"[WebUI] {ip} 2FA disable failed: invalid TOTP code.")
+                raise HTTPException(status_code=400, detail="Invalid TOTP code")
+
+        # 移除 2FA 数据，保留密码
+        password_data.pop("totp_secret", None)
+        password_data.pop("totp_enabled", None)
+        password_data.pop("recovery_codes", None)
+        _write_password_data(password_data)
+
+        Logger.info(f"[WebUI] {ip} disabled 2FA.")
+        return {"message": "2FA disabled successfully"}
+    except HTTPException as e:
+        raise e
     except Exception:
-        raise HTTPException(status_code=401, detail="Invalid password")
-
-    # 验证 TOTP
-    if recovery_code:
-        if not _verify_recovery_code(password_data, recovery_code):
-            Logger.warning(f"[WebUI] {ip} 2FA disable failed: invalid recovery code.")
-            raise HTTPException(status_code=400, detail="Invalid recovery code")
-    else:
-        totp = _get_totp(password_data)
-        if totp is None or not totp.verify(totp_code, valid_window=1):
-            Logger.warning(f"[WebUI] {ip} 2FA disable failed: invalid TOTP code.")
-            raise HTTPException(status_code=400, detail="Invalid TOTP code")
-
-    # 移除 2FA 数据，保留密码
-    password_data.pop("totp_secret", None)
-    password_data.pop("totp_enabled", None)
-    password_data.pop("recovery_codes", None)
-    _write_password_data(password_data)
-
-    Logger.info(f"[WebUI] {ip} disabled 2FA.")
-    return {"message": "2FA disabled successfully"}
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
