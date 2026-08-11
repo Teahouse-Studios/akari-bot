@@ -825,13 +825,15 @@ async def _(msg: Bot.MessageSession, user: str, module: str):
         sender_union_info = await SenderUnionInfo.resolve_union(user)
     auth_list = _get_authorizations(sender_union_info)
     if "add" in msg.parsed_msg:
-        for entry in auth_list:
-            if entry["module"] == module and entry["authorized_by"] == msg.session_info.sender_id:
-                await msg.finish(I18NContext("core.message.auth.add.already", user=user, module=module))
-                return
-        auth_list.append({"module": module, "authorized_by": msg.session_info.sender_id})
-        await _set_authorizations(sender_union_info, auth_list)
-        await msg.finish(I18NContext("core.message.auth.add.success", user=user, module=module))
+        verify = await msg.verify_user()
+        if verify:
+            for entry in auth_list:
+                if entry["module"] == module and entry["authorized_by"] == msg.session_info.sender_id:
+                    await msg.finish(I18NContext("core.message.auth.add.already", user=user, module=module))
+                    return
+            auth_list.append({"module": module, "authorized_by": msg.session_info.sender_id})
+            await _set_authorizations(sender_union_info, auth_list)
+            await msg.finish(I18NContext("core.message.auth.add.success", user=user, module=module))
     elif "remove" in msg.parsed_msg:
         new_list = [
             e for e in auth_list if not (e["module"] == module and e["authorized_by"] == msg.session_info.sender_id)

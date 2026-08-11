@@ -1,6 +1,7 @@
 """core.builtins.session 会话系统单元测试。"""
 
 import asyncio
+from unittest.mock import patch
 
 from core.builtins.session.features import Features
 from core.builtins.session.lock import ExecutionLockList
@@ -259,6 +260,46 @@ async def _test_task_bg_check_timeout():
         return False
 
 
+async def _make_verification_session(response: str, support_button: bool) -> MockMessageSession:
+    msg = MockMessageSession(["~test", response], is_ci=True)
+    await msg.async_init("~test")
+    msg.session_info.support_button = support_button
+    return msg
+
+
+async def _test_verify_user_with_button():
+    msg = await _make_verification_session("22", support_button=True)
+    with (
+        patch("core.builtins.session.internal.Random.sample", return_value=[11, 22, 33]),
+        patch("core.builtins.session.internal.Random.choice", return_value=22),
+    ):
+        result = await msg.verify_user(timeout=30, delete=False)
+    return (
+        result is True
+        and msg.buttons == [{"11": "11", "22": "22", "33": "33"}]
+        and any("点击数字“22”" in action for action in msg.action)
+    )
+
+
+async def _test_verify_user_text_fallback():
+    msg = await _make_verification_session("22", support_button=False)
+    with (
+        patch("core.builtins.session.internal.Random.sample", return_value=[11, 22, 33]),
+        patch("core.builtins.session.internal.Random.choice", return_value=22),
+    ):
+        result = await msg.verify_user(timeout=30, delete=False)
+    return result is True and not msg.buttons and any("发送数字“22”" in action for action in msg.action)
+
+
+async def _test_verify_user_rejects_wrong_number():
+    msg = await _make_verification_session("33", support_button=True)
+    with (
+        patch("core.builtins.session.internal.Random.sample", return_value=[11, 22, 33]),
+        patch("core.builtins.session.internal.Random.choice", return_value=22),
+    ):
+        return await msg.verify_user(timeout=30, delete=False) is False
+
+
 @func_case
 async def test_features(tester: Tester):
     """core.builtins.session.features: Features 测试"""
@@ -286,5 +327,15 @@ async def test_session_task(tester: Tester):
     await tester.test(_test_task_add_and_get, "SessionTaskManager 添加和获取任务测试")
     await tester.test(_test_task_add_callback, "SessionTaskManager 添加回调测试")
     await tester.test(_test_task_bg_check_timeout, "SessionTaskManager.bg_check() 超时处理测试")
+
+    return tester
+
+
+@func_case
+async def test_user_verification(tester: Tester):
+    """core.builtins.session.internal: 用户操作验证测试"""
+    await tester.test(_test_verify_user_with_button, "按钮平台展示三个数字并通过正确答案")
+    await tester.test(_test_verify_user_text_fallback, "不支持按钮的平台回退到发送数字")
+    await tester.test(_test_verify_user_rejects_wrong_number, "错误数字不能通过验证")
 
     return tester

@@ -335,7 +335,7 @@ requires-dist = [
     { name = "python-multipart", specifier = ">=0.0.22,<1.0.0" },
     { name = "python-whois", specifier = ">=0.9.0,<1.0.0" },
     { name = "pywin32", marker = "sys_platform == 'win32'", specifier = ">=312,<313" },
-    { name = "qq-botpy-sdk", specifier = ">=2.0.0" },
+    { name = "qq-botpy-sdk", git = "https://github.com/Teahouse-Studios/qq-botpy-sdk.git" },
     { name = "rapidfuzz", specifier = ">=3.14.5" },
     { name = "rdkit", specifier = ">=2026.3.1,<2026.4.0" },
     { name = "simpleeval", specifier = ">=1.0.0,<2.0.0" },
@@ -3182,16 +3182,12 @@ wheels = [
 [[package]]
 name = "qq-botpy-sdk"
 version = "2.0.0"
-source = { registry = "https://pypi.org/simple" }
+source = { git = "https://github.com/Teahouse-Studios/qq-botpy-sdk.git#4b702c3587b6e2cda45495ec749dd63943b748a0" }
 dependencies = [
     { name = "aiohttp" },
     { name = "apscheduler" },
     { name = "cryptography" },
     { name = "pyyaml" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/c6/95/1ad6e07256a57b0e07b4ab361abfe2bec8123191cb0f88b4a8b5d2c83ee3/qq_botpy_sdk-2.0.0.tar.gz", hash = "sha256:2c501167df3d584a0e05f30b56901753f0eb4f067d51799c7022f4f0983d1907", size = 99568, upload-time = "2026-08-10T15:17:04.849Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ff/1f/967704c3d013c6260fffb0667a62189bd280a984785ce5b3d1fb97d6e6d5/qq_botpy_sdk-2.0.0-py3-none-any.whl", hash = "sha256:aa3643331053f873c26ab2b60e2ad050abfe540f2ba6637cbcf44e46fb6e7a61", size = 124680, upload-time = "2026-08-10T15:17:03.466Z" },
 ]
 
 [[package]]

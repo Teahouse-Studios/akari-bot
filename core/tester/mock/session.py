@@ -223,6 +223,8 @@ class MockMessageSession(MessageSession):
         possibly_choices=None,
     ):
         confirm_prompt = None
+        if possibly_choices and self.session_info.support_button:
+            self.buttons.extend(possibly_choices)
         if message_chain:
             message_chain = get_message_chain(self.session_info, message_chain)
             if append_instruction:

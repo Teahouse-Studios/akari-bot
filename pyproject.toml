@@ -39,7 +39,7 @@ dependencies = [
     "py-cord>=2.7.2",
     "pyjwt[crypto]>=2.8.0,<3.0.0",
     "pyotp>=2.9.0,<3.0.0",
-    "qq-botpy-sdk>=2.0.0",
+    "qq-botpy-sdk==2.0.1",
     "slowapi>=0.1.9,<1.0.0",
     "urllib3>=2.6.3",
     "uvicorn[standard]>=0.38.0,<1.0.0",
@@ -115,3 +115,6 @@ quote-style = "double"
 
 [tool.pyright]
 reportUndefinedVariable = "error"
+
+[tool.uv.sources]
+qq-botpy-sdk = { git = "https://github.com/Teahouse-Studios/qq-botpy-sdk.git" }

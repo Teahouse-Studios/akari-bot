@@ -185,6 +185,37 @@ def _test_refresh_aliases():
         return False
 
 
+def _test_get_module_and_alias_first_words():
+    """ModulesManager.get_module_and_alias_first_words: 查找模块与别名首词"""
+    module_name = "__test_loader_related"
+    try:
+        test_module = Module.assign(
+            module_name=module_name,
+            alias={
+                "__test_loader_related_alias": module_name,
+                "__test_loader_related_alias detail": f"{module_name} detail",
+                "__test_loader_related_alt info": f"{module_name} info",
+            },
+            recommend_modules=None,
+            developers=None,
+        )
+        ModulesManager.add_module(test_module, "test.py")
+        ModulesManager.refresh_modules_aliases()
+        expected = [module_name, "__test_loader_related_alias", "__test_loader_related_alt"]
+        return (
+            ModulesManager.get_module_and_alias_first_words(module_name) == expected
+            and ModulesManager.get_module_and_alias_first_words("__test_loader_related_alias") == expected
+            and ModulesManager.get_module_and_alias_first_words("__test_loader_related_alt") == expected
+            and ModulesManager.get_module_and_alias_first_words("__test_loader_related_missing") == []
+        )
+    except Exception:
+        return False
+    finally:
+        ModulesManager.modules.pop(module_name, None)
+        ModulesManager.modules_origin.pop(module_name, None)
+        ModulesManager.refresh_modules_aliases()
+
+
 @func_case
 async def test_loader(tester: Tester):
     """core.loader: 模块加载器测试"""
@@ -198,4 +229,8 @@ async def test_loader(tester: Tester):
     await tester.test(_test_return_modules_list, "ModulesManager.return_modules_list 测试")
     await tester.test(_test_return_modules_list_filter_platform, "ModulesManager.return_modules_list 平台过滤测试")
     await tester.test(_test_refresh_aliases, "ModulesManager.refresh_modules_aliases 测试")
+    await tester.test(
+        _test_get_module_and_alias_first_words,
+        "ModulesManager.get_module_and_alias_first_words 测试",
+    )
     return tester

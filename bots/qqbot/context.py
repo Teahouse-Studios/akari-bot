@@ -1,13 +1,16 @@
 import asyncio
 import html
 from collections.abc import Mapping
+from datetime import datetime, timedelta, timezone
 from typing import Union
 from urllib.parse import quote
 
+import botpy
 import orjson
 from botpy.interaction import Interaction
 from botpy.message import BaseMessage, C2CMessage, DirectMessage, GroupMessage, Message
 from botpy.protocol import MediaSendResult, ReplyTarget
+from botpy.types.group import SetMemberMuteState
 from botpy.types.message import Reference, KeyboardPayload
 from botpy.types.inline import Keyboard, Button, KeyboardRow, RenderData, Action, Permission
 
@@ -164,7 +167,7 @@ class QQBotContextManager(ContextManager):
     context: dict[str, Union[BaseMessage, Interaction]] = {}
     features: Features = qqbot_features
     typing_states: dict[str, _TypingState] = {}
-    client = None
+    client: botpy.Client | None = None
 
     # 机器人沉默满此秒数后，才在群聊中补发输入提示
     TYPING_PROMPT_DELAY = 5
@@ -749,6 +752,49 @@ class QQBotContextManager(ContextManager):
                 message_id=session_info.message_id,
                 emoji_type=emoji_type,
                 emoji_id=qq_limited_emoji,
+            )
+
+    @classmethod
+    async def restrict_member(
+        cls, session_info: SessionInfo, user_id: str | list[str], duration: int | None = None, reason: str | None = None
+    ) -> None:
+        if isinstance(user_id, str):
+            user_id = [user_id]
+        if not isinstance(user_id, list):
+            raise TypeError("User ID must be a list or str")
+
+        if session_info.target_from == target_group_prefix:
+            client = _get_client()
+            duration = datetime.now(timezone.utc) + timedelta(seconds=duration if duration else 60)
+
+            rdata = [
+                SetMemberMuteState(
+                    op="add",
+                    member_openid=u.removeprefix(session_info.sender_from + "|"),
+                    mute_expire_at=duration.isoformat(),
+                )
+                for u in user_id
+            ]
+            Logger.debug(rdata)
+            await client.api.set_group_member_mutes(session_info.get_common_target_id(), rdata)
+
+    @classmethod
+    async def unrestrict_member(cls, session_info: SessionInfo, user_id: str | list[str]) -> None:
+        if isinstance(user_id, str):
+            user_id = [user_id]
+        if not isinstance(user_id, list):
+            raise TypeError("User ID must be a list or str")
+
+        if session_info.target_from == target_group_prefix:
+            client = _get_client()
+            await client.api.set_group_member_mutes(
+                session_info.get_common_target_id(),
+                [
+                    SetMemberMuteState(
+                        op="del", member_openid=u.removeprefix(session_info.sender_from + "|"), mute_expire_at=""
+                    )
+                    for u in user_id
+                ],
             )
 
 

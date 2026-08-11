@@ -97,6 +97,33 @@ class ModulesManager:
                 cls.modules_aliases.update(module.alias)
 
     @classmethod
+    def get_module_and_alias_first_words(cls, module_or_alias: str) -> list[str]:
+        """返回模块名及其所有别名的首词。"""
+        input_words = module_or_alias.split(maxsplit=1)
+        if not input_words:
+            return []
+
+        first_word = input_words[0]
+        module_name = first_word if first_word in cls.modules else None
+        if not module_name:
+            for alias, target in cls.modules_aliases.items():
+                if alias.split(maxsplit=1)[0] == first_word:
+                    module_name = target.split(maxsplit=1)[0]
+                    break
+
+        if not module_name or module_name not in cls.modules:
+            return []
+
+        result = [module_name]
+        for alias, target in cls.modules_aliases.items():
+            if target.split(maxsplit=1)[0] != module_name:
+                continue
+            alias_first_word = alias.split(maxsplit=1)[0]
+            if alias_first_word not in result:
+                result.append(alias_first_word)
+        return result
+
+    @classmethod
     def refresh_modules_hooks(cls):
         cls.modules_hooks.clear()
         for m in cls.modules:

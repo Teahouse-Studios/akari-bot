@@ -29,6 +29,7 @@ from core.constants import SessionFinished, WaitCancelException
 from core.exports import add_export, exports
 from core.utils.func import is_int
 from core.utils.image import msgnode2image
+from core.utils.random import Random
 
 if TYPE_CHECKING:
     from core.queue.server import JobQueueServer
@@ -639,6 +640,47 @@ class MessageSession:
             return result
         raise WaitCancelException
 
+    async def verify_user(
+        self,
+        message_chain: Chainable | None = None,
+        timeout: float | None = 120,
+        delete: bool = True,
+    ) -> bool:
+        """验证当前操作是否由用户完成。
+
+        从 1 到 100 中抽取三个不重复的数字，并随机指定其中一个作为答案。支持按钮的平台会展示
+        三个数字按钮，不支持按钮的平台则要求用户发送目标数字。
+
+        :param message_chain: 需要发送的提示消息，可不填
+        :param timeout: 等待用户操作的超时时间（秒），默认为 120 秒。
+        :param delete: 验证完成或超时后是否删除提示消息，默认为 True。
+        :return: 用户选择或发送的数字与目标数字一致时返回 True，否则返回 False。
+        :raises WaitCancelException: 如果等待超时或未取得用户输入。
+        """
+        choices = Random.sample(range(1, 101), 3)
+        answer = Random.choice(choices)
+        prompt_key = (
+            "message.user_verification.prompt.button"
+            if self.session_info.support_button
+            else "message.user_verification.prompt.text"
+        )
+        possibly_choices = (
+            [{str(choice): str(choice) for choice in choices}] if self.session_info.support_button else None
+        )
+        s = message_chain
+        if message_chain is None:
+            s = MessageChain.assign(I18NContext(prompt_key, number=answer))
+        else:
+            s += I18NContext(prompt_key, number=answer)
+        result = await self.wait_next_message(
+            s,
+            delete=delete,
+            timeout=timeout,
+            append_instruction=False,
+            possibly_choices=possibly_choices,
+        )
+        return result.as_display(text_only=True).strip() == str(answer)
+
     async def wait_anyone(
         self,
         message_chain: Chainable | None = None,
@@ -803,6 +845,7 @@ class MessageSession:
 
     waitConfirm = wait_confirm
     waitNextMessage = wait_next_message
+    verifyUser = verify_user
     waitReply = wait_reply
     waitAnyone = wait_anyone
     checkPermission = check_permission
