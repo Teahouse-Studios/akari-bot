@@ -61,8 +61,7 @@ def _get_totp(password_data: dict | None) -> pyotp.TOTP | None:
         return None
 
 
-def _generate_recovery_codes(count: int = 8) -> list[str]:
-    """生成一组 recovery codes（格式如 XXXX-XXXX）。"""
+def _generate_backup_codes(count: int = 8) -> list[str]:
     codes = []
     for _ in range(count):
         code = "-".join(
@@ -72,20 +71,18 @@ def _generate_recovery_codes(count: int = 8) -> list[str]:
     return codes
 
 
-def _hash_recovery_code(code: str) -> str:
-    """对单个 recovery code 进行哈希。"""
+def _hash_backup_code(code: str) -> str:
     return hashlib.sha256(code.strip().upper().encode()).hexdigest()
 
 
-def _verify_recovery_code(password_data: dict, code: str) -> bool:
-    """验证 recovery code 是否有效，若有效则从存储中移除。"""
-    recovery_codes = password_data.get("recovery_codes", [])
-    if not recovery_codes:
+def _verify_backup_code(password_data: dict, code: str) -> bool:
+    backup_codes = password_data.get("backup_codes", [])
+    if not backup_codes:
         return False
-    hashed = _hash_recovery_code(code)
-    if hashed in recovery_codes:
-        recovery_codes.remove(hashed)
-        password_data["recovery_codes"] = recovery_codes
+    hashed = _hash_backup_code(code)
+    if hashed in backup_codes:
+        backup_codes.remove(hashed)
+        password_data["backup_codes"] = backup_codes
         return True
     return False
 
@@ -172,11 +169,11 @@ async def auth(request: Request):
 
         if _is_2fa_enabled(password_data):
             totp_code = body.get("totp_code", "")
-            recovery_code = body.get("recovery_code", "")
+            backup_code = body.get("backup_code", "")
 
-            if recovery_code:
-                # 使用 recovery code 替代 TOTP 通过 2FA
-                if not _verify_recovery_code(password_data, recovery_code):
+            if backup_code:
+                # 使用 backup code 替代 TOTP 通过 2FA
+                if not _verify_backup_code(password_data, backup_code):
                     now = datetime.now(UTC)
                     login_failed_attempts[ip] = [
                         t for t in login_failed_attempts[ip] if (now - t).total_seconds() < 600
@@ -191,9 +188,9 @@ async def auth(request: Request):
                         Logger.warning(f"[WebUI] {ip} has been blocked due to excessive login failures.")
                         raise HTTPException(status_code=429, detail="This IP has been blocked")
 
-                    Logger.warning(f"[WebUI] {ip} login failed: invalid recovery code.")
-                    raise HTTPException(status_code=403, detail="Invalid recovery code")
-                # 持久化已消耗的 recovery code
+                    Logger.warning(f"[WebUI] {ip} login failed: invalid backup code.")
+                    raise HTTPException(status_code=403, detail="Invalid backup code")
+                # 持久化已消耗的 backup code
                 _write_password_data(password_data)
             else:
                 if not totp_code:
@@ -264,11 +261,11 @@ async def change_password(request: Request, response: Response):
         # 2FA 启用时，需要验证 TOTP 码
         if _is_2fa_enabled(password_data):
             totp_code = body.get("totp_code", "")
-            recovery_code = body.get("recovery_code", "")
+            backup_code = body.get("backup_code", "")
 
-            if recovery_code:
-                # 使用 recovery code 替代 TOTP 通过 2FA
-                if not _verify_recovery_code(password_data, recovery_code):
+            if backup_code:
+                # 使用 backup code 替代 TOTP 通过 2FA
+                if not _verify_backup_code(password_data, backup_code):
                     now = datetime.now(UTC)
                     login_failed_attempts[ip] = [
                         t for t in login_failed_attempts[ip] if (now - t).total_seconds() < 600
@@ -283,9 +280,9 @@ async def change_password(request: Request, response: Response):
                         Logger.warning(f"[WebUI] {ip} has been blocked due to excessive login failures.")
                         raise HTTPException(status_code=429, detail="This IP has been blocked")
 
-                    Logger.warning(f"[WebUI] {ip} login failed: invalid recovery code.")
-                    raise HTTPException(status_code=403, detail="Invalid recovery code")
-                # 持久化已消耗的 recovery code
+                    Logger.warning(f"[WebUI] {ip} login failed: invalid backup code.")
+                    raise HTTPException(status_code=403, detail="Invalid backup code")
+                # 持久化已消耗的 backup code
                 _write_password_data(password_data)
             else:
                 if not totp_code:
@@ -418,14 +415,14 @@ async def enable_totp(request: Request):
         password_data["totp_secret"] = encrypted_secret
         password_data["totp_enabled"] = True
 
-        # 生成并存储 recovery codes
-        recovery_codes = _generate_recovery_codes()
-        password_data["recovery_codes"] = [_hash_recovery_code(c) for c in recovery_codes]
+        # 生成并存储 backup codes
+        backup_codes = _generate_backup_codes()
+        password_data["backup_codes"] = [_hash_backup_code(c) for c in backup_codes]
 
         _write_password_data(password_data)
 
         Logger.info(f"[WebUI] {ip} enabled 2FA.")
-        return {"message": "success", "recovery_codes": recovery_codes}
+        return {"message": "success", "backup_codes": backup_codes}
     except HTTPException as e:
         raise e
     except Exception:
@@ -433,9 +430,9 @@ async def enable_totp(request: Request):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/api/totp/recovery-codes/reset")
+@app.post("/api/totp/backup-codes/reset")
 @limiter.limit("5/minute")
-async def reset_recovery_codes(request: Request):
+async def reset_backup_codes(request: Request):
     ip = get_client_ip(request)
     try:
         verify_jwt(request)
@@ -453,12 +450,10 @@ async def reset_recovery_codes(request: Request):
         body = await request.json()
         password = body.get("password", "")
         totp_code = body.get("totp_code", "")
-        recovery_code = body.get("recovery_code", "")
+        backup_code = body.get("backup_code", "")
 
-        if not password and not (totp_code or recovery_code):
-            raise HTTPException(
-                status_code=400, detail="Password is required, and provide TOTP code or a recovery code"
-            )
+        if not password and not (totp_code or backup_code):
+            raise HTTPException(status_code=400, detail="Password is required, and provide TOTP code or a backup code")
 
         # 验证密码
         try:
@@ -467,23 +462,23 @@ async def reset_recovery_codes(request: Request):
             raise HTTPException(status_code=401, detail="Invalid password")
 
         # 验证 TOTP
-        if recovery_code:
-            if not _verify_recovery_code(password_data, recovery_code):
-                Logger.warning(f"[WebUI] {ip} ecovery codes reset failed: invalid recovery code.")
-                raise HTTPException(status_code=400, detail="Invalid recovery code")
+        if backup_code:
+            if not _verify_backup_code(password_data, backup_code):
+                Logger.warning(f"[WebUI] {ip} ecovery codes reset failed: invalid backup code.")
+                raise HTTPException(status_code=400, detail="Invalid backup code")
         else:
             totp = _get_totp(password_data)
             if totp is None or not totp.verify(totp_code, valid_window=1):
-                Logger.warning(f"[WebUI] {ip} recovery codes reset failed: invalid TOTP code.")
+                Logger.warning(f"[WebUI] {ip} backup codes reset failed: invalid TOTP code.")
                 raise HTTPException(status_code=400, detail="Invalid TOTP code")
 
-        # 生成新的 recovery codes
-        recovery_codes = _generate_recovery_codes()
-        password_data["recovery_codes"] = [_hash_recovery_code(c) for c in recovery_codes]
+        # 生成新的 backup codes
+        backup_codes = _generate_backup_codes()
+        password_data["backup_codes"] = [_hash_backup_code(c) for c in backup_codes]
         _write_password_data(password_data)
 
-        Logger.info(f"[WebUI] {ip} reset recovery codes.")
-        return {"message": "success", "recovery_codes": recovery_codes}
+        Logger.info(f"[WebUI] {ip} reset backup codes.")
+        return {"message": "success", "backup_codes": backup_codes}
     except HTTPException as e:
         raise e
     except Exception:
@@ -510,12 +505,10 @@ async def disable_totp(request: Request):
 
         password = body.get("password", "")
         totp_code = body.get("totp_code", "")
-        recovery_code = body.get("recovery_code", "")
+        backup_code = body.get("backup_code", "")
 
-        if not password and not (totp_code or recovery_code):
-            raise HTTPException(
-                status_code=400, detail="Password is required, and provide TOTP code or a recovery code"
-            )
+        if not password and not (totp_code or backup_code):
+            raise HTTPException(status_code=400, detail="Password is required, and provide TOTP code or a backup code")
 
         # 验证密码
         try:
@@ -524,10 +517,10 @@ async def disable_totp(request: Request):
             raise HTTPException(status_code=401, detail="Invalid password")
 
         # 验证 TOTP
-        if recovery_code:
-            if not _verify_recovery_code(password_data, recovery_code):
-                Logger.warning(f"[WebUI] {ip} 2FA disable failed: invalid recovery code.")
-                raise HTTPException(status_code=400, detail="Invalid recovery code")
+        if backup_code:
+            if not _verify_backup_code(password_data, backup_code):
+                Logger.warning(f"[WebUI] {ip} 2FA disable failed: invalid backup code.")
+                raise HTTPException(status_code=400, detail="Invalid backup code")
         else:
             totp = _get_totp(password_data)
             if totp is None or not totp.verify(totp_code, valid_window=1):
@@ -537,7 +530,7 @@ async def disable_totp(request: Request):
         # 移除 2FA 数据，保留密码
         password_data.pop("totp_secret", None)
         password_data.pop("totp_enabled", None)
-        password_data.pop("recovery_codes", None)
+        password_data.pop("backup_codes", None)
         _write_password_data(password_data)
 
         Logger.info(f"[WebUI] {ip} disabled 2FA.")
