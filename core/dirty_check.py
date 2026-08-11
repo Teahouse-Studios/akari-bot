@@ -31,6 +31,8 @@ use_textscan_v1 = CoreConfig.check_use_textscan_v1
 
 ALIYUN_BACKEND = "aliyun"
 LOCAL_BACKEND = "qwen3guard"
+ALIYUN_SPLIT_CACHE_KEY = "_akari_split_results"
+TEXT_CHUNK_SIZE = 600
 BACKEND_ALIASES = {
     "aliyun": ALIYUN_BACKEND,
     "dirty_check": ALIYUN_BACKEND,
@@ -126,6 +128,31 @@ def parse_data(original_content: str, result: dict, confidence: float = 60, addi
     return {"content": content, "status": content == original_content, "original": original_content}
 
 
+def parse_aliyun_split_data(
+    original_content: str,
+    result: dict,
+    confidence: float = 60,
+    additional_text: str | None = None,
+) -> dict:
+    split_results = result.get(ALIYUN_SPLIT_CACHE_KEY)
+    if not isinstance(split_results, list):
+        raise ValueError("Invalid Aliyun split cache data")
+
+    chunks = [original_content[i : i + TEXT_CHUNK_SIZE] for i in range(0, len(original_content), TEXT_CHUNK_SIZE)]
+    if len(chunks) != len(split_results):
+        raise ValueError("Aliyun split cache data does not match content chunks")
+
+    parsed_results = [
+        parse_data(chunk, split_result, confidence, additional_text)
+        for chunk, split_result in zip(chunks, split_results, strict=True)
+    ]
+    return {
+        "content": "".join(result["content"] for result in parsed_results),
+        "status": all(result["status"] for result in parsed_results),
+        "original": original_content,
+    }
+
+
 def get_backend() -> str:
     configured = CoreConfig.dirty_check_backend.strip().lower()
     if configured not in BACKEND_ALIASES:
@@ -175,6 +202,13 @@ def local_cache_namespace() -> str:
     return f"{LOCAL_BACKEND}:{CoreConfig.dirty_check_local_model}"
 
 
+def dirty_word_cache_namespace(backend: str) -> str:
+    if backend == LOCAL_BACKEND:
+        return local_cache_namespace()
+    api_version = "textscan-v1" if use_textscan_v1 else "moderation-plus-v2"
+    return f"{ALIYUN_BACKEND}:{api_version}"
+
+
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
 async def check(
     text: str | list[str] | list[MessageElement] | MessageElement | MessageChain,
@@ -210,7 +244,7 @@ async def check(
     if not text:
         return []
 
-    cache_namespace = local_cache_namespace() if backend == LOCAL_BACKEND else ""
+    cache_namespace = dirty_word_cache_namespace(backend)
 
     query_list = {}
     for count, t in enumerate(text):
@@ -229,8 +263,10 @@ async def check(
                                 additional_text,
                                 CoreConfig.dirty_check_local_block_controversial,
                             )
-                        else:
+                        elif use_textscan_v1:
                             query_list[q][pq] = parse_data(pq, cache.result, confidence, additional_text)
+                        else:
+                            query_list[q][pq] = parse_aliyun_split_data(pq, cache.result, confidence, additional_text)
                 except Exception:
                     Logger.warning("Failed to get cache, skip.")
                     Logger.exception()
@@ -249,7 +285,7 @@ async def check(
             chunks = []
             chunk_owners = []
             for content in call_api_list_:
-                for chunk in [content[i : i + 600] for i in range(0, len(content), 600)]:
+                for chunk in [content[i : i + TEXT_CHUNK_SIZE] for i in range(0, len(content), TEXT_CHUNK_SIZE)]:
                     chunks.append(chunk)
                     chunk_owners.append(content)
 
@@ -320,8 +356,11 @@ async def check(
                             content = item["content"]
                             for n in call_api_list[content]:
                                 query_list[n][content] = parse_data(content, item, confidence, additional_text)
-                            hash_id = hashlib.sha256(content.encode("utf-8")).hexdigest()
-                            await DirtyWordCache.create(hash_id=hash_id, desc=content, result=item)
+                            hash_id = DirtyWordCache.make_hash(content, cache_namespace)
+                            await DirtyWordCache.update_or_create(
+                                hash_id=hash_id,
+                                defaults={"desc": content, "result": item},
+                            )
                     else:
                         raise ValueError(result["msg"])
                 else:
@@ -379,7 +418,7 @@ async def check(
             async with httpx.AsyncClient() as client:
                 tasks = []
                 for x in call_api_list_:
-                    chunks = [x[i : i + 600] for i in range(0, len(x), 600)]
+                    chunks = [x[i : i + TEXT_CHUNK_SIZE] for i in range(0, len(x), TEXT_CHUNK_SIZE)]
                     for idx, chunk in enumerate(chunks):
                         tasks.append(call_api(x, chunk, idx))
 
@@ -388,19 +427,19 @@ async def check(
             for x, res_list in split_results.items():
                 res_list.sort(key=lambda item: item[0])
 
-                merged_content = "".join([r[1]["content"] for r in res_list])
-                merged_status = all(r[1]["status"] for r in res_list)
-
-                final_parse_result = {"content": merged_content, "status": merged_status, "original": x}
+                cache_result = {ALIYUN_SPLIT_CACHE_KEY: [result[2] for result in res_list]}
+                final_parse_result = parse_aliyun_split_data(x, cache_result, confidence, additional_text)
 
                 for n in call_api_list[x]:
                     query_list[n][x] = final_parse_result
 
                 if res_list:
                     try:
-                        hash_id = hashlib.sha256(x.encode("utf-8")).hexdigest()
-                        last_api_data = res_list[-1][2]
-                        await DirtyWordCache.create(hash_id=hash_id, desc=x, result=last_api_data)
+                        hash_id = DirtyWordCache.make_hash(x, cache_namespace)
+                        await DirtyWordCache.update_or_create(
+                            hash_id=hash_id,
+                            defaults={"desc": x, "result": cache_result},
+                        )
                     except Exception:
                         Logger.warning("Failed to create dirty word cache, skip.")
                         Logger.exception()
