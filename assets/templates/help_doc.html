@@ -112,6 +112,32 @@
             font-weight: bolder;
         }
 
+        .help-module-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1em;
+        }
+
+        .module-type-label {
+            display: inline-flex;
+            align-items: center;
+            gap: .4em;
+            margin-right: .8em;
+            color: var(--theme-color-title);
+            font-size: .9em;
+            white-space: nowrap;
+        }
+
+        .module-type-swatch {
+            width: 1em;
+            height: 1em;
+            box-sizing: border-box;
+            border: 1px solid var(--theme-color-highlight);
+            border-radius: 3px;
+            background-color: var(--theme-color-main);
+        }
+
         .botbox {
             width: fit-content;
             padding: 10px;
@@ -189,7 +215,15 @@
         <h2>{{ locale.t("core.help.header") }}</h2>
         <hr>
         <div class="help-shard">
-            <h3 class="help-module-name"> {{ help_name }} </h3>
+            {% set module_type_key = "core.message.help.table.base" if module.base else
+                ("core.message.help.table.subscription" if module.rss else "core.message.help.table.external") %}
+            <div class="help-module-heading">
+                <h3 class="help-module-name"> {{ help_name }} </h3>
+                <div class="module-type-label">
+                    <span class="module-type-swatch" aria-hidden="true"></span>
+                    <span>{{ locale.t(module_type_key) }}</span>
+                </div>
+            </div>
             {% if module.desc %}
             <div class="help-desc">{{ locale.t_str(module.desc) }}</div>
             {%- endif %}

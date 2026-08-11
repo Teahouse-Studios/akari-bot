@@ -26,6 +26,7 @@ from modules.core.help import (
     build_module_table,
     end_inline_run,
     env,
+    get_module_type_display,
     help_overview,
     modules_list_help,
     strip_command_arguments,
@@ -158,7 +159,7 @@ async def _test_image_flag_overrides_markdown_table():
 
 
 async def _test_image_template_omits_help_command():
-    """图片帮助页不再内嵌查看详情命令，该提示由图片外的 ActionText 承担。"""
+    """图片帮助页不内嵌查看详情命令，并以色块图例说明模块类型。"""
     locale = (await _session("help_image_template")).locale
     rendered = await env.get_template("module_list.html").render_async(
         msg=SimpleNamespace(session_info=SimpleNamespace(prefixes=["~"])),
@@ -168,11 +169,55 @@ async def _test_image_template_omits_help_command():
         is_superuser=False,
         len=len,
         module_list={},
-        show_disabled_modules=False,
+        module_groups=[],
+        show_disabled_modules=True,
         target_enabled_list=[],
         use_font_mirror=False,
     )
-    return "${cmd}" not in rendered and "~help " not in rendered and "模块名称" not in rendered
+    swatches = (
+        "module-type-legend-base",
+        "module-type-legend-external",
+        "module-type-legend-subscription",
+        "module-type-legend-disabled",
+    )
+    return (
+        "${cmd}" not in rendered
+        and "~help " not in rendered
+        and "模块名称" not in rendered
+        and all(swatch in rendered for swatch in swatches)
+        and not any(color in rendered for color in ("橙色", "蓝色", "绿色", "灰色"))
+    )
+
+
+async def _test_help_doc_template_marks_module_type_with_swatch():
+    """模块详细帮助使用色块与类型名称标识当前模块。"""
+    locale = (await _session("help_doc_template")).locale
+    module = SimpleNamespace(base=True, rss=False, desc="", alias={}, developers=[])
+    help_ = SimpleNamespace(args={}, return_formatted_help_doc=lambda: "")
+    rendered = await env.get_template("help_doc.html").render_async(
+        locale=locale,
+        module=module,
+        help=help_,
+        help_name="help",
+        regex_list=[],
+        escape=str,
+        isinstance=isinstance,
+        str=str,
+        repattern=object,
+        use_font_mirror=False,
+    )
+    return 'class="module-type-swatch"' in rendered and "基础模块" in rendered and "橙色" not in rendered
+
+
+async def _test_markdown_help_marks_module_type_with_emoji():
+    """Markdown 模块详情使用 emoji 色块与类型名称标识当前模块。"""
+    locale = (await _session("help_markdown_type")).locale
+    module_types = (
+        (SimpleNamespace(base=True, rss=False), "🟧 基础模块"),
+        (SimpleNamespace(base=False, rss=False), "🟦 扩展模块"),
+        (SimpleNamespace(base=False, rss=True), "🟩 订阅扩展模块"),
+    )
+    return all(get_module_type_display(module, locale) == expected for module, expected in module_types)
 
 
 async def _test_element_sequence():
@@ -693,6 +738,8 @@ async def test_clickable_modules(tester: Tester):
     await tester.test(_test_image_help_precedes_action_text_fallback, "无表格能力时图片帮助优先测试")
     await tester.test(_test_image_flag_overrides_markdown_table, "--image 强制图片帮助测试")
     await tester.test(_test_image_template_omits_help_command, "图片内移除查看详情提示测试")
+    await tester.test(_test_help_doc_template_marks_module_type_with_swatch, "模块详细帮助类型色块测试")
+    await tester.test(_test_markdown_help_marks_module_type_with_emoji, "Markdown 模块详细帮助类型标记测试")
     await tester.test(_test_element_sequence, "元素交错排布测试")
     await tester.test(_test_title_ends_with_newline, "标题自带换行测试")
     await tester.test(_test_action_text_payload, "标签命令与展示文案测试")

@@ -37,6 +37,20 @@ def split_subscription_modules(module_list: dict, names: list[str]) -> tuple[lis
     return regular, subscription
 
 
+def get_module_type_display(module_, locale) -> str:
+    """返回适合 Markdown 详情页展示的模块类型标记。"""
+    if module_.base:
+        emoji = "🟧"
+        type_key = "core.message.help.table.base"
+    elif module_.rss:
+        emoji = "🟩"
+        type_key = "core.message.help.table.subscription"
+    else:
+        emoji = "🟦"
+        type_key = "core.message.help.table.external"
+    return f"{emoji} {locale.t(type_key)}"
+
+
 def build_clickable_modules(msg: Bot.MessageSession, groups: list[tuple[str, list[str]]]) -> list:
     """
     把若干组模块名构造成可点击的消息链片段。
@@ -420,7 +434,12 @@ async def _(msg: Bot.MessageSession, module: str):
             ):
                 table = build_command_table(msg, help_.return_json_help_doc(), regex_rows)
                 if table:
-                    detail = []
+                    detail = [
+                        Plain(
+                            get_module_type_display(module_, msg.session_info.locale) + "\n",
+                            disable_joke=True,
+                        )
+                    ]
                     if module_.desc:
                         detail.append(Plain(msg.session_info.locale.t_str(module_.desc) + "\n", disable_joke=True))
                     detail += table

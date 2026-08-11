@@ -116,6 +116,47 @@
             white-space: pre-line;
             line-height: 1.5;
         }
+
+        .module-type-legend {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px 18px;
+            margin: 8px 0;
+            font-size: 14px;
+        }
+
+        .module-type-legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .module-type-legend-swatch {
+            width: 14px;
+            height: 14px;
+            box-sizing: border-box;
+            border: 1px solid rgba(0, 0, 0, 0.25);
+            border-radius: 3px;
+        }
+
+        .module-type-legend-base {
+            background-color: #ffe0cc;
+        }
+
+        .module-type-legend-external {
+            background-color: #cce5ff;
+        }
+
+        .module-type-legend-subscription {
+            background-color: #e8f5e9;
+        }
+
+        .module-type-legend-disabled {
+            background-color: #d5d5d5;
+        }
+
         .mdui-prose :first-child {
             margin-top: 5px;
         }
@@ -157,6 +198,26 @@
         {% endif %}
         {% endfor %}
         <hr>
+            <div class="module-type-legend">
+                <span class="module-type-legend-item">
+                    <span class="module-type-legend-swatch module-type-legend-base" aria-hidden="true"></span>
+                    {{ locale.t('core.message.help.table.base') }}
+                </span>
+                <span class="module-type-legend-item">
+                    <span class="module-type-legend-swatch module-type-legend-external" aria-hidden="true"></span>
+                    {{ locale.t('core.message.help.table.external') }}
+                </span>
+                <span class="module-type-legend-item">
+                    <span class="module-type-legend-swatch module-type-legend-subscription" aria-hidden="true"></span>
+                    {{ locale.t('core.message.help.table.subscription') }}
+                </span>
+                {% if show_disabled_modules %}
+                <span class="module-type-legend-item">
+                    <span class="module-type-legend-swatch module-type-legend-disabled" aria-hidden="true"></span>
+                    {{ locale.t('core.message.help.table.disabled') }}
+                </span>
+                {% endif %}
+            </div>
             <div class="footer">
                 {{ locale.t('core.message.help.prompt', prefix=msg.session_info.prefixes[0]) }}
             </div>
