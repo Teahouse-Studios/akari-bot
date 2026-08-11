@@ -153,6 +153,8 @@ class CommandParser:
         format_args = templates_to_str(self._filtered_args, with_desc=True)
 
         args_lst = []
+        if not format_args and "" in self.args and not self.origin_template.doc:
+            args_lst.append(f"{self.command_prefixes[0]}{self.module_name}")
         for x in format_args:
             x = locale.t_str(x, locale_failed_prompt=False)
             x = f"{self.command_prefixes[0]}{self.module_name} {x}"
@@ -217,6 +219,9 @@ class CommandParser:
         format_args = templates_to_str(self._filtered_args, with_desc=True)
 
         args_list = []
+
+        if not format_args and "" in self.args and not self.origin_template.doc:
+            args_list.append({"args": f"{self.command_prefixes[0]}{self.module_name}", "desc": ""})
 
         # ========== 步骤 2: 解析命令和描述 ==========
         for x in format_args:

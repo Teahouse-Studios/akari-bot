@@ -9,7 +9,10 @@ from core.builtins.parser.args import (
     parse_template,
     templates_to_str,
 )
+from core.builtins.parser.command import CommandParser
 from core.tester import func_case, Tester
+from core.types import Module
+from core.types.module.component_meta import CommandMeta
 
 
 def _test_argument_pattern():
@@ -199,6 +202,18 @@ def _test_templates_to_str_with_desc():
         return False
 
 
+def _test_default_command_help_doc():
+    """测试无文档模块的默认命令会出现在帮助信息中"""
+    module = Module.assign(module_name="self-command", alias=None, recommend_modules=None, developers=None)
+    module.command_list.add(CommandMeta())
+    parser = CommandParser(module, ["~"], module_name=module.module_name)
+
+    return parser.return_formatted_help_doc() == "~self-command" and parser.return_json_help_doc() == {
+        "args": [{"args": "~self-command", "desc": ""}],
+        "options": [],
+    }
+
+
 @func_case
 async def test_parser_args(tester: Tester):
     """core.builtins.parser.args: 参数解析测试"""
@@ -215,5 +230,6 @@ async def test_parser_args(tester: Tester):
     await tester.test(_test_parse_template_multiple, "parse_template 多个模板测试")
     await tester.test(_test_templates_to_str, "templates_to_str 测试")
     await tester.test(_test_templates_to_str_with_desc, "templates_to_str 带描述测试")
+    await tester.test(_test_default_command_help_doc, "无文档模块默认命令帮助测试")
 
     return tester
