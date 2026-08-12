@@ -4,7 +4,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import ActionText, Embed, Image, Mention, Plain, Voice
+from core.builtins.message.internal import ActionText, Button, Embed, Image, Mention, Plain, Voice
 from core.builtins.session.info import SessionInfo
 from core.i18n import Locale
 from core.tester import Tester, func_case
@@ -28,6 +28,7 @@ def _session():
         support_voice=True,
         support_mention=True,
         support_embed=True,
+        support_button=True,
     )
 
 
@@ -56,6 +57,27 @@ async def _test_action_text_keeps_inline_fallback_and_metadata():
         payloads[0].content == "提示：帮助（~help ）参数"
         and len(payloads[-1].action_texts) == 1
         and payloads[-1].action_texts[0].text.text == "~help "
+    )
+
+
+async def _test_button_rows_are_collected():
+    payloads = await build_discord_payloads(
+        _session(),
+        MessageChain.assign([Plain("hello"), Button("Docs", "https://example.com"), Button("Help", "~help")]),
+    )
+    rows = payloads[-1].button_rows
+    return payloads[0].content == "hello" and [(button.show, button.value) for button in rows[0].buttons] == [
+        ("Docs", "https://example.com"),
+        ("Help", "~help"),
+    ]
+
+
+async def _test_button_only_message_gets_placeholder():
+    payloads = await build_discord_payloads(_session(), MessageChain.assign(Button("Help", "~help")))
+    return (
+        len(payloads) == 1
+        and payloads[0].content == "\u200b"
+        and payloads[0].button_rows[0].buttons[0] == Button("Help", "~help")
     )
 
 
@@ -148,6 +170,8 @@ async def test_discord_message_builder(tester: Tester):
     await tester.test(_test_text_prefers_newline, "文本优先在换行处分段")
     await tester.test(_test_plain_atcode_is_converted, "Plain 中的提及转换为 Discord 格式")
     await tester.test(_test_action_text_keeps_inline_fallback_and_metadata, "ActionText 保持行内降级并收集交互信息")
+    await tester.test(_test_button_rows_are_collected, "ButtonElement 收集按钮行")
+    await tester.test(_test_button_only_message_gets_placeholder, "纯按钮消息补充不可见正文")
     await tester.test(_test_mixed_elements_fit_one_payload, "混合元素合并为一个负载")
     await tester.test(_test_file_limit_creates_second_payload, "附件超过 10 个时拆包")
     await tester.test(_test_embed_limit_creates_second_payload, "Embed 超过 10 个时拆包")

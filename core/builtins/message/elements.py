@@ -534,9 +534,15 @@ class ImageElement(BaseElement):
     headers: dict[str, Any] | None = None
     need_get: bool = False
     cached_b64: str | None = None
+    max_h: int | None = None
 
     @classmethod
-    def assign(cls, path: str | Path | PILImage.Image, headers: dict[str, Any] | None = None):
+    def assign(
+        cls,
+        path: str | Path | PILImage.Image,
+        headers: dict[str, Any] | None = None,
+        max_h: int | None = None,
+    ):
         """
         创建图片元素的工厂方法。
 
@@ -548,6 +554,7 @@ class ImageElement(BaseElement):
                     - Base64 编码数据（以 base64 开头）
                     - PIL Image 对象
         :param headers: 获取网络图片时的请求头（如用户代理、认证信息等）
+        :param max_h: QQBot Markdown 图片的最大显示宽度（像素）
         :return: ImageElement 实例
         """
         need_get = False
@@ -585,7 +592,8 @@ class ImageElement(BaseElement):
                     img_file.write(img_data)
                 path = save
 
-        return deepcopy(cls(str(path), headers, need_get))
+        normalized_max_h = max(1, int(max_h)) if max_h is not None else None
+        return deepcopy(cls(path=str(path), headers=headers, need_get=need_get, max_h=normalized_max_h))
 
     async def get(self) -> str:
         """
@@ -675,7 +683,7 @@ class ImageElement(BaseElement):
         save = f"{random_cache_path()}.png"
         image.save(save)
         image.close()
-        return ImageElement.assign(save)
+        return ImageElement.assign(save, max_h=self.max_h)
 
     def kecode(self):
         """
@@ -683,11 +691,14 @@ class ImageElement(BaseElement):
 
         :return: KE 码格式的字符串
         """
+        params = [f"path={self.path}"]
         if self.headers:
             # 有请求头，进行 Base64 编码后传递
             headers_b64 = base64.b64encode(orjson.dumps(self.headers)).decode("utf-8")
-            return f"[KE:image,path={self.path},headers={headers_b64}]"
-        return f"[KE:image,path={self.path}]"
+            params.append(f"headers={headers_b64}")
+        if self.max_h is not None:
+            params.append(f"max_h={self.max_h}")
+        return f"[KE:image,{','.join(params)}]"
 
     async def to_PIL_image(self) -> PILImage.Image:
         """
@@ -981,6 +992,74 @@ class ActionTextElement(BaseElement):
 
 
 @define
+class ButtonElement(BaseElement):
+    """单个消息按钮元素。"""
+
+    show: str
+    value: str
+
+    @classmethod
+    def assign(cls, show: str, value: str):
+        """创建单个按钮，show 为展示文本，value 为点击数据。"""
+        return deepcopy(cls(show=str(show), value=str(value)))
+
+    def kecode(self):
+        """转换为 KE 码格式。"""
+        show = parse.quote(self.show, safe="")
+        value = parse.quote(self.value, safe="")
+        return f"[KE:button,show={show},value={value}]"
+
+    def __str__(self):
+        """返回 KE 码格式。"""
+        return self.kecode()
+
+
+@define
+class ButtonRows:
+    """消息按钮的一行。"""
+
+    buttons: list[ButtonElement]
+
+    @classmethod
+    def assign(cls, buttons: list[ButtonElement] | None = None):
+        """使用单个按钮元素组成一行。"""
+        normalized = []
+        for button in buttons or []:
+            if not isinstance(button, ButtonElement):
+                raise TypeError("ButtonRows only accepts Button elements.")
+            normalized.append(button)
+        return deepcopy(cls(buttons=normalized))
+
+
+@define
+class ButtonFrameElement(BaseElement):
+    """消息底部的完整按钮区域。"""
+
+    rows: list[ButtonRows]
+
+    @classmethod
+    def assign(cls, rows: list[ButtonRows] | None = None):
+        """使用按钮行组成完整按钮区域。"""
+        normalized = []
+        for row in rows or []:
+            if not isinstance(row, ButtonRows):
+                raise TypeError("ButtonFrame only accepts ButtonRows elements.")
+            if row.buttons:
+                normalized.append(row)
+        return deepcopy(cls(rows=normalized))
+
+    def kecode(self):
+        """转换为 KE 码格式。"""
+        rows = [[{"show": button.show, "value": button.value} for button in row.buttons] for row in self.rows]
+        data = parse.quote(orjson.dumps(rows).decode("utf-8"), safe="")
+        return f"[KE:button_frame,data={data}]"
+
+    def __str__(self):
+        """返回 KE 码格式。"""
+        return self.kecode()
+
+
+@define
 class EmbedFieldElement(BaseElement):
     """
     Embed 字段元素 - 用于构建嵌入式消息的字段。
@@ -1227,5 +1306,8 @@ __all__ = [
     "EmbedElement",
     "MentionElement",
     "ActionTextElement",
+    "ButtonElement",
+    "ButtonRows",
+    "ButtonFrameElement",
     "RawElement",
 ]

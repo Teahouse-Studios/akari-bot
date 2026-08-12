@@ -2,7 +2,8 @@ import asyncio
 import os
 
 from core.builtins.message.chain import get_message_chain, MessageChain
-from core.builtins.message.elements import PlainElement, ImageElement, MentionElement, BaseElement
+from core.builtins.message.elements import ButtonFrameElement, PlainElement, ImageElement, MentionElement, BaseElement
+from core.builtins.message.internal import Button
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession, I18NContext
 from core.builtins.utils import confirm_command
@@ -47,15 +48,10 @@ class MockMessageSession(MessageSession):
         enable_split_image=True,
         callback=None,
         callback_id=None,
-        button_data=None,
         force_markdown=False,
     ):
         # force_markdown 只影响平台的发送路径，测试替身不作区分，签名对齐即可
-        if button_data:
-            self.buttons.extend(button_data)
-
         message = get_message_chain(self.session_info, chain=message_chain)
-
         for x in message.as_sendable(self.session_info, parse_message=enable_parse_message):
             self.sent.append(x)
             if isinstance(x, PlainElement):
@@ -64,6 +60,8 @@ class MockMessageSession(MessageSession):
                 self.action.append(str(x))
             elif isinstance(x, MentionElement):
                 self.action.append(f"<@{x.client}|{str(x.id)}>")
+            elif isinstance(x, ButtonFrameElement):
+                self.buttons.extend([{button.show: button.value for button in row.buttons} for row in x.rows])
             elif isinstance(x, BaseElement):
                 self.action.append(str(x))
 
@@ -80,13 +78,10 @@ class MockMessageSession(MessageSession):
         enable_split_image=True,
         callback=None,
         callback_id=None,
-        button_data=None,
         force_markdown=False,
     ):
         if message_chain:
-            await self.send_message(message_chain, button_data=button_data, force_markdown=force_markdown)
-        elif button_data:
-            self.buttons.extend(button_data)
+            await self.send_message(message_chain, force_markdown=force_markdown)
         raise SessionFinished
 
     async def send_direct_message(
@@ -187,6 +182,9 @@ class MockMessageSession(MessageSession):
             message_chain = MessageChain.assign(I18NContext("core.message.confirm"))
         if append_instruction:
             message_chain.append(I18NContext("message.wait.confirm.prompt"))
+        if self.session_info.support_button:
+            message_chain.append(Button(self.session_info.locale.t("message.button.yes"), "confirm_yes"))
+            message_chain.append(Button(self.session_info.locale.t("message.button.no"), "confirm_no"))
         await self.send_message(message_chain)
         try:
             confirm_prompt = "\n".join(
@@ -223,12 +221,14 @@ class MockMessageSession(MessageSession):
         possibly_choices=None,
     ):
         confirm_prompt = None
-        if possibly_choices and self.session_info.support_button:
-            self.buttons.extend(possibly_choices)
         if message_chain:
             message_chain = get_message_chain(self.session_info, message_chain)
             if append_instruction:
                 message_chain.append(I18NContext("message.wait.next_message.prompt"))
+            if possibly_choices and self.session_info.support_button:
+                for row in possibly_choices:
+                    for show, value in row.items():
+                        message_chain.append(Button(show, value))
             await self.send_message(message_chain, quote)
             confirm_prompt = "\n".join(
                 [x.text if isinstance(x, PlainElement) else str(x) for x in message_chain.as_sendable()]

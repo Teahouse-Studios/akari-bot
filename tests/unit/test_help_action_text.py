@@ -12,11 +12,12 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import ActionTextElement, ImageElement, PlainElement
+from core.builtins.message.elements import ActionTextElement, ButtonFrameElement, ImageElement, PlainElement
 from core.builtins.message.internal import ActionText, I18NContext, Image, Plain
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.constants.exceptions import SessionFinished
+from core.i18n import Locale
 from core.logger import Logger
 from core.tester import func_case, Tester
 from core.utils.table import TABLE_MAX_ROWS, format_table_code
@@ -28,6 +29,7 @@ from modules.core.help import (
     end_inline_run,
     env,
     get_module_type_display,
+    get_help_link_buttons,
     help_overview,
     modules_list_help,
     strip_command_arguments,
@@ -35,6 +37,13 @@ from modules.core.help import (
 
 # 表格测试所用的表头键，此处不校验其内容，只借它走通渲染
 TABLE_TITLE_KEY = "core.message.help.table.title"
+
+
+def _test_help_about_button_replaces_donate():
+    msg = SimpleNamespace(session_info=SimpleNamespace(support_button=True, locale=Locale("zh_cn")))
+    with patch("modules.core.help.help_url", "https://example.com/docs"):
+        buttons = get_help_link_buttons(msg, include_modules=False)
+    return buttons == [("📃 在线文档", "https://example.com/docs"), ("ℹ️ 关于我们", "~about")]
 
 
 def _render_lines(session_info, parts) -> list[str]:
@@ -50,6 +59,8 @@ def _render_lines(session_info, parts) -> list[str]:
     """
     texts, inline_pending = [], False
     for x in MessageChain.assign(parts).as_sendable(session_info).values:
+        if isinstance(x, ButtonFrameElement):
+            continue
         if isinstance(x, ActionTextElement):
             # show 为选填，缺省时平台取 text 展示
             tag = f"[{x.show.text if x.show else x.text.text}]"
@@ -106,7 +117,6 @@ class _OverviewSession(_ImageHelpSession):
         super().__init__(session_info)
         self.is_admin = is_admin
         self.is_superuser = is_superuser
-        self.button_data = None
 
     async def check_permission(self):
         return self.is_admin
@@ -116,8 +126,16 @@ class _OverviewSession(_ImageHelpSession):
 
     async def finish(self, message, **kwargs):
         self.finished_message = MessageChain.assign(message)
-        self.button_data = kwargs.get("button_data")
         raise SessionFinished
+
+
+def _button_rows(chain: MessageChain) -> list[dict[str, str]]:
+    return [
+        {button.show: button.value for button in row.buttons}
+        for element in chain.values
+        if isinstance(element, ButtonFrameElement)
+        for row in element.rows
+    ]
 
 
 def _module(name: str, *, base: bool = False, rss: bool = False, unsupported: bool = False):
@@ -342,6 +360,31 @@ async def _test_unsupported_module_strikethrough():
     return any("~~[wikilog]~~" in line and "[🔕]" in line for line in lines)
 
 
+async def _test_module_table_group_legends():
+    """管理员模块表在扩展模块标题右侧展示开关图例，普通列表不展示。"""
+    session_info = await _session("help_group_legends")
+    msg = _FakeSession(session_info)
+    groups = [
+        ("core.message.help.table.external", [ModuleListEntry("wiki", True)]),
+        ("core.message.help.table.subscription", [ModuleListEntry("wikilog", False, subscription=True)]),
+    ]
+    lines = [line for line in _render_lines(session_info, build_module_table(msg, groups)) if line]
+    plain_lines = [
+        line
+        for line in _render_lines(
+            session_info,
+            build_module_table(msg, [("core.message.help.table.external", ["wiki"])]),
+        )
+        if line
+    ]
+    return (
+        lines[0].startswith("| 扩展模块 | 🔓 = 已启用 | 🔐 = 已禁用 |")
+        and any(line.startswith("| 订阅扩展模块 | 🔔 = 已启用 | 🔕 = 已禁用 |") for line in lines)
+        and not any("已启用" in line or "已禁用" in line for line in plain_lines)
+        and all(line.startswith("|") and line.endswith("|") for line in lines)
+    )
+
+
 async def _test_markdown_help_header():
     """测试 Markdown help 顶栏使用四个真实单元格，并与模块列表处于同一张表。"""
     session_info = await _session("help_header")
@@ -440,7 +483,7 @@ async def _test_qqbot_admin_help_includes_disabled_modules():
     sendable = msg.finished_message.as_sendable(session_info).values
     commands = [element.text.text for element in sendable if isinstance(element, ActionTextElement)]
     rendered = "\n".join(_render_lines(session_info, msg.finished_message.values))
-    buttons = {label: command for row in msg.button_data or [] for label, command in row.items()}
+    buttons = {label: command for row in _button_rows(msg.finished_message) for label, command in row.items()}
     return (
         "~enable coin" in commands
         and "~disable dice" in commands
@@ -504,7 +547,7 @@ async def _test_qqbot_non_admin_help_keeps_module_list_button():
     except SessionFinished:
         pass
     rendered = "\n".join(_render_lines(session_info, msg.finished_message.values))
-    buttons = {label: command for row in msg.button_data or [] for label, command in row.items()}
+    buttons = {label: command for row in _button_rows(msg.finished_message) for label, command in row.items()}
     return (
         "[dice]" in rendered
         and "[coin]" not in rendered
@@ -536,7 +579,7 @@ async def _test_qqbot_admin_legacy_help_keeps_legacy_scope():
     except SessionFinished:
         pass
     rendered = msg.finished_message.to_str()
-    buttons = {label: command for row in msg.button_data or [] for label, command in row.items()}
+    buttons = {label: command for row in _button_rows(msg.finished_message) for label, command in row.items()}
     return (
         "dice" in rendered
         and "coin" not in rendered
@@ -577,7 +620,7 @@ async def _test_qqbot_module_list_hides_toggles_from_non_admin():
     sendable = msg.finished_message.as_sendable(session_info).values
     commands = [element.text.text for element in sendable if isinstance(element, ActionTextElement)]
     rendered = "\n".join(_render_lines(session_info, msg.finished_message.values))
-    button_commands = [command for row in msg.button_data or [] for command in row.values()]
+    button_commands = [command for row in _button_rows(msg.finished_message) for command in row.values()]
     return (
         all(f"[{name}]" in rendered for name in modules)
         and not any(emoji in rendered for emoji in ("🔐", "🔓", "🔕", "🔔"))
@@ -1075,6 +1118,7 @@ async def _test_empty_group_skipped():
 @func_case
 async def test_clickable_modules(tester: Tester):
     """modules.core.help: 可点击模块列表测试"""
+    await tester.test(_test_help_about_button_replaces_donate, "help 关于我们按钮测试")
     await tester.test(_test_image_help_precedes_action_text_fallback, "无表格能力时图片帮助优先测试")
     await tester.test(_test_image_flag_overrides_markdown_table, "--image 强制图片帮助测试")
     await tester.test(_test_image_template_omits_help_command, "图片内移除查看详情提示测试")
@@ -1085,6 +1129,7 @@ async def test_clickable_modules(tester: Tester):
     await tester.test(_test_action_text_payload, "标签命令与展示文案测试")
     await tester.test(_test_module_toggle_payloads, "模块开关状态标签测试")
     await tester.test(_test_unsupported_module_strikethrough, "受限模块删除线测试")
+    await tester.test(_test_module_table_group_legends, "Markdown 模块分组开关图例测试")
     await tester.test(_test_markdown_help_header, "Markdown help 顶栏测试")
     await tester.test(_test_markdown_help_header_permissions_and_width, "Markdown help 顶栏权限与列宽测试")
     await tester.test(_test_qqbot_admin_help_includes_disabled_modules, "QQBot 管理员帮助合并模块列表测试")

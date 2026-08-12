@@ -5,8 +5,6 @@
 一两个按钮的参差排版。
 """
 
-from unittest.mock import patch
-
 from core.logger import Logger
 from core.tester import func_case, Tester
 from core.utils.button import (
@@ -33,7 +31,7 @@ def _row_sizes(count: int, per_row: int = DEFAULT_BUTTONS_PER_ROW) -> list[int]:
     :param per_row: 每行按钮数量的可读性上限。
     :return: 各行的按钮数量。
     """
-    return [len(row) for row in arrange_buttons(_make_buttons(count), per_row)]
+    return [len(row.buttons) for row in arrange_buttons(_make_buttons(count), per_row)]
 
 
 def _test_empty_returns_no_rows() -> bool:
@@ -62,7 +60,7 @@ def _test_platform_limits_hold() -> bool:
         if len(rows) > MAX_BUTTON_ROWS:
             Logger.error(f"{count} buttons produced {len(rows)} rows, over the limit of {MAX_BUTTON_ROWS}")
             return False
-        if any(len(row) > MAX_BUTTONS_PER_ROW for row in rows):
+        if any(len(row.buttons) > MAX_BUTTONS_PER_ROW for row in rows):
             Logger.error(f"{count} buttons produced a row over the limit of {MAX_BUTTONS_PER_ROW}")
             return False
     return True
@@ -71,7 +69,7 @@ def _test_platform_limits_hold() -> bool:
 def _test_order_and_content_preserved() -> bool:
     """排布不得打乱顺序或丢失按钮"""
     buttons = _make_buttons(12)
-    flat = [(label, command) for row in arrange_buttons(buttons) for label, command in row.items()]
+    flat = [(button.show, button.value) for row in arrange_buttons(buttons) for button in row.buttons]
     if flat != buttons:
         Logger.error("Arranging must preserve both the order and the content of the buttons")
         return False
@@ -81,7 +79,7 @@ def _test_order_and_content_preserved() -> bool:
 def _test_overflow_is_truncated() -> bool:
     """超出容量时截断至容量上限，而非硬塞进最后一行"""
     capacity = MAX_BUTTONS_PER_ROW * MAX_BUTTON_ROWS
-    total = sum(len(row) for row in arrange_buttons(_make_buttons(capacity + 1)))
+    total = sum(len(row.buttons) for row in arrange_buttons(_make_buttons(capacity + 1)))
     if total != capacity:
         Logger.error(f"Overflowing input should be truncated to {capacity}, got {total}")
         return False
@@ -99,18 +97,10 @@ def _test_custom_per_row() -> bool:
     return True
 
 
-def _test_duplicate_labels_warn() -> bool:
-    """同一行内的重复标签会在转为字典时互相覆盖，须给出告警"""
-    warned = []
-    with patch.object(Logger, "warning", lambda message: warned.append(message)):
-        rows = arrange_buttons([("same", "~a"), ("same", "~b")])
-    if not warned:
-        Logger.error("Duplicate labels within one row should emit a warning")
-        return False
-    if rows != [{"same": "~b"}]:
-        Logger.error(f"Duplicate labels collapse to the last one, got {rows}")
-        return False
-    return True
+def _test_duplicate_labels_are_preserved() -> bool:
+    """按钮改为独立对象后，同一行重复展示文本不会互相覆盖。"""
+    rows = arrange_buttons([("same", "~a"), ("same", "~b")])
+    return [(button.show, button.value) for button in rows[0].buttons] == [("same", "~a"), ("same", "~b")]
 
 
 @func_case
@@ -122,6 +112,6 @@ async def test_button_arrange(tester: Tester):
     await tester.test(_test_order_and_content_preserved, "顺序与内容守恒测试")
     await tester.test(_test_overflow_is_truncated, "超量截断测试")
     await tester.test(_test_custom_per_row, "自定义每行上限测试")
-    await tester.test(_test_duplicate_labels_warn, "重复标签告警测试")
+    await tester.test(_test_duplicate_labels_are_preserved, "重复展示文本保留测试")
 
     return tester

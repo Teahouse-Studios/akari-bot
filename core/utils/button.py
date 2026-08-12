@@ -7,6 +7,7 @@
 
 import math
 
+from core.builtins.message.elements import ButtonElement, ButtonRows
 from core.logger import Logger
 
 # 平台单行按钮数量的硬上限
@@ -18,24 +19,27 @@ MAX_BUTTON_ROWS = 5
 # 可读性上限，即默认的每行按钮数量
 DEFAULT_BUTTONS_PER_ROW = 3
 
+# MessageChain 自动排布单个 Button 时，每行的按钮数量
+AUTO_BUTTONS_PER_ROW = 10
+
+# MessageChain 自动排布单个 Button 时，允许生成的最大行数
+AUTO_BUTTON_MAX_ROWS = 5
+
 
 def arrange_buttons(
     buttons: list[tuple[str, str]],
     per_row: int = DEFAULT_BUTTONS_PER_ROW,
-) -> list[dict[str, str]]:
+) -> list[ButtonRows]:
     """
-    将（标签, 命令）序列整理为 ``button_data`` 所需的按行结构。
+    将（展示文本, 点击数据）序列整理为 ``ButtonFrame`` 所需的按钮行。
 
     行数由 ``per_row`` 算出后即固定，再把按钮均分到各行，使各行的数量至多相差一个——
     直接按 ``per_row`` 切片会得到 ``[3, 3, 3, 1]`` 这样参差的末行。行数超出平台上限时
     压回上限，此时每行的数量将突破 ``per_row``，至多到 ``MAX_BUTTONS_PER_ROW``。
 
-    同一行内标签相同的按钮会在转为字典时互相覆盖。此处不做去重，只记录告警：
-    这种情形多半是调用方拼错了标签，而静默丢弃会使按钮凭空消失且无从查起。
-
     :param buttons: （标签, 命令）序列。标签为按钮上展示的文本，命令为点击后发出的内容。
     :param per_row: 每行按钮数量的可读性上限。
-    :return: 每个元素为一行，键为标签、值为命令；输入为空时返回空列表。
+    :return: 按钮行列表；输入为空时返回空列表。
     """
     if not buttons:
         return []
@@ -58,7 +62,10 @@ def arrange_buttons(
         size = base + 1 if index < extra else base
         row = buttons[start : start + size]
         start += size
-        if len({label for label, _ in row}) != len(row):
-            Logger.warning(f"Duplicate button labels within one row: {[label for label, _ in row]}")
-        rows.append(dict(row))
+        rows.append(ButtonRows.assign([ButtonElement.assign(show, value) for show, value in row]))
     return rows
+
+
+def build_button_rows(rows: list[dict[str, str]]) -> list[ButtonRows]:
+    """把旧式的按行映射转换为类型化按钮行。"""
+    return [ButtonRows.assign([ButtonElement.assign(show, value) for show, value in row.items()]) for row in rows]

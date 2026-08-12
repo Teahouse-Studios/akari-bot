@@ -15,7 +15,6 @@ from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
-from core.utils.button_runtime import get_session_button_data
 
 
 def resolve_discord_reference(ctx, quote: bool):
@@ -78,9 +77,8 @@ class DiscordContextManager(ContextManager):
 
         payloads = await build_discord_payloads(session_info, message, enable_parse_message)
         action_texts = payloads[-1].action_texts if payloads else []
-        button_data = get_session_button_data(session_info)
         view = build_discord_button_view(
-            button_data,
+            payloads[-1].button_rows if payloads else [],
             session_info.sender_id,
             action_texts=action_texts,
             modal_title=session_info.locale.t("message.action_text.modal.title"),

@@ -7,6 +7,8 @@ interaction 事件另建会话，其可用前缀与常规消息入口不同，�
 
 from unittest.mock import patch
 
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.elements import ButtonFrameElement, I18NContextElement
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
@@ -42,8 +44,7 @@ async def _probe(target_id: str, client_name: str, support_button: bool, is_admi
     captured = {}
 
     async def _finish(self, message_chain=None, **kwargs):
-        captured["prompts"] = message_chain
-        captured["button_data"] = kwargs.get("button_data")
+        captured["prompts"] = MessageChain.assign(message_chain)
         raise SessionFinished
 
     async def _check_permission(self):
@@ -67,7 +68,9 @@ async def _test_button_data_shape():
         if len(rows) != 1:
             return False
         name, url = RECOMMENDED_WIKIS[0]
-        return rows[0] == {name: f"{command_prefix[0]}wiki set {url}"}
+        return [(button.show, button.value) for button in rows[0].buttons] == [
+            (name, f"{command_prefix[0]}wiki set {url}")
+        ]
 
     except Exception:
         return False
@@ -85,7 +88,7 @@ async def _test_button_rows_are_split():
         with patch("modules.wiki.utils.recommend.RECOMMENDED_WIKIS", wikis):
             rows = get_recommend_button_data()
         # 7 个按钮在上限 3 之下分作三行，余数均摊到首行
-        return [len(row) for row in rows] == [3, 2, 2]
+        return [len(row.buttons) for row in rows] == [3, 2, 2]
 
     except Exception:
         return False
@@ -102,7 +105,7 @@ async def _test_button_prefix_reachable_from_interaction():
             client_name="QQBot",
             sender_id="QQBot|1",
         )
-        data = next(iter(get_recommend_button_data()[0].values()))
+        data = get_recommend_button_data()[0].buttons[0].value
         return any(data.startswith(prefix) for prefix in session_info.prefixes)
 
     except Exception:
@@ -113,11 +116,17 @@ async def _test_admin_gets_buttons():
     """测试发出门槛 - QQ 官方机器人上的管理员收到按钮与引导文案"""
     try:
         captured = await _probe("QQBot|Group|recommend_admin", "QQBot", True, True)
-        keys = [element.key for element in captured["prompts"]]
-        return captured["button_data"] == get_recommend_button_data() and keys == [
-            "wiki.message.set.not_set",
-            "wiki.message.set.not_set.recommend",
-        ]
+        keys = [element.key for element in captured["prompts"] if isinstance(element, I18NContextElement)]
+        buttons = [element for element in captured["prompts"] if isinstance(element, ButtonFrameElement)]
+        return (
+            len(buttons) == 1
+            and buttons[0].rows == get_recommend_button_data()
+            and keys
+            == [
+                "wiki.message.set.not_set",
+                "wiki.message.set.not_set.recommend",
+            ]
+        )
 
     except Exception:
         return False
@@ -127,8 +136,8 @@ async def _test_non_admin_gets_no_buttons():
     """测试发出门槛 - 无管理权限者只收到原有提示"""
     try:
         captured = await _probe("QQBot|Group|recommend_member", "QQBot", True, False)
-        keys = [element.key for element in captured["prompts"]]
-        return not captured["button_data"] and keys == ["wiki.message.set.not_set"]
+        keys = [element.key for element in captured["prompts"] if isinstance(element, I18NContextElement)]
+        return not captured["prompts"].contains(ButtonFrameElement) and keys == ["wiki.message.set.not_set"]
 
     except Exception:
         return False
@@ -141,11 +150,17 @@ async def _test_other_client_gets_buttons():
     """
     try:
         captured = await _probe("TEST|Group|recommend_other", "TEST", True, True)
-        keys = [element.key for element in captured["prompts"]]
-        return captured["button_data"] == get_recommend_button_data() and keys == [
-            "wiki.message.set.not_set",
-            "wiki.message.set.not_set.recommend",
-        ]
+        keys = [element.key for element in captured["prompts"] if isinstance(element, I18NContextElement)]
+        buttons = [element for element in captured["prompts"] if isinstance(element, ButtonFrameElement)]
+        return (
+            len(buttons) == 1
+            and buttons[0].rows == get_recommend_button_data()
+            and keys
+            == [
+                "wiki.message.set.not_set",
+                "wiki.message.set.not_set.recommend",
+            ]
+        )
 
     except Exception:
         return False
@@ -158,8 +173,8 @@ async def _test_button_unsupported_gets_no_buttons():
     """
     try:
         captured = await _probe("QQBot|Group|recommend_nobutton", "QQBot", False, True)
-        keys = [element.key for element in captured["prompts"]]
-        return not captured["button_data"] and keys == ["wiki.message.set.not_set"]
+        keys = [element.key for element in captured["prompts"] if isinstance(element, I18NContextElement)]
+        return not captured["prompts"].contains(ButtonFrameElement) and keys == ["wiki.message.set.not_set"]
 
     except Exception:
         return False

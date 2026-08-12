@@ -3,6 +3,7 @@
 from aiogram.types import CopyTextButton, InlineKeyboardButton, InlineKeyboardMarkup
 
 from core.builtins.message.elements import ActionTextElement
+from core.builtins.message.elements import ButtonRows
 from core.logger import Logger
 from core.utils.button_runtime import register_button_rows
 
@@ -18,15 +19,20 @@ def _truncate_label(value: str) -> str:
 
 
 def build_telegram_button_markup(
-    button_data: list[dict[str, str]],
+    button_rows: list[ButtonRows],
     allowed_sender_id: str,
     action_texts: list[ActionTextElement] | None = None,
     supports_inline_queries: bool = True,
 ) -> InlineKeyboardMarkup | None:
     """将普通按钮和 ActionText 转换为 Telegram 内联键盘。"""
-    registered_rows = register_button_rows(button_data, allowed_sender_id)
+    registered_rows = register_button_rows(button_rows, allowed_sender_id)
     inline_keyboard = [
-        [InlineKeyboardButton(text=button.label, callback_data=button.token) for button in row]
+        [
+            InlineKeyboardButton(text=button.label, url=button.url)
+            if button.url
+            else InlineKeyboardButton(text=button.label, callback_data=button.token)
+            for button in row
+        ]
         for row in registered_rows
     ]
 

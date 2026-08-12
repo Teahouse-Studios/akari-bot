@@ -6,7 +6,7 @@ import filetype
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import I18NContext, Plain, Image, Voice, Url
+from core.builtins.message.internal import ButtonFrame, I18NContext, Plain, Image, Voice, Url
 from core.builtins.session.internal import MessageSession, confirm_prompt_key
 from core.builtins.utils import confirm_command
 from core.component import module
@@ -16,6 +16,7 @@ from core.utils.func import is_int
 from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
+from core.utils.button import build_button_rows
 from .database.models import WikiTargetInfo
 from .utils.mapping import generate_screenshot_v2_blocklist
 from .utils.recommend import finish_with_start_wiki_not_set
@@ -379,9 +380,9 @@ async def query_pages(
                                                 start_wiki_api=r.info.api,
                                             )
 
-                                await session.send_message(
-                                    i_msg_lst, callback=_callback, button_data=button_data, callback_id=callback_id
-                                )
+                                if button_data:
+                                    i_msg_lst.append(ButtonFrame(build_button_rows(button_data)))
+                                await session.send_message(i_msg_lst, callback=_callback, callback_id=callback_id)
 
                             else:
                                 if r.invalid_section and (
@@ -444,9 +445,9 @@ async def query_pages(
                                             start_wiki_api=r.info.api,
                                         )
 
-                                await session.send_message(
-                                    i_msg_lst, callback=_callback, button_data=button_data, callback_id=callback_id
-                                )
+                                if button_data:
+                                    i_msg_lst.append(ButtonFrame(build_button_rows(button_data)))
+                                await session.send_message(i_msg_lst, callback=_callback, callback_id=callback_id)
 
                 else:
                     plain_slice = MessageChain.create()

@@ -5,7 +5,7 @@ from collections.abc import Awaitable, Callable
 
 import discord
 
-from core.builtins.message.elements import ActionTextElement
+from core.builtins.message.elements import ActionTextElement, ButtonRows
 from core.logger import Logger
 from core.utils.button_runtime import register_button_rows
 
@@ -163,7 +163,7 @@ def set_action_text_submit_handler(handler: ActionTextSubmitHandler) -> None:
 
 
 def build_discord_button_view(
-    button_data: list[dict[str, str]],
+    button_rows: list[ButtonRows],
     allowed_sender_id: str,
     action_texts: list[ActionTextElement] | None = None,
     modal_title: str = "Edit command",
@@ -171,8 +171,13 @@ def build_discord_button_view(
     select_placeholder: str = "Select a command",
 ) -> DiscordButtonView | None:
     """将普通按钮和 ActionText 转换为同一个 Discord View。"""
-    truncated = len(button_data) > 5 or any(len(row) > 5 for row in button_data[:5])
-    rows = [dict(list(row.items())[:5]) for row in button_data[:5]]
+    buttons = [button for row in button_rows for button in row.buttons]
+    truncated = len(buttons) > 25
+    if len(button_rows) > 5 or any(len(row.buttons) > 5 for row in button_rows):
+        buttons = buttons[:25]
+        rows = [ButtonRows.assign(buttons[start : start + 5]) for start in range(0, len(buttons), 5)]
+    else:
+        rows = button_rows
     registered_rows = register_button_rows(rows, allowed_sender_id)
     if truncated:
         Logger.warning("Discord button data exceeded platform limits and was truncated.")
@@ -180,8 +185,11 @@ def build_discord_button_view(
     view = DiscordButtonView()
     for row_index, row in enumerate(registered_rows):
         for button in row:
-            discord_button = DiscordButton(label=button.label, custom_id=button.token, row=row_index)
-            discord_button.disabled = False
+            if button.url:
+                discord_button = discord.ui.Button(label=button.label, url=button.url, row=row_index)
+            else:
+                discord_button = DiscordButton(label=button.label, custom_id=button.token, row=row_index)
+                discord_button.disabled = False
             view.add_item(discord_button)
 
     action_texts = [x for x in (action_texts or []) if 0 < len(x.text.text) <= DISCORD_ACTION_TEXT_MAX_LENGTH]

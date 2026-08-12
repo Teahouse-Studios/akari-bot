@@ -6,7 +6,7 @@ import filetype
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import I18NContext, Image, Voice, Url
+from core.builtins.message.internal import ButtonFrame, I18NContext, Image, Voice, Url
 from core.component import module
 from core.dirty_check import check
 from core.logger import Logger
@@ -14,6 +14,7 @@ from core.utils.func import is_int
 from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
+from core.utils.button import build_button_rows
 from .database.models import WikiTargetInfo
 from .utils.mapping import generate_screenshot_v2_blocklist
 from .utils.screenshot_image import (
@@ -274,9 +275,9 @@ async def _(msg: Bot.MessageSession):
                                                 start_wiki_api=get_page.info.api,
                                             )
 
-                                await msg.send_message(
-                                    i_msg_lst, callback=_callback, button_data=button_data, callback_id=callback_id
-                                )
+                                if button_data:
+                                    i_msg_lst.append(ButtonFrame(build_button_rows(button_data)))
+                                await msg.send_message(i_msg_lst, callback=_callback, callback_id=callback_id)
                             else:
                                 await msg.send_message(I18NContext("wiki.message.invalid_section"))
                         if get_page.is_forum:
@@ -328,9 +329,9 @@ async def _(msg: Bot.MessageSession):
                                         start_wiki_api=get_page.info.api,
                                     )
 
-                            await msg.send_message(
-                                i_msg_lst, callback=_callback, button_data=button_data, callback_id=callback_id
-                            )
+                            if button_data:
+                                i_msg_lst.append(ButtonFrame(build_button_rows(button_data)))
+                            await msg.send_message(i_msg_lst, callback=_callback, callback_id=callback_id)
             if len(query_list) == 1 and img_send:
                 return
             if msg.session_info.support_image:

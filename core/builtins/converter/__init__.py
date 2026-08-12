@@ -80,6 +80,13 @@ converter.register_unstructure_hook(timedelta, lambda obj: {"_type": "timedelta"
 # 从字典恢复为对应的 MessageElement 子类对象
 def kwargs_to_elements(o):
     Logger.trace(f"kwargs before structure: {o}")
+    if o["_type"] == "ButtonElement" and "rows" in o:
+        rows = [
+            elements.ButtonRows.assign([elements.ButtonElement.assign(show, value) for show, value in row.items()])
+            for row in o["rows"]
+            if isinstance(row, dict)
+        ]
+        return elements.ButtonFrameElement.assign(rows)
     if o["_type"] == "I18NContextElement":
         for k in o["kwargs"]:
             if (

@@ -410,13 +410,13 @@ def _test_jump_buttons_absent_without_support() -> bool:
 def _test_help_buttons_present() -> bool:
     """支持按钮的平台上，help 菜单底部给出两个直达面板的按钮"""
     rows = get_setup_button_data(_make_msg(support_button=True))
-    commands = [command for row in rows for command in row.values()]
+    commands = [button.value for row in rows for button in row.buttons]
     expected = [f"{command_prefix[0]}setup list target", f"{command_prefix[0]}setup list sender"]
     if commands != expected:
         Logger.error(f"Help should offer both panel entries as {expected}, got {commands}")
         return False
     # 文案须取自按钮专设的键：面板标题带有分隔用的方括号，套进按钮里并不好看
-    labels = [label for row in rows for label in row]
+    labels = [button.show for row in rows for button in row.buttons]
     if labels != ["👥 场景设置", "💬 用户设置"]:
         Logger.error(f"Help button labels should carry no bracket decoration, got {labels}")
         return False

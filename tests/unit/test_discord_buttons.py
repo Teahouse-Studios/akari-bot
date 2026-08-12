@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, patch
 from bots.discord.buttons import (
     DiscordActionTextButton,
     DiscordActionTextSelect,
+    DiscordButton,
     build_discord_button_view,
     disable_selected_button,
 )
@@ -14,12 +15,13 @@ from bots.discord.features import features
 from core.builtins.message.internal import ActionText
 from core.builtins.session.info import SessionInfo
 from core.tester import Tester, func_case
+from core.utils.button import build_button_rows
 from core.utils.button_runtime import BUTTON_TOKEN_PREFIX, _clear_button_registry
 
 
 def _view():
     _clear_button_registry()
-    return build_discord_button_view([{"A": "~a", "B": "~b"}, {"C": "~c"}], "Discord|Client|1")
+    return build_discord_button_view(build_button_rows([{"A": "~a", "B": "~b"}, {"C": "~c"}]), "Discord|Client|1")
 
 
 def _test_view_layout_and_tokens():
@@ -33,6 +35,27 @@ def _test_view_layout_and_tokens():
     )
 
 
+def _test_link_buttons_use_native_urls():
+    _clear_button_registry()
+    view = build_discord_button_view(
+        build_button_rows([{"Docs": "https://example.com", "Local": "http://localhost"}, {"Help": "~help"}]),
+        "Discord|Client|1",
+    )
+    docs, local, help_button = view.children
+    return (
+        docs.url == "https://example.com"
+        and docs.custom_id is None
+        and not isinstance(docs, DiscordButton)
+        and local.url == "http://localhost"
+        and local.custom_id is None
+        and not isinstance(local, DiscordButton)
+        and isinstance(help_button, DiscordButton)
+        and help_button.url is None
+        and help_button.custom_id.startswith(BUTTON_TOKEN_PREFIX)
+        and [item.row for item in view.children] == [0, 0, 1]
+    )
+
+
 def _test_disables_only_selected():
     view = _view()
     selected = view.children[1].custom_id
@@ -42,7 +65,7 @@ def _test_disables_only_selected():
 
 def _test_platform_capacity():
     rows = [{f"B{row}-{column}": f"~b {row} {column}" for column in range(7)} for row in range(7)]
-    view = build_discord_button_view(rows, "Discord|Client|1")
+    view = build_discord_button_view(build_button_rows(rows), "Discord|Client|1")
     return len(view.children) == 25 and all(0 <= item.row < 5 for item in view.children)
 
 
@@ -188,6 +211,7 @@ async def _test_action_text_submit_routes_edited_message():
 async def test_discord_buttons(tester: Tester):
     """Discord 按钮组件。"""
     await tester.test(_test_view_layout_and_tokens, "按钮布局与 token")
+    await tester.test(_test_link_buttons_use_native_urls, "链接使用原生 URL 按钮")
     await tester.test(_test_disables_only_selected, "仅停用当前按钮")
     await tester.test(_test_platform_capacity, "平台容量限制")
     await tester.test(_test_feature_enabled, "平台声明按钮能力")

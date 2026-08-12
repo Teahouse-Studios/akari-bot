@@ -16,6 +16,8 @@ from core.builtins.message.elements import (
     EmbedElement,
     MentionElement,
     ActionTextElement,
+    ButtonElement,
+    ButtonFrameElement,
     RawElement,
 )
 
@@ -34,6 +36,8 @@ MessageElement = Union[
     EmbedElement,
     MentionElement,
     ActionTextElement,
+    ButtonElement,
+    ButtonFrameElement,
     None,
 ]
 

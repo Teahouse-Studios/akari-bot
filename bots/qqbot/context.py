@@ -6,7 +6,6 @@ from typing import Union
 from urllib.parse import quote
 
 import botpy
-import orjson
 from botpy.interaction import Interaction
 from botpy.message import BaseMessage, C2CMessage, DirectMessage, GroupMessage, Message
 from botpy.protocol import MediaSendResult, ReplyTarget
@@ -25,7 +24,15 @@ from bots.qqbot.info import (
 )
 from bots.qqbot.utils import url_filter
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
-from core.builtins.message.elements import ActionTextElement, PlainElement, ImageElement, MentionElement, URLElement
+from core.builtins.message.elements import (
+    ActionTextElement,
+    ButtonFrameElement,
+    ButtonRows,
+    PlainElement,
+    ImageElement,
+    MentionElement,
+    URLElement,
+)
 from core.builtins.message.internal import I18NContext
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
@@ -81,9 +88,57 @@ def _render_action_text(element: ActionTextElement) -> str:
     return f"<qqbot-cmd-input {' '.join(attrs)} />"
 
 
+def _build_qqbot_keyboard(
+    rows: list[ButtonRows], session_info: SessionInfo, target: ReplyTarget
+) -> KeyboardPayload | None:
+    """将 ButtonFrame 的按钮行转换为 QQBot 键盘。"""
+    if not rows:
+        return None
+    keyboard_rows = []
+    button_id = 0
+    for row in rows:
+        buttons = []
+        for message_button in row.buttons:
+            button_id += 1
+            buttons.append(
+                Button(
+                    id=str(button_id),
+                    render_data=RenderData(
+                        label=message_button.show,
+                        visited_label=session_info.locale.t("message.selected") + message_button.show,
+                        style=0,
+                    ),
+                    action=Action(
+                        type=0 if message_button.value.startswith(("http://", "https://")) else 1,
+                        permission=Permission(
+                            type=2 if target.scope == "c2c" else 0,
+                            specify_user_ids=[session_info.get_common_sender_id()],
+                            specify_role_ids=["1"],
+                        ),
+                        click_limit=1,
+                        data=message_button.value,
+                        at_bot_show_channel_list=False,
+                    ),
+                )
+            )
+        if buttons:
+            keyboard_rows.append(KeyboardRow(buttons=buttons))
+    if not keyboard_rows:
+        return None
+    return KeyboardPayload(content=Keyboard(rows=keyboard_rows))
+
+
 # 节点表格的高度上限，按「编号行 + 内容行」计对。过宽的表格平台会渲染失败，故此值宜小不宜大：
 # 每多一对，列数减半、单行长度随之减半。帮助的表格另有自己的上限，两者不共用。
 MESSAGE_NODES_MAX_ROWS = 2
+MARKDOWN_IMAGE_MAX_WIDTH = 128
+
+
+def _markdown_image_size(image: ImageElement, width: int, height: int) -> tuple[int, int]:
+    """计算 QQBot Markdown 图片尺寸；max_h 按兼容命名表示调用方指定的最大宽度。"""
+    max_width = image.max_h or MARKDOWN_IMAGE_MAX_WIDTH
+    scale = max_width / width if width > max_width else 1
+    return int(width * scale), int(height * scale)
 
 
 def nodes_to_table(session_info: SessionInfo, nodes: MessageNodes) -> str:
@@ -317,93 +372,10 @@ class QQBotContextManager(ContextManager):
 
             if quote and ctx and session_info.target_from in (target_guild_prefix, target_group_prefix):
                 texts.append(f'<qqbot-at-user id="{session_info.get_common_sender_id()}" />')
-            keyboard = None
-            if session_info.tmp.get("wait_type") == "wait_confirm" and session_info.tmp.get("wait_active") == "yes":
-                button_yes = Button(
-                    id="1",
-                    render_data=RenderData(
-                        label=session_info.locale.t("message.button.yes"),
-                        visited_label=session_info.locale.t("message.confirmed"),
-                        style=0,
-                    ),
-                    action=Action(
-                        type=1,
-                        permission=Permission(
-                            type=2 if target.scope == "c2c" else 0,
-                            specify_user_ids=[session_info.get_common_sender_id()],
-                            specify_role_ids=["1"],
-                        ),
-                        click_limit=1,
-                        data="confirm_yes",
-                        at_bot_show_channel_list=False,
-                    ),
-                )
-                button_no = Button(
-                    id="2",
-                    render_data=RenderData(
-                        label=session_info.locale.t("message.button.no"),
-                        visited_label=session_info.locale.t("message.cancelled"),
-                        style=0,
-                    ),
-                    action=Action(
-                        type=1,
-                        permission=Permission(
-                            type=2 if target.scope == "c2c" else 0,
-                            specify_user_ids=[session_info.get_common_sender_id()],
-                            specify_role_ids=["1"],
-                        ),
-                        click_limit=1,
-                        data="confirm_no",
-                        at_bot_show_channel_list=False,
-                    ),
-                )
-
-                keyboard = KeyboardPayload(content=Keyboard(rows=[KeyboardRow(buttons=[button_yes, button_no])]))
-
-            possibly_choices: list[dict[str, str]] = []
-            if session_info.tmp.get("button_data"):
-                possibly_choices: list[dict[str, str]] = orjson.loads(session_info.tmp.get("button_data", ""))
-            if (
-                session_info.tmp.get("wait_type") == "wait_next_message"
-                and session_info.tmp.get("wait_active") == "yes"
-            ):
-                possibly_choices: list[dict[str, str]] = orjson.loads(session_info.tmp.get("wait_possibly_choices", ""))
-            if len(possibly_choices) > 0:
-                rows = []
-                i = 0
-                links_head = ["http://", "https://"]
-                for r in possibly_choices:
-                    buttons = []
-
-                    for label, data in r.items():
-                        i += 1
-                        is_link = False
-                        for l in links_head:
-                            if data.startswith(l):
-                                is_link = True
-                                break
-                        button = Button(
-                            id=str(i),
-                            render_data=RenderData(
-                                label=label, visited_label=session_info.locale.t("message.selected") + label, style=0
-                            ),
-                            action=Action(
-                                type=0 if is_link else 1,
-                                permission=Permission(
-                                    type=2 if target.scope == "c2c" else 0,
-                                    specify_user_ids=[session_info.get_common_sender_id()],
-                                    specify_role_ids=["1"],
-                                ),
-                                click_limit=1,
-                                data=data,
-                                at_bot_show_channel_list=False,
-                            ),
-                        )
-                        buttons.append(button)
-                    rows.append(KeyboardRow(buttons=buttons))
-                keyboard = KeyboardPayload(content=Keyboard(rows=rows))
-
             converted_message = message.as_sendable(session_info, parse_message=enable_parse_message)
+            possibly_choices = [row for x in converted_message if isinstance(x, ButtonFrameElement) for row in x.rows]
+            keyboard = _build_qqbot_keyboard(possibly_choices, session_info, target)
+
             _use_markdown = True
 
             if converted_message.only(PlainElement):
@@ -444,11 +416,8 @@ class QQBotContextManager(ContextManager):
                         upload = await S3Storage.upload_temp(await x.get())
                         if upload and "public_url" in upload:
                             w, h = await x.get_wh()
-                            max_w = 128
-                            fin_scale = max_w / w if w > max_w else 1
-                            fin_w = w * fin_scale
-                            fin_h = h * fin_scale
-                            texts.append(f"![text #{int(fin_w)}px #{int(fin_h)}px]({upload['public_url']})")
+                            fin_w, fin_h = _markdown_image_size(x, w, h)
+                            texts.append(f"![text #{fin_w}px #{fin_h}px]({upload['public_url']})")
                     inline_pending = False
                 elif isinstance(x, MentionElement):
                     if x.client == client_name and session_info.target_from == target_guild_prefix:
@@ -462,6 +431,8 @@ class QQBotContextManager(ContextManager):
                         else:
                             texts.append(tag)
                     inline_pending = True
+            if keyboard and not texts:
+                texts.append("\u200b")
             if len(texts) != 0:
                 msg = "\n".join(texts)
                 result = await client.send_markdown(target, msg, keyboard=keyboard)

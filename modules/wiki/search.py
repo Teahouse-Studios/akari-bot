@@ -2,8 +2,9 @@ import asyncio
 import re
 
 from core.builtins.bot import Bot
-from core.builtins.message.internal import I18NContext, Plain
+from core.builtins.message.internal import ButtonFrame, I18NContext, Plain
 from core.logger import Logger
+from core.utils.button import build_button_rows
 from core.utils.func import is_int
 from .database.models import WikiTargetInfo
 from .utils.recommend import finish_with_start_wiki_not_set
@@ -89,4 +90,6 @@ async def search_pages(msg: Bot.MessageSession, title: str | list | tuple, use_p
             else:
                 await msg.finish()
 
-    await msg.send_message(msg_list, callback=_callback, button_data=button_list, callback_id=callback_id)
+    if button_list:
+        msg_list.append(ButtonFrame(build_button_rows(button_list)))
+    await msg.send_message(msg_list, callback=_callback, callback_id=callback_id)

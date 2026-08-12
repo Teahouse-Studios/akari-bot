@@ -12,6 +12,8 @@ from core.constants.default import (
     ignored_sender_default,
     issue_url_default,
     locale_url_default,
+    qq_test_group_url_default,
+    repo_url_default,
 )
 from core.constants.version import config_version as config_version_default
 
@@ -95,6 +97,8 @@ class CoreConfig:
     help_page_url: str = help_page_url_default
     issue_url: str = issue_url_default
     locale_url: str = locale_url_default
+    qq_test_group_url: str = qq_test_group_url_default
+    repo_url: str = repo_url_default
 
 
 # 密钥项写在 config.toml 的 [secret] 表内，故表名为 config、以 secret 标志区分，

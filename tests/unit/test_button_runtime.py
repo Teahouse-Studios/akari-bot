@@ -1,17 +1,15 @@
 """按钮运行时单元测试。"""
 
-from types import SimpleNamespace
 from unittest.mock import patch
 
 from core.builtins.utils import confirm_command_default
-from core.i18n import Locale
 from core.tester import Tester, func_case
+from core.utils.button import build_button_rows
 from core.utils.button_runtime import (
     BUTTON_TOKEN_PREFIX,
     ButtonConsumeStatus,
     _clear_button_registry,
     consume_button,
-    get_session_button_data,
     normalize_button_payload,
     register_button_rows,
 )
@@ -19,7 +17,7 @@ from core.utils.button_runtime import (
 
 def _register(payload="~help", sender="Discord|Client|1"):
     _clear_button_registry()
-    return register_button_rows([{"Help": payload}], sender)[0][0]
+    return register_button_rows(build_button_rows([{"Help": payload}]), sender)[0][0]
 
 
 def _test_token_is_short_and_namespaced():
@@ -57,18 +55,35 @@ def _test_expired_is_distinct_from_invalid():
 
 def _test_consuming_one_button_keeps_sibling():
     _clear_button_registry()
-    rows = register_button_rows([{"A": "~a", "B": "~b"}], "Discord|Client|1")
+    rows = register_button_rows(build_button_rows([{"A": "~a", "B": "~b"}]), "Discord|Client|1")
     first = consume_button(rows[0][0].token, "Discord|Client|1")
     sibling = consume_button(rows[0][1].token, "Discord|Client|1")
     return first.status is ButtonConsumeStatus.SUCCESS and sibling.status is ButtonConsumeStatus.SUCCESS
 
 
+def _test_urls_do_not_register_tokens():
+    _clear_button_registry()
+    buttons = register_button_rows(
+        build_button_rows([{"HTTP": "http://example.com", "HTTPS": "https://example.com", "Command": "~help"}]),
+        "Discord|Client|1",
+    )[0]
+    return (
+        buttons[0].url == "http://example.com"
+        and buttons[0].token is None
+        and buttons[1].url == "https://example.com"
+        and buttons[1].token is None
+        and buttons[2].url is None
+        and buttons[2].token.startswith(BUTTON_TOKEN_PREFIX)
+        and consume_button(buttons[2].token, "Discord|Client|1").status is ButtonConsumeStatus.SUCCESS
+    )
+
+
 def _test_register_prunes_expired_tokens():
     _clear_button_registry()
     with patch("core.utils.button_runtime.time.time", return_value=0.001):
-        expired = register_button_rows([{"Old": "~old"}], "Discord|Client|1")[0][0]
+        expired = register_button_rows(build_button_rows([{"Old": "~old"}]), "Discord|Client|1")[0][0]
     with patch("core.utils.button_runtime.time.time", return_value=7200.002):
-        register_button_rows([{"New": "~new"}], "Discord|Client|1")
+        register_button_rows(build_button_rows([{"New": "~new"}]), "Discord|Client|1")
     return consume_button(expired.token, "Discord|Client|1", now=7200.002).status is ButtonConsumeStatus.INVALID
 
 
@@ -77,29 +92,6 @@ def _test_confirmation_payloads_are_normalized():
     no = normalize_button_payload("confirm_no")
     unchanged = normalize_button_payload("~help")
     return yes == confirm_command_default[0] and no == "no" and unchanged == "~help"
-
-
-def _test_wait_confirm_builds_buttons():
-    session = SimpleNamespace(
-        tmp={"wait_type": "wait_confirm", "wait_active": "yes"},
-        locale=Locale("zh_cn"),
-    )
-    return get_session_button_data(session) == [
-        {session.locale.t("message.yes"): "confirm_yes", session.locale.t("message.no"): "confirm_no"}
-    ]
-
-
-def _test_wait_choices_override_explicit_buttons():
-    session = SimpleNamespace(
-        tmp={
-            "button_data": '[{"Explicit":"~explicit"}]',
-            "wait_type": "wait_next_message",
-            "wait_active": "yes",
-            "wait_possibly_choices": '[{"Choice":"1"}]',
-        },
-        locale=Locale("zh_cn"),
-    )
-    return get_session_button_data(session) == [{"Choice": "1"}]
 
 
 @func_case
@@ -111,8 +103,7 @@ async def test_button_runtime(tester: Tester):
     await tester.test(_test_second_use_is_rejected, "按钮只能成功使用一次")
     await tester.test(_test_expired_is_distinct_from_invalid, "过期与无效状态可区分")
     await tester.test(_test_consuming_one_button_keeps_sibling, "消费当前按钮不影响同组按钮")
+    await tester.test(_test_urls_do_not_register_tokens, "HTTP 链接不注册 token")
     await tester.test(_test_register_prunes_expired_tokens, "注册时清理过期 token")
     await tester.test(_test_confirmation_payloads_are_normalized, "确认按钮 payload 归一化")
-    await tester.test(_test_wait_confirm_builds_buttons, "等待确认生成按钮")
-    await tester.test(_test_wait_choices_override_explicit_buttons, "等待选项优先于显式按钮")
     return tester

@@ -1,7 +1,8 @@
 from typing import NoReturn
 
 from core.builtins.bot import Bot
-from core.builtins.message.internal import ActionText, I18NContext
+from core.builtins.message.internal import ActionText, ButtonFrame, I18NContext
+from core.builtins.message.elements import ButtonRows
 from core.builtins.utils import command_prefix
 from core.utils.button import arrange_buttons
 
@@ -11,7 +12,7 @@ RECOMMENDED_WIKIS: list[tuple[str, str]] = [
 ]
 
 
-def get_recommend_button_data() -> list[dict[str, str]]:
+def get_recommend_button_data() -> list[ButtonRows]:
     """
     构造推荐 Wiki 的按钮数据，每个元素为一行按钮。
 
@@ -44,4 +45,6 @@ async def finish_with_start_wiki_not_set(msg: Bot.MessageSession) -> NoReturn:
     if RECOMMENDED_WIKIS and msg.session_info.support_button and await msg.check_permission():
         prompts.append(I18NContext("wiki.message.set.not_set.recommend"))
         button_data = get_recommend_button_data()
-    await msg.finish(prompts, button_data=button_data)
+    if button_data:
+        prompts.append(ButtonFrame(button_data))
+    await msg.finish(prompts)

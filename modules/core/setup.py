@@ -2,7 +2,7 @@ from attrs import define
 
 from core.builtins.bot import Bot
 from core.builtins.message.elements import ActionTextElement
-from core.builtins.message.internal import ActionText, I18NContext, Plain
+from core.builtins.message.internal import ActionText, ButtonFrame, I18NContext, Plain
 from core.builtins.utils import command_prefix
 from core.component import module
 from core.config.base import CoreConfig
@@ -358,4 +358,5 @@ async def _(msg: Bot.MessageSession):
             after_inline=_ends_with_inline_entry(elements),
         )
 
-    await msg.finish(elements, button_data=arrange_buttons(build_jump_buttons(msg, show_target, show_sender)))
+    elements.append(ButtonFrame(arrange_buttons(build_jump_buttons(msg, show_target, show_sender))))
+    await msg.finish(elements)

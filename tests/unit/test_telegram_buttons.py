@@ -18,12 +18,13 @@ from bots.telegram.action_text import (
 from bots.telegram.features import features
 from core.builtins.message.internal import ActionText
 from core.tester import Tester, func_case
+from core.utils.button import build_button_rows
 from core.utils.button_runtime import BUTTON_TOKEN_PREFIX, _clear_button_registry
 
 
 def _markup():
     _clear_button_registry()
-    return build_telegram_button_markup([{"A": "~a", "B": "~b"}, {"C": "~c"}], "Telegram|User|1")
+    return build_telegram_button_markup(build_button_rows([{"A": "~a", "B": "~b"}, {"C": "~c"}]), "Telegram|User|1")
 
 
 def _test_markup_layout_and_tokens():
@@ -36,6 +37,35 @@ def _test_markup_layout_and_tokens():
     )
 
 
+def _test_link_buttons_use_native_urls():
+    _clear_button_registry()
+    markup = build_telegram_button_markup(
+        build_button_rows([{"Docs": "https://example.com", "Local": "http://localhost", "Help": "~help"}]),
+        "Telegram|User|1",
+    )
+    docs, local, help_button = markup.inline_keyboard[0]
+    return (
+        docs.url == "https://example.com"
+        and docs.callback_data is None
+        and local.url == "http://localhost"
+        and local.callback_data is None
+        and help_button.url is None
+        and help_button.callback_data.startswith(BUTTON_TOKEN_PREFIX)
+    )
+
+
+def _test_removing_callback_keeps_link_button():
+    _clear_button_registry()
+    markup = build_telegram_button_markup(
+        build_button_rows([{"Docs": "https://example.com", "Help": "~help"}]),
+        "Telegram|User|1",
+    )
+    updated = remove_selected_button(markup, markup.inline_keyboard[0][1].callback_data)
+    return [[button.text for button in row] for row in updated.inline_keyboard] == [
+        ["Docs"]
+    ] and updated.inline_keyboard[0][0].url == "https://example.com"
+
+
 def _test_removes_only_selected_and_empty_row():
     markup = _markup()
     selected = markup.inline_keyboard[1][0].callback_data
@@ -44,7 +74,7 @@ def _test_removes_only_selected_and_empty_row():
 
 
 def _test_removing_last_button_returns_none():
-    markup = build_telegram_button_markup([{"A": "~a"}], "Telegram|User|1")
+    markup = build_telegram_button_markup(build_button_rows([{"A": "~a"}]), "Telegram|User|1")
     selected = markup.inline_keyboard[0][0].callback_data
     return remove_selected_button(markup, selected) is None
 
@@ -203,6 +233,8 @@ async def _test_inline_query_handler_answers_personally_without_cache():
 async def test_telegram_buttons(tester: Tester):
     """Telegram 按钮组件。"""
     await tester.test(_test_markup_layout_and_tokens, "按钮布局与 token")
+    await tester.test(_test_link_buttons_use_native_urls, "链接使用原生 URL 按钮")
+    await tester.test(_test_removing_callback_keeps_link_button, "移除回调按钮时保留链接")
     await tester.test(_test_removes_only_selected_and_empty_row, "仅移除当前按钮并清理空行")
     await tester.test(_test_removing_last_button_returns_none, "移除最后按钮后清空键盘")
     await tester.test(_test_feature_enabled, "平台声明按钮能力")

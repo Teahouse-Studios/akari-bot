@@ -18,7 +18,6 @@ from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
-from core.utils.button_runtime import get_session_button_data
 
 
 class TelegramContextManager(ContextManager):
@@ -61,7 +60,6 @@ class TelegramContextManager(ContextManager):
             enable_parse_message=enable_parse_message,
             enable_split_image=enable_split_image,
         )
-        button_data = get_session_button_data(session_info)
         supports_inline_queries = True
         if content.action_texts:
             try:
@@ -73,7 +71,7 @@ class TelegramContextManager(ContextManager):
                 Logger.exception("Failed to detect Telegram Inline Mode support, using copy buttons: ")
                 supports_inline_queries = False
         markup = build_telegram_button_markup(
-            button_data,
+            content.button_rows,
             session_info.sender_id,
             action_texts=content.action_texts,
             supports_inline_queries=supports_inline_queries,

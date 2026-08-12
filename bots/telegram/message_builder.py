@@ -9,7 +9,15 @@ from attrs import define, field
 
 from bots.telegram.info import client_name
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import ActionTextElement, ImageElement, MentionElement, PlainElement, VoiceElement
+from core.builtins.message.elements import (
+    ActionTextElement,
+    ButtonFrameElement,
+    ButtonRows,
+    ImageElement,
+    MentionElement,
+    PlainElement,
+    VoiceElement,
+)
 from core.builtins.session.info import SessionInfo
 from core.utils.image import image_split
 
@@ -35,6 +43,7 @@ class TelegramContent:
     images: list = field(factory=list)
     audio: list = field(factory=list)
     action_texts: list[ActionTextElement] = field(factory=list)
+    button_rows: list[ButtonRows] = field(factory=list)
 
 
 @define
@@ -163,6 +172,7 @@ async def collect_telegram_content(
     images = []
     audio = []
     action_texts = []
+    button_rows = []
     inline_pending = False
     for element in message.as_sendable(session_info, parse_message=enable_parse_message):
         if isinstance(element, PlainElement):
@@ -180,6 +190,9 @@ async def collect_telegram_content(
                 text_parts.append(fallback)
             action_texts.append(element)
             inline_pending = True
+        elif isinstance(element, ButtonFrameElement):
+            button_rows.extend(element.rows)
+            inline_pending = False
         elif isinstance(element, MentionElement):
             if element.client == client_name and session_info.target_from in [
                 f"{client_name}|Group",
@@ -196,7 +209,16 @@ async def collect_telegram_content(
         elif isinstance(element, VoiceElement):
             audio.append(FSInputFile(element.path))
             inline_pending = False
-    return TelegramContent(text="\n".join(text_parts), images=images, audio=audio, action_texts=action_texts)
+    text = "\n".join(text_parts)
+    if not text and button_rows and not images and not audio:
+        text = "\u200b"
+    return TelegramContent(
+        text=text,
+        images=images,
+        audio=audio,
+        action_texts=action_texts,
+        button_rows=button_rows,
+    )
 
 
 def _group_media(items: list, media_type, caption: str | None = None) -> list:

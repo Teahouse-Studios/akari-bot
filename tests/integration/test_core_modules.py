@@ -17,6 +17,14 @@ async def test_version(tester: Tester):
 
 
 @func_case
+async def test_about(tester: Tester):
+    """about 命令测试"""
+    await tester.integrate("~about", Contains("AGPL-3.0"), "about 应显示关于信息")
+
+    return tester
+
+
+@func_case
 async def test_help(tester: Tester):
     """help 命令测试"""
     await tester.integrate("~help", Contains("基础模块"), "help 应显示基础模块列表")

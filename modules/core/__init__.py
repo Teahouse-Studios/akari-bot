@@ -1,4 +1,5 @@
 from .alias import *
+from .about import *
 from .analytics import *
 from .bind import *
 from .dev import *

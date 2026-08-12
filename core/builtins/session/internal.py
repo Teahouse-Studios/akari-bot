@@ -13,12 +13,11 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Coroutine, Match, NoReturn, TYPE_CHECKING
 
 from attrs import define, field
-import orjson
 from deprecated import deprecated
 from japanera import EraDate
 
 from core.builtins.message.chain import MessageChain, get_message_chain, Chainable, MessageNodes
-from core.builtins.message.internal import I18NContext
+from core.builtins.message.internal import Button, I18NContext
 from core.builtins.session.info import SessionInfo, FetchedSessionInfo
 from core.builtins.session.lock import ExecutionLockList
 from core.builtins.session.tasks import SessionTaskManager
@@ -115,7 +114,6 @@ class MessageSession:
         enable_split_image: bool = True,
         callback: Any | None = None,
         callback_id: str | None = None,
-        button_data: list[dict[str, str]] | None = None,
         force_markdown: bool = False,
     ) -> FinishedSession:
         """
@@ -137,7 +135,6 @@ class MessageSession:
         :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅 Telegram 平台使用，默认为 True）
         :param callback: 回调函数，在消息发送完成后执行（可选）
         :param callback_id: 回调函数的唯一标识符，用于特殊情形（QQ 平台的按钮）（可选）
-        :param button_data: 用于扩展按钮提示（可选）
         :return: FinishedSession 对象，包含消息 ID，可用于后续操作
 
         :raises SessionFinished: 如果发送过程中抛出异常
@@ -160,9 +157,6 @@ class MessageSession:
         # ========== 步骤 3: 发送消息 ==========
         # 通过消息队列发送消息，并阻塞等待返回包含消息 ID 的字典
 
-        # 如果提供了 button_data，则将其序列化为 JSON 并存储在会话的临时数据中
-        self.session_info.tmp["button_data"] = orjson.dumps(button_data or {}).decode("utf-8")
-
         # 设置强制使用 markdown 标记
         self.session_info.tmp["force_markdown"] = "true" if force_markdown else ""
 
@@ -174,9 +168,6 @@ class MessageSession:
             enable_split_image=enable_split_image,
         )
 
-        # 清空 button_data 以防止会话的后续消息一直出现 button_data
-
-        self.session_info.tmp["button_data"] = "[]"
         self.session_info.tmp["force_markdown"] = ""
 
         # ========== 步骤 4: 处理回调 ==========
@@ -209,7 +200,6 @@ class MessageSession:
         enable_split_image: bool = True,
         callback: Coroutine | None = None,
         callback_id: str | None = None,
-        button_data: list[dict[str, str]] = [],  # skipcq
         force_markdown: bool = False,
     ) -> NoReturn:
         """
@@ -229,8 +219,6 @@ class MessageSession:
         :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅 Telegram 平台使用，默认为 True）
         :param callback: 回调函数，在消息发送完成后执行（可选）
         :param callback_id: 回调函数的唯一标识符，用于特殊情形（QQ 平台的按钮）（可选）
-        :param button_data: 用于扩展按钮提示（可选）
-
         :raises SessionFinished: 总是抛出此异常来终止会话处理
         """
         f = None
@@ -244,7 +232,6 @@ class MessageSession:
                 enable_split_image=enable_split_image,
                 callback=callback,
                 callback_id=callback_id,
-                button_data=button_data,
                 force_markdown=force_markdown,
             )
         # ========== 终止会话 ==========
@@ -545,8 +532,6 @@ class MessageSession:
 
         :raises WaitCancelException: 如果超时或用户未确认
         """
-        self.session_info.tmp["wait_type"] = "wait_confirm"
-        self.session_info.tmp["wait_active"] = "yes"
         ExecutionLockList.remove(self)
         await self.end_typing()
         if CoreConfig.no_confirm:
@@ -558,9 +543,11 @@ class MessageSession:
         # 合并转发消息无从追加提示行，此时略过
         if append_instruction and isinstance(chain, MessageChain):
             chain.append(I18NContext(confirm_prompt_key(self.session_info)))
+        if self.session_info.support_button and isinstance(chain, MessageChain):
+            chain.append(Button(self.session_info.locale.t("message.button.yes"), "confirm_yes"))
+            chain.append(Button(self.session_info.locale.t("message.button.no"), "confirm_no"))
         send = await self.send_message(chain, quote)
         await asyncio.sleep(0.1)
-        self.session_info.tmp["wait_active"] = "no"
         if quick_confirm:
             await self._add_confirm_reaction(send.message_id)
         flag = asyncio.Event()
@@ -611,9 +598,6 @@ class MessageSession:
 
         :raises WaitCancelException: 如果超时或出错
         """
-        self.session_info.tmp["wait_type"] = "wait_next_message"
-        self.session_info.tmp["wait_active"] = "yes"
-        self.session_info.tmp["wait_possibly_choices"] = orjson.dumps(possibly_choices or {}).decode("utf-8")
         send = None
         ExecutionLockList.remove(self)
         await self.end_typing()
@@ -622,9 +606,12 @@ class MessageSession:
             # 合并转发消息无从追加提示行，此时略过
             if append_instruction and isinstance(chain, MessageChain):
                 chain.append(I18NContext("message.wait.next_message.prompt"))
+            if possibly_choices and self.session_info.support_button and isinstance(chain, MessageChain):
+                for row in possibly_choices:
+                    for show, value in row.items():
+                        chain.append(Button(show, value))
             send = await self.send_message(chain, quote)
         await asyncio.sleep(0.1)
-        self.session_info.tmp["wait_active"] = "no"
         flag = asyncio.Event()
         SessionTaskManager.add_task(self, flag, timeout=timeout)
         try:
@@ -701,8 +688,6 @@ class MessageSession:
 
         :raises WaitCancelException: 如果超时或出错
         """
-        self.session_info.tmp["wait_type"] = "wait_anyone"
-        self.session_info.tmp["wait_active"] = "yes"
         send = None
         ExecutionLockList.remove(self)
         await self.end_typing()
@@ -710,7 +695,6 @@ class MessageSession:
             chain = get_message_chain(self.session_info, message_chain)
             send = await self.send_message(chain, quote)
         await asyncio.sleep(0.1)
-        self.session_info.tmp["wait_active"] = "no"
         flag = asyncio.Event()
         SessionTaskManager.add_task(self, flag, all_=True, timeout=timeout)
         try:
@@ -759,8 +743,6 @@ class MessageSession:
 
         :raises WaitCancelException: 如果超时或出错
         """
-        self.session_info.tmp["wait_type"] = "wait_reply"
-        self.session_info.tmp["wait_active"] = "yes"
         if not self.session_info.support_quote:
             chain = get_message_chain(self.session_info, message_chain)
             # 合并转发消息无从追加提示行，此时略过
@@ -778,7 +760,6 @@ class MessageSession:
             chain.append(I18NContext("message.reply.prompt"))
         send = await self.send_message(chain, quote)
         await asyncio.sleep(0.1)
-        self.session_info.tmp["wait_active"] = "no"
         flag = asyncio.Event()
         SessionTaskManager.add_task(self, flag, reply=send.message_id, all_=all_, timeout=timeout)
         try:

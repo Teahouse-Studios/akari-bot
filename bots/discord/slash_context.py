@@ -2,12 +2,11 @@ import asyncio
 
 import discord
 
+from bots.discord.buttons import build_discord_button_view
 from bots.discord.context import DiscordContextManager
 from bots.discord.features import slash_features
-from bots.discord.info import client_name, target_channel_prefix
-from bots.discord.utils import convert_embed
+from bots.discord.message_builder import build_discord_payloads
 from core.builtins.message.chain import MessageChain, MessageNodes
-from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement, EmbedElement
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
@@ -35,46 +34,27 @@ class DiscordSlashContextManager(DiscordContextManager):
             Logger.error("This session does not support message nodes, check if bug exists.")
             return []
 
-        count = 0
+        payloads = await build_discord_payloads(session_info, message, enable_parse_message)
+        view = build_discord_button_view(
+            payloads[-1].button_rows if payloads else [],
+            session_info.sender_id,
+            action_texts=payloads[-1].action_texts if payloads else [],
+            modal_title=session_info.locale.t("message.action_text.modal.title"),
+            input_label=session_info.locale.t("message.action_text.modal.input"),
+            select_placeholder=session_info.locale.t("message.action_text.select"),
+        )
         msg_ids = []
-        for x in message.as_sendable(session_info, parse_message=enable_parse_message):
-            send_ = None
-            if isinstance(x, PlainElement):
-                if count == 0:
-                    send_ = await ctx.respond(x.text)
-                else:
-                    send_ = await ctx.send(x.text)
-                Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
-            elif isinstance(x, ImageElement):
-                if count == 0:
-                    send_ = await ctx.respond(file=discord.File(await x.get()))
-                else:
-                    send_ = await ctx.send(file=discord.File(await x.get()))
-                Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(x)}")
-            elif isinstance(x, VoiceElement):
-                if count == 0:
-                    send_ = await ctx.respond(file=discord.File(x.path))
-                else:
-                    send_ = await ctx.send(file=discord.File(x.path))
-                Logger.info(f"[Bot] -> [{session_info.target_id}]: Voice: {str(x)}")
-            elif isinstance(x, MentionElement):
-                if x.client == client_name and session_info.target_from == target_channel_prefix:
-                    if count == 0:
-                        send_ = await ctx.respond(f"<@{x.id}>")
-                    else:
-                        send_ = await ctx.send(f"<@{x.id}>")
-                    Logger.info(f"[Bot] -> [{session_info.target_id}]: Mention: {x.client}|{str(x.id)}")
-            elif isinstance(x, EmbedElement):
-                embeds, files = await convert_embed(x, session_info)
-                if count == 0:
-                    send_ = await ctx.respond(embed=embeds, files=files)
-                else:
-                    send_ = await ctx.send(embed=embeds, files=files)
-                Logger.info(f"[Bot] -> [{session_info.target_id}]: Embed: {str(x)}")
-
+        for index, payload in enumerate(payloads):
+            kwargs = {
+                "content": payload.content,
+                "files": payload.files or None,
+                "embeds": payload.embeds or None,
+                "view": view if index == len(payloads) - 1 else None,
+            }
+            send_ = await ctx.respond(**kwargs) if index == 0 else await ctx.send(**kwargs)
             if send_:
                 msg_ids.append(str(send_.id))
-            count += 1
+            Logger.info(f"[Bot] -> [{session_info.target_id}]: Aggregated Discord slash message {send_.id}")
         return msg_ids
 
     @classmethod

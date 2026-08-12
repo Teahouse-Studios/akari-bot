@@ -6,8 +6,8 @@ from jinja2 import FileSystemLoader, Environment
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import ImageElement
-from core.builtins.message.internal import ActionText, I18NContext, Plain, Url
+from core.builtins.message.elements import ButtonRows, ImageElement
+from core.builtins.message.internal import ActionText, ButtonFrame, I18NContext, Plain, Url
 from core.builtins.parser.command import CommandParser
 from core.builtins.utils import command_prefix
 from core.component import module
@@ -194,14 +194,38 @@ def build_module_table(
     """
     locale = msg.session_info.locale
     prefix = msg.session_info.prefixes[0]
-    groups = [(locale.t(title_key), names) for title_key, names in groups if names]
+    groups = [(title_key, locale.t(title_key), names) for title_key, names in groups if names]
     if not groups:
         return []
 
-    columns = resolve_table_columns([len(names) for _, names in groups], separators=len(groups) - 1)
+    legend_keys = {
+        "core.message.help.table.external": (
+            "core.message.help.table.legend.external.enabled",
+            "core.message.help.table.legend.external.disabled",
+        ),
+        "core.message.help.table.subscription": (
+            "core.message.help.table.legend.subscription.enabled",
+            "core.message.help.table.legend.subscription.disabled",
+        ),
+    }
+    legends = {
+        title_key: [locale.t(key) for key in legend_keys[title_key]]
+        for title_key, _, names in groups
+        if title_key in legend_keys and any(is_module_entry(item) for item in names)
+    }
+    columns = resolve_table_columns([len(names) for _, _, names in groups], separators=len(groups) - 1)
+    if legends:
+        columns = max(columns, 3)
     if include_help_header:
         columns = max(columns, 4)
-    blanks = " |" * (columns - 1)
+
+    def group_header(title_key: str, title: str) -> str:
+        cells = [escape_table_cell(title)]
+        if title_key in legends:
+            cells.extend(escape_table_cell(legend) for legend in legends[title_key])
+        cells.extend([""] * (columns - len(cells)))
+        return "|" + "".join(f" {cell} |" if cell else " |" for cell in cells) + "\n"
+
     parts = []
     # 表头与分隔线开头，随后各行的收尾、下一组的区隔行都并进同一个纯文本，
     # 以免相邻纯文本之间被适配器补上换行
@@ -230,14 +254,14 @@ def build_module_table(
         pending = (
             f" | {escape_table_cell(permission_text)} |{header_blanks}\n"
             f"|{'---|' * columns}\n"
-            f"| {escape_table_cell(groups[0][0])} |{blanks}\n"
+            f"{group_header(groups[0][0], groups[0][1])}"
         )
     else:
-        pending = f"| {escape_table_cell(groups[0][0])} |{blanks}\n|{'---|' * columns}\n"
+        pending = f"{group_header(groups[0][0], groups[0][1])}|{'---|' * columns}\n"
 
-    for index, (title, names) in enumerate(groups):
+    for index, (title_key, title, names) in enumerate(groups):
         if index:
-            pending += f"| {escape_table_cell(title)} |{blanks}\n"
+            pending += group_header(title_key, title)
         for offset, item in enumerate(names):
             parts.append(Plain(pending + "| " if not offset or offset % columns == 0 else pending, disable_joke=True))
             if is_module_entry(item):
@@ -363,11 +387,9 @@ def build_command_table(msg: Bot.MessageSession, help_doc: dict, regex_rows: lis
 
 def get_help_link_buttons(msg: Bot.MessageSession, include_modules: bool = True) -> list[tuple[str, str]]:
     """
-    构造帮助菜单底部的三个入口按钮：模块列表、在线文档、捐赠。
+    构造帮助菜单底部的三个入口按钮：模块列表、在线文档、关于我们。
 
-    三者都是回调按钮，点击后由机器人回一条消息，故各自都须有命令可回流——后两者对应
-    ``help --doc`` 与 ``help --donate``。跳转按钮虽可直接打开链接，却要求域名在平台报备，
-    未报备的会被拦下，此处不采用。
+    模块列表与关于我们使用命令回流，在线文档使用平台原生链接跳转。
 
     按钮命令一律使用 command_prefix：按钮回流经 interaction 事件另建会话，其可用前缀
     取自全局配置，不含各平台在常规消息入口所用的前缀。
@@ -386,20 +408,14 @@ def get_help_link_buttons(msg: Bot.MessageSession, include_modules: bool = True)
         buttons.append(
             (
                 locale.t("core.message.help.button.document"),
-                help_url if msg.session_info.client_name == "QQBot" else f"{prefix}help --doc",
+                help_url,
             )
         )
-    if donate_url:
-        buttons.append(
-            (
-                locale.t("core.message.help.button.donate"),
-                donate_url if msg.session_info.client_name == "QQBot" else f"{prefix}help --donate",
-            )
-        )
+    buttons.append((locale.t("core.message.help.button.about"), f"{prefix}about"))
     return buttons
 
 
-def get_setup_button_data(msg: Bot.MessageSession) -> list[dict[str, str]]:
+def get_setup_button_data(msg: Bot.MessageSession) -> list[ButtonRows]:
     """
     构造帮助菜单底部直达设置面板的按钮。
 
@@ -422,7 +438,7 @@ def get_setup_button_data(msg: Bot.MessageSession) -> list[dict[str, str]]:
     )
 
 
-def get_help_button_data(msg: Bot.MessageSession, include_modules: bool = True) -> list[dict[str, str]]:
+def get_help_button_data(msg: Bot.MessageSession, include_modules: bool = True) -> list[ButtonRows]:
     """
     构造帮助菜单底部的全部按钮：设置面板一行，三个入口按钮另起一行。
 
@@ -435,7 +451,7 @@ def get_help_button_data(msg: Bot.MessageSession, include_modules: bool = True) 
     return get_setup_button_data(msg) + arrange_buttons(get_help_link_buttons(msg, include_modules), per_row=3)
 
 
-def get_module_list_button_data(msg: Bot.MessageSession) -> list[dict[str, str]]:
+def get_module_list_button_data(msg: Bot.MessageSession) -> list[ButtonRows]:
     """构造模块列表底部的在线文档按钮。"""
     if not msg.session_info.support_button or not help_url:
         return []
@@ -715,10 +731,10 @@ async def help_overview(msg: Bot.MessageSession):
                 help_msg_list.append(
                     I18NContext("core.message.help.donate", url=MessageChain.assign(Url(donate_url, trusted=True)))
                 )
-            await msg.finish(
-                imgs + help_msg_list,
-                button_data=(get_setup_button_data(msg) if show_all_modules else get_help_button_data(msg)),
+            help_msg_list.append(
+                ButtonFrame(get_setup_button_data(msg) if show_all_modules else get_help_button_data(msg))
             )
+            await msg.finish(imgs + help_msg_list)
     if legacy_help:
         is_base_superuser = msg.session_info.sender_id in Bot.base_superuser_list
         is_superuser = msg.check_super_user()
@@ -781,11 +797,8 @@ async def help_overview(msg: Bot.MessageSession):
                 ]
             ):
                 append_qqbot_permissions_prompt(msg, help_msg)
-            await msg.finish(
-                help_msg,
-                button_data=get_help_button_data(msg, include_modules=not show_all_modules),
-                force_markdown=True,
-            )
+            help_msg.append(ButtonFrame(get_help_button_data(msg, include_modules=not show_all_modules)))
+            await msg.finish(help_msg, force_markdown=True)
         if use_clickable:
             help_msg = MessageChain.assign(
                 build_clickable_modules(
@@ -838,10 +851,8 @@ async def help_overview(msg: Bot.MessageSession):
             help_msg.append(
                 I18NContext("core.message.help.donate", url=MessageChain.assign(Url(donate_url, trusted=True)))
             )
-        await msg.finish(
-            help_msg,
-            button_data=get_help_button_data(msg, include_modules=not show_all_modules),
-        )
+        help_msg.append(ButtonFrame(get_help_button_data(msg, include_modules=not show_all_modules)))
+        await msg.finish(help_msg)
 
 
 async def modules_list_help(msg: Bot.MessageSession, legacy, force_image=False):
@@ -865,7 +876,8 @@ async def modules_list_help(msg: Bot.MessageSession, legacy, force_image=False):
                 help_msg.append(
                     I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url, trusted=True)))
                 )
-            await msg.finish(imgs + help_msg, button_data=get_module_list_button_data(msg))
+            help_msg.append(ButtonFrame(get_module_list_button_data(msg)))
+            await msg.finish(imgs + help_msg)
     if legacy_help:
         can_manage_modules = msg.session_info.client_name == "QQBot" and await msg.check_permission()
         module_list = ModulesManager.return_modules_list(
@@ -909,7 +921,8 @@ async def modules_list_help(msg: Bot.MessageSession, legacy, force_image=False):
             )
             help_msg += I18NContext("core.message.help.mdtable")
             append_qqbot_permissions_prompt(msg, help_msg)
-            await msg.finish(help_msg, button_data=get_module_list_button_data(msg), force_markdown=True)
+            help_msg.append(ButtonFrame(get_module_list_button_data(msg)))
+            await msg.finish(help_msg, force_markdown=True)
         elif use_clickable:
             help_msg = MessageChain.assign(
                 build_clickable_modules(
@@ -941,7 +954,8 @@ async def modules_list_help(msg: Bot.MessageSession, legacy, force_image=False):
             help_msg.append(
                 I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url, trusted=True)))
             )
-        await msg.finish(help_msg, button_data=get_module_list_button_data(msg))
+        help_msg.append(ButtonFrame(get_module_list_button_data(msg)))
+        await msg.finish(help_msg)
 
 
 async def help_generator(

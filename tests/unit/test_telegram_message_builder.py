@@ -19,7 +19,7 @@ from bots.telegram.message_builder import (
     split_telegram_html,
 )
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import ActionText, Image, Mention, Plain, Voice
+from core.builtins.message.internal import ActionText, Button, Image, Mention, Plain, Voice
 from core.builtins.session.info import SessionInfo
 from core.i18n import Locale
 from core.tester import Tester, func_case
@@ -71,6 +71,7 @@ def _session():
         support_image=True,
         support_voice=True,
         support_mention=True,
+        support_button=True,
     )
 
 
@@ -105,6 +106,25 @@ async def _test_action_text_keeps_inline_fallback_and_metadata():
         and len(content.action_texts) == 1
         and content.action_texts[0].text.text == "~help "
     )
+
+
+async def _test_button_rows_are_collected():
+    content = await collect_telegram_content(
+        _session(),
+        MessageChain.assign([Plain("hello"), Button("Docs", "https://example.com"), Button("Help", "~help")]),
+        enable_split_image=False,
+    )
+    return content.text == "hello" and [(button.show, button.value) for button in content.button_rows[0].buttons] == [
+        ("Docs", "https://example.com"),
+        ("Help", "~help"),
+    ]
+
+
+async def _test_button_only_message_gets_placeholder():
+    content = await collect_telegram_content(
+        _session(), MessageChain.assign(Button("Help", "~help")), enable_split_image=False
+    )
+    return content.text == "\u200b" and content.button_rows[0].buttons[0] == Button("Help", "~help")
 
 
 async def _test_collects_text_mentions_and_media():
@@ -222,6 +242,8 @@ async def test_telegram_message_builder(tester: Tester):
     await tester.test(_test_plain_html_is_escaped, "Plain 中的 HTML 特殊字符被转义")
     await tester.test(_test_atcode_keeps_surrounding_text_escaped, "提及转换不放行周围 HTML")
     await tester.test(_test_action_text_keeps_inline_fallback_and_metadata, "ActionText 保持行内降级并收集交互信息")
+    await tester.test(_test_button_rows_are_collected, "ButtonElement 收集按钮行")
+    await tester.test(_test_button_only_message_gets_placeholder, "纯按钮消息补充不可见正文")
     await tester.test(_test_collects_text_mentions_and_media, "收集文本、提及与媒体")
     await tester.test(_test_single_photo_uses_caption, "单图片使用 caption")
     await tester.test(_test_media_groups_and_types, "媒体分组与类型隔离")

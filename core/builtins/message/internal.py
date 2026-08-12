@@ -43,6 +43,12 @@ Raw = raw = RawElement.assign
 # 指令操作元素 - 用于嵌入可点击的命令入口，点击后文本填入输入框
 ActionText = action_text = ActionTextElement.assign
 
+# 单个按钮元素 - 可直接加入消息链并由发送阶段自动排布
+Button = button = ButtonElement.assign
+
+# 按钮区域元素 - 用于显式指定按钮行布局
+ButtonFrame = button_frame = ButtonFrameElement.assign
+
 __all__ = [
     "Plain",
     "Image",
@@ -55,6 +61,9 @@ __all__ = [
     "Mention",
     "Raw",
     "ActionText",
+    "Button",
+    "ButtonRows",
+    "ButtonFrame",
     "plain",
     "image",
     "voice",
@@ -66,4 +75,6 @@ __all__ = [
     "mention",
     "raw",
     "action_text",
+    "button",
+    "button_frame",
 ]

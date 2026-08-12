@@ -8,6 +8,8 @@ from bots.discord.utils import convert_embed
 from core.builtins.message.chain import MessageChain, match_atcode
 from core.builtins.message.elements import (
     ActionTextElement,
+    ButtonFrameElement,
+    ButtonRows,
     EmbedElement,
     ImageElement,
     MentionElement,
@@ -25,6 +27,7 @@ class DiscordPayload:
     files: list[discord.File] = field(factory=list)
     embeds: list[discord.Embed] = field(factory=list)
     action_texts: list[ActionTextElement] = field(factory=list)
+    button_rows: list[ButtonRows] = field(factory=list)
 
 
 def split_discord_text(text: str, limit: int = 2000) -> list[str]:
@@ -51,6 +54,7 @@ async def build_discord_payloads(
     files = []
     embed_units = []
     action_texts = []
+    button_rows = []
     embed_index = 0
     inline_pending = False
 
@@ -70,6 +74,9 @@ async def build_discord_payloads(
                 text_parts.append(fallback)
             action_texts.append(element)
             inline_pending = True
+        elif isinstance(element, ButtonFrameElement):
+            button_rows.extend(element.rows)
+            inline_pending = False
         elif isinstance(element, MentionElement):
             if element.client == client_name and session_info.target_from == target_channel_prefix:
                 text_parts.append(f"<@{element.id}>")
@@ -116,8 +123,11 @@ async def build_discord_payloads(
         )
         if text_index < len(text_chunks):
             text_index += 1
+    if not payloads and (button_rows or action_texts):
+        payloads.append(DiscordPayload(content="\u200b"))
     if payloads:
         payloads[-1].action_texts = action_texts
+        payloads[-1].button_rows = button_rows
     return payloads
 
 

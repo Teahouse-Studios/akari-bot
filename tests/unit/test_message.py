@@ -8,11 +8,16 @@ from core.builtins.message.elements import (
     MentionElement,
     EmbedElement,
     FormattedTimeElement,
+    ButtonElement,
+    ButtonRows,
+    ButtonFrameElement,
 )
 from core.builtins.message.internal import (
     Plain,
     Url,
     I18NContext,
+    Button,
+    ButtonFrame,
 )
 from core.tester import func_case, Tester
 
@@ -383,6 +388,15 @@ def _test_i18n_context():
         return False
 
 
+def _test_button_alias():
+    """测试 Button 别名。"""
+    try:
+        element = Button("帮助", "~help")
+        return isinstance(element, ButtonElement) and element.show == "帮助" and element.value == "~help"
+    except Exception:
+        return False
+
+
 @func_case
 async def test_message_chain(tester: Tester):
     """core.builtins.message.chain: MessageChain 测试"""
@@ -434,6 +448,7 @@ async def test_message_internal(tester: Tester):
     await tester.test(_test_plain_alias, "Plain 别名")
     await tester.test(_test_url_alias, "Url 别名")
     await tester.test(_test_i18n_context, "I18NContext 别名")
+    await tester.test(_test_button_alias, "Button 别名")
 
     return tester
 
@@ -548,6 +563,17 @@ def _test_image_element_url():
         return False
 
 
+def _test_image_element_max_h_roundtrip():
+    """ImageElement: max_h 参数可跨 KE 码与消息链序列化保留。"""
+    try:
+        elem = ImageElement.assign("https://example.com/img.png", max_h=512)
+        restored_kecode = match_kecode(elem.kecode()).values[0]
+        restored_chain = MessageChain.from_list(MessageChain.assign(elem).to_list()).values[0]
+        return elem.max_h == 512 and restored_kecode.max_h == 512 and restored_chain.max_h == 512
+    except Exception:
+        return False
+
+
 def _test_voice_element_assign():
     """VoiceElement: assign"""
     try:
@@ -590,6 +616,77 @@ def _test_embed_element_assign():
         return False
 
 
+def _test_button_element_roundtrip():
+    """Button 与 ButtonFrame：构造、KE 码与消息链序列化往返。"""
+    try:
+        button = Button("帮助", "~help")
+        frame = ButtonFrame(
+            [
+                ButtonRows.assign([Button("文档", "https://example.com"), button]),
+                ButtonRows.assign([Button("设置", "~setup")]),
+            ]
+        )
+        if not isinstance(button, ButtonElement) or not isinstance(frame, ButtonFrameElement):
+            return False
+        restored_kecode = match_kecode(frame.kecode()).values[0]
+        restored_chain = MessageChain.from_list(MessageChain.assign(frame).to_list()).values[0]
+        return (
+            isinstance(restored_kecode, ButtonFrameElement)
+            and restored_kecode == frame
+            and isinstance(restored_chain, ButtonFrameElement)
+            and restored_chain == frame
+            and match_kecode(button.kecode()).values[0] == button
+        )
+    except Exception:
+        return False
+
+
+def _test_button_element_follows_platform_capability():
+    """ButtonElement: 支持按钮时保留，否则发送阶段忽略。"""
+    try:
+        from types import SimpleNamespace
+
+        from core.i18n import Locale
+
+        chain = MessageChain.assign([Plain("提示"), Button("帮助", "~help")])
+        supported = SimpleNamespace(
+            support_embed=True,
+            support_button=True,
+            support_action_text=False,
+            use_url_manager=False,
+            use_url_md_format=False,
+            locale=Locale("zh_cn"),
+        )
+        unsupported = SimpleNamespace(
+            support_embed=True,
+            support_button=False,
+            support_action_text=False,
+            use_url_manager=False,
+            use_url_md_format=False,
+            locale=Locale("zh_cn"),
+        )
+        return chain.as_sendable(supported).contains(ButtonFrameElement) and not chain.as_sendable(
+            unsupported
+        ).contains(ButtonFrameElement)
+    except Exception:
+        return False
+
+
+def _test_standalone_buttons_are_auto_arranged():
+    """散落的 Button 自动按每行 10 个、最多 5 行规整。"""
+    try:
+        buttons = [Button(str(index), f"~button {index}") for index in range(55)]
+        sendable = MessageChain.assign(buttons).as_sendable()
+        frames = [element for element in sendable if isinstance(element, ButtonFrameElement)]
+        return (
+            len(frames) == 1
+            and [len(row.buttons) for row in frames[0].rows] == [10, 10, 10, 10, 10]
+            and frames[0].rows[-1].buttons[-1].show == "49"
+        )
+    except Exception:
+        return False
+
+
 @func_case
 async def test_message_chain_operations(tester: Tester):
     """MessageChain: 运算符和高级操作测试"""
@@ -608,7 +705,11 @@ async def test_message_elements_extended(tester: Tester):
     """消息元素扩展测试: Image/Voice/Mention/Embed"""
     await tester.test(_test_image_element_assign, "ImageElement.assign 本地路径")
     await tester.test(_test_image_element_url, "ImageElement.assign URL")
+    await tester.test(_test_image_element_max_h_roundtrip, "ImageElement.max_h 序列化往返")
     await tester.test(_test_voice_element_assign, "VoiceElement.assign")
     await tester.test(_test_mention_element_assign, "MentionElement.assign")
     await tester.test(_test_embed_element_assign, "EmbedElement.assign")
+    await tester.test(_test_button_element_roundtrip, "Button 与 ButtonFrame 构造及序列化往返")
+    await tester.test(_test_button_element_follows_platform_capability, "ButtonFrame 按平台能力保留或忽略")
+    await tester.test(_test_standalone_buttons_are_auto_arranged, "单个 Button 自动按 10 × 5 规整")
     return tester

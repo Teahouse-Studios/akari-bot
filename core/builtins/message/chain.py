@@ -31,6 +31,9 @@ from core.builtins.message.elements import (
     VoiceElement,
     MentionElement,
     ActionTextElement,
+    ButtonElement,
+    ButtonRows,
+    ButtonFrameElement,
 )
 from core.constants import Secret, default_locale
 from core.exports import add_export
@@ -39,6 +42,7 @@ from core.joke import shuffle_joke as joke
 from core.logger import Logger
 from core.utils.func import convert_bool
 from core.utils.http import url_pattern
+from core.utils.button import AUTO_BUTTON_MAX_ROWS, AUTO_BUTTONS_PER_ROW
 
 if TYPE_CHECKING:
     from core.builtins.session.info import SessionInfo
@@ -382,9 +386,36 @@ class MessageChain:
                 else:
                     _append_inline(value, x.to_plain(session_info))
 
+            # ========== 处理单个按钮元素 ==========
+            elif isinstance(x, ButtonElement):
+                if not session_info or session_info.support_button:
+                    value.append(x)
+
+            # ========== 处理按钮区域元素 ==========
+            elif isinstance(x, ButtonFrameElement):
+                if not session_info or session_info.support_button:
+                    value.append(x)
+
             # ========== 其他元素类型 ==========
             else:
                 value.append(x)
+
+        # ========== 自动排布散落的单个按钮 ==========
+        buttons = [x for x in value if isinstance(x, ButtonElement)]
+        if buttons:
+            capacity = AUTO_BUTTONS_PER_ROW * AUTO_BUTTON_MAX_ROWS
+            if len(buttons) > capacity:
+                Logger.warning(
+                    f"Got {len(buttons)} standalone buttons but only {capacity} fit; "
+                    f"dropped the last {len(buttons) - capacity}."
+                )
+                buttons = buttons[:capacity]
+            value = [x for x in value if not isinstance(x, ButtonElement)]
+            rows = [
+                ButtonRows.assign(buttons[start : start + AUTO_BUTTONS_PER_ROW])
+                for start in range(0, len(buttons), AUTO_BUTTONS_PER_ROW)
+            ]
+            value.append(ButtonFrameElement.assign(rows))
 
         # ========== 处理空消息链 ==========
         if not value:
@@ -997,6 +1028,7 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
     - `[KE:i18n,i18nkey=...,param1=val1,...]`: 多语言文本
     - `[KE:mention,userid=...]`: 提及用户
     - `[KE:action_text,text=...,show=...,reference=0]`: 指令操作
+    - `[KE:button,data=...]`: 消息底部按钮
 
     :param text: 包含 KE 码的文本字符串
     :param disable_joke: 是否禁用玩笑功能（默认为 False）
@@ -1085,7 +1117,8 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
                     parse_url = urlparse(path)
 
                     if parse_url[0] == "file" or url_pattern.match(parse_url[1]):
-                        img = ImageElement.assign(path=path)
+                        max_h = parsed_params.get("max_h")
+                        img = ImageElement.assign(path=path, max_h=int(max_h) if max_h and max_h.isdigit() else None)
 
                         headers = parsed_params.get("headers")
 
@@ -1094,7 +1127,10 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
 
                         elements.append(img)
                     else:
-                        elements.append(ImageElement.assign(path))
+                        max_h = parsed_params.get("max_h")
+                        elements.append(
+                            ImageElement.assign(path, max_h=int(max_h) if max_h and max_h.isdigit() else None)
+                        )
 
             # ========= 语音 =========
             elif element_type == "voice":
@@ -1158,6 +1194,42 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
                             convert_bool(parsed_params.get("quote_on_fallback"), False),
                         )
                     )
+
+            # ========= 按钮 =========
+            elif element_type == "button":
+                button_show = parsed_params.get("show")
+                button_value = parsed_params.get("value")
+                if button_show is not None and button_value is not None:
+                    elements.append(ButtonElement.assign(unquote(button_show), unquote(button_value)))
+                    continue
+
+                # 兼容旧版 ButtonElement 的按行 JSON KE 码。
+                button_data = parsed_params.get("data")
+                if button_data:
+                    decoded = orjson.loads(unquote(button_data))
+                    rows = [
+                        ButtonRows.assign([ButtonElement.assign(show, value) for show, value in row.items()])
+                        for row in decoded
+                        if isinstance(row, dict)
+                    ]
+                    elements.append(ButtonFrameElement.assign(rows))
+
+            elif element_type == "button_frame":
+                button_data = parsed_params.get("data")
+                if button_data:
+                    decoded = orjson.loads(unquote(button_data))
+                    rows = [
+                        ButtonRows.assign(
+                            [
+                                ButtonElement.assign(button["show"], button["value"])
+                                for button in row
+                                if isinstance(button, dict) and "show" in button and "value" in button
+                            ]
+                        )
+                        for row in decoded
+                        if isinstance(row, list)
+                    ]
+                    elements.append(ButtonFrameElement.assign(rows))
 
         except Exception:
             elements.append(PlainElement.assign(e, disable_joke=disable_joke))
