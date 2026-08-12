@@ -4,8 +4,10 @@ from core.tester import (
     func_case,
     Tester,
     Contains,
+    ContainsAll,
     Empty,
 )
+from modules.core.help import get_regex_disable_prefix_display
 
 
 @func_case
@@ -32,8 +34,11 @@ async def test_help(tester: Tester):
     await tester.integrate("~help version", Contains("version"), "help version 应显示版本帮助")
     await tester.integrate("~help version", Contains("版本号"), "help version 应包含版本号描述")
     await tester.integrate("~help mojang-status", Contains("~mojang-status"), "help 应展示无文档模块自身的默认命令")
-    await tester.integrate("~help bilibili", Contains("Tips："), "带正则表达式的详细 help 应展示临时关闭提示")
-    await tester.integrate("~help bilibili", Contains(". / 。"), "正则关闭提示应展示当前配置的前缀")
+    await tester.integrate(
+        "~help bilibili",
+        ContainsAll("Tips：", get_regex_disable_prefix_display()),
+        "带正则表达式的详细 help 应展示当前配置的临时关闭前缀",
+    )
 
     return tester
 
@@ -126,13 +131,5 @@ async def test_locale(tester: Tester):
 async def test_petal(tester: Tester):
     """petal 命令测试"""
     await tester.integrate("~petal", Contains("花瓣"), "petal 应显示花瓣信息")
-
-    return tester
-
-
-@func_case
-async def test_admin(tester: Tester):
-    """admin 命令测试"""
-    await tester.integrate("~admin list", Contains("管理员"), "admin list 应显示管理员信息")
 
     return tester

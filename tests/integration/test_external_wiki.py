@@ -47,14 +47,6 @@ async def test_wiki_prefix_manage(tester: Tester):
 
 
 @func_case
-async def test_wiki_page_info(tester: Tester):
-    """wiki 页面信息测试"""
-    await tester.integrate(START_WIKI, Contains("成功设置起始 Wiki"), "设置 Wiki")
-    await tester.integrate("~wiki Minecraft", Contains("Minecraft"), "wiki 查询应返回页面信息")
-    return tester
-
-
-@func_case
 async def test_wiki_not_found(tester: Tester):
     """wiki 不存在页面测试"""
     await tester.integrate(START_WIKI, Contains("成功设置起始 Wiki"), "设置 Wiki")

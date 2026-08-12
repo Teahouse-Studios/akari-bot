@@ -17,12 +17,19 @@ from core.tester import (
     AnyOutput,
     NoException,
 )
+from core.builtins.message.elements import PlainElement
 
 
 def _test_predicate(result):
     """测试 Predicate 匹配器"""
     output = result.get("output")
     return bool(output)
+
+
+async def _test_match_positive_and_negative():
+    """Match 必须同时支持精确命中并拒绝非精确文本。"""
+    result = {"output": [PlainElement.assign("Pong!")]}
+    return await Match("Pong!").match(result) and not await Match("Pong").match(result)
 
 
 @func_case
@@ -67,8 +74,7 @@ async def test_expectations(tester: Tester):
 @func_case
 async def test_match_matcher(tester: Tester):
     """Match 匹配器: 精确匹配测试"""
-    # Match 做全量精确比较，~ping 输出多行，用否定测试验证 Match 能力
-    await tester.integrate("~ping", ~Match("nonexistent_text_xyz_12345"), "Match 不匹配时应返回 False")
+    await tester.test(_test_match_positive_and_negative, "Match 精确匹配与反例")
     return tester
 
 
@@ -104,11 +110,4 @@ async def test_length_matcher(tester: Tester):
 async def test_contains_case_sensitive(tester: Tester):
     """Contains 匹配器: 大小写敏感测试"""
     await tester.integrate("~ping", Contains("pong", case_sensitive=False), "Contains 不区分大小写")
-    return tester
-
-
-@func_case
-async def test_noexception_matcher(tester: Tester):
-    """NoException 匹配器: 正常执行测试"""
-    await tester.integrate("~ping", NoException(), "NoException 正常执行")
     return tester

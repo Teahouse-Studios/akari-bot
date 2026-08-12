@@ -90,11 +90,8 @@ class Tester:
 
         result = await run_test_case(input_, expected=expected, is_ci=self.is_ci, timeout=timeout)
 
-        output = result.get("output")
-        action = result.get("action")
-
         if "timeout" in result or "exception" in result and not isinstance(expected, Expectation):
-            result.update({"expected": expected, "match": False, "note": note})
+            result.update({"type": "integration", "expected": expected, "match": False, "note": note})
             self._results.append(result)
             return result
 
@@ -103,18 +100,20 @@ class Tester:
         elif isinstance(expected, Expectation):
             match = await expected.match(result)
 
-        final = {
-            "type": "integration",
-            "input": input_,
-            "output": output,
-            "action": action,
-            "expected": expected,
-            "match": match,
-            "note": note,
-        }
+        result.update(
+            {
+                "type": "integration",
+                "input": input_,
+                "expected": expected,
+                "match": match,
+                "note": note,
+            }
+        )
+        if match and "exception" in result:
+            result.pop("traceback", None)
 
-        self._results.append(final)
-        return final
+        self._results.append(result)
+        return result
 
     def get_entries(self) -> list[dict]:
         return list(self._entries)

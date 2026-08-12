@@ -18,6 +18,13 @@ from core.utils.container import ExpiringTempDict
 from .decorator import CaseEntry
 from .expectations import Expectation
 
+DEFAULT_FUNCTION_TEST_TIMEOUT = 120.0
+
+
+def _infrastructure_error(input_, expected, message: str) -> list[dict]:
+    """把测试基础设施故障转换为可被 runner 计入失败的结果。"""
+    return [{"input": input_, "expected": expected, "traceback": message, "action": []}]
+
 
 async def run_case_entry(entry: CaseEntry, is_ci: bool = False) -> list[dict]:
     try:
@@ -26,13 +33,16 @@ async def run_case_entry(entry: CaseEntry, is_ci: bool = False) -> list[dict]:
         Logger.exception("Error closing database before test")
 
     if not await init_db():
-        Logger.critical(f"Failed to reinitialize database for case {entry.get('func')}. Skipping tests.")
-        return []
+        message = f"Failed to reinitialize database for case {entry.get('func')}."
+        Logger.critical(message)
+        return _infrastructure_error(entry.get("input"), entry.get("expected"), message)
 
     try:
         await load_modules(show_logs=False, monkey_patches={"Random": Random()})
     except Exception:
+        error = traceback.format_exc()
         Logger.exception("Failed to load modules for tests:")
+        return _infrastructure_error(entry.get("input"), entry.get("expected"), error)
 
     start = time.perf_counter()
     timeout = entry.get("timeout")
@@ -49,20 +59,25 @@ async def run_case_entry(entry: CaseEntry, is_ci: bool = False) -> list[dict]:
     return [result]
 
 
-async def run_function_entry(fn: FunctionType, is_ci: bool = False) -> dict[str, Any]:
+async def run_function_entry(
+    fn: FunctionType, is_ci: bool = False, timeout: float | None = DEFAULT_FUNCTION_TEST_TIMEOUT
+) -> dict[str, Any]:
     try:
         await close_db()
     except Exception:
         Logger.exception("Error closing database before func test")
 
     if not await init_db():
-        Logger.critical(f"Failed to reinitialize database for func test {fn.__name__}. Skipping.")
-        return {"skipped": True}
+        message = f"Failed to reinitialize database for func test {fn.__name__}."
+        Logger.critical(message)
+        return {"error": message}
 
     try:
         await load_modules(show_logs=False, monkey_patches={"Random": Random()})
     except Exception:
+        error = traceback.format_exc()
         Logger.exception("Failed to load modules for tests:")
+        return {"error": error}
 
     tester = None
     start = time.perf_counter()
@@ -71,9 +86,16 @@ async def run_function_entry(fn: FunctionType, is_ci: bool = False) -> dict[str,
 
         tester = TesterClass(fn.__name__)
         setattr(tester, "is_ci", is_ci)
-        returned = await fn(tester)
+        if timeout is None:
+            returned = await fn(tester)
+        else:
+            returned = await asyncio.wait_for(fn(tester), timeout=timeout)
         if isinstance(returned, TesterClass):
             tester = returned
+    except TimeoutError:
+        elapsed = time.perf_counter() - start
+        Logger.error(f"Function test {fn.__name__} timed out after {timeout} seconds.")
+        return {"timeout": True, "time_cost": elapsed, "timeout_limit": timeout}
     except Exception:
         error = traceback.format_exc()
         Logger.exception(f"Error running test function {fn.__name__}:")

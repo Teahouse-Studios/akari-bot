@@ -44,6 +44,14 @@ async def main(path: str, entry: str) -> int:
     for name in entries:
         res = await run_function_entry(getattr(mod, name), is_ci=True)
         print(f"=== {name} ===")
+        if res.get("timeout"):
+            failed += 1
+            print(f"  ERROR: timed out after {res.get('timeout_limit')} seconds")
+            continue
+        if res.get("skipped"):
+            failed += 1
+            print("  ERROR: test infrastructure skipped this entry")
+            continue
         for r in res.get("results", []):
             status = "PASS" if r.get("match") else "FAIL"
             if not r.get("match"):

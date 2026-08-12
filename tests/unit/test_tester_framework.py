@@ -7,9 +7,11 @@ mock 未同步，模块代码会在测试中抛出 TypeError，且失败信息�
 
 import inspect
 import re
+import asyncio
+from unittest.mock import AsyncMock, patch
 
 from core.builtins.session.internal import MessageSession
-from core.tester import func_case, Tester
+from core.tester import func_case, Tester, Raise
 from core.tester.expectations import Contains, ContainsAll, ContainsAny, Expectation, Regex
 from core.tester.junit import JUnitReport, JUnitTestCase, JUnitTestSuite
 from core.tester.mock.http import MockHTTPResponse
@@ -98,6 +100,75 @@ def _test_junit_coerces_error_details_to_text():
     return '<error message="Test error">True</error>' in report.to_xml_string()
 
 
+async def _test_integrate_preserves_unexpected_exception():
+    """func_case 的普通断言失败时应保留命令异常与 traceback。"""
+    error = ValueError("boom")
+    raw_result = {
+        "input": "~broken",
+        "exception": error,
+        "exception_message": "boom",
+        "traceback": "traceback: boom",
+        "action": ["(raise ValueError)", "boom"],
+        "output": None,
+    }
+    tester = Tester("exception")
+    with patch("core.tester.tester.run_test_case", new=AsyncMock(return_value=raw_result)):
+        result = await tester.integrate("~broken", Contains("success"))
+    return (
+        result.get("match") is False
+        and result.get("exception") is error
+        and result.get("traceback") == "traceback: boom"
+    )
+
+
+async def _test_integrate_expected_exception_is_not_runner_error():
+    """Raise 命中预期异常后应通过，并移除仅供失败报告使用的 traceback。"""
+    error = ValueError("boom")
+    raw_result = {
+        "input": "~broken",
+        "exception": error,
+        "exception_message": "boom",
+        "traceback": "traceback: boom",
+        "action": ["(raise ValueError)", "boom"],
+        "output": None,
+    }
+    tester = Tester("expected_exception")
+    with patch("core.tester.tester.run_test_case", new=AsyncMock(return_value=raw_result)):
+        result = await tester.integrate("~broken", Raise(ValueError, "boom"))
+    return result.get("match") is True and "traceback" not in result
+
+
+async def _test_function_entry_timeout_is_structured_failure():
+    """挂起的 func_case 应超时返回，不能阻塞整个测试列表。"""
+    from core.tester.process import run_function_entry
+
+    async def slow(_tester):
+        await asyncio.sleep(1)
+
+    with (
+        patch("core.tester.process.close_db", new=AsyncMock()),
+        patch("core.tester.process.init_db", new=AsyncMock(return_value=True)),
+        patch("core.tester.process.load_modules", new=AsyncMock()),
+    ):
+        result = await run_function_entry(slow, is_ci=True, timeout=0.01)
+    return result.get("timeout") is True and result.get("timeout_limit") == 0.01
+
+
+async def _test_function_entry_init_failure_is_error():
+    """数据库初始化失败属于基础设施错误，不能被记为跳过或通过。"""
+    from core.tester.process import run_function_entry
+
+    async def noop(_tester):
+        return None
+
+    with (
+        patch("core.tester.process.close_db", new=AsyncMock()),
+        patch("core.tester.process.init_db", new=AsyncMock(return_value=False)),
+    ):
+        result = await run_function_entry(noop, is_ci=True)
+    return bool(result.get("error")) and not result.get("skipped")
+
+
 @func_case
 async def test_tester_framework(tester: Tester):
     """core.tester: 测试框架自身一致性测试"""
@@ -108,5 +179,9 @@ async def test_tester_framework(tester: Tester):
     await tester.test(_test_contains_still_rejects_absent_text, "文本断言不误报测试")
     await tester.test(_test_expectation_has_repr, "断言器可读表示测试")
     await tester.test(_test_junit_coerces_error_details_to_text, "JUnit 异常详情文本化测试")
+    await tester.test(_test_integrate_preserves_unexpected_exception, "func_case 保留非预期异常测试")
+    await tester.test(_test_integrate_expected_exception_is_not_runner_error, "func_case 预期异常匹配测试")
+    await tester.test(_test_function_entry_timeout_is_structured_failure, "func_case 超时结构化失败测试")
+    await tester.test(_test_function_entry_init_failure_is_error, "func_case 初始化错误不可跳过测试")
 
     return tester

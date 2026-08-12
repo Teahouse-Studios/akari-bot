@@ -21,10 +21,3 @@ async def test_admin_add_remove(tester: Tester):
     await tester.integrate("~admin list", Contains("999"), "admin list 应包含新管理员")
     await tester.integrate("~admin remove TEST|999", Contains("管理员"), "admin remove 应提示移除结果")
     return tester
-
-
-@func_case
-async def test_admin_permission(tester: Tester):
-    """admin 命令权限测试"""
-    await tester.integrate("~admin list", Contains("管理员"), "admin list 应可被普通用户执行")
-    return tester

@@ -53,6 +53,7 @@ import glob
 import importlib.util
 import inspect
 import sys
+import traceback
 from types import FunctionType
 from typing import TypedDict
 
@@ -76,7 +77,7 @@ os.environ.setdefault("PYTHONPATH", str(Path(".").resolve()))
 
 IS_CI = os.environ.get("CI", "0") == "1"
 ENABLE_COVERAGE = os.environ.get("COVERAGE", "0") == "1"
-MAX_CONCURRENT = 10
+MAX_CONCURRENT = 1
 
 # Coverage 集成
 _coverage_instance = None
@@ -118,22 +119,6 @@ async def _run_registry_entry(semaphore: asyncio.Semaphore, entry: CaseEntry, te
         if fn.__doc__:
             Logger.info(f"DOC: {fn.__doc__}")
 
-        Logger.trace(f"_run_registry_entry close_db: TEST{test_number}")
-        try:
-            await close_db()
-        except Exception:
-            Logger.exception("Error closing database before test")
-        Logger.trace(f"_run_registry_entry init_db: TEST{test_number}")
-        if not await init_db():
-            Logger.critical(f"Failed to reinitialize database for TEST{test_number}. Skipping tests.")
-            return {"test_number": test_number, "skipped": True, "note": note}
-
-        Logger.trace(f"_run_registry_entry load_modules: TEST{test_number}")
-        try:
-            await load_modules(show_logs=False, monkey_patches={"Random": Random()})
-        except Exception:
-            Logger.exception("Failed to load modules for tests:")
-
         Logger.trace(f"_run_registry_entry run_case_entry: TEST{test_number}")
         results = await run_case_entry(entry, IS_CI)
         Logger.trace(f"_run_registry_entry DONE: TEST{test_number}")
@@ -167,17 +152,19 @@ async def main():
         if not await init_db():
             Logger.critical("Failed to initialize database. Aborting tests.")
             await close_db()
-            return
+            return 1
     except Exception:
         Logger.exception()
         await close_db()
-        return
+        return 1
 
     Logger.trace("main() load_modules")
     try:
         await load_modules(monkey_patches={"Random": Random()})
     except Exception:
         Logger.exception("Failed to load modules for tests:")
+        await close_db()
+        return 1
 
     Logger.trace("main() get_registry")
     print("=" * 60)
@@ -202,21 +189,31 @@ async def main():
     registry_results = await asyncio.gather(*registry_tasks, return_exceptions=True)
     Logger.trace(f"main() registry tasks completed, got {len(registry_results)} results")
 
-    for reg_result in registry_results:
+    for registry_index, reg_result in enumerate(registry_results, 1):
         if isinstance(reg_result, Exception):
             Logger.error(f"Error during test execution: {reg_result}")
             Logger.trace(f"main() EXCEPTION in registry result: {reg_result}")
+            failed += 1
+            total += 1
+            junit_testcase = JUnitTestCase(
+                name=f"TEST{registry_index}_runner", classname=f"RegistryTest.{registry_index}"
+            )
+            junit_testcase.error = ("Test runner error", repr(reg_result))
+            junit_registry_suite.add_testcase(junit_testcase)
             continue
 
         if not isinstance(reg_result, dict):
             Logger.trace(f"main() non-dict result: {type(reg_result)}")
+            failed += 1
+            total += 1
+            junit_testcase = JUnitTestCase(
+                name=f"TEST{registry_index}_invalid_result", classname=f"RegistryTest.{registry_index}"
+            )
+            junit_testcase.error = ("Invalid test result", repr(reg_result))
+            junit_registry_suite.add_testcase(junit_testcase)
             continue
 
         print("-" * 60)
-
-        if reg_result.get("skipped"):
-            Logger.trace("main() skipped result")
-            continue
 
         test_number = reg_result.get("test_number")
         note = reg_result.get("note")
@@ -320,21 +317,32 @@ async def main():
         pyfiles = sorted(glob.glob(os.path.join(tests_path, "**", "*.py"), recursive=True))
         Logger.trace(f"main() found {len(pyfiles)} test files")
         func_tasks: list[tuple[FunctionType, str]] = []
-        func_info_list = []
 
         for path in pyfiles:
             name = os.path.splitext(os.path.basename(path))[0]
             Logger.trace(f"main() importing {path}")
             spec = importlib.util.spec_from_file_location(f"tests_{name}", path)
             if not spec or not spec.loader:
-                Logger.error(f"Failed resolving tests file {path}, skipped.")
+                message = f"Failed resolving tests file {path}."
+                Logger.error(message)
+                failed += 1
+                total += 1
+                junit_testcase = JUnitTestCase(name=Path(path).name, classname="TestCollection")
+                junit_testcase.error = ("Test file resolution error", message)
+                junit_func_suite.add_testcase(junit_testcase)
                 continue
             mod = importlib.util.module_from_spec(spec)
             try:
                 sys.modules[spec.name] = mod
                 spec.loader.exec_module(mod)
             except Exception:
+                import_error = traceback.format_exc()
                 Logger.exception(f"Failed importing tests file {path}:")
+                failed += 1
+                total += 1
+                junit_testcase = JUnitTestCase(name=Path(path).name, classname="TestCollection")
+                junit_testcase.error = ("Test file import error", import_error)
+                junit_func_suite.add_testcase(junit_testcase)
                 continue
 
             for _, fn in inspect.getmembers(mod, inspect.isfunction):
@@ -343,7 +351,6 @@ async def main():
 
                 Logger.trace(f"main() found func_case: {fn.__name__} in {path}")
                 func_tasks.append((fn, path))
-                func_info_list.append((len(func_tasks) - 1, len(registry) + len(func_info_list) + 1))
 
         Logger.trace(f"main() running {len(func_tasks)} func tests sequentially")
         func_results = []
@@ -354,19 +361,19 @@ async def main():
                 func_results.append(result)
             except Exception as e:
                 Logger.error(f"main() EXCEPTION running func test {fn.__name__}: {e}")
-                func_results.append(e)
+                func_results.append({"fn": fn, "path": path, "res": {"error": repr(e)}})
             Logger.trace(f"main() finished func test: {fn.__name__}")
         Logger.trace(f"main() all func tests completed, got {len(func_results)} results")
 
         for idx, func_result in enumerate(func_results):
             Logger.trace(f"main() processing func result {idx}/{len(func_results)}")
-            if isinstance(func_result, Exception):
-                Logger.error(f"Error during function test execution: {func_result}")
-                Logger.trace(f"main() EXCEPTION in func result: {func_result}")
-                continue
-
             if not isinstance(func_result, dict):
                 Logger.trace(f"main() non-dict func result at index {idx}")
+                failed += 1
+                total += 1
+                junit_testcase = JUnitTestCase(name=f"invalid_result_{idx}", classname="FunctionTest")
+                junit_testcase.error = ("Invalid function test result", repr(func_result))
+                junit_func_suite.add_testcase(junit_testcase)
                 continue
 
             fn = func_result["fn"]
@@ -387,6 +394,21 @@ async def main():
                     name=fn.__name__, classname=f"FunctionTest.{test_number}", time=res.get("time_cost", 0.0)
                 )
                 junit_testcase.skipped = "Test skipped"
+                junit_func_suite.add_testcase(junit_testcase)
+                total += 1
+                continue
+            if res.get("timeout"):
+                Logger.trace(f"main() func test {fn.__name__} timed out")
+                failed += 1
+                total += 1
+                timeout_limit = res.get("timeout_limit")
+                junit_testcase = JUnitTestCase(
+                    name=fn.__name__, classname=f"FunctionTest.{test_number}", time=res.get("time_cost", 0.0)
+                )
+                junit_testcase.failure = (
+                    "Function test timeout",
+                    f"Test exceeded timeout limit of {timeout_limit} seconds",
+                )
                 junit_func_suite.add_testcase(junit_testcase)
                 continue
             if res.get("error"):
@@ -409,6 +431,7 @@ async def main():
                 )
                 junit_testcase.skipped = "No inputs registered"
                 junit_func_suite.add_testcase(junit_testcase)
+                total += 1
                 continue
 
             results = res["results"]
@@ -564,9 +587,8 @@ async def main():
     await close_db()
 
     Logger.trace("main() END")
-    if IS_CI and failed > 0:
-        sys.exit(1)
+    return 1 if IS_CI and (failed > 0 or total == 0) else 0
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    sys.exit(asyncio.run(main()))

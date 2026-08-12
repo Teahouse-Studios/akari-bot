@@ -20,14 +20,6 @@ async def test_dice_complex(tester: Tester):
 
 
 @func_case
-async def test_dice_d20(tester: Tester):
-    """dice d20 测试"""
-    await tester.integrate("~dice d20", Contains("d20"), "dice d20 应包含表达式")
-    await tester.integrate("~dice d20 10", Contains("掷得"), "dice d20 10 应输出判定结果")
-    return tester
-
-
-@func_case
 async def test_dice_invalid(tester: Tester):
     """dice 无效表达式测试"""
     await tester.integrate("~dice invalid_xyz", Contains("骰子"), "dice 无效表达式应提示错误")

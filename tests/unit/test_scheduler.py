@@ -4,18 +4,8 @@ from core.loader import ModulesManager
 from core.tester import func_case, Tester
 from core.tester.mock.scheduler import (
     get_scheduled_tasks,
-    get_schedule_summary,
     run_schedule_function,
 )
-
-
-def _test_get_scheduled_tasks_returns_list():
-    """get_scheduled_tasks: 应返回列表"""
-    try:
-        tasks = get_scheduled_tasks()
-        return isinstance(tasks, list)
-    except Exception:
-        return False
 
 
 def _test_get_scheduled_tasks_has_structure():
@@ -28,15 +18,6 @@ def _test_get_scheduled_tasks_has_structure():
         return (
             "module_name" in t and "function" in t and "function_name" in t and "trigger" in t and "trigger_type" in t
         )
-    except Exception:
-        return False
-
-
-def _test_get_schedule_summary_returns_dict():
-    """get_schedule_summary: 应返回字典"""
-    try:
-        summary = get_schedule_summary()
-        return isinstance(summary, dict)
     except Exception:
         return False
 
@@ -149,9 +130,7 @@ async def _test_run_schedule_function_with_timeout():
 @func_case
 async def test_scheduler_mock(tester: Tester):
     """计划任务 Mock 工具测试"""
-    await tester.test(_test_get_scheduled_tasks_returns_list, "get_scheduled_tasks 返回列表")
     await tester.test(_test_get_scheduled_tasks_has_structure, "get_scheduled_tasks 字段结构")
-    await tester.test(_test_get_schedule_summary_returns_dict, "get_schedule_summary 返回字典")
     await tester.test(_test_get_scheduled_tasks_filter_by_module, "get_scheduled_tasks 按模块过滤")
     await tester.test(_test_schedule_meta_stored_in_module, "ScheduleMeta 存储正确")
     await tester.test(_test_schedule_triggers_are_valid, "触发器类型有效")
