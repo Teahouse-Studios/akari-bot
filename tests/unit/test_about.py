@@ -54,8 +54,8 @@ def _test_markdown_layout_without_credits():
         and chain.values[0].path == str(CHARACTER_IMAGE_PATH)
         and chain.values[0].max_h == CHARACTER_IMAGE_MAX_WIDTH
         and texts[0].startswith("小可是 Teahouse Studios")
+        and "AGPL-3.0" in texts[0]
         and all("制作人员名单" not in text for text in texts)
-        and any(text.startswith("> ") and "AGPL-3.0" in text for text in texts)
     )
 
 
@@ -73,7 +73,7 @@ def _test_credits_button_and_no_button_hidden():
         and credits_button.show == "制作人员名单"
         and credits_button.value == f"{command_prefix[0]}about credits"
         and all("制作人员名单" not in text and "Alice" not in text and "Bob" not in text for text in no_button_text)
-        and markdown_text[1].startswith("> ")
+        and "开源仓库地址：" in markdown_text
     )
 
 
@@ -112,8 +112,8 @@ def _test_button_rows_and_qq_only_entry():
     qqbot_values = [row.buttons[0].value for row in qqbot_frame.rows]
     return (
         normal_repo.original_url == config["repo_url"]
-        and normal_repo.applied_md_format
-        and normal_repo.url == f"[{config['repo_url']}]({config['repo_url']})"
+        and not normal_repo.applied_md_format
+        and normal_repo.url == config["repo_url"]
         and qqbot_repo.original_url == config["repo_url"]
         and normal_values == [f"{command_prefix[0]}about credits", config["issue_url"], config["donate_url"]]
         and qqbot_values
