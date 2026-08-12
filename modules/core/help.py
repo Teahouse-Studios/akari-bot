@@ -750,10 +750,6 @@ async def help_overview(msg: Bot.MessageSession):
             module_ = [m for m in module_ if m in target_enabled_list]
         module_, subscription = split_subscription_modules(module_list, module_)
         if show_all_modules:
-            essential = [
-                create_module_entry(module_list[name], name, target_enabled_list, msg.session_info)
-                for name in essential
-            ]
             module_ = [
                 create_module_entry(module_list[name], name, target_enabled_list, msg.session_info) for name in module_
             ]

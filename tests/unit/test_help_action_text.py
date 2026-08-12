@@ -444,6 +444,8 @@ async def _test_qqbot_admin_help_includes_disabled_modules():
     return (
         "~enable coin" in commands
         and "~disable dice" in commands
+        and "~disable help" not in commands
+        and "[help]" in rendered
         and "场景管理员" in rendered
         and not any(command.endswith("module list") for command in buttons.values())
     )
