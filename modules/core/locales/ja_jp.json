@@ -255,7 +255,6 @@
     "core.message.help.table.alias": "エイリアス",
     "core.message.help.mdtable": "右にスワイプして、すべてのモジュールを表示されます。",
     "core.message.help.button.modules": "🧩 モジュール一覧",
-    "core.message.help.button.donate": "💵 寄付による支援",
     "core.message.help.button.document": "📃 ドキュメント",
     "core.message.features.prompt": "${target} の機能フラグ（現在のセッション／アクティブなセッション）：",
     "core.message.features.fetch.failed": "このコンテクストのセッションを自動的に取得できません。右側の列には「不明」と表示されます。",

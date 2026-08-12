@@ -192,7 +192,6 @@
     "core.message.forward_msg.enable": "已啟用轉發訊息。",
     "core.message.help.all_modules": "使用「${prefix}module list」檢視所有的可用模組。",
     "core.message.help.button.document": "📃 線上文件",
-    "core.message.help.button.donate": "💵 支持我們",
     "core.message.help.button.modules": "🧩 模組列表",
     "core.message.help.command_count": "${count} 條指令",
     "core.message.help.detail": "使用「${cmd}<模組名稱>」檢視詳細資訊。",

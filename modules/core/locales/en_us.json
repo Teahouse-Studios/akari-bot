@@ -255,7 +255,6 @@
     "core.message.help.table.alias": "Aliases",
     "core.message.help.mdtable": "Swipe right to view all modules.",
     "core.message.help.button.modules": "🧩 Module List",
-    "core.message.help.button.donate": "💵 Support Us",
     "core.message.help.button.document": "📃 Documentation",
     "core.message.features.prompt": "Feature flags for ${target} (current session / active session):",
     "core.message.features.fetch.failed": "Unable to actively retrieve the session for this context. The column on the right displays \"Unknown\"",
