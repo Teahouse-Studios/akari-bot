@@ -3,7 +3,8 @@ from pathlib import Path
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import ButtonRows
-from core.builtins.message.internal import Button, ButtonFrame, Image, Plain, Url
+from core.builtins.message.internal import Button, ButtonFrame, I18NContext, Image, Plain, Url
+from core.builtins.utils import command_prefix
 from core.component import module
 from core.config.base import CoreConfig
 from core.constants.path import assets_path
@@ -27,6 +28,19 @@ def read_credits(path: Path = CREDITS_PATH) -> str | None:
         return None
 
 
+def build_credits_message(msg: Bot.MessageSession) -> MessageChain:
+    """构造制作人员名单消息。"""
+    result = MessageChain.create()
+    if not (credits := read_credits()):
+        result.append(I18NContext("core.message.about.credits.unavailable"))
+        return result
+
+    title = msg.session_info.locale.t("core.message.about.credits")
+    credits_text = f"```{title}\n{credits}\n```" if msg.session_info.support_markdown else f"{title}\n{credits}"
+    result.append(Plain(credits_text, disable_joke=True))
+    return result
+
+
 def build_about_message(msg: Bot.MessageSession) -> MessageChain:
     """根据平台能力构造关于菜单。"""
     locale = msg.session_info.locale
@@ -37,24 +51,17 @@ def build_about_message(msg: Bot.MessageSession) -> MessageChain:
     introduction = locale.t("core.message.about.introduction")
     result.append(Plain(introduction, disable_joke=True))
 
-    if credits := read_credits():
-        title = locale.t("core.message.about.credits")
-        credits_text = f"```{title}\n{credits}\n```" if support_markdown else f"{title}\n{credits}"
-        result.append(Plain(credits_text, disable_joke=True))
-
-    license_ = locale.t("core.message.about.license")
-    result.append(Plain(f"> {license_}" if support_markdown else license_, disable_joke=True))
+    credits = read_credits()
 
     if CoreConfig.repo_url:
         repository_label = locale.t("core.message.about.button.repository")
-        if support_markdown:
+        if support_markdown and msg.session_info.client_name == "QQBot":
             result.append(Plain("\n"))
         result.append(Plain(f"{repository_label}：", disable_joke=True))
         result.append(
             Url(
                 CoreConfig.repo_url,
                 trusted=True,
-                md_format=support_markdown,
             )
         )
 
@@ -68,6 +75,10 @@ def build_about_message(msg: Bot.MessageSession) -> MessageChain:
 
     if msg.session_info.support_button:
         rows = []
+        if credits:
+            rows.append(
+                ButtonRows.assign([Button(locale.t("core.message.about.credits"), f"{command_prefix[0]}about credits")])
+            )
         for label_key, value in links:
             rows.append(ButtonRows.assign([Button(locale.t(label_key), value)]))
         if rows:
@@ -82,3 +93,8 @@ def build_about_message(msg: Bot.MessageSession) -> MessageChain:
 @about.command("{{I18N:core.help.about}}")
 async def _(msg: Bot.MessageSession):
     await msg.finish(build_about_message(msg), force_markdown=msg.session_info.support_markdown)
+
+
+@about.command("credits {{I18N:core.help.about.credits}}")
+async def _(msg: Bot.MessageSession):
+    await msg.finish(build_credits_message(msg), force_markdown=msg.session_info.support_markdown)

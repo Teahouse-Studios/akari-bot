@@ -4,10 +4,17 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from core.builtins.message.elements import ButtonFrameElement, ImageElement, PlainElement, URLElement
+from core.builtins.utils import command_prefix
 from core.config.base import CoreConfig
 from core.i18n import Locale
-from core.tester import Tester, func_case
-from modules.core.about import CHARACTER_IMAGE_MAX_WIDTH, CHARACTER_IMAGE_PATH, build_about_message, read_credits
+from core.tester import Contains, Tester, func_case
+from modules.core.about import (
+    CHARACTER_IMAGE_MAX_WIDTH,
+    CHARACTER_IMAGE_PATH,
+    build_about_message,
+    build_credits_message,
+    read_credits,
+)
 
 
 def _msg(client_name="TEST", support_markdown=True, support_button=True):
@@ -52,19 +59,31 @@ def _test_markdown_layout_without_credits():
     )
 
 
-def _test_credits_markdown_and_plain_fallback():
+def _test_credits_button_and_no_button_hidden():
     with patch("modules.core.about.read_credits", return_value="Alice\nBob"):
         markdown = build_about_message(_msg(support_markdown=True))
-        plain = build_about_message(_msg(support_markdown=False))
+        no_button = build_about_message(_msg(support_markdown=False, support_button=False))
     markdown_text = [element.text for element in markdown.values if isinstance(element, PlainElement)]
-    plain_text = [element.text for element in plain.values if isinstance(element, PlainElement)]
+    no_button_text = [element.text for element in no_button.values if isinstance(element, PlainElement)]
+    frame = next(element for element in markdown.values if isinstance(element, ButtonFrameElement))
+    credits_button = frame.rows[0].buttons[0]
     return (
         not markdown_text[0].startswith("> ")
-        and markdown_text[1] == "```制作人员名单\nAlice\nBob\n```"
-        and not plain_text[0].startswith("> ")
-        and plain_text[1] == "制作人员名单\nAlice\nBob"
-        and "```" not in plain_text[1]
-        and markdown_text[2].startswith("> ")
+        and all("Alice" not in text and "Bob" not in text for text in markdown_text)
+        and credits_button.show == "制作人员名单"
+        and credits_button.value == f"{command_prefix[0]}about credits"
+        and all("制作人员名单" not in text and "Alice" not in text and "Bob" not in text for text in no_button_text)
+        and markdown_text[1].startswith("> ")
+    )
+
+
+def _test_credits_message_markdown_and_plain():
+    with patch("modules.core.about.read_credits", return_value="Alice\nBob"):
+        markdown = build_credits_message(_msg(support_markdown=True))
+        plain = build_credits_message(_msg(support_markdown=False))
+    return (
+        markdown.values[0].text == "```制作人员名单\nAlice\nBob\n```"
+        and plain.values[0].text == "制作人员名单\nAlice\nBob"
     )
 
 
@@ -96,8 +115,14 @@ def _test_button_rows_and_qq_only_entry():
         and normal_repo.applied_md_format
         and normal_repo.url == f"[{config['repo_url']}]({config['repo_url']})"
         and qqbot_repo.original_url == config["repo_url"]
-        and normal_values == [config["issue_url"], config["donate_url"]]
-        and qqbot_values == [config["issue_url"], config["qq_test_group_url"], config["donate_url"]]
+        and normal_values == [f"{command_prefix[0]}about credits", config["issue_url"], config["donate_url"]]
+        and qqbot_values
+        == [
+            f"{command_prefix[0]}about credits",
+            config["issue_url"],
+            config["qq_test_group_url"],
+            config["donate_url"],
+        ]
         and normal_frame.rows[-1].buttons[0].show == "💵 支持我们"
     )
 
@@ -128,8 +153,10 @@ async def test_about(tester: Tester):
     """modules.core.about: 关于菜单。"""
     await tester.test(_test_missing_or_empty_credits_are_hidden, "制作人员文件缺失或为空时隐藏测试")
     await tester.test(_test_markdown_layout_without_credits, "Markdown 关于菜单布局测试")
-    await tester.test(_test_credits_markdown_and_plain_fallback, "制作人员 Markdown 与纯文本降级测试")
+    await tester.test(_test_credits_button_and_no_button_hidden, "制作人员按钮与无按钮隐藏测试")
+    await tester.test(_test_credits_message_markdown_and_plain, "制作人员名单消息测试")
     await tester.test(_test_button_rows_and_qq_only_entry, "关于菜单按钮与 QQBot 专属入口测试")
     await tester.test(_test_no_button_support_has_no_frame, "无按钮能力时降级为文本链接测试")
     await tester.test(_test_repository_url_plain_fallback, "开源仓库 Url 普通文本降级测试")
+    await tester.integrate("~about credits", Contains("制作人员名单"), "制作人员名单子命令测试")
     return tester
