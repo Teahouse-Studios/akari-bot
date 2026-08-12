@@ -1,4 +1,5 @@
 import re
+from dataclasses import dataclass
 from html import escape
 
 from jinja2 import FileSystemLoader, Environment
@@ -19,6 +20,7 @@ from core.utils.cache import random_cache_path
 from core.utils.image import cb64imglst
 from core.utils.table import escape_table_cell, format_table_code, resolve_table_columns
 from core.web_render import web_render, ElementScreenshotOptions
+from .utils import get_version_display
 
 env = Environment(loader=FileSystemLoader(templates_path), autoescape=True, enable_async=True)
 help_url = CoreConfig.help_url
@@ -26,6 +28,58 @@ donate_url = CoreConfig.donate_url
 use_font_mirror = CoreConfig.use_font_mirror
 
 hlp = module("help", base=True, doc=True)
+
+
+@dataclass(frozen=True)
+class ModuleListEntry:
+    name: str
+    enabled: bool
+    subscription: bool = False
+    unsupported: bool = False
+
+
+def is_module_entry(item) -> bool:
+    return all(hasattr(item, field) for field in ("name", "enabled", "subscription", "unsupported"))
+
+
+def create_module_entry(module_, name: str, enabled_modules: list[str] | None, session_info) -> ModuleListEntry:
+    return ModuleListEntry(
+        name=name,
+        enabled=module_.base or name in (enabled_modules or []),
+        subscription=module_.rss,
+        unsupported=bool(module_.unsupported_reason(session_info)),
+    )
+
+
+def get_module_toggle(entry: ModuleListEntry, prefix: str) -> tuple[str, str]:
+    if entry.subscription:
+        emoji = "🔔" if entry.enabled else "🔕"
+    else:
+        emoji = "🔓" if entry.enabled else "🔐"
+    action = "disable" if entry.enabled else "enable"
+    return emoji, f"{prefix}{action} {entry.name}"
+
+
+def format_module_entries(entries: list[str | ModuleListEntry]) -> str:
+    rendered = []
+    for item in entries:
+        if is_module_entry(item):
+            emoji, _ = get_module_toggle(item, "")
+            name = f"~~{item.name}~~" if item.unsupported else item.name
+            rendered.append(f"{emoji} {name}")
+        else:
+            rendered.append(item)
+    return " | ".join(rendered)
+
+
+def has_unsupported_entries(groups: list[tuple[str, list[str | ModuleListEntry]]]) -> bool:
+    return any(is_module_entry(item) and item.unsupported for _, entries in groups for item in entries)
+
+
+def qqbot_permissions_limited(msg: Bot.MessageSession) -> bool:
+    return msg.session_info.client_name == "QQBot" and not (
+        msg.session_info.support_rss and msg.session_info.read_all_messages
+    )
 
 
 def split_subscription_modules(module_list: dict, names: list[str]) -> tuple[list[str], list[str]]:
@@ -51,7 +105,7 @@ def get_module_type_display(module_, locale) -> str:
     return f"{emoji} {locale.t(type_key)}"
 
 
-def build_clickable_modules(msg: Bot.MessageSession, groups: list[tuple[str, list[str]]]) -> list:
+def build_clickable_modules(msg: Bot.MessageSession, groups: list[tuple[str, list[str | ModuleListEntry]]]) -> list:
     """
     把若干组模块名构造成可点击的消息链片段。
 
@@ -62,8 +116,6 @@ def build_clickable_modules(msg: Bot.MessageSession, groups: list[tuple[str, lis
     指令操作无条件拼入上一项，标题若不带换行，模块列表会被挤到标题同一行，
     与既有的纯文本版排版不符。同理，第二组起的标题还须带前导换行，
     否则会紧贴在上一组末尾的标签之后。
-
-    标题与分隔符均不参与玩笑替换 —— 模块名是标识符，被替换后就无法照着输入了。
 
     :param msg: 消息会话。
     :param groups: (标题多语言键, 模块名列表) 的序列，模块名为空的组会被跳过。
@@ -76,10 +128,18 @@ def build_clickable_modules(msg: Bot.MessageSession, groups: list[tuple[str, lis
             continue
         leading = "\n" if parts else ""
         parts.append(Plain(leading + msg.session_info.locale.t(title_key) + "\n", disable_joke=True))
-        for index, name in enumerate(names):
+        for index, item in enumerate(names):
             if index:
                 parts.append(Plain(" | ", disable_joke=True))
-            parts.append(ActionText(f"{prefix}help {name}", show=name))
+            if is_module_entry(item):
+                emoji, command = get_module_toggle(item, prefix)
+                parts.append(ActionText(command, show=emoji))
+                parts.append(Plain(" ~~" if item.unsupported else " ", disable_joke=True))
+                parts.append(ActionText(f"{prefix}help {item.name}", show=item.name))
+                if item.unsupported:
+                    parts.append(Plain("~~", disable_joke=True))
+            else:
+                parts.append(ActionText(f"{prefix}help {item}", show=item))
     return parts
 
 
@@ -103,13 +163,21 @@ def end_inline_run(chain: MessageChain) -> None:
     chain.append(Plain(" ", disable_joke=True))
 
 
-def build_module_table(msg: Bot.MessageSession, groups: list[tuple[str, list[str]]]) -> list:
+def build_module_table(
+    msg: Bot.MessageSession,
+    groups: list[tuple[str, list[str | ModuleListEntry]]],
+    include_help_header: bool = False,
+    permission: str = "user",
+) -> list:
     """
     把若干组模块名排成一张 markdown 表。
 
     各组同处一张表，组与组之间以一行只填组名的区隔行分开；首组的组名即表头。表格至多
     :data:`~core.utils.table.TABLE_MAX_ROWS` 行、至少 :data:`~core.utils.table.TABLE_MIN_COLUMNS` 列，
     模块数的增长由列数吸收。末行不足处补空单元格 —— markdown 要求各行的列数一致。
+
+    ``include_help_header`` 开启时，机器人名、当前语言、版本与用户权限会成为同一张表的首行。
+    此时表格至少使用四列，列数更多时在首行末尾补空单元格，所有行始终保持相同列数。
 
     模块名做成指令操作，点击即把 ``<前缀>help <模块名>`` 填入输入框。标签之所以能落在单元格
     中间，靠的正是适配器把指令操作及其后的文本一并并入上一项的行为（见
@@ -120,6 +188,8 @@ def build_module_table(msg: Bot.MessageSession, groups: list[tuple[str, list[str
 
     :param msg: 消息会话。
     :param groups: (组名多语言键, 模块名列表) 的序列，模块名为空的组会被跳过。
+    :param include_help_header: 是否在模块表格内加入 help 顶栏。
+    :param permission: 顶栏权限类型，可选 ``user``、``admin`` 或 ``superuser``。
     :return: 消息元素列表；所有组皆空时返回空片段，空态文案由调用方负责。
     """
     locale = msg.session_info.locale
@@ -129,25 +199,63 @@ def build_module_table(msg: Bot.MessageSession, groups: list[tuple[str, list[str
         return []
 
     columns = resolve_table_columns([len(names) for _, names in groups], separators=len(groups) - 1)
+    if include_help_header:
+        columns = max(columns, 4)
     blanks = " |" * (columns - 1)
     parts = []
     # 表头与分隔线开头，随后各行的收尾、下一组的区隔行都并进同一个纯文本，
     # 以免相邻纯文本之间被适配器补上换行
-    pending = f"| {escape_table_cell(groups[0][0])} |{blanks}\n|{'---|' * columns}\n"
+    if include_help_header:
+        bot_name = escape_table_cell(msg.session_info.bot_name or locale.t("bot_name"))
+        language = escape_table_cell(locale.t("language"))
+        version = get_version_display()
+        version_text = (
+            I18NContext("core.message.help.header.version", version=version)
+            if version
+            else I18NContext("core.message.help.header.version.unknown")
+        )
+        permission_text = locale.t(f"core.message.help.header.permission.{permission}")
+        header_blanks = " |" * (columns - 4)
+        parts.extend(
+            [
+                Plain(f"| {bot_name} | ", disable_joke=True),
+                ActionText(
+                    f"{prefix}locale",
+                    show=I18NContext("core.message.help.header.locale", language=language),
+                ),
+                Plain(" | ", disable_joke=True),
+                ActionText(f"{prefix}version", show=version_text),
+            ]
+        )
+        pending = (
+            f" | {escape_table_cell(permission_text)} |{header_blanks}\n"
+            f"|{'---|' * columns}\n"
+            f"| {escape_table_cell(groups[0][0])} |{blanks}\n"
+        )
+    else:
+        pending = f"| {escape_table_cell(groups[0][0])} |{blanks}\n|{'---|' * columns}\n"
 
     for index, (title, names) in enumerate(groups):
         if index:
             pending += f"| {escape_table_cell(title)} |{blanks}\n"
-        for offset, name in enumerate(names):
+        for offset, item in enumerate(names):
             parts.append(Plain(pending + "| " if not offset or offset % columns == 0 else pending, disable_joke=True))
-            parts.append(ActionText(f"{prefix}help {name}", show=name))
+            if is_module_entry(item):
+                emoji, command = get_module_toggle(item, prefix)
+                parts.append(ActionText(command, show=emoji))
+                parts.append(Plain(" ~~" if item.unsupported else " ", disable_joke=True))
+                parts.append(ActionText(f"{prefix}help {item.name}", show=item.name))
+                cell_end = "~~" if item.unsupported else ""
+            else:
+                parts.append(ActionText(f"{prefix}help {item}", show=item))
+                cell_end = ""
             if offset + 1 == len(names):
                 padding = (columns - (offset + 1) % columns) % columns
-                pending = " |" * (padding + 1) + "\n"
+                pending = cell_end + " |" * (padding + 1) + "\n"
             elif (offset + 1) % columns == 0:
-                pending = " |\n"
+                pending = cell_end + " |\n"
             else:
-                pending = " | "
+                pending = cell_end + " | "
 
     parts.append(Plain(pending, disable_joke=True))
     return parts
@@ -253,7 +361,7 @@ def build_command_table(msg: Bot.MessageSession, help_doc: dict, regex_rows: lis
     return parts
 
 
-def get_help_link_buttons(msg: Bot.MessageSession) -> list[tuple[str, str]]:
+def get_help_link_buttons(msg: Bot.MessageSession, include_modules: bool = True) -> list[tuple[str, str]]:
     """
     构造帮助菜单底部的三个入口按钮：模块列表、在线文档、捐赠。
 
@@ -271,11 +379,23 @@ def get_help_link_buttons(msg: Bot.MessageSession) -> list[tuple[str, str]]:
         return []
     locale = msg.session_info.locale
     prefix = command_prefix[0]
-    buttons = [(locale.t("core.message.help.button.modules"), f"{prefix}module list")]
+    buttons = []
+    if include_modules:
+        buttons.append((locale.t("core.message.help.button.modules"), f"{prefix}module list"))
     if help_url:
-        buttons.append((locale.t("core.message.help.button.document"), f"{prefix}help --doc"))
+        buttons.append(
+            (
+                locale.t("core.message.help.button.document"),
+                help_url if msg.session_info.client_name == "QQBot" else f"{prefix}help --doc",
+            )
+        )
     if donate_url:
-        buttons.append((locale.t("core.message.help.button.donate"), f"{prefix}help --donate"))
+        buttons.append(
+            (
+                locale.t("core.message.help.button.donate"),
+                donate_url if msg.session_info.client_name == "QQBot" else f"{prefix}help --donate",
+            )
+        )
     return buttons
 
 
@@ -302,7 +422,7 @@ def get_setup_button_data(msg: Bot.MessageSession) -> list[dict[str, str]]:
     )
 
 
-def get_help_button_data(msg: Bot.MessageSession) -> list[dict[str, str]]:
+def get_help_button_data(msg: Bot.MessageSession, include_modules: bool = True) -> list[dict[str, str]]:
     """
     构造帮助菜单底部的全部按钮：设置面板一行，三个入口按钮另起一行。
 
@@ -312,7 +432,39 @@ def get_help_button_data(msg: Bot.MessageSession) -> list[dict[str, str]]:
     :param msg: 消息会话。
     :return: 按钮数据；会话不具备按钮能力时为空列表。
     """
-    return get_setup_button_data(msg) + arrange_buttons(get_help_link_buttons(msg), per_row=3)
+    return get_setup_button_data(msg) + arrange_buttons(get_help_link_buttons(msg, include_modules), per_row=3)
+
+
+def get_module_list_button_data(msg: Bot.MessageSession) -> list[dict[str, str]]:
+    """构造模块列表底部的在线文档按钮。"""
+    if not msg.session_info.support_button or not help_url:
+        return []
+    return arrange_buttons(
+        [(msg.session_info.locale.t("core.message.help.button.document"), f"{command_prefix[0]}help --doc")]
+    )
+
+
+def append_qqbot_permissions_prompt(msg: Bot.MessageSession, help_msg: MessageChain) -> None:
+    if not qqbot_permissions_limited(msg):
+        return
+    help_msg.append(
+        I18NContext(
+            "core.message.help.qqbot.permissions.prompt",
+            cmd=ActionText(
+                f"{msg.session_info.prefixes[0]}help permissions",
+                show=I18NContext("core.message.help.qqbot.permissions.action"),
+            ),
+        )
+    )
+
+
+@hlp.command(
+    "permissions {{I18N:core.help.help.permissions}}",
+    available_for="QQBot",
+    priority=2,
+)
+async def qqbot_permissions(msg: Bot.MessageSession):
+    await msg.finish(I18NContext("core.message.help.qqbot.permissions"))
 
 
 @hlp.command(
@@ -531,10 +683,12 @@ async def help_overview(msg: Bot.MessageSession):
     force_legacy = parsed_msg.get("--legacy", False) and not force_image
     use_table = not force_image and not force_legacy and msg.session_info.support_markdown_table
     use_clickable = not use_table and not force_legacy and msg.session_info.support_action_text
+    qqbot_admin = msg.session_info.client_name == "QQBot" and await msg.check_permission()
+    show_all_modules = qqbot_admin and not force_legacy
 
     legacy_help = True
     if not use_table and not force_legacy and msg.session_info.support_image:
-        imgs = await help_generator(msg)
+        imgs = await help_generator(msg, show_disabled_modules=show_all_modules)
         if imgs:
             legacy_help = False
 
@@ -545,13 +699,14 @@ async def help_overview(msg: Bot.MessageSession):
                     cmd=ActionText(f"{msg.session_info.prefixes[0]}help "),
                 )
             )
-            help_msg_list.append(
-                I18NContext(
-                    "core.message.help.all_modules",
-                    prefix=msg.session_info.prefixes[0],
-                    cmd=ActionText(f"{msg.session_info.prefixes[0]}module list"),
+            if not show_all_modules:
+                help_msg_list.append(
+                    I18NContext(
+                        "core.message.help.all_modules",
+                        prefix=msg.session_info.prefixes[0],
+                        cmd=ActionText(f"{msg.session_info.prefixes[0]}module list"),
+                    )
                 )
-            )
             if help_url:
                 help_msg_list.append(
                     I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url, trusted=True)))
@@ -560,14 +715,17 @@ async def help_overview(msg: Bot.MessageSession):
                 help_msg_list.append(
                     I18NContext("core.message.help.donate", url=MessageChain.assign(Url(donate_url, trusted=True)))
                 )
-            await msg.finish(imgs + help_msg_list, button_data=get_setup_button_data(msg))
+            await msg.finish(
+                imgs + help_msg_list,
+                button_data=(get_setup_button_data(msg) if show_all_modules else get_help_button_data(msg)),
+            )
     if legacy_help:
         is_base_superuser = msg.session_info.sender_id in Bot.base_superuser_list
         is_superuser = msg.check_super_user()
         module_list = ModulesManager.return_modules_list(
             target_from=msg.session_info.target_from, client_name=msg.session_info.client_name
         )
-        target_enabled_list = msg.session_info.enabled_modules
+        target_enabled_list = msg.session_info.enabled_modules or []
 
         essential = []
         module_ = []
@@ -579,7 +737,7 @@ async def help_overview(msg: Bot.MessageSession):
                 continue
             if value.hidden:
                 continue
-            if value.unsupported_reason(msg.session_info):
+            if value.unsupported_reason(msg.session_info) and not show_all_modules:
                 continue
             if not is_superuser and value.required_superuser or not is_base_superuser and value.required_base_superuser:
                 continue
@@ -588,8 +746,21 @@ async def help_overview(msg: Bot.MessageSession):
                 essential.append(key)
             else:
                 module_.append(key)
-        module_ = [m for m in module_ if m in target_enabled_list]
+        if not show_all_modules:
+            module_ = [m for m in module_ if m in target_enabled_list]
         module_, subscription = split_subscription_modules(module_list, module_)
+        if show_all_modules:
+            essential = [
+                create_module_entry(module_list[name], name, target_enabled_list, msg.session_info)
+                for name in essential
+            ]
+            module_ = [
+                create_module_entry(module_list[name], name, target_enabled_list, msg.session_info) for name in module_
+            ]
+            subscription = [
+                create_module_entry(module_list[name], name, target_enabled_list, msg.session_info)
+                for name in subscription
+            ]
 
         if use_table:
             # 各类模块同处一张表，以一行区隔行分开；表格以纯文本收尾，无须 end_inline_run()
@@ -601,15 +772,24 @@ async def help_overview(msg: Bot.MessageSession):
                         ("core.message.help.table.external", module_),
                         ("core.message.help.table.subscription", subscription),
                     ],
+                    include_help_header=True,
+                    permission="superuser" if is_superuser else "admin" if qqbot_admin else "user",
                 )
             )
             help_msg += I18NContext("core.message.help.mdtable")
-            if msg.session_info.client_name == "QQBot" and not (
-                msg.session_info.support_rss and msg.session_info.read_all_messages
+            if has_unsupported_entries(
+                [
+                    ("core.message.help.table.base", essential),
+                    ("core.message.help.table.external", module_),
+                    ("core.message.help.table.subscription", subscription),
+                ]
             ):
-                help_msg += I18NContext("core.message.help.qqbot.limited")
-            # 其余三条提示改由底部按钮承担。
-            await msg.finish(help_msg, button_data=get_help_button_data(msg), force_markdown=True)
+                append_qqbot_permissions_prompt(msg, help_msg)
+            await msg.finish(
+                help_msg,
+                button_data=get_help_button_data(msg, include_modules=not show_all_modules),
+                force_markdown=True,
+            )
         if use_clickable:
             help_msg = MessageChain.assign(
                 build_clickable_modules(
@@ -624,13 +804,13 @@ async def help_overview(msg: Bot.MessageSession):
             end_inline_run(help_msg)
         else:
             help_msg = MessageChain.assign([I18NContext("core.message.help.legacy.base")])
-            help_msg.append(Plain(" | ".join(essential), disable_joke=True))
+            help_msg.append(Plain(format_module_entries(essential), disable_joke=True))
             if module_:
                 help_msg.append(I18NContext("core.message.help.legacy.external"))
-                help_msg.append(Plain(" | ".join(module_), disable_joke=True))
+                help_msg.append(Plain(format_module_entries(module_), disable_joke=True))
             if subscription:
                 help_msg.append(I18NContext("core.message.help.legacy.subscription"))
-                help_msg.append(Plain(" | ".join(subscription), disable_joke=True))
+                help_msg.append(Plain(format_module_entries(subscription), disable_joke=True))
         help_msg.append(
             I18NContext(
                 "core.message.help.detail",
@@ -638,13 +818,22 @@ async def help_overview(msg: Bot.MessageSession):
                 cmd=ActionText(f"{msg.session_info.prefixes[0]}help "),
             )
         )
-        help_msg.append(
-            I18NContext(
-                "core.message.help.all_modules",
-                prefix=msg.session_info.prefixes[0],
-                cmd=ActionText(f"{msg.session_info.prefixes[0]}module list"),
+        if not show_all_modules:
+            help_msg.append(
+                I18NContext(
+                    "core.message.help.all_modules",
+                    prefix=msg.session_info.prefixes[0],
+                    cmd=ActionText(f"{msg.session_info.prefixes[0]}module list"),
+                )
             )
-        )
+        if has_unsupported_entries(
+            [
+                ("core.message.help.legacy.base", essential),
+                ("core.message.help.legacy.external", module_),
+                ("core.message.help.legacy.subscription", subscription),
+            ]
+        ):
+            append_qqbot_permissions_prompt(msg, help_msg)
         if help_url:
             help_msg.append(
                 I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url, trusted=True)))
@@ -653,7 +842,10 @@ async def help_overview(msg: Bot.MessageSession):
             help_msg.append(
                 I18NContext("core.message.help.donate", url=MessageChain.assign(Url(donate_url, trusted=True)))
             )
-        await msg.finish(help_msg, button_data=get_setup_button_data(msg))
+        await msg.finish(
+            help_msg,
+            button_data=get_help_button_data(msg, include_modules=not show_all_modules),
+        )
 
 
 async def modules_list_help(msg: Bot.MessageSession, legacy, force_image=False):
@@ -677,11 +869,13 @@ async def modules_list_help(msg: Bot.MessageSession, legacy, force_image=False):
                 help_msg.append(
                     I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url, trusted=True)))
                 )
-            await msg.finish(imgs + help_msg)
+            await msg.finish(imgs + help_msg, button_data=get_module_list_button_data(msg))
     if legacy_help:
+        can_manage_modules = msg.session_info.client_name == "QQBot" and await msg.check_permission()
         module_list = ModulesManager.return_modules_list(
             target_from=msg.session_info.target_from, client_name=msg.session_info.client_name
         )
+        target_enabled_list = msg.session_info.enabled_modules or []
         module_ = []
         for x in module_list:
             if x[0] == "_":
@@ -696,6 +890,14 @@ async def modules_list_help(msg: Bot.MessageSession, legacy, force_image=False):
                 continue
             module_.append(module_list[x].module_name)
         module_, subscription = split_subscription_modules(module_list, module_)
+        if can_manage_modules:
+            module_ = [
+                create_module_entry(module_list[name], name, target_enabled_list, msg.session_info) for name in module_
+            ]
+            subscription = [
+                create_module_entry(module_list[name], name, target_enabled_list, msg.session_info)
+                for name in subscription
+            ]
         if not module_ and not subscription:
             help_msg = MessageChain.assign(I18NContext("core.message.help.legacy.availables.none"))
         elif use_table:
@@ -710,11 +912,8 @@ async def modules_list_help(msg: Bot.MessageSession, legacy, force_image=False):
                 )
             )
             help_msg += I18NContext("core.message.help.mdtable")
-            if msg.session_info.client_name == "QQBot" and not (
-                msg.session_info.support_rss and msg.session_info.read_all_messages
-            ):
-                help_msg += I18NContext("core.message.help.qqbot.limited")
-            await msg.finish(help_msg, button_data=get_help_button_data(msg), force_markdown=True)
+            append_qqbot_permissions_prompt(msg, help_msg)
+            await msg.finish(help_msg, button_data=get_module_list_button_data(msg), force_markdown=True)
         elif use_clickable:
             help_msg = MessageChain.assign(
                 build_clickable_modules(
@@ -730,10 +929,10 @@ async def modules_list_help(msg: Bot.MessageSession, legacy, force_image=False):
             help_msg = MessageChain.assign([])
             if module_:
                 help_msg.append(I18NContext("core.message.help.legacy.availables"))
-                help_msg.append(Plain(" | ".join(module_), disable_joke=True))
+                help_msg.append(Plain(format_module_entries(module_), disable_joke=True))
             if subscription:
                 help_msg.append(I18NContext("core.message.help.legacy.subscription"))
-                help_msg.append(Plain(" | ".join(subscription), disable_joke=True))
+                help_msg.append(Plain(format_module_entries(subscription), disable_joke=True))
         help_msg.append(
             I18NContext(
                 "core.message.help.detail",
@@ -741,11 +940,12 @@ async def modules_list_help(msg: Bot.MessageSession, legacy, force_image=False):
                 cmd=ActionText(f"{msg.session_info.prefixes[0]}help "),
             )
         )
+        append_qqbot_permissions_prompt(msg, help_msg)
         if help_url:
             help_msg.append(
                 I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url, trusted=True)))
             )
-        await msg.finish(help_msg)
+        await msg.finish(help_msg, button_data=get_module_list_button_data(msg))
 
 
 async def help_generator(

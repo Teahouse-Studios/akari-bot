@@ -263,8 +263,6 @@ class QQBotContextManager(ContextManager):
             msg = "\n".join(x.text for x in plains).strip()
             if session_info.target_from in (target_guild_prefix, target_direct_prefix):
                 msg = url_filter(msg)
-            if msg and session_info.tmp.get("message_type") == "group_at":
-                msg = "\n" + msg
 
             message_reference = None
             if quote and not images:
@@ -373,18 +371,24 @@ class QQBotContextManager(ContextManager):
             if len(possibly_choices) > 0:
                 rows = []
                 i = 0
+                links_head = ["http://", "https://"]
                 for r in possibly_choices:
                     buttons = []
 
                     for label, data in r.items():
                         i += 1
+                        is_link = False
+                        for l in links_head:
+                            if data.startswith(l):
+                                is_link = True
+                                break
                         button = Button(
                             id=str(i),
                             render_data=RenderData(
                                 label=label, visited_label=session_info.locale.t("message.selected") + label, style=0
                             ),
                             action=Action(
-                                type=1,
+                                type=0 if is_link else 1,
                                 permission=Permission(
                                     type=2 if target.scope == "c2c" else 0,
                                     specify_user_ids=[session_info.get_common_sender_id()],

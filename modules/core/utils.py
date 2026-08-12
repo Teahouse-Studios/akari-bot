@@ -17,27 +17,31 @@ from core.utils.bash import run_sys_command
 ver = module("version", base=True, doc=True)
 
 
+def get_version_display() -> str | None:
+    if not Bot.Info.version:
+        return None
+    version = str(Bot.Info.version)
+    return version[4:11] if version.startswith("git:") else version
+
+
 @ver.command("{{I18N:core.help.version}}")
 async def _(msg: Bot.MessageSession):
-    if Bot.Info.version:
+    if version_display := get_version_display():
+        send_msgs = MessageChain.assign(I18NContext("core.message.version", version=version_display, disable_joke=True))
         if str(Bot.Info.version).startswith("git:"):
-            commit = Bot.Info.version[4:11]
-            send_msgs = MessageChain.assign(I18NContext("core.message.version", version=commit, disable_joke=True))
             if CoreConfig.enable_commit_url:
                 returncode, repo_url, _ = await run_sys_command(["git", "config", "--get", "remote.origin.url"])
                 if returncode == 0:
                     repo_url = repo_url.strip().replace(".git", "")
-                    commit_url = f"{repo_url}/commit/{commit}"
+                    commit_url = f"{repo_url}/commit/{version_display}"
                     send_msgs.append(Url(commit_url, trusted=True))
         else:
-            version = Bot.Info.version
-            send_msgs = MessageChain.assign(I18NContext("core.message.version", version=version, disable_joke=True))
             if CoreConfig.enable_commit_url:
-                version = "nightly" if version.startswith("nightly") else version
+                version_tag = "nightly" if version_display.startswith("nightly") else version_display
                 returncode, repo_url, _ = await run_sys_command(["git", "config", "--get", "remote.origin.url"])
                 if returncode == 0:
                     repo_url = repo_url.strip().replace(".git", "")
-                    commit_url = f"{repo_url}/releases/tag/{version}"
+                    commit_url = f"{repo_url}/releases/tag/{version_tag}"
                     send_msgs.append(Url(commit_url, trusted=True))
         await msg.finish(send_msgs)
     else:

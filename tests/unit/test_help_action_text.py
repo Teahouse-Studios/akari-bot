@@ -21,6 +21,7 @@ from core.logger import Logger
 from core.tester import func_case, Tester
 from core.utils.table import TABLE_MAX_ROWS, format_table_code
 from modules.core.help import (
+    ModuleListEntry,
     build_clickable_modules,
     build_command_table,
     build_module_table,
@@ -98,6 +99,38 @@ class _ImageHelpSession(_FakeSession):
     async def finish(self, message, **kwargs):
         self.finished_message = MessageChain.assign(message)
         raise SessionFinished
+
+
+class _OverviewSession(_ImageHelpSession):
+    def __init__(self, session_info, is_admin: bool, is_superuser: bool = False):
+        super().__init__(session_info)
+        self.is_admin = is_admin
+        self.is_superuser = is_superuser
+        self.button_data = None
+
+    async def check_permission(self):
+        return self.is_admin
+
+    def check_super_user(self):
+        return self.is_superuser
+
+    async def finish(self, message, **kwargs):
+        self.finished_message = MessageChain.assign(message)
+        self.button_data = kwargs.get("button_data")
+        raise SessionFinished
+
+
+def _module(name: str, *, base: bool = False, rss: bool = False, unsupported: bool = False):
+    return SimpleNamespace(
+        module_name=name,
+        base=base,
+        rss=rss,
+        hidden=False,
+        _db_load=True,
+        required_superuser=False,
+        required_base_superuser=False,
+        unsupported_reason=lambda _session_info: "rss" if unsupported else None,
+    )
 
 
 async def _test_image_help_precedes_action_text_fallback():
@@ -273,6 +306,311 @@ async def _test_action_text_payload():
         return True
     except Exception:
         return False
+
+
+async def _test_module_toggle_payloads():
+    """测试普通与订阅模块的锁图标及 enable/disable 填入命令。"""
+    session_info = await _session("help_toggle")
+    msg = _FakeSession(session_info)
+    prefix = session_info.prefixes[0]
+    cases = (
+        (ModuleListEntry("wiki", True), "🔓", f"{prefix}disable wiki"),
+        (ModuleListEntry("dice", False), "🔐", f"{prefix}enable dice"),
+        (ModuleListEntry("wikilog", True, subscription=True), "🔔", f"{prefix}disable wikilog"),
+        (ModuleListEntry("weekly", False, subscription=True), "🔕", f"{prefix}enable weekly"),
+    )
+    for entry, emoji, command in cases:
+        parts = build_clickable_modules(msg, [(TABLE_TITLE_KEY, [entry])])
+        actions = [part for part in parts if isinstance(part, ActionTextElement)]
+        if len(actions) != 2:
+            return False
+        if actions[0].show.text != emoji or actions[0].text.text != command:
+            return False
+        if actions[1].show.text != entry.name or actions[1].text.text != f"{prefix}help {entry.name}":
+            return False
+    return True
+
+
+async def _test_unsupported_module_strikethrough():
+    """测试缺少 QQBot 权限的模块以删除线展示，状态按钮仍可点击。"""
+    session_info = await _session("help_strikethrough")
+    msg = _FakeSession(session_info)
+    entry = ModuleListEntry("wikilog", False, subscription=True, unsupported=True)
+    lines = [
+        line for line in _render_lines(session_info, build_module_table(msg, [(TABLE_TITLE_KEY, [entry])])) if line
+    ]
+    return any("~~[wikilog]~~" in line and "[🔕]" in line for line in lines)
+
+
+async def _test_markdown_help_header():
+    """测试 Markdown help 顶栏使用四个真实单元格，并与模块列表处于同一张表。"""
+    session_info = await _session("help_header")
+    session_info.bot_name = "小可测试版"
+    msg = _FakeSession(session_info)
+    try:
+        with patch("modules.core.help.get_version_display", return_value="v1.2.3"):
+            parts = build_module_table(
+                msg,
+                [(TABLE_TITLE_KEY, ["wiki", "dice", "coin"])],
+                include_help_header=True,
+                permission="admin",
+            )
+        actions = [part for part in parts if isinstance(part, ActionTextElement)]
+        locale_actions = [action for action in actions if action.text.text == f"{session_info.prefixes[0]}locale"]
+        version_actions = [action for action in actions if action.text.text == f"{session_info.prefixes[0]}version"]
+        if len(locale_actions) != 1 or len(version_actions) != 1:
+            return False
+        sendable = MessageChain.assign(parts).as_sendable(session_info).values
+        rendered = "".join(
+            element.text if isinstance(element, PlainElement) else f"[{element.show.text}]" for element in sendable
+        )
+        lines = [line for line in rendered.splitlines() if line]
+        return (
+            lines[0] == "| 小可测试版 | [语言：简体中文] | [版本：v1.2.3] | 当前权限：场景管理员 |"
+            and lines[1] == "|---|---|---|---|"
+            and lines[2].startswith("| ")
+            and lines[3] == "| [wiki] | [dice] | [coin] | |"
+            and {line.count("|") for line in lines} == {5}
+            and rendered.count("|---|---|---|---|") == 1
+            and "\n\n" not in rendered
+        )
+    except Exception:
+        return False
+
+
+async def _test_markdown_help_header_permissions_and_width():
+    """测试三种权限文案，并确保宽表顶栏使用空单元格补齐而非合并。"""
+    session_info = await _session("help_header_permissions")
+    msg = _FakeSession(session_info)
+    names = [f"m{i}" for i in range(41)]
+    expected_permissions = {
+        "user": "当前权限：普通用户",
+        "admin": "当前权限：场景管理员",
+        "superuser": "当前权限：超级用户",
+    }
+    try:
+        with patch("modules.core.help.get_version_display", return_value=None):
+            for permission, display in expected_permissions.items():
+                parts = build_module_table(
+                    msg,
+                    [(TABLE_TITLE_KEY, names)],
+                    include_help_header=True,
+                    permission=permission,
+                )
+                lines = [line for line in _render_lines(session_info, parts) if line]
+                separator_width = lines[1].count("|")
+                if display not in lines[0] or "版本：未知" not in lines[0]:
+                    return False
+                if any(line.count("|") != separator_width for line in lines):
+                    return False
+                if not lines[0].endswith("| |"):
+                    return False
+        return True
+    except Exception:
+        return False
+
+
+async def _test_qqbot_admin_help_includes_disabled_modules():
+    """测试 QQBot 管理员的 help 合并 module list，并移除模块列表按钮。"""
+    session_info = await SessionInfo.assign(
+        target_id="QQBot|Group|help_admin",
+        target_from="QQBot|Group",
+        client_name="QQBot",
+        sender_id="QQBot|1",
+        features=Features(
+            support_action_text=True,
+            support_button=True,
+            support_markdown=True,
+            support_markdown_table=True,
+            support_rss=True,
+        ),
+    )
+    session_info.enabled_modules = ["dice"]
+    msg = _OverviewSession(session_info, is_admin=True)
+    modules = {
+        "help": _module("help", base=True),
+        "coin": _module("coin"),
+        "dice": _module("dice"),
+    }
+    try:
+        with patch("modules.core.help.ModulesManager.return_modules_list", return_value=modules):
+            await help_overview(msg)
+    except SessionFinished:
+        pass
+    sendable = msg.finished_message.as_sendable(session_info).values
+    commands = [element.text.text for element in sendable if isinstance(element, ActionTextElement)]
+    rendered = "\n".join(_render_lines(session_info, msg.finished_message.values))
+    buttons = {label: command for row in msg.button_data or [] for label, command in row.items()}
+    return (
+        "~enable coin" in commands
+        and "~disable dice" in commands
+        and "场景管理员" in rendered
+        and not any(command.endswith("module list") for command in buttons.values())
+    )
+
+
+async def _test_qqbot_superuser_help_header():
+    """测试超级用户权限高于场景管理员，顶栏显示最高权限。"""
+    session_info = await SessionInfo.assign(
+        target_id="QQBot|Group|help_superuser",
+        target_from="QQBot|Group",
+        client_name="QQBot",
+        sender_id="QQBot|1",
+        features=Features(
+            support_action_text=True,
+            support_button=True,
+            support_markdown=True,
+            support_markdown_table=True,
+        ),
+    )
+    msg = _OverviewSession(session_info, is_admin=True, is_superuser=True)
+    modules = {"help": _module("help", base=True)}
+    try:
+        with patch("modules.core.help.ModulesManager.return_modules_list", return_value=modules):
+            await help_overview(msg)
+    except SessionFinished:
+        pass
+    rendered = "\n".join(_render_lines(session_info, msg.finished_message.values))
+    return "超级用户" in rendered and "场景管理员" not in rendered
+
+
+async def _test_qqbot_non_admin_help_keeps_module_list_button():
+    """测试 QQBot 非管理员的 help 只展示已开启模块，并保留 module list 按钮。"""
+    session_info = await SessionInfo.assign(
+        target_id="QQBot|Group|help_member",
+        target_from="QQBot|Group",
+        client_name="QQBot",
+        sender_id="QQBot|1",
+        features=Features(
+            support_action_text=True,
+            support_button=True,
+            support_markdown=True,
+            support_markdown_table=True,
+            support_rss=True,
+        ),
+    )
+    session_info.enabled_modules = ["dice"]
+    msg = _OverviewSession(session_info, is_admin=False)
+    modules = {
+        "help": _module("help", base=True),
+        "coin": _module("coin"),
+        "dice": _module("dice"),
+    }
+    try:
+        with patch("modules.core.help.ModulesManager.return_modules_list", return_value=modules):
+            await help_overview(msg)
+    except SessionFinished:
+        pass
+    rendered = "\n".join(_render_lines(session_info, msg.finished_message.values))
+    buttons = {label: command for row in msg.button_data or [] for label, command in row.items()}
+    return (
+        "[dice]" in rendered
+        and "[coin]" not in rendered
+        and "普通用户" in rendered
+        and any(command.endswith("module list") for command in buttons.values())
+    )
+
+
+async def _test_qqbot_admin_legacy_help_keeps_legacy_scope():
+    """测试显式 --legacy 仍只展示已开启模块，不启用管理合并样式。"""
+    session_info = await SessionInfo.assign(
+        target_id="QQBot|Group|help_admin_legacy",
+        target_from="QQBot|Group",
+        client_name="QQBot",
+        sender_id="QQBot|1",
+        features=Features(support_button=True),
+    )
+    session_info.enabled_modules = ["dice"]
+    msg = _OverviewSession(session_info, is_admin=True)
+    msg.parsed_msg = {"--legacy": True}
+    modules = {
+        "help": _module("help", base=True),
+        "coin": _module("coin"),
+        "dice": _module("dice"),
+    }
+    try:
+        with patch("modules.core.help.ModulesManager.return_modules_list", return_value=modules):
+            await help_overview(msg)
+    except SessionFinished:
+        pass
+    rendered = msg.finished_message.to_str()
+    buttons = {label: command for row in msg.button_data or [] for label, command in row.items()}
+    return (
+        "dice" in rendered
+        and "coin" not in rendered
+        and any(command.endswith("module list") for command in buttons.values())
+    )
+
+
+async def _test_qqbot_module_list_hides_toggles_from_non_admin():
+    """测试 QQBot 普通用户的 module list 隐藏开关，底部只保留在线文档按钮。"""
+    session_info = await SessionInfo.assign(
+        target_id="QQBot|Group|module_list_member",
+        target_from="QQBot|Group",
+        client_name="QQBot",
+        sender_id="QQBot|1",
+        features=Features(
+            support_action_text=True,
+            support_button=True,
+            support_markdown=True,
+            support_markdown_table=True,
+            support_rss=True,
+        ),
+    )
+    session_info.enabled_modules = ["dice", "wikilog"]
+    msg = _OverviewSession(session_info, is_admin=False)
+    modules = {
+        "coin": _module("coin"),
+        "dice": _module("dice"),
+        "wikilog": _module("wikilog", rss=True),
+    }
+    try:
+        with (
+            patch("modules.core.help.ModulesManager.return_modules_list", return_value=modules),
+            patch("modules.core.help.help_url", "https://example.com/help"),
+        ):
+            await modules_list_help(msg, legacy=False)
+    except SessionFinished:
+        pass
+    sendable = msg.finished_message.as_sendable(session_info).values
+    commands = [element.text.text for element in sendable if isinstance(element, ActionTextElement)]
+    rendered = "\n".join(_render_lines(session_info, msg.finished_message.values))
+    button_commands = [command for row in msg.button_data or [] for command in row.values()]
+    return (
+        all(f"[{name}]" in rendered for name in modules)
+        and not any(emoji in rendered for emoji in ("🔐", "🔓", "🔕", "🔔"))
+        and not any(command.startswith(("~enable ", "~disable ")) for command in commands)
+        and button_commands == ["~help --doc"]
+    )
+
+
+async def _test_qqbot_module_list_keeps_toggles_for_admin():
+    """测试 QQBot 场景管理员的 module list 仍提供模块开关。"""
+    session_info = await SessionInfo.assign(
+        target_id="QQBot|Group|module_list_admin",
+        target_from="QQBot|Group",
+        client_name="QQBot",
+        sender_id="QQBot|1",
+        features=Features(
+            support_action_text=True,
+            support_markdown=True,
+            support_markdown_table=True,
+        ),
+    )
+    session_info.enabled_modules = ["dice"]
+    msg = _OverviewSession(session_info, is_admin=True)
+    modules = {
+        "coin": _module("coin"),
+        "dice": _module("dice"),
+    }
+    try:
+        with patch("modules.core.help.ModulesManager.return_modules_list", return_value=modules):
+            await modules_list_help(msg, legacy=False)
+    except SessionFinished:
+        pass
+    sendable = msg.finished_message.as_sendable(session_info).values
+    commands = [element.text.text for element in sendable if isinstance(element, ActionTextElement)]
+    return "~enable coin" in commands and "~disable dice" in commands
 
 
 async def _test_single_module_no_separator():
@@ -743,6 +1081,16 @@ async def test_clickable_modules(tester: Tester):
     await tester.test(_test_element_sequence, "元素交错排布测试")
     await tester.test(_test_title_ends_with_newline, "标题自带换行测试")
     await tester.test(_test_action_text_payload, "标签命令与展示文案测试")
+    await tester.test(_test_module_toggle_payloads, "模块开关状态标签测试")
+    await tester.test(_test_unsupported_module_strikethrough, "受限模块删除线测试")
+    await tester.test(_test_markdown_help_header, "Markdown help 顶栏测试")
+    await tester.test(_test_markdown_help_header_permissions_and_width, "Markdown help 顶栏权限与列宽测试")
+    await tester.test(_test_qqbot_admin_help_includes_disabled_modules, "QQBot 管理员帮助合并模块列表测试")
+    await tester.test(_test_qqbot_superuser_help_header, "QQBot 超级用户顶栏权限测试")
+    await tester.test(_test_qqbot_non_admin_help_keeps_module_list_button, "QQBot 非管理员保留模块列表按钮测试")
+    await tester.test(_test_qqbot_admin_legacy_help_keeps_legacy_scope, "QQBot 管理员 legacy 帮助范围测试")
+    await tester.test(_test_qqbot_module_list_hides_toggles_from_non_admin, "QQBot 普通用户模块列表隐藏开关测试")
+    await tester.test(_test_qqbot_module_list_keeps_toggles_for_admin, "QQBot 管理员模块列表保留开关测试")
     await tester.test(_test_single_module_no_separator, "单模块无多余分隔符测试")
     await tester.test(_test_empty_returns_nothing, "空列表返回空片段测试")
     await tester.test(_test_disable_joke, "禁用玩笑替换测试")
