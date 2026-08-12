@@ -32,6 +32,8 @@ async def test_help(tester: Tester):
     await tester.integrate("~help version", Contains("version"), "help version 应显示版本帮助")
     await tester.integrate("~help version", Contains("版本号"), "help version 应包含版本号描述")
     await tester.integrate("~help mojang-status", Contains("~mojang-status"), "help 应展示无文档模块自身的默认命令")
+    await tester.integrate("~help bilibili", Contains("Tips："), "带正则表达式的详细 help 应展示临时关闭提示")
+    await tester.integrate("~help bilibili", Contains(". / 。"), "正则关闭提示应展示当前配置的前缀")
 
     return tester
 

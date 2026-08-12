@@ -129,6 +129,7 @@ def _test_resolve_disables_markdown_features() -> bool:
     for name in (
         "support_markdown",
         "support_markdown_table",
+        "support_handle_message_nodes",
         "support_action_text",
         "support_button",
         "use_url_md_format",

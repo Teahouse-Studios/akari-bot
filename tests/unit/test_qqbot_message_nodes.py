@@ -15,7 +15,7 @@ from botpy.message import GroupMessage
 
 import bots.qqbot.context as qqbot_context
 from bots.qqbot.context import MESSAGE_NODES_MAX_ROWS, QQBotContextManager, nodes_to_table
-from bots.qqbot.features import features as qqbot_features
+from bots.qqbot.features import features as qqbot_features, guild_features
 from bots.qqbot.config import QQBotConfig
 from bots.qqbot.info import target_group_prefix
 from core.builtins.message.chain import MessageChain, MessageNodes
@@ -70,6 +70,14 @@ def _test_feature_follows_markdown_config() -> bool:
     """节点支持须跟随 qq_use_markdown：表格只在 markdown 路径上成立"""
     if qqbot_features.support_handle_message_nodes is not QQBotConfig.qq_use_markdown:
         Logger.error("QQBot should tie support_handle_message_nodes to qq_use_markdown")
+        return False
+    return True
+
+
+def _test_nodes_disabled_without_table_support() -> bool:
+    """不支持 Markdown 表格的 QQBot 入口应把节点交给图片回退。"""
+    if guild_features.support_markdown_table or guild_features.support_handle_message_nodes:
+        Logger.error("QQBot guild sessions without markdown tables should not handle message nodes as tables")
         return False
     return True
 
@@ -265,6 +273,7 @@ async def _test_force_markdown_flag_from_module() -> bool:
 async def test_qqbot_message_nodes(tester: Tester):
     """bots.qqbot.context: 消息节点表格化测试"""
     await tester.test(_test_feature_follows_markdown_config, "节点支持跟随配置测试")
+    await tester.test(_test_nodes_disabled_without_table_support, "无表格能力时节点使用图片回退测试")
     await tester.test(_test_table_shape, "表格行列数测试")
     await tester.test(_test_rows_are_uniform, "表格列数齐平测试")
     await tester.test(_test_index_sits_above_content, "编号在上内容在下测试")

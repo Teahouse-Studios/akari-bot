@@ -105,6 +105,15 @@ def get_module_type_display(module_, locale) -> str:
     return f"{emoji} {locale.t(type_key)}"
 
 
+def get_regex_disable_prefix_display() -> str:
+    prefixes = [prefix for prefix in CoreConfig.regex_disable_prefix if isinstance(prefix, str) and prefix]
+    return " ".join(prefixes)
+
+
+def should_use_markdown_table(msg: Bot.MessageSession, force_image: bool = False, force_legacy: bool = False) -> bool:
+    return not force_image and not force_legacy and msg.session_info.support_markdown_table
+
+
 def build_clickable_modules(msg: Bot.MessageSession, groups: list[tuple[str, list[str | ModuleListEntry]]]) -> list:
     """
     把若干组模块名构造成可点击的消息链片段。
@@ -532,6 +541,7 @@ async def _(msg: Bot.MessageSession, module: str):
                 show_required_superuser=is_superuser,
                 show_required_base_superuser=is_base_superuser,
             )
+            regex_disable_prefixes = get_regex_disable_prefix_display()
 
             devs_msg = ""
             if (module_.required_superuser and not is_superuser) or (
@@ -564,6 +574,8 @@ async def _(msg: Bot.MessageSession, module: str):
                             else:
                                 mdocs.append(f"{pattern}{str(I18NContext('core.message.help.regex.no_information'))}")
                             regex_rows.append((raw_pattern, rdesc or ""))
+                    if regex_disable_prefixes:
+                        mdocs.append(I18NContext("core.help.regex.disable_tip", prefixes=regex_disable_prefixes))
 
                 if module_.alias:
                     for a in module_.alias:
@@ -594,12 +606,7 @@ async def _(msg: Bot.MessageSession, module: str):
                 wiki_msg = ""
 
             # 表格版优先于图片版：命令可点击填入，且与模块列表的排法一致
-            if (
-                not force_image
-                and not force_legacy
-                and msg.session_info.support_markdown
-                and msg.session_info.support_action_text
-            ):
+            if should_use_markdown_table(msg, force_image, force_legacy):
                 table = build_command_table(msg, help_.return_json_help_doc(), regex_rows)
                 if table:
                     detail = [
@@ -611,6 +618,8 @@ async def _(msg: Bot.MessageSession, module: str):
                     if module_.desc:
                         detail.append(Plain(msg.session_info.locale.t_str(module_.desc) + "\n", disable_joke=True))
                     detail += table
+                    if regex_rows and regex_disable_prefixes:
+                        detail.append(I18NContext("core.help.regex.disable_tip", prefixes=regex_disable_prefixes))
                     if devs_msg:
                         detail.append(Plain(devs_msg))
                     if wiki_msg:
@@ -640,6 +649,7 @@ async def _(msg: Bot.MessageSession, module: str):
                             isinstance=isinstance,
                             str=str,
                             repattern=re.Pattern,
+                            regex_disable_prefixes=regex_disable_prefixes,
                             use_font_mirror=use_font_mirror,
                         )
 
@@ -697,7 +707,7 @@ async def help_overview(msg: Bot.MessageSession):
     parsed_msg = msg.parsed_msg or {}
     force_image = parsed_msg.get("--image", False)
     force_legacy = parsed_msg.get("--legacy", False) and not force_image
-    use_table = not force_image and not force_legacy and msg.session_info.support_markdown_table
+    use_table = should_use_markdown_table(msg, force_image, force_legacy)
     use_clickable = not use_table and not force_legacy and msg.session_info.support_action_text
     qqbot_admin = msg.session_info.client_name == "QQBot" and await msg.check_permission()
     show_all_modules = qqbot_admin and not force_legacy
@@ -857,7 +867,7 @@ async def help_overview(msg: Bot.MessageSession):
 
 async def modules_list_help(msg: Bot.MessageSession, legacy, force_image=False):
     # 与 ~help 同理：表格不可用时优先保留图片，图片生成失败后再降级到文字版
-    use_table = not force_image and not legacy and msg.session_info.support_markdown_table
+    use_table = should_use_markdown_table(msg, force_image, legacy)
     use_clickable = not use_table and not legacy and msg.session_info.support_action_text
 
     legacy_help = True

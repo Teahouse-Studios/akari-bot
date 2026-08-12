@@ -11,6 +11,7 @@
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
+from bots.discord.features import features as discord_features
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import ActionTextElement, ButtonFrameElement, ImageElement, PlainElement
 from core.builtins.message.internal import ActionText, I18NContext, Image, Plain
@@ -30,8 +31,10 @@ from modules.core.help import (
     env,
     get_module_type_display,
     get_help_link_buttons,
+    get_regex_disable_prefix_display,
     help_overview,
     modules_list_help,
+    should_use_markdown_table,
     strip_command_arguments,
 )
 
@@ -180,6 +183,16 @@ async def _test_image_help_precedes_action_text_fallback():
     )
 
 
+async def _test_discord_detail_help_does_not_use_markdown_table():
+    """Discord 支持普通 Markdown 和 ActionText，但不应进入详细帮助的表格分支。"""
+    msg = SimpleNamespace(session_info=discord_features)
+    return (
+        discord_features.support_markdown
+        and discord_features.support_action_text
+        and not should_use_markdown_table(msg)
+    )
+
+
 async def _test_image_flag_overrides_markdown_table():
     """--image 应在支持 Markdown 表格的平台上仍强制生成图片帮助。"""
     session_info = await SessionInfo.assign(
@@ -269,6 +282,37 @@ async def _test_markdown_help_marks_module_type_with_emoji():
         (SimpleNamespace(base=False, rss=True), "🟩 订阅扩展模块"),
     )
     return all(get_module_type_display(module, locale) == expected for module, expected in module_types)
+
+
+async def _test_regex_disable_tip_uses_configured_prefixes():
+    with patch("core.config.CFGManager.get", return_value=["!", "！"]):
+        return get_regex_disable_prefix_display() == "! ！"
+
+
+async def _test_regex_disable_tip_hidden_when_disabled():
+    with patch("core.config.CFGManager.get", return_value=[]):
+        return get_regex_disable_prefix_display() == ""
+
+
+async def _test_help_doc_template_includes_regex_disable_tip():
+    locale = (await _session("help_regex_tip_template")).locale
+    module = SimpleNamespace(base=False, rss=False, desc="", alias={}, developers=[])
+    help_ = SimpleNamespace(args={}, return_formatted_help_doc=lambda: "")
+    regex = SimpleNamespace(pattern=r"BV[a-zA-Z0-9]{10}", desc=None)
+    rendered = await env.get_template("help_doc.html").render_async(
+        locale=locale,
+        module=module,
+        help=help_,
+        help_name="bilibili",
+        regex_list=[regex],
+        regex_disable_prefixes=". 。",
+        escape=str,
+        isinstance=isinstance,
+        str=str,
+        repattern=object,
+        use_font_mirror=False,
+    )
+    return "Tips：" in rendered and ". 。" in rendered and "临时关闭本条消息" in rendered
 
 
 async def _test_element_sequence():
@@ -1120,10 +1164,14 @@ async def test_clickable_modules(tester: Tester):
     """modules.core.help: 可点击模块列表测试"""
     await tester.test(_test_help_about_button_replaces_donate, "help 关于我们按钮测试")
     await tester.test(_test_image_help_precedes_action_text_fallback, "无表格能力时图片帮助优先测试")
+    await tester.test(_test_discord_detail_help_does_not_use_markdown_table, "Discord 详细帮助禁用 Markdown 表格测试")
     await tester.test(_test_image_flag_overrides_markdown_table, "--image 强制图片帮助测试")
     await tester.test(_test_image_template_omits_help_command, "图片内移除查看详情提示测试")
     await tester.test(_test_help_doc_template_marks_module_type_with_swatch, "模块详细帮助类型色块测试")
     await tester.test(_test_markdown_help_marks_module_type_with_emoji, "Markdown 模块详细帮助类型标记测试")
+    await tester.test(_test_regex_disable_tip_uses_configured_prefixes, "正则关闭 Tips 使用当前配置测试")
+    await tester.test(_test_regex_disable_tip_hidden_when_disabled, "正则关闭 Tips 随空配置隐藏测试")
+    await tester.test(_test_help_doc_template_includes_regex_disable_tip, "图片详细帮助展示正则关闭 Tips 测试")
     await tester.test(_test_element_sequence, "元素交错排布测试")
     await tester.test(_test_title_ends_with_newline, "标题自带换行测试")
     await tester.test(_test_action_text_payload, "标签命令与展示文案测试")

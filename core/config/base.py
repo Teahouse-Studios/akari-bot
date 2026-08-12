@@ -13,6 +13,7 @@ from core.constants.default import (
     issue_url_default,
     locale_url_default,
     qq_test_group_url_default,
+    regex_disable_prefix_default,
     repo_url_default,
 )
 from core.constants.version import config_version as config_version_default
@@ -45,6 +46,7 @@ class CoreConfig:
 
     # 命令交互
     command_prefix: list = command_prefix_default
+    regex_disable_prefix: list = regex_disable_prefix_default
     confirm_command: list = confirm_command_default
     mention_required: bool = False
     no_confirm: bool = False

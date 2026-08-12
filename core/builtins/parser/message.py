@@ -133,6 +133,11 @@ channel_claim_cache = ExpiringTempDict()
 regex_once_cache: set[tuple[str, int, str]] = set()
 
 
+def should_skip_regex(trigger_msg: str) -> bool:
+    prefixes = tuple(prefix for prefix in CoreConfig.regex_disable_prefix if isinstance(prefix, str) and prefix)
+    return trigger_msg.startswith(prefixes)
+
+
 async def parser(msg: "Bot.MessageSession"):
     """
     消息处理的主入口函数。
@@ -265,6 +270,8 @@ async def parser(msg: "Bot.MessageSession"):
             return msg
 
         # 检查正则
+        if should_skip_regex(msg.trigger_msg):
+            return msg
         if msg.session_info.muted:
             return
         if msg.session_info.use_running_mention:
