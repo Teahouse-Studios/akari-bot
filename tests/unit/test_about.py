@@ -93,7 +93,8 @@ def _test_button_rows_and_qq_only_entry():
     qqbot_values = [row.buttons[0].value for row in qqbot_frame.rows]
     return (
         normal_repo.original_url == config["repo_url"]
-        and normal_repo.md_format_name == "开源仓库地址"
+        and normal_repo.applied_md_format
+        and normal_repo.url == f"[{config['repo_url']}]({config['repo_url']})"
         and qqbot_repo.original_url == config["repo_url"]
         and normal_values == [config["issue_url"], config["donate_url"]]
         and qqbot_values == [config["issue_url"], config["qq_test_group_url"], config["donate_url"]]
