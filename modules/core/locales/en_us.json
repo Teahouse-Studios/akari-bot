@@ -311,8 +311,6 @@
     "core.bind.message.start.private.failed": "Linking failed. Please try again later.",
     "core.bind.message.start.private.prompt": "Please send \"${cmd}\" via private message on another platform within ${minute} minute(s) to complete the linking process. Once linked, your user data and private context message data will be merged and cannot be undone. Do not share your link code with anyone.",
     "core.bind.message.target.code.prompt": "Please send \"${cmd}\" in another context within ${minute} minute(s) to complete the complete the linking process. Once linked, the data from both sides will be merged and cannot be undone. Do not share your link code with anyone.",
-    "core.help.option.doc": "Get the online documentation URL.",
-    "core.help.option.donate": "Get the donation URL.",
     "core.help.setup.invalid_module_prompt": "Toggle whether to show a notification if the module does not exist.",
     "core.help.setup.list": "List the current settings for the context and the user.",
     "core.help.setup.list.sender": "List the user's settings status.",
