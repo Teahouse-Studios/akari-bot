@@ -685,25 +685,13 @@ async def _(msg: Bot.MessageSession, module: str):
 
 
 @hlp.command(
-    "[--legacy] [--doc] [--image] [--donate] {{I18N:core.help.help}}",
+    "[--legacy] [--image] {{I18N:core.help.help}}",
     options_desc={
         "--legacy": "{I18N:help.option.legacy}",
-        "--doc": "{I18N:core.help.option.doc}",
         "--image": "{I18N:help.option.image}",
-        "--donate": "{I18N:core.help.option.donate}",
     },
 )
 async def help_overview(msg: Bot.MessageSession):
-    # 支持 Markdown 表格的平台优先排成宽表；其余平台保留图片帮助，图片生成失败后
-    # 再降级到可点击列表或纯文本。显式要求 --legacy 者始终得到最朴素的版本。
-    if msg.parsed_msg and msg.parsed_msg.get("--doc", False) and bool(help_url):
-        await msg.finish(
-            I18NContext("core.message.help.document", url=MessageChain.assign(Url(help_url, trusted=True)))
-        )
-    if msg.parsed_msg and msg.parsed_msg.get("--donate", False) and bool(donate_url):
-        await msg.finish(
-            I18NContext("core.message.help.donate", url=MessageChain.assign(Url(donate_url, trusted=True)))
-        )
     parsed_msg = msg.parsed_msg or {}
     force_image = parsed_msg.get("--image", False)
     force_legacy = parsed_msg.get("--legacy", False) and not force_image
