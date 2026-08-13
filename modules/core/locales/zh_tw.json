@@ -366,7 +366,7 @@
     "core.message.help.header.locale": "語言：${language}",
     "core.message.help.header.permission.admin": "目前權限：場景管理員",
     "core.message.about.button.repository": "開源儲存庫位址",
-    "core.message.about.introduction": "小可是 Teahouse Studios 出品的多功能、跨平台、可自由擴展的聊天機器人助手，基於 AGPL-3.0 協議開源。\n請支持我們的工作以持續不斷地進行功能開發。",
+    "core.message.about.introduction": "小可是 Teahouse Studios 出品的多功能、跨平台、可自由擴展的聊天機器人助手，基於 AGPL-3.0 協議開源。\n請支持我們的工作以便持續開發與維護。",
     "core.message.help.header.permission.superuser": "目前權限：超級使用者",
     "core.message.help.header.permission.user": "目前權限：普通使用者",
     "core.message.help.header.version": "版本：${version}",
