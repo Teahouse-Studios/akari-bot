@@ -132,7 +132,7 @@
     "core.message.about.button.repository": "开源存储库地址",
     "core.message.about.credits": "开发人员名单",
     "core.message.about.credits.unavailable": "暂时无法读取开发人员名单。",
-    "core.message.about.introduction": "小可是 Teahouse Studios 出品的多功能、跨平台、可自由扩展的聊天助手，基于 AGPL-3.0 协议开源。\n请支持我们的工作以持续不断地进行功能开发。",
+    "core.message.about.introduction": "小可是由 Teahouse Studios 出品的多功能、跨平台、可自由扩展的聊天机器人助手，基于 AGPL-3.0 协议开源。\n请支持我们的工作以持续不断地进行功能开发。",
     "core.message.abuse.ban.success": "成功将用户 ${sender} 加入黑名单。",
     "core.message.abuse.block.self": "你不可以在本场景内进行此操作！",
     "core.message.abuse.block.success": "成功将场景 ${target} 加入黑名单。",
