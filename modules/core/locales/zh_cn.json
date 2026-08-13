@@ -129,7 +129,7 @@
     "core.message.about.button.donate": "💵 支持我们",
     "core.message.about.button.issue": "问题反馈&特殊需求提交入口",
     "core.message.about.button.qq_group": "QQ 测试群&快速反馈",
-    "core.message.about.button.repository": "开源仓库地址",
+    "core.message.about.button.repository": "开源存储库地址",
     "core.message.about.credits": "开发人员名单",
     "core.message.about.credits.unavailable": "暂时无法读取开发人员名单。",
     "core.message.about.introduction": "小可是 Teahouse Studios 出品的多功能、跨平台、可自由扩展的聊天助手，基于 AGPL-3.0 协议开源。\n请支持我们的工作以持续不断地进行功能开发。",
