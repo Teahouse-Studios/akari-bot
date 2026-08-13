@@ -353,5 +353,11 @@
     "core.message.whoami.superuser": "（你擁有此機器人的超級使用者權限）",
     "core.message.whoami.target.union": "目前場景所屬的場景群組：\n${id}",
     "core.message.whoami.target.union.bound": "已綁定 ${count} 個場景：\n",
-    "core.message.help.qqbot.limited": "目前群組的機器人功能受限，僅可使用部分功能。如需使用推播類別模組和正規類別模組，請聯絡群主為機器人開啟「取得群組內全部訊息」和「機器人主動在群組聊天內發言」權限。\n（需最新版本手機 QQ，且僅群主可開啟）"
+    "core.message.help.qqbot.limited": "目前群組的機器人功能受限，僅可使用部分功能。如需使用推播模組和正規類別模組，請聯絡群主為機器人開啟「取得群組內全部訊息」和「機器人主動在群組聊天內發言」權限。\n（需最新版本手機 QQ，且僅群主可開啟）",
+    "core.help.about": "查看關於機器人與開發人員的資訊。",
+    "core.help.about.credits": "查看開發人員名單。",
+    "core.help.help.permissions": "查看 QQ 官方機器人所需的群組聊天權限。",
+    "core.message.about.button.donate": "💵 支持我們",
+    "core.message.about.button.issue": "問題回饋&特殊需求提交入口",
+    "core.message.about.button.qq_group": "QQ 測試群&快速回饋"
 }
