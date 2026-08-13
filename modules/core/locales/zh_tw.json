@@ -359,5 +359,7 @@
     "core.help.help.permissions": "查看 QQ 官方機器人所需的群組聊天權限。",
     "core.message.about.button.donate": "💵 支持我們",
     "core.message.about.button.issue": "問題回饋&特殊需求提交入口",
-    "core.message.about.button.qq_group": "QQ 測試群&快速回饋"
+    "core.message.about.button.qq_group": "QQ 測試群&快速回饋",
+    "core.message.about.credits": "開發人員名單",
+    "core.message.about.credits.unavailable": "暫時無法讀取開發人員名單。"
 }
