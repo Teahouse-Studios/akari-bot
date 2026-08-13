@@ -365,5 +365,9 @@
     "core.message.help.table.legend.external.enabled": "🔐 = Enabled",
     "core.message.help.table.legend.subscription.disabled": "🔕 = Disabled",
     "core.message.help.table.legend.subscription.enabled": "🔔 = Enabled",
-    "core.message.help.table.subscription": "Subscription External Modules"
+    "core.message.help.table.subscription": "Subscription External Modules",
+    "core.message.help.qqbot.permissions.action": "See how to enable permissions",
+    "core.message.help.qqbot.permissions.prompt": "Modules with strikethrough require additional permissions. ${cmd}",
+    "core.message.help.table.disabled": "Disabled Modules",
+    "core.message.about.introduction": "AkariBot is a multifunctional, cross-platform, and freely scalable chatbot assistant developed by Teahouse Studios. It is open-source under the AGPL-3.0 license.\nPlease support our work to help us continue development and maintenance."
 }
