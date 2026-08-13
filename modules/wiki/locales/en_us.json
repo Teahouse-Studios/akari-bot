@@ -188,5 +188,10 @@
     "wiki.message.wiki_bot.login.success": "Login success.",
     "wiki.message.wiki_bot.toggle.disable": "Disabled to use wiki bot account.",
     "wiki.message.wiki_bot.toggle.enable": "Enabled to use wiki bot account.",
-    "wiki.message.wiki_inline.flies": "This page includes the following files:\n${file}"
+    "wiki.message.wiki_inline.flies": "This page includes the following files:\n${file}",
+    "wiki.message.invalid_section.select.button": "Click the button to select the corresponding chapter.",
+    "wiki.message.invalid_section.select.button.limit": "Due to limitations, buttons cannot be displayed for chapters numbered higher than 50. Please manually select a chapter to reply.",
+    "wiki.message.not_found.autofix.choice.prompt.button": "Please click the corresponding button to retrieve the content. Reply \"Yes\" selects content item #${number} by default. Send any other response cancels the operation.",
+    "wiki.message.search.prompt.button": "Click the button to look up the corresponding page.",
+    "wiki.message.set.not_set.recommend": "Or click the button below to link the recommended wikis."
 }

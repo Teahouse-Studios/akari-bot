@@ -15,7 +15,7 @@
     "config.comments.config.donate_url": "Donate URL.",
     "config.comments.config.enable_analytics": "Whether to enable built-in statistics features.",
     "config.comments.config.enable_commit_url": "Whether to show the commit URL when displaying version information.",
-    "config.comments.config.enable_dirty_check": "Whether to enable text filtering detection, requires the AccessKey ID and AccessKey Secret of Alibaba Cloud Content Security Service.",
+    "config.comments.config.enable_dirty_check": "Whether to enable text filtering detection.",
     "config.comments.config.enable_get_petal": "Whether to allow getting petals.",
     "config.comments.config.enable_joke": "Whether to enable the joke. It will occur on April 1st server time when enabled.",
     "config.comments.config.enable_petal": "Whether to enable the petal feature.",
@@ -212,5 +212,7 @@
     "message.button.invalid": "This button is no longer available.",
     "message.button.used": "This button has already been used.",
     "config.comments.config.typo_check_args_diff_ratio": "Threshold for the difference in the number of command parameters. Command matching is skipped when the ratio of the difference between the number of parameters entered by the user and the number of parameters in the template exceeds this value. Ranging from 0 to 1.",
-    "config.comments.config.typo_check_module_diff_ratio": "Threshold for the difference in module name length. If the ratio of the difference between the matched module name length and the user-entered length exceeds this value, the match is skipped. Rranging from 0 to 1."
+    "config.comments.config.typo_check_module_diff_ratio": "Threshold for the difference in module name length. If the ratio of the difference between the matched module name length and the user-entered length exceeds this value, the match is skipped. Rranging from 0 to 1.",
+    "config.comments.config.regex_disable_prefix": "Temporarily disable regex parsing of message prefixes.",
+    "config.comments.config.repo_url": "Open-source repository URL."
 }
