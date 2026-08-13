@@ -19,6 +19,7 @@ ignored_sender = ["QQ|2854196310"] # 無視的使用者列表，匹配到此列�
 report_targets = [] # 上報場景列表，此處填寫的場景 ID 將會被辨識為上報場景。（如：當機器人執行指令出錯時，機器人會將報錯訊息傳送至對應場景）
 retired_clients = [] # 已退役的用戶端及其資料遷移目標，格式為「<來源用戶端> -> <目標用戶端>」（例：「QQ -> QQBot」）。只填寫來源用戶端時表示不提供遷移。
 command_prefix = ["~", "～"] # 指令前綴，此處填入的值將會被辨識為指令前綴。
+regex_disable_prefix = [".", "。"] # 临时关闭正则模块解析的消息前缀；消息以其中任一值开头时，本条消息不会触发正则模块。
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # 確認指令的關鍵字，此處填入的值將會被辨識為確認指令。
 mention_required = false # 是否強制僅處理在訊息開頭提及機器人的訊息。
 no_confirm = false # 是否無需傳送者確認訊息後再執行指令。
@@ -57,8 +58,10 @@ bug_report_url = "https://s.wd-ljt.com/botreportbug" # 回報錯誤網址。
 donate_url = "http://afdian.com/a/teahouse" # 捐贈網址。
 help_url = "https://bot.teahouse.team" # 線上說明文件網址。
 help_page_url = "https://bot.teahouse.team/wiki/${module}" # 模組線上說明文件網址。
-issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # 問題報告網址。
+issue_url = "https://github.com/Teahouse-Studios/akari-bot/issues/new/choose" # 問題報告網址。
 locale_url = "https://hosted.weblate.org/engage/akaribot" # 在地化專案網址。
+qq_test_group_url = "<Replace me with str value>" # QQ 官方机器人的测试群邀请网址，留空时不在关于菜单中展示。
+repo_url = "https://github.com/Teahouse-Studios/akari-bot" # 开源仓库网址。
 
 [secret]
 # 金鑰組態部分，此處的值若意外出現在傳送的訊息中，機器人會嘗試攔截。但請務必提防洩漏。

@@ -19,6 +19,7 @@ ignored_sender = ["QQ|2854196310"] # Ignored user list. Users matching this list
 report_targets = [] # List of reporting contexts. The context ID filled in here will be identified as the reporting context. (e.g., when the bot encounters a command error, the bot will send the error information to the corresponding context)
 retired_clients = [] # Retired clients and their data migration targets, formatted as "<Source Client> -> <Target Client>" (e.g., "QQ -> QQBot"). Specifying only the source client indicates that migration is not provided.
 command_prefix = ["~", "～"] # Command prefixes. The value entered here will be recognized as the command prefix.
+regex_disable_prefix = [".", "。"] # 临时关闭正则模块解析的消息前缀；消息以其中任一值开头时，本条消息不会触发正则模块。
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # The keyword for the confirmation command. The value entered here will be recognized as the confirmation command.
 mention_required = false # Whether to force processing of only of messages that mention the bot at the beginning of the message.
 no_confirm = false # Whether to execute the command without the sender confirming the message.
@@ -57,8 +58,10 @@ bug_report_url = "https://s.wd-ljt.com/botreportbug" # Error reporting URL.
 donate_url = "http://afdian.com/a/teahouse" # Donate URL.
 help_url = "https://bot.teahouse.team" # Help document URL.
 help_page_url = "https://bot.teahouse.team/wiki/${module}" # Module help document URL.
-issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # Issue feedback URL.
+issue_url = "https://github.com/Teahouse-Studios/akari-bot/issues/new/choose" # Issue feedback URL.
 locale_url = "https://hosted.weblate.org/engage/akaribot" # Localized project URL.
+qq_test_group_url = "<Replace me with str value>" # QQ 官方机器人的测试群邀请网址，留空时不在关于菜单中展示。
+repo_url = "https://github.com/Teahouse-Studios/akari-bot" # 开源仓库网址。
 
 [secret]
 # The secret config section. The bot will try to intercept if the values here accidentally appears in the message sent, but be careful to prevent leakage.

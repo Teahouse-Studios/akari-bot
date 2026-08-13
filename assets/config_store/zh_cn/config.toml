@@ -58,8 +58,10 @@ bug_report_url = "https://s.wd-ljt.com/botreportbug" # 汇报错误网址。
 donate_url = "http://afdian.com/a/teahouse" # 捐赠网址。
 help_url = "https://bot.teahouse.team" # 帮助文档网址。
 help_page_url = "https://bot.teahouse.team/wiki/${module}" # 模块帮助文档网址。
-issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # 问题反馈网址。
+issue_url = "https://github.com/Teahouse-Studios/akari-bot/issues/new/choose" # 问题反馈网址。
 locale_url = "https://hosted.weblate.org/engage/akaribot" # 本地化项目网址。
+qq_test_group_url = "<Replace me with str value>" # QQ 官方机器人的测试群邀请网址，留空时不在关于菜单中展示。
+repo_url = "https://github.com/Teahouse-Studios/akari-bot" # 开源仓库网址。
 
 [secret]
 # 密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。

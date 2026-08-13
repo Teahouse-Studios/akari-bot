@@ -19,6 +19,7 @@ ignored_sender = ["QQ|2854196310"] # 無視されるユーザーのリスト。�
 report_targets = [] # レポート コンテクスト リスト。ここに入力されたコンテクスト ID がレポートコンテクストとして認識されます。（例：コマンドの実行エラーが発生すると、ボットは対応するコンテクストにエラー情報を送信します）
 retired_clients = [] # 廃止されたクライアントとそのデータ移行先を、「<移行元クライアント> -> <移行先クライアント>」（例：「QQ -> QQBot」）の形式で指定する必要があります。移行元クライアントのみを指定した場合は、移行を行わないことを示します。
 command_prefix = ["~", "～"] # コマンドのプレフィックス。ここに入力された値はコマンドのプレフィックスとして認識されます。
+regex_disable_prefix = [".", "。"] # 临时关闭正则模块解析的消息前缀；消息以其中任一值开头时，本条消息不会触发正则模块。
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # コマンド確認用のキーワード。ここに入力された値はコマンド確認用の単語として認識されます。
 mention_required = false # メッセージの冒頭にボットをメンションしたメッセージのみを処理することを強制するかどうか。
 no_confirm = false # 送信者がメッセージを確認せずにコマンドを実行するかどうか。
@@ -57,8 +58,10 @@ bug_report_url = "https://s.wd-ljt.com/botreportbug" # エラーを報告する�
 donate_url = "http://afdian.com/a/teahouse" # 寄付の URL。
 help_url = "https://bot.teahouse.team" # ドキュメントの URL。
 help_page_url = "https://bot.teahouse.team/wiki/${module}" # モジュールのヘルプ情報の URL。
-issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # フィードバックの URL。
+issue_url = "https://github.com/Teahouse-Studios/akari-bot/issues/new/choose" # フィードバックの URL。
 locale_url = "https://hosted.weblate.org/engage/akaribot" # 翻訳プロジェクトの URL。
+qq_test_group_url = "<Replace me with str value>" # QQ 官方机器人的测试群邀请网址，留空时不在关于菜单中展示。
+repo_url = "https://github.com/Teahouse-Studios/akari-bot" # 开源仓库网址。
 
 [secret]
 # キーの設定項目です。ここに入力された値は、送信メッセージに誤って含まれた場合、ボットはそれを傍受しようとします。ただし、漏洩を防ぐよう注意してください。
