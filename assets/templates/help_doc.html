@@ -267,7 +267,7 @@
                     {%- endfor %}
                     {% if regex_disable_prefixes %}
                     <div class="help-note">{{ locale.t("core.help.regex.disable_tip",
-                        prefixes=regex_disable_prefixes) }}</div>
+                        prefixes=regex_disable_prefixes[0]) }}</div>
                     {% endif %}
                 </div>
                 {% endif %}

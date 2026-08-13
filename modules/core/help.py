@@ -27,6 +27,8 @@ help_url = CoreConfig.help_url
 donate_url = CoreConfig.donate_url
 use_font_mirror = CoreConfig.use_font_mirror
 
+regex_disable_prefixes = CoreConfig.regex_disable_prefix
+
 hlp = module("help", base=True, doc=True)
 
 
@@ -103,11 +105,6 @@ def get_module_type_display(module_, locale) -> str:
         emoji = "🟦"
         type_key = "core.message.help.table.external"
     return f"{emoji} {locale.t(type_key)}"
-
-
-def get_regex_disable_prefix_display() -> str:
-    prefixes = [prefix for prefix in CoreConfig.regex_disable_prefix if isinstance(prefix, str) and prefix]
-    return " ".join(prefixes)
 
 
 def should_use_markdown_table(msg: Bot.MessageSession, force_image: bool = False, force_legacy: bool = False) -> bool:
@@ -541,7 +538,6 @@ async def _(msg: Bot.MessageSession, module: str):
                 show_required_superuser=is_superuser,
                 show_required_base_superuser=is_base_superuser,
             )
-            regex_disable_prefixes = get_regex_disable_prefix_display()
 
             devs_msg = ""
             if (module_.required_superuser and not is_superuser) or (
@@ -575,7 +571,7 @@ async def _(msg: Bot.MessageSession, module: str):
                                 mdocs.append(f"{pattern}{str(I18NContext('core.message.help.regex.no_information'))}")
                             regex_rows.append((raw_pattern, rdesc or ""))
                     if regex_disable_prefixes:
-                        mdocs.append(I18NContext("core.help.regex.disable_tip", prefixes=regex_disable_prefixes))
+                        mdocs.append(I18NContext("core.help.regex.disable_tip", prefixes=regex_disable_prefixes[0]))
 
                 if module_.alias:
                     for a in module_.alias:
@@ -619,7 +615,7 @@ async def _(msg: Bot.MessageSession, module: str):
                         detail.append(Plain(msg.session_info.locale.t_str(module_.desc) + "\n", disable_joke=True))
                     detail += table
                     if regex_rows and regex_disable_prefixes:
-                        detail.append(I18NContext("core.help.regex.disable_tip", prefixes=regex_disable_prefixes))
+                        detail.append(I18NContext("core.help.regex.disable_tip", prefixes=regex_disable_prefixes[0]))
                     if devs_msg:
                         detail.append(Plain(devs_msg))
                     if wiki_msg:
