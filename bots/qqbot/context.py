@@ -8,7 +8,7 @@ from urllib.parse import quote
 import botpy
 from botpy.interaction import Interaction
 from botpy.message import BaseMessage, C2CMessage, DirectMessage, GroupMessage, Message
-from botpy.protocol import MediaSendResult, ReplyTarget
+from botpy.protocol import ApiError, MediaSendResult, ReplyTarget
 from botpy.types.group import SetMemberMuteState
 from botpy.types.message import Reference, KeyboardPayload
 from botpy.types.inline import Keyboard, Button, KeyboardRow, RenderData, Action, Permission
@@ -48,6 +48,7 @@ qq_use_markdown = QQBotConfig.qq_use_markdown
 
 # 平台对指令操作标签内文本的字符数上限，按 urlencode 前的原文计算
 ACTION_TEXT_MAX_LENGTH = 100
+EXPIRED_REPLY_MESSAGE_CODE = 40034005
 
 
 def _truncate_action_text(value: str, field: str) -> str:
@@ -204,6 +205,14 @@ def _message_ids(result) -> list[str]:
     return []
 
 
+def _is_expired_reply_message_error(error: ApiError) -> bool:
+    """判断 QQ OpenAPI 异常是否表示被回复的消息 ID 已过期。"""
+    codes = [error.code]
+    if isinstance(error.response, Mapping):
+        codes.extend((error.response.get("code"), error.response.get("err_code")))
+    return any(str(code) == str(EXPIRED_REPLY_MESSAGE_CODE) for code in codes if code is not None)
+
+
 class _TypingState:
     """一轮输入状态的生命周期标志。
 
@@ -292,6 +301,22 @@ class QQBotContextManager(ContextManager):
         client = _get_client()
         target = _reply_target(session_info, ctx)
 
+        async def send_with_proactive_fallback(sender, /, *args, **kwargs):
+            """回复消息 ID 过期时，移除回复信息并立即改发一条主动消息。"""
+            nonlocal target
+            try:
+                return await sender(target, *args, **kwargs)
+            except ApiError as error:
+                if target.message_id is None or not _is_expired_reply_message_error(error):
+                    raise
+
+                Logger.warning(
+                    f"Reply message {target.message_id} expired when sending to {target.scope}|{target.target_id}; "
+                    "retrying as a proactive message."
+                )
+                target = ReplyTarget(scope=target.scope, target_id=target.target_id)
+                return await sender(target, *args, **kwargs)
+
         force_markdown = session_info.tmp.get("force_markdown") == "true"
         if isinstance(message, MessageNodes):
             message = MessageChain.assign(PlainElement.assign(nodes_to_table(session_info, message), disable_joke=True))
@@ -345,26 +370,30 @@ class QQBotContextManager(ContextManager):
                 image = images.pop(0)
                 image_path = await image.get()
                 if target.scope in ("group", "c2c"):
-                    result = await client.send_image(target, local_path=image_path, content=msg or None)
+                    result = await send_with_proactive_fallback(
+                        client.send_image, local_path=image_path, content=msg or None
+                    )
                 else:
-                    result = await client.send(
-                        target,
+                    result = await send_with_proactive_fallback(
+                        client.send,
                         content=msg or None,
                         message_reference=message_reference,
                         extra={"file_image": image_path},
                     )
                 await record(result, image)
             else:
-                result = await client.send(target, content=msg, message_reference=message_reference)
+                result = await send_with_proactive_fallback(
+                    client.send, content=msg, message_reference=message_reference
+                )
                 await record(result)
 
             Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
             for image in images:
                 image_path = await image.get()
                 if target.scope in ("group", "c2c"):
-                    result = await client.send_image(target, local_path=image_path)
+                    result = await send_with_proactive_fallback(client.send_image, local_path=image_path)
                 else:
-                    result = await client.send(target, extra={"file_image": image_path})
+                    result = await send_with_proactive_fallback(client.send, extra={"file_image": image_path})
                 await record(result, image)
 
         async def send_msg_markdown():
@@ -435,7 +464,7 @@ class QQBotContextManager(ContextManager):
                 texts.append("\u200b")
             if len(texts) != 0:
                 msg = "\n".join(texts)
-                result = await client.send_markdown(target, msg, keyboard=keyboard)
+                result = await send_with_proactive_fallback(client.send_markdown, msg, keyboard=keyboard)
                 msg_ids.extend(_message_ids(result))
                 if not _typing_prompt:
                     cls._on_message_sent(session_info)

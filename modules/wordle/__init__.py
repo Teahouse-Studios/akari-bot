@@ -57,12 +57,14 @@ async def _(msg: Bot.MessageSession):
     if trial:
         start_msg.append(I18NContext("wordle.message.start.trial"))
     await msg.send_message(start_msg)
+    reply_target = msg
 
     while board.get_trials() <= 6 and play_state.check() and not board.is_game_over():
         if trial:
             wait = await msg.wait_next_message(timeout=GAME_EXPIRED)
         else:
             wait = await msg.wait_anyone(timeout=GAME_EXPIRED)
+        reply_target = wait
         word = wait.as_display(text_only=True).strip().lower()
         if len(word) != 5 or not (word.isalpha() and word.isascii()):
             continue
@@ -96,12 +98,15 @@ async def _(msg: Bot.MessageSession):
             if trial:
                 petal = 2 if attempt <= 3 else 1
                 petal += 1 if hard_mode else 0
-                if reward := await gained_petal(msg, petal):
+                if reward := await gained_petal(reply_target, petal):
                     g_msg.append(reward)
         qc.reset()
         if text_mode:
-            await msg.finish([Plain(board.format_board())] + g_msg, quote=False)
-        await msg.finish([BImage(board_image.board_image), BImage(board_image.keyboard_image)] + g_msg, quote=False)
+            await reply_target.send_message([Plain(board.format_board())] + g_msg, quote=False)
+        else:
+            await reply_target.send_message(
+                [BImage(board_image.board_image), BImage(board_image.keyboard_image)] + g_msg, quote=False
+            )
 
 
 @wordle.command("stop {{I18N:game.help.stop}}")
