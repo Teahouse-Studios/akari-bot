@@ -8,6 +8,7 @@ from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 from bots.qqbot.context import QQBotContextManager, QQBotFetchedContextManager, permission_cache
 from bots.qqbot.info import *
 from bots.qqbot.features import group_disable_read_all_message_features, resolve_features, guild_features
+from bots.qqbot.navigation import build_navigation
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain
@@ -265,6 +266,10 @@ class MyClient(botpy.Client):
     async def on_interaction_create(interaction: Interaction):
         Logger.debug(interaction)
         await interaction.acknowledge()
+        send_msg = interaction.data.resolved.button_data
+        if not send_msg:
+            Logger.warning(f"Unsupported QQBot interaction payload: {interaction}")
+            return
         if interaction.chat_type == 0:
             target_id = f"{target_guild_prefix}|{interaction.guild_id}|{interaction.channel_id}"
             sender_id = f"{sender_tiny_prefix}|{interaction.user_openid}"
@@ -285,7 +290,6 @@ class MyClient(botpy.Client):
             return
         if sender_id in ignored_sender:
             return
-        send_msg = interaction.data.resolved.button_data
         quote_msg = None
         match_quote = re.match(r"<q:(.*?)>(.*)", send_msg)
 
@@ -320,7 +324,15 @@ intents.interaction = True
 if QQBotConfig.qq_private_bot:
     intents.guild_messages = True
 
-client = MyClient(intents=intents, bot_log=None, loguru_logger=Logger.log)
+menu, panels = build_navigation()
+client = MyClient(
+    intents=intents,
+    bot_log=None,
+    loguru_logger=Logger.log,
+    menu=menu,
+    panels=panels,
+    config_sync_strict=QQBotConfig.qq_navigation_sync_strict,
+)
 QQBotContextManager.client = client
 
 if QQBotConfig.enable:

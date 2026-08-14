@@ -106,7 +106,7 @@ charset-normalizer==3.4.7
     # via
     #   htmldate
     #   trafilatura
-click==8.3.1
+click==8.4.2
     # via
     #   ddgs
     #   flask
@@ -426,7 +426,7 @@ pyyaml==6.0.3
     #   pre-commit
     #   qq-botpy-sdk
     #   uvicorn
-qq-botpy-sdk==2.0.1
+qq-botpy-sdk==2.0.2
     # via akari-bot
 quart==0.20.0
     # via aiocqhttp

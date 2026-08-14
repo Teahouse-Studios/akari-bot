@@ -11,6 +11,7 @@ class QQBotConfig:
     qq_typing_emoji: int = 181
     qq_limited_emoji: int = 10060
     qq_use_markdown: bool = False
+    qq_navigation_sync_strict: bool = False
 
 
 @on_bot_config("qqbot", secret=True)
