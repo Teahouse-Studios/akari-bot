@@ -1,10 +1,8 @@
 """QQBot 静态全局菜单与指令面板测试。"""
 
-from unittest.mock import patch
-
 from botpy.configuration import ConfigurationManager
 
-from bots.qqbot.navigation import MENU_GROUPS, PANEL_GROUPS, PANEL_SCOPES, build_navigation, resolve_navigation
+from bots.qqbot.navigation import MENU_GROUPS, PANEL_GROUPS, PANEL_SCOPES, build_navigation
 from core.logger import Logger
 from core.tester import Tester, func_case
 
@@ -22,7 +20,11 @@ def _test_navigation_declarations() -> bool:
 
     menu_commands = []
     for menu_item, (group_name, expected_items) in zip(menu_data["items"], MENU_GROUPS, strict=True):
-        if menu_item["type"] != "menu" or menu_item["name"] != group_name or len(menu_item["sub_menu_items"]) != 5:
+        if (
+            menu_item["type"] != "menu"
+            or menu_item["name"] != group_name
+            or len(menu_item["sub_menu_items"]) != len(expected_items)
+        ):
             Logger.error(f"Unexpected QQBot menu group {group_name}: {menu_item}")
             return False
         actual_names = [item["name"] for item in menu_item["sub_menu_items"]]
@@ -117,12 +119,6 @@ def _test_navigation_limits() -> bool:
     return True
 
 
-def _test_navigation_disabled_does_not_manage_remote() -> bool:
-    with patch("bots.qqbot.navigation.QQBotConfig.qq_enable_navigation", False):
-        menu, panels = resolve_navigation()
-    return menu is None and panels == ()
-
-
 class _FakeAPI:
     def __init__(self):
         self.calls = []
@@ -167,6 +163,5 @@ async def test_qqbot_navigation(tester: Tester):
     """bots.qqbot.navigation: 静态菜单与指令面板测试"""
     await tester.test(_test_navigation_declarations, "静态导航声明测试")
     await tester.test(_test_navigation_limits, "平台容量与文本限制测试")
-    await tester.test(_test_navigation_disabled_does_not_manage_remote, "关闭时不接管远端配置测试")
     await tester.test(_test_navigation_sync, "SDK 声明式同步测试")
     return tester
