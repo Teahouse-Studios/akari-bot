@@ -19,7 +19,7 @@ ignored_sender = ["QQ|2854196310"] # 无视的用户列表，匹配到此列表�
 report_targets = [] # 上报场景列表，此处填写的场景 ID 将会被识别为上报场景。（如：在机器人执行命令出错时，机器人将会把错误信息发送至对应场景）
 retired_clients = [] # 已退役的客户端及其数据迁移目标，格式为“<源客户端> -> <目标客户端>”（例：“QQ -> QQBot”）。只填写源客户端时表示不提供迁移。
 command_prefix = ["~", "～"] # 命令前缀，此处填写的值将会被识别为命令前缀。
-regex_disable_prefix = [".", "。"] # 临时关闭正则模块解析的消息前缀；消息以其中任一值开头时，本条消息不会触发正则模块。
+regex_disable_prefix = [".", "。"] # 临时关闭正则解析的消息前缀。
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # 确认命令的关键词，此处填写的值将会被识别为确认命令。
 mention_required = false # 是否强制仅处理在消息开头提及机器人的消息。
 no_confirm = false # 是否无需发送者确认消息后再执行命令。
@@ -28,7 +28,7 @@ enable_analytics = true # 是否开启内置的统计功能。
 enable_bind_auto = false # 是否开启“bind auto”命令以自动配对同一场景内的其他实例。
 enable_commit_url = true # 是否在展示版本信息时显示 commit URL。
 enable_dirty_check = false # 是否开启文字过滤检测。
-dirty_check_backend = "aliyun" # 文字过滤后端，可选“aliyun”或“qwen3guard”。
+dirty_check_backend = "aliyun" # 文字过滤后端，支持“aliyun”或“qwen3guard”。
 dirty_check_local_model = "Qwen/Qwen3Guard-Gen-0.6B" # Qwen3Guard 本地模型目录或 ModelScope 模型 ID。
 dirty_check_local_max_new_tokens = 128 # 本地 Qwen3Guard 单次审核最多生成的 Token 数。
 dirty_check_local_block_controversial = true # 使用本地 Qwen3Guard 时，是否将 Controversial 内容视为不合规。
@@ -60,8 +60,8 @@ help_url = "https://bot.teahouse.team" # 帮助文档网址。
 help_page_url = "https://bot.teahouse.team/wiki/${module}" # 模块帮助文档网址。
 issue_url = "https://github.com/Teahouse-Studios/akari-bot/issues/new/choose" # 问题反馈网址。
 locale_url = "https://hosted.weblate.org/engage/akaribot" # 本地化项目网址。
-qq_test_group_url = "<Replace me with str value>" # QQ 官方机器人的测试群邀请网址，留空时不在关于菜单中展示。
-repo_url = "https://github.com/Teahouse-Studios/akari-bot" # 开源仓库网址。
+qq_test_group_url = "<Replace me with str value>" # QQ 机器人的测试群邀请网址，留空时不在关于菜单中展示。
+repo_url = "https://github.com/Teahouse-Studios/akari-bot" # 开源存储库网址。
 
 [secret]
 # 密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。

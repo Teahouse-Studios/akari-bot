@@ -19,7 +19,7 @@ ignored_sender = ["QQ|2854196310"] # Ignored user list. Users matching this list
 report_targets = [] # List of reporting contexts. The context ID filled in here will be identified as the reporting context. (e.g., when the bot encounters a command error, the bot will send the error information to the corresponding context)
 retired_clients = [] # Retired clients and their data migration targets, formatted as "<Source Client> -> <Target Client>" (e.g., "QQ -> QQBot"). Specifying only the source client indicates that migration is not provided.
 command_prefix = ["~", "～"] # Command prefixes. The value entered here will be recognized as the command prefix.
-regex_disable_prefix = [".", "。"] # 临时关闭正则模块解析的消息前缀；消息以其中任一值开头时，本条消息不会触发正则模块。
+regex_disable_prefix = [".", "。"] # Temporarily disable regex parsing of message prefixes.
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # The keyword for the confirmation command. The value entered here will be recognized as the confirmation command.
 mention_required = false # Whether to force processing of only of messages that mention the bot at the beginning of the message.
 no_confirm = false # Whether to execute the command without the sender confirming the message.
@@ -27,8 +27,8 @@ quick_confirm = true # Whether to enable quick confirmation of message.
 enable_analytics = true # Whether to enable built-in statistics features.
 enable_bind_auto = false # Whether to enable the "bind auto" command to automatically pair with other instances within the same context.
 enable_commit_url = true # Whether to show the commit URL when displaying version information.
-enable_dirty_check = false # Whether to enable text filtering detection, requires the AccessKey ID and AccessKey Secret of Alibaba Cloud Content Security Service.
-dirty_check_backend = "aliyun" # 文字过滤后端，可选“aliyun”或“qwen3guard”。
+enable_dirty_check = false # Whether to enable text filtering detection.
+dirty_check_backend = "aliyun" # 文字过滤后端，支持“aliyun”或“qwen3guard”。
 dirty_check_local_model = "Qwen/Qwen3Guard-Gen-0.6B" # Qwen3Guard 本地模型目录或 ModelScope 模型 ID。
 dirty_check_local_max_new_tokens = 128 # 本地 Qwen3Guard 单次审核最多生成的 Token 数。
 dirty_check_local_block_controversial = true # 使用本地 Qwen3Guard 时，是否将 Controversial 内容视为不合规。
@@ -60,8 +60,8 @@ help_url = "https://bot.teahouse.team" # Help document URL.
 help_page_url = "https://bot.teahouse.team/wiki/${module}" # Module help document URL.
 issue_url = "https://github.com/Teahouse-Studios/akari-bot/issues/new/choose" # Issue feedback URL.
 locale_url = "https://hosted.weblate.org/engage/akaribot" # Localized project URL.
-qq_test_group_url = "<Replace me with str value>" # QQ 官方机器人的测试群邀请网址，留空时不在关于菜单中展示。
-repo_url = "https://github.com/Teahouse-Studios/akari-bot" # 开源仓库网址。
+qq_test_group_url = "<Replace me with str value>" # The inviting URL for the QQ bot test group. Leaving this blank will prevent it from being displayed in the "About Us" menu.
+repo_url = "https://github.com/Teahouse-Studios/akari-bot" # Open-source repository URL.
 
 [secret]
 # The secret config section. The bot will try to intercept if the values here accidentally appears in the message sent, but be careful to prevent leakage.

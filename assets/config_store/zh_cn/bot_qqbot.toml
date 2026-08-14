@@ -12,6 +12,7 @@ qq_private_bot = false # 使用 QQ 机器人（官方）时，是否为私域机
 qq_typing_emoji = 181 # 使用 QQ 机器人（官方）时，正在处理消息时向消息挂上的回应表情 ID。ID 详见：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
 qq_limited_emoji = 10060 # 使用 QQ 机器人（官方）时，消息处理失败时向消息挂上的回应表情 ID。ID 详见：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
 qq_use_markdown = false # 使用 QQ 机器人（官方）时，是否使用 Markdown 格式消息（需配置 s3 兼容 API 存储图片）。
+qq_navigation_sync_strict = false # 同步 QQ 机器人（官方）的全局菜单与指令面板失败时，是否阻止客户端启动。
 
 [bot_qqbot_secret]
 # 客户端的密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
