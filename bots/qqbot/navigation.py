@@ -3,18 +3,18 @@ from botpy.configuration import Menu, Panel
 PANEL_SCOPES = ("c2c", "group", "channel", "dm")
 
 
-# 最多 10 组，按钮最多 14 字符 约 7 汉字
-# 子菜单最多 5 命令
+# C2C 输入框上菜单
+# 最多 10 组，按钮最多 10 字符（5 汉字）
+# 子菜单最多 5 命令，命令名称 14 字符（7 汉字）
 
 MENU_GROUPS = (
     (
-        "常用",
+        "开始",
         (
             ("帮助", "help"),
-            ("模块列表", "module list"),
             ("设置", "setup list"),
             ("运行状态", "ping"),
-            ("贡献名单", "about credits"),
+            ("关于我们", "about"),
         ),
     ),
     (
@@ -39,8 +39,8 @@ MENU_GROUPS = (
     ),
 )
 
-
-# 支持 20 个命令槽位
+# 斜杠命令面板
+# 支持 20 个命令槽位，命令名称 14 字符（7 汉字），简介 30 字符（15 汉字）
 PANEL_COMMANDS = (
     ("help", "查看命令帮助"),
     ("ping", "查看机器人状态"),
@@ -51,9 +51,9 @@ PANEL_COMMANDS = (
     ("mcserver", "查询 Minecraft 服务器"),
     ("mcplayer", "查询 Minecraft 玩家"),
     ("nintendo-err", "查询任天堂错误码"),
-    ("maimai", "查看舞萌 DX 功能"),
-    ("chunithm", "查看中二节奏功能"),
-    ("cytoid", "查看 Cytoid 功能"),
+    ("maimai", "使用舞萌 DX 功能"),
+    ("chunithm", "使用中二节奏功能"),
+    ("cytoid", "使用 Cytoid 功能"),
     ("24", "开始 24 点游戏"),
     ("cc", "开始元素符号猜谜"),
     ("coin", "抛一枚硬币"),
