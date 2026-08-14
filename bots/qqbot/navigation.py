@@ -12,7 +12,6 @@ MENU_GROUPS = (
         "开始",
         (
             ("帮助", "help"),
-            ("设置", "setup list"),
             ("运行状态", "ping"),
             ("关于我们", "about"),
         ),
@@ -22,9 +21,6 @@ MENU_GROUPS = (
         (
             ("用户设置", "setup list sender"),
             ("场景设置", "setup list target"),
-            ("输入提示", "setup typing"),
-            ("错字纠正", "setup check"),
-            ("Markdown", "setup markdown"),
         ),
     ),
     (
@@ -32,8 +28,6 @@ MENU_GROUPS = (
         (
             ("身份信息", "whoami"),
             ("语言设置", "locale"),
-            ("前缀列表", "prefix list"),
-            ("别名列表", "alias list"),
             ("账号绑定信息", "bind self"),
         ),
     ),
