@@ -7,7 +7,7 @@ from core.tester import (
     ContainsAll,
     Empty,
 )
-from modules.core.help import get_regex_disable_prefix_display
+from modules.core.help import regex_disable_prefixes
 
 
 @func_case
@@ -36,7 +36,7 @@ async def test_help(tester: Tester):
     await tester.integrate("~help mojang-status", Contains("~mojang-status"), "help 应展示无文档模块自身的默认命令")
     await tester.integrate(
         "~help bilibili",
-        ContainsAll("Tips：", get_regex_disable_prefix_display()),
+        ContainsAll("提示：", regex_disable_prefixes[0]),
         "带正则表达式的详细 help 应展示当前配置的临时关闭前缀",
     )
 

@@ -31,7 +31,6 @@ from modules.core.help import (
     env,
     get_module_type_display,
     get_help_link_buttons,
-    get_regex_disable_prefix_display,
     help_overview,
     modules_list_help,
     should_use_markdown_table,
@@ -284,16 +283,6 @@ async def _test_markdown_help_marks_module_type_with_emoji():
     return all(get_module_type_display(module, locale) == expected for module, expected in module_types)
 
 
-async def _test_regex_disable_tip_uses_configured_prefixes():
-    with patch("core.config.CFGManager.get", return_value=["!", "！"]):
-        return get_regex_disable_prefix_display() == "! ！"
-
-
-async def _test_regex_disable_tip_hidden_when_disabled():
-    with patch("core.config.CFGManager.get", return_value=[]):
-        return get_regex_disable_prefix_display() == ""
-
-
 async def _test_help_doc_template_includes_regex_disable_tip():
     locale = (await _session("help_regex_tip_template")).locale
     module = SimpleNamespace(base=False, rss=False, desc="", alias={}, developers=[])
@@ -305,14 +294,14 @@ async def _test_help_doc_template_includes_regex_disable_tip():
         help=help_,
         help_name="bilibili",
         regex_list=[regex],
-        regex_disable_prefixes=". 。",
+        regex_disable_prefixes=[".", "。"],
         escape=str,
         isinstance=isinstance,
         str=str,
         repattern=object,
         use_font_mirror=False,
     )
-    return "Tips：" in rendered and ". 。" in rendered and "临时关闭本条消息" in rendered
+    return "提示：" in rendered and "“.”" in rendered and "临时关闭本条消息" in rendered
 
 
 async def _test_element_sequence():
@@ -408,6 +397,7 @@ async def _test_module_table_group_legends():
     """管理员模块表在扩展模块标题右侧展示开关图例，普通列表不展示。"""
     session_info = await _session("help_group_legends")
     msg = _FakeSession(session_info)
+    locale = session_info.locale
     groups = [
         ("core.message.help.table.external", [ModuleListEntry("wiki", True)]),
         ("core.message.help.table.subscription", [ModuleListEntry("wikilog", False, subscription=True)]),
@@ -421,10 +411,26 @@ async def _test_module_table_group_legends():
         )
         if line
     ]
+    external_header = " | ".join(
+        locale.t(key)
+        for key in (
+            "core.message.help.table.external",
+            "core.message.help.table.legend.external.enabled",
+            "core.message.help.table.legend.external.disabled",
+        )
+    )
+    subscription_header = " | ".join(
+        locale.t(key)
+        for key in (
+            "core.message.help.table.subscription",
+            "core.message.help.table.legend.subscription.enabled",
+            "core.message.help.table.legend.subscription.disabled",
+        )
+    )
     return (
-        lines[0].startswith("| 扩展模块 | 🔓 = 已启用 | 🔐 = 已禁用 |")
-        and any(line.startswith("| 订阅扩展模块 | 🔔 = 已启用 | 🔕 = 已禁用 |") for line in lines)
-        and not any("已启用" in line or "已禁用" in line for line in plain_lines)
+        lines[0].startswith(f"| {external_header} |")
+        and any(line.startswith(f"| {subscription_header} |") for line in lines)
+        and not any("🔓" in line or "🔐" in line for line in plain_lines)
         and all(line.startswith("|") and line.endswith("|") for line in lines)
     )
 
@@ -1169,9 +1175,7 @@ async def test_clickable_modules(tester: Tester):
     await tester.test(_test_image_template_omits_help_command, "图片内移除查看详情提示测试")
     await tester.test(_test_help_doc_template_marks_module_type_with_swatch, "模块详细帮助类型色块测试")
     await tester.test(_test_markdown_help_marks_module_type_with_emoji, "Markdown 模块详细帮助类型标记测试")
-    await tester.test(_test_regex_disable_tip_uses_configured_prefixes, "正则关闭 Tips 使用当前配置测试")
-    await tester.test(_test_regex_disable_tip_hidden_when_disabled, "正则关闭 Tips 随空配置隐藏测试")
-    await tester.test(_test_help_doc_template_includes_regex_disable_tip, "图片详细帮助展示正则关闭 Tips 测试")
+    await tester.test(_test_help_doc_template_includes_regex_disable_tip, "图片详细帮助展示正则关闭提示测试")
     await tester.test(_test_element_sequence, "元素交错排布测试")
     await tester.test(_test_title_ends_with_newline, "标题自带换行测试")
     await tester.test(_test_action_text_payload, "标签命令与展示文案测试")

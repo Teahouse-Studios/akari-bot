@@ -49,11 +49,12 @@ def _test_markdown_layout_without_credits():
     with patch("modules.core.about.read_credits", return_value=None):
         chain = build_about_message(_msg())
     texts = _plain_texts(chain)
+    introduction = Locale("zh_cn").t("core.message.about.introduction")
     return (
         isinstance(chain.values[0], ImageElement)
         and chain.values[0].path == str(CHARACTER_IMAGE_PATH)
         and chain.values[0].max_h == CHARACTER_IMAGE_MAX_WIDTH
-        and texts[0].startswith("小可是 Teahouse Studios")
+        and texts[0] == introduction
         and "AGPL-3.0" in texts[0]
         and all("制作人员名单" not in text for text in texts)
     )
@@ -63,6 +64,9 @@ def _test_credits_button_and_no_button_hidden():
     with patch("modules.core.about.read_credits", return_value="Alice\nBob"):
         markdown = build_about_message(_msg(support_markdown=True))
         no_button = build_about_message(_msg(support_markdown=False, support_button=False))
+    locale = Locale("zh_cn")
+    credits_title = locale.t("core.message.about.credits")
+    repository_label = locale.t("core.message.about.button.repository")
     markdown_text = [element.text for element in markdown.values if isinstance(element, PlainElement)]
     no_button_text = [element.text for element in no_button.values if isinstance(element, PlainElement)]
     frame = next(element for element in markdown.values if isinstance(element, ButtonFrameElement))
@@ -70,10 +74,10 @@ def _test_credits_button_and_no_button_hidden():
     return (
         not markdown_text[0].startswith("> ")
         and all("Alice" not in text and "Bob" not in text for text in markdown_text)
-        and credits_button.show == "制作人员名单"
+        and credits_button.show == credits_title
         and credits_button.value == f"{command_prefix[0]}about credits"
-        and all("制作人员名单" not in text and "Alice" not in text and "Bob" not in text for text in no_button_text)
-        and "开源仓库地址：" in markdown_text
+        and all(credits_title not in text and "Alice" not in text and "Bob" not in text for text in no_button_text)
+        and f"{repository_label}：" in markdown_text
     )
 
 
@@ -81,10 +85,8 @@ def _test_credits_message_markdown_and_plain():
     with patch("modules.core.about.read_credits", return_value="Alice\nBob"):
         markdown = build_credits_message(_msg(support_markdown=True))
         plain = build_credits_message(_msg(support_markdown=False))
-    return (
-        markdown.values[0].text == "```制作人员名单\nAlice\nBob\n```"
-        and plain.values[0].text == "制作人员名单\nAlice\nBob"
-    )
+    title = Locale("zh_cn").t("core.message.about.credits")
+    return markdown.values[0].text == f"```{title}\nAlice\nBob\n```" and plain.values[0].text == f"{title}\nAlice\nBob"
 
 
 def _test_button_rows_and_qq_only_entry():
@@ -145,7 +147,8 @@ def _test_repository_url_plain_fallback():
         chain = build_about_message(_msg(support_markdown=False))
     repo = next(element for element in chain.values if isinstance(element, URLElement))
     texts = [element.text for element in chain.values if isinstance(element, PlainElement)]
-    return repo.original_url == CoreConfig.repo_url and not repo.applied_md_format and "开源仓库地址：" in texts
+    repository_label = Locale("zh_cn").t("core.message.about.button.repository")
+    return repo.original_url == CoreConfig.repo_url and not repo.applied_md_format and f"{repository_label}：" in texts
 
 
 @func_case
@@ -158,5 +161,6 @@ async def test_about(tester: Tester):
     await tester.test(_test_button_rows_and_qq_only_entry, "关于菜单按钮与 QQBot 专属入口测试")
     await tester.test(_test_no_button_support_has_no_frame, "无按钮能力时降级为文本链接测试")
     await tester.test(_test_repository_url_plain_fallback, "开源仓库 Url 普通文本降级测试")
-    await tester.integrate("~about credits", Contains("制作人员名单"), "制作人员名单子命令测试")
+    credits_title = Locale("zh_cn").t("core.message.about.credits")
+    await tester.integrate("~about credits", Contains(credits_title), "开发人员名单子命令测试")
     return tester
