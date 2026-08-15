@@ -1,11 +1,7 @@
 # ported from kurisu(https://github.com/nh-server/Kurisu/tree/main/cogs/results)
-import discord
-
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
 from core.component import module
-from core.utils.element import convert_discord_embed
-from . import switch, wiiu_support, wiiu_results, ctr_support, ctr_results
 
 
 class Results:
@@ -15,6 +11,8 @@ class Results:
 
     @staticmethod
     def fetch(error):
+        from . import ctr_results, ctr_support, switch, wiiu_results, wiiu_support
+
         if ctr_support.is_valid(error):
             return ctr_support.get(error)
         if ctr_results.is_valid(error):
@@ -30,6 +28,8 @@ class Results:
         return None
 
     def err2hex(self, error, suppress_error=False):
+        from . import switch
+
         # If it's already hex, just return it.
         if self.is_hex(error):
             return error
@@ -43,6 +43,8 @@ class Results:
 Only Nintendo Switch XXXX-YYYY formatted error codes are supported."
 
     def hex2err(self, error, suppress_error=False):
+        from . import switch
+
         # Don't bother processing anything if it's not hex.
         if self.is_hex(error):
             if switch.is_valid(error):
@@ -88,6 +90,10 @@ e = module("nintendo-err", alias=["nintendo_err", "err"], developers=["OasisAkar
 
 @e.command("<err_code> {{I18N:nintendo_err.help}}")
 async def _(msg: Bot.MessageSession, err_code: str):
+    import discord
+
+    from core.utils.element import convert_discord_embed
+
     results = Results()
     err = results.fixup_input(err_code)
     if meme := results.check_meme(err):

@@ -148,6 +148,25 @@ class SessionTaskManager:
         return None
 
     @classmethod
+    def remove_task(cls, msg: "MessageSession", all_: bool = False) -> dict | None:
+        """移除等待任务并清理已经为空的父级索引。"""
+        channel_key = msg.session_info.channel_key
+        sender = "all" if all_ else msg.session_info.sender_union_id
+        channel_tasks = cls._task_list.get(channel_key)
+        if not channel_tasks:
+            return None
+        sender_tasks = channel_tasks.get(sender)
+        if not sender_tasks:
+            return None
+
+        task_info = sender_tasks.pop(msg, None)
+        if not sender_tasks:
+            channel_tasks.pop(sender, None)
+        if not channel_tasks:
+            cls._task_list.pop(channel_key, None)
+        return task_info
+
+    @classmethod
     def get(cls):
         """
         获取整个任务列表。
@@ -175,7 +194,7 @@ class SessionTaskManager:
                         timeout = cls._task_list[target][sender][session].get("timeout", 3600)
 
                         # 如果超时，标记为不活跃并触发标志
-                        if elapsed_time > timeout:
+                        if timeout is not None and elapsed_time > timeout:
                             cls._task_list[target][sender][session]["active"] = False
                             # 设置标志，触发等待此标志的协程（无结果 = 取消）
                             cls._task_list[target][sender][session]["flag"].set()
@@ -209,6 +228,8 @@ class SessionTaskManager:
                 for sender in senders:
                     for s in cls._task_list[session.session_info.channel_key][sender]:
                         task_info = cls._task_list[session.session_info.channel_key][sender][s]
+                        if not task_info["active"]:
+                            continue
 
                         # 如果是 "wait" 类型任务，任何回复都会触发
                         if task_info["type"] == "wait":

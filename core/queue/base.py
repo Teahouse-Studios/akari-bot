@@ -57,6 +57,7 @@ class QueueTaskManager:
     """
 
     tasks = {}
+    TASK_TIMEOUT_SECONDS = 7200
 
     @classmethod
     async def add(cls, task_id: str):
@@ -70,8 +71,11 @@ class QueueTaskManager:
         """
         try:
             cls.tasks[task_id] = {"flag": asyncio.Event()}
-            await cls.tasks[task_id]["flag"].wait()
+            await asyncio.wait_for(cls.tasks[task_id]["flag"].wait(), timeout=cls.TASK_TIMEOUT_SECONDS)
             return cls.tasks[task_id]["result"]
+        except TimeoutError:
+            Logger.error(f"Queue task {task_id} timed out while waiting for the remote process.")
+            return None
         except Exception as e:
             Logger.error(f"Error in QueueTaskManager: {e}")
             return None
@@ -186,7 +190,10 @@ class JobQueueBase:
             # 检查操作处理器是否存在
             elif tsk.action in cls.queue_actions:
                 # 执行操作处理器
-                returns: dict = await cls.queue_actions[tsk.action](tsk, tsk.args)
+                remaining = cls.TASK_TIMEOUT_SECONDS - (time.time() - timestamp.timestamp())
+                returns: dict = await asyncio.wait_for(
+                    cls.queue_actions[tsk.action](tsk, tsk.args), timeout=max(remaining, 0)
+                )
                 tsk_val = await cls.return_val(tsk, returns if returns else {})
             else:
                 Logger.warning(f"Unknown action {tsk.action}, skip.")
@@ -204,6 +211,10 @@ class JobQueueBase:
             # 下面的代码不应该被执行，如果执行说明有代码 bug
             Logger.error(f"Task {tsk.action}({tsk.task_id}) seems not finished properly, bug in code?")
             await tsk.set_status("failed")
+        except TimeoutError:
+            Logger.warning(f"Task {tsk.task_id} timed out during action {tsk.action}.")
+            await cls.return_val(tsk, {}, status="timeout")
+            return
         except Exception:
             # 捕获任何异常并生成错误追踪
             f = traceback.format_exc()

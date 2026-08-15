@@ -3,9 +3,6 @@ import io
 import re
 import time
 
-from PIL import Image as PImage
-from rdkit import Chem
-from rdkit.Chem import AllChem, Draw, rdMolDescriptors
 from tenacity import retry, stop_after_attempt
 
 from core.builtins.bot import Bot
@@ -166,6 +163,9 @@ def parse_elements(formula: str) -> dict:
 
 @retry(stop=stop_after_attempt(3), reraise=True)
 async def search_pubchem(id: int | None = None):
+    from rdkit import Chem
+    from rdkit.Chem import rdMolDescriptors
+
     if id:
         answer_id = id
     else:
@@ -242,6 +242,10 @@ async def _(msg: Bot.MessageSession, pcid: int):
 
 
 async def chemical_code(msg: Bot.MessageSession, id: int | None = None, random_mode=True, captcha_mode=False):
+    from PIL import Image as PImage
+    from rdkit import Chem
+    from rdkit.Chem import AllChem, Draw
+
     play_state = PlayState("chemical_code", msg)
     if play_state.check():
         await msg.finish(I18NContext("game.message.running"))

@@ -1,6 +1,3 @@
-from langconv.converter import LanguageConverter
-from langconv.language.zh import zh_tw
-
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Plain, Url
@@ -31,6 +28,9 @@ async def _(msg: Bot.MessageSession, msg_type: str | None = None):
         data = await get_url(api, 200, fmt="json")
 
     if msg.session_info.locale.locale == "zh_tw":
+        from langconv.converter import LanguageConverter
+        from langconv.language.zh import zh_tw
+
         data = {
             k: (LanguageConverter.from_language(zh_tw).convert(v) if isinstance(v, str) else v) for k, v in data.items()
         }

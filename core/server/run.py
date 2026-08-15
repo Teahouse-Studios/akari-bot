@@ -9,6 +9,7 @@
 
 import asyncio
 import signal
+from contextlib import suppress
 
 from core.constants import Info, lang_list, all_locales_path
 from core.logger import Logger
@@ -31,7 +32,7 @@ def inner_ctrl_c_signal_handler(sig, frame):
 signal.signal(signal.SIGINT, inner_ctrl_c_signal_handler)
 
 
-async def main():
+async def main(process_stop_event=None):
     """服务器主函数。
 
     执行流程：
@@ -45,19 +46,23 @@ async def main():
     locale_loaded_err = build_locale_snapshot(list(lang_list.keys()), all_locales_path, "akari-bot")
     connect_locale_snapshot("akari-bot")
     await init_async(send_prompt=False)
-    asyncio.create_task(JobQueueServer.check_job_queue())
-    # 重启提示须等发起者所在客户端重新上报保活，而保活信号经队列轮询取回，
-    # 故置于轮询启动之后；先于轮询发送只会被当作客户端掉线而丢弃。
-    await load_prompt(locale_loaded_err)
-    while not stop_event.is_set():
-        await asyncio.sleep(1)
-    if stop_event.is_set():
+    queue_task = asyncio.create_task(JobQueueServer.check_job_queue())
+    try:
+        # 重启提示须等发起者所在客户端重新上报保活，而保活信号经队列轮询取回，
+        # 故置于轮询启动之后；先于轮询发送只会被当作客户端掉线而丢弃。
+        await load_prompt(locale_loaded_err)
+        while not stop_event.is_set() and not (process_stop_event and process_stop_event.is_set()):
+            await asyncio.sleep(1)
+    finally:
+        queue_task.cancel()
+        with suppress(asyncio.CancelledError):
+            await queue_task
         Logger.info("Stopping AkariBot Server...")
         await cleanup_sessions()
         Logger.success("AkariBot Server stopped successfully.")
 
 
-def run_async(subprocess: bool = False, binary_mode: bool = False):
+def run_async(subprocess: bool = False, binary_mode: bool = False, process_stop_event=None):
     """运行服务器。
 
     :param subprocess: 是否以子进程模式运行
@@ -65,7 +70,7 @@ def run_async(subprocess: bool = False, binary_mode: bool = False):
     """
     Info.subprocess = subprocess
     Info.binary_mode = binary_mode
-    asyncio.run(main())
+    asyncio.run(main(process_stop_event))
 
 
 if __name__ == "__main__":

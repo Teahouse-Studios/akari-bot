@@ -27,7 +27,6 @@ from core.config.base import CoreConfig
 from core.constants import SessionFinished, WaitCancelException
 from core.exports import add_export, exports
 from core.utils.func import is_int
-from core.utils.image import msgnode2image
 from core.utils.random import Random
 
 if TYPE_CHECKING:
@@ -146,6 +145,8 @@ class MessageSession:
         chain = get_message_chain(self.session_info, chain=message_chain)
 
         if isinstance(chain, MessageNodes) and not self.session_info.support_handle_message_nodes:
+            from core.utils.image import msgnode2image
+
             chain = MessageChain.assign(await msgnode2image(chain, session=self.session_info))
 
         # ========== 步骤 2: 安全检查 ==========
@@ -315,6 +316,8 @@ class MessageSession:
 
         chain = get_message_chain(self.session_info, chain=message_chain)
         if isinstance(chain, MessageNodes):
+            from core.utils.image import msgnode2image
+
             chain = MessageChain.assign(await msgnode2image(chain, session=self.session_info))
         if not chain.is_safe and not disable_secret_check:
             chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
@@ -552,13 +555,16 @@ class MessageSession:
             await self._add_confirm_reaction(send.message_id)
         flag = asyncio.Event()
         SessionTaskManager.add_task(self, flag, timeout=timeout)
+        task_info = None
         try:
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
             if send and delete:
                 await send.delete()
             raise WaitCancelException
-        result = SessionTaskManager.get_result(self)
+        finally:
+            task_info = SessionTaskManager.remove_task(self)
+        result = task_info.get("result") if task_info else None
         if result:
             if send and delete:
                 await send.delete()
@@ -614,13 +620,16 @@ class MessageSession:
         await asyncio.sleep(0.1)
         flag = asyncio.Event()
         SessionTaskManager.add_task(self, flag, timeout=timeout)
+        task_info = None
         try:
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
             if send and delete:
                 await send.delete()
             raise WaitCancelException
-        result = SessionTaskManager.get_result(self)
+        finally:
+            task_info = SessionTaskManager.remove_task(self)
+        result = task_info.get("result") if task_info else None
         if send and delete:
             await send.delete()
         if result:
@@ -697,17 +706,19 @@ class MessageSession:
         await asyncio.sleep(0.1)
         flag = asyncio.Event()
         SessionTaskManager.add_task(self, flag, all_=True, timeout=timeout)
+        task_info = None
         try:
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
             if send and delete:
                 await send.delete()
             raise WaitCancelException
-        result = SessionTaskManager.get()[self.session_info.channel_key]["all"][self]
-        if "result" in result:
+        finally:
+            task_info = SessionTaskManager.remove_task(self, all_=True)
+        if task_info and "result" in task_info:
             if send and delete:
                 await send.delete()
-            return SessionTaskManager.get()[self.session_info.channel_key]["all"][self]["result"]
+            return task_info["result"]
         raise WaitCancelException
 
     async def wait_reply(
@@ -762,13 +773,16 @@ class MessageSession:
         await asyncio.sleep(0.1)
         flag = asyncio.Event()
         SessionTaskManager.add_task(self, flag, reply=send.message_id, all_=all_, timeout=timeout)
+        task_info = None
         try:
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
             if send and delete:
                 await send.delete()
             raise WaitCancelException
-        result = SessionTaskManager.get_result(self)
+        finally:
+            task_info = SessionTaskManager.remove_task(self, all_=all_)
+        result = task_info.get("result") if task_info else None
         if send and delete:
             await send.delete()
         if result:

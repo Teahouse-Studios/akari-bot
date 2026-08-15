@@ -27,7 +27,6 @@ from core.database.models import (
     TargetUnionInfo,
 )
 from core.exports import add_export, exports
-from core.loader import ModulesManager
 from core.logger import Logger
 from core.retired import filter_retired_targets
 from core.utils.func import convert_list
@@ -112,17 +111,16 @@ class Bot:
             """内部异步处理函数 - 管理消息处理的生命周期"""
             # 添加上下文到管理器（存储 session_id 和对应的上下文对象）
             ctx_manager.add_context(session_info, ctx)
+            try:
+                # 获取消息队列客户端并发送消息给服务器处理
+                queue_client: "JobQueueClient" = exports["JobQueueClient"]
+                await queue_client.send_message_to_server(session_info)
 
-            # 获取消息队列客户端并发送消息给服务器处理
-            queue_client: "JobQueueClient" = exports["JobQueueClient"]
-
-            await queue_client.send_message_to_server(session_info)
-
-            # 等待 1 秒后清理上下文（防止删除过快导致的错误）
-            await asyncio.sleep(1)
-
-            # 从管理器中删除上下文
-            ctx_manager.del_context(session_info)
+                # 等待 1 秒后清理上下文（防止删除过快导致的错误）
+                await asyncio.sleep(1)
+            finally:
+                # 队列异常或任务被取消时也必须释放平台 SDK 消息对象。
+                ctx_manager.del_context(session_info)
 
         # 创建异步任务处理消息
         asyncio.create_task(_process_msg())
@@ -582,6 +580,8 @@ class Bot:
             :return: 钩子函数的返回值
             :raises ValueError: 如果模块或钩子名称无效
             """
+            from core.loader import ModulesManager
+
             if args is None:
                 args = {}
 

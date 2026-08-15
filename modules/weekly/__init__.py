@@ -4,7 +4,6 @@ from html import unescape
 from urllib import parse
 
 import orjson
-from bs4 import BeautifulSoup
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
@@ -12,13 +11,13 @@ from core.builtins.message.internal import Plain, Image, Url, I18NContext
 from core.component import module
 from core.i18n import Locale
 from core.utils.http import get_url
-from core.utils.image import msgchain2image
-from modules.wiki.utils.screenshot_image import generate_screenshot_v2
-from modules.wiki.utils.wikilib import WikiLib
-from .teahouse import get_rss as get_teahouse_rss
 
 
 async def get_weekly(with_img=False, zh_tw=False):
+    from bs4 import BeautifulSoup
+
+    from modules.wiki.utils.wikilib import WikiLib
+
     locale = Locale("zh_cn" if not zh_tw else "zh_tw")
     result = orjson.loads(
         await get_url(
@@ -74,6 +73,8 @@ async def get_weekly(with_img=False, zh_tw=False):
 
 
 async def get_weekly_img(with_img=False, zh_tw=False):
+    from modules.wiki.utils.screenshot_image import generate_screenshot_v2
+
     # locale = Locale("zh_cn" if not zh_tw else "zh_tw")
     img = await generate_screenshot_v2(
         "https://zh.minecraft.wiki/w/Template:Mainpage_section_featured_article" + ("?variant=zh-tw" if zh_tw else ""),
@@ -96,6 +97,13 @@ async def get_weekly_img(with_img=False, zh_tw=False):
             if get_image.status:
                 msg_.append(Plain(locale.t("weekly.message.image", img=get_image.file)))"""
     return msg_
+
+
+async def get_teahouse_rss(*args, **kwargs):
+    """兼容 weekly-rss 的公开入口，同时延迟加载 RSS 解析依赖。"""
+    from .teahouse import get_rss
+
+    return await get_rss(*args, **kwargs)
 
 
 wky = module("weekly", developers=["Dianliang233"], support_languages=["zh_cn", "zh_tw"], doc=True)
@@ -126,6 +134,8 @@ async def _(msg: Bot.MessageSession):
 
 @wky.command("teahouse image {{I18N:weekly.help.teahouse}}")
 async def _(msg: Bot.MessageSession):
+    from core.utils.image import msgchain2image
+
     weekly = await get_teahouse_rss()
     img = await msgchain2image(Plain(weekly), msg)
     if img:

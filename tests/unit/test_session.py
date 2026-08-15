@@ -260,6 +260,45 @@ async def _test_task_bg_check_timeout():
         return False
 
 
+async def _test_task_remove_prunes_indexes():
+    """等待完成后应释放 MessageSession 及空的父级索引。"""
+    try:
+        SessionTaskManager._task_list.clear()
+        msg = MockMessageSession("~test")
+        await msg.async_init("~test")
+        flag = asyncio.Event()
+        SessionTaskManager.add_task(msg, flag, timeout=60)
+
+        task_info = SessionTaskManager.remove_task(msg)
+        return task_info is not None and not SessionTaskManager.get()
+    finally:
+        SessionTaskManager._task_list.clear()
+
+
+async def _test_inactive_task_does_not_capture_message():
+    """已完成但尚待等待协程回收的任务不得被下一条消息覆盖结果。"""
+    try:
+        SessionTaskManager._task_list.clear()
+        waiting = MockMessageSession("~test")
+        await waiting.async_init("~test")
+        first_result = MockMessageSession("first")
+        await first_result.async_init("first")
+        second_result = MockMessageSession("second")
+        await second_result.async_init("second")
+
+        flag = asyncio.Event()
+        SessionTaskManager.add_task(waiting, flag, timeout=60)
+        task_info = SessionTaskManager.get()[waiting.session_info.channel_key][waiting.session_info.sender_union_id][
+            waiting
+        ]
+        task_info["active"] = False
+        task_info["result"] = first_result
+        await SessionTaskManager.check(second_result)
+        return task_info["result"] is first_result
+    finally:
+        SessionTaskManager._task_list.clear()
+
+
 async def _make_verification_session(response: str, support_button: bool) -> MockMessageSession:
     msg = MockMessageSession(["~test", response], is_ci=True)
     await msg.async_init("~test")
@@ -327,6 +366,8 @@ async def test_session_task(tester: Tester):
     await tester.test(_test_task_add_and_get, "SessionTaskManager 添加和获取任务测试")
     await tester.test(_test_task_add_callback, "SessionTaskManager 添加回调测试")
     await tester.test(_test_task_bg_check_timeout, "SessionTaskManager.bg_check() 超时处理测试")
+    await tester.test(_test_task_remove_prunes_indexes, "SessionTaskManager 完成后释放任务索引测试")
+    await tester.test(_test_inactive_task_does_not_capture_message, "SessionTaskManager 已完成任务不覆盖结果测试")
 
     return tester
 

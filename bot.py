@@ -19,10 +19,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from loguru import logger
-from tortoise import Tortoise, run_async
 
 from core.constants import ascii_art, bots_path, logs_path  # skipcq
-from core.database import close_db
 from core.config import CONFIG_READONLY_ENV
 
 
@@ -34,12 +32,6 @@ os.environ.setdefault("PYTHONPATH", str(Path(".").resolve()))
 os.environ.setdefault("AKARI_BOT_I18N_CACHE_DIR", AKARI_BOT_I18N_CACHE_DIR)
 
 
-# Basic logger setup
-try:
-    logger.remove(0)
-except ValueError:
-    pass
-
 Logger = logger.bind(name="BotDaemon")
 
 logger_format = (
@@ -48,28 +40,43 @@ logger_format = (
     "<green>[{time:YYYY-MM-DD HH:mm:ss}]</green>"
     "<level>[{level}]:{message}</level>"
 )
-Logger.add(
-    sys.stdout, format=logger_format, colorize=True, filter=lambda record: record["extra"].get("name") == "BotDaemon"
-)
+_daemon_logger_initialized = False
 
-Logger.add(
-    sink=logs_path / "BotDaemon_debug_{time:YYYY-MM-DD}.log",
-    format=logger_format,
-    rotation="00:00",
-    retention="1 day",
-    level="DEBUG",
-    filter=lambda record: record["level"].name == "DEBUG" and record["extra"].get("name") == "BotDaemon",
-    encoding="utf8",
-)
-Logger.add(
-    sink=logs_path / "BotDaemon_{time:YYYY-MM-DD}.log",
-    format=logger_format,
-    rotation="00:00",
-    retention="10 days",
-    level="INFO",
-    encoding="utf8",
-    filter=lambda record: record["extra"].get("name") == "BotDaemon",
-)
+
+def init_daemon_logger():
+    """仅为守护进程与短生命周期 pre-init 进程安装日志处理器。"""
+    global _daemon_logger_initialized
+    if _daemon_logger_initialized:
+        return
+    try:
+        logger.remove(0)
+    except ValueError:
+        pass
+    Logger.add(
+        sys.stdout,
+        format=logger_format,
+        colorize=True,
+        filter=lambda record: record["extra"].get("name") == "BotDaemon",
+    )
+    Logger.add(
+        sink=logs_path / "BotDaemon_debug_{time:YYYY-MM-DD}.log",
+        format=logger_format,
+        rotation="00:00",
+        retention="1 day",
+        level="DEBUG",
+        filter=lambda record: record["level"].name == "DEBUG" and record["extra"].get("name") == "BotDaemon",
+        encoding="utf8",
+    )
+    Logger.add(
+        sink=logs_path / "BotDaemon_{time:YYYY-MM-DD}.log",
+        format=logger_format,
+        rotation="00:00",
+        retention="10 days",
+        level="INFO",
+        encoding="utf8",
+        filter=lambda record: record["extra"].get("name") == "BotDaemon",
+    )
+    _daemon_logger_initialized = True
 
 
 class RestartBot(Exception):
@@ -79,12 +86,17 @@ class RestartBot(Exception):
 failed_to_start_attempts = {}
 disabled_bots = []
 processes: list[multiprocessing.Process] = []
+server_stop_event = None
 
 
 def pre_init():
+    init_daemon_logger()
     Logger.info(ascii_art)
     Logger.info("Akaribot is launching...")
+    from tortoise import Tortoise, run_async
+
     from core.constants.path import cache_path
+    from core.database import close_db
 
     if cache_path.exists():
         shutil.rmtree(cache_path)
@@ -190,9 +202,11 @@ def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
         sys.exit(1)
 
 
-async def cleanup_tasks():
-    loop = asyncio.get_event_loop()
-    asyncio.all_tasks(loop=loop)
+def server_go(stop_event, subprocess: bool = False, binary_mode: bool = False):
+    # Server 依赖树（尤其 WebRender）只应由 Server 子进程加载，守护进程不需要保留一份。
+    from core.server.run import run_async
+
+    run_async(subprocess, binary_mode, stop_event)
 
 
 binary_mode = not sys.argv[0].endswith(".py")
@@ -200,7 +214,8 @@ binary_mode = not sys.argv[0].endswith(".py")
 
 async def run_bot():
     from core.config import CFGManager
-    from core.server.run import run_async as server_run_async
+
+    global server_stop_event
 
     # 自此起 spawn 出的子进程一律只读：配置的生成已在 pre_init 中完成。
     # 须在任何 mp.Process 之前置位，spawn 会继承环境；restart_bot_process() 后续重启子进程时同样适用。
@@ -238,6 +253,7 @@ async def run_bot():
         processes.append(p)
 
     bots_list = [p.name for p in bots_path.iterdir() if p.is_dir() and not p.name.startswith("_")]
+    disabled_bots.clear()
 
     for t in CFGManager.values:
         if t.startswith("bot_") and not t.endswith("_secret") and t[4:] in bots_list:
@@ -257,7 +273,13 @@ async def run_bot():
         processes.append(p)
 
     # run the server process
-    server_process = mp.Process(target=server_run_async, args=(True, binary_mode), name="server", daemon=True)
+    server_stop_event = mp.Event()
+    server_process = mp.Process(
+        target=server_go,
+        args=(server_stop_event, True, binary_mode),
+        name="server",
+        daemon=True,
+    )
 
     server_process.start()
     processes.append(server_process)
@@ -292,10 +314,40 @@ async def run_bot():
     sys.exit(1)
 
 
-def terminate_process(process: multiprocessing.Process):
-    process.kill()
-    process.join()
-    process.close()
+def terminate_process(
+    process: multiprocessing.Process,
+    graceful_event=None,
+    graceful_timeout: float = 10,
+):
+    """优先请求进程自行清理，超时后再逐级终止。"""
+    try:
+        if process.is_alive() and graceful_event is not None:
+            graceful_event.set()
+            process.join(graceful_timeout)
+        if process.is_alive():
+            process.terminate()
+            process.join(5)
+        if process.is_alive():
+            process.kill()
+            process.join()
+    finally:
+        process.close()
+
+
+def cleanup_processes():
+    global server_stop_event
+    # 先停止平台入口，避免 Server 清空队列时仍有新任务写入；最后让 Server 释放 WebRender 等资源。
+    ordered_processes = sorted(processes, key=lambda ps: ps.name == "server")
+    for ps in ordered_processes:
+        pid = ps.pid
+        name = ps.name
+        Logger.warning(f"Terminating process {pid} ({name})...")
+        try:
+            terminate_process(ps, server_stop_event if name == "server" else None)
+        except Exception:
+            Logger.exception(f"Failed to terminate process {pid} ({name}) cleanly.")
+    processes.clear()
+    server_stop_event = None
 
 
 async def main_async():
@@ -303,22 +355,16 @@ async def main_async():
         multiprocess_run_until_complete(pre_init)
         await run_bot()  # Process will block here so
     except RestartBot as e:
-        for ps in processes:
-            Logger.warning(f"Terminating process {ps.pid} ({ps.name})...")
-            terminate_process(ps)
-        processes.clear()
+        cleanup_processes()
         raise e
     except (KeyboardInterrupt, SystemExit) as e:
-        for ps in processes:
-            terminate_process(ps)
-        processes.clear()
+        cleanup_processes()
         raise e
     except Exception as e:
         Logger.critical("An error occurred, please check the output.")
         traceback.print_exc()
+        cleanup_processes()
         raise e
-    finally:
-        await close_db()
 
 
 def main():
@@ -341,6 +387,7 @@ def main():
 
 
 if __name__ == "__main__":
+    init_daemon_logger()
     # Detect if the program is already running
     lock_file_path = Path("./.bot.lock").resolve()
     if sys.platform == "win32":

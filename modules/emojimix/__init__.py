@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import emoji
 import orjson
 
 from core.builtins.bot import Bot
@@ -109,13 +108,22 @@ class EmojimixGenerator:
         return sorted(supported_combinations, key=str)
 
 
-mixer = EmojimixGenerator()
+_mixer: EmojimixGenerator | None = None
+
+
+def get_mixer() -> EmojimixGenerator:
+    global _mixer
+    if _mixer is None:
+        _mixer = EmojimixGenerator()
+    return _mixer
+
 
 emojimix = module("emojimix", developers=["DoroWolf"], doc=True)
 
 
 @emojimix.command()
 async def _(msg: Bot.MessageSession):
+    mixer = get_mixer()
     combo = mixer.random_choice_emoji()
     Logger.debug(str(combo))
     result = mixer.mix_emoji(combo)
@@ -125,6 +133,9 @@ async def _(msg: Bot.MessageSession):
 
 @emojimix.command("<emoji1> [<emoji2>] {{I18N:emojimix.help}}")
 async def _(msg: Bot.MessageSession, emoji1: str, emoji2: str | None = None):
+    import emoji as emoji_lib
+
+    mixer = get_mixer()
     # 兼容性处理
     if "+" in emoji1:
         emojis = emoji1.split("+", 1)
@@ -133,15 +144,15 @@ async def _(msg: Bot.MessageSession, emoji1: str, emoji2: str | None = None):
         if emoji2 and not emoji1:
             emoji1, emoji2 = emoji2, emoji1
     elif emoji1 and not emoji2:
-        emojis = [item["emoji"] for item in emoji.emoji_list(emoji1)]
+        emojis = [item["emoji"] for item in emoji_lib.emoji_list(emoji1)]
         if emojis:
             emoji1 = emojis[0]
             emoji2 = emojis[1] if len(emojis) > 1 else None
 
-    if not emoji.is_emoji(emoji1):
+    if not emoji_lib.is_emoji(emoji1):
         await msg.finish(I18NContext("emojimix.message.invalid"))
     if emoji2:
-        if not emoji.is_emoji(emoji2):
+        if not emoji_lib.is_emoji(emoji2):
             await msg.finish(I18NContext("emojimix.message.invalid"))
         combo = mixer.make_emoji_tuple(emoji1, emoji2)
         Logger.debug(str(combo))
@@ -166,6 +177,7 @@ async def _(msg: Bot.MessageSession, emoji1: str, emoji2: str | None = None):
 
 @emojimix.command("list [<emoji>] {{I18N:emojimix.help.list}}")
 async def _(msg: Bot.MessageSession, emoji: str | None = None):
+    mixer = get_mixer()
     supported_emojis = mixer.list_supported_emojis(emoji)
     if emoji:
         if supported_emojis:

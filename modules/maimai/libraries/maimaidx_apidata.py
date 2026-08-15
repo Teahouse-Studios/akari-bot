@@ -2,8 +2,6 @@ from collections import defaultdict
 from urllib.parse import urlencode
 
 import orjson
-from langconv.converter import LanguageConverter
-from langconv.language.zh import zh_cn
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
@@ -134,6 +132,9 @@ async def get_alias(msg: Bot.MessageSession, sid: str) -> list:
 
 
 async def search_by_alias(input_: str) -> list:
+    from langconv.converter import LanguageConverter
+    from langconv.language.zh import zh_cn
+
     result = []
     convinput = LanguageConverter.from_language(zh_cn).convert(input_)
 

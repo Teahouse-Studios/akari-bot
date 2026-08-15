@@ -8,6 +8,7 @@
 - 数据库连接关闭
 """
 
+import asyncio
 import os
 
 from tortoise import Tortoise
@@ -16,6 +17,7 @@ from tortoise import Tortoise
 from core.database.models import JobQueuesTable
 from core.logger import Logger
 from core.scheduler import Scheduler
+from core.web_render import close_web_render
 
 
 async def cleanup_sessions():
@@ -33,9 +35,24 @@ async def cleanup_sessions():
     #         for z in get_wait_list[x][y]:
     #             if get_wait_list[x][y][z]["active"]:
     #                 await z.send_message(I18NContext("core.message.restart.prompt"))
-    await JobQueuesTable.clear_task(time=0)
-    Scheduler.shutdown()
-    await Tortoise.close_connections()
+    try:
+        await JobQueuesTable.clear_task(time=0)
+    except Exception:
+        Logger.exception("Failed to clear job queues cleanly.")
+    try:
+        Scheduler.shutdown()
+    except Exception:
+        Logger.exception("Failed to stop scheduler cleanly.")
+    try:
+        await asyncio.wait_for(close_web_render(), timeout=10)
+    except TimeoutError:
+        Logger.warning("Timed out while closing WebRender.")
+    except Exception:
+        Logger.exception("Failed to close WebRender cleanly.")
+    try:
+        await Tortoise.close_connections()
+    except Exception:
+        Logger.exception("Failed to close database connections cleanly.")
 
 
 async def restart():
