@@ -1188,6 +1188,11 @@ class JobQueuesTable(DBModel):
         return True
 
     @classmethod
+    async def clear_all_tasks(cls) -> int:
+        """无条件清空全部跨进程任务，供停机和崩溃恢复使用。"""
+        return await cls.all().delete()
+
+    @classmethod
     async def get_first(cls, target_clients: str | list[str]):
         if isinstance(target_clients, str):
             target_clients = [target_clients]

@@ -19,6 +19,7 @@ from core.builtins.bot import Bot
 from core.builtins.converter import converter
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, I18NContext
+from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.config import CFGManager
 from core.constants import Info, PrivateAssets, Secret
@@ -32,6 +33,28 @@ from .background_tasks import init_background_task
 # 等待发起重启的客户端重新上报保活的秒数上限。server 与各 bot 子进程一同重启，
 # 提示投递时客户端往往尚未就绪；但重启提示并非关键路径，客户端确已掉线时不应无限等待。
 RESTART_PROMPT_TIMEOUT = 60
+
+
+def restore_alive_clients() -> None:
+    """恢复 server-only 重启前保存的客户端路由信息。"""
+    alive_cache = PrivateAssets.path / ".cache_restart_alive"
+    if not alive_cache.exists():
+        return
+    try:
+        values = orjson.loads(alive_cache.read_bytes())
+        for client_name, data in values.items():
+            features = data.get("features")
+            Alive.refresh_alive(
+                client_name,
+                target_prefix_list=data.get("target_prefix_list") or [],
+                sender_prefix_list=data.get("sender_prefix_list") or [],
+                ctx_slot_index=data.get("ctx_slot_index"),
+                features=converter.structure(features, Features) if features else None,
+            )
+    except Exception:
+        Logger.exception("Failed to restore alive clients after restarting Server.")
+    finally:
+        alive_cache.unlink(missing_ok=True)
 
 
 async def init_async(start_scheduler=True, send_prompt=True) -> None:

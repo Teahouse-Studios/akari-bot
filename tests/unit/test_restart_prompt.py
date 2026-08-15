@@ -10,10 +10,12 @@ import orjson
 
 from core.alive import Alive
 from core.builtins.converter import converter
+from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.constants import PrivateAssets
 from core.database.models import JobQueuesTable
-from core.server.init import load_prompt
+from core.server.init import load_prompt, restore_alive_clients
+from core.server.terminate import cache_alive_clients
 from core.tester import func_case, Tester
 
 
@@ -98,10 +100,43 @@ async def _test_gives_up_when_client_never_online():
         _cleanup(alive)
 
 
+async def _test_server_only_restart_preserves_alive_clients():
+    """只重启 server 时应立即恢复现有客户端路由，不等待下一轮保活。"""
+    alive = Alive.values.copy()
+    alive_cache = PrivateAssets.path / ".cache_restart_alive"
+    try:
+        Alive.values.clear()
+        Alive.refresh_alive(
+            "RESTARTC",
+            target_prefix_list=["Restart|Group"],
+            sender_prefix_list=["Restart"],
+            ctx_slot_index=2,
+            features=Features(support_image=True),
+        )
+        cache_alive_clients()
+        Alive.values.clear()
+        restore_alive_clients()
+        restored = Alive.get_infos("RESTARTC")
+        return (
+            restored.get("target_prefix_list") == ["Restart|Group"]
+            and restored.get("sender_prefix_list") == ["Restart"]
+            and restored.get("ctx_slot_index") == 2
+            and restored.get("features").support_image
+            and not alive_cache.exists()
+        )
+    except Exception:
+        return False
+    finally:
+        alive_cache.unlink(missing_ok=True)
+        Alive.values.clear()
+        Alive.values.update(alive)
+
+
 @func_case
 async def test_restart_prompt(tester: Tester):
     """core.server.init: 重启提示送达测试"""
     await tester.test(_test_waits_for_client_to_come_online, "等待客户端上线后投递测试")
     await tester.test(_test_gives_up_when_client_never_online, "客户端不上线时超时放弃测试")
+    await tester.test(_test_server_only_restart_preserves_alive_clients, "server-only 重启保留客户端路由测试")
 
     return tester

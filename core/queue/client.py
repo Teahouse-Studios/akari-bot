@@ -12,6 +12,8 @@
 - 处理来自服务器的操作请求（消息发送、成员管理等）
 """
 
+import asyncio
+import os
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
@@ -22,6 +24,7 @@ from core.builtins.session.features import Features
 from core.database.models import JobQueuesTable
 from core.exports import exports, add_export
 from core.logger import Logger
+from core.restart import RESTART_PROCESS_EXIT_CODE
 from .base import JobQueueBase
 
 if TYPE_CHECKING:
@@ -194,6 +197,14 @@ class JobQueueClient(JobQueueBase):
         """
         ret = await cls.add_job("Server", "post_module_action", {"module": module, "action": action})
         return ret.get("success", False)
+
+
+@JobQueueClient.action("restart_client")
+async def restart_client(tsk: JobQueuesTable, args: dict):
+    """完成当前队列动作后退出客户端，让守护进程仅重启本平台。"""
+    Logger.warning("Received a targeted restart request from Server.")
+    asyncio.get_running_loop().call_later(1, os._exit, RESTART_PROCESS_EXIT_CODE)
+    return {"success": True}
 
 
 async def get_session(args: dict):
