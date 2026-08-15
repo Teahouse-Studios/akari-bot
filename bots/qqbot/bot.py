@@ -1,11 +1,10 @@
-import asyncio
 import re
 
 import botpy
 from botpy.interaction import Interaction
 from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 
-from bots.qqbot.context import QQBotContextManager, QQBotFetchedContextManager, permission_cache
+from bots.qqbot.context import QQBotContextManager, QQBotFetchedContextManager, cache_permission
 from bots.qqbot.info import *
 from bots.qqbot.features import group_disable_read_all_message_features, resolve_features, guild_features
 from bots.qqbot.navigation import build_navigation
@@ -38,8 +37,8 @@ class MyClient(botpy.Client):
         global initialized
         if not initialized:
             await client_init(target_prefix_list, sender_prefix_list, rename_logger=False)
-            asyncio.create_task(QQBotFetchedContextManager.process_tasks())
             initialized = True
+        QQBotFetchedContextManager.start_task_processor()
 
     @staticmethod
     async def on_at_message_create(message: Message):
@@ -157,7 +156,7 @@ class MyClient(botpy.Client):
             tmp={"message_type": "group_direct"},
         )
 
-        permission_cache[f"{target_id}|{sender_id}"] = message.author.member_role in ["admin", "owner"]
+        cache_permission(f"{target_id}|{sender_id}", message.author.member_role in ["admin", "owner"])
 
         await Bot.process_message(session, message, resolve_features(session))
 
@@ -195,7 +194,7 @@ class MyClient(botpy.Client):
             tmp={"message_type": "group_at"},
         )
 
-        permission_cache[f"{target_id}|{sender_id}"] = message.author.member_role in ["admin", "owner"]
+        cache_permission(f"{target_id}|{sender_id}", message.author.member_role in ["admin", "owner"])
 
         await Bot.process_message(session, message, resolve_features(session, group_disable_read_all_message_features))
 

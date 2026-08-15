@@ -19,7 +19,7 @@ from core.builtins.message.elements import (
     VoiceElement,
 )
 from core.builtins.session.info import SessionInfo
-from core.utils.image import image_split
+from core.utils.image_split import image_split
 
 
 @define(frozen=True)
@@ -143,6 +143,8 @@ def split_telegram_html(text: str, limit: int) -> list[str]:
     """按可见字符数拆分 Telegram HTML，并保持每段标签完整。"""
     if not text:
         return []
+    if "<" not in text and "&" not in text:
+        return _split_plain_telegram_text(text, limit)
     parser = _HTMLAtomParser()
     parser.feed(text)
     atoms = parser.atoms
@@ -158,6 +160,21 @@ def split_telegram_html(text: str, limit: int) -> list[str]:
         if chunk_atoms:
             chunks.append(_render_html_atoms(chunk_atoms))
         start = end + 1 if end < len(atoms) and atoms[end].newline else end
+    return chunks
+
+
+def _split_plain_telegram_text(text: str, limit: int) -> list[str]:
+    """纯文本快速拆分，避免为每个字符创建 HTML atom 对象。"""
+    chunks = []
+    start = 0
+    while start < len(text):
+        end = min(start + limit, len(text))
+        if end < len(text):
+            newline = text.rfind("\n", start, end)
+            if newline > start:
+                end = newline
+        chunks.append(text[start:end])
+        start = end + 1 if end < len(text) and text[end] == "\n" else end
     return chunks
 
 
@@ -240,6 +257,8 @@ def _group_media(items: list, media_type, caption: str | None = None) -> list:
 
 
 def _split_telegram_html_head(text: str, limit: int) -> tuple[str | None, str]:
+    if "<" not in text and "&" not in text:
+        return text[:limit] or None, text[limit:]
     parser = _HTMLAtomParser()
     parser.feed(text)
     atoms = parser.atoms

@@ -1,4 +1,3 @@
-import asyncio
 import importlib
 import logging
 import pkgutil
@@ -14,7 +13,6 @@ from bots.discord.buttons import set_action_text_submit_handler, set_button_clic
 from bots.discord.interactions import handle_action_text_submit, handle_button_click
 from bots.discord.context import DiscordContextManager, DiscordFetchedContextManager
 from bots.discord.info import *
-from bots.discord.slash_context import DiscordSlashContextManager
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, Image, Voice
@@ -48,24 +46,12 @@ mention_required = CoreConfig.mention_required
 count = 0
 
 
-async def cleanup_typing_signal():
-    while True:
-        for f in DiscordContextManager.typing_flags:
-            if f not in DiscordContextManager.context:
-                DiscordContextManager.typing_flags[f].set()
-        for fs in DiscordSlashContextManager.typing_flags:
-            if fs not in DiscordSlashContextManager.context:
-                DiscordSlashContextManager.typing_flags[fs].set()
-        await asyncio.sleep(1)
-
-
 @discord_bot.event
 async def on_ready():
     Logger.info(f"Logged on as {discord_bot.user}")
     global count
     if count == 0:
         await ensure_client_initialized()
-        asyncio.create_task(cleanup_typing_signal())
         logging.getLogger("discord").setLevel(logging.INFO)
         count += 1
 

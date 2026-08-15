@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
 
-from aiogram import types
 from aiogram.types import ChatPermissions
 
-from bots.telegram.buttons import build_telegram_button_markup, get_telegram_context_chat_and_user
+from bots.telegram.buttons import build_telegram_button_markup
 from bots.telegram.action_text import can_use_inline_action_text
 from bots.telegram.client import aiogram_bot
+from bots.telegram.context_snapshot import TelegramContextSnapshot
 from bots.telegram.features import features as telegram_features
 from bots.telegram.info import client_name
 from bots.telegram.message_builder import (
@@ -21,7 +21,7 @@ from core.logger import Logger
 
 
 class TelegramContextManager(ContextManager):
-    context: dict[str, types.Message | types.CallbackQuery] = {}
+    context: dict[str, TelegramContextSnapshot] = {}
     features: Features = telegram_features
 
     @classmethod
@@ -29,16 +29,19 @@ class TelegramContextManager(ContextManager):
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         # 这里可以添加权限检查的逻辑
-        ctx: types.Message | types.CallbackQuery | None = cls.context.get(session_info.session_id)
+        ctx = cls.context.get(session_info.session_id)
         if not ctx:
             chat = await aiogram_bot.get_chat(session_info.get_common_target_id())
             user_id = int(session_info.sender_id.split("|")[-1])
+            chat_id = chat.id
+            chat_type = str(getattr(chat.type, "value", chat.type))
         else:
-            chat, user = get_telegram_context_chat_and_user(ctx)
-            user_id = user.id if user else None
-        if chat.type == "private":
+            chat_id = ctx.chat_id
+            chat_type = ctx.chat_type
+            user_id = ctx.user_id
+        if chat_type == "private":
             return True
-        admins = [member.user.id for member in await aiogram_bot.get_chat_administrators(chat.id)]
+        admins = [member.user.id for member in await aiogram_bot.get_chat_administrators(chat_id)]
         return user_id in admins
 
     @classmethod

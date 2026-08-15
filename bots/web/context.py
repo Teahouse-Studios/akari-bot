@@ -17,6 +17,8 @@ from core.logger import Logger
 class WebContextManager(ContextManager):
     context: dict[str, dict] = {}
     features: Features = web_features
+    typing_tasks: dict[str, asyncio.Task[None]] = {}
+    TYPING_MAX_LIFETIME = 60
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
@@ -140,34 +142,62 @@ class WebContextManager(ContextManager):
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
-        async def _typing():
-            if session_info.session_id not in cls.context:
-                raise ValueError("Session not found in context")
-            # 这里可以添加开始输入状态的逻辑
-            ctx = cls.context[session_info.session_id]
-            if ctx:
-                try:
-                    websocket: WebSocket = Temp.data.get("web_chat_websocket")
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+        previous = cls.typing_flags.pop(session_info.session_id, None)
+        if previous:
+            previous.set()
+        previous_task = cls.typing_tasks.pop(session_info.session_id, None)
+        if previous_task:
+            previous_task.cancel()
+            await asyncio.gather(previous_task, return_exceptions=True)
+        flag = asyncio.Event()
+        cls.typing_flags[session_info.session_id] = flag
 
+        async def _typing():
+            try:
+                async with asyncio.timeout(cls.TYPING_MAX_LIFETIME):
+                    ctx = cls.context.get(session_info.session_id)
+                    if not ctx:
+                        return
+                    websocket: WebSocket = Temp.data.get("web_chat_websocket")
                     resp = {"action": "typing", "status": "start", "id": session_info.message_id}
                     if websocket:
                         await websocket.send_text(orjson.dumps(resp).decode())
+                    await flag.wait()
+            except TimeoutError:
+                Logger.debug(f"Typing state expired in session: {session_info.session_id}")
+                try:
+                    websocket: WebSocket = Temp.data.get("web_chat_websocket")
+                    if websocket:
+                        resp = {"action": "typing", "status": "end", "id": session_info.message_id}
+                        await websocket.send_text(orjson.dumps(resp).decode())
                 except Exception:
                     Logger.exception()
+            except Exception:
+                Logger.exception()
+            finally:
+                if cls.typing_flags.get(session_info.session_id) is flag:
+                    cls.typing_flags.pop(session_info.session_id, None)
+                current_task = asyncio.current_task()
+                if cls.typing_tasks.get(session_info.session_id) is current_task:
+                    cls.typing_tasks.pop(session_info.session_id, None)
 
-                flag = asyncio.Event()
-                cls.typing_flags[session_info.session_id] = flag
-                await flag.wait()
-
-        asyncio.create_task(_typing())
+        cls.typing_tasks[session_info.session_id] = asyncio.create_task(
+            _typing(), name=f"web-typing-{session_info.session_id}"
+        )
 
     @classmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
-        if session_info.session_id in cls.typing_flags:
-            cls.typing_flags[session_info.session_id].set()
-            del cls.typing_flags[session_info.session_id]
+        flag = cls.typing_flags.pop(session_info.session_id, None)
+        if flag:
+            flag.set()
+        task = cls.typing_tasks.pop(session_info.session_id, None)
+        if task:
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
         # 这里可以添加结束输入状态的逻辑
         try:
             websocket: WebSocket = Temp.data.get("web_chat_websocket")

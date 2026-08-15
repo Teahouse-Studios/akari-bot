@@ -3,6 +3,7 @@
 from aiogram import types
 
 from bots.telegram.buttons import remove_selected_button
+from bots.telegram.context_snapshot import TelegramContextSnapshot
 from bots.telegram.info import client_name, sender_prefix, target_prefix
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
@@ -72,4 +73,4 @@ async def handle_button_callback(callback: types.CallbackQuery, ctx_slot: int | 
         ctx_slot=ctx_slot,
         bot_id=_get_bot_id(),
     )
-    await Bot.process_message(session, callback)
+    await Bot.process_message(session, TelegramContextSnapshot.from_context(callback))

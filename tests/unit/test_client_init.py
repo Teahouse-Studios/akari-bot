@@ -74,15 +74,70 @@ async def _test_failed_discord_initialization_can_retry():
 
 async def _test_database_failure_stops_client_initialization():
     keepalive = AsyncMock()
-    with (
-        patch.object(client_init_module, "init_db", new=AsyncMock(return_value=False)),
-        patch.object(client_init_module.JobQueueClient, "send_keepalive_signal_to_server", new=keepalive),
-    ):
-        try:
-            await client_init_module.client_init(queue=False, rename_logger=False)
-        except RuntimeError as exc:
-            return "Failed to initialize database" in str(exc) and keepalive.await_count == 0
-    return False
+    old_initialization_task = client_init_module._initialization_task
+    client_init_module._initialization_task = None
+    try:
+        with (
+            patch.object(client_init_module, "init_db", new=AsyncMock(return_value=False)),
+            patch.object(client_init_module.JobQueueClient, "send_keepalive_signal_to_server", new=keepalive),
+        ):
+            try:
+                await client_init_module.client_init(queue=False, rename_logger=False)
+            except RuntimeError as exc:
+                return "Failed to initialize database" in str(exc) and keepalive.await_count == 0
+        return False
+    finally:
+        client_init_module._initialization_task = old_initialization_task
+
+
+async def _test_client_background_tasks_are_idempotent():
+    queue_started = asyncio.Event()
+    queue_release = asyncio.Event()
+
+    async def queue_poller():
+        queue_started.set()
+        await queue_release.wait()
+
+    old_queue_task = client_init_module._queue_task
+    old_keepalive_task = client_init_module._keepalive_task
+    old_initialization_task = client_init_module._initialization_task
+    client_init_module._queue_task = None
+    client_init_module._keepalive_task = None
+    client_init_module._initialization_task = None
+    init_db = AsyncMock(return_value=True)
+    try:
+        with (
+            patch.object(client_init_module, "init_db", new=init_db),
+            patch.object(client_init_module, "check_queue", new=queue_poller),
+            patch.object(
+                client_init_module.JobQueueClient,
+                "send_keepalive_signal_to_server",
+                new=AsyncMock(),
+            ),
+            patch.object(client_init_module.Bot, "ContextSlots", [SimpleNamespace(features=SimpleNamespace())]),
+            patch.object(client_init_module.Bot, "fetched_session_ctx_slot", 0),
+        ):
+            await client_init_module.client_init(rename_logger=False)
+            await asyncio.wait_for(queue_started.wait(), timeout=1)
+            first_queue_task = client_init_module._queue_task
+            first_keepalive_task = client_init_module._keepalive_task
+
+            await client_init_module.client_init(rename_logger=False)
+            return (
+                first_queue_task is client_init_module._queue_task
+                and first_keepalive_task is client_init_module._keepalive_task
+                and init_db.await_count == 1
+            )
+    finally:
+        queue_release.set()
+        tasks = [client_init_module._queue_task, client_init_module._keepalive_task]
+        for task in tasks:
+            if task is not None and not task.done():
+                task.cancel()
+        await asyncio.gather(*(task for task in tasks if task is not None), return_exceptions=True)
+        client_init_module._queue_task = old_queue_task
+        client_init_module._keepalive_task = old_keepalive_task
+        client_init_module._initialization_task = old_initialization_task
 
 
 async def _test_slash_session_waits_for_initialization():
@@ -120,5 +175,6 @@ async def test_client_init(tester: Tester):
     await tester.test(_test_concurrent_discord_events_share_initialization, "并发事件共享初始化任务")
     await tester.test(_test_failed_discord_initialization_can_retry, "初始化失败后允许重试")
     await tester.test(_test_database_failure_stops_client_initialization, "数据库失败时停止客户端初始化")
+    await tester.test(_test_client_background_tasks_are_idempotent, "客户端后台任务幂等")
     await tester.test(_test_slash_session_waits_for_initialization, "Slash 会话等待初始化完成")
     return tester

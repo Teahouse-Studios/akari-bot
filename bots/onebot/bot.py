@@ -1,4 +1,3 @@
-import asyncio
 import html
 import logging
 import re
@@ -51,7 +50,7 @@ qq_account = None
 @aiocqhttp_bot.on_startup
 async def startup():
     await client_init(target_prefix_list, sender_prefix_list)
-    asyncio.create_task(OneBotFetchedContextManager.process_tasks())
+    OneBotFetchedContextManager.start_task_processor()
     aiocqhttp_bot.logger.setLevel(logging.WARNING)
 
 

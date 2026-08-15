@@ -15,6 +15,7 @@ from bots.telegram.action_text import (
     can_use_inline_action_text,
     is_own_inline_message,
 )
+from bots.telegram.context_snapshot import TelegramContextSnapshot
 from bots.telegram.features import features
 from core.builtins.message.internal import ActionText
 from core.tester import Tester, func_case
@@ -139,6 +140,15 @@ def _test_callback_native_permission_uses_clicking_user():
     return resolved_chat is chat and resolved_user is user
 
 
+def _test_context_snapshot_keeps_only_permission_fields():
+    callback = SimpleNamespace(
+        from_user=SimpleNamespace(id=1),
+        message=SimpleNamespace(chat=SimpleNamespace(id=20, type="group")),
+    )
+    snapshot = TelegramContextSnapshot.from_context(callback)
+    return snapshot == TelegramContextSnapshot(chat_id=20, chat_type="group", user_id=1)
+
+
 async def _test_successful_callback_routes_message():
     from bots.telegram.interactions import handle_button_callback
 
@@ -166,6 +176,7 @@ async def _test_successful_callback_routes_message():
         await handle_button_callback(callback)
     kwargs = assign.await_args.kwargs
     updated: InlineKeyboardMarkup = message.edit_reply_markup.await_args.kwargs["reply_markup"]
+    routed_context = process.await_args.args[1]
     return (
         callback.answer.await_count == 1
         and [[button.text for button in row] for row in updated.inline_keyboard] == [["B"], ["C"]]
@@ -174,6 +185,7 @@ async def _test_successful_callback_routes_message():
         and kwargs["reply_id"] == "10"
         and kwargs["messages"].to_str() == "~a"
         and process.await_count == 1
+        and routed_context == TelegramContextSnapshot(chat_id=20, chat_type="group", user_id=1)
     )
 
 
@@ -249,4 +261,5 @@ async def test_telegram_buttons(tester: Tester):
     await tester.test(_test_forbidden_callback_does_not_route_message, "无权限点击不回流消息")
     await tester.test(_test_unrelated_callback_is_ignored, "忽略非按钮回调")
     await tester.test(_test_inline_query_handler_answers_personally_without_cache, "Inline Query 不缓存且仅用户可见")
+    await tester.test(_test_context_snapshot_keeps_only_permission_fields, "Telegram 上下文只保留权限字段")
     return tester

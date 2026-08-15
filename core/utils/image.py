@@ -14,6 +14,7 @@ from core.config.base import CoreConfig
 from core.constants.path import templates_path
 from core.logger import Logger
 from core.utils.cache import random_cache_path
+from core.utils.image_split import image_split as image_split
 from core.web_render import web_render, ElementScreenshotOptions
 
 if TYPE_CHECKING:
@@ -23,23 +24,6 @@ if TYPE_CHECKING:
 
 env = Environment(loader=FileSystemLoader(templates_path), autoescape=True, enable_async=True)
 use_font_mirror = CoreConfig.use_font_mirror
-
-
-async def image_split(i: ImageElement) -> list[ImageElement]:
-    img = PILImage.open(await i.get())
-    iw, ih = img.size
-    if ih <= 1500:
-        return [ImageElement.assign(img)]
-    _h = 0
-    i_list = []
-    for _ in range((ih // 1500) + 1):
-        if _h + 1500 > ih:
-            crop_h = ih
-        else:
-            crop_h = _h + 1500
-        i_list.append(ImageElement.assign(img.crop((0, _h, iw, crop_h))))
-        _h = crop_h
-    return i_list
 
 
 def get_fontsize(font, text):

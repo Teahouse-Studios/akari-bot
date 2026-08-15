@@ -11,7 +11,8 @@ proxy = CoreSecretConfig.proxy
 intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
-discord_bot = discord.Bot(intents=intents, proxy=proxy)
+# 所有消息相关操作都使用事件上下文、raw event 或显式 fetch，不需要 Pycord 默认缓存的 1000 条消息。
+discord_bot = discord.Bot(intents=intents, proxy=proxy, max_messages=None)
 
 _client_init_task: asyncio.Task[None] | None = None
 

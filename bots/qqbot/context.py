@@ -1,5 +1,7 @@
 import asyncio
 import html
+import time
+from collections import OrderedDict, deque
 from collections.abc import Mapping
 from datetime import datetime, timedelta, timezone
 from typing import Union
@@ -39,7 +41,6 @@ from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from bots.qqbot.config import QQBotConfig
 from core.logger import Logger
-from core.utils.s3 import S3Storage
 from core.utils.table import escape_table_cell, resolve_table_columns
 
 qq_typing_emoji = str(QQBotConfig.qq_typing_emoji)
@@ -49,6 +50,17 @@ qq_use_markdown = QQBotConfig.qq_use_markdown
 # 平台对指令操作标签内文本的字符数上限，按 urlencode 前的原文计算
 ACTION_TEXT_MAX_LENGTH = 100
 EXPIRED_REPLY_MESSAGE_CODE = 40034005
+PERMISSION_CACHE_TTL = 3600
+PERMISSION_CACHE_MAX_SIZE = 4096
+INITIATIVE_QUEUE_MAX_SIZE = 128
+HIGH_PRIORITY_BURST = 5
+HIGH_PRIORITY_QUEUE_RESERVE = 16
+
+
+def _load_s3_storage():
+    from core.utils.s3 import S3Storage
+
+    return S3Storage
 
 
 def _truncate_action_text(value: str, field: str) -> str:
@@ -172,8 +184,30 @@ def nodes_to_table(session_info: SessionInfo, nodes: MessageNodes) -> str:
     return "\n".join(lines)
 
 
-# 用户权限缓存，用于部分场景接口未返回群聊内身份使用
-permission_cache = {}
+# 用户权限缓存，用于部分场景接口未返回群聊内身份使用。只缓存管理员，缺失时安全退化为无权限。
+permission_cache: OrderedDict[str, float] = OrderedDict()
+
+
+def cache_permission(key: str, is_admin: bool, now: float | None = None) -> None:
+    if not is_admin:
+        permission_cache.pop(key, None)
+        return
+    permission_cache.pop(key, None)
+    permission_cache[key] = time.monotonic() if now is None else now
+    while len(permission_cache) > PERMISSION_CACHE_MAX_SIZE:
+        permission_cache.popitem(last=False)
+
+
+def get_cached_permission(key: str, now: float | None = None) -> bool:
+    cached_at = permission_cache.get(key)
+    if cached_at is None:
+        return False
+    now = time.monotonic() if now is None else now
+    if now - cached_at > PERMISSION_CACHE_TTL:
+        permission_cache.pop(key, None)
+        return False
+    permission_cache.move_to_end(key)
+    return True
 
 
 def _get_client():
@@ -231,6 +265,7 @@ class QQBotContextManager(ContextManager):
     context: dict[str, Union[BaseMessage, Interaction]] = {}
     features: Features = qqbot_features
     typing_states: dict[str, _TypingState] = {}
+    typing_tasks: dict[str, asyncio.Task[None]] = {}
     client: botpy.Client | None = None
 
     # 机器人沉默满此秒数后，才在群聊中补发输入提示
@@ -282,7 +317,7 @@ class QQBotContextManager(ContextManager):
             elif isinstance(ctx, C2CMessage):
                 return True
             else:
-                return permission_cache.get(f"{session_info.target_id}|{session_info.sender_id}", False)
+                return get_cached_permission(f"{session_info.target_id}|{session_info.sender_id}")
         return False
 
     @classmethod
@@ -429,6 +464,9 @@ class QQBotContextManager(ContextManager):
             # 指令操作是行内元素：它自身与紧随其后的文本都须并入上一项，
             # 否则 "\n".join(texts) 会把同属一句话的收尾文本甩到下一行
             inline_pending = False
+            s3_storage = None
+            if any(isinstance(element, ImageElement) for element in converted_message):
+                s3_storage = await asyncio.to_thread(_load_s3_storage)
 
             for x in converted_message:
                 if isinstance(x, PlainElement):
@@ -441,8 +479,8 @@ class QQBotContextManager(ContextManager):
                         texts.append(x.text)
                     inline_pending = False
                 elif isinstance(x, ImageElement):
-                    if S3Storage is not None:
-                        upload = await S3Storage.upload_temp(await x.get())
+                    if s3_storage is not None:
+                        upload = await s3_storage.upload_temp(await x.get())
                         if upload and "public_url" in upload:
                             w, h = await x.get_wh()
                             fin_w, fin_h = _markdown_image_size(x, w, h)
@@ -651,9 +689,11 @@ class QQBotContextManager(ContextManager):
         """好友消息使用 botpy 提供的原生输入状态通知。"""
         client = _get_client()
         context = cls.context.get(session_info.session_id)
+        target = _reply_target(session_info, context)
+        del context
         try:
             await client.send_typing(
-                _reply_target(session_info, context),
+                target,
                 duration_seconds=cls.TYPING_PROMPT_MAX_LIFETIME,
             )
         except Exception:
@@ -703,18 +743,24 @@ class QQBotContextManager(ContextManager):
         :param state: 本轮输入状态的标志。
         """
         try:
-            if session_info.target_from == target_guild_prefix:
-                await cls._guild_typing(session_info, state)
-            elif session_info.target_from == target_group_prefix:
-                await cls._group_typing(session_info, state)
-            elif session_info.target_from == target_c2c_prefix:
-                await cls._c2c_typing(session_info, state)
-            else:
-                await cls._wait_typing_over(state, cls.TYPING_PROMPT_MAX_LIFETIME)
+            async with asyncio.timeout(cls.TYPING_PROMPT_DELAY + cls.TYPING_PROMPT_MAX_LIFETIME + 10):
+                if session_info.target_from == target_guild_prefix:
+                    await cls._guild_typing(session_info, state)
+                elif session_info.target_from == target_group_prefix:
+                    await cls._group_typing(session_info, state)
+                elif session_info.target_from == target_c2c_prefix:
+                    await cls._c2c_typing(session_info, state)
+                else:
+                    await cls._wait_typing_over(state, cls.TYPING_PROMPT_MAX_LIFETIME)
+        except TimeoutError:
+            Logger.debug(f"Typing state expired in session: {session_info.session_id}")
         finally:
             # 结束信号若始终未至，状态不应长期滞留；仅回收本轮，避免误删后来者
             if cls.typing_states.get(session_info.session_id) is state:
                 del cls.typing_states[session_info.session_id]
+            current_task = asyncio.current_task()
+            if cls.typing_tasks.get(session_info.session_id) is current_task:
+                cls.typing_tasks.pop(session_info.session_id, None)
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
@@ -727,10 +773,17 @@ class QQBotContextManager(ContextManager):
         previous = cls.typing_states.pop(session_info.session_id, None)
         if previous:
             previous.finished.set()
+        previous_task = cls.typing_tasks.pop(session_info.session_id, None)
+        if previous_task:
+            previous_task.cancel()
+            await asyncio.gather(previous_task, return_exceptions=True)
 
         state = _TypingState()
         cls.typing_states[session_info.session_id] = state
-        asyncio.create_task(cls._typing_lifecycle(session_info, state))
+        cls.typing_tasks[session_info.session_id] = asyncio.create_task(
+            cls._typing_lifecycle(session_info, state),
+            name=f"qqbot-typing-{session_info.session_id}",
+        )
 
     @classmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
@@ -739,6 +792,10 @@ class QQBotContextManager(ContextManager):
         state = cls.typing_states.pop(session_info.session_id, None)
         if state:
             state.finished.set()
+        task = cls.typing_tasks.pop(session_info.session_id, None)
+        if task:
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
         Logger.debug(f"End typing in session: {session_info.session_id}")
 
     @classmethod
@@ -802,11 +859,14 @@ class QQBotContextManager(ContextManager):
             )
 
 
-_tasks_high_priority = []
-_tasks = []
+_tasks_high_priority = deque()
+_tasks = deque()
 
 
 class QQBotFetchedContextManager(QQBotContextManager):
+    _processor_task: asyncio.Task[None] | None = None
+    _high_priority_count = 0
+
     @classmethod
     async def send_message(
         cls,
@@ -821,17 +881,38 @@ class QQBotFetchedContextManager(QQBotContextManager):
         # 主动消息须按冷却排队发出，但调用方需要取得真实的消息 ID 才能判断本跳是否送达，
         # 因此入队的是「任务 + future」，待实际发送完成后再回传结果。
         future = asyncio.get_running_loop().create_future()
-        append_tsk = (
-            _tasks_high_priority
-            if session_info.target_union_info.target_data.get("in_post_whitelist", False)
-            else _tasks
-        )
-        append_tsk.append((future, session_info, message, quote, enable_parse_message, _ignore_retries, _typing_prompt))
-        return await future
+        high_priority = session_info.target_union_info.target_data.get("in_post_whitelist", False)
+        append_tsk = _tasks_high_priority if high_priority else _tasks
+        queue_size = len(_tasks_high_priority) + len(_tasks)
+        if not high_priority and queue_size >= INITIATIVE_QUEUE_MAX_SIZE - HIGH_PRIORITY_QUEUE_RESERVE:
+            Logger.warning(f"QQBot initiative message queue is full; dropped message to {session_info.target_id}.")
+            return []
+        if high_priority and queue_size >= INITIATIVE_QUEUE_MAX_SIZE:
+            if _tasks:
+                evicted_future = _tasks.popleft()[0]
+                if not evicted_future.done():
+                    evicted_future.set_result([])
+            else:
+                Logger.warning(
+                    f"QQBot high-priority initiative message queue is full; dropped message to {session_info.target_id}."
+                )
+                return []
+        task = (future, session_info, message, quote, enable_parse_message, _ignore_retries, _typing_prompt)
+        append_tsk.append(task)
+        try:
+            return await future
+        finally:
+            if future.cancelled():
+                try:
+                    append_tsk.remove(task)
+                except ValueError:
+                    pass
 
     @staticmethod
     async def _run_task(task: tuple) -> None:
         future, session_info, message, quote, enable_parse_message, _ignore_retries, _typing_prompt = task
+        if future.cancelled():
+            return
         try:
             result = await QQBotContextManager.send_message(
                 session_info,
@@ -841,11 +922,34 @@ class QQBotFetchedContextManager(QQBotContextManager):
                 _ignore_retries=_ignore_retries,
                 _typing_prompt=_typing_prompt,
             )
+        except asyncio.CancelledError:
+            if not future.done():
+                future.cancel()
+            raise
         except Exception:
             Logger.exception(f"Failed to post message to {session_info.target_id}: ")
             result = []
         if not future.done():
             future.set_result(result)
+
+    @classmethod
+    def _take_next_task(cls) -> tuple[tuple, bool] | None:
+        if _tasks_high_priority and (not _tasks or cls._high_priority_count < HIGH_PRIORITY_BURST):
+            cls._high_priority_count += 1
+            return _tasks_high_priority.popleft(), True
+        if _tasks:
+            cls._high_priority_count = 0
+            return _tasks.popleft(), False
+        cls._high_priority_count = 0
+        return None
+
+    @classmethod
+    def start_task_processor(cls) -> asyncio.Task[None]:
+        if cls._processor_task is None or cls._processor_task.done():
+            if cls._processor_task and not cls._processor_task.cancelled():
+                cls._processor_task.exception()
+            cls._processor_task = asyncio.create_task(cls.process_tasks(), name="qqbot-initiative-message-worker")
+        return cls._processor_task
 
     @staticmethod
     async def process_tasks():
@@ -853,17 +957,18 @@ class QQBotFetchedContextManager(QQBotContextManager):
         # 60 qpm
 
         while True:
-            if _tasks_high_priority:
-                await QQBotFetchedContextManager._run_task(_tasks_high_priority.pop(0))
-                cd = 1
-                Logger.info(
-                    f"Processed a high-priority task in QQBotFetchedContextManager, waiting cooldown for {cd}s..."
-                )
+            try:
+                queued_task = QQBotFetchedContextManager._take_next_task()
+                if queued_task is None:
+                    await asyncio.sleep(1)
+                    continue
+                task, high_priority = queued_task
+                await QQBotFetchedContextManager._run_task(task)
+                cd = 1 if high_priority else 1.5
+                priority = "high-priority " if high_priority else ""
+                Logger.info(f"Processed a {priority}task in QQBotFetchedContextManager, waiting cooldown for {cd}s...")
                 await asyncio.sleep(cd)
-            elif _tasks:
-                await QQBotFetchedContextManager._run_task(_tasks.pop(0))
-                cd = 1.5
-                Logger.info(f"Processed a task in QQBotFetchedContextManager, waiting cooldown for {cd}s...")
-                await asyncio.sleep(cd)
-            else:
-                await asyncio.sleep(1)
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                Logger.exception("QQBot initiative message worker failed to process a task: ")

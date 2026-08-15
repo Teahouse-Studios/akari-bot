@@ -6,6 +6,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 from aiogram.types import FSInputFile, InputMediaAudio, InputMediaPhoto
+from PIL import Image as PILImage
 
 from bots.telegram.message_builder import (
     TelegramAudioOperation,
@@ -23,6 +24,7 @@ from core.builtins.message.internal import ActionText, Button, Image, Mention, P
 from core.builtins.session.info import SessionInfo
 from core.i18n import Locale
 from core.tester import Tester, func_case
+from core.utils.image_split import image_split
 
 
 def _visible(chunks: list[str]) -> str:
@@ -35,6 +37,13 @@ def _test_plain_text_splits_at_limit():
 
 def _test_prefers_newline_boundary():
     return split_telegram_html("12345\n67890", 8) == ["12345", "67890"]
+
+
+def _test_long_plain_text_uses_lightweight_split_path():
+    text = "a" * 100_000
+    with patch("bots.telegram.message_builder._HTMLAtomParser", side_effect=AssertionError):
+        chunks = split_telegram_html(text, 4096)
+    return "".join(chunks) == text and all(len(chunk) <= 4096 for chunk in chunks)
 
 
 def _test_anchor_is_closed_and_reopened():
@@ -139,6 +148,25 @@ async def _test_collects_text_mentions_and_media():
         and len(content.images) == 1
         and len(content.audio) == 1
     )
+
+
+async def _test_image_split_boundaries_have_no_empty_crop():
+    expected = {
+        1499: [1499],
+        1500: [1500],
+        1501: [1500, 1],
+        3000: [1500, 1500],
+    }
+    for height, expected_heights in expected.items():
+        source = Image(PILImage.new("RGB", (1, height)))
+        split = await image_split(source)
+        actual_heights = []
+        for item in split:
+            with PILImage.open(await item.get()) as opened:
+                actual_heights.append(opened.height)
+        if actual_heights != expected_heights:
+            return False
+    return True
 
 
 def _test_single_photo_uses_caption():
@@ -253,4 +281,6 @@ async def test_telegram_message_builder(tester: Tester):
     await tester.test(_test_single_audio_operation, "单音频使用单项操作")
     await tester.test(_test_execute_operations_collects_ids_and_reply_once, "执行操作收集消息且仅首条引用")
     await tester.test(_test_final_media_group_attaches_markup_by_edit, "末尾媒体组通过编辑附加按钮")
+    await tester.test(_test_long_plain_text_uses_lightweight_split_path, "长纯文本使用轻量拆分路径")
+    await tester.test(_test_image_split_boundaries_have_no_empty_crop, "图片高度边界不生成空裁剪")
     return tester

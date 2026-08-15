@@ -2,6 +2,7 @@ import asyncio
 import random
 import re
 import time
+from collections import OrderedDict, deque
 from pathlib import Path
 
 import aiocqhttp
@@ -24,7 +25,31 @@ from .features import features as onebot_features
 qq_typing_emoji = str(AiocqhttpConfig.qq_typing_emoji)
 qq_limited_emoji = str(AiocqhttpConfig.qq_limited_emoji)
 qq_initiative_msg_cooldown = AiocqhttpConfig.qq_initiative_msg_cooldown
-last_send_typing_time = {}
+TYPING_CACHE_TTL = 3600
+TYPING_CACHE_MAX_SIZE = 4096
+TYPING_MAX_LIFETIME = 60
+INITIATIVE_QUEUE_MAX_SIZE = 128
+HIGH_PRIORITY_BURST = 5
+HIGH_PRIORITY_QUEUE_RESERVE = 16
+last_send_typing_time: OrderedDict[str, float] = OrderedDict()
+
+
+def _typing_prompt_on_cooldown(sender_id: str, now: float | None = None) -> bool:
+    now = time.monotonic() if now is None else now
+    last_sent = last_send_typing_time.get(sender_id)
+    while last_send_typing_time:
+        oldest_sender, oldest_time = next(iter(last_send_typing_time.items()))
+        if len(last_send_typing_time) <= TYPING_CACHE_MAX_SIZE and now - oldest_time <= TYPING_CACHE_TTL:
+            break
+        last_send_typing_time.pop(oldest_sender, None)
+    return last_sent is not None and now - last_sent <= TYPING_CACHE_TTL
+
+
+def _record_typing_prompt(sender_id: str, now: float | None = None) -> None:
+    last_send_typing_time.pop(sender_id, None)
+    last_send_typing_time[sender_id] = time.monotonic() if now is None else now
+    while len(last_send_typing_time) > TYPING_CACHE_MAX_SIZE:
+        last_send_typing_time.popitem(last=False)
 
 
 async def fake_forward_msg(session_info: SessionInfo, nodelist):
@@ -101,6 +126,7 @@ async def get_available_private_list():
 class OneBotContextManager(ContextManager):
     context: dict[str, Event] = {}
     features: Features = onebot_features
+    typing_tasks: dict[str, asyncio.Task[None]] = {}
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
@@ -455,56 +481,82 @@ class OneBotContextManager(ContextManager):
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+
+        previous = cls.typing_flags.pop(session_info.session_id, None)
+        if previous:
+            previous.set()
+        previous_task = cls.typing_tasks.pop(session_info.session_id, None)
+        if previous_task:
+            previous_task.cancel()
+            await asyncio.gather(previous_task, return_exceptions=True)
+        flag = asyncio.Event()
+        cls.typing_flags[session_info.session_id] = flag
+
         async def _typing():
-            if session_info.session_id not in cls.context:
-                raise ValueError("Session not found in context")
-            # 这里可以添加开始输入状态的逻辑
-            Logger.debug(f"Start typing in session: {session_info.session_id}")
+            try:
+                async with asyncio.timeout(TYPING_MAX_LIFETIME):
+                    Logger.debug(f"Start typing in session: {session_info.session_id}")
 
-            if session_info.target_from == target_group_prefix:  # wtf onebot 11
-                obi = Temp.data.get("onebot_impl")
-                if obi in ["llonebot", "napcat"]:
-                    await aiocqhttp_bot.call_action(
-                        "set_msg_emoji_like", message_id=session_info.message_id, emoji_id=qq_typing_emoji, set=True
-                    )
-                elif obi == "lagrange":
-                    await aiocqhttp_bot.call_action(
-                        "set_group_reaction",
-                        group_id=int(session_info.get_common_target_id()),
-                        message_id=session_info.message_id,
-                        code=qq_typing_emoji,
-                        is_add=True,
-                    )
-                else:
-                    if session_info.sender_id in last_send_typing_time:
-                        if time.time() - last_send_typing_time[session_info.sender_id] <= 3600:
-                            return
-                    last_send_typing_time[session_info.sender_id] = time.time()
-                    if obi == "shamrock":
-                        await aiocqhttp_bot.send_group_msg(
-                            group_id=int(session_info.get_common_target_id()),
-                            message=f"[CQ:touch,id={session_info.get_common_sender_id()}]",
-                        )
-                    elif obi == "go-cqhttp":
-                        await aiocqhttp_bot.send_group_msg(
-                            group_id=int(session_info.get_common_target_id()),
-                            message=f"[CQ:poke,qq={session_info.get_common_sender_id()}]",
-                        )
-                    else:
-                        pass
-            flag = asyncio.Event()
-            cls.typing_flags[session_info.session_id] = flag
-            await flag.wait()
+                    if session_info.target_from == target_group_prefix:  # wtf onebot 11
+                        obi = Temp.data.get("onebot_impl")
+                        if obi in ["llonebot", "napcat"]:
+                            await aiocqhttp_bot.call_action(
+                                "set_msg_emoji_like",
+                                message_id=session_info.message_id,
+                                emoji_id=qq_typing_emoji,
+                                set=True,
+                            )
+                        elif obi == "lagrange":
+                            await aiocqhttp_bot.call_action(
+                                "set_group_reaction",
+                                group_id=int(session_info.get_common_target_id()),
+                                message_id=session_info.message_id,
+                                code=qq_typing_emoji,
+                                is_add=True,
+                            )
+                        elif obi in ["shamrock", "go-cqhttp"] and not _typing_prompt_on_cooldown(
+                            session_info.sender_id
+                        ):
+                            if obi == "shamrock":
+                                await aiocqhttp_bot.send_group_msg(
+                                    group_id=int(session_info.get_common_target_id()),
+                                    message=f"[CQ:touch,id={session_info.get_common_sender_id()}]",
+                                )
+                            else:
+                                await aiocqhttp_bot.send_group_msg(
+                                    group_id=int(session_info.get_common_target_id()),
+                                    message=f"[CQ:poke,qq={session_info.get_common_sender_id()}]",
+                                )
+                            _record_typing_prompt(session_info.sender_id)
+                    await flag.wait()
+            except TimeoutError:
+                Logger.debug(f"Typing state expired in session: {session_info.session_id}")
+            except Exception:
+                Logger.exception(f"Failed to start typing in session {session_info.session_id}: ")
+            finally:
+                if cls.typing_flags.get(session_info.session_id) is flag:
+                    cls.typing_flags.pop(session_info.session_id, None)
+                current_task = asyncio.current_task()
+                if cls.typing_tasks.get(session_info.session_id) is current_task:
+                    cls.typing_tasks.pop(session_info.session_id, None)
 
-        asyncio.create_task(_typing())
+        cls.typing_tasks[session_info.session_id] = asyncio.create_task(
+            _typing(), name=f"onebot-typing-{session_info.session_id}"
+        )
 
     @classmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
-        if session_info.session_id in cls.typing_flags:
-            cls.typing_flags[session_info.session_id].set()
-            del cls.typing_flags[session_info.session_id]
+        flag = cls.typing_flags.pop(session_info.session_id, None)
+        if flag:
+            flag.set()
+        task = cls.typing_tasks.pop(session_info.session_id, None)
+        if task:
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
         # 这里可以添加结束输入状态的逻辑
         Logger.debug(f"End typing in session: {session_info.session_id}")
 
@@ -549,11 +601,14 @@ class OneBotContextManager(ContextManager):
         return await aiocqhttp_bot.call_action(api_name, **kwargs)
 
 
-_tasks_high_priority = []
-_tasks = []
+_tasks_high_priority = deque()
+_tasks = deque()
 
 
 class OneBotFetchedContextManager(OneBotContextManager):
+    _processor_task: asyncio.Task[None] | None = None
+    _high_priority_count = 0
+
     @classmethod
     async def send_message(
         cls,
@@ -566,17 +621,38 @@ class OneBotFetchedContextManager(OneBotContextManager):
         # 主动消息须按冷却排队发出，但调用方需要取得真实的消息 ID 才能判断本跳是否送达，
         # 因此入队的是「任务 + future」，待实际发送完成后再回传结果。
         future = asyncio.get_running_loop().create_future()
-        append_tsk = (
-            _tasks_high_priority
-            if session_info.target_union_info.target_data.get("in_post_whitelist", False)
-            else _tasks
-        )
-        append_tsk.append((future, session_info, message, quote, enable_parse_message, enable_split_image))
-        return await future
+        high_priority = session_info.target_union_info.target_data.get("in_post_whitelist", False)
+        append_tsk = _tasks_high_priority if high_priority else _tasks
+        queue_size = len(_tasks_high_priority) + len(_tasks)
+        if not high_priority and queue_size >= INITIATIVE_QUEUE_MAX_SIZE - HIGH_PRIORITY_QUEUE_RESERVE:
+            Logger.warning(f"OneBot initiative message queue is full; dropped message to {session_info.target_id}.")
+            return []
+        if high_priority and queue_size >= INITIATIVE_QUEUE_MAX_SIZE:
+            if _tasks:
+                evicted_future = _tasks.popleft()[0]
+                if not evicted_future.done():
+                    evicted_future.set_result([])
+            else:
+                Logger.warning(
+                    f"OneBot high-priority initiative message queue is full; dropped message to {session_info.target_id}."
+                )
+                return []
+        task = (future, session_info, message, quote, enable_parse_message, enable_split_image)
+        append_tsk.append(task)
+        try:
+            return await future
+        finally:
+            if future.cancelled():
+                try:
+                    append_tsk.remove(task)
+                except ValueError:
+                    pass
 
     @staticmethod
     async def _run_task(task: tuple) -> None:
         future, session_info, message, quote, enable_parse_message, enable_split_image = task
+        if future.cancelled():
+            return
         try:
             result = await OneBotContextManager.send_message(
                 session_info,
@@ -585,26 +661,56 @@ class OneBotFetchedContextManager(OneBotContextManager):
                 enable_parse_message=enable_parse_message,
                 enable_split_image=enable_split_image,
             )
+        except asyncio.CancelledError:
+            if not future.done():
+                future.cancel()
+            raise
         except Exception:
             Logger.exception(f"Failed to post message to {session_info.target_id}: ")
             result = []
         if not future.done():
             future.set_result(result)
 
+    @classmethod
+    def _take_next_task(cls) -> tuple[tuple, bool] | None:
+        if _tasks_high_priority and (not _tasks or cls._high_priority_count < HIGH_PRIORITY_BURST):
+            cls._high_priority_count += 1
+            return _tasks_high_priority.popleft(), True
+        if _tasks:
+            cls._high_priority_count = 0
+            return _tasks.popleft(), False
+        cls._high_priority_count = 0
+        return None
+
+    @classmethod
+    def start_task_processor(cls) -> asyncio.Task[None]:
+        if cls._processor_task is None or cls._processor_task.done():
+            if cls._processor_task and not cls._processor_task.cancelled():
+                cls._processor_task.exception()
+            cls._processor_task = asyncio.create_task(cls.process_tasks(), name="onebot-initiative-message-worker")
+        return cls._processor_task
+
     @staticmethod
     async def process_tasks():
         while True:
-            if _tasks_high_priority:
-                await OneBotFetchedContextManager._run_task(_tasks_high_priority.pop(0))
-                cd = random.randint(1, 5)
-                Logger.info(
-                    f"Processed a high-priority task in OneBotFetchedContextManager, waiting cooldown for {cd}s..."
-                )
+            try:
+                queued_task = OneBotFetchedContextManager._take_next_task()
+                if queued_task is None:
+                    await asyncio.sleep(1)
+                    continue
+                task, high_priority = queued_task
+                await OneBotFetchedContextManager._run_task(task)
+                if high_priority:
+                    cd = random.randint(1, 5)
+                    Logger.info(
+                        f"Processed a high-priority task in OneBotFetchedContextManager, waiting cooldown for {cd}s..."
+                    )
+                else:
+                    cd = random.randint(5, max(5, qq_initiative_msg_cooldown))
+                    Logger.info(f"Processed a task in OneBotFetchedContextManager, waiting cooldown for {cd}s...")
                 await asyncio.sleep(cd)
-            elif _tasks:
-                await OneBotFetchedContextManager._run_task(_tasks.pop(0))
-                cd = random.randint(5, qq_initiative_msg_cooldown)
-                Logger.info(f"Processed a task in OneBotFetchedContextManager, waiting cooldown for {cd}s...")
-                await asyncio.sleep(cd)
-            else:
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                Logger.exception("OneBot initiative message worker failed to process a task: ")
                 await asyncio.sleep(1)

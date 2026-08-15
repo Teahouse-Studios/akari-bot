@@ -1,4 +1,3 @@
-import asyncio
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -89,7 +88,6 @@ async def lifespan(app: FastAPI):
     if dist_path.exists():
         Logger.info(_webui_message())
     yield
-    await asyncio.Event().wait()  # 等待 server 清理进程
 
 
 app = FastAPI(lifespan=lifespan)

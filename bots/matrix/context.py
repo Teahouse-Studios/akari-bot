@@ -9,7 +9,7 @@ from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
-from core.utils.image import image_split
+from core.utils.image_split import image_split
 from .client import matrix_bot, homeserver_host
 from .features import features as matrix_features
 from .info import client_name, target_prefix

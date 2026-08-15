@@ -1,7 +1,7 @@
 import asyncio
 import os
 import re
-from collections import defaultdict, deque
+from collections import defaultdict
 from datetime import datetime
 
 from fastapi import WebSocket, WebSocketDisconnect
@@ -10,7 +10,6 @@ from bots.web.client import app
 from core.constants.path import logs_path
 from core.logger import Logger
 
-MAX_LOG_HISTORY = 1024
 INIT_READ_BYTES = 200 * 1024
 INITIAL_MAX_LINES = 100
 
@@ -38,7 +37,6 @@ async def websocket_logs(websocket: WebSocket):
 
     last_file_pos = defaultdict(int)  # 日志文件当前位置
     last_file_size = defaultdict(int)  # 日志文件大小
-    logs_history = deque(maxlen=MAX_LOG_HISTORY)  # 日志缓存历史
     today_logs = list((logs_path).glob(f"*_{current_date}.log"))  # 缓存日志文件列表
 
     initial_connect = True  # 标记是否为建立连接后的第一次读取
@@ -112,7 +110,6 @@ async def websocket_logs(websocket: WebSocket):
 
                 payload = "\n".join("\n".join(item) if isinstance(item, list) else item for item in new_loglines)
                 await websocket.send_text(payload)
-                logs_history.extend(new_loglines)
 
             initial_connect = False
             await asyncio.sleep(0.2 if new_loglines else 1.0)

@@ -16,6 +16,8 @@ class DiscordSlashContextManager(DiscordContextManager):
     context: dict[str, discord.ApplicationContext] = {}
     features: Features = slash_features
     typing_flags: dict[str, asyncio.Event] = {}
+    typing_tasks: dict[str, asyncio.Task[None]] = {}
+    TYPING_MAX_LIFETIME = 60
 
     @classmethod
     async def send_message(
@@ -59,28 +61,53 @@ class DiscordSlashContextManager(DiscordContextManager):
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+        previous = cls.typing_flags.pop(session_info.session_id, None)
+        if previous:
+            previous.set()
+        previous_task = cls.typing_tasks.pop(session_info.session_id, None)
+        if previous_task:
+            previous_task.cancel()
+            await asyncio.gather(previous_task, return_exceptions=True)
+        flag = asyncio.Event()
+        cls.typing_flags[session_info.session_id] = flag
+
         async def _typing():
-            if session_info.session_id not in cls.context:
-                raise ValueError("Session not found in context")
-            ctx: discord.ApplicationContext = cls.context[session_info.session_id]
-            if ctx:
-                async with ctx.channel.typing():
-                    await ctx.defer()
-                    Logger.debug(f"Start typing in session: {session_info.session_id}")
-                    # 这里可以添加开始输入状态的逻辑
-                    flag = asyncio.Event()
-                    cls.typing_flags[session_info.session_id] = flag
-                    await flag.wait()
+            try:
+                async with asyncio.timeout(cls.TYPING_MAX_LIFETIME):
+                    ctx: discord.ApplicationContext | None = cls.context.get(session_info.session_id)
+                    if not ctx:
+                        return
+                    async with ctx.channel.typing():
+                        await ctx.defer()
+                        Logger.debug(f"Start typing in session: {session_info.session_id}")
+                        await flag.wait()
+            except TimeoutError:
+                Logger.debug(f"Typing state expired in session: {session_info.session_id}")
+            except Exception:
+                Logger.exception(f"Failed to start typing in session {session_info.session_id}: ")
+            finally:
+                if cls.typing_flags.get(session_info.session_id) is flag:
+                    cls.typing_flags.pop(session_info.session_id, None)
+                current_task = asyncio.current_task()
+                if cls.typing_tasks.get(session_info.session_id) is current_task:
+                    cls.typing_tasks.pop(session_info.session_id, None)
 
-            # 这里可以添加开始输入状态的逻辑
-
-        asyncio.create_task(_typing())
+        cls.typing_tasks[session_info.session_id] = asyncio.create_task(
+            _typing(), name=f"discord-slash-typing-{session_info.session_id}"
+        )
 
     @classmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
-        if session_info.session_id in cls.typing_flags:
-            cls.typing_flags[session_info.session_id].set()
-            del cls.typing_flags[session_info.session_id]
+        flag = cls.typing_flags.pop(session_info.session_id, None)
+        if flag:
+            flag.set()
+        task = cls.typing_tasks.pop(session_info.session_id, None)
+        if task:
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+        if flag:
             Logger.debug(f"End typing in session: {session_info.session_id}")

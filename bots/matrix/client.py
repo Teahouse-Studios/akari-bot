@@ -1,4 +1,4 @@
-import urllib3
+from urllib.parse import urlparse
 from nio import AsyncClient, AsyncClientConfig
 
 from bots.matrix.config import MatrixConfig, MatrixSecretConfig
@@ -33,7 +33,7 @@ else:
 
 if homeserver.endswith("/"):
     Logger.warning("The matrix_homeserver ends with a slash(/), and this may cause M_UNRECOGNIZED error.")
-homeserver_host = urllib3.util.parse_url(homeserver).host
+homeserver_host = urlparse(homeserver).hostname
 matrix_bot: AsyncClient = AsyncClient(
     homeserver, user, store_path=store_path_nio, config=AsyncClientConfig(store_sync_tokens=True), proxy=proxy
 )
