@@ -32,7 +32,7 @@ async def generate_screenshot_v2(
             elements_.insert(0, ".diff")
         Logger.info("[WebRender] Generating element screenshot...")
         imgs = await web_render.element_screenshot(
-            ElementScreenshotOptions(url=page_link, element=elements_, locale=locale)
+            ElementScreenshotOptions(url=page_link, element=elements_, locale=locale, stealth=False)
         )
         if not imgs:
             Logger.error("[WebRender] Generation Failed.")
@@ -40,7 +40,7 @@ async def generate_screenshot_v2(
     else:
         Logger.info("[WebRender] Generating section screenshot...")
         imgs = await web_render.section_screenshot(
-            SectionScreenshotOptions(url=page_link, section=section, locale=locale)
+            SectionScreenshotOptions(url=page_link, section=section, locale=locale, stealth=False)
         )
         if not imgs:
             Logger.error("[WebRender] Generation Failed.")

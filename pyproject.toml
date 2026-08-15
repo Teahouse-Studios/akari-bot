@@ -17,7 +17,7 @@ requires-python = ">=3.12.0,<4.0.0"
 dependencies = [
     # akari-bot-service
     "akari-bot-i18n==0.1.2",
-    "akari-bot-webrender==0.5.14",
+    "akari-bot-webrender==0.6.1",
     "akari-bot-webui==0.4.0",
     # lib
     "coverage>=7.9.1,<8.0.0",

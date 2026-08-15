@@ -314,7 +314,7 @@ requires-dist = [
     { name = "aiofile", specifier = ">=3.8.1,<4.0.0" },
     { name = "aiogram", specifier = "==3.29.1" },
     { name = "akari-bot-i18n", specifier = "==0.1.2" },
-    { name = "akari-bot-webrender", specifier = "==0.5.14" },
+    { name = "akari-bot-webrender", specifier = "==0.6.1" },
     { name = "akari-bot-webui", specifier = "==0.4.0" },
     { name = "apscheduler", specifier = ">=3.9.1.post0,<4.0.0.0" },
     { name = "argon2-cffi", specifier = ">=25.0.0,<26.0.0" },
@@ -400,7 +400,7 @@ wheels = [
 
 [[package]]
 name = "akari-bot-webrender"
-version = "0.5.14"
+version = "0.6.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fastapi" },
@@ -409,14 +409,13 @@ dependencies = [
     { name = "loguru" },
     { name = "orjson" },
     { name = "playwright" },
-    { name = "pre-commit" },
     { name = "pydantic" },
     { name = "tf-playwright-stealth" },
     { name = "uvicorn" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/cb/af/01c76212ee4950841440d20cd770c7cd2000032f0193b66881e132e0410a/akari_bot_webrender-0.5.14.tar.gz", hash = "sha256:7c5795c6d9c03dc796ed78fe2d0c1103977ff54430eb4c1893a03ccd2d68fbb3", size = 13463, upload-time = "2026-07-25T18:21:32.138Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/26/dc/fe0ef6d79e7d79aea8092b894b5f9c32e37798bdc59cdfebb84d288fcfec/akari_bot_webrender-0.6.1.tar.gz", hash = "sha256:374df48595564fd53ddf193249e69abf30158911f25a6aa683e582b6ef2c2511", size = 18740, upload-time = "2026-08-15T17:58:30.073Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c5/a9/2f566237d4f22df5bc61854f92e7727316dcb83be22f21583790a6edcc96/akari_bot_webrender-0.5.14-py3-none-any.whl", hash = "sha256:c8dd8d19d1c8af7a0b49b010959b77d5a22887dd11e812ead9cfac741ad42cee", size = 17284, upload-time = "2026-07-25T18:21:30.884Z" },
+    { url = "https://files.pythonhosted.org/packages/1e/06/38b00794d66f2ab7e7e041f27b481c15140fafdf18505c2d1c8757a1d6c2/akari_bot_webrender-0.6.1-py3-none-any.whl", hash = "sha256:f3166717d4874402ccdbd105792b71888403bcef8737e45dc4eedb0b0e2a7314", size = 22571, upload-time = "2026-08-15T17:58:29.021Z" },
 ]
 
 [[package]]

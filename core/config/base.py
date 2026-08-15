@@ -123,6 +123,7 @@ class WebRenderConfig:
     browser_executable_path: str = ""
     remote_only: bool = False
     remote_web_render_url: str = ""
+    headless: bool = True
 
 
 @on_config("s3")

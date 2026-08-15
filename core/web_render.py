@@ -27,6 +27,7 @@ web_render = WebRender(
     remote_only=remote_only,
     export_logs=True,
     logs_path=str(logs_path),
+    headless=WebRenderConfig.headless,
 )
 
 
