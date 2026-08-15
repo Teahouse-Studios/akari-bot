@@ -28,7 +28,6 @@ from core.logger import Logger
 from core.scheduler import Scheduler
 from core.utils.bash import run_sys_command
 from .background_tasks import init_background_task
-from ..i18n import locale_loaded_err
 
 # 等待发起重启的客户端重新上报保活的秒数上限。server 与各 bot 子进程一同重启，
 # 提示投递时客户端往往尚未就绪；但重启提示并非关键路径，客户端确已掉线时不应无限等待。
@@ -105,8 +104,6 @@ async def init_async(start_scheduler=True, send_prompt=True) -> None:
     # 加载密钥和启动提示
     await load_secret()
     Logger.info(f"Hello, {Info.client_name}!")
-    if send_prompt:
-        await load_prompt(locale_loaded_err)
 
 
 async def load_secret():

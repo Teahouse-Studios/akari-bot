@@ -1,4 +1,4 @@
-from core import check_python_version  # skipcq
+from core.version import check_python_version  # skipcq
 
 check_python_version()  # noqa
 
@@ -26,9 +26,12 @@ from core.database import close_db
 from core.config import CONFIG_READONLY_ENV
 
 
+AKARI_BOT_I18N_CACHE_DIR = str(Path("./assets/i18n_cache/").resolve())
+
 load_dotenv()
 os.environ.setdefault("PYTHONIOENCODING", "UTF-8")
 os.environ.setdefault("PYTHONPATH", str(Path(".").resolve()))
+os.environ.setdefault("AKARI_BOT_I18N_CACHE_DIR", AKARI_BOT_I18N_CACHE_DIR)
 
 
 # Basic logger setup
@@ -202,6 +205,7 @@ async def run_bot():
     # 自此起 spawn 出的子进程一律只读：配置的生成已在 pre_init 中完成。
     # 须在任何 mp.Process 之前置位，spawn 会继承环境；restart_bot_process() 后续重启子进程时同样适用。
     os.environ[CONFIG_READONLY_ENV] = "1"
+    os.environ["AKARI_BOT_I18N_CACHE_DIR"] = AKARI_BOT_I18N_CACHE_DIR
 
     mp = multiprocessing.get_context("spawn" if sys.platform in ["win32", "darwin"] else "forkserver")
 

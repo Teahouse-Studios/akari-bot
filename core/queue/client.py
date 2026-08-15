@@ -21,7 +21,6 @@ from core.builtins.session.info import SessionInfo
 from core.builtins.session.features import Features
 from core.database.models import JobQueuesTable
 from core.exports import exports, add_export
-from core.i18n import Locale
 from core.logger import Logger
 from .base import JobQueueBase
 
@@ -455,23 +454,6 @@ async def _(tsk: JobQueuesTable, args: dict):
         g = await get_(_args.get("api_name", ""), **_args.get("args", {}))
         return g
     return {"success": False, "error": "OneBot API not supported in this context"}
-
-
-@JobQueueClient.action("reload_locale")
-async def _(tsk: JobQueuesTable, args: dict):
-    """重载语言文件处理器。
-
-    消息中的 I18NContext 元素是在客户端进程内渲染的，服务端重载语言文件只对自身生效，
-    须由服务端广播至各客户端一并重载，否则实际发出的消息仍为旧文案。
-
-    :return: 包含 err 的字典，err 为重载过程中产生的错误信息列表
-    """
-    err = Locale.reload()
-    if err:
-        Logger.error(f"Failed to reload locale files: {'; '.join(err)}")
-    else:
-        Logger.success("Locale files reloaded.")
-    return {"err": err}
 
 
 add_export(JobQueueClient)

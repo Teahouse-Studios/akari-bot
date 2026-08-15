@@ -1,6 +1,6 @@
 """core.i18n 国际化系统单元测试。"""
 
-from core.i18n import Locale, load_locale_file, get_available_locales
+from core.i18n import Locale, get_available_locales, build_locale_snapshot, connect_locale_snapshot
 from core.tester import func_case, Tester
 
 
@@ -70,7 +70,8 @@ def _test_load_locale_file():
     try:
         from core.constants import lang_list, all_locales_path
 
-        errors = load_locale_file(list(lang_list.keys()), all_locales_path)
+        errors = build_locale_snapshot(list(lang_list.keys()), all_locales_path, "akari-bot")
+        connect_locale_snapshot("akari-bot")
         return isinstance(errors, list)
     except Exception:
         return False

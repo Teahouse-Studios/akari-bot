@@ -9,6 +9,7 @@ from core.database import init_db
 from core.logger import Logger
 from core.queue.client import JobQueueClient
 from core.scheduler import Scheduler, IntervalTrigger
+from core.i18n import connect_locale_snapshot
 
 
 async def check_queue() -> None:
@@ -50,4 +51,5 @@ async def client_init(
     except SchedulerAlreadyRunningError:
         pass
     logging.getLogger("apscheduler.executors.default").setLevel(logging.WARNING)
+    connect_locale_snapshot("akari-bot")
     Logger.info(f"Hello, {Info.client_name}!")

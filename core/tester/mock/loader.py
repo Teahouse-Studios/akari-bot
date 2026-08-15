@@ -1,7 +1,8 @@
 import importlib
 import pkgutil
 
-from core.i18n import locale_loaded_err
+from core.constants import lang_list, all_locales_path
+from core.i18n import build_locale_snapshot, connect_locale_snapshot
 from core.loader import ModulesManager
 from core.logger import Logger
 
@@ -24,9 +25,11 @@ async def load_modules(show_logs=True, monkey_patches: dict[str, object] | None 
     import core.queue.server  # noqa: F401
 
     err_prompt = []
+    locale_loaded_err = build_locale_snapshot(list(lang_list.keys()), all_locales_path, "akari-bot")
     if locale_loaded_err:
         err_prompt.append("I18N loaded failed:")
         err_prompt.append("\n".join(locale_loaded_err))
+    connect_locale_snapshot("akari-bot")
 
     # Load HTTP fixtures if available
     if load_fixtures:

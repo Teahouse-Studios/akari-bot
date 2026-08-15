@@ -2,6 +2,7 @@ import platform
 import time
 
 import psutil
+from akari_bot_i18n.i18n import build_locale_snapshot
 from cpuinfo import get_cpu_info
 
 from core.builtins.bot import Bot
@@ -9,9 +10,9 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import ActionText, Plain, FormattedTime, I18NContext, Url
 from core.component import module
 from core.config.base import CoreConfig
+from core.constants import lang_list, all_locales_path
 from core.database.models import SenderUnionBind, SenderUnionInfo
 from core.i18n import get_available_locales, Locale
-from core.queue.server import JobQueueServer
 from core.utils.bash import run_sys_command
 
 ver = module("version", base=True, doc=True)
@@ -265,9 +266,7 @@ async def _(msg: Bot.MessageSession, lang: str):
 
 @locale.command("reload", required_superuser=True)
 async def _(msg: Bot.MessageSession):
-    err = msg.session_info.locale.reload()
-    # I18NContext 元素在客户端进程内渲染，只重载服务端的话实际发出的消息仍为旧文案。
-    err += [e for e in await JobQueueServer.client_reload_locale_all() if e not in err]
+    err = build_locale_snapshot(list(lang_list.keys()), all_locales_path, "akari-bot")
     if len(err) == 0:
         await msg.finish(I18NContext("message.success"))
     else:

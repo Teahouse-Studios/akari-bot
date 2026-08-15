@@ -20,6 +20,7 @@ assets/modules/maimai*
 assets/modules/phigros*
 assets/private*
 assets/retired/*
+/assets/i18n_cache/*
 bots/test/*
 junit.xml
 modules/test/*
@@ -43,7 +44,6 @@ output/*
 generated_docs/*
 .mimocode/*
 .claude/*
-.claude/skills/akaribot-dev/SKILL.md
 CLAUDE.md
 AGENTS.md
 .agents/*
