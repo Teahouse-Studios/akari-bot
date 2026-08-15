@@ -9,7 +9,7 @@ import discord
 import filetype
 
 import bots.discord.slash as slash_modules
-from bots.discord.client import discord_bot
+from bots.discord.client import discord_bot, ensure_client_initialized
 from bots.discord.buttons import set_action_text_submit_handler, set_button_click_handler
 from bots.discord.interactions import handle_action_text_submit, handle_button_click
 from bots.discord.context import DiscordContextManager, DiscordFetchedContextManager
@@ -20,7 +20,6 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, Image, Voice
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
-from core.client.init import client_init
 from bots.discord.config import DiscordConfig, DiscordSecretConfig
 from core.config.base import CoreConfig
 from core.logger import Logger
@@ -65,7 +64,7 @@ async def on_ready():
     Logger.info(f"Logged on as {discord_bot.user}")
     global count
     if count == 0:
-        await client_init(target_prefix_list, sender_prefix_list)
+        await ensure_client_initialized()
         asyncio.create_task(cleanup_typing_signal())
         logging.getLogger("discord").setLevel(logging.INFO)
         count += 1
@@ -132,6 +131,7 @@ async def on_message(message: discord.Message):
 
     msg_chain = await to_message_chain(message)
 
+    await ensure_client_initialized()
     session = await SessionInfo.assign(
         target_id=target_id,
         sender_id=sender_id,
@@ -162,6 +162,7 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
     if isinstance(await discord_bot.fetch_channel(payload.channel_id), discord.DMChannel):
         target_from = target_dm_channel_prefix
     target_id = f"{target_from}|{payload.channel_id}"
+    await ensure_client_initialized()
     session = await SessionInfo.assign(
         target_id=target_id,
         sender_id=sender_id,

@@ -25,7 +25,8 @@ async def client_init(
 ) -> None:
     if rename_logger:
         Logger.rename(Info.client_name)
-    await init_db(load_module_db=load_module_db)
+    if not await init_db(load_module_db=load_module_db):
+        raise RuntimeError(f"Failed to initialize database for {Info.client_name}.")
     if queue:
         asyncio.create_task(check_queue())
     await JobQueueClient.send_keepalive_signal_to_server(

@@ -4,7 +4,7 @@ import discord
 from attrs import define
 
 from bots.discord.buttons import disable_selected_button
-from bots.discord.client import discord_bot
+from bots.discord.client import discord_bot, ensure_client_initialized
 from bots.discord.info import client_name, sender_prefix, target_channel_prefix, target_dm_channel_prefix
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
@@ -67,6 +67,7 @@ async def handle_button_click(
         target_dm_channel_prefix if isinstance(interaction.channel, discord.DMChannel) else target_channel_prefix
     )
     message_id = str(interaction.message.id)
+    await ensure_client_initialized()
     session = await SessionInfo.assign(
         target_id=f"{target_from}|{interaction.channel.id}",
         sender_id=sender_id,
@@ -99,6 +100,7 @@ async def handle_action_text_submit(
         target_dm_channel_prefix if isinstance(interaction.channel, discord.DMChannel) else target_channel_prefix
     )
     origin_message_id = str(origin_message.id) if origin_message else None
+    await ensure_client_initialized()
     session = await SessionInfo.assign(
         target_id=f"{target_from}|{interaction.channel.id}",
         sender_id=f"{sender_prefix}|{interaction.user.id}",

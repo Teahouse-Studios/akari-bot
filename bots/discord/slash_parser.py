@@ -1,5 +1,6 @@
 import discord
 
+from bots.discord.client import ensure_client_initialized
 from bots.discord.info import *
 from bots.discord.slash_context import DiscordSlashContextManager
 from core.builtins.bot import Bot
@@ -11,6 +12,7 @@ slash_ctx_id = Bot.register_context_manager(DiscordSlashContextManager)
 
 
 async def ctx_to_session(ctx: discord.ApplicationContext | discord.AutocompleteContext, command: str) -> SessionInfo:
+    await ensure_client_initialized()
     target_from = target_channel_prefix
     if isinstance(ctx, discord.ApplicationContext):
         if isinstance(ctx.channel, discord.DMChannel):

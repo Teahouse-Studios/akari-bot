@@ -1,93 +1,70 @@
-"""core.queue 单元测试 - 语言文件重载的跨进程广播（需要数据库）。"""
+"""core.i18n 单元测试 - 语言快照的发布与重载。"""
 
-import asyncio
+import os
+import tempfile
+import time
+from contextlib import redirect_stderr
+from io import StringIO
+from pathlib import Path
+from uuid import uuid4
 
-from core.alive import Alive
-from core.database.models import JobQueuesTable
-from core.queue.base import QueueTaskManager
-from core.queue.client import JobQueueClient
-from core.queue.server import JobQueueServer
+from core.i18n import Locale, build_locale_snapshot, connect_locale_snapshot
 from core.tester import func_case, Tester
 
 
-async def _answer_reload_jobs(results: dict[str, dict]) -> None:
-    """
-    扮演客户端取走 reload_locale 任务并回填结果。
-    """
-    answered = set()
-    for _ in range(200):
-        for tsk in await JobQueuesTable.filter(action="reload_locale", target_client__in=list(results)):
-            task_id = str(tsk.task_id)
-            # add_job 先落库、再登记等待，登记完成之前回填会丢失唤醒。
-            if task_id in QueueTaskManager.tasks:
-                await QueueTaskManager.set_result(task_id, results[tsk.target_client])
-                answered.add(tsk.target_client)
-        if answered == set(results):
-            return
-        await asyncio.sleep(0.05)
+def _write_locale(path: Path, value: str) -> None:
+    path.write_text(f'{{"snapshot":{{"value":"{value}"}}}}', encoding="utf-8")
 
 
-async def _test_reload_locale_handler_returns_errors():
-    """测试语言重载 - 客户端处理器回传错误列表"""
+def _test_locale_snapshot_reload():
+    """测试语言重载 - 发布新快照并保留上一份可用快照。"""
+    namespace = f"akari-bot-test-{uuid4().hex}"
     try:
-        handler = JobQueueClient.queue_actions.get("reload_locale")
-        if not handler:
-            return False
-        ret = await handler(None, {})
-        return isinstance(ret, dict) and isinstance(ret.get("err"), list)
+        with tempfile.TemporaryDirectory(prefix="akari_locale_reload_") as directory:
+            locale_file = Path(directory) / "zh_cn.json"
+            _write_locale(locale_file, "before")
 
-    except Exception:
-        return False
+            if build_locale_snapshot(["zh_cn"], [directory], namespace):
+                return False
+            first_generation = connect_locale_snapshot(namespace)
+            locale = Locale("zh_cn")
+            if locale.t("snapshot.value", fallback=False, locale_failed_prompt=False) != "before":
+                return False
 
+            # 内容长度和 mtime 都保持不变，确保重载依赖内容签名而非文件元数据。
+            stat = locale_file.stat()
+            _write_locale(locale_file, "after!")
+            os.utime(locale_file, ns=(stat.st_atime_ns, stat.st_mtime_ns))
 
-async def _test_reload_locale_without_clients():
-    """测试语言重载 - 无客户端在线时不留下无人认领的任务"""
-    alive = Alive.values.copy()
-    try:
-        Alive.values.clear()
-        if await JobQueueServer.client_reload_locale_all() != []:
-            return False
-        return await JobQueuesTable.filter(action="reload_locale").count() == 0
+            if build_locale_snapshot(["zh_cn"], [directory], namespace):
+                return False
+            # Reader 会定期检查共享 manifest，无需恢复旧的队列广播或显式重连。
+            time.sleep(1.1)
+            if locale.t("snapshot.value", fallback=False, locale_failed_prompt=False) != "after!":
+                return False
+            second_generation = connect_locale_snapshot(namespace)
+            if first_generation == second_generation:
+                return False
 
-    except Exception:
-        return False
-    finally:
-        Alive.values.clear()
-        Alive.values.update(alive)
-
-
-async def _test_reload_locale_merges_client_errors():
-    """测试语言重载 - 广播至各客户端并合并重复的错误"""
-    alive = Alive.values.copy()
-    timeout = JobQueueServer.RELOAD_LOCALE_TIMEOUT
-    try:
-        Alive.values.clear()
-        JobQueueServer.RELOAD_LOCALE_TIMEOUT = 10
-        for client in ("LOCALEA", "LOCALEB"):
-            Alive.refresh_alive(client, target_prefix_list=[f"{client}|Group"], sender_prefix_list=[client])
-
-        results = {"LOCALEA": {"err": ["conflict"]}, "LOCALEB": {"err": ["conflict", "broken"]}}
-        errs, _ = await asyncio.gather(
-            JobQueueServer.client_reload_locale_all(),
-            _answer_reload_jobs(results),
-        )
-        # 各客户端读的是同一批语言文件，重复的错误叠加输出只会淹没真正的差异。
-        return sorted(errs) == ["broken", "conflict"]
-
+            # 临时写坏语言文件时应报告错误，但不能替换已经发布的健康快照。
+            locale_file.write_text("{", encoding="utf-8")
+            with redirect_stderr(StringIO()):
+                errors = build_locale_snapshot(["zh_cn"], [directory], namespace)
+            preserved_generation = connect_locale_snapshot(namespace)
+            return (
+                bool(errors)
+                and preserved_generation == second_generation
+                and locale.t("snapshot.value", fallback=False, locale_failed_prompt=False) == "after!"
+            )
     except Exception:
         return False
     finally:
-        JobQueueServer.RELOAD_LOCALE_TIMEOUT = timeout
-        await JobQueuesTable.filter(action="reload_locale").delete()
-        Alive.values.clear()
-        Alive.values.update(alive)
+        # 后续测试仍应使用测试框架在启动时发布的项目语言快照。
+        connect_locale_snapshot("akari-bot")
 
 
 @func_case
 async def test_locale_reload(tester: Tester):
-    """core.queue: 语言文件重载广播测试"""
-    await tester.test(_test_reload_locale_handler_returns_errors, "客户端重载处理器测试")
-    await tester.test(_test_reload_locale_without_clients, "无客户端在线测试")
-    await tester.test(_test_reload_locale_merges_client_errors, "多客户端错误合并测试")
-
+    """core.i18n: 语言快照重载测试。"""
+    await tester.test(_test_locale_snapshot_reload, "语言快照发布与回退测试")
     return tester

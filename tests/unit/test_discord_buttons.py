@@ -142,6 +142,7 @@ async def _test_successful_click_routes_message():
     )
     assigned = SimpleNamespace()
     with (
+        patch("bots.discord.interactions.ensure_client_initialized", new=AsyncMock()) as ensure_initialized,
         patch("bots.discord.interactions.SessionInfo.assign", new=AsyncMock(return_value=assigned)) as assign,
         patch("bots.discord.interactions.Bot.process_message", new=AsyncMock()) as process,
         patch("bots.discord.interactions._get_bot_id", return_value="30"),
@@ -151,6 +152,7 @@ async def _test_successful_click_routes_message():
     return (
         response.defer.await_count == 1
         and message.edit.await_count == 1
+        and ensure_initialized.await_count == 1
         and button.disabled is True
         and kwargs["sender_id"] == "Discord|Client|1"
         and kwargs["reply_id"] == "10"
@@ -190,6 +192,7 @@ async def _test_action_text_submit_routes_edited_message():
     )
     assigned = SimpleNamespace()
     with (
+        patch("bots.discord.interactions.ensure_client_initialized", new=AsyncMock()) as ensure_initialized,
         patch("bots.discord.interactions.SessionInfo.assign", new=AsyncMock(return_value=assigned)) as assign,
         patch("bots.discord.interactions.Bot.process_message", new=AsyncMock()) as process,
         patch("bots.discord.interactions._get_bot_id", return_value="30"),
@@ -199,6 +202,7 @@ async def _test_action_text_submit_routes_edited_message():
     context = process.await_args.args[1]
     return (
         response.defer.await_count == 1
+        and ensure_initialized.await_count == 1
         and kwargs["message_id"] == "11"
         and kwargs["reply_id"] == "10"
         and kwargs["messages"].to_str() == "~help edited"
