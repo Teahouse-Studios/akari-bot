@@ -1,0 +1,18 @@
+{
+    "mod_dl.help": "",
+    "mod_dl.help.desc": "",
+    "mod_dl.message.curseforge.not_found": "",
+    "mod_dl.message.curseforge.result": "",
+    "mod_dl.message.download_url": "",
+    "mod_dl.message.filename": "",
+    "mod_dl.message.invalid.non_digital": "",
+    "mod_dl.message.invalid.out_of_range": "",
+    "mod_dl.message.modrinth.not_found": "",
+    "mod_dl.message.modrinth.result": "",
+    "mod_dl.message.not_found": "",
+    "mod_dl.message.prompt": "",
+    "mod_dl.message.version": "",
+    "mod_dl.message.version.not_found": "",
+    "mod_dl.message.version.prompt": "",
+    "config.comments.module_mod_dl_secret.curseforge_api_key": ""
+}
