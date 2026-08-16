@@ -1,0 +1,11 @@
+{
+    "config.comments.bot_onebot.qq_allow_approve_friend": "",
+    "config.comments.bot_onebot.qq_allow_approve_group_invite": "",
+    "config.comments.bot_onebot.qq_enable_temp_session": "",
+    "config.comments.bot_onebot.qq_enable_listening_self_message": "",
+    "config.comments.bot_onebot.qq_host": "",
+    "config.comments.bot_onebot.qq_initiative_msg_cooldown": "",
+    "config.comments.bot_onebot.qq_limited_emoji": "",
+    "config.comments.bot_onebot.qq_typing_emoji": "",
+    "config.comments.bot_onebot_secret.qq_access_token": ""
+}
