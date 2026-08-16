@@ -1,0 +1,11 @@
+{
+    "server.help": "",
+    "server.help.option.p": "",
+    "server.help.option.r": "",
+    "server.message.local_address": "",
+    "server.message.gamemode": "",
+    "server.message.not_found": "",
+    "server.message.player": "",
+    "server.message.player.current": "",
+    "server.message.version": ""
+}
