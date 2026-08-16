@@ -9,3 +9,4 @@ browser_type = "chrome" # The browser type used by WebRender. (Supports "chrome"
 browser_executable_path = "<Replace me with str value>" # The browser executable file path used by WebRender. If empty, the default browser installed by Playwright is used.
 remote_only = false # Whether to use the remote WebRender service only.
 remote_web_render_url = "<Replace me with str value>" # The URL of the remote WebRender service. Try the request if the local WebRender rendering fails.
+headless = true # 是否以无头模式运行浏览器。
