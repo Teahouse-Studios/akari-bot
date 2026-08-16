@@ -1,0 +1,18 @@
+{
+    "whois.help": "",
+    "whois.message.creation_date": "",
+    "whois.message.dnssec": "",
+    "whois.message.domain_name": "",
+    "whois.message.email": "",
+    "whois.message.expiration_date": "",
+    "whois.message.get_failed": "",
+    "whois.message.location": "",
+    "whois.message.name": "",
+    "whois.message.name_servers": "",
+    "whois.message.organization": "",
+    "whois.message.postal_code": "",
+    "whois.message.referral_url": "",
+    "whois.message.registrar": "",
+    "whois.message.updated_date": "",
+    "whois.message.whois_server": ""
+}
