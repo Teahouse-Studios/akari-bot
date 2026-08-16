@@ -1,0 +1,23 @@
+{
+    "ai.help": "",
+    "ai.help.desc": "",
+    "ai.help.llm.instruct": "",
+    "ai.help.llm.list": "",
+    "ai.help.llm.set": "",
+    "ai.help.option.llm": "",
+    "ai.help.option.no_tools": "",
+    "ai.message.llm.instruct.clear.success": "",
+    "ai.message.llm.instruct.set.success": "",
+    "ai.message.llm.list.none": "",
+    "ai.message.llm.list": "",
+    "ai.message.llm.list.prompt": "",
+    "ai.message.llm.invalid": "",
+    "config.comments.module_ai_secret.e2b_api_key": "",
+    "config.comments.module_ai.ai_default_llm": "",
+    "config.comments.module_ai.llm_frequency_penalty": "",
+    "config.comments.module_ai.llm_max_tokens": "",
+    "config.comments.module_ai.llm_timeout": "",
+    "config.comments.module_ai.llm_presence_penalty": "",
+    "config.comments.module_ai.llm_temperature": "",
+    "config.comments.module_ai.llm_top_p": ""
+}
