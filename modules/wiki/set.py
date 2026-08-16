@@ -34,7 +34,8 @@ async def _(msg: Bot.MessageSession, wikiurl: str):
             if wiki_whitelist_url:
                 prompts.append(
                     I18NContext(
-                        "wiki.message.wiki_audit.untrust.address", url=MessageChain.assign(Url(wiki_whitelist_url))
+                        "wiki.message.wiki_audit.untrust.address",
+                        url=MessageChain.assign(Url(wiki_whitelist_url, trusted=True)),
                     )
                 )
 
@@ -96,12 +97,11 @@ async def _(msg: Bot.MessageSession):
     query = target.interwikis
     start_wiki = target.api_link
     base_interwiki_link = None
+    wiki_info = None
     if start_wiki:
-        base_interwiki_link_ = await WikiLib(start_wiki, target.headers).parse_page_info(
-            "Special:Interwiki", session=msg
-        )
-        if base_interwiki_link_.status:
-            base_interwiki_link = base_interwiki_link_.link
+        wiki_info = await WikiLib(start_wiki, target.headers).parse_page_info("Special:Interwiki", session=msg)
+        if wiki_info.status:
+            base_interwiki_link = wiki_info.link
     result = []
     if query != {}:
         if not msg.parsed_msg.get("--legacy", False) and msg.session_info.support_image:
@@ -119,7 +119,17 @@ async def _(msg: Bot.MessageSession):
                 )
             ]
             if base_interwiki_link:
-                mt.append(I18NContext("wiki.message.iw.list.prompt", url=MessageChain.assign(Url(base_interwiki_link))))
+                mt.append(
+                    I18NContext(
+                        "wiki.message.iw.list.prompt",
+                        url=MessageChain.assign(
+                            Url(
+                                base_interwiki_link,
+                                trusted=True if wiki_info and wiki_info.info and wiki_info.info.in_allowlist else None,
+                            )
+                        ),
+                    )
+                )
             await msg.finish(img_list + mt)
         else:
             result.append(I18NContext("wiki.message.iw.list.legacy"))
@@ -134,7 +144,17 @@ async def _(msg: Bot.MessageSession):
             )
         )
     if base_interwiki_link:
-        result.append(I18NContext("wiki.message.iw.list.prompt", url=MessageChain.assign(Url(base_interwiki_link))))
+        result.append(
+            I18NContext(
+                "wiki.message.iw.list.prompt",
+                url=MessageChain.assign(
+                    Url(
+                        base_interwiki_link,
+                        trusted=True if wiki_info and wiki_info.info and wiki_info.info.in_allowlist else None,
+                    )
+                ),
+            )
+        )
     await msg.finish(result)
 
 
