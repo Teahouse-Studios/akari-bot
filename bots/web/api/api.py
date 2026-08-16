@@ -145,6 +145,7 @@ async def get_config(request: Request):
 
 
 @app.get("/api/server-info")
+@limiter.limit("6/minute")
 async def server_info(request: Request):
     verify_jwt(request)
     return {
@@ -175,6 +176,7 @@ async def server_info(request: Request):
 
 
 @app.get("/api/analytics")
+@limiter.limit("20/minute")
 async def get_analytics(request: Request, days: int = Query(1)):
     verify_jwt(request)
     try:
@@ -200,6 +202,7 @@ async def get_analytics(request: Request, days: int = Query(1)):
 
 
 @app.get("/api/config")
+@limiter.limit("30/minute")
 async def get_config_list(request: Request):
     verify_jwt(request)
     try:
@@ -219,6 +222,7 @@ async def get_config_list(request: Request):
 
 
 @app.get("/api/config/{cfg_filename}")
+@limiter.limit("30/minute")
 async def get_config_file(request: Request, cfg_filename: str):
     verify_jwt(request)
     if not config_path.exists():
@@ -241,6 +245,7 @@ async def get_config_file(request: Request, cfg_filename: str):
 
 
 @app.put("/api/config/{cfg_filename}")
+@limiter.limit("10/minute")
 async def edit_config_file(request: Request, cfg_filename: str):
     ip = get_client_ip(request)
     try:
@@ -269,6 +274,7 @@ async def edit_config_file(request: Request, cfg_filename: str):
 
 
 @app.get("/api/target")
+@limiter.limit("30/minute")
 async def get_target_list(
     request: Request,
     prefix: str = Query(None),
@@ -311,6 +317,7 @@ async def get_target_list(
 
 
 @app.get("/api/target/{target_id}")
+@limiter.limit("30/minute")
 async def get_target_info(request: Request, target_id: str):
     try:
         verify_jwt(request)
@@ -327,6 +334,7 @@ async def get_target_info(request: Request, target_id: str):
 
 
 @app.patch("/api/target/{target_id}")
+@limiter.limit("20/minute")
 async def edit_target_info(request: Request, target_id: str):
     ip = get_client_ip(request)
     try:
@@ -384,6 +392,7 @@ async def edit_target_info(request: Request, target_id: str):
 
 
 @app.delete("/api/target/{target_id}")
+@limiter.limit("20/minute")
 async def delete_target_info(request: Request, target_id: str):
     ip = get_client_ip(request)
     try:
@@ -405,6 +414,7 @@ async def delete_target_info(request: Request, target_id: str):
 
 
 @app.get("/api/sender")
+@limiter.limit("30/minute")
 async def get_sender_list(
     request: Request,
     prefix: str = Query(None),
@@ -449,6 +459,7 @@ async def get_sender_list(
 
 
 @app.get("/api/sender/{sender_id}")
+@limiter.limit("30/minute")
 async def get_sender_info(request: Request, sender_id: str):
     try:
         verify_jwt(request)
@@ -465,6 +476,7 @@ async def get_sender_info(request: Request, sender_id: str):
 
 
 @app.patch("/api/sender/{sender_id}")
+@limiter.limit("20/minute")
 async def edit_sender_info(request: Request, sender_id: str):
     ip = get_client_ip(request)
     try:
@@ -516,6 +528,7 @@ async def edit_sender_info(request: Request, sender_id: str):
 
 
 @app.delete("/api/sender/{sender_id}")
+@limiter.limit("20/minute")
 async def delete_sender_info(request: Request, sender_id: str):
     ip = get_client_ip(request)
     try:
@@ -536,6 +549,7 @@ async def delete_sender_info(request: Request, sender_id: str):
 
 
 @app.get("/api/modules_list")
+@limiter.limit("30/minute")
 async def get_modules_list(request: Request):
     try:
         verify_jwt(request)
@@ -549,6 +563,7 @@ async def get_modules_list(request: Request):
 
 
 @app.get("/api/modules")
+@limiter.limit("30/minute")
 async def get_modules_info(request: Request, locale: str = Query(default_locale)):
     try:
         verify_jwt(request)
@@ -563,6 +578,7 @@ async def get_modules_info(request: Request, locale: str = Query(default_locale)
 
 
 @app.get("/api/module/{module_name}/related")
+@limiter.limit("30/minute")
 async def search_related_module(request: Request, module_name: str):
     try:
         verify_jwt(request)
@@ -576,6 +592,7 @@ async def search_related_module(request: Request, module_name: str):
 
 
 @app.get("/api/module/{module_name}/helpdoc")
+@limiter.limit("30/minute")
 async def get_module_helpdoc(request: Request, module_name: str, locale: str = Query(default_locale)):
     try:
         verify_jwt(request)
@@ -591,6 +608,7 @@ async def get_module_helpdoc(request: Request, module_name: str, locale: str = Q
 
 
 @app.post("/api/module/{module_name}/reload")
+@limiter.limit("10/minute")
 async def reload_module(request: Request, module_name: str):
     ip = get_client_ip(request)
     try:
@@ -609,6 +627,7 @@ async def reload_module(request: Request, module_name: str):
 
 
 @app.post("/api/module/{module_name}/load")
+@limiter.limit("10/minute")
 async def load_module(request: Request, module_name: str):
     ip = get_client_ip(request)
     try:
@@ -628,6 +647,7 @@ async def load_module(request: Request, module_name: str):
 
 
 @app.post("/api/module/{module_name}/unload")
+@limiter.limit("10/minute")
 async def unload_module(request: Request, module_name: str):
     ip = get_client_ip(request)
     try:
@@ -651,6 +671,7 @@ async def restart():
 
 
 @app.post("/api/restart")
+@limiter.limit("3/minute")
 async def restart_bot(request: Request):
     ip = get_client_ip(request)
     verify_jwt(request)

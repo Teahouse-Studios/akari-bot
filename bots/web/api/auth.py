@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import hashlib
 import secrets
@@ -115,12 +116,13 @@ def verify_jwt(request: Request):
 
 
 @app.get("/api/verify")
-@limiter.limit("10/second")
+@limiter.limit("10/minute")
 async def verify_token(request: Request):
     return verify_jwt(request)
 
 
 @app.post("/api/login")
+@limiter.limit("10/minute")
 async def auth(request: Request):
     ip = get_client_ip(request)
     if await MaliciousLoginRecords.check_blocked(ip):
@@ -166,7 +168,7 @@ async def auth(request: Request):
 
             if attempts_count >= 3:
                 await asyncio.sleep(min(attempts_count - 2, 5))
-                
+
             Logger.warning(f"[WebUI] {ip} login failed.")
             raise HTTPException(status_code=403, detail="Invalid password")
 
@@ -234,6 +236,7 @@ async def auth(request: Request):
 
 
 @app.put("/api/password")
+@limiter.limit("5/minute")
 async def change_password(request: Request, response: Response):
     ip = get_client_ip(request)
     try:
@@ -313,6 +316,7 @@ async def change_password(request: Request, response: Response):
 
 
 @app.delete("/api/password")
+@limiter.limit("5/minute")
 async def clear_password(request: Request):
     ip = get_client_ip(request)
     try:
@@ -355,6 +359,7 @@ async def has_password(request: Request):
 
 
 @app.get("/api/totp")
+@limiter.limit("10/minute")
 async def get_totp_status(request: Request):
     try:
         verify_jwt(request)

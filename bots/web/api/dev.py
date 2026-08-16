@@ -11,7 +11,7 @@ from fastapi.responses import Response, FileResponse, PlainTextResponse
 from tortoise import Tortoise
 from tortoise.exceptions import OperationalError
 
-from bots.web.client import app, get_client_ip
+from bots.web.client import app, limiter, get_client_ip
 from core.constants import dev_mode
 from core.database import fetch_module_db, get_model_fields, get_model_names
 from core.logger import Logger
@@ -21,6 +21,7 @@ ROOT_DIR = Path(__file__).parent.parent.parent.parent
 
 
 @app.get("/api/dev")
+@limiter.limit("10/minute")
 async def is_dev(request: Request):
     verify_jwt(request)
     return {"is_dev": dev_mode}
@@ -29,6 +30,7 @@ async def is_dev(request: Request):
 if dev_mode:
 
     @app.get("/api/dev/database/list")
+    @limiter.limit("30/minute")
     async def get_db_model_list(request: Request):
         try:
             verify_jwt(request)
@@ -43,6 +45,7 @@ if dev_mode:
             raise HTTPException(status_code=400, detail="Bad request")
 
     @app.get("/api/dev/database/field/{model}")
+    @limiter.limit("30/minute")
     async def get_db_model_fields(request: Request, model: str):
         try:
             verify_jwt(request)
@@ -57,6 +60,7 @@ if dev_mode:
             raise HTTPException(status_code=400, detail="Bad request")
 
     @app.post("/api/dev/database/exec")
+    @limiter.limit("10/minute")
     async def exec_sql(request: Request):
         ip = get_client_ip(request)
         try:
@@ -103,6 +107,7 @@ if dev_mode:
         }
 
     @app.get("/api/dev/files/list")
+    @limiter.limit("30/minute")
     def list_files(request: Request, path: str = ""):
         try:
             verify_jwt(request)
@@ -121,6 +126,7 @@ if dev_mode:
             raise HTTPException(status_code=400, detail="Bad request")
 
     @app.get("/api/dev/files/download")
+    @limiter.limit("20/minute")
     def download_file(request: Request, path: str):
         ip = get_client_ip(request)
         try:
@@ -149,6 +155,7 @@ if dev_mode:
             raise HTTPException(status_code=400, detail="Bad request")
 
     @app.delete("/api/dev/files/delete")
+    @limiter.limit("20/minute")
     def delete_file(request: Request, path: str):
         ip = get_client_ip(request)
         try:
@@ -176,6 +183,7 @@ if dev_mode:
             raise HTTPException(status_code=400, detail="Bad request")
 
     @app.post("/api/dev/files/rename")
+    @limiter.limit("20/minute")
     async def rename_file(request: Request):
         ip = get_client_ip(request)
         try:
@@ -211,6 +219,7 @@ if dev_mode:
             raise HTTPException(status_code=400, detail="Bad request")
 
     @app.post("/api/dev/files/upload")
+    @limiter.limit("20/minute")
     def upload_file(request: Request, path: str = Form(""), file: UploadFile = File(...)):
         ip = get_client_ip(request)
         try:
@@ -240,6 +249,7 @@ if dev_mode:
             raise HTTPException(status_code=400, detail="Bad request")
 
     @app.post("/api/dev/files/create")
+    @limiter.limit("20/minute")
     def create_file_or_dir(request: Request, path: str = "", name: str = "", filetype: str = ""):
         ip = get_client_ip(request)
         try:
@@ -261,6 +271,7 @@ if dev_mode:
             raise HTTPException(status_code=400, detail="Bad request")
 
     @app.get("/api/dev/files/preview")
+    @limiter.limit("30/minute")
     def preview_file(request: Request, path: str):
         try:
             verify_jwt(request)
