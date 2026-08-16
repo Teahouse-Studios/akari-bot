@@ -45,7 +45,7 @@ _多功能、跨平台、可自由扩展的异步聊天机器人助手_
 由于腾讯风控问题，请[在此提交](https://github.com/Teahouse-Studios/akari-bot/issues/new?assignees=OasisAkari&labels=New&template=add_new_group.yaml&title=%5BNEW%5D%3A+)入群申请。
 -->
 
-你也可以加入我们的 QQ 公共实例测试群：[738829671](https://qm.qq.com/q/Rmuo5ORYgq)
+你也可以加入我们的 QQ 公共实例反馈群：[738829671](https://qm.qq.com/q/Rmuo5ORYgq)
 #### Discord
 
 邀请链接：<https://discord.com/oauth2/authorize?client_id=879379218209861712&scope=bot&permissions=71605695277126>
