@@ -11,10 +11,8 @@ import asyncio
 import importlib
 import multiprocessing
 import os
-import signal
 import shutil
 import sys
-import threading
 import time
 import traceback
 from pathlib import Path
@@ -24,7 +22,6 @@ from loguru import logger
 
 from core.constants import ascii_art, bots_path, logs_path  # skipcq
 from core.config import CONFIG_READONLY_ENV
-from core.restart import RESTART_ALL_EXIT_CODE, RESTART_PROCESS_EXIT_CODE
 
 
 AKARI_BOT_I18N_CACHE_DIR = str(Path("./assets/i18n_cache/").resolve())
@@ -90,13 +87,6 @@ failed_to_start_attempts = {}
 disabled_bots = []
 processes: list[multiprocessing.Process] = []
 server_stop_event = None
-_termination_requested = threading.Event()
-
-
-def _termination_signal_handler(signum, frame):
-    """把 SIGTERM 转换为现有的受控退出流程。"""
-    del signum, frame
-    _termination_requested.set()
 
 
 def pre_init():
@@ -120,7 +110,7 @@ def pre_init():
     from core.config.scan import scan_config_templates
     from core.constants.version import database_version
     from core.database.link import get_db_link
-    from core.database.models import SenderUnionInfo, DBVersion, JobQueuesTable
+    from core.database.models import SenderUnionInfo, DBVersion
 
     # 配置的生成集中在此完成：子进程一律只读，此处遗漏的键将在子进程读取时抛出异常，
     # 因此任何模板加载失败均须中止启动，而非延至运行期才暴露。
@@ -161,23 +151,17 @@ def pre_init():
 
         Logger.info("Granting base superuser permission...")
         base_superuser = CoreConfig.base_superuser
-        await Tortoise.init(db_url=get_db_link(), modules={"models": ["core.database.models"]})
         if base_superuser:
             if isinstance(base_superuser, str):
                 base_superuser = [base_superuser]
+            await Tortoise.init(db_url=get_db_link(), modules={"models": ["core.database.models"]})
             for bu in base_superuser:
                 sender_info = await SenderUnionInfo.resolve_union(bu)
                 await sender_info.edit_attr("superuser", True)
+            await close_db()
             Logger.success("Base superuser permission granted successfully!")
         else:
             Logger.warning("The base superuser is not found, please setup it in the config file.")
-
-        # IDE Stop/TerminateProcess、SIGKILL 或断电无法执行任何 finally；JobQueue 是瞬态 IPC，
-        # 新一轮启动前必须清掉上一轮遗留，且此时平台与 Server 子进程尚未创建，不存在误删新任务的竞态。
-        stale_jobs = await JobQueuesTable.clear_all_tasks()
-        if stale_jobs:
-            Logger.warning(f"Cleared {stale_jobs} stale JobQueue records left by the previous run.")
-        await close_db()
 
     run_async(update_db())
     Logger.success("Pre-init completed successfully!")
@@ -191,9 +175,6 @@ def multiprocess_run_until_complete(func):
     p.start()
 
     while True:
-        if _termination_requested.is_set():
-            terminate_process(p)
-            raise SystemExit(0)
         if not p.is_alive():
             break
         time.sleep(1)
@@ -243,20 +224,6 @@ async def run_bot():
 
     mp = multiprocessing.get_context("spawn" if sys.platform in ["win32", "darwin"] else "forkserver")
 
-    def start_bot_process(bot_name: str):
-        p = mp.Process(
-            target=go,
-            args=(
-                bot_name,
-                True,
-                binary_mode,
-            ),
-            name=bot_name,
-            daemon=True,
-        )
-        p.start()
-        processes.append(p)
-
     def restart_bot_process(bot_name: str):
         if (
             bot_name not in failed_to_start_attempts
@@ -272,19 +239,18 @@ async def run_bot():
             return
 
         Logger.warning(f"Restarting bot {bot_name}...")
-        start_bot_process(bot_name)
-
-    def start_server_process():
-        global server_stop_event
-        server_stop_event = mp.Event()
-        server_process = mp.Process(
-            target=server_go,
-            args=(server_stop_event, True, binary_mode),
-            name="server",
+        p = mp.Process(
+            target=go,
+            args=(
+                bot_name,
+                True,
+                binary_mode,
+            ),
+            name=bot_name,
             daemon=True,
         )
-        server_process.start()
-        processes.append(server_process)
+        p.start()
+        processes.append(p)
 
     bots_list = [p.name for p in bots_path.iterdir() if p.is_dir() and not p.name.startswith("_")]
     disabled_bots.clear()
@@ -302,33 +268,32 @@ async def run_bot():
     for bl in bots_list:
         if bl in disabled_bots:
             continue
-        start_bot_process(bl)
+        p = mp.Process(target=go, args=(bl, True, binary_mode), name=bl, daemon=True)
+        p.start()
+        processes.append(p)
 
     # run the server process
-    start_server_process()
+    server_stop_event = mp.Event()
+    server_process = mp.Process(
+        target=server_go,
+        args=(server_stop_event, True, binary_mode),
+        name="server",
+        daemon=True,
+    )
+
+    server_process.start()
+    processes.append(server_process)
 
     while len(processes) > 1:
-        if _termination_requested.is_set():
-            raise SystemExit(0)
         for p in processes:
             if p.is_alive():
                 continue
             if p.name == "server":
                 if p.exitcode == 0:
                     sys.exit(0)
-                if p.exitcode == RESTART_ALL_EXIT_CODE:
-                    Logger.warning(
-                        f"Process {p.pid} (server) exited with code {RESTART_ALL_EXIT_CODE}, restart all bots."
-                    )
+                if p.exitcode == 233:
+                    Logger.warning(f"Process {p.pid} (server) exited with code 233, restart all bots.")
                     raise RestartBot
-                if p.exitcode == RESTART_PROCESS_EXIT_CODE:
-                    Logger.warning(
-                        f"Process {p.pid} (server) exited with code {RESTART_PROCESS_EXIT_CODE}, restart server only."
-                    )
-                    processes.remove(p)
-                    terminate_process(p)
-                    start_server_process()
-                    break
                 Logger.critical(f"Process {p.pid} (server) exited with code {p.exitcode}, please check the log.")
                 sys.exit(p.exitcode)
             if p.exitcode == 0:
@@ -336,20 +301,9 @@ async def run_bot():
                 processes.remove(p)
                 terminate_process(p)
                 break
-            if p.exitcode == RESTART_ALL_EXIT_CODE:
-                Logger.warning(
-                    f"Process {p.pid} ({p.name}) exited with code {RESTART_ALL_EXIT_CODE}, restart all bots."
-                )
+            if p.exitcode == 233:
+                Logger.warning(f"Process {p.pid} ({p.name}) exited with code 233, restart all bots.")
                 raise RestartBot
-            if p.exitcode == RESTART_PROCESS_EXIT_CODE:
-                bot_name = p.name
-                Logger.warning(
-                    f"Process {p.pid} ({bot_name}) exited with code {RESTART_PROCESS_EXIT_CODE}, restart this bot only."
-                )
-                processes.remove(p)
-                terminate_process(p)
-                start_bot_process(bot_name)
-                break
             Logger.critical(f"Process {p.pid} ({p.name}) exited with code {p.exitcode}, please check the log.")
             processes.remove(p)
             terminate_process(p)
@@ -363,7 +317,7 @@ async def run_bot():
 def terminate_process(
     process: multiprocessing.Process,
     graceful_event=None,
-    graceful_timeout: float = 30,
+    graceful_timeout: float = 10,
 ):
     """优先请求进程自行清理，超时后再逐级终止。"""
     try:
@@ -398,8 +352,6 @@ def cleanup_processes():
 
 async def main_async():
     try:
-        if _termination_requested.is_set():
-            raise SystemExit(0)
         multiprocess_run_until_complete(pre_init)
         await run_bot()  # Process will block here so
     except RestartBot as e:
@@ -428,8 +380,6 @@ def main():
         try:
             asyncio.run(main_async())
         except RestartBot:
-            if _termination_requested.is_set():
-                break
             clear_import_cache()
             continue
         except (KeyboardInterrupt, SystemExit):
@@ -438,8 +388,6 @@ def main():
 
 if __name__ == "__main__":
     init_daemon_logger()
-    if hasattr(signal, "SIGTERM"):
-        signal.signal(signal.SIGTERM, _termination_signal_handler)
     # Detect if the program is already running
     lock_file_path = Path("./.bot.lock").resolve()
     if sys.platform == "win32":

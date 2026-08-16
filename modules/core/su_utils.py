@@ -2,8 +2,6 @@ import re
 import shutil
 import time
 import traceback
-from dataclasses import dataclass
-
 from attrs import fields as attrs_fields
 
 import orjson
@@ -19,13 +17,12 @@ from core.component import module
 from core.config import CFGManager
 from core.config.base import CoreConfig
 from core.constants.exceptions import NoReportException, TestException
-from core.constants.path import bots_path, cache_path
+from core.constants.path import cache_path
 from core.database.models import SenderUnionInfo, TargetUnionInfo, JobQueuesTable
 from core.loader import ModulesManager
 from core.logger import Logger
-from core.restart import RestartPlan, RestartScope, classify_restart_paths, parse_git_diff_paths
 from core.scheduler import CronTrigger
-from core.server.terminate import restart, restart_bots
+from core.server.terminate import restart
 from core.tos import WARNING_COUNTS, check_temp_ban, remove_temp_ban
 from core.types import Param
 from core.utils.bash import run_sys_command
@@ -437,55 +434,11 @@ async def _(msg: Bot.MessageSession, target: str):
 upd = module("update", required_superuser=True, base=True, doc=True)
 
 
-@dataclass(frozen=True)
-class PullRepoResult:
-    output: str
-    old_head: str | None
-    new_head: str | None
-    changed_paths: tuple[str, ...] | None
-
-
-async def get_git_head() -> str | None:
-    returncode, commit_hash, _ = await run_sys_command(["git", "rev-parse", "HEAD"])
-    return commit_hash if returncode == 0 and commit_hash else None
-
-
-async def get_changed_paths(old_head: str, new_head: str) -> tuple[str, ...] | None:
-    returncode, output, error = await run_sys_command(
-        ["git", "diff", "--name-only", "--no-renames", "-z", old_head, new_head, "--"]
-    )
-    if returncode != 0:
-        Logger.warning(f"Failed to inspect changes between {old_head} and {new_head}: {error}")
-        return None
-    return parse_git_diff_paths(output)
-
-
 async def pull_repo():
-    old_head = await get_git_head()
     returncode, output, error = await run_sys_command(["git", "pull"], timeout=60)
     if returncode != 0:
-        return PullRepoResult(error, old_head, None, None)
-    new_head = await get_git_head()
-    changed_paths = await get_changed_paths(old_head, new_head) if old_head and new_head else None
-    return PullRepoResult(output, old_head, new_head, changed_paths)
-
-
-def make_restart_plan(changed_paths: tuple[str, ...] | None) -> RestartPlan:
-    if changed_paths is None:
-        return RestartPlan(RestartScope.ALL)
-    available_bots = {path.name for path in bots_path.iterdir() if path.is_dir() and not path.name.startswith("_")}
-    return classify_restart_paths(changed_paths, available_bots)
-
-
-async def inspect_pending_restart() -> tuple[RestartPlan, str | None]:
-    version = str(Bot.Info.version or "")
-    if not version.startswith("git:"):
-        return RestartPlan(RestartScope.ALL), None
-    old_head = version.removeprefix("git:")
-    new_head = await get_git_head()
-    if not new_head:
-        return RestartPlan(RestartScope.ALL), None
-    return make_restart_plan(await get_changed_paths(old_head, new_head)), new_head
+        return error
+    return output
 
 
 async def update_dependencies():
@@ -505,8 +458,8 @@ async def _(msg: Bot.MessageSession):
     if not Bot.Info.binary_mode:
         if Bot.Info.version and Bot.Info.version.startswith("git:"):
             pull_repo_result = await pull_repo()
-            if pull_repo_result.output:
-                await msg.send_message(Plain(pull_repo_result.output, disable_joke=True))
+            if pull_repo_result:
+                await msg.send_message(Plain(pull_repo_result, disable_joke=True))
 
         update_dependencies_result = await update_dependencies()
         if update_dependencies_result:
@@ -539,56 +492,27 @@ async def wait_for_restart(msg: Bot.MessageSession):
         await msg.send_message(I18NContext("core.message.restart.timeout"))
 
 
-async def prepare_restart(msg: Bot.MessageSession, force: bool = False):
-    if force:
-        return
+@rst.command("[--force-im-sure-what-i-am-doing]")
+async def _(msg: Bot.MessageSession):
+    if msg.parsed_msg and msg.parsed_msg.get("--force-im-sure-what-i-am-doing", False):
+        await restart()
     try:
         if not await msg.wait_confirm(append_instruction=False):
             await msg.finish()
-        if not restart_time:
-            restart_time.append(time.time())
-        await wait_for_restart(msg)
+        else:
+            if not restart_time:
+                restart_time.append(time.time())
+            await wait_for_restart(msg)
     except Exception:
         Logger.critical("Failed to send restart confirmation message, perhaps bug? Force restart...")
         Logger.critical(traceback.format_exc())
-
-
-async def execute_restart_plan(msg: Bot.MessageSession, plan: RestartPlan, new_head: str | None = None):
-    if plan.scope == RestartScope.MANUAL:
-        restart_time.clear()
-        await msg.finish(I18NContext("core.message.restart.manual_required"))
-    if plan.scope == RestartScope.BOTS:
-        try:
-            await msg.send_message(I18NContext("core.message.restart.bots", bots=", ".join(plan.bots)))
-            failed = await restart_bots(plan.bots)
-        except Exception:
-            Logger.exception("Failed to perform targeted bot restart, falling back to full restart.")
-            failed = plan.bots
-        if failed:
-            Logger.warning(f"Failed to request targeted restart for bots {failed}, falling back to full restart.")
-            plan = RestartPlan(RestartScope.ALL)
-        else:
-            if new_head:
-                Bot.Info.version = f"git:{new_head}"
-            restart_time.clear()
-            return
     try:
         restart_time.append(time.time())
         write_restart_cache(msg)
     except Exception:
         Logger.critical("Failed to write restart info cache, perhaps bug? Continue...")
         Logger.critical(traceback.format_exc())
-    await restart(server_only=plan.scope == RestartScope.SERVER)
-
-
-@rst.command("[--force-im-sure-what-i-am-doing]")
-async def _(msg: Bot.MessageSession):
-    force = bool(msg.parsed_msg and msg.parsed_msg.get("--force-im-sure-what-i-am-doing", False))
-    plan, new_head = await inspect_pending_restart()
-    if plan.scope == RestartScope.MANUAL:
-        await execute_restart_plan(msg, plan, new_head)
-    await prepare_restart(msg, force)
-    await execute_restart_plan(msg, plan, new_head)
+    await restart()
 
 
 upds = module(
@@ -604,15 +528,32 @@ upds = module(
 
 @upds.command("[--force-im-sure-what-i-am-doing]")
 async def _(msg: Bot.MessageSession):
-    force = bool(msg.parsed_msg and msg.parsed_msg.get("--force-im-sure-what-i-am-doing", False))
+    if msg.parsed_msg and msg.parsed_msg.get("--force-im-sure-what-i-am-doing", False):
+        if Bot.Info.version and Bot.Info.version.startswith("git:"):
+            await pull_repo()
+        await restart()
     if not Bot.Info.binary_mode:
-        await prepare_restart(msg, force)
-        pull_repo_result = PullRepoResult("", None, None, None)
+        try:
+            if not await msg.wait_confirm(append_instruction=False):
+                await msg.finish()
+            else:
+                if not restart_time:
+                    restart_time.append(time.time())
+                await wait_for_restart(msg)
+        except Exception:
+            Logger.critical("Failed to send restart confirmation message, perhaps bug? Force restart...")
+            Logger.critical(traceback.format_exc())
+        try:
+            restart_time.append(time.time())
+            write_restart_cache(msg)
+        except Exception:
+            Logger.critical("Failed to write restart info cache, perhaps bug? Continue...")
+            Logger.critical(traceback.format_exc())
         if Bot.Info.version and Bot.Info.version.startswith("git:"):
             try:
                 pull_repo_result = await pull_repo()
-                if pull_repo_result.output:
-                    await msg.send_message(Plain(pull_repo_result.output, disable_joke=True))
+                if pull_repo_result:
+                    await msg.send_message(Plain(pull_repo_result, disable_joke=True))
             except Exception:
                 Logger.critical("Failed to send pull result message, perhaps bug? Continue...")
                 Logger.critical(traceback.format_exc())
@@ -622,11 +563,7 @@ async def _(msg: Bot.MessageSession):
         except Exception:
             Logger.critical("Failed to send update dependencies result message, perhaps bug? Continue...")
             Logger.critical(traceback.format_exc())
-        await execute_restart_plan(
-            msg,
-            make_restart_plan(pull_repo_result.changed_paths),
-            pull_repo_result.new_head,
-        )
+        await restart()
     else:
         await msg.finish(I18NContext("core.message.update.binary_mode"))
 

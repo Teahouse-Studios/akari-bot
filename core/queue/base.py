@@ -119,19 +119,6 @@ class JobQueueBase:
     TASK_TIMEOUT_SECONDS = 7200  # 2小时
     pause_event = asyncio.Event()
     pause_event.set()
-    _accepting_tasks = True
-    _poller_task: asyncio.Task | None = None
-    _worker_tasks: set[asyncio.Task] = set()
-
-    def __init_subclass__(cls, **kwargs):
-        """为每个队列角色建立独立的生命周期状态。"""
-        super().__init_subclass__(**kwargs)
-        cls.is_running = False
-        cls.pause_event = asyncio.Event()
-        cls.pause_event.set()
-        cls._accepting_tasks = True
-        cls._poller_task = None
-        cls._worker_tasks = set()
 
     @classmethod
     async def add_job(cls, target_client: str, action, args, wait=True) -> str | dict | None:
@@ -281,18 +268,10 @@ class JobQueueBase:
 
         # 异步处理所有待处理的任务
         for tsk in get_all:
-            if not cls._accepting_tasks:
-                break
             Logger.trace(f"Received job queue task {tsk.task_id}, action: {tsk.action}")
             Logger.trace(f"Args: {tsk.args}")
             await tsk.set_status("processing")
-            if not cls._accepting_tasks:
-                # shutdown 可能发生在状态更新期间；恢复 pending，避免任务永久滞留。
-                await tsk.set_status("pending")
-                break
-            worker = asyncio.create_task(cls._process_task(tsk))
-            cls._worker_tasks.add(worker)
-            worker.add_done_callback(cls._worker_tasks.discard)
+            asyncio.create_task(cls._process_task(tsk))
 
     @classmethod
     async def check_job_queue(cls, target_client: str | None = None):
@@ -307,52 +286,16 @@ class JobQueueBase:
         if cls.is_running:
             raise QueueAlreadyRunning
         cls.is_running = True
-        cls._accepting_tasks = True
-        current_task = asyncio.current_task()
-        cls._poller_task = current_task
         try:
-            while cls._accepting_tasks:
+            while True:
                 # 等待pause_event被设置（允许继续处理）
                 await cls.pause_event.wait()
-                if not cls._accepting_tasks:
-                    break
                 # 检查并处理队列任务
                 await cls._check_queue(target_client)
                 # 以100毫秒的间隔循环检查
                 await asyncio.sleep(0.1)
         finally:
             cls.is_running = False
-            if cls._poller_task is current_task:
-                cls._poller_task = None
-
-    @classmethod
-    async def shutdown_workers(cls) -> None:
-        """停止接收新任务，并取消、等待所有正在执行的队列 worker。
-
-        该方法可以在轮询器运行或已经停止时调用。收束完成后会恢复初始状态，
-        允许同一个队列类稍后再次调用 :meth:`check_job_queue`。
-        """
-        cls._accepting_tasks = False
-        # pause_event 可能正因数据库重连被清除，先唤醒轮询器让它观察停止状态。
-        cls.pause_event.set()
-
-        poller_task = cls._poller_task
-        current_task = asyncio.current_task()
-        if poller_task is not None and poller_task is not current_task:
-            poller_task.cancel()
-            await asyncio.gather(poller_task, return_exceptions=True)
-
-        while workers := tuple(task for task in cls._worker_tasks if task is not current_task):
-            for worker in workers:
-                worker.cancel()
-            await asyncio.gather(*workers, return_exceptions=True)
-
-        cls._worker_tasks.discard(current_task)
-        cls.is_running = False
-        cls._poller_task = None
-        cls._accepting_tasks = True
-        cls.pause_event = asyncio.Event()
-        cls.pause_event.set()
 
     @classmethod
     def action(cls, action_name: str):

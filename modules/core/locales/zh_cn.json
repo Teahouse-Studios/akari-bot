@@ -311,8 +311,6 @@
     "core.message.purge.success": "成功清除缓存。",
     "core.message.raise": "异常测试",
     "core.message.restart.prompt": "由于机器人正在重启，此次执行命令的后续操作已被强制取消。\n请稍后重新执行命令，对此带来的不便，我们深感抱歉。",
-    "core.message.restart.bots": "检测到变更仅涉及以下平台，将只重启对应的机器人进程：${bots}",
-    "core.message.restart.manual_required": "检测到根目录 bot.py 已发生变更，机器人拒绝自动重启。请进入后台手动重启程序，以加载新的守护进程代码。",
     "core.message.restart.restarting": "重启中……",
     "core.message.restart.timeout": "等待已超时，强制重启中……",
     "core.message.restart.wait": "有 ${count} 个命令正在执行中，将于执行完毕后重启。",
