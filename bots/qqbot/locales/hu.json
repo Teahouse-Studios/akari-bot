@@ -1,0 +1,11 @@
+{
+    "config.comments.bot_qqbot_secret.qq_bot_secret": "",
+    "config.comments.bot_qqbot.qq_bot_appid": "",
+    "config.comments.bot_qqbot.qq_bot_enable_send_url": "",
+    "config.comments.bot_qqbot.qq_bot_openid": "",
+    "config.comments.bot_qqbot.qq_limited_emoji": "",
+    "config.comments.bot_qqbot.qq_navigation_sync_strict": "",
+    "config.comments.bot_qqbot.qq_private_bot": "",
+    "config.comments.bot_qqbot.qq_typing_emoji": "",
+    "config.comments.bot_qqbot.qq_use_markdown": ""
+}
