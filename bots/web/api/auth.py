@@ -154,7 +154,9 @@ async def auth(request: Request):
             login_failed_attempts[ip] = [t for t in login_failed_attempts[ip] if (now - t).total_seconds() < 600]
             login_failed_attempts[ip].append(now)
 
-            if len(login_failed_attempts[ip]) > login_max_attempt:
+            attempts_count = len(login_failed_attempts[ip])
+
+            if attempts_count > login_max_attempt:
                 await MaliciousLoginRecords.create(
                     ip_address=ip, blocked_until=now + timedelta(seconds=LOGIN_BLOCK_DURATION)
                 )
@@ -162,6 +164,9 @@ async def auth(request: Request):
                 Logger.warning(f"[WebUI] {ip} has been blocked due to excessive login failures.")
                 raise HTTPException(status_code=429, detail="This IP has been blocked")
 
+            if attempts_count >= 3:
+                await asyncio.sleep(min(attempts_count - 2, 5))
+                
             Logger.warning(f"[WebUI] {ip} login failed.")
             raise HTTPException(status_code=403, detail="Invalid password")
 
