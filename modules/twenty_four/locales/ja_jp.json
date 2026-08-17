@@ -1,1 +1,14 @@
-{}
+{
+    "twenty_four.help": "新しいゲームを開始します。",
+    "twenty_four.help.desc": "テンパズル、だが目標は 24 です。",
+    "twenty_four.help.solve": "24 ゲーム ソルバー。（ペタル 4 枚消費）",
+    "twenty_four.message": "与えられた数字の組み合わせ：${numbers}\n結果が 24 になる式を入力してください。（解がない場合は「N/A」と入力してください）",
+    "twenty_four.message.correct": "正解です。",
+    "twenty_four.message.solve.running": "ゲームは現在進行中です。まずゲームを終了してください。",
+    "twenty_four.message.solve.invalid": "数字は 1～13 です。入力を確認してください。",
+    "twenty_four.message.solve.prompt": "数字の組み合わせ ${numbers} のすべての解：",
+    "twenty_four.message.solve.no_solution": "数字の組み合わせ ${numbers} には解がありません。",
+    "twenty_four.message.incorrect.have_solution": "不正解：この組み合わせには解が存在します。\n考えられる解の一つ：${solution}",
+    "twenty_four.message.incorrect.invalid": "不正解：無効な式です。",
+    "twenty_four.message.incorrect": "不正解です。"
+}

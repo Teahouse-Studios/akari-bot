@@ -10,7 +10,7 @@
     "ai.message.llm.instruct.set.success": "Custom instructions have been set.",
     "ai.message.llm.list.none": "Cannot find any available LLMs. Please contact the bot owner to add one.",
     "ai.message.llm.list": "The following are the available LLM(s): ",
-    "ai.message.llm.list.prompt": "Use \"${prefix}ai llm set <LLM>\" to switch LLMs.",
+    "ai.message.llm.list.prompt": "Use \"${cmd}<LLM>\" to switch LLMs.",
     "ai.message.llm.invalid": "Invalid LLM name.",
     "config.comments.module_ai_secret.e2b_api_key": "E2B API key.",
     "config.comments.module_ai.ai_default_llm": "The LLM used by default.",

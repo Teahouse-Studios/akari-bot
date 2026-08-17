@@ -6,5 +6,6 @@
     "config.comments.bot_qqbot.qq_private_bot": "使用 QQ 機器人（官方）時，是否為私域機器人。",
     "config.comments.bot_qqbot.qq_typing_emoji": "使用 QQ 機器人（官方）時，正在處理訊息時向訊息掛上的回應表情 ID。ID 詳見：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji",
     "config.comments.bot_qqbot.qq_bot_openid": "QQ 機器人（官方）的 OpenID。",
-    "config.comments.bot_qqbot.qq_use_markdown": "使用 QQ 機器人（官方）時，是否使用 Markdown 格式訊息（需配置 s3 相容 API 儲存圖片）。"
+    "config.comments.bot_qqbot.qq_use_markdown": "使用 QQ 機器人（官方）時，是否使用 Markdown 格式訊息（需配置 s3 相容 API 儲存圖片）。",
+    "config.comments.bot_qqbot.qq_navigation_sync_strict": "同步 QQ 機器人（官方）的全域選單與指令面板失敗時，是否阻止用戶端啟動。"
 }

@@ -218,5 +218,6 @@
     "tos.message.warning": "警告：\n利用規約に基づいて、あなたは行動規範に違反しています。",
     "tos.message.warning.count": "これは ${current_warns} 回目の警告です。",
     "tos.message.warning.last": "これは最後の警告です。",
-    "tos.message.warning.prompt": "${warn_counts} 回以上の警告を受けた場合、アカウントはブロックされます。"
+    "tos.message.warning.prompt": "${warn_counts} 回以上の警告を受けた場合、アカウントはブロックされます。",
+    "config.comments.webrender.headless": "ブラウザをヘッドレス モードで実行するかどうか。"
 }
