@@ -218,5 +218,6 @@
     "tos.message.warning": "Warning:\nYou have violated our Code of Conduct according to our Terms of Service.",
     "tos.message.warning.count": "You have received ${current_warns} warnings.",
     "tos.message.warning.last": "This is the last warning.",
-    "tos.message.warning.prompt": "Your account will be blocked if you receive more than ${warn_counts} warnings."
+    "tos.message.warning.prompt": "Your account will be blocked if you receive more than ${warn_counts} warnings.",
+    "config.comments.webrender.headless": "Whether to run the browser in headless mode."
 }
