@@ -9,14 +9,16 @@ QQ 群没有原生输入状态能力，适配器以「先发一条提示消息�
 """
 
 import asyncio
+from types import SimpleNamespace
+from unittest.mock import patch
 
 from botpy.message import GroupMessage
 
-from bots.qqbot.context import QQBotContextManager, _TypingState
+from bots.qqbot.context import QQBotContextManager, TYPING_EMOTES, _TypingState
 from bots.qqbot.features import features as qqbot_features
 from bots.qqbot.info import target_c2c_prefix, target_group_prefix
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import ImageElement, PlainElement
+from core.builtins.message.elements import I18NContextElement, ImageElement, PlainElement
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 from core.tester import func_case, Tester
@@ -98,6 +100,8 @@ class _Recorder:
 
     def __init__(self):
         self.prompts: list[str] = []
+        self.prompt_messages: list[MessageChain] = []
+        self.prompt_kwargs: list[dict] = []
         self.messages: list[str] = []
         self.deleted: list[str] = []
         self._counter = 0
@@ -114,6 +118,8 @@ class _Recorder:
             msg_id = f"msg-{self._counter}"
             if kwargs.get("_typing_prompt"):
                 self.prompts.append(msg_id)
+                self.prompt_messages.append(message)
+                self.prompt_kwargs.append(kwargs)
             else:
                 self.messages.append(msg_id)
                 # 复刻生产 send_message 开头对「机器人已发言」的登记
@@ -139,6 +145,59 @@ class _Recorder:
     def leaked(self) -> list[str]:
         """已发出但未被撤回的输入提示。"""
         return [p for p in self.prompts if p not in self.deleted]
+
+
+class _InFlightPromptRecorder:
+    """模拟平台已接受 typing 消息、但 SDK 尚未返回消息 ID 的窗口。"""
+
+    def __init__(self):
+        self.prompt_started = asyncio.Event()
+        self.release_prompt = asyncio.Event()
+        self.prompts: list[str] = []
+        self.deleted: list[str] = []
+        self.platform_task: asyncio.Task[list[str]] | None = None
+
+    def __enter__(self):
+        cm = QQBotContextManager
+        self._orig_send = cm.__dict__.get("send_message")
+        self._orig_delete = cm.__dict__.get("delete_message")
+        self._orig_delay = cm.TYPING_PROMPT_DELAY
+
+        async def fake_send(session_info, message, *args, **kwargs):
+            if not kwargs.get("_typing_prompt"):
+                cm._on_message_sent(session_info)
+                return ["response-message"]
+
+            self.prompt_started.set()
+
+            async def platform_send():
+                await self.release_prompt.wait()
+                self.prompts.append("late-typing-message")
+                return ["late-typing-message"]
+
+            self.platform_task = asyncio.create_task(platform_send())
+            # botpy 的上层调用被取消时，底层 HTTP 请求仍可能已由平台受理并继续完成。
+            # shield 在测试中复现这个「消息会发出，但调用方拿不到结果」的窗口。
+            return await asyncio.shield(self.platform_task)
+
+        async def fake_delete(session_info, message_id, reason=None):
+            self.deleted.extend([message_id] if isinstance(message_id, str) else list(message_id))
+
+        cm.send_message = staticmethod(fake_send)
+        cm.delete_message = staticmethod(fake_delete)
+        cm.TYPING_PROMPT_DELAY = TEST_DELAY
+        return self
+
+    def __exit__(self, *exc_info):
+        cm = QQBotContextManager
+        cm.send_message = self._orig_send
+        cm.delete_message = self._orig_delete
+        cm.TYPING_PROMPT_DELAY = self._orig_delay
+        return False
+
+    @property
+    def leaked(self) -> list[str]:
+        return [prompt for prompt in self.prompts if prompt not in self.deleted]
 
 
 class _Session:
@@ -269,6 +328,102 @@ async def _test_prompt_recalled_on_end_typing() -> bool:
             return True
         finally:
             QQBotContextManager.context.pop(session.session_id, None)
+
+
+async def _test_in_flight_prompt_recalled_after_response() -> bool:
+    """响应先完成、typing 后落地时，仍须等待其消息 ID 并完成撤回。"""
+    session = _make_session("typing-in-flight-after-response")
+    QQBotContextManager.context[session.session_id] = object()
+    with _InFlightPromptRecorder() as rec:
+        end_task = None
+        try:
+            await QQBotContextManager.start_typing(session)
+            await asyncio.wait_for(rec.prompt_started.wait(), timeout=TEST_DELAY * 10)
+
+            # 正常回复先发送成功；随后 parser 会调用 end_typing。此时 typing 请求已经
+            # 被平台受理，但 SDK 还没有返回其消息 ID。
+            await QQBotContextManager.send_message(session, None)
+            end_task = asyncio.create_task(QQBotContextManager.end_typing(session))
+            await asyncio.sleep(TEST_DELAY)
+            rec.release_prompt.set()
+            await asyncio.wait_for(end_task, timeout=TEST_DELAY * 10)
+            if rec.platform_task:
+                await asyncio.wait_for(rec.platform_task, timeout=TEST_DELAY * 10)
+
+            if rec.leaked:
+                Logger.error(f"Typing prompt sent after the response was left behind: {rec.leaked}")
+                return False
+            if rec.prompts != ["late-typing-message"] or rec.deleted != ["late-typing-message"]:
+                Logger.error(f"Unexpected in-flight prompt lifecycle: sent={rec.prompts}, deleted={rec.deleted}")
+                return False
+            return True
+        finally:
+            rec.release_prompt.set()
+            if end_task and not end_task.done():
+                await asyncio.gather(end_task, return_exceptions=True)
+            await QQBotContextManager.end_typing(session)
+            QQBotContextManager.context.pop(session.session_id, None)
+
+
+async def _test_group_typing_uses_emote_when_enabled() -> bool:
+    """开启 use_emote 后，群聊输入提示应附带随机 GIF，并强制走原生图片发送。"""
+    if not TYPING_EMOTES:
+        Logger.error("Typing emote assets are missing, the enabled-path test cannot run")
+        return False
+
+    with (
+        patch("bots.qqbot.context.CoreConfig", new=SimpleNamespace(use_emote=True)),
+        patch(
+            "bots.qqbot.context._typing_random",
+            new=SimpleNamespace(choice=lambda values: values[0]),
+        ),
+        _Recorder() as rec,
+    ):
+        async with _Session("typing-emote-enabled") as session:
+            await QQBotContextManager.start_typing(session)
+            if not await _wait_prompt_sent(rec):
+                Logger.error("Typing prompt with emote was not sent after the delay window")
+                return False
+
+            elements = rec.prompt_messages[0].values
+            prompt = next((x for x in elements if isinstance(x, I18NContextElement)), None)
+            image = next((x for x in elements if isinstance(x, ImageElement)), None)
+            if prompt is None or prompt.key != "message.typing":
+                Logger.error(f"Typing prompt text is missing or unexpected: {elements}")
+                return False
+            if image is None or image.path not in {str(path) for path in TYPING_EMOTES}:
+                Logger.error(f"Typing prompt did not use an emote asset: {elements}")
+                return False
+            if rec.prompt_kwargs[0].get("_force_plain") is not True:
+                Logger.error("Typing GIF must use QQBot's native image path to preserve animation")
+                return False
+
+    if rec.leaked:
+        Logger.error(f"Typing prompt with emote was not recalled: {rec.leaked}")
+        return False
+    return True
+
+
+async def _test_group_typing_omits_emote_when_disabled() -> bool:
+    """关闭 use_emote 后，群聊输入提示应保持原有纯文本形态。"""
+    with patch("bots.qqbot.context.CoreConfig", new=SimpleNamespace(use_emote=False)), _Recorder() as rec:
+        async with _Session("typing-emote-disabled") as session:
+            await QQBotContextManager.start_typing(session)
+            if not await _wait_prompt_sent(rec):
+                Logger.error("Plain typing prompt was not sent after the delay window")
+                return False
+
+            if rec.prompt_messages[0].contains(ImageElement):
+                Logger.error(f"Typing prompt unexpectedly contains an emote: {rec.prompt_messages[0]}")
+                return False
+            if rec.prompt_kwargs[0].get("_force_plain") is not False:
+                Logger.error("Plain typing prompt should retain the configured Markdown send path")
+                return False
+
+    if rec.leaked:
+        Logger.error(f"Plain typing prompt was not recalled: {rec.leaked}")
+        return False
+    return True
 
 
 async def _send_via_context(session: SessionInfo, ctx: _FakeGroupMessage, message) -> tuple[_TypingState, bool]:
@@ -407,6 +562,9 @@ async def test_qqbot_typing(tester: Tester):
     await tester.test(_test_prompt_recalled_on_repeated_start, "重复开启输入状态撤回测试")
     await tester.test(_test_no_prompt_when_message_sent_early, "窗口内已发言不补发提示测试")
     await tester.test(_test_prompt_recalled_on_end_typing, "输入状态结束撤回提示测试")
+    await tester.test(_test_in_flight_prompt_recalled_after_response, "响应先于输入提示落地时的撤回测试")
+    await tester.test(_test_group_typing_uses_emote_when_enabled, "开启表情后的群聊输入提示测试")
+    await tester.test(_test_group_typing_omits_emote_when_disabled, "关闭表情后的群聊输入提示测试")
     await tester.test(_test_marked_after_send_succeeds, "发送成功后登记发言测试")
     await tester.test(_test_not_marked_when_send_fails, "发送失败不登记发言测试")
     await tester.test(_test_not_marked_while_converting_image, "图片转换期间不登记发言测试")

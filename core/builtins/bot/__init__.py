@@ -12,7 +12,7 @@ from core.alive import Alive
 from core.builtins.message.chain import *
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
-from core.builtins.session.info import SessionInfo, FetchedSessionInfo, ModuleHookContext
+from core.builtins.session.info import EventInfo, SessionInfo, FetchedSessionInfo, ModuleHookContext
 from core.builtins.session.internal import MessageSession, FetchedMessageSession
 from core.builtins.session.lock import ExecutionLockList
 from core.builtins.temp import *
@@ -57,6 +57,8 @@ class Bot:
 
     # 模块钩子上下文类型 - 用于模块钩子函数的参数传递
     ModuleHookContext = ModuleHookContext
+
+    EventInfo = EventInfo
 
     # 执行锁列表 - 防止同一用户并发执行命令
     ExecutionLockList = ExecutionLockList
@@ -124,6 +126,15 @@ class Bot:
 
         # 创建异步任务处理消息
         asyncio.create_task(_process_msg())
+
+    @classmethod
+    async def process_event(cls, event_info: EventInfo):
+        """将平台事件发送到服务器并交给已绑定该事件的模块处理。"""
+        if not isinstance(event_info, EventInfo):
+            raise TypeError("event_info must be an EventInfo")
+
+        queue_client: "JobQueueClient" = exports["JobQueueClient"]
+        return await queue_client.send_event_to_server(event_info)
 
     @staticmethod
     async def post_global_message(

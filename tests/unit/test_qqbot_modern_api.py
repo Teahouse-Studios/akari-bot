@@ -14,7 +14,7 @@ from bots.qqbot.info import (
     target_guild_prefix,
 )
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import ImageElement
+from core.builtins.message.elements import ImageElement, MentionElement, PlainElement
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 from core.tester import func_case, Tester
@@ -96,8 +96,23 @@ class _FailingSendClient:
         return {"id": "fallback"}
 
 
+class _CaptureSendClient:
+    def __init__(self):
+        self.calls = []
+
+    async def send(self, target, **kwargs):
+        self.calls.append(("plain", kwargs))
+        return {"id": "plain"}
+
+    async def send_markdown(self, target, content, keyboard=None):
+        self.calls.append(("markdown", {"content": content, "keyboard": keyboard}))
+        return {"id": "markdown"}
+
+
 async def _send_with_client(
-    session: SessionInfo, client: _FailingSendClient, message: MessageChain | None = None
+    session: SessionInfo,
+    client: _FailingSendClient | _CaptureSendClient,
+    message: MessageChain | None = None,
 ) -> list[str]:
     previous_client = QQBotContextManager.client
     QQBotContextManager.client = client
@@ -182,6 +197,29 @@ async def _test_proactive_error_is_not_retried() -> bool:
         QQBotContextManager.context.pop(session.session_id, None)
 
 
+async def _test_group_mention_plain_message() -> bool:
+    session = _make_session(target_group_prefix)
+    client = _CaptureSendClient()
+    message = MessageChain.assign([MentionElement.assign("QQBot|member"), PlainElement.assign("hello")])
+    with patch.object(qqbot_context, "qq_use_markdown", False):
+        result = await _send_with_client(session, client, message)
+    return result == ["plain"] and client.calls == [
+        ("plain", {"content": "<@member>\nhello", "message_reference": None})
+    ]
+
+
+async def _test_group_mention_markdown_message() -> bool:
+    session = _make_session(target_group_prefix)
+    session.support_markdown = True
+    client = _CaptureSendClient()
+    message = MessageChain.assign([MentionElement.assign("QQBot|member"), PlainElement.assign("hello")])
+    with patch.object(qqbot_context, "qq_use_markdown", True):
+        result = await _send_with_client(session, client, message)
+    return result == ["markdown"] and client.calls == [
+        ("markdown", {"content": '<qqbot-at-user id="member" />\nhello', "keyboard": None})
+    ]
+
+
 async def _test_c2c_delete_uses_unified_api() -> bool:
     client = _FakeClient()
     previous_client = QQBotContextManager.client
@@ -211,4 +249,6 @@ async def test_qqbot_modern_api(tester: Tester):
     await tester.test(_test_image_reply_falls_back_to_proactive, "图片过期回复转主动消息测试")
     await tester.test(_test_other_api_error_is_not_retried, "其他 API 错误不重试测试")
     await tester.test(_test_proactive_error_is_not_retried, "主动消息错误不重复重试测试")
+    await tester.test(_test_group_mention_plain_message, "群聊普通消息 Mention 渲染测试")
+    await tester.test(_test_group_mention_markdown_message, "群聊 Markdown Mention 渲染测试")
     return tester

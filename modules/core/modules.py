@@ -14,6 +14,7 @@ from .help import modules_list_help
 UNSUPPORTED_PROMPTS = {
     "rss": "core.message.module.enable.unsupported_rss",
     "regex": "core.message.module.enable.unsupported_regex",
+    "event": "core.message.module.enable.unsupported_event",
 }
 
 m = module(
@@ -114,6 +115,8 @@ async def config_modules(msg: Bot.MessageSession):
                     msglist.append(I18NContext("core.message.module.enable.already", module=x))
                 else:
                     msglist.append(I18NContext("core.message.module.enable.success", module=x))
+                    if modules_[x].event:
+                        msglist.append(I18NContext("core.message.module.enable.event_permissions"))
                     support_lang = modules_[x].support_languages
                     if support_lang:
                         if msg.session_info.locale.locale not in support_lang:

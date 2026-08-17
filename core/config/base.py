@@ -35,6 +35,7 @@ class CoreConfig:
     allow_reload_base: bool = False
     allow_request_private_ip: bool = False
     slower_schedule: bool = False
+    use_emote: bool = False
     use_font_mirror: bool = False
     use_secrets_random: bool = False
 

@@ -363,7 +363,7 @@ requires-dist = [
     { name = "python-multipart", specifier = ">=0.0.22,<1.0.0" },
     { name = "python-whois", specifier = ">=0.9.0,<1.0.0" },
     { name = "pywin32", marker = "sys_platform == 'win32'", specifier = ">=312,<313" },
-    { name = "qq-botpy-sdk", specifier = ">=2.0.2" },
+    { name = "qq-botpy-sdk", specifier = "==2.0.3" },
     { name = "rapidfuzz", specifier = ">=3.14.5" },
     { name = "rdkit", specifier = ">=2026.3.1,<2026.4.0" },
     { name = "simpleeval", specifier = ">=1.0.0,<2.0.0" },
@@ -3542,7 +3542,7 @@ wheels = [
 
 [[package]]
 name = "qq-botpy-sdk"
-version = "2.0.2"
+version = "2.0.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -3550,9 +3550,9 @@ dependencies = [
     { name = "cryptography" },
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2a/a3/c60d6988d397c20bb25b2faa03e3ab1cedcd366fcb4bb840541179e27cfa/qq_botpy_sdk-2.0.2.tar.gz", hash = "sha256:8d3babeea4dc13e480ff7b07a91ccb3d5ebbd6f9b54ed41ee6ce013ad4996068", size = 113268, upload-time = "2026-08-13T18:38:49.662Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/8e/33/00e5abe2f5e1bf82a65652644df8501ce9d96a45a544d7f13f01dff704b0/qq_botpy_sdk-2.0.3.tar.gz", hash = "sha256:cb0f569e230b8632c9d438abaa0c9eabde29525b97a0a07ccf866986f7f2bab0", size = 113304, upload-time = "2026-08-17T18:22:11.14Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/69/ce/8823dc2f8a449a9275e1000fd8eda09cca4af380afbd66cc00f01b80c6c2/qq_botpy_sdk-2.0.2-py3-none-any.whl", hash = "sha256:c5c70d0f20956504b3741a3c35f5e153fa19d534e9f002a35cf21cd45d452e50", size = 139662, upload-time = "2026-08-13T18:38:48.104Z" },
+    { url = "https://files.pythonhosted.org/packages/22/a2/60c2a2765d3c3d52ca49deabd76a54699bed1d138364261c5ade7aeec836/qq_botpy_sdk-2.0.3-py3-none-any.whl", hash = "sha256:ef0368dfddc946f3b2da09ba61b63968a3e3bb9110c9c045c205e4b03cfd1796", size = 139712, upload-time = "2026-08-17T18:22:09.517Z" },
 ]
 
 [[package]]

@@ -2,6 +2,7 @@ import re
 
 import botpy
 from botpy.interaction import Interaction
+from botpy.manage import GroupMemberEvent
 from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 
 from bots.qqbot.context import QQBotContextManager, QQBotFetchedContextManager, cache_permission
@@ -11,7 +12,7 @@ from bots.qqbot.navigation import build_navigation
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain
-from core.builtins.session.info import SessionInfo
+from core.builtins.session.info import EventInfo, SessionInfo
 from core.builtins.utils import command_prefix
 from core.client.init import client_init
 from bots.qqbot.config import QQBotConfig, QQBotSecretConfig
@@ -33,6 +34,48 @@ initialized = False
 
 
 class MyClient(botpy.Client):
+    @staticmethod
+    async def on_group_member_add(event: GroupMemberEvent):
+        """将 QQ 官方机器人群成员加入事件转换为核心事件。"""
+        member_openid = getattr(event, "member_openid", None) or getattr(event, "user_openid", None)
+        group_openid = getattr(event, "group_openid", None)
+        if not member_openid or not group_openid:
+            Logger.warning(f"Incomplete QQBot group_member_add event: {event}")
+            return
+        Logger.debug(event)
+
+        event_info = await EventInfo.assign(
+            event_name="member_joined",
+            target_id=f"{target_group_prefix}|{group_openid}",
+            target_from=target_group_prefix,
+            client_name=client_name,
+            sender_id=f"{sender_prefix}|{member_openid}",
+            sender_from=sender_prefix,
+            data={"event_id": event.event_id, "timestamp": event.timestamp},
+        )
+        await Bot.process_event(event_info)
+
+    @staticmethod
+    async def on_group_member_remove(event: GroupMemberEvent):
+        """将 QQ 官方机器人群成员退出事件转换为核心事件。"""
+        member_openid = getattr(event, "member_openid", None) or getattr(event, "user_openid", None)
+        group_openid = getattr(event, "group_openid", None)
+        if not member_openid or not group_openid:
+            Logger.warning(f"Incomplete QQBot group_member_remove event: {event}")
+            return
+        Logger.debug(event)
+
+        event_info = await EventInfo.assign(
+            event_name="member_left",
+            target_id=f"{target_group_prefix}|{group_openid}",
+            target_from=target_group_prefix,
+            client_name=client_name,
+            sender_id=f"{sender_prefix}|{member_openid}",
+            sender_from=sender_prefix,
+            data={"event_id": event.event_id, "timestamp": event.timestamp},
+        )
+        await Bot.process_event(event_info)
+
     async def on_ready(self):
         global initialized
         if not initialized:
@@ -320,6 +363,7 @@ intents.public_guild_messages = True
 intents.public_messages = True
 intents.direct_message = True
 intents.interaction = True
+intents.group_member_event = True
 if QQBotConfig.qq_private_bot:
     intents.guild_messages = True
 

@@ -257,6 +257,8 @@
     "core.message.module.enable.already": "失败：模块“${module}”已开启。",
     "core.message.module.enable.not_found": "失败：模块“${module}”不存在。",
     "core.message.module.enable.success": "成功：开启模块“${module}”。",
+    "core.message.module.enable.event_permissions": "提示：事件模块依赖平台事件订阅、读取全部消息及相应的场景管理权限，请确认机器人已获得这些权限。",
+    "core.message.module.enable.unsupported_event": "失败：此场景无法读取全部消息，不能开启事件模块，请先授予机器人对应权限。",
     "core.message.module.enable.unsupported_regex": "失败：此场景不支持正则模块，请检查是否开启对应的权限。",
     "core.message.module.enable.unsupported_rss": "失败：此场景不支持推送模块，请检查是否开启对应的权限。",
     "core.message.module.list.header": "模块列表",

@@ -4,6 +4,7 @@ import time
 from collections import OrderedDict, deque
 from collections.abc import Mapping
 from datetime import datetime, timedelta, timezone
+from secrets import SystemRandom
 from typing import Union
 from urllib.parse import quote
 
@@ -35,11 +36,13 @@ from core.builtins.message.elements import (
     MentionElement,
     URLElement,
 )
-from core.builtins.message.internal import I18NContext
+from core.builtins.message.internal import I18NContext, Image
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from bots.qqbot.config import QQBotConfig
+from core.config.base import CoreConfig
+from core.constants.path import assets_path
 from core.logger import Logger
 from core.utils.table import escape_table_cell, resolve_table_columns
 
@@ -55,6 +58,9 @@ PERMISSION_CACHE_MAX_SIZE = 4096
 INITIATIVE_QUEUE_MAX_SIZE = 128
 HIGH_PRIORITY_BURST = 5
 HIGH_PRIORITY_QUEUE_RESERVE = 16
+TYPING_EMOTE_DIR = assets_path / "emotes" / "typing"
+TYPING_EMOTES = tuple(sorted(TYPING_EMOTE_DIR.glob("*.gif")))
+_typing_random = SystemRandom()
 
 
 def _load_s3_storage():
@@ -330,6 +336,7 @@ class QQBotContextManager(ContextManager):
         enable_split_image: bool = True,
         _ignore_retries: bool = False,
         _typing_prompt: bool = False,
+        _force_plain: bool = False,
     ) -> list[str]:
         ctx: BaseMessage | Interaction | None = cls.context.get(session_info.session_id)
         msg_ids = []
@@ -370,7 +377,10 @@ class QQBotContextManager(ContextManager):
                 elif isinstance(x, ImageElement):
                     images.append(x)
                 elif isinstance(x, MentionElement):
-                    if x.client == client_name and session_info.target_from == target_guild_prefix:
+                    if x.client == client_name and session_info.target_from in (
+                        target_guild_prefix,
+                        target_group_prefix,
+                    ):
                         plains.append(PlainElement(text=f"<@{x.id}>"))
             if not plains and not images:
                 return
@@ -487,7 +497,10 @@ class QQBotContextManager(ContextManager):
                             texts.append(f"![text #{fin_w}px #{fin_h}px]({upload['public_url']})")
                     inline_pending = False
                 elif isinstance(x, MentionElement):
-                    if x.client == client_name and session_info.target_from == target_guild_prefix:
+                    if x.client == client_name and session_info.target_from in (
+                        target_guild_prefix,
+                        target_group_prefix,
+                    ):
                         texts.append(f'<qqbot-at-user id="{x.id}" />')
                     inline_pending = False
                 elif isinstance(x, ActionTextElement):
@@ -510,7 +523,7 @@ class QQBotContextManager(ContextManager):
 
         # 会话的 support_markdown 由 resolve_features() 按用户偏好置定，用户关闭 markdown 后
         # 走纯文本路径；全局配置关闭时同样如此。
-        if not qq_use_markdown or not session_info.support_markdown:
+        if _force_plain or not qq_use_markdown or not session_info.support_markdown:
             await send_msg()
         else:
             await send_msg_markdown()
@@ -713,11 +726,21 @@ class QQBotContextManager(ContextManager):
             if await cls._wait_typing_over(state, cls.TYPING_PROMPT_DELAY):
                 return
 
+            elements = [I18NContext("message.typing")]
+            if CoreConfig.use_emote:
+                if TYPING_EMOTES:
+                    elements.append(Image(_typing_random.choice(TYPING_EMOTES)))
+                else:
+                    Logger.warning(
+                        f"QQBot typing emote is enabled but no GIF resources were found in {TYPING_EMOTE_DIR}."
+                    )
+            typing_message = MessageChain.assign(elements)
             typing_msg = await cls.send_message(
                 session_info,
-                MessageChain.assign(I18NContext("message.typing")),
+                typing_message,
                 _ignore_retries=True,
                 _typing_prompt=True,
+                _force_plain=typing_message.contains(ImageElement),
                 quote=False,
             )
             Logger.debug(f"Typing prompt sent in session {session_info.session_id}: {typing_msg}")
@@ -769,14 +792,15 @@ class QQBotContextManager(ContextManager):
             return
         Logger.debug(f"Start typing in session: {session_info.session_id}")
 
-        # 同一会话重复开启时先结束上一轮，否则其提示消息将失去撤回时机
+        # 同一会话重复开启时先结束上一轮，否则其提示消息将失去撤回时机。
+        # 不可直接取消任务：平台可能已经接受发送请求但尚未返回消息 ID，取消后提示仍会
+        # 出现在群里，而机器人再也拿不到可供撤回的 ID。
         previous = cls.typing_states.pop(session_info.session_id, None)
         if previous:
             previous.finished.set()
         previous_task = cls.typing_tasks.pop(session_info.session_id, None)
         if previous_task:
-            previous_task.cancel()
-            await asyncio.gather(previous_task, return_exceptions=True)
+            await asyncio.shield(asyncio.gather(previous_task, return_exceptions=True))
 
         state = _TypingState()
         cls.typing_states[session_info.session_id] = state
@@ -794,8 +818,9 @@ class QQBotContextManager(ContextManager):
             state.finished.set()
         task = cls.typing_tasks.pop(session_info.session_id, None)
         if task:
-            task.cancel()
-            await asyncio.gather(task, return_exceptions=True)
+            # 让正在发送的提示取得消息 ID 后自行进入 finally 撤回。直接取消可能造成
+            # 「平台已发出、SDK 未返回 ID」的孤儿提示消息。
+            await asyncio.shield(asyncio.gather(task, return_exceptions=True))
         Logger.debug(f"End typing in session: {session_info.session_id}")
 
     @classmethod
@@ -877,6 +902,7 @@ class QQBotFetchedContextManager(QQBotContextManager):
         enable_split_image=True,
         _ignore_retries: bool = False,
         _typing_prompt: bool = False,
+        _force_plain: bool = False,
     ) -> list[str]:
         # 主动消息须按冷却排队发出，但调用方需要取得真实的消息 ID 才能判断本跳是否送达，
         # 因此入队的是「任务 + future」，待实际发送完成后再回传结果。
@@ -897,7 +923,16 @@ class QQBotFetchedContextManager(QQBotContextManager):
                     f"QQBot high-priority initiative message queue is full; dropped message to {session_info.target_id}."
                 )
                 return []
-        task = (future, session_info, message, quote, enable_parse_message, _ignore_retries, _typing_prompt)
+        task = (
+            future,
+            session_info,
+            message,
+            quote,
+            enable_parse_message,
+            _ignore_retries,
+            _typing_prompt,
+            _force_plain,
+        )
         append_tsk.append(task)
         try:
             return await future
@@ -910,7 +945,7 @@ class QQBotFetchedContextManager(QQBotContextManager):
 
     @staticmethod
     async def _run_task(task: tuple) -> None:
-        future, session_info, message, quote, enable_parse_message, _ignore_retries, _typing_prompt = task
+        future, session_info, message, quote, enable_parse_message, _ignore_retries, _typing_prompt, _force_plain = task
         if future.cancelled():
             return
         try:
@@ -921,6 +956,7 @@ class QQBotFetchedContextManager(QQBotContextManager):
                 enable_parse_message=enable_parse_message,
                 _ignore_retries=_ignore_retries,
                 _typing_prompt=_typing_prompt,
+                _force_plain=_force_plain,
             )
         except asyncio.CancelledError:
             if not future.done():

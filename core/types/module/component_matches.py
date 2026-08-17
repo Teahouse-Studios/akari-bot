@@ -94,4 +94,27 @@ class HookMatches(BaseMatches):
     set: list[HookMeta] = field(factory=list)
 
 
-__all__ = ["CommandMatches", "RegexMatches", "ScheduleMatches", "HookMatches"]
+@define
+class EventMatches(BaseMatches):
+    set: list[EventMeta] = field(factory=list)
+
+    def get(self, target_from: str | None = None) -> list[EventMeta]:
+        metas = []
+        for meta in self.set:
+            if not meta.load:
+                continue
+            if target_from:
+                client_name = target_from.split("|")[0]
+                if target_from in meta.exclude_from or client_name in meta.exclude_from:
+                    continue
+                if (
+                    target_from not in meta.available_for
+                    and client_name not in meta.available_for
+                    and "*" not in meta.available_for
+                ):
+                    continue
+            metas.append(meta)
+        return metas
+
+
+__all__ = ["CommandMatches", "RegexMatches", "ScheduleMatches", "HookMatches", "EventMatches"]

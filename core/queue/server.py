@@ -24,7 +24,7 @@ from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.parser.command import CommandParser
 from core.builtins.parser.message import parser
 from core.builtins.session.features import Features
-from core.builtins.session.info import SessionInfo
+from core.builtins.session.info import EventInfo, SessionInfo
 from core.builtins.utils import command_prefix
 from core.constants.info import Info
 from core.constants.path import PrivateAssets
@@ -204,7 +204,12 @@ class JobQueueServer(JobQueueBase):
 
     @classmethod
     async def client_restrict_member(
-        cls, session_info: SessionInfo, user_id: str | list[str], duration: int | None = None, reason: str | None = None
+        cls,
+        session_info: SessionInfo,
+        user_id: str | list[str],
+        duration: int | None = None,
+        reason: str | None = None,
+        wait: bool = False,
     ):
         """限制场景成员（禁言）。
 
@@ -226,12 +231,12 @@ class JobQueueServer(JobQueueBase):
                 "duration": duration,
                 "reason": reason,
             },
-            wait=False,
+            wait=wait,
         )
         return value
 
     @classmethod
-    async def client_unrestrict_member(cls, session_info: SessionInfo, user_id: str | list[str]):
+    async def client_unrestrict_member(cls, session_info: SessionInfo, user_id: str | list[str], wait: bool = False):
         """解除成员限制（解除禁言）。
 
         通过队列系统取消之前对成员的限制。这是一个非阻塞操作。
@@ -245,7 +250,7 @@ class JobQueueServer(JobQueueBase):
             session_info.client_name,
             "unrestrict_member",
             {"session_info": converter.unstructure(session_info), "user_id": user_id},
-            wait=False,
+            wait=wait,
         )
         return value
 
@@ -505,6 +510,15 @@ async def receive_message_from_client(tsk: JobQueuesTable, args: dict):
             converter.structure(args.get("session_info", {}), SessionInfo)
         )
     )
+    return {"success": True}
+
+
+@JobQueueServer.action("receive_event_from_client")
+async def receive_event_from_client(tsk: JobQueuesTable, args: dict):
+    """接收来自客户端的事件并分发给模块。"""
+    event_info = converter.structure(args.get("event_info", {}), EventInfo)
+    await event_info.refresh_info()
+    await ModulesManager.dispatch_event(event_info)
     return {"success": True}
 
 

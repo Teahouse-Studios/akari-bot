@@ -424,7 +424,7 @@ pyyaml==6.0.3
     #   pre-commit
     #   qq-botpy-sdk
     #   uvicorn
-qq-botpy-sdk==2.0.2
+qq-botpy-sdk==2.0.3
     # via akari-bot
 quart==0.20.0
     # via aiocqhttp

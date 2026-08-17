@@ -34,6 +34,88 @@ async def _none():
 
 
 @define
+class EventInfo:
+    """可跨进程序列化的平台事件上下文。"""
+
+    event_name: str
+    data: dict = field(factory=dict)
+    target_id: str | None = None
+    target_from: str | None = None
+    client_name: str | None = None
+    sender_id: str | None = None
+    sender_from: str | None = None
+    target_union_info: TargetUnionInfo | None = None
+    sender_union_info: SenderUnionInfo | None = None
+    target_union_id: str | None = None
+    sender_union_id: str | None = None
+    prefixes: list[str] = field(factory=list)
+
+    @classmethod
+    async def assign(
+        cls,
+        event_name: str,
+        data: dict | None = None,
+        target_id: str | None = None,
+        target_from: str | None = None,
+        client_name: str | None = None,
+        sender_id: str | None = None,
+        sender_from: str | None = None,
+        create: bool = True,
+    ) -> Self:
+        if target_id and target_from is None:
+            target_from = Alive.determine_target_from(target_id)
+        if target_from and not client_name:
+            client_name = Alive.determine_client(target_from)
+        if sender_id and sender_from is None:
+            sender_from = Alive.determine_sender_from(sender_id)
+
+        target_union_info, sender_union_info = await asyncio.gather(
+            TargetUnionInfo.get_by_target_id(target_id, create) if target_id else _none(),
+            SenderUnionInfo.get_by_sender_id(sender_id, create) if sender_id else _none(),
+        )
+        if target_id and target_union_info is None:
+            raise ValueError(f"TargetUnionInfo not found for target_id: {target_id}")
+
+        prefixes = cls._resolve_prefixes(target_union_info)
+        return cls(
+            event_name=event_name,
+            data=data or {},
+            target_id=target_id,
+            target_from=target_from,
+            client_name=client_name,
+            sender_id=sender_id,
+            sender_from=sender_from,
+            target_union_info=target_union_info,
+            sender_union_info=sender_union_info,
+            target_union_id=target_union_info.union_id if target_union_info else None,
+            sender_union_id=sender_union_info.union_id if sender_union_info else None,
+            prefixes=prefixes,
+        )
+
+    @staticmethod
+    def _resolve_prefixes(target_union_info: TargetUnionInfo | None) -> list[str]:
+        custom_prefixes = target_union_info.target_data.get("command_prefix", []) if target_union_info else []
+        if isinstance(custom_prefixes, str):
+            custom_prefixes = [custom_prefixes]
+        return list(dict.fromkeys([*custom_prefixes, *command_prefix]))
+
+    async def refresh_info(self) -> Self:
+        """反序列化后从数据库恢复 union 对象及场景前缀。"""
+        target_union_info, sender_union_info = await asyncio.gather(
+            TargetUnionInfo.get_by_target_id(self.target_id, create=False) if self.target_id else _none(),
+            SenderUnionInfo.get_by_sender_id(self.sender_id, create=False) if self.sender_id else _none(),
+        )
+        if self.target_id and target_union_info is None:
+            raise ValueError(f"TargetUnionInfo not found for target_id: {self.target_id}")
+        self.target_union_info = target_union_info
+        self.sender_union_info = sender_union_info
+        self.target_union_id = target_union_info.union_id if target_union_info else None
+        self.sender_union_id = sender_union_info.union_id if sender_union_info else None
+        self.prefixes = self._resolve_prefixes(target_union_info)
+        return self
+
+
+@define
 class SessionInfo:
     """
     会话信息类 - 承载一个消息会话的完整信息。
@@ -304,4 +386,4 @@ class ModuleHookContext:
     session_info: SessionInfo | None = None
 
 
-__all__ = ["SessionInfo", "FetchedSessionInfo", "ModuleHookContext"]
+__all__ = ["EventInfo", "SessionInfo", "FetchedSessionInfo", "ModuleHookContext"]

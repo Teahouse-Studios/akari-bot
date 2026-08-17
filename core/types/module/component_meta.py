@@ -75,4 +75,13 @@ class HookMeta(ModuleMeta):
     name: str | None = None
 
 
-__all__ = ["ModuleMeta", "CommandMeta", "RegexMeta", "ScheduleMeta", "HookMeta"]
+@define
+class EventMeta(ModuleMeta):
+    function: Callable = field(default=None)
+    name: str = ""
+    available_for: list = field(default=["*"], converter=convert_list)
+    exclude_from: list = field(default=[], converter=convert_list)
+    load: bool = True
+
+
+__all__ = ["ModuleMeta", "CommandMeta", "RegexMeta", "ScheduleMeta", "HookMeta", "EventMeta"]

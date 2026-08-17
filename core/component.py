@@ -130,10 +130,33 @@ class Bind:
 
             return decorator
 
+        def event(
+            self,
+            name: str,
+            available_for: str | list | tuple = "*",
+            exclude_from: str | list | tuple = "",
+            load: bool = True,
+        ):
+            def decorator(function):
+                ModulesManager.bind_to_module(
+                    self.module_name,
+                    EventMeta(
+                        function=function,
+                        name=name,
+                        available_for=available_for,
+                        exclude_from=exclude_from,
+                        load=load,
+                    ),
+                )
+                return function
+
+            return decorator
+
         on_command = command
         on_regex = regex
         on_schedule = schedule
         on_hook = hook
+        on_event = event
 
         @overload
         def handle(
@@ -218,6 +241,7 @@ def module(
     load: bool = True,
     rss: bool = False,
     regex: bool = False,
+    event: bool = False,
     required_superuser: bool = False,
     required_base_superuser: bool = False,
     suppress_invalid_prompt: bool = False,
@@ -241,6 +265,7 @@ def module(
     :param load: 将此命令设置是否加载。（默认为True）
     :param rss: 将此命令设为 RSS 命令。（默认为False）
     :param regex: 将此命令设为正则命令。（默认为False）
+    :param event: 将此命令设为事件模块。事件模块要求平台可读取全部消息。（默认为False）
     :param required_superuser: 将此命令设为机器人的超级用户才可执行。（默认为False）
     :param required_base_superuser: 将此命令设为机器人的基础超级用户才可执行。（默认为False）
     :param suppress_invalid_prompt: 命令未能匹配任何模板时是否抑制语法错误提示。
@@ -274,6 +299,7 @@ def module(
         load=load,
         rss=rss,
         regex=regex,
+        event=event,
         required_admin=required_admin,
         required_superuser=required_superuser,
         required_base_superuser=required_base_superuser,

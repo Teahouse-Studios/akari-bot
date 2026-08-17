@@ -353,7 +353,13 @@ class MessageSession:
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         await _queue_server.client_delete_message(self.session_info, self.session_info.message_id, reason)
 
-    async def restrict_member(self, user_id: str | list[str], duration: int | None = None, reason: str | None = None):
+    async def restrict_member(
+        self,
+        user_id: str | list[str],
+        duration: int | None = None,
+        reason: str | None = None,
+        wait: bool = False,
+    ):
         """
         用于禁言场景内成员，可能需要该场景的管理员权限。
 
@@ -364,16 +370,16 @@ class MessageSession:
         :param reason: 禁言原因（可选）
         """
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
-        await _queue_server.client_restrict_member(self.session_info, user_id, duration, reason)
+        return await _queue_server.client_restrict_member(self.session_info, user_id, duration, reason, wait=wait)
 
-    async def unrestrict_member(self, user_id: str | list[str]):
+    async def unrestrict_member(self, user_id: str | list[str], wait: bool = False):
         """
         用于解除禁言成员，可能需要该场景的管理员权限。
 
         :param user_id: 用户 ID 或 ID 列表
         """
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
-        await _queue_server.client_unrestrict_member(self.session_info, user_id)
+        return await _queue_server.client_unrestrict_member(self.session_info, user_id, wait=wait)
 
     async def kick_member(self, user_id: str | list[str], reason: str | None = None):
         """

@@ -1,10 +1,12 @@
 import importlib
+import asyncio
 import pkgutil
 import re
 import sys
 import traceback
 from typing import Callable
 
+from core.builtins.session.info import EventInfo
 from core.constants import PrivateAssets
 from core.database import reload_db
 from core.database.models import ModuleStatus
@@ -15,6 +17,7 @@ from core.types.module.component_meta import (
     RegexMeta,
     ScheduleMeta,
     HookMeta,
+    EventMeta,
 )
 
 
@@ -73,6 +76,7 @@ class ModulesManager:
     modules: dict[str, Module] = {}
     modules_aliases: dict[str, str] = {}
     modules_hooks: dict[str, Callable] = {}
+    modules_events: dict[str, list[tuple[str, EventMeta]]] = {}
     modules_origin: dict[str, str] = {}
     _deferred_bindings = []
 
@@ -139,10 +143,40 @@ class ModulesManager:
                     cls.modules_hooks.update({hook_name: hook.function})
 
     @classmethod
+    def refresh_modules_events(cls):
+        cls.modules_events.clear()
+        for module_name, module in cls.modules.items():
+            for event in module.events_list.set:
+                cls.modules_events.setdefault(event.name, []).append((module_name, event))
+
+    @classmethod
     def refresh(cls):
         cls.refresh_modules_aliases()
         cls.refresh_modules_hooks()
+        cls.refresh_modules_events()
         cls._return_cache.clear()
+
+    @classmethod
+    async def dispatch_event(cls, event_info: EventInfo):
+        if not isinstance(event_info, EventInfo):
+            raise TypeError("event_info must be an EventInfo")
+
+        target_from = event_info.target_from
+        target_union_info = event_info.target_union_info
+        available_modules = cls.return_modules_list(target_from, event_info.client_name) if target_from else cls.modules
+        handler_functions = []
+        for module_name, event_meta in cls.modules_events.get(event_info.event_name, []):
+            module = cls.modules.get(module_name)
+            if not module or not module._db_load or module_name not in available_modules:
+                continue
+            if event_meta not in module.events_list.get(target_from):
+                continue
+            if target_union_info and not module.base and module_name not in (target_union_info.modules or []):
+                continue
+            handler_functions.append(event_meta.function)
+        if handler_functions:
+            return await asyncio.gather(*[function(event_info) for function in handler_functions])
+        return []
 
     @classmethod
     def search_related_module(cls, module, include_self=True):
@@ -167,7 +201,7 @@ class ModulesManager:
     def bind_to_module(
         cls,
         module_name: str,
-        meta: CommandMeta | RegexMeta | ScheduleMeta | HookMeta,
+        meta: CommandMeta | RegexMeta | ScheduleMeta | HookMeta | EventMeta,
     ):
         if module_name in cls.modules:
             if isinstance(meta, CommandMeta):
@@ -178,6 +212,8 @@ class ModulesManager:
                 cls.modules[module_name].schedule_list.add(meta)
             elif isinstance(meta, HookMeta):
                 cls.modules[module_name].hooks_list.add(meta)
+            elif isinstance(meta, EventMeta):
+                cls.modules[module_name].events_list.add(meta)
 
     _return_cache = {}
 

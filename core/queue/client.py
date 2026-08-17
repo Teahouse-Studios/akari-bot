@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING
 
 from core.builtins.converter import converter
 from core.builtins.message.chain import MessageChain, MessageNodes
-from core.builtins.session.info import SessionInfo
+from core.builtins.session.info import EventInfo, SessionInfo
 from core.builtins.session.features import Features
 from core.database.models import JobQueuesTable
 from core.exports import exports, add_export
@@ -45,6 +45,16 @@ class JobQueueClient(JobQueueBase):
         """
         await cls.add_job(
             "Server", "receive_message_from_client", {"session_info": converter.unstructure(session_info)}
+        )
+
+    @classmethod
+    async def send_event_to_server(cls, event_info: EventInfo):
+        """向服务器发送客户端接收到的事件。"""
+        return await cls.add_job(
+            "Server",
+            "receive_event_from_client",
+            {"event_info": converter.unstructure(event_info)},
+            wait=False,
         )
 
     @classmethod
@@ -323,6 +333,7 @@ async def _(tsk: JobQueuesTable, args: dict):
     """
     session_info, _, ctx_manager, _args = await get_session(args)
     await ctx_manager.restrict_member(session_info, _args.get("user_id"), _args.get("duration", 0), _args.get("reason"))
+    return {"success": True}
 
 
 @JobQueueClient.action("unrestrict_member")
@@ -333,6 +344,7 @@ async def _(tsk: JobQueuesTable, args: dict):
     """
     session_info, _, ctx_manager, _args = await get_session(args)
     await ctx_manager.unrestrict_member(session_info, _args.get("user_id"))
+    return {"success": True}
 
 
 @JobQueueClient.action("kick_member")

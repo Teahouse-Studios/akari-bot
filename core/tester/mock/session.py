@@ -109,7 +109,7 @@ class MockMessageSession(MessageSession):
     async def delete(self, reason=None):
         self.action.append(f"(delete message{f': {reason}' if reason else ''})")
 
-    async def restrict_member(self, user_id, duration=None, reason=None):
+    async def restrict_member(self, user_id, duration=None, reason=None, wait=False):
         if isinstance(user_id, str):
             user_id = [user_id]
 
@@ -117,13 +117,15 @@ class MockMessageSession(MessageSession):
             self.action.append(
                 f"(restrict {x}{f' ({duration}s)' if duration else ''}{f': {reason}' if reason else ''})"
             )
+        return {"success": True} if wait else None
 
-    async def unrestrict_member(self, user_id):
+    async def unrestrict_member(self, user_id, wait=False):
         if isinstance(user_id, str):
             user_id = [user_id]
 
         for x in user_id:
             self.action.append(f"(unrestrict {x})")
+        return {"success": True} if wait else None
 
     async def kick_member(self, user_id, reason=None):
         if isinstance(user_id, str):
