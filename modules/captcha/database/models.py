@@ -13,7 +13,6 @@ class CaptchaTrust(DBModel):
 
     class Meta:
         table = "module_captcha_trust"
-        indexes = (("target_union_id", "sender_union_id"),)
 
 
 class CaptchaChallenge(DBModel):
@@ -34,7 +33,6 @@ class CaptchaChallenge(DBModel):
 
     class Meta:
         table = "module_captcha_challenge"
-        indexes = (("target_union_id", "sender_union_id"),)
 
 
 __all__ = ["CaptchaTrust", "CaptchaChallenge"]

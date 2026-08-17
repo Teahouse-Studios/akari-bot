@@ -67,8 +67,11 @@ async def init_async(start_scheduler=True, send_prompt=True) -> None:
             Logger.warning("Failed to get Git commit hash, is it a Git repository?")
     # 初始化数据库
     Logger.info("Initializing database...")
-    if await init_db():
-        Logger.success("Database initialized successfully.")
+    if not await init_db():
+        # 数据库模型已注册但建表失败时继续启动，会直到业务首次查询才表现为“表不存在”，
+        # 丢失真正的 DDL 异常上下文。初始化失败必须立即终止 server 启动。
+        raise RuntimeError("Failed to initialize server database.")
+    Logger.success("Database initialized successfully.")
 
     # 加载所有模块
     await load_modules()

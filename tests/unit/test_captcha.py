@@ -25,6 +25,31 @@ from modules.captcha import (
 from modules.captcha.database.models import CaptchaChallenge, CaptchaTrust
 from modules.captcha.service import verification_id
 
+MYSQL_MAX_INDEX_BYTES = 3072
+UTF8MB4_MAX_BYTES_PER_CHAR = 4
+
+
+def _test_captcha_indexes_fit_mysql_limit():
+    """验证码表的显式与字段索引均不得超过 MySQL InnoDB 的索引长度上限。"""
+    for model in (CaptchaTrust, CaptchaChallenge):
+        for field in model._meta.fields_map.values():
+            if not (getattr(field, "index", False) or getattr(field, "unique", False) or getattr(field, "pk", False)):
+                continue
+            max_length = getattr(field, "max_length", None)
+            if max_length and max_length * UTF8MB4_MAX_BYTES_PER_CHAR > MYSQL_MAX_INDEX_BYTES:
+                return False
+
+        for index in model._meta.indexes:
+            if not isinstance(index, tuple):
+                continue
+            index_bytes = sum(
+                (getattr(model._meta.fields_map[field_name], "max_length", 0) or 0) * UTF8MB4_MAX_BYTES_PER_CHAR
+                for field_name in index
+            )
+            if index_bytes > MYSQL_MAX_INDEX_BYTES:
+                return False
+    return True
+
 
 def _test_choices_are_valid():
     for answer in (1, 50, 100):
@@ -367,6 +392,7 @@ async def _test_member_left_removes_verification_records():
 @func_case
 async def test_captcha(tester: Tester):
     """captcha：验证码生成、场景前缀、事件幂等及私聊解禁。"""
+    await tester.test(_test_captcha_indexes_fit_mysql_limit, "验证码数据库索引兼容 MySQL 长度限制")
     await tester.test(_test_choices_are_valid, "验证码按钮选项范围与唯一性")
     await tester.test(_test_emote_choices_are_valid, "表情验证码选项与资源映射")
     await tester.test(_test_captcha_event_and_private_token, "入群事件、场景前缀与私聊 token 验证")
