@@ -1,1 +1,4 @@
-{}
+{
+    "config.comments.module_wordle.wordle_disable_image": "Wordle モジュールで画像を無効にするかどうか。",
+    "wordle.help": "新しいゲームを開始します。"
+}
