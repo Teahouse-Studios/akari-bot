@@ -1,9 +1,9 @@
 {
-    "color.help": "色の情報を提供します。16 進数、RGB、HSL カラーコード、または CSS やマテリアル デザインのカラー名に対応しています。空欄にするとランダムな色が使用されます。",
+    "color.help": "色の情報を提供します。16 進数、RGB、HSL カラーコード、または CSS やマテリアルデザインのカラー名に対応しています。空欄にするとランダムな色が使用されます。",
     "color.help.desc": "色の情報を取得します。",
     "color.message.embed.css": "CSS カラー名",
     "color.message.embed.css.approximate": "最も類似した CSS カラー名",
-    "color.message.embed.md": "マテリアル デザインのカラー名",
-    "color.message.embed.md.approximate": "最も類似したマテリアル デザインのカラー名",
+    "color.message.embed.md": "マテリアルデザインのカラー名",
+    "color.message.embed.md.approximate": "最も類似したマテリアルデザインのカラー名",
     "color.message.invalid": "認識できないカラー フォーマットです。"
 }
