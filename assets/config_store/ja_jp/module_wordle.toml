@@ -4,4 +4,4 @@
 
 [module_wordle]
 # モジュールの設定項目です。ここに入力された値は、メッセージ内にプレーンテキストで表示されます。この部分には機密情報を入力しないでください。
-wordle_disable_image = false # wordle 模块是否禁用图片。
+wordle_disable_image = false # Wordle モジュールで画像を無効にするかどうか。

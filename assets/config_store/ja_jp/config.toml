@@ -12,6 +12,7 @@ timezone_offset = "+8" # ボットのデフォルトのタイムゾーン オフ
 allow_reload_base = false # 基本モジュールのリロードを許可するかどうか。
 allow_request_private_ip = false # ボットがローカルのプライベート IP アドレスにリクエストを送信することを許可するかどうか。（情報漏洩を防ぐため）
 slower_schedule = false # 低速のタスクスケジューラを有効にするかどうか。（リクエストの負荷を軽減するため）
+use_emote = false # 是否使用表情资源。
 use_font_mirror = false # ウェブページをレンダリングするときにフォントのミラーリングを使用するかどうか。
 use_secrets_random = false # secrets ライブラリに基づく乱数ジェネレータを使用するかどうか。
 base_superuser = ["QQ|2596322644"] # ボットの基本スーパーユーザー リスト。ここに入力された値はボットの起動時にデータベースにロードされます。

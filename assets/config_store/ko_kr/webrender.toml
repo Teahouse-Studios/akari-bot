@@ -9,4 +9,4 @@ browser_type = "chrome" # WebRender에서 사용하는 브라우저 유형입니
 browser_executable_path = "<Replace me with str value>" # WebRender가 사용하는 브라우저 실행 파일의 경로입니다. 빈 값인 경우 Playwright에 설치된 기본 브라우저를 사용함니다.
 remote_only = false # 원격 WebRender만 사용 여부.
 remote_web_render_url = "<Replace me with str value>" # 원격 WebRender 서비스의 URL. 로컬 WebRender 렌더링이 실패할 경우 이 URL로 요청을 시도합니다.
-headless = true # 是否以无头模式运行浏览器。
+headless = true # 브라우저를 헤드리스 모드로 실행할지 여부.

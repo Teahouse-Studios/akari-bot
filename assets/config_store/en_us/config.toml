@@ -12,6 +12,7 @@ timezone_offset = "+8" # The bot's default timezone offset.
 allow_reload_base = false # Whether to allow reloading of the base modules.
 allow_request_private_ip = false # Whether to allow the bot to request local private IP addresses. (Prevent possible leakage)
 slower_schedule = false # Whether to enable a slower task scheduler. (To reduce request pressure)
+use_emote = false # 是否使用表情资源。
 use_font_mirror = false # Whether to use font mirrors when rendering web pages.
 use_secrets_random = false # Whether to use the random number generator based on the secrets library.
 base_superuser = ["QQ|2596322644"] # The bot's base superuser list. The values entered here will be loaded into the database when the bot starts.

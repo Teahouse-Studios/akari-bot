@@ -12,7 +12,7 @@ qq_private_bot = false # Whether it is a private bot when using the QQ official 
 qq_typing_emoji = 181 # When using the QQ official robot, the response emoji ID attached to the message when processing the message. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
 qq_limited_emoji = 10060 # When using the QQ official robot, the response emoji ID attached to the message when message processing fails. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
 qq_use_markdown = false # Whether to use Markdown-formatted messages when using QQ official robot. (requires configuring S3-compatible API storage for images)
-qq_navigation_sync_strict = false # 同步 QQ 机器人（官方）的全局菜单与指令面板失败时，是否阻止客户端启动。
+qq_navigation_sync_strict = false # Whether to prevent the client from launching when synchronizing the global menu and command panel of QQ official robot fails.
 
 [bot_qqbot_secret]
 # The secret config section of the client. The bot will try to intercept if the values here accidentally appears in the message sent, but be careful to prevent leakage.

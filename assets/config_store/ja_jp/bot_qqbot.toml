@@ -12,7 +12,7 @@ qq_private_bot = false # QQ ロボット（公式）を使用する場合、プ�
 qq_typing_emoji = 181 # QQ ロボット（公式）メッセージを処理するときにメッセージに添付される応答絵文字の ID。ID の詳細について：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji をご覧ください。
 qq_limited_emoji = 10060 # QQ ロボット（公式）でメッセージ処理に失敗した際にメッセージに付加される応答絵文字の ID。ID の詳細について：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji をご覧ください。
 qq_use_markdown = false # QQ ロボット（公式）使用時に、Markdown 形式のメッセージを使用するかどうか。（画像を保存するには、S3 互換 API を設定する必要があります）
-qq_navigation_sync_strict = false # 同步 QQ 机器人（官方）的全局菜单与指令面板失败时，是否阻止客户端启动。
+qq_navigation_sync_strict = false # QQ ボット（公式）のグローバル メニューとコマンド パネルの同期に失敗した場合、クライアントの起動を阻止するかどうか。
 
 [bot_qqbot_secret]
 # クライアントのキー設定項目です。ここに入力された値は、送信メッセージに誤って含まれた場合、ボットはそれを傍受しようとします。ただし、漏洩を防ぐよう注意してください。
