@@ -11,7 +11,7 @@ from core.alive import Alive
 from core.builtins.bot import Bot
 from core.builtins.converter import converter
 from core.builtins.message.chain import MessageChain, convert_senderid_to_atcode, match_kecode
-from core.builtins.message.internal import I18NContext, Plain
+from core.builtins.message.internal import I18NContext, Plain, Button
 from core.builtins.session.features import Features
 from core.component import module
 from core.config import CFGManager
@@ -661,6 +661,17 @@ async def _(msg: Bot.MessageSession, display_msg: str):
     try:
         display_msg = convert_senderid_to_atcode(display_msg, msg.session_info.sender_from)
         await msg.finish(display_msg, quote=False)
+    except Exception as e:
+        raise NoReportException(str(e))
+
+
+@say.command("md <display_msg>")
+async def _(msg: Bot.MessageSession, display_msg: str):
+    try:
+        display_msg = convert_senderid_to_atcode(display_msg, msg.session_info.sender_from)
+        chain = MessageChain.assign(display_msg)
+        chain += Button("md test", "md test")
+        await msg.finish(chain, quote=False)
     except Exception as e:
         raise NoReportException(str(e))
 
