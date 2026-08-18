@@ -127,6 +127,7 @@ async def _test_client_background_tasks_are_idempotent():
                 first_queue_task is client_init_module._queue_task
                 and first_keepalive_task is client_init_module._keepalive_task
                 and init_db.await_count == 1
+                and init_db.await_args.kwargs == {"load_module_db": False, "generate_schemas": False}
             )
     finally:
         queue_release.set()

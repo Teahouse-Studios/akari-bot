@@ -93,10 +93,10 @@ def pre_init():
     init_daemon_logger()
     Logger.info(ascii_art)
     Logger.info("Akaribot is launching...")
-    from tortoise import Tortoise, run_async
+    from tortoise import run_async
 
     from core.constants.path import cache_path
-    from core.database import close_db
+    from core.database import close_db, init_db
 
     if cache_path.exists():
         shutil.rmtree(cache_path)
@@ -109,7 +109,6 @@ def pre_init():
     from core.config.base import CoreConfig
     from core.config.scan import scan_config_templates
     from core.constants.version import database_version
-    from core.database.link import get_db_link
     from core.database.models import SenderUnionInfo, DBVersion
 
     # 配置的生成集中在此完成：子进程一律只读，此处遗漏的键将在子进程读取时抛出异常，
@@ -124,8 +123,8 @@ def pre_init():
 
     async def update_db():
         Logger.info("Checking database...")
-        await Tortoise.init(db_url=get_db_link(), modules={"models": ["core.database.models"]})
-        await Tortoise.generate_schemas(safe=True)
+        if not await init_db(generate_schemas=True):
+            raise RuntimeError("Failed to initialize database schemas during pre-init.")
 
         Logger.info("Verifying database version...")
 
@@ -154,7 +153,8 @@ def pre_init():
         if base_superuser:
             if isinstance(base_superuser, str):
                 base_superuser = [base_superuser]
-            await Tortoise.init(db_url=get_db_link(), modules={"models": ["core.database.models"]})
+            if not await init_db(load_module_db=False):
+                raise RuntimeError("Failed to initialize database while granting base superuser permission.")
             for bu in base_superuser:
                 sender_info = await SenderUnionInfo.resolve_union(bu)
                 await sender_info.edit_attr("superuser", True)

@@ -58,7 +58,7 @@ async def _client_init_once(
 
     if rename_logger:
         Logger.rename(Info.client_name)
-    if not await init_db(load_module_db=load_module_db):
+    if not await init_db(load_module_db=load_module_db, generate_schemas=False):
         raise RuntimeError(f"Failed to initialize database for {Info.client_name}.")
     await JobQueueClient.send_keepalive_signal_to_server(
         Info.client_name,

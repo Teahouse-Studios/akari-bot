@@ -10,7 +10,7 @@ from tortoise.exceptions import DBConnectionError
 
 from core.builtins.temp import Temp
 from core.logger import Logger
-from .link import get_db_link
+from .link import get_db_link, prepare_db_link
 from .local import DB_LINK
 from .models import DBModel
 
@@ -66,7 +66,11 @@ def get_model_fields(models_path: list[str], table_name: str) -> list[dict[str, 
     return []
 
 
-async def init_db(load_module_db: bool = True, db_models: list[str] | None = None) -> bool:
+async def init_db(
+    load_module_db: bool = True,
+    db_models: list[str] | None = None,
+    generate_schemas: bool = False,
+) -> bool:
     try:
         database_list = fetch_module_db() if load_module_db else []
         database_list += db_models if db_models else []
@@ -74,7 +78,7 @@ async def init_db(load_module_db: bool = True, db_models: list[str] | None = Non
             config={
                 "connections": {
                     "default": get_db_link(),
-                    "local": DB_LINK,
+                    "local": prepare_db_link(DB_LINK),
                 },
                 "apps": {
                     "models": {
@@ -90,7 +94,8 @@ async def init_db(load_module_db: bool = True, db_models: list[str] | None = Non
             _enable_global_fallback=True,
         )
 
-        await Tortoise.generate_schemas(safe=True)
+        if generate_schemas:
+            await Tortoise.generate_schemas(safe=True)
 
         Temp.data["modules_db_list"] = database_list
         return True
