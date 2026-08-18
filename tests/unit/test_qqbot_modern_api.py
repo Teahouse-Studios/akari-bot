@@ -220,6 +220,23 @@ async def _test_group_mention_markdown_message() -> bool:
     ]
 
 
+async def _test_s3_failure_keeps_markdown_message_sendable() -> bool:
+    class _FailingStorage:
+        async def upload_temp(self, file_path):
+            raise TimeoutError("S3 unavailable")
+
+    session = _make_session(target_group_prefix)
+    session.support_markdown = True
+    client = _CaptureSendClient()
+    message = MessageChain.assign([PlainElement.assign("hello"), ImageElement.assign(__file__)])
+    with (
+        patch.object(qqbot_context, "qq_use_markdown", True),
+        patch.object(qqbot_context, "_load_s3_storage", return_value=_FailingStorage()),
+    ):
+        result = await _send_with_client(session, client, message)
+    return result == ["markdown"] and client.calls == [("markdown", {"content": "hello", "keyboard": None})]
+
+
 async def _test_c2c_delete_uses_unified_api() -> bool:
     client = _FakeClient()
     previous_client = QQBotContextManager.client
@@ -251,4 +268,5 @@ async def test_qqbot_modern_api(tester: Tester):
     await tester.test(_test_proactive_error_is_not_retried, "主动消息错误不重复重试测试")
     await tester.test(_test_group_mention_plain_message, "群聊普通消息 Mention 渲染测试")
     await tester.test(_test_group_mention_markdown_message, "群聊 Markdown Mention 渲染测试")
+    await tester.test(_test_s3_failure_keeps_markdown_message_sendable, "S3 失败后继续发送 Markdown 测试")
     return tester

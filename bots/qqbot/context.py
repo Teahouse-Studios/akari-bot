@@ -490,11 +490,17 @@ class QQBotContextManager(ContextManager):
                     inline_pending = False
                 elif isinstance(x, ImageElement):
                     if s3_storage is not None:
-                        upload = await s3_storage.upload_temp(await x.get())
-                        if upload and "public_url" in upload:
-                            w, h = await x.get_wh()
-                            fin_w, fin_h = _markdown_image_size(x, w, h)
-                            texts.append(f"![text #{fin_w}px #{fin_h}px]({upload['public_url']})")
+                        try:
+                            upload = await s3_storage.upload_temp(await x.get())
+                            if upload and "public_url" in upload:
+                                w, h = await x.get_wh()
+                                fin_w, fin_h = _markdown_image_size(x, w, h)
+                                texts.append(f"![text #{fin_w}px #{fin_h}px]({upload['public_url']})")
+                        except Exception:
+                            Logger.exception(
+                                f"Failed to upload a QQBot markdown image to S3 for {session_info.session_id}; "
+                                "the remaining message will still be sent: "
+                            )
                     inline_pending = False
                 elif isinstance(x, MentionElement):
                     if x.client == client_name and session_info.target_from in (

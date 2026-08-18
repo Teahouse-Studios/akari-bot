@@ -135,6 +135,11 @@ class S3Config:
     s3_public_endpoint: str = ""
     s3_internal_endpoint: str = ""
     s3_temp_max_count: int = 20
+    s3_connect_timeout: float = 5
+    s3_read_timeout: float = 15
+    s3_operation_timeout: float = 40
+    s3_max_attempts: int = 2
+    s3_max_workers: int = 4
 
 
 @on_config("s3", secret=True)
