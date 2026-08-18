@@ -5,15 +5,15 @@
     "wordle.help.option.hard": "ハード モードを使用します。",
     "wordle.help.option.trial": "トライアル モードを使用します。",
     "wordle.help.theme": "ダーク テーマを使用するかどうかを設定します。",
-    "wordle.message.occupied": "このコンテクストではゲームが進行中です。",
     "wordle.message.finish": "ゲーム オーバー。答え：${answer}\n辞書検索：",
     "wordle.message.finish.success": "おめでとうございます！${attempt} ラウンドでゲームをクリアしました。",
     "wordle.message.hard.not_matched": "入力された単語は要件を満たしていません。",
     "wordle.message.not_a_word": "これは有効な単語ではありません。",
+    "wordle.message.occupied": "このコンテクストではゲームが進行中です。",
     "wordle.message.start": "ゲームが始まります。5 文字からなる単語を当てる必要があります。挑戦回数は 6 回です。\n緑色は文字と位置の両方が正しいことを示し、黄色は文字は正しいが位置が間違っていることを示し、灰色はその文字が単語に含まれていないことを示します。",
     "wordle.message.start.hard": "前のラウンドで色でマークされた文字は、次のラウンドで必ず登場しなければならず、かつ対応する要件を満たさなければなりません。",
     "wordle.message.start.trial": "現在トライアル モード中です。ゲームをクリアすると、ペタルを獲得できます。",
-    "wordle.message.stop": "停止しました。答え： ${answer}\n辞書検索：",
-    "wordle.message.theme.enable": "ダーク テーマは有効になりました。",
-    "wordle.message.theme.disable": "ダーク テーマは無効になりました。"
+    "wordle.message.stop": "停止しました。答え：${answer}\n辞書検索：",
+    "wordle.message.theme.disable": "ダーク テーマは無効になりました。",
+    "wordle.message.theme.enable": "ダーク テーマは有効になりました。"
 }

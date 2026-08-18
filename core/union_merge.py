@@ -84,7 +84,7 @@ async def issue_code(
     holder_id: str,
     prompt_key: str,
     extra: dict | None = None,
-    code_key: str = "core.bind.message.code",
+    code_key: str = "core.message.bind.code",
     command: str = "bind token",
 ) -> None:
     """
@@ -102,7 +102,7 @@ async def issue_code(
     :param command: 提示中待用户发送的命令，绑定码会拼接于其后。
     """
     if not msg.session_info.support_private_msg:
-        await msg.finish(I18NContext("core.bind.message.code.private.unsupported"))
+        await msg.finish(I18NContext("core.message.bind.code.private.unsupported"))
 
     generated = generate_code(store, union_id, holder_id, extra)
     full_command = f"{msg.session_info.prefixes[0]}{command} {generated}"
@@ -127,8 +127,8 @@ async def issue_code(
     # 平台仅在消息实际投递成功时返回消息 ID，未取得即表示该条私信未送达。
     if not sent:
         store.pop(generated)
-        await msg.finish(I18NContext("core.bind.message.code.private.failed"))
-    await msg.finish(I18NContext("core.bind.message.code.private.sent"))
+        await msg.finish(I18NContext("core.message.bind.code.private.failed"))
+    await msg.finish(I18NContext("core.message.bind.code.private.sent"))
 
 
 def id_lines(ids: list[str]) -> list:
@@ -211,7 +211,7 @@ async def choose_conflicts(msg: Bot.MessageSession, conflicts: list[type]) -> se
     keep_other_tables = set()
     for model in conflicts:
         if not await msg.wait_confirm(
-            I18NContext("core.bind.message.conflict.choose", module=get_union_module_name(model))
+            I18NContext("core.message.bind.conflict.choose", module=get_union_module_name(model))
         ):
             keep_other_tables.add(get_table_name(model))
     return keep_other_tables
@@ -225,7 +225,7 @@ def conflict_lines(conflicts: list[type]) -> list:
         return []
     return [
         I18NContext(
-            "core.bind.message.conflict",
+            "core.message.bind.conflict",
             modules="{I18N:message.delimiter}".join(get_union_module_name(m) for m in conflicts),
         )
     ]
@@ -247,17 +247,17 @@ async def plan_sender_merge(initiator: SenderUnionInfo, current: SenderUnionInfo
     conflicts = await collect_union_conflicts(current.union_id, initiator.union_id, scope=UNION_SCOPE_SENDER)
 
     lines = [
-        I18NContext("core.bind.message.self.confirm"),
-        I18NContext("core.bind.message.self.confirm.initiator", count=len(initiator_ids)),
+        I18NContext("core.message.bind.self.confirm"),
+        I18NContext("core.message.bind.self.confirm.initiator", count=len(initiator_ids)),
         *id_lines(initiator_ids),
-        I18NContext("core.bind.message.self.confirm.current", count=len(current_ids)),
+        I18NContext("core.message.bind.self.confirm.current", count=len(current_ids)),
         *id_lines(current_ids),
-        I18NContext("core.bind.message.self.confirm.inherit"),
+        I18NContext("core.message.bind.self.confirm.inherit"),
     ]
     if CoreConfig.enable_petal:
         lines.append(
             I18NContext(
-                "core.bind.message.self.confirm.petal",
+                "core.message.bind.self.confirm.petal",
                 initiator=initiator.petal,
                 current=current.petal,
                 total=initiator.petal + current.petal,
@@ -331,7 +331,7 @@ async def plan_target_merge(
     msg: Bot.MessageSession,
     initiator: TargetUnionInfo,
     current: TargetUnionInfo,
-    inherit_key: str = "core.bind.message.target.confirm.inherit",
+    inherit_key: str = "core.message.bind.target.confirm.inherit",
 ) -> dict:
     """
     收集一次场景组合并所需的信息：双方 ID、冲突模块与待确认的文案。
@@ -347,10 +347,10 @@ async def plan_target_merge(
     conflicts = await collect_union_conflicts(current.union_id, initiator.union_id, scope=UNION_SCOPE_TARGET)
 
     lines = [
-        I18NContext("core.bind.message.target.confirm"),
-        I18NContext("core.bind.message.target.confirm.initiator", count=len(initiator_ids)),
+        I18NContext("core.message.bind.target.confirm"),
+        I18NContext("core.message.bind.target.confirm.initiator", count=len(initiator_ids)),
         *id_lines(initiator_ids),
-        I18NContext("core.bind.message.target.confirm.current", count=len(current_ids)),
+        I18NContext("core.message.bind.target.confirm.current", count=len(current_ids)),
         *id_lines(current_ids),
         I18NContext(inherit_key, prefix=msg.session_info.prefixes[0]),
     ]
@@ -406,7 +406,7 @@ async def merge_target_unions(
     msg: Bot.MessageSession,
     initiator: TargetUnionInfo,
     current: TargetUnionInfo,
-    inherit_key: str = "core.bind.message.target.confirm.inherit",
+    inherit_key: str = "core.message.bind.target.confirm.inherit",
 ) -> TargetUnionInfo | None:
     """
     走完一次场景组合并：展示继承关系 → 确认 → 逐个处理冲突 → 记录快照 → 合并。
@@ -429,11 +429,11 @@ def channel_hint_lines(msg: Bot.MessageSession) -> list:
     ``bind auto`` 未启用时其命令并未注册，提示中不再提及，以免指向一条不存在的命令。
     """
     return [
-        I18NContext("core.bind.message.channel.hint"),
+        I18NContext("core.message.bind.channel.hint"),
         I18NContext(
-            "core.bind.message.channel.hint.auto"
+            "core.message.bind.channel.hint.auto"
             if CoreConfig.enable_bind_auto
-            else "core.bind.message.channel.hint.manual",
+            else "core.message.bind.channel.hint.manual",
             prefix=msg.session_info.prefixes[0],
         ),
     ]
@@ -455,6 +455,6 @@ async def target_lines(msg, union_id: str, ids: list[str]) -> list:
             lines.append(Plain(target_id, disable_joke=True))
         else:
             lines.append(
-                I18NContext("core.bind.message.target.info.entry", id=target_id, channel=channel_id, disable_joke=True)
+                I18NContext("core.message.bind.target.info.entry", id=target_id, channel=channel_id, disable_joke=True)
             )
     return lines + channel_hint_lines(msg)

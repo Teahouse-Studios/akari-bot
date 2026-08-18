@@ -67,14 +67,14 @@ async def _channel_lines(msg: Bot.MessageSession) -> list:
     """
     union_id = msg.session_info.target_union_id
     if not union_id:
-        return [I18NContext("core.bind.message.channel.unknown")]
+        return [I18NContext("core.message.bind.channel.unknown")]
     channel_id = msg.session_info.target_channel_id
 
     channels = await TargetUnionBind.list_channels(union_id)
     siblings = [target_id for target_id, cid in channels.items() if cid == channel_id]
     return [
-        I18NContext("core.bind.message.channel.info", channel=channel_id),
-        I18NContext("core.bind.message.channel.info.shared", count=len(siblings)),
+        I18NContext("core.message.bind.channel.info", channel=channel_id),
+        I18NContext("core.message.bind.channel.info.shared", count=len(siblings)),
         *id_lines(siblings),
         *channel_hint_lines(msg),
     ]
@@ -83,13 +83,13 @@ async def _channel_lines(msg: Bot.MessageSession) -> list:
 b = module(
     "bind",
     base=True,
-    desc="{I18N:core.bind.help.desc}",
+    desc="{I18N:core.help.bind.desc}",
     doc=True,
     alias={"connect": "bind auto"} if ENABLE_BIND_AUTO else None,
 )
 
 
-@b.command("{{I18N:core.bind.help}}")
+@b.command("{{I18N:core.help.bind}}")
 async def _(msg: Bot.MessageSession):
     sender_union_info = msg.session_info.sender_union_info
     target_union_info = msg.session_info.target_union_info
@@ -97,32 +97,32 @@ async def _(msg: Bot.MessageSession):
     target_ids = await target_union_info.list_bound_ids()
     await msg.finish(
         [
-            I18NContext("core.bind.message.self.info", id=sender_union_info.union_id, disable_joke=True),
-            I18NContext("core.bind.message.self.info.bound", count=len(sender_ids)),
+            I18NContext("core.message.bind.self.info", id=sender_union_info.union_id, disable_joke=True),
+            I18NContext("core.message.bind.self.info.bound", count=len(sender_ids)),
         ]
         + id_lines(sender_ids)
         + [
-            I18NContext("core.bind.message.target.info", id=target_union_info.union_id, disable_joke=True),
-            I18NContext("core.bind.message.target.info.bound", count=len(target_ids)),
+            I18NContext("core.message.bind.target.info", id=target_union_info.union_id, disable_joke=True),
+            I18NContext("core.message.bind.target.info.bound", count=len(target_ids)),
         ]
         + await target_lines(msg, target_union_info.union_id, target_ids)
     )
 
 
-@b.command("self {{I18N:core.bind.help.self}}")
+@b.command("self {{I18N:core.help.bind.self}}")
 async def _(msg: Bot.MessageSession):
     sender_union_info = msg.session_info.sender_union_info
     bound_ids = await sender_union_info.list_bound_ids()
     await msg.finish(
         [
-            I18NContext("core.bind.message.self.info", id=sender_union_info.union_id, disable_joke=True),
-            I18NContext("core.bind.message.self.info.bound", count=len(bound_ids)),
+            I18NContext("core.message.bind.self.info", id=sender_union_info.union_id, disable_joke=True),
+            I18NContext("core.message.bind.self.info.bound", count=len(bound_ids)),
         ]
         + id_lines(bound_ids)
     )
 
 
-@b.command("start {{I18N:core.bind.help.start}}")
+@b.command("start {{I18N:core.help.bind.start}}")
 async def _(msg: Bot.MessageSession):
     session_info = msg.session_info
     if session_info.is_private:
@@ -133,7 +133,7 @@ async def _(msg: Bot.MessageSession):
             _sender_bind_codes,
             session_info.sender_union_info.union_id,
             session_info.sender_id,
-            "core.bind.message.start.private.prompt",
+            "core.message.bind.start.private.prompt",
             extra={"target_union_id": session_info.target_union_info.union_id, "is_private": True},
         )
     # 场景组绑定会改动整个场景的数据，需要管理员权限；私聊则无此顾虑，故在此处而非命令级校验。
@@ -144,54 +144,54 @@ async def _(msg: Bot.MessageSession):
         _target_bind_codes,
         session_info.target_union_info.union_id,
         session_info.target_id,
-        "core.bind.message.target.code.prompt",
+        "core.message.bind.target.code.prompt",
         extra={"is_private": False},
     )
 
 
-@b.command("self remove <user> {{I18N:core.bind.help.self.remove}}")
+@b.command("self remove <user> {{I18N:core.help.bind.self.remove}}")
 async def _(msg: Bot.MessageSession, user: str):
     sender_union_info = msg.session_info.sender_union_info
     bound_ids = await sender_union_info.list_bound_ids()
     if user not in bound_ids:
-        await msg.finish(I18NContext("core.bind.message.self.remove.not_bound"))
+        await msg.finish(I18NContext("core.message.bind.self.remove.not_bound"))
     if len(bound_ids) <= 1:
-        await msg.finish(I18NContext("core.bind.message.self.remove.last"))
-    if not await msg.wait_confirm(I18NContext("core.bind.message.self.remove.confirm", id=user, disable_joke=True)):
+        await msg.finish(I18NContext("core.message.bind.self.remove.last"))
+    if not await msg.wait_confirm(I18NContext("core.message.bind.self.remove.confirm", id=user, disable_joke=True)):
         await msg.finish()
     if not await sender_union_info.unbind_id(user):
-        await msg.finish(I18NContext("core.bind.message.self.remove.failed"))
+        await msg.finish(I18NContext("core.message.bind.self.remove.failed"))
     await msg.session_info.refresh_info()
-    await msg.finish(I18NContext("core.bind.message.self.remove.success", id=user, disable_joke=True))
+    await msg.finish(I18NContext("core.message.bind.self.remove.success", id=user, disable_joke=True))
 
 
-@b.command("target {{I18N:core.bind.help.target}}", required_admin=True)
+@b.command("target {{I18N:core.help.bind.target}}", required_admin=True)
 async def _(msg: Bot.MessageSession):
     target_union_info = msg.session_info.target_union_info
     bound_ids = await target_union_info.list_bound_ids()
     await msg.finish(
         [
-            I18NContext("core.bind.message.target.info", id=target_union_info.union_id, disable_joke=True),
-            I18NContext("core.bind.message.target.info.bound", count=len(bound_ids)),
+            I18NContext("core.message.bind.target.info", id=target_union_info.union_id, disable_joke=True),
+            I18NContext("core.message.bind.target.info.bound", count=len(bound_ids)),
         ]
         + await target_lines(msg, target_union_info.union_id, bound_ids)
     )
 
 
-@b.command("target remove <target> {{I18N:core.bind.help.target.remove}}", required_admin=True)
+@b.command("target remove <target> {{I18N:core.help.bind.target.remove}}", required_admin=True)
 async def _(msg: Bot.MessageSession, target: str):
     target_union_info = msg.session_info.target_union_info
     bound_ids = await target_union_info.list_bound_ids()
     if target not in bound_ids:
-        await msg.finish(I18NContext("core.bind.message.target.remove.not_bound"))
+        await msg.finish(I18NContext("core.message.bind.target.remove.not_bound"))
     if len(bound_ids) <= 1:
-        await msg.finish(I18NContext("core.bind.message.target.remove.last"))
-    if not await msg.wait_confirm(I18NContext("core.bind.message.target.remove.confirm", id=target, disable_joke=True)):
+        await msg.finish(I18NContext("core.message.bind.target.remove.last"))
+    if not await msg.wait_confirm(I18NContext("core.message.bind.target.remove.confirm", id=target, disable_joke=True)):
         await msg.finish()
     if not await target_union_info.unbind_id(target):
-        await msg.finish(I18NContext("core.bind.message.target.remove.failed"))
+        await msg.finish(I18NContext("core.message.bind.target.remove.failed"))
     await msg.session_info.refresh_info()
-    await msg.finish(I18NContext("core.bind.message.target.remove.success", id=target, disable_joke=True))
+    await msg.finish(I18NContext("core.message.bind.target.remove.success", id=target, disable_joke=True))
 
 
 async def _bind_private(msg: Bot.MessageSession, entry: dict) -> None:
@@ -211,7 +211,7 @@ async def _bind_private(msg: Bot.MessageSession, entry: dict) -> None:
     sender_initiator = await SenderUnionInfo.get_or_none(union_id=entry["union_id"])
     target_initiator = await TargetUnionInfo.get_or_none(union_id=entry["target_union_id"])
     if not sender_initiator or not target_initiator:
-        await msg.finish(I18NContext("core.bind.message.code.invalid"))
+        await msg.finish(I18NContext("core.message.bind.code.invalid"))
 
     # 任一侧已同组则只并另一侧；两侧都已同组说明这枚码来自本方，无需绑定。
     sender_plan = (
@@ -225,9 +225,9 @@ async def _bind_private(msg: Bot.MessageSession, entry: dict) -> None:
         else None
     )
     if not sender_plan and not target_plan:
-        await msg.finish(I18NContext("core.bind.message.self.same"))
+        await msg.finish(I18NContext("core.message.bind.self.same"))
 
-    lines = [I18NContext("core.bind.message.start.private.confirm")]
+    lines = [I18NContext("core.message.bind.start.private.confirm")]
     for plan in (sender_plan, target_plan):
         if plan:
             lines += plan["lines"]
@@ -241,36 +241,36 @@ async def _bind_private(msg: Bot.MessageSession, entry: dict) -> None:
     merged_sender = await apply_sender_merge(sender_plan, sender_keep) if sender_plan else sender_current
     merged_target = await apply_target_merge(target_plan, target_keep) if target_plan else target_current
     if not merged_sender or not merged_target:
-        await msg.finish(I18NContext("core.bind.message.start.private.failed"))
+        await msg.finish(I18NContext("core.message.bind.start.private.failed"))
 
     await session_info.refresh_info()
     sender_ids = await merged_sender.list_bound_ids()
     target_ids = await merged_target.list_bound_ids()
     await msg.finish(
         [
-            I18NContext("core.bind.message.self.success", id=merged_sender.union_id, disable_joke=True),
-            I18NContext("core.bind.message.self.info.bound", count=len(sender_ids)),
+            I18NContext("core.message.bind.self.success", id=merged_sender.union_id, disable_joke=True),
+            I18NContext("core.message.bind.self.info.bound", count=len(sender_ids)),
         ]
         + id_lines(sender_ids)
         + [
-            I18NContext("core.bind.message.target.success", id=merged_target.union_id, disable_joke=True),
-            I18NContext("core.bind.message.target.info.bound", count=len(target_ids)),
+            I18NContext("core.message.bind.target.success", id=merged_target.union_id, disable_joke=True),
+            I18NContext("core.message.bind.target.info.bound", count=len(target_ids)),
         ]
         + await target_lines(msg, merged_target.union_id, target_ids)
     )
 
 
-@b.command("token <code> {{I18N:core.bind.help.token}}")
+@b.command("token <code> {{I18N:core.help.bind.token}}")
 async def _(msg: Bot.MessageSession, code: str):
     taken = _take_code(code)
     if not taken:
-        await msg.finish(I18NContext("core.bind.message.code.invalid"))
+        await msg.finish(I18NContext("core.message.bind.code.invalid"))
     scope, entry = taken
 
     # 绑定码的生成与使用须处于同类场景：私聊码带着发起方的场景组，若在群里兑换，
     # 会把一个群的数据并进对方的私聊；群码在私聊里兑换同理。
     if entry["is_private"] != msg.session_info.is_private:
-        await msg.finish(I18NContext("core.bind.message.code.scene.mismatch"))
+        await msg.finish(I18NContext("core.message.bind.code.scene.mismatch"))
 
     if scope == UNION_SCOPE_SENDER:
         await _bind_private(msg, entry)
@@ -281,10 +281,10 @@ async def _(msg: Bot.MessageSession, code: str):
 
     current = msg.session_info.target_union_info
     if entry["union_id"] == current.union_id:
-        await msg.finish(I18NContext("core.bind.message.target.same"))
+        await msg.finish(I18NContext("core.message.bind.target.same"))
     initiator = await TargetUnionInfo.get_or_none(union_id=entry["union_id"])
     if not initiator:
-        await msg.finish(I18NContext("core.bind.message.code.invalid"))
+        await msg.finish(I18NContext("core.message.bind.code.invalid"))
 
     merged = await merge_target_unions(msg, initiator, current)
     if not merged:
@@ -293,42 +293,42 @@ async def _(msg: Bot.MessageSession, code: str):
     bound_ids = await merged.list_bound_ids()
     await msg.finish(
         [
-            I18NContext("core.bind.message.target.success", id=merged.union_id, disable_joke=True),
-            I18NContext("core.bind.message.target.info.bound", count=len(bound_ids)),
+            I18NContext("core.message.bind.target.success", id=merged.union_id, disable_joke=True),
+            I18NContext("core.message.bind.target.info.bound", count=len(bound_ids)),
         ]
         + await target_lines(msg, merged.union_id, bound_ids)
     )
 
 
-@b.command("channel {{I18N:core.bind.help.channel}}", required_admin=True)
+@b.command("channel {{I18N:core.help.bind.channel}}", required_admin=True)
 async def _(msg: Bot.MessageSession):
     await msg.finish(await _channel_lines(msg))
 
 
-@b.command("channel set <channel> {{I18N:core.bind.help.channel.set}}", required_admin=True)
+@b.command("channel set <channel> {{I18N:core.help.bind.channel.set}}", required_admin=True)
 async def _(msg: Bot.MessageSession, channel: int):
     if not msg.session_info.target_union_id:
-        await msg.finish(I18NContext("core.bind.message.channel.unknown"))
+        await msg.finish(I18NContext("core.message.bind.channel.unknown"))
 
     await TargetUnionBind.filter(target_id=msg.session_info.target_id).update(channel_id=int(channel))
     # 变更通道后与原同通道场景不再对应同一个现实场景，保留互认记录会阻碍后续重新配对。
     await msg.session_info.target_union_info.forget_peer_bots(msg.session_info.target_id)
     await msg.session_info.refresh_info()
-    await msg.finish([I18NContext("core.bind.message.channel.set.success", channel=int(channel))])
+    await msg.finish([I18NContext("core.message.bind.channel.set.success", channel=int(channel))])
 
 
-@b.command("channel reset {{I18N:core.bind.help.channel.reset}}", required_admin=True)
+@b.command("channel reset {{I18N:core.help.bind.channel.reset}}", required_admin=True)
 async def _(msg: Bot.MessageSession):
     union_id = msg.session_info.target_union_id
     if not union_id:
-        await msg.finish(I18NContext("core.bind.message.channel.unknown"))
+        await msg.finish(I18NContext("core.message.bind.channel.unknown"))
 
     channel_id = await TargetUnionBind.next_channel_id(union_id)
     await TargetUnionBind.filter(target_id=msg.session_info.target_id).update(channel_id=channel_id)
     # 脱离通道后与原同通道场景不再关联，须一并清除互认记录，否则重新配对时握手口令会被双方屏蔽。
     await msg.session_info.target_union_info.forget_peer_bots(msg.session_info.target_id)
     await msg.session_info.refresh_info()
-    await msg.finish(I18NContext("core.bind.message.channel.reset.success", channel=channel_id))
+    await msg.finish(I18NContext("core.message.bind.channel.reset.success", channel=channel_id))
 
 
 async def _start_handshake(msg: Bot.MessageSession) -> None:
@@ -367,7 +367,7 @@ async def _expire_handshake(probe_token: str, initiator: Bot.MessageSession) -> 
             _pending_confirms.pop(confirm_token, None)
             await pending["responder"].release()
 
-    await initiator.send_message(I18NContext("core.bind.message.auto.timeout"))
+    await initiator.send_message(I18NContext("core.message.bind.auto.timeout"))
     await initiator.release()
 
 
@@ -450,17 +450,17 @@ async def _close_handshake(msg: Bot.MessageSession, token: str) -> None:
     await _complete_channel_handshake(entry)
 
 
-@b.command("auto {{I18N:core.bind.help.auto}}", required_admin=True, load=ENABLE_BIND_AUTO)
+@b.command("auto {{I18N:core.help.bind.auto}}", required_admin=True, load=ENABLE_BIND_AUTO)
 async def _(msg: Bot.MessageSession):
     await _start_handshake(msg)
 
 
-@b.command("channel probe <token> {{I18N:core.bind.help.channel.internal}}", load=ENABLE_BIND_AUTO)
+@b.command("channel probe <token> {{I18N:core.help.bind.channel.internal}}", load=ENABLE_BIND_AUTO)
 async def _(msg: Bot.MessageSession, token: str):
     await _respond_probe(msg, token)
 
 
-@b.command("channel confirm <token> {{I18N:core.bind.help.channel.internal}}", load=ENABLE_BIND_AUTO)
+@b.command("channel confirm <token> {{I18N:core.help.bind.channel.internal}}", load=ENABLE_BIND_AUTO)
 async def _(msg: Bot.MessageSession, token: str):
     await _close_handshake(msg, token)
 
@@ -512,10 +512,10 @@ async def _run_channel_handshake(entry: dict, initiator: Bot.MessageSession, res
     if initiator_target.union_id != responder_target.union_id:
         # 合并确认在发起侧进行：执行该命令的管理员位于发起侧。
         merged = await merge_target_unions(
-            initiator, initiator_target, responder_target, "core.bind.message.auto.confirm.inherit"
+            initiator, initiator_target, responder_target, "core.message.bind.auto.confirm.inherit"
         )
         if not merged:
-            await initiator.send_message(I18NContext("core.bind.message.auto.cancelled"))
+            await initiator.send_message(I18NContext("core.message.bind.auto.cancelled"))
             return
 
     # 将对方并入本场景所在的通道，此后二者同组同号，命令执行与消息推送均只由其中一方承担。
@@ -540,7 +540,7 @@ async def _run_channel_handshake(entry: dict, initiator: Bot.MessageSession, res
         await session.session_info.refresh_info()
         await session.send_message(
             I18NContext(
-                "core.bind.message.auto.success",
+                "core.message.bind.auto.success",
                 id=merged.union_id,
                 channel=channel_id,
                 disable_joke=True,
