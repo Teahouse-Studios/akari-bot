@@ -12,6 +12,9 @@ from core.constants.exceptions import SessionFinished
 from core.database.models import TargetUnionInfo
 from core.tester import Tester, func_case
 from modules.captcha import (
+    CAPTCHA_BUTTON_ROWS,
+    CAPTCHA_BUTTONS_PER_ROW,
+    CAPTCHA_CHOICE_COUNT,
     CAPTCHA_EMOTE_ANSWER_OFFSET,
     CAPTCHA_EMOTE_DIR,
     CAPTCHA_EMOTES,
@@ -54,7 +57,7 @@ def _test_captcha_indexes_fit_mysql_limit():
 def _test_choices_are_valid():
     for answer in (1, 50, 100):
         choices = make_choices(answer)
-        if len(choices) != 5 or len(set(choices)) != 5 or answer not in choices:
+        if len(choices) != CAPTCHA_CHOICE_COUNT or len(set(choices)) != CAPTCHA_CHOICE_COUNT or answer not in choices:
             return False
         if any(choice < 1 or choice > 100 for choice in choices):
             return False
@@ -62,13 +65,13 @@ def _test_choices_are_valid():
 
 
 def _test_emote_choices_are_valid():
-    if len(CAPTCHA_EMOTES) < 5:
+    if len(CAPTCHA_EMOTES) < CAPTCHA_CHOICE_COUNT:
         return False
     answer = CAPTCHA_EMOTE_ANSWER_OFFSET
     choices = make_emote_choices(answer)
     return (
-        len(choices) == 5
-        and len(set(choices)) == 5
+        len(choices) == CAPTCHA_CHOICE_COUNT
+        and len(set(choices)) == CAPTCHA_CHOICE_COUNT
         and answer in choices
         and all(captcha_emote_name(choice) in CAPTCHA_EMOTES for choice in choices)
         and all((CAPTCHA_EMOTE_DIR / f"{name}.gif").is_file() for name in CAPTCHA_EMOTES)
@@ -120,11 +123,13 @@ async def _test_captcha_event_and_private_token():
     rendered_prompt = group_session.locale.t(prompt.key, **prompt.kwargs) if prompt else ""
     if (
         challenge.status != "pending"
-        or len(challenge.choices) != 5
+        or len(challenge.choices) != CAPTCHA_CHOICE_COUNT
         or challenge.answer not in challenge.choices
         or restrict.await_count != 1
         or frame is None
-        or len(button_values) != 5
+        or len(button_values) != CAPTCHA_CHOICE_COUNT
+        or len(frame.rows) != CAPTCHA_BUTTON_ROWS
+        or any(len(row.buttons) != CAPTCHA_BUTTONS_PER_ROW for row in frame.rows)
         or any(not value.startswith(f"!token {challenge.token} ") for value in button_values)
         or prompt is None
         or prompt.kwargs["command"] != f"{command_prefix[0]}token {challenge.token}"
@@ -269,7 +274,13 @@ async def _test_preparing_challenge_resumes_after_restart():
         await member_joined(event)
 
     await challenge.refresh_from_db()
-    return challenge.status == "pending" and challenge.token == "resume-token" and restrict.await_count == 1
+    return (
+        challenge.status == "pending"
+        and challenge.token == "resume-token"
+        and len(challenge.choices) == CAPTCHA_CHOICE_COUNT
+        and challenge.answer in challenge.choices
+        and restrict.await_count == 1
+    )
 
 
 async def _test_emote_captcha_uses_localized_buttons():
@@ -349,6 +360,8 @@ async def _test_emote_captcha_uses_localized_buttons():
         and image.path == str(CAPTCHA_EMOTE_DIR / f"{emote_name}.gif")
         and [button.show for button in buttons] == expected_labels
         and [int(button.value.rsplit(maxsplit=1)[1]) for button in buttons] == challenge.choices
+        and len(frame.rows) == CAPTCHA_BUTTON_ROWS
+        and all(len(row.buttons) == CAPTCHA_BUTTONS_PER_ROW for row in frame.rows)
     )
 
 

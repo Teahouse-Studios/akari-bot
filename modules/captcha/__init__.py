@@ -22,6 +22,9 @@ CAPTCHA_MUTE_SECONDS = 30 * 24 * 60 * 60
 CAPTCHA_EMOTE_ANSWER_OFFSET = 101
 CAPTCHA_EMOTE_DIR = assets_path / "emotes" / "captcha_held"
 CAPTCHA_EMOTES = tuple(sorted(path.stem for path in CAPTCHA_EMOTE_DIR.glob("*.gif")))
+CAPTCHA_BUTTON_ROWS = 4
+CAPTCHA_BUTTONS_PER_ROW = 5
+CAPTCHA_CHOICE_COUNT = CAPTCHA_BUTTON_ROWS * CAPTCHA_BUTTONS_PER_ROW
 _random = SystemRandom()
 
 captcha = module(
@@ -34,9 +37,9 @@ token_module = module("token", base=True, hidden=True, available_for="QQBot")
 
 
 def make_choices(answer: int) -> list[int]:
-    """生成包含答案的 5 个不重复数字。"""
+    """生成包含答案的 20 个不重复数字。"""
     choices = {answer}
-    while len(choices) < 5:
+    while len(choices) < CAPTCHA_CHOICE_COUNT:
         choices.add(_random.randint(1, 100))
     values = list(choices)
     _random.shuffle(values)
@@ -44,10 +47,12 @@ def make_choices(answer: int) -> list[int]:
 
 
 def make_emote_choices(answer: int) -> list[int]:
-    """生成包含答案的 5 个不重复表情资源编号。"""
+    """生成包含答案的 20 个不重复表情资源编号。"""
+    if len(CAPTCHA_EMOTES) < CAPTCHA_CHOICE_COUNT:
+        raise ValueError(f"At least {CAPTCHA_CHOICE_COUNT} captcha emotes are required.")
     choices = {answer}
     maximum = CAPTCHA_EMOTE_ANSWER_OFFSET + len(CAPTCHA_EMOTES) - 1
-    while len(choices) < 5:
+    while len(choices) < CAPTCHA_CHOICE_COUNT:
         choices.add(_random.randint(CAPTCHA_EMOTE_ANSWER_OFFSET, maximum))
     values = list(choices)
     _random.shuffle(values)
@@ -79,12 +84,14 @@ async def member_joined(event: EventInfo):
     if existing and existing.status in {"pending", "failed", "verified"}:
         return
 
-    if CoreConfig.use_emote and len(CAPTCHA_EMOTES) >= 5:
+    if CoreConfig.use_emote and len(CAPTCHA_EMOTES) >= CAPTCHA_CHOICE_COUNT:
         answer = CAPTCHA_EMOTE_ANSWER_OFFSET + _random.randint(0, len(CAPTCHA_EMOTES) - 1)
         choices = make_emote_choices(answer)
     else:
         if CoreConfig.use_emote:
-            Logger.warning(f"Captcha emote mode requires at least 5 GIF resources in {CAPTCHA_EMOTE_DIR}.")
+            Logger.warning(
+                f"Captcha emote mode requires at least {CAPTCHA_CHOICE_COUNT} GIF resources in {CAPTCHA_EMOTE_DIR}."
+            )
         answer = _random.randint(1, 100)
         choices = make_choices(answer)
     defaults = {
@@ -99,6 +106,14 @@ async def member_joined(event: EventInfo):
     }
     if existing and existing.status == "preparing":
         challenge = existing
+        if len(challenge.choices) != CAPTCHA_CHOICE_COUNT:
+            if captcha_emote_name(challenge.answer) and len(CAPTCHA_EMOTES) >= CAPTCHA_CHOICE_COUNT:
+                challenge.choices = make_emote_choices(challenge.answer)
+            else:
+                if captcha_emote_name(challenge.answer):
+                    challenge.answer = _random.randint(1, 100)
+                challenge.choices = make_choices(challenge.answer)
+            await challenge.save()
     elif existing:
         for key, value in defaults.items():
             setattr(existing, key, value)
@@ -150,14 +165,14 @@ async def member_joined(event: EventInfo):
                 bot_name=session.session_info.bot_name,
                 command=private_command,
             ),
-            ButtonFrame(arrange_buttons(buttons, per_row=5)),
+            ButtonFrame(arrange_buttons(buttons, per_row=CAPTCHA_BUTTONS_PER_ROW)),
         ]
     else:
         buttons = [(str(choice), f"{command} {choice}") for choice in challenge.choices]
         message = [
             Mention(event.sender_id),
             I18NContext("captcha.message.challenge", answer=challenge.answer, command=private_command),
-            ButtonFrame(arrange_buttons(buttons, per_row=5)),
+            ButtonFrame(arrange_buttons(buttons, per_row=CAPTCHA_BUTTONS_PER_ROW)),
         ]
     sent = await session.send_message(message, quote=False)
     if sent.message_id:
