@@ -54,7 +54,7 @@ async def get_weekly(with_img=False, zh_tw=False):
     msg_list.append(
         I18NContext(
             "weekly.message.link",
-            img=MessageChain.assign(Url(imglink)) if imglink else locale.t("message.none"),
+            img=MessageChain.assign(Url(imglink, trusted=True)) if imglink else locale.t("message.none"),
             article=MessageChain.assign(
                 Url(f"https://zh.minecraft.wiki{page[0]}", trusted=True) if page else locale.t("message.none")
             ),
