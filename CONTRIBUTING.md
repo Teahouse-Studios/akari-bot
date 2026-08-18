@@ -51,7 +51,7 @@
 > [!WARNING]
 > **绝对不要**在 Issue 或其他任何公开渠道报告或复现包含敏感信息的安全问题或漏洞。
 > 
-> 涉及敏感内容的问题必须通过电子邮件（地址详见 [`pyproject.toml`](/pyproject.toml)）或私聊联系开发者。
+> 涉及敏感内容的问题必须通过电子邮件或私聊联系开发者，详见 [`SECURITY.md`](/SECURITY.md)。
 >
 > 违反本条规则的内容将被删除；若执意违反，后果自负。
 
@@ -232,7 +232,7 @@ No matter which method you choose, please **describe your problem in as much det
 > [!WARNING]
 > **Never** report or reproduce security issues / vulnerabilities that involve sensitive information in Issues or any public channels.
 >
-> Such issues must be reported privately via email (address available in [`pyproject.toml`](/pyproject.toml)) or direct message to the developers.
+> Such issues must be reported privately via email or direct message to the developers. See [`SECURITY.md`](/SECURITY.md))
 >
 > Content that violates this rule will be removed. Persistent violation may have consequences.
 
