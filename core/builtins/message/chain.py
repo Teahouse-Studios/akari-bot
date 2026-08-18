@@ -49,6 +49,9 @@ if TYPE_CHECKING:
     from core.builtins.session.internal import MessageSession
 
 
+_I18N_MESSAGE_PATTERN = re.compile(r"\[AKARI-MSG:([A-Za-z0-9_-]+={0,2})\]")
+
+
 @define
 class MessageChain:
     """
@@ -184,7 +187,10 @@ class MessageChain:
                 if secret := Secret.check(v.text):
                     Logger.warning(unsafeprompt("Plain", secret, v.text))
                     return False
-
+            if isinstance(v, URLElement):
+                if secret := Secret.check(v.original_url):
+                    Logger.warning(unsafeprompt("URL", secret, v.original_url))
+                    return False
             # ========== 检查 Embed 元素 ==========
             elif isinstance(v, EmbedElement):
                 # 检查标题
@@ -265,6 +271,27 @@ class MessageChain:
 
             support_embed = session_info.support_embed
 
+        def append_parsed_elements(element_chain: MessageChain) -> None:
+            inline_pending = False
+            for elem in element_chain.values:
+                elem_ = (
+                    MessageChain.assign(elem)
+                    .as_sendable(session_info, parse_message=False, disable_markdown=disable_markdown)
+                    .values
+                )
+                is_action_text = isinstance(elem, ActionTextElement)
+                for el in elem_:
+                    # 该赋值原本假定 elem 是纯文本元素，指令操作降级后
+                    # elem_ 中也会出现纯文本，不加判定会把元素改写为字符串
+                    if isinstance(el, PlainElement) and isinstance(elem, PlainElement) and session_info:
+                        elem.text = session_info.locale.t_str(el.text)
+                for el in elem_:
+                    if (is_action_text or inline_pending) and isinstance(el, PlainElement):
+                        _append_inline(value, el)
+                    else:
+                        value.append(el)
+                inline_pending = is_action_text
+
         # ========== 处理每个消息元素 ==========
         for x in self.values:
             if x is None:
@@ -289,26 +316,7 @@ class MessageChain:
                             # 换行拼接拆成数行。其余元素照旧各自追加，以免破坏
                             # MessageChain([Plain("a"), Plain("b")]) 经 KE 码往返后
                             # 仍应是两个元素的既有约定。
-                            inline_pending = False
-                            # 递归处理解析出的元素
-                            for elem in element_chain.values:
-                                elem_ = (
-                                    MessageChain.assign(elem)
-                                    .as_sendable(session_info, parse_message=False, disable_markdown=disable_markdown)
-                                    .values
-                                )
-                                is_action_text = isinstance(elem, ActionTextElement)
-                                for el in elem_:
-                                    # 该赋值原本假定 elem 是纯文本元素，指令操作降级后
-                                    # elem_ 中也会出现纯文本，不加判定会把元素改写为字符串
-                                    if isinstance(el, PlainElement) and isinstance(elem, PlainElement):
-                                        elem.text = session_info.locale.t_str(el.text)
-                                for el in elem_:
-                                    if (is_action_text or inline_pending) and isinstance(el, PlainElement):
-                                        _append_inline(value, el)
-                                    else:
-                                        value.append(el)
-                                inline_pending = is_action_text
+                            append_parsed_elements(element_chain)
                             continue
                     else:
                         # 空文本，使用默认错误消息
@@ -340,18 +348,16 @@ class MessageChain:
                     if isinstance(v, str):
                         x.kwargs[k] = locale.t_str(v)
                     if isinstance(v, MessageChain):
-                        # 传入 i18n 模块后 MessageChain 会被 Template.safe_substitute 强制转义为字符串... 思考了很久怎么处理比较好，决定暂时用 kecode 处理
-                        x.kwargs[k] = v.to_kecode()
+                        # Template.safe_substitute 会把参数强制转成字符串，因此先将消息链
+                        # 结构化并编码成可嵌入模板的内部标记，翻译后再还原。
+                        x.kwargs[k] = _serialize_i18n_message(v)
                     if isinstance(v, ActionTextElement):
-                        # 同上，参数值会被强制转为字符串。此处先解析内层再转 KE 码，
-                        # 交由随后对翻译结果的再次转换经 match_kecode() 还原为元素
-                        x.kwargs[k] = v.resolve(session_info).kecode()
+                        # 指令操作同样需要保留元素类型；先解析内层多语言元素再序列化。
+                        x.kwargs[k] = _serialize_i18n_message(v.resolve(session_info))
 
                 # 执行多语言翻译
                 t_value = locale.t(x.key, x.fallback, x.locale_failed_prompt, **x.kwargs)
-                value += (
-                    MessageChain.assign(t_value).as_sendable(session_info, disable_markdown=disable_markdown).values
-                )
+                append_parsed_elements(_deserialize_i18n_messages(t_value, x.disable_joke))
 
             # ========== 处理 URL 元素 ==========
             elif isinstance(x, URLElement):
@@ -1012,6 +1018,35 @@ def _append_inline(value: list, element: PlainElement) -> None:
         value[-1].text += element.text
     else:
         value.append(element)
+
+
+def _serialize_i18n_message(value: MessageChain | MessageElement) -> str:
+    chain = value if isinstance(value, MessageChain) else MessageChain.assign(value)
+    payload = orjson.dumps(converter.unstructure(chain, MessageChain))
+    encoded = base64.urlsafe_b64encode(payload).decode("ascii")
+    return f"[AKARI-MSG:{encoded}]"
+
+
+def _deserialize_i18n_messages(text: str, disable_joke: bool = False) -> MessageChain:
+    elements = MessageChain.create()
+    cursor = 0
+
+    for match in _I18N_MESSAGE_PATTERN.finditer(text):
+        if prefix := text[cursor : match.start()]:
+            elements.extend(match_kecode(prefix, disable_joke))
+
+        try:
+            payload = base64.urlsafe_b64decode(match.group(1))
+            elements.extend(converter.structure(orjson.loads(payload), MessageChain))
+        except Exception:
+            elements.extend(match_kecode(match.group(0), disable_joke))
+
+        cursor = match.end()
+
+    if suffix := text[cursor:]:
+        elements.extend(match_kecode(suffix, disable_joke))
+
+    return elements
 
 
 def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:

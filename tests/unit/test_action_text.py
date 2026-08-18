@@ -12,8 +12,9 @@ from core.builtins.message.elements import (
     ActionTextElement,
     I18NContextElement,
     PlainElement,
+    RawElement,
 )
-from core.builtins.message.internal import ActionText, I18NContext, Plain
+from core.builtins.message.internal import ActionText, I18NContext, Plain, Raw
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.tester import func_case, Tester
@@ -350,7 +351,7 @@ async def _test_inline_in_i18n_kwargs_supported():
     """测试支持的平台上，句子中的指令操作还原为独立元素
 
     locale.t() 内部经 Template.safe_substitute 将参数强制转为字符串，故元素须先
-    转为 KE 码，再由后续的 match_kecode() 还原。
+    序列化为内部标记，再在翻译完成后还原。
     """
     try:
         session_info = await _session("at_inline_keep", True)
@@ -361,6 +362,23 @@ async def _test_inline_in_i18n_kwargs_supported():
             return False
         # 元素前后的括号应作为纯文本保留
         if not any(isinstance(v, PlainElement) for v in sendable.values):
+            return False
+        return True
+    except Exception:
+        return False
+
+
+async def _test_i18n_message_chain_structured_roundtrip():
+    """测试不支持 KE 码的元素也能经 i18n 参数完整往返"""
+    try:
+        session_info = await _session("i18n_structured_chain", True)
+        chain = MessageChain.assign([I18NContext("message.brackets", msg=MessageChain.assign(Raw("<raw,data=1]")))])
+        sendable = chain.as_sendable(session_info)
+        raw = next((value for value in sendable.values if isinstance(value, RawElement)), None)
+        if raw is None or raw.value != "<raw,data=1]":
+            return False
+        plain_text = "".join(value.text for value in sendable.values if isinstance(value, PlainElement))
+        if plain_text != "（）":
             return False
         return True
     except Exception:
@@ -713,6 +731,7 @@ async def test_action_text_inline(tester: Tester):
     await tester.test(_test_inline_trailing_text_follows_element, "元素后文本顺序测试")
     await tester.test(_test_plain_kecode_roundtrip_not_merged, "普通 KE 码往返不合并测试")
     await tester.test(_test_inline_i18n_inner_translated, "句中内层多语言翻译测试")
+    await tester.test(_test_i18n_message_chain_structured_roundtrip, "i18n 消息链结构化往返测试")
 
     return tester
 
