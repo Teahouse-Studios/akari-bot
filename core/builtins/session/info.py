@@ -16,6 +16,7 @@ from attrs import define, field
 
 from core.alive import Alive
 from core.builtins.message.chain import MessageChain
+from core.builtins.session.event_types import EventName
 from core.builtins.session.features import Features
 from core.builtins.utils import command_prefix
 from core.config.base import CoreConfig
@@ -37,7 +38,7 @@ async def _none():
 class EventInfo:
     """可跨进程序列化的平台事件上下文。"""
 
-    event_name: str
+    event_name: EventName
     data: dict = field(factory=dict)
     target_id: str | None = None
     target_from: str | None = None
@@ -53,7 +54,7 @@ class EventInfo:
     @classmethod
     async def assign(
         cls,
-        event_name: str,
+        event_name: EventName,
         data: dict | None = None,
         target_id: str | None = None,
         target_from: str | None = None,
@@ -149,6 +150,7 @@ class SessionInfo:
     support_forward: bool = False
     support_delete: bool = False
     support_manage: bool = False
+    support_permission_group: bool = False
     support_markdown: bool = False
     support_markdown_table: bool = False
     support_reaction: bool = False

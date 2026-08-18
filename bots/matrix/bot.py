@@ -8,6 +8,7 @@ import nio
 from bots.matrix import client
 from bots.matrix.client import matrix_bot
 from bots.matrix.context import MatrixContextManager, MatrixFetchedContextManager
+from bots.matrix.events import member_joined, member_left, should_dispatch_member_joined, should_dispatch_member_left
 from bots.matrix.info import *
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
@@ -27,6 +28,7 @@ Bot.register_context_manager(MatrixFetchedContextManager, fetch_session=True)
 
 ignored_sender = CoreConfig.ignored_sender
 mention_required = CoreConfig.mention_required
+initial_sync_complete = False
 
 
 async def on_sync(resp: nio.SyncResponse):
@@ -42,6 +44,29 @@ async def on_invite(room: nio.MatrixRoom, event: nio.InviteEvent):
 
 async def on_room_member(room: nio.MatrixRoom, event: nio.RoomMemberEvent):
     Logger.info(f"Received m.room.member, {event.sender}: {event.prev_membership} -> {event.membership}")
+    member_id = event.state_key
+    sender_id = f"{sender_prefix}|{member_id.removeprefix('@')}"
+    if should_dispatch_member_joined(
+        initial_sync_complete=initial_sync_complete,
+        member_id=member_id,
+        bot_id=matrix_bot.user_id,
+        membership=event.membership,
+        prev_membership=event.prev_membership,
+        sender_id=sender_id,
+        ignored_sender=ignored_sender,
+    ):
+        await member_joined(member_id, room.room_id, event.event_id)
+    elif should_dispatch_member_left(
+        initial_sync_complete=initial_sync_complete,
+        member_id=member_id,
+        bot_id=matrix_bot.user_id,
+        membership=event.membership,
+        prev_membership=event.prev_membership,
+        sender_id=sender_id,
+        ignored_sender=ignored_sender,
+    ):
+        await member_left(member_id, room.room_id, event.event_id)
+
     # is_direct = (room.member_count == 1 or room.member_count == 2) and room.join_rule == "invite"
     # if not is_direct:
     #     resp = await bot.room_get_state_event(room.room_id, "m.room.member", client.user)
@@ -217,6 +242,7 @@ async def on_in_room_verify(room: nio.MatrixRoom, event: nio.RoomMessageUnknown)
 
 
 async def start():
+    global initial_sync_complete
     # Logger.info(f"Trying first sync")
     # sync = await bot.sync()
     # Logger.info(f"First sync finished in {sync.elapsed}ms, dropped older messages")
@@ -285,6 +311,7 @@ async def start():
     )
     await matrix_bot._handle_invited_rooms(resp)
     await matrix_bot._handle_joined_rooms(resp)
+    initial_sync_complete = True
 
     await client_init(target_prefix_list, sender_prefix_list)
 

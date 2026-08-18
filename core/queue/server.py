@@ -314,6 +314,50 @@ class JobQueueServer(JobQueueBase):
         return value
 
     @classmethod
+    async def client_grant_permission_group(
+        cls,
+        session_info: SessionInfo,
+        user_id: str | list[str],
+        permission_group_id: str | list[str],
+        reason: str | None = None,
+        wait: bool = False,
+    ):
+        """为客户端场景成员授予平台原生权限组或角色。"""
+        return await cls.add_job(
+            session_info.client_name,
+            "grant_permission_group",
+            {
+                "session_info": converter.unstructure(session_info),
+                "user_id": user_id,
+                "permission_group_id": permission_group_id,
+                "reason": reason,
+            },
+            wait=wait,
+        )
+
+    @classmethod
+    async def client_revoke_permission_group(
+        cls,
+        session_info: SessionInfo,
+        user_id: str | list[str],
+        permission_group_id: str | list[str],
+        reason: str | None = None,
+        wait: bool = False,
+    ):
+        """移除客户端场景成员的平台原生权限组或角色。"""
+        return await cls.add_job(
+            session_info.client_name,
+            "revoke_permission_group",
+            {
+                "session_info": converter.unstructure(session_info),
+                "user_id": user_id,
+                "permission_group_id": permission_group_id,
+                "reason": reason,
+            },
+            wait=wait,
+        )
+
+    @classmethod
     async def client_add_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str):
         """向消息添加反应。
 

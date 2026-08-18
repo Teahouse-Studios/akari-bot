@@ -410,6 +410,40 @@ class MessageSession:
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         await _queue_server.client_unban_member(self.session_info, user_id)
 
+    async def grant_permission_group(
+        self,
+        user_id: str | list[str],
+        permission_group_id: str | list[str],
+        reason: str | None = None,
+        wait: bool = False,
+    ):
+        """为场景成员授予平台原生权限组或角色。"""
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        return await _queue_server.client_grant_permission_group(
+            self.session_info,
+            user_id,
+            permission_group_id,
+            reason,
+            wait=wait,
+        )
+
+    async def revoke_permission_group(
+        self,
+        user_id: str | list[str],
+        permission_group_id: str | list[str],
+        reason: str | None = None,
+        wait: bool = False,
+    ):
+        """移除场景成员的平台原生权限组或角色。"""
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        return await _queue_server.client_revoke_permission_group(
+            self.session_info,
+            user_id,
+            permission_group_id,
+            reason,
+            wait=wait,
+        )
+
     async def add_reaction(self, emoji: str) -> Any:
         """
         用于给这条消息添加反应。

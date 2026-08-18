@@ -7,7 +7,7 @@ from discord import Message
 from bots.discord.buttons import build_discord_button_view
 from bots.discord.client import discord_bot
 from bots.discord.features import features as discord_features
-from bots.discord.info import target_channel_prefix, target_dm_channel_prefix
+from bots.discord.info import target_channel_prefix, target_dm_channel_prefix, target_guild_prefix
 from bots.discord.message_builder import build_discord_payloads, execute_discord_payloads
 from bots.discord.utils import get_channel_id, get_sender_id
 from core.builtins.message.chain import MessageChain, MessageNodes
@@ -24,6 +24,17 @@ def resolve_discord_reference(ctx, quote: bool):
     if isinstance(ctx, Message):
         return ctx
     return getattr(ctx, "message", None)
+
+
+async def get_discord_guild(session_info: SessionInfo):
+    """从频道会话或服务器事件会话取得 Discord Guild。"""
+    if session_info.target_from == target_channel_prefix:
+        channel = await discord_bot.fetch_channel(int(get_channel_id(session_info)))
+        return channel.guild
+    if session_info.target_from == target_guild_prefix:
+        guild_id = int(session_info.get_common_target_id())
+        return discord_bot.get_guild(guild_id) or await discord_bot.fetch_guild(guild_id)
+    return None
 
 
 class DiscordContextManager(ContextManager):
@@ -236,6 +247,64 @@ class DiscordContextManager(ContextManager):
                     Logger.info(f"Unbanned member {x} in channel {session_info.target_id}")
                 except Exception:
                     Logger.exception(f"Failed to unban member {x} in channel {session_info.target_id}: ")
+
+    @classmethod
+    async def grant_permission_group(
+        cls,
+        session_info: SessionInfo,
+        user_id: str | list[str],
+        permission_group_id: str | list[str],
+        reason: str | None = None,
+    ) -> None:
+        await cls._edit_permission_groups(session_info, user_id, permission_group_id, reason, grant=True)
+
+    @classmethod
+    async def revoke_permission_group(
+        cls,
+        session_info: SessionInfo,
+        user_id: str | list[str],
+        permission_group_id: str | list[str],
+        reason: str | None = None,
+    ) -> None:
+        await cls._edit_permission_groups(session_info, user_id, permission_group_id, reason, grant=False)
+
+    @classmethod
+    async def _edit_permission_groups(
+        cls,
+        session_info: SessionInfo,
+        user_id: str | list[str],
+        permission_group_id: str | list[str],
+        reason: str | None,
+        grant: bool,
+    ) -> None:
+        user_ids = [user_id] if isinstance(user_id, str) else user_id
+        group_ids = [permission_group_id] if isinstance(permission_group_id, str) else permission_group_id
+        if not isinstance(user_ids, list) or not isinstance(group_ids, list):
+            raise TypeError("User ID and permission group ID must be a list or str")
+
+        guild = await get_discord_guild(session_info)
+        if guild is None:
+            return
+        fetched_roles = None
+        roles = []
+        for group_id in group_ids:
+            role_id = int(str(group_id).split("|")[-1])
+            role = guild.get_role(role_id)
+            if role is None:
+                fetched_roles = fetched_roles or await guild.fetch_roles()
+                role = next((item for item in fetched_roles if item.id == role_id), None)
+            if role is None:
+                raise ValueError(f"Discord role {group_id} not found in guild {guild.id}")
+            roles.append(role)
+
+        for uid in user_ids:
+            member = await guild.fetch_member(int(str(uid).split("|")[-1]))
+            if grant:
+                await member.add_roles(*roles, reason=reason)
+            else:
+                await member.remove_roles(*roles, reason=reason)
+            action = "Granted" if grant else "Revoked"
+            Logger.info(f"{action} permission groups {group_ids} for member {uid} in guild {guild.id}")
 
     @classmethod
     async def add_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:

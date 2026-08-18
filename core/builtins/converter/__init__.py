@@ -11,6 +11,7 @@ from cattrs import Converter
 
 import core.builtins.message.elements as elements
 from core.builtins.message.elements import I18NContextElement
+from core.builtins.session.event_types import EventName
 from core.builtins.types import MessageElement
 from core.database.models import TargetUnionInfo, SenderUnionInfo
 from core.i18n import Locale
@@ -124,6 +125,9 @@ converter.register_structure_hook(Locale, lambda o, _: Locale(o["locale"]))
 # 时间间隔的结构化处理
 # 从字典恢复为 timedelta 对象，使用保存的秒数值
 converter.register_structure_hook(timedelta, lambda o, _: timedelta(seconds=o["seconds"]))
+
+# EventName 的 Literal 分支只用于类型提示；反序列化时保留任意自定义事件名。
+converter.register_structure_hook(EventName, lambda o, _: o)
 
 
 __all__ = ["converter"]

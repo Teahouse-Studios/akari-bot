@@ -11,7 +11,7 @@ from core.logger import Logger
 from .client import bot
 from .client import token as kook_token
 from .features import features as kook_features
-from .info import client_name, target_group_prefix, target_person_prefix
+from .info import client_name, target_group_prefix, target_person_prefix, target_guild_prefix
 
 kook_base = "https://www.kookapp.cn"
 kook_headers = {"Authorization": f"Bot {kook_token}"}
@@ -40,6 +40,17 @@ async def get_channel(session_info: SessionInfo) -> PublicChannel | User | None:
         Logger.warning(f"Unknown target_from: {session_info.target_from}")
         return None
     return _channel
+
+
+async def get_guild(session_info: SessionInfo):
+    """从 KOOK 频道会话或服务器事件会话取得 Guild。"""
+    if session_info.target_from == target_guild_prefix:
+        return await bot.client.fetch_guild(session_info.get_common_target_id())
+    if session_info.target_from == target_group_prefix:
+        channel = await get_channel(session_info)
+        if channel:
+            return await bot.client.fetch_guild(channel.guild_id)
+    return None
 
 
 class KOOKContextManager(ContextManager):
@@ -198,6 +209,52 @@ class KOOKContextManager(ContextManager):
                 Logger.info(f"Deleted message {id_} in session {session_info.session_id}")
             except Exception:
                 Logger.exception(f"Failed to delete message {id_} in session {session_info.session_id}: ")
+
+    @classmethod
+    async def grant_permission_group(
+        cls,
+        session_info: SessionInfo,
+        user_id: str | list[str],
+        permission_group_id: str | list[str],
+        reason: str | None = None,
+    ) -> None:
+        await cls._edit_permission_groups(session_info, user_id, permission_group_id, grant=True)
+
+    @classmethod
+    async def revoke_permission_group(
+        cls,
+        session_info: SessionInfo,
+        user_id: str | list[str],
+        permission_group_id: str | list[str],
+        reason: str | None = None,
+    ) -> None:
+        await cls._edit_permission_groups(session_info, user_id, permission_group_id, grant=False)
+
+    @staticmethod
+    async def _edit_permission_groups(
+        session_info: SessionInfo,
+        user_id: str | list[str],
+        permission_group_id: str | list[str],
+        grant: bool,
+    ) -> None:
+        user_ids = [user_id] if isinstance(user_id, str) else user_id
+        group_ids = [permission_group_id] if isinstance(permission_group_id, str) else permission_group_id
+        if not isinstance(user_ids, list) or not isinstance(group_ids, list):
+            raise TypeError("User ID and permission group ID must be a list or str")
+
+        guild = await get_guild(session_info)
+        if guild is None:
+            return
+        for uid in user_ids:
+            member_id = str(uid).split("|")[-1]
+            for group_id in group_ids:
+                role_id = str(group_id).split("|")[-1]
+                if grant:
+                    await guild.grant_role(member_id, role_id)
+                else:
+                    await guild.revoke_role(member_id, role_id)
+        action = "Granted" if grant else "Revoked"
+        Logger.info(f"{action} permission groups {group_ids} for members {user_ids} in guild {guild.id}")
 
     @classmethod
     async def add_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:

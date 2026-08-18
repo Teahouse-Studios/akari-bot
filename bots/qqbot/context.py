@@ -889,6 +889,55 @@ class QQBotContextManager(ContextManager):
                 ],
             )
 
+    @classmethod
+    async def grant_permission_group(
+        cls,
+        session_info: SessionInfo,
+        user_id: str | list[str],
+        permission_group_id: str | list[str],
+        reason: str | None = None,
+    ) -> None:
+        await cls._edit_permission_groups(session_info, user_id, permission_group_id, grant=True)
+
+    @classmethod
+    async def revoke_permission_group(
+        cls,
+        session_info: SessionInfo,
+        user_id: str | list[str],
+        permission_group_id: str | list[str],
+        reason: str | None = None,
+    ) -> None:
+        await cls._edit_permission_groups(session_info, user_id, permission_group_id, grant=False)
+
+    @staticmethod
+    async def _edit_permission_groups(
+        session_info: SessionInfo,
+        user_id: str | list[str],
+        permission_group_id: str | list[str],
+        grant: bool,
+    ) -> None:
+        if session_info.target_from != target_guild_prefix:
+            return
+        user_ids = [user_id] if isinstance(user_id, str) else user_id
+        group_ids = [permission_group_id] if isinstance(permission_group_id, str) else permission_group_id
+        if not isinstance(user_ids, list) or not isinstance(group_ids, list):
+            raise TypeError("User ID and permission group ID must be a list or str")
+
+        target_parts = session_info.target_id.removeprefix(f"{target_guild_prefix}|").split("|", 1)
+        guild_id = target_parts[0]
+        channel_id = target_parts[1] if len(target_parts) > 1 else None
+        client = _get_client()
+        for uid in user_ids:
+            member_id = str(uid).split("|")[-1]
+            for group_id in group_ids:
+                role_id = str(group_id).split("|")[-1]
+                if grant:
+                    await client.api.create_guild_role_member(guild_id, role_id, member_id, channel_id)
+                else:
+                    await client.api.delete_guild_role_member(guild_id, role_id, member_id, channel_id)
+        action = "Granted" if grant else "Revoked"
+        Logger.info(f"{action} permission groups {group_ids} for members {user_ids} in guild {guild_id}")
+
 
 _tasks_high_priority = deque()
 _tasks = deque()

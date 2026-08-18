@@ -44,6 +44,9 @@ class Features:
     # 权限管理支持 - 会话是否支持权限管理功能（如禁言、踢出）
     support_manage: bool = False
 
+    # 权限组管理支持 - 会话是否支持为成员授予或移除平台原生权限组／角色
+    support_permission_group: bool = False
+
     # Markdown 语法支持 - 会话是否支持 Markdown 格式化文本
     support_markdown: bool = False
 

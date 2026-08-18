@@ -5,6 +5,7 @@ from khl import Bot as khlBot, EventTypes, Event, Message, MessageTypes
 
 from bots.kook.client import bot
 from bots.kook.context import KOOKContextManager, KOOKFetchedContextManager
+from bots.kook.events import guild_member_joined, guild_member_left
 from bots.kook.info import *
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
@@ -136,6 +137,48 @@ async def private_add_reaction(b: khlBot, event: Event):
     )
 
     await Bot.process_message(session, event)
+
+
+@bot.on_event(EventTypes.JOINED_GUILD)
+async def joined_guild(b: khlBot, event: Event):
+    """接收 KOOK 服务器成员加入事件。"""
+    body = event.body
+    member_id = body.get("user_id")
+    guild_id = event.target_id
+    if not member_id or not guild_id:
+        return
+
+    sender_id = f"{sender_prefix}|{member_id}"
+    if member_id == b.client.me.id or sender_id in ignored_sender:
+        return
+
+    await guild_member_joined(
+        member_id,
+        guild_id,
+        joined_at=body.get("joined_at"),
+        event_id=str(event.id) if event.id is not None else None,
+    )
+
+
+@bot.on_event(EventTypes.EXITED_GUILD)
+async def exited_guild(b: khlBot, event: Event):
+    """接收 KOOK 服务器成员离开事件。"""
+    body = event.body
+    member_id = body.get("user_id")
+    guild_id = event.target_id
+    if not member_id or not guild_id:
+        return
+
+    sender_id = f"{sender_prefix}|{member_id}"
+    if member_id == b.client.me.id or sender_id in ignored_sender:
+        return
+
+    await guild_member_left(
+        member_id,
+        guild_id,
+        left_at=body.get("exited_at"),
+        event_id=str(event.id) if event.id is not None else None,
+    )
 
 
 @bot.on_startup

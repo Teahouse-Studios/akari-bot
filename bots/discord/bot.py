@@ -12,6 +12,7 @@ from bots.discord.client import discord_bot, ensure_client_initialized
 from bots.discord.buttons import set_action_text_submit_handler, set_button_click_handler
 from bots.discord.interactions import handle_action_text_submit, handle_button_click
 from bots.discord.context import DiscordContextManager, DiscordFetchedContextManager
+from bots.discord.events import guild_member_joined, guild_member_left
 from bots.discord.info import *
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
@@ -73,6 +74,28 @@ def load_slashcommands():
 
 
 load_slashcommands()
+
+
+@discord_bot.event
+async def on_member_join(member: discord.Member):
+    """接收 Discord 服务器成员加入事件。"""
+    sender_id = f"{sender_prefix}|{member.id}"
+    if member.id == discord_bot.user.id or sender_id in ignored_sender:
+        return
+
+    await ensure_client_initialized()
+    await guild_member_joined(member.id, member.guild.id, member.joined_at)
+
+
+@discord_bot.event
+async def on_member_remove(member: discord.Member):
+    """接收 Discord 服务器成员离开事件。"""
+    sender_id = f"{sender_prefix}|{member.id}"
+    if member.id == discord_bot.user.id or sender_id in ignored_sender:
+        return
+
+    await ensure_client_initialized()
+    await guild_member_left(member.id, member.guild.id)
 
 
 async def to_message_chain(message: discord.Message):

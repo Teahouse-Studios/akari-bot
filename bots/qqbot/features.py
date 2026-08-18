@@ -47,6 +47,7 @@ group_disable_read_all_message_features = evolve(
 
 guild_features = evolve(
     features,
+    support_permission_group=True,
     support_markdown=False,
     support_markdown_table=False,
     support_handle_message_nodes=False,

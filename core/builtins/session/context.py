@@ -324,6 +324,30 @@ class ContextManager(ABC):
 
     @classmethod
     @abstractmethod
+    async def grant_permission_group(
+        cls,
+        session_info: SessionInfo,
+        user_id: str | list[str],
+        permission_group_id: str | list[str],
+        reason: str | None = None,
+    ) -> None:
+        """为场景成员授予平台原生权限组或角色。"""
+        raise NotImplementedError  # 请继承 class 后实现方法
+
+    @classmethod
+    @abstractmethod
+    async def revoke_permission_group(
+        cls,
+        session_info: SessionInfo,
+        user_id: str | list[str],
+        permission_group_id: str | list[str],
+        reason: str | None = None,
+    ) -> None:
+        """移除场景成员的平台原生权限组或角色。"""
+        raise NotImplementedError  # 请继承 class 后实现方法
+
+    @classmethod
+    @abstractmethod
     async def add_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
         """
         为指定消息添加反应。

@@ -8,6 +8,7 @@ from bots.telegram.context import TelegramContextManager, TelegramFetchedContext
 from bots.telegram.context_snapshot import TelegramContextSnapshot
 from bots.telegram.action_text import handle_action_text_inline_query, is_own_inline_message
 from bots.telegram.interactions import handle_button_callback
+from bots.telegram.events import handle_left_chat_member, handle_new_chat_members
 from bots.telegram.info import *
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
@@ -66,6 +67,20 @@ async def _download_telegram_file(file_path: str | None) -> Path:
     destination = random_cache_path(suffix)
     await aiogram_bot.download_file(file_path, destination=destination, chunk_size=65536)
     return destination
+
+
+@dp.message(F.new_chat_members)
+async def member_joined_handler(message: types.Message):
+    """接收 Telegram 群组和超级群的新成员事件。"""
+    bot_user = await message.bot.me()
+    await handle_new_chat_members(message, bot_user.id, ignored_sender)
+
+
+@dp.message(F.left_chat_member)
+async def member_left_handler(message: types.Message):
+    """接收 Telegram 群组和超级群的成员离开事件。"""
+    bot_user = await message.bot.me()
+    await handle_left_chat_member(message, bot_user.id, ignored_sender)
 
 
 @dp.message()

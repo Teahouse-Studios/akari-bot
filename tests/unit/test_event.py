@@ -1,6 +1,7 @@
 """模块事件注册、事件上下文及跨进程分发单元测试。"""
 
 from types import SimpleNamespace
+from typing import Literal, get_args, get_origin, get_type_hints
 from unittest.mock import AsyncMock, patch
 
 from core.builtins.bot import Bot
@@ -40,6 +41,24 @@ def _test_event_binding():
         )
     finally:
         _remove_test_module(module_name)
+
+
+async def _test_event_name_literal_hint():
+    annotation = get_type_hints(EventInfo)["event_name"]
+    literal_type = next((arg for arg in get_args(annotation) if get_origin(arg) is Literal), None)
+    custom_event = await EventInfo.assign(event_name="custom_module_event")
+    return (
+        literal_type is not None
+        and set(get_args(literal_type))
+        == {
+            "member_joined",
+            "member_left",
+            "guild_member_joined",
+            "guild_member_left",
+        }
+        and str in get_args(annotation)
+        and custom_event.event_name == "custom_module_event"
+    )
 
 
 async def _test_event_info_roundtrip():
@@ -246,6 +265,7 @@ async def _test_server_event_dispatch():
 async def test_event(tester: Tester):
     """模块事件：注册、EventInfo、队列转换与服务器分发测试。"""
     await tester.test(_test_event_binding, "模块事件绑定测试")
+    await tester.test(_test_event_name_literal_hint, "EventInfo 事件名提示与自定义事件兼容测试")
     await tester.test(_test_event_info_roundtrip, "EventInfo 序列化与场景前缀测试")
     await tester.test(_test_event_dispatch, "模块事件分发与加载状态测试")
     await tester.test(_test_scoped_event_dispatch, "事件平台作用域与场景启用测试")

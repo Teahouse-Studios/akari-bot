@@ -377,6 +377,32 @@ async def _(tsk: JobQueuesTable, args: dict):
     await ctx_manager.unban_member(session_info, _args.get("user_id"))
 
 
+@JobQueueClient.action("grant_permission_group")
+async def _(tsk: JobQueuesTable, args: dict):
+    """为成员授予平台原生权限组或角色。"""
+    session_info, _, ctx_manager, _args = await get_session(args)
+    await ctx_manager.grant_permission_group(
+        session_info,
+        _args.get("user_id"),
+        _args.get("permission_group_id"),
+        _args.get("reason"),
+    )
+    return {"success": True}
+
+
+@JobQueueClient.action("revoke_permission_group")
+async def _(tsk: JobQueuesTable, args: dict):
+    """移除成员的平台原生权限组或角色。"""
+    session_info, _, ctx_manager, _args = await get_session(args)
+    await ctx_manager.revoke_permission_group(
+        session_info,
+        _args.get("user_id"),
+        _args.get("permission_group_id"),
+        _args.get("reason"),
+    )
+    return {"success": True}
+
+
 @JobQueueClient.action("add_reaction")
 async def _(tsk: JobQueuesTable, args: dict):
     """添加反应处理器。

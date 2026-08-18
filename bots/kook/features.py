@@ -11,6 +11,7 @@ features = Features(
     support_forward=False,
     support_delete=True,
     support_manage=False,
+    support_permission_group=True,
     support_markdown=True,
     support_reaction=True,
     support_quote=True,

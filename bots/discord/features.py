@@ -10,6 +10,7 @@ features = Features(
     support_forward=False,
     support_delete=True,
     support_manage=True,
+    support_permission_group=True,
     support_markdown=True,
     support_markdown_table=False,
     support_reaction=True,

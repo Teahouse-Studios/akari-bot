@@ -148,6 +148,22 @@ class MockMessageSession(MessageSession):
         for x in user_id:
             self.action.append(f"(unban {x})")
 
+    async def grant_permission_group(self, user_id, permission_group_id, reason=None, wait=False):
+        user_ids = [user_id] if isinstance(user_id, str) else user_id
+        permission_group_ids = [permission_group_id] if isinstance(permission_group_id, str) else permission_group_id
+        for uid in user_ids:
+            for group_id in permission_group_ids:
+                self.action.append(f"(grant permission group {group_id} to {uid}{f': {reason}' if reason else ''})")
+        return {"success": True} if wait else None
+
+    async def revoke_permission_group(self, user_id, permission_group_id, reason=None, wait=False):
+        user_ids = [user_id] if isinstance(user_id, str) else user_id
+        permission_group_ids = [permission_group_id] if isinstance(permission_group_id, str) else permission_group_id
+        for uid in user_ids:
+            for group_id in permission_group_ids:
+                self.action.append(f"(revoke permission group {group_id} from {uid}{f': {reason}' if reason else ''})")
+        return {"success": True} if wait else None
+
     async def add_reaction(self, emoji):
         self.action.append(f"(add reaction {emoji})")
 
