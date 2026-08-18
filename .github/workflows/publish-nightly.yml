@@ -26,7 +26,7 @@ jobs:
       - name: Package code
         run: |
           ZIP_NAME="AkariBot-nightly.zip"
-          zip -r "$ZIP_NAME" . -x '*.git*'
+          zip -r "$ZIP_NAME" . -x '*.git*' 'tests/*' 'tests/**'
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v7

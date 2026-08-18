@@ -8,3 +8,5 @@ requirements.txt
 renovate.json
 start
 start.bat
+tests/
+tester.py
