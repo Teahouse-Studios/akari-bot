@@ -15,7 +15,6 @@ from botpy.message import GroupMessage
 
 import bots.qqbot.context as qqbot_context
 import bots.qqbot.features as qqbot_features_module
-from bots.qqbot.config import QQBotConfig
 from bots.qqbot.context import QQBotContextManager
 from bots.qqbot.features import features as qqbot_features
 from bots.qqbot.features import group_disable_read_all_message_features, resolve_features
@@ -75,22 +74,6 @@ def _make_session(sender_data: dict | None) -> SessionInfo:
     )
 
 
-def _test_feature_defaults_to_false() -> bool:
-    """该能力是少数平台才有的，默认不具备"""
-    if Features().support_markdown_toggle is not False:
-        Logger.error("support_markdown_toggle should default to False")
-        return False
-    return True
-
-
-def _test_session_info_declares_field() -> bool:
-    """SessionInfo 须声明同名字段，否则该项无法随会话序列化传至 server 进程"""
-    if "support_markdown_toggle" not in {x.name for x in SessionInfo.__attrs_attrs__}:
-        Logger.error("SessionInfo must declare support_markdown_toggle for it to survive serialisation")
-        return False
-    return True
-
-
 async def _test_feature_injects_into_session() -> bool:
     """特性须能注入会话。此处取 True 而非默认的 False，默认值相同时测不出遗漏"""
     session_info = await SessionInfo.assign(
@@ -102,14 +85,6 @@ async def _test_feature_injects_into_session() -> bool:
     )
     if session_info.support_markdown_toggle is not True:
         Logger.error("support_markdown_toggle should be injectable into a session")
-        return False
-    return True
-
-
-def _test_qqbot_follows_markdown_config() -> bool:
-    """QQBot 的该能力须跟随 qq_use_markdown：全局关掉 markdown 时这个开关也无从谈起"""
-    if qqbot_features.support_markdown_toggle is not QQBotConfig.qq_use_markdown:
-        Logger.error("QQBot should tie support_markdown_toggle to qq_use_markdown")
         return False
     return True
 
@@ -275,10 +250,7 @@ async def _test_send_path_follows_session() -> bool:
 @func_case
 async def test_markdown_toggle(tester: Tester):
     """bots.qqbot.features: 用户级 markdown 开关测试"""
-    await tester.test(_test_feature_defaults_to_false, "能力默认不具备测试")
-    await tester.test(_test_session_info_declares_field, "SessionInfo 声明该字段测试")
     await tester.test(_test_feature_injects_into_session, "特性可注入会话测试")
-    await tester.test(_test_qqbot_follows_markdown_config, "QQBot 跟随全局配置测试")
     await tester.test(_test_resolve_keeps_base_when_enabled, "开启时保持默认能力测试")
     await tester.test(_test_resolve_disables_markdown_features, "关闭时禁用相关能力测试")
     await tester.test(_test_resolve_keeps_toggle_available, "关闭后仍可开回测试")

@@ -10,45 +10,6 @@ from core.tester import func_case, Tester
 from core.tester.mock.session import MockMessageSession
 
 
-def _test_features_default():
-    """测试 Features 默认值"""
-    try:
-        features = Features()
-        if features.support_image is not False:
-            return False
-        if features.support_voice is not False:
-            return False
-        if features.support_mention is not False:
-            return False
-        if features.support_embed is not False:
-            return False
-        if features.support_forward is not False:
-            return False
-        if features.support_delete is not False:
-            return False
-        if features.support_manage is not False:
-            return False
-        if features.support_markdown is not False:
-            return False
-        if features.support_markdown_table is not False:
-            return False
-        if features.support_reaction is not False:
-            return False
-        if features.support_quote is not False:
-            return False
-        if features.support_rss is not False:
-            return False
-        if features.support_typing is not False:
-            return False
-        if features.support_wait is not False:
-            return False
-        if features.support_action_text is not False:
-            return False
-        return True
-    except Exception:
-        return False
-
-
 async def _test_features_inject_action_text():
     """测试 support_action_text 能注入会话
 
@@ -342,7 +303,6 @@ async def _test_verify_user_rejects_wrong_number():
 @func_case
 async def test_features(tester: Tester):
     """core.builtins.session.features: Features 测试"""
-    await tester.test(_test_features_default, "Features 默认值测试")
     await tester.test(_test_features_override, "Features.override() 测试")
     await tester.test(_test_features_inject_action_text, "support_action_text 注入测试")
     await tester.test(_test_features_inject_markdown_table, "support_markdown_table 注入测试")

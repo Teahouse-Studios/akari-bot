@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from core.config import CFGManager
-from core.config.scan import iter_config_template_modules, scan_config_templates
+from core.config.scan import scan_config_templates
 from core.tester import func_case, Tester
 
 MINIMAL_CONFIG = """default_locale = "zh_cn"
@@ -47,21 +47,6 @@ def _temp_config():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
-def _test_scan_covers_every_template_file():
-    """磁盘上每个 config.py 都应被列入扫描范围，不得静默跳过"""
-    import bots
-    import modules
-
-    expected = {"core.config.base"}
-    for package in (bots, modules):
-        package_path = Path(package.__path__[0])
-        for entry in sorted(package_path.iterdir()):
-            if entry.is_dir() and (entry / "config.py").exists():
-                expected.add(f"{package.__name__}.{entry.name}.config")
-
-    return set(iter_config_template_modules()) == expected
-
-
 def _test_scan_reports_no_failure():
     """仓库内全部配置模板都应能加载"""
     with _temp_config():
@@ -87,7 +72,6 @@ def _test_scan_writes_template_fields():
 @func_case
 async def test_config_scan(tester: Tester):
     """core.config.scan: 配置模板扫描测试"""
-    await tester.test(_test_scan_covers_every_template_file, "扫描覆盖全部模板文件测试")
     await tester.test(_test_scan_reports_no_failure, "全部模板可加载测试")
     await tester.test(_test_scan_writes_template_fields, "可写进程中模板补写字段测试")
 

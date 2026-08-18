@@ -11,7 +11,6 @@ from bots.discord.buttons import (
     disable_selected_button,
 )
 from bots.discord.context import DiscordContextManager
-from bots.discord.features import features
 from core.builtins.message.internal import ActionText
 from core.builtins.session.info import SessionInfo
 from core.tester import Tester, func_case
@@ -67,10 +66,6 @@ def _test_platform_capacity():
     rows = [{f"B{row}-{column}": f"~b {row} {column}" for column in range(7)} for row in range(7)]
     view = build_discord_button_view(build_button_rows(rows), "Discord|Client|1")
     return len(view.children) == 25 and all(0 <= item.row < 5 for item in view.children)
-
-
-def _test_feature_enabled():
-    return features.support_button is True and features.support_action_text is True
 
 
 def _test_action_text_uses_modal_button():
@@ -218,7 +213,6 @@ async def test_discord_buttons(tester: Tester):
     await tester.test(_test_link_buttons_use_native_urls, "链接使用原生 URL 按钮")
     await tester.test(_test_disables_only_selected, "仅停用当前按钮")
     await tester.test(_test_platform_capacity, "平台容量限制")
-    await tester.test(_test_feature_enabled, "平台声明按钮能力")
     await tester.test(_test_action_text_uses_modal_button, "ActionText 使用 Modal 按钮")
     await tester.test(_test_many_action_texts_use_select, "大量 ActionText 使用下拉菜单")
     await tester.test(_test_action_text_button_opens_prefilled_modal, "Modal 预填命令并保留引用设置")

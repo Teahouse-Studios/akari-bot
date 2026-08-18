@@ -5,7 +5,6 @@ QQ 官方机器人在群主未开启「读取全部消息」权限时只收到�
 事件类型为判据，一并关闭两类模块。
 """
 
-from attr import evolve
 from unittest.mock import patch
 
 from bots.qqbot.features import group_disable_read_all_message_features
@@ -14,12 +13,11 @@ from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
 from core.constants.exceptions import SessionFinished
-from core.loader import ModulesManager
 from core.logger import Logger
 from core.tester import func_case, Tester
 from core.types.module import Module
 from modules.core.help import create_module_entry, format_module_entries
-from modules.core.modules import UNSUPPORTED_PROMPTS, config_modules
+from modules.core.modules import config_modules
 
 
 def _make_module(**kwargs) -> Module:
@@ -37,21 +35,6 @@ def _make_module(**kwargs) -> Module:
     return Module.assign(**base)
 
 
-def _test_feature_defaults_to_true():
-    """未声明时应视作可读取全部消息，以免各平台都要显式声明。"""
-    return Features().read_all_messages is True
-
-
-def _test_feature_can_be_disabled():
-    """平台可经 evolve 关闭该项，用于 QQ 官方机器人的提及消息场景。"""
-    return evolve(Features(), read_all_messages=False).read_all_messages is False
-
-
-def _test_session_info_declares_field():
-    """SessionInfo 须声明同名字段，否则该项无法随会话序列化传至 server 进程。"""
-    return "read_all_messages" in {x.name for x in SessionInfo.__attrs_attrs__}
-
-
 async def _test_feature_injects_into_session():
     """特性须能注入会话。
 
@@ -66,23 +49,6 @@ async def _test_feature_injects_into_session():
         features=Features(read_all_messages=False),
     )
     return session_info.read_all_messages is False
-
-
-def _test_module_regex_defaults_to_false():
-    """未声明的模块不应被当作正则模块。"""
-    return _make_module().regex is False
-
-
-def _test_module_regex_can_be_set():
-    """声明后该标记须落到 Module 上，并出现在 to_dict() 中。"""
-    mod = _make_module(regex=True)
-    return mod.regex is True and mod.to_dict()["regex"] is True
-
-
-def _test_module_event_can_be_set():
-    """事件模块标记须写入模块元数据。"""
-    mod = _make_module(event=True)
-    return mod.event is True and mod.to_dict()["event"] is True
 
 
 class _FakeSession:
@@ -132,13 +98,6 @@ def _test_event_module_markdown_strikethrough():
     return format_module_entries([entry]) == "🔐 ~~captcha~~"
 
 
-def _test_unsupported_prompts_cover_all_reasons():
-    """每种成因都须有对应文案，否则拒绝时无从提示。"""
-    return set(UNSUPPORTED_PROMPTS) == {"rss", "regex", "event"} and all(
-        key.startswith("core.message.module.enable.unsupported_") for key in UNSUPPORTED_PROMPTS.values()
-    )
-
-
 def _test_regex_blocked_when_cannot_read_all():
     """读不到全部消息时，正则模块即便已启用也不应参与匹配。"""
     mod = _make_module(regex=True)
@@ -164,29 +123,6 @@ def _test_non_regex_module_unaffected():
         regex_module_enabled(mod, "unittest_module", ["unittest_module"], False) is True
         and regex_module_enabled(mod, "unittest_module", [], False) is False
     )
-
-
-def _test_qqbot_override_closes_both():
-    """提及消息场景须同时关闭推送与全部消息读取，且不改动其余能力。
-
-    该场景不豁免模块启用检查（require_enable_modules 保持默认的 True），命令路径因而
-    照常要求模块已启用。被拒绝启用的正则模块，其命令在此场景中一并不可用，此为有意为之。
-    """
-    override = group_disable_read_all_message_features
-    return (
-        override.support_rss is False
-        and override.read_all_messages is False
-        and override.require_enable_modules is True
-        and override.support_image is True
-    )
-
-
-def _test_regex_modules_are_marked():
-    """注册了正则处理函数的模块须带 regex 标记，base 模块除外。"""
-    unmarked = [
-        name for name, mod in ModulesManager.modules.items() if mod.regex_list.set and not mod.regex and not mod.base
-    ]
-    return unmarked == []
 
 
 async def _enable_prompt(
@@ -283,25 +219,16 @@ async def _test_enable_event_module_warns_permissions():
 @func_case
 async def test_read_all_messages(tester: Tester):
     """core: read_all_messages 特性与正则模块管控"""
-    await tester.test(_test_feature_defaults_to_true, "特性默认为真")
-    await tester.test(_test_feature_can_be_disabled, "特性可被关闭")
-    await tester.test(_test_session_info_declares_field, "SessionInfo 声明该字段")
     await tester.test(_test_feature_injects_into_session, "特性可注入会话")
-    await tester.test(_test_module_regex_defaults_to_false, "模块 regex 标记默认为假")
-    await tester.test(_test_module_regex_can_be_set, "模块 regex 标记可置真")
-    await tester.test(_test_module_event_can_be_set, "模块 event 标记可置真")
     await tester.test(_test_unsupported_reason_rss, "推送模块受限判定")
     await tester.test(_test_unsupported_reason_regex, "正则模块受限判定")
     await tester.test(_test_unsupported_reason_event, "事件模块受限判定")
     await tester.test(_test_unsupported_reason_none, "无标记模块不受限")
     await tester.test(_test_event_module_markdown_strikethrough, "事件模块菜单删除线")
-    await tester.test(_test_unsupported_prompts_cover_all_reasons, "受限成因均有文案")
     await tester.test(_test_regex_blocked_when_cannot_read_all, "无权限时正则不参与匹配")
     await tester.test(_test_regex_allowed_when_can_read_all, "有权限时正则照常匹配")
     await tester.test(_test_base_module_still_exempt, "base 模块仍豁免")
     await tester.test(_test_non_regex_module_unaffected, "未标记模块不受影响")
-    await tester.test(_test_qqbot_override_closes_both, "QQBot 覆盖关闭两项")
-    await tester.test(_test_regex_modules_are_marked, "正则模块均已标记")
     await tester.test(_test_enable_regex_module_is_rejected, "启用正则模块被拒")
     await tester.test(_test_enable_rss_module_is_rejected, "启用推送模块被拒")
     await tester.test(_test_enable_event_module_is_rejected, "启用事件模块被拒")

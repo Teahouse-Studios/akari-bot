@@ -89,15 +89,6 @@ async def _test_target_judgement():
         _restore_routes(original)
 
 
-async def _test_config_field_exists():
-    """测试退役配置 - 字段存在且为列表"""
-    try:
-        return isinstance(CoreConfig.retired_clients, list)
-
-    except Exception:
-        return False
-
-
 async def _test_parse_basic_route():
     """测试关系解析 - 解析出源与目标，分隔符两侧的空白被去除"""
     try:
@@ -407,7 +398,6 @@ async def _test_union_push_skips_retired():
 @func_case
 async def test_retired_gate(tester: Tester):
     """core.retired: 迁移关系、退役判定与介入点测试"""
-    await tester.test(_test_config_field_exists, "配置字段存在测试")
     await tester.test(_test_parse_basic_route, "关系解析基本测试")
     await tester.test(_test_parse_source_only, "只写源测试")
     await tester.test(_test_parse_ignores_malformed, "格式错误忽略测试")

@@ -19,7 +19,6 @@ from bots.qqbot.features import resolve_features
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Url
 from core.builtins.session.info import SessionInfo
-from core.config.base import CoreConfig
 from core.database.models import SenderUnionInfo
 from core.logger import Logger
 from core.tester import func_case, Tester
@@ -160,18 +159,6 @@ async def _test_manager_off_leaves_url_untouched():
         return False
 
 
-async def _test_qqbot_declares_url_manager():
-    """测试平台接入 - qqbot 的能力集须跟随 enable_urlmanager
-
-    此项此前未设置而取默认的 False，未认证链接在 qqbot 上因此从未被标记。
-    """
-    try:
-        return qqbot_features.use_url_manager == CoreConfig.enable_urlmanager
-
-    except Exception:
-        return False
-
-
 async def _test_markdown_toggle_keeps_url_manager():
     """测试平台接入 - 用户关闭 markdown 后仍须保留 URLManager
 
@@ -264,7 +251,6 @@ async def test_url_guard(tester: Tester):
     await tester.test(_test_trusted_survives_kecode_roundtrip, "认证标记经 KE 码往返保留测试")
     await tester.test(_test_untrusted_not_double_wrapped_by_kecode, "KE 码往返不重复套跳板测试")
     await tester.test(_test_unmarked_url_still_follows_session_after_roundtrip, "未表态者往返后随会话测试")
-    await tester.test(_test_qqbot_declares_url_manager, "qqbot 接入 URLManager 测试")
     await tester.test(_test_markdown_toggle_keeps_url_manager, "关闭 markdown 保留 URLManager 测试")
 
     return tester

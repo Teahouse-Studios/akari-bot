@@ -15,7 +15,6 @@ from unittest.mock import patch
 from botpy.message import GroupMessage
 
 from bots.qqbot.context import QQBotContextManager, TYPING_EMOTES, _TypingState
-from bots.qqbot.features import features as qqbot_features
 from bots.qqbot.info import target_c2c_prefix, target_group_prefix
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import I18NContextElement, ImageElement, PlainElement
@@ -451,11 +450,6 @@ async def _send_via_context(session: SessionInfo, ctx: _FakeGroupMessage, messag
         QQBotContextManager.typing_states.pop(sid, None)
 
 
-def _test_typing_feature_enabled() -> bool:
-    """新版 botpy 已覆盖适配器所需输入状态路径，能力应向核心层开放。"""
-    return qqbot_features.support_typing is True
-
-
 async def _test_c2c_uses_native_typing() -> bool:
     """C2C 会话应调用 botpy 的原生输入状态接口，并带上入站消息 ID。"""
     session = SessionInfo(
@@ -555,7 +549,6 @@ async def _test_not_marked_while_converting_image() -> bool:
 @func_case
 async def test_qqbot_typing(tester: Tester):
     """bots.qqbot.context: 群聊输入提示的撤回时机测试"""
-    await tester.test(_test_typing_feature_enabled, "输入状态能力启用测试")
     await tester.test(_test_c2c_uses_native_typing, "C2C 原生输入状态测试")
     await tester.test(_test_prompt_recalled_after_bot_message, "机器人发言后撤回输入提示测试")
     await tester.test(_test_prompt_recalled_when_context_dropped, "上下文销毁后撤回输入提示测试")

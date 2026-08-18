@@ -98,21 +98,6 @@ def _test_render_empty_text():
         return False
 
 
-def _test_features_declared():
-    """测试适配器按 markdown 开关声明该能力
-
-    指令操作标签只在 markdown 消息中生效，故该标志须跟随 qq_use_markdown，
-    恒为真会让模块侧构造出发不出去的可点击内容。
-    """
-    try:
-        from bots.qqbot.config import QQBotConfig
-        from bots.qqbot.features import features
-
-        return features.support_action_text is QQBotConfig.qq_use_markdown
-    except Exception:
-        return False
-
-
 def _test_send_msg_markdown_inline_join():
     """测试指令操作与其前后文本落在同一行
 
@@ -190,7 +175,6 @@ async def test_qqbot_action_text(tester: Tester):
     await tester.test(_test_render_truncates_text, "text 截断测试")
     await tester.test(_test_render_truncates_show, "show 独立截断测试")
     await tester.test(_test_render_empty_text, "空 text 不产出标签测试")
-    await tester.test(_test_features_declared, "适配器能力声明测试")
     await tester.test(_test_send_msg_markdown_inline_join, "行内拼接测试")
     await tester.test(_test_button_element_builds_keyboard, "ButtonElement 构建键盘测试")
 

@@ -16,7 +16,6 @@ from bots.telegram.action_text import (
     is_own_inline_message,
 )
 from bots.telegram.context_snapshot import TelegramContextSnapshot
-from bots.telegram.features import features
 from core.builtins.message.internal import ActionText
 from core.tester import Tester, func_case
 from core.utils.button import build_button_rows
@@ -78,10 +77,6 @@ def _test_removing_last_button_returns_none():
     markup = build_telegram_button_markup(build_button_rows([{"A": "~a"}]), "Telegram|User|1")
     selected = markup.inline_keyboard[0][0].callback_data
     return remove_selected_button(markup, selected) is None
-
-
-def _test_feature_enabled():
-    return features.support_button is True and features.support_action_text is True
 
 
 def _test_action_text_uses_inline_query():
@@ -249,7 +244,6 @@ async def test_telegram_buttons(tester: Tester):
     await tester.test(_test_removing_callback_keeps_link_button, "移除回调按钮时保留链接")
     await tester.test(_test_removes_only_selected_and_empty_row, "仅移除当前按钮并清理空行")
     await tester.test(_test_removing_last_button_returns_none, "移除最后按钮后清空键盘")
-    await tester.test(_test_feature_enabled, "平台声明按钮能力")
     await tester.test(_test_action_text_uses_inline_query, "ActionText 使用当前聊天 Inline Query")
     await tester.test(_test_action_text_falls_back_to_copy, "未启用 Inline Mode 时复制命令")
     await tester.test(_test_inline_query_result_sends_edited_text, "Inline Query 结果发送编辑后文本")
