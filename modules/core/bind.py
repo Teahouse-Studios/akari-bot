@@ -12,7 +12,7 @@ from core.database.models import (
     TargetUnionBind,
 )
 from core.utils.container import ExpiringTempDict
-from core.utils.random import Random
+from core.utils.random import SecureRandom
 from core.union_merge import (
     BIND_CODE_EXPIRED,
     apply_sender_merge,
@@ -339,7 +339,7 @@ async def _start_handshake(msg: Bot.MessageSession) -> None:
     同一场景内的每个机器人都会各自解析该命令，确认提示会被重复发出。
     需要管理员确认的是握手闭合后的合并提示，该提示已完整说明数据的继承方式。
     """
-    probe_token = Random.randstr(HANDSHAKE_TOKEN_LENGTH)
+    probe_token = SecureRandom.randstr(HANDSHAKE_TOKEN_LENGTH)
     _pending_probes[probe_token] = {"initiator": msg}
 
     # 该命令仅由同一场景内的其它机器人识别，对用户而言只是一串无意义的口令。
@@ -418,7 +418,7 @@ async def _respond_probe(msg: Bot.MessageSession, token: str) -> None:
 
     # confirm 口令至此才生成，因而每一次配对各持一枚，且只有本次的响应方知晓：
     # 发起方广播出去的那一枚 probe 口令不足以推出它，旁观者也就无从抢先应答。
-    confirm_token = Random.randstr(HANDSHAKE_TOKEN_LENGTH)
+    confirm_token = SecureRandom.randstr(HANDSHAKE_TOKEN_LENGTH)
     _pending_confirms[confirm_token] = {
         "probe_token": token,
         "initiator": initiator,

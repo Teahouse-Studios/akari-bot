@@ -1,6 +1,5 @@
 """Discord 按钮组件构建。"""
 
-import secrets
 from collections.abc import Awaitable, Callable
 
 import discord
@@ -8,6 +7,7 @@ import discord
 from core.builtins.message.elements import ActionTextElement, ButtonRows
 from core.logger import Logger
 from core.utils.button_runtime import register_button_rows
+from core.utils.random import Random
 
 ButtonClickHandler = Callable[[discord.Interaction, discord.ui.Button], Awaitable[None]]
 ActionTextSubmitHandler = Callable[[discord.Interaction, str, bool, discord.Message | None], Awaitable[None]]
@@ -67,7 +67,7 @@ class DiscordActionTextModal(discord.ui.Modal):
         super().__init__(
             self.command_input,
             title=_truncate_label(title, 45),
-            custom_id=f"{ACTION_TEXT_CUSTOM_ID_PREFIX}{secrets.token_urlsafe(9)}",
+            custom_id=f"{ACTION_TEXT_CUSTOM_ID_PREFIX}{Random.token_urlsafe(9)}",
         )
 
     async def callback(self, interaction: discord.Interaction):
@@ -92,7 +92,7 @@ class DiscordActionTextButton(discord.ui.Button):
     ):
         super().__init__(
             label=_action_label(action_text),
-            custom_id=f"{ACTION_TEXT_CUSTOM_ID_PREFIX}{secrets.token_urlsafe(9)}",
+            custom_id=f"{ACTION_TEXT_CUSTOM_ID_PREFIX}{Random.token_urlsafe(9)}",
             style=discord.ButtonStyle.secondary,
             row=row,
         )
@@ -126,7 +126,7 @@ class DiscordActionTextSelect(discord.ui.Select):
         self.modal_title = modal_title
         self.input_label = input_label
         super().__init__(
-            custom_id=f"{ACTION_TEXT_CUSTOM_ID_PREFIX}{secrets.token_urlsafe(9)}",
+            custom_id=f"{ACTION_TEXT_CUSTOM_ID_PREFIX}{Random.token_urlsafe(9)}",
             placeholder=_truncate_label(placeholder, 150),
             options=[
                 discord.SelectOption(

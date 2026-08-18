@@ -1,7 +1,7 @@
 """core.utils.random 纯函数单元测试 - Random 类。"""
 
 from core.tester import func_case, Tester
-from core.utils.random import Random
+from core.utils.random import Random, SecureRandom
 
 
 def _test_random_random():
@@ -126,6 +126,18 @@ def _test_random_shuffle():
         return False
 
 
+def _test_random_token_urlsafe():
+    """测试 Random.token_urlsafe() - 生成无填充的 URL-safe token"""
+    try:
+        tokens = [Random.token_urlsafe(9), SecureRandom.token_urlsafe(9)]
+        return SecureRandom.use_secrets and all(
+            len(token) == 12 and token.isascii() and all(char.isalnum() or char in "-_" for char in token)
+            for token in tokens
+        )
+    except Exception:
+        return False
+
+
 @func_case
 async def test_random(tester: Tester):
     """core.utils.random: Random 类全部方法测试"""
@@ -137,5 +149,6 @@ async def test_random(tester: Tester):
     await tester.test(_test_random_choices, "Random.choices() 测试")
     await tester.test(_test_random_sample, "Random.sample() 测试")
     await tester.test(_test_random_shuffle, "Random.shuffle() 测试")
+    await tester.test(_test_random_token_urlsafe, "Random.token_urlsafe() 测试")
 
     return tester

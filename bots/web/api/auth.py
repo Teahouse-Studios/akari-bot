@@ -1,7 +1,6 @@
 import asyncio
 import base64
 import hashlib
-import secrets
 import string
 from collections import defaultdict
 from datetime import datetime, timedelta, UTC
@@ -19,6 +18,7 @@ from bots.web.config import WebConfig
 from core.constants.path import assets_path
 from core.database.models import MaliciousLoginRecords
 from core.logger import Logger
+from core.utils.random import SecureRandom
 
 PASSWORD_PATH = assets_path / "private" / "web" / ".password"
 LOGIN_BLOCK_DURATION = 3600
@@ -65,9 +65,7 @@ def _get_totp(password_data: dict | None) -> pyotp.TOTP | None:
 def _generate_backup_codes(count: int = 8) -> list[str]:
     codes = []
     for _ in range(count):
-        code = "-".join(
-            "".join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(4)) for _ in range(2)
-        )
+        code = "-".join(SecureRandom.randstr(4, string.ascii_uppercase + string.digits) for _ in range(2))
         codes.append(code)
     return codes
 

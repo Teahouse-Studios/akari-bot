@@ -1,9 +1,9 @@
 import hashlib
-import secrets
 from datetime import UTC, datetime
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Mention
+from core.utils.random import SecureRandom
 from modules.captcha.database.models import CaptchaChallenge, CaptchaTrust
 
 
@@ -39,7 +39,7 @@ async def trust_challenge(challenge: CaptchaChallenge) -> None:
 
 
 def new_token() -> str:
-    return secrets.token_urlsafe(18)
+    return SecureRandom.token_urlsafe(18)
 
 
 __all__ = [

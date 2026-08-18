@@ -1,5 +1,3 @@
-from secrets import SystemRandom
-
 from core.builtins.bot import Bot
 from core.builtins.message.internal import ButtonFrame, I18NContext, Image, Mention
 from core.builtins.session.info import EventInfo
@@ -9,6 +7,7 @@ from core.config.base import CoreConfig
 from core.constants.path import assets_path
 from core.logger import Logger
 from core.utils.button import arrange_buttons
+from core.utils.random import SecureRandom
 from modules.captcha.database.models import CaptchaChallenge, CaptchaTrust
 from modules.captcha.service import (
     get_origin_session,
@@ -25,7 +24,6 @@ CAPTCHA_EMOTES = tuple(sorted(path.stem for path in CAPTCHA_EMOTE_DIR.glob("*.gi
 CAPTCHA_BUTTON_ROWS = 5
 CAPTCHA_BUTTONS_PER_ROW = 4
 CAPTCHA_CHOICE_COUNT = CAPTCHA_BUTTON_ROWS * CAPTCHA_BUTTONS_PER_ROW
-_random = SystemRandom()
 
 captcha = module(
     "captcha",
@@ -40,9 +38,9 @@ def make_choices(answer: int) -> list[int]:
     """生成包含答案的 20 个不重复数字。"""
     choices = {answer}
     while len(choices) < CAPTCHA_CHOICE_COUNT:
-        choices.add(_random.randint(1, 100))
+        choices.add(SecureRandom.randint(1, 100))
     values = list(choices)
-    _random.shuffle(values)
+    SecureRandom.shuffle(values)
     return values
 
 
@@ -53,9 +51,9 @@ def make_emote_choices(answer: int) -> list[int]:
     choices = {answer}
     maximum = CAPTCHA_EMOTE_ANSWER_OFFSET + len(CAPTCHA_EMOTES) - 1
     while len(choices) < CAPTCHA_CHOICE_COUNT:
-        choices.add(_random.randint(CAPTCHA_EMOTE_ANSWER_OFFSET, maximum))
+        choices.add(SecureRandom.randint(CAPTCHA_EMOTE_ANSWER_OFFSET, maximum))
     values = list(choices)
-    _random.shuffle(values)
+    SecureRandom.shuffle(values)
     return values
 
 
@@ -85,14 +83,14 @@ async def member_joined(event: EventInfo):
         return
 
     if CoreConfig.use_emote and len(CAPTCHA_EMOTES) >= CAPTCHA_CHOICE_COUNT:
-        answer = CAPTCHA_EMOTE_ANSWER_OFFSET + _random.randint(0, len(CAPTCHA_EMOTES) - 1)
+        answer = CAPTCHA_EMOTE_ANSWER_OFFSET + SecureRandom.randint(0, len(CAPTCHA_EMOTES) - 1)
         choices = make_emote_choices(answer)
     else:
         if CoreConfig.use_emote:
             Logger.warning(
                 f"Captcha emote mode requires at least {CAPTCHA_CHOICE_COUNT} GIF resources in {CAPTCHA_EMOTE_DIR}."
             )
-        answer = _random.randint(1, 100)
+        answer = SecureRandom.randint(1, 100)
         choices = make_choices(answer)
     defaults = {
         "target_union_id": event.target_union_id,
@@ -111,7 +109,7 @@ async def member_joined(event: EventInfo):
                 challenge.choices = make_emote_choices(challenge.answer)
             else:
                 if captcha_emote_name(challenge.answer):
-                    challenge.answer = _random.randint(1, 100)
+                    challenge.answer = SecureRandom.randint(1, 100)
                 challenge.choices = make_choices(challenge.answer)
             await challenge.save()
     elif existing:

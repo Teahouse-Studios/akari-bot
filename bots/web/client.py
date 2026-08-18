@@ -14,7 +14,7 @@ from bots.web.config import WebConfig, WebSecretConfig
 from core.constants.path import assets_path, webui_path
 from core.database.models import SenderUnionInfo
 from core.logger import Logger
-from core.utils.random import Random
+from core.utils.random import SecureRandom
 from core.utils.socket import find_available_port, get_local_ip
 
 if (webui_path / "dist").exists():
@@ -59,7 +59,7 @@ def get_client_ip(request: Request) -> str:
 jwt_secret = WebSecretConfig.jwt_secret
 if not jwt_secret:
     # jwt_secret 须在 web 子进程首次启动时随机生成并持久化，属只读进程中的合法写入
-    CFGManager.edit_write("jwt_secret", Random.randbytes(32).hex(), secret=True, table_name="bot_web")
+    CFGManager.edit_write("jwt_secret", SecureRandom.randbytes(32).hex(), secret=True, table_name="bot_web")
     jwt_secret = WebSecretConfig.jwt_secret
 
 

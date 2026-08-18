@@ -373,8 +373,8 @@ async def _test_group_typing_uses_emote_when_enabled() -> bool:
     with (
         patch("bots.qqbot.context.CoreConfig", new=SimpleNamespace(use_emote=True)),
         patch(
-            "bots.qqbot.context._typing_random",
-            new=SimpleNamespace(choice=lambda values: values[0]),
+            "bots.qqbot.context.Random.choice",
+            return_value=TYPING_EMOTES[0],
         ),
         _Recorder() as rec,
     ):

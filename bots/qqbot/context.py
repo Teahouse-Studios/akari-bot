@@ -4,7 +4,6 @@ import time
 from collections import OrderedDict, deque
 from collections.abc import Mapping
 from datetime import datetime, timedelta, timezone
-from secrets import SystemRandom
 from typing import Union
 from urllib.parse import quote
 
@@ -44,6 +43,7 @@ from bots.qqbot.config import QQBotConfig
 from core.config.base import CoreConfig
 from core.constants.path import assets_path
 from core.logger import Logger
+from core.utils.random import Random
 from core.utils.table import escape_table_cell, resolve_table_columns
 
 qq_typing_emoji = str(QQBotConfig.qq_typing_emoji)
@@ -60,7 +60,6 @@ HIGH_PRIORITY_BURST = 5
 HIGH_PRIORITY_QUEUE_RESERVE = 16
 TYPING_EMOTE_DIR = assets_path / "emotes" / "typing"
 TYPING_EMOTES = tuple(sorted(TYPING_EMOTE_DIR.glob("*.gif")))
-_typing_random = SystemRandom()
 
 
 def _load_s3_storage():
@@ -735,7 +734,7 @@ class QQBotContextManager(ContextManager):
             elements = [I18NContext("message.typing")]
             if CoreConfig.use_emote:
                 if TYPING_EMOTES:
-                    elements.append(Image(_typing_random.choice(TYPING_EMOTES)))
+                    elements.append(Image(Random.choice(TYPING_EMOTES)))
                 else:
                     Logger.warning(
                         f"QQBot typing emote is enabled but no GIF resources were found in {TYPING_EMOTE_DIR}."

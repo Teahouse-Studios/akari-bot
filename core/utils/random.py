@@ -1,9 +1,11 @@
 """
-机器人内置的随机生成工具。在配置文件中将`use_secrets_random`设为`true`时使用`secrets`库，否则默认使用`random`库。
+机器人内置的随机生成工具。``Random`` 由 ``use_secrets_random`` 配置选择后端，
+``SecureRandom`` 始终使用 ``secrets``，用于密码、令牌和绑定口令等安全凭据。
 
 请在模块中使用此库进行随机生成，避免导入`random`或`secrets`库。
 """
 
+import base64
 import random as pyrandom
 import secrets
 from typing import Sequence, MutableSequence, TypeVar
@@ -174,3 +176,17 @@ class Random:
         if cls.use_secrets:
             return "".join(secrets.choice(chars) for _ in range(length))
         return "".join(pyrandom.choice(chars) for _ in range(length))
+
+    @classmethod
+    def token_urlsafe(cls, nbytes: int | None = None) -> str:
+        """生成适合用于 URL 的随机文本 token。"""
+        if cls.use_secrets:
+            return secrets.token_urlsafe(nbytes)
+        random_bytes = pyrandom.randbytes(32 if nbytes is None else nbytes)
+        return base64.urlsafe_b64encode(random_bytes).rstrip(b"=").decode("ascii")
+
+
+class SecureRandom(Random):
+    """始终使用 ``secrets`` 后端的安全随机工具。"""
+
+    use_secrets = True

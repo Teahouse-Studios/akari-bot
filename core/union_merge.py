@@ -20,7 +20,7 @@ from core.database.models import (
 )
 from core.logger import Logger
 from core.utils.container import ExpiringTempDict
-from core.utils.random import Random
+from core.utils.random import SecureRandom
 
 BIND_CODE_EXPIRED = 300  # 绑定码有效期（秒）
 BIND_CODE_LENGTH = 6
@@ -40,9 +40,9 @@ def generate_code(store: ExpiringTempDict, union_id: str, holder_id: str, extra:
     for old_code in [code for code, entry in store.items() if entry.get("union_id") == union_id]:
         store.pop(old_code)
 
-    code = "".join(Random.choices(BIND_CODE_ALPHABET, k=BIND_CODE_LENGTH))
+    code = "".join(SecureRandom.choices(BIND_CODE_ALPHABET, k=BIND_CODE_LENGTH))
     while code in store:
-        code = "".join(Random.choices(BIND_CODE_ALPHABET, k=BIND_CODE_LENGTH))
+        code = "".join(SecureRandom.choices(BIND_CODE_ALPHABET, k=BIND_CODE_LENGTH))
 
     store[code] = ExpiringTempDict(
         exp=BIND_CODE_EXPIRED,

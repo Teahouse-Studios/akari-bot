@@ -1,7 +1,6 @@
 """跨平台按钮 token 的注册与消费。"""
 
 import re
-import secrets
 import time
 from enum import Enum, auto
 
@@ -9,6 +8,7 @@ from attrs import define
 
 from core.builtins.message.elements import ButtonRows
 from core.builtins.utils import confirm_command_default
+from core.utils.random import SecureRandom
 
 BUTTON_TOKEN_PREFIX = "akb:"
 BUTTON_EXPIRES = 3600
@@ -59,7 +59,7 @@ _button_registry: dict[str, ButtonState] = {}
 
 def _generate_token() -> str:
     while True:
-        token = BUTTON_TOKEN_PREFIX + secrets.token_urlsafe(9)
+        token = BUTTON_TOKEN_PREFIX + SecureRandom.token_urlsafe(9)
         if token not in _button_registry:
             return token
 

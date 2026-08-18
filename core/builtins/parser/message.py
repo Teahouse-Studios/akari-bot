@@ -18,6 +18,7 @@ import inspect
 import re
 import time
 import traceback
+from pathlib import Path
 from string import Template as stringTemplate
 from types import UnionType
 from typing import TYPE_CHECKING, Union, get_args, get_origin
@@ -25,7 +26,7 @@ from typing import TYPE_CHECKING, Union, get_args, get_origin
 from rapidfuzz import process
 
 from core.builtins.message.chain import MessageChain, match_kecode
-from core.builtins.message.internal import ActionText, Plain, I18NContext
+from core.builtins.message.internal import ActionText, Image, Plain, I18NContext
 from core.builtins.parser.args import ArgumentPattern, Template as argsTemplate, templates_to_str
 from core.builtins.parser.command import CommandParser
 from core.builtins.session.lock import ExecutionLockList
@@ -42,6 +43,7 @@ from core.constants.exceptions import (
     WaitCancelException,
 )
 from core.constants.info import Info
+from core.constants.path import assets_path
 from core.database.models import AnalyticsData, SenderUnionInfo, TargetUnionBind
 from core.exports import exports
 from core.loader import ModulesManager
@@ -57,6 +59,7 @@ from core.types import Module, Param
 from core.types.module.component_meta import CommandMeta
 from core.utils.container import ExpiringTempDict, TokenBucket
 from core.utils.func import normalize_space
+from core.utils.random import Random
 
 if TYPE_CHECKING:
     from core.builtins.bot import Bot
@@ -79,6 +82,11 @@ report_targets = CoreConfig.report_targets
 
 # Bug 报告的 URL
 bug_report_url = CoreConfig.bug_report_url
+
+# 命令输入与执行异常提示所使用的公共表情资源
+COMMON_EMOTE_DIR = assets_path / "emotes" / "common"
+INVALID_COMMAND_EMOTES = tuple(sorted(COMMON_EMOTE_DIR.glob("invalid_*.gif")))
+BUG_EMOTES = tuple(sorted(COMMON_EMOTE_DIR.glob("bug_*.gif")))
 
 # ========== 错字检查的分数阈值 ==========
 # 这些阈值用于模糊匹配（当用户输入可能有错字时）
@@ -136,6 +144,16 @@ regex_once_cache: set[tuple[str, int, str]] = set()
 def should_skip_regex(trigger_msg: str) -> bool:
     prefixes = tuple(prefix for prefix in CoreConfig.regex_disable_prefix if isinstance(prefix, str) and prefix)
     return trigger_msg.startswith(prefixes)
+
+
+async def _send_common_emote(msg: "Bot.MessageSession", emotes: tuple[Path, ...]) -> None:
+    """按配置单独发送一条随机公共表情消息。"""
+    if not CoreConfig.use_emote or not msg.session_info.support_image or not emotes:
+        return
+    try:
+        await msg.send_message(Image(Random.choice(emotes)), quote=False)
+    except SendMessageFailed:
+        Logger.warning(f"Failed to send common emote in session {msg.session_info.session_id}.")
 
 
 async def parser(msg: "Bot.MessageSession"):
@@ -258,6 +276,7 @@ async def parser(msg: "Bot.MessageSession"):
                             cmd=ActionText(f"{msg.session_info.prefixes[0]}help"),
                         )
                     )
+                    await _send_common_emote(msg, INVALID_COMMAND_EMOTES)
             elif msg.session_info.invalid_module_prompt_enabled:
                 await msg.send_message(
                     I18NContext(
@@ -266,7 +285,7 @@ async def parser(msg: "Bot.MessageSession"):
                         cmd=ActionText(f"{msg.session_info.prefixes[0]}help"),
                     )
                 )
-
+                await _send_common_emote(msg, INVALID_COMMAND_EMOTES)
             return msg
 
         # 检查正则
@@ -726,6 +745,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                         cmd=ActionText(f"{msg.session_info.prefixes[0]}help {command_first_word}"),
                     )
                 )
+                await _send_common_emote(msg, INVALID_COMMAND_EMOTES)
     except SendMessageFailed:
         await _process_send_message_failed(msg)
 
@@ -1413,12 +1433,14 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
                     cmd=ActionText(f"{msg.session_info.prefixes[0]}help {command_first_word}"),
                 )
             )
+            await _send_common_emote(msg, INVALID_COMMAND_EMOTES)
             return
         except Exception as e:
             raise e
     except InvalidHelpDocTypeError:
         Logger.exception()
         await msg.send_message(I18NContext("error.module.helpdoc_invalid", module=command_first_word))
+        await _send_common_emote(msg, BUG_EMOTES)
         return
     finally:
         if _typing:
@@ -1478,6 +1500,7 @@ async def _process_noreport_exception(msg: "Bot.MessageSession", e: NoReportExce
     err_msg_chain.append(I18NContext("error.message.prompt.noreport"))
     await msg.handle_error_signal()
     await msg.send_message(err_msg_chain)
+    await _send_common_emote(msg, BUG_EMOTES)
 
 
 async def _process_external_exception(msg: "Bot.MessageSession", e: Exception):
@@ -1499,6 +1522,7 @@ async def _process_external_exception(msg: "Bot.MessageSession", e: Exception):
         err_msg_chain.append(I18NContext("error.message.prompt.address", url=bug_report_url))
     await msg.handle_error_signal()
     await msg.send_message(err_msg_chain)
+    await _send_common_emote(msg, BUG_EMOTES)
 
 
 async def _process_exception(msg: "Bot.MessageSession", e: Exception):
@@ -1535,7 +1559,7 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
     # 触发错误信号并发送消息
     await msg.handle_error_signal()
     await msg.send_message(err_msg_chain)
-
+    await _send_common_emote(msg, BUG_EMOTES)
     # ========== 发送错误报告给管理员 ==========
     if report_targets:
         # 上报场景按场景组配置，展开后同一现实场景的多个平台入口只应由其中一个收到回传
