@@ -2,7 +2,7 @@ import asyncio
 import html
 import time
 from collections import OrderedDict, deque
-from collections.abc import Mapping
+from collections.abc import Awaitable, Callable, Mapping
 from datetime import datetime, timedelta, timezone
 from typing import Union
 from urllib.parse import quote
@@ -10,7 +10,7 @@ from urllib.parse import quote
 import botpy
 from botpy.interaction import Interaction
 from botpy.message import BaseMessage, C2CMessage, DirectMessage, GroupMessage, Message
-from botpy.protocol import ApiError, MediaSendResult, ReplyTarget
+from botpy.protocol import ApiError, MediaFileType, MediaSendResult, MessageType, ReplyTarget
 from botpy.types.group import SetMemberMuteState
 from botpy.types.message import Reference, KeyboardPayload
 from botpy.types.inline import Keyboard, Button, KeyboardRow, RenderData, Action, Permission
@@ -255,15 +255,65 @@ def _is_expired_reply_message_error(error: ApiError) -> bool:
 class _TypingState:
     """一轮输入状态的生命周期标志。
 
-    群聊的输入提示是一条真实消息，撤回时机取决于两件事先发生哪一件：机器人发出了
-    自身消息，或输入状态被显式结束。两个标志各自对应其一，由等待方取先到者。
+    ``sending`` 表示普通回复已完成资源准备并进入发送阶段，用于阻止 typing 消息
+    后发；``spoken`` 只记录平台已经成功接受至少一条普通消息。
     """
 
-    __slots__ = ("finished", "spoken")
+    __slots__ = ("finished", "sending", "spoken")
 
     def __init__(self):
         self.finished = asyncio.Event()
+        self.sending = asyncio.Event()
         self.spoken = asyncio.Event()
+
+
+class _PreparedMessage:
+    """已完成资源准备、只差调用平台消息发送接口的消息。"""
+
+    __slots__ = ("has_payload", "queue_key", "send")
+
+    def __init__(
+        self,
+        target: ReplyTarget,
+        send: Callable[[], Awaitable[list[str]]],
+        *,
+        has_payload: bool,
+    ):
+        self.queue_key = f"{target.scope}|{target.target_id}"
+        self.send = send
+        self.has_payload = has_payload
+
+
+class _QueuedMessage:
+    """等待进入 QQ OpenAPI 消息发送阶段的任务。"""
+
+    __slots__ = ("future", "prepared", "sequence", "started", "typing_prompt", "typing_state")
+
+    def __init__(
+        self,
+        future: asyncio.Future[list[str]],
+        prepared: _PreparedMessage,
+        sequence: int,
+        *,
+        typing_prompt: bool,
+        typing_state: _TypingState | None,
+    ):
+        self.future = future
+        self.prepared = prepared
+        self.sequence = sequence
+        self.started = False
+        self.typing_prompt = typing_prompt
+        self.typing_state = typing_state
+
+
+class _MessageSendQueue:
+    """同一 QQ 目标的短生命周期发送整形队列。"""
+
+    __slots__ = ("pending", "worker")
+
+    def __init__(self):
+        self.pending: list[_QueuedMessage] = []
+        self.worker: asyncio.Task[None] | None = None
 
 
 class QQBotContextManager(ContextManager):
@@ -271,6 +321,8 @@ class QQBotContextManager(ContextManager):
     features: Features = qqbot_features
     typing_states: dict[str, _TypingState] = {}
     typing_tasks: dict[str, asyncio.Task[None]] = {}
+    message_send_queues: dict[str, _MessageSendQueue] = {}
+    message_send_sequence = 0
     client: botpy.Client | None = None
 
     # 机器人沉默满此秒数后，才在群聊中补发输入提示
@@ -326,7 +378,7 @@ class QQBotContextManager(ContextManager):
         return False
 
     @classmethod
-    async def send_message(
+    async def _prepare_message(
         cls,
         session_info: SessionInfo,
         message: MessageChain | MessageNodes,
@@ -336,34 +388,21 @@ class QQBotContextManager(ContextManager):
         _ignore_retries: bool = False,
         _typing_prompt: bool = False,
         _force_plain: bool = False,
-    ) -> list[str]:
+    ) -> _PreparedMessage:
+        """完成消息渲染和媒体上传，不调用最终的消息发送接口。"""
         ctx: BaseMessage | Interaction | None = cls.context.get(session_info.session_id)
-        msg_ids = []
         client = _get_client()
         target = _reply_target(session_info, ctx)
-
-        async def send_with_proactive_fallback(sender, /, *args, **kwargs):
-            """回复消息 ID 过期时，移除回复信息并立即改发一条主动消息。"""
-            nonlocal target
-            try:
-                return await sender(target, *args, **kwargs)
-            except ApiError as error:
-                if target.message_id is None or not _is_expired_reply_message_error(error):
-                    raise
-
-                Logger.warning(
-                    f"Reply message {target.message_id} expired when sending to {target.scope}|{target.target_id}; "
-                    "retrying as a proactive message."
-                )
-                target = ReplyTarget(scope=target.scope, target_id=target.target_id)
-                return await sender(target, *args, **kwargs)
 
         force_markdown = session_info.tmp.get("force_markdown") == "true"
         if isinstance(message, MessageNodes):
             message = MessageChain.assign(PlainElement.assign(nodes_to_table(session_info, message), disable_joke=True))
             force_markdown = True
 
-        async def send_msg():
+        async def empty_send() -> list[str]:
+            return []
+
+        async def prepare_plain_message() -> _PreparedMessage:
             plains: list[PlainElement] = []
             images: list[ImageElement] = []
 
@@ -382,7 +421,7 @@ class QQBotContextManager(ContextManager):
                     ):
                         plains.append(PlainElement(text=f"<@{x.id}>"))
             if not plains and not images:
-                return
+                return _PreparedMessage(target, empty_send, has_payload=False)
 
             msg = "\n".join(x.text for x in plains).strip()
             if session_info.target_from in (target_guild_prefix, target_direct_prefix):
@@ -403,44 +442,85 @@ class QQBotContextManager(ContextManager):
             if quote and images and isinstance(ctx, Message):
                 msg = f"<@{ctx.author.id}> \n{msg}"
 
-            async def record(result, image: ImageElement | None = None):
-                msg_ids.extend(_message_ids(result))
-                if not _typing_prompt:
-                    cls._on_message_sent(session_info)
-                if image:
-                    Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image)}")
-
-            if images:
-                image = images.pop(0)
-                image_path = await image.get()
-                if target.scope in ("group", "c2c"):
-                    result = await send_with_proactive_fallback(
-                        client.send_image, local_path=image_path, content=msg or None
-                    )
-                else:
-                    result = await send_with_proactive_fallback(
-                        client.send,
-                        content=msg or None,
-                        message_reference=message_reference,
-                        extra={"file_image": image_path},
-                    )
-                await record(result, image)
-            else:
-                result = await send_with_proactive_fallback(
-                    client.send, content=msg, message_reference=message_reference
-                )
-                await record(result)
-
-            Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
+            prepared_images: list[tuple[ImageElement, str | Mapping]] = []
             for image in images:
                 image_path = await image.get()
                 if target.scope in ("group", "c2c"):
-                    result = await send_with_proactive_fallback(client.send_image, local_path=image_path)
+                    upload = await client.upload_media(target, MediaFileType.IMAGE, local_path=image_path)
+                    file_info = upload.get("file_info") if isinstance(upload, Mapping) else None
+                    if not file_info:
+                        raise RuntimeError("QQBot media upload response does not contain file_info")
+                    prepared_images.append((image, {"file_info": file_info}))
                 else:
-                    result = await send_with_proactive_fallback(client.send, extra={"file_image": image_path})
-                await record(result, image)
+                    prepared_images.append((image, image_path))
 
-        async def send_msg_markdown():
+            async def send_plain_message() -> list[str]:
+                msg_ids = []
+                send_target = target
+
+                async def send_with_proactive_fallback(sender, /, *args, **kwargs):
+                    """回复消息 ID 过期时，移除回复信息并立即改发一条主动消息。"""
+                    nonlocal send_target
+                    try:
+                        return await sender(send_target, *args, **kwargs)
+                    except ApiError as error:
+                        if send_target.message_id is None or not _is_expired_reply_message_error(error):
+                            raise
+
+                        Logger.warning(
+                            f"Reply message {send_target.message_id} expired when sending to "
+                            f"{send_target.scope}|{send_target.target_id}; retrying as a proactive message."
+                        )
+                        send_target = ReplyTarget(scope=send_target.scope, target_id=send_target.target_id)
+                        return await sender(send_target, *args, **kwargs)
+
+                async def record(result, image: ImageElement | None = None):
+                    msg_ids.extend(_message_ids(result))
+                    if not _typing_prompt:
+                        cls._on_message_sent(session_info)
+                    if image:
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image)}")
+
+                remaining_images = list(prepared_images)
+                if remaining_images:
+                    image, prepared_image = remaining_images.pop(0)
+                    if send_target.scope in ("group", "c2c"):
+                        result = await send_with_proactive_fallback(
+                            client.send,
+                            content=msg or None,
+                            msg_type=MessageType.MEDIA,
+                            media=prepared_image,
+                        )
+                    else:
+                        result = await send_with_proactive_fallback(
+                            client.send,
+                            content=msg or None,
+                            message_reference=message_reference,
+                            extra={"file_image": prepared_image},
+                        )
+                    await record(result, image)
+                else:
+                    result = await send_with_proactive_fallback(
+                        client.send, content=msg, message_reference=message_reference
+                    )
+                    await record(result)
+
+                Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
+                for image, prepared_image in remaining_images:
+                    if send_target.scope in ("group", "c2c"):
+                        result = await send_with_proactive_fallback(
+                            client.send,
+                            msg_type=MessageType.MEDIA,
+                            media=prepared_image,
+                        )
+                    else:
+                        result = await send_with_proactive_fallback(client.send, extra={"file_image": prepared_image})
+                    await record(result, image)
+                return msg_ids
+
+            return _PreparedMessage(target, send_plain_message, has_payload=True)
+
+        async def prepare_markdown_message() -> _PreparedMessage:
             texts = []
 
             if quote and ctx and session_info.target_from in (target_guild_prefix, target_group_prefix):
@@ -468,7 +548,7 @@ class QQBotContextManager(ContextManager):
 
             if not _use_markdown:
                 Logger.debug("MessageElements do not require markdown, sending as plain message instead of markdown.")
-                return await send_msg()
+                return await prepare_plain_message()
 
             # 指令操作是行内元素：它自身与紧随其后的文本都须并入上一项，
             # 否则 "\n".join(texts) 会把同属一句话的收尾文本甩到下一行
@@ -518,22 +598,156 @@ class QQBotContextManager(ContextManager):
                     inline_pending = True
             if keyboard and not texts:
                 texts.append("\u200b")
-            if len(texts) != 0:
-                msg = "\n".join(texts)
-                result = await send_with_proactive_fallback(client.send_markdown, msg, keyboard=keyboard)
-                msg_ids.extend(_message_ids(result))
+            if not texts:
+                return _PreparedMessage(target, empty_send, has_payload=False)
+
+            msg = "\n".join(texts)
+
+            async def send_markdown_message() -> list[str]:
+                send_target = target
+                try:
+                    result = await client.send_markdown(send_target, msg, keyboard=keyboard)
+                except ApiError as error:
+                    if send_target.message_id is None or not _is_expired_reply_message_error(error):
+                        raise
+                    Logger.warning(
+                        f"Reply message {send_target.message_id} expired when sending to "
+                        f"{send_target.scope}|{send_target.target_id}; retrying as a proactive message."
+                    )
+                    send_target = ReplyTarget(scope=send_target.scope, target_id=send_target.target_id)
+                    result = await client.send_markdown(send_target, msg, keyboard=keyboard)
+                msg_ids = _message_ids(result)
                 if not _typing_prompt:
                     cls._on_message_sent(session_info)
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
+                return msg_ids
+
+            return _PreparedMessage(target, send_markdown_message, has_payload=True)
 
         # 会话的 support_markdown 由 resolve_features() 按用户偏好置定，用户关闭 markdown 后
         # 走纯文本路径；全局配置关闭时同样如此。
         if _force_plain or not qq_use_markdown or not session_info.support_markdown:
-            await send_msg()
-        else:
-            await send_msg_markdown()
+            return await prepare_plain_message()
+        return await prepare_markdown_message()
 
-        return msg_ids
+    @classmethod
+    async def _process_message_send_queue(cls, queue_key: str, queue: _MessageSendQueue) -> None:
+        """按目标串行发送，并在每次平台调用前淘汰已经过时的 typing 提示。"""
+        try:
+            await asyncio.sleep(0)
+            while queue.pending:
+                queued = min(queue.pending, key=lambda item: item.sequence)
+                queue.pending.remove(queued)
+                queued.started = True
+                if queued.future.cancelled():
+                    continue
+
+                # typing 出队后再让出一次执行权，允许同一时刻准备完成的普通回复
+                # 先置位 sending；随后仍会在真正调用平台消息接口前作最后检查。
+                await asyncio.sleep(0)
+                state = queued.typing_state
+                try:
+                    if queued.typing_prompt and (state is None or state.finished.is_set() or state.sending.is_set()):
+                        result = []
+                    else:
+                        result = await queued.prepared.send()
+                except asyncio.CancelledError:
+                    raise
+                except Exception as error:
+                    if not queued.future.done():
+                        queued.future.set_exception(error)
+                else:
+                    if not queued.future.done():
+                        queued.future.set_result(result)
+        except asyncio.CancelledError:
+            if "queued" in locals() and not queued.future.done():
+                queued.future.cancel()
+            raise
+        finally:
+            if cls.message_send_queues.get(queue_key) is queue:
+                cls.message_send_queues.pop(queue_key, None)
+            for pending in queue.pending:
+                if not pending.future.done():
+                    pending.future.set_exception(RuntimeError("QQBot message send queue stopped unexpectedly"))
+
+    @classmethod
+    async def _send_prepared_message(
+        cls,
+        session_info: SessionInfo,
+        prepared: _PreparedMessage,
+        *,
+        _typing_prompt: bool = False,
+        _typing_state: _TypingState | None = None,
+    ) -> list[str]:
+        """进入实际消息发送阶段；调用前不再做媒体上传或图片读取。"""
+        if not prepared.has_payload:
+            return []
+
+        state = _typing_state or cls.typing_states.get(session_info.session_id)
+        if _typing_prompt:
+            if state is None or state.finished.is_set() or state.sending.is_set():
+                return []
+        elif state:
+            cls._on_message_sending(session_info)
+
+        queue = cls.message_send_queues.setdefault(prepared.queue_key, _MessageSendQueue())
+        cls.message_send_sequence += 1
+        future = asyncio.get_running_loop().create_future()
+        queued = _QueuedMessage(
+            future,
+            prepared,
+            cls.message_send_sequence,
+            typing_prompt=_typing_prompt,
+            typing_state=state,
+        )
+        queue.pending.append(queued)
+        if queue.worker is None or queue.worker.done():
+            queue.worker = asyncio.create_task(
+                cls._process_message_send_queue(prepared.queue_key, queue),
+                name=f"qqbot-message-send-{prepared.queue_key}",
+            )
+
+        try:
+            return await asyncio.shield(future)
+        except asyncio.CancelledError:
+            if not queued.started:
+                try:
+                    queue.pending.remove(queued)
+                except ValueError:
+                    pass
+                future.cancel()
+            elif not future.done():
+                future.add_done_callback(lambda done: None if done.cancelled() else done.exception())
+            raise
+
+    @classmethod
+    async def send_message(
+        cls,
+        session_info: SessionInfo,
+        message: MessageChain | MessageNodes,
+        quote: bool = True,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+        _ignore_retries: bool = False,
+        _typing_prompt: bool = False,
+        _force_plain: bool = False,
+    ) -> list[str]:
+        """保持原有公开行为：准备资源并等待实际发送完成后返回消息 ID。"""
+        prepared = await cls._prepare_message(
+            session_info,
+            message,
+            quote=quote,
+            enable_parse_message=enable_parse_message,
+            enable_split_image=enable_split_image,
+            _ignore_retries=_ignore_retries,
+            _typing_prompt=_typing_prompt,
+            _force_plain=_force_plain,
+        )
+        return await cls._send_prepared_message(
+            session_info,
+            prepared,
+            _typing_prompt=_typing_prompt,
+        )
 
     @classmethod
     async def send_private_msg(
@@ -652,29 +866,27 @@ class QQBotContextManager(ContextManager):
 
     @classmethod
     def _on_message_sent(cls, session_info: SessionInfo) -> None:
-        """登记机器人已在该会话中发言。
-
-        输入提示的意义是填补机器人迟迟不出声的空窗，机器人一经发言，提示便失去意义，
-        应尽快撤回，故此处以发送动作驱动撤回，而非等到输入状态结束。
-
-        :param session_info: 发出消息的会话。
-        """
+        """登记平台已经成功接受该会话中的普通消息。"""
         state = cls.typing_states.get(session_info.session_id)
         if state:
             state.spoken.set()
 
+    @classmethod
+    def _on_message_sending(cls, session_info: SessionInfo) -> None:
+        """登记普通消息已完成资源准备，即将进入平台消息发送阶段。"""
+        state = cls.typing_states.get(session_info.session_id)
+        if state:
+            state.sending.set()
+
     @staticmethod
     async def _wait_typing_over(state: _TypingState, timeout: float) -> bool:
-        """等待输入状态结束或机器人发言，取先到者。
+        """等待输入状态结束或普通回复进入发送阶段，取先到者。
 
         :param state: 本轮输入状态的标志。
         :param timeout: 最长等待秒数。
         :return: 是否在超时之前等到了其中一个信号。
         """
-        waiters = [
-            asyncio.ensure_future(state.finished.wait()),
-            asyncio.ensure_future(state.spoken.wait()),
-        ]
+        waiters = [asyncio.ensure_future(state.finished.wait()), asyncio.ensure_future(state.sending.wait())]
         try:
             done, _ = await asyncio.wait(waiters, timeout=timeout, return_when=asyncio.FIRST_COMPLETED)
             return bool(done)
@@ -726,11 +938,9 @@ class QQBotContextManager(ContextManager):
         :param state: 本轮输入状态的标志。
         """
         typing_msg = None
+        prepare_task = None
+        state_waiter = None
         try:
-            # 机器人若在等待窗口内就已发言，空窗并未出现，无须补发提示
-            if await cls._wait_typing_over(state, cls.TYPING_PROMPT_DELAY):
-                return
-
             elements = [I18NContext("message.typing")]
             if CoreConfig.use_emote:
                 if TYPING_EMOTES:
@@ -740,13 +950,45 @@ class QQBotContextManager(ContextManager):
                         f"QQBot typing emote is enabled but no GIF resources were found in {TYPING_EMOTE_DIR}."
                     )
             typing_message = MessageChain.assign(elements)
-            typing_msg = await cls.send_message(
+            prepare_started_at = time.monotonic()
+            prepare_task = asyncio.create_task(
+                cls._prepare_message(
+                    session_info,
+                    typing_message,
+                    _ignore_retries=True,
+                    _typing_prompt=True,
+                    _force_plain=typing_message.contains(ImageElement),
+                    quote=False,
+                ),
+                name=f"qqbot-typing-prepare-{session_info.session_id}",
+            )
+            state_waiter = asyncio.create_task(
+                cls._wait_typing_over(state, cls.TYPING_PROMPT_MAX_LIFETIME),
+                name=f"qqbot-typing-prepare-wait-{session_info.session_id}",
+            )
+            done, _ = await asyncio.wait((prepare_task, state_waiter), return_when=asyncio.FIRST_COMPLETED)
+            if state_waiter in done and state_waiter.result():
+                prepare_task.cancel()
+                await asyncio.gather(prepare_task, return_exceptions=True)
+                return
+
+            prepared = await prepare_task
+            state_waiter.cancel()
+            await asyncio.gather(state_waiter, return_exceptions=True)
+
+            # 延时从 start_typing 信号开始计算；图片读取与 upload_media 不会额外
+            # 把提示发送时间向后推，从而避免资源准备慢于普通回复时 typing 后发。
+            remaining_delay = max(0.0, cls.TYPING_PROMPT_DELAY - (time.monotonic() - prepare_started_at))
+            if await cls._wait_typing_over(state, remaining_delay):
+                return
+            if state.finished.is_set() or state.sending.is_set():
+                return
+
+            typing_msg = await cls._send_prepared_message(
                 session_info,
-                typing_message,
-                _ignore_retries=True,
+                prepared,
                 _typing_prompt=True,
-                _force_plain=typing_message.contains(ImageElement),
-                quote=False,
+                _typing_state=state,
             )
             Logger.debug(f"Typing prompt sent in session {session_info.session_id}: {typing_msg}")
 
@@ -755,6 +997,12 @@ class QQBotContextManager(ContextManager):
         except Exception:
             Logger.exception(f"Failed to show typing prompt in session {session_info.session_id}: ")
         finally:
+            if state_waiter and not state_waiter.done():
+                state_waiter.cancel()
+                await asyncio.gather(state_waiter, return_exceptions=True)
+            if prepare_task and not prepare_task.done():
+                prepare_task.cancel()
+                await asyncio.gather(prepare_task, return_exceptions=True)
             # 撤回置于 finally：异常与任务取消同样不得使提示消息滞留于群中。
             # 撤回自身再失败也只作记录，不使本轮任务带着异常收场。
             if typing_msg:

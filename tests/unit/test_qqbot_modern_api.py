@@ -72,6 +72,7 @@ class _FailingSendClient:
     def __init__(self, code: int):
         self.code = code
         self.calls = []
+        self.uploads = []
 
     def _record(self, target, kwargs):
         self.calls.append((target.scope, target.target_id, target.message_id, dict(kwargs)))
@@ -91,9 +92,9 @@ class _FailingSendClient:
         self._record(target, {"content": content, "keyboard": keyboard})
         return {"id": "fallback"}
 
-    async def send_image(self, target, **kwargs):
-        self._record(target, kwargs)
-        return {"id": "fallback"}
+    async def upload_media(self, target, file_type, **kwargs):
+        self.uploads.append((target.scope, target.target_id, file_type, kwargs))
+        return {"file_info": "uploaded-image"}
 
 
 class _CaptureSendClient:
@@ -107,6 +108,10 @@ class _CaptureSendClient:
     async def send_markdown(self, target, content, keyboard=None):
         self.calls.append(("markdown", {"content": content, "keyboard": keyboard}))
         return {"id": "markdown"}
+
+    async def upload_media(self, target, file_type, **kwargs):
+        self.calls.append(("upload", {"file_type": file_type, **kwargs}))
+        return {"file_info": "uploaded-image"}
 
 
 async def _send_with_client(
@@ -167,7 +172,34 @@ async def _test_image_reply_falls_back_to_proactive() -> bool:
         result = await _send_with_client(session, client, message)
     finally:
         QQBotContextManager.context.pop(session.session_id, None)
-    return result == ["fallback"] and [call[2] for call in client.calls] == ["source-message", None]
+    return (
+        result == ["fallback"]
+        and [call[2] for call in client.calls] == ["source-message", None]
+        and len(client.uploads) == 1
+    )
+
+
+async def _test_plain_image_is_uploaded_before_send() -> bool:
+    """群聊 plain 图片须先 upload_media，发送阶段只提交 file_info 引用。"""
+    session = _make_session(target_group_prefix)
+    client = _CaptureSendClient()
+    message = MessageChain.assign([PlainElement.assign("hello"), ImageElement.assign(__file__)])
+    result = await _send_with_client(session, client, message)
+    expected = [
+        ("upload", {"file_type": 1, "local_path": __file__}),
+        (
+            "plain",
+            {
+                "content": "hello",
+                "msg_type": 7,
+                "media": {"file_info": "uploaded-image"},
+            },
+        ),
+    ]
+    if result != ["plain"] or client.calls != expected:
+        Logger.error(f"Unexpected plain image preparation/send sequence: result={result}, calls={client.calls}")
+        return False
+    return True
 
 
 async def _test_other_api_error_is_not_retried() -> bool:
@@ -264,6 +296,7 @@ async def test_qqbot_modern_api(tester: Tester):
     await tester.test(_test_expired_reply_falls_back_to_proactive, "过期回复消息转主动消息测试")
     await tester.test(_test_markdown_reply_falls_back_to_proactive, "Markdown 过期回复转主动消息测试")
     await tester.test(_test_image_reply_falls_back_to_proactive, "图片过期回复转主动消息测试")
+    await tester.test(_test_plain_image_is_uploaded_before_send, "Plain 图片预上传测试")
     await tester.test(_test_other_api_error_is_not_retried, "其他 API 错误不重试测试")
     await tester.test(_test_proactive_error_is_not_retried, "主动消息错误不重复重试测试")
     await tester.test(_test_group_mention_plain_message, "群聊普通消息 Mention 渲染测试")
