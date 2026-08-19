@@ -228,6 +228,7 @@
     "core.message.help.qqbot.permissions.prompt": "带有删除线的模块需要额外权限。${cmd}",
     "core.message.help.qqbot.permissions.quick_config": "使用安卓手机点击以下按钮可快速配置权限：",
     "core.message.help.qqbot.permissions.quick_config.click": "点击配置权限",
+    "core.message.help.qqbot.permissions.quick_config.qqgroup_num": "QQ群号",
     "core.message.help.regex_count": "${count} 条表达式",
     "core.message.help.regex.detail": "（${msg}）",
     "core.message.help.regex.no_information": "（无描述）",
