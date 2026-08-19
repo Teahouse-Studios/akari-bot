@@ -13,6 +13,8 @@ qq_typing_emoji = 181 # QQ 공식 로봇을 사용할 때, 이는 메시지 처�
 qq_limited_emoji = 10060 # QQ 공식 로봇을 사용할 때, 메시지 처리가 실패하면 메시지에 추가되는 응답 이모티콘 ID입니다. ID는 다음을 참조하십시오: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
 qq_use_markdown = false # QQ 공식 로봇을 사용할 때 Markdown 형식의 메시지를 사용할지 여부. (이미지를 저장하려면 S3 호환 API를 설정해야 합니다)
 qq_navigation_sync_strict = false # QQ 공식 로봇의 글로벌 메뉴와 명령 패널 동기화가 실패할 경우 클라이언트 실행을 차단할지 여부.
+qq_bot_uid = "<Replace me with str value>" # QQ 机器人（官方）的 UID，用于生成群聊权限配置链接。
+qq_bot_qqnum = "<Replace me with str value>" # QQ 机器人（官方）的 QQ 号，用于生成群聊权限配置链接。
 
 [bot_qqbot_secret]
 # 클라이언트 키 설정 섹션입니다. 이 값이 전송된 메시지에 실수로 나타날 경우 봇이 해당 메시지를 가로채려고 시도합니다. 하지만 이 값이 유출되지 않도록 각별히 주의해 주십시오.
