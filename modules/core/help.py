@@ -517,7 +517,7 @@ async def qqbot_permissions(msg: Bot.MessageSession, qq_group_id: str | None = N
         I18NContext(
             "core.message.help.qqbot.permissions",
             cmd=ActionText(
-                "/help permissions ",
+                "/help permissions",
                 show=f"/help permissions [<{msg.session_info.locale.t('core.message.help.qqbot.permissions.quick_config.qqgroup_num')}>]",
                 show_on_fallback=False,
             ),
