@@ -155,7 +155,11 @@ class MyClient(botpy.Client):
             ctx_slot=ctx_id,
             prefixes=prefixes,
             bot_id=qqbot_openid,
-            tmp={"message_type": "guild_direct"},
+            tmp={
+                "message_type": "guild_direct",
+                "qq_bot_uid": QQBotConfig.qq_bot_uid,
+                "qq_bot_qqnum": QQBotConfig.qq_bot_qqnum,
+            },
         )
 
         await Bot.process_message(session, message, guild_features)
@@ -196,7 +200,11 @@ class MyClient(botpy.Client):
             ctx_slot=ctx_id,
             prefixes=prefixes,
             bot_id=qqbot_openid,
-            tmp={"message_type": "group_direct"},
+            tmp={
+                "message_type": "group_direct",
+                "qq_bot_uid": QQBotConfig.qq_bot_uid,
+                "qq_bot_qqnum": QQBotConfig.qq_bot_qqnum,
+            },
         )
 
         cache_permission(f"{target_id}|{sender_id}", message.author.member_role in ["admin", "owner"])
@@ -234,7 +242,11 @@ class MyClient(botpy.Client):
             ctx_slot=ctx_id,
             prefixes=["/"],
             bot_id=qqbot_openid,
-            tmp={"message_type": "group_at"},
+            tmp={
+                "message_type": "group_at",
+                "qq_bot_uid": QQBotConfig.qq_bot_uid,
+                "qq_bot_qqnum": QQBotConfig.qq_bot_qqnum,
+            },
         )
 
         cache_permission(f"{target_id}|{sender_id}", message.author.member_role in ["admin", "owner"])
@@ -269,6 +281,7 @@ class MyClient(botpy.Client):
             ctx_slot=ctx_id,
             prefixes=["/"],
             bot_id=qqbot_openid,
+            tmp={"qq_bot_uid": QQBotConfig.qq_bot_uid, "qq_bot_qqnum": QQBotConfig.qq_bot_qqnum},
         )
 
         await Bot.process_message(session, message, guild_features)
@@ -300,6 +313,7 @@ class MyClient(botpy.Client):
             ctx_slot=ctx_id,
             prefixes=["/"],
             bot_id=qqbot_openid,
+            tmp={"qq_bot_uid": QQBotConfig.qq_bot_uid, "qq_bot_qqnum": QQBotConfig.qq_bot_qqnum},
         )
 
         await Bot.process_message(session, message, resolve_features(session))

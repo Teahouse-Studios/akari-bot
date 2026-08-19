@@ -7,7 +7,7 @@ from jinja2 import FileSystemLoader, Environment
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import ButtonRows, ImageElement
-from core.builtins.message.internal import ActionText, ButtonFrame, I18NContext, Plain, Url
+from core.builtins.message.internal import ActionText, ButtonFrame, I18NContext, Plain, Url, Button
 from core.builtins.parser.command import CommandParser
 from core.builtins.utils import command_prefix
 from core.component import module
@@ -30,6 +30,12 @@ use_font_mirror = CoreConfig.use_font_mirror
 regex_disable_prefixes = CoreConfig.regex_disable_prefix
 
 hlp = module("help", base=True, doc=True)
+
+QQBOT_PERMISSIONS_URL_TEMPLATE = (
+    "https://club.vip.qq.com/transfer?open_kuikly_info=%7B%22page_name%22%3A%20%22"
+    "ai_group_service_agreement_pop_page%22%2C%22groupCode%22%3A{qq_group_id}%2C%22"
+    "botUin%22%3A{bot_qq}%2C%22botUid%22%3A%22{bot_uid}%22%2C%22screen%22%3A1%7D"
+)
 
 
 @dataclass(frozen=True)
@@ -480,13 +486,43 @@ def append_qqbot_permissions_prompt(msg: Bot.MessageSession, help_msg: MessageCh
     )
 
 
+def build_qqbot_permissions_url(msg: Bot.MessageSession, qq_group_id: str) -> str:
+    tmp = msg.session_info.tmp or {}
+    return QQBOT_PERMISSIONS_URL_TEMPLATE.format(
+        qq_group_id=qq_group_id,
+        bot_qq=tmp.get("qq_bot_qqnum", ""),
+        bot_uid=tmp.get("qq_bot_uid", ""),
+    )
+
+
 @hlp.command(
-    "permissions {{I18N:core.help.help.permissions}}",
+    "permissions [<qq_group_id>] {{I18N:core.help.help.permissions}}",
     available_for="QQBot",
     priority=2,
 )
-async def qqbot_permissions(msg: Bot.MessageSession):
-    await msg.finish(I18NContext("core.message.help.qqbot.permissions"))
+async def qqbot_permissions(msg: Bot.MessageSession, qq_group_id: str | None = None):
+    if qq_group_id:
+        if not qq_group_id.isascii() or not qq_group_id.isdigit():
+            await msg.finish(I18NContext("core.message.help.qqbot.permissions.invalid_group_id"))
+        url = build_qqbot_permissions_url(msg, qq_group_id)
+        await msg.finish(
+            [
+                I18NContext(
+                    "core.message.help.qqbot.permissions.quick_config",
+                ),
+                Button(msg.session_info.locale.t("core.message.help.qqbot.permissions.quick_config.click"), url),
+            ]
+        )
+    await msg.finish(
+        I18NContext(
+            "core.message.help.qqbot.permissions",
+            cmd=ActionText(
+                "/help permissions ",
+                show="/help permissions [<qq群号>]",
+                show_on_fallback=False,
+            ),
+        )
+    )
 
 
 @hlp.command(
