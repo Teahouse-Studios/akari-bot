@@ -117,6 +117,7 @@ def _build_qqbot_keyboard(
     for row in rows:
         buttons = []
         for message_button in row.buttons:
+            payload = message_button.payload
             button_id += 1
             buttons.append(
                 Button(
@@ -127,14 +128,14 @@ def _build_qqbot_keyboard(
                         style=0,
                     ),
                     action=Action(
-                        type=0 if message_button.value.startswith(("http://", "https://")) else 1,
+                        type=0 if payload.value.startswith(("http://", "https://")) else 1,
                         permission=Permission(
                             type=2 if target.scope == "c2c" else 0,
                             specify_user_ids=[session_info.get_common_sender_id()],
                             specify_role_ids=["1"],
                         ),
                         click_limit=1,
-                        data=message_button.value,
+                        data=payload.to_data(),
                         at_bot_show_channel_list=False,
                     ),
                 )

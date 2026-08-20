@@ -1,6 +1,5 @@
 """跨平台按钮 token 的注册与消费。"""
 
-import re
 import time
 from enum import Enum, auto
 
@@ -12,7 +11,6 @@ from core.utils.random import SecureRandom
 
 BUTTON_TOKEN_PREFIX = "akb:"
 BUTTON_EXPIRES = 3600
-_CALLBACK_PATTERN = re.compile(r"<q:(.*?)>(.*)", re.DOTALL)
 
 
 @define
@@ -64,12 +62,6 @@ def _generate_token() -> str:
             return token
 
 
-def _split_payload(data: str) -> tuple[str | None, str]:
-    if match := _CALLBACK_PATTERN.fullmatch(data):
-        return match.group(1), match.group(2)
-    return None, data
-
-
 def register_button_rows(button_rows: list[ButtonRows], allowed_sender_id: str) -> list[list[RegisteredButton]]:
     """注册按钮行并返回平台可用的短 token。"""
     now = time.time()
@@ -81,14 +73,14 @@ def register_button_rows(button_rows: list[ButtonRows], allowed_sender_id: str) 
     for row in button_rows:
         registered_row = []
         for button in row.buttons:
-            if button.value.startswith(("http://", "https://")):
-                registered_row.append(RegisteredButton(label=button.show, url=button.value))
+            payload = button.payload
+            if payload.value.startswith(("http://", "https://")):
+                registered_row.append(RegisteredButton(label=button.show, url=payload.value))
                 continue
-            reply_id, payload = _split_payload(button.value)
             token = _generate_token()
             _button_registry[token] = ButtonState(
-                payload=payload,
-                reply_id=reply_id,
+                payload=payload.value,
+                reply_id=payload.reply_id,
                 allowed_sender_id=allowed_sender_id,
                 created_at=now,
             )

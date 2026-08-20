@@ -20,8 +20,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from loguru import logger
 
-from core.constants import ascii_art, bots_path, logs_path  # skipcq
-from core.config import CONFIG_READONLY_ENV
+from core.constants import CONFIG_READONLY_ENV, ascii_art, bots_path, logs_path  # skipcq
 
 
 AKARI_BOT_I18N_CACHE_DIR = str(Path("./assets/i18n_cache/").resolve())
@@ -95,12 +94,18 @@ def pre_init():
     Logger.info("Akaribot is launching...")
     from tortoise import run_async
 
-    from core.constants.path import cache_path
-    from core.database import close_db, init_db
+    from core.constants import all_locales_path, cache_path, lang_list
+    from core.i18n import build_locale_snapshot, connect_locale_snapshot
 
     if cache_path.exists():
         shutil.rmtree(cache_path)
     cache_path.mkdir(parents=True, exist_ok=True)
+
+    Logger.info("Loading i18n...")
+    locale_loaded_err = build_locale_snapshot(list(lang_list.keys()), all_locales_path, "akari-bot")
+    connect_locale_snapshot("akari-bot")
+    if locale_loaded_err:
+        Logger.warning(f"I18N loaded with errors: {locale_loaded_err}")
 
     Logger.info("Generating config...")
 
@@ -109,6 +114,7 @@ def pre_init():
     from core.config.base import CoreConfig
     from core.config.scan import scan_config_templates
     from core.constants.version import database_version
+    from core.database import close_db, init_db
     from core.database.models import SenderUnionInfo, DBVersion
 
     # 配置的生成集中在此完成：子进程一律只读，此处遗漏的键将在子进程读取时抛出异常，
@@ -213,14 +219,15 @@ binary_mode = not sys.argv[0].endswith(".py")
 
 
 async def run_bot():
-    from core.config import CFGManager
-
     global server_stop_event
 
     # 自此起 spawn 出的子进程一律只读：配置的生成已在 pre_init 中完成。
     # 须在任何 mp.Process 之前置位，spawn 会继承环境；restart_bot_process() 后续重启子进程时同样适用。
     os.environ[CONFIG_READONLY_ENV] = "1"
     os.environ["AKARI_BOT_I18N_CACHE_DIR"] = AKARI_BOT_I18N_CACHE_DIR
+
+    # CONFIG_READONLY_ENV 必须先于 core.config 的首次导入置位；后者会在导入期执行配置版本迁移。
+    from core.config import CFGManager
 
     mp = multiprocessing.get_context("spawn" if sys.platform in ["win32", "darwin"] else "forkserver")
 

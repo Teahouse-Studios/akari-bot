@@ -25,8 +25,6 @@ from .utils.utils import check_svg
 from .utils.wikilib import WikiLib
 from .wiki import query_pages
 
-import uuid
-
 wiki_inline = module(
     "wiki-inline",
     desc="{I18N:wiki.help.wiki_inline.desc}",
@@ -208,11 +206,9 @@ async def _(msg: Bot.MessageSession):
                             i_msg_lst = []
                             if get_page.sections:
                                 button_data_ = []
-                                callback_id = None
                                 if msg.session_info.support_button:
-                                    callback_id = str(uuid.uuid4())
                                     for i in range(len(get_page.sections)):
-                                        button_data_.append({str(i + 1): f"<q:{callback_id}>{str(i + 1)}"})
+                                        button_data_.append({str(i + 1): str(i + 1)})
                                 Logger.debug(button_data_)
                                 button_data = []
                                 rb = {}
@@ -277,7 +273,7 @@ async def _(msg: Bot.MessageSession):
 
                                 if button_data:
                                     i_msg_lst.append(ButtonFrame(build_button_rows(button_data)))
-                                await msg.send_message(i_msg_lst, callback=_callback, callback_id=callback_id)
+                                await msg.send_message(i_msg_lst, callback=_callback)
                             else:
                                 await msg.send_message(I18NContext("wiki.message.invalid_section"))
                         if get_page.is_forum:
@@ -286,9 +282,6 @@ async def _(msg: Bot.MessageSession):
                             img_table_headers = ["#"]
                             button_data = []
 
-                            callback_id = None
-                            if msg.session_info.support_button:
-                                callback_id = str(uuid.uuid4())
                             for x in forum_data:
                                 if x == "#":
                                     img_table_headers += forum_data[x]["data"]
@@ -298,7 +291,7 @@ async def _(msg: Bot.MessageSession):
                             bi = 1
                             for b in forum_data:
                                 if b != "#":
-                                    rb.update({b: f"<q:{callback_id}>{b}"})
+                                    rb.update({b: b})
                                     if len(rb.keys()) >= 5:
                                         button_data.append(rb.copy())
                                         rb.clear()
@@ -331,7 +324,7 @@ async def _(msg: Bot.MessageSession):
 
                             if button_data:
                                 i_msg_lst.append(ButtonFrame(build_button_rows(button_data)))
-                            await msg.send_message(i_msg_lst, callback=_callback, callback_id=callback_id)
+                            await msg.send_message(i_msg_lst, callback=_callback)
             if len(query_list) == 1 and img_send:
                 return
             if msg.session_info.support_image:

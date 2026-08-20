@@ -150,9 +150,9 @@ def _test_button_element_builds_keyboard():
             locale=Locale("zh_cn"),
             support_button=True,
         )
-        sendable = MessageChain.assign([Button("Docs", "https://example.com"), Button("Help", "~help")]).as_sendable(
-            session
-        )
+        sendable = MessageChain.assign(
+            [Button("Docs", "https://example.com"), Button("Help", "~help", reply_id="callback-123")]
+        ).as_sendable(session)
         frame = next(element for element in sendable if isinstance(element, ButtonFrameElement))
         keyboard = _build_qqbot_keyboard(frame.rows, session, SimpleNamespace(scope="group"))
         docs, help_button = keyboard["content"]["rows"][0]["buttons"]
@@ -160,7 +160,7 @@ def _test_button_element_builds_keyboard():
             docs["action"]["type"] == 0
             and docs["action"]["data"] == "https://example.com"
             and help_button["action"]["type"] == 1
-            and help_button["action"]["data"] == "~help"
+            and help_button["action"]["data"] == "<q:callback-123>~help"
         )
     except Exception:
         return False

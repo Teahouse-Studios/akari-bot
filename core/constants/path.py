@@ -8,6 +8,12 @@ from pathlib import Path
 # 而导入 core.constants 本身就会触发取值，引导代码因而无从先行导入本模块取得它。
 CONFIG_PATH_ENV = "AKARI_CONFIG_PATH"
 
+# 配置只读模式的环境变量名。守护进程在 spawn bot 与 server 子进程前置位，
+# pre-init 进程则清除此标记，以保证配置迁移与缺失项补全只发生在该进程中。
+# 该常量必须位于不依赖 core.config 的模块：若为取得常量而提前导入 core.config，
+# 其导入期版本迁移会在 i18n 快照初始化之前执行。
+CONFIG_READONLY_ENV = "AKARI_CONFIG_READONLY"
+
 # 基本路径
 assets_path = Path("./assets").resolve()
 bots_path = Path("./bots").resolve()

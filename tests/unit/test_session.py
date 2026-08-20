@@ -190,6 +190,72 @@ async def _test_task_add_callback():
         return False
 
 
+async def _test_send_message_binds_button_callback_reply_id():
+    """带 callback 的按钮应自动取得虚拟 reply_id，并与真实消息 ID 一起注册。"""
+    from core.builtins.message.chain import MessageChain
+    from core.builtins.message.elements import ButtonFrameElement
+    from core.builtins.message.internal import Button
+    from core.builtins.session.info import SessionInfo
+    from core.builtins.session.internal import MessageSession
+    from core.exports import exports
+    from core.i18n import Locale
+
+    captured = {}
+
+    class FakeJobQueueServer:
+        @classmethod
+        async def client_send_message(cls, session_info, chain, **kwargs):
+            captured["chain"] = chain
+            return {"message_id": ["physical-message"]}
+
+    async def callback(_session):
+        pass
+
+    session = SessionInfo(
+        target_id="TEST|Group|callback",
+        target_from="TEST|Group",
+        client_name="TEST",
+        sender_id="TEST|1",
+        locale=Locale("zh_cn"),
+        support_button=True,
+        tmp={},
+    )
+    msg = MessageSession(session)
+    with (
+        patch.dict(exports, {"JobQueueServer": FakeJobQueueServer}),
+        patch.object(SessionTaskManager, "add_callback") as add_callback,
+    ):
+        finished = await msg.send_message(MessageChain.assign(Button("Choose", "1")), callback=callback)
+
+    sendable = captured["chain"].as_sendable(session)
+    frame = next(element for element in sendable if isinstance(element, ButtonFrameElement))
+    virtual_reply_id = frame.rows[0].buttons[0].reply_id
+    registered_targets = add_callback.call_args.args[0]
+    return (
+        finished.message_id == ["physical-message"]
+        and virtual_reply_id is not None
+        and registered_targets == ["physical-message", virtual_reply_id]
+    )
+
+
+async def _test_virtual_reply_id_triggers_callback():
+    """按钮交互写入虚拟 reply_id 后应复用普通 callback 匹配。"""
+    SessionTaskManager._callback_list.clear()
+    called = False
+
+    async def callback(_session):
+        nonlocal called
+        called = True
+
+    msg = MockMessageSession("1")
+    await msg.async_init("1")
+    msg.session_info.reply_id = "virtual-reply"
+    SessionTaskManager.add_callback("virtual-reply", callback)
+    await SessionTaskManager.check(msg)
+    SessionTaskManager._callback_list.clear()
+    return called
+
+
 async def _test_task_bg_check_timeout():
     """测试 SessionTaskManager.bg_check() 超时处理"""
     try:
@@ -325,6 +391,8 @@ async def test_session_task(tester: Tester):
     """core.builtins.session.tasks: SessionTaskManager 测试"""
     await tester.test(_test_task_add_and_get, "SessionTaskManager 添加和获取任务测试")
     await tester.test(_test_task_add_callback, "SessionTaskManager 添加回调测试")
+    await tester.test(_test_send_message_binds_button_callback_reply_id, "按钮 callback 虚拟回复 ID 绑定测试")
+    await tester.test(_test_virtual_reply_id_triggers_callback, "虚拟 reply_id 复用 callback 匹配测试")
     await tester.test(_test_task_bg_check_timeout, "SessionTaskManager.bg_check() 超时处理测试")
     await tester.test(_test_task_remove_prunes_indexes, "SessionTaskManager 完成后释放任务索引测试")
     await tester.test(_test_inactive_task_does_not_capture_message, "SessionTaskManager 已完成任务不覆盖结果测试")

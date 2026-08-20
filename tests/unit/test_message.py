@@ -619,7 +619,7 @@ def _test_embed_element_assign():
 def _test_button_element_roundtrip():
     """Button 与 ButtonFrame：构造、KE 码与消息链序列化往返。"""
     try:
-        button = Button("帮助", "~help")
+        button = Button("帮助", "~help", reply_id="callback-123")
         frame = ButtonFrame(
             [
                 ButtonRows.assign([Button("文档", "https://example.com"), button]),
@@ -636,6 +636,7 @@ def _test_button_element_roundtrip():
             and isinstance(restored_chain, ButtonFrameElement)
             and restored_chain == frame
             and match_kecode(button.kecode()).values[0] == button
+            and button.payload.to_data() == "<q:callback-123>~help"
         )
     except Exception:
         return False

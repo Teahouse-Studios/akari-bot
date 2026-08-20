@@ -51,5 +51,8 @@ def scan_config_templates() -> list[str]:
         except Exception:
             failed.append(module_name)
             logger.exception(f"[Config] Failed to load config template {module_name}: ")
+    repaired_comments = CFGManager.repair_i18n_comments()
+    if repaired_comments:
+        logger.info(f"[Config] Repaired {repaired_comments} unresolved i18n comments.")
     CFGManager.save()
     return failed

@@ -26,6 +26,7 @@ from core.builtins.utils import confirm_command
 from core.config.base import CoreConfig
 from core.constants import SessionFinished, WaitCancelException
 from core.exports import add_export, exports
+from core.utils.button import bind_callback_reply_ids
 from core.utils.func import is_int
 from core.utils.random import Random
 
@@ -133,7 +134,7 @@ class MessageSession:
         :param enable_parse_message: 是否允许解析消息（此参数作接口兼容用，仅 QQ 平台使用，默认为 True）
         :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅 Telegram 平台使用，默认为 True）
         :param callback: 回调函数，在消息发送完成后执行（可选）
-        :param callback_id: 回调函数的唯一标识符，用于特殊情形（QQ 平台的按钮）（可选）
+        :param callback_id: 按钮交互使用的虚拟回复 ID；通常由框架自动生成（可选）
         :return: FinishedSession 对象，包含消息 ID，可用于后续操作
 
         :raises SessionFinished: 如果发送过程中抛出异常
@@ -155,6 +156,8 @@ class MessageSession:
             # 包含敏感信息，替换为安全提示消息
             chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
 
+        callback_reply_ids = bind_callback_reply_ids(chain, callback_id) if callback else []
+
         # ========== 步骤 3: 发送消息 ==========
         # 通过消息队列发送消息，并阻塞等待返回包含消息 ID 的字典
 
@@ -175,19 +178,18 @@ class MessageSession:
         if "message_id" in return_val:
             # 消息发送成功，如果有回调函数则注册
             if callback:
-                if isinstance(return_val["message_id"], str):
-                    return_val["message_id"] = [return_val["message_id"]]
-                if isinstance(return_val["message_id"], int):
-                    return_val["message_id"] = [str(return_val["message_id"])]
-                if callback_id:
-                    return_val["message_id"].append(callback_id)
+                message_ids = return_val["message_id"]
+                if isinstance(message_ids, (str, int)):
+                    message_ids = [message_ids]
+                callback_targets = [str(message_id) for message_id in message_ids]
+                callback_targets.extend(reply_id for reply_id in callback_reply_ids if reply_id not in callback_targets)
 
                 # 将 sender_id 添加到 message_id 中以处理 fallback 行为（目标会话不支持引用回复的 message_id）
 
                 if self.session_info.bot_id:
                     SessionTaskManager.add_callback([self.session_info.bot_id], callback)
 
-                SessionTaskManager.add_callback(return_val["message_id"], callback)
+                SessionTaskManager.add_callback(callback_targets, callback)
 
             return FinishedSession(self.session_info, return_val["message_id"])
         return FinishedSession(self.session_info, [])
@@ -219,7 +221,7 @@ class MessageSession:
         :param enable_parse_message: 是否允许解析消息（此参数作接口兼容用，仅 QQ 平台使用，默认为 True）
         :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅 Telegram 平台使用，默认为 True）
         :param callback: 回调函数，在消息发送完成后执行（可选）
-        :param callback_id: 回调函数的唯一标识符，用于特殊情形（QQ 平台的按钮）（可选）
+        :param callback_id: 按钮交互使用的虚拟回复 ID；通常由框架自动生成（可选）
         :raises SessionFinished: 总是抛出此异常来终止会话处理
         """
         f = None

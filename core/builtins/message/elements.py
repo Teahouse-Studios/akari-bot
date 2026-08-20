@@ -991,23 +991,65 @@ class ActionTextElement(BaseElement):
         return self.kecode()
 
 
+_BUTTON_REPLY_PATTERN = re.compile(r"<q:(.*?)>(.*)", re.DOTALL)
+
+
+@define(frozen=True)
+class ButtonPayload:
+    """按钮点击所携带的语义数据。
+
+    ``reply_id`` 是框架为按钮交互虚拟出的回复目标。平台收到点击事件后将它写入
+    :class:`SessionInfo.reply_id`，即可复用普通回复消息的 callback 分发机制。
+    ``<q:...>`` 仅是部分平台传输该字段时使用的兼容编码，不再由模块业务代码拼接。
+    """
+
+    value: str
+    reply_id: str | None = None
+
+    @classmethod
+    def parse(cls, data: str, reply_id: str | None = None):
+        """从平台数据或旧版 ``<q:reply_id>value`` 编码恢复语义字段。"""
+        data = str(data)
+        legacy_reply_id = None
+        if match := _BUTTON_REPLY_PATTERN.fullmatch(data):
+            legacy_reply_id = match.group(1) or None
+            data = match.group(2)
+        return cls(value=data, reply_id=str(reply_id) if reply_id is not None else legacy_reply_id)
+
+    def to_data(self) -> str:
+        """编码为只支持单个字符串字段的平台按钮数据。"""
+        if self.reply_id is None:
+            return self.value
+        return f"<q:{self.reply_id}>{self.value}"
+
+
 @define
 class ButtonElement(BaseElement):
     """单个消息按钮元素。"""
 
     show: str
     value: str
+    reply_id: str | None = None
 
     @classmethod
-    def assign(cls, show: str, value: str):
+    def assign(cls, show: str, value: str, reply_id: str | None = None):
         """创建单个按钮，show 为展示文本，value 为点击数据。"""
-        return deepcopy(cls(show=str(show), value=str(value)))
+        payload = ButtonPayload.parse(value, reply_id)
+        return deepcopy(cls(show=str(show), value=payload.value, reply_id=payload.reply_id))
+
+    @property
+    def payload(self) -> ButtonPayload:
+        """返回按钮点击数据；同时兼容反序列化得到的旧版内嵌编码。"""
+        return ButtonPayload.parse(self.value, self.reply_id)
 
     def kecode(self):
         """转换为 KE 码格式。"""
         show = parse.quote(self.show, safe="")
         value = parse.quote(self.value, safe="")
-        return f"[KE:button,show={show},value={value}]"
+        params = [f"show={show}", f"value={value}"]
+        if self.reply_id is not None:
+            params.append(f"reply_id={parse.quote(self.reply_id, safe='')}")
+        return f"[KE:button,{','.join(params)}]"
 
     def __str__(self):
         """返回 KE 码格式。"""
@@ -1050,7 +1092,17 @@ class ButtonFrameElement(BaseElement):
 
     def kecode(self):
         """转换为 KE 码格式。"""
-        rows = [[{"show": button.show, "value": button.value} for button in row.buttons] for row in self.rows]
+        rows = [
+            [
+                {
+                    "show": button.show,
+                    "value": button.value,
+                    **({"reply_id": button.reply_id} if button.reply_id is not None else {}),
+                }
+                for button in row.buttons
+            ]
+            for row in self.rows
+        ]
         data = parse.quote(orjson.dumps(rows).decode("utf-8"), safe="")
         return f"[KE:button_frame,data={data}]"
 
@@ -1306,6 +1358,7 @@ __all__ = [
     "EmbedElement",
     "MentionElement",
     "ActionTextElement",
+    "ButtonPayload",
     "ButtonElement",
     "ButtonRows",
     "ButtonFrameElement",

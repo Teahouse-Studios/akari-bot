@@ -9,6 +9,7 @@ from core.builtins.session.internal import MessageSession, I18NContext
 from core.builtins.utils import confirm_command
 from core.config.base import CoreConfig
 from core.constants.exceptions import SessionFinished
+from core.utils.button import bind_callback_reply_ids
 
 
 class MockMessageSession(MessageSession):
@@ -52,6 +53,8 @@ class MockMessageSession(MessageSession):
     ):
         # force_markdown 只影响平台的发送路径，测试替身不作区分，签名对齐即可
         message = get_message_chain(self.session_info, chain=message_chain)
+        if callback:
+            bind_callback_reply_ids(message, callback_id)
         for x in message.as_sendable(self.session_info, parse_message=enable_parse_message):
             self.sent.append(x)
             if isinstance(x, PlainElement):
@@ -81,7 +84,12 @@ class MockMessageSession(MessageSession):
         force_markdown=False,
     ):
         if message_chain:
-            await self.send_message(message_chain, force_markdown=force_markdown)
+            await self.send_message(
+                message_chain,
+                callback=callback,
+                callback_id=callback_id,
+                force_markdown=force_markdown,
+            )
         raise SessionFinished
 
     async def send_direct_message(

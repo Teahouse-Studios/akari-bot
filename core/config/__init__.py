@@ -19,12 +19,13 @@ from tomlkit import (
     nl,
 )
 from tomlkit.exceptions import KeyAlreadyPresent
-from tomlkit.items import Table
+from tomlkit.items import AoT, Table
 
-# 环境变量名。守护进程在 spawn 子进程之前置位，spawn 会继承环境。
+from core.constants.path import CONFIG_READONLY_ENV, config_path as default_config_path
+
+# 守护进程在 spawn 子进程之前置位，spawn 会继承环境。
 # 该闸门须赶在 core.config 被导入之前生效：core/config/update.py 的版本迁移是导入期执行的，
 # 而 go() 中的 Info.subprocess = True 置位过迟：其前一行的 core.logger 已导入 core.config。
-CONFIG_READONLY_ENV = "AKARI_CONFIG_READONLY"
 CONFIG_READONLY = bool(os.environ.get(CONFIG_READONLY_ENV))
 
 # 配置版本迁移只应发生在 pre_init 中。core.config.update 全仓仅此一处导入且为纯副作用导入，
@@ -34,11 +35,19 @@ if not CONFIG_READONLY:
 
 from core.constants.default import default_locale
 from core.constants.exceptions import ConfigValueError, ConfigOperationError
-from core.constants.path import config_path as default_config_path
 from core.exports import add_export
 from core.i18n import Locale
 
 ALLOWED_TYPES = (bool, datetime.datetime, datetime.date, float, int, list, str)
+I18N_COMMENT_PATTERN = re.compile(r"^#\s*\{I18N:(?P<key>[^}]+)}\s*$")
+
+
+def _localized_config_text(locale: Locale, key: str) -> str | None:
+    """取得配置注释文本，无法翻译时返回 ``None``，避免把 i18n 标记写入配置。"""
+    localized = locale.t(key, locale_failed_prompt=False)
+    if localized in (key, f"{{I18N:{key}}}"):
+        return None
+    return localized
 
 
 class CFGManager:
@@ -272,6 +281,51 @@ class CFGManager:
             return True
         table = document.get(target)
         return bool(table) and q in table
+
+    @classmethod
+    def repair_i18n_comments(cls) -> int:
+        """翻译配置中遗留的 ``{I18N:key}`` 注释标记。
+
+        旧版 pre-init 在连接 i18n 快照之前补全配置，导致翻译器把原始标记写入 TOML。
+        已存在的配置项不会再次进入生成分支，因此须在模板扫描结束后显式修复。
+        找不到翻译的过时标记会被清空，避免继续把内部键名展示给用户；配置值不受影响。
+
+        :return: 被替换或清空的注释数量。
+        """
+        cls._ensure_writable()
+        locale = Locale(cls.values.get("config", {}).get("default_locale") or default_locale)
+        # 该方法也可能被独立脚本调用。若调用方尚未连接 i18n 快照，所有键都会表现为未翻译；
+        # 此时不得把已有标记误判为过时内容并批量清空。
+        if _localized_config_text(locale, "config.header.line.1") is None:
+            return 0
+        repaired = 0
+
+        def repair_container(container):
+            nonlocal repaired
+            for _, item in container.body:
+                try:
+                    comment = item.trivia.comment
+                except (AttributeError, RuntimeError):
+                    comment = ""
+
+                if match := I18N_COMMENT_PATTERN.fullmatch(comment):
+                    localized = _localized_config_text(locale, match.group("key"))
+                    if localized is None:
+                        item.trivia.comment_ws = ""
+                        item.trivia.comment = ""
+                    else:
+                        item.comment(localized)
+                    repaired += 1
+
+                if isinstance(item, Table):
+                    repair_container(item.value)
+                elif isinstance(item, AoT):
+                    for table in item.body:
+                        repair_container(table.value)
+
+        for document in cls.values.values():
+            repair_container(document)
+        return repaired
 
     @classmethod
     def get(
@@ -533,15 +587,9 @@ class CFGManager:
                 get_locale = Locale(cls.values.get("config", {}).get("default_locale") or default_locale)
                 if cfg_name not in cls.values:  # if the target table is not found, create a new table
                     cls.values[cfg_name] = toml_document()
-                    cls.values[cfg_name].add(
-                        toml_comment(get_locale.t("config.header.line.1", locale_failed_prompt=False))
-                    )
-                    cls.values[cfg_name].add(
-                        toml_comment(get_locale.t("config.header.line.2", locale_failed_prompt=False))
-                    )
-                    cls.values[cfg_name].add(
-                        toml_comment(get_locale.t("config.header.line.3", locale_failed_prompt=False))
-                    )
+                    for header_key in ("config.header.line.1", "config.header.line.2", "config.header.line.3"):
+                        if header_comment := _localized_config_text(get_locale, header_key):
+                            cls.values[cfg_name].add(toml_comment(header_comment))
                 if (
                     target not in cls.values[cfg_name]
                 ):  # assume the child table name is the same as the parent table name
@@ -562,9 +610,8 @@ class CFGManager:
                         table_comment_key = f"config.table.{'secret' if is_secret else 'config'}_{prefix}"
                     cls.values[cfg_name].add(nl())
                     cls.values[cfg_name].add(target, toml_document())
-                    cls.values[cfg_name][target].add(
-                        toml_comment(get_locale.t(table_comment_key, locale_failed_prompt=False))
-                    )
+                    if table_comment := _localized_config_text(get_locale, table_comment_key):
+                        cls.values[cfg_name][target].add(toml_comment(table_comment))
 
                 try:
                     cls.values[cfg_name][target].add(q, value)
@@ -576,8 +623,7 @@ class CFGManager:
                     else:
                         qc = f"config.comments.{target}.{q}"
                     # get the comment for the key from locale
-                    localed_comment = get_locale.t(qc, locale_failed_prompt=False)
-                    if localed_comment != qc:
+                    if localed_comment := _localized_config_text(get_locale, qc):
                         cls.values[cfg_name][target].value.item(q).comment(localed_comment)
 
             if _generate:

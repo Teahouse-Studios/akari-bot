@@ -4,7 +4,9 @@ from unittest.mock import patch
 
 from core.builtins.utils import confirm_command_default
 from core.tester import Tester, func_case
-from core.utils.button import build_button_rows
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import Button, ButtonFrame
+from core.utils.button import bind_callback_reply_ids, build_button_rows
 from core.utils.button_runtime import (
     BUTTON_TOKEN_PREFIX,
     ButtonConsumeStatus,
@@ -29,6 +31,30 @@ def _test_callback_id_is_restored():
     button = _register("<q:callback-123>2")
     result = consume_button(button.token, "Discord|Client|1")
     return result.status is ButtonConsumeStatus.SUCCESS and result.payload == "2" and result.reply_id == "callback-123"
+
+
+def _test_callback_reply_id_is_bound_semantically():
+    chain = MessageChain.assign(
+        ButtonFrame(build_button_rows([{"One": "1", "Docs": "https://example.com"}, {"Two": "2"}]))
+    )
+    reply_ids = bind_callback_reply_ids(chain, "virtual-reply")
+    frame = chain.values[0]
+    one, docs = frame.rows[0].buttons
+    two = frame.rows[1].buttons[0]
+    return (
+        reply_ids == ["virtual-reply"]
+        and one.reply_id == "virtual-reply"
+        and two.reply_id == "virtual-reply"
+        and docs.reply_id is None
+        and one.value == "1"
+    )
+
+
+def _test_existing_button_reply_id_is_preserved():
+    chain = MessageChain.assign([Button("Existing", "1", reply_id="existing"), Button("New", "2")])
+    reply_ids = bind_callback_reply_ids(chain, "generated")
+    existing, new = chain.values
+    return reply_ids == ["existing", "generated"] and existing.reply_id == "existing" and new.reply_id == "generated"
 
 
 def _test_forbidden_does_not_consume():
@@ -99,6 +125,8 @@ async def test_button_runtime(tester: Tester):
     """core.utils.button_runtime: 按钮运行时。"""
     await tester.test(_test_token_is_short_and_namespaced, "按钮 token 长度与命名空间")
     await tester.test(_test_callback_id_is_restored, "callback ID 拆分与恢复")
+    await tester.test(_test_callback_reply_id_is_bound_semantically, "callback 虚拟回复 ID 语义绑定")
+    await tester.test(_test_existing_button_reply_id_is_preserved, "保留按钮显式回复 ID")
     await tester.test(_test_forbidden_does_not_consume, "无权限点击不消费按钮")
     await tester.test(_test_second_use_is_rejected, "按钮只能成功使用一次")
     await tester.test(_test_expired_is_distinct_from_invalid, "过期与无效状态可区分")

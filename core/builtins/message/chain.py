@@ -1235,7 +1235,14 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
                 button_show = parsed_params.get("show")
                 button_value = parsed_params.get("value")
                 if button_show is not None and button_value is not None:
-                    elements.append(ButtonElement.assign(unquote(button_show), unquote(button_value)))
+                    button_reply_id = parsed_params.get("reply_id")
+                    elements.append(
+                        ButtonElement.assign(
+                            unquote(button_show),
+                            unquote(button_value),
+                            unquote(button_reply_id) if button_reply_id is not None else None,
+                        )
+                    )
                     continue
 
                 # 兼容旧版 ButtonElement 的按行 JSON KE 码。
@@ -1256,7 +1263,7 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
                     rows = [
                         ButtonRows.assign(
                             [
-                                ButtonElement.assign(button["show"], button["value"])
+                                ButtonElement.assign(button["show"], button["value"], button.get("reply_id"))
                                 for button in row
                                 if isinstance(button, dict) and "show" in button and "value" in button
                             ]

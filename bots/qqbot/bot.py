@@ -11,6 +11,7 @@ from bots.qqbot.features import group_disable_read_all_message_features, resolve
 from bots.qqbot.navigation import build_navigation
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
+from core.builtins.message.elements import ButtonPayload
 from core.builtins.message.internal import Plain
 from core.builtins.session.info import EventInfo, SessionInfo
 from core.builtins.utils import command_prefix
@@ -346,12 +347,10 @@ class MyClient(botpy.Client):
             return
         if sender_id in ignored_sender:
             return
-        quote_msg = None
-        match_quote = re.match(r"<q:(.*?)>(.*)", send_msg)
-
-        if match_quote:
-            quote_msg = match_quote.group(1)
-            send_msg = match_quote.group(2)
+        # QQBot 的交互事件不会可靠返回按钮所属消息的 ID；发送阶段把框架生成的虚拟
+        # reply_id 编进 button data，此处恢复后即可复用 SessionTaskManager 的 callback 匹配。
+        payload = ButtonPayload.parse(send_msg)
+        send_msg = payload.value
         if send_msg == "confirm_yes":
             send_msg = confirm_command_default[0]
         elif send_msg == "confirm_no":
@@ -364,7 +363,7 @@ class MyClient(botpy.Client):
             is_private=target_from in (target_c2c_prefix, target_direct_prefix),
             sender_from=sender_from,
             client_name=client_name,
-            reply_id=interaction.data.resolved.message_id if quote_msg is None else quote_msg,
+            reply_id=payload.reply_id or interaction.data.resolved.message_id,
             messages=MessageChain.assign([Plain(send_msg)]),
             ctx_slot=ctx_id,
             bot_id=qqbot_openid,

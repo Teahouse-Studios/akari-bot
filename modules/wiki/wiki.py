@@ -1,6 +1,5 @@
 import asyncio
 import re
-import uuid
 
 import filetype
 
@@ -313,11 +312,9 @@ async def query_pages(
                             ):
                                 i_msg_lst = MessageChain.create()
                                 button_data_ = []
-                                callback_id = None
                                 if session.session_info.support_button:
-                                    callback_id = str(uuid.uuid4())
                                     for i in range(len(r.sections)):
-                                        button_data_.append({str(i + 1): f"<q:{callback_id}>{str(i + 1)}"})
+                                        button_data_.append({str(i + 1): str(i + 1)})
                                 Logger.debug(button_data_)
                                 button_data = []
                                 rb = {}
@@ -382,7 +379,7 @@ async def query_pages(
 
                                 if button_data:
                                     i_msg_lst.append(ButtonFrame(build_button_rows(button_data)))
-                                await session.send_message(i_msg_lst, callback=_callback, callback_id=callback_id)
+                                await session.send_message(i_msg_lst, callback=_callback)
 
                             else:
                                 if r.invalid_section and (
@@ -399,9 +396,6 @@ async def query_pages(
                                 img_table_headers = ["#"]
                                 button_data = []
 
-                                callback_id = None
-                                if session.session_info.support_button:
-                                    callback_id = str(uuid.uuid4())
                                 for x in forum_data:
                                     if x == "#":
                                         img_table_headers += forum_data[x]["data"]
@@ -411,7 +405,7 @@ async def query_pages(
                                 bi = 1
                                 for b in forum_data:
                                     if b != "#":
-                                        rb.update({b: f"<q:{callback_id}>{b}"})
+                                        rb.update({b: b})
                                         if len(rb.keys()) >= 10:
                                             button_data.append(rb.copy())
                                             rb.clear()
@@ -447,7 +441,7 @@ async def query_pages(
 
                                 if button_data:
                                     i_msg_lst.append(ButtonFrame(build_button_rows(button_data)))
-                                await session.send_message(i_msg_lst, callback=_callback, callback_id=callback_id)
+                                await session.send_message(i_msg_lst, callback=_callback)
 
                 else:
                     plain_slice = MessageChain.create()

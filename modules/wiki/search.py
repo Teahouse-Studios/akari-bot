@@ -10,7 +10,6 @@ from .database.models import WikiTargetInfo
 from .utils.recommend import finish_with_start_wiki_not_set
 from .utils.wikilib import WikiLib
 from .wiki import wiki, query_pages
-import uuid
 
 
 @wiki.command("search <pagename> {{I18N:wiki.help.search}}")
@@ -65,7 +64,6 @@ async def search_pages(msg: Bot.MessageSession, title: str | list | tuple, use_p
             for r in result:
                 wait_msg_list.append(iw_prefix + r)
 
-    callback_id = str(uuid.uuid4())
     if len(wait_msg_list) != 0:
         msg_list.append(I18NContext("wiki.message.search"))
         i = 0
@@ -78,7 +76,7 @@ async def search_pages(msg: Bot.MessageSession, title: str | list | tuple, use_p
             msg_list.append(I18NContext("wiki.message.search.prompt.button"))
             for w in wait_msg_list[0:5]:
                 i += 1
-                button_list.append({f"{i}. {w}": f"<q:{callback_id}>{str(i)}"})
+                button_list.append({f"{i}. {w}": str(i)})
     else:
         await msg.finish(I18NContext("wiki.message.search.not_found"))
 
@@ -92,4 +90,4 @@ async def search_pages(msg: Bot.MessageSession, title: str | list | tuple, use_p
 
     if button_list:
         msg_list.append(ButtonFrame(build_button_rows(button_list)))
-    await msg.send_message(msg_list, callback=_callback, callback_id=callback_id)
+    await msg.send_message(msg_list, callback=_callback)

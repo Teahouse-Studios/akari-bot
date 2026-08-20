@@ -6,8 +6,9 @@
 """
 
 import math
+import uuid
 
-from core.builtins.message.elements import ButtonElement, ButtonRows
+from core.builtins.message.elements import ButtonElement, ButtonFrameElement, ButtonRows, I18NContextElement
 from core.logger import Logger
 
 # 平台单行按钮数量的硬上限
@@ -69,3 +70,59 @@ def arrange_buttons(
 def build_button_rows(rows: list[dict[str, str]]) -> list[ButtonRows]:
     """把旧式的按行映射转换为类型化按钮行。"""
     return [ButtonRows.assign([ButtonElement.assign(show, value) for show, value in row.items()]) for row in rows]
+
+
+def _iter_buttons(value):
+    """递归取得消息对象中的按钮，包含 i18n 参数内嵌的消息元素。"""
+    if isinstance(value, ButtonElement):
+        yield value
+    elif isinstance(value, ButtonFrameElement):
+        for row in value.rows:
+            yield from row.buttons
+    elif isinstance(value, I18NContextElement):
+        for item in value.kwargs.values():
+            yield from _iter_buttons(item)
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from _iter_buttons(item)
+    elif isinstance(value, (list, tuple)):
+        for item in value:
+            yield from _iter_buttons(item)
+    elif isinstance(getattr(value, "values", None), list):
+        for item in value.values:
+            yield from _iter_buttons(item)
+
+
+def bind_callback_reply_ids(message, callback_id: str | None = None) -> list[str]:
+    """为消息中的按钮绑定 callback 使用的虚拟 ``reply_id``。
+
+    已显式设置 reply_id 的按钮保持原值；其余非链接按钮共享一个自动生成的 ID。
+    返回值是 callback 注册时需要监听的全部虚拟 reply_id，并保持出现顺序。
+    """
+    buttons = []
+    reply_ids = []
+    for button in _iter_buttons(message):
+        payload = button.payload
+        # 将旧版内嵌编码立即归一化，之后各平台只消费语义字段。
+        button.value = payload.value
+        button.reply_id = payload.reply_id
+        if payload.value.startswith(("http://", "https://")):
+            continue
+        buttons.append(button)
+        if payload.reply_id is not None and payload.reply_id not in reply_ids:
+            reply_ids.append(payload.reply_id)
+
+    generated_reply_id = str(callback_id) if callback_id is not None else None
+    if generated_reply_id is None and any(button.reply_id is None for button in buttons):
+        generated_reply_id = str(uuid.uuid4())
+
+    for button in buttons:
+        if button.reply_id is None:
+            button.reply_id = generated_reply_id
+        if button.reply_id is not None and button.reply_id not in reply_ids:
+            reply_ids.append(button.reply_id)
+
+    # 兼容显式 callback_id 但消息内没有按钮的既有调用。
+    if generated_reply_id is not None and generated_reply_id not in reply_ids:
+        reply_ids.append(generated_reply_id)
+    return reply_ids
