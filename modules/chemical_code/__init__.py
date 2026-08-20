@@ -173,21 +173,28 @@ async def search_pubchem(id: int | None = None):
     answer_id = str(answer_id)
     Logger.info(f"PubChem CID: {answer_id}")
     get = await get_url(f"{pubchem_link}/compound/cid/{answer_id}/property/SMILES/JSON", 200, fmt="json")
-    if get:
-        properties = get.get("PropertyTable", {}).get("Properties", [])
-        if not properties:
-            raise ValueError
-        compound_info = properties[0]
-        smiles = compound_info.get("SMILES", "")
-        mol = Chem.MolFromSmiles(smiles)
-        formula = rdMolDescriptors.CalcMolFormula(mol)
-        elements = parse_elements(formula)
-        return {
-            "id": answer_id,
-            "answer": formula,
-            "smiles": smiles,
-            "elements": elements,
-        }
+    if not get:
+        raise ValueError(f"PubChem CID {answer_id} returned no data")
+    properties = get.get("PropertyTable", {}).get("Properties", [])
+    if not properties:
+        raise ValueError(f"PubChem CID {answer_id} has no properties")
+    compound_info = properties[0]
+    smiles = compound_info.get("SMILES", "")
+    if not smiles:
+        raise ValueError(f"PubChem CID {answer_id} has no SMILES")
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None or mol.GetNumAtoms() == 0:
+        raise ValueError(f"PubChem CID {answer_id} has no valid molecular structure")
+    formula = rdMolDescriptors.CalcMolFormula(mol)
+    if not formula:
+        raise ValueError(f"PubChem CID {answer_id} has no molecular formula")
+    elements = parse_elements(formula)
+    return {
+        "id": answer_id,
+        "answer": formula,
+        "smiles": smiles,
+        "elements": elements,
+    }
 
 
 ccode = module(
