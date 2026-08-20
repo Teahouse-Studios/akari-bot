@@ -10,9 +10,9 @@ s3_region = "us-east-1" # S3-compatible API region name.
 s3_public_endpoint = "<Replace me with str value>" # S3-compatible API public access URL.
 s3_internal_endpoint = "<Replace me with str value>" # S3-compatible API internal access URL.
 s3_temp_max_count = 20 # Maximum number of temporary files for the S3-compatible API.
-s3_connect_timeout = 5 # S3 兼容 API 的连接超时时间，单位为秒。
-s3_read_timeout = 15 # S3 兼容 API 的网络读取超时时间，单位为秒。
-s3_operation_timeout = 40 # S3 兼容 API 单次完整操作的最长等待时间，单位为秒。
+s3_connect_timeout = 30 # S3 兼容 API 的连接超时时间，单位为秒。
+s3_read_timeout = 30 # S3 兼容 API 的网络读取超时时间，单位为秒。
+s3_operation_timeout = 60 # S3 兼容 API 单次完整操作的最长等待时间，单位为秒。
 s3_max_attempts = 2 # S3 兼容 API 单次请求包含首次请求在内的最大尝试次数。
 s3_max_workers = 4 # S3 兼容 API 专用线程池的最大线程数。
 
