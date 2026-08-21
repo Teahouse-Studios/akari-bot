@@ -17,6 +17,7 @@ from core.loader import ModulesManager
 from core.logger import Logger
 from core.utils.button import arrange_buttons
 from core.utils.cache import random_cache_path
+from core.utils.func import is_int
 from core.utils.image import cb64imglst
 from core.utils.table import escape_table_cell, format_table_code, resolve_table_columns
 from core.web_render import web_render, ElementScreenshotOptions
@@ -477,10 +478,10 @@ def append_qqbot_permissions_prompt(msg: Bot.MessageSession, help_msg: MessageCh
         return
     help_msg.append(
         I18NContext(
-            "core.message.help.qqbot.permissions.prompt",
+            "core.message.help.permissions.prompt",
             cmd=ActionText(
                 f"{msg.session_info.prefixes[0]}help permissions",
-                show=I18NContext("core.message.help.qqbot.permissions.action"),
+                show=I18NContext("core.message.help.permissions.action"),
             ),
         )
     )
@@ -502,23 +503,22 @@ def build_qqbot_permissions_url(msg: Bot.MessageSession, qq_group_id: str) -> st
 )
 async def qqbot_permissions(msg: Bot.MessageSession, qq_group_id: str | None = None):
     if qq_group_id:
-        if not qq_group_id.isascii() or not qq_group_id.isdigit():
-            await msg.finish(I18NContext("core.message.help.qqbot.permissions.invalid_group_id"))
+        if not is_int(qq_group_id):
+            await msg.finish(I18NContext("core.message.help.permissions.invalid"))
         url = build_qqbot_permissions_url(msg, qq_group_id)
         await msg.finish(
             [
                 I18NContext(
-                    "core.message.help.qqbot.permissions.quick_config",
+                    "core.message.help.permissions.quick_config",
                 ),
-                Button(msg.session_info.locale.t("core.message.help.qqbot.permissions.quick_config.click"), url),
+                Button(msg.session_info.locale.t("core.message.help.permissions.quick_config.button"), url),
             ]
         )
     await msg.finish(
         I18NContext(
-            "core.message.help.qqbot.permissions",
+            "core.message.help.permissions",
             cmd=ActionText(
-                "/help permissions",
-                show=f"/help permissions [<{msg.session_info.locale.t('core.message.help.qqbot.permissions.quick_config.qqgroup_num')}>]",
+                f"{msg.session_info.prefixes[0]}help permissions",
                 show_on_fallback=False,
             ),
         )
