@@ -1,1 +1,8 @@
-{}
+{
+    "config.comments.module_wordle.wordle_disable_image": "wordle 모듈에서 이미지를 비활성화할지 여부.",
+    "wordle.help": "새로운 게임을 시작합니다.",
+    "wordle.help.desc": "Wordle을 재생합니다.",
+    "wordle.help.option.hard": "하드 모드를 사용합니다.",
+    "wordle.help.option.trial": "도전 모드를 사용합니다.",
+    "wordle.help.theme": "어두운 테마를 사용할지 여부를 설정합니다."
+}
