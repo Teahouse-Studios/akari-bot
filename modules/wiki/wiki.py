@@ -11,6 +11,7 @@ from core.builtins.utils import confirm_command
 from core.component import module
 from core.constants.exceptions import AbuseWarning, SessionFinished, WaitCancelException
 from core.logger import Logger
+from core.server.lifecycle import BackgroundTaskLifecycle
 from core.utils.func import is_int
 from core.utils.http import download
 from core.utils.image import svg_render
@@ -881,3 +882,10 @@ async def auto_get_custom_iw_list(ctx: Bot.ModuleHookContext):
     if not target:
         return []
     return list(target.interwikis.keys())
+
+
+BackgroundTaskLifecycle.register_cleanup(
+    "module:wiki-background",
+    cancel_wiki_background_tasks,
+    label="Wiki background tasks",
+)

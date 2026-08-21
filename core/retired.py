@@ -8,6 +8,7 @@ from core.constants.path import retired_path
 from core.database.models import StoredData, TargetUnionBind
 from core.exports import exports
 from core.logger import Logger
+from core.server.lifecycle import BackgroundTaskLifecycle
 from core.utils.random import Random
 
 # 公告文案的基础语言。当前语言缺失时优先回退至此。
@@ -441,3 +442,10 @@ async def enqueue_notice(session_info) -> bool:
         raise
     Logger.debug(f"Queued retired notice for {target_id}, delay {delay}s.")
     return True
+
+
+BackgroundTaskLifecycle.register_cleanup(
+    "core:retired-notice",
+    cancel_retired_notice_tasks,
+    label="retired notice background tasks",
+)

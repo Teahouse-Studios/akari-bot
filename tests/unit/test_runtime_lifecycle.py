@@ -1,7 +1,6 @@
 """Server、客户端与消息入口的后台任务生命周期测试。"""
 
 import asyncio
-import sys
 from contextlib import asynccontextmanager
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
@@ -10,6 +9,7 @@ import core.builtins.bot as bot_module
 import core.client.init as client_init_module
 import core.server.background_tasks as background_tasks
 import core.server.init as server_init
+import core.server.lifecycle as server_lifecycle
 import core.server.run as server_run
 import core.server.terminate as server_terminate
 import core.web_render as web_render_module
@@ -126,6 +126,7 @@ async def _test_shutdown_cancels_background_initialization() -> bool:
             patch.object(server_terminate.JobQueuesTable, "clear_task", new=AsyncMock()),
             patch.object(server_terminate.SchedulerLifecycle, "begin_shutdown"),
             patch.object(server_terminate.SchedulerLifecycle, "shutdown", new=AsyncMock()),
+            patch.object(server_terminate.BackgroundTaskLifecycle, "run_cleanup", new=AsyncMock()),
             patch.object(server_terminate, "close_web_render", new=AsyncMock()),
             patch.object(server_terminate.Tortoise, "close_connections", new=AsyncMock()),
         ):
@@ -349,6 +350,7 @@ async def _test_shutdown_waits_for_inflight_queue_handlers() -> bool:
             patch.object(server_terminate.SchedulerLifecycle, "begin_shutdown"),
             patch.object(server_terminate.SchedulerLifecycle, "shutdown", new=AsyncMock()),
             patch.object(server_terminate, "stop_background_task", new=AsyncMock()),
+            patch.object(server_terminate.BackgroundTaskLifecycle, "run_cleanup", new=AsyncMock()),
             patch.object(server_terminate, "close_web_render", new=AsyncMock()),
             patch.object(server_terminate.Tortoise, "close_connections", new=AsyncMock()),
         ):
@@ -393,6 +395,7 @@ async def _test_shutdown_prevents_new_queue_claims() -> bool:
             patch.object(server_terminate.SchedulerLifecycle, "begin_shutdown"),
             patch.object(server_terminate.SchedulerLifecycle, "shutdown", new=AsyncMock()),
             patch.object(server_terminate, "stop_background_task", new=AsyncMock()),
+            patch.object(server_terminate.BackgroundTaskLifecycle, "run_cleanup", new=AsyncMock()),
             patch.object(server_terminate, "close_web_render", new=AsyncMock()),
             patch.object(server_terminate.Tortoise, "close_connections", new=AsyncMock()),
         ):
@@ -416,24 +419,140 @@ async def _test_shutdown_prevents_new_queue_claims() -> bool:
         queue.pause_event.set()
 
 
-async def _test_shutdown_cancels_loaded_detached_tasks_before_queue_stop() -> bool:
-    """模块 detached task 必须在 queue poller 与数据库关闭之前取消。"""
+async def _test_background_cleanup_registry_is_generic_and_reload_safe() -> bool:
+    """任意组件可注册清理，同一稳定 key 的热重载只保留最新回调。"""
+    calls = []
+
+    async def old_cleanup():
+        calls.append("old")
+
+    async def second_cleanup():
+        calls.append("second")
+
+    async def new_cleanup():
+        calls.append("new")
+
+    with patch.dict(server_lifecycle.BackgroundTaskLifecycle._cleanup_hooks, {}, clear=True):
+        server_lifecycle.BackgroundTaskLifecycle.register_cleanup("test:replace", old_cleanup)
+        server_lifecycle.BackgroundTaskLifecycle.register_cleanup("test:second", second_cleanup)
+        server_lifecycle.BackgroundTaskLifecycle.register_cleanup("test:replace", new_cleanup)
+        await server_lifecycle.BackgroundTaskLifecycle.run_cleanup()
+        return calls == ["new", "second"] and list(server_lifecycle.BackgroundTaskLifecycle._cleanup_hooks) == [
+            "test:replace",
+            "test:second",
+        ]
+
+
+async def _test_background_cleanup_isolates_failure_and_timeout() -> bool:
+    """单项清理失败或超时不得阻断后续组件关闭。"""
+    calls = []
+    timed_out = asyncio.Event()
+
+    async def failed_cleanup():
+        calls.append("failed")
+        raise RuntimeError("cleanup failed")
+
+    async def slow_cleanup():
+        try:
+            await asyncio.Event().wait()
+        finally:
+            timed_out.set()
+
+    async def healthy_cleanup():
+        calls.append("healthy")
+
+    with (
+        patch.dict(server_lifecycle.BackgroundTaskLifecycle._cleanup_hooks, {}, clear=True),
+        patch.object(server_lifecycle.Logger, "exception") as log_exception,
+        patch.object(server_lifecycle.Logger, "warning") as log_warning,
+    ):
+        server_lifecycle.BackgroundTaskLifecycle.register_cleanup("test:failed", failed_cleanup)
+        server_lifecycle.BackgroundTaskLifecycle.register_cleanup("test:timeout", slow_cleanup, timeout=0.01)
+        server_lifecycle.BackgroundTaskLifecycle.register_cleanup("test:healthy", healthy_cleanup)
+        await server_lifecycle.BackgroundTaskLifecycle.run_cleanup()
+        return (
+            calls == ["failed", "healthy"]
+            and timed_out.is_set()
+            and log_exception.call_count == 1
+            and log_warning.call_count == 1
+        )
+
+
+async def _test_shutdown_cleanup_keeps_result_pump_without_new_claims() -> bool:
+    """模块清理期间 Queue 只回收远端结果，不再领取新的 action。"""
+    queue = server_run.JobQueueServer
+    old_running = queue.is_running
+    old_shutting_down = queue._shutting_down
+    queue.is_running = False
+    first_claim = asyncio.Event()
+    cleanup_started = asyncio.Event()
+    result_reaped = asyncio.Event()
+    claimed_during_cleanup = False
+
+    async def check_queue(target_client=None, claim_new=True):
+        nonlocal claimed_during_cleanup
+        if claim_new:
+            if cleanup_started.is_set():
+                claimed_during_cleanup = True
+            first_claim.set()
+        elif cleanup_started.is_set():
+            result_reaped.set()
+
+    async def cleanup_registered_tasks():
+        cleanup_started.set()
+        await asyncio.wait_for(result_reaped.wait(), timeout=1)
+
+    poller = None
+    try:
+        with (
+            patch.object(queue, "_check_queue", new=check_queue),
+            patch.object(server_terminate.SchedulerLifecycle, "begin_shutdown"),
+            patch.object(server_terminate.SchedulerLifecycle, "shutdown", new=AsyncMock()),
+            patch.object(server_terminate, "stop_background_task", new=AsyncMock()),
+            patch.object(
+                server_terminate.BackgroundTaskLifecycle,
+                "run_cleanup",
+                new=cleanup_registered_tasks,
+            ),
+            patch.object(server_terminate.JobQueuesTable, "clear_task", new=AsyncMock()),
+            patch.object(server_terminate, "close_web_render", new=AsyncMock()),
+            patch.object(server_terminate.Tortoise, "close_connections", new=AsyncMock()),
+        ):
+            poller = asyncio.create_task(queue.check_job_queue(), name="test-server-result-pump")
+            await asyncio.wait_for(first_claim.wait(), timeout=1)
+            await asyncio.wait_for(server_terminate.cleanup_sessions(), timeout=2)
+        return result_reaped.is_set() and not claimed_during_cleanup and poller.done() and queue._poller_task is None
+    finally:
+        if poller is not None and not poller.done():
+            poller.cancel()
+        if poller is not None:
+            await asyncio.gather(poller, return_exceptions=True)
+        queue.is_running = old_running
+        queue._shutting_down = old_shutting_down
+        queue.pause_event.set()
+
+
+async def _test_shutdown_runs_registered_cleanup_before_queue_stop() -> bool:
+    """通用后台清理必须在新任务入口和生产者停止后、Queue 停止前执行。"""
     calls = []
 
     def begin_scheduler_shutdown():
         calls.append("scheduler-begin")
 
+    async def begin_queue_shutdown():
+        calls.append("queue-begin")
+
+    async def cancel_queue_handlers():
+        calls.append("queue-handlers")
+
     async def shutdown_scheduler():
         calls.append("scheduler-stop")
 
-    async def cancel_wiki():
-        calls.append("wiki")
+    async def stop_background():
+        calls.append("background-init")
 
-    async def cancel_bind():
-        calls.append("bind")
-
-    async def cancel_retired():
-        calls.append("retired")
+    async def cleanup_registered():
+        calls.append("registered-background")
 
     async def stop_queue():
         calls.append("queue")
@@ -450,16 +569,13 @@ async def _test_shutdown_cancels_loaded_detached_tasks_before_queue_stop() -> bo
         yield
         calls.append("window-exit")
 
-    fake_modules = {
-        "modules.wiki.wiki": SimpleNamespace(cancel_wiki_background_tasks=cancel_wiki),
-        "modules.core.bind": SimpleNamespace(cancel_bind_handshake_tasks=cancel_bind),
-        "core.retired": SimpleNamespace(cancel_retired_notice_tasks=cancel_retired),
-    }
     with (
-        patch.dict(sys.modules, fake_modules),
         patch.object(server_terminate.SchedulerLifecycle, "begin_shutdown", new=begin_scheduler_shutdown),
         patch.object(server_terminate.SchedulerLifecycle, "shutdown", new=shutdown_scheduler),
-        patch.object(server_terminate, "stop_background_task", new=AsyncMock()),
+        patch.object(server_terminate.JobQueueServer, "begin_shutdown", new=begin_queue_shutdown),
+        patch.object(server_terminate.JobQueueServer, "cancel_process_tasks", new=cancel_queue_handlers),
+        patch.object(server_terminate, "stop_background_task", new=stop_background),
+        patch.object(server_terminate.BackgroundTaskLifecycle, "run_cleanup", new=cleanup_registered),
         patch.object(server_terminate.JobQueueServer, "shutdown_window", new=shutdown_window),
         patch.object(server_terminate.JobQueueServer, "stop_job_queue", new=stop_queue),
         patch.object(server_terminate.JobQueuesTable, "clear_task", new=clear_task),
@@ -470,11 +586,12 @@ async def _test_shutdown_cancels_loaded_detached_tasks_before_queue_stop() -> bo
 
     return calls == [
         "scheduler-begin",
-        "wiki",
-        "bind",
-        "retired",
-        "window-enter",
+        "queue-begin",
+        "queue-handlers",
         "scheduler-stop",
+        "background-init",
+        "registered-background",
+        "window-enter",
         "queue",
         "clear",
         "database",
@@ -496,8 +613,14 @@ async def test_runtime_lifecycle(tester: Tester):
     await tester.test(_test_message_background_failure_is_observed_and_cleaned, "消息后台异常被记录并清理")
     await tester.test(_test_shutdown_waits_for_inflight_queue_handlers, "关闭时等待在途队列处理器")
     await tester.test(_test_shutdown_prevents_new_queue_claims, "关闭期间停止领取新的队列任务")
+    await tester.test(_test_background_cleanup_registry_is_generic_and_reload_safe, "后台清理注册与热重载替换")
+    await tester.test(_test_background_cleanup_isolates_failure_and_timeout, "后台清理异常与超时隔离")
     await tester.test(
-        _test_shutdown_cancels_loaded_detached_tasks_before_queue_stop,
-        "关闭时先取消模块后台任务再停止队列",
+        _test_shutdown_cleanup_keeps_result_pump_without_new_claims,
+        "后台清理期间 Queue 只回收结果",
+    )
+    await tester.test(
+        _test_shutdown_runs_registered_cleanup_before_queue_stop,
+        "关闭时执行注册后台清理再停止队列",
     )
     return tester

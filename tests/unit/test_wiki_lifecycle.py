@@ -4,6 +4,7 @@ import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
+from core.server.lifecycle import BackgroundTaskLifecycle
 from core.tester import func_case, Tester
 from modules.wiki.wiki import (
     _build_forum_callback,
@@ -161,6 +162,11 @@ async def _test_background_cleanup_cancels_and_releases():
     return task.cancelled() and task not in _wiki_background_tasks and session.release.await_count == 1
 
 
+async def _test_background_cleanup_is_registered():
+    spec = BackgroundTaskLifecycle._cleanup_hooks.get("module:wiki-background")
+    return spec is not None and spec.callback is cancel_wiki_background_tasks
+
+
 @func_case
 async def test_wiki_lifecycle(tester: Tester):
     await tester.test(_test_section_callback_uses_click_session_and_frozen_page, "章节回调会话与闭包冻结")
@@ -171,4 +177,5 @@ async def test_wiki_lifecycle(tester: Tester):
     await tester.test(_test_background_spawn_failure_rolls_back_hold, "Wiki 后台创建失败回滚 hold")
     await tester.test(_test_background_task_is_retained_until_completion, "Wiki 后台任务持有引用")
     await tester.test(_test_background_cleanup_cancels_and_releases, "Wiki 后台清理取消并释放")
+    await tester.test(_test_background_cleanup_is_registered, "Wiki 后台清理已注册")
     return tester

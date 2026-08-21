@@ -27,6 +27,7 @@ from core.retired import (
     reset_pending_cache,
     should_enqueue_notice,
 )
+from core.server.lifecycle import BackgroundTaskLifecycle
 from core.tester import func_case, Tester
 
 
@@ -306,6 +307,11 @@ async def _test_notice_cleanup_cancels_retained_delivery():
         reset_pending_cache()
 
 
+async def _test_notice_cleanup_is_registered():
+    spec = BackgroundTaskLifecycle._cleanup_hooks.get("core:retired-notice")
+    return spec is not None and spec.callback is retired_module.cancel_retired_notice_tasks
+
+
 @func_case
 async def test_retired_notice(tester: Tester):
     """core.retired: 公告读取、已发记录与排队测试"""
@@ -325,5 +331,6 @@ async def test_retired_notice(tester: Tester):
     await tester.test(_test_enqueue_allows_fresh_target, "新场景允许排队测试")
     await tester.test(_test_enqueue_concurrent_same_target_once, "同场景并发只排队一次测试")
     await tester.test(_test_notice_cleanup_cancels_retained_delivery, "公告后台清理测试")
+    await tester.test(_test_notice_cleanup_is_registered, "公告后台清理已注册测试")
 
     return tester

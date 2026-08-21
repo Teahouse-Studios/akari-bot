@@ -10,7 +10,6 @@
 
 import asyncio
 import os
-import sys
 
 from tortoise import Tortoise
 
@@ -21,20 +20,7 @@ from core.queue.server import JobQueueServer
 from core.scheduler import SchedulerLifecycle
 from core.web_render import close_web_render
 from .background_tasks import stop_background_task
-
-
-async def _cancel_loaded_background_tasks(module_name: str, function_name: str, label: str) -> None:
-    """取消一个已加载模块持有的后台任务，不在关闭阶段额外导入模块。"""
-    module = sys.modules.get(module_name)
-    cancel = getattr(module, function_name, None) if module else None
-    if cancel is None:
-        return
-    try:
-        await asyncio.wait_for(cancel(), timeout=10)
-    except TimeoutError:
-        Logger.warning(f"Timed out while cancelling {label} background tasks.")
-    except Exception:
-        Logger.exception(f"Failed to cancel {label} background tasks cleanly.")
+from .lifecycle import BackgroundTaskLifecycle
 
 
 async def cleanup_sessions():
@@ -52,40 +38,32 @@ async def cleanup_sessions():
     #         for z in get_wait_list[x][y]:
     #             if get_wait_list[x][y][z]["active"]:
     #                 await z.send_message(I18NContext("core.message.restart.prompt"))
-    # 先同步关闭 Scheduler 的新任务入口；真正取消／等待运行中 Job 放在 Queue
-    # shutdown_window 内、其它 Queue handler 已取消之后执行，避免正在 reload_db 的
-    # handler 持有 Scheduler 维护锁时与 restart action 互相等待。
+    # 先同步关闭 Scheduler 的新任务入口；真正取消／等待运行中 Job 放在其它 Queue
+    # handler 取消之后执行，避免正在 reload_db 的 handler 持有 Scheduler 维护锁时
+    # 与 restart action 互相等待。
     SchedulerLifecycle.begin_shutdown()
+    # 先关闭新 action 入口并与已经开始领取的一轮轮询建立屏障。轮询器仍继续回收
+    # QueueTaskManager 的远端结果，供下面取消任务时释放平台 context。
+    await JobQueueServer.begin_shutdown()
+    # Queue handler 可能持有 Scheduler 维护锁，也可能在退出路径创建 detached task。
+    # 先取消并等待它们，再关闭 Scheduler，最后统一清理所有已注册后台任务。
+    await JobQueueServer.cancel_process_tasks()
+    try:
+        await SchedulerLifecycle.shutdown()
+    except Exception:
+        Logger.exception("Failed to stop scheduler cleanly.")
     try:
         await stop_background_task()
     except Exception:
         Logger.exception("Failed to stop background initialization cleanly.")
-    # 这些任务持有 MessageSession context，取消时会经 JobQueue 请求平台进程 release。
-    # 因此必须在停止 Server queue poller 之前执行；关闭阶段只处理已经加载的模块，
-    # 不能为了清理而导入一个本来没有启用的模块及其数据库／配置依赖。
-    await _cancel_loaded_background_tasks(
-        "modules.wiki.wiki",
-        "cancel_wiki_background_tasks",
-        "Wiki",
-    )
-    await _cancel_loaded_background_tasks(
-        "modules.core.bind",
-        "cancel_bind_handshake_tasks",
-        "bind handshake",
-    )
-    await _cancel_loaded_background_tasks(
-        "core.retired",
-        "cancel_retired_notice_tasks",
-        "retired notice",
-    )
+    # 注册项可能持有 MessageSession context，取消时会经 Queue 请求平台进程 release，
+    # 因此必须在停止 poller 之前执行。只有实际导入过的组件会注册，不会在关闭阶段
+    # 为清理而额外导入未加载模块。
+    await BackgroundTaskLifecycle.run_cleanup()
     # restart() 可能由 Queue action 自身触发，此时主循环的轮询器仍在运行。关闭窗口
     # 必须先阻止它继续领取任务，再取消其它 handler，并在独占轮询锁时清库、关资源；
     # 否则清空队列或关闭连接期间仍可能启动一个新的平台副作用。
     async with JobQueueServer.shutdown_window():
-        try:
-            await SchedulerLifecycle.shutdown()
-        except Exception:
-            Logger.exception("Failed to stop scheduler cleanly.")
         # detached task 的 context 已经释放，此后不再需要轮询远端结果。先停止轮询器，
         # 再在持有 _poll_lock 的情况下清库和关连接，避免窗口退出后轮询已关闭的数据库。
         await JobQueueServer.stop_job_queue()

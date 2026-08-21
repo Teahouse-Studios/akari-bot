@@ -9,6 +9,7 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.session.info import SessionInfo
 from core.constants.exceptions import SessionFinished
 from core.database.models import TargetUnionInfo, TargetUnionBind
+from core.server.lifecycle import BackgroundTaskLifecycle
 from core.tester import func_case, Tester
 from core.tester.mock.session import MockMessageSession
 from modules.core.bind import (
@@ -433,6 +434,11 @@ async def _test_handshake_cleanup_cancels_expiry_and_releases():
     )
 
 
+async def _test_handshake_cleanup_is_registered():
+    spec = BackgroundTaskLifecycle._cleanup_hooks.get("module:bind-handshake")
+    return spec is not None and spec.callback is cancel_bind_handshake_tasks
+
+
 @func_case
 async def test_bind_auto(tester: Tester):
     """modules.core.bind: bind auto 握手测试"""
@@ -451,5 +457,6 @@ async def test_bind_auto(tester: Tester):
     await tester.test(_test_completion_releases_both_contexts_when_one_release_fails, "双侧上下文完整释放测试")
     await tester.test(_test_expiry_task_creation_failure_rolls_back_handshake, "超时任务创建失败回滚测试")
     await tester.test(_test_handshake_cleanup_cancels_expiry_and_releases, "握手后台清理测试")
+    await tester.test(_test_handshake_cleanup_is_registered, "握手后台清理已注册测试")
 
     return tester

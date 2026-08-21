@@ -123,6 +123,7 @@ class JobQueueBase:
     _process_tasks: set[asyncio.Task[None]] = set()
     _poll_lock = asyncio.Lock()
     _poller_task: asyncio.Task[None] | None = None
+    _shutting_down = False
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -134,6 +135,7 @@ class JobQueueBase:
         cls._poll_lock = asyncio.Lock()
         cls._poller_task = None
         cls.is_running = False
+        cls._shutting_down = False
 
     @classmethod
     def _process_task_done(cls, task: asyncio.Task[None]) -> None:
@@ -176,6 +178,16 @@ class JobQueueBase:
         await asyncio.gather(task, return_exceptions=True)
 
     @classmethod
+    async def begin_shutdown(cls) -> None:
+        """停止领取新 action，但保留轮询器回收远端任务结果。"""
+        cls._shutting_down = True
+        cls.pause_event.clear()
+        # 与已经读取到 ``claim_new=True`` 的轮询轮次建立屏障。离开此锁后，
+        # 轮询器仍可唤醒 QueueTaskManager，但不会再领取新的 action。
+        async with cls._poll_lock:
+            pass
+
+    @classmethod
     @asynccontextmanager
     async def maintenance_window(cls):
         """暂停领取新任务，排空在途 action 后独占队列数据库访问。
@@ -194,7 +206,8 @@ class JobQueueBase:
             async with cls._poll_lock:
                 yield
         finally:
-            cls.pause_event.set()
+            if not cls._shutting_down:
+                cls.pause_event.set()
 
     @classmethod
     @asynccontextmanager
@@ -206,16 +219,13 @@ class JobQueueBase:
         最后持有轮询锁清空队列和关闭数据库。该窗口也适用于由 Queue action 自身触发的
         ``restart()``：当前处理器会被排除，避免取消并等待自己。
         """
-        cls.pause_event.clear()
+        await cls.begin_shutdown()
         try:
-            # 与已经读取到 ``claim_new=True`` 的轮询轮次建立屏障；离开此锁后，后续
-            # 轮询只会回收终态结果，不会再领取新 action。
-            async with cls._poll_lock:
-                pass
             await cls.cancel_process_tasks()
             async with cls._poll_lock:
                 yield
         finally:
+            cls._shutting_down = False
             cls.pause_event.set()
 
     @classmethod

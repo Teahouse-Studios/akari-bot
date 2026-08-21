@@ -12,6 +12,7 @@ from core.database.models import (
     TargetUnionBind,
 )
 from core.logger import Logger
+from core.server.lifecycle import BackgroundTaskLifecycle
 from core.utils.container import ExpiringTempDict
 from core.utils.random import SecureRandom
 from core.union_merge import (
@@ -637,3 +638,10 @@ async def _run_channel_handshake(entry: dict, initiator: Bot.MessageSession, res
                 disable_joke=True,
             )
         )
+
+
+BackgroundTaskLifecycle.register_cleanup(
+    "module:bind-handshake",
+    cancel_bind_handshake_tasks,
+    label="bind handshake background tasks",
+)
