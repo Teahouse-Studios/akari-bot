@@ -219,5 +219,8 @@
     "tos.message.warning": "警告：\n依據使用條款，你已違反我們的行為準則。",
     "tos.message.warning.count": "這是第 ${current_warns} 次警告。",
     "tos.message.warning.last": "這是最後一次警告。",
-    "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。"
+    "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。",
+    "config.comments.config.use_emote": "是否使用表情資源。",
+    "config.comments.s3.s3_connect_timeout": "S3 相容 API 的連線逾時時間，單位為秒。",
+    "config.comments.s3.s3_max_attempts": "S3 相容 API 單次請求的最大嘗試次數。"
 }
