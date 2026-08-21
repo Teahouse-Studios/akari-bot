@@ -85,8 +85,8 @@ bug_report_url = CoreConfig.bug_report_url
 
 # 命令输入与执行异常提示所使用的公共表情资源
 COMMON_EMOTE_DIR = assets_path / "emotes" / "common"
-INVALID_COMMAND_EMOTES = tuple(sorted(COMMON_EMOTE_DIR.glob("invalid_*.gif")))
-BUG_EMOTES = tuple(sorted(COMMON_EMOTE_DIR.glob("bug_*.gif")))
+INVALID_COMMAND_EMOTES = tuple(sorted((COMMON_EMOTE_DIR / "invalid").glob("*.gif")))
+BUG_EMOTES = tuple(sorted((COMMON_EMOTE_DIR / "bug").glob("*.gif")))
 
 # ========== 错字检查的分数阈值 ==========
 # 这些阈值用于模糊匹配（当用户输入可能有错字时）
