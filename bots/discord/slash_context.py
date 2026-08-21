@@ -28,6 +28,32 @@ class DiscordSlashContextManager(DiscordContextManager):
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
     ) -> list[str]:
+        msg_ids = []
+        try:
+            return await cls._send_message(
+                session_info,
+                message,
+                quote=quote,
+                enable_parse_message=enable_parse_message,
+                enable_split_image=enable_split_image,
+                msg_ids=msg_ids,
+            )
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            Logger.exception(f"Failed to send Discord slash message to {session_info.target_id}: ")
+            return msg_ids
+
+    @classmethod
+    async def _send_message(
+        cls,
+        session_info: SessionInfo,
+        message: MessageChain | MessageNodes,
+        quote: bool = True,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+        msg_ids: list[str] | None = None,
+    ) -> list[str]:
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
         ctx: discord.ApplicationContext = cls.context[session_info.session_id]
@@ -45,7 +71,8 @@ class DiscordSlashContextManager(DiscordContextManager):
             input_label=session_info.locale.t("message.action_text.modal.input"),
             select_placeholder=session_info.locale.t("message.action_text.select"),
         )
-        msg_ids = []
+        if msg_ids is None:
+            msg_ids = []
         for index, payload in enumerate(payloads):
             kwargs = {
                 "content": payload.content,
@@ -54,6 +81,10 @@ class DiscordSlashContextManager(DiscordContextManager):
                 "view": view if index == len(payloads) - 1 else None,
             }
             send_ = await ctx.respond(**kwargs) if index == 0 else await ctx.send(**kwargs)
+            # py-cord 的首次 Interaction 响应返回 Interaction 本身，其 id 是交互 ID，
+            # 不能用于撤回、Callback 或后续消息操作。后续响应则直接返回 WebhookMessage。
+            if isinstance(send_, discord.Interaction):
+                send_ = await send_.original_response()
             if send_:
                 msg_ids.append(str(send_.id))
             Logger.info(f"[Bot] -> [{session_info.target_id}]: Aggregated Discord slash message {send_.id}")

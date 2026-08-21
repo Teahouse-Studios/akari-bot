@@ -1,12 +1,12 @@
-import asyncio
 import re
 
 from khl import Bot as khlBot, EventTypes, Event, Message, MessageTypes
 
 from bots.kook.client import bot
-from bots.kook.context import KOOKContextManager, KOOKFetchedContextManager
+from bots.kook.context import KOOKContextManager, KOOKFetchedContextManager, KOOKReactionContext
 from bots.kook.events import guild_member_joined, guild_member_left
 from bots.kook.info import *
+from bots.kook.lifecycle import run_bot
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, Image, Voice
@@ -91,52 +91,79 @@ async def msg_handler(message: Message):
 @bot.on_event(EventTypes.ADDED_REACTION)
 async def add_reaction(b: khlBot, event: Event):
     body = event.extra.get("body", {})
-    if body.get("user_id") == b.client.me.id:
+    user_id = body.get("user_id")
+    channel_id = body.get("channel_id")
+    origin_message_id = body.get("msg_id")
+    emoji = body.get("emoji", {}).get("id")
+    if user_id is None or channel_id is None or origin_message_id is None or not emoji:
         return
-    sender_id = f"{sender_prefix}|{body.get('user_id', '')}"
+    user_id = str(user_id)
+    if user_id == str(b.client.me.id):
+        return
+    sender_id = f"{sender_prefix}|{user_id}"
     if sender_id in ignored_sender:
         return
 
+    origin_message_id = str(origin_message_id)
+    emoji = str(emoji)
+    context = KOOKReactionContext(
+        origin_message_id=origin_message_id,
+        emoji=emoji,
+        user_id=user_id,
+    )
     session = await SessionInfo.assign(
-        target_id=f"{target_group_prefix}|{body.get('channel_id', '')}",
+        target_id=f"{target_group_prefix}|{channel_id}",
         sender_id=sender_id,
         target_from=target_group_prefix,
         sender_from=sender_prefix,
         client_name=client_name,
-        message_id=str(event.id),
-        reply_id=body.get("msg_id"),
-        messages=MessageChain.assign([Plain(body.get("emoji", {}).get("id", ""))]),
+        message_id=str(event.id) if event.id is not None else None,
+        reply_id=origin_message_id,
+        messages=MessageChain.assign([Plain(emoji)]),
         ctx_slot=ctx_id,
         bot_id=bot.me.id,
     )
 
-    await Bot.process_message(session, event)
+    await Bot.process_message(session, context)
 
 
 @bot.on_event(EventTypes.PRIVATE_ADDED_REACTION)
 async def private_add_reaction(b: khlBot, event: Event):
     body = event.extra.get("body", {})
-    if body.get("user_id") == b.client.me.id:
+    user_id = body.get("user_id")
+    origin_message_id = body.get("msg_id")
+    emoji = body.get("emoji", {}).get("id")
+    if user_id is None or origin_message_id is None or not emoji:
         return
-    sender_id = f"{sender_prefix}|{body.get('user_id', '')}"
+    user_id = str(user_id)
+    if user_id == str(b.client.me.id):
+        return
+    sender_id = f"{sender_prefix}|{user_id}"
     if sender_id in ignored_sender:
         return
 
+    origin_message_id = str(origin_message_id)
+    emoji = str(emoji)
+    context = KOOKReactionContext(
+        origin_message_id=origin_message_id,
+        emoji=emoji,
+        user_id=user_id,
+    )
     session = await SessionInfo.assign(
-        target_id=f"{target_person_prefix}|{body.get('user_id', '')}",
+        target_id=f"{target_person_prefix}|{user_id}",
         sender_id=sender_id,
         target_from=target_person_prefix,
         is_private=True,
         sender_from=sender_prefix,
         client_name=client_name,
-        message_id=str(event.id),
-        reply_id=body.get("msg_id"),
-        messages=MessageChain.assign([Plain(body.get("emoji", {}).get("id", ""))]),
+        message_id=str(event.id) if event.id is not None else None,
+        reply_id=origin_message_id,
+        messages=MessageChain.assign([Plain(emoji)]),
         ctx_slot=ctx_id,
         bot_id=bot.me.id,
     )
 
-    await Bot.process_message(session, event)
+    await Bot.process_message(session, context)
 
 
 @bot.on_event(EventTypes.JOINED_GUILD)
@@ -187,5 +214,4 @@ async def _(b: khlBot):
 
 
 if KookConfig.enable:
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(bot.start())
+    run_bot(bot)

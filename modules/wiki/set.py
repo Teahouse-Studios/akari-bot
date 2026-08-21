@@ -7,7 +7,7 @@ from core.config.base import CoreConfig
 from modules.wiki.config import WikiConfig
 from core.utils.image_table import image_table_render, ImageTable
 from . import wiki
-from .database.models import WikiTargetInfo
+from .database.models import WikiAllowList, WikiTargetInfo
 from .utils.wikilib import WikiLib
 
 enable_urlmanager = CoreConfig.enable_urlmanager
@@ -28,6 +28,8 @@ async def _(msg: Bot.MessageSession, wikiurl: str):
             if check.value.in_blocklist and not in_allowlist:
                 await msg.finish(I18NContext("wiki.message.invalid.blocked", name=wiki_name))
         result = await target.add_start_wiki(check.value.api)
+        if not result:
+            await msg.finish(I18NContext("message.failed"))
         prompts = [I18NContext("wiki.message.set.success", name=wiki_name)]
         if result and enable_urlmanager and not in_allowlist:
             prompts.append(I18NContext("wiki.message.wiki_audit.untrust"))
@@ -60,13 +62,16 @@ async def _(msg: Bot.MessageSession, interwiki: str, wikiurl: str):
         if Bot.Info.use_url_manager and check.value.in_blocklist and not check.value.in_allowlist:
             await msg.finish(msg.session_info.locale.t("wiki.message.invalid.blocked", name=wiki_name))
         result = await target.config_interwikis(interwiki, check.value.api)
+        if not result:
+            await msg.finish(I18NContext("message.failed"))
         prompts = [I18NContext("wiki.message.iw.add.success", iw=interwiki, name=wiki_name)]
         if result and enable_urlmanager and not check.value.in_allowlist:
             prompts.append(I18NContext("wiki.message.wiki_audit.untrust"))
             if wiki_whitelist_url:
                 prompts.append(
                     I18NContext(
-                        "wiki.message.wiki_audit.untrust.address", url=MessageChain.assign(Url(wiki_whitelist_url))
+                        "wiki.message.wiki_audit.untrust.address",
+                        url=MessageChain.assign(Url(wiki_whitelist_url, trusted=True)),
                     )
                 )
 
@@ -86,6 +91,7 @@ async def _(msg: Bot.MessageSession, interwiki: str):
     result = await target.config_interwikis(interwiki)
     if result:
         await msg.finish(I18NContext("wiki.message.iw.remove.success", iw=interwiki))
+    await msg.finish(I18NContext("message.failed"))
 
 
 @wiki.command(
@@ -164,7 +170,8 @@ async def _(msg: Bot.MessageSession, interwiki: str):
     query = target.interwikis
     if query != {}:
         if interwiki in query:
-            await msg.finish(Url(query[interwiki], trusted=True))
+            trusted = True if await WikiAllowList.check(query[interwiki]) else None
+            await msg.finish(Url(query[interwiki], trusted=trusted))
         else:
             await msg.finish(I18NContext("wiki.message.iw.get.not_found", iw=interwiki))
     else:
@@ -206,6 +213,7 @@ async def _(msg: Bot.MessageSession, headerkey: str):
     delete = await target.config_headers(headerkey, add=False)
     if delete:
         await msg.finish(I18NContext("wiki.message.headers.add.success", headers=orjson.dumps(target.headers).decode()))
+    await msg.finish(I18NContext("message.failed"))
 
 
 @wiki.command("headers reset {{I18N:wiki.help.headers.reset}}", required_admin=True)
@@ -214,6 +222,7 @@ async def _(msg: Bot.MessageSession):
     reset = await target.config_headers()
     if reset:
         await msg.finish(I18NContext("wiki.message.headers.reset.success"))
+    await msg.finish(I18NContext("message.failed"))
 
 
 @wiki.command("prefix set <prefix> {{I18N:wiki.help.prefix.set}}", required_admin=True)
@@ -222,6 +231,7 @@ async def _(msg: Bot.MessageSession, prefix: str):
     set_prefix = await target.config_prefix(prefix)
     if set_prefix:
         await msg.finish(I18NContext("wiki.message.prefix.set.success", wiki_prefix=prefix))
+    await msg.finish(I18NContext("message.failed"))
 
 
 @wiki.command("prefix reset {{I18N:wiki.help.prefix.reset}}", required_admin=True)
@@ -230,6 +240,7 @@ async def _(msg: Bot.MessageSession):
     set_prefix = await target.config_prefix()
     if set_prefix:
         await msg.finish(I18NContext("wiki.message.prefix.reset.success"))
+    await msg.finish(I18NContext("message.failed"))
 
 
 @wiki.command("redlink {{I18N:wiki.help.redlink}}", required_admin=True)

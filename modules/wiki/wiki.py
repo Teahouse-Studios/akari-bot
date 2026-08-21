@@ -9,8 +9,9 @@ from core.builtins.message.internal import ButtonFrame, I18NContext, Plain, Imag
 from core.builtins.session.internal import MessageSession, confirm_prompt_key
 from core.builtins.utils import confirm_command
 from core.component import module
-from core.constants.exceptions import AbuseWarning
+from core.constants.exceptions import AbuseWarning, SessionFinished, WaitCancelException
 from core.logger import Logger
+from core.server.lifecycle import BackgroundTaskLifecycle
 from core.utils.func import is_int
 from core.utils.http import download
 from core.utils.image import svg_render
@@ -36,6 +37,131 @@ wiki = module(
     developers=["OasisAkari"],
     doc=True,
 )
+
+
+# 模块重载会复用原模块字典。保留任务集合，确保重载前创建的后台任务仍有强引用，
+# 且完成回调能够从同一个集合中移除它们。
+_wiki_background_tasks: set[asyncio.Task] = globals().get("_wiki_background_tasks", set())
+
+
+def _wiki_background_done(task: asyncio.Task) -> None:
+    """Drop a finished task and explicitly retrieve its exception."""
+    _wiki_background_tasks.discard(task)
+    if task.cancelled():
+        return
+    error = task.exception()
+    if error is None or isinstance(error, (SessionFinished, WaitCancelException)):
+        return
+    Logger.error(f"Wiki background task {task.get_name()!r} failed: {error!r}")
+
+
+def _create_wiki_background_task(awaitable, *, name: str) -> asyncio.Task:
+    """Create and retain one Wiki background task until it finishes."""
+    task = asyncio.create_task(awaitable, name=name)
+    _wiki_background_tasks.add(task)
+    task.add_done_callback(_wiki_background_done)
+    return task
+
+
+async def _release_background_session(session: Bot.MessageSession) -> None:
+    """Release a held context without hiding the background operation's result."""
+    try:
+        await session.release()
+    except BaseException:
+        Logger.exception("Failed to release Wiki background context: ")
+
+
+async def _run_background_with_release(session: Bot.MessageSession, awaitable):
+    """Run one background operation and always release its held platform context."""
+    try:
+        return await awaitable
+    finally:
+        await _release_background_session(session)
+
+
+async def _start_background_with_release(session: Bot.MessageSession, awaitable_factory, *, name: str) -> asyncio.Task:
+    """Hold a session, then start a retained background operation with rollback on spawn failure."""
+    await session.hold()
+    awaitable = None
+    runner = None
+    try:
+        awaitable = awaitable_factory()
+        runner = _run_background_with_release(session, awaitable)
+        task = _create_wiki_background_task(runner, name=name)
+    except BaseException:
+        # create_task() may fail before taking ownership of either coroutine. Close both explicitly
+        # to avoid coroutine-leak warnings, then undo the already successful hold.
+        if runner is not None:
+            runner.close()
+        if awaitable is not None and hasattr(awaitable, "close"):
+            awaitable.close()
+        await _release_background_session(session)
+        raise
+
+    try:
+        # Let the runner enter its try/finally before handing it to detached lifecycle code.
+        # Cancelling a never-started coroutine skips its finally block and would leak both the
+        # inner awaitable and the held platform context.
+        await asyncio.sleep(0)
+    except BaseException:
+        task.cancel()
+        await asyncio.gather(task, return_exceptions=True)
+        raise
+    return task
+
+
+async def cancel_wiki_background_tasks() -> None:
+    """Cancel and drain every retained Wiki task before server resources are closed."""
+    current = asyncio.current_task()
+    tasks = {task for task in _wiki_background_tasks if task is not current and not task.done()}
+    for task in tasks:
+        task.cancel()
+    if tasks:
+        await asyncio.gather(*tasks, return_exceptions=True)
+
+
+async def _gather_background(*awaitables):
+    """Wait for every sibling task before propagating the first failure."""
+    results = await asyncio.gather(*awaitables, return_exceptions=True)
+    for result in results:
+        if isinstance(result, BaseException):
+            raise result
+    return results
+
+
+def _build_section_callback(page: PageInfo):
+    """Freeze one page's section choices for a callback dispatched after this query returns."""
+    title = page.title
+    sections = tuple(page.sections or ())
+    api = page.info.api
+
+    async def _callback(msg: Bot.MessageSession):
+        display = msg.as_display(text_only=True)
+        if not is_int(display):
+            return
+        index = int(display) - 1
+        if 0 <= index < len(sections):
+            await query_pages(msg, title=f"{title}#{sections[index]}", start_wiki_api=api)
+
+    return _callback
+
+
+def _build_forum_callback(page: PageInfo):
+    """Freeze one forum listing so later callbacks cannot observe another loop iteration's page."""
+    api = page.info.api
+    topics = {
+        str(key): value["text"]
+        for key, value in page.forum_data.items()
+        if key != "#" and isinstance(value, dict) and value.get("text")
+    }
+
+    async def _callback(msg: Bot.MessageSession):
+        display = msg.as_display(text_only=True)
+        Logger.debug(f"callback: {display}")
+        if is_int(display) and display in topics:
+            await query_pages(msg, title=topics[display], start_wiki_api=api)
+
+    return _callback
 
 
 @wiki.command()
@@ -364,22 +490,9 @@ async def query_pages(
                                             I18NContext("wiki.message.invalid_section.select.button.limit")
                                         )
 
-                                async def _callback(msg: Bot.MessageSession):
-                                    display = msg.as_display(text_only=True)
-
-                                    if is_int(display):
-                                        display = int(display)
-                                        if display <= len(r.sections):
-                                            r.selected_section = str(display - 1)
-                                            await query_pages(
-                                                session,
-                                                title=r.title + "#" + r.sections[display - 1],
-                                                start_wiki_api=r.info.api,
-                                            )
-
                                 if button_data:
                                     i_msg_lst.append(ButtonFrame(build_button_rows(button_data)))
-                                await session.send_message(i_msg_lst, callback=_callback)
+                                await session.send_message(i_msg_lst, callback=_build_section_callback(r))
 
                             else:
                                 if r.invalid_section and (
@@ -429,19 +542,9 @@ async def query_pages(
                                             I18NContext("wiki.message.invalid_section.select.button.limit")
                                         )
 
-                                async def _callback(msg: Bot.MessageSession):
-                                    display = msg.as_display(text_only=True)
-                                    Logger.debug(f"callback: {display}")
-                                    if is_int(display) and int(display) <= len(forum_data) - 1:
-                                        await query_pages(
-                                            session,
-                                            title=forum_data[display]["text"],
-                                            start_wiki_api=r.info.api,
-                                        )
-
                                 if button_data:
                                     i_msg_lst.append(ButtonFrame(build_button_rows(button_data)))
-                                await session.send_message(i_msg_lst, callback=_callback)
+                                await session.send_message(i_msg_lst, callback=_build_forum_callback(r))
 
                 else:
                     plain_slice = MessageChain.create()
@@ -732,13 +835,11 @@ async def query_pages(
                     )
 
         try:
-            await session.hold()
 
             async def _bgtask():
-                await asyncio.gather(image_and_voice(), wait_confirm(), infobox(), section())
-                await session.release()
+                await _gather_background(image_and_voice(), wait_confirm(), infobox(), section())
 
-            asyncio.create_task(_bgtask())
+            await _start_background_with_release(session, _bgtask, name="wiki-query-background")
         except ValueError:
             Logger.debug("Error occurred while holding session, skip.")
 
@@ -781,3 +882,10 @@ async def auto_get_custom_iw_list(ctx: Bot.ModuleHookContext):
     if not target:
         return []
     return list(target.interwikis.keys())
+
+
+BackgroundTaskLifecycle.register_cleanup(
+    "module:wiki-background",
+    cancel_wiki_background_tasks,
+    label="Wiki background tasks",
+)

@@ -330,10 +330,10 @@ async def _probe_wait_task(prefix: str, with_alive: bool) -> bool:
 
     SessionTaskManager._task_list.clear()
     try:
-        # all_ 的任务只按消息通道建键，最能直击同一频道键内的抢占
+        # all_ 任务按物理场景建稳定 bucket，check() 再按当前消息通道展开。
         SessionTaskManager.add_task(holder, asyncio.Event(), all_=True, timeout=60)
         await parser(retired)
-        return SessionTaskManager.get()[holder.session_info.channel_key]["all"][holder]["active"] is False
+        return SessionTaskManager.get()[holder.session_info.target_id]["all"][holder]["active"] is False
 
     finally:
         SessionTaskManager._task_list.clear()

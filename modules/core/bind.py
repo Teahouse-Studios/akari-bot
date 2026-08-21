@@ -11,6 +11,8 @@ from core.database.models import (
     TargetUnionInfo,
     TargetUnionBind,
 )
+from core.logger import Logger
+from core.server.lifecycle import BackgroundTaskLifecycle
 from core.utils.container import ExpiringTempDict
 from core.utils.random import SecureRandom
 from core.union_merge import (
@@ -24,6 +26,7 @@ from core.union_merge import (
     merge_target_unions,
     plan_sender_merge,
     plan_target_merge,
+    reserve_sender_merge,
     take_code,
     target_lines,
 )
@@ -41,11 +44,67 @@ _sender_bind_codes = ExpiringTempDict(exp=BIND_CODE_EXPIRED)
 _target_bind_codes = ExpiringTempDict(exp=BIND_CODE_EXPIRED)
 # 握手分两段登记：待认领的 probe 与待闭合的 confirm。口令一经发出即出现在场景中，
 # 任何人都能原样复制，故两段各自的口令都只能被消费一次。
-_pending_probes = {}
-_pending_confirms = {}
+_pending_probes = globals().get("_pending_probes", {})
+_pending_confirms = globals().get("_pending_confirms", {})
 # 握手闭合串行执行。若让位机制未生效（如某一平台的 probe 投递延迟），
 # 两轮并发执行至「是否同组」判定时会同时读到合并前的数据，各自新建一个组，合并即告失败。
-_handshake_lock = asyncio.Lock()
+_handshake_lock = globals().get("_handshake_lock") or asyncio.Lock()
+# reload 会复用模块字典。保留旧任务与 pending 状态，使重载前创建的超时任务仍能完成清理。
+_handshake_tasks: set[asyncio.Task] = globals().get("_handshake_tasks", set())
+
+
+def _handshake_task_done(task: asyncio.Task) -> None:
+    """Drop a finished expiry task and explicitly retrieve its exception."""
+    _handshake_tasks.discard(task)
+    if task.cancelled():
+        return
+    error = task.exception()
+    if error is not None:
+        Logger.error(f"Bind handshake background task {task.get_name()!r} failed: {error!r}")
+
+
+def _create_handshake_task(awaitable, *, name: str) -> asyncio.Task:
+    """Create and retain one handshake lifecycle task."""
+    try:
+        task = asyncio.create_task(awaitable, name=name)
+    except BaseException:
+        if hasattr(awaitable, "close"):
+            awaitable.close()
+        raise
+    _handshake_tasks.add(task)
+    task.add_done_callback(_handshake_task_done)
+    return task
+
+
+async def _release_sessions(*sessions: Bot.MessageSession) -> None:
+    """Best-effort release for every held handshake context, even when one release fails."""
+    unique_sessions = []
+    seen = set()
+    for session in sessions:
+        if session is not None and id(session) not in seen:
+            seen.add(id(session))
+            unique_sessions.append(session)
+    results = await asyncio.gather(*(session.release() for session in unique_sessions), return_exceptions=True)
+    for result in results:
+        if isinstance(result, BaseException):
+            Logger.error(f"Failed to release bind handshake context: {result!r}")
+
+
+async def cancel_bind_handshake_tasks() -> None:
+    """Cancel expiry tasks and release every context still owned by an unfinished handshake."""
+    current = asyncio.current_task()
+    tasks = {task for task in _handshake_tasks if task is not current and not task.done()}
+    for task in tasks:
+        task.cancel()
+    if tasks:
+        await asyncio.gather(*tasks, return_exceptions=True)
+
+    sessions = [entry.get("initiator") for entry in _pending_probes.values()]
+    for entry in _pending_confirms.values():
+        sessions.extend((entry.get("initiator"), entry.get("responder")))
+    _pending_probes.clear()
+    _pending_confirms.clear()
+    await _release_sessions(*sessions)
 
 
 def _take_code(code: str) -> tuple[str, dict] | None:
@@ -234,11 +293,16 @@ async def _bind_private(msg: Bot.MessageSession, entry: dict) -> None:
     if not await msg.wait_confirm(lines):
         await msg.finish()
 
-    # 冲突选择按域分别询问，两域的模块表互不相交，各自的选择不会互相影响
-    sender_keep = await choose_conflicts(msg, sender_plan["conflicts"]) if sender_plan else set()
+    # 场景侧选择须在建立 sender barrier 前完成；普通 wait_confirm 会释放执行
+    # lease。sender barrier 建立后，其冲突选择则保持 lease，直到合并写入结束。
     target_keep = await choose_conflicts(msg, target_plan["conflicts"]) if target_plan else set()
+    if sender_plan:
+        sender_plan = await reserve_sender_merge(msg, sender_plan)
+    sender_keep = (
+        await choose_conflicts(msg, sender_plan["conflicts"], preserve_execution_lock=True) if sender_plan else set()
+    )
 
-    merged_sender = await apply_sender_merge(sender_plan, sender_keep) if sender_plan else sender_current
+    merged_sender = await apply_sender_merge(sender_plan, sender_keep, msg) if sender_plan else sender_current
     merged_target = await apply_target_merge(target_plan, target_keep) if target_plan else target_current
     if not merged_sender or not merged_target:
         await msg.finish(I18NContext("core.message.bind.start.private.failed"))
@@ -310,11 +374,11 @@ async def _(msg: Bot.MessageSession, channel: int):
     if not msg.session_info.target_union_id:
         await msg.finish(I18NContext("core.message.bind.channel.unknown"))
 
-    await TargetUnionBind.filter(target_id=msg.session_info.target_id).update(channel_id=int(channel))
-    # 变更通道后与原同通道场景不再对应同一个现实场景，保留互认记录会阻碍后续重新配对。
-    await msg.session_info.target_union_info.forget_peer_bots(msg.session_info.target_id)
+    assigned_channel = await TargetUnionInfo.reassign_channel(msg.session_info.target_id, int(channel))
+    if assigned_channel is None:
+        await msg.finish(I18NContext("core.message.bind.channel.unknown"))
     await msg.session_info.refresh_info()
-    await msg.finish([I18NContext("core.message.bind.channel.set.success", channel=int(channel))])
+    await msg.finish([I18NContext("core.message.bind.channel.set.success", channel=assigned_channel)])
 
 
 @b.command("channel reset {{I18N:core.help.bind.channel.reset}}", required_admin=True)
@@ -323,10 +387,9 @@ async def _(msg: Bot.MessageSession):
     if not union_id:
         await msg.finish(I18NContext("core.message.bind.channel.unknown"))
 
-    channel_id = await TargetUnionBind.next_channel_id(union_id)
-    await TargetUnionBind.filter(target_id=msg.session_info.target_id).update(channel_id=channel_id)
-    # 脱离通道后与原同通道场景不再关联，须一并清除互认记录，否则重新配对时握手口令会被双方屏蔽。
-    await msg.session_info.target_union_info.forget_peer_bots(msg.session_info.target_id)
+    channel_id = await TargetUnionInfo.reassign_channel(msg.session_info.target_id)
+    if channel_id is None:
+        await msg.finish(I18NContext("core.message.bind.channel.unknown"))
     await msg.session_info.refresh_info()
     await msg.finish(I18NContext("core.message.bind.channel.reset.success", channel=channel_id))
 
@@ -342,11 +405,18 @@ async def _start_handshake(msg: Bot.MessageSession) -> None:
     probe_token = SecureRandom.randstr(HANDSHAKE_TOKEN_LENGTH)
     _pending_probes[probe_token] = {"initiator": msg}
 
-    # 该命令仅由同一场景内的其它机器人识别，对用户而言只是一串无意义的口令。
-    await msg.send_message(Plain(f"{msg.session_info.prefixes[0]}bind channel probe {probe_token}"))
-    await msg.hold()
-
-    asyncio.create_task(_expire_handshake(probe_token, msg))
+    held = False
+    try:
+        await msg.hold()
+        held = True
+        # 该命令仅由同一场景内的其它机器人识别，对用户而言只是一串无意义的口令。
+        await msg.send_message(Plain(f"{msg.session_info.prefixes[0]}bind channel probe {probe_token}"))
+        _create_handshake_task(_expire_handshake(probe_token, msg), name=f"bind-handshake-{probe_token}")
+    except BaseException:
+        _pending_probes.pop(probe_token, None)
+        if held:
+            await _release_sessions(msg)
+        raise
 
 
 async def _expire_handshake(probe_token: str, initiator: Bot.MessageSession) -> None:
@@ -362,13 +432,16 @@ async def _expire_handshake(probe_token: str, initiator: Bot.MessageSession) -> 
         return
 
     # probe 口令既已过期，由它换来的 confirm 口令不应继续有效。
+    responders = []
     for confirm_token, pending in _pending_confirms.copy().items():
         if pending["probe_token"] == probe_token:
             _pending_confirms.pop(confirm_token, None)
-            await pending["responder"].release()
+            responders.append(pending["responder"])
 
-    await initiator.send_message(I18NContext("core.message.bind.auto.timeout"))
-    await initiator.release()
+    try:
+        await initiator.send_message(I18NContext("core.message.bind.auto.timeout"))
+    finally:
+        await _release_sessions(*responders, initiator)
 
 
 async def _respond_probe(msg: Bot.MessageSession, token: str) -> None:
@@ -409,24 +482,41 @@ async def _respond_probe(msg: Bot.MessageSession, token: str) -> None:
             await msg.finish()
         yielded = _pending_probes.pop(mine, None)
         if yielded:
-            await yielded["initiator"].release()
+            await _release_sessions(yielded["initiator"])
 
     # 让位过程中让出过控制权，其间该口令可能已被另一个机器人认领，认领前须再确认一次。
     if entry.get("claimed"):
         await msg.finish()
     entry["claimed"] = True
 
-    # confirm 口令至此才生成，因而每一次配对各持一枚，且只有本次的响应方知晓：
-    # 发起方广播出去的那一枚 probe 口令不足以推出它，旁观者也就无从抢先应答。
-    confirm_token = SecureRandom.randstr(HANDSHAKE_TOKEN_LENGTH)
-    _pending_confirms[confirm_token] = {
-        "probe_token": token,
-        "initiator": initiator,
-        "responder": msg,
-        "initiator_bot_id": msg.session_info.sender_id,
-    }
-    await msg.send_message(Plain(f"{msg.session_info.prefixes[0]}bind channel confirm {confirm_token}"))
-    await msg.hold()
+    confirm_token = None
+    held = False
+    try:
+        await msg.hold()
+        held = True
+        # 持有上下文期间 probe 可能已经超时；此时不再生成一个无人负责清理的 confirm。
+        if _pending_probes.get(token) is not entry:
+            await _release_sessions(msg)
+            held = False
+            return
+
+        # confirm 口令至此才生成，因而每一次配对各持一枚，且只有本次的响应方知晓：
+        # 发起方广播出去的那一枚 probe 口令不足以推出它，旁观者也就无从抢先应答。
+        confirm_token = SecureRandom.randstr(HANDSHAKE_TOKEN_LENGTH)
+        _pending_confirms[confirm_token] = {
+            "probe_token": token,
+            "initiator": initiator,
+            "responder": msg,
+            "initiator_bot_id": msg.session_info.sender_id,
+        }
+        await msg.send_message(Plain(f"{msg.session_info.prefixes[0]}bind channel confirm {confirm_token}"))
+    except BaseException:
+        entry["claimed"] = False
+        if confirm_token:
+            _pending_confirms.pop(confirm_token, None)
+        if held:
+            await _release_sessions(msg)
+        raise
 
 
 async def _close_handshake(msg: Bot.MessageSession, token: str) -> None:
@@ -497,8 +587,7 @@ async def _complete_channel_handshake(entry: dict) -> None:
 
             await _run_channel_handshake(entry, initiator, responder)
     finally:
-        await initiator.release()
-        await responder.release()
+        await _release_sessions(initiator, responder)
 
 
 async def _run_channel_handshake(entry: dict, initiator: Bot.MessageSession, responder: Bot.MessageSession) -> None:
@@ -518,12 +607,15 @@ async def _run_channel_handshake(entry: dict, initiator: Bot.MessageSession, res
             await initiator.send_message(I18NContext("core.message.bind.auto.cancelled"))
             return
 
-    # 将对方并入本场景所在的通道，此后二者同组同号，命令执行与消息推送均只由其中一方承担。
-    initiator_bind = await TargetUnionBind.get_or_none(target_id=initiator.session_info.target_id)
-    channel_id = initiator_bind.channel_id if initiator_bind else 1
-    await TargetUnionBind.filter(
-        target_id__in=[initiator.session_info.target_id, responder.session_info.target_id]
-    ).update(channel_id=channel_id)
+    # 将对方所在的完整通道并入本场景通道。若只修改响应方这一行，它原通道中的第三个平台入口
+    # 会被错误拆开；通道等价关系具有传递性，必须整体移动。
+    channel_id = await TargetUnionInfo.unify_channels(
+        initiator.session_info.target_id,
+        responder.session_info.target_id,
+    )
+    if channel_id is None:
+        await initiator.send_message(I18NContext("core.message.bind.auto.cancelled"))
+        return
 
     # 记录双方的机器人账号，避免将对方发出的消息当作用户输入解析。
     # 账号按观察方所在平台的命名空间记录：发起方观察到的对端账号取自 confirm，对端观察到的发起方账号取自 probe。
@@ -546,3 +638,10 @@ async def _run_channel_handshake(entry: dict, initiator: Bot.MessageSession, res
                 disable_joke=True,
             )
         )
+
+
+BackgroundTaskLifecycle.register_cleanup(
+    "module:bind-handshake",
+    cancel_bind_handshake_tasks,
+    label="bind handshake background tasks",
+)

@@ -28,7 +28,7 @@ from core.types import Param
 from core.utils.bash import run_sys_command
 from core.utils.func import is_float, is_int
 from core.utils.storedata import get_stored_list, update_stored_list
-from core.web_render import web_render, close_web_render, init_web_render
+from core.web_render import check_web_render_status, close_web_render, init_web_render, web_render
 
 auto_purge_crontab = CoreConfig.auto_purge_crontab
 
@@ -481,10 +481,10 @@ restart_time = []
 
 
 async def wait_for_restart(msg: Bot.MessageSession):
-    get = Bot.ExecutionLockList.get()
+    active_commands = Bot.ExecutionLockList.count(exclude=msg)
     if time.time() - restart_time[0] < 60:
-        if len(get) != 0:
-            await msg.send_message(I18NContext("core.message.restart.wait", count=len(get)))
+        if active_commands:
+            await msg.send_message(I18NContext("core.message.restart.wait", count=active_commands))
             await msg.sleep(10)
             return await wait_for_restart(msg)
         await msg.send_message(I18NContext("core.message.restart.restarting"))
@@ -765,7 +765,7 @@ jobqueue = module("jobqueue", required_superuser=True, base=True)
 
 @jobqueue.command("clear")
 async def _(msg: Bot.MessageSession):
-    await JobQueuesTable.clear_task(time=0)
+    await JobQueuesTable.clear_task(time=0, include_active=True)
     await msg.finish(I18NContext("message.success"))
 
 
@@ -780,7 +780,7 @@ async def _(msg: Bot.MessageSession):
 @wr.command("start")
 async def _(msg: Bot.MessageSession):
     if await init_web_render():
-        Bot.Info.web_render_status = await web_render.browser.check_status()
+        Bot.Info.web_render_status = await check_web_render_status()
         await msg.finish(I18NContext("message.success"))
     else:
         await msg.finish(I18NContext("message.failed"))
@@ -789,7 +789,7 @@ async def _(msg: Bot.MessageSession):
 @wr.command("stop")
 async def _(msg: Bot.MessageSession):
     await close_web_render()
-    Bot.Info.web_render_status = await web_render.browser.check_status()
+    Bot.Info.web_render_status = await check_web_render_status()
     await msg.finish(I18NContext("message.success"))
 
 
@@ -797,7 +797,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     await close_web_render()
     if await init_web_render():
-        Bot.Info.web_render_status = await web_render.browser.check_status()
+        Bot.Info.web_render_status = await check_web_render_status()
         await msg.finish(I18NContext("message.success"))
     else:
         await msg.finish(I18NContext("message.failed"))

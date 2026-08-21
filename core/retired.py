@@ -8,6 +8,7 @@ from core.constants.path import retired_path
 from core.database.models import StoredData, TargetUnionBind
 from core.exports import exports
 from core.logger import Logger
+from core.server.lifecycle import BackgroundTaskLifecycle
 from core.utils.random import Random
 
 # 公告文案的基础语言。当前语言缺失时优先回退至此。
@@ -24,11 +25,21 @@ RETIRED_NOTIFY_DELAY_MAX = 86400
 # 已排入延时队列、尚未推送的场景。防止用户在等待期间连发消息导致重复排队。
 # 仅存于进程内存，重启即清空；因已发送记录只在推送成功后落库，重启后会自然重排。
 pending_notices: set[str] = set()
+_notice_tasks: set[asyncio.Task] = globals().get("_notice_tasks", set())
+
+# ``enqueue_notice`` 的判断与占位之间包含首次读取已发记录的 await。若没有互斥，两个并发消息会
+# 同时在等待前观察到「未排队」，随后各自创建一项投递任务。锁只覆盖判断与 set 占位，真正的
+# 延时投递不在临界区内，不会阻塞其它场景排队。
+_notice_enqueue_lock = asyncio.Lock()
 
 # 内存态是唯一真相源：判断与写入均走内存，落库时全量覆盖。
 # 若改为逐次读库-追加-写回，两个场景并发触发时先写的记录会被覆盖，对应场景将重复收到公告。
 _notified: dict[str, str] | None = None
 _notified_lock = asyncio.Lock()
+# 公告投递任务可能并发完成。每次持久化都从共享内存字典生成一份快照；若两个 save
+# 交错，较早生成的旧快照可能反而最后落库，使后完成的场景在重启后再次收到公告。
+_notified_write_lock = asyncio.Lock()
+_MISSING_NOTIFIED = object()
 
 # 迁移关系的分隔符，配置形如 "QQ -> QQBot"。
 RETIRED_ROUTE_SEPARATOR = "->"
@@ -245,12 +256,23 @@ async def mark_notified(target_id: str) -> None:
 
     :param target_id: 场景 ID。
     """
-    notified = await _load_notified()
-    notified[target_id] = datetime.now(UTC).isoformat()
+    async with _notified_write_lock:
+        notified = await _load_notified()
+        previous = notified.get(target_id, _MISSING_NOTIFIED)
+        notified[target_id] = datetime.now(UTC).isoformat()
 
-    stored, _ = await StoredData.get_or_create(stored_key=NOTIFIED_STORED_KEY, defaults={"value": []})
-    stored.value = [{"target_id": tid, "timestamp": ts} for tid, ts in notified.items()]
-    await stored.save()
+        try:
+            stored, _ = await StoredData.get_or_create(stored_key=NOTIFIED_STORED_KEY, defaults={"value": []})
+            stored.value = [{"target_id": tid, "timestamp": ts} for tid, ts in notified.items()]
+            await stored.save()
+        except BaseException:
+            # 内存态是后续排队判断的真相源。持久化失败时若不回滚，本进程会误以为已经投递，
+            # 后续消息将永远无法重试，直到下一次进程重启。
+            if previous is _MISSING_NOTIFIED:
+                notified.pop(target_id, None)
+            else:
+                notified[target_id] = previous
+            raise
 
 
 def read_notice(client_name: str, locale: str, base_path: Path | None = None) -> str | None:
@@ -364,6 +386,40 @@ async def _deliver_notice(session_info, delay: int) -> None:
         pending_notices.discard(target_id)
 
 
+def _notice_task_done(task: asyncio.Task, target_id: str) -> None:
+    """Release queue state and retrieve failures even if a task was cancelled before its first step."""
+    _notice_tasks.discard(task)
+    pending_notices.discard(target_id)
+    if task.cancelled():
+        return
+    error = task.exception()
+    if error is not None:
+        Logger.error(f"Retired notice background task for {target_id} failed: {error!r}")
+
+
+def _create_notice_task(awaitable, target_id: str) -> asyncio.Task:
+    """Create and retain one delayed retired-notice delivery task."""
+    try:
+        task = asyncio.create_task(awaitable, name=f"retired-notice-{target_id}")
+    except BaseException:
+        if hasattr(awaitable, "close"):
+            awaitable.close()
+        raise
+    _notice_tasks.add(task)
+    task.add_done_callback(lambda done: _notice_task_done(done, target_id))
+    return task
+
+
+async def cancel_retired_notice_tasks() -> None:
+    """Cancel and drain delayed notices before queue and database shutdown."""
+    current = asyncio.current_task()
+    tasks = {task for task in _notice_tasks if task is not current and not task.done()}
+    for task in tasks:
+        task.cancel()
+    if tasks:
+        await asyncio.gather(*tasks, return_exceptions=True)
+
+
 async def enqueue_notice(session_info) -> bool:
     """
     为一个场景排入退役公告的延时推送。
@@ -372,11 +428,24 @@ async def enqueue_notice(session_info) -> bool:
     :return: 是否新排入队列。
     """
     target_id = session_info.target_id
-    if not await should_enqueue_notice(target_id):
-        return False
+    async with _notice_enqueue_lock:
+        if not await should_enqueue_notice(target_id):
+            return False
+        pending_notices.add(target_id)
 
-    pending_notices.add(target_id)
-    delay = pick_notice_delay()
-    asyncio.create_task(_deliver_notice(session_info, delay))
+    try:
+        delay = pick_notice_delay()
+        _create_notice_task(_deliver_notice(session_info, delay), target_id)
+    except BaseException:
+        # 占位成功但任务未能创建时必须释放，否则该场景在本进程余下生命周期内都不会再排队。
+        pending_notices.discard(target_id)
+        raise
     Logger.debug(f"Queued retired notice for {target_id}, delay {delay}s.")
     return True
+
+
+BackgroundTaskLifecycle.register_cleanup(
+    "core:retired-notice",
+    cancel_retired_notice_tasks,
+    label="retired notice background tasks",
+)

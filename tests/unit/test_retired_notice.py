@@ -5,8 +5,13 @@
 分散在多个文件中改动会互相覆盖。同一 func_case 内部则是串行的。
 """
 
+import asyncio
 import tempfile
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
+
+import core.retired as retired_module
 
 from core.database.models import StoredData
 from core.retired import (
@@ -22,6 +27,7 @@ from core.retired import (
     reset_pending_cache,
     should_enqueue_notice,
 )
+from core.server.lifecycle import BackgroundTaskLifecycle
 from core.tester import func_case, Tester
 
 
@@ -186,6 +192,126 @@ async def _test_enqueue_allows_fresh_target():
         return False
 
 
+async def _test_concurrent_marks_do_not_persist_stale_snapshot():
+    """测试已发记录 - 并发慢写不能用旧快照覆盖较新的完整记录。"""
+    persisted = []
+    created = 0
+    previous_notified = retired_module._notified
+
+    class FakeStored:
+        def __init__(self, delay: float):
+            self.delay = delay
+            self.value = []
+
+        async def save(self):
+            snapshot = list(self.value)
+            await asyncio.sleep(self.delay)
+            persisted[:] = snapshot
+
+    async def get_or_create(**_kwargs):
+        nonlocal created
+        created += 1
+        # 未串行化时，第一笔保存会在第二笔之后完成，并以只含第一个场景的旧快照覆盖数据库。
+        return FakeStored(0.02 if created == 1 else 0), created == 1
+
+    retired_module._notified = {}
+    try:
+        with patch.object(retired_module.StoredData, "get_or_create", new=get_or_create):
+            first = asyncio.create_task(mark_notified("QQ|Group|concurrent-mark-1"))
+            await asyncio.sleep(0)
+            second = asyncio.create_task(mark_notified("QQ|Group|concurrent-mark-2"))
+            await asyncio.gather(first, second)
+        return {record["target_id"] for record in persisted} == {
+            "QQ|Group|concurrent-mark-1",
+            "QQ|Group|concurrent-mark-2",
+        }
+    finally:
+        retired_module._notified = previous_notified
+
+
+async def _test_failed_mark_rolls_back_memory_state():
+    """测试已发记录 - 落库失败不把内存永久标成已发送。"""
+    target_id = "QQ|Group|failed-mark"
+    previous_notified = retired_module._notified
+
+    class FakeStored:
+        value = []
+
+        async def save(self):
+            raise RuntimeError("save failed")
+
+    async def get_or_create(**_kwargs):
+        return FakeStored(), True
+
+    retired_module._notified = {}
+    try:
+        with patch.object(retired_module.StoredData, "get_or_create", new=get_or_create):
+            try:
+                await mark_notified(target_id)
+            except RuntimeError:
+                return target_id not in retired_module._notified and await should_enqueue_notice(target_id)
+        return False
+    finally:
+        retired_module._notified = previous_notified
+
+
+async def _test_enqueue_concurrent_same_target_once():
+    """测试公告排队 - 同一新场景并发触发只创建一个投递任务。"""
+    target_id = "QQ|Group|queued-concurrent"
+    await StoredData.filter(stored_key=NOTIFIED_STORED_KEY).delete()
+    reset_notified_cache()
+    reset_pending_cache()
+
+    delivered = []
+    original_deliver = retired_module._deliver_notice
+    original_pick_delay = retired_module.pick_notice_delay
+
+    async def fake_deliver(session_info, delay: int):
+        delivered.append((session_info.target_id, delay))
+
+    retired_module._deliver_notice = fake_deliver
+    retired_module.pick_notice_delay = lambda: 0
+    try:
+        session_info = SimpleNamespace(target_id=target_id)
+        results = await asyncio.gather(
+            retired_module.enqueue_notice(session_info),
+            retired_module.enqueue_notice(session_info),
+        )
+        # enqueue_notice 只负责创建后台任务，显式让出一次事件循环使替身完成。
+        await asyncio.sleep(0)
+        return results.count(True) == 1 and delivered == [(target_id, 0)]
+    finally:
+        retired_module._deliver_notice = original_deliver
+        retired_module.pick_notice_delay = original_pick_delay
+        reset_pending_cache()
+
+
+async def _test_notice_cleanup_cancels_retained_delivery():
+    """测试公告排队 - 生命周期清理取消延时任务并释放 pending 占位。"""
+    target_id = "QQ|Group|cancelled-notice"
+    previous_notified = retired_module._notified
+    original_pick_delay = retired_module.pick_notice_delay
+    retired_module._notified = {}
+    reset_pending_cache()
+    retired_module.pick_notice_delay = lambda: 3600
+    try:
+        queued = await retired_module.enqueue_notice(SimpleNamespace(target_id=target_id))
+        retained = bool(retired_module._notice_tasks) and target_id in pending_notices
+        await retired_module.cancel_retired_notice_tasks()
+        await asyncio.sleep(0)
+        return queued and retained and target_id not in pending_notices and not retired_module._notice_tasks
+    finally:
+        retired_module.pick_notice_delay = original_pick_delay
+        retired_module._notified = previous_notified
+        await retired_module.cancel_retired_notice_tasks()
+        reset_pending_cache()
+
+
+async def _test_notice_cleanup_is_registered():
+    spec = BackgroundTaskLifecycle._cleanup_hooks.get("core:retired-notice")
+    return spec is not None and spec.callback is retired_module.cancel_retired_notice_tasks
+
+
 @func_case
 async def test_retired_notice(tester: Tester):
     """core.retired: 公告读取、已发记录与排队测试"""
@@ -197,9 +323,14 @@ async def test_retired_notice(tester: Tester):
     await tester.test(_test_mark_then_notified, "记录后判定测试")
     await tester.test(_test_mark_persists_to_storage, "记录落库测试")
     await tester.test(_test_mark_keeps_existing_records, "追加不覆盖测试")
+    await tester.test(_test_concurrent_marks_do_not_persist_stale_snapshot, "并发记录不回写旧快照测试")
+    await tester.test(_test_failed_mark_rolls_back_memory_state, "落库失败回滚内存记录测试")
     await tester.test(_test_delay_within_range, "随机延迟区间测试")
     await tester.test(_test_enqueue_skips_notified, "已发送不排队测试")
     await tester.test(_test_enqueue_skips_pending, "已排队不重复测试")
     await tester.test(_test_enqueue_allows_fresh_target, "新场景允许排队测试")
+    await tester.test(_test_enqueue_concurrent_same_target_once, "同场景并发只排队一次测试")
+    await tester.test(_test_notice_cleanup_cancels_retained_delivery, "公告后台清理测试")
+    await tester.test(_test_notice_cleanup_is_registered, "公告后台清理已注册测试")
 
     return tester

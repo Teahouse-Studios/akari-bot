@@ -9,7 +9,6 @@ from core.database.models import (
     UNION_SCOPE_TARGET,
     SenderUnionInfo,
     TargetUnionInfo,
-    TargetUnionBind,
 )
 from core.retired import RETIRED_SOURCES, RETIRED_TARGETS, enqueue_notice, is_merge_route_allowed
 from core.union_merge import (
@@ -22,6 +21,7 @@ from core.union_merge import (
     merge_target_unions,
     plan_sender_merge,
     plan_target_merge,
+    reserve_sender_merge,
     take_code,
     target_lines,
 )
@@ -54,15 +54,16 @@ async def _unify_channel(initiator_target_id: str, current_target_id: str) -> in
     若日后取消退役、两个机器人回到共作状态，不同通道会让通道认领的快路径判定「通道内仅有自身」
     而双双放行，同一条命令因此被响应两次；统一通道是那条回退路径唯一的保险。
 
-    通道号取发起方的现有编号，发起方缺少绑定行时退回 1。
+    通道号取发起方的现有编号。两个场景原本所在的完整通道都会保留等价关系，
+    避免只移动端点而把同通道的第三个平台入口拆开。
 
     :param initiator_target_id: 发起方的场景 ID。
     :param current_target_id: 兑换方的场景 ID。
     :return: 统一后的通道号。
     """
-    initiator_bind = await TargetUnionBind.get_or_none(target_id=initiator_target_id)
-    channel_id = initiator_bind.channel_id if initiator_bind else 1
-    await TargetUnionBind.filter(target_id__in=[initiator_target_id, current_target_id]).update(channel_id=channel_id)
+    channel_id = await TargetUnionInfo.unify_channels(initiator_target_id, current_target_id)
+    if channel_id is None:
+        raise RuntimeError("Unable to unify migrated target channels.")
     return channel_id
 
 
@@ -160,11 +161,16 @@ async def _merge_private(msg: Bot.MessageSession, entry: dict) -> None:
     if not await msg.wait_confirm(lines):
         await msg.finish()
 
-    # 冲突选择按域分别询问，两域的模块表互不相交，各自的选择不会互相影响。
-    sender_keep = await choose_conflicts(msg, sender_plan["conflicts"]) if sender_plan else set()
+    # 场景侧选择须在建立 sender barrier 前完成；普通 wait_confirm 会释放执行
+    # lease。sender barrier 建立后，其冲突选择则保持 lease，直到合并写入结束。
     target_keep = await choose_conflicts(msg, target_plan["conflicts"]) if target_plan else set()
+    if sender_plan:
+        sender_plan = await reserve_sender_merge(msg, sender_plan)
+    sender_keep = (
+        await choose_conflicts(msg, sender_plan["conflicts"], preserve_execution_lock=True) if sender_plan else set()
+    )
 
-    merged_sender = await apply_sender_merge(sender_plan, sender_keep) if sender_plan else sender_current
+    merged_sender = await apply_sender_merge(sender_plan, sender_keep, msg) if sender_plan else sender_current
     merged_target = await apply_target_merge(target_plan, target_keep) if target_plan else target_current
     if not merged_sender or not merged_target:
         await msg.finish(I18NContext("core.message.merge.private.failed"))

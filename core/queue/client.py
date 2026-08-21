@@ -12,6 +12,7 @@
 - 处理来自服务器的操作请求（消息发送、成员管理等）
 """
 
+import asyncio
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
@@ -268,11 +269,19 @@ async def _(tsk: JobQueuesTable, args: dict):
     不应在每个场景各发一次。
     """
     session_info, bot, ctx_manager, _args = await get_session(args)
-    send = await ctx_manager.send_message(
-        session_info,
-        converter.structure(_args.get("message", {}), MessageChain | MessageNodes),
-        quote=False,
-    )
+    try:
+        send = await ctx_manager.send_message(
+            session_info,
+            converter.structure(_args.get("message", {}), MessageChain | MessageNodes),
+            quote=False,
+        )
+    except asyncio.CancelledError:
+        raise
+    except Exception:
+        # 主动推送的失败恢复依赖空消息 ID 触发 next_hops。第三方或旧平台适配器即使
+        # 没有自行吞掉平台异常，也不能让本跳任务直接结束而跳过故障切换。
+        Logger.exception(f"Failed to post message to {session_info.target_id}: ")
+        send = []
     if send:
         Logger.info(f"Posted message to {session_info.target_id}: {send}")
         return {"message_id": send}
@@ -304,13 +313,19 @@ async def _(tsk: JobQueuesTable, args: dict):
     返回发送的消息 ID，为空列表表示发送失败。
     """
     session_info, bot, ctx_manager, _args = await get_session(args)
-    send = await ctx_manager.send_private_msg(
-        session_info,
-        _args.get("user_id", ""),
-        converter.structure(_args.get("message", {}), MessageChain | MessageNodes),
-        enable_parse_message=_args.get("enable_parse_message", True),
-        enable_split_image=_args.get("enable_split_image", True),
-    )
+    try:
+        send = await ctx_manager.send_private_msg(
+            session_info,
+            _args.get("user_id", ""),
+            converter.structure(_args.get("message", {}), MessageChain | MessageNodes),
+            enable_parse_message=_args.get("enable_parse_message", True),
+            enable_split_image=_args.get("enable_split_image", True),
+        )
+    except asyncio.CancelledError:
+        raise
+    except Exception:
+        Logger.exception(f"Failed to send private message to {_args.get('user_id', '')}: ")
+        send = []
     return {"message_id": send}
 
 

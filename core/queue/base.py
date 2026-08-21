@@ -12,6 +12,7 @@
 import asyncio
 import time
 import traceback
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from uuid import uuid4
@@ -57,7 +58,7 @@ class QueueTaskManager:
     """
 
     tasks = {}
-    TASK_TIMEOUT_SECONDS = 7200
+    TASK_TIMEOUT_SECONDS = JobQueuesTable.ACTIVE_TIMEOUT_SECONDS
 
     @classmethod
     async def add(cls, task_id: str):
@@ -116,9 +117,116 @@ class JobQueueBase:
     queue_actions = {}
     report_targets = CoreConfig.report_targets
     is_running = False
-    TASK_TIMEOUT_SECONDS = 7200  # 2小时
+    TASK_TIMEOUT_SECONDS = JobQueuesTable.ACTIVE_TIMEOUT_SECONDS
     pause_event = asyncio.Event()
     pause_event.set()
+    _process_tasks: set[asyncio.Task[None]] = set()
+    _poll_lock = asyncio.Lock()
+    _poller_task: asyncio.Task[None] | None = None
+    _shutting_down = False
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        # Server 与 Client 在测试中可同时存在于同一解释器；各消费者必须拥有自己的
+        # 任务集合、暂停状态和轮询锁，不能通过基类属性互相影响。
+        cls._process_tasks = set()
+        cls.pause_event = asyncio.Event()
+        cls.pause_event.set()
+        cls._poll_lock = asyncio.Lock()
+        cls._poller_task = None
+        cls.is_running = False
+        cls._shutting_down = False
+
+    @classmethod
+    def _process_task_done(cls, task: asyncio.Task[None]) -> None:
+        cls._process_tasks.discard(task)
+        try:
+            task.result()
+        except asyncio.CancelledError:
+            pass
+        except Exception:
+            Logger.exception(f"Unhandled {cls.__name__} action task failure.")
+
+    @classmethod
+    async def cancel_process_tasks(cls) -> None:
+        """取消并等待已经领取、仍在运行的 action 处理器。"""
+        current = asyncio.current_task()
+        # restart() 可由 action 自身触发；排除当前任务，避免它取消并等待自己。
+        tasks = [task for task in cls._process_tasks if task is not current]
+        for task in tasks:
+            if not task.done():
+                task.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
+        cls._process_tasks.difference_update(tasks)
+
+    @classmethod
+    async def wait_process_tasks(cls) -> None:
+        """等待其它在途 action 完成；调用方自身若也是处理器则自动排除。"""
+        current = asyncio.current_task()
+        tasks = [task for task in cls._process_tasks if task is not current]
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
+
+    @classmethod
+    async def stop_job_queue(cls) -> None:
+        """取消并等待当前消费者的队列轮询器。"""
+        task = cls._poller_task
+        if task is None or task is asyncio.current_task():
+            return
+        if not task.done():
+            task.cancel()
+        await asyncio.gather(task, return_exceptions=True)
+
+    @classmethod
+    async def begin_shutdown(cls) -> None:
+        """停止领取新 action，但保留轮询器回收远端任务结果。"""
+        cls._shutting_down = True
+        cls.pause_event.clear()
+        # 与已经读取到 ``claim_new=True`` 的轮询轮次建立屏障。离开此锁后，
+        # 轮询器仍可唤醒 QueueTaskManager，但不会再领取新的 action。
+        async with cls._poll_lock:
+            pass
+
+    @classmethod
+    @asynccontextmanager
+    async def maintenance_window(cls):
+        """暂停领取新任务，排空在途 action 后独占队列数据库访问。
+
+        暂停期间轮询器仍会回收已完成任务的结果，使正在等待客户端回包的 action
+        能够正常收尾。等所有其它 action 完成后，再持有轮询锁进入维护区，保证
+        关闭或替换数据库连接时没有轮询查询与之并发。
+        """
+        cls.pause_event.clear()
+        try:
+            # 等待已经以“允许领取”状态进入的那一轮查询结束。释放锁后，后续轮询
+            # 只会泵回终态结果，不会再领取新的 action。
+            async with cls._poll_lock:
+                pass
+            await cls.wait_process_tasks()
+            async with cls._poll_lock:
+                yield
+        finally:
+            if not cls._shutting_down:
+                cls.pause_event.set()
+
+    @classmethod
+    @asynccontextmanager
+    async def shutdown_window(cls):
+        """停止领取新任务、取消在途 action，并独占队列数据库访问。
+
+        与 :meth:`maintenance_window` 不同，关闭流程不能无限等待可能正在执行网络请求
+        或等待远端回包的 action；它需要先阻止轮询器继续领取，再取消并等待已有处理器，
+        最后持有轮询锁清空队列和关闭数据库。该窗口也适用于由 Queue action 自身触发的
+        ``restart()``：当前处理器会被排除，避免取消并等待自己。
+        """
+        await cls.begin_shutdown()
+        try:
+            await cls.cancel_process_tasks()
+            async with cls._poll_lock:
+                yield
+        finally:
+            cls._shutting_down = False
+            cls.pause_event.set()
 
     @classmethod
     async def add_job(cls, target_client: str, action, args, wait=True) -> str | dict | None:
@@ -176,7 +284,7 @@ class JobQueueBase:
         2. 查找并执行相应的操作处理器
         3. 保存执行结果
         4. 处理任何异常并发送错误报告
-        5. 5秒后自动删除已完成的任务以节省数据库空间
+        5. 保留终态结果，交由定时清理统一删除
 
         :param tsk: 待处理的任务对象
         """
@@ -201,16 +309,18 @@ class JobQueueBase:
 
             if tsk_val:
                 Logger.trace(f"Task {tsk.action}({tsk.task_id}) {tsk.status}.")
-
-                # 完成的任务在 5 秒后自动删除以减少数据库大小
-                # 假定 5 秒足够处理任务完成后可能发生的事情
-                if tsk.status == "done":
-                    await asyncio.sleep(5)
-                    await tsk.delete()
                 return
             # 下面的代码不应该被执行，如果执行说明有代码 bug
             Logger.error(f"Task {tsk.action}({tsk.task_id}) seems not finished properly, bug in code?")
             await tsk.set_status("failed")
+        except asyncio.CancelledError:
+            # 处理器可能已经执行了外部副作用（发消息、禁言等），因此取消时不能把任务放回
+            # pending 让其它进程重试。写入 failed 终态既避免重复执行，也让等待方及时结束。
+            try:
+                await asyncio.shield(cls.return_val(tsk, {}, status="failed"))
+            except Exception:
+                Logger.exception(f"Failed to mark cancelled queue task {tsk.task_id} as failed: ")
+            raise
         except TimeoutError:
             Logger.warning(f"Task {tsk.task_id} timed out during action {tsk.action}.")
             await cls.return_val(tsk, {}, status="timeout")
@@ -240,7 +350,7 @@ class JobQueueBase:
             return
 
     @classmethod
-    async def _check_queue(cls, target_client: str | None = None):
+    async def _check_queue(cls, target_client: str | None = None, claim_new: bool = True):
         """检查队列中的待处理任务。
 
         该方法执行以下步骤：
@@ -259,6 +369,11 @@ class JobQueueBase:
             for tsk in await JobQueuesTable.filter(task_id__in=waiting):
                 if tsk.status not in ["pending", "processing"]:
                     await QueueTaskManager.set_result(str(tsk.task_id), tsk.result)
+
+        # 数据库维护期间只回收远端任务结果，不领取新的 action。不能把整个轮询器
+        # 停掉：在途 action 可能正在 QueueTaskManager 中等待客户端回包。
+        if not claim_new:
+            return
         # Logger.debug([cls.name, target_client if target_client else exports["Bot"].Info.client_name])
 
         # 获取待处理的任务列表
@@ -270,32 +385,40 @@ class JobQueueBase:
         for tsk in get_all:
             Logger.trace(f"Received job queue task {tsk.task_id}, action: {tsk.action}")
             Logger.trace(f"Args: {tsk.args}")
-            await tsk.set_status("processing")
-            asyncio.create_task(cls._process_task(tsk))
+            # 查询 pending 与启动处理之间可能有其它进程读取到同一快照；只有原子领取成功的
+            # 消费者才能继续，避免发送消息、禁言等非幂等动作被执行两次。
+            if not await tsk.claim():
+                continue
+            task = asyncio.create_task(cls._process_task(tsk))
+            cls._process_tasks.add(task)
+            task.add_done_callback(cls._process_task_done)
 
     @classmethod
     async def check_job_queue(cls, target_client: str | None = None):
         """启动队列检查循环。
 
         该方法以 100 毫秒的间隔持续检查队列中的任务，直到遇到异常或被外部停止。
-        使用 pause_event 来支持队列的暂停/恢复功能。
+        使用 pause_event 控制是否领取新任务。暂停时仍轮询终态结果，避免正在等待
+        远端回包的 action 与数据库维护流程互相等待。
 
         :param target_client: 可选的目标客户端过滤
         :raise QueueAlreadyRunning: 如果队列检查循环已经在运行
         """
         if cls.is_running:
             raise QueueAlreadyRunning
+        current = asyncio.current_task()
+        cls._poller_task = current
         cls.is_running = True
         try:
             while True:
-                # 等待pause_event被设置（允许继续处理）
-                await cls.pause_event.wait()
-                # 检查并处理队列任务
-                await cls._check_queue(target_client)
+                async with cls._poll_lock:
+                    await cls._check_queue(target_client, claim_new=cls.pause_event.is_set())
                 # 以100毫秒的间隔循环检查
                 await asyncio.sleep(0.1)
         finally:
             cls.is_running = False
+            if cls._poller_task is current:
+                cls._poller_task = None
 
     @classmethod
     def action(cls, action_name: str):

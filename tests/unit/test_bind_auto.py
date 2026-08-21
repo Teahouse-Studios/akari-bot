@@ -2,18 +2,25 @@
 
 import asyncio
 import re
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, patch
 
 from core.builtins.message.chain import MessageChain
 from core.builtins.session.info import SessionInfo
 from core.constants.exceptions import SessionFinished
 from core.database.models import TargetUnionInfo, TargetUnionBind
+from core.server.lifecycle import BackgroundTaskLifecycle
 from core.tester import func_case, Tester
 from core.tester.mock.session import MockMessageSession
 from modules.core.bind import (
     _close_handshake,
     _complete_channel_handshake,
+    _handshake_tasks,
+    _pending_confirms,
+    _pending_probes,
     _respond_probe,
     _start_handshake,
+    cancel_bind_handshake_tasks,
 )
 
 PROBE_PATTERN = re.compile(r"bind channel (probe|confirm) (\S+)")
@@ -311,6 +318,127 @@ async def _test_replayed_token_not_recorded_as_bot():
         return False
 
 
+async def _test_probe_send_failure_cleans_state_and_releases():
+    """测试 bind auto - probe 发送失败时不遗留口令或 held context"""
+    msg = await _session("FAILPROBE|Group|1")
+    before = set(_pending_probes)
+    held = 0
+    released = 0
+
+    async def hold():
+        nonlocal held
+        held += 1
+
+    async def release():
+        nonlocal released
+        released += 1
+
+    async def fail_send(*_args, **_kwargs):
+        raise RuntimeError("send failed")
+
+    msg.hold = hold
+    msg.release = release
+    msg.send_message = fail_send
+    try:
+        await _start_handshake(msg)
+    except RuntimeError:
+        return set(_pending_probes) == before and held == 1 and released == 1
+    return False
+
+
+async def _test_confirm_send_failure_cleans_state_and_releases():
+    """测试 bind auto - confirm 发送失败时允许 probe 重试并释放响应方上下文"""
+    token = "confirm-send-failure"
+    initiator = await _session("FAILCONFIRM1|Group|1")
+    responder = await _session("FAILCONFIRM2|Group|1", sender="peer_bot")
+    entry = {"initiator": initiator}
+    _pending_probes[token] = entry
+    before_confirms = set(_pending_confirms)
+    held = 0
+    released = 0
+
+    async def hold():
+        nonlocal held
+        held += 1
+
+    async def release():
+        nonlocal released
+        released += 1
+
+    async def fail_send(*_args, **_kwargs):
+        raise RuntimeError("send failed")
+
+    responder.hold = hold
+    responder.release = release
+    responder.send_message = fail_send
+    try:
+        await _respond_probe(responder, token)
+    except RuntimeError:
+        return (
+            set(_pending_confirms) == before_confirms and entry.get("claimed") is False and held == 1 and released == 1
+        )
+    finally:
+        _pending_probes.pop(token, None)
+    return False
+
+
+async def _test_completion_releases_both_contexts_when_one_release_fails():
+    """测试 bind auto - 任一 release 失败都不会阻止另一侧上下文释放"""
+    initiator_release = AsyncMock(side_effect=ValueError("first release failed"))
+    responder_release = AsyncMock()
+    initiator = SimpleNamespace(
+        session_info=SimpleNamespace(refresh_info=AsyncMock(side_effect=RuntimeError("handshake failed"))),
+        release=initiator_release,
+    )
+    responder = SimpleNamespace(session_info=SimpleNamespace(refresh_info=AsyncMock()), release=responder_release)
+
+    try:
+        await _complete_channel_handshake({"initiator": initiator, "responder": responder})
+    except RuntimeError:
+        return initiator_release.await_count == 1 and responder_release.await_count == 1
+    return False
+
+
+async def _test_expiry_task_creation_failure_rolls_back_handshake():
+    """测试 bind auto - 超时任务创建失败时回滚口令与 held context"""
+    msg = await _session("FAILTASK|Group|1")
+    before = set(_pending_probes)
+    msg.hold = AsyncMock()
+    msg.release = AsyncMock()
+
+    with patch("modules.core.bind.asyncio.create_task", side_effect=RuntimeError("loop closed")):
+        try:
+            await _start_handshake(msg)
+        except RuntimeError:
+            return set(_pending_probes) == before and msg.hold.await_count == 1 and msg.release.await_count == 1
+    return False
+
+
+async def _test_handshake_cleanup_cancels_expiry_and_releases():
+    """测试 bind auto - 生命周期清理取消超时任务并释放 pending context"""
+    await cancel_bind_handshake_tasks()
+    msg = await _session("CANCELTASK|Group|1")
+    msg.hold = AsyncMock()
+    msg.release = AsyncMock()
+
+    await _start_handshake(msg)
+    active = any(not task.done() for task in _handshake_tasks) and bool(_pending_probes)
+    await cancel_bind_handshake_tasks()
+    await asyncio.sleep(0)
+    return (
+        active
+        and not _pending_probes
+        and not _pending_confirms
+        and not _handshake_tasks
+        and msg.release.await_count == 1
+    )
+
+
+async def _test_handshake_cleanup_is_registered():
+    spec = BackgroundTaskLifecycle._cleanup_hooks.get("module:bind-handshake")
+    return spec is not None and spec.callback is cancel_bind_handshake_tasks
+
+
 @func_case
 async def test_bind_auto(tester: Tester):
     """modules.core.bind: bind auto 握手测试"""
@@ -324,5 +452,11 @@ async def test_bind_auto(tester: Tester):
     await tester.test(_test_probe_token_single_use, "probe 口令一次性测试")
     await tester.test(_test_confirm_rejects_other_session, "confirm 口令跨场景拒绝测试")
     await tester.test(_test_replayed_token_not_recorded_as_bot, "口令重放不误记机器人测试")
+    await tester.test(_test_probe_send_failure_cleans_state_and_releases, "probe 发送失败清理测试")
+    await tester.test(_test_confirm_send_failure_cleans_state_and_releases, "confirm 发送失败清理测试")
+    await tester.test(_test_completion_releases_both_contexts_when_one_release_fails, "双侧上下文完整释放测试")
+    await tester.test(_test_expiry_task_creation_failure_rolls_back_handshake, "超时任务创建失败回滚测试")
+    await tester.test(_test_handshake_cleanup_cancels_expiry_and_releases, "握手后台清理测试")
+    await tester.test(_test_handshake_cleanup_is_registered, "握手后台清理已注册测试")
 
     return tester

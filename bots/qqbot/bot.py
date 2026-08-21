@@ -15,7 +15,7 @@ from core.builtins.message.elements import ButtonPayload
 from core.builtins.message.internal import Plain
 from core.builtins.session.info import EventInfo, SessionInfo
 from core.builtins.utils import command_prefix
-from core.client.init import client_init
+from core.client.init import client_cleanup, client_init
 from bots.qqbot.config import QQBotConfig, QQBotSecretConfig
 from core.config.base import CoreConfig
 from core.constants.default import confirm_command_default
@@ -35,6 +35,20 @@ initialized = False
 
 
 class MyClient(botpy.Client):
+    async def close(self) -> None:
+        global initialized
+        try:
+            await QQBotFetchedContextManager.stop_task_processor()
+        finally:
+            try:
+                await QQBotContextManager.shutdown()
+            finally:
+                try:
+                    await client_cleanup()
+                finally:
+                    initialized = False
+                    await super().close()
+
     @staticmethod
     async def on_group_member_add(event: GroupMemberEvent):
         """将 QQ 官方机器人群成员加入事件转换为核心事件。"""
@@ -79,6 +93,7 @@ class MyClient(botpy.Client):
 
     async def on_ready(self):
         global initialized
+        QQBotContextManager.prepare_start()
         if not initialized:
             await client_init(target_prefix_list, sender_prefix_list, rename_logger=False)
             initialized = True
@@ -174,8 +189,8 @@ class MyClient(botpy.Client):
             return
 
         reply_id = None
-        if message.mentions:
-            reply_id = message.mentions[0].id
+        if message.message_reference:
+            reply_id = message.message_reference.message_id
 
         match_atme = False
 

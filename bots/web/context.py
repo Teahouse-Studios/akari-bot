@@ -25,6 +25,23 @@ class WebContextManager(ContextManager):
         return True
 
     @classmethod
+    def _get_websocket(cls, session_info: SessionInfo) -> WebSocket | None:
+        """Return the socket which owns this session.
+
+        A normal session must keep using the socket from which its message
+        arrived.  Only fetched sessions (scheduled or otherwise proactive
+        messages) may fall back to the most recently connected console.
+        """
+        if not getattr(session_info, "fetch", False):
+            context = cls.context.get(session_info.session_id)
+            if isinstance(context, dict):
+                websocket = context.get("websocket")
+                if websocket is not None:
+                    return websocket
+            return None
+        return Temp.data.get("web_chat_websocket")
+
+    @classmethod
     async def send_message(
         cls,
         session_info: SessionInfo,
@@ -33,7 +50,7 @@ class WebContextManager(ContextManager):
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
     ) -> list[str]:
-        websocket: WebSocket = Temp.data.get("web_chat_websocket")
+        websocket = cls._get_websocket(session_info)
         sends = []
 
         if isinstance(message, MessageNodes):
@@ -65,14 +82,21 @@ class WebContextManager(ContextManager):
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
     ) -> list[str]:
-        # 控制台仅服务于当前一位用户，不存在公开场景，私信与普通发送等价
-        return await cls.send_message(
-            session_info,
-            message,
-            quote=False,
-            enable_parse_message=enable_parse_message,
-            enable_split_image=enable_split_image,
-        )
+        # 控制台不存在公开场景，私信与普通发送等价；但平台发送失败仍须
+        # 遵守 ContextManager 契约，以空列表表示无法送达。
+        try:
+            return await cls.send_message(
+                session_info,
+                message,
+                quote=False,
+                enable_parse_message=enable_parse_message,
+                enable_split_image=enable_split_image,
+            )
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            Logger.exception(f"Failed to send private message to {user_id}: ")
+            return []
 
     @classmethod
     async def delete_message(
@@ -87,7 +111,7 @@ class WebContextManager(ContextManager):
             raise ValueError("Session not found in context")
 
         try:
-            websocket: WebSocket = Temp.data.get("web_chat_websocket")
+            websocket = cls._get_websocket(session_info)
 
             resp = {"action": "delete", "id": message_id}
             if websocket:
@@ -107,7 +131,7 @@ class WebContextManager(ContextManager):
             raise ValueError("Session not found in context")
 
         try:
-            websocket: WebSocket = Temp.data.get("web_chat_websocket")
+            websocket = cls._get_websocket(session_info)
 
             resp = {"action": "reaction", "id": message_id[-1], "emoji": emoji, "add": True}
             if websocket:
@@ -129,7 +153,7 @@ class WebContextManager(ContextManager):
             raise ValueError("Session not found in context")
 
         try:
-            websocket: WebSocket = Temp.data.get("web_chat_websocket")
+            websocket = cls._get_websocket(session_info)
 
             resp = {"action": "reaction", "id": message_id[-1], "emoji": emoji, "add": False}
             if websocket:
@@ -160,7 +184,7 @@ class WebContextManager(ContextManager):
                     ctx = cls.context.get(session_info.session_id)
                     if not ctx:
                         return
-                    websocket: WebSocket = Temp.data.get("web_chat_websocket")
+                    websocket = cls._get_websocket(session_info)
                     resp = {"action": "typing", "status": "start", "id": session_info.message_id}
                     if websocket:
                         await websocket.send_text(orjson.dumps(resp).decode())
@@ -168,7 +192,7 @@ class WebContextManager(ContextManager):
             except TimeoutError:
                 Logger.debug(f"Typing state expired in session: {session_info.session_id}")
                 try:
-                    websocket: WebSocket = Temp.data.get("web_chat_websocket")
+                    websocket = cls._get_websocket(session_info)
                     if websocket:
                         resp = {"action": "typing", "status": "end", "id": session_info.message_id}
                         await websocket.send_text(orjson.dumps(resp).decode())
@@ -200,7 +224,7 @@ class WebContextManager(ContextManager):
             await asyncio.gather(task, return_exceptions=True)
         # 这里可以添加结束输入状态的逻辑
         try:
-            websocket: WebSocket = Temp.data.get("web_chat_websocket")
+            websocket = cls._get_websocket(session_info)
 
             resp = {"action": "typing", "status": "end", "id": session_info.message_id}
             if websocket:
@@ -214,7 +238,7 @@ class WebContextManager(ContextManager):
             raise ValueError("Session not found in context")
         # 这里可以添加错误处理逻辑
         try:
-            websocket: WebSocket = Temp.data.get("web_chat_websocket")
+            websocket = cls._get_websocket(session_info)
 
             resp = {"action": "typing", "status": "error", "id": session_info.message_id}
             if websocket:

@@ -21,7 +21,8 @@ if TYPE_CHECKING:
 async def parser(msg: "Bot.MessageSession"):
     await msg.session_info.refresh_info()
 
-    await SessionTaskManager.check(msg)
+    if await SessionTaskManager.check(msg):
+        return msg
     modules = ModulesManager.return_modules_list()
 
     msg.trigger_msg = normalize_space(msg.as_display())

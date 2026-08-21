@@ -107,7 +107,9 @@ class ContextManager(ABC):
             cls.context_marks_hold[session_info.session_id] -= 1
             # 当计数达到 0 时，删除上下文和计数记录
             if cls.context_marks_hold[session_info.session_id] == 0:
-                del cls.context[session_info.session_id]
+                # 平台关闭流程可能已先清空上下文字典；release 仍须移除 hold 计数，
+                # 不能因重复清理抛 KeyError 而让后台任务以未取回异常结束。
+                cls.context.pop(session_info.session_id, None)
                 del cls.context_marks_hold[session_info.session_id]
                 Logger.trace(f"Context for session {session_info.session_id} is released.")
 

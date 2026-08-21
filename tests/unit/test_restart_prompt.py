@@ -98,10 +98,25 @@ async def _test_gives_up_when_client_never_online():
         _cleanup(alive)
 
 
+async def _test_corrupt_author_cache_is_discarded():
+    """损坏的重启发起者缓存不应阻止 Server 启动，也不能留到下次重复解析。"""
+    alive = Alive.values.copy()
+    author_cache = PrivateAssets.path / ".cache_restart_author"
+    try:
+        author_cache.write_bytes(b"{not valid json")
+        await load_prompt(None, timeout=0)
+        return not author_cache.exists()
+    except Exception:
+        return False
+    finally:
+        _cleanup(alive)
+
+
 @func_case
 async def test_restart_prompt(tester: Tester):
     """core.server.init: 重启提示送达测试"""
     await tester.test(_test_waits_for_client_to_come_online, "等待客户端上线后投递测试")
     await tester.test(_test_gives_up_when_client_never_online, "客户端不上线时超时放弃测试")
+    await tester.test(_test_corrupt_author_cache_is_discarded, "损坏重启缓存丢弃测试")
 
     return tester

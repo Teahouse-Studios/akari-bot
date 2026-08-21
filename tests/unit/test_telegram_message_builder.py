@@ -246,6 +246,17 @@ async def _test_execute_operations_collects_ids_and_reply_once():
     )
 
 
+async def _test_execute_operations_preserves_messages_before_failure():
+    first = SimpleNamespace(message_id=1)
+    bot = SimpleNamespace(send_message=AsyncMock(side_effect=[first, RuntimeError("send failed")]))
+    operations = [TelegramTextOperation(text="one"), TelegramTextOperation(text="two")]
+    try:
+        sent = await execute_telegram_operations(bot, 10, operations, reply_to_message_id=None, reply_markup=None)
+    except Exception:
+        return False
+    return sent == [first] and bot.send_message.await_count == 2
+
+
 async def _test_final_media_group_attaches_markup_by_edit():
     markup = SimpleNamespace()
     messages = [SimpleNamespace(message_id=1), SimpleNamespace(message_id=2, edit_reply_markup=AsyncMock())]
@@ -280,6 +291,7 @@ async def test_telegram_message_builder(tester: Tester):
     await tester.test(_test_text_without_media_uses_4096_limit, "纯文本使用 4096 字符限制")
     await tester.test(_test_single_audio_operation, "单音频使用单项操作")
     await tester.test(_test_execute_operations_collects_ids_and_reply_once, "执行操作收集消息且仅首条引用")
+    await tester.test(_test_execute_operations_preserves_messages_before_failure, "后续发送失败时保留已发送消息")
     await tester.test(_test_final_media_group_attaches_markup_by_edit, "末尾媒体组通过编辑附加按钮")
     await tester.test(_test_long_plain_text_uses_lightweight_split_path, "长纯文本使用轻量拆分路径")
     await tester.test(_test_image_split_boundaries_have_no_empty_crop, "图片高度边界不生成空裁剪")

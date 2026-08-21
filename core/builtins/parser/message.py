@@ -141,6 +141,11 @@ channel_claim_cache = ExpiringTempDict()
 regex_once_cache: set[tuple[str, int, str]] = set()
 
 
+def _sender_scope_key(msg: "Bot.MessageSession") -> str | None:
+    """返回会话内需要按绑定身份共享的内存状态键。"""
+    return msg.session_info.sender_union_id or msg.session_info.sender_id
+
+
 def should_skip_regex(trigger_msg: str) -> bool:
     prefixes = tuple(prefix for prefix in CoreConfig.regex_disable_prefix if isinstance(prefix, str) and prefix)
     return trigger_msg.startswith(prefixes)
@@ -187,8 +192,26 @@ async def parser(msg: "Bot.MessageSession"):
     if msg.session_info.sender_id in ignored_sender:
         return
 
+    # 同一现实场景中的其它机器人输出既不能进入命令／正则，也不能抢先完成
+    # wait_anyone 等等待任务；过滤必须发生在 SessionTaskManager.check() 之前。
+    if msg.session_info.sender_id in msg.session_info.target_union_info.list_peer_bots(msg.session_info.target_id):
+        Logger.debug(f"Ignored message from another client: {msg.session_info.sender_id}")
+        return
+
     try:
-        # ========== 步骤 1: 检查任务队列 ==========
+        # ========== 步骤 1: 入站权限检查 ==========
+        # 等待与 callback 同样是执行入口。若把封禁检查放在
+        # SessionTaskManager.check() 之后，被全局屏蔽或被当前场景屏蔽的
+        # 用户仍可推进 wait_anyone，也可通过普通 reply 触发按钮 callback。
+        # 此处沿用原命令路径的豁免规则，后续不再重复判定。
+        if msg.session_info.sender_union_info.blocked and not (
+            msg.session_info.sender_union_info.trusted or msg.session_info.sender_union_info.superuser
+        ):
+            return
+        if msg.session_info.sender_union_id in msg.session_info.banned_users and not msg.check_super_user():
+            return
+
+        # ========== 步骤 2: 检查任务队列 ==========
         # 检查是否有等待此消息的任务（如等待用户回复）
         # 等待任务按消息通道建键，同通道内的场景共享。退役场景若在此抢先命中，存活场景挂起的
         # 等待便由它的消息触发，模块拿到的结果也随之出自退役平台。故此处须与通道认领同判据，
@@ -198,7 +221,8 @@ async def parser(msg: "Bot.MessageSession"):
             msg.session_info.target_union_id,
             msg.session_info.target_channel_id,
         ):
-            await SessionTaskManager.check(msg)
+            if await SessionTaskManager.check(msg):
+                return
 
         # 获取该平台和客户端的所有可用模块
         modules = ModulesManager.return_modules_list(msg.session_info.target_from, msg.session_info.client_name)
@@ -208,22 +232,6 @@ async def parser(msg: "Bot.MessageSession"):
 
         # 如果消息为空，直接返回
         if len(msg.trigger_msg) == 0:
-            return
-
-        # 屏蔽同一个现实场景里其它机器人发的消息，避免把对方的输出当成用户输入去执行
-        if msg.session_info.sender_id in msg.session_info.target_union_info.list_peer_bots(msg.session_info.target_id):
-            Logger.debug("Ignored message from other clients: " + msg.trigger_msg)
-            return
-
-        # ========== 步骤 2: 权限检查 ==========
-        # 检查用户是否被被机器人屏蔽（机器人黑名单）
-        if msg.session_info.sender_union_info.blocked and not (
-            msg.session_info.sender_union_info.trusted or msg.session_info.sender_union_info.superuser
-        ):
-            return
-
-        # 检查用户是否在场景的屏蔽用户列表中（场景黑名单，按 union 记录，换绑同一 union 的其他账号同样受限）
-        if msg.session_info.sender_union_id in msg.session_info.banned_users and not msg.session_info.superuser:
             return
 
         # ========== 步骤 3: 命令匹配 ==========
@@ -249,7 +257,7 @@ async def parser(msg: "Bot.MessageSession"):
                 return
 
             if command_first_word:
-                if not try_acquire_execution_lock(msg):
+                if not await try_acquire_execution_lock(msg):
                     await msg.send_message(I18NContext("parser.command.running.prompt"))
                     return
 
@@ -295,7 +303,7 @@ async def parser(msg: "Bot.MessageSession"):
             return
         if msg.session_info.use_running_mention:
             if msg.trigger_msg.lower().find(msg.session_info.bot_name.lower()) != -1:
-                if ExecutionLockList.check(msg):
+                if await ExecutionLockList.is_locked(msg):
                     return await msg.send_message(I18NContext("parser.command.running.prompt2"))
 
         await _execute_regex(msg, modules, identify_str)
@@ -307,8 +315,16 @@ async def parser(msg: "Bot.MessageSession"):
     except Exception:
         Logger.exception()
     finally:
-        ExecutionLockList.remove(msg)
-        Info.message_parsed += 1
+        try:
+            await msg.release_execution_resources()
+        finally:
+            # wait_* 的回复会话会共享根命令的 ExecutionState，但没有最终
+            # 清理所有权。它仍可在 continuation 内主动 sleep／wait，从而
+            # 释放和重获同一 lease；这里只能由原始 parser 释放最终 lease，
+            # 否则回复消息返回时会拆掉仍在使用的 Union merge barrier。
+            if getattr(msg, "_execution_state_owner", True):
+                ExecutionLockList.remove(msg)
+            Info.message_parsed += 1
 
 
 async def _claim_channel_message(msg: "Bot.MessageSession", display: str | None = None) -> bool:
@@ -848,7 +864,7 @@ def regex_module_enabled(
     return bool(enabled_modules) and module_name in enabled_modules
 
 
-def try_acquire_execution_lock(msg: "Bot.MessageSession") -> bool:
+async def try_acquire_execution_lock(msg: "Bot.MessageSession") -> bool:
     """
     尝试为当前会话获取执行锁。
 
@@ -858,10 +874,7 @@ def try_acquire_execution_lock(msg: "Bot.MessageSession") -> bool:
     :param msg: 消息会话。
     :return: 是否成功获取。
     """
-    if ExecutionLockList.check(msg):
-        return False
-    ExecutionLockList.add(msg)
-    return True
+    return await ExecutionLockList.acquire(msg)
 
 
 def regex_func_available(rfunc, target_from: str, client_name: str) -> bool:
@@ -1059,7 +1072,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
 
                             # 正则由消息内容隐式触发，锁被占用时静默跳过；
                             # 此处若发出提示并 return，还会连带中断后续模块的正则遍历。
-                            if not try_acquire_execution_lock(msg):
+                            if not await try_acquire_execution_lock(msg):
                                 continue
 
                             # 标记须在调用处理函数之前落下：处理函数为协程，其执行期间同一场景的
@@ -1146,15 +1159,16 @@ async def _check_target_cooldown(msg: "Bot.MessageSession"):
         return
 
     # 获取该场景的冷却记录
-    target_record = target_cooldown_counter[msg.session_info.target_id]
+    target_record = target_cooldown_counter[msg.session_info.channel_key]
 
     # 获取该用户的冷却记录
-    sender_record = target_record.get(msg.session_info.sender_id)
+    sender_key = _sender_scope_key(msg)
+    sender_record = target_record.get(sender_key)
 
     # 如果不存在，则创建并跳过冷却提示
     if not sender_record:
         sender_record = ExpiringTempDict(data={"notified": False}, exp=cooldown_time, root=False)
-        target_record[msg.session_info.sender_id] = sender_record
+        target_record[sender_key] = sender_record
         return
 
     # 检查是否还在冷却期内
@@ -1190,14 +1204,15 @@ async def _tos_temp_ban(msg: "Bot.MessageSession"):
     :raises SessionFinished: 如果用户被封禁，终止会话
     """
     # 获取用户的封禁信息
-    ban_info = temp_ban_counter.get(msg.session_info.sender_id)
+    sender_key = _sender_scope_key(msg)
+    ban_info = temp_ban_counter.get(sender_key)
 
     if ban_info and not ban_info.is_expired():
         # 用户在封禁期内
 
         # 超级用户可以自动解除封禁
         if msg.check_super_user():
-            await remove_temp_ban(msg.session_info.sender_id)
+            await remove_temp_ban(sender_key)
             return None
 
         # 计算剩余封禁时间
@@ -1238,7 +1253,8 @@ async def _tos_msg_counter(msg: "Bot.MessageSession", command: str):
     """
     # ========== 单命令频率检查 ==========
     # 检查同一命令的使用频率
-    bucket_same = buckets_same[msg.session_info.sender_id][command]
+    sender_key = _sender_scope_key(msg)
+    bucket_same = buckets_same[sender_key][command]
     if "bucket" not in bucket_same:
         # 初始化令牌桶：容量 10，每 300 秒恢复满
         bucket_same["bucket"] = TokenBucket(10, 300)
@@ -1249,7 +1265,7 @@ async def _tos_msg_counter(msg: "Bot.MessageSession", command: str):
 
     # ========== 全局命令频率检查 ==========
     # 检查所有命令的总体使用频率
-    bucket_all = buckets_all[msg.session_info.sender_id]
+    bucket_all = buckets_all[sender_key]
     if "bucket" not in bucket_all:
         # 初始化令牌桶：容量 20，每 300 秒恢复满
         bucket_all["bucket"] = TokenBucket(20, 300)
@@ -1462,7 +1478,7 @@ async def _process_tos_abuse_warning(msg: "Bot.MessageSession", e: AbuseWarning)
     """
     if enable_tos and CoreConfig.tos_warning_counts >= 1 and not msg.check_super_user():
         await abuse_warn_target(msg, str(e))
-        temp_ban_counter[msg.session_info.sender_id] = {"count": 1, "ts": time.time()}
+        temp_ban_counter[_sender_scope_key(msg)] = {"count": 1, "ts": time.time()}
     else:
         err_msg_chain = MessageChain.assign(I18NContext("error.message.prompt"))
         err_msg_chain.append(Plain(msg.session_info.locale.t_str(str(e))))

@@ -1,14 +1,27 @@
+from copy import deepcopy
 from datetime import datetime, UTC
 from urllib.parse import urlparse
 
 import orjson
 from tortoise import fields
-from tortoise.exceptions import DoesNotExist
+from tortoise.transactions import in_transaction
 
 from core.database.base import DBModel
-from core.database.models import UNION_SCOPE_TARGET
+from core.database.models import TargetUnionInfo, UNION_SCOPE_TARGET, union_mutation
 
 table_prefix = "module_wiki_"
+
+
+def _normalized_authority(api_link: str) -> tuple[str, int | None] | None:
+    """提取用于白名单比较的规范化主机与端口，拒绝无主机或非法端口。"""
+    parsed = urlparse(api_link)
+    if not parsed.hostname:
+        return None
+    try:
+        port = parsed.port
+    except ValueError:
+        return None
+    return parsed.hostname.rstrip(".").casefold(), port
 
 
 class WikiTargetInfo(DBModel):
@@ -32,43 +45,66 @@ class WikiTargetInfo(DBModel):
     class Meta:
         table = f"{table_prefix}target_set_info"
 
+    async def _mutate(self, mutation) -> bool:
+        """在 Union 与模块行均存在时，基于数据库中的最新值执行一次定向更新。"""
+        async with union_mutation():
+            async with in_transaction("default") as connection:
+                target = await (
+                    TargetUnionInfo.filter(union_id=self.union_id).using_db(connection).select_for_update().first()
+                )
+                if not target:
+                    return False
+
+                current = await (
+                    type(self).filter(union_id=self.union_id).using_db(connection).select_for_update().first()
+                )
+                if not current:
+                    return False
+
+                updates = mutation(current)
+                if updates is None:
+                    return False
+                await type(self).filter(union_id=self.union_id).using_db(connection).update(**updates)
+                for field_name, value in updates.items():
+                    setattr(self, field_name, deepcopy(value))
+                return True
+
     async def add_start_wiki(self, url: str):
-        self.api_link = url
-        await self.save()
-        return True
+        return await self._mutate(lambda _: {"api_link": url})
 
     async def config_interwikis(self, iw: str, iwlink: str | None = None):
-        interwikis = self.interwikis
-        if iwlink:
-            interwikis[iw] = iwlink
-        else:
-            if iw in interwikis:
-                del interwikis[iw]
-        self.interwikis = interwikis
-        await self.save()
-        return True
+        def mutate(current):
+            interwikis = deepcopy(current.interwikis or {})
+            if iwlink:
+                interwikis[iw] = iwlink
+            else:
+                interwikis.pop(iw, None)
+            return {"interwikis": interwikis}
+
+        return await self._mutate(mutate)
 
     async def config_headers(self, headers: str | None = None, add: bool = True):
         try:
-            headers_ = self.headers
-            if headers and add:
-                headers = orjson.loads(headers)
-                for x in headers:
-                    headers_[x] = headers[x]
-            elif headers:
-                headers_ = {k: v for k, v in headers_.items() if k not in headers}
-            else:
-                headers_ = {}
-            self.headers = headers_
-            await self.save()
-            return True
+            parsed_headers = orjson.loads(headers) if headers and add else None
+            if parsed_headers is not None and not isinstance(parsed_headers, dict):
+                return False
+
+            def mutate(current):
+                current_headers = deepcopy(current.headers or {})
+                if parsed_headers is not None:
+                    current_headers.update(parsed_headers)
+                elif headers:
+                    current_headers = {key: value for key, value in current_headers.items() if key != headers}
+                else:
+                    current_headers = {}
+                return {"headers": current_headers}
+
+            return await self._mutate(mutate)
         except Exception:
             return False
 
     async def config_prefix(self, prefix: str | None = None):
-        self.prefix = prefix
-        await self.save()
-        return True
+        return await self._mutate(lambda _: {"prefix": prefix})
 
 
 class WikiSiteInfo(DBModel):
@@ -88,14 +124,13 @@ class WikiSiteInfo(DBModel):
         table = f"{table_prefix}site_info"
 
     async def update(self, info: dict):
-        try:
-            query = await WikiSiteInfo.get(api_link=self.api_link)
-            query.site_info = orjson.dumps(info)
-            query.timestamp = datetime.now(UTC)
-            await query.save()
-        except DoesNotExist:
-            await WikiSiteInfo.create(api_link=self.api_link, site_info=orjson.dumps(info), timestamp=datetime.now(UTC))
-
+        timestamp = datetime.now(UTC)
+        await type(self).update_or_create(
+            api_link=self.api_link,
+            defaults={"site_info": info, "timestamp": timestamp},
+        )
+        self.site_info = deepcopy(info)
+        self.timestamp = timestamp
         return True
 
     @classmethod
@@ -119,22 +154,20 @@ class WikiAllowList(DBModel):
 
     @classmethod
     async def check(cls, api_link) -> bool:
-        api_link = urlparse(api_link).netloc
-        return bool(await cls.filter(api_link__icontains=api_link).first())
+        authority = _normalized_authority(api_link)
+        if authority is None:
+            return False
+        allow_links = await cls.all().values_list("api_link", flat=True)
+        return any(_normalized_authority(link) == authority for link in allow_links)
 
     @classmethod
     async def add(cls, api_link) -> bool:
-        if await cls.filter(api_link=api_link).exists():
-            return False
-        await cls.create(api_link=api_link)
-        return True
+        _, created = await cls.get_or_create(api_link=api_link)
+        return created
 
     @classmethod
     async def remove(cls, api_link) -> bool:
-        if not await cls.filter(api_link=api_link).exists():
-            return False
-        await cls.filter(api_link=api_link).delete()
-        return True
+        return bool(await cls.filter(api_link=api_link).delete())
 
 
 class WikiBlockList(DBModel):
@@ -157,17 +190,12 @@ class WikiBlockList(DBModel):
 
     @classmethod
     async def add(cls, api_link) -> bool:
-        if await (cls.filter(api_link=api_link)).exists():
-            return False
-        await cls.create(api_link=api_link)
-        return True
+        _, created = await cls.get_or_create(api_link=api_link)
+        return created
 
     @classmethod
     async def remove(cls, api_link) -> bool:
-        if not await (cls.filter(api_link=api_link)).exists():
-            return False
-        await cls.filter(api_link=api_link).delete()
-        return True
+        return bool(await cls.filter(api_link=api_link).delete())
 
 
 class WikiBotAccountList(DBModel):
@@ -188,17 +216,12 @@ class WikiBotAccountList(DBModel):
 
     @classmethod
     async def add(cls, api_link: str, bot_account: str, bot_password: str):
-        if await (cls.filter(api_link=api_link)).exists():
-            return False
-
-        await cls.create(api_link=api_link, bot_account=bot_account, bot_password=bot_password)
-        return True
+        _, created = await cls.get_or_create(
+            api_link=api_link,
+            defaults={"bot_account": bot_account, "bot_password": bot_password},
+        )
+        return created
 
     @classmethod
     async def remove(cls, api_link):
-        queries = await cls.filter(api_link=api_link)
-        if not queries:
-            return False
-
-        await queries[0].delete()
-        return True
+        return bool(await cls.filter(api_link=api_link).delete())

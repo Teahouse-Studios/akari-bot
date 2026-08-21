@@ -186,6 +186,9 @@ class SessionInfo:
     enabled_modules: list | None = None
     petal: int | None = None
     prefixes: list[str] = field(factory=list)
+    # 平台消息入口额外声明的前缀（如 Discord Slash、QQ 官方的 ``/``）。
+    # refresh_info() 会刷新数据库中的自定义前缀，但必须保留这一组入口能力。
+    platform_prefixes: list[str] = field(factory=list)
     # 主动推送的下一跳场景 ID 列表：本跳发送失败时，由客户端回调服务端改用列表中的下一个场景重发
     next_hops: list[str] = field(factory=list)
     ctx_slot: int | None = 0
@@ -247,10 +250,12 @@ class SessionInfo:
         locale = Locale(target_union_info.locale)
         bot_name = locale.t("bot_name")
         _tz_offset = target_union_info.target_data.get("timezone_offset", CoreConfig.timezone_offset)
+        platform_prefixes = list(prefixes) if prefixes is not None else []
+        custom_prefixes = target_union_info.target_data.get("command_prefix", [])
+        if isinstance(custom_prefixes, str):
+            custom_prefixes = [custom_prefixes]
         prefixes = (
-            (prefixes + (target_union_info.target_data.get("command_prefix", []) + command_prefix.copy()))
-            if prefixes is not None
-            else []
+            list(dict.fromkeys([*platform_prefixes, *custom_prefixes, *command_prefix])) if prefixes is not None else []
         )
 
         tmp = tmp or {}
@@ -266,6 +271,7 @@ class SessionInfo:
             reply_id=reply_id,
             bot_id=bot_id,
             messages=messages,
+            superuser=sender_union_info.superuser if sender_union_info else False,
             banned_users=target_union_info.banned_users,
             custom_admins=target_union_info.custom_admins,
             timestamp=timestamp,
@@ -283,6 +289,7 @@ class SessionInfo:
             timezone_offset=parse_time_string(_tz_offset),
             petal=sender_union_info.petal if sender_union_info else None,
             prefixes=prefixes,
+            platform_prefixes=platform_prefixes,
             ctx_slot=ctx_slot,
             fetch=fetch,
             is_private=is_private,
@@ -303,24 +310,45 @@ class SessionInfo:
         return _c
 
     async def refresh_info(self):
-        # 同 assign()：两次解析互不依赖，并发发出
+        """从数据库同步会影响当前消息解析的 Union 状态。"""
+        # SessionInfo 在 bot 进程构造后才经队列抵达 server；这段时间内权限、静音、
+        # 语言或命令前缀都可能被其它消息修改。只替换 ORM 对象而保留派生字段，会让
+        # parser 继续按入队时的旧状态执行。
         sender_union_info, target_union_info = await asyncio.gather(
-            SenderUnionInfo.get_by_sender_id(self.sender_id) if self.sender_id else _none(),
-            TargetUnionInfo.get_by_target_id(self.target_id) if self.target_id else _none(),
+            SenderUnionInfo.get_by_sender_id(self.sender_id, create=False) if self.sender_id else _none(),
+            TargetUnionInfo.get_by_target_id(self.target_id, create=False) if self.target_id else _none(),
         )
+        # assign() 已在平台进程为入站消息建立两侧映射。消息排队期间若管理员删除了
+        # 对应 Union，刷新时绝不能再创建一套默认状态继续执行：那会复活已删除身份，
+        # 并可能绕过原 Union 上的封禁、静音或模块配置。
+        if self.sender_id and sender_union_info is None:
+            raise ValueError(f"SenderUnionInfo not found for sender_id: {self.sender_id}")
+        if self.target_id and target_union_info is None:
+            raise ValueError(f"TargetUnionInfo not found for target_id: {self.target_id}")
         self.sender_union_info = sender_union_info
         self.sender_union_id = sender_union_info.union_id if sender_union_info else None
-        # 场景 union 解析不出时保留原值，置空只会把问题推迟到后续访问处才暴露
-        if target_union_info:
-            self.target_union_info = target_union_info
-            self.target_union_id = target_union_info.union_id
-            from core.loader import ModulesManager
+        self.superuser = sender_union_info.superuser if sender_union_info else False
+        self.petal = sender_union_info.petal if sender_union_info else None
+        self.target_union_info = target_union_info
+        self.target_union_id = target_union_info.union_id
+        self.banned_users = target_union_info.banned_users
+        self.custom_admins = target_union_info.custom_admins
+        self.muted = target_union_info.muted
+        self.locale = Locale(target_union_info.locale)
+        self.bot_name = self.locale.t("bot_name")
+        self._tz_offset = target_union_info.target_data.get("timezone_offset", CoreConfig.timezone_offset)
+        self.timezone_offset = parse_time_string(self._tz_offset)
+        custom_prefixes = target_union_info.target_data.get("command_prefix", [])
+        if isinstance(custom_prefixes, str):
+            custom_prefixes = [custom_prefixes]
+        self.prefixes = list(dict.fromkeys([*self.platform_prefixes, *custom_prefixes, *command_prefix]))
+        from core.loader import ModulesManager
 
-            enabled_modules = []
-            for module_name in target_union_info.modules or []:
-                related_names = ModulesManager.get_module_and_alias_first_words(module_name) or [module_name]
-                enabled_modules.extend(name for name in related_names if name not in enabled_modules)
-            self.enabled_modules = enabled_modules
+        enabled_modules = []
+        for module_name in target_union_info.modules or []:
+            related_names = ModulesManager.get_module_and_alias_first_words(module_name) or [module_name]
+            enabled_modules.extend(name for name in related_names if name not in enabled_modules)
+        self.enabled_modules = enabled_modules
         bind = self.target_union_info.bind if self.target_union_info else None
         self.target_channel_id = bind.channel_id if bind else 1
 

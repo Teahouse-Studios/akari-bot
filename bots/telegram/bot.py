@@ -15,7 +15,7 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Voice, Image, Plain
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
-from core.client.init import client_init
+from core.client.init import client_cleanup, client_init
 from bots.telegram.config import AiogramConfig
 from core.config.base import CoreConfig
 from core.utils.button_runtime import BUTTON_TOKEN_PREFIX
@@ -46,10 +46,12 @@ async def to_message_chain(msg: types.Message):
         d = await _download_telegram_file(file.file_path)
         lst.append(Voice(d))
     if msg.document:
-        file = await aiogram_bot.get_file(msg.document.file_id)
-        if msg.document.mime_type.startswith("image/"):
+        mime_type = msg.document.mime_type or ""
+        if mime_type.startswith("image/"):
+            file = await aiogram_bot.get_file(msg.document.file_id)
             lst.append(Image(f"https://api.telegram.org/file/bot{token}/{file.file_path}"))
-        if msg.document.mime_type.startswith("audio/"):
+        elif mime_type.startswith("audio/"):
+            file = await aiogram_bot.get_file(msg.document.file_id)
             d = await _download_telegram_file(file.file_path)
             lst.append(Voice(d))
     if msg.caption:
@@ -85,6 +87,10 @@ async def member_left_handler(message: types.Message):
 
 @dp.message()
 async def msg_handler(message: types.Message):
+    # Telegram 允许消息仅带 sender_chat（例如匿名管理员或代表频道发言），此时
+    # from_user 为 None。核心权限与用户数据按用户 Union 解析，不能把场景 ID 冒充用户 ID。
+    if message.from_user is None:
+        return
     target_from = f"{target_prefix}|{message.chat.type.title()}"
     target_id = f"{target_from}|{message.chat.id}"
     sender_id = f"{sender_prefix}|{message.from_user.id}"
@@ -163,6 +169,11 @@ async def on_startup():
     await client_init(target_prefix_list, sender_prefix_list)
 
 
+async def on_shutdown():
+    await client_cleanup()
+
+
 if AiogramConfig.enable:
     dp.startup.register(on_startup)
+    dp.shutdown.register(on_shutdown)
     dp.run_polling(aiogram_bot, tasks_concurrency_limit=TELEGRAM_UPDATE_CONCURRENCY_LIMIT)

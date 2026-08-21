@@ -17,10 +17,13 @@ Bot.register_bot(client_name=client_name)
 
 ctx_id = Bot.register_context_manager(WebContextManager)
 
+_connected_web_chat_websockets: list[WebSocket] = []
+
 
 @app.websocket("/ws/chat")
 async def websocket_chat(websocket: WebSocket):
     await websocket.accept()
+    _connected_web_chat_websockets.append(websocket)
     Temp.data["web_chat_websocket"] = websocket
     target_id = f"{target_prefix}|0"
     sender_id = f"{sender_prefix}|0"
@@ -53,7 +56,7 @@ async def websocket_chat(websocket: WebSocket):
                             ctx_slot=ctx_id,
                         )
 
-                        await Bot.process_message(session, message)
+                        await Bot.process_message(session, {"message": message, "websocket": websocket})
                     elif action == "send":
                         msg_list = message.get("message", [])
                         content = msg_list[0].get("content", "") if msg_list else ""
@@ -71,7 +74,7 @@ async def websocket_chat(websocket: WebSocket):
                             ctx_slot=ctx_id,
                         )
 
-                        await Bot.process_message(session, message)
+                        await Bot.process_message(session, {"message": message, "websocket": websocket})
                 except orjson.JSONDecodeError:
                     continue
     except WebSocketDisconnect:
@@ -80,8 +83,16 @@ async def websocket_chat(websocket: WebSocket):
         Logger.exception()
         await websocket.close()
     finally:
-        if "web_chat_websocket" in Temp.data:
-            del Temp.data["web_chat_websocket"]
+        _connected_web_chat_websockets[:] = [
+            connected for connected in _connected_web_chat_websockets if connected is not websocket
+        ]
+        # 多个控制台连接可能短暂重叠。非当前连接退出时不能清理新连接；当前连接
+        # 退出时则恢复到最近一个仍在线的连接，供主动消息继续使用。
+        if Temp.data.get("web_chat_websocket") is websocket:
+            if _connected_web_chat_websockets:
+                Temp.data["web_chat_websocket"] = _connected_web_chat_websockets[-1]
+            else:
+                Temp.data.pop("web_chat_websocket", None)
 
 
 if WebConfig.enable:

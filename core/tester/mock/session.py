@@ -197,7 +197,14 @@ class MockMessageSession(MessageSession):
         pass
 
     async def wait_confirm(
-        self, message_chain=None, quote=True, delete=True, timeout=120, append_instruction=True, no_confirm_action=True
+        self,
+        message_chain=None,
+        quote=True,
+        delete=True,
+        timeout=120,
+        append_instruction=True,
+        no_confirm_action=True,
+        release_execution_lock=True,
     ):
         if CoreConfig.no_confirm:
             return no_confirm_action
