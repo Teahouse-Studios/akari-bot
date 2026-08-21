@@ -117,6 +117,19 @@ async def _test_unify_channel_missing_bind_is_safe():
         return False
 
 
+async def _test_unify_channel_missing_initiator_reassigns_current():
+    """测试通道统一 - 发起方绑定缺失时把当前场景移到兜底通道"""
+    target_id = "MERGETEST|Group|missing-initiator"
+    union = await TargetUnionInfo.resolve_union(target_id)
+    await TargetUnionBind.filter(target_id=target_id).update(channel_id=7)
+    try:
+        channel_id = await merge._unify_channel("NOSUCH|Group|initiator", target_id)
+        bind = await TargetUnionBind.get(target_id=target_id)
+        return channel_id == 1 and bind.channel_id == 1
+    finally:
+        await union.delete_union()
+
+
 @func_case
 async def test_merge_code(tester: Tester):
     """modules.core.merge: 迁移码签发与消费测试"""
@@ -127,5 +140,6 @@ async def test_merge_code(tester: Tester):
     await tester.test(_test_bind_code_not_consumable, "与 bind 隔离测试")
     await tester.test(_test_unify_channel_merges_two_sessions, "通道统一测试")
     await tester.test(_test_unify_channel_missing_bind_is_safe, "缺绑定行兜底测试")
+    await tester.test(_test_unify_channel_missing_initiator_reassigns_current, "缺发起方绑定时重分配当前通道测试")
 
     return tester

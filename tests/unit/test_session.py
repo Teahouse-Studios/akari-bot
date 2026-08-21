@@ -432,6 +432,12 @@ async def _test_wait_resume_reacquires_after_competing_command():
         async def end_typing(self):
             return None
 
+        async def hold(self):
+            return None
+
+        async def release(self):
+            return None
+
     session_info = await SessionInfo.assign(
         target_id="TEST|Group|wait-reacquire",
         target_from="TEST|Group",
@@ -449,7 +455,7 @@ async def _test_wait_resume_reacquires_after_competing_command():
             sender_from=session_info.sender_from,
         )
     )
-    incoming = MessageSession(
+    incoming = WaitSession(
         await SessionInfo.assign(
             target_id=session_info.target_id,
             target_from=session_info.target_from,

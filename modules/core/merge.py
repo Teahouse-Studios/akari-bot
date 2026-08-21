@@ -8,6 +8,7 @@ from core.database.models import (
     UNION_SCOPE_SENDER,
     UNION_SCOPE_TARGET,
     SenderUnionInfo,
+    TargetUnionBind,
     TargetUnionInfo,
 )
 from core.retired import RETIRED_SOURCES, RETIRED_TARGETS, enqueue_notice, is_merge_route_allowed
@@ -55,16 +56,30 @@ async def _unify_channel(initiator_target_id: str, current_target_id: str) -> in
     而双双放行，同一条命令因此被响应两次；统一通道是那条回退路径唯一的保险。
 
     通道号取发起方的现有编号。两个场景原本所在的完整通道都会保留等价关系，
-    避免只移动端点而把同通道的第三个平台入口拆开。
+    避免只移动端点而把同通道的第三个平台入口拆开。若迁移码存活期间发起方绑定
+    已被删除，则把仍存在的兑换方安全移到通道 1；两侧均不存在时也按旧契约返回 1。
 
     :param initiator_target_id: 发起方的场景 ID。
     :param current_target_id: 兑换方的场景 ID。
     :return: 统一后的通道号。
     """
     channel_id = await TargetUnionInfo.unify_channels(initiator_target_id, current_target_id)
-    if channel_id is None:
+    if channel_id is not None:
+        return channel_id
+
+    binds = await TargetUnionBind.filter(target_id__in=[initiator_target_id, current_target_id])
+    by_id = {bind.target_id: bind for bind in binds}
+    initiator_bind = by_id.get(initiator_target_id)
+    current_bind = by_id.get(current_target_id)
+    if initiator_bind and current_bind:
+        # 两行都存在却无法统一，说明迁移后的 Target Union 拓扑与调用约定不符；
+        # 此时不能把其中一侧静默移到其它通道，避免掩盖未完成的 Union 合并。
         raise RuntimeError("Unable to unify migrated target channels.")
-    return channel_id
+
+    fallback_channel = initiator_bind.channel_id if initiator_bind else 1
+    if current_bind and current_bind.channel_id != fallback_channel:
+        return await TargetUnionInfo.reassign_channel(current_target_id, fallback_channel) or fallback_channel
+    return fallback_channel
 
 
 m = module(

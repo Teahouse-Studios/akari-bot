@@ -198,15 +198,21 @@ def _test_all_named_hooks_are_reachable():
 @func_case
 async def test_scheduled_tasks(tester: Tester):
     """定时任务手动触发测试"""
-    await tester.test(_test_arcaea_rss_posts_new_version, "arcaea_rss 推送新版本测试")
-    await tester.test(_test_arcaea_rss_deduplicates, "arcaea_rss 去重测试")
-    await tester.test(_test_mcv_rss_posts_versions, "mcv_rss 推送版本测试")
-    await tester.test(_test_minecraft_news_posts_articles, "minecraft_news 推送文章测试")
-    await tester.test(_test_minecraft_news_deduplicates, "minecraft_news 去重测试")
-    await tester.test(_test_feedback_news_posts_articles, "feedback_news 推送文章测试")
-    await tester.test(_test_teahouse_weekly_posts, "teahouse_weekly_rss 推送测试")
-    await tester.test(_test_purge_recreates_cache_dir, "purge 重建缓存目录测试")
-    await tester.test(_test_schedules_report_failure_explicitly, "未录制语料显式失败测试")
+    alive = Alive.values.copy()
+    try:
+        await tester.test(_test_arcaea_rss_posts_new_version, "arcaea_rss 推送新版本测试")
+        await tester.test(_test_arcaea_rss_deduplicates, "arcaea_rss 去重测试")
+        await tester.test(_test_mcv_rss_posts_versions, "mcv_rss 推送版本测试")
+        await tester.test(_test_minecraft_news_posts_articles, "minecraft_news 推送文章测试")
+        await tester.test(_test_minecraft_news_deduplicates, "minecraft_news 去重测试")
+        await tester.test(_test_feedback_news_posts_articles, "feedback_news 推送文章测试")
+        await tester.test(_test_teahouse_weekly_posts, "teahouse_weekly_rss 推送测试")
+        await tester.test(_test_purge_recreates_cache_dir, "purge 重建缓存目录测试")
+        await tester.test(_test_schedules_report_failure_explicitly, "未录制语料显式失败测试")
+    finally:
+        Alive.values.clear()
+        Alive.values.update(alive)
+        await _reset_queue()
 
     return tester
 
