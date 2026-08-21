@@ -150,7 +150,6 @@ async def _test_aliyun_split_cache_preserves_result():
         await DirtyWordCache.filter(hash_id=hash_id).delete()
 
         with (
-            patch.object(dirty_check, "get_backend", return_value=dirty_check.ALIYUN_BACKEND),
             patch.object(dirty_check, "access_key_id", "id"),
             patch.object(dirty_check, "access_key_secret", "secret"),
             patch.object(dirty_check, "use_textscan_v1", False),

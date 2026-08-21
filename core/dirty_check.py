@@ -1,4 +1,4 @@
-"""检查字符串是否合规，支持阿里云内容安全与本地 Qwen3Guard。
+"""检查字符串是否合规，支持阿里云内容安全与自定义关键词过滤。
 
 使用阿里云后端前，请在配置文件中填写`check_access_key_id`和`check_access_key_secret`以便鉴权。
 """
@@ -21,8 +21,8 @@ from core.builtins.message.internal import I18NContext
 from core.builtins.session.internal import MessageSession
 from core.builtins.types import MessageElement
 from core.config.base import CoreConfig, CoreSecretConfig
+from core.constants.path import dirty_words_path
 from core.database.local import DirtyWordCache
-from core.local_dirty_check import moderate as moderate_with_local_model
 from core.logger import Logger
 
 access_key_id = CoreSecretConfig.check_access_key_id
@@ -30,15 +30,8 @@ access_key_secret = CoreSecretConfig.check_access_key_secret
 use_textscan_v1 = CoreConfig.check_use_textscan_v1
 
 ALIYUN_BACKEND = "aliyun"
-LOCAL_BACKEND = "qwen3guard"
 ALIYUN_SPLIT_CACHE_KEY = "_akari_split_results"
 TEXT_CHUNK_SIZE = 600
-BACKEND_ALIASES = {
-    "aliyun": ALIYUN_BACKEND,
-    "dirty_check": ALIYUN_BACKEND,
-    "local": LOCAL_BACKEND,
-    "qwen3guard": LOCAL_BACKEND,
-}
 
 
 def hash_hmac(key, code):
@@ -153,27 +146,78 @@ def parse_aliyun_split_data(
     }
 
 
-def get_backend() -> str:
-    configured = CoreConfig.dirty_check_backend.strip().lower()
-    if configured not in BACKEND_ALIASES:
-        raise ValueError(f"Unknown dirty check backend: {configured}")
-    return BACKEND_ALIASES[configured]
+def load_keyword_rules() -> dict[str, list[str]]:
+    rules: dict[str, list[str]] = {}
+
+    if not dirty_words_path.is_dir():
+        return rules
+
+    for file in sorted(dirty_words_path.glob("*.txt")):
+        if not file.is_file():
+            continue
+        label = f"custom_{file.stem}"
+        try:
+            words = [line.strip() for line in file.read_text(encoding="utf-8").splitlines() if line.strip()]
+        except (OSError, UnicodeDecodeError) as exc:
+            Logger.warning(f"Failed to load dirty words from {file}: {exc}")
+            continue
+        if words:
+            rules[label] = words
+
+    return rules
 
 
-def parse_local_data(
+def parse_keyword_data(
     original_content: str,
-    result: dict,
+    keywords: dict[str, list[str] | tuple[str, ...] | set[str]],
     additional_text: str | None = None,
-    block_controversial: bool = True,
 ) -> dict:
-    label = str(result.get("label", ""))
-    blocked = label.casefold() == "unsafe" or (block_controversial and label.casefold() == "controversial")
+    """使用自定义关键词对文本进行过滤。
+
+    :param original_content: 原始文本。
+    :param keywords: 以过滤标签为键、该标签下过滤词列表为值的字典。
+                     命中的过滤词会被替换为`<REDACTED:标签>`。
+    :param additional_text: 附加文本，若指定则会在返回的消息中附加此文本。
+    :returns: 过滤后的字典。命中关键词时`status`为`False`。
+    """
     content = original_content
 
-    if blocked:
-        categories = [str(x) for x in result.get("categories", []) if str(x).casefold() != "none"]
-        reason = ", ".join(dict.fromkeys(categories)) or label
-        content = str(I18NContext("check.redacted", reason=reason))
+    replace_tasks = []
+    seen = set()
+    for label, words in keywords.items():
+        for word in words:
+            word = str(word).strip()
+            if word and word not in seen:
+                seen.add(word)
+                replace_tasks.append((word, label))
+
+    if replace_tasks:
+        replace_tasks.sort(key=lambda x: len(x[0]), reverse=True)
+
+        i18ncode_pattern = re.compile(r"\{I18N:[^}]*\}")
+        placeholders = [(m.start(), m.end()) for m in i18ncode_pattern.finditer(content)]
+
+        def is_in_placeholder(start, end):
+            return any(start < p_end and end > p_start for p_start, p_end in placeholders)
+
+        matches_to_replace = []
+        replaced_intervals = []
+
+        for word, label in replace_tasks:
+            reason = str(I18NContext("check.redacted", reason=label))
+            for match in re.finditer(re.escape(word), content):
+                start, end = match.start(), match.end()
+                if is_in_placeholder(start, end):
+                    continue
+                if any(start < re_end and end > re_start for re_start, re_end in replaced_intervals):
+                    continue
+                matches_to_replace.append((start, end, reason))
+                replaced_intervals.append((start, end))
+
+        matches_to_replace = sorted(matches_to_replace, key=lambda x: x[0], reverse=True)
+
+        for start, end, reason in matches_to_replace:
+            content = content[:start] + reason + content[end:]
 
     if additional_text:
         content += "\n" + additional_text + "\n"
@@ -181,73 +225,22 @@ def parse_local_data(
     return {"content": content, "status": content == original_content, "original": original_content}
 
 
-def merge_local_results(results: list[dict]) -> dict:
-    labels = [str(result.get("label", "")) for result in results]
-    if any(label.casefold() == "unsafe" for label in labels):
-        label = "Unsafe"
-    elif any(label.casefold() == "controversial" for label in labels):
-        label = "Controversial"
-    else:
-        label = "Safe"
-
-    categories = []
-    for result in results:
-        for category in result.get("categories", []):
-            if category not in categories:
-                categories.append(category)
-    return {"label": label, "categories": categories, "raw": [result.get("raw", "") for result in results]}
-
-
-def local_cache_namespace() -> str:
-    return f"{LOCAL_BACKEND}:{CoreConfig.dirty_check_local_model}"
-
-
 def dirty_word_cache_namespace(backend: str) -> str:
-    if backend == LOCAL_BACKEND:
-        return local_cache_namespace()
     api_version = "textscan-v1" if use_textscan_v1 else "moderation-plus-v2"
     return f"{ALIYUN_BACKEND}:{api_version}"
 
 
-@retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
-async def check(
-    text: str | list[str] | list[MessageElement] | MessageElement | MessageChain,
-    session: MessageSession | None = None,
-    confidence: float = 60,
-    additional_text: str | None = None,
-    force=False,
-) -> list[dict]:
-    """检查字符串。
+async def _check_aliyun(texts: list[str], confidence: float = 60) -> list[dict]:
+    """对文本列表执行阿里云内容安全审核。
 
-    :param text: 字符串（List/Union）。
-    :param session: 消息会话，若指定则会在返回的消息中附加会话信息。
-    :param additional_text: 附加文本，若指定则会在返回的消息中附加此文本。
-    :returns: 经过审核后的字典列表。不合规部分会被替换为`<REDACTED:原因>`，全部不合规则是`<ALL REDACTED:原因>`。
+    :param texts: 待审核的文本列表。
+    :param confidence: 判定置信度阈值。
+    :returns: 与输入顺序一致的审核结果字典列表。
     """
-
-    if isinstance(text, str):
-        text = [text]
-    if isinstance(text, MessageElement):
-        text = [str(text)]
-    if isinstance(text, (list, MessageChain)):
-        text = [str(x) for x in text]
-
-    backend = get_backend()
-
-    if backend == ALIYUN_BACKEND and (not access_key_id or not access_key_secret):
-        Logger.warning("Dirty words filter was disabled, skip.")
-        return [{"content": t, "status": True, "original": t} for t in text]
-    if not force and (session and not session.session_info.require_check_dirty_words):
-        Logger.warning("Dirty words filter was disabled by session, skip.")
-        return [{"content": t, "status": True, "original": t} for t in text]
-
-    if not text:
-        return []
-
-    cache_namespace = dirty_word_cache_namespace(backend)
+    cache_namespace = dirty_word_cache_namespace(ALIYUN_BACKEND)
 
     query_list = {}
-    for count, t in enumerate(text):
+    for count, t in enumerate(texts):
         query_list[count] = {t: {"content": t, "status": True, "original": t}} if t == "" else {t: False}
 
     for q in query_list:
@@ -256,17 +249,10 @@ async def check(
                 try:
                     cache = await DirtyWordCache.check(pq, namespace=cache_namespace)
                     if cache:
-                        if backend == LOCAL_BACKEND:
-                            query_list[q][pq] = parse_local_data(
-                                pq,
-                                cache.result,
-                                additional_text,
-                                CoreConfig.dirty_check_local_block_controversial,
-                            )
-                        elif use_textscan_v1:
-                            query_list[q][pq] = parse_data(pq, cache.result, confidence, additional_text)
+                        if use_textscan_v1:
+                            query_list[q][pq] = parse_data(pq, cache.result, confidence)
                         else:
-                            query_list[q][pq] = parse_aliyun_split_data(pq, cache.result, confidence, additional_text)
+                            query_list[q][pq] = parse_aliyun_split_data(pq, cache.result, confidence)
                 except Exception:
                     Logger.warning("Failed to get cache, skip.")
                     Logger.exception()
@@ -281,43 +267,7 @@ async def check(
     Logger.debug(call_api_list_)
 
     if call_api_list_:
-        if backend == LOCAL_BACKEND:
-            chunks = []
-            chunk_owners = []
-            for content in call_api_list_:
-                for chunk in [content[i : i + TEXT_CHUNK_SIZE] for i in range(0, len(content), TEXT_CHUNK_SIZE)]:
-                    chunks.append(chunk)
-                    chunk_owners.append(content)
-
-            local_results = await moderate_with_local_model(
-                chunks,
-                CoreConfig.dirty_check_local_model,
-                CoreConfig.dirty_check_local_max_new_tokens,
-            )
-            grouped_results = {content: [] for content in call_api_list_}
-            for owner, result in zip(chunk_owners, local_results, strict=True):
-                grouped_results[owner].append(result)
-
-            for content, result_list in grouped_results.items():
-                merged_result = merge_local_results(result_list)
-                parsed_result = parse_local_data(
-                    content,
-                    merged_result,
-                    additional_text,
-                    CoreConfig.dirty_check_local_block_controversial,
-                )
-                for n in call_api_list[content]:
-                    query_list[n][content] = parsed_result
-                try:
-                    hash_id = DirtyWordCache.make_hash(content, cache_namespace)
-                    await DirtyWordCache.update_or_create(
-                        hash_id=hash_id,
-                        defaults={"desc": content, "result": merged_result},
-                    )
-                except Exception:
-                    Logger.warning("Failed to create local dirty word cache, skip.")
-                    Logger.exception()
-        elif use_textscan_v1:
+        if use_textscan_v1:
             url = "/green/text/scan"
             root = "https://green.cn-shanghai.aliyuncs.com"
             body = {
@@ -355,7 +305,7 @@ async def check(
                         for item in result["data"]:
                             content = item["content"]
                             for n in call_api_list[content]:
-                                query_list[n][content] = parse_data(content, item, confidence, additional_text)
+                                query_list[n][content] = parse_data(content, item, confidence)
                             hash_id = DirtyWordCache.make_hash(content, cache_namespace)
                             await DirtyWordCache.update_or_create(
                                 hash_id=hash_id,
@@ -408,7 +358,7 @@ async def check(
                         result = resp.json()
                         Logger.debug(result)
                         if result["Code"] == 200:
-                            parsed_sub = parse_data(sub_text, result["Data"], confidence, additional_text)
+                            parsed_sub = parse_data(sub_text, result["Data"], confidence)
                             split_results[original_text].append((index, parsed_sub, result["Data"]))
                         else:
                             raise ValueError(result["Message"])
@@ -428,7 +378,7 @@ async def check(
                 res_list.sort(key=lambda item: item[0])
 
                 cache_result = {ALIYUN_SPLIT_CACHE_KEY: [result[2] for result in res_list]}
-                final_parse_result = parse_aliyun_split_data(x, cache_result, confidence, additional_text)
+                final_parse_result = parse_aliyun_split_data(x, cache_result, confidence)
 
                 for n in call_api_list[x]:
                     query_list[n][x] = final_parse_result
@@ -448,6 +398,63 @@ async def check(
     for q in query_list.values():
         for result in q.values():
             results.append(result)
+    return results
+
+
+@retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
+async def check(
+    text: str | list[str] | list[MessageElement] | MessageElement | MessageChain,
+    session: MessageSession | None = None,
+    confidence: float = 60,
+    additional_text: str | None = None,
+    force=False,
+) -> list[dict]:
+    """检查字符串。
+
+    本地关键词过滤与阿里云 API 过滤为平行系统，二者叠加执行而非二选一：
+    任一步判定不合规即视为不合规。
+
+    :param text: 字符串（List/Union）。
+    :param session: 消息会话，若指定则会在返回的消息中附加会话信息。
+    :param additional_text: 附加文本，若指定则会在返回的消息中附加此文本。
+    :returns: 经过审核后的字典列表。不合规部分会被替换为`<REDACTED:原因>`，全部不合规则是`<ALL REDACTED:原因>`。
+    """
+
+    if isinstance(text, str):
+        text = [text]
+    if isinstance(text, MessageElement):
+        text = [str(text)]
+    if isinstance(text, (list, MessageChain)):
+        text = [str(x) for x in text]
+
+    if not force and (session and not session.session_info.require_check_dirty_words):
+        Logger.warning("Dirty words filter was disabled by session, skip.")
+        return [{"content": t, "status": True, "original": t} for t in text]
+
+    if not text:
+        return []
+
+    # 本地关键词过滤：存在词表文件时启用
+    keywords = load_keyword_rules()
+    keyword_results = [
+        parse_keyword_data(t, keywords) if keywords else {"content": t, "status": True, "original": t} for t in text
+    ]
+
+    # 阿里云 API 过滤：配置密钥后启用，输入为关键词过滤后的文本
+    aliyun_texts = [result["content"] for result in keyword_results]
+    if access_key_id and access_key_secret:
+        aliyun_results = await _check_aliyun(aliyun_texts, confidence)
+    else:
+        aliyun_results = [{"content": c, "status": True, "original": c} for c in aliyun_texts]
+
+    results = []
+    for keyword_result, aliyun_result in zip(keyword_results, aliyun_results, strict=True):
+        status = keyword_result["status"] and aliyun_result["status"]
+        content = aliyun_result["content"]
+        if additional_text:
+            content += "\n" + additional_text + "\n"
+        results.append({"content": content, "status": status, "original": keyword_result["original"]})
+
     return results
 
 

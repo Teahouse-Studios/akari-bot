@@ -58,10 +58,6 @@ class CoreConfig:
     enable_bind_auto: bool = False
     enable_commit_url: bool = True
     enable_dirty_check: bool = False
-    dirty_check_backend: str = "aliyun"
-    dirty_check_local_model: str = "Qwen/Qwen3Guard-Gen-0.6B"
-    dirty_check_local_max_new_tokens: int = 128
-    dirty_check_local_block_controversial: bool = True
     check_use_textscan_v1: bool = False
     enable_urlmanager: bool = False
     auto_purge_crontab: str = "0 0 * * *"
