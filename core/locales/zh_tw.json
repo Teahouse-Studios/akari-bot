@@ -222,5 +222,8 @@
     "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。",
     "config.comments.config.use_emote": "是否使用表情資源。",
     "config.comments.s3.s3_connect_timeout": "S3 相容 API 的連線逾時時間，單位為秒。",
-    "config.comments.s3.s3_max_attempts": "S3 相容 API 單次請求的最大嘗試次數。"
+    "config.comments.s3.s3_max_attempts": "S3 相容 API 單次請求的最大嘗試次數。",
+    "config.comments.s3.s3_max_workers": "S3 相容 API 專用執行緒池的最大執行緒數。",
+    "config.comments.s3.s3_operation_timeout": "S3 相容 API 單次完整操作的最長等待時間，單位為秒。",
+    "config.comments.s3.s3_read_timeout": "S3 相容 API 的網路讀取逾時時間，單位為秒。"
 }
