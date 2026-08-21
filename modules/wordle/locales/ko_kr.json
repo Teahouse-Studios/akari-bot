@@ -4,5 +4,16 @@
     "wordle.help.desc": "Wordle을 재생합니다.",
     "wordle.help.option.hard": "하드 모드를 사용합니다.",
     "wordle.help.option.trial": "도전 모드를 사용합니다.",
-    "wordle.help.theme": "어두운 테마를 사용할지 여부를 설정합니다."
+    "wordle.help.theme": "어두운 테마를 사용할지 여부를 설정합니다.",
+    "wordle.message.occupied": "이 컨텍스트에서 이미 게임이 진행 중입니다.",
+    "wordle.message.finish": "게임 오버. 정답: ${answer}\n사전 검색: ",
+    "wordle.message.finish.success": "축하합니다! ${attempt}번째 시도만에 게임을 클리어하셨습니다.",
+    "wordle.message.hard.not_matched": "입력한 단어가 조건에 맞지 않습니다.",
+    "wordle.message.not_a_word": "올바른 단어가 아닙니다.",
+    "wordle.message.start": "게임이 시작됩니다. 5글자로 된 단어를 맞혀야 합니다. 기회는 총 6번입니다.\n초록색은 글자와 위치가 모두 맞음을 의미하고, 노란색은 글자는 맞지만 위치가 틀렸음을 의미하며, 회색은 해당 글자가 단어에 포함되어 있지 않음을 의미합니다.",
+    "wordle.message.start.hard": "이전 라운드에서 색상으로 표시된 글자는 다음 라운드에서 반드시 포함되어야 하며, 해당 조건을 충족해야 합니다.",
+    "wordle.message.start.trial": "현재 도전 모드 진행 중입니다. 게임을 클리어하면 페탈을 획득할 수 있습니다.",
+    "wordle.message.stop": "종료되었습니다. 정답: ${answer}\n사전 검색: ",
+    "wordle.message.theme.disable": "다크 테마가 비활성화되었습니다.",
+    "wordle.message.theme.enable": "다크 테마가 활성화되었습니다."
 }
