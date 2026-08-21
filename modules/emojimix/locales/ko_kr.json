@@ -1,1 +1,9 @@
-{}
+{
+    "emojimix.help": "두 개의 이모지를 하나의 이미지로 조합합니다. 비워 두면 무작위 조합이 생성됩니다.",
+    "emojimix.help.list": "지원되는 모든 이모지 목록을 표시합니다.",
+    "emojimix.message.all_supported": "지원되는 모든 이모지:",
+    "emojimix.message.combine_supported": "'${emoji}'와(과) 조합 가능한 이모지:",
+    "emojimix.message.invalid": "유효하지 않은 이모지입니다.",
+    "emojimix.message.not_found": "이 이모지 조합은 지원되지 않습니다.",
+    "emojimix.message.unsupported": "지원되지 않는 이모지: ${emoji}"
+}
