@@ -155,6 +155,17 @@ async def _test_execute_uses_reference_first_and_view_last():
     )
 
 
+async def _test_execute_preserves_messages_before_send_failure():
+    first = SimpleNamespace(id=1)
+    channel = SimpleNamespace(send=AsyncMock(side_effect=[first, RuntimeError("send failed")]))
+    payloads = [DiscordPayload(content="one"), DiscordPayload(content="two")]
+    try:
+        messages = await execute_discord_payloads(channel, payloads)
+    except Exception:
+        return False
+    return messages == [first] and channel.send.await_count == 2
+
+
 def _test_interaction_reference_uses_component_message():
     from bots.discord.context import resolve_discord_reference
 
@@ -177,5 +188,6 @@ async def test_discord_message_builder(tester: Tester):
     await tester.test(_test_embed_limit_creates_second_payload, "Embed 超过 10 个时拆包")
     await tester.test(_test_embed_attachment_stays_with_embed, "Embed 附件与 Embed 保持同包")
     await tester.test(_test_execute_uses_reference_first_and_view_last, "引用仅首条且按钮仅末条")
+    await tester.test(_test_execute_preserves_messages_before_send_failure, "后续发送失败时保留已发送消息")
     await tester.test(_test_interaction_reference_uses_component_message, "Interaction 引用原按钮消息")
     return tester

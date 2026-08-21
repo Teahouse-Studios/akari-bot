@@ -42,7 +42,13 @@ async def _test_admin_required_blocks_non_admin():
 
 def _fake_lock_msg(sender_id: str):
     """构造一个仅提供 sender_id 的会话替身，执行锁只读取该字段。"""
-    return SimpleNamespace(session_info=SimpleNamespace(sender_id=sender_id))
+    return SimpleNamespace(
+        session_info=SimpleNamespace(
+            sender_id=sender_id,
+            sender_union_id=None,
+            tmp={},
+        )
+    )
 
 
 async def _test_lock_acquired_once():
@@ -51,8 +57,8 @@ async def _test_lock_acquired_once():
         from core.builtins.session.lock import ExecutionLockList
 
         msg = _fake_lock_msg("LOCKTEST|once")
-        first = try_acquire_execution_lock(msg)
-        second = try_acquire_execution_lock(msg)
+        first = await try_acquire_execution_lock(msg)
+        second = await try_acquire_execution_lock(msg)
         ExecutionLockList.remove(msg)
         return first and not second
 
@@ -66,9 +72,9 @@ async def _test_lock_released_can_reacquire():
         from core.builtins.session.lock import ExecutionLockList
 
         msg = _fake_lock_msg("LOCKTEST|again")
-        try_acquire_execution_lock(msg)
+        await try_acquire_execution_lock(msg)
         ExecutionLockList.remove(msg)
-        reacquired = try_acquire_execution_lock(msg)
+        reacquired = await try_acquire_execution_lock(msg)
         ExecutionLockList.remove(msg)
         return reacquired
 

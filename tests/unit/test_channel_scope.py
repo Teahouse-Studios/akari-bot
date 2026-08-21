@@ -8,6 +8,7 @@ from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
 from core.builtins.session.tasks import SessionTaskManager
 from core.cooldown import CoolDown, _cd_dict
+from core.constants import SessionFinished
 from core.database.models import SenderUnionInfo, StoredData, TargetUnionInfo, TargetUnionBind
 from core.game import PlayState
 from core.tester import func_case, Tester
@@ -45,7 +46,7 @@ async def _states_shared(prefix: str) -> tuple[bool, bool, bool]:
     PlayState("probe", first).disable()
 
     SessionTaskManager.add_task(first, asyncio.Event(), all_=True, timeout=60)
-    shared_task = second.session_info.channel_key in SessionTaskManager.get()
+    shared_task = bool(await SessionTaskManager._active_tasks(second))
     SessionTaskManager._task_list.clear()
 
     return shared_cooldown, shared_game, shared_task
@@ -104,11 +105,58 @@ async def _test_petal_quota_shared_across_platforms():
         await StoredData.filter(stored_key__startswith=f"{petal_module.PETAL_STORE_SCOPE}|").delete()
 
 
+async def _test_parser_cooldown_shared_within_channel_and_user_union():
+    """Parser 手动冷却应同时按消息通道和用户 Union 共享。"""
+    from core.builtins.parser.message import _check_target_cooldown, target_cooldown_counter
+    from core.tester.mock.session import MockMessageSession
+
+    target = await TargetUnionInfo.resolve_union("CDSCOPEA|Group|1")
+    await target.bind_id("CDSCOPEB|Group|2")
+    await TargetUnionBind.filter(target_id="CDSCOPEB|Group|2").update(channel_id=1)
+    await target.edit_target_data("cooldown_time", 60)
+
+    sender = await SenderUnionInfo.resolve_union("CDSCOPEA|1")
+    await sender.bind_id("CDSCOPEB|2")
+
+    async def make_session(target_id: str, sender_id: str, client: str):
+        msg = MockMessageSession("~test")
+        msg.session_info = await SessionInfo.assign(
+            target_id=target_id,
+            target_from=f"{client}|Group",
+            client_name=client,
+            sender_id=sender_id,
+            sender_from=client,
+        )
+
+        async def deny_permission():
+            return False
+
+        msg.check_permission = deny_permission
+        return msg
+
+    first = await make_session("CDSCOPEA|Group|1", "CDSCOPEA|1", "CDSCOPEA")
+    second = await make_session("CDSCOPEB|Group|2", "CDSCOPEB|2", "CDSCOPEB")
+    target_cooldown_counter.clear()
+    try:
+        await _check_target_cooldown(first)
+        try:
+            await _check_target_cooldown(second)
+        except SessionFinished:
+            return True
+        return False
+    finally:
+        target_cooldown_counter.clear()
+
+
 @func_case
 async def test_channel_scope(tester: Tester):
     """core: union 与消息通道的作用域测试"""
     await tester.test(_test_states_isolated_across_channels, "跨通道内存态隔离测试")
     await tester.test(_test_states_shared_within_channel, "同通道内存态共享测试")
     await tester.test(_test_petal_quota_shared_across_platforms, "花瓣额度按 union 共享测试")
+    await tester.test(
+        _test_parser_cooldown_shared_within_channel_and_user_union,
+        "Parser 冷却按通道和用户 Union 共享测试",
+    )
 
     return tester

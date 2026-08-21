@@ -1,11 +1,13 @@
 """QQBot 适配器对 botpy 翻新接口的接入测试。"""
 
-from unittest.mock import patch
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, patch
 
 from botpy.errors import ServerError
 from botpy.protocol import MediaSendResult
 
 import bots.qqbot.context as qqbot_context
+import bots.qqbot.bot as qqbot_bot
 from bots.qqbot.context import QQBotContextManager, _message_ids, _reply_target
 from bots.qqbot.info import (
     target_c2c_prefix,
@@ -112,6 +114,24 @@ class _CaptureSendClient:
     async def upload_media(self, target, file_type, **kwargs):
         self.calls.append(("upload", {"file_type": file_type, **kwargs}))
         return {"file_info": "uploaded-image"}
+
+
+class _PartialFailClient(_CaptureSendClient):
+    async def send(self, target, **kwargs):
+        self.calls.append(("plain", kwargs))
+        if len([call for call in self.calls if call[0] == "plain"]) == 1:
+            return {"id": "first"}
+        raise RuntimeError("second image failed")
+
+
+class _PrivateCaptureClient(_CaptureSendClient):
+    def __init__(self):
+        super().__init__()
+        self.api = SimpleNamespace(create_dms=AsyncMock(return_value={"guild_id": "dm-other"}))
+
+    async def send(self, target, **kwargs):
+        self.calls.append((target.scope, target.target_id, kwargs))
+        return {"id": "private"}
 
 
 async def _send_with_client(
@@ -269,6 +289,96 @@ async def _test_s3_failure_keeps_markdown_message_sendable() -> bool:
     return result == ["markdown"] and client.calls == [("markdown", {"content": "hello", "keyboard": None})]
 
 
+async def _test_plain_message_preserves_ids_before_later_send_failure() -> bool:
+    session = _make_session(target_group_prefix)
+    client = _PartialFailClient()
+    message = MessageChain.assign([ImageElement.assign(__file__), ImageElement.assign(__file__)])
+    result = await _send_with_client(session, client, message)
+    sends = [call for call in client.calls if call[0] == "plain"]
+    return result == ["first"] and len(sends) == 2
+
+
+async def _test_private_message_uses_explicit_channel_user() -> bool:
+    session = _make_session(target_guild_prefix, "guild|channel")
+    session.sender_id = "QQBot|Tiny|current-user"
+    client = _PrivateCaptureClient()
+    previous_client = QQBotContextManager.client
+    QQBotContextManager.client = client
+    try:
+        result = await QQBotContextManager.send_private_msg(
+            session,
+            "QQBot|Tiny|other-user",
+            MessageChain.assign("secret"),
+        )
+    finally:
+        QQBotContextManager.client = previous_client
+    return (
+        result == ["private"]
+        and client.api.create_dms.await_count == 1
+        and client.api.create_dms.await_args.kwargs == {"guild_id": "guild", "user_id": "other-user"}
+        and client.calls == [("dm", "dm-other", {"content": "secret", "message_reference": None})]
+    )
+
+
+async def _test_private_message_does_not_reuse_another_users_dm() -> bool:
+    session = _make_session(target_direct_prefix, "current-dm")
+    session.sender_id = "QQBot|Tiny|current-user"
+    client = _PrivateCaptureClient()
+    previous_client = QQBotContextManager.client
+    QQBotContextManager.client = client
+    try:
+        result = await QQBotContextManager.send_private_msg(
+            session,
+            "QQBot|Tiny|other-user",
+            MessageChain.assign("secret"),
+        )
+    finally:
+        QQBotContextManager.client = previous_client
+    return result == [] and client.api.create_dms.await_count == 0 and client.calls == []
+
+
+async def _test_private_message_client_failure_returns_empty() -> bool:
+    session = _make_session(target_group_prefix)
+    with patch("bots.qqbot.context._get_client", side_effect=RuntimeError("client unavailable")):
+        try:
+            result = await QQBotContextManager.send_private_msg(
+                session,
+                "QQBot|Client|other-user",
+                MessageChain.assign("secret"),
+            )
+        except Exception:
+            return False
+    return result == []
+
+
+async def _test_group_message_reply_uses_message_reference() -> bool:
+    """普通群消息的 reply_id 应来自被回复消息，而不是被提及用户。"""
+    message = SimpleNamespace(
+        group_openid="group",
+        author=SimpleNamespace(member_openid="sender", username="sender-name", member_role="member"),
+        message_reference=SimpleNamespace(message_id="referenced-message"),
+        mentions=[SimpleNamespace(id="mentioned-user")],
+        content="hello",
+        id="incoming-message",
+    )
+    session = SimpleNamespace()
+    assign = AsyncMock(return_value=session)
+    process_message = AsyncMock()
+    with (
+        patch.object(qqbot_bot.SessionInfo, "assign", new=assign),
+        patch.object(qqbot_bot.Bot, "process_message", new=process_message),
+        patch.object(qqbot_bot, "cache_permission"),
+        patch.object(qqbot_bot, "resolve_features", return_value=SimpleNamespace()),
+    ):
+        await qqbot_bot.MyClient.on_message_group_create(message)
+
+    return (
+        assign.await_count == 1
+        and assign.await_args.kwargs["reply_id"] == "referenced-message"
+        and process_message.await_count == 1
+    )
+
+
 async def _test_c2c_delete_uses_unified_api() -> bool:
     client = _FakeClient()
     previous_client = QQBotContextManager.client
@@ -302,4 +412,9 @@ async def test_qqbot_modern_api(tester: Tester):
     await tester.test(_test_group_mention_plain_message, "群聊普通消息 Mention 渲染测试")
     await tester.test(_test_group_mention_markdown_message, "群聊 Markdown Mention 渲染测试")
     await tester.test(_test_s3_failure_keeps_markdown_message_sendable, "S3 失败后继续发送 Markdown 测试")
+    await tester.test(_test_plain_message_preserves_ids_before_later_send_failure, "Plain 后续失败保留已发送 ID 测试")
+    await tester.test(_test_private_message_uses_explicit_channel_user, "频道私信使用显式目标用户测试")
+    await tester.test(_test_private_message_does_not_reuse_another_users_dm, "频道私信不复用其他用户 DM 测试")
+    await tester.test(_test_private_message_client_failure_returns_empty, "私信客户端解析失败返回空消息 ID 测试")
+    await tester.test(_test_group_message_reply_uses_message_reference, "普通群消息回复 ID 来源测试")
     return tester

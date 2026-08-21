@@ -1,10 +1,15 @@
 """core.builtins.bot 单元测试 - 主动推送的通道归拢与掉线避让（需要数据库）。"""
 
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, patch
+
 from core.alive import Alive
 from core.builtins.bot import Bot
-from core.builtins.message.chain import MessageChain
+from core.builtins.converter import converter
+from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.session.info import FetchedSessionInfo
 from core.database.models import JobQueuesTable, TargetUnionInfo, TargetUnionBind
+from core.queue.client import JobQueueClient
 from core.queue.server import JobQueueServer
 from core.tester import func_case, Tester
 
@@ -113,6 +118,41 @@ async def _test_add_job_gives_up_on_offline_client():
         Alive.values.update(alive)
 
 
+async def _test_post_exception_uses_next_hop():
+    session = SimpleNamespace(target_id="POSTE1|Group|a", next_hops=["POSTE2|Group|b"])
+    context = SimpleNamespace(send_message=AsyncMock(side_effect=RuntimeError("platform failed")))
+    add_job = AsyncMock()
+    message = converter.unstructure(MessageChain.assign("hello"), MessageChain | MessageNodes)
+    args = {"message": message, "module_name": "wiki"}
+    with (
+        patch("core.queue.client.get_session", new=AsyncMock(return_value=(session, None, context, args))),
+        patch.object(JobQueueClient, "add_job", new=add_job),
+    ):
+        result = await JobQueueClient.queue_actions["post_message"](SimpleNamespace(), {})
+    return (
+        result == {"message_id": []}
+        and add_job.await_count == 1
+        and add_job.await_args.args[:2] == ("Server", "post_next_hop")
+        and add_job.await_args.args[2]
+        == {
+            "next_hops": ["POSTE2|Group|b"],
+            "message": message,
+            "module_name": "wiki",
+        }
+        and add_job.await_args.kwargs == {"wait": False}
+    )
+
+
+async def _test_private_exception_returns_empty():
+    session = SimpleNamespace(target_id="POSTF|Group|a")
+    context = SimpleNamespace(send_private_msg=AsyncMock(side_effect=RuntimeError("platform failed")))
+    message = converter.unstructure(MessageChain.assign("hello"), MessageChain | MessageNodes)
+    args = {"user_id": "POSTF|user", "message": message}
+    with patch("core.queue.client.get_session", new=AsyncMock(return_value=(session, None, context, args))):
+        result = await JobQueueClient.queue_actions["send_private_message"](SimpleNamespace(), {})
+    return result == {"message_id": []}
+
+
 @func_case
 async def test_post_message(tester: Tester):
     """core.builtins.bot: 主动推送测试"""
@@ -120,5 +160,7 @@ async def test_post_message(tester: Tester):
     await tester.test(_test_offline_client_skipped, "掉线客户端避让测试")
     await tester.test(_test_all_offline_posts_nothing, "全部掉线放弃推送测试")
     await tester.test(_test_add_job_gives_up_on_offline_client, "掉线时不入队测试")
+    await tester.test(_test_post_exception_uses_next_hop, "平台异常时主动推送继续下一跳测试")
+    await tester.test(_test_private_exception_returns_empty, "平台异常时私信返回空消息 ID 测试")
 
     return tester
