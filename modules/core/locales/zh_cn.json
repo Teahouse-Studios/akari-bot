@@ -207,7 +207,7 @@
     "core.message.help.legacy.subscription": "订阅扩展模块：",
     "core.message.help.mdtable": "向右滑动以查看所有模块，点击可自动填入对应帮助命令。",
     "core.message.help.not_found": "此模块可能不存在，请检查输入。",
-    "core.message.help.permissions": "请让群主在最新版手机 QQ 中打开群聊设置，进入“群机器人”并选择本机器人，然后开启“获取群内全部消息”和“机器人主动在群聊内发言”权限。开启后，订阅扩展模块与正则模块才能正常工作。\n\nAndroid 手机可以输入“${cmd}[<QQ 群号>]”来快速配置功能。",
+    "core.message.help.permissions": "请让群主在最新版手机 QQ 中打开群聊设置，进入“群机器人”并选择本机器人，然后开启“获取群内全部消息”和“机器人主动在群聊内发言”权限。开启后，订阅扩展模块与正则模块才能正常工作。\n\nAndroid 手机可以输入“${cmd}[<QQ 群号>]”来快速设置权限。",
     "core.message.help.permissions.action": "查看权限开启方法",
     "core.message.help.permissions.invalid": "无效的 QQ 群号。",
     "core.message.help.permissions.prompt": "带有删除线的模块需要额外权限。${cmd}",
