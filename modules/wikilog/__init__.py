@@ -69,12 +69,14 @@ async def _(msg: Bot.MessageSession, apilink: str):
         await msg.finish(prompt)
     if status.available:
         records = await WikiLogTargetSetInfo.get_by_target_id(msg)
-        await records.conf_wiki(
+        changed = await records.conf_wiki(
             status.value.api,
             add="add" in msg.parsed_msg,
             reset="reset" in msg.parsed_msg,
         )
-        await msg.finish(I18NContext("wikilog.message.config.wiki.success", wiki=wiki_name))
+        if changed:
+            await msg.finish(I18NContext("wikilog.message.config.wiki.success", wiki=wiki_name))
+        await msg.finish(I18NContext("wikilog.message.filter.set.failed"))
     else:
         await msg.finish(I18NContext("wikilog.message.config.wiki.failed", message=status.message))
 
@@ -269,9 +271,9 @@ async def _(msg: Bot.MessageSession, apilink: str):
         rcshows_ = []
     else:
         rcshows_ = msg.parsed_msg.get("...")
-    if rcshows:
+    if rcshows_ is not None:
         records = await WikiLogTargetSetInfo.get_by_target_id(msg)
-        infos = orjson.loads(records.infos)
+        infos = records.infos
         wiki_info = WikiLib(apilink)
         status = await wiki_info.check_wiki_available()
         if status.available:

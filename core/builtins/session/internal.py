@@ -19,13 +19,14 @@ from japanera import EraDate
 from core.builtins.message.chain import MessageChain, get_message_chain, Chainable, MessageNodes
 from core.builtins.message.internal import Button, I18NContext
 from core.builtins.session.info import SessionInfo, FetchedSessionInfo
-from core.builtins.session.lock import ExecutionLockList
+from core.builtins.session.lock import ExecutionLockList, ExecutionState
 from core.builtins.session.tasks import SessionTaskManager
 from core.builtins.types import MessageElement
 from core.builtins.utils import confirm_command
 from core.config.base import CoreConfig
 from core.constants import SessionFinished, WaitCancelException
 from core.exports import add_export, exports
+from core.logger import Logger
 from core.utils.button import bind_callback_reply_ids
 from core.utils.func import is_int
 from core.utils.random import Random
@@ -82,6 +83,50 @@ class MessageSession:
 
     # 解析后的消息 - 命令参数等解析结果
     parsed_msg: dict = field(factory=dict)
+
+    # 仅存在于 Server 进程中的命令执行状态。通过 wait_* 取得的回复会话会共享
+    # 同一个对象，使嵌套等待可以释放／重获同一 lease，并由原始 parser 统一
+    # 释放等待结果所持有的平台 context。
+    _execution_state: ExecutionState = field(factory=ExecutionState, repr=False, eq=False)
+    _execution_state_owner: bool = field(default=True, repr=False, eq=False)
+
+    def _share_execution_state(self, result: "MessageSession") -> None:
+        """让等待结果加入当前命令执行域，但不取得最终清理所有权。"""
+        result._execution_state = ExecutionLockList.state(self)
+        result._execution_state_owner = False
+
+    def _adopt_wait_result(self, result: "MessageSession") -> None:
+        """接管一个已经持有平台 context 的等待结果。"""
+        self._share_execution_state(result)
+        ExecutionLockList.state(self).held_contexts.append(result)
+
+    async def release_execution_resources(self) -> None:
+        """由原始 parser 在命令结束时释放全部等待结果 context。"""
+        if not getattr(self, "_execution_state_owner", True):
+            return
+        state = ExecutionLockList.state(self)
+        held_contexts = list(state.held_contexts)
+        state.held_contexts.clear()
+        if not held_contexts:
+            return
+        pending = held_contexts
+        failures: list[tuple[MessageSession, BaseException]] = []
+        # release_context 是跨进程动作；一次瞬时 Queue／平台异常不应把已经
+        # hold 的 context 永久遗留。成功项只释放一次，失败项让出一拍后重试。
+        for attempt in range(2):
+            results = await asyncio.gather(*(result.release() for result in pending), return_exceptions=True)
+            failures = [
+                (result, error)
+                for result, error in zip(pending, results, strict=True)
+                if isinstance(error, BaseException)
+            ]
+            if not failures:
+                return
+            pending = [result for result, _error in failures]
+            if attempt == 0:
+                await asyncio.sleep(0)
+        for _result, error in failures:
+            Logger.error(f"Failed to release a wait-result context after retry: {error!r}")
 
     @property
     @deprecated(reason="Use `session_info` instead.")
@@ -158,21 +203,43 @@ class MessageSession:
 
         callback_reply_ids = bind_callback_reply_ids(chain, callback_id) if callback else []
 
+        # 在平台发送前为每次 callback 建立独立注册。按钮的虚拟 reply_id 可立即
+        # 命中；即使暂时只有 bot_id fallback，也必须登记一个无主 ID 的 pending
+        # 记录，使同场景并发发送在回包前表现为歧义，而不是误把回复交给先登记者。
+        # callback handle 使用随机 token，因此空主 ID 的并发注册不会互相覆盖。
+        callback_handle = None
+        if callback:
+            callback_handle = SessionTaskManager.add_callback(
+                self,
+                list(callback_reply_ids),
+                callback,
+                fallback_ids=self.session_info.bot_id,
+            )
+
         # ========== 步骤 3: 发送消息 ==========
         # 通过消息队列发送消息，并阻塞等待返回包含消息 ID 的字典
 
-        # 设置强制使用 markdown 标记
+        # 设置强制使用 markdown 标记。会话对象还会用于错误回传等后续发送，远端异常时
+        # 也必须恢复调用前的临时状态，不能让本次选项污染之后的消息。
+        missing = object()
+        previous_force_markdown = self.session_info.tmp.get("force_markdown", missing)
         self.session_info.tmp["force_markdown"] = "true" if force_markdown else ""
-
-        return_val = await _queue_server.client_send_message(
-            self.session_info,
-            chain,
-            quote=quote,
-            enable_parse_message=enable_parse_message,
-            enable_split_image=enable_split_image,
-        )
-
-        self.session_info.tmp["force_markdown"] = ""
+        try:
+            return_val = await _queue_server.client_send_message(
+                self.session_info,
+                chain,
+                quote=quote,
+                enable_parse_message=enable_parse_message,
+                enable_split_image=enable_split_image,
+            )
+        except BaseException:
+            SessionTaskManager.remove_callback(callback_handle)
+            raise
+        finally:
+            if previous_force_markdown is missing:
+                self.session_info.tmp.pop("force_markdown", None)
+            else:
+                self.session_info.tmp["force_markdown"] = previous_force_markdown
 
         # ========== 步骤 4: 处理回调 ==========
         if "message_id" in return_val:
@@ -182,16 +249,28 @@ class MessageSession:
                 if isinstance(message_ids, (str, int)):
                     message_ids = [message_ids]
                 callback_targets = [str(message_id) for message_id in message_ids]
-                callback_targets.extend(reply_id for reply_id in callback_reply_ids if reply_id not in callback_targets)
 
-                # 将 sender_id 添加到 message_id 中以处理 fallback 行为（目标会话不支持引用回复的 message_id）
-
-                if self.session_info.bot_id:
-                    SessionTaskManager.add_callback([self.session_info.bot_id], callback)
-
-                SessionTaskManager.add_callback(callback_targets, callback)
+                if callback_targets:
+                    if callback_handle is not None:
+                        # 用户可能已在发送回包前通过虚拟 ID 消费 callback；此时 extend
+                        # 返回 None，不能把已经执行过的一次性 callback 重新注册。
+                        callback_handle = SessionTaskManager.extend_callback(callback_handle, callback_targets)
+                    else:
+                        callback_targets.extend(
+                            reply_id for reply_id in callback_reply_ids if reply_id not in callback_targets
+                        )
+                        callback_handle = SessionTaskManager.add_callback(
+                            self,
+                            callback_targets,
+                            callback,
+                            fallback_ids=self.session_info.bot_id,
+                        )
+                else:
+                    # 空 ID 表示平台发送失败，不能只凭 bot_id 为不存在的消息留下 callback。
+                    SessionTaskManager.remove_callback(callback_handle)
 
             return FinishedSession(self.session_info, return_val["message_id"])
+        SessionTaskManager.remove_callback(callback_handle)
         return FinishedSession(self.session_info, [])
 
     async def finish(
@@ -552,6 +631,7 @@ class MessageSession:
         timeout: float | None = 120,
         append_instruction: bool = True,
         no_confirm_action: bool = True,
+        release_execution_lock: bool = True,
     ) -> bool:
         """
         一次性模板，用于等待触发对象确认。
@@ -573,14 +653,16 @@ class MessageSession:
         :param timeout: 超时时间（秒），默认为 120 秒
         :param append_instruction: 是否在发送的消息中附加提示（默认为 True）
         :param no_confirm_action: 在 `no_confirm` 配置项启用后的默认行为（默认为 True）
+        :param release_execution_lock: 等待期间是否释放执行锁。Union 合并在建立
+                                       双方 barrier 后须保持锁，避免冲突选择期间重新并发。
         :return: 若对象发送确认指令返回 True，反之返回 False
 
         :raises WaitCancelException: 如果超时或用户未确认
         """
-        ExecutionLockList.remove(self)
-        await self.end_typing()
         if CoreConfig.no_confirm:
             return no_confirm_action
+        released_lease = ExecutionLockList.remove(self) if release_execution_lock else False
+        await self.end_typing()
         if message_chain:
             chain = get_message_chain(self.session_info, message_chain)
         else:
@@ -591,14 +673,18 @@ class MessageSession:
         if self.session_info.support_button and isinstance(chain, MessageChain):
             chain.append(Button(self.session_info.locale.t("message.button.yes"), "confirm_yes"))
             chain.append(Button(self.session_info.locale.t("message.button.no"), "confirm_no"))
-        send = await self.send_message(chain, quote)
-        await asyncio.sleep(0.1)
-        if quick_confirm:
-            await self._add_confirm_reaction(send.message_id)
+        send = None
         flag = asyncio.Event()
         SessionTaskManager.add_task(self, flag, timeout=timeout)
         task_info = None
         try:
+            # 等待任务须在跨进程发送提示前登记；平台可能已展示消息并收到用户操作，
+            # 而发送 action 的结果尚未回到 Server。
+            send = await self.send_message(chain, quote)
+            # 添加表情反应需要跨进程网络往返；等待任务必须先登记，否则用户在此期间
+            # 发送文本确认或点击按钮会被当作普通消息处理并永久丢失。
+            if quick_confirm:
+                await self._add_confirm_reaction(send.message_id)
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
             if send and delete:
@@ -610,9 +696,10 @@ class MessageSession:
         if result:
             if send and delete:
                 await send.delete()
-            if result.as_display(text_only=True) in confirm_command:
-                return True
-            return False
+            confirmed = result.as_display(text_only=True) in confirm_command
+            if released_lease and not await ExecutionLockList.acquire(self, wait=True):
+                raise WaitCancelException
+            return confirmed
         raise WaitCancelException
 
     async def wait_next_message(
@@ -647,23 +734,22 @@ class MessageSession:
         :raises WaitCancelException: 如果超时或出错
         """
         send = None
-        ExecutionLockList.remove(self)
+        released_lease = ExecutionLockList.remove(self)
         await self.end_typing()
-        if message_chain:
-            chain = get_message_chain(self.session_info, message_chain)
-            # 合并转发消息无从追加提示行，此时略过
-            if append_instruction and isinstance(chain, MessageChain):
-                chain.append(I18NContext("message.wait.next_message.prompt"))
-            if possibly_choices and self.session_info.support_button and isinstance(chain, MessageChain):
-                for row in possibly_choices:
-                    for show, value in row.items():
-                        chain.append(Button(show, value))
-            send = await self.send_message(chain, quote)
-        await asyncio.sleep(0.1)
         flag = asyncio.Event()
         SessionTaskManager.add_task(self, flag, timeout=timeout)
         task_info = None
         try:
+            if message_chain:
+                chain = get_message_chain(self.session_info, message_chain)
+                # 合并转发消息无从追加提示行，此时略过
+                if append_instruction and isinstance(chain, MessageChain):
+                    chain.append(I18NContext("message.wait.next_message.prompt"))
+                if possibly_choices and self.session_info.support_button and isinstance(chain, MessageChain):
+                    for row in possibly_choices:
+                        for show, value in row.items():
+                            chain.append(Button(show, value))
+                send = await self.send_message(chain, quote)
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
             if send and delete:
@@ -675,6 +761,8 @@ class MessageSession:
         if send and delete:
             await send.delete()
         if result:
+            if released_lease and not await ExecutionLockList.acquire(self, wait=True):
+                raise WaitCancelException
             return result
         raise WaitCancelException
 
@@ -740,16 +828,15 @@ class MessageSession:
         :raises WaitCancelException: 如果超时或出错
         """
         send = None
-        ExecutionLockList.remove(self)
+        released_lease = ExecutionLockList.remove(self)
         await self.end_typing()
-        if message_chain:
-            chain = get_message_chain(self.session_info, message_chain)
-            send = await self.send_message(chain, quote)
-        await asyncio.sleep(0.1)
         flag = asyncio.Event()
         SessionTaskManager.add_task(self, flag, all_=True, timeout=timeout)
         task_info = None
         try:
+            if message_chain:
+                chain = get_message_chain(self.session_info, message_chain)
+                send = await self.send_message(chain, quote)
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
             if send and delete:
@@ -760,6 +847,8 @@ class MessageSession:
         if task_info and "result" in task_info:
             if send and delete:
                 await send.delete()
+            if released_lease and not await ExecutionLockList.acquire(self, wait=True):
+                raise WaitCancelException
             return task_info["result"]
         raise WaitCancelException
 
@@ -805,29 +894,48 @@ class MessageSession:
                 return await self.wait_anyone(chain, False, delete, timeout)
             return await self.wait_next_message(chain, False, delete, timeout, False)
 
-        ExecutionLockList.remove(self)
+        released_lease = ExecutionLockList.remove(self)
         await self.end_typing()
         chain = get_message_chain(self.session_info, message_chain)
         # 合并转发消息无从追加提示行，此时略过
         if append_instruction and isinstance(chain, MessageChain):
             chain.append(I18NContext("message.reply.prompt"))
-        send = await self.send_message(chain, quote)
-        await asyncio.sleep(0.1)
+        send = None
         flag = asyncio.Event()
-        SessionTaskManager.add_task(self, flag, reply=send.message_id, all_=all_, timeout=timeout)
+        # 先登记 pending reply，再把提示发往平台。用户可能在平台已展示
+        # 消息、而发送 action 的 message_id 尚未回到 Server 时立即回复。
+        SessionTaskManager.add_task(self, flag, all_=all_, reply_pending=True, timeout=timeout)
         task_info = None
         try:
-            await asyncio.wait_for(flag.wait(), timeout=timeout)
-        except asyncio.TimeoutError:
-            if send and delete:
-                await send.delete()
-            raise WaitCancelException
+            # timeout 是整次交互的预算，而不是只从平台发送回包后才开始计时。
+            # 否则一个卡住的跨进程发送可让 pending reply task 和引用它的入站
+            # parser 一直阻塞到 JobQueue 的全局超时，远超调用方声明的等待时长。
+            async with asyncio.timeout(timeout):
+                send = await self.send_message(chain, quote)
+                if not send.message_id or not SessionTaskManager.set_task_reply(self, send.message_id, all_=all_):
+                    raise WaitCancelException
+                await flag.wait()
+        except TimeoutError:
+            # timeout 与 incoming 完成可能落在同一事件循环拍。真正的线性化点是
+            # _complete_wait_task() 是否已经写入 result，而不是根 waiter 是否抢先
+            # 从 flag.wait() 恢复；finally 取回 task_info 后再据此决定成功或取消。
+            pass
         finally:
             task_info = SessionTaskManager.remove_task(self, all_=all_)
+            # 平台消息可能已经发送成功，但等待任务随后被取消、超时清理或在补
+            # reply ID 前失效。delete=True 时统一在退出等待域时撤回提示，避免
+            # 留下已经无法交互的消息；删除失败不能覆盖原始等待结果或控制流。
+            if send and delete:
+                try:
+                    await send.delete()
+                except asyncio.CancelledError:
+                    raise
+                except Exception:
+                    Logger.exception("Failed to delete a wait_reply prompt.")
         result = task_info.get("result") if task_info else None
-        if send and delete:
-            await send.delete()
         if result:
+            if released_lease and not await ExecutionLockList.acquire(self, wait=True):
+                raise WaitCancelException
             return result
         raise WaitCancelException
 
@@ -837,8 +945,10 @@ class MessageSession:
 
         :param s: 暂停时长（秒）
         """
-        ExecutionLockList.remove(self)
+        released_lease = ExecutionLockList.remove(self)
         await asyncio.sleep(s)
+        if released_lease and not await ExecutionLockList.acquire(self, wait=True):
+            raise WaitCancelException
 
     def check_super_user(self) -> bool:
         """

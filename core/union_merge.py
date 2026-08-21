@@ -7,6 +7,7 @@ import orjson
 from core.builtins.bot import Bot
 from core.builtins.message.internal import ActionText, I18NContext, Plain
 from core.config.base import CoreConfig
+from core.constants import WaitCancelException
 from core.constants.path import union_merge_logs_path
 from core.database.models import (
     UNION_SCOPE_SENDER,
@@ -201,7 +202,12 @@ def write_merge_log(new_union: str, scope: str, snapshot: dict, directory: Path 
         tmp_path.unlink(missing_ok=True)
 
 
-async def choose_conflicts(msg: Bot.MessageSession, conflicts: list[type]) -> set[str]:
+async def choose_conflicts(
+    msg: Bot.MessageSession,
+    conflicts: list[type],
+    *,
+    preserve_execution_lock: bool = False,
+) -> set[str]:
     """
     逐个询问模块数据冲突时保留哪一份。
 
@@ -211,7 +217,8 @@ async def choose_conflicts(msg: Bot.MessageSession, conflicts: list[type]) -> se
     keep_other_tables = set()
     for model in conflicts:
         if not await msg.wait_confirm(
-            I18NContext("core.message.bind.conflict.choose", module=get_union_module_name(model))
+            I18NContext("core.message.bind.conflict.choose", module=get_union_module_name(model)),
+            release_execution_lock=not preserve_execution_lock,
         ):
             keep_other_tables.add(get_table_name(model))
     return keep_other_tables
@@ -275,7 +282,49 @@ async def plan_sender_merge(initiator: SenderUnionInfo, current: SenderUnionInfo
     }
 
 
-async def apply_sender_merge(plan: dict, keep_other_tables: set[str]) -> SenderUnionInfo | None:
+async def reserve_sender_merge(msg: Bot.MessageSession, plan: dict) -> dict:
+    """为账号组合并建立双方身份域 barrier，并重新生成最新计划。"""
+    if not plan["initiator_ids"] or not plan["current_ids"]:
+        raise WaitCancelException
+
+    # 旧 Union 行可能在等待其它活跃命令期间被第三方合并并删除；以双方稳定的
+    # 物理 ID 为锚点重新解析，不能对旧 ORM 对象直接 refresh_from_db()。
+    initiator_id = plan["initiator_ids"][0]
+    current_id = plan["current_ids"][0]
+    reservation = {
+        plan["initiator"].union_id,
+        plan["current"].union_id,
+        *plan["initiator_ids"],
+        *plan["current_ids"],
+    }
+
+    while True:
+        if not await Bot.ExecutionLockList.reserve(msg, reservation):
+            raise WaitCancelException
+        initiator = await SenderUnionInfo.get_by_sender_id(initiator_id, create=False)
+        current = await SenderUnionInfo.get_by_sender_id(current_id, create=False)
+        if not initiator or not current or initiator.union_id == current.union_id:
+            raise WaitCancelException
+
+        latest = await plan_sender_merge(initiator, current)
+        latest_reservation = {
+            initiator.union_id,
+            current.union_id,
+            *latest["initiator_ids"],
+            *latest["current_ids"],
+        }
+        if latest_reservation.issubset(reservation):
+            return latest
+        # 等待期间一侧可能又与第三组发生合并。把新增成员继续纳入 barrier，
+        # 直到重新解析出的完整身份域已被当前 reservation 覆盖。
+        reservation.update(latest_reservation)
+
+
+async def apply_sender_merge(
+    plan: dict,
+    keep_other_tables: set[str],
+    msg: Bot.MessageSession | None = None,
+) -> SenderUnionInfo | None:
     """
     按计划执行账号组合并并记录快照。
 
@@ -308,6 +357,8 @@ async def apply_sender_merge(plan: dict, keep_other_tables: set[str]) -> SenderU
     merged = await initiator.merge_union(current, keep_other_tables)
     if merged:
         write_merge_log(merged.union_id, UNION_SCOPE_SENDER, snapshot)
+        if msg is not None:
+            await Bot.ExecutionLockList.refresh(msg)
     return merged
 
 
@@ -324,7 +375,12 @@ async def merge_sender_unions(
     plan = await plan_sender_merge(initiator, current)
     if not await msg.wait_confirm(plan["lines"]):
         return None
-    return await apply_sender_merge(plan, await choose_conflicts(msg, plan["conflicts"]))
+    plan = await reserve_sender_merge(msg, plan)
+    return await apply_sender_merge(
+        plan,
+        await choose_conflicts(msg, plan["conflicts"], preserve_execution_lock=True),
+        msg,
+    )
 
 
 async def plan_target_merge(

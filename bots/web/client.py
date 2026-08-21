@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse, RedirectResponse
 from slowapi import Limiter
 
 from bots.web.info import *
-from core.client.init import client_init
+from core.client.init import client_cleanup, client_init
 from core.config import CFGManager
 from bots.web.config import WebConfig, WebSecretConfig
 from core.constants.path import assets_path, webui_path
@@ -82,12 +82,15 @@ def _webui_message():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await client_init(target_prefix_list, sender_prefix_list)
-    sender_union_info = await SenderUnionInfo.resolve_union(f"{sender_prefix}|0")
-    await sender_union_info.edit_attr("superuser", True)
-    if dist_path.exists():
-        Logger.info(_webui_message())
-    yield
+    try:
+        await client_init(target_prefix_list, sender_prefix_list)
+        sender_union_info = await SenderUnionInfo.resolve_union(f"{sender_prefix}|0")
+        await sender_union_info.edit_attr("superuser", True)
+        if dist_path.exists():
+            Logger.info(_webui_message())
+        yield
+    finally:
+        await client_cleanup()
 
 
 app = FastAPI(lifespan=lifespan)

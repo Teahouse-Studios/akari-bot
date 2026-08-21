@@ -12,8 +12,6 @@ import asyncio
 import logging
 
 import orjson
-from apscheduler.schedulers import SchedulerAlreadyRunningError
-
 from core.alive import Alive
 from core.builtins.bot import Bot
 from core.builtins.converter import converter
@@ -25,9 +23,9 @@ from core.constants import Info, PrivateAssets, Secret
 from core.database import init_db
 from core.loader import load_modules, ModulesManager
 from core.logger import Logger
-from core.scheduler import Scheduler
+from core.scheduler import IntervalTrigger, SchedulerLifecycle
 from core.utils.bash import run_sys_command
-from .background_tasks import init_background_task
+from .background_tasks import hourly_background_task, start_background_task
 
 # 等待发起重启的客户端重新上报保活的秒数上限。server 与各 bot 子进程一同重启，
 # 提示投递时客户端往往尚未就绪；但重启提示并非关键路径，客户端确已掉线时不应无限等待。
@@ -74,33 +72,23 @@ async def init_async(start_scheduler=True, send_prompt=True) -> None:
 
     # 加载所有模块
     await load_modules()
-    gather_list = []
     modules = ModulesManager.return_modules_list()
 
-    # 为各模块配置的定时任务添加到调度器
-    for x in modules:
-        if not modules[x]._db_load:
-            continue
-
-        if schedules := modules[x].schedule_list.set:
-            for schedule in schedules:
-                Scheduler.add_job(
-                    func=schedule.function,
-                    trigger=schedule.trigger,
-                    misfire_grace_time=30,
-                    max_instance=1,
-                )
-    await asyncio.gather(*gather_list)
-
+    # 模块与核心 Job 都经统一 wrapper 注册，以便热重载、全局启停和 Server
+    # 关闭时能够按稳定 ID 替换，并等待运行中的 coroutine 真正退出。
+    SchedulerLifecycle.prepare()
+    SchedulerLifecycle.reconcile_all_modules(modules)
+    SchedulerLifecycle.register_core_job(
+        "hourly-background",
+        hourly_background_task,
+        IntervalTrigger(minutes=60),
+    )
     # 初始化后台任务（如 IP 查询、WebRender 等）
-    asyncio.create_task(init_background_task())
+    start_background_task()
 
     # 启动调度器
     if start_scheduler:
-        try:
-            Scheduler.start()
-        except SchedulerAlreadyRunningError:
-            pass
+        SchedulerLifecycle.start()
     logging.getLogger("apscheduler.executors.default").setLevel(logging.WARNING)
 
     # 加载密钥和启动提示
@@ -160,21 +148,39 @@ async def load_prompt(locale_load_error, timeout: float | None = None) -> None:
     author_cache = PrivateAssets.path / ".cache_restart_author"
     loader_cache = PrivateAssets.path / ".cache_loader"
     if author_cache.exists():
-        with open(author_cache, "r", encoding="utf-8") as open_author_cache:
-            author_session = converter.structure(orjson.loads(open_author_cache.read()), SessionInfo)
-        # 缓存须无条件清理：客户端始终不上线时若将其留下，下次启动会重复投递
-        author_cache.unlink()
+        try:
+            author_data = author_cache.read_bytes()
+        except OSError:
+            Logger.exception("Failed to read restart prompt author cache, skipped restart prompt.")
+            return
+        finally:
+            # 缓存须无条件清理：内容损坏、客户端不上线或投递失败时若将其留下，
+            # 下次启动会再次解析同一文件，严重时形成稳定的重启循环。
+            author_cache.unlink(missing_ok=True)
 
-        if not await _wait_for_client_online(
-            author_session.client_name, timeout if timeout else RESTART_PROMPT_TIMEOUT
-        ):
-            Logger.warning(f"Client {author_session.client_name} did not come online in time, skipped restart prompt.")
+        try:
+            author_session = converter.structure(orjson.loads(author_data), SessionInfo)
+        except Exception:
+            Logger.exception("Failed to decode restart prompt author cache, skipped restart prompt.")
             return
 
-        await author_session.refresh_info()
-        with open(loader_cache, "r", encoding="utf-8") as open_loader_cache:
+        try:
+            if not await _wait_for_client_online(
+                author_session.client_name, timeout if timeout is not None else RESTART_PROMPT_TIMEOUT
+            ):
+                Logger.warning(
+                    f"Client {author_session.client_name} did not come online in time, skipped restart prompt."
+                )
+                return
+
+            await author_session.refresh_info()
             message = []
-            if (read := open_loader_cache.read()) != "":
+            try:
+                read = loader_cache.read_text(encoding="utf-8")
+            except (OSError, UnicodeError):
+                Logger.exception("Failed to read module loader result cache for restart prompt.")
+                read = ""
+            if read != "":
                 message += [I18NContext("loader.load.failed"), Plain(read.strip(), disable_joke=True)]
             if locale_load_error:
                 message += [Plain("\n".join(locale_load_error), disable_joke=True)]
@@ -182,6 +188,12 @@ async def load_prompt(locale_load_error, timeout: float | None = None) -> None:
                 message = I18NContext("loader.load.success")
             message = MessageChain.assign(message)
             await Bot.send_direct_message(author_session, message)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            # 重启提示是 best-effort 的辅助信息，不能因为刷新旧会话或平台投递失败
+            # 阻止 Server 完成启动。
+            Logger.exception("Failed to deliver restart prompt.")
 
 
 __all__ = ["init_async", "load_prompt"]

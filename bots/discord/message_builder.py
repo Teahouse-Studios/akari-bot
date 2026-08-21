@@ -1,5 +1,7 @@
 """Discord 消息聚合负载构建。"""
 
+import asyncio
+
 import discord
 from attrs import define, field
 
@@ -17,6 +19,7 @@ from core.builtins.message.elements import (
     VoiceElement,
 )
 from core.builtins.session.info import SessionInfo
+from core.logger import Logger
 
 
 @define
@@ -135,13 +138,18 @@ async def execute_discord_payloads(channel, payloads: list[DiscordPayload], refe
     """依次发送 Discord 负载，引用仅首条、按钮仅末条。"""
     sent_messages = []
     for index, payload in enumerate(payloads):
-        sent_messages.append(
-            await channel.send(
+        try:
+            sent = await channel.send(
                 content=payload.content,
                 files=payload.files or None,
                 embeds=payload.embeds or None,
                 reference=reference if index == 0 else None,
                 view=view if index == len(payloads) - 1 else None,
             )
-        )
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            Logger.exception(f"Failed to send Discord payload {index + 1}/{len(payloads)}: ")
+            break
+        sent_messages.append(sent)
     return sent_messages

@@ -1,3 +1,6 @@
+import asyncio
+from dataclasses import dataclass
+
 import httpx
 import orjson
 from khl import Message, MessageTypes, PublicChannel, User
@@ -17,12 +20,24 @@ kook_base = "https://www.kookapp.cn"
 kook_headers = {"Authorization": f"Bot {kook_token}"}
 
 
+@dataclass(slots=True)
+class KOOKReactionContext:
+    """KOOK Reaction 事件中执行回复与删除所需的平台字段。"""
+
+    origin_message_id: str
+    emoji: str
+    user_id: str
+
+
 async def call_api(endpoint: str, **params):
     url = f"{kook_base}/api/v3/{endpoint}"
     async with httpx.AsyncClient() as client:
         resp = await client.post(url, data=params, headers=kook_headers)
-    data = orjson.loads(resp.text)
-    if not str(resp.status_code).startswith("2"):
+    try:
+        data = orjson.loads(resp.text)
+    except orjson.JSONDecodeError as exc:
+        raise ValueError({"status_code": resp.status_code, "body": resp.text}) from exc
+    if not 200 <= resp.status_code < 300 or not isinstance(data, dict) or data.get("code") not in (None, 0):
         raise ValueError(data)
     return data
 
@@ -54,18 +69,18 @@ async def get_guild(session_info: SessionInfo):
 
 
 class KOOKContextManager(ContextManager):
-    context: dict[str, Message] = {}
+    context: dict[str, Message | KOOKReactionContext] = {}
     features: Features = kook_features
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
         if session_info.target_from == target_person_prefix:
             return True
-        if session_info.session_id not in cls.context:
+        ctx = cls.context.get(session_info.session_id)
+        if not isinstance(ctx, Message):
             channel = await bot.client.fetch_public_channel(session_info.get_common_target_id())
             author = session_info.get_common_sender_id()
         else:
-            ctx: Message = cls.context[session_info.session_id]
             Logger.info("Identifying for channel: " + str(ctx.ctx.channel.id))
             channel = await bot.client.fetch_public_channel(ctx.ctx.channel.id)
             author = ctx.author.id
@@ -88,19 +103,57 @@ class KOOKContextManager(ContextManager):
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
     ) -> list[str]:
+        msg_ids = []
+        try:
+            return await cls._send_message(
+                session_info,
+                message,
+                quote=quote,
+                enable_parse_message=enable_parse_message,
+                enable_split_image=enable_split_image,
+                msg_ids=msg_ids,
+            )
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            Logger.exception(f"Failed to send KOOK message to {session_info.target_id}: ")
+            return msg_ids
+
+    @classmethod
+    async def _send_message(
+        cls,
+        session_info: SessionInfo,
+        message: MessageChain | MessageNodes,
+        quote: bool = True,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+        msg_ids: list[str] | None = None,
+    ) -> list[str]:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
-        ctx: Message | None = cls.context.get(session_info.session_id)
+        raw_ctx = cls.context.get(session_info.session_id)
+        ctx = raw_ctx if isinstance(raw_ctx, Message) else None
+        reaction_ctx = raw_ctx if isinstance(raw_ctx, KOOKReactionContext) else None
         _channel = None
         if not ctx:
             _channel = await get_channel(session_info)
             if not _channel:
                 Logger.warning(f"Channel {session_info.target_id} not found, cannot send message.")
+                return []
 
-        msg_ids = []
+        if msg_ids is None:
+            msg_ids = []
         if isinstance(message, MessageNodes):
             Logger.error("This session does not support message nodes, check if bug exists.")
             return []
+
+        async def send_to_channel(content, message_type: MessageTypes | None = None):
+            kwargs = {}
+            if message_type is not None:
+                kwargs["type"] = message_type
+            if reaction_ctx and quote and not msg_ids:
+                kwargs["quote"] = reaction_ctx.origin_message_id
+            return await _channel.send(content, **kwargs)
 
         for x in message.as_sendable(session_info, parse_message=enable_parse_message):
             if isinstance(x, PlainElement):
@@ -113,11 +166,13 @@ class KOOKContextManager(ContextManager):
                     )
 
                 else:
-                    send_ = await _channel.send(x.text)
+                    send_ = await send_to_channel(x.text)
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
                 msg_ids.append(str(send_.get("msg_id", "")))
             if isinstance(x, ImageElement):
-                url = await bot.create_asset(open(await x.get(), "rb"))  # skipcq
+                image_path = await x.get()
+                with open(image_path, "rb") as image:
+                    url = await bot.create_asset(image)
                 if ctx:
                     send_ = await ctx.reply(
                         url,
@@ -125,14 +180,12 @@ class KOOKContextManager(ContextManager):
                         type=MessageTypes.IMG,
                     )
                 else:
-                    send_ = await _channel.send(
-                        url,
-                        type=MessageTypes.IMG,
-                    )
+                    send_ = await send_to_channel(url, MessageTypes.IMG)
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(x.path)}")
                 msg_ids.append(str(send_.get("msg_id", "")))
             if isinstance(x, VoiceElement):
-                url = await bot.create_asset(open(x.path, "rb"))  # skipcq
+                with open(x.path, "rb") as audio:
+                    url = await bot.create_asset(audio)
                 if ctx:
                     send_ = await ctx.reply(
                         url,
@@ -140,10 +193,7 @@ class KOOKContextManager(ContextManager):
                         type=MessageTypes.AUDIO,
                     )
                 else:
-                    send_ = await _channel.send(
-                        url,
-                        type=MessageTypes.AUDIO,
-                    )
+                    send_ = await send_to_channel(url, MessageTypes.AUDIO)
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Voice: {str(x.__dict__)}")
                 msg_ids.append(str(send_.get("msg_id", "")))
             if isinstance(x, MentionElement):
@@ -154,9 +204,7 @@ class KOOKContextManager(ContextManager):
                             use_quote=quote and not msg_ids and ctx,
                         )
                     else:
-                        send_ = await _channel.send(
-                            f"(met){x.id}(met)",
-                        )
+                        send_ = await send_to_channel(f"(met){x.id}(met)")
                     Logger.info(f"[Bot] -> [{session_info.target_id}]: Mention: {x.client}|{str(x.id)}")
                     msg_ids.append(str(send_.get("msg_id", "")))
 
@@ -191,6 +239,26 @@ class KOOKContextManager(ContextManager):
     async def delete_message(
         cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None
     ) -> None:
+        ctx = cls.context.get(session_info.session_id)
+        if isinstance(ctx, KOOKReactionContext):
+            endpoint = (
+                "direct-message/delete-reaction"
+                if session_info.target_from == target_person_prefix
+                else "message/delete-reaction"
+            )
+            try:
+                await call_api(endpoint, msg_id=ctx.origin_message_id, emoji=ctx.emoji, user_id=ctx.user_id)
+                Logger.info(
+                    f'Removed reaction "{ctx.emoji}" from message {ctx.origin_message_id} '
+                    f"for user {ctx.user_id} in session {session_info.session_id}"
+                )
+            except Exception:
+                Logger.exception(
+                    f'Failed to remove reaction "{ctx.emoji}" from message {ctx.origin_message_id} '
+                    f"for user {ctx.user_id} in session {session_info.session_id}: "
+                )
+            return
+
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -258,6 +326,12 @@ class KOOKContextManager(ContextManager):
 
     @classmethod
     async def add_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
+        ctx = cls.context.get(session_info.session_id)
+        if isinstance(ctx, KOOKReactionContext):
+            message_id = ctx.origin_message_id
+        if message_id is None:
+            Logger.warning(f"KOOK reaction target is unavailable in session {session_info.session_id}.")
+            return
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -284,6 +358,12 @@ class KOOKContextManager(ContextManager):
 
     @classmethod
     async def remove_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
+        ctx = cls.context.get(session_info.session_id)
+        if isinstance(ctx, KOOKReactionContext):
+            message_id = ctx.origin_message_id
+        if message_id is None:
+            Logger.warning(f"KOOK reaction target is unavailable in session {session_info.session_id}.")
+            return
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -299,10 +379,18 @@ class KOOKContextManager(ContextManager):
 
         try:
             if session_info.target_from == target_person_prefix:
-                await call_api("direct-message/delete-reaction", msg_id=message_id[-1], emoji=emoji)
+                await call_api(
+                    "direct-message/delete-reaction",
+                    msg_id=message_id[-1],
+                    emoji=emoji,
+                )
             else:
-                await call_api("message/delete-reaction", msg_id=message_id[-1], emoji=emoji)
-            Logger.info(f'Added reaction "{emoji}" to message {message_id} in session {session_info.session_id}')
+                await call_api(
+                    "message/delete-reaction",
+                    msg_id=message_id[-1],
+                    emoji=emoji,
+                )
+            Logger.info(f'Removed reaction "{emoji}" from message {message_id} in session {session_info.session_id}')
         except Exception:
             Logger.exception(
                 f'Failed to remove reaction "{emoji}" to message {message_id} in session {session_info.session_id}: '

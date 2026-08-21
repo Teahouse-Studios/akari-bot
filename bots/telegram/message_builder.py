@@ -1,5 +1,6 @@
 """Telegram 消息聚合负载构建。"""
 
+import asyncio
 import re
 from html import escape
 from html.parser import HTMLParser
@@ -19,6 +20,7 @@ from core.builtins.message.elements import (
     VoiceElement,
 )
 from core.builtins.session.info import SessionInfo
+from core.logger import Logger
 from core.utils.image_split import image_split
 
 
@@ -305,42 +307,48 @@ async def execute_telegram_operations(
     sent_messages = []
     for index, operation in enumerate(operations):
         reply_id = reply_to_message_id if index == 0 else None
-        if isinstance(operation, TelegramTextOperation):
-            sent = await bot.send_message(
-                chat_id,
-                operation.text,
-                parse_mode="HTML",
-                reply_to_message_id=reply_id,
-                reply_markup=operation.reply_markup,
-            )
-            sent_messages.append(sent)
-        elif isinstance(operation, TelegramPhotoOperation):
-            sent = await bot.send_photo(
-                chat_id,
-                operation.photo,
-                caption=operation.caption,
-                parse_mode="HTML",
-                reply_to_message_id=reply_id,
-                reply_markup=operation.reply_markup,
-            )
-            sent_messages.append(sent)
-        elif isinstance(operation, TelegramAudioOperation):
-            sent = await bot.send_audio(
-                chat_id,
-                operation.audio,
-                caption=operation.caption,
-                parse_mode="HTML",
-                reply_to_message_id=reply_id,
-                reply_markup=operation.reply_markup,
-            )
-            sent_messages.append(sent)
-        elif isinstance(operation, TelegramMediaGroupOperation):
-            group = await bot.send_media_group(
-                chat_id,
-                operation.media,
-                reply_to_message_id=reply_id,
-            )
-            sent_messages.extend(group)
-            if operation.attach_markup_after_send and group and reply_markup is not None:
-                await group[-1].edit_reply_markup(reply_markup=reply_markup)
+        try:
+            if isinstance(operation, TelegramTextOperation):
+                sent = await bot.send_message(
+                    chat_id,
+                    operation.text,
+                    parse_mode="HTML",
+                    reply_to_message_id=reply_id,
+                    reply_markup=operation.reply_markup,
+                )
+                sent_messages.append(sent)
+            elif isinstance(operation, TelegramPhotoOperation):
+                sent = await bot.send_photo(
+                    chat_id,
+                    operation.photo,
+                    caption=operation.caption,
+                    parse_mode="HTML",
+                    reply_to_message_id=reply_id,
+                    reply_markup=operation.reply_markup,
+                )
+                sent_messages.append(sent)
+            elif isinstance(operation, TelegramAudioOperation):
+                sent = await bot.send_audio(
+                    chat_id,
+                    operation.audio,
+                    caption=operation.caption,
+                    parse_mode="HTML",
+                    reply_to_message_id=reply_id,
+                    reply_markup=operation.reply_markup,
+                )
+                sent_messages.append(sent)
+            elif isinstance(operation, TelegramMediaGroupOperation):
+                group = await bot.send_media_group(
+                    chat_id,
+                    operation.media,
+                    reply_to_message_id=reply_id,
+                )
+                sent_messages.extend(group)
+                if operation.attach_markup_after_send and group and reply_markup is not None:
+                    await group[-1].edit_reply_markup(reply_markup=reply_markup)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            Logger.exception(f"Failed to execute Telegram operation {index + 1}/{len(operations)}: ")
+            break
     return sent_messages

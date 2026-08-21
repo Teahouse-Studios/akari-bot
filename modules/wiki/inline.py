@@ -1,4 +1,3 @@
-import asyncio
 import re
 import urllib.parse
 
@@ -23,7 +22,7 @@ from .utils.screenshot_image import (
 )
 from .utils.utils import check_svg
 from .utils.wikilib import WikiLib
-from .wiki import query_pages
+from .wiki import _build_forum_callback, _build_section_callback, _start_background_with_release, query_pages
 
 wiki_inline = module(
     "wiki-inline",
@@ -80,7 +79,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     match_msg = msg.matched_msg
 
-    async def bgtask(query_list):
+    async def _run_bgtask(query_list):
         Logger.info(query_list)
         for q in query_list:
             img_send = False
@@ -259,21 +258,9 @@ async def _(msg: Bot.MessageSession):
                                             I18NContext("wiki.message.invalid_section.select.button.limit")
                                         )
 
-                                async def _callback(msg: Bot.MessageSession):
-                                    display = msg.as_display(text_only=True)
-                                    if is_int(display):
-                                        display = int(display)
-                                        if display <= len(get_page.sections):
-                                            get_page.selected_section = str(display - 1)
-                                            await query_pages(
-                                                msg,
-                                                title=get_page.title + "#" + get_page.sections[display - 1],
-                                                start_wiki_api=get_page.info.api,
-                                            )
-
                                 if button_data:
                                     i_msg_lst.append(ButtonFrame(build_button_rows(button_data)))
-                                await msg.send_message(i_msg_lst, callback=_callback)
+                                await msg.send_message(i_msg_lst, callback=_build_section_callback(get_page))
                             else:
                                 await msg.send_message(I18NContext("wiki.message.invalid_section"))
                         if get_page.is_forum:
@@ -313,18 +300,9 @@ async def _(msg: Bot.MessageSession):
                                 if len(forum_data) > 25:
                                     i_msg_lst.append(I18NContext("wiki.message.invalid_section.select.button.limit"))
 
-                            async def _callback(msg: Bot.MessageSession):
-                                display = msg.as_display(text_only=True)
-                                if is_int(display) and int(display) <= len(forum_data) - 1:
-                                    await query_pages(
-                                        msg,
-                                        title=forum_data[display]["text"],
-                                        start_wiki_api=get_page.info.api,
-                                    )
-
                             if button_data:
                                 i_msg_lst.append(ButtonFrame(build_button_rows(button_data)))
-                            await msg.send_message(i_msg_lst, callback=_callback)
+                            await msg.send_message(i_msg_lst, callback=_build_forum_callback(get_page))
             if len(query_list) == 1 and img_send:
                 return
             if msg.session_info.support_image:
@@ -353,7 +331,6 @@ async def _(msg: Bot.MessageSession):
                                 for img in get_section:
                                     imgs.append(Image(img))
                                 await msg.send_message(imgs, quote=False)
-        await msg.release()
 
     _query_list = []
     target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
@@ -370,6 +347,9 @@ async def _(msg: Bot.MessageSession):
             Logger.exception("Error occurred while checking wiki info for query: ")
 
     if _query_list:
-        await msg.hold()
-        asyncio.create_task(bgtask(_query_list))
-    # await bgtask()
+        await _start_background_with_release(
+            msg,
+            lambda: _run_bgtask(tuple(_query_list)),
+            name="wiki-inline-background",
+        )
+    # await _run_bgtask()

@@ -11,7 +11,7 @@ import bots.discord.slash as slash_modules
 from bots.discord.client import discord_bot, ensure_client_initialized
 from bots.discord.buttons import set_action_text_submit_handler, set_button_click_handler
 from bots.discord.interactions import handle_action_text_submit, handle_button_click
-from bots.discord.context import DiscordContextManager, DiscordFetchedContextManager
+from bots.discord.context import DiscordContextManager, DiscordFetchedContextManager, DiscordReactionContext
 from bots.discord.events import guild_member_joined, guild_member_left
 from bots.discord.info import *
 from core.builtins.bot import Bot
@@ -150,7 +150,7 @@ async def on_message(message: discord.Message):
         sender_from=sender_prefix,
         client_name=client_name,
         message_id=str(message.id),
-        reply_id=str(reply_id),
+        reply_id=str(reply_id) if reply_id is not None else None,
         messages=msg_chain,
         ctx_slot=ctx_id,
         bot_id=discord_bot.user.id,
@@ -167,10 +167,18 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
     sender_id = f"{sender_prefix}|{payload.user_id}"
     if sender_id in ignored_sender:
         return
+    channel = await discord_bot.fetch_channel(payload.channel_id)
     target_from = target_channel_prefix
-    if isinstance(await discord_bot.fetch_channel(payload.channel_id), discord.DMChannel):
+    if isinstance(channel, discord.DMChannel):
         target_from = target_dm_channel_prefix
     target_id = f"{target_from}|{payload.channel_id}"
+    try:
+        origin_message = await channel.fetch_message(payload.message_id)
+    except Exception:
+        Logger.exception(f"Failed to fetch Discord reaction origin message {payload.message_id}: ")
+        origin_message = None
+    user = payload.member or await discord_bot.fetch_user(payload.user_id)
+    context = DiscordReactionContext(channel=channel, user=user, message=origin_message, emoji=payload.emoji)
     await ensure_client_initialized()
     session = await SessionInfo.assign(
         target_id=target_id,
@@ -184,7 +192,7 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
         ctx_slot=ctx_id,
         bot_id=discord_bot.user.id,
     )
-    await Bot.process_message(session, payload)
+    await Bot.process_message(session, context)
 
 
 if DiscordConfig.enable:

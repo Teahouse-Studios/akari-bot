@@ -34,7 +34,7 @@ from core.i18n import Locale
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.utils.bash import run_sys_command
-from core.web_render import web_render
+from core.web_render import check_web_render_status
 from .base import JobQueueBase
 
 if TYPE_CHECKING:
@@ -609,7 +609,7 @@ async def _(tsk: JobQueuesTable, args: dict):
     Logger.trace(
         f"Trigger hook {args.get('module_or_hook_name', '')} with args {args.get('args', {})}, result: {_val}, type: {type(_val)}"
     )
-    await JobQueueServer.return_val(tsk, {"result": _val})
+    return {"result": _val}
 
 
 @JobQueueServer.action("client_direct_message")
@@ -671,7 +671,7 @@ async def get_web_render_status(tsk: JobQueuesTable, args: dict):
 
     :return: 包含 web_render_status 的字典
     """
-    return {"web_render_status": await web_render.browser.check_status()}
+    return {"web_render_status": await check_web_render_status()}
 
 
 @JobQueueServer.action("get_modules_list")

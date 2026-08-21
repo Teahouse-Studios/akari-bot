@@ -78,6 +78,10 @@ class Bot:
     # 主动获取消息会话的上下文管理器索引
     fetched_session_ctx_slot = 0
 
+    # 平台 SDK 的消息回调不可被 Server 处理耗时阻塞，因此消息以后台任务投递；
+    # 显式持有任务既避免异常无人取回，也便于平台关闭时统一取消。
+    _message_tasks: set[asyncio.Task[None]] = set()
+
     # 超级用户列表 - 拥有最高权限的用户 ID 列表
     base_superuser_list = CoreConfig.base_superuser
     if isinstance(base_superuser_list, str):
@@ -124,8 +128,29 @@ class Bot:
                 # 队列异常或任务被取消时也必须释放平台 SDK 消息对象。
                 ctx_manager.del_context(session_info)
 
-        # 创建异步任务处理消息
-        asyncio.create_task(_process_msg())
+        # 创建异步任务处理消息，并在完成时取回异常、移出有界任务集合。
+        task = asyncio.create_task(_process_msg(), name=f"process-message-{session_info.session_id or 'unknown'}")
+        cls._message_tasks.add(task)
+
+        def _message_task_done(done: asyncio.Task[None]) -> None:
+            cls._message_tasks.discard(done)
+            try:
+                done.result()
+            except asyncio.CancelledError:
+                pass
+            except Exception:
+                Logger.exception(f"Failed to process message {session_info.session_id or 'unknown'} in background.")
+
+        task.add_done_callback(_message_task_done)
+
+    @classmethod
+    async def cancel_pending_messages(cls) -> None:
+        """取消并等待当前平台仍在投递的消息任务。"""
+        tasks = list(cls._message_tasks)
+        for task in tasks:
+            if not task.done():
+                task.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
 
     @classmethod
     async def process_event(cls, event_info: EventInfo):

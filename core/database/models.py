@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import asyncio
 import uuid
 from collections import Counter
+from contextlib import asynccontextmanager
 from datetime import datetime, UTC, timedelta
 from decimal import Decimal
-from typing import Any, Literal, Self, overload
+from typing import Any, ClassVar, Literal, Self, overload
 
 from tortoise import fields
+from tortoise.expressions import F
 from tortoise.models import Model
 from tortoise.transactions import in_transaction
 
@@ -25,6 +28,28 @@ UNION_ID_PREFIXES = {
     UNION_SCOPE_SENDER: "USID",
     UNION_SCOPE_TARGET: "UTID",
 }
+
+# Union 的绑定、合并、删除、标量与 JSON 更新属于同一 mutation 域。它们都是低频管理操作，
+# 使用一把进程内锁可避免 SQLite 下无效的 SELECT ... FOR UPDATE，以及不同局部锁之间的交错。
+# MySQL 路径仍在事务内锁住核心行，覆盖 Web 与 Server 分属不同进程的情况。
+_union_mutation_lock = asyncio.Lock()
+
+
+@asynccontextmanager
+async def union_mutation():
+    """串行执行一段 Union 状态变更；调用方不得在内部再次进入本上下文。"""
+    async with _union_mutation_lock:
+        yield
+
+
+class UnionDeleteBlocked(RuntimeError):
+    """Union 仍被需要先解除外部状态的模块记录引用，不能直接删除。"""
+
+    def __init__(self, union_id: str, model: type[Model], reason: str):
+        self.union_id = union_id
+        self.model = model
+        self.reason = reason
+        super().__init__(f"Cannot delete union {union_id}: {get_table_name(model)}: {reason}")
 
 
 def _get_module_and_alias_first_words(module_names: str | list[str] | tuple[str, ...]) -> list[str]:
@@ -89,6 +114,80 @@ def iter_union_models(scope: str | None = None) -> list[type[Model]]:
                 continue
             result.append(model)
     return result
+
+
+def iter_union_reference_models() -> list[type[Model]]:
+    """遍历显式声明 Union 引用处理协议的模型。
+
+    这类表不以统一名称的 ``union_id`` 为键，例如 Captcha 同时引用场景与用户 Union，
+    因而不能由 :func:`iter_union_models` 猜测归属。模型只有显式实现下列任一类方法时才参与：
+
+    - ``validate_union_delete(scope, union_id)``
+    - ``migrate_union_reference(scope, from_union, to_union)``
+    - ``migrate_unbound_union_reference(scope, platform_id, from_union, to_union)``
+    - ``delete_union_reference(scope, union_id)``
+
+    统计和审计模型未声明协议，仍保持历史记录不变。
+    """
+    from tortoise import Tortoise
+
+    handlers = (
+        "validate_union_delete",
+        "migrate_union_reference",
+        "migrate_unbound_union_reference",
+        "delete_union_reference",
+    )
+    result = []
+    for app in Tortoise.apps.values():
+        for model in app.values():
+            if model in result:
+                continue
+            if any(callable(getattr(model, handler, None)) for handler in handlers):
+                result.append(model)
+    return result
+
+
+async def validate_union_delete(scope: str, union_id: str) -> None:
+    """让模块确认 Union 可以安全删除，否则抛出 :class:`UnionDeleteBlocked`。"""
+    for model in iter_union_reference_models():
+        handler = getattr(model, "validate_union_delete", None)
+        if not callable(handler):
+            continue
+        if reason := await handler(scope, union_id):
+            raise UnionDeleteBlocked(union_id, model, str(reason))
+
+
+async def migrate_union_references(scope: str, from_union: str, to_union: str) -> None:
+    """迁移显式声明协议的模块 Union 引用。"""
+    for model in iter_union_reference_models():
+        handler = getattr(model, "migrate_union_reference", None)
+        if callable(handler):
+            await handler(scope, from_union, to_union)
+
+
+async def migrate_unbound_union_references(
+    scope: str,
+    platform_id: str,
+    from_union: str,
+    to_union: str,
+) -> None:
+    """迁移能够按平台 ID 精确归属到被拆出成员的模块 Union 引用。
+
+    普通 ``union_id`` 模块数据按解绑契约留在原组；这条协议只供同时保存了平台 ID
+    与 Union ID 的显式引用表使用，使仍需完成的外部状态不会错误留给原组。
+    """
+    for model in iter_union_reference_models():
+        handler = getattr(model, "migrate_unbound_union_reference", None)
+        if callable(handler):
+            await handler(scope, platform_id, from_union, to_union)
+
+
+async def delete_union_references(scope: str, union_id: str) -> None:
+    """删除显式声明协议的模块 Union 引用。"""
+    for model in iter_union_reference_models():
+        handler = getattr(model, "delete_union_reference", None)
+        if callable(handler):
+            await handler(scope, union_id)
 
 
 async def collect_union_conflicts(from_union: str, to_union: str, scope: str | None = None) -> list[type[Model]]:
@@ -173,26 +272,44 @@ async def rewrite_sender_union_refs(from_union: str, to_union: str) -> None:
     ``custom_admins`` / ``banned_users`` 存的是用户 union ID，合并后若不改写，
     管理员身份将会丢失，限制名单也可通过换绑绕过。
     """
-    for target in await TargetUnionInfo.all():
+    # 调用方位于 Union mutation 事务中。锁住权限列表所属的 Target 行，避免 Web 与 Server
+    # 分属不同进程时，一边改写 Union 引用、一边添加管理员而互相覆盖整份 JSON 列表。
+    for target in await TargetUnionInfo.all().order_by("union_id").select_for_update():
         changed = False
+        update_fields = []
         for field in ("custom_admins", "banned_users"):
             value = getattr(target, field) or []
             if from_union in value:
                 setattr(target, field, list(dict.fromkeys(to_union if v == from_union else v for v in value)))
                 changed = True
+                update_fields.append(field)
         if changed:
-            await target.save()
+            await target.save(update_fields=update_fields)
 
 
 async def inherit_banned_union_refs(from_union: str, to_union: str) -> None:
     """
     使新拆出的用户 union 继承原 union 的场景限制名单，避免通过解绑规避封禁。
     """
-    for target in await TargetUnionInfo.all():
+    for target in await TargetUnionInfo.all().order_by("union_id").select_for_update():
         banned_users = target.banned_users or []
         if from_union in banned_users and to_union not in banned_users:
             target.banned_users = banned_users + [to_union]
-            await target.save()
+            await target.save(update_fields=["banned_users"])
+
+
+async def remove_sender_union_refs(union_id: str) -> None:
+    """从全部场景权限列表中移除已删除的用户 Union。"""
+    for target in await TargetUnionInfo.all().order_by("union_id").select_for_update():
+        update_fields = []
+        for field in ("custom_admins", "banned_users"):
+            value = list(getattr(target, field) or [])
+            filtered = [entry for entry in value if entry != union_id]
+            if filtered != value:
+                setattr(target, field, filtered)
+                update_fields.append(field)
+        if update_fields:
+            await target.save(update_fields=update_fields)
 
 
 async def backfill_union_binds() -> None:
@@ -382,26 +499,31 @@ class UnionInfo(DBModel):
         """
         bind_model = cls.bind_model
         bind = await bind_model.get_or_none(**{bind_model.id_field: platform_id})
-        if not bind:
-            # 自愈：允许存在 union_id 与平台 ID 相同、但缺少映射行的历史数据。
-            exist = await cls.get_or_none(union_id=platform_id)
-            if exist:
-                bind = await bind_model.create(**{bind_model.id_field: platform_id}, union_id=platform_id)
-            elif create:
-                bind = await bind_model.create(
-                    **{bind_model.id_field: platform_id}, union_id=new_union_id(cls.union_scope)
-                )
-            else:
-                return None
-
-        union = await cls.get_or_none(union_id=bind.union_id)
-        if not union:
+        if bind:
+            union = await cls.get_or_none(union_id=bind.union_id)
+            if union:
+                union.bind = bind
+                return union
             if not create:
                 return None
-            union = await cls.create(union_id=bind.union_id)
+        elif not create:
+            return None
 
-        union.bind = bind
-        return union
+        # 只有缺失或损坏的映射路径才进入 mutation 域；正常消息解析仍是无锁查询。
+        async with union_mutation():
+            bind = await bind_model.get_or_none(**{bind_model.id_field: platform_id})
+            if not bind:
+                # 自愈：允许存在 union_id 与平台 ID 相同、但缺少映射行的历史数据。
+                exist = await cls.get_or_none(union_id=platform_id)
+                union_id = platform_id if exist else new_union_id(cls.union_scope)
+                bind, _ = await bind_model.get_or_create(
+                    defaults={"union_id": union_id},
+                    **{bind_model.id_field: platform_id},
+                )
+
+            union, _ = await cls.get_or_create(union_id=bind.union_id)
+            union.bind = bind
+            return union
 
     async def list_bound_ids(self) -> list[str]:
         """
@@ -435,8 +557,39 @@ class UnionInfo(DBModel):
         return await cls.resolve_union(platform_id, create)
 
     async def edit_attr(self, key: str, value: Any) -> bool:
-        setattr(self, key, value)
-        await self.save()
+        if key not in self._meta.fields_map or key == self._meta.pk_attr:
+            raise ValueError(f"Unsupported Union field: {key}")
+        async with union_mutation():
+            updated = await type(self).filter(union_id=self.union_id).update(**{key: value})
+            if not updated:
+                return False
+            setattr(self, key, value)
+            return True
+
+    async def delete_union(self) -> bool:
+        """原子删除 Union、平台映射、当前模块状态及显式声明的引用。
+
+        统计和审计表不属于当前状态，不会由此删除。模块若维持平台侧限制等外部状态，
+        可通过 ``validate_union_delete`` 阻止直接删除，待外部状态解除后再重试。
+
+        :return: Union 存在并成功删除时为 True；已经不存在时为 False。
+        """
+        async with union_mutation():
+            async with in_transaction("default"):
+                current = await type(self).filter(union_id=self.union_id).select_for_update().first()
+                if not current:
+                    return False
+
+                await validate_union_delete(self.union_scope, self.union_id)
+
+                if self.union_scope == UNION_SCOPE_SENDER:
+                    await remove_sender_union_refs(self.union_id)
+
+                for model in iter_union_models(self.union_scope):
+                    await model.filter(union_id=self.union_id).delete()
+                await delete_union_references(self.union_scope, self.union_id)
+                await self.bind_model.filter(union_id=self.union_id).delete()
+                await current.delete()
         return True
 
 
@@ -491,15 +644,18 @@ class SenderUnionInfo(UnionInfo):
         :param trust: 是否为白名单模式，若 False 则为黑名单模式。
         :param enable: 是否要加入身份，若 False 则取消身份。
         """
-        if enable:
-            self.trusted = trust
-            self.blocked = not trust
-        else:
-            self.trusted = False
-            self.blocked = False
-
-        await self.save()
-        return True
+        trusted = trust if enable else False
+        blocked = not trust if enable else False
+        async with union_mutation():
+            updated = await SenderUnionInfo.filter(union_id=self.union_id).update(
+                trusted=trusted,
+                blocked=blocked,
+            )
+            if not updated:
+                return False
+            self.trusted = trusted
+            self.blocked = blocked
+            return True
 
     async def warn_user(self, amount: int = 1) -> bool:
         """
@@ -507,9 +663,13 @@ class SenderUnionInfo(UnionInfo):
 
         :param amount: 警告用户次数。
         """
-        self.warns = self.warns + amount
-        await self.save()
-        return True
+        async with union_mutation():
+            updated = await SenderUnionInfo.filter(union_id=self.union_id).update(warns=F("warns") + amount)
+            if not updated:
+                return False
+            fresh = await SenderUnionInfo.get(union_id=self.union_id)
+            self.warns = fresh.warns
+            return True
 
     async def modify_petal(self, amount: str | int | Decimal) -> bool:
         """
@@ -517,17 +677,19 @@ class SenderUnionInfo(UnionInfo):
 
         :param amount: 要添加或减少的花瓣数量。
         """
-        self.petal += int(amount)
-        await self.save()
-        return True
+        async with union_mutation():
+            updated = await SenderUnionInfo.filter(union_id=self.union_id).update(petal=F("petal") + int(amount))
+            if not updated:
+                return False
+            fresh = await SenderUnionInfo.get(union_id=self.union_id)
+            self.petal = fresh.petal
+            return True
 
     async def clear_petal(self) -> bool:
         """
         清空用户花瓣数量。
         """
-        self.petal = 0
-        await self.save()
-        return True
+        return await self.edit_attr("petal", 0)
 
     async def edit_sender_data(self, key: str, value: Any | None = None) -> bool:
         """
@@ -536,14 +698,23 @@ class SenderUnionInfo(UnionInfo):
         :param key: 键名。
         :param value: 值，若留空则删除该键值对。
         """
-        if value is None:
-            if key in self.sender_data:
-                del self.sender_data[key]
-        else:
-            self.sender_data[key] = value
-
-        await self.save()
-        return True
+        async with union_mutation():
+            async with in_transaction("default") as connection:
+                current = await (
+                    SenderUnionInfo.filter(union_id=self.union_id).using_db(connection).select_for_update().first()
+                )
+                if not current:
+                    return False
+                sender_data = dict(current.sender_data or {})
+                if value is None:
+                    sender_data.pop(key, None)
+                else:
+                    sender_data[key] = value
+                await (
+                    SenderUnionInfo.filter(union_id=self.union_id).using_db(connection).update(sender_data=sender_data)
+                )
+                self.sender_data = sender_data
+                return True
 
     async def bind_id(self, sender_id: str) -> bool:
         """
@@ -552,11 +723,16 @@ class SenderUnionInfo(UnionInfo):
         :param sender_id: 平台账号 ID。
         :return: 是否绑定成功，若该账号已绑定至其他 union 则为 False。
         """
-        bind = await SenderUnionBind.get_or_none(sender_id=sender_id)
-        if bind:
-            return bind.union_id == self.union_id
-        await SenderUnionBind.create(sender_id=sender_id, union_id=self.union_id)
-        return True
+        async with union_mutation():
+            async with in_transaction("default"):
+                current = await SenderUnionInfo.filter(union_id=self.union_id).select_for_update().first()
+                if not current:
+                    return False
+                bind, _ = await SenderUnionBind.get_or_create(
+                    sender_id=sender_id,
+                    defaults={"union_id": self.union_id},
+                )
+                return bind.union_id == self.union_id
 
     async def unbind_id(self, sender_id: str) -> "SenderUnionInfo | None":
         """
@@ -567,18 +743,36 @@ class SenderUnionInfo(UnionInfo):
         :param sender_id: 平台账号 ID。
         :return: 拆出后该账号所属的新 union，若无法解绑则为 None。
         """
-        binds = await self.list_bound_ids()
-        if sender_id not in binds or len(binds) <= 1:
-            return None
-        union = await SenderUnionInfo.create(
-            union_id=new_union_id(UNION_SCOPE_SENDER), blocked=self.blocked, warns=self.warns
-        )
-        # 先建新组再改挂映射行，全程不出现「该账号没有映射行」的中间态：
-        # 该状态下若中断，下次解析会把这个账号当作从未见过的新账号，另建一个干净的 union，
-        # 封禁与警告次数就此清零。union_id 不是主键，单条 UPDATE 即可改挂。
-        await SenderUnionBind.filter(sender_id=sender_id).update(union_id=union.union_id)
-        await inherit_banned_union_refs(self.union_id, union.union_id)
-        return union
+        async with union_mutation():
+            # 创建新组、改挂映射和继承场景限制名单必须原子完成；否则最后一步失败会留下
+            # 一个孤立的新 union，并使账号已经脱离原组但尚未继承全部处罚状态。
+            async with in_transaction("default"):
+                current = await SenderUnionInfo.filter(union_id=self.union_id).select_for_update().first()
+                if not current:
+                    return None
+                binds = await SenderUnionBind.filter(union_id=self.union_id).values_list("sender_id", flat=True)
+                if sender_id not in binds or len(binds) <= 1:
+                    return None
+
+                union = await SenderUnionInfo.create(
+                    union_id=new_union_id(UNION_SCOPE_SENDER),
+                    blocked=current.blocked,
+                    warns=current.warns,
+                )
+                # 先建新组再改挂映射行，全程不出现「该账号没有映射行」的中间态：
+                # 该状态下若中断，下次解析会把这个账号当作从未见过的新账号，另建一个干净的 union，
+                # 封禁与警告次数就此清零。union_id 不是主键，单条 UPDATE 即可改挂。
+                await SenderUnionBind.filter(sender_id=sender_id, union_id=self.union_id).update(
+                    union_id=union.union_id
+                )
+                await migrate_unbound_union_references(
+                    UNION_SCOPE_SENDER,
+                    sender_id,
+                    self.union_id,
+                    union.union_id,
+                )
+                await inherit_banned_union_refs(self.union_id, union.union_id)
+                return union
 
     async def merge_union(
         self, other: "SenderUnionInfo", keep_other_tables: set[str] | None = None
@@ -595,27 +789,53 @@ class SenderUnionInfo(UnionInfo):
         if other.union_id == self.union_id:
             return None
 
-        merged = await SenderUnionInfo.create(
-            union_id=new_union_id(UNION_SCOPE_SENDER),
-            blocked=self.blocked or other.blocked,
-            trusted=self.trusted or other.trusted,
-            superuser=self.superuser or other.superuser,
-            warns=max(self.warns, other.warns),
-            petal=self.petal + other.petal,
-            sender_data={**other.sender_data, **self.sender_data},
-        )
+        # 合并会同时改写核心表、平台映射、权限引用与若干模块表。任一步失败都必须整体回滚，
+        # 否则会留下新旧 union 并存或只有部分模块数据迁移的不可恢复状态。
+        async with union_mutation():
+            async with in_transaction("default") as connection:
+                union_ids = [self.union_id, other.union_id]
+                fresh_rows = await (
+                    SenderUnionInfo.filter(union_id__in=union_ids)
+                    .using_db(connection)
+                    .order_by("union_id")
+                    .select_for_update()
+                )
+                fresh_by_id = {row.union_id: row for row in fresh_rows}
+                fresh_self = fresh_by_id.get(self.union_id)
+                fresh_other = fresh_by_id.get(other.union_id)
+                if not fresh_self or not fresh_other:
+                    return None
 
-        # 先按冲突取舍将两侧模块数据归拢至一处，再整体改挂到新组；新组为空，第二步不会再产生冲突。
-        await migrate_union_tables(other.union_id, self.union_id, keep_other_tables, scope=UNION_SCOPE_SENDER)
-        await migrate_union_tables(self.union_id, merged.union_id, scope=UNION_SCOPE_SENDER)
+                merged = await SenderUnionInfo.create(
+                    union_id=new_union_id(UNION_SCOPE_SENDER),
+                    blocked=fresh_self.blocked or fresh_other.blocked,
+                    trusted=fresh_self.trusted or fresh_other.trusted,
+                    superuser=fresh_self.superuser or fresh_other.superuser,
+                    warns=max(fresh_self.warns, fresh_other.warns),
+                    petal=fresh_self.petal + fresh_other.petal,
+                    sender_data={**fresh_other.sender_data, **fresh_self.sender_data},
+                    using_db=connection,
+                )
 
-        for old_union in (self.union_id, other.union_id):
-            await rewrite_sender_union_refs(old_union, merged.union_id)
-            await SenderUnionBind.filter(union_id=old_union).update(union_id=merged.union_id)
+                # 先按冲突取舍将两侧模块数据归拢至一处，再整体改挂到新组；新组为空，第二步不会再产生冲突。
+                await migrate_union_tables(
+                    fresh_other.union_id,
+                    fresh_self.union_id,
+                    keep_other_tables,
+                    scope=UNION_SCOPE_SENDER,
+                )
+                await migrate_union_tables(fresh_self.union_id, merged.union_id, scope=UNION_SCOPE_SENDER)
 
-        await self.delete()
-        await other.delete()
-        return merged
+                for old_union in (fresh_self.union_id, fresh_other.union_id):
+                    await migrate_union_references(UNION_SCOPE_SENDER, old_union, merged.union_id)
+                    await rewrite_sender_union_refs(old_union, merged.union_id)
+                    await (
+                        SenderUnionBind.filter(union_id=old_union).using_db(connection).update(union_id=merged.union_id)
+                    )
+
+                await fresh_self.delete(using_db=connection)
+                await fresh_other.delete(using_db=connection)
+                return merged
 
 
 class TargetUnionInfo(UnionInfo):
@@ -672,18 +892,56 @@ class TargetUnionInfo(UnionInfo):
         """
         return list(normalize_peer_bots(self.target_data.get("bots_id")).get(target_id, {}).values())
 
-    async def link_peer_bots(self, links: dict[str, dict[str, str]]) -> None:
+    async def _link_peer_bots_unlocked(
+        self,
+        links: dict[str, dict[str, str]],
+        current: "TargetUnionInfo",
+        connection,
+    ) -> bool:
+        """在已持有 Union mutation 锁和核心行锁时登记机器人互认记录。"""
+        target_data = dict(current.target_data or {})
+        peers = normalize_peer_bots(target_data.get("bots_id"))
+        for observer, entries in links.items():
+            peers.setdefault(observer, {}).update({peer: bot_id for peer, bot_id in entries.items() if bot_id})
+        target_data["bots_id"] = peers
+        await TargetUnionInfo.filter(union_id=self.union_id).using_db(connection).update(target_data=target_data)
+        self.target_data = target_data
+        current.target_data = target_data
+        return True
+
+    async def link_peer_bots(self, links: dict[str, dict[str, str]]) -> bool:
         """
         登记机器人互认记录。
 
         :param links: ``{观察方场景 ID: {对端场景 ID: 对端机器人在观察方平台的账号}}``。
         """
-        peers = normalize_peer_bots(self.target_data.get("bots_id"))
-        for observer, entries in links.items():
-            peers.setdefault(observer, {}).update({peer: bot_id for peer, bot_id in entries.items() if bot_id})
-        await self.edit_target_data("bots_id", peers)
+        async with union_mutation():
+            async with in_transaction("default") as connection:
+                current = await (
+                    TargetUnionInfo.filter(union_id=self.union_id).using_db(connection).select_for_update().first()
+                )
+                if not current:
+                    return False
+                return await self._link_peer_bots_unlocked(links, current, connection)
 
-    async def forget_peer_bots(self, target_id: str) -> None:
+    async def _forget_peer_bots_unlocked(
+        self,
+        target_id: str,
+        current: "TargetUnionInfo",
+        connection,
+    ) -> bool:
+        """在已持有 Union mutation 锁和核心行锁时清理机器人互认记录。"""
+        target_data = dict(current.target_data or {})
+        peers = normalize_peer_bots(target_data.get("bots_id"))
+        peers.pop(target_id, None)
+        for entries in peers.values():
+            entries.pop(target_id, None)
+        target_data["bots_id"] = {observer: entries for observer, entries in peers.items() if entries}
+        await TargetUnionInfo.filter(union_id=self.union_id).using_db(connection).update(target_data=target_data)
+        self.target_data = target_data
+        return True
+
+    async def forget_peer_bots(self, target_id: str) -> bool:
         """
         将某个平台场景从机器人互认记录中完全移除，包含它自身的记录与其它场景对它的记录。
 
@@ -692,11 +950,118 @@ class TargetUnionInfo(UnionInfo):
 
         :param target_id: 要移除的平台场景 ID。
         """
-        peers = normalize_peer_bots(self.target_data.get("bots_id"))
-        peers.pop(target_id, None)
-        for entries in peers.values():
-            entries.pop(target_id, None)
-        await self.edit_target_data("bots_id", {observer: e for observer, e in peers.items() if e})
+        async with union_mutation():
+            async with in_transaction("default") as connection:
+                current = await (
+                    TargetUnionInfo.filter(union_id=self.union_id).using_db(connection).select_for_update().first()
+                )
+                if not current:
+                    return False
+                return await self._forget_peer_bots_unlocked(target_id, current, connection)
+
+    @classmethod
+    async def reassign_channel(cls, target_id: str, channel_id: int | None = None) -> int | None:
+        """原子地把单个平台场景移到另一条消息通道。
+
+        ``channel_id`` 为 ``None`` 时分配组内下一个新编号。通道变更和机器人互认记录清理
+        必须处于同一 Union mutation 与数据库事务中：若先更新映射、再另行清理互认记录，
+        等待任务或 parser 可能在两步之间观察到「已经分离通道但仍互相屏蔽」的半状态。
+
+        本方法只移动指定物理场景；管理员手工 set/reset 的语义正是让当前入口脱离原通道。
+        需要把两个既有通道整体并合时应使用 :meth:`unify_channels`。
+
+        :param target_id: 要移动的平台场景 ID。
+        :param channel_id: 目标通道号；为 ``None`` 时新建一条通道。
+        :return: 实际通道号；场景或所属 Union 已不存在时为 ``None``。
+        """
+        async with union_mutation():
+            # 全仓 Union 事务统一先锁核心行、再锁映射行。若反过来，MySQL 下可与
+            # bind/unbind/merge 形成「持 bind 等 union／持 union 等 bind」的死锁环。
+            # 候选 union_id 只作锁顺序提示；锁住核心行后必须重读映射并验证它未改挂。
+            for _attempt in range(2):
+                candidate = await TargetUnionBind.get_or_none(target_id=target_id)
+                if not candidate:
+                    return None
+                retry = False
+                async with in_transaction("default") as connection:
+                    current = await (
+                        cls.filter(union_id=candidate.union_id).using_db(connection).select_for_update().first()
+                    )
+                    if not current:
+                        retry = True
+                    else:
+                        bind = await (
+                            TargetUnionBind.filter(target_id=target_id).using_db(connection).select_for_update().first()
+                        )
+                        if not bind:
+                            return None
+                        if bind.union_id != candidate.union_id:
+                            retry = True
+                        else:
+                            assigned_channel = channel_id
+                            if assigned_channel is None:
+                                channels = await (
+                                    TargetUnionBind.filter(union_id=bind.union_id)
+                                    .using_db(connection)
+                                    .values_list("channel_id", flat=True)
+                                )
+                                assigned_channel = max(channels) + 1 if channels else 1
+                            assigned_channel = int(assigned_channel)
+                            if bind.channel_id == assigned_channel:
+                                return assigned_channel
+
+                            await (
+                                TargetUnionBind.filter(target_id=target_id, union_id=bind.union_id)
+                                .using_db(connection)
+                                .update(channel_id=assigned_channel)
+                            )
+                            await current._forget_peer_bots_unlocked(target_id, current, connection)
+                            return assigned_channel
+                if not retry:
+                    break
+            return None
+
+    @classmethod
+    async def unify_channels(cls, anchor_target_id: str, other_target_id: str) -> int | None:
+        """原子地把两个场景当前所在的完整消息通道合并为一条。
+
+        同号场景表达的是同一个现实场景，因而具有传递性。若只改 ``other_target_id`` 一行，
+        它原通道中的第三个平台入口会被错误拆开；本方法会把 ``other_target_id`` 所在通道的
+        全部映射一并移到锚点通道。已有互认记录仍描述同一现实场景，合并时无需清除。
+
+        两个场景必须已经位于同一 Target Union；常规绑定、自动配对和退役迁移都应先完成
+        Union 合并，再调用本方法统一通道。
+
+        :param anchor_target_id: 保留其通道号的平台场景 ID。
+        :param other_target_id: 将其完整通道并入锚点通道的平台场景 ID。
+        :return: 合并后的通道号；任一绑定或所属 Union 已不存在、或两者不同组时为 ``None``。
+        """
+        target_ids = list(dict.fromkeys([anchor_target_id, other_target_id]))
+        async with union_mutation():
+            async with in_transaction("default") as connection:
+                binds = await (
+                    TargetUnionBind.filter(target_id__in=target_ids)
+                    .using_db(connection)
+                    .order_by("target_id")
+                    .select_for_update()
+                )
+                by_id = {bind.target_id: bind for bind in binds}
+                anchor = by_id.get(anchor_target_id)
+                other = by_id.get(other_target_id)
+                if not anchor or not other or anchor.union_id != other.union_id:
+                    return None
+                current = await cls.filter(union_id=anchor.union_id).using_db(connection).select_for_update().first()
+                if not current:
+                    return None
+                if anchor.channel_id == other.channel_id:
+                    return anchor.channel_id
+
+                await (
+                    TargetUnionBind.filter(union_id=anchor.union_id, channel_id=other.channel_id)
+                    .using_db(connection)
+                    .update(channel_id=anchor.channel_id)
+                )
+                return anchor.channel_id
 
     async def bind_id(self, target_id: str) -> bool:
         """
@@ -705,15 +1070,32 @@ class TargetUnionInfo(UnionInfo):
         :param target_id: 平台场景 ID。
         :return: 是否绑定成功，若该场景已绑定至其他 union 则为 False。
         """
-        bind = await TargetUnionBind.get_or_none(target_id=target_id)
-        if bind:
-            return bind.union_id == self.union_id
-        await TargetUnionBind.create(
-            target_id=target_id,
-            union_id=self.union_id,
-            channel_id=await TargetUnionBind.next_channel_id(self.union_id),
-        )
-        return True
+        async with union_mutation():
+            async with in_transaction("default") as connection:
+                # MySQL 下锁住 union 数据行，使不同 server 进程也不能同时从相同最大通道号分配。
+                # SQLite 会忽略行锁语义，由外层 asyncio.Lock 保证单 server 进程内的顺序。
+                current = await (
+                    TargetUnionInfo.filter(union_id=self.union_id).using_db(connection).select_for_update().first()
+                )
+                if not current:
+                    return False
+
+                bind = await TargetUnionBind.filter(target_id=target_id).using_db(connection).first()
+                if bind:
+                    return bind.union_id == self.union_id
+
+                channels = await (
+                    TargetUnionBind.filter(union_id=self.union_id)
+                    .using_db(connection)
+                    .values_list("channel_id", flat=True)
+                )
+                channel_id = max(channels) + 1 if channels else 1
+                bind, _ = await TargetUnionBind.get_or_create(
+                    target_id=target_id,
+                    defaults={"union_id": self.union_id, "channel_id": channel_id},
+                    using_db=connection,
+                )
+                return bind.union_id == self.union_id
 
     async def unbind_id(self, target_id: str) -> "TargetUnionInfo | None":
         """
@@ -722,21 +1104,50 @@ class TargetUnionInfo(UnionInfo):
         :param target_id: 平台场景 ID。
         :return: 拆出后该场景所属的新 union，若无法解绑则为 None。
         """
-        binds = await self.list_bound_ids()
-        if target_id not in binds or len(binds) <= 1:
-            return None
-        # 封禁状态随场景一并转移，避免通过解绑规避处罚。
-        union = await TargetUnionInfo.create(
-            union_id=new_union_id(UNION_SCOPE_TARGET), blocked=self.blocked, locale=self.locale
-        )
-        # 先建新组再改挂映射行，全程不出现「该场景没有映射行」的中间态：
-        # 该状态下若中断，下次解析会把这个场景当作从未见过的新场景，另建一个干净的 union，
-        # 封禁就此清零。新组内只此一个场景，通道号复位为 1。
-        await TargetUnionBind.filter(target_id=target_id).update(union_id=union.union_id, channel_id=1)
-        # 拆出的场景与原组内的机器人不再对应同一个现实场景，互认记录须一并清除。
-        # 新组的 target_data 本为空，只需清理保留的一侧。
-        await self.forget_peer_bots(target_id)
-        return union
+        async with union_mutation():
+            # 新组、平台映射和互认记录属于同一次解绑；任一步失败均不能让数据库停在半迁移状态。
+            async with in_transaction("default") as connection:
+                current = await (
+                    TargetUnionInfo.filter(union_id=self.union_id).using_db(connection).select_for_update().first()
+                )
+                if not current:
+                    return None
+                binds = await (
+                    TargetUnionBind.filter(union_id=self.union_id)
+                    .using_db(connection)
+                    .values_list("target_id", flat=True)
+                )
+                if target_id not in binds or len(binds) <= 1:
+                    return None
+
+                # 封禁状态随场景一并转移，避免通过解绑规避处罚。
+                union = await TargetUnionInfo.create(
+                    union_id=new_union_id(UNION_SCOPE_TARGET),
+                    blocked=current.blocked,
+                    locale=current.locale,
+                    using_db=connection,
+                )
+                # 先建新组再改挂映射行，全程不出现「该场景没有映射行」的中间态：
+                # 该状态下若中断，下次解析会把这个场景当作从未见过的新场景，另建一个干净的 union，
+                # 封禁就此清零。新组内只此一个场景，通道号复位为 1。
+                moved = await (
+                    TargetUnionBind.filter(target_id=target_id, union_id=self.union_id)
+                    .using_db(connection)
+                    .update(union_id=union.union_id, channel_id=1)
+                )
+                if not moved:
+                    await union.delete(using_db=connection)
+                    return None
+                await migrate_unbound_union_references(
+                    UNION_SCOPE_TARGET,
+                    target_id,
+                    self.union_id,
+                    union.union_id,
+                )
+                # 拆出的场景与原组内的机器人不再对应同一个现实场景，互认记录须一并清除。
+                # 新组的 target_data 本为空，只需清理保留的一侧。调用内部版本避免重复进入全局锁。
+                await self._forget_peer_bots_unlocked(target_id, current, connection)
+                return union
 
     async def merge_union(
         self, other: "TargetUnionInfo", keep_other_tables: set[str] | None = None
@@ -753,43 +1164,76 @@ class TargetUnionInfo(UnionInfo):
         if other.union_id == self.union_id:
             return None
 
-        # bots_id 为两级结构，随 target_data 浅合并会使 other 一侧的互认记录被整体覆盖，
-        # 因此单独取并集。
-        peer_bots = normalize_peer_bots(other.target_data.get("bots_id"))
-        for observer, entries in normalize_peer_bots(self.target_data.get("bots_id")).items():
-            peer_bots.setdefault(observer, {}).update(entries)
+        async with union_mutation():
+            async with in_transaction("default") as connection:
+                union_ids = [self.union_id, other.union_id]
+                fresh_rows = await (
+                    TargetUnionInfo.filter(union_id__in=union_ids)
+                    .using_db(connection)
+                    .order_by("union_id")
+                    .select_for_update()
+                )
+                fresh_by_id = {row.union_id: row for row in fresh_rows}
+                fresh_self = fresh_by_id.get(self.union_id)
+                fresh_other = fresh_by_id.get(other.union_id)
+                if not fresh_self or not fresh_other:
+                    return None
 
-        merged = await TargetUnionInfo.create(
-            union_id=new_union_id(UNION_SCOPE_TARGET),
-            blocked=self.blocked or other.blocked,
-            muted=self.muted or other.muted,
-            locale=self.locale,
-            modules=list(set(self.modules) | set(other.modules)),
-            custom_admins=list(set(self.custom_admins) | set(other.custom_admins)),
-            banned_users=list(set(self.banned_users) | set(other.banned_users)),
-            target_data={**other.target_data, **self.target_data, "bots_id": peer_bots},
-        )
+                # bots_id 为两级结构，随 target_data 浅合并会使 other 一侧的互认记录被整体覆盖，
+                # 因此单独取并集。
+                peer_bots = normalize_peer_bots(fresh_other.target_data.get("bots_id"))
+                for observer, entries in normalize_peer_bots(fresh_self.target_data.get("bots_id")).items():
+                    peer_bots.setdefault(observer, {}).update(entries)
 
-        # 先按冲突取舍将两侧模块数据归拢至一处，再整体改挂到新组；新组为空，第二步不会再产生冲突。
-        await migrate_union_tables(other.union_id, self.union_id, keep_other_tables, scope=UNION_SCOPE_TARGET)
-        await migrate_union_tables(self.union_id, merged.union_id, scope=UNION_SCOPE_TARGET)
+                merged = await TargetUnionInfo.create(
+                    union_id=new_union_id(UNION_SCOPE_TARGET),
+                    blocked=fresh_self.blocked or fresh_other.blocked,
+                    muted=fresh_self.muted or fresh_other.muted,
+                    locale=fresh_self.locale,
+                    modules=list(dict.fromkeys([*(fresh_self.modules or []), *(fresh_other.modules or [])])),
+                    custom_admins=list(
+                        dict.fromkeys([*(fresh_self.custom_admins or []), *(fresh_other.custom_admins or [])])
+                    ),
+                    banned_users=list(
+                        dict.fromkeys([*(fresh_self.banned_users or []), *(fresh_other.banned_users or [])])
+                    ),
+                    target_data={**fresh_other.target_data, **fresh_self.target_data, "bots_id": peer_bots},
+                    using_db=connection,
+                )
 
-        # 自身一侧的通道号保持不变，并入方整体平移：双方均自 1 开始编号，
-        # 直接合表会使两个互不相关的场景同为 1 号，进而被误判为同一条消息通道。
-        # 平移须按原通道号建立映射，不能逐条分配新号——并入方内部原本同号的场景必须保持同号，
-        # 否则已配对的场景会在合并时被拆开。
-        await TargetUnionBind.filter(union_id=self.union_id).update(union_id=merged.union_id)
-        moved_channels: dict[int, int] = {}
-        for bind in await TargetUnionBind.filter(union_id=other.union_id).order_by("bound_at"):
-            if bind.channel_id not in moved_channels:
-                moved_channels[bind.channel_id] = await TargetUnionBind.next_channel_id(merged.union_id)
-            bind.union_id = merged.union_id
-            bind.channel_id = moved_channels[bind.channel_id]
-            await bind.save()
+                # 先按冲突取舍将两侧模块数据归拢至一处，再整体改挂到新组；新组为空，第二步不会再产生冲突。
+                await migrate_union_tables(
+                    fresh_other.union_id,
+                    fresh_self.union_id,
+                    keep_other_tables,
+                    scope=UNION_SCOPE_TARGET,
+                )
+                await migrate_union_tables(fresh_self.union_id, merged.union_id, scope=UNION_SCOPE_TARGET)
+                for old_union in (fresh_self.union_id, fresh_other.union_id):
+                    await migrate_union_references(UNION_SCOPE_TARGET, old_union, merged.union_id)
 
-        await self.delete()
-        await other.delete()
-        return merged
+                # 自身一侧的通道号保持不变，并入方整体平移：双方均自 1 开始编号，
+                # 直接合表会使两个互不相关的场景同为 1 号，进而被误判为同一条消息通道。
+                # 平移须按原通道号建立映射，不能逐条分配新号——并入方内部原本同号的场景必须保持同号，
+                # 否则已配对的场景会在合并时被拆开。
+                await (
+                    TargetUnionBind.filter(union_id=fresh_self.union_id)
+                    .using_db(connection)
+                    .update(union_id=merged.union_id)
+                )
+                moved_channels: dict[int, int] = {}
+                for bind in await (
+                    TargetUnionBind.filter(union_id=fresh_other.union_id).using_db(connection).order_by("bound_at")
+                ):
+                    if bind.channel_id not in moved_channels:
+                        moved_channels[bind.channel_id] = await TargetUnionBind.next_channel_id(merged.union_id)
+                    bind.union_id = merged.union_id
+                    bind.channel_id = moved_channels[bind.channel_id]
+                    await bind.save(using_db=connection)
+
+                await fresh_self.delete(using_db=connection)
+                await fresh_other.delete(using_db=connection)
+                return merged
 
     async def config_module(self, module_name: str | list | tuple, enable: bool = True) -> bool:
         """
@@ -798,17 +1242,24 @@ class TargetUnionInfo(UnionInfo):
         :param module_name: 指定的模块名称。
         :param enable: 是否要开启模块，若 False 则关闭模块。
         """
-        for mname in convert_list(module_name):
-            related_names = _get_module_and_alias_first_words(mname)
-            canonical_name = related_names[0]
-            if enable:
-                self.modules = [name for name in self.modules if name not in related_names]
-                self.modules.append(canonical_name)
-            else:
-                self.modules = [name for name in self.modules if name not in related_names]
-        self.modules = list(dict.fromkeys(self.modules))
-        await self.save()
-        return True
+        async with union_mutation():
+            async with in_transaction("default") as connection:
+                current = await (
+                    TargetUnionInfo.filter(union_id=self.union_id).using_db(connection).select_for_update().first()
+                )
+                if not current:
+                    return False
+                modules = list(current.modules or [])
+                for mname in convert_list(module_name):
+                    related_names = _get_module_and_alias_first_words(mname)
+                    canonical_name = related_names[0]
+                    modules = [name for name in modules if name not in related_names]
+                    if enable:
+                        modules.append(canonical_name)
+                modules = list(dict.fromkeys(modules))
+                await TargetUnionInfo.filter(union_id=self.union_id).using_db(connection).update(modules=modules)
+                self.modules = modules
+                return True
 
     async def switch_mute(self) -> bool:
         """
@@ -816,9 +1267,17 @@ class TargetUnionInfo(UnionInfo):
 
         :return: 机器人是否被禁用。
         """
-        self.muted = not self.muted
-        await self.save()
-        return self.muted
+        async with union_mutation():
+            async with in_transaction("default") as connection:
+                current = await (
+                    TargetUnionInfo.filter(union_id=self.union_id).using_db(connection).select_for_update().first()
+                )
+                if not current:
+                    return False
+                muted = not current.muted
+                await TargetUnionInfo.filter(union_id=self.union_id).using_db(connection).update(muted=muted)
+                self.muted = muted
+                return muted
 
     async def edit_target_data(self, key: str, value: Any | None = None) -> bool:
         """
@@ -827,14 +1286,23 @@ class TargetUnionInfo(UnionInfo):
         :param key: 键名。
         :param value: 值，若留空则删除该键值对。
         """
-        if value is None:
-            if key in self.target_data:
-                del self.target_data[key]
-        else:
-            self.target_data[key] = value
-
-        await self.save()
-        return True
+        async with union_mutation():
+            async with in_transaction("default") as connection:
+                current = await (
+                    TargetUnionInfo.filter(union_id=self.union_id).using_db(connection).select_for_update().first()
+                )
+                if not current:
+                    return False
+                target_data = dict(current.target_data or {})
+                if value is None:
+                    target_data.pop(key, None)
+                else:
+                    target_data[key] = value
+                await (
+                    TargetUnionInfo.filter(union_id=self.union_id).using_db(connection).update(target_data=target_data)
+                )
+                self.target_data = target_data
+                return True
 
     async def config_custom_admin(self, sender_union_id: str, enable: bool = True) -> bool:
         """
@@ -843,18 +1311,30 @@ class TargetUnionInfo(UnionInfo):
         :param sender_union_id: 指定的用户 union ID。
         :param enable: 是否要设置用户为场景内管理员，若 False 则移除管理员。
         """
-        custom_admins = self.custom_admins
-        if enable:
-            if sender_union_id not in custom_admins:
-                custom_admins.append(sender_union_id)
-            else:
-                return False
-        elif sender_union_id in custom_admins:
-            custom_admins.remove(sender_union_id)
+        async with union_mutation():
+            async with in_transaction("default") as connection:
+                current = await (
+                    TargetUnionInfo.filter(union_id=self.union_id).using_db(connection).select_for_update().first()
+                )
+                if not current:
+                    return False
+                custom_admins = list(current.custom_admins or [])
+                if enable:
+                    if sender_union_id in custom_admins:
+                        return False
+                    custom_admins.append(sender_union_id)
+                elif sender_union_id in custom_admins:
+                    custom_admins.remove(sender_union_id)
+                else:
+                    return False
 
-        self.custom_admins = custom_admins
-        await self.save()
-        return True
+                await (
+                    TargetUnionInfo.filter(union_id=self.union_id)
+                    .using_db(connection)
+                    .update(custom_admins=custom_admins)
+                )
+                self.custom_admins = custom_admins
+                return True
 
     async def config_banned_user(self, sender_union_id: str, enable: bool = True) -> bool:
         """
@@ -863,21 +1343,30 @@ class TargetUnionInfo(UnionInfo):
         :param sender_union_id: 指定的用户 union ID。
         :param enable: 是否要设置场景内用户限制使用机器人，若 False 则取消限制。
         """
-        banned_users = self.banned_users
-        if enable:
-            if sender_union_id not in banned_users:
-                banned_users.append(sender_union_id)
-            else:
-                return False
-        else:
-            if sender_union_id in banned_users:
-                banned_users.remove(sender_union_id)
-            else:
-                return False
+        async with union_mutation():
+            async with in_transaction("default") as connection:
+                current = await (
+                    TargetUnionInfo.filter(union_id=self.union_id).using_db(connection).select_for_update().first()
+                )
+                if not current:
+                    return False
+                banned_users = list(current.banned_users or [])
+                if enable:
+                    if sender_union_id in banned_users:
+                        return False
+                    banned_users.append(sender_union_id)
+                elif sender_union_id in banned_users:
+                    banned_users.remove(sender_union_id)
+                else:
+                    return False
 
-        self.banned_users = banned_users
-        await self.save()
-        return True
+                await (
+                    TargetUnionInfo.filter(union_id=self.union_id)
+                    .using_db(connection)
+                    .update(banned_users=banned_users)
+                )
+                self.banned_users = banned_users
+                return True
 
     @classmethod
     async def get_target_list_by_module(
@@ -1149,6 +1638,8 @@ class JobQueuesTable(DBModel):
     :param timestamp: 时间戳。
     """
 
+    ACTIVE_TIMEOUT_SECONDS: ClassVar[int] = 7200
+
     task_id = fields.UUIDField(primary_key=True)
     target_client = fields.CharField(max_length=512)
     action = fields.CharField(max_length=512)
@@ -1179,12 +1670,39 @@ class JobQueuesTable(DBModel):
         await self.save()
         return True
 
+    async def claim(self) -> bool:
+        """原子地将 pending 任务领取为 processing。
+
+        轮询消费者可能在同一时刻读到相同的 pending 快照。普通的实例 ``save()`` 不会
+        检查旧状态，两边都会成功并重复执行处理器；带状态条件的单条 UPDATE 只有一方
+        能更新一行，因此可作为跨进程的领取凭证。
+        """
+        updated = await type(self).filter(task_id=self.task_id, status="pending").update(status="processing")
+        if updated:
+            self.status = "processing"
+            return True
+        return False
+
     @classmethod
-    async def clear_task(cls, time=3600) -> bool:
-        timestamp = datetime.now(UTC) - timedelta(seconds=time)
+    async def clear_task(cls, time=3600, include_active=False) -> bool:
+        now = datetime.now(UTC)
+        timestamp = now - timedelta(seconds=time)
         Logger.debug(f"Clearing tasks older than {timestamp}...")
 
-        await cls.filter(timestamp__lt=timestamp).delete()
+        if include_active:
+            await cls.filter(timestamp__lt=timestamp).delete()
+            return True
+
+        # 定时清理只删除已进入终态且超过保留期的任务。pending / processing 最长可执行两小时，
+        # 若沿用无条件删除，它们会在等待方和执行方自己的超时机制生效前一小时就消失。
+        await cls.filter(timestamp__lt=timestamp, status__in=["done", "failed", "timeout"]).delete()
+
+        # 超过全局执行上限的活动任务已不可能合法完成，先标成 timeout 供等待方轮询取得终态。
+        # 终态删除必须发生在这一步之前，否则刚标记的行会在同一轮立即被删掉。
+        active_timeout = now - timedelta(seconds=cls.ACTIVE_TIMEOUT_SECONDS)
+        await cls.filter(timestamp__lt=active_timeout, status__in=["pending", "processing"]).update(
+            status="timeout", result={}
+        )
         return True
 
     @classmethod

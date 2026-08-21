@@ -58,7 +58,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
             await msg.finish(msg.session_info.locale.t("wiki.message.wiki_audit.remove.failed.other", api=apilink))
         list_name = msg.session_info.locale.t("wiki.message.wiki_audit.list_name.allowlist")
     else:
-        res = WikiBlockList.remove(apilink)
+        res = await WikiBlockList.remove(apilink)
         list_name = msg.session_info.locale.t("wiki.message.wiki_audit.list_name.blocklist")
     if not res:
         await msg.finish(
@@ -154,11 +154,15 @@ async def _(msg: Bot.MessageSession):
         if allow_list:
             wikis.append(msg.session_info.locale.t("wiki.message.wiki_audit.list.allowlist"))
             for al in allow_list:
-                wikis.append(f"{al[0]} ({msg.format_time(al[1].timestamp(), iso=True, timezone=False)})")
+                wikis.append(
+                    f"{al['api_link']} ({msg.format_time(al['timestamp'].timestamp(), iso=True, timezone=False)})"
+                )
         if block_list:
             wikis.append(msg.session_info.locale.t("wiki.message.wiki_audit.list.blocklist"))
             for bl in block_list:
-                wikis.append(f"{bl[0]} ({bl[1]})")
+                wikis.append(
+                    f"{bl['api_link']} ({msg.format_time(bl['timestamp'].timestamp(), iso=True, timezone=False)})"
+                )
         if wikis:
             await msg.finish(wikis)
         else:

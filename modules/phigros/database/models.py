@@ -1,7 +1,8 @@
 from tortoise import fields
+from tortoise.transactions import in_transaction
 
 from core.database.base import DBModel
-from core.database.models import UNION_SCOPE_SENDER
+from core.database.models import SenderUnionInfo, UNION_SCOPE_SENDER, union_mutation
 
 table_prefix = "module_phigros_"
 
@@ -33,23 +34,32 @@ class PhigrosBindInfo(DBModel):
         username: str = "Guest",
         is_international: bool = False,
     ):
-        exist_info = await cls.get_or_none(union_id=union_id)
-        if exist_info:
-            await exist_info.delete()
-        bind_info = (
-            await cls.get_or_create(
-                union_id=union_id,
-                session_token=session_token,
-                username=username,
-                is_international=is_international,
-            )
-        )[0]
-        await bind_info.save()
-        return True
+        async with union_mutation():
+            async with in_transaction("default") as connection:
+                current = await (
+                    SenderUnionInfo.filter(union_id=union_id).using_db(connection).select_for_update().first()
+                )
+                if not current:
+                    return False
+                await cls.update_or_create(
+                    union_id=union_id,
+                    defaults={
+                        "session_token": session_token,
+                        "username": username,
+                        "is_international": is_international,
+                    },
+                    using_db=connection,
+                )
+                return True
 
     @classmethod
     async def remove_bind_info(cls, union_id):
-        bind_info = await cls.get_or_none(union_id=union_id)
-        if bind_info:
-            await bind_info.delete()
-        return True
+        async with union_mutation():
+            async with in_transaction("default") as connection:
+                current = await (
+                    SenderUnionInfo.filter(union_id=union_id).using_db(connection).select_for_update().first()
+                )
+                if not current:
+                    return False
+                await cls.filter(union_id=union_id).using_db(connection).delete()
+                return True

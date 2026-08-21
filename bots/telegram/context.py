@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, timedelta
 
 from aiogram.types import ChatPermissions
@@ -46,6 +47,29 @@ class TelegramContextManager(ContextManager):
 
     @classmethod
     async def send_message(
+        cls,
+        session_info: SessionInfo,
+        message: MessageChain | MessageNodes,
+        quote: bool = True,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> list[str]:
+        try:
+            return await cls._send_message(
+                session_info,
+                message,
+                quote=quote,
+                enable_parse_message=enable_parse_message,
+                enable_split_image=enable_split_image,
+            )
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            Logger.exception(f"Failed to send Telegram message to {session_info.target_id}: ")
+            return []
+
+    @classmethod
+    async def _send_message(
         cls,
         session_info: SessionInfo,
         message: MessageChain | MessageNodes,

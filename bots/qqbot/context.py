@@ -58,6 +58,7 @@ PERMISSION_CACHE_MAX_SIZE = 4096
 INITIATIVE_QUEUE_MAX_SIZE = 128
 HIGH_PRIORITY_BURST = 5
 HIGH_PRIORITY_QUEUE_RESERVE = 16
+ADAPTER_SHUTDOWN_TIMEOUT = 10
 TYPING_EMOTE_DIR = assets_path / "emotes" / "typing"
 TYPING_EMOTES = tuple(sorted(TYPING_EMOTE_DIR.glob("*.gif")))
 
@@ -325,6 +326,7 @@ class QQBotContextManager(ContextManager):
     message_send_queues: dict[str, _MessageSendQueue] = {}
     message_send_sequence = 0
     client: botpy.Client | None = None
+    _shutting_down = False
 
     # 机器人沉默满此秒数后，才在群聊中补发输入提示
     TYPING_PROMPT_DELAY = 5
@@ -351,6 +353,50 @@ class QQBotContextManager(ContextManager):
         # 如果上下文被保持，记录日志但不删除
         if session_info.session_id in cls.context_marks_hold:
             Logger.trace(f"Context for session {session_info.session_id} is held, skipping deletion.")
+
+    @classmethod
+    def prepare_start(cls) -> None:
+        """允许新一轮客户端生命周期继续创建适配器任务。"""
+        cls._shutting_down = False
+
+    @classmethod
+    async def shutdown(cls) -> None:
+        """停止适配器自有任务，并释放所有等待发送结果的调用方。"""
+        cls._shutting_down = True
+
+        # 不直接取消 Typing 任务：平台可能已经接受提示消息，但 SDK 尚未返回其消息 ID。
+        # 先发结束信号并等待正常收尾，使任务有机会在 finally 中撤回提示。
+        for state in list(cls.typing_states.values()):
+            state.finished.set()
+        typing_tasks = list(dict.fromkeys(cls.typing_tasks.values()))
+        if typing_tasks:
+            typing_group = asyncio.gather(*typing_tasks, return_exceptions=True)
+            try:
+                await asyncio.wait_for(asyncio.shield(typing_group), timeout=ADAPTER_SHUTDOWN_TIMEOUT)
+            except TimeoutError:
+                Logger.warning("QQBot typing tasks did not stop in time; cancelling the remaining tasks.")
+                for task in typing_tasks:
+                    if not task.done():
+                        task.cancel()
+                await typing_group
+        cls.typing_states.clear()
+        cls.typing_tasks.clear()
+
+        # Typing 已尽量完成撤回后，再停止实际发送队列。worker 的取消分支会把当前
+        # 与尚未开始的 Future 解析为 []，维持 ContextManager 的发送失败约定。
+        queues = list(dict.fromkeys(cls.message_send_queues.values()))
+        workers = [queue.worker for queue in queues if queue.worker is not None]
+        for worker in workers:
+            if not worker.done():
+                worker.cancel()
+        if workers:
+            await asyncio.gather(*workers, return_exceptions=True)
+        for queue in queues:
+            for queued in queue.pending:
+                if not queued.future.done():
+                    queued.future.set_result([])
+            queue.pending.clear()
+        cls.message_send_queues.clear()
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
@@ -482,41 +528,51 @@ class QQBotContextManager(ContextManager):
                     if image:
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image)}")
 
-                remaining_images = list(prepared_images)
-                if remaining_images:
-                    image, prepared_image = remaining_images.pop(0)
-                    if send_target.scope in ("group", "c2c"):
-                        result = await send_with_proactive_fallback(
-                            client.send,
-                            content=msg or None,
-                            msg_type=MessageType.MEDIA,
-                            media=prepared_image,
-                        )
+                try:
+                    remaining_images = list(prepared_images)
+                    if remaining_images:
+                        image, prepared_image = remaining_images.pop(0)
+                        if send_target.scope in ("group", "c2c"):
+                            result = await send_with_proactive_fallback(
+                                client.send,
+                                content=msg or None,
+                                msg_type=MessageType.MEDIA,
+                                media=prepared_image,
+                            )
+                        else:
+                            result = await send_with_proactive_fallback(
+                                client.send,
+                                content=msg or None,
+                                message_reference=message_reference,
+                                extra={"file_image": prepared_image},
+                            )
+                        await record(result, image)
                     else:
                         result = await send_with_proactive_fallback(
-                            client.send,
-                            content=msg or None,
-                            message_reference=message_reference,
-                            extra={"file_image": prepared_image},
+                            client.send, content=msg, message_reference=message_reference
                         )
-                    await record(result, image)
-                else:
-                    result = await send_with_proactive_fallback(
-                        client.send, content=msg, message_reference=message_reference
-                    )
-                    await record(result)
+                        await record(result)
 
-                Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
-                for image, prepared_image in remaining_images:
-                    if send_target.scope in ("group", "c2c"):
-                        result = await send_with_proactive_fallback(
-                            client.send,
-                            msg_type=MessageType.MEDIA,
-                            media=prepared_image,
-                        )
-                    else:
-                        result = await send_with_proactive_fallback(client.send, extra={"file_image": prepared_image})
-                    await record(result, image)
+                    Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
+                    for image, prepared_image in remaining_images:
+                        if send_target.scope in ("group", "c2c"):
+                            result = await send_with_proactive_fallback(
+                                client.send,
+                                msg_type=MessageType.MEDIA,
+                                media=prepared_image,
+                            )
+                        else:
+                            result = await send_with_proactive_fallback(
+                                client.send, extra={"file_image": prepared_image}
+                            )
+                        await record(result, image)
+                except Exception:
+                    if not msg_ids:
+                        raise
+                    Logger.exception(
+                        f"QQBot message to {session_info.target_id} was only partially sent; "
+                        f"returning the recorded message IDs {msg_ids}: "
+                    )
                 return msg_ids
 
             return _PreparedMessage(target, send_plain_message, has_payload=True)
@@ -662,14 +718,20 @@ class QQBotContextManager(ContextManager):
                         queued.future.set_result(result)
         except asyncio.CancelledError:
             if "queued" in locals() and not queued.future.done():
-                queued.future.cancel()
+                if cls._shutting_down:
+                    queued.future.set_result([])
+                else:
+                    queued.future.cancel()
             raise
         finally:
             if cls.message_send_queues.get(queue_key) is queue:
                 cls.message_send_queues.pop(queue_key, None)
             for pending in queue.pending:
                 if not pending.future.done():
-                    pending.future.set_exception(RuntimeError("QQBot message send queue stopped unexpectedly"))
+                    if cls._shutting_down:
+                        pending.future.set_result([])
+                    else:
+                        pending.future.set_exception(RuntimeError("QQBot message send queue stopped unexpectedly"))
 
     @classmethod
     async def _send_prepared_message(
@@ -681,7 +743,7 @@ class QQBotContextManager(ContextManager):
         _typing_state: _TypingState | None = None,
     ) -> list[str]:
         """进入实际消息发送阶段；调用前不再做媒体上传或图片读取。"""
-        if not prepared.has_payload:
+        if cls._shutting_down or not prepared.has_payload:
             return []
 
         state = _typing_state or cls.typing_states.get(session_info.session_id)
@@ -759,16 +821,24 @@ class QQBotContextManager(ContextManager):
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
     ) -> list[str]:
-        client = _get_client()
         uid = user_id.split("|")[-1]
 
         try:
-            if session_info.target_from == target_direct_prefix:
+            # 客户端解析也可能在初始化失败或关闭期间抛错，仍应遵守私信失败返回空 ID 的契约。
+            client = _get_client()
+            if session_info.target_from == target_direct_prefix and user_id == session_info.sender_id:
                 # 当前已处于私信场景中，无需另行创建
                 target_id, target_from = session_info.target_id, target_direct_prefix
             elif user_id.startswith(sender_tiny_prefix):
                 # 频道用户的私信须先以来源频道创建私信场景，取得专用的 guild_id 后方可发送
-                guild_id = session_info.target_id.split("|")[2]
+                target_parts = session_info.target_id.split("|")
+                if session_info.target_from != target_guild_prefix or len(target_parts) < 3:
+                    Logger.warning(
+                        f"Cannot safely create a QQBot direct-message target for {user_id} "
+                        f"from {session_info.target_id}; skipped private delivery."
+                    )
+                    return []
+                guild_id = target_parts[2]
                 dms = await client.api.create_dms(guild_id=guild_id, user_id=uid)
                 target_id = f"{target_direct_prefix}|{dms['guild_id']}"
                 target_from = target_direct_prefix
@@ -785,6 +855,8 @@ class QQBotContextManager(ContextManager):
                 enable_parse_message=enable_parse_message,
                 enable_split_image=enable_split_image,
             )
+        except asyncio.CancelledError:
+            raise
         except Exception:
             Logger.exception(f"Failed to send private message to {user_id}: ")
             return []
@@ -1041,6 +1113,8 @@ class QQBotContextManager(ContextManager):
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
+        if cls._shutting_down:
+            return
         if session_info.session_id not in cls.context:
             Logger.warning(f"Session {session_info.session_id} not found in context, skipped typing.")
             return
@@ -1289,6 +1363,23 @@ class QQBotFetchedContextManager(QQBotContextManager):
                 cls._processor_task.exception()
             cls._processor_task = asyncio.create_task(cls.process_tasks(), name="qqbot-initiative-message-worker")
         return cls._processor_task
+
+    @classmethod
+    async def stop_task_processor(cls) -> None:
+        """停止主动消息 worker，并让尚未处理的调用方收到发送失败。"""
+        task = cls._processor_task
+        cls._processor_task = None
+        if task is not None:
+            if not task.done():
+                task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+
+        for queue in (_tasks_high_priority, _tasks):
+            while queue:
+                future = queue.popleft()[0]
+                if future is not None and not future.done():
+                    future.set_result([])
+        cls._high_priority_count = 0
 
     @staticmethod
     async def process_tasks():

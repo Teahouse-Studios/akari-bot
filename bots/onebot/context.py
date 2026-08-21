@@ -127,6 +127,25 @@ class OneBotContextManager(ContextManager):
     context: dict[str, Event] = {}
     features: Features = onebot_features
     typing_tasks: dict[str, asyncio.Task[None]] = {}
+    TYPING_SHUTDOWN_TIMEOUT = 1.0
+
+    @classmethod
+    async def shutdown(cls) -> None:
+        """释放 OneBot 适配器持有的输入状态任务与生命周期缓存。"""
+        for flag in tuple(cls.typing_flags.values()):
+            flag.set()
+
+        current = asyncio.current_task()
+        tasks = {task for task in cls.typing_tasks.values() if task is not current}
+        if tasks:
+            _, pending = await asyncio.wait(tasks, timeout=cls.TYPING_SHUTDOWN_TIMEOUT)
+            for task in pending:
+                task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
+
+        cls.typing_flags.clear()
+        cls.typing_tasks.clear()
+        last_send_typing_time.clear()
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
@@ -291,13 +310,14 @@ class OneBotContextManager(ContextManager):
             Logger.warning(f"Invalid user id {user_id}, cannot send private message.")
             return []
 
-        # 未添加机器人为好友时私聊必然无法送达，先查询好友列表以避免无效请求
-        private_list = await get_available_private_list()
-        if private_list and int(uid) not in private_list:
-            Logger.warning(f"User {uid} not found in private list, skipping private message send.")
-            return []
-
         try:
+            # 未添加机器人为好友时私聊必然无法送达，先查询好友列表以避免无效请求。
+            # 查询本身同样属于平台调用，网络错误等异常必须遵守私信失败返回空 ID 的契约。
+            private_list = await get_available_private_list()
+            if private_list and int(uid) not in private_list:
+                Logger.warning(f"User {uid} not found in private list, skipping private message send.")
+                return []
+
             # 显式指定基类：主动消息所用的子类会将发送放入冷却队列并返回 None，无法取得消息 ID
             return await OneBotContextManager.send_message(
                 cls.derive_private_session(session_info, f"{target_private_prefix}|{uid}", target_private_prefix),
@@ -306,6 +326,8 @@ class OneBotContextManager(ContextManager):
                 enable_parse_message=enable_parse_message,
                 enable_split_image=enable_split_image,
             )
+        except asyncio.CancelledError:
+            raise
         except Exception:
             Logger.exception(f"Failed to send private message to {user_id}: ")
             return []
@@ -689,6 +711,23 @@ class OneBotFetchedContextManager(OneBotContextManager):
                 cls._processor_task.exception()
             cls._processor_task = asyncio.create_task(cls.process_tasks(), name="onebot-initiative-message-worker")
         return cls._processor_task
+
+    @classmethod
+    async def stop_task_processor(cls) -> None:
+        """停止主动消息 worker，并让尚未处理的调用方收到发送失败。"""
+        task = cls._processor_task
+        cls._processor_task = None
+        if task is not None:
+            if not task.done():
+                task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+
+        for queue in (_tasks_high_priority, _tasks):
+            while queue:
+                future = queue.popleft()[0]
+                if future is not None and not future.done():
+                    future.set_result([])
+        cls._high_priority_count = 0
 
     @staticmethod
     async def process_tasks():

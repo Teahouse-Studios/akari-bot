@@ -5,6 +5,7 @@ import hashlib
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from functools import partial
+from inspect import isawaitable
 from pathlib import Path
 from urllib.parse import urlparse, urlunparse
 
@@ -168,8 +169,10 @@ class S3StorageAPI:
             resp = self._client.get_object(Bucket=self.bucket, Key=self._manifest_key(prefix))
             body = resp["Body"].read()
             return orjson.loads(body)
-        except ClientError:
-            return []
+        except ClientError as e:
+            if self._is_not_found_error(e):
+                return []
+            raise
 
     async def _read_manifest(self, prefix: str) -> list[dict]:
         return await self._run_sync(self._read_manifest_sync, prefix)
@@ -184,16 +187,16 @@ class S3StorageAPI:
     async def _update_manifest(self, prefix: str, updater):
         """在锁保护下读取 manifest、执行 updater(files)、写回（防止并发覆盖）。
 
-        updater 可为同步或异步函数，若为异步则 await 其执行结果。
+        updater 可为同步或异步函数；返回新列表时写入新列表，返回 None 时保留原地修改后的列表。
         """
-        import inspect
-
         lock = self._manifest_locks.setdefault(prefix, asyncio.Lock())
         async with lock:
             files = await self._read_manifest(prefix)
             result = updater(files)
-            if inspect.isawaitable(result):
-                await result
+            if isawaitable(result):
+                result = await result
+            if result is not None:
+                files = result
             await self._write_manifest(prefix, files)
 
     async def get_presigned_url(self, object_key: str, expires: int = 3600, internal: bool = True) -> str:
@@ -278,8 +281,17 @@ class S3StorageAPI:
         try:
             await self._run_sync(self._client.head_object, Bucket=self.bucket, Key=key)
             return True
-        except ClientError:
-            return False
+        except ClientError as e:
+            if self._is_not_found_error(e):
+                return False
+            raise
+
+    @staticmethod
+    def _is_not_found_error(error: ClientError) -> bool:
+        response = error.response
+        code = str(response.get("Error", {}).get("Code", ""))
+        status = response.get("ResponseMetadata", {}).get("HTTPStatusCode")
+        return code in {"404", "NoSuchKey", "NotFound"} or status == 404
 
     @staticmethod
     def _compute_hash(file_path: str | Path) -> str:

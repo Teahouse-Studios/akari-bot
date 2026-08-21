@@ -1,4 +1,5 @@
 import asyncio
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 import discord
@@ -15,6 +16,16 @@ from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
+
+
+@dataclass(slots=True)
+class DiscordReactionContext:
+    """Raw reaction 事件恢复出的最小平台上下文。"""
+
+    channel: discord.abc.Messageable
+    user: discord.User | discord.Member
+    message: Message | None
+    emoji: str | discord.PartialEmoji
 
 
 def resolve_discord_reference(ctx, quote: bool):
@@ -38,8 +49,11 @@ async def get_discord_guild(session_info: SessionInfo):
 
 
 class DiscordContextManager(ContextManager):
-    context: dict[str, Message | discord.Interaction] = {}
+    context: dict[str, Message | discord.Interaction | DiscordReactionContext] = {}
     features: Features = discord_features
+    typing_flags: dict[str, asyncio.Event] = {}
+    typing_tasks: dict[str, asyncio.Task[None]] = {}
+    TYPING_SHUTDOWN_TIMEOUT = 1.0
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
@@ -47,9 +61,13 @@ class DiscordContextManager(ContextManager):
         #     raise ValueError("Session not found in context")
         # 这里可以添加权限检查的逻辑
 
-        ctx: Message | discord.Interaction | None = cls.context.get(session_info.session_id)
+        ctx: Message | discord.Interaction | DiscordReactionContext | None = cls.context.get(session_info.session_id)
 
         Logger.debug(f"Checking permissions for session: {session_info.session_id}")
+
+        # 私聊不存在服务器成员与频道权限对象，不能先访问 channel.guild 或 permissions_for。
+        if session_info.target_from == target_dm_channel_prefix:
+            return True
 
         if not ctx:
             channel = await discord_bot.fetch_channel(int(get_channel_id(session_info)))
@@ -58,7 +76,14 @@ class DiscordContextManager(ContextManager):
             channel = ctx.channel
             author = ctx.user if hasattr(ctx, "user") else ctx.author
         try:
-            if channel.permissions_for(author).administrator or isinstance(channel, discord.DMChannel):
+            if (
+                isinstance(ctx, DiscordReactionContext)
+                and not isinstance(author, discord.Member)
+                and getattr(channel, "guild", None) is not None
+            ):
+                # Raw Reaction 在成员缓存缺失时只能先取得 User；频道权限计算需要完整 Member。
+                author = await channel.guild.fetch_member(author.id)
+            if isinstance(channel, discord.DMChannel) or channel.permissions_for(author).administrator:
                 return True
         except Exception:
             Logger.exception()
@@ -73,10 +98,33 @@ class DiscordContextManager(ContextManager):
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
     ) -> list[str]:
+        try:
+            return await cls._send_message(
+                session_info,
+                message,
+                quote=quote,
+                enable_parse_message=enable_parse_message,
+                enable_split_image=enable_split_image,
+            )
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            Logger.exception(f"Failed to send Discord message to {session_info.target_id}: ")
+            return []
+
+    @classmethod
+    async def _send_message(
+        cls,
+        session_info: SessionInfo,
+        message: MessageChain | MessageNodes,
+        quote: bool = True,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ) -> list[str]:
 
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
-        ctx: Message | discord.Interaction | None = cls.context.get(session_info.session_id)
+        ctx: Message | discord.Interaction | DiscordReactionContext | None = cls.context.get(session_info.session_id)
         if ctx:
             channel = ctx.channel
         else:
@@ -138,6 +186,26 @@ class DiscordContextManager(ContextManager):
     async def delete_message(
         cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None
     ) -> None:
+        ctx = cls.context.get(session_info.session_id)
+        if isinstance(ctx, DiscordReactionContext):
+            if ctx.message is None:
+                Logger.warning(
+                    f"Discord reaction origin {session_info.reply_id} is unavailable; cannot remove reaction."
+                )
+                return
+            try:
+                await ctx.message.remove_reaction(ctx.emoji, ctx.user)
+                Logger.info(
+                    f'Removed reaction "{ctx.emoji}" from message {ctx.message.id} '
+                    f"for user {ctx.user.id} in session {session_info.session_id}"
+                )
+            except Exception:
+                Logger.exception(
+                    f'Failed to remove reaction "{ctx.emoji}" from message {ctx.message.id} '
+                    f"for user {ctx.user.id} in session {session_info.session_id}: "
+                )
+            return
+
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -174,7 +242,7 @@ class DiscordContextManager(ContextManager):
             for x in user_id:
                 try:
                     channel = await discord_bot.fetch_channel(int(get_channel_id(session_info)))
-                    member = await channel.guild.fetch_member(int(get_sender_id(session_info)))
+                    member = await channel.guild.fetch_member(int(x.split("|")[-1]))
                     await member.timeout(until=until_date, reason=reason)
                     Logger.info(f"Restricted member {x} ({duration}s) in channel {session_info.target_id}")
                 except Exception:
@@ -191,7 +259,7 @@ class DiscordContextManager(ContextManager):
             for x in user_id:
                 try:
                     channel = await discord_bot.fetch_channel(int(get_channel_id(session_info)))
-                    member = await channel.guild.fetch_member(int(get_sender_id(session_info)))
+                    member = await channel.guild.fetch_member(int(x.split("|")[-1]))
                     await member.timeout(None)
                     Logger.info(f"Unrestricted member {x} in channel {session_info.target_id}")
                 except Exception:
@@ -208,7 +276,7 @@ class DiscordContextManager(ContextManager):
             for x in user_id:
                 try:
                     channel = await discord_bot.fetch_channel(int(get_channel_id(session_info)))
-                    member = await channel.guild.fetch_member(int(get_sender_id(session_info)))
+                    member = await channel.guild.fetch_member(int(x.split("|")[-1]))
                     await member.kick(reason=reason)
                     Logger.info(f"Kicked member {x} in channel {session_info.target_id}")
                 except Exception:
@@ -225,7 +293,7 @@ class DiscordContextManager(ContextManager):
             for x in user_id:
                 try:
                     channel = await discord_bot.fetch_channel(int(get_channel_id(session_info)))
-                    member = await channel.guild.fetch_member(int(get_sender_id(session_info)))
+                    member = await channel.guild.fetch_member(int(x.split("|")[-1]))
                     await member.ban(reason=reason)
                     Logger.info(f"Banned member {x} in channel {session_info.target_id}")
                 except Exception:
@@ -242,8 +310,8 @@ class DiscordContextManager(ContextManager):
             for x in user_id:
                 try:
                     channel = await discord_bot.fetch_channel(int(get_channel_id(session_info)))
-                    member = await channel.guild.fetch_member(int(get_sender_id(session_info)))
-                    await member.unban()
+                    user = await discord_bot.fetch_user(int(x.split("|")[-1]))
+                    await channel.guild.unban(user)
                     Logger.info(f"Unbanned member {x} in channel {session_info.target_id}")
                 except Exception:
                     Logger.exception(f"Failed to unban member {x} in channel {session_info.target_id}: ")
@@ -308,16 +376,26 @@ class DiscordContextManager(ContextManager):
 
     @classmethod
     async def add_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
+        ctx = cls.context.get(session_info.session_id)
+        if isinstance(ctx, DiscordReactionContext):
+            message_id = session_info.reply_id
+        if message_id is None:
+            Logger.warning(f"Discord reaction target is unavailable in session {session_info.session_id}.")
+            return
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
             raise TypeError("Message ID must be a list or str")
 
+        if not message_id:
+            Logger.warning(f"Discord reaction target is unavailable in session {session_info.session_id}.")
+            return
+
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
 
         if c := await discord_bot.fetch_channel(int(get_channel_id(session_info))):
-            m = await c.fetch_message(int(message_id[-1]))
+            m = ctx.message if isinstance(ctx, DiscordReactionContext) else await c.fetch_message(int(message_id[-1]))
             if m:
                 try:
                     await m.add_reaction(emoji)
@@ -333,19 +411,30 @@ class DiscordContextManager(ContextManager):
 
     @classmethod
     async def remove_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
+        ctx = cls.context.get(session_info.session_id)
+        reaction_user = discord_bot.user
+        if isinstance(ctx, DiscordReactionContext):
+            message_id = session_info.reply_id
+        if message_id is None:
+            Logger.warning(f"Discord reaction target is unavailable in session {session_info.session_id}.")
+            return
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
             raise TypeError("Message ID must be a list or str")
 
+        if not message_id:
+            Logger.warning(f"Discord reaction target is unavailable in session {session_info.session_id}.")
+            return
+
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
 
         if c := await discord_bot.fetch_channel(int(get_channel_id(session_info))):
-            m = await c.fetch_message(int(message_id[-1]))
+            m = ctx.message if isinstance(ctx, DiscordReactionContext) else await c.fetch_message(int(message_id[-1]))
             if m:
                 try:
-                    await m.remove_reaction(emoji, discord_bot.user)
+                    await m.remove_reaction(emoji, reaction_user)
                     Logger.info(
                         f'Removed reaction "{emoji}" to message {message_id} in session {session_info.session_id}'
                     )
@@ -358,33 +447,63 @@ class DiscordContextManager(ContextManager):
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
+        previous_task = cls.typing_tasks.pop(session_info.session_id, None)
+        if previous_task:
+            previous_task.cancel()
+            await asyncio.gather(previous_task, return_exceptions=True)
+
+        flag = asyncio.Event()
+        cls.typing_flags[session_info.session_id] = flag
+
         async def _typing():
-            if session_info.session_id not in cls.context:
-                raise ValueError("Session not found in context")
+            try:
+                ctx = cls.context.get(session_info.session_id)
+                if ctx:
+                    async with ctx.channel.typing():
+                        Logger.debug(f"Start typing in session: {session_info.session_id}")
+                        await flag.wait()
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                Logger.exception(f"Failed to start typing in session {session_info.session_id}: ")
+            finally:
+                if cls.typing_flags.get(session_info.session_id) is flag:
+                    cls.typing_flags.pop(session_info.session_id, None)
+                current_task = asyncio.current_task()
+                if cls.typing_tasks.get(session_info.session_id) is current_task:
+                    cls.typing_tasks.pop(session_info.session_id, None)
 
-            ctx = cls.context[session_info.session_id]
-            if ctx:
-                async with ctx.channel.typing():
-                    # session_info.tmp["session_typed"] = 'y'
-                    Logger.debug(f"Start typing in session: {session_info.session_id}")
-                    # 这里可以添加开始输入状态的逻辑
-                    # flag = asyncio.Event()
-                    # cls.typing_flags[session_info.session_id] = flag
-                    # await flag.wait()
-                    # del cls.typing_flags[session_info.session_id]
-
-            # 这里可以添加开始输入状态的逻辑
-
-        asyncio.create_task(_typing())
+        cls.typing_tasks[session_info.session_id] = asyncio.create_task(
+            _typing(), name=f"discord-typing-{session_info.session_id}"
+        )
 
     @classmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
-        # if session_info.session_id not in cls.context:
-        #     raise ValueError("Session not found in context")
-        if session_info.session_id in cls.typing_flags:
-            # cls.typing_flags[session_info.session_id].set()
-            # 这里可以添加结束输入状态的逻辑
-            Logger.debug(f"End typing in session: {session_info.session_id}")
+        flag = cls.typing_flags.pop(session_info.session_id, None)
+        if flag:
+            flag.set()
+        task = cls.typing_tasks.pop(session_info.session_id, None)
+        if task:
+            await asyncio.gather(task, return_exceptions=True)
+        Logger.debug(f"End typing in session: {session_info.session_id}")
+
+    @classmethod
+    async def shutdown(cls) -> None:
+        """释放当前 Discord 上下文管理器持有的输入状态任务。"""
+        for flag in tuple(cls.typing_flags.values()):
+            flag.set()
+
+        current = asyncio.current_task()
+        tasks = {task for task in cls.typing_tasks.values() if task is not current and not task.done()}
+        if tasks:
+            _, pending = await asyncio.wait(tasks, timeout=cls.TYPING_SHUTDOWN_TIMEOUT)
+            for task in pending:
+                task.cancel()
+            if pending:
+                await asyncio.gather(*pending, return_exceptions=True)
+
+        cls.typing_flags.clear()
+        cls.typing_tasks.clear()
 
     @classmethod
     async def error_signal(cls, session_info: SessionInfo) -> None:

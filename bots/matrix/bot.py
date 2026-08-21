@@ -15,7 +15,7 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, Image, Voice
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
-from core.client.init import client_init
+from core.client.init import client_cleanup, client_init
 from bots.matrix.config import MatrixConfig
 from core.config.base import CoreConfig
 from core.logger import Logger
@@ -75,7 +75,7 @@ async def on_room_member(room: nio.MatrixRoom, event: nio.RoomMemberEvent):
     #         is_direct = True
     if room.member_count == 1 and event.membership == "leave":
         resp = await matrix_bot.room_leave(room.room_id)
-        if resp is nio.ErrorResponse:
+        if isinstance(resp, nio.ErrorResponse):
             Logger.error(f"Error while leaving empty room {room.room_id}: {str(resp)}")
         else:
             Logger.info(f"Left empty room: {room.room_id}")
@@ -106,6 +106,7 @@ async def to_message_chain(event: nio.RoomMessageFormatted, reply_id: str | None
             return MessageChain.assign([])
         else:
             Logger.error(f"Got invalid m.image message from {target_id}")
+            return MessageChain.assign([])
         return MessageChain.assign(Image(await matrix_bot.mxc_to_http(url)))
     if msgtype == "m.audio":
         url = content.get("url")
@@ -181,9 +182,16 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
 
 
 async def on_reaction(room: nio.MatrixRoom, event: nio.ReactionEvent):
+    if event.sender == matrix_bot.user_id:
+        return
     relates_to = event.source.get("content", {}).get("m.relates_to", {})
     target_id = f"{target_prefix}|{room.room_id}"
     sender_id = f"{sender_prefix}|{event.sender[1:]}"
+    if sender_id in ignored_sender:
+        return
+    reaction = relates_to.get("key")
+    if not reaction or not event.reacts_to:
+        return
     session = await SessionInfo.assign(
         target_id=target_id,
         sender_id=sender_id,
@@ -192,11 +200,22 @@ async def on_reaction(room: nio.MatrixRoom, event: nio.ReactionEvent):
         client_name=client_name,
         message_id=event.event_id,
         reply_id=event.reacts_to,
-        messages=MessageChain.assign(Plain(relates_to.get("key"))),
+        messages=MessageChain.assign(Plain(reaction)),
         ctx_slot=ctx_id,
         bot_id=matrix_bot.user_id,
     )
     await Bot.process_message(session, (room, event))
+
+
+async def _sync_room_state() -> bool:
+    """执行一次初始同步；AsyncClient.sync 已负责更新房间并分发回调。"""
+    response = await matrix_bot.sync(
+        timeout=10000, since=matrix_bot.next_batch, full_state=True, set_presence="unavailable"
+    )
+    if isinstance(response, nio.ErrorResponse):
+        Logger.error(f"Failed to perform initial Matrix sync: {response}")
+        return False
+    return True
 
 
 async def on_verify(event: nio.KeyVerificationEvent):
@@ -241,7 +260,7 @@ async def on_in_room_verify(room: nio.MatrixRoom, event: nio.RoomMessageUnknown)
         Logger.info(resp)
 
 
-async def start():
+async def _run_client():
     global initial_sync_complete
     # Logger.info(f"Trying first sync")
     # sync = await bot.sync()
@@ -301,16 +320,18 @@ async def start():
 
     # set device name
     if client.device_name:
-        asyncio.create_task(matrix_bot.update_device(client.device_id, {"display_name": client.device_name}))
+        try:
+            response = await matrix_bot.update_device(client.device_id, {"display_name": client.device_name})
+            if isinstance(response, nio.ErrorResponse):
+                Logger.error(f"Failed to update Matrix device name: {response}")
+        except Exception:
+            Logger.exception("Failed to update Matrix device name:")
 
     # sync joined room state
     Logger.info("Starting sync room full state...")
     # bot.upload_filter(presence={"limit":1},room={"timeline":{"limit":1}})
-    resp = await matrix_bot.sync(
-        timeout=10000, since=matrix_bot.next_batch, full_state=True, set_presence="unavailable"
-    )
-    await matrix_bot._handle_invited_rooms(resp)
-    await matrix_bot._handle_joined_rooms(resp)
+    if not await _sync_room_state():
+        return
     initial_sync_complete = True
 
     await client_init(target_prefix_list, sender_prefix_list)
@@ -321,6 +342,8 @@ async def start():
     await matrix_bot.sync_forever(timeout=30000, full_state=False)
     Logger.info("sync loop stopped.")
 
+
+async def _backup_megolm_keys():
     if matrix_bot.olm:
         if client.megolm_backup_passphrase:
             backup_date = strftime("%Y-%m")
@@ -334,9 +357,49 @@ async def start():
             await matrix_bot.export_keys(str(backup_path), client.megolm_backup_passphrase)
             Logger.info("Megolm backup exported.")
 
-    await matrix_bot.set_presence("offline")
+
+async def _shutdown_client():
+    try:
+        await _backup_megolm_keys()
+    except Exception:
+        Logger.exception("Failed to back up Matrix encryption keys during shutdown:")
+    try:
+        await matrix_bot.set_presence("offline")
+    except Exception:
+        Logger.exception("Failed to set Matrix presence offline during shutdown:")
+    try:
+        await client_cleanup()
+    except Exception:
+        Logger.exception("Failed to clean up Matrix client resources:")
+    try:
+        await matrix_bot.close()
+    except Exception:
+        Logger.exception("Failed to close Matrix SDK client:")
+
+
+async def start():
+    try:
+        await _run_client()
+    finally:
+        await _shutdown_client()
+
+
+def run():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        loop.run_until_complete(start())
+    finally:
+        pending = asyncio.all_tasks(loop)
+        for task in pending:
+            task.cancel()
+        if pending:
+            loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+        loop.run_until_complete(loop.shutdown_asyncgens())
+        loop.run_until_complete(loop.shutdown_default_executor())
+        loop.close()
+        asyncio.set_event_loop(None)
 
 
 if matrix_bot and MatrixConfig.enable:
-    loop = asyncio.new_event_loop()
-    loop.run_until_complete(start())
+    run()
