@@ -62,7 +62,7 @@
     "config.comments.s3.s3_connect_timeout": "S3 兼容 API 的连接超时时间，单位为秒。",
     "config.comments.s3.s3_endpoint_url": "S3 兼容 API 的端点 URL。",
     "config.comments.s3.s3_internal_endpoint": "S3 兼容 API 的内网访问 URL。",
-    "config.comments.s3.s3_max_attempts": "S3 兼容 API 单次请求包含首次请求在内的最大尝试次数。",
+    "config.comments.s3.s3_max_attempts": "S3 兼容 API 单次请求的最大尝试次数。",
     "config.comments.s3.s3_max_workers": "S3 兼容 API 专用线程池的最大线程数。",
     "config.comments.s3.s3_operation_timeout": "S3 兼容 API 单次完整操作的最长等待时间，单位为秒。",
     "config.comments.s3.s3_public_endpoint": "S3 兼容 API 的公网访问 URL。",
