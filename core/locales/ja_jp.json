@@ -14,7 +14,7 @@
     "config.comments.config.debug": "デバッグモードを有効にするかどうか。有効にすると、より多くのログ情報が出力されます。",
     "config.comments.config.donate_url": "寄付の URL。",
     "config.comments.config.enable_analytics": "組み込みの統計機能を有効にするかどうか。",
-    "config.comments.config.enable_bind_auto": "同じシーン内の他のインスタンスを自動的にペアリングするために、「bind auto」コマンドを有効にするかどうか。",
+    "config.comments.config.enable_bind_auto": "同じコンテキスト内の他のインスタンスを自動的にペアリングするために、「bind auto」コマンドを有効にするかどうか。",
     "config.comments.config.enable_commit_url": "バージョン情報を表示する時にコミット URL を表示するかどうか。",
     "config.comments.config.enable_dirty_check": "テキスト フィルタリング検出を有効にするかどうか。Alibaba Cloud コンテンツ セキュリティ サービスの AccessKey ID と AccessKey Secret を設定する必要があります。",
     "config.comments.config.enable_get_petal": "ペタルの取得を許可するかどうか。",
@@ -219,5 +219,11 @@
     "tos.message.warning": "警告：\n利用規約に基づいて、あなたは行動規範に違反しています。",
     "tos.message.warning.count": "これは ${current_warns} 回目の警告です。",
     "tos.message.warning.last": "これは最後の警告です。",
-    "tos.message.warning.prompt": "${warn_counts} 回以上の警告を受けた場合、アカウントはブロックされます。"
+    "tos.message.warning.prompt": "${warn_counts} 回以上の警告を受けた場合、アカウントはブロックされます。",
+    "config.comments.config.use_emote": "感情表現リソースを使用するかどうか。",
+    "config.comments.s3.s3_connect_timeout": "S3 互換 API の接続タイムアウト。",
+    "config.comments.s3.s3_max_attempts": "S3 互換 API におけるリクエストごとの最大試行回数。",
+    "config.comments.s3.s3_max_workers": "S3 互換 API 専用のスレッドプールにおける最大スレッド数。",
+    "config.comments.s3.s3_operation_timeout": "S3 互換 API の単一の操作が完了するまでの最長待ち時間。",
+    "config.comments.s3.s3_read_timeout": "S3 互換 API におけるネットワーク読み取りタイムアウト。"
 }

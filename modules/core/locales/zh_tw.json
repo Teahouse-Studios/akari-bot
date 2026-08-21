@@ -209,7 +209,7 @@
     "core.message.help.not_found": "此模組可能不存在，請校對輸入。",
     "core.message.help.prompt": "標為斜體的模組只能被該場景的管理員所使用。",
     "core.message.help.qqbot.limited": "目前群組的機器人功能受限，僅可使用部分功能。如需使用推播模組和正規類別模組，請聯絡群組創建者為機器人開啟「獲取群內全部消息」和「機器人主動在群聊內發言」權限。\n（需最新版本行動端 QQ，且僅群組創建者可開啟）",
-    "core.message.help.permissions": "請讓群組創建者在最新版行動端 QQ 中開啟群組設定，進入「群機器人」並選擇本機器人，然後開啟「獲取群內全部消息」和「機器人主動在群聊內發言」權限。開啟後，訂閱擴充模組與正規模組才能正常運作。",
+    "core.message.help.permissions": "請讓群組創建者在最新版行動端 QQ 中開啟群組設定，進入「群機器人」並選擇本機器人，然後開啟「獲取群內全部消息」和「機器人主動在群聊內發言」權限。開啟後，訂閱擴充模組與正規模組才能正常運作。\n\nAndroid 手機可以輸入「${cmd}[<QQ 群號>]」來快速設定權限。",
     "core.message.help.permissions.action": "查看權限開啟方法",
     "core.message.help.permissions.prompt": "具有刪除線的模組需要額外權限。 ${cmd}",
     "core.message.help.regex_count": "${count} 條表示式",
@@ -380,5 +380,10 @@
     "core.message.whoami.superuser": "（你擁有此機器人的超級使用者權限）",
     "core.message.whoami.target": "本場景的 ID：\n${id}",
     "core.message.whoami.target.union": "目前場景所屬的場景群組：\n${id}",
-    "core.message.whoami.target.union.bound": "已綁定 ${count} 個場景：\n"
+    "core.message.whoami.target.union.bound": "已綁定 ${count} 個場景：\n",
+    "core.message.help.permissions.invalid": "無效的 QQ 群號。",
+    "core.message.help.permissions.quick_config": "使用 Android 手機點選以下按鈕快速設定權限：",
+    "core.message.help.permissions.quick_config.button": "點選設定權限",
+    "core.message.module.enable.event_permissions": "提示：事件模組依賴平台事件訂閱、讀取全部訊息及對應的場景管理權限，請確認機器人已取得這些權限。",
+    "core.message.module.enable.unsupported_event": "失敗：此場景無法讀取全部訊息，無法啟用事件模組，請先授予機器人對應權限。"
 }
