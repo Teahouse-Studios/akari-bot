@@ -41,7 +41,7 @@
     "core.help.setup.typing": "入力ヒントを表示するかどうかを切り替えます。",
     "core.help.version": "ボットのバージョンを表示します。",
     "core.help.whoami": "ボット内部のコマンド送信者の ID を取得します。",
-    "core.message.about.button.donate": "💵 応援してください",
+    "core.message.about.button.donate": "💵 寄付をお願い",
     "core.message.about.button.issue": "問題・フィードバック送信ポータル",
     "core.message.about.button.qq_group": "QQ グループ（テスト・迅速なフィードバック）",
     "core.message.about.button.repository": "オープンソース リポジトリの URL",

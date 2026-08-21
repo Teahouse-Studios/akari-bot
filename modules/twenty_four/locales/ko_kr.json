@@ -1,1 +1,14 @@
-{}
+{
+    "twenty_four.help": "새로운 게임을 시작합니다.",
+    "twenty_four.help.desc": "24 만들기 게임입니다.",
+    "twenty_four.help.solve": "24 게임 풀이 도구. (페탈 4개 소모)",
+    "twenty_four.message": "주어진 숫자 조합: ${numbers}\n결과가 24가 되는 수식을 입력하세요. (해답이 없는 경우 'N/A'를 입력하세요)",
+    "twenty_four.message.correct": "정답입니다.",
+    "twenty_four.message.solve.running": "현재 게임이 진행 중입니다. 먼저 게임을 종료해 주세요.",
+    "twenty_four.message.solve.invalid": "숫자는 1~13이어야 합니다. 입력을 확인해 주세요.",
+    "twenty_four.message.solve.prompt": "숫자 조합 ${numbers}의 모든 해답:",
+    "twenty_four.message.solve.no_solution": "숫자 조합 ${numbers}에는 해답이 없습니다.",
+    "twenty_four.message.incorrect.have_solution": "오답: 이 조합에는 해답이 존재합니다.\n가능한 해답 중 하나: ${solution}",
+    "twenty_four.message.incorrect.invalid": "오답: 올바르지 않은 수식입니다.",
+    "twenty_four.message.incorrect": "오답입니다."
+}
