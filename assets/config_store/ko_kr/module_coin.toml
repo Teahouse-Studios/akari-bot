@@ -4,7 +4,7 @@
 
 [module_coin]
 # 모듈의 구성 섹션입니다. 여기에 입력한 값은 메시지에 일반 텍스트로 표시됩니다. 민감한 정보는 이 섹션에 입력하지 마십시오.
-coin_limit = 10000 # coin 模块可抛硬币的上限。
-coin_faceup_weight = 4997 # coin 模块抛硬币时正面的权重。
-coin_facedown_weight = 4997 # coin 模块抛硬币时反面的权重。
-coin_stand_weight = 6 # coin 模块抛硬币时立起的权重。
+coin_limit = 10000 # coin 모듈에 동전 던지기의 최대 개수 제한.
+coin_faceup_weight = 4997 # coin 모듈에 동전을 던졌을 때 앞면이 나올 가중치.
+coin_facedown_weight = 4997 # coin 모듈에 동전을 던졌을 때 뒷면이 나올 가중치.
+coin_stand_weight = 6 # coin 모듈에 동전을 던졌을 때 모서리로 설 가중치.

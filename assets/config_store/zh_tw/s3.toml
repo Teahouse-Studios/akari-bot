@@ -10,11 +10,11 @@ s3_region = "us-east-1" # S3 相容 API 的地域名。
 s3_public_endpoint = "<Replace me with str value>" # S3 相容 API 的公網存取 URL。
 s3_internal_endpoint = "<Replace me with str value>" # S3 相容 API 的內網存取 URL。
 s3_temp_max_count = 20 # S3 相容 API 的暫存檔案最大數量。
-s3_connect_timeout = 30 # S3 兼容 API 的连接超时时间，单位为秒。
-s3_read_timeout = 30 # S3 兼容 API 的网络读取超时时间，单位为秒。
-s3_operation_timeout = 60 # S3 兼容 API 单次完整操作的最长等待时间，单位为秒。
-s3_max_attempts = 2 # S3 兼容 API 单次请求包含首次请求在内的最大尝试次数。
-s3_max_workers = 4 # S3 兼容 API 专用线程池的最大线程数。
+s3_connect_timeout = 30 # S3 相容 API 的連線逾時時間。
+s3_read_timeout = 30 # S3 相容 API 的網路讀取逾時時間。
+s3_operation_timeout = 60 # S3 相容 API 單次完整操作的最長等待時間。
+s3_max_attempts = 2 # S3 相容 API 單次請求的最大嘗試次數。
+s3_max_workers = 4 # S3 相容 API 專用執行緒池的最大執行緒數。
 
 [s3_secret]
 # S3 相容 API 的金鑰組態部分，此處的值若意外出現在傳送的訊息中，機器人會嘗試攔截。但請務必提防洩漏。

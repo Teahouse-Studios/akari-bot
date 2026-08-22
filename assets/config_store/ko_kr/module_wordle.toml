@@ -4,4 +4,4 @@
 
 [module_wordle]
 # 모듈의 구성 섹션입니다. 여기에 입력한 값은 메시지에 일반 텍스트로 표시됩니다. 민감한 정보는 이 섹션에 입력하지 마십시오.
-wordle_disable_image = false # wordle 模块是否禁用图片。
+wordle_disable_image = false # wordle 모듈에서 이미지를 비활성화할지 여부.
