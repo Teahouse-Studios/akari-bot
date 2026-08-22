@@ -6,7 +6,7 @@
     "config.comments.config.allow_reload_base": "기본 모듈 재로드 허용 여부.",
     "config.comments.config.allow_request_private_ip": "봇이 로컬 사설 IP 주소를 요청하도록 허용할지 여부. (잠재적인 정보 유출을 방지하기 위해)",
     "config.comments.config.auto_purge_crontab": "캐시 자동 삭제를 위한 Cron 표현식.",
-    "config.comments.config.base_superuser": "봇의 기본 슈퍼 유저 목록입니다. 여기에 입력된 값은 봇이 시작될 때 데이터베이스에 로드됩니다.",
+    "config.comments.config.base_superuser": "봇의 기본 슈퍼유저 목록입니다. 여기에 입력된 값은 봇이 시작될 때 데이터베이스에 로드됩니다.",
     "config.comments.config.bug_report_url": "버그 신고 URL.",
     "config.comments.config.check_use_textscan_v1": "이전 버전의 Alibaba Cloud 콘텐츠 보안 Text Scan 1.0 API 사용 여부.",
     "config.comments.config.command_prefix": "명령어 접두사입니다. 입력한 값이 명령어 접두사로 사용됩니다.",
