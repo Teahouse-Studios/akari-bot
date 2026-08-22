@@ -3,20 +3,20 @@
 # 예: TOML의 불리언 값은 반드시 소문자로 작성해야 합니다.
 
 [s3]
-# S3 兼容 API 的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
-s3_endpoint_url = "<Replace me with str value>" # S3 兼容 API 的端点 URL。
-s3_bucket = "<Replace me with str value>" # S3 兼容 API 的桶名。
-s3_region = "us-east-1" # S3 兼容 API 的地域名。
-s3_public_endpoint = "<Replace me with str value>" # S3 兼容 API 的公网访问 URL。
-s3_internal_endpoint = "<Replace me with str value>" # S3 兼容 API 的内网访问 URL。
-s3_temp_max_count = 20 # S3 兼容 API 的临时文件最大数量。
-s3_connect_timeout = 30 # S3 兼容 API 的连接超时时间，单位为秒。
-s3_read_timeout = 30 # S3 兼容 API 的网络读取超时时间，单位为秒。
-s3_operation_timeout = 60 # S3 兼容 API 单次完整操作的最长等待时间，单位为秒。
-s3_max_attempts = 2 # S3 兼容 API 单次请求包含首次请求在内的最大尝试次数。
-s3_max_workers = 4 # S3 兼容 API 专用线程池的最大线程数。
+# S3 호환 API 설정 항목입니다. 여기에 입력된 값은 메시지에 일반 텍스트로 표시됩니다. 이 섹션에는 민감한 정보를 입력하지 마십시오.
+s3_endpoint_url = "<Replace me with str value>" # S3 호환 API의 엔드포인트 URL.
+s3_bucket = "<Replace me with str value>" # S3 호환 API의 버킷 이름.
+s3_region = "us-east-1" # S3 호환 API의 리전 이름.
+s3_public_endpoint = "<Replace me with str value>" # S3 호환 API의 퍼블릭 액세스 URL.
+s3_internal_endpoint = "<Replace me with str value>" # S3 호환 API의 인트라넷 액세스 URL.
+s3_temp_max_count = 20 # S3 호환 API의 임시 파일 최대 개수.
+s3_connect_timeout = 30 # S3 호환 API의 연결 시간 초과.
+s3_read_timeout = 30 # S3 호환 API의 네트워크 읽기 시간 초과.
+s3_operation_timeout = 60 # S3 호환 API의 단일 조작이 완료되기까지의 최장 대기 시간.
+s3_max_attempts = 2 # S3 호환 API의 요청 당 최대 시도 횟수.
+s3_max_workers = 4 # S3 호환 API 전용 스레드 풀의 최대 스레드 수.
 
 [s3_secret]
-# S3 兼容 API 的密钥部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
-s3_access_key = "<Replace me with str value>" # S3 兼容 API 的 AccessKey。
-s3_secret_key = "<Replace me with str value>" # S3 兼容 API 的 SecretKey。
+# S3 호환 API 키 설정 항목입니다. 여기에 입력된 값이 전송 메시지에 실수로 포함된 경우, 봇이 이를 가로채려고 시도합니다. 그러나 유출되지 않도록 주의해 주십시오.
+s3_access_key = "<Replace me with str value>" # S3 호환 API의 AccessKey.
+s3_secret_key = "<Replace me with str value>" # S3 호환 API의 SecretKey.
