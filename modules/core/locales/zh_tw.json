@@ -162,7 +162,7 @@
     "core.message.bind.target.code.prompt": "請在 ${minute} 分鐘內於另一個場景中傳送「${cmd}」以完成綁定。綁定後雙方資料將被合併且無法撤銷，請勿將綁定碼告知他人。",
     "core.message.bind.target.confirm": "即將把下面兩個場景群組合併成一個新的場景群組，原有的兩組 ID 都會失效：",
     "core.message.bind.target.confirm.current": "當前場景群組（${count} 個場景）：",
-    "core.message.bind.target.confirm.inherit": "資料的繼承方式：語言沿用發起方；模組開關、管理員名單、限制名單取兩側並集；場景設定逐項合併，同名項以發起方為準；模組資料僅一側存在則直接遷移，兩側皆存在則逐一詢問保留哪一份。訊息頻道不會自動合併，併入的場景會另行編號，需要合併請在綁定後使用「${prefix}bind channel set」。合併後無法撤銷。",
+    "core.message.bind.target.confirm.inherit": "資料的繼承方式：語言沿用發起方；模組開關、管理員名單、限制名單取兩側並集；場景設定逐項合併，同名項以發起方為準；模組資料僅一側存在則直接遷移，兩側皆存在則逐一詢問保留哪一份。訊息管道不會自動合併，併入的場景會另行編號，需要合併請在綁定後使用「${prefix}bind channel set」。合併後無法撤銷。",
     "core.message.bind.target.confirm.initiator": "發起方場景群組（${count} 個場景）：",
     "core.message.bind.target.info": "目前場景所屬的場景群組：${id}",
     "core.message.bind.target.info.bound": "已綁定 ${count} 個場景：",
