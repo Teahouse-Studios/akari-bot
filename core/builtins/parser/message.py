@@ -200,10 +200,7 @@ async def parser(msg: "Bot.MessageSession"):
 
     try:
         # ========== 步骤 1: 入站权限检查 ==========
-        # 等待与 callback 同样是执行入口。若把封禁检查放在
-        # SessionTaskManager.check() 之后，被全局屏蔽或被当前场景屏蔽的
-        # 用户仍可推进 wait_anyone，也可通过普通 reply 触发按钮 callback。
-        # 此处沿用原命令路径的豁免规则，后续不再重复判定。
+
         if msg.session_info.sender_union_info.blocked and not (
             msg.session_info.sender_union_info.trusted or msg.session_info.sender_union_info.superuser
         ):
@@ -213,16 +210,12 @@ async def parser(msg: "Bot.MessageSession"):
 
         # ========== 步骤 2: 检查任务队列 ==========
         # 检查是否有等待此消息的任务（如等待用户回复）
-        # 等待任务按消息通道建键，同通道内的场景共享。退役场景若在此抢先命中，存活场景挂起的
-        # 等待便由它的消息触发，模块拿到的结果也随之出自退役平台。故此处须与通道认领同判据，
-        # 且早于任务检查：认领只拦命令与正则两条路径，拦不到等待。
         if not await is_yielding_retired_session(
             msg.session_info.target_id,
             msg.session_info.target_union_id,
             msg.session_info.target_channel_id,
         ):
-            if await SessionTaskManager.check(msg):
-                return
+            await SessionTaskManager.check(msg)
 
         # 获取该平台和客户端的所有可用模块
         modules = ModulesManager.return_modules_list(msg.session_info.target_from, msg.session_info.client_name)
@@ -362,9 +355,7 @@ async def _claim_channel_message(msg: "Bot.MessageSession", display: str | None 
     claimed = channel_claim_cache.get(token)
     claimed_at = claimed.get("timestamp") if claimed else None
     claimed_by = claimed.get("target_id") if claimed else None
-    # 认领方须与自身不同方可判定为重复。认领键只由通道与内容组成，不含发起方，
-    # 若不加这一判据，用户在时间窗内重复发送同样的内容会撞上自己上一条留下的认领，该条消息将无人响应。
-    # 此情形照常落至下方改写认领记录，同通道的其它场景因而仍按最新一次到达的时间避让。
+
     if claimed_at and claimed_by != msg.session_info.target_id and abs(now - claimed_at) <= CHANNEL_DEDUP_WINDOW:
         Logger.debug(f"Ignored duplicate message claimed by {claimed_by}: {display}")
         return True

@@ -23,10 +23,14 @@ class ExecutionState:
     ``held_contexts`` 则由原始 parser 执行域在结束时统一释放。
     """
 
-    __slots__ = ("held_contexts", "lock_subject", "lock_token")
+    __slots__ = ("held_contexts", "lock_owner_task", "lock_subject", "lock_token")
 
     def __init__(self) -> None:
         self.lock_token: str | None = None
+        # parser 的根 asyncio.Task 是 lease 的最终生命周期边界。正常路径仍由
+        # parser finally 主动释放；若调用链遭遇取消、意外 BaseException 或其它
+        # 未覆盖的退出路径，任务完成回调会回收遗留 lease，避免用户永久卡锁。
+        self.lock_owner_task: asyncio.Task | None = None
         self.held_contexts: list[MessageSession] = []
         # wait_anyone／wait_reply(all_=True) 取得的结果可能来自另一名用户。
         # continuation 在结果会话上继续 sleep／wait 时，执行锁仍须按最初发起
@@ -109,9 +113,40 @@ class ExecutionLockList:
 
     @classmethod
     def _install(cls, msg: "MessageSession", keys: set[str]) -> None:
+        state = cls.state(msg)
         token = uuid.uuid4().hex
-        cls.state(msg).lock_token = token
+        state.lock_token = token
         cls._list[token] = frozenset(keys)
+        cls._bind_owner_task(state)
+
+    @classmethod
+    def _bind_owner_task(cls, state: ExecutionState) -> None:
+        """把执行域绑定到当前根任务，并为非正常退出安装兜底清理。"""
+        task = asyncio.current_task()
+        if task is None or state.lock_owner_task is task:
+            return
+        if state.lock_owner_task is not None and not state.lock_owner_task.done():
+            # wait_* 的内部辅助 Task 可能共享根执行状态；lease 生命周期仍应由
+            # 最初取得它的 parser Task 管理，不能被短命辅助 Task 提前回收。
+            return
+        state.lock_owner_task = task
+        task.add_done_callback(
+            lambda finished, execution_state=state: cls._release_finished_owner(execution_state, finished)
+        )
+
+    @classmethod
+    def _release_finished_owner(cls, state: ExecutionState, finished: asyncio.Task) -> None:
+        """在 lease 所属任务结束后同步回收仍遗留的 token。"""
+        if state.lock_owner_task is not finished:
+            return
+        state.lock_owner_task = None
+        token = state.lock_token
+        state.lock_token = None
+        removed = isinstance(token, str) and cls._list.pop(token, None) is not None
+        if isinstance(token, str):
+            cls._reservations.discard(token)
+        if removed:
+            cls._notify_changed()
 
     @classmethod
     def _notify_changed(cls) -> None:
