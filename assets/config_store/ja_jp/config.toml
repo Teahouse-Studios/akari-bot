@@ -30,6 +30,7 @@ enable_bind_auto = false # 同じコンテキスト内の他のインスタン�
 enable_commit_url = true # バージョン情報を表示する時にコミット URL を表示するかどうか。
 enable_dirty_check = false # テキスト フィルタリング検出を有効にするかどうか。Alibaba Cloud コンテンツ セキュリティ サービスの AccessKey ID と AccessKey Secret を設定する必要があります。
 check_use_textscan_v1 = false # Alibaba Cloud コンテンツ セキュリティ サービスの Text Scan 1.0 レガシー API を使用するかどうか。
+check_local_first = false # ローカル キーワードによるテキスト フィルタリングを優先するかどうか、ローカル一致が発生した場合に API チェックをスキップするかどうか。十分な詳細度を備えた類語辞典が必要です。
 enable_urlmanager = false # URL スプリングボードの URLManager を有効にするかどうか。（URL が公式リンクではないことを宣言するなど）
 auto_purge_crontab = "0 0 * * *" # 自動キャッシュ パージ用の Cron 式。
 typo_check_module_score = 0.6 # モジュールのスペルチェックにおける類似度を許容スコア。範囲は 0 ～ 1 です。

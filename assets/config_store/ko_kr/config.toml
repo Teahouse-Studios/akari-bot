@@ -30,6 +30,7 @@ enable_bind_auto = false # 동일한 컨텍스트 내의 다른 인스턴스를 
 enable_commit_url = true # 버전 정보 표시 시 커밋 URL 표시 여부.
 enable_dirty_check = false # 텍스트 필터링 활성화 여부. Alibaba Cloud 콘텐츠 보안 서비스의 AccessKey ID 및 AccessKey Secret이 필요합니다.
 check_use_textscan_v1 = false # 이전 버전의 Alibaba Cloud 콘텐츠 보안 Text Scan 1.0 API 사용 여부.
+check_local_first = false # 로컬 키워드로 텍스트 필터링을 선호할지 여부, 로컬 일치가 발생할 경우 API 검사를 건너뛸지 여부. 충분한 상세도를 가진 동의어 사전이 필요합니다.
 enable_urlmanager = false # URLManager 활성화 여부. URL 중계용으로 사용됩니다. (이 URL이 공식 링크가 아님을 알리는 등)
 auto_purge_crontab = "0 0 * * *" # 캐시 자동 삭제를 위한 Cron 표현식.
 typo_check_module_score = 0.6 # 모듈 철자 검사 허용 유사도. 범위는 0에서 1 사이입니다.
