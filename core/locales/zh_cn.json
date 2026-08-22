@@ -8,6 +8,7 @@
     "config.comments.config.auto_purge_crontab": "自动清除缓存的 Cron 表达式。",
     "config.comments.config.base_superuser": "机器人的基础超级用户列表，此处填写的值将会在机器人启动时被加载进入数据库。",
     "config.comments.config.bug_report_url": "汇报错误网址。",
+    "config.comments.config.check_local_first": "是否优先使用本地关键词文本过滤，本地命中时将跳过 API 检查。需要足够细致的词库。",
     "config.comments.config.check_use_textscan_v1": "是否使用旧版阿里云内容安全 1.0 服务接口。",
     "config.comments.config.command_prefix": "命令前缀，此处填写的值将会被识别为命令前缀。",
     "config.comments.config.confirm_command": "确认命令的关键词，此处填写的值将会被识别为确认命令。",

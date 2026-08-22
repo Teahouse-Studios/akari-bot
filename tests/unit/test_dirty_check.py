@@ -184,6 +184,61 @@ def _test_aliyun_cache_namespace_isolated():
         return False
 
 
+async def _test_local_hit_still_checks_aliyun_by_default():
+    """check: 默认配置下，本地词表命中后仍会调用阿里云 API 二次过滤"""
+    try:
+        import core.dirty_check as dirty_check
+
+        calls = []
+
+        async def _fake_aliyun(texts, confidence=60):
+            calls.extend(texts)
+            return [{"content": t, "status": True, "original": t} for t in texts]
+
+        with (
+            patch.object(dirty_check, "access_key_id", "id"),
+            patch.object(dirty_check, "access_key_secret", "secret"),
+            patch.object(dirty_check, "local_first", False),
+            patch.object(dirty_check, "load_keyword_rules", lambda: {"test": ["bad"]}),
+            patch.object(dirty_check, "_check_aliyun", _fake_aliyun),
+        ):
+            await dirty_check.check(["Hello World", "this is bad"], force=True)
+
+        return len(calls) == 2
+    except Exception:
+        return False
+
+
+async def _test_local_hit_skips_aliyun_when_enabled():
+    """check: 开启 check_local_first 后，本地命中的文本不再调用阿里云 API"""
+    try:
+        import core.dirty_check as dirty_check
+
+        calls = []
+
+        async def _fake_aliyun(texts, confidence=60):
+            calls.extend(texts)
+            return [{"content": t, "status": True, "original": t} for t in texts]
+
+        with (
+            patch.object(dirty_check, "access_key_id", "id"),
+            patch.object(dirty_check, "access_key_secret", "secret"),
+            patch.object(dirty_check, "local_first", True),
+            patch.object(dirty_check, "load_keyword_rules", lambda: {"test": ["bad"]}),
+            patch.object(dirty_check, "_check_aliyun", _fake_aliyun),
+        ):
+            results = await dirty_check.check(["Hello World", "this is bad"], force=True)
+
+        return (
+            len(results) == 2
+            and results[0]["status"] is True
+            and results[1]["status"] is False
+            and calls == ["Hello World"]
+        )
+    except Exception:
+        return False
+
+
 @func_case
 async def test_dirty_check(tester: Tester):
     """core.dirty_check: 内容审核系统测试"""
@@ -197,4 +252,6 @@ async def test_dirty_check(tester: Tester):
     await tester.test(_test_check_bool_dirty_is_true, "check_bool 不合规返回真测试")
     await tester.test(_test_aliyun_split_cache_preserves_result, "阿里云长文本分片缓存测试")
     await tester.test(_test_aliyun_cache_namespace_isolated, "阿里云缓存版本隔离测试")
+    await tester.test(_test_local_hit_still_checks_aliyun_by_default, "默认配置下本地命中后仍送阿里云 API 测试")
+    await tester.test(_test_local_hit_skips_aliyun_when_enabled, "开启开关后本地命中跳过阿里云 API 测试")
     return tester

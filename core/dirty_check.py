@@ -28,6 +28,7 @@ from core.logger import Logger
 access_key_id = CoreSecretConfig.check_access_key_id
 access_key_secret = CoreSecretConfig.check_access_key_secret
 use_textscan_v1 = CoreConfig.check_use_textscan_v1
+local_first = CoreConfig.check_local_first
 
 ALIYUN_BACKEND = "aliyun"
 ALIYUN_SPLIT_CACHE_KEY = "_akari_split_results"
@@ -411,7 +412,9 @@ async def check(
 ) -> list[dict]:
     """检查字符串。
 
-    本地关键词过滤与阿里云 API 过滤为平行系统，二者叠加执行而非二选一：
+    本地关键词过滤优先执行：先对文本做本地词表过滤，再对过滤后的文本调用阿里云 API。
+    默认所有文本都会经过第三方 API 二次过滤；开启`check_local_first`后，
+    已被本地词表判定不合规的文本将跳过第三方 API 以节省费用，但本地词表覆盖不到的敏感词可能漏出。
     任一步判定不合规即视为不合规。
 
     :param text: 字符串（List/Union）。
@@ -440,12 +443,26 @@ async def check(
         parse_keyword_data(t, keywords) if keywords else {"content": t, "status": True, "original": t} for t in text
     ]
 
-    # 阿里云 API 过滤：配置密钥后启用，输入为关键词过滤后的文本
-    aliyun_texts = [result["content"] for result in keyword_results]
+    # 阿里云 API 过滤：默认对所有文本（含本地已命中的）发起请求，输入为本地过滤后的文本。
+    # 开启 check_local_first 后，本地已判定不合规的文本将跳过第三方 API 以节省费用，
+    # 但本地词表覆盖不到、需第三方 API 才能识别的敏感词可能漏出。
+    aliyun_results: list[dict] = []
     if access_key_id and access_key_secret:
-        aliyun_results = await _check_aliyun(aliyun_texts, confidence)
+        if local_first:
+            api_indices = [i for i, result in enumerate(keyword_results) if result["status"]]
+        else:
+            api_indices = list(range(len(keyword_results)))
+        api_texts = [keyword_results[i]["content"] for i in api_indices]
+        api_results = await _check_aliyun(api_texts, confidence) if api_texts else []
+        api_result_map = dict(zip(api_indices, api_results, strict=True))
+        aliyun_results = [
+            api_result_map.get(i, {"content": result["content"], "status": True, "original": result["content"]})
+            for i, result in enumerate(keyword_results)
+        ]
     else:
-        aliyun_results = [{"content": c, "status": True, "original": c} for c in aliyun_texts]
+        aliyun_results = [
+            {"content": result["content"], "status": True, "original": result["content"]} for result in keyword_results
+        ]
 
     results = []
     for keyword_result, aliyun_result in zip(keyword_results, aliyun_results, strict=True):

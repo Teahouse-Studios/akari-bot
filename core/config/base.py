@@ -59,6 +59,7 @@ class CoreConfig:
     enable_commit_url: bool = True
     enable_dirty_check: bool = False
     check_use_textscan_v1: bool = False
+    check_local_first: bool = False
     enable_urlmanager: bool = False
     auto_purge_crontab: str = "0 0 * * *"
 
