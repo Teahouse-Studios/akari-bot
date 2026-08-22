@@ -119,6 +119,45 @@ def dump_sender(sender: SenderUnionInfo, bound_ids: list[str], display_id: str) 
     }
 
 
+def dump_sender_group(sender: SenderUnionInfo, bound_ids: list[str]) -> dict:
+    """
+    序列化用户组信息，列出组内已绑定的全部平台账号 ID。
+    """
+    return {
+        "union_id": sender.union_id,
+        "member_count": len(bound_ids),
+        "members": bound_ids,
+        "blocked": sender.blocked,
+        "trusted": sender.trusted,
+        "superuser": sender.superuser,
+        "warns": sender.warns,
+        "petal": sender.petal,
+        "sender_data": sender.sender_data,
+    }
+
+
+def dump_target_group(target: TargetUnionInfo, channels: dict[str, int]) -> dict:
+    """
+    序列化场景组信息，列出组内全部场景及其消息通道号。
+    """
+    members = [
+        {"target_id": target_id, "channel_id": channel_id}
+        for target_id, channel_id in sorted(channels.items(), key=lambda kv: (kv[1], kv[0]))
+    ]
+    return {
+        "union_id": target.union_id,
+        "member_count": len(members),
+        "members": members,
+        "blocked": target.blocked,
+        "muted": target.muted,
+        "locale": target.locale,
+        "modules": target.modules,
+        "custom_admins": target.custom_admins,
+        "banned_users": target.banned_users,
+        "target_data": target.target_data,
+    }
+
+
 async def resolve_sender_unions(ids: list[str]) -> list[str]:
     """
     把权限列表中的平台账号 ID 解析为 union ID，已经是 union ID 的原样保留。
@@ -324,6 +363,24 @@ async def get_target_list(
         raise HTTPException(status_code=400, detail="Bad request")
 
 
+@app.get("/api/target/group/{union_id}")
+@limiter.limit("30/minute")
+async def get_target_group_info(request: Request, union_id: str):
+    try:
+        verify_jwt(request)
+        # 直接按 union_id 查核心行，避免 resolve_union 对组 ID 走自愈分支建出脏映射行。
+        target_union_info = await TargetUnionInfo.get_or_none(union_id=union_id)
+        if not target_union_info:
+            raise HTTPException(status_code=404, detail="Not found")
+        channels = await TargetUnionBind.list_channels(union_id)
+        return {"target_group": dump_target_group(target_union_info, channels)}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
 @app.get("/api/target/{target_id}")
 @limiter.limit("30/minute")
 async def get_target_info(request: Request, target_id: str):
@@ -459,6 +516,24 @@ async def get_sender_list(
         ]
 
         return {"sender_list": sender_list, "total": total}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.get("/api/sender/group/{union_id}")
+@limiter.limit("30/minute")
+async def get_sender_group_info(request: Request, union_id: str):
+    try:
+        verify_jwt(request)
+        # 直接按 union_id 查核心行，避免 resolve_union 对组 ID 走自愈分支建出脏映射行。
+        sender_union_info = await SenderUnionInfo.get_or_none(union_id=union_id)
+        if not sender_union_info:
+            raise HTTPException(status_code=404, detail="Not found")
+        bound_ids = await sender_union_info.list_bound_ids()
+        return {"sender_group": dump_sender_group(sender_union_info, bound_ids)}
     except HTTPException as e:
         raise e
     except Exception:
