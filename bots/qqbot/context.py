@@ -31,6 +31,7 @@ from core.builtins.message.elements import (
     ButtonFrameElement,
     ButtonRows,
     PlainElement,
+    MarkdownElement,
     ImageElement,
     MentionElement,
     URLElement,
@@ -430,8 +431,6 @@ class QQBotContextManager(ContextManager):
         session_info: SessionInfo,
         message: MessageChain | MessageNodes,
         quote: bool = True,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
         _ignore_retries: bool = False,
         _typing_prompt: bool = False,
         _force_plain: bool = False,
@@ -441,10 +440,10 @@ class QQBotContextManager(ContextManager):
         client = _get_client()
         target = _reply_target(session_info, ctx)
 
-        force_markdown = session_info.tmp.get("force_markdown") == "true"
         if isinstance(message, MessageNodes):
-            message = MessageChain.assign(PlainElement.assign(nodes_to_table(session_info, message), disable_joke=True))
-            force_markdown = True
+            message = MessageChain.assign(
+                MarkdownElement.assign(nodes_to_table(session_info, message), disable_joke=True)
+            )
 
         async def empty_send() -> list[str]:
             return []
@@ -453,10 +452,10 @@ class QQBotContextManager(ContextManager):
             plains: list[PlainElement] = []
             images: list[ImageElement] = []
 
-            for x in message.as_sendable(session_info, parse_message=enable_parse_message, disable_markdown=True):
+            for x in message.as_sendable(session_info, disable_markdown=True):
                 if isinstance(x, PlainElement):
                     x.text = html.unescape(x.text)
-                    if enable_parse_message:
+                    if x.allow_parse:
                         x.text = match_atcode(x.text, client_name, "<@{uid}>")
                     plains.append(x)
                 elif isinstance(x, ImageElement):
@@ -582,13 +581,13 @@ class QQBotContextManager(ContextManager):
 
             if quote and ctx and session_info.target_from in (target_guild_prefix, target_group_prefix):
                 texts.append(f'<qqbot-at-user id="{session_info.get_common_sender_id()}" />')
-            converted_message = message.as_sendable(session_info, parse_message=enable_parse_message)
+            converted_message = message.as_sendable(session_info)
             possibly_choices = [row for x in converted_message if isinstance(x, ButtonFrameElement) for row in x.rows]
             keyboard = _build_qqbot_keyboard(possibly_choices, session_info, target)
 
             _use_markdown = True
 
-            if converted_message.only(PlainElement):
+            if converted_message.only(PlainElement) and not converted_message.contains(MarkdownElement):
                 _use_markdown = False
             if converted_message.only(ImageElement) and len(converted_message) == 1:
                 _use_markdown = False
@@ -600,9 +599,6 @@ class QQBotContextManager(ContextManager):
 
             if keyboard:
                 _use_markdown = True
-            if force_markdown:
-                _use_markdown = True
-
             if not _use_markdown:
                 Logger.debug("MessageElements do not require markdown, sending as plain message instead of markdown.")
                 return await prepare_plain_message()
@@ -617,7 +613,7 @@ class QQBotContextManager(ContextManager):
             for x in converted_message:
                 if isinstance(x, PlainElement):
                     x.text = html.unescape(x.text)
-                    if enable_parse_message:
+                    if x.allow_parse:
                         x.text = match_atcode(x.text, client_name, "<@{uid}>")
                     if inline_pending and texts:
                         texts[-1] += x.text
@@ -789,8 +785,6 @@ class QQBotContextManager(ContextManager):
         session_info: SessionInfo,
         message: MessageChain | MessageNodes,
         quote: bool = True,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
         _ignore_retries: bool = False,
         _typing_prompt: bool = False,
         _force_plain: bool = False,
@@ -800,8 +794,6 @@ class QQBotContextManager(ContextManager):
             session_info,
             message,
             quote=quote,
-            enable_parse_message=enable_parse_message,
-            enable_split_image=enable_split_image,
             _ignore_retries=_ignore_retries,
             _typing_prompt=_typing_prompt,
             _force_plain=_force_plain,
@@ -818,8 +810,6 @@ class QQBotContextManager(ContextManager):
         session_info: SessionInfo,
         user_id: str,
         message: MessageChain | MessageNodes,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ) -> list[str]:
         uid = user_id.split("|")[-1]
 
@@ -852,8 +842,6 @@ class QQBotContextManager(ContextManager):
                 cls.derive_private_session(session_info, target_id, target_from),
                 message,
                 quote=False,
-                enable_parse_message=enable_parse_message,
-                enable_split_image=enable_split_image,
             )
         except asyncio.CancelledError:
             raise
@@ -1275,8 +1263,6 @@ class QQBotFetchedContextManager(QQBotContextManager):
         session_info: SessionInfo,
         message: MessageChain | MessageNodes,
         quote: bool = True,
-        enable_parse_message=True,
-        enable_split_image=True,
         _ignore_retries: bool = False,
         _typing_prompt: bool = False,
         _force_plain: bool = False,
@@ -1305,7 +1291,6 @@ class QQBotFetchedContextManager(QQBotContextManager):
             session_info,
             message,
             quote,
-            enable_parse_message,
             _ignore_retries,
             _typing_prompt,
             _force_plain,
@@ -1322,7 +1307,7 @@ class QQBotFetchedContextManager(QQBotContextManager):
 
     @staticmethod
     async def _run_task(task: tuple) -> None:
-        future, session_info, message, quote, enable_parse_message, _ignore_retries, _typing_prompt, _force_plain = task
+        future, session_info, message, quote, _ignore_retries, _typing_prompt, _force_plain = task
         if future.cancelled():
             return
         try:
@@ -1330,7 +1315,6 @@ class QQBotFetchedContextManager(QQBotContextManager):
                 session_info,
                 message,
                 quote=quote,
-                enable_parse_message=enable_parse_message,
                 _ignore_retries=_ignore_retries,
                 _typing_prompt=_typing_prompt,
                 _force_plain=_force_plain,

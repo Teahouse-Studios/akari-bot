@@ -23,6 +23,7 @@ from core.builtins.converter import converter
 from core.builtins.message.elements import (
     BaseElement,
     PlainElement,
+    MarkdownElement,
     EmbedElement,
     FormattedTimeElement,
     I18NContextElement,
@@ -302,11 +303,38 @@ class MessageChain:
             if isinstance(x, EmbedElement) and not support_embed:
                 value += x.to_message_chain(session_info)
 
+            # ========== 处理 Markdown 文本元素 ==========
+            elif isinstance(x, MarkdownElement):
+                markdown_enabled = not disable_markdown and (session_info is None or session_info.support_markdown)
+                source = PlainElement.assign(x.text, disable_joke=x.disable_joke, allow_parse=x.allow_parse)
+                converted = MessageChain.assign(source).as_sendable(
+                    session_info,
+                    parse_message=parse_message,
+                    disable_markdown=disable_markdown,
+                )
+                for element in converted:
+                    if isinstance(element, PlainElement):
+                        value.append(
+                            MarkdownElement.assign(
+                                element.text,
+                                disable_joke=element.disable_joke,
+                                allow_parse=element.allow_parse,
+                            )
+                            if markdown_enabled
+                            else MarkdownElement.assign(
+                                element.text,
+                                disable_joke=element.disable_joke,
+                                allow_parse=element.allow_parse,
+                            ).to_plain()
+                        )
+                    else:
+                        value.append(element)
+
             # ========== 处理纯文本元素 ==========
             elif isinstance(x, PlainElement):
                 if session_info:
                     if x.text != "":
-                        if parse_message:
+                        if parse_message and x.allow_parse:
                             # 进行多语言翻译
                             x.text = session_info.locale.t_str(x.text)
                             # 解析 KE 码格式的消息
@@ -1058,6 +1086,7 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
 
     支持的 KE 码类型：
     - `[KE:plain,text=...]`: 纯文本
+    - `[KE:markdown,text=...]`: Markdown 文本
     - `[KE:image,path=...]`: 图片
     - `[KE:voice,path=...]`: 语音
     - `[KE:i18n,i18nkey=...,param1=val1,...]`: 多语言文本
@@ -1141,8 +1170,20 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
                 text_value = unquote(parsed_params.get("text", ""))
 
                 local_disable_joke = convert_bool(parsed_params.get("disable_joke"), disable_joke)
+                allow_parse = convert_bool(parsed_params.get("allow_parse"), True)
 
-                elements.append(PlainElement.assign(text_value, disable_joke=local_disable_joke))
+                elements.append(
+                    PlainElement.assign(text_value, disable_joke=local_disable_joke, allow_parse=allow_parse)
+                )
+
+            # ========= Markdown 文本 =========
+            elif element_type == "markdown":
+                text_value = unquote(parsed_params.get("text", ""))
+                local_disable_joke = convert_bool(parsed_params.get("disable_joke"), disable_joke)
+                allow_parse = convert_bool(parsed_params.get("allow_parse"), True)
+                elements.append(
+                    MarkdownElement.assign(text_value, disable_joke=local_disable_joke, allow_parse=allow_parse)
+                )
 
             # ========= 图片 =========
             elif element_type == "image":
@@ -1153,7 +1194,12 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
 
                     if parse_url[0] == "file" or url_pattern.match(parse_url[1]):
                         max_h = parsed_params.get("max_h")
-                        img = ImageElement.assign(path=path, max_h=int(max_h) if max_h and max_h.isdigit() else None)
+                        allow_split = convert_bool(parsed_params.get("allow_split"), True)
+                        img = ImageElement.assign(
+                            path=path,
+                            max_h=int(max_h) if max_h and max_h.isdigit() else None,
+                            allow_split=allow_split,
+                        )
 
                         headers = parsed_params.get("headers")
 
@@ -1163,8 +1209,13 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
                         elements.append(img)
                     else:
                         max_h = parsed_params.get("max_h")
+                        allow_split = convert_bool(parsed_params.get("allow_split"), True)
                         elements.append(
-                            ImageElement.assign(path, max_h=int(max_h) if max_h and max_h.isdigit() else None)
+                            ImageElement.assign(
+                                path,
+                                max_h=int(max_h) if max_h and max_h.isdigit() else None,
+                                allow_split=allow_split,
+                            )
                         )
 
             # ========= 语音 =========

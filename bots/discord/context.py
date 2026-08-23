@@ -95,16 +95,12 @@ class DiscordContextManager(ContextManager):
         session_info: SessionInfo,
         message: MessageChain | MessageNodes,
         quote: bool = True,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ) -> list[str]:
         try:
             return await cls._send_message(
                 session_info,
                 message,
                 quote=quote,
-                enable_parse_message=enable_parse_message,
-                enable_split_image=enable_split_image,
             )
         except asyncio.CancelledError:
             raise
@@ -118,8 +114,6 @@ class DiscordContextManager(ContextManager):
         session_info: SessionInfo,
         message: MessageChain | MessageNodes,
         quote: bool = True,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ) -> list[str]:
 
         # if session_info.session_id not in cls.context:
@@ -134,7 +128,7 @@ class DiscordContextManager(ContextManager):
             Logger.error("This session does not support message nodes, check if bug exists.")
             return []
 
-        payloads = await build_discord_payloads(session_info, message, enable_parse_message)
+        payloads = await build_discord_payloads(session_info, message)
         action_texts = payloads[-1].action_texts if payloads else []
         view = build_discord_button_view(
             payloads[-1].button_rows if payloads else [],
@@ -156,8 +150,6 @@ class DiscordContextManager(ContextManager):
         session_info: SessionInfo,
         user_id: str,
         message: MessageChain | MessageNodes,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ) -> list[str]:
         uid = user_id.split("|")[-1]
         if not uid.isdigit():
@@ -175,8 +167,6 @@ class DiscordContextManager(ContextManager):
                 ),
                 message,
                 quote=False,
-                enable_parse_message=enable_parse_message,
-                enable_split_image=enable_split_image,
             )
         except Exception:
             Logger.exception(f"Failed to send private message to {user_id}: ")

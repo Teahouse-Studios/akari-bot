@@ -25,8 +25,6 @@ class DiscordSlashContextManager(DiscordContextManager):
         session_info: SessionInfo,
         message: MessageChain | MessageNodes,
         quote: bool = True,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ) -> list[str]:
         msg_ids = []
         try:
@@ -34,8 +32,6 @@ class DiscordSlashContextManager(DiscordContextManager):
                 session_info,
                 message,
                 quote=quote,
-                enable_parse_message=enable_parse_message,
-                enable_split_image=enable_split_image,
                 msg_ids=msg_ids,
             )
         except asyncio.CancelledError:
@@ -50,8 +46,6 @@ class DiscordSlashContextManager(DiscordContextManager):
         session_info: SessionInfo,
         message: MessageChain | MessageNodes,
         quote: bool = True,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
         msg_ids: list[str] | None = None,
     ) -> list[str]:
         if session_info.session_id not in cls.context:
@@ -62,7 +56,7 @@ class DiscordSlashContextManager(DiscordContextManager):
             Logger.error("This session does not support message nodes, check if bug exists.")
             return []
 
-        payloads = await build_discord_payloads(session_info, message, enable_parse_message)
+        payloads = await build_discord_payloads(session_info, message)
         view = build_discord_button_view(
             payloads[-1].button_rows if payloads else [],
             session_info.sender_id,

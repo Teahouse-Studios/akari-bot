@@ -2001,8 +2001,9 @@ async def _test_reply_task_preserves_comma_in_message_id():
         SessionTaskManager._task_list.clear()
 
 
-async def _test_send_message_restores_force_markdown_on_failure():
-    """消息发送异常后应恢复原有 force_markdown 临时值。"""
+async def _test_send_message_does_not_set_transport_format_flag():
+    """消息格式应由元素表达，发送链路不得再写入 transport 格式临时值。"""
+    from core.builtins.message.internal import Markdown
     from core.builtins.session.info import SessionInfo
     from core.builtins.session.internal import MessageSession
     from core.exports import exports
@@ -2019,17 +2020,17 @@ async def _test_send_message_restores_force_markdown_on_failure():
         sender_id="TEST|force-markdown-failure",
         sender_from="TEST",
     )
-    session_info.tmp["force_markdown"] = "previous"
+    session_info.tmp["existing"] = "value"
     msg = MessageSession(session_info)
 
     with patch.dict(exports, {"JobQueueServer": FailingQueueServer}):
         try:
-            await msg.send_message("test", force_markdown=True)
+            await msg.send_message(Markdown("**test**"))
         except RuntimeError:
             pass
         else:
             return False
-    return session_info.tmp.get("force_markdown") == "previous"
+    return session_info.tmp == {"existing": "value"}
 
 
 async def _test_wait_next_message_registers_before_fast_reply():
@@ -3176,7 +3177,7 @@ async def test_session_task(tester: Tester):
 @func_case
 async def test_message_session_lifecycle(tester: Tester):
     """core.builtins.session.internal: 消息发送与等待生命周期测试。"""
-    await tester.test(_test_send_message_restores_force_markdown_on_failure, "发送失败恢复 Markdown 标志测试")
+    await tester.test(_test_send_message_does_not_set_transport_format_flag, "发送链路不写入格式标志测试")
     await tester.test(_test_wait_next_message_registers_before_fast_reply, "快速回复不丢失测试")
     await tester.test(_test_wait_confirm_registers_before_reaction_roundtrip, "确认反应期间快速回复不丢失测试")
     await tester.test(_test_wait_reply_registers_before_send_returns, "引用回复发送前登记测试")

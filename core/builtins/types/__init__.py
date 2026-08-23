@@ -7,6 +7,7 @@
 
 from core.builtins.message.elements import (
     PlainElement,
+    MarkdownElement,
     URLElement,
     FormattedTimeElement,
     I18NContextElement,
@@ -24,7 +25,7 @@ from core.builtins.message.elements import (
 from typing import Union
 
 # 多媒体元素类型联合体 - 包含纯文本、图片、语音、原始格式消息
-MultimediaElement = Union[PlainElement, ImageElement, VoiceElement, RawElement]
+MultimediaElement = Union[PlainElement, MarkdownElement, ImageElement, VoiceElement, RawElement]
 
 # 完整的消息元素类型联合体 - 包含所有支持的消息元素类型
 MessageElement = Union[

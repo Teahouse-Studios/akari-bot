@@ -45,19 +45,15 @@ class MockMessageSession(MessageSession):
         message_chain,
         quote=True,
         disable_secret_check=False,
-        enable_parse_message=True,
-        enable_split_image=True,
         callback=None,
         callback_id=None,
-        force_markdown=False,
         callback_timeout=1800,
         callback_once=False,
     ):
-        # force_markdown 只影响平台的发送路径，测试替身不作区分，签名对齐即可
         message = get_message_chain(self.session_info, chain=message_chain)
         if callback:
             bind_callback_reply_ids(message, callback_id)
-        for x in message.as_sendable(self.session_info, parse_message=enable_parse_message):
+        for x in message.as_sendable(self.session_info):
             self.sent.append(x)
             if isinstance(x, PlainElement):
                 self.action.append(x.text)
@@ -79,11 +75,8 @@ class MockMessageSession(MessageSession):
         message_chain=None,
         quote=True,
         disable_secret_check=False,
-        enable_parse_message=True,
-        enable_split_image=True,
         callback=None,
         callback_id=None,
-        force_markdown=False,
         callback_timeout=1800,
         callback_once=False,
     ):
@@ -94,7 +87,6 @@ class MockMessageSession(MessageSession):
                 callback_id=callback_id,
                 callback_timeout=callback_timeout,
                 callback_once=callback_once,
-                force_markdown=force_markdown,
             )
         raise SessionFinished
 
@@ -102,8 +94,6 @@ class MockMessageSession(MessageSession):
         self,
         message_chain,
         disable_secret_check=False,
-        enable_parse_message=True,
-        enable_split_image=True,
     ):
         await self.send_message(message_chain)
 
@@ -112,8 +102,6 @@ class MockMessageSession(MessageSession):
         message_chain,
         user_id=None,
         disable_secret_check=False,
-        enable_parse_message=True,
-        enable_split_image=True,
     ):
         user_id = user_id or self.session_info.sender_id
         self.action.append(f"(private message to {user_id})")

@@ -3,7 +3,7 @@ from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from core.builtins.message.elements import ButtonFrameElement, ImageElement, PlainElement, URLElement
+from core.builtins.message.elements import ButtonFrameElement, ImageElement, MarkdownElement, PlainElement, URLElement
 from core.builtins.utils import command_prefix
 from core.config.base import CoreConfig
 from core.i18n import Locale
@@ -86,7 +86,14 @@ def _test_credits_message_markdown_and_plain():
         markdown = build_credits_message(_msg(support_markdown=True))
         plain = build_credits_message(_msg(support_markdown=False))
     title = Locale("zh_cn").t("core.message.about.credits")
-    return markdown.values[0].text == f"```{title}\nAlice\nBob\n```" and plain.values[0].text == f"{title}\nAlice\nBob"
+    markdown_element = markdown.as_sendable(_msg(support_markdown=True).session_info).values[0]
+    plain_element = plain.as_sendable(_msg(support_markdown=False).session_info).values[0]
+    return (
+        isinstance(markdown_element, MarkdownElement)
+        and markdown_element.text == f"```{title}\nAlice\nBob\n```"
+        and type(plain_element) is PlainElement
+        and plain_element.text == f"{title}\nAlice\nBob"
+    )
 
 
 def _test_button_rows_and_qq_only_entry():

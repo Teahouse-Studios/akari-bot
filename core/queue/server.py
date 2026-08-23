@@ -78,19 +78,15 @@ class JobQueueServer(JobQueueBase):
         message: MessageChain | MessageNodes,
         quote: bool = True,
         wait=True,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ):
         """向客户端发送消息。
 
-        通过队列系统向指定的客户端发送消息。支持引用、消息解析和图片分割等功能。
+        通过队列系统向指定的客户端发送消息，文本解析选项由消息元素自身携带。
 
         :param session_info: 目标会话信息，指定消息发送到哪个场景/用户
         :param message: 要发送的消息链对象
         :param quote: 是否引用原消息（默认 True）
         :param wait: 是否等待消息发送完成（默认 True）
-        :param enable_parse_message: 是否解析消息中的特殊标记（默认 True）
-        :param enable_split_image: 是否将大图片拆分成多条消息发送（默认 True）
 
         :return wait=True: 返回发送结果字典（包含 message_id 等）
         :return wait=False: 返回任务 ID
@@ -102,8 +98,6 @@ class JobQueueServer(JobQueueBase):
                 "session_info": converter.unstructure(session_info),
                 "message": converter.unstructure(message, MessageChain | MessageNodes),
                 "quote": quote,
-                "enable_parse_message": enable_parse_message,
-                "enable_split_image": enable_split_image,
             },
             wait=wait,
         )
@@ -147,8 +141,6 @@ class JobQueueServer(JobQueueBase):
         user_id: str,
         message: MessageChain | MessageNodes,
         wait: bool = True,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ):
         """向指定用户单独发送私聊消息。
 
@@ -158,8 +150,6 @@ class JobQueueServer(JobQueueBase):
         :param user_id: 目标用户 ID（带平台前缀，如 `QQ|10000`）
         :param message: 要发送的消息链对象
         :param wait: 是否等待消息发送完成（默认 True，取回消息 ID 需要等待）
-        :param enable_parse_message: 是否解析消息中的特殊标记（默认 True）
-        :param enable_split_image: 是否将大图片拆分成多条消息发送（默认 True）
 
         :return wait=True: 返回发送结果字典（包含 message_id，为空列表表示发送失败）
         :return wait=False: 返回任务 ID
@@ -171,8 +161,6 @@ class JobQueueServer(JobQueueBase):
                 "session_info": converter.unstructure(session_info),
                 "user_id": user_id,
                 "message": converter.unstructure(message, MessageChain | MessageNodes),
-                "enable_parse_message": enable_parse_message,
-                "enable_split_image": enable_split_image,
             },
             wait=wait,
         )
@@ -631,7 +619,6 @@ async def client_direct_message(tsk: JobQueuesTable, args: dict):
         session_info,
         message,
         disable_secret_check=args.get("disable_secret_check", False),
-        enable_parse_message=args.get("enable_parse_message", True),
     )
     return {"success": True}
 

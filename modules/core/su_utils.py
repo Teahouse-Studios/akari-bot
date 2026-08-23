@@ -640,7 +640,7 @@ async def _(msg: Bot.MessageSession):
     if dis:
         try:
             dis = dis.as_display()
-            await msg.finish(dis, enable_parse_message=False)
+            await msg.finish(Plain(dis, allow_parse=False))
         except Exception as e:
             raise NoReportException(str(e))
 
@@ -648,7 +648,7 @@ async def _(msg: Bot.MessageSession):
 @echo.command("[<display_msg>]")
 async def _(msg: Bot.MessageSession, dis: Param("<display_msg>", str)):
     try:
-        await msg.finish(dis, enable_parse_message=False)
+        await msg.finish(Plain(dis, allow_parse=False))
     except Exception as e:
         raise NoReportException(str(e))
 

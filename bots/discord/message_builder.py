@@ -49,9 +49,7 @@ def split_discord_text(text: str, limit: int = 2000) -> list[str]:
     return chunks
 
 
-async def build_discord_payloads(
-    session_info: SessionInfo, message: MessageChain, enable_parse_message: bool = True
-) -> list[DiscordPayload]:
+async def build_discord_payloads(session_info: SessionInfo, message: MessageChain) -> list[DiscordPayload]:
     """将完整消息链聚合为受平台限制约束的 Discord 负载。"""
     text_parts = []
     files = []
@@ -61,9 +59,9 @@ async def build_discord_payloads(
     embed_index = 0
     inline_pending = False
 
-    for element in message.as_sendable(session_info, parse_message=enable_parse_message):
+    for element in message.as_sendable(session_info):
         if isinstance(element, PlainElement):
-            text = match_atcode(element.text, client_name, "<@{uid}>") if enable_parse_message else element.text
+            text = match_atcode(element.text, client_name, "<@{uid}>") if element.allow_parse else element.text
             if inline_pending and text_parts:
                 text_parts[-1] += text
             else:

@@ -3,7 +3,7 @@ from pathlib import Path
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import ButtonRows
-from core.builtins.message.internal import Button, ButtonFrame, I18NContext, Image, Plain, Url
+from core.builtins.message.internal import Button, ButtonFrame, I18NContext, Image, Markdown, Plain, Url
 from core.builtins.utils import command_prefix
 from core.component import module
 from core.config.base import CoreConfig
@@ -36,8 +36,7 @@ def build_credits_message(msg: Bot.MessageSession) -> MessageChain:
         return result
 
     title = msg.session_info.locale.t("core.message.about.credits")
-    credits_text = f"```{title}\n{credits}\n```" if msg.session_info.support_markdown else f"{title}\n{credits}"
-    result.append(Plain(credits_text, disable_joke=True))
+    result.append(Markdown(f"```{title}\n{credits}\n```", disable_joke=True))
     return result
 
 
@@ -92,9 +91,9 @@ def build_about_message(msg: Bot.MessageSession) -> MessageChain:
 
 @about.command("{{I18N:core.help.about}}")
 async def _(msg: Bot.MessageSession):
-    await msg.finish(build_about_message(msg), force_markdown=msg.session_info.support_markdown)
+    await msg.finish(build_about_message(msg))
 
 
 @about.command("credits {{I18N:core.help.about.credits}}")
 async def _(msg: Bot.MessageSession):
-    await msg.finish(build_credits_message(msg), force_markdown=msg.session_info.support_markdown)
+    await msg.finish(build_credits_message(msg))

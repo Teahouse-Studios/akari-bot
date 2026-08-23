@@ -1576,9 +1576,8 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
                 f,
                 [
                     I18NContext("error.message.report", command=msg.trigger_msg),
-                    Plain(tb.strip(), disable_joke=True),
+                    Plain(tb.strip(), disable_joke=True, allow_parse=False),
                 ],
-                enable_parse_message=False,
                 disable_secret_check=True,
             )
 

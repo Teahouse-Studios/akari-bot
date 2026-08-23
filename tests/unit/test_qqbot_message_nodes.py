@@ -5,8 +5,8 @@
 节点变多时由列数吸收。
 
 两处易错：节点内容常为多行（wiki 的近期更改每条含标题、摘要、链接与时间戳），单元格容不下
-换行，须换成 <br>；摊平后的表格是纯文本，若不强制走 markdown 路径，会被判为「不需要
-markdown」而退回纯文本，表格标记原样露出。
+换行，须换成 <br>；摊平后的表格必须保留 MarkdownElement 类型，否则会按普通文本发送，
+表格标记原样露出。
 """
 
 from unittest.mock import patch
@@ -18,7 +18,7 @@ from bots.qqbot.context import MESSAGE_NODES_MAX_ROWS, QQBotContextManager, node
 from bots.qqbot.features import guild_features
 from bots.qqbot.info import target_group_prefix
 from core.builtins.message.chain import MessageChain, MessageNodes
-from core.builtins.message.internal import Plain
+from core.builtins.message.internal import Markdown, Plain
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 from core.tester import func_case, Tester
@@ -194,12 +194,8 @@ class _FakeClient:
         return {"id": "sent-1"}
 
 
-async def _test_nodes_force_markdown() -> bool:
-    """测试节点表格强制走 markdown 路径
-
-    摊平后的表格是纯文本，不强制的话会被判为「不需要 markdown」而退回纯文本，
-    表格标记原样露出。
-    """
+async def _test_nodes_use_markdown_element() -> bool:
+    """节点表格应以 Markdown 元素选择 Markdown 发送路径。"""
     session_id = "nodes-send"
     session_info = _make_session()
     session_info.session_id = session_id
@@ -225,18 +221,13 @@ async def _test_nodes_force_markdown() -> bool:
     return True
 
 
-async def _test_force_markdown_flag_from_module() -> bool:
-    """测试模块经 force_markdown 声明后，全为纯文本的消息也走 markdown
-
-    纯正则模块的帮助表格里没有可点击命令，整条消息全是纯文本，平台默认会退回纯文本发送，
-    表格标记原样露出。该标志正是为此而设。
-    """
+async def _test_markdown_element_selects_markdown_path() -> bool:
+    """全为文本的消息应根据元素类型选择 Plain 或 Markdown 发送路径。"""
     table = "| 正则 |  |\n|---|---|\n| a | b |"
-    for declared, expect_markdown in ((True, True), (False, False)):
-        session_id = f"force-md-{declared}"
+    for element, expect_markdown in ((Markdown(table), True), (Plain(table), False)):
+        session_id = f"markdown-element-{expect_markdown}"
         session_info = _make_session()
         session_info.session_id = session_id
-        session_info.tmp = {"force_markdown": "true" if declared else ""}
         ctx = _FakeGroupMessage()
         client = _FakeClient()
         QQBotContextManager.context[session_id] = ctx
@@ -245,16 +236,17 @@ async def _test_force_markdown_flag_from_module() -> bool:
                 patch.object(qqbot_context, "qq_use_markdown", True),
                 patch.object(QQBotContextManager, "client", client),
             ):
-                await QQBotContextManager.send_message(session_info, MessageChain.assign(Plain(table)), quote=False)
+                await QQBotContextManager.send_message(session_info, MessageChain.assign(element), quote=False)
         finally:
             QQBotContextManager.context.pop(session_id, None)
         if not client.calls:
-            Logger.error(f"Sending should reach the platform (declared={declared})")
+            Logger.error(f"Sending should reach the platform (markdown={expect_markdown})")
             return False
         sent_markdown = "markdown" in client.calls[0]
         if sent_markdown is not expect_markdown:
             Logger.error(
-                f"force_markdown={declared} should send as markdown={expect_markdown}, got {sorted(client.calls[0])}"
+                f"Markdown element={expect_markdown} should send as markdown={expect_markdown}, "
+                f"got {sorted(client.calls[0])}"
             )
             return False
     return True
@@ -270,7 +262,7 @@ async def test_qqbot_message_nodes(tester: Tester):
     await tester.test(_test_name_is_the_header, "节点组名称占表头测试")
     await tester.test(_test_multiline_content_uses_br, "多行内容换行测试")
     await tester.test(_test_pipes_are_escaped, "内容竖线转义测试")
-    await tester.test(_test_nodes_force_markdown, "节点强制走 markdown 测试")
-    await tester.test(_test_force_markdown_flag_from_module, "模块声明强制 markdown 测试")
+    await tester.test(_test_nodes_use_markdown_element, "节点 Markdown 元素发送测试")
+    await tester.test(_test_markdown_element_selects_markdown_path, "消息元素选择 Markdown 路径测试")
 
     return tester

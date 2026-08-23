@@ -134,8 +134,6 @@ class ContextManager(ABC):
         session_info: SessionInfo,
         message: MessageChain | MessageNodes,
         quote: bool = True,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ) -> list[str]:
         """
         向会话所在的场景发送消息。
@@ -143,8 +141,6 @@ class ContextManager(ABC):
         :param session_info: 会话信息
         :param message: 消息内容，可以是 MessageChain 或字符串
         :param quote: 是否引用消息
-        :param enable_parse_message: 是否允许解析消息。（此参数作接口兼容用，仅 QQ 平台使用，默认为 True）
-        :param enable_split_image: 是否允许拆分图片发送。（此参数作接口兼容用，仅 Telegram 平台使用，默认为 True）
         :return: 消息 ID 列表
         """
 
@@ -181,8 +177,6 @@ class ContextManager(ABC):
         session_info: SessionInfo,
         user_id: str,
         message: MessageChain | MessageNodes,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ) -> list[str]:
         """
         向指定用户单独发送私聊消息。
@@ -195,8 +189,6 @@ class ContextManager(ABC):
         :param session_info: 会话信息
         :param user_id: 目标用户 ID（带平台前缀，如 ``QQ|10000``）
         :param message: 消息内容
-        :param enable_parse_message: 是否允许解析消息
-        :param enable_split_image: 是否允许拆分图片发送
         :return: 消息 ID 列表，为空表示发送失败（如对方未添加机器人为好友、未开启私信等）
         """
         raise NotImplementedError  # 请继承 class 后实现方法

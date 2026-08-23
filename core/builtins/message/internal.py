@@ -13,6 +13,9 @@ from .elements import *
 # 纯文本元素 - 用于发送简单的文本消息
 Plain = plain = PlainElement.assign
 
+# Markdown 文本元素 - 支持平台保留格式，不支持的平台自动降级为普通文本
+Markdown = markdown = MarkdownElement.assign
+
 # 图片元素 - 用于发送图片消息
 Image = image = ImageElement.assign
 
@@ -51,6 +54,7 @@ ButtonFrame = button_frame = ButtonFrameElement.assign
 
 __all__ = [
     "Plain",
+    "Markdown",
     "Image",
     "Voice",
     "Embed",
@@ -65,6 +69,7 @@ __all__ = [
     "ButtonRows",
     "ButtonFrame",
     "plain",
+    "markdown",
     "image",
     "voice",
     "embed",

@@ -339,10 +339,9 @@ class JobQueueBase:
                         MessageChain.assign(
                             [
                                 I18NContext("error.message.report", command=tsk.action),
-                                Plain(f.strip(), disable_joke=True),
+                                Plain(f.strip(), disable_joke=True, allow_parse=False),
                             ]
                         ),
-                        enable_parse_message=False,
                         disable_secret_check=True,
                     )
             except Exception:
@@ -451,7 +450,6 @@ class JobQueueBase:
         cls,
         session_info: SessionInfo,
         message: MessageChain | MessageNodes,
-        enable_parse_message=False,
         disable_secret_check=True,
     ):
         """向客户端发送直接消息。
@@ -460,7 +458,6 @@ class JobQueueBase:
 
         :param session_info: 会话信息对象，包含客户端与场景等信息
         :param message: 要发送的消息链对象
-        :param enable_parse_message: 是否解析消息中的特殊标记（默认 False）
         :param disable_secret_check: 是否禁用密钥检查（默认 True）
         """
         await cls.add_job(
@@ -469,7 +466,6 @@ class JobQueueBase:
             {
                 "session_info": converter.unstructure(session_info),
                 "message": converter.unstructure(message, MessageChain | MessageNodes),
-                "enable_parse_message": enable_parse_message,
                 "disable_secret_check": disable_secret_check,
             },
         )

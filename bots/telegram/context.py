@@ -51,16 +51,12 @@ class TelegramContextManager(ContextManager):
         session_info: SessionInfo,
         message: MessageChain | MessageNodes,
         quote: bool = True,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ) -> list[str]:
         try:
             return await cls._send_message(
                 session_info,
                 message,
                 quote=quote,
-                enable_parse_message=enable_parse_message,
-                enable_split_image=enable_split_image,
             )
         except asyncio.CancelledError:
             raise
@@ -74,8 +70,6 @@ class TelegramContextManager(ContextManager):
         session_info: SessionInfo,
         message: MessageChain | MessageNodes,
         quote: bool = True,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ) -> list[str]:
         if isinstance(message, MessageNodes):
             Logger.error("This session does not support message nodes, check if bug exists.")
@@ -84,8 +78,6 @@ class TelegramContextManager(ContextManager):
         content = await collect_telegram_content(
             session_info,
             message,
-            enable_parse_message=enable_parse_message,
-            enable_split_image=enable_split_image,
         )
         supports_inline_queries = True
         if content.action_texts:
@@ -122,8 +114,6 @@ class TelegramContextManager(ContextManager):
         session_info: SessionInfo,
         user_id: str,
         message: MessageChain | MessageNodes,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ) -> list[str]:
         # Telegram 中用户的私聊 chat_id 即其用户 ID，可直接作为私聊场景发送
         uid = user_id.split("|")[-1]
@@ -132,8 +122,6 @@ class TelegramContextManager(ContextManager):
                 cls.derive_private_session(session_info, f"{client_name}|Private|{uid}", f"{client_name}|Private"),
                 message,
                 quote=False,
-                enable_parse_message=enable_parse_message,
-                enable_split_image=enable_split_image,
             )
             return [str(msg_id) for msg_id in msg_ids]
         except Exception:

@@ -452,8 +452,6 @@ class Bot:
         target: SessionInfo,
         message: Chainable,
         disable_secret_check: bool = False,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ):
         """
         发送直接消息到场景。
@@ -461,8 +459,6 @@ class Bot:
         :param target: 会话信息或场景 ID
         :param message: 消息内容
         :param disable_secret_check: 是否禁用敏感内容检查
-        :param enable_parse_message: 是否允许解析消息（平台兼容）
-        :param enable_split_image: 是否允许拆分图片（平台兼容）
         """
         # 如果传入的是场景 ID 字符串，先抓取会话
         if isinstance(target, str):
@@ -486,8 +482,6 @@ class Bot:
         await target.send_direct_message(
             message_chain=message,
             disable_secret_check=disable_secret_check,
-            enable_parse_message=enable_parse_message,
-            enable_split_image=enable_split_image,
         )
 
     @classmethod
@@ -496,8 +490,6 @@ class Bot:
         union_id: str | list[str],
         message: Chainable | Callable[[FetchedSessionInfo], Awaitable[Chainable | None]],
         disable_secret_check: bool = False,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ) -> None:
         """
         向一个场景组绑定的会话发送消息，同一条消息通道只发一次。
@@ -513,8 +505,6 @@ class Bot:
         :param union_id: 场景组的 union ID，可一次传入多个。
         :param message: 消息内容，或接受队首会话、返回消息内容的异步工厂，工厂返回 None 表示不发送。
         :param disable_secret_check: 是否禁用敏感内容检查。
-        :param enable_parse_message: 是否允许解析消息（平台兼容）。
-        :param enable_split_image: 是否允许拆分图片（平台兼容）。
         """
         # 退役客户端停止一切主动推送，滤除与场景组展开一并由 fetch_union_target_list 承担
         for session in await cls.pick_channel_heads(await cls.fetch_union_target_list(union_id)):
@@ -526,8 +516,6 @@ class Bot:
                 session,
                 chain,
                 disable_secret_check=disable_secret_check,
-                enable_parse_message=enable_parse_message,
-                enable_split_image=enable_split_image,
             )
 
     @classmethod
@@ -536,8 +524,6 @@ class Bot:
         session_info: SessionInfo,
         message: Chainable,
         user_id: str | None = None,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ) -> list[str]:
         """
         向指定用户单独发送私聊消息。
@@ -547,8 +533,6 @@ class Bot:
         :param session_info: 会话信息
         :param message: 消息内容
         :param user_id: 目标用户 ID（带平台前缀），留空则发给该会话的用户
-        :param enable_parse_message: 是否允许解析消息（平台兼容）
-        :param enable_split_image: 是否允许拆分图片（平台兼容）
         :return: 消息 ID 列表，为空表示发送失败
         :raises TypeError: 如果 session_info 不是 SessionInfo 类型
         """
@@ -571,8 +555,6 @@ class Bot:
             session_info,
             user_id,
             message,
-            enable_parse_message=enable_parse_message,
-            enable_split_image=enable_split_image,
         )
         return return_val.get("message_id") or []
 

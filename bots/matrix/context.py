@@ -87,8 +87,6 @@ class MatrixContextManager(ContextManager):
         session_info: SessionInfo,
         message: MessageChain | MessageNodes,
         quote: bool = True,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ) -> list[str]:
         msg_ids = []
         try:
@@ -96,8 +94,6 @@ class MatrixContextManager(ContextManager):
                 session_info,
                 message,
                 quote=quote,
-                enable_parse_message=enable_parse_message,
-                enable_split_image=enable_split_image,
                 msg_ids=msg_ids,
             )
         except asyncio.CancelledError:
@@ -112,8 +108,6 @@ class MatrixContextManager(ContextManager):
         session_info: SessionInfo,
         message: MessageChain | MessageNodes,
         quote: bool = True,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
         msg_ids: list[str] | None = None,
     ) -> list[str]:
         # if session_info.session_id not in cls.context:
@@ -129,7 +123,7 @@ class MatrixContextManager(ContextManager):
         if isinstance(message, MessageNodes):
             Logger.error("This session does not support message nodes, check if bug exists.")
             return []
-        for x in message.as_sendable(session_info, parse_message=enable_parse_message):
+        for x in message.as_sendable(session_info):
 
             async def _send_msg(content):
                 reply_to = None
@@ -202,14 +196,14 @@ class MatrixContextManager(ContextManager):
                 # reply_to_user = None
 
             if isinstance(x, PlainElement):
-                if enable_parse_message:
+                if x.allow_parse:
                     x.text = match_atcode(x.text, client_name, "{uid}")
                 content = {"msgtype": "m.notice", "body": x.text}
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
                 await _send_msg(content)
             elif isinstance(x, ImageElement):
                 split = [x]
-                if enable_split_image:
+                if x.allow_split:
                     Logger.info(f"Split image: {str(x)}")
                     split = await image_split(x)
                 for xs in split:
@@ -356,8 +350,6 @@ class MatrixContextManager(ContextManager):
         session_info: SessionInfo,
         user_id: str,
         message: MessageChain | MessageNodes,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ) -> list[str]:
         # Matrix 没有独立的私聊通道，私信实为仅含双方的房间，此处先查找该房间，不存在则创建
         mxid = user_id.split("|")[-1]
@@ -376,8 +368,6 @@ class MatrixContextManager(ContextManager):
                 cls.derive_private_session(session_info, f"{target_prefix}|{room.room_id}", target_prefix),
                 message,
                 quote=False,
-                enable_parse_message=enable_parse_message,
-                enable_split_image=enable_split_image,
             )
         except Exception:
             Logger.exception(f"Failed to send private message to {user_id}: ")
@@ -571,8 +561,6 @@ class MatrixFetchedContextManager(MatrixContextManager):
         session_info: SessionInfo,
         message: MessageChain | MessageNodes,
         quote: bool = True,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ) -> list[str]:
         try:
             room = await cls._resolve_matrix_room_(session_info)
@@ -581,8 +569,6 @@ class MatrixFetchedContextManager(MatrixContextManager):
                 session_info=session_info,
                 message=message,
                 quote=quote,
-                enable_parse_message=enable_parse_message,
-                enable_split_image=enable_split_image,
             )
         except Exception as e:
             Logger.exception(f"Failed to send message to {session_info.get_common_target_id()}: {e}")

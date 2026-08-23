@@ -3,6 +3,7 @@
 from core.builtins.message.chain import MessageChain, match_kecode
 from core.builtins.message.elements import (
     PlainElement,
+    MarkdownElement,
     URLElement,
     ImageElement,
     MentionElement,
@@ -13,6 +14,7 @@ from core.builtins.message.elements import (
     ButtonFrameElement,
 )
 from core.builtins.message.internal import (
+    Markdown,
     Plain,
     Url,
     I18NContext,
@@ -246,6 +248,66 @@ def _test_plain_element_kecode_disable_joke():
         return False
 
 
+def _test_markdown_element_and_plain_conversion():
+    """Markdown 元素应保留原文，并能生成可读的普通文本。"""
+    source = (
+        "# 标题\n\n**粗体**与[链接](https://example.com)\n"
+        "- 条目\n| 列一 | 列二 |\n|---|---|\n| 甲 | 乙 |\n```代码\nprint('ok')\n```"
+    )
+    element = Markdown(source, disable_joke=True)
+    plain = element.to_plain()
+    return (
+        isinstance(element, MarkdownElement)
+        and str(element) == source
+        and isinstance(plain, PlainElement)
+        and not isinstance(plain, MarkdownElement)
+        and plain.disable_joke
+        and plain.text == "标题\n\n粗体与链接 (https://example.com)\n• 条目\n列一 | 列二\n甲 | 乙\n代码\nprint('ok')"
+    )
+
+
+def _test_markdown_sendable_respects_session_capability():
+    """支持 Markdown 时保留元素，不支持或显式禁用时降级。"""
+    from types import SimpleNamespace
+
+    from core.i18n import Locale
+
+    def session(support_markdown):
+        return SimpleNamespace(
+            support_embed=False,
+            support_markdown=support_markdown,
+            locale=Locale("zh_cn"),
+        )
+
+    chain = MessageChain.assign(Markdown("**粗体**", disable_joke=True))
+    supported = chain.as_sendable(session(True)).values[0]
+    unsupported = chain.as_sendable(session(False)).values[0]
+    disabled = chain.as_sendable(session(True), disable_markdown=True).values[0]
+    return (
+        isinstance(supported, MarkdownElement)
+        and supported.text == "**粗体**"
+        and type(unsupported) is PlainElement
+        and unsupported.text == "粗体"
+        and type(disabled) is PlainElement
+        and disabled.text == "粗体"
+    )
+
+
+def _test_markdown_roundtrip():
+    """Markdown 元素应能经 KE 码和结构化消息链无损往返。"""
+    raw = "**a,b]c**"
+    element = Markdown(raw, disable_joke=True)
+    restored_kecode = match_kecode(element.kecode()).values[0]
+    restored_chain = MessageChain.from_list(MessageChain.assign(element).to_list()).values[0]
+    return (
+        isinstance(restored_kecode, MarkdownElement)
+        and restored_kecode.text == raw
+        and restored_kecode.disable_joke
+        and isinstance(restored_chain, MarkdownElement)
+        and restored_chain == element
+    )
+
+
 def _test_url_element_assign():
     """测试 URLElement.assign()"""
     try:
@@ -288,6 +350,35 @@ def _test_plain_kecode_roundtrip_disable_joke():
         if restored.disable_joke is not True:
             return False
         return True
+    except Exception:
+        return False
+
+
+def _test_plain_allow_parse_roundtrip_and_behavior():
+    """allow_parse 应跨序列化保留，并阻止消息链继续解析文本标记。"""
+    from types import SimpleNamespace
+
+    from core.i18n import Locale
+
+    try:
+        raw = "[KE:mention,userid=QQ|123]"
+        element = Plain(raw, allow_parse=False)
+        restored_kecode = match_kecode(element.kecode()).values[0]
+        restored_chain = MessageChain.from_list(MessageChain.assign(element).to_list()).values[0]
+        session = SimpleNamespace(support_embed=False, locale=Locale("zh_cn"))
+        parsed = MessageChain.assign(Plain(raw)).as_sendable(session)
+        unparsed = MessageChain.assign(element).as_sendable(session)
+        markdown_plain = Markdown("**hello**", allow_parse=False).to_plain()
+        return (
+            restored_kecode.allow_parse is False
+            and restored_chain.allow_parse is False
+            and parsed.contains(MentionElement)
+            and len(unparsed.values) == 1
+            and type(unparsed.values[0]) is PlainElement
+            and unparsed.values[0].text == raw
+            and unparsed.values[0].allow_parse is False
+            and markdown_plain.allow_parse is False
+        )
     except Exception:
         return False
 
@@ -424,6 +515,8 @@ async def test_message_elements(tester: Tester):
     await tester.test(_test_plain_element_str, "PlainElement.__str__()")
     await tester.test(_test_plain_element_kecode, "PlainElement.kecode()")
     await tester.test(_test_plain_element_kecode_disable_joke, "PlainElement.kecode() 禁用玩笑")
+    await tester.test(_test_markdown_element_and_plain_conversion, "MarkdownElement 普通文本转换")
+    await tester.test(_test_markdown_sendable_respects_session_capability, "MarkdownElement 平台能力降级")
     await tester.test(_test_url_element_assign, "URLElement.assign()")
     await tester.test(_test_url_element_str, "URLElement.__str__()")
 
@@ -435,6 +528,8 @@ async def test_kecode_roundtrip(tester: Tester):
     """core.builtins.message: KE 码转义往返测试"""
     await tester.test(_test_plain_kecode_roundtrip_separators, "纯文本含分隔符往返测试")
     await tester.test(_test_plain_kecode_roundtrip_disable_joke, "含分隔符时 disable_joke 往返测试")
+    await tester.test(_test_plain_allow_parse_roundtrip_and_behavior, "PlainElement.allow_parse 往返与解析控制")
+    await tester.test(_test_markdown_roundtrip, "MarkdownElement KE 码与结构化往返测试")
     await tester.test(_test_formatted_time_kecode_roundtrip, "格式化时间往返测试")
     await tester.test(_test_url_kecode_roundtrip, "URL 含逗号往返测试")
     await tester.test(_test_url_kecode_missing_text, "url 缺少 text 参数测试")
@@ -574,6 +669,23 @@ def _test_image_element_max_h_roundtrip():
         return False
 
 
+def _test_image_element_allow_split_roundtrip():
+    """ImageElement: allow_split 参数可跨 KE 码与消息链序列化保留。"""
+    try:
+        elem = ImageElement.assign("https://example.com/img.png", allow_split=False)
+        restored_kecode = match_kecode(elem.kecode()).values[0]
+        restored_chain = MessageChain.from_list(MessageChain.assign(elem).to_list()).values[0]
+        default_kecode = match_kecode(ImageElement.assign("https://example.com/default.png").kecode()).values[0]
+        return (
+            elem.allow_split is False
+            and restored_kecode.allow_split is False
+            and restored_chain.allow_split is False
+            and default_kecode.allow_split is True
+        )
+    except Exception:
+        return False
+
+
 def _test_voice_element_assign():
     """VoiceElement: assign"""
     try:
@@ -707,6 +819,7 @@ async def test_message_elements_extended(tester: Tester):
     await tester.test(_test_image_element_assign, "ImageElement.assign 本地路径")
     await tester.test(_test_image_element_url, "ImageElement.assign URL")
     await tester.test(_test_image_element_max_h_roundtrip, "ImageElement.max_h 序列化往返")
+    await tester.test(_test_image_element_allow_split_roundtrip, "ImageElement.allow_split 序列化往返")
     await tester.test(_test_voice_element_assign, "VoiceElement.assign")
     await tester.test(_test_mention_element_assign, "MentionElement.assign")
     await tester.test(_test_embed_element_assign, "EmbedElement.assign")

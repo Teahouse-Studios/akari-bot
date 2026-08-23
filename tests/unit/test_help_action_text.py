@@ -92,7 +92,11 @@ async def _session(target_suffix: str, support_action_text: bool = True):
         target_from="TEST|Group",
         client_name="TEST",
         sender_id="TEST|1",
-        features=Features(support_action_text=support_action_text),
+        features=Features(
+            support_action_text=support_action_text,
+            support_markdown=True,
+            support_markdown_table=True,
+        ),
     )
 
 

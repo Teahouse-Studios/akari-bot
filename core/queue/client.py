@@ -254,8 +254,6 @@ async def _(tsk: JobQueuesTable, args: dict):
         session_info,
         converter.structure(_args.get("message", {}), MessageChain | MessageNodes),
         quote=_args.get("quote", True),
-        enable_parse_message=_args.get("enable_parse_message", True),
-        enable_split_image=_args.get("enable_split_image", True),
     )
     return {"message_id": send}
 
@@ -318,8 +316,6 @@ async def _(tsk: JobQueuesTable, args: dict):
             session_info,
             _args.get("user_id", ""),
             converter.structure(_args.get("message", {}), MessageChain | MessageNodes),
-            enable_parse_message=_args.get("enable_parse_message", True),
-            enable_split_image=_args.get("enable_split_image", True),
         )
     except asyncio.CancelledError:
         raise

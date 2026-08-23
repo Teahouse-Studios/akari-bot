@@ -7,7 +7,7 @@ from jinja2 import FileSystemLoader, Environment
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import ButtonRows, ImageElement
-from core.builtins.message.internal import ActionText, ButtonFrame, I18NContext, Plain, Url, Button
+from core.builtins.message.internal import ActionText, ButtonFrame, I18NContext, Markdown, Plain, Url, Button
 from core.builtins.parser.command import CommandParser
 from core.builtins.utils import command_prefix
 from core.component import module
@@ -255,12 +255,12 @@ def build_module_table(
         header_blanks = " |" * (columns - 4)
         parts.extend(
             [
-                Plain(f"| {bot_name} | ", disable_joke=True),
+                Markdown(f"| {bot_name} | ", disable_joke=True),
                 ActionText(
                     f"{prefix}locale",
                     show=I18NContext("core.message.help.header.locale", language=language),
                 ),
-                Plain(" | ", disable_joke=True),
+                Markdown(" | ", disable_joke=True),
                 ActionText(f"{prefix}version", show=version_text),
             ]
         )
@@ -276,11 +276,13 @@ def build_module_table(
         if index:
             pending += group_header(title_key, title)
         for offset, item in enumerate(names):
-            parts.append(Plain(pending + "| " if not offset or offset % columns == 0 else pending, disable_joke=True))
+            parts.append(
+                Markdown(pending + "| " if not offset or offset % columns == 0 else pending, disable_joke=True)
+            )
             if is_module_entry(item):
                 emoji, command = get_module_toggle(item, prefix)
                 parts.append(ActionText(command, show=emoji))
-                parts.append(Plain(" ~~" if item.unsupported else " ", disable_joke=True))
+                parts.append(Markdown(" ~~" if item.unsupported else " ", disable_joke=True))
                 parts.append(ActionText(f"{prefix}help {item.name}", show=item.name))
                 cell_end = "~~" if item.unsupported else ""
             else:
@@ -294,7 +296,7 @@ def build_module_table(
             else:
                 pending = cell_end + " | "
 
-    parts.append(Plain(pending, disable_joke=True))
+    parts.append(Markdown(pending, disable_joke=True))
     return parts
 
 
@@ -385,7 +387,7 @@ def build_command_table(msg: Bot.MessageSession, help_doc: dict, regex_rows: lis
             pending += "| "
             for kind, first, second in chunk:
                 if kind == "command":
-                    parts.append(Plain(pending, disable_joke=True))
+                    parts.append(Markdown(pending, disable_joke=True))
                     parts.append(ActionText(strip_command_arguments(first), show=escape_table_cell(first)))
                     pending = f" | {escape_table_cell(second)} | "
                 else:
@@ -394,7 +396,7 @@ def build_command_table(msg: Bot.MessageSession, help_doc: dict, regex_rows: lis
                     pending += f"{cell} | {escape_table_cell(second)} | "
             pending = pending.rstrip() + "\n"
     # 末尾保留换行，理由同 build_module_table()：表格靠空行终结
-    parts.append(Plain(pending, disable_joke=True))
+    parts.append(Markdown(pending, disable_joke=True))
     return parts
 
 
@@ -656,9 +658,7 @@ async def _(msg: Bot.MessageSession, module: str):
                         detail.append(Plain(devs_msg))
                     if wiki_msg:
                         detail.append(wiki_msg)
-                    # 纯正则模块的表格里没有可点击命令，整条消息全是纯文本，
-                    # 不显式声明会被平台退回纯文本，表格标记原样露出
-                    await msg.finish(detail, force_markdown=True)
+                    await msg.finish(detail)
 
             if not force_legacy and msg.session_info.support_image and Bot.Info.web_render_status:
                 if (module_.required_superuser and not is_superuser) or (
@@ -828,7 +828,7 @@ async def help_overview(msg: Bot.MessageSession):
             ):
                 append_qqbot_permissions_prompt(msg, help_msg)
             help_msg.append(ButtonFrame(get_help_button_data(msg, include_modules=not show_all_modules)))
-            await msg.finish(help_msg, force_markdown=True)
+            await msg.finish(help_msg)
         if use_clickable:
             help_msg = MessageChain.assign(
                 build_clickable_modules(
@@ -952,7 +952,7 @@ async def modules_list_help(msg: Bot.MessageSession, legacy, force_image=False):
             help_msg += I18NContext("core.message.help.mdtable")
             append_qqbot_permissions_prompt(msg, help_msg)
             help_msg.append(ButtonFrame(get_module_list_button_data(msg)))
-            await msg.finish(help_msg, force_markdown=True)
+            await msg.finish(help_msg)
         elif use_clickable:
             help_msg = MessageChain.assign(
                 build_clickable_modules(

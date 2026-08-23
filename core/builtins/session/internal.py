@@ -155,11 +155,8 @@ class MessageSession:
         message_chain: Chainable,
         quote: bool = True,
         disable_secret_check: bool = False,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
         callback: Any | None = None,
         callback_id: str | None = None,
-        force_markdown: bool = False,
         callback_timeout: float | None = SessionTaskManager.CALLBACK_TTL,
         callback_once: bool = False,
     ) -> FinishedSession:
@@ -178,8 +175,6 @@ class MessageSession:
         :param message_chain: 消息链，若传入 str 则自动创建一条带有 PlainElement 的消息链
         :param quote: 是否引用原始消息（默认为 True）
         :param disable_secret_check: 是否禁用消息安全检查（默认为 False）
-        :param enable_parse_message: 是否允许解析消息（此参数作接口兼容用，仅 QQ 平台使用，默认为 True）
-        :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅 Telegram 平台使用，默认为 True）
         :param callback: 回调函数，在消息发送完成后执行（可选）
         :param callback_id: 按钮交互使用的虚拟回复 ID；通常由框架自动生成（可选）
         :param callback_timeout: callback 有效秒数；默认为 30 分钟，None 表示不自动过期
@@ -225,27 +220,15 @@ class MessageSession:
         # ========== 步骤 3: 发送消息 ==========
         # 通过消息队列发送消息，并阻塞等待返回包含消息 ID 的字典
 
-        # 设置强制使用 markdown 标记。会话对象还会用于错误回传等后续发送，远端异常时
-        # 也必须恢复调用前的临时状态，不能让本次选项污染之后的消息。
-        missing = object()
-        previous_force_markdown = self.session_info.tmp.get("force_markdown", missing)
-        self.session_info.tmp["force_markdown"] = "true" if force_markdown else ""
         try:
             return_val = await _queue_server.client_send_message(
                 self.session_info,
                 chain,
                 quote=quote,
-                enable_parse_message=enable_parse_message,
-                enable_split_image=enable_split_image,
             )
         except BaseException:
             SessionTaskManager.remove_callback(callback_handle)
             raise
-        finally:
-            if previous_force_markdown is missing:
-                self.session_info.tmp.pop("force_markdown", None)
-            else:
-                self.session_info.tmp["force_markdown"] = previous_force_markdown
 
         # ========== 步骤 4: 处理回调 ==========
         if "message_id" in return_val:
@@ -286,11 +269,8 @@ class MessageSession:
         message_chain: Chainable | None = None,
         quote: bool = True,
         disable_secret_check: bool = False,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
         callback: Coroutine | None = None,
         callback_id: str | None = None,
-        force_markdown: bool = False,
         callback_timeout: float | None = SessionTaskManager.CALLBACK_TTL,
         callback_once: bool = False,
     ) -> NoReturn:
@@ -307,8 +287,6 @@ class MessageSession:
         :param message_chain: 消息链，若传入 str 则自动创建一条带有 PlainElement 的消息链，可不填
         :param quote: 是否引用原始消息（默认为 True）
         :param disable_secret_check: 是否禁用消息安全检查（默认为 False）
-        :param enable_parse_message: 是否允许解析消息（此参数作接口兼容用，仅 QQ 平台使用，默认为 True）
-        :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅 Telegram 平台使用，默认为 True）
         :param callback: 回调函数，在消息发送完成后执行（可选）
         :param callback_id: 按钮交互使用的虚拟回复 ID；通常由框架自动生成（可选）
         :param callback_timeout: callback 有效秒数；默认为 30 分钟，None 表示不自动过期
@@ -322,13 +300,10 @@ class MessageSession:
                 message_chain,
                 disable_secret_check=disable_secret_check,
                 quote=quote,
-                enable_parse_message=enable_parse_message,
-                enable_split_image=enable_split_image,
                 callback=callback,
                 callback_id=callback_id,
                 callback_timeout=callback_timeout,
                 callback_once=callback_once,
-                force_markdown=force_markdown,
             )
         # ========== 终止会话 ==========
         # 抛出 SessionFinished 异常，包含已发送消息的信息
@@ -338,8 +313,6 @@ class MessageSession:
         self,
         message_chain: Chainable,
         disable_secret_check: bool = False,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ):
         """
         用于向消息用户直接发送消息。
@@ -356,8 +329,6 @@ class MessageSession:
 
         :param message_chain: 消息链，若传入 str 则自动创建一条带有 PlainElement 的消息链
         :param disable_secret_check: 是否禁用消息安全检查（默认为 False）
-        :param enable_parse_message: 是否允许解析消息（此参数作接口兼容用，仅 QQ 平台使用，默认为 True）
-        :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅 Telegram 平台使用，默认为 True）
         """
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
 
@@ -374,8 +345,6 @@ class MessageSession:
             self.session_info,
             chain,
             wait=False,
-            enable_parse_message=enable_parse_message,
-            enable_split_image=enable_split_image,
         )
 
     async def send_private_message(
@@ -383,8 +352,6 @@ class MessageSession:
         message_chain: Chainable,
         user_id: str | None = None,
         disable_secret_check: bool = False,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ) -> list[str]:
         """
         用于向指定用户单独发送私聊消息。
@@ -395,8 +362,6 @@ class MessageSession:
         :param message_chain: 消息链，若传入 str 则自动创建一条带有 PlainElement 的消息链
         :param user_id: 目标用户 ID（带平台前缀），留空则发给触发本会话的用户
         :param disable_secret_check: 是否禁用消息安全检查（默认为 False）
-        :param enable_parse_message: 是否允许解析消息（此参数作接口兼容用，仅 QQ 平台使用，默认为 True）
-        :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅 Telegram 平台使用，默认为 True）
         :return: 消息 ID 列表，为空表示发送失败（如平台不支持私信、对方未与机器人建立私聊等）
         """
         user_id = user_id or self.session_info.sender_id
@@ -421,8 +386,6 @@ class MessageSession:
             self.session_info,
             user_id,
             chain,
-            enable_parse_message=enable_parse_message,
-            enable_split_image=enable_split_image,
         )
         return return_val.get("message_id") or []
 

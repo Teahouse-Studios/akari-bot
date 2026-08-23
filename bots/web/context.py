@@ -47,8 +47,6 @@ class WebContextManager(ContextManager):
         session_info: SessionInfo,
         message: MessageChain | MessageNodes,
         quote: bool = True,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ) -> list[str]:
         websocket = cls._get_websocket(session_info)
         sends = []
@@ -57,7 +55,7 @@ class WebContextManager(ContextManager):
             Logger.error("This session does not support message nodes, check if bug exists.")
             return []
 
-        for x in message.as_sendable(session_info, parse_message=enable_parse_message):
+        for x in message.as_sendable(session_info):
             if isinstance(x, PlainElement):
                 sends.append({"type": "text", "content": x.text})
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
@@ -79,8 +77,6 @@ class WebContextManager(ContextManager):
         session_info: SessionInfo,
         user_id: str,
         message: MessageChain | MessageNodes,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ) -> list[str]:
         # 控制台不存在公开场景，私信与普通发送等价；但平台发送失败仍须
         # 遵守 ContextManager 契约，以空列表表示无法送达。
@@ -89,8 +85,6 @@ class WebContextManager(ContextManager):
                 session_info,
                 message,
                 quote=False,
-                enable_parse_message=enable_parse_message,
-                enable_split_image=enable_split_image,
             )
         except asyncio.CancelledError:
             raise

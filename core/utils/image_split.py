@@ -14,10 +14,10 @@ async def image_split(image: ImageElement, max_height: int = 1500) -> list[Image
         width, height = source.size
         if height <= max_height:
             with source.copy() as copied:
-                return [ImageElement.assign(copied)]
+                return [ImageElement.assign(copied, max_h=image.max_h, allow_split=False)]
 
         images = []
         for top in range(0, height, max_height):
             with source.crop((0, top, width, min(top + max_height, height))) as cropped:
-                images.append(ImageElement.assign(cropped))
+                images.append(ImageElement.assign(cropped, max_h=image.max_h, allow_split=False))
         return images

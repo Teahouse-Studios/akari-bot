@@ -173,8 +173,6 @@ class OneBotContextManager(ContextManager):
         session_info: SessionInfo,
         message: MessageChain | MessageNodes,
         quote: bool = True,
-        enable_parse_message=True,
-        enable_split_image=True,
     ) -> list[str]:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
@@ -204,11 +202,11 @@ class OneBotContextManager(ContextManager):
                 convert_msg_segments = MessageSegment.reply(int(session_info.message_id))
 
             count = 0
-            for x in message.as_sendable(session_info, parse_message=enable_parse_message):
+            for x in message.as_sendable(session_info):
                 if isinstance(x, PlainElement):
-                    if enable_parse_message:
+                    if x.allow_parse:
                         x.text = match_atcode(x.text, client_name, "[CQ:at,qq={uid}]")
-                    if enable_parse_message:
+                    if x.allow_parse:
                         parts = re.split(r"(\[CQ:[^\]]+\])", x.text)
                         parts = [part for part in parts if part]
                         previous_was_cq = False
@@ -302,8 +300,6 @@ class OneBotContextManager(ContextManager):
         session_info: SessionInfo,
         user_id: str,
         message: MessageChain | MessageNodes,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ) -> list[str]:
         uid = user_id.split("|")[-1]
         if not uid.isdigit():
@@ -323,8 +319,6 @@ class OneBotContextManager(ContextManager):
                 cls.derive_private_session(session_info, f"{target_private_prefix}|{uid}", target_private_prefix),
                 message,
                 quote=False,
-                enable_parse_message=enable_parse_message,
-                enable_split_image=enable_split_image,
             )
         except asyncio.CancelledError:
             raise
@@ -637,8 +631,6 @@ class OneBotFetchedContextManager(OneBotContextManager):
         session_info: SessionInfo,
         message: MessageChain | MessageNodes,
         quote: bool = True,
-        enable_parse_message=True,
-        enable_split_image=True,
     ) -> list[str]:
         # 主动消息须按冷却排队发出，但调用方需要取得真实的消息 ID 才能判断本跳是否送达，
         # 因此入队的是「任务 + future」，待实际发送完成后再回传结果。
@@ -659,7 +651,7 @@ class OneBotFetchedContextManager(OneBotContextManager):
                     f"OneBot high-priority initiative message queue is full; dropped message to {session_info.target_id}."
                 )
                 return []
-        task = (future, session_info, message, quote, enable_parse_message, enable_split_image)
+        task = (future, session_info, message, quote)
         append_tsk.append(task)
         try:
             return await future
@@ -672,7 +664,7 @@ class OneBotFetchedContextManager(OneBotContextManager):
 
     @staticmethod
     async def _run_task(task: tuple) -> None:
-        future, session_info, message, quote, enable_parse_message, enable_split_image = task
+        future, session_info, message, quote = task
         if future.cancelled():
             return
         try:
@@ -680,8 +672,6 @@ class OneBotFetchedContextManager(OneBotContextManager):
                 session_info,
                 message,
                 quote=quote,
-                enable_parse_message=enable_parse_message,
-                enable_split_image=enable_split_image,
             )
         except asyncio.CancelledError:
             if not future.done():

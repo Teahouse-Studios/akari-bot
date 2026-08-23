@@ -46,9 +46,8 @@ async def _test_matrix_image_preserves_detected_mimetype():
         ):
             result = await matrix_context.MatrixContextManager.send_message(
                 session,
-                MessageChain.assign(Image(image_path)),
+                MessageChain.assign(Image(image_path, allow_split=False)),
                 quote=False,
-                enable_split_image=False,
             )
     return result == ["$sent"] and upload.await_args.kwargs["content_type"] == "image/jpeg"
 
@@ -317,9 +316,8 @@ async def _test_matrix_upload_error_returns_empty_result():
             try:
                 result = await matrix_context.MatrixContextManager.send_message(
                     session,
-                    MessageChain.assign(Image(image_path)),
+                    MessageChain.assign(Image(image_path, allow_split=False)),
                     quote=False,
-                    enable_split_image=False,
                 )
             except Exception:
                 return False

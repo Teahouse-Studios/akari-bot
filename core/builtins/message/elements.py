@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import base64
+import html
 import mimetypes
 import random
 import re
@@ -109,9 +110,10 @@ class PlainElement(BaseElement):
 
     text: str
     disable_joke: bool = False
+    allow_parse: bool = True
 
     @classmethod
-    def assign(cls, *texts: Any, disable_joke: bool = False):
+    def assign(cls, *texts: Any, disable_joke: bool = False, allow_parse: bool = True):
         """
         创建纯文本元素的工厂方法。
 
@@ -120,12 +122,13 @@ class PlainElement(BaseElement):
 
         :param texts: 文本内容（支持多个参数），每个参数会被转换为字符串并拼接
         :param disable_joke: 是否禁用玩笑功能（默认为 False）
+        :param allow_parse: 是否允许解析 KE 码、i18n 与平台消息标记（默认为 True）
         :return: PlainElement 实例
         """
         # 将所有参数转换为字符串并用空字符连接（保留原始格式）
         text = "".join([str(x) for x in texts])
         disable_joke = bool(disable_joke)
-        return deepcopy(cls(text=text, disable_joke=disable_joke))
+        return deepcopy(cls(text=text, disable_joke=disable_joke, allow_parse=bool(allow_parse)))
 
     def kecode(self):
         """
@@ -140,14 +143,109 @@ class PlainElement(BaseElement):
         :return: KE 码格式的字符串
         """
         encoded = parse.quote(self.text, safe="")
+        params = [f"text={encoded}"]
         if self.disable_joke:
-            # 有参数，将其拼接到 KE 码中
-            return f"[KE:plain,text={encoded},disable_joke=1]"
-        return f"[KE:plain,text={encoded}]"
+            params.append("disable_joke=1")
+        if not self.allow_parse:
+            params.append("allow_parse=0")
+        return f"[KE:plain,{','.join(params)}]"
 
     def __str__(self):
         """返回文本内容"""
         return self.text
+
+
+def markdown_to_plain_text(text: str) -> str:
+    """把常见 Markdown 标记转换为适合纯文本平台展示的内容。"""
+    lines = []
+    fence_char = None
+    fence_length = 0
+
+    for line in text.replace("\r\n", "\n").replace("\r", "\n").split("\n"):
+        stripped = line.lstrip()
+        fence = re.match(r"(`{3,}|~{3,})(.*)$", stripped)
+        if fence:
+            marker, info = fence.groups()
+            if fence_char is None:
+                fence_char = marker[0]
+                fence_length = len(marker)
+                if info := info.strip():
+                    lines.append(info)
+                continue
+            if marker[0] == fence_char and len(marker) >= fence_length:
+                fence_char = None
+                fence_length = 0
+                continue
+
+        if fence_char is not None:
+            lines.append(line)
+            continue
+
+        # Markdown 表格的分隔行没有可读内容，纯文本降级时直接丢弃。
+        if re.fullmatch(r"\s*\|?(?:\s*:?-{3,}:?\s*\|)+\s*:?-{3,}:?\s*\|?\s*", line):
+            continue
+
+        line = re.sub(r"^\s{0,3}#{1,6}\s+", "", line)
+        line = re.sub(r"^\s{0,3}>\s?", "", line)
+        line = re.sub(r"^\s*[-*+]\s+\[[xX]\]\s+", "☑ ", line)
+        line = re.sub(r"^\s*[-*+]\s+\[ \]\s+", "☐ ", line)
+        line = re.sub(r"^\s*[-*+]\s+", "• ", line)
+        if re.fullmatch(r"\s{0,3}(?:[-*_]\s*){3,}", line):
+            continue
+
+        stripped_line = line.strip()
+        if stripped_line.startswith("|") and stripped_line.endswith("|"):
+            cells = [cell.strip().replace(r"\|", "|") for cell in re.split(r"(?<!\\)\|", stripped_line[1:-1])]
+            line = " | ".join(cells)
+
+        lines.append(line)
+
+    text = "\n".join(lines)
+    text = re.sub(
+        r"!\[([^\]]*)\]\((\S+?)(?:\s+[\"'].*?[\"'])?\)",
+        lambda match: f"{match.group(1)} ({match.group(2)})" if match.group(1) else match.group(2),
+        text,
+    )
+    text = re.sub(
+        r"\[([^\]]+)\]\((\S+?)(?:\s+[\"'].*?[\"'])?\)",
+        lambda match: match.group(2) if match.group(1) == match.group(2) else f"{match.group(1)} ({match.group(2)})",
+        text,
+    )
+    text = re.sub(r"<((?:https?://|mailto:)[^>]+)>", r"\1", text)
+    text = re.sub(r"(?i)<br\s*/?>", "\n", text)
+    text = re.sub(r"</?[^>]+>", "", text)
+    text = re.sub(r"(`+)(.*?)\1", r"\2", text)
+    text = re.sub(r"~~(.*?)~~", r"\1", text)
+    text = re.sub(r"\*\*(.*?)\*\*", r"\1", text)
+    text = re.sub(r"__(.*?)__", r"\1", text)
+    text = re.sub(r"(?<!\*)\*([^*\n]+)\*(?!\*)", r"\1", text)
+    text = re.sub(r"(?<!\w)_([^_\n]+)_(?!\w)", r"\1", text)
+    text = re.sub(r"\\([\\`*_{}\[\]()#+\-.!>|~])", r"\1", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return html.unescape(text).strip()
+
+
+@define
+class MarkdownElement(PlainElement):
+    """Markdown 文本元素；不支持 Markdown 时可降级为普通文本。"""
+
+    def to_plain(self) -> PlainElement:
+        """移除 Markdown 标记并保留可读内容。"""
+        return PlainElement.assign(
+            markdown_to_plain_text(self.text),
+            disable_joke=self.disable_joke,
+            allow_parse=self.allow_parse,
+        )
+
+    def kecode(self):
+        """转换为可跨进程传输的 Markdown KE 码。"""
+        encoded = parse.quote(self.text, safe="")
+        params = [f"text={encoded}"]
+        if self.disable_joke:
+            params.append("disable_joke=1")
+        if not self.allow_parse:
+            params.append("allow_parse=0")
+        return f"[KE:markdown,{','.join(params)}]"
 
 
 @define
@@ -535,6 +633,7 @@ class ImageElement(BaseElement):
     need_get: bool = False
     cached_b64: str | None = None
     max_h: int | None = None
+    allow_split: bool = True
 
     @classmethod
     def assign(
@@ -542,6 +641,7 @@ class ImageElement(BaseElement):
         path: str | Path | PILImage.Image,
         headers: dict[str, Any] | None = None,
         max_h: int | None = None,
+        allow_split: bool = True,
     ):
         """
         创建图片元素的工厂方法。
@@ -555,6 +655,7 @@ class ImageElement(BaseElement):
                     - PIL Image 对象
         :param headers: 获取网络图片时的请求头（如用户代理、认证信息等）
         :param max_h: QQBot Markdown 图片的最大显示宽度（像素）
+        :param allow_split: 平台发送时是否允许按高度拆分图片
         :return: ImageElement 实例
         """
         need_get = False
@@ -593,7 +694,15 @@ class ImageElement(BaseElement):
                 path = save
 
         normalized_max_h = max(1, int(max_h)) if max_h is not None else None
-        return deepcopy(cls(path=str(path), headers=headers, need_get=need_get, max_h=normalized_max_h))
+        return deepcopy(
+            cls(
+                path=str(path),
+                headers=headers,
+                need_get=need_get,
+                max_h=normalized_max_h,
+                allow_split=bool(allow_split),
+            )
+        )
 
     async def get(self) -> str:
         """
@@ -683,7 +792,7 @@ class ImageElement(BaseElement):
         save = f"{random_cache_path()}.png"
         image.save(save)
         image.close()
-        return ImageElement.assign(save, max_h=self.max_h)
+        return ImageElement.assign(save, max_h=self.max_h, allow_split=self.allow_split)
 
     def kecode(self):
         """
@@ -698,6 +807,8 @@ class ImageElement(BaseElement):
             params.append(f"headers={headers_b64}")
         if self.max_h is not None:
             params.append(f"max_h={self.max_h}")
+        if not self.allow_split:
+            params.append("allow_split=0")
         return f"[KE:image,{','.join(params)}]"
 
     async def to_PIL_image(self) -> PILImage.Image:
@@ -1349,6 +1460,8 @@ class RawElement(BaseElement):
 __all__ = [
     "BaseElement",
     "PlainElement",
+    "MarkdownElement",
+    "markdown_to_plain_text",
     "URLElement",
     "FormattedTimeElement",
     "I18NContextElement",

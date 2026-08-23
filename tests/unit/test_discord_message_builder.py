@@ -48,6 +48,14 @@ async def _test_plain_atcode_is_converted():
     return payloads[0].content == "hello <@2>"
 
 
+async def _test_plain_allow_parse_skips_atcode():
+    payloads = await build_discord_payloads(
+        _session(),
+        MessageChain.assign(Plain("hello <AT:Discord|2>", allow_parse=False)),
+    )
+    return payloads[0].content == "hello <AT:Discord|2>"
+
+
 async def _test_action_text_keeps_inline_fallback_and_metadata():
     session = _session()
     session.support_action_text = True
@@ -180,6 +188,7 @@ async def test_discord_message_builder(tester: Tester):
     await tester.test(_test_text_splits_at_2000, "文本按 2000 字符拆分")
     await tester.test(_test_text_prefers_newline, "文本优先在换行处分段")
     await tester.test(_test_plain_atcode_is_converted, "Plain 中的提及转换为 Discord 格式")
+    await tester.test(_test_plain_allow_parse_skips_atcode, "Plain.allow_parse=False 保留 Discord 提及文本")
     await tester.test(_test_action_text_keeps_inline_fallback_and_metadata, "ActionText 保持行内降级并收集交互信息")
     await tester.test(_test_button_rows_are_collected, "ButtonElement 收集按钮行")
     await tester.test(_test_button_only_message_gets_placeholder, "纯按钮消息补充不可见正文")

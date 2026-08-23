@@ -100,8 +100,6 @@ class KOOKContextManager(ContextManager):
         session_info: SessionInfo,
         message: MessageChain | MessageNodes,
         quote: bool = True,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ) -> list[str]:
         msg_ids = []
         try:
@@ -109,8 +107,6 @@ class KOOKContextManager(ContextManager):
                 session_info,
                 message,
                 quote=quote,
-                enable_parse_message=enable_parse_message,
-                enable_split_image=enable_split_image,
                 msg_ids=msg_ids,
             )
         except asyncio.CancelledError:
@@ -125,8 +121,6 @@ class KOOKContextManager(ContextManager):
         session_info: SessionInfo,
         message: MessageChain | MessageNodes,
         quote: bool = True,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
         msg_ids: list[str] | None = None,
     ) -> list[str]:
         # if session_info.session_id not in cls.context:
@@ -155,9 +149,9 @@ class KOOKContextManager(ContextManager):
                 kwargs["quote"] = reaction_ctx.origin_message_id
             return await _channel.send(content, **kwargs)
 
-        for x in message.as_sendable(session_info, parse_message=enable_parse_message):
+        for x in message.as_sendable(session_info):
             if isinstance(x, PlainElement):
-                if enable_parse_message:
+                if x.allow_parse:
                     x.text = match_atcode(x.text, client_name, "(met){uid}(met)")
                 if ctx:
                     send_ = await ctx.reply(
@@ -216,8 +210,6 @@ class KOOKContextManager(ContextManager):
         session_info: SessionInfo,
         user_id: str,
         message: MessageChain | MessageNodes,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
     ) -> list[str]:
         # KOOK 的私聊场景以用户为频道，get_channel 据此取得 User 对象
         uid = user_id.split("|")[-1]
@@ -226,8 +218,6 @@ class KOOKContextManager(ContextManager):
                 cls.derive_private_session(session_info, f"{target_person_prefix}|{uid}", target_person_prefix),
                 message,
                 quote=False,
-                enable_parse_message=enable_parse_message,
-                enable_split_image=enable_split_image,
             )
             # 接口未返回 msg_id 时上游会填入空串，此处过滤以免将失败判定为成功
             return [msg_id for msg_id in msg_ids if msg_id]

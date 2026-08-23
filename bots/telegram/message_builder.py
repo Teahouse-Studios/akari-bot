@@ -183,8 +183,6 @@ def _split_plain_telegram_text(text: str, limit: int) -> list[str]:
 async def collect_telegram_content(
     session_info: SessionInfo,
     message: MessageChain,
-    enable_parse_message: bool = True,
-    enable_split_image: bool = True,
 ) -> TelegramContent:
     """收集完整消息链中的 Telegram 文本、图片与音频。"""
     text_parts = []
@@ -193,9 +191,9 @@ async def collect_telegram_content(
     action_texts = []
     button_rows = []
     inline_pending = False
-    for element in message.as_sendable(session_info, parse_message=enable_parse_message):
+    for element in message.as_sendable(session_info):
         if isinstance(element, PlainElement):
-            text = _escape_telegram_text(element.text, parse_mentions=enable_parse_message)
+            text = _escape_telegram_text(element.text, parse_mentions=element.allow_parse)
             if inline_pending and text_parts:
                 text_parts[-1] += text
             else:
@@ -221,7 +219,7 @@ async def collect_telegram_content(
                 text_parts.append(f'<a href="tg://user?id={user_id}">@{user_id}</a>')
             inline_pending = False
         elif isinstance(element, ImageElement):
-            image_elements = await image_split(element) if enable_split_image else [element]
+            image_elements = await image_split(element) if element.allow_split else [element]
             for image in image_elements:
                 images.append(FSInputFile(await image.get()))
             inline_pending = False

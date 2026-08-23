@@ -16,7 +16,7 @@ from bots.qqbot.info import (
     target_guild_prefix,
 )
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import ImageElement, MentionElement, PlainElement
+from core.builtins.message.elements import ImageElement, MarkdownElement, MentionElement, PlainElement
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 from core.tester import func_case, Tester
@@ -172,12 +172,15 @@ async def _test_expired_reply_falls_back_to_proactive() -> bool:
 async def _test_markdown_reply_falls_back_to_proactive() -> bool:
     session = _make_session(target_group_prefix)
     session.support_markdown = True
-    session.tmp = {"force_markdown": "true"}
     client = _FailingSendClient(40034005)
     QQBotContextManager.context[session.session_id] = object()
     try:
         with patch.object(qqbot_context, "qq_use_markdown", True):
-            result = await _send_with_client(session, client)
+            result = await _send_with_client(
+                session,
+                client,
+                MessageChain.assign(MarkdownElement.assign("**hello**")),
+            )
     finally:
         QQBotContextManager.context.pop(session.session_id, None)
     return result == ["fallback"] and [call[2] for call in client.calls] == ["source-message", None]
@@ -269,6 +272,22 @@ async def _test_group_mention_markdown_message() -> bool:
         result = await _send_with_client(session, client, message)
     return result == ["markdown"] and client.calls == [
         ("markdown", {"content": '<qqbot-at-user id="member" />\nhello', "keyboard": None})
+    ]
+
+
+async def _test_plain_allow_parse_controls_qq_atcode() -> bool:
+    session = _make_session(target_group_prefix)
+    client = _CaptureSendClient()
+    message = MessageChain.assign(
+        [
+            PlainElement.assign("<AT:QQBot|raw>", allow_parse=False),
+            PlainElement.assign("<AT:QQBot|parsed>"),
+        ]
+    )
+    with patch.object(qqbot_context, "qq_use_markdown", False):
+        result = await _send_with_client(session, client, message)
+    return result == ["plain"] and client.calls == [
+        ("plain", {"content": "<AT:QQBot|raw>\n<@parsed>", "message_reference": None})
     ]
 
 
@@ -411,6 +430,7 @@ async def test_qqbot_modern_api(tester: Tester):
     await tester.test(_test_proactive_error_is_not_retried, "主动消息错误不重复重试测试")
     await tester.test(_test_group_mention_plain_message, "群聊普通消息 Mention 渲染测试")
     await tester.test(_test_group_mention_markdown_message, "群聊 Markdown Mention 渲染测试")
+    await tester.test(_test_plain_allow_parse_controls_qq_atcode, "Plain.allow_parse 逐段控制 QQ 提及解析测试")
     await tester.test(_test_s3_failure_keeps_markdown_message_sendable, "S3 失败后继续发送 Markdown 测试")
     await tester.test(_test_plain_message_preserves_ids_before_later_send_failure, "Plain 后续失败保留已发送 ID 测试")
     await tester.test(_test_private_message_uses_explicit_channel_user, "频道私信使用显式目标用户测试")
