@@ -25,6 +25,19 @@ from .mapping import *
 
 default_locale = BaseConfig.default_locale
 enable_tos = CoreConfig.enable_tos
+MAX_RESEARCH_SUGGESTIONS = 5
+
+
+def _merge_research_suggestions(search_results, limit: int = MAX_RESEARCH_SUGGESTIONS) -> list[str]:
+    """Merge ordered search-mode results into a unique, bounded suggestion list."""
+    suggestions = []
+    for titles, _invalid_namespace in search_results:
+        for title in titles:
+            if title not in suggestions:
+                suggestions.append(title)
+            if len(suggestions) >= limit:
+                return suggestions
+    return suggestions
 
 
 class InvalidWikiError(Exception):
@@ -463,9 +476,24 @@ class WikiLib:
         return pagenames
 
     async def research_page(self, page_name: str, namespace="*", srwhat="text"):
+        get_titles, invalid_namespace = await self.research_pages(
+            page_name,
+            namespace=namespace,
+            limit=1,
+            srwhat=srwhat,
+        )
+        new_page_name = get_titles[0] if get_titles else None
+        return new_page_name, invalid_namespace
+
+    async def research_pages(
+        self,
+        page_name: str,
+        namespace="*",
+        limit: int = MAX_RESEARCH_SUGGESTIONS,
+        srwhat="text",
+    ):
         await self.fixup_wiki_info()
-        get_titles = await self.search_page(page_name, namespace=namespace, limit=1, srwhat=srwhat)
-        new_page_name = get_titles[0] if len(get_titles) > 0 else None
+        get_titles = await self.search_page(page_name, namespace=namespace, limit=limit, srwhat=srwhat)
         title_split = page_name.split(":")
         invalid_namespace = False
         if (
@@ -474,7 +502,7 @@ class WikiLib:
             and title_split[0].lower() not in self.wiki_info.namespacealiases
         ):
             invalid_namespace = title_split[0]
-        return new_page_name, invalid_namespace
+        return get_titles[:limit], invalid_namespace
 
     async def get_page_body_class(self, page_name):
         await self.fixup_wiki_info()
@@ -811,17 +839,23 @@ class WikiLib:
 
                                 async def search_something(srwhat):
                                     try:
-                                        research = await self.research_page(page_info.title, namespace, srwhat=srwhat)
+                                        research = await self.research_pages(
+                                            page_info.title,
+                                            namespace,
+                                            limit=MAX_RESEARCH_SUGGESTIONS,
+                                            srwhat=srwhat,
+                                        )
                                         if srwhat == "text":
                                             nonlocal preferred
                                             nonlocal invalid_namespace
-                                            preferred = research[0]
+                                            if research[0]:
+                                                preferred = research[0][0]
                                             invalid_namespace = research[1]
                                         return research
                                     except Exception:
                                         if CoreConfig.debug:
                                             Logger.exception()
-                                        return None, False
+                                        return [], False
 
                                 searches = []
                                 searched_result = []
@@ -829,9 +863,7 @@ class WikiLib:
                                     searches.append(search_something(srwhat))
                                 # request concurrently
                                 gather_search = await asyncio.gather(*searches)
-                                for search in gather_search:
-                                    if search[0] and search[0] not in searched_result:
-                                        searched_result.append(search[0])
+                                searched_result = _merge_research_suggestions(gather_search)
 
                                 if not preferred and searched_result:
                                     preferred = searched_result[0]

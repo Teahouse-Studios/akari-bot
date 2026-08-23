@@ -22,7 +22,7 @@ from .utils.mapping import generate_screenshot_v2_blocklist
 from .utils.recommend import finish_with_start_wiki_not_set
 from .utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
 from .utils.utils import check_svg
-from .utils.wikilib import WikiLib, PageInfo, InvalidWikiError, QueryInfo
+from .utils.wikilib import MAX_RESEARCH_SUGGESTIONS, WikiLib, PageInfo, InvalidWikiError, QueryInfo
 
 wiki = module(
     "wiki",
@@ -162,6 +162,37 @@ def _build_forum_callback(page: PageInfo):
             await query_pages(msg, title=topics[display], start_wiki_api=api)
 
     return _callback
+
+
+def _build_not_found_choice_prompt(
+    title: str,
+    possible_titles: list[str],
+    preferred_title: str,
+    support_button: bool,
+) -> MessageChain:
+    """Build a missing-page choice prompt suited to the platform's interaction capabilities."""
+    possible_titles = possible_titles[:MAX_RESEARCH_SUGGESTIONS]
+    prompt = MessageChain.assign(I18NContext("wiki.message.not_found.autofix.choice", title=title))
+    preferred_number = str(possible_titles.index(preferred_title) + 1) if preferred_title in possible_titles else "1"
+    if not support_button:
+        for index, possible_title in enumerate(possible_titles, start=1):
+            prompt.append(Plain(f"{index}. {possible_title}"))
+        prompt.append(
+            I18NContext(
+                "wiki.message.not_found.autofix.choice.prompt",
+                number=preferred_number,
+            )
+        )
+        prompt.append(I18NContext("message.wait.next_message.prompt"))
+    return prompt
+
+
+def _build_not_found_choice_rows(possible_titles: list[str], start_index: int = 1) -> list[dict[str, str]]:
+    """Put every missing-page suggestion on its own button row."""
+    return [
+        {possible_title: str(index)}
+        for index, possible_title in enumerate(possible_titles[:MAX_RESEARCH_SUGGESTIONS], start=start_index)
+    ]
 
 
 @wiki.command()
@@ -341,7 +372,7 @@ async def query_pages(
                 if r.possible_research_title:
                     for possible in r.possible_research_title:
                         new_possible_title_list.append(iw_prefix + possible)
-                r.possible_research_title = new_possible_title_list
+                r.possible_research_title = new_possible_title_list[:MAX_RESEARCH_SUGGESTIONS]
                 if r.status:
                     plain_slice = MessageChain.create()
                     if display_before_title and display_before_title != display_title:
@@ -553,35 +584,17 @@ async def query_pages(
                         if isinstance(session, Bot.MessageSession) and session.session_info.support_wait:
                             if not session.session_info.target_union_info.target_data.get("wiki_redlink", False):
                                 if len(r.possible_research_title) > 1:
-                                    wait_plain_slice.append(
-                                        I18NContext(
-                                            "wiki.message.not_found.autofix.choice",
-                                            title=display_before_title,
+                                    wait_plain_slice.extend(
+                                        _build_not_found_choice_prompt(
+                                            display_before_title,
+                                            r.possible_research_title,
+                                            display_title,
+                                            session.session_info.support_button,
                                         )
                                     )
-                                    pi = 0
-                                    for p in r.possible_research_title:
-                                        pi += 1
-                                        wait_plain_slice.append(f"{pi}. {p}")
-                                    if session.session_info.support_button:
-                                        wait_plain_slice.append(
-                                            I18NContext(
-                                                "wiki.message.not_found.autofix.choice.prompt.button",
-                                                number=str(r.possible_research_title.index(display_title) + 1),
-                                            )
-                                        )
-                                    else:
-                                        wait_plain_slice.append(
-                                            I18NContext(
-                                                "wiki.message.not_found.autofix.choice.prompt",
-                                                number=str(r.possible_research_title.index(display_title) + 1),
-                                            )
-                                        )
                                     wait_possible_list.append(
                                         {display_before_title: {display_title: r.possible_research_title}}
                                     )
-                                    if not session.session_info.support_button:
-                                        wait_plain_slice.append(I18NContext("message.wait.next_message.prompt"))
                                 else:
                                     wait_plain_slice.append(
                                         I18NContext(
@@ -766,15 +779,13 @@ async def query_pages(
                         wi += 1
                     possibly_choices.append(choices_)
                 if wait_possible_list:
-                    choices_ = {}
                     # [{a: {b: [c,d,e]}}]
                     for w in wait_possible_list:
                         for ww in w:
                             for www in w[ww]:
-                                for wwww in w[ww][www]:
-                                    choices_[wwww] = str(wi)
-                                    wi += 1
-                    possibly_choices.append(choices_)
+                                choice_rows = _build_not_found_choice_rows(w[ww][www], start_index=wi)
+                                possibly_choices.extend(choice_rows)
+                                wi += len(choice_rows)
 
                 confirm = await session.wait_next_message(
                     wait_msg_list, delete=True, append_instruction=False, possibly_choices=possibly_choices

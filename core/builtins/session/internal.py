@@ -17,7 +17,7 @@ from deprecated import deprecated
 from japanera import EraDate
 
 from core.builtins.message.chain import MessageChain, get_message_chain, Chainable, MessageNodes
-from core.builtins.message.internal import Button, I18NContext
+from core.builtins.message.internal import Button, ButtonFrame, I18NContext
 from core.builtins.session.info import SessionInfo, FetchedSessionInfo
 from core.builtins.session.lock import ExecutionLockList, ExecutionState
 from core.builtins.session.tasks import SessionTaskManager
@@ -27,7 +27,7 @@ from core.config.base import CoreConfig
 from core.constants import SessionFinished, WaitCancelException
 from core.exports import add_export, exports
 from core.logger import Logger
-from core.utils.button import bind_callback_reply_ids
+from core.utils.button import bind_callback_reply_ids, build_button_rows
 from core.utils.func import is_int
 from core.utils.random import Random
 
@@ -723,9 +723,7 @@ class MessageSession:
                 if append_instruction and isinstance(chain, MessageChain):
                     chain.append(I18NContext("message.wait.next_message.prompt"))
                 if possibly_choices and self.session_info.support_button and isinstance(chain, MessageChain):
-                    for row in possibly_choices:
-                        for show, value in row.items():
-                            chain.append(Button(show, value))
+                    chain.append(ButtonFrame(build_button_rows(possibly_choices)))
                 send = await self.send_message(chain, quote)
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:

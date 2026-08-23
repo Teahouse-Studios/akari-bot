@@ -2065,6 +2065,48 @@ async def _test_wait_next_message_registers_before_fast_reply():
         SessionTaskManager._task_list.clear()
 
 
+async def _test_wait_next_message_preserves_choice_rows():
+    """possibly_choices 的每个映射应保留为独立按钮行。"""
+    from core.builtins.message.elements import ButtonFrameElement
+    from core.builtins.session.info import SessionInfo
+    from core.builtins.session.internal import MessageSession
+
+    class CaptureSession(MessageSession):
+        captured = None
+
+        async def send_message(self, message_chain, *args, **kwargs):
+            self.captured = message_chain
+            await SessionTaskManager.check(self)
+            return object()
+
+        async def end_typing(self):
+            return None
+
+    SessionTaskManager._task_list.clear()
+    session_info = await SessionInfo.assign(
+        target_id="TEST|Group|choice-rows",
+        target_from="TEST|Group",
+        client_name="TEST",
+        sender_id="TEST|choice-rows",
+        sender_from="TEST",
+    )
+    session_info.support_button = True
+    msg = CaptureSession(session_info)
+    choices = [{f"Page {index}": str(index)} for index in range(1, 6)]
+    try:
+        result = await msg.wait_next_message("prompt", possibly_choices=choices, timeout=0.05)
+        frames = [element for element in msg.captured.values if isinstance(element, ButtonFrameElement)]
+        return (
+            result is msg
+            and len(frames) == 1
+            and len(frames[0].rows) == 5
+            and all(len(row.buttons) == 1 for row in frames[0].rows)
+            and [row.buttons[0].show for row in frames[0].rows] == [f"Page {index}" for index in range(1, 6)]
+        )
+    finally:
+        SessionTaskManager._task_list.clear()
+
+
 async def _test_wait_confirm_registers_before_reaction_roundtrip():
     """添加确认反应发生网络让出时，立即到达的文本确认仍应命中等待任务。"""
     from core.builtins.message.chain import MessageChain
@@ -3179,6 +3221,7 @@ async def test_message_session_lifecycle(tester: Tester):
     """core.builtins.session.internal: 消息发送与等待生命周期测试。"""
     await tester.test(_test_send_message_does_not_set_transport_format_flag, "发送链路不写入格式标志测试")
     await tester.test(_test_wait_next_message_registers_before_fast_reply, "快速回复不丢失测试")
+    await tester.test(_test_wait_next_message_preserves_choice_rows, "等待选项保留显式按钮行测试")
     await tester.test(_test_wait_confirm_registers_before_reaction_roundtrip, "确认反应期间快速回复不丢失测试")
     await tester.test(_test_wait_reply_registers_before_send_returns, "引用回复发送前登记测试")
     await tester.test(_test_wait_reply_timeout_covers_pending_send, "reply 发送阶段受统一超时约束测试")
