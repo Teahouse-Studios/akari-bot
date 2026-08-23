@@ -1,5 +1,3 @@
-本目录用于存放本地文本过滤词库。
-
 ## 使用方法
 
 1. 将需要过滤的所有文本整理为一个或多个 `.txt` 文件。
@@ -13,9 +11,10 @@
 
 ```text
 dirty_words/
-├── profanity.txt
 ├── politics.txt
-└── spam.txt
+├── porn.txt
+├── profanity.txt
+...
 ```
 
 词库文件：
@@ -28,7 +27,7 @@ dirty_words/
 
 ## 命中后的显示格式
 
-当文本命中过滤词时，将不会显示原始内容，而是显示如下标签：
+当文本命中本地过滤关键词时，将会替换显示为以下标签：
 
 ```text
 [REDACTED:custom_<文件名称>]
@@ -36,25 +35,23 @@ dirty_words/
 
 例如：
 
-* 命中 `profanity.txt` 中的词条：
-
-```text
-[REDACTED:custom_profanity]
-```
-
 * 命中 `politics.txt` 中的词条：
 
 ```text
 [REDACTED:custom_politics]
 ```
 
+* 命中 `profanity.txt` 中的词条：
+
+```text
+[REDACTED:custom_profanity]
+```
+
 > “当你在凝视深渊的时候，深渊也正在凝视着你。”——弗里德里希·尼采
 >
-> 官方无法提供任何默认过滤词库，因为过滤词库本身也是一种敏感信息。请根据自身需求自行构建与维护词库。
+> 官方团队无法提供任何默认过滤词库，因为词库本身也是一种敏感信息。请根据自身需求自行构建与维护词库。
 
 ----
-
-This directory stores local text filtering word lists.
 
 ## Usage
 
@@ -69,9 +66,10 @@ Directory structure:
 
 ```text
 dirty_words/
-├── profanity.txt
 ├── politics.txt
-└── spam.txt
+├── porn.txt
+├── profanity.txt
+...
 ```
 
 Word list files:
@@ -84,7 +82,7 @@ ExampleWordC
 
 ## Match Display Format
 
-When text triggers a filter keyword, the original content will not be displayed. Instead, it will be replaced with the following tag:
+When text triggers a local filter keyword, it will be replaced with the following tag:
 
 ```text
 [REDACTED:custom_<Filename>]
@@ -92,16 +90,16 @@ When text triggers a filter keyword, the original content will not be displayed.
 
 Examples:
 
-* Triggering a word in `profanity.txt`:
-
-```text
-[REDACTED:custom_profanity]
-```
-
 * Triggering a word in `politics.txt`:
 
 ```text
 [REDACTED:custom_politics]
+```
+
+* Triggering a word in `profanity.txt`:
+
+```text
+[REDACTED:custom_profanity]
 ```
 
 > "When you gaze long into an abyss, the abyss also gazes into you." — Friedrich Nietzsche
