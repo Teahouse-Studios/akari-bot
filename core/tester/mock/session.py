@@ -50,6 +50,8 @@ class MockMessageSession(MessageSession):
         callback=None,
         callback_id=None,
         force_markdown=False,
+        callback_timeout=1800,
+        callback_once=False,
     ):
         # force_markdown 只影响平台的发送路径，测试替身不作区分，签名对齐即可
         message = get_message_chain(self.session_info, chain=message_chain)
@@ -82,12 +84,16 @@ class MockMessageSession(MessageSession):
         callback=None,
         callback_id=None,
         force_markdown=False,
+        callback_timeout=1800,
+        callback_once=False,
     ):
         if message_chain:
             await self.send_message(
                 message_chain,
                 callback=callback,
                 callback_id=callback_id,
+                callback_timeout=callback_timeout,
+                callback_once=callback_once,
                 force_markdown=force_markdown,
             )
         raise SessionFinished

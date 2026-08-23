@@ -1248,7 +1248,12 @@ async def _test_task_add_callback():
         await msg.async_init("1")
         callback_key = SessionTaskManager.add_callback(msg, "12345", test_callback)
         callback_info = SessionTaskManager._callback_list.get(callback_key)
-        if callback_info is None or callback_info["primary_ids"] != ("12345",):
+        if (
+            callback_info is None
+            or callback_info["primary_ids"] != ("12345",)
+            or callback_info["timeout"] != 1800
+            or callback_info["once"]
+        ):
             return False
 
         del SessionTaskManager._callback_list[callback_key]
@@ -1293,7 +1298,12 @@ async def _test_send_message_binds_button_callback_reply_id():
     SessionTaskManager._callback_list.clear()
     try:
         with patch.dict(exports, {"JobQueueServer": FakeJobQueueServer}):
-            finished = await msg.send_message(MessageChain.assign(Button("Choose", "1")), callback=callback)
+            finished = await msg.send_message(
+                MessageChain.assign(Button("Choose", "1")),
+                callback=callback,
+                callback_timeout=60,
+                callback_once=True,
+            )
 
         sendable = captured["chain"].as_sendable(session)
         frame = next(element for element in sendable if isinstance(element, ButtonFrameElement))
@@ -1305,6 +1315,8 @@ async def _test_send_message_binds_button_callback_reply_id():
             and len(registered) == 1
             and registered[0]["primary_ids"] == ("physical-message", virtual_reply_id)
             and registered[0]["fallback_ids"] == frozenset({"bot-fallback"})
+            and registered[0]["timeout"] == 60
+            and registered[0]["once"]
         )
     finally:
         SessionTaskManager._callback_list.clear()
@@ -1362,7 +1374,13 @@ async def _test_button_callback_registered_before_send_returns():
     try:
         with patch.dict(exports, {"JobQueueServer": RacingJobQueueServer}):
             finished = await msg.send_message(MessageChain.assign(Button("Choose", "1")), callback=callback)
-        return called == 1 and finished.message_id == ["physical-message"] and not SessionTaskManager._callback_list
+        registered = list(SessionTaskManager._callback_list.values())
+        return (
+            called == 1
+            and finished.message_id == ["physical-message"]
+            and len(registered) == 1
+            and "physical-message" in registered[0]["primary_ids"]
+        )
     finally:
         SessionTaskManager._callback_list.clear()
 
@@ -1423,8 +1441,8 @@ async def _test_virtual_reply_id_triggers_callback():
     return called and handled
 
 
-async def _test_callback_consumed_once_across_aliases():
-    """同一 callback 的真实／虚拟回复别名应在首次命中后一起失效。"""
+async def _test_callback_remains_active_across_aliases():
+    """同一 callback 的真实／虚拟回复别名在有效期内均可重复命中。"""
     SessionTaskManager._callback_list.clear()
     called = 0
 
@@ -1446,6 +1464,30 @@ async def _test_callback_consumed_once_across_aliases():
 
     remaining = bool(SessionTaskManager._callback_list)
     SessionTaskManager._callback_list.clear()
+    return called == 2 and remaining
+
+
+async def _test_callback_once_is_consumed_across_aliases():
+    """显式一次性 callback 在任一别名首次命中后应整体失效。"""
+    SessionTaskManager._callback_list.clear()
+    called = 0
+
+    async def callback(_session):
+        nonlocal called
+        called += 1
+
+    first = MockMessageSession("1")
+    await first.async_init("1")
+    first.session_info.reply_id = "physical-reply"
+    second = MockMessageSession("1")
+    await second.async_init("1")
+    second.session_info.reply_id = "virtual-reply"
+
+    SessionTaskManager.add_callback(first, ["physical-reply", "virtual-reply"], callback, once=True)
+    await SessionTaskManager.check(first)
+    await SessionTaskManager.check(second)
+    remaining = bool(SessionTaskManager._callback_list)
+    SessionTaskManager._callback_list.clear()
     return called == 1 and not remaining
 
 
@@ -1465,15 +1507,19 @@ async def _test_reused_callback_keeps_independent_registration():
     await second.async_init("1")
     second.session_info.reply_id = "message-two"
 
-    SessionTaskManager.add_callback(first, "message-one", callback)
+    first_key = SessionTaskManager.add_callback(first, "message-one", callback)
     second_key = SessionTaskManager.add_callback(second, "message-two", callback)
     await SessionTaskManager.check(first)
-    first_remaining = list(SessionTaskManager._callback_list)
+    first_remaining = set(SessionTaskManager._callback_list)
     await SessionTaskManager.check(second)
 
-    remaining = bool(SessionTaskManager._callback_list)
+    remaining = set(SessionTaskManager._callback_list)
     SessionTaskManager._callback_list.clear()
-    return called == ["message-one", "message-two"] and first_remaining == [second_key] and not remaining
+    return (
+        called == ["message-one", "message-two"]
+        and first_remaining == {first_key, second_key}
+        and remaining == {first_key, second_key}
+    )
 
 
 async def _test_shared_callback_fallback_is_not_guessed():
@@ -1499,17 +1545,17 @@ async def _test_shared_callback_fallback_is_not_guessed():
     reply.session_info.reply_id = "message-one"
     first_handled = await SessionTaskManager.check(reply)
     reply.session_info.reply_id = "shared-bot-id"
-    second_handled = await SessionTaskManager.check(reply)
+    fallback_still_ambiguous = not await SessionTaskManager.check(reply)
 
-    remaining = bool(SessionTaskManager._callback_list)
+    remaining = len(SessionTaskManager._callback_list)
     SessionTaskManager._callback_list.clear()
     return (
         not ambiguous_handled
         and both_remain
         and first_handled
-        and second_handled
-        and called == ["first", "second"]
-        and not remaining
+        and fallback_still_ambiguous
+        and called == ["first"]
+        and remaining == 2
     )
 
 
@@ -1640,7 +1686,7 @@ async def _test_callback_primary_id_beats_fallback():
     SessionTaskManager.add_callback(reply, "other-id", fallback_callback, fallback_ids="shared-id")
     try:
         handled = await SessionTaskManager.check(reply)
-        return handled and called == ["primary"] and len(SessionTaskManager._callback_list) == 1
+        return handled and called == ["primary"] and len(SessionTaskManager._callback_list) == 2
     finally:
         SessionTaskManager._callback_list.clear()
 
@@ -1717,7 +1763,7 @@ async def _test_callback_finish_is_consumed_as_control_flow():
 
     SessionTaskManager.add_callback(msg, "finish-callback", callback)
     try:
-        return await SessionTaskManager.check(msg) and not SessionTaskManager._callback_list
+        return await SessionTaskManager.check(msg) and bool(SessionTaskManager._callback_list)
     finally:
         SessionTaskManager._callback_list.clear()
 
@@ -1763,14 +1809,14 @@ async def _test_callback_rejects_other_physical_sender():
             and still_registered
             and owner_handled
             and called == [owner.session_info.sender_id]
-            and not SessionTaskManager._callback_list
+            and bool(SessionTaskManager._callback_list)
         )
     finally:
         SessionTaskManager._callback_list.clear()
 
 
 async def _test_callback_ttl_checked_on_use():
-    """即使周期清理尚未运行，超过一小时的 callback 也不得执行。"""
+    """即使周期清理尚未运行，超过自身有效期的 callback 也不得执行。"""
     msg = MockMessageSession("1")
     await msg.async_init("1")
     msg.session_info.reply_id = "expired-callback"
@@ -1781,12 +1827,57 @@ async def _test_callback_ttl_checked_on_use():
         called = True
 
     SessionTaskManager._callback_list.clear()
-    callback_key = SessionTaskManager.add_callback(msg, "expired-callback", callback)
-    SessionTaskManager._callback_list[callback_key]["ts"] -= SessionTaskManager.CALLBACK_TTL
+    callback_key = SessionTaskManager.add_callback(msg, "expired-callback", callback, timeout=10)
+    SessionTaskManager._callback_list[callback_key]["ts"] -= 10
     try:
         handled = await SessionTaskManager.check(msg)
         return not handled and not called and not SessionTaskManager._callback_list
     finally:
+        SessionTaskManager._callback_list.clear()
+
+
+async def _test_repeatable_callback_is_serialized():
+    """同一 callback 的连续触发应串行执行，并在完成后继续有效。"""
+    SessionTaskManager._callback_list.clear()
+    entered = asyncio.Event()
+    release = asyncio.Event()
+    active = 0
+    max_active = 0
+    called = 0
+
+    async def callback(_session):
+        nonlocal active, max_active, called
+        active += 1
+        max_active = max(max_active, active)
+        called += 1
+        if called == 1:
+            entered.set()
+            await release.wait()
+        active -= 1
+
+    first = MockMessageSession("1")
+    await first.async_init("1")
+    first.session_info.reply_id = "repeatable-callback"
+    second = MockMessageSession("1")
+    await second.async_init("1")
+    second.session_info.reply_id = "repeatable-callback"
+    SessionTaskManager.add_callback(first, "repeatable-callback", callback)
+    first_task = asyncio.create_task(SessionTaskManager.check(first))
+    second_task = None
+    try:
+        await asyncio.wait_for(entered.wait(), timeout=0.5)
+        second_task = asyncio.create_task(SessionTaskManager.check(second))
+        await asyncio.sleep(0)
+        if second_task.done():
+            return False
+        release.set()
+        handled = await asyncio.gather(first_task, second_task)
+        return handled == [True, True] and called == 2 and max_active == 1 and bool(SessionTaskManager._callback_list)
+    finally:
+        release.set()
+        pending = [task for task in (first_task, second_task) if task and not task.done()]
+        if pending:
+            await asyncio.gather(*pending, return_exceptions=True)
         SessionTaskManager._callback_list.clear()
 
 
@@ -3021,7 +3112,8 @@ async def test_session_task(tester: Tester):
     await tester.test(_test_button_callback_registered_before_send_returns, "按钮 callback 发送前登记测试")
     await tester.test(_test_send_failure_does_not_leave_callback, "callback 发送失败清理测试")
     await tester.test(_test_virtual_reply_id_triggers_callback, "虚拟 reply_id 复用 callback 匹配测试")
-    await tester.test(_test_callback_consumed_once_across_aliases, "callback 别名一次性消费测试")
+    await tester.test(_test_callback_remains_active_across_aliases, "callback 别名有效期内重复触发测试")
+    await tester.test(_test_callback_once_is_consumed_across_aliases, "一次性 callback 别名消费测试")
     await tester.test(_test_reused_callback_keeps_independent_registration, "callback 独立注册互不删除测试")
     await tester.test(_test_shared_callback_fallback_is_not_guessed, "callback 共享 fallback 消歧测试")
     await tester.test(
@@ -3038,6 +3130,7 @@ async def test_session_task(tester: Tester):
     await tester.test(_test_callback_finish_is_consumed_as_control_flow, "callback 正常结束控制流测试")
     await tester.test(_test_callback_rejects_other_physical_sender, "callback 物理发送者归属测试")
     await tester.test(_test_callback_ttl_checked_on_use, "callback 即时 TTL 测试")
+    await tester.test(_test_repeatable_callback_is_serialized, "可重复 callback 串行执行测试")
     await tester.test(_test_parser_rejects_blocked_wait_responder_before_task_check, "全局屏蔽者不完成等待测试")
     await tester.test(
         _test_parser_rejects_banned_callback_responder_before_task_check, "场景屏蔽者不执行 callback 测试"

@@ -65,7 +65,7 @@ class SessionTaskManager:
     # Telegram 等平台的 message_id 只在单个会话内唯一；channel_key 又会把同一现实
     # 场景的多个平台入口合并，二者都不能作为物理消息 ID 的唯一作用域。
     _callback_list = {}
-    CALLBACK_TTL = 3600
+    CALLBACK_TTL = 1800
 
     @staticmethod
     def _callback_scope(msg: "MessageSession") -> tuple[str | None, str]:
@@ -160,6 +160,9 @@ class SessionTaskManager:
         message_id: list[int] | list[str] | int | str,
         callback: Coroutine | None,
         fallback_ids: list[int] | list[str] | int | str | None = None,
+        *,
+        timeout: float | None = CALLBACK_TTL,
+        once: bool = False,
     ) -> tuple[tuple[str | None, str], str]:
         """
         为已发送的消息添加一个回调函数。
@@ -168,7 +171,12 @@ class SessionTaskManager:
 
         :param message_id: 消息 ID（可以是整数、字符串或列表）
         :param callback: 回调协程函数，当回复到达时执行
+        :param fallback_ids: 无法取得精确消息 ID 时使用的后备 ID
+        :param timeout: callback 有效秒数；默认为 30 分钟，None 表示不自动过期
+        :param once: 是否在首次命中后立即失效
         """
+        if timeout is not None and timeout <= 0:
+            raise ValueError("Callback timeout must be positive or None.")
         # 将同一次发送的全部消息 ID／虚拟按钮 ID／fallback ID 合并为一组；tuple
         # 不会像逗号拼接字符串那样在平台 ID 自身含逗号时产生歧义。
         if isinstance(message_id, list):
@@ -186,6 +194,11 @@ class SessionTaskManager:
         cls._callback_list[callback_key] = {
             "callback": callback,  # 要执行的回调
             "ts": time.time(),  # 添加时间戳（用于超时清理）
+            "timeout": timeout,
+            "once": once,
+            # 可重复 callback 必须串行执行，避免同一消息的快速连续操作并发
+            # 修改模块状态；一次性 callback 仍会在 await 用户代码前原子删除。
+            "lock": asyncio.Lock(),
             "owner_sender_id": msg.session_info.sender_id,
             "primary_ids": tuple(dict.fromkeys(primary_ids)),
             "fallback_ids": frozenset(fallback),
@@ -211,9 +224,15 @@ class SessionTaskManager:
 
     @classmethod
     def remove_callback(cls, callback_key: tuple[tuple[str | None, str], str] | None) -> None:
-        """撤销一组尚未消费的 callback 别名。"""
+        """撤销一组仍在有效期内的 callback 别名。"""
         if callback_key is not None:
             cls._callback_list.pop(callback_key, None)
+
+    @staticmethod
+    def _callback_expired(callback_info: dict, now: float | None = None) -> bool:
+        """判断 callback 是否已经超过自身有效期。"""
+        timeout = callback_info.get("timeout", SessionTaskManager.CALLBACK_TTL)
+        return timeout is not None and (time.time() if now is None else now) - callback_info["ts"] >= timeout
 
     @classmethod
     def get_result(cls, msg: "MessageSession"):
@@ -285,9 +304,9 @@ class SessionTaskManager:
                             cls._task_list[target][sender][session]["reply_ready"].set()
                             cls._task_list[target][sender][session]["flag"].set()
 
-        # 清理超过 1 小时的过期回调
+        # 清理超过各自有效期的 callback
         for message_id in cls._callback_list.copy():
-            if time.time() - cls._callback_list[message_id]["ts"] >= cls.CALLBACK_TTL:
+            if cls._callback_expired(cls._callback_list[message_id]):
                 del cls._callback_list[message_id]
 
     @classmethod
@@ -442,9 +461,9 @@ class SessionTaskManager:
         exact_matches = []
         fallback_matches = []
         for callback_key, callback_info in list(cls._callback_list.items()):
-            # bg_check() 只是周期清理，不能当作授权边界。超过一小时的
-            # callback 必须在尝试命中时立即失效。
-            if time.time() - callback_info["ts"] >= cls.CALLBACK_TTL:
+            # bg_check() 只是周期清理，不能当作授权边界。callback 必须在
+            # 尝试命中时按自身 timeout 立即判定是否失效。
+            if cls._callback_expired(callback_info):
                 cls._callback_list.pop(callback_key, None)
                 continue
             callback_scope, _registration_token = callback_key
@@ -472,16 +491,32 @@ class SessionTaskManager:
         if matched:
             callback_key, callback_info = matched
             callback = callback_info["callback"]
-            # 删除须发生在 await 用户代码之前，避免并发回复重复执行这一组回调。
-            cls._callback_list.pop(callback_key, None)
-            if callback:
-                try:
-                    await callback(session)
-                except SessionFinished:
-                    # callback 使用 msg.finish() 正常结束当前交互；这是控制流信号，不能
-                    # 逸出到 JobQueue action 令任务停在 processing 直到两小时超时。
-                    pass
-            return True
+            if callback_info.get("once", False):
+                # 一次性 callback 在 await 用户代码前原子删除，避免并发回复重复执行。
+                cls._callback_list.pop(callback_key, None)
+                if callback:
+                    try:
+                        await callback(session)
+                    except SessionFinished:
+                        # callback 使用 msg.finish() 正常结束当前交互；这是控制流信号，不能
+                        # 逸出到 JobQueue action 令任务停在 processing 直到两小时超时。
+                        pass
+                return True
+
+            async with callback_info["lock"]:
+                # 匹配和取得执行锁之间 callback 可能已被发送失败清理、主动撤销
+                # 或过期任务删除。执行前重新确认注册身份和有效期，不能让旧引用复活。
+                if cls._callback_list.get(callback_key) is not callback_info:
+                    return False
+                if cls._callback_expired(callback_info):
+                    cls._callback_list.pop(callback_key, None)
+                    return False
+                if callback:
+                    try:
+                        await callback(session)
+                    except SessionFinished:
+                        pass
+                return True
         return False
 
 

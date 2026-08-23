@@ -160,6 +160,8 @@ class MessageSession:
         callback: Any | None = None,
         callback_id: str | None = None,
         force_markdown: bool = False,
+        callback_timeout: float | None = SessionTaskManager.CALLBACK_TTL,
+        callback_once: bool = False,
     ) -> FinishedSession:
         """
         用于向消息用户返回消息。
@@ -180,6 +182,8 @@ class MessageSession:
         :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅 Telegram 平台使用，默认为 True）
         :param callback: 回调函数，在消息发送完成后执行（可选）
         :param callback_id: 按钮交互使用的虚拟回复 ID；通常由框架自动生成（可选）
+        :param callback_timeout: callback 有效秒数；默认为 30 分钟，None 表示不自动过期
+        :param callback_once: 是否在首次触发后立即失效；默认为 False
         :return: FinishedSession 对象，包含消息 ID，可用于后续操作
 
         :raises SessionFinished: 如果发送过程中抛出异常
@@ -214,6 +218,8 @@ class MessageSession:
                 list(callback_reply_ids),
                 callback,
                 fallback_ids=self.session_info.bot_id,
+                timeout=callback_timeout,
+                once=callback_once,
             )
 
         # ========== 步骤 3: 发送消息 ==========
@@ -252,8 +258,8 @@ class MessageSession:
 
                 if callback_targets:
                     if callback_handle is not None:
-                        # 用户可能已在发送回包前通过虚拟 ID 消费 callback；此时 extend
-                        # 返回 None，不能把已经执行过的一次性 callback 重新注册。
+                        # callback 可能已在发送回包前被主动撤销、过期或作为一次性
+                        # callback 消费；此时 extend 返回 None，不能重新注册。
                         callback_handle = SessionTaskManager.extend_callback(callback_handle, callback_targets)
                     else:
                         callback_targets.extend(
@@ -264,6 +270,8 @@ class MessageSession:
                             callback_targets,
                             callback,
                             fallback_ids=self.session_info.bot_id,
+                            timeout=callback_timeout,
+                            once=callback_once,
                         )
                 else:
                     # 空 ID 表示平台发送失败，不能只凭 bot_id 为不存在的消息留下 callback。
@@ -283,6 +291,8 @@ class MessageSession:
         callback: Coroutine | None = None,
         callback_id: str | None = None,
         force_markdown: bool = False,
+        callback_timeout: float | None = SessionTaskManager.CALLBACK_TTL,
+        callback_once: bool = False,
     ) -> NoReturn:
         """
         用于向消息用户返回消息并终结会话（模块后续代码不再执行）。
@@ -301,6 +311,8 @@ class MessageSession:
         :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅 Telegram 平台使用，默认为 True）
         :param callback: 回调函数，在消息发送完成后执行（可选）
         :param callback_id: 按钮交互使用的虚拟回复 ID；通常由框架自动生成（可选）
+        :param callback_timeout: callback 有效秒数；默认为 30 分钟，None 表示不自动过期
+        :param callback_once: 是否在首次触发后立即失效；默认为 False
         :raises SessionFinished: 总是抛出此异常来终止会话处理
         """
         f = None
@@ -314,6 +326,8 @@ class MessageSession:
                 enable_split_image=enable_split_image,
                 callback=callback,
                 callback_id=callback_id,
+                callback_timeout=callback_timeout,
+                callback_once=callback_once,
                 force_markdown=force_markdown,
             )
         # ========== 终止会话 ==========
