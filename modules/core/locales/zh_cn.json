@@ -240,6 +240,7 @@
     "core.message.locale.reload.failed": "以下字符串重载失败：",
     "core.message.locale.set.invalid": "语言代码无效。",
     "core.message.locale.set.prompt": "使用“${cmd}<语言代码>”设置语言。",
+    "core.message.locale.translation_progress": "${name}的进度为 ${percent}%，欢迎前往 Weblate 参与翻译：${url}",
     "core.message.merge.channel.unified": "两侧场景已并入消息通道 ${channel}，此后命令与推送只由其中一方承担。",
     "core.message.merge.code": "迁移码：${code}",
     "core.message.merge.code.invalid": "迁移码无效或已过期，请重新执行“${cmd}”获取。",

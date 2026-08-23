@@ -237,6 +237,7 @@
     "core.message.locale.reload.failed": "以下字串重新加載失敗：",
     "core.message.locale.set.invalid": "語言代碼無效。",
     "core.message.locale.set.prompt": "使用「${prefix}locale <語言代碼>」設定語言。",
+    "core.message.locale.translation_progress": "${name}的進度為 ${percent}%，歡迎前往 Weblate 參與翻譯：${url}",
     "core.message.merge.channel.unified": "兩側場景已併入訊息管道 ${channel}，此後指令與推播只由其中一方承擔。",
     "core.message.merge.code": "遷移碼：${code}",
     "core.message.merge.code.invalid": "遷移碼無效或過期，請重新執行「${cmd}」取得。",

@@ -4,6 +4,13 @@ confirm_command_default = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"]
 command_prefix_default = ["~", "～"]
 regex_disable_prefix_default = [".", "。"]
 lang_list = {"zh_cn": "简体中文", "zh_tw": "繁體中文", "en_us": "English", "ja_jp": "日本語", "ko_kr": "한국어"}
+weblate_lang_codes = {
+    "zh_cn": "zh_Hans",
+    "zh_tw": "zh_Hant",
+    "en_us": "en_US",
+    "ja_jp": "ja",
+    "ko_kr": "ko",
+}
 
 qq_host_default = "127.0.0.1:8080"
 matrix_homeserver_default = "https://matrix.org"

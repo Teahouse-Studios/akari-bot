@@ -111,6 +111,7 @@
     "core.message.locale.reload.failed": "다음 문자열의 로드가 실패했습니다: ",
     "core.message.locale.set.invalid": "언어 코드가 유효하지 않습니다.",
     "core.message.locale.set.prompt": "'${cmd} <언어 코드>'를 사용하여 언어를 설정합니다.",
+    "core.message.locale.translation_progress": "${name}의 번역 진행률이 ${percent}%입니다. Weblate에서 번역에 참여해 주세요:",
     "core.message.module.disable.already": "오류: 모듈 '${module}'이(가) 이미 비활성화되었습니다.",
     "core.message.module.disable.base": "오류: '${module}'은 기본 모듈이므로 비활성화할 수 없습니다.",
     "core.message.module.disable.not_found": "오류: 모듈 '${module}'이(가) 존재하지 않습니다.",

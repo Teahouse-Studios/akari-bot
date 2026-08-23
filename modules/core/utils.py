@@ -1,6 +1,7 @@
 import platform
 import time
 
+import orjson
 import psutil
 from akari_bot_i18n.i18n import build_locale_snapshot
 from cpuinfo import get_cpu_info
@@ -10,10 +11,17 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import ActionText, Plain, FormattedTime, I18NContext, Url
 from core.component import module
 from core.config.base import CoreConfig
-from core.constants import lang_list, all_locales_path
+from core.constants import all_locales_path, cache_path, lang_list, weblate_lang_codes
 from core.database.models import SenderUnionBind, SenderUnionInfo
 from core.i18n import get_available_locales, Locale
 from core.utils.bash import run_sys_command
+from core.utils.http import get_url
+
+WEBLATE_LANGUAGES_API = "https://hosted.weblate.org/api/projects/akaribot/languages/"
+TRANSLATION_PROGRESS_THRESHOLD = 80.0
+
+# Weblate 语言列表的缓存文件。机器人每晚自动清空 cache 目录时一并清理，次日首次调用时重新拉取。
+WEBLATE_LANGUAGES_CACHE = cache_path / "weblate_languages.json"
 
 ver = module("version", base=True, doc=True)
 
@@ -251,15 +259,70 @@ def build_locale_overview(msg: Bot.MessageSession, locale_url: str | None) -> li
     return res
 
 
+async def get_weblate_languages() -> list | None:
+    """获取 Weblate 的语言列表，结果缓存到 cache 目录以复用。
+
+    机器人每晚会自动清空 cache 目录，因此缓存会在次日首次调用时重新拉取。
+    """
+    if WEBLATE_LANGUAGES_CACHE.is_file():
+        try:
+            languages = orjson.loads(WEBLATE_LANGUAGES_CACHE.read_bytes())
+        except Exception:
+            languages = None
+        if isinstance(languages, list):
+            return languages
+        # 缓存损坏时移除，避免后续反复命中坏文件。
+        try:
+            WEBLATE_LANGUAGES_CACHE.unlink(missing_ok=True)
+        except OSError:
+            pass
+    try:
+        languages = await get_url(WEBLATE_LANGUAGES_API, fmt="json", timeout=5, logging_err_resp=False)
+    except Exception:
+        return None
+    if not isinstance(languages, list):
+        return None
+    try:
+        WEBLATE_LANGUAGES_CACHE.parent.mkdir(parents=True, exist_ok=True)
+        WEBLATE_LANGUAGES_CACHE.write_bytes(orjson.dumps(languages))
+    except OSError:
+        pass
+    return languages
+
+
+async def build_translation_notice(lang: str):
+    """当目标语言在 Weblate 的翻译进度低于阈值时，构造邀请参与翻译的消息。"""
+    weblate_code = weblate_lang_codes.get(lang)
+    if not weblate_code:
+        return None
+    languages = await get_weblate_languages()
+    if not languages:
+        return None
+    entry = next((item for item in languages if isinstance(item, dict) and item.get("code") == weblate_code), None)
+    if not entry:
+        return None
+    progress = entry.get("translated_percent")
+    if not isinstance(progress, (int, float)) or progress >= TRANSLATION_PROGRESS_THRESHOLD:
+        return None
+    return [
+        I18NContext(
+            "core.message.locale.translation_progress", name=Locale(lang).t("language"), percent=f"{progress:g}"
+        ),
+        Url(entry.get("url") or CoreConfig.locale_url, trusted=True),
+    ]
+
+
 @locale.command()
 async def _(msg: Bot.MessageSession):
-    await msg.finish(build_locale_overview(msg, CoreConfig.locale_url))
+    await msg.send_message(build_locale_overview(msg, CoreConfig.locale_url))
+    await msg.finish(await build_translation_notice(msg.session_info.locale.locale))
 
 
 @locale.command("[<lang>] {{I18N:core.help.locale.set}}", required_admin=True)
 async def _(msg: Bot.MessageSession, lang: str):
     if lang in get_available_locales() and await msg.session_info.target_union_info.edit_attr("locale", lang):
-        await msg.finish(Locale(lang).t("message.success"))
+        await msg.send_message(Locale(lang).t("message.success"))
+        await msg.finish(await build_translation_notice(lang))
     else:
         await msg.finish([I18NContext("core.message.locale.set.invalid"), *build_locale_list(msg)])
 

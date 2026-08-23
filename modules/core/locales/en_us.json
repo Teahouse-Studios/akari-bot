@@ -239,6 +239,7 @@
     "core.message.locale.reload.failed": "Failed to reload the following string(s): ",
     "core.message.locale.set.invalid": "Invalid language code.",
     "core.message.locale.set.prompt": "Use \"${cmd}<Language Code>\" to set the language.",
+    "core.message.locale.translation_progress": "${name} is ${percent}% translated. Help translate it on Weblate:",
     "core.message.module.disable.already": "Failed: Module \"${module}\" is disabled.",
     "core.message.module.disable.base": "Failed: \"${module}\" is a base module, thus cannot be disabled.",
     "core.message.module.disable.not_found": "Failed: Module \"${module}\" does not exist.",

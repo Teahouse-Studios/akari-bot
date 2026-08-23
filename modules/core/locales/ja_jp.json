@@ -161,6 +161,7 @@
     "core.message.locale.reload.failed": "次の文字列リロードは失敗します：",
     "core.message.locale.set.invalid": "言語コードが無効です。",
     "core.message.locale.set.prompt": "言語を設定するには、「${cmd}<言語コード>」を使用します。",
+    "core.message.locale.translation_progress": "${name}の翻訳進捗は ${percent}% です。Weblate で翻訳にご協力ください：",
     "core.message.module.disable.already": "失敗：モジュール「${module}」はすでに無効になっています。",
     "core.message.module.disable.base": "失敗：「${module}」は基本モジュールなので、無効にできません。",
     "core.message.module.disable.not_found": "失敗：モジュール「${module}」が存在しません。",
