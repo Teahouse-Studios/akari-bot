@@ -102,8 +102,11 @@ async def get_weekly_img(with_img=False, zh_tw=False):
 async def get_teahouse_rss(*args, **kwargs):
     """兼容 weekly-rss 的公开入口，同时延迟加载 RSS 解析依赖。"""
     from .teahouse import get_rss
-
-    return await get_rss(*args, **kwargs)
+    try:
+        content = await get_rss(*args, **kwargs)
+        return content
+    except Exception as e:
+        return str(I18NContext("message.error")) + str(e)
 
 
 wky = module("weekly", developers=["Dianliang233"], support_languages=["zh_cn", "zh_tw"], doc=True)
