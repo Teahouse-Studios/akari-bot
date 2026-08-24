@@ -10,7 +10,7 @@ config*/*.toml*
 *.db-wal
 cache/*
 assets/bots_list.json
-assets/dirty_words/*.txt
+assets/bad_words/*.txt
 assets/discord_slash_list.json
 assets/modules_list.json
 assets/schedulers_list.json

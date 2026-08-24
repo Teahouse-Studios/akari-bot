@@ -9,6 +9,7 @@ from aiogram.types import FSInputFile, InputMediaAudio, InputMediaPhoto
 from attrs import define, field
 
 from bots.telegram.info import client_name
+from core.builtins.filter import filter_badwords
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import (
     ActionTextElement,
@@ -104,7 +105,7 @@ class _HTMLAtomParser(HTMLParser):
         self.atoms.append(_HTMLAtom(raw, tuple(self.contexts)))
 
 
-_AT_CODE_PATTERN = re.compile(r"<(?:AT|@):([^\|]+)\|(?:.*?\|)?([^\|>]+)>")
+AT_CODE_PATTERN = re.compile(r"<(?:AT|@):([^\|]+)\|(?:.*?\|)?([^\|>]+)>")
 
 
 def _escape_telegram_text(text: str, parse_mentions: bool = True) -> str:
@@ -114,7 +115,7 @@ def _escape_telegram_text(text: str, parse_mentions: bool = True) -> str:
 
     result = []
     start = 0
-    for match in _AT_CODE_PATTERN.finditer(text):
+    for match in AT_CODE_PATTERN.finditer(text):
         result.append(escape(text[start : match.start()]))
         if match.group(1) == client_name:
             user_id = escape(match.group(2), quote=True)
@@ -193,6 +194,7 @@ async def collect_telegram_content(
     inline_pending = False
     for element in message.as_sendable(session_info):
         if isinstance(element, PlainElement):
+            element.text = session_info.locale.t_str(filter_badwords(element.text))
             text = _escape_telegram_text(element.text, parse_mentions=element.allow_parse)
             if inline_pending and text_parts:
                 text_parts[-1] += text

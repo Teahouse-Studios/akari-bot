@@ -27,7 +27,7 @@ tests_path = Path("./tests").resolve()
 webui_path = Path("./webui").resolve()
 
 # assets 子路径
-dirty_words_path = assets_path / "dirty_words"
+bad_words_path = assets_path / "bad_words"
 fonts_path = assets_path / "fonts"
 templates_path = assets_path / "templates"
 retired_path = assets_path / "retired"

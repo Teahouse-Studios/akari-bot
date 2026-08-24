@@ -29,6 +29,44 @@ def _test_parse_data_empty():
         return False
 
 
+def _test_parse_data_protects_at_code():
+    """parse_data: AT 码整体豁免，其中的命中词不应被替换"""
+    try:
+        from core.dirty_check import parse_data
+
+        result = parse_data(
+            "hello <AT:123 BADWORD> world",
+            {"RiskLevel": "high", "Result": [{"Confidence": 100, "RiskWords": "BADWORD", "Label": "mock"}]},
+        )
+        return result["status"] is True and result["content"] == "hello <AT:123 BADWORD> world"
+    except Exception:
+        return False
+
+
+def _test_parse_data_protects_ke_i18n_structure():
+    """parse_data: KE/I18N 的 value 参与过滤，结构与 key 保持原样"""
+    try:
+        from core.dirty_check import parse_data
+
+        dirty = {"RiskLevel": "high", "Result": [{"Confidence": 100, "RiskWords": "BADWORD", "Label": "mock"}]}
+
+        ke = parse_data("hello [KE:element,key=BADWORD] world", dirty)
+        i18n = parse_data("hello {I18N:msg.example,param=BADWORD} world", dirty)
+
+        return (
+            ke["status"] is False
+            and "BADWORD" not in ke["content"]
+            and "[KE:element,key=" in ke["content"]
+            and ke["content"].endswith("] world")
+            and i18n["status"] is False
+            and "BADWORD" not in i18n["content"]
+            and "{I18N:msg.example,param=" in i18n["content"]
+            and "} world" in i18n["content"]
+        )
+    except Exception:
+        return False
+
+
 def _test_hash_hmac():
     """hash_hmac: 应返回 base64 编码的 HMAC"""
     try:
@@ -184,66 +222,13 @@ def _test_aliyun_cache_namespace_isolated():
         return False
 
 
-async def _test_local_hit_still_checks_aliyun_by_default():
-    """check: 默认配置下，本地词表命中后仍会调用阿里云 API 二次过滤"""
-    try:
-        import core.dirty_check as dirty_check
-
-        calls = []
-
-        async def _fake_aliyun(texts, confidence=60):
-            calls.extend(texts)
-            return [{"content": t, "status": True, "original": t} for t in texts]
-
-        with (
-            patch.object(dirty_check, "access_key_id", "id"),
-            patch.object(dirty_check, "access_key_secret", "secret"),
-            patch.object(dirty_check, "local_first", False),
-            patch.object(dirty_check, "load_keyword_rules", lambda: {"test": ["bad"]}),
-            patch.object(dirty_check, "_check_aliyun", _fake_aliyun),
-        ):
-            await dirty_check.check(["Hello World", "this is bad"], force=True)
-
-        return len(calls) == 2
-    except Exception:
-        return False
-
-
-async def _test_local_hit_skips_aliyun_when_enabled():
-    """check: 开启 check_local_first 后，本地命中的文本不再调用阿里云 API"""
-    try:
-        import core.dirty_check as dirty_check
-
-        calls = []
-
-        async def _fake_aliyun(texts, confidence=60):
-            calls.extend(texts)
-            return [{"content": t, "status": True, "original": t} for t in texts]
-
-        with (
-            patch.object(dirty_check, "access_key_id", "id"),
-            patch.object(dirty_check, "access_key_secret", "secret"),
-            patch.object(dirty_check, "local_first", True),
-            patch.object(dirty_check, "load_keyword_rules", lambda: {"test": ["bad"]}),
-            patch.object(dirty_check, "_check_aliyun", _fake_aliyun),
-        ):
-            results = await dirty_check.check(["Hello World", "this is bad"], force=True)
-
-        return (
-            len(results) == 2
-            and results[0]["status"] is True
-            and results[1]["status"] is False
-            and calls == ["Hello World"]
-        )
-    except Exception:
-        return False
-
-
 @func_case
 async def test_dirty_check(tester: Tester):
     """core.dirty_check: 内容审核系统测试"""
     await tester.test(_test_parse_data_clean, "parse_data 正常文本测试")
     await tester.test(_test_parse_data_empty, "parse_data 空结果测试")
+    await tester.test(_test_parse_data_protects_at_code, "parse_data AT 码豁免测试")
+    await tester.test(_test_parse_data_protects_ke_i18n_structure, "parse_data KE/I18N 结构与 value 过滤测试")
     await tester.test(_test_hash_hmac, "hash_hmac 测试")
     await tester.test(_test_check_no_keys, "check 无密钥跳过测试")
     await tester.test(_test_check_empty_text, "check 空文本测试")
@@ -252,6 +237,4 @@ async def test_dirty_check(tester: Tester):
     await tester.test(_test_check_bool_dirty_is_true, "check_bool 不合规返回真测试")
     await tester.test(_test_aliyun_split_cache_preserves_result, "阿里云长文本分片缓存测试")
     await tester.test(_test_aliyun_cache_namespace_isolated, "阿里云缓存版本隔离测试")
-    await tester.test(_test_local_hit_still_checks_aliyun_by_default, "默认配置下本地命中后仍送阿里云 API 测试")
-    await tester.test(_test_local_hit_skips_aliyun_when_enabled, "开启开关后本地命中跳过阿里云 API 测试")
     return tester

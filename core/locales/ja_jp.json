@@ -8,7 +8,6 @@
     "config.comments.config.auto_purge_crontab": "自動キャッシュ パージ用の Cron 式。",
     "config.comments.config.base_superuser": "ボットの基本スーパーユーザー リスト。ここに入力された値はボットの起動時にデータベースにロードされます。",
     "config.comments.config.bug_report_url": "エラーを報告するための URL。",
-    "config.comments.config.check_local_first": "ローカル キーワードによるテキスト フィルタリングを優先するかどうか、ローカル一致が発生した場合に API チェックをスキップするかどうか。十分な詳細度を備えた類語辞典が必要です。",
     "config.comments.config.check_use_textscan_v1": "Alibaba Cloud コンテンツ セキュリティ サービスの Text Scan 1.0 レガシー API を使用するかどうか。",
     "config.comments.config.command_prefix": "コマンドのプレフィックス。ここに入力された値はコマンドのプレフィックスとして認識されます。",
     "config.comments.config.confirm_command": "コマンド確認用のキーワード。ここに入力された値はコマンド確認用の単語として認識されます。",

@@ -16,19 +16,18 @@ import httpx
 import orjson
 from tenacity import retry, wait_fixed, stop_after_attempt
 
+from core.builtins.filter.protect import get_protected_intervals, is_protected
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext
 from core.builtins.session.internal import MessageSession
 from core.builtins.types import MessageElement
 from core.config.base import CoreConfig, CoreSecretConfig
-from core.constants.path import dirty_words_path
 from core.database.local import DirtyWordCache
 from core.logger import Logger
 
 access_key_id = CoreSecretConfig.check_access_key_id
 access_key_secret = CoreSecretConfig.check_access_key_secret
 use_textscan_v1 = CoreConfig.check_use_textscan_v1
-local_first = CoreConfig.check_local_first
 
 ALIYUN_BACKEND = "aliyun"
 ALIYUN_SPLIT_CACHE_KEY = "_akari_split_results"
@@ -88,11 +87,7 @@ def parse_data(original_content: str, result: dict, confidence: float = 60, addi
     elif replace_tasks:
         replace_tasks = sorted(replace_tasks, key=lambda x: len(x[0]), reverse=True)
 
-        i18ncode_pattern = re.compile(r"\{I18N:[^}]*\}")
-        placeholders = [(m.start(), m.end()) for m in i18ncode_pattern.finditer(content)]
-
-        def is_in_placeholder(start, end):
-            return any(start < p_end and end > p_start for p_start, p_end in placeholders)
+        protected_intervals = get_protected_intervals(content)
 
         matches_to_replace = []
         replaced_intervals = []
@@ -102,8 +97,8 @@ def parse_data(original_content: str, result: dict, confidence: float = 60, addi
             for match in re.finditer(re.escape(word), content):
                 start, end = match.start(), match.end()
 
-                # 检查是否在占位符内，或者是否与已知高优先级长词的替换区间重叠
-                if is_in_placeholder(start, end):
+                # 命中 AT / KE / I18N 结构部分时跳过，或与已替换区间重叠时跳过
+                if is_protected(protected_intervals, start, end):
                     continue
                 if any(start < re_end and end > re_start for re_start, re_end in replaced_intervals):
                     continue
@@ -145,85 +140,6 @@ def parse_aliyun_split_data(
         "status": all(result["status"] for result in parsed_results),
         "original": original_content,
     }
-
-
-def load_keyword_rules() -> dict[str, list[str]]:
-    rules: dict[str, list[str]] = {}
-
-    if not dirty_words_path.is_dir():
-        return rules
-
-    for file in sorted(dirty_words_path.glob("*.txt")):
-        if not file.is_file():
-            continue
-        label = f"custom_{file.stem}"
-        try:
-            words = [line.strip() for line in file.read_text(encoding="utf-8").splitlines() if line.strip()]
-        except (OSError, UnicodeDecodeError) as exc:
-            Logger.warning(f"Failed to load dirty words from {file}: {exc}")
-            continue
-        if words:
-            rules[label] = words
-
-    return rules
-
-
-def parse_keyword_data(
-    original_content: str,
-    keywords: dict[str, list[str] | tuple[str, ...] | set[str]],
-    additional_text: str | None = None,
-) -> dict:
-    """使用自定义关键词对文本进行过滤。
-
-    :param original_content: 原始文本。
-    :param keywords: 以过滤标签为键、该标签下过滤词列表为值的字典。
-                     命中的过滤词会被替换为`<REDACTED:标签>`。
-    :param additional_text: 附加文本，若指定则会在返回的消息中附加此文本。
-    :returns: 过滤后的字典。命中关键词时`status`为`False`。
-    """
-    content = original_content
-
-    replace_tasks = []
-    seen = set()
-    for label, words in keywords.items():
-        for word in words:
-            word = str(word).strip()
-            if word and word not in seen:
-                seen.add(word)
-                replace_tasks.append((word, label))
-
-    if replace_tasks:
-        replace_tasks.sort(key=lambda x: len(x[0]), reverse=True)
-
-        i18ncode_pattern = re.compile(r"\{I18N:[^}]*\}")
-        placeholders = [(m.start(), m.end()) for m in i18ncode_pattern.finditer(content)]
-
-        def is_in_placeholder(start, end):
-            return any(start < p_end and end > p_start for p_start, p_end in placeholders)
-
-        matches_to_replace = []
-        replaced_intervals = []
-
-        for word, label in replace_tasks:
-            reason = str(I18NContext("check.redacted", reason=label))
-            for match in re.finditer(re.escape(word), content):
-                start, end = match.start(), match.end()
-                if is_in_placeholder(start, end):
-                    continue
-                if any(start < re_end and end > re_start for re_start, re_end in replaced_intervals):
-                    continue
-                matches_to_replace.append((start, end, reason))
-                replaced_intervals.append((start, end))
-
-        matches_to_replace = sorted(matches_to_replace, key=lambda x: x[0], reverse=True)
-
-        for start, end, reason in matches_to_replace:
-            content = content[:start] + reason + content[end:]
-
-    if additional_text:
-        content += "\n" + additional_text + "\n"
-
-    return {"content": content, "status": content == original_content, "original": original_content}
 
 
 def dirty_word_cache_namespace(backend: str) -> str:
@@ -410,17 +326,12 @@ async def check(
     additional_text: str | None = None,
     force=False,
 ) -> list[dict]:
-    """检查字符串。
-
-    本地关键词过滤优先执行：先对文本做本地词表过滤，再对过滤后的文本调用阿里云 API。
-    默认所有文本都会经过第三方 API 二次过滤；开启`check_local_first`后，
-    已被本地词表判定不合规的文本将跳过第三方 API 以节省费用，但本地词表覆盖不到的敏感词可能漏出。
-    任一步判定不合规即视为不合规。
+    """检查字符串。使用阿里云内容安全对文本进行审核。
 
     :param text: 字符串（List/Union）。
     :param session: 消息会话，若指定则会在返回的消息中附加会话信息。
     :param additional_text: 附加文本，若指定则会在返回的消息中附加此文本。
-    :returns: 经过审核后的字典列表。不合规部分会被替换为`<REDACTED:原因>`，全部不合规则是`<ALL REDACTED:原因>`。
+    :returns: 经过审核后的字典列表。不合规部分会被替换为`[REDACTED:原因]`。
     """
 
     if isinstance(text, str):
@@ -437,40 +348,14 @@ async def check(
     if not text:
         return []
 
-    # 本地关键词过滤：存在词表文件时启用
-    keywords = load_keyword_rules()
-    keyword_results = [
-        parse_keyword_data(t, keywords) if keywords else {"content": t, "status": True, "original": t} for t in text
-    ]
-
-    # 阿里云 API 过滤：默认对所有文本（含本地已命中的）发起请求，输入为本地过滤后的文本。
-    # 开启 check_local_first 后，本地已判定不合规的文本将跳过第三方 API 以节省费用，
-    # 但本地词表覆盖不到、需第三方 API 才能识别的敏感词可能漏出。
-    aliyun_results: list[dict] = []
     if access_key_id and access_key_secret:
-        if local_first:
-            api_indices = [i for i, result in enumerate(keyword_results) if result["status"]]
-        else:
-            api_indices = list(range(len(keyword_results)))
-        api_texts = [keyword_results[i]["content"] for i in api_indices]
-        api_results = await _check_aliyun(api_texts, confidence) if api_texts else []
-        api_result_map = dict(zip(api_indices, api_results, strict=True))
-        aliyun_results = [
-            api_result_map.get(i, {"content": result["content"], "status": True, "original": result["content"]})
-            for i, result in enumerate(keyword_results)
-        ]
+        results = await _check_aliyun(text, confidence)
     else:
-        aliyun_results = [
-            {"content": result["content"], "status": True, "original": result["content"]} for result in keyword_results
-        ]
+        results = [{"content": t, "status": True, "original": t} for t in text]
 
-    results = []
-    for keyword_result, aliyun_result in zip(keyword_results, aliyun_results, strict=True):
-        status = keyword_result["status"] and aliyun_result["status"]
-        content = aliyun_result["content"]
-        if additional_text:
-            content += "\n" + additional_text + "\n"
-        results.append({"content": content, "status": status, "original": keyword_result["original"]})
+    if additional_text:
+        for result in results:
+            result["content"] += "\n" + additional_text + "\n"
 
     return results
 

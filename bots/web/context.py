@@ -5,6 +5,7 @@ import orjson
 from fastapi import WebSocket
 
 from bots.web.features import features as web_features
+from core.builtins.filter import filter_badwords
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import PlainElement, ImageElement
 from core.builtins.session.context import ContextManager
@@ -57,6 +58,7 @@ class WebContextManager(ContextManager):
 
         for x in message.as_sendable(session_info):
             if isinstance(x, PlainElement):
+                x.text = session_info.locale.t_str(filter_badwords(x.text))
                 sends.append({"type": "text", "content": x.text})
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
             elif isinstance(x, ImageElement):

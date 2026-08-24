@@ -27,6 +27,7 @@ from rapidfuzz import process
 
 from core.builtins.message.chain import MessageChain, match_kecode
 from core.builtins.message.internal import ActionText, Image, Plain, I18NContext
+from core.builtins.filter import contain_badwords
 from core.builtins.parser.args import ArgumentPattern, Template as argsTemplate, templates_to_str
 from core.builtins.parser.command import CommandParser
 from core.builtins.session.lock import ExecutionLockList
@@ -225,6 +226,10 @@ async def parser(msg: "Bot.MessageSession"):
 
         # 如果消息为空，直接返回
         if len(msg.trigger_msg) == 0:
+            return
+
+        # 如果消息中有需要过滤的词，直接返回
+        if contain_badwords(msg.trigger_msg):
             return
 
         # ========== 步骤 3: 命令匹配 ==========

@@ -7,6 +7,7 @@ from attrs import define, field
 
 from bots.discord.info import client_name, target_channel_prefix
 from bots.discord.utils import convert_embed
+from core.builtins.filter import filter_badwords
 from core.builtins.message.chain import MessageChain, match_atcode
 from core.builtins.message.elements import (
     ActionTextElement,
@@ -61,6 +62,7 @@ async def build_discord_payloads(session_info: SessionInfo, message: MessageChai
 
     for element in message.as_sendable(session_info):
         if isinstance(element, PlainElement):
+            element.text = session_info.locale.t_str(filter_badwords(element.text))
             text = match_atcode(element.text, client_name, "<@{uid}>") if element.allow_parse else element.text
             if inline_pending and text_parts:
                 text_parts[-1] += text

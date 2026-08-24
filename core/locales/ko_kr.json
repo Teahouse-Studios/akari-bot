@@ -8,7 +8,6 @@
     "config.comments.config.auto_purge_crontab": "캐시 자동 삭제를 위한 Cron 표현식.",
     "config.comments.config.base_superuser": "봇의 기본 슈퍼유저 목록입니다. 여기에 입력된 값은 봇이 시작될 때 데이터베이스에 로드됩니다.",
     "config.comments.config.bug_report_url": "버그 신고 URL.",
-    "config.comments.config.check_local_first": "로컬 키워드로 텍스트 필터링을 선호할지 여부, 로컬 일치가 발생할 경우 API 검사를 건너뛸지 여부. 충분한 상세도를 가진 동의어 사전이 필요합니다.",
     "config.comments.config.check_use_textscan_v1": "이전 버전의 Alibaba Cloud 콘텐츠 보안 Text Scan 1.0 API 사용 여부.",
     "config.comments.config.command_prefix": "명령어 접두사입니다. 입력한 값이 명령어 접두사로 사용됩니다.",
     "config.comments.config.confirm_command": "확인 명령어 키워드입니다. 입력한 값이 확인 명령어로 인식됩니다.",

@@ -8,7 +8,6 @@
     "config.comments.config.auto_purge_crontab": "Cron expression for automatic cache purging.",
     "config.comments.config.base_superuser": "The bot's base superuser list. The values entered here will be loaded into the database when the bot starts.",
     "config.comments.config.bug_report_url": "Error reporting URL.",
-    "config.comments.config.check_local_first": "Whether to prioritize local keyword text filtering, skipping API checks when local matches occur. A sufficiently detailed thesaurus is required.",
     "config.comments.config.check_use_textscan_v1": "Whether to use Alibaba Cloud Content Security Text Scan 1.0 legacy API.",
     "config.comments.config.command_prefix": "Command prefixes. The value entered here will be recognized as the command prefix.",
     "config.comments.config.confirm_command": "The keyword for the confirmation command. The value entered here will be recognized as the confirmation command.",
