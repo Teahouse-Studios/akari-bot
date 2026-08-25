@@ -2,6 +2,8 @@
 
 import asyncio
 import importlib
+import os
+import tempfile
 from unittest.mock import AsyncMock, patch
 
 import orjson
@@ -9,9 +11,13 @@ from fastapi import WebSocketDisconnect
 
 from bots.web.config import WebConfig
 from bots.web.context import WebContextManager
-from core.builtins.message.chain import MessageChain
+from bots.web.features import features as web_features
+from core.builtins.message.chain import MessageChain, MessageNodes
+from core.builtins.message.elements import ButtonElement, ButtonFrameElement, ButtonRows
+from core.builtins.message.internal import ActionText, Embed, EmbedField, Markdown, Voice
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
+from core.utils.session import inject_features
 from core.tester import Tester, func_case
 
 
@@ -261,6 +267,136 @@ async def _test_restart_schedule_is_singleton_and_retained() -> bool:
         web_api._restart_task = previous
 
 
+def _featured_session(session_id: str) -> SessionInfo:
+    """带 Web 平台能力位的会话，供元素渲染测试使用。"""
+    session = _session(session_id)
+    inject_features(session, web_features)
+    return session
+
+
+async def _capture_send(session: SessionInfo, chain: MessageChain | MessageNodes) -> dict:
+    """发送消息并返回首条 Socket 收到的 JSON 负载。"""
+    source = _RecordingWebSocket()
+    WebContextManager.context[session.session_id] = {"websocket": source}
+    await WebContextManager.send_message(session, chain)
+    return orjson.loads(source.payloads[0])
+
+
+async def _test_markdown_element_sends_text_type() -> bool:
+    session = _featured_session("web-markdown-session")
+    try:
+        payload = await _capture_send(session, MessageChain.assign(Markdown("**加粗**")))
+        item = payload["message"][0]
+        return item["type"] == "text" and item["content"] == "**加粗**"
+    finally:
+        WebContextManager.context.pop(session.session_id, None)
+
+
+async def _test_voice_element_sends_voice_type() -> bool:
+    fd, path = tempfile.mkstemp(suffix=".mp3")
+    os.close(fd)
+    try:
+        with open(path, "wb") as f:
+            f.write(b"fake audio")
+        session = _featured_session("web-voice-session")
+        try:
+            payload = await _capture_send(session, MessageChain.assign(Voice(path)))
+            item = payload["message"][0]
+            return (
+                item["type"] == "voice" and item["content"].startswith("data:audio/") and ";base64," in item["content"]
+            )
+        finally:
+            WebContextManager.context.pop(session.session_id, None)
+    finally:
+        os.remove(path)
+
+
+async def _test_action_text_element_sends_action_text_type() -> bool:
+    session = _featured_session("web-action-text-session")
+    try:
+        payload = await _capture_send(
+            session, MessageChain.assign(ActionText("~wiki 沙盒", show="沙盒", reference=True))
+        )
+        item = payload["message"][0]
+        return (
+            item["type"] == "action_text"
+            and item["content"] == "~wiki 沙盒"
+            and item["show"] == "沙盒"
+            and "reference" not in item
+        )
+    finally:
+        WebContextManager.context.pop(session.session_id, None)
+
+
+async def _test_button_frame_element_sends_button_frame_type() -> bool:
+    session = _featured_session("web-button-session")
+    frame = ButtonFrameElement.assign(
+        [
+            ButtonRows.assign([ButtonElement.assign("帮助", "~help")]),
+            ButtonRows.assign([ButtonElement.assign("文档", "https://example.com")]),
+        ]
+    )
+    try:
+        payload = await _capture_send(session, MessageChain.assign(frame))
+        item = payload["message"][0]
+        return item["type"] == "button_frame" and item["content"] == [
+            [{"show": "帮助", "value": "~help", "reply_id": None}],
+            [{"show": "文档", "value": "https://example.com", "reply_id": None}],
+        ]
+    finally:
+        WebContextManager.context.pop(session.session_id, None)
+
+
+async def _test_embed_element_sends_embed_type() -> bool:
+    session = _featured_session("web-embed-session")
+    embed = Embed(
+        title="标题",
+        description="描述",
+        color=0xFF0000,
+        fields=[EmbedField("字段名", "字段值", inline=True)],
+    )
+    try:
+        payload = await _capture_send(session, MessageChain.assign(embed))
+        item = payload["message"][0]
+        content = item["content"]
+        return (
+            item["type"] == "embed"
+            and content["title"] == "标题"
+            and content["description"] == "描述"
+            and content["color"] == 0xFF0000
+            and content["image"] is None
+            and content["thumbnail"] is None
+            and content["fields"] == [{"name": "字段名", "value": "字段值", "inline": True}]
+        )
+    finally:
+        WebContextManager.context.pop(session.session_id, None)
+
+
+async def _test_message_nodes_sends_nodes_type() -> bool:
+    session = _featured_session("web-nodes-session")
+    nodes = MessageNodes.assign(
+        [
+            MessageChain.assign("第一条"),
+            MessageChain.assign("第二条"),
+        ],
+        name="转发组",
+    )
+    try:
+        payload = await _capture_send(session, nodes)
+        item = payload["message"][0]
+        content = item["content"]
+        return (
+            item["type"] == "nodes"
+            and content["name"] == "转发组"
+            and len(content["nodes"]) == 2
+            and content["nodes"][0][0]["type"] == "text"
+            and content["nodes"][0][0]["content"] == "第一条"
+            and content["nodes"][1][0]["content"] == "第二条"
+        )
+    finally:
+        WebContextManager.context.pop(session.session_id, None)
+
+
 @func_case
 async def test_web_adapter(tester: Tester):
     await tester.test(_test_passive_reply_uses_source_websocket, "Web 被动回复使用入站来源 Socket")
@@ -271,4 +407,10 @@ async def test_web_adapter(tester: Tester):
     await tester.test(_test_latest_disconnect_restores_previous_websocket, "Web 最新连接断开恢复旧连接")
     await tester.test(_test_restart_cleans_client_before_exit, "Web 重启前清理客户端")
     await tester.test(_test_restart_schedule_is_singleton_and_retained, "Web 重启任务单例持有")
+    await tester.test(_test_markdown_element_sends_text_type, "Web Markdown 元素降级为 text 类型")
+    await tester.test(_test_voice_element_sends_voice_type, "Web 语音元素发出 voice 类型")
+    await tester.test(_test_action_text_element_sends_action_text_type, "Web 指令操作元素发出 action_text 类型")
+    await tester.test(_test_button_frame_element_sends_button_frame_type, "Web 按钮区元素发出 button_frame 类型")
+    await tester.test(_test_embed_element_sends_embed_type, "Web Embed 元素发出 embed 类型")
+    await tester.test(_test_message_nodes_sends_nodes_type, "Web 消息节点发出 nodes 类型")
     return tester

@@ -11,6 +11,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
+from core.utils.button_runtime import normalize_button_payload
 from bots.web.config import WebConfig
 
 Bot.register_bot(client_name=client_name)
@@ -60,6 +61,10 @@ async def websocket_chat(websocket: WebSocket):
                     elif action == "send":
                         msg_list = message.get("message", [])
                         content = msg_list[0].get("content", "") if msg_list else ""
+                        # 按钮点击回传携带虚拟 reply_id；据此归一化确认按钮并路由到 callback
+                        reply_id = message.get("reply_id")
+                        if reply_id:
+                            content = normalize_button_payload(content)
                         msg_chain = MessageChain.assign(content)
                         session = await SessionInfo.assign(
                             target_id=target_id,
@@ -70,6 +75,7 @@ async def websocket_chat(websocket: WebSocket):
                             sender_from=sender_prefix,
                             client_name=client_name,
                             message_id=message.get("id", ""),
+                            reply_id=reply_id,
                             messages=msg_chain,
                             ctx_slot=ctx_id,
                         )

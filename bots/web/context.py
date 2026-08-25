@@ -1,4 +1,6 @@
 import asyncio
+import base64
+import mimetypes
 import uuid
 
 import orjson
@@ -7,12 +9,129 @@ from fastapi import WebSocket
 from bots.web.features import features as web_features
 from core.builtins.filter import filter_badwords
 from core.builtins.message.chain import MessageChain, MessageNodes
-from core.builtins.message.elements import PlainElement, ImageElement
+from core.builtins.message.elements import (
+    ActionTextElement,
+    ButtonFrameElement,
+    EmbedElement,
+    ImageElement,
+    PlainElement,
+    VoiceElement,
+)
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
 from core.logger import Logger
+
+
+def _file_data_uri(path: str) -> str:
+    """读取本地文件并编码为 data URI，供前端直接渲染音频。"""
+    mime_type, _ = mimetypes.guess_type(path)
+    if not mime_type:
+        mime_type = "audio/mpeg"
+    with open(path, "rb") as f:
+        data = base64.b64encode(f.read()).decode("UTF-8")
+    return f"data:{mime_type};base64,{data}"
+
+
+def _serialize_buttons(frame: ButtonFrameElement) -> list[list[dict]]:
+    """把按钮区序列化为二维数组，供前端渲染按钮行。"""
+    rows = []
+    for row in frame.rows:
+        buttons = []
+        for button in row.buttons:
+            payload = button.payload
+            buttons.append(
+                {
+                    "show": button.show,
+                    "value": payload.value,
+                    "reply_id": payload.reply_id,
+                }
+            )
+        if buttons:
+            rows.append(buttons)
+    return rows
+
+
+async def _serialize_embed(embed: EmbedElement, session_info: SessionInfo) -> dict:
+    """把 Embed 序列化为前端可直接渲染的富文本卡片数据。"""
+    image = await embed.image.get_base64(mime=True) if embed.image else None
+    thumbnail = await embed.thumbnail.get_base64(mime=True) if embed.thumbnail else None
+
+    raw_fields = embed.fields
+    if raw_fields is None:
+        raw_fields = []
+    elif not isinstance(raw_fields, list):
+        raw_fields = [raw_fields]
+    fields = [
+        {
+            "name": session_info.locale.t_str(field.name),
+            "value": session_info.locale.t_str(field.value),
+            "inline": field.inline,
+        }
+        for field in raw_fields
+    ]
+
+    return {
+        "title": session_info.locale.t_str(embed.title) if embed.title else None,
+        "description": session_info.locale.t_str(embed.description) if embed.description else None,
+        "url": embed.url,
+        "timestamp": embed.timestamp,
+        "color": embed.color,
+        "author": session_info.locale.t_str(embed.author) if embed.author else None,
+        "footer": session_info.locale.t_str(embed.footer) if embed.footer else None,
+        "image": image,
+        "thumbnail": thumbnail,
+        "fields": fields,
+    }
+
+
+async def _serialize_element(x, session_info: SessionInfo) -> dict | None:
+    """把单个可发送元素序列化为前端消息字典（发送规则的唯一落点）。
+
+    :return: 前端消息字典；无法识别的元素返回 None，由调用方跳过。
+    """
+    if isinstance(x, PlainElement):
+        return {"type": "text", "content": session_info.locale.t_str(filter_badwords(x.text))}
+    if isinstance(x, ImageElement):
+        return {"type": "image", "content": await x.get_base64(mime=True)}
+    if isinstance(x, VoiceElement):
+        return {"type": "voice", "content": _file_data_uri(x.path)}
+    if isinstance(x, ActionTextElement):
+        return {
+            "type": "action_text",
+            "content": x.text.text,
+            "show": x.show.text if x.show else x.text.text,
+        }
+    if isinstance(x, ButtonFrameElement):
+        return {"type": "button_frame", "content": _serialize_buttons(x)}
+    if isinstance(x, EmbedElement):
+        return {"type": "embed", "content": await _serialize_embed(x, session_info)}
+    return None
+
+
+async def _serialize_chain(chain: MessageChain, session_info: SessionInfo) -> list[dict]:
+    """把消息链序列化为前端消息数组，并逐元素记录发送日志。"""
+    sends = []
+    for x in chain.as_sendable(session_info):
+        item = await _serialize_element(x, session_info)
+        if item is None:
+            continue
+        sends.append(item)
+        kind = item["type"]
+        if kind == "text":
+            Logger.info(f"[Bot] -> [{session_info.target_id}]: {item['content']}")
+        elif kind == "image":
+            Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {item['content'][:50]}...")
+        elif kind == "voice":
+            Logger.info(f"[Bot] -> [{session_info.target_id}]: Voice: {x.path}")
+        elif kind == "action_text":
+            Logger.info(f"[Bot] -> [{session_info.target_id}]: ActionText: {item['content']}")
+        elif kind == "button_frame":
+            Logger.info(f"[Bot] -> [{session_info.target_id}]: ButtonFrame")
+        elif kind == "embed":
+            Logger.info(f"[Bot] -> [{session_info.target_id}]: Embed: {x.title or ''}")
+    return sends
 
 
 class WebContextManager(ContextManager):
@@ -50,21 +169,14 @@ class WebContextManager(ContextManager):
         quote: bool = True,
     ) -> list[str]:
         websocket = cls._get_websocket(session_info)
-        sends = []
+        sends: list[dict] = []
 
         if isinstance(message, MessageNodes):
-            Logger.error("This session does not support message nodes, check if bug exists.")
-            return []
-
-        for x in message.as_sendable(session_info):
-            if isinstance(x, PlainElement):
-                x.text = session_info.locale.t_str(filter_badwords(x.text))
-                sends.append({"type": "text", "content": x.text})
-                Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
-            elif isinstance(x, ImageElement):
-                img_b64 = await x.get_base64(mime=True)
-                sends.append({"type": "image", "content": img_b64})
-                Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {img_b64[:50]}...")
+            nodes = [await _serialize_chain(chain, session_info) for chain in message.values]
+            sends.append({"type": "nodes", "content": {"name": message.name, "nodes": nodes}})
+            Logger.info(f"[Bot] -> [{session_info.target_id}]: MessageNodes: {message.name} ({len(nodes)} nodes)")
+        else:
+            sends = await _serialize_chain(message, session_info)
 
         msg_id = str(uuid.uuid4())
         if websocket:
