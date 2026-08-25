@@ -8,7 +8,6 @@ features = Features(
     support_voice=True,
     support_mention=True,
     support_embed=False,
-    support_forward=False,
     support_delete=True,
     support_manage=False,
     support_permission_group=True,

@@ -27,7 +27,6 @@ from core.tos import WARNING_COUNTS, check_temp_ban, remove_temp_ban
 from core.types import Param
 from core.utils.bash import run_sys_command
 from core.utils.func import is_float, is_int
-from core.utils.storedata import get_stored_list, update_stored_list
 from core.web_render import check_web_render_status, close_web_render, init_web_render, web_render
 
 auto_purge_crontab = CoreConfig.auto_purge_crontab
@@ -613,22 +612,6 @@ async def _(msg: Bot.MessageSession):
     Bot.Temp.data["is_group_message_blocked"] = False
     Bot.Temp.data["waiting_for_send_group_message"] = []
     await msg.finish(I18NContext("core.message.resume.clear"))
-
-
-forward_msg = module("forward-msg", alias="forward_msg", required_superuser=True, base=True, doc=True)
-
-
-@forward_msg.command()
-async def _(msg: Bot.MessageSession):
-    alist = await get_stored_list(Bot.Info.client_name, "forward_msg")
-    if not alist:
-        alist = [{"status": True}]
-    alist[0]["status"] = not alist[0]["status"]
-    await update_stored_list(Bot.Info.client_name, "forward_msg", alist)
-    if not alist[0]["status"]:
-        await msg.finish(I18NContext("core.message.forward_msg.disable"))
-    else:
-        await msg.finish(I18NContext("core.message.forward_msg.enable"))
 
 
 echo = module("echo", required_superuser=True, base=True, doc=True)

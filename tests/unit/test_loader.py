@@ -25,7 +25,6 @@ RENAMED_MODULES = {
     "chemical-code": "chemical_code",
     "exchange-rate": "exchange_rate",
     "feedback-news": "feedback_news",
-    "forward-msg": "forward_msg",
     "maimai-regex": "maimai_regex",
     "mcbv-rss": "mcbv_rss",
     "mcv-rss": "mcv_rss",

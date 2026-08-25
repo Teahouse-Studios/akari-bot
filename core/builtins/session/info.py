@@ -147,7 +147,6 @@ class SessionInfo:
     support_voice: bool = False
     support_mention: bool = False
     support_embed: bool = False
-    support_forward: bool = False
     support_delete: bool = False
     support_manage: bool = False
     support_permission_group: bool = False

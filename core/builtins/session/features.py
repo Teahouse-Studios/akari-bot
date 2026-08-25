@@ -35,9 +35,6 @@ class Features:
     # 嵌入式内容支持 - 会话是否支持发送嵌入式内容（如卡片、富文本）
     support_embed: bool = False
 
-    # 消息转发支持 - 会话是否支持转发消息功能
-    support_forward: bool = False
-
     # 消息删除支持 - 会话是否支持删除已发送的消息
     support_delete: bool = False
 

@@ -5,7 +5,6 @@ features = Features(
     support_voice=True,
     support_mention=True,
     support_embed=False,
-    support_forward=False,
     support_delete=True,
     # Matrix 目前实现踢出／封禁，但没有实现 Captcha 所需的临时限制与解除限制。
     support_manage=False,

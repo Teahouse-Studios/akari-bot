@@ -9,7 +9,6 @@ features = Features(
     support_voice=True,
     support_mention=True,
     support_embed=False,
-    support_forward=True,
     support_delete=True,
     support_manage=True,
     support_markdown=False,
