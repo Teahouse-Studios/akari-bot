@@ -21,7 +21,7 @@ def _load_badword_rules() -> dict[str, list[str]]:
         try:
             words = [line.strip() for line in file.read_text(encoding="utf-8").splitlines() if line.strip()]
         except (OSError, UnicodeDecodeError) as exc:
-            Logger.warning(f"Failed to load dirty words from {file}: {exc}")
+            Logger.warning(f"Failed to load bad words from {file}: {exc}")
             continue
 
         if words:

@@ -152,5 +152,5 @@ def get_protected_intervals(content: str) -> list[tuple[int, int]]:
     return merged
 
 
-def is_protected(protected_intervals: list[tuple[int, int]], start: int, end: int):
+def is_protected(protected_intervals: list[tuple[int, int]], start: int, end: int) -> bool:
     return any(start < p_end and end > p_start for p_start, p_end in protected_intervals)
