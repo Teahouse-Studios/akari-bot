@@ -512,7 +512,7 @@ async def post_next_hop(tsk: JobQueuesTable, args: dict):
         if not session_info:
             Logger.warning(f"Failed to fetch next hop {target_id}, skipping to the one after it.")
             continue
-        # 掉线客户端无法接收任务，也就不会继续换跳，选中它将导致整条通道就此中断。
+        # 掉线客户端无法接收任务或继续换跳，选中后将中断整条通道。
         if not Alive.is_alive(session_info.client_name):
             Logger.warning(f"Client {session_info.client_name} is offline, skipping next hop {target_id}.")
             continue

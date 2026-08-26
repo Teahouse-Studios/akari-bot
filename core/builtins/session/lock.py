@@ -209,7 +209,7 @@ class ExecutionLockList:
         reservation = frozenset(set(cls._list[token]).union(keys))
         # 两个合并命令的扩展域只要有交集，后进入 reservation 的命令就必须
         # 主动让出。只检查“完整覆盖”挡不住 A+B 与 B+C 这类部分重叠：双方
-        # 扩展后都会等待对方，且再也没有 lease 能释放。
+        # 扩展后双方将相互等待，且不存在可释放的 lease。
         if any(
             other_token != token
             and other_token in cls._reservations

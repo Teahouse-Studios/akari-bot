@@ -55,7 +55,7 @@ async def _test_private_binds_both_unions():
         except SessionFinished:
             pass
 
-        # 私聊里「这个账号」与「这段私聊」是同一回事，只并其一会让另一半数据留在原处
+        # 私聊中的用户身份与私聊场景应同时合并，否则部分数据仍会保留在原组。
         senders = [(await SenderUnionInfo.resolve_union(f"{p}|1")).union_id for p in ("BINDA", "BINDB")]
         targets = [(await TargetUnionInfo.resolve_union(f"{p}|X|1")).union_id for p in ("BINDA", "BINDB")]
         return senders[0] == senders[1] and targets[0] == targets[1]

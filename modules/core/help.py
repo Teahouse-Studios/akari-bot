@@ -361,7 +361,7 @@ def build_command_table(msg: Bot.MessageSession, help_doc: dict, regex_rows: lis
         rows = [("text", flag, desc) for option in options for flag, desc in option.items()]
         sections.append((locale.t("core.message.help.table.options"), rows))
     if regex_rows:
-        # 正则满是格式标记字符，包进行内代码原样呈现，不再逐字符转义
+        # 正则包含大量格式标记字符，使用行内代码原样呈现，不再逐字符转义。
         rows = [("code", format_table_code(pattern), desc) for pattern, desc in regex_rows]
         sections.append((locale.t("core.message.help.table.regex"), rows))
     if not sections:

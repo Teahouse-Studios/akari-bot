@@ -108,7 +108,7 @@ async def _test_message_factory_receives_session():
             return Plain(session.target_id)
 
         calls = await _push(union_id, _build)
-        # 两个通道各算一次消息，且工厂拿到的会话即实际承担推送的那个
+        # 两个通道分别生成消息，且工厂接收实际承担推送的会话。
         return (
             sorted(seen) == ["UPUSHA|Group|factory", "UPUSHC|Group|factory"]
             and len(calls) == 2

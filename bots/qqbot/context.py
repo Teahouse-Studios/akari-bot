@@ -334,7 +334,7 @@ class QQBotContextManager(ContextManager):
 
     # 机器人沉默满此秒数后，才在群聊中补发输入提示
     TYPING_PROMPT_DELAY = 5
-    # 输入提示的最长存活秒数，用于在结束信号丢失时兜底撤回，避免提示消息永久滞留
+    # 输入提示的最长存活时间，用于在结束信号丢失时强制撤回。
     TYPING_PROMPT_MAX_LIFETIME = 60
 
     @classmethod
@@ -406,7 +406,6 @@ class QQBotContextManager(ContextManager):
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
-        # 这里可以添加权限检查的逻辑
         ctx: BaseMessage | None = cls.context.get(session_info.session_id)
 
         if ctx:
@@ -652,7 +651,7 @@ class QQBotContextManager(ContextManager):
                 return await prepare_plain_message()
 
             # 指令操作是行内元素：它自身与紧随其后的文本都须并入上一项，
-            # 否则 "\n".join(texts) 会把同属一句话的收尾文本甩到下一行
+            # 否则 "\n".join(texts) 会将同一句话的末尾文本移至下一行。
             inline_pending = False
             s3_storage = None
             if any(isinstance(element, ImageElement) for element in converted_message):
@@ -1108,7 +1107,7 @@ class QQBotContextManager(ContextManager):
             )
             Logger.debug(f"Typing prompt sent in session {session_info.session_id}: {typing_msg}")
 
-            # 机器人发言或输入状态结束皆可撤回，另以最长存活兜底，防止结束信号丢失
+            # 机器人发言或输入状态结束时均可撤回，并由最长存活时间处理信号丢失。
             await cls._wait_typing_over(state, cls.TYPING_PROMPT_MAX_LIFETIME)
         except Exception:
             Logger.exception(f"Failed to show typing prompt in session {session_info.session_id}: ")
@@ -1164,8 +1163,8 @@ class QQBotContextManager(ContextManager):
         Logger.debug(f"Start typing in session: {session_info.session_id}")
 
         # 同一会话重复开启时先结束上一轮，否则其提示消息将失去撤回时机。
-        # 不可直接取消任务：平台可能已经接受发送请求但尚未返回消息 ID，取消后提示仍会
-        # 出现在群里，而机器人再也拿不到可供撤回的 ID。
+        # 不可直接取消任务：平台可能已接受发送请求但尚未返回消息 ID；取消后提示仍会
+        # 留在群聊中，且无法取得用于撤回的 ID。
         previous = cls.typing_states.pop(session_info.session_id, None)
         if previous:
             previous.finished.set()
@@ -1198,7 +1197,6 @@ class QQBotContextManager(ContextManager):
     async def error_signal(cls, session_info: SessionInfo) -> None:
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
-        # 这里可以添加错误处理逻辑
 
         if session_info.target_from == target_guild_prefix:
             emoji_type = 1 if int(qq_limited_emoji) < 9000 else 2

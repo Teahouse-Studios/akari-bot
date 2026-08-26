@@ -469,7 +469,7 @@ class UnionInfo(DBModel):
 
     union_id = fields.CharField(max_length=512, primary_key=True)
     # 封禁状态只此一处。union 下的全部平台 ID 共享此行，因而封禁天然对组内所有 ID 生效，
-    # 不需要再往映射行上放一份标记——那反而会引出「组封了但某 ID 没封」这类无法自洽的状态。
+    # 映射行无需重复保存标记，否则会产生组状态与单个 ID 状态不一致的问题。
     blocked = fields.BooleanField(default=False)
 
     class Meta:
@@ -760,8 +760,8 @@ class SenderUnionInfo(UnionInfo):
                     warns=current.warns,
                 )
                 # 先建新组再改挂映射行，全程不出现「该账号没有映射行」的中间态：
-                # 该状态下若中断，下次解析会把这个账号当作从未见过的新账号，另建一个干净的 union，
-                # 封禁与警告次数就此清零。union_id 不是主键，单条 UPDATE 即可改挂。
+                # 该状态下若中断，下次解析会将账号视为新账号并创建新的 union，
+                # 从而丢失封禁与警告次数。union_id 不是主键，可通过单条 UPDATE 改挂。
                 await SenderUnionBind.filter(sender_id=sender_id, union_id=self.union_id).update(
                     union_id=union.union_id
                 )
@@ -1128,8 +1128,8 @@ class TargetUnionInfo(UnionInfo):
                     using_db=connection,
                 )
                 # 先建新组再改挂映射行，全程不出现「该场景没有映射行」的中间态：
-                # 该状态下若中断，下次解析会把这个场景当作从未见过的新场景，另建一个干净的 union，
-                # 封禁就此清零。新组内只此一个场景，通道号复位为 1。
+                # 该状态下若中断，下次解析会将场景视为新场景并创建新的 union，
+                # 从而丢失封禁状态。新组仅含该场景，通道号复位为 1。
                 moved = await (
                     TargetUnionBind.filter(target_id=target_id, union_id=self.union_id)
                     .using_db(connection)

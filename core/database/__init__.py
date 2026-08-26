@@ -144,8 +144,8 @@ async def reload_db(db_models: list[str] | None = None):
                     Logger.error("Failed to restore the previous database model list after reload failure.")
 
             try:
-                # Tortoise.init() 会建立一套新连接。旧实现反而在初始化成功后调用 close_connections()，
-                # 等于把刚建立的连接立即丢弃；这里先关闭旧连接，再初始化并保留新连接。
+                # Tortoise.init() 会建立新连接。旧实现随后调用 close_connections()，
+                # 导致新连接立即失效；因此应先关闭旧连接，再初始化并保留新连接。
                 await Tortoise.close_connections()
                 success = await init_db(db_models=db_models)
                 if success:

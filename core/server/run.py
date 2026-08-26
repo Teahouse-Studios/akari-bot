@@ -65,7 +65,7 @@ async def main(process_stop_event=None):
         Logger.info("Stopping AkariBot Server...")
         await cleanup_sessions()
         # cleanup_sessions 会在释放依赖 Queue 的后台 context 后停止 poller；初始化在
-        # poller 建立前失败等路径仍在这里兜底取消局部任务。
+        # poller 建立前失败时，仍需在此取消已创建的局部任务。
         if queue_task is not None:
             if not queue_task.done():
                 queue_task.cancel()

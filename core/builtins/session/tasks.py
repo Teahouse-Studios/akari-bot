@@ -19,41 +19,11 @@ if TYPE_CHECKING:
 
 
 class SessionTaskManager:
-    """
-    会话任务管理器 - 管理消息会话中的等待任务和回调。
-
-    负责追踪正在进行的异步任务，如等待用户回复，以及执行已发送消息的回调函数。
-
-    数据结构说明:
-    ```
-        _task_list: {
-            origin_target_id: {
-                origin_sender_id | "all": {
-                    message_session: {
-                        'flag': asyncio.Event,  # 用于同步的事件标志
-                        'active': bool,          # 任务是否活跃
-                        'type': str,             # 任务类型 ('wait' 或 'reply')
-                        'reply': tuple[str, ...], # 预期的回复消息 ID（仅 reply 类型）
-                        'ts': float,             # 任务创建时间戳
-                        'timeout': float,        # 任务超时时间（秒）
-                        'result': MessageSession # 任务完成后的结果（可选）
-                    }
-                }
-            }
-        }
-
-        _callback_list: {
-            message_id: {
-                'callback': Coroutine,  # 要执行的回调函数
-                'ts': float             # 回调添加时间戳
-            }
-        }
-    ```
-    """
+    """管理等待任务与消息回调。任务以稳定的物理 ID 索引，命中时再按当前 Union 拓扑展开；回调使用独立注册 token，并在发送完成后绑定物理消息 ID。"""
 
     # 存储活跃任务的字典，索引只使用登记时不可变的物理场景／账号 ID。
     # Union ID 和 channel_id 会在等待期间因合并、解绑或重新分配通道而变化；若把
-    # 快照作为永久索引，原物理用户会失去自己的 waiter，旧组成员反而可能接管它。
+    # 快照作为永久索引会使原物理用户失去 waiter，并可能由旧组成员错误接管。
     # check() 会按 incoming 的当前数据库拓扑展开同现实场景和同用户组的物理 ID，
     # 再从这些稳定 bucket 中选择候选。
     _task_list = {}
@@ -461,7 +431,7 @@ class SessionTaskManager:
         exact_matches = []
         fallback_matches = []
         for callback_key, callback_info in list(cls._callback_list.items()):
-            # bg_check() 只是周期清理，不能当作授权边界。callback 必须在
+            # bg_check() 仅用于周期清理，不能作为授权边界。callback 必须在
             # 尝试命中时按自身 timeout 立即判定是否失效。
             if cls._callback_expired(callback_info):
                 cls._callback_list.pop(callback_key, None)

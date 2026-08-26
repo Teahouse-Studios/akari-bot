@@ -234,7 +234,7 @@ async def update_assets(update_illustration: bool = True) -> bool:
         Logger.exception()
         return False
 
-    # 版本闸门：版本未变且元数据已就位时跳过重建，但仍走一遍曲绘补全，
+    # 版本未变且元数据已就位时跳过重建，但仍执行曲绘补全，
     # 以便修复上次中断留下的缺口。
     if remote_version and remote_version == _local_version() and song_info_exists():
         Logger.info(f"Phigros resource already at version {remote_version}, skipping metadata rebuild.")

@@ -118,20 +118,7 @@ class EventInfo:
 
 @define
 class SessionInfo:
-    """
-    会话信息类 - 承载一个消息会话的完整信息。
-
-    该类使用 attrs 装饰器，存储了一个消息会话所需的所有信息，
-    包括场景和用户信息、消息内容、平台特性、权限和配置等。
-
-    属性分类说明:
-    - 基本信息: target_id, target_from, client_name, sender_id, sender_from 等
-    - 消息信息: message_id, reply_id, messages 等
-    - 平台能力: support_* 系列标志
-    - 用户权限: superuser, banned_users, custom_admins 等
-    - 数据库模型: target_union_info, sender_union_info
-    - 系统配置: locale, prefixes, ctx_slot 等
-    """
+    """可跨进程序列化的会话快照，包含平台身份、消息元数据、能力、权限及 Union 状态。"""
 
     target_id: str
     target_from: str

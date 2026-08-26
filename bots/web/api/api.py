@@ -379,7 +379,7 @@ async def get_target_list(
 async def get_target_group_info(request: Request, union_id: str):
     try:
         verify_jwt(request)
-        # 直接按 union_id 查核心行，避免 resolve_union 对组 ID 走自愈分支建出脏映射行。
+        # 直接按 union_id 查询核心行，避免 resolve_union 为组 ID 创建无效映射。
         target_union_info = await TargetUnionInfo.get_or_none(union_id=union_id)
         if not target_union_info:
             raise HTTPException(status_code=404, detail="Not found")
@@ -447,7 +447,7 @@ async def edit_target_info(request: Request, target_id: str):
             target_union_info.locale = locale
         if modules is not None:
             target_union_info.modules = modules
-        # 权限名单存的是 union ID，控制台可能直接填平台账号 ID，这里统一解析一遍。
+        # 权限名单使用 union ID，控制台输入的平台账号 ID 需统一解析。
         if custom_admins is not None:
             target_union_info.custom_admins = await resolve_sender_unions(custom_admins)
         if banned_users is not None:
@@ -539,7 +539,7 @@ async def get_sender_list(
 async def get_sender_group_info(request: Request, union_id: str):
     try:
         verify_jwt(request)
-        # 直接按 union_id 查核心行，避免 resolve_union 对组 ID 走自愈分支建出脏映射行。
+        # 直接按 union_id 查询核心行，避免 resolve_union 为组 ID 创建无效映射。
         sender_union_info = await SenderUnionInfo.get_or_none(union_id=union_id)
         if not sender_union_info:
             raise HTTPException(status_code=404, detail="Not found")

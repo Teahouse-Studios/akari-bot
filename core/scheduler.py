@@ -62,7 +62,7 @@ class SchedulerLifecycle:
                 return None
 
             # maintenance 先关闭入口，再取得本锁作为提交屏障。已经 submit、但尚未
-            # 开始业务函数的 coroutine 会在这里看到关闭状态并直接退出。
+            # 尚未开始业务函数的 coroutine 会在此检测关闭状态并退出。
             async with cls._launch_lock:
                 if not cls._accepting_jobs:
                     return None

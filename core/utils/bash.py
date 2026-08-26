@@ -15,7 +15,7 @@ async def run_sys_command(command: list[str], timeout: float = 10) -> tuple[int,
     try:
         stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout)
         encoding = locale.getpreferredencoding(False)
-        # communicate() 返回后进程已结束，returncode 必然有值，此处兜底以满足返回类型约定
+        # communicate() 返回后进程已结束；默认值仅用于满足返回类型约定。
         return (
             process.returncode if process.returncode is not None else -1,
             stdout.decode(encoding, errors="ignore").strip(),

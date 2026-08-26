@@ -185,7 +185,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     session_info = msg.session_info
     if session_info.is_private:
-        # 私聊里「这个账号」与「这段私聊」是同一回事，两者一并绑定，
+        # 私聊中的用户身份与私聊场景属于同一数据边界，应一并绑定，
         # 否则换个平台私聊机器人时数据仍是两份。
         await issue_code(
             msg,
@@ -409,7 +409,7 @@ async def _start_handshake(msg: Bot.MessageSession) -> None:
     try:
         await msg.hold()
         held = True
-        # 该命令仅由同一场景内的其它机器人识别，对用户而言只是一串无意义的口令。
+        # 该命令仅供同一场景内的其它机器人识别，对用户不具备可读语义。
         await msg.send_message(Plain(f"{msg.session_info.prefixes[0]}bind channel probe {probe_token}"))
         _create_handshake_task(_expire_handshake(probe_token, msg), name=f"bind-handshake-{probe_token}")
     except BaseException:

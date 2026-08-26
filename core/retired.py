@@ -37,7 +37,7 @@ _notice_enqueue_lock = asyncio.Lock()
 _notified: dict[str, str] | None = None
 _notified_lock = asyncio.Lock()
 # 公告投递任务可能并发完成。每次持久化都从共享内存字典生成一份快照；若两个 save
-# 交错，较早生成的旧快照可能反而最后落库，使后完成的场景在重启后再次收到公告。
+# 写入顺序交错时，较早生成的旧快照可能最后落库，使后完成的场景在重启后再次收到公告。
 _notified_write_lock = asyncio.Lock()
 _MISSING_NOTIFIED = object()
 

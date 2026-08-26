@@ -133,7 +133,7 @@ class ExpiringTempDict:
 
         async with cls._clear_lock:
             with cls._registry_lock:
-                # 顺带剔除已失效的弱引用，否则登记表仍会随新建容器不断变长
+                # 同时移除失效的弱引用，避免登记表持续增长。
                 alive = [ref for ref in cls._registry if ref() is not None]
                 cls._registry[:] = alive
             root_objs = [obj for obj in (ref() for ref in alive) if obj is not None]

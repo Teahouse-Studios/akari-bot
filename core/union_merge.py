@@ -115,7 +115,7 @@ async def issue_code(
                 minute=BIND_CODE_EXPIRED // 60,
                 prefix=msg.session_info.prefixes[0],
                 code=generated,
-                # 标签上仍要显示命令本身，用户须知道自己将要发送什么，操作提示只是附注；
+                # 标签仍须显示实际命令，操作提示仅作为附注；
                 # 该提示离开可点击的平台便无意义，故不随降级带往其他平台。引号同理，
                 # 可点击的标签自带视觉边界，仅降级后的命令原文才需要它
                 cmd=ActionText(
@@ -507,7 +507,7 @@ async def target_lines(msg, union_id: str, ids: list[str]) -> list:
     for target_id in ids:
         channel_id = channels.get(target_id)
         if channel_id is None:
-            # 缺少绑定行的场景理论上不会出现在此处，此分支仅作兜底，避免展示流程中断。
+            # 缺少绑定行的场景理论上不会出现；该分支用于保证展示流程连续。
             lines.append(Plain(target_id, disable_joke=True))
         else:
             lines.append(

@@ -31,7 +31,7 @@ from core.tester import func_case, Tester
 SWITCH_KEY = "use_markdown"
 
 # 平台能力集在导入时即依配置定型，qq_use_markdown 为假的部署上，markdown 相关能力全为假，
-# 覆盖也就无从谈起。故各用例另建一份「markdown 已开启」的基准并打桩该开关，
+# 因此无法验证覆盖逻辑。各用例另建一份启用 Markdown 的基准并替换该开关，
 # 使断言只考察覆盖逻辑本身，不受本地配置左右。
 MARKDOWN_ON_BASE = evolve(
     qqbot_features,

@@ -27,7 +27,7 @@ async def _test_resolve_union_creates_bind():
         if not bind or bind.union_id != union.union_id:
             return False
 
-        # 同一个 ID 再解析应拿到同一个 union，而非另建一份。
+        # 同一 ID 应始终解析至原 union，不得重复创建。
         again = await SenderUnionInfo.resolve_union("UNIONTEST|resolve|1")
         return again.union_id == union.union_id
 

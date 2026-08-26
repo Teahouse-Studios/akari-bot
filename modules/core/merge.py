@@ -100,7 +100,7 @@ async def _(msg: Bot.MessageSession):
     origin = {"source_client": session_info.client_name, "holder_target_id": session_info.target_id}
 
     if session_info.is_private:
-        # 私聊里「这个账号」与「这段私聊」是同一回事，两者一并迁移，
+        # 私聊中的用户身份与私聊场景属于同一数据边界，应一并迁移，
         # 否则用户的个人数据仍留在退役实例上。
         await issue_code(
             msg,

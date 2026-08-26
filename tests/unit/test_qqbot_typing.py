@@ -225,7 +225,7 @@ class _InFlightPromptRecorder:
 
             self.platform_task = asyncio.create_task(platform_send())
             # botpy 的上层调用被取消时，底层 HTTP 请求仍可能已由平台受理并继续完成。
-            # shield 在测试中复现这个「消息会发出，但调用方拿不到结果」的窗口。
+            # shield 用于复现消息已发送、但调用方无法取得结果的时间窗口。
             return await asyncio.shield(self.platform_task)
 
         async def fake_delete(session_info, message_id, reason=None):

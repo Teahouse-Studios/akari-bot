@@ -170,7 +170,7 @@ def get_color_name(color: webcolors.HTML5SimpleColor, name_dict) -> tuple[str, b
     hex_name = webcolors.rgb_to_hex(color)
     if hex_name in name_dict:
         return name_dict[hex_name], True
-    # 颜色名表非空，下方循环必定取到近似名；空串仅为表意外为空时的兜底
+    # 颜色名表正常情况下非空；空串仅作为数据异常时的防御性默认值。
     color_name = ""
     min_dist = 1000000
     for name, value in name_dict.items():

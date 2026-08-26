@@ -61,7 +61,7 @@ class CFGManager:
     _last_watch = 0.0
     _lock_depth = 0
 
-    # 本进程是否只读。运行期一律读这个类属性而非模块级常量，测试可直接改写。
+    # 运行期只读状态统一取自该类属性，便于测试覆盖。
     readonly: bool = CONFIG_READONLY
     # 授权写入的嵌套深度。用计数而非布尔：write() 内部会调用 save()，两层都须放行。
     _allow_write_depth = 0
@@ -219,7 +219,7 @@ class CFGManager:
     def watch(cls):  # Watch for changes in the config file and reload if necessary
         if cls._watch_lock:
             return
-        # 每次配置读取都去 stat 一遍全部配置文件的话，一次属性访问就要几十次系统调用，
+        # 若每次读取配置都对全部文件执行 stat，单次属性访问将产生数十次系统调用，
         # 代价与「读一个已在内存里的值」完全不成比例。配置改动晚至多 WATCH_INTERVAL 秒生效即可。
         now = time.monotonic()
         if now - cls._last_watch < cls.WATCH_INTERVAL:

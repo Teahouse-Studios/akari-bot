@@ -57,7 +57,7 @@ async def _test_states_isolated_across_channels():
     try:
         union = await TargetUnionInfo.resolve_union("CHA1|Group|x")
         await union.bind_id("CHA2|Group|y")
-        # 绑定后默认各占一号，即默认谁也不与谁合并，此时只是共享配置而非同一个现实场景
+        # 绑定后各场景默认使用独立通道，仅共享配置，不代表同一现实场景。
         return await _states_shared("CHA") == (False, False, False)
 
     except Exception:
