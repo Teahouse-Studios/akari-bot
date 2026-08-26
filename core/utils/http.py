@@ -24,7 +24,6 @@ from core.constants.path import cache_path
 from core.constants.info import Info
 from core.logger import Logger
 
-logging_resp = False
 debug = CoreConfig.debug
 proxy = CoreSecretConfig.proxy if CoreSecretConfig.proxy else None
 
@@ -167,10 +166,9 @@ async def request_url(
                     follow_redirects=True,
                 )
                 Logger.debug(f"[{resp.status_code}] {url}")
-                if logging_resp:
-                    Logger.debug(resp.text)
+                Logger.trace(resp.text)
                 if status_code and resp.status_code != status_code:
-                    if not logging_resp and logging_err_resp:
+                    if logging_err_resp:
                         Logger.error(resp.text)
                     error_fmt = f"{str(resp.status_code)}[KE:Image,path=https://http.cat/{str(resp.status_code)}.jpg]"
                     if 500 <= resp.status_code < 600:
