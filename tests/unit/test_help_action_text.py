@@ -610,6 +610,39 @@ async def _test_qqbot_non_admin_help_keeps_module_list_button():
     )
 
 
+async def _test_help_without_enable_requirement_shows_all_modules_as_enabled():
+    """不要求启用模块时，普通用户的 help 展示全部模块并标记为已启用。"""
+    session_info = await SessionInfo.assign(
+        target_id="TEST|Group|help_without_enable_requirement",
+        target_from="TEST|Group",
+        client_name="TEST",
+        sender_id="TEST|1",
+        features=Features(
+            require_enable_modules=False,
+            support_action_text=True,
+            support_button=True,
+            support_markdown=True,
+            support_markdown_table=True,
+        ),
+    )
+    session_info.enabled_modules = ["dice"]
+    msg = _OverviewSession(session_info, is_admin=False)
+    modules = {
+        "help": _module("help", base=True),
+        "coin": _module("coin"),
+        "dice": _module("dice"),
+    }
+    try:
+        with patch("modules.core.help.ModulesManager.return_modules_list", return_value=modules):
+            await help_overview(msg)
+    except SessionFinished:
+        pass
+    sendable = msg.finished_message.as_sendable(session_info).values
+    commands = [element.text.text for element in sendable if isinstance(element, ActionTextElement)]
+    rendered = "\n".join(_render_lines(session_info, msg.finished_message.values))
+    return "[coin]" in rendered and "~disable coin" in commands and "~enable coin" not in commands
+
+
 async def _test_qqbot_admin_legacy_help_keeps_legacy_scope():
     """测试显式 --legacy 仍只展示已开启模块，不启用管理合并样式。"""
     session_info = await SessionInfo.assign(
@@ -1191,6 +1224,10 @@ async def test_clickable_modules(tester: Tester):
     await tester.test(_test_qqbot_admin_help_includes_disabled_modules, "QQBot 管理员帮助合并模块列表测试")
     await tester.test(_test_qqbot_superuser_help_header, "QQBot 超级用户顶栏权限测试")
     await tester.test(_test_qqbot_non_admin_help_keeps_module_list_button, "QQBot 非管理员保留模块列表按钮测试")
+    await tester.test(
+        _test_help_without_enable_requirement_shows_all_modules_as_enabled,
+        "不要求启用模块时帮助展示全部且均已启用测试",
+    )
     await tester.test(_test_qqbot_admin_legacy_help_keeps_legacy_scope, "QQBot 管理员 legacy 帮助范围测试")
     await tester.test(_test_qqbot_module_list_hides_toggles_from_non_admin, "QQBot 普通用户模块列表隐藏开关测试")
     await tester.test(_test_qqbot_module_list_keeps_toggles_for_admin, "QQBot 管理员模块列表保留开关测试")

@@ -253,6 +253,7 @@
     "core.message.merge.target.success": "场景数据已迁移完成，当前场景组：${id}",
     "core.message.module.disable.already": "失败：模块“${module}”已关闭。",
     "core.message.module.disable.base": "失败：“${module}”为基础模块，无法关闭。",
+    "core.message.module.disable.failed": "失败：无法关闭模块“${module}”。",
     "core.message.module.disable.not_found": "失败：模块“${module}”不存在。",
     "core.message.module.disable.success": "成功：关闭模块“${module}”。",
     "core.message.module.enable.already": "失败：模块“${module}”已开启。",

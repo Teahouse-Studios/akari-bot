@@ -98,7 +98,7 @@ async def config_modules(msg: Bot.MessageSession):
                         msglist.append(I18NContext("parser.module.unloaded", module=module_))
                     elif modules_[module_].required_superuser and not is_superuser:
                         msglist.append(I18NContext("parser.superuser.permission.denied"))
-                    elif modules_[module_].base:
+                    elif modules_[module_].base or not msg.session_info.require_enable_modules:
                         msglist.append(I18NContext("core.message.module.enable.already", module=module_))
                     elif reason := modules_[module_].unsupported_reason(msg.session_info):
                         msglist.append(I18NContext(UNSUPPORTED_PROMPTS[reason]))
@@ -159,6 +159,8 @@ async def config_modules(msg: Bot.MessageSession):
                         msglist.append(I18NContext("parser.superuser.permission.denied"))
                     elif modules_[module_].base:
                         msglist.append(I18NContext("core.message.module.disable.base", module=module_))
+                    elif not msg.session_info.require_enable_modules:
+                        msglist.append(I18NContext("core.message.module.disable.failed", module=module_))
                     else:
                         disable_list.append(module_)
 

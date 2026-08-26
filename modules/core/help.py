@@ -470,9 +470,7 @@ def get_module_list_button_data(msg: Bot.MessageSession) -> list[ButtonRows]:
     """构造模块列表底部的在线文档按钮。"""
     if not msg.session_info.support_button or not help_url:
         return []
-    return arrange_buttons(
-        [(msg.session_info.locale.t("core.message.help.button.document"), help_url)]
-    )
+    return arrange_buttons([(msg.session_info.locale.t("core.message.help.button.document"), help_url)])
 
 
 def append_qqbot_permissions_prompt(msg: Bot.MessageSession, help_msg: MessageChain) -> None:
@@ -730,7 +728,8 @@ async def help_overview(msg: Bot.MessageSession):
     use_table = should_use_markdown_table(msg, force_image, force_legacy)
     use_clickable = not use_table and not force_legacy and msg.session_info.support_action_text
     qqbot_admin = msg.session_info.client_name == "QQBot" and await msg.check_permission()
-    show_all_modules = qqbot_admin and not force_legacy
+    qqbot_style = qqbot_admin and not force_legacy
+    show_all_modules = qqbot_style or not msg.session_info.require_enable_modules
 
     legacy_help = True
     if not use_table and not force_legacy and msg.session_info.support_image:
@@ -761,9 +760,7 @@ async def help_overview(msg: Bot.MessageSession):
                 help_msg_list.append(
                     I18NContext("core.message.help.donate", url=MessageChain.assign(Url(donate_url, trusted=True)))
                 )
-            help_msg_list.append(
-                ButtonFrame(get_setup_button_data(msg) if show_all_modules else get_help_button_data(msg))
-            )
+            help_msg_list.append(ButtonFrame(get_setup_button_data(msg) if qqbot_style else get_help_button_data(msg)))
             await msg.finish(imgs + help_msg_list)
     if legacy_help:
         is_base_superuser = msg.session_info.sender_id in Bot.base_superuser_list
@@ -772,6 +769,8 @@ async def help_overview(msg: Bot.MessageSession):
             target_from=msg.session_info.target_from, client_name=msg.session_info.client_name
         )
         target_enabled_list = msg.session_info.enabled_modules or []
+        if not msg.session_info.require_enable_modules:
+            target_enabled_list = list(module_list)
 
         essential = []
         module_ = []
@@ -795,7 +794,7 @@ async def help_overview(msg: Bot.MessageSession):
         if not show_all_modules:
             module_ = [m for m in module_ if m in target_enabled_list]
         module_, subscription = split_subscription_modules(module_list, module_)
-        if show_all_modules:
+        if qqbot_style:
             module_ = [
                 create_module_entry(module_list[name], name, target_enabled_list, msg.session_info) for name in module_
             ]
@@ -827,7 +826,7 @@ async def help_overview(msg: Bot.MessageSession):
                 ]
             ):
                 append_qqbot_permissions_prompt(msg, help_msg)
-            help_msg.append(ButtonFrame(get_help_button_data(msg, include_modules=not show_all_modules)))
+            help_msg.append(ButtonFrame(get_help_button_data(msg, include_modules=not qqbot_style)))
             await msg.finish(help_msg)
         if use_clickable:
             help_msg = MessageChain.assign(
@@ -881,7 +880,7 @@ async def help_overview(msg: Bot.MessageSession):
             help_msg.append(
                 I18NContext("core.message.help.donate", url=MessageChain.assign(Url(donate_url, trusted=True)))
             )
-        help_msg.append(ButtonFrame(get_help_button_data(msg, include_modules=not show_all_modules)))
+        help_msg.append(ButtonFrame(get_help_button_data(msg, include_modules=not qqbot_style)))
         await msg.finish(help_msg)
 
 
@@ -1035,6 +1034,9 @@ async def help_generator(
 
     if not show_dev_modules:
         module_list = {k: v for k, v in module_.items() if k not in dev_module_list}
+
+    if not msg.session_info.require_enable_modules:
+        target_enabled_list = list(module_list)
 
     module_groups = [
         ("core.message.help.table.base", "base", {k: v for k, v in module_list.items() if v.base}),
