@@ -1,6 +1,4 @@
 import asyncio
-import base64
-import mimetypes
 import secrets
 import time
 import uuid
@@ -28,16 +26,6 @@ from core.logger import Logger
 
 _MEDIA_URL_LIFETIME = 600
 _media_urls: dict[str, tuple[str, float]] = {}
-
-
-def _file_data_uri(path: str) -> str:
-    """读取本地文件并编码为 data URI，供前端直接渲染音频。"""
-    mime_type, _ = mimetypes.guess_type(path)
-    if not mime_type:
-        mime_type = "audio/mpeg"
-    with open(path, "rb") as f:
-        data = base64.b64encode(f.read()).decode("UTF-8")
-    return f"data:{mime_type};base64,{data}"
 
 
 def register_media_url(path: str) -> str:
@@ -120,7 +108,7 @@ async def _serialize_element(x, session_info: SessionInfo) -> dict | None:
     if isinstance(x, ImageElement):
         return {"type": "image", "content": await x.get_base64(mime=True)}
     if isinstance(x, AudioElement):
-        return {"type": "audio", "content": _file_data_uri(x.path)}
+        return {"type": "audio", "content": register_media_url(x.path)}
     if isinstance(x, VideoElement):
         return {"type": "video", "content": register_media_url(x.path)}
     if isinstance(x, ActionTextElement):
