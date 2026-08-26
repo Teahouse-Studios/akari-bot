@@ -1,4 +1,5 @@
 import asyncio
+import mimetypes
 import os
 import platform
 from datetime import datetime, timedelta, UTC
@@ -6,7 +7,7 @@ from datetime import datetime, timedelta, UTC
 import psutil
 from cpuinfo import get_cpu_info
 from fastapi import HTTPException, Request, Query
-from fastapi.responses import Response
+from fastapi.responses import FileResponse, Response
 from tortoise.expressions import Q
 
 from bots.web.client import app, client_cleanup, limiter, enable_https, get_client_ip
@@ -26,6 +27,7 @@ from core.database.models import (
 from core.logger import Logger
 from core.queue.client import JobQueueClient
 from .auth import verify_jwt
+from bots.web.context import resolve_media_url
 
 started_time = datetime.now()
 _restart_task: asyncio.Task | None = None
@@ -175,6 +177,15 @@ async def resolve_sender_unions(ids: list[str]) -> list[str]:
 @limiter.limit("10/second")
 async def api_root(request: Request):
     return {"message": "Hello, AkariBot!"}
+
+
+@app.get("/api/media/{token}")
+@limiter.limit("120/minute")
+async def media(request: Request, token: str):
+    path = resolve_media_url(token)
+    if not path or not os.path.isfile(path):
+        raise HTTPException(status_code=404, detail="Media not found")
+    return FileResponse(path, media_type=mimetypes.guess_type(path)[0])
 
 
 @app.get("/api/init")

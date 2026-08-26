@@ -10,10 +10,10 @@ import orjson
 from fastapi import WebSocketDisconnect
 
 from bots.web.config import WebConfig
-from bots.web.context import WebContextManager
+from bots.web.context import WebContextManager, _serialize_element, resolve_media_url
 from bots.web.features import features as web_features
 from core.builtins.message.chain import MessageChain, MessageNodes
-from core.builtins.message.elements import ButtonElement, ButtonFrameElement, ButtonRows
+from core.builtins.message.elements import ButtonElement, ButtonFrameElement, ButtonRows, VideoElement
 from core.builtins.message.internal import ActionText, Embed, EmbedField, Markdown, Audio
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
@@ -41,6 +41,21 @@ def _session(session_id: str, *, fetch: bool = False) -> SessionInfo:
         message_id="incoming-message",
         fetch=fetch,
     )
+
+
+async def _test_video_element_web_serialization() -> bool:
+    session = _session("web-video-serialization")
+    with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as video_file:
+        video_file.write(b"video fixture")
+        video_path = video_file.name
+    try:
+        serialized = await _serialize_element(VideoElement.assign(video_path), session)
+        if serialized is None or serialized["type"] != "video":
+            return False
+        token = serialized["content"].rsplit("/", 1)[-1]
+        return serialized["content"].startswith("/api/media/") and resolve_media_url(token) == video_path
+    finally:
+        os.unlink(video_path)
 
 
 async def _test_passive_reply_uses_source_websocket() -> bool:
@@ -413,4 +428,5 @@ async def test_web_adapter(tester: Tester):
     await tester.test(_test_button_frame_element_sends_button_frame_type, "Web 按钮区元素发出 button_frame 类型")
     await tester.test(_test_embed_element_sends_embed_type, "Web Embed 元素发出 embed 类型")
     await tester.test(_test_message_nodes_sends_nodes_type, "Web 消息节点发出 nodes 类型")
+    await tester.test(_test_video_element_web_serialization, "Web Video 元素使用临时媒体 URL")
     return tester

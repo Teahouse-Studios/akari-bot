@@ -1,6 +1,8 @@
 import asyncio
 import base64
 import mimetypes
+import secrets
+import time
 import uuid
 
 import orjson
@@ -16,12 +18,16 @@ from core.builtins.message.elements import (
     ImageElement,
     PlainElement,
     AudioElement,
+    VideoElement,
 )
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
 from core.logger import Logger
+
+_MEDIA_URL_LIFETIME = 600
+_media_urls: dict[str, tuple[str, float]] = {}
 
 
 def _file_data_uri(path: str) -> str:
@@ -32,6 +38,24 @@ def _file_data_uri(path: str) -> str:
     with open(path, "rb") as f:
         data = base64.b64encode(f.read()).decode("UTF-8")
     return f"data:{mime_type};base64,{data}"
+
+
+def register_media_url(path: str) -> str:
+    now = time.monotonic()
+    _media_urls.update({token: value for token, value in _media_urls.items() if value[1] > now})
+    token = secrets.token_urlsafe(32)
+    _media_urls[token] = (path, now + _MEDIA_URL_LIFETIME)
+    return f"/api/media/{token}"
+
+
+def resolve_media_url(token: str) -> str | None:
+    media = _media_urls.get(token)
+    if not media:
+        return None
+    if media[1] <= time.monotonic():
+        _media_urls.pop(token, None)
+        return None
+    return media[0]
 
 
 def _serialize_buttons(frame: ButtonFrameElement) -> list[list[dict]]:
@@ -96,7 +120,9 @@ async def _serialize_element(x, session_info: SessionInfo) -> dict | None:
     if isinstance(x, ImageElement):
         return {"type": "image", "content": await x.get_base64(mime=True)}
     if isinstance(x, AudioElement):
-        return {"type": "voice", "content": _file_data_uri(x.path)}
+        return {"type": "audio", "content": _file_data_uri(x.path)}
+    if isinstance(x, VideoElement):
+        return {"type": "video", "content": register_media_url(x.path)}
     if isinstance(x, ActionTextElement):
         return {
             "type": "action_text",
@@ -123,8 +149,10 @@ async def _serialize_chain(chain: MessageChain, session_info: SessionInfo) -> li
             Logger.info(f"[Bot] -> [{session_info.target_id}]: {item['content']}")
         elif kind == "image":
             Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {item['content'][:50]}...")
-        elif kind == "voice":
+        elif kind == "audio":
             Logger.info(f"[Bot] -> [{session_info.target_id}]: Audio: {x.path}")
+        elif kind == "video":
+            Logger.info(f"[Bot] -> [{session_info.target_id}]: Video: {x.path}")
         elif kind == "action_text":
             Logger.info(f"[Bot] -> [{session_info.target_id}]: ActionText: {item['content']}")
         elif kind == "button_frame":

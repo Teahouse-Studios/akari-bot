@@ -1,5 +1,3 @@
-"""发送前的音视频压缩工具。"""
-
 from __future__ import annotations
 
 import asyncio
@@ -16,17 +14,16 @@ from core.utils.cache import random_cache_path
 
 
 async def compress_media_chain(chain: MessageChain) -> MessageChain:
-    """压缩超出阈值的音视频；配置不完整或缺失 ffmpeg 时原样返回。压缩失败时跳过对应元素，体积变大则使用原文件。"""
     ffmpeg_path = CoreConfig.ffmpeg_path
     threshold = CoreConfig.media_compression_threshold
 
     if not ffmpeg_path or threshold <= 0:
         return chain
 
-    # 提前校验并解析 ffmpeg 可执行文件路径
+    # 提前校验并解析 FFmpeg 可执行文件路径
     resolved_ffmpeg = shutil.which(ffmpeg_path)
     if resolved_ffmpeg is None and not Path(ffmpeg_path).is_file():
-        Logger.error(f"ffmpeg not found: {ffmpeg_path}")
+        Logger.error(f"FFmpeg not found: {ffmpeg_path}")
         return chain
 
     resolved_ffmpeg = resolved_ffmpeg or ffmpeg_path
@@ -57,21 +54,23 @@ async def compress_media_chain(chain: MessageChain) -> MessageChain:
         command = [resolved_ffmpeg, "-y", "-i", str(source)]
 
         if isinstance(element, AudioElement):
-            command += [
-                "-vn",
-                "-c:a", "libmp3lame",
-                "-b:a", "64k",
-                "-ar", "44100"
-            ]
+            command += ["-vn", "-c:a", "libmp3lame", "-b:a", "64k", "-ar", "44100"]
         else:
             command += [
-                "-c:v", "libx264",
-                "-preset", "faster",
-                "-crf", "30",
-                "-vf", "scale='min(1280\,iw)':-2",
-                "-r", "30",
-                "-c:a", "aac",
-                "-b:a", "64k"
+                "-c:v",
+                "libx264",
+                "-preset",
+                "faster",
+                "-crf",
+                "30",
+                "-vf",
+                "scale='min(1280\,iw)':-2",
+                "-r",
+                "30",
+                "-c:a",
+                "aac",
+                "-b:a",
+                "64k",
             ]
 
         command.append(str(output))
@@ -88,6 +87,7 @@ async def compress_media_chain(chain: MessageChain) -> MessageChain:
                 detail = stderr.decode(errors="replace")[-500:]
                 Logger.error(f"Failed to compress media {source}: {detail}")
                 output.unlink(missing_ok=True)
+                valid_elements.append(element)
                 continue
 
             compressed_size = output.stat().st_size
@@ -95,7 +95,7 @@ async def compress_media_chain(chain: MessageChain) -> MessageChain:
             # 若压缩后体积没有变小，改用原来的多媒体路径并清理临时文件
             if compressed_size >= source_size:
                 Logger.warning(
-                    f"Compressed size ({compressed_size} bytes) of \"{source}\" is not smaller than original ({source_size} bytes)."
+                    f'Compressed size ({compressed_size} bytes) of "{source}" is not smaller than original ({source_size} bytes).'
                 )
                 output.unlink(missing_ok=True)
                 valid_elements.append(element)
