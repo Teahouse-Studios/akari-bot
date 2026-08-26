@@ -28,8 +28,8 @@ async def compress_media_chain(chain: MessageChain) -> MessageChain:
     if resolved_ffmpeg is None and not Path(ffmpeg_path).is_file():
         Logger.error(f"ffmpeg not found: {ffmpeg_path}")
         return chain
-    resolved_ffmpeg = resolved_ffmpeg or ffmpeg_path
 
+    resolved_ffmpeg = resolved_ffmpeg or ffmpeg_path
     threshold_bytes = threshold * 1024 * 1024
 
     # 建立新消息链，用于存放入选的元素
@@ -57,9 +57,22 @@ async def compress_media_chain(chain: MessageChain) -> MessageChain:
         command = [resolved_ffmpeg, "-y", "-i", str(source)]
 
         if isinstance(element, AudioElement):
-            command += ["-vn", "-c:a", "libmp3lame", "-b:a", "128k"]
+            command += [
+                "-vn",
+                "-c:a", "libmp3lame",
+                "-b:a", "64k",
+                "-ar", "44100"
+            ]
         else:
-            command += ["-c:v", "libx264", "-preset", "veryfast", "-crf", "28", "-c:a", "aac", "-b:a", "128k"]
+            command += [
+                "-c:v", "libx264",
+                "-preset", "faster",
+                "-crf", "30",
+                "-vf", "scale='min(1280\,iw)':-2",
+                "-r", "30",
+                "-c:a", "aac",
+                "-b:a", "64k"
+            ]
 
         command.append(str(output))
 
