@@ -14,8 +14,8 @@ qq_use_markdown = QQBotConfig.qq_use_markdown
 
 features = Features(
     support_image=True,
-    support_audio=False,
-    support_video=False,
+    support_audio=True,
+    support_video=True,
     support_mention=True,
     support_embed=False,
     support_delete=True,

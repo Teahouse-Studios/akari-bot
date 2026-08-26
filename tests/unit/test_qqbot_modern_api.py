@@ -16,7 +16,14 @@ from bots.qqbot.info import (
     target_guild_prefix,
 )
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import ImageElement, MarkdownElement, MentionElement, PlainElement
+from core.builtins.message.elements import (
+    AudioElement,
+    ImageElement,
+    MarkdownElement,
+    MentionElement,
+    PlainElement,
+    VideoElement,
+)
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 from core.tester import func_case, Tester
@@ -225,6 +232,29 @@ async def _test_plain_image_is_uploaded_before_send() -> bool:
     return True
 
 
+async def _test_audio_video_are_sent_after_the_main_message() -> bool:
+    session = _make_session(target_group_prefix)
+    client = _CaptureSendClient()
+    message = MessageChain.assign(
+        [PlainElement.assign("hello"), AudioElement.assign(__file__), VideoElement.assign(__file__)]
+    )
+    with patch.object(qqbot_context, "qq_use_markdown", False):
+        result = await _send_with_client(session, client, message)
+    uploads = [call for call in client.calls if call[0] == "upload"]
+    sends = [call for call in client.calls if call[0] == "plain"]
+    return (
+        result == ["plain", "plain", "plain"]
+        and [call[1]["file_type"] for call in uploads]
+        == [qqbot_context.MediaFileType.VOICE, qqbot_context.MediaFileType.VIDEO]
+        and [call[1] for call in sends]
+        == [
+            {"content": "hello", "message_reference": None},
+            {"msg_type": 7, "media": {"file_info": "uploaded-image"}},
+            {"msg_type": 7, "media": {"file_info": "uploaded-image"}},
+        ]
+    )
+
+
 async def _test_other_api_error_is_not_retried() -> bool:
     session = _make_session(target_group_prefix)
     client = _FailingSendClient(40034006)
@@ -426,6 +456,7 @@ async def test_qqbot_modern_api(tester: Tester):
     await tester.test(_test_markdown_reply_falls_back_to_proactive, "Markdown 过期回复转主动消息测试")
     await tester.test(_test_image_reply_falls_back_to_proactive, "图片过期回复转主动消息测试")
     await tester.test(_test_plain_image_is_uploaded_before_send, "Plain 图片预上传测试")
+    await tester.test(_test_audio_video_are_sent_after_the_main_message, "音视频独立预上传并在主消息后发送测试")
     await tester.test(_test_other_api_error_is_not_retried, "其他 API 错误不重试测试")
     await tester.test(_test_proactive_error_is_not_retried, "主动消息错误不重复重试测试")
     await tester.test(_test_group_mention_plain_message, "群聊普通消息 Mention 渲染测试")

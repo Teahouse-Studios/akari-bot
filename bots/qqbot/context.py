@@ -34,6 +34,8 @@ from core.builtins.message.elements import (
     PlainElement,
     MarkdownElement,
     ImageElement,
+    AudioElement,
+    VideoElement,
     MentionElement,
     URLElement,
 )
@@ -449,9 +451,46 @@ class QQBotContextManager(ContextManager):
         async def empty_send() -> list[str]:
             return []
 
+        async def prepare_separate_media(elements: list[AudioElement | VideoElement]):
+            media = []
+            for element in elements:
+                media_type = MediaFileType.VOICE if isinstance(element, AudioElement) else MediaFileType.VIDEO
+                if target.scope in ("group", "c2c"):
+                    upload = await client.upload_media(target, media_type, local_path=element.path)
+                    file_info = upload.get("file_info") if isinstance(upload, Mapping) else None
+                    if not file_info:
+                        raise RuntimeError("QQBot media upload response does not contain file_info")
+                    media.append((element, {"file_info": file_info}))
+                else:
+                    media.append((element, element.path))
+            return media
+
+        async def send_separate_media(prepared_media) -> list[str]:
+            msg_ids = []
+            for element, media in prepared_media:
+                media_name = "audio" if isinstance(element, AudioElement) else "video"
+                try:
+                    if target.scope in ("group", "c2c"):
+                        result = await client.send(target, msg_type=MessageType.MEDIA, media=media)
+                    else:
+                        result = await client.send(target, extra={f"file_{media_name}": media})
+                    msg_ids.extend(_message_ids(result))
+                    cls._on_message_sent(session_info)
+                    Logger.info(f"[Bot] -> [{session_info.target_id}]: {media_name.title()}: {str(element)}")
+                except Exception:
+                    if not msg_ids:
+                        raise
+                    Logger.exception(
+                        f"QQBot {media_name} message to {session_info.target_id} was only partially sent; "
+                        f"returning the recorded message IDs {msg_ids}: "
+                    )
+                    break
+            return msg_ids
+
         async def prepare_plain_message() -> _PreparedMessage:
             plains: list[PlainElement] = []
             images: list[ImageElement] = []
+            media: list[AudioElement | VideoElement] = []
 
             for x in message.as_sendable(session_info, disable_markdown=True):
                 if isinstance(x, PlainElement):
@@ -461,13 +500,15 @@ class QQBotContextManager(ContextManager):
                     plains.append(x)
                 elif isinstance(x, ImageElement):
                     images.append(x)
+                elif isinstance(x, (AudioElement, VideoElement)):
+                    media.append(x)
                 elif isinstance(x, MentionElement):
                     if x.client == client_name and session_info.target_from in (
                         target_guild_prefix,
                         target_group_prefix,
                     ):
                         plains.append(PlainElement(text=f"<@{x.id}>"))
-            if not plains and not images:
+            if not plains and not images and not media:
                 return _PreparedMessage(target, empty_send, has_payload=False)
 
             msg = "\n".join(x.text for x in plains).strip()
@@ -501,8 +542,12 @@ class QQBotContextManager(ContextManager):
                 else:
                     prepared_images.append((image, image_path))
 
+            prepared_media = await prepare_separate_media(media)
+
             async def send_plain_message() -> list[str]:
                 msg_ids = []
+                if not plains and not images:
+                    return await send_separate_media(media)
                 send_target = target
 
                 async def send_with_proactive_fallback(sender, /, *args, **kwargs):
@@ -573,12 +618,14 @@ class QQBotContextManager(ContextManager):
                         f"QQBot message to {session_info.target_id} was only partially sent; "
                         f"returning the recorded message IDs {msg_ids}: "
                     )
+                msg_ids.extend(await send_separate_media(prepared_media))
                 return msg_ids
 
-            return _PreparedMessage(target, send_plain_message, has_payload=True)
+            return _PreparedMessage(target, send_plain_message, has_payload=bool(plains or images or media))
 
         async def prepare_markdown_message() -> _PreparedMessage:
             texts = []
+            media: list[AudioElement | VideoElement] = []
 
             if quote and ctx and session_info.target_from in (target_guild_prefix, target_group_prefix):
                 texts.append(f'<qqbot-at-user id="{session_info.get_common_sender_id()}" />')
@@ -635,6 +682,9 @@ class QQBotContextManager(ContextManager):
                                 "the remaining message will still be sent: "
                             )
                     inline_pending = False
+                elif isinstance(x, (AudioElement, VideoElement)):
+                    media.append(x)
+                    inline_pending = False
                 elif isinstance(x, MentionElement):
                     if x.client == client_name and session_info.target_from in (
                         target_guild_prefix,
@@ -652,31 +702,35 @@ class QQBotContextManager(ContextManager):
                     inline_pending = True
             if keyboard and not texts:
                 texts.append("\u200b")
-            if not texts:
+            prepared_media = await prepare_separate_media(media)
+            if not texts and not prepared_media:
                 return _PreparedMessage(target, empty_send, has_payload=False)
 
             msg = "\n".join(texts)
 
             async def send_markdown_message() -> list[str]:
-                send_target = target
-                try:
-                    result = await client.send_markdown(send_target, msg, keyboard=keyboard)
-                except ApiError as error:
-                    if send_target.message_id is None or not _is_expired_reply_message_error(error):
-                        raise
-                    Logger.warning(
-                        f"Reply message {send_target.message_id} expired when sending to "
-                        f"{send_target.scope}|{send_target.target_id}; retrying as a proactive message."
-                    )
-                    send_target = ReplyTarget(scope=send_target.scope, target_id=send_target.target_id)
-                    result = await client.send_markdown(send_target, msg, keyboard=keyboard)
-                msg_ids = _message_ids(result)
-                if not _typing_prompt:
-                    cls._on_message_sent(session_info)
-                Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
+                msg_ids = []
+                if texts:
+                    send_target = target
+                    try:
+                        result = await client.send_markdown(send_target, msg, keyboard=keyboard)
+                    except ApiError as error:
+                        if send_target.message_id is None or not _is_expired_reply_message_error(error):
+                            raise
+                        Logger.warning(
+                            f"Reply message {send_target.message_id} expired when sending to "
+                            f"{send_target.scope}|{send_target.target_id}; retrying as a proactive message."
+                        )
+                        send_target = ReplyTarget(scope=send_target.scope, target_id=target.target_id)
+                        result = await client.send_markdown(send_target, msg, keyboard=keyboard)
+                    msg_ids.extend(_message_ids(result))
+                    if not _typing_prompt:
+                        cls._on_message_sent(session_info)
+                    Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
+                msg_ids.extend(await send_separate_media(prepared_media))
                 return msg_ids
 
-            return _PreparedMessage(target, send_markdown_message, has_payload=True)
+            return _PreparedMessage(target, send_markdown_message, has_payload=bool(texts or prepared_media))
 
         # 会话的 support_markdown 由 resolve_features() 按用户偏好置定，用户关闭 markdown 后
         # 走纯文本路径；全局配置关闭时同样如此。
