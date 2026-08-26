@@ -16,7 +16,7 @@ from bots.discord.events import guild_member_joined, guild_member_left
 from bots.discord.info import *
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Plain, Image, Voice
+from core.builtins.message.internal import Plain, Image, Audio, Video
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
 from bots.discord.config import DiscordConfig, DiscordSecretConfig
@@ -105,7 +105,9 @@ async def to_message_chain(message: discord.Message):
         if filetype.is_image(d):
             lst.append(Image(d))
         elif filetype.is_audio(d):
-            lst.append(Voice(d))
+            lst.append(Audio(d))
+        elif filetype.is_video(d):
+            lst.append(Video(d))
     return MessageChain.assign(lst)
 
 

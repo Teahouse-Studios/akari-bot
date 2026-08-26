@@ -5,7 +5,7 @@ import filetype
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import ButtonFrame, I18NContext, Plain, Image, Voice, Url
+from core.builtins.message.internal import ButtonFrame, I18NContext, Plain, Image, Audio, Video, Url
 from core.builtins.session.internal import MessageSession, confirm_prompt_key
 from core.builtins.utils import confirm_command
 from core.component import module
@@ -728,7 +728,7 @@ async def query_pages(
                 if section_msg_list:
                     await session.send_message(section_msg_list, quote=False)
 
-        async def image_and_voice():
+        async def image_and_audio():
             if dl_list:
                 for f in dl_list:
                     dl = await download(f)
@@ -752,8 +752,18 @@ async def query_pages(
                             "mp3",
                             "wav",
                         ]:
-                            if session.session_info.support_voice:
-                                await session.send_message(Voice(dl), quote=False)
+                            if session.session_info.support_audio:
+                                await session.send_message(Audio(dl), quote=False)
+                        elif guess_type.extension in [
+                            "mp4",
+                            "mkv",
+                            "avi",
+                            "mov",
+                            "flv",
+                            "webm",
+                        ]:
+                            if session.session_info.support_video:
+                                await session.send_message(Video(dl), quote=False)
                     elif check_svg(dl):
                         rd = await svg_render(dl)
                         if session.session_info.support_image and rd:
@@ -848,7 +858,7 @@ async def query_pages(
         try:
 
             async def _bgtask():
-                await _gather_background(image_and_voice(), wait_confirm(), infobox(), section())
+                await _gather_background(image_and_audio(), wait_confirm(), infobox(), section())
 
             await _start_background_with_release(session, _bgtask, name="wiki-query-background")
         except ValueError:

@@ -6,7 +6,7 @@ import orjson
 
 from bots.onebot.info import sender_prefix
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Plain, Image, Voice, Raw
+from core.builtins.message.internal import Plain, Image, Audio, Video, Raw
 from core.builtins.temp import Temp
 from core.logger import Logger
 from .client import aiocqhttp_bot
@@ -117,7 +117,9 @@ async def to_message_chain(message: str | list[dict[str, Any]]) -> MessageChain:
                         if img_src:
                             lst.append(Image(img_src))
                     elif cq_data["type"] == "record":
-                        lst.append(Voice(cq_data["data"].get("file")))
+                        lst.append(Audio(cq_data["data"].get("file")))
+                    elif cq_data["type"] == "video":
+                        lst.append(Video(cq_data["data"].get("file")))
                     elif cq_data["type"] == "at":
                         lst.append(Plain(f"{sender_prefix}|{cq_data['data'].get('qq')}"))
                     else:
@@ -139,7 +141,9 @@ async def to_message_chain(message: str | list[dict[str, Any]]) -> MessageChain:
                 else:
                     lst.append(Image(item_data.get("url", "")))
             elif item_type == "record":
-                lst.append(Voice(item_data.get("file", "")))
+                lst.append(Audio(item_data.get("file", "")))
+            elif item_type == "video":
+                lst.append(Video(item_data.get("file", "")))
             elif item_type == "at":
                 lst.append(Plain(f"{sender_prefix}|{item_data.get('qq', '')}"))
             else:

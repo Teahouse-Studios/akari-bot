@@ -14,7 +14,7 @@ from bots.web.context import WebContextManager
 from bots.web.features import features as web_features
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import ButtonElement, ButtonFrameElement, ButtonRows
-from core.builtins.message.internal import ActionText, Embed, EmbedField, Markdown, Voice
+from core.builtins.message.internal import ActionText, Embed, EmbedField, Markdown, Audio
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
 from core.utils.session import inject_features
@@ -292,18 +292,18 @@ async def _test_markdown_element_sends_text_type() -> bool:
         WebContextManager.context.pop(session.session_id, None)
 
 
-async def _test_voice_element_sends_voice_type() -> bool:
+async def _test_audio_element_sends_audio_type() -> bool:
     fd, path = tempfile.mkstemp(suffix=".mp3")
     os.close(fd)
     try:
         with open(path, "wb") as f:
             f.write(b"fake audio")
-        session = _featured_session("web-voice-session")
+        session = _featured_session("web-audio-session")
         try:
-            payload = await _capture_send(session, MessageChain.assign(Voice(path)))
+            payload = await _capture_send(session, MessageChain.assign(Audio(path)))
             item = payload["message"][0]
             return (
-                item["type"] == "voice" and item["content"].startswith("data:audio/") and ";base64," in item["content"]
+                item["type"] == "audio" and item["content"].startswith("data:audio/") and ";base64," in item["content"]
             )
         finally:
             WebContextManager.context.pop(session.session_id, None)
@@ -408,7 +408,7 @@ async def test_web_adapter(tester: Tester):
     await tester.test(_test_restart_cleans_client_before_exit, "Web 重启前清理客户端")
     await tester.test(_test_restart_schedule_is_singleton_and_retained, "Web 重启任务单例持有")
     await tester.test(_test_markdown_element_sends_text_type, "Web Markdown 元素降级为 text 类型")
-    await tester.test(_test_voice_element_sends_voice_type, "Web 语音元素发出 voice 类型")
+    await tester.test(_test_audio_element_sends_audio_type, "Web 语音元素发出 audio 类型")
     await tester.test(_test_action_text_element_sends_action_text_type, "Web 指令操作元素发出 action_text 类型")
     await tester.test(_test_button_frame_element_sends_button_frame_type, "Web 按钮区元素发出 button_frame 类型")
     await tester.test(_test_embed_element_sends_embed_type, "Web Embed 元素发出 embed 类型")

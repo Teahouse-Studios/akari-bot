@@ -4,7 +4,8 @@ from core.builtins.session.features import Features
 
 features = Features(
     support_image=True,
-    support_voice=True,
+    support_audio=True,
+    support_video=True,
     support_mention=True,
     support_embed=True,
     support_delete=True,

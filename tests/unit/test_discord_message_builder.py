@@ -4,7 +4,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import ActionText, Button, Embed, Image, Mention, Plain, Voice
+from core.builtins.message.internal import ActionText, Button, Embed, Image, Mention, Plain, Audio
 from core.builtins.session.info import SessionInfo
 from core.i18n import Locale
 from core.tester import Tester, func_case
@@ -25,7 +25,7 @@ def _session():
         sender_from="Discord|Client",
         locale=Locale("zh_cn"),
         support_image=True,
-        support_voice=True,
+        support_audio=True,
         support_mention=True,
         support_embed=True,
         support_button=True,
@@ -91,7 +91,7 @@ async def _test_button_only_message_gets_placeholder():
 
 async def _test_mixed_elements_fit_one_payload():
     chain = MessageChain.assign(
-        [Plain("hello"), Mention("Discord|2"), Image("image.png"), Voice("voice.ogg"), Embed(title="card")]
+        [Plain("hello"), Mention("Discord|2"), Image("image.png"), Audio("audio.ogg"), Embed(title="card")]
     )
     fake_file = SimpleNamespace(filename="direct.bin")
     fake_embed = SimpleNamespace()

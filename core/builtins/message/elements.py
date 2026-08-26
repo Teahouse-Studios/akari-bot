@@ -47,7 +47,7 @@ class BaseElement:
     KE 码是 AkariBot 的消息元素文本化的格式，用于在不便于使用标准的元素类的情况下使用。
     在机器人发出消息的最后阶段，KE 码会被解析器解析成对应的消息元素对象。
     格式为 `[KE:type,param1=value1,param2=value2]`，其中：
-    - type：元素类型（plain、image、voice、mention 等）
+    - type：元素类型（plain、image、audio、mention 等）
     - param*：元素特定的参数
 
     示例：
@@ -834,7 +834,7 @@ class ImageElement(BaseElement):
 
 
 @define
-class VoiceElement(BaseElement):
+class AudioElement(BaseElement):
     """
     语音消息元素。
 
@@ -845,9 +845,9 @@ class VoiceElement(BaseElement):
 
     示例：
     ```
-        > voice = VoiceElement.assign("/path/to/audio.mp3")
-        > str(voice)
-        '[KE:voice,path=/path/to/audio.mp3]'
+        > audio = AudioElement.assign("/path/to/audio.mp3")
+        > str(audio)
+        '[KE:audio,path=/path/to/audio.mp3]'
     ```
     """
 
@@ -859,13 +859,52 @@ class VoiceElement(BaseElement):
         创建语音元素的工厂方法。
 
         :param path: 语音文件的本地路径（str 或 Path 对象）
-        :return: VoiceElement 实例
+        :return: AudioElement 实例
         """
         return deepcopy(cls(str(path)))
 
     def kecode(self):
         """转换为 KE 码格式"""
-        return f"[KE:voice,path={self.path}]"
+        return f"[KE:audio,path={self.path}]"
+
+    def __str__(self):
+        """返回 KE 码格式"""
+        return self.kecode()
+
+
+@define
+class VideoElement(BaseElement):
+    """
+    视频消息元素。
+
+    该类用于处理消息中的视频文件。支持本地文件路径。
+
+    属性：
+        path: 视频文件的本地路径
+
+    示例：
+    ```
+        > video = VideoElement.assign("/path/to/video.mp4")
+        > str(video)
+        '[KE:video,path=/path/to/video.mp4]'
+    ```
+    """
+
+    path: str
+
+    @classmethod
+    def assign(cls, path: str | Path):
+        """
+        创建语音元素的工厂方法。
+
+        :param path: 语音文件的本地路径（str 或 Path 对象）
+        :return: VideoElement 实例
+        """
+        return deepcopy(cls(str(path)))
+
+    def kecode(self):
+        """转换为 KE 码格式"""
+        return f"[KE:video,path={self.path}]"
 
     def __str__(self):
         """返回 KE 码格式"""
@@ -1466,7 +1505,8 @@ __all__ = [
     "FormattedTimeElement",
     "I18NContextElement",
     "ImageElement",
-    "VoiceElement",
+    "AudioElement",
+    "VideoElement",
     "EmbedFieldElement",
     "EmbedElement",
     "MentionElement",

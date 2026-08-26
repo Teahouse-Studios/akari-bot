@@ -7,7 +7,7 @@ from nio.api import RelationshipType
 
 from core.builtins.filter import filter_badwords
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
-from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
+from core.builtins.message.elements import PlainElement, ImageElement, AudioElement, VideoElement, MentionElement
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
@@ -255,7 +255,7 @@ class MatrixContextManager(ContextManager):
                             }
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(xs)}")
                         await _send_msg(content)
-            elif isinstance(x, VoiceElement):
+            elif isinstance(x, AudioElement):
                 path = x.path
                 filename = Path(path).name
                 filesize = Path(path).stat().st_size
@@ -301,7 +301,61 @@ class MatrixContextManager(ContextManager):
                         },
                     }
 
-                Logger.info(f"[Bot] -> [{session_info.target_id}]: Voice: {str(x)}")
+                Logger.info(f"[Bot] -> [{session_info.target_id}]: Audio: {str(x)}")
+                await _send_msg(content)
+            elif isinstance(x, VideoElement):
+                path = x.path
+                filename = Path(path).name
+                filesize = Path(path).stat().st_size
+                # 默认 mimetype 可以回退至 "video/mp4"
+                mimetype = mimetypes.guess_type(path)[0] or "video/mp4"
+
+                encrypted = session_info.get_common_target_id() in matrix_bot.encrypted_rooms
+                with open(path, "rb") as video:
+                    (upload, upload_encryption) = await matrix_bot.upload(
+                        video,
+                        content_type=mimetype,
+                        filename=filename,
+                        encrypt=encrypted,
+                        filesize=filesize,
+                    )
+                if isinstance(upload, nio.ErrorResponse):
+                    Logger.error(f"Failed to upload Matrix video {filename}: {upload}")
+                    continue
+                Logger.info(
+                    f"Uploaded video {filename} to media repo, uri: {upload.content_uri}, mime: {mimetype}, encrypted: {
+                        encrypted
+                    }"
+                )
+
+                video_info = {
+                    "size": filesize,
+                    "mimetype": mimetype,
+                }
+                if hasattr(x, "width") and x.width:
+                    video_info["w"] = x.width
+                if hasattr(x, "height") and x.height:
+                    video_info["h"] = x.height
+                if hasattr(x, "duration") and x.duration:
+                    video_info["duration"] = int(x.duration * 1000)  # 规范单位通常为毫秒 (ms)
+
+                if not encrypted:
+                    content = {
+                        "msgtype": "m.video",
+                        "url": upload.content_uri,
+                        "body": filename,
+                        "info": video_info,
+                    }
+                else:
+                    upload_encryption["url"] = upload.content_uri
+                    content = {
+                        "msgtype": "m.video",
+                        "body": filename,
+                        "file": upload_encryption,
+                        "info": video_info,
+                    }
+
+                Logger.info(f"[Bot] -> [{session_info.target_id}]: Video: {str(x)}")
                 await _send_msg(content)
             elif isinstance(x, MentionElement):
                 if x.client == client_name:

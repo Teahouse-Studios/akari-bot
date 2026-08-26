@@ -144,7 +144,8 @@ class SessionInfo:
     messages: MessageChain | None = None
     superuser: bool = False
     support_image: bool = False
-    support_voice: bool = False
+    support_audio: bool = False
+    support_video: bool = False
     support_mention: bool = False
     support_embed: bool = False
     support_delete: bool = False

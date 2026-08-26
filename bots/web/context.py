@@ -15,7 +15,7 @@ from core.builtins.message.elements import (
     EmbedElement,
     ImageElement,
     PlainElement,
-    VoiceElement,
+    AudioElement,
 )
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
@@ -95,7 +95,7 @@ async def _serialize_element(x, session_info: SessionInfo) -> dict | None:
         return {"type": "text", "content": session_info.locale.t_str(filter_badwords(x.text))}
     if isinstance(x, ImageElement):
         return {"type": "image", "content": await x.get_base64(mime=True)}
-    if isinstance(x, VoiceElement):
+    if isinstance(x, AudioElement):
         return {"type": "voice", "content": _file_data_uri(x.path)}
     if isinstance(x, ActionTextElement):
         return {
@@ -124,7 +124,7 @@ async def _serialize_chain(chain: MessageChain, session_info: SessionInfo) -> li
         elif kind == "image":
             Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {item['content'][:50]}...")
         elif kind == "voice":
-            Logger.info(f"[Bot] -> [{session_info.target_id}]: Voice: {x.path}")
+            Logger.info(f"[Bot] -> [{session_info.target_id}]: Audio: {x.path}")
         elif kind == "action_text":
             Logger.info(f"[Bot] -> [{session_info.target_id}]: ActionText: {item['content']}")
         elif kind == "button_frame":

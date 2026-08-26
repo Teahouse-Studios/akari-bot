@@ -9,7 +9,7 @@ from bots.kook.info import *
 from bots.kook.lifecycle import run_bot
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Plain, Image, Voice
+from core.builtins.message.internal import Plain, Image, Audio, Video
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
 from core.client.init import client_init
@@ -36,7 +36,9 @@ async def to_message_chain(message: Message):
     elif message.type == MessageTypes.IMG:
         lst.append(Image(message.content))
     elif message.type == MessageTypes.AUDIO:
-        lst.append(Voice(message.content))
+        lst.append(Audio(message.content))
+    elif message.type == MessageTypes.VIDEO:
+        lst.append(Video(message.content))
     return MessageChain.assign(lst)
 
 

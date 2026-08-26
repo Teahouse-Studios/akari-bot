@@ -15,7 +15,7 @@ import bots.onebot.context as onebot_context
 from bots.kook.features import features as kook_features
 from bots.discord.info import sender_prefix, target_channel_prefix, target_dm_channel_prefix
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Image, Mention, Plain, Voice
+from core.builtins.message.internal import Image, Mention, Plain, Audio
 from core.builtins.session.info import SessionInfo
 from core.tester import Tester, func_case
 
@@ -420,7 +420,7 @@ async def _test_kook_media_upload_closes_files():
         opened_files.append(file)
         return "https://asset"
 
-    channel = SimpleNamespace(send=AsyncMock(side_effect=[{"msg_id": "image"}, {"msg_id": "voice"}]))
+    channel = SimpleNamespace(send=AsyncMock(side_effect=[{"msg_id": "image"}, {"msg_id": "audio"}]))
     fake_client = ModuleType("bots.kook.client")
     fake_client.bot = SimpleNamespace(
         client=SimpleNamespace(fetch_public_channel=AsyncMock(return_value=channel)),
@@ -434,9 +434,9 @@ async def _test_kook_media_upload_closes_files():
         kook_context = importlib.import_module("bots.kook.context")
         with TemporaryDirectory() as directory:
             image_path = Path(directory) / "image.png"
-            voice_path = Path(directory) / "voice.ogg"
+            audio_path = Path(directory) / "audio.ogg"
             image_path.write_bytes(b"image")
-            voice_path.write_bytes(b"voice")
+            audio_path.write_bytes(b"audio")
             session = SessionInfo(
                 target_id="KOOK|Group|1",
                 target_from="KOOK|Group",
@@ -445,11 +445,11 @@ async def _test_kook_media_upload_closes_files():
                 client_name="KOOK",
                 session_id="kook-media-close",
                 support_image=True,
-                support_voice=True,
+                support_audio=True,
             )
             result = await kook_context.KOOKContextManager.send_message(
                 session,
-                MessageChain.assign([Image(image_path), Voice(voice_path)]),
+                MessageChain.assign([Image(image_path), Audio(audio_path)]),
                 quote=False,
             )
             files_closed = len(opened_files) == 2 and all(file.closed for file in opened_files)
@@ -458,7 +458,7 @@ async def _test_kook_media_upload_closes_files():
             for file in opened_files:
                 if not file.closed:
                     file.close()
-        return result == ["image", "voice"] and files_closed
+        return result == ["image", "audio"] and files_closed
     finally:
         for file in opened_files:
             if not file.closed:

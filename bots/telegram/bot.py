@@ -12,7 +12,7 @@ from bots.telegram.events import handle_left_chat_member, handle_new_chat_member
 from bots.telegram.info import *
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Voice, Image, Plain
+from core.builtins.message.internal import Audio, Video, Image, Plain
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
 from core.client.init import client_cleanup, client_init
@@ -34,17 +34,17 @@ mention_required = CoreConfig.mention_required
 
 async def to_message_chain(msg: types.Message):
     lst = []
-    if msg.audio:
-        file = await aiogram_bot.get_file(msg.audio.file_id)
-        d = await _download_telegram_file(file.file_path)
-        lst.append(Voice(d))
     if msg.photo:
         file = await aiogram_bot.get_file(msg.photo[-1].file_id)
         lst.append(Image(f"https://api.telegram.org/file/bot{token}/{file.file_path}"))
-    if msg.voice:
-        file = await aiogram_bot.get_file(msg.voice.file_id)
+    if msg.audio:
+        file = await aiogram_bot.get_file(msg.audio.file_id)
         d = await _download_telegram_file(file.file_path)
-        lst.append(Voice(d))
+        lst.append(Audio(d))
+    if msg.video:
+        file = await aiogram_bot.get_file(msg.video.file_id)
+        d = await _download_telegram_file(file.file_path)
+        lst.append(Video(d))
     if msg.document:
         mime_type = msg.document.mime_type or ""
         if mime_type.startswith("image/"):
@@ -53,7 +53,11 @@ async def to_message_chain(msg: types.Message):
         elif mime_type.startswith("audio/"):
             file = await aiogram_bot.get_file(msg.document.file_id)
             d = await _download_telegram_file(file.file_path)
-            lst.append(Voice(d))
+            lst.append(Audio(d))
+        elif mime_type.startswith("video/"):
+            file = await aiogram_bot.get_file(msg.document.file_id)
+            d = await _download_telegram_file(file.file_path)
+            lst.append(Video(d))
     if msg.caption:
         lst.append(Plain(msg.caption))
     if msg.text:

@@ -26,8 +26,11 @@ class Features:
     # 图像消息支持 - 会话是否支持发送和接收图片消息
     support_image: bool = False
 
-    # 语音消息支持 - 会话是否支持发送和接收语音消息
-    support_voice: bool = False
+    # 音频消息支持 - 会话是否支持发送和接收音频消息
+    support_audio: bool = False
+
+    # 视频消息支持 - 会话是否支持发送和接收视频消息
+    support_video: bool = False
 
     # 提及功能支持 - 会话是否支持 @ 提及功能（如 `@<用户名>`）
     support_mention: bool = False

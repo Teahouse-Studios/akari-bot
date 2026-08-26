@@ -20,7 +20,10 @@ Markdown = markdown = MarkdownElement.assign
 Image = image = ImageElement.assign
 
 # 语音元素 - 用于发送语音消息
-Voice = voice = VoiceElement.assign
+Audio = audio = AudioElement.assign
+
+# 视频元素 - 用于发送视频消息
+Video = video = VideoElement.assign
 
 # 嵌入式内容元素 - 用于发送卡片、富文本等嵌入式内容
 Embed = embed = EmbedElement.assign
@@ -56,7 +59,7 @@ __all__ = [
     "Plain",
     "Markdown",
     "Image",
-    "Voice",
+    "Audio",
     "Embed",
     "EmbedField",
     "Url",
@@ -71,7 +74,7 @@ __all__ = [
     "plain",
     "markdown",
     "image",
-    "voice",
+    "audio",
     "embed",
     "embed_field",
     "url",

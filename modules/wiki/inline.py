@@ -5,7 +5,7 @@ import filetype
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import ButtonFrame, I18NContext, Image, Voice, Url
+from core.builtins.message.internal import ButtonFrame, I18NContext, Image, Audio, Video, Url
 from core.component import module
 from core.dirty_check import check
 from core.logger import Logger
@@ -135,17 +135,36 @@ async def _(msg: Bot.MessageSession):
                                 "mp3",
                                 "wav",
                             ]:
-                                if msg.session_info.support_voice:
+                                if msg.session_info.support_audio:
                                     await msg.send_message(
                                         [
                                             I18NContext(
                                                 "wiki.message.wiki_inline.flies",
                                                 file=MessageChain.assign(Url(get_page.file)),
                                             ),
-                                            Voice(dl),
+                                            Audio(dl),
                                         ],
                                         quote=False,
                                     )
+                        elif guess_type.extension in [
+                            "mp4",
+                            "mkv",
+                            "avi",
+                            "mov",
+                            "flv",
+                            "webm",
+                        ]:
+                            if msg.session_info.support_video:
+                                await msg.send_message(
+                                    [
+                                        I18NContext(
+                                            "wiki.message.wiki_inline.flies",
+                                            file=MessageChain.assign(Url(get_page.file)),
+                                        ),
+                                        Video(dl),
+                                    ],
+                                    quote=False,
+                                )
                         elif check_svg(dl):
                             rd = await svg_render(dl)
                             if msg.session_info.support_image and rd:

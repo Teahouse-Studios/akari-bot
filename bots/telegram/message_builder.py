@@ -18,7 +18,8 @@ from core.builtins.message.elements import (
     ImageElement,
     MentionElement,
     PlainElement,
-    VoiceElement,
+    AudioElement,
+    VideoElement,
 )
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
@@ -225,7 +226,10 @@ async def collect_telegram_content(
             for image in image_elements:
                 images.append(FSInputFile(await image.get()))
             inline_pending = False
-        elif isinstance(element, VoiceElement):
+        elif isinstance(element, AudioElement):
+            audio.append(FSInputFile(element.path))
+            inline_pending = False
+        elif isinstance(element, VideoElement):
             audio.append(FSInputFile(element.path))
             inline_pending = False
     text = "\n".join(text_parts)

@@ -17,7 +17,8 @@ from core.builtins.message.elements import (
     ImageElement,
     MentionElement,
     PlainElement,
-    VoiceElement,
+    AudioElement,
+    VideoElement,
 )
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
@@ -87,7 +88,10 @@ async def build_discord_payloads(session_info: SessionInfo, message: MessageChai
         elif isinstance(element, ImageElement):
             files.append(discord.File(await element.get()))
             inline_pending = False
-        elif isinstance(element, VoiceElement):
+        elif isinstance(element, AudioElement):
+            files.append(discord.File(element.path))
+            inline_pending = False
+        elif isinstance(element, VideoElement):
             files.append(discord.File(element.path))
             inline_pending = False
         elif isinstance(element, EmbedElement):

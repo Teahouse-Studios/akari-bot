@@ -29,7 +29,8 @@ from core.builtins.message.elements import (
     I18NContextElement,
     URLElement,
     ImageElement,
-    VoiceElement,
+    AudioElement,
+    VideoElement,
     MentionElement,
     ActionTextElement,
     ButtonElement,
@@ -1088,7 +1089,7 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
     - `[KE:plain,text=...]`: 纯文本
     - `[KE:markdown,text=...]`: Markdown 文本
     - `[KE:image,path=...]`: 图片
-    - `[KE:voice,path=...]`: 语音
+    - `[KE:audio,path=...]`: 语音
     - `[KE:i18n,i18nkey=...,param1=val1,...]`: 多语言文本
     - `[KE:mention,userid=...]`: 提及用户
     - `[KE:action_text,text=...,show=...,reference=0]`: 指令操作
@@ -1219,11 +1220,18 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
                         )
 
             # ========= 语音 =========
-            elif element_type == "voice":
+            elif element_type == "audio":
                 path = parsed_params.get("path")
 
                 if path:
-                    elements.append(VoiceElement.assign(path))
+                    elements.append(AudioElement.assign(path))
+
+            # ========= 视频 =========
+            elif element_type == "video":
+                path = parsed_params.get("path")
+
+                if path:
+                    elements.append(VideoElement.assign(path))
 
             # ========= 多语言 =========
             elif element_type == "i18n":

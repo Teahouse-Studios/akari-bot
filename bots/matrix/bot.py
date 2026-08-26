@@ -12,7 +12,7 @@ from bots.matrix.events import member_joined, member_left, should_dispatch_membe
 from bots.matrix.info import *
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Plain, Image, Voice
+from core.builtins.message.internal import Plain, Image, Audio, Video
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
 from core.client.init import client_cleanup, client_init
@@ -113,7 +113,13 @@ async def to_message_chain(event: nio.RoomMessageFormatted, reply_id: str | None
         if not url:
             Logger.error(f"Got m.audio message without url from {target_id}")
             return MessageChain.assign([])
-        return MessageChain.assign(Voice(await matrix_bot.mxc_to_http(url)))
+        return MessageChain.assign(Audio(await matrix_bot.mxc_to_http(url)))
+    if msgtype == "m.video":
+        url = content.get("url")
+        if not url:
+            Logger.error(f"Got m.video message without url from {target_id}")
+            return MessageChain.assign([])
+        return MessageChain.assign(Video(await matrix_bot.mxc_to_http(url)))
     Logger.error(f"Got unknown msgtype: {msgtype}")
     return MessageChain.assign([])
 

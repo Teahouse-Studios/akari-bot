@@ -209,10 +209,10 @@ async def _test_session_refresh_does_not_recreate_deleted_unions():
 def _test_features_override():
     """测试 Features.override()"""
     try:
-        features = Features.override(support_image=True, support_voice=True)
+        features = Features.override(support_image=True, support_audio=True)
         if features.support_image is not True:
             return False
-        if features.support_voice is not True:
+        if features.support_audio is not True:
             return False
         if features.support_mention is not False:
             return False

@@ -14,7 +14,7 @@ from bots.onebot.info import target_private_prefix, target_group_prefix, client_
 from bots.onebot.utils import CQCodeHandler
 from core.builtins.filter import filter_badwords
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
-from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
+from core.builtins.message.elements import PlainElement, ImageElement, AudioElement, VideoElement, MentionElement
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
@@ -256,9 +256,13 @@ class OneBotContextManager(ContextManager):
                     )
                     Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(x)}")
                     count += 1
-                elif isinstance(x, VoiceElement):
+                elif isinstance(x, AudioElement):
                     convert_msg_segments = convert_msg_segments + MessageSegment.record(file=Path(x.path).as_uri())
-                    Logger.info(f"[Bot] -> [{session_info.target_id}]: Voice: {str(x)}")
+                    Logger.info(f"[Bot] -> [{session_info.target_id}]: Audio: {str(x)}")
+                    count += 1
+                elif isinstance(x, VideoElement):
+                    convert_msg_segments = convert_msg_segments + MessageSegment.video(file=Path(x.path).as_uri())
+                    Logger.info(f"[Bot] -> [{session_info.target_id}]: Audio: {str(x)}")
                     count += 1
                 elif isinstance(x, MentionElement):
                     if x.client == client_name and session_info.target_from == target_group_prefix:

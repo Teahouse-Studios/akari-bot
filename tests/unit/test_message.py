@@ -686,16 +686,32 @@ def _test_image_element_allow_split_roundtrip():
         return False
 
 
-def _test_voice_element_assign():
-    """VoiceElement: assign"""
+def _test_audio_element_assign():
+    """AudioElement: assign"""
     try:
-        from core.builtins.message.elements import VoiceElement
+        from core.builtins.message.elements import AudioElement
 
-        elem = VoiceElement.assign("/tmp/audio.mp3")
+        elem = AudioElement.assign("/tmp/audio.mp3")
         if elem.path != "/tmp/audio.mp3":
             return False
         ke = elem.kecode()
-        if "voice" not in ke:
+        if "audio" not in ke:
+            return False
+        return True
+    except Exception:
+        return False
+
+
+def _test_video_element_assign():
+    """VideoElement: assign"""
+    try:
+        from core.builtins.message.elements import VideoElement
+
+        elem = VideoElement.assign("/tmp/video.mp4")
+        if elem.path != "/tmp/video.mp4":
+            return False
+        ke = elem.kecode()
+        if "video" not in ke:
             return False
         return True
     except Exception:
@@ -815,12 +831,12 @@ async def test_message_chain_operations(tester: Tester):
 
 @func_case
 async def test_message_elements_extended(tester: Tester):
-    """消息元素扩展测试: Image/Voice/Mention/Embed"""
+    """消息元素扩展测试: Image/Audio/Mention/Embed"""
     await tester.test(_test_image_element_assign, "ImageElement.assign 本地路径")
     await tester.test(_test_image_element_url, "ImageElement.assign URL")
     await tester.test(_test_image_element_max_h_roundtrip, "ImageElement.max_h 序列化往返")
     await tester.test(_test_image_element_allow_split_roundtrip, "ImageElement.allow_split 序列化往返")
-    await tester.test(_test_voice_element_assign, "VoiceElement.assign")
+    await tester.test(_test_audio_element_assign, "AudioElement.assign")
     await tester.test(_test_mention_element_assign, "MentionElement.assign")
     await tester.test(_test_embed_element_assign, "EmbedElement.assign")
     await tester.test(_test_button_element_roundtrip, "Button 与 ButtonFrame 构造及序列化往返")

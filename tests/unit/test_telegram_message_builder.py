@@ -20,7 +20,7 @@ from bots.telegram.message_builder import (
     split_telegram_html,
 )
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import ActionText, Button, Image, Mention, Plain, Voice
+from core.builtins.message.internal import ActionText, Button, Image, Mention, Plain, Audio
 from core.builtins.session.info import SessionInfo
 from core.i18n import Locale
 from core.tester import Tester, func_case
@@ -78,7 +78,7 @@ def _session():
         sender_from="Telegram|User",
         locale=Locale("zh_cn"),
         support_image=True,
-        support_voice=True,
+        support_audio=True,
         support_mention=True,
         support_button=True,
     )
@@ -137,7 +137,7 @@ async def _test_button_only_message_gets_placeholder():
 
 async def _test_collects_text_mentions_and_media():
     chain = MessageChain.assign(
-        [Plain("hello"), Mention("Telegram|2"), Image("image.png", allow_split=False), Voice("voice.ogg")]
+        [Plain("hello"), Mention("Telegram|2"), Image("image.png", allow_split=False), Audio("audio.ogg")]
     )
     with (
         patch("bots.telegram.message_builder.FSInputFile", side_effect=lambda path: SimpleNamespace(path=path)),

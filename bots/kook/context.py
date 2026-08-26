@@ -7,7 +7,7 @@ from khl import Message, MessageTypes, PublicChannel, User
 
 from core.builtins.filter import filter_badwords
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
-from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
+from core.builtins.message.elements import PlainElement, ImageElement, AudioElement, VideoElement, MentionElement
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
@@ -179,7 +179,7 @@ class KOOKContextManager(ContextManager):
                     send_ = await send_to_channel(url, MessageTypes.IMG)
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(x.path)}")
                 msg_ids.append(str(send_.get("msg_id", "")))
-            if isinstance(x, VoiceElement):
+            if isinstance(x, AudioElement):
                 with open(x.path, "rb") as audio:
                     url = await bot.create_asset(audio)
                 if ctx:
@@ -190,7 +190,20 @@ class KOOKContextManager(ContextManager):
                     )
                 else:
                     send_ = await send_to_channel(url, MessageTypes.AUDIO)
-                Logger.info(f"[Bot] -> [{session_info.target_id}]: Voice: {str(x.__dict__)}")
+                Logger.info(f"[Bot] -> [{session_info.target_id}]: Audio: {str(x.__dict__)}")
+                msg_ids.append(str(send_.get("msg_id", "")))
+            if isinstance(x, VideoElement):
+                with open(x.path, "rb") as video:
+                    url = await bot.create_asset(video)
+                if ctx:
+                    send_ = await ctx.reply(
+                        url,
+                        use_quote=quote and not msg_ids and ctx,
+                        type=MessageTypes.VIDEO,
+                    )
+                else:
+                    send_ = await send_to_channel(url, MessageTypes.VIDEO)
+                Logger.info(f"[Bot] -> [{session_info.target_id}]: Video: {str(x.__dict__)}")
                 msg_ids.append(str(send_.get("msg_id", "")))
             if isinstance(x, MentionElement):
                 if x.client == client_name and session_info.target_from == target_group_prefix:

@@ -6,7 +6,8 @@ dirty_word_check = CoreConfig.enable_dirty_check
 
 features = Features(
     support_image=True,
-    support_voice=True,
+    support_audio=True,
+    support_video=True,
     support_mention=True,
     support_embed=False,
     support_delete=True,
