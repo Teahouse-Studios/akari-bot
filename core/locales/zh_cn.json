@@ -13,6 +13,8 @@
     "config.comments.config.confirm_command": "确认命令的关键词，此处填写的值将会被识别为确认命令。",
     "config.comments.config.debug": "是否开启调试模式，启用后会输出更多的日志信息。",
     "config.comments.config.donate_url": "捐赠网址。",
+    "config.comments.config.ffmpeg_path": "FFmpeg 文件路径。",
+    "config.comments.config.media_compression_threshold": "媒体文件阈值，超过此值的文件将尝试使用 FFmpeg 压缩。单位为 MB。",
     "config.comments.config.enable_analytics": "是否开启内置的统计功能。",
     "config.comments.config.enable_bind_auto": "是否开启“bind auto”命令以自动配对同一场景内的其他实例。",
     "config.comments.config.enable_commit_url": "是否在展示版本信息时显示 commit URL。",

@@ -38,6 +38,8 @@ class CoreConfig:
     use_emote: bool = False
     use_font_mirror: bool = False
     use_secrets_random: bool = False
+    ffmpeg_path: str = ""
+    media_compression_threshold: float = 10
 
     # 身份与权限
     base_superuser: list = base_superuser_default

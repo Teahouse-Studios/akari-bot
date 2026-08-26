@@ -10,7 +10,7 @@ from __future__ import annotations
 import asyncio
 from datetime import datetime, UTC
 from decimal import Decimal, ROUND_HALF_UP
-from typing import Any, Coroutine, Match, NoReturn, TYPE_CHECKING
+from typing import Any, Coroutine, Match, NoReturn, TYPE_CHECKING, cast
 
 from attrs import define, field
 from deprecated import deprecated
@@ -29,6 +29,7 @@ from core.exports import add_export, exports
 from core.logger import Logger
 from core.utils.button import bind_callback_reply_ids, build_button_rows
 from core.utils.func import is_int
+from core.utils.media import compress_media_chain
 from core.utils.random import Random
 
 if TYPE_CHECKING:
@@ -194,6 +195,11 @@ class MessageSession:
 
             chain = MessageChain.assign(await msgnode2image(chain, session=self.session_info))
 
+        if isinstance(chain, MessageChain):
+            chain = await compress_media_chain(chain)
+            if chain is None:
+                return cast(FinishedSession, None)
+
         # ========== 步骤 2: 安全检查 ==========
         # 检查消息是否包含敏感信息（如 API 密钥、密码等）
         if not chain.is_safe and not disable_secret_check:
@@ -334,8 +340,15 @@ class MessageSession:
 
         # ========== 步骤 1: 转换和检查消息 ==========
         chain = get_message_chain(session=self.session_info, chain=message_chain)
+        if isinstance(chain, MessageNodes):
+            from core.utils.image import msgnode2image
+
+            chain = MessageChain.assign(await msgnode2image(chain, session=self.session_info))
         if not chain.is_safe and not disable_secret_check:
             chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
+        chain = await compress_media_chain(chain)
+        if chain is None:
+            return None
 
         # ========== 步骤 2: 以后台任务方式发送消息 ==========
         # wait=False 表示不等待返回，消息会异步发送。
@@ -381,6 +394,10 @@ class MessageSession:
             chain = MessageChain.assign(await msgnode2image(chain, session=self.session_info))
         if not chain.is_safe and not disable_secret_check:
             chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
+
+        chain = await compress_media_chain(chain)
+        if chain is None:
+            return []
 
         return_val = await _queue_server.client_send_private_message(
             self.session_info,
