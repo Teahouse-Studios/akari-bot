@@ -656,6 +656,7 @@ class WikiLib:
                 "llprop": "url",
                 "inprop": "url",
                 "iiprop": "url",
+                "iwurl": "true",
                 "redirects": "true",
                 "converttitles": "true",
                 "titles": title,
@@ -1077,9 +1078,9 @@ class WikiLib:
                     _prefix += i["iw"] + ":"
                     _iw = True
 
-                    # if interwiki target not found, raise InvalidWikiError
-
-                    if not (get_iw := self.wiki_info.interwiki.get(i["iw"])):
+                    # MediaWiki 的 iwurl 会返回已经解析过全域、本地及转发规则的完整 URL。
+                    # siteinfo.interwikimap 不一定包含扩展提供的全域前缀，因此只把缓存映射作为兼容回退。
+                    if not (get_iw := i.get("url") or self.wiki_info.interwiki.get(i["iw"])):
                         raise InvalidWikiError(self.locale.t("wiki.message.utils.wikilib.get_failed.invalid_interwiki"))
                     # try to query interwiki page
                     iw_query = await WikiLib(url=get_iw, headers=self.headers).parse_page_info(
