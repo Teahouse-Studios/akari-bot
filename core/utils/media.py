@@ -1,11 +1,9 @@
 """发送前的音视频压缩工具。"""
-
 from __future__ import annotations
 
 import asyncio
 import shutil
 import subprocess
-import tempfile
 from copy import deepcopy
 from pathlib import Path
 
@@ -13,12 +11,14 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import AudioElement, VideoElement
 from core.config.base import CoreConfig
 from core.logger import Logger
+from core.utils.cache import random_cache_path
 
 
 async def compress_media_chain(chain: MessageChain) -> MessageChain | None:
     """压缩超出阈值的音视频；配置不完整时原样返回。压缩失败或超过阈值时跳过对应元素。"""
     ffmpeg_path = CoreConfig.ffmpeg_path.strip()
     threshold = CoreConfig.media_compression_threshold
+
     if not ffmpeg_path or threshold <= 0:
         return chain
 
@@ -50,13 +50,11 @@ async def compress_media_chain(chain: MessageChain) -> MessageChain | None:
         if resolved_ffmpeg is None:
             resolved_ffmpeg = shutil.which(ffmpeg_path)
             if resolved_ffmpeg is None and not Path(ffmpeg_path).is_file():
-                Logger.warning(f"ffmpeg not found: {ffmpeg_path}")
+                Logger.error(f"ffmpeg not found: {ffmpeg_path}")
                 continue
             resolved_ffmpeg = resolved_ffmpeg or ffmpeg_path
 
-        output_suffix = ".mp3" if isinstance(element, AudioElement) else ".mp4"
-        with tempfile.NamedTemporaryFile(prefix="akari-compressed-", suffix=output_suffix, delete=False) as file:
-            output = Path(file.name)
+        output = f"{random_cache_path()}{".mp3" if isinstance(element, AudioElement) else ".mp4"}"
 
         command = [resolved_ffmpeg, "-y", "-i", str(source)]
         if isinstance(element, AudioElement):
@@ -75,7 +73,7 @@ async def compress_media_chain(chain: MessageChain) -> MessageChain | None:
 
             if process.returncode != 0 or not output.exists():
                 detail = stderr.decode(errors="replace")[-500:]
-                Logger.warning(f"Failed to compress media {source}: {detail}")
+                Logger.error(f"Failed to compress media {source}: {detail}")
                 output.unlink(missing_ok=True)
                 continue
 
@@ -91,7 +89,6 @@ async def compress_media_chain(chain: MessageChain) -> MessageChain | None:
             # 压缩成功且达标
             element.path = str(output)
             valid_elements.append(element)
-
         except (OSError, subprocess.SubprocessError):
             Logger.exception(f"Failed to run ffmpeg for {source}: ")
             output.unlink(missing_ok=True)
