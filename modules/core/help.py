@@ -471,7 +471,7 @@ def get_module_list_button_data(msg: Bot.MessageSession) -> list[ButtonRows]:
     if not msg.session_info.support_button or not help_url:
         return []
     return arrange_buttons(
-        [(msg.session_info.locale.t("core.message.help.button.document"), f"{command_prefix[0]}help --doc")]
+        [(msg.session_info.locale.t("core.message.help.button.document"), help_url)]
     )
 
 
