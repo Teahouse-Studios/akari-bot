@@ -364,6 +364,38 @@ class WikiLib:
             else:
                 raise InvalidWikiError(wiki_info.message if wiki_info.message != "" else "")
 
+    @staticmethod
+    def _title_from_article_url(article_url: str, articlepath: str) -> str | None:
+        """按目标 Wiki 的 articlepath 从完整页面 URL 中还原标题。"""
+
+        def extract(template: str, value: str) -> str | None:
+            if "$1" not in template:
+                return None
+            pattern = re.escape(template).replace(re.escape("$1"), "(.*)")
+            if match := re.fullmatch(pattern, value):
+                return match.group(1)
+            return None
+
+        parsed_url = urllib.parse.urlsplit(article_url)
+        parsed_articlepath = urllib.parse.urlsplit(articlepath)
+        if path_title := extract(parsed_articlepath.path, parsed_url.path):
+            return urllib.parse.unquote(path_title)
+
+        article_query = urllib.parse.parse_qsl(parsed_articlepath.query, keep_blank_values=True)
+        url_query = urllib.parse.parse_qs(parsed_url.query, keep_blank_values=True)
+        for key, template_value in article_query:
+            if "$1" not in template_value:
+                continue
+            for value in url_query.get(key, []):
+                if query_title := extract(template_value, value):
+                    return query_title
+        return None
+
+    async def _resolve_interwiki_target_title(self, fallback_title: str) -> str:
+        """发现 Interwiki 目标 API，并从其 articlepath 还原实际页面标题。"""
+        await self.fixup_wiki_info()
+        return self._title_from_article_url(self.url, self.wiki_info.articlepath) or fallback_title
+
     async def get_json(self, _no_login=False, **kwargs) -> dict:
         await self.fixup_wiki_info()
         return await self.get_json_from_api(self.wiki_info.api, _no_login=_no_login, **kwargs)
@@ -1075,15 +1107,27 @@ class WikiLib:
                 if i["title"] == page_info.title:
                     iw_title = re.match(r"^" + i["iw"] + ":(.*)", i["title"])
                     iw_title = iw_title.group(1)
-                    _prefix += i["iw"] + ":"
                     _iw = True
 
                     # MediaWiki 的 iwurl 会返回已经解析过全域、本地及转发规则的完整 URL。
                     # siteinfo.interwikimap 不一定包含扩展提供的全域前缀，因此只把缓存映射作为兼容回退。
                     if not (get_iw := i.get("url") or self.wiki_info.interwiki.get(i["iw"])):
                         raise InvalidWikiError(self.locale.t("wiki.message.utils.wikilib.get_failed.invalid_interwiki"))
+
+                    target_wiki = WikiLib(url=get_iw, headers=self.headers)
+                    if i.get("url"):
+                        try:
+                            iw_title = await target_wiki._resolve_interwiki_target_title(iw_title)
+                        except InvalidWikiError:
+                            pass
+
+                    normalized_iw_title = iw_title.replace("_", " ")
+                    if normalized_iw_title and i["title"].endswith(normalized_iw_title):
+                        _prefix += i["title"][: -len(normalized_iw_title)]
+                    else:
+                        _prefix += i["iw"] + ":"
                     # try to query interwiki page
-                    iw_query = await WikiLib(url=get_iw, headers=self.headers).parse_page_info(
+                    iw_query = await target_wiki.parse_page_info(
                         iw_title, lang=lang, _tried=_tried + 1, _prefix=_prefix, _iw=_iw
                     )
                     before_page_info = page_info
