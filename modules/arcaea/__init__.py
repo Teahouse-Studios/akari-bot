@@ -26,6 +26,8 @@ async def _(msg: Bot.MessageSession):
         load_json = orjson.loads(resp)
     except Exception:
         await msg.finish(I18NContext("arcaea.message.get_failed"))
+    if not load_json.get("value"):
+        await msg.finish(I18NContext("arcaea.message.get_failed"))
     await msg.finish(
         I18NContext(
             "arcaea.message.download",
