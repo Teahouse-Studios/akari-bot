@@ -63,11 +63,9 @@ def _filter_message_chain_badwords(
         chain.values = [cast(MessageChain, _filter_message_chain_badwords(node, session_info)) for node in chain.values]
         return chain
 
-    sendable = chain.as_sendable(session_info)
-    for element in sendable.values:
+    for element in chain.values:
         if isinstance(element, PlainElement):
             element.text = session_info.locale.t_str(filter_badwords(element.text))
-    chain.values = sendable.values
     return chain
 
 
