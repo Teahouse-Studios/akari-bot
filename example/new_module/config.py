@@ -1,7 +1,7 @@
-from . import test
+from core.config.decorator import on_module_config
 
 
-@test.config()
+@on_module_config("test")
 class TestModuleConfig:
     """
     Use item function or a simple value to define the configuration for the module.
