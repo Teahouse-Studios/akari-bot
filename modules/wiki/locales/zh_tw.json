@@ -36,7 +36,7 @@
     "wiki.message.error.query": "發生錯誤：無法查詢此 Wiki。",
     "wiki.message.error.render_section": "發生錯誤：章節成像失敗，請聯絡開發人員檢查原因。",
     "wiki.message.error.set": "發生錯誤：無法設定此 Wiki。",
-    "wiki.message.flies": "此頁面含有以下檔案：\n",
+    "wiki.message.flies": "此頁面含有以下檔案：",
     "wiki.message.forum.prompt": "此頁面為論壇，以下是當前活躍的貼文：",
     "wiki.message.headers.add.failed": "更新請求標頭失敗，请校對輸入。",
     "wiki.message.headers.add.success": "已更新請求時所使用的請求標頭：${headers}",

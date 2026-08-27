@@ -36,7 +36,7 @@
     "wiki.message.error.query": "An error occurred: Unable to query this wiki.",
     "wiki.message.error.render_section": "An error occurred: Failed to render section. Please contact the developer for reasons.",
     "wiki.message.error.set": "An error occurred: Unable to set up this wiki.",
-    "wiki.message.flies": "This page includes the following files:\n",
+    "wiki.message.flies": "This page includes the following files: ",
     "wiki.message.forum.prompt": "This page is a forum. The following are all the currently active posts: ",
     "wiki.message.headers.add.failed": "Fail to update the request headers. Please check your input.",
     "wiki.message.headers.add.success": "The request headers have been updated: ${headers}",
