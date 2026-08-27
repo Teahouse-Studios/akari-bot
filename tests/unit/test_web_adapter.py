@@ -317,8 +317,11 @@ async def _test_audio_element_sends_audio_type() -> bool:
         try:
             payload = await _capture_send(session, MessageChain.assign(Audio(path)))
             item = payload["message"][0]
+            token = item["content"].rsplit("/", 1)[-1]
             return (
-                item["type"] == "audio" and item["content"].startswith("data:audio/") and ";base64," in item["content"]
+                item["type"] == "audio"
+                and item["content"].startswith("/api/media/")
+                and resolve_media_url(token) == path
             )
         finally:
             WebContextManager.context.pop(session.session_id, None)

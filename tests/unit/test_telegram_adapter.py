@@ -28,6 +28,7 @@ async def _test_document_without_mime_type_is_ignored() -> bool:
     message = SimpleNamespace(
         audio=None,
         photo=None,
+        video=None,
         document=SimpleNamespace(file_id="document", mime_type=None),
         caption=None,
         text=None,

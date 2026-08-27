@@ -611,7 +611,7 @@ async def _test_qqbot_non_admin_help_keeps_module_list_button():
 
 
 async def _test_help_without_enable_requirement_shows_all_modules_as_enabled():
-    """不要求启用模块时，普通用户的 help 展示全部模块并标记为已启用。"""
+    """不要求启用模块时，普通用户的 help 展示全部模块但不提供管理开关。"""
     session_info = await SessionInfo.assign(
         target_id="TEST|Group|help_without_enable_requirement",
         target_from="TEST|Group",
@@ -640,7 +640,11 @@ async def _test_help_without_enable_requirement_shows_all_modules_as_enabled():
     sendable = msg.finished_message.as_sendable(session_info).values
     commands = [element.text.text for element in sendable if isinstance(element, ActionTextElement)]
     rendered = "\n".join(_render_lines(session_info, msg.finished_message.values))
-    return "[coin]" in rendered and "~disable coin" in commands and "~enable coin" not in commands
+    return (
+        "[coin]" in rendered
+        and "~help coin" in commands
+        and not any(command.endswith(("enable coin", "disable coin")) for command in commands)
+    )
 
 
 async def _test_qqbot_admin_legacy_help_keeps_legacy_scope():
@@ -712,7 +716,7 @@ async def _test_qqbot_module_list_hides_toggles_from_non_admin():
         all(f"[{name}]" in rendered for name in modules)
         and not any(emoji in rendered for emoji in ("🔐", "🔓", "🔕", "🔔"))
         and not any(command.startswith(("~enable ", "~disable ")) for command in commands)
-        and button_commands == ["~help --doc"]
+        and button_commands == ["https://example.com/help"]
     )
 
 
