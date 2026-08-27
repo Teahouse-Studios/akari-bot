@@ -242,6 +242,7 @@ dependencies = [
     { name = "matplotlib" },
     { name = "matrix-nio" },
     { name = "mcstatus" },
+    { name = "milky-python-sdk" },
     { name = "numpy" },
     { name = "openai" },
     { name = "orjson" },
@@ -318,6 +319,7 @@ requires-dist = [
     { name = "matplotlib", specifier = ">=3.6.3,<4.0.0" },
     { name = "matrix-nio", specifier = ">=0.25.0,<1.0.0" },
     { name = "mcstatus", specifier = ">=13.1.0,<13.2.0" },
+    { name = "milky-python-sdk", specifier = ">=0.4.2" },
     { name = "numpy", specifier = "<2.5.2" },
     { name = "openai", specifier = ">=2.0.0,<3.0.0" },
     { name = "orjson", specifier = ">=3.10.9,<4.0.0" },
@@ -2207,6 +2209,20 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/d6/54/cfe61301667036ec958cb99bd3efefba235e65cdeb9c84d24a8293ba1d90/mdurl-0.1.2.tar.gz", hash = "sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba", size = 8729, upload-time = "2022-08-14T12:40:10.846Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8", size = 9979, upload-time = "2022-08-14T12:40:09.779Z" },
+]
+
+[[package]]
+name = "milky-python-sdk"
+version = "0.4.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "httpx" },
+    { name = "pydantic" },
+    { name = "python-dotenv" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/04/08/32992a338ca875085157f40357ab458a9e41844ff5b99c7dcd6183c2de52/milky_python_sdk-0.4.2.tar.gz", hash = "sha256:6203cbf63ea34655331841eb9219bea730bb3c217ec9ceea4762dd1fcb25d758", size = 72147, upload-time = "2026-05-19T13:28:58.344Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c8/e9/d8cb9f487ce22b9a5a2e42d87cfb2b1752b06401f505d7ec2a51eaeb6b4d/milky_python_sdk-0.4.2-py3-none-any.whl", hash = "sha256:fe82b3ee4a9b328865cfbc7425506b86c8bb8af8f84b6d5f4c84de9524fb0cfd", size = 21808, upload-time = "2026-05-19T13:28:56.824Z" },
 ]
 
 [[package]]

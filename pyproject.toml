@@ -36,6 +36,7 @@ dependencies = [
     "ffmpy>=1.0.0,<2.0.0",
     "khl-py>=0.3.16,<1.0.0",
     "matrix-nio>=0.25.0,<1.0.0",
+    "milky-python-sdk>=0.4.2",
     "py-cord>=2.7.2",
     "pyjwt[crypto]>=2.8.0,<3.0.0",
     "pyotp>=2.9.0,<3.0.0",
