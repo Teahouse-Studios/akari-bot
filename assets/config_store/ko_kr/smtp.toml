@@ -1,0 +1,18 @@
+# https://toml.io/ko/v1.0.0
+# 주의: TOML은 Python이 아닙니다. Python 문법을 사용하지 마십시오.
+# 예: TOML의 불리언 값은 반드시 소문자로 작성해야 합니다.
+
+[smtp]
+# SMTP 的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
+enable = false # SMTP 이메일을 통한 보고서 기능을 활성화할지 여부. 활성화하면 보고서 메시지가 컨텍스트에 보고되지 않습니다. 
+smtp_host = "<Replace me with str value>" # SMTP 서버 주소.
+smtp_port = 587 # SMTP 서버 포트 번호.
+smtp_username = "<Replace me with str value>" # SMTP 로그인 사용자 이름.
+smtp_sender = "<Replace me with str value>" # 발신자 주소. 비워두면 로그인한 사용자 이름을 사용합니다.
+smtp_ssl = false # SMTPS (SSL) 연결을 사용할지 여부.
+smtp_starttls = true # STARTTLS를 활성화할지 여부.
+
+[smtp_secret]
+# SMTP 的密钥部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
+smtp_password = "<Replace me with str value>" # SMTP 로그인 비밀번호.
+smtp_recipients = [] # 보고서 수신자 (이메일 주소). 

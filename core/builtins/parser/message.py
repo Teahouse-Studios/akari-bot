@@ -48,6 +48,7 @@ from core.database.models import AnalyticsData, SenderUnionInfo, TargetUnionBind
 from core.exports import exports
 from core.loader import ModulesManager
 from core.logger import Logger
+from core.report import send_report
 from core.retired import (
     is_module_allowed_when_retired,
     is_retired_client,
@@ -1551,8 +1552,6 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
     :param msg: 消息会话对象
     :param e: 异常对象
     """
-    bot: "Bot" = exports["Bot"]
-
     # 获取完整的错误堆栈
     tb = traceback.format_exc()
     Logger.error(tb)
@@ -1571,19 +1570,16 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
     await msg.handle_error_signal()
     await msg.send_message(err_msg_chain)
     await _send_common_emote(msg, BUG_EMOTES)
-    # ========== 发送错误报告给管理员 ==========
-    if report_targets:
-        # 上报场景按场景组配置，展开后同一现实场景的多个平台入口只应由其中一个收到回传
-        for f in await bot.pick_channel_heads(await bot.fetch_union_target_list(report_targets)):
-            # 发送详细的错误报告
-            await bot.send_direct_message(
-                f,
-                [
-                    I18NContext("error.message.report", command=msg.trigger_msg),
-                    Plain(tb.strip(), disable_joke=True, allow_parse=False),
-                ],
-                disable_secret_check=True,
-            )
+    # 发送错误报告给管理员
+    await send_report(
+        [
+            I18NContext("error.message.report", command=msg.trigger_msg),
+            Plain(tb.strip(), disable_joke=True, allow_parse=False),
+        ],
+        subject=f"AkariBot Error: {msg.trigger_msg}",
+        body=f"Command: {msg.trigger_msg}\n\n{tb.strip()}",
+        targets=report_targets,
+    )
 
 
 def __get_close_matches(

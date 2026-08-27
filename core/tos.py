@@ -5,6 +5,7 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext
 from core.config.base import CoreConfig
 from core.logger import Logger
+from core.report import send_report
 from core.utils.container import ExpiringTempDict
 
 report_targets = CoreConfig.report_targets
@@ -68,15 +69,16 @@ async def abuse_warn_target(msg: Bot.MessageSession, reason: str):
 
 
 async def tos_report(sender: str, target: str, reason: str, banned: bool = False):
-    if report_targets:
-        warn_template = [I18NContext("tos.message.report", sender=sender, target=target, disable_joke=True)]
-        warn_template.append(I18NContext("tos.message.reason", reason=reason, disable_joke=True))
-        if banned:
-            action = "{I18N:tos.message.action.blocked}"
-        else:
-            action = "{I18N:tos.message.action.warning}"
-        warn_template.append(I18NContext("tos.message.action", action=action, disable_joke=True))
-
-        # 上报场景按场景组配置，展开后同一现实场景的多个平台入口只应由其中一个收到回传
-        for f in await Bot.pick_channel_heads(await Bot.fetch_union_target_list(report_targets)):
-            await Bot.send_direct_message(f, warn_template)
+    warn_template = [I18NContext("tos.message.report", sender=sender, target=target, disable_joke=True)]
+    warn_template.append(I18NContext("tos.message.reason", reason=reason, disable_joke=True))
+    if banned:
+        action = "{I18N:tos.message.action.blocked}"
+    else:
+        action = "{I18N:tos.message.action.warning}"
+    warn_template.append(I18NContext("tos.message.action", action=action, disable_joke=True))
+    await send_report(
+        warn_template,
+        subject=f"AkariBot ToS Report: {sender}",
+        body=f"Sender: {sender}\nTarget: {target}\nReason: {reason}\nAction: {action}",
+        targets=report_targets,
+    )
