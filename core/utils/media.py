@@ -55,7 +55,7 @@ def compress_image(element: ImageElement, threshold_bytes: int) -> ImageElement:
         return element
 
 
-async def compress_av(element: AudioElement | VideoElement, ffmpeg_path: str) -> AudioElement | VideoElement:
+async def compress_audio_video(element: AudioElement | VideoElement, ffmpeg_path: str) -> AudioElement | VideoElement:
     source = Path(element.path)
     output = Path(f"{random_cache_path()}{'.mp3' if isinstance(element, AudioElement) else '.mp4'}")
     command = [ffmpeg_path, "-y", "-i", str(source)]
@@ -149,10 +149,10 @@ async def compress_media_chain(chain: MessageChain) -> MessageChain:
                 continue
             resolved_ffmpeg = resolved_ffmpeg or ffmpeg_path
 
-        valid_elements.append(await compress_av(element, resolved_ffmpeg))
+        valid_elements.append(await compress_audio_video(element, resolved_ffmpeg))
 
     compressed.values = valid_elements
     return compressed
 
 
-__all__ = ["compress_media_chain"]
+__all__ = ["compress_image", "compress_audio_video", "compress_media_chain"]

@@ -1,5 +1,4 @@
 import asyncio
-import html
 import time
 from collections import OrderedDict, deque
 from collections.abc import Awaitable, Callable, Mapping
@@ -25,7 +24,6 @@ from bots.qqbot.info import (
     target_c2c_prefix,
 )
 from bots.qqbot.utils import url_filter
-from core.builtins.filter import filter_badwords
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import (
     ActionTextElement,
@@ -493,7 +491,6 @@ class QQBotContextManager(ContextManager):
 
             for x in message.as_sendable(session_info, disable_markdown=True):
                 if isinstance(x, PlainElement):
-                    x.text = session_info.locale.t_str(filter_badwords(html.unescape(x.text)))
                     if x.allow_parse:
                         x.text = match_atcode(x.text, client_name, "<@{uid}>")
                     plains.append(x)
@@ -659,7 +656,6 @@ class QQBotContextManager(ContextManager):
 
             for x in converted_message:
                 if isinstance(x, PlainElement):
-                    x.text = session_info.locale.t_str(filter_badwords(html.unescape(x.text)))
                     if x.allow_parse:
                         x.text = match_atcode(x.text, client_name, "<@{uid}>")
                     if inline_pending and texts:

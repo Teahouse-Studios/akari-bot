@@ -16,8 +16,9 @@ from attrs import define, field
 from deprecated import deprecated
 from japanera import EraDate
 
+from core.builtins.filter import filter_badwords
 from core.builtins.message.chain import MessageChain, get_message_chain, Chainable, MessageNodes
-from core.builtins.message.internal import Button, ButtonFrame, I18NContext
+from core.builtins.message.internal import Button, ButtonFrame, I18NContext, PlainElement
 from core.builtins.session.info import SessionInfo, FetchedSessionInfo
 from core.builtins.session.lock import ExecutionLockList, ExecutionState
 from core.builtins.session.tasks import SessionTaskManager
@@ -52,6 +53,22 @@ def confirm_prompt_key(session_info: SessionInfo) -> str:
             return "message.wait.confirm.prompt.qq"
         return "message.wait.confirm.prompt.reaction"
     return "message.wait.confirm.prompt"
+
+
+def _filter_message_chain_badwords(
+    chain: MessageChain | MessageNodes, session_info: SessionInfo
+) -> MessageChain | MessageNodes:
+    """在消息进入平台适配器前统一过滤可发送文本。"""
+    if isinstance(chain, MessageNodes):
+        chain.values = [cast(MessageChain, _filter_message_chain_badwords(node, session_info)) for node in chain.values]
+        return chain
+
+    sendable = chain.as_sendable(session_info)
+    for element in sendable.values:
+        if isinstance(element, PlainElement):
+            element.text = session_info.locale.t_str(filter_badwords(element.text))
+    chain.values = sendable.values
+    return chain
 
 
 @define
@@ -189,6 +206,7 @@ class MessageSession:
         # ========== 步骤 1: 转换消息链格式 ==========
         # 根据平台和会话信息选择合适的消息链格式
         chain = get_message_chain(self.session_info, chain=message_chain)
+        chain = _filter_message_chain_badwords(chain, self.session_info)
 
         if isinstance(chain, MessageNodes) and not self.session_info.support_handle_message_nodes:
             from core.utils.image import msgnode2image
@@ -340,6 +358,7 @@ class MessageSession:
 
         # ========== 步骤 1: 转换和检查消息 ==========
         chain = get_message_chain(session=self.session_info, chain=message_chain)
+        chain = _filter_message_chain_badwords(chain, self.session_info)
         if isinstance(chain, MessageNodes):
             from core.utils.image import msgnode2image
 
@@ -388,6 +407,7 @@ class MessageSession:
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
 
         chain = get_message_chain(self.session_info, chain=message_chain)
+        chain = _filter_message_chain_badwords(chain, self.session_info)
         if isinstance(chain, MessageNodes):
             from core.utils.image import msgnode2image
 
