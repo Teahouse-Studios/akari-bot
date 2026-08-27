@@ -27,7 +27,7 @@ class ConfigMeta(type):
 
     模板此前仅靠导入副作用生成配置文件，类本身无人引用，取值代码只得将键名、默认值、类型与表名
     重复声明一次，二者不一致即造成同一配置项存在两个互不相同的默认值。引入本元类后，
-    ``AiocqhttpConfig.qq_typing_emoji`` 即为该配置项的当前值，模板成为唯一的定义处。
+    ``OneBotConfig.qq_typing_emoji`` 即为该配置项的当前值，模板成为唯一的定义处。
 
     必须实现在元类上：类体内的 ``__getattr__`` 只对实例生效，对类属性访问不起作用。
     """
@@ -237,7 +237,7 @@ def on_bot_config(bot_name: str, secret: bool = False):
     示例:
     ```
         @on_bot_config("onebot")
-        class AiocqhttpConfig:
+        class OneBotConfig:
             qq_typing_emoji: int = 181
     ```
 

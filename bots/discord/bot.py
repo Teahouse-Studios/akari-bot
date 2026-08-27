@@ -9,6 +9,7 @@ import filetype
 
 import bots.discord.slash as slash_modules
 from bots.discord.client import discord_bot, ensure_client_initialized
+from bots.discord.config import DiscordConfig, DiscordSecretConfig
 from bots.discord.buttons import set_action_text_submit_handler, set_button_click_handler
 from bots.discord.interactions import handle_action_text_submit, handle_button_click
 from bots.discord.context import DiscordContextManager, DiscordFetchedContextManager, DiscordReactionContext
@@ -19,7 +20,6 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, Image, Audio, Video
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
-from bots.discord.config import DiscordConfig, DiscordSecretConfig
 from core.config.base import CoreConfig
 from core.logger import Logger
 from core.utils.http import download

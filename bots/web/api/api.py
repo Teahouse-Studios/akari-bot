@@ -11,8 +11,8 @@ from fastapi.responses import FileResponse, Response
 from tortoise.expressions import Q
 
 from bots.web.client import app, client_cleanup, limiter, enable_https, get_client_ip
-from core.builtins.utils import command_prefix
 from bots.web.config import WebConfig
+from core.builtins.utils import command_prefix
 from core.config.base import BaseConfig, CoreConfig
 from core.constants import config_filename
 from core.constants.path import config_path

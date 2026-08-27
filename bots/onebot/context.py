@@ -10,16 +10,15 @@ from aiocqhttp import Event, MessageSegment
 from tenacity import retry, stop_after_attempt, wait_fixed
 
 from bots.onebot.client import aiocqhttp_bot
+from bots.onebot.config import AiocqhttpConfig
 from bots.onebot.info import target_private_prefix, target_group_prefix, client_name
 from bots.onebot.utils import CQCodeHandler
-from core.builtins.filter import filter_badwords
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, AudioElement, VideoElement, MentionElement
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
-from bots.onebot.config import AiocqhttpConfig
 from core.logger import Logger
 from .features import features as onebot_features
 
@@ -76,7 +75,7 @@ def convert_msg_nodes(
         msg_chain = message.as_sendable(session_info=session_info)
         for x in msg_chain:
             if isinstance(x, PlainElement):
-                content += session_info.locale.t_str(filter_badwords(x.text)) + "\n"
+                content += x.text + "\n"
             elif isinstance(x, ImageElement):
                 content += f"[CQ:image,file=base64://{x.get_base64()}]\n"
 
@@ -205,7 +204,6 @@ class OneBotContextManager(ContextManager):
             count = 0
             for x in message.as_sendable(session_info):
                 if isinstance(x, PlainElement):
-                    x.text = session_info.locale.t_str(filter_badwords(x.text))
                     if x.allow_parse:
                         x.text = match_atcode(x.text, client_name, "[CQ:at,qq={uid}]")
                     if x.allow_parse:

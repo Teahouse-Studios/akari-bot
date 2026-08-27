@@ -9,7 +9,6 @@ from aiogram.types import FSInputFile, InputMediaAudio, InputMediaPhoto
 from attrs import define, field
 
 from bots.telegram.info import client_name
-from core.builtins.filter import filter_badwords
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import (
     ActionTextElement,
@@ -195,7 +194,6 @@ async def collect_telegram_content(
     inline_pending = False
     for element in message.as_sendable(session_info):
         if isinstance(element, PlainElement):
-            element.text = session_info.locale.t_str(filter_badwords(element.text))
             text = _escape_telegram_text(element.text, parse_mentions=element.allow_parse)
             if inline_pending and text_parts:
                 text_parts[-1] += text

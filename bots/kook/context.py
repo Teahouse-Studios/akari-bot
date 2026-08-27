@@ -5,7 +5,6 @@ import httpx
 import orjson
 from khl import Message, MessageTypes, PublicChannel, User
 
-from core.builtins.filter import filter_badwords
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, AudioElement, VideoElement, MentionElement
 from core.builtins.session.context import ContextManager
@@ -152,7 +151,6 @@ class KOOKContextManager(ContextManager):
 
         for x in message.as_sendable(session_info):
             if isinstance(x, PlainElement):
-                x.text = session_info.locale.t_str(filter_badwords(x.text))
                 if x.allow_parse:
                     x.text = match_atcode(x.text, client_name, "(met){uid}(met)")
                 if ctx:

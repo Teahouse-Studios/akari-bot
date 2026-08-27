@@ -7,7 +7,6 @@ import orjson
 from fastapi import WebSocket
 
 from bots.web.features import features as web_features
-from core.builtins.filter import filter_badwords
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import (
     ActionTextElement,
@@ -104,7 +103,7 @@ async def _serialize_element(x, session_info: SessionInfo) -> dict | None:
     :return: 前端消息字典；无法识别的元素返回 None，由调用方跳过。
     """
     if isinstance(x, PlainElement):
-        return {"type": "text", "content": session_info.locale.t_str(filter_badwords(x.text))}
+        return {"type": "text", "content": x.text}
     if isinstance(x, ImageElement):
         return {"type": "image", "content": await x.get_base64(mime=True)}
     if isinstance(x, AudioElement):

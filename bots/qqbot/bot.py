@@ -5,6 +5,7 @@ from botpy.interaction import Interaction
 from botpy.manage import GroupMemberEvent
 from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 
+from bots.qqbot.config import QQBotConfig, QQBotSecretConfig
 from bots.qqbot.context import QQBotContextManager, QQBotFetchedContextManager, cache_permission
 from bots.qqbot.info import *
 from bots.qqbot.features import group_disable_read_all_message_features, resolve_features, guild_features
@@ -16,13 +17,11 @@ from core.builtins.message.internal import Plain
 from core.builtins.session.info import EventInfo, SessionInfo
 from core.builtins.utils import command_prefix
 from core.client.init import client_cleanup, client_init
-from bots.qqbot.config import QQBotConfig, QQBotSecretConfig
 from core.config.base import CoreConfig
 from core.constants.default import confirm_command_default
 from core.logger import Logger
 
 Bot.register_bot(client_name=client_name)
-Logger.rename(client_name)
 ctx_id = Bot.register_context_manager(QQBotContextManager)
 Bot.register_context_manager(QQBotFetchedContextManager, fetch_session=True)
 

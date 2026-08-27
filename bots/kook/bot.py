@@ -3,6 +3,7 @@ import re
 from khl import Bot as khlBot, EventTypes, Event, Message, MessageTypes
 
 from bots.kook.client import bot
+from bots.kook.config import KookConfig
 from bots.kook.context import KOOKContextManager, KOOKFetchedContextManager, KOOKReactionContext
 from bots.kook.events import guild_member_joined, guild_member_left
 from bots.kook.info import *
@@ -13,7 +14,6 @@ from core.builtins.message.internal import Plain, Image, Audio, Video
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
 from core.client.init import client_init
-from bots.kook.config import KookConfig
 from core.config.base import CoreConfig
 
 Bot.register_bot(client_name=client_name)

@@ -1,5 +1,4 @@
 import asyncio
-import html
 import time
 from collections import OrderedDict, deque
 from collections.abc import Awaitable, Callable, Mapping
@@ -15,6 +14,7 @@ from botpy.types.group import SetMemberMuteState
 from botpy.types.message import Reference, KeyboardPayload
 from botpy.types.inline import Keyboard, Button, KeyboardRow, RenderData, Action, Permission
 
+from bots.qqbot.config import QQBotConfig
 from bots.qqbot.features import features as qqbot_features
 from bots.qqbot.info import (
     client_name,
@@ -25,7 +25,6 @@ from bots.qqbot.info import (
     target_c2c_prefix,
 )
 from bots.qqbot.utils import url_filter
-from core.builtins.filter import filter_badwords
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import (
     ActionTextElement,
@@ -43,7 +42,6 @@ from core.builtins.message.internal import I18NContext, Image
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
-from bots.qqbot.config import QQBotConfig
 from core.config.base import CoreConfig
 from core.constants.path import assets_path
 from core.logger import Logger
@@ -493,7 +491,6 @@ class QQBotContextManager(ContextManager):
 
             for x in message.as_sendable(session_info, disable_markdown=True):
                 if isinstance(x, PlainElement):
-                    x.text = session_info.locale.t_str(filter_badwords(html.unescape(x.text)))
                     if x.allow_parse:
                         x.text = match_atcode(x.text, client_name, "<@{uid}>")
                     plains.append(x)
@@ -659,7 +656,6 @@ class QQBotContextManager(ContextManager):
 
             for x in converted_message:
                 if isinstance(x, PlainElement):
-                    x.text = session_info.locale.t_str(filter_badwords(html.unescape(x.text)))
                     if x.allow_parse:
                         x.text = match_atcode(x.text, client_name, "<@{uid}>")
                     if inline_pending and texts:

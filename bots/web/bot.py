@@ -5,6 +5,7 @@ import uvicorn
 
 from bots.web.api import *
 from bots.web.client import web_host, available_web_port, forwarded_allow_ips
+from bots.web.config import WebConfig
 from bots.web.context import WebContextManager
 from bots.web.info import *
 from core.builtins.bot import Bot
@@ -12,7 +13,6 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
 from core.utils.button_runtime import normalize_button_payload
-from bots.web.config import WebConfig
 
 Bot.register_bot(client_name=client_name)
 
