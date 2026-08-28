@@ -18,7 +18,7 @@ from core.utils.bash import run_sys_command
 from core.utils.http import get_url
 
 WEBLATE_LANGUAGES_API = "https://hosted.weblate.org/api/projects/akaribot/languages/"
-TRANSLATION_PROGRESS_THRESHOLD = 80.0
+TRANSLATION_PROGRESS_THRESHOLD = 95.0
 
 # Weblate 语言列表的缓存文件。机器人每晚自动清空 cache 目录时一并清理，次日首次调用时重新拉取。
 WEBLATE_LANGUAGES_CACHE = cache_path / "weblate_languages.json"
