@@ -320,7 +320,8 @@ async def _(msg: Bot.MessageSession):
 
 @locale.command("[<lang>] {{I18N:core.help.locale.set}}", required_admin=True)
 async def _(msg: Bot.MessageSession, lang: str):
-    if lang in get_available_locales() and await msg.session_info.target_union_info.edit_attr("locale", lang):
+    if lang in get_available_locales():
+        await msg.session_info.target_union_info.edit_attr("locale", lang)
         await msg.send_message(Locale(lang).t("message.success"))
         await msg.finish(await build_translation_notice(lang))
     else:

@@ -16,6 +16,7 @@
     "wiki.help.newbie": "Get recent newbie logs for the default wiki.",
     "wiki.help.option.l": "Find the corresponding language version of this page, and return the current language if no result.",
     "wiki.help.prefix.reset": "Reset custom wiki prefix.",
+    "wiki.help.random": "Random a Wiki page.",
     "wiki.help.prefix.set": "Set custom wiki prefix.",
     "wiki.help.rc": "Get recent changes for the default wiki.",
     "wiki.help.redlink": "Toggle whether to return the edit link when the page does not exist.",

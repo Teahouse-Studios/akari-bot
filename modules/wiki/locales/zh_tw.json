@@ -17,6 +17,7 @@
     "wiki.help.option.l": "查找本頁面的對應語言版本，若無結果則返回當前語言。",
     "wiki.help.prefix.reset": "重設自訂前綴。",
     "wiki.help.prefix.set": "設定自訂前綴。",
+    "wiki.help.random": "隨機一个 Wiki 页面。",
     "wiki.help.rc": "取得預設 Wiki 的近期變更。",
     "wiki.help.redlink": "切換是否在頁面不存在時返回編輯連結。",
     "wiki.help.search": "搜尋一個 Wiki 頁面。",

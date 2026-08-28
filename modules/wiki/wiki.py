@@ -195,13 +195,28 @@ def _build_not_found_choice_rows(possible_titles: list[str], start_index: int = 
     ]
 
 
+def _normalize_page_name(pagename: str) -> str:
+    if match := re.fullmatch(r"\[\[\s*(.*?)\s*\]\]", pagename):
+        return match.group(1).split("|", 1)[0].strip()
+    if match := re.fullmatch(r"\{\{\s*(.*?)\s*\}\}", pagename):
+        title = match.group(1).split("|", 1)[0].strip()
+        return f"Template:{title}"
+    return pagename
+
+
 @wiki.command()
 async def _(msg: Bot.MessageSession):
     await query_pages(msg)
 
 
+@wiki.command("random {{I18N:wiki.help.random}}")
+async def _(msg: Bot.MessageSession):
+    await query_pages(msg, random_page=True)
+
+
 @wiki.command("<pagename> [-l <lang>] {{I18N:wiki.help}}", options_desc={"-l": "{I18N:wiki.help.option.l}"})
 async def _(msg: Bot.MessageSession, pagename: str):
+    pagename = _normalize_page_name(pagename)
     get_lang = msg.parsed_msg.get("-l", False)
     if get_lang:
         lang = get_lang["<lang>"]
@@ -241,6 +256,7 @@ async def query_pages(
     mediawiki: bool = False,
     use_prefix: bool = True,
     inline_mode: bool = False,
+    random_page: bool = False,
 ):
     if isinstance(session, MessageSession):
         target = await WikiTargetInfo.get_by_target_id(session.session_info.target_id)
@@ -264,7 +280,16 @@ async def query_pages(
     # if lang in interwiki_list:
     #     start_wiki = interwiki_list[lang]
     #     lang = None
-    if title:
+    if random_page:
+        random_wiki = WikiLib(start_wiki, headers, locale=session.session_info.locale.locale)
+        random_result = await random_wiki.get_json(action="query", list="random", rnnamespace="0")
+        query_task = {
+            start_wiki: {
+                "query": [random_result["query"]["random"][0]["title"]],
+                "iw_prefix": "",
+            }
+        }
+    elif title:
         if isinstance(title, str):
             title = [title]
         title = list(set(title))
