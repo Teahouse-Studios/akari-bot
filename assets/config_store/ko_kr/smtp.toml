@@ -3,7 +3,7 @@
 # 예: TOML의 불리언 값은 반드시 소문자로 작성해야 합니다.
 
 [smtp]
-# SMTP 的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
+# SMTP 설정 항목입니다. 여기에 입력된 값은 메시지에 일반 텍스트로 표시됩니다. 이 섹션에는 민감한 정보를 입력하지 마십시오.
 enable = false # SMTP 이메일을 통한 보고서 기능을 활성화할지 여부. 활성화하면 보고서 메시지가 컨텍스트에 보고되지 않습니다. 
 smtp_host = "<Replace me with str value>" # SMTP 서버 주소.
 smtp_port = 587 # SMTP 서버 포트 번호.
@@ -13,6 +13,6 @@ smtp_ssl = false # SMTPS (SSL) 연결을 사용할지 여부.
 smtp_starttls = true # STARTTLS를 활성화할지 여부.
 
 [smtp_secret]
-# SMTP 的密钥部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
+# SMTP 키 설정 항목입니다. 여기에 입력된 값이 전송 메시지에 실수로 포함된 경우, 봇이 이를 가로채려고 시도합니다. 그러나 유출되지 않도록 주의해 주십시오.
 smtp_password = "<Replace me with str value>" # SMTP 로그인 비밀번호.
 smtp_recipients = [] # 보고서 수신자 (이메일 주소). 
