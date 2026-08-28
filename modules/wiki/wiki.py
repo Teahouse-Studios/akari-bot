@@ -196,9 +196,9 @@ def _build_not_found_choice_rows(possible_titles: list[str], start_index: int = 
 
 
 def _normalize_page_name(pagename: str) -> str:
-    if match := re.fullmatch(r"\[\[\s*(.*?)\s*\]\]", pagename):
+    if match := re.fullmatch(r"\[{1,2}\s*(.*?)\s*\]{1,2}", pagename):
         return match.group(1).split("|", 1)[0].strip()
-    if match := re.fullmatch(r"\{\{\s*(.*?)\s*\}\}", pagename):
+    if match := re.fullmatch(r"\{{1,2}\s*(.*?)\s*\}{1,2}", pagename):
         title = match.group(1).split("|", 1)[0].strip()
         return f"Template:{title}"
     return pagename
@@ -207,11 +207,6 @@ def _normalize_page_name(pagename: str) -> str:
 @wiki.command()
 async def _(msg: Bot.MessageSession):
     await query_pages(msg)
-
-
-@wiki.command("random {{I18N:wiki.help.random}}")
-async def _(msg: Bot.MessageSession):
-    await query_pages(msg, random_page=True)
 
 
 @wiki.command("<pagename> [-l <lang>] {{I18N:wiki.help}}", options_desc={"-l": "{I18N:wiki.help.option.l}"})
@@ -242,6 +237,11 @@ async def _(msg: Bot.MessageSession, pageid: str):
     else:
         lang = None
     await query_pages(msg, pageid=pageid, iw=iw, lang=lang)
+
+
+@wiki.command("random {{I18N:wiki.help.random}}")
+async def _(msg: Bot.MessageSession):
+    await query_pages(msg, random_page=True)
 
 
 async def query_pages(
