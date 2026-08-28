@@ -326,7 +326,7 @@ async def _test_audio_element_sends_audio_type() -> bool:
         finally:
             WebContextManager.context.pop(session.session_id, None)
     finally:
-        os.remove(path)
+        os.unlink(path)
 
 
 async def _test_action_text_element_sends_action_text_type() -> bool:

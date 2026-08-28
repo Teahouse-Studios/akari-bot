@@ -58,14 +58,16 @@ from dotenv import load_dotenv
 
 from core.builtins.utils import confirm_command
 from core.constants import ascii_art, cache_path, tests_path
-from core.logger import Logger
 from core.tester.decorator import CaseEntry, get_registry
 from core.tester.expectations import Expectation
+from core.tester.logger import TestLoggingLogger
 from core.tester.junit import JUnitReport, JUnitTestSuite, JUnitTestCase
 from core.tester.mock.database import init_db, close_db
 from core.tester.mock.loader import load_modules
 from core.tester.mock.random import Random
 from core.tester.process import run_case_entry, run_function_entry
+
+Logger = TestLoggingLogger("TEST")
 
 
 load_dotenv()
@@ -140,9 +142,7 @@ async def _run_func_test(fn: FunctionType, path: str) -> FuncTestResult:
 async def main():
     Logger.trace("main() START")
 
-    Logger.rename("test", export=False)
     cache_path.mkdir(parents=True, exist_ok=True)
-    Logger.info(ascii_art)
 
     Logger.trace("main() init_db")
     try:
@@ -164,7 +164,10 @@ async def main():
         return 1
 
     Logger.trace("main() get_registry")
-    print("=" * 60)
+    Logger.info(ascii_art)
+    Logger.info("=" * 60)
+    Logger.info("Tester is running. Please wait...")
+    Logger.info("=" * 60)
     registry = get_registry()
     Logger.trace(f"main() registry has {len(registry)} entries")
 
@@ -210,7 +213,7 @@ async def main():
             junit_registry_suite.add_testcase(junit_testcase)
             continue
 
-        print("-" * 60)
+        Logger.info("-" * 60)
 
         test_number = reg_result.get("test_number")
         note = reg_result.get("note")
@@ -307,7 +310,7 @@ async def main():
             if tcost is not None:
                 Logger.info(f"TIME COST: {tcost:.06f}s")
                 total_test_cost += tcost
-        print("-" * 60)
+        Logger.info("-" * 60)
 
     Logger.trace("main() starting func tests discovery")
     if os.path.isdir(tests_path):
@@ -383,7 +386,7 @@ async def main():
             if fn.__doc__:
                 Logger.info(f"DOC: {fn.__doc__}")
 
-            print("-" * 60)
+            Logger.info("-" * 60)
 
             if res.get("skipped"):
                 Logger.trace(f"main() func test {fn.__name__} skipped")
@@ -531,7 +534,7 @@ async def main():
                 total_test_cost += tcost
 
             total += 1
-            print("-" * 60)
+            Logger.info("-" * 60)
 
     Logger.trace("main() all tests processed")
     if total > 0:
@@ -541,7 +544,7 @@ async def main():
         if failed:
             Logger.error(f"FAILED: {failed}")
         Logger.info(f"TIME COST: {total_test_cost:.06f}s")
-        print("=" * 60)
+        Logger.info("=" * 60)
     else:
         Logger.warning("No tests registered. Use `core.tester.case` or `core.tester.test_case` to register tests.")
 
