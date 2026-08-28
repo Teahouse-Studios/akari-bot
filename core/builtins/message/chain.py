@@ -1380,6 +1380,23 @@ def match_atcode(text: str, client: str, pattern: str) -> str:
     return re.sub(r"<(?:AT|@):([^\|]+)\|(?:.*?\|)?([^\|>]+)>", _replacer, text)
 
 
+def escape_special_char(s: str, escape_comma: bool = True) -> str:
+    """
+    转义特殊占位符标记的特殊字符。
+
+    :param s: 要转义的字符串。
+    :param escape_comma: 是否转义逗号（`,`）。
+    :return: 转义后的字符串。
+    """
+    s = s.replace("&", "&amp;")
+    s = s.replace("{", "&#123;").replace("}", "&#124;")
+    s = s.replace("[", "&#91;").replace("]", "&#93;")
+    s = s.replace("<", "&lt;").replace(">", "&gt;")
+    if escape_comma:
+        s = s.replace(",", "&#44;")
+    return s
+
+
 def convert_senderid_to_atcode(text: str, sender_prefix: str) -> str:
     """
     将用户 ID 转换为 AT 码格式。
@@ -1442,4 +1459,6 @@ __all__ = [
     "get_message_chain",
     "MessageNodes",
     "match_kecode",
+    "match_atcode",
+    "escape_special_char",
 ]
