@@ -71,10 +71,9 @@ features = module("features", required_superuser=True, base=True, doc=True)
 async def _(msg: Bot.MessageSession):
     fetched = await Bot.fetch_target(msg.session_info.target_id)
 
-    locale = msg.session_info.locale
-    yes = locale.t("message.yes")
-    no = locale.t("message.no")
-    unknown = locale.t("message.unknown")
+    yes = str(I18NContext("message.yes"))
+    no = str(I18NContext("message.no"))
+    unknown = str(I18NContext("message.unknown"))
 
     lines = []
     diff_count = 0

@@ -9,7 +9,7 @@ from attrs import define, field
 from bs4 import BeautifulSoup
 
 import core.utils.html2text as html2text
-from core.builtins.message.internal import Url
+from core.builtins.message.internal import I18NContext, Url
 from core.builtins.session.internal import MessageSession
 from core.config.base import BaseConfig, CoreConfig
 from core.constants.exceptions import AbuseWarning, NoReportException
@@ -172,7 +172,7 @@ class WikiLib:
         except Exception as e:
             # Exception handling for moegirl.org.cn
             if api.find("moegirl.org.cn") != -1:
-                raise InvalidWikiError(self.locale.t("wiki.message.utils.wikilib.get_failed.moegirl"))
+                raise InvalidWikiError(str(I18NContext("wiki.message.utils.wikilib.get_failed.moegirl")))
             raise NoReportException(str(e))
 
     async def rearrange_siteinfo(self, info: dict | str | bytes, wiki_api_link) -> WikiInfo:
@@ -253,13 +253,13 @@ class WikiLib:
                     return WikiStatus(
                         available=False,
                         value=False,
-                        message=self.locale.t("wiki.message.utils.wikilib.get_failed.wikimedia"),
+                        message=str(I18NContext("wiki.message.utils.wikilib.get_failed.wikimedia")),
                     )
                 if get_page.find("<title>Attention Required! | Cloudflare</title>") != -1:
                     return WikiStatus(
                         available=False,
                         value=False,
-                        message=self.locale.t("wiki.message.utils.wikilib.get_failed.cloudflare"),
+                        message=str(I18NContext("wiki.message.utils.wikilib.get_failed.cloudflare")),
                     )
                 try:
                     m = re.findall(
@@ -276,24 +276,24 @@ class WikiLib:
                     return WikiStatus(
                         available=False,
                         value=False,
-                        message=self.locale.t("wiki.message.utils.wikilib.get_failed.not_mediawiki"),
+                        message=str(I18NContext("wiki.message.utils.wikilib.get_failed.not_mediawiki")),
                     )
             except TimeoutError:
                 return WikiStatus(
                     available=False,
                     value=False,
-                    message=self.locale.t("wiki.message.utils.wikilib.get_failed.timeout"),
+                    message=str(I18NContext("wiki.message.utils.wikilib.get_failed.timeout")),
                 )
             except Exception as e:
                 Logger.exception()
                 if str(e).startswith("403"):
-                    message = self.locale.t("wiki.message.utils.wikilib.get_failed.forbidden")
+                    message = str(I18NContext("wiki.message.utils.wikilib.get_failed.forbidden"))
                 elif not re.match(r"^(https?://).*", self.url):
-                    message = self.locale.t("wiki.message.utils.wikilib.get_failed.no_http_or_https_headers")
+                    message = str(I18NContext("wiki.message.utils.wikilib.get_failed.no_http_or_https_headers"))
                 else:
-                    message = self.locale.t("wiki.message.utils.wikilib.get_failed.may_not_mediawiki") + str(e)
+                    message = str(I18NContext("wiki.message.utils.wikilib.get_failed.may_not_mediawiki")) + str(e)
                 if self.url.find("moegirl.org.cn") != -1:
-                    message += "\n" + self.locale.t("wiki.message.utils.wikilib.get_failed.moegirl")
+                    message += "\n" + str(I18NContext("wiki.message.utils.wikilib.get_failed.moegirl"))
                 return WikiStatus(available=False, value=False, message=message)
         if wiki_api_link in redirect_list:
             wiki_api_link = redirect_list[wiki_api_link]
@@ -327,9 +327,9 @@ class WikiLib:
         except Exception as e:
             if CoreConfig.debug:
                 Logger.exception()
-            message = self.locale.t("wiki.message.utils.wikilib.get_failed.api") + str(e)
+            message = str(I18NContext("wiki.message.utils.wikilib.get_failed.api")) + str(e)
             if self.url.find("moegirl.org.cn") != -1:
-                message += "\n" + self.locale.t("wiki.message.utils.wikilib.get_failed.moegirl")
+                message += "\n" + str(I18NContext("wiki.message.utils.wikilib.get_failed.moegirl"))
             return WikiStatus(available=False, value=False, message=message)
         get_cache_info.site_info = get_json
         # 须带时区：不带时区的时间会被 Tortoise 当作 UTC 存入，缓存时间凭空提前一个时区差，
@@ -340,7 +340,7 @@ class WikiLib:
             available=True,
             value=info,
             message=(
-                self.locale.t("wiki.message.utils.wikilib.no_textextracts")
+                str(I18NContext("wiki.message.utils.wikilib.no_textextracts"))
                 if "TextExtracts" not in info.extensions
                 else ""
             ),
@@ -446,7 +446,7 @@ class WikiLib:
         parse_text = get_parse["parse"]["text"]["*"]
         t = h.handle(parse_text)
         if len(t) > 65535:
-            return self.locale.t("wiki.message.utils.wikilib.error.text_too_long")
+            return str(I18NContext("wiki.message.utils.wikilib.error.text_too_long"))
         if section:
             for i in range(1, 7):  # H1 to H6
                 s = re.split(r"(.*" + "#" * i + r"[^#].*\[.*?])", t, re.M | re.S)  # e.g. ### Section [..]
@@ -625,7 +625,7 @@ class WikiLib:
                 title=title if title else pageid,
                 id=pageid,
                 link=link,
-                desc=self.locale.t("message.error") + str(e),
+                desc=str(I18NContext("message.error")) + str(e),
                 info=self.wiki_info,
                 templates=[],
             )
@@ -769,7 +769,7 @@ class WikiLib:
         if not query:
             return PageInfo(
                 title=title,
-                desc=self.locale.t("wiki.message.utils.wikilib.error.empty"),
+                desc=str(I18NContext("wiki.message.utils.wikilib.error.empty")),
                 info=self.wiki_info,
             )
 
@@ -809,12 +809,14 @@ class WikiLib:
                 if "invalid" in page_raw:
                     match = re.search(r"\"(.)\"", page_raw["invalidreason"])
                     if match:
-                        rs = self.locale.t(
-                            "wiki.message.utils.wikilib.invalid.invalid_character",
-                            char=match.group(1),
+                        rs = str(
+                            I18NContext(
+                                "wiki.message.utils.wikilib.invalid.invalid_character",
+                                char=match.group(1),
+                            )
                         )
                     else:
-                        rs = self.locale.t("wiki.message.utils.wikilib.invalid.empty_title")
+                        rs = str(I18NContext("wiki.message.utils.wikilib.invalid.empty_title"))
                     page_info.desc = rs
                 elif "missing" in page_raw:
                     # if page is missing... try to research
@@ -1122,7 +1124,9 @@ class WikiLib:
                     # MediaWiki 的 iwurl 会返回已经解析过全域、本地及转发规则的完整 URL。
                     # siteinfo.interwikimap 不一定包含扩展提供的全域前缀，因此只把缓存映射作为兼容回退。
                     if not (get_iw := i.get("url") or self.wiki_info.interwiki.get(i["iw"])):
-                        raise InvalidWikiError(self.locale.t("wiki.message.utils.wikilib.get_failed.invalid_interwiki"))
+                        raise InvalidWikiError(
+                            str(I18NContext("wiki.message.utils.wikilib.get_failed.invalid_interwiki"))
+                        )
 
                     target_wiki = WikiLib(url=get_iw, headers=self.headers)
                     if i.get("url"):
