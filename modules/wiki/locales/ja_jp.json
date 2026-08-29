@@ -157,7 +157,7 @@
     "wiki.message.utils.wikilib.error.empty": "エラーが発生しました：API からコンテンツが返されませんでした。原因についてはサイト管理者にお問い合わせください。",
     "wiki.message.utils.wikilib.error.text_too_long": "エラーが発生しました：要求された段落テキストが長すぎるため、表示できません。",
     "wiki.message.utils.wikilib.get_failed.api": "API から情報を取得中にエラーが発生しました：",
-    "wiki.message.utils.wikilib.get_failed.wikimedia": "ウィキメディア財団のポリシー（T400119）によると、適切な User-Agent リクエストヘッダーを設定する必要があります。",
+    "wiki.message.utils.wikilib.get_failed.wikimedia": "ウィキメディア財団のポリシーによると、適切な User-Agent リクエストヘッダーを設定する必要があります。",
     "wiki.message.utils.wikilib.get_failed.cloudflare": "Cloudflare がボットのリクエストをブロックしました。この問題を解決するには、サイト管理者にお問い合わせください。",
     "wiki.message.utils.wikilib.get_failed.forbidden": "サーバーはボットのリクエストを拒否しました。",
     "wiki.message.utils.wikilib.get_failed.invalid_interwiki": "サイトの InterWiki 設定が正しく機能していません。この問題を解決するには、サイト管理者にご連絡ください。",

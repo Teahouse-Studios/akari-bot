@@ -166,7 +166,7 @@
     "wiki.message.utils.wikilib.get_failed.no_http_or_https_headers": "所给的链接没有指明协议头（链接应以“http://”或“https://”开头）。",
     "wiki.message.utils.wikilib.get_failed.not_mediawiki": "此站点不是一个有效的 Mediawiki（或自动嗅探 API 链接被拦截，请尝试手动设置 API 地址）。",
     "wiki.message.utils.wikilib.get_failed.timeout": "尝试建立连接超时。",
-    "wiki.message.utils.wikilib.get_failed.wikimedia": "根据维基媒体基金会政策（T400119），需要设置一个合适的 User-Agent 请求头。",
+    "wiki.message.utils.wikilib.get_failed.wikimedia": "根据维基媒体基金会政策，需要设置一个合适的 User-Agent 请求头。",
     "wiki.message.utils.wikilib.invalid.empty_title": "请求的页面标题为空，或只包含命名空间名称。",
     "wiki.message.utils.wikilib.invalid.invalid_character": "请求的页面标题包含无效字符：“${char}”。",
     "wiki.message.utils.wikilib.no_textextracts": "提示：此 Wiki 没有开启 TextExtracts 扩展。摘要由机器人离线解析页面源代码生成，可能与页面实际渲染的内容存在出入，部分页面可能没有摘要。",

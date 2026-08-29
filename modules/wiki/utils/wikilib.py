@@ -249,7 +249,7 @@ class WikiLib:
         except Exception:
             try:
                 get_page = await get_url(self.url, status_code=None, fmt="text", headers=self.headers)
-                if get_page.find("T400119") != -1:
+                if get_page.find("https://w.wiki/4wJS") != -1:
                     return WikiStatus(
                         available=False,
                         value=False,

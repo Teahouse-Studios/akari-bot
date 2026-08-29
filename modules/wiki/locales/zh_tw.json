@@ -166,7 +166,7 @@
     "wiki.message.utils.wikilib.get_failed.no_http_or_https_headers": "所給的連結沒有指明協議頭（連結應以「http://」或「https://」開頭）。",
     "wiki.message.utils.wikilib.get_failed.not_mediawiki": "此網站不是一個有效的 Mediawiki（或自動嗅探 API 連結被攔截，請嘗試手動設定 API 位址）。",
     "wiki.message.utils.wikilib.get_failed.timeout": "嘗試建立連結逾時。",
-    "wiki.message.utils.wikilib.get_failed.wikimedia": "根據維基媒體基金會的政策（T400119），需要設定一個合適的 User-Agent 請求標頭。",
+    "wiki.message.utils.wikilib.get_failed.wikimedia": "根據維基媒體基金會的政策，需要設定一個合適的 User-Agent 請求標頭。",
     "wiki.message.utils.wikilib.invalid.empty_title": "請求的頁面標題為空的或僅含命名空間名稱。",
     "wiki.message.utils.wikilib.invalid.invalid_character": "請求的頁面標題包含無效的字元：「${char}」。",
     "wiki.message.utils.wikilib.no_textextracts": "警告：此 Wiki 沒有啟用 TextExtracts 擴充功能。摘要由機器人離線解析頁面原始碼生成，可能與頁面實際渲染的內容存在出入，部分頁面可能沒有摘要。",
