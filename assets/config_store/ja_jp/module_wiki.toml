@@ -4,4 +4,4 @@
 
 [module_wiki]
 # モジュールの設定項目です。ここに入力された値は、メッセージ内にプレーンテキストで表示されます。この部分には機密情報を入力しないでください。
-wiki_whitelist_url = "https://github.com/Teahouse-Studios/akari-bot/issues/new?template=request_wiki_whitelist.yaml" # ウィキ ホワイトリスト申請用URL。
+wiki_allowlist_url = "https://github.com/Teahouse-Studios/akari-bot/issues/new?template=request_wiki_whitelist.yaml" # Wiki API 加入全局 URL 允许列表的申请网址。
