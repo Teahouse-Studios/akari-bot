@@ -3,14 +3,12 @@ import orjson
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import ActionText, I18NContext, Image, Plain, Url
-from core.config.base import CoreConfig
 from modules.wiki.config import WikiConfig
 from core.utils.image_table import image_table_render, ImageTable
 from . import wiki
 from .database.models import WikiAllowList, WikiTargetInfo
 from .utils.wikilib import WikiLib
 
-enable_urlmanager = CoreConfig.enable_urlmanager
 wiki_whitelist_url = WikiConfig.wiki_whitelist_url
 
 
@@ -22,16 +20,15 @@ async def _(msg: Bot.MessageSession, wikiurl: str):
         wiki_name = check.value.name
         if check.value.lang:
             wiki_name += f" ({check.value.lang})"
-        in_allowlist = True
-        if Bot.Info.use_url_manager:
-            in_allowlist = check.value.in_allowlist
-            if check.value.in_blocklist and not in_allowlist:
-                await msg.finish(I18NContext("wiki.message.invalid.blocked", name=wiki_name))
+        use_url_manager = msg.session_info.use_url_manager
+        in_allowlist = check.value.in_allowlist if use_url_manager else True
+        if use_url_manager and check.value.in_blocklist and not in_allowlist:
+            await msg.finish(I18NContext("wiki.message.invalid.blocked", name=wiki_name))
         result = await target.add_start_wiki(check.value.api)
         if not result:
             await msg.finish(I18NContext("message.failed"))
         prompts = [I18NContext("wiki.message.set.success", name=wiki_name)]
-        if result and enable_urlmanager and not in_allowlist:
+        if result and use_url_manager and not in_allowlist:
             prompts.append(I18NContext("wiki.message.wiki_audit.untrust"))
             if wiki_whitelist_url:
                 prompts.append(
@@ -59,13 +56,14 @@ async def _(msg: Bot.MessageSession, interwiki: str, wikiurl: str):
         wiki_name = check.value.name
         if check.value.lang:
             wiki_name += f" ({check.value.lang})"
-        if Bot.Info.use_url_manager and check.value.in_blocklist and not check.value.in_allowlist:
+        use_url_manager = msg.session_info.use_url_manager
+        if use_url_manager and check.value.in_blocklist and not check.value.in_allowlist:
             await msg.finish(msg.session_info.locale.t("wiki.message.invalid.blocked", name=wiki_name))
         result = await target.config_interwikis(interwiki, check.value.api)
         if not result:
             await msg.finish(I18NContext("message.failed"))
         prompts = [I18NContext("wiki.message.iw.add.success", iw=interwiki, name=wiki_name)]
-        if result and enable_urlmanager and not check.value.in_allowlist:
+        if result and use_url_manager and not check.value.in_allowlist:
             prompts.append(I18NContext("wiki.message.wiki_audit.untrust"))
             if wiki_whitelist_url:
                 prompts.append(

@@ -17,7 +17,7 @@ from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.button import build_button_rows
-from .database.models import WikiTargetInfo
+from .database.models import WikiAllowList, WikiBlockList, WikiSiteInfo, WikiTargetInfo
 from .utils.mapping import generate_screenshot_v2_blocklist
 from .utils.recommend import finish_with_start_wiki_not_set
 from .utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
@@ -204,6 +204,25 @@ def _normalize_page_name(pagename: str) -> str:
     return pagename
 
 
+async def finish_if_wiki_blocked(msg: Bot.MessageSession, api_link: str) -> None:
+    """在发起内容查询前拒绝已进入黑名单且未受白名单覆盖的 Wiki。"""
+    if not await WikiBlockList.check(api_link) or await WikiAllowList.check(api_link):
+        return
+
+    wiki_name = api_link
+    cached = await WikiSiteInfo.get_or_none(api_link=api_link)
+    site_info = cached.site_info if cached else None
+    if isinstance(site_info, dict):
+        query = site_info.get("query")
+        general = query.get("general") if isinstance(query, dict) else None
+        if isinstance(general, dict) and general.get("sitename"):
+            wiki_name = general["sitename"]
+            if general.get("lang"):
+                wiki_name += f" ({general['lang']})"
+
+    await msg.finish(I18NContext("wiki.message.invalid.blocked", name=wiki_name))
+
+
 @wiki.command()
 async def _(msg: Bot.MessageSession):
     await query_pages(msg)
@@ -277,6 +296,8 @@ async def query_pages(
     if not start_wiki:
         if isinstance(session, MessageSession):
             await finish_with_start_wiki_not_set(session)
+    if isinstance(session, MessageSession):
+        await finish_if_wiki_blocked(session, start_wiki)
     # if lang in interwiki_list:
     #     start_wiki = interwiki_list[lang]
     #     lang = None

@@ -9,7 +9,7 @@ from core.utils.func import is_int
 from .database.models import WikiTargetInfo
 from .utils.recommend import finish_with_start_wiki_not_set
 from .utils.wikilib import WikiLib
-from .wiki import wiki, query_pages
+from .wiki import finish_if_wiki_blocked, wiki, query_pages
 
 
 @wiki.command("search <pagename> {{I18N:wiki.help.search}}")
@@ -25,6 +25,7 @@ async def search_pages(msg: Bot.MessageSession, title: str | list | tuple, use_p
     prefix = target.prefix
     if not start_wiki:
         await finish_with_start_wiki_not_set(msg)
+    await finish_if_wiki_blocked(msg, start_wiki)
     if isinstance(title, str):
         title = [title]
     query_task = {start_wiki: {"query": [], "iw_prefix": ""}}

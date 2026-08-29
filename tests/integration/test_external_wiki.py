@@ -5,13 +5,69 @@ wiki 模块的绝大多数子命令都要求当前场景已设置默认 Wiki，�
 自行完成设置。相关请求由 tests/fixtures/http/ 下的录制响应提供，不依赖实时网络。
 """
 
+from unittest.mock import patch
+
 from core.tester import (
     func_case,
     Tester,
     Contains,
+    Match,
 )
+from core.tester.mock.session import MockMessageSession
 
 START_WIKI = "~wiki set https://zh.minecraft.wiki/api.php"
+_original_mock_session_init = MockMessageSession.async_init
+
+
+async def _init_url_manager_session(self, msg):
+    await _original_mock_session_init(self, msg)
+    self.session_info.use_url_manager = True
+
+
+@func_case
+async def test_wiki_set_audit(tester: Tester):
+    """wiki set 应按当前会话的 URLManager 能力执行黑白名单审计。"""
+    from modules.wiki.database.models import WikiAllowList, WikiBlockList, WikiTargetInfo
+
+    api = "https://zh.minecraft.wiki/api.php"
+    await WikiAllowList.remove(api)
+    await WikiBlockList.remove(api)
+    try:
+        with patch.object(MockMessageSession, "async_init", _init_url_manager_session):
+            await WikiBlockList.add(api)
+            await tester.integrate(START_WIKI, Contains("处于黑名单中"), "wiki set 应拦截黑名单 Wiki")
+            blocked_target = await WikiTargetInfo.get_by_target_id("TEST|Console|0")
+            await tester.test(lambda: blocked_target.api_link is None, "黑名单 Wiki 不应写入默认绑定")
+
+            await WikiBlockList.remove(api)
+            await tester.integrate(
+                START_WIKI,
+                Contains("此 Wiki 当前没有加入机器人的白名单列表中"),
+                "wiki set 应提示 Wiki 未加入白名单",
+            )
+            untrusted_target = await WikiTargetInfo.get_by_target_id("TEST|Console|0")
+            await tester.test(lambda: untrusted_target.api_link == api, "非白名单 Wiki 提示后仍应完成绑定")
+
+            await WikiBlockList.add(api)
+            blocked_message = "失败：Minecraft Wiki (zh) 处于黑名单中。"
+            with (
+                patch("modules.wiki.utils.wikilib.WikiLib.parse_page_info", side_effect=AssertionError),
+                patch("modules.wiki.utils.wikilib.WikiLib.search_page", side_effect=AssertionError),
+            ):
+                await tester.integrate(
+                    "~wiki Minecraft",
+                    Match(blocked_message),
+                    "已绑定 Wiki 后进入黑名单时应拒绝页面查询",
+                )
+                await tester.integrate(
+                    "~wiki search Minecraft",
+                    Match(blocked_message),
+                    "已绑定 Wiki 后进入黑名单时应拒绝搜索",
+                )
+    finally:
+        await WikiAllowList.remove(api)
+        await WikiBlockList.remove(api)
+    return tester
 
 
 @func_case
