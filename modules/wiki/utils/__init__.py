@@ -49,17 +49,17 @@ async def _(msg: Bot.MessageSession):
             except NetworkError:
                 legacy = False
                 await msg.send_message(I18NContext("wiki.message.ntqq.forward.timeout"))
-    elif not msg.parsed_msg and Info.web_render_status:
-        try:
-            if command == "rc":
-                nodelist = await get_rc_qq(msg, start_wiki, headers)
-                return await msg.send_message(nodelist)
-            elif command == "ab":
-                nodelist = await get_ab_qq(msg, start_wiki, headers)
-                return await msg.send_message(nodelist)
-        except Exception:
-            Logger.exception()
-            await msg.send_message(I18NContext("wiki.message.rollback"))
+        elif not msg.parsed_msg and Info.web_render_status:
+            try:
+                if command == "rc":
+                    nodelist = await get_rc_qq(msg, start_wiki, headers)
+                    return await msg.send_message(nodelist)
+                elif command == "ab":
+                    nodelist = await get_ab_qq(msg, start_wiki, headers)
+                    return await msg.send_message(nodelist)
+            except Exception:
+                Logger.exception()
+                await msg.send_message(I18NContext("wiki.message.rollback"))
     if legacy:
         try:
             if command == "rc":
