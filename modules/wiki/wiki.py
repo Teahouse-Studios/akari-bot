@@ -551,8 +551,8 @@ async def query_pages(
                                         ImageTable(
                                             session_data,
                                             [
-                                                session.session_info.locale.t("wiki.message.table.header.id"),
-                                                session.session_info.locale.t("wiki.message.table.header.section"),
+                                                str(I18NContext("wiki.message.table.header.id")),
+                                                str(I18NContext("wiki.message.table.header.section")),
                                             ],
                                         )
                                     )
@@ -824,8 +824,8 @@ async def query_pages(
                 if len(wait_list) == 1:
                     possibly_choices.append(
                         {
-                            session.session_info.locale.t("message.button.yes"): confirm_command[0],
-                            session.session_info.locale.t("message.button.no"): "no",
+                            str(I18NContext("message.button.yes")): confirm_command[0],
+                            str(I18NContext("message.button.no")): "no",
                         }
                     )
                 elif len(wait_list) > 1:

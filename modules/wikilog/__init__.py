@@ -308,57 +308,57 @@ async def _(msg: Bot.MessageSession):
     for apilink in infos:
         text += f"{apilink}: \n"
         text += (
-            msg.session_info.locale.t("wikilog.message.list.abuselog")
+            str(I18NContext("wikilog.message.list.abuselog"))
             + (
-                msg.session_info.locale.t("wikilog.message.enabled")
+                str(I18NContext("wikilog.message.enabled"))
                 if infos[apilink]["AbuseLog"]["enable"]
-                else msg.session_info.locale.t("wikilog.message.disabled")
+                else str(I18NContext("wikilog.message.disabled"))
             )
             + "\n"
         )
         text += (
-            msg.session_info.locale.t("wikilog.message.filters")
+            str(I18NContext("wikilog.message.filters"))
             + '\n"'
             + '" "'.join(infos[apilink]["AbuseLog"]["filters"])
             + '"'
             + "\n"
         )
         text += (
-            msg.session_info.locale.t("wikilog.message.recentchanges")
+            str(I18NContext("wikilog.message.recentchanges"))
             + (
-                msg.session_info.locale.t("wikilog.message.enabled")
+                str(I18NContext("wikilog.message.enabled"))
                 if infos[apilink]["RecentChanges"]["enable"]
-                else msg.session_info.locale.t("wikilog.message.disabled")
+                else str(I18NContext("wikilog.message.disabled"))
             )
             + "\n"
         )
         text += (
-            msg.session_info.locale.t("wikilog.message.filters")
+            str(I18NContext("wikilog.message.filters"))
             + '\n"'
             + '" "'.join(infos[apilink]["RecentChanges"]["filters"])
             + '"'
             + "\n"
         )
         text += (
-            msg.session_info.locale.t("wikilog.message.rcshow")
+            str(I18NContext("wikilog.message.rcshow"))
             + '\n"'
             + '" "'.join(infos[apilink]["RecentChanges"]["rcshow"])
             + '"'
             + "\n"
         )
         text += (
-            msg.session_info.locale.t("wikilog.message.usebot")
+            str(I18NContext("wikilog.message.usebot"))
             + (
-                msg.session_info.locale.t("wikilog.message.enabled")
+                str(I18NContext("wikilog.message.enabled"))
                 if infos[apilink]["use_bot"]
-                else msg.session_info.locale.t("wikilog.message.disabled")
+                else str(I18NContext("wikilog.message.disabled"))
             )
             + "\n"
         )
         if "note" in infos[apilink] and infos[apilink]["note"]:
-            text += msg.session_info.locale.t("wikilog.message.note") + infos[apilink]["note"] + "\n"
+            text += str(I18NContext("wikilog.message.note")) + infos[apilink]["note"] + "\n"
     if not text:
-        text += msg.session_info.locale.t("message.none")
+        text += str(I18NContext("message.none"))
     await msg.finish(text)
 
 

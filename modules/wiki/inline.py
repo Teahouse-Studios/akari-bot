@@ -261,8 +261,8 @@ async def _(msg: Bot.MessageSession):
                                         ImageTable(
                                             session_data,
                                             [
-                                                msg.session_info.locale.t("wiki.message.table.header.id"),
-                                                msg.session_info.locale.t("wiki.message.table.header.section"),
+                                                str(I18NContext("wiki.message.table.header.id")),
+                                                str(I18NContext("wiki.message.table.header.section")),
                                             ],
                                         )
                                     )

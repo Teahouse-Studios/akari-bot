@@ -26,5 +26,5 @@ async def get_ab_qq(msg: MessageSession, wiki_url, headers=None):
     ablist = await convert_ab_to_detailed_format(msg, query["query"]["abuselog"])
     for x in ablist:
         msgchain_lst.append(MessageChain.assign([Plain(x)]))
-    nodelist = MessageNodes.assign(msgchain_lst, name=msg.session_info.locale.t("wiki.message.ab.qq.title"))
+    nodelist = MessageNodes.assign(msgchain_lst, name=str(I18NContext("wiki.message.ab.qq.title")))
     return nodelist

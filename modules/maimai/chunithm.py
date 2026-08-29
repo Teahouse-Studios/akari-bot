@@ -293,7 +293,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession, username: str):
     if await get_record_df(msg, {"username": username}, use_cache=False):
         await DivingProberBindInfo.set_bind_info(union_id=msg.session_info.sender_union_id, username=username)
-        await msg.finish(msg.session_info.locale.t("maimai.message.bind.success") + username)
+        await msg.finish(str(I18NContext("maimai.message.bind.success")) + username)
 
 
 @chu.command("unbind df {{I18N:maimai.help.unbind}}")
@@ -318,7 +318,7 @@ if LX_DEVELOPER_TOKEN:
         data = await get_record_lx(msg, friendcode, use_cache=False)
         if data:
             await LxnsProberBindInfo.set_bind_info(union_id=msg.session_info.sender_union_id, friend_code=friendcode)
-            await msg.finish(msg.session_info.locale.t("maimai.message.bind.success") + data["nickname"])
+            await msg.finish(str(I18NContext("maimai.message.bind.success")) + data["nickname"])
 
     @chu.command("unbind lx {{I18N:maimai.help.unbind}}")
     async def _(msg: Bot.MessageSession):

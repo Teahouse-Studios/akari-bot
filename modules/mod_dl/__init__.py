@@ -152,9 +152,9 @@ async def _(msg: Bot.MessageSession, mod_name: str, version: str | None = None):
         if mod_info and mod_info[0] == "modrinth":  # modrinth mod
             if not ver:
                 reply2 = await msg.wait_reply(
-                    f"{msg.session_info.locale.t('mod_dl.message.version')}\n"
+                    f"{str(I18NContext('mod_dl.message.version'))}\n"
                     + "\n".join(mod_info[3])
-                    + f"\n{msg.session_info.locale.t('mod_dl.message.version.prompt')}",
+                    + f"\n{str(I18NContext('mod_dl.message.version.prompt'))}",
                     delete=True,
                 )
                 replied2 = reply2.as_display(text_only=True)
@@ -164,7 +164,7 @@ async def _(msg: Bot.MessageSession, mod_name: str, version: str | None = None):
                         files = version_info.get("files", [])
                         if files:
                             await msg.finish(
-                                f"{' '.join(version_info.get('loaders', []))}\n{msg.session_info.locale.t('mod_dl.message.download_url')}{files[0].get('url', '')}\n{msg.session_info.locale.t('mod_dl.message.filename')}{files[0].get('filename', '')}"
+                                f"{' '.join(version_info.get('loaders', []))}\n{str(I18NContext('mod_dl.message.download_url'))}{files[0].get('url', '')}\n{str(I18NContext('mod_dl.message.filename'))}{files[0].get('filename', '')}"
                             )
                 else:
                     await msg.finish()
@@ -176,7 +176,7 @@ async def _(msg: Bot.MessageSession, mod_name: str, version: str | None = None):
                     files = version_info.get("files", [])
                     if files:
                         await msg.finish(
-                            f"{' '.join(version_info.get('loaders', []))}\n{msg.session_info.locale.t('mod_dl.message.download_url')}{files[0].get('url', '')}\n{msg.session_info.locale.t('mod_dl.message.filename')}{files[0].get('filename', '')}"
+                            f"{' '.join(version_info.get('loaders', []))}\n{str(I18NContext('mod_dl.message.download_url'))}{files[0].get('url', '')}\n{str(I18NContext('mod_dl.message.filename'))}{files[0].get('filename', '')}"
                         )
         else:  # curseforge mod
             version_index = await get_curseforge_mod_version_index(mod_info[2]) or []
@@ -188,9 +188,9 @@ async def _(msg: Bot.MessageSession, mod_name: str, version: str | None = None):
             if version_index:
                 if not ver:
                     reply2 = await msg.wait_reply(
-                        f"{msg.session_info.locale.t('mod_dl.message.version')}\n"
+                        f"{str(I18NContext('mod_dl.message.version'))}\n"
                         + "\n".join(ver_list)
-                        + f"\n{msg.session_info.locale.t('mod_dl.message.version.prompt')}",
+                        + f"\n{str(I18NContext('mod_dl.message.version.prompt'))}",
                         delete=True,
                     )
                     ver = reply2.as_display(text_only=True)
@@ -202,8 +202,8 @@ async def _(msg: Bot.MessageSession, mod_name: str, version: str | None = None):
                     if file_info:
                         await msg.finish(
                             f"{' '.join(file_info.get('gameVersions', []))} \
-                                         \n{msg.session_info.locale.t('mod_dl.message.download_url')}{file_info.get('downloadUrl', '')} \
-                                         \n{msg.session_info.locale.t('mod_dl.message.filename')}{file_info.get('fileName', '')}"
+                                         \n{str(I18NContext('mod_dl.message.download_url'))}{file_info.get('downloadUrl', '')} \
+                                         \n{str(I18NContext('mod_dl.message.filename'))}{file_info.get('fileName', '')}"
                         )
                 else:
                     await msg.finish(I18NContext("mod_dl.message.version.not_found"))

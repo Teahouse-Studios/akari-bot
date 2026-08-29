@@ -45,14 +45,12 @@ async def get_rc(msg: Bot.MessageSession, wiki_url, headers=None):
                 d.append(comment)
         if x["type"] == "log":
             if "actionhidden" in x:
-                log = msg.session_info.locale.t(
-                    "wiki.message.rc.action.actionhidden", user=user, comment=x.get("comment", "")
-                )
+                log = str(I18NContext("wiki.message.rc.action.actionhidden", user=user, comment=x.get("comment", "")))
             elif x["logtype"] == x["logaction"]:
-                log = msg.session_info.locale.t(f"wiki.message.rc.action.{x['logtype']}", user=user, title=title)
+                log = str(I18NContext(f"wiki.message.rc.action.{x['logtype']}", user=user, title=title))
             else:
-                log = msg.session_info.locale.t(
-                    f"wiki.message.rc.action.{x['logtype']}.{x['logaction']}", user=user, title=title
+                log = str(
+                    I18NContext(f"wiki.message.rc.action.{x['logtype']}.{x['logaction']}", user=user, title=title)
                 )
             if log.find("{I18N:") != -1 and log.find("}") != -1:
                 if x["logaction"] == x["logtype"]:
@@ -183,12 +181,12 @@ async def convert_rc_to_detailed_format(msg: Bot.MessageSession, rc: list, wiki_
                 t.append(comment)
         if x["type"] == "log":
             if "actionhidden" in x:
-                log = msg.session_info.locale.t("wiki.message.rc.action.actionhidden", user=user, title=title)
+                log = str(I18NContext("wiki.message.rc.action.actionhidden", user=user, title=title))
             elif x["logtype"] == x["logaction"]:
-                log = msg.session_info.locale.t(f"wiki.message.rc.action.{x['logtype']}", user=user, title=title)
+                log = str(I18NContext(f"wiki.message.rc.action.{x['logtype']}", user=user, title=title))
             else:
-                log = msg.session_info.locale.t(
-                    f"wiki.message.rc.action.{x['logtype']}.{x['logaction']}", user=user, title=title
+                log = str(
+                    I18NContext(f"wiki.message.rc.action.{x['logtype']}.{x['logaction']}", user=user, title=title)
                 )
             if log.find("{I18N:") != -1 and log.find("}") != -1:
                 if x["logtype"] == x["logaction"]:

@@ -128,7 +128,7 @@ async def _display_union_list(msg: Bot.MessageSession, union_ids: list[str]) -> 
     """
     将权限列表中的 union ID 展开为其下绑定的平台账号 ID 用于展示，一行对应一个 union。
     """
-    delimiter = msg.session_info.locale.t("message.delimiter")
+    delimiter = str(I18NContext("message.delimiter"))
     lines = []
     for union_id in union_ids:
         bound_ids = await SenderUnionBind.list_ids(union_id)
