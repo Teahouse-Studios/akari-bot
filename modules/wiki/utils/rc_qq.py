@@ -31,7 +31,7 @@ async def get_rc_qq(msg: MessageSession, wiki_url, headers=None):
 
     for x in rclist:
         msgchain_lst.append(MessageChain.assign([Plain(x)]))
-    nodelist = MessageNodes.assign(msgchain_lst, name=str(I18NContext("wiki.message.rc.qq.title")))
+    nodelist = MessageNodes.assign(msgchain_lst, name=msg.session_info.locale.t("wiki.message.rc.qq.title"))
     return nodelist
 
 
