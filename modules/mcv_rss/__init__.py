@@ -17,10 +17,10 @@ from core.utils.http import get_url
 from core.utils.storedata import get_stored_list, update_stored_list
 from core.web_render import web_render, SourceOptions
 
-SNAPSHOT_PATTERN = re.compile(r"^(?P<major>[\d.]+)-snapshot-?(?P<patch>\d)+$")
+SNAPSHOT_PATTERN = re.compile(r"^(?P<major>[\d.]+)-snapshot-?(?P<patch>\d+)$")
 OLD_SNAPSHOT_PATTERN = re.compile(r"^(1\d)|(2[0-5])[w|W]\d{2}[A-Fa-f]$")
-PRERELEASE_PATTERN = re.compile(r"^(?P<major>[\d.]+)-pre-?(?P<patch>\d)+$")
-RELEASE_CANDIDATE_PATTERN = re.compile(r"^(?P<major>[\d.]+)-rc-?(?P<patch>\d)+$")
+PRERELEASE_PATTERN = re.compile(r"^(?P<major>[\d.]+)-pre-?(?P<patch>\d+)$")
+RELEASE_CANDIDATE_PATTERN = re.compile(r"^(?P<major>[\d.]+)-rc-?(?P<patch>\d+)$")
 RELEASE_PATTERN = re.compile(r"^\d{1,2}\.\d+(\.\d+)?$")
 
 CHANGELOG_URL_PREFIX = "https://www.minecraft.net/en-us/article/minecraft"

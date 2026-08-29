@@ -175,6 +175,7 @@
     "message.success": "成功。",
     "message.typing": "正在输入中……",
     "message.unknown": "未知",
+    "message.url.blocked": "<此链接已被全局阻止列表拦截>",
     "message.url.untrusted": "此链接未经认证，请谨慎打开",
     "message.user_verification.prompt.button": "此为高危操作，请点击数字“${number}”完成操作验证。",
     "message.user_verification.prompt.text": "此为高危操作，请发送数字“${number}”完成操作验证。",

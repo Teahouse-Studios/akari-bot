@@ -26,7 +26,7 @@ qq_test_group_url_default = ""
 bug_report_url_default = "https://s.wd-ljt.com/botreportbug"
 locale_url_default = "https://hosted.weblate.org/engage/akaribot"
 
-wiki_whitelist_url_default = (
+wiki_allowlist_url_default = (
     "https://github.com/Teahouse-Studios/akari-bot/issues/new?template=request_wiki_whitelist.yaml"
 )
 

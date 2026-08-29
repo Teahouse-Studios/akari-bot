@@ -5,15 +5,13 @@ wiki 模块的绝大多数子命令都要求当前场景已设置默认 Wiki，�
 自行完成设置。相关请求由 tests/fixtures/http/ 下的录制响应提供，不依赖实时网络。
 """
 
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
-from core.tester import (
-    func_case,
-    Tester,
-    Contains,
-    Match,
-)
+from core.tester import All, Contains, Match, Not, Tester, func_case
 from core.tester.mock.session import MockMessageSession
+from core.utils.url_policy import GlobalURLAllowlist, GlobalURLBlocklist
 
 START_WIKI = "~wiki set https://zh.minecraft.wiki/api.php"
 _original_mock_session_init = MockMessageSession.async_init
@@ -25,48 +23,74 @@ async def _init_url_manager_session(self, msg):
 
 
 @func_case
-async def test_wiki_set_audit(tester: Tester):
-    """wiki set 应按当前会话的 URLManager 能力执行黑白名单审计。"""
-    from modules.wiki.database.models import WikiAllowList, WikiBlockList, WikiTargetInfo
+async def test_wiki_set_url_policy(tester: Tester):
+    """wiki set 应以规范 API 端点的全局 URL 策略作为唯一认证来源。"""
+    from modules.wiki.database.models import WikiTargetInfo
 
     api = "https://zh.minecraft.wiki/api.php"
-    await WikiAllowList.remove(api)
-    await WikiBlockList.remove(api)
-    try:
-        with patch.object(MockMessageSession, "async_init", _init_url_manager_session):
-            await WikiBlockList.add(api)
-            await tester.integrate(START_WIKI, Contains("处于黑名单中"), "wiki set 应拦截黑名单 Wiki")
-            blocked_target = await WikiTargetInfo.get_by_target_id("TEST|Console|0")
-            await tester.test(lambda: blocked_target.api_link is None, "黑名单 Wiki 不应写入默认绑定")
-
-            await WikiBlockList.remove(api)
-            await tester.integrate(
-                START_WIKI,
-                Contains("此 Wiki 当前没有加入机器人的白名单列表中"),
-                "wiki set 应提示 Wiki 未加入白名单",
-            )
-            untrusted_target = await WikiTargetInfo.get_by_target_id("TEST|Console|0")
-            await tester.test(lambda: untrusted_target.api_link == api, "非白名单 Wiki 提示后仍应完成绑定")
-
-            await WikiBlockList.add(api)
-            blocked_message = "失败：Minecraft Wiki (zh) 处于黑名单中。"
-            with (
-                patch("modules.wiki.utils.wikilib.WikiLib.parse_page_info", side_effect=AssertionError),
-                patch("modules.wiki.utils.wikilib.WikiLib.search_page", side_effect=AssertionError),
-            ):
+    with TemporaryDirectory() as temp_dir:
+        root = Path(temp_dir)
+        allowlist_directory = root / "allowlist"
+        blocklist_directory = root / "blocklist"
+        with (
+            patch.object(GlobalURLAllowlist, "directory", allowlist_directory),
+            patch.object(GlobalURLAllowlist, "builtin_path", allowlist_directory / "global.txt"),
+            patch.object(GlobalURLAllowlist, "user_path", allowlist_directory / "user.txt"),
+            patch.object(GlobalURLBlocklist, "directory", blocklist_directory),
+            patch.object(GlobalURLBlocklist, "builtin_path", blocklist_directory / "global.txt"),
+            patch.object(GlobalURLBlocklist, "user_path", blocklist_directory / "user.txt"),
+            patch.object(MockMessageSession, "async_init", _init_url_manager_session),
+        ):
+            GlobalURLAllowlist.clear_cache()
+            GlobalURLBlocklist.clear_cache()
+            try:
+                GlobalURLBlocklist.add_user_rule(api)
                 await tester.integrate(
-                    "~wiki Minecraft",
-                    Match(blocked_message),
-                    "已绑定 Wiki 后进入黑名单时应拒绝页面查询",
+                    START_WIKI,
+                    Contains("处于阻止列表中"),
+                    "wiki set 应拦截全局 URL 阻止列表中的 API",
                 )
+                blocked_target = await WikiTargetInfo.get_by_target_id("TEST|Console|0")
+                await tester.test(lambda: blocked_target.api_link is None, "阻止列表中的 Wiki 不应写入默认绑定")
+
+                GlobalURLBlocklist.remove_user_rule(api)
                 await tester.integrate(
-                    "~wiki search Minecraft",
-                    Match(blocked_message),
-                    "已绑定 Wiki 后进入黑名单时应拒绝搜索",
+                    START_WIKI,
+                    Contains("API 端点当前没有加入机器人的全局 URL 允许列表"),
+                    "wiki set 应提示 API 未加入全局 URL 允许列表",
                 )
-    finally:
-        await WikiAllowList.remove(api)
-        await WikiBlockList.remove(api)
+                untrusted_target = await WikiTargetInfo.get_by_target_id("TEST|Console|0")
+                await tester.test(lambda: untrusted_target.api_link == api, "未认证 Wiki API 提示后仍应完成绑定")
+
+                GlobalURLAllowlist.add_user_rule(api)
+                await tester.integrate(
+                    START_WIKI,
+                    All(
+                        Contains("成功设置默认 Wiki"),
+                        Not(Contains("没有加入机器人的全局 URL 允许列表")),
+                    ),
+                    "全局 URL 允许列表中的 API 应作为可信 Wiki",
+                )
+
+                GlobalURLBlocklist.add_user_rule(api)
+                blocked_message = "失败：Minecraft Wiki (zh) 处于阻止列表中。"
+                with (
+                    patch("modules.wiki.utils.wikilib.WikiLib.parse_page_info", side_effect=AssertionError),
+                    patch("modules.wiki.utils.wikilib.WikiLib.search_page", side_effect=AssertionError),
+                ):
+                    await tester.integrate(
+                        "~wiki Minecraft",
+                        Match(blocked_message),
+                        "已绑定 Wiki 的 API 进入全局阻止列表后应拒绝页面查询",
+                    )
+                    await tester.integrate(
+                        "~wiki search Minecraft",
+                        Match(blocked_message),
+                        "已绑定 Wiki 的 API 进入全局阻止列表后应拒绝搜索",
+                    )
+            finally:
+                GlobalURLAllowlist.clear_cache()
+                GlobalURLBlocklist.clear_cache()
     return tester
 
 

@@ -17,8 +17,9 @@ from core.dirty_check import check
 from core.i18n import Locale
 from core.logger import Logger
 from core.utils.http import get_url
+from core.utils.url_policy import evaluate_url_policy
 from core.web_render import web_render, SourceOptions
-from modules.wiki.database.models import WikiSiteInfo, WikiAllowList, WikiBlockList
+from modules.wiki.database.models import WikiSiteInfo
 from modules.wiki.utils.bot import BotAccount
 from modules.wiki.utils.summarize import extract_summary, truncate_summary
 from .mapping import *
@@ -42,6 +43,12 @@ def _merge_research_suggestions(search_results, limit: int = MAX_RESEARCH_SUGGES
 
 class InvalidWikiError(Exception):
     pass
+
+
+class BlockedWikiError(InvalidWikiError):
+    def __init__(self, url: str):
+        super().__init__(url)
+        self.url = url
 
 
 @define
@@ -75,8 +82,8 @@ class WikiInfo:
     namespaces: dict[str, int] = field(factory=dict)
     namespaces_local: dict[str, str] = field(factory=dict)
     namespacealiases: dict[str, str] = field(factory=dict)
-    in_allowlist: bool = False
-    in_blocklist: bool = False
+    is_allowed: bool = False
+    is_blocked: bool = False
     script: str = ""
     logo_url: str = ""
     lang: str = None
@@ -130,8 +137,8 @@ class WikiLib:
         self.headers = headers
 
     @staticmethod
-    def should_check_content_audit(session: MessageSession | None = None) -> bool:
-        """wiki 内容审计是否受当前会话的脏词过滤开关控制。"""
+    def should_check_content(session: MessageSession | None = None) -> bool:
+        """当前会话是否要求检查 Wiki 返回内容。"""
         if session is None:
             return False
         session_info = getattr(session, "session_info", None)
@@ -218,6 +225,7 @@ class WikiLib:
         interwiki_dict = {}
         for interwiki in interwiki_map:
             interwiki_dict[interwiki["prefix"]] = interwiki["url"]
+        policy = evaluate_url_policy(wiki_api_link)
         return WikiInfo(
             articlepath=real_url + info["query"]["general"]["articlepath"],
             extensions=ext_list,
@@ -230,13 +238,15 @@ class WikiLib:
             namespaces_local=namespaces_local,
             namespacealiases=namespacealiases,
             interwiki=interwiki_dict,
-            in_allowlist=await WikiAllowList.check(wiki_api_link),
-            in_blocklist=await WikiBlockList.check(wiki_api_link),
+            is_allowed=policy.allowed,
+            is_blocked=policy.blocked,
             script=real_url + info["query"]["general"]["script"],
             logo_url=info["query"]["general"].get("logo"),
         )
 
-    async def check_wiki_available(self):
+    async def check_wiki_available(self, ignore_url_policy: bool = False):
+        if not ignore_url_policy and evaluate_url_policy(self.url).blocked:
+            raise BlockedWikiError(self.url)
         try:
             self.url = re.sub(
                 r"https://zh\.moegirl\.org\.cn/",
@@ -297,6 +307,8 @@ class WikiLib:
                 return WikiStatus(available=False, value=False, message=message)
         if wiki_api_link in redirect_list:
             wiki_api_link = redirect_list[wiki_api_link]
+        if not ignore_url_policy and evaluate_url_policy(wiki_api_link).blocked:
+            raise BlockedWikiError(wiki_api_link)
         get_cache_info = await WikiSiteInfo.get_or_none(api_link=wiki_api_link)
         if get_cache_info:
             if (
@@ -408,6 +420,8 @@ class WikiLib:
 
     async def get_json(self, _no_login=False, **kwargs) -> dict:
         await self.fixup_wiki_info()
+        if evaluate_url_policy(self.wiki_info.api).blocked:
+            raise BlockedWikiError(self.wiki_info.api)
         return await self.get_json_from_api(self.wiki_info.api, _no_login=_no_login, **kwargs)
 
     async def return_api(self, _no_login=False, _no_format=False, **kwargs) -> str:
@@ -617,6 +631,8 @@ class WikiLib:
                 return await nq.parse_page_info(m.group(1))
         try:
             await self.fixup_wiki_info()
+        except BlockedWikiError:
+            raise
         except InvalidWikiError as e:
             link = None
             if self.url.find("$1") != -1:
@@ -630,8 +646,6 @@ class WikiLib:
                 templates=[],
             )
         ban = False
-        if self.wiki_info.in_blocklist and not self.wiki_info.in_allowlist:
-            ban = True
 
         # if redirected too many times, raise AbuseWarning
         if _tried > 5 and enable_tos:
@@ -1177,9 +1191,7 @@ class WikiLib:
 
                                 if before_page_info.selected_section:
                                     page_info.selected_section = before_page_info.selected_section
-        if not self.wiki_info.in_allowlist and self.should_check_content_audit(
-            session
-        ):  # check content if not in allowlist
+        if not self.wiki_info.is_allowed and self.should_check_content(session):
             checklist = []
             if page_info.title:
                 checklist.append(page_info.title)
@@ -1196,6 +1208,8 @@ class WikiLib:
             page_info.id = -1
             page_info.desc = ""
             page_info.link = str(Url(page_info.link, trusted=False))
+        if page_info.desc:
+            page_info.desc = page_info.desc.strip()
         return page_info
 
     async def random_page(self) -> PageInfo:

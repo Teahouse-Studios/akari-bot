@@ -43,8 +43,8 @@ async def _test_flag_reaches_fetched_session():
         Alive.values.update(alive)
 
 
-async def _test_wiki_audit_respects_dirty_word_feature():
-    """Wiki 审核检查须受 require_check_dirty_words 开关控制。"""
+async def _test_wiki_content_check_respects_dirty_word_feature():
+    """Wiki 内容检查须受 require_check_dirty_words 开关控制。"""
     from modules.wiki.utils.wikilib import WikiLib
 
     class SessionInfo:
@@ -54,12 +54,12 @@ async def _test_wiki_audit_respects_dirty_word_feature():
         session_info = SessionInfo()
 
     wiki = WikiLib("https://example.test/w/api.php")
-    wiki.wiki_info.in_allowlist = False
-    if wiki.should_check_content_audit(Session()):
+    wiki.wiki_info.is_allowed = False
+    if wiki.should_check_content(Session()):
         return False
 
     SessionInfo.require_check_dirty_words = True
-    if not wiki.should_check_content_audit(Session()):
+    if not wiki.should_check_content(Session()):
         return False
 
     return True
@@ -69,6 +69,6 @@ async def _test_wiki_audit_respects_dirty_word_feature():
 async def test_dirty_check_features(tester: Tester):
     """bots.features: 平台能力开关测试"""
     await tester.test(_test_flag_reaches_fetched_session, "开关传递到主动推送会话测试")
-    await tester.test(_test_wiki_audit_respects_dirty_word_feature, "Wiki 审核开关测试")
+    await tester.test(_test_wiki_content_check_respects_dirty_word_feature, "Wiki 内容检查开关测试")
 
     return tester

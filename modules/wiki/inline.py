@@ -91,13 +91,13 @@ async def _(msg: Bot.MessageSession):
                 get_page = None
                 if is_int(get_id):
                     get_page = await wiki_.parse_page_info(pageid=int(get_id), session=msg)
-                    if not q[qq].in_allowlist and msg.session_info.use_url_manager:
+                    if not q[qq].is_allowed and msg.session_info.use_url_manager:
                         for result in await check(get_page.title, session=msg):
                             if not result["status"]:
                                 return
                 elif get_title != "":
                     title = urllib.parse.unquote(get_title)
-                    if not q[qq].in_allowlist and msg.session_info.use_url_manager:
+                    if not q[qq].is_allowed and msg.session_info.use_url_manager:
                         for result in await check(title, session=msg):
                             if not result["status"]:
                                 return
@@ -180,7 +180,7 @@ async def _(msg: Bot.MessageSession):
                         if (
                             get_page.status
                             and get_page.title
-                            and (wiki_.wiki_info.in_allowlist or not msg.session_info.use_url_manager)
+                            and (wiki_.wiki_info.is_allowed or not msg.session_info.use_url_manager)
                         ):
                             if wiki_.wiki_info.realurl not in generate_screenshot_v2_blocklist:
                                 is_disambiguation = False
@@ -197,7 +197,7 @@ async def _(msg: Bot.MessageSession):
                                 )
                                 get_infobox = await generate_screenshot_v2(
                                     qq,
-                                    allow_special_page=(q[qq].in_allowlist or not msg.session_info.use_url_manager),
+                                    allow_special_page=(q[qq].is_allowed or not msg.session_info.use_url_manager),
                                     content_mode=content_mode,
                                     locale=msg.session_info.locale.locale,
                                 )
@@ -216,7 +216,7 @@ async def _(msg: Bot.MessageSession):
                         if (
                             (
                                 get_page.invalid_section
-                                and (wiki_.wiki_info.in_allowlist or not msg.session_info.use_url_manager)
+                                and (wiki_.wiki_info.is_allowed or not msg.session_info.use_url_manager)
                             )
                             or (get_page.is_talk_page and not get_page.selected_section)
                             and Bot.Info.web_render_status
@@ -247,7 +247,7 @@ async def _(msg: Bot.MessageSession):
                                         "wiki.message.invalid_section.prompt"
                                         if get_page.invalid_section
                                         and (
-                                            get_page.info.in_allowlist
+                                            get_page.info.is_allowed
                                             or not (
                                                 isinstance(msg, Bot.MessageSession) and msg.session_info.use_url_manager
                                             )
@@ -338,7 +338,7 @@ async def _(msg: Bot.MessageSession):
                             section_.append(qs)
                     if section_:
                         s = urllib.parse.unquote("".join(section_)[1:])
-                        if q[qq].realurl and (q[qq].in_allowlist or not msg.session_info.use_url_manager):
+                        if q[qq].realurl and (q[qq].is_allowed or not msg.session_info.use_url_manager):
                             if q[qq].realurl in generate_screenshot_v2_blocklist:
                                 get_section = await generate_screenshot_v1(q[qq].realurl, qq, headers, section=s)
                             else:

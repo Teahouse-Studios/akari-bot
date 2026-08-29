@@ -3,38 +3,39 @@ import orjson
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import ActionText, I18NContext, Image, Plain, Url
+from core.utils.url_policy import evaluate_url_policy
 from modules.wiki.config import WikiConfig
 from core.utils.image_table import image_table_render, ImageTable
 from . import wiki
-from .database.models import WikiAllowList, WikiTargetInfo
+from .database.models import WikiTargetInfo
 from .utils.wikilib import WikiLib
 
-wiki_whitelist_url = WikiConfig.wiki_whitelist_url
+wiki_allowlist_url = WikiConfig.wiki_allowlist_url
 
 
 @wiki.command("set <wikiurl> {{I18N:wiki.help.set}}", required_admin=True)
 async def _(msg: Bot.MessageSession, wikiurl: str):
     target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
-    check = await WikiLib(wikiurl, headers=target.headers).check_wiki_available()
+    check = await WikiLib(wikiurl, headers=target.headers).check_wiki_available(ignore_url_policy=True)
     if check.available:
         wiki_name = check.value.name
         if check.value.lang:
             wiki_name += f" ({check.value.lang})"
         use_url_manager = msg.session_info.use_url_manager
-        in_allowlist = check.value.in_allowlist if use_url_manager else True
-        if use_url_manager and check.value.in_blocklist and not in_allowlist:
-            await msg.finish(I18NContext("wiki.message.invalid.blocked", name=wiki_name))
+        is_allowed = check.value.is_allowed if use_url_manager else True
+        if use_url_manager and check.value.is_blocked and not is_allowed:
+            await msg.finish(I18NContext("wiki.message.invalid.blocked"))
         result = await target.add_start_wiki(check.value.api)
         if not result:
             await msg.finish(I18NContext("message.failed"))
         prompts = [I18NContext("wiki.message.set.success", name=wiki_name)]
-        if result and use_url_manager and not in_allowlist:
-            prompts.append(I18NContext("wiki.message.wiki_audit.untrust"))
-            if wiki_whitelist_url:
+        if result and use_url_manager and not is_allowed:
+            prompts.append(I18NContext("wiki.message.url_policy.untrust"))
+            if wiki_allowlist_url:
                 prompts.append(
                     I18NContext(
-                        "wiki.message.wiki_audit.untrust.address",
-                        url=MessageChain.assign(Url(wiki_whitelist_url, trusted=True)),
+                        "wiki.message.url_policy.untrust.address",
+                        url=MessageChain.assign(Url(wiki_allowlist_url, trusted=True)),
                     )
                 )
 
@@ -51,25 +52,25 @@ async def _(msg: Bot.MessageSession, wikiurl: str):
 @wiki.command("iw add <interwiki> <wikiurl> {{I18N:wiki.help.iw.add}}", required_admin=True)
 async def _(msg: Bot.MessageSession, interwiki: str, wikiurl: str):
     target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
-    check = await WikiLib(wikiurl, headers=target.headers).check_wiki_available()
+    check = await WikiLib(wikiurl, headers=target.headers).check_wiki_available(ignore_url_policy=True)
     if check.available:
         wiki_name = check.value.name
         if check.value.lang:
             wiki_name += f" ({check.value.lang})"
         use_url_manager = msg.session_info.use_url_manager
-        if use_url_manager and check.value.in_blocklist and not check.value.in_allowlist:
-            await msg.finish(I18NContext("wiki.message.invalid.blocked", name=wiki_name))
+        if use_url_manager and check.value.is_blocked and not check.value.is_allowed:
+            await msg.finish(I18NContext("wiki.message.invalid.blocked"))
         result = await target.config_interwikis(interwiki, check.value.api)
         if not result:
             await msg.finish(I18NContext("message.failed"))
         prompts = [I18NContext("wiki.message.iw.add.success", iw=interwiki, name=wiki_name)]
-        if result and use_url_manager and not check.value.in_allowlist:
-            prompts.append(I18NContext("wiki.message.wiki_audit.untrust"))
-            if wiki_whitelist_url:
+        if result and use_url_manager and not check.value.is_allowed:
+            prompts.append(I18NContext("wiki.message.url_policy.untrust"))
+            if wiki_allowlist_url:
                 prompts.append(
                     I18NContext(
-                        "wiki.message.wiki_audit.untrust.address",
-                        url=MessageChain.assign(Url(wiki_whitelist_url, trusted=True)),
+                        "wiki.message.url_policy.untrust.address",
+                        url=MessageChain.assign(Url(wiki_allowlist_url, trusted=True)),
                     )
                 )
 
@@ -129,7 +130,7 @@ async def _(msg: Bot.MessageSession):
                         url=MessageChain.assign(
                             Url(
                                 base_interwiki_link,
-                                trusted=True if wiki_info and wiki_info.info and wiki_info.info.in_allowlist else None,
+                                trusted=True if wiki_info and wiki_info.info and wiki_info.info.is_allowed else None,
                             )
                         ),
                     )
@@ -154,7 +155,7 @@ async def _(msg: Bot.MessageSession):
                 url=MessageChain.assign(
                     Url(
                         base_interwiki_link,
-                        trusted=True if wiki_info and wiki_info.info and wiki_info.info.in_allowlist else None,
+                        trusted=True if wiki_info and wiki_info.info and wiki_info.info.is_allowed else None,
                     )
                 ),
             )
@@ -168,7 +169,7 @@ async def _(msg: Bot.MessageSession, interwiki: str):
     query = target.interwikis
     if query != {}:
         if interwiki in query:
-            trusted = True if await WikiAllowList.check(query[interwiki]) else None
+            trusted = True if evaluate_url_policy(query[interwiki]).allowed else None
             await msg.finish(Url(query[interwiki], trusted=trusted))
         else:
             await msg.finish(I18NContext("wiki.message.iw.get.not_found", iw=interwiki))

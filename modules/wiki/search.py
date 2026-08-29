@@ -8,7 +8,7 @@ from core.utils.button import build_button_rows
 from core.utils.func import is_int
 from .database.models import WikiTargetInfo
 from .utils.recommend import finish_with_start_wiki_not_set
-from .utils.wikilib import WikiLib
+from .utils.wikilib import BlockedWikiError, WikiLib
 from .wiki import finish_if_wiki_blocked, wiki, query_pages
 
 
@@ -54,13 +54,17 @@ async def search_pages(msg: Bot.MessageSession, title: str | list | tuple, use_p
     wait_msg_list = []
     button_list = []
     for q in query_task:
+        await finish_if_wiki_blocked(msg, q)
         current_task = query_task[q]
         ready_for_query_pages = current_task["query"] if "query" in current_task else []
         iw_prefix = (current_task["iw_prefix"] + ":") if current_task["iw_prefix"] != "" else ""
         tasks = []
         for rd in ready_for_query_pages:
             tasks.append(asyncio.ensure_future(WikiLib(q, headers).search_page(rd)))
-        query = await asyncio.gather(*tasks)
+        try:
+            query = await asyncio.gather(*tasks)
+        except BlockedWikiError as e:
+            await finish_if_wiki_blocked(msg, e.url)
         for result in query:
             for r in result:
                 wait_msg_list.append(iw_prefix + r)

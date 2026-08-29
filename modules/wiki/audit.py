@@ -1,169 +1,110 @@
 from core.builtins.bot import Bot
-from core.builtins.message.internal import I18NContext, Image
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
-from core.utils.image_table import image_table_render, ImageTable
-from .database.models import WikiAllowList, WikiBlockList
-from .utils.wikilib import WikiLib
+from core.utils.url_policy import GlobalURLAllowlist, GlobalURLBlocklist, URLRuleError
+from .utils.wikilib import BlockedWikiError, WikiLib
 
 aud = module(
     "wiki-audit",
     required_superuser=True,
     alias=["wiki_audit", "wau"],
+    desc="{I18N:wiki.help.wiki_audit.desc}",
     doc=True,
 )
 
 
-@aud.command(["trust <apilink>", "block <apilink>"])
-async def _(msg: Bot.MessageSession, apilink: str):
-    check = await WikiLib(apilink).check_wiki_available()
-    if check.available:
-        apilink = check.value.api
-        if msg.parsed_msg.get("trust", False):
-            res = await WikiAllowList.add(apilink)
-            list_name = str(I18NContext("wiki.message.wiki_audit.list_name.allowlist"))
-        else:
-            res = await WikiBlockList.add(apilink)
-            list_name = str(I18NContext("wiki.message.wiki_audit.list_name.blocklist"))
-        if not res:
-            await msg.finish(
-                I18NContext(
-                    "wiki.message.wiki_audit.add.failed",
-                    list_name=list_name,
-                    api=apilink,
-                )
-            )
-        else:
-            await msg.finish(
-                I18NContext(
-                    "wiki.message.wiki_audit.add.success",
-                    list_name=list_name,
-                    api=apilink,
-                )
-            )
-    else:
-        result = str(I18NContext("wiki.message.error.add")) + (
-            "\n" + str(I18NContext("wiki.message.error.info")) + check.message if check.message != "" else ""
+def _url_rule_error(msg: Bot.MessageSession, list_name: str, error: URLRuleError) -> I18NContext:
+    reason = msg.session_info.locale.t(f"core.message.url_{list_name}.error.reason.{error.reason}")
+    return I18NContext(f"core.message.url_{list_name}.error.invalid", reason=reason)
+
+
+def _url_rule_details(msg: Bot.MessageSession, rules) -> str:
+    return "\n".join(
+        f"[{msg.session_info.locale.t(f'core.message.url_allowlist.source.{rule.source}')}] {rule.serialized}"
+        for rule in rules
+    )
+
+
+async def _resolve_wiki_api(msg: Bot.MessageSession, wikiurl: str, *, error_action: str) -> str:
+    """将 Wiki 页面、站点或 API 地址解析为规范 API URL。"""
+    try:
+        check = await WikiLib(wikiurl).check_wiki_available()
+    except BlockedWikiError as exc:
+        await msg.finish(I18NContext("wiki.message.invalid.blocked", name=exc.url))
+
+    if not check.available:
+        prompts = [I18NContext(f"wiki.message.error.{error_action}")]
+        if check.message:
+            prompts.extend((I18NContext("wiki.message.error.info"), Plain(check.message)))
+        await msg.finish(MessageChain.assign(prompts))
+    return check.value.api
+
+
+async def _resolve_cached_wiki_api(wikiurl: str) -> str:
+    """移除规则时优先使用缓存，以兼容已不可访问的 Wiki。"""
+    check = await WikiLib(wikiurl).check_wiki_info_from_database_cache()
+    return check.value.api if check.available else wikiurl
+
+
+@aud.command(
+    [
+        "trust <wikiurl> {{I18N:wiki.help.wiki_audit.trust}}",
+        "block <wikiurl> {{I18N:wiki.help.wiki_audit.block}}",
+    ]
+)
+async def _(msg: Bot.MessageSession, wikiurl: str):
+    api_url = await _resolve_wiki_api(msg, wikiurl, error_action="add")
+    is_block = bool(msg.parsed_msg.get("block", False))
+    list_name = "blocklist" if is_block else "allowlist"
+    rule_list = GlobalURLBlocklist if is_block else GlobalURLAllowlist
+
+    try:
+        added = rule_list.add_user_rule(api_url)
+    except URLRuleError as exc:
+        await msg.finish(_url_rule_error(msg, list_name, exc))
+
+    await msg.finish(
+        I18NContext(
+            f"core.message.url_{list_name}.add.{'success' if added else 'exists'}",
+            rule=api_url,
         )
-        await msg.finish(result)
+    )
 
 
-@aud.command(["distrust <apilink>", "unblock <apilink>"])
-async def _(msg: Bot.MessageSession, apilink: str):
-    check = await WikiLib(apilink).check_wiki_info_from_database_cache()
-    if check.available:
-        apilink = check.value.api
-    if msg.parsed_msg.get("distrust", False):
-        res = await WikiAllowList.remove(apilink)  # 已关闭的站点无法验证有效性
-        if not res:
-            await msg.finish(I18NContext("wiki.message.wiki_audit.remove.failed.other", api=apilink))
-        list_name = str(I18NContext("wiki.message.wiki_audit.list_name.allowlist"))
-    else:
-        res = await WikiBlockList.remove(apilink)
-        list_name = str(I18NContext("wiki.message.wiki_audit.list_name.blocklist"))
-    if not res:
-        await msg.finish(
-            I18NContext(
-                "wiki.message.wiki_audit.remove.failed",
-                list_name=list_name,
-                api=apilink,
-            )
+@aud.command(
+    [
+        "distrust <wikiurl> {{I18N:wiki.help.wiki_audit.distrust}}",
+        "unblock <wikiurl> {{I18N:wiki.help.wiki_audit.unblock}}",
+    ]
+)
+async def _(msg: Bot.MessageSession, wikiurl: str):
+    api_url = await _resolve_cached_wiki_api(wikiurl)
+    is_unblock = bool(msg.parsed_msg.get("unblock", False))
+    list_name = "blocklist" if is_unblock else "allowlist"
+    rule_list = GlobalURLBlocklist if is_unblock else GlobalURLAllowlist
+    try:
+        removed = rule_list.remove_user_rule(api_url)
+    except URLRuleError as exc:
+        await msg.finish(_url_rule_error(msg, list_name, exc))
+    await msg.finish(
+        I18NContext(
+            f"core.message.url_{list_name}.remove.{'success' if removed else 'missing'}",
+            rule=api_url,
         )
-    else:
-        await msg.finish(
-            I18NContext(
-                "wiki.message.wiki_audit.remove.success",
-                list_name=list_name,
-                api=apilink,
-            )
+    )
+
+
+@aud.command("query <wikiurl> {{I18N:wiki.help.wiki_audit.query}}")
+async def _(msg: Bot.MessageSession, wikiurl: str):
+    api_url = await _resolve_wiki_api(msg, wikiurl, error_action="query")
+    matches = GlobalURLAllowlist.matching_rules(api_url)
+    if not matches:
+        await msg.finish(I18NContext("core.message.url_allowlist.query.denied", url=api_url))
+    await msg.finish(
+        I18NContext(
+            "core.message.url_allowlist.query.allowed",
+            url=api_url,
+            rules=_url_rule_details(msg, matches),
         )
-
-
-@aud.command("query <apilink>")
-async def _(msg: Bot.MessageSession, apilink: str):
-    check = await WikiLib(apilink).check_wiki_available()
-    if check.available:
-        apilink = check.value.api
-        msg_list = []
-        allow = await WikiAllowList.check(apilink)
-        block = await WikiBlockList.check(apilink)
-        if allow:
-            msg_list.append(str(I18NContext("wiki.message.wiki_audit.query.allowlist", api=apilink)))
-        if block:
-            msg_list.append(str(I18NContext("wiki.message.wiki_audit.query.blocklist", api=apilink)))
-        if allow and block:
-            msg_list.append(str(I18NContext("wiki.message.wiki_audit.query.conflict")))
-        if not msg_list:
-            msg_list.append(str(I18NContext("wiki.message.wiki_audit.query.none", api=apilink)))
-        await msg.finish(msg_list)
-    else:
-        result = str(I18NContext("wiki.message.error.query")) + (
-            "\n" + str(I18NContext("wiki.message.error.info")) + check.message if check.message != "" else ""
-        )
-        await msg.finish(result)
-
-
-@aud.command("list [--legacy]")
-async def _(msg: Bot.MessageSession):
-    allow_list = await WikiAllowList.all().values("api_link", "timestamp")
-    block_list = await WikiBlockList.all().values("api_link", "timestamp")
-    legacy = True
-    if not msg.parsed_msg.get("--legacy", False) and msg.session_info.support_image:
-        send_msgs = []
-        allow_columns = [
-            [x["api_link"], msg.format_time(x["timestamp"].timestamp(), iso=True, timezone=False)] for x in allow_list
-        ]
-
-        if allow_columns:
-            allow_table = ImageTable(
-                data=allow_columns,
-                headers=[
-                    "{I18N:wiki.message.wiki_audit.list.table.header.apilink}",
-                    "{I18N:wiki.message.wiki_audit.list.table.header.date}",
-                ],
-                session_info=msg.session_info,
-            )
-            if allow_table:
-                allow_image = await image_table_render(allow_table)
-                if allow_image:
-                    send_msgs.append(I18NContext("wiki.message.wiki_audit.list.allowlist"))
-                    for im in allow_image:
-                        send_msgs.append(Image(im))
-        block_columns = [
-            [x["api_link"], msg.format_time(x["timestamp"].timestamp(), iso=True, timezone=False)] for x in block_list
-        ]
-        if block_columns:
-            block_table = ImageTable(
-                data=block_columns,
-                headers=[
-                    "{I18N:wiki.message.wiki_audit.list.table.header.apilink}",
-                    "{I18N:wiki.message.wiki_audit.list.table.header.date}",
-                ],
-                session_info=msg.session_info,
-            )
-            if block_table:
-                block_image = await image_table_render(block_table)
-                if block_image:
-                    send_msgs.append(I18NContext("wiki.message.wiki_audit.list.blocklist"))
-                    for im in block_image:
-                        send_msgs.append(Image(im))
-        if send_msgs:
-            legacy = False
-            await msg.finish(send_msgs)
-    if legacy:
-        wikis = []
-        if allow_list:
-            wikis.append(str(I18NContext("wiki.message.wiki_audit.list.allowlist")))
-            for al in allow_list:
-                wikis.append(
-                    f"{al['api_link']} ({msg.format_time(al['timestamp'].timestamp(), iso=True, timezone=False)})"
-                )
-        if block_list:
-            wikis.append(str(I18NContext("wiki.message.wiki_audit.list.blocklist")))
-            for bl in block_list:
-                wikis.append(
-                    f"{bl['api_link']} ({msg.format_time(bl['timestamp'].timestamp(), iso=True, timezone=False)})"
-                )
-        if wikis:
-            await msg.finish(wikis)
-        else:
-            await msg.finish(I18NContext("wiki.message.wiki_audit.list.none"))
+    )

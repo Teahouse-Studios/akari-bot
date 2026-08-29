@@ -8,14 +8,17 @@ from core.queue.client import JobQueueClient
 from core.scheduler import DateTrigger, IntervalTrigger
 from .database.models import WikiBotAccountList
 from .utils.bot import BotAccount, LoginFailed
-from .utils.wikilib import WikiLib
+from .utils.wikilib import BlockedWikiError, WikiLib
 
 wb = module("wiki-bot", required_superuser=True, doc=True, alias=["wiki_bot", "wbot"])
 
 
 @wb.command("login <apilink> <account> <password>")
 async def _(msg: Bot.MessageSession, apilink: str, account: str, password: str):
-    check = await WikiLib(apilink).check_wiki_available()
+    try:
+        check = await WikiLib(apilink).check_wiki_available()
+    except BlockedWikiError as exc:
+        await msg.finish(I18NContext("wiki.message.invalid.blocked", name=exc.url))
     if check.available:
         try:
             login = await BotAccount._login(check.value.api, account, password)

@@ -3,6 +3,7 @@ from tortoise import Tortoise
 from core.database import fetch_module_db
 from core.database.link import db_type, get_db_link
 from core.database.models import DBVersion, TargetUnionInfo, TargetUnionBind, backfill_union_binds
+from core.utils.url_policy import GlobalURLAllowlist, GlobalURLBlocklist
 
 # v3：原本以平台 ID 为主键的两张核心表改挂 union，表名一并对齐模型名，
 # 以免「target_info」这类旧名继续读作「平台场景信息」。
@@ -29,6 +30,12 @@ UNION_RENAME_TABLES = {
 
 # v3：统计与审计表保留原始 ID，另增 union 列用于聚合。
 UNION_RECORD_TABLES = ["analytics_data", "unfriendly_actions"]
+
+# v4：Wiki API 独立名单并入全局 URL 规则文件，迁移成功后移除旧表。
+WIKI_URL_RULE_TABLES = (
+    ("module_wiki_allow_list", GlobalURLAllowlist),
+    ("module_wiki_block_list", GlobalURLBlocklist),
+)
 
 
 def quote_ident(name: str) -> str:
@@ -102,6 +109,16 @@ async def has_index(conn, table: str, column: str) -> bool:
         [table, column],
     )
     return bool(rows)
+
+
+async def migrate_wiki_url_rules(conn) -> None:
+    """将旧 Wiki API 名单迁入全局 URL 用户规则文件。"""
+    for table, rule_list in WIKI_URL_RULE_TABLES:
+        if not await has_table(conn, table):
+            continue
+        rows = await conn.execute_query_dict(f"SELECT {quote_ident('api_link')} FROM {quote_ident(table)};")
+        rule_list.import_user_rules(row["api_link"] for row in rows)
+        await conn.execute_query(f"DROP TABLE {quote_ident(table)};")
 
 
 async def update_database_to_v3(conn):
@@ -216,6 +233,14 @@ async def update_database_to_v3(conn):
             )
 
 
+async def update_database_to_v4(conn):
+    """将数据库升级至 v4：将 Wiki API 名单迁入全局 URL 名单。
+
+    :param conn: 数据库连接。
+    """
+    await migrate_wiki_url_rules(conn)
+
+
 async def update_database():
     database_list = fetch_module_db()
     await Tortoise.init(db_url=get_db_link(), modules={"models": ["core.database.models"] + database_list})
@@ -296,5 +321,11 @@ async def update_database():
 
             await query_dbver.delete()
             await DBVersion.create(version=3)
+        if db_version < 4:
+            query_dbver = await DBVersion.first()
 
+            await update_database_to_v4(conn)
+
+            await query_dbver.delete()
+            await DBVersion.create(version=4)
     await Tortoise.close_connections()
