@@ -1,5 +1,5 @@
 name: 申请 Wiki 链接白名单
-description: 提交申请 Wiki 链接白名单，使 QQ 侧公共实例使用 `wiki` 模块查询对象 Wiki 时，直接展示 Wiki 链接而不是“非官方页面”跳转链接。
+description: 提交申请 Wiki 链接白名单，使 QQ 平台的公共实例使用 `wiki` 模块查询时，能够直接展示对应 Wiki 页面链接。
 title: "[REQUEST]: Wiki 链接白名单申请"
 labels: ["request"]
 assignees:
@@ -10,6 +10,7 @@ body:
     id: preflight
     attributes:
       label: 开始之前……
+      description: 一个简单的判断方法：若此 Wiki 已被官方防火墙封锁，那么就没必要填写这个了。
       options:
         - label: 我已确定此 Wiki 中的内容没有任何涉嫌政治、色情、谩骂、暴力等不良内容。
           required: true
