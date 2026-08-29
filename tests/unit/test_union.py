@@ -1448,6 +1448,26 @@ async def _test_wiki_allowlist_matches_exact_authority():
         await WikiAllowList.remove(allowed)
 
 
+async def _test_wiki_blocklist_matches_http_and_https_equivalently():
+    """Wiki 黑名单应按主机与端口比较，http/https 可互相匹配。"""
+    from modules.wiki.database.models import WikiBlockList
+
+    blocked = "https://blocked.example.test/api.php"
+    await WikiBlockList.remove(blocked)
+    if not await WikiBlockList.add(blocked):
+        return False
+    try:
+        return (
+            await WikiBlockList.check("https://BLOCKED.EXAMPLE.TEST./w/api.php")
+            and await WikiBlockList.check("http://blocked.example.test/api.php")
+            and not await WikiBlockList.check("https://example.test/api.php")
+            and not await WikiBlockList.check("https://notblocked.example.test/api.php")
+            and not await WikiBlockList.check("https://blocked.example.test:8443/api.php")
+        )
+    finally:
+        await WikiBlockList.remove(blocked)
+
+
 @func_case
 async def test_union(tester: Tester):
     """core.database.models: union 绑定测试"""
@@ -1510,5 +1530,9 @@ async def test_union(tester: Tester):
     await tester.test(_test_wiki_mutations_use_fresh_row, "Wiki 旧实例定向更新测试")
     await tester.test(_test_wikilog_mutations_use_fresh_nested_data, "Wikilog 旧实例嵌套更新测试")
     await tester.test(_test_wiki_allowlist_matches_exact_authority, "Wiki 白名单精确域名测试")
+    await tester.test(
+        _test_wiki_blocklist_matches_http_and_https_equivalently,
+        "Wiki 黑名单 http/https 兼容测试",
+    )
 
     return tester

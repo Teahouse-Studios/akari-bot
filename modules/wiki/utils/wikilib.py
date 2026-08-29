@@ -129,6 +129,16 @@ class WikiLib:
             headers = {}
         self.headers = headers
 
+    @staticmethod
+    def should_check_content_audit(session: MessageSession | None = None) -> bool:
+        """wiki 内容审计是否受当前会话的脏词过滤开关控制。"""
+        if session is None:
+            return False
+        session_info = getattr(session, "session_info", None)
+        if session_info is None:
+            return False
+        return bool(getattr(session_info, "require_check_dirty_words", False))
+
     async def get_json_from_api(self, api, _no_login=False, **kwargs) -> dict:
         cookies = None
         Logger.debug(BotAccount.cookies)
@@ -1163,7 +1173,9 @@ class WikiLib:
 
                                 if before_page_info.selected_section:
                                     page_info.selected_section = before_page_info.selected_section
-        if not self.wiki_info.in_allowlist:  # check content if not in allowlist
+        if not self.wiki_info.in_allowlist and self.should_check_content_audit(
+            session
+        ):  # check content if not in allowlist
             checklist = []
             if page_info.title:
                 checklist.append(page_info.title)

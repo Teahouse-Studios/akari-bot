@@ -162,12 +162,30 @@ class WikiAllowList(DBModel):
 
     @classmethod
     async def add(cls, api_link) -> bool:
+        authority = _normalized_authority(api_link)
+        if authority is None:
+            return False
+        if await cls.check(api_link):
+            return False
         _, created = await cls.get_or_create(api_link=api_link)
         return created
 
     @classmethod
     async def remove(cls, api_link) -> bool:
-        return bool(await cls.filter(api_link=api_link).delete())
+        authority = _normalized_authority(api_link)
+        if authority is None:
+            return False
+        target_rows = [
+            link
+            for link in await cls.all().values_list("api_link", flat=True)
+            if _normalized_authority(link) == authority
+        ]
+        if not target_rows:
+            return False
+        delete_count = 0
+        for link in target_rows:
+            delete_count += await cls.filter(api_link=link).delete()
+        return delete_count > 0
 
 
 class WikiBlockList(DBModel):
@@ -186,16 +204,38 @@ class WikiBlockList(DBModel):
 
     @classmethod
     async def check(cls, api_link: str) -> bool:
-        return await (cls.filter(api_link=api_link)).exists()
+        authority = _normalized_authority(api_link)
+        if authority is None:
+            return False
+        block_links = await cls.all().values_list("api_link", flat=True)
+        return any(_normalized_authority(link) == authority for link in block_links)
 
     @classmethod
     async def add(cls, api_link) -> bool:
+        authority = _normalized_authority(api_link)
+        if authority is None:
+            return False
+        if await cls.check(api_link):
+            return False
         _, created = await cls.get_or_create(api_link=api_link)
         return created
 
     @classmethod
     async def remove(cls, api_link) -> bool:
-        return bool(await cls.filter(api_link=api_link).delete())
+        authority = _normalized_authority(api_link)
+        if authority is None:
+            return False
+        target_rows = [
+            link
+            for link in await cls.all().values_list("api_link", flat=True)
+            if _normalized_authority(link) == authority
+        ]
+        if not target_rows:
+            return False
+        delete_count = 0
+        for link in target_rows:
+            delete_count += await cls.filter(api_link=link).delete()
+        return delete_count > 0
 
 
 class WikiBotAccountList(DBModel):
