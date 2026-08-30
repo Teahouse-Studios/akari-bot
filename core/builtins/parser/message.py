@@ -51,6 +51,7 @@ from core.logger import Logger
 from core.retired import (
     is_module_allowed_when_retired,
     is_retired_client,
+    is_retired_target,
     is_yielding_retired_session,
     should_yield_channel,
 )
@@ -249,8 +250,15 @@ async def parser(msg: "Bot.MessageSession"):
             ):
                 return
 
-            # 执行前先认领消息通道，同通道内已有场景认领则避让，_process_command 会去掉 trigger_msg 的前缀
-            if await _claim_channel_message(msg):
+            routed_command_available = None
+            if command_first_word in modules and is_module_allowed_when_retired(command_first_word):
+                routed_command_available = _command_available_for_current_session(
+                    msg, modules[command_first_word], command_first_word
+                )
+
+            # 执行前先认领消息通道，同通道内已有场景认领则避让，_process_command 会去掉 trigger_msg 的前缀。
+            # 退役迁移命令按子命令分流：裸 merge 由源端处理，merge token 由目标端处理。
+            if await _claim_channel_message(msg, routed_command_available=routed_command_available):
                 return
 
             if command_first_word:
@@ -324,7 +332,21 @@ async def parser(msg: "Bot.MessageSession"):
             Info.message_parsed += 1
 
 
-async def _claim_channel_message(msg: "Bot.MessageSession", display: str | None = None) -> bool:
+def _command_available_for_current_session(msg: "Bot.MessageSession", module: Module, command_first_word: str) -> bool:
+    """判断当前客户端能否解析一个按平台分流的具体命令。"""
+    command_parser = CommandParser(
+        module, msg=msg, module_name=command_first_word, command_prefixes=msg.session_info.prefixes
+    )
+    try:
+        parsed = command_parser.parse(msg.trigger_msg)
+    except InvalidCommandFormatError:
+        return False
+    return bool(parsed and parsed[0])
+
+
+async def _claim_channel_message(
+    msg: "Bot.MessageSession", display: str | None = None, routed_command_available: bool | None = None
+) -> bool:
     """
     认领一条消息，并判断它是否已被同一消息通道内的另一个场景处理。
 
@@ -333,6 +355,7 @@ async def _claim_channel_message(msg: "Bot.MessageSession", display: str | None 
 
     :param msg: 消息会话。
     :param display: 参与判定的文本，留空则取命令文本。
+    :param routed_command_available: 当前客户端能否执行按平台分流的退役迁移命令；其它命令为 None。
     :return: True 表示已被其它场景认领，当前场景应当避让。
     """
     union_id = msg.session_info.target_union_id
@@ -345,8 +368,17 @@ async def _claim_channel_message(msg: "Bot.MessageSession", display: str | None 
     if sum(1 for cid in channels.values() if cid == channel_id) <= 1:
         return False
 
+    channel_targets = [target_id for target_id, cid in channels.items() if cid == channel_id]
+    mixed_retired_channel = any(is_retired_target(target_id) for target_id in channel_targets) and any(
+        not is_retired_target(target_id) for target_id in channel_targets
+    )
+    if mixed_retired_channel and routed_command_available is False:
+        Logger.debug(f"Context {msg.session_info.target_id} yielded an unavailable routed command.")
+        return True
+
     # 退役场景不执行白名单之外的命令，由它认领会导致同通道的其他场景避让而无人响应。
-    if should_yield_channel(msg.session_info.target_id, channels, channel_id):
+    # 白名单迁移命令已在上方按具体子命令选定执行端，不再套用无条件退役让位。
+    if routed_command_available is not True and should_yield_channel(msg.session_info.target_id, channels, channel_id):
         Logger.debug(f"Retired context {msg.session_info.target_id} yielded the channel.")
         return True
 
