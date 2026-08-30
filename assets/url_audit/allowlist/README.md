@@ -37,15 +37,15 @@ regex:https://example\.com/download/[^/?#]+\.zip
 
 ## 命令配置
 
-`url` 是仅限超级用户使用的基础模块。允许列表命令只修改 `user.txt`，不会修改 `global.txt`。
+`url-audit` 是仅限超级用户使用的基础命令。允许列表命令只修改 `user.txt`，不会修改 `global.txt`。
 
 ```text
-~url allowlist add https://example.com/
-~url allowlist add-regex https://[a-z-]+\.example\.org/w/api\.php
-~url allowlist remove https://example.com/
-~url allowlist remove-regex https://[a-z-]+\.example\.org/w/api\.php
-~url allowlist query https://zh-cn.example.org/w/api.php
-~url allowlist list
+~url-audit allowlist add https://example.com/
+~url-audit allowlist add-regex https://[a-z-]+\.example\.org/w/api\.php
+~url-audit allowlist remove https://example.com/
+~url-audit allowlist remove-regex https://[a-z-]+\.example\.org/w/api\.php
+~url-audit allowlist query https://zh-cn.example.org/w/api.php
+~url-audit allowlist list
 ```
 
 `add-regex` 和 `remove-regex` 接收正则表达式本身，不需要添加 `regex:` 前缀。`query` 会显示命中的规则及其来源。命令不能删除 `global.txt` 中的主仓规则。
@@ -78,8 +78,8 @@ regex:https://example\.com/download/[^/?#]+\.zip
 建议转义域名中的 `.`，限定重复次数或字符范围，并避免嵌套、重叠或含糊的重复结构。
 
 ```text
-~url allowlist add https://wiki.example.org/w/api.php
-~url allowlist add-regex https://[a-z-]+\.example\.org/(?:w/)?api\.php
+~url-audit allowlist add https://wiki.example.org/w/api.php
+~url-audit allowlist add-regex https://[a-z-]+\.example\.org/(?:w/)?api\.php
 ```
 
 正则规则按完整 API URL 匹配，适合一次放行同一 Wiki 的不同语言站点，或兼容各站点不同的 API 路径规范。全局阻止列表优先级更高；同一 API 同时命中允许列表与阻止列表时，Wiki 会在请求内容前拒绝访问。

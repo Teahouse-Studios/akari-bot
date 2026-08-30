@@ -5,7 +5,7 @@ from tempfile import TemporaryDirectory
 from unittest.mock import AsyncMock, patch
 
 from core.tester import Contains, Tester, func_case
-from core.utils.url_policy import GlobalURLAllowlist, GlobalURLBlocklist
+from core.utils.url_audit import GlobalURLAllowlist, GlobalURLBlocklist
 from modules.wiki.utils.wikilib import BlockedWikiError, WikiInfo, WikiLib, WikiStatus
 
 PAGE_URL = "https://wiki.example.test/wiki/Example_Page"

@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, patch
 
 from core.builtins.message.elements import ImageElement
 from core.tester import Contains, Empty, Exist, Tester, func_case
-from core.utils.url_policy import GlobalURLAllowlist, URLRuleError, match_regex_rules, validate_regex_pattern
+from core.utils.url_audit import GlobalURLAllowlist, URLRuleError, match_regex_rules, validate_regex_pattern
 
 
 @func_case

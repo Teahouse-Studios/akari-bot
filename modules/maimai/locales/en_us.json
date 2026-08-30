@@ -12,7 +12,7 @@
     "maimai.help.grade": "Query the 段位認定 (Course) list.",
     "maimai.help.id": "Query song or chart info by ID.",
     "maimai.help.level": "Search for songs by level.",
-    "maimai.help.maimai_regex.desc": "Use Maimai commands more easily.",
+    "maimai.help.maimai-regex.desc": "Use Maimai commands more easily.",
     "maimai.help.new": "View the latest songs in the current version.",
     "maimai.help.option.p": "Specify the number of pages, default is 1.",
     "maimai.help.random": "Generate a random song",

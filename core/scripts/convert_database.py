@@ -30,7 +30,7 @@ from core.database import fetch_module_db
 from core.database.link import get_db_link
 from core.database.models import *
 from core.logger import Logger
-from core.utils.url_policy import GlobalURLAllowlist, GlobalURLBlocklist
+from core.utils.url_audit import GlobalURLAllowlist, GlobalURLBlocklist
 from modules.cytoid.database.models import *
 from modules.maimai.database.models import *
 from modules.phigros.database.models import *

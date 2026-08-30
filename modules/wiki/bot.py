@@ -24,12 +24,12 @@ async def _(msg: Bot.MessageSession, apilink: str, account: str, password: str):
             login = await BotAccount._login(check.value.api, account, password)
             if await WikiBotAccountList.add(check.value.api, account, password):
                 BotAccount.cookies[check.value.api] = login
-                await msg.finish(I18NContext("wiki.message.wiki_bot.login.success"))
+                await msg.finish(I18NContext("wiki.message.wiki-bot.login.success"))
             else:
-                await msg.finish(I18NContext("wiki.message.wiki_bot.login.already"))
+                await msg.finish(I18NContext("wiki.message.wiki-bot.login.already"))
         except LoginFailed as e:
             Logger.error(f"Login failed: {e}")
-            await msg.finish(I18NContext("wiki.message.wiki_bot.login.failed", detail=e))
+            await msg.finish(I18NContext("wiki.message.wiki-bot.login.failed", detail=e))
     else:
         result = [I18NContext("wiki.message.error.query")]
         if check.message:
@@ -53,10 +53,10 @@ async def _(msg: Bot.MessageSession):
     use_bot_account = msg.session_info.target_union_info.target_data.get("use_bot_account")
     if use_bot_account:
         await msg.session_info.target_union_info.edit_target_data("use_bot_account", False)
-        await msg.finish(I18NContext("wiki.message.wiki_bot.toggle.disable"))
+        await msg.finish(I18NContext("wiki.message.wiki-bot.toggle.disable"))
     else:
         await msg.session_info.target_union_info.edit_target_data("use_bot_account", True)
-        await msg.finish(I18NContext("wiki.message.wiki_bot.toggle.enable"))
+        await msg.finish(I18NContext("wiki.message.wiki-bot.toggle.enable"))
 
 
 @wb.hook("login_wiki_bots")

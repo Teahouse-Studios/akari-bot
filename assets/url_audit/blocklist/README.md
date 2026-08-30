@@ -29,15 +29,15 @@ regex:https://example\.com/malware/[^/?#]+\.zip
 
 ## 命令配置
 
-`url` 是仅限超级用户使用的基础模块。阻止列表命令只修改 `user.txt`。
+`url-audit` 是仅限超级用户使用的基础命令。阻止列表命令只修改 `user.txt`。
 
 ```text
-~url blocklist add https://unsafe.example.com/
-~url blocklist add-regex https://unsafe-[a-z]+\.example\.com/.*
-~url blocklist remove https://unsafe.example.com/
-~url blocklist remove-regex https://unsafe-[a-z]+\.example\.com/.*
-~url blocklist query https://unsafe-cdn.example.com/file
-~url blocklist list
+~url-audit blocklist add https://unsafe.example.com/
+~url-audit blocklist add-regex https://unsafe-[a-z]+\.example\.com/.*
+~url-audit blocklist remove https://unsafe.example.com/
+~url-audit blocklist remove-regex https://unsafe-[a-z]+\.example\.com/.*
+~url-audit blocklist query https://unsafe-cdn.example.com/file
+~url-audit blocklist list
 ```
 
 `add-regex` 和 `remove-regex` 接收正则表达式本身，不需要添加 `regex:` 前缀。命令不能删除 `global.txt` 中的主仓规则。
@@ -47,8 +47,8 @@ regex:https://example\.com/malware/[^/?#]+\.zip
 Wiki 不再维护独立的审计列表。命中本全局阻止列表的 Wiki API 会在站点绑定、页面查询或搜索发出内容请求前被拒绝；即使同一 URL 同时命中允许列表，也仍以阻止列表为准。
 
 ```text
-~url blocklist add https://unsafe.example.org/w/api.php
-~url blocklist add-regex https://unsafe-[a-z]+\.example\.org/(?:w/)?api\.php
+~url-audit blocklist add https://unsafe.example.org/w/api.php
+~url-audit blocklist add-regex https://unsafe-[a-z]+\.example\.org/(?:w/)?api\.php
 ~wiki-audit block https://unsafe.example.org/wiki/Example_Page
 ~wiki-audit unblock https://unsafe.example.org/w/api.php
 ```

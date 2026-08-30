@@ -2,26 +2,26 @@ from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
-from core.utils.url_policy import GlobalURLAllowlist, GlobalURLBlocklist, URLRuleError
+from core.utils.url_audit import GlobalURLAllowlist, GlobalURLBlocklist, URLRuleError
 from .utils.wikilib import BlockedWikiError, WikiLib
 
 aud = module(
     "wiki-audit",
     required_superuser=True,
     alias=["wiki_audit", "wau"],
-    desc="{I18N:wiki.help.wiki_audit.desc}",
+    desc="{I18N:wiki.help.wiki-audit.desc}",
     doc=True,
 )
 
 
-def _url_rule_error(msg: Bot.MessageSession, list_name: str, error: URLRuleError) -> I18NContext:
-    reason = msg.session_info.locale.t(f"core.message.url_{list_name}.error.reason.{error.reason}")
-    return I18NContext(f"core.message.url_{list_name}.error.invalid", reason=reason)
+def _url_rule_error(msg: Bot.MessageSession, list_name: str, error: URLRuleError):
+    reason = msg.session_info.locale.t(f"core.message.url-audit.error.{list_name}.reason.{error.reason}")
+    return I18NContext(f"core.message.url-audit.error.{list_name}.invalid", reason=reason)
 
 
 def _url_rule_details(msg: Bot.MessageSession, rules) -> str:
     return "\n".join(
-        f"[{msg.session_info.locale.t(f'core.message.url_allowlist.source.{rule.source}')}] {rule.serialized}"
+        f"[{msg.session_info.locale.t(f'core.message.url-audit.source.allowlist.{rule.source}')}] {rule.serialized}"
         for rule in rules
     )
 
@@ -49,8 +49,8 @@ async def _resolve_cached_wiki_api(wikiurl: str) -> str:
 
 @aud.command(
     [
-        "trust <wikiurl> {{I18N:wiki.help.wiki_audit.trust}}",
-        "block <wikiurl> {{I18N:wiki.help.wiki_audit.block}}",
+        "trust <wikiurl> {{I18N:wiki.help.wiki-audit.trust}}",
+        "block <wikiurl> {{I18N:wiki.help.wiki-audit.block}}",
     ]
 )
 async def _(msg: Bot.MessageSession, wikiurl: str):
@@ -66,7 +66,7 @@ async def _(msg: Bot.MessageSession, wikiurl: str):
 
     await msg.finish(
         I18NContext(
-            f"core.message.url_{list_name}.add.{'success' if added else 'exists'}",
+            f"core.message.url-audit.add.{list_name}.{'success' if added else 'exists'}",
             rule=api_url,
         )
     )
@@ -74,8 +74,8 @@ async def _(msg: Bot.MessageSession, wikiurl: str):
 
 @aud.command(
     [
-        "distrust <wikiurl> {{I18N:wiki.help.wiki_audit.distrust}}",
-        "unblock <wikiurl> {{I18N:wiki.help.wiki_audit.unblock}}",
+        "distrust <wikiurl> {{I18N:wiki.help.wiki-audit.distrust}}",
+        "unblock <wikiurl> {{I18N:wiki.help.wiki-audit.unblock}}",
     ]
 )
 async def _(msg: Bot.MessageSession, wikiurl: str):
@@ -89,21 +89,21 @@ async def _(msg: Bot.MessageSession, wikiurl: str):
         await msg.finish(_url_rule_error(msg, list_name, exc))
     await msg.finish(
         I18NContext(
-            f"core.message.url_{list_name}.remove.{'success' if removed else 'missing'}",
+            f"core.message.url-audit.remove.{list_name}.{'success' if removed else 'missing'}",
             rule=api_url,
         )
     )
 
 
-@aud.command("query <wikiurl> {{I18N:wiki.help.wiki_audit.query}}")
+@aud.command("query <wikiurl> {{I18N:wiki.help.wiki-audit.query}}")
 async def _(msg: Bot.MessageSession, wikiurl: str):
     api_url = await _resolve_wiki_api(msg, wikiurl, error_action="query")
     matches = GlobalURLAllowlist.matching_rules(api_url)
     if not matches:
-        await msg.finish(I18NContext("core.message.url_allowlist.query.denied", url=api_url))
+        await msg.finish(I18NContext("core.message.url-audit.query.allowlist.denied", url=api_url))
     await msg.finish(
         I18NContext(
-            "core.message.url_allowlist.query.allowed",
+            "core.message.url-audit.query.allowlist.allowed",
             url=api_url,
             rules=_url_rule_details(msg, matches),
         )

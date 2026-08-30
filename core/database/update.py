@@ -3,7 +3,7 @@ from tortoise import Tortoise
 from core.database import fetch_module_db
 from core.database.link import db_type, get_db_link
 from core.database.models import DBVersion, TargetUnionInfo, TargetUnionBind, backfill_union_binds
-from core.utils.url_policy import GlobalURLAllowlist, GlobalURLBlocklist
+from core.utils.url_audit import GlobalURLAllowlist, GlobalURLBlocklist
 
 # v3：原本以平台 ID 为主键的两张核心表改挂 union，表名一并对齐模型名，
 # 以免「target_info」这类旧名继续读作「平台场景信息」。

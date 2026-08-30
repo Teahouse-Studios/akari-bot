@@ -345,7 +345,7 @@ class _GlobalURLRuleList:
 
 
 class GlobalURLAllowlist(_GlobalURLRuleList):
-    directory = assets_path / "url" / "allowlist"
+    directory = assets_path / "url_audit" / "allowlist"
     builtin_path = directory / "global.txt"
     user_path = directory / "user.txt"
     label = "allowlist"
@@ -360,7 +360,7 @@ class GlobalURLAllowlist(_GlobalURLRuleList):
 
 
 class GlobalURLBlocklist(_GlobalURLRuleList):
-    directory = assets_path / "url" / "blocklist"
+    directory = assets_path / "url_audit" / "blocklist"
     builtin_path = directory / "global.txt"
     user_path = directory / "user.txt"
     label = "blocklist"

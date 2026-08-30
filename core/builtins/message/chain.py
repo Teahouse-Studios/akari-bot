@@ -44,7 +44,7 @@ from core.joke import shuffle_joke as joke
 from core.logger import Logger
 from core.utils.func import convert_bool
 from core.utils.http import url_pattern
-from core.utils.url_policy import GlobalURLBlocklist, evaluate_url_policy, redact_blocklisted_urls
+from core.utils.url_audit import GlobalURLBlocklist, evaluate_url_policy, redact_blocklisted_urls
 from core.utils.button import AUTO_BUTTON_MAX_ROWS, AUTO_BUTTONS_PER_ROW
 
 if TYPE_CHECKING:

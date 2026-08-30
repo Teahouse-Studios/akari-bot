@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, patch
 
 from core.builtins.message.elements import ImageElement
 from core.tester import Contains, Empty, Exist, Tester, func_case
-from core.utils.url_policy import GlobalURLBlocklist
+from core.utils.url_audit import GlobalURLBlocklist
 
 
 @func_case

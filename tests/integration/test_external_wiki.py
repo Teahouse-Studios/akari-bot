@@ -11,7 +11,7 @@ from unittest.mock import patch
 
 from core.tester import All, Contains, Match, Not, Tester, func_case
 from core.tester.mock.session import MockMessageSession
-from core.utils.url_policy import GlobalURLAllowlist, GlobalURLBlocklist
+from core.utils.url_audit import GlobalURLAllowlist, GlobalURLBlocklist
 
 START_WIKI = "~wiki set https://zh.minecraft.wiki/api.php"
 _original_mock_session_init = MockMessageSession.async_init
