@@ -242,7 +242,7 @@ async def parser(msg: "Bot.MessageSession"):
             command_first_word = await _process_command(msg, modules, disable_prefix, in_prefix_list)
 
             # 退役客户端仅保留白名单模块。此处须早于通道认领：若退役场景先认领再因退役不执行，
-            # 同通道的其他场景会因避让而放弃处理，该场景内将无人响应。
+            # 同通道的其他场景会因避让而放弃处理，该场景内将无客户端响应。
             if (
                 is_retired_client(msg.session_info.client_name)
                 and not is_module_allowed_when_retired(command_first_word)
@@ -257,7 +257,7 @@ async def parser(msg: "Bot.MessageSession"):
                 )
 
             # 执行前先认领消息通道，同通道内已有场景认领则避让，_process_command 会去掉 trigger_msg 的前缀。
-            # 退役迁移命令按子命令分流：裸 merge 由源端处理，merge token 由目标端处理。
+            # 退役迁移命令按子命令分流， merge 由源退役端处理，merge token 由目标端处理。
             if await _claim_channel_message(msg, routed_command_available=routed_command_available):
                 return
 
@@ -326,7 +326,6 @@ async def parser(msg: "Bot.MessageSession"):
             # wait_* 的回复会话会共享根命令的 ExecutionState，但没有最终
             # 清理所有权。它仍可在 continuation 内主动 sleep／wait，从而
             # 释放和重获同一 lease；这里只能由原始 parser 释放最终 lease，
-            # 否则回复消息返回时会拆掉仍在使用的 Union merge barrier。
             if getattr(msg, "_execution_state_owner", True):
                 ExecutionLockList.remove(msg)
             Info.message_parsed += 1
@@ -364,7 +363,7 @@ async def _claim_channel_message(
     channel_id = msg.session_info.target_channel_id
 
     channels = await TargetUnionBind.list_channels(union_id)
-    # 通道内仅有自身时不存在重复执行的可能，绝大多数场景经由此快路径返回。
+    # 通道内仅有自身时不存在重复执行的可能。
     if sum(1 for cid in channels.values() if cid == channel_id) <= 1:
         return False
 
@@ -376,8 +375,7 @@ async def _claim_channel_message(
         Logger.debug(f"Context {msg.session_info.target_id} yielded an unavailable routed command.")
         return True
 
-    # 退役场景不执行白名单之外的命令，由它认领会导致同通道的其他场景避让而无人响应。
-    # 白名单迁移命令已在上方按具体子命令选定执行端，不再套用无条件退役让位。
+    # 退役场景不执行白名单之外的命令，白名单迁移命令已在上方按具体子命令选定执行端
     if routed_command_available is not True and should_yield_channel(msg.session_info.target_id, channels, channel_id):
         Logger.debug(f"Retired context {msg.session_info.target_id} yielded the channel.")
         return True
@@ -387,7 +385,7 @@ async def _claim_channel_message(
     token = f"{union_id}|{channel_id}|{hashlib.sha256(display.encode('utf-8')).hexdigest()}"
     now = time.time()
 
-    # 以下查表与写入之间不得出现 await：在单线程事件循环下该段方为原子操作，认领才不会被并发打断。
+    # 以下查表与写入之间不得出现 await，在单线程事件循环下该段方为原子操作。
     claimed = channel_claim_cache.get(token)
     claimed_at = claimed.get("timestamp") if claimed else None
     claimed_by = claimed.get("target_id") if claimed else None
