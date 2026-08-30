@@ -20,7 +20,7 @@ weekly_rss = module(
 
 teahouse_weekly_rss = module(
     "teahouse-weekly-rss",
-    desc="{I18N:weekly_rss.help.teahouse_weekly_rss.desc}",
+    desc="{I18N:weekly_rss.help.teahouse-weekly-rss.desc}",
     developers=["OasisAkari"],
     alias=["teahouse_weekly_rss", "teahouseweeklyrss", "teahouserss"],
     doc=True,
@@ -59,10 +59,10 @@ async def _():
     weekly = await get_teahouse_rss()
 
     weekly_cn = MessageChain.assign(
-        Plain(Locale("zh_cn").t("weekly_rss.message.teahouse_weekly_rss", prefix=command_prefix[0]) + weekly)
+        Plain(Locale("zh_cn").t("weekly_rss.message.teahouse-weekly-rss", prefix=command_prefix[0]) + weekly)
     )
     weekly_tw = MessageChain.assign(
-        Plain(Locale("zh_tw").t("weekly_rss.message.teahouse_weekly_rss", prefix=command_prefix[0]) + weekly)
+        Plain(Locale("zh_tw").t("weekly_rss.message.teahouse-weekly-rss", prefix=command_prefix[0]) + weekly)
     )
     weekly_cn_qq = MessageChain.assign(await msgchain2image(weekly_cn))
     weekly_tw_qq = MessageChain.assign(await msgchain2image(weekly_tw))

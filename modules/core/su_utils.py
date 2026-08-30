@@ -275,20 +275,20 @@ async def _(msg: Bot.MessageSession, group_id: str):
 
 
 url = module(
-    "url",
+    "url-audit",
     required_superuser=True,
     base=True,
 )
 
 
-def _url_rule_error(msg: Bot.MessageSession, list_name: str, error: URLRuleError) -> I18NContext:
-    reason = msg.session_info.locale.t(f"core.message.url_{list_name}.error.reason.{error.reason}")
-    return I18NContext(f"core.message.url_{list_name}.error.invalid", reason=reason)
+def _url_rule_error(msg: Bot.MessageSession, list_name: str, error: URLRuleError):
+    reason = msg.session_info.locale.t(f"core.message.url-audit.error.{list_name}.reason.{error.reason}")
+    return I18NContext(f"core.message.url-audit.error.{list_name}.invalid", reason=reason)
 
 
 def _url_rule_details(msg: Bot.MessageSession, list_name: str, rules) -> str:
     return "\n".join(
-        f"[{msg.session_info.locale.t(f'core.message.url_{list_name}.source.{rule.source}')}] {rule.serialized}"
+        f"[{msg.session_info.locale.t(f'core.message.url-audit.source.{list_name}.{rule.source}')}] {rule.serialized}"
         for rule in rules
     )
 
@@ -298,31 +298,31 @@ async def _finish_url_rule_list(msg: Bot.MessageSession, list_name: str, rules: 
     table = ImageTable(
         [
             [
-                locale.t(f"core.message.url_{list_name}.source.{rule.source}"),
-                locale.t("core.message.url.list.table.type.regex")
+                locale.t(f"core.message.url-audit.source.{list_name}.{rule.source}"),
+                locale.t("core.message.url-audit.list.table.type.regex")
                 if rule.is_regex
-                else locale.t("core.message.url.list.table.type.exact"),
+                else locale.t("core.message.url-audit.list.table.type.exact"),
                 rule.value,
             ]
             for rule in rules
         ],
         [
-            locale.t("core.message.url.list.table.header.source"),
-            locale.t("core.message.url.list.table.header.type"),
-            locale.t("core.message.url.list.table.header.rule"),
+            locale.t("core.message.url-audit.list.table.header.source"),
+            locale.t("core.message.url-audit.list.table.header.type"),
+            locale.t("core.message.url-audit.list.table.header.rule"),
         ],
         disable_joke=True,
     )
     imgs = await image_table_render(table)
     if not imgs:
         await msg.finish()
-    await msg.finish([I18NContext(f"core.message.url_{list_name}.list.title")] + [Image(img) for img in imgs])
+    await msg.finish([I18NContext(f"core.message.url-audit.list.{list_name}.title")] + [Image(img) for img in imgs])
 
 
 @url.command(
     [
-        "allowlist add <url> {{I18N:core.help.url.allowlist.add}}",
-        "allowlist add-regex <url> {{I18N:core.help.url.allowlist.add_regex}}",
+        "allowlist add <url> {{I18N:core.help.url-audit.allowlist.add}}",
+        "allowlist add-regex <url> {{I18N:core.help.url-audit.allowlist.add_regex}}",
     ]
 )
 async def _(msg: Bot.MessageSession, url: str):
@@ -333,7 +333,7 @@ async def _(msg: Bot.MessageSession, url: str):
         await msg.finish(_url_rule_error(msg, "allowlist", exc))
     await msg.finish(
         I18NContext(
-            "core.message.url_allowlist.add.success" if added else "core.message.url_allowlist.add.exists",
+            "core.message.url-audit.add.allowlist.success" if added else "core.message.url-audit.add.allowlist.exists",
             rule=(f"regex:{url.strip()}" if is_regex else url),
         )
     )
@@ -341,8 +341,8 @@ async def _(msg: Bot.MessageSession, url: str):
 
 @url.command(
     [
-        "allowlist remove <url> {{I18N:core.help.url.allowlist.remove}}",
-        "allowlist remove-regex <url> {{I18N:core.help.url.allowlist.remove_regex}}",
+        "allowlist remove <url> {{I18N:core.help.url-audit.allowlist.remove}}",
+        "allowlist remove-regex <url> {{I18N:core.help.url-audit.allowlist.remove_regex}}",
     ]
 )
 async def _(msg: Bot.MessageSession, url: str):
@@ -353,33 +353,35 @@ async def _(msg: Bot.MessageSession, url: str):
         await msg.finish(_url_rule_error(msg, "allowlist", exc))
     await msg.finish(
         I18NContext(
-            "core.message.url_allowlist.remove.success" if removed else "core.message.url_allowlist.remove.missing",
+            "core.message.url-audit.remove.allowlist.success"
+            if removed
+            else "core.message.url-audit.remove.allowlist.missing",
             rule=(f"regex:{url.strip()}" if is_regex else url),
         )
     )
 
 
-@url.command("allowlist query <url> {{I18N:core.help.url.allowlist.query}}")
+@url.command("allowlist query <url> {{I18N:core.help.url-audit.allowlist.query}}")
 async def _(msg: Bot.MessageSession, url: str):
     matches = GlobalURLAllowlist.matching_rules(url)
     if not matches:
-        await msg.finish(I18NContext("core.message.url_allowlist.query.denied", url=url))
+        await msg.finish(I18NContext("core.message.url-audit.query.allowlist.denied", url=url))
     details = _url_rule_details(msg, "allowlist", matches)
-    await msg.finish(I18NContext("core.message.url_allowlist.query.allowed", url=url, rules=details))
+    await msg.finish(I18NContext("core.message.url-audit.query.allowlist.allowed", url=url, rules=details))
 
 
-@url.command("allowlist list {{I18N:core.help.url.allowlist.list}}")
+@url.command("allowlist list {{I18N:core.help.url-audit.allowlist.list}}")
 async def _(msg: Bot.MessageSession):
     rules = GlobalURLAllowlist.rules()
     if not rules:
-        await msg.finish(I18NContext("core.message.url_allowlist.list.empty"))
+        await msg.finish(I18NContext("core.message.url-audit.list.allowlist.empty"))
     await _finish_url_rule_list(msg, "allowlist", rules)
 
 
 @url.command(
     [
-        "blocklist add <url> {{I18N:core.help.url.blocklist.add}}",
-        "blocklist add-regex <url> {{I18N:core.help.url.blocklist.add_regex}}",
+        "blocklist add <url> {{I18N:core.help.url-audit.blocklist.add}}",
+        "blocklist add-regex <url> {{I18N:core.help.url-audit.blocklist.add_regex}}",
     ]
 )
 async def _(msg: Bot.MessageSession, url: str):
@@ -390,7 +392,7 @@ async def _(msg: Bot.MessageSession, url: str):
         await msg.finish(_url_rule_error(msg, "blocklist", exc))
     await msg.finish(
         I18NContext(
-            "core.message.url_blocklist.add.success" if added else "core.message.url_blocklist.add.exists",
+            "core.message.url-audit.add.blocklist.success" if added else "core.message.url-audit.add.blocklist.exists",
             rule=(f"regex:{url.strip()}" if is_regex else url),
         )
     )
@@ -398,8 +400,8 @@ async def _(msg: Bot.MessageSession, url: str):
 
 @url.command(
     [
-        "blocklist remove <url> {{I18N:core.help.url.blocklist.remove}}",
-        "blocklist remove-regex <url> {{I18N:core.help.url.blocklist.remove_regex}}",
+        "blocklist remove <url> {{I18N:core.help.url-audit.blocklist.remove}}",
+        "blocklist remove-regex <url> {{I18N:core.help.url-audit.blocklist.remove_regex}}",
     ]
 )
 async def _(msg: Bot.MessageSession, url: str):
@@ -410,26 +412,28 @@ async def _(msg: Bot.MessageSession, url: str):
         await msg.finish(_url_rule_error(msg, "blocklist", exc))
     await msg.finish(
         I18NContext(
-            "core.message.url_blocklist.remove.success" if removed else "core.message.url_blocklist.remove.missing",
+            "core.message.url-audit.remove.blocklist.success"
+            if removed
+            else "core.message.url-audit.remove.blocklist.missing",
             rule=(f"regex:{url.strip()}" if is_regex else url),
         )
     )
 
 
-@url.command("blocklist query <url> {{I18N:core.help.url.blocklist.query}}")
+@url.command("blocklist query <url> {{I18N:core.help.url-audit.blocklist.query}}")
 async def _(msg: Bot.MessageSession, url: str):
     matches = GlobalURLBlocklist.matching_rules(url)
     if not matches:
-        await msg.finish(I18NContext("core.message.url_blocklist.query.allowed", url=url))
+        await msg.finish(I18NContext("core.message.url-audit.query.blocklist.allowed", url=url))
     details = _url_rule_details(msg, "blocklist", matches)
-    await msg.finish(I18NContext("core.message.url_blocklist.query.blocked", url=url, rules=details))
+    await msg.finish(I18NContext("core.message.url-audit.query.blocklist.blocked", url=url, rules=details))
 
 
-@url.command("blocklist list {{I18N:core.help.url.blocklist.list}}")
+@url.command("blocklist list {{I18N:core.help.url-audit.blocklist.list}}")
 async def _(msg: Bot.MessageSession):
     rules = GlobalURLBlocklist.rules()
     if not rules:
-        await msg.finish(I18NContext("core.message.url_blocklist.list.empty"))
+        await msg.finish(I18NContext("core.message.url-audit.list.blocklist.empty"))
     await _finish_url_rule_list(msg, "blocklist", rules)
 
 
