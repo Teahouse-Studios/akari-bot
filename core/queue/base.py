@@ -14,7 +14,6 @@ import time
 import traceback
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from core.builtins.converter import converter
@@ -26,9 +25,7 @@ from core.constants import QueueAlreadyRunning
 from core.database.models import JobQueuesTable
 from core.exports import exports
 from core.logger import Logger
-
-if TYPE_CHECKING:
-    from core.builtins.bot import Bot
+from core.report import send_report
 
 
 @dataclass
@@ -288,7 +285,6 @@ class JobQueueBase:
 
         :param tsk: 待处理的任务对象
         """
-        bot: "Bot" = exports["Bot"]
         try:
             timestamp = tsk.timestamp
             # 检查任务是否超时
@@ -331,19 +327,20 @@ class JobQueueBase:
             Logger.error(f)
             await cls.return_val(tsk, {"traceback": f}, status="failed")
             try:
-                # 向报告场景发送错误信息
-                # 上报场景按场景组配置，展开后同一现实场景的多个平台入口只应由其中一个收到回传
-                for ft in await bot.pick_channel_heads(await bot.fetch_union_target_list(cls.report_targets)):
-                    await cls.client_direct_message(
-                        ft,
-                        MessageChain.assign(
-                            [
-                                I18NContext("error.message.report", command=tsk.action),
-                                Plain(f.strip(), disable_joke=True, allow_parse=False),
-                            ]
-                        ),
-                        disable_secret_check=True,
-                    )
+                await send_report(
+                    MessageChain.assign(
+                        [
+                            I18NContext("error.message.report", command=tsk.action),
+                            Plain(f.strip(), disable_joke=True, allow_parse=False),
+                        ]
+                    ),
+                    subject=f"AkariBot Queue Error: {tsk.action}",
+                    body=f"Action: {tsk.action}\n\n{f.strip()}",
+                    direct_sender=lambda target, message: cls.client_direct_message(
+                        target, message, disable_secret_check=True
+                    ),
+                    targets=cls.report_targets,
+                )
             except Exception:
                 Logger.exception()
             return

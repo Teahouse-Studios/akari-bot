@@ -1,0 +1,18 @@
+# https://toml.io/en/v1.0.0
+# NOTE: TOML is not like Python. Do not use Python syntax here.
+# EXAMPLE: Boolean values in TOML must be lowercase.
+
+[smtp]
+# The basic config section of the SMTP. The values entered here can be displayed in the message. Please do not enter sensitive information in this section.
+enable = false # Whether to enable SMTP email reporting. If enabled, reporting messages will no longer be reported to the contexts.
+smtp_host = "<Replace me with str value>" # SMTP server address.
+smtp_port = 587 # SMTP server port number.
+smtp_username = "<Replace me with str value>" # SMTP login username.
+smtp_sender = "<Replace me with str value>" # Sender address. Leave blank to use the login username.
+smtp_ssl = false # Whether to use SMTPS (SSL) connection.
+smtp_starttls = true # Whether to enable STARTTLS.
+
+[smtp_secret]
+# The secret config section of the SMTP. The bot will try to intercept if the values here accidentally appears in the message sent, but be careful to prevent leakage.
+smtp_password = "<Replace me with str value>" # SMTP login password.
+smtp_recipients = [] # Email reporting recipients.
