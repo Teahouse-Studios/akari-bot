@@ -22,39 +22,39 @@ async def test_url_blocklist_commands(tester: Tester):
             (directory / "global.txt").write_text("https://repo-blocked.example.test/release\n", encoding="utf-8")
             GlobalURLBlocklist.clear_cache()
             await tester.integrate(
-                "~url blocklist query https://repo-blocked.example.test/release",
-                Contains("主仓规则"),
-                "主仓同步阻止列表规则应被识别并标记来源",
+                "~url-audit blocklist query https://repo-blocked.example.test/release",
+                Contains("全局规则"),
+                "全局阻止列表规则应被识别并标记来源",
             )
             await tester.integrate(
-                "~url blocklist add https://repo-blocked.example.test/release",
+                "~url-audit blocklist add https://repo-blocked.example.test/release",
                 Contains("规则已存在"),
-                "用户文件不应重复覆盖主仓阻止列表规则",
+                "用户文件不应重复覆盖全局阻止列表规则",
             )
             await tester.integrate(
-                "~url blocklist add https://blocked.example.test/docs/1",
+                "~url-audit blocklist add https://blocked.example.test/docs/1",
                 Contains("已将规则加入用户自定义 URL 阻止列表"),
                 "应能通过命令添加精确 URL 阻止列表规则",
             )
             await tester.integrate(
-                "~url blocklist query https://blocked.example.test/docs/1",
+                "~url-audit blocklist query https://blocked.example.test/docs/1",
                 Contains("已被以下全局规则拦截"),
                 "精确 URL 阻止列表规则应立即生效",
             )
             await tester.integrate(
-                r"~url blocklist add-regex https://blocked-[a-z]{2}\.example\.test/docs/[0-9]+",
+                r"~url-audit blocklist add-regex https://blocked-[a-z]{2}\.example\.test/docs/[0-9]+",
                 Contains("已将规则加入用户自定义 URL 阻止列表"),
                 "应能通过命令添加正则 URL 阻止列表规则",
             )
             await tester.integrate(
-                "~url blocklist query https://blocked-zh.example.test/docs/42",
+                "~url-audit blocklist query https://blocked-zh.example.test/docs/42",
                 Contains("已被以下全局规则拦截"),
                 "正则 URL 阻止列表规则应立即生效",
             )
             render = AsyncMock(return_value=["https://example.test/blocklist.png"])
             with patch("modules.core.su_utils.image_table_render", new=render):
                 await tester.integrate(
-                    "~url blocklist list",
+                    "~url-audit blocklist list",
                     Exist(ImageElement),
                     "阻止列表应渲染为图片表格",
                 )
@@ -62,7 +62,7 @@ async def test_url_blocklist_commands(tester: Tester):
                 lambda: (
                     render.await_count == 1
                     and render.await_args.args[0].headers == ["来源", "类型", "规则"]
-                    and ["主仓规则", "精确 URL", "https://repo-blocked.example.test/release"]
+                    and ["全局规则", "精确 URL", "https://repo-blocked.example.test/release"]
                     in render.await_args.args[0].data
                     and [
                         "用户规则",
@@ -75,17 +75,17 @@ async def test_url_blocklist_commands(tester: Tester):
             )
             with patch("modules.core.su_utils.image_table_render", new=AsyncMock(return_value=None)):
                 await tester.integrate(
-                    "~url blocklist list",
+                    "~url-audit blocklist list",
                     Empty(),
                     "WebRender 不可用时阻止列表命令不得发出任何内容",
                 )
             await tester.integrate(
-                "~url blocklist add-regex .*",
+                "~url-audit blocklist add-regex .*",
                 Contains("匹配范围过宽"),
                 "阻止列表过宽正则表达式应被拒绝",
             )
             await tester.integrate(
-                "~url blocklist remove https://blocked.example.test/docs/1",
+                "~url-audit blocklist remove https://blocked.example.test/docs/1",
                 Contains("已从用户自定义 URL 阻止列表删除规则"),
                 "应能通过命令删除精确 URL 阻止列表规则",
             )

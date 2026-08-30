@@ -9,6 +9,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
+from core.i18n import Locale
 from core.tester import All, Contains, Match, Not, Tester, func_case
 from core.tester.mock.session import MockMessageSession
 from core.utils.url_audit import GlobalURLAllowlist, GlobalURLBlocklist
@@ -73,7 +74,7 @@ async def test_wiki_set_url_policy(tester: Tester):
                 )
 
                 GlobalURLBlocklist.add_user_rule(api)
-                blocked_message = "失败：Minecraft Wiki (zh) 处于阻止列表中。"
+                blocked_message = Locale("zh_cn").t("wiki.message.invalid.blocked")
                 with (
                     patch("modules.wiki.utils.wikilib.WikiLib.parse_page_info", side_effect=AssertionError),
                     patch("modules.wiki.utils.wikilib.WikiLib.search_page", side_effect=AssertionError),

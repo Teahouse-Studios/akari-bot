@@ -325,7 +325,7 @@ async def _test_global_blocklist_fails_closed_on_regex_budget_exhaustion():
                     r"regex:https://blocked\.example\.test/.*" + "\n", encoding="utf-8"
                 )
                 GlobalURLBlocklist.clear_cache()
-                with patch("core.utils.url_audittime.monotonic", side_effect=[0.0, 1.0]):
+                with patch("core.utils.url_audit.time.monotonic", side_effect=[0.0, 1.0]):
                     return GlobalURLBlocklist.is_blocked(_URL)
     except Exception:
         return False
