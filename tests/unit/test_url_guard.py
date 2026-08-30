@@ -9,6 +9,8 @@ enable_urlmanager 开启时，未经认证的链接原本一律转为 ROT13 编�
 替换成跳板地址；其二是代码块内不可再套 [名称](URL)，故该路径须跳过 markdown 格式转换。
 """
 
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from attr import evolve
@@ -17,11 +19,13 @@ import bots.qqbot.features as qqbot_features_module
 from bots.qqbot.features import features as qqbot_features
 from bots.qqbot.features import resolve_features
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Url
+from core.builtins.message.elements import EmbedElement
+from core.builtins.message.internal import Embed, EmbedField, Url
 from core.builtins.session.info import SessionInfo
 from core.database.models import SenderUnionInfo
 from core.logger import Logger
 from core.tester import func_case, Tester
+from core.utils.url_policy import GlobalURLAllowlist, GlobalURLBlocklist
 
 # 跳板服务的域名，用以断言某条路径确实未走跳板
 _MM_HOST = "mm.teahouse.team"
@@ -159,6 +163,176 @@ async def _test_manager_off_leaves_url_untouched():
         return False
 
 
+async def _test_global_allowlist_bypasses_guard():
+    """测试全局允许列表 - 未表态链接命中用户规则后不再拦截。"""
+    try:
+        with TemporaryDirectory() as temp_dir:
+            directory = Path(temp_dir)
+            with (
+                patch.object(GlobalURLAllowlist, "directory", directory),
+                patch.object(GlobalURLAllowlist, "builtin_path", directory / "global.txt"),
+                patch.object(GlobalURLAllowlist, "user_path", directory / "user.txt"),
+            ):
+                GlobalURLAllowlist.clear_cache()
+                GlobalURLAllowlist.add_user_rule(_URL)
+                out = _render(_session(use_url_manager=True, support_markdown=True))
+                return out == _URL
+    except Exception:
+        return False
+    finally:
+        GlobalURLAllowlist.clear_cache()
+
+
+async def _test_explicit_untrusted_overrides_global_allowlist():
+    """测试审计优先级 - 显式不可信链接不得被全局允许列表提升。"""
+    try:
+        with TemporaryDirectory() as temp_dir:
+            directory = Path(temp_dir)
+            with (
+                patch.object(GlobalURLAllowlist, "directory", directory),
+                patch.object(GlobalURLAllowlist, "builtin_path", directory / "global.txt"),
+                patch.object(GlobalURLAllowlist, "user_path", directory / "user.txt"),
+            ):
+                GlobalURLAllowlist.clear_cache()
+                GlobalURLAllowlist.add_user_rule(_URL)
+                session_info = _session(use_url_manager=True, support_markdown=True)
+                return _render(session_info, trusted=False) == _expected_block(session_info)
+    except Exception:
+        return False
+    finally:
+        GlobalURLAllowlist.clear_cache()
+
+
+async def _test_global_blocklist_blocks_trusted_url():
+    """测试全局阻止列表 - 显式可信链接也不得输出原 URL。"""
+    try:
+        with TemporaryDirectory() as temp_dir:
+            directory = Path(temp_dir)
+            with (
+                patch.object(GlobalURLBlocklist, "directory", directory),
+                patch.object(GlobalURLBlocklist, "builtin_path", directory / "global.txt"),
+                patch.object(GlobalURLBlocklist, "user_path", directory / "user.txt"),
+            ):
+                GlobalURLBlocklist.clear_cache()
+                GlobalURLBlocklist.add_user_rule(_URL)
+                session_info = _session(use_url_manager=False, support_markdown=True)
+                out = _render(session_info, trusted=True)
+                return out == session_info.locale.t("message.url.blocked") and _URL not in out
+    except Exception:
+        return False
+    finally:
+        GlobalURLBlocklist.clear_cache()
+
+
+async def _test_global_blocklist_overrides_allowlist():
+    """测试列表优先级 - 同时命中时必须由阻止列表拦截。"""
+    try:
+        with TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            allowlist_directory = root / "allowlist"
+            blocklist_directory = root / "blocklist"
+            with (
+                patch.object(GlobalURLAllowlist, "directory", allowlist_directory),
+                patch.object(GlobalURLAllowlist, "builtin_path", allowlist_directory / "global.txt"),
+                patch.object(GlobalURLAllowlist, "user_path", allowlist_directory / "user.txt"),
+                patch.object(GlobalURLBlocklist, "directory", blocklist_directory),
+                patch.object(GlobalURLBlocklist, "builtin_path", blocklist_directory / "global.txt"),
+                patch.object(GlobalURLBlocklist, "user_path", blocklist_directory / "user.txt"),
+            ):
+                GlobalURLAllowlist.clear_cache()
+                GlobalURLBlocklist.clear_cache()
+                GlobalURLAllowlist.add_user_rule(_URL)
+                GlobalURLBlocklist.add_user_rule(_URL)
+                session_info = _session(use_url_manager=True, support_markdown=True)
+                out = _render(session_info)
+                return out == session_info.locale.t("message.url.blocked") and _URL not in out
+    except Exception:
+        return False
+    finally:
+        GlobalURLAllowlist.clear_cache()
+        GlobalURLBlocklist.clear_cache()
+
+
+async def _test_global_blocklist_removes_embed_url():
+    """测试 Embed - 阻止列表中的跳转链接不得绕过 URL 元素检查。"""
+    try:
+        with TemporaryDirectory() as temp_dir:
+            directory = Path(temp_dir)
+            with (
+                patch.object(GlobalURLBlocklist, "directory", directory),
+                patch.object(GlobalURLBlocklist, "builtin_path", directory / "global.txt"),
+                patch.object(GlobalURLBlocklist, "user_path", directory / "user.txt"),
+            ):
+                GlobalURLBlocklist.clear_cache()
+                GlobalURLBlocklist.add_user_rule(_URL)
+                session_info = _session(support_embed=True)
+                out = MessageChain.assign(
+                    [
+                        Embed(
+                            title="Blocked",
+                            description=f"before {_URL} after",
+                            url=_URL,
+                            fields=[EmbedField("link", _URL)],
+                        )
+                    ]
+                ).as_sendable(session_info)
+                embed = out.values[0] if len(out.values) == 1 and isinstance(out.values[0], EmbedElement) else None
+                return (
+                    embed is not None
+                    and embed.url is None
+                    and _URL not in embed.description
+                    and _URL not in embed.fields[0].value
+                )
+    except Exception:
+        return False
+    finally:
+        GlobalURLBlocklist.clear_cache()
+
+
+async def _test_global_blocklist_redacts_plain_text_url():
+    """测试纯文本 - 模块不得用裸 URL 绕过结构化链接检查。"""
+    try:
+        with TemporaryDirectory() as temp_dir:
+            directory = Path(temp_dir)
+            with (
+                patch.object(GlobalURLBlocklist, "directory", directory),
+                patch.object(GlobalURLBlocklist, "builtin_path", directory / "global.txt"),
+                patch.object(GlobalURLBlocklist, "user_path", directory / "user.txt"),
+            ):
+                GlobalURLBlocklist.clear_cache()
+                GlobalURLBlocklist.add_user_rule(_URL)
+                session_info = _session()
+                out = "".join(str(x) for x in MessageChain.assign(f"before {_URL}, after").as_sendable(session_info))
+                return out == f"before {session_info.locale.t('message.url.blocked')}, after" and _URL not in out
+    except Exception:
+        return False
+    finally:
+        GlobalURLBlocklist.clear_cache()
+
+
+async def _test_global_blocklist_fails_closed_on_regex_budget_exhaustion():
+    """测试正则超时 - 阻止列表不得因匹配预算耗尽而放行链接。"""
+    try:
+        with TemporaryDirectory() as temp_dir:
+            directory = Path(temp_dir)
+            with (
+                patch.object(GlobalURLBlocklist, "directory", directory),
+                patch.object(GlobalURLBlocklist, "builtin_path", directory / "global.txt"),
+                patch.object(GlobalURLBlocklist, "user_path", directory / "user.txt"),
+            ):
+                directory.mkdir(parents=True, exist_ok=True)
+                (directory / "global.txt").write_text(
+                    r"regex:https://blocked\.example\.test/.*" + "\n", encoding="utf-8"
+                )
+                GlobalURLBlocklist.clear_cache()
+                with patch("core.utils.url_policy.time.monotonic", side_effect=[0.0, 1.0]):
+                    return GlobalURLBlocklist.is_blocked(_URL)
+    except Exception:
+        return False
+    finally:
+        GlobalURLBlocklist.clear_cache()
+
+
 async def _test_markdown_toggle_keeps_url_manager():
     """测试平台接入 - 用户关闭 markdown 后仍须保留 URLManager
 
@@ -248,6 +422,16 @@ async def test_url_guard(tester: Tester):
     await tester.test(_test_markdown_off_falls_back_to_springboard, "不支持 markdown 时回退跳板测试")
     await tester.test(_test_disable_markdown_falls_back_to_springboard, "强制禁用 markdown 时回退跳板测试")
     await tester.test(_test_manager_off_leaves_url_untouched, "未启用 URLManager 时原样输出测试")
+    await tester.test(_test_global_allowlist_bypasses_guard, "全局 URL 允许列表放行测试")
+    await tester.test(_test_explicit_untrusted_overrides_global_allowlist, "显式不可信优先级测试")
+    await tester.test(_test_global_blocklist_blocks_trusted_url, "全局 URL 阻止列表覆盖可信标记测试")
+    await tester.test(_test_global_blocklist_overrides_allowlist, "全局 URL 阻止列表覆盖允许列表测试")
+    await tester.test(_test_global_blocklist_removes_embed_url, "全局 URL 阻止列表移除 Embed 链接测试")
+    await tester.test(_test_global_blocklist_redacts_plain_text_url, "全局 URL 阻止列表过滤纯文本链接测试")
+    await tester.test(
+        _test_global_blocklist_fails_closed_on_regex_budget_exhaustion,
+        "全局 URL 阻止列表正则预算耗尽时拒绝发送测试",
+    )
     await tester.test(_test_trusted_survives_kecode_roundtrip, "认证标记经 KE 码往返保留测试")
     await tester.test(_test_untrusted_not_double_wrapped_by_kecode, "KE 码往返不重复套跳板测试")
     await tester.test(_test_unmarked_url_still_follows_session_after_roundtrip, "未表态者往返后随会话测试")

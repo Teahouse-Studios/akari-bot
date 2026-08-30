@@ -30,6 +30,7 @@ from core.database import fetch_module_db
 from core.database.link import get_db_link
 from core.database.models import *
 from core.logger import Logger
+from core.utils.url_policy import GlobalURLAllowlist, GlobalURLBlocklist
 from modules.cytoid.database.models import *
 from modules.maimai.database.models import *
 from modules.phigros.database.models import *
@@ -643,28 +644,18 @@ async def convert_database():
             Logger.error(f"WikiSiteInfo record: {r.__dict__}")
     await conn.execute_query("DROP TABLE IF EXISTS _old_module_wiki_WikiInfo;")
 
-    Logger.info("Converting WikiAllowList...")
+    Logger.info("Converting WikiAllowList to the global URL allowlist...")
 
-    # Wiki 白名单转换
+    # 旧 Wiki API 白名单已并入全局 URL 规则文件；全部写入成功后才删除旧表。
     wiki_allow_list_record = await WikiAllowListL.all()
-    for r in wiki_allow_list_record:
-        try:
-            await WikiAllowList.create(api_link=r.apiLink, timestamp=r.timestamp)
-        except Exception as e:
-            Logger.error(f"Failed to convert WikiAllowList: {r.apiLink}, error: {e}")
-            Logger.error(f"WikiAllowList record: {r.__dict__}")
+    GlobalURLAllowlist.import_user_rules(r.apiLink for r in wiki_allow_list_record)
     await conn.execute_query("DROP TABLE IF EXISTS _old_module_wiki_WikiAllowList;")
 
-    Logger.info("Converting WikiBlockList...")
+    Logger.info("Converting WikiBlockList to the global URL blocklist...")
 
-    # Wiki 黑名单转换
+    # 旧 Wiki API 黑名单同样保留精确规则或 regex: 前缀的正则规则。
     wiki_block_list_record = await WikiBlockListL.all()
-    for r in wiki_block_list_record:
-        try:
-            await WikiBlockList.create(api_link=r.apiLink, timestamp=r.timestamp)
-        except Exception as e:
-            Logger.error(f"Failed to convert WikiBlockList: {r.apiLink}, error: {e}")
-            Logger.error(f"WikiBlockList record: {r.__dict__}")
+    GlobalURLBlocklist.import_user_rules(r.apiLink for r in wiki_block_list_record)
     await conn.execute_query("DROP TABLE IF EXISTS _old_module_wiki_WikiBlockList;")
 
     Logger.info("Converting WikiBotAccountList...")

@@ -26,7 +26,7 @@ from .wiki import _build_forum_callback, _build_section_callback, _start_backgro
 
 wiki_inline = module(
     "wiki-inline",
-    desc="{I18N:wiki.help.wiki_inline.desc}",
+    desc="{I18N:wiki.help.wiki-inline.desc}",
     doc=True,
     recommend_modules=["wiki"],
     alias=["wiki_inline", "wiki_regex"],
@@ -35,7 +35,7 @@ wiki_inline = module(
 )
 
 
-@wiki_inline.regex(r"\[\[(.*?)\]\]", flags=re.I, mode="A", desc="{I18N:wiki.help.wiki_inline.page}")
+@wiki_inline.regex(r"\[\[(.*?)\]\]", flags=re.I, mode="A", desc="{I18N:wiki.help.wiki-inline.page}")
 async def _(msg: Bot.MessageSession):
     query_list = []
     for x in msg.matched_msg:
@@ -45,7 +45,7 @@ async def _(msg: Bot.MessageSession):
         await query_pages(msg, query_list[:5], inline_mode=True)
 
 
-@wiki_inline.regex(r"\{\{(.*?)\}\}", flags=re.I, mode="A", desc="{I18N:wiki.help.wiki_inline.template}")
+@wiki_inline.regex(r"\{\{(.*?)\}\}", flags=re.I, mode="A", desc="{I18N:wiki.help.wiki-inline.template}")
 async def _(msg: Bot.MessageSession):
     query_list = []
     for x in msg.matched_msg:
@@ -56,7 +56,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @wiki_inline.regex(
-    r"≺(.*?)≻|⧼(.*?)⧽", flags=re.I, mode="A", show_typing=False, desc="{I18N:wiki.help.wiki_inline.mediawiki}"
+    r"≺(.*?)≻|⧼(.*?)⧽", flags=re.I, mode="A", show_typing=False, desc="{I18N:wiki.help.wiki-inline.mediawiki}"
 )
 async def _(msg: Bot.MessageSession):
     query_list = []
@@ -74,7 +74,7 @@ async def _(msg: Bot.MessageSession):
     mode="A",
     show_typing=False,
     logging=False,
-    desc="{I18N:wiki.help.wiki_inline.url}",
+    desc="{I18N:wiki.help.wiki-inline.url}",
 )
 async def _(msg: Bot.MessageSession):
     match_msg = msg.matched_msg
@@ -91,13 +91,13 @@ async def _(msg: Bot.MessageSession):
                 get_page = None
                 if is_int(get_id):
                     get_page = await wiki_.parse_page_info(pageid=int(get_id), session=msg)
-                    if not q[qq].in_allowlist and msg.session_info.use_url_manager:
+                    if not q[qq].is_allowed and msg.session_info.use_url_manager:
                         for result in await check(get_page.title, session=msg):
                             if not result["status"]:
                                 return
                 elif get_title != "":
                     title = urllib.parse.unquote(get_title)
-                    if not q[qq].in_allowlist and msg.session_info.use_url_manager:
+                    if not q[qq].is_allowed and msg.session_info.use_url_manager:
                         for result in await check(title, session=msg):
                             if not result["status"]:
                                 return
@@ -120,7 +120,7 @@ async def _(msg: Bot.MessageSession):
                                     await msg.send_message(
                                         [
                                             I18NContext(
-                                                "wiki.message.wiki_inline.flies",
+                                                "wiki.message.wiki-inline.flies",
                                                 file=MessageChain.assign(Url(get_page.file)),
                                             ),
                                             Image(dl),
@@ -139,7 +139,7 @@ async def _(msg: Bot.MessageSession):
                                     await msg.send_message(
                                         [
                                             I18NContext(
-                                                "wiki.message.wiki_inline.flies",
+                                                "wiki.message.wiki-inline.flies",
                                                 file=MessageChain.assign(Url(get_page.file)),
                                             ),
                                             Audio(dl),
@@ -158,7 +158,7 @@ async def _(msg: Bot.MessageSession):
                                 await msg.send_message(
                                     [
                                         I18NContext(
-                                            "wiki.message.wiki_inline.flies",
+                                            "wiki.message.wiki-inline.flies",
                                             file=MessageChain.assign(Url(get_page.file)),
                                         ),
                                         Video(dl),
@@ -170,7 +170,7 @@ async def _(msg: Bot.MessageSession):
                             if msg.session_info.support_image and rd:
                                 chain = [
                                     I18NContext(
-                                        "wiki.message.wiki_inline.flies",
+                                        "wiki.message.wiki-inline.flies",
                                         file=MessageChain.assign(Url(get_page.file)),
                                     ),
                                 ] + rd
@@ -180,7 +180,7 @@ async def _(msg: Bot.MessageSession):
                         if (
                             get_page.status
                             and get_page.title
-                            and (wiki_.wiki_info.in_allowlist or not msg.session_info.use_url_manager)
+                            and (wiki_.wiki_info.is_allowed or not msg.session_info.use_url_manager)
                         ):
                             if wiki_.wiki_info.realurl not in generate_screenshot_v2_blocklist:
                                 is_disambiguation = False
@@ -197,7 +197,7 @@ async def _(msg: Bot.MessageSession):
                                 )
                                 get_infobox = await generate_screenshot_v2(
                                     qq,
-                                    allow_special_page=(q[qq].in_allowlist or not msg.session_info.use_url_manager),
+                                    allow_special_page=(q[qq].is_allowed or not msg.session_info.use_url_manager),
                                     content_mode=content_mode,
                                     locale=msg.session_info.locale.locale,
                                 )
@@ -216,7 +216,7 @@ async def _(msg: Bot.MessageSession):
                         if (
                             (
                                 get_page.invalid_section
-                                and (wiki_.wiki_info.in_allowlist or not msg.session_info.use_url_manager)
+                                and (wiki_.wiki_info.is_allowed or not msg.session_info.use_url_manager)
                             )
                             or (get_page.is_talk_page and not get_page.selected_section)
                             and Bot.Info.web_render_status
@@ -247,7 +247,7 @@ async def _(msg: Bot.MessageSession):
                                         "wiki.message.invalid_section.prompt"
                                         if get_page.invalid_section
                                         and (
-                                            get_page.info.in_allowlist
+                                            get_page.info.is_allowed
                                             or not (
                                                 isinstance(msg, Bot.MessageSession) and msg.session_info.use_url_manager
                                             )
@@ -261,8 +261,8 @@ async def _(msg: Bot.MessageSession):
                                         ImageTable(
                                             session_data,
                                             [
-                                                msg.session_info.locale.t("wiki.message.table.header.id"),
-                                                msg.session_info.locale.t("wiki.message.table.header.section"),
+                                                str(I18NContext("wiki.message.table.header.id")),
+                                                str(I18NContext("wiki.message.table.header.section")),
                                             ],
                                         )
                                     )
@@ -338,7 +338,7 @@ async def _(msg: Bot.MessageSession):
                             section_.append(qs)
                     if section_:
                         s = urllib.parse.unquote("".join(section_)[1:])
-                        if q[qq].realurl and (q[qq].in_allowlist or not msg.session_info.use_url_manager):
+                        if q[qq].realurl and (q[qq].is_allowed or not msg.session_info.use_url_manager):
                             if q[qq].realurl in generate_screenshot_v2_blocklist:
                                 get_section = await generate_screenshot_v1(q[qq].realurl, qq, headers, section=s)
                             else:

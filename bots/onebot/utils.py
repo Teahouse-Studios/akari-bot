@@ -22,7 +22,7 @@ async def get_onebot_implementation() -> str | None:
 
 
 class CQCodeHandler:
-    get_supported = ["at", "face", "forward", "image", "json", "record", "text"]
+    get_supported = ["at", "face", "forward", "image", "json", "record", "text", "video"]
     pattern = re.compile(r"\[CQ:(\w+),?[^\]]*\]")
 
     @staticmethod
@@ -99,7 +99,7 @@ class CQCodeHandler:
 async def to_message_chain(message: str | list[dict[str, Any]]) -> MessageChain:
     lst = []
     if isinstance(message, str):
-        spl = re.split(r"(\[CQ:(?:text|image|record|at).*?])", message)
+        spl = re.split(r"(\[CQ:(?:text|image|record|video|at).*?])", message)
         for s in spl:
             if not s:
                 continue

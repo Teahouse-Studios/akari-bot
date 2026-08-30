@@ -16,13 +16,14 @@ from core.utils.func import is_int
 from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
+from core.utils.url_policy import evaluate_url_policy
 from core.utils.button import build_button_rows
-from .database.models import WikiTargetInfo
+from .database.models import WikiSiteInfo, WikiTargetInfo
 from .utils.mapping import generate_screenshot_v2_blocklist
 from .utils.recommend import finish_with_start_wiki_not_set
 from .utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
 from .utils.utils import check_svg
-from .utils.wikilib import MAX_RESEARCH_SUGGESTIONS, WikiLib, PageInfo, InvalidWikiError, QueryInfo
+from .utils.wikilib import BlockedWikiError, MAX_RESEARCH_SUGGESTIONS, WikiLib, PageInfo, InvalidWikiError, QueryInfo
 
 wiki = module(
     "wiki",
@@ -195,6 +196,34 @@ def _build_not_found_choice_rows(possible_titles: list[str], start_index: int = 
     ]
 
 
+def _normalize_page_name(pagename: str) -> str:
+    if match := re.fullmatch(r"\[{1,2}\s*(.*?)\s*\]{1,2}", pagename):
+        return match.group(1).split("|", 1)[0].strip()
+    if match := re.fullmatch(r"\{{1,2}\s*(.*?)\s*\}{1,2}", pagename):
+        title = match.group(1).split("|", 1)[0].strip()
+        return f"Template:{title}"
+    return pagename
+
+
+async def finish_if_wiki_blocked(msg: Bot.MessageSession, api_link: str) -> None:
+    """在发起内容查询前拒绝全局 URL 阻止列表中的 Wiki API。"""
+    if not evaluate_url_policy(api_link).blocked:
+        return
+
+    wiki_name = api_link
+    cached = await WikiSiteInfo.get_or_none(api_link=api_link)
+    site_info = cached.site_info if cached else None
+    if isinstance(site_info, dict):
+        query = site_info.get("query")
+        general = query.get("general") if isinstance(query, dict) else None
+        if isinstance(general, dict) and general.get("sitename"):
+            wiki_name = general["sitename"]
+            if general.get("lang"):
+                wiki_name += f" ({general['lang']})"
+
+    await msg.finish(I18NContext("wiki.message.invalid.blocked"))
+
+
 @wiki.command()
 async def _(msg: Bot.MessageSession):
     await query_pages(msg)
@@ -202,6 +231,7 @@ async def _(msg: Bot.MessageSession):
 
 @wiki.command("<pagename> [-l <lang>] {{I18N:wiki.help}}", options_desc={"-l": "{I18N:wiki.help.option.l}"})
 async def _(msg: Bot.MessageSession, pagename: str):
+    pagename = _normalize_page_name(pagename)
     get_lang = msg.parsed_msg.get("-l", False)
     if get_lang:
         lang = get_lang["<lang>"]
@@ -229,6 +259,11 @@ async def _(msg: Bot.MessageSession, pageid: str):
     await query_pages(msg, pageid=pageid, iw=iw, lang=lang)
 
 
+@wiki.command("random {{I18N:wiki.help.random}}")
+async def _(msg: Bot.MessageSession):
+    await query_pages(msg, random_page=True)
+
+
 async def query_pages(
     session: Bot.MessageSession | QueryInfo,
     title: str | list | tuple | None = None,
@@ -241,6 +276,7 @@ async def query_pages(
     mediawiki: bool = False,
     use_prefix: bool = True,
     inline_mode: bool = False,
+    random_page: bool = False,
 ):
     if isinstance(session, MessageSession):
         target = await WikiTargetInfo.get_by_target_id(session.session_info.target_id)
@@ -261,10 +297,21 @@ async def query_pages(
     if not start_wiki:
         if isinstance(session, MessageSession):
             await finish_with_start_wiki_not_set(session)
+    if isinstance(session, MessageSession):
+        await finish_if_wiki_blocked(session, start_wiki)
     # if lang in interwiki_list:
     #     start_wiki = interwiki_list[lang]
     #     lang = None
-    if title:
+    if random_page:
+        random_wiki = WikiLib(start_wiki, headers, locale=session.session_info.locale.locale)
+        random_result = await random_wiki.get_json(action="query", list="random", rnnamespace="0")
+        query_task = {
+            start_wiki: {
+                "query": [random_result["query"]["random"][0]["title"]],
+                "iw_prefix": "",
+            }
+        }
+    elif title:
         if isinstance(title, str):
             title = [title]
         title = list(set(title))
@@ -326,6 +373,8 @@ async def query_pages(
     if preset_message:
         msg_list.extend(preset_message)
     for q in query_task:
+        if isinstance(session, MessageSession):
+            await finish_if_wiki_blocked(session, q)
         current_task = query_task[q]
         ready_for_query_pages = current_task["query"] if "query" in current_task else []
         ready_for_query_ids = current_task["queryid"] if "queryid" in current_task else []
@@ -396,7 +445,7 @@ async def query_pages(
                         r.link
                         and r.selected_section
                         and (
-                            r.info.in_allowlist
+                            r.info.is_allowed
                             or not (isinstance(session, Bot.MessageSession) and session.session_info.use_url_manager)
                         )
                         and not r.invalid_section
@@ -407,7 +456,7 @@ async def query_pages(
                                 r.link: {
                                     "url": r.info.realurl,
                                     "section": r.selected_section,
-                                    "in_allowlist": r.info.in_allowlist
+                                    "is_allowed": r.info.is_allowed
                                     or not (
                                         isinstance(session, Bot.MessageSession) and session.session_info.use_url_manager
                                     ),
@@ -420,19 +469,19 @@ async def query_pages(
                             plain_slice.append(Plain(r.desc))
 
                     if r.link:
-                        plain_slice.append(Url(r.link, trusted=True if r.info.in_allowlist else None))
+                        plain_slice.append(Url(r.link, trusted=True if r.info.is_allowed else None))
 
                     if r.file:
                         dl_list.append(r.file)
                         plain_slice.append(I18NContext("wiki.message.flies"))
-                        plain_slice.append(Url(r.file, trusted=True if r.info.in_allowlist else None))
+                        plain_slice.append(Url(r.file, trusted=True if r.info.is_allowed else None))
                     else:
                         if r.link and not r.selected_section:
                             render_infobox_list.append(
                                 {
                                     r.link: {
                                         "url": r.info.realurl,
-                                        "in_allowlist": r.info.in_allowlist
+                                        "is_allowed": r.info.is_allowed
                                         or not (
                                             isinstance(session, Bot.MessageSession)
                                             and session.session_info.use_url_manager
@@ -456,7 +505,7 @@ async def query_pages(
                         if (
                             r.invalid_section
                             and (
-                                r.info.in_allowlist
+                                r.info.is_allowed
                                 or not (
                                     isinstance(session, Bot.MessageSession) and session.session_info.use_url_manager
                                 )
@@ -490,7 +539,7 @@ async def query_pages(
                                         "wiki.message.invalid_section.prompt"
                                         if r.invalid_section
                                         and (
-                                            r.info.in_allowlist
+                                            r.info.is_allowed
                                             or not (
                                                 isinstance(session, Bot.MessageSession)
                                                 and session.session_info.use_url_manager
@@ -505,8 +554,8 @@ async def query_pages(
                                         ImageTable(
                                             session_data,
                                             [
-                                                session.session_info.locale.t("wiki.message.table.header.id"),
-                                                session.session_info.locale.t("wiki.message.table.header.section"),
+                                                str(I18NContext("wiki.message.table.header.id")),
+                                                str(I18NContext("wiki.message.table.header.section")),
                                             ],
                                         )
                                     )
@@ -527,7 +576,7 @@ async def query_pages(
 
                             else:
                                 if r.invalid_section and (
-                                    r.info.in_allowlist
+                                    r.info.is_allowed
                                     or not (
                                         isinstance(session, Bot.MessageSession) and session.session_info.use_url_manager
                                     )
@@ -650,6 +699,11 @@ async def query_pages(
                         msg_list.extend(plain_slice)
                     if wait_plain_slice:
                         wait_msg_list.extend(wait_plain_slice)
+        except BlockedWikiError as e:
+            if isinstance(session, Bot.MessageSession):
+                await finish_if_wiki_blocked(session, e.url)
+            else:
+                raise
         except InvalidWikiError as e:
             # 异常自身不是消息元素，须先取其文本再并入消息链。
             error_message = MessageChain.assign([I18NContext("message.error"), Plain(str(e))])
@@ -681,7 +735,7 @@ async def query_pages(
                         if i[ii]["url"] not in generate_screenshot_v2_blocklist:
                             get_infobox = await generate_screenshot_v2(
                                 ii,
-                                allow_special_page=i[ii]["in_allowlist"],
+                                allow_special_page=i[ii]["is_allowed"],
                                 content_mode=i[ii]["content_mode"],
                                 locale=session.session_info.locale.locale,
                             )
@@ -693,7 +747,7 @@ async def query_pages(
                                 i[ii]["url"],
                                 ii,
                                 headers,
-                                allow_special_page=i[ii]["in_allowlist"],
+                                allow_special_page=i[ii]["is_allowed"],
                             )
                             if get_infobox:
                                 for img in get_infobox:
@@ -706,7 +760,7 @@ async def query_pages(
                 section_msg_list = MessageChain.create()
                 for i in render_section_list:
                     for ii in i:
-                        if i[ii]["in_allowlist"]:
+                        if i[ii]["is_allowed"]:
                             if i[ii]["url"] not in generate_screenshot_v2_blocklist:
                                 get_section = await generate_screenshot_v2(
                                     ii, section=i[ii]["section"], locale=session.session_info.locale.locale
@@ -778,8 +832,8 @@ async def query_pages(
                 if len(wait_list) == 1:
                     possibly_choices.append(
                         {
-                            session.session_info.locale.t("message.button.yes"): confirm_command[0],
-                            session.session_info.locale.t("message.button.no"): "no",
+                            str(I18NContext("message.button.yes")): confirm_command[0],
+                            str(I18NContext("message.button.no")): "no",
                         }
                     )
                 elif len(wait_list) > 1:

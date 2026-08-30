@@ -6,7 +6,7 @@ from core.builtins.message.elements import ButtonRows
 from core.builtins.utils import command_prefix
 from core.utils.button import arrange_buttons
 
-# 未设置起始 Wiki 时向用户推荐的 Wiki，元素为（显示名称，API 端点地址）。
+# 未设置默认 Wiki 时向用户推荐的 Wiki，元素为（显示名称，API 端点地址）。
 RECOMMENDED_WIKIS: list[tuple[str, str]] = [
     ("Minecraft Wiki", "https://zh.minecraft.wiki/api.php"),
 ]
@@ -27,7 +27,7 @@ def get_recommend_button_data() -> list[ButtonRows]:
 
 async def finish_with_start_wiki_not_set(msg: Bot.MessageSession) -> NoReturn:
     """
-    提示当前场景尚未设置起始 Wiki 并终结会话。
+    提示当前场景尚未设置默认 Wiki 并终结会话。
 
     在支持按钮的平台上，额外为具备设置权限的用户附上推荐 Wiki 的按钮。
     按钮回流后走完整的命令解析流程，权限由 wiki set 命令自身再次校验。

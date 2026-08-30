@@ -7,14 +7,18 @@ from core.builtins.message.internal import I18NContext, Plain, Url
 from core.dirty_check import check_bool, rickroll
 from core.logger import Logger
 from modules.wiki.utils.utils import strptime2ts
-from modules.wiki.utils.wikilib import WikiLib
+from modules.wiki.utils.wikilib import BlockedWikiError, WikiLib
 
 
 async def get_user_info(msg: Bot.MessageSession, username, wikiurl, headers=None):
     wiki = WikiLib(wikiurl, headers)
-    if not await wiki.check_wiki_available():
+    try:
+        status = await wiki.check_wiki_available()
+    except BlockedWikiError:
+        return I18NContext("wiki.message.invalid.blocked")
+    if not status.available:
         return I18NContext("wiki.message.user.wiki_unavailable", wikiurl=wikiurl)
-    await wiki.fixup_wiki_info()
+    wiki.wiki_info = status.value
     match_interwiki = re.match(r"(.*?):(.*)", username)
     if match_interwiki:
         if match_interwiki.group(1) in wiki.wiki_info.interwiki:
@@ -173,5 +177,5 @@ async def get_user_info(msg: Bot.MessageSession, username, wikiurl, headers=None
         msgs.append(Plain(str(I18NContext("wiki.message.user.blocked.reason")) + data["blocked_reason"]))
 
     if url := data.get("url", ""):
-        msgs.append(Url(url, trusted=True if wiki.wiki_info.in_allowlist else None))
+        msgs.append(Url(url, trusted=True if wiki.wiki_info.is_allowed else None))
     return MessageChain.assign(msgs)

@@ -18,7 +18,7 @@ from core.utils.bash import run_sys_command
 from core.utils.http import get_url
 
 WEBLATE_LANGUAGES_API = "https://hosted.weblate.org/api/projects/akaribot/languages/"
-TRANSLATION_PROGRESS_THRESHOLD = 80.0
+TRANSLATION_PROGRESS_THRESHOLD = 95.0
 
 # Weblate 语言列表的缓存文件。机器人每晚自动清空 cache 目录时一并清理，次日首次调用时重新拉取。
 WEBLATE_LANGUAGES_CACHE = cache_path / "weblate_languages.json"
@@ -128,7 +128,7 @@ async def _display_union_list(msg: Bot.MessageSession, union_ids: list[str]) -> 
     """
     将权限列表中的 union ID 展开为其下绑定的平台账号 ID 用于展示，一行对应一个 union。
     """
-    delimiter = msg.session_info.locale.t("message.delimiter")
+    delimiter = str(I18NContext("message.delimiter"))
     lines = []
     for union_id in union_ids:
         bound_ids = await SenderUnionBind.list_ids(union_id)
@@ -320,7 +320,8 @@ async def _(msg: Bot.MessageSession):
 
 @locale.command("[<lang>] {{I18N:core.help.locale.set}}", required_admin=True)
 async def _(msg: Bot.MessageSession, lang: str):
-    if lang in get_available_locales() and await msg.session_info.target_union_info.edit_attr("locale", lang):
+    if lang in get_available_locales():
+        await msg.session_info.target_union_info.edit_attr("locale", lang)
         await msg.send_message(Locale(lang).t("message.success"))
         await msg.finish(await build_translation_notice(lang))
     else:

@@ -23,15 +23,17 @@ async def mcjv(msg: Bot.MessageSession):
             if v["id"] == snapshot:
                 time_snapshot = datetime.fromisoformat(v["releaseTime"]).timestamp()
 
-        message1 = msg.session_info.locale.t(
-            "mcv.message.mcv.launcher",
-            release=data["latest"]["release"],
-            snapshot=data["latest"]["snapshot"],
-            release_time=msg.format_time(time_release),
-            snapshot_time=msg.format_time(time_snapshot),
+        message1 = str(
+            I18NContext(
+                "mcv.message.mcv.launcher",
+                release=data["latest"]["release"],
+                snapshot=data["latest"]["snapshot"],
+                release_time=msg.format_time(time_release),
+                snapshot_time=msg.format_time(time_snapshot),
+            )
         )
     except Exception:  # Probably...
-        message1 = msg.session_info.locale.t("mcv.message.mcv.launcher.failed")
+        message1 = str(I18NContext("mcv.message.mcv.launcher.failed"))
     return I18NContext("mcv.message.mcv", launcher_ver=message1)
 
 
@@ -62,14 +64,14 @@ async def mcbv(msg: Bot.MessageSession):
         pass
     return (
         (
-            f"""{msg.session_info.locale.t("mcv.message.mcbv.play_store")}
-{play_store_version if play_store_version else msg.session_info.locale.t("mcv.message.mcbv.get_failed")}
+            f"""{str(I18NContext("mcv.message.mcbv.play_store"))}
+{play_store_version if play_store_version else str(I18NContext("mcv.message.mcbv.get_failed"))}
 """
             if Secret.ip_country != "China"
             else ""
         )
-        + f"""{msg.session_info.locale.t("mcv.message.mcbv.ms_store")}
-{ms_store_version if ms_store_version else msg.session_info.locale.t("mcv.message.mcbv.get_failed")}"""
+        + f"""{str(I18NContext("mcv.message.mcbv.ms_store"))}
+{ms_store_version if ms_store_version else str(I18NContext("mcv.message.mcbv.get_failed"))}"""
     )
 
 

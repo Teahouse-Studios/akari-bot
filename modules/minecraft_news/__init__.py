@@ -14,7 +14,7 @@ minecraft_news = module(
     "minecraft-news",
     developers=["_LittleC_", "OasisAkari", "Dianliang233"],
     recommend_modules=["feedback-news"],
-    desc="{I18N:minecraft_news.help.minecraft_news}",
+    desc="{I18N:minecraft_news.help.minecraft-news}",
     alias=["minecraft_news", "minecraftnews", "mcnews"],
     doc=True,
     rss=True,
@@ -24,7 +24,7 @@ feedback_news = module(
     "feedback-news",
     developers=["Dianliang233"],
     recommend_modules=["minecraft-news"],
-    desc="{I18N:minecraft_news.help.feedback_news}",
+    desc="{I18N:minecraft_news.help.feedback-news}",
     alias=["feedback_news", "feedbacknews"],
     doc=True,
     rss=True,
@@ -93,7 +93,7 @@ async def _():
                             message=MessageChain.assign(
                                 [
                                     I18NContext(
-                                        "minecraft_news.message.minecraft_news",
+                                        "minecraft_news.message.minecraft-news",
                                         title=title,
                                         desc=desc,
                                     ),
@@ -143,7 +143,7 @@ async def _():
                         message=MessageChain.assign(
                             [
                                 I18NContext(
-                                    "minecraft_news.message.feedback_news",
+                                    "minecraft_news.message.feedback-news",
                                     name=name,
                                 ),
                                 Url(link, trusted=True),

@@ -11,7 +11,7 @@ from core.alive import Alive
 from core.builtins.bot import Bot
 from core.builtins.converter import converter
 from core.builtins.message.chain import MessageChain, convert_senderid_to_atcode, match_kecode
-from core.builtins.message.internal import I18NContext, Plain, Button
+from core.builtins.message.internal import I18NContext, Plain, Button, Image
 from core.builtins.session.features import Features
 from core.component import module
 from core.config import CFGManager
@@ -27,6 +27,8 @@ from core.tos import WARNING_COUNTS, check_temp_ban, remove_temp_ban
 from core.types import Param
 from core.utils.bash import run_sys_command
 from core.utils.func import is_float, is_int
+from core.utils.image_table import ImageTable, image_table_render
+from core.utils.url_policy import GlobalURLAllowlist, GlobalURLBlocklist, URLRule, URLRuleError
 from core.web_render import check_web_render_status, close_web_render, init_web_render, web_render
 
 auto_purge_crontab = CoreConfig.auto_purge_crontab
@@ -71,10 +73,9 @@ features = module("features", required_superuser=True, base=True, doc=True)
 async def _(msg: Bot.MessageSession):
     fetched = await Bot.fetch_target(msg.session_info.target_id)
 
-    locale = msg.session_info.locale
-    yes = locale.t("message.yes")
-    no = locale.t("message.no")
-    unknown = locale.t("message.unknown")
+    yes = str(I18NContext("message.yes"))
+    no = str(I18NContext("message.no"))
+    unknown = str(I18NContext("message.unknown"))
 
     lines = []
     diff_count = 0
@@ -271,6 +272,169 @@ async def _(msg: Bot.MessageSession, group_id: str):
     v = not target_union_info.target_data.get(k, False)
     await target_union_info.edit_target_data(k, v)
     await msg.finish(I18NContext("core.message.set.option.edit.success", k=k, v=v))
+
+
+url = module(
+    "url-audit",
+    required_superuser=True,
+    base=True,
+)
+
+
+def _url_rule_error(msg: Bot.MessageSession, list_name: str, error: URLRuleError):
+    reason = msg.session_info.locale.t(f"core.message.url-audit.error.{list_name}.reason.{error.reason}")
+    return I18NContext(f"core.message.url-audit.error.{list_name}.invalid", reason=reason)
+
+
+def _url_rule_details(msg: Bot.MessageSession, list_name: str, rules) -> str:
+    return "\n".join(
+        f"[{msg.session_info.locale.t(f'core.message.url-audit.source.{list_name}.{rule.source}')}] {rule.serialized}"
+        for rule in rules
+    )
+
+
+async def _finish_url_rule_list(msg: Bot.MessageSession, list_name: str, rules: tuple[URLRule, ...]) -> None:
+    locale = msg.session_info.locale
+    table = ImageTable(
+        [
+            [
+                locale.t(f"core.message.url-audit.source.{list_name}.{rule.source}"),
+                locale.t("core.message.url-audit.list.table.type.regex")
+                if rule.is_regex
+                else locale.t("core.message.url-audit.list.table.type.exact"),
+                rule.value,
+            ]
+            for rule in rules
+        ],
+        [
+            locale.t("core.message.url-audit.list.table.header.source"),
+            locale.t("core.message.url-audit.list.table.header.type"),
+            locale.t("core.message.url-audit.list.table.header.rule"),
+        ],
+        disable_joke=True,
+    )
+    imgs = await image_table_render(table)
+    if not imgs:
+        await msg.finish()
+    await msg.finish([I18NContext(f"core.message.url-audit.list.{list_name}.title")] + [Image(img) for img in imgs])
+
+
+@url.command(
+    [
+        "allowlist add <url> {{I18N:core.help.url-audit.allowlist.add}}",
+        "allowlist add-regex <url> {{I18N:core.help.url-audit.allowlist.add_regex}}",
+    ]
+)
+async def _(msg: Bot.MessageSession, url: str):
+    is_regex = bool(msg.parsed_msg.get("add-regex", False))
+    try:
+        added = GlobalURLAllowlist.add_user_rule(url, is_regex=is_regex)
+    except URLRuleError as exc:
+        await msg.finish(_url_rule_error(msg, "allowlist", exc))
+    await msg.finish(
+        I18NContext(
+            "core.message.url-audit.add.allowlist.success" if added else "core.message.url-audit.add.allowlist.exists",
+            rule=(f"regex:{url.strip()}" if is_regex else url),
+        )
+    )
+
+
+@url.command(
+    [
+        "allowlist remove <url> {{I18N:core.help.url-audit.allowlist.remove}}",
+        "allowlist remove-regex <url> {{I18N:core.help.url-audit.allowlist.remove_regex}}",
+    ]
+)
+async def _(msg: Bot.MessageSession, url: str):
+    is_regex = bool(msg.parsed_msg.get("remove-regex", False))
+    try:
+        removed = GlobalURLAllowlist.remove_user_rule(url, is_regex=is_regex)
+    except URLRuleError as exc:
+        await msg.finish(_url_rule_error(msg, "allowlist", exc))
+    await msg.finish(
+        I18NContext(
+            "core.message.url-audit.remove.allowlist.success"
+            if removed
+            else "core.message.url-audit.remove.allowlist.missing",
+            rule=(f"regex:{url.strip()}" if is_regex else url),
+        )
+    )
+
+
+@url.command("allowlist query <url> {{I18N:core.help.url-audit.allowlist.query}}")
+async def _(msg: Bot.MessageSession, url: str):
+    matches = GlobalURLAllowlist.matching_rules(url)
+    if not matches:
+        await msg.finish(I18NContext("core.message.url-audit.query.allowlist.denied", url=url))
+    details = _url_rule_details(msg, "allowlist", matches)
+    await msg.finish(I18NContext("core.message.url-audit.query.allowlist.allowed", url=url, rules=details))
+
+
+@url.command("allowlist list {{I18N:core.help.url-audit.allowlist.list}}")
+async def _(msg: Bot.MessageSession):
+    rules = GlobalURLAllowlist.rules()
+    if not rules:
+        await msg.finish(I18NContext("core.message.url-audit.list.allowlist.empty"))
+    await _finish_url_rule_list(msg, "allowlist", rules)
+
+
+@url.command(
+    [
+        "blocklist add <url> {{I18N:core.help.url-audit.blocklist.add}}",
+        "blocklist add-regex <url> {{I18N:core.help.url-audit.blocklist.add_regex}}",
+    ]
+)
+async def _(msg: Bot.MessageSession, url: str):
+    is_regex = bool(msg.parsed_msg.get("add-regex", False))
+    try:
+        added = GlobalURLBlocklist.add_user_rule(url, is_regex=is_regex)
+    except URLRuleError as exc:
+        await msg.finish(_url_rule_error(msg, "blocklist", exc))
+    await msg.finish(
+        I18NContext(
+            "core.message.url-audit.add.blocklist.success" if added else "core.message.url-audit.add.blocklist.exists",
+            rule=(f"regex:{url.strip()}" if is_regex else url),
+        )
+    )
+
+
+@url.command(
+    [
+        "blocklist remove <url> {{I18N:core.help.url-audit.blocklist.remove}}",
+        "blocklist remove-regex <url> {{I18N:core.help.url-audit.blocklist.remove_regex}}",
+    ]
+)
+async def _(msg: Bot.MessageSession, url: str):
+    is_regex = bool(msg.parsed_msg.get("remove-regex", False))
+    try:
+        removed = GlobalURLBlocklist.remove_user_rule(url, is_regex=is_regex)
+    except URLRuleError as exc:
+        await msg.finish(_url_rule_error(msg, "blocklist", exc))
+    await msg.finish(
+        I18NContext(
+            "core.message.url-audit.remove.blocklist.success"
+            if removed
+            else "core.message.url-audit.remove.blocklist.missing",
+            rule=(f"regex:{url.strip()}" if is_regex else url),
+        )
+    )
+
+
+@url.command("blocklist query <url> {{I18N:core.help.url-audit.blocklist.query}}")
+async def _(msg: Bot.MessageSession, url: str):
+    matches = GlobalURLBlocklist.matching_rules(url)
+    if not matches:
+        await msg.finish(I18NContext("core.message.url-audit.query.blocklist.allowed", url=url))
+    details = _url_rule_details(msg, "blocklist", matches)
+    await msg.finish(I18NContext("core.message.url-audit.query.blocklist.blocked", url=url, rules=details))
+
+
+@url.command("blocklist list {{I18N:core.help.url-audit.blocklist.list}}")
+async def _(msg: Bot.MessageSession):
+    rules = GlobalURLBlocklist.rules()
+    if not rules:
+        await msg.finish(I18NContext("core.message.url-audit.list.blocklist.empty"))
+    await _finish_url_rule_list(msg, "blocklist", rules)
 
 
 ae = module("abuse", alias="ae", required_superuser=True, base=True, doc=True)

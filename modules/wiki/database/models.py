@@ -1,6 +1,5 @@
 from copy import deepcopy
 from datetime import datetime, UTC
-from urllib.parse import urlparse
 
 import orjson
 from tortoise import fields
@@ -10,18 +9,6 @@ from core.database.base import DBModel
 from core.database.models import TargetUnionInfo, UNION_SCOPE_TARGET, union_mutation
 
 table_prefix = "module_wiki_"
-
-
-def _normalized_authority(api_link: str) -> tuple[str, int | None] | None:
-    """提取用于白名单比较的规范化主机与端口，拒绝无主机或非法端口。"""
-    parsed = urlparse(api_link)
-    if not parsed.hostname:
-        return None
-    try:
-        port = parsed.port
-    except ValueError:
-        return None
-    return parsed.hostname.rstrip(".").casefold(), port
 
 
 class WikiTargetInfo(DBModel):
@@ -136,66 +123,6 @@ class WikiSiteInfo(DBModel):
     @classmethod
     async def get_like_this(cls, t: str):
         return await (cls.filter(api_link__contains=t)).first()
-
-
-class WikiAllowList(DBModel):
-    """
-    Wiki 白名单列表。
-
-    :param api_link: API 链接
-    :param timestamp: 更新时间
-    """
-
-    api_link = fields.CharField(max_length=512, primary_key=True)
-    timestamp = fields.DatetimeField(auto_now_add=True)
-
-    class Meta:
-        table = f"{table_prefix}allow_list"
-
-    @classmethod
-    async def check(cls, api_link) -> bool:
-        authority = _normalized_authority(api_link)
-        if authority is None:
-            return False
-        allow_links = await cls.all().values_list("api_link", flat=True)
-        return any(_normalized_authority(link) == authority for link in allow_links)
-
-    @classmethod
-    async def add(cls, api_link) -> bool:
-        _, created = await cls.get_or_create(api_link=api_link)
-        return created
-
-    @classmethod
-    async def remove(cls, api_link) -> bool:
-        return bool(await cls.filter(api_link=api_link).delete())
-
-
-class WikiBlockList(DBModel):
-    """
-    Wiki 黑名单列表。
-
-    :param api_link: API 链接
-    :param timestamp: 更新时间
-    """
-
-    api_link = fields.CharField(max_length=512, primary_key=True)
-    timestamp = fields.DatetimeField(auto_now_add=True)
-
-    class Meta:
-        table = f"{table_prefix}block_list"
-
-    @classmethod
-    async def check(cls, api_link: str) -> bool:
-        return await (cls.filter(api_link=api_link)).exists()
-
-    @classmethod
-    async def add(cls, api_link) -> bool:
-        _, created = await cls.get_or_create(api_link=api_link)
-        return created
-
-    @classmethod
-    async def remove(cls, api_link) -> bool:
-        return bool(await cls.filter(api_link=api_link).delete())
 
 
 class WikiBotAccountList(DBModel):

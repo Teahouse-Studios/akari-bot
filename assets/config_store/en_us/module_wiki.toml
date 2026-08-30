@@ -4,4 +4,4 @@
 
 [module_wiki]
 # The basic config section of the module. The values entered here can be displayed in the message. Please do not enter sensitive information in this section.
-wiki_whitelist_url = "https://github.com/Teahouse-Studios/akari-bot/issues/new?template=request_wiki_whitelist.yaml" # Wiki whitelist application URL.
+wiki_allowlist_url = "https://github.com/Teahouse-Studios/akari-bot/issues/new?template=request_wiki_whitelist.yaml" # Wiki API 加入全局 URL 允许列表的申请网址。

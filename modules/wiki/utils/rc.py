@@ -2,7 +2,7 @@ import re
 import urllib.parse
 
 from core.builtins.bot import Bot
-from core.builtins.message.chain import MessageChain
+from core.builtins.message.chain import MessageChain, escape_special_char
 from core.builtins.message.internal import I18NContext, Plain, Url
 from core.dirty_check import check
 from core.logger import Logger
@@ -41,7 +41,7 @@ async def get_rc(msg: Bot.MessageSession, wiki_url, headers=None):
                 }"
             )
             if x["comment"]:
-                comment = str(I18NContext("message.brackets", msg=replace_brackets(x["comment"])))
+                comment = str(I18NContext("message.brackets", msg=escape_special_char(replace_brackets(x["comment"]))))
                 d.append(comment)
         if x["type"] == "log":
             if "actionhidden" in x:
@@ -78,11 +78,11 @@ async def get_rc(msg: Bot.MessageSession, wiki_url, headers=None):
             if "target_title" in params:
                 d.append(str(I18NContext("wiki.message.rc.params.target_title")) + params["target_title"])
             if x["comment"]:
-                comment = str(I18NContext("message.brackets", msg=replace_brackets(x["comment"])))
+                comment = str(I18NContext("message.brackets", msg=escape_special_char(replace_brackets(x["comment"]))))
                 d.append(comment)
     y = await check(d, session=msg)
 
-    g = MessageChain.assign([Url(pageurl, trusted=True if wiki.wiki_info.in_allowlist else None)])
+    g = MessageChain.assign([Url(pageurl, trusted=True if wiki.wiki_info.is_allowed else None)])
     g += MessageChain.assign([Plain(z["content"]) for z in y])
     g.append(I18NContext("message.collapse", amount=RC_LIMIT))
 

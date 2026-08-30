@@ -8,25 +8,28 @@ from core.queue.client import JobQueueClient
 from core.scheduler import DateTrigger, IntervalTrigger
 from .database.models import WikiBotAccountList
 from .utils.bot import BotAccount, LoginFailed
-from .utils.wikilib import WikiLib
+from .utils.wikilib import BlockedWikiError, WikiLib
 
 wb = module("wiki-bot", required_superuser=True, doc=True, alias=["wiki_bot", "wbot"])
 
 
 @wb.command("login <apilink> <account> <password>")
 async def _(msg: Bot.MessageSession, apilink: str, account: str, password: str):
-    check = await WikiLib(apilink).check_wiki_available()
+    try:
+        check = await WikiLib(apilink).check_wiki_available()
+    except BlockedWikiError as exc:
+        await msg.finish(I18NContext("wiki.message.invalid.blocked", name=exc.url))
     if check.available:
         try:
             login = await BotAccount._login(check.value.api, account, password)
             if await WikiBotAccountList.add(check.value.api, account, password):
                 BotAccount.cookies[check.value.api] = login
-                await msg.finish(I18NContext("wiki.message.wiki_bot.login.success"))
+                await msg.finish(I18NContext("wiki.message.wiki-bot.login.success"))
             else:
-                await msg.finish(I18NContext("wiki.message.wiki_bot.login.already"))
+                await msg.finish(I18NContext("wiki.message.wiki-bot.login.already"))
         except LoginFailed as e:
             Logger.error(f"Login failed: {e}")
-            await msg.finish(I18NContext("wiki.message.wiki_bot.login.failed", detail=e))
+            await msg.finish(I18NContext("wiki.message.wiki-bot.login.failed", detail=e))
     else:
         result = [I18NContext("wiki.message.error.query")]
         if check.message:
@@ -50,10 +53,10 @@ async def _(msg: Bot.MessageSession):
     use_bot_account = msg.session_info.target_union_info.target_data.get("use_bot_account")
     if use_bot_account:
         await msg.session_info.target_union_info.edit_target_data("use_bot_account", False)
-        await msg.finish(I18NContext("wiki.message.wiki_bot.toggle.disable"))
+        await msg.finish(I18NContext("wiki.message.wiki-bot.toggle.disable"))
     else:
         await msg.session_info.target_union_info.edit_target_data("use_bot_account", True)
-        await msg.finish(I18NContext("wiki.message.wiki_bot.toggle.enable"))
+        await msg.finish(I18NContext("wiki.message.wiki-bot.toggle.enable"))
 
 
 @wb.hook("login_wiki_bots")

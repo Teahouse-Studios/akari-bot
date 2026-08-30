@@ -44,6 +44,7 @@ from core.joke import shuffle_joke as joke
 from core.logger import Logger
 from core.utils.func import convert_bool
 from core.utils.http import url_pattern
+from core.utils.url_policy import GlobalURLBlocklist, evaluate_url_policy, redact_blocklisted_urls
 from core.utils.button import AUTO_BUTTON_MAX_ROWS, AUTO_BUTTONS_PER_ROW
 
 if TYPE_CHECKING:
@@ -247,7 +248,7 @@ class MessageChain:
         该方法将消息链中的各种元素转换为适合发送的格式，包括：
         1. 多语言翻译
         2. KE 码解析
-        3. URL 处理（跳板和 Markdown 格式）
+        3. URL 处理（全局黑名单、跳板和 Markdown 格式）
         4. 时间格式化
         5. 愚人节玩笑处理
 
@@ -298,6 +299,22 @@ class MessageChain:
         for x in self.values:
             if x is None:
                 continue
+
+            if isinstance(x, EmbedElement) and GlobalURLBlocklist.rules():
+                x = deepcopy(x)
+                locale = session_info.locale if session_info else Locale(default_locale)
+                replacement = locale.t("message.url.blocked")
+                for attribute in ("title", "description", "author", "footer"):
+                    text = getattr(x, attribute)
+                    if text:
+                        translated = locale.t_str(text)
+                        setattr(x, attribute, redact_blocklisted_urls(translated, replacement))
+                fields = x.fields if isinstance(x.fields, list) else [x.fields] if x.fields else []
+                for field in fields:
+                    field.name = redact_blocklisted_urls(locale.t_str(field.name), replacement)
+                    field.value = redact_blocklisted_urls(locale.t_str(field.value), replacement)
+                if x.url and GlobalURLBlocklist.is_blocked(x.url):
+                    x.url = None
 
             # ========== 处理 Embed 元素 ==========
             # 如果平台不支持 Embed，将其转换为普通消息链
@@ -350,6 +367,8 @@ class MessageChain:
                     else:
                         # 空文本，使用默认错误消息
                         x = PlainElement.assign(session_info.locale.t("error.message.chain.empty"))
+                locale = session_info.locale if session_info else Locale(default_locale)
+                x.text = redact_blocklisted_urls(x.text, locale.t("message.url.blocked"))
                 value.append(x)
 
             # ========== 处理格式化时间元素 ==========
@@ -390,9 +409,21 @@ class MessageChain:
 
             # ========== 处理 URL 元素 ==========
             elif isinstance(x, URLElement):
+                url_policy = evaluate_url_policy(x.original_url)
+                if url_policy.blocked:
+                    locale = session_info.locale if session_info else Locale(default_locale)
+                    value.append(PlainElement.assign(locale.t("message.url.blocked"), disable_joke=True))
+                    continue
+
+                globally_trusted = bool(
+                    session_info and session_info.use_url_manager and x.trusted is None and url_policy.allowed
+                )
                 # 链接须按未认证处理的两种来源：模块显式标记为不可信，或未表态而会话启用了 URLManager
                 needs_guard = bool(
-                    session_info and x.trusted is not True and (x.trusted is False or session_info.use_url_manager)
+                    session_info
+                    and not globally_trusted
+                    and x.trusted is not True
+                    and (x.trusted is False or session_info.use_url_manager)
                 )
                 if needs_guard and session_info.support_markdown and not disable_markdown:
                     title = session_info.locale.t("message.url.untrusted")
@@ -400,7 +431,7 @@ class MessageChain:
                     continue
 
                 # 应用 URL 跳板（如果需要）
-                if session_info and x.trusted is None and session_info.use_url_manager:
+                if session_info and x.trusted is None and not globally_trusted and session_info.use_url_manager:
                     x = URLElement.assign(x.url, trusted=False, md_format_name=x.md_format_name)
                 # 应用 Markdown 格式（如果需要）
                 if (
@@ -1380,6 +1411,23 @@ def match_atcode(text: str, client: str, pattern: str) -> str:
     return re.sub(r"<(?:AT|@):([^\|]+)\|(?:.*?\|)?([^\|>]+)>", _replacer, text)
 
 
+def escape_special_char(s: str, escape_comma: bool = True) -> str:
+    """
+    转义特殊占位符标记的特殊字符。
+
+    :param s: 要转义的字符串。
+    :param escape_comma: 是否转义逗号（`,`）。
+    :return: 转义后的字符串。
+    """
+    s = s.replace("&", "&amp;")
+    s = s.replace("{", "&#123;").replace("}", "&#124;")
+    s = s.replace("[", "&#91;").replace("]", "&#93;")
+    s = s.replace("<", "&lt;").replace(">", "&gt;")
+    if escape_comma:
+        s = s.replace(",", "&#44;")
+    return s
+
+
 def convert_senderid_to_atcode(text: str, sender_prefix: str) -> str:
     """
     将用户 ID 转换为 AT 码格式。
@@ -1442,4 +1490,6 @@ __all__ = [
     "get_message_chain",
     "MessageNodes",
     "match_kecode",
+    "match_atcode",
+    "escape_special_char",
 ]

@@ -377,5 +377,28 @@ if config["config_version"] < config_version:
         with open(cfg_file_path, "w", encoding="utf-8") as f:
             f.write(toml_dumps(config))
 
+    if config["config_version"] < 4:
+        wiki_config_path = config_path / "module_wiki.toml"
+        if wiki_config_path.exists():
+            with open(wiki_config_path, encoding="utf-8") as f:
+                wiki_config = toml_parser(f.read())
+            wiki_table = wiki_config.get("module_wiki", {})
+            if "wiki_whitelist_url" in wiki_table:
+                if "wiki_allowlist_url" not in wiki_table:
+                    wiki_table["wiki_allowlist_url"] = wiki_table["wiki_whitelist_url"]
+                wiki_table.pop("wiki_whitelist_url")
+                comment_key = "config.comments.module_wiki.wiki_allowlist_url"
+                localed_comment = Locale(config.get("default_locale", "zh_cn")).t(
+                    comment_key, locale_failed_prompt=False
+                )
+                if localed_comment != comment_key:
+                    wiki_table.value.item("wiki_allowlist_url").comment(localed_comment)
+                with open(wiki_config_path, "w", encoding="utf-8") as f:
+                    f.write(toml_dumps(wiki_config))
+
+        config["config_version"] = 4
+        with open(cfg_file_path, "w", encoding="utf-8") as f:
+            f.write(toml_dumps(config))
+
     logger.success("Config file updated successfully.")
     sleep(3)

@@ -19,7 +19,7 @@ async def get_ab_qq(msg: MessageSession, wiki_url, headers=None):
         MessageChain.assign(
             [
                 I18NContext("wiki.message.ab.qq.title"),
-                Url(pageurl, trusted=True if wiki.wiki_info.in_allowlist else None),
+                Url(pageurl, trusted=True if wiki.wiki_info.is_allowed else None),
             ]
         )
     ]

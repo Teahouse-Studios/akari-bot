@@ -438,6 +438,7 @@ referencing==0.37.0
     #   jsonschema-specifications
 regex==2026.5.9
     # via
+    #   akari-bot
     #   dateparser
     #   wikitextparser
 rich==15.0.0

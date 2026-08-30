@@ -23,7 +23,7 @@ async def _test_global_interwiki_uses_api_url():
         articlepath="https://zh.minecraft.wiki/w/$1",
         script="https://zh.minecraft.wiki/",
         interwiki={},
-        in_allowlist=True,
+        is_allowed=True,
     )
     captured = {}
 
@@ -35,7 +35,7 @@ async def _test_global_interwiki_uses_api_url():
                 api=TARGET_API,
                 articlepath="https://meta.minecraft.wiki/w/$1",
                 script="https://meta.minecraft.wiki/",
-                in_allowlist=True,
+                is_allowed=True,
             ),
             message="",
         )
@@ -93,7 +93,7 @@ async def _test_multilevel_interwiki_resolves_target_title():
         articlepath="https://meta.miraheze.org/wiki/$1",
         script="https://meta.miraheze.org/w/index.php",
         interwiki={"mh": "https://meta.miraheze.org/wiki/$1"},
-        in_allowlist=True,
+        is_allowed=True,
     )
     captured = {}
 
@@ -105,7 +105,7 @@ async def _test_multilevel_interwiki_resolves_target_title():
                 api=MIRAHEZE_TARGET_API,
                 articlepath="https://allthetropes.org/wiki/$1",
                 script="https://allthetropes.org/w/index.php",
-                in_allowlist=True,
+                is_allowed=True,
             ),
             message="",
         )
