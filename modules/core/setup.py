@@ -64,14 +64,14 @@ async def _(msg: Bot.MessageSession, second: int):
     await msg.finish(I18NContext("core.message.setup.cooldown.success", time=second))
 
 
-@setup.command("invalid_module_prompt {{I18N:core.help.setup.invalid_module_prompt}}", required_admin=True)
+@setup.command("invalid-module-prompt {{I18N:core.help.setup.invalid-module-prompt}}", required_admin=True)
 async def _(msg: Bot.MessageSession):
     if not msg.session_info.invalid_module_prompt_enabled:
         await msg.session_info.target_union_info.edit_target_data("invalid_module_prompt", True)
-        await msg.finish(I18NContext("core.message.setup.invalid_module_prompt.enable"))
+        await msg.finish(I18NContext("core.message.setup.invalid-module-prompt.enable"))
     else:
         await msg.session_info.target_union_info.edit_target_data("invalid_module_prompt", False)
-        await msg.finish(I18NContext("core.message.setup.invalid_module_prompt.disable"))
+        await msg.finish(I18NContext("core.message.setup.invalid-module-prompt.disable"))
 
 
 # 不加 available_for：框架只能按平台名过滤命令，无法按会话特性过滤。若改用平台名，
@@ -197,9 +197,9 @@ def build_target_rows(msg: Bot.MessageSession) -> list[SettingRow]:
         ),
         _toggle_row(
             locale,
-            "core.message.setup.list.item.invalid_module_prompt",
+            "core.message.setup.list.item.invalid-module-prompt",
             msg.session_info.invalid_module_prompt_enabled,
-            "setup invalid_module_prompt",
+            "setup invalid-module-prompt",
         ),
     ]
     return rows
