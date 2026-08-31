@@ -15,12 +15,8 @@ assets/discord_slash_list.json
 assets/modules_list.json
 assets/schedulers_list.json
 assets/union_merge_logs/*
-assets/url/allowlist/user.txt
-assets/url/blocklist/user.txt
-assets/modules/ai*
-assets/modules/arcaea*
-assets/modules/maimai*
-assets/modules/phigros*
+assets/url-aduit/allowlist/user.txt
+assets/url-aduit/blocklist/user.txt
 assets/private*
 assets/retired/*
 /assets/i18n_cache/*
