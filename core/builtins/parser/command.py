@@ -296,7 +296,12 @@ class CommandParser:
         try:
             # 使用 shlex 分割命令，支持引号和转义序列
             # 例如: "search 'multi word' -t recent" -> ["search", "multi word", "-t", "recent"]
-            split_command = shlex.split(command)
+            lexer = shlex.shlex(command, posix=True)
+            lexer.whitespace_split = True
+            lexer.commenters = ""
+            # 关闭 shlex 默认的转义字符
+            lexer.escape = ""
+            split_command = list(lexer)
         except ValueError:
             # 如果 shlex 分割失败（如引号不匹配），使用简单的空格分割
             split_command = command.split(" ")
