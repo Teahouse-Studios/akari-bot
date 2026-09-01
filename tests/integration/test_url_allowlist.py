@@ -52,6 +52,18 @@ async def test_url_allowlist_commands(tester: Tester):
                 Contains("已被以下全局规则放行"),
                 "正则 URL 规则应立即生效",
             )
+            await tester.integrate(
+                "~url-audit allowlist query https://zhXexampleYtest/docs/42",
+                Contains("未被全局 URL 允许列表放行"),
+                "转义点号不得被改写为可匹配任意字符的通配符",
+            )
+            await tester.test(
+                lambda: (
+                    r"regex:https://[a-z]{2}\.example\.test/docs/[0-9]+"
+                    in (directory / "user.txt").read_text(encoding="utf-8").splitlines()
+                ),
+                "命令写入 user.txt 时应保留正则反斜杠",
+            )
             render = AsyncMock(return_value=["https://example.test/allowlist.png"])
             with patch("modules.core.su_utils.image_table_render", new=render):
                 await tester.integrate(
@@ -64,7 +76,7 @@ async def test_url_allowlist_commands(tester: Tester):
                     render.await_count == 1
                     and render.await_args.args[0].headers == ["来源", "类型", "规则"]
                     and ["全局规则", "精确 URL", "https://repo.example.test/release"] in render.await_args.args[0].data
-                    and ["用户规则", "正则表达式", "https://[a-z]{2}.example.test/docs/[0-9]+"]
+                    and ["用户规则", "正则表达式", r"https://[a-z]{2}\.example\.test/docs/[0-9]+"]
                     in render.await_args.args[0].data
                 ),
                 "允许列表图片表格应包含来源、类型与规则",

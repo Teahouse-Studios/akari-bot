@@ -214,6 +214,21 @@ def _test_default_command_help_doc():
     }
 
 
+def _test_command_parser_preserves_backslashes():
+    """命令参数中的反斜杠应原样传递给下游。"""
+    module = Module.assign(module_name="parser-test", alias=None, recommend_modules=None, developers=None)
+    module.command_list.add(CommandMeta(command_template=parse_template(["add-regex <pattern>"])))
+    parser = CommandParser(module, ["~"], module_name=module.module_name)
+
+    unquoted = parser.parse(r"parser-test add-regex https://example\.test/\d+\\suffix")[1]
+    quoted = parser.parse(r'parser-test add-regex "https://example\.test/a b"')[1]
+
+    return (
+        unquoted["<pattern>"] == r"https://example\.test/\d+\\suffix"
+        and quoted["<pattern>"] == r"https://example\.test/a b"
+    )
+
+
 @func_case
 async def test_parser_args(tester: Tester):
     """core.builtins.parser.args: 参数解析测试"""
@@ -231,5 +246,6 @@ async def test_parser_args(tester: Tester):
     await tester.test(_test_templates_to_str, "templates_to_str 测试")
     await tester.test(_test_templates_to_str_with_desc, "templates_to_str 带描述测试")
     await tester.test(_test_default_command_help_doc, "无文档模块默认命令帮助测试")
+    await tester.test(_test_command_parser_preserves_backslashes, "命令参数反斜杠保留测试")
 
     return tester

@@ -51,6 +51,18 @@ async def test_url_blocklist_commands(tester: Tester):
                 Contains("已被以下全局规则拦截"),
                 "正则 URL 阻止列表规则应立即生效",
             )
+            await tester.integrate(
+                "~url-audit blocklist query https://blocked-zhXexampleYtest/docs/42",
+                Contains("未被全局 URL 阻止列表拦截"),
+                "转义点号不得被改写为可匹配任意字符的通配符",
+            )
+            await tester.test(
+                lambda: (
+                    r"regex:https://blocked-[a-z]{2}\.example\.test/docs/[0-9]+"
+                    in (directory / "user.txt").read_text(encoding="utf-8").splitlines()
+                ),
+                "命令写入 user.txt 时应保留正则反斜杠",
+            )
             render = AsyncMock(return_value=["https://example.test/blocklist.png"])
             with patch("modules.core.su_utils.image_table_render", new=render):
                 await tester.integrate(
@@ -67,7 +79,7 @@ async def test_url_blocklist_commands(tester: Tester):
                     and [
                         "用户规则",
                         "正则表达式",
-                        "https://blocked-[a-z]{2}.example.test/docs/[0-9]+",
+                        r"https://blocked-[a-z]{2}\.example\.test/docs/[0-9]+",
                     ]
                     in render.await_args.args[0].data
                 ),
