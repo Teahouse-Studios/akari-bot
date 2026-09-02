@@ -38,7 +38,7 @@
     "wikilog.help.api.get": "取得指定 Wiki 的指定 API 資料連結。",
     "wikilog.help.keepalive.enable": "啟用機器人登入狀態檢查。",
     "wikilog.help.keepalive.disable": "停用機器人登入狀態檢查。",
-    "wikilog.message.untrust.wiki": "失敗：此 Wiki 目前沒有加入機器人的允許列表中。",
+    "wikilog.message.untrust.wiki": "失敗：此 Wiki 目前沒有加入機器人的允許清單中。",
     "wikilog.message.keepalive.logged.as": "[Keep alive] 以 ${name} 的身分登入：${wiki}",
     "wikilog.message.keepalive.failed": "[Keep alive] 登入狀態檢查失敗：${link}"
 }
