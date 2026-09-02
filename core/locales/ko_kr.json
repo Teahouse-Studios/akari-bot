@@ -227,5 +227,6 @@
     "tos.message.warning": "경고:\n이용 약관에 따라 귀하는 당사의 행동 강령을 위반했습니다.",
     "tos.message.warning.count": "이번이 ${current_warns}번째 경고입니다.",
     "tos.message.warning.last": "이번이 마지막 경고입니다.",
-    "tos.message.warning.prompt": "경고가 ${warn_counts}회를 초과할 경우, 귀하의 계정을 정지할 것입니다."
+    "tos.message.warning.prompt": "경고가 ${warn_counts}회를 초과할 경우, 귀하의 계정을 정지할 것입니다.",
+    "message.url.blocked": "<글로벌 차단 목록으로 링크 차단됨>"
 }
