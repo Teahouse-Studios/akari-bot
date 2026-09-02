@@ -321,8 +321,8 @@ async def _finish_url_rule_list(msg: Bot.MessageSession, list_name: str, rules: 
 
 @url.command(
     [
-        "allowlist add <url> {{I18N:core.help.url-audit.allowlist.add}}",
-        "allowlist add-regex <url> {{I18N:core.help.url-audit.allowlist.add_regex}}",
+        "allowlist add <url>",
+        "allowlist add-regex <url>",
     ]
 )
 async def _(msg: Bot.MessageSession, url: str):
@@ -341,8 +341,8 @@ async def _(msg: Bot.MessageSession, url: str):
 
 @url.command(
     [
-        "allowlist remove <url> {{I18N:core.help.url-audit.allowlist.remove}}",
-        "allowlist remove-regex <url> {{I18N:core.help.url-audit.allowlist.remove_regex}}",
+        "allowlist remove <url>",
+        "allowlist remove-regex <url>",
     ]
 )
 async def _(msg: Bot.MessageSession, url: str):
@@ -361,7 +361,7 @@ async def _(msg: Bot.MessageSession, url: str):
     )
 
 
-@url.command("allowlist query <url> {{I18N:core.help.url-audit.allowlist.query}}")
+@url.command("allowlist query <url>")
 async def _(msg: Bot.MessageSession, url: str):
     matches = GlobalURLAllowlist.matching_rules(url)
     if not matches:
@@ -370,7 +370,7 @@ async def _(msg: Bot.MessageSession, url: str):
     await msg.finish(I18NContext("core.message.url-audit.allowlist.query.allowed", url=url, rules=details))
 
 
-@url.command("allowlist list {{I18N:core.help.url-audit.allowlist.list}}")
+@url.command("allowlist list")
 async def _(msg: Bot.MessageSession):
     rules = GlobalURLAllowlist.rules()
     if not rules:
@@ -380,8 +380,8 @@ async def _(msg: Bot.MessageSession):
 
 @url.command(
     [
-        "blocklist add <url> {{I18N:core.help.url-audit.blocklist.add}}",
-        "blocklist add-regex <url> {{I18N:core.help.url-audit.blocklist.add_regex}}",
+        "blocklist add <url>",
+        "blocklist add-regex <url>",
     ]
 )
 async def _(msg: Bot.MessageSession, url: str):
@@ -400,8 +400,8 @@ async def _(msg: Bot.MessageSession, url: str):
 
 @url.command(
     [
-        "blocklist remove <url> {{I18N:core.help.url-audit.blocklist.remove}}",
-        "blocklist remove-regex <url> {{I18N:core.help.url-audit.blocklist.remove_regex}}",
+        "blocklist remove <url>",
+        "blocklist remove-regex <url>",
     ]
 )
 async def _(msg: Bot.MessageSession, url: str):
@@ -420,7 +420,7 @@ async def _(msg: Bot.MessageSession, url: str):
     )
 
 
-@url.command("blocklist query <url> {{I18N:core.help.url-audit.blocklist.query}}")
+@url.command("blocklist query <url>")
 async def _(msg: Bot.MessageSession, url: str):
     matches = GlobalURLBlocklist.matching_rules(url)
     if not matches:
@@ -429,7 +429,7 @@ async def _(msg: Bot.MessageSession, url: str):
     await msg.finish(I18NContext("core.message.url-audit.blocklist.query.blocked", url=url, rules=details))
 
 
-@url.command("blocklist list {{I18N:core.help.url-audit.blocklist.list}}")
+@url.command("blocklist list")
 async def _(msg: Bot.MessageSession):
     rules = GlobalURLBlocklist.rules()
     if not rules:
