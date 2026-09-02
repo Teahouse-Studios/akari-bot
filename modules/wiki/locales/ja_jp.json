@@ -44,7 +44,7 @@
     "wiki.message.headers.show": "現在設定されているリクエスト ヘッダーは以下のとおりです：\n${headers}\nカスタマイズするには、「${cmd}」を使用してください。\n例：\n${prefix}wiki headers add {\\\"accept-language\\\": \\\"en;q=0.8,en-GB;q=0.7,en-US;q=0.6\\\"}",
     "wiki.message.id.invalid": "ページ ID は数字でなければなりません。",
     "wiki.message.id.not_found": "ページ ID が ${id} のページが見つかりませんでした。",
-    "wiki.message.invalid.blocked": "失敗：${name} はブラックリストに登録されています。",
+    "wiki.message.invalid.blocked": "失敗：このウィキはブロックリストに登録されています。",
     "wiki.message.invalid_namespace": "このウィキには ${namespace} というの名前空間が存在しません。入力内容を確認してください。",
     "wiki.message.invalid_section": "（この節は存在なし）",
     "wiki.message.invalid_section.prompt": "この節は存在しません。以下の節が候補となります：",
