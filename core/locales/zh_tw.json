@@ -6,7 +6,7 @@
     "config.comments.config.allow_reload_base": "是否允許重載基礎模組。",
     "config.comments.config.allow_request_private_ip": "是否允許機器人請求本地私有 IP 位址。（防止可能的資訊外洩）",
     "config.comments.config.auto_purge_crontab": "自動清除快取的 Cron 表達式。",
-    "config.comments.config.base_superuser": "機器人的基礎超級使用者列表，此處填寫的值將會在機器人啟動時載入資料庫。",
+    "config.comments.config.base_superuser": "機器人的基礎超級使用者清單，此處填寫的值將會在機器人啟動時載入資料庫。",
     "config.comments.config.bug_report_url": "回報錯誤網址。",
     "config.comments.config.check_use_textscan_v1": "是否使用舊版阿里雲內容安全 1.0 服務介面。",
     "config.comments.config.command_prefix": "指令前綴，此處填入的值將會被辨識為指令前綴。",
@@ -26,7 +26,7 @@
     "config.comments.config.ffmpeg_path": "FFmpeg 執行檔路徑。",
     "config.comments.config.help_page_url": "模組線上說明文件網址。",
     "config.comments.config.help_url": "線上說明文件網址。",
-    "config.comments.config.ignored_sender": "無視的使用者列表，匹配到此列表中的使用者將會被忽略。",
+    "config.comments.config.ignored_sender": "無視的使用者清單，匹配到此清單中的使用者將會被忽略。",
     "config.comments.config.issue_url": "問題報告網址。",
     "config.comments.config.locale_url": "在地化專案網址。",
     "config.comments.config.media_compression_threshold": "媒體檔案大小閾值，超過此值的檔案將嘗試使用 FFmpeg 壓縮。單位為 MB。",
@@ -40,7 +40,7 @@
     "config.comments.config.quick_confirm": "是否啟用訊息快速確認。",
     "config.comments.config.regex_disable_prefix": "暫時關閉正規解析的訊息前綴。",
     "config.comments.config.repo_url": "開源儲存庫網址。",
-    "config.comments.config.report_targets": "上報場景列表，此處填寫的場景 ID 將會被辨識為上報場景。（如：當機器人執行指令出錯時，機器人會將報錯訊息傳送至對應場景）",
+    "config.comments.config.report_targets": "上報場景清單，此處填寫的場景 ID 將會被辨識為上報場景。（如：當機器人執行指令出錯時，機器人會將報錯訊息傳送至對應場景）",
     "config.comments.config.retired_clients": "已退役的用戶端及其資料遷移目標，格式為「<來源用戶端> -> <目標用戶端>」（例：「QQ -> QQBot」）。只填寫來源用戶端時表示不提供遷移。",
     "config.comments.config.rickroll_msg": "文字過濾偵測失敗時的 Rickroll 訊息。",
     "config.comments.config.shuffle_rate": "玩笑的隨機發生率，範圍 0 到 1 之間。",
@@ -166,7 +166,7 @@
     "message.id.invalid.target": "ID 格式錯誤，格式應為「${target}|<場景 ID>」。",
     "message.id.not_found.sender": "此使用者不存在。",
     "message.id.not_found.target": "此場景不存在。",
-    "message.list": "訊息列表",
+    "message.list": "訊息清單",
     "message.no": "否",
     "message.none": "無",
     "message.quotes": "「${msg}」",
@@ -227,5 +227,6 @@
     "tos.message.warning": "警告：\n依據使用條款，你已違反我們的行為準則。",
     "tos.message.warning.count": "這是第 ${current_warns} 次警告。",
     "tos.message.warning.last": "這是最後一次警告。",
-    "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。"
+    "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。",
+    "message.url.blocked": "<此連結已被全域阻止清單攔截>"
 }
