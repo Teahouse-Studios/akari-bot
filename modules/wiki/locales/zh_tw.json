@@ -174,5 +174,9 @@
     "wiki.message.wiki-bot.login.success": "登入成功。",
     "wiki.message.wiki-bot.toggle.disable": "已禁用機器人帳戶。",
     "wiki.message.wiki-bot.toggle.enable": "已啟用機器人帳戶。",
-    "wiki.message.wiki-inline.flies": "此頁面含有以下檔案：\n${file}"
+    "wiki.message.wiki-inline.flies": "此頁面含有以下檔案：\n${file}",
+    "config.comments.module_wiki.wiki_allowlist_url": "Wiki API 加入全域 URL 允許清單的申請網址。",
+    "wiki.help.wiki-audit.block": "從 Wiki 位址解析 API URL，並加入全域 URL 封鎖清單。",
+    "wiki.message.url_policy.untrust": "注意：此 Wiki 的 API 端點目前沒有加入機器人的全域 URL 允許列表，查詢此 Wiki 時將會對傳回內容進行限制。",
+    "wiki.message.url_policy.untrust.address": "如需取消限制，請在此申請加入全域 URL 允許清單：${url}"
 }
