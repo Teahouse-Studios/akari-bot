@@ -384,7 +384,7 @@
     "core.message.whoami.superuser": "（你擁有此機器人的超級使用者權限）",
     "core.message.whoami.target": "本場景的 ID：\n${id}",
     "core.message.whoami.target.union": "目前場景所屬的場景群組：\n${id}",
-    "core.message.whoami.target.union.bound": "已綁定 ${count} 個場景：\n",,
+    "core.message.whoami.target.union.bound": "已綁定 ${count} 個場景：\n",
     "core.message.url-audit.allowlist.add.exists": "規則已存在於全域 URL 允許清單中：${rule}",
     "core.message.url-audit.allowlist.add.success": "已將規則加入使用者自訂 URL 允許清單：${rule}",
     "core.message.url-audit.allowlist.error.invalid": "URL 允許清單規則無效：${reason}",
