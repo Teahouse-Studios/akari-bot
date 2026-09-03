@@ -44,7 +44,6 @@
     "config.comments.config.retired_clients": "廃止されたクライアントとそのデータ移行先を、「<移行元クライアント> -> <移行先クライアント>」（例：「QQ -> QQBot」）の形式で指定する必要があります。移行元クライアントのみを指定した場合は、移行を行わないことを示します。",
     "config.comments.config.rickroll_msg": "テキスト フィルタリング検出に失敗したときのリックロール メッセージ。",
     "config.comments.config.shuffle_rate": "ジョークのランダム発生率。範囲は 0 ～ 1 です。",
-    "config.comments.config.slower_schedule": "低速のタスクスケジューラを有効にするかどうか。（リクエストの負荷を軽減するため）",
     "config.comments.config.timezone_offset": "ボットのデフォルトのタイムゾーン オフセット。",
     "config.comments.config.tos_temp_ban_time": "利用規約違反時の一時的な禁止時間。",
     "config.comments.config.tos_warning_counts": "利用規約違反に対する警告の最大数。",

@@ -44,7 +44,6 @@
     "config.comments.config.retired_clients": "Retired clients and their data migration targets, formatted as \"<Source Client> -> <Target Client>\" (e.g., \"QQ -> QQBot\"). Specifying only the source client indicates that migration is not provided.",
     "config.comments.config.rickroll_msg": "Rickroll message when text filter check fails.",
     "config.comments.config.shuffle_rate": "The random occurrence rate of jokes, ranging from 0 to 1.",
-    "config.comments.config.slower_schedule": "Whether to enable a slower task scheduler. (To reduce request pressure)",
     "config.comments.config.timezone_offset": "The bot's default timezone offset.",
     "config.comments.config.tos_temp_ban_time": "Temporary ban duration for ToS violations.",
     "config.comments.config.tos_warning_counts": "Maximum number of warnings for ToS violations.",
