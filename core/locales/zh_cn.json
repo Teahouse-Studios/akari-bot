@@ -44,7 +44,7 @@
     "config.comments.config.retired_clients": "已退役的客户端及其数据迁移目标，格式为“<源客户端> -> <目标客户端>”（例：“QQ -> QQBot”）。只填写源客户端时表示不提供迁移。",
     "config.comments.config.rickroll_msg": "文字过滤检测失败时的 Rickroll 消息。",
     "config.comments.config.shuffle_rate": "玩笑的随机发生率，范围 0 到 1 之间。",
-    "config.comments.config.slower_schedule": "是否开启更慢的计划任务调度器。（减少请求压力用）",
+    "config.comments.config.schedule_interval_multiplier": "计划任务的间隔时间倍率，仅影响 IntervalTrigger，必须为大于 0 的数值。（值越大相对间隔时间越长）",
     "config.comments.config.timezone_offset": "机器人的默认时区偏移量。",
     "config.comments.config.tos_temp_ban_time": "违反 ToS 时的临时封禁时间。",
     "config.comments.config.tos_warning_counts": "违反 ToS 时的警告次数。",

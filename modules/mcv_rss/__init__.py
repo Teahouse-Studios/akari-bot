@@ -60,8 +60,6 @@ async def get_article(version):
     return "", ""
 
 
-trigger_times = 60 if not CoreConfig.slower_schedule else 180
-
 startup_mute = [True, True]
 
 mcv_rss = module(
@@ -101,7 +99,7 @@ mcbv_rss = module(
 #     await fetch.post_message("mcv_jira_rss", **ctx.args)
 
 
-@mcv_rss.schedule(IntervalTrigger(seconds=trigger_times))
+@mcv_rss.schedule(IntervalTrigger(seconds=60))
 async def _():
     global startup_mute
     url = "https://piston-meta.mojang.com/mc/game/version_manifest.json"

@@ -104,6 +104,42 @@ def _test_importing_daemon_does_not_load_config():
     return result.returncode == 0 and result.stdout.strip().endswith("False")
 
 
+def _test_legacy_slower_schedule_migrates_to_multiplier():
+    """旧布尔开关应迁移为等价的计划任务间隔倍率。"""
+    tmp = Path(tempfile.mkdtemp(prefix="akari_cfg_migrate_"))
+    try:
+        (tmp / "config.toml").write_text(
+            'default_locale = "zh_cn"\nconfig_version = 4\n\n[config]\nslower_schedule = true\n',
+            encoding="utf-8",
+        )
+        env = os.environ.copy()
+        env["AKARI_CONFIG_PATH"] = str(tmp)
+        env.pop("AKARI_CONFIG_READONLY", None)
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                (
+                    "from core.config import CFGManager; "
+                    "print(CFGManager.values['config']['config_version']); "
+                    "print(CFGManager.values['config']['config']['schedule_interval_multiplier']); "
+                    "print('slower_schedule' in CFGManager.values['config']['config'])"
+                ),
+            ],
+            cwd=Path(__file__).resolve().parents[2],
+            env=env,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            timeout=15,
+            check=False,
+        )
+        output = result.stdout.splitlines()
+        return result.returncode == 0 and output[-3:] == ["5", "3.0", "False"]
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 @func_case
 async def test_config_scan(tester: Tester):
     """core.config.scan: 配置模板扫描测试"""
@@ -111,5 +147,6 @@ async def test_config_scan(tester: Tester):
     await tester.test(_test_scan_writes_template_fields, "可写进程中模板补写字段测试")
     await tester.test(_test_scan_repairs_raw_i18n_comments, "原始 i18n 配置注释修复测试")
     await tester.test(_test_importing_daemon_does_not_load_config, "守护进程延迟导入配置系统测试")
+    await tester.test(_test_legacy_slower_schedule_migrates_to_multiplier, "旧 slower_schedule 布尔值迁移测试")
 
     return tester

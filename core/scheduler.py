@@ -2,9 +2,11 @@
 
 import asyncio
 import inspect
+import math
 from collections.abc import Callable, Iterable, Mapping
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
+from datetime import timedelta
 from functools import wraps
 from typing import TYPE_CHECKING, Any
 
@@ -15,13 +17,53 @@ from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, SchedulerAl
 from apscheduler.triggers.combining import AndTrigger, OrTrigger
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
-from apscheduler.triggers.interval import IntervalTrigger
+from apscheduler.triggers.interval import IntervalTrigger as APSchedulerIntervalTrigger
+
+from core.config.base import CoreConfig
 
 if TYPE_CHECKING:
     from core.types import Module
 
 
 Scheduler = AsyncIOScheduler()
+
+
+def _schedule_interval_multiplier() -> float:
+    multiplier = CoreConfig.schedule_interval_multiplier
+    if isinstance(multiplier, bool) or not isinstance(multiplier, (int, float)):
+        raise ValueError("CoreConfig.schedule_interval_multiplier must be a number greater than 0.")
+    multiplier = float(multiplier)
+    if not math.isfinite(multiplier) or multiplier <= 0:
+        raise ValueError("CoreConfig.schedule_interval_multiplier must be a finite number greater than 0.")
+    return multiplier
+
+
+class IntervalTrigger(APSchedulerIntervalTrigger):
+    """按全局配置倍率调整间隔的 APScheduler IntervalTrigger。"""
+
+    def __init__(
+        self,
+        weeks=0,
+        days=0,
+        hours=0,
+        minutes=0,
+        seconds=0,
+        start_date=None,
+        end_date=None,
+        timezone=None,
+        jitter=None,
+    ):
+        interval = timedelta(weeks=weeks, days=days, hours=hours, minutes=minutes, seconds=seconds)
+        if not interval:
+            interval = timedelta(seconds=1)
+        interval *= _schedule_interval_multiplier()
+        super().__init__(
+            seconds=interval.total_seconds(),
+            start_date=start_date,
+            end_date=end_date,
+            timezone=timezone,
+            jitter=jitter,
+        )
 
 
 @dataclass(frozen=True)

@@ -1,13 +1,16 @@
 """计划任务系统单元测试 - 验证模块定时任务注册和执行。"""
 
 import asyncio
+from datetime import timedelta
 from unittest.mock import AsyncMock, patch
 
-from apscheduler.triggers.interval import IntervalTrigger
+from apscheduler.triggers.interval import IntervalTrigger as APSchedulerIntervalTrigger
 
+import core.component as component
+from core.config.base import CoreConfig
 from core.database.models import ModuleStatus
 from core.loader import ModulesManager
-from core.scheduler import Scheduler, SchedulerLifecycle
+from core.scheduler import IntervalTrigger, Scheduler, SchedulerLifecycle
 from core.tester import func_case, Tester
 from core.tester.mock.scheduler import (
     get_scheduled_tasks,
@@ -141,6 +144,35 @@ def _make_scheduled_module(module_name: str, function, loaded: bool = True) -> M
     module._db_load = loaded
     module.schedule_list.add(ScheduleMeta(function=function, trigger=IntervalTrigger(hours=1)))
     return module
+
+
+def _test_interval_trigger_applies_configured_multiplier():
+    """IntervalTrigger 应将全局倍率应用于声明的间隔。"""
+    with patch.object(CoreConfig, "schedule_interval_multiplier", 2.5):
+        trigger = IntervalTrigger(minutes=2)
+    return trigger.interval == timedelta(minutes=5) and trigger.interval_length == 300
+
+
+def _test_interval_trigger_rejects_invalid_multiplier():
+    """非正数倍率应在注册计划任务时立即失败。"""
+    with patch.object(CoreConfig, "schedule_interval_multiplier", 0):
+        try:
+            IntervalTrigger(seconds=60)
+        except ValueError:
+            return True
+    return False
+
+
+def _test_registered_interval_schedules_use_configurable_trigger():
+    """所有已注册的周期任务都应经过可配置的 IntervalTrigger。"""
+    interval_triggers = [
+        task["trigger"] for task in get_scheduled_tasks() if isinstance(task["trigger"], APSchedulerIntervalTrigger)
+    ]
+    return (
+        bool(interval_triggers)
+        and all(isinstance(trigger, IntervalTrigger) for trigger in interval_triggers)
+        and component.IntervalTrigger is IntervalTrigger
+    )
 
 
 def _test_scheduler_reconcile_uses_stable_ids_and_explicit_limit():
@@ -305,6 +337,12 @@ async def test_scheduler_mock(tester: Tester):
     await tester.test(_test_run_schedule_function_with_noop, "run_schedule_function 空函数")
     await tester.test(_test_run_schedule_function_with_error, "run_schedule_function 异常捕获")
     await tester.test(_test_run_schedule_function_with_timeout, "run_schedule_function 超时捕获")
+    await tester.test(_test_interval_trigger_applies_configured_multiplier, "IntervalTrigger 应用间隔倍率")
+    await tester.test(_test_interval_trigger_rejects_invalid_multiplier, "IntervalTrigger 拒绝无效倍率")
+    await tester.test(
+        _test_registered_interval_schedules_use_configurable_trigger,
+        "全部周期计划任务使用可配置触发器",
+    )
     await tester.test(_test_scheduler_reconcile_uses_stable_ids_and_explicit_limit, "Scheduler 稳定 ID 与并发上限")
     await tester.test(_test_module_load_unload_synchronizes_jobs, "模块全局启停同步 Scheduler")
     await tester.test(_test_scheduler_maintenance_cancels_and_waits_running_job, "Scheduler 维护窗口等待运行任务")
