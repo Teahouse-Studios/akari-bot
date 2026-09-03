@@ -3,7 +3,7 @@
 # 例：TOML のブール値は小文字である必要があります。
 
 default_locale = "ja_jp" # プリセット言語環境。
-config_version = 4 # バージョン番号。機能アップデートに伴い自動的に更新されるので、通常は変更しないでください。
+config_version = 5 # バージョン番号。機能アップデートに伴い自動的に更新されるので、通常は変更しないでください。
 
 [config]
 # 基本的な設定項目です。ここに入力された値は、メッセージ内にプレーンテキストで表示されます。この部分には機密情報を入力しないでください。
@@ -11,7 +11,7 @@ debug = false # デバッグモードを有効にするかどうか。有効に�
 timezone_offset = "+8" # ボットのデフォルトのタイムゾーン オフセット。
 allow_reload_base = false # 基本モジュールのリロードを許可するかどうか。
 allow_request_private_ip = false # ボットがローカルのプライベート IP アドレスにリクエストを送信することを許可するかどうか。（情報漏洩を防ぐため）
-slower_schedule = false # 低速のタスクスケジューラを有効にするかどうか。（リクエストの負荷を軽減するため）
+schedule_interval_multiplier = 1.0 # 计划任务的间隔时间倍率，仅影响 IntervalTrigger，必须为大于 0 的数值。（值越大相对间隔时间越长）
 use_emote = false # 感情表現リソースを使用するかどうか。
 use_font_mirror = false # ウェブページをレンダリングするときにフォントのミラーリングを使用するかどうか。
 use_secrets_random = false # secrets ライブラリに基づく乱数ジェネレータを使用するかどうか。
