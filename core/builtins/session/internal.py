@@ -12,6 +12,7 @@ from datetime import datetime, UTC
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Coroutine, Match, NoReturn, TYPE_CHECKING, cast
 
+from akari_bot_i18n.i18n import Locale
 from attrs import define, field
 from deprecated import deprecated
 from japanera import EraDate
@@ -25,7 +26,7 @@ from core.builtins.session.tasks import SessionTaskManager
 from core.builtins.types import MessageElement
 from core.builtins.utils import confirm_command
 from core.config.base import CoreConfig
-from core.constants import SessionFinished, WaitCancelException
+from core.constants import SessionFinished, WaitCancelException, default_locale
 from core.exports import add_export, exports
 from core.logger import Logger
 from core.utils.button import bind_callback_reply_ids, build_button_rows
@@ -165,6 +166,20 @@ class MessageSession:
         :return: 消息会话实例
         """
         return cls(session_info=session)
+
+    @property
+    def t(self):
+        if self.session_info:
+            return self.session_info.locale.t
+        Logger.warning("SessionInfo is not available, returning default language for translation function.")
+        return Locale(default_locale).t
+
+    @property
+    def t_str(self):
+        if self.session_info:
+            return self.session_info.locale.t_str
+        Logger.warning("SessionInfo is not available, returning default language for translation function.")
+        return Locale(default_locale).t_str
 
     async def send_message(
         self,

@@ -20,6 +20,11 @@ from core.utils.url_audit import evaluate_url_policy
 from core.utils.button import build_button_rows
 from .database.models import WikiSiteInfo, WikiTargetInfo
 from .utils.mapping import generate_screenshot_v2_blocklist
+from .utils.disambiguation import (
+    build_disambiguation_table,
+    build_disambiguation_text,
+    is_disambiguation_overlong,
+)
 from .utils.recommend import finish_with_start_wiki_not_set
 from .utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
 from .utils.utils import check_svg
@@ -163,6 +168,25 @@ def _build_forum_callback(page: PageInfo):
             await query_pages(msg, title=topics[display], start_wiki_api=api)
 
     return _callback
+
+
+def _build_disambiguation_output(msg: Bot.MessageSession, page: PageInfo, interwiki_prefix: str) -> MessageChain:
+    blocks = page.disambiguation_blocks
+    command_prefix = msg.session_info.prefixes[0]
+    if is_disambiguation_overlong(blocks):
+        if (
+            msg.session_info.client_name == "QQBot"
+            and msg.session_info.support_markdown_table
+            and msg.session_info.support_action_text
+        ):
+            return build_disambiguation_table(
+                blocks,
+                command_prefix,
+                msg.session_info.locale.t("wiki.message.disambiguation.table.header"),
+                interwiki_prefix,
+            )
+        return MessageChain.create()
+    return build_disambiguation_text(blocks, command_prefix, interwiki_prefix)
 
 
 def _build_not_found_choice_prompt(
@@ -465,7 +489,9 @@ async def query_pages(
                         )
                         plain_slice.append(I18NContext("wiki.message.section.rendering"))
                     else:
-                        if r.desc:
+                        if isinstance(session, Bot.MessageSession) and r.is_disambiguation and r.disambiguation_blocks:
+                            plain_slice.extend(_build_disambiguation_output(session, r, iw_prefix))
+                        elif r.desc:
                             plain_slice.append(Plain(r.desc))
 
                     if r.link:
@@ -488,13 +514,7 @@ async def query_pages(
                                         ),
                                         "content_mode": r.has_template_doc
                                         or r.title.split(":")[0] in ["User"]
-                                        or (
-                                            r.templates
-                                            and (
-                                                "Template:Disambiguation" in r.templates
-                                                or "Template:Version disambiguation" in r.templates
-                                            )
-                                        )
+                                        or r.is_disambiguation
                                         or r.is_forum_topic,
                                     }
                                 }
@@ -554,8 +574,8 @@ async def query_pages(
                                         ImageTable(
                                             session_data,
                                             [
-                                                str(I18NContext("wiki.message.table.header.id")),
-                                                str(I18NContext("wiki.message.table.header.section")),
+                                                session.t("wiki.message.table.header.id"),
+                                                session.t("wiki.message.table.header.section"),
                                             ],
                                         )
                                     )

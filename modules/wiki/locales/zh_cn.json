@@ -43,6 +43,7 @@
     "wiki.message.error.query": "发生错误：无法查询此 Wiki。",
     "wiki.message.error.render_section": "发生错误：章节渲染失败，请联系开发者检查原因。",
     "wiki.message.error.set": "发生错误：无法设置此 Wiki。",
+    "wiki.message.disambiguation.table.header": "可能指",
     "wiki.message.flies": "此页面包括以下文件：",
     "wiki.message.forum.prompt": "此页面为论坛页，以下是当前活跃的帖子：",
     "wiki.message.headers.add.failed": "更新请求标头失败，请检查输入。",

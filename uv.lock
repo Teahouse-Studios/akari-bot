@@ -288,7 +288,7 @@ requires-dist = [
     { name = "aiofile", specifier = ">=3.8.1,<4.0.0" },
     { name = "aiogram", specifier = "==3.31.0" },
     { name = "akari-bot-i18n", specifier = "==0.1.2" },
-    { name = "akari-bot-webrender", specifier = "==0.6.1" },
+    { name = "akari-bot-webrender", specifier = "==0.6.2" },
     { name = "akari-bot-webui", specifier = "==0.4.3" },
     { name = "apscheduler", specifier = ">=3.9.1.post0,<4.0.0.0" },
     { name = "argon2-cffi", specifier = ">=25.0.0,<26.0.0" },
@@ -371,7 +371,7 @@ wheels = [
 
 [[package]]
 name = "akari-bot-webrender"
-version = "0.6.1"
+version = "0.6.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fastapi" },
@@ -384,9 +384,9 @@ dependencies = [
     { name = "tf-playwright-stealth" },
     { name = "uvicorn" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/26/dc/fe0ef6d79e7d79aea8092b894b5f9c32e37798bdc59cdfebb84d288fcfec/akari_bot_webrender-0.6.1.tar.gz", hash = "sha256:374df48595564fd53ddf193249e69abf30158911f25a6aa683e582b6ef2c2511", size = 18740, upload-time = "2026-08-15T17:58:30.073Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/63/4a/12d2ac80f6d7bd4a2e7ad97189614430c5b7dfa75fc5fb0d75aec456ee42/akari_bot_webrender-0.6.2.tar.gz", hash = "sha256:7b23ddb5e18957f3b50b9277c8c494c1d795408e425702e15b74db50540c329b", size = 19155, upload-time = "2026-09-04T08:56:29.456Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1e/06/38b00794d66f2ab7e7e041f27b481c15140fafdf18505c2d1c8757a1d6c2/akari_bot_webrender-0.6.1-py3-none-any.whl", hash = "sha256:f3166717d4874402ccdbd105792b71888403bcef8737e45dc4eedb0b0e2a7314", size = 22571, upload-time = "2026-08-15T17:58:29.021Z" },
+    { url = "https://files.pythonhosted.org/packages/c1/7e/fd0740365fb7b8f4146b185ebc00c019ae38b51092e6617038d016302b04/akari_bot_webrender-0.6.2-py3-none-any.whl", hash = "sha256:c7b951f98cda58eb7364b44da29cc3cb03b007cec67d52212ccde8f17d0b1cc4", size = 22959, upload-time = "2026-09-04T08:56:27.985Z" },
 ]
 
 [[package]]
@@ -1538,8 +1538,8 @@ name = "httpcore2"
 version = "2.12.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "h11" },
-    { name = "truststore" },
+    { name = "h11", marker = "sys_platform != 'emscripten'" },
+    { name = "truststore", marker = "sys_platform != 'emscripten'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/be/ad/f4f0e57345f1870f3e8cb624e058d7eca6e5a27d33bcc3311d9b618734cd/httpcore2-2.12.0.tar.gz", hash = "sha256:9293522bba0aa7c4c8e9e3f040c16575bd8868e155a77fa30c7a9085a5eae648", size = 67548, upload-time = "2026-08-18T13:22:08.211Z" }
 wheels = [

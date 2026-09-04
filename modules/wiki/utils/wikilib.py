@@ -21,6 +21,7 @@ from core.utils.url_audit import evaluate_url_policy
 from core.utils.web_render import web_render, SourceOptions
 from modules.wiki.database.models import WikiSiteInfo
 from modules.wiki.utils.bot import BotAccount
+from modules.wiki.utils.disambiguation import DisambiguationBlock, is_disambiguation_page, parse_disambiguation_html
 from modules.wiki.utils.summarize import extract_summary, truncate_summary
 from .mapping import *
 
@@ -113,6 +114,8 @@ class PageInfo:
     interwiki_prefix: str | None = ""
     status: bool = True
     templates: list[str] = None
+    is_disambiguation: bool = False
+    disambiguation_blocks: list[DisambiguationBlock] = field(factory=list)
     before_page_property: str = "page"
     page_property: str = "page"
     has_template_doc: bool = False
@@ -764,10 +767,11 @@ class WikiLib:
             # 摘要须由本地解析 Wikitext 得出。此处随主查询一并取回，无须额外请求。
             # rvslots 自 MediaWiki 1.32 起提供，更低版本会忽略该参数并返回旧式结构，
             # 故读取时两种结构都要认。
-            query_props += ["revisions"]
+            query_props += ["revisions", "pageprops"]
             query_string.update(
                 {
                     "prop": "|".join(query_props),
+                    "ppprop": "description|displaytitle|disambiguation|infoboxes",
                     "rvprop": "content",
                     "rvslots": "main",
                 }
@@ -883,6 +887,9 @@ class WikiLib:
                                 page_info.desc = reparse.desc
                                 page_info.file = reparse.file
                                 page_info.status = reparse.status
+                                page_info.templates = reparse.templates
+                                page_info.is_disambiguation = reparse.is_disambiguation
+                                page_info.disambiguation_blocks = reparse.disambiguation_blocks
                                 page_info.invalid_namespace = reparse.invalid_namespace
                                 page_info.possible_research_title = reparse.possible_research_title
                             else:
@@ -965,6 +972,7 @@ class WikiLib:
                     # handling templates
 
                     templates = page_info.templates = [t["title"] for t in page_raw.get("templates", [])]
+                    page_info.is_disambiguation = is_disambiguation_page(page_raw.get("pageprops"), templates)
 
                     # handling special talk page
                     if selected_section or page_info.invalid_section or page_info.is_talk_page:
@@ -1108,6 +1116,15 @@ class WikiLib:
                                     page_desc = self.parse_text(
                                         extract_summary(self._get_revision_content(page_raw), selected_section)
                                     )
+                            if page_info.is_disambiguation and not selected_section:
+                                try:
+                                    parsed_page = await self.get_json(action="parse", page=title, prop="text")
+                                    page_info.disambiguation_blocks = parse_disambiguation_html(
+                                        parsed_page["parse"]["text"]["*"],
+                                        self.wiki_info.realurl or self.wiki_info.api,
+                                    )
+                                except Exception:
+                                    Logger.exception("Failed to parse Wiki disambiguation page: ")
                             full_url = page_raw["fullurl"] + page_info.args
                             file = None
                             if "imageinfo" in page_raw:
@@ -1126,6 +1143,9 @@ class WikiLib:
                             page_info.edit_link = query_langlinks.edit_link
                             page_info.file = query_langlinks.file
                             page_info.desc = query_langlinks.desc
+                            page_info.templates = query_langlinks.templates
+                            page_info.is_disambiguation = query_langlinks.is_disambiguation
+                            page_info.disambiguation_blocks = query_langlinks.disambiguation_blocks
         interwiki_: list[dict[str, str]] = query.get("interwiki")
         if interwiki_:
             # handling interwiki pages

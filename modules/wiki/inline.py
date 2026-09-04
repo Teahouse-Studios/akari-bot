@@ -183,16 +183,10 @@ async def _(msg: Bot.MessageSession):
                             and (wiki_.wiki_info.is_allowed or not msg.session_info.use_url_manager)
                         ):
                             if wiki_.wiki_info.realurl not in generate_screenshot_v2_blocklist:
-                                is_disambiguation = False
-                                if get_page.templates:
-                                    is_disambiguation = (
-                                        "Template:Disambiguation" in get_page.templates
-                                        or "Template:Version disambiguation" in get_page.templates
-                                    )
                                 content_mode = (
                                     get_page.has_template_doc
                                     or get_page.title.split(":")[0] in ["User"]
-                                    or is_disambiguation
+                                    or get_page.is_disambiguation
                                     or get_page.is_forum_topic
                                 )
                                 get_infobox = await generate_screenshot_v2(
@@ -261,8 +255,8 @@ async def _(msg: Bot.MessageSession):
                                         ImageTable(
                                             session_data,
                                             [
-                                                str(I18NContext("wiki.message.table.header.id")),
-                                                str(I18NContext("wiki.message.table.header.section")),
+                                                msg.t("wiki.message.table.header.id"),
+                                                msg.t("wiki.message.table.header.section"),
                                             ],
                                         )
                                     )
