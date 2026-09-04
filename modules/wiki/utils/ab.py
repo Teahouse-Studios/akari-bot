@@ -1,7 +1,7 @@
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Plain, Url
-from core.dirty_check import check
+from core.utils.dirty_check import check
 from modules.wiki.utils.utils import strptime2ts
 from modules.wiki.utils.wikilib import WikiLib
 

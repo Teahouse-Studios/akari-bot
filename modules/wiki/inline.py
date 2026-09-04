@@ -7,7 +7,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import ButtonFrame, I18NContext, Image, Audio, Video, Url
 from core.component import module
-from core.dirty_check import check
+from core.utils.dirty_check import check
 from core.logger import Logger
 from core.utils.func import is_int
 from core.utils.http import download

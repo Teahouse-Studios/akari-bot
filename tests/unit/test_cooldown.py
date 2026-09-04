@@ -1,6 +1,6 @@
-"""core.cooldown 冷却系统单元测试。"""
+"""core.utils.cooldown 冷却系统单元测试。"""
 
-from core.cooldown import CoolDown, _cd_dict
+from core.utils.cooldown import CoolDown, _cd_dict
 from core.tester import func_case, Tester
 from core.tester.mock.session import MockMessageSession
 
@@ -94,7 +94,7 @@ async def _test_cooldown_multiple_keys():
 
 @func_case
 async def test_cooldown(tester: Tester):
-    """core.cooldown: CoolDown 冷却系统测试"""
+    """core.utils.cooldown: CoolDown 冷却系统测试"""
     await tester.test(_test_cooldown_init, "CoolDown 初始化测试")
     await tester.test(_test_cooldown_init_whole_target, "CoolDown whole_target 初始化测试")
     await tester.test(_test_cooldown_check_no_cooldown, "CoolDown 无冷却时 check 测试")

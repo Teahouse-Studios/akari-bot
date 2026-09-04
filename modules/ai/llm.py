@@ -8,7 +8,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import Image, Plain
 from modules.ai.config import AiConfig
 from core.constants.exceptions import ExternalException
-from core.dirty_check import check
+from core.utils.dirty_check import check
 from core.logger import Logger
 from core.utils.func import parse_time_string
 from .formatting import parse_markdown, generate_code_snippet, generate_latex, generate_md_table

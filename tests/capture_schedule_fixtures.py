@@ -63,7 +63,7 @@ async def main():
     await load_modules(show_logs=False, monkey_patches={"Random": Random()}, load_fixtures=False)
 
     import core.utils.http as http_module
-    from core.web_render import web_render
+    from core.utils.web_render import web_render
 
     original_request = http_module.request_url
     original_source = web_render.source

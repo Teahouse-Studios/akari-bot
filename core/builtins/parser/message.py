@@ -48,14 +48,14 @@ from core.database.models import AnalyticsData, SenderUnionInfo, TargetUnionBind
 from core.exports import exports
 from core.loader import ModulesManager
 from core.logger import Logger
-from core.retired import (
+from core.utils.retired import (
     is_module_allowed_when_retired,
     is_retired_client,
     is_retired_target,
     is_yielding_retired_session,
     should_yield_channel,
 )
-from core.tos import TOS_TEMPBAN_TIME, temp_ban_counter, abuse_warn_target, remove_temp_ban
+from core.utils.tos import TOS_TEMPBAN_TIME, temp_ban_counter, abuse_warn_target, remove_temp_ban
 from core.types import Module, Param
 from core.types.module.component_meta import CommandMeta
 from core.utils.container import ExpiringTempDict, TokenBucket

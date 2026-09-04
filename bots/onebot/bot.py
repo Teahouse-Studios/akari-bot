@@ -24,8 +24,8 @@ from core.constants.default import confirm_command_default
 from core.database.models import SenderUnionInfo, TargetUnionInfo, UnfriendlyActionRecords
 from core.i18n import Locale
 from core.logger import Logger
-from core.retired import is_retired_client
-from core.tos import tos_report
+from core.utils.retired import is_retired_client
+from core.utils.tos import tos_report
 
 Bot.register_bot(client_name=client_name)
 ctx_id = Bot.register_context_manager(OneBotContextManager)

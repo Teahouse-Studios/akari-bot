@@ -670,7 +670,7 @@ async def _test_partial_overlap_merge_reservations_do_not_deadlock():
 async def _test_active_sender_leases_are_barriered_before_merge():
     """两个活跃 Union 合并前须等待另一 lease，期间阻止双方新命令进入。"""
     from core.builtins.session.internal import MessageSession
-    from core.union_merge import apply_sender_merge, plan_sender_merge, reserve_sender_merge
+    from core.utils.union_merge import apply_sender_merge, plan_sender_merge, reserve_sender_merge
 
     target_id = "TEST|Group|active-sender-merge-barrier"
     first_id = "TEST|active-sender-merge-first"
@@ -724,7 +724,7 @@ async def _test_active_sender_leases_are_barriered_before_merge():
 
         ExecutionLockList.remove(first)
         reserved_plan = await asyncio.wait_for(reserve_task, timeout=0.5)
-        with patch("core.union_merge.write_merge_log"):
+        with patch("core.utils.union_merge.write_merge_log"):
             merged = await apply_sender_merge(reserved_plan, set(), merge_command)
         keys = ExecutionLockList.get()
         return (

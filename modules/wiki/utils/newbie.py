@@ -1,7 +1,7 @@
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Plain, Url
 from core.builtins.session.internal import MessageSession
-from core.dirty_check import check
+from core.utils.dirty_check import check
 from modules.wiki.utils.wikilib import WikiLib
 
 NEWBIE_LIMIT = 10

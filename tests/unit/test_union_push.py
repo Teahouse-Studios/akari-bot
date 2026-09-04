@@ -149,11 +149,11 @@ async def _test_report_targets_dedup():
             sent.append(target.target_id)
 
         with (
-            patch("core.tos.report_targets", targets),
+            patch("core.utils.tos.report_targets", targets),
             patch.object(Alive, "get_alive", return_value=_ALIVE),
             patch.object(Bot, "send_direct_message", _record),
         ):
-            from core.tos import tos_report
+            from core.utils.tos import tos_report
 
             await tos_report("UPUSHA|1", "UPUSHA|Group|report", "reason")
         return sent == ["UPUSHA|Group|report"]

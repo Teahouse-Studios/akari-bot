@@ -15,7 +15,7 @@ from core.logger import Logger
 from core.server.lifecycle import BackgroundTaskLifecycle
 from core.utils.container import ExpiringTempDict
 from core.utils.random import SecureRandom
-from core.union_merge import (
+from core.utils.union_merge import (
     BIND_CODE_EXPIRED,
     apply_sender_merge,
     apply_target_merge,

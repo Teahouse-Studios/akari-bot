@@ -12,7 +12,7 @@ import core.server.init as server_init
 import core.server.lifecycle as server_lifecycle
 import core.server.run as server_run
 import core.server.terminate as server_terminate
-import core.web_render as web_render_module
+import core.utils.web_render as web_render_module
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.exports import exports

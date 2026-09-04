@@ -1,4 +1,4 @@
-"""core.retired 单元测试 - 公告文案读取、已发记录与排队。
+"""core.utils.retired 单元测试 - 公告文案读取、已发记录与排队。
 
 凡是改动 ``CoreConfig.retired_clients`` 的用例一律放在 ``test_retired_gate.py``：
 ``tester.py`` 并发执行各个 func_case，而该配置与 ``RETIRED_ROUTES`` 是进程级全局状态，
@@ -11,10 +11,10 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
-import core.retired as retired_module
+import core.utils.retired as retired_module
 
 from core.database.models import StoredData
-from core.retired import (
+from core.utils.retired import (
     NOTIFIED_STORED_KEY,
     RETIRED_NOTIFY_DELAY_MAX,
     RETIRED_NOTIFY_DELAY_MIN,
@@ -314,7 +314,7 @@ async def _test_notice_cleanup_is_registered():
 
 @func_case
 async def test_retired_notice(tester: Tester):
-    """core.retired: 公告读取、已发记录与排队测试"""
+    """core.utils.retired: 公告读取、已发记录与排队测试"""
     await tester.test(_test_notice_exact_locale, "命中当前语言测试")
     await tester.test(_test_notice_falls_back_to_zh_cn, "回退 zh_cn 测试")
     await tester.test(_test_notice_falls_back_to_any, "回退任意文件测试")

@@ -77,7 +77,7 @@ def _test_telegram_imports_stay_in_platform_process() -> bool:
         [
             sys.executable,
             "-c",
-            "import sys; import bots.telegram.message_builder; assert 'core.web_render' not in sys.modules",
+            "import sys; import bots.telegram.message_builder; assert 'core.utils.web_render' not in sys.modules",
         ],
         capture_output=True,
         timeout=30,

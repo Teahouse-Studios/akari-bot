@@ -18,7 +18,7 @@ from core.database.models import JobQueuesTable
 from core.logger import Logger
 from core.queue.server import JobQueueServer
 from core.scheduler import SchedulerLifecycle
-from core.web_render import close_web_render
+from core.utils.web_render import close_web_render
 from .background_tasks import stop_background_task
 from .lifecycle import BackgroundTaskLifecycle
 

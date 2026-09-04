@@ -4,7 +4,7 @@ import re
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
 from core.component import module
-from core.dirty_check import check
+from core.utils.dirty_check import check
 from .server import query_java_server, query_bedrock_server
 
 s = module(

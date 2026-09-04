@@ -1,6 +1,6 @@
 from core.builtins.bot import Bot
 from core.builtins.message.internal import Plain, I18NContext, Url
-from core.dirty_check import rickroll
+from core.utils.dirty_check import rickroll
 from core.utils.http import get_url
 from modules.github.utils import dirty_check, dark_check
 

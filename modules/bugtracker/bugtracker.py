@@ -5,7 +5,7 @@ from core.constants.exceptions import ExternalException
 from core.logger import Logger
 from core.utils.http import post_url, get_url
 from core.utils.image import cb64imglst
-from core.web_render import web_render, ElementScreenshotOptions
+from core.utils.web_render import web_render, ElementScreenshotOptions
 
 elements = ["div[class^='MuiContainer-root']"]
 

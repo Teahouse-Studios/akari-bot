@@ -28,7 +28,7 @@ from core.database.models import (
 )
 from core.exports import add_export, exports
 from core.logger import Logger
-from core.retired import filter_retired_targets
+from core.utils.retired import filter_retired_targets
 from core.utils.func import convert_list
 from core.utils.session import inject_features
 

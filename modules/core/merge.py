@@ -11,8 +11,8 @@ from core.database.models import (
     TargetUnionBind,
     TargetUnionInfo,
 )
-from core.retired import RETIRED_SOURCES, RETIRED_TARGETS, enqueue_notice, is_merge_route_allowed
-from core.union_merge import (
+from core.utils.retired import RETIRED_SOURCES, RETIRED_TARGETS, enqueue_notice, is_merge_route_allowed
+from core.utils.union_merge import (
     BIND_CODE_EXPIRED,
     apply_sender_merge,
     apply_target_merge,

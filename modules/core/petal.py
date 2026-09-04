@@ -4,7 +4,7 @@ from core.builtins.message.internal import I18NContext
 from core.component import module
 from core.config.base import CoreConfig
 from core.database.models import SenderUnionInfo
-from core.petal import sign_get_petal, cost_petal
+from core.utils.petal import sign_get_petal, cost_petal
 
 petal_ = module(
     "petal", alias={"petals": "petal", "sign": "petal sign"}, base=True, doc=True, load=CoreConfig.enable_petal

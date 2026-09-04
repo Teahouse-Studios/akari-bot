@@ -1,7 +1,7 @@
 import orjson
 import trafilatura
 
-from core.web_render import web_render, SourceOptions
+from core.utils.web_render import web_render, SourceOptions
 
 MAX_LENGTH = 4096
 

@@ -1,4 +1,4 @@
-"""core.retired 单元测试 - 迁移关系解析、退役判定与介入点。
+"""core.utils.retired 单元测试 - 迁移关系解析、退役判定与介入点。
 
 本文件集中放置所有改动 ``CoreConfig.retired_clients`` 的用例：``tester.py`` 并发执行各个
 func_case，而该配置与 ``RETIRED_ROUTES`` 是进程级全局状态，分散在多个文件中改动会互相覆盖。
@@ -22,7 +22,7 @@ from core.builtins.session.tasks import SessionTaskManager
 from core.config.base import CoreConfig
 from core.database.models import TargetUnionBind, TargetUnionInfo
 from core.loader import ModulesManager
-from core.retired import (
+from core.utils.retired import (
     RETIRED_ALLOWED_MODULES,
     filter_retired_targets,
     is_merge_route_allowed,
@@ -456,7 +456,7 @@ async def _test_union_push_skips_retired():
 
 @func_case
 async def test_retired_gate(tester: Tester):
-    """core.retired: 迁移关系、退役判定与介入点测试"""
+    """core.utils.retired: 迁移关系、退役判定与介入点测试"""
     await tester.test(_test_parse_basic_route, "关系解析基本测试")
     await tester.test(_test_parse_source_only, "只写源测试")
     await tester.test(_test_parse_ignores_malformed, "格式错误忽略测试")

@@ -14,8 +14,7 @@ from core.config.base import CoreConfig
 from core.constants.path import templates_path
 from core.logger import Logger
 from core.utils.cache import random_cache_path
-from core.utils.image_split import image_split as image_split
-from core.web_render import web_render, ElementScreenshotOptions
+from core.utils.web_render import web_render, ElementScreenshotOptions
 
 if TYPE_CHECKING:
     from core.builtins.session.internal import MessageSession

@@ -34,7 +34,7 @@ from core.i18n import Locale
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.utils.bash import run_sys_command
-from core.web_render import check_web_render_status
+from core.utils.web_render import check_web_render_status
 from .base import JobQueueBase
 
 if TYPE_CHECKING:

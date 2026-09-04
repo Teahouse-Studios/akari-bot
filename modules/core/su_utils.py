@@ -23,13 +23,13 @@ from core.loader import ModulesManager
 from core.logger import Logger
 from core.scheduler import CronTrigger
 from core.server.terminate import restart
-from core.tos import WARNING_COUNTS, check_temp_ban, remove_temp_ban
+from core.utils.tos import WARNING_COUNTS, check_temp_ban, remove_temp_ban
 from core.types import Param
 from core.utils.bash import run_sys_command
 from core.utils.func import is_float, is_int
 from core.utils.image_table import ImageTable, image_table_render
 from core.utils.url_audit import GlobalURLAllowlist, GlobalURLBlocklist, URLRule, URLRuleError
-from core.web_render import check_web_render_status, close_web_render, init_web_render, web_render
+from core.utils.web_render import check_web_render_status, close_web_render, init_web_render, web_render
 
 auto_purge_crontab = CoreConfig.auto_purge_crontab
 

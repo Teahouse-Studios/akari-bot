@@ -40,7 +40,7 @@ from core.builtins.message.elements import (
 from core.constants import Secret, default_locale
 from core.exports import add_export
 from core.i18n import Locale
-from core.joke import shuffle_joke as joke
+from core.utils.joke import shuffle_joke as joke
 from core.logger import Logger
 from core.utils.func import convert_bool
 from core.utils.http import url_pattern
