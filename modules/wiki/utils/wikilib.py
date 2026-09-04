@@ -30,6 +30,16 @@ enable_tos = CoreConfig.enable_tos
 MAX_RESEARCH_SUGGESTIONS = 5
 
 
+def _has_manual_anchor(html: str, section: str) -> bool:
+    """检查渲染正文中是否存在与 URL 片段匹配的手动锚点。"""
+    normalized = urllib.parse.unquote(section).replace(" ", "_")
+    soup = BeautifulSoup(html, "html.parser")
+    for anchor in soup.find_all("span", id=True):
+        if "anchor" in anchor.get("class", []) and anchor["id"].replace(" ", "_") == normalized:
+            return True
+    return False
+
+
 def _merge_research_suggestions(search_results, limit: int = MAX_RESEARCH_SUGGESTIONS) -> list[str]:
     """Merge ordered search-mode results into a unique, bounded suggestion list."""
     suggestions = []
@@ -123,6 +133,7 @@ class PageInfo:
     possible_research_title: list[str] = None
     body_class: list[str] = None
     invalid_section: bool = False
+    is_manual_anchor: bool = False
     is_talk_page: bool = False
     is_forum: bool = False
     is_forum_topic: bool = False
@@ -890,6 +901,7 @@ class WikiLib:
                                 page_info.templates = reparse.templates
                                 page_info.is_disambiguation = reparse.is_disambiguation
                                 page_info.disambiguation_blocks = reparse.disambiguation_blocks
+                                page_info.is_manual_anchor = reparse.is_manual_anchor
                                 page_info.invalid_namespace = reparse.invalid_namespace
                                 page_info.possible_research_title = reparse.possible_research_title
                             else:
@@ -991,6 +1003,20 @@ class WikiLib:
                         if selected_section:
                             if urllib.parse.unquote(selected_section) not in section_list:
                                 page_info.invalid_section = True
+                                try:
+                                    parsed_page = await self.get_json(
+                                        action="parse",
+                                        page=page_info.title,
+                                        prop="text",
+                                    )
+                                    parsed_text = parsed_page.get("parse", {}).get("text", "")
+                                    if isinstance(parsed_text, dict):
+                                        parsed_text = parsed_text.get("*", "")
+                                    if parsed_text and _has_manual_anchor(parsed_text, selected_section):
+                                        page_info.invalid_section = False
+                                        page_info.is_manual_anchor = True
+                                except Exception:
+                                    Logger.exception("Failed to check Wiki manual section anchor: ")
 
                     # handling special pages
                     if "special" in page_raw:
@@ -1105,7 +1131,7 @@ class WikiLib:
                                         page_info.has_template_doc = True
                                     page_info.before_page_property = page_info.page_property = "template"
                             # get description
-                            if get_desc:
+                            if get_desc and not page_info.is_manual_anchor:
                                 if use_extracts:
                                     raw_desc = page_raw.get("extract")
                                     if raw_desc:
