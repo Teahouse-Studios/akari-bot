@@ -7,6 +7,7 @@ from core.builtins.message.internal import I18NContext, Plain
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
 from core.database.models import JobQueuesTable
+from core.queue.contracts import PlatformAPI
 from core.tester import func_case, Tester
 
 
@@ -26,11 +27,11 @@ async def _queued_message(client: str, message) -> dict:
     以给定入参调用 send_direct_message，返回其入队任务里的 message 字段。
     """
     Alive.refresh_alive(client, target_prefix_list=[f"{client}|Group"], sender_prefix_list=[client])
-    await JobQueuesTable.filter(action="send_message").delete()
+    await JobQueuesTable.filter(action=PlatformAPI.send_message.name).delete()
     msg = await _session(client)
     await msg.send_direct_message(message)
-    row = await JobQueuesTable.filter(action="send_message").first()
-    return row.args["message"] if row else {}
+    row = await JobQueuesTable.filter(action=PlatformAPI.send_message.name).first()
+    return row.args["payload"]["message"] if row else {}
 
 
 async def _test_bare_element_is_wrapped():

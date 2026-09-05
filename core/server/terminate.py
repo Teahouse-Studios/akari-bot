@@ -43,7 +43,7 @@ async def cleanup_sessions():
     # 与 restart action 互相等待。
     SchedulerLifecycle.begin_shutdown()
     # 先关闭新 action 入口并与已经开始领取的一轮轮询建立屏障。轮询器仍继续回收
-    # QueueTaskManager 的远端结果，供下面取消任务时释放平台 context。
+    # 在途 RPC 的远端结果，供下面取消任务时释放平台 context。
     await JobQueueServer.begin_shutdown()
     # Queue handler 可能持有 Scheduler 维护锁，也可能在退出路径创建 detached task。
     # 先取消并等待它们，再关闭 Scheduler，最后统一清理所有已注册后台任务。

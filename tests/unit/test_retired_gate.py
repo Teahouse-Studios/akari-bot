@@ -9,7 +9,7 @@ func_case，而该配置与 ``RETIRED_ROUTES`` 是进程级全局状态，分散
 """
 
 import asyncio
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 from core.alive import Alive
 from core.builtins.bot import Bot
@@ -22,6 +22,7 @@ from core.builtins.session.tasks import SessionTaskManager
 from core.config.base import CoreConfig
 from core.database.models import TargetUnionBind, TargetUnionInfo
 from core.loader import ModulesManager
+from core.queue.contracts import PlatformAPI
 from core.utils.retired import (
     RETIRED_ALLOWED_MODULES,
     filter_retired_targets,
@@ -333,9 +334,18 @@ async def _probe_wait_task(prefix: str, with_alive: bool) -> bool:
     SessionTaskManager._task_list.clear()
     try:
         # all_ 任务按物理场景建稳定 bucket，check() 再按当前消息通道展开。
-        SessionTaskManager.add_task(holder, asyncio.Event(), all_=True, timeout=60)
-        await parser(retired)
-        return SessionTaskManager.get()[holder.session_info.target_id]["all"][holder]["active"] is False
+        flag = asyncio.Event()
+        SessionTaskManager.add_task(holder, flag, all_=True, timeout=60)
+        # 这里只模拟平台成功持有上下文，parser 与等待任务路由仍执行真实逻辑。
+        hold = AsyncMock(return_value=None)
+        with patch.object(PlatformAPI, "hold_context", new=hold):
+            await parser(retired)
+        task = SessionTaskManager.get()[holder.session_info.target_id]["all"][holder]
+        if with_alive:
+            hold.assert_not_awaited()
+        else:
+            hold.assert_awaited_once_with(retired.session_info)
+        return task["active"] is False and flag.is_set() and task["result"] is retired
 
     finally:
         SessionTaskManager._task_list.clear()

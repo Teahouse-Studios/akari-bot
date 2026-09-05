@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, patch
 import bots.discord.client as discord_client
 import bots.discord.slash_parser as discord_slash_parser
 import core.client.init as client_init_module
+from core.queue.contracts import ServerAPI
 from core.tester import Tester, func_case
 
 
@@ -81,7 +82,7 @@ async def _test_database_failure_stops_client_initialization():
         with (
             patch.object(client_init_module, "init_db", new=AsyncMock(return_value=False)),
             patch.object(client_init_module, "close_db", new=close_db),
-            patch.object(client_init_module.JobQueueClient, "send_keepalive_signal_to_server", new=keepalive),
+            patch.object(ServerAPI.keepalive, "submit", new=keepalive),
         ):
             try:
                 await client_init_module.client_init(queue=False, rename_logger=False)
@@ -118,7 +119,7 @@ async def _test_database_failure_cleanup_allows_retry():
             patch.object(client_init_module, "init_db", new=init_db),
             patch.object(client_init_module, "close_db", new=close_db),
             patch.object(client_init_module, "_keepalive_loop", new=keepalive_loop),
-            patch.object(client_init_module.JobQueueClient, "send_keepalive_signal_to_server", new=keepalive),
+            patch.object(ServerAPI.keepalive, "submit", new=keepalive),
             patch.object(client_init_module, "connect_locale_snapshot"),
             patch.object(client_init_module.Bot, "ContextSlots", [SimpleNamespace(features=SimpleNamespace())]),
             patch.object(client_init_module.Bot, "fetched_session_ctx_slot", 0),
@@ -165,8 +166,8 @@ async def _test_client_background_tasks_are_idempotent():
             patch.object(client_init_module, "init_db", new=init_db),
             patch.object(client_init_module, "check_queue", new=queue_poller),
             patch.object(
-                client_init_module.JobQueueClient,
-                "send_keepalive_signal_to_server",
+                ServerAPI.keepalive,
+                "submit",
                 new=AsyncMock(),
             ),
             patch.object(client_init_module.Bot, "ContextSlots", [SimpleNamespace(features=SimpleNamespace())]),

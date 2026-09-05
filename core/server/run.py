@@ -13,6 +13,7 @@ import signal
 from core.constants import Info, lang_list, all_locales_path
 from core.logger import Logger
 from core.queue.server import JobQueueServer
+from core.queue.rpc import set_default_peer
 from core.server.init import init_async, load_prompt
 from core.server.terminate import cleanup_sessions
 
@@ -42,6 +43,7 @@ async def main(process_stop_event=None):
     5. 收到停止信号后执行清理
     """
     Logger.info("Starting AkariBot Server...")
+    set_default_peer(JobQueueServer)
     queue_task = None
     try:
         locale_loaded_err = build_locale_snapshot(list(lang_list.keys()), all_locales_path, "akari-bot")

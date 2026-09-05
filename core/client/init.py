@@ -6,6 +6,8 @@ from core.database import close_db, init_db
 from core.i18n import connect_locale_snapshot
 from core.logger import Logger
 from core.queue.client import JobQueueClient
+from core.queue.contracts import ServerAPI
+from core.queue.rpc import set_default_peer
 
 
 _queue_task: asyncio.Task[None] | None = None
@@ -35,7 +37,7 @@ async def _keepalive_loop(
     while True:
         await asyncio.sleep(60)
         try:
-            await JobQueueClient.send_keepalive_signal_to_server(
+            await ServerAPI.keepalive.submit(
                 Info.client_name,
                 target_prefix_list=target_prefix_list,
                 sender_prefix_list=sender_prefix_list,
@@ -67,6 +69,8 @@ async def _client_init_once(
 ) -> None:
     global _queue_task, _keepalive_task
 
+    set_default_peer(JobQueueClient)
+
     started_tasks: list[tuple[str, asyncio.Task[None]]] = []
     database_attempted = False
     try:
@@ -75,7 +79,7 @@ async def _client_init_once(
         database_attempted = True
         if not await init_db(load_module_db=load_module_db, generate_schemas=False):
             raise RuntimeError(f"Failed to initialize database for {Info.client_name}.")
-        await JobQueueClient.send_keepalive_signal_to_server(
+        await ServerAPI.keepalive.submit(
             Info.client_name,
             target_prefix_list=target_prefix_list,
             sender_prefix_list=sender_prefix_list,

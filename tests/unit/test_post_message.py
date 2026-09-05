@@ -5,12 +5,13 @@ from unittest.mock import AsyncMock, patch
 
 from core.alive import Alive
 from core.builtins.bot import Bot
-from core.builtins.converter import converter
-from core.builtins.message.chain import MessageChain, MessageNodes
+from core.builtins.message.chain import MessageChain
 from core.builtins.session.info import FetchedSessionInfo
 from core.database.models import JobQueuesTable, TargetUnionInfo, TargetUnionBind
-from core.queue.client import JobQueueClient
+from core.queue.client import post_message, send_private_msg
 from core.queue.server import JobQueueServer
+from core.queue.contracts import PlatformAPI, ServerAPI
+from core.queue.errors import RpcUnavailableError
 from core.tester import func_case, Tester
 
 
@@ -37,9 +38,11 @@ async def _take_posted() -> list[tuple[str, list[str]]]:
     """
     取出并清空已入队的主动推送任务，返回 ``(目标会话, 下一跳列表)``。
     """
-    rows = await JobQueuesTable.filter(action="post_message")
-    await JobQueuesTable.filter(action="post_message").delete()
-    return [(r.args["session_info"]["target_id"], r.args["session_info"]["next_hops"]) for r in rows]
+    rows = await JobQueuesTable.filter(action=PlatformAPI.post_message.name)
+    await JobQueuesTable.filter(action=PlatformAPI.post_message.name).delete()
+    return [
+        (r.args["payload"]["session_info"]["target_id"], r.args["payload"]["session_info"]["next_hops"]) for r in rows
+    ]
 
 
 async def _test_channel_posts_once_with_next_hops():
@@ -100,16 +103,17 @@ async def _test_all_offline_posts_nothing():
         Alive.values.update(alive)
 
 
-async def _test_add_job_gives_up_on_offline_client():
+async def _test_rpc_rejects_offline_client():
     """测试队列 - 目标客户端掉线时当场失败，而不是永久等下去"""
     alive = Alive.values.copy()
     try:
         Alive.values.clear()
-        # wait=True 所等待的 Event 不会再被置位，若不提前拦截将使整条发送路径永久阻塞。
-        got = await JobQueueServer.add_job("POSTD", "send_message", {}, wait=True)
-        if got != {}:
-            return False
-        return await JobQueuesTable.filter(action="send_message").count() == 0
+        # 离线目的地须当场抛出错误，不创建无人消费的请求或结果等待者。
+        try:
+            await JobQueueServer.call("POSTD", PlatformAPI.send_message.name, {})
+        except RpcUnavailableError:
+            return not await JobQueuesTable.filter(action=PlatformAPI.send_message.name).exists()
+        return False
 
     except Exception:
         return False
@@ -121,36 +125,24 @@ async def _test_add_job_gives_up_on_offline_client():
 async def _test_post_exception_uses_next_hop():
     session = SimpleNamespace(target_id="POSTE1|Group|a", next_hops=["POSTE2|Group|b"])
     context = SimpleNamespace(send_message=AsyncMock(side_effect=RuntimeError("platform failed")))
-    add_job = AsyncMock()
-    message = converter.unstructure(MessageChain.assign("hello"), MessageChain | MessageNodes)
-    args = {"message": message, "module_name": "wiki"}
+    next_hop = AsyncMock()
+    message = MessageChain.assign("hello")
     with (
-        patch("core.queue.client.get_session", new=AsyncMock(return_value=(session, None, context, args))),
-        patch.object(JobQueueClient, "add_job", new=add_job),
+        patch("core.queue.client.resolve_context", new=AsyncMock(return_value=context)),
+        patch.object(ServerAPI.post_next_hop, "submit", new=next_hop),
     ):
-        result = await JobQueueClient.queue_actions["post_message"](SimpleNamespace(), {})
-    return (
-        result == {"message_id": []}
-        and add_job.await_count == 1
-        and add_job.await_args.args[:2] == ("Server", "post_next_hop")
-        and add_job.await_args.args[2]
-        == {
-            "next_hops": ["POSTE2|Group|b"],
-            "message": message,
-            "module_name": "wiki",
-        }
-        and add_job.await_args.kwargs == {"wait": False}
-    )
+        result = await post_message(session, message, "wiki")
+    next_hop.assert_awaited_once_with(["POSTE2|Group|b"], message, "wiki")
+    return result == []
 
 
 async def _test_private_exception_returns_empty():
     session = SimpleNamespace(target_id="POSTF|Group|a")
     context = SimpleNamespace(send_private_msg=AsyncMock(side_effect=RuntimeError("platform failed")))
-    message = converter.unstructure(MessageChain.assign("hello"), MessageChain | MessageNodes)
-    args = {"user_id": "POSTF|user", "message": message}
-    with patch("core.queue.client.get_session", new=AsyncMock(return_value=(session, None, context, args))):
-        result = await JobQueueClient.queue_actions["send_private_message"](SimpleNamespace(), {})
-    return result == {"message_id": []}
+    message = MessageChain.assign("hello")
+    with patch("core.queue.client.resolve_context", new=AsyncMock(return_value=context)):
+        result = await send_private_msg(session, "POSTF|user", message)
+    return result == []
 
 
 @func_case
@@ -159,7 +151,7 @@ async def test_post_message(tester: Tester):
     await tester.test(_test_channel_posts_once_with_next_hops, "同通道只推一次测试")
     await tester.test(_test_offline_client_skipped, "掉线客户端避让测试")
     await tester.test(_test_all_offline_posts_nothing, "全部掉线放弃推送测试")
-    await tester.test(_test_add_job_gives_up_on_offline_client, "掉线时不入队测试")
+    await tester.test(_test_rpc_rejects_offline_client, "掉线时不入队测试")
     await tester.test(_test_post_exception_uses_next_hop, "平台异常时主动推送继续下一跳测试")
     await tester.test(_test_private_exception_returns_empty, "平台异常时私信返回空消息 ID 测试")
 

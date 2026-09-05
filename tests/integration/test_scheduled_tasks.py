@@ -15,6 +15,7 @@
 from core.alive import Alive
 from core.constants.path import cache_path
 from core.database.models import JobQueuesTable
+from core.queue.contracts import PlatformAPI
 from core.tester import func_case, Tester
 from core.tester.mock.factory import TestDataFactory
 from core.tester.mock.scheduler import (
@@ -38,7 +39,7 @@ async def _subscribe(module_name: str):
 
 
 async def _posted_count() -> int:
-    return await JobQueuesTable.filter(action="post_message").count()
+    return await JobQueuesTable.filter(action=PlatformAPI.post_message.name).count()
 
 
 async def _reset_queue():

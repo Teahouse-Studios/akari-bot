@@ -6,10 +6,10 @@ from bots.discord.features import features as discord_features
 from bots.kook.features import features as kook_features
 from bots.qqbot.context import QQBotContextManager
 from bots.qqbot.features import features as qqbot_features, guild_features
-from core.builtins.converter import converter
+from core.builtins.bot import Bot
 from core.builtins.session.info import SessionInfo
 from core.queue.client import JobQueueClient
-from core.queue.server import JobQueueServer
+from core.queue.contracts import PlatformAPI
 from core.tester import Tester, func_case
 
 
@@ -30,31 +30,32 @@ async def _test_server_queue_forwarding():
     )
     captured = []
 
-    async def add_job(target_client, action, args, wait=True):
-        captured.append((target_client, action, args, wait))
-        return {"success": True}
+    class Peer:
+        @staticmethod
+        async def call(target, method, payload, timeout=None):
+            captured.append((target, method, payload, True))
+            return None
 
-    with patch.object(JobQueueServer, "add_job", new=add_job):
-        grant = await JobQueueServer.client_grant_permission_group(
-            session,
-            ["Discord|Client|1", "Discord|Client|2"],
-            ["10", "20"],
-            "test",
-            wait=True,
-        )
-        revoke = await JobQueueServer.client_revoke_permission_group(session, "Discord|Client|1", "10")
+        @staticmethod
+        async def submit(target, method, payload, timeout=None):
+            captured.append((target, method, payload, False))
+            return "task-id"
 
-    grant_args = captured[0][2]
+    grant = await PlatformAPI.grant_permission_group.using(Peer)(
+        session, ["Discord|Client|1", "Discord|Client|2"], ["10", "20"], "test"
+    )
+    revoke = await PlatformAPI.revoke_permission_group.using(Peer).submit(session, "Discord|Client|1", "10")
+    grant_args = PlatformAPI.grant_permission_group.decode_arguments(captured[0][2]).arguments
     return (
-        grant == {"success": True}
-        and revoke == {"success": True}
-        and captured[0][0:2] == ("Discord", "grant_permission_group")
+        grant is None
+        and revoke == "task-id"
+        and captured[0][0:2] == ("Discord", PlatformAPI.grant_permission_group.name)
         and captured[0][3] is True
         and grant_args["user_id"] == ["Discord|Client|1", "Discord|Client|2"]
         and grant_args["permission_group_id"] == ["10", "20"]
         and grant_args["reason"] == "test"
-        and converter.structure(grant_args["session_info"], SessionInfo).support_permission_group is False
-        and captured[1][0:2] == ("Discord", "revoke_permission_group")
+        and grant_args["session_info"].support_permission_group is False
+        and captured[1][0:2] == ("Discord", PlatformAPI.revoke_permission_group.name)
         and captured[1][3] is False
     )
 
@@ -66,36 +67,27 @@ async def _test_client_queue_actions():
         client_name="Discord",
     )
     context = SimpleNamespace(
-        grant_permission_group=AsyncMock(),
-        revoke_permission_group=AsyncMock(),
+        grant_permission_group=AsyncMock(return_value=None),
+        revoke_permission_group=AsyncMock(return_value=None),
     )
-    get_session = AsyncMock(
-        side_effect=lambda args: (session, None, context, args),
-    )
-    args = {
-        "session_info": converter.unstructure(session),
-        "user_id": ["Discord|Client|1"],
-        "permission_group_id": ["10", "20"],
-        "reason": "test",
-    }
+    with (
+        patch.object(Bot, "ContextSlots", [context]),
+        patch.object(SessionInfo, "refresh_info", new=AsyncMock()),
+    ):
+        grant = await JobQueueClient.handlers[PlatformAPI.grant_permission_group.name](
+            PlatformAPI.grant_permission_group.encode_arguments(session, ["Discord|Client|1"], ["10", "20"], "test")
+        )
+        revoke = await JobQueueClient.handlers[PlatformAPI.revoke_permission_group.name](
+            PlatformAPI.revoke_permission_group.encode_arguments(session, ["Discord|Client|1"], ["10", "20"], "test")
+        )
 
-    with patch("core.queue.client.get_session", new=get_session):
-        grant = await JobQueueClient.queue_actions["grant_permission_group"](SimpleNamespace(), args)
-        revoke = await JobQueueClient.queue_actions["revoke_permission_group"](SimpleNamespace(), args)
-
-    context.grant_permission_group.assert_awaited_once_with(
-        session,
-        ["Discord|Client|1"],
-        ["10", "20"],
-        "test",
-    )
-    context.revoke_permission_group.assert_awaited_once_with(
-        session,
-        ["Discord|Client|1"],
-        ["10", "20"],
-        "test",
-    )
-    return grant == {"success": True} and revoke == {"success": True}
+    for method in (context.grant_permission_group, context.revoke_permission_group):
+        assert method.await_count == 1
+        forwarded, *arguments = method.await_args.args
+        assert isinstance(forwarded, SessionInfo)
+        assert forwarded.target_id == session.target_id
+        assert arguments == [["Discord|Client|1"], ["10", "20"], "test"]
+    return grant is None and revoke is None
 
 
 async def _test_discord_permission_groups():

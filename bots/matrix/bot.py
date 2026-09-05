@@ -19,7 +19,7 @@ from core.builtins.utils import command_prefix
 from core.client.init import client_cleanup, client_init
 from core.config.base import CoreConfig
 from core.logger import Logger
-from core.queue.client import JobQueueClient
+from core.queue.contracts import ServerAPI
 
 Bot.register_bot(client_name=client_name)
 
@@ -343,7 +343,7 @@ async def _run_client():
     await client_init(target_prefix_list, sender_prefix_list)
 
     Logger.info("starting sync loop...")
-    version = await JobQueueClient.get_bot_version()
+    version = await ServerAPI.get_bot_version()
     await matrix_bot.set_presence("online", f"AkariBot {version}")
     await matrix_bot.sync_forever(timeout=30000, full_state=False)
     Logger.info("sync loop stopped.")

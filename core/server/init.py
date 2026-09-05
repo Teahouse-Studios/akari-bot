@@ -140,7 +140,7 @@ async def load_prompt(locale_load_error, timeout: float | None = None) -> None:
     清理缓存文件。
 
     保活表随 server 进程内存一并清空，重启后须等目标客户端重新上报保活方能投递提示，
-    否则 `JobQueueServer.add_job` 会以「客户端掉线」为由将其丢弃。
+    否则平台 RPC 会因客户端尚未上线而失败。
 
     :param locale_load_error: 语言文件加载过程中产生的错误信息
     :param timeout: 等待目标客户端上线的秒数上限，默认为 `RESTART_PROMPT_TIMEOUT`

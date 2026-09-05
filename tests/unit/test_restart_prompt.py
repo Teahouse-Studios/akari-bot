@@ -1,7 +1,7 @@
 """core.server.init 单元测试 - 重启提示的送达（需要数据库）。
 
 server 进程重启后 `Alive` 保活表随进程内存一并清空，须等目标客户端重新上报保活
-才能投递重启提示，否则 `JobQueueServer.add_job` 会以「客户端掉线」为由将其丢弃。
+才能投递重启提示，否则 RPC 会以「客户端掉线」为由拒绝请求。
 """
 
 import asyncio
@@ -14,6 +14,7 @@ from core.builtins.session.info import SessionInfo
 from core.constants import PrivateAssets
 from core.database.models import JobQueuesTable
 from core.server.init import load_prompt
+from core.queue.contracts import PlatformAPI
 from core.tester import func_case, Tester
 
 
@@ -36,12 +37,12 @@ async def _write_restart_cache(client: str) -> None:
 
 async def _prompt_sent() -> bool:
     """重启提示是否已入队。"""
-    return await JobQueuesTable.filter(action="send_message").exists()
+    return await JobQueuesTable.filter(action=PlatformAPI.send_message.name).exists()
 
 
 async def _reset(client: str) -> None:
     Alive.values.clear()
-    await JobQueuesTable.filter(action="send_message").delete()
+    await JobQueuesTable.filter(action=PlatformAPI.send_message.name).delete()
     await _write_restart_cache(client)
 
 
@@ -56,7 +57,7 @@ async def _test_waits_for_client_to_come_online():
 
     server 与各 bot 子进程一同重启，`load_prompt` 执行时保活表必然为空：
     保活信号须经 `check_job_queue` 轮询取回才会落到 `Alive`，而该轮询启动于
-    `load_prompt` 之后。若不等待即发送，提示会被 `add_job` 的掉线检查静默丢弃。
+    `load_prompt` 之后。若不等待即发送，RPC 的掉线检查会拒绝提示请求。
     """
     client = "RESTARTA"
     alive = Alive.values.copy()

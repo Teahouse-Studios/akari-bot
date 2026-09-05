@@ -15,7 +15,7 @@ import core.server.terminate as server_terminate
 import core.utils.web_render as web_render_module
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
-from core.exports import exports
+from core.queue.contracts import ServerAPI
 from core.tester import Tester, func_case
 
 
@@ -244,8 +244,8 @@ async def _test_client_queue_poller_recovers_from_transient_failure() -> bool:
             patch.object(client_init_module, "init_db", new=AsyncMock(return_value=True)),
             patch.object(client_init_module.JobQueueClient, "check_job_queue", new=flaky_queue_poller),
             patch.object(
-                client_init_module.JobQueueClient,
-                "send_keepalive_signal_to_server",
+                ServerAPI.keepalive,
+                "submit",
                 new=AsyncMock(),
             ),
             patch.object(client_init_module.Bot, "ContextSlots", [SimpleNamespace(features=Features())]),
@@ -293,9 +293,7 @@ async def _test_message_background_failure_is_observed_and_cleaned() -> bool:
             raise RuntimeError("queue write failed")
 
     old_slots = bot_module.Bot.ContextSlots
-    old_queue_client = exports.get("JobQueueClient")
     bot_module.Bot.ContextSlots = [FakeContextManager()]
-    exports["JobQueueClient"] = FailingQueueClient
     session = SessionInfo(
         target_id="Lifecycle|Group|1",
         target_from="Lifecycle|Group",
@@ -306,7 +304,10 @@ async def _test_message_background_failure_is_observed_and_cleaned() -> bool:
         ctx_slot=0,
     )
     try:
-        with patch.object(bot_module.Logger, "exception") as log_exception:
+        with (
+            patch.object(ServerAPI, "receive_message", new=FailingQueueClient.send_message_to_server),
+            patch.object(bot_module.Logger, "exception") as log_exception,
+        ):
             await bot_module.Bot.process_message(session, object())
             await asyncio.wait_for(deleted.wait(), timeout=1)
             await asyncio.sleep(0)
@@ -319,10 +320,6 @@ async def _test_message_background_failure_is_observed_and_cleaned() -> bool:
                 task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)
         bot_module.Bot.ContextSlots = old_slots
-        if old_queue_client is None:
-            exports.pop("JobQueueClient", None)
-        else:
-            exports["JobQueueClient"] = old_queue_client
 
 
 async def _test_shutdown_waits_for_inflight_queue_handlers() -> bool:

@@ -12,6 +12,7 @@ from core.builtins.session.internal import MessageSession
 from core.builtins.utils import command_prefix
 from core.constants.exceptions import SessionFinished
 from core.database.models import SenderUnionInfo, TargetUnionInfo
+from core.queue.errors import RpcRemoteError
 from core.tester import Tester, func_case
 from modules.captcha import (
     CAPTCHA_BUTTON_ROWS,
@@ -101,7 +102,7 @@ async def _test_captcha_event_and_private_token():
         sender_id=sender_id,
         sender_from="QQBot",
     )
-    restrict = AsyncMock(return_value={"success": True})
+    restrict = AsyncMock(return_value=None)
     sent_messages = []
 
     async def send_message(_self, message, **_kwargs):
@@ -150,7 +151,7 @@ async def _test_captcha_event_and_private_token():
     )
     msg = MessageSession(session_info=private_session)
     origin = AsyncMock()
-    origin.unrestrict_member.return_value = {"success": True}
+    origin.unrestrict_member.return_value = None
     responses = []
 
     async def finish(_self, message=None, **_kwargs):
@@ -202,7 +203,7 @@ async def _test_wrong_button_marks_challenge_failed():
     with (
         patch("modules.captcha.CoreConfig", new=SimpleNamespace(use_emote=False)),
         patch("core.builtins.bot.Bot.fetch_target", new=AsyncMock(return_value=group_session)),
-        patch.object(MessageSession, "restrict_member", new=AsyncMock(return_value={"success": True})),
+        patch.object(MessageSession, "restrict_member", new=AsyncMock(return_value=None)),
         patch.object(MessageSession, "send_message", new=send_message),
     ):
         await member_joined(event)
@@ -266,7 +267,7 @@ async def _test_preparing_challenge_resumes_after_restart():
     async def send_message(_self, _message, **_kwargs):
         return SimpleNamespace(message_id=["verification-message"])
 
-    restrict = AsyncMock(return_value={"success": True})
+    restrict = AsyncMock(return_value=None)
     with (
         patch("modules.captcha.CoreConfig", new=SimpleNamespace(use_emote=False)),
         patch("core.builtins.bot.Bot.fetch_target", new=AsyncMock(return_value=session)),
@@ -304,7 +305,7 @@ async def _test_delivery_failure_marks_error_after_successful_unrestrict():
         sender_id=sender_id,
         sender_from="QQBot",
     )
-    unrestrict = AsyncMock(return_value={"success": True})
+    unrestrict = AsyncMock(return_value=None)
 
     async def send_message(_self, _message, **_kwargs):
         return SimpleNamespace(message_id=[])
@@ -312,7 +313,7 @@ async def _test_delivery_failure_marks_error_after_successful_unrestrict():
     with (
         patch("modules.captcha.CoreConfig", new=SimpleNamespace(use_emote=False)),
         patch("core.builtins.bot.Bot.fetch_target", new=AsyncMock(return_value=session)),
-        patch.object(MessageSession, "restrict_member", new=AsyncMock(return_value={"success": True})),
+        patch.object(MessageSession, "restrict_member", new=AsyncMock(return_value=None)),
         patch.object(MessageSession, "unrestrict_member", new=unrestrict),
         patch.object(MessageSession, "send_message", new=send_message),
     ):
@@ -343,7 +344,7 @@ async def _test_delivery_failure_keeps_active_status_when_unrestrict_fails():
         sender_id=sender_id,
         sender_from="QQBot",
     )
-    unrestrict = AsyncMock(return_value={"success": False})
+    unrestrict = AsyncMock(side_effect=RpcRemoteError("platform rejected unrestrict"))
 
     async def send_message(_self, _message, **_kwargs):
         return SimpleNamespace(message_id=[])
@@ -351,7 +352,7 @@ async def _test_delivery_failure_keeps_active_status_when_unrestrict_fails():
     with (
         patch("modules.captcha.CoreConfig", new=SimpleNamespace(use_emote=False)),
         patch("core.builtins.bot.Bot.fetch_target", new=AsyncMock(return_value=session)),
-        patch.object(MessageSession, "restrict_member", new=AsyncMock(return_value={"success": True})),
+        patch.object(MessageSession, "restrict_member", new=AsyncMock(return_value=None)),
         patch.object(MessageSession, "unrestrict_member", new=unrestrict),
         patch.object(MessageSession, "send_message", new=send_message),
     ):
@@ -397,7 +398,7 @@ async def _test_emote_captcha_uses_localized_buttons():
     with (
         patch("modules.captcha.CoreConfig", new=SimpleNamespace(use_emote=True)),
         patch("core.builtins.bot.Bot.fetch_target", new=AsyncMock(return_value=session)),
-        patch.object(MessageSession, "restrict_member", new=AsyncMock(return_value={"success": True})),
+        patch.object(MessageSession, "restrict_member", new=AsyncMock(return_value=None)),
         patch.object(MessageSession, "send_message", new=send_message),
     ):
         await member_joined(event)
@@ -479,7 +480,7 @@ async def _test_emote_captcha_restores_markdown_after_send_error():
     with (
         patch("modules.captcha.CoreConfig", new=SimpleNamespace(use_emote=True)),
         patch("core.builtins.bot.Bot.fetch_target", new=AsyncMock(return_value=session)),
-        patch.object(MessageSession, "restrict_member", new=AsyncMock(return_value={"success": True})),
+        patch.object(MessageSession, "restrict_member", new=AsyncMock(return_value=None)),
         patch.object(MessageSession, "send_message", new=AsyncMock(side_effect=RuntimeError("send failed"))),
     ):
         try:
@@ -757,7 +758,7 @@ async def _test_sender_unbind_during_member_join_preserves_challenge_migration()
 
     async def restrict_member(_self, _user_id, _duration=None, **_kwargs):
         result["split"] = await sender.unbind_id(split_id)
-        return {"success": True}
+        return None
 
     async def send_message(_self, _message, **_kwargs):
         return SimpleNamespace(message_id=["verification-message"])
@@ -802,7 +803,7 @@ async def _test_target_unbind_during_member_join_preserves_challenge_migration()
 
     async def restrict_member(_self, _user_id, _duration=None, **_kwargs):
         result["split"] = await target.unbind_id(split_id)
-        return {"success": True}
+        return None
 
     async def send_message(_self, _message, **_kwargs):
         return SimpleNamespace(message_id=["verification-message"])
@@ -854,7 +855,7 @@ async def _test_sender_unbind_during_token_moves_trust_to_current_union():
 
     async def unrestrict_member(_user_id, **_kwargs):
         result["split"] = await sender.unbind_id(split_id)
-        return {"success": True}
+        return None
 
     async def finish(_self, message=None, **_kwargs):
         result["finish"] = message.key if isinstance(message, I18NContextElement) else None
@@ -923,7 +924,7 @@ async def _test_target_unbind_during_token_moves_trust_to_current_union():
 
     async def unrestrict_member(_user_id, **_kwargs):
         result["split"] = await target.unbind_id(split_id)
-        return {"success": True}
+        return None
 
     async def finish(_self, message=None, **_kwargs):
         result["finish"] = message.key if isinstance(message, I18NContextElement) else None
@@ -982,7 +983,7 @@ async def _test_token_does_not_report_success_when_trust_fails():
     )
     msg = MessageSession(session_info=session)
     origin = AsyncMock()
-    origin.unrestrict_member.return_value = {"success": True}
+    origin.unrestrict_member.return_value = None
     result = {}
 
     async def finish(_self, message=None, **_kwargs):

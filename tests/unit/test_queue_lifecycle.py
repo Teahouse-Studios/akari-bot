@@ -6,6 +6,8 @@ from unittest.mock import AsyncMock, patch
 
 from core.database.models import JobQueuesTable
 from core.queue.base import JobQueueBase
+from core.queue.codec import decode
+from core.queue.contracts import ServerAPI
 from core.queue.server import JobQueueServer
 from core.exports import exports
 from core.tester import func_case, Tester
@@ -53,22 +55,21 @@ async def _test_cancelled_processing_becomes_failed():
     """测试处理取消 - 任务进入 failed 终态，避免永久卡在 processing 或重复执行副作用。"""
 
     class AuditQueue(JobQueueBase):
-        queue_actions = {}
+        pass
 
     started = asyncio.Event()
     never = asyncio.Event()
 
-    @AuditQueue.action("cancel-audit")
-    async def _handler(tsk, args):
+    @AuditQueue.register("cancel-audit")
+    async def _handler(args):
         started.set()
         await never.wait()
         return {"success": True}
 
-    task_id = await JobQueuesTable.add_task("QUEUE-AUDIT", "cancel-audit", {})
-    row = await JobQueuesTable.get(task_id=task_id)
-    await row.set_status("processing")
+    task_id = await AuditQueue.submit("QUEUE-CANCEL-AUDIT", "cancel-audit", {})
+    (request,) = await AuditQueue.transport.receive(["QUEUE-CANCEL-AUDIT"])
 
-    processing = asyncio.create_task(AuditQueue._process_task(row))
+    processing = asyncio.create_task(AuditQueue._process_task(request))
     await asyncio.wait_for(started.wait(), timeout=1)
     processing.cancel()
     try:
@@ -77,29 +78,28 @@ async def _test_cancelled_processing_becomes_failed():
         pass
 
     refreshed = await JobQueuesTable.get(task_id=task_id)
-    return refreshed.status == "failed" and refreshed.result == {}
+    return refreshed.status == "failed" and refreshed.result["error"]["code"] == "cancelled"
 
 
 async def _test_completed_task_persists_for_waiter():
     """测试处理完成 - 结果行保留到定时清理，等待方短暂离线后仍能读取。"""
 
     class AuditQueue(JobQueueBase):
-        queue_actions = {}
+        pass
 
-    @AuditQueue.action("done-audit")
-    async def _handler(tsk, args):
+    @AuditQueue.register("done-audit")
+    async def _handler(args):
         return {"value": 1}
 
-    task_id = await JobQueuesTable.add_task("QUEUE-AUDIT", "done-audit", {})
-    row = await JobQueuesTable.get(task_id=task_id)
-    await row.set_status("processing")
+    task_id = await AuditQueue.submit("QUEUE-DONE-AUDIT", "done-audit", {})
+    (request,) = await AuditQueue.transport.receive(["QUEUE-DONE-AUDIT"])
 
     # 旧实现会在完成后 sleep(5) 再删除结果行；替换 sleep 使失败能够立即复现。
     with patch("core.queue.base.asyncio.sleep", new=AsyncMock()):
-        await AuditQueue._process_task(row)
+        await AuditQueue._process_task(request)
 
     refreshed = await JobQueuesTable.get_or_none(task_id=task_id)
-    return refreshed is not None and refreshed.status == "done" and refreshed.result == {"value": 1}
+    return refreshed is not None and refreshed.status == "done" and refreshed.result["value"] == {"value": 1}
 
 
 async def _test_concurrent_consumers_claim_once():
@@ -107,17 +107,16 @@ async def _test_concurrent_consumers_claim_once():
 
     class AuditQueue(JobQueueBase):
         name = "QUEUE-AUDIT-INTERNAL"
-        queue_actions = {}
 
     handler_calls = 0
 
-    @AuditQueue.action("claim-audit")
-    async def _handler(tsk, args):
+    @AuditQueue.register("claim-audit")
+    async def _handler(args):
         nonlocal handler_calls
         handler_calls += 1
         return {"calls": handler_calls}
 
-    task_id = await JobQueuesTable.add_task("QUEUE-AUDIT-CLAIM", "claim-audit", {})
+    task_id = await AuditQueue.submit("QUEUE-AUDIT-CLAIM", "claim-audit", {})
     readers = 0
     both_read = asyncio.Event()
 
@@ -132,8 +131,8 @@ async def _test_concurrent_consumers_claim_once():
 
     scheduled = []
 
-    def _capture_task(coro):
-        task = asyncio.get_running_loop().create_task(coro)
+    def _capture_task(coro, **kwargs):
+        task = asyncio.get_running_loop().create_task(coro, **kwargs)
         scheduled.append(task)
         return task
 
@@ -153,16 +152,19 @@ async def _test_concurrent_consumers_claim_once():
 
 async def _test_trigger_hook_result_is_not_overwritten():
     """trigger_hook 应由统一处理流程写回一次，不能先写真实值又被空字典覆盖。"""
-    task_id = await JobQueuesTable.add_task("QUEUE-AUDIT", "trigger_hook", {})
-    row = await JobQueuesTable.get(task_id=task_id)
-    await row.set_status("processing")
+    task_id = await JobQueueBase.submit(
+        "QUEUE-HOOK-AUDIT", ServerAPI.trigger_hook.name, ServerAPI.trigger_hook.encode_arguments("example")
+    )
+    (request,) = await JobQueueServer.transport.receive(["QUEUE-HOOK-AUDIT"])
     expected = {"hook": "value"}
 
     with patch.object(exports["Bot"].Hook, "trigger", new=AsyncMock(return_value=expected)):
-        await JobQueueServer._process_task(row)
+        await JobQueueServer._process_task(request)
 
     refreshed = await JobQueuesTable.get(task_id=task_id)
-    return refreshed.status == "done" and refreshed.result == {"result": expected}
+    return (
+        refreshed.status == "done" and decode(refreshed.result["value"], ServerAPI.trigger_hook.result_type) == expected
+    )
 
 
 @func_case

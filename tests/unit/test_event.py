@@ -1,6 +1,5 @@
 """模块事件注册、事件上下文及跨进程分发单元测试。"""
 
-from types import SimpleNamespace
 from typing import Literal, get_args, get_origin, get_type_hints
 from unittest.mock import AsyncMock, patch
 
@@ -10,8 +9,8 @@ from core.builtins.session.info import EventInfo
 from core.component import Bind
 from core.database.models import SenderUnionInfo, TargetUnionInfo
 from core.loader import ModulesManager
-from core.queue.client import JobQueueClient
-from core.queue.server import JobQueueServer
+from core.queue.contracts import ServerAPI
+from core.queue.server import receive_event
 from core.tester import Tester, func_case
 from core.types import Module
 
@@ -196,19 +195,19 @@ async def _test_client_event_conversion():
     )
     captured = {}
 
-    async def add_job(target_client, action, args, wait=True):
-        captured.update(target_client=target_client, action=action, args=args, wait=wait)
-        return "task-id"
+    class Peer:
+        @staticmethod
+        async def submit(target_client, method, payload, timeout=None):
+            captured.update(target_client=target_client, action=method, args=payload)
+            return "task-id"
 
-    with patch.object(JobQueueClient, "add_job", new=add_job):
-        result = await JobQueueClient.send_event_to_server(event)
+    result = await ServerAPI.receive_event.using(Peer).submit(event)
 
     serialized = captured["args"]["event_info"]
     return (
         result == "task-id"
         and captured["target_client"] == "Server"
-        and captured["action"] == "receive_event_from_client"
-        and captured["wait"] is False
+        and captured["action"] == ServerAPI.receive_event.name
         and serialized["event_name"] == "updated"
         and serialized["data"] == {"value": 3}
         and serialized["target_union_info"]["union_id"] == event.target_union_id
@@ -225,7 +224,7 @@ async def _test_bot_process_event():
         target_from="QQBot|Group",
         client_name="QQBot",
     )
-    with patch.object(JobQueueClient, "send_event_to_server", new=send_event):
+    with patch.object(ServerAPI.receive_event, "submit", new=send_event):
         result = await Bot.process_event(event)
 
     send_event.assert_awaited_once_with(event)
@@ -243,16 +242,12 @@ async def _test_server_event_dispatch():
         data={"value": 5},
     )
     dispatch = AsyncMock(return_value=[])
-    handler = JobQueueServer.queue_actions["receive_event_from_client"]
     with patch.object(ModulesManager, "dispatch_event", new=dispatch):
-        result = await handler(
-            SimpleNamespace(),
-            {"event_info": converter.unstructure(event)},
-        )
+        result = await ServerAPI.receive_event.dispatch(receive_event, ServerAPI.receive_event.encode_arguments(event))
 
     dispatched = dispatch.await_args.args[0]
     return (
-        result == {"success": True}
+        result is None
         and isinstance(dispatched, EventInfo)
         and isinstance(dispatched.target_union_info, TargetUnionInfo)
         and isinstance(dispatched.sender_union_info, SenderUnionInfo)

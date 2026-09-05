@@ -1,7 +1,7 @@
 """modules.core.bind 单元测试 - bind start 的私聊与群组分支（需要数据库）。"""
 
 import asyncio
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import modules.core.bind as bind
 from core.utils.union_merge import generate_code
@@ -9,6 +9,7 @@ from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
 from core.constants.exceptions import SessionFinished
 from core.database.models import SenderUnionInfo, TargetUnionInfo
+from core.queue.contracts import PlatformAPI
 from core.tester import func_case, Tester
 
 
@@ -49,8 +50,10 @@ async def _test_private_binds_both_unions():
     try:
         initiator = await _session("BINDA", True)
         entry = _issue_private_code(initiator)
+        send = AsyncMock(return_value=["bind-success"])
         try:
-            with _answer_confirm(True):
+            # 本用例验证真实数据库合并；模拟平台接收最终成功提示。
+            with _answer_confirm(True), patch.object(PlatformAPI, "send_message", new=send):
                 await bind._bind_private(await _session("BINDB", True), entry)
         except SessionFinished:
             pass
@@ -58,7 +61,13 @@ async def _test_private_binds_both_unions():
         # 私聊中的用户身份与私聊场景应同时合并，否则部分数据仍会保留在原组。
         senders = [(await SenderUnionInfo.resolve_union(f"{p}|1")).union_id for p in ("BINDA", "BINDB")]
         targets = [(await TargetUnionInfo.resolve_union(f"{p}|X|1")).union_id for p in ("BINDA", "BINDB")]
-        return senders[0] == senders[1] and targets[0] == targets[1]
+        send.assert_awaited_once()
+        sent_keys = {getattr(element, "key", None) for element in send.await_args.args[1].values}
+        return (
+            senders[0] == senders[1]
+            and targets[0] == targets[1]
+            and {"core.message.bind.self.success", "core.message.bind.target.success"} <= sent_keys
+        )
 
     except Exception:
         return False
