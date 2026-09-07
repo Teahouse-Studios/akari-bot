@@ -228,5 +228,5 @@
     "tos.message.warning.count": "這是第 ${current_warns} 次警告。",
     "tos.message.warning.last": "這是最後一次警告。",
     "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。",
-    "message.url.blocked": "<此連結已被全域阻止清單攔截>"
+    "message.url.blocked": "[此連結已被阻止]"
 }
