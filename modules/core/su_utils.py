@@ -605,7 +605,9 @@ async def _(msg: Bot.MessageSession, target: str):
 upd = module("update", required_superuser=True, base=True, doc=True)
 
 
-async def pull_repo():
+async def pull_repo(force: bool = False):
+    if force:
+        await run_sys_command(["git", "reset", "--hard"], timeout=60)
     returncode, output, error = await run_sys_command(["git", "pull"], timeout=60)
     if returncode != 0:
         return error
@@ -620,15 +622,11 @@ async def update_dependencies():
     return "..." + pip_install[-500:] if len(pip_install) > 500 else pip_install
 
 
-@upd.command("[--force-im-sure-what-i-am-doing] {{I18N:core.help.update}}")
+@upd.command("[--force] {{I18N:core.help.update}}", options_desc={"--force": "{I18N:core.help.update.option.force}"})
 async def _(msg: Bot.MessageSession):
-    if msg.parsed_msg and msg.parsed_msg.get("--force-im-sure-what-i-am-doing", False) and not Bot.Info.binary_mode:
-        await pull_repo()
-        await update_dependencies()
-        return
     if not Bot.Info.binary_mode:
         if Bot.Info.version and Bot.Info.version.startswith("git:"):
-            pull_repo_result = await pull_repo()
+            pull_repo_result = await pull_repo(bool(msg.parsed_msg and msg.parsed_msg.get("--force", False)))
             if pull_repo_result:
                 await msg.send_message(Plain(pull_repo_result, disable_joke=True))
 
@@ -663,20 +661,21 @@ async def wait_for_restart(msg: Bot.MessageSession):
         await msg.send_message(I18NContext("core.message.restart.timeout"))
 
 
-@rst.command("[--force-im-sure-what-i-am-doing] {{I18N:core.help.restart}}")
+@rst.command("[--force] {{I18N:core.help.restart}}", options_desc={"--force": "{I18N:core.help.restart.force}"})
 async def _(msg: Bot.MessageSession):
-    if msg.parsed_msg and msg.parsed_msg.get("--force-im-sure-what-i-am-doing", False):
-        await restart()
-    try:
-        if not await msg.wait_confirm(append_instruction=False):
-            await msg.finish()
-        else:
-            if not restart_time:
-                restart_time.append(time.time())
-            await wait_for_restart(msg)
-    except Exception:
-        Logger.critical("Failed to send restart confirmation message, perhaps bug? Force restart...")
-        Logger.critical(traceback.format_exc())
+    if msg.parsed_msg and msg.parsed_msg.get("--force", False):
+        await msg.send_message(I18NContext("core.message.restart.restarting"))
+    else:
+        try:
+            if not await msg.wait_confirm(append_instruction=False):
+                await msg.finish()
+            else:
+                if not restart_time:
+                    restart_time.append(time.time())
+                await wait_for_restart(msg)
+        except Exception:
+            Logger.critical("Failed to send restart confirmation message, perhaps bug? Force restart...")
+            Logger.critical(traceback.format_exc())
     try:
         restart_time.append(time.time())
         write_restart_cache(msg)
@@ -697,23 +696,27 @@ upds = module(
 )
 
 
-@upds.command("[--force-im-sure-what-i-am-doing] {{I18N:core.help.update-restart}}")
+@upds.command(
+    "[--force] {{I18N:core.help.update&restart}}",
+    options_desc={"--force": "{I18N:core.help.update&restart.option.force}"},
+)
 async def _(msg: Bot.MessageSession):
-    if msg.parsed_msg and msg.parsed_msg.get("--force-im-sure-what-i-am-doing", False):
-        if Bot.Info.version and Bot.Info.version.startswith("git:"):
-            await pull_repo()
-        await restart()
+    force = bool(msg.parsed_msg and msg.parsed_msg.get("--force", False))
+
     if not Bot.Info.binary_mode:
-        try:
-            if not await msg.wait_confirm(append_instruction=False):
-                await msg.finish()
-            else:
-                if not restart_time:
-                    restart_time.append(time.time())
-                await wait_for_restart(msg)
-        except Exception:
-            Logger.critical("Failed to send restart confirmation message, perhaps bug? Force restart...")
-            Logger.critical(traceback.format_exc())
+        if force:
+            await msg.send_message(I18NContext("core.message.restart.restarting"))
+        else:
+            try:
+                if not await msg.wait_confirm(append_instruction=False):
+                    await msg.finish()
+                else:
+                    if not restart_time:
+                        restart_time.append(time.time())
+                    await wait_for_restart(msg)
+            except Exception:
+                Logger.critical("Failed to send restart confirmation message, perhaps bug? Force restart...")
+                Logger.critical(traceback.format_exc())
         try:
             restart_time.append(time.time())
             write_restart_cache(msg)
@@ -722,7 +725,7 @@ async def _(msg: Bot.MessageSession):
             Logger.critical(traceback.format_exc())
         if Bot.Info.version and Bot.Info.version.startswith("git:"):
             try:
-                pull_repo_result = await pull_repo()
+                pull_repo_result = await pull_repo(force)
                 if pull_repo_result:
                     await msg.send_message(Plain(pull_repo_result, disable_joke=True))
             except Exception:
@@ -789,7 +792,7 @@ async def _(msg: Bot.MessageSession):
 echo = module("echo", required_superuser=True, base=True, doc=True)
 
 
-@echo.command("{{I18N:core.help.echo}}")
+@echo.command()
 async def _(msg: Bot.MessageSession):
     dis = await msg.wait_next_message(I18NContext("core.message.echo.prompt"), delete=True, append_instruction=False)
     if dis:
@@ -800,7 +803,7 @@ async def _(msg: Bot.MessageSession):
             raise NoReportException(str(e))
 
 
-@echo.command("[<display_msg>] {{I18N:core.help.echo.display}}")
+@echo.command("[<display_msg>] {{I18N:core.help.echo}}")
 async def _(msg: Bot.MessageSession, dis: Param("<display_msg>", str)):
     try:
         await msg.finish(Plain(dis, allow_parse=False))

@@ -554,6 +554,10 @@ async def _(msg: Bot.MessageSession, module: str):
 
             if not module_._db_load:
                 await msg.finish(I18NContext("parser.module.unloaded", module=help_name))
+            if (module_.required_superuser and not is_superuser) or (
+                module_.required_base_superuser and not is_base_superuser
+            ):
+                await msg.finish(I18NContext("core.message.help.not_found"))
             if module_.desc:
                 desc = msg.session_info.locale.t_str(module_.desc)
                 mdocs.append(desc)
