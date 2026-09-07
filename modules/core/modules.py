@@ -118,7 +118,7 @@ async def config_modules(msg: Bot.MessageSession):
                                     recommend_modules_list.append(r)
         if await msg.session_info.target_union_info.config_module(enable_list, True):
             for x in enable_list:
-                if x in enabled_modules_list:
+                if not msg.session_info.require_enable_modules or x in enabled_modules_list:
                     msglist.append(I18NContext("core.message.module.enable.already", module=x))
                 else:
                     msglist.append(I18NContext("core.message.module.enable.success", module=x))
@@ -173,7 +173,9 @@ async def config_modules(msg: Bot.MessageSession):
 
         if await msg.session_info.target_union_info.config_module(disable_list, False):
             for x in disable_list:
-                if x not in enabled_modules_list:
+                if not msg.session_info.require_enable_modules:
+                    msglist.append(I18NContext("core.message.module.disable.failed", module=x))
+                elif x not in enabled_modules_list:
                     msglist.append(I18NContext("core.message.module.disable.already", module=x))
                 else:
                     msglist.append(I18NContext("core.message.module.disable.success", module=x))
