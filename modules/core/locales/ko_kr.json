@@ -6,7 +6,7 @@
     "core.help.admin.ban.list": "봇 사용이 제한된 모든 회원을 확인합니다.",
     "core.help.admin.desc": "일부 봇 관리자만 사용할 수 있는 명령어입니다.",
     "core.help.admin.list": "모든 봇 관리자를 확인합니다.",
-    "core.help.admin.remove": "해당 회원의 봇 관리자 권한을 해제합니다.",
+    "core.help.admin.remove": "멤버의 봇 관리자 권한을 삭제합니다.",
     "core.help.admin.unban": "회원의 봇 사용 제한을 해제합니다.",
     "core.help.alias.add": "사용자 정의 명령어 별칭을 추가합니다.",
     "core.help.alias.list": "사용자 정의 명령어 별칭 목록을 확인합니다.",
