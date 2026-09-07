@@ -5,7 +5,7 @@ from openai import AsyncOpenAI, APITimeoutError, RateLimitError
 from PIL import Image as PILImage
 
 from core.builtins.bot import Bot
-from core.builtins.message.internal import Image, Plain
+from core.builtins.message.internal import Image, Markdown, Plain
 from modules.ai.config import AiConfig
 from core.constants.exceptions import ExternalException
 from core.utils.dirty_check import check
@@ -102,7 +102,9 @@ async def ask_llm(
     res = await check("\n\n".join(content_pieces), session=session)
     resm = "".join(m["content"] for m in res)
 
-    if session.session_info.support_image:
+    if session.session_info.support_markdown and session.session_info.support_markdown_extension:
+        chain = [Markdown(resm)]
+    elif session.session_info.support_image:
         blocks = parse_markdown(resm)
         chain = []
         for block in blocks:

@@ -115,7 +115,7 @@ def get_module_type_display(module_, locale) -> str:
 
 
 def should_use_markdown_table(msg: Bot.MessageSession, force_image: bool = False, force_legacy: bool = False) -> bool:
-    return not force_image and not force_legacy and msg.session_info.support_markdown_table
+    return not force_image and not force_legacy and msg.session_info.support_markdown_extension
 
 
 def build_clickable_modules(msg: Bot.MessageSession, groups: list[tuple[str, list[str | ModuleListEntry]]]) -> list:

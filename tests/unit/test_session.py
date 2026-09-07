@@ -85,7 +85,7 @@ async def _test_release_context_tolerates_prior_platform_cleanup():
 
 
 async def _test_features_inject_markdown_table():
-    """测试 support_markdown_table 能注入并随会话序列化"""
+    """测试 support_markdown_extension 能注入并随会话序列化"""
     try:
         from core.builtins.session.info import SessionInfo
 
@@ -94,9 +94,9 @@ async def _test_features_inject_markdown_table():
             target_from="TEST|Group",
             client_name="TEST",
             sender_id="TEST|1",
-            features=Features(support_markdown_table=True),
+            features=Features(support_markdown_extension=True),
         )
-        return session_info.support_markdown_table is True
+        return session_info.support_markdown_extension is True
     except Exception:
         return False
 
@@ -3113,7 +3113,7 @@ async def test_features(tester: Tester):
     await tester.test(_test_features_override, "Features.override() 测试")
     await tester.test(_test_features_inject_action_text, "support_action_text 注入测试")
     await tester.test(_test_release_context_tolerates_prior_platform_cleanup, "平台先清理后的上下文释放测试")
-    await tester.test(_test_features_inject_markdown_table, "support_markdown_table 注入测试")
+    await tester.test(_test_features_inject_markdown_table, "support_markdown_extension 注入测试")
     await tester.test(_test_session_refresh_updates_derived_union_state, "SessionInfo 刷新派生状态测试")
     await tester.test(_test_session_refresh_does_not_recreate_deleted_unions, "SessionInfo 刷新不复活已删除 Union")
 
