@@ -6,7 +6,7 @@
     "core.help.admin.ban.list": "ボット利用の制限されているメンバーを表示します。",
     "core.help.admin.desc": "ボット管理者が使用できるコマンド。",
     "core.help.admin.list": "すべてのボット管理者を表示します。",
-    "core.help.admin.remove": "メンバーのボット管理者を解除します。",
+    "core.help.admin.remove": "メンバーのボット管理者権限を削除します。",
     "core.help.admin.unban": "メンバーのボット利用制限を解除します。",
     "core.help.alias.add": "カスタム コマンド エイリアスを追加します。",
     "core.help.alias.list": "カスタム コマンド エイリアスのリストを表示します。",
