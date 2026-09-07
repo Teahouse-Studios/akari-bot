@@ -46,6 +46,7 @@
     "core.help.config.delete": "删除配置项。",
     "core.help.config.get": "读取配置项。",
     "core.help.config.write": "写入配置项。",
+    "core.help.config.write.option.s": "是否为密钥配置项。",
     "core.help.database.exec": "执行 SQL 查询。",
     "core.help.database.field": "查看数据库模型字段。",
     "core.help.database.model": "查看数据库模型列表。",

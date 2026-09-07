@@ -881,7 +881,10 @@ async def _(msg: Bot.MessageSession, k: str, table_name: str | None = None):
     await msg.finish(str(CFGManager.get(k, table_name=table_name)))
 
 
-@cfg_.command("write <k> <v> [<table_name>] [-s] {{I18N:core.help.config.write}}")
+@cfg_.command(
+    "write <k> <v> [<table_name>] [-s] {{I18N:core.help.config.write}}",
+    options_desc={"-s": "{I18N:core.help.config.write.option.s}"},
+)
 async def _(msg: Bot.MessageSession, k: str, v: str, table_name: str | None = None):
     secret = bool(msg.parsed_msg["-s"])
     if v.lower() == "true":
