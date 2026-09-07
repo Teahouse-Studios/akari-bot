@@ -227,5 +227,6 @@
     "tos.message.warning.count": "這是第 ${current_warns} 次警告。",
     "tos.message.warning.last": "這是最後一次警告。",
     "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。",
-    "message.url.blocked": "[此連結已被阻止]"
+    "message.url.blocked": "[此連結已被阻止]",
+    "config.comments.config.schedule_interval_multiplier": "計畫任務觸發器的間隔時間倍數。"
 }
