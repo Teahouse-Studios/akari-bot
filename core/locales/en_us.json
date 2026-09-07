@@ -29,7 +29,7 @@
     "config.comments.config.issue_url": "Issue feedback URL.",
     "config.comments.config.locale_url": "Localized project URL.",
     "config.comments.config.media_compression_threshold": "Media file size threshold. Files exceeding this value will compressed using FFmpeg. Unit: MB.",
-    "config.comments.config.enable_analytics": "Whether to enable built-in statistics features.",
+    "config.comments.config.enable_analytics": "Whether to enable built-in analytics features.",
     "config.comments.config.mention_required": "Whether to force processing of only of messages that mention the bot at the beginning of the message.",
     "config.comments.config.no_confirm": "Whether to execute the command without the sender confirming the message.",
     "config.comments.config.petal_gained_limit": "The maximum number of petals users can get per day.",
@@ -227,5 +227,6 @@
     "tos.message.warning.count": "You have received ${current_warns} warnings.",
     "tos.message.warning.last": "This is the last warning.",
     "tos.message.warning.prompt": "Your account will be blocked if you receive more than ${warn_counts} warnings.",
-    "message.url.blocked": "[LINK HAS BEEN BLOCKED]"
+    "message.url.blocked": "[LINK HAS BEEN BLOCKED]",
+    "config.comments.config.schedule_interval_multiplier": "The interval multiplier for scheduled task triggers."
 }
