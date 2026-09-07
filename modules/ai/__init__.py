@@ -11,7 +11,7 @@ from .setting import llm_api_list, llm_list, llm_su_list
 default_llm = AiConfig.ai_default_llm
 default_llm = default_llm if default_llm in llm_list else None
 
-ai = module("ai", developers=["DoroWolf", "Dianliang233"], desc="{I18N:ai.help.desc}", doc=True, exclude_from="QQBot")
+ai = module("ai", developers=["DoroWolf", "Dianliang233"], desc="{I18N:ai.help.desc}", doc=True)
 
 
 @ai.command(
