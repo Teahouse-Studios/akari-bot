@@ -43,6 +43,7 @@
     "config.comments.config.report_targets": "レポート コンテキスト リスト。ここに入力されたコンテキスト ID がレポートコンテキストとして認識されます。（例：コマンドの実行エラーが発生すると、ボットは対応するコンテキストにエラー情報を送信します）",
     "config.comments.config.retired_clients": "廃止されたクライアントとそのデータ移行先を、「<移行元クライアント> -> <移行先クライアント>」（例：「QQ -> QQBot」）の形式で指定する必要があります。移行元クライアントのみを指定した場合は、移行を行わないことを示します。",
     "config.comments.config.rickroll_msg": "テキスト フィルタリング検出に失敗したときのリックロール メッセージ。",
+    "config.comments.config.schedule_interval_multiplier": "スケジュール タスク トリガーの間隔時間の倍率。",
     "config.comments.config.shuffle_rate": "ジョークのランダム発生率。範囲は 0 ～ 1 です。",
     "config.comments.config.timezone_offset": "ボットのデフォルトのタイムゾーン オフセット。",
     "config.comments.config.tos_temp_ban_time": "利用規約違反時の一時的な禁止時間。",
@@ -174,6 +175,7 @@
     "message.success": "成功しました。",
     "message.typing": "タイピング……",
     "message.unknown": "不明",
+    "message.url.blocked": "[リンクはブロックされた]",
     "message.url.untrusted": "このリンクは認証されていませんので、開く際はご注意ください",
     "message.user_verification.prompt.button": "これは危険度の高い操作です。数字「${number}」をクリックして、操作の確認を行ってください。",
     "message.user_verification.prompt.text": "これは危険度の高い操作です。数字「${number}」を送信して、操作の確認を行ってください。",
@@ -226,7 +228,5 @@
     "tos.message.warning": "警告：\n利用規約に基づいて、あなたは行動規範に違反しています。",
     "tos.message.warning.count": "これは ${current_warns} 回目の警告です。",
     "tos.message.warning.last": "これは最後の警告です。",
-    "tos.message.warning.prompt": "${warn_counts} 回以上の警告を受けた場合、アカウントはブロックされます。",
-    "message.url.blocked": "[リンクはブロックされた]",
-    "config.comments.config.schedule_interval_multiplier": "スケジュール タスク トリガーの間隔時間の倍率。"
+    "tos.message.warning.prompt": "${warn_counts} 回以上の警告を受けた場合、アカウントはブロックされます。"
 }

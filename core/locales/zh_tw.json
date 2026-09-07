@@ -43,6 +43,7 @@
     "config.comments.config.report_targets": "上報場景清單，此處填寫的場景 ID 將會被辨識為上報場景。（如：當機器人執行指令出錯時，機器人會將報錯訊息傳送至對應場景）",
     "config.comments.config.retired_clients": "已退役的用戶端及其資料遷移目標，格式為「<來源用戶端> -> <目標用戶端>」（例：「QQ -> QQBot」）。只填寫來源用戶端時表示不提供遷移。",
     "config.comments.config.rickroll_msg": "文字過濾偵測失敗時的 Rickroll 訊息。",
+    "config.comments.config.schedule_interval_multiplier": "計畫任務觸發器的間隔時間倍數。",
     "config.comments.config.shuffle_rate": "玩笑的隨機發生率，範圍 0 到 1 之間。",
     "config.comments.config.timezone_offset": "機器人的預設時區偏移量。",
     "config.comments.config.tos_temp_ban_time": "違反 ToS 時的暫時封鎖時間。",
@@ -174,6 +175,7 @@
     "message.success": "成功。",
     "message.typing": "正在輸入中……",
     "message.unknown": "未知",
+    "message.url.blocked": "[此連結已被阻止]",
     "message.url.untrusted": "此連結未經認證，請謹慎開啟",
     "message.user_verification.prompt.button": "此為高風險操作，請點選數字「${number}」完成操作驗證。",
     "message.user_verification.prompt.text": "此為高風險操作，請傳送數字「${number}」完成操作驗證。",
@@ -226,7 +228,5 @@
     "tos.message.warning": "警告：\n依據使用條款，你已違反我們的行為準則。",
     "tos.message.warning.count": "這是第 ${current_warns} 次警告。",
     "tos.message.warning.last": "這是最後一次警告。",
-    "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。",
-    "message.url.blocked": "[此連結已被阻止]",
-    "config.comments.config.schedule_interval_multiplier": "計畫任務觸發器的間隔時間倍數。"
+    "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。"
 }
