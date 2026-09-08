@@ -97,7 +97,7 @@ async def report_error(method: str, details: str) -> None:
 
 @ServerAPI.post_next_hop.bind(JobQueueServer)
 async def post_next_hop(next_hops: list[str], message: MessageChain | MessageNodes, module_name: str = "") -> bool:
-    """解析下一跳并交给对应平台；跳表只会缩短。"""
+    """解析下一跳并交给对应平台；跳表值会缩短。"""
     bot = exports["Bot"]
     remaining = list(next_hops)
     while remaining:
