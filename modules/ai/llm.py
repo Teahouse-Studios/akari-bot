@@ -22,7 +22,7 @@ top_p = AiConfig.llm_top_p
 frequency_penalty = AiConfig.llm_frequency_penalty
 presence_penalty = AiConfig.llm_presence_penalty
 
-MAX_ITERATIONS = 5
+MAX_ITERATIONS = AiConfig.llm_max_calling_iteration
 
 
 async def ask_llm(

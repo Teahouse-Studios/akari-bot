@@ -1,31 +1,26 @@
-在使用本模块前，请确保在 `modules/ai/assets` 目录下创建 `llm_api_list.json` 配置文件，否则模块将无法正常运行。
+在使用本模块前，请确保在 `modules/ai/assets` 目录下创建 `llm_api_list.yaml` 配置文件，否则模块将无法正常运行。
 
-Before using this module, please make sure to create `llm_api_list.json` configuration file in the `modules/ai/assets`
+Before using this module, please make sure to create `llm_api_list.yaml` configuration file in the `modules/ai/assets`
 directory. Otherwise, the module will not function properly.
 
 ---
 
-## `llm_api_list.json` 文件结构 (File Structure)
+## `llm_api_list.yaml` 文件结构 (File Structure)
 
-该 JSON 文件应包含一个 `llm_api_list` 数组，每个元素表示一个大语言模型 API 配置，示例如下：
+该 YAML 文件应包含一个 `llm_api_list` 数组，每个元素表示一个大语言模型 API 配置，示例如下：
 
-This JSON file should contain an `llm_api_list` array, where each element represents a LLM API configuration, as shown
+This YAML file should contain an `llm_api_list` array, where each element represents a LLM API configuration, as shown
 in the example below:
 
-```json
-{
-    "llm_api_list": [
-        {
-            "api_key": "sk-1145141919810",
-            "api_url": "https://api.examplellm.com/v1",
-            "model_name": "llm-v1",
-            "name": "example-llm",
-            "price_in": 0.0005,
-            "price_out": 0.0005,
-            "superuser": false
-        }
-    ]
-}
+```yaml
+llm_api_list:
+  - api_key: sk-1145141919810
+    api_url: https://api.examplellm.com/v1
+    model_name: llm-v1
+    name: example-llm
+    price_in: 0.0005
+    price_out: 0.0005
+    superuser: false
 ```
 
 ---
@@ -70,31 +65,30 @@ in the example below:
 
 建议按照服务商的定价计算 `price` 值，通常设 1 花瓣 = ¥0.01。
 
-It is recommended to calculate the `price` value according to the service provider's pricing, usually assume 1 petal =
-¥0.01.
+It is recommended to calculate the `price` value according to the service provider's pricing, usually assume 1 petal = ¥0.01.
 
-例如 `deepseek-reasoner` 模型的价格如下：
+例如 `deepseek-v4-pro` 模型的价格如下：
 
-For example, the price of `deepseek-reasoner` model is as follows:
+For example, the price of `deepseek-v4-pro` model is as follows:
 
 - **deepseek-reasoner**
-    - **输入 (Input)：¥4 / 1M tokens**
-    - **输出 (Output)：¥16 / 1M tokens**
+    - **输入 (Input)：¥9 / 1M tokens**
+    - **输出 (Output)：¥27 / 1M tokens**
 
 计算方法：
 
 Calculation method:
 
-- **输入成本 (Input cost)：** ¥4 / 1M tokens = ¥0.000004 / token = 0.0004 petal/token
-- **输出成本 (Output cost)：** ¥16 / 1M tokens = ¥0.000016 / token = 0.0016 petal/token
+- **输入成本 (Input cost)：** ¥9 / 1M tokens = ¥0.000009 / token = 0.0009 petal/token
+- **输出成本 (Output cost)：** ¥27 / 1M tokens = ¥0.000027 / token = 0.0027 petal/token
 
-因此，若使用 `deepseek-reasoner`，可设置：
+因此，若使用 `deepseek-v4-pro`，可设置：
 
-Therefore, if you use `deepseek-reasoner`, you can set:
+Therefore, if you use `deepseek-v4-pro`, you can set:
 
 ```json
-"price_in": 0.0004
-"price_out": 0.0016
+"price_in": 0.0009
+"price_out": 0.0027
 ```
 
 请根据自身情况与服务商定价合理设置 `price`，以进行成本控制。

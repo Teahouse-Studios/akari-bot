@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import orjson
+import yaml
 
 instructions_path = Path(__file__).parent / "assets" / "instructions.txt"
 if instructions_path.exists():
@@ -9,10 +9,17 @@ if instructions_path.exists():
 else:
     INSTRUCTIONS = ""
 
-llm_api_list_path = Path(__file__).parent / "assets" / "llm_api_list.json"
-if llm_api_list_path.exists():
-    with open(llm_api_list_path, "rb") as f:
-        llm_api_list = orjson.loads(f.read()).get("llm_api_list", [])
+llm_api_list_path = next(
+    (
+        Path(__file__).parent / "assets" / filename
+        for filename in ("llm_api_list.yaml", "llm_api_list.yml")
+        if (Path(__file__).parent / "assets" / filename).exists()
+    ),
+    None,
+)
+if llm_api_list_path:
+    with open(llm_api_list_path, "r", encoding="utf-8") as f:
+        llm_api_list = (yaml.safe_load(f) or {}).get("llm_api_list", [])
 else:
     llm_api_list = []
 
