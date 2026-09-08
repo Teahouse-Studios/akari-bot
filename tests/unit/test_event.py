@@ -10,6 +10,7 @@ from core.component import Bind
 from core.database.models import SenderUnionInfo, TargetUnionInfo
 from core.loader import ModulesManager
 from core.queue.contracts import ServerAPI
+from core.queue.peer import ServiceRoute
 from core.queue.server import receive_event
 from core.tester import Tester, func_case
 from core.types import Module
@@ -206,7 +207,8 @@ async def _test_client_event_conversion():
     serialized = captured["args"]["event_info"]
     return (
         result == "task-id"
-        and captured["target_client"] == "Server"
+        and captured["target_client"]
+        == ServiceRoute(service="Server", routing_key=event.target_id, role="server")
         and captured["action"] == ServerAPI.receive_event.name
         and serialized["event_name"] == "updated"
         and serialized["data"] == {"value": 3}

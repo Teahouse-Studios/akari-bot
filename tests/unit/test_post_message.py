@@ -1,5 +1,6 @@
 """core.builtins.bot 单元测试 - 主动推送的通道归拢与掉线避让（需要数据库）。"""
 
+from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
@@ -7,7 +8,7 @@ from core.alive import Alive
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.session.info import FetchedSessionInfo
-from core.database.models import JobQueuesTable, TargetUnionInfo, TargetUnionBind
+from core.database.models import JobQueuePeersTable, JobQueuesTable, TargetUnionInfo, TargetUnionBind
 from core.queue.client import post_message, send_private_msg
 from core.queue.server import JobQueueServer
 from core.queue.contracts import PlatformAPI, ServerAPI
@@ -34,6 +35,27 @@ async def _build_channel(prefix: str) -> list[FetchedSessionInfo]:
     return sessions
 
 
+async def _register_client(client: str) -> None:
+    metadata = {
+        "target_prefix_list": [f"{client}|Group"],
+        "sender_prefix_list": [client],
+    }
+    lease_until = datetime.now(UTC) + timedelta(seconds=300)
+    await JobQueuePeersTable.update_or_create(
+        peer_id=f"TEST-PEER-{client}",
+        defaults={
+            "role": "client",
+            "service": client,
+            "state": "ready",
+            "capabilities": ["rpc", "signals"],
+            "metadata": metadata,
+            "heartbeat_at": datetime.now(UTC),
+            "lease_until": lease_until,
+        },
+    )
+    Alive.refresh_peer(f"TEST-PEER-{client}", client, metadata=metadata, lease_until=lease_until)
+
+
 async def _take_posted() -> list[tuple[str, list[str]]]:
     """
     取出并清空已入队的主动推送任务，返回 ``(目标会话, 下一跳列表)``。
@@ -52,7 +74,7 @@ async def _test_channel_posts_once_with_next_hops():
         sessions = await _build_channel("POSTA")
         Alive.values.clear()
         for client in ("POSTA1", "POSTA2"):
-            Alive.refresh_alive(client, target_prefix_list=[f"{client}|Group"], sender_prefix_list=[client])
+            await _register_client(client)
 
         await Bot.post_message("", MessageChain.assign("hello"), sessions)
         posted = await _take_posted()
@@ -74,7 +96,7 @@ async def _test_offline_client_skipped():
         sessions = await _build_channel("POSTB")
         Alive.values.clear()
         # 仅第二个平台在线时，队首应换为该平台，且不再保留下一跳。
-        Alive.refresh_alive("POSTB2", target_prefix_list=["POSTB2|Group"], sender_prefix_list=["POSTB2"])
+        await _register_client("POSTB2")
 
         await Bot.post_message("", MessageChain.assign("hello"), sessions)
         return await _take_posted() == [("POSTB2|Group|b", [])]
@@ -148,11 +170,14 @@ async def _test_private_exception_returns_empty():
 @func_case
 async def test_post_message(tester: Tester):
     """core.builtins.bot: 主动推送测试"""
-    await tester.test(_test_channel_posts_once_with_next_hops, "同通道只推一次测试")
-    await tester.test(_test_offline_client_skipped, "掉线客户端避让测试")
-    await tester.test(_test_all_offline_posts_nothing, "全部掉线放弃推送测试")
-    await tester.test(_test_rpc_rejects_offline_client, "掉线时不入队测试")
-    await tester.test(_test_post_exception_uses_next_hop, "平台异常时主动推送继续下一跳测试")
-    await tester.test(_test_private_exception_returns_empty, "平台异常时私信返回空消息 ID 测试")
+    try:
+        await tester.test(_test_channel_posts_once_with_next_hops, "同通道只推一次测试")
+        await tester.test(_test_offline_client_skipped, "掉线客户端避让测试")
+        await tester.test(_test_all_offline_posts_nothing, "全部掉线放弃推送测试")
+        await tester.test(_test_rpc_rejects_offline_client, "掉线时不入队测试")
+        await tester.test(_test_post_exception_uses_next_hop, "平台异常时主动推送继续下一跳测试")
+        await tester.test(_test_private_exception_returns_empty, "平台异常时私信返回空消息 ID 测试")
+    finally:
+        await JobQueuePeersTable.filter(peer_id__startswith="TEST-PEER-POST").delete()
 
     return tester

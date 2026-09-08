@@ -50,8 +50,9 @@ async def main(process_stop_event=None):
         connect_locale_snapshot("akari-bot")
         await init_async(send_prompt=False)
         queue_task = asyncio.create_task(JobQueueServer.check_job_queue(), name="server-queue-poller")
-        # 重启提示须等发起者所在客户端重新上报保活，而保活信号经队列轮询取回，
-        # 故置于轮询启动之后；先于轮询发送只会被当作客户端掉线而丢弃。
+        await JobQueueServer.wait_ready()
+        # 重启提示须等发起者所在客户端完成 Peer 注册，且投递自身依赖队列结果泵，
+        # 故置于当前 Server 注册 ready 并开始轮询之后。
         await load_prompt(locale_loaded_err)
         while not stop_event.is_set() and not (process_stop_event and process_stop_event.is_set()):
             # 队列轮询是 Server 的生命线。它若因数据库或代码异常退出而主循环仍继续，

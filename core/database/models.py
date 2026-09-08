@@ -1630,7 +1630,7 @@ class JobQueuesTable(DBModel):
     任务队列表。
 
     :param task_id: 任务 ID。
-    :param target_client: 目标客户端。
+    :param target_peer: 目标进程实例或 service。
     :param action: 动作。
     :param args: 参数。
     :param status: 任务状态。
@@ -1641,22 +1641,26 @@ class JobQueuesTable(DBModel):
     ACTIVE_TIMEOUT_SECONDS: ClassVar[int] = 7200
 
     task_id = fields.UUIDField(primary_key=True)
-    target_client = fields.CharField(max_length=512)
+    correlation_id = fields.UUIDField(null=True, index=True)
+    source_peer_id = fields.CharField(max_length=128, null=True, index=True)
+    target_peer = fields.CharField(max_length=512)
+    message_kind = fields.CharField(max_length=16, default="rpc")
     action = fields.CharField(max_length=512)
     args = fields.JSONField(default={})
     status = fields.CharField(max_length=32, default="pending")
+    claimed_by = fields.CharField(max_length=128, null=True, index=True)
     result = fields.JSONField(default={})
     timestamp = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
         table = "job_queues"
         # 每个进程每 100 毫秒按这两列轮询一次，无索引时开销随表内行数线性增长
-        indexes = (("target_client", "status"),)
+        indexes = (("target_peer", "status"),)
 
     @classmethod
-    async def add_task(cls, target_client: str, action: str, args: dict) -> str:
+    async def add_task(cls, target_peer: str, action: str, args: dict) -> str:
         task_id = str(uuid.uuid4())
-        await cls.create(task_id=task_id, target_client=target_client, action=action, args=args)
+        await cls.create(task_id=task_id, target_peer=target_peer, action=action, args=args)
         return task_id
 
     async def set_val(self, value, status) -> bool:
@@ -1670,16 +1674,19 @@ class JobQueuesTable(DBModel):
         await self.save()
         return True
 
-    async def claim(self) -> bool:
+    async def claim(self, peer_id: str | None = None) -> bool:
         """原子地将 pending 任务领取为 processing。
 
         轮询消费者可能在同一时刻读到相同的 pending 快照。普通的实例 ``save()`` 不会
         检查旧状态，两边都会成功并重复执行处理器；带状态条件的单条 UPDATE 只有一方
         能更新一行，因此可作为跨进程的领取凭证。
         """
-        updated = await type(self).filter(task_id=self.task_id, status="pending").update(status="processing")
+        updated = await type(self).filter(task_id=self.task_id, status="pending").update(
+            status="processing", claimed_by=peer_id
+        )
         if updated:
             self.status = "processing"
+            self.claimed_by = peer_id
             return True
         return False
 
@@ -1706,16 +1713,39 @@ class JobQueuesTable(DBModel):
         return True
 
     @classmethod
-    async def get_first(cls, target_clients: str | list[str]):
-        if isinstance(target_clients, str):
-            target_clients = [target_clients]
-        return await cls.filter(target_client__in=target_clients, status="pending").first()
+    async def get_first(cls, target_peers: str | list[str]):
+        if isinstance(target_peers, str):
+            target_peers = [target_peers]
+        return await cls.filter(target_peer__in=target_peers, status="pending").first()
 
     @classmethod
-    async def get_all(cls, target_clients: str | list[str]):
-        if isinstance(target_clients, str):
-            target_clients = [target_clients]
-        return await cls.filter(target_client__in=target_clients, status="pending").all()
+    async def get_all(cls, target_peers: str | list[str]):
+        if isinstance(target_peers, str):
+            target_peers = [target_peers]
+        return await cls.filter(target_peer__in=target_peers, status="pending").all()
+
+
+class JobQueuePeersTable(DBModel):
+    """JobQueue 进程注册表；租约是在线状态的唯一事实来源。"""
+
+    peer_id = fields.CharField(max_length=128, primary_key=True)
+    node_id = fields.CharField(max_length=128, null=True, index=True)
+    role = fields.CharField(max_length=32, index=True)
+    service = fields.CharField(max_length=128, index=True)
+    state = fields.CharField(max_length=16, default="starting", index=True)
+    capabilities = fields.JSONField(default=list)
+    metadata = fields.JSONField(default=dict)
+    started_at = fields.DatetimeField(auto_now_add=True)
+    heartbeat_at = fields.DatetimeField(auto_now=True)
+    lease_until = fields.DatetimeField(index=True)
+
+    class Meta:
+        table = "job_queue_peers"
+        indexes = (("role", "service", "state"), ("state", "lease_until"))
+
+    @classmethod
+    async def active(cls):
+        return await cls.filter(state="ready", lease_until__gt=datetime.now(UTC)).all()
 
 
 class MaliciousLoginRecords(DBModel):

@@ -16,6 +16,7 @@ from core.builtins.session.info import FetchedSessionInfo, SessionInfo
 from core.queue import codec
 from core.queue.base import JobQueueBase
 from core.queue.contracts import PlatformAPI, ServerAPI
+from core.queue.peer import ServiceRoute
 from core.queue.rpc import context_method, remote
 from core.tester import Tester, func_case
 
@@ -75,11 +76,8 @@ async def _test_domain_codec_roundtrip():
     assert isinstance(restored_nodes, MessageNodes)
     assert codec.encode(restored_nodes, MessageChain | MessageNodes) == codec.encode(nodes, MessageChain | MessageNodes)
     features = Features(support_image=True, support_private_msg=True)
-    restored_features = ServerAPI.keepalive.decode_arguments(
-        _wire(ServerAPI.keepalive.encode_arguments("RPC-CODEC", ctx_slot_index=0, features=features))
-    ).arguments
-    assert restored_features["ctx_slot_index"] == 0
-    assert restored_features["features"] == features
+    restored_features = codec.decode(_wire(codec.encode(features, Features)), Features)
+    assert restored_features == features
     return True
 
 
@@ -127,6 +125,33 @@ async def _test_platform_signature_drives_automatic_dispatch():
     args = Context.restrict_member.await_args
     assert args.args[0].target_id == session.target_id
     assert args.args[1:] == (["RPC-AUTO|1"], None, "test")
+    return True
+
+
+async def _test_platform_routes_context_to_originating_instance():
+    incoming = await SessionInfo.assign(
+        target_id="RPC-OWNER|Group|1",
+        target_from="RPC-OWNER",
+        client_name="RPC-OWNER",
+        owner_peer_id="RPC-OWNER-INSTANCE",
+    )
+    fetched = await FetchedSessionInfo.assign(
+        target_id="RPC-OWNER|Group|2",
+        target_from="RPC-OWNER",
+        client_name="RPC-OWNER",
+        fetch=True,
+    )
+    assert PlatformAPI.send_message._route(incoming, MessageChain.assign("incoming")) == "RPC-OWNER-INSTANCE"
+    assert PlatformAPI.send_message._route(fetched, MessageChain.assign("fetched")) == ServiceRoute(
+        service="RPC-OWNER",
+        routing_key="RPC-OWNER|Group|2",
+        role="client",
+    )
+    assert ServerAPI.receive_message._route(incoming) == ServiceRoute(
+        service="Server",
+        routing_key=incoming.channel_key,
+        role="server",
+    )
     return True
 
 
@@ -240,6 +265,10 @@ async def test_rpc_contracts(tester: Tester):
     await tester.test(_test_domain_codec_roundtrip, "会话、消息节点、i18n 和平台特性的 JSON 往返")
     await tester.test(_test_dynamic_hook_values_are_safe_and_lossless, "动态 hook 参数无损往返和类型白名单")
     await tester.test(_test_platform_signature_drives_automatic_dispatch, "平台接口复用 ContextManager 签名并自动分发")
+    await tester.test(
+        _test_platform_routes_context_to_originating_instance,
+        "平台上下文操作路由回原始 Client 实例",
+    )
     await tester.test(_test_submission_and_signature_drift, "仅提交操作与执行等待分离并拒绝签名漂移")
     await tester.test(_test_union_discriminators_and_dictionary_contracts, "联合类型显式保留分支并拒绝非字符串字典键")
     await tester.test(

@@ -51,7 +51,11 @@ async def _test_bidirectional_process_rpc():
             for process, output in ((caller, caller_output), (server, server_output)):
                 if process.returncode != 0:
                     raise AssertionError(b"\n".join(output).decode("utf-8", errors="replace"))
-            return b'"rpc_process": "passed"' in caller_output[0] and b'"callbacks": 9' in caller_output[0]
+            return (
+                b'"rpc_process": "passed"' in caller_output[0]
+                and b'"signals": "passed"' in caller_output[0]
+                and b'"callbacks": 9' in caller_output[0]
+            )
         finally:
             for process in processes:
                 if process.returncode is None:
@@ -61,5 +65,8 @@ async def _test_bidirectional_process_rpc():
 
 @func_case
 async def test_rpc_process(tester: Tester):
-    await tester.test(_test_bidirectional_process_rpc, "独立进程 RPC 往返、并发反向调用、错误传播和关闭测试")
+    await tester.test(
+        _test_bidirectional_process_rpc,
+        "独立进程发现、广播、RPC 往返、反向调用和错误传播",
+    )
     return tester

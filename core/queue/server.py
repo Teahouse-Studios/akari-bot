@@ -3,14 +3,13 @@
 import re
 import time
 from hashlib import sha256
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from core.alive import Alive
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.internal import I18NContext, Plain
 from core.builtins.parser.command import CommandParser
 from core.builtins.parser.message import parser
-from core.builtins.session.features import Features
 from core.builtins.session.info import EventInfo, SessionInfo
 from core.builtins.utils import command_prefix
 from core.constants.path import PrivateAssets
@@ -26,15 +25,39 @@ from .contracts import PlatformAPI, ServerAPI
 from .errors import RpcUnavailableError
 from .reporting import report_rpc_error
 
+if TYPE_CHECKING:
+    from .peer import ServiceRoute
+
 
 class JobQueueServer(JobQueueBase):
     """服务端 RPC 消费者及其生命周期。"""
 
     @classmethod
-    def validate_target(cls, target: str) -> None:
-        super().validate_target(target)
-        if target not in ("Server", cls.name) and not Alive.is_alive(target):
-            raise RpcUnavailableError(f"Client {target} is offline.", target=target)
+    async def ensure_target_available(cls, target: str, route: "ServiceRoute | None" = None) -> None:
+        """以权威 Peer Registry 判断 Client 或实例是否仍可接收新任务。"""
+        if target in ("Server", cls.name):
+            return
+        from .peer import PeerDirectory, PeerSelector
+
+        # ServiceRoute 已在入队前从 Registry 选中了一个 ready 实例，无需重复查询。
+        if route is not None and target != route.service:
+            return
+        if route is not None:
+            records = await PeerDirectory.resolve(
+                PeerSelector(
+                    roles=(route.role,) if route.role else (),
+                    services=(route.service,),
+                )
+            )
+        else:
+            records = await PeerDirectory.resolve(PeerSelector.peer(target))
+            if not records:
+                records = await PeerDirectory.resolve(PeerSelector.service(target))
+        if records:
+            for record in records:
+                cls._update_peer_cache(record.snapshot())
+            return
+        raise RpcUnavailableError(f"Client or peer {target} is offline.", target=target)
 
     @classmethod
     async def report_error(cls, method: str, details: str) -> None:
@@ -106,23 +129,6 @@ async def receive_message(session_info: SessionInfo) -> None:
 async def receive_event(event_info: EventInfo) -> None:
     await event_info.refresh_info()
     await ModulesManager.dispatch_event(event_info)
-
-
-@ServerAPI.keepalive.bind(JobQueueServer)
-async def keepalive(
-    client_name: str,
-    target_prefix_list: list[str] | None = None,
-    sender_prefix_list: list[str] | None = None,
-    ctx_slot_index: int | None = None,
-    features: Features | None = None,
-) -> None:
-    Alive.refresh_alive(
-        client_name,
-        target_prefix_list=target_prefix_list or [],
-        sender_prefix_list=sender_prefix_list or [],
-        ctx_slot_index=ctx_slot_index,
-        features=features,
-    )
 
 
 @ServerAPI.trigger_hook.bind(JobQueueServer)

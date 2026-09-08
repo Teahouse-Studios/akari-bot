@@ -13,7 +13,8 @@ from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import EventInfo, SessionInfo
 from .codec import register_value_type
-from .rpc import context_method, remote
+from .peer import ServiceRoute
+from .rpc import context_method, context_target, remote
 
 
 register_value_type("message", MessageChain | MessageNodes)
@@ -22,8 +23,20 @@ register_value_type("event", EventInfo)
 register_value_type("features", Features)
 
 
-def _platform_target(args) -> str:
-    return args["session_info"].client_name
+def _platform_target(args) -> str | ServiceRoute:
+    return context_target(args)
+
+
+def _server_session_target(args) -> ServiceRoute:
+    session_info = args["session_info"]
+    routing_key = session_info.channel_key if session_info.target_union_id else session_info.target_id
+    return ServiceRoute(service="Server", routing_key=routing_key, role="server")
+
+
+def _server_event_target(args) -> ServiceRoute:
+    event_info = args["event_info"]
+    routing_key = event_info.target_id or event_info.sender_id or str(event_info.event_name)
+    return ServiceRoute(service="Server", routing_key=routing_key, role="server")
 
 
 class PlatformAPI:
@@ -69,24 +82,14 @@ class ServerAPI:
         ...
 
     @staticmethod
-    @remote("server.receive_message", timeout=7200)
+    @remote("server.receive_message", target=_server_session_target, timeout=7200)
     async def receive_message(session_info: SessionInfo) -> None:
         """Complete message processing before releasing the originating context."""
         ...
 
     @staticmethod
-    @remote("server.receive_event", timeout=7200)
+    @remote("server.receive_event", target=_server_event_target, timeout=7200)
     async def receive_event(event_info: EventInfo) -> None: ...
-
-    @staticmethod
-    @remote("server.keepalive", timeout=30)
-    async def keepalive(
-        client_name: str,
-        target_prefix_list: list[str] | None = None,
-        sender_prefix_list: list[str] | None = None,
-        ctx_slot_index: int | None = None,
-        features: Features | None = None,
-    ) -> None: ...
 
     @staticmethod
     @remote("server.trigger_hook", timeout=7200)

@@ -9,6 +9,7 @@ import core.database as database
 from core.database.models import JobQueuesTable
 from core.database.link import prepare_db_link
 from core.queue.server import JobQueueServer
+from core.queue.transport import PROTOCOL_VERSION
 from core.scheduler import Scheduler, SchedulerLifecycle
 from core.tester import Tester, func_case
 from core.types import Module
@@ -322,7 +323,7 @@ async def _test_reload_keeps_pumping_remote_results():
     result_task_id = await JobQueuesTable.add_task("QUEUE-REMOTE", "reload-result", {})
     result_task_id = str(result_task_id)
     await JobQueuesTable.filter(task_id=result_task_id).update(
-        status="done", result={"rpc": 1, "value": {"ready": True}}
+        status="done", result={"rpc": PROTOCOL_VERSION, "value": {"ready": True}}
     )
     handler_done = asyncio.Event()
 
@@ -331,7 +332,7 @@ async def _test_reload_keeps_pumping_remote_results():
 
     async def handler():
         result = await waiter
-        if result.envelope == {"rpc": 1, "value": {"ready": True}}:
+        if result.envelope == {"rpc": PROTOCOL_VERSION, "value": {"ready": True}}:
             handler_done.set()
 
     async def close_connections():

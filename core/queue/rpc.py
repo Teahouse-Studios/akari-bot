@@ -12,17 +12,20 @@ import math
 from collections.abc import Awaitable, Callable, Mapping
 from copy import copy
 from functools import update_wrapper
-from typing import Any, Generic, ParamSpec, TypeVar, TYPE_CHECKING, get_type_hints, overload
+from typing import TYPE_CHECKING, Any, Generic, ParamSpec, Self, TypeVar, get_type_hints, overload
 
 from . import codec
+from .peer import ServiceRoute
 
 if TYPE_CHECKING:
     from .base import JobQueueBase
+    from .peer import PeerSelector, SignalReceipt, SignalReport
 
 
 P = ParamSpec("P")
 R = TypeVar("R")
-Route = str | Callable[[Mapping[str, Any]], str]
+RouteTarget = str | ServiceRoute
+Route = RouteTarget | Callable[[Mapping[str, Any]], RouteTarget]
 _default_peer: type[JobQueueBase] | None = None
 
 
@@ -39,6 +42,16 @@ def get_default_peer() -> type[JobQueueBase]:
     if peer is None:
         raise RuntimeError("RPC peer has not been configured for this process")
     return peer
+
+
+def context_target(args: Mapping[str, Any]) -> RouteTarget:
+    """Route context-bound work to its owner or a stable instance of its client service."""
+    session_info = args["session_info"]
+    return session_info.owner_peer_id or ServiceRoute(
+        service=session_info.client_name,
+        routing_key=session_info.target_id,
+        role="client",
+    )
 
 
 class RpcMethod(Generic[P, R]):
@@ -69,12 +82,12 @@ class RpcMethod(Generic[P, R]):
         update_wrapper(self, function)
         self.__signature__ = self.signature
 
-    def using(self, peer: type[JobQueueBase]) -> RpcMethod[P, R]:
+    def using(self, peer: type[JobQueueBase]) -> Self:
         endpoint = copy(self)
         endpoint.peer = peer
         return endpoint
 
-    def with_timeout(self, seconds: float) -> "RpcMethod[P, R]":
+    def with_timeout(self, seconds: float) -> Self:
         if not math.isfinite(seconds) or seconds <= 0:
             raise ValueError("RPC timeout must be positive and finite")
         endpoint = copy(self)
@@ -114,8 +127,8 @@ class RpcMethod(Generic[P, R]):
         rebound.apply_defaults()
         return rebound
 
-    def _route(self, *args: P.args, **kwargs: P.kwargs) -> str:
-        if isinstance(self.target, str):
+    def _route(self, *args: P.args, **kwargs: P.kwargs) -> RouteTarget:
+        if isinstance(self.target, (str, ServiceRoute)):
             return self.target
         bound = self.signature.bind(*args, **kwargs)
         bound.apply_defaults()
@@ -171,11 +184,58 @@ class RpcMethod(Generic[P, R]):
         peer.register(self.name, dispatch)
 
 
+class SignalMethod(RpcMethod[P, R]):
+    """Typed fan-out event declaration with optional per-peer ACK collection."""
+
+    async def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R:
+        raise TypeError("Signals require an explicit PeerSelector via .emit() or .gather()")
+
+    async def emit(self, selector: "PeerSelector", *args: P.args, **kwargs: P.kwargs) -> "SignalReceipt":
+        payload = self.encode_arguments(*args, **kwargs)
+        peer = self.peer or get_default_peer()
+        return await peer.emit_signal(self.name, payload, selector, timeout=self.timeout)
+
+    async def gather(self, selector: "PeerSelector", *args: P.args, **kwargs: P.kwargs) -> "SignalReport":
+        payload = self.encode_arguments(*args, **kwargs)
+        peer = self.peer or get_default_peer()
+        report = await peer.gather_signal(self.name, payload, selector, timeout=self.timeout)
+        decoded = {
+            peer_id: [codec.decode(value, self.result_type) for value in values]
+            for peer_id, values in report.results.items()
+        }
+        from .peer import SignalReport
+
+        return SignalReport(report.event_id, decoded, report.errors)
+
+    def bind(self, peer: type[JobQueueBase]):
+        def decorator(handler: Callable[P, Awaitable[R]]):
+            def shape(signature):
+                return [(p.name, p.kind, p.default) for p in signature.parameters.values()]
+
+            if shape(inspect.signature(handler)) != shape(self.signature):
+                raise TypeError(f"Handler signature differs from signal contract: {self.name}")
+
+            async def dispatch(_context, payload):
+                return await self.dispatch(handler, payload)
+
+            peer.on_signal(self.name, dispatch)
+            return handler
+
+        return decorator
+
+
 def remote(
     name: str, *, target: Route = "Server", timeout: float = 120
 ) -> Callable[[Callable[P, Awaitable[R]]], RpcMethod[P, R]]:
     def decorator(function: Callable[P, Awaitable[R]]) -> RpcMethod[P, R]:
         return RpcMethod(function, name=name, target=target, timeout=timeout)
+
+    return decorator
+
+
+def signal(name: str, *, timeout: float = 30) -> Callable[[Callable[P, Awaitable[R]]], SignalMethod[P, R]]:
+    def decorator(function: Callable[P, Awaitable[R]]) -> SignalMethod[P, R]:
+        return SignalMethod(function, name=name, target="", timeout=timeout)
 
     return decorator
 
@@ -192,7 +252,7 @@ def context_method(function: Callable) -> RpcMethod:
     return RpcMethod(
         function,
         name=f"platform.{function.__name__}",
-        target=lambda args: args["session_info"].client_name,
+        target=context_target,
         context_method=function.__name__,
         timeout=7200 if function.__name__ in ("send_message", "send_private_msg") else 120,
     )

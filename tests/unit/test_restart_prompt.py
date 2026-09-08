@@ -1,10 +1,11 @@
 """core.server.init 单元测试 - 重启提示的送达（需要数据库）。
 
-server 进程重启后 `Alive` 保活表随进程内存一并清空，须等目标客户端重新上报保活
+server 进程重启后须等目标客户端重新注册为 ready，且以 Peer Registry 的有效租约为准，
 才能投递重启提示，否则 RPC 会以「客户端掉线」为由拒绝请求。
 """
 
 import asyncio
+from datetime import UTC, datetime, timedelta
 
 import orjson
 
@@ -12,7 +13,7 @@ from core.alive import Alive
 from core.builtins.converter import converter
 from core.builtins.session.info import SessionInfo
 from core.constants import PrivateAssets
-from core.database.models import JobQueuesTable
+from core.database.models import JobQueuePeersTable, JobQueuesTable
 from core.server.init import load_prompt
 from core.queue.contracts import PlatformAPI
 from core.tester import func_case, Tester
@@ -43,7 +44,25 @@ async def _prompt_sent() -> bool:
 async def _reset(client: str) -> None:
     Alive.values.clear()
     await JobQueuesTable.filter(action=PlatformAPI.send_message.name).delete()
+    await JobQueuePeersTable.filter(peer_id=f"TEST-PEER-{client}").delete()
     await _write_restart_cache(client)
+
+
+async def _register_client(client: str) -> None:
+    metadata = {
+        "target_prefix_list": [f"{client}|Group"],
+        "sender_prefix_list": [client],
+    }
+    await JobQueuePeersTable.create(
+        peer_id=f"TEST-PEER-{client}",
+        role="client",
+        service=client,
+        state="ready",
+        capabilities=["rpc", "signals"],
+        metadata=metadata,
+        heartbeat_at=datetime.now(UTC),
+        lease_until=datetime.now(UTC) + timedelta(seconds=300),
+    )
 
 
 def _cleanup(alive: dict) -> None:
@@ -53,11 +72,11 @@ def _cleanup(alive: dict) -> None:
 
 
 async def _test_waits_for_client_to_come_online():
-    """测试重启提示 - 客户端在提示发出前尚未上报保活时，应等其上线后再投递
+    """测试重启提示 - 客户端在提示发出前尚未注册为 ready 时，应等其上线后再投递
 
-    server 与各 bot 子进程一同重启，`load_prompt` 执行时保活表必然为空：
-    保活信号须经 `check_job_queue` 轮询取回才会落到 `Alive`，而该轮询启动于
-    `load_prompt` 之后。若不等待即发送，RPC 的掉线检查会拒绝提示请求。
+    server 与各 bot 子进程一同重启，`load_prompt` 执行时本地拓扑缓存必然为空；
+    客户端须先在 Peer Registry 注册带有效租约的 ready 实例。若不等待即发送，
+    RPC 的掉线检查会拒绝提示请求。
     """
     client = "RESTARTA"
     alive = Alive.values.copy()
@@ -66,7 +85,7 @@ async def _test_waits_for_client_to_come_online():
 
         async def _come_online():
             await asyncio.sleep(0.5)
-            Alive.refresh_alive(client, target_prefix_list=[f"{client}|Group"], sender_prefix_list=[client])
+            await _register_client(client)
 
         task = asyncio.create_task(_come_online())
         await load_prompt(None, timeout=10)
@@ -116,8 +135,11 @@ async def _test_corrupt_author_cache_is_discarded():
 @func_case
 async def test_restart_prompt(tester: Tester):
     """core.server.init: 重启提示送达测试"""
-    await tester.test(_test_waits_for_client_to_come_online, "等待客户端上线后投递测试")
-    await tester.test(_test_gives_up_when_client_never_online, "客户端不上线时超时放弃测试")
-    await tester.test(_test_corrupt_author_cache_is_discarded, "损坏重启缓存丢弃测试")
+    try:
+        await tester.test(_test_waits_for_client_to_come_online, "等待客户端上线后投递测试")
+        await tester.test(_test_gives_up_when_client_never_online, "客户端不上线时超时放弃测试")
+        await tester.test(_test_corrupt_author_cache_is_discarded, "损坏重启缓存丢弃测试")
+    finally:
+        await JobQueuePeersTable.filter(peer_id__startswith="TEST-PEER-RESTART").delete()
 
     return tester

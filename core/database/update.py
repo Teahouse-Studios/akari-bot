@@ -241,6 +241,76 @@ async def update_database_to_v4(conn):
     await migrate_wiki_url_rules(conn)
 
 
+async def update_database_to_v5(conn):
+    """完成 JobQueue 协议 v2 所需的实例寻址、信号关联和领取者迁移。"""
+    for column, declaration in (
+        ("correlation_id", "CHAR(36) NULL"),
+        ("source_peer_id", "VARCHAR(128) NULL"),
+        ("message_kind", "VARCHAR(16) NOT NULL DEFAULT 'rpc'"),
+        ("claimed_by", "VARCHAR(128) NULL"),
+    ):
+        if not await has_column(conn, "job_queues", column):
+            await conn.execute_query(
+                f"ALTER TABLE {quote_ident('job_queues')} ADD COLUMN {quote_ident(column)} {declaration};"
+            )
+    for column in ("correlation_id", "source_peer_id", "claimed_by"):
+        if not await has_index(conn, "job_queues", column):
+            await conn.execute_query(
+                f"CREATE INDEX {quote_ident(f'idx_job_queues_{column}')} "
+                f"ON {quote_ident('job_queues')} ({quote_ident(column)});"
+            )
+
+    has_target_peer = await has_column(conn, "job_queues", "target_peer")
+    has_target_client = await has_column(conn, "job_queues", "target_client")
+    if not has_target_peer and has_target_client:
+        if db_type == "sqlite":
+            await conn.execute_query(
+                f"ALTER TABLE {quote_ident('job_queues')} RENAME COLUMN "
+                f"{quote_ident('target_client')} TO {quote_ident('target_peer')};"
+            )
+        else:
+            await conn.execute_query(
+                f"ALTER TABLE {quote_ident('job_queues')} CHANGE "
+                f"{quote_ident('target_client')} {quote_ident('target_peer')} VARCHAR(512) NOT NULL;"
+            )
+    elif not has_target_peer:
+        await conn.execute_query(
+            f"ALTER TABLE {quote_ident('job_queues')} "
+            f"ADD COLUMN {quote_ident('target_peer')} VARCHAR(512) NOT NULL DEFAULT '';"
+        )
+    elif has_target_client:
+        await conn.execute_query(
+            f"UPDATE {quote_ident('job_queues')} "
+            f"SET {quote_ident('target_peer')} = {quote_ident('target_client')} "
+            f"WHERE {quote_ident('target_peer')} = '';"
+        )
+        if db_type == "sqlite":
+            indexes = await conn.execute_query_dict(f"PRAGMA index_list({quote_ident('job_queues')});")
+            for index in indexes:
+                columns = await conn.execute_query_dict(f"PRAGMA index_info({quote_ident(index['name'])});")
+                if any(column["name"] == "target_client" for column in columns):
+                    await conn.execute_query(f"DROP INDEX {quote_ident(index['name'])};")
+        else:
+            indexes = await conn.execute_query_dict(
+                "SELECT DISTINCT INDEX_NAME FROM information_schema.STATISTICS "
+                "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s AND COLUMN_NAME = %s "
+                "AND INDEX_NAME <> 'PRIMARY';",
+                ["job_queues", "target_client"],
+            )
+            for index in indexes:
+                await conn.execute_query(
+                    f"DROP INDEX {quote_ident(index['INDEX_NAME'])} ON {quote_ident('job_queues')};"
+                )
+        await conn.execute_query(
+            f"ALTER TABLE {quote_ident('job_queues')} DROP COLUMN {quote_ident('target_client')};"
+        )
+    if not await has_index(conn, "job_queues", "target_peer"):
+        await conn.execute_query(
+            f"CREATE INDEX {quote_ident('idx_job_queues_peer_status')} "
+            f"ON {quote_ident('job_queues')} ({quote_ident('target_peer')}, {quote_ident('status')});"
+        )
+
+
 async def update_database():
     database_list = fetch_module_db()
     await Tortoise.init(db_url=get_db_link(), modules={"models": ["core.database.models"] + database_list})
@@ -328,4 +398,11 @@ async def update_database():
 
             await query_dbver.delete()
             await DBVersion.create(version=4)
+        if db_version < 5:
+            query_dbver = await DBVersion.first()
+
+            await update_database_to_v5(conn)
+
+            await query_dbver.delete()
+            await DBVersion.create(version=5)
     await Tortoise.close_connections()

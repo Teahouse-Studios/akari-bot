@@ -10,6 +10,7 @@ from core.builtins.bot import Bot
 from core.builtins.session.info import SessionInfo
 from core.queue.client import JobQueueClient
 from core.queue.contracts import PlatformAPI
+from core.queue.peer import ServiceRoute
 from core.tester import Tester, func_case
 
 
@@ -49,13 +50,21 @@ async def _test_server_queue_forwarding():
     return (
         grant is None
         and revoke == "task-id"
-        and captured[0][0:2] == ("Discord", PlatformAPI.grant_permission_group.name)
+        and captured[0][0:2]
+        == (
+            ServiceRoute(service="Discord", routing_key=session.target_id, role="client"),
+            PlatformAPI.grant_permission_group.name,
+        )
         and captured[0][3] is True
         and grant_args["user_id"] == ["Discord|Client|1", "Discord|Client|2"]
         and grant_args["permission_group_id"] == ["10", "20"]
         and grant_args["reason"] == "test"
         and grant_args["session_info"].support_permission_group is False
-        and captured[1][0:2] == ("Discord", PlatformAPI.revoke_permission_group.name)
+        and captured[1][0:2]
+        == (
+            ServiceRoute(service="Discord", routing_key=session.target_id, role="client"),
+            PlatformAPI.revoke_permission_group.name,
+        )
         and captured[1][3] is False
     )
 

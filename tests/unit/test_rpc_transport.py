@@ -17,7 +17,7 @@ from core.queue.errors import (
     RpcTimeoutError,
     RpcUnavailableError,
 )
-from core.queue.transport import RpcRequest, RpcResponse
+from core.queue.transport import PROTOCOL_VERSION, RpcRequest, RpcResponse
 from core.tester import func_case, Tester
 
 
@@ -40,7 +40,7 @@ async def _peers():
         for task in pollers:
             task.cancel()
         await asyncio.gather(*pollers, return_exceptions=True)
-        await JobQueuesTable.filter(target_client__in=[Caller.name, Receiver.name]).delete()
+        await JobQueuesTable.filter(target_peer__in=[Caller.name, Receiver.name]).delete()
 
 
 async def _wait_status(task_id, status):
@@ -284,7 +284,7 @@ async def _test_bad_protocol_and_late_success_are_not_silent():
             return False
         except RpcProtocolError:
             pass
-        await receiver.transport.finish(RpcResponse(task_id, "done", {"rpc": 1, "value": "late"}))
+        await receiver.transport.finish(RpcResponse(task_id, "done", {"rpc": PROTOCOL_VERSION, "value": "late"}))
         row = await JobQueuesTable.get(task_id=task_id)
         assert row.status == "failed"
     return True

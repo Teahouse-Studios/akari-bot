@@ -11,10 +11,13 @@ async def main(database_path: str, role: str) -> None:
 
     from core.queue.base import JobQueueBase
     from core.queue.errors import RpcRemoteError
+    from core.queue.peer import PeerDirectory, PeerSelector
     from core.queue.rpc import remote
 
     class Peer(JobQueueBase):
         name = role
+
+    Peer.configure_peer(role="test", service=f"{role}-SERVICE", capabilities=["rpc", "signals"])
 
     await Tortoise.init(
         db_url=f"sqlite://{database_path}",
@@ -61,13 +64,29 @@ async def main(database_path: str, role: str) -> None:
     async def stop_handler() -> None:
         stopped.set()
 
+    @Peer.on_signal("audit.signal")
+    async def signal_handler(context, payload):
+        return {"receiver": role, "source": context.source_peer_id, "payload": payload}
+
     poller = asyncio.create_task(Peer.check_job_queue())
     try:
+        async with asyncio.timeout(10):
+            while not await PeerDirectory.resolve(PeerSelector.peer(role)):
+                await asyncio.sleep(0.01)
         if role == "RPC-B":
             print("RPC_READY", flush=True)
             await asyncio.wait_for(stopped.wait(), timeout=35)
             await Peer.wait_process_tasks()
         else:
+            async with asyncio.timeout(10):
+                while len(await PeerDirectory.resolve(PeerSelector.peer("RPC-A", "RPC-B"))) != 2:
+                    await asyncio.sleep(0.01)
+            signal_report = await Peer.gather_signal(
+                "audit.signal", {"version": 2}, PeerSelector.peer("RPC-B"), timeout=10
+            )
+            assert signal_report.results["RPC-B"] == [
+                {"receiver": "RPC-B", "source": "RPC-A", "payload": {"version": 2}}
+            ]
             payload = {"empty": [], "false": False, "none": None, "text": "双进程", "nested": {"n": 7}}
             assert await echo.using(Peer)(payload) == payload
             assert await nested.using(Peer)(20) == 41
@@ -83,7 +102,10 @@ async def main(database_path: str, role: str) -> None:
             assert await echo.using(Peer)({"after_error": True}) == {"after_error": True}
             await stop.using(Peer)()
             assert not Peer._pending
-            print(json.dumps({"rpc_process": "passed", "callbacks": len(results) + 1}), flush=True)
+            print(
+                json.dumps({"rpc_process": "passed", "signals": "passed", "callbacks": len(results) + 1}),
+                flush=True,
+            )
     finally:
         await Peer.cancel_process_tasks()
         poller.cancel()
