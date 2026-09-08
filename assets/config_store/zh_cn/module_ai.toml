@@ -11,6 +11,7 @@ llm_temperature = 1.0 # 大语言模型的温度采样，范围 0 到 2 之间�
 llm_top_p = 1.0 # 大语言模型的核采样，范围 0 到 1 之间。不建议与 temperature 同时修改。
 llm_frequency_penalty = 0.0 # 大语言模型的频率惩罚，范围 -2 到 2 之间。
 llm_presence_penalty = 0.0 # 大语言模型的存在惩罚，范围 -2 到 2 之间。
+llm_max_calling_iteration = 5 # 限制大语言模型的最大工具调用迭代次数。
 
 [module_ai_secret]
 # 模块的密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
