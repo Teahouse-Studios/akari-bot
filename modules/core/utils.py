@@ -328,7 +328,7 @@ async def _(msg: Bot.MessageSession, lang: str):
         await msg.finish([I18NContext("core.message.locale.set.invalid"), *build_locale_list(msg)])
 
 
-@locale.command("reload", required_superuser=True)
+@locale.command("reload {{I18N:core.help.locale.reload}}", required_superuser=True)
 async def _(msg: Bot.MessageSession):
     err = build_locale_snapshot(list(lang_list.keys()), all_locales_path, "akari-bot")
     if len(err) == 0:

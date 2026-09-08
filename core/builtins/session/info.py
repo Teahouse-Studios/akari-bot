@@ -139,7 +139,7 @@ class SessionInfo:
     support_manage: bool = False
     support_permission_group: bool = False
     support_markdown: bool = False
-    support_markdown_table: bool = False
+    support_markdown_extension: bool = False
     support_reaction: bool = False
     support_quote: bool = False
     support_rss: bool = False

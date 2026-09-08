@@ -1710,7 +1710,8 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
     is_superuser = msg.check_super_user()
 
     # ========== 步骤 2: 收集用户可用的模块列表 ==========
-    available_modules = []
+    available_modules: dict[str, str] = {}
+    available_module_targets: dict[str, list[str]] = {}
     for x in modules:
         # 筛选条件：基础模块或已启用的模块
         if modules[x].base or (x in msg.session_info.enabled_modules):
@@ -1726,11 +1727,19 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
             # 跳过当前平台没有可用命令的模块（如仅含 regex 的模块，不能作为命令调用）
             if not modules[x].command_list.get(msg.session_info.target_from):
                 continue
-            available_modules.append(x)
+            available_modules[x] = x
+            available_module_targets[x] = [x]
+            for alias, target in ModulesManager.modules_aliases.items():
+                if target.split(maxsplit=1)[0] == x:
+                    alias_first_word = alias.split(maxsplit=1)[0]
+                    available_modules.setdefault(alias_first_word, x)
+                    available_module_targets.setdefault(alias_first_word, target.split())
 
     # ========== 步骤 3: 模块名相似度匹配 ==========
     # 使用 rapidfuzz 找出最接近的模块名
-    match_close_module: list = __get_close_matches(command_first_word, available_modules, 1, typo_check_module_score)
+    match_close_module: list = __get_close_matches(
+        command_first_word, list(available_modules), 1, typo_check_module_score
+    )
 
     if match_close_module:
         # 找到了相似的模块
@@ -1752,7 +1761,10 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
                 match_close_module = []
 
     if match_close_module:
-        module: Module = modules[match_close_module[0]]
+        matched_module_name = match_close_module[0]
+        matched_real_module_name = available_modules[matched_module_name]
+        matched_module_target = available_module_targets[matched_module_name]
+        module: Module = modules[matched_real_module_name]
 
         # ========== 步骤 4: 检查模块是否有命令模板 ==========
         none_template = True
@@ -1761,7 +1773,8 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
                 none_template = False
                 break
 
-        command_split = msg.trigger_msg.split(" ")
+        input_command_split = msg.trigger_msg.split(" ")
+        command_split = matched_module_target + input_command_split[1:]
         len_command_split = len(command_split)
 
         # ========== 步骤 5: 命令参数匹配（仅对有模板的模块）==========
@@ -1825,7 +1838,7 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
                 m_split_options = filter(None, re.split(r"(\[.*?\])", match_split))
                 old_command_split = command_split.copy()
                 del old_command_split[0]  # 删除模块名
-                new_command_split = [match_close_module[0]]
+                new_command_split = [matched_real_module_name]
                 for m_ in m_split_options:
                     if m_.startswith("["):  # 如果是可选参数
                         m_split = m_.split(" ")  # 切割可选参数中的空格（说明存在多个子必须参数）
@@ -1868,27 +1881,34 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
                             else:
                                 new_command_split.append(mm)
                 new_command_display = " ".join(new_command_split)
+                if matched_module_name != matched_real_module_name:
+                    target_prefix = " ".join(matched_module_target)
+                    display_suffix = new_command_display[len(target_prefix) :].lstrip()
+                    new_command_display = matched_module_name + (f" {display_suffix}" if display_suffix else "")
                 result = await _typo_confirm(
-                    msg, new_command_display, new_command_split[0], " ".join(new_command_split)
+                    msg,
+                    new_command_display,
+                    matched_real_module_name,
+                    " ".join(new_command_split),
                 )
                 if result:
                     return result
             else:
                 if len_command_split - 1 == 1:
-                    new_command_display = f"{match_close_module[0]} {' '.join(command_split[1:])}"
+                    new_command_display = f"{matched_module_name} {' '.join(input_command_split[1:])}"
                     result = await _typo_confirm(
                         msg,
                         new_command_display,
-                        match_close_module[0],
-                        " ".join([match_close_module[0]] + command_split[1:]),
+                        matched_real_module_name,
+                        " ".join([matched_real_module_name] + command_split[1:]),
                     )
                     if result:
                         return result
         else:
-            new_trigger_msg = match_close_module[0] + (
+            new_trigger_msg = matched_real_module_name + (
                 " " + " ".join(command_split[1:]) if len(command_split) > 1 else ""
             )
-            result = await _typo_confirm(msg, new_trigger_msg, match_close_module[0], new_trigger_msg)
+            result = await _typo_confirm(msg, new_trigger_msg, matched_real_module_name, new_trigger_msg)
             if result:
                 return result
     return None, None, False

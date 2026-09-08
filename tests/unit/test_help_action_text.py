@@ -95,7 +95,7 @@ async def _session(target_suffix: str, support_action_text: bool = True):
         features=Features(
             support_action_text=support_action_text,
             support_markdown=True,
-            support_markdown_table=True,
+            support_markdown_extension=True,
         ),
     )
 
@@ -167,7 +167,7 @@ async def _test_image_help_precedes_action_text_fallback():
         features=Features(
             support_image=True,
             support_action_text=True,
-            support_markdown_table=False,
+            support_markdown_extension=False,
         ),
     )
     msg = _ImageHelpSession(session_info)
@@ -206,7 +206,7 @@ async def _test_image_flag_overrides_markdown_table():
         features=Features(
             support_image=True,
             support_action_text=True,
-            support_markdown_table=True,
+            support_markdown_extension=True,
         ),
     )
     msg = _ImageHelpSession(session_info, parsed_msg={"--image": True})
@@ -518,7 +518,7 @@ async def _test_qqbot_admin_help_includes_disabled_modules():
             support_action_text=True,
             support_button=True,
             support_markdown=True,
-            support_markdown_table=True,
+            support_markdown_extension=True,
             support_rss=True,
         ),
     )
@@ -559,7 +559,7 @@ async def _test_qqbot_superuser_help_header():
             support_action_text=True,
             support_button=True,
             support_markdown=True,
-            support_markdown_table=True,
+            support_markdown_extension=True,
         ),
     )
     msg = _OverviewSession(session_info, is_admin=True, is_superuser=True)
@@ -584,7 +584,7 @@ async def _test_qqbot_non_admin_help_keeps_module_list_button():
             support_action_text=True,
             support_button=True,
             support_markdown=True,
-            support_markdown_table=True,
+            support_markdown_extension=True,
             support_rss=True,
         ),
     )
@@ -622,7 +622,7 @@ async def _test_help_without_enable_requirement_shows_all_modules_as_enabled():
             support_action_text=True,
             support_button=True,
             support_markdown=True,
-            support_markdown_table=True,
+            support_markdown_extension=True,
         ),
     )
     session_info.enabled_modules = ["dice"]
@@ -689,7 +689,7 @@ async def _test_qqbot_module_list_hides_toggles_from_non_admin():
             support_action_text=True,
             support_button=True,
             support_markdown=True,
-            support_markdown_table=True,
+            support_markdown_extension=True,
             support_rss=True,
         ),
     )
@@ -730,7 +730,7 @@ async def _test_qqbot_module_list_keeps_toggles_for_admin():
         features=Features(
             support_action_text=True,
             support_markdown=True,
-            support_markdown_table=True,
+            support_markdown_extension=True,
         ),
     )
     session_info.enabled_modules = ["dice"]

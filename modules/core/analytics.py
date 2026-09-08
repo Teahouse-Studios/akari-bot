@@ -78,7 +78,7 @@ def annotate_points(data_x: list[str], data_y: list[int]) -> None:
 ana = module("analytics", alias="ana", required_superuser=True, base=True, doc=True)
 
 
-@ana.command()
+@ana.command("{{I18N:core.help.analytics}}")
 async def _(msg: Bot.MessageSession):
     if enable_analytics:
         first_record = await get_first_record()
@@ -102,7 +102,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("core.message.analytics.disabled"))
 
 
-@ana.command("days [<module>]")
+@ana.command("days [<module>] {{I18N:core.help.analytics.days}}")
 async def _(msg: Bot.MessageSession):
     if enable_analytics:
         first_record = await get_first_record()
@@ -146,7 +146,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("core.message.analytics.disabled"))
 
 
-@ana.command("year [<module>]")
+@ana.command("year [<module>] {{I18N:core.help.analytics.year}}")
 async def _(msg: Bot.MessageSession):
     if enable_analytics:
         first_record = await get_first_record()
@@ -191,7 +191,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("core.message.analytics.disabled"))
 
 
-@ana.command("modules [<rank>]")
+@ana.command("modules [<rank>] {{I18N:core.help.analytics.modules}}")
 async def _(msg: Bot.MessageSession, rank: int | None = None):
     rank = rank if rank and rank > 0 else 30
     if enable_analytics:

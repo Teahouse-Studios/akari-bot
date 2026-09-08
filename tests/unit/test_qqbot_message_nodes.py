@@ -67,7 +67,7 @@ def _unescaped_pipes(line: str) -> int:
 
 def _test_nodes_disabled_without_table_support() -> bool:
     """不支持 Markdown 表格的 QQBot 入口应把节点交给图片回退。"""
-    if guild_features.support_markdown_table or guild_features.support_handle_message_nodes:
+    if guild_features.support_markdown_extension or guild_features.support_handle_message_nodes:
         Logger.error("QQBot guild sessions without markdown tables should not handle message nodes as tables")
         return False
     return True

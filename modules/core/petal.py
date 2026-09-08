@@ -61,7 +61,14 @@ async def _(msg: Bot.MessageSession, petal: int, user: str):
         await msg.finish()
 
 
-@petal_.command(["[<user>]", "modify <petal> [<user>]", "clear [<user>]"], required_superuser=True)
+@petal_.command(
+    [
+        "[<user>] {{I18N:core.help.petal.admin}}",
+        "modify <petal> [<user>] {{I18N:core.help.petal.modify}}",
+        "clear [<user>] {{I18N:core.help.petal.clear}}",
+    ],
+    required_superuser=True,
+)
 async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg.get("<user>", False)
     if msg.parsed_msg.get("modify", False):

@@ -15,7 +15,7 @@ DBDATA_PER_PAGE = 10
 _eval = module("eval", required_superuser=True, base=True, doc=True, load=dev_mode)
 
 
-@_eval.command("<expr>")
+@_eval.command("<expr> {{I18N:core.help.eval}}")
 async def _(msg: Bot.MessageSession, expr: str):
     try:
         await msg.finish(str(eval(expr, {"msg": msg, "Bot": Bot})), disable_secret_check=True)  # skipcq
@@ -26,14 +26,14 @@ async def _(msg: Bot.MessageSession, expr: str):
 db = module("database", alias="db", required_superuser=True, base=True, doc=True, load=dev_mode)
 
 
-@db.command("model")
+@db.command("model {{I18N:core.help.database.model}}")
 async def _(msg: Bot.MessageSession):
     models_path = ["core.database.models"] + fetch_module_db()
     table_lst = sorted(get_model_names(models_path))
     await msg.finish([I18NContext("core.message.database.list")] + table_lst)
 
 
-@db.command("field <model> [--legacy]")
+@db.command("field <model> [--legacy] {{I18N:core.help.database.field}}")
 async def _(msg: Bot.MessageSession, model: str):
     models_path = ["core.database.models"] + fetch_module_db()
     result = get_model_fields(models_path, model)
@@ -58,7 +58,7 @@ async def _(msg: Bot.MessageSession, model: str):
         await msg.finish(Plain(table_str, disable_joke=True))
 
 
-@db.command("exec <sql> [-p <page>] [--legacy]")
+@db.command("exec <sql> [-p <page>] [--legacy] {{I18N:core.help.database.exec}}")
 async def _(msg: Bot.MessageSession, sql: str):
     try:
         conn = Tortoise.get_connection("default")

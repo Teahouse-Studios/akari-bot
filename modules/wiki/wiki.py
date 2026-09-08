@@ -176,7 +176,7 @@ def _build_disambiguation_output(msg: Bot.MessageSession, page: PageInfo, interw
     if is_disambiguation_overlong(blocks):
         if (
             msg.session_info.client_name == "QQBot"
-            and msg.session_info.support_markdown_table
+            and msg.session_info.support_markdown_extension
             and msg.session_info.support_action_text
         ):
             return build_disambiguation_table(
