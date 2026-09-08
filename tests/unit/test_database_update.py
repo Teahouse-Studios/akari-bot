@@ -135,6 +135,10 @@ async def _test_jobqueue_v5_migration_recreates_current_sqlite_schema():
             await database_update.update_database_to_v5(conn)
 
         columns = {row["name"] for row in await conn.execute_query_dict('PRAGMA table_info("job_queues");')}
+        indexes = set()
+        for index in await conn.execute_query_dict('PRAGMA index_list("job_queues");'):
+            index_columns = await conn.execute_query_dict(f'PRAGMA index_info("{index["name"]}");')
+            indexes.add(tuple(column["name"] for column in index_columns))
         rows = await conn.execute_query_dict('SELECT * FROM "job_queues";')
         return (
             not rows
@@ -145,6 +149,7 @@ async def _test_jobqueue_v5_migration_recreates_current_sqlite_schema():
                 "source_peer_id",
                 "target_peer",
                 "message_kind",
+                "expects_response",
                 "action",
                 "args",
                 "status",
@@ -153,6 +158,7 @@ async def _test_jobqueue_v5_migration_recreates_current_sqlite_schema():
                 "timestamp",
             }
             <= columns
+            and {("target_peer", "status"), ("status", "timestamp")} <= indexes
         )
     finally:
         await conn.execute_query('DROP TABLE IF EXISTS "job_queues";')

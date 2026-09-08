@@ -4,7 +4,7 @@ import asyncio
 import os
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
 from core.alive import Alive
@@ -13,7 +13,7 @@ from core.constants import Info
 from core.database.models import JobQueuePeersTable, JobQueuesTable
 from core.queue.base import JobQueueBase
 from core.queue.errors import RpcProtocolError, RpcTimeoutError, RpcUnavailableError
-from core.queue.peer import PeerDirectory, PeerSelector, ServiceRoute
+from core.queue.peer import PeerDirectory, PeerIdentity, PeerSelector, ServiceRoute
 from core.queue.rpc import remote, signal
 from core.queue.server import JobQueueServer
 from core.queue.transport import RpcRequest
@@ -94,7 +94,7 @@ async def _test_instances_discover_each_other_and_fan_out_once():
         async with asyncio.timeout(2):
             while True:
                 rows = await JobQueuesTable.filter(correlation_id=receipt.event_id)
-                if len(seen) == 2 and len(rows) == 2 and all(row.status == "done" for row in rows):
+                if len(seen) == 2 and not rows:
                     break
                 await asyncio.sleep(0.005)
         Alive.values.pop(worker_a.name, None)
@@ -104,8 +104,6 @@ async def _test_instances_discover_each_other_and_fan_out_once():
             and all(event_id == receipt.event_id for event_id, _, _ in seen.values())
             and all(source == controller.name for _, source, _ in seen.values())
             and all(payload == {"version": 7} for _, _, payload in seen.values())
-            and {row.claimed_by for row in rows} == {worker_a.name, worker_b.name}
-            and all(row.status == "done" for row in rows)
             and set(Alive.peer_ids(service="workers")) == {worker_a.name, worker_b.name}
             and Alive.is_alive(worker_a.name)
         )
@@ -175,11 +173,20 @@ async def _test_auto_identity_is_unique_per_process_lifecycle():
         first = AutoPeer.configure_peer(role="worker", service="jobs")
         second = AutoPeer.configure_peer(role="worker", service="jobs")
         named = NamedPeer.configure_peer(role="worker", service="jobs")
+        previous_name = AutoPeer.name
+        previous_identity = AutoPeer.identity
+        try:
+            AutoPeer.configure_peer(role="worker", service="jobs", metadata={"invalid": object()})
+            return False
+        except TypeError:
+            pass
         return (
             first.peer_id != second.peer_id
             and named.peer_id == "PEER-NAMED"
             and second.metadata["pid"] == os.getpid()
             and bool(second.node_id)
+            and AutoPeer.name == previous_name
+            and AutoPeer.identity is previous_identity
         )
     finally:
         Info.peer_id, Info.peer_role = previous_peer
@@ -255,6 +262,36 @@ async def _test_stopped_peer_cannot_be_revived_by_late_ready_signal():
             )
         )
         return not Alive.is_alive(peer_id) and Alive.values[peer_id]["state"] == "stopped"
+    finally:
+        await JobQueuePeersTable.filter(peer_id=peer_id).delete()
+        Alive.values.clear()
+        Alive.values.update(previous_alive)
+
+
+async def _test_authoritative_reregistration_revives_stopped_cache():
+    """同一实例的轮询器重新注册后，权威 ready 信号应立即覆盖 stopped 缓存。"""
+    previous_alive = Alive.values.copy()
+    peer_id = f"PEER-REREGISTER-{uuid4()}"
+
+    class Observer(JobQueueBase):
+        name = f"PEER-OBSERVER-{uuid4()}"
+
+    identity = PeerIdentity(peer_id, "client", "workers")
+    try:
+        Alive.refresh_peer(peer_id, "workers", role="client", state="stopped")
+        record = await PeerDirectory.register(identity, "ready")
+        await Observer._dispatch_signal(
+            RpcRequest(
+                "ready-after-restart",
+                Observer.name,
+                "peer.ready",
+                record.snapshot(),
+                float("inf"),
+                source_peer_id=peer_id,
+                message_kind="signal",
+            )
+        )
+        return Alive.is_alive(peer_id) and Alive.values[peer_id]["state"] == "ready"
     finally:
         await JobQueuePeersTable.filter(peer_id=peer_id).delete()
         Alive.values.clear()
@@ -353,6 +390,7 @@ async def _test_typed_signal_gathers_independent_acknowledgements():
             set(values) == {worker_a.name, worker_b.name}
             and set(values.values()) == {"A:9", "B:9"}
             and not report.errors
+            and not await JobQueuesTable.filter(correlation_id=report.event_id).exists()
         )
 
 
@@ -376,6 +414,27 @@ async def _test_signal_failure_is_isolated_per_target():
             report.results == {worker_a.name: ["ok:10"]}
             and set(report.errors) == {worker_b.name}
             and "expected target failure" in report.errors[worker_b.name]
+            and not await JobQueuesTable.filter(correlation_id=report.event_id).exists()
+        )
+
+
+async def _test_signal_timeout_discards_abandoned_deliveries():
+    @signal("audit.timeout", timeout=0.05)
+    async def timeout_signal() -> None: ...
+
+    async with _peer_cluster() as (controller, worker_a, worker_b):
+        for worker in (worker_a, worker_b):
+
+            @timeout_signal.bind(worker)
+            async def wait_forever() -> None:
+                await asyncio.Event().wait()
+
+        report = await timeout_signal.using(controller).gather(PeerSelector.service("workers"))
+        await asyncio.gather(worker_a.wait_process_tasks(), worker_b.wait_process_tasks())
+        return (
+            set(report.errors) == {worker_a.name, worker_b.name}
+            and not report.results
+            and not await JobQueuesTable.filter(correlation_id=report.event_id).exists()
         )
 
 
@@ -398,8 +457,11 @@ async def _test_service_target_remains_anycast_for_load_balancing():
             anycast.bind(worker)(make_handler(worker))
 
         result = await anycast.using(controller)(4)
-        row = await JobQueuesTable.filter(action=anycast.name).order_by("-timestamp").first()
-        return len(calls) == 1 and result == f"{calls[0]}:4" and row.claimed_by == calls[0]
+        return (
+            len(calls) == 1
+            and result == f"{calls[0]}:4"
+            and not await JobQueuesTable.filter(action=anycast.name).exists()
+        )
 
 
 async def _test_service_route_is_stable_and_distributes_routing_keys():
@@ -539,7 +601,7 @@ async def _test_route_resolution_obeys_rpc_deadline():
     return rpc_timed_out and signal_timed_out
 
 
-async def _test_expired_instance_is_removed_and_direct_waiter_is_released():
+async def _test_expired_instance_discards_fire_and_forget_delivery():
     previous_alive = Alive.values.copy()
     peer_id = f"PEER-EXPIRED-{uuid4()}"
     task_id = None
@@ -566,11 +628,9 @@ async def _test_expired_instance_is_removed_and_direct_waiter_is_released():
             }
         )
         peer = await JobQueuePeersTable.get(peer_id=peer_id)
-        row = await JobQueuesTable.get(task_id=task_id)
         return (
             peer.state == "stopped"
-            and row.status == "failed"
-            and row.result["error"]["code"] == "unavailable"
+            and await JobQueuesTable.get_or_none(task_id=task_id) is None
             and not Alive.is_alive(peer_id)
         )
     finally:
@@ -581,11 +641,117 @@ async def _test_expired_instance_is_removed_and_direct_waiter_is_released():
         Alive.values.update(previous_alive)
 
 
+async def _test_expiration_rolls_back_when_delivery_finalization_fails():
+    """租约 CAS 与任务终结必须同事务提交，失败后应保留可重试状态。"""
+    peer_id = f"PEER-ROLLBACK-{uuid4()}"
+    task_id = None
+    try:
+        await JobQueuePeersTable.create(
+            peer_id=peer_id,
+            role="client",
+            service="rollback",
+            state="ready",
+            capabilities=[],
+            metadata={},
+            lease_until=datetime.now(UTC) - timedelta(seconds=1),
+        )
+        task_id = await JobQueuesTable.add_task(peer_id, "audit.rollback", {})
+        failure = AsyncMock(side_effect=RuntimeError("simulated finalization failure"))
+        with patch.object(PeerDirectory, "_fail_instance_deliveries", new=failure):
+            try:
+                await PeerDirectory.expire_stale()
+                return False
+            except RuntimeError:
+                pass
+        peer = await JobQueuePeersTable.get(peer_id=peer_id)
+        task = await JobQueuesTable.get(task_id=task_id)
+        if peer.state != "ready" or task.status != "pending":
+            return False
+        expired = await PeerDirectory.expire_stale()
+        peer = await JobQueuePeersTable.get(peer_id=peer_id)
+        task = await JobQueuesTable.get(task_id=task_id)
+        return peer_id in expired and peer.state == "stopped" and task.status == "failed"
+    finally:
+        await JobQueuePeersTable.filter(peer_id=peer_id).delete()
+        if task_id is not None:
+            await JobQueuesTable.filter(task_id=task_id).delete()
+
+
+async def _test_unexpected_poller_failure_unregisters_peer():
+    """轮询器异常退出时不得保留本地 registered 状态或可路由租约。"""
+    peer_id = f"PEER-POLLER-FAIL-{uuid4()}"
+
+    class FailingPeer(JobQueueBase):
+        name = peer_id
+
+    FailingPeer.configure_peer(role="worker", service="failing")
+    try:
+        with patch.object(FailingPeer, "_check_queue", new=AsyncMock(side_effect=RuntimeError("poll failed"))):
+            try:
+                await FailingPeer.check_job_queue()
+                return False
+            except RuntimeError:
+                pass
+        record = await PeerDirectory.lookup(peer_id)
+        return record is not None and record.state == "stopped" and not FailingPeer._registered
+    finally:
+        await JobQueuePeersTable.filter(peer_id=peer_id).delete()
+        await JobQueuesTable.filter(source_peer_id=peer_id).delete()
+        await JobQueuesTable.filter(target_peer=peer_id).delete()
+
+
+async def _test_ambiguous_registration_failure_is_rolled_back():
+    """注册写入后才抛错时，应以已知 peer_id 主动撤销半注册记录。"""
+    peer_id = f"PEER-REGISTER-FAIL-{uuid4()}"
+
+    class FailingPeer(JobQueueBase):
+        name = peer_id
+
+    FailingPeer.configure_peer(role="worker", service="failing")
+    original_register = PeerDirectory.register.__func__
+
+    async def register_then_fail(cls, identity, state="starting"):
+        await original_register(cls, identity, state)
+        raise RuntimeError("ambiguous registration failure")
+
+    try:
+        with patch.object(PeerDirectory, "register", new=classmethod(register_then_fail)):
+            try:
+                await FailingPeer.check_job_queue()
+                return False
+            except RuntimeError:
+                pass
+        record = await PeerDirectory.lookup(peer_id)
+        return record is not None and record.state == "stopped" and not FailingPeer._registered
+    finally:
+        await JobQueuePeersTable.filter(peer_id=peer_id).delete()
+
+
+async def _test_interrupted_emit_discards_partial_transport_write():
+    """批量信号写入部分成功后抛错时，清理所有已知投递 ID。"""
+    signal_name = f"audit.partial-submit.{uuid4()}"
+    async with _peer_cluster() as (controller, _worker_a, _worker_b):
+        original_send = controller.transport.send
+
+        async def write_one_then_fail(requests):
+            await original_send(requests[0])
+            raise RuntimeError("partial transport write")
+
+        with patch.object(controller.transport, "send_many", new=write_one_then_fail):
+            try:
+                await controller.emit_signal(signal_name, None, PeerSelector.service("workers"), timeout=2)
+                return False
+            except RuntimeError:
+                pass
+        return not await JobQueuesTable.filter(source_peer_id=controller.name, action=signal_name).exists()
+
+
 @func_case
 async def test_peer_signals(tester: Tester):
     await tester.test(_test_auto_identity_is_unique_per_process_lifecycle, "进程生命周期身份唯一且可辨认")
     await tester.test(_test_peer_selector_normalizes_and_validates_targets, "广播选择器规范化并拒绝歧义目标")
     await tester.test(_test_stopped_peer_cannot_be_revived_by_late_ready_signal, "生命周期信号乱序不复活实例")
+    await tester.test(_test_authoritative_reregistration_revives_stopped_cache, "权威重新注册立即恢复实例缓存")
     await tester.test(_test_ready_peer_ignores_late_stopped_signal, "迟到停止信号不能错误摘除 ready 实例")
     await tester.test(_test_lifecycle_signal_rejects_non_object_payload, "生命周期信号拒绝非对象载荷")
     await tester.test(
@@ -595,6 +761,7 @@ async def test_peer_signals(tester: Tester):
     await tester.test(_test_startup_ready_and_welcome_are_mutual, "启动 ready/welcome 信号双向辨认")
     await tester.test(_test_typed_signal_gathers_independent_acknowledgements, "强类型信号逐实例 ACK 汇总")
     await tester.test(_test_signal_failure_is_isolated_per_target, "单个广播目标失败不影响其它实例 ACK")
+    await tester.test(_test_signal_timeout_discards_abandoned_deliveries, "广播等待超时删除放弃的投递")
     await tester.test(
         _test_service_target_remains_anycast_for_load_balancing,
         "服务地址维持竞争消费负载均衡",
@@ -613,7 +780,11 @@ async def test_peer_signals(tester: Tester):
     )
     await tester.test(_test_route_resolution_obeys_rpc_deadline, "稳定路由查询计入 RPC deadline")
     await tester.test(
-        _test_expired_instance_is_removed_and_direct_waiter_is_released,
-        "租约过期释放实例直投任务",
+        _test_expired_instance_discards_fire_and_forget_delivery,
+        "租约过期删除免回包实例直投任务",
     )
+    await tester.test(_test_expiration_rolls_back_when_delivery_finalization_fails, "租约失效与任务终结事务回滚")
+    await tester.test(_test_unexpected_poller_failure_unregisters_peer, "轮询器异常退出注销实例")
+    await tester.test(_test_ambiguous_registration_failure_is_rolled_back, "注册结果未知时撤销半注册实例")
+    await tester.test(_test_interrupted_emit_discards_partial_transport_write, "广播部分写入异常清理投递")
     return tester

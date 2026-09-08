@@ -20,10 +20,12 @@ Bot 与 Server 进程共用一套双向 RPC 与信号运行时。数据库中的
 | `reporting.py` | 提交配置中指定的错误报告，并避免错误报告流程等待自身完成 |
 
 `JobQueuePeersTable` 以 `peer_id` 为主键登记每个进程实例。
-`JobQueuesTable` 中的 `target_peer`、`source_peer_id`、`correlation_id`、`message_kind` 与
-`claimed_by` 分别记录投递目标、来源实例、关联标识、消息类别及实际领取者。
+`JobQueuesTable` 中的 `target_peer`、`source_peer_id`、`correlation_id`、`message_kind`、
+`expects_response` 与 `claimed_by` 分别记录投递目标、来源实例、关联标识、消息类别、是否需要回包及
+实际领取者。
 
-如需替换普通任务的投递后端，应实现 `send`、`send_many`、`receive`、`responses` 与 `finish`。
+如需替换普通任务的投递后端，应实现 `send`、`send_many`、`receive`、`consume_responses`、`discard`
+与 `finish`。
 如需同时将 Peer Registry 迁移至数据库之外，还必须等价实现租约查询、权威实例发现及实例退出后的
 未完成任务终结机制。`PeerSelector` 支持按实例、节点、角色、service 与 capability 的交集筛选目标，
 并可显式排除指定实例。
@@ -52,7 +54,9 @@ Bot 与 Server 进程共用一套双向 RPC 与信号运行时。数据库中的
 稳定路由。连接恢复后，实例重新注册为 `ready` 并广播 `peer.resumed`，从而避免在维护期间接收新消息。
 
 所有生命周期信号均须由其载荷中对应的 `peer_id` 发出，并且仅在信号内容与 Registry 当前状态一致时
-更新本地缓存。延迟到达的 `ready`、`resumed` 或 `stopped` 信号不得覆盖更新后的权威状态。
+更新本地缓存。延迟到达的 `ready`、`resumed` 或 `stopped` 信号不得覆盖更新后的权威状态；同一进程内的
+轮询器异常重启并以原 `peer_id` 重新取得有效租约时，则允许经 Registry 确认的新 `ready` 状态覆盖本地
+`stopped` 缓存。
 
 ## RPC 调用
 
@@ -112,6 +116,9 @@ receipt = await invalidate_cache.emit(PeerSelector.role("server"), version=8)
 # 等待各目标处理完成，并按 peer_id 汇总 ACK 或错误。
 report = await invalidate_cache.gather(PeerSelector.service("Server"), version=8)
 ```
+
+`.emit()` 投递不要求回包，各目标处理完成后会直接删除相应队列行；`.gather()` 要求逐实例 ACK，终态结果
+由发起方读取后立即删除。`SignalReceipt` 中的任务 ID 仅用于关联本次投递，不表示对应队列行会被持久保留。
 
 同一信号可以在单个进程内注册多个本地订阅者。底层接口亦可直接调用
 `JobQueueBase.emit_signal()` 或 `JobQueueBase.gather_signal()`；业务代码原则上应优先声明强类型
@@ -188,14 +195,31 @@ async def example(name: str, enabled: bool = True) -> list[str]:
 - `None`、`False`、空列表与空字典均属于合法的成功返回值，不参与错误状态判断。
 - 查询与信号的默认超时时间为 30 秒，普通操作为 120 秒，消息处理、消息发送及长操作最长为 7200 秒。
   每个请求具有独立的 deadline，不继承已经过期的父请求期限，以确保 `finally` 中的资源释放操作仍可执行。
-- 调用方取消等待仅影响本地等待状态，不保证撤销远端副作用；远端处理仍受该请求自身 deadline 的约束。
+- timeout 与 deadline 必须为正的有限数值或有限时间戳；布尔值虽然在 Python 中属于整数子类，仍将被明确
+  拒绝。响应错误码等协议字段亦须符合约定类型，畸形数据统一转换为 `RpcProtocolError`，不得泄漏底层
+  类型异常。
+- 调用方取消等待时会删除相应队列行，但不保证撤销已经开始的远端副作用；远端处理仍受该请求自身
+  deadline 的约束，其最终完成状态可能无法再由调用方取得。
+- 投递操作可能在数据库已经提交后才报告取消或连接异常。等待型调用在此情况下按“投递结果未知”处理，
+  并以预先生成的任务 ID 尝试清理队列行；该清理不改变远端副作用可能已经发生的事实。
 - 原子领取可以避免同一投递被多个消费者重复执行，但不提供严格 FIFO 或 exactly-once 保证。
   如果外部副作用已经完成而响应丢失，则最终执行结果可能无法确定，因此不得自动重试发送、禁言等操作。
+- `.submit()` 与 `.emit()` 不等待远端结果，处理器进入终态后直接删除任务行；等待型 RPC 与 `.gather()`
+  在发起方读取终态结果后立即删除任务行。终态记录不是审计日志，不应依赖其持久存在。
+- 发起方已经读取终态结果后，若删除操作发生瞬时故障，应优先交付内存中的有效结果并记录清理异常，避免
+  结果泵退出或将成功结果降级为 unavailable；未删除的终态行仍由定时任务兜底回收。
+- 调用方异常退出等情况可能遗留未消费的终态结果；定时清理仅作为兜底，并通过 `(status, timestamp)`
+  索引限制扫描成本。
 - 队列轮询与处理器并发运行；处理器等待反向调用时，不会阻塞结果接收。
 - 进入维护状态时，实例停止领取新请求，但继续接收在途结果；待处理器全部结束后，方可独占数据库连接。
+- 同一任务可以重入维护窗口；不同任务发起的维护窗口按实例串行执行，以避免不可重入锁导致死锁，或后续
+  维护在 Registry 已恢复 `ready` 状态后继续运行。
 - 关闭过程中，结果接收器会持续运行，直至会话与后台任务清理完成，随后才停止轮询并关闭数据库连接。
+- 队列轮询器异常退出时，实例会主动撤销 Registry 注册并释放本地等待方，不继续以可路由但无法收发任务的
+  状态存活。Client 监督器可在状态清理完成后重新启动轮询器；Server 则将异常上抛至进程监督逻辑。
 - 实例正常退出或租约到期时，发往该实例的未完成直投任务会被标记为 unavailable。以 service 为目标的
-  任播任务不会因单个实例退出而被删除，仍可由同组其他实例领取。
+  任播任务不会因单个实例退出而被删除，仍可由同组其他实例领取。实例状态更新与其直投任务终结位于同一
+  数据库事务内；任一操作失败时整体回滚，以便下一轮租约扫描继续处理。
 - 消息入口必须等待 Server 完成处理后再释放 Client 侧的 SDK 上下文，不得改为 `.submit()`。
 
 ## 协议升级与验证
@@ -213,7 +237,7 @@ ORM 模型重新创建该表；旧表中的待领取、执行中及已完成任�
 - `tests/unit/test_rpc_contracts.py`：验证调用签名、默认值、业务对象 JSON 往返及平台接口自动绑定；
 - `tests/unit/test_rpc_transport.py`：验证真实数据库往返、异常传播、取消、超时清理、维护与关闭流程；
 - `tests/unit/test_rpc_process.py`：通过两个独立 Python 进程与临时 SQLite 验证并发反向调用；
-- `tests/unit/test_queue_lifecycle.py`：验证原子领取、终态保留及活动任务清理；
+- `tests/unit/test_queue_lifecycle.py`：验证原子领取、结果消费后删除、免回包任务删除及活动任务清理；
 - `tests/unit/test_peer_signals.py`：验证实例发现、同 service 任播、逐实例扇出、ACK 与租约到期；
 - 会话、事件、平台关闭、主动推送、数据库维护与验证码测试用于覆盖上层迁移行为。
 

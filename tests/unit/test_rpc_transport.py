@@ -7,7 +7,10 @@ from dataclasses import replace
 from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
+from tortoise.queryset import QuerySet
+
 from core.database.models import JobQueuesTable
+from core.logger import Logger
 from core.queue.base import current_peer, JobQueueBase
 from core.queue.errors import (
     RpcCancelledError,
@@ -69,6 +72,7 @@ async def _test_roundtrip_preserves_json_and_registry_isolation():
         assert caller.pause_event is not receiver.pause_event
         assert current_peer.get() is None
         assert not caller._pending
+        assert not await JobQueuesTable.filter(source_peer_id=caller.name, action="echo").exists()
     return True
 
 
@@ -143,9 +147,10 @@ async def _test_local_cancellation_does_not_cancel_or_retry_remote_effect():
         (result,) = await asyncio.gather(task, return_exceptions=True)
         assert isinstance(result, asyncio.CancelledError)
         assert not caller._pending
+        assert await JobQueuesTable.get_or_none(task_id=task_id) is None
         proceed.set()
-        row = await _wait_status(task_id, "done")
-        assert row.result["value"] == "effect-completed" and calls == 1
+        await receiver.wait_process_tasks()
+        assert await JobQueuesTable.get_or_none(task_id=task_id) is None and calls == 1
     return True
 
 
@@ -166,15 +171,20 @@ async def _test_handler_deadline_allows_cleanup_rpc():
                 # Cleanup has its own deadline even when the outer request expired.
                 await receiver.call(caller.name, "cleanup", None, timeout=1)
 
-        task_id = await caller.submit(receiver.name, "deadline", None, timeout=0.1)
+        request = caller._request(receiver.name, "deadline", None, timeout=0.1)
+        await caller.transport.send(request)
         await asyncio.wait_for(cleaned.wait(), 1)
-        row = await _wait_status(task_id, "timeout")
+        row = await _wait_status(request.task_id, "timeout")
         assert row.result["error"]["code"] == "timeout"
+        (response,) = await caller.transport.consume_responses([request.task_id])
+        assert response.status == "timeout"
+        assert await JobQueuesTable.get_or_none(task_id=request.task_id) is None
         try:
             await caller.call("NO-RPC-RECEIVER", "missing", None, timeout=0.02)
             return False
-        except RpcTimeoutError:
+        except RpcTimeoutError as exc:
             assert not caller._pending
+            assert await JobQueuesTable.get_or_none(task_id=exc.task_id) is None
     return True
 
 
@@ -193,7 +203,7 @@ async def _test_expired_requests_skip_effects_and_global_limit_applies():
         with patch.object(caller, "TASK_TIMEOUT_SECONDS", 0.01):
             request = caller._request(receiver.name, "effect", None, 100)
             assert request.deadline <= time.time() + 0.01
-        for timeout in (0, -1, float("nan"), float("inf")):
+        for timeout in (True, False, 0, -1, float("nan"), float("inf"), "1"):
             try:
                 await caller.submit(receiver.name, "effect", None, timeout=timeout)
                 return False
@@ -213,6 +223,7 @@ async def _test_shutdown_failure_wakes_remote_caller():
 
         task = asyncio.create_task(caller.call(receiver.name, "hang", None, timeout=2))
         await asyncio.wait_for(started.wait(), 1)
+        (task_id,) = caller._pending
         await receiver.begin_shutdown()
         await receiver.cancel_process_tasks()
         try:
@@ -221,6 +232,7 @@ async def _test_shutdown_failure_wakes_remote_caller():
         except RpcCancelledError:
             pass
         assert not caller._pending
+        assert await JobQueuesTable.get_or_none(task_id=task_id) is None
     return True
 
 
@@ -231,6 +243,7 @@ async def _test_stopping_result_pump_wakes_local_waiters():
         async with asyncio.timeout(1):
             while not caller._pending:
                 await asyncio.sleep(0)
+        (task_id,) = caller._pending
         await caller.stop_job_queue()
         try:
             await asyncio.wait_for(task, 1)
@@ -238,6 +251,7 @@ async def _test_stopping_result_pump_wakes_local_waiters():
         except RpcUnavailableError:
             pass
         assert not caller._pending
+        assert await JobQueuesTable.get_or_none(task_id=task_id) is None
     return True
 
 
@@ -287,7 +301,125 @@ async def _test_bad_protocol_and_late_success_are_not_silent():
         await receiver.transport.finish(RpcResponse(task_id, "done", {"rpc": PROTOCOL_VERSION, "value": "late"}))
         row = await JobQueuesTable.get(task_id=task_id)
         assert row.status == "failed"
+        malformed_error = RpcResponse(
+            task_id,
+            "failed",
+            {"rpc": PROTOCOL_VERSION, "error": {"code": [], "message": "invalid"}},
+        )
+        try:
+            caller._decode_response(request, malformed_error)
+            return False
+        except RpcProtocolError:
+            pass
     return True
+
+
+async def _test_ambiguous_send_failure_discards_possible_insert():
+    """send 已落库后才抛错时，等待型调用仍应按未知结果清理已知任务 ID。"""
+    async with _peers() as (caller, _receiver):
+        original_send = caller.transport.send
+
+        async def save_then_fail(request):
+            await original_send(request)
+            raise RuntimeError("ambiguous send failure")
+
+        with patch.object(caller.transport, "send", new=save_then_fail):
+            try:
+                await caller.call("RPC-NO-RECEIVER", "ambiguous", None, timeout=1)
+                return False
+            except RuntimeError as exc:
+                assert str(exc) == "ambiguous send failure"
+        return (
+            not caller._pending
+            and not await JobQueuesTable.filter(
+                source_peer_id=caller.name,
+                action="ambiguous",
+            ).exists()
+        )
+
+
+async def _test_response_cleanup_failure_does_not_hide_result():
+    """终态结果已读入内存后，删除失败不得终止结果泵或改写调用结果。"""
+    async with _peers() as (caller, receiver):
+
+        @receiver.register("cleanup-failure")
+        async def succeed(payload):
+            return payload
+
+        original_delete = QuerySet.delete
+
+        async def fail_delete(query):
+            if query.model is JobQueuesTable:
+                raise RuntimeError("simulated cleanup failure")
+            return await original_delete(query)
+
+        with patch.object(QuerySet, "delete", new=fail_delete), patch.object(Logger, "exception") as logged:
+            result = await caller.call(receiver.name, "cleanup-failure", {"ok": True}, timeout=2)
+        rows = await JobQueuesTable.filter(source_peer_id=caller.name, action="cleanup-failure")
+        await JobQueuesTable.filter(source_peer_id=caller.name, action="cleanup-failure").delete()
+        return (
+            result == {"ok": True}
+            and len(rows) == 1
+            and rows[0].status == "done"
+            and logged.call_count >= 1
+            and caller.is_running
+        )
+
+
+async def _test_malformed_deadline_is_protocol_failure():
+    """bool 是 int 的子类，但不得被解释成合法的 Unix deadline。"""
+    async with _peers() as (caller, receiver):
+        request = replace(caller._request(receiver.name, "never", None, timeout=2), deadline=True)
+        await caller.transport.send(request)
+        row = await _wait_status(request.task_id, "failed")
+        (response,) = await caller.transport.consume_responses([request.task_id])
+        return row.result["error"]["code"] == "protocol_error" and response.status == "failed"
+
+
+async def _test_nested_maintenance_window_is_reentrant_for_owner():
+    """同一任务嵌套维护窗口时复用外层锁，避免不可重入锁导致死锁。"""
+    async with _peers() as (caller, _receiver):
+        async with asyncio.timeout(1):
+            async with caller.maintenance_window():
+                assert not caller.pause_event.is_set()
+                async with caller.maintenance_window():
+                    assert not caller.pause_event.is_set()
+                assert not caller.pause_event.is_set()
+        return caller.pause_event.is_set() and caller._maintenance_owner is None
+
+
+async def _test_concurrent_maintenance_windows_are_serialized():
+    """不同任务的维护窗口必须串行，避免后进入者在 Registry 已恢复 ready 后执行维护。"""
+    async with _peers() as (caller, _receiver):
+        first_entered = asyncio.Event()
+        release_first = asyncio.Event()
+        second_entered = asyncio.Event()
+
+        async def first():
+            async with caller.maintenance_window():
+                first_entered.set()
+                await release_first.wait()
+
+        async def second():
+            await first_entered.wait()
+            async with caller.maintenance_window():
+                second_entered.set()
+
+        first_task = asyncio.create_task(first())
+        second_task = asyncio.create_task(second())
+        try:
+            await asyncio.wait_for(first_entered.wait(), 1)
+            await asyncio.sleep(0.02)
+            serialized = not second_entered.is_set()
+            release_first.set()
+            await asyncio.wait_for(asyncio.gather(first_task, second_task), 1)
+            return serialized and second_entered.is_set() and caller.pause_event.is_set()
+        finally:
+            release_first.set()
+            for task in (first_task, second_task):
+                if not task.done():
+                    task.cancel()
+            await asyncio.gather(first_task, second_task, return_exceptions=True)
 
 
 @func_case
@@ -302,4 +434,9 @@ async def test_rpc_transport(tester: Tester):
     await tester.test(_test_stopping_result_pump_wakes_local_waiters, "结果泵关闭释放本地等待")
     await tester.test(_test_maintenance_pumps_nested_results_before_entering, "维护前排空双向在途调用")
     await tester.test(_test_bad_protocol_and_late_success_are_not_silent, "旧协议明确失败且终态不被覆盖")
+    await tester.test(_test_ambiguous_send_failure_discards_possible_insert, "投递结果未知时清理可能已写入的任务")
+    await tester.test(_test_response_cleanup_failure_does_not_hide_result, "结果删除失败不掩盖已读取结果")
+    await tester.test(_test_malformed_deadline_is_protocol_failure, "非法布尔 deadline 明确返回协议错误")
+    await tester.test(_test_nested_maintenance_window_is_reentrant_for_owner, "同任务嵌套维护窗口不会自锁")
+    await tester.test(_test_concurrent_maintenance_windows_are_serialized, "并发维护窗口串行执行")
     return tester

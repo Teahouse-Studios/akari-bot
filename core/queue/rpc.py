@@ -29,6 +29,12 @@ Route = RouteTarget | Callable[[Mapping[str, Any]], RouteTarget]
 _default_peer: type[JobQueueBase] | None = None
 
 
+def _validate_timeout(seconds: float) -> float:
+    if isinstance(seconds, bool) or not isinstance(seconds, (int, float)) or not math.isfinite(seconds) or seconds <= 0:
+        raise ValueError("RPC timeout must be positive and finite")
+    return float(seconds)
+
+
 def set_default_peer(peer: type[JobQueueBase]) -> None:
     """Set once in the process bootstrap; importing contracts has no such effect."""
     global _default_peer
@@ -66,7 +72,7 @@ class RpcMethod(Generic[P, R]):
     ):
         self.name = name
         self.target = target
-        self.timeout = timeout
+        self.timeout = _validate_timeout(timeout)
         self.context_method = context_method
         self.signature = inspect.signature(function)
         self.hints = get_type_hints(function)
@@ -88,10 +94,8 @@ class RpcMethod(Generic[P, R]):
         return endpoint
 
     def with_timeout(self, seconds: float) -> Self:
-        if not math.isfinite(seconds) or seconds <= 0:
-            raise ValueError("RPC timeout must be positive and finite")
         endpoint = copy(self)
-        endpoint.timeout = seconds
+        endpoint.timeout = _validate_timeout(seconds)
         return endpoint
 
     def encode_arguments(self, *args: P.args, **kwargs: P.kwargs) -> dict:

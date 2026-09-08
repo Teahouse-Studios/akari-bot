@@ -11,6 +11,8 @@ from datetime import UTC, datetime, timedelta
 from hashlib import sha256
 from typing import Literal
 
+from tortoise.transactions import in_transaction
+
 from core.database.models import JobQueuePeersTable, JobQueuesTable
 
 type PeerRole = Literal["client", "server", "worker", "test"]
@@ -115,9 +117,7 @@ class ServiceRoute:
             raise ValueError("Route service must be a nonempty string no longer than 128 characters")
         if not isinstance(self.routing_key, str):
             raise TypeError("Route key must be a string")
-        if self.role is not None and (
-            not isinstance(self.role, str) or not self.role or len(self.role) > 32
-        ):
+        if self.role is not None and (not isinstance(self.role, str) or not self.role or len(self.role) > 32):
             raise ValueError("Route role must be a nonempty string no longer than 32 characters")
 
 
@@ -225,19 +225,24 @@ class PeerDirectory:
     @classmethod
     async def set_state(cls, peer_id: str, state: PeerState, lease_seconds: int | None = None) -> bool:
         lease_until = datetime.now(UTC) + timedelta(seconds=lease_seconds or cls.LEASE_SECONDS)
-        updated = await JobQueuePeersTable.filter(peer_id=peer_id).update(
-            state=state, lease_until=lease_until
-        )
+        updated = await JobQueuePeersTable.filter(peer_id=peer_id).update(state=state, lease_until=lease_until)
         return bool(updated)
 
     @classmethod
     async def unregister(cls, peer_id: str) -> bool:
         now = datetime.now(UTC)
-        updated = await JobQueuePeersTable.filter(peer_id=peer_id).update(
-            state="stopped", heartbeat_at=now, lease_until=now
-        )
-        if updated:
-            await cls._fail_instance_deliveries(peer_id, "Target process stopped before completing the request.")
+        async with in_transaction(JobQueuePeersTable._meta.default_connection) as connection:
+            updated = await (
+                JobQueuePeersTable.filter(peer_id=peer_id)
+                .using_db(connection)
+                .update(state="stopped", heartbeat_at=now, lease_until=now)
+            )
+            if updated:
+                await cls._fail_instance_deliveries(
+                    peer_id,
+                    "Target process stopped before completing the request.",
+                    connection=connection,
+                )
         return bool(updated)
 
     @classmethod
@@ -254,32 +259,64 @@ class PeerDirectory:
         ).all()
         peer_ids = []
         for row in rows:
-            updated = await JobQueuePeersTable.filter(
-                peer_id=row.peer_id,
-                state__in=["starting", "ready", "maintenance", "draining"],
-                lease_until__lte=now,
-            ).update(state="stopped")
-            if updated:
-                peer_ids.append(row.peer_id)
-                await cls._fail_instance_deliveries(row.peer_id, "Target process lease expired.")
+            async with in_transaction(JobQueuePeersTable._meta.default_connection) as connection:
+                updated = await (
+                    JobQueuePeersTable.filter(
+                        peer_id=row.peer_id,
+                        state__in=["starting", "ready", "maintenance", "draining"],
+                        lease_until__lte=now,
+                    )
+                    .using_db(connection)
+                    .update(state="stopped")
+                )
+                if updated:
+                    await cls._fail_instance_deliveries(
+                        row.peer_id,
+                        "Target process lease expired.",
+                        connection=connection,
+                    )
+                    peer_ids.append(row.peer_id)
         await JobQueuePeersTable.filter(
             state="stopped", heartbeat_at__lt=now - timedelta(seconds=cls.STOPPED_RETENTION_SECONDS)
         ).delete()
         return peer_ids
 
     @staticmethod
-    async def _fail_instance_deliveries(peer_id: str, message: str) -> None:
+    async def _fail_instance_deliveries(peer_id: str, message: str, *, connection=None) -> None:
         from core.queue.transport import PROTOCOL_VERSION
 
         result = {
             "rpc": PROTOCOL_VERSION,
             "error": {"code": "unavailable", "type": "RpcUnavailableError", "message": message},
         }
-        await JobQueuesTable.filter(target_peer=peer_id, status="pending").update(
-            status="failed",
-            result=result,
-        )
-        await JobQueuesTable.filter(claimed_by=peer_id, status="processing").update(status="failed", result=result)
+
+        async def fail_deliveries(db) -> None:
+            await (
+                JobQueuesTable.filter(target_peer=peer_id, status="pending", expects_response=False)
+                .using_db(db)
+                .delete()
+            )
+            await (
+                JobQueuesTable.filter(claimed_by=peer_id, status="processing", expects_response=False)
+                .using_db(db)
+                .delete()
+            )
+            await (
+                JobQueuesTable.filter(target_peer=peer_id, status="pending", expects_response=True)
+                .using_db(db)
+                .update(status="failed", result=result)
+            )
+            await (
+                JobQueuesTable.filter(claimed_by=peer_id, status="processing", expects_response=True)
+                .using_db(db)
+                .update(status="failed", result=result)
+            )
+
+        if connection is not None:
+            await fail_deliveries(connection)
+            return
+        async with in_transaction(JobQueuesTable._meta.default_connection) as transaction:
+            await fail_deliveries(transaction)
 
     @classmethod
     async def resolve(cls, selector: PeerSelector | None = None) -> list[PeerRecord]:

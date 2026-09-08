@@ -169,6 +169,14 @@ async def _test_submission_and_signature_drift():
         submit.assert_awaited_once_with("other", "test.submit", {"value": 4}, timeout=7)
         call.assert_not_awaited()
 
+    for invalid_timeout in (True, 0, float("nan"), "7"):
+        try:
+            method.with_timeout(invalid_timeout)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"Invalid RPC timeout was accepted: {invalid_timeout!r}")
+
     async def wrong(value: int, extra: int) -> None: ...
 
     try:

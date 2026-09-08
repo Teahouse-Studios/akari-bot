@@ -1631,6 +1631,7 @@ class JobQueuesTable(DBModel):
 
     :param task_id: 任务 ID。
     :param target_peer: 目标进程实例或 service。
+    :param expects_response: 调用方是否等待终态结果。
     :param action: 动作。
     :param args: 参数。
     :param status: 任务状态。
@@ -1645,6 +1646,7 @@ class JobQueuesTable(DBModel):
     source_peer_id = fields.CharField(max_length=128, null=True, index=True)
     target_peer = fields.CharField(max_length=512)
     message_kind = fields.CharField(max_length=16, default="rpc")
+    expects_response = fields.BooleanField(default=True)
     action = fields.CharField(max_length=512)
     args = fields.JSONField(default={})
     status = fields.CharField(max_length=32, default="pending")
@@ -1655,7 +1657,8 @@ class JobQueuesTable(DBModel):
     class Meta:
         table = "job_queues"
         # 每个进程每 100 毫秒按这两列轮询一次，无索引时开销随表内行数线性增长
-        indexes = (("target_peer", "status"),)
+        # status / timestamp 索引用于低成本回收调用方异常退出后遗留的终态记录
+        indexes = (("target_peer", "status"), ("status", "timestamp"))
 
     @classmethod
     async def add_task(cls, target_peer: str, action: str, args: dict) -> str:
@@ -1681,8 +1684,10 @@ class JobQueuesTable(DBModel):
         检查旧状态，两边都会成功并重复执行处理器；带状态条件的单条 UPDATE 只有一方
         能更新一行，因此可作为跨进程的领取凭证。
         """
-        updated = await type(self).filter(task_id=self.task_id, status="pending").update(
-            status="processing", claimed_by=peer_id
+        updated = (
+            await type(self)
+            .filter(task_id=self.task_id, status="pending")
+            .update(status="processing", claimed_by=peer_id)
         )
         if updated:
             self.status = "processing"
@@ -1704,12 +1709,13 @@ class JobQueuesTable(DBModel):
         # 若沿用无条件删除，它们会在等待方和执行方自己的超时机制生效前一小时就消失。
         await cls.filter(timestamp__lt=timestamp, status__in=["done", "failed", "timeout"]).delete()
 
-        # 超过全局执行上限的活动任务已不可能合法完成，先标成 timeout 供等待方轮询取得终态。
-        # 终态删除必须发生在这一步之前，否则刚标记的行会在同一轮立即被删掉。
+        # 超过全局执行上限的活动任务已不可能合法完成。免回包任务直接删除；等待型任务先标成
+        # timeout 供调用方轮询取得终态。终态删除必须发生在这一步之前，否则刚标记的行会在
+        # 同一轮立即被删掉。
         active_timeout = now - timedelta(seconds=cls.ACTIVE_TIMEOUT_SECONDS)
-        await cls.filter(timestamp__lt=active_timeout, status__in=["pending", "processing"]).update(
-            status="timeout", result={}
-        )
+        stale_active = cls.filter(timestamp__lt=active_timeout, status__in=["pending", "processing"])
+        await stale_active.filter(expects_response=False).delete()
+        await stale_active.filter(expects_response=True).update(status="timeout", result={})
         return True
 
     @classmethod

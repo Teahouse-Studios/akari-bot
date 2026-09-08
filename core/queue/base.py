@@ -69,10 +69,12 @@ class JobQueueBase:
     pause_event = asyncio.Event()
     pause_event.set()
     _poll_lock = asyncio.Lock()
+    _maintenance_lock = asyncio.Lock()
     _poller_task: asyncio.Task | None = None
     _ready_event = asyncio.Event()
     _registered = False
     _maintenance_active = False
+    _maintenance_owner: asyncio.Task | None = None
     is_running = False
     _shutting_down = False
     HEARTBEAT_INTERVAL_SECONDS = 15
@@ -90,10 +92,12 @@ class JobQueueBase:
         cls.pause_event = asyncio.Event()
         cls.pause_event.set()
         cls._poll_lock = asyncio.Lock()
+        cls._maintenance_lock = asyncio.Lock()
         cls._poller_task = None
         cls._ready_event = asyncio.Event()
         cls._registered = False
         cls._maintenance_active = False
+        cls._maintenance_owner = None
         cls.is_running = False
         cls._shutting_down = False
         cls._next_heartbeat = 0.0
@@ -135,35 +139,42 @@ class JobQueueBase:
             raise ValueError("Peer role must be a nonempty string no longer than 32 characters")
         if not isinstance(service, str) or not service or len(service) > 128:
             raise ValueError("Peer service must be a nonempty string no longer than 128 characters")
-        if any(not isinstance(capability, str) or not capability for capability in capabilities):
-            raise ValueError("Peer capabilities must be nonempty strings")
-        if cls._auto_peer_id:
-            cls.name = "Internal|" + str(uuid4())
-        if not isinstance(cls.name, str) or not cls.name or len(cls.name) > 128:
+        if not isinstance(capabilities, (list, tuple)) or any(
+            not isinstance(capability, str) or not capability for capability in capabilities
+        ):
+            raise ValueError("Peer capabilities must be a list or tuple of nonempty strings")
+        peer_id = "Internal|" + str(uuid4()) if cls._auto_peer_id else cls.name
+        if not isinstance(peer_id, str) or not peer_id or len(peer_id) > 128:
             raise ValueError("Peer ID must be a nonempty string no longer than 128 characters")
-        cls._ready_event.clear()
-        cls._registered = False
-        cls._maintenance_active = False
-        cls._shutting_down = False
-        cls.pause_event.set()
-        peer_metadata = {**dict(metadata or {}), "pid": os.getpid()}
+        if metadata is not None and not isinstance(metadata, dict):
+            raise TypeError("Peer metadata must be a dictionary")
+        peer_metadata = {**(metadata or {}), "pid": os.getpid()}
         json.dumps(peer_metadata, allow_nan=False)
-        resolved_node_id = node_id or socket.gethostname()[:128]
+        resolved_node_id = socket.gethostname()[:128] if node_id is None else node_id
         if not isinstance(resolved_node_id, str) or not resolved_node_id or len(resolved_node_id) > 128:
             raise ValueError("Peer node ID must be a nonempty string no longer than 128 characters")
-        cls.identity = PeerIdentity(
-            peer_id=cls.name,
+        identity = PeerIdentity(
+            peer_id=peer_id,
             node_id=resolved_node_id,
             role=role,
             service=service,
             capabilities=tuple(capabilities),
             metadata=peer_metadata,
         )
+        # 所有可能失败的验证完成后再切换类级生命周期状态，避免半配置污染。
+        cls.name = peer_id
+        cls.identity = identity
+        cls._ready_event.clear()
+        cls._registered = False
+        cls._maintenance_active = False
+        cls._maintenance_owner = None
+        cls._shutting_down = False
+        cls.pause_event.set()
         from core.constants import Info
 
-        Info.peer_id = cls.name
+        Info.peer_id = peer_id
         Info.peer_role = role
-        return cls.identity
+        return identity
 
     @classmethod
     def on_signal(cls, name: str, handler: SignalHandler | None = None):
@@ -197,12 +208,22 @@ class JobQueueBase:
 
     @classmethod
     def _request_duration(cls, timeout: float | None) -> float:
-        if timeout is not None and (not math.isfinite(timeout) or timeout <= 0):
+        if timeout is not None and (
+            isinstance(timeout, bool)
+            or not isinstance(timeout, (int, float))
+            or not math.isfinite(timeout)
+            or timeout <= 0
+        ):
             raise ValueError("RPC timeout must be a positive finite duration.")
         duration = cls.TASK_TIMEOUT_SECONDS if timeout is None else min(timeout, cls.TASK_TIMEOUT_SECONDS)
-        if not math.isfinite(duration) or duration <= 0:
+        if (
+            isinstance(duration, bool)
+            or not isinstance(duration, (int, float))
+            or not math.isfinite(duration)
+            or duration <= 0
+        ):
             raise ValueError("RPC timeout must be a positive finite duration.")
-        return duration
+        return float(duration)
 
     @staticmethod
     def _target_label(target: str | ServiceRoute) -> str:
@@ -218,6 +239,7 @@ class JobQueueBase:
         *,
         message_kind: str = "rpc",
         correlation_id: str | None = None,
+        expects_response: bool = True,
         task_id: str | None = None,
         deadline: float | None = None,
     ) -> RpcRequest:
@@ -229,9 +251,19 @@ class JobQueueBase:
             raise
         if not isinstance(method, str) or not method:
             raise ValueError("RPC method must be a nonempty string.")
+        if len(method) > 512:
+            raise ValueError("RPC method must be no longer than 512 characters.")
+        if len(target) > 512:
+            raise ValueError("RPC destination must be no longer than 512 characters.")
+        if message_kind not in ("rpc", "signal"):
+            raise ValueError("RPC message kind must be rpc or signal.")
+        if not isinstance(expects_response, bool):
+            raise TypeError("RPC expects_response must be a boolean.")
         duration = cls._request_duration(timeout)
         json.dumps(payload, allow_nan=False)
         deadline = time.time() + duration if deadline is None else deadline
+        if isinstance(deadline, bool) or not isinstance(deadline, (int, float)) or not math.isfinite(deadline):
+            raise ValueError("RPC deadline must be a finite timestamp.")
         return RpcRequest(
             task_id,
             target,
@@ -241,6 +273,7 @@ class JobQueueBase:
             source_peer_id=cls.name,
             correlation_id=correlation_id,
             message_kind=message_kind,
+            expects_response=expects_response,
         )
 
     @classmethod
@@ -256,6 +289,7 @@ class JobQueueBase:
         deadline = time.time() + cls._request_duration(timeout)
         resolved_target = cls._target_label(target)
         future = None
+        response_received = False
         try:
             async with asyncio.timeout(max(0, deadline - time.time())):
                 resolved_target = await cls.resolve_target(target)
@@ -275,6 +309,7 @@ class JobQueueBase:
                 )
                 await cls.transport.send(request)
                 response = await future
+                response_received = True
             return cls._decode_response(request, response)
         except RpcError as exc:
             exc.method, exc.target, exc.task_id = method, resolved_target, task_id
@@ -290,6 +325,14 @@ class JobQueueBase:
             cls._pending.pop(task_id, None)
             if future is not None and not future.done():
                 future.cancel()
+            # send() 可能在 INSERT 已提交后才因取消或连接异常返回。只要已建立
+            # 本地 waiter，就按“投递结果未知”处理并尝试删除该任务；删除不存在的 ID
+            # 是安全的，且不会取消已经开始的远端处理器。
+            if future is not None and not response_received:
+                try:
+                    await asyncio.shield(cls.transport.discard([task_id]))
+                except Exception:
+                    Logger.exception(f"Failed to discard abandoned RPC {task_id}.")
 
     @classmethod
     async def submit(
@@ -312,6 +355,7 @@ class JobQueueBase:
                     method,
                     payload,
                     timeout,
+                    expects_response=False,
                     task_id=task_id,
                     deadline=deadline,
                 )
@@ -344,6 +388,9 @@ class JobQueueBase:
         """Fan out one signal into an independent direct delivery per ready peer."""
         event_id = str(uuid4())
         deadline = time.time() + cls._request_duration(timeout)
+        peers = []
+        requests = []
+        submitted = False
         try:
             async with asyncio.timeout(max(0, deadline - time.time())):
                 peers = await PeerDirectory.resolve(selector)
@@ -357,12 +404,14 @@ class JobQueueBase:
                         timeout,
                         message_kind="signal",
                         correlation_id=event_id,
+                        expects_response=False,
                         deadline=deadline,
                     )
                     for peer in peers
                 ]
                 if requests:
                     await cls.transport.send_many(requests)
+                submitted = True
         except TimeoutError as exc:
             raise RpcTimeoutError(
                 f"Signal submission {name} exceeded its deadline; acceptance is unknown.",
@@ -370,6 +419,12 @@ class JobQueueBase:
                 target="fan-out",
                 task_id=event_id,
             ) from exc
+        finally:
+            if requests and not submitted:
+                try:
+                    await asyncio.shield(cls.transport.discard([request.task_id for request in requests]))
+                except Exception:
+                    Logger.exception(f"Failed to discard interrupted signal fan-out {event_id}.")
         return SignalReceipt(event_id, {peer.peer_id: request.task_id for peer, request in zip(peers, requests)})
 
     @classmethod
@@ -387,6 +442,8 @@ class JobQueueBase:
         peers = []
         requests = []
         futures = {}
+        outcomes = []
+        completed = False
         try:
             try:
                 async with asyncio.timeout(max(0, deadline - time.time())):
@@ -435,11 +492,20 @@ class JobQueueBase:
                     return exc
 
             outcomes = await asyncio.gather(*(wait_one(request) for request in requests))
+            completed = True
         finally:
+            abandoned = []
             for request in requests:
                 future = cls._pending.pop(request.task_id, None)
+                if not completed or future is None or future.cancelled() or not future.done():
+                    abandoned.append(request.task_id)
                 if future is not None and not future.done():
                     future.cancel()
+            if abandoned:
+                try:
+                    await asyncio.shield(cls.transport.discard(abandoned))
+                except Exception:
+                    Logger.exception(f"Failed to discard {len(abandoned)} abandoned signal deliveries.")
         results, errors = {}, {}
         for peer, outcome in zip(peers, outcomes):
             if isinstance(outcome, BaseException):
@@ -461,7 +527,10 @@ class JobQueueBase:
         error = envelope.get("error")
         if response.status != "failed" or not isinstance(error, dict):
             raise RpcProtocolError("Invalid RPC response status or error.", **context)
-        error_type = ERROR_TYPES.get(error.get("code"), RpcRemoteError)
+        error_code = error.get("code")
+        if not isinstance(error_code, str):
+            raise RpcProtocolError("Invalid RPC response error code.", **context)
+        error_type = ERROR_TYPES.get(error_code, RpcRemoteError)
         raise error_type(
             str(error.get("message", "Remote RPC failed.")), remote_type=str(error.get("type", "")), **context
         )
@@ -476,7 +545,8 @@ class JobQueueBase:
                     "rpc": PROTOCOL_VERSION,
                     "error": {"code": error.code, "type": remote_type or type(error).__name__, "message": str(error)},
                 },
-            )
+            ),
+            expects_response=request.expects_response,
         )
 
     @classmethod
@@ -491,9 +561,15 @@ class JobQueueBase:
         try:
             if request.version != PROTOCOL_VERSION:
                 raise RpcProtocolError(f"Unsupported RPC protocol version: {request.version}.")
-            if not math.isfinite(request.deadline):
+            if not isinstance(request.expects_response, bool):
+                raise RpcProtocolError("Invalid RPC response expectation flag.")
+            if (
+                isinstance(request.deadline, bool)
+                or not isinstance(request.deadline, (int, float))
+                or not math.isfinite(request.deadline)
+            ):
                 raise RpcProtocolError("Invalid RPC deadline.")
-            remaining = min(request.deadline - time.time(), cls.TASK_TIMEOUT_SECONDS)
+            remaining = min(request.deadline - time.time(), cls._request_duration(None))
             if remaining <= 0:
                 raise RpcTimeoutError("Request expired before execution.")
             deadline_scope = asyncio.timeout(remaining)
@@ -515,7 +591,10 @@ class JobQueueBase:
                 # A handler's own TimeoutError is a remote application failure,
                 # distinct from the RPC deadline expiring.
                 raise
-            await cls.transport.finish(RpcResponse(request.task_id, "done", {"rpc": PROTOCOL_VERSION, "value": value}))
+            await cls.transport.finish(
+                RpcResponse(request.task_id, "done", {"rpc": PROTOCOL_VERSION, "value": value}),
+                expects_response=request.expects_response,
+            )
         except asyncio.CancelledError:
             try:
                 await asyncio.shield(cls._finish_error(request, RpcCancelledError("Remote handler was cancelled.")))
@@ -560,7 +639,9 @@ class JobQueueBase:
             if not announced:
                 return []
             signal_payload = announced[0].snapshot()
-            cls._update_peer_cache(signal_payload)
+            # Registry 已确认该实例重新处于 ready；允许同一进程内的轮询器重启
+            # 覆盖先前 stopped 缓存，同时仍拒绝没有权威租约的迟到 ready 信号。
+            cls._update_peer_cache(signal_payload, force=True)
             if request.method == "peer.ready" and request.source_peer_id and cls.identity is not None:
                 records = await PeerDirectory.resolve(PeerSelector.peer(cls.name))
                 if records:
@@ -571,6 +652,7 @@ class JobQueueBase:
                         30,
                         message_kind="signal",
                         correlation_id=context.event_id,
+                        expects_response=False,
                     )
                     await cls.transport.send(welcome)
         elif request.method in ("peer.maintenance", "peer.draining", "peer.stopped"):
@@ -645,7 +727,7 @@ class JobQueueBase:
     @classmethod
     async def _check_queue(cls, target: str | None = None, claim_new: bool = True):
         if cls._pending:
-            for response in await cls.transport.responses(list(cls._pending)):
+            for response in await cls.transport.consume_responses(list(cls._pending)):
                 future = cls._pending.get(response.task_id)
                 if future is not None and not future.done():
                     future.set_result(response)
@@ -682,7 +764,7 @@ class JobQueueBase:
             graceful_stop = True
             raise
         finally:
-            if graceful_stop or cls._shutting_down:
+            if graceful_stop or cls._shutting_down or cls._registered:
                 await cls._stop_peer()
             cls.is_running = False
             if cls._poller_task is current:
@@ -703,6 +785,12 @@ class JobQueueBase:
                             },
                         )
                     )
+            pending_task_ids = list(cls._pending)
+            if pending_task_ids:
+                try:
+                    await cls.transport.discard(pending_task_ids)
+                except Exception:
+                    Logger.exception(f"Failed to discard {len(pending_task_ids)} RPCs after result pump stopped.")
 
     @classmethod
     async def wait_ready(cls, timeout: float = 30) -> None:
@@ -720,8 +808,17 @@ class JobQueueBase:
     async def _start_peer(cls) -> None:
         if cls.identity is None:
             return
+        try:
+            await PeerDirectory.register(cls.identity, "starting")
+        except (Exception, asyncio.CancelledError):
+            # register() 也可能在事务已提交后才因取消或连接状态异常返回。
+            # 以唯一 peer_id 尝试回滚，不让半注册实例保留到租约自然过期。
+            try:
+                await asyncio.shield(PeerDirectory.unregister(cls.name))
+            except Exception:
+                Logger.exception(f"Failed to roll back partial JobQueue registration for {cls.name}.")
+            raise
         cls._registered = True
-        await PeerDirectory.register(cls.identity, "starting")
         if not await PeerDirectory.set_state(cls.name, "ready"):
             await PeerDirectory.register(cls.identity, "ready")
         records = await PeerDirectory.refresh_alive_cache()
@@ -843,20 +940,30 @@ class JobQueueBase:
     @asynccontextmanager
     async def maintenance_window(cls):
         """Drain handlers while pumping responses, then exclude database polling."""
-        cls.pause_event.clear()
-        maintenance_started = False
-        try:
-            async with cls._poll_lock:
-                pass
-            maintenance_started = await cls._begin_maintenance()
-            await cls.wait_process_tasks()
-            async with cls._poll_lock:
-                yield
-        finally:
-            if maintenance_started:
-                await cls._end_maintenance()
-            if not cls._shutting_down:
-                cls.pause_event.set()
+        current = asyncio.current_task()
+        if cls._maintenance_owner is current:
+            # asyncio.Lock 不可重入；同一任务中的嵌套维护复用外层独占窗口。
+            yield
+            return
+        async with cls._maintenance_lock:
+            cls.pause_event.clear()
+            maintenance_started = False
+            try:
+                async with cls._poll_lock:
+                    pass
+                maintenance_started = await cls._begin_maintenance()
+                await cls.wait_process_tasks()
+                async with cls._poll_lock:
+                    cls._maintenance_owner = current
+                    try:
+                        yield
+                    finally:
+                        cls._maintenance_owner = None
+            finally:
+                if maintenance_started:
+                    await cls._end_maintenance()
+                if not cls._shutting_down:
+                    cls.pause_event.set()
 
     @classmethod
     async def _begin_maintenance(cls) -> bool:
