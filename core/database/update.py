@@ -242,73 +242,15 @@ async def update_database_to_v4(conn):
 
 
 async def update_database_to_v5(conn):
-    """完成 JobQueue 协议 v2 所需的实例寻址、信号关联和领取者迁移。"""
-    for column, declaration in (
-        ("correlation_id", "CHAR(36) NULL"),
-        ("source_peer_id", "VARCHAR(128) NULL"),
-        ("message_kind", "VARCHAR(16) NOT NULL DEFAULT 'rpc'"),
-        ("claimed_by", "VARCHAR(128) NULL"),
-    ):
-        if not await has_column(conn, "job_queues", column):
-            await conn.execute_query(
-                f"ALTER TABLE {quote_ident('job_queues')} ADD COLUMN {quote_ident(column)} {declaration};"
-            )
-    for column in ("correlation_id", "source_peer_id", "claimed_by"):
-        if not await has_index(conn, "job_queues", column):
-            await conn.execute_query(
-                f"CREATE INDEX {quote_ident(f'idx_job_queues_{column}')} "
-                f"ON {quote_ident('job_queues')} ({quote_ident(column)});"
-            )
+    """将数据库升级至 v5：丢弃旧任务队列表并按当前模型重新创建。
 
-    has_target_peer = await has_column(conn, "job_queues", "target_peer")
-    has_target_client = await has_column(conn, "job_queues", "target_client")
-    if not has_target_peer and has_target_client:
-        if db_type == "sqlite":
-            await conn.execute_query(
-                f"ALTER TABLE {quote_ident('job_queues')} RENAME COLUMN "
-                f"{quote_ident('target_client')} TO {quote_ident('target_peer')};"
-            )
-        else:
-            await conn.execute_query(
-                f"ALTER TABLE {quote_ident('job_queues')} CHANGE "
-                f"{quote_ident('target_client')} {quote_ident('target_peer')} VARCHAR(512) NOT NULL;"
-            )
-    elif not has_target_peer:
-        await conn.execute_query(
-            f"ALTER TABLE {quote_ident('job_queues')} "
-            f"ADD COLUMN {quote_ident('target_peer')} VARCHAR(512) NOT NULL DEFAULT '';"
-        )
-    elif has_target_client:
-        await conn.execute_query(
-            f"UPDATE {quote_ident('job_queues')} "
-            f"SET {quote_ident('target_peer')} = {quote_ident('target_client')} "
-            f"WHERE {quote_ident('target_peer')} = '';"
-        )
-        if db_type == "sqlite":
-            indexes = await conn.execute_query_dict(f"PRAGMA index_list({quote_ident('job_queues')});")
-            for index in indexes:
-                columns = await conn.execute_query_dict(f"PRAGMA index_info({quote_ident(index['name'])});")
-                if any(column["name"] == "target_client" for column in columns):
-                    await conn.execute_query(f"DROP INDEX {quote_ident(index['name'])};")
-        else:
-            indexes = await conn.execute_query_dict(
-                "SELECT DISTINCT INDEX_NAME FROM information_schema.STATISTICS "
-                "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s AND COLUMN_NAME = %s "
-                "AND INDEX_NAME <> 'PRIMARY';",
-                ["job_queues", "target_client"],
-            )
-            for index in indexes:
-                await conn.execute_query(
-                    f"DROP INDEX {quote_ident(index['INDEX_NAME'])} ON {quote_ident('job_queues')};"
-                )
-        await conn.execute_query(
-            f"ALTER TABLE {quote_ident('job_queues')} DROP COLUMN {quote_ident('target_client')};"
-        )
-    if not await has_index(conn, "job_queues", "target_peer"):
-        await conn.execute_query(
-            f"CREATE INDEX {quote_ident('idx_job_queues_peer_status')} "
-            f"ON {quote_ident('job_queues')} ({quote_ident('target_peer')}, {quote_ident('status')});"
-        )
+    JobQueue 记录仅表示进程间的临时在途任务，不属于需要跨版本保留的业务数据。协议 v2 的表结构
+    与旧协议不兼容，因此升级时直接删除旧表，避免保留无法可靠解释或继续执行的历史任务。
+
+    :param conn: 数据库连接。
+    """
+    await conn.execute_query(f"DROP TABLE IF EXISTS {quote_ident('job_queues')};")
+    await Tortoise.generate_schemas(safe=True)
 
 
 async def update_database():
