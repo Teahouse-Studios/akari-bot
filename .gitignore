@@ -1,48 +1,119 @@
+# Environment Variables
 *.env
-__pycache__/
-config*/*.cfg*
-config*/*.toml*
-.idea
-.DS_Store
-.vscode/*
+
+# Runtime Lock & Process Files
+.bot.lock
+.pid_last
+
+# SQLite
 *.db
 *.db-shm
 *.db-wal
+
+# Python
+__pycache__/
+
+# ==========
+# Bot Core
+# ==========
+
+# Cache
+.cache_loader
+/assets/i18n_cache/*
 cache/*
-assets/bots_list.json
-assets/bad_words/*.txt
-assets/discord_slash_list.json
-assets/modules_list.json
-assets/schedulers_list.json
+
+# Configuration Files
+config*/*.toml*
+
+# Build Outputs
+output/*
+
+# Logs
+*.log
 assets/union_merge_logs/*
+
+# Private Assets
+assets/private*
+
+# Version Files
+version*
+!version.py
+
+# ==========
+# Local Development Environment
+# ==========
+
+# JetBrains
+.idea
+
+# MacOS
+.DS_Store
+
+# Local Runtime Configuration
+.run/*
+
+# VS Code
+.vscode/*
+
+# ==========
+# AI Agent / LLM Tools
+# ==========
+
+.agents/*
+AGENTS.md
+
+# Claude Code
+.claude/*
+CLAUDE.md
+
+# Mimo Code
+.mimocode/*
+
+# ==========
+# User Customization
+# ==========
+
+# Local Text Filters
+assets/bad_words/*.txt
+
+# Local URL Audit
 assets/url_audit/allowlist/user.txt
 assets/url_audit/blocklist/user.txt
-assets/private*
-assets/retired/*
-/assets/i18n_cache/*
-bots/test/*
-junit.xml
-modules/test/*
+
+# Module Assets
 modules/ai/assets/*
 modules/arcaea/assets/*
 modules/maimai/assets/*
 modules/phigros/assets/*
+
+# Retired Client Assets
+assets/retired/*
+
+# WebUI
 webui/*
-version*
-!version.py
-.pid_last
-.cache_loader
-.console_history
-*.log
-matrix_store
-output/*
-.bot.lock
+
+# ==========
+# Testing & CI
+# ==========
+
+# Test Adapters & Modules
+bots/test/*
+modules/test/*
+
+# Test Files
 /test*.*
 !tester.py
-.run/*
-generated_docs/*
-.mimocode/*
-.claude/*
-CLAUDE.md
-AGENTS.md
-.agents/*
+
+# CI Test Report
+junit.xml
+
+# ==========
+# Legacy
+# ==========
+
+assets/bots_list.json
+assets/discord_slash_list.json
+assets/modules_list.json
+assets/schedulers_list.json
+
+matrix_store
