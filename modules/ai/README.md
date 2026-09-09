@@ -18,8 +18,8 @@ llm_api_list:
     api_url: https://api.examplellm.com/v1
     model_name: llm-v1
     name: example-llm
-    price_in: 0.0005
-    price_out: 0.0005
+    price_in: 50
+    price_out: 50
     superuser: false
 ```
 
@@ -50,12 +50,12 @@ llm_api_list:
         - `true`: Restricted to superusers only.
     - `false` 或 `null`：无须权限。
         - `false` or `null`: No permissions required.
-- `price_in`：1 个输入 token 所需的花瓣数量。
-    - The number of petals required per input token.
+- `price_in`： 百万输入 token 所需的花瓣数量。
+    - The number of petals required per 1M input token.
     - 如果留空，默认为 `0`。
         - Defaults to `0` if left empty.
-- `price_out`：1 个输出 token 所需的花瓣数量。
-    - The number of petals required per output token.
+- `price_out`：百万输出 token 所需的花瓣数量。
+    - The number of petals required per 1M output token.
     - 如果留空，默认为 `0`。
         - Defaults to `0` if left empty.
 
@@ -79,16 +79,16 @@ For example, the price of `deepseek-v4-pro` model is as follows:
 
 Calculation method:
 
-- **输入成本 (Input cost)：** ¥9 / 1M tokens = ¥0.000009 / token = 0.0009 petal/token
-- **输出成本 (Output cost)：** ¥27 / 1M tokens = ¥0.000027 / token = 0.0027 petal/token
+- **输入成本 (Input cost)：** ¥9 / 1M token = 900 petal / 1M token
+- **输出成本 (Output cost)：** ¥27 / 1M token = 2700 petal / 1M token
 
 因此，若使用 `deepseek-v4-pro`，可设置：
 
 Therefore, if you use `deepseek-v4-pro`, you can set:
 
 ```json
-"price_in": 0.0009
-"price_out": 0.0027
+"price_in": 900
+"price_out": 2700
 ```
 
 请根据自身情况与服务商定价合理设置 `price`，以进行成本控制。

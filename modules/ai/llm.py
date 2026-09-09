@@ -42,11 +42,27 @@ async def ask_llm(
     messages = [
         {"role": "system", "content": INSTRUCTIONS},
         {"role": "system", "content": f"Current datetime: {fmt_now}"},
-        {"role": "user", "content": prompt},
+        {
+            "role": "system",
+            "content":
+                f"Session language: {session.session_info.locale.t('language')}. "
+                "Use this language for output unless specified by user.",
+        },
     ]
     custom_instructions = session.session_info.sender_union_info.sender_data.get("ai_custom_instructions")
     if custom_instructions:
-        messages.insert(2, {"role": "system", "content": custom_instructions})
+        messages.insert(3, {"role": "system", "content": custom_instructions})
+
+    # TODO: 多模态支持
+    messages.append({
+        "role": "user",
+        "content": [
+            {
+                "type": "text",
+                "text": prompt,
+            }
+        ]
+    })
 
     total_input_tokens = 0
     total_output_tokens = 0
@@ -56,7 +72,7 @@ async def ask_llm(
     iterations = 0
     while iterations <= MAX_ITERATIONS:
         try:
-            completion = await client.chat.completions.create(
+            response = await client.chat.completions.create(
                 model=model_name,
                 messages=messages,
                 tool_choice=tool_choice,
@@ -67,15 +83,16 @@ async def ask_llm(
                 frequency_penalty=frequency_penalty,
                 presence_penalty=presence_penalty,
                 timeout=timeout,
+                parallel_tool_calls=True,
             )
         except (APITimeoutError, RateLimitError) as e:
             raise ExternalException(e)
         except Exception as e:
             raise e
 
-        res_msg = completion.choices[0].message
-        total_input_tokens += completion.usage.prompt_tokens
-        total_output_tokens += completion.usage.completion_tokens
+        res_msg = response.choices[0].message
+        total_input_tokens += response.usage.prompt_tokens
+        total_output_tokens += response.usage.completion_tokens
 
         messages.append(res_msg)
         if res_msg.content:
@@ -84,7 +101,6 @@ async def ask_llm(
         if res_msg.tool_calls:
             iterations += 1
             messages = await tool_function_calls(res_msg.tool_calls, messages)
-
             if iterations == MAX_ITERATIONS:
                 messages.append(
                     {
