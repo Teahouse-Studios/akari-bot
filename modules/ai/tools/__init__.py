@@ -30,8 +30,7 @@ async def tool_function_calls(tool_calls, messages: list[dict[str, Any]]):
         return tool_call.id, result
 
     tool_results = await asyncio.gather(
-        *[execute_single_tool(tool_call) for tool_call in tool_calls],
-        return_exceptions=True
+        *[execute_single_tool(tool_call) for tool_call in tool_calls], return_exceptions=True
     )
 
     for tool_call_id, result in tool_results:
@@ -45,5 +44,5 @@ async def tool_function_calls(tool_calls, messages: list[dict[str, Any]]):
                 "content": result,
             }
         )
-    
+
     return messages
