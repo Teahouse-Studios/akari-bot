@@ -1,19 +1,11 @@
-"""Shared JobQueue peer identity, discovery and selection.
-
-The database lease registry is authoritative. Process-local topology caches are
-only accelerators and are periodically reconciled from this directory.
-"""
+"""介质无关的 JobQueue Peer 身份、筛选条件及注册表协议。"""
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from hashlib import sha256
-from typing import Literal
-
-from tortoise.transactions import in_transaction
-
-from core.database.models import JobQueuePeersTable, JobQueuesTable
+from typing import Literal, Protocol
 
 type PeerRole = Literal["client", "server", "worker", "test"]
 type PeerState = Literal["starting", "ready", "maintenance", "draining", "stopped"]
@@ -42,7 +34,7 @@ class PeerIdentity:
 
 @dataclass(frozen=True)
 class PeerSelector:
-    """Select ready process instances for fan-out delivery."""
+    """选择当前处于 ready 状态且满足全部约束的进程实例。"""
 
     peer_ids: tuple[str, ...] = ()
     node_ids: tuple[str, ...] = ()
@@ -106,7 +98,7 @@ class PeerSelector:
 
 @dataclass(frozen=True)
 class ServiceRoute:
-    """Resolve a logical service to one ready instance using rendezvous hashing."""
+    """以 Rendezvous Hash 将业务键稳定路由至一个 ready 实例。"""
 
     service: str
     routing_key: str
@@ -131,19 +123,6 @@ class PeerRecord:
     capabilities: tuple[str, ...]
     metadata: dict
     lease_until: datetime
-
-    @classmethod
-    def from_model(cls, row: JobQueuePeersTable) -> "PeerRecord":
-        return cls(
-            peer_id=row.peer_id,
-            node_id=row.node_id,
-            role=row.role,
-            service=row.service,
-            state=row.state,
-            capabilities=tuple(row.capabilities or []),
-            metadata=dict(row.metadata or {}),
-            lease_until=row.lease_until,
-        )
 
     def snapshot(self) -> dict:
         lease_until = self.lease_until
@@ -172,6 +151,8 @@ class SignalContext:
 class SignalReceipt:
     event_id: str
     deliveries: dict[str, str]
+    errors: dict[str, str] = field(default_factory=dict)
+    unknown: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -181,170 +162,34 @@ class SignalReport:
     errors: dict[str, str]
 
 
-class PeerDirectory:
-    LEASE_SECONDS = 45
-    MAINTENANCE_LEASE_SECONDS = 600
-    STOPPED_RETENTION_SECONDS = 86400
+class PeerRegistry(Protocol):
+    MAINTENANCE_LEASE_SECONDS: int
 
-    @classmethod
-    async def register(cls, identity: PeerIdentity, state: PeerState = "starting") -> PeerRecord:
-        now = datetime.now(UTC)
-        row, _ = await JobQueuePeersTable.update_or_create(
-            peer_id=identity.peer_id,
-            defaults={
-                "node_id": identity.node_id,
-                "role": identity.role,
-                "service": identity.service,
-                "state": state,
-                "capabilities": list(identity.capabilities),
-                "metadata": identity.metadata,
-                "heartbeat_at": now,
-                "lease_until": now + timedelta(seconds=cls.LEASE_SECONDS),
-            },
-        )
-        return PeerRecord.from_model(row)
+    async def register(self, identity: PeerIdentity, state: PeerState = "starting") -> PeerRecord: ...
 
-    @classmethod
-    async def renew(cls, identity: PeerIdentity) -> bool:
-        now = datetime.now(UTC)
-        updated = await JobQueuePeersTable.filter(
-            peer_id=identity.peer_id,
-            state__in=["starting", "ready"],
-        ).update(
-            node_id=identity.node_id,
-            role=identity.role,
-            service=identity.service,
-            state="ready",
-            capabilities=list(identity.capabilities),
-            metadata=identity.metadata,
-            heartbeat_at=now,
-            lease_until=now + timedelta(seconds=cls.LEASE_SECONDS),
-        )
-        return bool(updated)
+    async def renew(self, identity: PeerIdentity) -> bool: ...
 
-    @classmethod
-    async def set_state(cls, peer_id: str, state: PeerState, lease_seconds: int | None = None) -> bool:
-        lease_until = datetime.now(UTC) + timedelta(seconds=lease_seconds or cls.LEASE_SECONDS)
-        updated = await JobQueuePeersTable.filter(peer_id=peer_id).update(state=state, lease_until=lease_until)
-        return bool(updated)
+    async def set_state(self, peer_id: str, state: PeerState, lease_seconds: int | None = None) -> bool: ...
 
-    @classmethod
-    async def unregister(cls, peer_id: str) -> bool:
-        now = datetime.now(UTC)
-        async with in_transaction(JobQueuePeersTable._meta.default_connection) as connection:
-            updated = await (
-                JobQueuePeersTable.filter(peer_id=peer_id)
-                .using_db(connection)
-                .update(state="stopped", heartbeat_at=now, lease_until=now)
-            )
-            if updated:
-                await cls._fail_instance_deliveries(
-                    peer_id,
-                    "Target process stopped before completing the request.",
-                    connection=connection,
-                )
-        return bool(updated)
+    async def unregister(self, peer_id: str) -> bool: ...
 
-    @classmethod
-    async def lookup(cls, peer_id: str) -> PeerRecord | None:
-        """Return the current registry row regardless of routable state."""
-        row = await JobQueuePeersTable.filter(peer_id=peer_id).first()
-        return PeerRecord.from_model(row) if row is not None else None
+    async def lookup(self, peer_id: str) -> PeerRecord | None: ...
 
-    @classmethod
-    async def expire_stale(cls) -> list[str]:
-        now = datetime.now(UTC)
-        rows = await JobQueuePeersTable.filter(
-            state__in=["starting", "ready", "maintenance", "draining"], lease_until__lte=now
-        ).all()
-        peer_ids = []
-        for row in rows:
-            async with in_transaction(JobQueuePeersTable._meta.default_connection) as connection:
-                updated = await (
-                    JobQueuePeersTable.filter(
-                        peer_id=row.peer_id,
-                        state__in=["starting", "ready", "maintenance", "draining"],
-                        lease_until__lte=now,
-                    )
-                    .using_db(connection)
-                    .update(state="stopped")
-                )
-                if updated:
-                    await cls._fail_instance_deliveries(
-                        row.peer_id,
-                        "Target process lease expired.",
-                        connection=connection,
-                    )
-                    peer_ids.append(row.peer_id)
-        await JobQueuePeersTable.filter(
-            state="stopped", heartbeat_at__lt=now - timedelta(seconds=cls.STOPPED_RETENTION_SECONDS)
-        ).delete()
-        return peer_ids
+    async def expire_stale(self) -> list[str]: ...
 
-    @staticmethod
-    async def _fail_instance_deliveries(peer_id: str, message: str, *, connection=None) -> None:
-        from core.queue.transport import PROTOCOL_VERSION
+    async def resolve(self, selector: PeerSelector | None = None) -> list[PeerRecord]: ...
 
-        result = {
-            "rpc": PROTOCOL_VERSION,
-            "error": {"code": "unavailable", "type": "RpcUnavailableError", "message": message},
-        }
+    async def select_route(self, route: ServiceRoute) -> PeerRecord | None: ...
 
-        async def fail_deliveries(db) -> None:
-            await (
-                JobQueuesTable.filter(target_peer=peer_id, status="pending", expects_response=False)
-                .using_db(db)
-                .delete()
-            )
-            await (
-                JobQueuesTable.filter(claimed_by=peer_id, status="processing", expects_response=False)
-                .using_db(db)
-                .delete()
-            )
-            await (
-                JobQueuesTable.filter(target_peer=peer_id, status="pending", expects_response=True)
-                .using_db(db)
-                .update(status="failed", result=result)
-            )
-            await (
-                JobQueuesTable.filter(claimed_by=peer_id, status="processing", expects_response=True)
-                .using_db(db)
-                .update(status="failed", result=result)
-            )
 
-        if connection is not None:
-            await fail_deliveries(connection)
-            return
-        async with in_transaction(JobQueuesTable._meta.default_connection) as transaction:
-            await fail_deliveries(transaction)
+class PeerRegistryBase:
+    """供不同介质复用稳定路由算法的注册表基类。"""
 
-    @classmethod
-    async def resolve(cls, selector: PeerSelector | None = None) -> list[PeerRecord]:
-        selector = selector or PeerSelector.all()
-        query = JobQueuePeersTable.filter(state="ready", lease_until__gt=datetime.now(UTC))
-        if selector.peer_ids:
-            query = query.filter(peer_id__in=selector.peer_ids)
-        if selector.node_ids:
-            query = query.filter(node_id__in=selector.node_ids)
-        if selector.roles:
-            query = query.filter(role__in=selector.roles)
-        if selector.services:
-            query = query.filter(service__in=selector.services)
-        if selector.exclude_peer_ids:
-            query = query.exclude(peer_id__in=selector.exclude_peer_ids)
-        rows = await query.all()
-        required_capabilities = set(selector.capabilities)
-        records = []
-        for row in rows:
-            if required_capabilities and not required_capabilities.issubset(set(row.capabilities or [])):
-                continue
-            records.append(PeerRecord.from_model(row))
-        records.sort(key=lambda peer: peer.peer_id)
-        return records
+    async def resolve(self, selector: PeerSelector | None = None) -> list[PeerRecord]:
+        raise NotImplementedError
 
-    @classmethod
-    async def select_route(cls, route: ServiceRoute) -> PeerRecord | None:
-        peers = await cls.resolve(
+    async def select_route(self, route: ServiceRoute) -> PeerRecord | None:
+        peers = await self.resolve(
             PeerSelector(
                 roles=(route.role,) if route.role else (),
                 services=(route.service,),
@@ -352,40 +197,4 @@ class PeerDirectory:
         )
         if not peers:
             return None
-        return max(
-            peers,
-            key=lambda peer: sha256(f"{route.routing_key}\0{peer.peer_id}".encode()).digest(),
-        )
-
-    @classmethod
-    async def refresh_alive_cache(cls) -> list[PeerRecord]:
-        expired_peer_ids = await cls.expire_stale()
-        records = await cls.resolve()
-        from core.alive import Alive
-
-        for peer_id in expired_peer_ids:
-            data = Alive.values.get(peer_id, {})
-            Alive.refresh_peer(
-                peer_id,
-                str(data.get("service", "")),
-                role=str(data.get("role", "client")),
-                state="stopped",
-                capabilities=list(data.get("capabilities", [])),
-                metadata={
-                    key: value
-                    for key, value in data.items()
-                    if key
-                    not in {
-                        "peer_id",
-                        "client_name",
-                        "service",
-                        "role",
-                        "state",
-                        "capabilities",
-                        "lease_until",
-                        "ts",
-                    }
-                },
-            )
-        Alive.replace_peers(records)
-        return records
+        return max(peers, key=lambda peer: sha256(f"{route.routing_key}\0{peer.peer_id}".encode()).digest())

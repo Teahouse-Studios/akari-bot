@@ -14,6 +14,7 @@ from tortoise.models import Model
 from tortoise.transactions import in_transaction
 
 from core.constants.default import default_locale
+from core.queue.transport import DEFAULT_TIMEOUT_SECONDS
 from core.utils.func import convert_list
 from .base import DBModel, extract_session_id
 from ..logger import Logger
@@ -1639,7 +1640,7 @@ class JobQueuesTable(DBModel):
     :param timestamp: 时间戳。
     """
 
-    ACTIVE_TIMEOUT_SECONDS: ClassVar[int] = 7200
+    ACTIVE_TIMEOUT_SECONDS: ClassVar[int] = DEFAULT_TIMEOUT_SECONDS
 
     task_id = fields.UUIDField(primary_key=True)
     correlation_id = fields.UUIDField(null=True, index=True)
@@ -1725,10 +1726,15 @@ class JobQueuesTable(DBModel):
         return await cls.filter(target_peer__in=target_peers, status="pending").first()
 
     @classmethod
-    async def get_all(cls, target_peers: str | list[str]):
+    async def get_all(cls, target_peers: str | list[str], limit: int | None = None):
         if isinstance(target_peers, str):
             target_peers = [target_peers]
-        return await cls.filter(target_peer__in=target_peers, status="pending").all()
+        # 不附加排序：现有 (target_peer, status) 索引可在达到 limit 后停止扫描；
+        # JobQueue 本身不承诺严格 FIFO，避免为候选批次对全部积压记录建立临时排序表。
+        query = cls.filter(target_peer__in=target_peers, status="pending")
+        if limit is not None:
+            query = query.limit(limit)
+        return await query.all()
 
 
 class JobQueuePeersTable(DBModel):

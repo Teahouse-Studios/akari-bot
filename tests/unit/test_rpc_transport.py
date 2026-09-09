@@ -298,7 +298,10 @@ async def _test_bad_protocol_and_late_success_are_not_silent():
             return False
         except RpcProtocolError:
             pass
-        await receiver.transport.finish(RpcResponse(task_id, "done", {"rpc": PROTOCOL_VERSION, "value": "late"}))
+        await receiver.transport.respond(
+            request,
+            RpcResponse(request.task_id, "done", {"rpc": PROTOCOL_VERSION, "value": "late"}),
+        )
         row = await JobQueuesTable.get(task_id=task_id)
         assert row.status == "failed"
         malformed_error = RpcResponse(

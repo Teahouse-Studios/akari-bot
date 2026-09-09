@@ -15,7 +15,7 @@ from botocore.config import Config as BotoConfig
 from botocore.exceptions import ClientError
 
 from core.logger import Logger
-from core.config.base import S3Config, S3SecretConfig
+from core.config.s3 import S3Config, S3SecretConfig
 
 
 s3_access_key = S3SecretConfig.s3_access_key

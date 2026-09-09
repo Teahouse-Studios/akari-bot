@@ -2,7 +2,7 @@
 
 import asyncio
 from types import SimpleNamespace
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, parse_qsl, urlsplit
 from unittest.mock import AsyncMock, patch
 
 import core.database as database
@@ -25,16 +25,23 @@ def _query_fields(link: str) -> dict[str, list[str]]:
 def _test_sqlite_defaults_are_added():
     link = prepare_db_link("sqlite://database/save.db")
     fields = _query_fields(link)
-    return fields.get("journal_mode") == ["WAL"] and fields.get("busy_timeout") == ["30000"]
+    keys = [key for key, _ in parse_qsl(urlsplit(link).query)]
+    return (
+        fields.get("journal_mode") == ["WAL"]
+        and fields.get("busy_timeout") == ["30000"]
+        and keys.index("busy_timeout") < keys.index("journal_mode")
+    )
 
 
 def _test_sqlite_explicit_fields_are_preserved():
-    link = prepare_db_link("sqlite://database/save.db?busy_timeout=1000&journal_mode=DELETE&cache_size=2000")
+    link = prepare_db_link("sqlite://database/save.db?journal_mode=DELETE&cache_size=2000&busy_timeout=1000")
     fields = _query_fields(link)
+    keys = [key for key, _ in parse_qsl(urlsplit(link).query)]
     return (
         fields.get("busy_timeout") == ["1000"]
         and fields.get("journal_mode") == ["DELETE"]
         and fields.get("cache_size") == ["2000"]
+        and keys.index("busy_timeout") < keys.index("journal_mode")
     )
 
 

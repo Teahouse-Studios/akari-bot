@@ -10,7 +10,6 @@ import asyncio
 import json
 import math
 import os
-import socket
 import time
 import traceback
 from collections.abc import Awaitable, Callable
@@ -20,6 +19,7 @@ from uuid import uuid4
 
 from core.constants import QueueAlreadyRunning
 from core.logger import Logger
+from core.queue.backend import create_jobqueue_backend, JobQueueBackend
 from core.queue.errors import (
     ERROR_TYPES,
     RpcCancelledError,
@@ -31,17 +31,17 @@ from core.queue.errors import (
     RpcUnavailableError,
 )
 from core.queue.transport import (
-    DatabaseTransport,
+    BatchSendResult,
     DEFAULT_TIMEOUT_SECONDS,
     JsonValue,
     PROTOCOL_VERSION,
     RpcRequest,
     RpcResponse,
-    RpcTransport,
+    MessageTransport,
 )
 from core.queue.peer import (
-    PeerDirectory,
     PeerIdentity,
+    PeerRegistry,
     PeerSelector,
     ServiceRoute,
     SignalContext,
@@ -60,7 +60,9 @@ class JobQueueBase:
     _auto_peer_id = True
     TASK_TIMEOUT_SECONDS = DEFAULT_TIMEOUT_SECONDS
     POLL_INTERVAL_SECONDS = 0.1
-    transport: RpcTransport = DatabaseTransport()
+    backend: JobQueueBackend | None = None
+    registry: PeerRegistry
+    transport: MessageTransport
     handlers: dict[str, Handler] = {}
     signal_handlers: dict[str, list[SignalHandler]] = {}
     identity: PeerIdentity | None = None
@@ -105,8 +107,27 @@ class JobQueueBase:
         cls._auto_peer_id = "name" not in cls.__dict__
         if cls._auto_peer_id:
             cls.name = "Internal|" + str(uuid4())
-        if "transport" not in cls.__dict__:
-            cls.transport = DatabaseTransport()
+        if "backend" not in cls.__dict__:
+            cls.backend = create_jobqueue_backend("database")
+        if cls.backend is None:
+            raise TypeError("JobQueue subclasses must configure a complete backend")
+        cls.registry = cls.backend.registry
+        cls.transport = cls.backend.transport
+
+    @classmethod
+    def configure_backend(cls, backend: JobQueueBackend) -> None:
+        """在 Peer 启动前装配一套内部一致的控制面和数据面后端。"""
+        if cls.is_running:
+            raise RuntimeError("Cannot reconfigure a running JobQueue backend")
+        if cls._registered:
+            raise RuntimeError("Cannot reconfigure a registered JobQueue backend before stopping it")
+        if not getattr(backend, "name", None):
+            raise TypeError("JobQueue backend must declare a nonempty name")
+        if not hasattr(backend, "registry") or not hasattr(backend, "transport"):
+            raise TypeError("JobQueue backend must provide both registry and transport")
+        cls.backend = backend
+        cls.registry = backend.registry
+        cls.transport = backend.transport
 
     @classmethod
     def register(cls, name: str, handler: Handler | None = None):
@@ -150,7 +171,15 @@ class JobQueueBase:
             raise TypeError("Peer metadata must be a dictionary")
         peer_metadata = {**(metadata or {}), "pid": os.getpid()}
         json.dumps(peer_metadata, allow_nan=False)
-        resolved_node_id = socket.gethostname()[:128] if node_id is None else node_id
+        if node_id is None:
+            # 延迟导入配置模板，避免仅导入 JobQueue 基础模块便触发配置系统的初始化副作用。
+            from core.config.jobqueue import JobQueueConfig
+
+            node_id = JobQueueConfig.jobqueue_node_id
+            if isinstance(node_id, str):
+                node_id = node_id.strip() or None
+        # 未配置节点标识时，仅为当前进程生命周期生成新的随机值。
+        resolved_node_id = str(uuid4()) if node_id is None else node_id
         if not isinstance(resolved_node_id, str) or not resolved_node_id or len(resolved_node_id) > 128:
             raise ValueError("Peer node ID must be a nonempty string no longer than 128 characters")
         identity = PeerIdentity(
@@ -200,7 +229,7 @@ class JobQueueBase:
         """Resolve a logical service route from the authoritative peer directory."""
         if isinstance(target, str):
             return target
-        peer = await PeerDirectory.select_route(target)
+        peer = await cls.registry.select_route(target)
         if peer is None:
             return target.service
         cls._update_peer_cache(peer.snapshot())
@@ -276,6 +305,17 @@ class JobQueueBase:
             expects_response=expects_response,
         )
 
+    @staticmethod
+    def _validate_batch_result(requests: list[RpcRequest], result: BatchSendResult) -> None:
+        if not isinstance(result, BatchSendResult):
+            raise RpcProtocolError("Transport returned an invalid batch delivery result.")
+        expected = {request.task_id for request in requests}
+        if len(expected) != len(requests):
+            raise RpcProtocolError("Transport batch contains duplicate task IDs.")
+        reported = set(result.accepted) | result.rejected.keys() | set(result.unknown)
+        if reported != expected:
+            raise RpcProtocolError("Transport batch delivery result does not cover exactly the submitted requests.")
+
     @classmethod
     async def call(
         cls,
@@ -330,9 +370,9 @@ class JobQueueBase:
             # 是安全的，且不会取消已经开始的远端处理器。
             if future is not None and not response_received:
                 try:
-                    await asyncio.shield(cls.transport.discard([task_id]))
+                    await asyncio.shield(cls.transport.abandon([task_id]))
                 except Exception:
-                    Logger.exception(f"Failed to discard abandoned RPC {task_id}.")
+                    Logger.exception(f"Failed to clean up abandoned RPC {task_id}.")
 
     @classmethod
     async def submit(
@@ -390,10 +430,11 @@ class JobQueueBase:
         deadline = time.time() + cls._request_duration(timeout)
         peers = []
         requests = []
+        batch_result = BatchSendResult()
         submitted = False
         try:
             async with asyncio.timeout(max(0, deadline - time.time())):
-                peers = await PeerDirectory.resolve(selector)
+                peers = await cls.registry.resolve(selector)
                 for peer in peers:
                     cls._update_peer_cache(peer.snapshot())
                 requests = [
@@ -410,7 +451,8 @@ class JobQueueBase:
                     for peer in peers
                 ]
                 if requests:
-                    await cls.transport.send_many(requests)
+                    batch_result = await cls.transport.send_many(requests)
+                    cls._validate_batch_result(requests, batch_result)
                 submitted = True
         except TimeoutError as exc:
             raise RpcTimeoutError(
@@ -422,10 +464,24 @@ class JobQueueBase:
         finally:
             if requests and not submitted:
                 try:
-                    await asyncio.shield(cls.transport.discard([request.task_id for request in requests]))
+                    await asyncio.shield(cls.transport.abandon([request.task_id for request in requests]))
                 except Exception:
-                    Logger.exception(f"Failed to discard interrupted signal fan-out {event_id}.")
-        return SignalReceipt(event_id, {peer.peer_id: request.task_id for peer, request in zip(peers, requests)})
+                    Logger.exception(f"Failed to clean up interrupted signal fan-out {event_id}.")
+        task_to_peer = {request.task_id: peer.peer_id for peer, request in zip(peers, requests)}
+        return SignalReceipt(
+            event_id,
+            {
+                task_to_peer[request.task_id]: request.task_id
+                for request in requests
+                if request.task_id in batch_result.accepted
+            },
+            {
+                task_to_peer[request.task_id]: batch_result.rejected[request.task_id]
+                for request in requests
+                if request.task_id in batch_result.rejected
+            },
+            tuple(task_to_peer[request.task_id] for request in requests if request.task_id in batch_result.unknown),
+        )
 
     @classmethod
     async def gather_signal(
@@ -443,11 +499,12 @@ class JobQueueBase:
         requests = []
         futures = {}
         outcomes = []
+        batch_result = BatchSendResult()
         completed = False
         try:
             try:
                 async with asyncio.timeout(max(0, deadline - time.time())):
-                    peers = await PeerDirectory.resolve(selector)
+                    peers = await cls.registry.resolve(selector)
                     for peer in peers:
                         cls._update_peer_cache(peer.snapshot())
                     requests = [
@@ -467,7 +524,8 @@ class JobQueueBase:
                         cls._pending[request.task_id] = future
                         futures[request.task_id] = future
                     if requests:
-                        await cls.transport.send_many(requests)
+                        batch_result = await cls.transport.send_many(requests)
+                        cls._validate_batch_result(requests, batch_result)
             except TimeoutError as exc:
                 raise RpcTimeoutError(
                     f"Signal submission {name} exceeded its deadline; acceptance is unknown.",
@@ -477,6 +535,20 @@ class JobQueueBase:
                 ) from exc
 
             async def wait_one(request: RpcRequest):
+                if request.task_id in batch_result.rejected:
+                    return RpcUnavailableError(
+                        batch_result.rejected[request.task_id],
+                        method=name,
+                        target=request.target,
+                        task_id=request.task_id,
+                    )
+                if request.task_id in batch_result.unknown:
+                    return RpcUnavailableError(
+                        "Signal delivery acceptance is unknown.",
+                        method=name,
+                        target=request.target,
+                        task_id=request.task_id,
+                    )
                 try:
                     async with asyncio.timeout(max(0, request.deadline - time.time())):
                         response = await futures[request.task_id]
@@ -503,9 +575,9 @@ class JobQueueBase:
                     future.cancel()
             if abandoned:
                 try:
-                    await asyncio.shield(cls.transport.discard(abandoned))
+                    await asyncio.shield(cls.transport.abandon(abandoned))
                 except Exception:
-                    Logger.exception(f"Failed to discard {len(abandoned)} abandoned signal deliveries.")
+                    Logger.exception(f"Failed to clean up {len(abandoned)} abandoned signal deliveries.")
         results, errors = {}, {}
         for peer, outcome in zip(peers, outcomes):
             if isinstance(outcome, BaseException):
@@ -537,7 +609,8 @@ class JobQueueBase:
 
     @classmethod
     async def _finish_error(cls, request: RpcRequest, error: RpcError, remote_type: str = "") -> None:
-        await cls.transport.finish(
+        await cls.transport.respond(
+            request,
             RpcResponse(
                 request.task_id,
                 "timeout" if isinstance(error, RpcTimeoutError) else "failed",
@@ -546,7 +619,6 @@ class JobQueueBase:
                     "error": {"code": error.code, "type": remote_type or type(error).__name__, "message": str(error)},
                 },
             ),
-            expects_response=request.expects_response,
         )
 
     @classmethod
@@ -591,9 +663,9 @@ class JobQueueBase:
                 # A handler's own TimeoutError is a remote application failure,
                 # distinct from the RPC deadline expiring.
                 raise
-            await cls.transport.finish(
+            await cls.transport.respond(
+                request,
                 RpcResponse(request.task_id, "done", {"rpc": PROTOCOL_VERSION, "value": value}),
-                expects_response=request.expects_response,
             )
         except asyncio.CancelledError:
             try:
@@ -635,7 +707,7 @@ class JobQueueBase:
                 raise RpcProtocolError("Peer lifecycle signal is missing a valid peer ID.")
             if request.source_peer_id != peer_id:
                 raise RpcProtocolError("Peer lifecycle signal source does not match its announced peer ID.")
-            announced = await PeerDirectory.resolve(PeerSelector.peer(peer_id))
+            announced = await cls.registry.resolve(PeerSelector.peer(peer_id))
             if not announced:
                 return []
             signal_payload = announced[0].snapshot()
@@ -643,7 +715,7 @@ class JobQueueBase:
             # 覆盖先前 stopped 缓存，同时仍拒绝没有权威租约的迟到 ready 信号。
             cls._update_peer_cache(signal_payload, force=True)
             if request.method == "peer.ready" and request.source_peer_id and cls.identity is not None:
-                records = await PeerDirectory.resolve(PeerSelector.peer(cls.name))
+                records = await cls.registry.resolve(PeerSelector.peer(cls.name))
                 if records:
                     welcome = cls._request(
                         request.source_peer_id,
@@ -666,7 +738,7 @@ class JobQueueBase:
                 "peer.draining": "draining",
                 "peer.stopped": "stopped",
             }[request.method]
-            announced = await PeerDirectory.lookup(peer_id)
+            announced = await cls.registry.lookup(peer_id)
             if announced is None or announced.state != state:
                 return []
             signal_payload = announced.snapshot()
@@ -677,7 +749,7 @@ class JobQueueBase:
                 raise RpcProtocolError("Peer lifecycle signal is missing a valid peer ID.")
             if request.source_peer_id != peer_id:
                 raise RpcProtocolError("Peer lifecycle signal source does not match its announced peer ID.")
-            records = await PeerDirectory.resolve(PeerSelector.peer(peer_id))
+            records = await cls.registry.resolve(PeerSelector.peer(peer_id))
             if not records:
                 return []
             signal_payload = records[0].snapshot()
@@ -690,6 +762,40 @@ class JobQueueBase:
         if errors:
             raise RuntimeError("; ".join(errors))
         return outcomes
+
+    @classmethod
+    async def _refresh_peer_cache(cls):
+        """以当前后端的权威注册表对账进程内拓扑缓存。"""
+        expired_peer_ids = await cls.registry.expire_stale()
+        records = await cls.registry.resolve()
+        from core.alive import Alive
+
+        for peer_id in expired_peer_ids:
+            data = Alive.values.get(peer_id, {})
+            Alive.refresh_peer(
+                peer_id,
+                str(data.get("service", "")),
+                role=str(data.get("role", "client")),
+                state="stopped",
+                capabilities=list(data.get("capabilities", [])),
+                metadata={
+                    key: value
+                    for key, value in data.items()
+                    if key
+                    not in {
+                        "peer_id",
+                        "client_name",
+                        "service",
+                        "role",
+                        "state",
+                        "capabilities",
+                        "lease_until",
+                        "ts",
+                    }
+                },
+            )
+        Alive.replace_peers(records)
+        return records
 
     @staticmethod
     def _update_peer_cache(snapshot: dict, *, force: bool = False) -> None:
@@ -753,7 +859,14 @@ class JobQueueBase:
         cls._poller_task = current
         cls.is_running = True
         graceful_stop = False
+        backend_started = False
+        backend = cls.backend
+        if backend is None:
+            cls.is_running = False
+            raise RuntimeError("JobQueue backend has not been configured")
         try:
+            await backend.start(cls.identity)
+            backend_started = True
             await cls._start_peer()
             while True:
                 async with cls._poll_lock:
@@ -788,9 +901,14 @@ class JobQueueBase:
             pending_task_ids = list(cls._pending)
             if pending_task_ids:
                 try:
-                    await cls.transport.discard(pending_task_ids)
+                    await cls.transport.abandon(pending_task_ids)
                 except Exception:
-                    Logger.exception(f"Failed to discard {len(pending_task_ids)} RPCs after result pump stopped.")
+                    Logger.exception(f"Failed to clean up {len(pending_task_ids)} RPCs after result pump stopped.")
+            if backend_started or backend.ready:
+                try:
+                    await asyncio.shield(backend.close())
+                except Exception:
+                    Logger.exception(f"Failed to close JobQueue backend {backend.name}.")
 
     @classmethod
     async def wait_ready(cls, timeout: float = 30) -> None:
@@ -809,19 +927,19 @@ class JobQueueBase:
         if cls.identity is None:
             return
         try:
-            await PeerDirectory.register(cls.identity, "starting")
+            await cls.registry.register(cls.identity, "starting")
         except (Exception, asyncio.CancelledError):
             # register() 也可能在事务已提交后才因取消或连接状态异常返回。
             # 以唯一 peer_id 尝试回滚，不让半注册实例保留到租约自然过期。
             try:
-                await asyncio.shield(PeerDirectory.unregister(cls.name))
+                await asyncio.shield(cls.registry.unregister(cls.name))
             except Exception:
                 Logger.exception(f"Failed to roll back partial JobQueue registration for {cls.name}.")
             raise
         cls._registered = True
-        if not await PeerDirectory.set_state(cls.name, "ready"):
-            await PeerDirectory.register(cls.identity, "ready")
-        records = await PeerDirectory.refresh_alive_cache()
+        if not await cls.registry.set_state(cls.name, "ready"):
+            await cls.registry.register(cls.identity, "ready")
+        records = await cls._refresh_peer_cache()
         own = next((record for record in records if record.peer_id == cls.name), None)
         if own is not None:
             await cls.emit_signal(
@@ -841,11 +959,11 @@ class JobQueueBase:
             return
         now = time.monotonic()
         if now >= cls._next_heartbeat:
-            if not await PeerDirectory.renew(cls.identity):
-                await PeerDirectory.register(cls.identity, "ready")
+            if not await cls.registry.renew(cls.identity):
+                await cls.registry.register(cls.identity, "ready")
             cls._next_heartbeat = now + cls.HEARTBEAT_INTERVAL_SECONDS
         if now >= cls._next_reconcile:
-            await PeerDirectory.refresh_alive_cache()
+            await cls._refresh_peer_cache()
             cls._next_reconcile = now + cls.RECONCILE_INTERVAL_SECONDS
 
     @classmethod
@@ -854,10 +972,10 @@ class JobQueueBase:
             return
         unregistered = False
         try:
-            await PeerDirectory.set_state(cls.name, "draining")
-            unregistered = await PeerDirectory.unregister(cls.name)
+            await cls.registry.set_state(cls.name, "draining")
+            unregistered = await cls.registry.unregister(cls.name)
             if unregistered:
-                record = await PeerDirectory.lookup(cls.name)
+                record = await cls.registry.lookup(cls.name)
                 await cls.emit_signal(
                     "peer.stopped",
                     record.snapshot() if record is not None else cls.identity.snapshot("stopped"),
@@ -881,7 +999,7 @@ class JobQueueBase:
             )
             if not unregistered:
                 try:
-                    await PeerDirectory.unregister(cls.name)
+                    await cls.registry.unregister(cls.name)
                 except Exception:
                     Logger.exception(f"Failed to unregister JobQueue peer {cls.name}.")
             cls._registered = False
@@ -925,7 +1043,7 @@ class JobQueueBase:
         if already_shutting_down or cls.identity is None or not cls._registered:
             return
         try:
-            await PeerDirectory.set_state(cls.name, "draining")
+            await cls.registry.set_state(cls.name, "draining")
             cls._update_peer_cache(cls.identity.snapshot("draining"))
             await cls.emit_signal(
                 "peer.draining",
@@ -970,10 +1088,10 @@ class JobQueueBase:
         if cls.identity is None or not cls._registered or cls._shutting_down or cls._maintenance_active:
             return False
         try:
-            if not await PeerDirectory.set_state(
+            if not await cls.registry.set_state(
                 cls.name,
                 "maintenance",
-                lease_seconds=PeerDirectory.MAINTENANCE_LEASE_SECONDS,
+                lease_seconds=cls.registry.MAINTENANCE_LEASE_SECONDS,
             ):
                 return False
         except Exception:
@@ -997,8 +1115,8 @@ class JobQueueBase:
         try:
             if cls.identity is None or not cls._registered or cls._shutting_down:
                 return
-            await PeerDirectory.register(cls.identity, "ready")
-            records = await PeerDirectory.resolve(PeerSelector.peer(cls.name))
+            await cls.registry.register(cls.identity, "ready")
+            records = await cls.registry.resolve(PeerSelector.peer(cls.name))
             if not records:
                 return
             snapshot = records[0].snapshot()

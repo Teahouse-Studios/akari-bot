@@ -37,22 +37,22 @@ class JobQueueServer(JobQueueBase):
         """以权威 Peer Registry 判断 Client 或实例是否仍可接收新任务。"""
         if target in ("Server", cls.name):
             return
-        from .peer import PeerDirectory, PeerSelector
+        from .peer import PeerSelector
 
         # ServiceRoute 已在入队前从 Registry 选中了一个 ready 实例，无需重复查询。
         if route is not None and target != route.service:
             return
         if route is not None:
-            records = await PeerDirectory.resolve(
+            records = await cls.registry.resolve(
                 PeerSelector(
                     roles=(route.role,) if route.role else (),
                     services=(route.service,),
                 )
             )
         else:
-            records = await PeerDirectory.resolve(PeerSelector.peer(target))
+            records = await cls.registry.resolve(PeerSelector.peer(target))
             if not records:
-                records = await PeerDirectory.resolve(PeerSelector.service(target))
+                records = await cls.registry.resolve(PeerSelector.service(target))
         if records:
             for record in records:
                 cls._update_peer_cache(record.snapshot())

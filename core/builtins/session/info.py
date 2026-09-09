@@ -303,9 +303,10 @@ class SessionInfo:
         if fetch:
             get_params = {}
             if client_name:
-                from core.queue.peer import PeerDirectory, ServiceRoute
+                from core.queue.peer import ServiceRoute
+                from core.queue.rpc import get_default_peer
 
-                routed_peer = await PeerDirectory.select_route(
+                routed_peer = await get_default_peer().registry.select_route(
                     ServiceRoute(service=client_name, routing_key=target_id, role="client")
                 )
                 if routed_peer is not None:

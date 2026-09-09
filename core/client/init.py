@@ -8,6 +8,7 @@ from core.database import close_db, init_db
 from core.i18n import connect_locale_snapshot
 from core.logger import Logger
 from core.queue.client import JobQueueClient
+from core.queue.backend import create_jobqueue_backend
 from core.queue.rpc import set_default_peer
 
 
@@ -61,6 +62,7 @@ async def _client_init_once(
             raise RuntimeError(f"Failed to initialize database for {Info.client_name}.")
         features = Bot.ContextSlots[Bot.fetched_session_ctx_slot].features
         feature_data = converter.unstructure(features, Features)
+        JobQueueClient.configure_backend(create_jobqueue_backend())
         JobQueueClient.configure_peer(
             role="client",
             service=Info.client_name,

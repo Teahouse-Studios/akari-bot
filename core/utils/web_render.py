@@ -11,7 +11,7 @@ from akari_bot_webrender.functions.options import (
 )
 
 from core.config import format_url
-from core.config.base import WebRenderConfig
+from core.config.webrender import WebRenderConfig
 from core.constants.path import logs_path
 from core.logger import Logger
 

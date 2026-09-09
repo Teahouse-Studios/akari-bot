@@ -11,7 +11,7 @@ async def main(database_path: str, role: str) -> None:
 
     from core.queue.base import JobQueueBase
     from core.queue.errors import RpcRemoteError
-    from core.queue.peer import PeerDirectory, PeerSelector
+    from core.queue.peer import PeerSelector
     from core.queue.rpc import remote
 
     class Peer(JobQueueBase):
@@ -71,7 +71,7 @@ async def main(database_path: str, role: str) -> None:
     poller = asyncio.create_task(Peer.check_job_queue())
     try:
         async with asyncio.timeout(10):
-            while not await PeerDirectory.resolve(PeerSelector.peer(role)):
+            while not await Peer.registry.resolve(PeerSelector.peer(role)):
                 await asyncio.sleep(0.01)
         if role == "RPC-B":
             print("RPC_READY", flush=True)
@@ -79,7 +79,7 @@ async def main(database_path: str, role: str) -> None:
             await Peer.wait_process_tasks()
         else:
             async with asyncio.timeout(10):
-                while len(await PeerDirectory.resolve(PeerSelector.peer("RPC-A", "RPC-B"))) != 2:
+                while len(await Peer.registry.resolve(PeerSelector.peer("RPC-A", "RPC-B"))) != 2:
                     await asyncio.sleep(0.01)
             signal_report = await Peer.gather_signal(
                 "audit.signal", {"version": 2}, PeerSelector.peer("RPC-B"), timeout=10

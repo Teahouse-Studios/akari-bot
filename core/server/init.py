@@ -23,6 +23,7 @@ from core.database import init_db
 from core.loader import load_modules, ModulesManager
 from core.logger import Logger
 from core.queue.server import JobQueueServer
+from core.queue.backend import create_jobqueue_backend
 from core.scheduler import IntervalTrigger, SchedulerLifecycle
 from core.utils.bash import run_sys_command
 from .background_tasks import hourly_background_task, start_background_task
@@ -50,6 +51,7 @@ async def init_async(start_scheduler=True, send_prompt=True) -> None:
     """
     # 设置客户端信息为 "Server"
     Info.client_name = "Server"
+    JobQueueServer.configure_backend(create_jobqueue_backend())
     JobQueueServer.configure_peer(
         role="server",
         service=Info.client_name,
@@ -127,11 +129,11 @@ async def _wait_for_client_online(client_name: str, timeout: float) -> bool:
     :return: 客户端是否已上线
     """
 
-    from core.queue.peer import PeerDirectory, PeerSelector
+    from core.queue.peer import PeerSelector
 
     async def _poll():
         while True:
-            records = await PeerDirectory.resolve(PeerSelector(roles=("client",), services=(client_name,)))
+            records = await JobQueueServer.registry.resolve(PeerSelector(roles=("client",), services=(client_name,)))
             if records:
                 for record in records:
                     JobQueueServer._update_peer_cache(record.snapshot())
