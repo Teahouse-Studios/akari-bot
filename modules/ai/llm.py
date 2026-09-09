@@ -5,7 +5,7 @@ from openai import AsyncOpenAI, APITimeoutError, RateLimitError
 from PIL import Image as PILImage
 
 from core.builtins.bot import Bot
-from core.builtins.message.internal import Image, Markdown, Plain
+from core.builtins.message.internal import ImageElement, Image, Markdown, Plain
 from modules.ai.config import AiConfig
 from core.constants.exceptions import ExternalException
 from core.utils.dirty_check import check
@@ -21,8 +21,20 @@ temperature = AiConfig.llm_temperature
 top_p = AiConfig.llm_top_p
 frequency_penalty = AiConfig.llm_frequency_penalty
 presence_penalty = AiConfig.llm_presence_penalty
+max_iterations = AiConfig.llm_max_calling_iteration
 
-MAX_ITERATIONS = AiConfig.llm_max_calling_iteration
+
+async def _build_user_content(session: Bot.MessageSession, prompt: str) -> list[dict]:
+    content = [{"type": "text", "text": prompt}]
+    images = [element for element in session.session_info.messages.values if isinstance(element, ImageElement)]
+    for image in images:
+        content.append(
+            {
+                "type": "image_url",
+                "image_url": {"url": await image.get_base64(mime=True)},
+            }
+        )
+    return content
 
 
 async def ask_llm(
@@ -32,7 +44,7 @@ async def ask_llm(
     api_url: str,
     api_key: str,
     use_tools: bool = True,
-) -> tuple[list, int, int]:
+) -> tuple[list, int, int, int]:
     client = AsyncOpenAI(base_url=api_url, api_key=api_key)
 
     tz_ = session.session_info._tz_offset
@@ -44,33 +56,29 @@ async def ask_llm(
         {"role": "system", "content": f"Current datetime: {fmt_now}"},
         {
             "role": "system",
-            "content":
-                f"Session language: {session.session_info.locale.t('language')}. "
-                "Use this language for output unless specified by user.",
+            "content": f"Session language: {session.session_info.locale.t('language')}. "
+            "Use this language for output unless specified by user.",
         },
     ]
     custom_instructions = session.session_info.sender_union_info.sender_data.get("ai_custom_instructions")
     if custom_instructions:
         messages.insert(3, {"role": "system", "content": custom_instructions})
 
-    # TODO: 多模态支持
-    messages.append({
-        "role": "user",
-        "content": [
-            {
-                "type": "text",
-                "text": prompt,
-            }
-        ]
-    })
+    messages.append(
+        {
+            "role": "user",
+            "content": await _build_user_content(session, prompt),
+        }
+    )
 
     total_input_tokens = 0
+    total_cached_tokens = 0
     total_output_tokens = 0
     content_pieces = []
     tool_choice = "auto" if use_tools else "none"
 
     iterations = 0
-    while iterations <= MAX_ITERATIONS:
+    while iterations <= max_iterations:
         try:
             response = await client.chat.completions.create(
                 model=model_name,
@@ -91,7 +99,9 @@ async def ask_llm(
             raise e
 
         res_msg = response.choices[0].message
-        total_input_tokens += response.usage.prompt_tokens
+        cached_tokens = response.usage.prompt_tokens_details.cached_tokens
+        total_input_tokens += response.usage.prompt_tokens - cached_tokens
+        total_cached_tokens += cached_tokens
         total_output_tokens += response.usage.completion_tokens
 
         messages.append(res_msg)
@@ -101,7 +111,7 @@ async def ask_llm(
         if res_msg.tool_calls:
             iterations += 1
             messages = await tool_function_calls(res_msg.tool_calls, messages)
-            if iterations == MAX_ITERATIONS:
+            if iterations == max_iterations:
                 messages.append(
                     {
                         "role": "system",
@@ -152,4 +162,4 @@ async def ask_llm(
     else:
         chain = [Plain(resm)]
 
-    return chain, total_input_tokens, total_output_tokens
+    return chain, total_input_tokens, total_cached_tokens, total_output_tokens
