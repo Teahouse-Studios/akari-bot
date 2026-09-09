@@ -116,18 +116,17 @@ async def ask_llm(
             iterations += 1
             messages = await tool_function_calls(res_msg.tool_calls, messages)
             if iterations == max_iterations:
+                Logger.warning("LLM tool calling reached maximum iterations.")
                 messages.append(
                     {
                         "role": "system",
-                        "content": "Warning: Iteration limit reached. Provide the final answer based on the available information and do not attempt to call functions again.",
+                        "content": "Warning: Iteration limit reached. Provide the final answer based on the available information and do not attempt to call tools again.",
                     }
                 )
                 tool_choice = "none"
             continue
         else:
             break
-    else:
-        Logger.warning("LLM function calling reached maximum iterations.")
 
     res = await check("\n\n".join(content_pieces), session=session)
     resm = "".join(m["content"] for m in res)
