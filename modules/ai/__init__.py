@@ -70,7 +70,10 @@ async def _(msg: Bot.MessageSession, prompt: str):
                 use_tools,
             )
 
+            
             Logger.info(f"{input_tokens + cache_tokens + output_tokens} token used while calling LLM.")
+            Logger.info(f"Input (miss cache): {input_tokens} | Input (hit cache): {cache_tokens
+                      } | Output: {output_tokens}")
             billing = get_llm_billing(llm_info, input_tokens)
             petal = await count_token_petal(
                 msg,
