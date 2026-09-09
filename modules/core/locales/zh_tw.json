@@ -73,7 +73,7 @@
     "core.help.module.reload": "重新載入模組。",
     "core.help.module.unload": "移除模組。",
     "core.help.mute": "使機器人停止發言。",
-    "core.help.petal": "取得花瓣數量。",
+    "core.help.petal": "檢視花瓣數量。",
     "core.help.petal.admin": "檢視使用者的花瓣數量。",
     "core.help.petal.clear": "清除使用者的花瓣數量。",
     "core.help.petal.give": "將花瓣給予他人。",

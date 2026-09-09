@@ -112,6 +112,19 @@ async def find_bud(bud_id: str) -> dict | None:
     return None
 
 
+async def release_buds() -> int:
+    """释放所有空花苞和过期花苞，并返回释放数量。"""
+    async with _bud_mutation_lock:
+        async with in_transaction("default") as connection:
+            buds, stored = await _load_buds_for_update(connection)
+            original_buds = list(stored.value if stored else [])
+            now = datetime.now().timestamp()
+            expired = sum(1 for bud in original_buds if now - bud.get("created", now) >= BUD_TTL_SECONDS)
+            kept = [bud for bud in buds if len(bud.get("records", [])) < bud.get("count", 0)]
+            await _save_buds(stored, kept, connection)
+            return expired + len(buds) - len(kept)
+
+
 async def claim_bud(msg: Bot.MessageSession, code: str) -> tuple[str, dict | None, int | None]:
     """领取花苞，返回 ``(状态, 花苞, 领取数量)``。
 
@@ -189,4 +202,4 @@ async def _save_buds(stored: StoredData | None, buds: list[dict], connection) ->
         await StoredData.create(stored_key=f"{BUD_STORE_SCOPE}|{BUD_STORE_KEY}", value=buds, using_db=connection)
 
 
-__all__ = ["split_amount", "generate_bud_id", "create_bud", "find_bud", "claim_bud"]
+__all__ = ["split_amount", "generate_bud_id", "create_bud", "find_bud", "release_buds", "claim_bud"]

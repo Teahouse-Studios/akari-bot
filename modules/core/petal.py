@@ -7,7 +7,7 @@ from core.database.models import SenderUnionInfo
 from core.scheduler import CronTrigger
 from core.utils.petal import sign_get_petal, cost_petal
 from core.utils.petal import settle_petals
-from core.utils.bud import claim_bud, create_bud, find_bud
+from core.utils.bud import claim_bud, create_bud, find_bud, release_buds
 
 
 petal_ = module(
@@ -130,10 +130,10 @@ async def _(msg: Bot.MessageSession, petal: int, count: int, passcode: str):
     if petal <= 0:
         await msg.finish(I18NContext("petal.message.count.invalid"))
     if count <= 0 or petal < count:
-        await msg.finish(I18NContext("petal.bud.message.count.invalid"))
+        await msg.finish(I18NContext("core.message.petal.bud.count.invalid"))
     passcode = passcode.strip()
     if not await msg.wait_confirm(
-        I18NContext("petal.bud.message.send.confirm", total=petal, count=count, code=passcode)
+        I18NContext("core.message.petal.bud.send.confirm", total=petal, count=count, code=passcode)
     ):
         await msg.finish()
     sender_union_info = msg.session_info.sender_union_info
@@ -144,10 +144,10 @@ async def _(msg: Bot.MessageSession, petal: int, count: int, passcode: str):
     bud = await create_bud(msg.session_info.sender_id, msg.session_info.sender_union_id, petal, count, passcode)
     if bud is None:
         await sender_union_info.modify_petal(petal)
-        await msg.finish(I18NContext("petal.bud.message.code.exists"))
+        await msg.finish(I18NContext("core.message.petal.bud.code.exists"))
     await msg.finish(
         I18NContext(
-            "petal.bud.message.send.success",
+            "core.message.petal.bud.send.success",
             id=bud["id"],
             total=petal,
             count=count,
@@ -160,24 +160,29 @@ async def _(msg: Bot.MessageSession, petal: int, count: int, passcode: str):
 async def _(msg: Bot.MessageSession, passcode: str):
     status, _, amount = await claim_bud(msg, passcode.strip())
     if status == "success":
-        await msg.finish(I18NContext("petal.bud.message.receive.success", amount=amount))
+        await msg.finish(
+            [
+                I18NContext("core.message.petal.bud.receive.success"),
+                I18NContext("petal.message.gained.success", amount=amount),
+            ]
+        )
     elif status == "already":
-        await msg.finish(I18NContext("petal.bud.message.receive.already"))
+        await msg.finish(I18NContext("core.message.petal.bud.receive.already"))
     elif status == "empty":
-        await msg.finish(I18NContext("petal.bud.message.receive.empty"))
+        await msg.finish(I18NContext("core.message.petal.bud.receive.empty"))
     else:
-        await msg.finish(I18NContext("petal.bud.message.receive.not_found"))
+        await msg.finish(I18NContext("core.message.petal.bud.receive.not_found"))
 
 
 @petal_.command("bud info <id> {{I18N:core.help.petal.bud.info}}")
 async def _(msg: Bot.MessageSession, id: str):
     bud = await find_bud(id.strip())
     if bud is None:
-        await msg.finish(I18NContext("petal.bud.message.info.not_found"))
+        await msg.finish(I18NContext("core.message.petal.bud.info.not_found"))
     records = bud["records"]
     lines = [
         I18NContext(
-            "petal.bud.message.info",
+            "core.message.petal.bud.info",
             sender=bud["sender_id"],
             code=bud["code"],
             total=bud["total"],
@@ -189,5 +194,13 @@ async def _(msg: Bot.MessageSession, id: str):
         lines.append(I18NContext("none"))
     else:
         for r in records:
-            lines.append(I18NContext("petal.bud.message.info.record", sender=r["sender_id"], amount=r["amount"]))
+            lines.append(I18NContext("core.message.petal.bud.info.record", sender=r["sender_id"], amount=r["amount"]))
     await msg.finish(lines)
+
+
+@petal_.command("bud release {{I18N:core.help.petal.bud.release}}", required_superuser=True)
+async def _(msg: Bot.MessageSession):
+    released = await release_buds()
+    if released:
+        await msg.finish(I18NContext("core.message.petal.bud.release", count=released))
+    await msg.finish(I18NContext("core.message.petal.bud.release.none"))

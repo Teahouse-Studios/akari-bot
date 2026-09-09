@@ -73,7 +73,7 @@
     "core.help.module.reload": "Reload the modules.",
     "core.help.module.unload": "Unload the modules.",
     "core.help.mute": "Make the bot stop sending messages.",
-    "core.help.petal": "Get the number of petals.",
+    "core.help.petal": "Check the number of petals.",
     "core.help.petal.admin": "Check the user's number of petals.",
     "core.help.petal.clear": "Clear the user's number of petals.",
     "core.help.petal.give": "Give petals to others.",

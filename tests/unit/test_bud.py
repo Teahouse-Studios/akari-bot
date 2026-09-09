@@ -136,6 +136,35 @@ async def _test_bud_refund_on_expiry():
         return False
 
 
+async def _test_release_buds():
+    """release_buds - 清理空花苞并退款清理过期花苞"""
+    try:
+        from core.database.models import SenderUnionInfo
+        from core.utils.bud import BUD_STORE_KEY, BUD_STORE_SCOPE, create_bud, release_buds
+        from core.utils.storedata import get_stored_list, update_stored_list
+
+        sender = await TestDataFactory.ensure_sender(sender_id="TEST|release", petal=0)
+        empty = await create_bud("TEST|release", sender.union_id, 5, 1, "release-empty")
+        expired = await create_bud("TEST|release", sender.union_id, 7, 1, "release-expired")
+        if empty is None or expired is None:
+            return False
+
+        buds = await get_stored_list(BUD_STORE_SCOPE, BUD_STORE_KEY) or []
+        for bud in buds:
+            if bud["id"] == empty["id"]:
+                bud["records"] = [{"union_id": "TEST|claimed", "amount": 5}]
+            elif bud["id"] == expired["id"]:
+                bud["created"] -= 25 * 3600
+        await update_stored_list(BUD_STORE_SCOPE, BUD_STORE_KEY, buds)
+
+        released = await release_buds()
+        refreshed = await SenderUnionInfo.get(union_id=sender.union_id)
+        remaining = await get_stored_list(BUD_STORE_SCOPE, BUD_STORE_KEY)
+        return released == 2 and refreshed.petal == 7 and not remaining
+    except Exception:
+        return False
+
+
 @func_case
 async def test_bud(tester: Tester):
     """core.utils.bud: 花苞系统测试"""
@@ -146,5 +175,6 @@ async def test_bud(tester: Tester):
     await tester.test(_test_generate_bud_id, "generate_bud_id 唯一性测试")
     await tester.test(_test_bud_ttl_24h, "花苞有效期 24 小时测试")
     await tester.test(_test_bud_refund_on_expiry, "过期花苞退款测试")
+    await tester.test(_test_release_buds, "空花苞和过期花苞释放测试")
 
     return tester
