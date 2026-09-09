@@ -37,6 +37,20 @@ async def _test_split_amount_minimum():
         return False
 
 
+async def _test_split_amount_avoids_extreme_small_shares():
+    """split_amount - 余量充足时避免拆出 1 片"""
+    try:
+        from core.utils.bud import split_amount
+
+        for _ in range(200):
+            shares = split_amount(50, 8)
+            if min(shares) < 3:
+                return False
+        return True
+    except Exception:
+        return False
+
+
 async def _test_split_amount_invalid():
     """split_amount - 非法参数抛异常"""
     try:
@@ -127,6 +141,7 @@ async def test_bud(tester: Tester):
     """core.utils.bud: 花苞系统测试"""
     await tester.test(_test_split_amount_conservation, "split_amount 总额守恒测试")
     await tester.test(_test_split_amount_minimum, "split_amount 每份至少 1 片测试")
+    await tester.test(_test_split_amount_avoids_extreme_small_shares, "split_amount 避免极端小额测试")
     await tester.test(_test_split_amount_invalid, "split_amount 非法参数测试")
     await tester.test(_test_generate_bud_id, "generate_bud_id 唯一性测试")
     await tester.test(_test_bud_ttl_24h, "花苞有效期 24 小时测试")
