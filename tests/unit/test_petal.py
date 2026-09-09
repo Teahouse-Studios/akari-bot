@@ -93,6 +93,24 @@ async def _test_cost_petal_insufficient_with_mock():
         return False
 
 
+async def _test_petal_settlement_applies_rebate():
+    """测试周期结算按返点比例保留余额。"""
+    from core.database.models import SenderUnionInfo
+    from core.utils.petal import settle_petals
+
+    sender = await TestDataFactory.ensure_sender(petal=10)
+
+    class MockConfig:
+        enable_petal = True
+        petal_rebate_rate = 0.2
+
+    with patch("core.utils.petal.CoreConfig", MockConfig):
+        await settle_petals()
+
+    refreshed = await SenderUnionInfo.get(union_id=sender.union_id)
+    return refreshed.petal == 2
+
+
 @func_case
 async def test_petal(tester: Tester):
     """core.utils.petal: 花瓣系统测试"""
@@ -100,5 +118,6 @@ async def test_petal(tester: Tester):
     await tester.test(_test_cost_petal_returns_bool, "cost_petal 返回布尔值测试")
     await tester.test(_test_gained_petal_with_mock, "gained_petal Mock Config 测试")
     await tester.test(_test_cost_petal_insufficient_with_mock, "cost_petal 花瓣不足 Mock 测试")
+    await tester.test(_test_petal_settlement_applies_rebate, "花瓣返点结算测试")
 
     return tester

@@ -4,11 +4,18 @@ from core.builtins.message.internal import I18NContext
 from core.component import module
 from core.config.base import CoreConfig
 from core.database.models import SenderUnionInfo
+from core.scheduler import CronTrigger
 from core.utils.petal import sign_get_petal, cost_petal
+from core.utils.petal import settle_petals
 
 petal_ = module(
     "petal", alias={"petals": "petal", "sign": "petal sign"}, base=True, doc=True, load=CoreConfig.enable_petal
 )
+
+
+@petal_.schedule(CronTrigger.from_crontab(CoreConfig.petal_reset_crontab))
+async def _reset_petals():
+    await settle_petals()
 
 
 @petal_.command("{{I18N:core.help.petal}}")

@@ -4,6 +4,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.elements import I18NContextElement
 from core.builtins.message.internal import I18NContext
 from core.config.base import CoreConfig
+from core.database.models import SenderUnionInfo
 from core.utils.random import Random
 from core.utils.storedata import get_stored_list, update_stored_list
 
@@ -113,20 +114,7 @@ async def cost_petal(msg: Bot.MessageSession, amount: int, send_prompt: bool = T
 
 async def sign_get_petal(msg: Bot.MessageSession) -> int | None:
     if CoreConfig.enable_petal:
-
-        def _draw_petals() -> int:
-            petal = 1
-            limit = CoreConfig.petal_sign_limit
-            limit = limit if limit > 0 else 5
-            rate = CoreConfig.petal_sign_rate
-            for _ in range(limit - 1):  # 指数衰减
-                if Random.random() < rate:
-                    petal += 1
-                else:
-                    break
-            return petal
-
-        amount = _draw_petals()
+        amount = Random.randint(1, CoreConfig.petal_sign_limit)
         sender_union_info = msg.session_info.sender_union_info
         union_id = msg.session_info.sender_union_id
         if not sender_union_info or not union_id:
@@ -148,4 +136,16 @@ async def sign_get_petal(msg: Bot.MessageSession) -> int | None:
         return 0
 
 
-__all__ = ["gained_petal", "lost_petal", "cost_petal"]
+async def settle_petals() -> int:
+    """结算所有用户的花瓣余额，并返回成功结算的用户数。"""
+    if CoreConfig.enable_petal:
+        rebate_rate = min(max(float(CoreConfig.petal_rebate_rate), 0.0), 1.0)
+        settled = 0
+        for sender_union_info in await SenderUnionInfo.all():
+            if await sender_union_info.settle_petal(rebate_rate):
+                settled += 1
+        return settled
+    return 0
+
+
+__all__ = ["gained_petal", "lost_petal", "cost_petal", "sign_get_petal", "settle_petals"]
