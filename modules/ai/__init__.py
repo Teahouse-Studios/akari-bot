@@ -126,7 +126,6 @@ async def _(msg: Bot.MessageSession):
                 Plain("\n".join(sorted(available_llms))),
                 I18NContext(
                     "ai.message.llm.list.prompt",
-                    prefix=msg.session_info.prefixes[0],
                     cmd=ActionText(f"{msg.session_info.prefixes[0]}ai llm set "),
                 ),
             ]

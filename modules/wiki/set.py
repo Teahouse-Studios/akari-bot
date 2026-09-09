@@ -119,7 +119,6 @@ async def _(msg: Bot.MessageSession):
             mt = [
                 I18NContext(
                     "wiki.message.iw.list",
-                    prefix=msg.session_info.prefixes[0],
                     cmd=ActionText(f"{msg.session_info.prefixes[0]}wiki iw get "),
                 )
             ]
@@ -144,7 +143,6 @@ async def _(msg: Bot.MessageSession):
         result.append(
             I18NContext(
                 "wiki.message.iw.list.none",
-                prefix=msg.session_info.prefixes[0],
                 cmd=ActionText(f"{msg.session_info.prefixes[0]}wiki iw add"),
             )
         )
@@ -177,7 +175,6 @@ async def _(msg: Bot.MessageSession, interwiki: str):
         await msg.finish(
             I18NContext(
                 "wiki.message.iw.list.none",
-                prefix=msg.session_info.prefixes[0],
                 cmd=ActionText(f"{msg.session_info.prefixes[0]}wiki iw add"),
             )
         )
@@ -190,7 +187,6 @@ async def _(msg: Bot.MessageSession):
         I18NContext(
             "wiki.message.headers.show",
             headers=orjson.dumps(target.headers).decode(),
-            prefix=msg.session_info.prefixes[0],
             cmd=ActionText(f"{msg.session_info.prefixes[0]}wiki headers add"),
         )
     )

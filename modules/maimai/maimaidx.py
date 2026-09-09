@@ -255,7 +255,6 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
             msg_chain.append(
                 I18NContext(
                     "maimai.message.disambiguation.chart.prompt",
-                    prefix=msg.session_info.prefixes[0],
                     cmd=ActionText(f"{msg.session_info.prefixes[0]}maimai chart "),
                 )
             )
@@ -384,7 +383,6 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
             msg_chain.append(
                 I18NContext(
                     "maimai.message.disambiguation.song.prompt",
-                    prefix=msg.session_info.prefixes[0],
                     cmd=ActionText(f"{msg.session_info.prefixes[0]}maimai song "),
                 )
             )
@@ -495,7 +493,6 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str):
             msg_chain.append(
                 I18NContext(
                     "maimai.message.disambiguation.scoreline.prompt",
-                    prefix=msg.session_info.prefixes[0],
                     cmd=ActionText(f"{msg.session_info.prefixes[0]}maimai scoreline "),
                 )
             )
@@ -591,7 +588,6 @@ async def query_song_score(msg, query):
             msg_chain.append(
                 I18NContext(
                     "maimai.message.disambiguation.score.prompt",
-                    prefix=msg.session_info.prefixes[0],
                     cmd=ActionText(f"{msg.session_info.prefixes[0]}maimai score "),
                 )
             )

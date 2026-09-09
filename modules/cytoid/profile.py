@@ -15,7 +15,6 @@ async def cytoid_profile(msg: Bot.MessageSession, username):
             await msg.finish(
                 I18NContext(
                     "cytoid.message.user_unbound",
-                    prefix=msg.session_info.prefixes[0],
                     cmd=ActionText(f"{msg.session_info.prefixes[0]}cytoid bind"),
                 )
             )

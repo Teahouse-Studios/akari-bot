@@ -164,7 +164,6 @@ async def _(msg: Bot.MessageSession):
             I18NContext(
                 "core.message.admin.invalid",
                 sender=msg.session_info.sender_from,
-                prefix=msg.session_info.prefixes[0],
                 cmd=ActionText(f"{msg.session_info.prefixes[0]}whoami"),
             )
         )
@@ -203,7 +202,6 @@ async def _(msg: Bot.MessageSession):
             I18NContext(
                 "core.message.admin.invalid",
                 sender=msg.session_info.sender_from,
-                prefix=msg.session_info.prefixes[0],
                 cmd=ActionText(f"{msg.session_info.prefixes[0]}whoami"),
             )
         )
@@ -244,7 +242,6 @@ def build_locale_overview(msg: Bot.MessageSession, locale_url: str | None) -> li
         I18NContext("core.message.locale.prompt", lang="{I18N:language}"),
         I18NContext(
             "core.message.locale.set.prompt",
-            prefix=msg.session_info.prefixes[0],
             cmd=ActionText(f"{msg.session_info.prefixes[0]}locale "),
         ),
         *build_locale_list(msg),

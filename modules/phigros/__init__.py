@@ -51,7 +51,6 @@ async def _require_bind(msg: Bot.MessageSession):
         await msg.finish(
             I18NContext(
                 "phigros.message.user_unbound",
-                prefix=msg.session_info.prefixes[0],
                 cmd=ActionText(f"{msg.session_info.prefixes[0]}phigros bind"),
             )
         )
@@ -67,7 +66,6 @@ async def _require_song_info(msg: Bot.MessageSession) -> dict:
         await msg.finish(
             I18NContext(
                 "phigros.message.file_not_found",
-                prefix=msg.session_info.prefixes[0],
                 cmd=ActionText(f"{msg.session_info.prefixes[0]}phigros update"),
             )
         )
@@ -97,7 +95,6 @@ async def _fetch_save(msg: Bot.MessageSession, bind_info):
             await msg.finish(
                 I18NContext(
                     "phigros.message.token_invalid",
-                    prefix=msg.session_info.prefixes[0],
                     cmd=ActionText(f"{msg.session_info.prefixes[0]}phigros bind"),
                 )
             )

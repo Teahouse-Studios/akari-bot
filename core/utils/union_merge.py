@@ -113,7 +113,6 @@ async def issue_code(
             I18NContext(
                 prompt_key,
                 minute=BIND_CODE_EXPIRED // 60,
-                prefix=msg.session_info.prefixes[0],
                 code=generated,
                 # 标签仍须显示实际命令，操作提示仅作为附注；
                 # 该提示离开可点击的平台便无意义，故不随降级带往其他平台。引号同理，

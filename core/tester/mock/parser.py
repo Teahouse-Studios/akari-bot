@@ -124,7 +124,6 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                     I18NContext(
                         "parser.module.disabled.prompt",
                         module=command_first_word,
-                        prefix=msg.session_info.prefixes[0],
                         cmd=ActionText(f"{msg.session_info.prefixes[0]}enable {command_first_word}"),
                     )
                 )

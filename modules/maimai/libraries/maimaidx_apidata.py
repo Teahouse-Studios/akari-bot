@@ -115,7 +115,6 @@ async def get_alias(msg: Bot.MessageSession, sid: str) -> list:
         await msg.finish(
             I18NContext(
                 "maimai.message.alias.file_not_found",
-                prefix=msg.session_info.prefixes[0],
                 cmd=ActionText(f"{msg.session_info.prefixes[0]}maimai update"),
             )
         )
