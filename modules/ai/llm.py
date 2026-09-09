@@ -5,7 +5,8 @@ from openai import AsyncOpenAI, APITimeoutError, RateLimitError
 from PIL import Image as PILImage
 
 from core.builtins.bot import Bot
-from core.builtins.message.internal import ImageElement, Image, Markdown, Plain
+from core.builtins.message.internal import ImageElement, Image, Markdown, Plain, PlainElement
+from core.builtins.message.chain import MessageChain
 from modules.ai.config import AiConfig
 from core.constants.exceptions import ExternalException
 from core.utils.dirty_check import check
@@ -24,22 +25,25 @@ presence_penalty = AiConfig.llm_presence_penalty
 max_iterations = AiConfig.llm_max_calling_iteration
 
 
-async def _build_user_content(session: Bot.MessageSession, prompt: str) -> list[dict]:
-    content = [{"type": "text", "text": prompt}]
-    images = [element for element in session.session_info.messages.values if isinstance(element, ImageElement)]
-    for image in images:
-        content.append(
-            {
-                "type": "image_url",
-                "image_url": {"url": await image.get_base64(mime=True)},
-            }
-        )
+async def _build_user_content(prompt: str | MessageChain) -> list[dict]:
+    elements = MessageChain.assign(prompt).values if isinstance(prompt, str) else prompt.values
+    content = []
+    for element in elements:
+        if isinstance(element, PlainElement):
+            content.append({"type": "text", "text": element.text})
+        elif isinstance(element, ImageElement):
+            content.append(
+                {
+                    "type": "image_url",
+                    "image_url": {"url": await element.get_base64(mime=True)},
+                }
+            )
     return content
 
 
 async def ask_llm(
     session: Bot.MessageSession,
-    prompt: str,
+    prompt: str | MessageChain,
     model_name: str,
     api_url: str,
     api_key: str,
@@ -67,7 +71,7 @@ async def ask_llm(
     messages.append(
         {
             "role": "user",
-            "content": await _build_user_content(session, prompt),
+            "content": await _build_user_content(prompt),
         }
     )
 

@@ -1,5 +1,6 @@
 from core.builtins.bot import Bot
-from core.builtins.message.internal import ActionText, I18NContext, Plain
+from core.builtins.message.internal import ActionText, I18NContext, ImageElement, Plain
+from core.builtins.message.chain import MessageChain
 from core.component import module
 from modules.ai.config import AiConfig
 from core.utils.cooldown import CoolDown
@@ -54,9 +55,15 @@ async def _(msg: Bot.MessageSession, prompt: str):
             # OpenAI、Matplotlib、网页提取等依赖体积较大，仅在实际调用 AI 时加载。
             from .llm import ask_llm
 
+            prompt_chain = MessageChain.assign(
+                [
+                    Plain(prompt),
+                    *(x for x in msg.session_info.messages.values if isinstance(x, ImageElement)),
+                ]
+            )
             chain, input_tokens, cache_tokens, output_tokens = await ask_llm(
                 msg,
-                prompt,
+                prompt_chain,
                 llm_info["model_name"],
                 llm_info["api_url"],
                 llm_info["api_key"],
