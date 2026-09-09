@@ -1,5 +1,5 @@
 from pathlib import Path
-from datetime import datetime, time, timezone
+from datetime import datetime, time
 from decimal import Decimal, InvalidOperation
 
 import yaml
@@ -97,7 +97,9 @@ def get_llm_billing(llm: dict, context_tokens: int = 0, now: datetime | None = N
                         prices[price_name] = safe_price(tier[config_name])
 
     if billing_type != "per_call" and use_time_rules:
-        current = now or datetime.now(timezone.utc)
+        current = now or datetime.now()
+        if current.tzinfo is not None:
+            current = current.astimezone()
         current_time = current.time()
         for rule in time_rules:
             if not isinstance(rule, dict) or not isinstance(rule.get("time_range"), str):

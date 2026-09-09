@@ -236,7 +236,7 @@ time_rules:
 time_range: "00:00-08:30"
 ```
 
-表示 UTC 00:00 至 08:30 期间使用该价格。
+表示服务器时间 00:00 至 08:30 期间使用该价格。
 
 ### `week`
 
@@ -611,7 +611,7 @@ For example:
 time_range: "00:00-08:30"
 ```
 
-This means that the specified prices apply from 00:00 to 08:30 UTC.
+This means that the specified prices apply from 00:00 to 08:30 server time.
 
 ### `week`
 
@@ -847,7 +847,7 @@ llm_api_list:
           price_out: 100
           price_cache: 50
 
-      # [可选] 根据 UTC 时间及星期进行峰谷计费
+      # [可选] 根据服务器时间及星期进行峰谷计费
       time_rules:
         - time_range: "00:00-08:30"
           week: [1, 2, 3, 4, 5, 6, 7]
@@ -1036,7 +1036,7 @@ time_rules:
 time_range: "00:00-08:30"
 ```
 
-表示 UTC 00:00 至 08:30 期间使用该价格。
+表示服务器时间 00:00 至 08:30 期间使用该价格。
 
 ### `week`
 
@@ -1277,7 +1277,7 @@ llm_api_list:
           price_out: 100
           price_cache: 50
 
-      # [Optional] Time-based pricing based on UTC time and weekdays
+      # [Optional] Time-based pricing based on server time and weekdays
       time_rules:
         - time_range: "00:00-08:30"
           week: [1, 2, 3, 4, 5, 6, 7]
@@ -1466,7 +1466,7 @@ For example:
 time_range: "00:00-08:30"
 ```
 
-This means that the specified prices apply from 00:00 to 08:30 UTC.
+This means that the specified prices apply from 00:00 to 08:30 server time.
 
 ### `week`
 
