@@ -10,6 +10,7 @@ from bots.web.context import WebContextManager
 from bots.web.info import *
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import Plain, Image
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
 from core.utils.button_runtime import normalize_button_payload
@@ -60,12 +61,21 @@ async def websocket_chat(websocket: WebSocket):
                         await Bot.process_message(session, {"message": message, "websocket": websocket})
                     elif action == "send":
                         msg_list = message.get("message", [])
-                        content = msg_list[0].get("content", "") if msg_list else ""
-                        # 按钮点击回传携带虚拟 reply_id；据此归一化确认按钮并路由到 callback
                         reply_id = message.get("reply_id")
-                        if reply_id:
-                            content = normalize_button_payload(content)
-                        msg_chain = MessageChain.assign(content)
+                        elements = []
+                        for block in msg_list:
+                            block_type = block.get("type")
+                            if block_type == "text":
+                                content = block.get("content", "")
+                                if reply_id:
+                                    content = normalize_button_payload(content)
+                                if content:
+                                    elements.append(Plain(content))
+                            elif block_type == "image":
+                                content = block.get("content", "")
+                                if content:
+                                    elements.append(Image(content))
+                        msg_chain = MessageChain.assign(elements)
                         session = await SessionInfo.assign(
                             target_id=target_id,
                             sender_id=sender_id,
