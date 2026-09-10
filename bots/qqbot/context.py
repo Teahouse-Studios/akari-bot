@@ -58,6 +58,7 @@ PASSIVE_REPLY_FALLBACK_ERROR_CODES = frozenset({"40034005", "40034128"})
 PROACTIVE_PERMISSION_DENIED_ERROR_CODES = frozenset({"304046", "40034102"})
 PERMISSION_CACHE_TTL = 3600
 PERMISSION_CACHE_MAX_SIZE = 4096
+MESSAGE_ID_CACHE_MAX_SIZE = 4096
 INITIATIVE_QUEUE_MAX_SIZE = 128
 HIGH_PRIORITY_BURST = 5
 HIGH_PRIORITY_QUEUE_RESERVE = 16
@@ -196,6 +197,7 @@ def nodes_to_table(session_info: SessionInfo, nodes: MessageNodes) -> str:
 
 # 用户权限缓存，用于部分场景接口未返回群聊内身份使用。只缓存管理员，缺失时安全退化为无权限。
 permission_cache: OrderedDict[str, float] = OrderedDict()
+message_id_cache: OrderedDict[str, str] = OrderedDict()
 
 
 def cache_permission(key: str, is_admin: bool, now: float | None = None) -> None:
@@ -218,6 +220,30 @@ def get_cached_permission(key: str, now: float | None = None) -> bool:
         return False
     permission_cache.move_to_end(key)
     return True
+
+
+def cache_message_id_pair(application_id: str | None, api_id: str | None) -> None:
+    """缓存应用层消息 ID 到平台接口消息 ID 的映射。"""
+    if not application_id or not api_id:
+        return
+    application_id = str(application_id)
+    api_id = str(api_id)
+    message_id_cache.pop(application_id, None)
+    message_id_cache[application_id] = api_id
+    while len(message_id_cache) > MESSAGE_ID_CACHE_MAX_SIZE:
+        message_id_cache.popitem(last=False)
+
+
+def _resolve_api_message_id(message_id: str) -> str | None:
+    """把框架持有的应用层消息 ID 还原成可用于 QQ OpenAPI 的 ID。"""
+    message_id = str(message_id)
+    if api_id := message_id_cache.get(message_id):
+        message_id_cache.move_to_end(message_id)
+        return api_id
+    # REFIDX 仅用于应用层识别，映射丢失时不能误传给平台接口。
+    if message_id.startswith("REFIDX"):
+        return None
+    return message_id
 
 
 def _get_client():
@@ -244,8 +270,22 @@ def _message_ids(result) -> list[str]:
         return _message_ids(result.message)
     if isinstance(result, list):
         return [message_id for item in result for message_id in _message_ids(item)]
-    if isinstance(result, Mapping) and result.get("id"):
-        return [str(result["id"])]
+    if isinstance(result, Mapping):
+        api_id = result.get("id")
+        ext_info = result.get("ext_info")
+        application_id = None
+        if isinstance(ext_info, Mapping):
+            application_id = ext_info.get("msg_idx") or ext_info.get("ref_idx")
+        if application_id:
+            cache_message_id_pair(str(application_id), str(api_id) if api_id else None)
+            return [str(application_id)]
+        if api_id:
+            api_id = str(api_id)
+            # 真实平台的 ROBOT ID 只能用于接口调用，不能作为 wait_reply 等应用层标识。
+            if api_id.startswith("ROBOT"):
+                Logger.warning("QQBot send response has a ROBOT message ID but no ext_info message index.")
+                return []
+            return [api_id]
     return []
 
 
@@ -561,15 +601,8 @@ class QQBotContextManager(ContextManager):
 
             message_reference = None
             if quote and not images:
-                if isinstance(ctx, (Message, DirectMessage)):
+                if isinstance(ctx, (Message, DirectMessage, GroupMessage)):
                     message_reference = Reference(message_id=ctx.id, ignore_get_message_error=False)
-                elif isinstance(ctx, GroupMessage) and ctx.message_scene:
-                    ext = ctx.message_scene.get("ext") or []
-                    if ext and ext[0].startswith("msg_idx=REFIDX"):
-                        message_reference = Reference(
-                            message_id=ext[0].replace("msg_idx=", ""),
-                            ignore_get_message_error=False,
-                        )
 
             if quote and images and isinstance(ctx, Message):
                 msg = f"<@{ctx.author.id}> \n{msg}"
@@ -942,8 +975,14 @@ class QQBotContextManager(ContextManager):
             return
         client = _get_client()
         for msg_id in message_id:
+            api_message_id = _resolve_api_message_id(msg_id)
+            if api_message_id is None:
+                Logger.warning(
+                    f"Cannot delete QQBot application message ID {msg_id}: its API message ID is unavailable."
+                )
+                continue
             try:
-                await client.recall_message(target, msg_id, hidetip=target.scope == "channel")
+                await client.recall_message(target, api_message_id, hidetip=target.scope == "channel")
                 Logger.info(f"Deleted message {msg_id} in session {session_info.session_id}")
             except Exception:
                 Logger.exception(f"Failed to delete message {msg_id} in session {session_info.session_id}: ")
@@ -961,11 +1000,18 @@ class QQBotContextManager(ContextManager):
         if session_info.target_from == target_guild_prefix:
             emoji_type = 1 if int(qq_typing_emoji) < 9000 else 2
             client = _get_client()
+            api_message_id = _resolve_api_message_id(message_id[-1])
+            if api_message_id is None:
+                Logger.warning(
+                    f"Cannot add reaction to QQBot application message ID {message_id[-1]}: "
+                    "its API message ID is unavailable."
+                )
+                return
 
             try:
                 await client.api.put_reaction(
                     channel_id=session_info.get_common_target_id(),
-                    message_id=message_id[-1],
+                    message_id=api_message_id,
                     emoji_type=emoji_type,
                     emoji_id=emoji,
                 )
@@ -988,11 +1034,18 @@ class QQBotContextManager(ContextManager):
         if session_info.target_from == target_guild_prefix:
             emoji_type = 1 if int(qq_typing_emoji) < 9000 else 2
             client = _get_client()
+            api_message_id = _resolve_api_message_id(message_id[-1])
+            if api_message_id is None:
+                Logger.warning(
+                    f"Cannot remove reaction from QQBot application message ID {message_id[-1]}: "
+                    "its API message ID is unavailable."
+                )
+                return
 
             try:
                 await client.api.delete_reaction(
                     channel_id=session_info.get_common_target_id(),
-                    message_id=message_id[-1],
+                    message_id=api_message_id,
                     emoji_type=emoji_type,
                     emoji_id=emoji,
                 )

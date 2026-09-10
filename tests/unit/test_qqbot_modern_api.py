@@ -4,11 +4,12 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 from botpy.errors import ServerError
+from botpy.message import GroupMessage
 from botpy.protocol import MediaSendResult
 
 import bots.qqbot.context as qqbot_context
-import bots.qqbot.bot as qqbot_bot
-from bots.qqbot.context import QQBotContextManager, _message_ids, _reply_target
+from bots.qqbot.config import QQBotConfig
+from bots.qqbot.context import QQBotContextManager, _message_ids, _reply_target, _resolve_api_message_id
 from bots.qqbot.info import (
     target_c2c_prefix,
     target_direct_prefix,
@@ -27,6 +28,9 @@ from core.builtins.message.elements import (
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 from core.tester import func_case, Tester
+
+with patch.object(QQBotConfig, "enable", False):
+    import bots.qqbot.bot as qqbot_bot
 
 
 def _make_session(target_from: str, target: str = "target") -> SessionInfo:
@@ -62,11 +66,20 @@ def _test_reply_target_scopes() -> bool:
 
 def _test_message_id_collection() -> bool:
     result = [
-        {"id": "plain"},
-        MediaSendResult(upload={"file_info": "image"}, message={"id": "image"}),
+        {"id": "ROBOT-plain", "ext_info": {"ref_idx": "REFIDX-plain"}},
+        MediaSendResult(
+            upload={"file_info": "image"},
+            message={"id": "ROBOT-image", "ext_info": {"msg_idx": "REFIDX-image"}},
+        ),
+        {"id": "legacy-id"},
+        {"id": "ROBOT-without-index"},
         None,
     ]
-    return _message_ids(result) == ["plain", "image"]
+    return (
+        _message_ids(result) == ["REFIDX-plain", "REFIDX-image", "legacy-id"]
+        and _resolve_api_message_id("REFIDX-plain") == "ROBOT-plain"
+        and _resolve_api_message_id("REFIDX-image") == "ROBOT-image"
+    )
 
 
 class _FakeClient:
@@ -474,14 +487,21 @@ async def _test_private_message_client_failure_returns_empty() -> bool:
 
 
 async def _test_group_message_reply_uses_message_reference() -> bool:
-    """普通群消息的 reply_id 应来自被回复消息，而不是被提及用户。"""
+    """普通群消息的 reply_id 应使用 message_scene 中的应用层引用 ID。"""
     message = SimpleNamespace(
         group_openid="group",
         author=SimpleNamespace(member_openid="sender", username="sender-name", member_role="member"),
-        message_reference=SimpleNamespace(message_id="referenced-message"),
+        message_reference=SimpleNamespace(message_id="ROBOT-referenced"),
+        message_scene={
+            "ext": [
+                "auth_token=token",
+                "ref_msg_idx=REFIDX-referenced",
+                "msg_idx=REFIDX-incoming",
+            ]
+        },
         mentions=[SimpleNamespace(id="mentioned-user")],
         content="hello",
-        id="incoming-message",
+        id="ROBOT-incoming",
     )
     session = SimpleNamespace()
     assign = AsyncMock(return_value=session)
@@ -496,9 +516,51 @@ async def _test_group_message_reply_uses_message_reference() -> bool:
 
     return (
         assign.await_count == 1
-        and assign.await_args.kwargs["reply_id"] == "referenced-message"
+        and assign.await_args.kwargs["message_id"] == "ROBOT-incoming"
+        and assign.await_args.kwargs["reply_id"] == "REFIDX-referenced"
+        and _resolve_api_message_id("REFIDX-incoming") == "ROBOT-incoming"
         and process_message.await_count == 1
     )
+
+
+async def _test_group_quote_uses_api_message_id() -> bool:
+    """平台引用参数必须使用 ROBOT ID，不能把 msg_idx 传给 OpenAPI。"""
+    session = _make_session(target_group_prefix)
+    session.message_id = "ROBOT-source"
+    context = GroupMessage(
+        None,
+        "event",
+        {
+            "id": "ROBOT-source",
+            "content": "source",
+            "group_openid": "target",
+            "author": {"member_openid": "sender", "username": "sender"},
+            "message_scene": {"ext": ["msg_idx=REFIDX-source"]},
+        },
+    )
+    client = _CaptureSendClient()
+    QQBotContextManager.context[session.session_id] = context
+    try:
+        result = await _send_with_client(session, client)
+    finally:
+        QQBotContextManager.context.pop(session.session_id, None)
+
+    reference = client.calls[0][1].get("message_reference")
+    return result == ["plain"] and reference is not None and reference["message_id"] == "ROBOT-source"
+
+
+async def _test_delete_translates_application_message_id() -> bool:
+    """框架返回的 REFIDX 在调用撤回接口前须还原为 ROBOT ID。"""
+    client = _FakeClient()
+    _message_ids({"id": "ROBOT-delete", "ext_info": {"ref_idx": "REFIDX-delete"}})
+    previous_client = QQBotContextManager.client
+    QQBotContextManager.client = client
+    try:
+        await QQBotContextManager.delete_message(_make_session(target_group_prefix), "REFIDX-delete")
+        await QQBotContextManager.delete_message(_make_session(target_group_prefix), "REFIDX-unmapped")
+    finally:
+        QQBotContextManager.client = previous_client
+    return len(client.recalls) == 1 and client.recalls[0][1] == "ROBOT-delete"
 
 
 async def _test_c2c_delete_uses_unified_api() -> bool:
@@ -524,6 +586,7 @@ async def test_qqbot_modern_api(tester: Tester):
     """bots.qqbot.context: botpy 翻新接口接入测试"""
     await tester.test(_test_reply_target_scopes, "统一回复目标映射测试")
     await tester.test(_test_message_id_collection, "高层发送结果消息 ID 提取测试")
+    await tester.test(_test_delete_translates_application_message_id, "应用层消息 ID 撤回映射测试")
     await tester.test(_test_c2c_delete_uses_unified_api, "C2C 统一撤回接口测试")
     await tester.test(_test_expired_reply_falls_back_to_proactive, "过期回复消息转主动消息测试")
     await tester.test(_test_passive_reply_limit_falls_back_to_proactive, "被动回复时间或次数超限转主动消息测试")
@@ -546,4 +609,5 @@ async def test_qqbot_modern_api(tester: Tester):
     await tester.test(_test_private_message_does_not_reuse_another_users_dm, "频道私信不复用其他用户 DM 测试")
     await tester.test(_test_private_message_client_failure_returns_empty, "私信客户端解析失败返回空消息 ID 测试")
     await tester.test(_test_group_message_reply_uses_message_reference, "普通群消息回复 ID 来源测试")
+    await tester.test(_test_group_quote_uses_api_message_id, "群消息平台引用使用接口消息 ID 测试")
     return tester

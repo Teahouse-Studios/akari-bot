@@ -1,4 +1,5 @@
 import re
+from collections.abc import Mapping
 
 import botpy
 from botpy.interaction import Interaction
@@ -6,7 +7,7 @@ from botpy.manage import GroupMemberEvent
 from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 
 from bots.qqbot.config import QQBotConfig, QQBotSecretConfig
-from bots.qqbot.context import QQBotContextManager, QQBotFetchedContextManager, cache_permission
+from bots.qqbot.context import QQBotContextManager, QQBotFetchedContextManager, cache_message_id_pair, cache_permission
 from bots.qqbot.info import *
 from bots.qqbot.features import group_disable_read_all_message_features, resolve_features, guild_features
 from bots.qqbot.navigation import build_navigation
@@ -31,6 +32,37 @@ qqbot_secret = QQBotSecretConfig.qq_bot_secret
 ignored_sender = CoreConfig.ignored_sender
 
 initialized = False
+
+
+def _message_application_ids(message) -> tuple[str | None, str | None]:
+    """读取消息场景中的当前消息 ID 和被引用消息 ID。"""
+    application_id = None
+    reply_id = None
+    message_scene = getattr(message, "message_scene", None)
+    if isinstance(message_scene, Mapping):
+        ext = message_scene.get("ext") or []
+        for item in ext:
+            if not isinstance(item, str):
+                continue
+            key, separator, value = item.partition("=")
+            if not separator or not value:
+                continue
+            if key == "msg_idx":
+                application_id = value
+            elif key == "ref_msg_idx":
+                reply_id = value
+
+    if reply_id is None:
+        reference = getattr(message, "message_reference", None)
+        reply_id = getattr(reference, "message_id", None)
+    return application_id, reply_id
+
+
+def _record_message_ids(message) -> str | None:
+    """登记入站消息的两类 ID，并返回供应用层比较的引用 ID。"""
+    application_id, reply_id = _message_application_ids(message)
+    cache_message_id_pair(application_id, getattr(message, "id", None))
+    return reply_id
 
 
 class MyClient(botpy.Client):
@@ -105,9 +137,7 @@ class MyClient(botpy.Client):
         if sender_id in ignored_sender:
             return
 
-        reply_id = None
-        if message.message_reference:
-            reply_id = message.message_reference.message_id
+        reply_id = _record_message_ids(message)
 
         message.content = re.sub(r"<@(.*?)>", "", message.content).strip()
         if not message.content:
@@ -140,9 +170,7 @@ class MyClient(botpy.Client):
         if sender_id in ignored_sender:
             return
 
-        reply_id = None
-        if message.message_reference:
-            reply_id = message.message_reference.message_id
+        reply_id = _record_message_ids(message)
 
         match_atme = False
 
@@ -187,9 +215,7 @@ class MyClient(botpy.Client):
         if sender_id in ignored_sender:
             return
 
-        reply_id = None
-        if message.message_reference:
-            reply_id = message.message_reference.message_id
+        reply_id = _record_message_ids(message)
 
         match_atme = False
 
@@ -234,9 +260,7 @@ class MyClient(botpy.Client):
         if sender_id in ignored_sender:
             return
 
-        reply_id = None
-        if message.message_reference:
-            reply_id = message.message_reference.message_id
+        reply_id = _record_message_ids(message)
 
         message.content = re.sub(r"<@(.*?)>", "", message.content).strip()
         if not message.content:
@@ -276,9 +300,7 @@ class MyClient(botpy.Client):
         if sender_id in ignored_sender:
             return
 
-        reply_id = None
-        if message.message_reference:
-            reply_id = message.message_reference.message_id
+        reply_id = _record_message_ids(message)
 
         msg_chain = MessageChain.assign(message.content)
 
@@ -308,9 +330,7 @@ class MyClient(botpy.Client):
         if sender_id in ignored_sender:
             return
 
-        reply_id = None
-        if message.message_reference:
-            reply_id = message.message_reference.message_id
+        reply_id = _record_message_ids(message)
 
         msg_chain = MessageChain.assign(message.content)
 
