@@ -12,7 +12,7 @@ from core.constants.exceptions import ExternalException
 from core.utils.dirty_check import check
 from core.logger import Logger
 from core.utils.func import parse_time_string
-from .formatting import parse_markdown, generate_code_snippet, generate_latex, generate_md_table
+from .formatting import parse_markdown, generate_code_snippet, generate_latex, generate_md_table, format_refs
 from .setting import INSTRUCTIONS
 from .tools import TOOLS, tool_function_calls
 
@@ -130,6 +130,7 @@ async def ask_llm(
 
     res = await check("\n\n".join(content_pieces), session=session)
     resm = "".join(m["content"] for m in res)
+    resm = format_refs(session, resm)
 
     if session.session_info.support_markdown and session.session_info.support_markdown_extension:
         chain = [Markdown(resm)]

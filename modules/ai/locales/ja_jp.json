@@ -12,6 +12,7 @@
     "ai.message.llm.list": "利用可能な LLM は以下の通りです：",
     "ai.message.llm.list.none": "利用可能な LLM が見つかりません。追加するには、ボットの所有者にご連絡ください。",
     "ai.message.llm.list.prompt": "LLM を切り替えるには、「${cmd}<LLM>」を使用します。",
+    "ai.message.references.title": "参考資料",
     "config.comments.module_ai_secret.e2b_api_key": "E2B API キー。",
     "config.comments.module_ai.ai_default_llm": "デフォルトで使用される LLM。",
     "config.comments.module_ai.llm_frequency_penalty": "LLM の周波数ペナルティ。範囲は -2 ～ 2 です。",

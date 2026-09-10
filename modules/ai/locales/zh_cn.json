@@ -6,6 +6,7 @@
     "ai.help.llm.set": "设置场景内默认大语言模型。",
     "ai.help.option.llm": "指定使用的大语言模型。",
     "ai.help.option.no_tools": "是否禁止大语言模型调用工具。",
+    "ai.message.references.title": "参考资料",
     "ai.message.llm.instruct.clear.success": "已清除自定义命令。",
     "ai.message.llm.instruct.set.success": "已设置自定义命令。",
     "ai.message.llm.invalid": "无效的大语言模型。",

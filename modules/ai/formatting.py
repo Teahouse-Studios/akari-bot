@@ -3,6 +3,7 @@ import re
 import matplotlib.pyplot as plt
 import orjson
 
+from core.builtins.bot import Bot
 from core.utils.cache import random_cache_path
 from core.utils.http import post_url
 from core.utils.image_table import ImageTable, image_table_render
@@ -50,6 +51,26 @@ def parse_markdown(md: str) -> list[dict[str, str]]:
         blocks.append({"type": "text", "content": md[last_end:]})
 
     return blocks
+
+
+def format_refs(session: Bot.MessageSession, text: str) -> str:
+    ref_pattern = re.compile(r"\[ref:([^>]+?)\]")
+    urls: list[str] = []
+
+    def _replace(match: re.Match) -> str:
+        url = match.group(1).strip()
+        if url not in urls:
+            urls.append(url)
+        return f"[{urls.index(url) + 1}]"
+
+    text = ref_pattern.sub(_replace, text)
+
+    if urls:
+        text += "\n\n"
+        text += f"### {session.session_info.locale.t('ai.message.references.title')}\n"
+        text += "\n".join(f"{urls.index(url) + 1}. {url}" for url in urls)
+
+    return text
 
 
 def process_redacted(text: str) -> str:
