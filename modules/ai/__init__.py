@@ -18,16 +18,16 @@ ai = module("ai", developers=["DoroWolf", "Dianliang233"], desc="{I18N:ai.help.d
 
 
 @ai.command(
-    "<prompt> [--ctx <session_id>] [--llm <llm>] [--no-tools] {{I18N:ai.help}}",
+    "<prompt> [--ctx <turn_id>] [--llm <llm>] [--no-tools] {{I18N:ai.help}}",
     options_desc={
-        "--ctx": "{I18N:ai.help.option.context}",
+        "--ctx": "{I18N:ai.help.option.ctx}",
         "--llm": "{I18N:ai.help.option.llm}",
         "--no-tools": "{I18N:ai.help.option.no_tools}",
     },
 )
 async def _(msg: Bot.MessageSession, prompt: str):
     get_ctx = msg.parsed_msg.get("--ctx", False)
-    session_id = get_ctx["<session_id>"].strip() if get_ctx else None
+    turn_id = get_ctx["<turn_id>"].strip() if get_ctx else None
     get_llm = msg.parsed_msg.get("--llm", False)
     selected_llm = get_llm["<llm>"].lower() if get_llm else None
     target_default_llm = msg.session_info.target_union_info.target_data.get("ai_default_llm")
@@ -35,10 +35,9 @@ async def _(msg: Bot.MessageSession, prompt: str):
 
     is_superuser = msg.check_super_user()
 
-    # 延续上下文只能通过 --ctx 显式指定；引用回复由 wait_reply 循环处理。
-    scene_key = msg.session_info.channel_key
-    history = get_context(session_id, scene_key) if session_id else None
-    if session_id and history is None:
+    context_key = msg.session_info.channel_key
+    history = get_context(turn_id, context_key) if turn_id else None
+    if turn_id and history is None:
         await msg.finish(I18NContext("ai.message.context.invalid"))
 
     available_llms = llm_list + (llm_su_list if is_superuser else [])
@@ -53,7 +52,6 @@ async def _(msg: Bot.MessageSession, prompt: str):
     if not llm_info:
         await msg.finish(I18NContext("ai.message.llm.invalid"))
 
-    # 支持引用回复的平台通过 wait_reply 循环延续对话；否则仅发送一次，由 --ctx 延续。
     current_msg = msg
     current_prompt = prompt
 
@@ -98,7 +96,7 @@ async def _(msg: Bot.MessageSession, prompt: str):
         )
 
         # 每轮建立新的快照，保留旧 ID 以支持从任意一轮分叉。
-        session_id = create_context(history, scene_key)
+        turn_id = create_context(history, context_key)
 
         Logger.info(f"{input_tokens + cache_tokens + output_tokens} token used while calling LLM.")
         Logger.info(f"Input (miss cache): {input_tokens} | Input (hit cache): {cache_tokens} | Output: {output_tokens}")
@@ -115,23 +113,18 @@ async def _(msg: Bot.MessageSession, prompt: str):
         )
 
         chain.append(Plain("\n---\n"))
+        cmd = ActionText(f"{msg.session_info.prefixes[0]}ai --ctx {turn_id}"
         if msg.session_info.support_quote:
-            chain.append(I18NContext("ai.message.context.hint.quote"))
+            chain.append(I18NContext("ai.message.context.hint.quote", cmd=cmd))
         else:
-            chain.append(
-                I18NContext(
-                    "ai.message.context.hint",
-                    cmd=ActionText(f"{msg.session_info.prefixes[0]}ai --ctx {session_id}"),
-                )
-            )
-        chain.append(I18NContext("ai.message.context.id", session_id=session_id))
+            chain.append(I18NContext("ai.message.context.hint", cmd=cmd))
+        chain.append(I18NContext("ai.message.context.id", turn_id=turn_id))
         if petal != 0:
             chain.append(I18NContext("petal.message.cost", amount=petal))
 
         if not current_is_superuser:
             qc.reset()
 
-        # 不支持引用回复：仅发送一次并结束，由 --ctx 参数延续。
         if not msg.session_info.support_quote:
             await current_msg.finish(chain)
 
