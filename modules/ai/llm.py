@@ -171,5 +171,8 @@ async def ask_llm(
         chain = [Plain(resm)]
 
     # 仅保留对话部分（去掉每次动态重建的 system 消息与工具迭代警告）作为新的上下文历史。
-    new_history = [m for m in messages[len(system_messages) :] if m.get("role") != "system"]
+    # assistant 消息是 ChatCompletionMessage（pydantic 对象），其余为 dict，需分别取 role。
+    new_history = [
+        m for m in messages[len(system_messages) :] if (m.get("role") if isinstance(m, dict) else m.role) != "system"
+    ]
     return chain, total_input_tokens, total_cached_tokens, total_output_tokens, new_history
