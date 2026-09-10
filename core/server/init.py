@@ -178,6 +178,11 @@ async def load_prompt(locale_load_error, timeout: float | None = None) -> None:
             Logger.exception("Failed to decode restart prompt author cache, skipped restart prompt.")
             return
 
+        # 入站会话原本绑定在发起重启命令的 Client peer 上；完整重启后该进程实例
+        # 已不存在，继续使用旧 owner_peer_id 会把提示投递给失效 peer。解除实例绑定，
+        # 让平台 RPC 在 ready 的同名 Client 服务中重新选择实例。
+        author_session.owner_peer_id = None
+
         try:
             if not await _wait_for_client_online(
                 author_session.client_name, timeout if timeout is not None else RESTART_PROMPT_TIMEOUT

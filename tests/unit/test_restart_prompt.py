@@ -25,6 +25,7 @@ async def _write_restart_cache(client: str) -> None:
         target_id=f"{client}|Group|1",
         target_from=f"{client}|Group",
         client_name=client,
+        owner_peer_id=f"STALE-PEER-{client}",
         sender_id=f"{client}|1",
         create=True,
     )
@@ -36,9 +37,12 @@ async def _write_restart_cache(client: str) -> None:
         loader_cache.write_text("")
 
 
-async def _prompt_sent() -> bool:
+async def _prompt_sent(target_peer: str | None = None) -> bool:
     """重启提示是否已入队。"""
-    return await JobQueuesTable.filter(action=PlatformAPI.send_message.name).exists()
+    query = JobQueuesTable.filter(action=PlatformAPI.send_message.name)
+    if target_peer is not None:
+        query = query.filter(target_peer=target_peer)
+    return await query.exists()
 
 
 async def _reset(client: str) -> None:
@@ -90,7 +94,7 @@ async def _test_waits_for_client_to_come_online():
         task = asyncio.create_task(_come_online())
         await load_prompt(None, timeout=10)
         await task
-        return await _prompt_sent()
+        return await _prompt_sent(f"TEST-PEER-{client}")
 
     except Exception:
         return False
