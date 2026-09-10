@@ -18,20 +18,21 @@ ai = module("ai", developers=["DoroWolf", "Dianliang233"], desc="{I18N:ai.help.d
 
 
 @ai.command(
-    "<prompt> [--no-tools] [--ctx <session_id>] [--llm <llm>] {{I18N:ai.help}}",
+    "<prompt> [--ctx <session_id>] [--llm <llm>] [--no-tools] {{I18N:ai.help}}",
     options_desc={
+        "--ctx": "{I18N:ai.help.option.context}",
         "--llm": "{I18N:ai.help.option.llm}",
         "--no-tools": "{I18N:ai.help.option.no_tools}",
-        "--ctx": "{I18N:ai.help.option.context}",
     },
 )
 async def _(msg: Bot.MessageSession, prompt: str):
     get_ctx = msg.parsed_msg.get("--ctx", False)
     session_id = get_ctx["<session_id>"].strip() if get_ctx else None
-    use_tools = not msg.parsed_msg.get("--no-tools", False)
     get_llm = msg.parsed_msg.get("--llm", False)
     selected_llm = get_llm["<llm>"].lower() if get_llm else None
     target_default_llm = msg.session_info.target_union_info.target_data.get("ai_default_llm")
+    use_tools = not msg.parsed_msg.get("--no-tools", False)
+
     is_superuser = msg.check_super_user()
 
     # 延续上下文只能通过 --ctx 显式指定；引用回复由 wait_reply 循环处理。
