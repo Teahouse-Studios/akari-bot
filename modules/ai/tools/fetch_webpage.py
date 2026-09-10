@@ -1,6 +1,7 @@
 import orjson
 import trafilatura
 
+from core.utils.http import get_url
 from core.utils.web_render import web_render, SourceOptions
 
 MAX_LENGTH = 4096
@@ -29,16 +30,21 @@ fetch_webpage_desc = {
 
 async def fetch_webpage(url: str):
     try:
-        resp = await web_render.source(
-            SourceOptions(
-                url=url,
-                stealth=True,
+        try:
+            resp = await web_render.source(
+                SourceOptions(
+                    url=url,
+                    stealth=True,
+                )
             )
-        )
-        if not resp:
-            return "Failed to fetch URL."
+            html = resp.text if resp else None
+        except Exception:
+            html = None
 
-        text = trafilatura.extract(resp.text)
+        if not html:
+            html = await get_url(url)
+
+        text = trafilatura.extract(html)
         if not text:
             return "No content extracted."
         text = " ".join(text.split())
