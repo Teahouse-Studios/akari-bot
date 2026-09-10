@@ -42,6 +42,11 @@ logger_format = (
 _daemon_logger_initialized = False
 
 
+def _is_daemon_log(record):
+    """守护进程自身及尚未重命名的核心日志均写入 BotDaemon。"""
+    return record["extra"].get("name") in {None, "BotDaemon"}
+
+
 def init_daemon_logger():
     """仅为守护进程与短生命周期 pre-init 进程安装日志处理器。"""
     global _daemon_logger_initialized
@@ -55,7 +60,7 @@ def init_daemon_logger():
         sys.stdout,
         format=logger_format,
         colorize=True,
-        filter=lambda record: record["extra"].get("name") == "BotDaemon",
+        filter=_is_daemon_log,
     )
     Logger.add(
         sink=logs_path / "BotDaemon_debug_{time:YYYY-MM-DD}.log",
@@ -63,7 +68,7 @@ def init_daemon_logger():
         rotation="00:00",
         retention="1 day",
         level="DEBUG",
-        filter=lambda record: record["level"].name == "DEBUG" and record["extra"].get("name") == "BotDaemon",
+        filter=lambda record: record["level"].name == "DEBUG" and _is_daemon_log(record),
         encoding="utf8",
     )
     Logger.add(
@@ -73,7 +78,7 @@ def init_daemon_logger():
         retention="10 days",
         level="INFO",
         encoding="utf8",
-        filter=lambda record: record["extra"].get("name") == "BotDaemon",
+        filter=_is_daemon_log,
     )
     _daemon_logger_initialized = True
 
