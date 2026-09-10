@@ -11,10 +11,8 @@
 # 所有进程必须使用同一后端。WebSocket 仅处理在线投递，不持久化离线任务或在途结果；连接或鉴权失败时不会自动回退至数据库，以避免形成不一致的双重通信通道。
 jobqueue_backend = "websocket" # JobQueue 使用的完整传输后端，推荐 websocket，可选 database 或 websocket。
 jobqueue_node_id = "<Replace me with str value>" # JobQueue 节点标识，长度不得超过 128 个字符。未填写时，每个进程在启动时分别生成新的 UUID；为多个进程填写相同值可将其归入同一部署节点。
-jobqueue_websocket_url = "ws://127.0.0.1:8765/jobqueue" # WebSocket JobQueue Hub 地址。远程部署应使用 wss，并确保所有进程连接同一 Hub。
-jobqueue_websocket_embedded_hub = true # 选择 websocket 后端时，是否由机器人守护进程启动独立的本地 Hub 子进程。
-jobqueue_websocket_bind_host = "127.0.0.1" # 内置 WebSocket Hub 的监听地址。监听非回环地址时必须配置访问令牌。
-jobqueue_websocket_bind_port = 8765 # 内置 WebSocket Hub 的监听端口。
+jobqueue_websocket_mode = "embedded" # WebSocket Hub 部署模式，可选 embedded 或 external。embedded 由守护进程启动本机 Hub；external 连接独立部署的 Hub。
+jobqueue_websocket_url = "ws://127.0.0.1:8765/jobqueue" # WebSocket JobQueue Hub 的统一地址。embedded 模式同时从该地址取得监听主机、端口和路径；external 模式将其作为客户端连接地址。
 jobqueue_websocket_queue_size = 1000 # 每个 WebSocket Peer 的最大待发送帧数量，队列满时新投递将被拒绝。
 jobqueue_websocket_max_message_bytes = 1048576 # 单个 WebSocket 协议帧允许的最大字节数。
 jobqueue_websocket_command_timeout = 10 # WebSocket 控制命令的超时时间，单位为秒。

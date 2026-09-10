@@ -84,10 +84,8 @@ def _test_core_templates_are_grouped_into_domain_files():
         == {
             "jobqueue_backend",
             "jobqueue_node_id",
+            "jobqueue_websocket_mode",
             "jobqueue_websocket_url",
-            "jobqueue_websocket_embedded_hub",
-            "jobqueue_websocket_bind_host",
-            "jobqueue_websocket_bind_port",
             "jobqueue_websocket_queue_size",
             "jobqueue_websocket_max_message_bytes",
             "jobqueue_websocket_command_timeout",
@@ -146,14 +144,15 @@ def _test_fresh_process_generates_all_grouped_core_templates():
         jobqueue_text = (tmp / "jobqueue.toml").read_text(encoding="utf-8")
         intro = "# JobQueue 必须在 database 与 websocket 中选择一套完整后端。"
         database = "# database：无需额外部署 Hub"
-        websocket = "# websocket：项目推荐选项。经 Hub 实时路由"
-        consistency = "# 所有进程必须使用同一后端。"
+        websocket = "# websocket：经 Hub 实时路由"
+        consistency = "# 如需分布式部署，分布节点必须使用同一类型的后端。"
         backend = 'jobqueue_backend = "websocket"'
         return (
             result.returncode == 0
             and not any(key.startswith("jobqueue_") for key in core_values["config"])
             and not any(key.startswith("jobqueue_") for key in core_values["secret"])
             and jobqueue_values["jobqueue"]["jobqueue_backend"] == "websocket"
+            and jobqueue_values["jobqueue"]["jobqueue_websocket_mode"] == "embedded"
             and "jobqueue_websocket_token" in jobqueue_values["jobqueue_secret"]
             and "s3_bucket" in s3_values["s3"]
             and "remote_web_render_url" in webrender_values["webrender"]

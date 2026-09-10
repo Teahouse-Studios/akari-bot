@@ -42,7 +42,7 @@ class WebSocketCommandTimeout(RpcTimeoutError):
 def _is_loopback(host: str | None) -> bool:
     if not host:
         return False
-    if host.lower() == "localhost":
+    if host.lower().rstrip(".") == "localhost":
         return True
     try:
         return ipaddress.ip_address(host).is_loopback
@@ -52,9 +52,8 @@ def _is_loopback(host: str | None) -> bool:
 
 @dataclass(frozen=True)
 class WebSocketSettings:
+    mode: str = "embedded"
     url: str = "ws://127.0.0.1:8765/jobqueue"
-    bind_host: str = "127.0.0.1"
-    bind_port: int = 8765
     token: str = ""
     queue_size: int = 1000
     max_message_bytes: int = 1048576
@@ -62,13 +61,27 @@ class WebSocketSettings:
     heartbeat_seconds: float = 15
 
     def __post_init__(self) -> None:
-        parsed = urlparse(self.url)
+        if not isinstance(self.mode, str):
+            raise TypeError("JobQueue WebSocket mode must be a string")
+        mode = self.mode.strip().lower()
+        if mode not in ("embedded", "external"):
+            raise ValueError("JobQueue WebSocket mode must be embedded or external")
+        if not isinstance(self.url, str):
+            raise TypeError("JobQueue WebSocket URL must be a string")
+        url = self.url.strip()
+        try:
+            parsed = urlparse(url)
+            port = parsed.port
+        except ValueError as exc:
+            raise ValueError("JobQueue WebSocket URL contains an invalid host or port") from exc
         if parsed.scheme not in ("ws", "wss") or not parsed.hostname:
             raise ValueError("JobQueue WebSocket URL must use ws or wss and include a host")
-        if not isinstance(self.bind_host, str) or not self.bind_host:
-            raise ValueError("JobQueue WebSocket bind host must be a nonempty string")
-        if isinstance(self.bind_port, bool) or not isinstance(self.bind_port, int) or not 0 <= self.bind_port <= 65535:
-            raise ValueError("JobQueue WebSocket bind port must be between 0 and 65535")
+        if parsed.username is not None or parsed.password is not None:
+            raise ValueError("JobQueue WebSocket URL must not contain credentials")
+        if parsed.fragment:
+            raise ValueError("JobQueue WebSocket URL must not contain a fragment")
+        if port is not None and not 0 <= port <= 65535:
+            raise ValueError("JobQueue WebSocket URL port must be between 0 and 65535")
         if not isinstance(self.token, str):
             raise TypeError("JobQueue WebSocket token must be a string")
         for field_name in ("queue_size", "max_message_bytes"):
@@ -79,10 +92,35 @@ class WebSocketSettings:
             value = getattr(self, field_name)
             if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
                 raise ValueError(f"JobQueue WebSocket {field_name} must be a positive finite duration")
-        if not self.token and (not _is_loopback(self.bind_host) or not _is_loopback(parsed.hostname)):
+        if not self.token and not _is_loopback(parsed.hostname):
             raise ValueError("A JobQueue WebSocket token is required for non-loopback connections")
         if not _is_loopback(parsed.hostname) and parsed.scheme != "wss":
             raise ValueError("Remote JobQueue WebSocket connections must use wss")
+        if mode == "embedded" and not _is_loopback(parsed.hostname):
+            raise ValueError("Embedded JobQueue WebSocket Hub URLs must use a loopback host")
+        if mode == "embedded" and parsed.scheme != "ws":
+            raise ValueError("Embedded JobQueue WebSocket Hub URLs must use ws; terminate TLS at an external Hub")
+        if not parsed.path:
+            parsed = parsed._replace(path="/jobqueue")
+            url = parsed.geturl()
+        object.__setattr__(self, "mode", mode)
+        object.__setattr__(self, "url", url)
+
+    @property
+    def embedded(self) -> bool:
+        return self.mode == "embedded"
+
+    @property
+    def bind_host(self) -> str:
+        host = urlparse(self.url).hostname
+        assert host is not None
+        return host
+
+    @property
+    def bind_port(self) -> int:
+        parsed = urlparse(self.url)
+        port = parsed.port
+        return port if port is not None else (443 if parsed.scheme == "wss" else 80)
 
     @property
     def path(self) -> str:
@@ -92,15 +130,17 @@ class WebSocketSettings:
     def from_config(cls) -> "WebSocketSettings":
         from core.config.jobqueue import JobQueueConfig, JobQueueSecretConfig
 
-        return cls(
+        settings = cls(
+            mode=JobQueueConfig.jobqueue_websocket_mode,
             url=JobQueueConfig.jobqueue_websocket_url,
-            bind_host=JobQueueConfig.jobqueue_websocket_bind_host,
-            bind_port=JobQueueConfig.jobqueue_websocket_bind_port,
             token=JobQueueSecretConfig.jobqueue_websocket_token,
             queue_size=JobQueueConfig.jobqueue_websocket_queue_size,
             max_message_bytes=JobQueueConfig.jobqueue_websocket_max_message_bytes,
             command_timeout=JobQueueConfig.jobqueue_websocket_command_timeout,
         )
+        if settings.bind_port == 0:
+            raise ValueError("Configured JobQueue WebSocket URL port must be between 1 and 65535")
+        return settings
 
 
 def _identity_to_wire(identity: PeerIdentity) -> dict[str, Any]:

@@ -6,7 +6,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 import bot as daemon
-from core.config.jobqueue import JobQueueConfig
+from core.config.jobqueue import JobQueueConfig, JobQueueSecretConfig
 from core.tester import func_case, Tester
 
 
@@ -92,7 +92,7 @@ class _FakeBotsPath:
         return iter((SimpleNamespace(name="test-platform", is_dir=lambda: True),))
 
 
-async def _run_daemon_once(*, backend: str, embedded: bool, hub_ready: bool = True):
+async def _run_daemon_once(*, backend: str, mode: str, hub_ready: bool = True):
     context = _FakeContext(hub_ready=hub_ready)
     original_readonly = os.environ.get(daemon.CONFIG_READONLY_ENV)
     original_i18n_cache = os.environ.get("AKARI_BOT_I18N_CACHE_DIR")
@@ -105,11 +105,16 @@ async def _run_daemon_once(*, backend: str, embedded: bool, hub_ready: bool = Tr
             patch.object(daemon.multiprocessing, "get_context", return_value=context),
             patch.object(daemon, "bots_path", _FakeBotsPath()),
             patch.object(JobQueueConfig, "jobqueue_backend", backend),
-            patch.object(JobQueueConfig, "jobqueue_websocket_embedded_hub", embedded),
+            patch.object(JobQueueConfig, "jobqueue_websocket_mode", mode),
+            patch.object(JobQueueConfig, "jobqueue_websocket_url", "ws://127.0.0.1:8765/jobqueue"),
+            patch.object(JobQueueConfig, "jobqueue_websocket_queue_size", 1000),
+            patch.object(JobQueueConfig, "jobqueue_websocket_max_message_bytes", 1048576),
+            patch.object(JobQueueConfig, "jobqueue_websocket_command_timeout", 10),
+            patch.object(JobQueueSecretConfig, "jobqueue_websocket_token", ""),
         ):
             try:
                 await daemon.run_bot()
-            except (RuntimeError, SystemExit) as exc:
+            except (RuntimeError, SystemExit, TypeError, ValueError) as exc:
                 return context, exc
             raise AssertionError("Daemon orchestration returned without a terminal condition")
     finally:
@@ -128,7 +133,7 @@ async def _run_daemon_once(*, backend: str, embedded: bool, hub_ready: bool = Tr
 
 
 async def _test_embedded_hub_starts_before_peers():
-    context, terminal = await _run_daemon_once(backend="websocket", embedded=True)
+    context, terminal = await _run_daemon_once(backend="websocket", mode="embedded")
     names = [process.name for process in context.created]
     return (
         isinstance(terminal, SystemExit)
@@ -143,8 +148,8 @@ async def _test_embedded_hub_starts_before_peers():
 
 
 async def _test_external_and_database_backends_skip_hub():
-    external, external_terminal = await _run_daemon_once(backend="websocket", embedded=False)
-    database, database_terminal = await _run_daemon_once(backend="database", embedded=True)
+    external, external_terminal = await _run_daemon_once(backend="websocket", mode="external")
+    database, database_terminal = await _run_daemon_once(backend="database", mode="invalid")
     return (
         isinstance(external_terminal, SystemExit)
         and external_terminal.code == 0
@@ -156,12 +161,17 @@ async def _test_external_and_database_backends_skip_hub():
 
 
 async def _test_embedded_hub_start_failure_rolls_back():
-    context, terminal = await _run_daemon_once(backend="websocket", embedded=True, hub_ready=False)
+    context, terminal = await _run_daemon_once(backend="websocket", mode="embedded", hub_ready=False)
     return (
         isinstance(terminal, RuntimeError)
         and [process.name for process in context.created] == ["jobqueue-hub"]
         and context.created[0].closed
     )
+
+
+async def _test_invalid_websocket_mode_fails_before_starting_processes():
+    context, terminal = await _run_daemon_once(backend="websocket", mode="automatic")
+    return isinstance(terminal, ValueError) and not context.created
 
 
 def _test_sqlite_database_backend_warns_without_changing_selection():
@@ -225,6 +235,9 @@ async def test_jobqueue_daemon(tester: Tester):
     await tester.test(_test_embedded_hub_starts_before_peers, "内置 WebSocket Hub 先于 Peer 启动")
     await tester.test(_test_external_and_database_backends_skip_hub, "外部 Hub 与数据库后端不启动内置 Hub")
     await tester.test(_test_embedded_hub_start_failure_rolls_back, "内置 WebSocket Hub 启动失败回滚")
+    await tester.test(
+        _test_invalid_websocket_mode_fails_before_starting_processes, "非法 WebSocket Hub 模式在启动前失败"
+    )
     await tester.test(_test_sqlite_database_backend_warns_without_changing_selection, "SQLite 数据库后端启动警告")
     await tester.test(_test_warning_is_not_emitted_for_recommended_or_non_sqlite_backends, "非风险后端组合不警告")
     await tester.test(_test_cleanup_keeps_hub_until_last, "守护进程按 Bot、Server、Hub 顺序关闭")

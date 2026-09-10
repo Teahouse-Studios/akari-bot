@@ -17,10 +17,8 @@ from core.config.decorator import on_config
 class JobQueueConfig:
     jobqueue_backend: str = "websocket"
     jobqueue_node_id: str
+    jobqueue_websocket_mode: str = "embedded"
     jobqueue_websocket_url: str = "ws://127.0.0.1:8765/jobqueue"
-    jobqueue_websocket_embedded_hub: bool = True
-    jobqueue_websocket_bind_host: str = "127.0.0.1"
-    jobqueue_websocket_bind_port: int = 8765
     jobqueue_websocket_queue_size: int = 1000
     jobqueue_websocket_max_message_bytes: int = 1048576
     jobqueue_websocket_command_timeout: float = 10

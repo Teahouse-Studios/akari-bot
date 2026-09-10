@@ -259,10 +259,14 @@ async def run_bot():
 
     mp = multiprocessing.get_context("spawn" if sys.platform in ["win32", "darwin"] else "forkserver")
 
-    if (
-        JobQueueConfig.jobqueue_backend.strip().lower() == "websocket"
-        and JobQueueConfig.jobqueue_websocket_embedded_hub
-    ):
+    if JobQueueConfig.jobqueue_backend.strip().lower() == "websocket":
+        from core.queue.websocket import WebSocketSettings
+
+        websocket_settings = WebSocketSettings.from_config()
+    else:
+        websocket_settings = None
+
+    if websocket_settings is not None and websocket_settings.embedded:
         jobqueue_hub_stop_event = mp.Event()
         hub_ready_event = mp.Event()
         hub_process = mp.Process(

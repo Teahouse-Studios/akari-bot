@@ -34,9 +34,8 @@ async def _test_backend_factory_obeys_config_without_fallback():
     if not isinstance(configured, DatabaseJobQueueBackend):
         return False
     with (
+        patch.object(JobQueueConfig, "jobqueue_websocket_mode", "embedded"),
         patch.object(JobQueueConfig, "jobqueue_websocket_url", "ws://127.0.0.1:8765/jobqueue"),
-        patch.object(JobQueueConfig, "jobqueue_websocket_bind_host", "127.0.0.1"),
-        patch.object(JobQueueConfig, "jobqueue_websocket_bind_port", 8765),
         patch.object(JobQueueConfig, "jobqueue_websocket_queue_size", 1000),
         patch.object(JobQueueConfig, "jobqueue_websocket_max_message_bytes", 1048576),
         patch.object(JobQueueConfig, "jobqueue_websocket_command_timeout", 10),

@@ -132,10 +132,8 @@ WebSocket 后端由一个独立 Hub 和任意数量的 Peer 连接组成。Hub �
 ```toml
 [jobqueue]
 jobqueue_backend = "websocket"
+jobqueue_websocket_mode = "embedded"
 jobqueue_websocket_url = "ws://127.0.0.1:8765/jobqueue"
-jobqueue_websocket_embedded_hub = true
-jobqueue_websocket_bind_host = "127.0.0.1"
-jobqueue_websocket_bind_port = 8765
 jobqueue_websocket_queue_size = 1000
 jobqueue_websocket_max_message_bytes = 1048576
 jobqueue_websocket_command_timeout = 10
@@ -144,14 +142,25 @@ jobqueue_websocket_command_timeout = 10
 jobqueue_websocket_token = ""
 ```
 
-默认配置仅监听回环地址，允许本机部署不设置令牌。监听非回环地址或连接非回环 Hub 时必须设置共享访问令牌；
-非回环客户端地址必须使用 `wss`。生产环境宜通过反向代理终止 TLS，并将 Hub 本身继续限制在受信网络内。
+`jobqueue_websocket_mode` 明确 Hub 的部署模式：`embedded` 表示由机器人守护进程启动内置 Hub，
+`external` 表示各 Peer 仅连接独立部署的外部 Hub。部署模式不得依据 URL 的主机地址推断，以免本机外部 Hub
+被误判为内置 Hub。`jobqueue_websocket_url` 是 WebSocket 地址的唯一配置来源；在 `embedded` 模式下，
+Hub 的监听主机、监听端口和协议路径均从该 URL 解析，各 Peer 亦连接同一地址；在 `external` 模式下，
+该 URL 仅表示 Peer 的连接地址。
+
+内置 Hub 不负责 TLS 终止，因此 `embedded` 模式仅接受使用 `ws` 的回环地址，默认配置允许本机部署不设置
+令牌。连接非回环外部 Hub 时必须使用 `wss` 并设置共享访问令牌。生产环境宜通过反向代理终止 TLS，
+并将 Hub 本身限制在受信网络内。单一 `embedded` 配置不表达“监听通配地址，但通过另一域名连接”的双地址
+部署；多节点、反向代理或其它需要区分监听地址与连接地址的场景应使用 `external` 模式，由外部部署系统分别
+管理 Hub 的监听端点与公开连接地址。
+
 Hub 在握手阶段将连接绑定至唯一 `peer_id`，此后不信任请求载荷自行声明的 `source_peer_id`，而是统一以连接
 身份覆盖该字段。重复连接同一 `peer_id`、身份越权修改、非目标 Peer 回包及畸形协议帧均会被拒绝。
 
-如需使用外部 Hub，应将 `jobqueue_websocket_embedded_hub` 设置为 `false`，并确保外部进程使用同一份 Hub
-监听参数与访问令牌。可通过 `uv run python -m core.queue.websocket` 启动独立 Hub。该进程不负责自动发现
-其它 Hub，也不提供多 Hub 状态复制；同一逻辑集群在任一时刻必须连接至同一个权威 Hub。
+使用外部 Hub 时，应将 `jobqueue_websocket_mode` 设置为 `external`，并确保所有 Peer 配置相同的连接 URL
+与访问令牌。项目所附 Hub 可通过 `uv run python -m core.queue.websocket` 独立启动；此时应在 Hub 主机上
+提供适用于其监听端点的独立配置。该进程不负责自动发现其它 Hub，也不提供多 Hub 状态复制；同一逻辑集群
+在任一时刻必须连接至同一个权威 Hub。
 
 WebSocket 后端属于实时、非持久化传输。Hub 对每个 Peer 设置有界发送队列，并限制单帧大小；目标队列已满时，
 新投递会被明确拒绝。控制命令在发送后超时则按 unknown 处理，不得据此自动重试有外部副作用的请求。目标

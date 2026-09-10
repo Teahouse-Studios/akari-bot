@@ -6,8 +6,10 @@ import sys
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
+from unittest.mock import patch
 from uuid import uuid4
 
+from core.config.jobqueue import JobQueueConfig
 from core.queue.base import current_peer, JobQueueBase
 from core.queue.errors import RpcProtocolError, RpcUnavailableError
 from core.queue.peer import PeerSelector, SignalContext
@@ -30,8 +32,6 @@ async def _websocket_peers(
 ):
     hub_settings = WebSocketSettings(
         url="ws://127.0.0.1:0/jobqueue",
-        bind_host="127.0.0.1",
-        bind_port=0,
         token=token,
         queue_size=queue_size,
         max_message_bytes=max_message_bytes,
@@ -45,8 +45,6 @@ async def _websocket_peers(
     try:
         client_settings = WebSocketSettings(
             url=hub.url,
-            bind_host="127.0.0.1",
-            bind_port=hub.bound_port,
             token=token,
             queue_size=queue_size,
             max_message_bytes=max_message_bytes,
@@ -166,19 +164,64 @@ async def _test_websocket_disconnect_wakes_outstanding_call():
             return not caller._pending
 
 
+def _test_websocket_settings_use_mode_and_url_as_single_source():
+    with (
+        patch.object(JobQueueConfig, "jobqueue_websocket_mode", " EMBEDDED "),
+        patch.object(JobQueueConfig, "jobqueue_websocket_url", " ws://localhost:8766 "),
+        patch("core.config.jobqueue.JobQueueSecretConfig.jobqueue_websocket_token", ""),
+    ):
+        settings = WebSocketSettings.from_config()
+    if (
+        settings.mode != "embedded"
+        or not settings.embedded
+        or settings.url != "ws://localhost:8766/jobqueue"
+        or settings.bind_host != "localhost"
+        or settings.bind_port != 8766
+        or settings.path != "/jobqueue"
+    ):
+        return False
+
+    external = WebSocketSettings(mode="external", url="wss://queue.example.com/ws", token="secret")
+    if external.embedded or external.bind_host != "queue.example.com" or external.bind_port != 443:
+        return False
+
+    invalid_settings = (
+        {"mode": "automatic"},
+        {"url": "ws://127.0.0.1:not-a-port/jobqueue"},
+        {"url": "ws://user:password@127.0.0.1:8765/jobqueue"},
+        {"url": "ws://127.0.0.1:8765/jobqueue#fragment"},
+        {"mode": "embedded", "url": "wss://127.0.0.1:8765/jobqueue"},
+        {"mode": "embedded", "url": "ws://0.0.0.0:8765/jobqueue", "token": "secret"},
+        {"mode": "external", "url": "ws://queue.example.com/jobqueue", "token": "secret"},
+    )
+    for kwargs in invalid_settings:
+        try:
+            WebSocketSettings(**kwargs)
+            return False
+        except (TypeError, ValueError):
+            pass
+
+    with (
+        patch.object(JobQueueConfig, "jobqueue_websocket_mode", "embedded"),
+        patch.object(JobQueueConfig, "jobqueue_websocket_url", "ws://127.0.0.1:0/jobqueue"),
+        patch("core.config.jobqueue.JobQueueSecretConfig.jobqueue_websocket_token", ""),
+    ):
+        try:
+            WebSocketSettings.from_config()
+            return False
+        except ValueError:
+            return True
+
+
 async def _test_websocket_authentication_and_remote_token_requirement():
     try:
-        WebSocketSettings(url="ws://example.com/jobqueue", bind_host="0.0.0.0", token="")
+        WebSocketSettings(mode="external", url="ws://example.com/jobqueue", token="")
         return False
     except ValueError:
         pass
-    hub = WebSocketHub(
-        WebSocketSettings(url="ws://127.0.0.1:0/jobqueue", bind_port=0, token="correct", command_timeout=0.5)
-    )
+    hub = WebSocketHub(WebSocketSettings(url="ws://127.0.0.1:0/jobqueue", token="correct", command_timeout=0.5))
     await hub.start()
-    backend = WebSocketJobQueueBackend(
-        WebSocketSettings(url=hub.url, bind_port=hub.bound_port, token="incorrect", command_timeout=0.5)
-    )
+    backend = WebSocketJobQueueBackend(WebSocketSettings(url=hub.url, token="incorrect", command_timeout=0.5))
     identity = None
 
     class AuthenticationPeer(JobQueueBase):
@@ -270,7 +313,6 @@ async def _test_websocket_expired_delivery_is_released():
 async def _test_websocket_hub_restart_and_idempotent_close():
     settings = WebSocketSettings(
         url="ws://127.0.0.1:0/jobqueue",
-        bind_port=0,
         token="restart-test-token",
         command_timeout=1,
     )
@@ -291,7 +333,6 @@ async def _test_websocket_independent_process_roundtrip():
     hub = WebSocketHub(
         WebSocketSettings(
             url="ws://127.0.0.1:0/jobqueue",
-            bind_port=0,
             token=token,
             command_timeout=2,
             heartbeat_seconds=2,
@@ -363,6 +404,10 @@ async def test_jobqueue_websocket_backend(tester: Tester):
     await tester.test(
         _test_websocket_disconnect_wakes_outstanding_call,
         "WebSocket 目标断线立即唤醒调用方",
+    )
+    await tester.test(
+        _test_websocket_settings_use_mode_and_url_as_single_source,
+        "WebSocket 部署模式与统一 URL 配置解析",
     )
     await tester.test(
         _test_websocket_authentication_and_remote_token_requirement,
