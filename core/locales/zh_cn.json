@@ -28,7 +28,7 @@
     "config.comments.config.help_url": "帮助文档网址。",
     "config.comments.config.ignored_sender": "无视的用户列表，匹配到此列表中的用户将会被忽略。",
     "config.comments.config.issue_url": "问题反馈网址。",
-    "config.comments.jobqueue.jobqueue_backend": "JobQueue 使用的完整传输后端，可选 database 或 websocket，以下为不同后端之间的优缺点：",
+    "config.comments.jobqueue.jobqueue_backend": "JobQueue 使用的完整传输后端，可选 database 或 websocket，不同后端之间的优缺点请参考以上注释。",
     "config.comments.jobqueue.jobqueue_node_id": "JobQueue 节点标识，长度不得超过 128 个字符。留空时，启动阶段会生成 UUID 并写回配置；共用此配置的进程将归入同一部署节点。",
     "config.comments.jobqueue.jobqueue_websocket_command_timeout": "WebSocket 控制命令的超时时间，单位为秒。",
     "config.comments.jobqueue.jobqueue_websocket_max_message_bytes": "单个 WebSocket 协议帧允许的最大字节数。",
