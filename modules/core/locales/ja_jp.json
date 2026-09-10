@@ -73,7 +73,7 @@
     "core.help.module.reload": "モジュールを再読み込みします。",
     "core.help.module.unload": "モジュールをアンロードします。",
     "core.help.mute": "ボットの発話を停止します。",
-    "core.help.petal": "ペタルの数を取得します。",
+    "core.help.petal": "ペタルの数を確認します。",
     "core.help.petal.admin": "ユーザーのペタルの数を確認します。",
     "core.help.petal.clear": "ユーザーのペタルの数を消去します。",
     "core.help.petal.give": "ペタルを他の人に贈ります。",

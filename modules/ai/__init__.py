@@ -1,12 +1,13 @@
 from core.builtins.bot import Bot
-from core.builtins.message.internal import ActionText, I18NContext, Plain
+from core.builtins.message.internal import ActionText, I18NContext, ImageElement, Plain
+from core.builtins.message.chain import MessageChain
 from core.component import module
 from modules.ai.config import AiConfig
 from core.utils.cooldown import CoolDown
 from core.utils.dirty_check import check_bool, rickroll
 from core.logger import Logger
 from .petal import precount_petal, count_token_petal
-from .setting import llm_api_list, llm_list, llm_su_list
+from .setting import get_llm_billing, llm_api_list, llm_list, llm_su_list
 
 default_llm = AiConfig.ai_default_llm
 default_llm = default_llm if default_llm in llm_list else None
@@ -35,7 +36,14 @@ async def _(msg: Bot.MessageSession, prompt: str):
         llm_info = next((llm for llm in llm_api_list if llm["name"].lower() == selected_llm), None)
 
     if llm_info:
-        if not is_superuser and not precount_petal(msg, llm_info["price_in"], llm_info["price_out"]):
+        billing = get_llm_billing(llm_info)
+        if not is_superuser and not precount_petal(
+            msg,
+            billing["input_price"],
+            billing["cache_price"],
+            billing["output_price"],
+            call_price=billing["call_price"],
+        ):
             await msg.finish(I18NContext("petal.message.cost.not_enough"))
 
         if await check_bool(prompt, msg):
@@ -47,18 +55,35 @@ async def _(msg: Bot.MessageSession, prompt: str):
             # OpenAI、Matplotlib、网页提取等依赖体积较大，仅在实际调用 AI 时加载。
             from .llm import ask_llm
 
-            chain, input_tokens, output_tokens = await ask_llm(
+            prompt_chain = MessageChain.assign(
+                [
+                    Plain(prompt),
+                    *(x for x in msg.session_info.messages.values if isinstance(x, ImageElement)),
+                ]
+            )
+            chain, input_tokens, cache_tokens, output_tokens = await ask_llm(
                 msg,
-                prompt,
+                prompt_chain,
                 llm_info["model_name"],
                 llm_info["api_url"],
                 llm_info["api_key"],
                 use_tools,
             )
 
-            Logger.info(f"{input_tokens + output_tokens} tokens used while calling AI.")
+            
+            Logger.info(f"{input_tokens + cache_tokens + output_tokens} token used while calling LLM.")
+            Logger.info(f"Input (miss cache): {input_tokens} | Input (hit cache): {cache_tokens
+                      } | Output: {output_tokens}")
+            billing = get_llm_billing(llm_info, input_tokens)
             petal = await count_token_petal(
-                msg, llm_info["price_in"], llm_info["price_out"], input_tokens, output_tokens
+                msg,
+                billing["input_price"],
+                billing["cache_price"],
+                billing["output_price"],
+                input_tokens,
+                cache_tokens,
+                output_tokens,
+                billing["call_price"],
             )
 
             if petal != 0:
@@ -104,7 +129,6 @@ async def _(msg: Bot.MessageSession):
                 Plain("\n".join(sorted(available_llms))),
                 I18NContext(
                     "ai.message.llm.list.prompt",
-                    prefix=msg.session_info.prefixes[0],
                     cmd=ActionText(f"{msg.session_info.prefixes[0]}ai llm set "),
                 ),
             ]

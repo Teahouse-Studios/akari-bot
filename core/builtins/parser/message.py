@@ -285,7 +285,6 @@ async def parser(msg: "Bot.MessageSession"):
                     await msg.send_message(
                         I18NContext(
                             "parser.command.invalid.module",
-                            prefix=msg.session_info.prefixes[0],
                             cmd=ActionText(f"{msg.session_info.prefixes[0]}help"),
                         )
                     )
@@ -294,7 +293,6 @@ async def parser(msg: "Bot.MessageSession"):
                 await msg.send_message(
                     I18NContext(
                         "parser.command.invalid.module",
-                        prefix=msg.session_info.prefixes[0],
                         cmd=ActionText(f"{msg.session_info.prefixes[0]}help"),
                     )
                 )
@@ -680,7 +678,6 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                         I18NContext(
                             "parser.module.disabled.prompt",
                             module=command_first_word,
-                            prefix=msg.session_info.prefixes[0],
                             cmd=ActionText(f"{msg.session_info.prefixes[0]}enable {command_first_word}"),
                         )
                     )
@@ -711,7 +708,6 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                         I18NContext(
                             "parser.module.disabled.prompt",
                             module=command_first_word,
-                            prefix=msg.session_info.prefixes[0],
                             cmd=ActionText(f"{msg.session_info.prefixes[0]}enable {command_first_word}"),
                         )
                     )
@@ -782,7 +778,6 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                     I18NContext(
                         "parser.command.invalid.syntax",
                         module=command_first_word,
-                        prefix=msg.session_info.prefixes[0],
                         cmd=ActionText(f"{msg.session_info.prefixes[0]}help {command_first_word}"),
                     )
                 )
@@ -1470,7 +1465,6 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
                 I18NContext(
                     "parser.command.invalid.syntax",
                     module=command_first_word,
-                    prefix=msg.session_info.prefixes[0],
                     cmd=ActionText(f"{msg.session_info.prefixes[0]}help {command_first_word}"),
                 )
             )

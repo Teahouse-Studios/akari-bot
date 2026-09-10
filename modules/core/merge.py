@@ -216,7 +216,6 @@ async def _(msg: Bot.MessageSession, code: str):
         await msg.finish(
             I18NContext(
                 "core.message.merge.code.invalid",
-                prefix=msg.session_info.prefixes[0],
                 cmd=ActionText(f"{msg.session_info.prefixes[0]}merge"),
             )
         )
@@ -247,7 +246,6 @@ async def _(msg: Bot.MessageSession, code: str):
         await msg.finish(
             I18NContext(
                 "core.message.merge.code.invalid",
-                prefix=msg.session_info.prefixes[0],
                 cmd=ActionText(f"{msg.session_info.prefixes[0]}merge"),
             )
         )

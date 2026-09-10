@@ -14,7 +14,6 @@ async def get_diving_prober_bind_info(msg: Bot.MessageSession, **kwargs):
         await msg.finish(
             I18NContext(
                 "chunithm.message.user_unbound.df",
-                prefix=msg.session_info.prefixes[0],
                 cmd=ActionText(f"{msg.session_info.prefixes[0]}chunithm bind df"),
             )
         )
@@ -55,7 +54,6 @@ async def get_lxns_prober_bind_info(msg: Bot.MessageSession):
             await msg.finish(
                 I18NContext(
                     "chunithm.message.user_unbound.lx",
-                    prefix=msg.session_info.prefixes[0],
                     cmd=ActionText(f"{msg.session_info.prefixes[0]}chunithm bind lx"),
                 )
             )

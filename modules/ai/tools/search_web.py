@@ -19,9 +19,9 @@ search_web_desc = {
                 "search_results": {
                     "type": "integer",
                     "description": "Number of search results.",
-                    "default": 5,
+                    "default": 10,
                     "minimum": 1,
-                    "maximum": 10,
+                    "maximum": 20,
                 },
             },
             "required": ["query"],

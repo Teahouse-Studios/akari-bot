@@ -11,6 +11,7 @@ llm_temperature = 1.0 # The temperature sampling of the LLMs, ranging from 0 to 
 llm_top_p = 1.0 # The nucleus sampling of the LLMs, ranging from 0 to 1. It is not recommended to modify it at the same time as temperature.
 llm_frequency_penalty = 0.0 # The frequency penalty of the LLMs, ranging from -2 to 2.
 llm_presence_penalty = 0.0 # The presence penalty of the LLMs, ranging from -2 to 2.
+llm_max_calling_iteration = 5 # Limit the maximum number of tool call iterations in the LLM.
 
 [module_ai_secret]
 # The secret config section of the module. The bot will try to intercept if the values here accidentally appears in the message sent, but be careful to prevent leakage.

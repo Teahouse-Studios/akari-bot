@@ -692,6 +692,20 @@ class SenderUnionInfo(UnionInfo):
         """
         return await self.edit_attr("petal", 0)
 
+    async def settle_petal(self, rebate_rate: float) -> bool:
+        """按返点比例结算用户花瓣，并在事务中锁定当前余额。"""
+        async with union_mutation():
+            async with in_transaction("default") as connection:
+                current = await (
+                    SenderUnionInfo.filter(union_id=self.union_id).using_db(connection).select_for_update().first()
+                )
+                if not current:
+                    return False
+                petal = max(0, int(current.petal * rebate_rate))
+                await SenderUnionInfo.filter(union_id=self.union_id).using_db(connection).update(petal=petal)
+                self.petal = petal
+                return True
+
     async def edit_sender_data(self, key: str, value: Any | None = None) -> bool:
         """
         设置用户数据。

@@ -1,7 +1,7 @@
 # Environment Variables
 *.env
 
-# Runtime Locks & Process Files
+# Runtime Lock & Process Files
 .bot.lock
 .pid_last
 
@@ -14,7 +14,7 @@
 __pycache__/
 
 # ==========
-# Core
+# Bot Core
 # ==========
 
 # Cache
@@ -46,7 +46,7 @@ version*
 # JetBrains
 .idea
 
-# macOS
+# MacOS
 .DS_Store
 
 # Local Runtime Configuration
@@ -61,8 +61,13 @@ version*
 
 .agents/*
 AGENTS.md
+generated_docs/*
+
+# Claude Code
 .claude/*
 CLAUDE.md
+
+# Mimo Code
 .mimocode/*
 
 # ==========
@@ -96,24 +101,20 @@ webui/*
 bots/test/*
 modules/test/*
 
-# Test Cases
+# Test Files
 /test*.*
 !tester.py
 
-# Test Reports
+# CI Test Report
 junit.xml
 
 # ==========
 # Legacy
 # ==========
 
-.console_history
-
 assets/bots_list.json
 assets/discord_slash_list.json
 assets/modules_list.json
 assets/schedulers_list.json
-
-generated_docs/*
 
 matrix_store

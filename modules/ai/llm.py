@@ -5,7 +5,8 @@ from openai import AsyncOpenAI, APITimeoutError, RateLimitError
 from PIL import Image as PILImage
 
 from core.builtins.bot import Bot
-from core.builtins.message.internal import Image, Markdown, Plain
+from core.builtins.message.internal import ImageElement, Image, Markdown, Plain, PlainElement
+from core.builtins.message.chain import MessageChain
 from modules.ai.config import AiConfig
 from core.constants.exceptions import ExternalException
 from core.utils.dirty_check import check
@@ -21,18 +22,33 @@ temperature = AiConfig.llm_temperature
 top_p = AiConfig.llm_top_p
 frequency_penalty = AiConfig.llm_frequency_penalty
 presence_penalty = AiConfig.llm_presence_penalty
+max_iterations = AiConfig.llm_max_calling_iteration
 
-MAX_ITERATIONS = 5
+
+async def _build_user_content(prompt: str | MessageChain) -> list[dict]:
+    elements = MessageChain.assign(prompt).values if isinstance(prompt, str) else prompt.values
+    content = []
+    for element in elements:
+        if isinstance(element, PlainElement):
+            content.append({"type": "text", "text": element.text})
+        elif isinstance(element, ImageElement):
+            content.append(
+                {
+                    "type": "image_url",
+                    "image_url": {"url": await element.get_base64(mime=True)},
+                }
+            )
+    return content
 
 
 async def ask_llm(
     session: Bot.MessageSession,
-    prompt: str,
+    prompt: str | MessageChain,
     model_name: str,
     api_url: str,
     api_key: str,
     use_tools: bool = True,
-) -> tuple[list, int, int]:
+) -> tuple[list, int, int, int]:
     client = AsyncOpenAI(base_url=api_url, api_key=api_key)
 
     tz_ = session.session_info._tz_offset
@@ -42,21 +58,33 @@ async def ask_llm(
     messages = [
         {"role": "system", "content": INSTRUCTIONS},
         {"role": "system", "content": f"Current datetime: {fmt_now}"},
-        {"role": "user", "content": prompt},
+        {
+            "role": "system",
+            "content": f"Session language: {session.session_info.locale.t('language')}. "
+            "Use this language for output unless specified by user.",
+        },
     ]
     custom_instructions = session.session_info.sender_union_info.sender_data.get("ai_custom_instructions")
     if custom_instructions:
-        messages.insert(2, {"role": "system", "content": custom_instructions})
+        messages.insert(3, {"role": "system", "content": custom_instructions})
+
+    messages.append(
+        {
+            "role": "user",
+            "content": await _build_user_content(prompt),
+        }
+    )
 
     total_input_tokens = 0
+    total_cached_tokens = 0
     total_output_tokens = 0
     content_pieces = []
     tool_choice = "auto" if use_tools else "none"
 
     iterations = 0
-    while iterations <= MAX_ITERATIONS:
+    while iterations <= max_iterations:
         try:
-            completion = await client.chat.completions.create(
+            response = await client.chat.completions.create(
                 model=model_name,
                 messages=messages,
                 tool_choice=tool_choice,
@@ -67,15 +95,18 @@ async def ask_llm(
                 frequency_penalty=frequency_penalty,
                 presence_penalty=presence_penalty,
                 timeout=timeout,
+                parallel_tool_calls=True,
             )
         except (APITimeoutError, RateLimitError) as e:
             raise ExternalException(e)
         except Exception as e:
             raise e
 
-        res_msg = completion.choices[0].message
-        total_input_tokens += completion.usage.prompt_tokens
-        total_output_tokens += completion.usage.completion_tokens
+        res_msg = response.choices[0].message
+        cached_tokens = response.usage.prompt_tokens_details.cached_tokens
+        total_input_tokens += response.usage.prompt_tokens - cached_tokens
+        total_cached_tokens += cached_tokens
+        total_output_tokens += response.usage.completion_tokens
 
         messages.append(res_msg)
         if res_msg.content:
@@ -84,20 +115,18 @@ async def ask_llm(
         if res_msg.tool_calls:
             iterations += 1
             messages = await tool_function_calls(res_msg.tool_calls, messages)
-
-            if iterations == MAX_ITERATIONS:
+            if iterations == max_iterations:
+                Logger.warning("LLM tool calling reached maximum iterations.")
                 messages.append(
                     {
                         "role": "system",
-                        "content": "Warning: Iteration limit reached. Provide the final answer based on the available information and do not attempt to call functions again.",
+                        "content": "Warning: Iteration limit reached. Provide the final answer based on the available information and do not attempt to call tools again.",
                     }
                 )
                 tool_choice = "none"
             continue
         else:
             break
-    else:
-        Logger.warning("LLM function calling reached maximum iterations.")
 
     res = await check("\n\n".join(content_pieces), session=session)
     resm = "".join(m["content"] for m in res)
@@ -136,4 +165,4 @@ async def ask_llm(
     else:
         chain = [Plain(resm)]
 
-    return chain, total_input_tokens, total_output_tokens
+    return chain, total_input_tokens, total_cached_tokens, total_output_tokens

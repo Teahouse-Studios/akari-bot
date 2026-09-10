@@ -744,7 +744,6 @@ async def help_overview(msg: Bot.MessageSession):
             help_msg_list = MessageChain.assign(
                 I18NContext(
                     "core.message.help.detail",
-                    prefix=msg.session_info.prefixes[0],
                     cmd=ActionText(f"{msg.session_info.prefixes[0]}help "),
                 )
             )
@@ -752,7 +751,6 @@ async def help_overview(msg: Bot.MessageSession):
                 help_msg_list.append(
                     I18NContext(
                         "core.message.help.all_modules",
-                        prefix=msg.session_info.prefixes[0],
                         cmd=ActionText(f"{msg.session_info.prefixes[0]}module list"),
                     )
                 )
@@ -856,7 +854,6 @@ async def help_overview(msg: Bot.MessageSession):
         help_msg.append(
             I18NContext(
                 "core.message.help.detail",
-                prefix=msg.session_info.prefixes[0],
                 cmd=ActionText(f"{msg.session_info.prefixes[0]}help "),
             )
         )
@@ -864,7 +861,6 @@ async def help_overview(msg: Bot.MessageSession):
             help_msg.append(
                 I18NContext(
                     "core.message.help.all_modules",
-                    prefix=msg.session_info.prefixes[0],
                     cmd=ActionText(f"{msg.session_info.prefixes[0]}module list"),
                 )
             )
@@ -901,7 +897,6 @@ async def modules_list_help(msg: Bot.MessageSession, legacy, force_image=False):
             help_msg = MessageChain.assign(
                 I18NContext(
                     "core.message.help.detail",
-                    prefix=msg.session_info.prefixes[0],
                     cmd=ActionText(f"{msg.session_info.prefixes[0]}help "),
                 )
             )
@@ -978,7 +973,6 @@ async def modules_list_help(msg: Bot.MessageSession, legacy, force_image=False):
         help_msg.append(
             I18NContext(
                 "core.message.help.detail",
-                prefix=msg.session_info.prefixes[0],
                 cmd=ActionText(f"{msg.session_info.prefixes[0]}help "),
             )
         )
