@@ -117,6 +117,18 @@ def _response_data(response: httpx.Response) -> dict[str, Any]:
     return data
 
 
+def _oauth_error(payload: dict[str, Any]) -> tuple[str | None, str | None]:
+    """从 TapTap OAuth 的顶层或 data 层提取错误码和描述。"""
+    data = payload.get("data")
+    error_data = data if isinstance(data, dict) else payload
+    error = error_data.get("error")
+    description = error_data.get("error_description") or error_data.get("msg")
+    return (
+        str(error) if error is not None else None,
+        str(description) if description is not None else None,
+    )
+
+
 class TapTapLogin:
     """使用已有异步客户端执行 TapTap 设备码登录。"""
 
@@ -168,18 +180,20 @@ class TapTapLogin:
         if response.is_success and isinstance(data, dict) and data.get("kid") and data.get("mac_key"):
             return data
 
-        error = data.get("error") if isinstance(data, dict) else payload.get("error")
-        if error == "authorization_pending":
+        error, description = _oauth_error(payload)
+        if error in {"authorization_pending", "authorization_waiting"}:
             return None
         if error == "slow_down":
             raise TapTapSlowDown
-        if error in {"expired_token", "invalid_grant"}:
+        if error in {"expired_token", "invalid_grant", "invalid_grant_code"}:
             raise TapTapQRCodeExpired
         if error in {"access_denied", "authorization_declined"}:
             raise TapTapAuthorizationDenied
 
-        response.raise_for_status()
-        raise TapTapLoginError(f"TapTap device authorization failed: {error or 'unknown_error'}")
+        detail = f": {description}" if description else ""
+        raise TapTapLoginError(
+            f"TapTap device authorization failed ({response.status_code}): {error or 'unknown_error'}{detail}"
+        )
 
     async def get_profile(self, access_token: dict[str, Any]) -> dict[str, Any]:
         """读取完成授权的 TapTap 用户公开资料。"""

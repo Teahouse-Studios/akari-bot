@@ -7,6 +7,9 @@ import httpx
 from core.tester import func_case, Tester
 from modules.phigros.libraries.taptap import (
     TapTapLogin,
+    TapTapLoginError,
+    TapTapQRCode,
+    TapTapQRCodeExpired,
     build_mac_authorization,
 )
 
@@ -52,6 +55,8 @@ async def _test_device_login_flow():
             token_attempts += 1
             if token_attempts == 1:
                 return httpx.Response(400, json={"success": False, "data": {"error": "authorization_pending"}})
+            if token_attempts == 2:
+                return httpx.Response(400, json={"success": False, "data": {"error": "authorization_waiting"}})
             return httpx.Response(
                 200,
                 json={
@@ -79,13 +84,50 @@ async def _test_device_login_flow():
         login = TapTapLogin(client)
         qrcode_data = await login.request_login_qrcode()
         pending = await login.check_qrcode_result(qrcode_data)
+        waiting = await login.check_qrcode_result(qrcode_data)
         access_token = await login.check_qrcode_result(qrcode_data)
         profile = await login.get_profile(access_token)
         user_data = await login.get_user_data(access_token, profile)
 
     return (
-        pending is None and token_attempts == 2 and profile["name"] == "Test" and user_data["sessionToken"] == "a" * 25
+        pending is None
+        and waiting is None
+        and token_attempts == 3
+        and profile["name"] == "Test"
+        and user_data["sessionToken"] == "a" * 25
     )
+
+
+async def _test_device_login_errors():
+    """设备码失效应分类处理，未知错误应保留脱敏后的诊断信息。"""
+    responses = iter(
+        [
+            httpx.Response(400, json={"data": {"error": "invalid_grant_code"}}),
+            httpx.Response(
+                400,
+                json={"data": {"error": "invalid_request", "error_description": "unsupported parameter"}},
+            ),
+        ]
+    )
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return next(responses)
+
+    qrcode_data = TapTapQRCode("device", "code", "https://example.test", 300, 1)
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        login = TapTapLogin(client)
+        try:
+            await login.check_qrcode_result(qrcode_data)
+        except TapTapQRCodeExpired:
+            pass
+        else:
+            return False
+
+        try:
+            await login.check_qrcode_result(qrcode_data)
+        except TapTapLoginError as e:
+            return "invalid_request" in str(e) and "unsupported parameter" in str(e)
+    return False
 
 
 @func_case
@@ -93,4 +135,5 @@ async def test_phigros_taptap(tester: Tester):
     """phigros: TapTap 扫码登录"""
     await tester.test(_test_mac_authorization_matches_official_vector, "TapTap MAC 官方向量")
     await tester.test(_test_device_login_flow, "TapTap 设备码登录请求链路")
+    await tester.test(_test_device_login_errors, "TapTap 设备码错误分类")
     return tester
