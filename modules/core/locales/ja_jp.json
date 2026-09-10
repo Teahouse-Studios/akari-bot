@@ -376,7 +376,7 @@
     "core.message.petal.sign.already": "今日はサインインしました。明日もう一度お試しください。",
     "core.message.petal.sign.disabled": "このコンテキストではチェックインが無効です。",
     "core.message.petal.sign.success": "サインインに成功！",
-    "core.message.ping.detail": "システム起動時間：${system_boot_time}\nボット稼働時間：${bot_running_time}\nPython バージョン：${python_version}\nWebRender ステータス：${web_render_status}\nクライアント名：${client_name}\n起動後に処理されたコマンド数：${command_parsed}\n起動後に処理されたメッセージ数：${parsed}\nプロセッサ モデル：${cpu_brand}\nプロセッサ使用量：${cpu_percent}%\n物理メモリ：${ram}M 使用量：${ram_percent}%\nスワップ メモリ：${swap}M 使用量：${swap_percent}%\nディスク容量：${disk_space}G/${disk_space_total}G",
+    "core.message.ping.detail": "システム起動時間：${system_boot_time}\nボット稼働時間：${bot_running_time}\nPython バージョン：${python_version}\nWebRender ステータス：${web_render_status}\nJobQueue バックエンド タイプ：${jobqueue_backend}\nクライアント名：${client_name}\n起動後に処理されたコマンド数：${command_parsed}\n起動後に処理されたメッセージ数：${parsed}\nプロセッサ モデル：${cpu_brand}\nプロセッサ使用量：${cpu_percent}%\n物理メモリ：${ram}M 使用量：${ram_percent}%\nスワップ メモリ：${swap}M 使用量：${swap_percent}%\nディスク容量：${disk_space}G/${disk_space_total}G",
     "core.message.ping.simple": "ボット稼働時間：${bot_running_time}\nプロセッサ使用量：${cpu_percent}%\nメモリ使用量：${ram_percent}%\nディスク使用量：${disk_percent}%",
     "core.message.post.confirm": "次のメッセージがコンテキスト ${target} にプッシュされます。続行しますか？",
     "core.message.post.global.confirm": "警告：次のメッセージがすべてのコンテキストにプッシュされます。続行しますか？",
@@ -506,5 +506,16 @@
     "core.message.whoami.superuser": "（ボットのスーパーユーザー権限があります）",
     "core.message.whoami.target": "このコンテキストの ID：\n${id}",
     "core.message.whoami.target.union": "現在のコンテキストが属するコンテキスト グループ：\n${id}",
-    "core.message.whoami.target.union.bound": "${count} 個のコンテキストがバインドされています：\n"
+    "core.message.whoami.target.union.bound": "${count} 個のコンテキストがバインドされています：\n",
+    "core.help.petal.bud": "花包みを受け取ります。",
+    "core.help.petal.bud.info": "花包みの詳細情報を見ます。",
+    "core.help.petal.bud.release": "期限切れの花包みをすべて強制的に放出します。",
+    "core.help.petal.bud.send": "花包みを送ります。",
+    "core.message.petal.bud.code.exists": "パスワードは既に使用されています。",
+    "core.message.petal.bud.count.invalid": "無効なカウントです。正の整数でなければならず、ペタルの数を超えてはなりません。",
+    "core.message.petal.bud.info": "送信者：${sender}\nパスワード：${code}\n合計：${total} 枚 | 受取回数：${claimed}/${count} 回\n受取履歴：",
+    "core.message.petal.bud.info.record": "${sender}：${amount} 枚",
+    "core.message.petal.bud.send.confirm": "この操作には ${total} 枚のペタルが必要となり、${count} 回まで受け取れる花包みが 1 つ送られます（パスワード：${code}）。続行しますか？",
+    "core.message.petal.bud.send.success": "花包みが送られました！ペタルは ${total} 枚で、${count} 回受け取ることができます。\nID：${id}\nこの花包みを受け取るには、「${cmd}」を使用してください。",
+    "core.message.petal.bud.info.not_found": "この花包みは見つかりません。"
 }
