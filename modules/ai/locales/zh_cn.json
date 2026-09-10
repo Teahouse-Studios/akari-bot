@@ -4,7 +4,7 @@
     "ai.help.llm.instruct": "设置大语言模型的自定义命令。",
     "ai.help.llm.list": "查看支持的大语言模型列表。",
     "ai.help.llm.set": "设置场景内默认大语言模型。",
-    "ai.help.option.context": "指定要延续的对话轮次 ID。",
+    "ai.help.option.ctx": "指定要延续的对话轮次 ID。",
     "ai.help.option.llm": "指定使用的大语言模型。",
     "ai.help.option.no_tools": "是否禁止大语言模型调用工具。",
     "ai.message.context.hint": "提示：在 10 分钟内使用“${cmd}”可继续对话。",
