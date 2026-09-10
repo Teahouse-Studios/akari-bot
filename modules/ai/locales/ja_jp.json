@@ -4,7 +4,6 @@
     "ai.help.llm.instruct": "LLM 向けのカスタム指示を設定します。",
     "ai.help.llm.list": "対応している LLM の一覧をご確認します。",
     "ai.help.llm.set": "コンテキスト内でデフォルトの LLM を設定します。",
-    "ai.help.option.context": "継続するコンテキストウィンドウ ID を指定します。",
     "ai.help.option.llm": "使用する LLM を指定します。",
     "ai.help.option.no_tools": "LLM をツール呼び出すを無効にするかどうか。",
     "ai.message.context.hint": "ヒント：10 分以内に「${cmd}」を使用すれば会話を続けられます。",

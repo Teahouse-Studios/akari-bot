@@ -4,7 +4,6 @@
     "ai.help.llm.instruct": "Set custom instructions for the LLMs.",
     "ai.help.llm.list": "Check the list of supported LLMs.",
     "ai.help.llm.set": "Set the default LLM in context.",
-    "ai.help.option.context": "Specify the context window ID to continue.",
     "ai.help.option.llm": "Specify the LLM to use.",
     "ai.help.option.no_tools": "Whether to disable the tool calling for the LLMs.",
     "ai.message.context.hint": "Hint: Use \"${cmd}\" within 10 minutes to continue the conversation.",
