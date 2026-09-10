@@ -4,7 +4,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
 from core.logger import Logger
-from core.queue.client import JobQueueClient
+from core.queue.contracts import ServerAPI
 from core.scheduler import DateTrigger, IntervalTrigger
 from .database.models import WikiBotAccountList
 from .utils.bot import BotAccount, LoginFailed
@@ -69,5 +69,5 @@ async def _(ctx: Bot.ModuleHookContext):
 async def _():
     Logger.info("Start login wiki bot account...")
     await BotAccount.login()
-    await JobQueueClient.trigger_hook("wikilog.keepalive")
+    await ServerAPI.trigger_hook.submit("wikilog.keepalive")
     Logger.success("Successfully login wiki bot account.")

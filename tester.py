@@ -17,6 +17,9 @@ TEST_CONFIG_TEMPLATE_PATH = Path("assets/config_store/zh_cn")
 # 测试所需的配置覆盖项，格式为 (文件名, 表名, 键名, 值)。
 TEST_CONFIG_OVERRIDES: list[tuple[str, str, str, object]] = [
     ("config.toml", "config", "enable_petal", True),
+    # 通用测试进程不启动守护进程所管理的 WebSocket Hub。数据库后端
+    # 作为自包含测试基座；WebSocket 的真实连接行为由专项用例显式建立 Hub 验证。
+    ("jobqueue.toml", "jobqueue", "jobqueue_backend", "database"),
 ]
 
 

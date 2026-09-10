@@ -5,8 +5,10 @@ from core.config.base import CoreSecretConfig
 from core.constants import database_path
 
 SQLITE_CONNECTION_DEFAULTS = {
-    "journal_mode": "WAL",
+    # Tortoise 按参数顺序执行 PRAGMA。先延长锁等待时间，再尝试切换 WAL，
+    # 避免多个进程并发启动时 journal_mode 尚未受到 30 秒等待策略保护。
     "busy_timeout": "30000",
+    "journal_mode": "WAL",
 }
 
 db_link = CoreSecretConfig.db_path
@@ -30,6 +32,9 @@ def prepare_db_link(link: str) -> str:
     query = parse_qsl(parsed.query, keep_blank_values=True)
     existing_fields = {key.lower() for key, _ in query}
     query.extend((key, value) for key, value in SQLITE_CONNECTION_DEFAULTS.items() if key not in existing_fields)
+    # busy_timeout 必须在可能取得写锁的 PRAGMA（尤其 journal_mode）之前生效；
+    # 即使调用方显式提供了参数并采用其它排列，也统一提前执行等待策略。
+    query.sort(key=lambda item: item[0].lower() != "busy_timeout")
     return urlunsplit(parsed._replace(query=urlencode(query)))
 
 

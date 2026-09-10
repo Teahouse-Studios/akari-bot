@@ -2,7 +2,7 @@ import discord
 
 from bots.discord.client import discord_bot
 from bots.discord.slash_parser import slash_parser, ctx_to_session
-from core.queue.client import JobQueueClient
+from core.queue.contracts import ServerAPI
 
 
 @discord_bot.slash_command(name="ab", description="Get recent abuse logs for the default wiki.")
@@ -25,7 +25,7 @@ wiki = discord_bot.create_group("wiki", "Query information from Mediawiki-based 
 
 async def auto_get_custom_iw_list(ctx: discord.AutocompleteContext):
     session = await ctx_to_session(ctx, "")
-    return await JobQueueClient.trigger_hook("wiki.auto_get_custom_iw_list", session, wait=True)
+    return await ServerAPI.trigger_hook("wiki.auto_get_custom_iw_list", session)
 
 
 async def default_wiki(ctx: discord.AutocompleteContext):
@@ -35,9 +35,7 @@ async def default_wiki(ctx: discord.AutocompleteContext):
 
 async def auto_search(ctx: discord.AutocompleteContext):
     session = await ctx_to_session(ctx, "")
-    return await JobQueueClient.trigger_hook(
-        "wiki.autosearch", session, wait=True, **{"title": ctx.options["pagename"]}
-    )
+    return await ServerAPI.trigger_hook("wiki.autosearch", session, **{"title": ctx.options["pagename"]})
 
 
 @wiki.command(name="query", description="Query a wiki page.")

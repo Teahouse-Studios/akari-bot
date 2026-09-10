@@ -3,7 +3,7 @@
 
 负责服务器的关闭和重启，包括：
 - 会话清理
-- 任务队列清空
+- 当前 Server 实例的队列任务收尾
 - 调度器关闭
 - 数据库连接关闭
 """
@@ -14,7 +14,6 @@ import os
 from tortoise import Tortoise
 
 # from core.builtins.session.tasks import SessionTaskManager
-from core.database.models import JobQueuesTable
 from core.logger import Logger
 from core.queue.server import JobQueueServer
 from core.scheduler import SchedulerLifecycle
@@ -27,7 +26,7 @@ async def cleanup_sessions():
     """清理服务器资源。
 
     执行以下清理步骤：
-    1. 清理所有待处理的任务队列
+    1. 停止领取并终结本 Server 实例的在途任务
     2. 关闭调度器
     3. 关闭数据库连接
     """
@@ -43,7 +42,7 @@ async def cleanup_sessions():
     # 与 restart action 互相等待。
     SchedulerLifecycle.begin_shutdown()
     # 先关闭新 action 入口并与已经开始领取的一轮轮询建立屏障。轮询器仍继续回收
-    # QueueTaskManager 的远端结果，供下面取消任务时释放平台 context。
+    # 在途 RPC 的远端结果，供下面取消任务时释放平台 context。
     await JobQueueServer.begin_shutdown()
     # Queue handler 可能持有 Scheduler 维护锁，也可能在退出路径创建 detached task。
     # 先取消并等待它们，再关闭 Scheduler，最后统一清理所有已注册后台任务。
@@ -61,16 +60,12 @@ async def cleanup_sessions():
     # 为清理而额外导入未加载模块。
     await BackgroundTaskLifecycle.run_cleanup()
     # restart() 可能由 Queue action 自身触发，此时主循环的轮询器仍在运行。关闭窗口
-    # 必须先阻止它继续领取任务，再取消其它 handler，并在独占轮询锁时清库、关资源；
-    # 否则清空队列或关闭连接期间仍可能启动一个新的平台副作用。
+    # 必须先阻止它继续领取任务，再取消其它 handler，并在独占轮询锁时关闭资源。
+    # 不能清空全局队列表：同一 service 的其它 Server 实例仍可能依赖其中的任务。
     async with JobQueueServer.shutdown_window():
         # detached task 的 context 已经释放，此后不再需要轮询远端结果。先停止轮询器，
-        # 再在持有 _poll_lock 的情况下清库和关连接，避免窗口退出后轮询已关闭的数据库。
+        # 再在持有 _poll_lock 的情况下关闭依赖，避免窗口退出后轮询已关闭的数据库。
         await JobQueueServer.stop_job_queue()
-        try:
-            await JobQueuesTable.clear_task(time=0, include_active=True)
-        except Exception:
-            Logger.exception("Failed to clear job queues cleanly.")
         try:
             await asyncio.wait_for(close_web_render(), timeout=10)
         except TimeoutError:
