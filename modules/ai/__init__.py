@@ -9,7 +9,7 @@ from core.logger import Logger
 from core.constants import WaitCancelException
 from .petal import precount_petal, count_token_petal
 from .setting import get_llm_billing, llm_api_list, llm_list, llm_su_list
-from .context import CONTEXT_EXPIRY, create_context, get_context, refresh_context
+from .context import CONTEXT_EXPIRY, create_context, get_context
 
 default_llm = AiConfig.ai_default_llm
 default_llm = default_llm if default_llm in llm_list else None
@@ -35,7 +35,8 @@ async def _(msg: Bot.MessageSession, prompt: str):
     is_superuser = msg.check_super_user()
 
     # 延续上下文只能通过 --ctx 显式指定；引用回复由 wait_reply 循环处理。
-    history = get_context(session_id) if session_id else None
+    scene_key = msg.session_info.channel_key
+    history = get_context(session_id, scene_key) if session_id else None
     if session_id and history is None:
         await msg.finish(I18NContext("ai.message.context.invalid"))
 
@@ -95,9 +96,8 @@ async def _(msg: Bot.MessageSession, prompt: str):
             history=history,
         )
 
-        if session_id:
-            refresh_context(session_id)
-        session_id = create_context(history)
+        # 每轮建立新的快照，保留旧 ID 以支持从任意一轮分叉。
+        session_id = create_context(history, scene_key)
 
         Logger.info(f"{input_tokens + cache_tokens + output_tokens} token used while calling LLM.")
         Logger.info(f"Input (miss cache): {input_tokens} | Input (hit cache): {cache_tokens} | Output: {output_tokens}")
