@@ -517,5 +517,11 @@
     "core.message.petal.bud.info.record": "${sender}：${amount} 枚",
     "core.message.petal.bud.send.confirm": "この操作には ${total} 枚のペタルが必要となり、${count} 回まで受け取れる花包みが 1 つ送られます（パスワード：${code}）。続行しますか？",
     "core.message.petal.bud.send.success": "花包みが送られました！ペタルは ${total} 枚で、${count} 回受け取ることができます。\nID：${id}\nこの花包みを受け取るには、「${cmd}」を使用してください。",
-    "core.message.petal.bud.info.not_found": "この花包みは見つかりません。"
+    "core.message.petal.bud.info.not_found": "この花包みは見つかりません。",
+    "core.message.petal.bud.receive.already": "あなたは既にこの花包みを受け取っています。",
+    "core.message.petal.bud.receive.empty": "この花包みは既に予約済みです。",
+    "core.message.petal.bud.receive.not_found": "一致する花包みが見つかりません。パスワードが正しいかご確認ください。",
+    "core.message.petal.bud.receive.success": "受け取りに成功！",
+    "core.message.petal.bud.release": "${count} 個の期限切れの花包みが放出されました。",
+    "core.message.petal.bud.release.none": "期限切れの花包みは存在せず、放出する必要はありません。"
 }
