@@ -78,19 +78,26 @@ class _FakeClient:
 
 
 class _FailingSendClient:
-    def __init__(self, code: int):
+    def __init__(self, code: int, fallback_code: int | None = None):
         self.code = code
+        self.fallback_code = fallback_code
         self.calls = []
         self.uploads = []
 
     def _record(self, target, kwargs):
         self.calls.append((target.scope, target.target_id, target.message_id, dict(kwargs)))
-        if len(self.calls) == 1:
+        code = self.code if len(self.calls) == 1 else self.fallback_code
+        if code is not None:
+            messages = {
+                40034005: "回复消息msg_id已过期",
+                40034102: "主动消息失败, 无权限",
+            }
+            message = messages.get(code, "回复消息失败，被动回复时间或者次数超过限制")
             raise ServerError(
-                "回复消息msg_id已过期",
+                message,
                 status=400,
-                code=self.code,
-                response={"message": "回复消息msg_id已过期", "code": self.code, "err_code": self.code},
+                code=code,
+                response={"message": message, "code": code, "err_code": code},
             )
 
     async def send(self, target, **kwargs):
@@ -174,6 +181,59 @@ async def _test_expired_reply_falls_back_to_proactive() -> bool:
         Logger.error(f"Proactive fallback should preserve the message payload: {client.calls}")
         return False
     return True
+
+
+async def _test_passive_reply_limit_falls_back_to_proactive() -> bool:
+    session = _make_session(target_group_prefix)
+    client = _FailingSendClient(40034128)
+    QQBotContextManager.context[session.session_id] = object()
+    try:
+        result = await _send_with_client(session, client)
+    finally:
+        QQBotContextManager.context.pop(session.session_id, None)
+    return result == ["fallback"] and [call[2] for call in client.calls] == ["source-message", None]
+
+
+async def _test_fallback_without_proactive_permission_is_silent() -> bool:
+    session = _make_session(target_group_prefix)
+    client = _FailingSendClient(40034128, fallback_code=40034102)
+    QQBotContextManager.context[session.session_id] = object()
+    try:
+        try:
+            result = await _send_with_client(session, client)
+        except ServerError:
+            return False
+    finally:
+        QQBotContextManager.context.pop(session.session_id, None)
+    return result == [] and [call[2] for call in client.calls] == ["source-message", None]
+
+
+async def _test_proactive_permission_denied_is_silent() -> bool:
+    session = _make_session(target_group_prefix)
+    client = _FailingSendClient(40034102)
+    try:
+        try:
+            result = await _send_with_client(session, client)
+        except ServerError:
+            return False
+    finally:
+        QQBotContextManager.context.pop(session.session_id, None)
+    return result == [] and len(client.calls) == 1 and client.calls[0][2] is None
+
+
+async def _test_audio_reply_limit_falls_back_to_proactive() -> bool:
+    session = _make_session(target_group_prefix)
+    client = _FailingSendClient(40034128)
+    QQBotContextManager.context[session.session_id] = object()
+    try:
+        result = await _send_with_client(session, client, MessageChain.assign(AudioElement.assign(__file__)))
+    finally:
+        QQBotContextManager.context.pop(session.session_id, None)
+    return (
+        result == ["fallback"]
+        and [call[2] for call in client.calls] == ["source-message", None]
+        and len(client.uploads) == 1
+    )
 
 
 async def _test_markdown_reply_falls_back_to_proactive() -> bool:
@@ -298,6 +358,19 @@ async def _test_group_mention_markdown_message() -> bool:
     session.support_markdown = True
     client = _CaptureSendClient()
     message = MessageChain.assign([MentionElement.assign("QQBot|member"), PlainElement.assign("hello")])
+    with patch.object(qqbot_context, "qq_use_markdown", True):
+        result = await _send_with_client(session, client, message)
+    return result == ["markdown"] and client.calls == [
+        ("markdown", {"content": '<qqbot-at-user id="member" />\nhello', "keyboard": None})
+    ]
+
+
+async def _test_markdown_removes_line_break_before_at() -> bool:
+    """Markdown payload 不应保留首个 at 标签前的换行。"""
+    session = _make_session(target_group_prefix)
+    session.support_markdown = True
+    client = _CaptureSendClient()
+    message = MessageChain.assign(MarkdownElement.assign('\r\n<qqbot-at-user id="member" />\nhello'))
     with patch.object(qqbot_context, "qq_use_markdown", True):
         result = await _send_with_client(session, client, message)
     return result == ["markdown"] and client.calls == [
@@ -453,6 +526,10 @@ async def test_qqbot_modern_api(tester: Tester):
     await tester.test(_test_message_id_collection, "高层发送结果消息 ID 提取测试")
     await tester.test(_test_c2c_delete_uses_unified_api, "C2C 统一撤回接口测试")
     await tester.test(_test_expired_reply_falls_back_to_proactive, "过期回复消息转主动消息测试")
+    await tester.test(_test_passive_reply_limit_falls_back_to_proactive, "被动回复时间或次数超限转主动消息测试")
+    await tester.test(_test_fallback_without_proactive_permission_is_silent, "被动回复回退无主动权限静默测试")
+    await tester.test(_test_proactive_permission_denied_is_silent, "主动消息无权限静默测试")
+    await tester.test(_test_audio_reply_limit_falls_back_to_proactive, "音频被动回复超限转主动消息测试")
     await tester.test(_test_markdown_reply_falls_back_to_proactive, "Markdown 过期回复转主动消息测试")
     await tester.test(_test_image_reply_falls_back_to_proactive, "图片过期回复转主动消息测试")
     await tester.test(_test_plain_image_is_uploaded_before_send, "Plain 图片预上传测试")
@@ -461,6 +538,7 @@ async def test_qqbot_modern_api(tester: Tester):
     await tester.test(_test_proactive_error_is_not_retried, "主动消息错误不重复重试测试")
     await tester.test(_test_group_mention_plain_message, "群聊普通消息 Mention 渲染测试")
     await tester.test(_test_group_mention_markdown_message, "群聊 Markdown Mention 渲染测试")
+    await tester.test(_test_markdown_removes_line_break_before_at, "Markdown at 标签前换行清理测试")
     await tester.test(_test_plain_allow_parse_controls_qq_atcode, "Plain.allow_parse 逐段控制 QQ 提及解析测试")
     await tester.test(_test_s3_failure_keeps_markdown_message_sendable, "S3 失败后继续发送 Markdown 测试")
     await tester.test(_test_plain_message_preserves_ids_before_later_send_failure, "Plain 后续失败保留已发送 ID 测试")

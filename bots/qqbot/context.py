@@ -54,7 +54,8 @@ qq_use_markdown = QQBotConfig.qq_use_markdown
 
 # 平台对指令操作标签内文本的字符数上限，按 urlencode 前的原文计算
 ACTION_TEXT_MAX_LENGTH = 100
-EXPIRED_REPLY_MESSAGE_CODE = 40034005
+PASSIVE_REPLY_FALLBACK_ERROR_CODES = frozenset({"40034005", "40034128"})
+PROACTIVE_PERMISSION_DENIED_ERROR_CODES = frozenset({"304046", "40034102"})
 PERMISSION_CACHE_TTL = 3600
 PERMISSION_CACHE_MAX_SIZE = 4096
 INITIATIVE_QUEUE_MAX_SIZE = 128
@@ -248,12 +249,22 @@ def _message_ids(result) -> list[str]:
     return []
 
 
-def _is_expired_reply_message_error(error: ApiError) -> bool:
-    """判断 QQ OpenAPI 异常是否表示被回复的消息 ID 已过期。"""
+def _api_error_codes(error: ApiError) -> set[str]:
+    """收集 QQ OpenAPI 异常在兼容层和响应正文中的错误码。"""
     codes = [error.code]
     if isinstance(error.response, Mapping):
         codes.extend((error.response.get("code"), error.response.get("err_code")))
-    return any(str(code) == str(EXPIRED_REPLY_MESSAGE_CODE) for code in codes if code is not None)
+    return {str(code) for code in codes if code is not None}
+
+
+def _is_passive_reply_fallback_error(error: ApiError) -> bool:
+    """判断被动回复是否因消息过期或回复次数超限而可改发主动消息。"""
+    return bool(_api_error_codes(error) & PASSIVE_REPLY_FALLBACK_ERROR_CODES)
+
+
+def _is_proactive_permission_denied_error(error: ApiError) -> bool:
+    """判断主动消息是否因目标未授予主动发送权限而失败。"""
+    return bool(_api_error_codes(error) & PROACTIVE_PERMISSION_DENIED_ERROR_CODES)
 
 
 class _TypingState:
@@ -439,6 +450,37 @@ class QQBotContextManager(ContextManager):
         ctx: BaseMessage | Interaction | None = cls.context.get(session_info.session_id)
         client = _get_client()
         target = _reply_target(session_info, ctx)
+        send_target = target
+        proactive_unavailable = False
+
+        async def send_with_proactive_fallback(sender, /, *args, **kwargs):
+            """被动回复不可用时改发主动消息；无主动权限时静默返回。"""
+            nonlocal proactive_unavailable, send_target
+            if proactive_unavailable:
+                return None
+            try:
+                return await sender(send_target, *args, **kwargs)
+            except ApiError as error:
+                if send_target.message_id is None:
+                    if _is_proactive_permission_denied_error(error):
+                        proactive_unavailable = True
+                        return None
+                    raise
+                if not _is_passive_reply_fallback_error(error):
+                    raise
+
+                Logger.warning(
+                    f"Passive reply {send_target.message_id} is no longer available when sending to "
+                    f"{send_target.scope}|{send_target.target_id}; retrying as a proactive message."
+                )
+                send_target = ReplyTarget(scope=send_target.scope, target_id=send_target.target_id)
+                try:
+                    return await sender(send_target, *args, **kwargs)
+                except ApiError as proactive_error:
+                    if _is_proactive_permission_denied_error(proactive_error):
+                        proactive_unavailable = True
+                        return None
+                    raise
 
         if isinstance(message, MessageNodes):
             message = MessageChain.assign(
@@ -467,13 +509,19 @@ class QQBotContextManager(ContextManager):
             for element, media in prepared_media:
                 media_name = "audio" if isinstance(element, AudioElement) else "video"
                 try:
-                    if target.scope in ("group", "c2c"):
-                        result = await client.send(target, msg_type=MessageType.MEDIA, media=media)
+                    if send_target.scope in ("group", "c2c"):
+                        result = await send_with_proactive_fallback(
+                            client.send, msg_type=MessageType.MEDIA, media=media
+                        )
                     else:
-                        result = await client.send(target, extra={f"file_{media_name}": media})
-                    msg_ids.extend(_message_ids(result))
-                    cls._on_message_sent(session_info)
-                    Logger.info(f"[Bot] -> [{session_info.target_id}]: {media_name.title()}: {str(element)}")
+                        result = await send_with_proactive_fallback(client.send, extra={f"file_{media_name}": media})
+                    result_ids = _message_ids(result)
+                    msg_ids.extend(result_ids)
+                    if result_ids:
+                        cls._on_message_sent(session_info)
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {media_name.title()}: {str(element)}")
+                    if proactive_unavailable:
+                        break
                 except Exception:
                     if not msg_ids:
                         raise
@@ -543,31 +591,16 @@ class QQBotContextManager(ContextManager):
             async def send_plain_message() -> list[str]:
                 msg_ids = []
                 if not plains and not images:
-                    return await send_separate_media(media)
-                send_target = target
-
-                async def send_with_proactive_fallback(sender, /, *args, **kwargs):
-                    """回复消息 ID 过期时，移除回复信息并立即改发一条主动消息。"""
-                    nonlocal send_target
-                    try:
-                        return await sender(send_target, *args, **kwargs)
-                    except ApiError as error:
-                        if send_target.message_id is None or not _is_expired_reply_message_error(error):
-                            raise
-
-                        Logger.warning(
-                            f"Reply message {send_target.message_id} expired when sending to "
-                            f"{send_target.scope}|{send_target.target_id}; retrying as a proactive message."
-                        )
-                        send_target = ReplyTarget(scope=send_target.scope, target_id=send_target.target_id)
-                        return await sender(send_target, *args, **kwargs)
+                    return await send_separate_media(prepared_media)
 
                 async def record(result, image: ImageElement | None = None):
-                    msg_ids.extend(_message_ids(result))
-                    if not _typing_prompt:
+                    result_ids = _message_ids(result)
+                    msg_ids.extend(result_ids)
+                    if result_ids and not _typing_prompt:
                         cls._on_message_sent(session_info)
-                    if image:
+                    if result_ids and image:
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image)}")
+                    return bool(result_ids)
 
                 try:
                     remaining_images = list(prepared_images)
@@ -587,15 +620,18 @@ class QQBotContextManager(ContextManager):
                                 message_reference=message_reference,
                                 extra={"file_image": prepared_image},
                             )
-                        await record(result, image)
+                        sent = await record(result, image)
                     else:
                         result = await send_with_proactive_fallback(
                             client.send, content=msg, message_reference=message_reference
                         )
-                        await record(result)
+                        sent = await record(result)
 
-                    Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
+                    if sent:
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
                     for image, prepared_image in remaining_images:
+                        if proactive_unavailable:
+                            break
                         if send_target.scope in ("group", "c2c"):
                             result = await send_with_proactive_fallback(
                                 client.send,
@@ -701,27 +737,20 @@ class QQBotContextManager(ContextManager):
             if not texts and not prepared_media:
                 return _PreparedMessage(target, empty_send, has_payload=False)
 
-            msg = "\n".join(texts)
+            # Markdown 路径不像普通文本路径那样整体 strip，以免破坏正文末尾的 Markdown 语义；
+            # 但开头的换行没有有效语义，还会在首个 at 标签前渲染出空行。
+            msg = "\n".join(texts).lstrip("\r\n")
 
             async def send_markdown_message() -> list[str]:
                 msg_ids = []
                 if texts:
-                    send_target = target
-                    try:
-                        result = await client.send_markdown(send_target, msg, keyboard=keyboard)
-                    except ApiError as error:
-                        if send_target.message_id is None or not _is_expired_reply_message_error(error):
-                            raise
-                        Logger.warning(
-                            f"Reply message {send_target.message_id} expired when sending to "
-                            f"{send_target.scope}|{send_target.target_id}; retrying as a proactive message."
-                        )
-                        send_target = ReplyTarget(scope=send_target.scope, target_id=target.target_id)
-                        result = await client.send_markdown(send_target, msg, keyboard=keyboard)
-                    msg_ids.extend(_message_ids(result))
-                    if not _typing_prompt:
+                    result = await send_with_proactive_fallback(client.send_markdown, msg, keyboard=keyboard)
+                    result_ids = _message_ids(result)
+                    msg_ids.extend(result_ids)
+                    if result_ids and not _typing_prompt:
                         cls._on_message_sent(session_info)
-                    Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
+                    if result_ids:
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
                 msg_ids.extend(await send_separate_media(prepared_media))
                 return msg_ids
 
