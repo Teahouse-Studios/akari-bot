@@ -1,5 +1,6 @@
 import asyncio
 import inspect
+import traceback
 from collections.abc import Callable
 
 from core.logger import Logger
@@ -45,10 +46,27 @@ class Tester:
         }
         self._entries.append(entry_meta)
 
-        if asyncio.iscoroutinefunction(func):
-            result = await func()
-        else:
-            result = func()
+        try:
+            if asyncio.iscoroutinefunction(func):
+                result = await func()
+            else:
+                result = func()
+        except Exception as exception:
+            final = {
+                "type": "unit",
+                "input": None,
+                "output": None,
+                "action": [],
+                "expected": func,
+                "match": False,
+                "note": note,
+                "exception_type": type(exception).__name__,
+                "exception_message": str(exception),
+                "traceback": traceback.format_exc(),
+            }
+            self._results.append(final)
+            self._progress_event.set()
+            return final
 
         passed = bool(result)
         final = {

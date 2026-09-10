@@ -142,7 +142,7 @@ async def _run_func_test(fn: FunctionType, path: str) -> FuncTestResult:
     return {"fn": fn, "path": path, "res": res}
 
 
-async def main():
+async def main(inspect_module=inspect):
     Logger.trace("main() START")
 
     cache_path.mkdir(parents=True, exist_ok=True)
@@ -348,7 +348,7 @@ async def main():
                 junit_func_suite.add_testcase(junit_testcase)
                 continue
 
-            for _, fn in inspect.getmembers(mod, inspect.isfunction):
+            for _, fn in inspect_module.getmembers(mod, inspect_module.isfunction):
                 if not getattr(fn, "_func_case", False):
                     continue
 
@@ -443,8 +443,9 @@ async def main():
             results = res["results"]
             Logger.trace(f"main() processing func test {fn.__name__} with {len(results)} results")
 
+            subtest_number = 0
             func_pass = True
-            func_error_msg = ""
+            func_error_msgs: list[str] = []
             for r_idx, r in enumerate(results):
                 Logger.trace(f"main() processing result {r_idx}/{len(results)} for {fn.__name__}")
                 type_ = r.get("type")
@@ -459,9 +460,9 @@ async def main():
                     Logger.error("RESULT: FAIL (timeout)")
                     func_pass = False
                     if type_ == "integration":
-                        func_error_msg = f"Test timeout for input: {inp}"
+                        func_error_msgs.append(f"Test timeout for input: {inp}")
                     else:
-                        func_error_msg = "Test timeout"
+                        func_error_msgs.append("Test timeout")
                     break
 
                 if "traceback" in r:
@@ -472,8 +473,11 @@ async def main():
                     Logger.error("ERROR during execution:")
                     Logger.error(r.get("traceback"))
                     func_pass = False
-                    func_error_msg = r.get("traceback", "Unknown error")
-                    break
+                    func_error_msgs.append(r.get("traceback", "Unknown error"))
+                    if type_ == "integration":
+                        break
+                    Logger.error("RESULT: FAIL (exception)")
+                    continue
 
                 expected = r.get("expected")
                 action = r.get("action", [])
@@ -507,7 +511,7 @@ async def main():
                             Logger.success("RESULT: PASS")
                             continue
                         func_pass = False
-                        func_error_msg = f"Manual review failed for input: {inp}"
+                        func_error_msgs.append(f"Manual review failed for input: {inp}")
                     except (EOFError, KeyboardInterrupt):
                         print("")
                         Logger.warning("Interrupted by user.")
@@ -515,9 +519,10 @@ async def main():
                 else:
                     Logger.error("RESULT: FAIL")
                     func_pass = False
-                    func_error_msg = f"Expected: {expected}\nActual: {fmted_output}"
+                    func_error_msgs.append(f"Expected: {expected}\nActual: {fmted_output}")
                 break
 
+            func_error_msg = "\n".join(func_error_msgs)
             if func_pass:
                 Logger.success(f"FUNC ({fn.__name__}) RESULT: PASS")
                 passed += 1
@@ -533,6 +538,29 @@ async def main():
                 junit_testcase.failure = ("Function test failed", func_error_msg)
 
             junit_func_suite.add_testcase(junit_testcase)
+
+            for failed_result in results:
+                if failed_result.get("match"):
+                    continue
+                if "traceback" not in failed_result:
+                    continue
+                subtest_number += 1
+                subtest_name = failed_result.get("note") or getattr(
+                    failed_result.get("expected"), "__name__", str(failed_result.get("expected"))
+                )
+                junit_subtest = JUnitTestCase(
+                    name=f"{fn.__name__}::{subtest_name}",
+                    classname=f"FunctionTest.{test_number}.{subtest_number}",
+                    time=res.get("time_cost", 0.0),
+                )
+                if failed_result.get("type") == "integration":
+                    junit_subtest.error = ("Test execution error", failed_result.get("traceback", "Unknown error"))
+                else:
+                    junit_subtest.failure = (
+                        f"Subtest raised {failed_result.get('exception_type', 'Exception')}",
+                        failed_result.get("traceback", "Unknown error"),
+                    )
+                junit_func_suite.add_testcase(junit_subtest)
 
             tcost = res.get("time_cost")
             if tcost is not None:

@@ -8,6 +8,9 @@ mock 未同步，模块代码会在测试中抛出 TypeError，且失败信息�
 import inspect
 import re
 import asyncio
+import sys
+import types
+from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
 from core.builtins.session.internal import MessageSession
@@ -184,6 +187,123 @@ async def _test_function_entry_timeout_resets_on_progress():
     return not result.get("timeout") and all(entry.get("match") for entry in result.get("results", []))
 
 
+async def _test_unit_subtest_exception_keeps_running_and_counts_once():
+    """unit 子测试抛异常应记录后继续跑后续子测试，runner 只计一次失败。"""
+    import tester as tester_module
+
+    async def boom():
+        raise RuntimeError("unit boom")
+
+    async def fine():
+        return True
+
+    from core.tester.decorator import func_case as _fc
+
+    @_fc
+    async def mixed(tester):
+        await tester.test(boom, "失败子测试")
+        await tester.test(fine, "成功子测试")
+        return tester
+
+    with (
+        patch("core.tester.process.close_db", new=AsyncMock()),
+        patch("core.tester.process.init_db", new=AsyncMock(return_value=True)),
+        patch("core.tester.process.load_modules", new=AsyncMock()),
+    ):
+        from core.tester.process import run_function_entry
+
+        res = await run_function_entry(mixed, is_ci=True)
+
+    class FakeSuite:
+        def __init__(self, name):
+            self.name = name
+            self.test_cases = []
+
+        def add_testcase(self, tc):
+            self.test_cases.append(tc)
+
+    func_suite = FakeSuite("Function Tests")
+    registry_suite = FakeSuite("Registry Tests")
+
+    class _NullLogger:
+        def __getattr__(self, name):
+            return lambda *args, **kwargs: None
+
+    fake_spec = types.SimpleNamespace(
+        name="tests__fake_case",
+        loader=types.SimpleNamespace(exec_module=lambda mod: None),
+    )
+    original_modules = dict(sys.modules)
+
+    with (
+        patch.object(tester_module, "Logger", _NullLogger()),
+        patch.object(tester_module, "init_db", new=AsyncMock(return_value=True)),
+        patch.object(tester_module, "close_db", new=AsyncMock()),
+        patch.object(tester_module, "load_modules", new=AsyncMock()),
+        patch.object(tester_module, "get_registry", return_value=[]),
+        patch.object(tester_module, "run_function_entry", new=AsyncMock(return_value=res)),
+        patch.object(tester_module.glob, "glob", return_value=[str(Path("tests/unit/_fake_case.py"))]),
+        patch.object(tester_module.importlib.util, "spec_from_file_location", return_value=fake_spec),
+        patch.object(tester_module, "junit_func_suite", func_suite),
+        patch.object(tester_module, "junit_registry_suite", registry_suite),
+        patch.object(tester_module, "junit_report") as junit_report,
+        patch.object(tester_module.os.path, "isdir", return_value=True),
+        patch.object(tester_module.importlib.util, "module_from_spec", return_value=types.SimpleNamespace()),
+    ):
+        sys.modules.clear()
+        sys.modules.update(original_modules)
+        junit_report.test_suites = []
+        fake_inspect = types.SimpleNamespace(
+            getmembers=lambda mod, predicate=None: [("mixed", mixed)],
+            isfunction=lambda obj: obj is mixed,
+        )
+        await tester_module.main(inspect_module=fake_inspect)
+
+    names = [tc.name for tc in func_suite.test_cases]
+    failed_cases = [tc for tc in func_suite.test_cases if tc.failure or tc.error]
+    checks = {
+        "exception_recorded": res["results"][0].get("exception_type") == "RuntimeError",
+        "kept_running": len(res["results"]) == 2 and res["results"][1].get("match") is True,
+        "two_cases": len(func_suite.test_cases) == 2,
+        "no_double_count": len(failed_cases) == 2,
+        "subtest_named": any("失败子测试" in name for name in names),
+    }
+    if not all(checks.values()):
+        raise AssertionError(
+            f"runner accounting regression: {checks}; "
+            f"cases={[(tc.name, bool(tc.failure), bool(tc.error)) for tc in func_suite.test_cases]}"
+        )
+    return True
+
+
+async def _test_function_entry_does_not_misclassify_test_timeout():
+    """子测试自身的 TimeoutError 应保留堆栈，不能冒充 runner 无进展超时。"""
+    from core.tester.process import run_function_entry
+
+    async def inner_timeout():
+        raise TimeoutError("inner deadline")
+
+    async def timed_test(tester):
+        await tester.test(inner_timeout, "内部超时")
+        return tester
+
+    with (
+        patch("core.tester.process.close_db", new=AsyncMock()),
+        patch("core.tester.process.init_db", new=AsyncMock(return_value=True)),
+        patch("core.tester.process.load_modules", new=AsyncMock()),
+    ):
+        result = await run_function_entry(timed_test, is_ci=True, timeout=0.2)
+    (subtest,) = result.get("results", [])
+    return (
+        not result.get("timeout")
+        and subtest.get("match") is False
+        and subtest.get("exception_type") == "TimeoutError"
+        and "inner deadline" in subtest.get("exception_message", "")
+        and "inner deadline" in subtest.get("traceback", "")
+        and subtest.get("note") == "内部超时"
+    )
+
+
 async def _test_function_entry_init_failure_is_error():
     """数据库初始化失败属于基础设施错误，不能被记为跳过或通过。"""
     from core.tester.process import run_function_entry
@@ -213,6 +333,8 @@ async def test_tester_framework(tester: Tester):
     await tester.test(_test_integrate_expected_exception_is_not_runner_error, "func_case 预期异常匹配测试")
     await tester.test(_test_function_entry_timeout_is_structured_failure, "func_case 超时结构化失败测试")
     await tester.test(_test_function_entry_timeout_resets_on_progress, "func_case 超时按进展刷新测试")
+    await tester.test(_test_unit_subtest_exception_keeps_running_and_counts_once, "unit 子测试异常续跑且计数一次测试")
+    await tester.test(_test_function_entry_does_not_misclassify_test_timeout, "子测试超时不冒充 runner 超时测试")
     await tester.test(_test_function_entry_init_failure_is_error, "func_case 初始化错误不可跳过测试")
 
     return tester

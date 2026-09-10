@@ -1,5 +1,6 @@
 """配置模板扫描的单元测试。"""
 
+import json
 import os
 import shutil
 import subprocess
@@ -107,6 +108,8 @@ def _test_core_templates_are_grouped_into_domain_files():
 
 def _test_fresh_process_generates_all_grouped_core_templates():
     """全新进程只导入扫描器时，也应生成所有领域配置文件与独立说明注释。"""
+    from core.config.jobqueue import JobQueueConfig
+
     tmp = Path(tempfile.mkdtemp(prefix="akari_cfg_grouped_"))
     try:
         current_config = MINIMAL_CONFIG.replace("config_version = 3", f"config_version = {config_version}")
@@ -147,11 +150,14 @@ def _test_fresh_process_generates_all_grouped_core_templates():
         with (tmp / "webrender.toml").open("rb") as webrender_file:
             webrender_values = tomllib.load(webrender_file)
         jobqueue_text = (tmp / "jobqueue.toml").read_text(encoding="utf-8")
-        intro = "# JobQueue 必须在 database 与 websocket 中选择一套完整后端。"
-        database = "# database：无需额外部署 Hub"
-        websocket = "# websocket：经 Hub 实时路由"
-        consistency = "# 如需分布式部署，分布节点必须使用同一类型的后端。"
-        backend = 'jobqueue_backend = "websocket"'
+        locale_path = Path(__file__).resolve().parents[2] / "core" / "locales" / "zh_cn.json"
+        locale = json.loads(locale_path.read_text(encoding="utf-8"))
+        comment_keys = JobQueueConfig.__config_fields__["jobqueue_backend"]["standalone_comment_keys"]
+        jobqueue_lines = jobqueue_text.splitlines()
+        expected_lines = [f"# {locale[key]}" for key in comment_keys]
+        comment_positions = [jobqueue_lines.index(line) if line in jobqueue_lines else -1 for line in expected_lines]
+        backend_line = 'jobqueue_backend = "websocket"'
+        backend_positions = [i for i, line in enumerate(jobqueue_lines) if line.startswith(backend_line)]
         return (
             result.returncode == 0
             and not any(key.startswith("jobqueue_") for key in core_values["config"])
@@ -162,11 +168,11 @@ def _test_fresh_process_generates_all_grouped_core_templates():
             and len(jobqueue_values["jobqueue_secret"]["jobqueue_websocket_token"]) >= 43
             and "s3_bucket" in s3_values["s3"]
             and "remote_web_render_url" in webrender_values["webrender"]
-            and jobqueue_text.index(intro)
-            < jobqueue_text.index(database)
-            < jobqueue_text.index(websocket)
-            < jobqueue_text.index(consistency)
-            < jobqueue_text.index(backend)
+            and all(position >= 0 for position in comment_positions)
+            and len(set(comment_positions)) == len(comment_positions)
+            and comment_positions == sorted(comment_positions)
+            and len(backend_positions) == 1
+            and comment_positions[-1] < backend_positions[0]
         )
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

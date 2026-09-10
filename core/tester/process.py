@@ -21,6 +21,10 @@ from .expectations import Expectation
 DEFAULT_FUNCTION_TEST_TIMEOUT = 120.0
 
 
+class _FunctionTestNoProgress(Exception):
+    """Raised only when the func_case watchdog observes no completed subtest."""
+
+
 def _infrastructure_error(input_, expected, message: str) -> list[dict]:
     """把测试基础设施故障转换为可被 runner 计入失败的结果。"""
     return [{"input": input_, "expected": expected, "traceback": message, "action": []}]
@@ -109,7 +113,7 @@ async def run_function_entry(
                     progress_task.cancel()
                     function_task.cancel()
                     await asyncio.gather(progress_task, function_task, return_exceptions=True)
-                    raise TimeoutError
+                    raise _FunctionTestNoProgress
             finally:
                 if progress_task is not None and not progress_task.done():
                     progress_task.cancel()
@@ -119,7 +123,7 @@ async def run_function_entry(
                     await asyncio.gather(function_task, return_exceptions=True)
         if isinstance(returned, TesterClass):
             tester = returned
-    except TimeoutError:
+    except _FunctionTestNoProgress:
         elapsed = time.perf_counter() - start
         entries = tester.get_entries() if tester is not None else []
         results = tester.get_results() if tester is not None else []
