@@ -2,14 +2,14 @@
 
 import asyncio
 from types import SimpleNamespace
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, parse_qsl, urlsplit
 from unittest.mock import AsyncMock, patch
 
 import core.database as database
 from core.database.models import JobQueuesTable
 from core.database.link import prepare_db_link
-from core.queue.base import QueueTaskManager
 from core.queue.server import JobQueueServer
+from core.queue.transport import PROTOCOL_VERSION
 from core.scheduler import Scheduler, SchedulerLifecycle
 from core.tester import Tester, func_case
 from core.types import Module
@@ -25,16 +25,23 @@ def _query_fields(link: str) -> dict[str, list[str]]:
 def _test_sqlite_defaults_are_added():
     link = prepare_db_link("sqlite://database/save.db")
     fields = _query_fields(link)
-    return fields.get("journal_mode") == ["WAL"] and fields.get("busy_timeout") == ["30000"]
+    keys = [key for key, _ in parse_qsl(urlsplit(link).query)]
+    return (
+        fields.get("journal_mode") == ["WAL"]
+        and fields.get("busy_timeout") == ["30000"]
+        and keys.index("busy_timeout") < keys.index("journal_mode")
+    )
 
 
 def _test_sqlite_explicit_fields_are_preserved():
-    link = prepare_db_link("sqlite://database/save.db?busy_timeout=1000&journal_mode=DELETE&cache_size=2000")
+    link = prepare_db_link("sqlite://database/save.db?journal_mode=DELETE&cache_size=2000&busy_timeout=1000")
     fields = _query_fields(link)
+    keys = [key for key, _ in parse_qsl(urlsplit(link).query)]
     return (
         fields.get("busy_timeout") == ["1000"]
         and fields.get("journal_mode") == ["DELETE"]
         and fields.get("cache_size") == ["2000"]
+        and keys.index("busy_timeout") < keys.index("journal_mode")
     )
 
 
@@ -322,12 +329,17 @@ async def _test_reload_keeps_pumping_remote_results():
     old_is_running = JobQueueServer.is_running
     result_task_id = await JobQueuesTable.add_task("QUEUE-REMOTE", "reload-result", {})
     result_task_id = str(result_task_id)
-    await JobQueuesTable.filter(task_id=result_task_id).update(status="done", result={"ready": True})
+    await JobQueuesTable.filter(task_id=result_task_id).update(
+        status="done", result={"rpc": PROTOCOL_VERSION, "value": {"ready": True}}
+    )
     handler_done = asyncio.Event()
 
+    waiter = asyncio.get_running_loop().create_future()
+    JobQueueServer._pending[result_task_id] = waiter
+
     async def handler():
-        result = await QueueTaskManager.add(result_task_id)
-        if result == {"ready": True}:
+        result = await waiter
+        if result.envelope == {"rpc": PROTOCOL_VERSION, "value": {"ready": True}}:
             handler_done.set()
 
     async def close_connections():
@@ -338,8 +350,6 @@ async def _test_reload_keeps_pumping_remote_results():
 
     handler_task = asyncio.create_task(handler(), name="test-database-reload-remote-waiter")
     JobQueueServer._process_tasks.add(handler_task)
-    while result_task_id not in QueueTaskManager.tasks:
-        await asyncio.sleep(0)
 
     reload_task = None
     poller_task = None
@@ -373,7 +383,7 @@ async def _test_reload_keeps_pumping_remote_results():
             return_exceptions=True,
         )
         JobQueueServer._process_tasks.discard(handler_task)
-        QueueTaskManager.tasks.pop(result_task_id, None)
+        JobQueueServer._pending.pop(result_task_id, None)
         await JobQueuesTable.filter(task_id=result_task_id).delete()
         JobQueueServer.pause_event.set()
         JobQueueServer.is_running = old_is_running

@@ -34,6 +34,12 @@ async def _none():
     return None
 
 
+def _current_client_peer_id() -> str | None:
+    from core.constants import Info
+
+    return (Info.peer_id or None) if Info.peer_role == "client" else None
+
+
 @define
 class EventInfo:
     """可跨进程序列化的平台事件上下文。"""
@@ -43,6 +49,7 @@ class EventInfo:
     target_id: str | None = None
     target_from: str | None = None
     client_name: str | None = None
+    owner_peer_id: str | None = None
     sender_id: str | None = None
     sender_from: str | None = None
     target_union_info: TargetUnionInfo | None = None
@@ -59,6 +66,7 @@ class EventInfo:
         target_id: str | None = None,
         target_from: str | None = None,
         client_name: str | None = None,
+        owner_peer_id: str | None = None,
         sender_id: str | None = None,
         sender_from: str | None = None,
         create: bool = True,
@@ -84,6 +92,7 @@ class EventInfo:
             target_id=target_id,
             target_from=target_from,
             client_name=client_name,
+            owner_peer_id=owner_peer_id or _current_client_peer_id(),
             sender_id=sender_id,
             sender_from=sender_from,
             target_union_info=target_union_info,
@@ -123,6 +132,9 @@ class SessionInfo:
     target_id: str
     target_from: str
     client_name: str
+    # 与平台 SDK 上下文绑定的入站会话必须回到原始 Client 实例；
+    # 主动会话留空以使用服务组 anycast。
+    owner_peer_id: str | None = None
     sender_id: str | None = None
     sender_from: str | None = None
     sender_name: str | None = None
@@ -197,6 +209,7 @@ class SessionInfo:
         cls,
         target_id: str,
         client_name: str | None = None,
+        owner_peer_id: str | None = None,
         target_from: str | None = None,
         sender_id: str | None = None,
         bot_id: str | None = None,
@@ -251,6 +264,7 @@ class SessionInfo:
             target_id=target_id,
             target_from=target_from,
             client_name=client_name,
+            owner_peer_id=owner_peer_id or (None if fetch else _current_client_peer_id()),
             sender_id=sender_id,
             sender_from=sender_from,
             sender_name=sender_name,
@@ -287,10 +301,32 @@ class SessionInfo:
             _c = inject_features(session=_c, features=features)
 
         if fetch:
-            get_params = Alive.get_infos(client_name)
+            get_params = {}
+            if client_name:
+                from core.queue.peer import ServiceRoute
+                from core.queue.rpc import get_default_peer
+
+                routed_peer = await get_default_peer().registry.select_route(
+                    ServiceRoute(service=client_name, routing_key=target_id, role="client")
+                )
+                if routed_peer is not None:
+                    Alive.refresh_peer(
+                        routed_peer.peer_id,
+                        routed_peer.service,
+                        role=routed_peer.role,
+                        state=routed_peer.state,
+                        capabilities=list(routed_peer.capabilities),
+                        metadata=routed_peer.metadata,
+                        lease_until=routed_peer.lease_until,
+                    )
+                    get_params = routed_peer.metadata
             if get_params:
                 _c.ctx_slot = get_params.get("ctx_slot_index", 999)
                 features = get_params.get("features", None)
+                if isinstance(features, dict):
+                    from core.builtins.converter import converter
+
+                    features = converter.structure(features, Features)
                 if features:
                     _c = inject_features(session=_c, features=features)
 

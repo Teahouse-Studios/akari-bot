@@ -337,6 +337,7 @@ class CFGManager:
         table_name: str | None = None,
         _global: bool = False,
         _generate: bool = False,
+        standalone_comment_keys: tuple[str, ...] = (),
     ) -> Any:
         """
         获取配置文件中的配置项。
@@ -348,6 +349,7 @@ class CFGManager:
         :param table_name: 配置项表名。
         :param _global: 内部变量，是否在所有表中查找配置项。（默认为False）
         :param _generate: 内部变量，生成配置文件时使用。（默认为False）
+        :param standalone_comment_keys: 生成字段前独立注释块所使用的 i18n 键
 
         :return: 配置文件中对应配置项的值。
         """
@@ -430,7 +432,7 @@ class CFGManager:
                 else:
                     cfg_type = cfg_type if cfg_type else type(default)
 
-            cls.write(q, default, cfg_type, secret, table_name, _generate)
+            cls.write(q, default, cfg_type, secret, table_name, _generate, standalone_comment_keys)
             return default
 
         # if cfg_type provided, start type check
@@ -479,6 +481,7 @@ class CFGManager:
         secret: bool = False,
         table_name: str | None = None,
         _generate: bool = False,
+        standalone_comment_keys: tuple[str, ...] = (),
     ):
         """
         修改配置文件中的配置项。
@@ -488,6 +491,7 @@ class CFGManager:
         :param cfg_type: 配置项类型。
         :param secret: 是否为密钥配置项。（默认为False）
         :param table_name: 配置项表名。
+        :param standalone_comment_keys: 生成字段前独立注释块所使用的 i18n 键。
         """
         cls.watch()
         q = q.lower()
@@ -614,6 +618,15 @@ class CFGManager:
                         cls.values[cfg_name][target].add(toml_comment(table_comment))
 
                 try:
+                    standalone_comments = [
+                        text
+                        for key in standalone_comment_keys
+                        if (text := _localized_config_text(get_locale, key)) is not None
+                    ]
+                    if standalone_comments:
+                        cls.values[cfg_name][target].add(nl())
+                        for standalone_comment in standalone_comments:
+                            cls.values[cfg_name][target].add(toml_comment(standalone_comment))
                     cls.values[cfg_name][target].add(q, value)
                 except KeyAlreadyPresent:
                     cls.values[cfg_name][target][q] = value
@@ -736,6 +749,7 @@ def Config(
     get_url: bool = False,
     _global: bool = False,
     _generate: bool = False,
+    standalone_comment_keys: tuple[str, ...] = (),
 ) -> Any:
     """
     获取配置文件中的配置项。
@@ -748,12 +762,22 @@ def Config(
     :param get_url: 是否为URL配置项。（默认为False）
     :param _global: 内部变量，是否在所有表中查找配置项。（默认为False）
     :param _generate: 内部变量，生成配置文件时使用。（默认为False）
+    :param standalone_comment_keys: 生成字段前独立注释块所使用的 i18n 键
     :return: 配置文件中对应配置项的值。
     """
     if get_url:
-        v = format_url(CFGManager.get(q, default, str, secret, table_name, _global, _generate))
+        v = format_url(CFGManager.get(q, default, str, secret, table_name, _global, _generate, standalone_comment_keys))
     else:
-        v = CFGManager.get(q, default, cfg_type, secret, table_name, _global, _generate)
+        v = CFGManager.get(
+            q,
+            default,
+            cfg_type,
+            secret,
+            table_name,
+            _global,
+            _generate,
+            standalone_comment_keys,
+        )
     return v
 
 

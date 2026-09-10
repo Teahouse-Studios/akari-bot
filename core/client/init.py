@@ -1,15 +1,18 @@
 import asyncio
 
 from core.builtins.bot import Bot
+from core.builtins.converter import converter
+from core.builtins.session.features import Features
 from core.constants import Info
 from core.database import close_db, init_db
 from core.i18n import connect_locale_snapshot
 from core.logger import Logger
 from core.queue.client import JobQueueClient
+from core.queue.backend import create_jobqueue_backend
+from core.queue.rpc import set_default_peer
 
 
 _queue_task: asyncio.Task[None] | None = None
-_keepalive_task: asyncio.Task[None] | None = None
 _initialization_task: asyncio.Task[None] | None = None
 QUEUE_RESTART_DELAY = 0.1
 
@@ -26,26 +29,6 @@ async def check_queue() -> None:
         else:
             Logger.error(f"Client queue poller for {Info.client_name} returned unexpectedly, restarting.")
         await asyncio.sleep(QUEUE_RESTART_DELAY)
-
-
-async def _keepalive_loop(
-    target_prefix_list: list | None,
-    sender_prefix_list: list | None,
-) -> None:
-    while True:
-        await asyncio.sleep(60)
-        try:
-            await JobQueueClient.send_keepalive_signal_to_server(
-                Info.client_name,
-                target_prefix_list=target_prefix_list,
-                sender_prefix_list=sender_prefix_list,
-                ctx_slot_index=Bot.fetched_session_ctx_slot,
-                features=Bot.ContextSlots[Bot.fetched_session_ctx_slot].features,
-            )
-        except asyncio.CancelledError:
-            raise
-        except Exception:
-            Logger.exception(f"Failed to send keepalive signal for {Info.client_name}: ")
 
 
 def _restart_finished_task(task: asyncio.Task[None] | None, name: str) -> bool:
@@ -65,7 +48,9 @@ async def _client_init_once(
     load_module_db=False,
     rename_logger: bool = True,
 ) -> None:
-    global _queue_task, _keepalive_task
+    global _queue_task
+
+    set_default_peer(JobQueueClient)
 
     started_tasks: list[tuple[str, asyncio.Task[None]]] = []
     database_attempted = False
@@ -75,22 +60,25 @@ async def _client_init_once(
         database_attempted = True
         if not await init_db(load_module_db=load_module_db, generate_schemas=False):
             raise RuntimeError(f"Failed to initialize database for {Info.client_name}.")
-        await JobQueueClient.send_keepalive_signal_to_server(
-            Info.client_name,
-            target_prefix_list=target_prefix_list,
-            sender_prefix_list=sender_prefix_list,
-            ctx_slot_index=Bot.fetched_session_ctx_slot,
-            features=Bot.ContextSlots[Bot.fetched_session_ctx_slot].features,
+        features = Bot.ContextSlots[Bot.fetched_session_ctx_slot].features
+        feature_data = converter.unstructure(features, Features)
+        JobQueueClient.configure_backend(create_jobqueue_backend())
+        JobQueueClient.configure_peer(
+            role="client",
+            service=Info.client_name,
+            capabilities=["rpc", "signals", *(name for name, supported in feature_data.items() if supported)],
+            metadata={
+                "target_prefix_list": target_prefix_list or [],
+                "sender_prefix_list": sender_prefix_list or [],
+                "ctx_slot_index": Bot.fetched_session_ctx_slot,
+                "features": feature_data,
+            },
         )
         if queue and _restart_finished_task(_queue_task, "Client queue poller"):
             _queue_task = asyncio.create_task(check_queue(), name=f"{Info.client_name}-queue-poller")
             started_tasks.append(("queue", _queue_task))
-        if _restart_finished_task(_keepalive_task, "Client keepalive task"):
-            _keepalive_task = asyncio.create_task(
-                _keepalive_loop(target_prefix_list, sender_prefix_list),
-                name=f"{Info.client_name}-keepalive",
-            )
-            started_tasks.append(("keepalive", _keepalive_task))
+        if queue:
+            await JobQueueClient.wait_ready()
         connect_locale_snapshot("akari-bot")
         Logger.info(f"Hello, {Info.client_name}!")
     except BaseException:
@@ -103,9 +91,14 @@ async def _client_init_once(
         for name, task in started_tasks:
             if name == "queue" and _queue_task is task:
                 _queue_task = None
-            elif name == "keepalive" and _keepalive_task is task:
-                _keepalive_task = None
         if database_attempted:
+            if started_tasks or JobQueueClient._registered:
+                try:
+                    await JobQueueClient.begin_shutdown()
+                    await JobQueueClient.cancel_process_tasks()
+                    await JobQueueClient.stop_job_queue()
+                except Exception:
+                    Logger.exception(f"Failed to roll back JobQueue peer for {Info.client_name}.")
             await close_db()
         raise
 
@@ -138,19 +131,24 @@ async def client_init(
 
 
 async def client_cleanup() -> None:
-    """取消客户端初始化、队列和保活任务，并关闭数据库连接。"""
-    global _queue_task, _keepalive_task, _initialization_task
-    tasks = list(
-        dict.fromkeys(task for task in (_initialization_task, _queue_task, _keepalive_task) if task is not None)
-    )
-    for task in tasks:
-        if not task.done():
-            task.cancel()
-    await asyncio.gather(*tasks, return_exceptions=True)
+    """取消客户端初始化和队列任务，并关闭数据库连接。"""
+    global _queue_task, _initialization_task
+    initialization_task = _initialization_task
+    if initialization_task is not None and not initialization_task.done():
+        initialization_task.cancel()
+        await asyncio.gather(initialization_task, return_exceptions=True)
+
+    queue_task = _queue_task
+    if queue_task is not None and not queue_task.done():
+        async with JobQueueClient.shutdown_window():
+            queue_task.cancel()
+            await asyncio.gather(queue_task, return_exceptions=True)
+            await JobQueueClient.stop_job_queue()
+    else:
+        await JobQueueClient.cancel_process_tasks()
+        await JobQueueClient.stop_job_queue()
     _initialization_task = None
     _queue_task = None
-    _keepalive_task = None
-    await JobQueueClient.cancel_process_tasks()
     await Bot.cancel_pending_messages()
     await close_db()
 

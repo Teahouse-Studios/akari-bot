@@ -241,6 +241,18 @@ async def update_database_to_v4(conn):
     await migrate_wiki_url_rules(conn)
 
 
+async def update_database_to_v5(conn):
+    """将数据库升级至 v5：丢弃旧任务队列表并按当前模型重新创建。
+
+    JobQueue 记录仅表示进程间的临时在途任务，不属于需要跨版本保留的业务数据。协议 v2 的表结构
+    与旧协议不兼容，因此升级时直接删除旧表，避免保留无法可靠解释或继续执行的历史任务。
+
+    :param conn: 数据库连接。
+    """
+    await conn.execute_query(f"DROP TABLE IF EXISTS {quote_ident('job_queues')};")
+    await Tortoise.generate_schemas(safe=True)
+
+
 async def update_database():
     database_list = fetch_module_db()
     await Tortoise.init(db_url=get_db_link(), modules={"models": ["core.database.models"] + database_list})
@@ -328,4 +340,11 @@ async def update_database():
 
             await query_dbver.delete()
             await DBVersion.create(version=4)
+        if db_version < 5:
+            query_dbver = await DBVersion.first()
+
+            await update_database_to_v5(conn)
+
+            await query_dbver.delete()
+            await DBVersion.create(version=5)
     await Tortoise.close_connections()

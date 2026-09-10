@@ -19,10 +19,11 @@ def apply_monkey_patch(module, monkey_patches: dict[str, object] | None):
 async def load_modules(show_logs=True, monkey_patches: dict[str, object] | None = None, load_fixtures: bool = True):
     import modules
 
-    # Bot.post_message 等主动推送路径通过 exports["JobQueueServer"] 取用队列服务，
-    # 而该导出是在 core.queue.server 导入时注册的。生产环境由 server 进程负责导入，
-    # 测试环境若不显式导入，所有触发推送的代码路径都会以 KeyError 失败。
-    import core.queue.server  # noqa: F401
+    # 测试显式配置默认 RPC peer，与生产入口一致，避免依赖模块导入顺序。
+    from core.queue.server import JobQueueServer
+    from core.queue.rpc import set_default_peer
+
+    set_default_peer(JobQueueServer)
 
     err_prompt = []
     locale_loaded_err = build_locale_snapshot(list(lang_list.keys()), all_locales_path, "akari-bot")

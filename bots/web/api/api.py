@@ -25,7 +25,7 @@ from core.database.models import (
     UnionDeleteBlocked,
 )
 from core.logger import Logger
-from core.queue.client import JobQueueClient
+from core.queue.contracts import ServerAPI
 from .auth import verify_jwt
 from bots.web.context import resolve_media_url
 
@@ -216,8 +216,8 @@ async def server_info(request: Request):
         "bot": {
             "started_time": started_time.timestamp(),
             "python_version": platform.python_version(),
-            "version": await JobQueueClient.get_bot_version(),
-            "web_render_status": await JobQueueClient.get_web_render_status(),
+            "version": await ServerAPI.get_bot_version(),
+            "web_render_status": await ServerAPI.get_web_render_status(),
         },
         "cpu": {"cpu_brand": get_cpu_info()["brand_raw"], "cpu_percent": psutil.cpu_percent(interval=1)},
         "memory": {
@@ -647,7 +647,7 @@ async def delete_sender_info(request: Request, sender_id: str):
 async def get_modules_list(request: Request):
     try:
         verify_jwt(request)
-        modules_list = await JobQueueClient.get_modules_list()
+        modules_list = await ServerAPI.get_modules_list()
         return {"modules": modules_list}
     except HTTPException as e:
         raise e
@@ -661,7 +661,7 @@ async def get_modules_list(request: Request):
 async def get_modules_info(request: Request, locale: str = Query(default_locale)):
     try:
         verify_jwt(request)
-        modules = await JobQueueClient.get_modules_info(locale=locale)
+        modules = await ServerAPI.get_modules_info(locale=locale)
 
         return {"modules": modules}
     except HTTPException as e:
@@ -676,7 +676,7 @@ async def get_modules_info(request: Request, locale: str = Query(default_locale)
 async def search_related_module(request: Request, module_name: str):
     try:
         verify_jwt(request)
-        modules = await JobQueueClient.get_module_related(module=module_name)
+        modules = await ServerAPI.get_module_related(module=module_name)
         return {"modules": modules}
     except HTTPException as e:
         raise e
@@ -690,7 +690,7 @@ async def search_related_module(request: Request, module_name: str):
 async def get_module_helpdoc(request: Request, module_name: str, locale: str = Query(default_locale)):
     try:
         verify_jwt(request)
-        help_doc = await JobQueueClient.get_module_helpdoc(module=module_name, locale=locale)
+        help_doc = await ServerAPI.get_module_helpdoc(module=module_name, locale=locale)
         if not help_doc:
             raise HTTPException(status_code=404, detail="Not found")
         return help_doc
@@ -707,7 +707,7 @@ async def reload_module(request: Request, module_name: str):
     ip = get_client_ip(request)
     try:
         verify_jwt(request)
-        status = await JobQueueClient.post_module_action(module=module_name, action="reload")
+        status = await ServerAPI.post_module_action(module=module_name, action="reload")
         if not status:
             Logger.warning(f"[WebUI] {ip} failed to reload module: {module_name}")
             raise HTTPException(status_code=422, detail="Reload modules failed")
@@ -726,7 +726,7 @@ async def load_module(request: Request, module_name: str):
     ip = get_client_ip(request)
     try:
         verify_jwt(request)
-        status = await JobQueueClient.post_module_action(module=module_name, action="load")
+        status = await ServerAPI.post_module_action(module=module_name, action="load")
         if not status:
             Logger.warning(f"[WebUI] {ip} failed to load module: {module_name}")
             raise HTTPException(status_code=422, detail="Load modules failed")
@@ -746,7 +746,7 @@ async def unload_module(request: Request, module_name: str):
     ip = get_client_ip(request)
     try:
         verify_jwt(request)
-        status = await JobQueueClient.post_module_action(module=module_name, action="unload")
+        status = await ServerAPI.post_module_action(module=module_name, action="unload")
         if not status:
             Logger.warning(f"[WebUI] {ip} failed to unload module: {module_name}")
             raise HTTPException(status_code=422, detail="Unload modules failed")

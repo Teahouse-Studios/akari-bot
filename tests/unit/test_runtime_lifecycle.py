@@ -15,7 +15,7 @@ import core.server.terminate as server_terminate
 import core.utils.web_render as web_render_module
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
-from core.exports import exports
+from core.queue.contracts import ServerAPI
 from core.tester import Tester, func_case
 
 
@@ -50,6 +50,7 @@ async def _test_server_notices_dead_queue_poller() -> bool:
         patch.object(server_run, "init_async", new=AsyncMock()),
         patch.object(server_run, "load_prompt", new=AsyncMock()),
         patch.object(server_run.JobQueueServer, "check_job_queue", new=fail_queue),
+        patch.object(server_run.JobQueueServer, "wait_ready", new=AsyncMock()),
         patch.object(server_run, "cleanup_sessions", new=cleanup),
     ):
         try:
@@ -89,6 +90,7 @@ async def _test_server_keeps_queue_poller_alive_for_cleanup() -> bool:
         patch.object(server_run, "init_async", new=AsyncMock()),
         patch.object(server_run, "load_prompt", new=load_prompt),
         patch.object(server_run.JobQueueServer, "check_job_queue", new=queue_poller),
+        patch.object(server_run.JobQueueServer, "wait_ready", new=AsyncMock()),
         patch.object(server_run, "cleanup_sessions", new=cleanup),
     ):
         await server_run.main(process_stop_event)
@@ -123,7 +125,6 @@ async def _test_shutdown_cancels_background_initialization() -> bool:
             patch.object(server_init, "load_secret", new=AsyncMock()),
             patch.object(server_init, "init_background_task", new=slow_background_init, create=True),
             patch.object(background_tasks, "init_background_task", new=slow_background_init),
-            patch.object(server_terminate.JobQueuesTable, "clear_task", new=AsyncMock()),
             patch.object(server_terminate.SchedulerLifecycle, "begin_shutdown"),
             patch.object(server_terminate.SchedulerLifecycle, "shutdown", new=AsyncMock()),
             patch.object(server_terminate.BackgroundTaskLifecycle, "run_cleanup", new=AsyncMock()),
@@ -234,20 +235,15 @@ async def _test_client_queue_poller_recovers_from_transient_failure() -> bool:
         await release.wait()
 
     old_queue_task = client_init_module._queue_task
-    old_keepalive_task = client_init_module._keepalive_task
     old_initialization_task = client_init_module._initialization_task
     client_init_module._queue_task = None
-    client_init_module._keepalive_task = None
     client_init_module._initialization_task = None
     try:
         with (
             patch.object(client_init_module, "init_db", new=AsyncMock(return_value=True)),
             patch.object(client_init_module.JobQueueClient, "check_job_queue", new=flaky_queue_poller),
-            patch.object(
-                client_init_module.JobQueueClient,
-                "send_keepalive_signal_to_server",
-                new=AsyncMock(),
-            ),
+            patch.object(client_init_module.JobQueueClient, "configure_peer"),
+            patch.object(client_init_module.JobQueueClient, "wait_ready", new=AsyncMock()),
             patch.object(client_init_module.Bot, "ContextSlots", [SimpleNamespace(features=Features())]),
             patch.object(client_init_module.Bot, "fetched_session_ctx_slot", 0),
             patch.object(client_init_module, "connect_locale_snapshot"),
@@ -262,13 +258,12 @@ async def _test_client_queue_poller_recovers_from_transient_failure() -> bool:
             )
     finally:
         release.set()
-        tasks = [client_init_module._queue_task, client_init_module._keepalive_task]
+        tasks = [client_init_module._queue_task]
         for task in tasks:
             if task is not None and not task.done():
                 task.cancel()
         await asyncio.gather(*(task for task in tasks if task is not None), return_exceptions=True)
         client_init_module._queue_task = old_queue_task
-        client_init_module._keepalive_task = old_keepalive_task
         client_init_module._initialization_task = old_initialization_task
 
 
@@ -293,9 +288,7 @@ async def _test_message_background_failure_is_observed_and_cleaned() -> bool:
             raise RuntimeError("queue write failed")
 
     old_slots = bot_module.Bot.ContextSlots
-    old_queue_client = exports.get("JobQueueClient")
     bot_module.Bot.ContextSlots = [FakeContextManager()]
-    exports["JobQueueClient"] = FailingQueueClient
     session = SessionInfo(
         target_id="Lifecycle|Group|1",
         target_from="Lifecycle|Group",
@@ -306,7 +299,10 @@ async def _test_message_background_failure_is_observed_and_cleaned() -> bool:
         ctx_slot=0,
     )
     try:
-        with patch.object(bot_module.Logger, "exception") as log_exception:
+        with (
+            patch.object(ServerAPI, "receive_message", new=FailingQueueClient.send_message_to_server),
+            patch.object(bot_module.Logger, "exception") as log_exception,
+        ):
             await bot_module.Bot.process_message(session, object())
             await asyncio.wait_for(deleted.wait(), timeout=1)
             await asyncio.sleep(0)
@@ -319,10 +315,6 @@ async def _test_message_background_failure_is_observed_and_cleaned() -> bool:
                 task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)
         bot_module.Bot.ContextSlots = old_slots
-        if old_queue_client is None:
-            exports.pop("JobQueueClient", None)
-        else:
-            exports["JobQueueClient"] = old_queue_client
 
 
 async def _test_shutdown_waits_for_inflight_queue_handlers() -> bool:
@@ -346,7 +338,6 @@ async def _test_shutdown_waits_for_inflight_queue_handlers() -> bool:
     await asyncio.wait_for(started.wait(), timeout=1)
     try:
         with (
-            patch.object(server_terminate.JobQueuesTable, "clear_task", new=AsyncMock()),
             patch.object(server_terminate.SchedulerLifecycle, "begin_shutdown"),
             patch.object(server_terminate.SchedulerLifecycle, "shutdown", new=AsyncMock()),
             patch.object(server_terminate, "stop_background_task", new=AsyncMock()),
@@ -380,7 +371,7 @@ async def _test_shutdown_prevents_new_queue_claims() -> bool:
             if cleanup_started.is_set() and not allow_cleanup.is_set():
                 claimed_during_cleanup = True
 
-    async def clear_task(*args, **kwargs):
+    async def close_web_render():
         cleanup_started.set()
         # 给轮询器多次调度机会；正确实现会因 shutdown_window 持有轮询锁而无法进入。
         for _ in range(5):
@@ -391,12 +382,14 @@ async def _test_shutdown_prevents_new_queue_claims() -> bool:
     try:
         with (
             patch.object(queue, "_check_queue", new=check_queue),
-            patch.object(server_terminate.JobQueuesTable, "clear_task", new=clear_task),
+            patch.object(queue, "_start_peer", new=AsyncMock()),
+            patch.object(queue, "_maintain_peer", new=AsyncMock()),
+            patch.object(queue, "_stop_peer", new=AsyncMock()),
             patch.object(server_terminate.SchedulerLifecycle, "begin_shutdown"),
             patch.object(server_terminate.SchedulerLifecycle, "shutdown", new=AsyncMock()),
             patch.object(server_terminate, "stop_background_task", new=AsyncMock()),
             patch.object(server_terminate.BackgroundTaskLifecycle, "run_cleanup", new=AsyncMock()),
-            patch.object(server_terminate, "close_web_render", new=AsyncMock()),
+            patch.object(server_terminate, "close_web_render", new=close_web_render),
             patch.object(server_terminate.Tortoise, "close_connections", new=AsyncMock()),
         ):
             poller = asyncio.create_task(queue.check_job_queue(), name="test-server-queue-poller")
@@ -506,6 +499,9 @@ async def _test_shutdown_cleanup_keeps_result_pump_without_new_claims() -> bool:
     try:
         with (
             patch.object(queue, "_check_queue", new=check_queue),
+            patch.object(queue, "_start_peer", new=AsyncMock()),
+            patch.object(queue, "_maintain_peer", new=AsyncMock()),
+            patch.object(queue, "_stop_peer", new=AsyncMock()),
             patch.object(server_terminate.SchedulerLifecycle, "begin_shutdown"),
             patch.object(server_terminate.SchedulerLifecycle, "shutdown", new=AsyncMock()),
             patch.object(server_terminate, "stop_background_task", new=AsyncMock()),
@@ -514,7 +510,6 @@ async def _test_shutdown_cleanup_keeps_result_pump_without_new_claims() -> bool:
                 "run_cleanup",
                 new=cleanup_registered_tasks,
             ),
-            patch.object(server_terminate.JobQueuesTable, "clear_task", new=AsyncMock()),
             patch.object(server_terminate, "close_web_render", new=AsyncMock()),
             patch.object(server_terminate.Tortoise, "close_connections", new=AsyncMock()),
         ):
@@ -557,9 +552,6 @@ async def _test_shutdown_runs_registered_cleanup_before_queue_stop() -> bool:
     async def stop_queue():
         calls.append("queue")
 
-    async def clear_task(*args, **kwargs):
-        calls.append("clear")
-
     async def close_connections():
         calls.append("database")
 
@@ -578,7 +570,6 @@ async def _test_shutdown_runs_registered_cleanup_before_queue_stop() -> bool:
         patch.object(server_terminate.BackgroundTaskLifecycle, "run_cleanup", new=cleanup_registered),
         patch.object(server_terminate.JobQueueServer, "shutdown_window", new=shutdown_window),
         patch.object(server_terminate.JobQueueServer, "stop_job_queue", new=stop_queue),
-        patch.object(server_terminate.JobQueuesTable, "clear_task", new=clear_task),
         patch.object(server_terminate, "close_web_render", new=AsyncMock()),
         patch.object(server_terminate.Tortoise, "close_connections", new=close_connections),
     ):
@@ -593,7 +584,6 @@ async def _test_shutdown_runs_registered_cleanup_before_queue_stop() -> bool:
         "registered-background",
         "window-enter",
         "queue",
-        "clear",
         "database",
         "window-exit",
     ]

@@ -39,6 +39,8 @@ class Info:
     :param command_parsed: 已处理命令数量。
     :param message_parsed: 已处理消息数量。
     :param client_name: 客户端名称。
+    :param peer_id: 当前 JobQueue 进程实例 ID。
+    :param peer_role: 当前 JobQueue 进程角色。
     :param dirty_word_check: 是否启用文本过滤。
     :param web_render_status: WebRender 状态。
     :param use_url_manager: 是否启用 URLManager。
@@ -51,6 +53,9 @@ class Info:
     command_parsed = 0
     message_parsed = 0
     client_name = ""
+    # JobQueue 运行实例 ID 每次进程启动都不同；client_name 仍表示可竞争消费的服务组。
+    peer_id = ""
+    peer_role = ""
     dirty_word_check = False
     web_render_status = False
     use_url_manager = False

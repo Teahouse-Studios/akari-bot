@@ -1,10 +1,13 @@
 """bots/*/features 单元测试 - 平台能力开关的传递（需要数据库）。"""
 
+from datetime import UTC, datetime, timedelta
+
 from core.alive import Alive
 from core.builtins.bot import Bot
 from core.builtins.converter import converter
 from core.builtins.session.features import Features
 from core.builtins.session.internal import FetchedMessageSession
+from core.database.models import JobQueuePeersTable
 from core.tester import func_case, Tester
 
 FLAG = "require_check_dirty_words"
@@ -15,16 +18,35 @@ async def _test_flag_reaches_fetched_session():
     alive = Alive.values.copy()
     try:
         Alive.values.clear()
-        # 主动推送的会话没有触发消息，能力标志只能从保活信号里带过来，
+        # 主动推送的会话没有触发消息，能力标志只能从进程注册元数据里带过来，
         # wikilog 等模块的 check() 正是据此判断要不要过滤。
         for client, flag in (("DIRTYON", True), ("DIRTYOFF", False)):
             features = Features(**{FLAG: flag})
-            Alive.refresh_alive(
+            feature_data = converter.unstructure(features, Features)
+            metadata = {
+                "target_prefix_list": [f"{client}|Group"],
+                "sender_prefix_list": [client],
+                "ctx_slot_index": 1,
+                "features": feature_data,
+            }
+            lease_until = datetime.now(UTC) + timedelta(seconds=300)
+            await JobQueuePeersTable.update_or_create(
+                peer_id=f"TEST-PEER-{client}",
+                defaults={
+                    "role": "client",
+                    "service": client,
+                    "state": "ready",
+                    "capabilities": ["rpc", "signals"],
+                    "metadata": metadata,
+                    "heartbeat_at": datetime.now(UTC),
+                    "lease_until": lease_until,
+                },
+            )
+            Alive.refresh_peer(
+                f"TEST-PEER-{client}",
                 client,
-                target_prefix_list=[f"{client}|Group"],
-                sender_prefix_list=[client],
-                ctx_slot_index=1,
-                features=converter.structure(converter.unstructure(features, Features), Features),
+                metadata=metadata,
+                lease_until=lease_until,
             )
 
         for client, flag in (("DIRTYON", True), ("DIRTYOFF", False)):
@@ -39,6 +61,7 @@ async def _test_flag_reaches_fetched_session():
     except Exception:
         return False
     finally:
+        await JobQueuePeersTable.filter(peer_id__startswith="TEST-PEER-DIRTY").delete()
         Alive.values.clear()
         Alive.values.update(alive)
 

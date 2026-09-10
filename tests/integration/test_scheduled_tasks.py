@@ -12,9 +12,12 @@
 未录制的 URL 会立即失败，而不是带着重试与超时把用例拖上一分多钟。
 """
 
+from datetime import UTC, datetime, timedelta
+
 from core.alive import Alive
 from core.constants.path import cache_path
-from core.database.models import JobQueuesTable
+from core.database.models import JobQueuePeersTable, JobQueuesTable
+from core.queue.contracts import PlatformAPI
 from core.tester import func_case, Tester
 from core.tester.mock.factory import TestDataFactory
 from core.tester.mock.scheduler import (
@@ -34,11 +37,28 @@ async def _subscribe(module_name: str):
     两者缺一，任务即便正常执行也不会留下任何可观察的推送。
     """
     await TestDataFactory.ensure_target(SUBSCRIBER_TARGET, modules=[module_name])
-    Alive.refresh_alive("TEST", target_prefix_list=["TEST|Group"], sender_prefix_list=["TEST"])
+    metadata = {
+        "target_prefix_list": ["TEST|Group"],
+        "sender_prefix_list": ["TEST"],
+    }
+    lease_until = datetime.now(UTC) + timedelta(seconds=300)
+    await JobQueuePeersTable.update_or_create(
+        peer_id="TEST-PEER-SCHEDULED",
+        defaults={
+            "role": "client",
+            "service": "TEST",
+            "state": "ready",
+            "capabilities": ["rpc", "signals"],
+            "metadata": metadata,
+            "heartbeat_at": datetime.now(UTC),
+            "lease_until": lease_until,
+        },
+    )
+    Alive.refresh_peer("TEST-PEER-SCHEDULED", "TEST", metadata=metadata, lease_until=lease_until)
 
 
 async def _posted_count() -> int:
-    return await JobQueuesTable.filter(action="post_message").count()
+    return await JobQueuesTable.filter(action=PlatformAPI.post_message.name).count()
 
 
 async def _reset_queue():
@@ -213,6 +233,7 @@ async def test_scheduled_tasks(tester: Tester):
         Alive.values.clear()
         Alive.values.update(alive)
         await _reset_queue()
+        await JobQueuePeersTable.filter(peer_id="TEST-PEER-SCHEDULED").delete()
 
     return tester
 

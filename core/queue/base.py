@@ -1,141 +1,824 @@
-"""
-核心队列管理模块，实现异步任务队列的基础功能。
+"""Symmetric RPC runtime. Contracts own codecs; transports own delivery.
 
-该模块提供了一个分布式任务队列系统，支持在不同的客户端和服务器之间进行
-异步任务的调度和执行。主要功能包括：
-- 任务的异步添加和追踪
-- 任务结果的保存和获取
-- 任务执行状态的管理
-- 超时处理和错误报告
+Cancellation stops local waiting only. The receiver uses the request deadline and
+never retries a claimed request. Each peer has independent handlers and waiters.
 """
+
+from __future__ import annotations
 
 import asyncio
+import json
+import math
+import os
 import time
 import traceback
+from collections.abc import Awaitable, Callable
 from contextlib import asynccontextmanager
-from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from contextvars import ContextVar
 from uuid import uuid4
 
-from core.builtins.converter import converter
-from core.builtins.message.chain import MessageChain, MessageNodes
-from core.builtins.message.internal import I18NContext, Plain
-from core.builtins.session.info import SessionInfo
-from core.config.base import CoreConfig
 from core.constants import QueueAlreadyRunning
-from core.database.models import JobQueuesTable
-from core.exports import exports
 from core.logger import Logger
+from core.queue.backend import create_jobqueue_backend, JobQueueBackend
+from core.queue.errors import (
+    ERROR_TYPES,
+    RpcCancelledError,
+    RpcError,
+    RpcMethodNotFoundError,
+    RpcProtocolError,
+    RpcRemoteError,
+    RpcTimeoutError,
+    RpcUnavailableError,
+)
+from core.queue.transport import (
+    BatchSendResult,
+    DEFAULT_TIMEOUT_SECONDS,
+    JsonValue,
+    PROTOCOL_VERSION,
+    RpcRequest,
+    RpcResponse,
+    MessageTransport,
+)
+from core.queue.peer import (
+    PeerIdentity,
+    PeerRegistry,
+    PeerSelector,
+    ServiceRoute,
+    SignalContext,
+    SignalReceipt,
+    SignalReport,
+)
 
-if TYPE_CHECKING:
-    from core.builtins.bot import Bot
-
-
-@dataclass
-class QueueFinished:
-    """表示队列任务完成的数据结构。
-
-    Attributes:
-        task_id: 任务的唯一标识符
-        action: 执行的操作名称
-        status: 任务最终状态（如'done'、'failed'、'timeout'等）
-    """
-
-    task_id: str
-    action: str
-    status: str
-
-
-class QueueTaskManager:
-    """管理队列中待处理任务的内存状态。
-
-    该管理器维护任务的事件同步机制，允许异步等待任务完成并获取结果。
-    使用 asyncio.Event 实现任务的完成信号通知。
-
-    Attributes:
-        tasks: 字典，存储所有待处理的任务，键为task_id，值为任务状态字典
-              包含'flag'（asyncio.Event）和'result'（执行结果）
-    """
-
-    tasks = {}
-    TASK_TIMEOUT_SECONDS = JobQueuesTable.ACTIVE_TIMEOUT_SECONDS
-
-    @classmethod
-    async def add(cls, task_id: str):
-        """添加任务并等待其完成。
-
-        该方法会阻塞直到任务完成（通过 set_result 方法设置），然后返回结果。
-        无论成功或失败，都会清理任务记录。
-
-        :param task_id: 任务的唯一标识符
-        :return: 任务执行的结果字典，如果发生错误返回 None
-        """
-        try:
-            cls.tasks[task_id] = {"flag": asyncio.Event()}
-            await asyncio.wait_for(cls.tasks[task_id]["flag"].wait(), timeout=cls.TASK_TIMEOUT_SECONDS)
-            return cls.tasks[task_id]["result"]
-        except TimeoutError:
-            Logger.error(f"Queue task {task_id} timed out while waiting for the remote process.")
-            return None
-        except Exception as e:
-            Logger.error(f"Error in QueueTaskManager: {e}")
-            return None
-        finally:
-            if task_id in cls.tasks:
-                del cls.tasks[task_id]
-
-    @classmethod
-    async def set_result(cls, task_id: str, result: dict):
-        """设置任务结果并通知等待方。
-
-        该方法将结果保存到任务记录，并触发 asyncio.Event 以唤醒等待该任务的协程。
-
-        :param task_id: 任务的唯一标识符
-        :param result: 任务执行的结果字典
-        """
-        if task_id in cls.tasks:
-            cls.tasks[task_id]["result"] = result
-            cls.tasks[task_id]["flag"].set()
+current_peer: ContextVar[type[JobQueueBase] | None] = ContextVar("rpc_current_peer", default=None)
+current_request: ContextVar[RpcRequest | None] = ContextVar("rpc_current_request", default=None)
+type Handler = Callable[[JsonValue], Awaitable[JsonValue]]
+type SignalHandler = Callable[[SignalContext, JsonValue], Awaitable[JsonValue]]
 
 
 class JobQueueBase:
-    """队列任务的基类，定义了队列管理的核心接口和逻辑。
-
-    该类实现了一个通用的异步任务队列系统，支持注册自定义操作处理器，
-    定期检查待处理任务，执行任务并收集结果。
-
-    Attributes:
-        name: 队列的唯一标识名称，默认使用"Internal|UUID"格式
-        queue_actions: 字典，注册的操作处理器，键为操作名称，值为异步处理函数
-        report_targets: 错误报告的场景列表，当任务失败时发送错误信息到这些场景
-        is_running: 布尔值，表示队列检查循环是否正在运行
-        TASK_TIMEOUT_SECONDS: 任务超时时间（秒），超过此时间的任务会被标记为超时
-        pause_event: asyncio.Event，用于暂停/恢复队列处理
-    """
-
     name = "Internal|" + str(uuid4())
-    queue_actions = {}
-    report_targets = CoreConfig.report_targets
-    is_running = False
-    TASK_TIMEOUT_SECONDS = JobQueuesTable.ACTIVE_TIMEOUT_SECONDS
+    _auto_peer_id = True
+    TASK_TIMEOUT_SECONDS = DEFAULT_TIMEOUT_SECONDS
+    POLL_INTERVAL_SECONDS = 0.1
+    backend: JobQueueBackend | None = None
+    registry: PeerRegistry
+    transport: MessageTransport
+    handlers: dict[str, Handler] = {}
+    signal_handlers: dict[str, list[SignalHandler]] = {}
+    identity: PeerIdentity | None = None
+    _pending: dict[str, asyncio.Future[RpcResponse]] = {}
+    _process_tasks: set[asyncio.Task[None]] = set()
     pause_event = asyncio.Event()
     pause_event.set()
-    _process_tasks: set[asyncio.Task[None]] = set()
     _poll_lock = asyncio.Lock()
-    _poller_task: asyncio.Task[None] | None = None
+    _maintenance_lock = asyncio.Lock()
+    _poller_task: asyncio.Task | None = None
+    _ready_event = asyncio.Event()
+    _registered = False
+    _maintenance_active = False
+    _maintenance_owner: asyncio.Task | None = None
+    is_running = False
     _shutting_down = False
+    HEARTBEAT_INTERVAL_SECONDS = 15
+    RECONCILE_INTERVAL_SECONDS = 10
+    _next_heartbeat = 0.0
+    _next_reconcile = 0.0
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        # Server 与 Client 在测试中可同时存在于同一解释器；各消费者必须拥有自己的
-        # 任务集合、暂停状态和轮询锁，不能通过基类属性互相影响。
+        cls.handlers = dict(cls.handlers)
+        cls.signal_handlers = {name: list(handlers) for name, handlers in cls.signal_handlers.items()}
+        cls.identity = None
+        cls._pending = {}
         cls._process_tasks = set()
         cls.pause_event = asyncio.Event()
         cls.pause_event.set()
         cls._poll_lock = asyncio.Lock()
+        cls._maintenance_lock = asyncio.Lock()
         cls._poller_task = None
+        cls._ready_event = asyncio.Event()
+        cls._registered = False
+        cls._maintenance_active = False
+        cls._maintenance_owner = None
         cls.is_running = False
         cls._shutting_down = False
+        cls._next_heartbeat = 0.0
+        cls._next_reconcile = 0.0
+        cls._auto_peer_id = "name" not in cls.__dict__
+        if cls._auto_peer_id:
+            cls.name = "Internal|" + str(uuid4())
+        if "backend" not in cls.__dict__:
+            cls.backend = create_jobqueue_backend("database")
+        if cls.backend is None:
+            raise TypeError("JobQueue subclasses must configure a complete backend")
+        cls.registry = cls.backend.registry
+        cls.transport = cls.backend.transport
+
+    @classmethod
+    def configure_backend(cls, backend: JobQueueBackend) -> None:
+        """在 Peer 启动前装配一套内部一致的控制面和数据面后端。"""
+        if cls.is_running:
+            raise RuntimeError("Cannot reconfigure a running JobQueue backend")
+        if cls._registered:
+            raise RuntimeError("Cannot reconfigure a registered JobQueue backend before stopping it")
+        if not getattr(backend, "name", None):
+            raise TypeError("JobQueue backend must declare a nonempty name")
+        if not hasattr(backend, "registry") or not hasattr(backend, "transport"):
+            raise TypeError("JobQueue backend must provide both registry and transport")
+        cls.backend = backend
+        cls.registry = backend.registry
+        cls.transport = backend.transport
+
+    @classmethod
+    def register(cls, name: str, handler: Handler | None = None):
+        """Bind a wire method directly or as a decorator; reject duplicate bindings."""
+
+        def bind(func: Handler):
+            if name in cls.handlers:
+                raise ValueError(f"RPC method already registered on {cls.__name__}: {name}")
+            cls.handlers[name] = func
+            return func
+
+        return bind(handler) if handler is not None else bind
+
+    @classmethod
+    def configure_peer(
+        cls,
+        *,
+        role: str,
+        service: str,
+        node_id: str | None = None,
+        capabilities: list[str] | tuple[str, ...] = (),
+        metadata: dict | None = None,
+    ) -> PeerIdentity:
+        """Declare the process identity advertised through the shared registry."""
+        if cls.is_running:
+            raise RuntimeError("Cannot reconfigure a running JobQueue peer")
+        if cls._registered:
+            raise RuntimeError("Cannot reconfigure a registered JobQueue peer before stopping it")
+        if not isinstance(role, str) or not role or len(role) > 32:
+            raise ValueError("Peer role must be a nonempty string no longer than 32 characters")
+        if not isinstance(service, str) or not service or len(service) > 128:
+            raise ValueError("Peer service must be a nonempty string no longer than 128 characters")
+        if not isinstance(capabilities, (list, tuple)) or any(
+            not isinstance(capability, str) or not capability for capability in capabilities
+        ):
+            raise ValueError("Peer capabilities must be a list or tuple of nonempty strings")
+        peer_id = "Internal|" + str(uuid4()) if cls._auto_peer_id else cls.name
+        if not isinstance(peer_id, str) or not peer_id or len(peer_id) > 128:
+            raise ValueError("Peer ID must be a nonempty string no longer than 128 characters")
+        if metadata is not None and not isinstance(metadata, dict):
+            raise TypeError("Peer metadata must be a dictionary")
+        peer_metadata = {**(metadata or {}), "pid": os.getpid()}
+        json.dumps(peer_metadata, allow_nan=False)
+        if node_id is None:
+            # 延迟导入配置模板，避免仅导入 JobQueue 基础模块便触发配置系统的初始化副作用。
+            from core.config.jobqueue import JobQueueConfig
+
+            node_id = JobQueueConfig.jobqueue_node_id
+            if isinstance(node_id, str):
+                node_id = node_id.strip() or None
+        # 正常启动会在 pre_init 中持久化缺失值；此回退仅供绕过守护进程的独立入口和测试使用。
+        resolved_node_id = str(uuid4()) if node_id is None else node_id
+        if not isinstance(resolved_node_id, str) or not resolved_node_id or len(resolved_node_id) > 128:
+            raise ValueError("Peer node ID must be a nonempty string no longer than 128 characters")
+        identity = PeerIdentity(
+            peer_id=peer_id,
+            node_id=resolved_node_id,
+            role=role,
+            service=service,
+            capabilities=tuple(capabilities),
+            metadata=peer_metadata,
+        )
+        # 所有可能失败的验证完成后再切换类级生命周期状态，避免半配置污染。
+        cls.name = peer_id
+        cls.identity = identity
+        cls._ready_event.clear()
+        cls._registered = False
+        cls._maintenance_active = False
+        cls._maintenance_owner = None
+        cls._shutting_down = False
+        cls.pause_event.set()
+        from core.constants import Info
+
+        Info.peer_id = peer_id
+        Info.peer_role = role
+        return identity
+
+    @classmethod
+    def on_signal(cls, name: str, handler: SignalHandler | None = None):
+        """Register one of any number of local subscribers for a signal name."""
+
+        def bind(func: SignalHandler):
+            cls.signal_handlers.setdefault(name, []).append(func)
+            return func
+
+        return bind(handler) if handler is not None else bind
+
+    @classmethod
+    def validate_target(cls, target: str) -> None:
+        if not isinstance(target, str) or not target:
+            raise RpcUnavailableError("RPC destination is missing.", target=target)
+
+    @classmethod
+    async def ensure_target_available(cls, target: str, route: ServiceRoute | None = None) -> None:
+        """Optionally verify a destination against an authoritative transport directory."""
+
+    @classmethod
+    async def resolve_target(cls, target: str | ServiceRoute) -> str:
+        """Resolve a logical service route from the authoritative peer directory."""
+        if isinstance(target, str):
+            return target
+        peer = await cls.registry.select_route(target)
+        if peer is None:
+            return target.service
+        cls._update_peer_cache(peer.snapshot())
+        return peer.peer_id
+
+    @classmethod
+    def _request_duration(cls, timeout: float | None) -> float:
+        if timeout is not None and (
+            isinstance(timeout, bool)
+            or not isinstance(timeout, (int, float))
+            or not math.isfinite(timeout)
+            or timeout <= 0
+        ):
+            raise ValueError("RPC timeout must be a positive finite duration.")
+        duration = cls.TASK_TIMEOUT_SECONDS if timeout is None else min(timeout, cls.TASK_TIMEOUT_SECONDS)
+        if (
+            isinstance(duration, bool)
+            or not isinstance(duration, (int, float))
+            or not math.isfinite(duration)
+            or duration <= 0
+        ):
+            raise ValueError("RPC timeout must be a positive finite duration.")
+        return float(duration)
+
+    @staticmethod
+    def _target_label(target: str | ServiceRoute) -> str:
+        return target if isinstance(target, str) else target.service
+
+    @classmethod
+    def _request(
+        cls,
+        target: str,
+        method: str,
+        payload: JsonValue,
+        timeout: float | None,
+        *,
+        message_kind: str = "rpc",
+        correlation_id: str | None = None,
+        expects_response: bool = True,
+        task_id: str | None = None,
+        deadline: float | None = None,
+    ) -> RpcRequest:
+        task_id = task_id or str(uuid4())
+        try:
+            cls.validate_target(target)
+        except RpcError as exc:
+            exc.method, exc.target, exc.task_id = method, target, task_id
+            raise
+        if not isinstance(method, str) or not method:
+            raise ValueError("RPC method must be a nonempty string.")
+        if len(method) > 512:
+            raise ValueError("RPC method must be no longer than 512 characters.")
+        if len(target) > 512:
+            raise ValueError("RPC destination must be no longer than 512 characters.")
+        if message_kind not in ("rpc", "signal"):
+            raise ValueError("RPC message kind must be rpc or signal.")
+        if not isinstance(expects_response, bool):
+            raise TypeError("RPC expects_response must be a boolean.")
+        duration = cls._request_duration(timeout)
+        json.dumps(payload, allow_nan=False)
+        deadline = time.time() + duration if deadline is None else deadline
+        if isinstance(deadline, bool) or not isinstance(deadline, (int, float)) or not math.isfinite(deadline):
+            raise ValueError("RPC deadline must be a finite timestamp.")
+        return RpcRequest(
+            task_id,
+            target,
+            method,
+            payload,
+            deadline,
+            source_peer_id=cls.name,
+            correlation_id=correlation_id,
+            message_kind=message_kind,
+            expects_response=expects_response,
+        )
+
+    @staticmethod
+    def _validate_batch_result(requests: list[RpcRequest], result: BatchSendResult) -> None:
+        if not isinstance(result, BatchSendResult):
+            raise RpcProtocolError("Transport returned an invalid batch delivery result.")
+        expected = {request.task_id for request in requests}
+        if len(expected) != len(requests):
+            raise RpcProtocolError("Transport batch contains duplicate task IDs.")
+        reported = set(result.accepted) | result.rejected.keys() | set(result.unknown)
+        if reported != expected:
+            raise RpcProtocolError("Transport batch delivery result does not cover exactly the submitted requests.")
+
+    @classmethod
+    async def call(
+        cls,
+        target: str | ServiceRoute,
+        method: str,
+        payload: JsonValue,
+        *,
+        timeout: float | None = None,
+    ) -> JsonValue:
+        task_id = str(uuid4())
+        deadline = time.time() + cls._request_duration(timeout)
+        resolved_target = cls._target_label(target)
+        future = None
+        response_received = False
+        try:
+            async with asyncio.timeout(max(0, deadline - time.time())):
+                resolved_target = await cls.resolve_target(target)
+                request = cls._request(
+                    resolved_target,
+                    method,
+                    payload,
+                    timeout,
+                    task_id=task_id,
+                    deadline=deadline,
+                )
+                future = asyncio.get_running_loop().create_future()
+                cls._pending[request.task_id] = future
+                await cls.ensure_target_available(
+                    resolved_target,
+                    target if isinstance(target, ServiceRoute) else None,
+                )
+                await cls.transport.send(request)
+                response = await future
+                response_received = True
+            return cls._decode_response(request, response)
+        except RpcError as exc:
+            exc.method, exc.target, exc.task_id = method, resolved_target, task_id
+            raise
+        except TimeoutError as exc:
+            raise RpcTimeoutError(
+                f"RPC {method} on {resolved_target} exceeded its deadline; remote completion is unknown.",
+                method=method,
+                target=resolved_target,
+                task_id=task_id,
+            ) from exc
+        finally:
+            cls._pending.pop(task_id, None)
+            if future is not None and not future.done():
+                future.cancel()
+            # send() 可能在 INSERT 已提交后才因取消或连接异常返回。只要已建立
+            # 本地 waiter，就按“投递结果未知”处理并尝试删除该任务；删除不存在的 ID
+            # 是安全的，且不会取消已经开始的远端处理器。
+            if future is not None and not response_received:
+                try:
+                    await asyncio.shield(cls.transport.abandon([task_id]))
+                except Exception:
+                    Logger.exception(f"Failed to clean up abandoned RPC {task_id}.")
+
+    @classmethod
+    async def submit(
+        cls,
+        target: str | ServiceRoute,
+        method: str,
+        payload: JsonValue,
+        *,
+        timeout: float | None = None,
+    ) -> str:
+        """Return an accepted task ID; acceptance does not promise execution success."""
+        task_id = str(uuid4())
+        deadline = time.time() + cls._request_duration(timeout)
+        resolved_target = cls._target_label(target)
+        try:
+            async with asyncio.timeout(max(0, deadline - time.time())):
+                resolved_target = await cls.resolve_target(target)
+                request = cls._request(
+                    resolved_target,
+                    method,
+                    payload,
+                    timeout,
+                    expects_response=False,
+                    task_id=task_id,
+                    deadline=deadline,
+                )
+                await cls.ensure_target_available(
+                    resolved_target,
+                    target if isinstance(target, ServiceRoute) else None,
+                )
+                await cls.transport.send(request)
+        except RpcError as exc:
+            exc.method, exc.target, exc.task_id = method, resolved_target, task_id
+            raise
+        except TimeoutError as exc:
+            raise RpcTimeoutError(
+                f"RPC submission {method} exceeded its deadline; acceptance is unknown.",
+                method=method,
+                target=resolved_target,
+                task_id=task_id,
+            ) from exc
+        return task_id
+
+    @classmethod
+    async def emit_signal(
+        cls,
+        name: str,
+        payload: JsonValue,
+        selector: PeerSelector | None = None,
+        *,
+        timeout: float | None = 30,
+    ) -> SignalReceipt:
+        """Fan out one signal into an independent direct delivery per ready peer."""
+        event_id = str(uuid4())
+        deadline = time.time() + cls._request_duration(timeout)
+        peers = []
+        requests = []
+        batch_result = BatchSendResult()
+        submitted = False
+        try:
+            async with asyncio.timeout(max(0, deadline - time.time())):
+                peers = await cls.registry.resolve(selector)
+                for peer in peers:
+                    cls._update_peer_cache(peer.snapshot())
+                requests = [
+                    cls._request(
+                        peer.peer_id,
+                        name,
+                        payload,
+                        timeout,
+                        message_kind="signal",
+                        correlation_id=event_id,
+                        expects_response=False,
+                        deadline=deadline,
+                    )
+                    for peer in peers
+                ]
+                if requests:
+                    batch_result = await cls.transport.send_many(requests)
+                    cls._validate_batch_result(requests, batch_result)
+                submitted = True
+        except TimeoutError as exc:
+            raise RpcTimeoutError(
+                f"Signal submission {name} exceeded its deadline; acceptance is unknown.",
+                method=name,
+                target="fan-out",
+                task_id=event_id,
+            ) from exc
+        finally:
+            if requests and not submitted:
+                try:
+                    await asyncio.shield(cls.transport.abandon([request.task_id for request in requests]))
+                except Exception:
+                    Logger.exception(f"Failed to clean up interrupted signal fan-out {event_id}.")
+        task_to_peer = {request.task_id: peer.peer_id for peer, request in zip(peers, requests)}
+        return SignalReceipt(
+            event_id,
+            {
+                task_to_peer[request.task_id]: request.task_id
+                for request in requests
+                if request.task_id in batch_result.accepted
+            },
+            {
+                task_to_peer[request.task_id]: batch_result.rejected[request.task_id]
+                for request in requests
+                if request.task_id in batch_result.rejected
+            },
+            tuple(task_to_peer[request.task_id] for request in requests if request.task_id in batch_result.unknown),
+        )
+
+    @classmethod
+    async def gather_signal(
+        cls,
+        name: str,
+        payload: JsonValue,
+        selector: PeerSelector | None = None,
+        *,
+        timeout: float | None = 30,
+    ) -> SignalReport:
+        """Fan out a signal and collect each process instance's independent ACK."""
+        event_id = str(uuid4())
+        deadline = time.time() + cls._request_duration(timeout)
+        peers = []
+        requests = []
+        futures = {}
+        outcomes = []
+        batch_result = BatchSendResult()
+        completed = False
+        try:
+            try:
+                async with asyncio.timeout(max(0, deadline - time.time())):
+                    peers = await cls.registry.resolve(selector)
+                    for peer in peers:
+                        cls._update_peer_cache(peer.snapshot())
+                    requests = [
+                        cls._request(
+                            peer.peer_id,
+                            name,
+                            payload,
+                            timeout,
+                            message_kind="signal",
+                            correlation_id=event_id,
+                            deadline=deadline,
+                        )
+                        for peer in peers
+                    ]
+                    for request in requests:
+                        future = asyncio.get_running_loop().create_future()
+                        cls._pending[request.task_id] = future
+                        futures[request.task_id] = future
+                    if requests:
+                        batch_result = await cls.transport.send_many(requests)
+                        cls._validate_batch_result(requests, batch_result)
+            except TimeoutError as exc:
+                raise RpcTimeoutError(
+                    f"Signal submission {name} exceeded its deadline; acceptance is unknown.",
+                    method=name,
+                    target="fan-out",
+                    task_id=event_id,
+                ) from exc
+
+            async def wait_one(request: RpcRequest):
+                if request.task_id in batch_result.rejected:
+                    return RpcUnavailableError(
+                        batch_result.rejected[request.task_id],
+                        method=name,
+                        target=request.target,
+                        task_id=request.task_id,
+                    )
+                if request.task_id in batch_result.unknown:
+                    return RpcUnavailableError(
+                        "Signal delivery acceptance is unknown.",
+                        method=name,
+                        target=request.target,
+                        task_id=request.task_id,
+                    )
+                try:
+                    async with asyncio.timeout(max(0, request.deadline - time.time())):
+                        response = await futures[request.task_id]
+                    return cls._decode_response(request, response)
+                except TimeoutError:
+                    return RpcTimeoutError(
+                        "Signal acknowledgement exceeded its deadline.",
+                        method=name,
+                        target=request.target,
+                        task_id=request.task_id,
+                    )
+                except Exception as exc:
+                    return exc
+
+            outcomes = await asyncio.gather(*(wait_one(request) for request in requests))
+            completed = True
+        finally:
+            abandoned = []
+            for request in requests:
+                future = cls._pending.pop(request.task_id, None)
+                if not completed or future is None or future.cancelled() or not future.done():
+                    abandoned.append(request.task_id)
+                if future is not None and not future.done():
+                    future.cancel()
+            if abandoned:
+                try:
+                    await asyncio.shield(cls.transport.abandon(abandoned))
+                except Exception:
+                    Logger.exception(f"Failed to clean up {len(abandoned)} abandoned signal deliveries.")
+        results, errors = {}, {}
+        for peer, outcome in zip(peers, outcomes):
+            if isinstance(outcome, BaseException):
+                errors[peer.peer_id] = str(outcome)
+            else:
+                results[peer.peer_id] = outcome
+        return SignalReport(event_id, results, errors)
+
+    @staticmethod
+    def _decode_response(request: RpcRequest, response: RpcResponse) -> JsonValue:
+        context = {"method": request.method, "target": request.target, "task_id": request.task_id}
+        envelope = response.envelope
+        if response.status == "timeout":
+            raise RpcTimeoutError("The remote request expired.", **context)
+        if not isinstance(envelope, dict) or envelope.get("rpc") != PROTOCOL_VERSION:
+            raise RpcProtocolError("Invalid RPC response envelope.", **context)
+        if response.status == "done" and "value" in envelope:
+            return envelope["value"]
+        error = envelope.get("error")
+        if response.status != "failed" or not isinstance(error, dict):
+            raise RpcProtocolError("Invalid RPC response status or error.", **context)
+        error_code = error.get("code")
+        if not isinstance(error_code, str):
+            raise RpcProtocolError("Invalid RPC response error code.", **context)
+        error_type = ERROR_TYPES.get(error_code, RpcRemoteError)
+        raise error_type(
+            str(error.get("message", "Remote RPC failed.")), remote_type=str(error.get("type", "")), **context
+        )
+
+    @classmethod
+    async def _finish_error(cls, request: RpcRequest, error: RpcError, remote_type: str = "") -> None:
+        await cls.transport.respond(
+            request,
+            RpcResponse(
+                request.task_id,
+                "timeout" if isinstance(error, RpcTimeoutError) else "failed",
+                {
+                    "rpc": PROTOCOL_VERSION,
+                    "error": {"code": error.code, "type": remote_type or type(error).__name__, "message": str(error)},
+                },
+            ),
+        )
+
+    @classmethod
+    async def report_error(cls, method: str, details: str) -> None:
+        """Override to submit reports without blocking on another RPC."""
+        Logger.error(f"RPC {method} failed:\n{details}")
+
+    @classmethod
+    async def _process_task(cls, request: RpcRequest) -> None:
+        peer_token = current_peer.set(cls)
+        request_token = current_request.set(request)
+        try:
+            if request.version != PROTOCOL_VERSION:
+                raise RpcProtocolError(f"Unsupported RPC protocol version: {request.version}.")
+            if not isinstance(request.expects_response, bool):
+                raise RpcProtocolError("Invalid RPC response expectation flag.")
+            if (
+                isinstance(request.deadline, bool)
+                or not isinstance(request.deadline, (int, float))
+                or not math.isfinite(request.deadline)
+            ):
+                raise RpcProtocolError("Invalid RPC deadline.")
+            remaining = min(request.deadline - time.time(), cls._request_duration(None))
+            if remaining <= 0:
+                raise RpcTimeoutError("Request expired before execution.")
+            deadline_scope = asyncio.timeout(remaining)
+            try:
+                async with deadline_scope:
+                    if request.message_kind == "signal":
+                        value = await cls._dispatch_signal(request)
+                    elif request.message_kind == "rpc":
+                        handler = cls.handlers.get(request.method)
+                        if handler is None:
+                            raise RpcMethodNotFoundError(f"RPC method is not registered: {request.method}.")
+                        value = await handler(request.payload)
+                    else:
+                        raise RpcProtocolError(f"Unsupported message kind: {request.message_kind}.")
+                    json.dumps(value, allow_nan=False)
+            except TimeoutError as exc:
+                if deadline_scope.expired():
+                    raise RpcTimeoutError("Remote handler exceeded its deadline.") from exc
+                # A handler's own TimeoutError is a remote application failure,
+                # distinct from the RPC deadline expiring.
+                raise
+            await cls.transport.respond(
+                request,
+                RpcResponse(request.task_id, "done", {"rpc": PROTOCOL_VERSION, "value": value}),
+            )
+        except asyncio.CancelledError:
+            try:
+                await asyncio.shield(cls._finish_error(request, RpcCancelledError("Remote handler was cancelled.")))
+            except Exception:
+                Logger.exception(f"Failed to record cancelled RPC {request.task_id}.")
+            raise
+        except RpcError as exc:
+            Logger.warning(f"RPC {request.method} ({request.task_id}) failed [{exc.code}]: {exc}")
+            await cls._finish_error(request, exc)
+        except Exception as exc:
+            details = traceback.format_exc()
+            await cls._finish_error(request, RpcRemoteError(str(exc)), type(exc).__name__)
+            try:
+                await cls.report_error(request.method, details)
+            except Exception:
+                Logger.exception(f"Failed to report RPC error for {request.method}.")
+        finally:
+            current_request.reset(request_token)
+            current_peer.reset(peer_token)
+
+    @classmethod
+    async def _dispatch_signal(cls, request: RpcRequest) -> JsonValue:
+        context = SignalContext(request.correlation_id or request.task_id, request.source_peer_id, cls.name)
+        signal_payload = request.payload
+        lifecycle_signals = {
+            "peer.ready",
+            "peer.welcome",
+            "peer.maintenance",
+            "peer.resumed",
+            "peer.draining",
+            "peer.stopped",
+        }
+        if request.method in lifecycle_signals and not isinstance(request.payload, dict):
+            raise RpcProtocolError("Peer lifecycle signal payload must be an object.")
+        if request.method in ("peer.ready", "peer.welcome"):
+            peer_id = request.payload.get("peer_id")
+            if not isinstance(peer_id, str) or not peer_id:
+                raise RpcProtocolError("Peer lifecycle signal is missing a valid peer ID.")
+            if request.source_peer_id != peer_id:
+                raise RpcProtocolError("Peer lifecycle signal source does not match its announced peer ID.")
+            announced = await cls.registry.resolve(PeerSelector.peer(peer_id))
+            if not announced:
+                return []
+            signal_payload = announced[0].snapshot()
+            # Registry 已确认该实例重新处于 ready；允许同一进程内的轮询器重启
+            # 覆盖先前 stopped 缓存，同时仍拒绝没有权威租约的迟到 ready 信号。
+            cls._update_peer_cache(signal_payload, force=True)
+            if request.method == "peer.ready" and request.source_peer_id and cls.identity is not None:
+                records = await cls.registry.resolve(PeerSelector.peer(cls.name))
+                if records:
+                    welcome = cls._request(
+                        request.source_peer_id,
+                        "peer.welcome",
+                        records[0].snapshot(),
+                        30,
+                        message_kind="signal",
+                        correlation_id=context.event_id,
+                        expects_response=False,
+                    )
+                    await cls.transport.send(welcome)
+        elif request.method in ("peer.maintenance", "peer.draining", "peer.stopped"):
+            peer_id = request.payload.get("peer_id")
+            if not isinstance(peer_id, str) or not peer_id:
+                raise RpcProtocolError("Peer lifecycle signal is missing a valid peer ID.")
+            if request.source_peer_id != peer_id:
+                raise RpcProtocolError("Peer lifecycle signal source does not match its announced peer ID.")
+            state = {
+                "peer.maintenance": "maintenance",
+                "peer.draining": "draining",
+                "peer.stopped": "stopped",
+            }[request.method]
+            announced = await cls.registry.lookup(peer_id)
+            if announced is None or announced.state != state:
+                return []
+            signal_payload = announced.snapshot()
+            cls._update_peer_cache(signal_payload)
+        elif request.method == "peer.resumed":
+            peer_id = request.payload.get("peer_id")
+            if not isinstance(peer_id, str) or not peer_id:
+                raise RpcProtocolError("Peer lifecycle signal is missing a valid peer ID.")
+            if request.source_peer_id != peer_id:
+                raise RpcProtocolError("Peer lifecycle signal source does not match its announced peer ID.")
+            records = await cls.registry.resolve(PeerSelector.peer(peer_id))
+            if not records:
+                return []
+            signal_payload = records[0].snapshot()
+            cls._update_peer_cache(signal_payload, force=True)
+        handlers = cls.signal_handlers.get(request.method, [])
+        outcomes = await asyncio.gather(
+            *(handler(context, signal_payload) for handler in handlers), return_exceptions=True
+        )
+        errors = [f"{type(outcome).__name__}: {outcome}" for outcome in outcomes if isinstance(outcome, BaseException)]
+        if errors:
+            raise RuntimeError("; ".join(errors))
+        return outcomes
+
+    @classmethod
+    async def _refresh_peer_cache(cls):
+        """以当前后端的权威注册表对账进程内拓扑缓存。"""
+        expired_peer_ids = await cls.registry.expire_stale()
+        records = await cls.registry.resolve()
+        from core.alive import Alive
+
+        for peer_id in expired_peer_ids:
+            data = Alive.values.get(peer_id, {})
+            Alive.refresh_peer(
+                peer_id,
+                str(data.get("service", "")),
+                role=str(data.get("role", "client")),
+                state="stopped",
+                capabilities=list(data.get("capabilities", [])),
+                metadata={
+                    key: value
+                    for key, value in data.items()
+                    if key
+                    not in {
+                        "peer_id",
+                        "client_name",
+                        "service",
+                        "role",
+                        "state",
+                        "capabilities",
+                        "lease_until",
+                        "ts",
+                    }
+                },
+            )
+        Alive.replace_peers(records)
+        return records
+
+    @staticmethod
+    def _update_peer_cache(snapshot: dict, *, force: bool = False) -> None:
+        from core.alive import Alive
+
+        peer_id = snapshot.get("peer_id")
+        if not isinstance(peer_id, str) or not peer_id:
+            return
+        lease_until = snapshot.get("lease_until")
+        if isinstance(lease_until, (int, float)):
+            from datetime import UTC, datetime
+
+            lease_until = datetime.fromtimestamp(lease_until, UTC)
+        Alive.refresh_peer(
+            peer_id,
+            str(snapshot.get("service", "")),
+            role=str(snapshot.get("role", "client")),
+            state=str(snapshot.get("state", "ready")),
+            capabilities=list(snapshot.get("capabilities", [])),
+            metadata=dict(snapshot.get("metadata", {})),
+            lease_until=lease_until,
+            force=force,
+        )
 
     @classmethod
     def _process_task_done(cls, task: asyncio.Task[None]) -> None:
@@ -145,13 +828,185 @@ class JobQueueBase:
         except asyncio.CancelledError:
             pass
         except Exception:
-            Logger.exception(f"Unhandled {cls.__name__} action task failure.")
+            Logger.exception(f"Unhandled {cls.__name__} RPC task failure.")
+
+    @classmethod
+    async def _check_queue(cls, target: str | None = None, claim_new: bool = True):
+        if cls._pending:
+            for response in await cls.transport.consume_responses(list(cls._pending)):
+                future = cls._pending.get(response.task_id)
+                if future is not None and not future.done():
+                    future.set_result(response)
+        if not claim_new:
+            return
+        targets = [cls.name]
+        if target:
+            targets.append(target)
+        elif cls.identity is not None:
+            targets.append(cls.identity.service)
+        for request in await cls.transport.receive(list(dict.fromkeys(targets)), cls.name):
+            task = asyncio.create_task(
+                cls._process_task(request), name=f"{request.message_kind}:{request.method}:{request.task_id}"
+            )
+            cls._process_tasks.add(task)
+            task.add_done_callback(cls._process_task_done)
+
+    @classmethod
+    async def check_job_queue(cls, target: str | None = None):
+        if cls.is_running:
+            raise QueueAlreadyRunning
+        current = asyncio.current_task()
+        cls._poller_task = current
+        cls.is_running = True
+        graceful_stop = False
+        backend_started = False
+        backend = cls.backend
+        if backend is None:
+            cls.is_running = False
+            raise RuntimeError("JobQueue backend has not been configured")
+        try:
+            await backend.start(cls.identity)
+            backend_started = True
+            await cls._start_peer()
+            while True:
+                async with cls._poll_lock:
+                    await cls._check_queue(target, claim_new=cls.pause_event.is_set())
+                    await cls._maintain_peer()
+                await asyncio.sleep(cls.POLL_INTERVAL_SECONDS)
+        except asyncio.CancelledError:
+            graceful_stop = True
+            raise
+        finally:
+            if graceful_stop or cls._shutting_down or cls._registered:
+                await cls._stop_peer()
+            cls.is_running = False
+            if cls._poller_task is current:
+                cls._poller_task = None
+            for task_id, future in list(cls._pending.items()):
+                if not future.done():
+                    future.set_result(
+                        RpcResponse(
+                            task_id,
+                            "failed",
+                            {
+                                "rpc": PROTOCOL_VERSION,
+                                "error": {
+                                    "code": "unavailable",
+                                    "type": "RpcUnavailableError",
+                                    "message": "Local RPC result pump stopped.",
+                                },
+                            },
+                        )
+                    )
+            pending_task_ids = list(cls._pending)
+            if pending_task_ids:
+                try:
+                    await cls.transport.abandon(pending_task_ids)
+                except Exception:
+                    Logger.exception(f"Failed to clean up {len(pending_task_ids)} RPCs after result pump stopped.")
+            if backend_started or backend.ready:
+                try:
+                    await asyncio.shield(backend.close())
+                except Exception:
+                    Logger.exception(f"Failed to close JobQueue backend {backend.name}.")
+
+    @classmethod
+    async def wait_ready(cls, timeout: float = 30) -> None:
+        if cls.identity is None or cls._ready_event.is_set():
+            return
+        async with asyncio.timeout(timeout):
+            while not cls._ready_event.is_set():
+                task = cls._poller_task
+                if task is not None and task.done():
+                    await task
+                    raise RuntimeError("JobQueue poller stopped before peer registration completed")
+                await asyncio.sleep(0.01)
+
+    @classmethod
+    async def _start_peer(cls) -> None:
+        if cls.identity is None:
+            return
+        try:
+            await cls.registry.register(cls.identity, "starting")
+        except (Exception, asyncio.CancelledError):
+            # register() 也可能在事务已提交后才因取消或连接状态异常返回。
+            # 以唯一 peer_id 尝试回滚，不让半注册实例保留到租约自然过期。
+            try:
+                await asyncio.shield(cls.registry.unregister(cls.name))
+            except Exception:
+                Logger.exception(f"Failed to roll back partial JobQueue registration for {cls.name}.")
+            raise
+        cls._registered = True
+        if not await cls.registry.set_state(cls.name, "ready"):
+            await cls.registry.register(cls.identity, "ready")
+        records = await cls._refresh_peer_cache()
+        own = next((record for record in records if record.peer_id == cls.name), None)
+        if own is not None:
+            await cls.emit_signal(
+                "peer.ready",
+                own.snapshot(),
+                PeerSelector.all().excluding(cls.name),
+                timeout=30,
+            )
+        now = time.monotonic()
+        cls._next_heartbeat = now + cls.HEARTBEAT_INTERVAL_SECONDS
+        cls._next_reconcile = now + cls.RECONCILE_INTERVAL_SECONDS
+        cls._ready_event.set()
+
+    @classmethod
+    async def _maintain_peer(cls) -> None:
+        if cls.identity is None or cls._shutting_down or cls._maintenance_active:
+            return
+        now = time.monotonic()
+        if now >= cls._next_heartbeat:
+            if not await cls.registry.renew(cls.identity):
+                await cls.registry.register(cls.identity, "ready")
+            cls._next_heartbeat = now + cls.HEARTBEAT_INTERVAL_SECONDS
+        if now >= cls._next_reconcile:
+            await cls._refresh_peer_cache()
+            cls._next_reconcile = now + cls.RECONCILE_INTERVAL_SECONDS
+
+    @classmethod
+    async def _stop_peer(cls) -> None:
+        if cls.identity is None or not cls._registered:
+            return
+        unregistered = False
+        try:
+            await cls.registry.set_state(cls.name, "draining")
+            unregistered = await cls.registry.unregister(cls.name)
+            if unregistered:
+                record = await cls.registry.lookup(cls.name)
+                await cls.emit_signal(
+                    "peer.stopped",
+                    record.snapshot() if record is not None else cls.identity.snapshot("stopped"),
+                    PeerSelector.all().excluding(cls.name),
+                    timeout=10,
+                )
+        except Exception:
+            Logger.exception(f"Failed to publish peer shutdown for {cls.name}.")
+        finally:
+            cls._ready_event.clear()
+            cls._maintenance_active = False
+            from core.alive import Alive
+
+            Alive.refresh_peer(
+                cls.name,
+                cls.identity.service,
+                role=cls.identity.role,
+                state="stopped",
+                capabilities=list(cls.identity.capabilities),
+                metadata=cls.identity.metadata,
+            )
+            if not unregistered:
+                try:
+                    await cls.registry.unregister(cls.name)
+                except Exception:
+                    Logger.exception(f"Failed to unregister JobQueue peer {cls.name}.")
+            cls._registered = False
 
     @classmethod
     async def cancel_process_tasks(cls) -> None:
-        """取消并等待已经领取、仍在运行的 action 处理器。"""
         current = asyncio.current_task()
-        # restart() 可由 action 自身触发；排除当前任务，避免它取消并等待自己。
         tasks = [task for task in cls._process_tasks if task is not current]
         for task in tasks:
             if not task.done():
@@ -161,64 +1016,126 @@ class JobQueueBase:
 
     @classmethod
     async def wait_process_tasks(cls) -> None:
-        """等待其它在途 action 完成；调用方自身若也是处理器则自动排除。"""
-        current = asyncio.current_task()
-        tasks = [task for task in cls._process_tasks if task is not current]
+        tasks = [task for task in cls._process_tasks if task is not asyncio.current_task()]
         if tasks:
             await asyncio.gather(*tasks, return_exceptions=True)
 
     @classmethod
     async def stop_job_queue(cls) -> None:
-        """取消并等待当前消费者的队列轮询器。"""
         task = cls._poller_task
         if task is None or task is asyncio.current_task():
+            if cls._registered:
+                await cls._stop_peer()
             return
         if not task.done():
             task.cancel()
         await asyncio.gather(task, return_exceptions=True)
+        if cls._registered:
+            await cls._stop_peer()
 
     @classmethod
     async def begin_shutdown(cls) -> None:
-        """停止领取新 action，但保留轮询器回收远端任务结果。"""
+        already_shutting_down = cls._shutting_down
         cls._shutting_down = True
         cls.pause_event.clear()
-        # 与已经读取到 ``claim_new=True`` 的轮询轮次建立屏障。离开此锁后，
-        # 轮询器仍可唤醒 QueueTaskManager，但不会再领取新的 action。
         async with cls._poll_lock:
             pass
+        if already_shutting_down or cls.identity is None or not cls._registered:
+            return
+        try:
+            await cls.registry.set_state(cls.name, "draining")
+            cls._update_peer_cache(cls.identity.snapshot("draining"))
+            await cls.emit_signal(
+                "peer.draining",
+                cls.identity.snapshot("draining"),
+                PeerSelector.all().excluding(cls.name),
+                timeout=10,
+            )
+        except Exception:
+            Logger.exception(f"Failed to publish peer draining state for {cls.name}.")
 
     @classmethod
     @asynccontextmanager
     async def maintenance_window(cls):
-        """暂停领取新任务，排空在途 action 后独占队列数据库访问。
+        """Drain handlers while pumping responses, then exclude database polling."""
+        current = asyncio.current_task()
+        if cls._maintenance_owner is current:
+            # asyncio.Lock 不可重入；同一任务中的嵌套维护复用外层独占窗口。
+            yield
+            return
+        async with cls._maintenance_lock:
+            cls.pause_event.clear()
+            maintenance_started = False
+            try:
+                async with cls._poll_lock:
+                    pass
+                maintenance_started = await cls._begin_maintenance()
+                await cls.wait_process_tasks()
+                async with cls._poll_lock:
+                    cls._maintenance_owner = current
+                    try:
+                        yield
+                    finally:
+                        cls._maintenance_owner = None
+            finally:
+                if maintenance_started:
+                    await cls._end_maintenance()
+                if not cls._shutting_down:
+                    cls.pause_event.set()
 
-        暂停期间轮询器仍会回收已完成任务的结果，使正在等待客户端回包的 action
-        能够正常收尾。等所有其它 action 完成后，再持有轮询锁进入维护区，保证
-        关闭或替换数据库连接时没有轮询查询与之并发。
-        """
-        cls.pause_event.clear()
+    @classmethod
+    async def _begin_maintenance(cls) -> bool:
+        if cls.identity is None or not cls._registered or cls._shutting_down or cls._maintenance_active:
+            return False
         try:
-            # 等待已经以“允许领取”状态进入的那一轮查询结束。释放锁后，后续轮询
-            # 只会泵回终态结果，不会再领取新的 action。
-            async with cls._poll_lock:
-                pass
-            await cls.wait_process_tasks()
-            async with cls._poll_lock:
-                yield
+            if not await cls.registry.set_state(
+                cls.name,
+                "maintenance",
+                lease_seconds=cls.registry.MAINTENANCE_LEASE_SECONDS,
+            ):
+                return False
+        except Exception:
+            Logger.exception(f"Failed to enter peer maintenance state for {cls.name}.")
+            return False
+        cls._maintenance_active = True
+        cls._update_peer_cache(cls.identity.snapshot("maintenance"))
+        try:
+            await cls.emit_signal(
+                "peer.maintenance",
+                cls.identity.snapshot("maintenance"),
+                PeerSelector.all().excluding(cls.name),
+                timeout=10,
+            )
+        except Exception:
+            Logger.exception(f"Failed to publish peer maintenance state for {cls.name}.")
+        return True
+
+    @classmethod
+    async def _end_maintenance(cls) -> None:
+        try:
+            if cls.identity is None or not cls._registered or cls._shutting_down:
+                return
+            await cls.registry.register(cls.identity, "ready")
+            records = await cls.registry.resolve(PeerSelector.peer(cls.name))
+            if not records:
+                return
+            snapshot = records[0].snapshot()
+            cls._update_peer_cache(snapshot, force=True)
+            await cls.emit_signal(
+                "peer.resumed",
+                snapshot,
+                PeerSelector.all().excluding(cls.name),
+                timeout=10,
+            )
+        except Exception:
+            Logger.exception(f"Failed to publish peer resumed state for {cls.name}.")
         finally:
-            if not cls._shutting_down:
-                cls.pause_event.set()
+            cls._maintenance_active = False
 
     @classmethod
     @asynccontextmanager
     async def shutdown_window(cls):
-        """停止领取新任务、取消在途 action，并独占队列数据库访问。
-
-        与 :meth:`maintenance_window` 不同，关闭流程不能无限等待可能正在执行网络请求
-        或等待远端回包的 action；它需要先阻止轮询器继续领取，再取消并等待已有处理器，
-        最后持有轮询锁清空队列和关闭数据库。该窗口也适用于由 Queue action 自身触发的
-        ``restart()``：当前处理器会被排除，避免取消并等待自己。
-        """
+        """Stop new claims, cancel handlers, then exclude database polling."""
         await cls.begin_shutdown()
         try:
             await cls.cancel_process_tasks()
@@ -227,245 +1144,3 @@ class JobQueueBase:
         finally:
             cls._shutting_down = False
             cls.pause_event.set()
-
-    @classmethod
-    async def add_job(cls, target_client: str, action, args, wait=True) -> str | dict | None:
-        """向队列添加新的任务。
-
-        该方法将任务信息保存到数据库，可选择等待任务完成或立即返回。
-
-        :param target_client: 目标客户端名称，用于将任务路由到特定客户端
-        :param action: 操作名称，对应queue_actions中的处理器
-        :param args: 操作参数，会被传递给处理器
-        :param wait: 是否等待任务完成（默认True）。
-
-            - True: 阻塞直到任务完成，返回执行结果；
-            - False: 立即返回任务 ID，不等待执行
-
-        :return wait=True: 返回任务的执行结果字典
-        :return wait=False: 返回任务 ID 字符串
-        :return target_client 为 None: 返回 None
-        """
-        # Logger.debug(f"Adding job to queue {cls.name}, target client: {target_client}, action: {action}, args: {args}, wait: {wait}")
-        if target_client:
-            task_id = await JobQueuesTable.add_task(target_client, action, args)
-        else:
-            Logger.warning(f"Cannot add job {action} due to target_client being None, perhaps a bug?")
-            return None
-        if wait:
-            return await QueueTaskManager.add(task_id)
-        return task_id
-
-    @staticmethod
-    async def return_val(tsk: JobQueuesTable, value: dict, status: str = "done") -> QueueFinished:
-        """保存任务执行结果并更新任务状态。
-
-        该方法将结果写入数据库，并返回 QueueFinished 对象表示任务完成。
-
-        :param tsk: 任务对象
-        :param value: 任务执行的结果字典
-        :param status: 任务最终状态（默认"done"）
-
-            - "done": 执行成功
-            - "failed": 执行失败
-            - "timeout": 执行超时
-
-        :return: QueueFinished 对象，包含任务 ID、操作名称和最终状态
-        """
-        await tsk.set_val(value, status)
-        return QueueFinished(str(tsk.task_id), tsk.action, tsk.status)
-
-    @classmethod
-    async def _process_task(cls, tsk: JobQueuesTable):
-        """处理单个队列任务。
-
-        该方法执行以下步骤：
-        1. 检查任务是否超时
-        2. 查找并执行相应的操作处理器
-        3. 保存执行结果
-        4. 处理任何异常并发送错误报告
-        5. 保留终态结果，交由定时清理统一删除
-
-        :param tsk: 待处理的任务对象
-        """
-        bot: "Bot" = exports["Bot"]
-        try:
-            timestamp = tsk.timestamp
-            # 检查任务是否超时
-            if time.time() - timestamp.timestamp() > cls.TASK_TIMEOUT_SECONDS:
-                Logger.warning(f"Task {tsk.task_id} timeout, skip.")
-                tsk_val = await cls.return_val(tsk, {}, status="timeout")
-            # 检查操作处理器是否存在
-            elif tsk.action in cls.queue_actions:
-                # 执行操作处理器
-                remaining = cls.TASK_TIMEOUT_SECONDS - (time.time() - timestamp.timestamp())
-                returns: dict = await asyncio.wait_for(
-                    cls.queue_actions[tsk.action](tsk, tsk.args), timeout=max(remaining, 0)
-                )
-                tsk_val = await cls.return_val(tsk, returns if returns else {})
-            else:
-                Logger.warning(f"Unknown action {tsk.action}, skip.")
-                tsk_val = await cls.return_val(tsk, {}, status="failed")
-
-            if tsk_val:
-                Logger.trace(f"Task {tsk.action}({tsk.task_id}) {tsk.status}.")
-                return
-            # 下面的代码不应该被执行，如果执行说明有代码 bug
-            Logger.error(f"Task {tsk.action}({tsk.task_id}) seems not finished properly, bug in code?")
-            await tsk.set_status("failed")
-        except asyncio.CancelledError:
-            # 处理器可能已经执行了外部副作用（发消息、禁言等），因此取消时不能把任务放回
-            # pending 让其它进程重试。写入 failed 终态既避免重复执行，也让等待方及时结束。
-            try:
-                await asyncio.shield(cls.return_val(tsk, {}, status="failed"))
-            except Exception:
-                Logger.exception(f"Failed to mark cancelled queue task {tsk.task_id} as failed: ")
-            raise
-        except TimeoutError:
-            Logger.warning(f"Task {tsk.task_id} timed out during action {tsk.action}.")
-            await cls.return_val(tsk, {}, status="timeout")
-            return
-        except Exception:
-            # 捕获任何异常并生成错误追踪
-            f = traceback.format_exc()
-            Logger.error(f)
-            await cls.return_val(tsk, {"traceback": f}, status="failed")
-            try:
-                # 向报告场景发送错误信息
-                # 上报场景按场景组配置，展开后同一现实场景的多个平台入口只应由其中一个收到回传
-                for ft in await bot.pick_channel_heads(await bot.fetch_union_target_list(cls.report_targets)):
-                    await cls.client_direct_message(
-                        ft,
-                        MessageChain.assign(
-                            [
-                                I18NContext("error.message.report", command=tsk.action),
-                                Plain(f.strip(), disable_joke=True, allow_parse=False),
-                            ]
-                        ),
-                        disable_secret_check=True,
-                    )
-            except Exception:
-                Logger.exception()
-            return
-
-    @classmethod
-    async def _check_queue(cls, target_client: str | None = None, claim_new: bool = True):
-        """检查队列中的待处理任务。
-
-        该方法执行以下步骤：
-        1. 检查 QueueTaskManager 中是否有待处理任务，如果已完成则设置其结果
-        2. 从数据库中获取待处理和正在处理的任务
-        3. 为每个待处理任务创建异步处理任务
-
-        :param target_client: 可选的目标客户端过滤，如果为 None 则获取当前客户端的任务
-        """
-        # Logger.debug(f"Checking job queue for {cls.name}, target client: {target_client if target_client else "all"}")
-        # 检查并设置已完成的任务结果。
-        # 该轮询每 100 毫秒执行一次，逐个任务查询会让同时等待的任务数直接乘上查询次数，
-        # 故一次取回全部待查任务。
-        waiting = list(QueueTaskManager.tasks)
-        if waiting:
-            for tsk in await JobQueuesTable.filter(task_id__in=waiting):
-                if tsk.status not in ["pending", "processing"]:
-                    await QueueTaskManager.set_result(str(tsk.task_id), tsk.result)
-
-        # 数据库维护期间只回收远端任务结果，不领取新的 action。不能把整个轮询器
-        # 停掉：在途 action 可能正在 QueueTaskManager 中等待客户端回包。
-        if not claim_new:
-            return
-        # Logger.debug([cls.name, target_client if target_client else exports["Bot"].Info.client_name])
-
-        # 获取待处理的任务列表
-        get_all = await JobQueuesTable.get_all(
-            [cls.name, target_client if target_client else exports["Bot"].Info.client_name]
-        )
-
-        # 异步处理所有待处理的任务
-        for tsk in get_all:
-            Logger.trace(f"Received job queue task {tsk.task_id}, action: {tsk.action}")
-            Logger.trace(f"Args: {tsk.args}")
-            # 查询 pending 与启动处理之间可能有其它进程读取到同一快照；只有原子领取成功的
-            # 消费者才能继续，避免发送消息、禁言等非幂等动作被执行两次。
-            if not await tsk.claim():
-                continue
-            task = asyncio.create_task(cls._process_task(tsk))
-            cls._process_tasks.add(task)
-            task.add_done_callback(cls._process_task_done)
-
-    @classmethod
-    async def check_job_queue(cls, target_client: str | None = None):
-        """启动队列检查循环。
-
-        该方法以 100 毫秒的间隔持续检查队列中的任务，直到遇到异常或被外部停止。
-        使用 pause_event 控制是否领取新任务。暂停时仍轮询终态结果，避免正在等待
-        远端回包的 action 与数据库维护流程互相等待。
-
-        :param target_client: 可选的目标客户端过滤
-        :raise QueueAlreadyRunning: 如果队列检查循环已经在运行
-        """
-        if cls.is_running:
-            raise QueueAlreadyRunning
-        current = asyncio.current_task()
-        cls._poller_task = current
-        cls.is_running = True
-        try:
-            while True:
-                async with cls._poll_lock:
-                    await cls._check_queue(target_client, claim_new=cls.pause_event.is_set())
-                # 以100毫秒的间隔循环检查
-                await asyncio.sleep(0.1)
-        finally:
-            cls.is_running = False
-            if cls._poller_task is current:
-                cls._poller_task = None
-
-    @classmethod
-    def action(cls, action_name: str):
-        """装饰器：注册操作处理器。
-
-        使用此装饰器可以为特定的操作名称注册处理函数。
-        处理器函数应该是异步函数，接收 JobQueuesTable 对象和参数字典。
-
-        示例:
-        ```
-            @JobQueueBase.action("my_action")
-            async def handle_my_action(tsk: JobQueuesTable, args: dict):
-                # 处理逻辑
-                return {"result": "success"}
-        ```
-
-        :param action_name: 操作的名称
-
-        :return: 装饰器函数
-        """
-
-        def decorator(func):
-            cls.queue_actions[action_name] = func
-            return func
-
-        return decorator
-
-    @classmethod
-    async def client_direct_message(
-        cls,
-        session_info: SessionInfo,
-        message: MessageChain | MessageNodes,
-        disable_secret_check=True,
-    ):
-        """向客户端发送直接消息。
-
-        该方法通过队列系统异步发送消息，不等待消息发送完成。
-
-        :param session_info: 会话信息对象，包含客户端与场景等信息
-        :param message: 要发送的消息链对象
-        :param disable_secret_check: 是否禁用密钥检查（默认 True）
-        """
-        await cls.add_job(
-            "Server",
-            "client_direct_message",
-            {
-                "session_info": converter.unstructure(session_info),
-                "message": converter.unstructure(message, MessageChain | MessageNodes),
-                "disable_secret_check": disable_secret_check,
-            },
-        )

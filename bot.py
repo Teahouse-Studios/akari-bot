@@ -91,6 +91,22 @@ failed_to_start_attempts = {}
 disabled_bots = []
 processes: list[multiprocessing.Process] = []
 server_stop_event = None
+jobqueue_hub_stop_event = None
+
+
+def warn_if_database_jobqueue_uses_sqlite(jobqueue_backend: object, database_type: object) -> bool:
+    """数据库队列与 SQLite 组合使用时输出一次非阻断警告。"""
+    if not isinstance(jobqueue_backend, str) or jobqueue_backend.strip().lower() != "database":
+        return False
+    if not isinstance(database_type, str) or database_type.strip().lower() != "sqlite":
+        return False
+    Logger.warning(
+        "JobQueue is using the database backend with SQLite. SQLite permits only one concurrent writer; "
+        "JobQueue delivery, claim, heartbeat, response, and cleanup writes will contend with application data "
+        'and may cause "database is locked" errors under load. Set [jobqueue].jobqueue_backend = "websocket" '
+        "in config/jobqueue.toml to move JobQueue traffic off SQLite."
+    )
+    return True
 
 
 def pre_init():
@@ -116,10 +132,12 @@ def pre_init():
 
     # CoreConfig 的导入须留在函数内：multiprocessing 以 spawn / forkserver 启动子进程时
     # 会以 __mp_main__ 重新导入主模块，置于顶层将使每个子进程再次触发配置模板的生成。
-    from core.config.base import CoreConfig
+    from core.config.core import CoreConfig
+    from core.config.jobqueue import bootstrap_jobqueue_config, JobQueueConfig
     from core.config.scan import scan_config_templates
     from core.constants.version import database_version
     from core.database import close_db, init_db
+    from core.database.link import db_type
     from core.database.models import SenderUnionInfo, DBVersion
 
     # 配置的生成集中在此完成：子进程一律只读，此处遗漏的键将在子进程读取时抛出异常，
@@ -128,6 +146,12 @@ def pre_init():
     if failed_templates:
         Logger.critical(f"Failed to load config templates: {failed_templates}. Aborting.")
         sys.exit(1)
+
+    generated_jobqueue_fields = bootstrap_jobqueue_config()
+    if generated_jobqueue_fields:
+        Logger.info("Generated and saved missing JobQueue configuration values.")
+
+    warn_if_database_jobqueue_uses_sqlite(JobQueueConfig.jobqueue_backend, db_type)
 
     if CoreConfig.debug:
         Logger.debug("Debug mode is enabled.")
@@ -220,11 +244,18 @@ def server_go(stop_event, subprocess: bool = False, binary_mode: bool = False):
     run_async(subprocess, binary_mode, stop_event)
 
 
+def jobqueue_hub_go(stop_event, ready_event):
+    """在独立子进程中运行内置 WebSocket JobQueue Hub。"""
+    from core.queue.websocket import run_websocket_hub_process
+
+    run_websocket_hub_process(stop_event, ready_event)
+
+
 binary_mode = not sys.argv[0].endswith(".py")
 
 
 async def run_bot():
-    global server_stop_event
+    global server_stop_event, jobqueue_hub_stop_event
 
     # 自此起 spawn 出的子进程一律只读：配置的生成已在 pre_init 中完成。
     # 须在任何 mp.Process 之前置位，spawn 会继承环境；restart_bot_process() 后续重启子进程时同样适用。
@@ -233,8 +264,37 @@ async def run_bot():
 
     # CONFIG_READONLY_ENV 必须先于 core.config 的首次导入置位；后者会在导入期执行配置版本迁移。
     from core.config import CFGManager
+    from core.config.jobqueue import JobQueueConfig
 
     mp = multiprocessing.get_context("spawn" if sys.platform in ["win32", "darwin"] else "forkserver")
+
+    if JobQueueConfig.jobqueue_backend.strip().lower() == "websocket":
+        from core.queue.websocket import WebSocketSettings
+
+        websocket_settings = WebSocketSettings.from_config()
+    else:
+        websocket_settings = None
+
+    if websocket_settings is not None and websocket_settings.embedded:
+        jobqueue_hub_stop_event = mp.Event()
+        hub_ready_event = mp.Event()
+        hub_process = mp.Process(
+            target=jobqueue_hub_go,
+            args=(jobqueue_hub_stop_event, hub_ready_event),
+            name="jobqueue-hub",
+            daemon=True,
+        )
+        hub_process.start()
+        processes.append(hub_process)
+        hub_ready = await asyncio.to_thread(hub_ready_event.wait, 10)
+        if not hub_ready or not hub_process.is_alive():
+            exitcode = hub_process.exitcode
+            Logger.critical(f"WebSocket JobQueue Hub failed to start, exit code: {exitcode}.")
+            terminate_process(hub_process, jobqueue_hub_stop_event)
+            processes.remove(hub_process)
+            jobqueue_hub_stop_event = None
+            raise RuntimeError("Failed to start the WebSocket JobQueue Hub")
+        Logger.success("WebSocket JobQueue Hub is ready.")
 
     def restart_bot_process(bot_name: str):
         if (
@@ -308,6 +368,9 @@ async def run_bot():
                     raise RestartBot
                 Logger.critical(f"Process {p.pid} (server) exited with code {p.exitcode}, please check the log.")
                 sys.exit(p.exitcode)
+            if p.name == "jobqueue-hub":
+                Logger.critical(f"Process {p.pid} (jobqueue-hub) exited with code {p.exitcode}, please check the log.")
+                sys.exit(p.exitcode or 1)
             if p.exitcode == 0:
                 Logger.warning(f"Process {p.pid} ({p.name}) exited with code 0, abort to restart.")
                 processes.remove(p)
@@ -347,19 +410,24 @@ def terminate_process(
 
 
 def cleanup_processes():
-    global server_stop_event
-    # 先停止平台入口，避免 Server 清空队列时仍有新任务写入；最后让 Server 释放 WebRender 等资源。
-    ordered_processes = sorted(processes, key=lambda ps: ps.name == "server")
+    global server_stop_event, jobqueue_hub_stop_event
+    # 先停止平台入口，再停止 Server；WebSocket Hub 最后退出，以便其它进程完成关闭信号与回包。
+    shutdown_order = {"server": 1, "jobqueue-hub": 2}
+    ordered_processes = sorted(processes, key=lambda ps: shutdown_order.get(ps.name, 0))
     for ps in ordered_processes:
         pid = ps.pid
         name = ps.name
         Logger.warning(f"Terminating process {pid} ({name})...")
         try:
-            terminate_process(ps, server_stop_event if name == "server" else None)
+            graceful_event = (
+                server_stop_event if name == "server" else jobqueue_hub_stop_event if name == "jobqueue-hub" else None
+            )
+            terminate_process(ps, graceful_event)
         except Exception:
             Logger.exception(f"Failed to terminate process {pid} ({name}) cleanly.")
     processes.clear()
     server_stop_event = None
+    jobqueue_hub_stop_event = None
 
 
 async def main_async():

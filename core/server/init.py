@@ -12,7 +12,6 @@ import asyncio
 import logging
 
 import orjson
-from core.alive import Alive
 from core.builtins.bot import Bot
 from core.builtins.converter import converter
 from core.builtins.message.chain import MessageChain
@@ -23,11 +22,13 @@ from core.constants import Info, PrivateAssets, Secret
 from core.database import init_db
 from core.loader import load_modules, ModulesManager
 from core.logger import Logger
+from core.queue.server import JobQueueServer
+from core.queue.backend import create_jobqueue_backend
 from core.scheduler import IntervalTrigger, SchedulerLifecycle
 from core.utils.bash import run_sys_command
 from .background_tasks import hourly_background_task, start_background_task
 
-# 等待发起重启的客户端重新上报保活的秒数上限。server 与各 bot 子进程一同重启，
+# 等待发起重启的客户端重新注册为 ready 的秒数上限。server 与各 bot 子进程一同重启，
 # 提示投递时客户端往往尚未就绪；但重启提示并非关键路径，客户端确已掉线时不应无限等待。
 RESTART_PROMPT_TIMEOUT = 60
 
@@ -45,11 +46,17 @@ async def init_async(start_scheduler=True, send_prompt=True) -> None:
 
     Args:
         start_scheduler: 是否启动定时任务（默认True）
-        send_prompt: 是否发送重启提示（默认True）。提示须等目标客户端重新上报保活方能投递，
-                     而保活信号经队列轮询取回，故由调用方在轮询启动后自行调用 `load_prompt`
+        send_prompt: 是否发送重启提示（默认True）。提示须等目标客户端重新注册为 ready 方能投递，
+                     故由调用方在数据库和队列启动后自行调用 `load_prompt`
     """
     # 设置客户端信息为 "Server"
     Info.client_name = "Server"
+    JobQueueServer.configure_backend(create_jobqueue_backend())
+    JobQueueServer.configure_peer(
+        role="server",
+        service=Info.client_name,
+        capabilities=["rpc", "signals", "modules", "scheduler"],
+    )
     Logger.rename(Info.client_name)
 
     # 读取版本信息
@@ -115,15 +122,22 @@ async def load_secret():
 
 
 async def _wait_for_client_online(client_name: str, timeout: float) -> bool:
-    """等待客户端重新上报保活。
+    """等待客户端重新注册为 ready。
 
     :param client_name: 目标客户端名称
     :param timeout: 等待的秒数上限
     :return: 客户端是否已上线
     """
 
+    from core.queue.peer import PeerSelector
+
     async def _poll():
-        while not Alive.is_alive(client_name):
+        while True:
+            records = await JobQueueServer.registry.resolve(PeerSelector(roles=("client",), services=(client_name,)))
+            if records:
+                for record in records:
+                    JobQueueServer._update_peer_cache(record.snapshot())
+                return
             await asyncio.sleep(0.5)
 
     try:
@@ -139,8 +153,8 @@ async def load_prompt(locale_load_error, timeout: float | None = None) -> None:
     如果存在缓存的发送重启命令的对象信息，发送加载成功或失败的提示。
     清理缓存文件。
 
-    保活表随 server 进程内存一并清空，重启后须等目标客户端重新上报保活方能投递提示，
-    否则 `JobQueueServer.add_job` 会以「客户端掉线」为由将其丢弃。
+    本地拓扑缓存随 server 进程内存一并清空，重启后须以 Peer Registry 确认目标客户端
+    已注册为 ready 方能投递提示，否则平台 RPC 会因客户端尚未上线而失败。
 
     :param locale_load_error: 语言文件加载过程中产生的错误信息
     :param timeout: 等待目标客户端上线的秒数上限，默认为 `RESTART_PROMPT_TIMEOUT`

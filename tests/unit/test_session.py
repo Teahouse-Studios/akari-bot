@@ -2,7 +2,7 @@
 
 import asyncio
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
@@ -10,6 +10,7 @@ from core.builtins.session.info import SessionInfo
 from core.builtins.session.lock import ExecutionLockList
 from core.builtins.session.tasks import SessionTaskManager
 from core.database.models import SenderUnionInfo, TargetUnionBind, TargetUnionInfo
+from core.queue.contracts import PlatformAPI
 from core.tester import func_case, Tester
 from core.tester.mock.session import MockMessageSession
 
@@ -1270,7 +1271,6 @@ async def _test_send_message_binds_button_callback_reply_id():
     from core.builtins.message.internal import Button
     from core.builtins.session.info import SessionInfo
     from core.builtins.session.internal import MessageSession
-    from core.exports import exports
     from core.i18n import Locale
 
     captured = {}
@@ -1279,7 +1279,7 @@ async def _test_send_message_binds_button_callback_reply_id():
         @classmethod
         async def client_send_message(cls, session_info, chain, **kwargs):
             captured["chain"] = chain
-            return {"message_id": ["physical-message"]}
+            return ["physical-message"]
 
     async def callback(_session):
         pass
@@ -1297,7 +1297,7 @@ async def _test_send_message_binds_button_callback_reply_id():
     msg = MessageSession(session)
     SessionTaskManager._callback_list.clear()
     try:
-        with patch.dict(exports, {"JobQueueServer": FakeJobQueueServer}):
+        with patch.object(PlatformAPI, "send_message", new=FakeJobQueueServer.client_send_message):
             finished = await msg.send_message(
                 MessageChain.assign(Button("Choose", "1")),
                 callback=callback,
@@ -1329,7 +1329,6 @@ async def _test_button_callback_registered_before_send_returns():
     from core.builtins.message.internal import Button
     from core.builtins.session.info import SessionInfo
     from core.builtins.session.internal import MessageSession
-    from core.exports import exports
     from core.i18n import Locale
 
     called = 0
@@ -1368,11 +1367,11 @@ async def _test_button_callback_registered_before_send_returns():
             )
             if not await SessionTaskManager.check(reply):
                 raise RuntimeError("callback was not registered before platform send returned")
-            return {"message_id": ["physical-message"]}
+            return ["physical-message"]
 
     SessionTaskManager._callback_list.clear()
     try:
-        with patch.dict(exports, {"JobQueueServer": RacingJobQueueServer}):
+        with patch.object(PlatformAPI, "send_message", new=RacingJobQueueServer.client_send_message):
             finished = await msg.send_message(MessageChain.assign(Button("Choose", "1")), callback=callback)
         registered = list(SessionTaskManager._callback_list.values())
         return (
@@ -1391,13 +1390,12 @@ async def _test_send_failure_does_not_leave_callback():
     from core.builtins.message.internal import Button
     from core.builtins.session.info import SessionInfo
     from core.builtins.session.internal import MessageSession
-    from core.exports import exports
     from core.i18n import Locale
 
     class FailedJobQueueServer:
         @classmethod
         async def client_send_message(cls, session_info, chain, **kwargs):
-            return {"message_id": []}
+            return []
 
     async def callback(_session):
         return None
@@ -1416,7 +1414,7 @@ async def _test_send_failure_does_not_leave_callback():
     )
     SessionTaskManager._callback_list.clear()
     try:
-        with patch.dict(exports, {"JobQueueServer": FailedJobQueueServer}):
+        with patch.object(PlatformAPI, "send_message", new=FailedJobQueueServer.client_send_message):
             finished = await msg.send_message(MessageChain.assign(Button("Choose", "1")), callback=callback)
         return finished.message_id == [] and not SessionTaskManager._callback_list
     finally:
@@ -1594,7 +1592,6 @@ async def _test_callback_registration_handle_survives_alias_collision():
 async def _test_pending_plain_callbacks_make_bot_fallback_ambiguous():
     """无按钮 callback 在发送回包前也须登记，避免 bot_id fallback 串线。"""
     from core.builtins.session.internal import MessageSession
-    from core.exports import exports
     from core.i18n import Locale
 
     entered = asyncio.Event()
@@ -1611,7 +1608,7 @@ async def _test_pending_plain_callbacks_make_bot_fallback_ambiguous():
             if call_count == 2:
                 entered.set()
             await release_sends.wait()
-            return {"message_id": [f"physical-{call_index}"]}
+            return [f"physical-{call_index}"]
 
     async def first_callback(_session):
         called.append("first")
@@ -1645,7 +1642,7 @@ async def _test_pending_plain_callbacks_make_bot_fallback_ambiguous():
     first_task = None
     second_task = None
     try:
-        with patch.dict(exports, {"JobQueueServer": BlockingQueueServer}):
+        with patch.object(PlatformAPI, "send_message", new=BlockingQueueServer.client_send_message):
             first_task = asyncio.create_task(first.send_message("one", callback=first_callback))
             second_task = asyncio.create_task(second.send_message("two", callback=second_callback))
             await asyncio.wait_for(entered.wait(), timeout=0.5)
@@ -2006,7 +2003,6 @@ async def _test_send_message_does_not_set_transport_format_flag():
     from core.builtins.message.internal import Markdown
     from core.builtins.session.info import SessionInfo
     from core.builtins.session.internal import MessageSession
-    from core.exports import exports
 
     class FailingQueueServer:
         @classmethod
@@ -2023,7 +2019,7 @@ async def _test_send_message_does_not_set_transport_format_flag():
     session_info.tmp["existing"] = "value"
     msg = MessageSession(session_info)
 
-    with patch.dict(exports, {"JobQueueServer": FailingQueueServer}):
+    with patch.object(PlatformAPI, "send_message", new=FailingQueueServer.client_send_message):
         try:
             await msg.send_message(Markdown("**test**"))
         except RuntimeError:
@@ -2057,8 +2053,9 @@ async def _test_wait_next_message_registers_before_fast_reply():
     )
     msg = FastReplySession(session_info)
     try:
-        result = await msg.wait_next_message("prompt", timeout=0.05)
-        return result is msg
+        with patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)):
+            result = await msg.wait_next_message("prompt", timeout=0.05)
+            return result is msg
     except WaitCancelException:
         return False
     finally:
@@ -2094,15 +2091,16 @@ async def _test_wait_next_message_preserves_choice_rows():
     msg = CaptureSession(session_info)
     choices = [{f"Page {index}": str(index)} for index in range(1, 6)]
     try:
-        result = await msg.wait_next_message("prompt", possibly_choices=choices, timeout=0.05)
-        frames = [element for element in msg.captured.values if isinstance(element, ButtonFrameElement)]
-        return (
-            result is msg
-            and len(frames) == 1
-            and len(frames[0].rows) == 5
-            and all(len(row.buttons) == 1 for row in frames[0].rows)
-            and [row.buttons[0].show for row in frames[0].rows] == [f"Page {index}" for index in range(1, 6)]
-        )
+        with patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)):
+            result = await msg.wait_next_message("prompt", possibly_choices=choices, timeout=0.05)
+            frames = [element for element in msg.captured.values if isinstance(element, ButtonFrameElement)]
+            return (
+                result is msg
+                and len(frames) == 1
+                and len(frames[0].rows) == 5
+                and all(len(row.buttons) == 1 for row in frames[0].rows)
+                and [row.buttons[0].show for row in frames[0].rows] == [f"Page {index}" for index in range(1, 6)]
+            )
     finally:
         SessionTaskManager._task_list.clear()
 
@@ -2137,7 +2135,8 @@ async def _test_wait_confirm_registers_before_reaction_roundtrip():
     )
     msg = FastConfirmSession(session_info)
     try:
-        return await msg.wait_confirm("prompt", delete=False, timeout=0.05)
+        with patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)):
+            return await msg.wait_confirm("prompt", delete=False, timeout=0.05)
     except WaitCancelException:
         return False
     finally:
@@ -2180,9 +2179,10 @@ async def _test_wait_reply_registers_before_send_returns():
     msg = FastReplySession(session_info)
     SessionTaskManager._task_list.clear()
     try:
-        result = await msg.wait_reply("prompt", delete=False, timeout=0.5)
-        handled = await check_task_holder["task"] if "task" in check_task_holder else False
-        return result is incoming and handled and not SessionTaskManager.get()
+        with patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)):
+            result = await msg.wait_reply("prompt", delete=False, timeout=0.5)
+            handled = await check_task_holder["task"] if "task" in check_task_holder else False
+            return result is incoming and handled and not SessionTaskManager.get()
     finally:
         check_task = check_task_holder.get("task")
         if check_task and not check_task.done():

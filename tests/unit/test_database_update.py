@@ -1,4 +1,4 @@
-"""URL 全局规则的数据库升级测试。"""
+"""数据库版本升级测试。"""
 
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -87,8 +87,94 @@ async def _test_invalid_rule_preserves_source_table():
             return result
 
 
+async def _test_jobqueue_v5_migration_drops_and_recreates_table():
+    for db_type, drop_statement in (
+        ("sqlite", 'DROP TABLE IF EXISTS "job_queues";'),
+        ("mysql", "DROP TABLE IF EXISTS `job_queues`;"),
+    ):
+        conn = AsyncMock()
+        generate_schemas = AsyncMock()
+
+        with (
+            patch.object(database_update, "db_type", db_type),
+            patch.object(database_update.Tortoise, "generate_schemas", new=generate_schemas),
+        ):
+            await database_update.update_database_to_v5(conn)
+
+        if not (
+            conn.execute_query.await_count == 1
+            and conn.execute_query.await_args.args == (drop_statement,)
+            and generate_schemas.await_count == 1
+            and generate_schemas.await_args.kwargs == {"safe": True}
+        ):
+            return False
+    return True
+
+
+async def _test_jobqueue_v5_migration_recreates_current_sqlite_schema():
+    conn = database_update.Tortoise.get_connection("default")
+    await conn.execute_query('DROP TABLE IF EXISTS "job_queues";')
+    await conn.execute_query("""
+        CREATE TABLE "job_queues" (
+            "task_id" CHAR(36) PRIMARY KEY,
+            "target_client" VARCHAR(512) NOT NULL,
+            "action" VARCHAR(512) NOT NULL,
+            "args" JSON NOT NULL DEFAULT '{}',
+            "status" VARCHAR(32) NOT NULL DEFAULT 'pending',
+            "result" JSON NOT NULL DEFAULT '{}',
+            "timestamp" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+    """)
+    await conn.execute_query("""
+        INSERT INTO "job_queues" ("task_id", "target_client", "action")
+        VALUES ('00000000-0000-0000-0000-000000000001', 'client:test', 'legacy.action');
+    """)
+
+    try:
+        with patch.object(database_update, "db_type", "sqlite"):
+            await database_update.update_database_to_v5(conn)
+
+        columns = {row["name"] for row in await conn.execute_query_dict('PRAGMA table_info("job_queues");')}
+        indexes = set()
+        for index in await conn.execute_query_dict('PRAGMA index_list("job_queues");'):
+            index_columns = await conn.execute_query_dict(f'PRAGMA index_info("{index["name"]}");')
+            indexes.add(tuple(column["name"] for column in index_columns))
+        rows = await conn.execute_query_dict('SELECT * FROM "job_queues";')
+        return (
+            not rows
+            and "target_client" not in columns
+            and {
+                "task_id",
+                "correlation_id",
+                "source_peer_id",
+                "target_peer",
+                "message_kind",
+                "expects_response",
+                "action",
+                "args",
+                "status",
+                "claimed_by",
+                "result",
+                "timestamp",
+            }
+            <= columns
+            and {("target_peer", "status"), ("status", "timestamp")} <= indexes
+        )
+    finally:
+        await conn.execute_query('DROP TABLE IF EXISTS "job_queues";')
+        await database_update.Tortoise.generate_schemas(safe=True)
+
+
 @func_case
 async def test_database_update(tester: Tester):
     await tester.test(_test_wiki_url_rules_are_migrated_idempotently, "Wiki URL 规则幂等迁入全局名单")
     await tester.test(_test_invalid_rule_preserves_source_table, "URL 规则迁移失败时保留旧表")
+    await tester.test(
+        _test_jobqueue_v5_migration_drops_and_recreates_table,
+        "JobQueue v5 删除旧任务表并触发安全建表",
+    )
+    await tester.test(
+        _test_jobqueue_v5_migration_recreates_current_sqlite_schema,
+        "JobQueue v5 丢弃旧任务并重建当前 SQLite 表结构",
+    )
     return tester

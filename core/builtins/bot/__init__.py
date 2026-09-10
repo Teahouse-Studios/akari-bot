@@ -6,7 +6,7 @@
 """
 
 import asyncio
-from typing import Any, Awaitable, Callable, TYPE_CHECKING
+from typing import Any, Awaitable, Callable
 
 from core.alive import Alive
 from core.builtins.message.chain import *
@@ -26,15 +26,14 @@ from core.database.models import (
     TargetUnionBind,
     TargetUnionInfo,
 )
-from core.exports import add_export, exports
+from core.exports import add_export
 from core.logger import Logger
 from core.utils.retired import filter_retired_targets
 from core.utils.func import convert_list
 from core.utils.session import inject_features
 
-if TYPE_CHECKING:
-    from core.queue.client import JobQueueClient
-    from core.queue.server import JobQueueServer
+from core.queue.contracts import PlatformAPI, ServerAPI
+from core.queue.errors import RpcUnavailableError
 
 enable_analytics = CoreConfig.enable_analytics
 
@@ -119,8 +118,7 @@ class Bot:
             ctx_manager.add_context(session_info, ctx)
             try:
                 # 获取消息队列客户端并发送消息给服务器处理
-                queue_client: "JobQueueClient" = exports["JobQueueClient"]
-                await queue_client.send_message_to_server(session_info)
+                await ServerAPI.receive_message(session_info)
 
                 # 等待 1 秒后清理上下文（防止删除过快导致的错误）
                 await asyncio.sleep(1)
@@ -158,8 +156,7 @@ class Bot:
         if not isinstance(event_info, EventInfo):
             raise TypeError("event_info must be an EventInfo")
 
-        queue_client: "JobQueueClient" = exports["JobQueueClient"]
-        return await queue_client.send_event_to_server(event_info)
+        return await ServerAPI.receive_event.submit(event_info)
 
     @staticmethod
     async def post_global_message(
@@ -343,9 +340,6 @@ class Bot:
         if session_list is None:
             session_list = await Bot.get_enabled_this_module(module_name)
 
-        # 获取消息队列服务器
-        queue_server: "JobQueueServer" = exports["JobQueueServer"]
-
         # 同一条消息通道仅推送一次，其余会话作为发送失败时的后备
         for session_ in await cls.pick_channel_heads(session_list):
             # 将消息转换为该会话支持的消息链格式
@@ -362,7 +356,12 @@ class Bot:
                 post_message = chain
 
             # 发送消息
-            await queue_server.client_post_message(session_, post_message, module_name)
+            try:
+                await PlatformAPI.post_message.submit(session_, post_message, module_name)
+            except RpcUnavailableError:
+                # 选择队首之后可能刚好掉线，仍让剩余场景获得投递机会。
+                await ServerAPI.post_next_hop.submit(session_.next_hops, post_message, module_name)
+                continue
 
             # 如果启用分析功能，记录统计数据。一条消息通道计为一次推送，因此每组仅记录一条
             if enable_analytics and module_name:
@@ -390,8 +389,7 @@ class Bot:
         """
         if not isinstance(session_info, SessionInfo):
             raise TypeError("session_info must be a SessionInfo")
-        queue_server: "JobQueueServer" = exports["JobQueueServer"]
-        await queue_server.client_start_typing_signal(session_info)
+        await PlatformAPI.start_typing(session_info)
 
     @classmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
@@ -403,8 +401,7 @@ class Bot:
         """
         if not isinstance(session_info, SessionInfo):
             raise TypeError("session_info must be a SessionInfo")
-        queue_server: "JobQueueServer" = exports["JobQueueServer"]
-        await queue_server.client_end_typing_signal(session_info)
+        await PlatformAPI.end_typing(session_info)
 
     @classmethod
     def register_context_manager(cls, ctx_manager: Any, fetch_session: bool = False) -> int:
@@ -548,15 +545,14 @@ class Bot:
             Logger.warning(f"Client {session_info.client_name} does not support private message.")
             return []
 
-        queue_server: "JobQueueServer" = exports["JobQueueServer"]
         message = get_message_chain(session_info, message)
 
-        return_val = await queue_server.client_send_private_message(
+        return_val = await PlatformAPI.send_private_msg(
             session_info,
             user_id,
             message,
         )
-        return return_val.get("message_id") or []
+        return return_val
 
     @classmethod
     async def get_enabled_this_module(cls, module: str) -> list[FetchedSessionInfo]:
