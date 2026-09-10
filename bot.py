@@ -128,7 +128,7 @@ def pre_init():
     # CoreConfig 的导入须留在函数内：multiprocessing 以 spawn / forkserver 启动子进程时
     # 会以 __mp_main__ 重新导入主模块，置于顶层将使每个子进程再次触发配置模板的生成。
     from core.config.core import CoreConfig
-    from core.config.jobqueue import JobQueueConfig
+    from core.config.jobqueue import bootstrap_jobqueue_config, JobQueueConfig
     from core.config.scan import scan_config_templates
     from core.constants.version import database_version
     from core.database import close_db, init_db
@@ -141,6 +141,10 @@ def pre_init():
     if failed_templates:
         Logger.critical(f"Failed to load config templates: {failed_templates}. Aborting.")
         sys.exit(1)
+
+    generated_jobqueue_fields = bootstrap_jobqueue_config()
+    if generated_jobqueue_fields:
+        Logger.info("Generated and saved missing JobQueue configuration values.")
 
     warn_if_database_jobqueue_uses_sqlite(JobQueueConfig.jobqueue_backend, db_type)
 

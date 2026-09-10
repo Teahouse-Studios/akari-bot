@@ -8,6 +8,8 @@ import tempfile
 import tomllib
 from contextlib import contextmanager
 from pathlib import Path
+from unittest.mock import patch
+from uuid import UUID
 
 from core.config import CFGManager
 from core.config.scan import scan_config_templates
@@ -122,7 +124,10 @@ def _test_fresh_process_generates_all_grouped_core_templates():
                     "build_locale_snapshot(list(lang_list.keys()), all_locales_path, 'akari-bot'); "
                     "connect_locale_snapshot('akari-bot'); "
                     "from core.config.scan import scan_config_templates; "
-                    "raise SystemExit(bool(scan_config_templates()))"
+                    "from core.config.jobqueue import bootstrap_jobqueue_config; "
+                    "failed = scan_config_templates(); "
+                    "bootstrap_jobqueue_config() if not failed else None; "
+                    "raise SystemExit(bool(failed))"
                 ),
             ],
             cwd=Path(__file__).resolve().parents[2],
@@ -152,8 +157,9 @@ def _test_fresh_process_generates_all_grouped_core_templates():
             and not any(key.startswith("jobqueue_") for key in core_values["config"])
             and not any(key.startswith("jobqueue_") for key in core_values["secret"])
             and jobqueue_values["jobqueue"]["jobqueue_backend"] == "websocket"
+            and UUID(jobqueue_values["jobqueue"]["jobqueue_node_id"]).version == 4
             and jobqueue_values["jobqueue"]["jobqueue_websocket_mode"] == "embedded"
-            and "jobqueue_websocket_token" in jobqueue_values["jobqueue_secret"]
+            and len(jobqueue_values["jobqueue_secret"]["jobqueue_websocket_token"]) >= 43
             and "s3_bucket" in s3_values["s3"]
             and "remote_web_render_url" in webrender_values["webrender"]
             and jobqueue_text.index(intro)
@@ -164,6 +170,34 @@ def _test_fresh_process_generates_all_grouped_core_templates():
         )
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
+
+
+def _test_jobqueue_bootstrap_persists_missing_values_once():
+    """JobQueue 共享身份与密钥应在配置生成阶段安全自举，并保留后续已有值。"""
+    from core.config.jobqueue import bootstrap_jobqueue_config
+
+    generated_uuid = UUID("12345678-1234-4678-9234-567812345678")
+    generated_token = "generated-jobqueue-token"
+    with _temp_config() as tmp:
+        CFGManager.edit_write("jobqueue_node_id", "  ", str, table_name="jobqueue")
+        CFGManager.edit_write("jobqueue_websocket_token", "", str, secret=True, table_name="jobqueue")
+        with (
+            patch("core.config.jobqueue.uuid4", return_value=generated_uuid) as uuid_factory,
+            patch("core.utils.random.SecureRandom.token_urlsafe", return_value=generated_token) as token_factory,
+        ):
+            first = bootstrap_jobqueue_config()
+            second = bootstrap_jobqueue_config()
+
+        with (tmp / "jobqueue.toml").open("rb") as jobqueue_file:
+            values = tomllib.load(jobqueue_file)
+        return (
+            first == ("jobqueue_node_id", "jobqueue_websocket_token")
+            and second == ()
+            and uuid_factory.call_count == 1
+            and token_factory.call_count == 1
+            and values["jobqueue"]["jobqueue_node_id"] == str(generated_uuid)
+            and values["jobqueue_secret"]["jobqueue_websocket_token"] == generated_token
+        )
 
 
 def _test_scan_writes_template_fields():
@@ -299,6 +333,7 @@ async def test_config_scan(tester: Tester):
     await tester.test(_test_scan_reports_no_failure, "全部模板可加载测试")
     await tester.test(_test_core_templates_are_grouped_into_domain_files, "核心配置模板独立文件与兼容导入测试")
     await tester.test(_test_fresh_process_generates_all_grouped_core_templates, "全新进程生成领域模板测试")
+    await tester.test(_test_jobqueue_bootstrap_persists_missing_values_once, "JobQueue 身份与密钥持久化自举测试")
     await tester.test(_test_scan_writes_template_fields, "可写进程中模板补写字段测试")
     await tester.test(_test_standalone_comment_declaration_is_validated, "独立配置注释声明校验测试")
     await tester.test(_test_scan_repairs_raw_i18n_comments, "原始 i18n 配置注释修复测试")

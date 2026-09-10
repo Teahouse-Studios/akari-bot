@@ -178,7 +178,7 @@ class JobQueueBase:
             node_id = JobQueueConfig.jobqueue_node_id
             if isinstance(node_id, str):
                 node_id = node_id.strip() or None
-        # 未配置节点标识时，仅为当前进程生命周期生成新的随机值。
+        # 正常启动会在 pre_init 中持久化缺失值；此回退仅供绕过守护进程的独立入口和测试使用。
         resolved_node_id = str(uuid4()) if node_id is None else node_id
         if not isinstance(resolved_node_id, str) or not resolved_node_id or len(resolved_node_id) > 128:
             raise ValueError("Peer node ID must be a nonempty string no longer than 128 characters")
