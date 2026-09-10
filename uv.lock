@@ -261,6 +261,7 @@ dependencies = [
     { name = "pywin32", marker = "sys_platform == 'win32'" },
     { name = "pyyaml" },
     { name = "qq-botpy-sdk" },
+    { name = "qrcode" },
     { name = "rapidfuzz" },
     { name = "rdkit" },
     { name = "regex" },
@@ -339,6 +340,7 @@ requires-dist = [
     { name = "pywin32", marker = "sys_platform == 'win32'", specifier = ">=312,<313" },
     { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "qq-botpy-sdk", specifier = "==2.0.3" },
+    { name = "qrcode", specifier = ">=8.2,<9.0.0" },
     { name = "rapidfuzz", specifier = ">=3.14.5" },
     { name = "rdkit", specifier = ">=2026.3.1,<2026.4.0" },
     { name = "regex", specifier = ">=2026.5.9,<2027.0.0" },
@@ -3245,6 +3247,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/8e/33/00e5abe2f5e1bf82a65652644df8501ce9d96a45a544d7f13f01dff704b0/qq_botpy_sdk-2.0.3.tar.gz", hash = "sha256:cb0f569e230b8632c9d438abaa0c9eabde29525b97a0a07ccf866986f7f2bab0", size = 113304, upload-time = "2026-08-17T18:22:11.14Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/22/a2/60c2a2765d3c3d52ca49deabd76a54699bed1d138364261c5ade7aeec836/qq_botpy_sdk-2.0.3-py3-none-any.whl", hash = "sha256:ef0368dfddc946f3b2da09ba61b63968a3e3bb9110c9c045c205e4b03cfd1796", size = 139712, upload-time = "2026-08-17T18:22:09.517Z" },
+]
+
+[[package]]
+name = "qrcode"
+version = "8.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "colorama", marker = "sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8f/b2/7fc2931bfae0af02d5f53b174e9cf701adbb35f39d69c2af63d4a39f81a9/qrcode-8.2.tar.gz", hash = "sha256:35c3f2a4172b33136ab9f6b3ef1c00260dd2f66f858f24d88418a015f446506c", size = 43317, upload-time = "2025-05-01T15:44:24.726Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/dd/b8/d2d6d731733f51684bbf76bf34dab3b70a9148e8f2cef2bb544fccec681a/qrcode-8.2-py3-none-any.whl", hash = "sha256:16e64e0716c14960108e85d853062c9e8bba5ca8252c0b4d0231b9df4060ff4f", size = 45986, upload-time = "2025-05-01T15:44:22.781Z" },
 ]
 
 [[package]]
