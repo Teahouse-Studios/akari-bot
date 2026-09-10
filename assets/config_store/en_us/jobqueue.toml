@@ -1,6 +1,6 @@
-# https://toml.io/cn/v1.0.0
-# 注意：TOML 不是 Python。请不要在此处使用 Python 语法。
-# 例如：TOML 中的布尔值必须是小写。
+# https://toml.io/en/v1.0.0
+# NOTE: TOML is not like Python. Do not use Python syntax here.
+# EXAMPLE: Boolean values in TOML must be lowercase.
 
 [jobqueue]
 # JobQueue 的非敏感配置部分。请勿在此处填写访问令牌等敏感信息。
