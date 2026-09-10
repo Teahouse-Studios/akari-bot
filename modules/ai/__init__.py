@@ -18,7 +18,7 @@ ai = module("ai", developers=["DoroWolf", "Dianliang233"], desc="{I18N:ai.help.d
 
 
 @ai.command(
-    "<prompt> [--no-tools] [--ctx <ctx>] [--llm <llm>] {{I18N:ai.help}}",
+    "<prompt> [--no-tools] [--ctx <session_id>] [--llm <llm>] {{I18N:ai.help}}",
     options_desc={
         "--llm": "{I18N:ai.help.option.llm}",
         "--no-tools": "{I18N:ai.help.option.no_tools}",
@@ -27,7 +27,7 @@ ai = module("ai", developers=["DoroWolf", "Dianliang233"], desc="{I18N:ai.help.d
 )
 async def _(msg: Bot.MessageSession, prompt: str):
     get_ctx = msg.parsed_msg.get("--ctx", False)
-    context_id = get_ctx["<ctx>"].strip() if get_ctx else None
+    session_id = get_ctx["<session_id>"].strip() if get_ctx else None
     use_tools = not msg.parsed_msg.get("--no-tools", False)
     get_llm = msg.parsed_msg.get("--llm", False)
     selected_llm = get_llm["<llm>"].lower() if get_llm else None
@@ -35,8 +35,8 @@ async def _(msg: Bot.MessageSession, prompt: str):
     is_superuser = msg.check_super_user()
 
     # 延续上下文只能通过 --ctx 显式指定；引用回复由 wait_reply 循环处理。
-    history = get_context(context_id) if context_id else None
-    if context_id and history is None:
+    history = get_context(session_id) if session_id else None
+    if session_id and history is None:
         await msg.finish(I18NContext("ai.message.context.invalid"))
 
     available_llms = llm_list + (llm_su_list if is_superuser else [])
@@ -96,10 +96,10 @@ async def _(msg: Bot.MessageSession, prompt: str):
         )
 
         # 建立或延续上下文窗口，并附上上下文 ID 与提示。
-        if context_id:
-            update_context(context_id, history)
+        if session_id:
+            update_context(session_id, history)
         else:
-            context_id = create_context(history)
+            session_id = create_context(history)
 
         Logger.info(f"{input_tokens + cache_tokens + output_tokens} token used while calling LLM.")
         Logger.info(f"Input (miss cache): {input_tokens} | Input (hit cache): {cache_tokens} | Output: {output_tokens}")
@@ -122,10 +122,10 @@ async def _(msg: Bot.MessageSession, prompt: str):
             chain.append(
                 I18NContext(
                     "ai.message.context.hint",
-                    cmd=ActionText(f"{msg.session_info.prefixes[0]}ai --ctx {context_id}"),
+                    cmd=ActionText(f"{msg.session_info.prefixes[0]}ai --ctx {session_id}"),
                 )
             )
-        chain.append(I18NContext("ai.message.context.id", context_id=context_id))
+        chain.append(I18NContext("ai.message.context.id", session_id=session_id))
         if petal != 0:
             chain.append(I18NContext("petal.message.cost", amount=petal))
 
@@ -139,12 +139,12 @@ async def _(msg: Bot.MessageSession, prompt: str):
         try:
             reply = await current_msg.wait_reply(chain, all_=True, timeout=CONTEXT_EXPIRY, append_instruction=False)
         except WaitCancelException:
-            return
+            await msg.finish()
 
         current_prompt = reply.as_display(text_only=True).strip()
         current_msg = reply
         if not current_prompt and not any(isinstance(x, ImageElement) for x in reply.session_info.messages.values):
-            return
+            await msg.finish()
 
 
 @ai.command("llm instruct [<instructions>] {{I18N:ai.help.llm.instruct}}")
