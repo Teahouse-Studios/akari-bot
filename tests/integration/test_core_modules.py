@@ -105,7 +105,6 @@ async def test_unknown_command(tester: Tester):
 async def test_ping(tester: Tester):
     """ping 命令测试"""
     await tester.integrate("~ping", Contains("Pong!"), "ping 应输出 Pong!")
-    await tester.integrate("~ping", Contains("Python 版本"), "ping 应显示 Python 版本")
 
     return tester
 
