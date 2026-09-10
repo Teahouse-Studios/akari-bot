@@ -96,7 +96,7 @@
     "config.header.line.3": "例如：TOML 中的布尔值必须是小写。",
     "config.notes.jobqueue.backend.consistency": "如需分布式部署，分布节点必须使用同一类型的后端。",
     "config.notes.jobqueue.backend.database": "database：无需额外部署 Hub，且可在共享数据库中保留尚未过期的队列记录；但轮询、领取、心跳与清理均会增加数据库负载。不建议在使用 SQLite 作为数据库时使用。",
-    "config.notes.jobqueue.backend.intro": "JobQueue 必须在 database 与 websocket 中选择一套完整后端。",
+    "config.notes.jobqueue.backend.intro": "机器人客户端与服务端的通信依赖于 JobQueue，实例部署必须在 database 与 websocket 中选择一套完整后端。一般情况下你无需关注这些配置。（如遇 websocket 端口冲突可调整使用后端或端口）",
     "config.notes.jobqueue.backend.websocket": "websocket：经 Hub 实时路由，延迟较低，且可以避免 JobQueue 对业务数据库的轮询和写入竞争；但需要维护 Hub、长连接以及远程连接所需的令牌和 TLS。",
     "config.table.config": "一些基础的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。",
     "config.table.config_bot": "客户端的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。",
