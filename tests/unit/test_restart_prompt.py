@@ -52,13 +52,13 @@ async def _reset(client: str) -> None:
     await _write_restart_cache(client)
 
 
-async def _register_client(client: str) -> None:
+async def _register_client(client: str, peer_id: str | None = None) -> None:
     metadata = {
         "target_prefix_list": [f"{client}|Group"],
         "sender_prefix_list": [client],
     }
     await JobQueuePeersTable.create(
-        peer_id=f"TEST-PEER-{client}",
+        peer_id=peer_id or f"TEST-PEER-{client}",
         role="client",
         service=client,
         state="ready",
@@ -73,6 +73,32 @@ def _cleanup(alive: dict) -> None:
     (PrivateAssets.path / ".cache_restart_author").unlink(missing_ok=True)
     Alive.values.clear()
     Alive.values.update(alive)
+
+
+async def _test_ignores_previous_client_lease():
+    """数据库后端不得把重启前仍在有效租约内的旧客户端当作新实例。"""
+    client = "RESTARTC"
+    old_peer = f"STALE-PEER-{client}"
+    new_peer = f"TEST-PEER-{client}"
+    alive = Alive.values.copy()
+    try:
+        await _reset(client)
+        await JobQueuePeersTable.filter(peer_id=old_peer).delete()
+        await _register_client(client, old_peer)
+
+        async def _new_instance_comes_online():
+            await asyncio.sleep(0.5)
+            await _register_client(client, new_peer)
+
+        task = asyncio.create_task(_new_instance_comes_online())
+        await load_prompt(None, timeout=10)
+        await task
+        return await _prompt_sent(new_peer) and not await _prompt_sent(old_peer)
+    except Exception:
+        return False
+    finally:
+        await JobQueuePeersTable.filter(peer_id=old_peer).delete()
+        _cleanup(alive)
 
 
 async def _test_waits_for_client_to_come_online():
@@ -141,6 +167,7 @@ async def test_restart_prompt(tester: Tester):
     """core.server.init: 重启提示送达测试"""
     try:
         await tester.test(_test_waits_for_client_to_come_online, "等待客户端上线后投递测试")
+        await tester.test(_test_ignores_previous_client_lease, "忽略重启前客户端残留租约测试")
         await tester.test(_test_gives_up_when_client_never_online, "客户端不上线时超时放弃测试")
         await tester.test(_test_corrupt_author_cache_is_discarded, "损坏重启缓存丢弃测试")
     finally:

@@ -121,30 +121,37 @@ async def load_secret():
                             Secret.update(w)
 
 
-async def _wait_for_client_online(client_name: str, timeout: float) -> bool:
-    """等待客户端重新注册为 ready。
+async def _wait_for_client_online(
+    client_name: str,
+    timeout: float,
+    previous_peer_id: str | None = None,
+) -> str | None:
+    """等待客户端的新进程实例注册为 ready。
 
     :param client_name: 目标客户端名称
     :param timeout: 等待的秒数上限
-    :return: 客户端是否已上线
+    :param previous_peer_id: 重启前绑定的客户端实例 ID；该实例必须排除
+    :return: 新客户端实例 ID，超时则返回 None
     """
 
     from core.queue.peer import PeerSelector
 
     async def _poll():
+        selector = PeerSelector(roles=("client",), services=(client_name,))
+        if previous_peer_id:
+            selector = selector.excluding(previous_peer_id)
         while True:
-            records = await JobQueueServer.registry.resolve(PeerSelector(roles=("client",), services=(client_name,)))
+            records = await JobQueueServer.registry.resolve(selector)
             if records:
                 for record in records:
                     JobQueueServer._update_peer_cache(record.snapshot())
-                return
+                return records[0].peer_id
             await asyncio.sleep(0.5)
 
     try:
-        await asyncio.wait_for(_poll(), timeout=timeout)
+        return await asyncio.wait_for(_poll(), timeout=timeout)
     except asyncio.TimeoutError:
-        return False
-    return True
+        return None
 
 
 async def load_prompt(locale_load_error, timeout: float | None = None) -> None:
@@ -178,19 +185,23 @@ async def load_prompt(locale_load_error, timeout: float | None = None) -> None:
             Logger.exception("Failed to decode restart prompt author cache, skipped restart prompt.")
             return
 
-        # 入站会话原本绑定在发起重启命令的 Client peer 上；完整重启后该进程实例
-        # 已不存在，继续使用旧 owner_peer_id 会把提示投递给失效 peer。解除实例绑定，
-        # 让平台 RPC 在 ready 的同名 Client 服务中重新选择实例。
-        author_session.owner_peer_id = None
+        # 数据库后端中的旧 Client peer 在进程退出后可能仍保留一段有效租约。它虽然
+        # 已无法消费任务，却仍会被普通服务路由视为 ready，因此须明确排除缓存中的旧实例，
+        # 并把提示固定投递给本轮重启后实际注册的新实例。
+        previous_peer_id = author_session.owner_peer_id
 
         try:
-            if not await _wait_for_client_online(
-                author_session.client_name, timeout if timeout is not None else RESTART_PROMPT_TIMEOUT
-            ):
+            replacement_peer_id = await _wait_for_client_online(
+                author_session.client_name,
+                timeout if timeout is not None else RESTART_PROMPT_TIMEOUT,
+                previous_peer_id=previous_peer_id,
+            )
+            if replacement_peer_id is None:
                 Logger.warning(
                     f"Client {author_session.client_name} did not come online in time, skipped restart prompt."
                 )
                 return
+            author_session.owner_peer_id = replacement_peer_id
 
             await author_session.refresh_info()
             message = []
