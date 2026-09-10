@@ -1,3 +1,4 @@
+import asyncio
 import inspect
 from collections.abc import Callable
 
@@ -11,7 +12,12 @@ class Tester:
         self.name = name
         self._entries: list[dict] = []
         self._results: list[dict] = []
+        self._progress_event = asyncio.Event()
         self.is_ci: bool = False
+
+    async def _wait_for_progress(self) -> None:
+        await self._progress_event.wait()
+        self._progress_event.clear()
 
     async def test(
         self,
@@ -25,8 +31,6 @@ class Tester:
         :param note: 额外说明。
         :returns: 测试结果字典。
         """
-        import asyncio
-
         # Predicate 等可调用对象没有 __name__，回退到其类名
         Logger.trace(f"[{self.name}] test: {note or getattr(func, '__name__', type(func).__name__)}")
 
@@ -57,6 +61,7 @@ class Tester:
             "note": note,
         }
         self._results.append(final)
+        self._progress_event.set()
         return final
 
     async def integrate(
@@ -93,6 +98,7 @@ class Tester:
         if "timeout" in result or "exception" in result and not isinstance(expected, Expectation):
             result.update({"type": "integration", "expected": expected, "match": False, "note": note})
             self._results.append(result)
+            self._progress_event.set()
             return result
 
         if not expected:
@@ -113,6 +119,7 @@ class Tester:
             result.pop("traceback", None)
 
         self._results.append(result)
+        self._progress_event.set()
         return result
 
     def get_entries(self) -> list[dict]:

@@ -64,6 +64,8 @@ started_time = time.time()
 
 @ping.command("{{I18N:core.help.ping}}")
 async def _(msg: Bot.MessageSession):
+    from core.queue.server import JobQueueServer
+
     result = MessageChain.assign(Plain("Pong!"))
 
     td_seconds = time.time() - started_time
@@ -85,6 +87,7 @@ async def _(msg: Bot.MessageSession):
                 bot_running_time=timediff,
                 python_version=platform.python_version(),
                 web_render_status=web_render_status,
+                jobqueue_backend=JobQueueServer.backend.name,
                 cpu_brand=get_cpu_info()["brand_raw"],
                 cpu_percent=cpu_percent,
                 ram=ram,
