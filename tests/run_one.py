@@ -46,7 +46,10 @@ async def main(path: str, entry: str) -> int:
         print(f"=== {name} ===")
         if res.get("timeout"):
             failed += 1
-            print(f"  ERROR: timed out after {res.get('timeout_limit')} seconds")
+            detail = f"no progress for {res.get('timeout_limit')} seconds"
+            if active_test := res.get("active_test"):
+                detail += f" while running {active_test!r}"
+            print(f"  ERROR: {detail}; completed subtests: {res.get('completed_tests', 0)}")
             continue
         if res.get("skipped"):
             failed += 1

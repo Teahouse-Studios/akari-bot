@@ -139,11 +139,14 @@ async def _test_integrate_expected_exception_is_not_runner_error():
 
 
 async def _test_function_entry_timeout_is_structured_failure():
-    """挂起的 func_case 应超时返回，不能阻塞整个测试列表。"""
+    """无进展的 func_case 应超时返回，不能阻塞整个测试列表。"""
     from core.tester.process import run_function_entry
 
-    async def slow(_tester):
-        await asyncio.sleep(1)
+    async def stuck():
+        await asyncio.Event().wait()
+
+    async def slow(tester):
+        await tester.test(stuck, "卡住的子测试")
 
     with (
         patch("core.tester.process.close_db", new=AsyncMock()),
@@ -151,7 +154,34 @@ async def _test_function_entry_timeout_is_structured_failure():
         patch("core.tester.process.load_modules", new=AsyncMock()),
     ):
         result = await run_function_entry(slow, is_ci=True, timeout=0.01)
-    return result.get("timeout") is True and result.get("timeout_limit") == 0.01
+    return (
+        result.get("timeout") is True
+        and result.get("timeout_limit") == 0.01
+        and result.get("active_test") == "卡住的子测试"
+        and result.get("completed_tests") == 0
+    )
+
+
+async def _test_function_entry_timeout_resets_on_progress():
+    """func_case 持续完成子测试时，总耗时超过单次超时仍应通过。"""
+    from core.tester.process import run_function_entry
+
+    async def step():
+        await asyncio.sleep(0.02)
+        return True
+
+    async def progressing(tester):
+        for _ in range(12):
+            await tester.test(step)
+        return tester
+
+    with (
+        patch("core.tester.process.close_db", new=AsyncMock()),
+        patch("core.tester.process.init_db", new=AsyncMock(return_value=True)),
+        patch("core.tester.process.load_modules", new=AsyncMock()),
+    ):
+        result = await run_function_entry(progressing, is_ci=True, timeout=0.2)
+    return not result.get("timeout") and all(entry.get("match") for entry in result.get("results", []))
 
 
 async def _test_function_entry_init_failure_is_error():
@@ -182,6 +212,7 @@ async def test_tester_framework(tester: Tester):
     await tester.test(_test_integrate_preserves_unexpected_exception, "func_case 保留非预期异常测试")
     await tester.test(_test_integrate_expected_exception_is_not_runner_error, "func_case 预期异常匹配测试")
     await tester.test(_test_function_entry_timeout_is_structured_failure, "func_case 超时结构化失败测试")
+    await tester.test(_test_function_entry_timeout_resets_on_progress, "func_case 超时按进展刷新测试")
     await tester.test(_test_function_entry_init_failure_is_error, "func_case 初始化错误不可跳过测试")
 
     return tester

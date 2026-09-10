@@ -104,6 +104,10 @@ class _FailingSendClient:
             messages = {
                 40034005: "回复消息msg_id已过期",
                 40034102: "主动消息失败, 无权限",
+                40034105: "主动消息失败, 无权限",
+                40034101: "机器人非群成员",
+                40054002: "机器人已被禁言",
+                40054003: "机器人不是群成员",
             }
             message = messages.get(code, "回复消息失败，被动回复时间或者次数超过限制")
             raise ServerError(
@@ -222,8 +226,25 @@ async def _test_fallback_without_proactive_permission_is_silent() -> bool:
 
 
 async def _test_proactive_permission_denied_is_silent() -> bool:
+    for code in (40034102, 40034105):
+        session = _make_session(target_group_prefix)
+        client = _FailingSendClient(code)
+        try:
+            try:
+                result = await _send_with_client(session, client)
+            except ServerError:
+                return False
+        finally:
+            QQBotContextManager.context.pop(session.session_id, None)
+        if result != [] or len(client.calls) != 1 or client.calls[0][2] is not None:
+            return False
+    return True
+
+
+async def _test_platform_proactive_permission_result_overrides_local_reply_target() -> bool:
     session = _make_session(target_group_prefix)
-    client = _FailingSendClient(40034102)
+    client = _FailingSendClient(40034105)
+    QQBotContextManager.context[session.session_id] = object()
     try:
         try:
             result = await _send_with_client(session, client)
@@ -231,7 +252,70 @@ async def _test_proactive_permission_denied_is_silent() -> bool:
             return False
     finally:
         QQBotContextManager.context.pop(session.session_id, None)
-    return result == [] and len(client.calls) == 1 and client.calls[0][2] is None
+    return result == [] and len(client.calls) == 1 and client.calls[0][2] == "source-message"
+
+
+async def _test_proactive_permission_message_is_silent_for_unknown_code() -> bool:
+    session = _make_session(target_group_prefix)
+    client = _FailingSendClient(49999999)
+    client.code = 49999999
+    original_record = client._record
+
+    def record_with_permission_message(target, kwargs):
+        client.calls.append((target.scope, target.target_id, target.message_id, dict(kwargs)))
+        raise ServerError(
+            "主动消息失败，无权限",
+            status=400,
+            code=client.code,
+            response={"message": "主动消息失败，无权限", "code": client.code},
+        )
+
+    client._record = record_with_permission_message
+    try:
+        try:
+            result = await _send_with_client(session, client)
+        except ServerError:
+            return False
+    finally:
+        client._record = original_record
+    return result == [] and len(client.calls) == 1
+
+
+async def _test_terminal_send_error_silently_aborts_without_proactive_fallback() -> bool:
+    for code in (40034101, 40054002, 40054003):
+        for has_context in (False, True):
+            session = _make_session(target_group_prefix)
+            client = _FailingSendClient(code)
+            if has_context:
+                QQBotContextManager.context[session.session_id] = object()
+            try:
+                try:
+                    result = await _send_with_client(session, client)
+                except ServerError:
+                    return False
+            finally:
+                QQBotContextManager.context.pop(session.session_id, None)
+            if result != [] or len(client.calls) != 1:
+                return False
+            expected_message_id = "source-message" if has_context else None
+            if client.calls[0][2] != expected_message_id:
+                return False
+    return True
+
+
+async def _test_terminal_send_error_stops_remaining_message_parts() -> bool:
+    for code in (40034101, 40054002, 40054003):
+        session = _make_session(target_group_prefix)
+        client = _FailingSendClient(code)
+        message = MessageChain.assign([ImageElement.assign(__file__), ImageElement.assign(__file__)])
+        QQBotContextManager.context[session.session_id] = object()
+        try:
+            result = await _send_with_client(session, client, message)
+        finally:
+            QQBotContextManager.context.pop(session.session_id, None)
+        if result != [] or len(client.calls) != 1 or len(client.uploads) != 2:
+            return False
+    return True
 
 
 async def _test_audio_reply_limit_falls_back_to_proactive() -> bool:
@@ -592,6 +676,19 @@ async def test_qqbot_modern_api(tester: Tester):
     await tester.test(_test_passive_reply_limit_falls_back_to_proactive, "被动回复时间或次数超限转主动消息测试")
     await tester.test(_test_fallback_without_proactive_permission_is_silent, "被动回复回退无主动权限静默测试")
     await tester.test(_test_proactive_permission_denied_is_silent, "主动消息无权限静默测试")
+    await tester.test(
+        _test_platform_proactive_permission_result_overrides_local_reply_target,
+        "平台主动消息无权限判定覆盖本地回复目标测试",
+    )
+    await tester.test(
+        _test_proactive_permission_message_is_silent_for_unknown_code,
+        "未知错误码的主动消息无权限文案静默测试",
+    )
+    await tester.test(
+        _test_terminal_send_error_silently_aborts_without_proactive_fallback,
+        "不可发送错误静默终止且不主动回退测试",
+    )
+    await tester.test(_test_terminal_send_error_stops_remaining_message_parts, "不可发送错误终止剩余消息片段测试")
     await tester.test(_test_audio_reply_limit_falls_back_to_proactive, "音频被动回复超限转主动消息测试")
     await tester.test(_test_markdown_reply_falls_back_to_proactive, "Markdown 过期回复转主动消息测试")
     await tester.test(_test_image_reply_falls_back_to_proactive, "图片过期回复转主动消息测试")

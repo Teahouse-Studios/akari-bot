@@ -405,13 +405,16 @@ async def main():
                 failed += 1
                 total += 1
                 timeout_limit = res.get("timeout_limit")
+                active_test = res.get("active_test")
+                completed_tests = res.get("completed_tests", 0)
+                detail = f"No progress for {timeout_limit} seconds after {completed_tests} completed subtests"
+                if active_test:
+                    detail += f"\nActive subtest: {active_test}"
+                Logger.error(detail)
                 junit_testcase = JUnitTestCase(
                     name=fn.__name__, classname=f"FunctionTest.{test_number}", time=res.get("time_cost", 0.0)
                 )
-                junit_testcase.failure = (
-                    "Function test timeout",
-                    f"Test exceeded timeout limit of {timeout_limit} seconds",
-                )
+                junit_testcase.failure = ("Function test timeout", detail)
                 junit_func_suite.add_testcase(junit_testcase)
                 continue
             if res.get("error"):

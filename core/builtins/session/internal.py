@@ -888,7 +888,6 @@ class MessageSession:
         """
         if not self.session_info.support_quote:
             chain = get_message_chain(self.session_info, message_chain)
-            # 合并转发消息无从追加提示行，此时略过
             if append_instruction and isinstance(chain, MessageChain):
                 chain.append(I18NContext("message.wait.next_message.prompt"))
             if all_:
@@ -898,34 +897,21 @@ class MessageSession:
         released_lease = ExecutionLockList.remove(self)
         await self.end_typing()
         chain = get_message_chain(self.session_info, message_chain)
-        # 合并转发消息无从追加提示行，此时略过
         if append_instruction and isinstance(chain, MessageChain):
             chain.append(I18NContext("message.reply.prompt"))
         send = None
         flag = asyncio.Event()
-        # 先登记 pending reply，再把提示发往平台。用户可能在平台已展示
-        # 消息、而发送 action 的 message_id 尚未回到 Server 时立即回复。
         SessionTaskManager.add_task(self, flag, all_=all_, reply_pending=True, timeout=timeout)
-        task_info = None
         try:
-            # timeout 是整次交互的预算，而不是只从平台发送回包后才开始计时。
-            # 否则一个卡住的跨进程发送可让 pending reply task 和引用它的入站
-            # parser 一直阻塞到 JobQueue 的全局超时，远超调用方声明的等待时长。
             async with asyncio.timeout(timeout):
                 send = await self.send_message(chain, quote)
                 if not send.message_id or not SessionTaskManager.set_task_reply(self, send.message_id, all_=all_):
                     raise WaitCancelException
                 await flag.wait()
         except TimeoutError:
-            # timeout 与 incoming 完成可能落在同一事件循环拍。真正的线性化点是
-            # _complete_wait_task() 是否已经写入 result，而不是根 waiter 是否抢先
-            # 从 flag.wait() 恢复；finally 取回 task_info 后再据此决定成功或取消。
             pass
         finally:
             task_info = SessionTaskManager.remove_task(self, all_=all_)
-            # 平台消息可能已经发送成功，但等待任务随后被取消、超时清理或在补
-            # reply ID 前失效。delete=True 时统一在退出等待域时撤回提示，避免
-            # 留下已经无法交互的消息；删除失败不能覆盖原始等待结果或控制流。
             if send and delete:
                 try:
                     await send.delete()
