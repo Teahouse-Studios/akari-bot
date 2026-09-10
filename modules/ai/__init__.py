@@ -9,7 +9,7 @@ from core.logger import Logger
 from core.constants import WaitCancelException
 from .petal import precount_petal, count_token_petal
 from .setting import get_llm_billing, llm_api_list, llm_list, llm_su_list
-from .context import CONTEXT_EXPIRY, create_context, get_context, update_context
+from .context import CONTEXT_EXPIRY, create_context, get_context, refresh_context
 
 default_llm = AiConfig.ai_default_llm
 default_llm = default_llm if default_llm in llm_list else None
@@ -95,11 +95,9 @@ async def _(msg: Bot.MessageSession, prompt: str):
             history=history,
         )
 
-        # 建立或延续上下文窗口，并附上上下文 ID 与提示。
         if session_id:
-            update_context(session_id, history)
-        else:
-            session_id = create_context(history)
+            refresh_context(session_id)
+        session_id = create_context(history)
 
         Logger.info(f"{input_tokens + cache_tokens + output_tokens} token used while calling LLM.")
         Logger.info(f"Input (miss cache): {input_tokens} | Input (hit cache): {cache_tokens} | Output: {output_tokens}")

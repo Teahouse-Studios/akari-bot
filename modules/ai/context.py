@@ -31,11 +31,16 @@ def get_context(session_id: str | None) -> list[dict] | None:
     return messages if messages is not None else None
 
 
-def update_context(session_id: str, messages: list[dict]) -> bool:
-    """更新上下文窗口的对话历史并重置计时；不存在或已过期返回 False。"""
+def refresh_context(session_id: str | None) -> bool:
+    """会话被成功续写时仅重置其过期计时，历史保持不变；不存在或已过期返回 False。
+
+    会话一旦创建即视为不可变的快照：续写时生成新的会话 ID 以支持分叉，
+    这里只负责在父会话被成功继续时刷新其有效期。
+    """
+    if not session_id:
+        return False
     window = _context_windows.data.get(session_id)
     if not isinstance(window, ExpiringTempDict) or window.is_expired():
         return False
-    window.data["messages"] = messages
     window.refresh()
     return True
