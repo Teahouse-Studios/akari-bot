@@ -6,7 +6,6 @@
     "ai.help.llm.set": "장면 내에서 기본 LLM을 설정합니다.",
     "ai.help.option.llm": "사용할 LLM을 지정합니다.",
     "ai.help.option.no_tools": "LLM을 도구로 호출하는 기능을 비활성화할지 여부.",
-    "ai.help.option.context": "이어서 사용할 컨텍스트 창 ID를 지정합니다.",
     "ai.message.llm.instruct.clear.success": "맞춤형 지침이 삭제되었습니다.",
     "ai.message.llm.instruct.set.success": "맞춤형 지침이 설정되었습니다.",
     "ai.message.llm.invalid": "유효하지 않은 LLM 이름입니다.",
@@ -14,10 +13,10 @@
     "ai.message.llm.list.none": "사용 가능한 LLM을 찾을 수 없습니다. 추가하려면 봇 소유자에게 문의하세요.",
     "ai.message.llm.list.prompt": "LLM을 전환하려면 \"${cmd}<LLM>\"을 사용합니다.",
     "ai.message.references.title": "참고자료",
-    "ai.message.context.invalid": "컨텍스트 창이 존재하지 않거나 만료되었습니다.",
-    "ai.message.context.hint": "팁: 10분 안에 \"${cmd}\"을(를) 사용해 대화를 이어갈 수 있습니다.",
-    "ai.message.context.hint.quote": "팁: 10분 안에 이 메시지에 답장하면 대화를 이어갈 수 있습니다.",
-    "ai.message.context.id": "세션 ID: ${session_id}",
+    "ai.message.context.invalid": "대화 턴이 존재하지 않거나 만료되었습니다.",
+    "ai.message.context.hint": "팁: 10분 이내에 '${cmd}'를 사용하여 대화를 계속할 수 있습니다.",
+    "ai.message.context.hint.quote": "팁: 10분 이내에 이 메시지에 회신하거나 '${cmd}'를 사용하여 대화를 계속할 수 있습니다.",
+    "ai.message.context.id": "대화 턴 ID: ${turn_id}",
     "config.comments.module_ai_secret.e2b_api_key": "E2B API 키.",
     "config.comments.module_ai.ai_default_llm": "기본으로 사용되는 LLM.",
     "config.comments.module_ai.llm_frequency_penalty": "LLM의 빈도 페널티. 범위는 -2에서 2 사이입니다.",
@@ -26,5 +25,6 @@
     "config.comments.module_ai.llm_presence_penalty": "LLM의 존재 페널티. 범위는 -2에서 2 사이입니다.",
     "config.comments.module_ai.llm_temperature": "LLM의 온도 샘플링. 범위는 0에서 2 사이입니다. top_p와 동시에 변경하는 것은 권장하지 않습니다.",
     "config.comments.module_ai.llm_timeout": "LLM 시간 초과.",
-    "config.comments.module_ai.llm_top_p": "LLM의 핵 샘플링. 범위는 0에서 1 사이입니다. temperature와 동시에 수정하는 것은 권장하지 않습니다."
+    "config.comments.module_ai.llm_top_p": "LLM의 핵 샘플링. 범위는 0에서 1 사이입니다. temperature와 동시에 수정하는 것은 권장하지 않습니다.",
+    "ai.help.option.ctx": "계속할 대화 턴의 ID를 지정합니다."
 }

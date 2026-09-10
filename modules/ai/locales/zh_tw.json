@@ -4,15 +4,14 @@
     "ai.help.llm.instruct": "設定大語言模型的自訂指令。",
     "ai.help.llm.list": "檢視已支援的大語言模型清單。",
     "ai.help.llm.set": "設定場景內預設大語言模型。",
-    "ai.help.option.context": "指定要延續的上下文視窗 ID。",
     "ai.help.option.llm": "指定使用的大語言模型。",
     "ai.help.option.no_tools": "是否禁止大語言模型呼叫工具。",
     "ai.message.context.hint": "提示：10 分鐘內使用「${cmd}」可繼續對話。",
-    "ai.message.context.hint.quote": "提示：10 分鐘內引用回覆此訊息可繼續對話。",
-    "ai.message.context.id": "會話 ID：${session_id}",
-    "ai.message.context.invalid": "上下文視窗不存在或已過期。",
+    "ai.message.context.hint.quote": "提示：10 分鐘內引用回覆此訊息或使用「${cmd}」可繼續對話。",
+    "ai.message.context.id": "對話輪次 ID：${turn_id}",
+    "ai.message.context.invalid": "對話輪次不存在或已過期。",
     "ai.message.llm.instruct.clear.success": "已移除自訂指令。",
-    "ai.message.llm.instruct.set.success": "設定自訂指令前綴。",
+    "ai.message.llm.instruct.set.success": "已設定自訂指令。",
     "ai.message.llm.invalid": "無效的大語言模型。",
     "ai.message.llm.list": "以下為可用的大語言模型：",
     "ai.message.llm.list.none": "找不到可用的大語言模型，請聯絡機器人所有者新增。",
@@ -26,5 +25,6 @@
     "config.comments.module_ai.llm_presence_penalty": "大語言模型的存在懲罰，範圍 -2 到 2 之間。",
     "config.comments.module_ai.llm_temperature": "大語言模型的溫度取樣，範圍 0 到 2 之間。不建議與 top_p 同時修改。",
     "config.comments.module_ai.llm_timeout": "大語言模型的逾時時間。",
-    "config.comments.module_ai.llm_top_p": "大語言模型的核取樣，範圍 0 到 1 之間。不建議與 temperature 同時修改。"
+    "config.comments.module_ai.llm_top_p": "大語言模型的核取樣，範圍 0 到 1 之間。不建議與 temperature 同時修改。",
+    "ai.help.option.ctx": "指定要延續的對話輪次 ID。"
 }

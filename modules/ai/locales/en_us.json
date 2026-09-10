@@ -4,13 +4,12 @@
     "ai.help.llm.instruct": "Set custom instructions for the LLMs.",
     "ai.help.llm.list": "Check the list of supported LLMs.",
     "ai.help.llm.set": "Set the default LLM in context.",
-    "ai.help.option.context": "Specify the context window ID to continue.",
     "ai.help.option.llm": "Specify the LLM to use.",
     "ai.help.option.no_tools": "Whether to disable the tool calling for the LLMs.",
-    "ai.message.context.hint": "Hint: Use \"${cmd}\" within 10 minutes to continue the conversation.",
-    "ai.message.context.hint.quote": "Hint: Reply to this message within 10 minutes to continue the conversation.",
-    "ai.message.context.id": "Session ID: ${session_id}. ",
-    "ai.message.context.invalid": "The context window does not exist or has expired.",
+    "ai.message.context.hint": "Hint: Use \"${cmd}\" within 10 minutes to continue the dialogue.",
+    "ai.message.context.hint.quote": "Hint: Reply to this message or use \"${cmd}\" within 10 minutes to continue the dialogue.",
+    "ai.message.context.id": "Dialogue turn ID: ${turn_id}",
+    "ai.message.context.invalid": "The dialogue turn does not exist or has expired.",
     "ai.message.llm.instruct.clear.success": "Custom instructions have been cleared.",
     "ai.message.llm.instruct.set.success": "Custom instructions have been set.",
     "ai.message.llm.invalid": "Invalid LLM name.",
@@ -26,5 +25,6 @@
     "config.comments.module_ai.llm_presence_penalty": "The presence penalty of the LLMs, ranging from -2 to 2.",
     "config.comments.module_ai.llm_temperature": "The temperature sampling of the LLMs, ranging from 0 to 2. It is not recommended to modify it at the same time as top_p.",
     "config.comments.module_ai.llm_timeout": "Timeout for the LLMs.",
-    "config.comments.module_ai.llm_top_p": "The nucleus sampling of the LLMs, ranging from 0 to 1. It is not recommended to modify it at the same time as temperature."
+    "config.comments.module_ai.llm_top_p": "The nucleus sampling of the LLMs, ranging from 0 to 1. It is not recommended to modify it at the same time as temperature.",
+    "ai.help.option.ctx": "Specify the ID of the next dialogue turn."
 }

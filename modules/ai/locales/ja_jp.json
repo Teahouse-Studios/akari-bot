@@ -4,13 +4,12 @@
     "ai.help.llm.instruct": "LLM 向けのカスタム指示を設定します。",
     "ai.help.llm.list": "対応している LLM の一覧をご確認します。",
     "ai.help.llm.set": "コンテキスト内でデフォルトの LLM を設定します。",
-    "ai.help.option.context": "継続するコンテキストウィンドウ ID を指定します。",
     "ai.help.option.llm": "使用する LLM を指定します。",
     "ai.help.option.no_tools": "LLM をツール呼び出すを無効にするかどうか。",
-    "ai.message.context.hint": "ヒント：10 分以内に「${cmd}」を使用すれば会話を続けられます。",
-    "ai.message.context.hint.quote": "ヒント：10 分以内にこのメッセージを返信すれば会話を続けられます。",
-    "ai.message.context.id": "セッション ID：${session_id}",
-    "ai.message.context.invalid": "コンテキストウィンドウが存在しないか、期限切れです。",
+    "ai.message.context.hint": "ヒント：10 分以内に「${cmd}」を使用して会話を続けられます。",
+    "ai.message.context.hint.quote": "ヒント：10 分以内にこのメッセージに返信するか、「${cmd}」を使用して会話を続けられます。",
+    "ai.message.context.id": "会話ターンの ID：${turn_id}",
+    "ai.message.context.invalid": "会話のターンが存在しないか、期限が切れています。",
     "ai.message.llm.instruct.clear.success": "カスタム指示が削除されました。",
     "ai.message.llm.instruct.set.success": "カスタム指示が設定されました。",
     "ai.message.llm.invalid": "無効な LLM 名です。",
@@ -26,5 +25,6 @@
     "config.comments.module_ai.llm_presence_penalty": "LLM の存在ペナルティ。範囲は -2 ～ 2 です。",
     "config.comments.module_ai.llm_temperature": "LLM の温度サンプリング。範囲は 0 ～ 2 です。top_p と同時に変更することは推奨されません。",
     "config.comments.module_ai.llm_timeout": "LLM のタイムアウト。",
-    "config.comments.module_ai.llm_top_p": "LLM のカーネルサンプリング。範囲は 0 ～ 1 です。temperature と同時に変更することは推奨されません。"
+    "config.comments.module_ai.llm_top_p": "LLM のカーネルサンプリング。範囲は 0 ～ 1 です。temperature と同時に変更することは推奨されません。",
+    "ai.help.option.ctx": "継続する会話ターンの ID を指定します。"
 }
