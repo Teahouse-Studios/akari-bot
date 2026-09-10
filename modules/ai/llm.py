@@ -48,14 +48,15 @@ async def ask_llm(
     api_url: str,
     api_key: str,
     use_tools: bool = True,
-) -> tuple[list, int, int, int]:
+    history: list[dict] | None = None,
+) -> tuple[list, int, int, int, list]:
     client = AsyncOpenAI(base_url=api_url, api_key=api_key)
 
     tz_ = session.session_info._tz_offset
     now_tz = datetime.now(timezone(parse_time_string(tz_)))
     fmt_now = now_tz.strftime("%Y-%m-%d %H:%M:%S %A") + f"(UTC{tz_})" if tz_ != "+0" else "(UTC)"
 
-    messages = [
+    system_messages = [
         {"role": "system", "content": INSTRUCTIONS},
         {"role": "system", "content": f"Current datetime: {fmt_now}"},
         {
@@ -66,14 +67,17 @@ async def ask_llm(
     ]
     custom_instructions = session.session_info.sender_union_info.sender_data.get("ai_custom_instructions")
     if custom_instructions:
-        messages.insert(3, {"role": "system", "content": custom_instructions})
+        system_messages.append({"role": "system", "content": custom_instructions})
 
-    messages.append(
+    # 延续上下文时，历史对话（不含 system 消息）会被拼接到本次请求之前。
+    conversation = list(history) if history else []
+    conversation.append(
         {
             "role": "user",
             "content": await _build_user_content(prompt),
         }
     )
+    messages = [*system_messages, *conversation]
 
     total_input_tokens = 0
     total_cached_tokens = 0
@@ -166,4 +170,6 @@ async def ask_llm(
     else:
         chain = [Plain(resm)]
 
-    return chain, total_input_tokens, total_cached_tokens, total_output_tokens
+    # 仅保留对话部分（去掉每次动态重建的 system 消息与工具迭代警告）作为新的上下文历史。
+    new_history = [m for m in messages[len(system_messages) :] if m.get("role") != "system"]
+    return chain, total_input_tokens, total_cached_tokens, total_output_tokens, new_history
