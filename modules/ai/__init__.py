@@ -113,7 +113,7 @@ async def _(msg: Bot.MessageSession, prompt: str):
         )
 
         chain.append(Plain("\n---\n"))
-        cmd = ActionText(f"{msg.session_info.prefixes[0]}ai --ctx {turn_id}"
+        cmd = ActionText(f"{msg.session_info.prefixes[0]}ai --ctx {turn_id}")
         if msg.session_info.support_quote:
             chain.append(I18NContext("ai.message.context.hint.quote", cmd=cmd))
         else:
