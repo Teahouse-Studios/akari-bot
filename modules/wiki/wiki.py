@@ -5,7 +5,7 @@ import filetype
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import ButtonFrame, I18NContext, Plain, Image, Audio, Video, Url
+from core.builtins.message.internal import ButtonFrame, I18NContext, Markdown, Plain, Image, Audio, Video, Url
 from core.builtins.session.internal import MessageSession, confirm_prompt_key
 from core.builtins.utils import confirm_command
 from core.component import module
@@ -257,6 +257,14 @@ async def finish_if_wiki_blocked(msg: Bot.MessageSession, api_link: str) -> None
                 wiki_name += f" ({general['lang']})"
 
     await msg.finish(I18NContext("wiki.message.invalid.blocked"))
+
+
+def _format_page_desc(desc: str, session: Bot.MessageSession | QueryInfo):
+    """按平台能力格式化页面摘要，Markdown 会话使用块引用。"""
+    if isinstance(session, MessageSession) and session.session_info.support_markdown:
+        lines = desc.splitlines() or [""]
+        return Markdown("\n".join(f"> {line}" if line else ">" for line in lines))
+    return Plain(desc)
 
 
 @wiki.command()
@@ -558,7 +566,7 @@ async def _query_pages_impl(
                         if isinstance(session, Bot.MessageSession) and r.is_disambiguation and r.disambiguation_blocks:
                             plain_slice.extend(_build_disambiguation_output(session, r, iw_prefix))
                         elif r.desc:
-                            plain_slice.append(Plain(r.desc))
+                            plain_slice.append(_format_page_desc(r.desc, session))
 
                     if r.link:
                         plain_slice.append(Url(r.link, trusted=True if r.info.is_allowed else None))
@@ -769,7 +777,7 @@ async def _query_pages_impl(
                     elif r.id != -1:
                         plain_slice.append(I18NContext("wiki.message.id.not_found", id=str(r.id)))
                     if r.desc:
-                        plain_slice.append(r.desc)
+                        plain_slice.append(_format_page_desc(r.desc, session))
                     if r.invalid_namespace and r.before_title:
                         plain_slice.append(
                             I18NContext(
