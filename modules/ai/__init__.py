@@ -148,6 +148,79 @@ async def _(msg: Bot.MessageSession, prompt: str):
             await msg.finish()
 
 
+def _build_llm_billing_items(llm_info: dict) -> list:
+    """Build the billing message items for a single LLM (used by ``llm list --price`` and ``llm price``)."""
+    items = []
+    billing_config = llm_info.get("billing") if isinstance(llm_info.get("billing"), dict) else {}
+    billing_type = billing_config.get("type", "token")
+    billing = get_llm_billing(llm_info)
+    if billing_type != "per_call" and any(billing[price_name] > 0 for price_name in ("input_price", "output_price")):
+        items.append(
+            I18NContext(
+                "ai.message.llm.list.billing.token",
+                input_price=billing["input_price"],
+                output_price=billing["output_price"],
+            )
+        )
+    if billing_type != "per_call" and any(
+        billing[price_name] > 0 for price_name in ("cache_write_price", "cache_read_price")
+    ):
+        items.append(
+            I18NContext(
+                "ai.message.llm.list.billing.token.cache",
+                cache_write_price=billing["cache_write_price"],
+                cache_read_price=billing["cache_read_price"],
+            )
+        )
+
+    if billing["call_price"] > 0:
+        items.append(I18NContext("ai.message.llm.list.billing.call", call_price=billing["call_price"]))
+
+    tiers = billing_config.get("tiers")
+    time_rules = billing_config.get("time_rules")
+    valid_tiers = [
+        tier
+        for tier in tiers or []
+        if isinstance(tier, dict) and isinstance(tier.get("context_threshold"), int) and tier["context_threshold"] >= 0
+    ]
+    if (
+        billing_type != "per_call"
+        and isinstance(tiers, list)
+        and tiers
+        and len(valid_tiers) == len(tiers)
+        and not (isinstance(time_rules, list) and time_rules)
+    ):
+        for tier in sorted(
+            valid_tiers,
+            key=lambda tier: tier["context_threshold"],
+        ):
+            tier_billing = get_llm_billing(llm_info, tier["context_threshold"])
+            if not any(
+                tier_billing[price_name] > 0
+                for price_name in ("input_price", "cache_write_price", "cache_read_price", "output_price")
+            ):
+                continue
+            items.extend(
+                [
+                    I18NContext(
+                        "ai.message.llm.list.billing.tiers.threshold",
+                        context_threshold=tier["context_threshold"],
+                    ),
+                    I18NContext(
+                        "ai.message.llm.list.billing.token",
+                        input_price=tier_billing["input_price"],
+                        output_price=tier_billing["output_price"],
+                    ),
+                    I18NContext(
+                        "ai.message.llm.list.billing.token.cache",
+                        cache_write_price=tier_billing["cache_write_price"],
+                        cache_read_price=tier_billing["cache_read_price"],
+                    ),
+                ]
+            )
+    return items
+
+
 @ai.command("llm instruct [<instructions>] {{I18N:ai.help.llm.instruct}}")
 async def _(msg: Bot.MessageSession, llm: str):
     instructions = msg.parsed_msg.get("<instructions>")
@@ -168,87 +241,36 @@ async def _(msg: Bot.MessageSession, llm: str):
         await msg.finish(I18NContext("ai.message.llm.invalid"))
 
 
-@ai.command("llm list {{I18N:ai.help.llm.list}}")
+@ai.command("llm price <llm> {{I18N:ai.help.llm.price}}")
+async def _(msg: Bot.MessageSession, llm: str):
+    llm = llm.lower()
+    available_llms = llm_list + (llm_su_list if msg.check_super_user() else [])
+    llm_info = next((item for item in llm_api_list if item["name"].lower() == llm), None)
+    if llm_info and llm in available_llms:
+        await msg.finish(
+            [
+                I18NContext("ai.message.llm.price", name=llm_info["name"]),
+                *_build_llm_billing_items(llm_info),
+            ]
+        )
+    else:
+        await msg.finish(I18NContext("ai.message.llm.invalid"))
+
+
+@ai.command(
+    "llm list [--price] {{I18N:ai.help.llm.list}}", options_desc={"--price": "{I18N:ai.help.llm.list.option.price}"}
+)
 async def _(msg: Bot.MessageSession):
     available_llms = llm_list + (llm_su_list if msg.check_super_user() else [])
+    show_price = bool(msg.parsed_msg.get("--price", False))
 
     if available_llms:
         llm_items = []
         for _, llm_name in enumerate(sorted(available_llms)):
             llm_info = next(llm for llm in llm_api_list if llm["name"].lower() == llm_name)
             llm_items.append(Plain(llm_name))
-
-            billing_config = llm_info.get("billing") if isinstance(llm_info.get("billing"), dict) else {}
-            billing_type = billing_config.get("type", "token")
-            billing = get_llm_billing(llm_info)
-            if billing_type != "per_call" and any(
-                billing[price_name] > 0 for price_name in ("input_price", "output_price")
-            ):
-                llm_items.append(
-                    I18NContext(
-                        "ai.message.llm.list.billing.token",
-                        input_price=billing["input_price"],
-                        output_price=billing["output_price"],
-                    )
-                )
-            if billing_type != "per_call" and any(
-                billing[price_name] > 0 for price_name in ("cache_write_price", "cache_read_price")
-            ):
-                llm_items.append(
-                    I18NContext(
-                        "ai.message.llm.list.billing.token.cache",
-                        cache_write_price=billing["cache_write_price"],
-                        cache_read_price=billing["cache_read_price"],
-                    )
-                )
-
-            if billing["call_price"] > 0:
-                llm_items.append(I18NContext("ai.message.llm.list.billing.call", call_price=billing["call_price"]))
-
-            tiers = billing_config.get("tiers")
-            time_rules = billing_config.get("time_rules")
-            valid_tiers = [
-                tier
-                for tier in tiers or []
-                if isinstance(tier, dict)
-                and isinstance(tier.get("context_threshold"), int)
-                and tier["context_threshold"] >= 0
-            ]
-            if (
-                billing_type != "per_call"
-                and isinstance(tiers, list)
-                and tiers
-                and len(valid_tiers) == len(tiers)
-                and not (isinstance(time_rules, list) and time_rules)
-            ):
-                for tier in sorted(
-                    valid_tiers,
-                    key=lambda tier: tier["context_threshold"],
-                ):
-                    tier_billing = get_llm_billing(llm_info, tier["context_threshold"])
-                    if not any(
-                        tier_billing[price_name] > 0
-                        for price_name in ("input_price", "cache_write_price", "cache_read_price", "output_price")
-                    ):
-                        continue
-                    llm_items.extend(
-                        [
-                            I18NContext(
-                                "ai.message.llm.list.billing.tiers.threshold",
-                                context_threshold=tier["context_threshold"],
-                            ),
-                            I18NContext(
-                                "ai.message.llm.list.billing.token",
-                                input_price=tier_billing["input_price"],
-                                output_price=tier_billing["output_price"],
-                            ),
-                            I18NContext(
-                                "ai.message.llm.list.billing.token.cache",
-                                cache_write_price=tier_billing["cache_write_price"],
-                                cache_read_price=tier_billing["cache_read_price"],
-                            ),
-                        ]
-                    )
+            if show_price:
+                llm_items.extend(_build_llm_billing_items(llm_info))
 
         await msg.finish(
             [
