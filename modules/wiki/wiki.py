@@ -263,7 +263,7 @@ def _format_page_desc(desc: str, session: Bot.MessageSession | QueryInfo):
     """按平台能力格式化页面摘要，Markdown 会话使用块引用。"""
     if isinstance(session, MessageSession) and session.session_info.support_markdown:
         lines = desc.splitlines() or [""]
-        return Markdown("\n".join(f"> {line}" if line else ">" for line in lines))
+        return Markdown("\n".join(f"> {line}" if line else ">" for line in lines) + "\n")
     return Plain(desc)
 
 
