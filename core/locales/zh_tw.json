@@ -36,7 +36,7 @@
     "config.comments.config.petal_lost_limit": "單日失去花瓣上限。",
     "config.comments.config.petal_sign_max": "單日簽到取得花瓣上限。",
     "config.comments.config.petal_sign_min": "單日簽到取得花瓣下限。",
-    "config.comments.config.petal_sign_rate": "簽到取得花瓣機率，範圍 0 到 1 之間，取得數量呈指數衰減。",
+    "config.comments.config.petal_sign_rate": "簽到取得花瓣機率，範圍 0 到 1 之間，取得數量呈幾何分布。",
     "config.comments.config.qq_test_group_url": "QQ 機器人的測試群邀請網址，留空時不在關於選單中展示。",
     "config.comments.config.quick_confirm": "是否啟用訊息快速確認。",
     "config.comments.config.regex_disable_prefix": "暫時關閉正規解析的訊息前綴。",

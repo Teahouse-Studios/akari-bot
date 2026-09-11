@@ -36,7 +36,7 @@
     "config.comments.config.petal_lost_limit": "1 日に失われるペタルの最大数。",
     "config.comments.config.petal_sign_max": "1 日にサインインすることで獲得できるペタルの最大数。",
     "config.comments.config.petal_sign_min": "1 日にサインインすることで獲得できるペタルの最小数。",
-    "config.comments.config.petal_sign_rate": "サインインすることでペタルを獲得できる確率、範囲は 0 ～ 1 で、獲得できるペタルの数は指数関数的に減少します。",
+    "config.comments.config.petal_sign_rate": "サインインすることでペタルを獲得できる確率、範囲は 0 ～ 1 で、獲得できるペタルの数は幾何分布的に減少します。",
     "config.comments.config.qq_test_group_url": "QQボットのテストグループへの招待 URL。空欄にすると、「私たちについて」メニューには表示されません。",
     "config.comments.config.quick_confirm": "メッセージのクイック確認を有効にするかどうか。",
     "config.comments.config.regex_disable_prefix": "正規表現の解析を一時的に無効にするためのメッセージ プレフィックス。",

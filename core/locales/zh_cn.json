@@ -38,7 +38,7 @@
     "config.comments.config.petal_reset_crontab": "花瓣结算周期的 Cron 表达式。",
     "config.comments.config.petal_sign_max": "单日签到获取花瓣上限。",
     "config.comments.config.petal_sign_min": "单日签到获取花瓣下限。",
-    "config.comments.config.petal_sign_rate": "签到获取花瓣概率，范围 0 到 1 之间，获取数量呈指数衰减。",
+    "config.comments.config.petal_sign_rate": "签到获取花瓣概率，范围 0 到 1 之间，获取数量呈几何分布。",
     "config.comments.config.qq_test_group_url": "QQ 机器人的测试群邀请网址，留空时不在关于菜单中展示。",
     "config.comments.config.quick_confirm": "是否开启消息快速确认。",
     "config.comments.config.regex_disable_prefix": "临时关闭正则解析的消息前缀。",
