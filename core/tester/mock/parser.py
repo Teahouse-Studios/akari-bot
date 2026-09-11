@@ -10,6 +10,7 @@ from core.constants.exceptions import InvalidCommandFormatError, SessionFinished
 from core.exports import exports
 from core.loader import ModulesManager
 from core.logger import Logger
+from core.module_runtime import ModuleRuntimeManager
 from core.types import Module, Param
 from core.types.module.component_meta import CommandMeta
 from core.utils.func import normalize_space
@@ -148,7 +149,8 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                 continue
             if msg.session_info.typing_prompt_enabled:
                 await msg.start_typing()
-            await func.function(msg)  # 将msg传入下游模块
+            async with ModuleRuntimeManager.use(module.module_name):
+                await func.function(msg)  # 将msg传入下游模块
             raise SessionFinished  # if not using msg.finish
 
 
@@ -172,7 +174,8 @@ async def _execute_regex(msg: "Bot.MessageSession", modules):
                 if matched:  # 如果匹配成功
                     if hasattr(msg, "_casetest_target") and rfunc.function is not msg._casetest_target:
                         continue
-                    await rfunc.function(msg)  # 将msg传入下游模块
+                    async with ModuleRuntimeManager.use(regex_module.module_name):
+                        await rfunc.function(msg)  # 将msg传入下游模块
                     raise SessionFinished  # if not using msg.finish
 
 
@@ -239,7 +242,8 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
     else:
         kwargs[func_params[list(func_params.keys())[0]].name] = msg
 
-    await parsed_msg[0].function(**kwargs)  # 将msg传入下游模块
+    async with ModuleRuntimeManager.use(module.module_name):
+        await parsed_msg[0].function(**kwargs)  # 将msg传入下游模块
     return True
 
 

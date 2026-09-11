@@ -131,10 +131,11 @@ async def reload_db(db_models: list[str] | None = None):
         from core.scheduler import SchedulerLifecycle
 
         old_modules_db_list = Temp.data.get("modules_db_list", [])
-        # Scheduler 在 Queue 体系之外，同样会读写 Tortoise。必须先停止新 Job、
-        # 取消并等待运行中 Job，再排空 Queue handler，最后才能替换全局连接。
+        # 先排空 Queue handler，再停止新 Job 并取消运行中的 Job，最后才能替换
+        # 全局连接。顺序不能反：持有 Scheduler 锁等待 Queue handler 收尾时，
+        # load/unload 等 handler 可能正阻塞在 Scheduler 锁上，形成互锁。
         # Loader 已在更外层覆盖 Python reload；该窗口支持同一 Task 重入。
-        async with SchedulerLifecycle.maintenance_window(), JobQueueServer.maintenance_window():
+        async with JobQueueServer.maintenance_window(), SchedulerLifecycle.maintenance_window():
 
             async def restore_previous_models():
                 # 失败的初始化可能留下部分连接状态，恢复旧模型前再清理一次。

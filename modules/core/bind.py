@@ -12,7 +12,7 @@ from core.database.models import (
     TargetUnionBind,
 )
 from core.logger import Logger
-from core.server.lifecycle import BackgroundTaskLifecycle
+from core.module_runtime import ModuleRuntimeManager
 from core.utils.container import ExpiringTempDict
 from core.utils.random import SecureRandom
 from core.utils.union_merge import (
@@ -40,40 +40,40 @@ ENABLE_BIND_AUTO = CoreConfig.enable_bind_auto
 
 # 绑定码与握手状态仅保存在 server 进程内存中，重启即失效。
 # 各平台的 bot 子进程共用同一个 server 进程，因此跨平台握手无需落库。
-_sender_bind_codes = ExpiringTempDict(exp=BIND_CODE_EXPIRED)
-_target_bind_codes = ExpiringTempDict(exp=BIND_CODE_EXPIRED)
+_sender_bind_codes = ModuleRuntimeManager.state(
+    "bind",
+    "sender_bind_codes",
+    default_factory=lambda: ExpiringTempDict(exp=BIND_CODE_EXPIRED),
+    preserve=True,
+)
+_target_bind_codes = ModuleRuntimeManager.state(
+    "bind",
+    "target_bind_codes",
+    default_factory=lambda: ExpiringTempDict(exp=BIND_CODE_EXPIRED),
+    preserve=True,
+)
 # 握手分两段登记：待认领的 probe 与待闭合的 confirm。口令一经发出即出现在场景中，
 # 任何人都能原样复制，故两段各自的口令都只能被消费一次。
-_pending_probes = globals().get("_pending_probes", {})
-_pending_confirms = globals().get("_pending_confirms", {})
+_pending_probes = ModuleRuntimeManager.state("bind", "pending_probes", default_factory=dict, preserve=True)
+_pending_confirms = ModuleRuntimeManager.state("bind", "pending_confirms", default_factory=dict, preserve=True)
 # 握手闭合串行执行。若让位机制未生效（如某一平台的 probe 投递延迟），
 # 两轮并发执行至「是否同组」判定时会同时读到合并前的数据，各自新建一个组，合并即告失败。
-_handshake_lock = globals().get("_handshake_lock") or asyncio.Lock()
-# reload 会复用模块字典。保留旧任务与 pending 状态，使重载前创建的超时任务仍能完成清理。
-_handshake_tasks: set[asyncio.Task] = globals().get("_handshake_tasks", set())
-
-
-def _handshake_task_done(task: asyncio.Task) -> None:
-    """Drop a finished expiry task and explicitly retrieve its exception."""
-    _handshake_tasks.discard(task)
-    if task.cancelled():
-        return
-    error = task.exception()
-    if error is not None:
-        Logger.error(f"Bind handshake background task {task.get_name()!r} failed: {error!r}")
+_handshake_lock = ModuleRuntimeManager.state(
+    "bind",
+    "handshake_lock",
+    default_factory=asyncio.Lock,
+    preserve=True,
+)
 
 
 def _create_handshake_task(awaitable, *, name: str) -> asyncio.Task:
-    """Create and retain one handshake lifecycle task."""
+    """Create one framework-managed handshake lifecycle task."""
     try:
-        task = asyncio.create_task(awaitable, name=name)
+        return b.spawn(awaitable, name=name)
     except BaseException:
         if hasattr(awaitable, "close"):
             awaitable.close()
         raise
-    _handshake_tasks.add(task)
-    task.add_done_callback(_handshake_task_done)
-    return task
 
 
 async def _release_sessions(*sessions: Bot.MessageSession) -> None:
@@ -90,15 +90,8 @@ async def _release_sessions(*sessions: Bot.MessageSession) -> None:
             Logger.error(f"Failed to release bind handshake context: {result!r}")
 
 
-async def cancel_bind_handshake_tasks() -> None:
-    """Cancel expiry tasks and release every context still owned by an unfinished handshake."""
-    current = asyncio.current_task()
-    tasks = {task for task in _handshake_tasks if task is not current and not task.done()}
-    for task in tasks:
-        task.cancel()
-    if tasks:
-        await asyncio.gather(*tasks, return_exceptions=True)
-
+async def cleanup_bind_handshake_state() -> None:
+    """Release every context still owned by an unfinished handshake."""
     sessions = [entry.get("initiator") for entry in _pending_probes.values()]
     for entry in _pending_confirms.values():
         sessions.extend((entry.get("initiator"), entry.get("responder")))
@@ -640,8 +633,7 @@ async def _run_channel_handshake(entry: dict, initiator: Bot.MessageSession, res
         )
 
 
-BackgroundTaskLifecycle.register_cleanup(
-    "module:bind-handshake",
-    cancel_bind_handshake_tasks,
-    label="bind handshake background tasks",
+b.cleanup(
+    cleanup_bind_handshake_state,
+    name="bind handshake state",
 )

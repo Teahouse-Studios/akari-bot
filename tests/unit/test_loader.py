@@ -2,18 +2,21 @@
 
 import asyncio
 import sys
+from contextlib import asynccontextmanager
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from types import ModuleType
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, call, patch
 
 from apscheduler.triggers.interval import IntervalTrigger
 
 import core.loader as loader_module
+from core.config import CFGManager
 from core.constants import PrivateAssets
 from core.database.models import ModuleStatus
 from core.loader import ModulesManager
+from core.queue.server import JobQueueServer
 from core.scheduler import SchedulerLifecycle
 from core.tester import func_case, Tester
 from core.types import Module
@@ -390,6 +393,75 @@ async def _test_reload_preserves_mixed_status_and_rebuilds_registries():
         _restore_module_manager(snapshot)
 
 
+async def _test_reload_accepts_new_aliasless_module():
+    """无旧状态且 alias=None 的模块不能因读取空别名而让整次重载失败。"""
+    package = "modules.__test_loader_reload_aliasless"
+    module_name = "__test_loader_reload_aliasless"
+    snapshot = _snapshot_module_manager()
+
+    async def hook():
+        return "hook"
+
+    async def event(_):
+        return "event"
+
+    def reload_python(_):
+        _reload_test_module(module_name, None, f"{package}.entry", hook, event)
+        return 1
+
+    try:
+        old_module = _reload_test_module(
+            module_name,
+            "__test_loader_reload_aliasless_old",
+            f"{package}.entry",
+            hook,
+            event,
+        )
+        old_module._db_load = False
+        await ModuleStatus.filter(module_name=module_name).delete()
+
+        with (
+            patch.object(ModulesManager, "reload_py_module", side_effect=reload_python),
+            patch.object(loader_module, "reload_db", new=AsyncMock(return_value=True)),
+        ):
+            success, count = await ModulesManager.reload_module(module_name)
+
+        return (
+            success
+            and count == 1
+            and ModulesManager.modules[module_name].alias is None
+            and ModulesManager.modules[module_name]._db_load
+        )
+    finally:
+        await ModuleStatus.filter(module_name=module_name).delete()
+        _restore_module_manager(snapshot)
+
+
+async def _test_reload_drains_queue_before_scheduler_maintenance():
+    """reload 不能持 Scheduler 锁等待会再次申请该锁的 Queue handler。"""
+    order = []
+
+    @asynccontextmanager
+    async def queue_window():
+        order.append("queue")
+        yield
+
+    @asynccontextmanager
+    async def scheduler_window():
+        order.append("scheduler")
+        yield
+
+    reload_impl = AsyncMock(return_value=(True, 1))
+    with (
+        patch.object(JobQueueServer, "maintenance_window", new=queue_window),
+        patch.object(SchedulerLifecycle, "maintenance_window", new=scheduler_window),
+        patch.object(ModulesManager, "_reload_module", new=reload_impl),
+    ):
+        result = await ModulesManager.reload_module("__test_loader_lock_order")
+
+    return result == (True, 1) and order == ["queue", "scheduler"] and reload_impl.await_count == 1
+
+
 async def _test_reload_python_failure_restores_all_registries():
     """Python 重载中途失败时，部分新注册不能污染旧模块、别名、Hook 或 Event。"""
     package = "modules.__test_loader_reload_python_failure"
@@ -566,28 +638,74 @@ def _test_related_modules_respect_package_boundary():
         _restore_module_manager(snapshot)
 
 
+def _test_reload_dependency_closure_is_dependency_first():
+    """重载依赖包时必须先重载依赖，再重载使用它的模块。"""
+    with (
+        patch.object(ModulesManager, "_rebuild_dependency_graph"),
+        patch.dict(
+            ModulesManager._dependency_graph,
+            {
+                "modules.wiki": set(),
+                "modules.wikilog": {"modules.wiki"},
+                "modules.wiki-audit": {"modules.wiki"},
+            },
+            clear=True,
+        ),
+    ):
+        closure = ModulesManager._reload_closure("modules.wiki")
+    return closure == ["modules.wiki", "modules.wiki-audit", "modules.wikilog"]
+
+
+def _test_reload_syncs_missing_module_config_fields():
+    """reload 后新增的模块配置字段应通过授权接口补写。"""
+    package = "modules.__test_loader_config_sync"
+    config_module_name = f"{package}.config"
+
+    class ProbeConfig:
+        __config_fields__ = {
+            "probe_value": {
+                "default": 42,
+                "cfg_type": int,
+                "secret": False,
+                "table_name": "module_probe",
+            }
+        }
+
+    config_module = ModuleType(config_module_name)
+    config_module.ProbeConfig = ProbeConfig
+    edit_write = MagicMock()
+    try:
+        with (
+            patch.dict(sys.modules, {config_module_name: config_module}),
+            patch.object(CFGManager, "has", return_value=False),
+            patch.object(CFGManager, "edit_write", edit_write),
+        ):
+            errors = ModulesManager._sync_config_fields(package)
+        return not errors and edit_write.call_args_list == [call("probe_value", 42, int, False, "module_probe")]
+    finally:
+        sys.modules.pop(config_module_name, None)
+
+
 def _test_reload_py_module_visits_nested_modules_once():
-    """递归重载只遍历直接子级，嵌套模块不能被祖先和父级重复执行。"""
+    """隔离重载按原 sys.modules 顺序重新 import 整个模块树。"""
     root_name = "__test_loader_reload_tree"
     module_names = [root_name, f"{root_name}.child", f"{root_name}.child.grandchild", f"{root_name}.sibling"]
     fake_modules = {name: ModuleType(name) for name in module_names}
     reload_order = []
 
-    def reload_python(module):
-        reload_order.append(module.__name__)
+    def import_python(name):
+        reload_order.append(name)
+        module = fake_modules[name]
+        sys.modules[name] = module
         return module
 
     with (
         patch.dict(sys.modules, fake_modules),
-        patch.object(loader_module.importlib, "reload", side_effect=reload_python),
+        patch.object(loader_module.importlib, "import_module", side_effect=import_python),
     ):
         count = ModulesManager.reload_py_module(root_name)
 
-    return (
-        count == len(module_names)
-        and reload_order == [f"{root_name}.child.grandchild", f"{root_name}.child", f"{root_name}.sibling", root_name]
-        and len(reload_order) == len(set(reload_order))
-    )
+    return count == len(module_names) and reload_order == module_names and len(reload_order) == len(set(reload_order))
 
 
 def _test_reload_py_module_propagates_child_failure():
@@ -597,19 +715,44 @@ def _test_reload_py_module_propagates_child_failure():
     fake_modules = {root_name: ModuleType(root_name), child_name: ModuleType(child_name)}
     reload_order = []
 
-    def reload_python(module):
-        reload_order.append(module.__name__)
-        if module.__name__ == child_name:
+    def import_python(name):
+        reload_order.append(name)
+        if name == child_name:
             raise RuntimeError("child reload failed")
+        module = fake_modules[name]
+        sys.modules[name] = module
         return module
 
     with (
         patch.dict(sys.modules, fake_modules),
-        patch.object(loader_module.importlib, "reload", side_effect=reload_python),
+        patch.object(loader_module.importlib, "import_module", side_effect=import_python),
     ):
         count = ModulesManager.reload_py_module(root_name)
+        restored = set(fake_modules) <= set(sys.modules)
 
-    return count == -999 and reload_order == [child_name]
+    return count == -999 and root_name in reload_order and child_name in reload_order and restored
+
+
+def _test_reload_py_module_uses_fresh_namespace():
+    """重载应替换模块对象，旧函数持有的模块字典不能被原地改写。"""
+    module_name = "__test_loader_fresh_namespace"
+    old_module = ModuleType(module_name)
+    old_module.version = "old"
+    new_module = ModuleType(module_name)
+    new_module.version = "new"
+
+    def import_python(name):
+        sys.modules[name] = new_module
+        return new_module
+
+    with (
+        patch.dict(sys.modules, {module_name: old_module}),
+        patch.object(loader_module.importlib, "import_module", side_effect=import_python),
+    ):
+        count = ModulesManager.reload_py_module(module_name)
+        replaced = sys.modules[module_name] is new_module
+
+    return count == 1 and replaced and old_module.version == "old" and new_module.version == "new"
 
 
 async def _test_concurrent_reload_fails_before_mutation():
@@ -831,12 +974,20 @@ async def test_loader(tester: Tester):
     await tester.test(_test_renamed_modules_keep_legacy_aliases, "模块主名连字符迁移别名测试")
     await tester.test(_test_module_status_alias_migration, "ModuleStatus 旧主名加载状态迁移测试")
     await tester.test(_test_reload_preserves_mixed_status_and_rebuilds_registries, "模块重载保留混合状态与注册表")
+    await tester.test(_test_reload_accepts_new_aliasless_module, "模块重载接受无别名的新模块")
+    await tester.test(
+        _test_reload_drains_queue_before_scheduler_maintenance,
+        "模块重载先排空队列再进入 Scheduler 维护",
+    )
     await tester.test(_test_reload_python_failure_restores_all_registries, "Python 重载失败恢复完整注册表")
     await tester.test(_test_reload_reports_database_reinitialization_failure, "数据库重载失败恢复旧状态")
     await tester.test(_test_reload_defers_cross_module_bindings, "跨模块装饰器延迟绑定")
     await tester.test(_test_related_modules_respect_package_boundary, "热重载包名前缀边界")
+    await tester.test(_test_reload_dependency_closure_is_dependency_first, "热重载依赖闭包顺序")
+    await tester.test(_test_reload_syncs_missing_module_config_fields, "热重载补写新增配置字段")
     await tester.test(_test_reload_py_module_visits_nested_modules_once, "嵌套 Python 模块只重载一次")
     await tester.test(_test_reload_py_module_propagates_child_failure, "子模块重载失败向上传播")
+    await tester.test(_test_reload_py_module_uses_fresh_namespace, "Python 重载使用新模块命名空间")
     await tester.test(_test_concurrent_reload_fails_before_mutation, "并发模块重载在改动前快速失败")
     await tester.test(_test_initial_load_rolls_back_partial_registration, "启动加载失败回滚半注册模块")
     await tester.test(_test_cancelled_reload_restores_registry_and_status, "取消热重载恢复注册表与状态")

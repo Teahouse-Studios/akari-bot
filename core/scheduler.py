@@ -20,6 +20,7 @@ from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger as APSchedulerIntervalTrigger
 
 from core.config.base import CoreConfig
+from core.module_runtime import ModuleRuntimeManager
 
 if TYPE_CHECKING:
     from core.types import Module
@@ -111,10 +112,16 @@ class SchedulerLifecycle:
                 cls._active_tasks[current] = spec.job_id
 
             try:
-                result = spec.function()
-                if inspect.isawaitable(result):
-                    return await result
-                return result
+                if spec.module_name is None:
+                    result = spec.function()
+                    if inspect.isawaitable(result):
+                        return await result
+                    return result
+                async with ModuleRuntimeManager.use(spec.module_name):
+                    result = spec.function()
+                    if inspect.isawaitable(result):
+                        return await result
+                    return result
             finally:
                 cls._active_tasks.pop(current, None)
 

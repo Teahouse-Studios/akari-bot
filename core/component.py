@@ -12,6 +12,7 @@ from core.builtins.types import MessageElement
 from core.config.decorator import _process_class
 from core.constants.exceptions import InvalidTemplatePattern
 from core.loader import ModulesManager
+from core.module_runtime import ModuleRuntimeManager, RuntimeResource
 from core.scheduler import IntervalTrigger
 from core.types import Module
 from core.types.module.component_meta import *
@@ -157,6 +158,76 @@ class Bind:
         on_schedule = schedule
         on_hook = hook
         on_event = event
+
+        def state(
+            self,
+            name: str,
+            *,
+            default=None,
+            default_factory=None,
+            preserve: bool = False,
+            version: int = 1,
+            migrate=None,
+        ):
+            """Declare module-owned in-memory state managed across reloads."""
+            return ModuleRuntimeManager.state(
+                self.module_name,
+                name,
+                default=default,
+                default_factory=default_factory,
+                preserve=preserve,
+                version=version,
+                migrate=migrate,
+            )
+
+        def cache(
+            self,
+            name: str,
+            *,
+            default_factory=dict,
+            version: int = 1,
+        ):
+            """Declare an in-memory cache invalidated when its version changes."""
+            return self.state(
+                name,
+                default_factory=default_factory,
+                preserve=True,
+                version=version,
+            )
+
+        def resource(
+            self,
+            name: str,
+            factory,
+            close=None,
+            *,
+            timeout: float = 10,
+        ) -> RuntimeResource:
+            """Declare a lazy resource owned by the framework-managed runtime."""
+            return ModuleRuntimeManager.resource(
+                self.module_name,
+                name,
+                factory,
+                close,
+                timeout=timeout,
+            )
+
+        def cache_path(self, name: str, *, version: int = 1):
+            """Return a versioned module cache directory managed by the framework."""
+            return ModuleRuntimeManager.cache_path(self.module_name, name, version)
+
+        def cleanup(self, callback, *, name: str | None = None, timeout: float = 10):
+            """Register an idempotent cleanup that runs when this generation stops."""
+            return ModuleRuntimeManager.cleanup(self.module_name, callback, name=name, timeout=timeout)
+
+        def spawn(self, awaitable, *, name: str | None = None, suppress_errors=()):
+            """Create a tracked background task owned by this module runtime."""
+            return ModuleRuntimeManager.spawn(
+                self.module_name,
+                awaitable,
+                name=name,
+                suppress_errors=suppress_errors,
+            )
 
         @overload
         def handle(

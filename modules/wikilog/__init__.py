@@ -420,7 +420,7 @@ async def _(ctx: Bot.ModuleHookContext):
             await Bot.send_direct_message_to_union_target(union_id, message)
 
 
-fetch_cache = {}
+fetch_cache = wikilog.cache("fetch_cache", version=1)
 
 
 @wikilog.schedule(IntervalTrigger(seconds=60))
