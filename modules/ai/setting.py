@@ -32,6 +32,10 @@ for llm in llm_api_list:
         llm["price_in"] = 0
     if not llm.get("price_out"):
         llm["price_out"] = 0
+    if not llm.get("price_cache_read"):
+        llm["price_cache_read"] = 0
+    if not llm.get("price_cache_write"):
+        llm["price_cache_write"] = 0
 
 _name_count = {}
 for llm in llm_api_list:
@@ -61,12 +65,14 @@ def get_llm_billing(llm: dict, context_tokens: int = 0, now: datetime | None = N
 
     prices = {
         "input_price": safe_price(billing.get("price_in", llm.get("price_in", 0))),
-        "cache_price": safe_price(billing.get("price_cache", llm.get("price_cache", 0))),
         "output_price": safe_price(billing.get("price_out", llm.get("price_out", 0))),
+        "cache_read_price": safe_price(billing.get("price_cache_read", llm.get("price_cache_read", 0))),
+        "cache_write_price": safe_price(billing.get("price_cache_write", llm.get("price_cache_write", 0))),
         "call_price": safe_price(billing.get("call_price", 0)),
     }
     if billing_type == "per_call":
-        prices["input_price"] = prices["cache_price"] = prices["output_price"] = 0
+        prices["input_price"] = prices["cache_write_price"] = prices["cache_read_price"] = 0
+        prices["output_price"] = 0
 
     tiers = billing.get("tiers")
     time_rules = billing.get("time_rules")
@@ -90,7 +96,8 @@ def get_llm_billing(llm: dict, context_tokens: int = 0, now: datetime | None = N
             if tier:
                 for price_name, config_name in (
                     ("input_price", "price_in"),
-                    ("cache_price", "price_cache"),
+                    ("cache_write_price", "price_cache_write"),
+                    ("cache_read_price", "price_cache_read"),
                     ("output_price", "price_out"),
                 ):
                     if config_name in tier:
@@ -117,7 +124,8 @@ def get_llm_billing(llm: dict, context_tokens: int = 0, now: datetime | None = N
                 if in_range:
                     for price_name, config_name in (
                         ("input_price", "price_in"),
-                        ("cache_price", "price_cache"),
+                        ("cache_write_price", "price_cache_write"),
+                        ("cache_read_price", "price_cache_read"),
                         ("output_price", "price_out"),
                     ):
                         if config_name in rule:

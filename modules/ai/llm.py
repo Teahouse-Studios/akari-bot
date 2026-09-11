@@ -49,7 +49,7 @@ async def ask_llm(
     api_key: str,
     use_tools: bool = True,
     history: list[dict] | None = None,
-) -> tuple[list, int, int, int, list]:
+) -> tuple[list, int, int, int, int, list]:
     client = AsyncOpenAI(base_url=api_url, api_key=api_key)
 
     tz_ = session.session_info._tz_offset
@@ -80,7 +80,8 @@ async def ask_llm(
     messages = [*system_messages, *conversation]
 
     total_input_tokens = 0
-    total_cached_tokens = 0
+    total_cache_read_tokens = 0
+    total_cache_write_tokens = 0
     total_output_tokens = 0
     content_pieces = []
     tool_choice = "auto" if use_tools else "none"
@@ -107,10 +108,16 @@ async def ask_llm(
             raise e
 
         res_msg = response.choices[0].message
-        cached_tokens = response.usage.prompt_tokens_details.cached_tokens
-        total_input_tokens += response.usage.prompt_tokens - cached_tokens
-        total_cached_tokens += cached_tokens
-        total_output_tokens += response.usage.completion_tokens
+        usage = response.usage
+        prompt_details = getattr(usage, "prompt_tokens_details", None)
+        cache_read_tokens = getattr(prompt_details, "cached_tokens", 0) or 0
+        cache_write_tokens = getattr(prompt_details, "cache_creation_input_tokens", None)
+        if not cache_write_tokens:
+            cache_write_tokens = getattr(usage, "cache_creation_input_tokens", 0) or 0
+        total_input_tokens += max(0, usage.prompt_tokens - cache_read_tokens - cache_write_tokens)
+        total_cache_read_tokens += cache_read_tokens
+        total_cache_write_tokens += cache_write_tokens
+        total_output_tokens += usage.completion_tokens
 
         messages.append(res_msg)
         if res_msg.content:
@@ -175,4 +182,11 @@ async def ask_llm(
     new_history = [
         m for m in messages[len(system_messages) :] if (m.get("role") if isinstance(m, dict) else m.role) != "system"
     ]
-    return chain, total_input_tokens, total_cached_tokens, total_output_tokens, new_history
+    return (
+        chain,
+        total_input_tokens,
+        total_output_tokens,
+        total_cache_read_tokens,
+        total_cache_write_tokens,
+        new_history,
+    )

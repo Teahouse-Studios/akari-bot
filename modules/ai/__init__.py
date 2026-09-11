@@ -62,8 +62,9 @@ async def _(msg: Bot.MessageSession, prompt: str):
         if not current_is_superuser and not precount_petal(
             current_msg,
             billing["input_price"],
-            billing["cache_price"],
             billing["output_price"],
+            billing["cache_read_price"],
+            billing["cache_write_price"],
             call_price=billing["call_price"],
         ):
             await current_msg.finish(I18NContext("petal.message.cost.not_enough"))
@@ -85,7 +86,7 @@ async def _(msg: Bot.MessageSession, prompt: str):
                 *(x for x in current_msg.session_info.messages.values if isinstance(x, ImageElement)),
             ]
         )
-        chain, input_tokens, cache_tokens, output_tokens, history = await ask_llm(
+        chain, input_tokens, output_tokens, cache_read_tokens, cache_write_tokens, history = await ask_llm(
             current_msg,
             prompt_chain,
             llm_info["model_name"],
@@ -98,17 +99,24 @@ async def _(msg: Bot.MessageSession, prompt: str):
         # 每轮建立新的快照，保留旧 ID 以支持从任意一轮分叉。
         turn_id = create_context(history, context_key)
 
-        Logger.info(f"{input_tokens + cache_tokens + output_tokens} token used while calling LLM.")
-        Logger.info(f"Input (miss cache): {input_tokens} | Input (hit cache): {cache_tokens} | Output: {output_tokens}")
+        Logger.info(
+            f"{input_tokens + cache_read_tokens + cache_write_tokens + output_tokens} token used while calling LLM."
+        )
+        Logger.info(
+            f"Input (miss cache): {input_tokens} | Output: {output_tokens}"
+            f"Cache read: {cache_read_tokens} | Cache write: {cache_write_tokens}"
+        )
         billing = get_llm_billing(llm_info, input_tokens)
         petal = await count_token_petal(
             current_msg,
             billing["input_price"],
-            billing["cache_price"],
             billing["output_price"],
+            billing["cache_read_price"],
+            billing["cache_write_price"],
             input_tokens,
-            cache_tokens,
             output_tokens,
+            cache_read_tokens,
+            cache_write_tokens,
             billing["call_price"],
         )
 
@@ -173,14 +181,23 @@ async def _(msg: Bot.MessageSession):
             billing_type = billing_config.get("type", "token")
             billing = get_llm_billing(llm_info)
             if billing_type != "per_call" and any(
-                billing[price_name] > 0 for price_name in ("input_price", "cache_price", "output_price")
+                billing[price_name] > 0 for price_name in ("input_price", "output_price")
             ):
                 llm_items.append(
                     I18NContext(
                         "ai.message.llm.list.billing.token",
                         input_price=billing["input_price"],
-                        cache_price=billing["cache_price"],
                         output_price=billing["output_price"],
+                    )
+                )
+            if billing_type != "per_call" and any(
+                billing[price_name] > 0 for price_name in ("cache_write_price", "cache_read_price")
+            ):
+                llm_items.append(
+                    I18NContext(
+                        "ai.message.llm.list.billing.token.cache",
+                        cache_write_price=billing["cache_write_price"],
+                        cache_read_price=billing["cache_read_price"],
                     )
                 )
 
@@ -209,7 +226,8 @@ async def _(msg: Bot.MessageSession):
                 ):
                     tier_billing = get_llm_billing(llm_info, tier["context_threshold"])
                     if not any(
-                        tier_billing[price_name] > 0 for price_name in ("input_price", "cache_price", "output_price")
+                        tier_billing[price_name] > 0
+                        for price_name in ("input_price", "cache_write_price", "cache_read_price", "output_price")
                     ):
                         continue
                     llm_items.extend(
@@ -221,8 +239,12 @@ async def _(msg: Bot.MessageSession):
                             I18NContext(
                                 "ai.message.llm.list.billing.token",
                                 input_price=tier_billing["input_price"],
-                                cache_price=tier_billing["cache_price"],
                                 output_price=tier_billing["output_price"],
+                            ),
+                            I18NContext(
+                                "ai.message.llm.list.billing.token.cache",
+                                cache_write_price=tier_billing["cache_write_price"],
+                                cache_read_price=tier_billing["cache_read_price"],
                             ),
                         ]
                     )

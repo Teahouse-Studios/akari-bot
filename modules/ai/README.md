@@ -17,7 +17,8 @@ llm_api_list:
     model_name: llm-v1
     name: example-llm
     price_in: 50
-    price_cache: 20
+    price_cache_read: 20
+    price_cache_write: 40
     price_out: 50
     superuser: false
 ```
@@ -37,7 +38,8 @@ llm_api_list:
     billing:
       type: token
       price_in: 50
-      price_cache: 20
+      price_cache_read: 20
+      price_cache_write: 40
       price_out: 50
       # 可选
       call_price: 10
@@ -46,13 +48,15 @@ llm_api_list:
         - context_threshold: 131072
           price_in: 100
           price_out: 100
-          price_cache: 50
+          price_cache_read: 50
+          price_cache_write: 80
       # 可选
       time_rules:
         - time_range: "00:00-08:30"
           week: [1, 2, 3, 4, 5, 6, 7]
           price_in: 20
-          price_cache: 10
+          price_cache_read: 10
+          price_cache_write: 20
           price_out: 20
 ```
 
@@ -105,7 +109,8 @@ billing:
 billing:
   type: token
   price_in: 50
-  price_cache: 20
+  price_cache_read: 20
+  price_cache_write: 40
   price_out: 50
 ```
 
@@ -132,7 +137,8 @@ billing:
   type: hybrid
   call_price: 10
   price_in: 50
-  price_cache: 20
+  price_cache_read: 20
+  price_cache_write: 40
   price_out: 50
 ```
 
@@ -145,8 +151,11 @@ billing:
 以下参数的单位均为 **花瓣 / 1M token**：
 
 * `price_in`：百万输入 Token 所需的花瓣数量。
-* `price_cache`：百万输入缓存命中 Token 所需的花瓣数量。
+* `price_cache_read`：百万输入缓存命中 Token 所需的花瓣数量。
+* `price_cache_write`：百万输入缓存写入 Token 所需的花瓣数量。
 * `price_out`：百万输出 Token 所需的花瓣数量。
+
+旧版的 `price_cache` 等同于 `price_cache_read`，仍可继续使用。缓存写入价格只有在模型 API 返回缓存写入 token 数量时才会应用。
 
 如果未设置，默认值为 `0`。
 
@@ -520,8 +529,11 @@ The final cost of each API call consists of the fixed per-call fee and the token
 The following parameters are measured in **petals per 1M tokens**:
 
 * `price_in`: Number of petals required per 1M input tokens.
-* `price_cache`: Number of petals required per 1M cached input tokens.
+* `price_cache_read`: Number of petals required per 1M cached input tokens.
+* `price_cache_write`: Number of petals required per 1M input tokens written to cache.
 * `price_out`: Number of petals required per 1M output tokens.
+
+The legacy `price_cache` option is treated as `price_cache_read`. Cache write pricing is applied when the model API reports cache creation token usage.
 
 If omitted, the default value is `0`.
 
