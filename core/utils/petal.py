@@ -186,6 +186,31 @@ async def sign_get_petal(msg: Bot.MessageSession) -> int | None:
                 )
                 if not current:
                     return None
+                # 签到记录同样挂在 union 上，避免多平台绑定后重复签到。
+                stored = await (
+                    StoredData.filter(stored_key=f"{PETAL_STORE_SCOPE}|signedpetal")
+                    .using_db(connection)
+                    .select_for_update()
+                    .first()
+                )
+                quota = dict((stored.value if stored else [{}])[0])
+                now = datetime.now()
+                expired = datetime.combine((now + timedelta(days=1)).date(), datetime.min.time())
+                record = quota.get(union_id)
+                if not record or now.timestamp() > record["expired"]:
+                    record = {"time": now.timestamp(), "expired": expired.timestamp(), "amount": 0}
+                    quota[union_id] = record
+                if record["amount"]:
+                    # 今日已签到，返回 0 由上层提示“明日再试”。
+                    return 0
+                record["amount"] = 1
+                if stored:
+                    stored.value = [quota]
+                    await stored.save(using_db=connection, update_fields=["value"])
+                else:
+                    await StoredData.create(
+                        stored_key=f"{PETAL_STORE_SCOPE}|signedpetal", value=[quota], using_db=connection
+                    )
                 await SenderUnionInfo.filter(union_id=union_id).using_db(connection).update(petal=F("petal") + amount)
                 current.petal += amount
         sender_union_info.petal = current.petal

@@ -117,6 +117,45 @@ async def _test_petal_session_balance_stays_in_sync():
     return msg.session_info.petal == actual.petal == 5
 
 
+async def _test_sign_petal_once_per_day():
+    """测试 sign_get_petal - 同一 union 每日仅可签到一次，跨日（服务器 0 点）重置。"""
+    from core.database.models import SenderUnionInfo, StoredData
+    from core.utils.petal import sign_get_petal
+
+    await TestDataFactory.ensure_sender(petal=0)
+    msg = MockMessageSession("~test")
+    await msg.async_init("~test")
+
+    class MockConfig:
+        """替换 CoreConfig 的桩，固定签到收益以便断言。"""
+
+        enable_petal = True
+        petal_sign_min = 5
+        petal_sign_max = 5
+        petal_sign_rate = 1.0
+
+    store_key = "Union|signedpetal"
+    try:
+        with patch("core.utils.petal.CoreConfig", MockConfig):
+            first = await sign_get_petal(msg)
+            second = await sign_get_petal(msg)
+            # 今日已签到返回 0，余额不再增加
+            if first != 5 or second != 0:
+                return False
+            # 模拟跨过服务器 0 点：把签到记录的过期时间改为过去
+            stored = await StoredData.get(stored_key=store_key)
+            quota = dict(stored.value[0])
+            quota[msg.session_info.sender_union_id]["expired"] = 0
+            stored.value = [quota]
+            await stored.save(update_fields=["value"])
+            third = await sign_get_petal(msg)
+
+        actual = await SenderUnionInfo.get(union_id=msg.session_info.sender_union_id)
+        return third == 5 and actual.petal == 10
+    finally:
+        await StoredData.filter(stored_key=f"{store_key}").delete()
+
+
 async def _test_petal_settlement_applies_rebate():
     """测试周期结算按返点比例保留余额。"""
     from core.database.models import SenderUnionInfo
@@ -143,6 +182,7 @@ async def test_petal(tester: Tester):
     await tester.test(_test_gained_petal_with_mock, "gained_petal Mock Config 测试")
     await tester.test(_test_cost_petal_insufficient_with_mock, "cost_petal 花瓣不足 Mock 测试")
     await tester.test(_test_petal_session_balance_stays_in_sync, "花瓣变更后会话余额同步测试")
+    await tester.test(_test_sign_petal_once_per_day, "签到每日仅一次且跨日重置测试")
     await tester.test(_test_petal_settlement_applies_rebate, "花瓣返点结算测试")
 
     return tester
