@@ -9,8 +9,10 @@ from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.lock import ExecutionLockList
 from core.builtins.session.tasks import SessionTaskManager
+from core.constants import SessionContextUnavailable
 from core.database.models import SenderUnionInfo, TargetUnionBind, TargetUnionInfo
 from core.queue.contracts import PlatformAPI
+from core.queue.errors import RpcRemoteError
 from core.tester import func_case, Tester
 from core.tester.mock.session import MockMessageSession
 
@@ -83,6 +85,40 @@ async def _test_release_context_tolerates_prior_platform_cleanup():
     finally:
         ContextManager.context.pop(session_id, None)
         ContextManager.context_marks_hold.pop(session_id, None)
+
+
+async def _test_hold_normalizes_remote_context_unavailable():
+    """跨进程 hold 的上下文缺失应恢复为可供调用方处理的领域异常。"""
+    from core.builtins.session.internal import MessageSession
+
+    session = MessageSession(
+        SessionInfo(
+            target_id="TEST|Group|hold-unavailable",
+            target_from="TEST|Group",
+            client_name="TEST",
+        )
+    )
+    for remote_type in (SessionContextUnavailable.__name__, ValueError.__name__):
+        remote_error = RpcRemoteError(
+            "Session not found in context",
+            remote_type=remote_type,
+        )
+        with patch.object(PlatformAPI, "hold_context", new=AsyncMock(side_effect=remote_error)):
+            try:
+                await session.hold()
+            except SessionContextUnavailable:
+                continue
+            return False
+
+    unexpected = RpcRemoteError("Session not found in context", remote_type="RuntimeError")
+    with patch.object(PlatformAPI, "hold_context", new=AsyncMock(side_effect=unexpected)):
+        try:
+            await session.hold()
+        except SessionContextUnavailable:
+            return False
+        except RpcRemoteError as exc:
+            return exc is unexpected
+    return False
 
 
 async def _test_features_inject_markdown_table():
@@ -3113,6 +3149,7 @@ async def test_features(tester: Tester):
     await tester.test(_test_features_override, "Features.override() 测试")
     await tester.test(_test_features_inject_action_text, "support_action_text 注入测试")
     await tester.test(_test_release_context_tolerates_prior_platform_cleanup, "平台先清理后的上下文释放测试")
+    await tester.test(_test_hold_normalizes_remote_context_unavailable, "跨进程 hold 上下文缺失归一化测试")
     await tester.test(_test_features_inject_markdown_table, "support_markdown_extension 注入测试")
     await tester.test(_test_session_refresh_updates_derived_union_state, "SessionInfo 刷新派生状态测试")
     await tester.test(_test_session_refresh_does_not_recreate_deleted_unions, "SessionInfo 刷新不复活已删除 Union")

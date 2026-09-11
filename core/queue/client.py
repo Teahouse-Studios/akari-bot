@@ -9,7 +9,8 @@ from core.builtins.session.info import SessionInfo
 from core.exports import exports, add_export
 from core.logger import Logger
 from .base import JobQueueBase
-from .contracts import PlatformAPI, ServerAPI
+from .contracts import PlatformAPI, ProcessAPI, ServerAPI
+from .diagnostics import collect_self_usage
 from .rpc import RpcMethod
 from .reporting import report_rpc_error
 
@@ -84,6 +85,11 @@ async def call_onebot_api(session_info: SessionInfo, api_name: str, **kwargs: An
     if call_api:
         return await call_api(api_name, **kwargs)
     return {"success": False, "error": "OneBot API not supported in this context"}
+
+
+@ProcessAPI.resource_usage.bind(JobQueueClient)
+async def resource_usage() -> dict[str, int]:
+    return collect_self_usage()
 
 
 add_export(JobQueueClient)

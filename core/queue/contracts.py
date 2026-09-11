@@ -14,7 +14,7 @@ from core.builtins.session.features import Features
 from core.builtins.session.info import EventInfo, SessionInfo
 from .codec import register_value_type
 from .peer import ServiceRoute
-from .rpc import context_method, context_target, remote
+from .rpc import context_method, context_target, remote, signal
 
 
 register_value_type("message", MessageChain | MessageNodes)
@@ -71,6 +71,18 @@ class PlatformAPI:
     @remote("platform.call_onebot_api", target=_platform_target)
     async def call_onebot_api(session_info: SessionInfo, api_name: str, **kwargs: Any) -> dict:
         """Call the platform's explicitly supported OneBot extension."""
+        ...
+
+
+class ProcessAPI:
+    @staticmethod
+    @signal("process.resource_usage", timeout=10)
+    async def resource_usage() -> dict[str, int]:
+        """Report the responding process's own memory footprint in bytes.
+
+        Peers answer for themselves because ``uss`` is only readable from
+        inside the process; see ``core.queue.diagnostics``.
+        """
         ...
 
 

@@ -76,14 +76,25 @@ async def main(process_stop_event=None):
         Logger.success("AkariBot Server stopped successfully.")
 
 
-def run_async(subprocess: bool = False, binary_mode: bool = False, process_stop_event=None):
+def run_async(
+    subprocess: bool = False,
+    binary_mode: bool = False,
+    process_stop_event=None,
+    daemon_pid: int | None = None,
+    hub_pid: int | None = None,
+):
     """运行服务器。
 
     :param subprocess: 是否以子进程模式运行
     :param binary_mode: 是否启用二进制模式
+    :param process_stop_event: 守护进程用于请求优雅停止的事件
+    :param daemon_pid: 守护进程 PID，用于统计非 Peer 进程的内存占用
+    :param hub_pid: 内置 JobQueue Hub 子进程 PID，同上
     """
     Info.subprocess = subprocess
     Info.binary_mode = binary_mode
+    Info.daemon_pid = daemon_pid
+    Info.hub_pid = hub_pid
     asyncio.run(main(process_stop_event))
 
 

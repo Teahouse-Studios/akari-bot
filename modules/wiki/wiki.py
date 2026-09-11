@@ -9,7 +9,12 @@ from core.builtins.message.internal import ButtonFrame, I18NContext, Plain, Imag
 from core.builtins.session.internal import MessageSession, confirm_prompt_key
 from core.builtins.utils import confirm_command
 from core.component import module
-from core.constants.exceptions import AbuseWarning, SessionFinished, WaitCancelException
+from core.constants.exceptions import (
+    AbuseWarning,
+    SessionContextUnavailable,
+    SessionFinished,
+    WaitCancelException,
+)
 from core.logger import Logger
 from core.server.lifecycle import BackgroundTaskLifecycle
 from core.utils.func import is_int
@@ -56,7 +61,7 @@ def _wiki_background_done(task: asyncio.Task) -> None:
     if task.cancelled():
         return
     error = task.exception()
-    if error is None or isinstance(error, (SessionFinished, WaitCancelException)):
+    if error is None or isinstance(error, (SessionContextUnavailable, SessionFinished, WaitCancelException)):
         return
     Logger.error(f"Wiki background task {task.get_name()!r} failed: {error!r}")
 
@@ -85,9 +90,15 @@ async def _run_background_with_release(session: Bot.MessageSession, awaitable):
         await _release_background_session(session)
 
 
-async def _start_background_with_release(session: Bot.MessageSession, awaitable_factory, *, name: str) -> asyncio.Task:
+async def _start_background_with_release(
+    session: Bot.MessageSession, awaitable_factory, *, name: str
+) -> asyncio.Task | None:
     """Hold a session, then start a retained background operation with rollback on spawn failure."""
-    await session.hold()
+    try:
+        await session.hold()
+    except SessionContextUnavailable:
+        Logger.debug("Wiki background skipped because the session context is unavailable.")
+        return None
     awaitable = None
     runner = None
     try:
@@ -289,6 +300,61 @@ async def _(msg: Bot.MessageSession):
 
 
 async def query_pages(
+    session: Bot.MessageSession | QueryInfo,
+    title: str | list | tuple | None = None,
+    pageid: str | None = None,
+    iw: str | None = None,
+    lang: str | None = None,
+    preset_message: MessageChain | None = None,
+    start_wiki_api: str | None = None,
+    template: bool = False,
+    mediawiki: bool = False,
+    use_prefix: bool = True,
+    inline_mode: bool = False,
+    random_page: bool = False,
+):
+    """在查询全过程中保持平台上下文，避免慢请求期间被消息清理流程释放。"""
+    if not isinstance(session, MessageSession):
+        return await _query_pages_impl(
+            session,
+            title=title,
+            pageid=pageid,
+            iw=iw,
+            lang=lang,
+            preset_message=preset_message,
+            start_wiki_api=start_wiki_api,
+            template=template,
+            mediawiki=mediawiki,
+            use_prefix=use_prefix,
+            inline_mode=inline_mode,
+            random_page=random_page,
+        )
+
+    try:
+        await session.hold()
+    except SessionContextUnavailable:
+        Logger.debug("Wiki query skipped because the session context is unavailable.")
+        return None
+    try:
+        return await _query_pages_impl(
+            session,
+            title=title,
+            pageid=pageid,
+            iw=iw,
+            lang=lang,
+            preset_message=preset_message,
+            start_wiki_api=start_wiki_api,
+            template=template,
+            mediawiki=mediawiki,
+            use_prefix=use_prefix,
+            inline_mode=inline_mode,
+            random_page=random_page,
+        )
+    finally:
+        await _release_background_session(session)
+
+
+async def _query_pages_impl(
     session: Bot.MessageSession | QueryInfo,
     title: str | list | tuple | None = None,
     pageid: str | None = None,
@@ -929,14 +995,10 @@ async def query_pages(
                         lang=lang,
                     )
 
-        try:
+        async def _bgtask():
+            await _gather_background(image_and_audio(), wait_confirm(), infobox(), section())
 
-            async def _bgtask():
-                await _gather_background(image_and_audio(), wait_confirm(), infobox(), section())
-
-            await _start_background_with_release(session, _bgtask, name="wiki-query-background")
-        except ValueError:
-            Logger.debug("Error occurred while holding session, skip.")
+        await _start_background_with_release(session, _bgtask, name="wiki-query-background")
 
     else:
         return {

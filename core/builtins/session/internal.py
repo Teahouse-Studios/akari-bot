@@ -26,7 +26,7 @@ from core.builtins.session.tasks import SessionTaskManager
 from core.builtins.types import MessageElement
 from core.builtins.utils import confirm_command
 from core.config.base import CoreConfig
-from core.constants import SessionFinished, WaitCancelException, default_locale
+from core.constants import SessionContextUnavailable, SessionFinished, WaitCancelException, default_locale
 from core.exports import add_export
 from core.logger import Logger
 from core.utils.button import bind_callback_reply_ids, build_button_rows
@@ -35,6 +35,7 @@ from core.utils.media import compress_media_chain
 from core.utils.random import Random
 
 from core.queue.contracts import PlatformAPI
+from core.queue.errors import RpcRemoteError
 
 # 快速确认模式 - 允许用户快速确认操作
 quick_confirm = CoreConfig.quick_confirm
@@ -582,7 +583,14 @@ class MessageSession:
 
         在需要保持会话活跃状态以处理异步操作时使用。
         """
-        await PlatformAPI.hold_context(self.session_info)
+        try:
+            await PlatformAPI.hold_context(self.session_info)
+        except RpcRemoteError as exc:
+            if exc.remote_type == SessionContextUnavailable.__name__ or (
+                exc.remote_type == ValueError.__name__ and str(exc) == "Session not found in context"
+            ):
+                raise SessionContextUnavailable(str(exc)) from exc
+            raise
 
     async def release(self):
         """

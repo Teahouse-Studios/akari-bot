@@ -38,6 +38,10 @@ class InvalidHelpDocTypeError(Exception):
     pass
 
 
+class SessionContextUnavailable(ValueError):
+    """平台进程中对应的消息上下文已经不可用。"""
+
+
 class InvalidTemplatePattern(Exception):
     pass
 

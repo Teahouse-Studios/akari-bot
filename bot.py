@@ -237,11 +237,17 @@ def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
         sys.exit(1)
 
 
-def server_go(stop_event, subprocess: bool = False, binary_mode: bool = False):
+def server_go(
+    stop_event,
+    subprocess: bool = False,
+    binary_mode: bool = False,
+    daemon_pid: int | None = None,
+    hub_pid: int | None = None,
+):
     # Server 依赖树（尤其 WebRender）只应由 Server 子进程加载，守护进程不需要保留一份。
     from core.server.run import run_async
 
-    run_async(subprocess, binary_mode, stop_event)
+    run_async(subprocess, binary_mode, stop_event, daemon_pid, hub_pid)
 
 
 def jobqueue_hub_go(stop_event, ready_event):
@@ -267,6 +273,9 @@ async def run_bot():
     from core.config.jobqueue import JobQueueConfig
 
     mp = multiprocessing.get_context("spawn" if sys.platform in ["win32", "darwin"] else "forkserver")
+    # 守护进程与 Hub 非 JobQueue Peer，Server 无从 Registry 获知其 PID。此处随 Process
+    # 参数传递而非环境变量：forkserver 于首个子进程启动时快照环境，后续改动不再生效。
+    hub_pid = None
 
     if JobQueueConfig.jobqueue_backend.strip().lower() == "websocket":
         from core.queue.websocket import WebSocketSettings
@@ -295,6 +304,7 @@ async def run_bot():
             jobqueue_hub_stop_event = None
             raise RuntimeError("Failed to start the WebSocket JobQueue Hub")
         Logger.success("WebSocket JobQueue Hub is ready.")
+        hub_pid = hub_process.pid
 
     def restart_bot_process(bot_name: str):
         if (
@@ -348,7 +358,7 @@ async def run_bot():
     server_stop_event = mp.Event()
     server_process = mp.Process(
         target=server_go,
-        args=(server_stop_event, True, binary_mode),
+        args=(server_stop_event, True, binary_mode, os.getpid(), hub_pid),
         name="server",
         daemon=True,
     )

@@ -21,7 +21,8 @@ from core.logger import Logger
 from core.utils.bash import run_sys_command
 from core.utils.web_render import check_web_render_status
 from .base import JobQueueBase
-from .contracts import PlatformAPI, ServerAPI
+from .contracts import PlatformAPI, ProcessAPI, ServerAPI
+from .diagnostics import collect_self_usage
 from .errors import RpcUnavailableError
 from .reporting import report_rpc_error
 
@@ -220,6 +221,11 @@ async def post_module_action(module: str, action: Literal["load", "unload", "rel
         case _:
             status = False
     return status
+
+
+@ProcessAPI.resource_usage.bind(JobQueueServer)
+async def resource_usage() -> dict[str, int]:
+    return collect_self_usage()
 
 
 add_export(JobQueueServer)

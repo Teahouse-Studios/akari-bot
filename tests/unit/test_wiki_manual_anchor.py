@@ -145,6 +145,8 @@ async def _test_manual_anchor_is_delegated_to_webrender():
         patch("modules.wiki.wiki.finish_if_wiki_blocked", new=AsyncMock()),
         patch("modules.wiki.wiki.generate_screenshot_v2", new=render),
         patch("modules.wiki.wiki._start_background_with_release", new=_run_background),
+        patch.object(MessageSession, "hold", new=AsyncMock()),
+        patch.object(MessageSession, "release", new=AsyncMock()),
         patch.object(MessageSession, "send_message", new=_send_message),
     ):
         await query_pages(session, title="示例页面#manual_anchor")

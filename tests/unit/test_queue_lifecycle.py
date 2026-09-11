@@ -156,22 +156,31 @@ async def _test_concurrent_consumers_claim_once():
     task_id = await AuditQueue.submit("QUEUE-AUDIT-CLAIM", "claim-audit", {})
     readers = 0
     both_read = asyncio.Event()
+    original_get_all = JobQueuesTable.get_all
 
     async def _get_same_pending_snapshot(target_clients, limit=None):
-        del limit
+        # 补丁作用于进程级的 JobQueuesTable，同一事件循环中其它 Peer 的轮询器也会命中。
+        # 非本测试目标须原样放行，否则外部轮询器会占用会合名额，使本测试的协程永久等待。
+        if "QUEUE-AUDIT-CLAIM" not in target_clients:
+            return await original_get_all(target_clients, limit=limit)
         nonlocal readers
-        row = await JobQueuesTable.get(task_id=task_id)
-        readers += 1
-        if readers == 2:
-            both_read.set()
-        await both_read.wait()
+        try:
+            row = await JobQueuesTable.get(task_id=task_id)
+        finally:
+            # 读取失败亦须放行对端：否则异常将表现为无进展挂起，掩盖真实原因。
+            readers += 1
+            if readers >= 2:
+                both_read.set()
+        await asyncio.wait_for(both_read.wait(), timeout=10)
         return [row]
 
     scheduled = []
 
     def _capture_task(coro, **kwargs):
         task = asyncio.get_running_loop().create_task(coro, **kwargs)
-        scheduled.append(task)
+        # 同上：只登记本任务派发的处理协程，避免等待其它轮询器的在途任务。
+        if str(kwargs.get("name", "")).endswith(str(task_id)):
+            scheduled.append(task)
         return task
 
     with (

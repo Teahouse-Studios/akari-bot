@@ -14,6 +14,7 @@ from core.config.base import CoreConfig
 from core.constants import all_locales_path, cache_path, lang_list, weblate_lang_codes
 from core.database.models import SenderUnionBind, SenderUnionInfo
 from core.i18n import get_available_locales, Locale
+from core.queue.diagnostics import DAEMON_LABEL, gather_process_usage, PEERS_LABEL
 from core.utils.bash import run_sys_command
 from core.utils.http import get_url
 
@@ -62,6 +63,43 @@ ping = module("ping", base=True, doc=True)
 started_time = time.time()
 
 
+async def _build_process_usage_lines(msg: Bot.MessageSession) -> list[str]:
+    """构造各进程内存占用的展示行；无任何数据时返回空列表。"""
+    usages, failures = await gather_process_usage()
+    if not usages and not failures:
+        return []
+    locale = msg.session_info.locale
+    # 平台名与 jobqueue-hub 为专有名词，仅占位标签需本地化。
+    labels = {
+        DAEMON_LABEL: "core.message.ping.process.daemon",
+        PEERS_LABEL: "core.message.ping.process.peers",
+    }
+
+    def display_name(name: str) -> str:
+        return locale.t(labels[name]) if name in labels else name
+
+    lines = []
+    for usage in usages:
+        lines.append(
+            locale.t(
+                "core.message.ping.process",
+                name=display_name(usage.name),
+                pid=usage.pid if usage.pid is not None else "-",
+                memory=int(usage.memory / (1024 * 1024)),
+                metric=usage.metric,
+            )
+        )
+    for failure in failures:
+        lines.append(
+            locale.t(
+                "core.message.ping.process.unavailable",
+                name=display_name(failure.name),
+                reason=failure.reason,
+            )
+        )
+    return lines
+
+
 @ping.command("{{I18N:core.help.ping}}")
 async def _(msg: Bot.MessageSession):
     from core.queue.server import JobQueueServer
@@ -102,6 +140,9 @@ async def _(msg: Bot.MessageSession):
                 disable_joke=True,
             )
         )
+        if process_lines := await _build_process_usage_lines(msg):
+            header = msg.session_info.locale.t("core.message.ping.process.list")
+            result.append(Plain("\n".join([header, *process_lines]), disable_joke=True, allow_parse=False))
     else:
         disk_percent = psutil.disk_usage("/").percent
         result.append(
