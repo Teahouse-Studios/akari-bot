@@ -12,7 +12,7 @@
     "ai.message.llm.instruct.set.success": "맞춤형 지침이 설정되었습니다.",
     "ai.message.llm.invalid": "유효하지 않은 LLM 이름입니다.",
     "ai.message.llm.list": "사용 가능한 LLM은 다음과 같습니다: ",
-    "ai.message.llm.price": "\"${name}\"의 페탈 가격:",
+    "ai.message.llm.price": "'${name}'의 페탈 가격:",
     "ai.message.llm.list.billing.token": "입력(캐시 미적중): ${input_price} 페탈/1M 토큰 | 출력: ${output_price} 페탈/1M 토큰",
     "ai.message.llm.list.billing.token.cache": "캐시 쓰기: ${cache_write_price} 페탈/1M 토큰 | 캐시 읽기: ${cache_read_price} 페탈/1M 토큰",
     "ai.message.llm.list.billing.call": "호출 가격: ${call_price} 페탈/회",
