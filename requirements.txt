@@ -20,7 +20,6 @@ aiohttp==3.14.3
     #   khl-py
     #   matrix-nio
     #   py-cord
-    #   qq-botpy-sdk
 aiohttp-socks==0.11.0
     # via matrix-nio
 aiosignal==1.4.0
@@ -225,9 +224,12 @@ httpx==0.28.1
     #   e2b
     #   e2b-code-interpreter
     #   httpx-ws
+    #   qq-botpy-sdk
     #   wolframalpha
 httpx-ws==0.9.0
-    # via akari-bot
+    # via
+    #   akari-bot
+    #   qq-botpy-sdk
 httpx2==2.12.0
     # via openai
 httpx2-jsfetch==1.0 ; sys_platform == 'emscripten'
@@ -436,7 +438,7 @@ pyyaml==6.0.3
     #   pre-commit
     #   qq-botpy-sdk
     #   uvicorn
-qq-botpy-sdk==2.0.3
+qq-botpy-sdk==2.0.4
     # via akari-bot
 qrcode==8.2
     # via akari-bot

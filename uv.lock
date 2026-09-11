@@ -341,7 +341,7 @@ requires-dist = [
     { name = "python-whois", specifier = ">=0.9.0,<1.0.0" },
     { name = "pywin32", marker = "sys_platform == 'win32'", specifier = ">=312,<313" },
     { name = "pyyaml", specifier = ">=6.0.3" },
-    { name = "qq-botpy-sdk", specifier = "==2.0.3" },
+    { name = "qq-botpy-sdk", specifier = "==2.0.4" },
     { name = "qrcode", specifier = ">=8.2,<9.0.0" },
     { name = "rapidfuzz", specifier = ">=3.14.5" },
     { name = "rdkit", specifier = ">=2026.3.1,<2026.4.0" },
@@ -3253,17 +3253,18 @@ wheels = [
 
 [[package]]
 name = "qq-botpy-sdk"
-version = "2.0.3"
+version = "2.0.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "aiohttp" },
     { name = "apscheduler" },
     { name = "cryptography" },
+    { name = "httpx" },
+    { name = "httpx-ws" },
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8e/33/00e5abe2f5e1bf82a65652644df8501ce9d96a45a544d7f13f01dff704b0/qq_botpy_sdk-2.0.3.tar.gz", hash = "sha256:cb0f569e230b8632c9d438abaa0c9eabde29525b97a0a07ccf866986f7f2bab0", size = 113304, upload-time = "2026-08-17T18:22:11.14Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3a/c0/64ead5f37a918aa361ace96c41a2152e84e07537f0616b7fc266151e28c0/qq_botpy_sdk-2.0.4.tar.gz", hash = "sha256:3b28f7bf05cb1a5ba774dbe3c12d34e56cfe12e898b0bd84424556b007542065", size = 114978, upload-time = "2026-09-11T04:50:22.247Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/22/a2/60c2a2765d3c3d52ca49deabd76a54699bed1d138364261c5ade7aeec836/qq_botpy_sdk-2.0.3-py3-none-any.whl", hash = "sha256:ef0368dfddc946f3b2da09ba61b63968a3e3bb9110c9c045c205e4b03cfd1796", size = 139712, upload-time = "2026-08-17T18:22:09.517Z" },
+    { url = "https://files.pythonhosted.org/packages/b5/db/fe849f493c37efa1e13ff98d13262b15164a7d0f7c527f614ffeeef5ef00/qq_botpy_sdk-2.0.4-py3-none-any.whl", hash = "sha256:40377478b4b5595b084525d4df5eea8ca1f016c76e5e24d36ce1105588b961a9", size = 146740, upload-time = "2026-09-11T04:50:20.791Z" },
 ]
 
 [[package]]
