@@ -103,7 +103,7 @@ async def _(msg: Bot.MessageSession, prompt: str):
             f"{input_tokens + cache_read_tokens + cache_write_tokens + output_tokens} token used while calling LLM."
         )
         Logger.info(
-            f"Input (miss cache): {input_tokens} | Output: {output_tokens}"
+            f"Input (miss cache): {input_tokens} | Output: {output_tokens} | "
             f"Cache read: {cache_read_tokens} | Cache write: {cache_write_tokens}"
         )
         billing = get_llm_billing(llm_info, input_tokens)
