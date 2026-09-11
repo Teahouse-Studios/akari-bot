@@ -74,8 +74,6 @@ class CoreConfig:
     enable_get_petal: bool = False
     petal_gained_limit: int = 0
     petal_lost_limit: int = 0
-    petal_sign_limit: int = 5
-    petal_sign_rate: float = 0.5
     petal_sign_min: int = 1
     petal_sign_max: int = 10
     petal_reset_crontab: str = "0 0 1 * *"
