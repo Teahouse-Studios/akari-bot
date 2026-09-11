@@ -18,56 +18,6 @@ PETAL_STORE_SCOPE = "Union"
 _petal_mutation_lock = asyncio.Lock()
 
 
-async def _change_daily_petal(
-    msg: Bot.MessageSession, amount: int, store_key: str, limit: int, balance_delta: int
-) -> int | None:
-    """Atomically consume a daily quota and update the union balance."""
-    sender_union_info = msg.session_info.sender_union_info
-    union_id = msg.session_info.sender_union_id
-    if not sender_union_info or not union_id:
-        return None
-
-    amount = limit if amount > limit > 0 else amount
-    async with _petal_mutation_lock:
-        async with in_transaction("default") as connection:
-            current = await SenderUnionInfo.filter(union_id=union_id).using_db(connection).select_for_update().first()
-            if not current:
-                return None
-            stored = await (
-                StoredData.filter(stored_key=f"{PETAL_STORE_SCOPE}|{store_key}")
-                .using_db(connection)
-                .select_for_update()
-                .first()
-            )
-            quota = dict((stored.value if stored else [{}])[0])
-            now = datetime.now()
-            expired = datetime.combine((now + timedelta(days=1)).date(), datetime.min.time())
-            record = quota.get(union_id)
-            if not record or now.timestamp() > record["expired"]:
-                record = {"time": now.timestamp(), "expired": expired.timestamp(), "amount": 0}
-                quota[union_id] = record
-            if limit > 0:
-                amount = min(amount, max(0, limit - record["amount"]))
-                if not amount:
-                    return 0
-            record["amount"] += amount
-            if stored:
-                stored.value = [quota]
-                await stored.save(using_db=connection, update_fields=["value"])
-            else:
-                await StoredData.create(
-                    stored_key=f"{PETAL_STORE_SCOPE}|{store_key}", value=[quota], using_db=connection
-                )
-            await (
-                SenderUnionInfo.filter(union_id=union_id)
-                .using_db(connection)
-                .update(petal=F("petal") + balance_delta * amount)
-            )
-            current.petal += balance_delta * amount
-            sender_union_info.petal = current.petal
-            return amount
-
-
 async def gained_petal(msg: Bot.MessageSession, amount: int) -> I18NContextElement | None:
     """增加花瓣。
 
@@ -83,11 +33,48 @@ async def gained_petal(msg: Bot.MessageSession, amount: int) -> I18NContextEleme
         union_id = msg.session_info.sender_union_id
         if not sender_union_info or not union_id:
             return None
-        changed = await _change_daily_petal(msg, amount, "gainedpetal", limit, 1)
+        async with _petal_mutation_lock:
+            async with in_transaction("default") as connection:
+                current = await (
+                    SenderUnionInfo.filter(union_id=union_id).using_db(connection).select_for_update().first()
+                )
+                if not current:
+                    return None
+                stored = await (
+                    StoredData.filter(stored_key=f"{PETAL_STORE_SCOPE}|gainedpetal")
+                    .using_db(connection)
+                    .select_for_update()
+                    .first()
+                )
+                quota = dict((stored.value if stored else [{}])[0])
+                now = datetime.now()
+                expired = datetime.combine((now + timedelta(days=1)).date(), datetime.min.time())
+                record = quota.get(union_id)
+                if not record or now.timestamp() > record["expired"]:
+                    record = {"time": now.timestamp(), "expired": expired.timestamp(), "amount": 0}
+                    quota[union_id] = record
+                changed = min(amount, max(0, limit - record["amount"])) if limit > 0 else amount
+                if changed:
+                    record["amount"] += changed
+                    if stored:
+                        stored.value = [quota]
+                        await stored.save(using_db=connection, update_fields=["value"])
+                    else:
+                        await StoredData.create(
+                            stored_key=f"{PETAL_STORE_SCOPE}|gainedpetal", value=[quota], using_db=connection
+                        )
+                    await (
+                        SenderUnionInfo.filter(union_id=union_id)
+                        .using_db(connection)
+                        .update(petal=F("petal") + changed)
+                    )
+                    current.petal += changed
+        if changed:
+            sender_union_info.petal = current.petal
+            msg.session_info.petal = current.petal
         if changed == 0:
             return I18NContext("petal.message.gained.limit")
-        amount = changed
-        return I18NContext("petal.message.gained.success", amount=amount)
+        return I18NContext("petal.message.gained.success", amount=changed)
 
 
 async def lost_petal(msg: Bot.MessageSession, amount: int) -> I18NContextElement | None:
@@ -105,11 +92,48 @@ async def lost_petal(msg: Bot.MessageSession, amount: int) -> I18NContextElement
         union_id = msg.session_info.sender_union_id
         if not sender_union_info or not union_id:
             return None
-        changed = await _change_daily_petal(msg, amount, "lostpetal", limit, -1)
+        async with _petal_mutation_lock:
+            async with in_transaction("default") as connection:
+                current = await (
+                    SenderUnionInfo.filter(union_id=union_id).using_db(connection).select_for_update().first()
+                )
+                if not current:
+                    return None
+                stored = await (
+                    StoredData.filter(stored_key=f"{PETAL_STORE_SCOPE}|lostpetal")
+                    .using_db(connection)
+                    .select_for_update()
+                    .first()
+                )
+                quota = dict((stored.value if stored else [{}])[0])
+                now = datetime.now()
+                expired = datetime.combine((now + timedelta(days=1)).date(), datetime.min.time())
+                record = quota.get(union_id)
+                if not record or now.timestamp() > record["expired"]:
+                    record = {"time": now.timestamp(), "expired": expired.timestamp(), "amount": 0}
+                    quota[union_id] = record
+                changed = min(amount, max(0, limit - record["amount"])) if limit > 0 else amount
+                if changed:
+                    record["amount"] += changed
+                    if stored:
+                        stored.value = [quota]
+                        await stored.save(using_db=connection, update_fields=["value"])
+                    else:
+                        await StoredData.create(
+                            stored_key=f"{PETAL_STORE_SCOPE}|lostpetal", value=[quota], using_db=connection
+                        )
+                    await (
+                        SenderUnionInfo.filter(union_id=union_id)
+                        .using_db(connection)
+                        .update(petal=F("petal") - changed)
+                    )
+                    current.petal -= changed
+        if changed:
+            sender_union_info.petal = current.petal
+            msg.session_info.petal = current.petal
         if changed == 0:
             return I18NContext("petal.message.lost.limit")
-        amount = changed
-        return I18NContext("petal.message.lost.success", amount=amount)
+        return I18NContext("petal.message.lost.success", amount=changed)
 
 
 async def cost_petal(msg: Bot.MessageSession, amount: int, send_prompt: bool = True) -> bool:
@@ -136,6 +160,7 @@ async def cost_petal(msg: Bot.MessageSession, amount: int, send_prompt: bool = T
                 await msg.send_message(I18NContext("petal.message.cost.not_enough"))
             return False
         sender_union_info.petal = (sender_union_info.petal or 0) - amount
+        msg.session_info.petal = sender_union_info.petal
     return True
 
 
@@ -146,13 +171,26 @@ async def sign_get_petal(msg: Bot.MessageSession) -> int | None:
         if petal_sign_min > petal_sign_max:
             petal_sign_min, petal_sign_max = petal_sign_max, petal_sign_min
 
-        amount = Random.randint(petal_sign_min, petal_sign_max)
+        sign_rate = min(max(float(CoreConfig.petal_sign_rate), 0.0), 1.0)
+        amount = petal_sign_min
+        while amount < petal_sign_max and Random.random() < sign_rate:
+            amount += 1
         sender_union_info = msg.session_info.sender_union_info
         union_id = msg.session_info.sender_union_id
         if not sender_union_info or not union_id:
             return None
-        changed = await _change_daily_petal(msg, amount, "signgetpetal", 1, 1)
-        return amount if changed else 0
+        async with _petal_mutation_lock:
+            async with in_transaction("default") as connection:
+                current = await (
+                    SenderUnionInfo.filter(union_id=union_id).using_db(connection).select_for_update().first()
+                )
+                if not current:
+                    return None
+                await SenderUnionInfo.filter(union_id=union_id).using_db(connection).update(petal=F("petal") + amount)
+                current.petal += amount
+        sender_union_info.petal = current.petal
+        msg.session_info.petal = current.petal
+        return amount
 
 
 async def settle_petals() -> int:

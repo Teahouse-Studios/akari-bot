@@ -31,7 +31,7 @@ def precount_petal(
         petal = petal if petal > 0 else 0
         if petal == 0:
             return True
-        return msg.session_info.petal >= petal
+        return msg.session_info.sender_union_info.petal >= petal
     return True
 
 
@@ -57,5 +57,6 @@ async def count_token_petal(
         petal = petal if petal > 0 else 0
         if petal != 0:
             await msg.session_info.sender_union_info.modify_petal(-petal)
+            msg.session_info.petal = msg.session_info.sender_union_info.petal
             return petal
     return 0

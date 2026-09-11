@@ -1,5 +1,5 @@
 {
-    "ai.help": "与大语言模型聊天。",
+    "ai.help": "与大语言模型聊天。（需要消耗花瓣）",
     "ai.help.desc": "有事为什么不问问小可呢？",
     "ai.help.llm.instruct": "设置大语言模型的自定义命令。",
     "ai.help.llm.list": "查看支持的大语言模型列表。",
@@ -15,6 +15,7 @@
     "ai.message.llm.instruct.set.success": "已设置自定义命令。",
     "ai.message.llm.invalid": "无效的大语言模型。",
     "ai.message.llm.list": "以下为可用的大语言模型：",
+    "ai.message.llm.list.billing": "${name}（输入：${input_price}、缓存：${cache_price}、输出：${output_price} 花瓣/百万 Token、调用：${call_price} 花瓣）",
     "ai.message.llm.list.none": "找不到可用的大语言模型，请联系机器人拥有者添加。",
     "ai.message.llm.list.prompt": "使用“${cmd}<模型名称>”切换模型。",
     "ai.message.references.title": "参考资料",

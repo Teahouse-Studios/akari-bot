@@ -14,6 +14,7 @@
     "ai.message.llm.instruct.set.success": "カスタム指示が設定されました。",
     "ai.message.llm.invalid": "無効な LLM 名です。",
     "ai.message.llm.list": "利用可能な LLM は以下の通りです：",
+    "ai.message.llm.list.billing": "${name}（入力: ${input_price}、キャッシュ: ${cache_price}、出力: ${output_price} 花びら/100万トークン、呼び出し: ${call_price} 花びら）",
     "ai.message.llm.list.none": "利用可能な LLM が見つかりません。追加するには、ボットの所有者にご連絡ください。",
     "ai.message.llm.list.prompt": "LLM を切り替えるには、「${cmd}<LLM>」を使用します。",
     "ai.message.references.title": "参考資料",

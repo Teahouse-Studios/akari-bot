@@ -93,6 +93,30 @@ async def _test_cost_petal_insufficient_with_mock():
         return False
 
 
+async def _test_petal_session_balance_stays_in_sync():
+    """测试花瓣变更后会话快照与实际余额一致。"""
+    from core.database.models import SenderUnionInfo
+    from core.utils.petal import gained_petal, lost_petal, cost_petal
+
+    await TestDataFactory.ensure_sender(petal=0)
+    msg = MockMessageSession("~test")
+    await msg.async_init("~test")
+
+    class MockConfig:
+        enable_petal = True
+        enable_get_petal = True
+        petal_gained_limit = 100
+        petal_lost_limit = 100
+
+    with patch("core.utils.petal.CoreConfig", MockConfig):
+        await gained_petal(msg, 10)
+        await cost_petal(msg, 3, send_prompt=False)
+        await lost_petal(msg, 2)
+
+    actual = await SenderUnionInfo.get(union_id=msg.session_info.sender_union_id)
+    return msg.session_info.petal == actual.petal == 5
+
+
 async def _test_petal_settlement_applies_rebate():
     """测试周期结算按返点比例保留余额。"""
     from core.database.models import SenderUnionInfo
@@ -118,6 +142,7 @@ async def test_petal(tester: Tester):
     await tester.test(_test_cost_petal_returns_bool, "cost_petal 返回布尔值测试")
     await tester.test(_test_gained_petal_with_mock, "gained_petal Mock Config 测试")
     await tester.test(_test_cost_petal_insufficient_with_mock, "cost_petal 花瓣不足 Mock 测试")
+    await tester.test(_test_petal_session_balance_stays_in_sync, "花瓣变更后会话余额同步测试")
     await tester.test(_test_petal_settlement_applies_rebate, "花瓣返点结算测试")
 
     return tester

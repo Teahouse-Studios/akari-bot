@@ -74,10 +74,11 @@ class CoreConfig:
     enable_get_petal: bool = False
     petal_gained_limit: int = 0
     petal_lost_limit: int = 0
-    petal_sign_min: int = 1
-    petal_sign_max: int = 10
+    petal_sign_min: int = 2
+    petal_sign_max: int = 12
+    petal_sign_rate: float = 0.5
     petal_reset_crontab: str = "0 0 1 * *"
-    petal_rebate_rate: int = 0.2
+    petal_rebate_rate: float = 0.2
 
     # 玩笑
     enable_joke: bool = True

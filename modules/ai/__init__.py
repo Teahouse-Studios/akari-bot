@@ -164,10 +164,30 @@ async def _(msg: Bot.MessageSession):
     available_llms = llm_list + (llm_su_list if msg.check_super_user() else [])
 
     if available_llms:
+        llm_items = []
+        for index, llm_name in enumerate(sorted(available_llms)):
+            if index:
+                llm_items.append(Plain("\n"))
+            llm_info = next(llm for llm in llm_api_list if llm["name"].lower() == llm_name)
+            billing = get_llm_billing(llm_info)
+            if any(billing.values()):
+                llm_items.append(
+                    I18NContext(
+                        "ai.message.llm.list.billing",
+                        name=llm_name,
+                        input_price=billing["input_price"],
+                        cache_price=billing["cache_price"],
+                        output_price=billing["output_price"],
+                        call_price=billing["call_price"],
+                    )
+                )
+            else:
+                llm_items.append(Plain(llm_name))
+
         await msg.finish(
             [
                 I18NContext("ai.message.llm.list"),
-                Plain("\n".join(sorted(available_llms))),
+                *llm_items,
                 I18NContext(
                     "ai.message.llm.list.prompt",
                     cmd=ActionText(f"{msg.session_info.prefixes[0]}ai llm set "),

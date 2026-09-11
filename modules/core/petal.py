@@ -61,7 +61,7 @@ async def _(msg: Bot.MessageSession, petal: int, user: str):
                     "core.message.petal.give.success",
                     sender=user,
                     give_petal=petal,
-                    petal=msg.session_info.petal - int(petal),
+                    petal=msg.session_info.petal,
                 )
             )
         else:
@@ -94,7 +94,9 @@ async def _(msg: Bot.MessageSession):
             await msg.session_info.sender_union_info.modify_petal(petal)
             await msg.finish(
                 I18NContext(
-                    "core.message.petal.modify.self", add_petal=petal, petal=msg.session_info.petal + int(petal)
+                    "core.message.petal.modify.self",
+                    add_petal=petal,
+                    petal=msg.session_info.sender_union_info.petal,
                 )
             )
     elif msg.parsed_msg.get("clear", False):

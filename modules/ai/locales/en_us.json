@@ -14,6 +14,7 @@
     "ai.message.llm.instruct.set.success": "Custom instructions have been set.",
     "ai.message.llm.invalid": "Invalid LLM name.",
     "ai.message.llm.list": "The following are the available LLM(s): ",
+    "ai.message.llm.list.billing": "${name} (input: ${input_price}, cache: ${cache_price}, output: ${output_price} petals/1M tokens, call: ${call_price} petals)",
     "ai.message.llm.list.none": "Cannot find any available LLMs. Please contact the bot owner to add one.",
     "ai.message.llm.list.prompt": "Use \"${cmd}<LLM>\" to switch LLMs.",
     "ai.message.references.title": "References",
