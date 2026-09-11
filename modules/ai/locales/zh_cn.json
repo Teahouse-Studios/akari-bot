@@ -17,7 +17,7 @@
     "ai.message.llm.instruct.set.success": "已设置自定义命令。",
     "ai.message.llm.invalid": "无效的大语言模型。",
     "ai.message.llm.list": "以下为可用的大语言模型：",
-    "ai.message.llm.price": "「${name}」的花瓣价格：",
+    "ai.message.llm.price": "“${name}”的花瓣价格：",
     "ai.message.llm.list.billing.token": "输入（未命中缓存）：${input_price} 花瓣/1M Token | 输出：${output_price} 花瓣/1M Token",
     "ai.message.llm.list.billing.token.cache": "缓存创建：${cache_write_price} 花瓣/1M Token | 缓存读取：${cache_read_price} 花瓣/1M Token",
     "ai.message.llm.list.billing.call": "调用价格：${call_price} 花瓣/次",
