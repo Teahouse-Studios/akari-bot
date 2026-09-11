@@ -92,7 +92,8 @@ async def _(msg: Bot.MessageSession, prompt: str):
             llm_info["model_name"],
             llm_info["api_url"],
             llm_info["api_key"],
-            use_tools,
+            endpoint=llm_info.get("endpoint", "openai"),
+            use_tools=use_tools,
             history=history,
         )
 

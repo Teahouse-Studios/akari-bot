@@ -28,6 +28,8 @@ else:
 for llm in llm_api_list:
     if not llm.get("name"):
         llm["name"] = llm["model_name"]
+    if not llm.get("endpoint"):
+        llm["endpoint"] = "openai"
     if not llm.get("price_in"):
         llm["price_in"] = 0
     if not llm.get("price_out"):

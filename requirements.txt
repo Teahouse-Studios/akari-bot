@@ -36,8 +36,11 @@ annotated-doc==0.0.4
     # via fastapi
 annotated-types==0.7.0
     # via pydantic
+anthropic==1.5.0
+    # via akari-bot
 anyio==4.12.1
     # via
+    #   anthropic
     #   gql
     #   httpx
     #   httpx-ws
@@ -148,6 +151,8 @@ dnspython==2.8.0
     # via mcstatus
 dockerfile-parse==2.0.1
     # via e2b
+docstring-parser==0.18.0
+    # via anthropic
 e2b==2.21.0
     # via e2b-code-interpreter
 e2b-code-interpreter==2.6.2
@@ -231,7 +236,9 @@ httpx-ws==0.9.0
     #   akari-bot
     #   qq-botpy-sdk
 httpx2==2.12.0
-    # via openai
+    # via
+    #   anthropic
+    #   openai
 httpx2-jsfetch==1.0 ; sys_platform == 'emscripten'
     # via httpx2
 hypercorn==0.18.0
@@ -265,7 +272,9 @@ jinja2==3.1.6
     #   flask
     #   quart
 jiter==0.16.0
-    # via openai
+    # via
+    #   anthropic
+    #   openai
 jmespath==1.1.0
     # via
     #   boto3
@@ -393,6 +402,7 @@ pydantic==2.12.5
     # via
     #   aiogram
     #   akari-bot-webrender
+    #   anthropic
     #   fastapi
     #   openai
 pydantic-core==2.41.5
@@ -475,7 +485,9 @@ six==1.17.0
 slowapi==0.1.9
     # via akari-bot
 sniffio==1.3.1
-    # via openai
+    # via
+    #   anthropic
+    #   openai
 soupsieve==2.8.3
     # via beautifulsoup4
 starlette==0.52.1
@@ -503,6 +515,7 @@ typing-extensions==4.15.0
     #   aiogram
     #   aiohttp
     #   aiosignal
+    #   anthropic
     #   anyio
     #   beautifulsoup4
     #   cattrs

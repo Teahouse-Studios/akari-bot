@@ -1,7 +1,6 @@
 import io
 from datetime import datetime, timezone
 
-from openai import AsyncOpenAI, APITimeoutError, RateLimitError
 from PIL import Image as PILImage
 
 from core.builtins.bot import Bot
@@ -14,14 +13,9 @@ from core.logger import Logger
 from core.utils.func import parse_time_string
 from .formatting import parse_markdown, generate_code_snippet, generate_latex, generate_md_table, format_refs
 from .setting import INSTRUCTIONS
-from .tools import TOOLS, tool_function_calls
+from .tools import tool_function_calls
+from .endpoints import build_endpoint, RETRYABLE_EXCEPTIONS
 
-max_tokens = AiConfig.llm_max_tokens
-timeout = AiConfig.llm_timeout
-temperature = AiConfig.llm_temperature
-top_p = AiConfig.llm_top_p
-frequency_penalty = AiConfig.llm_frequency_penalty
-presence_penalty = AiConfig.llm_presence_penalty
 max_iterations = AiConfig.llm_max_calling_iteration
 
 
@@ -47,10 +41,11 @@ async def ask_llm(
     model_name: str,
     api_url: str,
     api_key: str,
+    endpoint: str = "openai",
     use_tools: bool = True,
     history: list[dict] | None = None,
 ) -> tuple[list, int, int, int, int, list]:
-    client = AsyncOpenAI(base_url=api_url, api_key=api_key)
+    client = build_endpoint(endpoint, api_url, api_key, model_name)
 
     tz_ = session.session_info._tz_offset
     now_tz = datetime.now(timezone(parse_time_string(tz_)))
@@ -89,43 +84,24 @@ async def ask_llm(
     iterations = 0
     while iterations <= max_iterations:
         try:
-            response = await client.chat.completions.create(
-                model=model_name,
-                messages=messages,
-                tool_choice=tool_choice,
-                tools=TOOLS,
-                max_completion_tokens=max_tokens,
-                temperature=temperature,
-                top_p=top_p,
-                frequency_penalty=frequency_penalty,
-                presence_penalty=presence_penalty,
-                timeout=timeout,
-                parallel_tool_calls=True,
-            )
-        except (APITimeoutError, RateLimitError) as e:
+            result = await client.create(messages, tool_choice=tool_choice)
+        except RETRYABLE_EXCEPTIONS as e:
             raise ExternalException(e)
         except Exception as e:
             raise e
 
-        res_msg = response.choices[0].message
-        usage = response.usage
-        prompt_details = getattr(usage, "prompt_tokens_details", None)
-        cache_read_tokens = getattr(prompt_details, "cached_tokens", 0) or 0
-        cache_write_tokens = getattr(prompt_details, "cache_creation_input_tokens", None)
-        if not cache_write_tokens:
-            cache_write_tokens = getattr(usage, "cache_creation_input_tokens", 0) or 0
-        total_input_tokens += max(0, usage.prompt_tokens - cache_read_tokens - cache_write_tokens)
-        total_cache_read_tokens += cache_read_tokens
-        total_cache_write_tokens += cache_write_tokens
-        total_output_tokens += usage.completion_tokens
+        total_input_tokens += result.input_tokens
+        total_cache_read_tokens += result.cache_read_tokens
+        total_cache_write_tokens += result.cache_write_tokens
+        total_output_tokens += result.output_tokens
 
-        messages.append(res_msg)
-        if res_msg.content:
-            content_pieces.append(res_msg.content)
+        messages.append(result.assistant_message)
+        if result.text:
+            content_pieces.append(result.text)
 
-        if res_msg.tool_calls:
+        if result.tool_calls:
             iterations += 1
-            messages = await tool_function_calls(res_msg.tool_calls, messages)
+            messages = await tool_function_calls(result.tool_calls, messages)
             if iterations == max_iterations:
                 Logger.warning("LLM tool calling reached maximum iterations.")
                 messages.append(
@@ -178,10 +154,8 @@ async def ask_llm(
         chain = [Plain(resm)]
 
     # 仅保留对话部分（去掉每次动态重建的 system 消息与工具迭代警告）作为新的上下文历史。
-    # assistant 消息是 ChatCompletionMessage（pydantic 对象），其余为 dict，需分别取 role。
-    new_history = [
-        m for m in messages[len(system_messages) :] if (m.get("role") if isinstance(m, dict) else m.role) != "system"
-    ]
+    # 所有消息现均为 dict（OpenAI Chat Completions 格式）。
+    new_history = [m for m in messages[len(system_messages) :] if m.get("role") != "system"]
     return (
         chain,
         total_input_tokens,

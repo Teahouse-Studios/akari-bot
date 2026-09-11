@@ -16,6 +16,7 @@ llm_api_list:
     api_url: https://api.examplellm.com/v1
     model_name: llm-v1
     name: example-llm
+    endpoint: openai
     price_in: 50
     price_out: 50
     price_cache_read: 20
@@ -33,6 +34,7 @@ llm_api_list:
     api_url: https://api.examplellm.com/v1
     model_name: new-model
     name: example-llm
+    endpoint: openai
     superuser: false
 
     billing:
@@ -69,6 +71,11 @@ llm_api_list:
 * `api_key`：大语言模型 API 的 API Key。
 * `api_url`：大语言模型 API 的 URL。
 * `model_name`：大语言模型的名称。
+* `endpoint`：大语言模型 API 的类型，支持以下取值：
+
+  * `openai`（默认）：OpenAI Chat Completions API。
+  * `openai-response`：OpenAI Responses API。
+  * `anthropic`：Anthropic Messages API。
 
 ### 可选参数
 
@@ -425,6 +432,11 @@ llm_api_list:
 * `api_key`: The API Key for the LLM API.
 * `api_url`: The URL of the LLM API.
 * `model_name`: The name of the LLM.
+* `endpoint`: The type of the LLM API. Supported values:
+
+  * `openai` (default): OpenAI Chat Completions API.
+  * `openai-response`: OpenAI Responses API.
+  * `anthropic`: Anthropic Messages API.
 
 ### Optional Parameters
 

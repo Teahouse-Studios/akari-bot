@@ -1,8 +1,6 @@
 import asyncio
 from typing import Any
 
-import orjson
-
 from core.logger import Logger
 from .execute_python_code import *
 from .fetch_webpage import *
@@ -14,8 +12,8 @@ TOOLS = [fnd for fnd in _tools if fnd]
 
 async def tool_function_calls(tool_calls, messages: list[dict[str, Any]]):
     async def execute_single_tool(tool_call):
-        fn_name = tool_call.function.name
-        args = orjson.loads(tool_call.function.arguments)
+        fn_name = tool_call.name
+        args = tool_call.arguments
 
         result = ""
         Logger.info(f"Calling function: {fn_name} with args: {args}")
