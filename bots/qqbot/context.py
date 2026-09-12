@@ -45,6 +45,7 @@ from core.builtins.session.info import SessionInfo
 from core.config.base import CoreConfig
 from core.constants.path import assets_path
 from core.logger import Logger
+from core.utils.media import resolve_media_path
 from core.utils.random import Random
 from core.utils.table import escape_table_cell, resolve_table_columns
 
@@ -556,15 +557,19 @@ class QQBotContextManager(ContextManager):
         async def prepare_separate_media(elements: list[AudioElement | VideoElement]):
             media = []
             for element in elements:
+                # 底层文件不可得（文件缺失或为空）时跳过该元素
+                media_path = await resolve_media_path(element)
+                if media_path is None:
+                    continue
                 media_type = MediaFileType.VOICE if isinstance(element, AudioElement) else MediaFileType.VIDEO
                 if target.scope in ("group", "c2c"):
-                    upload = await client.upload_media(target, media_type, local_path=element.path)
+                    upload = await client.upload_media(target, media_type, local_path=media_path)
                     file_info = upload.get("file_info") if isinstance(upload, Mapping) else None
                     if not file_info:
                         raise RuntimeError("QQBot media upload response does not contain file_info")
                     media.append((element, {"file_info": file_info}))
                 else:
-                    media.append((element, element.path))
+                    media.append((element, media_path))
             return media
 
         async def send_separate_media(prepared_media) -> list[str]:
@@ -597,7 +602,7 @@ class QQBotContextManager(ContextManager):
 
         async def prepare_plain_message() -> _PreparedMessage:
             plains: list[PlainElement] = []
-            images: list[ImageElement] = []
+            images: list[tuple[ImageElement, str]] = []
             media: list[AudioElement | VideoElement] = []
 
             for x in message.as_sendable(session_info, disable_markdown=True):
@@ -606,7 +611,10 @@ class QQBotContextManager(ContextManager):
                         x.text = match_atcode(x.text, client_name, "<@{uid}>")
                     plains.append(x)
                 elif isinstance(x, ImageElement):
-                    images.append(x)
+                    # 图片不可读（本地文件缺失或下载失败）时跳过该元素
+                    image_path = await resolve_media_path(x)
+                    if image_path is not None:
+                        images.append((x, image_path))
                 elif isinstance(x, (AudioElement, VideoElement)):
                     media.append(x)
                 elif isinstance(x, MentionElement):
@@ -631,8 +639,7 @@ class QQBotContextManager(ContextManager):
                 msg = f"<@{ctx.author.id}> \n{msg}"
 
             prepared_images: list[tuple[ImageElement, str | Mapping]] = []
-            for image in images:
-                image_path = await image.get()
+            for image, image_path in images:
                 if target.scope in ("group", "c2c"):
                     upload = await client.upload_media(target, MediaFileType.IMAGE, local_path=image_path)
                     file_info = upload.get("file_info") if isinstance(upload, Mapping) else None
@@ -756,9 +763,11 @@ class QQBotContextManager(ContextManager):
                         texts.append(x.text)
                     inline_pending = False
                 elif isinstance(x, ImageElement):
-                    if s3_storage is not None:
+                    # 图片不可读（本地文件缺失或下载失败）时跳过该元素
+                    image_path = await resolve_media_path(x)
+                    if image_path is not None and s3_storage is not None:
                         try:
-                            upload = await s3_storage.upload_temp(await x.get())
+                            upload = await s3_storage.upload_temp(image_path)
                             if upload and "public_url" in upload:
                                 w, h = await x.get_wh()
                                 fin_w, fin_h = _markdown_image_size(x, w, h)

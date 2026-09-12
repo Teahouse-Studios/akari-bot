@@ -20,6 +20,7 @@ from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
 from core.logger import Logger
+from core.utils.media import resolve_media_base64, resolve_media_path
 from .features import features as onebot_features
 
 qq_typing_emoji = str(AiocqhttpConfig.qq_typing_emoji)
@@ -65,7 +66,7 @@ async def fake_forward_msg(session_info: SessionInfo, nodelist):
         )
 
 
-def convert_msg_nodes(
+async def convert_msg_nodes(
     session_info: SessionInfo,
     msg_node: MessageNodes,
 ) -> list[dict]:
@@ -77,7 +78,10 @@ def convert_msg_nodes(
             if isinstance(x, PlainElement):
                 content += x.text + "\n"
             elif isinstance(x, ImageElement):
-                content += f"[CQ:image,file=base64://{x.get_base64()}]\n"
+                image_b64 = await resolve_media_base64(x)
+                if image_b64 is None:
+                    continue
+                content += f"[CQ:image,file=base64://{image_b64}]\n"
 
         template = {
             "type": "node",
@@ -194,7 +198,7 @@ class OneBotContextManager(ContextManager):
                         return []
 
         if isinstance(message, MessageNodes):
-            send = await fake_forward_msg(session_info, convert_msg_nodes(session_info, message))
+            send = await fake_forward_msg(session_info, await convert_msg_nodes(session_info, message))
 
         else:
             convert_msg_segments = MessageSegment.text("")
@@ -249,18 +253,26 @@ class OneBotContextManager(ContextManager):
                     Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
                     count += 1
                 elif isinstance(x, ImageElement):
-                    convert_msg_segments = convert_msg_segments + MessageSegment.image(
-                        "base64://" + await x.get_base64()
-                    )
+                    image_b64 = await resolve_media_base64(x)
+                    if image_b64 is None:
+                        continue
+                    convert_msg_segments = convert_msg_segments + MessageSegment.image("base64://" + image_b64)
                     Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(x)}")
                     count += 1
-                elif isinstance(x, AudioElement):
-                    convert_msg_segments = convert_msg_segments + MessageSegment.record(file=Path(x.path).as_uri())
-                    Logger.info(f"[Bot] -> [{session_info.target_id}]: Audio: {str(x)}")
-                    count += 1
-                elif isinstance(x, VideoElement):
-                    convert_msg_segments = convert_msg_segments + MessageSegment.video(file=Path(x.path).as_uri())
-                    Logger.info(f"[Bot] -> [{session_info.target_id}]: Audio: {str(x)}")
+                elif isinstance(x, (AudioElement, VideoElement)):
+                    media_path = await resolve_media_path(x)
+                    if media_path is None:
+                        continue
+                    if isinstance(x, AudioElement):
+                        convert_msg_segments = convert_msg_segments + MessageSegment.record(
+                            file=Path(media_path).as_uri()
+                        )
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: Audio: {str(x)}")
+                    else:
+                        convert_msg_segments = convert_msg_segments + MessageSegment.video(
+                            file=Path(media_path).as_uri()
+                        )
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: Video: {str(x)}")
                     count += 1
                 elif isinstance(x, MentionElement):
                     if x.client == client_name and session_info.target_from == target_group_prefix:
@@ -269,6 +281,10 @@ class OneBotContextManager(ContextManager):
                     else:
                         convert_msg_segments = convert_msg_segments + MessageSegment.text(" ")
                     count += 1
+
+            if count == 0:
+                # 元素均因底层媒体不可得被跳过时不发送空消息
+                return []
 
             if session_info.target_from == target_group_prefix:
                 try:

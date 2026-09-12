@@ -1,5 +1,7 @@
 """Discord 消息聚合构建器单元测试。"""
 
+import os
+import tempfile
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
@@ -90,17 +92,23 @@ async def _test_button_only_message_gets_placeholder():
 
 
 async def _test_mixed_elements_fit_one_payload():
-    chain = MessageChain.assign(
-        [Plain("hello"), Mention("Discord|2"), Image("image.png"), Audio("audio.ogg"), Embed(title="card")]
-    )
-    fake_file = SimpleNamespace(filename="direct.bin")
-    fake_embed = SimpleNamespace()
-    with (
-        patch("bots.discord.message_builder.discord.File", return_value=fake_file),
-        patch("bots.discord.message_builder.convert_embed", new=AsyncMock(return_value=(fake_embed, []))),
-        patch("core.builtins.message.elements.ImageElement.get", new=AsyncMock(return_value=b"image")),
-    ):
-        payloads = await build_discord_payloads(_session(), chain)
+    with tempfile.NamedTemporaryFile(suffix=".ogg", delete=False) as audio_file:
+        audio_file.write(b"audio fixture")
+        audio_path = audio_file.name
+    try:
+        chain = MessageChain.assign(
+            [Plain("hello"), Mention("Discord|2"), Image("image.png"), Audio(audio_path), Embed(title="card")]
+        )
+        fake_file = SimpleNamespace(filename="direct.bin")
+        fake_embed = SimpleNamespace()
+        with (
+            patch("bots.discord.message_builder.discord.File", return_value=fake_file),
+            patch("bots.discord.message_builder.convert_embed", new=AsyncMock(return_value=(fake_embed, []))),
+            patch("core.builtins.message.elements.ImageElement.get", new=AsyncMock(return_value=b"image")),
+        ):
+            payloads = await build_discord_payloads(_session(), chain)
+    finally:
+        os.unlink(audio_path)
     payload = payloads[0]
     return (
         len(payloads) == 1
@@ -108,6 +116,16 @@ async def _test_mixed_elements_fit_one_payload():
         and len(payload.files) == 2
         and payload.embeds == [fake_embed]
     )
+
+
+async def _test_unavailable_media_elements_are_skipped():
+    """图片/音频底层文件缺失时不产生附件，仅保留文本。"""
+    chain = MessageChain.assign(
+        [Plain("hello"), Image("missing-image-fixture.png"), Audio("missing-audio-fixture.mp3")]
+    )
+    with patch("bots.discord.message_builder.discord.File", side_effect=lambda *_args, **kwargs: kwargs):
+        payloads = await build_discord_payloads(_session(), chain)
+    return len(payloads) == 1 and payloads[0].content == "hello" and payloads[0].files == []
 
 
 async def _test_file_limit_creates_second_payload():
@@ -193,6 +211,7 @@ async def test_discord_message_builder(tester: Tester):
     await tester.test(_test_button_rows_are_collected, "ButtonElement 收集按钮行")
     await tester.test(_test_button_only_message_gets_placeholder, "纯按钮消息补充不可见正文")
     await tester.test(_test_mixed_elements_fit_one_payload, "混合元素合并为一个负载")
+    await tester.test(_test_unavailable_media_elements_are_skipped, "不可用的媒体元素被跳过")
     await tester.test(_test_file_limit_creates_second_payload, "附件超过 10 个时拆包")
     await tester.test(_test_embed_limit_creates_second_payload, "Embed 超过 10 个时拆包")
     await tester.test(_test_embed_attachment_stays_with_embed, "Embed 附件与 Embed 保持同包")

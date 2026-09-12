@@ -718,13 +718,17 @@ class ImageElement(BaseElement):
         """
         获取图片的实际路径。
 
-        如果是网络 URL，会自动下载到本地缓存。
+        如果是网络 URL，会自动下载到本地缓存；本地路径则校验文件是否存在。
 
         :return: 本地文件路径字符串
+        :raise FileNotFoundError: 本地图片文件不存在。
         """
         if self.need_get:
             # 从网络下载图片
             return str(await self.get_image())
+        # 本地路径须确认文件存在，否则调用方应跳过该元素
+        if not Path(self.path).is_file():
+            raise FileNotFoundError(f"Image file not found: {self.path}")
         # 返回本地路径
         return self.path
 
@@ -734,19 +738,23 @@ class ImageElement(BaseElement):
         从网络下载图片。
 
         使用 3 次重试机制，每次获取失败后会自动重试。
+        下载到的内容若并非可识别的图片格式，则视为获取失败。
 
         :return: 本地缓存文件的 Path 对象
+        :raise ValueError: 响应状态码异常或下载到的内容并非图片。
         """
         url = self.path
         async with httpx.AsyncClient() as client:
             # 发送 HTTP GET 请求获取图片
             resp = await client.get(url, timeout=20.0, headers=self.headers)
+            resp.raise_for_status()
             raw = resp.content
-            # 自动识别图片格式
+            # 自动识别图片格式，识别失败的响应体（如 JS、HTML）不应写入缓存
             kind = filetype.match(raw)
-            ft = kind.extension if kind else ""
+            if not kind:
+                raise ValueError(f"Content fetched from {url} is not a recognized image file.")
             # 保存到缓存目录
-            img_path = random_cache_path(ft)
+            img_path = random_cache_path(kind.extension)
             with open(img_path, "wb+") as image_cache:
                 image_cache.write(raw)
             return img_path

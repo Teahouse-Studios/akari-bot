@@ -3,6 +3,7 @@ import traceback
 
 import orjson
 from ddgs import DDGS
+from filetype import filetype
 
 from core.config.base import CoreSecretConfig
 from core.utils.http import get_url
@@ -71,15 +72,15 @@ async def search_images(query: str, search_results: int = 5):
 
         async def is_accessible(result):
             try:
-                await get_url(
+                content = await get_url(
                     result["image_url"],
                     fmt="content",
                     attempt=1,
                     logging_err_resp=False,
                 )
-                return True
             except Exception:
                 return False
+            return isinstance(content, bytes) and filetype.match(content) is not None
 
         accessible = await asyncio.gather(*(is_accessible(result) for result in results))
         results = [result for result, is_result_accessible in zip(results, accessible) if is_result_accessible][

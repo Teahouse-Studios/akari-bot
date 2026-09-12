@@ -11,6 +11,7 @@ from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
+from core.utils.media import resolve_media_path
 from .client import bot
 from .client import token as kook_token
 from .features import features as kook_features
@@ -164,7 +165,9 @@ class KOOKContextManager(ContextManager):
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
                 msg_ids.append(str(send_.get("msg_id", "")))
             if isinstance(x, ImageElement):
-                image_path = await x.get()
+                image_path = await resolve_media_path(x)
+                if image_path is None:
+                    continue
                 with open(image_path, "rb") as image:
                     url = await bot.create_asset(image)
                 if ctx:
@@ -178,7 +181,10 @@ class KOOKContextManager(ContextManager):
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(x.path)}")
                 msg_ids.append(str(send_.get("msg_id", "")))
             if isinstance(x, AudioElement):
-                with open(x.path, "rb") as audio:
+                audio_path = await resolve_media_path(x)
+                if audio_path is None:
+                    continue
+                with open(audio_path, "rb") as audio:
                     url = await bot.create_asset(audio)
                 if ctx:
                     send_ = await ctx.reply(
@@ -191,7 +197,10 @@ class KOOKContextManager(ContextManager):
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Audio: {str(x.__dict__)}")
                 msg_ids.append(str(send_.get("msg_id", "")))
             if isinstance(x, VideoElement):
-                with open(x.path, "rb") as video:
+                video_path = await resolve_media_path(x)
+                if video_path is None:
+                    continue
+                with open(video_path, "rb") as video:
                     url = await bot.create_asset(video)
                 if ctx:
                     send_ = await ctx.reply(

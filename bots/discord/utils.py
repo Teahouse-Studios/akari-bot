@@ -4,6 +4,7 @@ import discord
 
 from core.builtins.message.elements import EmbedElement
 from core.builtins.session.info import SessionInfo
+from core.logger import Logger
 
 
 def get_channel_id(session_info: SessionInfo) -> str:
@@ -28,14 +29,22 @@ async def convert_embed(embed: EmbedElement, session_info: SessionInfo, attachme
         )
         if embed.image:
             image_name = f"{attachment_prefix}-image.png"
-            upload = discord.File(await embed.image.get(), filename=image_name)
-            files.append(upload)
-            embeds.set_image(url=f"attachment://{image_name}")
+            try:
+                upload = discord.File(await embed.image.get(), filename=image_name)
+            except Exception:
+                Logger.exception(f"Unable to get embed image {embed.image.path}, skipping the image: ")
+            else:
+                files.append(upload)
+                embeds.set_image(url=f"attachment://{image_name}")
         if embed.thumbnail:
             thumbnail_name = f"{attachment_prefix}-thumbnail.png"
-            upload = discord.File(await embed.thumbnail.get(), filename=thumbnail_name)
-            files.append(upload)
-            embeds.set_thumbnail(url=f"attachment://{thumbnail_name}")
+            try:
+                upload = discord.File(await embed.thumbnail.get(), filename=thumbnail_name)
+            except Exception:
+                Logger.exception(f"Unable to get embed thumbnail {embed.thumbnail.path}, skipping it: ")
+            else:
+                files.append(upload)
+                embeds.set_thumbnail(url=f"attachment://{thumbnail_name}")
         if embed.author:
             embeds.set_author(name=session_info.locale.t_str(embed.author))
         if embed.footer:

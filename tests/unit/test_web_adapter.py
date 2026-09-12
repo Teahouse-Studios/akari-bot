@@ -13,8 +13,15 @@ from bots.web.config import WebConfig
 from bots.web.context import WebContextManager, _serialize_element, resolve_media_url
 from bots.web.features import features as web_features
 from core.builtins.message.chain import MessageChain, MessageNodes
-from core.builtins.message.elements import ButtonElement, ButtonFrameElement, ButtonRows, VideoElement
-from core.builtins.message.internal import ActionText, Embed, EmbedField, Markdown, Audio
+from core.builtins.message.elements import (
+    AudioElement,
+    ButtonElement,
+    ButtonFrameElement,
+    ButtonRows,
+    ImageElement,
+    VideoElement,
+)
+from core.builtins.message.internal import ActionText, Embed, EmbedField, Markdown, Audio, Image, Plain
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
 from core.utils.session import inject_features
@@ -415,6 +422,27 @@ async def _test_message_nodes_sends_nodes_type() -> bool:
         WebContextManager.context.pop(session.session_id, None)
 
 
+async def _test_unavailable_media_elements_are_skipped() -> bool:
+    """底层文件缺失的媒体元素不产生前端消息字典。"""
+    session = _session("web-unavailable-media-session")
+    return (
+        await _serialize_element(ImageElement.assign("missing-image-fixture.png"), session) is None
+        and await _serialize_element(AudioElement.assign("missing-audio-fixture.mp3"), session) is None
+        and await _serialize_element(VideoElement.assign("missing-video-fixture.mp4"), session) is None
+    )
+
+
+async def _test_missing_media_chain_keeps_text_only() -> bool:
+    """媒体元素不可用时消息链仅发送剩余文本。"""
+    session = _featured_session("web-missing-media-session")
+    try:
+        payload = await _capture_send(session, MessageChain.assign([Plain("hello"), Image("missing.png")]))
+        message = payload["message"]
+        return len(message) == 1 and message[0]["type"] == "text" and message[0]["content"] == "hello"
+    finally:
+        WebContextManager.context.pop(session.session_id, None)
+
+
 @func_case
 async def test_web_adapter(tester: Tester):
     await tester.test(_test_passive_reply_uses_source_websocket, "Web 被动回复使用入站来源 Socket")
@@ -432,4 +460,6 @@ async def test_web_adapter(tester: Tester):
     await tester.test(_test_embed_element_sends_embed_type, "Web Embed 元素发出 embed 类型")
     await tester.test(_test_message_nodes_sends_nodes_type, "Web 消息节点发出 nodes 类型")
     await tester.test(_test_video_element_web_serialization, "Web Video 元素使用临时媒体 URL")
+    await tester.test(_test_unavailable_media_elements_are_skipped, "Web 跳过不可用的媒体元素")
+    await tester.test(_test_missing_media_chain_keeps_text_only, "Web 媒体不可用时仅发送剩余文本")
     return tester

@@ -412,6 +412,42 @@ async def _test_audio_video_are_sent_after_the_main_message() -> bool:
     )
 
 
+async def _test_missing_media_elements_are_skipped() -> bool:
+    """图片/语音/视频底层文件缺失时不发送任何消息。"""
+    session = _make_session(target_group_prefix)
+    client = _CaptureSendClient()
+    message = MessageChain.assign(
+        [
+            ImageElement.assign("missing-image-fixture.png"),
+            AudioElement.assign("missing-audio-fixture.mp3"),
+            VideoElement.assign("missing-video-fixture.mp4"),
+        ]
+    )
+    with patch.object(qqbot_context, "qq_use_markdown", False):
+        result = await _send_with_client(session, client, message)
+    if result != [] or client.calls != []:
+        Logger.error(f"Expected unavailable media to be skipped: result={result}, calls={client.calls}")
+        return False
+    return True
+
+
+async def _test_missing_media_keeps_remaining_text() -> bool:
+    """媒体元素不可用时仍发送其余文本内容。"""
+    session = _make_session(target_group_prefix)
+    client = _CaptureSendClient()
+    message = MessageChain.assign([PlainElement.assign("hello"), ImageElement.assign("missing-image-fixture.png")])
+    with patch.object(qqbot_context, "qq_use_markdown", False):
+        result = await _send_with_client(session, client, message)
+    uploads = [call for call in client.calls if call[0] == "upload"]
+    sends = [call for call in client.calls if call[0] == "plain"]
+    return (
+        result == ["plain"]
+        and not uploads
+        and [call[1].get("content") for call in sends] == ["hello"]
+        and all("media" not in call[1] for call in sends)
+    )
+
+
 async def _test_other_api_error_is_not_retried() -> bool:
     session = _make_session(target_group_prefix)
     client = _FailingSendClient(40034006)
@@ -694,6 +730,8 @@ async def test_qqbot_modern_api(tester: Tester):
     await tester.test(_test_image_reply_falls_back_to_proactive, "图片过期回复转主动消息测试")
     await tester.test(_test_plain_image_is_uploaded_before_send, "Plain 图片预上传测试")
     await tester.test(_test_audio_video_are_sent_after_the_main_message, "音视频独立预上传并在主消息后发送测试")
+    await tester.test(_test_missing_media_elements_are_skipped, "不可用媒体元素被跳过测试")
+    await tester.test(_test_missing_media_keeps_remaining_text, "媒体不可用时保留文本测试")
     await tester.test(_test_other_api_error_is_not_retried, "其他 API 错误不重试测试")
     await tester.test(_test_proactive_error_is_not_retried, "主动消息错误不重复重试测试")
     await tester.test(_test_group_mention_plain_message, "群聊普通消息 Mention 渲染测试")

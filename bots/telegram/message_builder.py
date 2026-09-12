@@ -23,6 +23,7 @@ from core.builtins.message.elements import (
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 from core.utils.image_split import image_split
+from core.utils.media import resolve_media_path
 
 
 @define(frozen=True)
@@ -220,15 +221,24 @@ async def collect_telegram_content(
                 text_parts.append(f'<a href="tg://user?id={user_id}">@{user_id}</a>')
             inline_pending = False
         elif isinstance(element, ImageElement):
-            image_elements = await image_split(element) if element.allow_split else [element]
-            for image in image_elements:
-                images.append(FSInputFile(await image.get()))
+            split = [element]
+            if element.allow_split:
+                try:
+                    split = await image_split(element)
+                except Exception:
+                    # 图片不可读（本地文件缺失或下载失败）时跳过该元素
+                    Logger.exception(f"Unable to split image {element.path}, skipping this element: ")
+                    split = []
+            for image in split:
+                image_path = await resolve_media_path(image)
+                if image_path is not None:
+                    images.append(FSInputFile(image_path))
             inline_pending = False
-        elif isinstance(element, AudioElement):
-            audio.append(FSInputFile(element.path))
-            inline_pending = False
-        elif isinstance(element, VideoElement):
-            audio.append(FSInputFile(element.path))
+        elif isinstance(element, (AudioElement, VideoElement)):
+            # 底层文件不可得时跳过该元素
+            media_path = await resolve_media_path(element)
+            if media_path is not None:
+                audio.append(FSInputFile(media_path))
             inline_pending = False
     text = "\n".join(text_parts)
     if not text and button_rows and not images and not audio:

@@ -26,10 +26,15 @@ async def _build_user_content(prompt: str | MessageChain) -> list[dict]:
         if isinstance(element, PlainElement):
             content.append({"type": "text", "text": element.text})
         elif isinstance(element, ImageElement):
+            try:
+                image_url = await element.get_base64(mime=True)
+            except Exception:
+                Logger.exception(f"Unable to get image {element.path}, skipping this element: ")
+                continue
             content.append(
                 {
                     "type": "image_url",
-                    "image_url": {"url": await element.get_base64(mime=True)},
+                    "image_url": {"url": image_url},
                 }
             )
     return content
