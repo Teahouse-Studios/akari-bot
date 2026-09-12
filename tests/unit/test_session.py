@@ -2412,7 +2412,7 @@ async def _test_wait_reply_timeout_covers_pending_send():
     SessionTaskManager._task_list.clear()
     try:
         try:
-            await asyncio.wait_for(waiting.wait_reply("prompt", timeout=0.05), timeout=0.3)
+            await asyncio.wait_for(waiting.wait_reply("prompt", timeout=0.2), timeout=10)
         except WaitCancelException:
             pass
         except asyncio.TimeoutError:

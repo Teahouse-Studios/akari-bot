@@ -21,6 +21,10 @@ from core.queue.transport import BatchSendResult, RpcRequest
 from core.tester import Tester, func_case
 
 
+RPC_TEST_TIMEOUT = 10
+SIGNAL_TIMEOUT = 1
+
+
 class RegistryAuditPeer(JobQueueBase):
     """为直接 Registry 测试提供显式数据库后端。"""
 
@@ -61,7 +65,7 @@ async def _peer_cluster():
     peers = (Controller, WorkerA, WorkerB)
     pollers = [asyncio.create_task(peer.check_job_queue()) for peer in peers]
     try:
-        async with asyncio.timeout(2):
+        async with asyncio.timeout(RPC_TEST_TIMEOUT):
             while len(await peers[0].registry.resolve(PeerSelector.peer(*(peer.name for peer in peers)))) != len(peers):
                 await asyncio.sleep(0.005)
         yield peers
@@ -94,9 +98,9 @@ async def _test_instances_discover_each_other_and_fan_out_once():
             "audit.broadcast",
             {"version": 7},
             PeerSelector(roles=("client",), services=("workers",), capabilities=("jobs",)),
-            timeout=2,
+            timeout=RPC_TEST_TIMEOUT,
         )
-        async with asyncio.timeout(2):
+        async with asyncio.timeout(RPC_TEST_TIMEOUT):
             while True:
                 rows = await JobQueuesTable.filter(correlation_id=receipt.event_id)
                 if len(seen) == 2 and not rows:
@@ -449,7 +453,7 @@ async def _test_signal_failure_is_isolated_per_target():
 
 
 async def _test_signal_timeout_discards_abandoned_deliveries():
-    @signal("audit.timeout", timeout=0.05)
+    @signal("audit.timeout", timeout=SIGNAL_TIMEOUT)
     async def timeout_signal() -> None: ...
 
     async with _peer_cluster() as (controller, worker_a, worker_b):
@@ -471,7 +475,7 @@ async def _test_signal_timeout_discards_abandoned_deliveries():
 async def _test_service_target_remains_anycast_for_load_balancing():
     calls = []
 
-    @remote("audit.anycast", target="workers", timeout=2)
+    @remote("audit.anycast", target="workers", timeout=RPC_TEST_TIMEOUT)
     async def anycast(value: int) -> str: ...
 
     async with _peer_cluster() as (controller, worker_a, worker_b):

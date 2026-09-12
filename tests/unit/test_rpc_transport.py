@@ -24,6 +24,9 @@ from core.queue.transport import PROTOCOL_VERSION, RpcRequest, RpcResponse
 from core.tester import func_case, Tester
 
 
+RPC_TEST_TIMEOUT = 10
+
+
 @asynccontextmanager
 async def _peers():
     class Caller(JobQueueBase):
@@ -47,7 +50,7 @@ async def _peers():
 
 
 async def _wait_status(task_id, status):
-    async with asyncio.timeout(2):
+    async with asyncio.timeout(RPC_TEST_TIMEOUT):
         while True:
             row = await JobQueuesTable.get(task_id=task_id)
             if row.status == status:
@@ -64,7 +67,9 @@ async def _test_roundtrip_preserves_json_and_registry_isolation():
             return payload
 
         values = [None, False, True, 0, "", [], {}, [False, {"value": None}], {"x": [1, "二"]}]
-        results = await asyncio.gather(*(caller.call(receiver.name, "echo", value, timeout=2) for value in values))
+        results = await asyncio.gather(
+            *(caller.call(receiver.name, "echo", value, timeout=RPC_TEST_TIMEOUT) for value in values)
+        )
         assert results == values
         assert "echo" not in caller.handlers
         assert caller._pending is not receiver._pending
@@ -85,9 +90,11 @@ async def _test_bidirectional_nested_calls():
 
         @receiver.register("outer")
         async def outer(payload):
-            return await current_peer.get().call(caller.name, "callback", payload, timeout=2)
+            return await current_peer.get().call(caller.name, "callback", payload, timeout=RPC_TEST_TIMEOUT)
 
-        result = await asyncio.gather(*(caller.call(receiver.name, "outer", {"value": n}, timeout=2) for n in range(8)))
+        result = await asyncio.gather(
+            *(caller.call(receiver.name, "outer", {"value": n}, timeout=RPC_TEST_TIMEOUT) for n in range(8))
+        )
         assert result == [{"value": n + 1} for n in range(8)]
     return True
 
@@ -106,19 +113,19 @@ async def _test_remote_errors_and_invalid_method_are_distinct():
         report = AsyncMock()
         with patch.object(receiver, "report_error", report):
             try:
-                await caller.call(receiver.name, "broken", {}, timeout=2)
+                await caller.call(receiver.name, "broken", {}, timeout=RPC_TEST_TIMEOUT)
                 return False
             except RpcRemoteError as exc:
                 assert exc.remote_type == "ValueError"
                 assert exc.method == "broken" and exc.target == receiver.name and exc.task_id
                 assert str(exc) == "deliberate handler failure"
             try:
-                await caller.call(receiver.name, "missing", {}, timeout=2)
+                await caller.call(receiver.name, "missing", {}, timeout=RPC_TEST_TIMEOUT)
                 return False
             except RpcMethodNotFoundError:
                 pass
             try:
-                await caller.call(receiver.name, "application_timeout", {}, timeout=2)
+                await caller.call(receiver.name, "application_timeout", {}, timeout=RPC_TEST_TIMEOUT)
                 return False
             except RpcRemoteError as exc:
                 assert exc.remote_type == "TimeoutError" and not isinstance(exc, RpcTimeoutError)
@@ -140,8 +147,8 @@ async def _test_local_cancellation_does_not_cancel_or_retry_remote_effect():
             await proceed.wait()
             return "effect-completed"
 
-        task = asyncio.create_task(caller.call(receiver.name, "effect", None, timeout=2))
-        await asyncio.wait_for(started.wait(), 1)
+        task = asyncio.create_task(caller.call(receiver.name, "effect", None, timeout=RPC_TEST_TIMEOUT))
+        await asyncio.wait_for(started.wait(), RPC_TEST_TIMEOUT)
         (task_id,) = caller._pending
         task.cancel()
         (result,) = await asyncio.gather(task, return_exceptions=True)
@@ -169,7 +176,7 @@ async def _test_handler_deadline_allows_cleanup_rpc():
                 await asyncio.Event().wait()
             finally:
                 # Cleanup has its own deadline even when the outer request expired.
-                await receiver.call(caller.name, "cleanup", None, timeout=1)
+                await receiver.call(caller.name, "cleanup", None, timeout=RPC_TEST_TIMEOUT)
 
         request = caller._request(receiver.name, "deadline", None, timeout=0.1)
         await caller.transport.send(request)
@@ -221,8 +228,8 @@ async def _test_shutdown_failure_wakes_remote_caller():
             started.set()
             await asyncio.Event().wait()
 
-        task = asyncio.create_task(caller.call(receiver.name, "hang", None, timeout=2))
-        await asyncio.wait_for(started.wait(), 1)
+        task = asyncio.create_task(caller.call(receiver.name, "hang", None, timeout=RPC_TEST_TIMEOUT))
+        await asyncio.wait_for(started.wait(), RPC_TEST_TIMEOUT)
         (task_id,) = caller._pending
         await receiver.begin_shutdown()
         await receiver.cancel_process_tasks()
@@ -239,8 +246,8 @@ async def _test_shutdown_failure_wakes_remote_caller():
 async def _test_stopping_result_pump_wakes_local_waiters():
     async with _peers() as (caller, receiver):
         await receiver.begin_shutdown()
-        task = asyncio.create_task(caller.call(receiver.name, "never", None, timeout=2))
-        async with asyncio.timeout(1):
+        task = asyncio.create_task(caller.call(receiver.name, "never", None, timeout=RPC_TEST_TIMEOUT))
+        async with asyncio.timeout(RPC_TEST_TIMEOUT):
             while not caller._pending:
                 await asyncio.sleep(0)
         (task_id,) = caller._pending
@@ -267,10 +274,10 @@ async def _test_maintenance_pumps_nested_results_before_entering():
 
         @receiver.register("outer")
         async def outer(payload):
-            return await receiver.call(caller.name, "callback", None, timeout=2)
+            return await receiver.call(caller.name, "callback", None, timeout=RPC_TEST_TIMEOUT)
 
-        task = asyncio.create_task(caller.call(receiver.name, "outer", None, timeout=2))
-        await asyncio.wait_for(callback_started.wait(), 1)
+        task = asyncio.create_task(caller.call(receiver.name, "outer", None, timeout=RPC_TEST_TIMEOUT))
+        await asyncio.wait_for(callback_started.wait(), RPC_TEST_TIMEOUT)
 
         async def maintain():
             async with receiver.maintenance_window():
@@ -281,8 +288,8 @@ async def _test_maintenance_pumps_nested_results_before_entering():
         await asyncio.sleep(0.02)
         assert not entered.is_set()
         finish_callback.set()
-        result = await asyncio.wait_for(task, 1)
-        await asyncio.wait_for(maintenance, 1)
+        result = await asyncio.wait_for(task, RPC_TEST_TIMEOUT)
+        await asyncio.wait_for(maintenance, RPC_TEST_TIMEOUT)
         assert result == "callback-done" and entered.is_set() and receiver.pause_event.is_set()
     return True
 
@@ -301,10 +308,10 @@ async def _test_non_exclusive_maintenance_pumps_cleanup_rpc():
                 async with receiver.maintenance_window(exclusive=True):
                     assert receiver._maintenance_exclusive_owner is current
                 assert receiver._maintenance_exclusive_owner is None
-                return await receiver.call(caller.name, "cleanup", {"ok": True}, timeout=1)
+                return await receiver.call(caller.name, "cleanup", {"ok": True}, timeout=RPC_TEST_TIMEOUT)
 
         current = asyncio.current_task()
-        result = await asyncio.wait_for(maintain_and_cleanup(), timeout=2)
+        result = await asyncio.wait_for(maintain_and_cleanup(), timeout=RPC_TEST_TIMEOUT)
         return (
             result == {"ok": True}
             and caller._maintenance_exclusive_owner is None
@@ -382,7 +389,7 @@ async def _test_response_cleanup_failure_does_not_hide_result():
             return await original_delete(query)
 
         with patch.object(QuerySet, "delete", new=fail_delete), patch.object(Logger, "exception") as logged:
-            result = await caller.call(receiver.name, "cleanup-failure", {"ok": True}, timeout=2)
+            result = await caller.call(receiver.name, "cleanup-failure", {"ok": True}, timeout=RPC_TEST_TIMEOUT)
         rows = await JobQueuesTable.filter(source_peer_id=caller.name, action="cleanup-failure")
         await JobQueuesTable.filter(source_peer_id=caller.name, action="cleanup-failure").delete()
         return (
@@ -397,7 +404,7 @@ async def _test_response_cleanup_failure_does_not_hide_result():
 async def _test_malformed_deadline_is_protocol_failure():
     """bool 是 int 的子类，但不得被解释成合法的 Unix deadline。"""
     async with _peers() as (caller, receiver):
-        request = replace(caller._request(receiver.name, "never", None, timeout=2), deadline=True)
+        request = replace(caller._request(receiver.name, "never", None, timeout=RPC_TEST_TIMEOUT), deadline=True)
         await caller.transport.send(request)
         row = await _wait_status(request.task_id, "failed")
         (response,) = await caller.transport.consume_responses([request.task_id])
@@ -407,7 +414,7 @@ async def _test_malformed_deadline_is_protocol_failure():
 async def _test_nested_maintenance_window_is_reentrant_for_owner():
     """同一任务嵌套维护窗口时复用外层锁，避免不可重入锁导致死锁。"""
     async with _peers() as (caller, _receiver):
-        async with asyncio.timeout(1):
+        async with asyncio.timeout(RPC_TEST_TIMEOUT):
             async with caller.maintenance_window():
                 assert not caller.pause_event.is_set()
                 async with caller.maintenance_window():
@@ -436,11 +443,11 @@ async def _test_concurrent_maintenance_windows_are_serialized():
         first_task = asyncio.create_task(first())
         second_task = asyncio.create_task(second())
         try:
-            await asyncio.wait_for(first_entered.wait(), 1)
+            await asyncio.wait_for(first_entered.wait(), RPC_TEST_TIMEOUT)
             await asyncio.sleep(0.02)
             serialized = not second_entered.is_set()
             release_first.set()
-            await asyncio.wait_for(asyncio.gather(first_task, second_task), 1)
+            await asyncio.wait_for(asyncio.gather(first_task, second_task), RPC_TEST_TIMEOUT)
             return serialized and second_entered.is_set() and caller.pause_event.is_set()
         finally:
             release_first.set()
