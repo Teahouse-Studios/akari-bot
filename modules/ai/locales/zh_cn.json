@@ -13,6 +13,7 @@
     "ai.message.context.hint.quote": "提示：在 10 分钟内引用回复此消息或使用“${cmd}”可继续对话。",
     "ai.message.context.id": "对话轮次 ID：${turn_id}",
     "ai.message.context.invalid": "对话轮次不存在或已过期。",
+    "ai.message.no_prompt": "请发送 Prompt 消息以开始对话。",
     "ai.message.llm.instruct.clear.success": "已清除自定义命令。",
     "ai.message.llm.instruct.set.success": "已设置自定义命令。",
     "ai.message.llm.invalid": "无效的大语言模型。",

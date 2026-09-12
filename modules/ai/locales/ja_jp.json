@@ -6,6 +6,7 @@
     "ai.help.llm.list.option.price": "詳細な価格情報を表示するかどうか。",
     "ai.help.llm.price": "LLM のペタル価格を確認します。",
     "ai.help.llm.set": "コンテキスト内でデフォルトの LLM を設定します。",
+    "ai.help.option.ctx": "継続する会話ターンの ID を指定します。",
     "ai.help.option.llm": "使用する LLM を指定します。",
     "ai.help.option.no_tools": "LLM をツール呼び出すを無効にするかどうか。",
     "ai.message.context.hint": "ヒント：10 分以内に「${cmd}」を使用して会話を続けられます。",
@@ -16,13 +17,14 @@
     "ai.message.llm.instruct.set.success": "カスタム指示が設定されました。",
     "ai.message.llm.invalid": "無効な LLM 名です。",
     "ai.message.llm.list": "利用可能な LLM は以下の通りです：",
-    "ai.message.llm.price": "「${name}」のペタル価格：",
-    "ai.message.llm.list.billing.token": "入力（キャッシュ未使用）：${input_price} ペタル/1M トークン | 出力：${output_price} ペタル/1M トークン",
-    "ai.message.llm.list.billing.token.cache": "キャッシュ書き込み：${cache_write_price} ペタル/1M トークン | キャッシュ読み込み：${cache_read_price} ペタル/1M トークン",
     "ai.message.llm.list.billing.call": "呼び出し料金：${call_price} ペタル/回",
     "ai.message.llm.list.billing.tiers.threshold": "${context_threshold} トークンを超えた場合：",
+    "ai.message.llm.list.billing.token": "入力（キャッシュ未使用）：${input_price} ペタル/1M トークン | 出力：${output_price} ペタル/1M トークン",
+    "ai.message.llm.list.billing.token.cache": "キャッシュ書き込み：${cache_write_price} ペタル/1M トークン | キャッシュ読み込み：${cache_read_price} ペタル/1M トークン",
     "ai.message.llm.list.none": "利用可能な LLM が見つかりません。追加するには、ボットの所有者にご連絡ください。",
     "ai.message.llm.list.prompt": "LLM を切り替えるには、「${cmd}<LLM>」を使用します。",
+    "ai.message.llm.price": "「${name}」のペタル価格：",
+    "ai.message.no_prompt": "対話を開始するには、まずプロンプト メッセージを送信してください。",
     "ai.message.references.title": "参考資料",
     "config.comments.module_ai_secret.e2b_api_key": "E2B API キー。",
     "config.comments.module_ai.ai_default_llm": "デフォルトで使用される LLM。",
@@ -32,6 +34,5 @@
     "config.comments.module_ai.llm_presence_penalty": "LLM の存在ペナルティ。範囲は -2 ～ 2 です。",
     "config.comments.module_ai.llm_temperature": "LLM の温度サンプリング。範囲は 0 ～ 2 です。top_p と同時に変更することは推奨されません。",
     "config.comments.module_ai.llm_timeout": "LLM のタイムアウト。",
-    "config.comments.module_ai.llm_top_p": "LLM のカーネルサンプリング。範囲は 0 ～ 1 です。temperature と同時に変更することは推奨されません。",
-    "ai.help.option.ctx": "継続する会話ターンの ID を指定します。"
+    "config.comments.module_ai.llm_top_p": "LLM のカーネルサンプリング。範囲は 0 ～ 1 です。temperature と同時に変更することは推奨されません。"
 }

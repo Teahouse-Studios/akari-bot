@@ -15,6 +15,7 @@
     "ai.message.llm.instruct.clear.success": "已移除自訂指令。",
     "ai.message.llm.instruct.set.success": "已設定自訂指令。",
     "ai.message.llm.invalid": "無效的大語言模型。",
+    "ai.message.no_prompt": "請傳送 Prompt 訊息以開始對話。",
     "ai.message.llm.list": "以下為可用的大語言模型：",
     "ai.message.llm.price": "「${name}」的花瓣價格：",
     "ai.message.llm.list.billing.token": "輸入（未命中快取）：${input_price} 花瓣/1M Token | 輸出：${output_price} 花瓣/1M Token",

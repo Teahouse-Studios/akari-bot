@@ -17,21 +17,34 @@ default_llm = default_llm if default_llm in llm_list else None
 ai = module("ai", developers=["DoroWolf", "Dianliang233"], desc="{I18N:ai.help.desc}", doc=True)
 
 
+def _get_message_images(msg: Bot.MessageSession) -> list[ImageElement]:
+    messages = msg.session_info.messages
+    return [element for element in messages.values if isinstance(element, ImageElement)] if messages else []
+
+
 @ai.command(
-    "<prompt> [--ctx <turn_id>] [--llm <llm>] [--no-tools] {{I18N:ai.help}}",
+    options_desc={
+        "--ctx": "{I18N:ai.help.option.ctx}",
+        "--llm": "{I18N:ai.help.option.llm}",
+        "--no-tools": "{I18N:ai.help.option.no_tools}",
+    }
+)
+@ai.command(
+    "[<prompt>] [--ctx <turn_id>] [--llm <llm>] [--no-tools] {{I18N:ai.help}}",
     options_desc={
         "--ctx": "{I18N:ai.help.option.ctx}",
         "--llm": "{I18N:ai.help.option.llm}",
         "--no-tools": "{I18N:ai.help.option.no_tools}",
     },
 )
-async def _(msg: Bot.MessageSession, prompt: str):
-    get_ctx = msg.parsed_msg.get("--ctx", False)
+async def _(msg: Bot.MessageSession, prompt: str = ""):
+    parsed_msg = msg.parsed_msg or {}
+    get_ctx = parsed_msg.get("--ctx", False)
     turn_id = get_ctx["<turn_id>"].strip() if get_ctx else None
-    get_llm = msg.parsed_msg.get("--llm", False)
+    get_llm = parsed_msg.get("--llm", False)
     selected_llm = get_llm["<llm>"].lower() if get_llm else None
     target_default_llm = msg.session_info.target_union_info.target_data.get("ai_default_llm")
-    use_tools = not msg.parsed_msg.get("--no-tools", False)
+    use_tools = not parsed_msg.get("--no-tools", False)
 
     is_superuser = msg.check_super_user()
 
@@ -53,9 +66,15 @@ async def _(msg: Bot.MessageSession, prompt: str):
         await msg.finish(I18NContext("ai.message.llm.invalid"))
 
     current_msg = msg
-    current_prompt = prompt
+    current_prompt = prompt or ""
 
     while True:
+        images = _get_message_images(current_msg)
+        if not current_prompt and not images:
+            current_msg = await current_msg.wait_next_message(message_chain=I18NContext("ai.message.no_prompt"))
+            current_prompt = current_msg.as_display(text_only=True).strip()
+            continue
+
         current_is_superuser = current_msg.check_super_user()
 
         billing = get_llm_billing(llm_info)
@@ -80,12 +99,8 @@ async def _(msg: Bot.MessageSession, prompt: str):
         # OpenAI、Matplotlib、网页提取等依赖体积较大，仅在实际调用 AI 时加载。
         from .llm import ask_llm
 
-        prompt_chain = MessageChain.assign(
-            [
-                Plain(current_prompt),
-                *(x for x in current_msg.session_info.messages.values if isinstance(x, ImageElement)),
-            ]
-        )
+        prompt_elements = [Plain(current_prompt)] if current_prompt else []
+        prompt_chain = MessageChain.assign([*prompt_elements, *images])
         chain, input_tokens, output_tokens, cache_read_tokens, cache_write_tokens, history = await ask_llm(
             current_msg,
             prompt_chain,
@@ -144,7 +159,7 @@ async def _(msg: Bot.MessageSession, prompt: str):
 
         current_prompt = reply.as_display(text_only=True).strip()
         current_msg = reply
-        if not current_prompt and not any(isinstance(x, ImageElement) for x in reply.session_info.messages.values):
+        if not current_prompt and not _get_message_images(reply):
             await msg.finish()
 
 
