@@ -686,6 +686,57 @@ def _test_image_element_allow_split_roundtrip():
         return False
 
 
+def _test_image_element_preserves_pil_format():
+    """ImageElement: PIL 输入应保留原始图片格式，无格式时才使用 PNG。"""
+    try:
+        from io import BytesIO
+
+        from PIL import Image as PILImage
+
+        buffer = BytesIO()
+        PILImage.new("RGB", (1, 1), "red").save(buffer, format="JPEG")
+        buffer.seek(0)
+        with PILImage.open(buffer) as image:
+            elem = ImageElement.assign(image)
+
+        with PILImage.open(elem.path) as saved:
+            jpeg_ok = elem.path.endswith(".jpg") and saved.format == "JPEG"
+
+        generated = ImageElement.assign(PILImage.new("RGBA", (1, 1)))
+        with PILImage.open(generated.path) as saved:
+            return jpeg_ok and generated.path.endswith(".png") and saved.format == "PNG"
+    except Exception:
+        return False
+
+
+def _test_image_element_preserves_base64_format():
+    """ImageElement: Base64 输入应按实际数据保留扩展名。"""
+    try:
+        import base64
+        from io import BytesIO
+        from pathlib import Path
+
+        from PIL import Image as PILImage
+
+        buffer = BytesIO()
+        PILImage.new("RGB", (1, 1), "red").save(buffer, format="JPEG")
+        raw = buffer.getvalue()
+        encoded = base64.b64encode(raw).decode()
+
+        for source in (f"base64://{encoded}", f"data:image/jpeg;base64,{encoded}"):
+            elem = ImageElement.assign(source)
+            if not elem.path.endswith(".jpg"):
+                return False
+            if Path(elem.path).read_bytes() != raw:
+                return False
+            with PILImage.open(elem.path) as saved:
+                if saved.format != "JPEG":
+                    return False
+        return True
+    except Exception:
+        return False
+
+
 def _test_audio_element_assign():
     """AudioElement: assign"""
     try:
@@ -836,6 +887,8 @@ async def test_message_elements_extended(tester: Tester):
     await tester.test(_test_image_element_url, "ImageElement.assign URL")
     await tester.test(_test_image_element_max_h_roundtrip, "ImageElement.max_h 序列化往返")
     await tester.test(_test_image_element_allow_split_roundtrip, "ImageElement.allow_split 序列化往返")
+    await tester.test(_test_image_element_preserves_pil_format, "ImageElement.assign 保留 PIL 格式")
+    await tester.test(_test_image_element_preserves_base64_format, "ImageElement.assign 保留 Base64 格式")
     await tester.test(_test_audio_element_assign, "AudioElement.assign")
     await tester.test(_test_mention_element_assign, "MentionElement.assign")
     await tester.test(_test_embed_element_assign, "EmbedElement.assign")

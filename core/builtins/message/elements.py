@@ -662,8 +662,13 @@ class ImageElement(BaseElement):
         if isinstance(path, PILImage.Image):
             # ========== 处理 PIL Image 对象 ==========
             # 将 PIL Image 保存为本地文件
-            save = random_cache_path("png")
-            path.convert("RGBA").save(save)
+            image_format = (path.format or "PNG").upper()
+            extension = {
+                "JPEG": "jpg",
+                "JPEG2000": "jp2",
+            }.get(image_format, image_format.lower())
+            save = random_cache_path(extension)
+            path.save(save, format=image_format)
             path = str(save)
         elif isinstance(path, Path):
             # ========== 处理 Path 对象 ==========
@@ -676,19 +681,24 @@ class ImageElement(BaseElement):
         # ========== 处理 Base64 编码数据 ==========
         elif "base64" in path:
             # 提取 Base64 编码的图片数据
+            extension = None
             if path.startswith("base64://"):
                 img_data = base64.b64decode(path[len("base64://") :])
 
             elif path.startswith("data:"):
-                _, encoded_img = path.split(",", 1)
+                metadata, encoded_img = path.split(",", 1)
                 img_data = base64.b64decode(encoded_img)
+                mime_type = metadata[len("data:") :].split(";", 1)[0]
+                extension = (mimetypes.guess_extension(mime_type, strict=False) or "").lstrip(".")
             else:
                 Logger.error("Cannot match format for Base64 image data.")
                 img_data = None
 
             # 将解码后的数据保存为本地文件
             if img_data:
-                save = random_cache_path("png")
+                detected = filetype.match(img_data)
+                extension = detected.extension if detected else extension or "png"
+                save = random_cache_path(extension)
                 with open(save, "wb") as img_file:
                     img_file.write(img_data)
                 path = save
