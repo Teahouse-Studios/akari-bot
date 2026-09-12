@@ -743,7 +743,8 @@ class ImageElement(BaseElement):
             resp = await client.get(url, timeout=20.0, headers=self.headers)
             raw = resp.content
             # 自动识别图片格式
-            ft = filetype.match(raw).extension
+            kind = filetype.match(raw)
+            ft = kind.extension if kind else ""
             # 保存到缓存目录
             img_path = random_cache_path(ft)
             with open(img_path, "wb+") as image_cache:

@@ -1,17 +1,19 @@
+import asyncio
 import traceback
 
 import orjson
 from ddgs import DDGS
 
 from core.config.base import CoreSecretConfig
+from core.utils.http import get_url
 
 proxy = CoreSecretConfig.proxy
 
 VERIFY_HINT = (
     "\n\n"
     "One more step! "
-    "Verify that the image in `thumbnail_url` matches the expectations, "
-    "then use `image_url` as the final output. "
+    "Verify that the image in `image_url` matches the expectations, "
+    "then use it as the final output. "
     "If you lack of visual ability, discard all of the above results."
 )
 
@@ -55,7 +57,7 @@ async def search_images(query: str, search_results: int = 5):
                 query,
                 region="wt-wt",
                 safesearch="on",
-                max_results=search_results,
+                max_results=search_results * 2,
             ):
                 results.append(
                     {
@@ -66,6 +68,23 @@ async def search_images(query: str, search_results: int = 5):
                         "source": result.get("source", ""),
                     }
                 )
+
+        async def is_accessible(result):
+            try:
+                await get_url(
+                    result["image_url"],
+                    fmt="content",
+                    attempt=1,
+                    logging_err_resp=False,
+                )
+                return True
+            except Exception:
+                return False
+
+        accessible = await asyncio.gather(*(is_accessible(result) for result in results))
+        results = [result for result, is_result_accessible in zip(results, accessible) if is_result_accessible][
+            :search_results
+        ]
 
         if not results:
             return "No image results found."
