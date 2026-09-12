@@ -7,7 +7,8 @@ from core.utils.web_render import web_render, SourceOptions
 MAX_LENGTH = 4096
 
 REFERENCE_HINT = (
-    "\n\nIf you use this content as a source in your final answer, "
+    "\n\n"
+    "If you use this content as a source in your final answer, "
     "append a reference tag `[ref:<url>]` at the end of the cited content, "
     "replacing `<url>` with the exact URL of this source. "
     "Only cite the source if you actually reference it."

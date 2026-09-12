@@ -8,7 +8,8 @@ from core.config.base import CoreSecretConfig
 proxy = CoreSecretConfig.proxy
 
 REFERENCE_HINT = (
-    "\n\nIf you use any of the above results as a source in your final answer, "
+    "\n\n"
+    "If you use any of the above results as a source in your final answer, "
     "append a reference tag `[ref:<url>]` at the end of the cited content, "
     "replacing `<url>` with the exact URL of this source. "
     "Only cite the source if you actually reference it."

@@ -4,9 +4,10 @@ from typing import Any
 from core.logger import Logger
 from .execute_python_code import *
 from .fetch_webpage import *
+from .search_images import *
 from .search_web import *
 
-_tools = [execute_python_code_desc, fetch_webpage_desc, search_web_desc]
+_tools = [execute_python_code_desc, fetch_webpage_desc, search_web_desc, search_images_desc]
 TOOLS = [fnd for fnd in _tools if fnd]
 
 
@@ -22,6 +23,8 @@ async def tool_function_calls(tool_calls, messages: list[dict[str, Any]]):
             result = await execute_python_code(args["code"])
         elif fn_name == "fetch_webpage":
             result = await fetch_webpage(args["url"])
+        elif fn_name == "search_images":
+            result = await search_images(args["query"], args.get("search_results", 5))
         elif fn_name == "search_web":
             result = await search_web(args["query"], args.get("search_results", 10))
 
