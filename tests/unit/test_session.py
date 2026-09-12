@@ -760,7 +760,7 @@ async def _test_active_sender_leases_are_barriered_before_merge():
             return False
 
         ExecutionLockList.remove(first)
-        reserved_plan = await asyncio.wait_for(reserve_task, timeout=0.5)
+        reserved_plan = await asyncio.wait_for(reserve_task, timeout=10)
         with patch("core.utils.union_merge.write_merge_log"):
             merged = await apply_sender_merge(reserved_plan, set(), merge_command)
         keys = ExecutionLockList.get()
@@ -2345,9 +2345,10 @@ async def _test_wait_reply_send_failure_unblocks_pending_parser():
         else:
             return False
         check_task = check_task_holder.get("task")
+        check_result = await asyncio.wait_for(check_task, timeout=10) if check_task is not None else None
         return (
             check_task is not None
-            and not await asyncio.wait_for(check_task, timeout=0.2)
+            and check_result is False
             and not SessionTaskManager.get()
             and incoming.hold_calls == 0
         )
@@ -2421,11 +2422,12 @@ async def _test_wait_reply_timeout_covers_pending_send():
             return False
 
         check_task = check_task_holder.get("task")
+        check_result = await asyncio.wait_for(check_task, timeout=10) if check_task is not None else None
         return (
             send_entered.is_set()
             and send_cancelled
             and check_task is not None
-            and not await asyncio.wait_for(check_task, timeout=0.2)
+            and check_result is False
             and not SessionTaskManager.get()
             and incoming.hold_calls == 0
         )

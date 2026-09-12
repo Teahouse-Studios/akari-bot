@@ -180,7 +180,7 @@ async def _test_handler_deadline_allows_cleanup_rpc():
 
         request = caller._request(receiver.name, "deadline", None, timeout=0.1)
         await caller.transport.send(request)
-        await asyncio.wait_for(cleaned.wait(), 1)
+        await asyncio.wait_for(cleaned.wait(), RPC_TEST_TIMEOUT)
         row = await _wait_status(request.task_id, "timeout")
         assert row.result["error"]["code"] == "timeout"
         (response,) = await caller.transport.consume_responses([request.task_id])

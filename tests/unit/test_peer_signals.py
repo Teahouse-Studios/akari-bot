@@ -148,10 +148,10 @@ async def _test_startup_ready_and_welcome_are_mutual():
     pollers = []
     try:
         pollers.append(asyncio.create_task(Observer.check_job_queue()))
-        await Observer.wait_ready(timeout=2)
+        await Observer.wait_ready(timeout=RPC_TEST_TIMEOUT)
         pollers.append(asyncio.create_task(Newcomer.check_job_queue()))
-        await Newcomer.wait_ready(timeout=2)
-        async with asyncio.timeout(2):
+        await Newcomer.wait_ready(timeout=RPC_TEST_TIMEOUT)
+        async with asyncio.timeout(RPC_TEST_TIMEOUT):
             await asyncio.gather(ready_seen.wait(), welcome_seen.wait())
         return Alive.is_alive(Observer.name) and Alive.is_alive(Newcomer.name)
     finally:
@@ -404,7 +404,7 @@ async def _test_lifecycle_signal_rejects_non_object_payload():
 
 
 async def _test_typed_signal_gathers_independent_acknowledgements():
-    @signal("audit.typed", timeout=2)
+    @signal("audit.typed", timeout=RPC_TEST_TIMEOUT)
     async def typed_signal(version: int) -> str: ...
 
     async with _peer_cluster() as (controller, worker_a, worker_b):
@@ -429,7 +429,7 @@ async def _test_typed_signal_gathers_independent_acknowledgements():
 
 
 async def _test_signal_failure_is_isolated_per_target():
-    @signal("audit.partial-failure", timeout=2)
+    @signal("audit.partial-failure", timeout=RPC_TEST_TIMEOUT)
     async def partial_failure(version: int) -> str: ...
 
     async with _peer_cluster() as (controller, worker_a, worker_b):
@@ -464,7 +464,8 @@ async def _test_signal_timeout_discards_abandoned_deliveries():
                 await asyncio.Event().wait()
 
         report = await timeout_signal.using(controller).gather(PeerSelector.service("workers"))
-        await asyncio.gather(worker_a.wait_process_tasks(), worker_b.wait_process_tasks())
+        async with asyncio.timeout(RPC_TEST_TIMEOUT):
+            await asyncio.gather(worker_a.wait_process_tasks(), worker_b.wait_process_tasks())
         return (
             set(report.errors) == {worker_a.name, worker_b.name}
             and not report.results
@@ -510,8 +511,10 @@ async def _test_draining_instance_is_removed_from_new_delivery_snapshots():
     async with _peer_cluster() as (controller, worker_a, worker_b):
         await worker_a.begin_shutdown()
         routed_peer = await controller.resolve_target(ServiceRoute("workers", "scene-1", role="client"))
-        receipt = await controller.emit_signal("audit.after-drain", None, PeerSelector.service("workers"), timeout=2)
-        async with asyncio.timeout(2):
+        receipt = await controller.emit_signal(
+            "audit.after-drain", None, PeerSelector.service("workers"), timeout=RPC_TEST_TIMEOUT
+        )
+        async with asyncio.timeout(RPC_TEST_TIMEOUT):
             while worker_a.name in Alive.peer_ids(service="workers"):
                 await asyncio.sleep(0.005)
         return routed_peer == worker_b.name and set(receipt.deliveries) == {worker_b.name}
@@ -540,10 +543,10 @@ async def _test_maintenance_temporarily_removes_instance_from_stable_routes():
         async with original_peer.maintenance_window():
             during_maintenance = await controller.resolve_target(route)
             registry_state = (await JobQueuePeersTable.get(peer_id=original_peer.name)).state
-            async with asyncio.timeout(2):
+            async with asyncio.timeout(RPC_TEST_TIMEOUT):
                 await maintenance_seen.wait()
         after_maintenance = await controller.resolve_target(route)
-        async with asyncio.timeout(2):
+        async with asyncio.timeout(RPC_TEST_TIMEOUT):
             await resumed_seen.wait()
             while not Alive.is_alive(original_peer.name):
                 await asyncio.sleep(0.005)
@@ -649,7 +652,7 @@ async def _test_expired_instance_discards_fire_and_forget_delivery():
             metadata={},
             lease_until=datetime.now(UTC) - timedelta(seconds=1),
         )
-        task_id = await RegistryAuditPeer.submit(peer_id, "audit.never", None, timeout=2)
+        task_id = await RegistryAuditPeer.submit(peer_id, "audit.never", None, timeout=RPC_TEST_TIMEOUT)
         await RegistryAuditPeer._refresh_peer_cache()
         RegistryAuditPeer._update_peer_cache(
             {
@@ -773,7 +776,9 @@ async def _test_interrupted_emit_discards_partial_transport_write():
 
         with patch.object(controller.transport, "send_many", new=write_one_then_fail):
             try:
-                await controller.emit_signal(signal_name, None, PeerSelector.service("workers"), timeout=2)
+                await controller.emit_signal(
+                    signal_name, None, PeerSelector.service("workers"), timeout=RPC_TEST_TIMEOUT
+                )
                 return False
             except RuntimeError:
                 pass
@@ -792,8 +797,12 @@ async def _test_partial_batch_result_is_reported_per_peer():
             )
 
         with patch.object(controller.transport, "send_many", new=partial_result):
-            receipt = await controller.emit_signal(signal_name, None, PeerSelector.service("workers"), timeout=2)
-            report = await controller.gather_signal(signal_name, None, PeerSelector.service("workers"), timeout=2)
+            receipt = await controller.emit_signal(
+                signal_name, None, PeerSelector.service("workers"), timeout=RPC_TEST_TIMEOUT
+            )
+            report = await controller.gather_signal(
+                signal_name, None, PeerSelector.service("workers"), timeout=RPC_TEST_TIMEOUT
+            )
         return (
             not receipt.deliveries
             and len(receipt.errors) == 1
