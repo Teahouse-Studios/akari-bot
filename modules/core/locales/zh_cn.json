@@ -257,6 +257,7 @@
     "core.message.bind.target.remove.success": "已将 ${id} 移出当前场景组。",
     "core.message.bind.target.same": "此绑定码由当前场景组生成，无需绑定。绑定流程已中止。",
     "core.message.bind.target.success": "绑定成功，新的场景组：${id}",
+    "core.message.config.write.create.confirm": "配置项 ${k}（${table}）尚不存在，本次写入将会新建它。是否继续？",
     "core.message.database.list": "数据库中所有支持操作的模型：",
     "core.message.database.no_result": "无结果。",
     "core.message.database.pages": "（第 ${page} 页，共 ${total_pages} 页，共 ${data_count} 条）",

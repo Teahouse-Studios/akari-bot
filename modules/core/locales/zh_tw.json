@@ -253,6 +253,7 @@
     "core.message.bind.target.remove.success": "已將 ${id} 移出目前場景群組。",
     "core.message.bind.target.same": "此綁定碼由目前場景群組生成，無需綁定。綁定流程已中止。",
     "core.message.bind.target.success": "綁定成功，新的場景群組：${id}",
+    "core.message.config.write.create.confirm": "組態項目 ${k}（${table}）尚不存在，本次寫入將會新建它。是否繼續？",
     "core.message.database.list": "資料庫中所有已支援操作的模型：",
     "core.message.database.no_result": "無結果。",
     "core.message.database.pages": "（第 ${page} 頁，共 ${total_pages} 頁，共 ${data_count} 條）",

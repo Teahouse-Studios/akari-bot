@@ -253,6 +253,7 @@
     "core.message.bind.target.remove.success": "${id} を現在のコンテキスト グループから削除しました。",
     "core.message.bind.target.same": "この連携コードは現在のコンテキスト グループによって生成されたものであり、連携する必要はありません。連携プロセスを終了しました。",
     "core.message.bind.target.success": "連携に成功しました。新しいコンテキスト グループ：${id}",
+    "core.message.config.write.create.confirm": "設定項目 ${k}（${table}）はまだ存在しません。この書き込みで新規作成されます。続行しますか？",
     "core.message.database.list": "データベース内の操作をサポートするすべてのモデル：",
     "core.message.database.no_result": "結果がありません。",
     "core.message.database.pages": "（${page}／${total_pages} ページ、合計 ${data_count} エントリ）",

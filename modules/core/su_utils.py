@@ -909,6 +909,18 @@ async def _(msg: Bot.MessageSession, k: str, v: str, table_name: str | None = No
         table_name = "config"
         secret = True
 
+    if not CFGManager.has(k, secret=secret, table_name=table_name):
+        # 新建配置项会改变配置文件结构，与改写已有值不同，需额外确认
+        if not await msg.wait_confirm(
+            I18NContext(
+                "core.message.config.write.create.confirm",
+                k=k,
+                table=table_name,
+            ),
+            append_instruction=False,
+        ):
+            await msg.finish()
+
     CFGManager.edit_write(k, v_, secret=secret, table_name=table_name)
     await msg.finish(I18NContext("message.success"))
 

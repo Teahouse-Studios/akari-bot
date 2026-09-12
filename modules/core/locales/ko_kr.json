@@ -253,6 +253,7 @@
     "core.message.bind.target.remove.success": "${id}을(를) 현재 컨텍스트 그룹에서 제거했습니다.",
     "core.message.bind.target.same": "이 연동 코드는 현재 컨텍스트 그룹에서 생성된 것이므로 연동할 필요가 없습니다. 연동 프로세스를 종료합니다.",
     "core.message.bind.target.success": "연동에 성공했습니다. 새 컨텍스트 그룹: ${id}",
+    "core.message.config.write.create.confirm": "설정 항목 ${k}(${table})이(가) 아직 존재하지 않습니다. 이번 쓰기로 새로 생성됩니다. 계속하시겠습니까?",
     "core.message.database.list": "데이터베이스에서 지원되는 모든 모델: ",
     "core.message.database.no_result": "결과가 없습니다.",
     "core.message.database.pages": "(페이지 ${page} / ${total_pages} | 총 ${data_count})",
