@@ -48,6 +48,7 @@ from core.database.models import AnalyticsData, SenderUnionInfo, TargetUnionBind
 from core.exports import exports
 from core.loader import ModulesManager
 from core.logger import Logger
+from core.module_runtime import ModuleRuntimeManager
 from core.utils.retired import (
     is_module_allowed_when_retired,
     is_retired_client,
@@ -759,7 +760,8 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                     await msg.start_typing()
                     _typing = True
                 # 执行模块函数
-                await func.function(msg)
+                async with ModuleRuntimeManager.use(module.module_name):
+                    await func.function(msg)
                 raise SessionFinished(msg.sent)
 
         # ========== 步骤 8: 错字检查 ==========
@@ -1104,10 +1106,12 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                             if rfunc.show_typing and msg.session_info.typing_prompt_enabled:
                                 await msg.start_typing()
                                 _typing = True
-                                await rfunc.function(msg)  # 将msg传入下游模块
+                                async with ModuleRuntimeManager.use(regex_module.module_name):
+                                    await rfunc.function(msg)  # 将msg传入下游模块
 
                             else:
-                                await rfunc.function(msg)  # 将msg传入下游模块
+                                async with ModuleRuntimeManager.use(regex_module.module_name):
+                                    await rfunc.function(msg)  # 将msg传入下游模块
                             ExecutionLockList.remove(msg)
                             raise SessionFinished(msg.sent)  # if not using msg.finish
                     except SessionFinished as e:
@@ -1451,7 +1455,8 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
                 _typing = True
 
             # ========== 步骤 6: 执行命令函数 ==========
-            await parsed_msg[0].function(**kwargs)
+            async with ModuleRuntimeManager.use(module.module_name):
+                await parsed_msg[0].function(**kwargs)
 
             # 如果函数没有使用 msg.finish，手动结束会话
             raise SessionFinished(msg.sent)

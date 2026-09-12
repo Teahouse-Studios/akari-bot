@@ -287,6 +287,31 @@ async def _test_maintenance_pumps_nested_results_before_entering():
     return True
 
 
+async def _test_non_exclusive_maintenance_pumps_cleanup_rpc():
+    """非独占维护窗口不得阻断清理阶段发起的响应回收。"""
+    async with _peers() as (caller, receiver):
+
+        @caller.register("cleanup")
+        async def cleanup(payload):
+            return payload
+
+        async def maintain_and_cleanup():
+            async with receiver.maintenance_window(exclusive=False):
+                assert not receiver.pause_event.is_set()
+                async with receiver.maintenance_window(exclusive=True):
+                    assert receiver._maintenance_exclusive_owner is current
+                assert receiver._maintenance_exclusive_owner is None
+                return await receiver.call(caller.name, "cleanup", {"ok": True}, timeout=1)
+
+        current = asyncio.current_task()
+        result = await asyncio.wait_for(maintain_and_cleanup(), timeout=2)
+        return (
+            result == {"ok": True}
+            and caller._maintenance_exclusive_owner is None
+            and receiver._maintenance_exclusive_owner is None
+        )
+
+
 async def _test_bad_protocol_and_late_success_are_not_silent():
     async with _peers() as (caller, receiver):
         task_id = await JobQueuesTable.add_task(receiver.name, "legacy", {"old": "payload"})
@@ -436,6 +461,7 @@ async def test_rpc_transport(tester: Tester):
     await tester.test(_test_shutdown_failure_wakes_remote_caller, "接收方关闭唤醒调用方")
     await tester.test(_test_stopping_result_pump_wakes_local_waiters, "结果泵关闭释放本地等待")
     await tester.test(_test_maintenance_pumps_nested_results_before_entering, "维护前排空双向在途调用")
+    await tester.test(_test_non_exclusive_maintenance_pumps_cleanup_rpc, "非独占维护仍可回收清理 RPC 响应")
     await tester.test(_test_bad_protocol_and_late_success_are_not_silent, "旧协议明确失败且终态不被覆盖")
     await tester.test(_test_ambiguous_send_failure_discards_possible_insert, "投递结果未知时清理可能已写入的任务")
     await tester.test(_test_response_cleanup_failure_does_not_hide_result, "结果删除失败不掩盖已读取结果")

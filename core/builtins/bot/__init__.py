@@ -28,6 +28,7 @@ from core.database.models import (
 )
 from core.exports import add_export
 from core.logger import Logger
+from core.module_runtime import ModuleRuntimeManager
 from core.utils.retired import filter_retired_targets
 from core.utils.func import convert_list
 from core.utils.session import inject_features
@@ -615,7 +616,8 @@ class Bot:
 
                         # 执行模块的所有钩子
                         for hook in modules[module_or_hook_name].hooks_list.set:
-                            await asyncio.create_task(hook.function(ModuleHookContext(args, session_info=session_info)))
+                            async with ModuleRuntimeManager.use(module_or_hook_name):
+                                await hook.function(ModuleHookContext(args, session_info=session_info))
                         return None
 
                 raise ValueError(f"Invalid module name {module_or_hook_name}")
@@ -623,9 +625,13 @@ class Bot:
             # 处理自定义钩子
             if module_or_hook_name:
                 if module_or_hook_name in ModulesManager.modules_hooks:
-                    return await ModulesManager.modules_hooks[module_or_hook_name](
-                        ModuleHookContext(args, session_info=session_info)
-                    )
+                    module_name = ModulesManager.modules_hook_modules.get(module_or_hook_name)
+                    if module_name is None:
+                        raise ValueError(f"Hook {module_or_hook_name} has no owning module")
+                    async with ModuleRuntimeManager.use(module_name):
+                        return await ModulesManager.modules_hooks[module_or_hook_name](
+                            ModuleHookContext(args, session_info=session_info)
+                        )
             raise ValueError(f"Invalid hook name {module_or_hook_name}")
 
 

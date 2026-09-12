@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, patch
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
 from core.constants import SessionContextUnavailable
+from core.module_runtime import ModuleRuntimeManager
 from core.server.lifecycle import BackgroundTaskLifecycle
 from core.tester import func_case, Tester
 from modules.wiki.wiki import (
@@ -15,8 +16,6 @@ from modules.wiki.wiki import (
     _gather_background,
     _run_background_with_release,
     _start_background_with_release,
-    _wiki_background_tasks,
-    cancel_wiki_background_tasks,
     query_pages,
 )
 
@@ -130,7 +129,7 @@ async def _test_background_spawn_failure_rolls_back_hold():
     async def idle():
         await asyncio.sleep(0)
 
-    with patch("modules.wiki.wiki.asyncio.create_task", side_effect=RuntimeError("loop closed")):
+    with patch("core.module_runtime.asyncio.create_task", side_effect=RuntimeError("loop closed")):
         try:
             await _start_background_with_release(session, idle, name="wiki-spawn-failure")
         except RuntimeError:
@@ -158,11 +157,13 @@ async def _test_background_task_is_retained_until_completion():
         await gate.wait()
 
     task = await _start_background_with_release(session, wait_for_gate, name="wiki-retained-task")
-    retained = task in _wiki_background_tasks
+    retained = task in ModuleRuntimeManager.get_or_create("wiki").tasks
     gate.set()
     await task
     await asyncio.sleep(0)
-    return retained and task not in _wiki_background_tasks and session.release.await_count == 1
+    return (
+        retained and task not in ModuleRuntimeManager.get_or_create("wiki").tasks and session.release.await_count == 1
+    )
 
 
 async def _test_query_pages_holds_context_for_entire_query():
@@ -220,14 +221,15 @@ async def _test_background_cleanup_cancels_and_releases():
         await gate.wait()
 
     task = await _start_background_with_release(session, wait_forever, name="wiki-cleanup-task")
-    await cancel_wiki_background_tasks()
+    runtime = ModuleRuntimeManager.get_or_create("wiki")
+    await runtime.stop("test")
+    runtime.activate()
     await asyncio.sleep(0)
-    return task.cancelled() and task not in _wiki_background_tasks and session.release.await_count == 1
+    return task.cancelled() and task not in runtime.tasks and session.release.await_count == 1
 
 
-async def _test_background_cleanup_is_registered():
-    spec = BackgroundTaskLifecycle._cleanup_hooks.get("module:wiki-background")
-    return spec is not None and spec.callback is cancel_wiki_background_tasks
+async def _test_background_tasks_are_runtime_owned():
+    return "module:wiki-background" not in BackgroundTaskLifecycle._cleanup_hooks
 
 
 @func_case
@@ -243,5 +245,5 @@ async def test_wiki_lifecycle(tester: Tester):
     await tester.test(_test_query_pages_holds_context_for_entire_query, "Wiki 查询全程保持上下文")
     await tester.test(_test_query_pages_skips_when_context_is_unavailable, "Wiki 查询上下文不可用时跳过")
     await tester.test(_test_background_cleanup_cancels_and_releases, "Wiki 后台清理取消并释放")
-    await tester.test(_test_background_cleanup_is_registered, "Wiki 后台清理已注册")
+    await tester.test(_test_background_tasks_are_runtime_owned, "Wiki 后台任务由 runtime 托管")
     return tester

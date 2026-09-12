@@ -15,6 +15,7 @@ from tortoise import Tortoise
 
 # from core.builtins.session.tasks import SessionTaskManager
 from core.logger import Logger
+from core.module_runtime import ModuleRuntimeManager
 from core.queue.server import JobQueueServer
 from core.scheduler import SchedulerLifecycle
 from core.utils.web_render import close_web_render
@@ -55,6 +56,7 @@ async def cleanup_sessions():
         await stop_background_task()
     except Exception:
         Logger.exception("Failed to stop background initialization cleanly.")
+    await ModuleRuntimeManager.shutdown()
     # 注册项可能持有 MessageSession context，取消时会经 Queue 请求平台进程 release，
     # 因此必须在停止 poller 之前执行。只有实际导入过的组件会注册，不会在关闭阶段
     # 为清理而额外导入未加载模块。

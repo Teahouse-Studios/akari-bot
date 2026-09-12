@@ -77,6 +77,7 @@ class JobQueueBase:
     _registered = False
     _maintenance_active = False
     _maintenance_owner: asyncio.Task | None = None
+    _maintenance_exclusive_owner: asyncio.Task | None = None
     is_running = False
     _shutting_down = False
     HEARTBEAT_INTERVAL_SECONDS = 15
@@ -100,6 +101,7 @@ class JobQueueBase:
         cls._registered = False
         cls._maintenance_active = False
         cls._maintenance_owner = None
+        cls._maintenance_exclusive_owner = None
         cls.is_running = False
         cls._shutting_down = False
         cls._next_heartbeat = 0.0
@@ -197,6 +199,7 @@ class JobQueueBase:
         cls._registered = False
         cls._maintenance_active = False
         cls._maintenance_owner = None
+        cls._maintenance_exclusive_owner = None
         cls._shutting_down = False
         cls.pause_event.set()
         from core.constants import Info
@@ -1056,12 +1059,26 @@ class JobQueueBase:
 
     @classmethod
     @asynccontextmanager
-    async def maintenance_window(cls):
-        """Drain handlers while pumping responses, then exclude database polling."""
+    async def maintenance_window(cls, *, exclusive: bool = True):
+        """Drain handlers, optionally excluding polling while the body runs.
+
+        Non-exclusive maintenance keeps the poller alive for response delivery,
+        heartbeats, and cleanup RPCs, but ``pause_event`` prevents new actions
+        from being claimed. Database replacement can nest an exclusive window
+        when queue storage itself must be quiesced.
+        """
         current = asyncio.current_task()
         if cls._maintenance_owner is current:
-            # asyncio.Lock 不可重入；同一任务中的嵌套维护复用外层独占窗口。
-            yield
+            if exclusive and cls._maintenance_exclusive_owner is not current:
+                async with cls._poll_lock:
+                    cls._maintenance_exclusive_owner = current
+                    try:
+                        yield
+                    finally:
+                        cls._maintenance_exclusive_owner = None
+            else:
+                # asyncio.Lock 不可重入；嵌套窗口复用同一任务已有的范围。
+                yield
             return
         async with cls._maintenance_lock:
             cls.pause_event.clear()
@@ -1071,12 +1088,19 @@ class JobQueueBase:
                     pass
                 maintenance_started = await cls._begin_maintenance()
                 await cls.wait_process_tasks()
-                async with cls._poll_lock:
-                    cls._maintenance_owner = current
-                    try:
+                cls._maintenance_owner = current
+                try:
+                    if exclusive:
+                        async with cls._poll_lock:
+                            cls._maintenance_exclusive_owner = current
+                            try:
+                                yield
+                            finally:
+                                cls._maintenance_exclusive_owner = None
+                    else:
                         yield
-                    finally:
-                        cls._maintenance_owner = None
+                finally:
+                    cls._maintenance_owner = None
             finally:
                 if maintenance_started:
                     await cls._end_maintenance()

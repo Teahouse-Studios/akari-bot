@@ -16,7 +16,6 @@ from core.constants.exceptions import (
     WaitCancelException,
 )
 from core.logger import Logger
-from core.server.lifecycle import BackgroundTaskLifecycle
 from core.utils.func import is_int
 from core.utils.http import download
 from core.utils.image import svg_render
@@ -50,30 +49,6 @@ wiki = module(
 )
 
 
-# 模块重载会复用原模块字典。保留任务集合，确保重载前创建的后台任务仍有强引用，
-# 且完成回调能够从同一个集合中移除它们。
-_wiki_background_tasks: set[asyncio.Task] = globals().get("_wiki_background_tasks", set())
-
-
-def _wiki_background_done(task: asyncio.Task) -> None:
-    """Drop a finished task and explicitly retrieve its exception."""
-    _wiki_background_tasks.discard(task)
-    if task.cancelled():
-        return
-    error = task.exception()
-    if error is None or isinstance(error, (SessionContextUnavailable, SessionFinished, WaitCancelException)):
-        return
-    Logger.error(f"Wiki background task {task.get_name()!r} failed: {error!r}")
-
-
-def _create_wiki_background_task(awaitable, *, name: str) -> asyncio.Task:
-    """Create and retain one Wiki background task until it finishes."""
-    task = asyncio.create_task(awaitable, name=name)
-    _wiki_background_tasks.add(task)
-    task.add_done_callback(_wiki_background_done)
-    return task
-
-
 async def _release_background_session(session: Bot.MessageSession) -> None:
     """Release a held context without hiding the background operation's result."""
     try:
@@ -104,7 +79,11 @@ async def _start_background_with_release(
     try:
         awaitable = awaitable_factory()
         runner = _run_background_with_release(session, awaitable)
-        task = _create_wiki_background_task(runner, name=name)
+        task = wiki.spawn(
+            runner,
+            name=name,
+            suppress_errors=(SessionContextUnavailable, SessionFinished, WaitCancelException),
+        )
     except BaseException:
         # create_task() may fail before taking ownership of either coroutine. Close both explicitly
         # to avoid coroutine-leak warnings, then undo the already successful hold.
@@ -125,16 +104,6 @@ async def _start_background_with_release(
         await asyncio.gather(task, return_exceptions=True)
         raise
     return task
-
-
-async def cancel_wiki_background_tasks() -> None:
-    """Cancel and drain every retained Wiki task before server resources are closed."""
-    current = asyncio.current_task()
-    tasks = {task for task in _wiki_background_tasks if task is not current and not task.done()}
-    for task in tasks:
-        task.cancel()
-    if tasks:
-        await asyncio.gather(*tasks, return_exceptions=True)
 
 
 async def _gather_background(*awaitables):
@@ -263,6 +232,8 @@ def _format_page_desc(desc: str, session: Bot.MessageSession | QueryInfo):
     """按平台能力格式化页面摘要，Markdown 会话使用块引用。"""
     if isinstance(session, MessageSession) and session.session_info.support_markdown:
         lines = desc.splitlines() or [""]
+        # Markdown 元素后再拼接其它元素时，这个尾换行会与 MessageChain
+        # 的分隔换行组成空行，避免 QQ 手机端把下一行吞进引用块。
         return Markdown("\n".join(f"> {line}" if line else ">" for line in lines) + "\n")
     return Plain(desc)
 
@@ -1047,10 +1018,3 @@ async def auto_get_custom_iw_list(ctx: Bot.ModuleHookContext):
     if not target:
         return []
     return list(target.interwikis.keys())
-
-
-BackgroundTaskLifecycle.register_cleanup(
-    "module:wiki-background",
-    cancel_wiki_background_tasks,
-    label="Wiki background tasks",
-)
