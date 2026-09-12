@@ -1,13 +1,15 @@
 from tortoise import Tortoise
+from tortoise.context import TortoiseContext
 
 from core.database import fetch_module_db, close_db
 from core.logger import Logger
 
 
 async def init_db(load_module_db: bool = True) -> bool:
+    context = None
     try:
         database_list = fetch_module_db() if load_module_db else []
-        await Tortoise.init(
+        context = await Tortoise.init(
             config={
                 "connections": {
                     "default": "sqlite://:memory:",
@@ -32,6 +34,9 @@ async def init_db(load_module_db: bool = True) -> bool:
     except Exception:
         Logger.exception()
         return False
+    finally:
+        if isinstance(context, TortoiseContext):
+            context.__exit__(None, None, None)
 
 
 __all__ = ["init_db", "close_db"]
