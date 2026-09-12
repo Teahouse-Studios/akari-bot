@@ -296,7 +296,7 @@ class WikiLib:
                     # Logger.info(api_match)
                     wiki_api_link = api_match
                 except IndexError:
-                    Logger.error(get_page)
+                    Logger.trace(get_page)
                     return WikiStatus(
                         available=False,
                         value=False,

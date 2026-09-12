@@ -4,7 +4,7 @@ from collections.abc import Mapping
 import botpy
 from botpy.interaction import Interaction
 from botpy.manage import GroupMemberEvent
-from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
+from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message, BaseMessage
 
 from bots.qqbot.config import QQBotConfig, QQBotSecretConfig
 from bots.qqbot.context import QQBotContextManager, QQBotFetchedContextManager, cache_message_id_pair, cache_permission
@@ -14,7 +14,7 @@ from bots.qqbot.navigation import build_navigation
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import ButtonPayload
-from core.builtins.message.internal import Plain
+from core.builtins.message.internal import Plain, Image, Audio, Video
 from core.builtins.session.info import EventInfo, SessionInfo
 from core.builtins.utils import command_prefix
 from core.client.init import client_cleanup, client_init
@@ -64,6 +64,20 @@ def _record_message_ids(message) -> str | None:
     application_id, reply_id = _message_application_ids(message)
     cache_message_id_pair(application_id, getattr(message, "id", None))
     return reply_id
+
+
+def _convert_message_content(message: BaseMessage | Message | DirectMessage) -> MessageChain:
+    msg_chain = MessageChain.assign(message.content)
+
+    for attachment in message.attachments:
+        content_type = attachment.content_type
+        if content_type.startswith("image"):
+            msg_chain.append(Image(attachment.url))
+        if content_type.startswith("voice"):
+            msg_chain.append(Audio(attachment.url))
+        if content_type.startswith("video"):
+            msg_chain.append(Video(attachment.url))
+    return msg_chain
 
 
 class MyClient(botpy.Client):
@@ -140,11 +154,13 @@ class MyClient(botpy.Client):
 
         reply_id = _record_message_ids(message)
 
-        message.content = re.sub(r"<@(.*?)>", "", message.content).strip()
-        if not message.content:
+        pure_content = re.sub(r"<@(.*?)>", "", message.content).strip()
+        if not pure_content:
             message.content = f"{command_prefix[0]}help"
 
-        msg_chain = MessageChain.assign(re.sub(r"<@(.*?)>", rf"{sender_tiny_prefix}|\1", message.content))
+        message.content = re.sub(r"<@(.*?)>", rf"{sender_tiny_prefix}|\1", message.content)
+
+        msg_chain = _convert_message_content(message)
 
         session = await SessionInfo.assign(
             target_id=target_id,
@@ -173,18 +189,15 @@ class MyClient(botpy.Client):
 
         reply_id = _record_message_ids(message)
 
-        match_atme = False
+        pure_content = re.sub(r"<@(.*?)>", "", message.content).strip()
+        if not pure_content:
+            message.content = f"{command_prefix[0]}help"
 
-        if qqbot_openid:
-            if m := re.match(r"<@(.*?)>(.*)", message.content):
-                if m.group(1) == qqbot_openid:
-                    match_atme = True
-                    message.content = m.group(2).strip()
-                    if not message.content:
-                        message.content = f"{command_prefix[0]}help"
+        message.content = re.sub(r"<@(.*?)>", rf"{sender_tiny_prefix}|\1", message.content)
 
-        msg_chain = MessageChain.assign(re.sub(r"<@(.*?)>", rf"{sender_tiny_prefix}|\1", message.content))
-        prefixes = [] if not match_atme else ["/"]
+        msg_chain = _convert_message_content(message)
+
+        prefixes = []
 
         session = await SessionInfo.assign(
             target_id=target_id,
@@ -221,13 +234,14 @@ class MyClient(botpy.Client):
         match_atme = False
 
         if qqbot_openid:
-            if m := re.match(r"<@(.*?)>(.*)", message.content):
+            if m := re.match(r"^<@(.*?)>(.*)", message.content):
                 if m.group(1) == qqbot_openid:
                     match_atme = True
                     message.content = m.group(2).strip()
                     if not message.content:
                         message.content = f"{command_prefix[0]}help"
-        msg_chain = MessageChain.assign(re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", message.content))
+        message.content = re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", message.content)
+        msg_chain = _convert_message_content(message)
         prefixes = [] if not match_atme else ["/"]
         session = await SessionInfo.assign(
             target_id=target_id,
@@ -263,11 +277,12 @@ class MyClient(botpy.Client):
 
         reply_id = _record_message_ids(message)
 
-        message.content = re.sub(r"<@(.*?)>", "", message.content).strip()
+        message.content = re.sub(r"^<@(.*?)>", "", message.content).strip()
         if not message.content:
             message.content = f"{command_prefix[0]}help"
 
-        msg_chain = MessageChain.assign(re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", message.content))
+        message.content = re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", message.content)
+        msg_chain = _convert_message_content(message)
 
         session = await SessionInfo.assign(
             target_id=target_id,
@@ -303,7 +318,8 @@ class MyClient(botpy.Client):
 
         reply_id = _record_message_ids(message)
 
-        msg_chain = MessageChain.assign(message.content)
+        message.content = re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", message.content)
+        msg_chain = _convert_message_content(message)
 
         session = await SessionInfo.assign(
             target_id=target_id,
@@ -333,7 +349,8 @@ class MyClient(botpy.Client):
 
         reply_id = _record_message_ids(message)
 
-        msg_chain = MessageChain.assign(message.content)
+        message.content = re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", message.content)
+        msg_chain = _convert_message_content(message)
 
         session = await SessionInfo.assign(
             target_id=target_id,
