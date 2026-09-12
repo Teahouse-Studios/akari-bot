@@ -10,8 +10,8 @@ proxy = CoreSecretConfig.proxy
 VERIFY_HINT = (
     "\n\n"
     "One more step! "
-    "Verify that the image in thumbnail_url matches the expectations, "
-    "then use image_url as the final output. "
+    "Verify that the image in `thumbnail_url` matches the expectations, "
+    "then use `image_url` as the final output. "
     "If you lack of visual ability, discard all of the above results."
 )
 
@@ -19,7 +19,7 @@ REFERENCE_HINT = (
     "\n\n"
     "If you use this content as a source in your final answer, "
     "append a reference tag `[ref:<url>]` at the end of the cited content, "
-    "replacing `<url>` with the exact URL of this source. "
+    "replacing `<url>` with the exact URL (`source_url`) of this source. "
     "Only cite the source if you actually reference it."
 )
 
