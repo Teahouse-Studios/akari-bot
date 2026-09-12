@@ -3,9 +3,11 @@ import importlib.util
 import inspect
 import pkgutil
 import traceback
+from dataclasses import dataclass
 from typing import Any
 
 from tortoise import Tortoise
+from tortoise.context import TortoiseContext
 
 from core.builtins.temp import Temp
 from core.logger import Logger
@@ -14,6 +16,16 @@ from .local import DB_LINK
 from .models import DBModel
 
 _reload_lock = asyncio.Lock()
+
+
+@dataclass(slots=True)
+class PreparedDatabaseReload:
+    """A fully initialized database context waiting for atomic activation."""
+
+    context: TortoiseContext
+    previous_context: TortoiseContext | None
+    database_list: list[str]
+    activated: bool = False
 
 
 def fetch_module_db():
@@ -125,48 +137,117 @@ async def init_db(
         return False
 
 
+def _database_config(load_module_db: bool, db_models: list[str] | None) -> tuple[dict, list[str]]:
+    database_list = fetch_module_db() if load_module_db else []
+    database_list += db_models if db_models else []
+    return (
+        {
+            "connections": {
+                "default": get_db_link(),
+                "local": prepare_db_link(DB_LINK),
+            },
+            "apps": {
+                "models": {
+                    "models": ["core.database.models"] + database_list,
+                    "default_connection": "default",
+                },
+                "local_models": {
+                    "models": ["core.database.local"],
+                    "default_connection": "local",
+                },
+            },
+        },
+        database_list,
+    )
+
+
+async def prepare_db_reload(db_models: list[str] | None = None) -> PreparedDatabaseReload | None:
+    """Build a replacement context while the old one remains active."""
+    from tortoise import context as tortoise_context
+
+    previous_context = tortoise_context.get_current_context()
+    config, database_list = _database_config(True, db_models)
+    context = TortoiseContext()
+    token = tortoise_context._current_context.set(context)
+    try:
+        await context.init(config=config, _enable_global_fallback=False)
+    except asyncio.CancelledError:
+        try:
+            await asyncio.shield(context.close_connections())
+        except Exception:
+            Logger.exception("Failed to clean up cancelled database reload preparation.")
+        raise
+    except Exception:
+        Logger.exception()
+        try:
+            await context.close_connections()
+        except Exception:
+            Logger.exception("Failed to clean up failed database reload preparation.")
+        return None
+    finally:
+        tortoise_context._current_context.reset(token)
+    return PreparedDatabaseReload(context, previous_context, database_list)
+
+
+def activate_db_reload(prepared: PreparedDatabaseReload) -> None:
+    """Atomically publish a prepared context to all tasks using the global fallback."""
+    if prepared.activated:
+        return
+    from tortoise import context as tortoise_context
+
+    # Tortoise 只提供 set_global_context，但缺少可替换现有 global 的公共 API。
+    # 在切换前新 context 已完全初始化，故这里是有意的原子替换点。
+    tortoise_context._global_context = prepared.context
+    if tortoise_context._current_context.get() is prepared.previous_context:
+        tortoise_context._current_context.set(prepared.context)
+    Temp.data["modules_db_list"] = list(prepared.database_list)
+    prepared.activated = True
+
+
+async def close_prepared_db_reload(prepared: PreparedDatabaseReload) -> None:
+    """Discard a prepared context that was not activated."""
+    if prepared.activated:
+        return
+    try:
+        await prepared.context.close_connections()
+    except Exception:
+        Logger.exception("Failed to close an unused prepared database context.")
+
+
+async def close_previous_db_context(prepared: PreparedDatabaseReload) -> None:
+    """Close the context replaced by an activated database reload."""
+    if not prepared.activated or prepared.previous_context is None:
+        return
+    if prepared.previous_context is prepared.context:
+        return
+    try:
+        await prepared.previous_context.close_connections()
+    except Exception:
+        Logger.exception("Failed to close the previous database context after reload.")
+
+
 async def reload_db(db_models: list[str] | None = None):
     async with _reload_lock:
         from core.queue.server import JobQueueServer
         from core.scheduler import SchedulerLifecycle
 
-        old_modules_db_list = Temp.data.get("modules_db_list", [])
-        # 先排空 Queue handler，再停止新 Job 并取消运行中的 Job，最后才能替换
-        # 全局连接。顺序不能反：持有 Scheduler 锁等待 Queue handler 收尾时，
-        # load/unload 等 handler 可能正阻塞在 Scheduler 锁上，形成互锁。
-        # Loader 已在更外层覆盖 Python reload；该窗口支持同一 Task 重入。
-        async with JobQueueServer.maintenance_window(), SchedulerLifecycle.maintenance_window():
-
-            async def restore_previous_models():
-                # 失败的初始化可能留下部分连接状态，恢复旧模型前再清理一次。
-                await Tortoise.close_connections()
-                recovered = await init_db(load_module_db=False, db_models=old_modules_db_list)
-                if not recovered:
-                    Logger.error("Failed to restore the previous database model list after reload failure.")
-
+        # 先排空 Queue handler，再停止新 Job 并取消运行中的 Job；新 context
+        # 的构建不触碰旧连接，激活与旧 context 关闭在准备完成后完成。
+        async with JobQueueServer.maintenance_window(exclusive=True), SchedulerLifecycle.maintenance_window():
+            prepared = await prepare_db_reload(db_models)
+            if prepared is None:
+                return False
+            activate_db_reload(prepared)
+            close_task = asyncio.create_task(
+                close_previous_db_context(prepared),
+                name="database-reload-close-previous",
+            )
             try:
-                # Tortoise.init() 会建立新连接。旧实现随后调用 close_connections()，
-                # 导致新连接立即失效；因此应先关闭旧连接，再初始化并保留新连接。
-                await Tortoise.close_connections()
-                success = await init_db(db_models=db_models)
-                if success:
-                    return True
-
-                # init_db() 统一把底层连接异常转换为 False，故回退不能依赖不可达的异常分支。
-                Logger.error("Failed to reload database, falling back to the previous model list...")
-                await restore_previous_models()
+                await asyncio.shield(close_task)
             except asyncio.CancelledError:
-                # 关闭旧连接后若在新连接初始化期间被取消，Server 会继续运行却没有
-                # 可用数据库。恢复旧模型后再传播取消，让 Loader 同步回滚注册表。
-                try:
-                    await asyncio.shield(restore_previous_models())
-                except Exception:
-                    Logger.exception("Failed to restore database after cancelled reload.")
+                await close_task
                 raise
-
-            # 回退只保证旧连接可继续使用，不代表调用方请求的新模型已经生效。
-            # Loader 必须据此回滚刚注册的模块，故无论恢复是否成功都报告失败。
-            return False
+            return True
 
 
 async def close_db():

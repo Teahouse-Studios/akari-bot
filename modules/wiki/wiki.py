@@ -232,6 +232,8 @@ def _format_page_desc(desc: str, session: Bot.MessageSession | QueryInfo):
     """按平台能力格式化页面摘要，Markdown 会话使用块引用。"""
     if isinstance(session, MessageSession) and session.session_info.support_markdown:
         lines = desc.splitlines() or [""]
+        # Markdown 元素后再拼接其它元素时，这个尾换行会与 MessageChain
+        # 的分隔换行组成空行，避免 QQ 手机端把下一行吞进引用块。
         return Markdown("\n".join(f"> {line}" if line else ">" for line in lines) + "\n")
     return Plain(desc)
 

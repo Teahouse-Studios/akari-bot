@@ -14,7 +14,7 @@ from typing import Callable
 from core.builtins.session.info import EventInfo
 from core.config import CFGManager
 from core.constants import PrivateAssets, all_locales_path, lang_list
-from core.database import reload_db
+from core.database import activate_db_reload, close_prepared_db_reload, close_previous_db_context, prepare_db_reload
 from core.database.base import DBModel
 from core.database.models import ModuleStatus
 from core.i18n import build_locale_snapshot
@@ -162,6 +162,45 @@ class ModulesManager:
         return errors
 
     @classmethod
+    def _stable_schema_value(cls, value):
+        """Convert Tortoise schema metadata to a reload-stable hashable value."""
+        if value is None or isinstance(value, (bool, int, float, str, bytes)):
+            return value
+        if isinstance(value, type):
+            return f"{value.__module__}.{value.__qualname__}"
+        if callable(value):
+            return f"{getattr(value, '__module__', '')}.{getattr(value, '__qualname__', repr(value))}"
+        if isinstance(value, dict):
+            return tuple(sorted((str(key), cls._stable_schema_value(item)) for key, item in value.items()))
+        if isinstance(value, (set, frozenset)):
+            return tuple(sorted((cls._stable_schema_value(item) for item in value), key=repr))
+        if isinstance(value, (list, tuple)):
+            return tuple(cls._stable_schema_value(item) for item in value)
+        return repr(value)
+
+    @classmethod
+    def _field_schema_fingerprint(cls, field_obj):
+        describe = getattr(field_obj, "describe", None)
+        if callable(describe):
+            try:
+                metadata = describe(serializable=False)
+            except TypeError:
+                metadata = describe()
+            # default 只影响 Python 层赋值，不参与表结构。
+            metadata = {
+                key: value for key, value in metadata.items() if key not in {"default", "python_type", "docstring"}
+            }
+            return cls._stable_schema_value(metadata)
+        return (
+            type(field_obj).__name__,
+            str(getattr(field_obj, "max_length", "")),
+            bool(getattr(field_obj, "null", False)),
+            bool(getattr(field_obj, "pk", False)),
+            bool(getattr(field_obj, "unique", False)),
+            bool(getattr(field_obj, "index", False)),
+        )
+
+    @classmethod
     def _model_schema_fingerprint(cls, py_module: str) -> tuple[tuple, ...]:
         """Return a stable structural fingerprint for a module's ORM models."""
         models_module = f"{py_module}.database.models"
@@ -188,16 +227,16 @@ class ModulesManager:
                 continue
             fields = []
             for field_name, field_obj in model._meta.fields_map.items():
-                fields.append(
-                    (
-                        field_name,
-                        type(field_obj).__name__,
-                        str(getattr(field_obj, "max_length", "")),
-                        bool(getattr(field_obj, "null", False)),
-                        bool(getattr(field_obj, "pk", False)),
-                    )
+                fields.append((field_name, cls._field_schema_fingerprint(field_obj)))
+            tables.append(
+                (
+                    table_name,
+                    tuple(sorted(fields)),
+                    cls._stable_schema_value(getattr(meta, "unique_together", ())),
+                    cls._stable_schema_value(getattr(meta, "indexes", ())),
+                    getattr(meta, "table_description", None),
                 )
-            tables.append((table_name, tuple(sorted(fields))))
+            )
         return tuple(sorted(tables))
 
     @classmethod
@@ -391,13 +430,42 @@ class ModulesManager:
             except (OSError, SyntaxError, UnicodeDecodeError):
                 continue
             for node in ast.walk(tree):
+                imported_names: tuple[str, ...] = ()
                 if isinstance(node, ast.Import):
-                    imported = (alias.name for alias in node.names)
+                    imported_names = tuple(alias.name for alias in node.names)
                 elif isinstance(node, ast.ImportFrom) and node.module:
-                    imported = (node.module,)
-                else:
-                    continue
-                for imported_name in imported:
+                    imported_names = (node.module,)
+                    if node.module == "modules":
+                        imported_names += tuple(f"modules.{alias.name}" for alias in node.names)
+                elif isinstance(node, ast.Call):
+                    function = node.func
+                    function_name = (
+                        function.attr
+                        if isinstance(function, ast.Attribute)
+                        else function.id
+                        if isinstance(function, ast.Name)
+                        else None
+                    )
+                    if function_name not in {"import_module", "__import__"}:
+                        continue
+                    argument = next(
+                        (item for item in node.args if isinstance(item, ast.Constant) and isinstance(item.value, str)),
+                        None,
+                    )
+                    if argument is None:
+                        argument = next(
+                            (
+                                keyword.value
+                                for keyword in node.keywords
+                                if keyword.arg in {"name", "module"}
+                                and isinstance(keyword.value, ast.Constant)
+                                and isinstance(keyword.value.value, str)
+                            ),
+                            None,
+                        )
+                    if argument is not None:
+                        imported_names = (argument.value,)
+                for imported_name in imported_names:
                     dependency = cls._normalize_package_name(imported_name)
                     if dependency and dependency != package_name:
                         dependencies.add(dependency)
@@ -549,26 +617,31 @@ class ModulesManager:
         全域卸载该机器人模块。
         """
         if module_name in cls.modules:
+            from core.queue.server import JobQueueServer
+
             module = cls.modules[module_name]
             old_load = module._db_load
-            async with SchedulerLifecycle.maintenance_window({module_name}):
-                try:
-                    await ModuleStatus.set_module_loaded(module_name, False)
-                    module._db_load = False
-                    SchedulerLifecycle.reconcile_modules({module_name}, cls.modules)
-                    await ModuleRuntimeManager.suspend(module_name)
-                except BaseException:
+            # 与 reload 保持相同顺序：先排空 Queue handler，再进入 Scheduler 维护。
+            # 非独占 Queue 窗口仍允许轮询器回收模块清理产生的响应。
+            async with JobQueueServer.maintenance_window(exclusive=False):
+                async with SchedulerLifecycle.maintenance_window({module_name}):
                     try:
-                        await asyncio.shield(ModuleStatus.set_module_loaded(module_name, old_load))
-                        module._db_load = old_load
+                        await ModuleStatus.set_module_loaded(module_name, False)
+                        module._db_load = False
                         SchedulerLifecycle.reconcile_modules({module_name}, cls.modules)
-                        if old_load:
-                            ModuleRuntimeManager.activate(module_name)
-                        else:
-                            await ModuleRuntimeManager.suspend(module_name)
-                    except Exception:
-                        Logger.exception(f"Failed to restore module unload state for {module_name}:")
-                    raise
+                        await ModuleRuntimeManager.suspend(module_name)
+                    except BaseException:
+                        try:
+                            await asyncio.shield(ModuleStatus.set_module_loaded(module_name, old_load))
+                            module._db_load = old_load
+                            SchedulerLifecycle.reconcile_modules({module_name}, cls.modules)
+                            if old_load:
+                                ModuleRuntimeManager.activate(module_name)
+                            else:
+                                await ModuleRuntimeManager.suspend(module_name)
+                        except Exception:
+                            Logger.exception(f"Failed to restore module unload state for {module_name}:")
+                        raise
             return True
         return False
 
@@ -591,7 +664,9 @@ class ModulesManager:
             # 旧函数的 __globals__ 指向会被原地更新的模块字典。
             from core.queue.server import JobQueueServer
 
-            async with JobQueueServer.maintenance_window():
+            # 长时间保持非独占窗口：停止领取新 action，但让轮询器继续回收
+            # 响应、续租与执行模块清理 RPC。数据库替换会在内部再嵌套独占窗口。
+            async with JobQueueServer.maintenance_window(exclusive=False):
                 async with SchedulerLifecycle.maintenance_window():
                     return await cls._reload_module(module_name)
 
@@ -600,12 +675,17 @@ class ModulesManager:
         py_module = cls.return_py_module(module_name)
         reload_packages = cls._reload_closure(py_module)
         reload_package_set = set(reload_packages)
+        python_module_snapshot = {
+            name: module
+            for name, module in sys.modules.items()
+            if any(name == package_name or name.startswith(f"{package_name}.") for package_name in reload_packages)
+        }
         related_modules = cls._module_names_for_py_modules(reload_package_set)
         locale_fingerprints = {package_name: cls._locale_fingerprint(package_name) for package_name in reload_packages}
         changed_locale_packages = {
             package_name
             for package_name, fingerprint in locale_fingerprints.items()
-            if fingerprint and cls._locale_fingerprints.get(package_name) != fingerprint
+            if cls._locale_fingerprints.get(package_name, ()) != fingerprint
         }
         old_schema_fingerprints = {
             package_name: cls._model_schema_fingerprint(package_name) for package_name in reload_packages
@@ -619,6 +699,7 @@ class ModulesManager:
         status_names_to_replace = set(related_modules)
         statuses_replaced = False
         registrations_replaced = False
+        committed = False
         count = -999
         old_statuses = {}
         scheduler_names_to_replace = set(related_modules)
@@ -628,6 +709,12 @@ class ModulesManager:
         def restore_registrations():
             for package_name in reversed(reload_packages):
                 cls._restore_module_registrations(package_name, old_modules, old_origins)
+
+        def restore_python_modules():
+            for name in list(sys.modules):
+                if any(name == package_name or name.startswith(f"{package_name}.") for package_name in reload_packages):
+                    sys.modules.pop(name, None)
+            sys.modules.update(python_module_snapshot)
 
         async def restore_statuses():
             await ModuleStatus.filter(module_name__in=status_names_to_replace).delete()
@@ -654,16 +741,18 @@ class ModulesManager:
                 count += package_count
             if count <= 0:
                 runtime_names.update(cls._module_names_for_py_modules(reload_package_set))
+                restore_python_modules()
                 restore_registrations()
-                ModuleRuntimeManager.abort_reload(runtime_snapshot, runtime_names)
+                await ModuleRuntimeManager.abort_reload(runtime_snapshot, runtime_names)
                 return False, count
 
             reloaded_modules = cls._module_names_for_py_modules(reload_package_set)
             runtime_names.update(reloaded_modules)
             if not reloaded_modules:
                 Logger.error(f"Reloaded Python packages {reload_packages}, but they did not register any modules.")
+                restore_python_modules()
                 restore_registrations()
-                ModuleRuntimeManager.abort_reload(runtime_snapshot, runtime_names)
+                await ModuleRuntimeManager.abort_reload(runtime_snapshot, runtime_names)
                 return False, count
 
             config_errors = []
@@ -671,8 +760,9 @@ class ModulesManager:
                 config_errors.extend(cls._sync_config_fields(package_name))
             if config_errors:
                 Logger.error(f"Failed to synchronize module configuration for {reload_packages}: {config_errors}")
+                restore_python_modules()
                 restore_registrations()
-                ModuleRuntimeManager.abort_reload(runtime_snapshot, runtime_names)
+                await ModuleRuntimeManager.abort_reload(runtime_snapshot, runtime_names)
                 return False, count
 
             changed_schema_packages = [
@@ -685,8 +775,9 @@ class ModulesManager:
                     f"Database model schema changed during reload for {changed_schema_packages}; "
                     "restart and run database migration instead."
                 )
+                restore_python_modules()
                 restore_registrations()
-                ModuleRuntimeManager.abort_reload(runtime_snapshot, runtime_names)
+                await ModuleRuntimeManager.abort_reload(runtime_snapshot, runtime_names)
                 return False, count
 
             if cls._deferred_bindings:
@@ -724,14 +815,18 @@ class ModulesManager:
             SchedulerLifecycle.reconcile_modules(scheduler_names_to_replace, cls.modules)
             schedules_replaced = True
 
-            if not await reload_db():
-                Logger.error(f"Reloaded Python module {py_module}, but failed to reinitialize its database models.")
+            # 先构建可独立失败的数据库 context；旧 context 和旧 runtime 此时都
+            # 保持可用。只有全部校验成功后才进入不可逆 commit。
+            prepared_db = await prepare_db_reload()
+            if prepared_db is None:
+                Logger.error(f"Reloaded Python module {py_module}, but failed to prepare its database models.")
                 await restore_statuses()
                 statuses_replaced = False
+                restore_python_modules()
                 restore_registrations()
                 SchedulerLifecycle.restore_modules(old_schedules, scheduler_names_to_replace)
                 schedules_replaced = False
-                ModuleRuntimeManager.abort_reload(runtime_snapshot, runtime_names)
+                await ModuleRuntimeManager.abort_reload(runtime_snapshot, runtime_names)
                 return False, count
 
             active_modules = {
@@ -739,7 +834,49 @@ class ModulesManager:
                 for name in runtime_names
                 if name in cls.modules and cls.modules[name]._db_load and cls.modules[name].load
             }
-            await ModuleRuntimeManager.commit_reload(runtime_snapshot, runtime_names, active_modules)
+            # commit 是代际切换的不可逆边界。取消可以中断构建阶段，但不能在
+            # runtime 已切换、旧 generation 已停止后再回滚注册表和数据库。
+            from core.queue.server import JobQueueServer
+
+            commit_task = asyncio.create_task(
+                ModuleRuntimeManager.commit_reload(
+                    runtime_snapshot,
+                    runtime_names,
+                    active_modules,
+                    set(cls.modules),
+                ),
+                name=f"module-reload-runtime-commit:{py_module}",
+            )
+            reload_cancelled = False
+            try:
+                await asyncio.shield(commit_task)
+            except asyncio.CancelledError:
+                reload_cancelled = True
+                try:
+                    await commit_task
+                except BaseException:
+                    await close_prepared_db_reload(prepared_db)
+                    raise
+            try:
+                # 旧 runtime 已停止，此时短时独占 Queue 轮询并切换数据库 context，
+                # 避免轮询器在旧连接关闭过程中仍发出查询。
+                activate_db_reload(prepared_db)
+                async with JobQueueServer.maintenance_window(exclusive=True):
+                    close_task = asyncio.create_task(
+                        close_previous_db_context(prepared_db),
+                        name=f"module-reload-close-previous-db:{py_module}",
+                    )
+                    try:
+                        await asyncio.shield(close_task)
+                    except asyncio.CancelledError:
+                        reload_cancelled = True
+                        await close_task
+            except BaseException:
+                await close_prepared_db_reload(prepared_db)
+                raise
+            committed = True
+            if reload_cancelled:
+                raise asyncio.CancelledError()
             if changed_locale_packages:
                 try:
                     locale_errors = build_locale_snapshot(list(lang_list.keys()), all_locales_path, "akari-bot")
@@ -756,32 +893,38 @@ class ModulesManager:
         except asyncio.CancelledError:
             # Queue action 超时或 Server 关闭都会取消热重载。取消不能被转换成普通
             # 失败，但在继续传播前必须恢复已删改的持久状态与内存注册表。
-            if statuses_replaced:
-                try:
-                    await asyncio.shield(restore_statuses())
-                except Exception:
-                    Logger.exception(f"Failed to restore ModuleStatus rows for cancelled reload of {py_module}:")
-            runtime_names.update(cls._module_names_for_py_modules(reload_package_set))
-            if registrations_replaced:
-                restore_registrations()
-            if schedules_replaced:
-                SchedulerLifecycle.restore_modules(old_schedules, scheduler_names_to_replace)
-            ModuleRuntimeManager.abort_reload(runtime_snapshot, runtime_names)
+            if not committed:
+                if statuses_replaced:
+                    try:
+                        await asyncio.shield(restore_statuses())
+                    except Exception:
+                        Logger.exception(f"Failed to restore ModuleStatus rows for cancelled reload of {py_module}:")
+                runtime_names.update(cls._module_names_for_py_modules(reload_package_set))
+                restore_python_modules()
+                if registrations_replaced:
+                    restore_registrations()
+                if schedules_replaced:
+                    SchedulerLifecycle.restore_modules(old_schedules, scheduler_names_to_replace)
+                await ModuleRuntimeManager.abort_reload(runtime_snapshot, runtime_names)
             raise
         except Exception:
             Logger.exception(f"Failed to reload module package {py_module}:")
-            runtime_names.update(cls._module_names_for_py_modules(reload_package_set))
-            if statuses_replaced:
-                try:
-                    await restore_statuses()
-                except Exception:
-                    Logger.exception(f"Failed to restore ModuleStatus rows for {py_module}:")
-            if registrations_replaced:
-                restore_registrations()
-            if schedules_replaced:
-                SchedulerLifecycle.restore_modules(old_schedules, scheduler_names_to_replace)
-            ModuleRuntimeManager.abort_reload(runtime_snapshot, runtime_names)
-            return False, count
+            if not committed:
+                runtime_names.update(cls._module_names_for_py_modules(reload_package_set))
+                if statuses_replaced:
+                    try:
+                        await restore_statuses()
+                    except Exception:
+                        Logger.exception(f"Failed to restore ModuleStatus rows for {py_module}:")
+                if registrations_replaced:
+                    restore_python_modules()
+                    restore_registrations()
+                if schedules_replaced:
+                    SchedulerLifecycle.restore_modules(old_schedules, scheduler_names_to_replace)
+                await ModuleRuntimeManager.abort_reload(runtime_snapshot, runtime_names)
+                return False, count
+            Logger.exception(f"Reload for {py_module} committed, but post-commit work failed:")
+            return True, count
         finally:
             cls._deferred_bindings = old_deferred_bindings
             cls._reload_package = old_reload_package
@@ -798,6 +941,7 @@ class ModulesManager:
         snapshot = {name: sys.modules[name] for name in module_names}
         try:
             Logger.info(f"Reloading {module_name} with a fresh module namespace ...")
+            importlib.invalidate_caches()
             for name in module_names:
                 sys.modules.pop(name, None)
             for name in module_names:

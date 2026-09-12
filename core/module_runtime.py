@@ -8,6 +8,7 @@ disable, reload and shutdown transitions.
 from __future__ import annotations
 
 import asyncio
+import copy
 import inspect
 import re
 import shutil
@@ -74,7 +75,7 @@ class RuntimeResource(Generic[T]):
                 return self.value  # type: ignore[return-value]
             value = self.factory()
             if inspect.isawaitable(value):
-                value = await value
+                value = await asyncio.wait_for(value, timeout=self.timeout)
             self.value = value
             self.initialized = True
             return value
@@ -113,6 +114,7 @@ class ModuleRuntime:
     state_specs: dict[str, _StateSpec] = field(default_factory=dict)
     resources: dict[str, RuntimeResource] = field(default_factory=dict)
     cache_paths: dict[str, Path] = field(default_factory=dict)
+    created_cache_paths: set[Path] = field(default_factory=set, repr=False)
     tasks: set[asyncio.Task] = field(default_factory=set)
     suppressed_task_errors: dict[asyncio.Task, tuple[type[BaseException], ...]] = field(default_factory=dict)
     cleanup_specs: list[_CleanupSpec] = field(default_factory=list)
@@ -120,10 +122,16 @@ class ModuleRuntime:
 
     def next_generation(self) -> "ModuleRuntime":
         """Create the next generation while retaining declared state metadata."""
+        preserved_state = {
+            name: value
+            for name, value in self.state.items()
+            if (spec := self.state_specs.get(name)) is not None and spec.preserve
+        }
         return ModuleRuntime(
             module_name=self.module_name,
             generation=self.generation + 1,
-            state=dict(self.state),
+            active=False,
+            state=preserved_state,
             state_specs=dict(self.state_specs),
         )
 
@@ -145,7 +153,14 @@ class ModuleRuntime:
                 if migrate is None:
                     value = default_factory()
                 else:
-                    value = migrate(previous)
+                    try:
+                        migration_input = copy.deepcopy(previous)
+                    except Exception as exc:
+                        raise RuntimeError(
+                            f"Preserved state {self.module_name!r}.{name!r} cannot be copied before migration; "
+                            "provide versioned state that is deepcopyable."
+                        ) from exc
+                    value = migrate(migration_input)
             else:
                 value = previous
         else:
@@ -176,8 +191,11 @@ class ModuleRuntime:
         safe_module = re.sub(r"[^A-Za-z0-9_.-]+", "_", self.module_name)
         safe_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", name)
         path = cache_path / "module_runtime" / safe_module / safe_name / f"v{version}"
+        existed = path.exists()
         path.mkdir(parents=True, exist_ok=True)
         self.cache_paths[name] = path
+        if not existed:
+            self.created_cache_paths.add(path)
         return path
 
     def declare_cleanup(
@@ -192,8 +210,8 @@ class ModuleRuntime:
         self.cleanup_specs.append(_CleanupSpec(callback, name or f"{self.module_name}:cleanup", timeout))
 
     def cleanup_cache_paths(self) -> None:
-        """Remove directories created for this discarded generation."""
-        for path in self.cache_paths.values():
+        """Remove only cache directories first created for this discarded generation."""
+        for path in self.created_cache_paths:
             try:
                 shutil.rmtree(path, ignore_errors=True)
             except OSError:
@@ -234,15 +252,25 @@ class ModuleRuntime:
     async def stop(self, reason: str) -> None:
         """Cancel owned tasks and close resources; safe to call more than once."""
         async with self._stop_lock:
-            if not self.active and not self.tasks:
+            if (
+                not self.active
+                and not self.tasks
+                and not any(resource.initialized for resource in self.resources.values())
+            ):
                 return
             self.active = False
             current = asyncio.current_task()
             tasks = [task for task in self.tasks if task is not current and not task.done()]
             for task in tasks:
                 task.cancel()
+            stop_cancelled = False
             if tasks:
-                await asyncio.gather(*tasks, return_exceptions=True)
+                task_gather = asyncio.gather(*tasks, return_exceptions=True)
+                try:
+                    await asyncio.shield(task_gather)
+                except asyncio.CancelledError:
+                    stop_cancelled = True
+                    await asyncio.gather(task_gather, return_exceptions=True)
             self.tasks.difference_update(tasks)
             for spec in reversed(self.cleanup_specs):
                 try:
@@ -250,16 +278,23 @@ class ModuleRuntime:
                     if inspect.isawaitable(result):
                         await asyncio.wait_for(result, timeout=spec.timeout)
                 except asyncio.CancelledError:
-                    raise
+                    stop_cancelled = True
                 except TimeoutError:
                     Logger.warning(f"Timed out while cleaning {spec.name!r} for module {self.module_name!r}.")
                 except Exception:
                     Logger.exception(f"Failed to clean {spec.name!r} for module {self.module_name!r}:")
             for resource in reversed(tuple(self.resources.values())):
-                await resource.close()
+                close_task = asyncio.create_task(resource.close())
+                try:
+                    await asyncio.shield(close_task)
+                except asyncio.CancelledError:
+                    stop_cancelled = True
+                    await asyncio.gather(close_task, return_exceptions=True)
             Logger.debug(
                 f"Stopped module runtime {self.module_name!r} (generation {self.generation}, reason={reason})."
             )
+            if stop_cancelled:
+                raise asyncio.CancelledError()
 
 
 current_runtime: ContextVar[ModuleRuntime | None] = ContextVar("module_runtime", default=None)
@@ -270,6 +305,8 @@ class ModuleRuntimeManager:
 
     _current: dict[str, ModuleRuntime] = {}
     _staging: dict[str, ModuleRuntime] = {}
+    _reload_in_progress = False
+    _reload_created: set[str] = set()
 
     @classmethod
     def get_or_create(cls, module_name: str) -> ModuleRuntime:
@@ -277,8 +314,10 @@ class ModuleRuntimeManager:
         if runtime is None:
             runtime = cls._current.get(module_name)
         if runtime is None:
-            runtime = ModuleRuntime(module_name)
+            runtime = ModuleRuntime(module_name, active=not cls._reload_in_progress)
             cls._current[module_name] = runtime
+            if cls._reload_in_progress:
+                cls._reload_created.add(module_name)
         return runtime
 
     @classmethod
@@ -367,6 +406,8 @@ class ModuleRuntimeManager:
     @classmethod
     def prepare_reload(cls, module_names: set[str]) -> dict[str, ModuleRuntime]:
         snapshot: dict[str, ModuleRuntime] = {}
+        cls._reload_in_progress = True
+        cls._reload_created.clear()
         for module_name in module_names:
             runtime = cls._current.get(module_name)
             if runtime is None:
@@ -376,19 +417,25 @@ class ModuleRuntimeManager:
         return snapshot
 
     @classmethod
-    def abort_reload(
+    async def abort_reload(
         cls,
         snapshot: dict[str, ModuleRuntime],
         module_names: set[str],
     ) -> None:
-        for module_name in module_names:
-            staged = cls._staging.pop(module_name, None)
-            if staged is not None and staged is not snapshot.get(module_name):
-                staged.cleanup_cache_paths()
-            if module_name not in snapshot:
+        try:
+            for module_name in set(cls._staging) | module_names:
+                staged = cls._staging.pop(module_name, None)
+                if staged is not None and staged is not snapshot.get(module_name):
+                    await staged.stop("reload-aborted")
+                    staged.cleanup_cache_paths()
+            for module_name in tuple(cls._reload_created):
                 runtime = cls._current.pop(module_name, None)
-                if runtime is not None and runtime is not staged:
+                if runtime is not None:
+                    await runtime.stop("reload-aborted")
                     runtime.cleanup_cache_paths()
+        finally:
+            cls._reload_created.clear()
+            cls._reload_in_progress = False
 
     @classmethod
     async def commit_reload(
@@ -396,29 +443,42 @@ class ModuleRuntimeManager:
         snapshot: dict[str, ModuleRuntime],
         module_names: set[str],
         active_modules: set[str],
+        registered_modules: set[str] | None = None,
     ) -> None:
-        for module_name in module_names:
-            runtime = cls._staging.pop(module_name, None)
-            if runtime is None:
-                runtime = cls._current.get(module_name)
-            if runtime is None:
-                continue
-            cls._current[module_name] = runtime
-            if module_name in active_modules:
-                runtime.activate()
-            else:
-                await runtime.stop("reload-disabled")
-        for old_runtime in snapshot.values():
-            await old_runtime.stop("reload")
-        for module_name in module_names:
-            old_runtime = snapshot.get(module_name)
-            current = cls._current.get(module_name)
-            if old_runtime is None or current is None:
-                continue
-            for name, current_path in current.cache_paths.items():
-                old_path = old_runtime.cache_paths.get(name)
-                if old_path is not None and old_path != current_path:
-                    shutil.rmtree(old_path, ignore_errors=True)
+        registered = set(module_names) if registered_modules is None else set(registered_modules)
+        removed_modules = set(module_names) - registered
+        try:
+            for module_name in module_names:
+                runtime = cls._staging.pop(module_name, None)
+                if module_name in removed_modules:
+                    if runtime is not None:
+                        await runtime.stop("reload-removed")
+                        runtime.cleanup_cache_paths()
+                    cls._current.pop(module_name, None)
+                    continue
+                if runtime is None:
+                    runtime = cls._current.get(module_name)
+                if runtime is None:
+                    continue
+                cls._current[module_name] = runtime
+                if module_name in active_modules:
+                    runtime.activate()
+                else:
+                    await runtime.stop("reload-disabled")
+            for old_runtime in snapshot.values():
+                await old_runtime.stop("reload")
+            for module_name in module_names:
+                old_runtime = snapshot.get(module_name)
+                current = cls._current.get(module_name)
+                if old_runtime is None or current is None:
+                    continue
+                current_paths = set(current.cache_paths.values())
+                for old_path in old_runtime.cache_paths.values():
+                    if module_name in removed_modules or old_path not in current_paths:
+                        shutil.rmtree(old_path, ignore_errors=True)
+        finally:
+            cls._reload_created.clear()
+            cls._reload_in_progress = False
 
     @classmethod
     def activate(cls, module_name: str) -> None:
@@ -434,7 +494,12 @@ class ModuleRuntimeManager:
     async def shutdown(cls) -> None:
         for runtime in tuple(cls._current.values()):
             await runtime.stop("shutdown")
+        for runtime in tuple(cls._staging.values()):
+            await runtime.stop("shutdown-staged")
+            runtime.cleanup_cache_paths()
         cls._staging.clear()
+        cls._reload_created.clear()
+        cls._reload_in_progress = False
 
 
 __all__ = [

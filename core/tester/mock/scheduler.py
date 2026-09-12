@@ -21,6 +21,7 @@ from typing import Callable
 
 from core.constants.info import Info
 from core.loader import ModulesManager
+from core.module_runtime import ModuleRuntimeManager
 
 
 def get_scheduled_tasks(module_name: str | None = None) -> list[dict]:
@@ -68,7 +69,7 @@ def get_schedule_summary() -> dict[str, list[str]]:
     return summary
 
 
-async def run_schedule_function(func: Callable, timeout: float = 30) -> dict:
+async def run_schedule_function(func: Callable, timeout: float = 30, *, module_name: str | None = None) -> dict:
     """手动执行一个计划任务函数。
 
     :param func: 计划任务函数
@@ -79,7 +80,11 @@ async def run_schedule_function(func: Callable, timeout: float = 30) -> dict:
 
     start = time.time()
     try:
-        await asyncio.wait_for(func(), timeout=timeout)
+        if module_name is None:
+            await asyncio.wait_for(func(), timeout=timeout)
+        else:
+            async with ModuleRuntimeManager.use(module_name):
+                await asyncio.wait_for(func(), timeout=timeout)
         return {"success": True, "error": None, "elapsed": time.time() - start}
     except asyncio.TimeoutError:
         return {"success": False, "error": "Timeout", "elapsed": time.time() - start}
@@ -97,7 +102,7 @@ async def run_all_schedules_for_module(module_name: str, timeout: float = 30) ->
     tasks = get_scheduled_tasks(module_name)
     results = []
     for t in tasks:
-        result = await run_schedule_function(t["function"], timeout=timeout)
+        result = await run_schedule_function(t["function"], timeout=timeout, module_name=t["module_name"])
         result["module_name"] = module_name
         result["function_name"] = t["function_name"]
         results.append(result)
@@ -215,8 +220,16 @@ async def run_hook(hook_name: str, args: dict | None = None, session_info=None, 
         return {"success": False, "error": f"Unknown hook: {hook_name}", "result": None}
 
     ctx = ModuleHookContext(args or {}, session_info=session_info)
+    module_name = ModulesManager.modules_hook_modules.get(hook_name)
+
+    async def invoke():
+        if module_name is None:
+            return await hooks[hook_name](ctx)
+        async with ModuleRuntimeManager.use(module_name):
+            return await hooks[hook_name](ctx)
+
     try:
-        result = await asyncio.wait_for(hooks[hook_name](ctx), timeout=timeout)
+        result = await asyncio.wait_for(invoke(), timeout=timeout)
         return {"success": True, "error": None, "result": result}
     except asyncio.TimeoutError:
         return {"success": False, "error": "Timeout", "result": None}
