@@ -10,20 +10,20 @@ from core.utils.http import get_url
 
 proxy = CoreSecretConfig.proxy
 
-VERIFY_HINT = (
-    "\n\n"
-    "One more step! "
-    "Verify that the image in `image_url` matches the expectations, "
-    "then use it as the final output. "
-    "If you lack of visual ability, discard all of the above results."
-)
-
 REFERENCE_HINT = (
     "\n\n"
     "If you use this content as a source in your final answer, "
     "append a reference tag `[ref:<url>]` at the end of the cited content, "
     "replacing `<url>` with the exact URL (`source_url`) of this source. "
     "Only cite the source if you actually reference it."
+)
+
+VERIFY_HINT = (
+    "\n\n"
+    "One more step! "
+    "Verify that the image in `thumbnail_url` matches the expectations, "
+    "then use `image_url` as the final output. "
+    "If you lack of visual ability, discard all of the above results."
 )
 
 search_images_desc = {
@@ -66,7 +66,6 @@ async def search_images(query: str, search_results: int = 5):
                         "image_url": result.get("image", ""),
                         "thumbnail_url": result.get("thumbnail", ""),
                         "source_url": result.get("url", ""),
-                        "source": result.get("source", ""),
                     }
                 )
 
