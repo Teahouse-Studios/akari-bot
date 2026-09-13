@@ -563,16 +563,17 @@ async def bind_account(msg) -> None:
         Logger.exception()
         await msg.finish(I18NContext("maimai.message.oauth.failed"))
 
-    await msg.send_message(
+    msg_chain = (
         MessageChain.assign(
             [
                 I18NContext("maimai.message.oauth.prompt", minutes=max(1, device.expires_in // 60)),
                 Url(device.verification_uri_complete, trusted=True),
-                I18NContext("maimai.message.oauth.prompt.warn"),
             ]
         ),
-        quote=False,
     )
+    if not DF_CONFIDENTIAL_CLIENT:
+        msg_chain.append(I18NContext("maimai.message.oauth.prompt.warn"))
+    await msg.send_message(msg_chain, quote=False)
 
     deadline = time.monotonic() + device.expires_in
     interval = device.interval
