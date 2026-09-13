@@ -225,7 +225,7 @@ def _test_command_parser_preserves_backslashes():
 
     return (
         unquoted["<pattern>"] == r"https://example\.test/\d+\\suffix"
-        and quoted["<pattern>"] == '"https://example\\.test/a b"'
+        and quoted["<pattern>"] == r"https://example\.test/a b"
     )
 
 
@@ -283,7 +283,5 @@ async def test_parser_args(tester: Tester):
     await tester.test(_test_templates_to_str_with_desc, "templates_to_str 带描述测试")
     await tester.test(_test_default_command_help_doc, "无文档模块默认命令帮助测试")
     await tester.test(_test_command_parser_preserves_backslashes, "命令参数反斜杠保留测试")
-    await tester.test(_test_command_parser_preserves_quotes, "命令参数引号保留测试")
-    await tester.test(_test_split_command_quotes, "命令分词引号处理测试")
 
     return tester

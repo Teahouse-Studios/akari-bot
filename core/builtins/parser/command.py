@@ -26,6 +26,9 @@ default_locale = BaseConfig.default_locale
 # 预编译正则：匹配中文引号（避免每次 parse 重新编译）
 _CN_QUOTE_PATTERN = re.compile(r"[“”]")
 
+# 支持的引号字符
+_QUOTE_CHARS = ('"', "'")
+
 
 def _split_command(command: str) -> list[str]:
     """
@@ -52,13 +55,14 @@ def _split_command(command: str) -> list[str]:
             continue
 
         quote = command[index]
-        # 寻找与起始引号配对且包裹整段参数的结束引号
-        end = command.find(quote, index + 1)
-        if end != -1 and (end + 1 == length or command[end + 1].isspace()):
-            # 引号包裹整段参数：去除引号，保留其中的空白字符
-            split_command.append(command[index + 1 : end])
-            index = end + 1
-            continue
+        if quote in _QUOTE_CHARS:
+            # 寻找与起始引号配对且包裹整段参数的结束引号
+            end = command.find(quote, index + 1)
+            if end != -1 and (end + 1 == length or command[end + 1].isspace()):
+                # 引号包裹整段参数：去除引号，保留其中的空白字符
+                split_command.append(command[index + 1 : end])
+                index = end + 1
+                continue
 
         # 其余情况按字面处理：一直取到下一个空白字符（引号不参与分组）
         end = index

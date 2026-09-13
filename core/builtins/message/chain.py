@@ -1436,26 +1436,29 @@ def convert_senderid_to_atcode(text: str, sender_prefix: str) -> str:
     主要用于在消息中自动识别和转换用户 ID 引用。
 
     处理流程：
-    1. 转义 sender_prefix 中的特殊字符
+    1. 转义 sender_prefix 中的特殊字符（仅用于正则，不改动文本）
     2. 查找所有匹配的用户 ID
     3. 将其包装为 `<AT:...>` 格式
 
+    文本中的反斜杠是普通字符，原样保留。
+
     :param text: 包含用户 ID 的文本
-    :param sender_prefix: 用户 ID 的前缀（如 "QQ|"）
+    :param sender_prefix: 用户 ID 的前缀（如 "QQ"）
     :return: 转换后的文本，用户 ID 被包装为 AT 码
 
     示例：
         > text = "User QQ|123456 said hello"
-        > convert_senderid_to_atcode(text, "QQ|")
+        > convert_senderid_to_atcode(text, "QQ")
         'User <AT:QQ|123456> said hello'
     """
-    # 转义前缀中的特殊字符（如 `|`）
-    sender_prefix = sender_prefix.replace("|", "\\|")
+    # 转义前缀中的特殊字符（如 `|`），避免其被当作正则元字符
+    sender_prefix = re.escape(sender_prefix)
 
     # 使用正则表达式查找并包装用户 ID
     # 负向后瞻断言确保不会重复包装已有的 AT 码
     # \g<0> 引用整个匹配的字符串
-    return re.sub(rf"(?<!<AT:)(?<!<@:){sender_prefix}\|\w+", r"<AT:\g<0>>", text).replace("\\", "")
+    # 转义只作用于正则本身；文本中的反斜杠是普通字符，须原样保留
+    return re.sub(rf"(?<!<AT:)(?<!<@:){sender_prefix}\|\w+", r"<AT:\g<0>>", text)
 
 
 # 将消息链类添加到导出列表中
