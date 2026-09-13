@@ -36,7 +36,7 @@ async def get_bind_info(msg: Bot.MessageSession) -> DivingProberBindInfo:
         await msg.finish(
             I18NContext(
                 "maimai.message.user_unbound",
-                cmd=ActionText(f"{msg.session_info.prefixes[0]}maimai bind"),
+                cmd=ActionText(f"{msg.session_info.prefixes[0]}maimai bind df"),
             )
         )
     return bind_info
@@ -52,7 +52,7 @@ async def prompt_rebind(msg: Bot.MessageSession, exc: DivingFishTokenRevoked) ->
     await msg.finish(
         I18NContext(
             "maimai.message.oauth.revoked",
-            cmd=ActionText(f"{msg.session_info.prefixes[0]}maimai bind"),
+            cmd=ActionText(f"{msg.session_info.prefixes[0]}maimai bind df"),
         )
     )
 
