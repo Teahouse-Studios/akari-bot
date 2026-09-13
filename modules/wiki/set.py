@@ -188,6 +188,7 @@ async def _(msg: Bot.MessageSession):
             "wiki.message.headers.show",
             headers=orjson.dumps(target.headers).decode(),
             cmd=ActionText(f"{msg.session_info.prefixes[0]}wiki headers add"),
+            prefix=msg.session_info.prefixes[0]
         )
     )
 

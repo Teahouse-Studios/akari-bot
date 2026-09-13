@@ -89,10 +89,11 @@ async def init_db(
     db_models: list[str] | None = None,
     generate_schemas: bool = False,
 ) -> bool:
+    context = None
     try:
         database_list = fetch_module_db() if load_module_db else []
         database_list += db_models if db_models else []
-        await Tortoise.init(
+        context = await Tortoise.init(
             config={
                 "connections": {
                     "default": get_db_link(),
@@ -135,6 +136,12 @@ async def init_db(
         except Exception:
             Logger.exception("Failed to clean up partial database initialization.")
         return False
+    finally:
+        # Tortoise.init() 在无当前 context 时会把初始化 context 写入当前任务。
+        # 这会复制给 Queue poller 等后续任务，reload 替换全局 context 后它们
+        # 仍会持有旧对象。初始化完成后恢复为“仅使用 global fallback”。
+        if isinstance(context, TortoiseContext):
+            context.__exit__(None, None, None)
 
 
 def _database_config(load_module_db: bool, db_models: list[str] | None) -> tuple[dict, list[str]]:
@@ -199,7 +206,9 @@ def activate_db_reload(prepared: PreparedDatabaseReload) -> None:
     # 在切换前新 context 已完全初始化，故这里是有意的原子替换点。
     tortoise_context._global_context = prepared.context
     if tortoise_context._current_context.get() is prepared.previous_context:
-        tortoise_context._current_context.set(prepared.context)
+        # 不把新 context 固定到当前任务，否则后续子任务会继续继承任务级对象，
+        # 下一次 reload 替换全局 context 时重现旧 context 泄漏。
+        tortoise_context._current_context.set(None)
     Temp.data["modules_db_list"] = list(prepared.database_list)
     prepared.activated = True
 
@@ -255,3 +264,10 @@ async def close_db():
         await Tortoise.close_connections()
     except Exception:
         pass
+    finally:
+        # close_connections 只关闭连接，不会移除 Tortoise 的 global fallback。
+        # 清理任务级与全局 context，允许后续 init_db() 真正重新初始化。
+        from tortoise import context as tortoise_context
+
+        tortoise_context._global_context = None
+        tortoise_context._current_context.set(None)

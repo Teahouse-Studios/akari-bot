@@ -6,6 +6,7 @@ from urllib.parse import parse_qs, parse_qsl, urlsplit
 from unittest.mock import AsyncMock, patch
 
 import core.database as database
+import tortoise.context as tortoise_context
 from core.database.models import JobQueuesTable
 from core.database.link import prepare_db_link
 from core.queue.server import JobQueueServer
@@ -14,6 +15,7 @@ from core.scheduler import Scheduler, SchedulerLifecycle
 from core.tester import Tester, func_case
 from core.types import Module
 from core.types.module.component_meta import ScheduleMeta
+from tortoise.context import TortoiseContext
 
 from apscheduler.triggers.interval import IntervalTrigger
 
@@ -168,6 +170,87 @@ async def _test_cancelled_init_closes_partial_connections():
         except asyncio.CancelledError:
             return close_connections.await_count == 1
     return False
+
+
+async def _test_init_db_clears_task_local_tortoise_context():
+    """Server 启动后任务应继承空 context，统一走可替换的 global fallback。"""
+    context = TortoiseContext()
+    context.__enter__()
+    old_modules_db_list = database.Temp.data.get("modules_db_list")
+    try:
+        with (
+            patch.object(database, "fetch_module_db", return_value=[]),
+            patch.object(database.Tortoise, "init", new=AsyncMock(return_value=context)),
+        ):
+            result = await database.init_db()
+        return result and tortoise_context._current_context.get() is None and context._token is None
+    finally:
+        if context._token is not None:
+            context.__exit__(None, None, None)
+        if old_modules_db_list is None:
+            database.Temp.data.pop("modules_db_list", None)
+        else:
+            database.Temp.data["modules_db_list"] = old_modules_db_list
+
+
+async def _test_activate_db_reload_clears_inherited_old_context():
+    """发布新数据库时不得继续把旧 context 固定到 reload 任务。"""
+    old_context = TortoiseContext()
+    new_context = TortoiseContext()
+    previous_global = tortoise_context._global_context
+    token = tortoise_context._current_context.set(old_context)
+    prepared = database.PreparedDatabaseReload(
+        context=new_context,
+        previous_context=old_context,
+        database_list=[],
+    )
+    try:
+        database.activate_db_reload(prepared)
+        return (
+            prepared.activated
+            and tortoise_context._global_context is new_context
+            and tortoise_context._current_context.get() is None
+        )
+    finally:
+        tortoise_context._global_context = previous_global
+        tortoise_context._current_context.reset(token)
+
+
+async def _test_task_created_after_init_uses_replaceable_global_context():
+    """初始化后创建的任务不得复制旧 context，必须动态读取 global fallback。"""
+    old_context = TortoiseContext()
+    new_context = TortoiseContext()
+    previous_global = tortoise_context._global_context
+    token = tortoise_context._current_context.set(None)
+    tortoise_context._global_context = old_context
+    release = asyncio.Event()
+    started = asyncio.Event()
+
+    async def child():
+        inherited = tortoise_context._current_context.get()
+        started.set()
+        await release.wait()
+        return inherited, tortoise_context.get_current_context()
+
+    task = asyncio.create_task(child())
+    prepared = database.PreparedDatabaseReload(
+        context=new_context,
+        previous_context=old_context,
+        database_list=[],
+    )
+    try:
+        await started.wait()
+        database.activate_db_reload(prepared)
+        release.set()
+        inherited, resolved = await task
+        return inherited is None and resolved is new_context
+    finally:
+        release.set()
+        if not task.done():
+            task.cancel()
+        await asyncio.gather(task, return_exceptions=True)
+        tortoise_context._global_context = previous_global
+        tortoise_context._current_context.reset(token)
 
 
 async def _test_reload_activates_prepared_context_before_closing_previous():
@@ -452,6 +535,15 @@ async def test_database_init(tester: Tester):
     await tester.test(_test_pre_init_mode_generates_all_schemas, "pre-init 建立核心、local 与模块表")
     await tester.test(_test_failed_init_closes_partial_connections, "数据库初始化失败清理部分连接")
     await tester.test(_test_cancelled_init_closes_partial_connections, "数据库初始化取消清理部分连接")
+    await tester.test(_test_init_db_clears_task_local_tortoise_context, "数据库初始化清理任务级 context")
+    await tester.test(
+        _test_activate_db_reload_clears_inherited_old_context,
+        "数据库切换不继承旧任务级 context",
+    )
+    await tester.test(
+        _test_task_created_after_init_uses_replaceable_global_context,
+        "初始化后任务使用可替换 global context",
+    )
     await tester.test(
         _test_reload_activates_prepared_context_before_closing_previous,
         "热重载先准备新 context 再原子切换",
