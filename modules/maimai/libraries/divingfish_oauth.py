@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 import orjson
 
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import I18NContext, Plain, Url
+from core.builtins.message.internal import I18NContext, Url
 from core.logger import Logger
 from core.utils.http import get_url, post_url
 from modules.maimai.config import MaimaiConfig
@@ -443,14 +443,7 @@ async def bind_account(msg) -> None:
     _cache_token(union_id, str(token["access_token"]), _expires_in(token))
     bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
     nickname = await fill_bind_username(bind_info) if bind_info else ""
-    await msg.finish(
-        MessageChain.assign(
-            [
-                I18NContext("maimai.message.bind.success"),
-                Plain(nickname or str(subject or "")),
-            ]
-        )
-    )
+    await msg.finish(I18NContext("maimai.message.bind.success", username=nickname or str(subject or "")))
 
 
 async def unbind_account(msg) -> None:

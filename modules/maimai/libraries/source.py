@@ -115,7 +115,9 @@ async def switch_source(msg: Bot.MessageSession, game: str, bind_hints: dict[str
         await msg.finish(
             I18NContext(
                 "maimai.message.switch.unbound",
-                source=I18NContext("maimai.message.source.lx" if target == SOURCE_LXNS else "maimai.message.source.df"),
+                source=str(
+                    I18NContext("maimai.message.source.lx" if target == SOURCE_LXNS else "maimai.message.source.df")
+                ),
                 cmd=ActionText(bind_hints[target]),
             )
         )

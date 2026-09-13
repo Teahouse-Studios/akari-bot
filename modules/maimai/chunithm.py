@@ -317,7 +317,7 @@ async def _(msg: Bot.MessageSession, friendcode: str | None = None):
     data = await get_record_lx(msg, friendcode, use_cache=False)
     if data:
         await LxnsProberBindInfo.set_bind_info(union_id=msg.session_info.sender_union_id, friend_code=friendcode)
-        await msg.finish(str(I18NContext("maimai.message.bind.success")) + data["nickname"])
+        await msg.finish(I18NContext("maimai.message.bind.success", username=data["nickname"]))
 
 
 @chu.command("unbind lx {{I18N:maimai.help.unbind}}")
