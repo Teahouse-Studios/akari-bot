@@ -26,7 +26,7 @@ from core.queue.diagnostics import (
 )
 from core.utils.bash import run_sys_command
 from core.utils.http import get_url
-from core.utils.table import escape_table_cell, format_inline_code, format_table_code
+from core.utils.table import format_inline_code
 
 WEBLATE_LANGUAGES_API = "https://hosted.weblate.org/api/projects/akaribot/languages/"
 TRANSLATION_PROGRESS_THRESHOLD = 95.0
@@ -134,29 +134,20 @@ def _build_process_usage_lines(
     return lines
 
 
-def _format_markdown_rows(locale: Locale, rows: Sequence[tuple[str, str]], *, use_table: bool) -> str:
-    if use_table:
-        values = [(name, format_table_code(str(value))) for name, value in rows]
-        item_title = escape_table_cell(locale.t("core.message.ping.table.item"))
-        value_title = escape_table_cell(locale.t("core.message.ping.table.value"))
-        lines = [f"| {item_title} | {value_title} |", "| --- | --- |"]
-        lines.extend(f"| {escape_table_cell(name)} | {value} |" for name, value in values)
-        return "\n".join(lines)
-    values = [(name, format_inline_code(str(value))) for name, value in rows]
-    return "\n".join(
-        "- " + locale.t("core.message.ping.markdown.item", name=name, value=value) for name, value in values
+def _format_markdown_items(locale: Locale, items: Sequence[tuple[str, str]]) -> str:
+    separator = locale.t("core.message.ping.markdown.separator")
+    return separator.join(
+        locale.t(
+            "core.message.ping.markdown.item",
+            name=name,
+            value=format_inline_code(str(value)),
+        )
+        for name, value in items
     )
 
 
-def _format_markdown_section(
-    locale: Locale,
-    title_key: str,
-    rows: Sequence[tuple[str, str]],
-    *,
-    use_table: bool,
-) -> str:
-    title = locale.t(title_key)
-    return f"**{title}**\n\n{_format_markdown_rows(locale, rows, use_table=use_table)}"
+def _format_markdown_quote(lines: Sequence[str]) -> str:
+    return "\n".join(f"> {line}" if line else ">" for line in lines)
 
 
 def _build_ping_simple_markdown(
@@ -168,65 +159,25 @@ def _build_ping_simple_markdown(
     disk_percent: float,
 ) -> MarkdownElement:
     locale = msg.session_info.locale
-    rows = [
-        (locale.t("core.message.ping.label.bot_running_time"), bot_running_time),
-        (locale.t("core.message.ping.label.cpu_percent"), f"{cpu_percent}%"),
-        (locale.t("core.message.ping.label.memory"), f"{ram_percent}%"),
-        (locale.t("core.message.ping.label.disk"), f"{disk_percent}%"),
-    ]
-    body = _format_markdown_rows(
-        locale,
-        rows,
-        use_table=msg.session_info.support_markdown_extension,
-    )
-    return Markdown(f"**Pong!**\n\n{body}", disable_joke=True)
-
-
-def _format_process_markdown_table(
-    locale: Locale,
-    usages: Sequence[ProcessUsage],
-    failures: Sequence[ProcessUnavailable],
-) -> str:
-    headers = [
-        locale.t("core.message.ping.table.process"),
-        locale.t("core.message.ping.table.pid"),
-        locale.t("core.message.ping.table.memory"),
-    ]
     lines = [
-        "| " + " | ".join(escape_table_cell(header) for header in headers) + " |",
-        "| --- | --- | --- |",
+        "**Pong!**",
+        "",
+        _format_markdown_items(
+            locale,
+            [
+                (locale.t("core.message.ping.label.bot_running_time"), bot_running_time),
+                (locale.t("core.message.ping.label.cpu_percent"), f"{cpu_percent}%"),
+            ],
+        ),
+        _format_markdown_items(
+            locale,
+            [
+                (locale.t("core.message.ping.label.memory_percent"), f"{ram_percent}%"),
+                (locale.t("core.message.ping.label.disk_percent"), f"{disk_percent}%"),
+            ],
+        ),
     ]
-    for usage in usages:
-        value = locale.t(
-            "core.message.ping.process.value",
-            memory=int(usage.memory / (1024 * 1024)),
-            metric=usage.metric,
-        )
-        lines.append(
-            "| "
-            + " | ".join(
-                (
-                    escape_table_cell(_display_process_name(locale, usage.name)),
-                    str(usage.pid) if usage.pid is not None else "-",
-                    format_table_code(value),
-                )
-            )
-            + " |"
-        )
-    for failure in failures:
-        value = locale.t("core.message.ping.process.value.unavailable", reason=failure.reason)
-        lines.append(
-            "| "
-            + " | ".join(
-                (
-                    escape_table_cell(_display_process_name(locale, failure.name)),
-                    "-",
-                    format_table_code(value),
-                )
-            )
-            + " |"
-        )
-    return "\n".join(lines)
+    return Markdown(_format_markdown_quote(lines), disable_joke=True)
 
 
 def _build_ping_detail_markdown(
@@ -236,7 +187,6 @@ def _build_ping_detail_markdown(
     failures: Sequence[ProcessUnavailable],
 ) -> MarkdownElement:
     locale = msg.session_info.locale
-    use_table = msg.session_info.support_markdown_extension
     system_rows = [
         (locale.t("core.message.ping.label.system_boot_time"), status.system_boot_time),
         (locale.t("core.message.ping.label.bot_running_time"), status.bot_running_time),
@@ -268,18 +218,29 @@ def _build_ping_detail_markdown(
             ),
         ),
     ]
-    sections = [
-        _format_markdown_section(locale, "core.message.ping.markdown.system", system_rows, use_table=use_table),
-        _format_markdown_section(locale, "core.message.ping.markdown.resources", resource_rows, use_table=use_table),
+    lines = [
+        "**Pong!**",
+        "",
+        f"**{locale.t('core.message.ping.markdown.system')}**",
+        _format_markdown_items(locale, system_rows[0:2]),
+        _format_markdown_items(locale, system_rows[2:4]),
+        _format_markdown_items(locale, system_rows[4:6]),
+        _format_markdown_items(locale, system_rows[6:8]),
+        "",
+        f"**{locale.t('core.message.ping.markdown.resources')}**",
+        _format_markdown_items(locale, resource_rows[0:2]),
+        _format_markdown_items(locale, resource_rows[2:4]),
+        _format_markdown_items(locale, resource_rows[4:5]),
     ]
     if usages or failures:
-        title = locale.t("core.message.ping.markdown.process")
-        if use_table:
-            process_body = _format_process_markdown_table(locale, usages, failures)
-        else:
-            process_body = "\n".join(f"- {line}" for line in _build_process_usage_lines(msg, usages, failures))
-        sections.append(f"**{title}**\n\n{process_body}")
-    return Markdown("**Pong!**\n\n" + "\n\n".join(sections), disable_joke=True)
+        lines.extend(
+            [
+                "",
+                f"**{locale.t('core.message.ping.markdown.process')}**",
+                *_build_process_usage_lines(msg, usages, failures),
+            ]
+        )
+    return Markdown(_format_markdown_quote(lines), disable_joke=True)
 
 
 @ping.command("{{I18N:core.help.ping}}")
