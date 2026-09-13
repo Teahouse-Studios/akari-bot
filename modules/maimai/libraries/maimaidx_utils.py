@@ -37,7 +37,7 @@ async def get_diving_prober_bind_info(msg: Bot.MessageSession, **kwargs):
         await msg.finish(
             I18NContext(
                 "maimai.message.user_unbound",
-                cmd=ActionText(f"{msg.session_info.prefixes[0]}maimai bind"),
+                cmd=ActionText(f"{msg.session_info.prefixes[0]}maimai bind df"),
             )
         )
     if not bind_info.username:
