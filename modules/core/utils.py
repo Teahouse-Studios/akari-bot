@@ -8,7 +8,7 @@ from cpuinfo import get_cpu_info
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import ActionText, Plain, FormattedTime, I18NContext, Url
+from core.builtins.message.internal import ActionText, Plain, FormattedTime, I18NContext, Markdown, Url
 from core.component import module
 from core.config.base import CoreConfig
 from core.constants import all_locales_path, cache_path, lang_list, weblate_lang_codes
@@ -100,6 +100,16 @@ async def _build_process_usage_lines(msg: Bot.MessageSession) -> list[str]:
     return lines
 
 
+def _format_ping_result(msg: Bot.MessageSession, result: MessageChain) -> MessageChain:
+    """在支持 Markdown 的平台将 ping 信息整理到代码块中。"""
+    if not msg.session_info.support_markdown:
+        return result
+
+    rendered = result.as_sendable(msg.session_info)
+    body = rendered.to_str(connector="\n")
+    return MessageChain.assign(Markdown(f"```\n{body}\n```", disable_joke=True, allow_parse=False))
+
+
 @ping.command("{{I18N:core.help.ping}}")
 async def _(msg: Bot.MessageSession):
     from core.queue.server import JobQueueServer
@@ -155,7 +165,7 @@ async def _(msg: Bot.MessageSession):
                 disable_joke=True,
             )
         )
-    await msg.finish(result)
+    await msg.finish(_format_ping_result(msg, result))
 
 
 admin = module(
