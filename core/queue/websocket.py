@@ -21,10 +21,11 @@ from httpx_ws import AsyncWebSocketSession, WebSocketDisconnect, aconnect_ws
 
 from .errors import RpcProtocolError, RpcTimeoutError, RpcUnavailableError
 from .peer import PeerIdentity, PeerRecord, PeerRegistryBase, PeerSelector, PeerState
-from .transport import BatchSendResult, PROTOCOL_VERSION, RpcRequest, RpcResponse
+from .transport import MAX_RPC_TRACEBACK_LENGTH, BatchSendResult, PROTOCOL_VERSION, RpcRequest, RpcResponse
 
 
 _PEER_STATES = frozenset({"starting", "ready", "maintenance", "draining", "stopped"})
+_RPC_CONTEXT_MARKER = "--- RPC request context ---"
 
 
 class WebSocketBackendError(RpcUnavailableError):
@@ -246,7 +247,80 @@ def _request_to_wire(request: RpcRequest) -> dict[str, Any]:
         "correlation_id": request.correlation_id,
         "message_kind": request.message_kind,
         "expects_response": request.expects_response,
+        "caller_traceback": request.caller_traceback,
     }
+
+
+def _truncate_text_for_bytes(
+    value: str,
+    max_bytes: int,
+    marker: str = "\n... traceback truncated ...\n",
+) -> str:
+    """Trim diagnostic text to a UTF-8 byte budget while retaining both ends."""
+    if max_bytes <= 0:
+        return ""
+    encoded = value.encode("utf-8")
+    if len(encoded) <= max_bytes:
+        return value
+    marker_bytes = marker.encode("utf-8")
+    if max_bytes <= len(marker_bytes):
+        return encoded[:max_bytes].decode("utf-8", errors="ignore")
+    remaining = max_bytes - len(marker_bytes)
+    head_bytes = remaining // 2
+    tail_bytes = remaining - head_bytes
+    head = encoded[:head_bytes].decode("utf-8", errors="ignore")
+    tail = encoded[-tail_bytes:].decode("utf-8", errors="ignore") if tail_bytes else ""
+    return head + marker + tail
+
+
+def _request_batch_fits(requests: list[RpcRequest], max_bytes: int) -> bool:
+    """Preflight the command frame using a UUID-sized command ID."""
+    try:
+        _encode_frame(
+            {
+                "type": "command",
+                "id": "0" * 36,
+                "op": "send_many",
+                "requests": [_request_to_wire(request) for request in requests],
+            },
+            max_bytes,
+        )
+    except WebSocketProtocolError:
+        return False
+    return True
+
+
+def _fit_request_tracebacks(requests: list[RpcRequest], max_bytes: int) -> list[RpcRequest]:
+    """Fit caller stacks into a WebSocket command without changing local requests."""
+    if _request_batch_fits(requests, max_bytes):
+        return requests
+    if not any(isinstance(request.caller_traceback, str) and request.caller_traceback for request in requests):
+        return requests
+
+    best: list[RpcRequest] | None = None
+    low, high = 0.0, 1.0
+    for _ in range(16):
+        ratio = (low + high) / 2
+        candidate = [
+            replace(
+                request,
+                caller_traceback=(
+                    _truncate_text_for_bytes(
+                        request.caller_traceback,
+                        int(len(request.caller_traceback.encode("utf-8")) * ratio),
+                    )
+                    if isinstance(request.caller_traceback, str)
+                    else request.caller_traceback
+                ),
+            )
+            for request in requests
+        ]
+        if _request_batch_fits(candidate, max_bytes):
+            best = candidate
+            low = ratio
+        else:
+            high = ratio
+    return best or requests
 
 
 def _request_from_wire(value: Any) -> RpcRequest:
@@ -261,6 +335,7 @@ def _request_from_wire(value: Any) -> RpcRequest:
     correlation_id = value.get("correlation_id")
     message_kind = value.get("message_kind")
     expects_response = value.get("expects_response")
+    caller_traceback = value.get("caller_traceback")
     if not isinstance(task_id, str) or not task_id or len(task_id) > 128:
         raise WebSocketProtocolError("RPC request contains an invalid task ID")
     if not isinstance(target, str) or not target or len(target) > 512:
@@ -275,6 +350,10 @@ def _request_from_wire(value: Any) -> RpcRequest:
         raise WebSocketProtocolError("RPC request contains an invalid source peer ID")
     if correlation_id is not None and (not isinstance(correlation_id, str) or not correlation_id):
         raise WebSocketProtocolError("RPC request contains an invalid correlation ID")
+    if caller_traceback is not None and (
+        not isinstance(caller_traceback, str) or len(caller_traceback) > MAX_RPC_TRACEBACK_LENGTH
+    ):
+        raise WebSocketProtocolError("RPC request contains an invalid caller traceback")
     if message_kind not in ("rpc", "signal") or not isinstance(expects_response, bool):
         raise WebSocketProtocolError("RPC request contains invalid delivery options")
     try:
@@ -292,11 +371,73 @@ def _request_from_wire(value: Any) -> RpcRequest:
         correlation_id,
         message_kind,
         expects_response,
+        caller_traceback,
     )
 
 
 def _response_to_wire(response: RpcResponse) -> dict[str, Any]:
     return {"task_id": response.task_id, "status": response.status, "envelope": response.envelope}
+
+
+def _response_frame_fits(response: RpcResponse, max_bytes: int) -> bool:
+    try:
+        _encode_frame({"type": "response", "response": _response_to_wire(response)}, max_bytes)
+    except WebSocketProtocolError:
+        return False
+    return True
+
+
+def _fit_error_response(response: RpcResponse, max_bytes: int) -> RpcResponse:
+    """Drop or trim optional diagnostics when a small WebSocket frame cannot carry them.
+
+    The caller retains the original request (and therefore its local caller
+    stack), so omitting the remote diagnostic is preferable to losing the
+    response altogether.
+    """
+    if _response_frame_fits(response, max_bytes):
+        return response
+    envelope = response.envelope
+    if not isinstance(envelope, dict) or not isinstance(envelope.get("error"), dict):
+        return response
+    error = envelope["error"]
+    diagnostic_keys = {"traceback", "caller_traceback", "remote_traceback"}
+    compact_error = {key: value for key, value in error.items() if key not in diagnostic_keys}
+    compact_envelope = {**envelope, "error": compact_error}
+    compact_response = RpcResponse(response.task_id, response.status, compact_envelope)
+    diagnostic = error.get("traceback")
+    if isinstance(diagnostic, str) and _response_frame_fits(compact_response, max_bytes):
+        # Preserve as much of the remote stack as the frame allows.  A binary
+        # search avoids repeated oversized frames for long exception messages.
+        # Receiver-side diagnostics already contain request context; remove
+        # that suffix before trimming so the caller can rebuild complete local
+        # context from its original request rather than receive a torn marker.
+        if _RPC_CONTEXT_MARKER in diagnostic:
+            diagnostic = diagnostic.split(_RPC_CONTEXT_MARKER, 1)[0].rstrip()
+        low, high = 0, len(diagnostic.encode("utf-8"))
+        best = compact_response
+        while low <= high:
+            budget = (low + high) // 2
+            candidate_error = {**compact_error, "traceback": _truncate_text_for_bytes(diagnostic, budget)}
+            candidate = RpcResponse(response.task_id, response.status, {**envelope, "error": candidate_error})
+            if _response_frame_fits(candidate, max_bytes):
+                best = candidate
+                low = budget + 1
+            else:
+                high = budget - 1
+        return best
+    if _response_frame_fits(compact_response, max_bytes):
+        return compact_response
+
+    # Extremely small limits can leave no room for the original message. Keep
+    # the protocol shape valid with a short fallback before letting the caller
+    # handle a genuinely impossible frame limit.
+    minimal_error = {
+        "code": error.get("code", "rpc_error"),
+        "type": error.get("type", "RpcError"),
+        "message": "RPC error",
+    }
+    minimal = RpcResponse(response.task_id, response.status, {"rpc": envelope.get("rpc"), "error": minimal_error})
+    return minimal if _response_frame_fits(minimal, max_bytes) else response
 
 
 def _response_from_wire(value: Any) -> RpcResponse:
@@ -802,9 +943,13 @@ class WebSocketHub:
                     continue
                 delivery = _HubDelivery(request, connection.peer_id, target.peer_id)
                 self.deliveries[request.task_id] = delivery
+                wire_request = _fit_request_tracebacks(
+                    [replace(request, target=target.peer_id)],
+                    self.settings.max_message_bytes,
+                )[0]
                 if not self._enqueue_frame_locked(
                     target_connection,
-                    {"type": "request", "request": _request_to_wire(replace(request, target=target.peer_id))},
+                    {"type": "request", "request": _request_to_wire(wire_request)},
                     control=False,
                 ):
                     del self.deliveries[request.task_id]
@@ -871,6 +1016,7 @@ class WebSocketHub:
                 return
             source = self.connections.get(delivery.source_peer_id)
             if source is not None:
+                response = _fit_error_response(response, self.settings.max_message_bytes)
                 if not self._enqueue_frame_locked(
                     source, {"type": "response", "response": _response_to_wire(response)}
                 ):
@@ -1076,9 +1222,10 @@ class WebSocketMessageTransport:
     async def send_many(self, requests: list[RpcRequest]) -> BatchSendResult:
         if not requests:
             return BatchSendResult()
+        wire_requests = _fit_request_tracebacks(requests, self.connection.settings.max_message_bytes)
         try:
             result = await self.connection.command(
-                "send_many", requests=[_request_to_wire(request) for request in requests]
+                "send_many", requests=[_request_to_wire(request) for request in wire_requests]
             )
         except (WebSocketBackendError, WebSocketCommandTimeout):
             return BatchSendResult(unknown=frozenset(request.task_id for request in requests))
@@ -1129,6 +1276,7 @@ class WebSocketMessageTransport:
             raise ValueError("RPC response task ID does not match its request")
         if not self.connection.connected:
             return
+        response = _fit_error_response(response, self.connection.settings.max_message_bytes)
         await self.connection._send_frame({"type": "response", "response": _response_to_wire(response)})
 
 

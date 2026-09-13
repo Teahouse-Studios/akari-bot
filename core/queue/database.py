@@ -43,7 +43,12 @@ class DatabaseMessageTransport:
             message_kind=request.message_kind,
             expects_response=request.expects_response,
             action=request.method,
-            args={"rpc": request.version, "payload": request.payload, "deadline": request.deadline},
+            args={
+                "rpc": request.version,
+                "payload": request.payload,
+                "deadline": request.deadline,
+                "caller_traceback": request.caller_traceback,
+            },
         )
 
     async def send(self, request: RpcRequest) -> None:
@@ -72,6 +77,7 @@ class DatabaseMessageTransport:
                     correlation_id=str(row.correlation_id) if row.correlation_id else None,
                     message_kind=row.message_kind,
                     expects_response=row.expects_response,
+                    caller_traceback=envelope.get("caller_traceback"),
                 )
             )
         return requests

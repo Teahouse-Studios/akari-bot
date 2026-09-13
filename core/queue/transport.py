@@ -11,6 +11,7 @@ type JsonValue = None | bool | int | float | str | list[JsonValue] | dict[str, J
 
 PROTOCOL_VERSION = 2
 DEFAULT_TIMEOUT_SECONDS = 7200
+MAX_RPC_TRACEBACK_LENGTH = 64 * 1024
 
 
 @dataclass(frozen=True)
@@ -25,6 +26,7 @@ class RpcRequest:
     correlation_id: str | None = None
     message_kind: str = "rpc"
     expects_response: bool = True
+    caller_traceback: str | None = None
 
 
 @dataclass(frozen=True)

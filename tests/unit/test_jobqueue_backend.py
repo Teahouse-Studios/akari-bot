@@ -8,8 +8,15 @@ from core.queue.backend import create_jobqueue_backend
 from core.queue.base import JobQueueBase
 from core.queue.database import DatabaseJobQueueBackend, DatabaseMessageTransport, DatabasePeerRegistry
 from core.queue.errors import RpcProtocolError
-from core.queue.transport import BatchSendResult, RpcRequest
+from core.queue.transport import BatchSendResult, PROTOCOL_VERSION, RpcRequest, RpcResponse
 from core.queue.websocket import WebSocketJobQueueBackend
+from core.queue.websocket import (
+    _encode_frame,
+    _fit_error_response,
+    _fit_request_tracebacks,
+    _request_to_wire,
+    _response_to_wire,
+)
 from core.tester import func_case, Tester
 
 
@@ -113,6 +120,40 @@ async def _test_batch_result_must_cover_every_request_once():
         return True
 
 
+def _test_websocket_diagnostics_fit_small_frames():
+    request = RpcRequest(
+        "traceback-request",
+        "target",
+        "method",
+        None,
+        time.time() + 1,
+        caller_traceback="调用方\n" * 4000,
+    )
+    fitted_request = _fit_request_tracebacks([request], 2048)[0]
+    request_frame = {
+        "type": "command",
+        "id": "0" * 36,
+        "op": "send_many",
+        "requests": [_request_to_wire(fitted_request)],
+    }
+    response = RpcResponse(
+        "traceback-response",
+        "failed",
+        {
+            "rpc": PROTOCOL_VERSION,
+            "error": {
+                "code": "remote_error",
+                "type": "ValueError",
+                "message": "失败",
+                "traceback": "远端\n" * 20000,
+            },
+        },
+    )
+    fitted_response = _fit_error_response(response, 2048)
+    response_frame = {"type": "response", "response": _response_to_wire(fitted_response)}
+    return len(_encode_frame(request_frame, 2048)) <= 2048 and len(_encode_frame(response_frame, 2048)) <= 2048
+
+
 @func_case
 async def test_jobqueue_backend(tester: Tester):
     await tester.test(_test_database_backend_is_a_complete_isolated_bundle, "数据库后端完整装配且实例隔离")
@@ -120,4 +161,5 @@ async def test_jobqueue_backend(tester: Tester):
     await tester.test(_test_runtime_injects_registry_and_transport_as_one_bundle, "运行时整套注入控制面与数据面")
     await tester.test(_test_partial_backend_start_is_closed_transactionally, "后端部分启动失败后执行关闭回滚")
     await tester.test(_test_batch_result_must_cover_every_request_once, "批量投递结果完整且互斥")
+    await tester.test(_test_websocket_diagnostics_fit_small_frames, "WebSocket 小帧仍可传递错误诊断")
     return tester

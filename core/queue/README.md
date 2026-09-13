@@ -306,7 +306,10 @@ async def example(name: str, enabled: bool = True) -> list[str]:
 
 ## 错误、超时与关闭语义
 
-- `RpcRemoteError` 保留远端异常类型；所有 RPC 异常均包含方法名称、目标与请求 ID。
+- `RpcRemoteError` 保留远端异常类型；所有 RPC 异常均包含方法名称、目标与请求 ID。等待型调用的异常还会保留
+  远端执行 traceback，并在其后附加请求来源、Peer 与发起进程的调用栈；`.traceback` 是合并后的诊断文本，
+  `.remote_traceback` 尽可能保留纯远端片段。`.submit()` 和错误信号虽然不等待回包，也会携带
+  同一份调用上下文，便于在接收端定位发起位置。
 - `RpcMethodNotFoundError`、`RpcUnavailableError`、`RpcTimeoutError`、`RpcCancelledError` 与
   `RpcProtocolError` 分别表示方法未注册、目标不可达、请求过期、远端任务取消及协议错误。
 - `None`、`False`、空列表与空字典均属于合法的成功返回值，不参与错误状态判断。

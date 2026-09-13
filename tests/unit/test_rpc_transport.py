@@ -4,6 +4,7 @@ import asyncio
 import time
 from contextlib import asynccontextmanager
 from dataclasses import replace
+from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
@@ -20,7 +21,8 @@ from core.queue.errors import (
     RpcTimeoutError,
     RpcUnavailableError,
 )
-from core.queue.transport import PROTOCOL_VERSION, RpcRequest, RpcResponse
+from core.queue.peer import PeerRecord
+from core.queue.transport import MAX_RPC_TRACEBACK_LENGTH, PROTOCOL_VERSION, RpcRequest, RpcResponse
 from core.tester import func_case, Tester
 
 
@@ -132,6 +134,157 @@ async def _test_remote_errors_and_invalid_method_are_distinct():
         assert report.await_count == 2
         assert not caller._pending
     return True
+
+
+async def _test_remote_error_keeps_originating_call_context():
+    async with _peers() as (caller, receiver):
+
+        @receiver.register("context-broken")
+        async def broken(payload):
+            raise ValueError("context failure")
+
+        async def invoke_from_application():
+            return await caller.call(receiver.name, "context-broken", {}, timeout=RPC_TEST_TIMEOUT)
+
+        report = AsyncMock()
+        with patch.object(receiver, "report_error", report):
+            try:
+                await invoke_from_application()
+                return False
+            except RpcRemoteError as exc:
+                assert exc.remote_type == "ValueError"
+                assert exc.remote_traceback and "--- RPC request context ---" not in exc.remote_traceback
+                assert "context-broken" in exc.traceback
+                assert "invoke_from_application" in exc.traceback
+                assert "caller traceback (originating process)" in exc.traceback
+        assert report.await_count == 1
+        details = report.await_args.args[1]
+        return (
+            "context-broken" in details
+            and "invoke_from_application" in details
+            and "caller traceback (originating process)" in details
+        )
+
+
+async def _test_async_error_signal_reports_originating_call_context():
+    async with _peers() as (caller, receiver):
+
+        @receiver.register("platform.error_signal")
+        async def error_signal(payload):
+            raise RuntimeError("error signal failure")
+
+        async def invoke_from_message_handler():
+            return await caller.submit(
+                receiver.name,
+                "platform.error_signal",
+                {"session": "session-1"},
+                timeout=RPC_TEST_TIMEOUT,
+            )
+
+        report = AsyncMock()
+        with patch.object(receiver, "report_error", report):
+            task_id = await invoke_from_message_handler()
+            async with asyncio.timeout(RPC_TEST_TIMEOUT):
+                while report.await_count == 0:
+                    await asyncio.sleep(0.005)
+        details = report.await_args.args[1]
+        return (
+            isinstance(task_id, str)
+            and "platform.error_signal" in details
+            and "invoke_from_message_handler" in details
+            and "caller traceback (originating process)" in details
+            and not await JobQueuesTable.get_or_none(task_id=task_id)
+        )
+
+
+async def _test_error_details_stay_within_protocol_limit():
+    request = RpcRequest(
+        "traceback-limit",
+        "receiver",
+        "oversized",
+        None,
+        time.time() + 1,
+        caller_traceback="C" * MAX_RPC_TRACEBACK_LENGTH,
+    )
+    details = JobQueueBase._format_error_details(request, "R" * MAX_RPC_TRACEBACK_LENGTH)
+    return (
+        len(details) <= MAX_RPC_TRACEBACK_LENGTH
+        and "--- RPC request context ---" in details
+        and "caller traceback (originating process):" in details
+        and "remote traceback truncated" in details
+        and "traceback truncated" in details
+    )
+
+
+async def _test_legacy_remote_traceback_is_augmented_with_request_context():
+    request = RpcRequest(
+        "legacy-traceback",
+        "receiver",
+        "legacy.failure",
+        None,
+        time.time() + 1,
+        source_peer_id="caller",
+        caller_traceback="originating_call",
+    )
+    response = RpcResponse(
+        request.task_id,
+        "failed",
+        {
+            "rpc": PROTOCOL_VERSION,
+            "error": {
+                "code": "remote_error",
+                "type": "ValueError",
+                "message": "legacy failure",
+                "traceback": "remote_handler_traceback",
+                "caller_traceback": "",
+            },
+        },
+    )
+    try:
+        JobQueueBase._decode_response(request, response)
+        return False
+    except RpcRemoteError as exc:
+        return (
+            exc.remote_traceback == "remote_handler_traceback"
+            and "remote_handler_traceback" in exc.traceback
+            and "legacy.failure" in exc.traceback
+            and "originating_call" in exc.traceback
+            and "caller traceback (originating process)" in exc.traceback
+        )
+
+
+async def _test_signal_timeout_error_keeps_remote_diagnostics():
+    async with _peers() as (caller, receiver):
+
+        async def invoke_from_signal_dispatcher():
+            return await caller.gather_signal("timeout-diagnostic", None, timeout=RPC_TEST_TIMEOUT)
+
+        record = PeerRecord(
+            receiver.name,
+            "test-node",
+            "test",
+            "test-service",
+            "ready",
+            (),
+            {},
+            datetime.now(UTC) + timedelta(seconds=RPC_TEST_TIMEOUT),
+        )
+        with (
+            patch.object(caller.registry, "resolve", new=AsyncMock(return_value=[record])),
+            patch.object(
+                receiver,
+                "_dispatch_signal",
+                new=AsyncMock(side_effect=RpcTimeoutError("handler deadline diagnostic")),
+            ),
+        ):
+            report = await invoke_from_signal_dispatcher()
+        details = report.errors.get(receiver.name, "")
+        return (
+            "handler deadline diagnostic" in details
+            and "timeout-diagnostic" in details
+            and "invoke_from_signal_dispatcher" in details
+            and "caller traceback (originating process)" in details
+        )
 
 
 async def _test_local_cancellation_does_not_cancel_or_retry_remote_effect():
@@ -462,6 +615,13 @@ async def test_rpc_transport(tester: Tester):
     await tester.test(_test_roundtrip_preserves_json_and_registry_isolation, "RPC 空值与 peer 状态隔离")
     await tester.test(_test_bidirectional_nested_calls, "双向嵌套 RPC 并发回包")
     await tester.test(_test_remote_errors_and_invalid_method_are_distinct, "远端异常与未知方法独立错误")
+    await tester.test(_test_remote_error_keeps_originating_call_context, "远端异常保留调用方上下文")
+    await tester.test(_test_async_error_signal_reports_originating_call_context, "异步错误信号保留调用方上下文")
+    await tester.test(_test_error_details_stay_within_protocol_limit, "错误详情遵守协议长度上限")
+    await tester.test(
+        _test_legacy_remote_traceback_is_augmented_with_request_context, "旧版远端 traceback 补齐调用上下文"
+    )
+    await tester.test(_test_signal_timeout_error_keeps_remote_diagnostics, "信号超时错误保留远端诊断")
     await tester.test(_test_local_cancellation_does_not_cancel_or_retry_remote_effect, "取消等待不取消或重试远端副作用")
     await tester.test(_test_handler_deadline_allows_cleanup_rpc, "执行超时仍能完成清理 RPC")
     await tester.test(_test_expired_requests_skip_effects_and_global_limit_applies, "过期请求不执行且限制全局上限")

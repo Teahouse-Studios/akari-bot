@@ -38,6 +38,7 @@ from core.queue.transport import (
     RpcRequest,
     RpcResponse,
     MessageTransport,
+    MAX_RPC_TRACEBACK_LENGTH,
 )
 from core.queue.peer import (
     PeerIdentity,
@@ -53,6 +54,9 @@ current_peer: ContextVar[type[JobQueueBase] | None] = ContextVar("rpc_current_pe
 current_request: ContextVar[RpcRequest | None] = ContextVar("rpc_current_request", default=None)
 type Handler = Callable[[JsonValue], Awaitable[JsonValue]]
 type SignalHandler = Callable[[SignalContext, JsonValue], Awaitable[JsonValue]]
+
+_RPC_CONTEXT_MARKER = "--- RPC request context ---"
+_RPC_CALLER_TRACEBACK_MARKER = "caller traceback (originating process):"
 
 
 class JobQueueBase:
@@ -274,6 +278,7 @@ class JobQueueBase:
         expects_response: bool = True,
         task_id: str | None = None,
         deadline: float | None = None,
+        caller_traceback: str | None = None,
     ) -> RpcRequest:
         task_id = task_id or str(uuid4())
         try:
@@ -291,6 +296,10 @@ class JobQueueBase:
             raise ValueError("RPC message kind must be rpc or signal.")
         if not isinstance(expects_response, bool):
             raise TypeError("RPC expects_response must be a boolean.")
+        if caller_traceback is not None and (
+            not isinstance(caller_traceback, str) or len(caller_traceback) > MAX_RPC_TRACEBACK_LENGTH
+        ):
+            raise ValueError("RPC caller traceback must be a string within the protocol size limit.")
         duration = cls._request_duration(timeout)
         json.dumps(payload, allow_nan=False)
         deadline = time.time() + duration if deadline is None else deadline
@@ -306,7 +315,182 @@ class JobQueueBase:
             correlation_id=correlation_id,
             message_kind=message_kind,
             expects_response=expects_response,
+            caller_traceback=caller_traceback,
         )
+
+    @staticmethod
+    def _truncate_traceback(
+        value: str,
+        limit: int = MAX_RPC_TRACEBACK_LENGTH,
+        marker: str = "\n... traceback truncated ...\n",
+    ) -> str:
+        if len(value) <= limit:
+            return value
+        if limit <= len(marker):
+            return value[:limit]
+        head = (limit - len(marker)) // 2
+        tail = limit - len(marker) - head
+        return value[:head] + marker + value[-tail:]
+
+    @classmethod
+    def _capture_caller_traceback(cls) -> str:
+        """Capture the local call site before an RPC crosses the process boundary.
+
+        The final two frames belong to this helper and ``call``/``submit``. The
+        remaining frames include the application code that initiated the RPC;
+        retaining the transport frame as well makes nested calls easy to follow.
+        If this is a reverse call made while handling another RPC, append the
+        parent request's origin so the eventual report can cross more than one
+        process boundary.
+        """
+        frames = traceback.format_stack()
+        details = "".join(frames[:-2])
+        parent = current_request.get()
+        if parent is not None and parent.caller_traceback:
+            details += (
+                "\n--- parent RPC request ---\n"
+                f"method: {parent.method}\n"
+                f"target: {parent.target}\n"
+                f"task_id: {parent.task_id}\n"
+                f"{parent.caller_traceback.rstrip()}"
+            )
+        return cls._truncate_traceback(details)
+
+    @classmethod
+    def _format_error_details(
+        cls,
+        request: RpcRequest,
+        remote_traceback: str,
+        *,
+        caller_traceback: str | None = None,
+    ) -> str:
+        """Join the remote exception with enough request context to find its origin."""
+        remote_traceback = remote_traceback.rstrip() if isinstance(remote_traceback, str) else ""
+        context_prefix = "\n".join(
+            [
+                _RPC_CONTEXT_MARKER,
+                f"method: {request.method}",
+                f"target: {request.target}",
+                f"task_id: {request.task_id}",
+                f"source_peer_id: {request.source_peer_id or '<unknown>'}",
+            ]
+        )
+        if caller_traceback is None:
+            caller_traceback = request.caller_traceback
+        caller_traceback = caller_traceback.rstrip() if isinstance(caller_traceback, str) else ""
+        caller_label = _RPC_CALLER_TRACEBACK_MARKER
+
+        # Keep request metadata intact, then divide the remaining budget
+        # between the remote traceback and the originating-process stack.
+        if caller_traceback:
+            fixed_context = f"{context_prefix}\n{caller_label}"
+            available = MAX_RPC_TRACEBACK_LENGTH - len(fixed_context) - 1
+            if remote_traceback:
+                available -= 2
+            available = max(0, available)
+            caller_reserve = min(len(caller_traceback), available // 2 if remote_traceback else available)
+            remote_budget = min(len(remote_traceback), available - caller_reserve)
+            caller_budget = min(len(caller_traceback), available - remote_budget)
+            remote_traceback = cls._truncate_traceback(
+                remote_traceback,
+                remote_budget,
+                "\n... remote traceback truncated ...\n",
+            )
+            caller_traceback = cls._truncate_traceback(caller_traceback, caller_budget)
+            context_details = f"{fixed_context}\n{caller_traceback}"
+        else:
+            context_details = context_prefix
+            remote_budget = MAX_RPC_TRACEBACK_LENGTH - len(context_details) - (2 if remote_traceback else 0)
+            remote_traceback = cls._truncate_traceback(
+                remote_traceback,
+                max(0, remote_budget),
+                "\n... remote traceback truncated ...\n",
+            )
+
+        details = "\n\n".join(part for part in (remote_traceback, context_details) if part)
+        # The allocation above is exact; retain a defensive guard if future
+        # context fields change without updating the budget calculation.
+        return cls._truncate_traceback(details)
+
+    @staticmethod
+    def _has_request_context(request: RpcRequest, details: str) -> bool:
+        """Return whether a diagnostic already identifies this exact request."""
+        if not isinstance(details, str) or _RPC_CONTEXT_MARKER not in details:
+            return False
+        return all(
+            field in details
+            for field in (
+                f"method: {request.method}",
+                f"target: {request.target}",
+                f"task_id: {request.task_id}",
+            )
+        )
+
+    @classmethod
+    def _remote_traceback_part(cls, request: RpcRequest, details: str) -> str:
+        """Extract the remote portion from a diagnostic produced by this runtime."""
+        if not cls._has_request_context(request, details):
+            return details
+        return details.split(f"\n\n{_RPC_CONTEXT_MARKER}", 1)[0].rstrip()
+
+    @classmethod
+    def _merge_error_traceback(
+        cls,
+        request: RpcRequest,
+        remote_traceback: str | None,
+        *,
+        caller_traceback: str | None = None,
+    ) -> str:
+        """Normalize old and new response diagnostics without duplicating context."""
+        remote_traceback = remote_traceback if isinstance(remote_traceback, str) else ""
+        if caller_traceback is None:
+            caller_traceback = request.caller_traceback
+        caller_traceback = caller_traceback if isinstance(caller_traceback, str) else ""
+        if remote_traceback and cls._has_request_context(request, remote_traceback):
+            # Current receivers send a complete diagnostic. Rebuild it with the
+            # locally captured caller stack so a small intermediary cannot
+            # replace the authoritative origin with a truncated copy.
+            remote_part = cls._remote_traceback_part(request, remote_traceback)
+            if caller_traceback:
+                return cls._format_error_details(request, remote_part, caller_traceback=caller_traceback)
+            return cls._truncate_traceback(remote_traceback)
+        return cls._format_error_details(request, remote_traceback, caller_traceback=caller_traceback)
+
+    @classmethod
+    def _annotate_error(
+        cls,
+        error: RpcError,
+        *,
+        method: str,
+        target: str,
+        task_id: str,
+        caller_traceback: str | None = None,
+    ) -> RpcError:
+        """Attach request identity and a useful local origin to synthetic failures."""
+        error.method = method
+        error.target = target
+        error.task_id = task_id
+        existing_traceback = getattr(error, "traceback", "")
+        if caller_traceback is not None and not getattr(error, "caller_traceback", ""):
+            error.caller_traceback = caller_traceback
+        request = RpcRequest(
+            task_id,
+            target,
+            method,
+            None,
+            0,
+            source_peer_id=cls.name,
+            caller_traceback=getattr(error, "caller_traceback", None) or caller_traceback,
+        )
+        diagnostic_traceback = existing_traceback
+        if not isinstance(diagnostic_traceback, str) or not diagnostic_traceback:
+            diagnostic_traceback = str(error) or type(error).__name__
+        error.traceback = cls._merge_error_traceback(
+            request,
+            diagnostic_traceback,
+            caller_traceback=getattr(error, "caller_traceback", None) or caller_traceback,
+        )
+        return error
 
     @staticmethod
     def _validate_batch_result(requests: list[RpcRequest], result: BatchSendResult) -> None:
@@ -331,6 +515,7 @@ class JobQueueBase:
         task_id = str(uuid4())
         deadline = time.time() + cls._request_duration(timeout)
         resolved_target = cls._target_label(target)
+        caller_traceback = cls._capture_caller_traceback()
         future = None
         response_received = False
         try:
@@ -343,6 +528,7 @@ class JobQueueBase:
                     timeout,
                     task_id=task_id,
                     deadline=deadline,
+                    caller_traceback=caller_traceback,
                 )
                 future = asyncio.get_running_loop().create_future()
                 cls._pending[request.task_id] = future
@@ -355,14 +541,23 @@ class JobQueueBase:
                 response_received = True
             return cls._decode_response(request, response)
         except RpcError as exc:
-            exc.method, exc.target, exc.task_id = method, resolved_target, task_id
-            raise
-        except TimeoutError as exc:
-            raise RpcTimeoutError(
-                f"RPC {method} on {resolved_target} exceeded its deadline; remote completion is unknown.",
+            raise cls._annotate_error(
+                exc,
                 method=method,
                 target=resolved_target,
                 task_id=task_id,
+                caller_traceback=caller_traceback,
+            )
+        except TimeoutError as exc:
+            error = RpcTimeoutError(
+                f"RPC {method} on {resolved_target} exceeded its deadline; remote completion is unknown.",
+            )
+            raise cls._annotate_error(
+                error,
+                method=method,
+                target=resolved_target,
+                task_id=task_id,
+                caller_traceback=caller_traceback,
             ) from exc
         finally:
             cls._pending.pop(task_id, None)
@@ -390,6 +585,7 @@ class JobQueueBase:
         task_id = str(uuid4())
         deadline = time.time() + cls._request_duration(timeout)
         resolved_target = cls._target_label(target)
+        caller_traceback = cls._capture_caller_traceback()
         try:
             async with asyncio.timeout(max(0, deadline - time.time())):
                 resolved_target = await cls.resolve_target(target)
@@ -401,6 +597,7 @@ class JobQueueBase:
                     expects_response=False,
                     task_id=task_id,
                     deadline=deadline,
+                    caller_traceback=caller_traceback,
                 )
                 await cls.ensure_target_available(
                     resolved_target,
@@ -408,14 +605,21 @@ class JobQueueBase:
                 )
                 await cls.transport.send(request)
         except RpcError as exc:
-            exc.method, exc.target, exc.task_id = method, resolved_target, task_id
-            raise
-        except TimeoutError as exc:
-            raise RpcTimeoutError(
-                f"RPC submission {method} exceeded its deadline; acceptance is unknown.",
+            raise cls._annotate_error(
+                exc,
                 method=method,
                 target=resolved_target,
                 task_id=task_id,
+                caller_traceback=caller_traceback,
+            )
+        except TimeoutError as exc:
+            error = RpcTimeoutError(f"RPC submission {method} exceeded its deadline; acceptance is unknown.")
+            raise cls._annotate_error(
+                error,
+                method=method,
+                target=resolved_target,
+                task_id=task_id,
+                caller_traceback=caller_traceback,
             ) from exc
         return task_id
 
@@ -435,6 +639,7 @@ class JobQueueBase:
         requests = []
         batch_result = BatchSendResult()
         submitted = False
+        caller_traceback = None if name.startswith("peer.") else cls._capture_caller_traceback()
         try:
             async with asyncio.timeout(max(0, deadline - time.time())):
                 peers = await cls.registry.resolve(selector)
@@ -450,6 +655,7 @@ class JobQueueBase:
                         correlation_id=event_id,
                         expects_response=False,
                         deadline=deadline,
+                        caller_traceback=caller_traceback,
                     )
                     for peer in peers
                 ]
@@ -457,12 +663,22 @@ class JobQueueBase:
                     batch_result = await cls.transport.send_many(requests)
                     cls._validate_batch_result(requests, batch_result)
                 submitted = True
-        except TimeoutError as exc:
-            raise RpcTimeoutError(
-                f"Signal submission {name} exceeded its deadline; acceptance is unknown.",
+        except RpcError as exc:
+            raise cls._annotate_error(
+                exc,
                 method=name,
                 target="fan-out",
                 task_id=event_id,
+                caller_traceback=caller_traceback,
+            )
+        except TimeoutError as exc:
+            error = RpcTimeoutError(f"Signal submission {name} exceeded its deadline; acceptance is unknown.")
+            raise cls._annotate_error(
+                error,
+                method=name,
+                target="fan-out",
+                task_id=event_id,
+                caller_traceback=caller_traceback,
             ) from exc
         finally:
             if requests and not submitted:
@@ -504,6 +720,7 @@ class JobQueueBase:
         outcomes = []
         batch_result = BatchSendResult()
         completed = False
+        caller_traceback = None if name.startswith("peer.") else cls._capture_caller_traceback()
         try:
             try:
                 async with asyncio.timeout(max(0, deadline - time.time())):
@@ -519,6 +736,7 @@ class JobQueueBase:
                             message_kind="signal",
                             correlation_id=event_id,
                             deadline=deadline,
+                            caller_traceback=caller_traceback,
                         )
                         for peer in peers
                     ]
@@ -529,42 +747,108 @@ class JobQueueBase:
                     if requests:
                         batch_result = await cls.transport.send_many(requests)
                         cls._validate_batch_result(requests, batch_result)
-            except TimeoutError as exc:
-                raise RpcTimeoutError(
-                    f"Signal submission {name} exceeded its deadline; acceptance is unknown.",
+            except RpcError as exc:
+                raise cls._annotate_error(
+                    exc,
                     method=name,
                     target="fan-out",
                     task_id=event_id,
+                    caller_traceback=caller_traceback,
+                )
+            except TimeoutError as exc:
+                error = RpcTimeoutError(f"Signal submission {name} exceeded its deadline; acceptance is unknown.")
+                raise cls._annotate_error(
+                    error,
+                    method=name,
+                    target="fan-out",
+                    task_id=event_id,
+                    caller_traceback=caller_traceback,
                 ) from exc
 
             async def wait_one(request: RpcRequest):
                 if request.task_id in batch_result.rejected:
-                    return RpcUnavailableError(
-                        batch_result.rejected[request.task_id],
+                    return cls._annotate_error(
+                        RpcUnavailableError(batch_result.rejected[request.task_id]),
                         method=name,
                         target=request.target,
                         task_id=request.task_id,
+                        caller_traceback=request.caller_traceback,
                     )
                 if request.task_id in batch_result.unknown:
-                    return RpcUnavailableError(
-                        "Signal delivery acceptance is unknown.",
+                    return cls._annotate_error(
+                        RpcUnavailableError("Signal delivery acceptance is unknown."),
                         method=name,
                         target=request.target,
                         task_id=request.task_id,
+                        caller_traceback=request.caller_traceback,
                     )
                 try:
                     async with asyncio.timeout(max(0, request.deadline - time.time())):
                         response = await futures[request.task_id]
-                    return cls._decode_response(request, response)
-                except TimeoutError:
-                    return RpcTimeoutError(
-                        "Signal acknowledgement exceeded its deadline.",
+                except RpcError as exc:
+                    return cls._annotate_error(
+                        exc,
                         method=name,
                         target=request.target,
                         task_id=request.task_id,
+                        caller_traceback=request.caller_traceback,
+                    )
+                except TimeoutError:
+                    return cls._annotate_error(
+                        RpcTimeoutError("Signal acknowledgement exceeded its deadline."),
+                        method=name,
+                        target=request.target,
+                        task_id=request.task_id,
+                        caller_traceback=request.caller_traceback,
                     )
                 except Exception as exc:
-                    return exc
+                    remote_traceback = traceback.format_exc()
+                    return cls._annotate_error(
+                        RpcRemoteError(
+                            str(exc),
+                            remote_type=type(exc).__name__,
+                            traceback=cls._format_error_details(
+                                request,
+                                remote_traceback,
+                                caller_traceback=request.caller_traceback,
+                            ),
+                            caller_traceback=request.caller_traceback or "",
+                            remote_traceback=remote_traceback,
+                        ),
+                        method=name,
+                        target=request.target,
+                        task_id=request.task_id,
+                        caller_traceback=request.caller_traceback,
+                    )
+                try:
+                    return cls._decode_response(request, response)
+                except RpcError as exc:
+                    return cls._annotate_error(
+                        exc,
+                        method=name,
+                        target=request.target,
+                        task_id=request.task_id,
+                        caller_traceback=request.caller_traceback,
+                    )
+                except Exception as exc:
+                    remote_traceback = traceback.format_exc()
+                    return cls._annotate_error(
+                        RpcRemoteError(
+                            str(exc),
+                            remote_type=type(exc).__name__,
+                            traceback=cls._format_error_details(
+                                request,
+                                remote_traceback,
+                                caller_traceback=request.caller_traceback,
+                            ),
+                            caller_traceback=request.caller_traceback or "",
+                            remote_traceback=remote_traceback,
+                        ),
+                        method=name,
+                        target=request.target,
+                        task_id=request.task_id,
+                        caller_traceback=request.caller_traceback,
+                    )
 
             outcomes = await asyncio.gather(*(wait_one(request) for request in requests))
             completed = True
@@ -584,34 +868,154 @@ class JobQueueBase:
         results, errors = {}, {}
         for peer, outcome in zip(peers, outcomes):
             if isinstance(outcome, BaseException):
-                errors[peer.peer_id] = str(outcome)
+                errors[peer.peer_id] = getattr(outcome, "traceback", "") or str(outcome)
             else:
                 results[peer.peer_id] = outcome
         return SignalReport(event_id, results, errors)
 
-    @staticmethod
-    def _decode_response(request: RpcRequest, response: RpcResponse) -> JsonValue:
+    @classmethod
+    def _response_protocol_error(cls, request: RpcRequest, message: str) -> RpcProtocolError:
+        caller_traceback = request.caller_traceback if isinstance(request.caller_traceback, str) else ""
+        return RpcProtocolError(
+            message,
+            method=request.method,
+            target=request.target,
+            task_id=request.task_id,
+            traceback=cls._merge_error_traceback(
+                request,
+                f"RpcProtocolError: {message}",
+                caller_traceback=caller_traceback,
+            ),
+            caller_traceback=caller_traceback,
+            remote_traceback="",
+        )
+
+    @classmethod
+    def _response_tracebacks(cls, request: RpcRequest, error: dict) -> tuple[str, str, str]:
+        """Validate response diagnostics and merge legacy bare stacks with their request."""
+        remote_traceback = error.get("traceback", "")
+        request_caller_traceback = request.caller_traceback if isinstance(request.caller_traceback, str) else ""
+        response_caller_traceback = error.get("caller_traceback")
+        if response_caller_traceback is None or response_caller_traceback == "":
+            caller_traceback = request_caller_traceback
+        else:
+            caller_traceback = response_caller_traceback
+        if (
+            not isinstance(remote_traceback, str)
+            or len(remote_traceback) > MAX_RPC_TRACEBACK_LENGTH
+            or not isinstance(caller_traceback, str)
+            or len(caller_traceback) > MAX_RPC_TRACEBACK_LENGTH
+        ):
+            raise cls._response_protocol_error(request, "Invalid RPC response traceback.")
+        details = cls._merge_error_traceback(
+            request,
+            remote_traceback,
+            caller_traceback=caller_traceback,
+        )
+        pure_remote_traceback = cls._remote_traceback_part(request, remote_traceback)
+        return pure_remote_traceback, caller_traceback, details
+
+    @classmethod
+    def _decode_response(cls, request: RpcRequest, response: RpcResponse) -> JsonValue:
         context = {"method": request.method, "target": request.target, "task_id": request.task_id}
         envelope = response.envelope
+        request_caller_traceback = request.caller_traceback if isinstance(request.caller_traceback, str) else ""
         if response.status == "timeout":
-            raise RpcTimeoutError("The remote request expired.", **context)
+            # Timeout rows created by stale-task cleanup may have an empty
+            # envelope; when diagnostics are present, preserve them just as
+            # for a normal failed response.
+            if not isinstance(envelope, dict) or envelope.get("rpc") != PROTOCOL_VERSION:
+                raise RpcTimeoutError(
+                    "The remote request expired.",
+                    traceback=cls._merge_error_traceback(
+                        request,
+                        "RpcTimeoutError: The remote request expired.",
+                        caller_traceback=request_caller_traceback,
+                    ),
+                    caller_traceback=request_caller_traceback,
+                    remote_traceback="",
+                    **context,
+                )
+            error = envelope.get("error")
+            if not isinstance(error, dict):
+                raise RpcTimeoutError(
+                    "The remote request expired.",
+                    traceback=cls._merge_error_traceback(
+                        request,
+                        "RpcTimeoutError: The remote request expired.",
+                        caller_traceback=request_caller_traceback,
+                    ),
+                    caller_traceback=request_caller_traceback,
+                    remote_traceback="",
+                    **context,
+                )
+            remote_traceback, caller_traceback, details = cls._response_tracebacks(request, error)
+            if not remote_traceback:
+                details = cls._merge_error_traceback(
+                    request,
+                    f"{error.get('type', 'RpcTimeoutError')}: {error.get('message', 'The remote request expired.')}",
+                    caller_traceback=caller_traceback,
+                )
+            raise RpcTimeoutError(
+                str(error.get("message", "The remote request expired.")),
+                remote_type=str(error.get("type", "")),
+                traceback=details,
+                caller_traceback=caller_traceback,
+                remote_traceback=remote_traceback,
+                **context,
+            )
         if not isinstance(envelope, dict) or envelope.get("rpc") != PROTOCOL_VERSION:
-            raise RpcProtocolError("Invalid RPC response envelope.", **context)
+            raise cls._response_protocol_error(request, "Invalid RPC response envelope.")
         if response.status == "done" and "value" in envelope:
             return envelope["value"]
         error = envelope.get("error")
         if response.status != "failed" or not isinstance(error, dict):
-            raise RpcProtocolError("Invalid RPC response status or error.", **context)
+            raise cls._response_protocol_error(request, "Invalid RPC response status or error.")
         error_code = error.get("code")
         if not isinstance(error_code, str):
-            raise RpcProtocolError("Invalid RPC response error code.", **context)
+            raise cls._response_protocol_error(request, "Invalid RPC response error code.")
         error_type = ERROR_TYPES.get(error_code, RpcRemoteError)
+        remote_traceback, caller_traceback, details = cls._response_tracebacks(request, error)
+        if not remote_traceback:
+            details = cls._merge_error_traceback(
+                request,
+                f"{error.get('type', error_type.__name__)}: {error.get('message', 'Remote RPC failed.')}",
+                caller_traceback=caller_traceback,
+            )
         raise error_type(
-            str(error.get("message", "Remote RPC failed.")), remote_type=str(error.get("type", "")), **context
+            str(error.get("message", "Remote RPC failed.")),
+            remote_type=str(error.get("type", "")),
+            traceback=details,
+            caller_traceback=caller_traceback,
+            remote_traceback=remote_traceback,
+            **context,
         )
 
     @classmethod
-    async def _finish_error(cls, request: RpcRequest, error: RpcError, remote_type: str = "") -> None:
+    async def _finish_error(
+        cls,
+        request: RpcRequest,
+        error: RpcError,
+        remote_type: str = "",
+        traceback_details: str = "",
+    ) -> None:
+        error_payload = {
+            "code": error.code,
+            "type": remote_type or type(error).__name__,
+            "message": str(error),
+        }
+        if traceback_details:
+            error_payload["traceback"] = cls._merge_error_traceback(
+                request,
+                traceback_details,
+                caller_traceback=request.caller_traceback,
+            )
+        else:
+            error_payload["traceback"] = cls._merge_error_traceback(
+                request,
+                f"{type(error).__name__}: {error}",
+                caller_traceback=request.caller_traceback,
+            )
         await cls.transport.respond(
             request,
             RpcResponse(
@@ -619,7 +1023,7 @@ class JobQueueBase:
                 "timeout" if isinstance(error, RpcTimeoutError) else "failed",
                 {
                     "rpc": PROTOCOL_VERSION,
-                    "error": {"code": error.code, "type": remote_type or type(error).__name__, "message": str(error)},
+                    "error": error_payload,
                 },
             ),
         )
@@ -638,6 +1042,11 @@ class JobQueueBase:
                 raise RpcProtocolError(f"Unsupported RPC protocol version: {request.version}.")
             if not isinstance(request.expects_response, bool):
                 raise RpcProtocolError("Invalid RPC response expectation flag.")
+            if request.caller_traceback is not None and (
+                not isinstance(request.caller_traceback, str)
+                or len(request.caller_traceback) > MAX_RPC_TRACEBACK_LENGTH
+            ):
+                raise RpcProtocolError("Invalid RPC caller traceback.")
             if (
                 isinstance(request.deadline, bool)
                 or not isinstance(request.deadline, (int, float))
@@ -671,17 +1080,28 @@ class JobQueueBase:
                 RpcResponse(request.task_id, "done", {"rpc": PROTOCOL_VERSION, "value": value}),
             )
         except asyncio.CancelledError:
+            details = cls._format_error_details(request, traceback.format_exc())
             try:
-                await asyncio.shield(cls._finish_error(request, RpcCancelledError("Remote handler was cancelled.")))
+                await asyncio.shield(
+                    cls._finish_error(
+                        request,
+                        RpcCancelledError("Remote handler was cancelled."),
+                        traceback_details=details,
+                    )
+                )
             except Exception:
                 Logger.exception(f"Failed to record cancelled RPC {request.task_id}.")
             raise
         except RpcError as exc:
-            Logger.warning(f"RPC {request.method} ({request.task_id}) failed [{exc.code}]: {exc}")
-            await cls._finish_error(request, exc)
+            details = cls._format_error_details(request, traceback.format_exc())
+            warning = f"RPC {request.method} ({request.task_id}) failed [{exc.code}]: {exc}"
+            if not request.expects_response:
+                warning += f"\n{details}"
+            Logger.warning(warning)
+            await cls._finish_error(request, exc, traceback_details=details)
         except Exception as exc:
-            details = traceback.format_exc()
-            await cls._finish_error(request, RpcRemoteError(str(exc)), type(exc).__name__)
+            details = cls._format_error_details(request, traceback.format_exc())
+            await cls._finish_error(request, RpcRemoteError(str(exc)), type(exc).__name__, details)
             try:
                 await cls.report_error(request.method, details)
             except Exception:
@@ -761,7 +1181,14 @@ class JobQueueBase:
         outcomes = await asyncio.gather(
             *(handler(context, signal_payload) for handler in handlers), return_exceptions=True
         )
-        errors = [f"{type(outcome).__name__}: {outcome}" for outcome in outcomes if isinstance(outcome, BaseException)]
+        errors = []
+        for outcome in outcomes:
+            if not isinstance(outcome, BaseException):
+                continue
+            error_traceback = "".join(
+                traceback.format_exception(type(outcome), outcome, outcome.__traceback__)
+            ).rstrip()
+            errors.append(f"{type(outcome).__name__}: {outcome}\n{error_traceback}")
         if errors:
             raise RuntimeError("; ".join(errors))
         return outcomes
