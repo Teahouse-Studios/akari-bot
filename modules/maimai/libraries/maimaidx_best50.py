@@ -1,8 +1,11 @@
+from typing import Any
+
 from PIL import Image, ImageDraw, ImageFont
 
 from core.builtins.bot import Bot
 from core.constants.path import noto_sans_bold_path, noto_sans_demilight_path, noto_sans_symbol_path
 from core.utils.func import truncate_text
+from .lxns_apidata import get_record_lx
 from .maimaidx_apidata import get_record
 from .maimaidx_mapping import (
     mai_cover_path,
@@ -14,6 +17,10 @@ from .maimaidx_music import TotalList
 from .maimaidx_utils import compute_rating, calc_dxstar
 
 total_list = TotalList()
+
+# 画面上标注的数据源名称。
+SOURCE_NAME_DIVING_FISH = "Diving-Fish"
+SOURCE_NAME_LXNS = "Lxns"
 
 
 class ChartInfo:
@@ -104,10 +111,17 @@ class BestList:
 
 
 class DrawBest:
-    def __init__(self, sd_best: BestList, dx_best: BestList, username: str):
+    def __init__(
+        self,
+        sd_best: BestList,
+        dx_best: BestList,
+        username: str,
+        source: str = SOURCE_NAME_DIVING_FISH,
+    ):
         self.sd_best = sd_best
         self.dx_best = dx_best
         self.username = self._fullwidth_to_halfwidth(username)
+        self.source = source
         self.sd_rating = sum(compute_rating(c.ds, c.achievement) for c in sd_best)
         self.dx_rating = sum(compute_rating(c.ds, c.achievement) for c in dx_best)
         self.player_rating = self.sd_rating + self.dx_rating
@@ -395,6 +409,8 @@ class DrawBest:
         img_draw = ImageDraw.Draw(self.img)
         font = ImageFont.truetype(noto_sans_demilight_path, 30, encoding="utf-8")
         img_draw.text((34, 24), " ".join(self.username), fill="black", font=font)
+        font = ImageFont.truetype(noto_sans_demilight_path, 24, encoding="utf-8")
+        img_draw.text((512, 60), f"API Source: {self.source}", fill="black", font=font)
         font = ImageFont.truetype(noto_sans_bold_path, 16, encoding="utf-8")
         self._draw_rating(self.img, img_draw, (34, 64), self.player_rating, font)
         font = ImageFont.truetype(noto_sans_demilight_path, 20, encoding="utf-8")
@@ -409,8 +425,17 @@ class DrawBest:
         return self.img
 
 
-async def generate(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> Image.Image | None:
-    resp = await get_record(msg, payload, use_cache)
+async def generate(
+    msg: Bot.MessageSession,
+    payload: dict | None = None,
+    token: Any = None,
+    source: str = SOURCE_NAME_DIVING_FISH,
+    use_cache: bool = True,
+) -> Image.Image | None:
+    if source == SOURCE_NAME_LXNS:
+        resp = await get_record_lx(msg, token, use_cache)
+    else:
+        resp = await get_record(msg, payload, use_cache)
     if not resp:
         return None
     sd_best = BestList(35)
@@ -422,5 +447,5 @@ async def generate(msg: Bot.MessageSession, payload: dict, use_cache: bool = Tru
         sd_best.push(await ChartInfo.from_json(c))
     for c in dx:
         dx_best.push(await ChartInfo.from_json(c))
-    pic = DrawBest(sd_best, dx_best, resp.get("nickname", "")).get_dir()
+    pic = DrawBest(sd_best, dx_best, resp.get("nickname", ""), source).get_dir()
     return pic

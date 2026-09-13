@@ -79,10 +79,27 @@ def toggle_source(current: str) -> str:
     return SOURCE_DIVING_FISH if current == SOURCE_LXNS else SOURCE_LXNS
 
 
+def lxns_bind_usable(
+    refresh_token: str | None,
+    friend_code: str | None,
+    lxns_available: bool = _LXNS_AVAILABLE,
+) -> bool:
+    """判断一条落雪绑定记录是否可用。
+
+    OAuth 授权过即可用；仅有好友码的旧绑定要走开发者令牌接口，落雪完全没配置时取不到数据。
+
+    :param refresh_token: 该绑定记录的 refresh token。
+    :param friend_code: 该绑定记录的好友码。
+    :param lxns_available: 落雪是否已登记 OAuth 应用或开发者令牌。
+    :return: 是否可用。
+    """
+    return bool(refresh_token) or (lxns_available and bool(friend_code))
+
+
 async def is_bound(msg: Bot.MessageSession, game: str, source: str) -> bool:
     """判断用户在该数据源上是否已有可用的绑定。
 
-    中二还允许仅凭好友码绑定落雪，这类旧绑定走的是开发者令牌，仍可正常查分。
+    舞萌与中二都允许仅凭好友码绑定落雪，这类旧绑定走的是开发者令牌，仍可正常查分。
 
     :param msg: 消息会话。
     :param game: 游戏标识。
@@ -95,9 +112,7 @@ async def is_bound(msg: Bot.MessageSession, game: str, source: str) -> bool:
     bind_info = await LxnsProberBindInfo.get_by_sender_id(msg, create=False)
     if not bind_info:
         return False
-    # 好友码那条路要借助开发者令牌，令牌没配时这条绑定取不到数据。
-    friend_code_usable = game == GAME_CHUNITHM and _LXNS_AVAILABLE and bool(bind_info.friend_code)
-    return bool(bind_info.refresh_token) or friend_code_usable
+    return lxns_bind_usable(bind_info.refresh_token, bind_info.friend_code)
 
 
 async def switch_source(msg: Bot.MessageSession, game: str, bind_hints: dict[str, str]) -> None:
@@ -122,4 +137,11 @@ async def switch_source(msg: Bot.MessageSession, game: str, bind_hints: dict[str
             )
         )
     await set_source(msg, game, target)
-    await msg.finish(I18NContext("maimai.message.switch.lx" if target == SOURCE_LXNS else "maimai.message.switch.df"))
+    await msg.finish(
+        I18NContext(
+            "maimai.message.switch",
+            source=str(
+                I18NContext("maimai.message.source.lx" if target == SOURCE_LXNS else "maimai.message.source.df")
+            ),
+        )
+    )

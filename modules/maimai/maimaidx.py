@@ -6,12 +6,14 @@ from core.scheduler import CronTrigger
 from core.utils.func import is_int
 from core.utils.image import msgchain2image
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_cover
+from .libraries.maimaidx_best50 import SOURCE_NAME_DIVING_FISH, SOURCE_NAME_LXNS
 from .libraries.maimaidx_best50 import generate as generate_b50
 from .libraries.maimaidx_platelist import generate as generate_plate
 from .libraries.maimaidx_scoreline import draw_scoreline_table
 from .libraries.maimaidx_scorelist import generate as generate_process
 from .libraries.maimaidx_utils import *
 from .libraries.divingfish_oauth import bind_account, unbind_account
+from .libraries.lxns_apidata import get_lxns_prober_bind_info, get_record_lx
 from .libraries.lxns_oauth import bind_account as bind_lx_account, unbind_account as unbind_lx_account
 from .libraries.source import (
     GAME_MAIMAI,
@@ -20,6 +22,7 @@ from .libraries.source import (
     pick_source,
     switch_source,
 )
+from .database.models import LxnsProberBindInfo
 
 total_list = TotalList()
 
@@ -565,9 +568,16 @@ async def _(msg: Bot.MessageSession):
     await unbind_account(msg)
 
 
-@mai.command("bind lx {{I18N:maimai.help.bind.lx}}")
-async def _(msg: Bot.MessageSession):
-    await bind_lx_account(msg)
+@mai.command("bind lx [<friendcode>] {{I18N:maimai.help.bind.lx}}")
+async def _(msg: Bot.MessageSession, friendcode: str | None = None):
+    if not friendcode:
+        # 不带好友码即以 OAuth 授权绑定，可读到完整成绩。
+        await bind_lx_account(msg)
+    # 仅凭好友码的旧方式仍然可用：不必授权，但只能读到公开的最佳成绩。
+    data = await get_record_lx(msg, friendcode, use_cache=False)
+    if data:
+        await LxnsProberBindInfo.set_bind_info(union_id=msg.session_info.sender_union_id, friend_code=friendcode)
+        await msg.finish(I18NContext("maimai.message.bind.success", username=data["nickname"]))
 
 
 @mai.command("unbind lx {{I18N:maimai.help.unbind}}")
@@ -590,8 +600,15 @@ async def _(msg: Bot.MessageSession):
 
 @mai.command("b50 {{I18N:maimai.help.b50}}")
 async def _(msg: Bot.MessageSession):
-    payload = await get_diving_prober_bind_info(msg, b50=True)
-    img = await generate_b50(msg, payload)
+    if pick_source(msg, GAME_MAIMAI) == SOURCE_LXNS:
+        token = await get_lxns_prober_bind_info(msg)
+        payload = None
+        source = SOURCE_NAME_LXNS
+    else:
+        token = None
+        payload = await get_diving_prober_bind_info(msg, b50=True)
+        source = SOURCE_NAME_DIVING_FISH
+    img = await generate_b50(msg, payload, token, source)
     if img:
         await msg.finish(BImage(img))
 
