@@ -555,20 +555,17 @@ async def _(msg: Bot.MessageSession, base: float, score: float):
     await msg.finish(Plain(compute_rating(base, score)))
 
 
-@mai.command("bind {{I18N:maimai.help.bind.df}}")
 @mai.command("bind df {{I18N:maimai.help.bind.df}}")
 async def _(msg: Bot.MessageSession):
-    # 水鱼已改为 OAuth：绑定不再需要用户名，用户自行在授权页确认即可。
     await bind_account(msg)
 
 
-@mai.command("unbind {{I18N:maimai.help.unbind}}")
 @mai.command("unbind df {{I18N:maimai.help.unbind}}")
 async def _(msg: Bot.MessageSession):
     await unbind_account(msg)
 
 
-@mai.command("bind lx [<friendcode>] {{I18N:maimai.help.bind.lx}}")
+@mai.command("bind lx [<friendcode>] {{I18N:maimai.help.bind.lx}}", required_superuser=True)
 async def _(msg: Bot.MessageSession, friendcode: str | None = None):
     if not friendcode:
         # 不带好友码即以 OAuth 授权绑定，可读到完整成绩。
@@ -580,12 +577,12 @@ async def _(msg: Bot.MessageSession, friendcode: str | None = None):
         await msg.finish(I18NContext("maimai.message.bind.success", username=data["nickname"]))
 
 
-@mai.command("unbind lx {{I18N:maimai.help.unbind}}")
+@mai.command("unbind lx {{I18N:maimai.help.unbind}}", required_superuser=True)
 async def _(msg: Bot.MessageSession):
     await unbind_lx_account(msg)
 
 
-@mai.command("switch {{I18N:maimai.help.switch}}")
+@mai.command("switch {{I18N:maimai.help.switch}}", required_superuser=True)
 async def _(msg: Bot.MessageSession):
     prefix = msg.session_info.prefixes[0]
     await switch_source(

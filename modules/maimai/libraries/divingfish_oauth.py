@@ -401,7 +401,7 @@ async def bind_account(msg) -> None:
             [
                 I18NContext("maimai.message.oauth.prompt", minutes=max(1, device.expires_in // 60)),
                 Url(device.verification_uri_complete, trusted=True),
-                I18NContext("maimai.message.oauth.prompt.code", code=device.user_code),
+                I18NContext("maimai.message.oauth.prompt.warn"),
             ]
         ),
         quote=False,

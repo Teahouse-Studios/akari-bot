@@ -8,7 +8,7 @@ from .libraries.chunithm_best30 import generate as generate_b30
 from .libraries.chunithm_music import TotalList
 from .libraries.chunithm_utils import *
 from .libraries.divingfish_oauth import bind_account, unbind_account
-from .libraries.lxns_oauth import bind_account as bind_lx_account, unbind_account as unbind_lx_account
+from .libraries.lxns_oauth import unbind_account as unbind_lx_account
 from .libraries.source import (
     GAME_CHUNITHM,
     SOURCE_DIVING_FISH,
@@ -308,11 +308,11 @@ async def _(msg: Bot.MessageSession):
     await unbind_account(msg)
 
 
-@chu.command("bind lx [<friendcode>] {{I18N:maimai.help.bind.lx}}")
-async def _(msg: Bot.MessageSession, friendcode: str | None = None):
-    if not friendcode:
-        # 不带好友码即以 OAuth 授权绑定，可读到完整成绩。
-        await bind_lx_account(msg)
+@chu.command("bind lx <friendcode> {{I18N:maimai.help.bind.lx}}")
+async def _(msg: Bot.MessageSession, friendcode: str):
+    #    if not friendcode:
+    #        # 不带好友码即以 OAuth 授权绑定，可读到完整成绩。
+    #        await bind_lx_account(msg)
     # 仅凭好友码的旧方式仍然可用：不必授权，但只能读到公开的最佳成绩。
     data = await get_record_lx(msg, friendcode, use_cache=False)
     if data:
