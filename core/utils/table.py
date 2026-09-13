@@ -27,20 +27,30 @@ def escape_table_cell(text: str) -> str:
     return text.replace("|", "\\|").replace("\r\n", "\n").replace("\n", "  <br>  ")
 
 
-def format_table_code(text: str) -> str:
+def format_inline_code(text: str) -> str:
     """
-    把文本包成 markdown 行内代码，使其中的格式标记不被解析。
+    把文本包成适用于普通 Markdown 正文的行内代码。
 
     :param text: 原始文本。
-    :return: 可安全放入单元格的行内代码；文本为空时返回空串。
+    :return: 行内代码；文本为空时返回空串。
     """
     if not text:
         return ""
-    body = text.replace("|", "\\|").replace("\r\n", "\n").replace("\n", " ")
+    body = text.replace("\r\n", "\n").replace("\n", " ")
     longest = max((len(run) for run in re.findall(r"`+", body)), default=0)
     fence = "`" * (longest + 1)
     padding = " " if body.startswith("`") or body.endswith("`") else ""
     return f"{fence}{padding}{body}{padding}{fence}"
+
+
+def format_table_code(text: str) -> str:
+    """
+    把文本包成 markdown 表格单元格中的行内代码，并转义表格分隔符。
+
+    :param text: 原始文本。
+    :return: 可安全放入单元格的行内代码；文本为空时返回空串。
+    """
+    return format_inline_code(text.replace("|", "\\|"))
 
 
 def resolve_table_columns(

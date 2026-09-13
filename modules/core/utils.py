@@ -1,5 +1,7 @@
 import platform
 import time
+from collections.abc import Sequence
+from dataclasses import dataclass
 
 import orjson
 import psutil
@@ -8,15 +10,23 @@ from cpuinfo import get_cpu_info
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import ActionText, Plain, FormattedTime, I18NContext, Url
+from core.builtins.message.elements import MarkdownElement
+from core.builtins.message.internal import ActionText, Plain, FormattedTime, I18NContext, Markdown, Url
 from core.component import module
 from core.config.base import CoreConfig
 from core.constants import all_locales_path, cache_path, lang_list, weblate_lang_codes
 from core.database.models import SenderUnionBind, SenderUnionInfo
 from core.i18n import get_available_locales, Locale
-from core.queue.diagnostics import DAEMON_LABEL, gather_process_usage, PEERS_LABEL
+from core.queue.diagnostics import (
+    DAEMON_LABEL,
+    PEERS_LABEL,
+    ProcessUnavailable,
+    ProcessUsage,
+    gather_process_usage,
+)
 from core.utils.bash import run_sys_command
 from core.utils.http import get_url
+from core.utils.table import escape_table_cell, format_inline_code, format_table_code
 
 WEBLATE_LANGUAGES_API = "https://hosted.weblate.org/api/projects/akaribot/languages/"
 TRANSLATION_PROGRESS_THRESHOLD = 95.0
@@ -63,27 +73,51 @@ ping = module("ping", base=True, doc=True)
 started_time = time.time()
 
 
-async def _build_process_usage_lines(msg: Bot.MessageSession) -> list[str]:
-    """构造各进程内存占用的展示行；无任何数据时返回空列表。"""
-    usages, failures = await gather_process_usage()
-    if not usages and not failures:
-        return []
-    locale = msg.session_info.locale
-    # 平台名与 jobqueue-hub 为专有名词，仅占位标签需本地化。
+@dataclass(frozen=True)
+class _PingStatus:
+    """一次 ping 采集所得的展示数据。"""
+
+    system_boot_time: str
+    bot_running_time: str
+    python_version: str
+    web_render_status: str
+    jobqueue_backend: str
+    client_name: str
+    command_parsed: int
+    message_parsed: int
+    cpu_brand: str
+    cpu_percent: float
+    ram: int
+    ram_percent: float
+    swap: int
+    swap_percent: float
+    disk: int
+    disk_total: int
+    disk_percent: float
+
+
+def _display_process_name(locale: Locale, name: str) -> str:
     labels = {
         DAEMON_LABEL: "core.message.ping.process.daemon",
         PEERS_LABEL: "core.message.ping.process.peers",
     }
+    return locale.t(labels[name]) if name in labels else name
 
-    def display_name(name: str) -> str:
-        return locale.t(labels[name]) if name in labels else name
+
+def _build_process_usage_lines(
+    msg: Bot.MessageSession,
+    usages: Sequence[ProcessUsage],
+    failures: Sequence[ProcessUnavailable],
+) -> list[str]:
+    """构造各进程内存占用的纯文本展示行；无任何数据时返回空列表。"""
+    locale = msg.session_info.locale
 
     lines = []
     for usage in usages:
         lines.append(
             locale.t(
                 "core.message.ping.process",
-                name=display_name(usage.name),
+                name=_display_process_name(locale, usage.name),
                 pid=usage.pid if usage.pid is not None else "-",
                 memory=int(usage.memory / (1024 * 1024)),
                 metric=usage.metric,
@@ -93,68 +127,247 @@ async def _build_process_usage_lines(msg: Bot.MessageSession) -> list[str]:
         lines.append(
             locale.t(
                 "core.message.ping.process.unavailable",
-                name=display_name(failure.name),
+                name=_display_process_name(locale, failure.name),
                 reason=failure.reason,
             )
         )
     return lines
 
 
+def _format_markdown_rows(locale: Locale, rows: Sequence[tuple[str, str]], *, use_table: bool) -> str:
+    if use_table:
+        values = [(name, format_table_code(str(value))) for name, value in rows]
+        item_title = escape_table_cell(locale.t("core.message.ping.table.item"))
+        value_title = escape_table_cell(locale.t("core.message.ping.table.value"))
+        lines = [f"| {item_title} | {value_title} |", "| --- | --- |"]
+        lines.extend(f"| {escape_table_cell(name)} | {value} |" for name, value in values)
+        return "\n".join(lines)
+    values = [(name, format_inline_code(str(value))) for name, value in rows]
+    return "\n".join(
+        "- " + locale.t("core.message.ping.markdown.item", name=name, value=value) for name, value in values
+    )
+
+
+def _format_markdown_section(
+    locale: Locale,
+    title_key: str,
+    rows: Sequence[tuple[str, str]],
+    *,
+    use_table: bool,
+) -> str:
+    title = locale.t(title_key)
+    return f"**{title}**\n\n{_format_markdown_rows(locale, rows, use_table=use_table)}"
+
+
+def _build_ping_simple_markdown(
+    msg: Bot.MessageSession,
+    *,
+    bot_running_time: str,
+    cpu_percent: float,
+    ram_percent: float,
+    disk_percent: float,
+) -> MarkdownElement:
+    locale = msg.session_info.locale
+    rows = [
+        (locale.t("core.message.ping.label.bot_running_time"), bot_running_time),
+        (locale.t("core.message.ping.label.cpu_percent"), f"{cpu_percent}%"),
+        (locale.t("core.message.ping.label.memory"), f"{ram_percent}%"),
+        (locale.t("core.message.ping.label.disk"), f"{disk_percent}%"),
+    ]
+    body = _format_markdown_rows(
+        locale,
+        rows,
+        use_table=msg.session_info.support_markdown_extension,
+    )
+    return Markdown(f"**Pong!**\n\n{body}", disable_joke=True)
+
+
+def _format_process_markdown_table(
+    locale: Locale,
+    usages: Sequence[ProcessUsage],
+    failures: Sequence[ProcessUnavailable],
+) -> str:
+    headers = [
+        locale.t("core.message.ping.table.process"),
+        locale.t("core.message.ping.table.pid"),
+        locale.t("core.message.ping.table.memory"),
+    ]
+    lines = [
+        "| " + " | ".join(escape_table_cell(header) for header in headers) + " |",
+        "| --- | --- | --- |",
+    ]
+    for usage in usages:
+        value = locale.t(
+            "core.message.ping.process.value",
+            memory=int(usage.memory / (1024 * 1024)),
+            metric=usage.metric,
+        )
+        lines.append(
+            "| "
+            + " | ".join(
+                (
+                    escape_table_cell(_display_process_name(locale, usage.name)),
+                    str(usage.pid) if usage.pid is not None else "-",
+                    format_table_code(value),
+                )
+            )
+            + " |"
+        )
+    for failure in failures:
+        value = locale.t("core.message.ping.process.value.unavailable", reason=failure.reason)
+        lines.append(
+            "| "
+            + " | ".join(
+                (
+                    escape_table_cell(_display_process_name(locale, failure.name)),
+                    "-",
+                    format_table_code(value),
+                )
+            )
+            + " |"
+        )
+    return "\n".join(lines)
+
+
+def _build_ping_detail_markdown(
+    msg: Bot.MessageSession,
+    status: _PingStatus,
+    usages: Sequence[ProcessUsage],
+    failures: Sequence[ProcessUnavailable],
+) -> MarkdownElement:
+    locale = msg.session_info.locale
+    use_table = msg.session_info.support_markdown_extension
+    system_rows = [
+        (locale.t("core.message.ping.label.system_boot_time"), status.system_boot_time),
+        (locale.t("core.message.ping.label.bot_running_time"), status.bot_running_time),
+        (locale.t("core.message.ping.label.python_version"), status.python_version),
+        (locale.t("core.message.ping.label.web_render_status"), status.web_render_status),
+        (locale.t("core.message.ping.label.jobqueue_backend"), status.jobqueue_backend),
+        (locale.t("core.message.ping.label.client_name"), status.client_name),
+        (locale.t("core.message.ping.label.command_parsed"), str(status.command_parsed)),
+        (locale.t("core.message.ping.label.message_parsed"), str(status.message_parsed)),
+    ]
+    resource_rows = [
+        (locale.t("core.message.ping.label.cpu_brand"), status.cpu_brand),
+        (locale.t("core.message.ping.label.cpu_percent"), f"{status.cpu_percent}%"),
+        (
+            locale.t("core.message.ping.label.memory"),
+            locale.t("core.message.ping.value.memory", total=status.ram, percent=status.ram_percent),
+        ),
+        (
+            locale.t("core.message.ping.label.swap"),
+            locale.t("core.message.ping.value.memory", total=status.swap, percent=status.swap_percent),
+        ),
+        (
+            locale.t("core.message.ping.label.disk"),
+            locale.t(
+                "core.message.ping.value.disk",
+                used=status.disk,
+                total=status.disk_total,
+                percent=status.disk_percent,
+            ),
+        ),
+    ]
+    sections = [
+        _format_markdown_section(locale, "core.message.ping.markdown.system", system_rows, use_table=use_table),
+        _format_markdown_section(locale, "core.message.ping.markdown.resources", resource_rows, use_table=use_table),
+    ]
+    if usages or failures:
+        title = locale.t("core.message.ping.markdown.process")
+        if use_table:
+            process_body = _format_process_markdown_table(locale, usages, failures)
+        else:
+            process_body = "\n".join(f"- {line}" for line in _build_process_usage_lines(msg, usages, failures))
+        sections.append(f"**{title}**\n\n{process_body}")
+    return Markdown("**Pong!**\n\n" + "\n\n".join(sections), disable_joke=True)
+
+
 @ping.command("{{I18N:core.help.ping}}")
 async def _(msg: Bot.MessageSession):
     from core.queue.server import JobQueueServer
 
-    result = MessageChain.assign(Plain("Pong!"))
+    result = MessageChain.create()
 
     td_seconds = time.time() - started_time
     timediff = f"{int(td_seconds // 3600):02d}:{int((td_seconds % 3600) // 60):02d}:{int(td_seconds % 60):02d}"
     cpu_percent = psutil.cpu_percent()
-    ram_percent = psutil.virtual_memory().percent
+    ram_usage = psutil.virtual_memory()
+    disk_usage = psutil.disk_usage("/")
     if msg.check_super_user():
         boot_start = str(FormattedTime(psutil.boot_time(), iso=True))
-        web_render_status = str(Bot.Info.web_render_status)
-        ram = int(psutil.virtual_memory().total / (1024 * 1024))
-        swap = int(psutil.swap_memory().total / (1024 * 1024))
-        swap_percent = psutil.swap_memory().percent
-        disk = int(psutil.disk_usage("/").used / (1024 * 1024 * 1024))
-        disk_total = int(psutil.disk_usage("/").total / (1024 * 1024 * 1024))
-        result.append(
-            I18NContext(
-                "core.message.ping.detail",
-                system_boot_time=boot_start,
-                bot_running_time=timediff,
-                python_version=platform.python_version(),
-                web_render_status=web_render_status,
-                jobqueue_backend=JobQueueServer.backend.name,
-                cpu_brand=get_cpu_info()["brand_raw"],
-                cpu_percent=cpu_percent,
-                ram=ram,
-                ram_percent=ram_percent,
-                swap=swap,
-                swap_percent=swap_percent,
-                disk_space=disk,
-                disk_space_total=disk_total,
-                client_name=msg.session_info.client_name,
-                command_parsed=Bot.Info.command_parsed,
-                parsed=Bot.Info.message_parsed,
-                disable_joke=True,
-            )
+        swap_usage = psutil.swap_memory()
+        status = _PingStatus(
+            system_boot_time=boot_start,
+            bot_running_time=timediff,
+            python_version=platform.python_version(),
+            web_render_status=str(Bot.Info.web_render_status),
+            jobqueue_backend=JobQueueServer.backend.name,
+            client_name=msg.session_info.client_name,
+            command_parsed=Bot.Info.command_parsed,
+            message_parsed=Bot.Info.message_parsed,
+            cpu_brand=get_cpu_info()["brand_raw"],
+            cpu_percent=cpu_percent,
+            ram=int(ram_usage.total / (1024 * 1024)),
+            ram_percent=ram_usage.percent,
+            swap=int(swap_usage.total / (1024 * 1024)),
+            swap_percent=swap_usage.percent,
+            disk=int(disk_usage.used / (1024 * 1024 * 1024)),
+            disk_total=int(disk_usage.total / (1024 * 1024 * 1024)),
+            disk_percent=disk_usage.percent,
         )
-        if process_lines := await _build_process_usage_lines(msg):
-            header = msg.session_info.locale.t("core.message.ping.process.list")
-            result.append(Plain("\n".join([header, *process_lines]), disable_joke=True, allow_parse=False))
+        process_usages, process_failures = await gather_process_usage()
+        if msg.session_info.support_markdown:
+            result.append(_build_ping_detail_markdown(msg, status, process_usages, process_failures))
+        else:
+            result.append(Plain("Pong!"))
+            result.append(
+                I18NContext(
+                    "core.message.ping.detail",
+                    system_boot_time=status.system_boot_time,
+                    bot_running_time=status.bot_running_time,
+                    python_version=status.python_version,
+                    web_render_status=status.web_render_status,
+                    jobqueue_backend=status.jobqueue_backend,
+                    cpu_brand=status.cpu_brand,
+                    cpu_percent=status.cpu_percent,
+                    ram=status.ram,
+                    ram_percent=status.ram_percent,
+                    swap=status.swap,
+                    swap_percent=status.swap_percent,
+                    disk_space=status.disk,
+                    disk_space_total=status.disk_total,
+                    client_name=status.client_name,
+                    command_parsed=status.command_parsed,
+                    parsed=status.message_parsed,
+                    disable_joke=True,
+                )
+            )
+            if process_lines := _build_process_usage_lines(msg, process_usages, process_failures):
+                header = msg.session_info.locale.t("core.message.ping.process.list")
+                result.append(Plain("\n".join([header, *process_lines]), disable_joke=True, allow_parse=False))
     else:
-        disk_percent = psutil.disk_usage("/").percent
-        result.append(
-            I18NContext(
-                "core.message.ping.simple",
-                bot_running_time=timediff,
-                cpu_percent=cpu_percent,
-                ram_percent=ram_percent,
-                disk_percent=disk_percent,
-                disable_joke=True,
+        if msg.session_info.support_markdown:
+            result.append(
+                _build_ping_simple_markdown(
+                    msg,
+                    bot_running_time=timediff,
+                    cpu_percent=cpu_percent,
+                    ram_percent=ram_usage.percent,
+                    disk_percent=disk_usage.percent,
+                )
             )
-        )
+        else:
+            result.append(Plain("Pong!"))
+            result.append(
+                I18NContext(
+                    "core.message.ping.simple",
+                    bot_running_time=timediff,
+                    cpu_percent=cpu_percent,
+                    ram_percent=ram_usage.percent,
+                    disk_percent=disk_usage.percent,
+                    disable_joke=True,
+                )
+            )
     await msg.finish(result)
 
 
