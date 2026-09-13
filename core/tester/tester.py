@@ -13,17 +13,19 @@ class Tester:
         self.name = name
         self._entries: list[dict] = []
         self._results: list[dict] = []
-        # Event is level-triggered and can lose a notification when clear()
-        # races with a subsequent subtest completion. Queue one token per
-        # completed subtest so the func_case watchdog observes every progress.
-        self._progress_queue: asyncio.Queue[None] = asyncio.Queue()
+        self._progress_event = asyncio.Event()
+        self._progress_revision = 0
         self.is_ci: bool = False
 
-    async def _wait_for_progress(self) -> None:
-        await self._progress_queue.get()
+    async def _wait_for_progress(self, after_revision: int) -> int:
+        while self._progress_revision <= after_revision:
+            await self._progress_event.wait()
+            self._progress_event.clear()
+        return self._progress_revision
 
     def _notify_progress(self) -> None:
-        self._progress_queue.put_nowait(None)
+        self._progress_revision += 1
+        self._progress_event.set()
 
     async def test(
         self,

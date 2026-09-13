@@ -187,14 +187,65 @@ async def _test_function_entry_timeout_resets_on_progress():
     return not result.get("timeout") and all(entry.get("match") for entry in result.get("results", []))
 
 
-async def _test_progress_notifications_are_not_lost():
-    """连续完成的子测试必须各自产生 watchdog 可消费的进度通知。"""
+async def _test_progress_notifications_coalesce_to_latest_revision():
+    """连续完成的子测试应保留最新进度，但不能作为旧通知反复重置 watchdog。"""
     tester = Tester("progress_queue")
+    revision = tester._progress_revision
     tester._notify_progress()
     tester._notify_progress()
-    await asyncio.wait_for(tester._wait_for_progress(), timeout=0.1)
-    await asyncio.wait_for(tester._wait_for_progress(), timeout=0.1)
-    return True
+    observed = await asyncio.wait_for(tester._wait_for_progress(revision), timeout=0.1)
+    return observed == revision + 2
+
+
+async def _test_function_entry_bounds_cancellation_cleanup():
+    """子测试延迟响应取消时，watchdog 也必须在固定时间内返回。"""
+    from core.tester.process import run_function_entry
+
+    cleanup_started = asyncio.Event()
+    release_cleanup = asyncio.Event()
+
+    async def stuck_after_cancel():
+        try:
+            await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            cleanup_started.set()
+            await release_cleanup.wait()
+
+    async def stubborn(tester):
+        await tester.test(stuck_after_cancel, "延迟取消的子测试")
+
+    try:
+        with (
+            patch("core.tester.process.close_db", new=AsyncMock()),
+            patch("core.tester.process.init_db", new=AsyncMock(return_value=True)),
+            patch("core.tester.process.load_modules", new=AsyncMock()),
+            patch("core.tester.process.FUNCTION_TEST_CANCEL_TIMEOUT", 0.01),
+        ):
+            result = await asyncio.wait_for(run_function_entry(stubborn, is_ci=True, timeout=0.01), timeout=0.1)
+        return result.get("timeout") is True and result.get("cleanup_pending") is True and cleanup_started.is_set()
+    finally:
+        release_cleanup.set()
+        await asyncio.sleep(0)
+
+
+async def _test_cancelled_progress_waiter_does_not_reset_deadline():
+    """外部取消进度等待器不能冒充子测试完成并无限刷新 watchdog。"""
+    from core.tester.process import run_function_entry
+
+    async def cancelled_waiter(_self, _after_revision):
+        raise asyncio.CancelledError
+
+    async def stuck(_tester):
+        await asyncio.Event().wait()
+
+    with (
+        patch("core.tester.process.close_db", new=AsyncMock()),
+        patch("core.tester.process.init_db", new=AsyncMock(return_value=True)),
+        patch("core.tester.process.load_modules", new=AsyncMock()),
+        patch.object(Tester, "_wait_for_progress", new=cancelled_waiter),
+    ):
+        result = await asyncio.wait_for(run_function_entry(stuck, is_ci=True, timeout=0.01), timeout=0.1)
+    return result.get("timeout") is True and result.get("cleanup_pending") is False
 
 
 async def _test_unit_subtest_exception_keeps_running_and_counts_once():
@@ -343,7 +394,15 @@ async def test_tester_framework(tester: Tester):
     await tester.test(_test_integrate_expected_exception_is_not_runner_error, "func_case 预期异常匹配测试")
     await tester.test(_test_function_entry_timeout_is_structured_failure, "func_case 超时结构化失败测试")
     await tester.test(_test_function_entry_timeout_resets_on_progress, "func_case 超时按进展刷新测试")
-    await tester.test(_test_progress_notifications_are_not_lost, "连续进度通知不丢失测试")
+    await tester.test(
+        _test_progress_notifications_coalesce_to_latest_revision,
+        "连续进度通知合并到最新版本测试",
+    )
+    await tester.test(_test_function_entry_bounds_cancellation_cleanup, "func_case 取消收尾有界测试")
+    await tester.test(
+        _test_cancelled_progress_waiter_does_not_reset_deadline,
+        "进度等待器取消不刷新 watchdog 测试",
+    )
     await tester.test(_test_unit_subtest_exception_keeps_running_and_counts_once, "unit 子测试异常续跑且计数一次测试")
     await tester.test(_test_function_entry_does_not_misclassify_test_timeout, "子测试超时不冒充 runner 超时测试")
     await tester.test(_test_function_entry_init_failure_is_error, "func_case 初始化错误不可跳过测试")

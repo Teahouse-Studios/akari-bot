@@ -179,6 +179,7 @@ async def main(inspect_module=inspect):
     passed = 0
     failed = 0
     total_test_cost = 0.0
+    force_exit = False
 
     semaphore = asyncio.Semaphore(MAX_CONCURRENT)
     registry_tasks = []
@@ -362,6 +363,10 @@ async def main(inspect_module=inspect):
             try:
                 result = await _run_func_test(fn, path)
                 func_results.append(result)
+                if result["res"].get("cleanup_pending"):
+                    force_exit = True
+                    Logger.error(f"Stopping after {fn.__name__}: timed-out task did not finish cancellation cleanup.")
+                    break
             except Exception as e:
                 Logger.error(f"main() EXCEPTION running func test {fn.__name__}: {e}")
                 func_results.append({"fn": fn, "path": path, "res": {"error": repr(e)}})
@@ -410,6 +415,8 @@ async def main(inspect_module=inspect):
                 detail = f"No progress for {timeout_limit} seconds after {completed_tests} completed subtests"
                 if active_test:
                     detail += f"\nActive subtest: {active_test}"
+                if res.get("cleanup_pending"):
+                    detail += "\nCancellation cleanup exceeded its deadline"
                 Logger.error(detail)
                 junit_testcase = JUnitTestCase(
                     name=fn.__name__, classname=f"FunctionTest.{test_number}", time=res.get("time_cost", 0.0)
@@ -593,6 +600,13 @@ async def main(inspect_module=inspect):
             Logger.success(f"JUnit XML report generated: {junit_output_path}")
         except Exception as e:
             Logger.error(f"Failed to generate JUnit XML report: {e}")
+
+    if force_exit:
+        Logger.error("Forcing tester shutdown because a timed-out task is still running.")
+        shutil.rmtree(test_config_path, ignore_errors=True)
+        sys.stdout.flush()
+        sys.stderr.flush()
+        os._exit(1)
 
     # Coverage 报告生成
     if _coverage_instance:

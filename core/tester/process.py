@@ -19,10 +19,35 @@ from .decorator import CaseEntry
 from .expectations import Expectation
 
 DEFAULT_FUNCTION_TEST_TIMEOUT = 120.0
+FUNCTION_TEST_CANCEL_TIMEOUT = 1.0
 
 
 class _FunctionTestNoProgress(Exception):
     """Raised only when the func_case watchdog observes no completed subtest."""
+
+
+def _consume_task_result(task: asyncio.Task) -> None:
+    if task.cancelled():
+        return
+    try:
+        task.exception()
+    except asyncio.CancelledError:
+        pass
+
+
+async def _cancel_task(task: asyncio.Task) -> bool:
+    """Cancel a task without allowing cancellation cleanup to block the runner."""
+    if task.done():
+        await asyncio.gather(task, return_exceptions=True)
+        return True
+    task.cancel()
+    done, _ = await asyncio.wait((task,), timeout=FUNCTION_TEST_CANCEL_TIMEOUT)
+    if task not in done:
+        task.cancel()
+        task.add_done_callback(_consume_task_result)
+        return False
+    await asyncio.gather(task, return_exceptions=True)
+    return True
 
 
 def _infrastructure_error(input_, expected, message: str) -> list[dict]:
@@ -84,6 +109,7 @@ async def run_function_entry(
         return {"error": error}
 
     tester = None
+    cleanup_pending = False
     start = time.perf_counter()
     try:
         from core.tester import Tester as TesterClass
@@ -95,12 +121,18 @@ async def run_function_entry(
         else:
             function_task = asyncio.create_task(fn(tester))
             progress_task = None
+            progress_revision = tester._progress_revision
+            progress_deadline = asyncio.get_running_loop().time() + timeout
             try:
                 while True:
-                    progress_task = asyncio.create_task(tester._wait_for_progress())
+                    progress_task = asyncio.create_task(
+                        tester._wait_for_progress(progress_revision),
+                        name=f"function-test-progress:{fn.__name__}",
+                    )
+                    remaining = max(0.0, progress_deadline - asyncio.get_running_loop().time())
                     done, _ = await asyncio.wait(
                         (function_task, progress_task),
-                        timeout=timeout,
+                        timeout=remaining,
                         return_when=asyncio.FIRST_COMPLETED,
                     )
                     if function_task in done:
@@ -109,18 +141,21 @@ async def run_function_entry(
                         returned = function_task.result()
                         break
                     if progress_task in done:
+                        current_revision = tester._progress_revision
+                        if not progress_task.cancelled():
+                            current_revision = progress_task.result()
+                        if current_revision > progress_revision:
+                            progress_revision = current_revision
+                            progress_deadline = asyncio.get_running_loop().time() + timeout
+                        elif asyncio.get_running_loop().time() >= progress_deadline:
+                            raise _FunctionTestNoProgress
                         continue
-                    progress_task.cancel()
-                    function_task.cancel()
-                    await asyncio.gather(progress_task, function_task, return_exceptions=True)
                     raise _FunctionTestNoProgress
             finally:
                 if progress_task is not None and not progress_task.done():
-                    progress_task.cancel()
-                    await asyncio.gather(progress_task, return_exceptions=True)
+                    await _cancel_task(progress_task)
                 if not function_task.done():
-                    function_task.cancel()
-                    await asyncio.gather(function_task, return_exceptions=True)
+                    cleanup_pending = not await _cancel_task(function_task)
         if isinstance(returned, TesterClass):
             tester = returned
     except _FunctionTestNoProgress:
@@ -144,6 +179,7 @@ async def run_function_entry(
             "timeout_limit": timeout,
             "active_test": active_test,
             "completed_tests": len(results),
+            "cleanup_pending": cleanup_pending,
             "entries": entries,
             "results": results,
         }
