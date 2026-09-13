@@ -37,6 +37,14 @@ WIKI_URL_RULE_TABLES = (
     ("module_wiki_block_list", GlobalURLBlocklist),
 )
 
+# v6：绑定表补充 OAuth 授权所需的列，水鱼侧为公开客户端，落雪侧为用户授权。
+OAUTH_BIND_COLUMNS = (
+    ("module_maimai_diving_prober_bind_info", "refresh_token", "VARCHAR(1024)"),
+    ("module_maimai_diving_prober_bind_info", "subject", "VARCHAR(512)"),
+    ("module_maimai_lxns_prober_bind_info", "refresh_token", "VARCHAR(1024)"),
+    ("module_maimai_lxns_prober_bind_info", "subject", "VARCHAR(512)"),
+)
+
 
 def quote_ident(name: str) -> str:
     """
@@ -253,6 +261,27 @@ async def update_database_to_v5(conn):
     await Tortoise.generate_schemas(safe=True)
 
 
+async def update_database_to_v6(conn):
+    """将数据库升级至 v6：为绑定表补充 OAuth 授权所需的列。
+
+    水鱼分发给用户各自部署的应用属于公开客户端，换票接口对它不可用，只能为每位用户各自保存一把
+    refresh token；落雪侧则改为保存用户的授权令牌。Developer-Token 时代无需保存任何用户凭据，
+    表内因而没有这些列。表若由 ``generate_schemas()`` 新建，列已存在，跳过即可。旧行没有
+    refresh token，仅在用户重新完成一次绑定之前不可用。
+
+    :param conn: 数据库连接。
+    """
+    for table, column, column_type in OAUTH_BIND_COLUMNS:
+        if not await has_table(conn, table):
+            # 未启用该模块时这张表可能根本不存在，此时无需迁移。
+            continue
+        if await has_column(conn, table, column):
+            continue
+        await conn.execute_query(
+            f"ALTER TABLE {quote_ident(table)} ADD COLUMN {quote_ident(column)} {column_type} NULL;"
+        )
+
+
 async def update_database():
     database_list = fetch_module_db()
     await Tortoise.init(db_url=get_db_link(), modules={"models": ["core.database.models"] + database_list})
@@ -347,4 +376,11 @@ async def update_database():
 
             await query_dbver.delete()
             await DBVersion.create(version=5)
+        if db_version < 6:
+            query_dbver = await DBVersion.first()
+
+            await update_database_to_v6(conn)
+
+            await query_dbver.delete()
+            await DBVersion.create(version=6)
     await Tortoise.close_connections()

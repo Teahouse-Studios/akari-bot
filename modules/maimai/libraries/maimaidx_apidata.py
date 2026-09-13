@@ -1,5 +1,4 @@
 from collections import defaultdict
-from urllib.parse import urlencode
 
 import orjson
 
@@ -11,11 +10,51 @@ from core.constants.path import cache_path
 from core.logger import Logger
 from core.utils.func import is_int
 from core.utils.http import download, get_url, post_url
+from .divingfish_oauth import (
+    DF_OAUTH_ENABLED,
+    DivingFishTokenRevoked,
+    request_player_data,
+)
 from .maimaidx_mapping import *
 from .maimaidx_music import get_cover_len5_id, Music, TotalList
+from .lxns_apidata import (
+    get_plate_lx,
+    get_record_lx,
+    get_song_record_lx,
+    get_total_record_lx,
+)
+from .source import GAME_MAIMAI, SOURCE_LXNS, pick_source
+from ..database.models import DivingProberBindInfo
 from core.config.base import CoreConfig
 
 total_list = TotalList()
+
+
+async def get_bind_info(msg: Bot.MessageSession) -> DivingProberBindInfo:
+    bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
+    if not bind_info or not bind_info.refresh_token:
+        await msg.finish(
+            I18NContext(
+                "maimai.message.user_unbound",
+                cmd=ActionText(f"{msg.session_info.prefixes[0]}maimai bind"),
+            )
+        )
+    return bind_info
+
+
+async def prompt_rebind(msg: Bot.MessageSession, exc: DivingFishTokenRevoked) -> None:
+    """令牌失效时引导用户重新完成一次绑定授权。
+
+    :param msg: 消息会话。
+    :param exc: 触发本提示的异常。
+    """
+    Logger.warning(f"Diving-Fish refresh token is no longer valid: {exc}")
+    await msg.finish(
+        I18NContext(
+            "maimai.message.oauth.revoked",
+            cmd=ActionText(f"{msg.session_info.prefixes[0]}maimai bind"),
+        )
+    )
 
 
 async def update_cover() -> bool:
@@ -161,6 +200,9 @@ async def search_by_alias(input_: str) -> list:
 
 
 async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> dict | None:
+    if pick_source(msg, GAME_MAIMAI) == SOURCE_LXNS:
+        # 落雪没有按用户查询的公开端点，查询对象由令牌决定，载荷只在水鱼侧使用。
+        return await get_record_lx(msg, use_cache)
     mai_cache_path = cache_path / "maimai-record"
     mai_cache_path.mkdir(parents=True, exist_ok=True)
     cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace('|', '_')}_maimaidx_record.json"
@@ -204,24 +246,19 @@ async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = T
 
 async def get_song_record(
     msg: Bot.MessageSession,
-    payload: dict,
     sid: str | list[str],
     use_cache: bool = True,
 ) -> str | None:
-    if DF_DEVELOPER_TOKEN:
+    if pick_source(msg, GAME_MAIMAI) == SOURCE_LXNS:
+        return await get_song_record_lx(msg, sid, use_cache)
+    if DF_OAUTH_ENABLED:
+        bind_info = await get_bind_info(msg)
         mai_cache_path = cache_path / "maimai-record"
         mai_cache_path.mkdir(parents=True, exist_ok=True)
         cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace('|', '_')}_maimaidx_song_record.json"
-        url = "https://www.diving-fish.com/api/maimaidxprober/dev/player/record"
+        url = "https://www.diving-fish.com/api/maimaidxprober/player/record"
         try:
-            payload.update({"music_id": sid})
-            data = await post_url(
-                url,
-                data=orjson.dumps(payload),
-                status_code=200,
-                headers={"Content-Type": "application/json", "accept": "*/*", "Developer-Token": DF_DEVELOPER_TOKEN},
-                fmt="json",
-            )
+            data = await request_player_data(bind_info, url, method="POST", data={"music_id": sid})
             if use_cache and data:
                 if cache_dir.exists():
                     with open(cache_dir, "rb") as f:
@@ -236,9 +273,14 @@ async def get_song_record(
                     f.write(orjson.dumps(backup_data))
             return data
         except Exception as e:
-            if str(e).startswith("400"):
+            if isinstance(e, DivingFishTokenRevoked):
+                await prompt_rebind(msg, e)
+            elif str(e).startswith("400"):
                 raise ConfigValueError("{I18N:error.config.invalid}")
-            Logger.exception()
+            elif str(e).startswith("429"):
+                await msg.send_message(I18NContext("maimai.message.oauth.rate_limit"))
+            else:
+                Logger.exception()
             if use_cache and cache_dir.exists():
                 try:
                     with open(cache_dir, "rb") as f:
@@ -255,22 +297,19 @@ async def get_song_record(
 
 async def get_total_record(
     msg: Bot.MessageSession,
-    payload: dict,
     utage: bool = False,
     use_cache: bool = True,
 ):
-    if DF_DEVELOPER_TOKEN:
+    if pick_source(msg, GAME_MAIMAI) == SOURCE_LXNS:
+        return await get_total_record_lx(msg, utage, use_cache)
+    if DF_OAUTH_ENABLED:
+        bind_info = await get_bind_info(msg)
         mai_cache_path = cache_path / "maimai-record"
         mai_cache_path.mkdir(parents=True, exist_ok=True)
         cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace('|', '_')}_maimaidx_total_record.json"
-        url = "https://www.diving-fish.com/api/maimaidxprober/dev/player/records"
+        url = "https://www.diving-fish.com/api/maimaidxprober/player/records"
         try:
-            data = await get_url(
-                f"{url}?{urlencode(payload)}",
-                status_code=200,
-                headers={"Content-Type": "application/json", "accept": "*/*", "Developer-Token": DF_DEVELOPER_TOKEN},
-                fmt="json",
-            )
+            data = await request_player_data(bind_info, url)
             if use_cache and data:
                 with open(cache_dir, "wb") as f:
                     f.write(orjson.dumps(data))
@@ -278,16 +317,14 @@ async def get_total_record(
                 data = {"records": [d for d in data.get("records", []) if int(d.get("id", 0)) < 100000]}  # 过滤宴谱
             return data
         except Exception as e:
-            if str(e).startswith("400"):
-                if "qq" in payload:
-                    await msg.finish(I18NContext("maimai.message.user_unbound.qq"))
-                else:
-                    await msg.finish(I18NContext("maimai.message.user_not_found.df"))
+            if isinstance(e, DivingFishTokenRevoked):
+                await prompt_rebind(msg, e)
+            elif str(e).startswith("400"):
+                await msg.finish(I18NContext("maimai.message.user_not_found.df"))
             elif str(e).startswith("403"):
-                if "qq" in payload:
-                    await msg.finish(I18NContext("maimai.message.forbidden.eula"))
-                else:
-                    await msg.finish(I18NContext("maimai.message.forbidden"))
+                await msg.finish(I18NContext("maimai.message.forbidden.eula"))
+            elif str(e).startswith("429"):
+                await msg.send_message(I18NContext("maimai.message.oauth.rate_limit"))
             else:
                 Logger.exception()
             if use_cache and cache_dir.exists():
@@ -307,19 +344,19 @@ async def get_total_record(
 
 
 async def get_plate(msg: Bot.MessageSession, payload: dict, version: str, use_cache: bool = True) -> dict | None:
-    if DF_DEVELOPER_TOKEN:
+    if pick_source(msg, GAME_MAIMAI) == SOURCE_LXNS:
+        return await get_plate_lx(msg, payload, version, use_cache)
+    # OAuth 下查询对象由令牌决定，此处的载荷只用于携带版本列表。
+    if DF_OAUTH_ENABLED:
+        bind_info = await get_bind_info(msg)
         version = "舞" if version == "覇" else version  # “覇者”属于舞代
         mai_cache_path = cache_path / "maimai-record"
         mai_cache_path.mkdir(parents=True, exist_ok=True)
         cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace('|', '_')}_maimaidx_plate_{version}.json"
-        url = "https://www.diving-fish.com/api/maimaidxprober/query/plate"
+        url = "https://www.diving-fish.com/api/maimaidxprober/player/plate"
         try:
-            data = await post_url(
-                url,
-                data=orjson.dumps(payload),
-                status_code=200,
-                headers={"Content-Type": "application/json", "accept": "*/*", "Developer-Token": DF_DEVELOPER_TOKEN},
-                fmt="json",
+            data = await request_player_data(
+                bind_info, url, method="POST", data={"version": payload.get("version", [])}
             )
             data = {"verlist": [d for d in data.get("verlist", []) if int(d.get("id", 0)) < 100000]}  # 过滤宴谱
             if use_cache and data:
@@ -327,16 +364,14 @@ async def get_plate(msg: Bot.MessageSession, payload: dict, version: str, use_ca
                     f.write(orjson.dumps(data))
             return data
         except Exception as e:
-            if str(e).startswith("400"):
-                if "qq" in payload:
-                    await msg.finish(I18NContext("maimai.message.user_unbound.qq"))
-                else:
-                    await msg.finish(I18NContext("maimai.message.user_not_found.df"))
+            if isinstance(e, DivingFishTokenRevoked):
+                await prompt_rebind(msg, e)
+            elif str(e).startswith("400"):
+                await msg.finish(I18NContext("maimai.message.user_not_found.df"))
             elif str(e).startswith("403"):
-                if "qq" in payload:
-                    await msg.finish(I18NContext("maimai.message.forbidden.eula"))
-                else:
-                    await msg.finish(I18NContext("maimai.message.forbidden"))
+                await msg.finish(I18NContext("maimai.message.forbidden.eula"))
+            elif str(e).startswith("429"):
+                await msg.send_message(I18NContext("maimai.message.oauth.rate_limit"))
             else:
                 Logger.exception()
             if use_cache and cache_dir.exists():
