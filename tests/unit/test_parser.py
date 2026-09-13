@@ -1,5 +1,7 @@
 """core.builtins.parser 命令解析单元测试。"""
 
+from types import SimpleNamespace
+
 from core.builtins.parser.args import (
     ArgumentPattern,
     DescPattern,
@@ -10,6 +12,8 @@ from core.builtins.parser.args import (
     templates_to_str,
 )
 from core.builtins.parser.command import CommandParser, _split_command
+from core.builtins.parser.message import _format_error_detail
+from core.builtins.message.elements import MarkdownElement
 from core.tester import func_case, Tester
 from core.types import Module
 from core.types.module.component_meta import CommandMeta
@@ -265,6 +269,18 @@ def _test_split_command_quotes():
     )
 
 
+def _test_error_detail_markdown_format():
+    """支持 Markdown 的平台应将错误详情包装为安全的代码块。"""
+    msg = SimpleNamespace(session_info=SimpleNamespace(support_markdown=True))
+    chain = _format_error_detail(msg, "failure: `value`")
+    return (
+        len(chain.values) == 1
+        and isinstance(chain.values[0], MarkdownElement)
+        and chain.values[0].text == "```\nfailure: `value`\n```"
+        and chain.values[0].allow_parse is False
+    )
+
+
 @func_case
 async def test_parser_args(tester: Tester):
     """core.builtins.parser.args: 参数解析测试"""
@@ -283,5 +299,6 @@ async def test_parser_args(tester: Tester):
     await tester.test(_test_templates_to_str_with_desc, "templates_to_str 带描述测试")
     await tester.test(_test_default_command_help_doc, "无文档模块默认命令帮助测试")
     await tester.test(_test_command_parser_preserves_backslashes, "命令参数反斜杠保留测试")
+    await tester.test(_test_error_detail_markdown_format, "Markdown 错误详情代码块测试")
 
     return tester

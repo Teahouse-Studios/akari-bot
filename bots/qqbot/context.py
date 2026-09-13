@@ -55,6 +55,11 @@ qq_use_markdown = QQBotConfig.qq_use_markdown
 
 # 平台对指令操作标签内文本的字符数上限，按 urlencode 前的原文计算
 ACTION_TEXT_MAX_LENGTH = 100
+# QQ Bot inline keyboards accept at most five rows with ten buttons per row.
+# Core button layout is shared across platforms with different limits; normalize it
+# at this adapter boundary before handing the payload to botpy.
+QQBOT_MAX_KEYBOARD_ROWS = 5
+QQBOT_MAX_KEYBOARD_COLUMNS = 10
 PASSIVE_REPLY_FALLBACK_ERROR_CODES = frozenset({"40034005", "40034128"})
 PROACTIVE_PERMISSION_DENIED_ERROR_CODES = frozenset({"304046", "40034102", "40034105"})
 SILENT_SEND_ABORT_ERROR_CODES = frozenset({"40034101", "40054002", "40054003"})
@@ -119,11 +124,30 @@ def _build_qqbot_keyboard(
     """将 ButtonFrame 的按钮行转换为 QQBot 键盘。"""
     if not rows:
         return None
+
+    # ButtonFrame is shared by platforms with different keyboard limits. Split
+    # only oversized rows so normal row grouping remains intact. A keyboard
+    # cannot represent more than 50 buttons; keep the earliest buttons, matching
+    # the existing truncation policy elsewhere.
+    keyboard_rows_data = [
+        row.buttons[start : start + QQBOT_MAX_KEYBOARD_COLUMNS]
+        for row in rows
+        for start in range(0, len(row.buttons), QQBOT_MAX_KEYBOARD_COLUMNS)
+    ]
+    if len(keyboard_rows_data) > QQBOT_MAX_KEYBOARD_ROWS:
+        button_count = sum(len(row) for row in keyboard_rows_data)
+        rendered_count = sum(len(row) for row in keyboard_rows_data[:QQBOT_MAX_KEYBOARD_ROWS])
+        Logger.warning(
+            f"QQBot inline keyboard has {button_count} buttons but only {rendered_count} fit; "
+            f"dropped the last {button_count - rendered_count}."
+        )
+        keyboard_rows_data = keyboard_rows_data[:QQBOT_MAX_KEYBOARD_ROWS]
+
     keyboard_rows = []
     button_id = 0
-    for row in rows:
+    for row_buttons in keyboard_rows_data[:QQBOT_MAX_KEYBOARD_ROWS]:
         buttons = []
-        for message_button in row.buttons:
+        for message_button in row_buttons:
             payload = message_button.payload
             button_id += 1
             buttons.append(

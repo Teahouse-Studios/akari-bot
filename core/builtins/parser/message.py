@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING, Union, get_args, get_origin
 from rapidfuzz import process
 
 from core.builtins.message.chain import MessageChain, match_kecode
-from core.builtins.message.internal import ActionText, Image, Plain, I18NContext
+from core.builtins.message.internal import ActionText, Image, Markdown, I18NContext
 from core.builtins.parser.args import ArgumentPattern, Template as argsTemplate, templates_to_str
 from core.builtins.parser.command import CommandParser
 from core.builtins.session.lock import ExecutionLockList
@@ -1505,9 +1505,21 @@ async def _process_tos_abuse_warning(msg: "Bot.MessageSession", e: AbuseWarning)
         temp_ban_counter[_sender_scope_key(msg)] = {"count": 1, "ts": time.time()}
     else:
         err_msg_chain = MessageChain.assign(I18NContext("error.message.prompt"))
-        err_msg_chain.append(Plain(msg.session_info.locale.t_str(str(e))))
+        err_msg_chain += _format_error_detail(msg, msg.session_info.locale.t_str(str(e)))
         err_msg_chain.append(I18NContext("error.message.prompt.noreport"))
         await msg.send_message(err_msg_chain)
+
+
+def _format_error_detail(msg_or_session, text: str) -> MessageChain:
+    """按目标平台能力格式化错误详情。支持 Markdown 时使用 fenced code block。"""
+    session_info = getattr(msg_or_session, "session_info", msg_or_session)
+    if not session_info.support_markdown:
+        return match_kecode(text)
+
+    # 选择比正文中最长反引号序列更长的 fence，避免异常文本意外结束代码块。
+    longest_fence = max((len(match.group(0)) for match in re.finditer(r"`+", text)), default=0)
+    fence = "`" * max(3, longest_fence + 1)
+    return MessageChain.assign(Markdown(f"{fence}\n{text}\n{fence}", disable_joke=True, allow_parse=False))
 
 
 async def _process_send_message_failed(msg: "Bot.MessageSession"):
@@ -1536,7 +1548,7 @@ async def _process_noreport_exception(msg: "Bot.MessageSession", e: NoReportExce
     Logger.exception()
     err_msg_chain = MessageChain.assign(I18NContext("error.message.prompt"))
     err_msg = msg.session_info.locale.t_str(str(e))
-    err_msg_chain += match_kecode(err_msg)
+    err_msg_chain += _format_error_detail(msg, err_msg)
     err_msg_chain.append(I18NContext("error.message.prompt.noreport"))
     await msg.handle_error_signal()
     await msg.send_message(err_msg_chain)
@@ -1556,7 +1568,7 @@ async def _process_external_exception(msg: "Bot.MessageSession", e: Exception):
     Logger.exception()
     err_msg_chain = MessageChain.assign(I18NContext("error.message.prompt"))
     err_msg = msg.session_info.locale.t_str(str(e))
-    err_msg_chain += match_kecode(err_msg)
+    err_msg_chain += _format_error_detail(msg, err_msg)
     err_msg_chain.append(I18NContext("error.message.prompt.external"))
     if bug_report_url:
         err_msg_chain.append(I18NContext("error.message.prompt.address", url=bug_report_url))
@@ -1589,7 +1601,7 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
     # 构建用户错误消息
     err_msg_chain = MessageChain.assign(I18NContext("error.message.prompt"))
     err_msg = msg.session_info.locale.t_str(str(e))
-    err_msg_chain += match_kecode(err_msg)
+    err_msg_chain += _format_error_detail(msg, err_msg)
     err_msg_chain.append(I18NContext("error.message.prompt.report"))
 
     # 添加 bug 报告地址
@@ -1609,7 +1621,7 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
                 f,
                 [
                     I18NContext("error.message.report", command=msg.trigger_msg),
-                    Plain(tb.strip(), disable_joke=True, allow_parse=False),
+                    *_format_error_detail(f, tb.strip()).values,
                 ],
                 disable_secret_check=True,
             )
