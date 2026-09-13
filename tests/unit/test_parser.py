@@ -9,7 +9,7 @@ from core.builtins.parser.args import (
     parse_template,
     templates_to_str,
 )
-from core.builtins.parser.command import CommandParser
+from core.builtins.parser.command import CommandParser, _split_command
 from core.tester import func_case, Tester
 from core.types import Module
 from core.types.module.component_meta import CommandMeta
@@ -225,7 +225,43 @@ def _test_command_parser_preserves_backslashes():
 
     return (
         unquoted["<pattern>"] == r"https://example\.test/\d+\\suffix"
-        and quoted["<pattern>"] == r"https://example\.test/a b"
+        and quoted["<pattern>"] == '"https://example\\.test/a b"'
+    )
+
+
+def _test_command_parser_preserves_quotes():
+    """命令参数中的成套引号应原样传递给下游。"""
+    module = Module.assign(module_name="parser-test", alias=None, recommend_modules=None, developers=None)
+    module.command_list.add(CommandMeta(command_template=parse_template(["target data edit <k> <v>"])))
+    parser = CommandParser(module, ["~"], module_name=module.module_name)
+
+    double_quoted = parser.parse('parser-test target data edit config {"a": "b"}')[1]
+    single_quoted = parser.parse("parser-test target data edit config {'a': 'b'}")[1]
+    embedded = parser.parse('parser-test target data edit config a"b"c')[1]
+    grouped = parser.parse('parser-test target data edit config "value with space"')[1]
+
+    return (
+        double_quoted["<v>"] == '{"a": "b"}'
+        and single_quoted["<v>"] == "{'a': 'b'}"
+        and embedded["<v>"] == 'a"b"c'
+        and grouped["<v>"] == "value with space"
+    )
+
+
+def _test_split_command_quotes():
+    """命令分词：引号包裹整段参数时作为分组符号，其余引号原样保留。"""
+    return (
+        _split_command('parser-test add-regex "multi word" -t') == ["parser-test", "add-regex", "multi word", "-t"]
+        and _split_command('parser-test add-regex {"a": "b"}') == ["parser-test", "add-regex", '{"a":', '"b"}']
+        and _split_command('parser-test add-regex a"b"c') == ["parser-test", "add-regex", 'a"b"c']
+        and _split_command("parser-test add-regex 'multi word'") == ["parser-test", "add-regex", "multi word"]
+        and _split_command('parser-test add-regex "unbalanced') == ["parser-test", "add-regex", '"unbalanced']
+        and _split_command(r"parser-test add-regex https://example\.test/\d+")
+        == [
+            "parser-test",
+            "add-regex",
+            r"https://example\.test/\d+",
+        ]
     )
 
 
@@ -247,5 +283,7 @@ async def test_parser_args(tester: Tester):
     await tester.test(_test_templates_to_str_with_desc, "templates_to_str 带描述测试")
     await tester.test(_test_default_command_help_doc, "无文档模块默认命令帮助测试")
     await tester.test(_test_command_parser_preserves_backslashes, "命令参数反斜杠保留测试")
+    await tester.test(_test_command_parser_preserves_quotes, "命令参数引号保留测试")
+    await tester.test(_test_split_command_quotes, "命令分词引号处理测试")
 
     return tester

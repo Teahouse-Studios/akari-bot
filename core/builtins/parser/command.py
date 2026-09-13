@@ -6,7 +6,6 @@
 """
 
 import re
-import shlex
 import traceback
 from typing import TYPE_CHECKING
 
@@ -26,6 +25,49 @@ default_locale = BaseConfig.default_locale
 
 # 预编译正则：匹配中文引号（避免每次 parse 重新编译）
 _CN_QUOTE_PATTERN = re.compile(r"[“”]")
+
+
+def _split_command(command: str) -> list[str]:
+    """
+    按空白符号分割命令字符串，并原样保留参数中的字面字符（引号、反斜杠等）。
+
+    与标准 shell 的分词规则不同，这里只有在「整段参数被一对匹配的引号包裹」时，
+    引号才会作为分组符号被去除，以便参数中能够包含空白字符：
+
+    - ``'"multi word"'`` -> ``['multi word']``（引号包裹整段参数，作为分组符号）
+    - ``'{"a": "b"}'`` -> ``['{"a":', '"b"}']``（引号位于参数中间，原样保留）
+    - ``'a"b"c'`` -> ``['a"b"c']``（引号位于参数中间，原样保留）
+    - ``'"a b'`` -> ``['"a', 'b']``（引号不匹配，原样保留且不参与分组）
+
+    :param command: 待分割的命令字符串
+    :return: 分割后的参数列表
+    """
+    split_command = []
+    index = 0
+    length = len(command)
+    while index < length:
+        # 跳过空白字符
+        if command[index].isspace():
+            index += 1
+            continue
+
+        quote = command[index]
+        # 寻找与起始引号配对且包裹整段参数的结束引号
+        end = command.find(quote, index + 1)
+        if end != -1 and (end + 1 == length or command[end + 1].isspace()):
+            # 引号包裹整段参数：去除引号，保留其中的空白字符
+            split_command.append(command[index + 1 : end])
+            index = end + 1
+            continue
+
+        # 其余情况按字面处理：一直取到下一个空白字符（引号不参与分组）
+        end = index
+        while end < length and not command[end].isspace():
+            end += 1
+        split_command.append(command[index:end])
+        index = end
+
+    return split_command
 
 
 class CommandParser:
@@ -269,7 +311,7 @@ class CommandParser:
         解析流程：
         1. 如果没有命令模板，返回 None
         2. 规范化命令字符串（处理引号等特殊字符）
-        3. 使用 shlex 分割命令（支持引号和转义）
+        3. 按空白符号分割命令（引号包裹整段参数时作为分组符号，其余引号原样保留）
         4. 如果命令为空，处理默认命令
         5. 对命令参数进行模板匹配
         6. 返回匹配的命令和解析的参数
@@ -293,18 +335,9 @@ class CommandParser:
         command = _CN_QUOTE_PATTERN.sub('"', command)
 
         # ========== 步骤 3: 分割命令字符串 ==========
-        try:
-            # 使用 shlex 分割命令，支持引号和转义序列
-            # 例如: "search 'multi word' -t recent" -> ["search", "multi word", "-t", "recent"]
-            lexer = shlex.shlex(command, posix=True)
-            lexer.whitespace_split = True
-            lexer.commenters = ""
-            # 关闭 shlex 默认的转义字符
-            lexer.escape = ""
-            split_command = list(lexer)
-        except ValueError:
-            # 如果 shlex 分割失败（如引号不匹配），使用简单的空格分割
-            split_command = command.split(" ")
+        # 按空白符号分割命令，支持引号分组，并原样保留引号、反斜杠等字面字符
+        # 例如: "search 'multi word' -t recent" -> ["search", "multi word", "-t", "recent"]
+        split_command = _split_command(command)
 
         Logger.trace("splited command: " + str(split_command))
 
