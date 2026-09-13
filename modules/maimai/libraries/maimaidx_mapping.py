@@ -2,12 +2,9 @@ from pathlib import Path
 
 from modules.maimai.config import MaimaiSecretConfig
 
-DF_DEVELOPER_TOKEN = MaimaiSecretConfig.diving_fish_developer_token
 LX_DEVELOPER_TOKEN = MaimaiSecretConfig.lxns_developer_token
 SONGS_PER_PAGE = 30
 SONGS_NEED_IMG = 10
-
-default_source = "lxns" if LX_DEVELOPER_TOKEN else "diving-fish"
 
 mai_assets_path = Path(__file__).parent.parent / "assets"
 mai_cover_path = mai_assets_path / "static" / "mai" / "cover"

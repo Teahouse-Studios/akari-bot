@@ -11,6 +11,15 @@ from .libraries.maimaidx_platelist import generate as generate_plate
 from .libraries.maimaidx_scoreline import draw_scoreline_table
 from .libraries.maimaidx_scorelist import generate as generate_process
 from .libraries.maimaidx_utils import *
+from .libraries.divingfish_oauth import bind_account, unbind_account
+from .libraries.lxns_oauth import bind_account as bind_lx_account, unbind_account as unbind_lx_account
+from .libraries.source import (
+    GAME_MAIMAI,
+    SOURCE_DIVING_FISH,
+    SOURCE_LXNS,
+    pick_source,
+    switch_source,
+)
 
 total_list = TotalList()
 
@@ -543,17 +552,40 @@ async def _(msg: Bot.MessageSession, base: float, score: float):
     await msg.finish(Plain(compute_rating(base, score)))
 
 
-@mai.command("bind <username> {{I18N:maimai.help.bind.lx}}")
-async def _(msg: Bot.MessageSession, username: str):
-    if await get_record(msg, {"username": username}, use_cache=False):
-        await DivingProberBindInfo.set_bind_info(union_id=msg.session_info.sender_union_id, username=username)
-        await msg.finish(str(I18NContext("maimai.message.bind.success")) + username)
+@mai.command("bind {{I18N:maimai.help.bind.df}}")
+@mai.command("bind df {{I18N:maimai.help.bind.df}}")
+async def _(msg: Bot.MessageSession):
+    # 水鱼已改为 OAuth：绑定不再需要用户名，用户自行在授权页确认即可。
+    await bind_account(msg)
 
 
 @mai.command("unbind {{I18N:maimai.help.unbind}}")
+@mai.command("unbind df {{I18N:maimai.help.unbind}}")
 async def _(msg: Bot.MessageSession):
-    await DivingProberBindInfo.remove_bind_info(union_id=msg.session_info.sender_union_id)
-    await msg.finish(I18NContext("maimai.message.unbind.success"))
+    await unbind_account(msg)
+
+
+@mai.command("bind lx {{I18N:maimai.help.bind.lx}}")
+async def _(msg: Bot.MessageSession):
+    await bind_lx_account(msg)
+
+
+@mai.command("unbind lx {{I18N:maimai.help.unbind}}")
+async def _(msg: Bot.MessageSession):
+    await unbind_lx_account(msg)
+
+
+@mai.command("switch {{I18N:maimai.help.switch}}")
+async def _(msg: Bot.MessageSession):
+    prefix = msg.session_info.prefixes[0]
+    await switch_source(
+        msg,
+        GAME_MAIMAI,
+        {
+            SOURCE_DIVING_FISH: f"{prefix}maimai bind df",
+            SOURCE_LXNS: f"{prefix}maimai bind lx",
+        },
+    )
 
 
 @mai.command("b50 {{I18N:maimai.help.b50}}")
@@ -668,6 +700,11 @@ async def query_process(msg, level, goal, get_list=False):
 
 @mai.command("rank {{I18N:maimai.help.rank}}")
 async def _(msg: Bot.MessageSession):
+    if pick_source(msg, GAME_MAIMAI) == SOURCE_LXNS:
+        # 落雪没有全服分数排行，只有水鱼提供。
+        await msg.finish(
+            I18NContext("maimai.message.rank.df_only", cmd=ActionText(f"{msg.session_info.prefixes[0]}maimai switch"))
+        )
     payload = await get_diving_prober_bind_info(msg)
     await get_rank(msg, payload)
 

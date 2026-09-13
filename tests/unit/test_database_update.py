@@ -165,6 +165,73 @@ async def _test_jobqueue_v5_migration_recreates_current_sqlite_schema():
         await database_update.Tortoise.generate_schemas(safe=True)
 
 
+async def _test_diving_fish_v6_migration_adds_oauth_columns():
+    """水鱼绑定表的 OAuth 列应被补上且可重复执行"""
+    conn = database_update.Tortoise.get_connection("default")
+    table = "module_maimai_diving_prober_bind_info"
+    # 先还原成升级前的表结构：只有旧列，且带一行旧数据。
+    await conn.execute_query(f'DROP TABLE IF EXISTS "{table}";')
+    await conn.execute_query(f"""
+        CREATE TABLE "{table}" (
+            "union_id" VARCHAR(512) PRIMARY KEY,
+            "username" VARCHAR(512) NOT NULL
+        );
+    """)
+    await conn.execute_query(f'INSERT INTO "{table}" ("union_id", "username") VALUES (\'sender|1\', \'legacy\');')
+
+    try:
+        with patch.object(database_update, "db_type", "sqlite"):
+            await database_update.update_database_to_v6(conn)
+            await database_update.update_database_to_v6(conn)
+
+        columns = {row["name"] for row in await conn.execute_query_dict(f'PRAGMA table_info("{table}");')}
+        rows = await conn.execute_query_dict(f'SELECT * FROM "{table}";')
+        return (
+            {"union_id", "username", "refresh_token", "subject"} <= columns
+            and len(rows) == 1
+            # 旧行没有 refresh token，需由用户重新完成一次绑定。
+            and rows[0]["refresh_token"] is None
+        )
+    finally:
+        await conn.execute_query(f'DROP TABLE IF EXISTS "{table}";')
+        await database_update.Tortoise.generate_schemas(safe=True)
+
+
+async def _test_lxns_v6_migration_adds_oauth_columns():
+    """落雪绑定表的 OAuth 列应被补上且可重复执行"""
+    conn = database_update.Tortoise.get_connection("default")
+    table = "module_maimai_lxns_prober_bind_info"
+    # 先还原成升级前的表结构：只有旧列，且带一行旧数据。
+    await conn.execute_query(f'DROP TABLE IF EXISTS "{table}";')
+    await conn.execute_query(f"""
+        CREATE TABLE "{table}" (
+            "union_id" VARCHAR(512) PRIMARY KEY,
+            "friend_code" VARCHAR(512) NOT NULL
+        );
+    """)
+    await conn.execute_query(
+        f'INSERT INTO "{table}" ("union_id", "friend_code") VALUES (\'sender|2\', \'1234567890\');'
+    )
+
+    try:
+        with patch.object(database_update, "db_type", "sqlite"):
+            await database_update.update_database_to_v6(conn)
+            await database_update.update_database_to_v6(conn)
+
+        columns = {row["name"] for row in await conn.execute_query_dict(f'PRAGMA table_info("{table}");')}
+        rows = await conn.execute_query_dict(f'SELECT * FROM "{table}";')
+        return (
+            {"union_id", "friend_code", "refresh_token", "subject"} <= columns
+            and len(rows) == 1
+            # 旧行没有 refresh token，仍可凭好友码查分。
+            and rows[0]["refresh_token"] is None
+            and rows[0]["friend_code"] == "1234567890"
+        )
+    finally:
+        await conn.execute_query(f'DROP TABLE IF EXISTS "{table}";')
+        await database_update.Tortoise.generate_schemas(safe=True)
+
+
 @func_case
 async def test_database_update(tester: Tester):
     await tester.test(_test_wiki_url_rules_are_migrated_idempotently, "Wiki URL 规则幂等迁入全局名单")
@@ -176,5 +243,13 @@ async def test_database_update(tester: Tester):
     await tester.test(
         _test_jobqueue_v5_migration_recreates_current_sqlite_schema,
         "JobQueue v5 丢弃旧任务并重建当前 SQLite 表结构",
+    )
+    await tester.test(
+        _test_diving_fish_v6_migration_adds_oauth_columns,
+        "水鱼绑定 v6 补充 OAuth 列并保留旧数据",
+    )
+    await tester.test(
+        _test_lxns_v6_migration_adds_oauth_columns,
+        "落雪绑定 v6 补充 OAuth 列并保留旧数据",
     )
     return tester

@@ -3,10 +3,19 @@ from core.builtins.message.internal import Plain, Image as BImage
 from core.component import module
 from core.utils.func import is_int
 from core.utils.image import msgchain2image
-from .libraries.chunithm_apidata import get_info, get_record_df, get_record_lx, update_cover
+from .libraries.chunithm_apidata import get_info, get_record_lx, update_cover
 from .libraries.chunithm_best30 import generate as generate_b30
 from .libraries.chunithm_music import TotalList
 from .libraries.chunithm_utils import *
+from .libraries.divingfish_oauth import bind_account, unbind_account
+from .libraries.lxns_oauth import bind_account as bind_lx_account, unbind_account as unbind_lx_account
+from .libraries.source import (
+    GAME_CHUNITHM,
+    SOURCE_DIVING_FISH,
+    SOURCE_LXNS,
+    pick_source,
+    switch_source,
+)
 
 total_list = TotalList()
 
@@ -289,46 +298,49 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("maimai.message.random.failed"))
 
 
-@chu.command("bind df <username> {{I18N:maimai.help.bind.df}}")
-async def _(msg: Bot.MessageSession, username: str):
-    if await get_record_df(msg, {"username": username}, use_cache=False):
-        await DivingProberBindInfo.set_bind_info(union_id=msg.session_info.sender_union_id, username=username)
-        await msg.finish(str(I18NContext("maimai.message.bind.success")) + username)
+@chu.command("bind df {{I18N:maimai.help.bind.df}}")
+async def _(msg: Bot.MessageSession):
+    await bind_account(msg)
 
 
 @chu.command("unbind df {{I18N:maimai.help.unbind}}")
 async def _(msg: Bot.MessageSession):
-    await DivingProberBindInfo.remove_bind_info(union_id=msg.session_info.sender_union_id)
-    await msg.finish(I18NContext("maimai.message.unbind.success"))
+    await unbind_account(msg)
 
 
-if LX_DEVELOPER_TOKEN:
+@chu.command("bind lx [<friendcode>] {{I18N:maimai.help.bind.lx}}")
+async def _(msg: Bot.MessageSession, friendcode: str | None = None):
+    if not friendcode:
+        # 不带好友码即以 OAuth 授权绑定，可读到完整成绩。
+        await bind_lx_account(msg)
+    # 仅凭好友码的旧方式仍然可用：不必授权，但只能读到公开的最佳成绩。
+    data = await get_record_lx(msg, friendcode, use_cache=False)
+    if data:
+        await LxnsProberBindInfo.set_bind_info(union_id=msg.session_info.sender_union_id, friend_code=friendcode)
+        await msg.finish(str(I18NContext("maimai.message.bind.success")) + data["nickname"])
 
-    @chu.command("switch {{I18N:chunithm.help.switch}}")
-    async def _(msg: Bot.MessageSession):
-        if msg.session_info.sender_union_info.sender_data.get("chunithum_record_source", default_source) == "lxns":
-            await msg.session_info.sender_union_info.edit_sender_data("chunithum_record_source", "diving-fish")
-            await msg.finish(I18NContext("maimai.message.switch.df"))
-        else:
-            await msg.session_info.sender_union_info.edit_sender_data("chunithum_record_source", "lxns")
-            await msg.finish(I18NContext("maimai.message.switch.lx"))
 
-    @chu.command("bind lx <friendcode> {{I18N:maimai.help.bind.lx}}")
-    async def _(msg: Bot.MessageSession, friendcode: str):
-        data = await get_record_lx(msg, friendcode, use_cache=False)
-        if data:
-            await LxnsProberBindInfo.set_bind_info(union_id=msg.session_info.sender_union_id, friend_code=friendcode)
-            await msg.finish(str(I18NContext("maimai.message.bind.success")) + data["nickname"])
+@chu.command("unbind lx {{I18N:maimai.help.unbind}}")
+async def _(msg: Bot.MessageSession):
+    await unbind_lx_account(msg)
 
-    @chu.command("unbind lx {{I18N:maimai.help.unbind}}")
-    async def _(msg: Bot.MessageSession):
-        await LxnsProberBindInfo.remove_bind_info(union_id=msg.session_info.sender_union_id)
-        await msg.finish(I18NContext("maimai.message.unbind.success"))
+
+@chu.command("switch {{I18N:chunithm.help.switch}}")
+async def _(msg: Bot.MessageSession):
+    prefix = msg.session_info.prefixes[0]
+    await switch_source(
+        msg,
+        GAME_CHUNITHM,
+        {
+            SOURCE_DIVING_FISH: f"{prefix}chunithm bind df",
+            SOURCE_LXNS: f"{prefix}chunithm bind lx",
+        },
+    )
 
 
 @chu.command("b30 {{I18N:chunithm.help.b30}}")
 async def _(msg: Bot.MessageSession):
-    if msg.session_info.sender_union_info.sender_data.get("chunithum_record_source", default_source) == "lxns":
+    if pick_source(msg, GAME_CHUNITHM) == SOURCE_LXNS:
         token = await get_lxns_prober_bind_info(msg)
         source = "Lxns"
     else:
