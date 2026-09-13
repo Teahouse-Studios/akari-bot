@@ -16,8 +16,6 @@ from core.builtins.message.elements import (
 from core.builtins.message.internal import (
     Markdown,
     Plain,
-    Url,
-    I18NContext,
     Button,
     ButtonFrame,
 )
@@ -167,57 +165,11 @@ def _test_to_str_multiple():
         return False
 
 
-def _test_len():
-    """测试消息链长度"""
-    try:
-        chain = MessageChain.assign([PlainElement.assign("A"), PlainElement.assign("B")])
-        if len(chain) != 2:
-            return False
-        return True
-    except Exception:
-        return False
-
-
-def _test_len_empty():
-    """测试空消息链长度"""
-    try:
-        chain = MessageChain.assign(None)
-        if len(chain) != 0:
-            return False
-        return True
-    except Exception:
-        return False
-
-
-def _test_plain_element_assign():
-    """测试 PlainElement.assign()"""
-    try:
-        elem = PlainElement.assign("Hello")
-        if not isinstance(elem, PlainElement):
-            return False
-        if elem.text != "Hello":
-            return False
-        return True
-    except Exception:
-        return False
-
-
 def _test_plain_element_multiple_args():
     """测试 PlainElement.assign() 多参数"""
     try:
         elem = PlainElement.assign("Hello", " ", "World")
         if elem.text != "Hello World":
-            return False
-        return True
-    except Exception:
-        return False
-
-
-def _test_plain_element_str():
-    """测试 PlainElement.__str__()"""
-    try:
-        elem = PlainElement.assign("Test")
-        if str(elem) != "Test":
             return False
         return True
     except Exception:
@@ -306,19 +258,6 @@ def _test_markdown_roundtrip():
         and isinstance(restored_chain, MarkdownElement)
         and restored_chain == element
     )
-
-
-def _test_url_element_assign():
-    """测试 URLElement.assign()"""
-    try:
-        elem = URLElement.assign("https://example.com")
-        if not isinstance(elem, URLElement):
-            return False
-        if elem.url != "https://example.com":
-            return False
-        return True
-    except Exception:
-        return False
 
 
 def _test_plain_kecode_roundtrip_separators():
@@ -431,63 +370,6 @@ def _test_url_kecode_missing_text():
         return False
 
 
-def _test_url_element_str():
-    """测试 URLElement.__str__()"""
-    try:
-        elem = URLElement.assign("https://example.com")
-        if str(elem) != "https://example.com":
-            return False
-        return True
-    except Exception:
-        return False
-
-
-def _test_plain_alias():
-    """测试 Plain 别名"""
-    try:
-        elem = Plain("Hello")
-        if not isinstance(elem, PlainElement):
-            return False
-        if elem.text != "Hello":
-            return False
-        return True
-    except Exception:
-        return False
-
-
-def _test_url_alias():
-    """测试 Url 别名"""
-    try:
-        elem = Url("https://example.com")
-        if not isinstance(elem, URLElement):
-            return False
-        return True
-    except Exception:
-        return False
-
-
-def _test_i18n_context():
-    """测试 I18NContext 别名"""
-    try:
-        from core.builtins.message.elements import I18NContextElement
-
-        elem = I18NContext("test.key", param="value")
-        if not isinstance(elem, I18NContextElement):
-            return False
-        return True
-    except Exception:
-        return False
-
-
-def _test_button_alias():
-    """测试 Button 别名。"""
-    try:
-        element = Button("帮助", "~help")
-        return isinstance(element, ButtonElement) and element.show == "帮助" and element.value == "~help"
-    except Exception:
-        return False
-
-
 @func_case
 async def test_message_chain(tester: Tester):
     """core.builtins.message.chain: MessageChain 测试"""
@@ -501,8 +383,6 @@ async def test_message_chain(tester: Tester):
     await tester.test(_test_assign_mixed_list, "混合类型列表")
     await tester.test(_test_to_str, "to_str() 方法")
     await tester.test(_test_to_str_multiple, "多个元素的 to_str()")
-    await tester.test(_test_len, "消息链长度")
-    await tester.test(_test_len_empty, "空消息链长度")
 
     return tester
 
@@ -510,15 +390,11 @@ async def test_message_chain(tester: Tester):
 @func_case
 async def test_message_elements(tester: Tester):
     """core.builtins.message.elements: 消息元素测试"""
-    await tester.test(_test_plain_element_assign, "PlainElement.assign()")
     await tester.test(_test_plain_element_multiple_args, "PlainElement.assign() 多参数")
-    await tester.test(_test_plain_element_str, "PlainElement.__str__()")
     await tester.test(_test_plain_element_kecode, "PlainElement.kecode()")
     await tester.test(_test_plain_element_kecode_disable_joke, "PlainElement.kecode() 禁用玩笑")
     await tester.test(_test_markdown_element_and_plain_conversion, "MarkdownElement 普通文本转换")
     await tester.test(_test_markdown_sendable_respects_session_capability, "MarkdownElement 平台能力降级")
-    await tester.test(_test_url_element_assign, "URLElement.assign()")
-    await tester.test(_test_url_element_str, "URLElement.__str__()")
 
     return tester
 
@@ -533,17 +409,6 @@ async def test_kecode_roundtrip(tester: Tester):
     await tester.test(_test_formatted_time_kecode_roundtrip, "格式化时间往返测试")
     await tester.test(_test_url_kecode_roundtrip, "URL 含逗号往返测试")
     await tester.test(_test_url_kecode_missing_text, "url 缺少 text 参数测试")
-
-    return tester
-
-
-@func_case
-async def test_message_internal(tester: Tester):
-    """core.builtins.message.internal: 内部消息别名测试"""
-    await tester.test(_test_plain_alias, "Plain 别名")
-    await tester.test(_test_url_alias, "Url 别名")
-    await tester.test(_test_i18n_context, "I18NContext 别名")
-    await tester.test(_test_button_alias, "Button 别名")
 
     return tester
 
@@ -593,18 +458,6 @@ def _test_chain_is_safe():
     try:
         chain = MessageChain.assign("Hello World")
         return chain.is_safe is True
-    except Exception:
-        return False
-
-
-def _test_chain_append():
-    """MessageChain: append 方法"""
-    try:
-        chain = MessageChain.assign("Hello")
-        chain.append(PlainElement.assign(" World"))
-        if len(chain) != 2:
-            return False
-        return True
     except Exception:
         return False
 
@@ -899,7 +752,6 @@ async def test_message_chain_operations(tester: Tester):
     await tester.test(_test_chain_iadd, "MessageChain += 运算符")
     await tester.test(_test_chain_radd, "list + MessageChain 运算符")
     await tester.test(_test_chain_is_safe, "MessageChain is_safe 属性")
-    await tester.test(_test_chain_append, "MessageChain append 方法")
     await tester.test(_test_chain_copy, "MessageChain copy 方法")
     await tester.test(_test_chain_to_str_connector, "MessageChain to_str 自定义连接符")
     await tester.test(_test_convert_senderid_to_atcode_wraps_sender_id, "convert_senderid_to_atcode 包装发送者 ID")

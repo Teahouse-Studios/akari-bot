@@ -6,9 +6,10 @@ from types import SimpleNamespace
 from typing import Any
 from unittest.mock import AsyncMock, patch
 
-from attrs import define
+from attrs import define, evolve
 
 from core.builtins.message.chain import MessageChain, MessageNodes
+from core.builtins.message.elements import MarkdownElement, PlainElement
 from core.builtins.message.internal import I18NContext
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
@@ -217,10 +218,12 @@ async def _test_error_reporting_deduplicates_delivery_failures():
     session = await FetchedSessionInfo.assign(
         target_id="RPC-REPORT|Group|1", target_from="RPC-REPORT", client_name="RPC-REPORT", fetch=True
     )
+    markdown_session = evolve(session, target_id="RPC-REPORT|Group|2", support_markdown=True)
     bot = SimpleNamespace(
-        fetch_union_target_list=AsyncMock(return_value=[session]),
-        pick_channel_heads=AsyncMock(return_value=[session]),
+        fetch_union_target_list=AsyncMock(return_value=[session, markdown_session]),
+        pick_channel_heads=AsyncMock(return_value=[session, markdown_session]),
     )
+    details = "delivery failed: <value>\n```\n[KE:image,path=error.png]\n{I18N:error.message.prompt}"
     send = AsyncMock(return_value="report-task")
     previous = dict(server._recent_reports)
     server._recent_reports.clear()
@@ -230,11 +233,21 @@ async def _test_error_reporting_deduplicates_delivery_failures():
             patch.object(server, "CoreConfig", SimpleNamespace(report_targets=["report-union"])),
             patch.object(ServerAPI.direct_message, "submit", send),
         ):
-            await server.report_error("platform.send_message", "delivery failed")
-            await server.report_error("platform.send_message", "delivery failed")
-        assert send.await_count == 1
-        assert send.await_args.args[0] is session
-        assert send.await_args.kwargs == {"disable_secret_check": True}
+            await server.report_error("platform.send_message", details)
+            await server.report_error("platform.send_message", details)
+        assert send.await_count == 2
+        for call, target in zip(send.await_args_list, [session, markdown_session]):
+            assert call.args[0] is target
+            assert call.kwargs == {"disable_secret_check": True}
+            # 验证真实上报路径在 RPC 编解码和发送预处理之后仍保留诊断文本。
+            payload = ServerAPI.direct_message.encode_arguments(*call.args, **call.kwargs)
+            restored = ServerAPI.direct_message.decode_arguments(_wire(payload)).arguments
+            rendered = restored["message"].as_sendable(restored["session_info"])
+            assert len(rendered.values) == 2
+            detail = rendered.values[1]
+            assert type(detail) is (MarkdownElement if target.support_markdown else PlainElement)
+            assert detail.text == (f"````\n{details}\n````" if target.support_markdown else details)
+            assert detail.disable_joke and not detail.allow_parse
         submit = AsyncMock(return_value="task")
         with (
             patch.object(reporting, "CoreConfig", SimpleNamespace(report_targets=["report-union"])),

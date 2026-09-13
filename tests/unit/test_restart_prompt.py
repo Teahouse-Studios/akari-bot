@@ -6,6 +6,8 @@ server 进程重启后须等目标客户端重新注册为 ready，且以 Peer R
 
 import asyncio
 from datetime import UTC, datetime, timedelta
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, patch
 
 import orjson
 
@@ -86,14 +88,14 @@ async def _test_ignores_previous_client_lease():
         await JobQueuePeersTable.filter(peer_id=old_peer).delete()
         await _register_client(client, old_peer)
 
-        async def _new_instance_comes_online():
-            await asyncio.sleep(0.5)
+        async def _new_instance_comes_online(_delay):
+            assert not await _prompt_sent(), "旧实例仍在线时不得提前投递"
             await _register_client(client, new_peer)
 
-        task = asyncio.create_task(_new_instance_comes_online())
-        await load_prompt(None, timeout=10)
-        await task
-        return await _prompt_sent(new_peer) and not await _prompt_sent(old_peer)
+        poll_sleep = AsyncMock(side_effect=_new_instance_comes_online)
+        with patch("core.server.init.asyncio", SimpleNamespace(sleep=poll_sleep, wait_for=asyncio.wait_for)):
+            await load_prompt(None, timeout=10)
+        return poll_sleep.await_count == 1 and await _prompt_sent(new_peer) and not await _prompt_sent(old_peer)
     except Exception:
         return False
     finally:
@@ -113,14 +115,14 @@ async def _test_waits_for_client_to_come_online():
     try:
         await _reset(client)
 
-        async def _come_online():
-            await asyncio.sleep(0.5)
+        async def _come_online(_delay):
+            assert not await _prompt_sent(), "客户端注册前不得投递"
             await _register_client(client)
 
-        task = asyncio.create_task(_come_online())
-        await load_prompt(None, timeout=10)
-        await task
-        return await _prompt_sent(f"TEST-PEER-{client}")
+        poll_sleep = AsyncMock(side_effect=_come_online)
+        with patch("core.server.init.asyncio", SimpleNamespace(sleep=poll_sleep, wait_for=asyncio.wait_for)):
+            await load_prompt(None, timeout=10)
+        return poll_sleep.await_count == 1 and await _prompt_sent(f"TEST-PEER-{client}")
 
     except Exception:
         return False
@@ -138,7 +140,7 @@ async def _test_gives_up_when_client_never_online():
     try:
         await _reset(client)
 
-        await asyncio.wait_for(load_prompt(None, timeout=1), timeout=10)
+        await asyncio.wait_for(load_prompt(None, timeout=0.05), timeout=10)
         # 超时放弃后不应残留缓存，否则下次启动会重复投递
         return not await _prompt_sent() and not (PrivateAssets.path / ".cache_restart_author").exists()
 

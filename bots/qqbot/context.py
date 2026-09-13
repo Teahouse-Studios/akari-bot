@@ -7,9 +7,10 @@ from typing import Union
 from urllib.parse import quote
 
 import botpy
+import httpx
 from botpy.interaction import Interaction
 from botpy.message import BaseMessage, C2CMessage, DirectMessage, GroupMessage, Message
-from botpy.protocol import ApiError, MediaFileType, MediaSendResult, MessageType, ReplyTarget
+from botpy.protocol import ApiError, MediaFileType, MediaSendResult, MessageType, ReplyTarget, TransportError
 from botpy.types.group import SetMemberMuteState
 from botpy.types.message import Reference, KeyboardPayload
 from botpy.types.inline import Keyboard, Button, KeyboardRow, RenderData, Action, Permission
@@ -70,6 +71,7 @@ INITIATIVE_QUEUE_MAX_SIZE = 128
 HIGH_PRIORITY_BURST = 5
 HIGH_PRIORITY_QUEUE_RESERVE = 16
 ADAPTER_SHUTDOWN_TIMEOUT = 10
+MEDIA_UPLOAD_MAX_ATTEMPTS = 3
 TYPING_EMOTE_DIR = assets_path / "emotes" / "typing"
 TYPING_EMOTES = tuple(sorted(TYPING_EMOTE_DIR.glob("*.gif")))
 
@@ -78,6 +80,36 @@ def _load_s3_storage():
     from core.utils.s3 import S3Storage
 
     return S3Storage
+
+
+async def _upload_media(
+    client: botpy.Client, target: ReplyTarget, file_type: MediaFileType, *, local_path: str
+) -> dict[str, str]:
+    """仅为媒体预上传的瞬态网络错误补充重试，最多调用上传三次。"""
+    attempts = 0
+    while True:
+        try:
+            # 只上传资源，禁止平台随上传自动发消息，确保重试不会重复投递。
+            upload = await client.upload_media(target, file_type, local_path=local_path, srv_send_msg=False)
+            break
+        except TransportError as error:
+            # SDK 报告的尝试次数用于减少后续补充重试；单次调用内的重试仍由 SDK 控制。
+            attempts += max(error.attempts or 1, 1)
+            if attempts >= MEDIA_UPLOAD_MAX_ATTEMPTS or not isinstance(
+                error.cause, (httpx.TimeoutException, httpx.NetworkError, httpx.RemoteProtocolError)
+            ):
+                raise
+            delay = 2 ** (attempts - 1)
+            Logger.warning(
+                f"QQBot media upload to {target.scope}|{target.target_id} failed after {attempts} attempt(s) "
+                f"({type(error.cause).__name__}); retrying in {delay}s."
+            )
+            await asyncio.sleep(delay)
+
+    file_info = upload.get("file_info") if isinstance(upload, Mapping) else None
+    if not file_info:
+        raise RuntimeError("QQBot media upload response does not contain file_info")
+    return {"file_info": file_info}
 
 
 def _truncate_action_text(value: str, field: str) -> str:
@@ -587,11 +619,7 @@ class QQBotContextManager(ContextManager):
                     continue
                 media_type = MediaFileType.VOICE if isinstance(element, AudioElement) else MediaFileType.VIDEO
                 if target.scope in ("group", "c2c"):
-                    upload = await client.upload_media(target, media_type, local_path=media_path)
-                    file_info = upload.get("file_info") if isinstance(upload, Mapping) else None
-                    if not file_info:
-                        raise RuntimeError("QQBot media upload response does not contain file_info")
-                    media.append((element, {"file_info": file_info}))
+                    media.append((element, await _upload_media(client, target, media_type, local_path=media_path)))
                 else:
                     media.append((element, media_path))
             return media
@@ -665,11 +693,8 @@ class QQBotContextManager(ContextManager):
             prepared_images: list[tuple[ImageElement, str | Mapping]] = []
             for image, image_path in images:
                 if target.scope in ("group", "c2c"):
-                    upload = await client.upload_media(target, MediaFileType.IMAGE, local_path=image_path)
-                    file_info = upload.get("file_info") if isinstance(upload, Mapping) else None
-                    if not file_info:
-                        raise RuntimeError("QQBot media upload response does not contain file_info")
-                    prepared_images.append((image, {"file_info": file_info}))
+                    media_ref = await _upload_media(client, target, MediaFileType.IMAGE, local_path=image_path)
+                    prepared_images.append((image, media_ref))
                 else:
                     prepared_images.append((image, image_path))
 

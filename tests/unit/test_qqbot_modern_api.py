@@ -373,7 +373,7 @@ async def _test_plain_image_is_uploaded_before_send() -> bool:
     message = MessageChain.assign([PlainElement.assign("hello"), ImageElement.assign(__file__)])
     result = await _send_with_client(session, client, message)
     expected = [
-        ("upload", {"file_type": 1, "local_path": __file__}),
+        ("upload", {"file_type": 1, "local_path": __file__, "srv_send_msg": False}),
         (
             "plain",
             {
@@ -620,6 +620,7 @@ async def _test_group_message_reply_uses_message_reference() -> bool:
             ]
         },
         mentions=[SimpleNamespace(id="mentioned-user")],
+        attachments=[],
         content="hello",
         id="ROBOT-incoming",
     )

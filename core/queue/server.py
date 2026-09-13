@@ -9,7 +9,7 @@ from core.alive import Alive
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.internal import I18NContext, Plain
 from core.builtins.parser.command import CommandParser
-from core.builtins.parser.message import parser
+from core.builtins.parser.message import _format_error_detail, parser
 from core.builtins.session.info import EventInfo, SessionInfo
 from core.builtins.utils import command_prefix
 from core.constants.path import PrivateAssets
@@ -84,14 +84,14 @@ async def report_error(method: str, details: str) -> None:
     _recent_reports[fingerprint] = now
     bot = exports["Bot"]
     for session in await bot.pick_channel_heads(await bot.fetch_union_target_list(CoreConfig.report_targets)):
+        details_chain = (
+            _format_error_detail(session, details.strip())
+            if session.support_markdown
+            else MessageChain.assign(Plain(details.strip(), disable_joke=True, allow_parse=False))
+        )
         await ServerAPI.direct_message.submit(
             session,
-            MessageChain.assign(
-                [
-                    I18NContext("error.message.report", command=method),
-                    Plain(details.strip(), disable_joke=True, allow_parse=False),
-                ]
-            ),
+            MessageChain.assign(I18NContext("error.message.report", command=method)) + details_chain,
             disable_secret_check=True,
         )
 

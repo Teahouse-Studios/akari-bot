@@ -1,113 +1,97 @@
-"""Expectation 匹配器自身正确性测试。"""
+"""直接验证匹配器的正反例；命令执行由 integration 用例覆盖。"""
 
+from core.builtins.message.elements import PlainElement
 from core.tester import (
-    func_case,
-    Tester,
-    Contains,
-    Match,
-    StartsWith,
-    EndsWith,
-    Regex,
-    Empty,
-    Length,
-    Predicate,
     All,
     Any,
-    Not,
     AnyOutput,
+    Contains,
+    Empty,
+    Length,
+    Match,
     NoException,
+    Not,
+    Predicate,
+    Regex,
+    StartsWith,
+    EndsWith,
+    Tester,
+    func_case,
 )
-from core.builtins.message.elements import PlainElement
 
 
-def _test_predicate(result):
-    """测试 Predicate 匹配器"""
-    output = result.get("output")
-    return bool(output)
+def _output(text):
+    return {"output": [PlainElement.assign(text)] if text is not None else []}
 
 
-async def _test_match_positive_and_negative():
-    """Match 必须同时支持精确命中并拒绝非精确文本。"""
-    result = {"output": [PlainElement.assign("Pong!")]}
-    return await Match("Pong!").match(result) and not await Match("Pong").match(result)
+async def _test_text_matchers():
+    cases = (
+        (Match("Pong!"), "Pong!", "Pong"),
+        (Contains("pong"), "Pong!", "Ping!"),
+        (Contains("pong", case_sensitive=True), "pong!", "Pong!"),
+        (StartsWith("Pong"), "Pong!", "Say Pong!"),
+        (EndsWith("Pong!"), "Say Pong!", "Pong! now"),
+        (Regex(r"^Pong[0-9]+!$"), "Pong42!", "Pong!"),
+    )
+    for matcher, accepted, rejected in cases:
+        assert await matcher.match(_output(accepted)), repr(matcher)
+        assert not await matcher.match(_output(rejected)), repr(matcher)
+    return True
+
+
+async def _test_output_matchers():
+    present, empty = _output("Pong!"), _output(None)
+    assert await AnyOutput().match(present)
+    assert not await AnyOutput().match(empty)
+    assert not await AnyOutput().match(_output("执行命令时发生错误"))
+    assert await Empty().match(empty) and not await Empty().match(present)
+    for matcher in (Length(eq=1), Length(ge=1)):
+        assert await matcher.match(present) and not await matcher.match(empty), repr(matcher)
+    assert await NoException().match(present)
+    assert not await NoException().match({"exception": ValueError("boom")})
+    return True
+
+
+async def _test_predicate_matcher():
+    def has_output(result):
+        return bool(result.get("output"))
+
+    async def async_has_output(result):
+        return has_output(result)
+
+    for predicate in (has_output, async_has_output):
+        matcher = Predicate(predicate)
+        assert await matcher.match(_output("Pong!"))
+        assert not await matcher.match(_output(None))
+    return True
+
+
+async def _test_combinators():
+    result = _output("Pong!")
+    matches = {True: Match("Pong!"), False: Match("Ping!")}
+    # 两种拼写均覆盖真值表，防止恒真、恒假或只检查第一个条件。
+    for left, right, conjunction, disjunction in (
+        (True, True, True, True),
+        (True, False, False, True),
+        (False, True, False, True),
+        (False, False, False, False),
+    ):
+        a, b = matches[left], matches[right]
+        for matcher in (All(a, b), a & b):
+            assert await matcher.match(result) is conjunction, repr(matcher)
+        for matcher in (Any(a, b), a | b):
+            assert await matcher.match(result) is disjunction, repr(matcher)
+    for value, matcher in matches.items():
+        assert await Not(matcher).match(result) is not value
+        assert await (~matcher).match(result) is not value
+    return True
 
 
 @func_case
 async def test_expectations(tester: Tester):
-    """Expectation 匹配器: 各类型匹配器测试"""
-    # AnyOutput 匹配器
-    await tester.integrate("~ping", AnyOutput(), "AnyOutput 有输出")
-
-    # Contains 匹配器
-    await tester.integrate("~ping", Contains("Pong"), "Contains 包含文本")
-
-    # Empty 匹配器
-    await tester.integrate("~nonexistent_command_xyz_12345", Empty(), "Empty 无输出")
-
-    # NoException 匹配器
-    await tester.integrate("~ping", NoException(), "NoException 正常执行")
-
-    # Predicate 匹配器
-    await tester.integrate("~ping", Predicate(_test_predicate), "Predicate 自定义匹配")
-
-    # 组合匹配器 - All (AND)
-    await tester.integrate("~ping", All(Contains("Pong"), AnyOutput()), "All 组合匹配")
-
-    # 组合匹配器 - Any (OR)
-    await tester.integrate("~ping", Any(Contains("Pong"), Contains("nonexistent_text")), "Any 组合匹配")
-
-    # 组合匹配器 - Not
-    await tester.integrate("~ping", Not(Contains("nonexistent_text_xyz")), "Not 组合匹配")
-
-    # 运算符组合 - &
-    await tester.integrate("~ping", Contains("Pong") & AnyOutput(), "& 运算符组合")
-
-    # 运算符组合 - |
-    await tester.integrate("~ping", Contains("Pong") | Contains("nonexistent"), "| 运算符组合")
-
-    # 运算符组合 - ~
-    await tester.integrate("~ping", ~Contains("nonexistent_text_xyz"), "~ 运算符组合")
-
-    return tester
-
-
-@func_case
-async def test_match_matcher(tester: Tester):
-    """Match 匹配器: 精确匹配测试"""
-    await tester.test(_test_match_positive_and_negative, "Match 精确匹配与反例")
-    return tester
-
-
-@func_case
-async def test_startswith_matcher(tester: Tester):
-    """StartsWith 匹配器: 前缀匹配测试"""
-    await tester.integrate("~ping", StartsWith("Pong"), "StartsWith 前缀匹配")
-    return tester
-
-
-@func_case
-async def test_endswith_matcher(tester: Tester):
-    """EndsWith 匹配器: 后缀匹配测试"""
-    await tester.integrate("~version", EndsWith("。"), "EndsWith 后缀匹配")
-    return tester
-
-
-@func_case
-async def test_regex_matcher(tester: Tester):
-    """Regex 匹配器: 正则匹配测试"""
-    await tester.integrate("~ping", Regex(r"Pong"), "Regex 正则匹配")
-    return tester
-
-
-@func_case
-async def test_length_matcher(tester: Tester):
-    """Length 匹配器: 消息链长度测试"""
-    await tester.integrate("~ping", Length(ge=1), "Length 至少1个元素")
-    return tester
-
-
-@func_case
-async def test_contains_case_sensitive(tester: Tester):
-    """Contains 匹配器: 大小写敏感测试"""
-    await tester.integrate("~ping", Contains("pong", case_sensitive=False), "Contains 不区分大小写")
+    """Expectation：文本、空输出、异常、自定义断言与组合条件。"""
+    await tester.test(_test_text_matchers, "文本匹配器正反例与大小写敏感测试")
+    await tester.test(_test_output_matchers, "输出数量、空输出和异常匹配测试")
+    await tester.test(_test_predicate_matcher, "同步与异步 Predicate 正反例测试")
+    await tester.test(_test_combinators, "组合匹配器与运算符真值表测试")
     return tester
