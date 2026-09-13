@@ -13,12 +13,17 @@ class Tester:
         self.name = name
         self._entries: list[dict] = []
         self._results: list[dict] = []
-        self._progress_event = asyncio.Event()
+        # Event is level-triggered and can lose a notification when clear()
+        # races with a subsequent subtest completion. Queue one token per
+        # completed subtest so the func_case watchdog observes every progress.
+        self._progress_queue: asyncio.Queue[None] = asyncio.Queue()
         self.is_ci: bool = False
 
     async def _wait_for_progress(self) -> None:
-        await self._progress_event.wait()
-        self._progress_event.clear()
+        await self._progress_queue.get()
+
+    def _notify_progress(self) -> None:
+        self._progress_queue.put_nowait(None)
 
     async def test(
         self,
@@ -65,7 +70,7 @@ class Tester:
                 "traceback": traceback.format_exc(),
             }
             self._results.append(final)
-            self._progress_event.set()
+            self._notify_progress()
             return final
 
         passed = bool(result)
@@ -79,7 +84,7 @@ class Tester:
             "note": note,
         }
         self._results.append(final)
-        self._progress_event.set()
+        self._notify_progress()
         return final
 
     async def integrate(
@@ -116,7 +121,7 @@ class Tester:
         if "timeout" in result or "exception" in result and not isinstance(expected, Expectation):
             result.update({"type": "integration", "expected": expected, "match": False, "note": note})
             self._results.append(result)
-            self._progress_event.set()
+            self._notify_progress()
             return result
 
         if not expected:
@@ -137,7 +142,7 @@ class Tester:
             result.pop("traceback", None)
 
         self._results.append(result)
-        self._progress_event.set()
+        self._notify_progress()
         return result
 
     def get_entries(self) -> list[dict]:

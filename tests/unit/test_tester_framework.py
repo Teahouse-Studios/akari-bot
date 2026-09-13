@@ -187,6 +187,16 @@ async def _test_function_entry_timeout_resets_on_progress():
     return not result.get("timeout") and all(entry.get("match") for entry in result.get("results", []))
 
 
+async def _test_progress_notifications_are_not_lost():
+    """连续完成的子测试必须各自产生 watchdog 可消费的进度通知。"""
+    tester = Tester("progress_queue")
+    tester._notify_progress()
+    tester._notify_progress()
+    await asyncio.wait_for(tester._wait_for_progress(), timeout=0.1)
+    await asyncio.wait_for(tester._wait_for_progress(), timeout=0.1)
+    return True
+
+
 async def _test_unit_subtest_exception_keeps_running_and_counts_once():
     """unit 子测试抛异常应记录后继续跑后续子测试，runner 只计一次失败。"""
     import tester as tester_module
@@ -333,6 +343,7 @@ async def test_tester_framework(tester: Tester):
     await tester.test(_test_integrate_expected_exception_is_not_runner_error, "func_case 预期异常匹配测试")
     await tester.test(_test_function_entry_timeout_is_structured_failure, "func_case 超时结构化失败测试")
     await tester.test(_test_function_entry_timeout_resets_on_progress, "func_case 超时按进展刷新测试")
+    await tester.test(_test_progress_notifications_are_not_lost, "连续进度通知不丢失测试")
     await tester.test(_test_unit_subtest_exception_keeps_running_and_counts_once, "unit 子测试异常续跑且计数一次测试")
     await tester.test(_test_function_entry_does_not_misclassify_test_timeout, "子测试超时不冒充 runner 超时测试")
     await tester.test(_test_function_entry_init_failure_is_error, "func_case 初始化错误不可跳过测试")
