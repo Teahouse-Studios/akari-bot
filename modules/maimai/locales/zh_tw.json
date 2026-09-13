@@ -97,8 +97,6 @@
     "maimai.message.scorelist": "以下為 ${user} 的 ${level} 級成績清單：",
     "maimai.message.search": "「${keyword}」的搜尋結果：",
     "maimai.message.song": "藝術家：${artist}\n分類：${genre}\nBPM：${bpm}\n版本：${version}\n難度：${level}",
-    "maimai.message.switch.df": "API 資料來源已切換為：Diving-Fish",
-    "maimai.message.switch.lx": "API 資料來源已切換為：落雪咖啡屋",
     "maimai.message.too_much": "結果過多（${length} 條），請縮小搜尋範圍。",
     "maimai.message.unbind.success": "解除綁定成功。",
     "maimai.message.use_cache": "取得玩家分數失敗，已使用快取資料。",
