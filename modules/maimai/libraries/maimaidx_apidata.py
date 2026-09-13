@@ -13,6 +13,7 @@ from core.utils.http import download, get_url, post_url
 from .divingfish_oauth import (
     DF_OAUTH_ENABLED,
     DivingFishTokenRevoked,
+    diving_fish_bind_usable,
     request_player_data,
 )
 from .maimaidx_mapping import *
@@ -32,7 +33,7 @@ total_list = TotalList()
 
 async def get_bind_info(msg: Bot.MessageSession) -> DivingProberBindInfo:
     bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
-    if not bind_info or not bind_info.refresh_token:
+    if not diving_fish_bind_usable(bind_info):
         await msg.finish(
             I18NContext(
                 "maimai.message.user_unbound",
@@ -43,12 +44,15 @@ async def get_bind_info(msg: Bot.MessageSession) -> DivingProberBindInfo:
 
 
 async def prompt_rebind(msg: Bot.MessageSession, exc: DivingFishTokenRevoked) -> None:
-    """令牌失效时引导用户重新完成一次绑定授权。
+    """授权失效时引导用户重新完成一次绑定授权。
+
+    两种客户端都会走到这里：公开客户端的 refresh token 被撤销，或机密客户端换票时对方已不
+    再授权本应用。对用户而言要做的事相同。
 
     :param msg: 消息会话。
     :param exc: 触发本提示的异常。
     """
-    Logger.warning(f"Diving-Fish refresh token is no longer valid: {exc}")
+    Logger.warning(f"The Diving-Fish authorization of {msg.session_info.sender_id} is no longer valid: {exc}")
     await msg.finish(
         I18NContext(
             "maimai.message.oauth.revoked",

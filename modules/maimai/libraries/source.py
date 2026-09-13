@@ -6,6 +6,7 @@
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import ActionText, I18NContext
+from .divingfish_oauth import diving_fish_bind_usable
 from ..config import MaimaiConfig, MaimaiSecretConfig
 from ..database.models import DivingProberBindInfo, LxnsProberBindInfo
 
@@ -108,7 +109,7 @@ async def is_bound(msg: Bot.MessageSession, game: str, source: str) -> bool:
     """
     if source == SOURCE_DIVING_FISH:
         bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
-        return bool(bind_info and bind_info.refresh_token)
+        return diving_fish_bind_usable(bind_info)
     bind_info = await LxnsProberBindInfo.get_by_sender_id(msg, create=False)
     if not bind_info:
         return False

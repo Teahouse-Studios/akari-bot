@@ -159,7 +159,7 @@ async def get_record_df(
         return data
     except Exception as e:
         if isinstance(e, DivingFishTokenRevoked):
-            Logger.warning(f"Diving-Fish refresh token is no longer valid: {e}")
+            Logger.warning(f"The Diving-Fish authorization of {msg.session_info.sender_id} is no longer valid: {e}")
             await msg.finish(
                 I18NContext(
                     "maimai.message.oauth.revoked",

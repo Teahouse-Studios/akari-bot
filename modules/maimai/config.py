@@ -10,6 +10,7 @@ class MaimaiConfig:
 
 @on_module_config("maimai", secret=True)
 class MaimaiSecretConfig:
+    diving_fish_client_secret: str = ""
     lxns_developer_token: str = ""
     lxns_client_secret: str = ""
     lxns_redirect_uri: str = ""

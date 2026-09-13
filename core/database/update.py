@@ -37,7 +37,7 @@ WIKI_URL_RULE_TABLES = (
     ("module_wiki_block_list", GlobalURLBlocklist),
 )
 
-# v6：绑定表补充 OAuth 授权所需的列，水鱼侧为公开客户端，落雪侧为用户授权。
+# v6：绑定表补充 OAuth 授权所需的列，水鱼、落雪两侧的取数方式都改由 OAuth 令牌决定。
 OAUTH_BIND_COLUMNS = (
     ("module_maimai_diving_prober_bind_info", "refresh_token", "VARCHAR(1024)"),
     ("module_maimai_diving_prober_bind_info", "subject", "VARCHAR(512)"),

@@ -3,6 +3,7 @@ from core.builtins.message.internal import ActionText, I18NContext
 from core.constants.exceptions import ConfigValueError
 from core.utils.http import get_url
 from .chunithm_mapping import *
+from .divingfish_oauth import diving_fish_bind_usable
 from ..database.models import DivingProberBindInfo, LxnsProberBindInfo
 
 
@@ -15,7 +16,7 @@ async def get_diving_prober_bind_info(msg: Bot.MessageSession):
     :return: 该用户的绑定记录。
     """
     bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
-    if not bind_info or not bind_info.refresh_token:
+    if not diving_fish_bind_usable(bind_info):
         await msg.finish(
             I18NContext(
                 "chunithm.message.user_unbound.df",
