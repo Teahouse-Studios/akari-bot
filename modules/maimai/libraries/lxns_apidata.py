@@ -13,7 +13,6 @@ from core.builtins.message.internal import ActionText, I18NContext
 from core.constants.exceptions import ConfigValueError
 from core.constants.path import cache_path
 from core.logger import Logger
-from core.utils.http import get_url
 from .lxns_oauth import (
     LXNS_API_BASE,
     LXNS_MAIMAI_PLAYER_URL,
@@ -22,16 +21,12 @@ from .lxns_oauth import (
     request_player_data,
     unwrap,
 )
-from .maimaidx_mapping import LX_DEVELOPER_TOKEN, plate_mapping, sd_plate_mapping
+from .maimaidx_mapping import plate_mapping, sd_plate_mapping
 from .maimaidx_music import TotalList
 from ..database.models import LxnsProberBindInfo
 
 LXNS_MAIMAI_BESTS_URL = f"{LXNS_API_BASE}/user/maimai/player/bests"
 LXNS_MAIMAI_SCORES_URL = f"{LXNS_API_BASE}/user/maimai/player/scores"
-# 公开端点：凭好友码即可读取，无需用户授权，但须携带开发者令牌。
-LXNS_MAIMAI_FRIEND_PLAYER_URL = f"{LXNS_API_BASE}/maimai/player/{{friend_code}}"
-LXNS_MAIMAI_FRIEND_BESTS_URL = f"{LXNS_API_BASE}/maimai/player/{{friend_code}}/bests"
-LXNS_MAIMAI_QQ_PLAYER_URL = f"{LXNS_API_BASE}/maimai/player/qq/{{qq}}"
 
 # 落雪把标准与 DX 谱面记在同一个曲目 ID 下，水鱼则给 DX 谱面的 ID 加 10000，互换即是在
 # 这个偏移量上加减。宴会场曲目（ID 大于等于 100000）不分谱面类型，不参与换算。
@@ -184,8 +179,7 @@ def _cache_file(msg: Bot.MessageSession, name: str):
 async def get_bind_info(msg: Bot.MessageSession) -> LxnsProberBindInfo:
     """取得该用户的落雪绑定记录。
 
-    查询对象由令牌决定，故必须存在这位用户自己的授权记录；仅有好友码的旧绑定无法用于
-    用户态接口。
+    查询对象由令牌决定，故必须存在这位用户自己的授权记录。
 
     :param msg: 消息会话。
     :return: 该用户的绑定记录。
@@ -199,56 +193,6 @@ async def get_bind_info(msg: Bot.MessageSession) -> LxnsProberBindInfo:
             )
         )
     return bind_info
-
-
-def _developer_headers() -> dict[str, str]:
-    """公开端点所需的开发者令牌请求头。"""
-    return {
-        "User-Agent": "AkariBot/1.0",
-        "Authorization": LX_DEVELOPER_TOKEN,
-        "Content-Type": "application/json",
-        "accept": "*/*",
-    }
-
-
-async def get_lxns_prober_bind_info(msg: Bot.MessageSession) -> LxnsProberBindInfo | str:
-    """取得该用户的落雪身份。
-
-    已授权 OAuth 的绑定直接返回绑定记录，查询对象由令牌决定；仅有好友码的旧绑定沿用开发者
-    令牌接口，查询对象是好友码。QQ 平台上的无绑定用户仍可按 QQ 号反查好友码。
-
-    :param msg: 消息会话。
-    :return: 该用户的绑定记录，或仅有好友码的旧绑定的好友码。
-    """
-    bind_info = await LxnsProberBindInfo.get_by_sender_id(msg, create=False)
-    if bind_info and bind_info.refresh_token:
-        return bind_info
-    if bind_info and bind_info.friend_code:
-        return bind_info.friend_code
-    # 好友码反查同样需要开发者令牌，令牌没配时这条路必然 401，不如直接提示未绑定。
-    if msg.session_info.sender_from == "QQ" and LX_DEVELOPER_TOKEN:
-        try:
-            profile_url = LXNS_MAIMAI_QQ_PLAYER_URL.format(qq=msg.session_info.get_common_sender_id())
-            profile_data = await get_url(profile_url, status_code=200, headers=_developer_headers(), fmt="json")
-            profile = unwrap(profile_data)
-            friend_code = str(profile.get("friend_code", "")) if isinstance(profile, dict) else ""
-            if friend_code:
-                return friend_code
-        except Exception as e:
-            if str(e).startswith(("400", "404")):
-                await msg.finish(I18NContext("maimai.message.user_not_found.lx"))
-            elif str(e).startswith("401"):
-                raise ConfigValueError("{I18N:error.config.invalid}")
-            elif str(e).startswith("403"):
-                await msg.finish(I18NContext("maimai.message.forbidden"))
-            else:
-                raise e
-    await msg.finish(
-        I18NContext(
-            "maimai.message.user_unbound",
-            cmd=ActionText(f"{msg.session_info.prefixes[0]}maimai bind lx"),
-        )
-    )
 
 
 async def _prompt_error(msg: Bot.MessageSession, e: Exception) -> None:
@@ -394,38 +338,6 @@ async def split_bests(scores: list[dict]) -> dict:
     }
 
 
-async def fetch_friend_player(friend_code: str) -> dict:
-    """凭好友码取回公开的玩家信息。
-
-    :param friend_code: 好友码。
-    :return: 玩家信息，含 `name` 与 `rating`。
-    """
-    resp = await get_url(
-        LXNS_MAIMAI_FRIEND_PLAYER_URL.format(friend_code=friend_code),
-        status_code=200,
-        headers=_developer_headers(),
-        fmt="json",
-    )
-    profile = unwrap(resp)
-    return profile if isinstance(profile, dict) else {}
-
-
-async def fetch_friend_bests(friend_code: str) -> dict:
-    """凭好友码取回公开的最佳成绩。
-
-    :param friend_code: 好友码。
-    :return: 含 `standard` 与 `dx` 两份成绩列表的响应。
-    """
-    resp = await get_url(
-        LXNS_MAIMAI_FRIEND_BESTS_URL.format(friend_code=friend_code),
-        status_code=200,
-        headers=_developer_headers(),
-        fmt="json",
-    )
-    resp = unwrap(resp)
-    return resp if isinstance(resp, dict) else {}
-
-
 async def get_record_lx_oauth(msg: Bot.MessageSession, bind_info: LxnsProberBindInfo, use_cache: bool = True) -> dict:
     """以 OAuth 令牌取回 B35 与 B15，形状与水鱼的 `/query/player` 一致。
 
@@ -464,60 +376,23 @@ async def get_record_lx_oauth(msg: Bot.MessageSession, bind_info: LxnsProberBind
     return await _with_cache(msg, _cache_file(msg, "maimaidx_lx_bests"), fetch)
 
 
-async def get_record_lx_friend(msg: Bot.MessageSession, friend_code: str, use_cache: bool = True) -> dict:
-    """凭好友码取回公开的 B35 与 B15，形状与水鱼的 `/query/player` 一致。
-
-    公开端点只给最佳成绩，没有水鱼那样按版本划分的成绩，故按谱面类型自行划分。
-
-    :param msg: 消息会话。
-    :param friend_code: 好友码。
-    :param use_cache: 是否读写本地缓存。
-    :return: 含 `nickname`、`rating` 与 `charts.sd` / `charts.dx` 的成绩字典。
-    """
-
-    async def fetch():
-        try:
-            player = await fetch_friend_player(friend_code)
-            resp = await fetch_friend_bests(friend_code)
-        except Exception as e:
-            if str(e).startswith("401"):
-                # 开发者令牌无效：属于部署配置问题，提示用户也无济于事。
-                raise ConfigValueError("{I18N:error.config.invalid}") from e
-            raise
-        charts = await split_bests(list(resp.get("standard") or []) + list(resp.get("dx") or []))
-        return {
-            "nickname": player.get("name", ""),
-            "username": player.get("name", ""),
-            "rating": player.get("rating", 0),
-            "charts": charts,
-        }
-
-    return await _with_cache(msg, _cache_file(msg, "maimaidx_lx_bests"), fetch)
-
-
 async def get_record_lx(
     msg: Bot.MessageSession,
-    token: LxnsProberBindInfo | str | None = None,
+    token: LxnsProberBindInfo | None = None,
     use_cache: bool = True,
 ) -> dict:
     """取回 B35 与 B15，形状与水鱼的 `/query/player` 一致。
 
-    已授权 OAuth 的绑定由令牌决定查询对象；仅有好友码的旧绑定改走公开端点，须携带开发者
-    令牌，且只能读到公开的最佳成绩。
+    查询对象由令牌决定：落雪的用户态端点按令牌认出用户，没有别的识别方式。
 
     :param msg: 消息会话。
-    :param token: 落雪绑定记录，或仅有好友码的旧绑定的好友码；为空时自行解析。
+    :param token: 该用户的落雪绑定记录；为空时自行解析。
     :param use_cache: 是否读写本地缓存。
     :return: 含 `nickname`、`rating` 与 `charts.sd` / `charts.dx` 的成绩字典。
     """
-    if token is None:
-        token = await get_lxns_prober_bind_info(msg)
-    if isinstance(token, LxnsProberBindInfo) and token.refresh_token:
-        return await get_record_lx_oauth(msg, token, use_cache)
-    friend_code = token.friend_code if isinstance(token, LxnsProberBindInfo) else token
-    if friend_code and LX_DEVELOPER_TOKEN:
-        return await get_record_lx_friend(msg, str(friend_code), use_cache)
-    raise ConfigValueError("{I18N:error.config.secret.not_found}")
+    if not token or not token.refresh_token:
+        token = await get_bind_info(msg)
+    return await get_record_lx_oauth(msg, token, use_cache)
 
 
 async def get_song_record_lx(msg: Bot.MessageSession, sid: str | list[str], use_cache: bool = True) -> dict:

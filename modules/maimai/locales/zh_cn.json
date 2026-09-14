@@ -12,7 +12,6 @@
     "config.comments.module_maimai_secret.lxns_client_id": "落雪咖啡屋 OAuth 应用的 client_id。",
     "config.comments.module_maimai_secret.diving_fish_client_secret": "水鱼账号 OAuth 应用的 client_secret。公开客户端可留空。",
     "config.comments.module_maimai_secret.lxns_client_secret": "落雪咖啡屋 OAuth 应用的 client_secret。",
-    "config.comments.module_maimai_secret.lxns_developer_token": "落雪咖啡屋查分器的开发者令牌。",
     "config.comments.module_maimai_secret.lxns_redirect_uri": "落雪咖啡屋 OAuth 使用的回调地址；应用登记为“无回调地址”时可留空。",
     "maimai.help.alias": "查询歌曲的别名。",
     "maimai.help.b50": "查询 Maimai 玩家的 B50 列表。",
@@ -82,9 +81,8 @@
     "maimai.message.oauth.failed": "无法发起查分器授权，请稍后再试。",
     "maimai.message.oauth.lx.code_invalid": "授权码无效或已过期，请重新发起绑定。",
     "maimai.message.oauth.lx.not_configured": "未找到落雪咖啡屋 OAuth 的 client_id，请联系机器人所有者。",
-    "maimai.message.oauth.lx.prompt": "请由本人打开以下链接完成落雪咖啡屋账号授权，链接 ${minutes} 分钟内有效。授权完成后页面会显示授权码，请在本会话内直接发送该授权码。",
+    "maimai.message.oauth.lx.prompt": "请由本人打开以下链接完成落雪咖啡屋账号授权，授权完成后页面会显示授权码。请使用“${cmd} <授权码>”回传该授权码。",
     "maimai.message.oauth.lx.revoked": "落雪咖啡屋账号的授权已失效，请使用“${cmd}”重新完成绑定。",
-    "maimai.message.oauth.lx.timeout": "等待授权码超时，请重新发起绑定。",
     "maimai.message.oauth.not_configured": "未找到水鱼账号 OAuth 的 client_id，请联系机器人所有者。",
     "maimai.message.oauth.prompt": "请由本人打开以下链接完成水鱼账号授权，链接在 ${minutes} 分钟内有效：",
     "maimai.message.oauth.public_warn": "注意：请勿将本消息分享给他人。",
@@ -124,7 +122,7 @@
     "maimai.message.unbind.success": "解绑成功。",
     "maimai.message.use_cache": "获取玩家分数失败，已使用缓存数据。",
     "maimai.message.user_not_found.df": "未找到用户，请确保此玩家的用户名和查分器中的用户名相同。",
-    "maimai.message.user_not_found.lx": "未找到用户，请检查好友码是否存在。",
+    "maimai.message.user_not_found.lx": "未找到用户，请确认落雪咖啡屋账号是否已上传过成绩。",
     "maimai.message.user_unbound": "未绑定用户，请使用“${cmd}”绑定一个用户。",
     "maimai.message.user_unbound.qq": "未绑定用户，请前往查分器并绑定你的 QQ 号。\n查分器地址：https://www.diving-fish.com/maimaidx/prober"
 }

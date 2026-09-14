@@ -246,77 +246,22 @@ async def process_lxdata(profile_data, record_data) -> dict:
     return {"nickname": nickname, "rating": rating, "records": {"b30": new_bests, "n20": new_new_bests}}
 
 
-async def get_record_lx(msg: Bot.MessageSession, bind_info, use_cache: bool = True) -> dict | None:
+async def get_record_lx(msg: Bot.MessageSession, bind_info: LxnsProberBindInfo, use_cache: bool = True) -> dict | None:
     """取得中二的 B30 / N20 成绩。
 
-    已授权 OAuth 的绑定由令牌决定查询对象；仅有好友码的旧绑定仍走开发者令牌接口。
+    查询对象由令牌决定，故必须存在这位用户自己的授权记录。
 
     :param msg: 消息会话。
-    :param bind_info: 落雪绑定记录，或仅有好友码的旧绑定的好友码。
+    :param bind_info: 该用户的落雪绑定记录。
     :param use_cache: 是否读写本地缓存。
     :return: 含 `nickname`、`rating` 与 `records.b30` / `records.n20` 的成绩字典。
     """
+    if not bind_info.refresh_token:
+        raise ConfigValueError("{I18N:error.config.secret.not_found}")
     mai_cache_path = cache_path / "maimai-record"
     mai_cache_path.mkdir(parents=True, exist_ok=True)
-    cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace('|', '_')}_chunithm_record_lx.json"
-
-    if isinstance(bind_info, LxnsProberBindInfo) and bind_info.refresh_token:
-        return await get_record_lx_oauth(msg, bind_info, cache_dir, use_cache)
-    friend_code = bind_info.friend_code if isinstance(bind_info, LxnsProberBindInfo) else bind_info
-
-    if friend_code and LX_DEVELOPER_TOKEN:
-        profile_url = f"https://maimai.lxns.net/api/v0/chunithm/player/{friend_code}"
-        record_url = f"https://maimai.lxns.net/api/v0/chunithm/player/{friend_code}/bests"
-        try:
-            profile_data = await get_url(
-                profile_url,
-                status_code=200,
-                headers={
-                    "User-Agent": "AkariBot/1.0",
-                    "Authorization": LX_DEVELOPER_TOKEN,
-                    "Content-Type": "application/json",
-                    "accept": "*/*",
-                },
-                fmt="json",
-            )
-            record_data = await get_url(
-                record_url,
-                status_code=200,
-                headers={
-                    "User-Agent": "AkariBot/1.0",
-                    "Authorization": LX_DEVELOPER_TOKEN,
-                    "Content-Type": "application/json",
-                    "accept": "*/*",
-                },
-                fmt="json",
-            )
-
-            data = await process_lxdata(profile_data, record_data)
-            if use_cache and data:
-                with open(cache_dir, "wb") as f:
-                    f.write(orjson.dumps(data))
-            return data
-        except Exception as e:
-            if str(e).startswith(("400", "404")):
-                await msg.finish(I18NContext("maimai.message.user_not_found.lx"))
-            elif str(e).startswith("401"):
-                raise ConfigValueError("{I18N:error.config.invalid}")
-            elif str(e).startswith("403"):
-                await msg.finish(I18NContext("maimai.message.forbidden"))
-            else:
-                Logger.exception()
-            if use_cache and cache_dir.exists():
-                try:
-                    with open(cache_dir, "rb") as f:
-                        data = orjson.loads(f.read())
-                    await msg.send_message(I18NContext("maimai.message.use_cache"))
-                    return data
-                except Exception:
-                    raise e
-            else:
-                raise e
-    else:
-        raise ConfigValueError("{I18N:error.config.secret.not_found}")
+    cache_file = mai_cache_path / f"{msg.session_info.sender_id.replace('|', '_')}_chunithm_record_lx.json"
+    return await get_record_lx_oauth(msg, bind_info, cache_file, use_cache)
 
 
 async def get_record_lx_oauth(

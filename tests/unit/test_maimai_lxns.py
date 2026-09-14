@@ -2,7 +2,6 @@
 
 from unittest.mock import patch
 
-from core.constants.exceptions import ConfigValueError
 from core.tester import func_case, Tester
 from modules.maimai.database.models import LxnsProberBindInfo
 from modules.maimai.libraries import lxns_apidata, maimaidx_apidata
@@ -18,9 +17,8 @@ from modules.maimai.libraries.lxns_apidata import (
 )
 from modules.maimai.libraries.maimaidx_utils import compute_rating
 from modules.maimai.libraries.lxns_oauth import (
+    _extract_bind_code,
     build_authorize_url,
-    generate_code_challenge,
-    generate_code_verifier,
     unwrap,
 )
 from modules.maimai.libraries.source import (
@@ -162,61 +160,42 @@ async def _test_source_selection():
 
 
 async def _test_lxns_bind_usable():
-    """落雪绑定可用性：授权过的必然可用，仅有好友码的要落雪已配置才可用"""
+    """落雪绑定可用性：授权过且落雪已配置才可用，仅有好友码的旧记录一律不可用"""
     return (
-        lxns_bind_usable("token", "")
-        and lxns_bind_usable("token", "123456")
-        and lxns_bind_usable(None, "123456", True)
-        and not lxns_bind_usable(None, "123456", False)
-        and not lxns_bind_usable(None, "")
-        and not lxns_bind_usable("", "")
+        lxns_bind_usable("token", True)
+        and not lxns_bind_usable(None, True)
+        and not lxns_bind_usable("", True)
+        and not lxns_bind_usable("token", False)
     )
 
 
 async def _test_lxns_record_route():
-    """落雪取分路由：有令牌走用户态接口，仅有好友码走公开端点，两者皆无则判为未绑定"""
-    oauth_bind = LxnsProberBindInfo(union_id="u", friend_code="", refresh_token="token")
-    friend_bind = LxnsProberBindInfo(union_id="u", friend_code="123456789", refresh_token=None)
+    """落雪取分一律走用户态接口；带不出令牌的旧记录与未绑定用户都转去取当前绑定"""
+    oauth_bind = LxnsProberBindInfo(union_id="u", refresh_token="token")
+    legacy_bind = LxnsProberBindInfo(union_id="u", refresh_token=None)
     calls = []
-    empty = _MessageSession({})
 
     async def fake_oauth(msg, bind_info, use_cache=True):
-        calls.append(("oauth", bind_info, use_cache))
+        calls.append((bind_info, use_cache))
         return {"charts": {}}
 
-    async def fake_friend(msg, friend_code, use_cache=True):
-        calls.append(("friend", friend_code, use_cache))
-        return {"charts": {}}
-
-    async def fake_prober(msg):
-        calls.append(("prober", None, None))
-        return friend_bind
+    async def fake_bind_info(msg):
+        calls.append("rebind")
+        return oauth_bind
 
     with (
         patch.object(lxns_apidata, "get_record_lx_oauth", fake_oauth),
-        patch.object(lxns_apidata, "get_record_lx_friend", fake_friend),
-        patch.object(lxns_apidata, "get_lxns_prober_bind_info", fake_prober),
-        patch.object(lxns_apidata, "LX_DEVELOPER_TOKEN", "developer-token"),
+        patch.object(lxns_apidata, "get_bind_info", fake_bind_info),
     ):
-        await get_record_lx(empty, oauth_bind, use_cache=False)
-        await get_record_lx(empty, friend_bind, use_cache=False)
-        await get_record_lx(empty, "987654321", use_cache=False)
-        await get_record_lx(empty, None, use_cache=False)
-        try:
-            await get_record_lx(empty, "", use_cache=False)
-        except ConfigValueError:
-            rejected = True
-        else:
-            rejected = False
+        data = await get_record_lx(_MessageSession({}), oauth_bind, use_cache=False)
+        alias = await get_record_lx(_MessageSession({}), None, use_cache=False)
+        legacy = await get_record_lx(_MessageSession({}), legacy_bind, use_cache=False)
 
     return (
-        [call[0] for call in calls] == ["oauth", "friend", "friend", "prober", "friend"]
-        and calls[0][1] is oauth_bind
-        and calls[1][1] == "123456789"
-        and calls[2][1] == "987654321"
-        and calls[4][1] == "123456789"
-        and all(call[2] is False for call in calls if call[2] is not None)
-        and rejected
+        data == {"charts": {}}
+        and alias == {"charts": {}}
+        and legacy == {"charts": {}}
+        and calls == [(oauth_bind, False), "rebind", (oauth_bind, False), "rebind", (oauth_bind, False)]
     )
 
 
@@ -238,32 +217,30 @@ async def _test_get_record_forwards_use_cache():
     return data == {"charts": {}} and received == [(None, False)]
 
 
-async def _test_pkce_code_challenge():
-    """PKCE 挑战值应按 S256 计算，且与 RFC 7636 的样例一致"""
-    return (
-        generate_code_challenge("dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk")
-        == "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM"
-    )
-
-
-async def _test_code_verifier_is_random_and_urlsafe():
-    """校验串应随机生成且仅含 URL 安全字符"""
-    first = generate_code_verifier()
-    second = generate_code_verifier()
-    allowed = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_")
-    return len(first) >= 43 and first != second and set(first) <= allowed
-
-
-async def _test_authorize_url_carries_pkce():
-    """授权链接应带上授权码流程与 PKCE 所需参数"""
-    url = build_authorize_url("challenge-value", "state-value")
+async def _test_authorize_url_params():
+    """授权链接应带上授权码流程与回调地址，且不带 PKCE 与 state"""
+    url = build_authorize_url()
     return (
         url.startswith("https://maimai.lxns.net/oauth/authorize?")
         and "response_type=code" in url
         and "scope=read_player" in url
-        and "code_challenge=challenge-value" in url
-        and "code_challenge_method=S256" in url
-        and "state=state-value" in url
+        and "redirect_uri=" in url
+        and "code_challenge" not in url
+        and "code_verifier" not in url
+        and "state=" not in url
+    )
+
+
+async def _test_extract_bind_code():
+    """用户发来的授权码应能从引号、空白与整串回调地址里取出"""
+    return (
+        _extract_bind_code("abc123") == "abc123"
+        and _extract_bind_code("  abc123\n") == "abc123"
+        and _extract_bind_code("“abc123”") == "abc123"
+        and _extract_bind_code("https://example.com/callback?code=abc123&state=x") == "abc123"
+        and _extract_bind_code("https://example.com/callback?code=a%2Fb") == "a/b"
+        and _extract_bind_code("https://example.com/callback") == ""
+        and _extract_bind_code("") == ""
     )
 
 
@@ -298,9 +275,8 @@ async def test_maimai_lxns(tester: Tester):
     await tester.test(_test_lxns_bind_usable, "落雪绑定可用性判断")
     await tester.test(_test_lxns_record_route, "落雪取分路由选择")
     await tester.test(_test_get_record_forwards_use_cache, "水鱼侧取分转发落雪参数")
-    await tester.test(_test_pkce_code_challenge, "PKCE S256 挑战值")
-    await tester.test(_test_code_verifier_is_random_and_urlsafe, "PKCE 校验串生成")
-    await tester.test(_test_authorize_url_carries_pkce, "授权链接参数")
+    await tester.test(_test_authorize_url_params, "授权链接参数")
+    await tester.test(_test_extract_bind_code, "授权码提取")
     await tester.test(_test_unwrap_data_field, "接口 data 包裹解析")
     await tester.test(_test_plate_versions, "名牌板版本标识映射")
     return tester

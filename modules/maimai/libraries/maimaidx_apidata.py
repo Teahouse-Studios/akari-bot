@@ -205,7 +205,7 @@ async def search_by_alias(input_: str) -> list:
 
 async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> dict | None:
     if pick_source(msg, GAME_MAIMAI) == SOURCE_LXNS:
-        # 落雪没有按任意用户名查询的公开端点，查询对象由绑定（令牌或好友码）决定，载荷只在水鱼侧使用。
+        # 落雪没有按任意用户名查询的公开端点，查询对象完全由令牌决定，载荷只在水鱼侧使用。
         return await get_record_lx(msg, use_cache=use_cache)
     mai_cache_path = cache_path / "maimai-record"
     mai_cache_path.mkdir(parents=True, exist_ok=True)

@@ -1,7 +1,5 @@
-from modules.maimai.config import MaimaiSecretConfig
 from .maimaidx_mapping import mai_assets_path
 
-LX_DEVELOPER_TOKEN = MaimaiSecretConfig.lxns_developer_token
 SONGS_PER_PAGE = 30
 
 chu_cover_path = mai_assets_path / "static" / "chu" / "cover"

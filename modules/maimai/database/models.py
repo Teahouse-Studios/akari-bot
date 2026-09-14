@@ -88,14 +88,12 @@ class LxnsProberBindInfo(DBModel):
     maimai 落雪绑定信息表。
 
     :param union_id: 用户联合 ID
-    :param friend_code: 好友码；以 OAuth 授权方式绑定的行没有好友码，取空串
     :param refresh_token: 该用户的落雪账号 refresh token，仅 OAuth 授权后存在
     :param subject: 落雪用户 ID，即令牌响应中的 `sub`
     """
 
     union_scope = UNION_SCOPE_SENDER
     union_id = fields.CharField(max_length=512, primary_key=True)
-    friend_code = fields.CharField(max_length=512, default="")
     refresh_token = fields.CharField(max_length=1024, null=True)
     subject = fields.CharField(max_length=512, null=True)
 
@@ -106,7 +104,6 @@ class LxnsProberBindInfo(DBModel):
     async def set_bind_info(
         cls,
         union_id: str,
-        friend_code: str | None = None,
         refresh_token: str | None = None,
         subject: str | None = None,
     ):
@@ -117,10 +114,8 @@ class LxnsProberBindInfo(DBModel):
                 )
                 if not current:
                     return False
-                # 未提供的字段不得写成空值：好友码与 OAuth 令牌由不同流程分别写入。
+                # 未提供的字段不得写成空值：令牌与用户 ID 由不同时机分别写入。
                 defaults = {}
-                if friend_code is not None:
-                    defaults["friend_code"] = friend_code
                 if refresh_token is not None:
                     defaults["refresh_token"] = refresh_token
                 if subject is not None:
@@ -139,7 +134,7 @@ class LxnsProberBindInfo(DBModel):
         """回写轮换后的 refresh token。
 
         每次刷新都会签发新令牌并立即作废旧的，故新令牌必须在继续任何逻辑之前落盘；
-        单独提供本方法，以免一并改动好友码等由别的流程维护的字段。
+        单独提供本方法，以免把只该在绑定时写入的字段一并覆盖掉。
 
         :param union_id: 用户联合 ID。
         :param refresh_token: 新签发的 refresh token。

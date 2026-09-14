@@ -13,7 +13,7 @@ from .libraries.maimaidx_scoreline import draw_scoreline_table
 from .libraries.maimaidx_scorelist import generate as generate_process
 from .libraries.maimaidx_utils import *
 from .libraries.divingfish_oauth import bind_account, unbind_account
-from .libraries.lxns_apidata import get_lxns_prober_bind_info, get_record_lx
+from .libraries.lxns_apidata import get_bind_info
 from .libraries.lxns_oauth import bind_account as bind_lx_account, unbind_account as unbind_lx_account
 from .libraries.source import (
     GAME_MAIMAI,
@@ -22,7 +22,6 @@ from .libraries.source import (
     pick_source,
     switch_source,
 )
-from .database.models import LxnsProberBindInfo
 
 total_list = TotalList()
 
@@ -565,19 +564,12 @@ async def _(msg: Bot.MessageSession):
     await unbind_account(msg)
 
 
-@mai.command("bind lx [<friendcode>] {{I18N:maimai.help.bind.lx}}", required_superuser=True)
-async def _(msg: Bot.MessageSession, friendcode: str | None = None):
-    if not friendcode:
-        # 不带好友码即以 OAuth 授权绑定，可读到完整成绩。
-        await bind_lx_account(msg)
-    # 仅凭好友码的旧方式仍然可用：不必授权，但只能读到公开的最佳成绩。
-    data = await get_record_lx(msg, friendcode, use_cache=False)
-    if data:
-        await LxnsProberBindInfo.set_bind_info(union_id=msg.session_info.sender_union_id, friend_code=friendcode)
-        await msg.finish(I18NContext("maimai.message.bind.success", username=data["nickname"]))
+@mai.command("bind lx [<auth_code>] {{I18N:maimai.help.bind.lx}}")
+async def _(msg: Bot.MessageSession, auth_code: str | None = None):
+    await bind_lx_account(msg, auth_code, ActionText(f"{msg.session_info.prefixes[0]}maimai bind lx"))
 
 
-@mai.command("unbind lx {{I18N:maimai.help.unbind}}", required_superuser=True)
+@mai.command("unbind lx {{I18N:maimai.help.unbind}}")
 async def _(msg: Bot.MessageSession):
     await unbind_lx_account(msg)
 
@@ -598,7 +590,7 @@ async def _(msg: Bot.MessageSession):
 @mai.command("b50 {{I18N:maimai.help.b50}}")
 async def _(msg: Bot.MessageSession):
     if pick_source(msg, GAME_MAIMAI) == SOURCE_LXNS:
-        token = await get_lxns_prober_bind_info(msg)
+        token = await get_bind_info(msg)
         payload = None
         source = SOURCE_NAME_LXNS
     else:
