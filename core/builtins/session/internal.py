@@ -70,6 +70,29 @@ def _filter_message_chain_badwords(
     return chain
 
 
+async def _normalize_outgoing_chain(session_info: SessionInfo, chain: Any, disable_secret_check: bool):
+    """对 hook 改写后的最终出站链完整执行发送规范化。
+
+    与发送流程的前置段一致：归一化 → 过滤 → 不支持节点时转图 → 压缩 → 安全检查。
+    MessageNodes 也必须过节点级安全校验与平台能力转换，不能只做普通链分支。
+    返回 None 表示内容已不可用（如压缩失败）。
+    """
+    if not isinstance(chain, (MessageChain, MessageNodes)):
+        chain = get_message_chain(session_info, chain=chain)
+    chain = _filter_message_chain_badwords(chain, session_info)
+    if isinstance(chain, MessageNodes) and not session_info.support_handle_message_nodes:
+        from core.utils.image import msgnode2image
+
+        chain = MessageChain.assign(await msgnode2image(chain, session=session_info))
+    if isinstance(chain, MessageChain):
+        chain = await compress_media_chain(chain)
+        if chain is None:
+            return None
+    if not chain.is_safe and not disable_secret_check:
+        chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
+    return chain
+
+
 @define
 class MessageSession:
     """
@@ -236,12 +259,31 @@ class MessageSession:
             # 包含敏感信息，替换为安全提示消息
             chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
 
+        # ========== 步骤 2.5: 出站 before_send ==========
+        # 在 callback 登记之前，避免取消时遗留 pending 注册
+        from core.builtins.parser.hooks import (
+            OutgoingPayload,
+            Stop,
+            dispatch_outgoing_before_send,
+            dispatch_outgoing_result,
+        )
+
+        outgoing_payload = OutgoingPayload(chain=chain, quote=quote)
+        stop_send = await dispatch_outgoing_before_send(self, outgoing_payload)
+        if isinstance(stop_send, Stop):
+            return cast(FinishedSession, FinishedSession(self.session_info, []))
+        chain = outgoing_payload.chain
+        quote = outgoing_payload.quote
+
+        # 改写后的最终消息必须重新过完整发送规范化（含 MessageNodes 节点校验与平台转换）
+        chain = await _normalize_outgoing_chain(self.session_info, chain, disable_secret_check)
+        if chain is None:
+            return cast(FinishedSession, None)
+        outgoing_payload.chain = chain
+
         callback_reply_ids = bind_callback_reply_ids(chain, callback_id) if callback else []
 
-        # 在平台发送前为每次 callback 建立独立注册。按钮的虚拟 reply_id 可立即
-        # 命中；即使暂时只有 bot_id fallback，也必须登记一个无主 ID 的 pending
-        # 记录，使同场景并发发送在回包前表现为歧义，而不是误把回复交给先登记者。
-        # callback handle 使用随机 token，因此空主 ID 的并发注册不会互相覆盖。
+        # 在平台发送前为每次 callback 建立独立注册。
         callback_handle = None
         if callback:
             callback_handle = SessionTaskManager.add_callback(
@@ -254,19 +296,21 @@ class MessageSession:
             )
 
         # ========== 步骤 3: 发送消息 ==========
-        # 通过消息队列发送消息，并等待平台返回消息 ID 列表
-
         try:
             return_val = await PlatformAPI.send_message(
                 self.session_info,
                 chain,
                 quote=quote,
             )
-        except BaseException:
+        except (asyncio.CancelledError, SystemExit, KeyboardInterrupt):
             SessionTaskManager.remove_callback(callback_handle)
             raise
+        except BaseException:
+            SessionTaskManager.remove_callback(callback_handle)
+            await dispatch_outgoing_result(self, outgoing_payload, ok=False)
+            raise
 
-        # ========== 步骤 4: 处理回调 ==========
+        # ========== 步骤 4: 处理回调（先完成 callback 收尾，再分发观察）==========
         if return_val:
             # 消息发送成功，如果有回调函数则注册
             if callback:
@@ -296,8 +340,11 @@ class MessageSession:
                     # 空 ID 表示平台发送失败，不能只凭 bot_id 为不存在的消息留下 callback。
                     SessionTaskManager.remove_callback(callback_handle)
 
+            # 观察快照带真实消息 ID 与最终发送内容；慢观察者不会延长 callback 未绑定窗口
+            await dispatch_outgoing_result(self, outgoing_payload, ok=True, message_ids=return_val)
             return FinishedSession(self.session_info, return_val)
         SessionTaskManager.remove_callback(callback_handle)
+        await dispatch_outgoing_result(self, outgoing_payload, ok=False, message_ids=[])
         return FinishedSession(self.session_info, [])
 
     async def finish(
@@ -380,11 +427,33 @@ class MessageSession:
         if chain is None:
             return None
 
+        # ========== 步骤 1.5: 出站 before_send ==========
+        from core.builtins.parser.hooks import (
+            OutgoingPayload,
+            Stop,
+            dispatch_outgoing_before_send,
+            dispatch_outgoing_result,
+        )
+
+        outgoing_payload = OutgoingPayload(chain=chain)
+        stop_send = await dispatch_outgoing_before_send(self, outgoing_payload)
+        if isinstance(stop_send, Stop):
+            return None
+        chain = outgoing_payload.chain
+        chain = await _normalize_outgoing_chain(self.session_info, chain, disable_secret_check)
+        if chain is None:
+            return None
+        outgoing_payload.chain = chain
+
         # ========== 步骤 2: 以后台任务方式发送消息 ==========
-        # submit 仅等待任务入队，平台发送在后台进行。
-        # 须发送已归一化并通过安全检查的 chain，而非原始入参：后者可能是 bare 元素或字符串，
-        # 经队列的 MessageChain | MessageNodes 反序列化时会因缺少 values 而失败。
-        await PlatformAPI.send_message.submit(self.session_info, chain)
+        try:
+            await PlatformAPI.send_message.submit(self.session_info, chain, quote=outgoing_payload.quote)
+        except (asyncio.CancelledError, SystemExit, KeyboardInterrupt):
+            raise
+        except BaseException:
+            await dispatch_outgoing_result(self, outgoing_payload, ok=False)
+            raise
+        # submit 仅代表接受投递，不能据此发布 sent
 
     async def send_private_message(
         self,
@@ -424,11 +493,38 @@ class MessageSession:
         if chain is None:
             return []
 
-        return_val = await PlatformAPI.send_private_msg(
-            self.session_info,
-            user_id,
-            chain,
+        from core.builtins.parser.hooks import (
+            OutgoingPayload,
+            Stop,
+            dispatch_outgoing_before_send,
+            dispatch_outgoing_result,
         )
+
+        outgoing_payload = OutgoingPayload(chain=chain, quote=False)
+        stop_send = await dispatch_outgoing_before_send(self, outgoing_payload)
+        if isinstance(stop_send, Stop):
+            return []
+        chain = outgoing_payload.chain
+        chain = await _normalize_outgoing_chain(self.session_info, chain, disable_secret_check)
+        if chain is None:
+            return []
+        outgoing_payload.chain = chain
+        # 私信接口没有引用参数，观察内容始终反映实际的不引用发送。
+        outgoing_payload.quote = False
+
+        try:
+            return_val = await PlatformAPI.send_private_msg(
+                self.session_info,
+                user_id,
+                chain,
+            )
+        except (asyncio.CancelledError, SystemExit, KeyboardInterrupt):
+            raise
+        except BaseException:
+            await dispatch_outgoing_result(self, outgoing_payload, ok=False)
+            raise
+        # 观察入口拿快照，不能改写正式返回值
+        await dispatch_outgoing_result(self, outgoing_payload, ok=bool(return_val), message_ids=return_val or [])
         return return_val
 
     def as_display(

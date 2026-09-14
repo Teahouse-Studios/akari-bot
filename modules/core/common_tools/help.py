@@ -20,8 +20,9 @@ from core.utils.cache import random_cache_path
 from core.utils.func import is_int
 from core.utils.image import cb64imglst
 from core.utils.table import escape_table_cell, format_table_code, resolve_table_columns
-from core.utils.web_render import web_render, ElementScreenshotOptions
-from .utils import get_version_display
+from core.utils.web_render import ElementScreenshotOptions, web_render
+
+from modules.core.common_tools.version_utils import get_version_display
 
 env = Environment(loader=FileSystemLoader(templates_path), autoescape=True, enable_async=True)
 help_url = CoreConfig.help_url

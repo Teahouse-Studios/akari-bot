@@ -35,7 +35,7 @@ from core.utils.retired import (
     should_yield_channel,
 )
 from core.tester import func_case, Tester
-from modules.core import merge as merge_module
+from modules.core.common_tools import merge as merge_module
 
 
 def _use_routes(entries: list):

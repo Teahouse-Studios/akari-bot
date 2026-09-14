@@ -1,0 +1,130 @@
+import orjson
+from akari_bot_i18n.i18n import build_locale_snapshot
+
+from core.builtins.bot import Bot
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import ActionText, I18NContext, Plain, Url
+from core.component import module
+from core.config.base import CoreConfig
+from core.constants import all_locales_path, lang_list, weblate_lang_codes
+from core.i18n import Locale, get_available_locales
+from core.utils.http import get_url
+from core.constants.path import cache_path
+
+WEBLATE_LANGUAGES_API = "https://hosted.weblate.org/api/projects/akaribot/languages/"
+TRANSLATION_PROGRESS_THRESHOLD = 95.0
+WEBLATE_LANGUAGES_CACHE = cache_path / "weblate_languages.json"
+
+locale = module("locale", base=True, desc="{I18N:core.help.locale.desc}", alias="lang", doc=True)
+
+
+def build_locale_list(msg: Bot.MessageSession) -> list:
+    """构造逐行显示的可用语言列表。"""
+    locales = [(lang, Locale(lang).t("language")) for lang in get_available_locales()]
+    if not msg.session_info.support_action_text:
+        return [I18NContext("core.message.locale.langlist", langlist="\n".join(name for _, name in locales))]
+
+    prefix = msg.session_info.prefixes[0]
+    parts = []
+    for index, (lang, name) in enumerate(locales):
+        parts.append(ActionText(f"{prefix}locale {lang}", show=name))
+        parts.append(Plain("\n" if index + 1 < len(locales) else " ", disable_joke=True))
+    return [I18NContext("core.message.locale.langlist", langlist=MessageChain.assign(parts))]
+
+
+def build_locale_overview(msg: Bot.MessageSession, locale_url: str | None) -> list:
+    """构造语言命令的概览消息。"""
+    res = [
+        I18NContext("core.message.locale.prompt", lang="{I18N:language}"),
+        I18NContext(
+            "core.message.locale.set.prompt",
+            cmd=ActionText(f"{msg.session_info.prefixes[0]}locale "),
+        ),
+        *build_locale_list(msg),
+    ]
+    if locale_url:
+        res.append(
+            I18NContext(
+                "core.message.locale.contribute",
+                url=MessageChain.assign(Url(locale_url, trusted=True)),
+            )
+        )
+    return res
+
+
+async def get_weblate_languages() -> list | None:
+    """获取 Weblate 的语言列表，结果缓存到 cache 目录以复用。
+
+    机器人每晚会自动清空 cache 目录，因此缓存会在次日首次调用时重新拉取。
+    """
+    if WEBLATE_LANGUAGES_CACHE.is_file():
+        try:
+            languages = orjson.loads(WEBLATE_LANGUAGES_CACHE.read_bytes())
+        except Exception:
+            languages = None
+        if isinstance(languages, list):
+            return languages
+        # 缓存损坏时移除，避免后续反复命中坏文件。
+        try:
+            WEBLATE_LANGUAGES_CACHE.unlink(missing_ok=True)
+        except OSError:
+            pass
+    try:
+        languages = await get_url(WEBLATE_LANGUAGES_API, fmt="json", timeout=5, logging_err_resp=False)
+    except Exception:
+        return None
+    if not isinstance(languages, list):
+        return None
+    try:
+        WEBLATE_LANGUAGES_CACHE.parent.mkdir(parents=True, exist_ok=True)
+        WEBLATE_LANGUAGES_CACHE.write_bytes(orjson.dumps(languages))
+    except OSError:
+        pass
+    return languages
+
+
+async def build_translation_notice(lang: str):
+    """当目标语言在 Weblate 的翻译进度低于阈值时，构造邀请参与翻译的消息。"""
+    weblate_code = weblate_lang_codes.get(lang)
+    if not weblate_code:
+        return None
+    languages = await get_weblate_languages()
+    if not languages:
+        return None
+    entry = next((item for item in languages if isinstance(item, dict) and item.get("code") == weblate_code), None)
+    if not entry:
+        return None
+    progress = entry.get("translated_percent")
+    if not isinstance(progress, (int, float)) or progress >= TRANSLATION_PROGRESS_THRESHOLD:
+        return None
+    return [
+        I18NContext(
+            "core.message.locale.translation_progress", name=Locale(lang).t("language"), percent=f"{progress:g}"
+        ),
+        Url(entry.get("url") or CoreConfig.locale_url, trusted=True),
+    ]
+
+
+@locale.command()
+async def _(msg: Bot.MessageSession):
+    await msg.send_message(build_locale_overview(msg, CoreConfig.locale_url))
+    await msg.finish(await build_translation_notice(msg.session_info.locale.locale))
+
+
+@locale.command("[<lang>] {{I18N:core.help.locale.set}}", required_admin=True)
+async def _(msg: Bot.MessageSession, lang: str):
+    if lang in get_available_locales():
+        await msg.session_info.target_union_info.edit_attr("locale", lang)
+        await msg.send_message(Locale(lang).t("message.success"))
+        await msg.finish(await build_translation_notice(lang))
+    else:
+        await msg.finish([I18NContext("core.message.locale.set.invalid"), *build_locale_list(msg)])
+
+
+@locale.command("reload {{I18N:core.help.locale.reload}}", required_superuser=True)
+async def _(msg: Bot.MessageSession):
+    err = build_locale_snapshot(list(lang_list.keys()), all_locales_path, "akari-bot")
+    if len(err) == 0:
+        await msg.finish(I18NContext("message.success"))
+    else:
+        await msg.finish([I18NContext("core.message.locale.reload.failed"), Plain("\n".join(err), disable_joke=True)])

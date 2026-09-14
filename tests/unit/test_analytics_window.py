@@ -1,11 +1,11 @@
-"""modules.core.analytics 单元测试 - 统计时间窗口的时区处理（需要数据库）。"""
+"""modules.core.su_tools.analytics 单元测试 - 统计时间窗口的时区处理（需要数据库）。"""
 
 import warnings
 from datetime import timedelta
 
 from core.database.models import AnalyticsData
 from core.tester import func_case, Tester
-from modules.core.analytics import local_midnight
+from modules.core.su_tools.analytics import local_midnight
 
 
 def _test_local_midnight_is_aware():
@@ -69,7 +69,7 @@ async def _test_window_counts_today_only():
 
 @func_case
 async def test_analytics_window(tester: Tester):
-    """modules.core.analytics: 统计时间窗口测试"""
+    """modules.core.su_tools.analytics: 统计时间窗口测试"""
     await tester.test(_test_local_midnight_is_aware, "零点带时区测试")
     await tester.test(_test_window_emits_no_naive_warning, "无 naive datetime 警告测试")
     await tester.test(_test_window_counts_today_only, "今日窗口边界测试")

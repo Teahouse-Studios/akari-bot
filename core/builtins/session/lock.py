@@ -172,6 +172,11 @@ class ExecutionLockList:
 
         while True:
             keys = await cls._current_keys(msg)
+            # _current_keys() 的数据库查询会让出执行权；其间同一执行域的另一协程
+            # （被等待任务消费的回复会话）可能已把 token 装上。必须在判定冲突前
+            # 重新确认所有权，否则根命令会等待自己持有的 lease 永久自锁。
+            if cls._owns_active_lease(msg):
+                return False
             if not keys:
                 return False
             if not cls._conflicts(keys):
