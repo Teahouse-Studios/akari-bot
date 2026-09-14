@@ -310,7 +310,7 @@ async def _(msg: Bot.MessageSession):
 
 @chu.command("bind lx [<auth_code>] {{I18N:maimai.help.bind.lx}}")
 async def _(msg: Bot.MessageSession, auth_code: str | None = None):
-    await bind_lx_account(msg, auth_code, ActionText(f"{msg.session_info.prefixes[0]}chunithm bind lx"))
+    await bind_lx_account(msg, auth_code, ActionText(f"{msg.session_info.prefixes[0]}chunithm bind lx "))
 
 
 @chu.command("unbind lx {{I18N:maimai.help.unbind}}")
@@ -331,15 +331,23 @@ async def _(msg: Bot.MessageSession):
     )
 
 
-@chu.command("b30 {{I18N:chunithm.help.b30}}")
-async def _(msg: Bot.MessageSession):
+@chu.command("b30 [<user>] {{I18N:chunithm.help.b30}}")
+async def _(msg: Bot.MessageSession, user: str | None = None):
+    username = ""
+    friend_code = ""
     if pick_source(msg, GAME_CHUNITHM) == SOURCE_LXNS:
-        token = await get_lxns_prober_bind_info(msg)
+        # 落雪的查询对象是好友码；不填参数时由令牌认出账号。
+        if user and not is_int(user):
+            await msg.finish(I18NContext("maimai.message.friend_code_invalid"))
+        token = None if user else await get_lxns_prober_bind_info(msg)
+        friend_code = user or ""
         source = "Lxns"
     else:
-        token = await get_diving_prober_bind_info(msg)
+        # 填了用户名便查这个玩家，无需绑定。
+        token = None if user else await get_diving_prober_bind_info(msg)
+        username = user or ""
         source = "Diving-Fish"
-    img = await generate_b30(msg, token, source)
+    img = await generate_b30(msg, token, source, username=username, friend_code=friend_code, use_cache=not user)
     if img:
         await msg.finish(BImage(img))
 

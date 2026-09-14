@@ -42,7 +42,6 @@ OAUTH_BIND_COLUMNS = (
     ("module_maimai_diving_prober_bind_info", "refresh_token", "VARCHAR(1024)"),
     ("module_maimai_diving_prober_bind_info", "subject", "VARCHAR(512)"),
     ("module_maimai_lxns_prober_bind_info", "refresh_token", "VARCHAR(1024)"),
-    ("module_maimai_lxns_prober_bind_info", "subject", "VARCHAR(512)"),
 )
 
 # v6：绑定方式换代后不再读写的历史列。落雪好友码曾用于免授权的查分接口，现已改为上传 OAuth 令牌，

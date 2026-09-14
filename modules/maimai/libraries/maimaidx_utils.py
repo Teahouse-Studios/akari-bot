@@ -140,7 +140,7 @@ async def get_rank(msg: Bot.MessageSession, payload: dict, use_cache: bool = Tru
     rank_data = await get_url(url, 200, fmt="json")
     rank_data = sorted(rank_data, key=lambda x: x.get("ra", 0), reverse=True)  # 根据rating排名并倒序
 
-    player_data: dict = await get_record(msg, payload, use_cache)
+    player_data: dict = await get_record(msg, payload, use_cache=use_cache)
     username = player_data.get("username", "")
 
     rating = 0
@@ -286,7 +286,7 @@ async def get_score_list(
     res: dict = await get_total_record(msg, use_cache=use_cache)
     records = res["records"]
 
-    player_data: dict = await get_record(msg, payload, use_cache)
+    player_data: dict = await get_record(msg, payload, use_cache=use_cache)
     song_list = []
     for song in records:
         if song["level"] == level:

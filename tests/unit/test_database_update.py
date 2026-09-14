@@ -198,7 +198,10 @@ async def _test_diving_fish_v6_migration_adds_oauth_columns():
 
 
 async def _test_lxns_v6_migration_replaces_friend_code_with_oauth_columns():
-    """落雪绑定表的 OAuth 列应被补上、旧好友码列应被删除，且可重复执行"""
+    """落雪绑定表的 OAuth 令牌列应被补上、旧好友码列应被删除，且可重复执行
+
+    落雪侧的令牌不需要额外保存用户标识，故这里只补 refresh token 一列，不涉及 `subject`。
+    """
     conn = database_update.Tortoise.get_connection("default")
     table = "module_maimai_lxns_prober_bind_info"
     # 先还原成升级前的表结构：只有旧好友码列，且带一行旧数据。
@@ -221,11 +224,10 @@ async def _test_lxns_v6_migration_replaces_friend_code_with_oauth_columns():
         columns = {row["name"] for row in await conn.execute_query_dict(f'PRAGMA table_info("{table}");')}
         rows = await conn.execute_query_dict(f'SELECT * FROM "{table}";')
         return (
-            columns == {"union_id", "refresh_token", "subject"}
+            columns == {"union_id", "refresh_token"}
             and len(rows) == 1
             # 旧行保留下来但没有 refresh token，需由用户重新完成一次绑定。
             and rows[0]["refresh_token"] is None
-            and rows[0]["subject"] is None
         )
     finally:
         await conn.execute_query(f'DROP TABLE IF EXISTS "{table}";')

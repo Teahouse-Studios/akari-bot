@@ -87,15 +87,16 @@ class LxnsProberBindInfo(DBModel):
     """
     maimai 落雪绑定信息表。
 
+    落雪的令牌能自行以 refresh token 轮换，不需像水鱼那样拿用户 ID 去换票，故这里不保存令牌响应
+    里的 `sub`——它只在绑定时用于向用户确认账号。
+
     :param union_id: 用户联合 ID
     :param refresh_token: 该用户的落雪账号 refresh token，仅 OAuth 授权后存在
-    :param subject: 落雪用户 ID，即令牌响应中的 `sub`
     """
 
     union_scope = UNION_SCOPE_SENDER
     union_id = fields.CharField(max_length=512, primary_key=True)
     refresh_token = fields.CharField(max_length=1024, null=True)
-    subject = fields.CharField(max_length=512, null=True)
 
     class Meta:
         table = f"{table_prefix}lxns_prober_bind_info"
@@ -105,7 +106,6 @@ class LxnsProberBindInfo(DBModel):
         cls,
         union_id: str,
         refresh_token: str | None = None,
-        subject: str | None = None,
     ):
         async with union_mutation():
             async with in_transaction("default") as connection:
@@ -114,23 +114,18 @@ class LxnsProberBindInfo(DBModel):
                 )
                 if not current:
                     return False
-                # 未提供的字段不得写成空值：令牌与用户 ID 由不同时机分别写入。
-                defaults = {}
-                if refresh_token is not None:
-                    defaults["refresh_token"] = refresh_token
-                if subject is not None:
-                    defaults["subject"] = subject
-                if not defaults:
+                # 未提供令牌时没有可写的字段，不得把已有令牌写成空值。
+                if refresh_token is None:
                     return True
                 await cls.update_or_create(
                     union_id=union_id,
-                    defaults=defaults,
+                    defaults={"refresh_token": refresh_token},
                     using_db=connection,
                 )
                 return True
 
     @classmethod
-    async def update_refresh_token(cls, union_id: str, refresh_token: str, subject: str | None = None):
+    async def update_refresh_token(cls, union_id: str, refresh_token: str):
         """回写轮换后的 refresh token。
 
         每次刷新都会签发新令牌并立即作废旧的，故新令牌必须在继续任何逻辑之前落盘；
@@ -138,12 +133,8 @@ class LxnsProberBindInfo(DBModel):
 
         :param union_id: 用户联合 ID。
         :param refresh_token: 新签发的 refresh token。
-        :param subject: 落雪用户 ID，仅在响应中带上时更新。
         """
-        defaults = {"refresh_token": refresh_token}
-        if subject is not None:
-            defaults["subject"] = subject
-        return await cls.filter(union_id=union_id).update(**defaults)
+        return await cls.filter(union_id=union_id).update(refresh_token=refresh_token)
 
     @classmethod
     async def remove_bind_info(cls, union_id):

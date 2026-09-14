@@ -15,9 +15,12 @@ from core.constants.path import cache_path
 from core.logger import Logger
 from .lxns_oauth import (
     LXNS_API_BASE,
+    LXNS_DEVELOPER_ENABLED,
     LXNS_MAIMAI_PLAYER_URL,
     LXNS_OAUTH_ENABLED,
     LxnsTokenRevoked,
+    fetch_player_field,
+    request_developer_data,
     request_player_data,
     unwrap,
 )
@@ -27,6 +30,10 @@ from ..database.models import LxnsProberBindInfo
 
 LXNS_MAIMAI_BESTS_URL = f"{LXNS_API_BASE}/user/maimai/player/bests"
 LXNS_MAIMAI_SCORES_URL = f"{LXNS_API_BASE}/user/maimai/player/scores"
+
+# 开发者端点按好友码寻址，能查询任意玩家；好友码相同即同一账号，故查询自己与他人走同一条路。
+LXNS_MAIMAI_PLAYER_BY_FRIEND_CODE_URL = f"{LXNS_API_BASE}/maimai/player/{{friend_code}}"
+LXNS_MAIMAI_BESTS_BY_FRIEND_CODE_URL = f"{LXNS_API_BASE}/maimai/player/{{friend_code}}/bests"
 
 # 落雪把标准与 DX 谱面记在同一个曲目 ID 下，水鱼则给 DX 谱面的 ID 加 10000，互换即是在
 # 这个偏移量上加减。宴会场曲目（ID 大于等于 100000）不分谱面类型，不参与换算。
@@ -249,6 +256,12 @@ def _require_oauth() -> None:
         raise ConfigValueError("{I18N:error.config.secret.not_found}")
 
 
+def _require_developer() -> None:
+    """未配置开发者密钥时，按好友码查询一概不可用。"""
+    if not LXNS_DEVELOPER_ENABLED:
+        raise ConfigValueError("{I18N:error.config.secret.not_found}")
+
+
 async def fetch_player(bind_info: LxnsProberBindInfo) -> dict:
     """取回玩家信息。
 
@@ -325,8 +338,39 @@ async def get_total_record_lx(
     return await _with_cache(msg, _cache_file(msg, "maimaidx_lx_total_record"), fetch)
 
 
+def _raw_scores(data: dict | None, key: str) -> list[dict]:
+    """取出一组落雪原始成绩，忽略形状不对的条目。
+
+    :param data: 落雪接口的响应。
+    :param key: 成绩所在字段名，`standard` 或 `dx`。
+    :return: 落雪原始字段的成绩列表。
+    """
+    scores = (data or {}).get(key)
+    if not isinstance(scores, list):
+        return []
+    return [score for score in scores if isinstance(score, dict)]
+
+
+async def map_bests(bests: dict | None) -> dict:
+    """把落雪按旧曲、现曲给出的 Best 换算成水鱼形状的 B35 与 B15。
+
+    `standard` 与 `dx` 本身就是游戏内 Rating 所取的 B35 与 B15，故各自照单换算。旧曲里也有
+    DX 谱面——它们的曲目 ID 就是 DX 曲目 ID——但它们属于 B35，不能按谱面类型重新划到 B15。
+
+    :param bests: 含 `standard` 与 `dx` 两组成绩的落雪响应。
+    :return: 含 `sd`（B35）与 `dx`（B15）两份成绩列表的字典。
+    """
+    return {
+        "sd": top_rated(await map_scores(_raw_scores(bests, "standard")), 35),
+        "dx": top_rated(await map_scores(_raw_scores(bests, "dx")), 15),
+    }
+
+
 async def split_bests(scores: list[dict]) -> dict:
-    """把落雪成绩按谱面类型划分为 B35 与 B15。
+    """把全量成绩按谱面类型近似划分成 B35 与 B15。
+
+    只在落雪没给出划分好的 Best 时用作退路：全量成绩里没有旧曲与现曲之分，只能按谱面类型各
+    取前 35 / 15 张近似，与官方按旧曲、现曲划分的结果可能略有出入。
 
     :param scores: 落雪原始字段的成绩列表。
     :return: 含 `sd` 与 `dx` 两份成绩列表的字典。
@@ -338,12 +382,59 @@ async def split_bests(scores: list[dict]) -> dict:
     }
 
 
+async def fetch_player_by_friend_code(friend_code: str) -> dict:
+    """按好友码取回玩家信息（开发者端点）。
+
+    :param friend_code: 落雪好友码。
+    :return: 玩家信息，含 `name` 与 `rating`。
+    """
+    resp = await request_developer_data(LXNS_MAIMAI_PLAYER_BY_FRIEND_CODE_URL.format(friend_code=friend_code))
+    return resp if isinstance(resp, dict) else {}
+
+
+async def fetch_bests_by_friend_code(friend_code: str) -> dict:
+    """按好友码取回官方划分的 Best 成绩（开发者端点）。
+
+    :param friend_code: 落雪好友码。
+    :return: 含 `standard` 与 `dx` 两份成绩列表的响应。
+    """
+    resp = await request_developer_data(LXNS_MAIMAI_BESTS_BY_FRIEND_CODE_URL.format(friend_code=friend_code))
+    return resp if isinstance(resp, dict) else {}
+
+
+async def get_record_lx_dev(msg: Bot.MessageSession, friend_code: str, use_cache: bool = True) -> dict:
+    """以开发者端点按好友码取回 B35 与 B15，形状与水鱼的 `/query/player` 一致。
+
+    落雪把旧曲与现曲的 Best 分开给出，正是游戏内 Rating 所取的 B35 与 B15；按谱面类型从全量
+    成绩里截取只能得到近似结果，故配置了开发者密钥便一律走这里。
+
+    :param msg: 消息会话。
+    :param friend_code: 落雪好友码。
+    :param use_cache: 是否读写本地缓存。
+    :return: 含 `nickname`、`rating` 与 `charts.sd` / `charts.dx` 的成绩字典。
+    """
+    _require_developer()
+
+    async def fetch():
+        player = await fetch_player_by_friend_code(friend_code)
+        bests = await fetch_bests_by_friend_code(friend_code)
+        charts = await map_bests(bests)
+        return {
+            "nickname": player.get("name", ""),
+            "username": player.get("name", ""),
+            "rating": player.get("rating", 0),
+            "charts": charts,
+        }
+
+    return await _with_cache(msg, _cache_file(msg, f"maimaidx_bests_lx_{friend_code}"), fetch)
+
+
 async def get_record_lx_oauth(msg: Bot.MessageSession, bind_info: LxnsProberBindInfo, use_cache: bool = True) -> dict:
     """以 OAuth 令牌取回 B35 与 B15，形状与水鱼的 `/query/player` 一致。
 
-    落雪的用户态文档只列出玩家信息与全量成绩两个端点，`bests` 属未文档化的前端接口：取不到
-    时退化为按谱面类型从全量成绩里各取前 35 / 15 张，与官方按旧曲、现曲划分的 B35 / B15
-    可能略有出入。
+    落雪文档里真正的 Best 是按好友码寻址的开发者端点，故这里只是未配置开发者密钥时的退路：
+    先试用户态文档未列出的 `bests`，取不到时退化为按谱面类型从全量成绩里各取前 35 / 15 张，
+    与官方按旧曲、现曲划分的 B35 / B15 可能略有出入。
 
     :param msg: 消息会话。
     :param bind_info: 该用户的落雪绑定记录。
@@ -363,7 +454,7 @@ async def get_record_lx_oauth(msg: Bot.MessageSession, bind_info: LxnsProberBind
             Logger.exception()
             resp = None
         if isinstance(resp, dict) and (resp.get("standard") or resp.get("dx")):
-            charts = await split_bests(list(resp.get("standard") or []) + list(resp.get("dx") or []))
+            charts = await map_bests(resp)
         else:
             charts = await split_bests(await fetch_scores(bind_info))
         return {
@@ -373,25 +464,35 @@ async def get_record_lx_oauth(msg: Bot.MessageSession, bind_info: LxnsProberBind
             "charts": charts,
         }
 
-    return await _with_cache(msg, _cache_file(msg, "maimaidx_lx_bests"), fetch)
+    return await _with_cache(msg, _cache_file(msg, "maimaidx_bests_lx"), fetch)
 
 
 async def get_record_lx(
     msg: Bot.MessageSession,
     token: LxnsProberBindInfo | None = None,
+    friend_code: str = "",
     use_cache: bool = True,
 ) -> dict:
     """取回 B35 与 B15，形状与水鱼的 `/query/player` 一致。
 
-    查询对象由令牌决定：落雪的用户态端点按令牌认出用户，没有别的识别方式。
+    查询对象按参数决定：给出好友码时查询该玩家，只有开发者密钥能识别好友码；否则查询令牌
+    所属的账号——落雪的令牌认不出好友码，故再用个人资料里的好友码换成开发者端点，以取到
+    官方划分的 B35 / B15。
 
     :param msg: 消息会话。
     :param token: 该用户的落雪绑定记录；为空时自行解析。
+    :param friend_code: 要查询的好友码；为空时查询绑定账号。
     :param use_cache: 是否读写本地缓存。
     :return: 含 `nickname`、`rating` 与 `charts.sd` / `charts.dx` 的成绩字典。
     """
+    if friend_code:
+        return await get_record_lx_dev(msg, friend_code, use_cache)
     if not token or not token.refresh_token:
         token = await get_bind_info(msg)
+    if LXNS_DEVELOPER_ENABLED:
+        own_code = await fetch_player_field(token, "friend_code", LXNS_MAIMAI_PLAYER_URL)
+        if own_code:
+            return await get_record_lx_dev(msg, own_code, use_cache)
     return await get_record_lx_oauth(msg, token, use_cache)
 
 
