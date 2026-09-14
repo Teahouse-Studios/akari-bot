@@ -14,7 +14,7 @@ arc = module(
     developers=["OasisAkari"],
     desc="{I18N:arcaea.help.desc}",
     doc=True,
-    alias=["a", "arc"],
+    alias="arc",
 )
 
 
