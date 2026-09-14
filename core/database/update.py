@@ -37,13 +37,16 @@ WIKI_URL_RULE_TABLES = (
     ("module_wiki_block_list", GlobalURLBlocklist),
 )
 
-# v6：绑定表补充 OAuth 授权所需的列，水鱼侧为公开客户端，落雪侧为用户授权。
+# v6：绑定表补充 OAuth 授权所需的列，水鱼、落雪两侧的取数方式都改由 OAuth 令牌决定。
 OAUTH_BIND_COLUMNS = (
     ("module_maimai_diving_prober_bind_info", "refresh_token", "VARCHAR(1024)"),
     ("module_maimai_diving_prober_bind_info", "subject", "VARCHAR(512)"),
     ("module_maimai_lxns_prober_bind_info", "refresh_token", "VARCHAR(1024)"),
-    ("module_maimai_lxns_prober_bind_info", "subject", "VARCHAR(512)"),
 )
+
+# v6：绑定方式换代后不再读写的历史列。落雪好友码曾用于免授权的查分接口，现已改为上传 OAuth 令牌，
+# 模型也不再声明该列；留着它只会让库结构与模型长期不一致（旧列带 NOT NULL 且无默认值，新写入会直接失败）。
+OBSOLETE_BIND_COLUMNS = (("module_maimai_lxns_prober_bind_info", "friend_code"),)
 
 
 def quote_ident(name: str) -> str:
@@ -262,12 +265,15 @@ async def update_database_to_v5(conn):
 
 
 async def update_database_to_v6(conn):
-    """将数据库升级至 v6：为绑定表补充 OAuth 授权所需的列。
+    """将数据库升级至 v6：为绑定表调整 OAuth 授权所需的列。
 
     水鱼分发给用户各自部署的应用属于公开客户端，换票接口对它不可用，只能为每位用户各自保存一把
     refresh token；落雪侧则改为保存用户的授权令牌。Developer-Token 时代无需保存任何用户凭据，
     表内因而没有这些列。表若由 ``generate_schemas()`` 新建，列已存在，跳过即可。旧行没有
     refresh token，仅在用户重新完成一次绑定之前不可用。
+
+    同一批变更里还要删掉落雪的旧好友码列：该字段已彻底退出模型，旧表上却是 NOT NULL 且无默认值，
+    不删除会让新绑定写入直接失败。两段都是先探测再执行，可重复运行。
 
     :param conn: 数据库连接。
     """
@@ -280,6 +286,12 @@ async def update_database_to_v6(conn):
         await conn.execute_query(
             f"ALTER TABLE {quote_ident(table)} ADD COLUMN {quote_ident(column)} {column_type} NULL;"
         )
+    for table, column in OBSOLETE_BIND_COLUMNS:
+        if not await has_table(conn, table):
+            continue
+        if not await has_column(conn, table, column):
+            continue
+        await conn.execute_query(f"ALTER TABLE {quote_ident(table)} DROP COLUMN {quote_ident(column)};")
 
 
 async def update_database():

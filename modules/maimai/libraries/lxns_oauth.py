@@ -1,23 +1,21 @@
 """落雪咖啡屋（LXNS）OAuth 授权。
 
 落雪只提供授权码流程，没有设备码流程：应用无法替用户完成授权，用户必须在自己的浏览器里
-打开授权链接并同意，页面随后直接显示授权码（应用登记为「无回调地址」时），用户再把这串
-授权码发回会话。授权码只能使用一次，且兑换时必须带上发起授权时用的 PKCE 校验串。
+打开授权链接并同意，授权页随后直接显示授权码（应用登记为「无回调地址」时），用户再把这串
+授权码发回会话。授权码只能使用一次，故链接与授权码都只能留在发起绑定的那场会话里。
 """
 
 import asyncio
-import base64
-import hashlib
-import secrets
+import re
 import time
 from typing import Any
-from urllib.parse import urlencode
+from urllib.parse import unquote, urlencode
 
 import orjson
 
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Url
-from core.constants.exceptions import WaitCancelException
+from core.constants.exceptions import ConfigValueError
 from core.logger import Logger
 from core.utils.http import get_url, post_url
 from modules.maimai.config import MaimaiConfig, MaimaiSecretConfig
@@ -30,16 +28,20 @@ LXNS_API_BASE = f"{LXNS_AUTH_SERVER}/api/v0"
 LXNS_MAIMAI_PLAYER_URL = f"{LXNS_API_BASE}/user/maimai/player"
 LXNS_CHUNITHM_PLAYER_URL = f"{LXNS_API_BASE}/user/chunithm/player"
 
-# `read_player` 同时覆盖舞萌与中二的玩家信息、谱面成绩与历史成绩。
 LXNS_SCOPE = "read_player"
 
 LXNS_CLIENT_ID = MaimaiConfig.lxns_client_id
 LXNS_CLIENT_SECRET = MaimaiSecretConfig.lxns_client_secret
-LXNS_REDIRECT_URI = MaimaiSecretConfig.lxns_redirect_uri
 LXNS_OAUTH_ENABLED = bool(LXNS_CLIENT_ID)
 
-# 授权码要经由用户手动搬运一趟，等待时间给得比常规交互宽裕些。
-AUTHORIZE_TIMEOUT = 300
+# 开发者密钥是应用自己的凭据，与任何用户无关，故不随 OAuth 绑定变化；有了它才能按好友码
+# 查询任意玩家的成绩。
+LXNS_DEVELOPER_TOKEN = MaimaiSecretConfig.lxns_developer_token
+LXNS_DEVELOPER_ENABLED = bool(LXNS_DEVELOPER_TOKEN)
+
+# 应用登记为「无回调地址」时，授权页在自身页面里显示授权码；OAuth 规范把这种用法记作 oob。
+LXNS_OOB_REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"
+
 _TOKEN_EXPIRE_MARGIN = 30
 
 _access_token_cache: dict[str, tuple[str, float]] = {}
@@ -58,45 +60,39 @@ class LxnsTokenRevoked(LxnsOAuthError):
     """refresh token 已失效：用户撤销了授权，或令牌链因并发刷新被吊销。"""
 
 
-def generate_code_verifier() -> str:
-    """生成 PKCE 校验串。
-
-    :return: 随机校验串。
-    """
-    return secrets.token_urlsafe(64)
-
-
-def generate_code_challenge(verifier: str) -> str:
-    """按 S256 由校验串算出挑战值。
-
-    :param verifier: 校验串。
-    :return: base64url 编码（无填充）的挑战值。
-    """
-    digest = hashlib.sha256(verifier.encode()).digest()
-    return base64.urlsafe_b64encode(digest).rstrip(b"=").decode()
-
-
-def build_authorize_url(code_challenge: str, state: str) -> str:
+def build_authorize_url() -> str:
     """拼出授权链接。
 
-    应用登记为「无回调地址」时不带 `redirect_uri`，授权完成后页面直接显示授权码；已登记
-    回调地址时必须带上，且须与登记值完全一致。
+    应用登记为「无回调地址」时授权完成后页面直接显示授权码；已登记回调地址时，授权页会跳到
+    该地址并附上授权码。两种情况都由 `redirect_uri` 参数表达，故始终携带。
 
-    :param code_challenge: PKCE 挑战值。
-    :param state: 用于关联请求状态并防跨站请求伪造的随机串。
     :return: 授权链接。
     """
     query = {
         "response_type": "code",
         "client_id": LXNS_CLIENT_ID,
         "scope": LXNS_SCOPE,
-        "code_challenge": code_challenge,
-        "code_challenge_method": "S256",
-        "state": state,
+        "redirect_uri": LXNS_OOB_REDIRECT_URI,
     }
-    if LXNS_REDIRECT_URI:
-        query["redirect_uri"] = LXNS_REDIRECT_URI
     return f"{LXNS_AUTHORIZE_URL}?{urlencode(query)}"
+
+
+def _extract_bind_code(text: str) -> str:
+    """从用户发来的内容里取出授权码。
+
+    用户可能直接粘贴授权码，也可能把回调地址整串复制过来；后者要从中取出 `code` 参数。
+
+    :param text: 用户发来的内容。
+    :return: 授权码；内容里没有授权码时返回空字符串。
+    """
+    text = text.strip().strip("\"'“”‘’`")
+    match = re.search(r"[?&#]code=([^&\s]+)", text)
+    if match:
+        return unquote(match.group(1)).strip()
+    # 粘过来的是一整条链接却没有 code 参数：与其把它整个丢给令牌端点，不如直接判为无效。
+    if "://" in text:
+        return ""
+    return text
 
 
 def unwrap(resp: Any) -> Any:
@@ -150,11 +146,10 @@ def _check_client_config() -> None:
         raise LxnsOAuthError("The LXNS OAuth client_id is not configured.")
 
 
-async def exchange_code(code: str, code_verifier: str) -> dict:
+async def exchange_code(code: str) -> dict:
     """以授权码换取访问令牌。
 
     :param code: 用户在授权页上取得的授权码。
-    :param code_verifier: 发起授权时生成的 PKCE 校验串。
     :return: 令牌响应，含 `access_token`、`refresh_token` 与 `sub`。
     :raise LxnsCodeInvalid: 授权码无效、已过期，或与客户端、回调地址不匹配。
     :raise LxnsOAuthError: 其它错误。
@@ -164,12 +159,10 @@ async def exchange_code(code: str, code_verifier: str) -> dict:
         "client_id": LXNS_CLIENT_ID,
         "grant_type": "authorization_code",
         "code": code,
-        "code_verifier": code_verifier,
+        "redirect_uri": LXNS_OOB_REDIRECT_URI,
     }
     if LXNS_CLIENT_SECRET:
         payload["client_secret"] = LXNS_CLIENT_SECRET
-    if LXNS_REDIRECT_URI:
-        payload["redirect_uri"] = LXNS_REDIRECT_URI
     resp = await _token_request(payload)
     error = resp.get("error")
     if error:
@@ -251,10 +244,7 @@ async def get_access_token(bind_info: LxnsProberBindInfo) -> str:
             raise LxnsTokenRevoked("No refresh token stored for this user.")
         resp = await refresh_access_token(refresh_token)
         rotated = str(resp.get("refresh_token") or refresh_token)
-        subject = resp.get("sub")
-        await LxnsProberBindInfo.update_refresh_token(
-            union_id, rotated, subject=str(subject) if subject is not None else None
-        )
+        await LxnsProberBindInfo.update_refresh_token(union_id, rotated)
         bind_info.refresh_token = rotated
         token = str(resp["access_token"])
         _cache_token(union_id, token, _expires_in(resp))
@@ -304,12 +294,39 @@ async def request_player_data(
     return await _send(token)
 
 
-async def fetch_player_name(bind_info: LxnsProberBindInfo, url: str = LXNS_MAIMAI_PLAYER_URL) -> str:
-    """取得该账号在落雪上的玩家名，用于向用户确认绑定到了哪个账号。
+async def request_developer_data(url: str, params: dict[str, Any] | None = None) -> Any:
+    """以开发者密钥请求落雪的开发者端点。
+
+    开发者端点按好友码寻址，是查询他人成绩的唯一手段。密钥失效时落雪返回 `401`；与 refresh
+    token 不同，密钥无法自行轮换，只能重新申请。
+
+    :param url: 端点地址。
+    :param params: 查询参数。
+    :return: 响应体解析所得的 JSON。
+    :raise ConfigValueError: 未配置开发者密钥。
+    """
+    if not LXNS_DEVELOPER_ENABLED:
+        raise ConfigValueError("{I18N:error.config.secret.not_found}")
+    resp = await get_url(
+        url,
+        status_code=200,
+        params=params,
+        headers={"accept": "*/*", "Authorization": LXNS_DEVELOPER_TOKEN},
+        fmt="json",
+    )
+    return unwrap(resp)
+
+
+async def fetch_player_field(bind_info: LxnsProberBindInfo, field: str, url: str = LXNS_MAIMAI_PLAYER_URL) -> str:
+    """取得该账号在落雪个人资料里的某个字段。
+
+    个人资料里既有玩家名也有好友码：前者用于向用户确认绑定到了哪个账号，后者是开发者端点的
+    寻址依据。
 
     :param bind_info: 该用户的绑定记录。
+    :param field: 字段名，如 `name`、`friend_code`。
     :param url: 舞萌或中二的玩家信息端点。
-    :return: 玩家名；获取失败时返回空字符串。
+    :return: 字段值的字符串形式；获取失败或字段缺失时返回空字符串。
     """
     try:
         profile = unwrap(await request_player_data(bind_info, url))
@@ -318,57 +335,66 @@ async def fetch_player_name(bind_info: LxnsProberBindInfo, url: str = LXNS_MAIMA
         return ""
     if not isinstance(profile, dict):
         return ""
-    return str(profile.get("name", ""))
+    value = profile.get(field)
+    return str(value) if value is not None else ""
 
 
-async def bind_account(msg) -> None:
-    """以授权码流程引导用户完成一次落雪账号绑定。
+async def fetch_player_name(bind_info: LxnsProberBindInfo, url: str = LXNS_MAIMAI_PLAYER_URL) -> str:
+    """取得该账号在落雪上的玩家名，用于向用户确认绑定到了哪个账号。
+
+    :param bind_info: 该用户的绑定记录。
+    :param url: 舞萌或中二的玩家信息端点。
+    :return: 玩家名；获取失败时返回空字符串。
+    """
+    return await fetch_player_field(bind_info, "name", url)
+
+
+async def bind_account(msg, code: str | None = None, cmd=None) -> None:
+    """以授权码流程完成一次落雪账号绑定。
 
     授权码只在用户自己的浏览器里生成：链接一旦被转发给他人，对方点下同意，令牌就落在
-    转发者手上。故提示与授权码都必须留在发起绑定的这场会话里。
+    转发者手上。故提示与授权码都必须留在发起绑定的这场会话里，绑定因此分两步：不带参数时
+    只给出授权链接，用户取回授权码后再用同一条命令把它发回来。
 
     :param msg: 消息会话。
+    :param code: 用户发来的授权码，或含授权码的回调地址；为空时只给出授权链接。
+    :param cmd: 发回授权码所用的命令（`ActionText`），用于提示用户。
     """
     if not LXNS_OAUTH_ENABLED:
         await msg.finish(I18NContext("maimai.message.oauth.lx.not_configured"))
-    code_verifier = generate_code_verifier()
-    authorize_url = build_authorize_url(generate_code_challenge(code_verifier), secrets.token_urlsafe(16))
-    try:
-        reply = await msg.wait_next_message(
+    if not code:
+        await msg.finish(
             MessageChain.assign(
                 [
-                    I18NContext("maimai.message.oauth.lx.prompt", minutes=max(1, AUTHORIZE_TIMEOUT // 60)),
-                    Url(authorize_url, trusted=True),
+                    I18NContext("maimai.message.oauth.lx.prompt", cmd=cmd),
+                    Url(build_authorize_url(), trusted=True),
                 ]
-            ),
-            quote=False,
-            timeout=AUTHORIZE_TIMEOUT,
+            )
         )
-    except WaitCancelException:
-        await msg.finish(I18NContext("maimai.message.oauth.lx.timeout"))
-
-    code = reply.as_display(text_only=True).strip()
+    code = _extract_bind_code(code)
+    if not code:
+        await msg.finish(I18NContext("maimai.message.oauth.lx.code_invalid"))
     try:
-        token = await exchange_code(code, code_verifier)
+        token = await exchange_code(code)
     except LxnsCodeInvalid:
-        await reply.finish(I18NContext("maimai.message.oauth.lx.code_invalid"))
+        await msg.finish(I18NContext("maimai.message.oauth.lx.code_invalid"))
     except LxnsOAuthError:
         Logger.exception()
-        await reply.finish(I18NContext("maimai.message.oauth.failed"))
+        await msg.finish(I18NContext("maimai.message.oauth.failed"))
 
-    union_id = reply.session_info.sender_union_id
+    union_id = msg.session_info.sender_union_id
+    # 令牌里的 `sub` 只用于兜底显示账号，落雪侧不落库（落雪靠 refresh token 自行轮换）。
     subject = token.get("sub")
     # 令牌此刻已经在手，而同一授权码无法换取第二次：先落盘，再做其它事情。
     if not await LxnsProberBindInfo.set_bind_info(
         union_id=union_id,
         refresh_token=str(token["refresh_token"]),
-        subject=str(subject) if subject is not None else None,
     ):
-        await reply.finish(I18NContext("maimai.message.oauth.failed"))
+        await msg.finish(I18NContext("maimai.message.oauth.failed"))
     _cache_token(union_id, str(token["access_token"]), _expires_in(token))
-    bind_info = await LxnsProberBindInfo.get_by_sender_id(reply, create=False)
+    bind_info = await LxnsProberBindInfo.get_by_sender_id(msg, create=False)
     nickname = await fetch_player_name(bind_info) if bind_info else ""
-    await reply.finish(I18NContext("maimai.message.bind.success", username=nickname or str(subject or "")))
+    await msg.finish(I18NContext("maimai.message.bind.success", username=nickname or str(subject or "")))
 
 
 async def unbind_account(msg) -> None:

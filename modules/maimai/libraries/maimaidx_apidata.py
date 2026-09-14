@@ -13,6 +13,7 @@ from core.utils.http import download, get_url, post_url
 from .divingfish_oauth import (
     DF_OAUTH_ENABLED,
     DivingFishTokenRevoked,
+    diving_fish_bind_usable,
     request_player_data,
 )
 from .maimaidx_mapping import *
@@ -32,7 +33,7 @@ total_list = TotalList()
 
 async def get_bind_info(msg: Bot.MessageSession) -> DivingProberBindInfo:
     bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
-    if not bind_info or not bind_info.refresh_token:
+    if not diving_fish_bind_usable(bind_info):
         await msg.finish(
             I18NContext(
                 "maimai.message.user_unbound",
@@ -43,12 +44,15 @@ async def get_bind_info(msg: Bot.MessageSession) -> DivingProberBindInfo:
 
 
 async def prompt_rebind(msg: Bot.MessageSession, exc: DivingFishTokenRevoked) -> None:
-    """令牌失效时引导用户重新完成一次绑定授权。
+    """授权失效时引导用户重新完成一次绑定授权。
+
+    两种客户端都会走到这里：公开客户端的 refresh token 被撤销，或机密客户端换票时对方已不
+    再授权本应用。对用户而言要做的事相同。
 
     :param msg: 消息会话。
     :param exc: 触发本提示的异常。
     """
-    Logger.warning(f"Diving-Fish refresh token is no longer valid: {exc}")
+    Logger.warning(f"The Diving-Fish authorization of {msg.session_info.sender_id} is no longer valid: {exc}")
     await msg.finish(
         I18NContext(
             "maimai.message.oauth.revoked",
@@ -199,10 +203,25 @@ async def search_by_alias(input_: str) -> list:
     return list(set(result))
 
 
-async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> dict | None:
+async def get_record(
+    msg: Bot.MessageSession,
+    payload: dict | None = None,
+    friend_code: str = "",
+    use_cache: bool = True,
+) -> dict | None:
+    """按数据源取回 B50，形状统一为水鱼 `/query/player` 的返回。
+
+    水鱼侧以 `payload`（`qq` 或用户名）确定查询对象，落雪侧则以好友码确定，故两者各取所需。
+
+    :param msg: 消息会话。
+    :param payload: 水鱼查询载荷，含 `qq` 或 `username`。
+    :param friend_code: 落雪好友码；查询他人时由调用方给出。
+    :param use_cache: 是否读写本地缓存。
+    :return: 含 `nickname`、`rating` 与 `charts` 的成绩字典。
+    """
     if pick_source(msg, GAME_MAIMAI) == SOURCE_LXNS:
-        # 落雪没有按任意用户名查询的公开端点，查询对象由绑定（令牌或好友码）决定，载荷只在水鱼侧使用。
-        return await get_record_lx(msg, use_cache=use_cache)
+        return await get_record_lx(msg, friend_code=friend_code, use_cache=use_cache)
+    payload = payload or {}
     mai_cache_path = cache_path / "maimai-record"
     mai_cache_path.mkdir(parents=True, exist_ok=True)
     cache_dir = mai_cache_path / f"{msg.session_info.sender_id.replace('|', '_')}_maimaidx_record.json"

@@ -3,6 +3,7 @@ from core.builtins.message.internal import Image as BImage
 from core.component import module
 from core.logger import Logger
 from core.scheduler import CronTrigger
+from core.types import Param
 from core.utils.func import is_int
 from core.utils.image import msgchain2image
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_cover
@@ -13,7 +14,7 @@ from .libraries.maimaidx_scoreline import draw_scoreline_table
 from .libraries.maimaidx_scorelist import generate as generate_process
 from .libraries.maimaidx_utils import *
 from .libraries.divingfish_oauth import bind_account, unbind_account
-from .libraries.lxns_apidata import get_lxns_prober_bind_info, get_record_lx
+from .libraries.lxns_apidata import get_bind_info
 from .libraries.lxns_oauth import bind_account as bind_lx_account, unbind_account as unbind_lx_account
 from .libraries.source import (
     GAME_MAIMAI,
@@ -22,7 +23,6 @@ from .libraries.source import (
     pick_source,
     switch_source,
 )
-from .database.models import LxnsProberBindInfo
 
 total_list = TotalList()
 
@@ -41,7 +41,7 @@ mai = module(
     "base <constant> [<constant_max>] [-p <page>] {{I18N:maimai.help.base}}",
     options_desc={"-p": "{I18N:maimai.help.option.p}"},
 )
-async def _(msg: Bot.MessageSession, constant: float, constant_max: float | None = None):
+async def _(msg: Bot.MessageSession, constant: float, constant_max: float | None = None, page: str | None = None):
     result_set = []
     if constant <= 0:
         await msg.finish(I18NContext("maimai.message.level_invalid"))
@@ -79,9 +79,8 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float | None
                 )
 
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    get_page = msg.parsed_msg.get("-p", False)
-    if get_page and is_int(get_page["<page>"]):
-        page = max(min(int(get_page["<page>"]), total_pages), 1)
+    if page and is_int(page):
+        page = max(min(int(page), total_pages), 1)
     else:
         page = 1
     start_index = (page - 1) * SONGS_PER_PAGE
@@ -105,7 +104,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float | None
 
 
 @mai.command("level <level> [-p <page>] {{I18N:maimai.help.level}}", options_desc={"-p": "{I18N:maimai.help.option.p}"})
-async def _(msg: Bot.MessageSession, level: str):
+async def _(msg: Bot.MessageSession, level: str, page: str | None = None):
     result_set = []
     data = (await total_list.get()).filter(level=level)
     for music in sorted(data, key=lambda i: int(i.get("id", 0))):
@@ -122,8 +121,7 @@ async def _(msg: Bot.MessageSession, level: str):
                     )
                 )
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    get_page = msg.parsed_msg.get("-p", False)
-    page = max(min(int(get_page["<page>"]), total_pages), 1) if get_page and is_int(get_page["<page>"]) else 1
+    page = max(min(int(page), total_pages), 1) if page and is_int(page) else 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
@@ -147,15 +145,14 @@ async def _(msg: Bot.MessageSession, level: str):
 
 
 @mai.command("new [-p <page>] {{I18N:maimai.help.new}}", options_desc={"-p": "{I18N:maimai.help.option.p}"})
-async def _(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession, page: str | None = None):
     result_set = []
     data = (await total_list.get()).new()
 
     for music in sorted(data, key=lambda i: int(i.get("id", 0))):
         result_set.append((music.get("id", ""), music.get("title", ""), music.get("type", "")))
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    get_page = msg.parsed_msg.get("-p", False)
-    page = max(min(int(get_page["<page>"]), total_pages), 1) if get_page and is_int(get_page["<page>"]) else 1
+    page = max(min(int(page), total_pages), 1) if page and is_int(page) else 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
@@ -180,7 +177,7 @@ async def _(msg: Bot.MessageSession):
     "search <keyword> [-p <page>] {{I18N:maimai.help.search}}",
     options_desc={"-p": "{I18N:maimai.help.option.p}"},
 )
-async def _(msg: Bot.MessageSession, keyword: str):
+async def _(msg: Bot.MessageSession, keyword: str, page: str | None = None):
     name = keyword.strip()
     result_set = []
     data = (await total_list.get()).filter(title_search=name)
@@ -190,8 +187,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
     for music in sorted(data, key=lambda i: int(i.get("id", 0))):
         result_set.append((music.get("id", ""), music.get("title", ""), music.get("type", "")))
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    get_page = msg.parsed_msg.get("-p", False)
-    page = max(min(int(get_page["<page>"]), total_pages), 1) if get_page and is_int(get_page["<page>"]) else 1
+    page = max(min(int(page), total_pages), 1) if page and is_int(page) else 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
@@ -375,12 +371,10 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
 
 @mai.command("id <id> {{I18N:maimai.help.id}}")
 @mai.command("song <id_or_alias> {{I18N:maimai.help.song}}")
-async def _(msg: Bot.MessageSession, id_or_alias: str):
-    if "<id>" in msg.parsed_msg:
-        sid = msg.parsed_msg["<id>"]
-    elif id_or_alias[:2].lower() == "id":
+async def _(msg: Bot.MessageSession, id_or_alias: str, sid: Param("<id>", str) = None):
+    if sid is None and id_or_alias[:2].lower() == "id":
         sid = id_or_alias[2:]
-    else:
+    if sid is None:
         sid_list = await search_by_alias(id_or_alias)
         if len(sid_list) == 0:
             await msg.finish(I18NContext("maimai.message.music_not_found"))
@@ -440,8 +434,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
 
 
 @mai.command("random <diff+level> [<dx_type>] {{I18N:maimai.help.random.filter}}")
-async def _(msg: Bot.MessageSession, dx_type: str | None = None):
-    condit = msg.parsed_msg["<diff+level>"]
+async def _(msg: Bot.MessageSession, dx_type: str | None = None, condit: Param("<diff+level>", str) = None):
     level = ""
     diff = ""
     try:
@@ -565,19 +558,12 @@ async def _(msg: Bot.MessageSession):
     await unbind_account(msg)
 
 
-@mai.command("bind lx [<friendcode>] {{I18N:maimai.help.bind.lx}}", required_superuser=True)
-async def _(msg: Bot.MessageSession, friendcode: str | None = None):
-    if not friendcode:
-        # 不带好友码即以 OAuth 授权绑定，可读到完整成绩。
-        await bind_lx_account(msg)
-    # 仅凭好友码的旧方式仍然可用：不必授权，但只能读到公开的最佳成绩。
-    data = await get_record_lx(msg, friendcode, use_cache=False)
-    if data:
-        await LxnsProberBindInfo.set_bind_info(union_id=msg.session_info.sender_union_id, friend_code=friendcode)
-        await msg.finish(I18NContext("maimai.message.bind.success", username=data["nickname"]))
+@mai.command("bind lx [<auth_code>] {{I18N:maimai.help.bind.lx}}")
+async def _(msg: Bot.MessageSession, auth_code: str | None = None):
+    await bind_lx_account(msg, auth_code, ActionText(f"{msg.session_info.prefixes[0]}maimai bind lx "))
 
 
-@mai.command("unbind lx {{I18N:maimai.help.unbind}}", required_superuser=True)
+@mai.command("unbind lx {{I18N:maimai.help.unbind}}")
 async def _(msg: Bot.MessageSession):
     await unbind_lx_account(msg)
 
@@ -595,17 +581,23 @@ async def _(msg: Bot.MessageSession):
     )
 
 
-@mai.command("b50 {{I18N:maimai.help.b50}}")
-async def _(msg: Bot.MessageSession):
+@mai.command("b50 [<user>] {{I18N:maimai.help.b50}}")
+async def _(msg: Bot.MessageSession, user: str | None = None):
+    friend_code = ""
     if pick_source(msg, GAME_MAIMAI) == SOURCE_LXNS:
-        token = await get_lxns_prober_bind_info(msg)
+        # 落雪的查询对象是好友码；不填参数时由令牌认出账号，无需绑定信息以外的输入。
+        if user and not is_int(user):
+            await msg.finish(I18NContext("maimai.message.friend_code_invalid"))
+        token = None if user else await get_bind_info(msg)
         payload = None
+        friend_code = user or ""
         source = SOURCE_NAME_LXNS
     else:
         token = None
-        payload = await get_diving_prober_bind_info(msg, b50=True)
+        # 填了用户名便查这个玩家，无需绑定；否则查绑定账号（或按 QQ 查）。
+        payload = {"username": user, "b50": True} if user else await get_diving_prober_bind_info(msg, b50=True)
         source = SOURCE_NAME_DIVING_FISH
-    img = await generate_b50(msg, payload, token, source)
+    img = await generate_b50(msg, payload, token, source, friend_code, use_cache=not user)
     if img:
         await msg.finish(BImage(img))
 
@@ -651,8 +643,7 @@ async def query_song_score(msg, query):
 
 
 @mai.command("plate <plate> [-l] {{I18N:maimai.help.plate}}", options_desc={"-l": "{I18N:maimai.help.option.l}"})
-async def _(msg: Bot.MessageSession, plate: str):
-    get_list = msg.parsed_msg.get("-l", False)
+async def _(msg: Bot.MessageSession, plate: str, get_list: Param("-l", bool) = False):
     await query_plate(msg, plate, get_list)
 
 
@@ -682,8 +673,7 @@ async def query_plate(msg, plate, get_list=False):
 @mai.command(
     "process <level> <goal> [-l] {{I18N:maimai.help.process}}", options_desc={"-l": "{I18N:maimai.help.option.l}"}
 )
-async def _(msg: Bot.MessageSession, level: str, goal: str):
-    get_list = msg.parsed_msg.get("-l", False)
+async def _(msg: Bot.MessageSession, level: str, goal: str, get_list: Param("-l", bool) = False):
     await query_process(msg, level, goal, get_list)
 
 
@@ -726,9 +716,9 @@ async def _(msg: Bot.MessageSession):
 @mai.command(
     "scorelist <level> [-p <page>] {{I18N:maimai.help.scorelist}}", options_desc={"-p": "{I18N:maimai.help.option.p}"}
 )
-async def _(msg: Bot.MessageSession, level: str):
-    get_page = msg.parsed_msg.get("-p", False)
-    page = get_page["<page>"] if get_page and is_int(get_page["<page>"]) else 1
+async def _(msg: Bot.MessageSession, level: str, page: str | None = None):
+    if not (page and is_int(page)):
+        page = 1
 
     payload = await get_diving_prober_bind_info(msg)
     output, get_img = await get_score_list(msg, payload, level, page)
@@ -744,8 +734,8 @@ async def _(msg: Bot.MessageSession, level: str):
 
 
 @mai.command("update [--no-cover]", required_superuser=True)
-async def _(msg: Bot.MessageSession):
-    if msg.parsed_msg.get("--no-cover", False):
+async def _(msg: Bot.MessageSession, no_cover: bool = False):
+    if no_cover:
         actions = await update_alias() and await total_list.update()
     else:
         actions = await update_alias() and await update_cover() and await total_list.update()

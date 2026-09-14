@@ -1,8 +1,5 @@
 from pathlib import Path
 
-from modules.maimai.config import MaimaiSecretConfig
-
-LX_DEVELOPER_TOKEN = MaimaiSecretConfig.lxns_developer_token
 SONGS_PER_PAGE = 30
 SONGS_NEED_IMG = 10
 

@@ -1367,6 +1367,147 @@ def _unwrap_optional(annotation):
     return annotation
 
 
+def _unwrap_option_value(value):
+    """解包带杠选项的解析结果，方便直接作为函数参数传入。
+
+    带子参数的选项（如 ``[--foo <bar>]``）在 ``msg.parsed_msg`` 中会被解析为字典
+    （形如 ``{"<bar>": "value"}``）。恰好只有一个子参数时解包为该子参数的值，
+    使函数参数可以直接拿到 ``"value"``；其余情况原样返回。
+
+    :param value: 选项在 ``msg.parsed_msg`` 中的值。
+    :return: 解包后的选项值。
+    """
+    if isinstance(value, dict) and len(value) == 1:
+        return next(iter(value.values()))
+    return value
+
+
+def _resolve_parsed_value(param_name: str, parsed_msg: dict):
+    """在解析结果中查找与命令函数参数对应的值。
+
+    查找顺序如下，命中即返回：
+
+    1. ``<param_name>``：位置参数；
+    2. ``param_name``：无杠标志或子命令；
+    3. ``-param_name`` / ``--param-name``：带杠选项，参数名中的下划线按连字符匹配
+       （如参数 ``no_cover`` 对应 ``--no-cover``），带子参数的选项按
+       :func:`_unwrap_option_value` 解包；
+    4. 带杠选项的子参数 ``<param_name>``：如 ``[-p <page>]`` 对应参数 ``page``。
+
+    :param param_name: 命令函数的参数名。
+    :param parsed_msg: ``msg.parsed_msg`` 映射后的解析结果。
+    :return: ``(found, value)`` 二元组；``found`` 为假时应使用参数默认值。
+    """
+    if (key := f"<{param_name}>") in parsed_msg:
+        return True, parsed_msg[key]
+
+    if param_name in parsed_msg:
+        return True, parsed_msg[param_name]
+
+    option_name = param_name.replace("_", "-")
+    for key in (f"-{option_name}", f"--{option_name}"):
+        if key in parsed_msg:
+            return True, _unwrap_option_value(parsed_msg[key])
+
+    sub_key = f"<{param_name}>"
+    for key, value in parsed_msg.items():
+        if key.startswith("-") and isinstance(value, dict) and sub_key in value:
+            return True, value[sub_key]
+
+    return False, None
+
+
+def _build_command_kwargs(command, msg: "Bot.MessageSession", bot) -> dict:
+    """根据命令函数的签名构建调用参数。
+
+    将 ``msg.parsed_msg`` 的解析结果映射为函数的关键字参数：
+
+    - 标注为 ``Bot.MessageSession`` 的参数注入会话对象；
+    - 标注为 ``Param`` 的参数按 ``Param.name`` 取解析结果，适用于
+      ``-i``、``<address:port>`` 等无法作为函数参数名的模板元素；
+    - 其余参数按 :func:`_resolve_parsed_value` 取位置参数或带杠选项的值。
+      选项未提供时（解析结果为 ``False``）对非 ``bool`` 参数回退到默认值，
+      标注为 ``bool`` 时直接传入 ``False``。
+
+    :param command: 匹配到的 ``CommandMeta``。
+    :param msg: 消息会话对象。
+    :param bot: ``Bot`` 类，用于判断 ``Bot.MessageSession`` 标注。
+    :return: 调用命令函数用的关键字参数字典。
+    :raises InvalidCommandFormatError: 参数存在但无法转换为标注的类型时抛出。
+    """
+    kwargs = {}
+    func_params = _get_cached_signature(command.function).parameters
+
+    if len(func_params) > 1 and msg.parsed_msg:
+        parsed_msg_ = msg.parsed_msg
+        no_message_session = True
+
+        for param_name, param_obj in func_params.items():
+            # ========== 处理 MessageSession 参数 ==========
+            if param_obj.annotation == bot.MessageSession:
+                kwargs[param_name] = msg
+                no_message_session = False
+                continue
+
+            # ========== 处理自定义 Param 类型 ==========
+            if isinstance(param_obj.annotation, Param):
+                if param_obj.annotation.name in parsed_msg_:
+                    if isinstance(parsed_msg_[param_obj.annotation.name], param_obj.annotation.type):
+                        kwargs[param_name] = parsed_msg_[param_obj.annotation.name]
+                    else:
+                        Logger.warning(f"{param_obj.annotation.name} is not a {param_obj.annotation.type}")
+                elif param_obj.default is inspect.Parameter.empty:
+                    # 已声明默认值（如可选选项缺席）时无需提示，避免每次执行都告警
+                    Logger.warning(f"{param_obj.annotation.name} is not in parsed_msg")
+                if param_name not in kwargs:
+                    # 解析结果缺失或类型不匹配时回退到默认值
+                    if param_obj.default is not inspect.Parameter.empty:
+                        kwargs[param_name] = param_obj.default
+                    else:
+                        kwargs[param_name] = None
+                continue
+
+            # ========== 处理普通参数与带杠选项 ==========
+            found, value = _resolve_parsed_value(param_name, parsed_msg_)
+            annotation = _unwrap_optional(param_obj.annotation)
+
+            # 选项/标志未提供时解析结果为 False，非 bool 参数应回退到默认值
+            if found and value is False and annotation is not bool:
+                found = False
+
+            if found:
+                try:
+                    # 根据类型注解进行类型转换，可选参数按其非 None 类型处理
+                    if annotation == int:
+                        value = int(value)
+                    elif annotation == float:
+                        value = float(value)
+                    elif annotation == bool:
+                        value = bool(value)
+                except (TypeError, ValueError):
+                    # 类型转换失败，命令格式错误
+                    raise InvalidCommandFormatError
+                kwargs[param_name] = value
+            else:
+                # 参数不在解析结果中，使用默认值或 None
+                if param_obj.default is not inspect.Parameter.empty:
+                    kwargs[param_name] = param_obj.default
+                else:
+                    kwargs[param_name] = None
+
+        # 警告：函数缺少 MessageSession 参数（可能导致运行时错误）
+        if no_message_session:
+            Logger.warning(
+                f"{command.function.__name__} has no Bot.MessageSession parameter, did you forgot to add it?\n"
+                "Remember: MessageSession IS NOT Bot.MessageSession"
+            )
+    else:
+        # 函数只有一个参数，直接传入 MessageSession
+        kwargs[func_params[list(func_params.keys())[0]].name] = msg
+
+    return kwargs
+
+
 async def _execute_module_command(msg: "Bot.MessageSession", module, command_first_word):
     """
     执行模块的命令解析和处理。
@@ -1430,74 +1571,8 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
                 raise InvalidCommandFormatError
 
             # ========== 步骤 4: 构建函数参数 ==========
-            # 根据命令函数的签名，准备调用参数
-            kwargs = {}
-            func_params = _get_cached_signature(command.function).parameters
-
-            if len(func_params) > 1 and msg.parsed_msg:
-                # 函数有多个参数，需要映射解析后的参数
-                parsed_msg_ = msg.parsed_msg.copy()
-                no_message_session = True  # 标记是否缺少 MessageSession 参数
-
-                # 遍历函数的所有参数
-                for param_name, param_obj in func_params.items():
-                    # ========== 处理 MessageSession 参数 ==========
-                    if param_obj.annotation == bot.MessageSession:
-                        kwargs[param_name] = msg
-                        no_message_session = False
-
-                    # ========== 处理自定义 Param 类型 ==========
-                    elif isinstance(param_obj.annotation, Param):
-                        if param_obj.annotation.name in parsed_msg_:
-                            # 检查类型是否匹配
-                            if isinstance(parsed_msg_[param_obj.annotation.name], param_obj.annotation.type):
-                                kwargs[param_name] = parsed_msg_[param_obj.annotation.name]
-                                del parsed_msg_[param_obj.annotation.name]
-                            else:
-                                Logger.warning(f"{param_obj.annotation.name} is not a {param_obj.annotation.type}")
-                        else:
-                            Logger.warning(f"{param_obj.annotation.name} is not in parsed_msg")
-
-                    # ========== 处理普通参数 ==========
-                    param_name_ = param_name
-
-                    # 检查是否使用了 <param> 格式
-                    if (param_name__ := f"<{param_name}>") in parsed_msg_:
-                        param_name_ = param_name__
-
-                    if param_name_ in parsed_msg_:
-                        # 参数在解析结果中
-                        kwargs[param_name] = parsed_msg_[param_name_]
-                        try:
-                            # 尝试根据类型注解进行类型转换，可选参数按其非 None 类型处理
-                            annotation = _unwrap_optional(param_obj.annotation)
-                            if annotation == int:
-                                kwargs[param_name] = int(parsed_msg_[param_name_])
-                            elif annotation == float:
-                                kwargs[param_name] = float(parsed_msg_[param_name_])
-                            elif annotation == bool:
-                                kwargs[param_name] = bool(parsed_msg_[param_name_])
-                            del parsed_msg_[param_name_]
-                        except (KeyError, ValueError):
-                            # 类型转换失败，命令格式错误
-                            raise InvalidCommandFormatError
-                    else:
-                        # 参数不在解析结果中，使用默认值或 None
-                        if param_name_ not in kwargs:
-                            if param_obj.default is not inspect.Parameter.empty:
-                                kwargs[param_name_] = param_obj.default
-                            else:
-                                kwargs[param_name_] = None
-
-                # 警告：函数缺少 MessageSession 参数（可能导致运行时错误）
-                if no_message_session:
-                    Logger.warning(
-                        f"{command.function.__name__} has no Bot.MessageSession parameter, did you forgot to add it?\n"
-                        "Remember: MessageSession IS NOT Bot.MessageSession"
-                    )
-            else:
-                # 函数只有一个参数，直接传入 MessageSession
-                kwargs[func_params[list(func_params.keys())[0]].name] = msg
+            # 根据命令函数的签名，准备调用参数（含带杠选项到函数参数的映射）
+            kwargs = _build_command_kwargs(command, msg, bot)
 
             # ========== 步骤 5: 显示“正在输入……”状态 ==========
             if msg.session_info.typing_prompt_enabled:

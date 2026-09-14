@@ -35,8 +35,8 @@ async def wait_for_restart(msg: Bot.MessageSession):
 
 
 @rst.command("[--force] {{I18N:core.help.restart}}", options_desc={"--force": "{I18N:core.help.restart.force}"})
-async def _(msg: Bot.MessageSession):
-    if msg.parsed_msg and msg.parsed_msg.get("--force", False):
+async def _(msg: Bot.MessageSession, force: bool = False):
+    if force:
         await msg.send_message(I18NContext("core.message.restart.restarting"))
     else:
         try:

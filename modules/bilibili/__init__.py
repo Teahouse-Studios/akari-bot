@@ -6,6 +6,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.elements import PlainElement, RawElement
 from core.builtins.message.internal import I18NContext
 from core.component import module
+from core.types import Param
 from .bili_api import get_video_info
 
 bili = module(
@@ -25,16 +26,14 @@ bili = module(
     options_desc={"-i": "{I18N:bilibili.help.option.i}"},
     exclude_from=["Discord|Channel"],
 )
-async def _(msg: Bot.MessageSession, bid: str, get_detail=False):
-    if msg.parsed_msg.get("-i", False):
-        get_detail = True
+async def _(msg: Bot.MessageSession, bid: str, info: Param("-i", bool) = False):
     if bid[:2].upper() == "BV":
         query = f"?bvid={bid}"
     elif bid[:2].upper() == "AV":
         query = f"?aid={bid[2:]}"
     else:
         return await msg.finish(I18NContext("bilibili.message.invalid"))
-    output = await get_video_info(msg, query, get_detail)
+    output = await get_video_info(msg, query, info)
     await msg.finish(output)
 
 

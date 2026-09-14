@@ -37,14 +37,17 @@ def _get_message_images(msg: Bot.MessageSession) -> list[ImageElement]:
         "--no-tools": "{I18N:ai.help.option.no_tools}",
     },
 )
-async def _(msg: Bot.MessageSession, prompt: str = ""):
-    parsed_msg = msg.parsed_msg or {}
-    get_ctx = parsed_msg.get("--ctx", False)
-    turn_id = get_ctx["<turn_id>"].strip() if get_ctx else None
-    get_llm = parsed_msg.get("--llm", False)
-    selected_llm = get_llm["<llm>"].lower() if get_llm else None
+async def _(
+    msg: Bot.MessageSession,
+    prompt: str = "",
+    turn_id: str | None = None,
+    llm: str | None = None,
+    no_tools: bool = False,
+):
+    turn_id = turn_id.strip() if turn_id else None
+    selected_llm = llm.lower() if llm else None
     target_default_llm = msg.session_info.target_union_info.target_data.get("ai_default_llm")
-    use_tools = not parsed_msg.get("--no-tools", False)
+    use_tools = not no_tools
 
     is_superuser = msg.check_super_user()
 
@@ -237,8 +240,7 @@ def _build_llm_billing_items(llm_info: dict) -> list:
 
 
 @ai.command("llm instruct [<instructions>] {{I18N:ai.help.llm.instruct}}")
-async def _(msg: Bot.MessageSession, llm: str):
-    instructions = msg.parsed_msg.get("<instructions>")
+async def _(msg: Bot.MessageSession, instructions: str | None = None):
     await msg.session_info.sender_union_info.edit_sender_data("ai_custom_instructions", instructions)
     if instructions:
         await msg.finish(I18NContext("ai.message.llm.instruct.set.success"))
@@ -275,16 +277,15 @@ async def _(msg: Bot.MessageSession, llm: str):
 @ai.command(
     "llm list [--price] {{I18N:ai.help.llm.list}}", options_desc={"--price": "{I18N:ai.help.llm.list.option.price}"}
 )
-async def _(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession, price: bool = False):
     available_llms = llm_list + (llm_su_list if msg.check_super_user() else [])
-    show_price = bool(msg.parsed_msg.get("--price", False))
 
     if available_llms:
         llm_items = []
         for _, llm_name in enumerate(sorted(available_llms)):
             llm_info = next(llm for llm in llm_api_list if llm["name"].lower() == llm_name)
             llm_items.append(Plain(llm_name))
-            if show_price:
+            if price:
                 llm_items.extend(_build_llm_billing_items(llm_info))
 
         await msg.finish(

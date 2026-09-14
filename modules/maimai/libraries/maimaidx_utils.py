@@ -8,7 +8,7 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import ActionText, I18NContext, Plain
 from core.utils.http import get_url
 from core.utils.random import Random
-from .divingfish_oauth import fill_bind_username
+from .divingfish_oauth import diving_fish_bind_usable, fill_bind_username
 from .maimaidx_apidata import get_record, get_song_record, get_total_record, get_plate
 from .maimaidx_mapping import *
 from .maimaidx_music import TotalList
@@ -31,7 +31,9 @@ async def get_diving_prober_bind_info(msg: Bot.MessageSession, **kwargs):
     if pick_source(msg, GAME_MAIMAI) == SOURCE_LXNS:
         return dict(kwargs)
     bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
-    if not bind_info:
+    # 记录存在但没有可用的授权（如配置刚由公开客户端改为机密客户端，旧行里只有 refresh token）
+    # 时同样按未绑定处理：QQ 用户能退回 `qq` 直接查，其它平台则只能重新绑定一次。
+    if not diving_fish_bind_usable(bind_info):
         if msg.session_info.sender_from == "QQ":
             return {"qq": msg.session_info.get_common_sender_id()} | kwargs
         await msg.finish(
@@ -138,7 +140,7 @@ async def get_rank(msg: Bot.MessageSession, payload: dict, use_cache: bool = Tru
     rank_data = await get_url(url, 200, fmt="json")
     rank_data = sorted(rank_data, key=lambda x: x.get("ra", 0), reverse=True)  # 根据rating排名并倒序
 
-    player_data: dict = await get_record(msg, payload, use_cache)
+    player_data: dict = await get_record(msg, payload, use_cache=use_cache)
     username = player_data.get("username", "")
 
     rating = 0
@@ -284,7 +286,7 @@ async def get_score_list(
     res: dict = await get_total_record(msg, use_cache=use_cache)
     records = res["records"]
 
-    player_data: dict = await get_record(msg, payload, use_cache)
+    player_data: dict = await get_record(msg, payload, use_cache=use_cache)
     song_list = []
     for song in records:
         if song["level"] == level:

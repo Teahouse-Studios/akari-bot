@@ -945,7 +945,7 @@ async def _test_delete_sender_union_cleans_current_state():
     await target.save(update_fields=["custom_admins", "banned_users"])
     await CytoidBindInfo.create(union_id=sender.union_id, username="delete-me")
     await DivingProberBindInfo.create(union_id=sender.union_id, username="delete-me")
-    await LxnsProberBindInfo.create(union_id=sender.union_id, friend_code="123456")
+    await LxnsProberBindInfo.create(union_id=sender.union_id, refresh_token="delete-me")
     await PhigrosBindInfo.create(union_id=sender.union_id, session_token="delete-me", username="delete-me")
     pair_id = verification_id(target.union_id, sender.union_id)
     await CaptchaTrust.create(
@@ -1333,7 +1333,7 @@ async def _test_bind_models_reject_deleted_union():
     results = [
         await CytoidBindInfo.set_bind_info(union_id, "user"),
         await DivingProberBindInfo.set_bind_info(union_id, "user"),
-        await LxnsProberBindInfo.set_bind_info(union_id, "123456"),
+        await LxnsProberBindInfo.set_bind_info(union_id, "refresh-token"),
         await PhigrosBindInfo.set_bind_info(union_id, "a" * 25),
     ]
     return results == [False] * 4 and not any(

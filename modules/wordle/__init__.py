@@ -22,10 +22,7 @@ wordle = module(
     "[--hard] [--trial] {{I18N:wordle.help}}",
     options_desc={"--hard": "{I18N:wordle.help.option.hard}", "--trial": "{I18N:wordle.help.option.trial}"},
 )
-async def _(msg: Bot.MessageSession):
-    hard_mode = bool(msg.parsed_msg and msg.parsed_msg.get("--hard", False))
-    trial = bool(msg.parsed_msg and msg.parsed_msg.get("--trial", False))
-
+async def _(msg: Bot.MessageSession, hard: bool = False, trial: bool = False):
     play_state = PlayState("wordle", msg)
     if play_state.check():
         await msg.finish(I18NContext("game.message.running"))
@@ -52,7 +49,7 @@ async def _(msg: Bot.MessageSession):
         start_msg.append(BImage(board_image.board_image))
         start_msg.append(BImage(board_image.keyboard_image))
     start_msg.append(I18NContext("wordle.message.start"))
-    if hard_mode:
+    if hard:
         start_msg.append(I18NContext("wordle.message.start.hard"))
     if trial:
         start_msg.append(I18NContext("wordle.message.start.trial"))
@@ -74,7 +71,7 @@ async def _(msg: Bot.MessageSession):
         if not board.add_word(word, last_word):
             await wait.send_message(I18NContext("wordle.message.hard.not_matched"))
             continue
-        if hard_mode:
+        if hard:
             last_word = word
         board_image.update_board()
         board_image.update_keyboard()
@@ -97,7 +94,7 @@ async def _(msg: Bot.MessageSession):
             g_msg = [I18NContext("wordle.message.finish.success", attempt=attempt)]
             if trial:
                 petal = 2 if attempt <= 3 else 1
-                petal += 1 if hard_mode else 0
+                petal += 1 if hard else 0
                 if reward := await gained_petal(reply_target, petal):
                     g_msg.append(reward)
         qc.reset()

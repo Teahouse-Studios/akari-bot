@@ -1,7 +1,6 @@
 import time
 import traceback
 
-
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
@@ -25,9 +24,7 @@ upds = module(
     "[--force] {{I18N:core.help.update&restart}}",
     options_desc={"--force": "{I18N:core.help.update&restart.option.force}"},
 )
-async def _(msg: Bot.MessageSession):
-    force = bool(msg.parsed_msg and msg.parsed_msg.get("--force", False))
-
+async def _(msg: Bot.MessageSession, force: bool = False):
     if not Bot.Info.binary_mode:
         if force:
             await msg.send_message(I18NContext("core.message.restart.restarting"))

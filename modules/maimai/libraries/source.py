@@ -6,7 +6,8 @@
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import ActionText, I18NContext
-from ..config import MaimaiConfig, MaimaiSecretConfig
+from .divingfish_oauth import diving_fish_bind_usable
+from ..config import MaimaiConfig
 from ..database.models import DivingProberBindInfo, LxnsProberBindInfo
 
 SOURCE_DIVING_FISH = "diving-fish"
@@ -21,8 +22,8 @@ SOURCE_DEFAULT = {
     GAME_CHUNITHM: SOURCE_LXNS,
 }
 
-# 落雪既未登记用户授权、也没有开发者令牌时，落雪那一侧根本取不到数据。
-_LXNS_AVAILABLE = bool(MaimaiConfig.lxns_client_id or MaimaiSecretConfig.lxns_developer_token)
+# 落雪未登记 OAuth 应用时，落雪那一侧根本取不到数据。
+_LXNS_AVAILABLE = bool(MaimaiConfig.lxns_client_id)
 
 # 中二的历史键名把 chunithm 写成了 chunithum，旧值须继续可读；写回时改用正确拼写。
 SOURCE_KEYS = {
@@ -79,27 +80,20 @@ def toggle_source(current: str) -> str:
     return SOURCE_DIVING_FISH if current == SOURCE_LXNS else SOURCE_LXNS
 
 
-def lxns_bind_usable(
-    refresh_token: str | None,
-    friend_code: str | None,
-    lxns_available: bool = _LXNS_AVAILABLE,
-) -> bool:
+def lxns_bind_usable(refresh_token: str | None, lxns_available: bool = _LXNS_AVAILABLE) -> bool:
     """判断一条落雪绑定记录是否可用。
 
-    OAuth 授权过即可用；仅有好友码的旧绑定要走开发者令牌接口，落雪完全没配置时取不到数据。
+    落雪只认令牌：存量记录里就算留着好友码也换不来成绩，故一律要求授权过。
 
     :param refresh_token: 该绑定记录的 refresh token。
-    :param friend_code: 该绑定记录的好友码。
-    :param lxns_available: 落雪是否已登记 OAuth 应用或开发者令牌。
+    :param lxns_available: 落雪是否已登记 OAuth 应用。
     :return: 是否可用。
     """
-    return bool(refresh_token) or (lxns_available and bool(friend_code))
+    return bool(refresh_token) and lxns_available
 
 
 async def is_bound(msg: Bot.MessageSession, game: str, source: str) -> bool:
     """判断用户在该数据源上是否已有可用的绑定。
-
-    舞萌与中二都允许仅凭好友码绑定落雪，这类旧绑定走的是开发者令牌，仍可正常查分。
 
     :param msg: 消息会话。
     :param game: 游戏标识。
@@ -108,11 +102,11 @@ async def is_bound(msg: Bot.MessageSession, game: str, source: str) -> bool:
     """
     if source == SOURCE_DIVING_FISH:
         bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
-        return bool(bind_info and bind_info.refresh_token)
+        return diving_fish_bind_usable(bind_info)
     bind_info = await LxnsProberBindInfo.get_by_sender_id(msg, create=False)
     if not bind_info:
         return False
-    return lxns_bind_usable(bind_info.refresh_token, bind_info.friend_code)
+    return lxns_bind_usable(bind_info.refresh_token)
 
 
 async def switch_source(msg: Bot.MessageSession, game: str, bind_hints: dict[str, str]) -> None:

@@ -7,6 +7,7 @@ from core.builtins.message.internal import I18NContext
 from core.component import module
 from core.config import CFGManager
 from core.logger import Logger
+from core.types import Param
 from core.utils.func import is_float, is_int
 
 cfg_ = module("config", required_superuser=True, alias="cfg", base=True, doc=True)
@@ -21,8 +22,7 @@ async def _(msg: Bot.MessageSession, k: str, table_name: str | None = None):
     "write <k> <v> [<table_name>] [-s] {{I18N:core.help.config.write}}",
     options_desc={"-s": "{I18N:core.help.config.write.option.s}"},
 )
-async def _(msg: Bot.MessageSession, k: str, v: str, table_name: str | None = None):
-    secret = bool(msg.parsed_msg["-s"])
+async def _(msg: Bot.MessageSession, k: str, v: str, table_name: str | None = None, secret: Param("-s", bool) = False):
     if v.lower() == "true":
         v_ = True
     elif v.lower() == "false":

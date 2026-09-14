@@ -36,6 +36,39 @@ class Bind:
             load: bool = True,
             priority: int = 1,
         ):
+            """
+            绑定模块命令。
+
+            命令模板语法参见 :func:`core.builtins.parser.args.parse_template`。
+            模板中的参数与选项可直接映射为被装饰函数的参数：
+
+            - ``<name>``：位置参数，对应同名函数参数；未提供时使用默认值或 ``None``；
+            - ``[flag]``：标志选项，对应同名函数参数，标注为 ``bool`` 时直接得到选项是否传入；
+            - ``[-b]`` / ``[--foo <bar>]``：带杠选项，对应同名函数参数，参数名中的
+              下划线按连字符匹配（如参数 ``no_cover`` 对应 ``--no-cover``）；
+              带子参数且仅有一个子参数时，直接将该子参数的值传入；
+            - 也可直接使用选项的子参数名，如 ``[-p <page>]`` 对应函数参数 ``page``；
+            - ``-i``、``<address:port>`` 等无法作为函数参数名的模板元素，可用 ``Param``
+              标注指定对应的模板元素，如 ``data: Param("-i", bool) = False``。
+
+            示例::
+
+                @module.command("test [-b] [--foo <bar>]")
+                async def _(msg: Bot.MessageSession, b: bool = False, foo: str | None = None):
+                    ...
+
+            :param command_template: 命令模板，可传入多个模板作为同一命令的多个变体。
+            :param command_templates: 额外的命令模板。
+            :param options_desc: 选项描述，用于生成帮助文档。
+            :param required_admin: 此命令是否需要场景管理员权限。
+            :param required_superuser: 此命令是否仅超级用户可执行。
+            :param required_base_superuser: 此命令是否仅基础超级用户可执行。
+            :param available_for: 此命令支持的平台列表。
+            :param exclude_from: 此命令排除的平台列表。
+            :param load: 是否加载此命令。
+            :param priority: 匹配优先级，数值越大优先级越高。
+            """
+
             def decorator(function):
                 nonlocal command_template
                 if isinstance(command_template, str):

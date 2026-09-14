@@ -24,10 +24,10 @@ async def update_dependencies():
 
 
 @upd.command("[--force] {{I18N:core.help.update}}", options_desc={"--force": "{I18N:core.help.update.option.force}"})
-async def _(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession, force: bool = False):
     if not Bot.Info.binary_mode:
         if Bot.Info.version and Bot.Info.version.startswith("git:"):
-            pull_repo_result = await pull_repo(bool(msg.parsed_msg and msg.parsed_msg.get("--force", False)))
+            pull_repo_result = await pull_repo(force)
             if pull_repo_result:
                 await msg.send_message(Plain(pull_repo_result, disable_joke=True))
 
