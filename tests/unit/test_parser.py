@@ -19,6 +19,7 @@ from core.builtins.parser.message import (
     _unwrap_option_value,
 )
 from core.builtins.message.elements import MarkdownElement
+from core.constants.exceptions import InvalidTemplatePattern
 from core.tester import func_case, Tester
 from core.types import Module
 from core.types.module.component_meta import CommandMeta
@@ -140,6 +141,17 @@ def _test_parse_template_optional():
         return True
     except Exception:
         return False
+
+
+def _test_parse_template_rejects_multi_character_short_option():
+    """短选项不能包含多个字符。"""
+    try:
+        parse_template(["[-abc]"])
+    except InvalidTemplatePattern:
+        return parse_template(["[-a]"]) and parse_template(["[--abc]"])
+    except Exception:
+        return False
+    return False
 
 
 def _test_parse_template_description():

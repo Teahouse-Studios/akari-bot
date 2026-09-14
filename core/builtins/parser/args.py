@@ -312,6 +312,9 @@ def parse_template(argv: list[str], depth: int = 0) -> list[Template]:
                         flag = optional_patterns[0]  # 标志名称
                         args += optional_patterns[1:]  # 后续元素是该标志的参数
 
+                    if flag and flag.startswith("-") and not flag.startswith("--") and len(flag) != 2:
+                        raise InvalidTemplatePattern(f"Short option must contain exactly one character: {flag}")
+
                     # 标志不能是描述（描述应该单独使用）
                     if flag and flag.startswith("{"):
                         raise InvalidTemplatePattern(f"Optional flag cannot be description: {flag}")
