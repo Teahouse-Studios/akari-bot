@@ -532,15 +532,15 @@ async def qqbot_permissions(msg: Bot.MessageSession, qq_group_id: str | None = N
         "--image": "{I18N:help.option.image}",
     },
 )
-async def _(msg: Bot.MessageSession, module: str):
+async def _(msg: Bot.MessageSession, module: str, image: bool = False, legacy: bool = False):
     is_base_superuser = msg.session_info.sender_id in Bot.base_superuser_list
     is_superuser = msg.check_super_user()
     module_list = ModulesManager.return_modules_list(
         target_from=msg.session_info.target_from, client_name=msg.session_info.client_name
     )
     alias = ModulesManager.modules_aliases
-    force_image = msg.parsed_msg.get("--image", False)
-    force_legacy = msg.parsed_msg.get("--legacy", False) and not force_image
+    force_image = image
+    force_legacy = legacy and not force_image
 
     if msg.parsed_msg:
         mdocs = []
@@ -725,10 +725,9 @@ async def _(msg: Bot.MessageSession, module: str):
         "--image": "{I18N:help.option.image}",
     },
 )
-async def help_overview(msg: Bot.MessageSession):
-    parsed_msg = msg.parsed_msg or {}
-    force_image = parsed_msg.get("--image", False)
-    force_legacy = parsed_msg.get("--legacy", False) and not force_image
+async def help_overview(msg: Bot.MessageSession, image: bool = False, legacy: bool = False):
+    force_image = image
+    force_legacy = legacy and not force_image
     use_table = should_use_markdown_table(msg, force_image, force_legacy)
     use_clickable = not use_table and not force_legacy and msg.session_info.support_action_text
     qqbot_admin = msg.session_info.client_name == "QQBot" and await msg.check_permission()

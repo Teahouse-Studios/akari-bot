@@ -103,18 +103,17 @@ async def _(msg: Bot.MessageSession):
 
 
 @ana.command("days [<module>] {{I18N:core.help.analytics.days}}")
-async def _(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession, module: str | None = None):
     if enable_analytics:
         first_record = await get_first_record()
         if not first_record:
             await msg.finish(I18NContext("core.message.analytics.none"))
-        module_ = msg.parsed_msg.get("<module>")
-        if not module_:
+        if not module:
             result = I18NContext("core.message.analytics.days.total", first_record=first_record)
         else:
             result = I18NContext(
                 "core.message.analytics.days",
-                module=module_,
+                module=module,
                 first_record=first_record,
             )
         data_ = {}
@@ -123,7 +122,7 @@ async def _(msg: Bot.MessageSession):
         for d in range(30):
             old = midnight - timedelta(days=29 - d)
             new = old + timedelta(days=1)
-            get_ = await AnalyticsData.get_count_by_times(new, old, module_)
+            get_ = await AnalyticsData.get_count_by_times(new, old, module)
             data_[old.day] = get_
         data_x = []
         data_y = []
@@ -147,19 +146,18 @@ async def _(msg: Bot.MessageSession):
 
 
 @ana.command("year [<module>] {{I18N:core.help.analytics.year}}")
-async def _(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession, module: str | None = None):
     if enable_analytics:
         first_record = await get_first_record()
 
         if not first_record:
             await msg.finish(I18NContext("core.message.analytics.none"))
-        module_ = msg.parsed_msg.get("<module>")
-        if not module_:
+        if not module:
             result = I18NContext("core.message.analytics.year.total", first_record=first_record)
         else:
             result = I18NContext(
                 "core.message.analytics.year",
-                module=module_,
+                module=module,
                 first_record=first_record,
             )
         data_ = {}
@@ -168,7 +166,7 @@ async def _(msg: Bot.MessageSession):
         for m in range(12):
             old = first_day - relativedelta(months=11 - m)
             new = old + relativedelta(months=1)
-            get_ = await AnalyticsData.get_count_by_times(new, old, module_)
+            get_ = await AnalyticsData.get_count_by_times(new, old, module)
             data_[old.month] = get_
         data_x = []
         data_y = []

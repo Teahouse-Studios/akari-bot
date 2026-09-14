@@ -623,10 +623,10 @@ async def update_dependencies():
 
 
 @upd.command("[--force] {{I18N:core.help.update}}", options_desc={"--force": "{I18N:core.help.update.option.force}"})
-async def _(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession, force: bool = False):
     if not Bot.Info.binary_mode:
         if Bot.Info.version and Bot.Info.version.startswith("git:"):
-            pull_repo_result = await pull_repo(bool(msg.parsed_msg and msg.parsed_msg.get("--force", False)))
+            pull_repo_result = await pull_repo(force)
             if pull_repo_result:
                 await msg.send_message(Plain(pull_repo_result, disable_joke=True))
 
@@ -662,8 +662,8 @@ async def wait_for_restart(msg: Bot.MessageSession):
 
 
 @rst.command("[--force] {{I18N:core.help.restart}}", options_desc={"--force": "{I18N:core.help.restart.force}"})
-async def _(msg: Bot.MessageSession):
-    if msg.parsed_msg and msg.parsed_msg.get("--force", False):
+async def _(msg: Bot.MessageSession, force: bool = False):
+    if force:
         await msg.send_message(I18NContext("core.message.restart.restarting"))
     else:
         try:
@@ -700,9 +700,7 @@ upds = module(
     "[--force] {{I18N:core.help.update&restart}}",
     options_desc={"--force": "{I18N:core.help.update&restart.option.force}"},
 )
-async def _(msg: Bot.MessageSession):
-    force = bool(msg.parsed_msg and msg.parsed_msg.get("--force", False))
-
+async def _(msg: Bot.MessageSession, force: bool = False):
     if not Bot.Info.binary_mode:
         if force:
             await msg.send_message(I18NContext("core.message.restart.restarting"))
@@ -885,8 +883,7 @@ async def _(msg: Bot.MessageSession, k: str, table_name: str | None = None):
     "write <k> <v> [<table_name>] [-s] {{I18N:core.help.config.write}}",
     options_desc={"-s": "{I18N:core.help.config.write.option.s}"},
 )
-async def _(msg: Bot.MessageSession, k: str, v: str, table_name: str | None = None):
-    secret = bool(msg.parsed_msg["-s"])
+async def _(msg: Bot.MessageSession, k: str, v: str, table_name: str | None = None, secret: Param("-s", bool) = False):
     if v.lower() == "true":
         v_ = True
     elif v.lower() == "false":

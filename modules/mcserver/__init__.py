@@ -4,6 +4,7 @@ import re
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
 from core.component import module
+from core.types import Param
 from core.utils.dirty_check import check
 from .server import query_java_server, query_bedrock_server
 
@@ -19,11 +20,12 @@ s = module(
     "<address:port> [-r] [-p] {{I18N:server.help}}",
     options_desc={"-r": "{I18N:server.help.option.r}", "-p": "{I18N:server.help.option.p}"},
 )
-async def _(msg: Bot.MessageSession):
-    server_address = msg.parsed_msg["<address:port>"]
-    raw = msg.parsed_msg.get("-r", False)
-    showplayer = msg.parsed_msg.get("-p", False)
-
+async def _(
+    msg: Bot.MessageSession,
+    server_address: Param("<address:port>", str),
+    raw: Param("-r", bool) = False,
+    showplayer: Param("-p", bool) = False,
+):
     if check_local_address(server_address):
         await msg.finish(I18NContext("server.message.local_address"))
 

@@ -1,17 +1,16 @@
-import inspect
 import re
 from typing import TYPE_CHECKING
 
 from core.builtins.message.internal import ActionText, I18NContext
 from core.builtins.parser.command import CommandParser
-from core.builtins.parser.message import _unwrap_optional, should_skip_regex
+from core.builtins.parser.message import _build_command_kwargs, should_skip_regex
 from core.builtins.session.tasks import SessionTaskManager
-from core.constants.exceptions import InvalidCommandFormatError, SessionFinished
+from core.constants.exceptions import SessionFinished
 from core.exports import exports
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.module_runtime import ModuleRuntimeManager
-from core.types import Module, Param
+from core.types import Module
 from core.types.module.component_meta import CommandMeta
 from core.utils.func import normalize_space
 
@@ -192,55 +191,7 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
     if hasattr(msg, "_casetest_target") and command.function is not msg._casetest_target:
         return False
 
-    kwargs = {}
-    func_params = inspect.signature(command.function).parameters
-    if len(func_params) > 1 and msg.parsed_msg:
-        parsed_msg_ = msg.parsed_msg.copy()
-        no_message_session = True
-        for param_name, param_obj in func_params.items():
-            if param_obj.annotation == bot.MessageSession:
-                kwargs[param_name] = msg
-                no_message_session = False
-            elif isinstance(param_obj.annotation, Param):
-                if param_obj.annotation.name in parsed_msg_:
-                    if isinstance(parsed_msg_[param_obj.annotation.name], param_obj.annotation.type):
-                        kwargs[param_name] = parsed_msg_[param_obj.annotation.name]
-                        del parsed_msg_[param_obj.annotation.name]
-                    else:
-                        Logger.warning(f"{param_obj.annotation.name} is not a {param_obj.annotation.type}")
-                else:
-                    Logger.warning(f"{param_obj.annotation.name} is not in parsed_msg")
-            param_name_ = param_name
-
-            if (param_name__ := f"<{param_name}>") in parsed_msg_:
-                param_name_ = param_name__
-
-            if param_name_ in parsed_msg_:
-                kwargs[param_name] = parsed_msg_[param_name_]
-                try:
-                    annotation = _unwrap_optional(param_obj.annotation)
-                    if annotation == int:
-                        kwargs[param_name] = int(parsed_msg_[param_name_])
-                    elif annotation == float:
-                        kwargs[param_name] = float(parsed_msg_[param_name_])
-                    elif annotation == bool:
-                        kwargs[param_name] = bool(parsed_msg_[param_name_])
-                    del parsed_msg_[param_name_]
-                except (KeyError, ValueError):
-                    raise InvalidCommandFormatError
-            else:
-                if param_name_ not in kwargs:
-                    if param_obj.default is not inspect.Parameter.empty:
-                        kwargs[param_name_] = param_obj.default
-                    else:
-                        kwargs[param_name_] = None
-        if no_message_session:
-            Logger.warning(
-                f"{command.function.__name__} has no Bot.MessageSession parameter, did you forgot to add it?\n"
-                "Remember: MessageSession IS NOT Bot.MessageSession"
-            )
-    else:
-        kwargs[func_params[list(func_params.keys())[0]].name] = msg
+    kwargs = _build_command_kwargs(command, msg, bot)
 
     async with ModuleRuntimeManager.use(module.module_name):
         await parsed_msg[0].function(**kwargs)  # 将msg传入下游模块

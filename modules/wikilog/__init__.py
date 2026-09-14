@@ -10,6 +10,7 @@ from core.component import module
 from modules.wiki.config import WikiConfig
 from core.logger import Logger
 from core.scheduler import IntervalTrigger
+from core.types import Param
 from modules.wiki.utils.ab import convert_ab_to_detailed_format
 from modules.wiki.utils.rc import convert_rc_to_detailed_format
 from modules.wiki.utils.wikilib import BlockedWikiError, WikiLib
@@ -196,11 +197,14 @@ async def _(msg: Bot.MessageSession, apilink, logtype):
 
 @wikilog.command("filter set <apilink> <logtype> ... {{I18N:wikilog.help.filter.set}}")
 @wikilog.command("filter reset <apilink> <logtype> {{I18N:wikilog.help.filter.reset}}")
-async def _(msg: Bot.MessageSession, apilink: str, logtype: str):
+async def _(
+    msg: Bot.MessageSession,
+    apilink: str,
+    logtype: str,
+    filters: Param("...", list) = None,
+):
     if "reset" in msg.parsed_msg:
         filters = ["*"]
-    else:
-        filters = msg.parsed_msg.get("...")
     if filters:
         logtype = type_map.get(logtype)
         if logtype:
@@ -274,11 +278,8 @@ async def _(msg: Bot.MessageSession, apilink: str):
 
 @wikilog.command("rcshow set <apilink> ... {{I18N:wikilog.help.rcshow.set}}")
 @wikilog.command("rcshow reset <apilink> {{I18N:wikilog.help.rcshow.reset}}")
-async def _(msg: Bot.MessageSession, apilink: str):
-    if "reset" in msg.parsed_msg:
-        rcshows_ = []
-    else:
-        rcshows_ = msg.parsed_msg.get("...")
+async def _(msg: Bot.MessageSession, apilink: str, rcshow_args: Param("...", list) = None):
+    rcshows_ = [] if "reset" in msg.parsed_msg else rcshow_args
     if rcshows_ is not None:
         records = await WikiLogTargetSetInfo.get_by_target_id(msg)
         infos = records.infos
@@ -374,7 +375,7 @@ async def _(msg: Bot.MessageSession):
     "note set <apilink> ... {{I18N:wikilog.help.note.set}}",
     "note remove <apilink> {{I18N:wikilog.help.note.remove}}",
 )
-async def _(msg: Bot.MessageSession, apilink: str):
+async def _(msg: Bot.MessageSession, apilink: str, note_words: Param("...", list) = None):
     records = await WikiLogTargetSetInfo.get_by_target_id(msg)
     infos = records.infos
     wiki_info = WikiLib(apilink)
@@ -384,10 +385,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
         if status.value.lang:
             wiki_name += f" ({status.value.lang})"
         if status.value.api in infos:
-            if "remove" in msg.parsed_msg:
-                note = ""
-            else:
-                note = " ".join(msg.parsed_msg.get("...", []))
+            note = "" if "remove" in msg.parsed_msg else " ".join(note_words or [])
             r = await records.conf_note(status.value.api, note)
             if r:
                 await msg.finish(I18NContext("wikilog.message.note.success", wiki=wiki_name, note=note))

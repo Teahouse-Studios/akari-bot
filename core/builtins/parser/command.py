@@ -42,6 +42,12 @@ def _split_command(command: str) -> list[str]:
     - ``'a"b"c'`` -> ``['a"b"c']``（引号位于参数中间，原样保留）
     - ``'"a b'`` -> ``['"a', 'b']``（引号不匹配，原样保留且不参与分组）
 
+    作为例外，选项的内联值支持引号分组（POSIX/GNU 的 ``--flag=value`` 形式），
+    以便值中包含空白字符：
+
+    - ``'--lang="zh cn"'`` -> ``['--lang=zh cn']``（引号紧跟在 ``=`` 之后，作为分组符号）
+    - ``'--foo="a b"c'`` -> ``['--foo="a', 'b"c']``（引号后仍有字符，按字面处理）
+
     :param command: 待分割的命令字符串
     :return: 分割后的参数列表
     """
@@ -65,11 +71,25 @@ def _split_command(command: str) -> list[str]:
                 continue
 
         # 其余情况按字面处理：一直取到下一个空白字符（引号不参与分组）
+        # 例外：引号紧跟在选项内联值的 `=` 之后时作为分组符号（如 --lang="zh cn"）
+        token = []
         end = index
         while end < length and not command[end].isspace():
+            char = command[end]
+            if char in _QUOTE_CHARS and end > index and command[end - 1] == "=" and command[index] == "-":
+                quote_end = command.find(char, end + 1)
+                if quote_end != -1 and (quote_end + 1 == length or command[quote_end + 1].isspace()):
+                    # 保留 `--lang=` 前缀，去掉引号并保留其中的空白字符
+                    token.append(command[index:end])
+                    token.append(command[end + 1 : quote_end])
+                    index = quote_end + 1
+                    break
             end += 1
-        split_command.append(command[index:end])
-        index = end
+        else:
+            token.append(command[index:end])
+            index = end
+
+        split_command.append("".join(token))
 
     return split_command
 

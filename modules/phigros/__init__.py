@@ -5,6 +5,7 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import ActionText, Image, I18NContext, Url
 from core.component import module
 from core.logger import Logger
+from core.types import Param
 from core.utils.random import Random
 
 from .database.models import PhigrosBindInfo
@@ -142,14 +143,13 @@ def _song_chain(song_id: str, info: dict) -> MessageChain:
     "bind <sessiontoken> [-i] {{I18N:phigros.help.bind}}",
     options_desc={"-i": "{I18N:phigros.help.option.i}"},
 )
-async def _(msg: Bot.MessageSession, sessiontoken: str):
+async def _(msg: Bot.MessageSession, sessiontoken: str, is_international: Param("-i", bool) = False):
     if msg.session_info.target_from in PUBLIC_TARGETS:
         await msg.send_message(I18NContext("phigros.message.bind.warning"), quote=False)
         await msg.delete()
     if not check_session_token(sessiontoken):
         await msg.finish(I18NContext("phigros.message.bind.invalid_token"), quote=False)
 
-    is_international = bool(msg.parsed_msg.get("-i", False))
     try:
         async with phigros_cloud(sessiontoken, is_international) as cloud:
             username = await cloud.getNickname()
@@ -358,7 +358,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @phi.command("update [--no-illus] {{I18N:phigros.help.update}}", required_superuser=True)
-async def _(msg: Bot.MessageSession):
-    if await update_assets(not msg.parsed_msg.get("--no-illus", False)):
+async def _(msg: Bot.MessageSession, no_illus: bool = False):
+    if await update_assets(not no_illus):
         await msg.finish(I18NContext("message.success"))
     await msg.finish(I18NContext("message.failed"))

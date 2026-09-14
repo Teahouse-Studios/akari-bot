@@ -244,13 +244,8 @@ async def _(msg: Bot.MessageSession):
 
 
 @wiki.command("<pagename> [-l <lang>] {{I18N:wiki.help}}", options_desc={"-l": "{I18N:wiki.help.option.l}"})
-async def _(msg: Bot.MessageSession, pagename: str):
+async def _(msg: Bot.MessageSession, pagename: str, lang: str | None = None):
     pagename = _normalize_page_name(pagename)
-    get_lang = msg.parsed_msg.get("-l", False)
-    if get_lang:
-        lang = get_lang["<lang>"]
-    else:
-        lang = None
     await query_pages(msg, pagename, lang=lang)
 
 
@@ -258,18 +253,13 @@ async def _(msg: Bot.MessageSession, pagename: str):
     "id <pageid> [-l <lang>] {{I18N:wiki.help.id}}",
     options_desc={"-l": "{I18N:wiki.help.option.l}"},
 )
-async def _(msg: Bot.MessageSession, pageid: str):
+async def _(msg: Bot.MessageSession, pageid: str, lang: str | None = None):
     iw = None
     if match_iw := re.match(r"(.*?):(.*)", pageid):
         iw = match_iw.group(1)
         pageid = match_iw.group(2)
     if not is_int(pageid):
         await msg.finish(I18NContext("wiki.message.id.invalid"))
-    get_lang = msg.parsed_msg.get("-l", False)
-    if get_lang:
-        lang = get_lang["<lang>"]
-    else:
-        lang = None
     await query_pages(msg, pageid=pageid, iw=iw, lang=lang)
 
 

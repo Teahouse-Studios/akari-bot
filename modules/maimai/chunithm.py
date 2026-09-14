@@ -1,6 +1,7 @@
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, Image as BImage
 from core.component import module
+from core.types import Param
 from core.utils.func import is_int
 from core.utils.image import msgchain2image
 from .libraries.chunithm_apidata import get_info, update_cover
@@ -33,7 +34,7 @@ chu = module(
     "base <constant> [<constant_max>] [-p <page>] {{I18N:maimai.help.base}}",
     options_desc={"-p": "{I18N:maimai.help.option.p}"},
 )
-async def _(msg: Bot.MessageSession, constant: float, constant_max: float | None = None):
+async def _(msg: Bot.MessageSession, constant: float, constant_max: float | None = None, page: str | None = None):
     result_set = []
     if constant <= 0:
         await msg.finish(I18NContext("maimai.message.level_invalid"))
@@ -69,8 +70,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float | None
             )
 
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    get_page = msg.parsed_msg.get("-p", False)
-    page = max(min(int(get_page["<page>"]), total_pages), 1) if get_page and is_int(get_page["<page>"]) else 1
+    page = max(min(int(page), total_pages), 1) if page and is_int(page) else 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
@@ -93,7 +93,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float | None
     "level <level> [-p <page>] {{I18N:maimai.help.level}}",
     options_desc={"-p": "{I18N:maimai.help.option.p}"},
 )
-async def _(msg: Bot.MessageSession, level: str):
+async def _(msg: Bot.MessageSession, level: str, page: str | None = None):
     result_set = []
     data = (await total_list.get()).filter(level=level)
     for music in sorted(data, key=lambda i: int(i.get("id", 0))):
@@ -108,8 +108,7 @@ async def _(msg: Bot.MessageSession, level: str):
                 )
             )
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    get_page = msg.parsed_msg.get("-p", False)
-    page = max(min(int(get_page["<page>"]), total_pages), 1) if get_page and is_int(get_page["<page>"]) else 1
+    page = max(min(int(page), total_pages), 1) if page and is_int(page) else 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
@@ -131,7 +130,7 @@ async def _(msg: Bot.MessageSession, level: str):
 
 
 @chu.command("search <keyword> [-p <page>] {{I18N:maimai.help.search}}")
-async def _(msg: Bot.MessageSession, keyword: str):
+async def _(msg: Bot.MessageSession, keyword: str, page: str | None = None):
     name = keyword.strip()
     result_set = []
     data = (await total_list.get()).filter(title_search=name)
@@ -141,8 +140,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
     for music in sorted(data, key=lambda i: int(i.get("id", 0))):
         result_set.append((music.get("id", ""), music.get("title", "")))
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    get_page = msg.parsed_msg.get("-p", False)
-    page = max(min(int(get_page["<page>"]), total_pages), 1) if get_page and is_int(get_page["<page>"]) else 1
+    page = max(min(int(page), total_pages), 1) if page and is_int(page) else 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
@@ -220,9 +218,8 @@ async def _(msg: Bot.MessageSession, song: str):
 
 @chu.command("id <id> {{I18N:maimai.help.id}}")
 @chu.command("song <song> {{I18N:maimai.help.song}}")
-async def _(msg: Bot.MessageSession, song: str):
-    if "<id>" in msg.parsed_msg:
-        sid = msg.parsed_msg["<id>"]
+async def _(msg: Bot.MessageSession, song: str, sid: Param("<id>", str) = None):
+    if sid:
         music = (await total_list.get()).by_id(sid)
     else:
         if is_int(song):
@@ -264,8 +261,7 @@ async def _(msg: Bot.MessageSession, song: str):
 
 
 @chu.command("random [<diff+level>] {{I18N:maimai.help.random}}")
-async def _(msg: Bot.MessageSession):
-    condit = msg.parsed_msg.get("<diff+level>", "")
+async def _(msg: Bot.MessageSession, condit: Param("<diff+level>", str) = ""):
     level = ""
     diff = ""
     try:
@@ -353,8 +349,8 @@ async def _(msg: Bot.MessageSession, user: str | None = None):
 
 
 @chu.command("update [--no-cover]", required_superuser=True)
-async def _(msg: Bot.MessageSession):
-    if msg.parsed_msg.get("--no-cover", False):
+async def _(msg: Bot.MessageSession, no_cover: bool = False):
+    if no_cover:
         actions = await total_list.update()
     else:
         actions = await update_cover() and await total_list.update()

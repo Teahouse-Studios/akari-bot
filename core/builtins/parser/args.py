@@ -484,6 +484,55 @@ def templates_to_str(templates: list[Template], with_desc=False, simplify=True) 
     return text
 
 
+# POSIX 选项终止符：其后的 token 一律视为操作数，不再作为选项解析
+OPTION_TERMINATOR = "--"
+
+
+def _split_option_terminator(argv: list[str]) -> tuple[list[str], list[str]]:
+    """
+    按第一个 ``--`` 将参数列表切分为「选项区」与「操作数区」。
+
+    POSIX 约定（Utility Syntax Guideline 10）：第一个 ``--`` 之后的 token 即使以 ``-``
+    开头也应视作操作数，因此选项匹配只应在前半部分进行。``--`` 本身不进入任何参数值，
+    其后再次出现的 ``--`` 作为字面操作数保留。
+
+    :param argv: 待切分的参数列表
+    :return: ``(选项区, 操作数区)`` 二元组，均为新列表（不会与传入的列表共享引用）
+    """
+    if OPTION_TERMINATOR in argv:
+        index = argv.index(OPTION_TERMINATOR)
+        return argv[:index], argv[index + 1 :]
+    return argv[:], []
+
+
+def _find_option(argv: list[str], flag: str, allow_inline: bool = True) -> tuple[int, str | None] | None:
+    """
+    在参数列表中定位选项，支持 ``--flag=value`` 形式的内联值。
+
+    - 精确匹配 ``flag`` -> ``(索引, None)``
+    - 内联匹配 ``flag=value`` -> ``(索引, value)``，仅当 ``allow_inline`` 为真且 ``flag``
+      以 ``-`` 开头时启用；按第一个 ``=`` 切分，允许值为空串或自身包含 ``=``。
+    - 非 ``-`` 开头的标志（如无前缀的子命令名）只做精确匹配。
+
+    :param argv: 参数列表（应已剔除 ``--`` 之后的操作数）
+    :param flag: 模板中定义的选项标志，如 ``-p``、``--legacy``
+    :param allow_inline: 是否接受 ``flag=value`` 形式（带子参数的选项应设为真）
+    :return: ``(索引, 内联值或 None)``，未找到时返回 ``None``
+    """
+    if not flag:
+        return None
+
+    allow_inline = allow_inline and flag.startswith("-")
+    inline_prefix = flag + "="
+    for index, token in enumerate(argv):
+        if token == flag:
+            return index, None
+        if allow_inline and token.startswith(inline_prefix):
+            return index, token[len(inline_prefix) :]
+
+    return None
+
+
 def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
     """
     根据给定的模板列表解析命令行参数。
@@ -510,6 +559,12 @@ def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
     - ...: 可变长参数，可消耗 0 个或多个参数
     - `[flag <param>]`: 可选参数，可能带有标志和子参数
 
+    POSIX 兼容行为：
+    - ``--``: 选项终止符，其后的 token 一律按操作数处理（不再作为选项），``--`` 本身丢弃
+    - ``--flag=value`` / ``-p=value``: 带子参数的选项支持内联值，等价于 ``--flag value``；
+      值按第一个 ``=`` 切分，可为空或自身包含 ``=``；无子参数的布尔标志不接受该形式
+    - 选项可出现在操作数之间的任意位置（GNU 风格排列），仅第一个 ``--`` 具有特殊含义
+
     示例：
     - 模板: Template([ArgumentPattern('<lang>'), OptionalPattern('-v', [...])])
     - 输入: argv = ["python", "-v"]
@@ -528,8 +583,10 @@ def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
     # ========== 步骤 1: 尝试用每个模板进行匹配 ==========
     for template in templates:
         try:
-            # 复制 argv 以避免修改原始列表（保护输入数据）
-            argv_copy = argv.copy()
+            # ========== 步骤 1.5: 分离 `--` 之后的操作数 ==========
+            # 选项匹配只在 `--` 之前的 token 上进行，`--` 之后的 token 一律按操作数处理
+            # 切片返回新列表，因此后续的删除操作不会修改传入的 argv（保护输入数据）
+            argv_copy, operand_argv = _split_option_terminator(argv)
             parsed_argv = {}  # 存储解析结果的字典
             original_template = template
             afters = []  # 用于存储可变长参数的处理列表
@@ -553,28 +610,38 @@ def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
                     # 初始化该可选参数为未被设置状态
                     parsed_argv[a.flag] = Optional({}, flagged=False)
 
-                    # 检查该标志是否在参数列表中
-                    if a.flag in argv_copy:  # if flag is in argv
-                        # 标志存在，需要处理其关联的参数
-                        if not a.args:
-                            # 该可选参数没有子参数，直接标记为已设置并移除标志
+                    # 在参数列表中定位该标志（带子参数时同时接受 `--flag=value` 内联形式）
+                    has_sub_args = bool(a.args)
+                    found = _find_option(argv_copy, a.flag, allow_inline=has_sub_args)
+                    if found is not None:
+                        index_flag, inline_value = found
+                        # 该可选参数没有子参数，直接标记为已设置并移除标志
+                        if not has_sub_args:
                             parsed_argv[a.flag] = Optional({}, flagged=True)
-                            argv_copy.remove(a.flag)
+                            del argv_copy[index_flag]
                         else:
-                            # 该可选参数有子参数，需要递归解析
-                            index_flag = argv_copy.index(a.flag)
-                            # 计算该可选参数需要的子参数个数
+                            # 计算该可选参数需要的子参数个数（以第一个变体为准）
                             len_t_args = len(a.args[0].args)
+                            # 内联值充当第一个子参数，其余子参数继续从后续 token 取
+                            sub_argv = [] if inline_value is None else [inline_value]
+                            needed = len_t_args - len(sub_argv)
+                            consumed = 0
+                            if needed > 0:
+                                following = argv_copy[index_flag + 1 :]
+                                # 子参数不足时按实际可用数量取用，缺失的部分由递归解析标记为 False
+                                consumed = min(needed, len(following))
+                                sub_argv.extend(following[:consumed])
 
-                            # 检查是否有足够的参数来满足这个可选参数的需求
-                            if len(argv_copy[index_flag:]) >= len_t_args:
-                                # 提取该可选参数的所有子参数
-                                sub_argv = argv_copy[index_flag + 1 : index_flag + len_t_args + 1]
-
+                            if sub_argv:
                                 # 递归调用 parse_argv 解析可选参数的子参数
                                 parsed_argv[a.flag] = Optional(parse_argv(sub_argv, a.args).args, flagged=True)
-                                # 从参数列表中删除已处理的部分（标志 + 子参数）
-                                del argv_copy[index_flag : index_flag + len_t_args + 1]
+                                # 从参数列表中删除已处理的部分（标志 + 已消耗的子参数）
+                                del argv_copy[index_flag : index_flag + 1 + consumed]
+                            # 子参数完全缺失时保持 flagged=False，标志留待后续按操作数处理
+
+            # ========== 步骤 2.5: 合并 `--` 之后的操作数 ==========
+            # 选项解析阶段只处理 `--` 之前的 token，此后所有 token 均按操作数处理
+            argv_copy = argv_copy + operand_argv
 
             # ========== 步骤 3: 处理必需参数 ==========
             # 必需参数由 ArgumentPattern 表示（不在可选参数中的参数）
@@ -599,11 +666,12 @@ def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
 
                     # ========== 处理布尔参数（标志）==========
                     else:
-                        # 标志参数：检查是否存在于参数列表中
-                        parsed_argv[a.name] = a.name in argv_copy
-                        if parsed_argv[a.name]:
+                        # 标志参数：仅接受精确匹配，`flag=value` 形式不视为该标志
+                        found = _find_option(argv_copy, a.name, allow_inline=False)
+                        parsed_argv[a.name] = found is not None
+                        if found is not None:
                             # 如果标志存在，从参数列表中移除它
-                            argv_copy.remove(a.name)
+                            del argv_copy[found[0]]
 
             # ========== 步骤 4: 处理剩余参数（可变长参数和无标志可选参数）==========
             if argv_copy:
@@ -638,9 +706,10 @@ def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
 
                                 # ========== 处理布尔标志参数 ==========
                                 else:
-                                    parsed_argv[sub_args.name] = sub_args.name in argv_copy
-                                    if parsed_argv[sub_args.name]:
-                                        argv_copy.remove(sub_args.name)
+                                    found = _find_option(argv_copy, sub_args.name, allow_inline=False)
+                                    parsed_argv[sub_args.name] = found is not None
+                                    if found is not None:
+                                        del argv_copy[found[0]]
                             subi += 1
                         ai += 1
 
@@ -657,7 +726,8 @@ def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
                                 parsed_argv[argv_keys[argv_keys.index(template_arguments[-1].name)]].value += (
                                     " " + " ".join(argv_copy)
                                 )
-                                del argv_copy[0]
+                                # 剩余 token 已并入上一个值参数，清空以避免重复处理
+                                argv_copy.clear()
 
             # 将成功构建的匹配添加到结果列表
             matched_result.append(MatchedResult(parsed_argv, original_template, template.priority))
