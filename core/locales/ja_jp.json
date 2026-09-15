@@ -77,7 +77,6 @@
     "config.comments.secret.db_path": "データベース接続文字列。Tortoise ORM でサポートされているデータベース接続文字列形式を使用してください。",
     "config.comments.secret.proxy": "プロキシ サービスのアドレス。",
     "config.comments.smtp_secret.smtp_password": "SMTP のログイン パスワード。",
-    "config.comments.smtp.enable": "SMTP メールによるレポート機能を有効にするかどうか。有効にすると、レポート メッセージはコンテキストに報告されなくなります。",
     "config.comments.smtp.smtp_host": "SMTP サーバーのアドレス。",
     "config.comments.smtp.smtp_port": "SMTP サーバーのポート番号。",
     "config.comments.smtp.smtp_ssl": "SMTPS（SSL）接続を使用するかどうか。",
