@@ -199,6 +199,7 @@ async def run_function_entry(
         if active_test:
             message += f" while running {active_test!r}"
         Logger.error(f"{message}.")
+        cleanup_pending = not await _cancel_orphan_tasks(baseline_tasks) or cleanup_pending
         return {
             "timeout": True,
             "time_cost": elapsed,
@@ -209,10 +210,13 @@ async def run_function_entry(
             "entries": entries,
             "results": results,
         }
-    except Exception:
+    except (asyncio.CancelledError, KeyboardInterrupt, SystemExit, GeneratorExit):
+        raise
+    except BaseException:
         error = traceback.format_exc()
         Logger.exception(f"Error running test function {fn.__name__}:")
-        return {"error": error}
+        cleanup_pending = not await _cancel_orphan_tasks(baseline_tasks) or cleanup_pending
+        return {"error": error, "cleanup_pending": cleanup_pending}
 
     cleanup_pending = not await _cancel_orphan_tasks(baseline_tasks) or cleanup_pending
 

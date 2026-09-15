@@ -58,7 +58,11 @@ class Tester:
                 result = await func()
             else:
                 result = func()
-        except Exception as exception:
+        except (asyncio.CancelledError, KeyboardInterrupt, SystemExit, GeneratorExit):
+            # Cancellation and process-control signals belong to the runner, not
+            # to an individual assertion result.
+            raise
+        except BaseException as exception:
             final = {
                 "type": "unit",
                 "input": None,

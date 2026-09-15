@@ -187,6 +187,57 @@ async def _test_function_entry_timeout_resets_on_progress():
     return not result.get("timeout") and all(entry.get("match") for entry in result.get("results", []))
 
 
+async def _test_protocol_exception_is_recorded_without_stopping_function_test():
+    """业务控制流异常应记录为失败，入口异常也必须有界清理。"""
+    from core.constants import WaitCancelException
+    from core.tester.process import run_function_entry
+
+    async def cancelled_wait():
+        raise WaitCancelException
+
+    async def fine():
+        return True
+
+    async def mixed(tester):
+        await tester.test(cancelled_wait, "等待取消")
+        await tester.test(fine, "后续测试")
+        return tester
+
+    orphan_cancelled = asyncio.Event()
+
+    async def orphan():
+        try:
+            await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            orphan_cancelled.set()
+            raise
+
+    async def unhandled_protocol_exception(_tester):
+        asyncio.create_task(orphan(), name="test-protocol-exception-orphan")
+        await asyncio.sleep(0)
+        raise WaitCancelException
+
+    with (
+        patch("core.tester.process.close_db", new=AsyncMock()),
+        patch("core.tester.process.init_db", new=AsyncMock(return_value=True)),
+        patch("core.tester.process.load_modules", new=AsyncMock()),
+    ):
+        result = await run_function_entry(mixed, is_ci=True)
+        unhandled_result = await run_function_entry(unhandled_protocol_exception, is_ci=True)
+
+    results = result.get("results", [])
+    return (
+        not result.get("error")
+        and len(results) == 2
+        and results[0].get("match") is False
+        and results[0].get("exception_type") == "WaitCancelException"
+        and results[1].get("match") is True
+        and unhandled_result.get("error")
+        and unhandled_result.get("cleanup_pending") is False
+        and orphan_cancelled.is_set()
+    )
+
+
 async def _test_function_entries_cancel_orphaned_tasks_before_reinitializing_database():
     """func_case 收尾必须回收遗留任务，避免它们使用上一轮数据库连接。"""
     from core.tester.process import _cancel_orphan_tasks
@@ -413,6 +464,10 @@ async def test_tester_framework(tester: Tester):
     await tester.test(_test_integrate_expected_exception_is_not_runner_error, "func_case 预期异常匹配测试")
     await tester.test(_test_function_entry_timeout_is_structured_failure, "func_case 超时结构化失败测试")
     await tester.test(_test_function_entry_timeout_resets_on_progress, "func_case 超时按进展刷新测试")
+    await tester.test(
+        _test_protocol_exception_is_recorded_without_stopping_function_test,
+        "业务控制流异常不终止 func_case 测试",
+    )
     await tester.test(
         _test_function_entries_cancel_orphaned_tasks_before_reinitializing_database,
         "func_case 之间回收遗留任务测试",
