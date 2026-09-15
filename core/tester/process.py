@@ -9,7 +9,7 @@ from core.builtins.message.elements import PlainElement
 from core.constants.exceptions import SessionFinished
 from core.database.models import SenderUnionInfo, TargetUnionInfo
 from core.logger import Logger
-from core.tester.mock.database import init_db, close_db
+from core.tester.mock.database import close_db, get_last_init_error, init_db
 from core.tester.mock.loader import load_modules
 from core.tester.mock.parser import parser
 from core.tester.mock.random import Random
@@ -62,7 +62,7 @@ async def run_case_entry(entry: CaseEntry, is_ci: bool = False) -> list[dict]:
         Logger.exception("Error closing database before test")
 
     if not await init_db():
-        message = f"Failed to reinitialize database for case {entry.get('func')}."
+        message = f"Failed to reinitialize database for case {entry.get('func')}.\n{get_last_init_error()}"
         Logger.critical(message)
         return _infrastructure_error(entry.get("input"), entry.get("expected"), message)
 
@@ -97,7 +97,7 @@ async def run_function_entry(
         Logger.exception("Error closing database before func test")
 
     if not await init_db():
-        message = f"Failed to reinitialize database for func test {fn.__name__}."
+        message = f"Failed to reinitialize database for func test {fn.__name__}.\n{get_last_init_error()}"
         Logger.critical(message)
         return {"error": message}
 
