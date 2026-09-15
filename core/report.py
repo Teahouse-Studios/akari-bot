@@ -24,7 +24,11 @@ def _send_email(subject: str, body: str) -> None:
     message = EmailMessage()
     message["Date"] = format_datetime(datetime.now(UTC), usegmt=True)
     message["Subject"] = subject
-    message["From"] = f"{SMTPConfig.smtp_sender_name} <{SMTPConfig.smtp_user}>" or SMTPConfig.smtp_user
+    message["From"] = (
+        f"{SMTPConfig.smtp_sender_name} <{SMTPConfig.smtp_user}>"
+        if SMTPConfig.smtp_sender_name
+        else SMTPConfig.smtp_user
+    )
     message["To"] = ", ".join(SMTPConfig.smtp_recipients)
     message.set_content(body)
 
@@ -60,6 +64,8 @@ async def send_report(
             await asyncio.to_thread(_send_email, subject, body)
         except Exception:
             Logger.exception("Failed to send report email: ")
+        else:
+            return
 
     targets = CoreConfig.report_targets if targets is None else targets
     if not targets:
