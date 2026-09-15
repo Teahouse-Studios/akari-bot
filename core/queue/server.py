@@ -18,6 +18,7 @@ from core.exports import exports, add_export
 from core.i18n import Locale
 from core.loader import ModulesManager
 from core.logger import Logger
+from core.report import send_report
 from core.utils.bash import run_sys_command
 from core.utils.web_render import check_web_render_status
 from .base import JobQueueBase
@@ -82,8 +83,8 @@ async def report_error(method: str, details: str) -> None:
     if len(_recent_reports) >= 128:
         del _recent_reports[next(iter(_recent_reports))]
     _recent_reports[fingerprint] = now
-    bot = exports["Bot"]
-    for session in await bot.pick_channel_heads(await bot.fetch_union_target_list(CoreConfig.report_targets)):
+
+    async def send_to_report_target(session, _report) -> None:
         details_chain = (
             _format_error_detail(session, details.strip())
             if session.support_markdown
@@ -94,6 +95,14 @@ async def report_error(method: str, details: str) -> None:
             MessageChain.assign(I18NContext("error.message.report", command=method)) + details_chain,
             disable_secret_check=True,
         )
+
+    await send_report(
+        MessageChain.assign([]),
+        subject=f"AkariBot RPC Error: {method}",
+        body=f"Method: {method}\n\n{details.strip()}",
+        direct_sender=send_to_report_target,
+        targets=CoreConfig.report_targets,
+    )
 
 
 @ServerAPI.post_next_hop.bind(JobQueueServer)

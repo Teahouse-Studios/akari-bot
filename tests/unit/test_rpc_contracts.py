@@ -256,6 +256,15 @@ async def _test_error_reporting_deduplicates_delivery_failures():
             await reporting.report_rpc_error(object(), "platform.broken", "trace")
             await reporting.report_rpc_error(object(), ServerAPI.report_error.name, "report failed")
         submit.assert_awaited_once_with("platform.broken", "trace")
+
+        submit.reset_mock()
+        with (
+            patch.object(reporting, "CoreConfig", SimpleNamespace(report_targets=[])),
+            patch.object(reporting, "email_report_enabled", return_value=True),
+            patch.object(ServerAPI.report_error, "using", return_value=SimpleNamespace(submit=submit)),
+        ):
+            await reporting.report_rpc_error(object(), "platform.smtp_only", "smtp report")
+        submit.assert_awaited_once_with("platform.smtp_only", "smtp report")
         return True
     finally:
         server._recent_reports.clear()
