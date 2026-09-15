@@ -56,7 +56,7 @@ async def _test_external_smtp_client_uses_starttls_and_login():
     with (
         patch.object(SMTPConfig, "smtp_host", "smtp.example.com"),
         patch.object(SMTPConfig, "smtp_port", 587),
-        patch.object(SMTPConfig, "smtp_sender_name", "bot@example.com"),
+        patch.object(SMTPConfig, "smtp_sender", "bot@example.com"),
         patch.object(SMTPConfig, "smtp_user", "bot@example.com"),
         patch.object(SMTPConfig, "smtp_starttls", True),
         patch.object(SMTPConfig, "smtp_ssl", False),

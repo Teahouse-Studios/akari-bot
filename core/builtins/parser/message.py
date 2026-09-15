@@ -1692,7 +1692,7 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
             I18NContext("error.message.report", command=msg.trigger_msg),
             Plain(tb.strip(), disable_joke=True, allow_parse=False),
         ],
-        subject=f"AkariBot Error: {msg.trigger_msg}",
+        subject=f"[AkariBot] An error occurred: {msg.trigger_msg}",
         body=f"Command: {msg.trigger_msg}\n\n{tb.strip()}",
         targets=report_targets,
     )

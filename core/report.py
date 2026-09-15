@@ -24,18 +24,14 @@ def _send_email(subject: str, body: str) -> None:
     message = EmailMessage()
     message["Date"] = format_datetime(datetime.now(UTC), usegmt=True)
     message["Subject"] = subject
-    message["From"] = (
-        f"{SMTPConfig.smtp_sender_name} <{SMTPConfig.smtp_user}>"
-        if SMTPConfig.smtp_sender_name
-        else SMTPConfig.smtp_user
-    )
+    message["From"] = SMTPConfig.smtp_sender or SMTPConfig.smtp_username
     message["To"] = ", ".join(SMTPConfig.smtp_recipients)
     message.set_content(body)
 
     if SMTPConfig.smtp_ssl:
         with smtplib.SMTP_SSL(SMTPConfig.smtp_host, int(SMTPConfig.smtp_port)) as server:
-            if SMTPConfig.smtp_user:
-                server.login(SMTPConfig.smtp_user, SMTPSecretConfig.smtp_password)
+            if SMTPConfig.smtp_username:
+                server.login(SMTPConfig.smtp_username, SMTPSecretConfig.smtp_password)
             server.send_message(message)
         return
 
@@ -43,8 +39,8 @@ def _send_email(subject: str, body: str) -> None:
         server.ehlo()
         if SMTPConfig.smtp_starttls:
             server.starttls()
-        if SMTPConfig.smtp_user:
-            server.login(SMTPConfig.smtp_user, SMTPSecretConfig.smtp_password)
+        if SMTPConfig.smtp_username:
+            server.login(SMTPConfig.smtp_username, SMTPSecretConfig.smtp_password)
         server.send_message(message)
 
 

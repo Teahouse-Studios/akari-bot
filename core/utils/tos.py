@@ -4,6 +4,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext
 from core.config.base import CoreConfig
+from core.i18n import Locale
 from core.logger import Logger
 from core.report import send_report
 from core.utils.container import ExpiringTempDict
@@ -78,7 +79,7 @@ async def tos_report(sender: str, target: str, reason: str, banned: bool = False
     warn_template.append(I18NContext("tos.message.action", action=action, disable_joke=True))
     await send_report(
         warn_template,
-        subject=f"AkariBot ToS Report: {sender}",
-        body=f"Sender: {sender}\nTarget: {target}\nReason: {reason}\nAction: {action}",
+        subject=f"[AkariBot] ToS Report: {sender}",
+        body=f"Sender: {sender}\nContext: {target}\nReason: {reason}\nAction: {Locale('en_us').t(action)}",
         targets=report_targets,
     )
