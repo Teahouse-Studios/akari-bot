@@ -110,12 +110,10 @@ Issues = "https://github.com/Teahouse-Studios/akari-bot/issues"
 [dependency-groups]
 dev = ["ruff>=0.15.1", "pytest>=9.0.2", "pytest-asyncio>=1.3.0"]
 
-# pytest 是自研测试框架的本地/IDE 前端，CI 仍以 tester.py 为准（见 core/tester/pytest_plugin.py）。
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
-# 框架的 Tester 类被测试模块导入，会撞上 pytest 的 Test* 类收集规则。
 filterwarnings = ["ignore:cannot collect test class:pytest.PytestCollectionWarning"]
 
 [tool.ruff]
