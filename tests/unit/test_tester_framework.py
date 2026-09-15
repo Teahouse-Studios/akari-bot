@@ -204,38 +204,52 @@ async def _test_protocol_exception_is_recorded_without_stopping_function_test():
         return tester
 
     orphan_cancelled = asyncio.Event()
+    orphan_started = asyncio.Event()
+    orphan_task = {}
 
     async def orphan():
         try:
+            orphan_started.set()
             await asyncio.Event().wait()
         except asyncio.CancelledError:
             orphan_cancelled.set()
             raise
 
     async def unhandled_protocol_exception(_tester):
-        asyncio.create_task(orphan(), name="test-protocol-exception-orphan")
-        await asyncio.sleep(0)
+        orphan_task["task"] = asyncio.create_task(orphan(), name="test-protocol-exception-orphan")
+        await orphan_started.wait()
         raise WaitCancelException
 
-    with (
-        patch("core.tester.process.close_db", new=AsyncMock()),
-        patch("core.tester.process.init_db", new=AsyncMock(return_value=True)),
-        patch("core.tester.process.load_modules", new=AsyncMock()),
-    ):
-        result = await run_function_entry(mixed, is_ci=True)
-        unhandled_result = await run_function_entry(unhandled_protocol_exception, is_ci=True)
+    try:
+        with (
+            patch("core.tester.process.close_db", new=AsyncMock()),
+            patch("core.tester.process.init_db", new=AsyncMock(return_value=True)),
+            patch("core.tester.process.load_modules", new=AsyncMock()),
+        ):
+            result = await run_function_entry(mixed, is_ci=True)
+            unhandled_result = await run_function_entry(unhandled_protocol_exception, is_ci=True)
 
-    results = result.get("results", [])
-    return (
-        not result.get("error")
-        and len(results) == 2
-        and results[0].get("match") is False
-        and results[0].get("exception_type") == "WaitCancelException"
-        and results[1].get("match") is True
-        and unhandled_result.get("error")
-        and unhandled_result.get("cleanup_pending") is False
-        and orphan_cancelled.is_set()
-    )
+        results = result.get("results", [])
+        task = orphan_task.get("task")
+        return (
+            not result.get("error")
+            and len(results) == 2
+            and results[0].get("match") is False
+            and results[0].get("exception_type") == "WaitCancelException"
+            and results[1].get("match") is True
+            and unhandled_result.get("error")
+            and unhandled_result.get("cleanup_pending") is False
+            and task is not None
+            and task.done()
+            and task.cancelled()
+            and orphan_cancelled.is_set()
+        )
+    finally:
+        task = orphan_task.get("task")
+        if task is not None and not task.done():
+            task.cancel()
+        if task is not None:
+            await asyncio.gather(task, return_exceptions=True)
 
 
 async def _test_function_entries_cancel_orphaned_tasks_before_reinitializing_database():

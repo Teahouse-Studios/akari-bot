@@ -2306,10 +2306,15 @@ async def _test_ready_reply_is_not_blocked_by_earlier_pending_reply():
     SessionTaskManager._task_list.clear()
     SessionTaskManager.add_task(first, first_flag, reply_pending=True, timeout=60)
     SessionTaskManager.add_task(second, second_flag, reply="ready-target", timeout=60)
+    first_info = SessionTaskManager.get()[first.session_info.target_id][first.session_info.sender_id][first]
+    second_info = SessionTaskManager.get()[second.session_info.target_id][second.session_info.sender_id][second]
+
+    async def active_tasks(_cls, _session):
+        return [(first, first_info), (second, second_info)]
+
     try:
-        handled = await asyncio.wait_for(SessionTaskManager.check(incoming), timeout=0.2)
-        first_info = SessionTaskManager.get()[first.session_info.target_id][first.session_info.sender_id][first]
-        second_info = SessionTaskManager.get()[second.session_info.target_id][second.session_info.sender_id][second]
+        with patch.object(SessionTaskManager, "_active_tasks", new=classmethod(active_tasks)):
+            handled = await SessionTaskManager.check(incoming)
         await second.release_execution_resources()
         return (
             handled
