@@ -98,7 +98,7 @@ async def report_error(method: str, details: str) -> None:
 
     await send_report(
         MessageChain.assign([]),
-        subject=f"[AkariBot] RPC Error: {method}",
+        subject=f"[AkariBot] RPC Error occurred: {method}",
         body=f"Method: {method}\n\n{details.strip()}",
         direct_sender=send_to_report_target,
         targets=CoreConfig.report_targets,
