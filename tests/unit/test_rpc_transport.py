@@ -317,6 +317,7 @@ async def _test_local_cancellation_does_not_cancel_or_retry_remote_effect():
 async def _test_handler_deadline_allows_cleanup_rpc():
     async with _peers() as (caller, receiver):
         cleaned = asyncio.Event()
+        handler_started = asyncio.Event()
 
         @caller.register("cleanup")
         async def cleanup(payload):
@@ -325,14 +326,18 @@ async def _test_handler_deadline_allows_cleanup_rpc():
 
         @receiver.register("deadline")
         async def deadline(payload):
+            handler_started.set()
             try:
                 await asyncio.Event().wait()
             finally:
                 # Cleanup has its own deadline even when the outer request expired.
                 await receiver.call(caller.name, "cleanup", None, timeout=RPC_TEST_TIMEOUT)
 
-        request = caller._request(receiver.name, "deadline", None, timeout=0.1)
+        # The transport deadline includes queue delivery. Confirm execution first so
+        # this test exercises handler cancellation rather than expiry before claim.
+        request = caller._request(receiver.name, "deadline", None, timeout=1)
         await caller.transport.send(request)
+        await asyncio.wait_for(handler_started.wait(), RPC_TEST_TIMEOUT)
         await asyncio.wait_for(cleaned.wait(), RPC_TEST_TIMEOUT)
         row = await _wait_status(request.task_id, "timeout")
         assert row.result["error"]["code"] == "timeout"

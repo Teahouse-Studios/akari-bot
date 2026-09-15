@@ -314,6 +314,31 @@ async def _patch_database_reload(prepare):
         yield patched
 
 
+@asynccontextmanager
+async def _isolated_reload_lifecycle():
+    """Keep reload state from other subtests out of cancellation-path assertions."""
+
+    @asynccontextmanager
+    async def maintenance_window(*_args, **_kwargs):
+        yield
+
+    with (
+        patch.object(ModulesManager, "_reload_lock", new=asyncio.Lock()),
+        patch.object(JobQueueServer, "maintenance_window", new=maintenance_window),
+        patch.object(SchedulerLifecycle, "maintenance_window", new=maintenance_window),
+    ):
+        yield
+
+
+async def _cancel_reload_task(task: asyncio.Task | None):
+    """Finish a reload task before restoring its mocks and registry snapshot."""
+    if task is None:
+        return
+    if not task.done():
+        task.cancel()
+    await asyncio.gather(task, return_exceptions=True)
+
+
 def _reload_test_module(name: str, alias: str, origin: str, hook_function, event_function, load: bool = True):
     module = Module.assign(
         module_name=name,
@@ -960,6 +985,7 @@ async def _test_concurrent_reload_fails_before_mutation():
     snapshot = _snapshot_module_manager()
     entered_database_reload = asyncio.Event()
     release_database_reload = asyncio.Event()
+    first = None
 
     async def prepare_database():
         entered_database_reload.set()
@@ -978,13 +1004,17 @@ async def _test_concurrent_reload_fails_before_mutation():
         await ModuleStatus.filter(module_name=module_name).delete()
         await ModuleStatus.create(module_name=module_name, load=True)
         with patch.object(ModulesManager, "reload_py_module", new=reload_py_module):
-            async with _patch_database_reload(prepare_database):
-                first = asyncio.create_task(ModulesManager.reload_module(module_name))
-                await asyncio.wait_for(entered_database_reload.wait(), timeout=1)
-                second_result = await asyncio.wait_for(ModulesManager.reload_module("second"), timeout=1)
-                untouched = second_result == (False, 0) and reload_py_module.call_count == 1
-                release_database_reload.set()
-                first_result = await asyncio.wait_for(first, timeout=1)
+            async with _patch_database_reload(prepare_database), _isolated_reload_lifecycle():
+                try:
+                    first = asyncio.create_task(ModulesManager.reload_module(module_name))
+                    await asyncio.wait_for(entered_database_reload.wait(), timeout=1)
+                    second_result = await asyncio.wait_for(ModulesManager.reload_module("second"), timeout=1)
+                    untouched = second_result == (False, 0) and reload_py_module.call_count == 1
+                    release_database_reload.set()
+                    first_result = await asyncio.wait_for(first, timeout=1)
+                finally:
+                    release_database_reload.set()
+                    await _cancel_reload_task(first)
         return untouched and first_result == (True, 1)
     finally:
         release_database_reload.set()
@@ -1052,6 +1082,7 @@ async def _test_cancelled_reload_restores_registry_and_status():
     module_name = "__test_loader_reload_cancelled"
     snapshot = _snapshot_module_manager()
     entered_database_reload = asyncio.Event()
+    task = None
 
     async def old_hook():
         return "old"
@@ -1086,16 +1117,16 @@ async def _test_cancelled_reload_restores_registry_and_status():
         await ModuleStatus.create(module_name=module_name, load=False)
 
         with patch.object(ModulesManager, "reload_py_module", side_effect=reload_python):
-            async with _patch_database_reload(prepare_database):
-                task = asyncio.create_task(ModulesManager.reload_module(module_name))
-                await asyncio.wait_for(entered_database_reload.wait(), timeout=1)
-                task.cancel()
+            async with _patch_database_reload(prepare_database), _isolated_reload_lifecycle():
                 try:
-                    await task
-                except asyncio.CancelledError:
-                    pass
-                else:
-                    return False
+                    task = asyncio.create_task(ModulesManager.reload_module(module_name))
+                    await asyncio.wait_for(entered_database_reload.wait(), timeout=1)
+                    task.cancel()
+                    (result,) = await asyncio.gather(task, return_exceptions=True)
+                    if not isinstance(result, asyncio.CancelledError):
+                        return False
+                finally:
+                    await _cancel_reload_task(task)
 
         status = await ModuleStatus.get_or_none(module_name=module_name)
         return (
@@ -1117,6 +1148,7 @@ async def _test_cancelled_commit_keeps_committed_generation():
     snapshot = _snapshot_module_manager()
     entered_commit = asyncio.Event()
     release_commit = asyncio.Event()
+    task = None
 
     async def old_hook():
         return "old"
@@ -1154,17 +1186,18 @@ async def _test_cancelled_commit_keeps_committed_generation():
             patch.object(ModulesManager, "reload_py_module", side_effect=reload_python),
             patch.object(ModuleRuntimeManager, "commit_reload", new=commit_reload),
         ):
-            async with _patch_database_reload(AsyncMock(return_value=object())):
-                task = asyncio.create_task(ModulesManager.reload_module(module_name))
-                await asyncio.wait_for(entered_commit.wait(), timeout=1)
-                task.cancel()
-                release_commit.set()
+            async with _patch_database_reload(AsyncMock(return_value=object())), _isolated_reload_lifecycle():
                 try:
-                    await task
-                except asyncio.CancelledError:
-                    pass
-                else:
-                    return False
+                    task = asyncio.create_task(ModulesManager.reload_module(module_name))
+                    await asyncio.wait_for(entered_commit.wait(), timeout=1)
+                    task.cancel()
+                    release_commit.set()
+                    (result,) = await asyncio.gather(task, return_exceptions=True)
+                    if not isinstance(result, asyncio.CancelledError):
+                        return False
+                finally:
+                    release_commit.set()
+                    await _cancel_reload_task(task)
 
         status = await ModuleStatus.get_or_none(module_name=module_name)
         return (
