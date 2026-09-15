@@ -1,8 +1,5 @@
-"""使用统计采集：通过 parser 观察入口写入 AnalyticsData 与 Info 计数。
-
-旧口径：
-- ``Info.command_parsed`` / ``Info.message_parsed`` 不受 enable_analytics 控制；
-- ``AnalyticsData.create`` 受 enable_analytics 控制。
+"""
+通过 parser 观察入口写入 AnalyticsData 与 Info 计数。
 """
 
 from __future__ import annotations

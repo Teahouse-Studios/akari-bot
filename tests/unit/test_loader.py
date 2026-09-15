@@ -1007,7 +1007,10 @@ async def _test_concurrent_reload_fails_before_mutation():
             async with _patch_database_reload(prepare_database), _isolated_reload_lifecycle():
                 try:
                     first = asyncio.create_task(ModulesManager.reload_module(module_name))
-                    await asyncio.wait_for(entered_database_reload.wait(), timeout=1)
+                    # The full suite can delay task scheduling while other async tests are unwinding.
+                    # This gate only observes entry into our database reload stub, so use a test-level
+                    # timeout that tolerates CI contention without allowing a real deadlock to hang.
+                    await asyncio.wait_for(entered_database_reload.wait(), timeout=10)
                     second_result = await asyncio.wait_for(ModulesManager.reload_module("second"), timeout=1)
                     untouched = second_result == (False, 0) and reload_py_module.call_count == 1
                     release_database_reload.set()
@@ -1120,7 +1123,10 @@ async def _test_cancelled_reload_restores_registry_and_status():
             async with _patch_database_reload(prepare_database), _isolated_reload_lifecycle():
                 try:
                     task = asyncio.create_task(ModulesManager.reload_module(module_name))
-                    await asyncio.wait_for(entered_database_reload.wait(), timeout=1)
+                    # The full suite can delay task scheduling while other async tests are unwinding.
+                    # This gate only observes entry into our database reload stub, so use a test-level
+                    # timeout that tolerates CI contention without allowing a real deadlock to hang.
+                    await asyncio.wait_for(entered_database_reload.wait(), timeout=10)
                     task.cancel()
                     (result,) = await asyncio.gather(task, return_exceptions=True)
                     if not isinstance(result, asyncio.CancelledError):

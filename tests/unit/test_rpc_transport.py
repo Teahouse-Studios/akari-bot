@@ -531,6 +531,32 @@ async def _test_ambiguous_send_failure_discards_possible_insert():
         )
 
 
+async def _test_abandon_cleanup_is_bounded():
+    """A stuck cleanup backend must not extend a timed-out RPC indefinitely."""
+    async with _peers() as (caller, receiver):
+
+        @receiver.register("cleanup-timeout")
+        async def cleanup_timeout(payload):
+            await asyncio.Event().wait()
+
+        async def abandon_forever(task_ids):
+            await asyncio.Event().wait()
+
+        original_timeout = caller.ABANDON_TIMEOUT_SECONDS
+        caller.ABANDON_TIMEOUT_SECONDS = 0.05
+        try:
+            started = time.monotonic()
+            with patch.object(caller.transport, "abandon", new=abandon_forever):
+                try:
+                    await caller.call(receiver.name, "cleanup-timeout", None, timeout=0.01)
+                    return False
+                except RpcTimeoutError:
+                    pass
+            return time.monotonic() - started < 1
+        finally:
+            caller.ABANDON_TIMEOUT_SECONDS = original_timeout
+
+
 async def _test_response_cleanup_failure_does_not_hide_result():
     """终态结果已读入内存后，删除失败不得终止结果泵或改写调用结果。"""
     async with _peers() as (caller, receiver):
@@ -636,6 +662,7 @@ async def test_rpc_transport(tester: Tester):
     await tester.test(_test_non_exclusive_maintenance_pumps_cleanup_rpc, "非独占维护仍可回收清理 RPC 响应")
     await tester.test(_test_bad_protocol_and_late_success_are_not_silent, "旧协议明确失败且终态不被覆盖")
     await tester.test(_test_ambiguous_send_failure_discards_possible_insert, "投递结果未知时清理可能已写入的任务")
+    await tester.test(_test_abandon_cleanup_is_bounded, "放弃投递清理有界且不阻塞调用方")
     await tester.test(_test_response_cleanup_failure_does_not_hide_result, "结果删除失败不掩盖已读取结果")
     await tester.test(_test_malformed_deadline_is_protocol_failure, "非法布尔 deadline 明确返回协议错误")
     await tester.test(_test_nested_maintenance_window_is_reentrant_for_owner, "同任务嵌套维护窗口不会自锁")
