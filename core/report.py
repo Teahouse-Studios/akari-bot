@@ -2,7 +2,9 @@
 
 import asyncio
 import smtplib
+from datetime import UTC, datetime
 from email.message import EmailMessage
+from email.utils import format_datetime
 from typing import Awaitable, Callable
 
 from core.builtins.message.chain import Chainable
@@ -15,28 +17,30 @@ DirectSender = Callable[[object, Chainable], Awaitable[None]]
 
 
 def email_report_enabled() -> bool:
-    return bool(SMTPConfig.enable and SMTPConfig.smtp_host and SMTPSecretConfig.smtp_recipients)
+    return bool(SMTPConfig.enable and SMTPConfig.smtp_host and SMTPConfig.smtp_recipients)
 
 
 def _send_email(subject: str, body: str) -> None:
     message = EmailMessage()
+    message["Date"] = format_datetime(datetime.now(UTC), usegmt=True)
     message["Subject"] = subject
-    message["From"] = SMTPConfig.smtp_sender or SMTPConfig.smtp_username
-    message["To"] = ", ".join(SMTPSecretConfig.smtp_recipients)
+    message["From"] = f"{SMTPConfig.smtp_sender_name} <{SMTPConfig.smtp_user}>" or SMTPConfig.smtp_user
+    message["To"] = ", ".join(SMTPConfig.smtp_recipients)
     message.set_content(body)
 
     if SMTPConfig.smtp_ssl:
-        with smtplib.SMTP_SSL(SMTPConfig.smtp_host, SMTPConfig.smtp_port) as server:
-            if SMTPConfig.smtp_username:
-                server.login(SMTPConfig.smtp_username, SMTPSecretConfig.smtp_password)
+        with smtplib.SMTP_SSL(SMTPConfig.smtp_host, int(SMTPConfig.smtp_port)) as server:
+            if SMTPConfig.smtp_user:
+                server.login(SMTPConfig.smtp_user, SMTPSecretConfig.smtp_password)
             server.send_message(message)
         return
 
-    with smtplib.SMTP(SMTPConfig.smtp_host, SMTPConfig.smtp_port) as server:
+    with smtplib.SMTP(SMTPConfig.smtp_host, int(SMTPConfig.smtp_port)) as server:
+        server.ehlo()
         if SMTPConfig.smtp_starttls:
             server.starttls()
-        if SMTPConfig.smtp_username:
-            server.login(SMTPConfig.smtp_username, SMTPSecretConfig.smtp_password)
+        if SMTPConfig.smtp_user:
+            server.login(SMTPConfig.smtp_user, SMTPSecretConfig.smtp_password)
         server.send_message(message)
 
 
@@ -56,7 +60,6 @@ async def send_report(
             await asyncio.to_thread(_send_email, subject, body)
         except Exception:
             Logger.exception("Failed to send report email: ")
-        return
 
     targets = CoreConfig.report_targets if targets is None else targets
     if not targets:

@@ -7,12 +7,12 @@
 enable = false # 是否开启 SMTP 邮件上报，开启后将不再上报至场景。
 smtp_host = "<Replace me with str value>" # SMTP 服务器地址。
 smtp_port = 587 # SMTP 服务器端口号。
-smtp_username = "<Replace me with str value>" # SMTP 登录用户名。
-smtp_sender = "<Replace me with str value>" # 发件人地址，留空则使用登录用户名。
+smtp_user = "AkariBot" # SMTP 登录邮箱地址。
+smtp_sender_name = "<Replace me with str value>" # 发件人名称，留空则使用登录邮箱地址。
+smtp_recipients = [] # 邮件上报收件人列表。
 smtp_ssl = false # 是否使用 SMTPS（SSL）连线。
 smtp_starttls = true # 是否启用 STARTTLS。
 
 [smtp_secret]
 # SMTP 的密钥部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
 smtp_password = "<Replace me with str value>" # SMTP 登录密码。
-smtp_recipients = [] # 邮件上报收件人清单。

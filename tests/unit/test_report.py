@@ -1,5 +1,6 @@
 """上报服务单元测试。"""
 
+from email.utils import parsedate_to_datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from core.config.base import SMTPConfig, SMTPSecretConfig
@@ -55,8 +56,8 @@ async def _test_external_smtp_client_uses_starttls_and_login():
     with (
         patch.object(SMTPConfig, "smtp_host", "smtp.example.com"),
         patch.object(SMTPConfig, "smtp_port", 587),
-        patch.object(SMTPConfig, "smtp_sender", "bot@example.com"),
-        patch.object(SMTPConfig, "smtp_username", "bot@example.com"),
+        patch.object(SMTPConfig, "smtp_sender_name", "bot@example.com"),
+        patch.object(SMTPConfig, "smtp_user", "bot@example.com"),
         patch.object(SMTPConfig, "smtp_starttls", True),
         patch.object(SMTPConfig, "smtp_ssl", False),
         patch.object(SMTPSecretConfig, "smtp_password", "app-password"),
@@ -74,6 +75,7 @@ async def _test_external_smtp_client_uses_starttls_and_login():
         and message["To"] == "ops@example.com, backup@example.com"
         and message["Subject"] == "subject"
         and message.get_content() == "body\n"
+        and parsedate_to_datetime(message["Date"]).tzinfo is not None
     )
 
 
