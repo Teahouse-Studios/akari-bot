@@ -1726,12 +1726,13 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
     await _send_common_emote(msg, BUG_EMOTES)
     # 发送错误报告给管理员
     await send_report(
-        [
-            I18NContext("error.message.report", command=msg.trigger_msg),
-            Plain(tb.strip(), disable_joke=True, allow_parse=False),
-        ],
-        subject=f"AkariBot Error: {msg.trigger_msg}",
-        body=f"Command: {msg.trigger_msg}\n\n{tb.strip()}",
+        message=MessageChain.assign(
+            [
+                I18NContext("error.message.report", disable_joke=True, command=msg.trigger_msg),
+                Plain(tb.strip(), disable_joke=True, allow_parse=False),
+            ]
+        ),
+        subject=f"[AkariBot] An error occurred: {msg.trigger_msg}",
         targets=report_targets,
     )
 

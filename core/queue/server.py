@@ -12,6 +12,7 @@ from core.builtins.parser.command import CommandParser
 from core.builtins.parser.message import _format_error_detail, parser
 from core.builtins.session.info import EventInfo, SessionInfo
 from core.builtins.utils import command_prefix
+from core.constants.default import default_locale
 from core.constants.path import PrivateAssets
 from core.config.base import CoreConfig
 from core.exports import exports, add_export
@@ -92,14 +93,14 @@ async def report_error(method: str, details: str) -> None:
         )
         await ServerAPI.direct_message.submit(
             session,
-            MessageChain.assign(I18NContext("error.message.report", command=method)) + details_chain,
+            MessageChain.assign(I18NContext("error.message.report", command=method, disable_joke=True)) + details_chain,
             disable_secret_check=True,
         )
 
     await send_report(
-        MessageChain.assign([]),
-        subject=f"AkariBot RPC Error: {method}",
-        body=f"Method: {method}\n\n{details.strip()}",
+        [],
+        subject=f"[AkariBot] RPC Error occurred: {method}",
+        body=f"{Locale(default_locale).t('error.message.report', command=method)}\n{details.strip()}",
         direct_sender=send_to_report_target,
         targets=CoreConfig.report_targets,
     )

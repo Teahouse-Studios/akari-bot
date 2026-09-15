@@ -7,7 +7,7 @@ from email.message import EmailMessage
 from email.utils import format_datetime
 from typing import Awaitable, Callable
 
-from core.builtins.message.chain import Chainable
+from core.builtins.message.chain import Chainable, MessageChain
 from core.config.base import CoreConfig, SMTPConfig, SMTPSecretConfig
 from core.exports import exports
 from core.logger import Logger
@@ -51,7 +51,7 @@ def _send_email(subject: str, body: str) -> None:
 async def send_report(
     message: Chainable,
     subject: str,
-    body: str,
+    body: str | None = None,
     direct_sender: DirectSender | None = None,
     targets: list | None = None,
 ) -> None:
@@ -60,6 +60,8 @@ async def send_report(
     邮件上报配置完整时不会触发任何场景消息；未启用邮件时才使用场景上报。
     """
     if email_report_enabled():
+        if body is None:
+            body = MessageChain.assign(message).as_sendable(disable_markdown=True).to_str()
         try:
             await asyncio.to_thread(_send_email, subject, body)
         except Exception:
