@@ -800,6 +800,39 @@ async def _test_interrupted_emit_discards_partial_transport_write():
         return not await JobQueuesTable.filter(source_peer_id=controller.name, action=signal_name).exists()
 
 
+async def _test_interrupted_emit_cleanup_is_bounded():
+    """部分写入后的异常清理卡住时，广播调用仍应及时返回。"""
+    signal_name = f"audit.partial-submit-timeout.{uuid4()}"
+    async with _peer_cluster() as (controller, _worker_a, _worker_b):
+        original_send = controller.transport.send
+
+        async def write_one_then_fail(requests):
+            await original_send(requests[0])
+            raise RuntimeError("partial transport write")
+
+        async def abandon_forever(task_ids):
+            await asyncio.Event().wait()
+
+        original_timeout = controller.ABANDON_TIMEOUT_SECONDS
+        controller.ABANDON_TIMEOUT_SECONDS = 0.05
+        try:
+            started = asyncio.get_running_loop().time()
+            with (
+                patch.object(controller.transport, "send_many", new=write_one_then_fail),
+                patch.object(controller.transport, "abandon", new=abandon_forever),
+            ):
+                try:
+                    await controller.emit_signal(
+                        signal_name, None, PeerSelector.service("workers"), timeout=RPC_TEST_TIMEOUT
+                    )
+                    return False
+                except RuntimeError:
+                    pass
+            return asyncio.get_running_loop().time() - started < 1
+        finally:
+            controller.ABANDON_TIMEOUT_SECONDS = original_timeout
+
+
 async def _test_partial_batch_result_is_reported_per_peer():
     """传输层明确报告部分失败时，广播结果不得伪装成全部成功。"""
     signal_name = f"audit.partial-result.{uuid4()}"
@@ -869,5 +902,6 @@ async def test_peer_signals(tester: Tester):
     await tester.test(_test_unexpected_poller_failure_unregisters_peer, "轮询器异常退出注销实例")
     await tester.test(_test_ambiguous_registration_failure_is_rolled_back, "注册结果未知时撤销半注册实例")
     await tester.test(_test_interrupted_emit_discards_partial_transport_write, "广播部分写入异常清理投递")
+    await tester.test(_test_interrupted_emit_cleanup_is_bounded, "广播异常清理有界且不阻塞调用方")
     await tester.test(_test_partial_batch_result_is_reported_per_peer, "广播批量投递部分结果逐实例呈现")
     return tester
