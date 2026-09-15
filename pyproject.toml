@@ -108,7 +108,13 @@ Homepage = "https://github.com/Teahouse-Studios/akari-bot"
 Issues = "https://github.com/Teahouse-Studios/akari-bot/issues"
 
 [dependency-groups]
-dev = ["ruff>=0.15.1"]
+dev = ["ruff>=0.15.1", "pytest>=9.0.2", "pytest-asyncio>=1.3.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+filterwarnings = ["ignore:cannot collect test class:pytest.PytestCollectionWarning"]
 
 [tool.ruff]
 line-length = 120

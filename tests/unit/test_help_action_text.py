@@ -108,9 +108,10 @@ class _FakeSession:
 
 
 class _ImageHelpSession(_FakeSession):
-    def __init__(self, session_info, parsed_msg=None):
+    def __init__(self, session_info):
         super().__init__(session_info)
-        self.parsed_msg = parsed_msg or {}
+        # 选项已由解析器转成函数参数注入，这里仅保持属性存在
+        self.parsed_msg = {}
         self.finished_message = None
 
     async def finish(self, message, **kwargs):
@@ -209,7 +210,7 @@ async def _test_image_flag_overrides_markdown_table():
             support_markdown_extension=True,
         ),
     )
-    msg = _ImageHelpSession(session_info, parsed_msg={"--image": True})
+    msg = _ImageHelpSession(session_info)
     generated = [Image("help.png")]
     try:
         with patch("modules.core.common_tools.help.help_generator", new=AsyncMock(return_value=generated)) as generator:
@@ -658,7 +659,6 @@ async def _test_qqbot_admin_legacy_help_keeps_legacy_scope():
     )
     session_info.enabled_modules = ["dice"]
     msg = _OverviewSession(session_info, is_admin=True)
-    msg.parsed_msg = {"--legacy": True}
     modules = {
         "help": _module("help", base=True),
         "coin": _module("coin"),

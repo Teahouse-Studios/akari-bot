@@ -1,0 +1,18 @@
+# https://toml.io/cn/v1.0.0
+# 注意：TOML 不是 Python。請不要在此處使用 Python 語法。
+# 例如：TOML 中的布林值必須是小寫。
+
+[smtp]
+# SMTP 的組態部分，此處填寫的值可在訊息中以明文顯示。請不要在此部分填寫敏感資訊。
+enable = false # 是否啟用 SMTP 郵件上報；啟用後不再上報至場景。
+smtp_host = "<Replace me with str value>" # SMTP 伺服器位址。
+smtp_port = 587 # SMTP 伺服器連接埠。
+smtp_username = "<Replace me with str value>" # SMTP 登入使用者名稱。
+smtp_sender = "<Replace me with str value>" # 寄件者位址，留空則使用登入使用者名稱。
+smtp_ssl = false # 是否使用 SMTPS（SSL）連線。
+smtp_starttls = true # 是否啟用 STARTTLS。
+
+[smtp_secret]
+# SMTP 的金鑰組態部分，此處的值若意外出現在傳送的訊息中，機器人會嘗試攔截。但請務必提防洩漏。
+smtp_password = "<Replace me with str value>" # SMTP 登入密碼。
+smtp_recipients = [] # 郵件上報收件者清單。

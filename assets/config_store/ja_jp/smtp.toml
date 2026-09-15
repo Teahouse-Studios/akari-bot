@@ -1,0 +1,18 @@
+# https://toml.io/ja/v1.0.0
+# 注：TOML は Python ではありませんので、ここでは Python の文法を使用しないでください。
+# 例：TOML のブール値は小文字である必要があります。
+
+[smtp]
+# SMTP の設定項目です。ここに入力された値は、メッセージ内にプレーンテキストで表示されます。この部分には機密情報を入力しないでください。
+enable = false # SMTP メールによるレポート機能を有効にするかどうか。有効にすると、レポート メッセージはコンテキストに報告されなくなります。
+smtp_host = "<Replace me with str value>" # SMTP サーバーのアドレス。
+smtp_port = 587 # SMTP サーバーのポート番号。
+smtp_username = "<Replace me with str value>" # SMTP のログインユーザー名。
+smtp_sender = "<Replace me with str value>" # 送信者アドレス。空欄にすると、ログイン ユーザー名を使用します。
+smtp_ssl = false # SMTPS（SSL）接続を使用するかどうか。
+smtp_starttls = true # STARTTLS を有効にするかどうか。
+
+[smtp_secret]
+# SMTP のキー設定項目です。ここに入力された値は、送信メッセージに誤って含まれた場合、ボットはそれを傍受しようとします。ただし、漏洩を防ぐよう注意してください。
+smtp_password = "<Replace me with str value>" # SMTP のログイン パスワード。
+smtp_recipients = [] # レポートの受信者（メールアドレス）。
