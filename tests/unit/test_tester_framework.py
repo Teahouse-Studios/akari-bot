@@ -187,6 +187,25 @@ async def _test_function_entry_timeout_resets_on_progress():
     return not result.get("timeout") and all(entry.get("match") for entry in result.get("results", []))
 
 
+async def _test_function_entries_cancel_orphaned_tasks_before_reinitializing_database():
+    """func_case 收尾必须回收遗留任务，避免它们使用上一轮数据库连接。"""
+    from core.tester.process import _cancel_orphan_tasks
+
+    cancelled = asyncio.Event()
+
+    async def orphan():
+        try:
+            await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            cancelled.set()
+            raise
+
+    baseline = set(asyncio.all_tasks())
+    task = asyncio.create_task(orphan(), name="test-orphaned-function-entry-task")
+    await asyncio.sleep(0)
+    return await _cancel_orphan_tasks(baseline) and task.cancelled() and cancelled.is_set()
+
+
 async def _test_progress_notifications_coalesce_to_latest_revision():
     """连续完成的子测试应保留最新进度，但不能作为旧通知反复重置 watchdog。"""
     tester = Tester("progress_queue")
@@ -394,6 +413,10 @@ async def test_tester_framework(tester: Tester):
     await tester.test(_test_integrate_expected_exception_is_not_runner_error, "func_case 预期异常匹配测试")
     await tester.test(_test_function_entry_timeout_is_structured_failure, "func_case 超时结构化失败测试")
     await tester.test(_test_function_entry_timeout_resets_on_progress, "func_case 超时按进展刷新测试")
+    await tester.test(
+        _test_function_entries_cancel_orphaned_tasks_before_reinitializing_database,
+        "func_case 之间回收遗留任务测试",
+    )
     await tester.test(
         _test_progress_notifications_coalesce_to_latest_revision,
         "连续进度通知合并到最新版本测试",
