@@ -74,9 +74,9 @@ async def tos_report(sender: str, target: str, reason: str, banned: bool = False
     )
     warn_template.append(I18NContext("tos.message.reason", reason=reason, disable_joke=True))
     if banned:
-        action = str(I18NContext("tos.message.action.blocked"))
+        action = str(I18NContext("tos.message.action.blocked", disable_joke=True))
     else:
-        action = str(I18NContext("tos.message.action.warning"))
+        action = str(I18NContext("tos.message.action.warning", disable_joke=True))
     warn_template.append(I18NContext("tos.message.action", action=action, disable_joke=True))
     await send_report(
         warn_template,

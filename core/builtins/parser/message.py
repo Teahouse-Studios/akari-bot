@@ -1694,7 +1694,7 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
     await send_report(
         message=MessageChain.assign(
             [
-                I18NContext("error.message.report", command=msg.trigger_msg),
+                I18NContext("error.message.report", disable_joke=True, command=msg.trigger_msg),
                 Plain(tb.strip(), disable_joke=True, allow_parse=False),
             ]
         ),
