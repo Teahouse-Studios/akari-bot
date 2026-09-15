@@ -107,6 +107,7 @@ modules/test/*
 
 # CI Test Report
 junit.xml
+pytest*
 
 # ==========
 # Legacy

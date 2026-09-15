@@ -46,6 +46,12 @@ RENAMED_MODULES = {
 }
 
 
+# 每次热重载都会重建依赖图（遍历并解析全部模块源码，实测 0.6~0.9 秒），
+# 冷文件缓存或高负载环境下会明显超过 1 秒，故等待步骤统一留出余量，
+# 避免把「慢」误判成「卡住」。
+RELOAD_WAIT_TIMEOUT = 10
+
+
 def _test_add_module():
     """ModulesManager.add_module: 添加模块"""
     try:
@@ -980,11 +986,13 @@ async def _test_concurrent_reload_fails_before_mutation():
         with patch.object(ModulesManager, "reload_py_module", new=reload_py_module):
             async with _patch_database_reload(prepare_database):
                 first = asyncio.create_task(ModulesManager.reload_module(module_name))
-                await asyncio.wait_for(entered_database_reload.wait(), timeout=1)
-                second_result = await asyncio.wait_for(ModulesManager.reload_module("second"), timeout=1)
+                await asyncio.wait_for(entered_database_reload.wait(), timeout=RELOAD_WAIT_TIMEOUT)
+                second_result = await asyncio.wait_for(
+                    ModulesManager.reload_module("second"), timeout=RELOAD_WAIT_TIMEOUT
+                )
                 untouched = second_result == (False, 0) and reload_py_module.call_count == 1
                 release_database_reload.set()
-                first_result = await asyncio.wait_for(first, timeout=1)
+                first_result = await asyncio.wait_for(first, timeout=RELOAD_WAIT_TIMEOUT)
         return untouched and first_result == (True, 1)
     finally:
         release_database_reload.set()
@@ -1088,7 +1096,7 @@ async def _test_cancelled_reload_restores_registry_and_status():
         with patch.object(ModulesManager, "reload_py_module", side_effect=reload_python):
             async with _patch_database_reload(prepare_database):
                 task = asyncio.create_task(ModulesManager.reload_module(module_name))
-                await asyncio.wait_for(entered_database_reload.wait(), timeout=1)
+                await asyncio.wait_for(entered_database_reload.wait(), timeout=RELOAD_WAIT_TIMEOUT)
                 task.cancel()
                 try:
                     await task
@@ -1156,7 +1164,7 @@ async def _test_cancelled_commit_keeps_committed_generation():
         ):
             async with _patch_database_reload(AsyncMock(return_value=object())):
                 task = asyncio.create_task(ModulesManager.reload_module(module_name))
-                await asyncio.wait_for(entered_commit.wait(), timeout=1)
+                await asyncio.wait_for(entered_commit.wait(), timeout=RELOAD_WAIT_TIMEOUT)
                 task.cancel()
                 release_commit.set()
                 try:
