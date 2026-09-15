@@ -87,7 +87,7 @@
     "config.comments.secret.db_path": "数据库连接字符串，请使用 Tortoise ORM 支持的数据库连接字符串格式。",
     "config.comments.secret.proxy": "代理服务地址。",
     "config.comments.smtp_secret.smtp_password": "SMTP 登录密码。",
-    "config.comments.smtp.enable": "是否开启 SMTP 邮件上报，开启后将不再上报至场景。",
+    "config.comments.smtp.enable_email_report": "是否开启 SMTP 邮件上报，开启后将不再上报至场景。",
     "config.comments.smtp.smtp_host": "SMTP 服务器地址。",
     "config.comments.smtp.smtp_port": "SMTP 服务器端口号。",
     "config.comments.smtp.smtp_recipients": "邮件上报收件人列表。",

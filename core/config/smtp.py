@@ -3,7 +3,7 @@ from core.config.decorator import on_config
 
 @on_config("smtp")
 class SMTPConfig:
-    enable: bool = False
+    enable_email_report: bool = False
     smtp_host: str = ""
     smtp_port: int = 587
     smtp_user: str = "AkariBot"

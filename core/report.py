@@ -17,7 +17,7 @@ DirectSender = Callable[[object, Chainable], Awaitable[None]]
 
 
 def email_report_enabled() -> bool:
-    return bool(SMTPConfig.enable and SMTPConfig.smtp_host and SMTPConfig.smtp_recipients)
+    return bool(SMTPConfig.enable_email_report and SMTPConfig.smtp_host and SMTPConfig.smtp_recipients)
 
 
 def _send_email(subject: str, body: str) -> None:
