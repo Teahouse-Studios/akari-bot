@@ -4,7 +4,7 @@ import urllib.parse
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain, escape_special_char
 from core.builtins.message.internal import I18NContext, Plain, Url
-from core.dirty_check import check
+from core.utils.dirty_check import check
 from core.logger import Logger
 from modules.wiki.utils.utils import strptime2ts
 from modules.wiki.utils.wikilib import WikiLib, WikiInfo

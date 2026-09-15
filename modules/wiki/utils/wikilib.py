@@ -13,20 +13,31 @@ from core.builtins.message.internal import I18NContext, Url
 from core.builtins.session.internal import MessageSession
 from core.config.base import BaseConfig, CoreConfig
 from core.constants.exceptions import AbuseWarning, NoReportException
-from core.dirty_check import check
+from core.utils.dirty_check import check
 from core.i18n import Locale
 from core.logger import Logger
 from core.utils.http import get_url
-from core.utils.url_policy import evaluate_url_policy
-from core.web_render import web_render, SourceOptions
+from core.utils.url_audit import evaluate_url_policy
+from core.utils.web_render import web_render, SourceOptions
 from modules.wiki.database.models import WikiSiteInfo
 from modules.wiki.utils.bot import BotAccount
+from modules.wiki.utils.disambiguation import DisambiguationBlock, is_disambiguation_page, parse_disambiguation_html
 from modules.wiki.utils.summarize import extract_summary, truncate_summary
 from .mapping import *
 
 default_locale = BaseConfig.default_locale
 enable_tos = CoreConfig.enable_tos
 MAX_RESEARCH_SUGGESTIONS = 5
+
+
+def _has_manual_anchor(html: str, section: str) -> bool:
+    """检查渲染正文中是否存在与 URL 片段匹配的手动锚点。"""
+    normalized = urllib.parse.unquote(section).replace(" ", "_")
+    soup = BeautifulSoup(html, "html.parser")
+    for anchor in soup.find_all("span", id=True):
+        if "anchor" in anchor.get("class", []) and anchor["id"].replace(" ", "_") == normalized:
+            return True
+    return False
 
 
 def _merge_research_suggestions(search_results, limit: int = MAX_RESEARCH_SUGGESTIONS) -> list[str]:
@@ -113,6 +124,8 @@ class PageInfo:
     interwiki_prefix: str | None = ""
     status: bool = True
     templates: list[str] = None
+    is_disambiguation: bool = False
+    disambiguation_blocks: list[DisambiguationBlock] = field(factory=list)
     before_page_property: str = "page"
     page_property: str = "page"
     has_template_doc: bool = False
@@ -120,6 +133,7 @@ class PageInfo:
     possible_research_title: list[str] = None
     body_class: list[str] = None
     invalid_section: bool = False
+    is_manual_anchor: bool = False
     is_talk_page: bool = False
     is_forum: bool = False
     is_forum_topic: bool = False
@@ -282,7 +296,7 @@ class WikiLib:
                     # Logger.info(api_match)
                     wiki_api_link = api_match
                 except IndexError:
-                    Logger.error(get_page)
+                    Logger.trace(get_page)
                     return WikiStatus(
                         available=False,
                         value=False,
@@ -764,10 +778,11 @@ class WikiLib:
             # 摘要须由本地解析 Wikitext 得出。此处随主查询一并取回，无须额外请求。
             # rvslots 自 MediaWiki 1.32 起提供，更低版本会忽略该参数并返回旧式结构，
             # 故读取时两种结构都要认。
-            query_props += ["revisions"]
+            query_props += ["revisions", "pageprops"]
             query_string.update(
                 {
                     "prop": "|".join(query_props),
+                    "ppprop": "description|displaytitle|disambiguation|infoboxes",
                     "rvprop": "content",
                     "rvslots": "main",
                 }
@@ -883,6 +898,10 @@ class WikiLib:
                                 page_info.desc = reparse.desc
                                 page_info.file = reparse.file
                                 page_info.status = reparse.status
+                                page_info.templates = reparse.templates
+                                page_info.is_disambiguation = reparse.is_disambiguation
+                                page_info.disambiguation_blocks = reparse.disambiguation_blocks
+                                page_info.is_manual_anchor = reparse.is_manual_anchor
                                 page_info.invalid_namespace = reparse.invalid_namespace
                                 page_info.possible_research_title = reparse.possible_research_title
                             else:
@@ -965,6 +984,7 @@ class WikiLib:
                     # handling templates
 
                     templates = page_info.templates = [t["title"] for t in page_raw.get("templates", [])]
+                    page_info.is_disambiguation = is_disambiguation_page(page_raw.get("pageprops"), templates)
 
                     # handling special talk page
                     if selected_section or page_info.invalid_section or page_info.is_talk_page:
@@ -983,6 +1003,20 @@ class WikiLib:
                         if selected_section:
                             if urllib.parse.unquote(selected_section) not in section_list:
                                 page_info.invalid_section = True
+                                try:
+                                    parsed_page = await self.get_json(
+                                        action="parse",
+                                        page=page_info.title,
+                                        prop="text",
+                                    )
+                                    parsed_text = parsed_page.get("parse", {}).get("text", "")
+                                    if isinstance(parsed_text, dict):
+                                        parsed_text = parsed_text.get("*", "")
+                                    if parsed_text and _has_manual_anchor(parsed_text, selected_section):
+                                        page_info.invalid_section = False
+                                        page_info.is_manual_anchor = True
+                                except Exception:
+                                    Logger.exception("Failed to check Wiki manual section anchor: ")
 
                     # handling special pages
                     if "special" in page_raw:
@@ -1097,7 +1131,7 @@ class WikiLib:
                                         page_info.has_template_doc = True
                                     page_info.before_page_property = page_info.page_property = "template"
                             # get description
-                            if get_desc:
+                            if get_desc and not page_info.is_manual_anchor:
                                 if use_extracts:
                                     raw_desc = page_raw.get("extract")
                                     if raw_desc:
@@ -1108,6 +1142,15 @@ class WikiLib:
                                     page_desc = self.parse_text(
                                         extract_summary(self._get_revision_content(page_raw), selected_section)
                                     )
+                            if page_info.is_disambiguation and not selected_section:
+                                try:
+                                    parsed_page = await self.get_json(action="parse", page=title, prop="text")
+                                    page_info.disambiguation_blocks = parse_disambiguation_html(
+                                        parsed_page["parse"]["text"]["*"],
+                                        self.wiki_info.realurl or self.wiki_info.api,
+                                    )
+                                except Exception:
+                                    Logger.exception("Failed to parse Wiki disambiguation page: ")
                             full_url = page_raw["fullurl"] + page_info.args
                             file = None
                             if "imageinfo" in page_raw:
@@ -1126,6 +1169,9 @@ class WikiLib:
                             page_info.edit_link = query_langlinks.edit_link
                             page_info.file = query_langlinks.file
                             page_info.desc = query_langlinks.desc
+                            page_info.templates = query_langlinks.templates
+                            page_info.is_disambiguation = query_langlinks.is_disambiguation
+                            page_info.disambiguation_blocks = query_langlinks.disambiguation_blocks
         interwiki_: list[dict[str, str]] = query.get("interwiki")
         if interwiki_:
             # handling interwiki pages

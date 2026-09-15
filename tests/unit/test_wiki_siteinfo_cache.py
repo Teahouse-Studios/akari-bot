@@ -5,7 +5,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 from core.tester import func_case, Tester
-from core.utils.url_policy import URLPolicyDecision
+from core.utils.url_audit import URLPolicyDecision
 from modules.wiki.utils.wikilib import BlockedWikiError, WikiInfo, WikiLib
 
 API_LINK = "https://example.com/api.php"

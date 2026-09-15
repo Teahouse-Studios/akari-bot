@@ -2,7 +2,13 @@
 # 주의: TOML은 Python이 아닙니다. Python 문법을 사용하지 마십시오.
 # 예: TOML의 불리언 값은 반드시 소문자로 작성해야 합니다.
 
+[module_maimai]
+# 모듈의 구성 섹션입니다. 여기에 입력한 값은 메시지에 일반 텍스트로 표시됩니다. 민감한 정보는 이 섹션에 입력하지 마십시오.
+diving_fish_client_id = "<Replace me with str value>"
+lxns_client_id = "<Replace me with str value>"
+
 [module_maimai_secret]
 # 모듈의 키 설정 섹션입니다. 이 값이 전송된 메시지에 실수로 나타날 경우 봇이 해당 메시지를 가로채려고 시도합니다. 하지만 이 값이 유출되지 않도록 각별히 주의해 주십시오.
-diving_fish_developer_token = "<Replace me with str value>" # Diving Fish 查分器的开发者令牌。
+diving_fish_client_secret = "<Replace me with str value>" # 水鱼账号 OAuth 应用的 client_secret。公开客户端可留空。
 lxns_developer_token = "<Replace me with str value>" # 落雪咖啡屋查分器的开发者令牌。
+lxns_client_secret = "<Replace me with str value>" # 落雪咖啡屋 OAuth 应用的 client_secret。

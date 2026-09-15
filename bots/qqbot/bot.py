@@ -1,19 +1,20 @@
 import re
+from collections.abc import Mapping
 
 import botpy
 from botpy.interaction import Interaction
 from botpy.manage import GroupMemberEvent
-from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
+from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message, BaseMessage
 
 from bots.qqbot.config import QQBotConfig, QQBotSecretConfig
-from bots.qqbot.context import QQBotContextManager, QQBotFetchedContextManager, cache_permission
+from bots.qqbot.context import QQBotContextManager, QQBotFetchedContextManager, cache_message_id_pair, cache_permission
 from bots.qqbot.info import *
 from bots.qqbot.features import group_disable_read_all_message_features, resolve_features, guild_features
 from bots.qqbot.navigation import build_navigation
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import ButtonPayload
-from core.builtins.message.internal import Plain
+from core.builtins.message.internal import Plain, Image, Audio, Video
 from core.builtins.session.info import EventInfo, SessionInfo
 from core.builtins.utils import command_prefix
 from core.client.init import client_cleanup, client_init
@@ -22,6 +23,7 @@ from core.constants.default import confirm_command_default
 from core.logger import Logger
 
 Bot.register_bot(client_name=client_name)
+Logger.rename(client_name)
 ctx_id = Bot.register_context_manager(QQBotContextManager)
 Bot.register_context_manager(QQBotFetchedContextManager, fetch_session=True)
 
@@ -31,6 +33,51 @@ qqbot_secret = QQBotSecretConfig.qq_bot_secret
 ignored_sender = CoreConfig.ignored_sender
 
 initialized = False
+
+
+def _message_application_ids(message) -> tuple[str | None, str | None]:
+    """读取消息场景中的当前消息 ID 和被引用消息 ID。"""
+    application_id = None
+    reply_id = None
+    message_scene = getattr(message, "message_scene", None)
+    if isinstance(message_scene, Mapping):
+        ext = message_scene.get("ext") or []
+        for item in ext:
+            if not isinstance(item, str):
+                continue
+            key, separator, value = item.partition("=")
+            if not separator or not value:
+                continue
+            if key == "msg_idx":
+                application_id = value
+            elif key == "ref_msg_idx":
+                reply_id = value
+
+    if reply_id is None:
+        reference = getattr(message, "message_reference", None)
+        reply_id = getattr(reference, "message_id", None)
+    return application_id, reply_id
+
+
+def _record_message_ids(message) -> str | None:
+    """登记入站消息的两类 ID，并返回供应用层比较的引用 ID。"""
+    application_id, reply_id = _message_application_ids(message)
+    cache_message_id_pair(application_id, getattr(message, "id", None))
+    return reply_id
+
+
+def _convert_message_content(message: BaseMessage | Message | DirectMessage) -> MessageChain:
+    msg_chain = MessageChain.assign(message.content)
+
+    for attachment in message.attachments:
+        content_type = attachment.content_type
+        if content_type.startswith("image"):
+            msg_chain.append(Image(attachment.url))
+        if content_type.startswith("voice"):
+            msg_chain.append(Audio(attachment.url))
+        if content_type.startswith("video"):
+            msg_chain.append(Video(attachment.url))
+    return msg_chain
 
 
 class MyClient(botpy.Client):
@@ -105,15 +152,15 @@ class MyClient(botpy.Client):
         if sender_id in ignored_sender:
             return
 
-        reply_id = None
-        if message.message_reference:
-            reply_id = message.message_reference.message_id
+        reply_id = _record_message_ids(message)
 
-        message.content = re.sub(r"<@(.*?)>", "", message.content).strip()
-        if not message.content:
+        pure_content = re.sub(r"<@(.*?)>", "", message.content).strip()
+        if not pure_content:
             message.content = f"{command_prefix[0]}help"
 
-        msg_chain = MessageChain.assign(re.sub(r"<@(.*?)>", rf"{sender_tiny_prefix}|\1", message.content))
+        message.content = re.sub(r"<@(.*?)>", rf"{sender_tiny_prefix}|\1", message.content)
+
+        msg_chain = _convert_message_content(message)
 
         session = await SessionInfo.assign(
             target_id=target_id,
@@ -140,22 +187,17 @@ class MyClient(botpy.Client):
         if sender_id in ignored_sender:
             return
 
-        reply_id = None
-        if message.message_reference:
-            reply_id = message.message_reference.message_id
+        reply_id = _record_message_ids(message)
 
-        match_atme = False
+        pure_content = re.sub(r"<@(.*?)>", "", message.content).strip()
+        if not pure_content:
+            message.content = f"{command_prefix[0]}help"
 
-        if qqbot_openid:
-            if m := re.match(r"<@(.*?)>(.*)", message.content):
-                if m.group(1) == qqbot_openid:
-                    match_atme = True
-                    message.content = m.group(2).strip()
-                    if not message.content:
-                        message.content = f"{command_prefix[0]}help"
+        message.content = re.sub(r"<@(.*?)>", rf"{sender_tiny_prefix}|\1", message.content)
 
-        msg_chain = MessageChain.assign(re.sub(r"<@(.*?)>", rf"{sender_tiny_prefix}|\1", message.content))
-        prefixes = [] if not match_atme else ["/"]
+        msg_chain = _convert_message_content(message)
+
+        prefixes = []
 
         session = await SessionInfo.assign(
             target_id=target_id,
@@ -187,20 +229,19 @@ class MyClient(botpy.Client):
         if sender_id in ignored_sender:
             return
 
-        reply_id = None
-        if message.message_reference:
-            reply_id = message.message_reference.message_id
+        reply_id = _record_message_ids(message)
 
         match_atme = False
 
         if qqbot_openid:
-            if m := re.match(r"<@(.*?)>(.*)", message.content):
+            if m := re.match(r"^<@(.*?)>(.*)", message.content):
                 if m.group(1) == qqbot_openid:
                     match_atme = True
                     message.content = m.group(2).strip()
                     if not message.content:
                         message.content = f"{command_prefix[0]}help"
-        msg_chain = MessageChain.assign(re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", message.content))
+        message.content = re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", message.content)
+        msg_chain = _convert_message_content(message)
         prefixes = [] if not match_atme else ["/"]
         session = await SessionInfo.assign(
             target_id=target_id,
@@ -234,15 +275,14 @@ class MyClient(botpy.Client):
         if sender_id in ignored_sender:
             return
 
-        reply_id = None
-        if message.message_reference:
-            reply_id = message.message_reference.message_id
+        reply_id = _record_message_ids(message)
 
-        message.content = re.sub(r"<@(.*?)>", "", message.content).strip()
+        message.content = re.sub(r"^<@(.*?)>", "", message.content).strip()
         if not message.content:
             message.content = f"{command_prefix[0]}help"
 
-        msg_chain = MessageChain.assign(re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", message.content))
+        message.content = re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", message.content)
+        msg_chain = _convert_message_content(message)
 
         session = await SessionInfo.assign(
             target_id=target_id,
@@ -276,11 +316,10 @@ class MyClient(botpy.Client):
         if sender_id in ignored_sender:
             return
 
-        reply_id = None
-        if message.message_reference:
-            reply_id = message.message_reference.message_id
+        reply_id = _record_message_ids(message)
 
-        msg_chain = MessageChain.assign(message.content)
+        message.content = re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", message.content)
+        msg_chain = _convert_message_content(message)
 
         session = await SessionInfo.assign(
             target_id=target_id,
@@ -308,11 +347,10 @@ class MyClient(botpy.Client):
         if sender_id in ignored_sender:
             return
 
-        reply_id = None
-        if message.message_reference:
-            reply_id = message.message_reference.message_id
+        reply_id = _record_message_ids(message)
 
-        msg_chain = MessageChain.assign(message.content)
+        message.content = re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", message.content)
+        msg_chain = _convert_message_content(message)
 
         session = await SessionInfo.assign(
             target_id=target_id,

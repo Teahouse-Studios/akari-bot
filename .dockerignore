@@ -1,12 +1,24 @@
+# Git
 .git
 .github
+.gitignore
+
+# Development / CI
 .deepsource.toml
 .editorconfig
-.gitignore
 .pre-commit-config.yaml
-requirements.txt
 renovate.json
-start
-start.bat
+requirements.txt
+
+# Tests
 tests/
 tester.py
+
+# Documentation
+SECURITY.md
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+
+# Local startup scripts
+start
+start.bat

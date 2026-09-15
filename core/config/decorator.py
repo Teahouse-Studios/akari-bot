@@ -11,6 +11,7 @@
 - 自动生成 __init__ 和 __repr__ 方法
 """
 
+from collections.abc import Mapping
 import inspect
 from types import UnionType
 from typing import Any, Literal, TypeVar, get_args
@@ -45,7 +46,12 @@ class ConfigMeta(type):
         return CFGManager.get(**field)
 
 
-def _process_class(cls: type[T], table_name, secret=False) -> type[T]:
+def _process_class(
+    cls: type[T],
+    table_name,
+    secret=False,
+    standalone_comments: Mapping[str, tuple[str, ...]] | None = None,
+) -> type[T]:
     """处理类并转换为配置对象。
 
     该函数是核心的转换逻辑，它会：
@@ -56,12 +62,35 @@ def _process_class(cls: type[T], table_name, secret=False) -> type[T]:
     :param cls: 要处理的类对象
     :param table_name: 配置表名称，用于在配置文件中标识该配置块
     :param secret: 是否将该配置的值视为敏感信息进行加密存储（默认 False）
+    :param standalone_comments: 配置字段名前的独立注释块。键为字段名，值为按顺序排列的 i18n 键元组
     :return: 处理后的类对象，具有自动生成的初始化和字符串表示方法
     """
     cls_annotations = {k: v for k, v in inspect.get_annotations(cls).items() if not k.startswith("__")}
     # 未写类型标注时退回类属性本身，使无标注的模板仍能生成配置项
     if not cls_annotations:
         cls_annotations = {k: Any for k, _ in vars(cls).items() if not k.startswith("__")}
+
+    if standalone_comments is None:
+        standalone_comments = {}
+    elif not isinstance(standalone_comments, Mapping):
+        raise TypeError("Standalone comments must be a mapping of config fields to i18n key tuples.")
+    else:
+        standalone_comments = dict(standalone_comments)
+    if not all(isinstance(field_name, str) and field_name for field_name in standalone_comments):
+        raise TypeError("Standalone comment field names must be non-empty strings.")
+    unknown_comment_fields = standalone_comments.keys() - cls_annotations.keys()
+    if unknown_comment_fields:
+        fields = ", ".join(sorted(unknown_comment_fields))
+        raise ValueError(f"Standalone comments reference undeclared config fields: {fields}")
+    for field_name, comment_keys in standalone_comments.items():
+        if (
+            not isinstance(comment_keys, tuple)
+            or not comment_keys
+            or not all(isinstance(key, str) and key for key in comment_keys)
+        ):
+            raise TypeError(
+                f"Standalone comments for config field {field_name!r} must be a tuple of non-empty i18n keys."
+            )
 
     # 各字段传给 CFGManager.get() 的完整参数，既供元类读取配置值，也供 __init__ 取默认值
     config_fields: dict[str, dict[str, Any]] = {}
@@ -108,6 +137,7 @@ def _process_class(cls: type[T], table_name, secret=False) -> type[T]:
                     "cfg_type": get_args(__attr_type) if isinstance(__attr_type, UnionType) else __attr_type,
                     "secret": secret,
                     "table_name": table_name,
+                    "standalone_comment_keys": standalone_comments.get(attr_name, ()),
                 }
 
                 # 只读进程不补写配置文件：生成统一在 bot.py 的 pre_init() 中完成，
@@ -130,6 +160,7 @@ def _process_class(cls: type[T], table_name, secret=False) -> type[T]:
                         secret,  # 敏感信息标志
                         table_name,  # 配置表名
                         _generate=True,  # 生成模式标志
+                        standalone_comment_keys=standalone_comments.get(attr_name, ()),
                     )
                     # 保存修改到配置文件
                     CFGManager.save()
@@ -154,7 +185,12 @@ def _process_class(cls: type[T], table_name, secret=False) -> type[T]:
     return new_cls
 
 
-def on_config(table_name: str, table_type: Literal["module", "bot", ""] = "", secret: bool = False):
+def on_config(
+    table_name: str,
+    table_type: Literal["module", "bot", ""] = "",
+    secret: bool = False,
+    standalone_comments: Mapping[str, tuple[str, ...]] | None = None,
+):
     """配置装饰器工厂函数。
 
     这是一个装饰器工厂，返回实际的装饰器函数。
@@ -181,6 +217,7 @@ def on_config(table_name: str, table_type: Literal["module", "bot", ""] = "", se
                    - "": 空字符串表示不添加前缀
     :param secret: 是否将此配置中的所有值视为敏感信息进行加密存储（默认 False）。
                设置为 True 时，配置值会被加密存储在配置文件中。
+    :param standalone_comments: 配置字段名前的独立注释块。键为字段名，值为按顺序排列的 i18n 键元组。
 
     :return: 装饰器函数，接收一个类并返回处理后的类
     """
@@ -196,7 +233,7 @@ def on_config(table_name: str, table_type: Literal["module", "bot", ""] = "", se
         """
         # 构造表名：如果 table_type 不为空，则添加前缀和下划线分隔符
         __type = table_type + "_" if table_type != "" else table_type
-        return _process_class(cls, __type + table_name, secret)
+        return _process_class(cls, __type + table_name, secret, standalone_comments)
 
     return wrap
 
@@ -229,7 +266,11 @@ def on_base_config():
     return wrap
 
 
-def on_bot_config(bot_name: str, secret: bool = False):
+def on_bot_config(
+    bot_name: str,
+    secret: bool = False,
+    standalone_comments: Mapping[str, tuple[str, ...]] | None = None,
+):
     """平台配置装饰器工厂函数。
 
     等价于 ``on_config(bot_name, table_type="bot", secret=secret)``，供 ``bots/`` 下的配置模板使用。
@@ -244,13 +285,18 @@ def on_bot_config(bot_name: str, secret: bool = False):
     :param bot_name: 平台名称，须与 `bots/` 下的目录名一致：守护进程以 ``bot_<目录名>``
                  的表名查找该平台的 `enable` 配置。最终的表名为 "bot_平台名"
     :param secret: 是否将此配置中的所有值视为敏感信息进行加密存储（默认 False）
+    :param standalone_comments: 配置字段名前的独立注释块。键为字段名，值为 i18n 键元组
 
     :return: 装饰器函数，接收一个类并返回处理后的类
     """
-    return on_config(bot_name, "bot", secret)
+    return on_config(bot_name, "bot", secret, standalone_comments)
 
 
-def on_module_config(module_name: str, secret: bool = False):
+def on_module_config(
+    module_name: str,
+    secret: bool = False,
+    standalone_comments: Mapping[str, tuple[str, ...]] | None = None,
+):
     """模块配置装饰器工厂函数。
 
     等价于 ``on_config(module_name, table_type="module", secret=secret)``，供 ``modules/`` 下的配置模板使用。
@@ -268,10 +314,11 @@ def on_module_config(module_name: str, secret: bool = False):
 
     :param module_name: 模块名称，须与 `module()` 声明的名称一致。最终的表名为 "module_模块名"
     :param secret: 是否将此配置中的所有值视为敏感信息进行加密存储（默认 False）
+    :param standalone_comments: 配置字段名前的独立注释块。键为字段名，值为 i18n 键元组
 
     :return: 装饰器函数，接收一个类并返回处理后的类
     """
-    return on_config(module_name, "module", secret)
+    return on_config(module_name, "module", secret, standalone_comments)
 
 
 # 将 _process_class 函数导出到系统模块导出表中，使其可被其他模块导入使用

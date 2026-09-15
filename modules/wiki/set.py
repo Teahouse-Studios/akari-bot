@@ -3,7 +3,7 @@ import orjson
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import ActionText, I18NContext, Image, Plain, Url
-from core.utils.url_policy import evaluate_url_policy
+from core.utils.url_audit import evaluate_url_policy
 from modules.wiki.config import WikiConfig
 from core.utils.image_table import image_table_render, ImageTable
 from . import wiki
@@ -97,7 +97,7 @@ async def _(msg: Bot.MessageSession, interwiki: str):
     "iw list [--legacy] {{I18N:wiki.help.iw.list}}",
     options_desc={"--legacy": "{I18N:help.option.legacy}"},
 )
-async def _(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession, legacy: bool = False):
     target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     query = target.interwikis
     start_wiki = target.api_link
@@ -109,7 +109,7 @@ async def _(msg: Bot.MessageSession):
             base_interwiki_link = wiki_info.link
     result = []
     if query != {}:
-        if not msg.parsed_msg.get("--legacy", False) and msg.session_info.support_image:
+        if not legacy and msg.session_info.support_image:
             columns = [[x, query[x]] for x in query]
             imgs = await image_table_render(ImageTable(columns, ["Interwiki", "Url"]))
         else:
@@ -119,7 +119,6 @@ async def _(msg: Bot.MessageSession):
             mt = [
                 I18NContext(
                     "wiki.message.iw.list",
-                    prefix=msg.session_info.prefixes[0],
                     cmd=ActionText(f"{msg.session_info.prefixes[0]}wiki iw get "),
                 )
             ]
@@ -144,7 +143,6 @@ async def _(msg: Bot.MessageSession):
         result.append(
             I18NContext(
                 "wiki.message.iw.list.none",
-                prefix=msg.session_info.prefixes[0],
                 cmd=ActionText(f"{msg.session_info.prefixes[0]}wiki iw add"),
             )
         )
@@ -177,7 +175,6 @@ async def _(msg: Bot.MessageSession, interwiki: str):
         await msg.finish(
             I18NContext(
                 "wiki.message.iw.list.none",
-                prefix=msg.session_info.prefixes[0],
                 cmd=ActionText(f"{msg.session_info.prefixes[0]}wiki iw add"),
             )
         )
@@ -190,8 +187,8 @@ async def _(msg: Bot.MessageSession):
         I18NContext(
             "wiki.message.headers.show",
             headers=orjson.dumps(target.headers).decode(),
-            prefix=msg.session_info.prefixes[0],
             cmd=ActionText(f"{msg.session_info.prefixes[0]}wiki headers add"),
+            prefix=msg.session_info.prefixes[0],
         )
     )
 

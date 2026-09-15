@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING, Union, get_args, get_origin
 from rapidfuzz import process
 
 from core.builtins.message.chain import MessageChain, match_kecode
-from core.builtins.message.internal import ActionText, Image, Plain, I18NContext
+from core.builtins.message.internal import ActionText, Image, Plain, Markdown, I18NContext
 from core.builtins.parser.args import ArgumentPattern, Template as argsTemplate, templates_to_str
 from core.builtins.parser.command import CommandParser
 from core.builtins.session.lock import ExecutionLockList
@@ -49,13 +49,15 @@ from core.exports import exports
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.report import send_report
-from core.retired import (
+from core.module_runtime import ModuleRuntimeManager
+from core.utils.retired import (
     is_module_allowed_when_retired,
     is_retired_client,
+    is_retired_target,
     is_yielding_retired_session,
     should_yield_channel,
 )
-from core.tos import TOS_TEMPBAN_TIME, temp_ban_counter, abuse_warn_target, remove_temp_ban
+from core.utils.tos import TOS_TEMPBAN_TIME, temp_ban_counter, abuse_warn_target, remove_temp_ban
 from core.types import Module, Param
 from core.types.module.component_meta import CommandMeta
 from core.utils.container import ExpiringTempDict, TokenBucket
@@ -242,7 +244,7 @@ async def parser(msg: "Bot.MessageSession"):
             command_first_word = await _process_command(msg, modules, disable_prefix, in_prefix_list)
 
             # 退役客户端仅保留白名单模块。此处须早于通道认领：若退役场景先认领再因退役不执行，
-            # 同通道的其他场景会因避让而放弃处理，该场景内将无人响应。
+            # 同通道的其他场景会因避让而放弃处理，该场景内将无客户端响应。
             if (
                 is_retired_client(msg.session_info.client_name)
                 and not is_module_allowed_when_retired(command_first_word)
@@ -250,8 +252,15 @@ async def parser(msg: "Bot.MessageSession"):
             ):
                 return
 
-            # 执行前先认领消息通道，同通道内已有场景认领则避让，_process_command 会去掉 trigger_msg 的前缀
-            if await _claim_channel_message(msg):
+            routed_command_available = None
+            if command_first_word in modules and is_module_allowed_when_retired(command_first_word):
+                routed_command_available = _command_available_for_current_session(
+                    msg, modules[command_first_word], command_first_word
+                )
+
+            # 执行前先认领消息通道，同通道内已有场景认领则避让，_process_command 会去掉 trigger_msg 的前缀。
+            # 退役迁移命令按子命令分流， merge 由源退役端处理，merge token 由目标端处理。
+            if await _claim_channel_message(msg, routed_command_available=routed_command_available):
                 return
 
             if command_first_word:
@@ -278,7 +287,6 @@ async def parser(msg: "Bot.MessageSession"):
                     await msg.send_message(
                         I18NContext(
                             "parser.command.invalid.module",
-                            prefix=msg.session_info.prefixes[0],
                             cmd=ActionText(f"{msg.session_info.prefixes[0]}help"),
                         )
                     )
@@ -287,7 +295,6 @@ async def parser(msg: "Bot.MessageSession"):
                 await msg.send_message(
                     I18NContext(
                         "parser.command.invalid.module",
-                        prefix=msg.session_info.prefixes[0],
                         cmd=ActionText(f"{msg.session_info.prefixes[0]}help"),
                     )
                 )
@@ -319,13 +326,26 @@ async def parser(msg: "Bot.MessageSession"):
             # wait_* 的回复会话会共享根命令的 ExecutionState，但没有最终
             # 清理所有权。它仍可在 continuation 内主动 sleep／wait，从而
             # 释放和重获同一 lease；这里只能由原始 parser 释放最终 lease，
-            # 否则回复消息返回时会拆掉仍在使用的 Union merge barrier。
             if getattr(msg, "_execution_state_owner", True):
                 ExecutionLockList.remove(msg)
             Info.message_parsed += 1
 
 
-async def _claim_channel_message(msg: "Bot.MessageSession", display: str | None = None) -> bool:
+def _command_available_for_current_session(msg: "Bot.MessageSession", module: Module, command_first_word: str) -> bool:
+    """判断当前客户端能否解析一个按平台分流的具体命令。"""
+    command_parser = CommandParser(
+        module, msg=msg, module_name=command_first_word, command_prefixes=msg.session_info.prefixes
+    )
+    try:
+        parsed = command_parser.parse(msg.trigger_msg)
+    except InvalidCommandFormatError:
+        return False
+    return bool(parsed and parsed[0])
+
+
+async def _claim_channel_message(
+    msg: "Bot.MessageSession", display: str | None = None, routed_command_available: bool | None = None
+) -> bool:
     """
     认领一条消息，并判断它是否已被同一消息通道内的另一个场景处理。
 
@@ -334,6 +354,7 @@ async def _claim_channel_message(msg: "Bot.MessageSession", display: str | None 
 
     :param msg: 消息会话。
     :param display: 参与判定的文本，留空则取命令文本。
+    :param routed_command_available: 当前客户端能否执行按平台分流的退役迁移命令；其它命令为 None。
     :return: True 表示已被其它场景认领，当前场景应当避让。
     """
     union_id = msg.session_info.target_union_id
@@ -342,12 +363,20 @@ async def _claim_channel_message(msg: "Bot.MessageSession", display: str | None 
     channel_id = msg.session_info.target_channel_id
 
     channels = await TargetUnionBind.list_channels(union_id)
-    # 通道内仅有自身时不存在重复执行的可能，绝大多数场景经由此快路径返回。
+    # 通道内仅有自身时不存在重复执行的可能。
     if sum(1 for cid in channels.values() if cid == channel_id) <= 1:
         return False
 
-    # 退役场景不执行白名单之外的命令，由它认领会导致同通道的其他场景避让而无人响应。
-    if should_yield_channel(msg.session_info.target_id, channels, channel_id):
+    channel_targets = [target_id for target_id, cid in channels.items() if cid == channel_id]
+    mixed_retired_channel = any(is_retired_target(target_id) for target_id in channel_targets) and any(
+        not is_retired_target(target_id) for target_id in channel_targets
+    )
+    if mixed_retired_channel and routed_command_available is False:
+        Logger.debug(f"Context {msg.session_info.target_id} yielded an unavailable routed command.")
+        return True
+
+    # 退役场景不执行白名单之外的命令，白名单迁移命令已在上方按具体子命令选定执行端
+    if routed_command_available is not True and should_yield_channel(msg.session_info.target_id, channels, channel_id):
         Logger.debug(f"Retired context {msg.session_info.target_id} yielded the channel.")
         return True
 
@@ -356,7 +385,7 @@ async def _claim_channel_message(msg: "Bot.MessageSession", display: str | None 
     token = f"{union_id}|{channel_id}|{hashlib.sha256(display.encode('utf-8')).hexdigest()}"
     now = time.time()
 
-    # 以下查表与写入之间不得出现 await：在单线程事件循环下该段方为原子操作，认领才不会被并发打断。
+    # 以下查表与写入之间不得出现 await，在单线程事件循环下该段方为原子操作。
     claimed = channel_claim_cache.get(token)
     claimed_at = claimed.get("timestamp") if claimed else None
     claimed_by = claimed.get("target_id") if claimed else None
@@ -651,7 +680,6 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                         I18NContext(
                             "parser.module.disabled.prompt",
                             module=command_first_word,
-                            prefix=msg.session_info.prefixes[0],
                             cmd=ActionText(f"{msg.session_info.prefixes[0]}enable {command_first_word}"),
                         )
                     )
@@ -682,7 +710,6 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                         I18NContext(
                             "parser.module.disabled.prompt",
                             module=command_first_word,
-                            prefix=msg.session_info.prefixes[0],
                             cmd=ActionText(f"{msg.session_info.prefixes[0]}enable {command_first_word}"),
                         )
                     )
@@ -734,7 +761,8 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                     await msg.start_typing()
                     _typing = True
                 # 执行模块函数
-                await func.function(msg)
+                async with ModuleRuntimeManager.use(module.module_name):
+                    await func.function(msg)
                 raise SessionFinished(msg.sent)
 
         # ========== 步骤 8: 错字检查 ==========
@@ -753,7 +781,6 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                     I18NContext(
                         "parser.command.invalid.syntax",
                         module=command_first_word,
-                        prefix=msg.session_info.prefixes[0],
                         cmd=ActionText(f"{msg.session_info.prefixes[0]}help {command_first_word}"),
                     )
                 )
@@ -1080,10 +1107,12 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                             if rfunc.show_typing and msg.session_info.typing_prompt_enabled:
                                 await msg.start_typing()
                                 _typing = True
-                                await rfunc.function(msg)  # 将msg传入下游模块
+                                async with ModuleRuntimeManager.use(regex_module.module_name):
+                                    await rfunc.function(msg)  # 将msg传入下游模块
 
                             else:
-                                await rfunc.function(msg)  # 将msg传入下游模块
+                                async with ModuleRuntimeManager.use(regex_module.module_name):
+                                    await rfunc.function(msg)  # 将msg传入下游模块
                             ExecutionLockList.remove(msg)
                             raise SessionFinished(msg.sent)  # if not using msg.finish
                     except SessionFinished as e:
@@ -1293,6 +1322,147 @@ def _unwrap_optional(annotation):
     return annotation
 
 
+def _unwrap_option_value(value):
+    """解包带杠选项的解析结果，方便直接作为函数参数传入。
+
+    带子参数的选项（如 ``[--foo <bar>]``）在 ``msg.parsed_msg`` 中会被解析为字典
+    （形如 ``{"<bar>": "value"}``）。恰好只有一个子参数时解包为该子参数的值，
+    使函数参数可以直接拿到 ``"value"``；其余情况原样返回。
+
+    :param value: 选项在 ``msg.parsed_msg`` 中的值。
+    :return: 解包后的选项值。
+    """
+    if isinstance(value, dict) and len(value) == 1:
+        return next(iter(value.values()))
+    return value
+
+
+def _resolve_parsed_value(param_name: str, parsed_msg: dict):
+    """在解析结果中查找与命令函数参数对应的值。
+
+    查找顺序如下，命中即返回：
+
+    1. ``<param_name>``：位置参数；
+    2. ``param_name``：无杠标志或子命令；
+    3. ``-param_name`` / ``--param-name``：带杠选项，参数名中的下划线按连字符匹配
+       （如参数 ``no_cover`` 对应 ``--no-cover``），带子参数的选项按
+       :func:`_unwrap_option_value` 解包；
+    4. 带杠选项的子参数 ``<param_name>``：如 ``[-p <page>]`` 对应参数 ``page``。
+
+    :param param_name: 命令函数的参数名。
+    :param parsed_msg: ``msg.parsed_msg`` 映射后的解析结果。
+    :return: ``(found, value)`` 二元组；``found`` 为假时应使用参数默认值。
+    """
+    if (key := f"<{param_name}>") in parsed_msg:
+        return True, parsed_msg[key]
+
+    if param_name in parsed_msg:
+        return True, parsed_msg[param_name]
+
+    option_name = param_name.replace("_", "-")
+    for key in (f"-{option_name}", f"--{option_name}"):
+        if key in parsed_msg:
+            return True, _unwrap_option_value(parsed_msg[key])
+
+    sub_key = f"<{param_name}>"
+    for key, value in parsed_msg.items():
+        if key.startswith("-") and isinstance(value, dict) and sub_key in value:
+            return True, value[sub_key]
+
+    return False, None
+
+
+def _build_command_kwargs(command, msg: "Bot.MessageSession", bot) -> dict:
+    """根据命令函数的签名构建调用参数。
+
+    将 ``msg.parsed_msg`` 的解析结果映射为函数的关键字参数：
+
+    - 标注为 ``Bot.MessageSession`` 的参数注入会话对象；
+    - 标注为 ``Param`` 的参数按 ``Param.name`` 取解析结果，适用于
+      ``-i``、``<address:port>`` 等无法作为函数参数名的模板元素；
+    - 其余参数按 :func:`_resolve_parsed_value` 取位置参数或带杠选项的值。
+      选项未提供时（解析结果为 ``False``）对非 ``bool`` 参数回退到默认值，
+      标注为 ``bool`` 时直接传入 ``False``。
+
+    :param command: 匹配到的 ``CommandMeta``。
+    :param msg: 消息会话对象。
+    :param bot: ``Bot`` 类，用于判断 ``Bot.MessageSession`` 标注。
+    :return: 调用命令函数用的关键字参数字典。
+    :raises InvalidCommandFormatError: 参数存在但无法转换为标注的类型时抛出。
+    """
+    kwargs = {}
+    func_params = _get_cached_signature(command.function).parameters
+
+    if len(func_params) > 1 and msg.parsed_msg:
+        parsed_msg_ = msg.parsed_msg
+        no_message_session = True
+
+        for param_name, param_obj in func_params.items():
+            # ========== 处理 MessageSession 参数 ==========
+            if param_obj.annotation == bot.MessageSession:
+                kwargs[param_name] = msg
+                no_message_session = False
+                continue
+
+            # ========== 处理自定义 Param 类型 ==========
+            if isinstance(param_obj.annotation, Param):
+                if param_obj.annotation.name in parsed_msg_:
+                    if isinstance(parsed_msg_[param_obj.annotation.name], param_obj.annotation.type):
+                        kwargs[param_name] = parsed_msg_[param_obj.annotation.name]
+                    else:
+                        Logger.warning(f"{param_obj.annotation.name} is not a {param_obj.annotation.type}")
+                elif param_obj.default is inspect.Parameter.empty:
+                    # 已声明默认值（如可选选项缺席）时无需提示，避免每次执行都告警
+                    Logger.warning(f"{param_obj.annotation.name} is not in parsed_msg")
+                if param_name not in kwargs:
+                    # 解析结果缺失或类型不匹配时回退到默认值
+                    if param_obj.default is not inspect.Parameter.empty:
+                        kwargs[param_name] = param_obj.default
+                    else:
+                        kwargs[param_name] = None
+                continue
+
+            # ========== 处理普通参数与带杠选项 ==========
+            found, value = _resolve_parsed_value(param_name, parsed_msg_)
+            annotation = _unwrap_optional(param_obj.annotation)
+
+            # 选项/标志未提供时解析结果为 False，非 bool 参数应回退到默认值
+            if found and value is False and annotation is not bool:
+                found = False
+
+            if found:
+                try:
+                    # 根据类型注解进行类型转换，可选参数按其非 None 类型处理
+                    if annotation == int:
+                        value = int(value)
+                    elif annotation == float:
+                        value = float(value)
+                    elif annotation == bool:
+                        value = bool(value)
+                except (TypeError, ValueError):
+                    # 类型转换失败，命令格式错误
+                    raise InvalidCommandFormatError
+                kwargs[param_name] = value
+            else:
+                # 参数不在解析结果中，使用默认值或 None
+                if param_obj.default is not inspect.Parameter.empty:
+                    kwargs[param_name] = param_obj.default
+                else:
+                    kwargs[param_name] = None
+
+        # 警告：函数缺少 MessageSession 参数（可能导致运行时错误）
+        if no_message_session:
+            Logger.warning(
+                f"{command.function.__name__} has no Bot.MessageSession parameter, did you forgot to add it?\n"
+                "Remember: MessageSession IS NOT Bot.MessageSession"
+            )
+    else:
+        # 函数只有一个参数，直接传入 MessageSession
+        kwargs[func_params[list(func_params.keys())[0]].name] = msg
+
+    return kwargs
+
+
 async def _execute_module_command(msg: "Bot.MessageSession", module, command_first_word):
     """
     执行模块的命令解析和处理。
@@ -1352,74 +1522,8 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
                 raise InvalidCommandFormatError
 
             # ========== 步骤 4: 构建函数参数 ==========
-            # 根据命令函数的签名，准备调用参数
-            kwargs = {}
-            func_params = _get_cached_signature(command.function).parameters
-
-            if len(func_params) > 1 and msg.parsed_msg:
-                # 函数有多个参数，需要映射解析后的参数
-                parsed_msg_ = msg.parsed_msg.copy()
-                no_message_session = True  # 标记是否缺少 MessageSession 参数
-
-                # 遍历函数的所有参数
-                for param_name, param_obj in func_params.items():
-                    # ========== 处理 MessageSession 参数 ==========
-                    if param_obj.annotation == bot.MessageSession:
-                        kwargs[param_name] = msg
-                        no_message_session = False
-
-                    # ========== 处理自定义 Param 类型 ==========
-                    elif isinstance(param_obj.annotation, Param):
-                        if param_obj.annotation.name in parsed_msg_:
-                            # 检查类型是否匹配
-                            if isinstance(parsed_msg_[param_obj.annotation.name], param_obj.annotation.type):
-                                kwargs[param_name] = parsed_msg_[param_obj.annotation.name]
-                                del parsed_msg_[param_obj.annotation.name]
-                            else:
-                                Logger.warning(f"{param_obj.annotation.name} is not a {param_obj.annotation.type}")
-                        else:
-                            Logger.warning(f"{param_obj.annotation.name} is not in parsed_msg")
-
-                    # ========== 处理普通参数 ==========
-                    param_name_ = param_name
-
-                    # 检查是否使用了 <param> 格式
-                    if (param_name__ := f"<{param_name}>") in parsed_msg_:
-                        param_name_ = param_name__
-
-                    if param_name_ in parsed_msg_:
-                        # 参数在解析结果中
-                        kwargs[param_name] = parsed_msg_[param_name_]
-                        try:
-                            # 尝试根据类型注解进行类型转换，可选参数按其非 None 类型处理
-                            annotation = _unwrap_optional(param_obj.annotation)
-                            if annotation == int:
-                                kwargs[param_name] = int(parsed_msg_[param_name_])
-                            elif annotation == float:
-                                kwargs[param_name] = float(parsed_msg_[param_name_])
-                            elif annotation == bool:
-                                kwargs[param_name] = bool(parsed_msg_[param_name_])
-                            del parsed_msg_[param_name_]
-                        except (KeyError, ValueError):
-                            # 类型转换失败，命令格式错误
-                            raise InvalidCommandFormatError
-                    else:
-                        # 参数不在解析结果中，使用默认值或 None
-                        if param_name_ not in kwargs:
-                            if param_obj.default is not inspect.Parameter.empty:
-                                kwargs[param_name_] = param_obj.default
-                            else:
-                                kwargs[param_name_] = None
-
-                # 警告：函数缺少 MessageSession 参数（可能导致运行时错误）
-                if no_message_session:
-                    Logger.warning(
-                        f"{command.function.__name__} has no Bot.MessageSession parameter, did you forgot to add it?\n"
-                        "Remember: MessageSession IS NOT Bot.MessageSession"
-                    )
-            else:
-                # 函数只有一个参数，直接传入 MessageSession
-                kwargs[func_params[list(func_params.keys())[0]].name] = msg
+            # 根据命令函数的签名，准备调用参数（含带杠选项到函数参数的映射）
+            kwargs = _build_command_kwargs(command, msg, bot)
 
             # ========== 步骤 5: 显示“正在输入……”状态 ==========
             if msg.session_info.typing_prompt_enabled:
@@ -1427,7 +1531,8 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
                 _typing = True
 
             # ========== 步骤 6: 执行命令函数 ==========
-            await parsed_msg[0].function(**kwargs)
+            async with ModuleRuntimeManager.use(module.module_name):
+                await parsed_msg[0].function(**kwargs)
 
             # 如果函数没有使用 msg.finish，手动结束会话
             raise SessionFinished(msg.sent)
@@ -1441,7 +1546,6 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
                 I18NContext(
                     "parser.command.invalid.syntax",
                     module=command_first_word,
-                    prefix=msg.session_info.prefixes[0],
                     cmd=ActionText(f"{msg.session_info.prefixes[0]}help {command_first_word}"),
                 )
             )
@@ -1477,9 +1581,21 @@ async def _process_tos_abuse_warning(msg: "Bot.MessageSession", e: AbuseWarning)
         temp_ban_counter[_sender_scope_key(msg)] = {"count": 1, "ts": time.time()}
     else:
         err_msg_chain = MessageChain.assign(I18NContext("error.message.prompt"))
-        err_msg_chain.append(Plain(msg.session_info.locale.t_str(str(e))))
+        err_msg_chain += _format_error_detail(msg, msg.session_info.locale.t_str(str(e)))
         err_msg_chain.append(I18NContext("error.message.prompt.noreport"))
         await msg.send_message(err_msg_chain)
+
+
+def _format_error_detail(msg_or_session, text: str) -> MessageChain:
+    """按目标平台能力格式化错误详情。支持 Markdown 时使用 fenced code block。"""
+    session_info = getattr(msg_or_session, "session_info", msg_or_session)
+    if not session_info.support_markdown:
+        return match_kecode(text)
+
+    # 选择比正文中最长反引号序列更长的 fence，避免异常文本意外结束代码块。
+    longest_fence = max((len(match.group(0)) for match in re.finditer(r"`+", text)), default=0)
+    fence = "`" * max(3, longest_fence + 1)
+    return MessageChain.assign(Markdown(f"{fence}\n{text}\n{fence}", disable_joke=True, allow_parse=False))
 
 
 async def _process_send_message_failed(msg: "Bot.MessageSession"):
@@ -1508,7 +1624,7 @@ async def _process_noreport_exception(msg: "Bot.MessageSession", e: NoReportExce
     Logger.exception()
     err_msg_chain = MessageChain.assign(I18NContext("error.message.prompt"))
     err_msg = msg.session_info.locale.t_str(str(e))
-    err_msg_chain += match_kecode(err_msg)
+    err_msg_chain += _format_error_detail(msg, err_msg)
     err_msg_chain.append(I18NContext("error.message.prompt.noreport"))
     await msg.handle_error_signal()
     await msg.send_message(err_msg_chain)
@@ -1528,7 +1644,7 @@ async def _process_external_exception(msg: "Bot.MessageSession", e: Exception):
     Logger.exception()
     err_msg_chain = MessageChain.assign(I18NContext("error.message.prompt"))
     err_msg = msg.session_info.locale.t_str(str(e))
-    err_msg_chain += match_kecode(err_msg)
+    err_msg_chain += _format_error_detail(msg, err_msg)
     err_msg_chain.append(I18NContext("error.message.prompt.external"))
     if bug_report_url:
         err_msg_chain.append(I18NContext("error.message.prompt.address", url=bug_report_url))
@@ -1559,7 +1675,7 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
     # 构建用户错误消息
     err_msg_chain = MessageChain.assign(I18NContext("error.message.prompt"))
     err_msg = msg.session_info.locale.t_str(str(e))
-    err_msg_chain += match_kecode(err_msg)
+    err_msg_chain += _format_error_detail(msg, err_msg)
     err_msg_chain.append(I18NContext("error.message.prompt.report"))
 
     # 添加 bug 报告地址
@@ -1676,7 +1792,8 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
     is_superuser = msg.check_super_user()
 
     # ========== 步骤 2: 收集用户可用的模块列表 ==========
-    available_modules = []
+    available_modules: dict[str, str] = {}
+    available_module_targets: dict[str, list[str]] = {}
     for x in modules:
         # 筛选条件：基础模块或已启用的模块
         if modules[x].base or (x in msg.session_info.enabled_modules):
@@ -1692,11 +1809,19 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
             # 跳过当前平台没有可用命令的模块（如仅含 regex 的模块，不能作为命令调用）
             if not modules[x].command_list.get(msg.session_info.target_from):
                 continue
-            available_modules.append(x)
+            available_modules[x] = x
+            available_module_targets[x] = [x]
+            for alias, target in ModulesManager.modules_aliases.items():
+                if target.split(maxsplit=1)[0] == x:
+                    alias_first_word = alias.split(maxsplit=1)[0]
+                    available_modules.setdefault(alias_first_word, x)
+                    available_module_targets.setdefault(alias_first_word, target.split())
 
     # ========== 步骤 3: 模块名相似度匹配 ==========
     # 使用 rapidfuzz 找出最接近的模块名
-    match_close_module: list = __get_close_matches(command_first_word, available_modules, 1, typo_check_module_score)
+    match_close_module: list = __get_close_matches(
+        command_first_word, list(available_modules), 1, typo_check_module_score
+    )
 
     if match_close_module:
         # 找到了相似的模块
@@ -1718,7 +1843,10 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
                 match_close_module = []
 
     if match_close_module:
-        module: Module = modules[match_close_module[0]]
+        matched_module_name = match_close_module[0]
+        matched_real_module_name = available_modules[matched_module_name]
+        matched_module_target = available_module_targets[matched_module_name]
+        module: Module = modules[matched_real_module_name]
 
         # ========== 步骤 4: 检查模块是否有命令模板 ==========
         none_template = True
@@ -1727,7 +1855,8 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
                 none_template = False
                 break
 
-        command_split = msg.trigger_msg.split(" ")
+        input_command_split = msg.trigger_msg.split(" ")
+        command_split = matched_module_target + input_command_split[1:]
         len_command_split = len(command_split)
 
         # ========== 步骤 5: 命令参数匹配（仅对有模板的模块）==========
@@ -1791,7 +1920,7 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
                 m_split_options = filter(None, re.split(r"(\[.*?\])", match_split))
                 old_command_split = command_split.copy()
                 del old_command_split[0]  # 删除模块名
-                new_command_split = [match_close_module[0]]
+                new_command_split = [matched_real_module_name]
                 for m_ in m_split_options:
                     if m_.startswith("["):  # 如果是可选参数
                         m_split = m_.split(" ")  # 切割可选参数中的空格（说明存在多个子必须参数）
@@ -1834,27 +1963,34 @@ async def _command_typo_check(msg: "Bot.MessageSession", modules, command_first_
                             else:
                                 new_command_split.append(mm)
                 new_command_display = " ".join(new_command_split)
+                if matched_module_name != matched_real_module_name:
+                    target_prefix = " ".join(matched_module_target)
+                    display_suffix = new_command_display[len(target_prefix) :].lstrip()
+                    new_command_display = matched_module_name + (f" {display_suffix}" if display_suffix else "")
                 result = await _typo_confirm(
-                    msg, new_command_display, new_command_split[0], " ".join(new_command_split)
+                    msg,
+                    new_command_display,
+                    matched_real_module_name,
+                    " ".join(new_command_split),
                 )
                 if result:
                     return result
             else:
                 if len_command_split - 1 == 1:
-                    new_command_display = f"{match_close_module[0]} {' '.join(command_split[1:])}"
+                    new_command_display = f"{matched_module_name} {' '.join(input_command_split[1:])}"
                     result = await _typo_confirm(
                         msg,
                         new_command_display,
-                        match_close_module[0],
-                        " ".join([match_close_module[0]] + command_split[1:]),
+                        matched_real_module_name,
+                        " ".join([matched_real_module_name] + command_split[1:]),
                     )
                     if result:
                         return result
         else:
-            new_trigger_msg = match_close_module[0] + (
+            new_trigger_msg = matched_real_module_name + (
                 " " + " ".join(command_split[1:]) if len(command_split) > 1 else ""
             )
-            result = await _typo_confirm(msg, new_trigger_msg, match_close_module[0], new_trigger_msg)
+            result = await _typo_confirm(msg, new_trigger_msg, matched_real_module_name, new_trigger_msg)
             if result:
                 return result
     return None, None, False

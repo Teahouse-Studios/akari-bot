@@ -1,12 +1,22 @@
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, Image as BImage
 from core.component import module
+from core.types import Param
 from core.utils.func import is_int
 from core.utils.image import msgchain2image
-from .libraries.chunithm_apidata import get_info, get_record_df, get_record_lx, update_cover
+from .libraries.chunithm_apidata import get_info, update_cover
 from .libraries.chunithm_best30 import generate as generate_b30
 from .libraries.chunithm_music import TotalList
 from .libraries.chunithm_utils import *
+from .libraries.divingfish_oauth import bind_account, unbind_account
+from .libraries.lxns_oauth import bind_account as bind_lx_account, unbind_account as unbind_lx_account
+from .libraries.source import (
+    GAME_CHUNITHM,
+    SOURCE_DIVING_FISH,
+    SOURCE_LXNS,
+    pick_source,
+    switch_source,
+)
 
 total_list = TotalList()
 
@@ -24,7 +34,7 @@ chu = module(
     "base <constant> [<constant_max>] [-p <page>] {{I18N:maimai.help.base}}",
     options_desc={"-p": "{I18N:maimai.help.option.p}"},
 )
-async def _(msg: Bot.MessageSession, constant: float, constant_max: float | None = None):
+async def _(msg: Bot.MessageSession, constant: float, constant_max: float | None = None, page: str | None = None):
     result_set = []
     if constant <= 0:
         await msg.finish(I18NContext("maimai.message.level_invalid"))
@@ -60,8 +70,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float | None
             )
 
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    get_page = msg.parsed_msg.get("-p", False)
-    page = max(min(int(get_page["<page>"]), total_pages), 1) if get_page and is_int(get_page["<page>"]) else 1
+    page = max(min(int(page), total_pages), 1) if page and is_int(page) else 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
@@ -84,7 +93,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float | None
     "level <level> [-p <page>] {{I18N:maimai.help.level}}",
     options_desc={"-p": "{I18N:maimai.help.option.p}"},
 )
-async def _(msg: Bot.MessageSession, level: str):
+async def _(msg: Bot.MessageSession, level: str, page: str | None = None):
     result_set = []
     data = (await total_list.get()).filter(level=level)
     for music in sorted(data, key=lambda i: int(i.get("id", 0))):
@@ -99,8 +108,7 @@ async def _(msg: Bot.MessageSession, level: str):
                 )
             )
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    get_page = msg.parsed_msg.get("-p", False)
-    page = max(min(int(get_page["<page>"]), total_pages), 1) if get_page and is_int(get_page["<page>"]) else 1
+    page = max(min(int(page), total_pages), 1) if page and is_int(page) else 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
@@ -122,7 +130,7 @@ async def _(msg: Bot.MessageSession, level: str):
 
 
 @chu.command("search <keyword> [-p <page>] {{I18N:maimai.help.search}}")
-async def _(msg: Bot.MessageSession, keyword: str):
+async def _(msg: Bot.MessageSession, keyword: str, page: str | None = None):
     name = keyword.strip()
     result_set = []
     data = (await total_list.get()).filter(title_search=name)
@@ -132,8 +140,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
     for music in sorted(data, key=lambda i: int(i.get("id", 0))):
         result_set.append((music.get("id", ""), music.get("title", "")))
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    get_page = msg.parsed_msg.get("-p", False)
-    page = max(min(int(get_page["<page>"]), total_pages), 1) if get_page and is_int(get_page["<page>"]) else 1
+    page = max(min(int(page), total_pages), 1) if page and is_int(page) else 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
@@ -211,9 +218,8 @@ async def _(msg: Bot.MessageSession, song: str):
 
 @chu.command("id <id> {{I18N:maimai.help.id}}")
 @chu.command("song <song> {{I18N:maimai.help.song}}")
-async def _(msg: Bot.MessageSession, song: str):
-    if "<id>" in msg.parsed_msg:
-        sid = msg.parsed_msg["<id>"]
+async def _(msg: Bot.MessageSession, song: str, sid: Param("<id>", str) = None):
+    if sid:
         music = (await total_list.get()).by_id(sid)
     else:
         if is_int(song):
@@ -255,8 +261,7 @@ async def _(msg: Bot.MessageSession, song: str):
 
 
 @chu.command("random [<diff+level>] {{I18N:maimai.help.random}}")
-async def _(msg: Bot.MessageSession):
-    condit = msg.parsed_msg.get("<diff+level>", "")
+async def _(msg: Bot.MessageSession, condit: Param("<diff+level>", str) = ""):
     level = ""
     diff = ""
     try:
@@ -289,59 +294,63 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("maimai.message.random.failed"))
 
 
-@chu.command("bind df <username> {{I18N:maimai.help.bind.df}}")
-async def _(msg: Bot.MessageSession, username: str):
-    if await get_record_df(msg, {"username": username}, use_cache=False):
-        await DivingProberBindInfo.set_bind_info(union_id=msg.session_info.sender_union_id, username=username)
-        await msg.finish(str(I18NContext("maimai.message.bind.success")) + username)
+@chu.command("bind df {{I18N:maimai.help.bind.df}}")
+async def _(msg: Bot.MessageSession):
+    await bind_account(msg)
 
 
 @chu.command("unbind df {{I18N:maimai.help.unbind}}")
 async def _(msg: Bot.MessageSession):
-    await DivingProberBindInfo.remove_bind_info(union_id=msg.session_info.sender_union_id)
-    await msg.finish(I18NContext("maimai.message.unbind.success"))
+    await unbind_account(msg)
 
 
-if LX_DEVELOPER_TOKEN:
-
-    @chu.command("switch {{I18N:chunithm.help.switch}}")
-    async def _(msg: Bot.MessageSession):
-        if msg.session_info.sender_union_info.sender_data.get("chunithum_record_source", default_source) == "lxns":
-            await msg.session_info.sender_union_info.edit_sender_data("chunithum_record_source", "diving-fish")
-            await msg.finish(I18NContext("maimai.message.switch.df"))
-        else:
-            await msg.session_info.sender_union_info.edit_sender_data("chunithum_record_source", "lxns")
-            await msg.finish(I18NContext("maimai.message.switch.lx"))
-
-    @chu.command("bind lx <friendcode> {{I18N:maimai.help.bind.lx}}")
-    async def _(msg: Bot.MessageSession, friendcode: str):
-        data = await get_record_lx(msg, friendcode, use_cache=False)
-        if data:
-            await LxnsProberBindInfo.set_bind_info(union_id=msg.session_info.sender_union_id, friend_code=friendcode)
-            await msg.finish(str(I18NContext("maimai.message.bind.success")) + data["nickname"])
-
-    @chu.command("unbind lx {{I18N:maimai.help.unbind}}")
-    async def _(msg: Bot.MessageSession):
-        await LxnsProberBindInfo.remove_bind_info(union_id=msg.session_info.sender_union_id)
-        await msg.finish(I18NContext("maimai.message.unbind.success"))
+@chu.command("bind lx [<auth_code>] {{I18N:maimai.help.bind.lx}}")
+async def _(msg: Bot.MessageSession, auth_code: str | None = None):
+    await bind_lx_account(msg, auth_code, ActionText(f"{msg.session_info.prefixes[0]}chunithm bind lx "))
 
 
-@chu.command("b30 {{I18N:chunithm.help.b30}}")
+@chu.command("unbind lx {{I18N:maimai.help.unbind}}")
 async def _(msg: Bot.MessageSession):
-    if msg.session_info.sender_union_info.sender_data.get("chunithum_record_source", default_source) == "lxns":
-        token = await get_lxns_prober_bind_info(msg)
+    await unbind_lx_account(msg)
+
+
+@chu.command("switch {{I18N:chunithm.help.switch}}")
+async def _(msg: Bot.MessageSession):
+    prefix = msg.session_info.prefixes[0]
+    await switch_source(
+        msg,
+        GAME_CHUNITHM,
+        {
+            SOURCE_DIVING_FISH: f"{prefix}chunithm bind df",
+            SOURCE_LXNS: f"{prefix}chunithm bind lx",
+        },
+    )
+
+
+@chu.command("b30 [<user>] {{I18N:chunithm.help.b30}}")
+async def _(msg: Bot.MessageSession, user: str | None = None):
+    username = ""
+    friend_code = ""
+    if pick_source(msg, GAME_CHUNITHM) == SOURCE_LXNS:
+        # 落雪的查询对象是好友码；不填参数时由令牌认出账号。
+        if user and not is_int(user):
+            await msg.finish(I18NContext("maimai.message.friend_code_invalid"))
+        token = None if user else await get_lxns_prober_bind_info(msg)
+        friend_code = user or ""
         source = "Lxns"
     else:
-        token = await get_diving_prober_bind_info(msg)
+        # 填了用户名便查这个玩家，无需绑定。
+        token = None if user else await get_diving_prober_bind_info(msg)
+        username = user or ""
         source = "Diving-Fish"
-    img = await generate_b30(msg, token, source)
+    img = await generate_b30(msg, token, source, username=username, friend_code=friend_code, use_cache=not user)
     if img:
         await msg.finish(BImage(img))
 
 
 @chu.command("update [--no-cover]", required_superuser=True)
-async def _(msg: Bot.MessageSession):
-    if msg.parsed_msg.get("--no-cover", False):
+async def _(msg: Bot.MessageSession, no_cover: bool = False):
+    if no_cover:
         actions = await total_list.update()
     else:
         actions = await update_cover() and await total_list.update()

@@ -329,12 +329,27 @@ class DrawBest:
 
 
 async def generate(
-    msg: Bot.MessageSession, token: Any = None, source: str = "Lxns", use_cache: bool = True
+    msg: Bot.MessageSession,
+    token: Any = None,
+    source: str = "Lxns",
+    username: str = "",
+    friend_code: str = "",
+    use_cache: bool = True,
 ) -> Image.Image | None:
+    """绘制 B30。
+
+    :param msg: 消息会话。
+    :param token: 该用户的水鱼或落雪绑定记录。
+    :param source: 数据源名称，决定走哪一侧的取数流程。
+    :param username: 水鱼用户名；查询他人时由调用方给出。
+    :param friend_code: 落雪好友码；查询他人时由调用方给出。
+    :param use_cache: 是否读写本地缓存。
+    :return: 绘制结果；无数据时为 None。
+    """
     if source == "Lxns":
-        resp = await get_record_lx(msg, token, use_cache)
+        resp = await get_record_lx(msg, token, friend_code, use_cache)
     else:
-        resp = await get_record_df(msg, token, use_cache)
+        resp = await get_record_df(msg, token, username, use_cache)
     if not resp:
         return None
     best = BestList(30)

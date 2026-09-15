@@ -6,11 +6,11 @@ from unittest.mock import patch
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
 from core.builtins.session.tasks import SessionTaskManager
-from core.cooldown import CoolDown, _cd_dict
+from core.utils.cooldown import CoolDown, _cd_dict
 from core.constants import SessionFinished
 from core.database.models import SenderUnionInfo, StoredData, TargetUnionInfo, TargetUnionBind
-from core.game import PlayState
-import core.petal as petal_module
+from core.utils.game import PlayState
+import core.utils.petal as petal_module
 from core.tester import func_case, Tester
 
 

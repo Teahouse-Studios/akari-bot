@@ -1,108 +1,132 @@
 import io
 from datetime import datetime, timezone
 
-from openai import AsyncOpenAI, APITimeoutError, RateLimitError
 from PIL import Image as PILImage
 
 from core.builtins.bot import Bot
-from core.builtins.message.internal import Image, Plain
+from core.builtins.message.internal import ImageElement, Image, Markdown, Plain, PlainElement
+from core.builtins.message.chain import MessageChain
 from modules.ai.config import AiConfig
 from core.constants.exceptions import ExternalException
-from core.dirty_check import check
+from core.utils.dirty_check import check
 from core.logger import Logger
 from core.utils.func import parse_time_string
-from .formatting import parse_markdown, generate_code_snippet, generate_latex, generate_md_table
+from .formatting import parse_markdown, generate_code_snippet, generate_latex, generate_md_table, format_refs
 from .setting import INSTRUCTIONS
-from .tools import TOOLS, tool_function_calls
+from .tools import tool_function_calls
+from .endpoints import build_endpoint, RETRYABLE_EXCEPTIONS
 
-max_tokens = AiConfig.llm_max_tokens
-timeout = AiConfig.llm_timeout
-temperature = AiConfig.llm_temperature
-top_p = AiConfig.llm_top_p
-frequency_penalty = AiConfig.llm_frequency_penalty
-presence_penalty = AiConfig.llm_presence_penalty
+max_iterations = AiConfig.llm_max_calling_iteration
 
-MAX_ITERATIONS = 5
+
+async def _build_user_content(prompt: str | MessageChain) -> list[dict]:
+    elements = MessageChain.assign(prompt).values if isinstance(prompt, str) else prompt.values
+    content = []
+    for element in elements:
+        if isinstance(element, PlainElement):
+            content.append({"type": "text", "text": element.text})
+        elif isinstance(element, ImageElement):
+            try:
+                image_url = await element.get_base64(mime=True)
+            except Exception:
+                Logger.exception(f"Unable to get image {element.path}, skipping this element: ")
+                continue
+            content.append(
+                {
+                    "type": "image_url",
+                    "image_url": {"url": image_url},
+                }
+            )
+    return content
 
 
 async def ask_llm(
     session: Bot.MessageSession,
-    prompt: str,
+    prompt: str | MessageChain,
     model_name: str,
     api_url: str,
     api_key: str,
+    endpoint: str = "openai",
     use_tools: bool = True,
-) -> tuple[list, int, int]:
-    client = AsyncOpenAI(base_url=api_url, api_key=api_key)
+    history: list[dict] | None = None,
+) -> tuple[list, int, int, int, int, list]:
+    client = build_endpoint(endpoint, api_url, api_key, model_name)
 
     tz_ = session.session_info._tz_offset
     now_tz = datetime.now(timezone(parse_time_string(tz_)))
     fmt_now = now_tz.strftime("%Y-%m-%d %H:%M:%S %A") + f"(UTC{tz_})" if tz_ != "+0" else "(UTC)"
 
-    messages = [
+    system_messages = [
         {"role": "system", "content": INSTRUCTIONS},
         {"role": "system", "content": f"Current datetime: {fmt_now}"},
-        {"role": "user", "content": prompt},
+        {
+            "role": "system",
+            "content": f"Session language: {session.session_info.locale.t('language')}. "
+            "Use this language for output unless specified by user.",
+        },
     ]
     custom_instructions = session.session_info.sender_union_info.sender_data.get("ai_custom_instructions")
     if custom_instructions:
-        messages.insert(2, {"role": "system", "content": custom_instructions})
+        system_messages.append({"role": "system", "content": custom_instructions})
+
+    # 延续上下文时，历史对话（不含 system 消息）会被拼接到本次请求之前。
+    conversation = list(history) if history else []
+    conversation.append(
+        {
+            "role": "user",
+            "content": await _build_user_content(prompt),
+        }
+    )
+    messages = [*system_messages, *conversation]
 
     total_input_tokens = 0
+    total_cache_read_tokens = 0
+    total_cache_write_tokens = 0
     total_output_tokens = 0
     content_pieces = []
     tool_choice = "auto" if use_tools else "none"
 
     iterations = 0
-    while iterations <= MAX_ITERATIONS:
+    while iterations <= max_iterations:
         try:
-            completion = await client.chat.completions.create(
-                model=model_name,
-                messages=messages,
-                tool_choice=tool_choice,
-                tools=TOOLS,
-                max_completion_tokens=max_tokens,
-                temperature=temperature,
-                top_p=top_p,
-                frequency_penalty=frequency_penalty,
-                presence_penalty=presence_penalty,
-                timeout=timeout,
-            )
-        except (APITimeoutError, RateLimitError) as e:
+            result = await client.create(messages, tool_choice=tool_choice)
+        except RETRYABLE_EXCEPTIONS as e:
             raise ExternalException(e)
         except Exception as e:
             raise e
 
-        res_msg = completion.choices[0].message
-        total_input_tokens += completion.usage.prompt_tokens
-        total_output_tokens += completion.usage.completion_tokens
+        total_input_tokens += result.input_tokens
+        total_cache_read_tokens += result.cache_read_tokens
+        total_cache_write_tokens += result.cache_write_tokens
+        total_output_tokens += result.output_tokens
 
-        messages.append(res_msg)
-        if res_msg.content:
-            content_pieces.append(res_msg.content)
+        messages.append(result.assistant_message)
+        if result.text:
+            content_pieces.append(result.text)
 
-        if res_msg.tool_calls:
+        if result.tool_calls:
             iterations += 1
-            messages = await tool_function_calls(res_msg.tool_calls, messages)
-
-            if iterations == MAX_ITERATIONS:
+            messages = await tool_function_calls(result.tool_calls, messages)
+            if iterations == max_iterations:
+                Logger.warning("LLM tool calling reached maximum iterations.")
                 messages.append(
                     {
                         "role": "system",
-                        "content": "Warning: Iteration limit reached. Provide the final answer based on the available information and do not attempt to call functions again.",
+                        "content": "Warning: Iteration limit reached. Provide the final answer based on the available information and do not attempt to call tools again.",
                     }
                 )
                 tool_choice = "none"
             continue
         else:
             break
-    else:
-        Logger.warning("LLM function calling reached maximum iterations.")
 
     res = await check("\n\n".join(content_pieces), session=session)
     resm = "".join(m["content"] for m in res)
+    resm = format_refs(session, resm)
 
-    if session.session_info.support_image:
+    if session.session_info.support_markdown and session.session_info.support_markdown_extension:
+        chain = [Markdown(resm)]
+    elif session.session_info.support_image:
         blocks = parse_markdown(resm)
         chain = []
         for block in blocks:
@@ -134,4 +158,14 @@ async def ask_llm(
     else:
         chain = [Plain(resm)]
 
-    return chain, total_input_tokens, total_output_tokens
+    # 仅保留对话部分（去掉每次动态重建的 system 消息与工具迭代警告）作为新的上下文历史。
+    # 所有消息现均为 dict（OpenAI Chat Completions 格式）。
+    new_history = [m for m in messages[len(system_messages) :] if m.get("role") != "system"]
+    return (
+        chain,
+        total_input_tokens,
+        total_output_tokens,
+        total_cache_read_tokens,
+        total_cache_write_tokens,
+        new_history,
+    )

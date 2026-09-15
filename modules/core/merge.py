@@ -11,8 +11,8 @@ from core.database.models import (
     TargetUnionBind,
     TargetUnionInfo,
 )
-from core.retired import RETIRED_SOURCES, RETIRED_TARGETS, enqueue_notice, is_merge_route_allowed
-from core.union_merge import (
+from core.utils.retired import RETIRED_SOURCES, RETIRED_TARGETS, enqueue_notice, is_merge_route_allowed
+from core.utils.union_merge import (
     BIND_CODE_EXPIRED,
     apply_sender_merge,
     apply_target_merge,
@@ -216,7 +216,6 @@ async def _(msg: Bot.MessageSession, code: str):
         await msg.finish(
             I18NContext(
                 "core.message.merge.code.invalid",
-                prefix=msg.session_info.prefixes[0],
                 cmd=ActionText(f"{msg.session_info.prefixes[0]}merge"),
             )
         )
@@ -247,7 +246,6 @@ async def _(msg: Bot.MessageSession, code: str):
         await msg.finish(
             I18NContext(
                 "core.message.merge.code.invalid",
-                prefix=msg.session_info.prefixes[0],
                 cmd=ActionText(f"{msg.session_info.prefixes[0]}merge"),
             )
         )

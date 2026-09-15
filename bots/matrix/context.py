@@ -12,6 +12,7 @@ from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 from core.utils.image_split import image_split
+from core.utils.media import resolve_media_path
 from .client import matrix_bot, homeserver_host
 from .features import features as matrix_features
 from .info import client_name, target_prefix
@@ -205,9 +206,15 @@ class MatrixContextManager(ContextManager):
                 split = [x]
                 if x.allow_split:
                     Logger.info(f"Split image: {str(x)}")
-                    split = await image_split(x)
+                    try:
+                        split = await image_split(x)
+                    except Exception:
+                        Logger.exception(f"Unable to split image {x.path}, skipping this element: ")
+                        split = []
                 for xs in split:
-                    path = await xs.get()
+                    path = await resolve_media_path(xs)
+                    if path is None:
+                        continue
                     with open(path, "rb") as image:
                         filename = Path(path).name
                         filesize = Path(path).stat().st_size
@@ -254,7 +261,9 @@ class MatrixContextManager(ContextManager):
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(xs)}")
                         await _send_msg(content)
             elif isinstance(x, AudioElement):
-                path = x.path
+                path = await resolve_media_path(x)
+                if path is None:
+                    continue
                 filename = Path(path).name
                 filesize = Path(path).stat().st_size
                 mimetype = mimetypes.guess_type(path)[0] or "audio/ogg"
@@ -302,7 +311,9 @@ class MatrixContextManager(ContextManager):
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Audio: {str(x)}")
                 await _send_msg(content)
             elif isinstance(x, VideoElement):
-                path = x.path
+                path = await resolve_media_path(x)
+                if path is None:
+                    continue
                 filename = Path(path).name
                 filesize = Path(path).stat().st_size
                 # 默认 mimetype 可以回退至 "video/mp4"

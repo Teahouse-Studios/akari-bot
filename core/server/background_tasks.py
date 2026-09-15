@@ -13,10 +13,10 @@ import asyncio
 from core.builtins.session.tasks import SessionTaskManager
 from core.constants import Info
 from core.database.models import JobQueuesTable
-from core.ip import fetch_ip_info
+from core.utils.ip import fetch_ip_info
 from core.logger import Logger
 from core.utils.container import ExpiringTempDict
-from core.web_render import check_web_render_status, init_web_render
+from core.utils.web_render import check_web_render_status, init_web_render
 
 
 _background_task: asyncio.Task[None] | None = None

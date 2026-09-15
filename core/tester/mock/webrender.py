@@ -109,7 +109,7 @@ class WebRenderMock:
         """
         if cls._enabled:
             return
-        from core.web_render import web_render
+        from core.utils.web_render import web_render
 
         cls._originals = {name: getattr(web_render, name) for name in cls.PATCHED_METHODS}
 
@@ -146,7 +146,7 @@ class WebRenderMock:
         """恢复被接管的真实方法。"""
         if not cls._enabled:
             return
-        from core.web_render import web_render
+        from core.utils.web_render import web_render
 
         for name, original in cls._originals.items():
             setattr(web_render, name, original)

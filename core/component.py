@@ -6,13 +6,14 @@ from typing import overload
 from apscheduler.triggers.combining import AndTrigger, OrTrigger
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
-from apscheduler.triggers.interval import IntervalTrigger
 
 from core.builtins.parser.args import parse_template
 from core.builtins.types import MessageElement
 from core.config.decorator import _process_class
 from core.constants.exceptions import InvalidTemplatePattern
 from core.loader import ModulesManager
+from core.module_runtime import ModuleRuntimeManager, RuntimeResource
+from core.scheduler import IntervalTrigger
 from core.types import Module
 from core.types.module.component_meta import *
 
@@ -35,6 +36,39 @@ class Bind:
             load: bool = True,
             priority: int = 1,
         ):
+            """
+            绑定模块命令。
+
+            命令模板语法参见 :func:`core.builtins.parser.args.parse_template`。
+            模板中的参数与选项可直接映射为被装饰函数的参数：
+
+            - ``<name>``：位置参数，对应同名函数参数；未提供时使用默认值或 ``None``；
+            - ``[flag]``：标志选项，对应同名函数参数，标注为 ``bool`` 时直接得到选项是否传入；
+            - ``[-b]`` / ``[--foo <bar>]``：带杠选项，对应同名函数参数，参数名中的
+              下划线按连字符匹配（如参数 ``no_cover`` 对应 ``--no-cover``）；
+              带子参数且仅有一个子参数时，直接将该子参数的值传入；
+            - 也可直接使用选项的子参数名，如 ``[-p <page>]`` 对应函数参数 ``page``；
+            - ``-i``、``<address:port>`` 等无法作为函数参数名的模板元素，可用 ``Param``
+              标注指定对应的模板元素，如 ``data: Param("-i", bool) = False``。
+
+            示例::
+
+                @module.command("test [-b] [--foo <bar>]")
+                async def _(msg: Bot.MessageSession, b: bool = False, foo: str | None = None):
+                    ...
+
+            :param command_template: 命令模板，可传入多个模板作为同一命令的多个变体。
+            :param command_templates: 额外的命令模板。
+            :param options_desc: 选项描述，用于生成帮助文档。
+            :param required_admin: 此命令是否需要场景管理员权限。
+            :param required_superuser: 此命令是否仅超级用户可执行。
+            :param required_base_superuser: 此命令是否仅基础超级用户可执行。
+            :param available_for: 此命令支持的平台列表。
+            :param exclude_from: 此命令排除的平台列表。
+            :param load: 是否加载此命令。
+            :param priority: 匹配优先级，数值越大优先级越高。
+            """
+
             def decorator(function):
                 nonlocal command_template
                 if isinstance(command_template, str):
@@ -157,6 +191,76 @@ class Bind:
         on_schedule = schedule
         on_hook = hook
         on_event = event
+
+        def state(
+            self,
+            name: str,
+            *,
+            default=None,
+            default_factory=None,
+            preserve: bool = False,
+            version: int = 1,
+            migrate=None,
+        ):
+            """Declare module-owned in-memory state managed across reloads."""
+            return ModuleRuntimeManager.state(
+                self.module_name,
+                name,
+                default=default,
+                default_factory=default_factory,
+                preserve=preserve,
+                version=version,
+                migrate=migrate,
+            )
+
+        def cache(
+            self,
+            name: str,
+            *,
+            default_factory=dict,
+            version: int = 1,
+        ):
+            """Declare an in-memory cache invalidated when its version changes."""
+            return self.state(
+                name,
+                default_factory=default_factory,
+                preserve=True,
+                version=version,
+            )
+
+        def resource(
+            self,
+            name: str,
+            factory,
+            close=None,
+            *,
+            timeout: float = 10,
+        ) -> RuntimeResource:
+            """Declare a lazy resource owned by the framework-managed runtime."""
+            return ModuleRuntimeManager.resource(
+                self.module_name,
+                name,
+                factory,
+                close,
+                timeout=timeout,
+            )
+
+        def cache_path(self, name: str, *, version: int = 1):
+            """Return a versioned module cache directory managed by the framework."""
+            return ModuleRuntimeManager.cache_path(self.module_name, name, version)
+
+        def cleanup(self, callback, *, name: str | None = None, timeout: float = 10):
+            """Register an idempotent cleanup that runs when this generation stops."""
+            return ModuleRuntimeManager.cleanup(self.module_name, callback, name=name, timeout=timeout)
+
+        def spawn(self, awaitable, *, name: str | None = None, suppress_errors=()):
+            """Create a tracked background task owned by this module runtime."""
+            return ModuleRuntimeManager.spawn(
+                self.module_name,
+                awaitable,
+                name=name,
+                suppress_errors=suppress_errors,
+            )
 
         @overload
         def handle(

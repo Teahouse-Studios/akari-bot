@@ -1,4 +1,4 @@
-"""core.tos TOS 管理系统单元测试。"""
+"""core.utils.tos TOS 管理系统单元测试。"""
 
 import time
 from unittest.mock import patch, AsyncMock
@@ -15,7 +15,7 @@ from core.utils.container import ExpiringTempDict
 async def _test_check_temp_ban_no_ban():
     """check_temp_ban: 未封禁时返回 False"""
     try:
-        from core.tos import check_temp_ban, temp_ban_counter
+        from core.utils.tos import check_temp_ban, temp_ban_counter
 
         temp_ban_counter.clear()
         result = await check_temp_ban("TEST|nonexistent_target")
@@ -27,7 +27,7 @@ async def _test_check_temp_ban_no_ban():
 async def _test_check_temp_ban_with_nested_dict():
     """check_temp_ban: 存储非空 dict 时应返回剩余秒数"""
     try:
-        from core.tos import check_temp_ban, temp_ban_counter
+        from core.utils.tos import check_temp_ban, temp_ban_counter
 
         temp_ban_counter.clear()
         target_id = "TEST|ban_target_1"
@@ -44,7 +44,7 @@ async def _test_check_temp_ban_with_nested_dict():
 async def _test_remove_temp_ban():
     """remove_temp_ban: 应清除封禁记录"""
     try:
-        from core.tos import remove_temp_ban, check_temp_ban, temp_ban_counter
+        from core.utils.tos import remove_temp_ban, check_temp_ban, temp_ban_counter
 
         temp_ban_counter.clear()
         target_id = "TEST|ban_target_2"
@@ -76,10 +76,10 @@ async def _test_abuse_warn_target_sends_message():
     # 若不覆写该判定，本用例断言的发送行为永远不会发生。
     with (
         patch.object(MockMessageSession, "check_super_user", lambda self: False),
-        patch("core.tos.CoreConfig", MockConfig),
-        patch("core.tos.tos_report", new_callable=AsyncMock),
+        patch("core.utils.tos.CoreConfig", MockConfig),
+        patch("core.utils.tos.tos_report", new_callable=AsyncMock),
     ):
-        from core.tos import abuse_warn_target
+        from core.utils.tos import abuse_warn_target
 
         await abuse_warn_target(msg, "test_reason")
 
@@ -89,8 +89,8 @@ async def _test_abuse_warn_target_sends_message():
 async def _test_tos_report_no_targets():
     """tos_report: 无报告场景时不报错"""
     try:
-        with patch("core.tos.report_targets", []):
-            from core.tos import tos_report
+        with patch("core.utils.tos.report_targets", []):
+            from core.utils.tos import tos_report
 
             await tos_report("TEST|sender", "TEST|target", "reason")
         return True
@@ -101,7 +101,7 @@ async def _test_tos_report_no_targets():
 async def _test_temp_ban_counter_type():
     """temp_ban_counter: 应为 ExpiringTempDict 实例"""
     try:
-        from core.tos import temp_ban_counter
+        from core.utils.tos import temp_ban_counter
 
         return isinstance(temp_ban_counter, ExpiringTempDict)
     except Exception:
@@ -111,7 +111,7 @@ async def _test_temp_ban_counter_type():
 async def _test_check_temp_ban_expired():
     """check_temp_ban: 过期的封禁应返回 False"""
     try:
-        from core.tos import check_temp_ban, temp_ban_counter
+        from core.utils.tos import check_temp_ban, temp_ban_counter
 
         temp_ban_counter.clear()
         target_id = "TEST|ban_expired"
@@ -148,7 +148,7 @@ async def _bound_sessions(prefix: str):
 async def _test_temp_ban_shared_by_sender_union():
     """临时封禁不能通过切换同一 Union 下的另一个平台身份绕过。"""
     from core.builtins.parser.message import _tos_temp_ban
-    from core.tos import temp_ban_counter
+    from core.utils.tos import temp_ban_counter
 
     first, second = await _bound_sessions("temp-ban-union")
     temp_ban_counter.clear()
@@ -187,7 +187,7 @@ async def _test_rate_bucket_shared_by_sender_union():
 
 @func_case
 async def test_tos(tester: Tester):
-    """core.tos: TOS 管理系统测试"""
+    """core.utils.tos: TOS 管理系统测试"""
     await tester.test(_test_check_temp_ban_no_ban, "check_temp_ban 未封禁测试")
     await tester.test(_test_check_temp_ban_with_nested_dict, "check_temp_ban 封禁中测试")
     await tester.test(_test_check_temp_ban_expired, "check_temp_ban 过期封禁测试")

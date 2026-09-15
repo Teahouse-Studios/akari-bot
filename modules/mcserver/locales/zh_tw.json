@@ -1,6 +1,6 @@
 {
     "server.help": "取得 Minecraft：Java 版/基岩版伺服器 MOTD。",
-    "server.help.option.p": "列出玩家列表。",
+    "server.help.option.p": "列出玩家清單。",
     "server.help.option.r": "列出原始資訊。",
     "server.message.local_address": "無效的域名或 IP 位址。",
     "server.message.gamemode": "遊戲模式：",

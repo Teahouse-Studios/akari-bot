@@ -21,7 +21,7 @@
     "maimai.help.unbind": "Unbind user.",
     "maimai.message.alias": "Alias of ${title}:",
     "maimai.message.alias.alias_not_found": "No matching aliases were found.",
-    "maimai.message.alias.file_not_found": "Alias file not found. Please initialize by \"${prefix}maimai update\".",
+    "maimai.message.alias.file_not_found": "Alias file not found. Please initialize by \"${cmd}\".",
     "maimai.message.b50.text_prompt": "Here is the Best 50 list of ${user} (Rating ${rating}):",
     "maimai.message.bind.success": "Binding successful: ",
     "maimai.message.chart_not_found": "No matching charts were found.",

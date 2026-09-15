@@ -11,7 +11,7 @@
 5. 清理临时表
 
 使用情形：
-- 从 v4 更新至 v5 时进行数据迁移
+- 从无法直接增量升级的旧数据库转换至当前版本
 - 保留所有历史数据不丢失
 - 自动处理格式差异和类型转换
 """
@@ -30,7 +30,7 @@ from core.database import fetch_module_db
 from core.database.link import get_db_link
 from core.database.models import *
 from core.logger import Logger
-from core.utils.url_policy import GlobalURLAllowlist, GlobalURLBlocklist
+from core.utils.url_audit import GlobalURLAllowlist, GlobalURLBlocklist
 from modules.cytoid.database.models import *
 from modules.maimai.database.models import *
 from modules.phigros.database.models import *

@@ -1,5 +1,7 @@
 """core.builtins.parser 命令解析单元测试。"""
 
+from types import SimpleNamespace
+
 from core.builtins.parser.args import (
     ArgumentPattern,
     DescPattern,
@@ -9,7 +11,15 @@ from core.builtins.parser.args import (
     parse_template,
     templates_to_str,
 )
-from core.builtins.parser.command import CommandParser
+from core.builtins.parser.command import CommandParser, _split_command
+from core.builtins.parser.message import (
+    _build_command_kwargs,
+    _format_error_detail,
+    _resolve_parsed_value,
+    _unwrap_option_value,
+)
+from core.builtins.message.elements import MarkdownElement
+from core.constants.exceptions import InvalidTemplatePattern
 from core.tester import func_case, Tester
 from core.types import Module
 from core.types.module.component_meta import CommandMeta
@@ -133,6 +143,17 @@ def _test_parse_template_optional():
         return False
 
 
+def _test_parse_template_rejects_multi_character_short_option():
+    """短选项不能包含多个字符。"""
+    try:
+        parse_template(["[-abc]"])
+    except InvalidTemplatePattern:
+        return parse_template(["[-a]"]) and parse_template(["[--abc]"])
+    except Exception:
+        return False
+    return False
+
+
 def _test_parse_template_description():
     """测试 parse_template 描述"""
     try:
@@ -214,6 +235,216 @@ def _test_default_command_help_doc():
     }
 
 
+def _test_command_parser_preserves_backslashes():
+    """命令参数中的反斜杠应原样传递给下游。"""
+    module = Module.assign(module_name="parser-test", alias=None, recommend_modules=None, developers=None)
+    module.command_list.add(CommandMeta(command_template=parse_template(["add-regex <pattern>"])))
+    parser = CommandParser(module, ["~"], module_name=module.module_name)
+
+    unquoted = parser.parse(r"parser-test add-regex https://example\.test/\d+\\suffix")[1]
+    quoted = parser.parse(r'parser-test add-regex "https://example\.test/a b"')[1]
+
+    return (
+        unquoted["<pattern>"] == r"https://example\.test/\d+\\suffix"
+        and quoted["<pattern>"] == r"https://example\.test/a b"
+    )
+
+
+def _test_command_parser_preserves_quotes():
+    """命令参数中的成套引号应原样传递给下游。"""
+    module = Module.assign(module_name="parser-test", alias=None, recommend_modules=None, developers=None)
+    module.command_list.add(CommandMeta(command_template=parse_template(["target data edit <k> <v>"])))
+    parser = CommandParser(module, ["~"], module_name=module.module_name)
+
+    double_quoted = parser.parse('parser-test target data edit config {"a": "b"}')[1]
+    single_quoted = parser.parse("parser-test target data edit config {'a': 'b'}")[1]
+    embedded = parser.parse('parser-test target data edit config a"b"c')[1]
+    grouped = parser.parse('parser-test target data edit config "value with space"')[1]
+
+    return (
+        double_quoted["<v>"] == '{"a": "b"}'
+        and single_quoted["<v>"] == "{'a': 'b'}"
+        and embedded["<v>"] == 'a"b"c'
+        and grouped["<v>"] == "value with space"
+    )
+
+
+def _build_option_parser():
+    """构造带选项模板的命令解析器（search / rc 两个子命令）。"""
+    module = Module.assign(module_name="parser-test", alias=None, recommend_modules=None, developers=None)
+    module.command_list.add(
+        CommandMeta(command_template=parse_template(["search <keyword> [-p <page>]", "rc [--legacy]"]))
+    )
+    return CommandParser(module, ["~"], module_name=module.module_name)
+
+
+def _test_command_parser_option_terminator():
+    """`--` 之后的 token 应作为操作数，不再被识别为选项。"""
+    parser = _build_option_parser()
+
+    escaped = parser.parse("parser-test search -- -p")[1]
+    mixed = parser.parse("parser-test search -p 3 -- -v")[1]
+    repeated = parser.parse("parser-test search -- -- -p")[1]
+
+    return (
+        escaped["-p"] is False
+        and escaped["<keyword>"] == "-p"
+        and mixed["-p"] == {"<page>": "3"}
+        and mixed["<keyword>"] == "-v"
+        and repeated["-p"] is False
+        and repeated["<keyword>"] == "-- -p"
+    )
+
+
+def _test_command_parser_option_inline_value():
+    """`--flag=value` / `-p=value` 内联值应等价于「标志 + 值」。"""
+    parser = _build_option_parser()
+
+    plain = parser.parse("parser-test search hello -p 3")[1]
+    short = parser.parse("parser-test search hello -p=3")[1]
+    quoted = parser.parse('parser-test search hello -p="5 1"')[1]
+    empty = parser.parse("parser-test search hello -p=")[1]
+
+    return (
+        short["-p"] == {"<page>": "3"}
+        and short["<keyword>"] == "hello"
+        and short["-p"] == plain["-p"]
+        and quoted["-p"] == {"<page>": "5 1"}
+        and quoted["<keyword>"] == "hello"
+        and empty["-p"] == {"<page>": ""}
+        and empty["<keyword>"] == "hello"
+    )
+
+
+def _test_command_parser_option_missing_value():
+    """选项子参数缺失时按未启用处理，标志作为普通操作数留给值参数；布尔标志不识别内联值。"""
+    parser = _build_option_parser()
+
+    missing = parser.parse("parser-test search hello -p")[1]
+    bool_flag = parser.parse("parser-test rc --legacy")[1]
+    bool_inline = parser.parse("parser-test rc --legacy=1")[1]
+
+    return (
+        missing["-p"] is False
+        and missing["<keyword>"] == "hello -p"
+        and bool_flag["--legacy"] is True
+        and bool_inline["--legacy"] is False
+    )
+
+
+def _test_split_command_quotes():
+    """命令分词：引号包裹整段参数时作为分组符号，其余引号原样保留。"""
+    return (
+        _split_command('parser-test add-regex "multi word" -t') == ["parser-test", "add-regex", "multi word", "-t"]
+        and _split_command('parser-test add-regex {"a": "b"}') == ["parser-test", "add-regex", '{"a":', '"b"}']
+        and _split_command('parser-test add-regex a"b"c') == ["parser-test", "add-regex", 'a"b"c']
+        and _split_command("parser-test add-regex 'multi word'") == ["parser-test", "add-regex", "multi word"]
+        and _split_command('parser-test add-regex "unbalanced') == ["parser-test", "add-regex", '"unbalanced']
+        and _split_command(r"parser-test add-regex https://example\.test/\d+")
+        == [
+            "parser-test",
+            "add-regex",
+            r"https://example\.test/\d+",
+        ]
+    )
+
+
+def _test_split_command_option_quotes():
+    """命令分词：选项内联值处的引号作为分组符号，普通参数中的引号原样保留。"""
+    return (
+        _split_command('parser-test search --foo="a b"') == ["parser-test", "search", "--foo=a b"]
+        and _split_command("parser-test search --lang='zh cn'") == ["parser-test", "search", "--lang=zh cn"]
+        and _split_command("parser-test search -p='3 1'") == ["parser-test", "search", "-p=3 1"]
+        and _split_command('parser-test search --foo="a b"c') == ["parser-test", "search", '--foo="a', 'b"c']
+        and _split_command('parser-test search key="a b"') == ["parser-test", "search", 'key="a', 'b"']
+        and _split_command("parser-test search --foo='a b") == ["parser-test", "search", "--foo='a", "b"]
+    )
+
+
+def _test_error_detail_markdown_format():
+    """支持 Markdown 的平台应将错误详情包装为安全的代码块。"""
+    msg = SimpleNamespace(session_info=SimpleNamespace(support_markdown=True))
+    chain = _format_error_detail(msg, "failure: `value`")
+    return (
+        len(chain.values) == 1
+        and isinstance(chain.values[0], MarkdownElement)
+        and chain.values[0].text == "```\nfailure: `value`\n```"
+        and chain.values[0].allow_parse is False
+    )
+
+
+def _test_unwrap_option_value():
+    """选项子参数解包：仅有一个子参数时取该子参数的值，其余原样返回。"""
+    return (
+        _unwrap_option_value({"<bar>": "baz"}) == "baz"
+        and _unwrap_option_value({}) == {}
+        and _unwrap_option_value({"<start>": "1", "<end>": "9"}) == {"<start>": "1", "<end>": "9"}
+        and _unwrap_option_value(True) is True
+        and _unwrap_option_value(False) is False
+    )
+
+
+def _test_resolve_parsed_value():
+    """命令参数取值：位置参数、标志、带杠选项与选项子参数的映射。"""
+    cases = [
+        ({"<pagename>": "abc"}, "pagename", (True, "abc")),
+        ({"list": True}, "list", (True, True)),
+        ({"-b": True}, "b", (True, True)),
+        ({"-b": False}, "b", (True, False)),
+        ({"--foo": {"<bar>": "baz"}}, "foo", (True, "baz")),
+        ({"--no-cover": True}, "no_cover", (True, True)),
+        ({"--legacy": False}, "legacy", (True, False)),
+        ({"-p": {"<page>": "3"}}, "page", (True, "3")),
+        ({"-p": {"<page>": "1 3"}}, "page", (True, "1 3")),
+        ({}, "missing", (False, None)),
+    ]
+    for parsed_msg, param_name, expected in cases:
+        if _resolve_parsed_value(param_name, parsed_msg) != expected:
+            return False
+    return True
+
+
+def _test_build_command_kwargs():
+    """命令参数构建：带杠选项注入函数参数、类型转换与默认值回退。"""
+
+    class FakeBot:
+        class MessageSession:
+            pass
+
+    async def command(msg: FakeBot.MessageSession, b: bool = False, foo: str | None = None, page: int = 1):
+        pass
+
+    async def single(msg: FakeBot.MessageSession):
+        pass
+
+    command_meta = SimpleNamespace(function=command)
+    single_meta = SimpleNamespace(function=single)
+
+    provided = SimpleNamespace(parsed_msg={"-b": True, "--foo": {"<bar>": "baz"}, "-p": {"<page>": "3"}})
+    if _build_command_kwargs(command_meta, provided, FakeBot) != {
+        "msg": provided,
+        "b": True,
+        "foo": "baz",
+        "page": 3,
+    }:
+        return False
+
+    missing = SimpleNamespace(parsed_msg={"-b": False, "--foo": False, "-p": False})
+    if _build_command_kwargs(command_meta, missing, FakeBot) != {
+        "msg": missing,
+        "b": False,
+        "foo": None,
+        "page": 1,
+    }:
+        return False
+
+    single_msg = SimpleNamespace(parsed_msg={"-b": True})
+    if _build_command_kwargs(single_meta, single_msg, FakeBot) != {"msg": single_msg}:
+        return False
+
+    return True
+
+
 @func_case
 async def test_parser_args(tester: Tester):
     """core.builtins.parser.args: 参数解析测试"""
@@ -231,5 +462,16 @@ async def test_parser_args(tester: Tester):
     await tester.test(_test_templates_to_str, "templates_to_str 测试")
     await tester.test(_test_templates_to_str_with_desc, "templates_to_str 带描述测试")
     await tester.test(_test_default_command_help_doc, "无文档模块默认命令帮助测试")
+    await tester.test(_test_split_command_quotes, "命令分词引号测试")
+    await tester.test(_test_split_command_option_quotes, "命令分词选项内联值引号测试")
+    await tester.test(_test_command_parser_preserves_quotes, "命令参数引号保留测试")
+    await tester.test(_test_command_parser_option_terminator, "命令选项终止符测试")
+    await tester.test(_test_command_parser_option_inline_value, "命令选项内联值测试")
+    await tester.test(_test_command_parser_option_missing_value, "命令选项缺少值测试")
+    await tester.test(_test_command_parser_preserves_backslashes, "命令参数反斜杠保留测试")
+    await tester.test(_test_error_detail_markdown_format, "Markdown 错误详情代码块测试")
+    await tester.test(_test_unwrap_option_value, "选项子参数解包测试")
+    await tester.test(_test_resolve_parsed_value, "命令参数取值映射测试")
+    await tester.test(_test_build_command_kwargs, "命令参数构建与选项注入测试")
 
     return tester

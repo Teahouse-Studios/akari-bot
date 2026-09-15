@@ -27,7 +27,7 @@ KNOWN_INDIRECT_KEYS = {
 }
 
 # 上述键的 cmd 实际由该文件中的 issue_code() 补上
-INDIRECT_PROVIDER = "core/union_merge.py"
+INDIRECT_PROVIDER = "core/utils/union_merge.py"
 
 
 def _iter_call_args(source: str, key: str):

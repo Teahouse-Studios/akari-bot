@@ -11,6 +11,7 @@ llm_temperature = 1.0 # 大語言模型的溫度取樣，範圍 0 到 2 之間�
 llm_top_p = 1.0 # 大語言模型的核取樣，範圍 0 到 1 之間。不建議與 temperature 同時修改。
 llm_frequency_penalty = 0.0 # 大語言模型的頻率懲罰，範圍 -2 到 2 之間。
 llm_presence_penalty = 0.0 # 大語言模型的存在懲罰，範圍 -2 到 2 之間。
+llm_max_calling_iteration = 5 # 限制大語言模型的最大工具呼叫疊代次數。
 
 [module_ai_secret]
 # 模組的金鑰組態部分，此處的值若意外出現在傳送的訊息中，機器人會嘗試攔截。但請務必提防洩漏。

@@ -8,12 +8,13 @@ from cpuinfo import get_cpu_info
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import ActionText, Plain, FormattedTime, I18NContext, Url
+from core.builtins.message.internal import ActionText, Plain, FormattedTime, I18NContext, Markdown, Url
 from core.component import module
 from core.config.base import CoreConfig
 from core.constants import all_locales_path, cache_path, lang_list, weblate_lang_codes
 from core.database.models import SenderUnionBind, SenderUnionInfo
 from core.i18n import get_available_locales, Locale
+from core.queue.diagnostics import DAEMON_LABEL, gather_process_usage, PEERS_LABEL
 from core.utils.bash import run_sys_command
 from core.utils.http import get_url
 
@@ -62,8 +63,57 @@ ping = module("ping", base=True, doc=True)
 started_time = time.time()
 
 
+async def _build_process_usage_lines(msg: Bot.MessageSession) -> list[str]:
+    """构造各进程内存占用的展示行；无任何数据时返回空列表。"""
+    usages, failures = await gather_process_usage()
+    if not usages and not failures:
+        return []
+    locale = msg.session_info.locale
+    # 平台名与 jobqueue-hub 为专有名词，仅占位标签需本地化。
+    labels = {
+        DAEMON_LABEL: "core.message.ping.process.daemon",
+        PEERS_LABEL: "core.message.ping.process.peers",
+    }
+
+    def display_name(name: str) -> str:
+        return locale.t(labels[name]) if name in labels else name
+
+    lines = []
+    for usage in usages:
+        lines.append(
+            locale.t(
+                "core.message.ping.process",
+                name=display_name(usage.name),
+                pid=usage.pid if usage.pid is not None else "-",
+                memory=int(usage.memory / (1024 * 1024)),
+                metric=usage.metric,
+            )
+        )
+    for failure in failures:
+        lines.append(
+            locale.t(
+                "core.message.ping.process.unavailable",
+                name=display_name(failure.name),
+                reason=failure.reason,
+            )
+        )
+    return lines
+
+
+def _format_ping_result(msg: Bot.MessageSession, result: MessageChain) -> MessageChain:
+    """在支持 Markdown 的平台将 ping 信息整理到代码块中。"""
+    if not msg.session_info.support_markdown:
+        return result
+
+    rendered = result.as_sendable(msg.session_info)
+    body = rendered.to_str(connector="\n")
+    return MessageChain.assign(Markdown(f"```\n{body}\n```", disable_joke=True, allow_parse=False))
+
+
 @ping.command("{{I18N:core.help.ping}}")
 async def _(msg: Bot.MessageSession):
+    from core.queue.server import JobQueueServer
+
     result = MessageChain.assign(Plain("Pong!"))
 
     td_seconds = time.time() - started_time
@@ -85,6 +135,7 @@ async def _(msg: Bot.MessageSession):
                 bot_running_time=timediff,
                 python_version=platform.python_version(),
                 web_render_status=web_render_status,
+                jobqueue_backend=JobQueueServer.backend.name,
                 cpu_brand=get_cpu_info()["brand_raw"],
                 cpu_percent=cpu_percent,
                 ram=ram,
@@ -99,6 +150,9 @@ async def _(msg: Bot.MessageSession):
                 disable_joke=True,
             )
         )
+        if process_lines := await _build_process_usage_lines(msg):
+            header = msg.session_info.locale.t("core.message.ping.process.list")
+            result.append(Plain("\n".join([header, *process_lines]), disable_joke=True, allow_parse=False))
     else:
         disk_percent = psutil.disk_usage("/").percent
         result.append(
@@ -111,7 +165,7 @@ async def _(msg: Bot.MessageSession):
                 disable_joke=True,
             )
         )
-    await msg.finish(result)
+    await msg.finish(_format_ping_result(msg, result))
 
 
 admin = module(
@@ -164,7 +218,6 @@ async def _(msg: Bot.MessageSession):
             I18NContext(
                 "core.message.admin.invalid",
                 sender=msg.session_info.sender_from,
-                prefix=msg.session_info.prefixes[0],
                 cmd=ActionText(f"{msg.session_info.prefixes[0]}whoami"),
             )
         )
@@ -203,7 +256,6 @@ async def _(msg: Bot.MessageSession):
             I18NContext(
                 "core.message.admin.invalid",
                 sender=msg.session_info.sender_from,
-                prefix=msg.session_info.prefixes[0],
                 cmd=ActionText(f"{msg.session_info.prefixes[0]}whoami"),
             )
         )
@@ -244,7 +296,6 @@ def build_locale_overview(msg: Bot.MessageSession, locale_url: str | None) -> li
         I18NContext("core.message.locale.prompt", lang="{I18N:language}"),
         I18NContext(
             "core.message.locale.set.prompt",
-            prefix=msg.session_info.prefixes[0],
             cmd=ActionText(f"{msg.session_info.prefixes[0]}locale "),
         ),
         *build_locale_list(msg),
@@ -328,7 +379,7 @@ async def _(msg: Bot.MessageSession, lang: str):
         await msg.finish([I18NContext("core.message.locale.set.invalid"), *build_locale_list(msg)])
 
 
-@locale.command("reload", required_superuser=True)
+@locale.command("reload {{I18N:core.help.locale.reload}}", required_superuser=True)
 async def _(msg: Bot.MessageSession):
     err = build_locale_snapshot(list(lang_list.keys()), all_locales_path, "akari-bot")
     if len(err) == 0:

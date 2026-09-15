@@ -3,11 +3,11 @@ import orjson
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Url
 from core.component import module
-from core.dirty_check import check_bool, rickroll
+from core.utils.dirty_check import check_bool, rickroll
 from core.utils.func import is_int
 from core.utils.http import get_url
 from core.utils.image import cb64imglst
-from core.web_render import web_render, ElementScreenshotOptions
+from core.utils.web_render import web_render, ElementScreenshotOptions
 
 t = module(
     "tweet",

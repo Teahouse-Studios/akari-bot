@@ -37,7 +37,6 @@ async def finish_with_start_wiki_not_set(msg: Bot.MessageSession) -> NoReturn:
     prompts = [
         I18NContext(
             "wiki.message.set.not_set",
-            prefix=msg.session_info.prefixes[0],
             cmd=ActionText(f"{msg.session_info.prefixes[0]}wiki set"),
         )
     ]

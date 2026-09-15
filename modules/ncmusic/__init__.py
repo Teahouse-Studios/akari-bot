@@ -25,14 +25,14 @@ ncmusic = module(
     "search <keyword> [--legacy] {{I18N:ncmusic.help.search}}",
     options_desc={"--legacy": "{I18N:help.option.legacy}"},
 )
-async def _(msg: Bot.MessageSession, keyword: str):
+async def _(msg: Bot.MessageSession, keyword: str, legacy: bool = False):
     if not API:
         raise ConfigValueError("{I18N:error.config.secret.not_found}")
     url = f"{API}/search?keywords={keyword}"
     result = await get_url(url, 200, fmt="json")
     result_data = result.get("result", {})
     song_count = result_data.get("songCount", 0)
-    legacy = True
+    legacy_show = True
 
     if song_count == 0:
         await msg.finish(I18NContext("ncmusic.message.search.not_found"))
@@ -40,7 +40,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
     songs = result_data.get("songs", [])[:SEARCH_LIMIT]
 
     send_msg = MessageChain.assign(I18NContext("ncmusic.message.search.result"))
-    if not msg.parsed_msg.get("--legacy", False) and msg.session_info.support_image:
+    if not legacy and msg.session_info.support_image:
         data = [
             [
                 str(i),
@@ -72,7 +72,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
 
         imgs = await image_table_render(tables)
         if imgs:
-            legacy = False
+            legacy_show = False
             for img in imgs:
                 send_msg.append(Image(img))
             if song_count > SEARCH_LIMIT:
@@ -103,7 +103,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
             else:
                 await msg.finish(I18NContext("ncmusic.message.search.invalid.non_digital"))
 
-    if legacy:
+    if legacy_show:
         for i, song in enumerate(songs, start=1):
             song_msg = f"{i} - {song.get('name', '')}"
             if song.get("transNames"):

@@ -15,7 +15,7 @@ DBDATA_PER_PAGE = 10
 _eval = module("eval", required_superuser=True, base=True, doc=True, load=dev_mode)
 
 
-@_eval.command("<expr>")
+@_eval.command("<expr> {{I18N:core.help.eval}}")
 async def _(msg: Bot.MessageSession, expr: str):
     try:
         await msg.finish(str(eval(expr, {"msg": msg, "Bot": Bot})), disable_secret_check=True)  # skipcq
@@ -26,15 +26,15 @@ async def _(msg: Bot.MessageSession, expr: str):
 db = module("database", alias="db", required_superuser=True, base=True, doc=True, load=dev_mode)
 
 
-@db.command("model")
+@db.command("model {{I18N:core.help.database.model}}")
 async def _(msg: Bot.MessageSession):
     models_path = ["core.database.models"] + fetch_module_db()
     table_lst = sorted(get_model_names(models_path))
     await msg.finish([I18NContext("core.message.database.list")] + table_lst)
 
 
-@db.command("field <model> [--legacy]")
-async def _(msg: Bot.MessageSession, model: str):
+@db.command("field <model> [--legacy] {{I18N:core.help.database.field}}")
+async def _(msg: Bot.MessageSession, model: str, legacy: bool = False):
     models_path = ["core.database.models"] + fetch_module_db()
     result = get_model_fields(models_path, model)
 
@@ -44,7 +44,7 @@ async def _(msg: Bot.MessageSession, model: str):
     headers = list(result[0].keys())
     data = [[str(v) for v in r.values()] for r in result]
 
-    if not msg.parsed_msg.get("--legacy", False) and msg.session_info.support_image:
+    if not legacy and msg.session_info.support_image:
         table = ImageTable(data=data, headers=headers, session_info=msg.session_info, disable_joke=True)
         imgs = await image_table_render(table)
     else:
@@ -58,8 +58,8 @@ async def _(msg: Bot.MessageSession, model: str):
         await msg.finish(Plain(table_str, disable_joke=True))
 
 
-@db.command("exec <sql> [-p <page>] [--legacy]")
-async def _(msg: Bot.MessageSession, sql: str):
+@db.command("exec <sql> [-p <page>] [--legacy] {{I18N:core.help.database.exec}}")
+async def _(msg: Bot.MessageSession, sql: str, page: str | None = None, legacy: bool = False):
     try:
         conn = Tortoise.get_connection("default")
         if sql.upper().startswith("SELECT"):
@@ -72,9 +72,8 @@ async def _(msg: Bot.MessageSession, sql: str):
             data = [[str(v) for v in r.values()] for r in result]
 
             total_pages = (len(data) + DBDATA_PER_PAGE - 1) // DBDATA_PER_PAGE
-            get_page = msg.parsed_msg.get("-p", False)
 
-            page = max(min(int(get_page["<page>"]), total_pages), 1) if get_page and is_int(get_page["<page>"]) else 1
+            page = max(min(int(page), total_pages), 1) if page and is_int(page) else 1
             start_index = (page - 1) * DBDATA_PER_PAGE
             end_index = page * DBDATA_PER_PAGE
             page_data = data[start_index:end_index]
@@ -83,7 +82,7 @@ async def _(msg: Bot.MessageSession, sql: str):
                 "core.message.database.pages", page=page, total_pages=total_pages, data_count=len(data)
             )
 
-            if not msg.parsed_msg.get("--legacy", False) and msg.session_info.support_image:
+            if not legacy and msg.session_info.support_image:
                 table = ImageTable(data=page_data, headers=headers, session_info=msg.session_info, disable_joke=True)
                 imgs = await image_table_render(table)
             else:

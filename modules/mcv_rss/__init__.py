@@ -15,7 +15,7 @@ from core.logger import Logger
 from core.scheduler import IntervalTrigger
 from core.utils.http import get_url
 from core.utils.storedata import get_stored_list, update_stored_list
-from core.web_render import web_render, SourceOptions
+from core.utils.web_render import web_render, SourceOptions
 
 SNAPSHOT_PATTERN = re.compile(r"^(?P<major>[\d.]+)-snapshot-?(?P<patch>\d+)$")
 OLD_SNAPSHOT_PATTERN = re.compile(r"^(1\d)|(2[0-5])[w|W]\d{2}[A-Fa-f]$")
@@ -60,8 +60,6 @@ async def get_article(version):
     return "", ""
 
 
-trigger_times = 60 if not CoreConfig.slower_schedule else 180
-
 startup_mute = [True, True]
 
 mcv_rss = module(
@@ -101,7 +99,7 @@ mcbv_rss = module(
 #     await fetch.post_message("mcv_jira_rss", **ctx.args)
 
 
-@mcv_rss.schedule(IntervalTrigger(seconds=trigger_times))
+@mcv_rss.schedule(IntervalTrigger(seconds=60))
 async def _():
     global startup_mute
     url = "https://piston-meta.mojang.com/mc/game/version_manifest.json"

@@ -9,18 +9,18 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.session.info import SessionInfo
 from core.constants.exceptions import SessionFinished
 from core.database.models import TargetUnionInfo, TargetUnionBind
+from core.module_runtime import ModuleRuntimeManager
 from core.server.lifecycle import BackgroundTaskLifecycle
 from core.tester import func_case, Tester
 from core.tester.mock.session import MockMessageSession
 from modules.core.bind import (
     _close_handshake,
     _complete_channel_handshake,
-    _handshake_tasks,
     _pending_confirms,
     _pending_probes,
     _respond_probe,
     _start_handshake,
-    cancel_bind_handshake_tasks,
+    cleanup_bind_handshake_state,
 )
 
 PROBE_PATTERN = re.compile(r"bind channel (probe|confirm) (\S+)")
@@ -406,7 +406,7 @@ async def _test_expiry_task_creation_failure_rolls_back_handshake():
     msg.hold = AsyncMock()
     msg.release = AsyncMock()
 
-    with patch("modules.core.bind.asyncio.create_task", side_effect=RuntimeError("loop closed")):
+    with patch("core.module_runtime.asyncio.create_task", side_effect=RuntimeError("loop closed")):
         try:
             await _start_handshake(msg)
         except RuntimeError:
@@ -416,27 +416,27 @@ async def _test_expiry_task_creation_failure_rolls_back_handshake():
 
 async def _test_handshake_cleanup_cancels_expiry_and_releases():
     """测试 bind auto - 生命周期清理取消超时任务并释放 pending context"""
-    await cancel_bind_handshake_tasks()
+    await cleanup_bind_handshake_state()
     msg = await _session("CANCELTASK|Group|1")
     msg.hold = AsyncMock()
     msg.release = AsyncMock()
 
     await _start_handshake(msg)
-    active = any(not task.done() for task in _handshake_tasks) and bool(_pending_probes)
-    await cancel_bind_handshake_tasks()
+    runtime = ModuleRuntimeManager.get_or_create("bind")
+    active = any(not task.done() for task in runtime.tasks) and bool(_pending_probes)
+    await runtime.stop("test")
+    runtime.activate()
     await asyncio.sleep(0)
     return (
-        active
-        and not _pending_probes
-        and not _pending_confirms
-        and not _handshake_tasks
-        and msg.release.await_count == 1
+        active and not _pending_probes and not _pending_confirms and not runtime.tasks and msg.release.await_count == 1
     )
 
 
 async def _test_handshake_cleanup_is_registered():
-    spec = BackgroundTaskLifecycle._cleanup_hooks.get("module:bind-handshake")
-    return spec is not None and spec.callback is cancel_bind_handshake_tasks
+    runtime = ModuleRuntimeManager.get_or_create("bind")
+    return "module:bind-handshake" not in BackgroundTaskLifecycle._cleanup_hooks and any(
+        spec.callback is cleanup_bind_handshake_state for spec in runtime.cleanup_specs
+    )
 
 
 @func_case

@@ -1,7 +1,9 @@
 """Telegram 消息聚合构建器单元测试。"""
 
 import html
+import os
 import re
+import tempfile
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
@@ -136,14 +138,21 @@ async def _test_button_only_message_gets_placeholder():
 
 
 async def _test_collects_text_mentions_and_media():
-    chain = MessageChain.assign(
-        [Plain("hello"), Mention("Telegram|2"), Image("image.png", allow_split=False), Audio("audio.ogg")]
-    )
-    with (
-        patch("bots.telegram.message_builder.FSInputFile", side_effect=lambda path: SimpleNamespace(path=path)),
-        patch("core.builtins.message.elements.ImageElement.get", new=AsyncMock(return_value="image.bin")),
-    ):
-        content = await collect_telegram_content(_session(), chain)
+    # 音频元素要求底层文件真实存在，此处使用临时文件
+    with tempfile.NamedTemporaryFile(suffix=".ogg", delete=False) as audio_file:
+        audio_file.write(b"audio fixture")
+        audio_path = audio_file.name
+    try:
+        chain = MessageChain.assign(
+            [Plain("hello"), Mention("Telegram|2"), Image("image.png", allow_split=False), Audio(audio_path)]
+        )
+        with (
+            patch("bots.telegram.message_builder.FSInputFile", side_effect=lambda path: SimpleNamespace(path=path)),
+            patch("core.builtins.message.elements.ImageElement.get", new=AsyncMock(return_value="image.bin")),
+        ):
+            content = await collect_telegram_content(_session(), chain)
+    finally:
+        os.unlink(audio_path)
     return (
         content.text == 'hello\n<a href="tg://user?id=2">@2</a>'
         and len(content.images) == 1
@@ -285,6 +294,21 @@ async def _test_final_media_group_attaches_markup_by_edit():
     return messages[-1].edit_reply_markup.await_args.kwargs["reply_markup"] is markup
 
 
+async def _test_unavailable_media_elements_are_skipped():
+    """图片/音频底层文件缺失时不产生媒体，仅保留文本操作。"""
+    chain = MessageChain.assign(
+        [Plain("hello"), Image("missing-image-fixture.png"), Audio("missing-audio-fixture.mp3")]
+    )
+    content = await collect_telegram_content(_session(), chain)
+    operations = build_telegram_operations(content)
+    return (
+        content.text == "hello"
+        and content.images == []
+        and content.audio == []
+        and operations == [TelegramTextOperation(text="hello")]
+    )
+
+
 @func_case
 async def test_telegram_message_builder(tester: Tester):
     """Telegram 消息聚合构建器。"""
@@ -301,6 +325,7 @@ async def test_telegram_message_builder(tester: Tester):
     await tester.test(_test_button_rows_are_collected, "ButtonElement 收集按钮行")
     await tester.test(_test_button_only_message_gets_placeholder, "纯按钮消息补充不可见正文")
     await tester.test(_test_collects_text_mentions_and_media, "收集文本、提及与媒体")
+    await tester.test(_test_unavailable_media_elements_are_skipped, "不可用的媒体元素被跳过")
     await tester.test(_test_single_photo_uses_caption, "单图片使用 caption")
     await tester.test(_test_media_groups_and_types, "媒体分组与类型隔离")
     await tester.test(_test_caption_overflow_becomes_text_operation, "caption 溢出转普通文本")

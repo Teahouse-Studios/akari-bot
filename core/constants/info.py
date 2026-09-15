@@ -39,6 +39,10 @@ class Info:
     :param command_parsed: 已处理命令数量。
     :param message_parsed: 已处理消息数量。
     :param client_name: 客户端名称。
+    :param peer_id: 当前 JobQueue 进程实例 ID。
+    :param peer_role: 当前 JobQueue 进程角色。
+    :param daemon_pid: 守护进程 PID，由守护进程显式传入，独立运行时为 None。
+    :param hub_pid: 内置 JobQueue Hub 子进程 PID，未启用内置 Hub 时为 None。
     :param dirty_word_check: 是否启用文本过滤。
     :param web_render_status: WebRender 状态。
     :param use_url_manager: 是否启用 URLManager。
@@ -51,6 +55,12 @@ class Info:
     command_parsed = 0
     message_parsed = 0
     client_name = ""
+    # JobQueue 运行实例 ID 每次进程启动都不同；client_name 仍表示可竞争消费的服务组。
+    peer_id = ""
+    peer_role = ""
+    # 守护进程与内置 Hub 非 JobQueue Peer，其 PID 须由守护进程在 spawn 时显式传入。
+    daemon_pid: int | None = None
+    hub_pid: int | None = None
     dirty_word_check = False
     web_render_status = False
     use_url_manager = False

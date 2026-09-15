@@ -3,8 +3,8 @@ from simpleeval import simple_eval
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
-from core.game import PlayState, GAME_EXPIRED
-from core.petal import cost_petal, gained_petal, lost_petal
+from core.utils.game import PlayState, GAME_EXPIRED
+from core.utils.petal import cost_petal, gained_petal, lost_petal
 from core.utils.func import is_int
 from core.utils.random import Random
 

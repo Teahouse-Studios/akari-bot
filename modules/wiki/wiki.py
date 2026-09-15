@@ -5,21 +5,30 @@ import filetype
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import ButtonFrame, I18NContext, Plain, Image, Audio, Video, Url
+from core.builtins.message.internal import ButtonFrame, I18NContext, Markdown, Plain, Image, Audio, Video, Url
 from core.builtins.session.internal import MessageSession, confirm_prompt_key
 from core.builtins.utils import confirm_command
 from core.component import module
-from core.constants.exceptions import AbuseWarning, SessionFinished, WaitCancelException
+from core.constants.exceptions import (
+    AbuseWarning,
+    SessionContextUnavailable,
+    SessionFinished,
+    WaitCancelException,
+)
 from core.logger import Logger
-from core.server.lifecycle import BackgroundTaskLifecycle
 from core.utils.func import is_int
 from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
-from core.utils.url_policy import evaluate_url_policy
+from core.utils.url_audit import evaluate_url_policy
 from core.utils.button import build_button_rows
 from .database.models import WikiSiteInfo, WikiTargetInfo
 from .utils.mapping import generate_screenshot_v2_blocklist
+from .utils.disambiguation import (
+    build_disambiguation_table,
+    build_disambiguation_text,
+    is_disambiguation_overlong,
+)
 from .utils.recommend import finish_with_start_wiki_not_set
 from .utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
 from .utils.utils import check_svg
@@ -40,30 +49,6 @@ wiki = module(
 )
 
 
-# 模块重载会复用原模块字典。保留任务集合，确保重载前创建的后台任务仍有强引用，
-# 且完成回调能够从同一个集合中移除它们。
-_wiki_background_tasks: set[asyncio.Task] = globals().get("_wiki_background_tasks", set())
-
-
-def _wiki_background_done(task: asyncio.Task) -> None:
-    """Drop a finished task and explicitly retrieve its exception."""
-    _wiki_background_tasks.discard(task)
-    if task.cancelled():
-        return
-    error = task.exception()
-    if error is None or isinstance(error, (SessionFinished, WaitCancelException)):
-        return
-    Logger.error(f"Wiki background task {task.get_name()!r} failed: {error!r}")
-
-
-def _create_wiki_background_task(awaitable, *, name: str) -> asyncio.Task:
-    """Create and retain one Wiki background task until it finishes."""
-    task = asyncio.create_task(awaitable, name=name)
-    _wiki_background_tasks.add(task)
-    task.add_done_callback(_wiki_background_done)
-    return task
-
-
 async def _release_background_session(session: Bot.MessageSession) -> None:
     """Release a held context without hiding the background operation's result."""
     try:
@@ -80,15 +65,25 @@ async def _run_background_with_release(session: Bot.MessageSession, awaitable):
         await _release_background_session(session)
 
 
-async def _start_background_with_release(session: Bot.MessageSession, awaitable_factory, *, name: str) -> asyncio.Task:
+async def _start_background_with_release(
+    session: Bot.MessageSession, awaitable_factory, *, name: str
+) -> asyncio.Task | None:
     """Hold a session, then start a retained background operation with rollback on spawn failure."""
-    await session.hold()
+    try:
+        await session.hold()
+    except SessionContextUnavailable:
+        Logger.debug("Wiki background skipped because the session context is unavailable.")
+        return None
     awaitable = None
     runner = None
     try:
         awaitable = awaitable_factory()
         runner = _run_background_with_release(session, awaitable)
-        task = _create_wiki_background_task(runner, name=name)
+        task = wiki.spawn(
+            runner,
+            name=name,
+            suppress_errors=(SessionContextUnavailable, SessionFinished, WaitCancelException),
+        )
     except BaseException:
         # create_task() may fail before taking ownership of either coroutine. Close both explicitly
         # to avoid coroutine-leak warnings, then undo the already successful hold.
@@ -109,16 +104,6 @@ async def _start_background_with_release(session: Bot.MessageSession, awaitable_
         await asyncio.gather(task, return_exceptions=True)
         raise
     return task
-
-
-async def cancel_wiki_background_tasks() -> None:
-    """Cancel and drain every retained Wiki task before server resources are closed."""
-    current = asyncio.current_task()
-    tasks = {task for task in _wiki_background_tasks if task is not current and not task.done()}
-    for task in tasks:
-        task.cancel()
-    if tasks:
-        await asyncio.gather(*tasks, return_exceptions=True)
 
 
 async def _gather_background(*awaitables):
@@ -163,6 +148,25 @@ def _build_forum_callback(page: PageInfo):
             await query_pages(msg, title=topics[display], start_wiki_api=api)
 
     return _callback
+
+
+def _build_disambiguation_output(msg: Bot.MessageSession, page: PageInfo, interwiki_prefix: str) -> MessageChain:
+    blocks = page.disambiguation_blocks
+    command_prefix = msg.session_info.prefixes[0]
+    if is_disambiguation_overlong(blocks):
+        if (
+            msg.session_info.client_name == "QQBot"
+            and msg.session_info.support_markdown_extension
+            and msg.session_info.support_action_text
+        ):
+            return build_disambiguation_table(
+                blocks,
+                command_prefix,
+                msg.session_info.locale.t("wiki.message.disambiguation.table.header"),
+                interwiki_prefix,
+            )
+        return MessageChain.create()
+    return build_disambiguation_text(blocks, command_prefix, interwiki_prefix)
 
 
 def _build_not_found_choice_prompt(
@@ -224,19 +228,24 @@ async def finish_if_wiki_blocked(msg: Bot.MessageSession, api_link: str) -> None
     await msg.finish(I18NContext("wiki.message.invalid.blocked"))
 
 
+def _format_page_desc(desc: str, session: Bot.MessageSession | QueryInfo):
+    """按平台能力格式化页面摘要，Markdown 会话使用块引用。"""
+    if isinstance(session, MessageSession) and session.session_info.support_markdown:
+        lines = desc.splitlines() or [""]
+        # Markdown 元素后再拼接其它元素时，这个尾换行会与 MessageChain
+        # 的分隔换行组成空行，避免 QQ 手机端把下一行吞进引用块。
+        return Markdown("\n".join(f"> {line}" if line else ">" for line in lines) + "\n")
+    return Plain(desc)
+
+
 @wiki.command()
 async def _(msg: Bot.MessageSession):
     await query_pages(msg)
 
 
 @wiki.command("<pagename> [-l <lang>] {{I18N:wiki.help}}", options_desc={"-l": "{I18N:wiki.help.option.l}"})
-async def _(msg: Bot.MessageSession, pagename: str):
+async def _(msg: Bot.MessageSession, pagename: str, lang: str | None = None):
     pagename = _normalize_page_name(pagename)
-    get_lang = msg.parsed_msg.get("-l", False)
-    if get_lang:
-        lang = get_lang["<lang>"]
-    else:
-        lang = None
     await query_pages(msg, pagename, lang=lang)
 
 
@@ -244,18 +253,13 @@ async def _(msg: Bot.MessageSession, pagename: str):
     "id <pageid> [-l <lang>] {{I18N:wiki.help.id}}",
     options_desc={"-l": "{I18N:wiki.help.option.l}"},
 )
-async def _(msg: Bot.MessageSession, pageid: str):
+async def _(msg: Bot.MessageSession, pageid: str, lang: str | None = None):
     iw = None
     if match_iw := re.match(r"(.*?):(.*)", pageid):
         iw = match_iw.group(1)
         pageid = match_iw.group(2)
     if not is_int(pageid):
         await msg.finish(I18NContext("wiki.message.id.invalid"))
-    get_lang = msg.parsed_msg.get("-l", False)
-    if get_lang:
-        lang = get_lang["<lang>"]
-    else:
-        lang = None
     await query_pages(msg, pageid=pageid, iw=iw, lang=lang)
 
 
@@ -265,6 +269,61 @@ async def _(msg: Bot.MessageSession):
 
 
 async def query_pages(
+    session: Bot.MessageSession | QueryInfo,
+    title: str | list | tuple | None = None,
+    pageid: str | None = None,
+    iw: str | None = None,
+    lang: str | None = None,
+    preset_message: MessageChain | None = None,
+    start_wiki_api: str | None = None,
+    template: bool = False,
+    mediawiki: bool = False,
+    use_prefix: bool = True,
+    inline_mode: bool = False,
+    random_page: bool = False,
+):
+    """在查询全过程中保持平台上下文，避免慢请求期间被消息清理流程释放。"""
+    if not isinstance(session, MessageSession):
+        return await _query_pages_impl(
+            session,
+            title=title,
+            pageid=pageid,
+            iw=iw,
+            lang=lang,
+            preset_message=preset_message,
+            start_wiki_api=start_wiki_api,
+            template=template,
+            mediawiki=mediawiki,
+            use_prefix=use_prefix,
+            inline_mode=inline_mode,
+            random_page=random_page,
+        )
+
+    try:
+        await session.hold()
+    except SessionContextUnavailable:
+        Logger.debug("Wiki query skipped because the session context is unavailable.")
+        return None
+    try:
+        return await _query_pages_impl(
+            session,
+            title=title,
+            pageid=pageid,
+            iw=iw,
+            lang=lang,
+            preset_message=preset_message,
+            start_wiki_api=start_wiki_api,
+            template=template,
+            mediawiki=mediawiki,
+            use_prefix=use_prefix,
+            inline_mode=inline_mode,
+            random_page=random_page,
+        )
+    finally:
+        await _release_background_session(session)
+
+
+async def _query_pages_impl(
     session: Bot.MessageSession | QueryInfo,
     title: str | list | tuple | None = None,
     pageid: str | None = None,
@@ -465,8 +524,10 @@ async def query_pages(
                         )
                         plain_slice.append(I18NContext("wiki.message.section.rendering"))
                     else:
-                        if r.desc:
-                            plain_slice.append(Plain(r.desc))
+                        if isinstance(session, Bot.MessageSession) and r.is_disambiguation and r.disambiguation_blocks:
+                            plain_slice.extend(_build_disambiguation_output(session, r, iw_prefix))
+                        elif r.desc:
+                            plain_slice.append(_format_page_desc(r.desc, session))
 
                     if r.link:
                         plain_slice.append(Url(r.link, trusted=True if r.info.is_allowed else None))
@@ -488,13 +549,7 @@ async def query_pages(
                                         ),
                                         "content_mode": r.has_template_doc
                                         or r.title.split(":")[0] in ["User"]
-                                        or (
-                                            r.templates
-                                            and (
-                                                "Template:Disambiguation" in r.templates
-                                                or "Template:Version disambiguation" in r.templates
-                                            )
-                                        )
+                                        or r.is_disambiguation
                                         or r.is_forum_topic,
                                     }
                                 }
@@ -554,8 +609,8 @@ async def query_pages(
                                         ImageTable(
                                             session_data,
                                             [
-                                                str(I18NContext("wiki.message.table.header.id")),
-                                                str(I18NContext("wiki.message.table.header.section")),
+                                                session.t("wiki.message.table.header.id"),
+                                                session.t("wiki.message.table.header.section"),
                                             ],
                                         )
                                     )
@@ -683,7 +738,7 @@ async def query_pages(
                     elif r.id != -1:
                         plain_slice.append(I18NContext("wiki.message.id.not_found", id=str(r.id)))
                     if r.desc:
-                        plain_slice.append(r.desc)
+                        plain_slice.append(_format_page_desc(r.desc, session))
                     if r.invalid_namespace and r.before_title:
                         plain_slice.append(
                             I18NContext(
@@ -909,14 +964,10 @@ async def query_pages(
                         lang=lang,
                     )
 
-        try:
+        async def _bgtask():
+            await _gather_background(image_and_audio(), wait_confirm(), infobox(), section())
 
-            async def _bgtask():
-                await _gather_background(image_and_audio(), wait_confirm(), infobox(), section())
-
-            await _start_background_with_release(session, _bgtask, name="wiki-query-background")
-        except ValueError:
-            Logger.debug("Error occurred while holding session, skip.")
+        await _start_background_with_release(session, _bgtask, name="wiki-query-background")
 
     else:
         return {
@@ -957,10 +1008,3 @@ async def auto_get_custom_iw_list(ctx: Bot.ModuleHookContext):
     if not target:
         return []
     return list(target.interwikis.keys())
-
-
-BackgroundTaskLifecycle.register_cleanup(
-    "module:wiki-background",
-    cancel_wiki_background_tasks,
-    label="Wiki background tasks",
-)

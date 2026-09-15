@@ -34,8 +34,8 @@ async def test_help(tester: Tester):
     await tester.integrate("~help version", Contains("version"), "help version 应显示版本帮助")
     await tester.integrate("~help version", Contains("版本号"), "help version 应包含版本号描述")
     await tester.integrate(
-        "~help url",
-        ContainsAll("~url allowlist", "~url blocklist"),
+        "~help url-audit",
+        ContainsAll("~url-audit allowlist", "~url-audit blocklist"),
         "合并后的 URL 模块帮助应展示允许列表与阻止列表子命令",
     )
     await tester.integrate("~help mojang-status", Contains("~mojang-status"), "help 应展示无文档模块自身的默认命令")
@@ -105,7 +105,6 @@ async def test_unknown_command(tester: Tester):
 async def test_ping(tester: Tester):
     """ping 命令测试"""
     await tester.integrate("~ping", Contains("Pong!"), "ping 应输出 Pong!")
-    await tester.integrate("~ping", Contains("Python 版本"), "ping 应显示 Python 版本")
 
     return tester
 

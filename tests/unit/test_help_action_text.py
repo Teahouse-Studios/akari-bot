@@ -95,7 +95,7 @@ async def _session(target_suffix: str, support_action_text: bool = True):
         features=Features(
             support_action_text=support_action_text,
             support_markdown=True,
-            support_markdown_table=True,
+            support_markdown_extension=True,
         ),
     )
 
@@ -108,9 +108,10 @@ class _FakeSession:
 
 
 class _ImageHelpSession(_FakeSession):
-    def __init__(self, session_info, parsed_msg=None):
+    def __init__(self, session_info):
         super().__init__(session_info)
-        self.parsed_msg = parsed_msg or {}
+        # 选项已由解析器转成函数参数注入，这里仅保持属性存在
+        self.parsed_msg = {}
         self.finished_message = None
 
     async def finish(self, message, **kwargs):
@@ -167,7 +168,7 @@ async def _test_image_help_precedes_action_text_fallback():
         features=Features(
             support_image=True,
             support_action_text=True,
-            support_markdown_table=False,
+            support_markdown_extension=False,
         ),
     )
     msg = _ImageHelpSession(session_info)
@@ -206,14 +207,14 @@ async def _test_image_flag_overrides_markdown_table():
         features=Features(
             support_image=True,
             support_action_text=True,
-            support_markdown_table=True,
+            support_markdown_extension=True,
         ),
     )
-    msg = _ImageHelpSession(session_info, parsed_msg={"--image": True})
+    msg = _ImageHelpSession(session_info)
     generated = [Image("help.png")]
     try:
         with patch("modules.core.help.help_generator", new=AsyncMock(return_value=generated)) as generator:
-            await help_overview(msg)
+            await help_overview(msg, image=True)
     except SessionFinished:
         pass
     sendable = msg.finished_message.as_sendable(session_info).values if msg.finished_message else []
@@ -518,7 +519,7 @@ async def _test_qqbot_admin_help_includes_disabled_modules():
             support_action_text=True,
             support_button=True,
             support_markdown=True,
-            support_markdown_table=True,
+            support_markdown_extension=True,
             support_rss=True,
         ),
     )
@@ -559,7 +560,7 @@ async def _test_qqbot_superuser_help_header():
             support_action_text=True,
             support_button=True,
             support_markdown=True,
-            support_markdown_table=True,
+            support_markdown_extension=True,
         ),
     )
     msg = _OverviewSession(session_info, is_admin=True, is_superuser=True)
@@ -584,7 +585,7 @@ async def _test_qqbot_non_admin_help_keeps_module_list_button():
             support_action_text=True,
             support_button=True,
             support_markdown=True,
-            support_markdown_table=True,
+            support_markdown_extension=True,
             support_rss=True,
         ),
     )
@@ -622,7 +623,7 @@ async def _test_help_without_enable_requirement_shows_all_modules_as_enabled():
             support_action_text=True,
             support_button=True,
             support_markdown=True,
-            support_markdown_table=True,
+            support_markdown_extension=True,
         ),
     )
     session_info.enabled_modules = ["dice"]
@@ -658,7 +659,6 @@ async def _test_qqbot_admin_legacy_help_keeps_legacy_scope():
     )
     session_info.enabled_modules = ["dice"]
     msg = _OverviewSession(session_info, is_admin=True)
-    msg.parsed_msg = {"--legacy": True}
     modules = {
         "help": _module("help", base=True),
         "coin": _module("coin"),
@@ -666,7 +666,7 @@ async def _test_qqbot_admin_legacy_help_keeps_legacy_scope():
     }
     try:
         with patch("modules.core.help.ModulesManager.return_modules_list", return_value=modules):
-            await help_overview(msg)
+            await help_overview(msg, legacy=True)
     except SessionFinished:
         pass
     rendered = msg.finished_message.to_str()
@@ -689,7 +689,7 @@ async def _test_qqbot_module_list_hides_toggles_from_non_admin():
             support_action_text=True,
             support_button=True,
             support_markdown=True,
-            support_markdown_table=True,
+            support_markdown_extension=True,
             support_rss=True,
         ),
     )
@@ -730,7 +730,7 @@ async def _test_qqbot_module_list_keeps_toggles_for_admin():
         features=Features(
             support_action_text=True,
             support_markdown=True,
-            support_markdown_table=True,
+            support_markdown_extension=True,
         ),
     )
     session_info.enabled_modules = ["dice"]
@@ -897,7 +897,7 @@ async def _test_hint_not_glued_to_module_list():
 
 
 async def _test_table_shape():
-    """测试表格的行列数：高度封顶，宽度随模块数增长"""
+    """在扩列边界前后同时校验高度、列数和末行补齐。"""
     session_info = await _session("help_table_shape")
     msg = _FakeSession(session_info)
     cases = {
@@ -908,9 +908,14 @@ async def _test_table_shape():
         4: (3, 2),
         13: (3, 5),
         25: (3, 9),
+        29: (3, 10),
         30: (3, 10),
+        31: (4, 8),
+        39: (4, 10),
         40: (4, 10),
+        41: (5, 9),
         66: (7, 10),
+        199: (20, 10),
     }
     for count, (columns, rows) in cases.items():
         names = [f"m{i}" for i in range(count)]
@@ -924,39 +929,9 @@ async def _test_table_shape():
         if lines[1] != "|" + "---|" * columns:
             Logger.error(f"{count} modules should render {columns} columns, got {lines[1]!r}")
             return False
-    return True
-
-
-async def _test_table_never_exceeds_max_rows():
-    """测试任何模块数下高度都不突破上限
-
-    高度失控正是上一版三列不限行被否掉的原因，此处守住不再复发。
-    """
-    session_info = await _session("help_table_height")
-    msg = _FakeSession(session_info)
-    for count in range(1, 200):
-        names = [f"m{i}" for i in range(count)]
-        lines = [
-            line for line in _render_lines(session_info, build_module_table(msg, [(TABLE_TITLE_KEY, names)])) if line
-        ]
         if len(lines) - 2 > TABLE_MAX_ROWS:
             Logger.error(f"{count} modules produced {len(lines) - 2} rows, over the limit of {TABLE_MAX_ROWS}")
             return False
-    return True
-
-
-async def _test_table_rows_are_uniform():
-    """测试各行列数一致，末行不足处补空单元格
-
-    markdown 要求整张表的列数齐平，末行漏补会使该行连同表格一并渲染失败。
-    """
-    session_info = await _session("help_table_pad")
-    msg = _FakeSession(session_info)
-    for count in range(1, 30):
-        names = [f"m{i}" for i in range(count)]
-        lines = [
-            line for line in _render_lines(session_info, build_module_table(msg, [(TABLE_TITLE_KEY, names)])) if line
-        ]
         widths = {line.count("|") for line in lines}
         if len(widths) != 1:
             Logger.error(f"{count} modules produced ragged rows: {lines}")
@@ -1241,9 +1216,7 @@ async def test_clickable_modules(tester: Tester):
     await tester.test(_test_rendered_layout, "渲染后分行测试")
     await tester.test(_test_multi_group_separation, "组间换行测试")
     await tester.test(_test_hint_not_glued_to_module_list, "提示语不粘连测试")
-    await tester.test(_test_table_shape, "表格行列数测试")
-    await tester.test(_test_table_never_exceeds_max_rows, "表格高度封顶测试")
-    await tester.test(_test_table_rows_are_uniform, "表格列数齐平测试")
+    await tester.test(_test_table_shape, "表格扩列边界、高度封顶与末行补齐测试")
     await tester.test(_test_table_cells_are_clickable, "表格单元格可点击测试")
     await tester.test(_test_table_empty_returns_nothing, "表格空列表测试")
     await tester.test(_test_table_does_not_end_inline, "表格纯文本收尾测试")

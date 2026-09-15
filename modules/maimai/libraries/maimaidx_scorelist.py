@@ -228,7 +228,7 @@ class DrawLevelList:
 async def _get_level_process(
     msg: Bot.MessageSession, payload: dict, level: str, goal: str | None = None, use_cache: bool = True
 ) -> tuple[dict[str, list[str]], list[tuple[str, int]]]:
-    res = await get_total_record(msg, payload, use_cache)
+    res = await get_total_record(msg, use_cache)
     records: list = res["records"]
 
     song_played = []

@@ -6,6 +6,7 @@ import time
 from contextlib import redirect_stderr
 from io import StringIO
 from pathlib import Path
+from unittest.mock import patch
 from uuid import uuid4
 
 from core.i18n import Locale, build_locale_snapshot, connect_locale_snapshot
@@ -20,7 +21,11 @@ def _test_locale_snapshot_reload():
     """测试语言重载 - 发布新快照并保留上一份可用快照。"""
     namespace = f"akari-bot-test-{uuid4().hex}"
     try:
-        with tempfile.TemporaryDirectory(prefix="akari_locale_reload_") as directory:
+        with (
+            tempfile.TemporaryDirectory(prefix="akari_locale_reload_") as directory,
+            patch("akari_bot_i18n.i18n.time", wraps=time) as clock,
+        ):
+            clock.monotonic.return_value = time.monotonic()
             locale_file = Path(directory) / "zh_cn.json"
             _write_locale(locale_file, "before")
 
@@ -39,7 +44,7 @@ def _test_locale_snapshot_reload():
             if build_locale_snapshot(["zh_cn"], [directory], namespace):
                 return False
             # Reader 会定期检查共享 manifest，无需恢复旧的队列广播或显式重连。
-            time.sleep(1.1)
+            clock.monotonic.return_value += 1.1
             if locale.t("snapshot.value", fallback=False, locale_failed_prompt=False) != "after!":
                 return False
             second_generation = connect_locale_snapshot(namespace)

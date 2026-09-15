@@ -21,6 +21,7 @@ from core.builtins.message.elements import (
 )
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
+from core.utils.media import resolve_media_path
 
 
 @define
@@ -83,14 +84,10 @@ async def build_discord_payloads(session_info: SessionInfo, message: MessageChai
             if element.client == client_name and session_info.target_from == target_channel_prefix:
                 text_parts.append(f"<@{element.id}>")
             inline_pending = False
-        elif isinstance(element, ImageElement):
-            files.append(discord.File(await element.get()))
-            inline_pending = False
-        elif isinstance(element, AudioElement):
-            files.append(discord.File(element.path))
-            inline_pending = False
-        elif isinstance(element, VideoElement):
-            files.append(discord.File(element.path))
+        elif isinstance(element, (ImageElement, AudioElement, VideoElement)):
+            media_path = await resolve_media_path(element)
+            if media_path is not None:
+                files.append(discord.File(media_path))
             inline_pending = False
         elif isinstance(element, EmbedElement):
             embed, embed_files = await convert_embed(element, session_info, attachment_prefix=f"embed-{embed_index}")

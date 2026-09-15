@@ -323,7 +323,7 @@ def _test_markdown_row_follows_setting() -> bool:
 def _test_invalid_prompt_row() -> bool:
     """「模块不存在」提示是场景域的开关，取值随场景设置反转"""
     on = _row_by_label(build_target_rows(_make_msg()), "“模块不存在”提示")
-    if not on or on.command != "setup invalid_module_prompt":
+    if not on or on.command != "setup invalid-module-prompt":
         Logger.error(f"The target panel should carry the invalid-module switch, got {on}")
         return False
     if on.value != "已开启":

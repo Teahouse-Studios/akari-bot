@@ -2,18 +2,20 @@
 
 import asyncio
 from types import SimpleNamespace
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, parse_qsl, urlsplit
 from unittest.mock import AsyncMock, patch
 
 import core.database as database
+import tortoise.context as tortoise_context
 from core.database.models import JobQueuesTable
 from core.database.link import prepare_db_link
-from core.queue.base import QueueTaskManager
 from core.queue.server import JobQueueServer
+from core.queue.transport import PROTOCOL_VERSION
 from core.scheduler import Scheduler, SchedulerLifecycle
 from core.tester import Tester, func_case
 from core.types import Module
 from core.types.module.component_meta import ScheduleMeta
+from tortoise.context import TortoiseContext
 
 from apscheduler.triggers.interval import IntervalTrigger
 
@@ -25,16 +27,23 @@ def _query_fields(link: str) -> dict[str, list[str]]:
 def _test_sqlite_defaults_are_added():
     link = prepare_db_link("sqlite://database/save.db")
     fields = _query_fields(link)
-    return fields.get("journal_mode") == ["WAL"] and fields.get("busy_timeout") == ["30000"]
+    keys = [key for key, _ in parse_qsl(urlsplit(link).query)]
+    return (
+        fields.get("journal_mode") == ["WAL"]
+        and fields.get("busy_timeout") == ["30000"]
+        and keys.index("busy_timeout") < keys.index("journal_mode")
+    )
 
 
 def _test_sqlite_explicit_fields_are_preserved():
-    link = prepare_db_link("sqlite://database/save.db?busy_timeout=1000&journal_mode=DELETE&cache_size=2000")
+    link = prepare_db_link("sqlite://database/save.db?journal_mode=DELETE&cache_size=2000&busy_timeout=1000")
     fields = _query_fields(link)
+    keys = [key for key, _ in parse_qsl(urlsplit(link).query)]
     return (
         fields.get("busy_timeout") == ["1000"]
         and fields.get("journal_mode") == ["DELETE"]
         and fields.get("cache_size") == ["2000"]
+        and keys.index("busy_timeout") < keys.index("journal_mode")
     )
 
 
@@ -163,30 +172,114 @@ async def _test_cancelled_init_closes_partial_connections():
     return False
 
 
-async def _test_reload_closes_old_connections_before_reinitializing():
-    """热重载须先关闭旧连接，成功初始化的新连接必须保持可用。"""
+async def _test_init_db_clears_task_local_tortoise_context():
+    """Server 启动后任务应继承空 context，统一走可替换的 global fallback。"""
+    context = TortoiseContext()
+    context.__enter__()
     old_modules_db_list = database.Temp.data.get("modules_db_list")
-    closed = False
+    try:
+        with (
+            patch.object(database, "fetch_module_db", return_value=[]),
+            patch.object(database.Tortoise, "init", new=AsyncMock(return_value=context)),
+        ):
+            result = await database.init_db()
+        return result and tortoise_context._current_context.get() is None and context._token is None
+    finally:
+        if context._token is not None:
+            context.__exit__(None, None, None)
+        if old_modules_db_list is None:
+            database.Temp.data.pop("modules_db_list", None)
+        else:
+            database.Temp.data["modules_db_list"] = old_modules_db_list
+
+
+async def _test_activate_db_reload_clears_inherited_old_context():
+    """发布新数据库时不得继续把旧 context 固定到 reload 任务。"""
+    old_context = TortoiseContext()
+    new_context = TortoiseContext()
+    previous_global = tortoise_context._global_context
+    token = tortoise_context._current_context.set(old_context)
+    prepared = database.PreparedDatabaseReload(
+        context=new_context,
+        previous_context=old_context,
+        database_list=[],
+    )
+    try:
+        database.activate_db_reload(prepared)
+        return (
+            prepared.activated
+            and tortoise_context._global_context is new_context
+            and tortoise_context._current_context.get() is None
+        )
+    finally:
+        tortoise_context._global_context = previous_global
+        tortoise_context._current_context.reset(token)
+
+
+async def _test_task_created_after_init_uses_replaceable_global_context():
+    """初始化后创建的任务不得复制旧 context，必须动态读取 global fallback。"""
+    old_context = TortoiseContext()
+    new_context = TortoiseContext()
+    previous_global = tortoise_context._global_context
+    token = tortoise_context._current_context.set(None)
+    tortoise_context._global_context = old_context
+    release = asyncio.Event()
+    started = asyncio.Event()
+
+    async def child():
+        inherited = tortoise_context._current_context.get()
+        started.set()
+        await release.wait()
+        return inherited, tortoise_context.get_current_context()
+
+    task = asyncio.create_task(child())
+    prepared = database.PreparedDatabaseReload(
+        context=new_context,
+        previous_context=old_context,
+        database_list=[],
+    )
+    try:
+        await started.wait()
+        database.activate_db_reload(prepared)
+        release.set()
+        inherited, resolved = await task
+        return inherited is None and resolved is new_context
+    finally:
+        release.set()
+        if not task.done():
+            task.cancel()
+        await asyncio.gather(task, return_exceptions=True)
+        tortoise_context._global_context = previous_global
+        tortoise_context._current_context.reset(token)
+
+
+async def _test_reload_activates_prepared_context_before_closing_previous():
+    """热重载必须先完整构建新 context，再原子激活并关闭旧 context。"""
+    old_modules_db_list = database.Temp.data.get("modules_db_list")
+    prepared = object()
     calls = []
 
-    async def close_connections():
-        nonlocal closed
-        closed = True
-        calls.append("close")
+    async def prepare(models):
+        calls.append(("prepare", models))
+        return prepared
 
-    async def initialize(**kwargs):
-        calls.append(("init", kwargs, closed))
-        return closed
+    def activate(value):
+        calls.append(("activate", value))
+
+    async def close_previous(value):
+        calls.append(("close_previous", value))
 
     try:
         with (
-            patch.object(database.Tortoise, "close_connections", new=close_connections),
-            patch.object(database, "init_db", new=initialize),
+            patch.object(database, "prepare_db_reload", new=prepare),
+            patch.object(database, "activate_db_reload", new=activate),
+            patch.object(database, "close_previous_db_context", new=close_previous),
         ):
             result = await database.reload_db(db_models=["modules.example.database.models"])
         return result is True and calls == [
-            "close",
-            ("init", {"db_models": ["modules.example.database.models"]}, True),
+            ("prepare", ["modules.example.database.models"]),
+            ("activate", prepared),
+            ("close_previous", prepared),
         ]
     finally:
         if old_modules_db_list is None:
@@ -195,31 +288,30 @@ async def _test_reload_closes_old_connections_before_reinitializing():
             database.Temp.data["modules_db_list"] = old_modules_db_list
 
 
-async def _test_reload_restores_previous_models_after_failure():
-    """新模型初始化失败时须重新载入上一次成功的模型集合。"""
+async def _test_reload_failure_does_not_activate_partial_context():
+    """新 context 准备失败时旧数据库必须保持激活且不得发布半成品。"""
     old_modules_db_list = database.Temp.data.get("modules_db_list")
-    previous_models = ["modules.previous.database.models"]
-    database.Temp.data["modules_db_list"] = previous_models
     calls = []
 
-    async def close_connections():
-        calls.append("close")
+    async def prepare(models):
+        calls.append(("prepare", models))
+        return None
 
-    async def initialize(**kwargs):
-        calls.append(("init", kwargs))
-        return kwargs.get("load_module_db") is False
+    def activate(value):
+        calls.append(("activate", value))
+
+    async def close_previous(value):
+        calls.append(("close_previous", value))
 
     try:
         with (
-            patch.object(database.Tortoise, "close_connections", new=close_connections),
-            patch.object(database, "init_db", new=initialize),
+            patch.object(database, "prepare_db_reload", new=prepare),
+            patch.object(database, "activate_db_reload", new=activate),
+            patch.object(database, "close_previous_db_context", new=close_previous),
         ):
             result = await database.reload_db(db_models=["modules.broken.database.models"])
         return result is False and calls == [
-            "close",
-            ("init", {"db_models": ["modules.broken.database.models"]}),
-            "close",
-            ("init", {"load_module_db": False, "db_models": previous_models}),
+            ("prepare", ["modules.broken.database.models"]),
         ]
     finally:
         if old_modules_db_list is None:
@@ -233,35 +325,33 @@ async def _test_reload_waits_for_other_queue_handlers():
     old_modules_db_list = database.Temp.data.get("modules_db_list")
     started = asyncio.Event()
     release = asyncio.Event()
-    initialized = asyncio.Event()
+    prepare_called = asyncio.Event()
 
     async def handler():
         started.set()
         await release.wait()
 
-    async def close_connections():
-        return None
-
-    async def initialize(**kwargs):
-        initialized.set()
-        return True
+    async def prepare(models):
+        prepare_called.set()
+        return object()
 
     handler_task = asyncio.create_task(handler(), name="test-database-reload-handler")
     JobQueueServer._process_tasks.add(handler_task)
     await asyncio.wait_for(started.wait(), timeout=1)
     try:
         with (
-            patch.object(database.Tortoise, "close_connections", new=close_connections),
-            patch.object(database, "init_db", new=initialize),
+            patch.object(database, "prepare_db_reload", new=prepare),
+            patch.object(database, "activate_db_reload"),
+            patch.object(database, "close_previous_db_context", new=AsyncMock()),
         ):
             reload_task = asyncio.create_task(database.reload_db())
             await asyncio.sleep(0)
             await asyncio.sleep(0)
-            waited = not initialized.is_set() and not reload_task.done()
+            waited = not prepare_called.is_set() and not reload_task.done()
             release.set()
             await handler_task
             result = await asyncio.wait_for(reload_task, timeout=1)
-        return waited and result is True and initialized.is_set()
+        return waited and result is True and prepare_called.is_set()
     finally:
         release.set()
         if not handler_task.done():
@@ -275,11 +365,11 @@ async def _test_reload_waits_for_other_queue_handlers():
 
 
 async def _test_reload_cancels_scheduler_jobs_before_closing_connections():
-    """数据库重载须先等待 schedule 的取消清理，再关闭 Tortoise。"""
+    """数据库重载须先等待 schedule 的取消清理，再准备新 context。"""
     module_name = "__test_database_scheduler_maintenance"
     started = asyncio.Event()
     stopped = asyncio.Event()
-    close_saw_stopped = []
+    prepare_saw_stopped = []
 
     async def scheduled():
         started.set()
@@ -288,11 +378,9 @@ async def _test_reload_cancels_scheduler_jobs_before_closing_connections():
         finally:
             stopped.set()
 
-    async def close_connections():
-        close_saw_stopped.append(stopped.is_set())
-
-    async def initialize(**kwargs):
-        return True
+    async def prepare(models):
+        prepare_saw_stopped.append(stopped.is_set())
+        return object()
 
     module = Module.assign(module_name=module_name, alias=None, recommend_modules=None, developers=None)
     module._db_load = True
@@ -304,11 +392,12 @@ async def _test_reload_cancels_scheduler_jobs_before_closing_connections():
     try:
         await asyncio.wait_for(started.wait(), timeout=1)
         with (
-            patch.object(database.Tortoise, "close_connections", new=close_connections),
-            patch.object(database, "init_db", new=initialize),
+            patch.object(database, "prepare_db_reload", new=prepare),
+            patch.object(database, "activate_db_reload"),
+            patch.object(database, "close_previous_db_context", new=AsyncMock()),
         ):
             result = await database.reload_db()
-        return result is True and stopped.is_set() and task.done() and close_saw_stopped == [True]
+        return result is True and stopped.is_set() and task.done() and prepare_saw_stopped == [True]
     finally:
         if not task.done():
             task.cancel()
@@ -322,24 +411,24 @@ async def _test_reload_keeps_pumping_remote_results():
     old_is_running = JobQueueServer.is_running
     result_task_id = await JobQueuesTable.add_task("QUEUE-REMOTE", "reload-result", {})
     result_task_id = str(result_task_id)
-    await JobQueuesTable.filter(task_id=result_task_id).update(status="done", result={"ready": True})
+    await JobQueuesTable.filter(task_id=result_task_id).update(
+        status="done", result={"rpc": PROTOCOL_VERSION, "value": {"ready": True}}
+    )
     handler_done = asyncio.Event()
 
+    waiter = asyncio.get_running_loop().create_future()
+    JobQueueServer._pending[result_task_id] = waiter
+
     async def handler():
-        result = await QueueTaskManager.add(result_task_id)
-        if result == {"ready": True}:
+        result = await waiter
+        if result.envelope == {"rpc": PROTOCOL_VERSION, "value": {"ready": True}}:
             handler_done.set()
 
-    async def close_connections():
-        return None
-
-    async def initialize(**kwargs):
-        return True
+    async def prepare(models):
+        return object()
 
     handler_task = asyncio.create_task(handler(), name="test-database-reload-remote-waiter")
     JobQueueServer._process_tasks.add(handler_task)
-    while result_task_id not in QueueTaskManager.tasks:
-        await asyncio.sleep(0)
 
     reload_task = None
     poller_task = None
@@ -347,8 +436,9 @@ async def _test_reload_keeps_pumping_remote_results():
         JobQueueServer.is_running = False
         JobQueueServer.pause_event.set()
         with (
-            patch.object(database.Tortoise, "close_connections", new=close_connections),
-            patch.object(database, "init_db", new=initialize),
+            patch.object(database, "prepare_db_reload", new=prepare),
+            patch.object(database, "activate_db_reload"),
+            patch.object(database, "close_previous_db_context", new=AsyncMock()),
         ):
             reload_task = asyncio.create_task(database.reload_db())
             while JobQueueServer.pause_event.is_set() and not reload_task.done():
@@ -373,7 +463,7 @@ async def _test_reload_keeps_pumping_remote_results():
             return_exceptions=True,
         )
         JobQueueServer._process_tasks.discard(handler_task)
-        QueueTaskManager.tasks.pop(result_task_id, None)
+        JobQueueServer._pending.pop(result_task_id, None)
         await JobQueuesTable.filter(task_id=result_task_id).delete()
         JobQueueServer.pause_event.set()
         JobQueueServer.is_running = old_is_running
@@ -383,28 +473,28 @@ async def _test_reload_keeps_pumping_remote_results():
             database.Temp.data["modules_db_list"] = old_modules_db_list
 
 
-async def _test_cancelled_reload_restores_previous_models():
-    """关闭旧连接后的数据库热重载被取消时，须先恢复旧模型再传播取消。"""
+async def _test_cancelled_reload_does_not_publish_partial_context():
+    """准备新 context 时被取消，不得激活或关闭旧数据库 context。"""
     old_modules_db_list = database.Temp.data.get("modules_db_list")
-    previous_models = ["modules.previous.database.models"]
-    database.Temp.data["modules_db_list"] = previous_models
     entered = asyncio.Event()
     calls = []
 
-    async def close_connections():
-        calls.append("close")
-
-    async def initialize(**kwargs):
-        calls.append(("init", kwargs))
-        if kwargs.get("load_module_db") is False:
-            return True
+    async def prepare(models):
+        calls.append(("prepare", models))
         entered.set()
         await asyncio.Event().wait()
 
+    def activate(value):
+        calls.append(("activate", value))
+
+    async def close_previous(value):
+        calls.append(("close_previous", value))
+
     try:
         with (
-            patch.object(database.Tortoise, "close_connections", new=close_connections),
-            patch.object(database, "init_db", new=initialize),
+            patch.object(database, "prepare_db_reload", new=prepare),
+            patch.object(database, "activate_db_reload", new=activate),
+            patch.object(database, "close_previous_db_context", new=close_previous),
         ):
             task = asyncio.create_task(database.reload_db(db_models=["modules.cancelled.database.models"]))
             await asyncio.wait_for(entered.wait(), timeout=1)
@@ -420,10 +510,7 @@ async def _test_cancelled_reload_restores_previous_models():
             cancelled
             and calls
             == [
-                "close",
-                ("init", {"db_models": ["modules.cancelled.database.models"]}),
-                "close",
-                ("init", {"load_module_db": False, "db_models": previous_models}),
+                ("prepare", ["modules.cancelled.database.models"]),
             ]
             and JobQueueServer.pause_event.is_set()
         )
@@ -448,10 +535,25 @@ async def test_database_init(tester: Tester):
     await tester.test(_test_pre_init_mode_generates_all_schemas, "pre-init 建立核心、local 与模块表")
     await tester.test(_test_failed_init_closes_partial_connections, "数据库初始化失败清理部分连接")
     await tester.test(_test_cancelled_init_closes_partial_connections, "数据库初始化取消清理部分连接")
-    await tester.test(_test_reload_closes_old_connections_before_reinitializing, "热重载先关闭旧连接")
-    await tester.test(_test_reload_restores_previous_models_after_failure, "热重载失败恢复旧模型")
+    await tester.test(_test_init_db_clears_task_local_tortoise_context, "数据库初始化清理任务级 context")
+    await tester.test(
+        _test_activate_db_reload_clears_inherited_old_context,
+        "数据库切换不继承旧任务级 context",
+    )
+    await tester.test(
+        _test_task_created_after_init_uses_replaceable_global_context,
+        "初始化后任务使用可替换 global context",
+    )
+    await tester.test(
+        _test_reload_activates_prepared_context_before_closing_previous,
+        "热重载先准备新 context 再原子切换",
+    )
+    await tester.test(_test_reload_failure_does_not_activate_partial_context, "热重载失败不发布半成品 context")
     await tester.test(_test_reload_waits_for_other_queue_handlers, "热重载等待其它队列处理器")
     await tester.test(_test_reload_cancels_scheduler_jobs_before_closing_connections, "热重载先排空计划任务")
     await tester.test(_test_reload_keeps_pumping_remote_results, "热重载暂停时继续回收远端结果")
-    await tester.test(_test_cancelled_reload_restores_previous_models, "数据库热重载取消恢复旧模型")
+    await tester.test(
+        _test_cancelled_reload_does_not_publish_partial_context,
+        "数据库热重载取消不发布半成品 context",
+    )
     return tester

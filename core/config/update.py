@@ -400,5 +400,26 @@ if config["config_version"] < config_version:
         with open(cfg_file_path, "w", encoding="utf-8") as f:
             f.write(toml_dumps(config))
 
+    if config["config_version"] < 5:
+        core_table = config.get("config", {})
+        if "schedule_interval_multiplier" not in core_table:
+            old_value = core_table.pop("slower_schedule", 1.0)
+            if isinstance(old_value, bool):
+                old_value = 3.0 if old_value else 1.0
+            elif not isinstance(old_value, (int, float)) or old_value <= 0:
+                old_value = 1.0
+            core_table["schedule_interval_multiplier"] = float(old_value)
+        else:
+            core_table.pop("slower_schedule", None)
+
+        comment_key = "config.comments.config.schedule_interval_multiplier"
+        localed_comment = Locale(config.get("default_locale", "zh_cn")).t(comment_key, locale_failed_prompt=False)
+        if localed_comment != comment_key:
+            core_table.value.item("schedule_interval_multiplier").comment(localed_comment)
+
+        config["config_version"] = 5
+        with open(cfg_file_path, "w", encoding="utf-8") as f:
+            f.write(toml_dumps(config))
+
     logger.success("Config file updated successfully.")
     sleep(3)

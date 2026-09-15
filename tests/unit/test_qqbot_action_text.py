@@ -8,10 +8,16 @@
 from types import SimpleNamespace
 from urllib.parse import quote
 
-from bots.qqbot.context import ACTION_TEXT_MAX_LENGTH, _build_qqbot_keyboard, _render_action_text
+from bots.qqbot.context import (
+    ACTION_TEXT_MAX_LENGTH,
+    QQBOT_MAX_KEYBOARD_COLUMNS,
+    QQBOT_MAX_KEYBOARD_ROWS,
+    _build_qqbot_keyboard,
+    _render_action_text,
+)
 from bots.qqbot.info import target_group_prefix
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import ActionTextElement, ButtonFrameElement, PlainElement
+from core.builtins.message.elements import ActionTextElement, ButtonFrameElement, ButtonRows, PlainElement
 from core.builtins.message.internal import Button
 from core.builtins.session.info import SessionInfo
 from core.i18n import Locale
@@ -166,6 +172,31 @@ def _test_button_element_builds_keyboard():
         return False
 
 
+def _test_keyboard_reflows_and_caps_qq_limits():
+    """测试超宽/超长按钮区域在 QQ 限制内重排，并丢弃超出容量的尾部按钮。"""
+    try:
+        session = SessionInfo(
+            target_id=f"{target_group_prefix}|1",
+            target_from=target_group_prefix,
+            client_name="QQBot",
+            sender_id="QQBot|1",
+            locale=Locale("zh_cn"),
+            support_button=True,
+        )
+        rows = [ButtonRows.assign([Button(f"B{index}", str(index)) for index in range(57)])]
+        keyboard = _build_qqbot_keyboard(rows, session, SimpleNamespace(scope="group"))
+        rendered_rows = keyboard["content"]["rows"]
+        rendered_buttons = [button for row in rendered_rows for button in row["buttons"]]
+        return (
+            len(rendered_rows) <= QQBOT_MAX_KEYBOARD_ROWS
+            and all(len(row["buttons"]) <= QQBOT_MAX_KEYBOARD_COLUMNS for row in rendered_rows)
+            and len(rendered_buttons) == QQBOT_MAX_KEYBOARD_ROWS * QQBOT_MAX_KEYBOARD_COLUMNS
+            and rendered_buttons[-1]["render_data"]["label"] == "B49"
+        )
+    except Exception:
+        return False
+
+
 @func_case
 async def test_qqbot_action_text(tester: Tester):
     """bots.qqbot.context: 指令操作标签渲染测试"""
@@ -177,5 +208,6 @@ async def test_qqbot_action_text(tester: Tester):
     await tester.test(_test_render_empty_text, "空 text 不产出标签测试")
     await tester.test(_test_send_msg_markdown_inline_join, "行内拼接测试")
     await tester.test(_test_button_element_builds_keyboard, "ButtonElement 构建键盘测试")
+    await tester.test(_test_keyboard_reflows_and_caps_qq_limits, "QQBot 键盘行列限制测试")
 
     return tester

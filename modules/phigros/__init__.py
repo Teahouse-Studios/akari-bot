@@ -1,8 +1,11 @@
+from time import monotonic
+
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import ActionText, Image, I18NContext
+from core.builtins.message.internal import ActionText, Image, I18NContext, Url
 from core.component import module
 from core.logger import Logger
+from core.types import Param
 from core.utils.random import Random
 
 from .database.models import PhigrosBindInfo
@@ -19,6 +22,14 @@ from .libraries.client import check_session_token, is_token_invalid, phigros_clo
 from .libraries.format import settings_lines, summary_lines, unlock_lines
 from .libraries.genb30 import get_b30, get_song_rank
 from .libraries.record import get_records, get_save, parse_part
+from .libraries.taptap import (
+    TapTapAuthorizationDenied,
+    TapTapLoginContext,
+    TapTapLoginError,
+    TapTapQRCodeExpired,
+    TapTapSlowDown,
+    generate_qrcode,
+)
 
 phi = module(
     "phigros",
@@ -51,8 +62,7 @@ async def _require_bind(msg: Bot.MessageSession):
         await msg.finish(
             I18NContext(
                 "phigros.message.user_unbound",
-                prefix=msg.session_info.prefixes[0],
-                cmd=ActionText(f"{msg.session_info.prefixes[0]}phigros bind"),
+                cmd=ActionText(f"{msg.session_info.prefixes[0]}phigros login"),
             )
         )
     return bind_info
@@ -67,7 +77,6 @@ async def _require_song_info(msg: Bot.MessageSession) -> dict:
         await msg.finish(
             I18NContext(
                 "phigros.message.file_not_found",
-                prefix=msg.session_info.prefixes[0],
                 cmd=ActionText(f"{msg.session_info.prefixes[0]}phigros update"),
             )
         )
@@ -97,8 +106,7 @@ async def _fetch_save(msg: Bot.MessageSession, bind_info):
             await msg.finish(
                 I18NContext(
                     "phigros.message.token_invalid",
-                    prefix=msg.session_info.prefixes[0],
-                    cmd=ActionText(f"{msg.session_info.prefixes[0]}phigros bind"),
+                    cmd=ActionText(f"{msg.session_info.prefixes[0]}phigros login"),
                 )
             )
         await msg.finish(I18NContext("phigros.message.fetch_failed"))
@@ -135,14 +143,13 @@ def _song_chain(song_id: str, info: dict) -> MessageChain:
     "bind <sessiontoken> [-i] {{I18N:phigros.help.bind}}",
     options_desc={"-i": "{I18N:phigros.help.option.i}"},
 )
-async def _(msg: Bot.MessageSession, sessiontoken: str):
+async def _(msg: Bot.MessageSession, sessiontoken: str, is_international: Param("-i", bool) = False):
     if msg.session_info.target_from in PUBLIC_TARGETS:
         await msg.send_message(I18NContext("phigros.message.bind.warning"), quote=False)
         await msg.delete()
     if not check_session_token(sessiontoken):
         await msg.finish(I18NContext("phigros.message.bind.invalid_token"), quote=False)
 
-    is_international = bool(msg.parsed_msg.get("-i", False))
     try:
         async with phigros_cloud(sessiontoken, is_international) as cloud:
             username = await cloud.getNickname()
@@ -157,6 +164,67 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
         is_international=is_international,
     )
     await msg.finish(I18NContext("phigros.message.bind.success", username=username), quote=False)
+
+
+@phi.command("login {{I18N:phigros.help.login}}")
+async def _(msg: Bot.MessageSession):
+    if not msg.session_info.is_private:
+        await msg.finish(I18NContext("phigros.message.login.private_only"), quote=False)
+
+    try:
+        async with TapTapLoginContext() as login:
+            qrcode_data = await login.request_login_qrcode()
+            if msg.session_info.support_image:
+                prompt = [
+                    I18NContext("phigros.message.login.prompt", seconds=qrcode_data.expires_in),
+                    Image(generate_qrcode(qrcode_data.qrcode_url)),
+                    Url(qrcode_data.qrcode_url, trusted=True),
+                ]
+            else:
+                prompt = [
+                    I18NContext("phigros.message.login.prompt_link", seconds=qrcode_data.expires_in),
+                    Url(qrcode_data.qrcode_url, trusted=True),
+                ]
+            await msg.send_message(prompt, quote=False)
+
+            deadline = monotonic() + qrcode_data.expires_in
+            interval = qrcode_data.interval
+            access_token = None
+            while monotonic() < deadline:
+                await msg.sleep(min(interval, max(0, deadline - monotonic())))
+                try:
+                    access_token = await login.check_qrcode_result(qrcode_data)
+                except TapTapSlowDown:
+                    interval += 5
+                    continue
+                if access_token:
+                    break
+            if not access_token:
+                raise TapTapQRCodeExpired
+
+            profile = await login.get_profile(access_token)
+            user_data = await login.get_user_data(access_token, profile)
+            session_token = user_data.get("sessionToken")
+            if not isinstance(session_token, str) or not check_session_token(session_token):
+                raise TapTapLoginError("Phigros login did not return a valid SessionToken.")
+
+        async with phigros_cloud(session_token) as cloud:
+            username = await cloud.getNickname()
+    except TapTapQRCodeExpired:
+        await msg.finish(I18NContext("phigros.message.login.expired"), quote=False)
+    except TapTapAuthorizationDenied:
+        await msg.finish(I18NContext("phigros.message.login.denied"), quote=False)
+    except Exception:
+        Logger.exception()
+        await msg.finish(I18NContext("phigros.message.login.failed"), quote=False)
+
+    if not await PhigrosBindInfo.set_bind_info(
+        union_id=msg.session_info.sender_union_id,
+        session_token=session_token,
+        username=username or "Guest",
+    ):
+        await msg.finish(I18NContext("phigros.message.login.failed"), quote=False)
+    await msg.finish(I18NContext("phigros.message.bind.success", username=username or "Guest"), quote=False)
 
 
 @phi.command("unbind {{I18N:phigros.help.unbind}}")
@@ -290,7 +358,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @phi.command("update [--no-illus] {{I18N:phigros.help.update}}", required_superuser=True)
-async def _(msg: Bot.MessageSession):
-    if await update_assets(not msg.parsed_msg.get("--no-illus", False)):
+async def _(msg: Bot.MessageSession, no_illus: bool = False):
+    if await update_assets(not no_illus):
         await msg.finish(I18NContext("message.success"))
     await msg.finish(I18NContext("message.failed"))

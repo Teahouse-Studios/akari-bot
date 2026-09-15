@@ -20,7 +20,7 @@ from core.utils.cache import random_cache_path
 from core.utils.func import is_int
 from core.utils.image import cb64imglst
 from core.utils.table import escape_table_cell, format_table_code, resolve_table_columns
-from core.web_render import web_render, ElementScreenshotOptions
+from core.utils.web_render import web_render, ElementScreenshotOptions
 from .utils import get_version_display
 
 env = Environment(loader=FileSystemLoader(templates_path), autoescape=True, enable_async=True)
@@ -115,7 +115,7 @@ def get_module_type_display(module_, locale) -> str:
 
 
 def should_use_markdown_table(msg: Bot.MessageSession, force_image: bool = False, force_legacy: bool = False) -> bool:
-    return not force_image and not force_legacy and msg.session_info.support_markdown_table
+    return not force_image and not force_legacy and msg.session_info.support_markdown_extension
 
 
 def build_clickable_modules(msg: Bot.MessageSession, groups: list[tuple[str, list[str | ModuleListEntry]]]) -> list:
@@ -532,15 +532,15 @@ async def qqbot_permissions(msg: Bot.MessageSession, qq_group_id: str | None = N
         "--image": "{I18N:help.option.image}",
     },
 )
-async def _(msg: Bot.MessageSession, module: str):
+async def _(msg: Bot.MessageSession, module: str, image: bool = False, legacy: bool = False):
     is_base_superuser = msg.session_info.sender_id in Bot.base_superuser_list
     is_superuser = msg.check_super_user()
     module_list = ModulesManager.return_modules_list(
         target_from=msg.session_info.target_from, client_name=msg.session_info.client_name
     )
     alias = ModulesManager.modules_aliases
-    force_image = msg.parsed_msg.get("--image", False)
-    force_legacy = msg.parsed_msg.get("--legacy", False) and not force_image
+    force_image = image
+    force_legacy = legacy and not force_image
 
     if msg.parsed_msg:
         mdocs = []
@@ -554,6 +554,10 @@ async def _(msg: Bot.MessageSession, module: str):
 
             if not module_._db_load:
                 await msg.finish(I18NContext("parser.module.unloaded", module=help_name))
+            if (module_.required_superuser and not is_superuser) or (
+                module_.required_base_superuser and not is_base_superuser
+            ):
+                await msg.finish(I18NContext("core.message.help.not_found"))
             if module_.desc:
                 desc = msg.session_info.locale.t_str(module_.desc)
                 mdocs.append(desc)
@@ -721,10 +725,9 @@ async def _(msg: Bot.MessageSession, module: str):
         "--image": "{I18N:help.option.image}",
     },
 )
-async def help_overview(msg: Bot.MessageSession):
-    parsed_msg = msg.parsed_msg or {}
-    force_image = parsed_msg.get("--image", False)
-    force_legacy = parsed_msg.get("--legacy", False) and not force_image
+async def help_overview(msg: Bot.MessageSession, image: bool = False, legacy: bool = False):
+    force_image = image
+    force_legacy = legacy and not force_image
     use_table = should_use_markdown_table(msg, force_image, force_legacy)
     use_clickable = not use_table and not force_legacy and msg.session_info.support_action_text
     qqbot_admin = msg.session_info.client_name == "QQBot" and await msg.check_permission()
@@ -740,7 +743,6 @@ async def help_overview(msg: Bot.MessageSession):
             help_msg_list = MessageChain.assign(
                 I18NContext(
                     "core.message.help.detail",
-                    prefix=msg.session_info.prefixes[0],
                     cmd=ActionText(f"{msg.session_info.prefixes[0]}help "),
                 )
             )
@@ -748,7 +750,6 @@ async def help_overview(msg: Bot.MessageSession):
                 help_msg_list.append(
                     I18NContext(
                         "core.message.help.all_modules",
-                        prefix=msg.session_info.prefixes[0],
                         cmd=ActionText(f"{msg.session_info.prefixes[0]}module list"),
                     )
                 )
@@ -852,7 +853,6 @@ async def help_overview(msg: Bot.MessageSession):
         help_msg.append(
             I18NContext(
                 "core.message.help.detail",
-                prefix=msg.session_info.prefixes[0],
                 cmd=ActionText(f"{msg.session_info.prefixes[0]}help "),
             )
         )
@@ -860,7 +860,6 @@ async def help_overview(msg: Bot.MessageSession):
             help_msg.append(
                 I18NContext(
                     "core.message.help.all_modules",
-                    prefix=msg.session_info.prefixes[0],
                     cmd=ActionText(f"{msg.session_info.prefixes[0]}module list"),
                 )
             )
@@ -897,7 +896,6 @@ async def modules_list_help(msg: Bot.MessageSession, legacy, force_image=False):
             help_msg = MessageChain.assign(
                 I18NContext(
                     "core.message.help.detail",
-                    prefix=msg.session_info.prefixes[0],
                     cmd=ActionText(f"{msg.session_info.prefixes[0]}help "),
                 )
             )
@@ -974,7 +972,6 @@ async def modules_list_help(msg: Bot.MessageSession, legacy, force_image=False):
         help_msg.append(
             I18NContext(
                 "core.message.help.detail",
-                prefix=msg.session_info.prefixes[0],
                 cmd=ActionText(f"{msg.session_info.prefixes[0]}help "),
             )
         )

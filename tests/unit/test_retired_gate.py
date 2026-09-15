@@ -1,4 +1,4 @@
-"""core.retired 单元测试 - 迁移关系解析、退役判定与介入点。
+"""core.utils.retired 单元测试 - 迁移关系解析、退役判定与介入点。
 
 本文件集中放置所有改动 ``CoreConfig.retired_clients`` 的用例：``tester.py`` 并发执行各个
 func_case，而该配置与 ``RETIRED_ROUTES`` 是进程级全局状态，分散在多个文件中改动会互相覆盖。
@@ -9,19 +9,21 @@ func_case，而该配置与 ``RETIRED_ROUTES`` 是进程级全局状态，分散
 """
 
 import asyncio
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 from core.alive import Alive
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain
-from core.builtins.parser.message import parser
+from core.builtins.parser.message import channel_claim_cache, parser
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
 from core.builtins.session.tasks import SessionTaskManager
 from core.config.base import CoreConfig
 from core.database.models import TargetUnionBind, TargetUnionInfo
-from core.retired import (
+from core.loader import ModulesManager
+from core.queue.contracts import PlatformAPI
+from core.utils.retired import (
     RETIRED_ALLOWED_MODULES,
     filter_retired_targets,
     is_merge_route_allowed,
@@ -33,6 +35,7 @@ from core.retired import (
     should_yield_channel,
 )
 from core.tester import func_case, Tester
+from modules.core import merge as merge_module
 
 
 def _use_routes(entries: list):
@@ -289,14 +292,14 @@ async def _test_alive_never_yields():
         _restore_routes(original)
 
 
-async def _session(target_id: str, client: str) -> MessageSession:
-    """建一个消息内容为空的会话，用于只跑到 parser 的任务检查一段。"""
+async def _session(target_id: str, client: str, text: str = "") -> MessageSession:
+    """建立用于真实 parser 检查的会话。"""
     session_info = await SessionInfo.assign(
         target_id=target_id,
         target_from=f"{client}|Group",
         client_name=client,
         sender_id=f"{client}|1",
-        messages=MessageChain.assign(Plain("")),
+        messages=MessageChain.assign(Plain(text)),
         create=True,
     )
     return MessageSession(session_info=session_info)
@@ -331,9 +334,18 @@ async def _probe_wait_task(prefix: str, with_alive: bool) -> bool:
     SessionTaskManager._task_list.clear()
     try:
         # all_ 任务按物理场景建稳定 bucket，check() 再按当前消息通道展开。
-        SessionTaskManager.add_task(holder, asyncio.Event(), all_=True, timeout=60)
-        await parser(retired)
-        return SessionTaskManager.get()[holder.session_info.target_id]["all"][holder]["active"] is False
+        flag = asyncio.Event()
+        SessionTaskManager.add_task(holder, flag, all_=True, timeout=60)
+        # 这里只模拟平台成功持有上下文，parser 与等待任务路由仍执行真实逻辑。
+        hold = AsyncMock(return_value=None)
+        with patch.object(PlatformAPI, "hold_context", new=hold):
+            await parser(retired)
+        task = SessionTaskManager.get()[holder.session_info.target_id]["all"][holder]
+        if with_alive:
+            hold.assert_not_awaited()
+        else:
+            hold.assert_awaited_once_with(retired.session_info)
+        return task["active"] is False and flag.is_set() and task["result"] is retired
 
     finally:
         SessionTaskManager._task_list.clear()
@@ -361,6 +373,63 @@ async def _test_retired_keeps_wait_task_when_alone():
     except Exception:
         return False
 
+    finally:
+        _restore_routes(original)
+
+
+async def _probe_merge_command_route(command: str, order: tuple[str, str], prefix: str) -> bool:
+    """让迁移关系两端依次处理同一条命令，返回是否仅由期望端进入模块执行。"""
+    retired_client = f"{prefix}R"
+    alive_client = f"{prefix}A"
+    retired_target = f"{retired_client}|Group|x"
+    alive_target = f"{alive_client}|Group|y"
+    _use_routes([f"{retired_client} -> {alive_client}"])
+
+    union = await TargetUnionInfo.resolve_union(retired_target)
+    await union.bind_id(alive_target)
+    await TargetUnionBind.filter(target_id__in=[retired_target, alive_target]).update(channel_id=1)
+
+    sessions = {
+        "retired": await _session(retired_target, retired_client, command),
+        "alive": await _session(alive_target, alive_client, command),
+    }
+    executed: list[str] = []
+
+    async def _record(msg, modules, command_first_word, identify_str):
+        executed.append(msg.session_info.client_name)
+
+    module = ModulesManager.modules[merge_module.m.module_name]
+    previous_load = module._db_load
+    module._db_load = True
+    channel_claim_cache.clear()
+    try:
+        with (
+            patch.object(ModulesManager, "return_modules_list", return_value={"merge": module}),
+            patch("core.builtins.parser.message._execute_module", new=_record),
+        ):
+            for side in order:
+                await parser(sessions[side])
+        expected = retired_client if command == "~merge" else alive_client
+        return executed == [expected]
+    finally:
+        channel_claim_cache.clear()
+        module._db_load = previous_load
+
+
+async def _test_merge_start_routes_to_retired_source():
+    """测试迁移命令 - 同通道目标端先收到裸 merge 时仍由退役源端执行。"""
+    original = CoreConfig.retired_clients
+    try:
+        return await _probe_merge_command_route("~merge", ("alive", "retired"), "MRS")
+    finally:
+        _restore_routes(original)
+
+
+async def _test_merge_token_routes_to_alive_target():
+    """测试迁移命令 - 同通道退役源端先收到 token 命令时仍由存活目标端执行。"""
+    original = CoreConfig.retired_clients
+    try:
+        return await _probe_merge_command_route("~merge token ABCDEF", ("retired", "alive"), "MRT")
     finally:
         _restore_routes(original)
 
@@ -397,7 +466,7 @@ async def _test_union_push_skips_retired():
 
 @func_case
 async def test_retired_gate(tester: Tester):
-    """core.retired: 迁移关系、退役判定与介入点测试"""
+    """core.utils.retired: 迁移关系、退役判定与介入点测试"""
     await tester.test(_test_parse_basic_route, "关系解析基本测试")
     await tester.test(_test_parse_source_only, "只写源测试")
     await tester.test(_test_parse_ignores_malformed, "格式错误忽略测试")
@@ -417,6 +486,8 @@ async def test_retired_gate(tester: Tester):
     await tester.test(_test_alive_never_yields, "非退役不让位测试")
     await tester.test(_test_retired_yields_wait_task, "退役让出等待任务测试")
     await tester.test(_test_retired_keeps_wait_task_when_alone, "独占通道保留等待任务测试")
+    await tester.test(_test_merge_start_routes_to_retired_source, "迁移发起命令路由测试")
+    await tester.test(_test_merge_token_routes_to_alive_target, "迁移兑换命令路由测试")
     await tester.test(_test_union_push_skips_retired, "组内推送滤除退役测试")
 
     return tester

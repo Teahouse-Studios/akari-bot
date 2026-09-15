@@ -15,6 +15,7 @@ from typing import Any
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
+from core.constants.exceptions import SessionContextUnavailable
 from core.logger import Logger
 
 
@@ -80,11 +81,11 @@ class ContextManager(ABC):
         防止上下文被删除。支持嵌套保持，每次调用增加计数。
 
         :param session_info: 会话信息对象
-        :raises ValueError: 如果会话上下文不存在
+        :raises SessionContextUnavailable: 如果会话上下文不存在
         """
         # 检查上下文是否存在
         if session_info.session_id not in cls.context:
-            raise ValueError("Session not found in context")
+            raise SessionContextUnavailable("Session not found in context")
 
         # 增加持有计数
         if session_info.session_id in cls.context_marks_hold:

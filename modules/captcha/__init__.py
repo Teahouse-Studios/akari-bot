@@ -11,6 +11,7 @@ from core.config.base import CoreConfig
 from core.constants.path import assets_path
 from core.database.models import SenderUnionInfo, TargetUnionInfo, union_mutation
 from core.logger import Logger
+from core.queue.errors import RpcError
 from core.utils.button import arrange_buttons
 from core.utils.random import SecureRandom
 from modules.captcha.database.models import CaptchaChallenge, CaptchaTrust
@@ -79,15 +80,11 @@ async def _release_restriction_after_delivery_failure(
     challenge.status = "failed"
     await challenge.save(update_fields=["status"])
     try:
-        result = await session.unrestrict_member(challenge.sender_id, wait=True)
+        await session.unrestrict_member(challenge.sender_id, wait=True)
     except asyncio.CancelledError:
         raise
     except Exception:
         Logger.exception(f"Failed to release captcha restriction for {challenge.sender_id}: ")
-        return False
-
-    if not result or not result.get("success"):
-        Logger.warning(f"Failed to release captcha restriction for {challenge.sender_id}.")
         return False
 
     # 只有平台明确确认解禁成功后，才把记录降为无需外部清理的普通错误。
@@ -207,9 +204,11 @@ async def member_joined(event: EventInfo):
         return
 
     session = await Bot.FetchedMessageSession.from_session_info(fetched)
-    restrict_result = await session.restrict_member(event.sender_id, CAPTCHA_MUTE_SECONDS, wait=True)
-    if not restrict_result or not restrict_result.get("success"):
-        challenge.status = "error"
+    try:
+        await session.restrict_member(event.sender_id, CAPTCHA_MUTE_SECONDS, wait=True)
+    except RpcError:
+        # RPC 失败（尤其超时）不能证明平台未执行禁言，保留限制的归属以便清理。
+        challenge.status = "failed"
         await challenge.save(update_fields=["status"])
         await session.send_message(I18NContext("captcha.message.permission_error"), quote=False)
         return
@@ -297,8 +296,9 @@ async def token(msg: Bot.MessageSession, token: str, answer: int | None = None):
     origin = await get_origin_session(challenge)
     if not origin:
         await msg.finish(I18NContext("token.message.unavailable"))
-    unrestrict_result = await origin.unrestrict_member(challenge.sender_id, wait=True)
-    if not unrestrict_result or not unrestrict_result.get("success"):
+    try:
+        await origin.unrestrict_member(challenge.sender_id, wait=True)
+    except RpcError:
         await msg.finish(I18NContext("token.message.unrestrict_failed"))
 
     if not await trust_challenge(challenge):
