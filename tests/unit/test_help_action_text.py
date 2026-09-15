@@ -213,7 +213,7 @@ async def _test_image_flag_overrides_markdown_table():
     generated = [Image("help.png")]
     try:
         with patch("modules.core.common_tools.help.help_generator", new=AsyncMock(return_value=generated)) as generator:
-            await help_overview(msg)
+            await help_overview(msg, image=True)
     except SessionFinished:
         pass
     sendable = msg.finished_message.as_sendable(session_info).values if msg.finished_message else []
@@ -666,7 +666,7 @@ async def _test_qqbot_admin_legacy_help_keeps_legacy_scope():
     }
     try:
         with patch("modules.core.common_tools.help.ModulesManager.return_modules_list", return_value=modules):
-            await help_overview(msg)
+            await help_overview(msg, legacy=True)
     except SessionFinished:
         pass
     rendered = msg.finished_message.to_str()
