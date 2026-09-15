@@ -1189,7 +1189,10 @@ async def _test_cancelled_commit_keeps_committed_generation():
             async with _patch_database_reload(AsyncMock(return_value=object())), _isolated_reload_lifecycle():
                 try:
                     task = asyncio.create_task(ModulesManager.reload_module(module_name))
-                    await asyncio.wait_for(entered_commit.wait(), timeout=1)
+                    # The full suite can delay task scheduling while other async tests are unwinding.
+                    # This gate only observes entry into our commit stub, so use a test-level timeout
+                    # that is long enough for CI contention without allowing a real deadlock to hang.
+                    await asyncio.wait_for(entered_commit.wait(), timeout=10)
                     task.cancel()
                     release_commit.set()
                     (result,) = await asyncio.gather(task, return_exceptions=True)
