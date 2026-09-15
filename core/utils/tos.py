@@ -69,16 +69,17 @@ async def abuse_warn_target(msg: Bot.MessageSession, reason: str):
 
 
 async def tos_report(sender: str, target: str, reason: str, banned: bool = False):
-    warn_template = [I18NContext("tos.message.report", sender=sender, target=target, disable_joke=True)]
+    warn_template = MessageChain.assign(
+        [I18NContext("tos.message.report", sender=sender, target=target, disable_joke=True)]
+    )
     warn_template.append(I18NContext("tos.message.reason", reason=reason, disable_joke=True))
     if banned:
-        action = "{I18N:tos.message.action.blocked}"
+        action = str(I18NContext("tos.message.action.blocked"))
     else:
-        action = "{I18N:tos.message.action.warning}"
+        action = str(I18NContext("tos.message.action.warning"))
     warn_template.append(I18NContext("tos.message.action", action=action, disable_joke=True))
     await send_report(
         warn_template,
-        subject=f"AkariBot ToS Report: {sender}",
-        body=f"Sender: {sender}\nTarget: {target}\nReason: {reason}\nAction: {action}",
+        subject=f"[AkariBot] ToS Report: {sender}",
         targets=report_targets,
     )

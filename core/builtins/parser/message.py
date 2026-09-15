@@ -1578,7 +1578,11 @@ async def _process_tos_abuse_warning(msg: "Bot.MessageSession", e: AbuseWarning)
     """
     if enable_tos and CoreConfig.tos_warning_counts >= 1 and not msg.check_super_user():
         await abuse_warn_target(msg, str(e))
-        temp_ban_counter[_sender_scope_key(msg)] = {"count": 1, "ts": time.time()}
+        temp_ban_counter[_sender_scope_key(msg)] = ExpiringTempDict(
+            exp=TOS_TEMPBAN_TIME,
+            data={"count": 1},
+            root=False,
+        )
     else:
         err_msg_chain = MessageChain.assign(I18NContext("error.message.prompt"))
         err_msg_chain += _format_error_detail(msg, msg.session_info.locale.t_str(str(e)))
@@ -1688,12 +1692,13 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
     await _send_common_emote(msg, BUG_EMOTES)
     # 发送错误报告给管理员
     await send_report(
-        [
-            I18NContext("error.message.report", command=msg.trigger_msg),
-            Plain(tb.strip(), disable_joke=True, allow_parse=False),
-        ],
-        subject=f"AkariBot Error: {msg.trigger_msg}",
-        body=f"Command: {msg.trigger_msg}\n\n{tb.strip()}",
+        message=MessageChain.assign(
+            [
+                I18NContext("error.message.report", command=msg.trigger_msg),
+                Plain(tb.strip(), disable_joke=True, allow_parse=False),
+            ]
+        ),
+        subject=f"[AkariBot] An error occurred: {msg.trigger_msg}",
         targets=report_targets,
     )
 

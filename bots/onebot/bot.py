@@ -14,7 +14,7 @@ from bots.onebot.info import *
 from bots.onebot.utils import to_message_chain, get_onebot_implementation
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Plain
+from core.builtins.message.internal import Plain, I18NContext
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
 from core.builtins.utils import command_prefix
@@ -281,7 +281,7 @@ async def _(event: Event):
         if result and not sender_union_info.superuser:
             Logger.info(f"Ban {sender_id} ({target_id}) by ToS: restrict")
             Logger.info(f"Block {target_id} by ToS: restrict")
-            reason = Locale(default_locale).t("tos.message.reason.restrict")
+            reason = str(I18NContext("tos.message.reason.restrict"))
             await tos_report(sender_id, target_id, reason, banned=True)
             await target_union_info.edit_attr("blocked", True)
             await aiocqhttp_bot.call_action("set_group_leave", group_id=event.group_id)
@@ -308,7 +308,7 @@ async def _(event: Event):
         if not sender_union_info.superuser:
             Logger.info(f"Ban {sender_id} ({target_id}) by ToS: kick")
             Logger.info(f"Block {target_id} by ToS: kick")
-            reason = Locale(default_locale).t("tos.message.reason.kick")
+            reason = str(I18NContext("tos.message.reason.kick"))
             await tos_report(sender_id, target_id, reason, banned=True)
             await target_union_info.edit_attr("blocked", True)
             await sender_union_info.switch_identity(trust=False)
