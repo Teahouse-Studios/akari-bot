@@ -14,7 +14,7 @@ async def _test_email_takes_priority_over_targets():
     with (
         patch.object(SMTPConfig, "enable_email_report", True),
         patch.object(SMTPConfig, "smtp_host", "smtp.example.com"),
-        patch.object(SMTPSecretConfig, "smtp_recipients", ["ops@example.com"]),
+        patch.object(SMTPConfig, "smtp_recipients", ["ops@example.com"]),
         patch("core.report._send_email") as send_email,
     ):
         await send_report("message", "subject", "body", direct_sender=direct_sender, targets=["target"])
@@ -29,7 +29,7 @@ async def _test_targets_are_used_without_email():
     bot.fetch_union_target_list = AsyncMock(return_value=["target-a", "target-b"])
     bot.pick_channel_heads = AsyncMock(return_value=["target-a"])
     with (
-        patch.object(SMTPConfig, "enable", False),
+        patch.object(SMTPConfig, "enable_email_report", False),
         patch("core.report.exports", {"Bot": bot}),
     ):
         await send_report("message", "subject", "body", direct_sender=direct_sender, targets=["report"])
@@ -44,7 +44,7 @@ async def _test_targets_are_used_without_email():
 async def _test_no_targets_does_not_send():
     """未启用 SMTP 且没有上报场景时不发送。"""
     direct_sender = AsyncMock()
-    with patch.object(SMTPConfig, "enable", False):
+    with patch.object(SMTPConfig, "enable_email_report", False):
         await send_report("message", "subject", "body", direct_sender=direct_sender, targets=[])
     return not direct_sender.called
 
@@ -56,12 +56,12 @@ async def _test_external_smtp_client_uses_starttls_and_login():
     with (
         patch.object(SMTPConfig, "smtp_host", "smtp.example.com"),
         patch.object(SMTPConfig, "smtp_port", 587),
-        patch.object(SMTPConfig, "smtp_sender", "bot@example.com"),
+        patch.object(SMTPConfig, "smtp_sender_name", "bot@example.com"),
         patch.object(SMTPConfig, "smtp_user", "bot@example.com"),
         patch.object(SMTPConfig, "smtp_starttls", True),
         patch.object(SMTPConfig, "smtp_ssl", False),
         patch.object(SMTPSecretConfig, "smtp_password", "app-password"),
-        patch.object(SMTPSecretConfig, "smtp_recipients", ["ops@example.com", "backup@example.com"]),
+        patch.object(SMTPConfig, "smtp_recipients", ["ops@example.com", "backup@example.com"]),
         patch("core.report.smtplib.SMTP", return_value=smtp) as smtp_constructor,
     ):
         _send_email("subject", "body")

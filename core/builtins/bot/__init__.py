@@ -614,8 +614,10 @@ class Bot:
                         if not modules[module_or_hook_name]._db_load:
                             return None
 
-                        # 执行模块的所有钩子
+                        # 只执行具名 hook；point 订阅走 ParserHookExecutor，签名不同
                         for hook in modules[module_or_hook_name].hooks_list.set:
+                            if hook.point:
+                                continue
                             async with ModuleRuntimeManager.use(module_or_hook_name):
                                 await hook.function(ModuleHookContext(args, session_info=session_info))
                         return None
@@ -628,6 +630,10 @@ class Bot:
                     module_name = ModulesManager.modules_hook_modules.get(module_or_hook_name)
                     if module_name is None:
                         raise ValueError(f"Hook {module_or_hook_name} has no owning module")
+                    module = ModulesManager.modules.get(module_name)
+                    # 具名能力同样受模块全局停用约束
+                    if module is not None and not module._db_load:
+                        return None
                     async with ModuleRuntimeManager.use(module_name):
                         return await ModulesManager.modules_hooks[module_or_hook_name](
                             ModuleHookContext(args, session_info=session_info)

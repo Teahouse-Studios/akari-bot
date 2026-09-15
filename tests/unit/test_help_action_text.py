@@ -22,7 +22,7 @@ from core.i18n import Locale
 from core.logger import Logger
 from core.tester import func_case, Tester
 from core.utils.table import TABLE_MAX_ROWS, format_table_code
-from modules.core.help import (
+from modules.core.common_tools.help import (
     ModuleListEntry,
     build_clickable_modules,
     build_command_table,
@@ -43,7 +43,7 @@ TABLE_TITLE_KEY = "core.message.help.table.title"
 
 def _test_help_about_button_replaces_donate():
     msg = SimpleNamespace(session_info=SimpleNamespace(support_button=True, locale=Locale("zh_cn")))
-    with patch("modules.core.help.help_url", "https://example.com/docs"):
+    with patch("modules.core.common_tools.help.help_url", "https://example.com/docs"):
         buttons = get_help_link_buttons(msg, include_modules=False)
     return buttons == [("📃 在线文档", "https://example.com/docs"), ("ℹ️ 关于我们", "~about")]
 
@@ -174,7 +174,7 @@ async def _test_image_help_precedes_action_text_fallback():
     msg = _ImageHelpSession(session_info)
     generated = [Image("help.png")]
     try:
-        with patch("modules.core.help.help_generator", new=AsyncMock(return_value=generated)) as generator:
+        with patch("modules.core.common_tools.help.help_generator", new=AsyncMock(return_value=generated)) as generator:
             await modules_list_help(msg, legacy=False)
     except SessionFinished:
         pass
@@ -213,7 +213,7 @@ async def _test_image_flag_overrides_markdown_table():
     msg = _ImageHelpSession(session_info)
     generated = [Image("help.png")]
     try:
-        with patch("modules.core.help.help_generator", new=AsyncMock(return_value=generated)) as generator:
+        with patch("modules.core.common_tools.help.help_generator", new=AsyncMock(return_value=generated)) as generator:
             await help_overview(msg, image=True)
     except SessionFinished:
         pass
@@ -446,7 +446,7 @@ async def _test_markdown_help_header():
     session_info.bot_name = "小可测试版"
     msg = _FakeSession(session_info)
     try:
-        with patch("modules.core.help.get_version_display", return_value="v1.2.3"):
+        with patch("modules.core.common_tools.help.get_version_display", return_value="v1.2.3"):
             parts = build_module_table(
                 msg,
                 [(TABLE_TITLE_KEY, ["wiki", "dice", "coin"])],
@@ -487,7 +487,7 @@ async def _test_markdown_help_header_permissions_and_width():
         "superuser": "当前权限：超级用户",
     }
     try:
-        with patch("modules.core.help.get_version_display", return_value=None):
+        with patch("modules.core.common_tools.help.get_version_display", return_value=None):
             for permission, display in expected_permissions.items():
                 parts = build_module_table(
                     msg,
@@ -531,7 +531,7 @@ async def _test_qqbot_admin_help_includes_disabled_modules():
         "dice": _module("dice"),
     }
     try:
-        with patch("modules.core.help.ModulesManager.return_modules_list", return_value=modules):
+        with patch("modules.core.common_tools.help.ModulesManager.return_modules_list", return_value=modules):
             await help_overview(msg)
     except SessionFinished:
         pass
@@ -566,7 +566,7 @@ async def _test_qqbot_superuser_help_header():
     msg = _OverviewSession(session_info, is_admin=True, is_superuser=True)
     modules = {"help": _module("help", base=True)}
     try:
-        with patch("modules.core.help.ModulesManager.return_modules_list", return_value=modules):
+        with patch("modules.core.common_tools.help.ModulesManager.return_modules_list", return_value=modules):
             await help_overview(msg)
     except SessionFinished:
         pass
@@ -597,7 +597,7 @@ async def _test_qqbot_non_admin_help_keeps_module_list_button():
         "dice": _module("dice"),
     }
     try:
-        with patch("modules.core.help.ModulesManager.return_modules_list", return_value=modules):
+        with patch("modules.core.common_tools.help.ModulesManager.return_modules_list", return_value=modules):
             await help_overview(msg)
     except SessionFinished:
         pass
@@ -634,7 +634,7 @@ async def _test_help_without_enable_requirement_shows_all_modules_as_enabled():
         "dice": _module("dice"),
     }
     try:
-        with patch("modules.core.help.ModulesManager.return_modules_list", return_value=modules):
+        with patch("modules.core.common_tools.help.ModulesManager.return_modules_list", return_value=modules):
             await help_overview(msg)
     except SessionFinished:
         pass
@@ -665,7 +665,7 @@ async def _test_qqbot_admin_legacy_help_keeps_legacy_scope():
         "dice": _module("dice"),
     }
     try:
-        with patch("modules.core.help.ModulesManager.return_modules_list", return_value=modules):
+        with patch("modules.core.common_tools.help.ModulesManager.return_modules_list", return_value=modules):
             await help_overview(msg, legacy=True)
     except SessionFinished:
         pass
@@ -702,8 +702,8 @@ async def _test_qqbot_module_list_hides_toggles_from_non_admin():
     }
     try:
         with (
-            patch("modules.core.help.ModulesManager.return_modules_list", return_value=modules),
-            patch("modules.core.help.help_url", "https://example.com/help"),
+            patch("modules.core.common_tools.help.ModulesManager.return_modules_list", return_value=modules),
+            patch("modules.core.common_tools.help.help_url", "https://example.com/help"),
         ):
             await modules_list_help(msg, legacy=False)
     except SessionFinished:
@@ -740,7 +740,7 @@ async def _test_qqbot_module_list_keeps_toggles_for_admin():
         "dice": _module("dice"),
     }
     try:
-        with patch("modules.core.help.ModulesManager.return_modules_list", return_value=modules):
+        with patch("modules.core.common_tools.help.ModulesManager.return_modules_list", return_value=modules):
             await modules_list_help(msg, legacy=False)
     except SessionFinished:
         pass
@@ -1183,7 +1183,7 @@ async def _test_empty_group_skipped():
 
 @func_case
 async def test_clickable_modules(tester: Tester):
-    """modules.core.help: 可点击模块列表测试"""
+    """modules.core.common_tools.help: 可点击模块列表测试"""
     await tester.test(_test_help_about_button_replaces_donate, "help 关于我们按钮测试")
     await tester.test(_test_image_help_precedes_action_text_fallback, "无表格能力时图片帮助优先测试")
     await tester.test(_test_discord_detail_help_does_not_use_markdown_table, "Discord 详细帮助禁用 Markdown 表格测试")

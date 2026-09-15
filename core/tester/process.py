@@ -9,7 +9,7 @@ from core.builtins.message.elements import PlainElement
 from core.constants.exceptions import SessionFinished
 from core.database.models import SenderUnionInfo, TargetUnionInfo
 from core.logger import Logger
-from core.tester.mock.database import init_db, close_db
+from core.tester.mock.database import close_db, get_last_init_error, init_db
 from core.tester.mock.loader import load_modules
 from core.tester.mock.parser import parser
 from core.tester.mock.random import Random
@@ -50,6 +50,29 @@ async def _cancel_task(task: asyncio.Task) -> bool:
     return True
 
 
+async def _cancel_orphan_tasks(baseline: set[asyncio.Task] | None = None) -> bool:
+    """Cancel detached tasks created by a function-test entry.
+
+    Function tests share an event loop but rebuild their in-memory SQLite context
+    between entries. A detached task using the old context can otherwise retain
+    locks or resume during the next entry. Cleanup is bounded for the same reason
+    as watchdog cancellation: a task that ignores cancellation must not stall CI.
+    """
+    current = asyncio.current_task()
+    tasks = [
+        task
+        for task in asyncio.all_tasks()
+        if task is not current
+        and not task.done()
+        and not task.get_name().startswith("function-test-progress:")
+        and (baseline is None or task not in baseline)
+    ]
+    if not tasks:
+        return True
+    completed = await asyncio.gather(*(_cancel_task(task) for task in tasks))
+    return all(completed)
+
+
 def _infrastructure_error(input_, expected, message: str) -> list[dict]:
     """把测试基础设施故障转换为可被 runner 计入失败的结果。"""
     return [{"input": input_, "expected": expected, "traceback": message, "action": []}]
@@ -62,7 +85,7 @@ async def run_case_entry(entry: CaseEntry, is_ci: bool = False) -> list[dict]:
         Logger.exception("Error closing database before test")
 
     if not await init_db():
-        message = f"Failed to reinitialize database for case {entry.get('func')}."
+        message = f"Failed to reinitialize database for case {entry.get('func')}.\n{get_last_init_error()}"
         Logger.critical(message)
         return _infrastructure_error(entry.get("input"), entry.get("expected"), message)
 
@@ -91,13 +114,17 @@ async def run_case_entry(entry: CaseEntry, is_ci: bool = False) -> list[dict]:
 async def run_function_entry(
     fn: FunctionType, is_ci: bool = False, timeout: float | None = DEFAULT_FUNCTION_TEST_TIMEOUT
 ) -> dict[str, Any]:
+    # Every func_case is an isolation boundary. Record existing runner tasks so
+    # only work started by this entry is reclaimed after it finishes.
+    cleanup_pending = False
+    baseline_tasks = set(asyncio.all_tasks())
     try:
         await close_db()
     except Exception:
         Logger.exception("Error closing database before func test")
 
     if not await init_db():
-        message = f"Failed to reinitialize database for func test {fn.__name__}."
+        message = f"Failed to reinitialize database for func test {fn.__name__}.\n{get_last_init_error()}"
         Logger.critical(message)
         return {"error": message}
 
@@ -109,7 +136,6 @@ async def run_function_entry(
         return {"error": error}
 
     tester = None
-    cleanup_pending = False
     start = time.perf_counter()
     try:
         from core.tester import Tester as TesterClass
@@ -173,6 +199,7 @@ async def run_function_entry(
         if active_test:
             message += f" while running {active_test!r}"
         Logger.error(f"{message}.")
+        cleanup_pending = not await _cancel_orphan_tasks(baseline_tasks) or cleanup_pending
         return {
             "timeout": True,
             "time_cost": elapsed,
@@ -183,15 +210,26 @@ async def run_function_entry(
             "entries": entries,
             "results": results,
         }
-    except Exception:
+    except (asyncio.CancelledError, KeyboardInterrupt, SystemExit, GeneratorExit):
+        raise
+    except BaseException:
         error = traceback.format_exc()
         Logger.exception(f"Error running test function {fn.__name__}:")
-        return {"error": error}
+        cleanup_pending = not await _cancel_orphan_tasks(baseline_tasks) or cleanup_pending
+        return {"error": error, "cleanup_pending": cleanup_pending}
+
+    cleanup_pending = not await _cancel_orphan_tasks(baseline_tasks) or cleanup_pending
 
     elapsed = time.perf_counter() - start
     entries = tester.get_entries()
     results = tester.get_results()
-    return {"tester": tester, "entries": entries, "results": results, "time_cost": elapsed}
+    return {
+        "tester": tester,
+        "entries": entries,
+        "results": results,
+        "time_cost": elapsed,
+        "cleanup_pending": cleanup_pending,
+    }
 
 
 async def run_test_case(

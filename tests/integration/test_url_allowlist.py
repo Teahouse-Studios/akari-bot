@@ -65,7 +65,7 @@ async def test_url_allowlist_commands(tester: Tester):
                 "命令写入 user.txt 时应保留正则反斜杠",
             )
             render = AsyncMock(return_value=["https://example.test/allowlist.png"])
-            with patch("modules.core.su_utils.image_table_render", new=render):
+            with patch("modules.core.su_tools.url_audit.image_table_render", new=render):
                 await tester.integrate(
                     "~url-audit allowlist list",
                     Exist(ImageElement),
@@ -81,7 +81,7 @@ async def test_url_allowlist_commands(tester: Tester):
                 ),
                 "允许列表图片表格应包含来源、类型与规则",
             )
-            with patch("modules.core.su_utils.image_table_render", new=AsyncMock(return_value=None)):
+            with patch("modules.core.su_tools.url_audit.image_table_render", new=AsyncMock(return_value=None)):
                 await tester.integrate(
                     "~url-audit allowlist list",
                     Empty(),

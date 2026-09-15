@@ -63,6 +63,9 @@ class JobQueueBase:
     name = "Internal|" + str(uuid4())
     _auto_peer_id = True
     TASK_TIMEOUT_SECONDS = DEFAULT_TIMEOUT_SECONDS
+    # Abandon is best-effort cleanup.  A database lock or disconnected backend must
+    # not keep the caller (or shutdown) blocked after the original RPC has ended.
+    ABANDON_TIMEOUT_SECONDS = 5.0
     POLL_INTERVAL_SECONDS = 0.1
     backend: JobQueueBackend | None = None
     registry: PeerRegistry
@@ -504,6 +507,21 @@ class JobQueueBase:
             raise RpcProtocolError("Transport batch delivery result does not cover exactly the submitted requests.")
 
     @classmethod
+    async def _abandon_with_timeout(cls, task_ids: list[str]) -> None:
+        """Best-effort delivery cleanup with a bounded wait.
+
+        Cleanup may race a remote claim/respond transaction.  It must remain
+        cancellation-safe, but an unhealthy backend must not turn that race into
+        an unbounded wait in an RPC or shutdown ``finally`` block.
+        """
+        if not task_ids:
+            return
+        try:
+            await asyncio.shield(asyncio.wait_for(cls.transport.abandon(task_ids), timeout=cls.ABANDON_TIMEOUT_SECONDS))
+        except TimeoutError:
+            Logger.error(f"Timed out cleaning up {len(task_ids)} abandoned JobQueue delivery(ies).")
+
+    @classmethod
     async def call(
         cls,
         target: str | ServiceRoute,
@@ -568,7 +586,7 @@ class JobQueueBase:
             # 是安全的，且不会取消已经开始的远端处理器。
             if future is not None and not response_received:
                 try:
-                    await asyncio.shield(cls.transport.abandon([task_id]))
+                    await cls._abandon_with_timeout([task_id])
                 except Exception:
                     Logger.exception(f"Failed to clean up abandoned RPC {task_id}.")
 
@@ -683,7 +701,7 @@ class JobQueueBase:
         finally:
             if requests and not submitted:
                 try:
-                    await asyncio.shield(cls.transport.abandon([request.task_id for request in requests]))
+                    await cls._abandon_with_timeout([request.task_id for request in requests])
                 except Exception:
                     Logger.exception(f"Failed to clean up interrupted signal fan-out {event_id}.")
         task_to_peer = {request.task_id: peer.peer_id for peer, request in zip(peers, requests)}
@@ -862,7 +880,7 @@ class JobQueueBase:
                     future.cancel()
             if abandoned:
                 try:
-                    await asyncio.shield(cls.transport.abandon(abandoned))
+                    await cls._abandon_with_timeout(abandoned)
                 except Exception:
                     Logger.exception(f"Failed to clean up {len(abandoned)} abandoned signal deliveries.")
         results, errors = {}, {}
@@ -1331,7 +1349,7 @@ class JobQueueBase:
             pending_task_ids = list(cls._pending)
             if pending_task_ids:
                 try:
-                    await cls.transport.abandon(pending_task_ids)
+                    await cls._abandon_with_timeout(pending_task_ids)
                 except Exception:
                     Logger.exception(f"Failed to clean up {len(pending_task_ids)} RPCs after result pump stopped.")
             if backend_started or backend.ready:

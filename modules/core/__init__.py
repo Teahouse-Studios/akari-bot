@@ -1,13 +1,7 @@
-from .alias import *
-from .about import *
-from .analytics import *
-from .bind import *
-from .dev import *
-from .help import *
-from .modules import *
-from .petal import *
-from .prefix import *
-from .setup import *
-from .su_utils import *
-from .utils import *
-from .merge import *
+"""Core command package assembled by responsibility-oriented subpackages."""
+
+# Import order is deliberate: parser policies register before commands that use them.
+from .hooks import *
+from .admin_tools import *
+from .common_tools import *
+from .su_tools import *

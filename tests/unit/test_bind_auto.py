@@ -1,4 +1,4 @@
-"""modules.core.bind 单元测试 - bind auto 握手的并发收敛与口令防重放（需要数据库）。"""
+"""modules.core.common_tools.bind 单元测试 - bind auto 握手的并发收敛与口令防重放（需要数据库）。"""
 
 import asyncio
 import re
@@ -13,7 +13,7 @@ from core.module_runtime import ModuleRuntimeManager
 from core.server.lifecycle import BackgroundTaskLifecycle
 from core.tester import func_case, Tester
 from core.tester.mock.session import MockMessageSession
-from modules.core.bind import (
+from modules.core.common_tools.bind import (
     _close_handshake,
     _complete_channel_handshake,
     _pending_confirms,
@@ -441,7 +441,7 @@ async def _test_handshake_cleanup_is_registered():
 
 @func_case
 async def test_bind_auto(tester: Tester):
-    """modules.core.bind: bind auto 握手测试"""
+    """modules.core.common_tools.bind: bind auto 握手测试"""
     await tester.test(_test_only_one_round_survives, "握手让位测试")
     await tester.test(_test_concurrent_completion_merges_once, "并发闭合只合并一次测试")
     await tester.test(_test_concurrent_auto_records_bots_id, "机器人账号落库测试")

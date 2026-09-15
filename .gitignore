@@ -36,8 +36,9 @@ assets/union_merge_logs/*
 assets/private*
 
 # Version Files
-version*
-!version.py
+/assets/version
+/assets/version_tag
+!/version.py
 
 # ==========
 # Local Development Environment

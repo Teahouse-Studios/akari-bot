@@ -8,7 +8,7 @@ from core.config.base import CoreConfig
 from core.constants.exceptions import InvalidHelpDocTypeError
 from core.database.models import ModuleStatus
 from core.loader import ModulesManager
-from .help import modules_list_help
+from modules.core.common_tools.help import modules_list_help
 
 # 模块受限成因到提示文案的映射，键取自 Module.unsupported_reason() 的返回值。
 UNSUPPORTED_PROMPTS = {

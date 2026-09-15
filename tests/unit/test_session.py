@@ -2184,11 +2184,26 @@ async def _test_wait_reply_registers_before_send_returns():
     from core.builtins.session.internal import MessageSession
 
     check_task_holder = {}
+    pending_reply_wait_started = asyncio.Event()
+
+    class ObservedReplyReady:
+        def __init__(self, event):
+            self._event = event
+
+        def is_set(self):
+            return self._event.is_set()
+
+        def set(self):
+            self._event.set()
+
+        async def wait(self):
+            pending_reply_wait_started.set()
+            await self._event.wait()
 
     class FastReplySession(MessageSession):
         async def send_message(self, *args, **kwargs):
             check_task_holder["task"] = asyncio.create_task(SessionTaskManager.check(incoming))
-            await asyncio.sleep(0)
+            await asyncio.wait_for(pending_reply_wait_started.wait(), timeout=5)
             return type("Sent", (), {"message_id": ["fast-reply-prompt"]})()
 
         async def end_typing(self):
@@ -2214,15 +2229,32 @@ async def _test_wait_reply_registers_before_send_returns():
     )
     msg = FastReplySession(session_info)
     SessionTaskManager._task_list.clear()
+    original_active_tasks = SessionTaskManager._active_tasks
+
+    async def observe_active_tasks(cls, session):
+        active_tasks = await original_active_tasks(session)
+        if session is incoming:
+            for waiting_session, task_info in active_tasks:
+                if waiting_session is msg and not task_info["reply_ready"].is_set():
+                    task_info["reply_ready"] = ObservedReplyReady(task_info["reply_ready"])
+        return active_tasks
+
     try:
-        with patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)):
-            result = await msg.wait_reply("prompt", delete=False, timeout=0.5)
+        with (
+            patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)),
+            patch.object(SessionTaskManager, "_active_tasks", new=classmethod(observe_active_tasks)),
+        ):
+            result = await msg.wait_reply("prompt", delete=False, timeout=5)
             handled = await check_task_holder["task"] if "task" in check_task_holder else False
-            return result is incoming and handled and not SessionTaskManager.get()
+            return (
+                result is incoming and handled and pending_reply_wait_started.is_set() and not SessionTaskManager.get()
+            )
     finally:
         check_task = check_task_holder.get("task")
         if check_task and not check_task.done():
             check_task.cancel()
+        if check_task:
+            await asyncio.gather(check_task, return_exceptions=True)
         SessionTaskManager._task_list.clear()
 
 
@@ -2274,10 +2306,15 @@ async def _test_ready_reply_is_not_blocked_by_earlier_pending_reply():
     SessionTaskManager._task_list.clear()
     SessionTaskManager.add_task(first, first_flag, reply_pending=True, timeout=60)
     SessionTaskManager.add_task(second, second_flag, reply="ready-target", timeout=60)
+    first_info = SessionTaskManager.get()[first.session_info.target_id][first.session_info.sender_id][first]
+    second_info = SessionTaskManager.get()[second.session_info.target_id][second.session_info.sender_id][second]
+
+    async def active_tasks(_cls, _session):
+        return [(first, first_info), (second, second_info)]
+
     try:
-        handled = await asyncio.wait_for(SessionTaskManager.check(incoming), timeout=0.2)
-        first_info = SessionTaskManager.get()[first.session_info.target_id][first.session_info.sender_id][first]
-        second_info = SessionTaskManager.get()[second.session_info.target_id][second.session_info.sender_id][second]
+        with patch.object(SessionTaskManager, "_active_tasks", new=classmethod(active_tasks)):
+            handled = await SessionTaskManager.check(incoming)
         await second.release_execution_resources()
         return (
             handled

@@ -65,7 +65,7 @@ from core.tester.decorator import CaseEntry, get_registry
 from core.tester.expectations import Expectation
 from core.tester.logger import TestLoggingLogger
 from core.tester.junit import JUnitReport, JUnitTestSuite, JUnitTestCase
-from core.tester.mock.database import init_db, close_db
+from core.tester.mock.database import close_db, get_last_init_error, init_db
 from core.tester.mock.loader import load_modules
 from core.tester.mock.random import Random
 from core.tester.process import run_case_entry, run_function_entry
@@ -150,7 +150,7 @@ async def main(inspect_module=inspect):
     Logger.trace("main() init_db")
     try:
         if not await init_db():
-            Logger.critical("Failed to initialize database. Aborting tests.")
+            Logger.critical(f"Failed to initialize database. Aborting tests.\n{get_last_init_error()}")
             await close_db()
             return 1
     except Exception:

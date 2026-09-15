@@ -16,8 +16,8 @@ from core.constants.exceptions import SessionFinished
 from core.logger import Logger
 from core.tester import func_case, Tester
 from core.types.module import Module
-from modules.core.help import create_module_entry, format_module_entries
-from modules.core.modules import config_modules
+from modules.core.common_tools.help import create_module_entry, format_module_entries
+from modules.core.admin_tools.modules import config_modules
 
 
 def _make_module(**kwargs) -> Module:
