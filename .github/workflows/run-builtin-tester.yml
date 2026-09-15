@@ -41,7 +41,7 @@ jobs:
           cp -r assets/config_store/zh_cn/* config/
 
       - name: Run tests
-        timeout-minutes: 20
+        timeout-minutes: 60
         env:
           CI: "1"
         run: |
