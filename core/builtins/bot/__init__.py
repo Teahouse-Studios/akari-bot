@@ -10,6 +10,7 @@ from typing import Any, Awaitable, Callable
 
 from core.alive import Alive
 from core.builtins.message.chain import *
+from core.builtins.parser.hooks import ParserHookContext
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import EventInfo, SessionInfo, FetchedSessionInfo, ModuleHookContext
@@ -57,6 +58,9 @@ class Bot:
 
     # 模块钩子上下文类型 - 用于模块钩子函数的参数传递
     ModuleHookContext = ModuleHookContext
+
+    # Parser 入口 hook 上下文；控制结果类型可通过 ``ctx.Stop`` 等访问。
+    ParserHookContext = ParserHookContext
 
     EventInfo = EventInfo
 

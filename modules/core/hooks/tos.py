@@ -8,6 +8,7 @@ from __future__ import annotations
 import re
 import time
 from functools import wraps
+from typing import TYPE_CHECKING
 
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext
@@ -18,6 +19,9 @@ from core.constants.exceptions import AbuseWarning, SendMessageFailed, SessionFi
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.utils.container import ExpiringTempDict, TokenBucket
+
+if TYPE_CHECKING:
+    from core.builtins.bot import Bot
 
 _I18N_KEY_RE = re.compile(r"^\{I18N:([^}]+)}$")
 
@@ -49,14 +53,14 @@ def _resolve_reason_text(msg, reason: str) -> str:
     return msg.session_info.locale.t_str(text)
 
 
-tos = module("tos", hidden=True, load=True)
+tos = module("tos", hidden=True, load=True, base=True)
 
 
 def _enforce_tos(function):
     """ToS 检查故障仍拒绝执行；不能降级成普通扩展 hook 的失败放行。"""
 
     @wraps(function)
-    async def enforced(ctx):
+    async def enforced(ctx: "Bot.ParserHookContext"):
         try:
             return await function(ctx)
         except (Exception, SendMessageFailed, SessionFinished, WaitCancelException):
@@ -79,14 +83,13 @@ _buckets_all = tos.state(
     preserve=True,
     version=1,
 )
-# 临封计数：进程内单例，兼容既有测试与门面
+# 临封计数：同版本热重载时保留，版本变化时重建。
 temp_ban_counter = tos.state(
     "temp_ban_counter",
     default_factory=lambda: ExpiringTempDict(exp=_temp_ban_time()),
     preserve=True,
     version=1,
 )
-_temp_ban = temp_ban_counter
 
 
 def sender_scope_key(msg) -> str | None:
@@ -190,15 +193,12 @@ async def _temp_ban_check(msg):
         return Stop(
             message=MessageChain.assign(I18NContext("tos.message.tempbanned", ban_time=remaining)),
             scope=StopScope.MESSAGE,
-            # 仅旧临封提示分支计入兼容成功统计；升级处罚不在此列
-            data={"stats_compat": "session_finished"},
         )
     if ban_info["count"] <= 3:
         ban_info["count"] += 1
         return Stop(
             message=MessageChain.assign(I18NContext("tos.message.tempbanned.warning", ban_time=remaining)),
             scope=StopScope.MESSAGE,
-            data={"stats_compat": "session_finished"},
         )
     # 升级处罚：拒绝决定已经形成，通知失败不得把它丢成"放行"
     await _apply_abuse_safely(msg, "{I18N:tos.message.reason.ignore}")
@@ -276,13 +276,13 @@ async def _apply_abuse(msg, reason: str):
 # 强制检查沿用旧 parser 的无超时语义；外部取消仍传播，不能因 hook 超时降级放行。
 @tos.hook(point=HookPoint.COMMAND_PREPARE, priority=10, name="temp_ban", server_scope=True, timeout=0)
 @_enforce_tos
-async def _(ctx):
+async def _(ctx: "Bot.ParserHookContext"):
     return await _temp_ban_check(ctx.msg)
 
 
 @tos.hook(point=HookPoint.COMMAND_BEFORE_PARSE, priority=10, name="counter", server_scope=True, timeout=0)
 @_enforce_tos
-async def _(ctx):
+async def _(ctx: "Bot.ParserHookContext"):
     module_name = ctx.module_name or ctx.command_first_word
     if not module_name:
         return None
@@ -294,17 +294,15 @@ async def _(ctx):
 
 @tos.hook(point=HookPoint.REGEX_PREPARE, priority=10, name="temp_ban", server_scope=True, timeout=0)
 @_enforce_tos
-async def _(ctx):
+async def _(ctx: "Bot.ParserHookContext"):
     if not ctx.data.get("show_typing", True):
         return None
-    # 临封提示分支自带 stats_compat=session_finished；升级处罚（penalty）不带，
-    # 不再统一给所有 Stop 附加兼容统计标记。
     return await _temp_ban_check(ctx.msg)
 
 
 @tos.hook(point=HookPoint.REGEX_BEFORE_EXECUTE, priority=10, name="counter", server_scope=True, timeout=0)
 @_enforce_tos
-async def _(ctx):
+async def _(ctx: "Bot.ParserHookContext"):
     if not ctx.data.get("show_typing", True):
         return None
     if ctx.data.get("base"):
@@ -313,7 +311,7 @@ async def _(ctx):
 
 
 @tos.hook(point=HookPoint.EXECUTION_ERROR, priority=10, name="abuse_warning", server_scope=True)
-async def _(ctx):
+async def _(ctx: "Bot.ParserHookContext"):
     error = ctx.data.get("error")
     if not isinstance(error, AbuseWarning):
         return None
@@ -328,7 +326,7 @@ async def _(ctx):
 
 
 @tos.hook("check_temp_ban")
-async def _(ctx):
+async def _(ctx: "Bot.ModuleHookContext"):
     """args: {"target": str} → 剩余秒数或 False"""
     target = ctx.args.get("target")
     if not target:
@@ -337,7 +335,7 @@ async def _(ctx):
 
 
 @tos.hook("remove_temp_ban")
-async def _(ctx):
+async def _(ctx: "Bot.ModuleHookContext"):
     """args: {"target": str} → None"""
     target = ctx.args.get("target")
     if target:
@@ -346,7 +344,7 @@ async def _(ctx):
 
 
 @tos.hook("report")
-async def _(ctx):
+async def _(ctx: "Bot.ModuleHookContext"):
     """args: {"sender","target","reason","banned"} → None
 
     Client 侧经 ``ServerAPI.trigger_hook("tos.report", ...)`` 调用，
@@ -361,6 +359,12 @@ async def _(ctx):
     return None
 
 
+@tos.hook("warning_counts")
+async def _(ctx: "Bot.ModuleHookContext") -> int:
+    """具名能力：读取当前 ToS 警告阈值。"""
+    return _warning_counts()
+
+
 __all__ = [
     "tos",
     "sender_scope_key",
@@ -369,12 +373,4 @@ __all__ = [
     "abuse_warn_target",
     "tos_report",
     "temp_ban_counter",
-    "_enable_tos",
-    "_temp_ban_check",
-    "_msg_counter",
-    "_temp_ban",
-    "_buckets_same",
-    "_buckets_all",
-    "_warning_counts",
-    "_temp_ban_time",
 ]

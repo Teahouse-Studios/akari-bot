@@ -9,6 +9,7 @@ from core.builtins.parser.hooks import Handled, HookPoint, ParserHookExecutor, R
 from core.builtins.parser.message import _execute_module
 from core.constants.exceptions import InvalidCommandFormatError
 from core.i18n import Locale
+from core.loader import ModulesManager
 from core.tester import Tester, func_case
 from core.types import Module
 from core.types.module.component_meta import CommandMeta, HookMeta
@@ -35,9 +36,15 @@ async def _run_template_recovery(
     module.suppress_invalid_prompt = suppress
     module.command_list.add(CommandMeta(function=command, command_template=parse_template(["run"])))
     meta = HookMeta(function=on_unmatched, point=HookPoint.COMMAND_UNMATCHED, server_scope=True)
+    builtin_policies = ModulesManager.modules.get("parser_policies")
+    modules = {module_name: module}
+    subscriptions = [build_subscription(module_name, meta, 0)]
+    if builtin_policies is not None:
+        modules["parser_policies"] = builtin_policies
+        subscriptions.extend(ModulesManager.parser_hook_subscriptions.get(HookPoint.COMMAND_UNMATCHED, ()))
     manager = SimpleNamespace(
-        modules={module_name: module},
-        parser_hook_subscriptions={HookPoint.COMMAND_UNMATCHED: [build_subscription(module_name, meta, 0)]},
+        modules=modules,
+        parser_hook_subscriptions={HookPoint.COMMAND_UNMATCHED: subscriptions},
     )
     executor = ParserHookExecutor(manager)
     session = SimpleNamespace(
@@ -69,12 +76,10 @@ async def _run_template_recovery(
         check_super_user=lambda: False,
     )
     with (
-        patch("core.builtins.parser.message._check_target_cooldown", new=AsyncMock()),
-        patch("core.builtins.parser.message._send_common_emote", new=AsyncMock()),
         patch("core.builtins.parser.message.ExecutionLockList.remove"),
         patch("core.builtins.parser.message.has_hook_subscribers", side_effect=executor.has_subscribers),
         patch("core.builtins.parser.message.dispatch_parser_hook", side_effect=executor.dispatch),
-        patch("core.builtins.parser.message.ModulesManager.return_modules_list", return_value=manager.modules),
+        patch("core.builtins.parser.message.ModulesManager.return_modules_list", return_value={module_name: module}),
     ):
         await _execute_module(msg, manager.modules, module_name, "[recovery test]", allow_recovery=allow_recovery)
     return msg, called, unmatched
@@ -94,7 +99,7 @@ async def _test_template_recovery_executes_after_confirmation():
 async def _test_template_recovery_prompt_boundaries():
     for options, expected_unmatched, expected_prompt in (
         ({}, True, True),
-        ({"allow_recovery": False}, False, True),
+        ({"allow_recovery": False}, True, True),
         ({"suppress": True}, False, False),
         ({"suppress": True, "allow_recovery": False}, False, False),
         ({"result": Handled()}, True, False),
@@ -117,7 +122,7 @@ async def _test_template_recovery_prompt_boundaries():
 async def _test_execution_format_error_does_not_retry():
     msg, called, unmatched = await _run_template_recovery(matched=True, execution_error=True)
     assert called == ["__template_recovery run"]
-    assert not unmatched
+    assert unmatched == [("__template_recovery", "syntax")]
     assert msg.send_message.await_count == 1
     assert msg.wait_confirm.await_count == 0
     return True

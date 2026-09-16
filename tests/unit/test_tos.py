@@ -192,7 +192,7 @@ async def test_tos(tester: Tester):
     await tester.test(_test_temp_ban_shared_by_sender_union, "临时封禁按用户 Union 共享测试")
     await tester.test(_test_rate_bucket_shared_by_sender_union, "ToS 令牌桶按用户 Union 共享测试")
     await tester.test(_test_counter_overflow_survives_notify_failure, "超限拒绝不被通知故障丢弃测试")
-    await tester.test(_test_temp_ban_hint_marks_stats_compat, "临封提示带兼容统计标记测试")
+    await tester.test(_test_temp_ban_hint_has_no_compat_metadata, "临封提示不携带兼容元数据测试")
     await tester.test(_test_penalty_cancellation_propagates, "ToS 通知保留取消与进程退出信号测试")
     await tester.test(_test_enforcement_failure_stops_execution, "ToS 检查故障拒绝执行并保留退出信号测试")
     await tester.test(_test_slow_penalty_keeps_rejection, "ToS 处罚不受默认 hook 超时策略放行测试")
@@ -250,8 +250,8 @@ async def _test_counter_overflow_survives_notify_failure():
         _buckets_all.clear()
 
 
-async def _test_temp_ban_hint_marks_stats_compat():
-    """仅临封提示分支带 stats_compat；升级处罚（penalty）不带，避免误计成功统计。"""
+async def _test_temp_ban_hint_has_no_compat_metadata():
+    """临封提示与升级处罚都使用普通 Stop，不携带旧流程兼容元数据。"""
     from core.builtins.parser.hooks import HookPoint, Stop
     from modules.core.hooks.tos import _temp_ban_check, temp_ban_counter
 
@@ -269,7 +269,7 @@ async def _test_temp_ban_hint_marks_stats_compat():
                     assert outcome.failed == 0 and outcome.executed == 1
                     hint = outcome.result
                     assert isinstance(hint, Stop)
-                    assert hint.data.get("stats_compat") == "session_finished"
+                    assert "stats_compat" not in hint.data
                     assert not hint.data.get("penalty")
 
         # count=4 → 升级处罚分支，标记为 penalty 且无兼容统计标记
@@ -281,7 +281,7 @@ async def _test_temp_ban_hint_marks_stats_compat():
             escalated = await _temp_ban_check(first)
         assert isinstance(escalated, Stop)
         assert escalated.data.get("penalty")
-        assert escalated.data.get("stats_compat") != "session_finished"
+        assert "stats_compat" not in escalated.data
         return True
     finally:
         temp_ban_counter.clear()

@@ -12,13 +12,9 @@ from core.builtins.parser.args import (
     templates_to_str,
 )
 from core.builtins.parser.command import CommandParser, _split_command
-from core.builtins.parser.message import (
-    _build_command_kwargs,
-    _format_error_detail,
-    _resolve_parsed_value,
-    _unwrap_option_value,
-)
+from core.builtins.parser.message import _build_command_kwargs, _resolve_parsed_value, _unwrap_option_value
 from core.builtins.message.elements import MarkdownElement
+from core.builtins.bot import Bot
 from core.constants.exceptions import InvalidTemplatePattern
 from core.tester import func_case, Tester
 from core.types import Module
@@ -361,10 +357,14 @@ def _test_split_command_option_quotes():
     )
 
 
-def _test_error_detail_markdown_format():
+async def _test_error_detail_markdown_format():
     """支持 Markdown 的平台应将错误详情包装为安全的代码块。"""
-    msg = SimpleNamespace(session_info=SimpleNamespace(support_markdown=True))
-    chain = _format_error_detail(msg, "failure: `value`")
+    session_info = SimpleNamespace(support_markdown=True)
+    chain = await Bot.Hook.trigger(
+        "parser_errors.format_error_detail",
+        session_info=session_info,
+        args={"text": "failure: `value`"},
+    )
     return (
         len(chain.values) == 1
         and isinstance(chain.values[0], MarkdownElement)

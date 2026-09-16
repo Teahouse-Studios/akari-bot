@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from core.builtins.parser.hooks import HookPoint
 from core.component import module
 from core.config.base import CoreConfig
@@ -11,17 +13,20 @@ from core.constants.info import Info
 from core.database.models import AnalyticsData
 from core.logger import Logger
 
+if TYPE_CHECKING:
+    from core.builtins.bot import Bot
+
 
 def _enable_analytics() -> bool:
     return bool(getattr(CoreConfig, "enable_analytics", False))
 
 
-telemetry = module("telemetry", hidden=True, load=True)
+telemetry = module("telemetry", hidden=True, load=True, base=True)
 
 
 @telemetry.hook(point=HookPoint.EXECUTION_FINISHED, priority=50, name="record", server_scope=True)
-async def _(ctx):
-    """旧 SessionFinished 分支：命令/正则解析计数与入库。"""
+async def _(ctx: "Bot.ParserHookContext"):
+    """命令/正则执行结束后的解析计数与入库。"""
     Info.command_parsed += 1
     if not _enable_analytics():
         return None
@@ -42,9 +47,9 @@ async def _(ctx):
 
 
 @telemetry.hook(point=HookPoint.FINISHED, priority=50, name="message_parsed", server_scope=True)
-async def _(ctx):
+async def _(ctx: "Bot.ParserHookContext"):
     """parser 主流程 finally：消息级计数。"""
     Info.message_parsed += 1
 
 
-__all__ = ["telemetry", "_enable_analytics"]
+__all__ = ["telemetry"]

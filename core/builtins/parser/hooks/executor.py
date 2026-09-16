@@ -60,9 +60,15 @@ _OBSERVER_POINTS = frozenset(
 # 每入口允许的结果类型；未列出的入口允许全部
 _ALLOWED_RESULTS: dict[HookPoint, tuple[type, ...]] = {
     HookPoint.SESSION_READY: (Continue, Stop),
+    HookPoint.SESSION_BEFORE_WAIT: (Continue, Stop),
     HookPoint.COMMAND_PREPARE: (Continue, Stop),
     HookPoint.COMMAND_BEFORE_PARSE: (Continue, Stop),
+    HookPoint.COMMAND_BEFORE_EXECUTE: (Continue, Stop),
+    HookPoint.COMMAND_ROUTE: (Continue, Stop),
     HookPoint.COMMAND_UNMATCHED: (Continue, Stop, RecoveryProposal, Handled),
+    HookPoint.REGEX_ROUTE: (Continue, Stop),
+    HookPoint.REGEX_CANDIDATE: (Continue, Stop),
+    HookPoint.CHANNEL_CLAIM: (Continue, Stop),
     HookPoint.REGEX_PREPARE: (Continue, Stop),
     HookPoint.REGEX_BEFORE_EXECUTE: (Continue, Stop),
     HookPoint.EXECUTION_FINISHED: (Continue,),
@@ -340,6 +346,13 @@ class ParserHookExecutor:
                         outcome.failed += 1
                         Logger.exception(f"Parser hook {sub.subscription_id} ({point}) draft commit failed; discarded.")
                         continue
+
+                if isinstance(result, Continue):
+                    # Continue carries optional stage metadata (for example, whether
+                    # the wait-task router should be skipped). Preserve contributions
+                    # from every subscriber instead of letting the last one overwrite them.
+                    if result.data:
+                        outcome.result = Continue(data={**outcome.result.data, **result.data})
                 if outgoing is not None and outgoing_draft is not None and point == HookPoint.OUTGOING_BEFORE_SEND:
                     if isinstance(result, Continue):
                         try:

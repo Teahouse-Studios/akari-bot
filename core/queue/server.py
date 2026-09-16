@@ -7,9 +7,9 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from core.alive import Alive
 from core.builtins.message.chain import MessageChain, MessageNodes
-from core.builtins.message.internal import I18NContext, Plain
+from core.builtins.message.internal import I18NContext
 from core.builtins.parser.command import CommandParser
-from core.builtins.parser.message import _format_error_detail, parser
+from core.builtins.parser.message import parser
 from core.builtins.session.info import EventInfo, SessionInfo
 from core.builtins.utils import command_prefix
 from core.constants.default import default_locale
@@ -86,10 +86,10 @@ async def report_error(method: str, details: str) -> None:
     _recent_reports[fingerprint] = now
 
     async def send_to_report_target(session, _report) -> None:
-        details_chain = (
-            _format_error_detail(session, details.strip())
-            if session.support_markdown
-            else MessageChain.assign(Plain(details.strip(), disable_joke=True, allow_parse=False))
+        details_chain = await exports["Bot"].Hook.trigger(
+            "parser_errors.format_error_detail",
+            session_info=session,
+            args={"text": details.strip()},
         )
         await ServerAPI.direct_message.submit(
             session,

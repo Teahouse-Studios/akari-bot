@@ -16,14 +16,11 @@ import hashlib
 import inspect
 import re
 import time
-import traceback
-from pathlib import Path
 from string import Template as stringTemplate
 from types import UnionType
 from typing import TYPE_CHECKING, Union, get_args, get_origin
 
-from core.builtins.message.chain import MessageChain, match_kecode
-from core.builtins.message.internal import ActionText, Image, Plain, Markdown, I18NContext
+from core.builtins.message.internal import I18NContext
 from core.builtins.parser.command import CommandParser
 from core.builtins.parser.hooks import (
     Continue,
@@ -37,62 +34,27 @@ from core.builtins.parser.hooks import (
 )
 from core.builtins.session.lock import ExecutionLockList
 from core.builtins.session.tasks import SessionTaskManager
-from core.config.base import CoreConfig
 from core.constants.exceptions import (
     AbuseWarning,
     ExternalException,
     InvalidCommandFormatError,
-    InvalidHelpDocTypeError,
     NoReportException,
     SessionFinished,
     SendMessageFailed,
     WaitCancelException,
 )
-from core.constants.path import assets_path
-from core.database.models import SenderUnionInfo, TargetUnionBind
+from core.database.models import TargetUnionBind
 from core.exports import exports
 from core.loader import ModulesManager
 from core.logger import Logger
-from core.report import send_report
 from core.module_runtime import ModuleRuntimeManager
-from core.utils.retired import (
-    is_module_allowed_when_retired,
-    is_retired_client,
-    is_retired_target,
-    is_yielding_retired_session,
-    should_yield_channel,
-)
 from core.types import Module, Param
 from core.types.module.component_meta import CommandMeta
 from core.utils.container import ExpiringTempDict
 from core.utils.func import normalize_space
-from core.utils.random import Random
 
 if TYPE_CHECKING:
     from core.builtins.bot import Bot
-
-# ========== 全局配置项 ==========
-
-# 忽略的用户列表 - 这些用户的消息不会被处理
-ignored_sender = CoreConfig.ignored_sender
-
-# ========== 功能开关 ==========
-
-# 错误报告的场景列表（将错误信息发送给这些场景）
-report_targets = CoreConfig.report_targets
-
-# Bug 报告的 URL
-bug_report_url = CoreConfig.bug_report_url
-
-# 命令输入与执行异常提示所使用的公共表情资源
-COMMON_EMOTE_DIR = assets_path / "emotes" / "common"
-INVALID_COMMAND_EMOTES = tuple(sorted((COMMON_EMOTE_DIR / "invalid").glob("*.gif")))
-BUG_EMOTES = tuple(sorted((COMMON_EMOTE_DIR / "bug").glob("*.gif")))
-
-# ========== 频率限制相关 ==========
-
-# 冷却计数 - 记录被暂时禁止的用户和禁止时长
-target_cooldown_counter = ExpiringTempDict()
 
 # 匹配哈希缓存 - 缓存消息与模块的匹配结果，加速处理
 match_hash_cache = ExpiringTempDict()
@@ -107,11 +69,6 @@ channel_claim_cache = ExpiringTempDict()
 # 标记为单次触发的正则，其「模块名 + 正则序号 + 场景 ID」在此登记，登记后不再参与匹配。
 # 仅存于进程内存，重启即清空；条目数上限为「触发过的场景数 × 单次触发正则条数」，有界。
 regex_once_cache: set[tuple[str, int, str]] = set()
-
-
-def _sender_scope_key(msg: "Bot.MessageSession") -> str | None:
-    """返回会话内需要按绑定身份共享的内存状态键。"""
-    return msg.session_info.sender_union_id or msg.session_info.sender_id
 
 
 async def _dispatch_stage(
@@ -147,6 +104,29 @@ async def _dispatch_stage(
     return result
 
 
+async def _dispatch_execution_error(
+    msg: "Bot.MessageSession",
+    error: BaseException,
+    *,
+    module_name: str | None,
+    module_type: str,
+    error_kind: str | None = None,
+) -> None:
+    """把执行异常交给错误策略；核心只负责分类和分发。"""
+    data = {"error": error, "module_type": module_type}
+    if error_kind is not None:
+        data["error_kind"] = error_kind
+    outcome = await _dispatch_stage(
+        HookPoint.EXECUTION_ERROR,
+        msg,
+        module_name=module_name,
+        command_first_word=module_name,
+        data=data,
+    )
+    if not isinstance(outcome, Handled):
+        Logger.exception(f"Unhandled parser execution error in module {module_name or '<unknown>'}.")
+
+
 async def _validate_recovery_target(
     msg: "Bot.MessageSession",
     modules,
@@ -156,8 +136,6 @@ async def _validate_recovery_target(
     """确认后重校验：模块仍在、已加载、平台可用、模板仍可解析。"""
     module = modules.get(command_first_word)
     if module is None or not module._db_load:
-        return False
-    if is_retired_client(msg.session_info.client_name) and not is_module_allowed_when_retired(command_first_word):
         return False
     has_template = any(func.command_template for func in module.command_list.get(msg.session_info.target_from))
     # 有命令模板但当前客户端解析不出可用命令，视为过期建议；无模板模块允许透传
@@ -222,10 +200,11 @@ async def _try_command_recovery(
                     Logger.exception("Failed to refresh session info during command recovery; aborting recovery.")
                     return True
                 if not await _validate_recovery_target(msg, fresh_modules, new_word, proposal.trigger_msg):
-                    await msg.send_message(
-                        I18NContext(
-                            "parser.command.invalid.module", cmd=ActionText(f"{msg.session_info.prefixes[0]}help")
-                        )
+                    await _dispatch_stage(
+                        HookPoint.COMMAND_UNMATCHED,
+                        msg,
+                        command_first_word=new_word,
+                        data={"unmatched_kind": "module", "recovery_stale": True},
                     )
                     return True
                 await _execute_module(msg, fresh_modules, new_word, identify_str, allow_recovery=False)
@@ -234,39 +213,10 @@ async def _try_command_recovery(
             return True
 
     if unmatched_kind == "template":
-        # 已知模块但模板不匹配：保留旧「语法错误」提示口径
-        await msg.send_message(
-            I18NContext(
-                "parser.command.invalid.syntax",
-                module=command_first_word,
-                cmd=ActionText(f"{msg.session_info.prefixes[0]}help {command_first_word}"),
-            )
-        )
-        await _send_common_emote(msg, INVALID_COMMAND_EMOTES)
-    elif msg.session_info.invalid_module_prompt_enabled:
-        await msg.send_message(
-            I18NContext(
-                "parser.command.invalid.module",
-                cmd=ActionText(f"{msg.session_info.prefixes[0]}help"),
-            )
-        )
-        await _send_common_emote(msg, INVALID_COMMAND_EMOTES)
+        # 默认语法提示由 parser_policies 的 COMMAND_UNMATCHED 订阅负责。
+        return True
+    # 默认模块不存在提示同样由策略订阅负责。
     return True
-
-
-def should_skip_regex(trigger_msg: str) -> bool:
-    prefixes = tuple(prefix for prefix in CoreConfig.regex_disable_prefix if isinstance(prefix, str) and prefix)
-    return trigger_msg.startswith(prefixes)
-
-
-async def _send_common_emote(msg: "Bot.MessageSession", emotes: tuple[Path, ...]) -> None:
-    """按配置单独发送一条随机公共表情消息。"""
-    if not CoreConfig.use_emote or not msg.session_info.support_image or not emotes:
-        return
-    try:
-        await msg.send_message(Image(Random.choice(emotes)), quote=False)
-    except SendMessageFailed:
-        Logger.warning(f"Failed to send common emote in session {msg.session_info.session_id}.")
 
 
 async def parser(msg: "Bot.MessageSession"):
@@ -295,40 +245,22 @@ async def parser(msg: "Bot.MessageSession"):
 
     # 创建标识字符串用于日志记录
     identify_str = f"[{msg.session_info.sender_id} ({msg.session_info.target_id})]"
-
-    # 检查用户是否在忽略列表中
-    if msg.session_info.sender_id in ignored_sender:
-        return
-
-    # 同一现实场景中的其它机器人输出既不能进入命令／正则，也不能抢先完成
-    # wait_anyone 等等待任务；过滤必须发生在 SessionTaskManager.check() 之前。
-    if msg.session_info.sender_id in msg.session_info.target_union_info.list_peer_bots(msg.session_info.target_id):
-        Logger.debug(f"Ignored message from another client: {msg.session_info.sender_id}")
-        return
-
     try:
-        # ========== 步骤 1: 入站权限检查 ==========
-
-        if msg.session_info.sender_union_info.blocked and not (
-            msg.session_info.sender_union_info.trusted or msg.session_info.sender_union_info.superuser
-        ):
-            return
-        if msg.session_info.sender_union_id in msg.session_info.banned_users and not msg.check_super_user():
-            return
-
-        # ========== 步骤 1.5: session.ready ==========
-        # 入站检查通过后、等待任务投递前；可写 tmp 等草稿字段，不改身份/等待键
+        # 入站策略（忽略发送者、互认机器人、封禁/阻断身份）在等待任务投递前统一处理。
         ready_result = await _dispatch_stage(HookPoint.SESSION_READY, msg)
         if isinstance(ready_result, Stop) and ready_result.scope == StopScope.MESSAGE:
             return
 
         # ========== 步骤 2: 检查任务队列 ==========
-        # 检查是否有等待此消息的任务（如等待用户回复）
-        if not await is_yielding_retired_session(
-            msg.session_info.target_id,
-            msg.session_info.target_union_id,
-            msg.session_info.target_channel_id,
-        ):
+        # 检查是否有等待此消息的任务（如等待用户回复）。入口策略可以明确让出等待路由，
+        # 但仍允许消息继续进入普通命令/正则流程。
+        wait_result = await _dispatch_stage(HookPoint.SESSION_BEFORE_WAIT, msg)
+        if isinstance(wait_result, Stop) and wait_result.scope == StopScope.MESSAGE:
+            return
+        skip_wait_tasks = isinstance(wait_result, Stop) or (
+            isinstance(wait_result, Continue) and wait_result.data.get("skip_wait_tasks", False)
+        )
+        if not skip_wait_tasks:
             # 消息已被等待任务或 callback 消费：它属于先前命令的执行域，
             # 不能再次进入命令/正则路由，否则会与持有锁的根命令形成自锁。
             if await SessionTaskManager.check(msg):
@@ -357,52 +289,61 @@ async def parser(msg: "Bot.MessageSession"):
 
             command_first_word = await _process_command(msg, modules, disable_prefix, in_prefix_list)
 
-            # 退役客户端仅保留白名单模块。此处须早于通道认领：若退役场景先认领再因退役不执行，
-            # 同通道的其他场景会因避让而放弃处理，该场景内将无客户端响应。
-            if (
-                is_retired_client(msg.session_info.client_name)
-                and not is_module_allowed_when_retired(command_first_word)
-                # and not msg.check_super_user()
-            ):
-                return
-
             routed_command_available = None
-            if command_first_word in modules and is_module_allowed_when_retired(command_first_word):
+            if command_first_word in modules:
                 routed_command_available = _command_available_for_current_session(
                     msg, modules[command_first_word], command_first_word
                 )
 
-            # 执行前先认领消息通道，同通道内已有场景认领则避让，_process_command 会去掉 trigger_msg 的前缀。
-            # 退役迁移命令按子命令分流， merge 由源退役端处理，merge token 由目标端处理。
-            if await _claim_channel_message(msg, routed_command_available=routed_command_available):
+            route_result = await _dispatch_stage(
+                HookPoint.COMMAND_ROUTE,
+                msg,
+                module_name=command_first_word,
+                command_first_word=command_first_word,
+                data={"routed_command_available": routed_command_available},
+            )
+            if isinstance(route_result, Stop):
+                return
+
+            claim_outcome = await _dispatch_channel_claim(
+                msg,
+                module_name=command_first_word,
+                command_first_word=command_first_word,
+                data={"routed_command_available": routed_command_available},
+            )
+            if isinstance(claim_outcome, Stop):
+                return
+            elif claim_outcome:
                 return
 
             if command_first_word:
                 if not await try_acquire_execution_lock(msg):
-                    await msg.send_message(I18NContext("parser.command.running.prompt"))
+                    await _dispatch_stage(
+                        HookPoint.COMMAND_BEFORE_EXECUTE,
+                        msg,
+                        command_first_word=command_first_word,
+                        data={"locked": True},
+                    )
                     return
-
-            if msg.session_info.muted and command_first_word != "mute":  # 检查机器人在场景中是否被禁言
-                return
 
             if command_first_word in modules:  # 检查触发命令是否在模块列表中
                 if modules[command_first_word]._db_load:  # 检查模块是否已加载
                     await _execute_module(msg, modules, command_first_word, identify_str)
                 else:
-                    await msg.send_message(I18NContext("parser.module.unloaded", module=command_first_word))
+                    await _dispatch_stage(
+                        HookPoint.COMMAND_UNMATCHED,
+                        msg,
+                        command_first_word=command_first_word,
+                        data={"unmatched_kind": "unloaded"},
+                    )
             else:
                 await _try_command_recovery(msg, modules, command_first_word, identify_str)
             return msg
 
-        # 检查正则
-        if should_skip_regex(msg.trigger_msg):
+        # 正则路由策略（禁用前缀、静音、运行中提醒）由 core policy hook 决定。
+        regex_route_result = await _dispatch_stage(HookPoint.REGEX_ROUTE, msg)
+        if isinstance(regex_route_result, Stop):
             return msg
-        if msg.session_info.muted:
-            return
-        if msg.session_info.use_running_mention:
-            if msg.trigger_msg.lower().find(msg.session_info.bot_name.lower()) != -1:
-                if await ExecutionLockList.is_locked(msg):
-                    return await msg.send_message(I18NContext("parser.command.running.prompt2"))
 
         await _execute_regex(msg, modules, identify_str)
         return msg
@@ -436,8 +377,33 @@ def _command_available_for_current_session(msg: "Bot.MessageSession", module: Mo
     return bool(parsed and parsed[0])
 
 
+async def _dispatch_channel_claim(
+    msg: "Bot.MessageSession",
+    *,
+    display: str | None = None,
+    module_name: str | None = None,
+    command_first_word: str | None = None,
+    data: dict | None = None,
+) -> bool | Stop:
+    """运行通道策略并认领消息；策略与去重共用一次通道查询。"""
+    union_id = msg.session_info.target_union_id
+    channels = await TargetUnionBind.list_channels(union_id) if union_id else {}
+    hook_data = dict(data or {})
+    hook_data["channels"] = channels
+    claim_result = await _dispatch_stage(
+        HookPoint.CHANNEL_CLAIM,
+        msg,
+        module_name=module_name,
+        command_first_word=command_first_word,
+        data=hook_data,
+    )
+    if isinstance(claim_result, Stop):
+        return claim_result
+    return await _claim_channel_message(msg, display, channels=channels)
+
+
 async def _claim_channel_message(
-    msg: "Bot.MessageSession", display: str | None = None, routed_command_available: bool | None = None
+    msg: "Bot.MessageSession", display: str | None = None, *, channels: dict[str, int] | None = None
 ) -> bool:
     """
     认领一条消息，并判断它是否已被同一消息通道内的另一个场景处理。
@@ -447,7 +413,6 @@ async def _claim_channel_message(
 
     :param msg: 消息会话。
     :param display: 参与判定的文本，留空则取命令文本。
-    :param routed_command_available: 当前客户端能否执行按平台分流的退役迁移命令；其它命令为 None。
     :return: True 表示已被其它场景认领，当前场景应当避让。
     """
     union_id = msg.session_info.target_union_id
@@ -455,23 +420,11 @@ async def _claim_channel_message(
         return False
     channel_id = msg.session_info.target_channel_id
 
-    channels = await TargetUnionBind.list_channels(union_id)
+    if channels is None:
+        channels = await TargetUnionBind.list_channels(union_id)
     # 通道内仅有自身时不存在重复执行的可能。
     if sum(1 for cid in channels.values() if cid == channel_id) <= 1:
         return False
-
-    channel_targets = [target_id for target_id, cid in channels.items() if cid == channel_id]
-    mixed_retired_channel = any(is_retired_target(target_id) for target_id in channel_targets) and any(
-        not is_retired_target(target_id) for target_id in channel_targets
-    )
-    if mixed_retired_channel and routed_command_available is False:
-        Logger.debug(f"Context {msg.session_info.target_id} yielded an unavailable routed command.")
-        return True
-
-    # 退役场景不执行白名单之外的命令，白名单迁移命令已在上方按具体子命令选定执行端
-    if routed_command_available is not True and should_yield_channel(msg.session_info.target_id, channels, channel_id):
-        Logger.debug(f"Retired context {msg.session_info.target_id} yielded the channel.")
-        return True
 
     if display is None:
         display = msg.trigger_msg
@@ -700,29 +653,6 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
     return first_word
 
 
-async def _check_superuser_or_authorized(msg: "Bot.MessageSession", module_name: str) -> bool:
-    """
-    检查用户是否有使用该模块的权限，支持模块授权。
-
-    先检查是否为超级用户，若不是则检查 sender_data 中的 module_auth 授权列表。
-    授权需同时验证授权者仍为超级用户。
-
-    :param msg: 消息会话对象
-    :param module_name: 模块名称
-    :return: 如果用户有权限返回 True
-    """
-    if msg.check_super_user():
-        return True
-    related_module_names = ModulesManager.get_module_and_alias_first_words(module_name) or [module_name]
-    auth_list = msg.session_info.sender_union_info.sender_data.get("module_auth", [])
-    for entry in auth_list:
-        if entry.get("module") in related_module_names:
-            authorizer = await SenderUnionInfo.get_by_sender_id(entry["authorized_by"], create=False)
-            if authorizer and authorizer.superuser:
-                return True
-    return False
-
-
 async def _execute_module(
     msg: "Bot.MessageSession",
     modules,
@@ -754,97 +684,22 @@ async def _execute_module(
     :param allow_recovery: 是否允许模板不匹配时走纠错恢复；恢复重入应传 False
     """
     time_start = time.perf_counter()
-    bot: "Bot" = exports["Bot"]
     _typing = False  # 标记是否正在显示“正在输入……”状态
     try:
-        # ========== 步骤 1: 冷却检查 ==========
-        # 检查场景是否在冷却期内（被临时禁止）
-        await _check_target_cooldown(msg)
+        module: Module = modules[command_first_word]
 
-        # ========== 步骤 2: 入口 prepare（ToS 临时封禁等）==========
+        # ========== 步骤 1: 入口 prepare（策略与 ToS）==========
         prepare_result = await _dispatch_stage(
             HookPoint.COMMAND_PREPARE,
             msg,
             module_name=command_first_word,
             command_first_word=command_first_word,
+            data={"module": module},
         )
         if isinstance(prepare_result, Stop):
-            # 仅旧临封提示分支（带 stats_compat 标记）经 SessionFinished 计入
-            # command_parsed；升级处罚等 handled Stop 只终止消息，不发布成功统计。
-            if prepare_result.scope == StopScope.MESSAGE:
-                if prepare_result.data.get("stats_compat") == "session_finished":
-                    raise SessionFinished(msg.sent)
-                return
             return
 
-        # ========== 步骤 3: 获取模块并检查是否有可用命令 ==========
-        module: Module = modules[command_first_word]
-        if not module.command_list.set:
-            # 模块没有可用的命令，展示模块简介
-            if module.unsupported_reason(msg.session_info):
-                # 模块受平台能力或权限所限，不展示简介
-                return
-            if module.desc:
-                # 发送模块描述
-                desc = [I18NContext("parser.module.desc", desc=msg.session_info.locale.t_str(module.desc))]
-                if command_first_word not in msg.session_info.enabled_modules:
-                    # 模块未启用，添加提示
-                    desc.append(
-                        I18NContext(
-                            "parser.module.disabled.prompt",
-                            module=command_first_word,
-                            cmd=ActionText(f"{msg.session_info.prefixes[0]}enable {command_first_word}"),
-                        )
-                    )
-                await msg.send_message(desc)
-            else:
-                # 没有描述，报告未绑定
-                await msg.send_message(I18NContext("error.module.unbound", module=command_first_word))
-            return
-
-        # ========== 步骤 4: 权限检查 ==========
-        if module.required_base_superuser:
-            # 需要基础超级用户权限
-            if msg.session_info.sender_id not in bot.base_superuser_list:
-                await msg.send_message(I18NContext("parser.superuser.permission.denied"))
-                return
-        elif module.required_superuser:
-            # 需要超级用户权限
-            if not await _check_superuser_or_authorized(msg, command_first_word):
-                await msg.send_message(I18NContext("parser.superuser.permission.denied"))
-                return
-        elif not module.base:
-            # 普通模块，检查是否已启用
-            if command_first_word not in msg.session_info.enabled_modules and msg.session_info.require_enable_modules:
-                # 模块未启用
-                if await msg.check_permission():
-                    # 用户有权限，询问是否启用
-                    await msg.send_message(
-                        I18NContext(
-                            "parser.module.disabled.prompt",
-                            module=command_first_word,
-                            cmd=ActionText(f"{msg.session_info.prefixes[0]}enable {command_first_word}"),
-                        )
-                    )
-                    if await msg.wait_confirm(I18NContext("parser.module.disabled.to_enable"), no_confirm_action=False):
-                        # 用户确认启用
-                        await msg.session_info.target_union_info.config_module(command_first_word)
-                        await msg.send_message(
-                            I18NContext("core.message.module.enable.success", module=command_first_word)
-                        )
-                    else:
-                        # 用户取消，终止执行
-                        return
-                else:
-                    # 用户无权限，直接拒绝
-                    await msg.finish(I18NContext("parser.module.disabled", module=command_first_word))
-        elif module.required_admin:
-            # 需要管理员权限
-            if not await msg.check_permission():
-                await msg.send_message(I18NContext("parser.admin.permission.denied.module", module=command_first_word))
-                return
-
-        # ========== 步骤 5: 入口 before_parse（ToS 令牌桶等）==========
+        # ========== 步骤 2: 入口 before_parse（ToS 令牌桶等）==========
         before_parse_result = await _dispatch_stage(
             HookPoint.COMMAND_BEFORE_PARSE,
             msg,
@@ -855,7 +710,7 @@ async def _execute_module(
         if isinstance(before_parse_result, Stop):
             return
 
-        # ========== 步骤 6: 检查并处理命令模板 ==========
+        # ========== 步骤 3: 检查并处理命令模板 ==========
         none_templates = True  # 标记模块是否有命令模板
         for func in module.command_list.get(msg.session_info.target_from):
             if func.command_template:
@@ -864,13 +719,16 @@ async def _execute_module(
 
         if not none_templates:
             # 有命令模板，进行命令解析
-            if await _execute_module_command(msg, module, command_first_word) is not False:
-                raise SessionFinished(msg.sent)  # 如果模块没有使用 msg.finish，手动结束会话
+            command_result = await _execute_module_command(msg, module, command_first_word)
+            if command_result is not False:
+                # ``None`` 表示命令已被入口策略处理（例如权限拒绝或参数错误），
+                # 不应伪装成成功执行；正常命令会在 helper 内抛出 SessionFinished。
+                return
             # 仅模板匹配失败进入恢复；参数转换或已开始执行的命令报错不能重试。
             if module.suppress_invalid_prompt:
                 return
         else:
-            # ========== 步骤 7: 无模板，直接传递消息 ==========
+            # ========== 步骤 4: 无模板，直接传递消息 ==========
             # 模块没有命令模板，直接将消息传给模块处理
             msg.parsed_msg = None
             for func in module.command_list.set:
@@ -884,20 +742,18 @@ async def _execute_module(
                         await func.function(msg)
                     raise SessionFinished(msg.sent)
 
-        # ========== 步骤 8: 模板未匹配时的恢复建议 ==========
+        # ========== 步骤 5: 模板未匹配时的恢复建议 ==========
         if allow_recovery:
             await _try_command_recovery(msg, modules, command_first_word, identify_str, unmatched_kind="template")
         else:
-            await msg.send_message(
-                I18NContext(
-                    "parser.command.invalid.syntax",
-                    module=command_first_word,
-                    cmd=ActionText(f"{msg.session_info.prefixes[0]}help {command_first_word}"),
-                )
+            await _dispatch_stage(
+                HookPoint.COMMAND_UNMATCHED,
+                msg,
+                command_first_word=command_first_word,
+                data={"unmatched_kind": "syntax", "suppress_invalid_prompt": module.suppress_invalid_prompt},
             )
-            await _send_common_emote(msg, INVALID_COMMAND_EMOTES)
-    except SendMessageFailed:
-        await _process_send_message_failed(msg)
+    except SendMessageFailed as e:
+        await _dispatch_execution_error(msg, e, module_name=command_first_word, module_type="normal")
 
     # ========== 异常处理 ==========
     except SessionFinished as e:
@@ -915,36 +771,24 @@ async def _execute_module(
         )
 
     except ExternalException as e:
-        # 外部异常（如网络错误、API 错误）
-        await _process_external_exception(msg, e)
+        await _dispatch_execution_error(msg, e, module_name=command_first_word, module_type="normal")
 
     except AbuseWarning as e:
-        # 业务处罚由 ToS 订阅拥有；失败或未 Handled 时不重跑可能已部分完成的处罚
-        if has_hook_subscribers(HookPoint.EXECUTION_ERROR):
-            outcome = await dispatch_parser_hook(
-                HookPoint.EXECUTION_ERROR,
-                msg,
-                module_name=command_first_word,
-                command_first_word=command_first_word,
-                data={"error": e, "module_type": "normal"},
-            )
-            if not isinstance(outcome.result, Handled):
-                await _process_abuse_generic_error(msg, e)
-        else:
-            await _process_abuse_generic_error(msg, e)
+        await _dispatch_execution_error(msg, e, module_name=command_first_word, module_type="normal")
 
     except NoReportException as e:
-        # 无需报告的异常（已知的用户错误）
-        await _process_noreport_exception(msg, e)
+        await _dispatch_execution_error(msg, e, module_name=command_first_word, module_type="normal")
 
     except Exception as e:
         # 其他未预期的异常
-        if "timeout" in str(e).lower().replace(" ", ""):
-            # 超时相关的异常作为外部异常处理
-            await _process_external_exception(msg, e)
-        else:
-            # 其他异常，记录详细信息并报告
-            await _process_exception(msg, e)
+        error_kind = "external" if "timeout" in str(e).lower().replace(" ", "") else None
+        await _dispatch_execution_error(
+            msg,
+            e,
+            module_name=command_first_word,
+            module_type="normal",
+            error_kind=error_kind,
+        )
     finally:
         # 清理工作
         if _typing:
@@ -1035,24 +879,6 @@ def regex_func_available(rfunc, target_from: str, client_name: str) -> bool:
     return "*" in rfunc.available_for or target_from in rfunc.available_for or client_name in rfunc.available_for
 
 
-async def regex_func_permitted(msg: "Bot.MessageSession", rfunc, module_name: str) -> bool:
-    """
-    判断一条正则处理函数在当前会话中是否有权执行。
-
-    该判定与消息内容无关，须在执行正则匹配之前完成，避免为无权使用的处理函数白付匹配开销。
-
-    :param msg: 消息会话。
-    :param rfunc: 正则处理函数的元数据。
-    :param module_name: 所属模块名称。
-    :return: 是否有权执行。
-    """
-    if rfunc.required_superuser:
-        return await _check_superuser_or_authorized(msg, module_name)
-    if rfunc.required_admin:
-        return await msg.check_permission()
-    return True
-
-
 async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
     """
     执行正则表达式匹配的模块。
@@ -1072,8 +898,6 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
     :param modules: 可用的模块字典
     :param identify_str: 用于日志的标识字符串
     """
-    bot: "Bot" = exports["Bot"]
-
     # 同一条消息会被所有模块的正则轮流匹配，而渲染结果只由这两个参数决定，
     # 按参数缓存一次，避免每条正则都把消息链重新走一遍
     display_cache: dict[tuple[bool, tuple], str] = {}
@@ -1090,10 +914,6 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
         if not modules[m]._db_load:
             continue
 
-        # 退役客户端仅保留白名单模块，其余模块的正则一律不参与匹配。
-        if is_retired_client(msg.session_info.client_name) and not is_module_allowed_when_retired(m):
-            continue
-
         try:
             # ========== 步骤 1: 检查模块是否已启用且有正则表达式 ==========
             if (
@@ -1104,21 +924,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
             ):
                 regex_module: Module = modules[m]
 
-                # ========== 步骤 2: 权限检查 ==========
-                if regex_module.required_base_superuser:
-                    # 需要基础超级用户权限
-                    if msg.session_info.sender_id not in bot.base_superuser_list:
-                        continue
-                elif regex_module.required_superuser:
-                    # 需要超级用户权限
-                    if not await _check_superuser_or_authorized(msg, m):
-                        continue
-                elif regex_module.required_admin:
-                    # 需要管理员权限
-                    if not await msg.check_permission():
-                        continue
-
-                # ========== 步骤 3: 检查模块可用性和平台限制 ==========
+                # ========== 步骤 2: 检查模块可用性和平台限制 ==========
                 if (
                     not regex_module.load  # 模块未加载
                     or msg.session_info.target_from in regex_module.exclude_from  # 平台被排除
@@ -1131,7 +937,18 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                 ):
                     continue
 
-                # ========== 步骤 4: 遍历模块的所有正则表达式 ==========
+                candidate_result = await _dispatch_stage(
+                    HookPoint.REGEX_CANDIDATE,
+                    msg,
+                    module_name=m,
+                    data={"module": regex_module},
+                )
+                if isinstance(candidate_result, Stop):
+                    if candidate_result.scope == StopScope.MESSAGE:
+                        return
+                    continue
+
+                # ========== 步骤 3: 遍历模块的所有正则表达式 ==========
                 for index, rfunc in enumerate(regex_module.regex_list.set):
                     # 正则级的平台声明，与命令级的 available_for / exclude_from 对称。
                     # 步骤 3 校验的是模块级声明，两者互不覆盖。
@@ -1141,10 +958,6 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                     # 单次触发的正则在该场景跑过之后不再参与匹配，避免每条消息都付出
                     # 通道认领的数据库查询与统计插入。
                     if rfunc.trigger_once_startup and regex_once_triggered(m, index, msg.session_info.target_id):
-                        continue
-
-                    # 权限与消息内容无关，先筛选后匹配，避免为无权使用的处理函数白付正则开销。
-                    if not await regex_func_permitted(msg, rfunc, m):
                         continue
 
                     time_start = time.perf_counter()
@@ -1178,10 +991,6 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                                 Logger.info(f"{identify_str} -> [Bot]: {msg.trigger_msg}")
                             Logger.debug("Matched hash:" + str(matched_hash))
 
-                            # 执行前先认领消息通道，同通道内已有场景认领则避让
-                            if await _claim_channel_message(msg, str(matched_hash)):
-                                continue
-
                             # ========== 循环匹配检测 ==========
                             # 检查是否重复匹配
                             if rfunc.logging and matched_hash in match_hash_cache[msg.session_info.target_id]:
@@ -1193,23 +1002,34 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                                 exp=1, root=False
                             )
 
-                            # ========== 入口 prepare / 冷却 ==========
+                            # ========== 入口 prepare / 冷却 / 权限 ==========
                             prepare_result = await _dispatch_stage(
                                 HookPoint.REGEX_PREPARE,
                                 msg,
                                 module_name=m,
-                                data={"show_typing": rfunc.show_typing, "base": regex_module.base},
+                                data={
+                                    "show_typing": rfunc.show_typing,
+                                    "base": regex_module.base,
+                                    "regex": rfunc,
+                                },
                             )
                             if isinstance(prepare_result, Stop):
                                 if prepare_result.scope == StopScope.MESSAGE:
-                                    # 旧口径：临封提示经 SessionFinished 计入统计
-                                    if prepare_result.data.get("stats_compat") == "session_finished":
-                                        raise SessionFinished(msg.sent)
                                     return
                                 continue
-                            if rfunc.show_typing:
-                                await _check_target_cooldown(msg)
 
+                            # 策略通过后再认领通道，未授权正则不会阻塞其它场景。
+                            claim_outcome = await _dispatch_channel_claim(
+                                msg,
+                                display=str(matched_hash),
+                                module_name=m,
+                                data={"matched_hash": matched_hash, "regex": rfunc},
+                            )
+                            if isinstance(claim_outcome, Stop):
+                                if claim_outcome.scope == StopScope.MESSAGE:
+                                    return
+                            elif claim_outcome:
+                                continue
                             # ========== 入口 before_execute（ToS 计数）==========
                             before_exec_result = await _dispatch_stage(
                                 HookPoint.REGEX_BEFORE_EXECUTE,
@@ -1261,89 +1081,27 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                         continue
 
                     except ExternalException as e:
-                        await _process_external_exception(msg, e)
+                        await _dispatch_execution_error(msg, e, module_name=m, module_type="regex")
 
                     except NoReportException as e:
-                        await _process_noreport_exception(msg, e)
+                        await _dispatch_execution_error(msg, e, module_name=m, module_type="regex")
 
                     except AbuseWarning as e:
-                        if has_hook_subscribers(HookPoint.EXECUTION_ERROR):
-                            outcome = await dispatch_parser_hook(
-                                HookPoint.EXECUTION_ERROR,
-                                msg,
-                                module_name=m,
-                                data={"error": e, "module_type": "regex"},
-                            )
-                            if not isinstance(outcome.result, Handled):
-                                await _process_abuse_generic_error(msg, e)
-                        else:
-                            await _process_abuse_generic_error(msg, e)
+                        await _dispatch_execution_error(msg, e, module_name=m, module_type="regex")
 
                     except Exception as e:
-                        if "timeout" in str(e).lower().replace(" ", ""):
-                            await _process_external_exception(msg, e)
-                        else:
-                            await _process_exception(msg, e)
+                        error_kind = "external" if "timeout" in str(e).lower().replace(" ", "") else None
+                        await _dispatch_execution_error(
+                            msg, e, module_name=m, module_type="regex", error_kind=error_kind
+                        )
                     finally:
                         if _typing:
                             await msg.end_typing()
                         ExecutionLockList.remove(msg)
 
-        except SendMessageFailed:
-            await _process_send_message_failed(msg)
+        except SendMessageFailed as e:
+            await _dispatch_execution_error(msg, e, module_name=m, module_type="regex")
             continue
-
-
-async def _check_target_cooldown(msg: "Bot.MessageSession"):
-    """
-    检查场景是否在冷却期内。
-
-    该函数实现了命令冷却机制，防止用户过于频繁地使用命令。
-    冷却时间可在场景配置中设置，管理员和超级用户不受限制。
-
-    工作流程：
-    1. 获取冷却时间配置
-    2. 检查用户是否有权限绕过冷却
-    3. 检查用户是否在冷却期内
-    4. 如果在冷却期，抛出异常阻止执行
-
-    :param msg: 消息会话对象
-    :raises NoReportException: 如果用户在冷却期内
-    """
-    # 获取场景配置的冷却时间（秒）
-    cooldown_time = int(msg.session_info.target_union_info.target_data.get("cooldown_time", 0))
-
-    # 如果没有配置冷却时间或用户有管理权限，直接返回
-    if not cooldown_time or await msg.check_permission():
-        return
-
-    # 获取该场景的冷却记录
-    target_record = target_cooldown_counter[msg.session_info.channel_key]
-
-    # 获取该用户的冷却记录
-    sender_key = _sender_scope_key(msg)
-    sender_record = target_record.get(sender_key)
-
-    # 如果不存在，则创建并跳过冷却提示
-    if not sender_record:
-        sender_record = ExpiringTempDict(data={"notified": False}, exp=cooldown_time, root=False)
-        target_record[sender_key] = sender_record
-        return
-
-    # 检查是否还在冷却期内
-    if not sender_record.is_expired():
-        # 如果还没有通知过用户，发送冷却提示
-        if not sender_record.get("notified", False):
-            sender_record["notified"] = True
-            # 计算剩余冷却时间
-            elapsed = cooldown_time - (time.time() - sender_record.ts)
-            await msg.finish(I18NContext("message.cooldown.manual", time=int(elapsed)))
-        await msg.finish()
-
-    # 重置冷却期
-    sender_record.refresh()
-    sender_record["notified"] = False
-    sender_record.exp = cooldown_time
 
 
 @functools.lru_cache(maxsize=256)
@@ -1534,207 +1292,50 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
             module, msg=msg, module_name=command_first_word, command_prefixes=msg.session_info.prefixes
         )
         try:
-            try:
-                parsed_msg = command_parser.parse(msg.trigger_msg)  # 解析模块的子功能命令
-            except InvalidCommandFormatError:
-                return False
-            command: CommandMeta = parsed_msg[0]
-            msg.parsed_msg = parsed_msg[1]  # 使用命令模板解析后的消息
-            Logger.trace("Parsed message: " + str(msg.parsed_msg))
-
-            # ========== 步骤 2: 验证用户权限 ==========
-
-            if command.required_base_superuser:
-                if msg.session_info.sender_id not in bot.base_superuser_list:
-                    await msg.send_message(I18NContext("parser.superuser.permission.denied"))
-                    return
-            elif command.required_superuser:
-                if not await _check_superuser_or_authorized(msg, command_first_word):
-                    await msg.send_message(I18NContext("parser.superuser.permission.denied"))
-                    return
-            elif command.required_admin:
-                if not await msg.check_permission():
-                    await msg.send_message(I18NContext("parser.admin.permission.denied.command"))
-                    return
-
-            # ========== 步骤 3: 检查命令是否在场景内有效 ==========
-
-            if (
-                not command.load
-                or msg.session_info.target_from in command.exclude_from
-                or msg.session_info.client_name in command.exclude_from
-                or (
-                    "*" not in command.available_for
-                    and msg.session_info.target_from not in command.available_for
-                    and msg.session_info.client_name not in command.available_for
-                )
-            ):
-                raise InvalidCommandFormatError
-
-            # ========== 步骤 4: 构建函数参数 ==========
-            # 根据命令函数的签名，准备调用参数（含带杠选项到函数参数的映射）
-            kwargs = _build_command_kwargs(command, msg, bot)
-
-            # ========== 步骤 5: 显示“正在输入……”状态 ==========
-            if msg.session_info.typing_prompt_enabled:
-                await msg.start_typing()
-                _typing = True
-
-            # ========== 步骤 6: 执行命令函数 ==========
-            async with ModuleRuntimeManager.use(module.module_name):
-                await parsed_msg[0].function(**kwargs)
-
-            # 如果函数没有使用 msg.finish，手动结束会话
-            raise SessionFinished(msg.sent)
+            parsed_msg = command_parser.parse(msg.trigger_msg)  # 解析模块的子功能命令
         except InvalidCommandFormatError:
-            # 模板已匹配后发生的转换/执行错误只报告语法错误，不能重新执行命令。
-            if module.suppress_invalid_prompt:
-                return
-            await msg.send_message(
-                I18NContext(
-                    "parser.command.invalid.syntax",
-                    module=command_first_word,
-                    cmd=ActionText(f"{msg.session_info.prefixes[0]}help {command_first_word}"),
-                )
-            )
-            await _send_common_emote(msg, INVALID_COMMAND_EMOTES)
+            return False
+        command: CommandMeta = parsed_msg[0]
+        msg.parsed_msg = parsed_msg[1]  # 使用命令模板解析后的消息
+        Logger.trace("Parsed message: " + str(msg.parsed_msg))
+
+        # ========== 步骤 2: 入口 before_execute（权限与平台策略）==========
+        authorize_result = await _dispatch_stage(
+            HookPoint.COMMAND_BEFORE_EXECUTE,
+            msg,
+            module_name=command_first_word,
+            command_first_word=command_first_word,
+            data={"command": command},
+        )
+        if isinstance(authorize_result, Stop):
             return
-        except Exception as e:
-            raise e
-    except InvalidHelpDocTypeError:
-        Logger.exception()
-        await msg.send_message(I18NContext("error.module.helpdoc_invalid", module=command_first_word))
-        await _send_common_emote(msg, BUG_EMOTES)
-        return
+
+        # ========== 步骤 3: 构建函数参数 ==========
+        # 根据命令函数的签名，准备调用参数（含带杠选项到函数参数的映射）
+        kwargs = _build_command_kwargs(command, msg, bot)
+
+        # ========== 步骤 4: 显示“正在输入……”状态 ==========
+        if msg.session_info.typing_prompt_enabled:
+            await msg.start_typing()
+            _typing = True
+
+        # ========== 步骤 5: 执行命令函数 ==========
+        async with ModuleRuntimeManager.use(module.module_name):
+            await parsed_msg[0].function(**kwargs)
+
+        # 如果函数没有使用 msg.finish，手动结束会话
+        raise SessionFinished(msg.sent)
+    except InvalidCommandFormatError:
+        # 模板已匹配后发生的转换错误只进入 hook，不能重新执行命令。
+        await _dispatch_stage(
+            HookPoint.COMMAND_UNMATCHED,
+            msg,
+            command_first_word=command_first_word,
+            data={"unmatched_kind": "syntax", "suppress_invalid_prompt": module.suppress_invalid_prompt},
+        )
     finally:
         if _typing:
             await msg.end_typing()
-
-
-async def _process_abuse_generic_error(msg: "Bot.MessageSession", e: AbuseWarning):
-    """AbuseWarning 的核心通用反馈：不写警告、不上报、不临封。
-
-    业务处罚由 ``modules/core/tos.py`` 的 EXECUTION_ERROR 订阅拥有；
-    无订阅或订阅失败时只给用户错误提示，避免重复处罚。
-    """
-    err_msg_chain = MessageChain.assign(I18NContext("error.message.prompt"))
-    # AbuseWarning 文本可能是 {I18N:...} kecode，交给消息链解析而非 t_str 字面量
-    err_msg_chain += match_kecode(msg.session_info.locale.t_str(str(e)))
-    err_msg_chain.append(I18NContext("error.message.prompt.noreport"))
-    await msg.send_message(err_msg_chain)
-
-
-def _format_error_detail(msg_or_session, text: str) -> MessageChain:
-    """按目标平台能力格式化错误详情。支持 Markdown 时使用 fenced code block。"""
-    session_info = getattr(msg_or_session, "session_info", msg_or_session)
-    if not session_info.support_markdown:
-        return match_kecode(text)
-
-    # 选择比正文中最长反引号序列更长的 fence，避免异常文本意外结束代码块。
-    longest_fence = max((len(match.group(0)) for match in re.finditer(r"`+", text)), default=0)
-    fence = "`" * max(3, longest_fence + 1)
-    return MessageChain.assign(Markdown(f"{fence}\n{text}\n{fence}", disable_joke=True, allow_parse=False))
-
-
-async def _process_send_message_failed(msg: "Bot.MessageSession"):
-    """
-    处理消息发送失败的情况。
-
-    当机器人无法发送消息时（如被禁言、权限不足等），
-    触发错误信号并尝试通知用户。
-
-    :param msg: 消息会话对象
-    """
-    await msg.handle_error_signal()
-    await msg.send_message(I18NContext("error.message.limited"))
-
-
-async def _process_noreport_exception(msg: "Bot.MessageSession", e: NoReportException):
-    """
-    处理无需报告的异常。
-
-    这类异常通常是已知的用户错误（如参数错误、权限不足等），
-    不需要记录详细的错误报告，只需告知用户。
-
-    :param msg: 消息会话对象
-    :param e: 无需报告的异常对象
-    """
-    Logger.exception()
-    err_msg_chain = MessageChain.assign(I18NContext("error.message.prompt"))
-    err_msg = msg.session_info.locale.t_str(str(e))
-    err_msg_chain += _format_error_detail(msg, err_msg)
-    err_msg_chain.append(I18NContext("error.message.prompt.noreport"))
-    await msg.handle_error_signal()
-    await msg.send_message(err_msg_chain)
-    await _send_common_emote(msg, BUG_EMOTES)
-
-
-async def _process_external_exception(msg: "Bot.MessageSession", e: Exception):
-    """
-    处理外部异常（如网络错误、API 错误等）。
-
-    这类异常通常是由外部服务引起的（如 API 不可用、网络超时等），
-    需要告知用户问题来源，并提供反馈渠道。
-
-    :param msg: 消息会话对象
-    :param e: 外部异常对象
-    """
-    Logger.exception()
-    err_msg_chain = MessageChain.assign(I18NContext("error.message.prompt"))
-    err_msg = msg.session_info.locale.t_str(str(e))
-    err_msg_chain += _format_error_detail(msg, err_msg)
-    err_msg_chain.append(I18NContext("error.message.prompt.external"))
-    if bug_report_url:
-        err_msg_chain.append(I18NContext("error.message.prompt.address", url=bug_report_url))
-    await msg.handle_error_signal()
-    await msg.send_message(err_msg_chain)
-    await _send_common_emote(msg, BUG_EMOTES)
-
-
-async def _process_exception(msg: "Bot.MessageSession", e: Exception):
-    """
-    处理未预期的内部异常。
-
-    这是最后的异常处理层，用于捕获所有未被其他处理器捕获的异常。
-    会记录完整的错误堆栈，通知用户，并将错误报告发送给管理员。
-
-    处理流程：
-    1. 记录完整的错误堆栈到日志
-    2. 向用户发送错误消息和报告提示
-    3. 如果配置了报告场景，发送详细错误报告给管理员
-
-    :param msg: 消息会话对象
-    :param e: 异常对象
-    """
-    # 获取完整的错误堆栈
-    tb = traceback.format_exc()
-    Logger.error(tb)
-
-    # 构建用户错误消息
-    err_msg_chain = MessageChain.assign(I18NContext("error.message.prompt"))
-    err_msg = msg.session_info.locale.t_str(str(e))
-    err_msg_chain += _format_error_detail(msg, err_msg)
-    err_msg_chain.append(I18NContext("error.message.prompt.report"))
-
-    # 添加 bug 报告地址
-    if bug_report_url:
-        err_msg_chain.append(I18NContext("error.message.prompt.address", url=bug_report_url))
-
-    # 触发错误信号并发送消息
-    await msg.handle_error_signal()
-    await msg.send_message(err_msg_chain)
-    await _send_common_emote(msg, BUG_EMOTES)
-    # 发送错误报告给管理员
-    await send_report(
-        message=MessageChain.assign(
-            [
-                I18NContext("error.message.report", disable_joke=True, command=msg.trigger_msg),
-                Plain(tb.strip(), disable_joke=True, allow_parse=False),
-            ]
-        ),
-        subject=f"[AkariBot] An error occurred: {msg.trigger_msg}",
-        targets=report_targets,
-    )
 
 
 __all__ = ["parser"]

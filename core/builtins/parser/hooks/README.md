@@ -5,31 +5,42 @@
 ## 快速开始
 
 ```python
-from core.builtins.parser.hooks import Continue, HookPoint, Stop, StopScope
+from typing import TYPE_CHECKING
+
+from core.builtins.parser.hooks import HookPoint
 from core.component import module
+
+if TYPE_CHECKING:
+    from core.builtins.bot import Bot
 
 ext = module("example-ext", hidden=True)
 
 
 @ext.hook(point=HookPoint.COMMAND_PREPARE, priority=10, name="policy")
-async def _(ctx):
+async def _(ctx: "Bot.ParserHookContext"):
     # ctx.msg / ctx.session_info / ctx.data / ctx.module_name
     if should_block(ctx.msg):
-        return Stop(message=None, scope=StopScope.MESSAGE)
-    return Continue()
+        return ctx.Stop(scope=ctx.StopScope.MESSAGE)
+    return ctx.Continue()
 ```
 
 ## 入口一览
 
 | HookPoint | 时机 | 典型用途 |
 | --- | --- | --- |
-| `SESSION_READY` | 入站检查后、等待任务前 | 补充 tmp；可写 SessionDraft |
-| `COMMAND_PREPARE` | 冷却后、模块权限前 | ToS 临封；可写 SessionDraft |
-| `COMMAND_BEFORE_PARSE` | 权限后、模板解析前 | ToS 计数；可写 SessionDraft |
+| `SESSION_READY` | 会话刷新后、等待任务前 | 入站过滤、补充 tmp；可写 SessionDraft |
+| `SESSION_BEFORE_WAIT` | 入站策略后、等待任务投递前 | 调整等待任务路由 |
+| `COMMAND_PREPARE` | 命令候选后、模块权限前 | 冷却、ToS 临封；可写 SessionDraft |
+| `COMMAND_BEFORE_PARSE` | 模块策略后、模板解析前 | ToS 计数；可写 SessionDraft |
+| `COMMAND_BEFORE_EXECUTE` | 模板解析后、命令函数调用前 | 命令权限与平台策略 |
+| `COMMAND_ROUTE` | 命令解析后、通道认领前 | 命令路由与迁移策略 |
 | `COMMAND_UNMATCHED` | 未找到模块/模板 | 纠错建议；可写 SessionDraft |
-| `REGEX_PREPARE` | 正则匹配去重后 | regex 临封 |
+| `REGEX_ROUTE` | 消息规范化后、正则候选遍历前 | 正则禁用前缀、静音与运行中提醒 |
+| `REGEX_CANDIDATE` | 每个正则模块匹配前 | 模块级正则路由 |
+| `CHANNEL_CLAIM` | 候选策略通过后、通道认领前 | 通道让位策略 |
+| `REGEX_PREPARE` | 正则匹配并完成循环去重后 | regex 临封与权限 |
 | `REGEX_BEFORE_EXECUTE` | regex 冷却后、取锁前 | regex 计数 |
-| `EXECUTION_FINISHED` | 旧 SessionFinished 分支 | 统计观察 |
+| `EXECUTION_FINISHED` | 命令/正则函数执行结束 | 统计观察 |
 | `EXECUTION_ERROR` | 可分类异常 | AbuseWarning 处理 |
 | `FINISHED` | parser finally 清理后 | 消息级计数 |
 | `OUTGOING_BEFORE_SEND` | 安全检查后、平台发送前 | 消息转换；可改 `ctx.outgoing.chain` |
@@ -57,9 +68,9 @@ async def _(ctx):
 
 ```python
 @ext.hook(point=HookPoint.COMMAND_PREPARE)
-async def _(ctx):
+async def _(ctx: "Bot.ParserHookContext"):
     ctx.draft.set_tmp("tag", "1")
-    return Continue()
+    return ctx.Continue()
 ```
 
 身份、权限、ORM、执行锁不在草稿内。
@@ -89,11 +100,14 @@ hook 不得：
 
 - 用 `msg.finish()` / 抛 `SessionFinished` 表达业务拒绝（请用 `Stop`）
 - 在观察入口吞掉原异常或改写执行结果
-- 依赖对 SessionInfo 物理身份的写入（本期无草稿事务）
+- 依赖对 SessionInfo 身份字段的写入（可写字段必须经 `SessionDraft` 提交）
 
 ## 内置订阅方
 
-- `modules/core/tos.py`：临封、令牌桶、上报；四个强制检查不限时且检查故障按消息级 `Stop` 处理，
+- `modules/core/hooks/policies.py`：入站、冷却、权限、正则路由和默认命令反馈
+- `modules/core/hooks/errors.py`：异常反馈与错误详情格式化
+- `modules/core/hooks/retired.py`：退役客户端路由和通道让位
+- `modules/core/hooks/tos.py`：临封、令牌桶、上报；四个强制检查不限时且检查故障按消息级 `Stop` 处理，
   避免失败放行；具名能力 `tos.check_temp_ban` / `tos.remove_temp_ban` / `tos.report`
-- `modules/core/telemetry.py`：AnalyticsData 与 Info 计数
-- `modules/core/typo.py`：纠错 RecoveryProposal
+- `modules/core/hooks/telemetry.py`：AnalyticsData 与 Info 计数
+- `modules/core/hooks/typo.py`：纠错 RecoveryProposal

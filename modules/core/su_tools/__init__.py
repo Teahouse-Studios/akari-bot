@@ -16,7 +16,6 @@ from .restart import *
 from .say import *
 from .set import *
 from .superuser import *
-from .tos_utils import *
 from .update import *
 from .update_script import *
 from .url_audit import *

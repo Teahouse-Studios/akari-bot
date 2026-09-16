@@ -3,11 +3,6 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
 from core.component import module
 from core.database.models import SenderUnionInfo, TargetUnionInfo
-from modules.core.hooks.tos import _warning_counts as _tos_warning_counts
-from modules.core.su_tools.tos_utils import (
-    check_temp_ban_for_admin as _tos_check_temp_ban,
-    remove_temp_ban_for_admin as _tos_remove_temp_ban,
-)
 
 ae = module("abuse", alias="ae", required_superuser=True, base=True, doc=True)
 
@@ -22,7 +17,9 @@ async def _(msg: Bot.MessageSession, user: str):
             await msg.finish()
         sender_union_info = await SenderUnionInfo.resolve_union(user)
     warns = sender_union_info.warns
-    temp_banned_time = await _tos_check_temp_ban(user)
+    temp_banned_time = await Bot.Hook.trigger(
+        "tos.check_temp_ban", session_info=msg.session_info, args={"target": user}
+    )
     stat = []
     if temp_banned_time:
         stat.append(I18NContext("core.message.abuse.check.tempbanned", ban_time=temp_banned_time))
@@ -43,7 +40,8 @@ async def _(msg: Bot.MessageSession, user: str, count: int = 1):
             await msg.finish()
         sender_union_info = await SenderUnionInfo.resolve_union(user)
     await sender_union_info.warn_user(count)
-    if sender_union_info.warns > _tos_warning_counts() >= 1 and not sender_union_info.trusted:
+    warning_counts = await Bot.Hook.trigger("tos.warning_counts", session_info=msg.session_info)
+    if sender_union_info.warns > warning_counts >= 1 and not sender_union_info.trusted:
         await sender_union_info.switch_identity(trust=False)
     await msg.finish(
         I18NContext("core.message.abuse.warn.success", sender=user, count=count, warn_count=sender_union_info.warns)
@@ -82,7 +80,7 @@ async def _(msg: Bot.MessageSession, user: str):
 async def _(msg: Bot.MessageSession, user: str):
     if not Alive.determine_sender_from(user):
         await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
-    await _tos_remove_temp_ban(user)
+    await Bot.Hook.trigger("tos.remove_temp_ban", session_info=msg.session_info, args={"target": user})
     await msg.finish(I18NContext("core.message.abuse.untempban.success", sender=user))
 
 

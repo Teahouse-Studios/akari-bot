@@ -36,10 +36,13 @@ class Stop(HookResult):
 
     :param message: 可选的用户可见提示；由 parser 统一发送。
     :param scope: ``candidate`` 停止当前命令/正则候选；``message`` 停止整条消息处理。
-    :param data: 供观察入口或兼容适配器使用的附加数据。
+    :param data: 供后续策略或观察入口使用的附加数据。
     """
 
-    message: MessageChain | None = None
+    message: MessageChain | None = field(
+        default=None,
+        converter=lambda value: MessageChain.assign(value) if value is not None else None,
+    )
     scope: StopScope = StopScope.CANDIDATE
     data: dict = field(factory=dict)
 

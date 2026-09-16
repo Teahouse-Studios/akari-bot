@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import copy
 import re
+from typing import TYPE_CHECKING
 
 from rapidfuzz import process
 
@@ -20,6 +21,9 @@ from core.logger import Logger
 from core.types import Module
 from core.types.module.component_meta import CommandMeta
 
+if TYPE_CHECKING:
+    from core.builtins.bot import Bot
+
 typo_check_module_score = CoreConfig.typo_check_module_score
 typo_check_command_score = CoreConfig.typo_check_command_score
 typo_check_args_score = CoreConfig.typo_check_args_score
@@ -27,7 +31,7 @@ typo_check_options_score = CoreConfig.typo_check_options_score
 typo_check_args_diff_ratio = CoreConfig.typo_check_args_diff_ratio
 typo_check_module_diff_ratio = CoreConfig.typo_check_module_diff_ratio
 
-typo = module("typo", hidden=True, load=True)
+typo = module("typo", hidden=True, load=True, base=True)
 
 
 def _get_close_matches(word, possibilities, n=1, cutoff=0.6):
@@ -219,8 +223,10 @@ def suggest_correction(msg, modules, command_first_word) -> RecoveryProposal | N
 
 
 @typo.hook(point=HookPoint.COMMAND_UNMATCHED, priority=50, name="suggest", server_scope=True)
-async def _(ctx):
+async def _(ctx: "Bot.ParserHookContext"):
     """未匹配模块时提供纠错建议。用户偏好关闭时跳过。"""
+    if ctx.data.get("unmatched_kind") != "module" or ctx.data.get("recovery_stale"):
+        return None
     if not ctx.msg.session_info.sender_union_info.sender_data.get("typo_check", True):
         return None
     modules = ModulesManager.return_modules_list(

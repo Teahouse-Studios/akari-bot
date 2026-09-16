@@ -10,12 +10,13 @@ from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from attrs import define, field as attrs_field
 
 from .draft import SessionDraft
 from .points import HookPoint
+from .results import Continue, Handled, RecoveryProposal, Stop, StopScope
 
 if TYPE_CHECKING:
     from core.builtins.bot import Bot
@@ -150,6 +151,13 @@ class OutgoingPayload:
 @define
 class ParserHookContext:
     """入口订阅执行时的受控上下文。"""
+
+    # 结果类型作为上下文能力暴露，内置模块无需为简单控制流重复导入。
+    Continue: ClassVar[type[Continue]] = Continue
+    Stop: ClassVar[type[Stop]] = Stop
+    StopScope: ClassVar[type[StopScope]] = StopScope
+    Handled: ClassVar[type[Handled]] = Handled
+    RecoveryProposal: ClassVar[type[RecoveryProposal]] = RecoveryProposal
 
     point: HookPoint
     msg: "Bot.MessageSession"

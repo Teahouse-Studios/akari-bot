@@ -1,0 +1,86 @@
+"""退役客户端的消息路由策略。
+
+退役是部署策略，不属于 parser 的通用命令/正则协调逻辑。该模块只在入口
+hook 中决定是否让出等待任务、候选模块或消息通道；迁移公告和主动推送仍由
+``core.utils.retired`` 提供给对应的业务模块使用。
+"""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from core.builtins.parser.hooks import HookPoint
+from core.component import module
+from core.database.models import TargetUnionBind
+from core.utils.retired import (
+    is_module_allowed_when_retired,
+    is_retired_client,
+    is_retired_target,
+    should_yield_channel,
+)
+
+if TYPE_CHECKING:
+    from core.builtins.bot import Bot
+
+
+retired = module("retired_policy", hidden=True, load=True, base=True)
+
+
+@retired.hook(point=HookPoint.COMMAND_ROUTE, priority=1, name="route_gate", server_scope=True)
+async def _(ctx: "Bot.ParserHookContext"):
+    """在通道认领前过滤退役客户端上的非迁移命令。"""
+    if is_retired_client(ctx.msg.session_info.client_name) and not is_module_allowed_when_retired(
+        ctx.module_name or ctx.command_first_word
+    ):
+        return ctx.Stop(scope=ctx.StopScope.MESSAGE)
+    return None
+
+
+@retired.hook(point=HookPoint.SESSION_BEFORE_WAIT, priority=10, name="wait_task", server_scope=True, timeout=0)
+async def _(ctx: "Bot.ParserHookContext"):
+    """退役场景与存活场景共用通道时，不抢先前命令的等待回复。"""
+    info = ctx.msg.session_info
+    if not is_retired_target(info.target_id) or not info.target_union_id:
+        return None
+    channels = ctx.data.get("channels")
+    if channels is None:
+        channels = await TargetUnionBind.list_channels(info.target_union_id)
+    if should_yield_channel(info.target_id, channels, info.target_channel_id):
+        return ctx.Continue(data={"skip_wait_tasks": True})
+    return None
+
+
+@retired.hook(point=HookPoint.REGEX_CANDIDATE, priority=10, name="regex_gate", server_scope=True)
+async def _(ctx: "Bot.ParserHookContext"):
+    """退役客户端不参与迁移白名单之外的正则匹配。"""
+    if is_retired_client(ctx.msg.session_info.client_name) and not is_module_allowed_when_retired(ctx.module_name):
+        return ctx.Stop(scope=ctx.StopScope.CANDIDATE)
+    return None
+
+
+@retired.hook(point=HookPoint.CHANNEL_CLAIM, priority=10, name="yield", server_scope=True, timeout=0)
+async def _(ctx: "Bot.ParserHookContext"):
+    """在同通道的退役/存活场景之间选择唯一执行端。"""
+    info = ctx.msg.session_info
+    if not info.target_union_id:
+        return None
+    channels = ctx.data.get("channels")
+    if channels is None:
+        channels = await TargetUnionBind.list_channels(info.target_union_id)
+    channel_id = info.target_channel_id
+    channel_targets = [target_id for target_id, cid in channels.items() if cid == channel_id]
+    if len(channel_targets) <= 1:
+        return None
+
+    routed_available = ctx.data.get("routed_command_available")
+    mixed_channel = any(is_retired_target(target_id) for target_id in channel_targets) and any(
+        not is_retired_target(target_id) for target_id in channel_targets
+    )
+    if mixed_channel and routed_available is False:
+        return ctx.Stop(scope=ctx.StopScope.CANDIDATE)
+    if routed_available is not True and should_yield_channel(info.target_id, channels, channel_id):
+        return ctx.Stop(scope=ctx.StopScope.CANDIDATE)
+    return None
+
+
+__all__ = ["retired"]
