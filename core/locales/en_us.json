@@ -77,8 +77,6 @@
     "config.comments.secret.db_path": "Database connection string, use the connection string format supported by Tortoise ORM.",
     "config.comments.secret.proxy": "Proxy service address.",
     "config.comments.smtp_secret.smtp_password": "SMTP login password.",
-    "config.comments.smtp_secret.smtp_recipients": "Email reporting recipients.",
-    "config.comments.smtp.enable": "Whether to enable SMTP email reporting. If enabled, reporting messages will no longer be reported to the contexts.",
     "config.comments.smtp.smtp_host": "SMTP server address.",
     "config.comments.smtp.smtp_port": "SMTP server port number.",
     "config.comments.smtp.smtp_sender": "Sender address. Leave blank to use the login username.",
