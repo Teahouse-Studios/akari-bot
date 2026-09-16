@@ -4,12 +4,12 @@
 
 [smtp]
 # The basic config section of the SMTP. The values entered here can be displayed in the message. Please do not enter sensitive information in this section.
-enable_email_report = false # 是否开启 SMTP 邮件上报，开启后将不再上报至场景。
+enable_email_report = false # Whether to enable SMTP email reporting. If enabled, messages will no longer be reported to the context.
 smtp_host = "<Replace me with str value>" # SMTP server address.
 smtp_port = 587 # SMTP server port number.
-smtp_username = "<Replace me with str value>" # SMTP login username.
-smtp_sender = "<Replace me with str value>" # Sender address. Leave blank to use the login username.
-smtp_recipients = [] # 邮件上报收件人列表。
+smtp_user = "AkariBot" # SMTP 登录邮箱地址。
+smtp_sender_name = "<Replace me with str value>" # 发件人名称，留空则使用登录邮箱地址。
+smtp_recipients = [] # List of recipients for the email report.
 smtp_ssl = false # Whether to use SMTPS (SSL) connection.
 smtp_starttls = true # Whether to enable STARTTLS.
 
