@@ -13,7 +13,6 @@
     "config.comments.module_maimai_secret.lxns_developer_token": "落雪咖啡屋查分器的开发者令牌。",
     "config.comments.module_maimai_secret.diving_fish_client_secret": "水鱼账号 OAuth 应用的 client_secret。公开客户端可留空。",
     "config.comments.module_maimai_secret.lxns_client_secret": "落雪咖啡屋 OAuth 应用的 client_secret。",
-    "config.comments.module_maimai_secret.lxns_redirect_uri": "/",
     "maimai.help.alias": "查询歌曲的别名。",
     "maimai.help.b50": "查询 Maimai 玩家的 B50 列表。",
     "maimai.help.base": "根据定数或定数范围搜索歌曲。",
