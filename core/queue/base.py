@@ -75,6 +75,7 @@ class JobQueueBase:
     identity: PeerIdentity | None = None
     _pending: dict[str, asyncio.Future[RpcResponse]] = {}
     _process_tasks: set[asyncio.Task[None]] = set()
+    _cleanup_tasks: set[asyncio.Task[None]] = set()
     pause_event = asyncio.Event()
     pause_event.set()
     _poll_lock = asyncio.Lock()
@@ -99,6 +100,7 @@ class JobQueueBase:
         cls.identity = None
         cls._pending = {}
         cls._process_tasks = set()
+        cls._cleanup_tasks = set()
         cls.pause_event = asyncio.Event()
         cls.pause_event.set()
         cls._poll_lock = asyncio.Lock()
@@ -512,26 +514,29 @@ class JobQueueBase:
 
         Cleanup may race a remote claim/respond transaction.  It must remain
         cancellation-safe, but an unhealthy backend must not turn that race into
-        an unbounded wait in an RPC or shutdown ``finally`` block.
+        an unbounded wait in an RPC or shutdown ``finally`` block.  Once the
+        caller's bound is reached, the backend operation is allowed to finish in
+        the background so a slow database driver can release its transaction;
+        peer shutdown owns the final cancellation and join of these tasks.
         """
         if not task_ids:
             return
         abandon_task = asyncio.create_task(cls.transport.abandon(task_ids))
+        cls._cleanup_tasks.add(abandon_task)
         try:
             done, _ = await asyncio.wait((abandon_task,), timeout=cls.ABANDON_TIMEOUT_SECONDS)
         except asyncio.CancelledError:
-            abandon_task.cancel()
             abandon_task.add_done_callback(cls._abandon_task_done)
             raise
         if not done:
-            abandon_task.cancel()
             abandon_task.add_done_callback(cls._abandon_task_done)
             Logger.error(f"Timed out cleaning up {len(task_ids)} abandoned JobQueue delivery(ies).")
             return
         abandon_task.result()
 
-    @staticmethod
-    def _abandon_task_done(task: asyncio.Task) -> None:
+    @classmethod
+    def _abandon_task_done(cls, task: asyncio.Task) -> None:
+        cls._cleanup_tasks.discard(task)
         if task.cancelled():
             return
         try:
@@ -1479,6 +1484,12 @@ class JobQueueBase:
                 task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)
         cls._process_tasks.difference_update(tasks)
+        cleanup_tasks = [task for task in cls._cleanup_tasks if task is not current]
+        for task in cleanup_tasks:
+            if not task.done():
+                task.cancel()
+        await asyncio.gather(*cleanup_tasks, return_exceptions=True)
+        cls._cleanup_tasks.difference_update(cleanup_tasks)
 
     @classmethod
     async def wait_process_tasks(cls) -> None:

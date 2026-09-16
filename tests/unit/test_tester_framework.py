@@ -271,6 +271,45 @@ async def _test_function_entries_cancel_orphaned_tasks_before_reinitializing_dat
     return await _cancel_orphan_tasks(baseline) and task.cancelled() and cancelled.is_set()
 
 
+async def _test_case_entry_cancels_orphaned_tasks_before_next_database_context():
+    """注册表用例也必须回收任务，避免 action 持有上一轮数据库连接。"""
+    from core.tester.process import run_case_entry
+
+    cancelled = asyncio.Event()
+    orphan_task = None
+
+    async def orphan():
+        try:
+            await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            cancelled.set()
+            raise
+
+    async def fake_run_test_case(*_args, **_kwargs):
+        nonlocal orphan_task
+        orphan_task = asyncio.create_task(orphan(), name="test-orphaned-case-entry-task")
+        await asyncio.sleep(0)
+        return {"input": "~case", "output": [], "action": [], "expected": None}
+
+    entry = {
+        "func": lambda _msg: None,
+        "input": "~case",
+        "expected": None,
+        "note": None,
+        "timeout": None,
+        "file": None,
+        "line": 0,
+    }
+    with (
+        patch("core.tester.process.close_db", new=AsyncMock()),
+        patch("core.tester.process.init_db", new=AsyncMock(return_value=True)),
+        patch("core.tester.process.load_modules", new=AsyncMock()),
+        patch("core.tester.process.run_test_case", new=fake_run_test_case),
+    ):
+        await run_case_entry(entry, is_ci=True)
+    return orphan_task is not None and orphan_task.cancelled() and cancelled.is_set()
+
+
 async def _test_progress_notifications_coalesce_to_latest_revision():
     """连续完成的子测试应保留最新进度，但不能作为旧通知反复重置 watchdog。"""
     tester = Tester("progress_queue")
@@ -485,6 +524,10 @@ async def test_tester_framework(tester: Tester):
     await tester.test(
         _test_function_entries_cancel_orphaned_tasks_before_reinitializing_database,
         "func_case 之间回收遗留任务测试",
+    )
+    await tester.test(
+        _test_case_entry_cancels_orphaned_tasks_before_next_database_context,
+        "注册表用例之间回收遗留任务测试",
     )
     await tester.test(
         _test_progress_notifications_coalesce_to_latest_revision,

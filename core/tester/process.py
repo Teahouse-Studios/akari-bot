@@ -79,6 +79,8 @@ def _infrastructure_error(input_, expected, message: str) -> list[dict]:
 
 
 async def run_case_entry(entry: CaseEntry, is_ci: bool = False) -> list[dict]:
+    baseline_tasks = set(asyncio.all_tasks())
+
     try:
         await close_db()
     except Exception:
@@ -90,25 +92,34 @@ async def run_case_entry(entry: CaseEntry, is_ci: bool = False) -> list[dict]:
         return _infrastructure_error(entry.get("input"), entry.get("expected"), message)
 
     try:
-        await load_modules(show_logs=False, monkey_patches={"Random": Random()})
-    except Exception:
-        error = traceback.format_exc()
-        Logger.exception("Failed to load modules for tests:")
-        return _infrastructure_error(entry.get("input"), entry.get("expected"), error)
+        try:
+            await load_modules(show_logs=False, monkey_patches={"Random": Random()})
+        except Exception:
+            error = traceback.format_exc()
+            Logger.exception("Failed to load modules for tests:")
+            return _infrastructure_error(entry.get("input"), entry.get("expected"), error)
 
-    start = time.perf_counter()
-    timeout = entry.get("timeout")
-    result = await run_test_case(entry["input"], entry["expected"], entry["func"], is_ci, timeout=timeout)
-    elapsed = time.perf_counter() - start
-    if "exception" in result and isinstance(result["expected"], Expectation):
-        match = await result["expected"].match(result)
-        if match:
-            del result["traceback"]
-    try:
-        result["time_cost"] = elapsed
-    except Exception:
-        pass
-    return [result]
+        start = time.perf_counter()
+        timeout = entry.get("timeout")
+        result = await run_test_case(entry["input"], entry["expected"], entry["func"], is_ci, timeout=timeout)
+        elapsed = time.perf_counter() - start
+        if "exception" in result and isinstance(result["expected"], Expectation):
+            match = await result["expected"].match(result)
+            if match:
+                del result["traceback"]
+        try:
+            result["time_cost"] = elapsed
+        except Exception:
+            pass
+        return [result]
+    finally:
+        # Integration cases can start queue pollers, waiters, or platform tasks.
+        # They share the event loop and in-memory database with later cases, so a
+        # detached task must not survive the database context it captured.
+        if not await _cancel_orphan_tasks(baseline_tasks):
+            message = "Registry test left a task that did not finish cancellation cleanup."
+            Logger.error(message)
+            raise RuntimeError(message)
 
 
 async def run_function_entry(
