@@ -15,6 +15,8 @@ class HookPoint(StrEnum):
     SESSION_READY = "session.ready"
     # 会话入口策略完成后、投递等待任务前；决定是否交给等待任务消费
     SESSION_BEFORE_WAIT = "session.before_wait"
+    # 消息文本规范化后、前缀判断前；允许重写触发文本
+    MESSAGE_NORMALIZED = "parser.message.normalized"
     # 命令候选选定后、模块处理前；冷却、临封和模块策略
     COMMAND_PREPARE = "parser.command.prepare"
     # 模块权限处理后、模板解析前；ToS 令牌桶计数
@@ -63,6 +65,7 @@ SESSION_DRAFT_POINTS: frozenset[HookPoint] = frozenset(
 ALL_HOOK_POINTS: tuple[HookPoint, ...] = (
     HookPoint.SESSION_READY,
     HookPoint.SESSION_BEFORE_WAIT,
+    HookPoint.MESSAGE_NORMALIZED,
     HookPoint.COMMAND_PREPARE,
     HookPoint.COMMAND_BEFORE_PARSE,
     HookPoint.COMMAND_BEFORE_EXECUTE,

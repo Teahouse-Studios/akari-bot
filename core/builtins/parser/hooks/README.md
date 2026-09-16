@@ -30,6 +30,7 @@ async def _(ctx: "Bot.ParserHookContext"):
 | --- | --- | --- |
 | `SESSION_READY` | 会话刷新后、等待任务前 | 入站过滤、补充 tmp；可写 SessionDraft |
 | `SESSION_BEFORE_WAIT` | 入站策略后、等待任务投递前 | 调整等待任务路由 |
+| `MESSAGE_NORMALIZED` | 消息文本规范化后、前缀判断前 | 自定义别名等触发文本改写 |
 | `COMMAND_PREPARE` | 命令候选后、模块权限前 | 冷却、ToS 临封；可写 SessionDraft |
 | `COMMAND_BEFORE_PARSE` | 模块策略后、模板解析前 | ToS 计数；可写 SessionDraft |
 | `COMMAND_BEFORE_EXECUTE` | 模板解析后、命令函数调用前 | 命令权限与平台策略 |
@@ -50,6 +51,7 @@ async def _(ctx: "Bot.ParserHookContext"):
 ## 结果类型
 
 - `Continue()`（或 `None`）：继续
+- `RewriteTrigger(trigger_msg)`：提交新的触发文本并继续同入口的后续 hook
 - `Stop(message=..., scope=CANDIDATE|MESSAGE)`：业务拒绝；出站入口表示取消发送
 - `RecoveryProposal(trigger_msg, command_first_word, display)`：恢复建议
 - `Handled()`：错误入口已处理（观察入口禁止）
@@ -107,6 +109,8 @@ hook 不得：
 - `modules/core/hooks/policies.py`：入站、冷却、权限、正则路由和默认命令反馈
 - `modules/core/hooks/errors.py`：异常反馈与错误详情格式化
 - `modules/core/hooks/retired.py`：退役客户端路由和通道让位
+- `modules/core/admin_tools/alias.py`：自定义别名改写
+- `modules/core/hooks/routing.py`：同通道消息认领
 - `modules/core/hooks/tos.py`：临封、令牌桶、上报；四个强制检查不限时且检查故障按消息级 `Stop` 处理，
   避免失败放行；具名能力 `tos.check_temp_ban` / `tos.remove_temp_ban` / `tos.report`
 - `modules/core/hooks/telemetry.py`：AnalyticsData 与 Info 计数

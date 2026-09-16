@@ -1,11 +1,53 @@
 import re
+from string import Template as StringTemplate
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import Image, I18NContext, Plain
+from core.builtins.parser.hooks import HookPoint
 from core.component import module
+from core.logger import Logger
 from core.utils.image_table import image_table_render, ImageTable
 
 ali = module("alias", base=True, doc=True)
+
+
+def transform_alias(command: str, aliases: dict[str, str], prefix: str) -> str:
+    """按场景自定义规则改写命令文本。"""
+    matched_aliases = []
+    for pattern, replacement in aliases.items():
+        if not re.search(r"\${[^}]*}", pattern):
+            continue
+        normalized_pattern = re.sub(r"(\$\{\w+})(?=\$\{\w+})", r"\1 ", pattern)
+        placeholders = re.findall(r"\$\{([^{}$]+)}", normalized_pattern)
+        regex_pattern = re.escape(normalized_pattern)
+        for placeholder in placeholders:
+            regex_pattern = regex_pattern.replace(re.escape(f"${{{placeholder}}}"), r"(\S+)")
+        if match := re.match(regex_pattern, command):
+            matched_aliases.append((len(placeholders), replacement, placeholders, match))
+
+    if matched_aliases:
+        _, replacement, placeholders, match = max(matched_aliases, key=lambda item: item[0])
+        values = dict(zip(placeholders, match.groups()))
+        return prefix + StringTemplate(replacement).safe_substitute(values)
+
+    for pattern, replacement in aliases.items():
+        if not re.search(r"\${[^}]*}", pattern) and command.startswith(pattern):
+            return command.replace(pattern, prefix + replacement, 1)
+    return command
+
+
+@ali.hook(point=HookPoint.MESSAGE_NORMALIZED, priority=10, name="rewrite", server_scope=True)
+async def _(ctx: Bot.ParserHookContext):
+    info = ctx.msg.session_info
+    target = info.target_union_info
+    aliases = target.target_data.get("command_alias", {}) if target else {}
+    if not aliases or not info.prefixes:
+        return None
+    trigger_msg = transform_alias(ctx.trigger_msg, dict(aliases), info.prefixes[0])
+    if trigger_msg == ctx.trigger_msg:
+        return None
+    Logger.debug(trigger_msg)
+    return ctx.RewriteTrigger(trigger_msg)
 
 
 @ali.command(

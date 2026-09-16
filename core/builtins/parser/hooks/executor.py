@@ -29,6 +29,7 @@ from .results import (
     Handled,
     HookResult,
     RecoveryProposal,
+    RewriteTrigger,
     Stop,
     StopScope,
     normalize_result,
@@ -61,6 +62,7 @@ _OBSERVER_POINTS = frozenset(
 _ALLOWED_RESULTS: dict[HookPoint, tuple[type, ...]] = {
     HookPoint.SESSION_READY: (Continue, Stop),
     HookPoint.SESSION_BEFORE_WAIT: (Continue, Stop),
+    HookPoint.MESSAGE_NORMALIZED: (Continue, RewriteTrigger, Stop),
     HookPoint.COMMAND_PREPARE: (Continue, Stop),
     HookPoint.COMMAND_BEFORE_PARSE: (Continue, Stop),
     HookPoint.COMMAND_BEFORE_EXECUTE: (Continue, Stop),
@@ -213,6 +215,8 @@ class ParserHookExecutor:
                 and isinstance(result.command_first_word, str)
                 and (result.display is None or isinstance(result.display, str))
             )
+        if isinstance(result, RewriteTrigger):
+            return isinstance(result.trigger_msg, str)
         if isinstance(result, Stop):
             return (
                 (result.message is None or isinstance(result.message, MessageChain))
@@ -251,6 +255,7 @@ class ParserHookExecutor:
         try:
             use_draft = point in SESSION_DRAFT_POINTS
             is_observer = point in _OBSERVER_POINTS
+            shared_data = dict(data or {})
             for sub in subscriptions:
                 # 前序 hook 等待期间可能停用或重载后续订阅方；调用前必须按最新状态复核。
                 eligible, is_stale = self._subscription_eligible(
@@ -275,7 +280,7 @@ class ParserHookExecutor:
                     point=point,
                     msg=msg,
                     module_name=module_name,
-                    data=dict(data or {}),
+                    data=dict(shared_data),
                     command_first_word=command_first_word,
                     draft=draft,
                     outgoing=outgoing_draft if outgoing_draft is not None else outgoing,
@@ -352,7 +357,10 @@ class ParserHookExecutor:
                     # the wait-task router should be skipped). Preserve contributions
                     # from every subscriber instead of letting the last one overwrite them.
                     if result.data:
-                        outcome.result = Continue(data={**outcome.result.data, **result.data})
+                        shared_data.update(result.data)
+                        outcome.result = Continue(data=dict(shared_data))
+                elif isinstance(result, RewriteTrigger):
+                    msg.trigger_msg = result.trigger_msg
                 if outgoing is not None and outgoing_draft is not None and point == HookPoint.OUTGOING_BEFORE_SEND:
                     if isinstance(result, Continue):
                         try:

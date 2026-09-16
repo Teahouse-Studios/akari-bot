@@ -16,7 +16,7 @@ from attrs import define, field as attrs_field
 
 from .draft import SessionDraft
 from .points import HookPoint
-from .results import Continue, Handled, RecoveryProposal, Stop, StopScope
+from .results import Continue, Handled, RecoveryProposal, RewriteTrigger, Stop, StopScope
 
 if TYPE_CHECKING:
     from core.builtins.bot import Bot
@@ -158,6 +158,7 @@ class ParserHookContext:
     StopScope: ClassVar[type[StopScope]] = StopScope
     Handled: ClassVar[type[Handled]] = Handled
     RecoveryProposal: ClassVar[type[RecoveryProposal]] = RecoveryProposal
+    RewriteTrigger: ClassVar[type[RewriteTrigger]] = RewriteTrigger
 
     point: HookPoint
     msg: "Bot.MessageSession"

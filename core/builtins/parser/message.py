@@ -12,11 +12,8 @@
 """
 
 import functools
-import hashlib
 import inspect
-import re
 import time
-from string import Template as stringTemplate
 from types import UnionType
 from typing import TYPE_CHECKING, Union, get_args, get_origin
 
@@ -43,7 +40,6 @@ from core.constants.exceptions import (
     SendMessageFailed,
     WaitCancelException,
 )
-from core.database.models import TargetUnionBind
 from core.exports import exports
 from core.loader import ModulesManager
 from core.logger import Logger
@@ -58,13 +54,6 @@ if TYPE_CHECKING:
 
 # 匹配哈希缓存 - 缓存消息与模块的匹配结果，加速处理
 match_hash_cache = ExpiringTempDict()
-
-# 同一条消息在不同平台被接收的时间差上限（秒）
-# 跨平台的消息 ID 无法互通，只能依据「内容一致且接收时间相近」判定是否为同一条消息
-CHANNEL_DEDUP_WINDOW = 10
-
-# 消息通道认领记录 - 键为 union|通道号|文本哈希，由最先写入的场景负责执行
-channel_claim_cache = ExpiringTempDict()
 
 # 标记为单次触发的正则，其「模块名 + 正则序号 + 场景 ID」在此登记，登记后不再参与匹配。
 # 仅存于进程内存，重启即清空；条目数上限为「触发过的场景数 × 单次触发正则条数」，有界。
@@ -272,6 +261,10 @@ async def parser(msg: "Bot.MessageSession"):
         # 将消息转换为易读的显示格式
         msg.trigger_msg = normalize_space(msg.as_display())
 
+        normalized_result = await _dispatch_stage(HookPoint.MESSAGE_NORMALIZED, msg)
+        if isinstance(normalized_result, Stop):
+            return
+
         # 如果消息为空，直接返回
         if len(msg.trigger_msg) == 0:
             return
@@ -305,15 +298,14 @@ async def parser(msg: "Bot.MessageSession"):
             if isinstance(route_result, Stop):
                 return
 
-            claim_outcome = await _dispatch_channel_claim(
+            claim_outcome = await _dispatch_stage(
+                HookPoint.CHANNEL_CLAIM,
                 msg,
                 module_name=command_first_word,
                 command_first_word=command_first_word,
                 data={"routed_command_available": routed_command_available},
             )
             if isinstance(claim_outcome, Stop):
-                return
-            elif claim_outcome:
                 return
 
             if command_first_word:
@@ -377,173 +369,17 @@ def _command_available_for_current_session(msg: "Bot.MessageSession", module: Mo
     return bool(parsed and parsed[0])
 
 
-async def _dispatch_channel_claim(
-    msg: "Bot.MessageSession",
-    *,
-    display: str | None = None,
-    module_name: str | None = None,
-    command_first_word: str | None = None,
-    data: dict | None = None,
-) -> bool | Stop:
-    """运行通道策略并认领消息；策略与去重共用一次通道查询。"""
-    union_id = msg.session_info.target_union_id
-    channels = await TargetUnionBind.list_channels(union_id) if union_id else {}
-    hook_data = dict(data or {})
-    hook_data["channels"] = channels
-    claim_result = await _dispatch_stage(
-        HookPoint.CHANNEL_CLAIM,
-        msg,
-        module_name=module_name,
-        command_first_word=command_first_word,
-        data=hook_data,
-    )
-    if isinstance(claim_result, Stop):
-        return claim_result
-    return await _claim_channel_message(msg, display, channels=channels)
-
-
-async def _claim_channel_message(
-    msg: "Bot.MessageSession", display: str | None = None, *, channels: dict[str, int] | None = None
-) -> bool:
-    """
-    认领一条消息，并判断它是否已被同一消息通道内的另一个场景处理。
-
-    跨平台的消息 ID 无法互通，判定「同一条消息」只能依据来源、内容与时间：出自通道内的另一个场景，
-    纯文本一致，且两次接收的时间相差不超过 :data:`CHANNEL_DEDUP_WINDOW` 秒。
-
-    :param msg: 消息会话。
-    :param display: 参与判定的文本，留空则取命令文本。
-    :return: True 表示已被其它场景认领，当前场景应当避让。
-    """
-    union_id = msg.session_info.target_union_id
-    if not union_id:
-        return False
-    channel_id = msg.session_info.target_channel_id
-
-    if channels is None:
-        channels = await TargetUnionBind.list_channels(union_id)
-    # 通道内仅有自身时不存在重复执行的可能。
-    if sum(1 for cid in channels.values() if cid == channel_id) <= 1:
-        return False
-
-    if display is None:
-        display = msg.trigger_msg
-    token = f"{union_id}|{channel_id}|{hashlib.sha256(display.encode('utf-8')).hexdigest()}"
-    now = time.time()
-
-    # 以下查表与写入之间不得出现 await，在单线程事件循环下该段方为原子操作。
-    claimed = channel_claim_cache.get(token)
-    claimed_at = claimed.get("timestamp") if claimed else None
-    claimed_by = claimed.get("target_id") if claimed else None
-
-    if claimed_at and claimed_by != msg.session_info.target_id and abs(now - claimed_at) <= CHANNEL_DEDUP_WINDOW:
-        Logger.debug(f"Ignored duplicate message claimed by {claimed_by}: {display}")
-        return True
-
-    channel_claim_cache[token] = ExpiringTempDict(
-        exp=CHANNEL_DEDUP_WINDOW * 3,
-        data={"timestamp": now, "target_id": msg.session_info.target_id},
-        root=False,
-    )
-    return False
-
-
-def _transform_alias(msg, command: str):
-    """
-    转换自定义命令别名为实际命令。
-
-    该函数处理用户自定义的命令别名，支持两种类型：
-    1. 带占位符的别名（如 "aaa ${keyword}" -> "bbb ${keyword}"）
-    2. 简单的文本替换别名（如 "enable" -> "module enable"）
-
-    对于带占位符的别名，会优先选择占位符数量最多的匹配（复杂度最高优先）。
-
-    :param msg: 消息会话对象
-    :param command: 原始命令字符串
-    :return: 转换后的命令字符串（如果没有匹配的别名，返回原命令）
-    """
-    # 从场景信息中获取自定义别名字典
-    aliases = dict(msg.session_info.target_union_info.target_data.get("command_alias", {}).items())
-
-    # 存储所有匹配的别名模板，格式: (占位符数量, 模式, 替换, 占位符列表, 匹配对象)
-    matched_aliases = []
-
-    # ========== 处理带占位符的别名 ==========
-    for pattern, replacement in aliases.items():
-        # 检查模式中是否包含占位符（格式: ${name}）
-        if re.search(r"\${[^}]*}", pattern):
-            # 处理连在一起的多个占位符，在它们之间插入空格
-            # 例如: "${a}${b}" -> "${a} ${b}"
-            normalized_pattern = re.sub(r"(\$\{\w+})(?=\$\{\w+})", r"\1 ", pattern)
-
-            # 提取所有占位符的名称
-            # 例如: "${keyword} ${type}" -> ["keyword", "type"]
-            placeholders = re.findall(r"\$\{([^{}$]+)}", normalized_pattern)
-
-            # 构造用于匹配的正则表达式
-            # 将占位符替换为捕获组 (\S+)，用于匹配非空白字符
-            regex_pattern = re.escape(normalized_pattern)
-            for ph in placeholders:
-                regex_pattern = regex_pattern.replace(re.escape(f"${{{ph}}}"), r"(\S+)")
-
-            # 尝试匹配命令
-            match = re.match(regex_pattern, command)
-            if match:
-                # 记录匹配结果：(占位符数量, 原始模式, 替换文本, 占位符列表, 匹配对象)
-                matched_aliases.append((len(placeholders), pattern, replacement, placeholders, match))
-
-    # ========== 选择最佳匹配 ==========
-    # 如果有多个匹配，按占位符数量降序排列（复杂度高的优先）
-    if matched_aliases:
-        matched_aliases.sort(key=lambda x: x[0], reverse=True)
-
-        # 使用复杂度最高的匹配
-        _, pattern, replacement, placeholders, match = matched_aliases[0]
-        groups = match.groups()
-
-        # 创建占位符到实际值的映射字典
-        placeholder_dict = {placeholders[i]: groups[i] for i in range(len(groups))}
-
-        # 使用字符串模板替换占位符
-        result = stringTemplate(replacement).safe_substitute(placeholder_dict)
-        Logger.debug(msg.session_info.prefixes[0] + result)
-        return msg.session_info.prefixes[0] + result
-
-    # ========== 处理不带占位符的简单别名 ==========
-    # 例如: "h" -> "help"
-    for pattern, replacement in aliases.items():
-        if not re.search(r"\${[^}]*}", pattern):
-            # 如果命令以该模式开头，进行替换
-            if command.startswith(pattern):
-                new_command = command.replace(pattern, msg.session_info.prefixes[0] + replacement, 1)
-                Logger.debug(new_command)
-                return new_command
-
-    # 没有匹配的别名，返回原命令
-    return command
-
-
 def _get_prefixes(msg: "Bot.MessageSession"):
     """
     检查并处理消息的命令前缀。
 
-    该函数执行以下操作：
-    1. 如果配置了自定义别名，先进行别名转换
-    2. 检查是否禁用前缀（空字符串前缀）
-    3. 检查消息是否以配置的前缀开头
-    4. 如果匹配到前缀，将其移至前缀列表的首位（便于后续操作）
+    该函数检查禁用前缀配置、匹配消息前缀，并把命中的前缀移到列表首位。
 
     :param msg: 消息会话对象
     :return: (disable_prefix, in_prefix_list) 元组
              - disable_prefix: 是否禁用前缀检查（True 表示任何消息都视为命令）
              - in_prefix_list: 消息是否以某个前缀开头
     """
-    # ========== 步骤 1: 处理自定义别名 ==========
-    if msg.session_info.target_union_info.target_data.get("command_alias"):
-        # 将自定义别名替换为实际命令
-        msg.trigger_msg = _transform_alias(msg, msg.trigger_msg)
-
-    # ========== 步骤 2: 检查前缀配置 ==========
     disable_prefix = False
     # 如果上游指定了命令前缀，使用指定的命令前缀
     if msg.session_info.prefixes:
@@ -554,14 +390,12 @@ def _get_prefixes(msg: "Bot.MessageSession"):
     display_prefix = ""
     in_prefix_list = False
 
-    # ========== 步骤 3: 检查消息是否以前缀开头 ==========
     for cp in msg.session_info.prefixes:
         if msg.trigger_msg.startswith(cp):
             display_prefix = cp
             in_prefix_list = True
             break
 
-    # ========== 步骤 4: 前缀验证和优化 ==========
     if in_prefix_list or disable_prefix:
         # 排除特殊情况：消息太短或是删除线格式（~~xxx~~）
         if len(msg.trigger_msg) <= 1 or msg.trigger_msg[:2] == "~~":
@@ -1019,16 +853,15 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                                 continue
 
                             # 策略通过后再认领通道，未授权正则不会阻塞其它场景。
-                            claim_outcome = await _dispatch_channel_claim(
+                            claim_outcome = await _dispatch_stage(
+                                HookPoint.CHANNEL_CLAIM,
                                 msg,
-                                display=str(matched_hash),
                                 module_name=m,
-                                data={"matched_hash": matched_hash, "regex": rfunc},
+                                data={"claim_key": str(matched_hash), "regex": rfunc},
                             )
                             if isinstance(claim_outcome, Stop):
                                 if claim_outcome.scope == StopScope.MESSAGE:
                                     return
-                            elif claim_outcome:
                                 continue
                             # ========== 入口 before_execute（ToS 计数）==========
                             before_exec_result = await _dispatch_stage(

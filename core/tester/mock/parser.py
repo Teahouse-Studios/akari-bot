@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 from core.builtins.message.internal import ActionText, I18NContext
 from core.builtins.parser.command import CommandParser
+from core.builtins.parser.hooks import HookPoint, dispatch_parser_hook
 from core.builtins.parser.message import _build_command_kwargs
 from core.builtins.session.tasks import SessionTaskManager
 from core.constants.exceptions import SessionFinished
@@ -27,6 +28,7 @@ async def parser(msg: "Bot.MessageSession"):
     modules = ModulesManager.return_modules_list()
 
     msg.trigger_msg = normalize_space(msg.as_display())
+    await dispatch_parser_hook(HookPoint.MESSAGE_NORMALIZED, msg)
     if len(msg.trigger_msg) == 0:
         return
 

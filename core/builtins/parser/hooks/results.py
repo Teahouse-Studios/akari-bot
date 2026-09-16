@@ -23,6 +23,13 @@ class Continue(HookResult):
     data: dict = field(factory=dict)
 
 
+@define
+class RewriteTrigger(HookResult):
+    """提交新的触发文本并继续当前入口的后续 hook。"""
+
+    trigger_msg: str
+
+
 class StopScope(StrEnum):
     """``Stop`` 的作用域。"""
 
@@ -85,6 +92,7 @@ def normalize_result(raw: object) -> HookResult:
 __all__ = [
     "HookResult",
     "Continue",
+    "RewriteTrigger",
     "Stop",
     "StopScope",
     "RecoveryProposal",

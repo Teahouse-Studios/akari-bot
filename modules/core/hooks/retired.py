@@ -42,9 +42,7 @@ async def _(ctx: "Bot.ParserHookContext"):
     info = ctx.msg.session_info
     if not is_retired_target(info.target_id) or not info.target_union_id:
         return None
-    channels = ctx.data.get("channels")
-    if channels is None:
-        channels = await TargetUnionBind.list_channels(info.target_union_id)
+    channels = await TargetUnionBind.list_channels(info.target_union_id)
     if should_yield_channel(info.target_id, channels, info.target_channel_id):
         return ctx.Continue(data={"skip_wait_tasks": True})
     return None
@@ -64,9 +62,7 @@ async def _(ctx: "Bot.ParserHookContext"):
     info = ctx.msg.session_info
     if not info.target_union_id:
         return None
-    channels = ctx.data.get("channels")
-    if channels is None:
-        channels = await TargetUnionBind.list_channels(info.target_union_id)
+    channels = ctx.data["channels"]
     channel_id = info.target_channel_id
     channel_targets = [target_id for target_id, cid in channels.items() if cid == channel_id]
     if len(channel_targets) <= 1:
