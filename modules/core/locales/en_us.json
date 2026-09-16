@@ -524,5 +524,10 @@
     "core.message.petal.bud.release.none": "There are no expired flower buds that need to be released.",
     "core.message.petal.bud.send.confirm": "This operation will cost ${total} petal(s) and send out a flower bud that can be claimed ${count} time(s) (password: ${code}). Continue?",
     "core.message.petal.bud.send.success": "The flower bud has been sent! It contains ${total} petals and can be claimed ${count} time(s).\nID: ${id}\nUse \"${cmd}\" to claim this flower bud.",
-    "core.help.petal.bud.info": "View details about the flower buds."
+    "core.help.petal.bud.info": "View details about the flower buds.",
+    "core.message.ping.process": "${name} (PID ${pid}): ${memory}M (${metric})",
+    "core.message.ping.process.daemon": "Daemon",
+    "core.message.ping.process.list": "Memory usage of each process:",
+    "core.message.ping.process.peers": "Each platform and server process",
+    "core.message.ping.process.unavailable": "${name}: Unavailable (${reason})"
 }
