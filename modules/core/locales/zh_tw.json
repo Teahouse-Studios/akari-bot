@@ -524,5 +524,10 @@
     "core.message.petal.bud.release.none": "沒有需要釋放的過期花苞。",
     "core.message.petal.bud.send.confirm": "此操作將花費 ${total} 片花瓣，發出可領取 ${count} 次的花苞（口令：${code}）。 是否繼續？",
     "core.message.petal.bud.send.success": "花苞已發送！ 共 ${total} 片花瓣，可領取 ${count} 次。\nID：${id}\n使用「${cmd}」可領取此花苞。",
-    "core.help.petal.bud.info": "檢視花苞詳情。"
+    "core.help.petal.bud.info": "檢視花苞詳情。",
+    "core.message.ping.process": "${name}（PID ${pid}）：${memory}M（${metric}）",
+    "core.message.ping.process.daemon": "守護行程",
+    "core.message.ping.process.list": "各行程記憶體佔用：",
+    "core.message.ping.process.peers": "各平台與伺服端行程",
+    "core.message.ping.process.unavailable": "${name}：不可用（${reason}）"
 }

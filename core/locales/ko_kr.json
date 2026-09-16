@@ -77,8 +77,6 @@
     "config.comments.secret.db_path": "데이터베이스 연결 문자열. Tortoise ORM에서 지원하는 데이터베이스 연결 문자열 형식을 사용하세요.",
     "config.comments.secret.proxy": "프록시 서버 주소.",
     "config.comments.smtp_secret.smtp_password": "SMTP 로그인 비밀번호.",
-    "config.comments.smtp_secret.smtp_recipients": "보고서 수신자 (이메일 주소). ",
-    "config.comments.smtp.enable": "SMTP 이메일을 통한 보고서 기능을 활성화할지 여부. 활성화하면 보고서 메시지가 컨텍스트에 보고되지 않습니다. ",
     "config.comments.smtp.smtp_host": "SMTP 서버 주소.",
     "config.comments.smtp.smtp_port": "SMTP 서버 포트 번호.",
     "config.comments.smtp.smtp_sender": "발신자 주소. 비워두면 로그인한 사용자 이름을 사용합니다.",
@@ -240,5 +238,11 @@
     "tos.message.warning": "경고:\n이용 약관에 따라 귀하는 당사의 행동 강령을 위반했습니다.",
     "tos.message.warning.count": "이번이 ${current_warns}번째 경고입니다.",
     "tos.message.warning.last": "이번이 마지막 경고입니다.",
-    "tos.message.warning.prompt": "경고가 ${warn_counts}회를 초과할 경우, 귀하의 계정을 정지할 것입니다."
+    "tos.message.warning.prompt": "경고가 ${warn_counts}회를 초과할 경우, 귀하의 계정을 정지할 것입니다.",
+    "config.comments.config.petal_reset_crontab": "페탈(petal) 주기에 대한 Cron 표현식.",
+    "config.comments.config.petal_rebate_rate": "페탈(petal) 사이클의 끝에 유지되는 비율. 범위는 0에서 1 사이입니다.",
+    "config.comments.smtp.enable_email_report": "SMTP 메일의 보고 기능을 활성화합니다. 사용하도록 설정하면 메시지가 더 이상 컨텍스트에 보고되지 않습니다.",
+    "config.comments.smtp.smtp_recipients": "메일 보고서의 수신자 목록.",
+    "config.table.config_jobqueue": "JobQueue 설정 항목입니다. 여기에 입력된 값은 메시지에 일반 텍스트로 표시됩니다. 이 섹션에는 민감한 정보를 입력하지 마십시오.",
+    "config.table.secret_jobqueue": "JobQueue 키 설정 항목입니다. 여기에 입력된 값이 전송 메시지에 실수로 포함된 경우, 봇이 이를 가로채려고 시도합니다. 그러나 유출되지 않도록 주의해 주십시오."
 }
