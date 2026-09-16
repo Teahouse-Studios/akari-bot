@@ -66,6 +66,8 @@ class JobQueueBase:
     # Abandon is best-effort cleanup.  A database lock or disconnected backend must
     # not keep the caller (or shutdown) blocked after the original RPC has ended.
     ABANDON_TIMEOUT_SECONDS = 5.0
+    SHUTDOWN_POLL_LOCK_TIMEOUT_SECONDS = 5.0
+    SHUTDOWN_OPERATION_TIMEOUT_SECONDS = 1.0
     POLL_INTERVAL_SECONDS = 0.1
     backend: JobQueueBackend | None = None
     registry: PeerRegistry
@@ -1349,7 +1351,11 @@ class JobQueueBase:
             raise
         finally:
             if graceful_stop or cls._shutting_down or cls._registered:
-                await cls._stop_peer()
+                try:
+                    async with asyncio.timeout(cls.SHUTDOWN_OPERATION_TIMEOUT_SECONDS):
+                        await cls._stop_peer()
+                except TimeoutError:
+                    Logger.warning(f"Timed out stopping JobQueue peer {cls.name} after poller exit.")
             cls.is_running = False
             if cls._poller_task is current:
                 cls._poller_task = None
@@ -1482,14 +1488,18 @@ class JobQueueBase:
         for task in tasks:
             if not task.done():
                 task.cancel()
-        await asyncio.gather(*tasks, return_exceptions=True)
-        cls._process_tasks.difference_update(tasks)
+        if tasks:
+            done, _ = await asyncio.wait(tasks, timeout=cls.SHUTDOWN_OPERATION_TIMEOUT_SECONDS)
+            await asyncio.gather(*done, return_exceptions=True)
+            cls._process_tasks.difference_update(done)
         cleanup_tasks = [task for task in cls._cleanup_tasks if task is not current]
         for task in cleanup_tasks:
             if not task.done():
                 task.cancel()
-        await asyncio.gather(*cleanup_tasks, return_exceptions=True)
-        cls._cleanup_tasks.difference_update(cleanup_tasks)
+        if cleanup_tasks:
+            done, _ = await asyncio.wait(cleanup_tasks, timeout=cls.SHUTDOWN_OPERATION_TIMEOUT_SECONDS)
+            await asyncio.gather(*done, return_exceptions=True)
+            cls._cleanup_tasks.difference_update(done)
 
     @classmethod
     async def wait_process_tasks(cls) -> None:
@@ -1502,32 +1512,62 @@ class JobQueueBase:
         task = cls._poller_task
         if task is None or task is asyncio.current_task():
             if cls._registered:
-                await cls._stop_peer()
+                try:
+                    async with asyncio.timeout(cls.SHUTDOWN_OPERATION_TIMEOUT_SECONDS):
+                        await cls._stop_peer()
+                except TimeoutError:
+                    Logger.warning(f"Timed out stopping JobQueue peer {cls.name}.")
             return
         if not task.done():
             task.cancel()
         await asyncio.gather(task, return_exceptions=True)
         if cls._registered:
-            await cls._stop_peer()
+            try:
+                async with asyncio.timeout(cls.SHUTDOWN_OPERATION_TIMEOUT_SECONDS):
+                    await cls._stop_peer()
+            except TimeoutError:
+                Logger.warning(f"Timed out stopping JobQueue peer {cls.name}.")
+
+    @classmethod
+    async def _acquire_shutdown_poll_lock(cls) -> bool:
+        if cls._poll_lock.locked():
+            poller = cls._poller_task
+            if poller is not None and poller is not asyncio.current_task() and not poller.done():
+                poller.cancel()
+            Logger.warning(f"Skipped waiting for JobQueue poll lock while shutting down {cls.name}.")
+            return False
+        try:
+            async with asyncio.timeout(cls.SHUTDOWN_POLL_LOCK_TIMEOUT_SECONDS):
+                await cls._poll_lock.acquire()
+        except TimeoutError:
+            Logger.warning(f"Timed out waiting for JobQueue poll lock while shutting down {cls.name}.")
+            return False
+        return True
 
     @classmethod
     async def begin_shutdown(cls) -> None:
         already_shutting_down = cls._shutting_down
         cls._shutting_down = True
         cls.pause_event.clear()
-        async with cls._poll_lock:
-            pass
-        if already_shutting_down or cls.identity is None or not cls._registered:
+        poll_lock_acquired = True
+        if not already_shutting_down and cls._registered:
+            poll_lock_acquired = await cls._acquire_shutdown_poll_lock()
+            if poll_lock_acquired:
+                cls._poll_lock.release()
+        if already_shutting_down or cls.identity is None or not cls._registered or not poll_lock_acquired:
             return
         try:
-            await cls.registry.set_state(cls.name, "draining")
-            cls._update_peer_cache(cls.identity.snapshot("draining"))
-            await cls.emit_signal(
-                "peer.draining",
-                cls.identity.snapshot("draining"),
-                PeerSelector.all().excluding(cls.name),
-                timeout=10,
-            )
+            async with asyncio.timeout(cls.SHUTDOWN_OPERATION_TIMEOUT_SECONDS):
+                await cls.registry.set_state(cls.name, "draining")
+                cls._update_peer_cache(cls.identity.snapshot("draining"))
+                await cls.emit_signal(
+                    "peer.draining",
+                    cls.identity.snapshot("draining"),
+                    PeerSelector.all().excluding(cls.name),
+                    timeout=10,
+                )
+        except TimeoutError:
+            Logger.warning(f"Timed out publishing JobQueue peer shutdown for {cls.name}.")
         except Exception:
             Logger.exception(f"Failed to publish peer draining state for {cls.name}.")
 
@@ -1635,10 +1675,13 @@ class JobQueueBase:
     async def shutdown_window(cls):
         """Stop new claims, cancel handlers, then exclude database polling."""
         await cls.begin_shutdown()
+        poll_lock_acquired = False
         try:
             await cls.cancel_process_tasks()
-            async with cls._poll_lock:
-                yield
+            poll_lock_acquired = await cls._acquire_shutdown_poll_lock()
+            yield
         finally:
+            if poll_lock_acquired:
+                cls._poll_lock.release()
             cls._shutting_down = False
             cls.pause_event.set()

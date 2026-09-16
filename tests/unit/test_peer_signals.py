@@ -833,6 +833,68 @@ async def _test_interrupted_emit_cleanup_is_bounded():
             controller.ABANDON_TIMEOUT_SECONDS = original_timeout
 
 
+async def _test_shutdown_does_not_wait_forever_for_poll_lock():
+    """关闭时轮询锁被占用也必须在 deadline 内继续摘流。"""
+    async with _peer_cluster() as (controller, _worker_a, _worker_b):
+        original_timeout = controller.SHUTDOWN_POLL_LOCK_TIMEOUT_SECONDS
+        controller.SHUTDOWN_POLL_LOCK_TIMEOUT_SECONDS = 0.05
+        await controller._poll_lock.acquire()
+        try:
+            started = asyncio.get_running_loop().time()
+            await asyncio.wait_for(controller.begin_shutdown(), timeout=1)
+            elapsed = asyncio.get_running_loop().time() - started
+        finally:
+            controller._poll_lock.release()
+            controller.SHUTDOWN_POLL_LOCK_TIMEOUT_SECONDS = original_timeout
+        return elapsed < 0.5 and controller._shutting_down
+
+
+async def _test_shutdown_task_cleanup_is_bounded():
+    """取消不响应的后台清理任务不能让 Queue 关闭卡死。"""
+    async with _peer_cluster() as (controller, _worker_a, _worker_b):
+        original_timeout = controller.SHUTDOWN_OPERATION_TIMEOUT_SECONDS
+        controller.SHUTDOWN_OPERATION_TIMEOUT_SECONDS = 0.05
+        release = asyncio.Event()
+
+        async def ignore_cancellation():
+            try:
+                await asyncio.Event().wait()
+            except asyncio.CancelledError:
+                await release.wait()
+
+        task = asyncio.create_task(ignore_cancellation())
+        controller._cleanup_tasks.add(task)
+        try:
+            started = asyncio.get_running_loop().time()
+            await asyncio.wait_for(controller.cancel_process_tasks(), timeout=1)
+            elapsed = asyncio.get_running_loop().time() - started
+            return elapsed < 0.5 and task in controller._cleanup_tasks and not task.done()
+        finally:
+            release.set()
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+            controller._cleanup_tasks.discard(task)
+            controller.SHUTDOWN_OPERATION_TIMEOUT_SECONDS = original_timeout
+
+
+async def _test_shutdown_window_does_not_wait_forever_for_poll_lock():
+    """关闭窗口无法取得轮询锁时也必须让调用方继续回收资源。"""
+    async with _peer_cluster() as (controller, _worker_a, _worker_b):
+        original_timeout = controller.SHUTDOWN_POLL_LOCK_TIMEOUT_SECONDS
+        controller.SHUTDOWN_POLL_LOCK_TIMEOUT_SECONDS = 0.05
+        await controller._poll_lock.acquire()
+        entered = False
+        try:
+            started = asyncio.get_running_loop().time()
+            async with controller.shutdown_window():
+                entered = True
+            elapsed = asyncio.get_running_loop().time() - started
+        finally:
+            controller._poll_lock.release()
+            controller.SHUTDOWN_POLL_LOCK_TIMEOUT_SECONDS = original_timeout
+        return entered and elapsed < 0.5
+
+
 async def _test_partial_batch_result_is_reported_per_peer():
     """传输层明确报告部分失败时，广播结果不得伪装成全部成功。"""
     signal_name = f"audit.partial-result.{uuid4()}"
@@ -903,5 +965,8 @@ async def test_peer_signals(tester: Tester):
     await tester.test(_test_ambiguous_registration_failure_is_rolled_back, "注册结果未知时撤销半注册实例")
     await tester.test(_test_interrupted_emit_discards_partial_transport_write, "广播部分写入异常清理投递")
     await tester.test(_test_interrupted_emit_cleanup_is_bounded, "广播异常清理有界且不阻塞调用方")
+    await tester.test(_test_shutdown_does_not_wait_forever_for_poll_lock, "关闭时轮询锁占用不会导致无界等待")
+    await tester.test(_test_shutdown_task_cleanup_is_bounded, "关闭时不响应取消的清理任务不会卡死")
+    await tester.test(_test_shutdown_window_does_not_wait_forever_for_poll_lock, "关闭窗口轮询锁占用不会卡死")
     await tester.test(_test_partial_batch_result_is_reported_per_peer, "广播批量投递部分结果逐实例呈现")
     return tester
