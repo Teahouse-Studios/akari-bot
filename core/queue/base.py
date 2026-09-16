@@ -516,10 +516,28 @@ class JobQueueBase:
         """
         if not task_ids:
             return
+        abandon_task = asyncio.create_task(cls.transport.abandon(task_ids))
         try:
-            await asyncio.shield(asyncio.wait_for(cls.transport.abandon(task_ids), timeout=cls.ABANDON_TIMEOUT_SECONDS))
-        except TimeoutError:
+            done, _ = await asyncio.wait((abandon_task,), timeout=cls.ABANDON_TIMEOUT_SECONDS)
+        except asyncio.CancelledError:
+            abandon_task.cancel()
+            abandon_task.add_done_callback(cls._abandon_task_done)
+            raise
+        if not done:
+            abandon_task.cancel()
+            abandon_task.add_done_callback(cls._abandon_task_done)
             Logger.error(f"Timed out cleaning up {len(task_ids)} abandoned JobQueue delivery(ies).")
+            return
+        abandon_task.result()
+
+    @staticmethod
+    def _abandon_task_done(task: asyncio.Task) -> None:
+        if task.cancelled():
+            return
+        try:
+            task.result()
+        except Exception:
+            Logger.exception("Abandoned JobQueue delivery cleanup failed after cancellation.")
 
     @classmethod
     async def call(
