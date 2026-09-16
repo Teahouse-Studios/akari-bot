@@ -524,5 +524,10 @@
     "core.message.petal.bud.receive.not_found": "一致する花包みが見つかりません。パスワードが正しいかご確認ください。",
     "core.message.petal.bud.receive.success": "受け取りに成功！",
     "core.message.petal.bud.release": "${count} 個の期限切れの花包みが放出されました。",
-    "core.message.petal.bud.release.none": "期限切れの花包みは存在せず、放出する必要はありません。"
+    "core.message.petal.bud.release.none": "期限切れの花包みは存在せず、放出する必要はありません。",
+    "core.message.ping.process": "${name}（PID ${pid}）：${memory}M（${metric}）",
+    "core.message.ping.process.daemon": "デーモン",
+    "core.message.ping.process.list": "各プロセスのメモリ使用量：",
+    "core.message.ping.process.peers": "各プラットフォームとサーバー プロセス",
+    "core.message.ping.process.unavailable": "${name}：利用不可（${reason}）"
 }
