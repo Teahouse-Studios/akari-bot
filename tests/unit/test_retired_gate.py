@@ -15,7 +15,7 @@ from core.alive import Alive
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain
-from core.builtins.parser.message import channel_claim_cache, parser
+from core.builtins.parser.message import parser
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
 from core.builtins.session.tasks import SessionTaskManager
@@ -35,7 +35,8 @@ from core.utils.retired import (
     should_yield_channel,
 )
 from core.tester import func_case, Tester
-from modules.core import merge as merge_module
+from modules.core.common_tools import merge as merge_module
+from modules.core.hooks.routing import channel_claim_cache
 
 
 def _use_routes(entries: list):

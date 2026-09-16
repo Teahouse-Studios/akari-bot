@@ -270,6 +270,26 @@ async def _test_websocket_limits_duplicate_identity_and_backpressure():
         return result
 
 
+async def _test_websocket_command_slot_contention_waits_for_capacity():
+    """控制命令短暂拥塞时应等待槽位，而不是立即拒绝启动期 action。"""
+    async with _websocket_peers(queue_size=1) as (_, peers):
+        caller, receiver = peers
+        slots = caller.backend.connection._command_slots
+        await slots.acquire()
+        try:
+            command = asyncio.create_task(caller.backend.registry.resolve(PeerSelector.peer(receiver.name)))
+            await asyncio.sleep(0)
+            if command.done():
+                return False
+            slots.release()
+            records = await asyncio.wait_for(command, timeout=1)
+            return [record.peer_id for record in records] == [receiver.name]
+        finally:
+            if not command.done():
+                command.cancel()
+            await asyncio.gather(command, return_exceptions=True)
+
+
 async def _test_websocket_frame_size_limit_cleans_waiter():
     async with _websocket_peers(max_message_bytes=2048) as (hub, peers):
         caller, receiver = peers
@@ -416,6 +436,10 @@ async def test_jobqueue_websocket_backend(tester: Tester):
     await tester.test(
         _test_websocket_limits_duplicate_identity_and_backpressure,
         "WebSocket 重复身份拒绝与有界队列背压",
+    )
+    await tester.test(
+        _test_websocket_command_slot_contention_waits_for_capacity,
+        "WebSocket 控制命令槽位拥塞等待而非立即拒绝",
     )
     await tester.test(
         _test_websocket_frame_size_limit_cleans_waiter,

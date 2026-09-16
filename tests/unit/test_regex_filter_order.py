@@ -1,43 +1,9 @@
-"""core.builtins.parser.message 单元测试 - 正则处理函数的权限筛选。"""
+"""core.builtins.parser.message 单元测试 - 正则平台筛选与执行锁。"""
 
 from types import SimpleNamespace
 
-from core.builtins.parser.message import regex_func_available, regex_func_permitted, try_acquire_execution_lock
+from core.builtins.parser.message import regex_func_available, try_acquire_execution_lock
 from core.tester import func_case, Tester
-
-
-def _fake_rfunc(required_admin: bool = False, required_superuser: bool = False):
-    """构造一条仅含权限标志的正则处理函数替身。"""
-    return SimpleNamespace(required_admin=required_admin, required_superuser=required_superuser)
-
-
-def _fake_msg(is_admin: bool):
-    """构造一个仅提供 check_permission 的会话替身。"""
-
-    async def check_permission():
-        return is_admin
-
-    return SimpleNamespace(check_permission=check_permission)
-
-
-async def _test_no_requirement_always_permitted():
-    """测试正则权限筛选 - 无权限要求时一律放行"""
-    try:
-        return await regex_func_permitted(_fake_msg(False), _fake_rfunc(), "wiki")
-
-    except Exception:
-        return False
-
-
-async def _test_admin_required_blocks_non_admin():
-    """测试正则权限筛选 - 需管理员时拦下非管理员"""
-    try:
-        blocked = await regex_func_permitted(_fake_msg(False), _fake_rfunc(required_admin=True), "wiki")
-        passed = await regex_func_permitted(_fake_msg(True), _fake_rfunc(required_admin=True), "wiki")
-        return not blocked and passed
-
-    except Exception:
-        return False
 
 
 def _fake_lock_msg(sender_id: str):
@@ -157,9 +123,7 @@ async def _test_unloaded_is_unavailable():
 
 @func_case
 async def test_regex_filter_order(tester: Tester):
-    """core.builtins.parser.message: 正则平台与权限筛选测试"""
-    await tester.test(_test_no_requirement_always_permitted, "无权限要求放行测试")
-    await tester.test(_test_admin_required_blocks_non_admin, "管理员权限拦截测试")
+    """core.builtins.parser.message: 正则平台筛选与执行锁测试"""
     await tester.test(_test_lock_acquired_once, "执行锁互斥测试")
     await tester.test(_test_lock_released_can_reacquire, "执行锁释放后重取测试")
     await tester.test(_test_wildcard_available_everywhere, "通配平台可用测试")

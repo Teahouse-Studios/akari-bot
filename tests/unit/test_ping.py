@@ -8,7 +8,7 @@ from core.builtins.message.internal import Plain
 from core.builtins.session.info import SessionInfo
 from core.i18n import Locale
 from core.tester import Tester, func_case
-from modules.core.utils import _format_ping_result
+from modules.core.common_tools.ping import _format_ping_result
 
 
 def _msg(support_markdown: bool):

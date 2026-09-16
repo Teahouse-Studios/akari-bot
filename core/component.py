@@ -157,9 +157,45 @@ class Bind:
 
             return decorator
 
-        def hook(self, name: str | None = None):
+        def hook(
+            self,
+            name: str | None = None,
+            *,
+            point: str | None = None,
+            priority: int = 100,
+            available_for: str | list | tuple = "*",
+            exclude_from: str | list | tuple = "",
+            load: bool = True,
+            timeout: float = 5.0,
+            server_scope: bool = False,
+        ):
+            """注册具名 hook 或 parser 入口订阅。
+
+            :param name: 具名能力名；入口订阅时可作为稳定订阅 ID 后缀。
+            :param point: ``HookPoint`` 入口常量或其字符串值；与 name 同时给出时走入口索引。
+            :param priority: 入口订阅优先级，升序执行。
+            :param available_for: 入口订阅的平台限制，语义同 command。
+            :param exclude_from: 入口订阅的平台排除，语义同 command。
+            :param load: 入口订阅开关。
+            :param timeout: 入口订阅单次执行预算（秒）；<=0 不限时。
+            :param server_scope: 系统扩展作用域，免场景 enabled_modules。
+            """
+
             def decorator(function):
-                ModulesManager.bind_to_module(self.module_name, HookMeta(function=function, name=name))
+                ModulesManager.bind_to_module(
+                    self.module_name,
+                    HookMeta(
+                        function=function,
+                        name=name,
+                        point=str(point) if point is not None else None,
+                        priority=priority,
+                        available_for=available_for,
+                        exclude_from=exclude_from,
+                        load=load,
+                        timeout=timeout,
+                        server_scope=server_scope,
+                    ),
+                )
                 return function
 
             return decorator

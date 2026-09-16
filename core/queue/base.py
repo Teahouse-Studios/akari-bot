@@ -63,6 +63,11 @@ class JobQueueBase:
     name = "Internal|" + str(uuid4())
     _auto_peer_id = True
     TASK_TIMEOUT_SECONDS = DEFAULT_TIMEOUT_SECONDS
+    # Abandon is best-effort cleanup.  A database lock or disconnected backend must
+    # not keep the caller (or shutdown) blocked after the original RPC has ended.
+    ABANDON_TIMEOUT_SECONDS = 5.0
+    SHUTDOWN_POLL_LOCK_TIMEOUT_SECONDS = 5.0
+    SHUTDOWN_OPERATION_TIMEOUT_SECONDS = 1.0
     POLL_INTERVAL_SECONDS = 0.1
     backend: JobQueueBackend | None = None
     registry: PeerRegistry
@@ -72,6 +77,7 @@ class JobQueueBase:
     identity: PeerIdentity | None = None
     _pending: dict[str, asyncio.Future[RpcResponse]] = {}
     _process_tasks: set[asyncio.Task[None]] = set()
+    _cleanup_tasks: set[asyncio.Task[None]] = set()
     pause_event = asyncio.Event()
     pause_event.set()
     _poll_lock = asyncio.Lock()
@@ -96,6 +102,7 @@ class JobQueueBase:
         cls.identity = None
         cls._pending = {}
         cls._process_tasks = set()
+        cls._cleanup_tasks = set()
         cls.pause_event = asyncio.Event()
         cls.pause_event.set()
         cls._poll_lock = asyncio.Lock()
@@ -504,6 +511,42 @@ class JobQueueBase:
             raise RpcProtocolError("Transport batch delivery result does not cover exactly the submitted requests.")
 
     @classmethod
+    async def _abandon_with_timeout(cls, task_ids: list[str]) -> None:
+        """Best-effort delivery cleanup with a bounded wait.
+
+        Cleanup may race a remote claim/respond transaction.  It must remain
+        cancellation-safe, but an unhealthy backend must not turn that race into
+        an unbounded wait in an RPC or shutdown ``finally`` block.  Once the
+        caller's bound is reached, the backend operation is allowed to finish in
+        the background so a slow database driver can release its transaction;
+        peer shutdown owns the final cancellation and join of these tasks.
+        """
+        if not task_ids:
+            return
+        abandon_task = asyncio.create_task(cls.transport.abandon(task_ids))
+        cls._cleanup_tasks.add(abandon_task)
+        try:
+            done, _ = await asyncio.wait((abandon_task,), timeout=cls.ABANDON_TIMEOUT_SECONDS)
+        except asyncio.CancelledError:
+            abandon_task.add_done_callback(cls._abandon_task_done)
+            raise
+        if not done:
+            abandon_task.add_done_callback(cls._abandon_task_done)
+            Logger.error(f"Timed out cleaning up {len(task_ids)} abandoned JobQueue delivery(ies).")
+            return
+        abandon_task.result()
+
+    @classmethod
+    def _abandon_task_done(cls, task: asyncio.Task) -> None:
+        cls._cleanup_tasks.discard(task)
+        if task.cancelled():
+            return
+        try:
+            task.result()
+        except Exception:
+            Logger.exception("Abandoned JobQueue delivery cleanup failed after cancellation.")
+
+    @classmethod
     async def call(
         cls,
         target: str | ServiceRoute,
@@ -568,7 +611,7 @@ class JobQueueBase:
             # 是安全的，且不会取消已经开始的远端处理器。
             if future is not None and not response_received:
                 try:
-                    await asyncio.shield(cls.transport.abandon([task_id]))
+                    await cls._abandon_with_timeout([task_id])
                 except Exception:
                     Logger.exception(f"Failed to clean up abandoned RPC {task_id}.")
 
@@ -683,7 +726,7 @@ class JobQueueBase:
         finally:
             if requests and not submitted:
                 try:
-                    await asyncio.shield(cls.transport.abandon([request.task_id for request in requests]))
+                    await cls._abandon_with_timeout([request.task_id for request in requests])
                 except Exception:
                     Logger.exception(f"Failed to clean up interrupted signal fan-out {event_id}.")
         task_to_peer = {request.task_id: peer.peer_id for peer, request in zip(peers, requests)}
@@ -862,7 +905,7 @@ class JobQueueBase:
                     future.cancel()
             if abandoned:
                 try:
-                    await asyncio.shield(cls.transport.abandon(abandoned))
+                    await cls._abandon_with_timeout(abandoned)
                 except Exception:
                     Logger.exception(f"Failed to clean up {len(abandoned)} abandoned signal deliveries.")
         results, errors = {}, {}
@@ -1308,7 +1351,11 @@ class JobQueueBase:
             raise
         finally:
             if graceful_stop or cls._shutting_down or cls._registered:
-                await cls._stop_peer()
+                try:
+                    async with asyncio.timeout(cls.SHUTDOWN_OPERATION_TIMEOUT_SECONDS):
+                        await cls._stop_peer()
+                except TimeoutError:
+                    Logger.warning(f"Timed out stopping JobQueue peer {cls.name} after poller exit.")
             cls.is_running = False
             if cls._poller_task is current:
                 cls._poller_task = None
@@ -1331,7 +1378,7 @@ class JobQueueBase:
             pending_task_ids = list(cls._pending)
             if pending_task_ids:
                 try:
-                    await cls.transport.abandon(pending_task_ids)
+                    await cls._abandon_with_timeout(pending_task_ids)
                 except Exception:
                     Logger.exception(f"Failed to clean up {len(pending_task_ids)} RPCs after result pump stopped.")
             if backend_started or backend.ready:
@@ -1441,8 +1488,18 @@ class JobQueueBase:
         for task in tasks:
             if not task.done():
                 task.cancel()
-        await asyncio.gather(*tasks, return_exceptions=True)
-        cls._process_tasks.difference_update(tasks)
+        if tasks:
+            done, _ = await asyncio.wait(tasks, timeout=cls.SHUTDOWN_OPERATION_TIMEOUT_SECONDS)
+            await asyncio.gather(*done, return_exceptions=True)
+            cls._process_tasks.difference_update(done)
+        cleanup_tasks = [task for task in cls._cleanup_tasks if task is not current]
+        for task in cleanup_tasks:
+            if not task.done():
+                task.cancel()
+        if cleanup_tasks:
+            done, _ = await asyncio.wait(cleanup_tasks, timeout=cls.SHUTDOWN_OPERATION_TIMEOUT_SECONDS)
+            await asyncio.gather(*done, return_exceptions=True)
+            cls._cleanup_tasks.difference_update(done)
 
     @classmethod
     async def wait_process_tasks(cls) -> None:
@@ -1455,32 +1512,56 @@ class JobQueueBase:
         task = cls._poller_task
         if task is None or task is asyncio.current_task():
             if cls._registered:
-                await cls._stop_peer()
+                try:
+                    async with asyncio.timeout(cls.SHUTDOWN_OPERATION_TIMEOUT_SECONDS):
+                        await cls._stop_peer()
+                except TimeoutError:
+                    Logger.warning(f"Timed out stopping JobQueue peer {cls.name}.")
             return
         if not task.done():
             task.cancel()
         await asyncio.gather(task, return_exceptions=True)
         if cls._registered:
-            await cls._stop_peer()
+            try:
+                async with asyncio.timeout(cls.SHUTDOWN_OPERATION_TIMEOUT_SECONDS):
+                    await cls._stop_peer()
+            except TimeoutError:
+                Logger.warning(f"Timed out stopping JobQueue peer {cls.name}.")
+
+    @classmethod
+    async def _acquire_shutdown_poll_lock(cls) -> bool:
+        try:
+            async with asyncio.timeout(cls.SHUTDOWN_POLL_LOCK_TIMEOUT_SECONDS):
+                await cls._poll_lock.acquire()
+        except TimeoutError:
+            Logger.warning(f"Timed out waiting for JobQueue poll lock while shutting down {cls.name}.")
+            return False
+        return True
 
     @classmethod
     async def begin_shutdown(cls) -> None:
         already_shutting_down = cls._shutting_down
         cls._shutting_down = True
         cls.pause_event.clear()
-        async with cls._poll_lock:
-            pass
-        if already_shutting_down or cls.identity is None or not cls._registered:
+        poll_lock_acquired = True
+        if not already_shutting_down and cls._registered:
+            poll_lock_acquired = await cls._acquire_shutdown_poll_lock()
+            if poll_lock_acquired:
+                cls._poll_lock.release()
+        if already_shutting_down or cls.identity is None or not cls._registered or not poll_lock_acquired:
             return
         try:
-            await cls.registry.set_state(cls.name, "draining")
-            cls._update_peer_cache(cls.identity.snapshot("draining"))
-            await cls.emit_signal(
-                "peer.draining",
-                cls.identity.snapshot("draining"),
-                PeerSelector.all().excluding(cls.name),
-                timeout=10,
-            )
+            async with asyncio.timeout(cls.SHUTDOWN_OPERATION_TIMEOUT_SECONDS):
+                await cls.registry.set_state(cls.name, "draining")
+                cls._update_peer_cache(cls.identity.snapshot("draining"))
+                await cls.emit_signal(
+                    "peer.draining",
+                    cls.identity.snapshot("draining"),
+                    PeerSelector.all().excluding(cls.name),
+                    timeout=10,
+                )
+        except TimeoutError:
+            Logger.warning(f"Timed out publishing JobQueue peer shutdown for {cls.name}.")
         except Exception:
             Logger.exception(f"Failed to publish peer draining state for {cls.name}.")
 
@@ -1588,10 +1669,13 @@ class JobQueueBase:
     async def shutdown_window(cls):
         """Stop new claims, cancel handlers, then exclude database polling."""
         await cls.begin_shutdown()
+        poll_lock_acquired = False
         try:
             await cls.cancel_process_tasks()
-            async with cls._poll_lock:
-                yield
+            poll_lock_acquired = await cls._acquire_shutdown_poll_lock()
+            yield
         finally:
+            if poll_lock_acquired:
+                cls._poll_lock.release()
             cls._shutting_down = False
             cls.pause_event.set()

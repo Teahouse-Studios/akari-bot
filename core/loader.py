@@ -106,6 +106,11 @@ class ModulesManager:
     modules_aliases: dict[str, str] = {}
     modules_hooks: dict[str, Callable] = {}
     modules_hook_modules: dict[str, str] = {}
+    # 具名 hook 与 parser hook 统一建立订阅索引，复用共享执行基础的资格与代际机制。
+    modules_hook_subscriptions: dict[str, list] = {}
+    module_hook_subscriptions: dict[str, list] = {}
+    # parser 入口订阅：HookPoint -> 已排序订阅列表；与具名 hook 分索引
+    parser_hook_subscriptions: dict = {}
     modules_events: dict[str, list[tuple[str, EventMeta]]] = {}
     modules_origin: dict[str, str] = {}
     _deferred_bindings = []
@@ -301,15 +306,36 @@ class ModulesManager:
 
     @classmethod
     def refresh_modules_hooks(cls):
+        from core.builtins.parser.hooks import HookPoint, build_subscription
+
         cls.modules_hooks.clear()
         cls.modules_hook_modules.clear()
+        cls.modules_hook_subscriptions.clear()
+        cls.module_hook_subscriptions.clear()
+        cls.parser_hook_subscriptions.clear()
+        point_index: dict = {}
         for m in cls.modules:
             module = cls.modules[m]
-            if module.hooks_list:
-                for hook in module.hooks_list.set:
-                    hook_name = module.module_name + (("." + hook.name) if hook.name else "")
-                    cls.modules_hooks.update({hook_name: hook.function})
-                    cls.modules_hook_modules[hook_name] = module.module_name
+            if not module.hooks_list:
+                continue
+            for index, hook in enumerate(module.hooks_list.set):
+                if hook.point:
+                    try:
+                        point = HookPoint(hook.point)
+                    except ValueError:
+                        Logger.error(f"Module {module.module_name} registered unknown hook point: {hook.point}")
+                        continue
+                    point_index.setdefault(point, []).append(build_subscription(module.module_name, hook, index))
+                    continue
+                hook_name = module.module_name + (("." + hook.name) if hook.name else "")
+                cls.modules_hooks.update({hook_name: hook.function})
+                cls.modules_hook_modules[hook_name] = module.module_name
+                subscription = build_subscription(module.module_name, hook, index)
+                cls.modules_hook_subscriptions.setdefault(hook_name, []).append(subscription)
+                cls.module_hook_subscriptions.setdefault(module.module_name, []).append(subscription)
+        for point, subs in point_index.items():
+            subs.sort(key=lambda s: (s.priority, s.module_name, s.subscription_id))
+            cls.parser_hook_subscriptions[point] = subs
 
     @classmethod
     def refresh_modules_events(cls):
@@ -349,9 +375,17 @@ class ModulesManager:
                 async with ModuleRuntimeManager.use(module_name):
                     return await function(event_info)
 
-            return await asyncio.gather(
-                *[invoke(module_name, function, event_info) for module_name, function in handler_functions]
-            )
+            # 逐 handler 隔离：单个订阅失败不影响其他订阅，也不向调用方泄漏业务异常
+            results = []
+            for module_name, function in handler_functions:
+                try:
+                    results.append(await invoke(module_name, function, event_info))
+                except asyncio.CancelledError:
+                    raise
+                except Exception:
+                    Logger.exception(f"Event handler in module {module_name} failed for {event_info.event_name}.")
+                    results.append(None)
+            return results
         return []
 
     @classmethod
@@ -709,6 +743,11 @@ class ModulesManager:
         def restore_registrations():
             for package_name in reversed(reload_packages):
                 cls._restore_module_registrations(package_name, old_modules, old_origins)
+            # 恢复的是旧代际的注册，但 ModuleRuntimeManager 的 staging 仍是新代际；
+            # 若不重建索引，build_subscription 会把旧函数标记成 staging 的新
+            # generation，abort 之后旧 runtime 与订阅代际不符，旧订阅全部失效。
+            # 此处重建时 staging 尚未撤销，需在 abort_reload 之后再次重建。
+            cls.refresh_modules_hooks()
 
         def restore_python_modules():
             for name in list(sys.modules):
@@ -744,6 +783,7 @@ class ModulesManager:
                 restore_python_modules()
                 restore_registrations()
                 await ModuleRuntimeManager.abort_reload(runtime_snapshot, runtime_names)
+                cls.refresh_modules_hooks()
                 return False, count
 
             reloaded_modules = cls._module_names_for_py_modules(reload_package_set)
@@ -753,6 +793,7 @@ class ModulesManager:
                 restore_python_modules()
                 restore_registrations()
                 await ModuleRuntimeManager.abort_reload(runtime_snapshot, runtime_names)
+                cls.refresh_modules_hooks()
                 return False, count
 
             config_errors = []
@@ -763,6 +804,7 @@ class ModulesManager:
                 restore_python_modules()
                 restore_registrations()
                 await ModuleRuntimeManager.abort_reload(runtime_snapshot, runtime_names)
+                cls.refresh_modules_hooks()
                 return False, count
 
             changed_schema_packages = [
@@ -778,6 +820,7 @@ class ModulesManager:
                 restore_python_modules()
                 restore_registrations()
                 await ModuleRuntimeManager.abort_reload(runtime_snapshot, runtime_names)
+                cls.refresh_modules_hooks()
                 return False, count
 
             if cls._deferred_bindings:
@@ -827,6 +870,7 @@ class ModulesManager:
                 SchedulerLifecycle.restore_modules(old_schedules, scheduler_names_to_replace)
                 schedules_replaced = False
                 await ModuleRuntimeManager.abort_reload(runtime_snapshot, runtime_names)
+                cls.refresh_modules_hooks()
                 return False, count
 
             active_modules = {
@@ -906,6 +950,7 @@ class ModulesManager:
                 if schedules_replaced:
                     SchedulerLifecycle.restore_modules(old_schedules, scheduler_names_to_replace)
                 await ModuleRuntimeManager.abort_reload(runtime_snapshot, runtime_names)
+                cls.refresh_modules_hooks()
             raise
         except Exception:
             Logger.exception(f"Failed to reload module package {py_module}:")
@@ -922,6 +967,7 @@ class ModulesManager:
                 if schedules_replaced:
                     SchedulerLifecycle.restore_modules(old_schedules, scheduler_names_to_replace)
                 await ModuleRuntimeManager.abort_reload(runtime_snapshot, runtime_names)
+                cls.refresh_modules_hooks()
                 return False, count
             Logger.exception(f"Reload for {py_module} committed, but post-commit work failed:")
             return True, count

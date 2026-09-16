@@ -214,14 +214,23 @@ async def _test_union_discriminators_and_dictionary_contracts():
 async def _test_error_reporting_deduplicates_delivery_failures():
     from core.exports import exports
     from core.queue import reporting, server
+    from core.builtins.message.internal import Plain
+    from modules.core.hooks.errors import format_error_detail
 
     session = await FetchedSessionInfo.assign(
         target_id="RPC-REPORT|Group|1", target_from="RPC-REPORT", client_name="RPC-REPORT", fetch=True
     )
     markdown_session = evolve(session, target_id="RPC-REPORT|Group|2", support_markdown=True)
+
+    async def format_detail(_name, session_info=None, args=None):
+        if not session_info.support_markdown:
+            return MessageChain.assign(Plain((args or {}).get("text", ""), disable_joke=True, allow_parse=False))
+        return format_error_detail(session_info, (args or {}).get("text", ""))
+
     bot = SimpleNamespace(
         fetch_union_target_list=AsyncMock(return_value=[session, markdown_session]),
         pick_channel_heads=AsyncMock(return_value=[session, markdown_session]),
+        Hook=SimpleNamespace(trigger=format_detail),
     )
     details = "delivery failed: <value>\n```\n[KE:image,path=error.png]\n{I18N:error.message.prompt}"
     send = AsyncMock(return_value="report-task")

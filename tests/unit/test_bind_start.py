@@ -1,9 +1,9 @@
-"""modules.core.bind 单元测试 - bind start 的私聊与群组分支（需要数据库）。"""
+"""modules.core.common_tools.bind 单元测试 - bind start 的私聊与群组分支（需要数据库）。"""
 
 import asyncio
 from unittest.mock import AsyncMock, patch
 
-import modules.core.bind as bind
+import modules.core.common_tools.bind as bind
 from core.utils.union_merge import generate_code
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
@@ -118,7 +118,7 @@ async def _test_scene_mismatch_rejected():
 
 @func_case
 async def test_bind_start(tester: Tester):
-    """modules.core.bind: bind start 测试"""
+    """modules.core.common_tools.bind: bind start 测试"""
     await tester.test(_test_private_binds_both_unions, "私聊同时绑定两组测试")
     await tester.test(_test_cancel_leaves_nothing_bound, "取消不留半绑状态测试")
     await tester.test(_test_scene_mismatch_rejected, "跨场景兑换拦截测试")

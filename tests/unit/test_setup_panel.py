@@ -15,8 +15,8 @@ from core.config.base import CoreConfig
 from core.database.models import SenderUnionInfo, TargetUnionInfo
 from core.logger import Logger
 from core.tester import func_case, Tester
-from modules.core.help import get_setup_button_data
-from modules.core.setup import (
+from modules.core.common_tools.help import get_setup_button_data
+from modules.core.common_tools.setup import (
     _ends_with_inline_entry,
     build_jump_buttons,
     build_sender_rows,
@@ -433,7 +433,7 @@ def _test_help_buttons_absent_without_support() -> bool:
 
 @func_case
 async def test_setup_panel(tester: Tester):
-    """modules.core.setup: 设置面板构造测试"""
+    """modules.core.common_tools.setup: 设置面板构造测试"""
     await tester.test(_test_sender_rows_default_to_enabled, "个人设置默认开启测试")
     await tester.test(_test_sender_rows_follow_setting, "个人设置跟随取值测试")
     await tester.test(_test_target_rows_content, "场景设置内容测试")

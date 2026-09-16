@@ -7,7 +7,7 @@ from core.tester import (
     ContainsAll,
     Empty,
 )
-from modules.core.help import regex_disable_prefixes
+from modules.core.common_tools.help import regex_disable_prefixes
 
 
 @func_case

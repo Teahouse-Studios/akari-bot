@@ -1036,6 +1036,7 @@ class _WebSocketConnection:
         self.responses: dict[str, RpcResponse] = {}
         self.peer_states: dict[str, PeerRecord] = {}
         self._send_lock = asyncio.Lock()
+        self._command_slots = asyncio.BoundedSemaphore(settings.queue_size)
         self._error: BaseException | None = None
         self._closing = False
 
@@ -1187,8 +1188,15 @@ class _WebSocketConnection:
 
     async def command(self, operation: str, **data: Any) -> Any:
         self.ensure_connected()
-        if len(self.commands) >= self.settings.queue_size:
-            raise WebSocketBackendError("Too many concurrent WebSocket JobQueue commands")
+        acquired = False
+        try:
+            async with asyncio.timeout(self.settings.command_timeout):
+                await self._command_slots.acquire()
+            acquired = True
+        except TimeoutError as exc:
+            raise WebSocketCommandTimeout(
+                f"WebSocket JobQueue command {operation} could not acquire a command slot"
+            ) from exc
         command_id = str(uuid4())
         future = asyncio.get_running_loop().create_future()
         self.commands[command_id] = future
@@ -1205,6 +1213,8 @@ class _WebSocketConnection:
             self.commands.pop(command_id, None)
             if not future.done():
                 future.cancel()
+            if acquired:
+                self._command_slots.release()
 
 
 class WebSocketMessageTransport:

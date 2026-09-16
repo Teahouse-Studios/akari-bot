@@ -187,6 +187,129 @@ async def _test_function_entry_timeout_resets_on_progress():
     return not result.get("timeout") and all(entry.get("match") for entry in result.get("results", []))
 
 
+async def _test_protocol_exception_is_recorded_without_stopping_function_test():
+    """业务控制流异常应记录为失败，入口异常也必须有界清理。"""
+    from core.constants import WaitCancelException
+    from core.tester.process import run_function_entry
+
+    async def cancelled_wait():
+        raise WaitCancelException
+
+    async def fine():
+        return True
+
+    async def mixed(tester):
+        await tester.test(cancelled_wait, "等待取消")
+        await tester.test(fine, "后续测试")
+        return tester
+
+    orphan_cancelled = asyncio.Event()
+    orphan_started = asyncio.Event()
+    orphan_task = {}
+
+    async def orphan():
+        try:
+            orphan_started.set()
+            await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            orphan_cancelled.set()
+            raise
+
+    async def unhandled_protocol_exception(_tester):
+        orphan_task["task"] = asyncio.create_task(orphan(), name="test-protocol-exception-orphan")
+        await orphan_started.wait()
+        raise WaitCancelException
+
+    try:
+        with (
+            patch("core.tester.process.close_db", new=AsyncMock()),
+            patch("core.tester.process.init_db", new=AsyncMock(return_value=True)),
+            patch("core.tester.process.load_modules", new=AsyncMock()),
+        ):
+            result = await run_function_entry(mixed, is_ci=True)
+            unhandled_result = await run_function_entry(unhandled_protocol_exception, is_ci=True)
+
+        results = result.get("results", [])
+        task = orphan_task.get("task")
+        return (
+            not result.get("error")
+            and len(results) == 2
+            and results[0].get("match") is False
+            and results[0].get("exception_type") == "WaitCancelException"
+            and results[1].get("match") is True
+            and unhandled_result.get("error")
+            and unhandled_result.get("cleanup_pending") is False
+            and task is not None
+            and task.done()
+            and task.cancelled()
+            and orphan_cancelled.is_set()
+        )
+    finally:
+        task = orphan_task.get("task")
+        if task is not None and not task.done():
+            task.cancel()
+        if task is not None:
+            await asyncio.gather(task, return_exceptions=True)
+
+
+async def _test_function_entries_cancel_orphaned_tasks_before_reinitializing_database():
+    """func_case 收尾必须回收遗留任务，避免它们使用上一轮数据库连接。"""
+    from core.tester.process import _cancel_orphan_tasks
+
+    cancelled = asyncio.Event()
+
+    async def orphan():
+        try:
+            await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            cancelled.set()
+            raise
+
+    baseline = set(asyncio.all_tasks())
+    task = asyncio.create_task(orphan(), name="test-orphaned-function-entry-task")
+    await asyncio.sleep(0)
+    return await _cancel_orphan_tasks(baseline) and task.cancelled() and cancelled.is_set()
+
+
+async def _test_case_entry_cancels_orphaned_tasks_before_next_database_context():
+    """注册表用例也必须回收任务，避免 action 持有上一轮数据库连接。"""
+    from core.tester.process import run_case_entry
+
+    cancelled = asyncio.Event()
+    orphan_task = None
+
+    async def orphan():
+        try:
+            await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            cancelled.set()
+            raise
+
+    async def fake_run_test_case(*_args, **_kwargs):
+        nonlocal orphan_task
+        orphan_task = asyncio.create_task(orphan(), name="test-orphaned-case-entry-task")
+        await asyncio.sleep(0)
+        return {"input": "~case", "output": [], "action": [], "expected": None}
+
+    entry = {
+        "func": lambda _msg: None,
+        "input": "~case",
+        "expected": None,
+        "note": None,
+        "timeout": None,
+        "file": None,
+        "line": 0,
+    }
+    with (
+        patch("core.tester.process.close_db", new=AsyncMock()),
+        patch("core.tester.process.init_db", new=AsyncMock(return_value=True)),
+        patch("core.tester.process.load_modules", new=AsyncMock()),
+        patch("core.tester.process.run_test_case", new=fake_run_test_case),
+    ):
+        await run_case_entry(entry, is_ci=True)
+    return orphan_task is not None and orphan_task.cancelled() and cancelled.is_set()
+
+
 async def _test_progress_notifications_coalesce_to_latest_revision():
     """连续完成的子测试应保留最新进度，但不能作为旧通知反复重置 watchdog。"""
     tester = Tester("progress_queue")
@@ -394,6 +517,18 @@ async def test_tester_framework(tester: Tester):
     await tester.test(_test_integrate_expected_exception_is_not_runner_error, "func_case 预期异常匹配测试")
     await tester.test(_test_function_entry_timeout_is_structured_failure, "func_case 超时结构化失败测试")
     await tester.test(_test_function_entry_timeout_resets_on_progress, "func_case 超时按进展刷新测试")
+    await tester.test(
+        _test_protocol_exception_is_recorded_without_stopping_function_test,
+        "业务控制流异常不终止 func_case 测试",
+    )
+    await tester.test(
+        _test_function_entries_cancel_orphaned_tasks_before_reinitializing_database,
+        "func_case 之间回收遗留任务测试",
+    )
+    await tester.test(
+        _test_case_entry_cancels_orphaned_tasks_before_next_database_context,
+        "注册表用例之间回收遗留任务测试",
+    )
     await tester.test(
         _test_progress_notifications_coalesce_to_latest_revision,
         "连续进度通知合并到最新版本测试",

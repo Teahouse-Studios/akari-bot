@@ -6,8 +6,8 @@ class SMTPConfig:
     enable_email_report: bool = False
     smtp_host: str = ""
     smtp_port: int = 587
-    smtp_username: str = ""
-    smtp_sender: str = ""
+    smtp_user: str = "AkariBot"
+    smtp_sender_name: str = ""
     smtp_recipients: list = []
     smtp_ssl: bool = False
     smtp_starttls: bool = True

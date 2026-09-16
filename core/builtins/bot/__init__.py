@@ -10,6 +10,7 @@ from typing import Any, Awaitable, Callable
 
 from core.alive import Alive
 from core.builtins.message.chain import *
+from core.builtins.parser.hooks import ParserHookContext
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import EventInfo, SessionInfo, FetchedSessionInfo, ModuleHookContext
@@ -28,7 +29,6 @@ from core.database.models import (
 )
 from core.exports import add_export
 from core.logger import Logger
-from core.module_runtime import ModuleRuntimeManager
 from core.utils.retired import filter_retired_targets
 from core.utils.func import convert_list
 from core.utils.session import inject_features
@@ -57,6 +57,9 @@ class Bot:
 
     # 模块钩子上下文类型 - 用于模块钩子函数的参数传递
     ModuleHookContext = ModuleHookContext
+
+    # Parser 入口 hook 上下文；控制结果类型可通过 ``ctx.Stop`` 等访问。
+    ParserHookContext = ParserHookContext
 
     EventInfo = EventInfo
 
@@ -582,7 +585,12 @@ class Bot:
         """
 
         @staticmethod
-        async def trigger(module_or_hook_name: str, session_info: SessionInfo | None = None, args=None) -> Any:
+        async def trigger(
+            module_or_hook_name: str,
+            session_info: SessionInfo | None = None,
+            args=None,
+            timeout: float | None = None,
+        ) -> Any:
             """
             触发模块钩子或自定义钩子。
 
@@ -592,47 +600,18 @@ class Bot:
                                       如果包含 `.`，视为自定义钩子名；否则视为模块名
             :param session_info: 会话信息（可选）
             :param args: 传递给钩子的参数字典
+            :param timeout: 覆盖订阅默认执行预算；``<=0`` 表示不限时
             :return: 钩子函数的返回值
             :raises ValueError: 如果模块或钩子名称无效
             """
-            from core.loader import ModulesManager
+            from core.builtins.hooks import dispatch_module_hook
 
-            if args is None:
-                args = {}
-
-            # 判断是否为自定义钩子（包含 "."）或模块钩子
-            hook_mode = False
-            if "." in module_or_hook_name:
-                hook_mode = True
-
-            # 处理模块钩子
-            if not hook_mode:
-                if module_or_hook_name:
-                    modules = ModulesManager.modules
-                    # 检查模块是否存在且已加载
-                    if module_or_hook_name in modules:
-                        if not modules[module_or_hook_name]._db_load:
-                            return None
-
-                        # 执行模块的所有钩子
-                        for hook in modules[module_or_hook_name].hooks_list.set:
-                            async with ModuleRuntimeManager.use(module_or_hook_name):
-                                await hook.function(ModuleHookContext(args, session_info=session_info))
-                        return None
-
-                raise ValueError(f"Invalid module name {module_or_hook_name}")
-
-            # 处理自定义钩子
-            if module_or_hook_name:
-                if module_or_hook_name in ModulesManager.modules_hooks:
-                    module_name = ModulesManager.modules_hook_modules.get(module_or_hook_name)
-                    if module_name is None:
-                        raise ValueError(f"Hook {module_or_hook_name} has no owning module")
-                    async with ModuleRuntimeManager.use(module_name):
-                        return await ModulesManager.modules_hooks[module_or_hook_name](
-                            ModuleHookContext(args, session_info=session_info)
-                        )
-            raise ValueError(f"Invalid hook name {module_or_hook_name}")
+            return await dispatch_module_hook(
+                module_or_hook_name,
+                session_info=session_info,
+                args=args,
+                timeout=timeout,
+            )
 
 
 # 将 Bot 类导出到系统的导出列表中

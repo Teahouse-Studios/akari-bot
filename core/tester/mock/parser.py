@@ -3,9 +3,11 @@ from typing import TYPE_CHECKING
 
 from core.builtins.message.internal import ActionText, I18NContext
 from core.builtins.parser.command import CommandParser
-from core.builtins.parser.message import _build_command_kwargs, should_skip_regex
+from core.builtins.parser.hooks import HookPoint, dispatch_parser_hook
+from core.builtins.parser.message import _build_command_kwargs
 from core.builtins.session.tasks import SessionTaskManager
 from core.constants.exceptions import SessionFinished
+from core.config.base import CoreConfig
 from core.exports import exports
 from core.loader import ModulesManager
 from core.logger import Logger
@@ -26,6 +28,7 @@ async def parser(msg: "Bot.MessageSession"):
     modules = ModulesManager.return_modules_list()
 
     msg.trigger_msg = normalize_space(msg.as_display())
+    await dispatch_parser_hook(HookPoint.MESSAGE_NORMALIZED, msg)
     if len(msg.trigger_msg) == 0:
         return
 
@@ -41,7 +44,7 @@ async def parser(msg: "Bot.MessageSession"):
         return None
 
     # 检查正则
-    if should_skip_regex(msg.trigger_msg):
+    if _should_skip_regex(msg.trigger_msg):
         return None
     # 若任何正则命中则会在 _execute_regex 中调用对应函数并抛出 SessionFinished
     await _execute_regex(msg, modules)
@@ -69,6 +72,11 @@ def _get_prefixes(msg: "Bot.MessageSession"):
             msg.session_info.prefixes.insert(0, display_prefix)
 
     return disable_prefix, in_prefix_list
+
+
+def _should_skip_regex(trigger_msg: str) -> bool:
+    prefixes = tuple(prefix for prefix in CoreConfig.regex_disable_prefix if isinstance(prefix, str) and prefix)
+    return bool(prefixes) and trigger_msg.startswith(prefixes)
 
 
 async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, in_prefix_list):
