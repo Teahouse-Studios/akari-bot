@@ -12,6 +12,7 @@ from core.builtins.parser.hooks import (
     build_subscription,
     normalize_result,
 )
+from core.builtins.hooks import platform_allows, subscription_sort_key
 from core.builtins.parser.hooks.dispatch import reset_parser_hook_executor
 from core.builtins.parser.hooks.dispatch import get_parser_hook_executor
 from core.loader import ModulesManager
@@ -68,8 +69,6 @@ def _test_normalize_result():
 def _test_subscription_sort_and_platform():
     """HookSubscription: 排序键与平台过滤"""
     try:
-        from core.builtins.parser.hooks.executor import _platform_allows, _subscription_sort_key
-
         a = build_subscription(
             "mod_a",
             HookMeta(function=lambda ctx: None, point=HookPoint.COMMAND_PREPARE, priority=10, name="a"),
@@ -80,7 +79,7 @@ def _test_subscription_sort_and_platform():
             HookMeta(function=lambda ctx: None, point=HookPoint.COMMAND_PREPARE, priority=10, name="b"),
             0,
         )
-        assert _subscription_sort_key(a) < _subscription_sort_key(b)
+        assert subscription_sort_key(a) < subscription_sort_key(b)
 
         limited = build_subscription(
             "mod_c",
@@ -93,9 +92,9 @@ def _test_subscription_sort_and_platform():
             ),
             0,
         )
-        assert not _platform_allows(limited.available_for, limited.exclude_from, "TEST|1", "TEST")
-        assert _platform_allows(limited.available_for, limited.exclude_from, "QQ|1", "QQ")
-        assert _platform_allows(a.available_for, a.exclude_from, "TEST|1", "TEST")
+        assert not platform_allows(limited.available_for, limited.exclude_from, "TEST|1", "TEST")
+        assert platform_allows(limited.available_for, limited.exclude_from, "QQ|1", "QQ")
+        assert platform_allows(a.available_for, a.exclude_from, "TEST|1", "TEST")
         return True
     except Exception:
         return False
@@ -190,6 +189,8 @@ async def _test_loader_indexes_point_hooks():
         try:
             ModulesManager.refresh_modules_hooks()
             assert ModulesManager.modules_hooks.get(f"{module_name}.reload") is named
+            assert ModulesManager.modules_hook_subscriptions[f"{module_name}.reload"][0].function is named
+            assert ModulesManager.module_hook_subscriptions[module_name][0].function is named
             subs = ModulesManager.parser_hook_subscriptions.get(HookPoint.COMMAND_PREPARE) or []
             assert any(s.subscription_id.endswith(":p") and s.module_name == module_name for s in subs)
             # 确保 named hook 未进入 point 索引
@@ -522,6 +523,79 @@ async def _test_named_hook_skips_point_and_disabled():
         return False
 
 
+async def _test_named_hook_uses_shared_execution_contract():
+    """具名 hook 复用共享执行器的广播隔离、平台筛选和单能力错误传播。"""
+    from core.builtins.hooks import dispatch_module_hook
+    from core.constants.exceptions import SessionFinished
+
+    module_name = "__test_named_contract"
+    module = _make_module(module_name)
+    calls = []
+
+    async def broadcast_bad(ctx):
+        calls.append("bad")
+        raise RuntimeError("broadcast failure")
+
+    async def broadcast_good(ctx):
+        calls.append("good")
+
+    async def restricted(ctx):
+        calls.append("restricted")
+        return "restricted-result"
+
+    async def direct_failure(ctx):
+        raise SessionFinished("stop")
+
+    module.hooks_list.add(HookMeta(function=broadcast_bad, name="bad"))
+    module.hooks_list.add(HookMeta(function=broadcast_good, name="good"))
+    module.hooks_list.add(HookMeta(function=restricted, name="restricted", available_for=["QQ"], timeout=1))
+    module.hooks_list.add(HookMeta(function=direct_failure, name="direct"))
+    ModulesManager.modules[module_name] = module
+    try:
+        ModulesManager.refresh_modules_hooks()
+        await dispatch_module_hook(module_name)
+        assert calls == ["bad", "good"]
+
+        session = SimpleNamespace(target_from="TEST|Group", client_name="TEST")
+        assert await dispatch_module_hook(f"{module_name}.restricted", session_info=session) is None
+        assert calls == ["bad", "good"]
+
+        try:
+            await dispatch_module_hook(f"{module_name}.direct")
+        except SessionFinished:
+            return True
+        return False
+    finally:
+        ModulesManager.modules.pop(module_name, None)
+        ModulesManager.refresh_modules_hooks()
+
+
+async def _test_named_hook_timeout_is_enforced():
+    """具名 hook 的单次调用遵守订阅 timeout。"""
+    import asyncio
+
+    from core.builtins.hooks import dispatch_module_hook
+
+    module_name = "__test_named_timeout"
+    module = _make_module(module_name)
+
+    async def slow(ctx):
+        await asyncio.sleep(0.05)
+
+    module.hooks_list.add(HookMeta(function=slow, name="slow", timeout=0.01))
+    ModulesManager.modules[module_name] = module
+    try:
+        ModulesManager.refresh_modules_hooks()
+        try:
+            await dispatch_module_hook(f"{module_name}.slow")
+        except asyncio.TimeoutError:
+            return True
+        return False
+    finally:
+        ModulesManager.modules.pop(module_name, None)
+        ModulesManager.refresh_modules_hooks()
+
+
 async def _test_event_handler_isolation():
     """event 分发：单 handler 失败不影响其他 handler"""
     try:
@@ -700,6 +774,8 @@ async def test_parser_hooks(tester: Tester):
     await tester.test(_test_stale_generation_skipped, "stale generation skipped")
     await tester.test(_test_per_subscription_timeout, "per-subscription timeout")
     await tester.test(_test_named_hook_skips_point_and_disabled, "named hook skip point/disabled")
+    await tester.test(_test_named_hook_uses_shared_execution_contract, "具名 hook 共享执行契约测试")
+    await tester.test(_test_named_hook_timeout_is_enforced, "具名 hook 超时约束测试")
     await tester.test(_test_event_handler_isolation, "event handler isolation")
     await tester.test(_test_recovery_target_revalidated, "recovery target revalidated")
     await tester.test(_test_session_ready_draft_commit, "session.ready draft commit")

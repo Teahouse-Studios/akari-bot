@@ -15,9 +15,16 @@ from contextvars import ContextVar
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
+from core.builtins.hooks import (
+    DEFAULT_HOOK_TIMEOUT,
+    HookExecutor,
+    HookSubscription,
+    build_subscription,
+    invoke_subscription,
+    subscription_sort_key,
+)
 from core.constants.exceptions import SendMessageFailed, SessionFinished, WaitCancelException
 from core.logger import Logger
-from core.module_runtime import ModuleRuntimeManager
 
 from core.builtins.message.chain import MessageChain
 
@@ -37,10 +44,6 @@ from .results import (
 
 if TYPE_CHECKING:
     from core.builtins.bot import Bot
-    from core.types import Module
-    from core.types.module.component_meta import HookMeta
-
-DEFAULT_HOOK_TIMEOUT = 5.0
 
 _CONTROL_RESULTS = (Stop, RecoveryProposal, Handled)
 _PROTOCOL_EXCEPTIONS = (SessionFinished, WaitCancelException, SendMessageFailed)
@@ -82,25 +85,6 @@ _ALLOWED_RESULTS: dict[HookPoint, tuple[type, ...]] = {
 }
 
 
-@dataclass(frozen=True, slots=True)
-class HookSubscription:
-    module_name: str
-    subscription_id: str
-    meta: "HookMeta"
-    priority: int
-    available_for: tuple[str, ...]
-    exclude_from: tuple[str, ...]
-    load: bool
-    timeout: float = DEFAULT_HOOK_TIMEOUT
-    generation: int = 0
-    # server 作用域：免场景 enabled_modules，仍遵守全局停用与平台约束
-    server_scope: bool = False
-
-    @property
-    def function(self):
-        return self.meta.function
-
-
 @dataclass(slots=True)
 class HookDispatchOutcome:
     result: HookResult
@@ -109,53 +93,12 @@ class HookDispatchOutcome:
     skipped_stale: int = 0
 
 
-def _subscription_sort_key(sub: HookSubscription) -> tuple[int, str, str]:
-    return (sub.priority, sub.module_name, sub.subscription_id)
-
-
-def _platform_allows(available_for, exclude_from, target_from: str | None, client_name: str | None) -> bool:
-    if not target_from:
-        return True
-    if not client_name:
-        client_name = target_from.split("|", 1)[0] if "|" in target_from else target_from
-    if target_from in exclude_from or client_name in exclude_from:
-        return False
-    return "*" in available_for or target_from in available_for or client_name in available_for
-
-
-def _current_generation(module_name: str) -> int | None:
-    # reload 期间新 runtime 在 staging；必须优先取它
-    runtime = ModuleRuntimeManager._staging.get(module_name) or ModuleRuntimeManager._current.get(module_name)
-    return runtime.generation if runtime is not None else None
-
-
-def _module_scene_enabled(module: "Module", module_name: str, session_info) -> bool:
-    if module.base:
-        return True
-    # 与 parser 一致：不要求场景启用时不拦截
-    if not getattr(session_info, "require_enable_modules", True):
-        return True
-    enabled = getattr(session_info, "enabled_modules", None)
-    if enabled is None:
-        return True
-    return module_name in enabled
-
-
-class ParserHookExecutor:
+class ParserHookExecutor(HookExecutor):
     def __init__(self, modules_manager: Any):
-        self._modules_manager = modules_manager
+        super().__init__(modules_manager)
 
     def has_subscribers(self, point: HookPoint) -> bool:
         return bool(self._modules_manager.parser_hook_subscriptions.get(point))
-
-    def _module_active(self, module: "Module") -> bool:
-        return bool(module._db_load and module.load)
-
-    def _generation_ok(self, sub: HookSubscription) -> bool:
-        if sub.generation <= 0:
-            return True
-        current = _current_generation(sub.module_name)
-        return current is not None and current == sub.generation
 
     def _subscription_eligible(
         self,
@@ -164,22 +107,7 @@ class ParserHookExecutor:
         client_name: str | None,
         session_info: Any = None,
     ) -> tuple[bool, bool]:
-        """判断订阅当前是否可执行，并标记代际是否已过期。"""
-        if not sub.load:
-            return False, False
-        module = self._modules_manager.modules.get(sub.module_name)
-        if module is None or not self._module_active(module):
-            return False, False
-        if not self._generation_ok(sub):
-            return False, True
-        if not _platform_allows(tuple(module.available_for), tuple(module.exclude_from), target_from, client_name):
-            return False, False
-        if not _platform_allows(sub.available_for, sub.exclude_from, target_from, client_name):
-            return False, False
-        if session_info is not None and not sub.server_scope:
-            if not _module_scene_enabled(module, sub.module_name, session_info):
-                return False, False
-        return True, False
+        return self.subscription_eligible(sub, target_from, client_name, session_info)
 
     def _collect(
         self,
@@ -198,7 +126,7 @@ class ParserHookExecutor:
             stale += int(is_stale)
             if eligible:
                 selected.append(sub)
-        selected.sort(key=_subscription_sort_key)
+        selected.sort(key=subscription_sort_key)
         return selected, stale
 
     def _result_allowed(self, point: HookPoint, result: HookResult) -> bool:
@@ -386,60 +314,13 @@ class ParserHookExecutor:
         ctx: ParserHookContext,
         timeout: float | None,
     ) -> HookResult:
-        async def call() -> HookResult:
-            async with ModuleRuntimeManager.use(sub.module_name):
-                raw = await sub.function(ctx)
-            return normalize_result(raw)
-
-        if timeout is None or timeout <= 0:
-            return await call()
-
-        runtime = ModuleRuntimeManager._staging.get(sub.module_name) or ModuleRuntimeManager._current.get(
-            sub.module_name
+        return await invoke_subscription(
+            sub,
+            ctx,
+            timeout,
+            transform=normalize_result,
+            task_prefix="parser-hook",
         )
-        # 子任务必须由模块 runtime 托管：dispatch 被取消或 hook 超时时随之取消，
-        # 不会在调用方结束后游离执行；runtime 缺失或已停用时退回普通任务。
-        if runtime is not None and runtime.active:
-            task = runtime.spawn(call(), name=f"parser-hook:{sub.subscription_id}")
-        else:
-            task = asyncio.ensure_future(call())
-        try:
-            done, _pending = await asyncio.wait({task}, timeout=timeout)
-        except asyncio.CancelledError:
-            task.cancel()
-            raise
-        if task in done:
-            return task.result()
-        # 截止：撤销提交资格并有界收尾；吞取消后的晚返回一概不采纳
-        task.cancel()
-        try:
-            # 只等子任务自身的收尾；收尾期间父 dispatch 被外部取消时继续传播，
-            # 不能把这次取消吞成可忽略的 TimeoutError。
-            await asyncio.wait_for(asyncio.shield(task), timeout=0.05)
-        except asyncio.CancelledError:
-            if not task.cancelled():
-                raise
-        except (asyncio.TimeoutError, Exception):
-            pass
-        raise asyncio.TimeoutError()
-
-
-def build_subscription(module_name: str, meta: "HookMeta", index: int) -> HookSubscription:
-    subscription_id = meta.point + ":" + (meta.name or f"anon#{index}")
-    generation = _current_generation(module_name) or 0
-    server_scope = bool(getattr(meta, "server_scope", False))
-    return HookSubscription(
-        module_name=module_name,
-        subscription_id=subscription_id,
-        meta=meta,
-        priority=meta.priority,
-        available_for=tuple(meta.available_for),
-        exclude_from=tuple(meta.exclude_from),
-        load=meta.load,
-        timeout=float(meta.timeout) if meta.timeout is not None else DEFAULT_HOOK_TIMEOUT,
-        generation=generation,
-        server_scope=server_scope,
-    )
 
 
 __all__ = [

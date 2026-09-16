@@ -189,23 +189,29 @@ async def force_run_schedule(
 def get_module_hooks(module_name: str | None = None) -> dict[str, Callable]:
     """获取已注册的具名钩子。
 
-    钩子以 ``{模块名}.{钩子名}`` 为键注册在 ``ModulesManager.modules_hooks``，
-    生产环境经由 JobQueue 的 trigger_hook 动作分发。
+    钩子以 ``{模块名}.{钩子名}`` 为键建立具名订阅索引；
+    执行时统一经模块 hook executor 分发。
 
     :param module_name: 指定模块名，None 则返回全部钩子。
     :returns: {钩子全名: 钩子函数} 字典。
     """
-    hooks = ModulesManager.modules_hooks
+    subscriptions = ModulesManager.modules_hook_subscriptions
+    hooks = {
+        name: subscription.function
+        for name, entries in subscriptions.items()
+        if entries
+        for subscription in entries[:1]
+    }
     if module_name is None:
-        return dict(hooks)
+        return hooks
     return {name: fn for name, fn in hooks.items() if name.split(".")[0] == module_name}
 
 
 async def run_hook(hook_name: str, args: dict | None = None, session_info=None, timeout: float = 30) -> dict:
     """按名手动触发一个具名钩子。
 
-    以与生产环境一致的方式构造 ``ModuleHookContext`` 并调用钩子函数，
-    从而覆盖钩子内部逻辑，而不仅仅是它的注册状态。
+    通过与生产环境相同的模块 hook executor 调用钩子，覆盖真实的
+    平台过滤、超时、runtime 和异常隔离逻辑。
 
     :param hook_name: 钩子全名，形如 ``wikilog.keepalive``。
     :param args: 传递给钩子的参数字典。
@@ -213,23 +219,15 @@ async def run_hook(hook_name: str, args: dict | None = None, session_info=None, 
     :param timeout: 超时时间（秒）。
     :returns: {"success": bool, "error": str | None, "result": Any}
     """
-    from core.builtins.session.info import ModuleHookContext
-
-    hooks = ModulesManager.modules_hooks
-    if hook_name not in hooks:
-        return {"success": False, "error": f"Unknown hook: {hook_name}", "result": None}
-
-    ctx = ModuleHookContext(args or {}, session_info=session_info)
-    module_name = ModulesManager.modules_hook_modules.get(hook_name)
-
-    async def invoke():
-        if module_name is None:
-            return await hooks[hook_name](ctx)
-        async with ModuleRuntimeManager.use(module_name):
-            return await hooks[hook_name](ctx)
+    from core.builtins.hooks import dispatch_module_hook
 
     try:
-        result = await asyncio.wait_for(invoke(), timeout=timeout)
+        result = await dispatch_module_hook(
+            hook_name,
+            session_info=session_info,
+            args=args,
+            timeout=timeout,
+        )
         return {"success": True, "error": None, "result": result}
     except asyncio.TimeoutError:
         return {"success": False, "error": "Timeout", "result": None}

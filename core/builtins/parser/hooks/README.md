@@ -1,6 +1,18 @@
 # Parser 入口 Hook API
 
-模块通过 `@module.hook(point=...)` 订阅 parser 阶段，与旧式具名 hook（`.hook("name")`）正交。
+模块通过 `@module.hook(point=...)` 订阅 parser 阶段；具名能力（`.hook("name")`）也由同一套订阅执行基础负责。
+
+## 具名 Module Hook
+
+具名 hook 通过 `Bot.Hook.trigger("module.name", session_info=..., args=...)` 调用。
+它与 parser hook 共享模块启用状态、平台过滤、runtime generation、超时和取消收尾：
+
+- `module.name`：执行指定能力，返回最后一个成功回调的返回值；异常直接传播给调用方。
+- `module`：按优先级执行该模块全部未指定 `point` 的具名 hook；单个回调失败会记录并继续，返回值不向广播调用方汇总。
+- 具名 hook 默认执行预算为 5 秒，可在 `@module.hook(..., timeout=...)` 覆盖；传 `timeout<=0` 表示不限时。
+- 具名 hook 的 `available_for` / `exclude_from` 会基于传入的 `session_info` 检查；没有会话时只执行全平台订阅。
+
+测试和计划任务 mock 也调用同一分发入口，不应直接取 `ModulesManager.modules_hooks` 调函数。
 
 ## 快速开始
 

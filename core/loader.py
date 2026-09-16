@@ -106,6 +106,9 @@ class ModulesManager:
     modules_aliases: dict[str, str] = {}
     modules_hooks: dict[str, Callable] = {}
     modules_hook_modules: dict[str, str] = {}
+    # 具名 hook 与 parser hook 统一建立订阅索引，复用共享执行基础的资格与代际机制。
+    modules_hook_subscriptions: dict[str, list] = {}
+    module_hook_subscriptions: dict[str, list] = {}
     # parser 入口订阅：HookPoint -> 已排序订阅列表；与具名 hook 分索引
     parser_hook_subscriptions: dict = {}
     modules_events: dict[str, list[tuple[str, EventMeta]]] = {}
@@ -307,6 +310,8 @@ class ModulesManager:
 
         cls.modules_hooks.clear()
         cls.modules_hook_modules.clear()
+        cls.modules_hook_subscriptions.clear()
+        cls.module_hook_subscriptions.clear()
         cls.parser_hook_subscriptions.clear()
         point_index: dict = {}
         for m in cls.modules:
@@ -325,6 +330,9 @@ class ModulesManager:
                 hook_name = module.module_name + (("." + hook.name) if hook.name else "")
                 cls.modules_hooks.update({hook_name: hook.function})
                 cls.modules_hook_modules[hook_name] = module.module_name
+                subscription = build_subscription(module.module_name, hook, index)
+                cls.modules_hook_subscriptions.setdefault(hook_name, []).append(subscription)
+                cls.module_hook_subscriptions.setdefault(module.module_name, []).append(subscription)
         for point, subs in point_index.items():
             subs.sort(key=lambda s: (s.priority, s.module_name, s.subscription_id))
             cls.parser_hook_subscriptions[point] = subs

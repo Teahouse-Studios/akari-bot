@@ -11,13 +11,9 @@ from .dispatch import (
     reset_parser_hook_executor,
 )
 from .draft import SessionDraft, SessionDraftError, WRITABLE_FIELDS, build_session_draft
-from .executor import (
-    DEFAULT_HOOK_TIMEOUT,
-    HookDispatchOutcome,
-    HookSubscription,
-    ParserHookExecutor,
-    build_subscription,
-)
+from core.builtins.hooks import DEFAULT_HOOK_TIMEOUT, HookSubscription, build_subscription
+
+from .executor import HookDispatchOutcome, ParserHookExecutor
 from .points import ALL_HOOK_POINTS, SESSION_DRAFT_POINTS, HookPoint
 from .results import (
     Continue,
