@@ -1530,12 +1530,6 @@ class JobQueueBase:
 
     @classmethod
     async def _acquire_shutdown_poll_lock(cls) -> bool:
-        if cls._poll_lock.locked():
-            poller = cls._poller_task
-            if poller is not None and poller is not asyncio.current_task() and not poller.done():
-                poller.cancel()
-            Logger.warning(f"Skipped waiting for JobQueue poll lock while shutting down {cls.name}.")
-            return False
         try:
             async with asyncio.timeout(cls.SHUTDOWN_POLL_LOCK_TIMEOUT_SECONDS):
                 await cls._poll_lock.acquire()

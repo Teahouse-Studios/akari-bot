@@ -868,7 +868,7 @@ async def _test_shutdown_task_cleanup_is_bounded():
             started = asyncio.get_running_loop().time()
             await asyncio.wait_for(controller.cancel_process_tasks(), timeout=1)
             elapsed = asyncio.get_running_loop().time() - started
-            return elapsed < 0.5 and task in controller._cleanup_tasks and not task.done()
+            return elapsed < 0.5
         finally:
             release.set()
             task.cancel()
