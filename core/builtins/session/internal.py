@@ -15,7 +15,6 @@ from typing import Any, Coroutine, Match, NoReturn, cast
 from akari_bot_i18n.i18n import Locale
 from attrs import define, field
 from deprecated import deprecated
-from japanera import EraDate
 
 from core.builtins.filter import filter_badwords
 from core.builtins.message.chain import MessageChain, get_message_chain, Chainable, MessageNodes
@@ -25,8 +24,8 @@ from core.builtins.session.lock import ExecutionLockList, ExecutionState
 from core.builtins.session.tasks import SessionTaskManager
 from core.builtins.types import MessageElement
 from core.builtins.utils import confirm_command
-from core.config.base import CoreConfig
-from core.constants import SessionContextUnavailable, SessionFinished, WaitCancelException, default_locale
+from core.config.base import BaseConfig, CoreConfig
+from core.constants import SessionContextUnavailable, SessionFinished, WaitCancelException
 from core.exports import add_export
 from core.logger import Logger
 from core.utils.button import bind_callback_reply_ids, build_button_rows
@@ -37,6 +36,8 @@ from core.utils.random import Random
 from core.queue.contracts import PlatformAPI
 from core.queue.errors import RpcRemoteError
 
+# 会话相关配置在导入期取一次快照，避免每次取文案都去读配置
+default_locale = BaseConfig.default_locale
 # 快速确认模式 - 允许用户快速确认操作
 quick_confirm = CoreConfig.quick_confirm
 
@@ -1097,7 +1098,7 @@ class MessageSession:
         self,
         timestamp: float,
         date: bool = True,
-        iso: bool = False,
+        simple: bool = False,
         time: bool = True,
         seconds: bool = True,
         timezone: bool = True,
@@ -1109,7 +1110,7 @@ class MessageSession:
 
         :param timestamp: UTC 时间戳
         :param date: 是否显示日期（默认为 True）
-        :param iso: 是否以 ISO 格式显示日期（默认为 False）
+        :param simple: 是否以简单格式显示日期（默认为 False）
         :param time: 是否显示时间（默认为 True）
         :param seconds: 是否显示秒（默认为 True）
         :param timezone: 是否显示时区（默认为 True）
@@ -1121,14 +1122,10 @@ class MessageSession:
             'February 13, 2009 23:31:30 (UTC)'
         ```
         """
-        dt = datetime.fromtimestamp(timestamp, UTC) + self.session_info.timezone_offset
         ftime_template = []
         if date:
-            if iso:
-                ftime_template.append(self.session_info.locale.t("time.date.iso.format"))
-            elif self.session_info.locale.locale == "ja_jp":
-                era_date = EraDate.from_date(dt).strftime(self.session_info.locale.t("time.date.format"))
-                ftime_template.append(era_date)
+            if simple:
+                ftime_template.append(self.session_info.locale.t("time.date.simple.format"))
             else:
                 ftime_template.append(self.session_info.locale.t("time.date.format"))
         if time:

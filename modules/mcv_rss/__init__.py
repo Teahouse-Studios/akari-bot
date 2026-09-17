@@ -128,8 +128,8 @@ async def _():
                             I18NContext(
                                 "mcv_rss.message.mcv-rss.release",
                                 version=release,
-                                record_time=FormattedTime(time_release, iso=True),
-                                posted_time=FormattedTime(datetime.now().timestamp(), iso=True),
+                                record_time=FormattedTime(time_release, simple=True),
+                                posted_time=FormattedTime(datetime.now().timestamp(), simple=True),
                             ),
                         ]
                     ),
@@ -165,8 +165,8 @@ async def _():
                             I18NContext(
                                 "mcv_rss.message.mcv-rss.snapshot",
                                 version=file["latest"]["snapshot"],
-                                record_time=FormattedTime(time_snapshot, iso=True),
-                                posted_time=FormattedTime(datetime.now().timestamp(), iso=True),
+                                record_time=FormattedTime(time_snapshot, simple=True),
+                                posted_time=FormattedTime(datetime.now().timestamp(), simple=True),
                             ),
                         ]
                     ),

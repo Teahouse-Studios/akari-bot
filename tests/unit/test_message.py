@@ -234,7 +234,7 @@ def _test_markdown_sendable_respects_session_capability():
     chain = MessageChain.assign(Markdown("**粗体**", disable_joke=True))
     supported = chain.as_sendable(session(True)).values[0]
     unsupported = chain.as_sendable(session(False)).values[0]
-    disabled = chain.as_sendable(session(True), disable_markdown=True).values[0]
+    disabled = chain.as_sendable(session(True), enable_markdown=False).values[0]
     return (
         isinstance(supported, MarkdownElement)
         and supported.text == "**粗体**"

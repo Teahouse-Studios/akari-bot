@@ -216,10 +216,14 @@
     "petal.message.gained.success": "${amount} 枚のペタルを入手しました。",
     "petal.message.lost.limit": "（今日は失われたペタルの一日あたりの制限に達しました。）",
     "petal.message.lost.success": "${amount} 枚のペタルを失いました。",
-    "time.date.format": "%Y 年（%-K %-y 年）%m 月 %d 日",
-    "time.date.iso.format": "%Y/%m/%d",
+    "time.date.format": "%Y 年 %m 月 %d 日",
+    "time.date.simple.format": "%Y/%m/%d",
     "time.time.format": "%H:%M:%S",
     "time.time.nosec.format": "%H:%M",
+    "smtp.report.subject.error.command": "エラー発生：${cmd}",
+    "smtp.report.subject.error.rpc": "RPC エラー発生：${method}",
+    "smtp.report.subject.tos": "利用規約違反の報告：${sender}",
+    "smtp.report.footer": "このメールを受け取るべきでない場合は、${issue_url} にアクセスしてボットの所有者に通知し、この通知を無効にするよう依頼してください。",
     "tos.message.action": "行動を起こす：${action}",
     "tos.message.action.blocked": "ブロック",
     "tos.message.action.warning": "警告",
@@ -244,5 +248,5 @@
     "config.table.config_jobqueue": "JobQueue の設定項目です。ここに入力された値は、メッセージ内にプレーンテキストで表示されます。この部分には機密情報を入力しないでください。",
     "config.table.secret_jobqueue": "JobQueue のキー設定項目です。ここに入力された値は、送信メッセージに誤って含まれた場合、ボットはそれを傍受しようとします。ただし、漏洩を防ぐよう注意してください。",
     "config.comments.smtp.enable_email_report": "SMTPメールのレポート機能を有効にします。有効にすると、メッセージはコンテキストにレポートされなくなります。",
-    "config.comments.smtp.smtp_recipients": "メール レポートの受信者リスト。"
+    "config.comments.smtp.smtp_recipients": "メールの受信者リスト。"
 }

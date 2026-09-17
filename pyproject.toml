@@ -46,7 +46,6 @@ dependencies = [
     # core
     "cattrs>=26.1.0,<26.2.0",
     "filetype>=1.2.0,<2.0.0",
-    "japanera>=2.1.3,<3.0.0",
     "orjson>=3.10.9,<4.0.0",
     "Pillow>=12.0.0,<13.0.0",
     "rapidfuzz>=3.14.5",

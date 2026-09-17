@@ -37,7 +37,8 @@ from core.builtins.message.elements import (
     ButtonRows,
     ButtonFrameElement,
 )
-from core.constants import Secret, default_locale
+from core.config.base import BaseConfig
+from core.constants import Secret
 from core.exports import add_export
 from core.i18n import Locale
 from core.utils.joke import shuffle_joke as joke
@@ -53,6 +54,8 @@ if TYPE_CHECKING:
 
 
 _I18N_MESSAGE_PATTERN = re.compile(r"\[AKARI-MSG:([A-Za-z0-9_-]+={0,2})\]")
+
+default_locale = BaseConfig.default_locale
 
 
 @define
@@ -240,7 +243,7 @@ class MessageChain:
         self,
         session_info: SessionInfo | MessageSession | None = None,
         parse_message: bool = True,
-        disable_markdown=False,
+        enable_markdown: bool = True,
     ) -> ConvertedMessageChain:
         """
         将消息链转换为可发送的格式。
@@ -254,7 +257,7 @@ class MessageChain:
 
         :param session_info: 会话信息，用于本地化和平台特定的处理
         :param parse_message: 是否解析消息中的特殊格式（如 KE 码、多语言标记等）
-        :param disable_markdown: 是否禁用 markdown 格式转换
+        :param enable_markdown: 是否启用 markdown 格式转换
         :return: 可发送的消息元素列表
 
         示例：
@@ -279,7 +282,7 @@ class MessageChain:
             for elem in element_chain.values:
                 elem_ = (
                     MessageChain.assign(elem)
-                    .as_sendable(session_info, parse_message=False, disable_markdown=disable_markdown)
+                    .as_sendable(session_info, parse_message=False, enable_markdown=enable_markdown)
                     .values
                 )
                 is_action_text = isinstance(elem, ActionTextElement)
@@ -323,12 +326,12 @@ class MessageChain:
 
             # ========== 处理 Markdown 文本元素 ==========
             elif isinstance(x, MarkdownElement):
-                markdown_enabled = not disable_markdown and (session_info is None or session_info.support_markdown)
+                markdown_enabled = enable_markdown and (session_info is None or session_info.support_markdown)
                 source = PlainElement.assign(x.text, disable_joke=x.disable_joke, allow_parse=x.allow_parse)
                 converted = MessageChain.assign(source).as_sendable(
                     session_info,
                     parse_message=parse_message,
-                    disable_markdown=disable_markdown,
+                    enable_markdown=enable_markdown,
                 )
                 for element in converted:
                     if isinstance(element, PlainElement):
@@ -425,7 +428,7 @@ class MessageChain:
                     and x.trusted is not True
                     and (x.trusted is False or session_info.use_url_manager)
                 )
-                if needs_guard and session_info.support_markdown and not disable_markdown:
+                if needs_guard and session_info.support_markdown and enable_markdown:
                     title = session_info.locale.t("message.url.untrusted")
                     value.append(PlainElement.assign(f"```{title}\n{x.original_url}\n```", disable_joke=True))
                     continue
@@ -434,11 +437,7 @@ class MessageChain:
                 if session_info and x.trusted is None and not globally_trusted and session_info.use_url_manager:
                     x = URLElement.assign(x.url, trusted=False, md_format_name=x.md_format_name)
                 # 应用 Markdown 格式（如果需要）
-                if (
-                    session_info
-                    and (session_info.use_url_md_format and not x.applied_md_format)
-                    and not disable_markdown
-                ):
+                if session_info and (session_info.use_url_md_format and not x.applied_md_format) and enable_markdown:
                     x = URLElement.assign(x.url, md_format=True, md_format_name=x.md_format_name)
 
                 value.append(PlainElement.assign(x.url, disable_joke=True))
@@ -447,7 +446,7 @@ class MessageChain:
             elif isinstance(x, ActionTextElement):
                 # 内层的多语言元素只有在此处才能确定会话语言，故转换阶段一次性解析
                 x = x.resolve(session_info)
-                if session_info and session_info.support_action_text and not disable_markdown and x.text.text:
+                if session_info and session_info.support_action_text and enable_markdown and x.text.text:
                     value.append(x)
                 else:
                     _append_inline(value, x.to_plain(session_info))

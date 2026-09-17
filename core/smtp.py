@@ -6,11 +6,13 @@ from email.utils import format_datetime
 from typing import Awaitable, Callable
 
 from core.builtins.message.chain import Chainable, MessageChain
-from core.config.base import CoreConfig, SMTPConfig, SMTPSecretConfig
+from core.config.base import BaseConfig, CoreConfig, SMTPConfig, SMTPSecretConfig
 from core.constants.path import assets_path
 from core.exports import exports
+from core.i18n import Locale
 from core.logger import Logger
 
+locale = Locale(BaseConfig.default_locale)
 LOGO_PATH = assets_path / "akaribot_logo.png"
 
 
@@ -21,61 +23,73 @@ def email_report_enabled() -> bool:
     return bool(SMTPConfig.enable_email_report and SMTPConfig.smtp_host and SMTPConfig.smtp_recipients)
 
 
-def _build_email_html(body: str) -> str:
-    date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
+def _report_footer(issue_url: str) -> str:
+    """构建上报邮件的页脚，引导不应收到通知的收件人前往项目 issue 反馈。"""
+    return locale.t("smtp.report.footer", issue_url=issue_url)
+
+
+def _report_footer_html(issue_url: str) -> str:
+    """将页脚中的反馈地址转换为 HTML 超链接。"""
+    footer = _report_footer(issue_url)
+    if not issue_url:
+        return footer
+    return footer.replace(issue_url, f'<a href="{issue_url}">{issue_url}</a>')
+
+
+def _build_email_html(body: str, footer: str) -> str:
     return f"""
     <html>
       <body>
-        <div>{body.replace(chr(10), '<br>')}</div>
+        <div>{body.replace(chr(10), "<br>")}</div>
         <div style="margin-top:24px">
           <img src="cid:akari_logo" height="64"><br>
-          <span>{date}</span>
+          <span>{datetime.now().strftime(locale.t_str("{I18N:time.date.format} {I18N:time.time.format}"))}</span>
         </div>
+        <div style="margin-top:20px;font-size:12px;color:#808080">{footer}</div>
       </body>
     </html>
     """
 
 
 def send_email(subject: str, body: str) -> None:
-    message = EmailMessage()
+    emailmsg = EmailMessage()
 
-    message["Date"] = format_datetime(datetime.now(UTC), usegmt=True)
-    message["Subject"] = subject
-    message["From"] = SMTPConfig.smtp_sender or SMTPConfig.smtp_username
-    message["To"] = ", ".join(SMTPConfig.smtp_recipients)
+    emailmsg["Date"] = format_datetime(datetime.now(UTC), usegmt=True)
+    emailmsg["Subject"] = subject
+    emailmsg["From"] = SMTPConfig.smtp_sender or SMTPConfig.smtp_username
+    emailmsg["To"] = ", ".join(SMTPConfig.smtp_recipients)
+
+    issue_url = CoreConfig.issue_url
 
     # 纯文本版本
-    message.set_content(body)
+    emailmsg.set_content(f"{body}\n\n{_report_footer(issue_url)}")
 
     # HTML版本
-    message.add_alternative(_build_email_html(body), subtype="html")
+    emailmsg.add_alternative(_build_email_html(body, _report_footer_html(issue_url)), subtype="html")
 
     # 内嵌Logo
     if LOGO_PATH.exists():
         with LOGO_PATH.open("rb") as fp:
             logo_data = fp.read()
 
-        html_part = message.get_payload()[-1]
+        html_part = emailmsg.get_payload()[-1]
         html_part.add_related(logo_data, maintype="image", subtype="png", cid="<akari_logo>")
 
     if SMTPConfig.smtp_ssl:
         with smtplib.SMTP_SSL(SMTPConfig.smtp_host, int(SMTPConfig.smtp_port)) as server:
             if SMTPConfig.smtp_username:
                 server.login(SMTPConfig.smtp_username, SMTPSecretConfig.smtp_password)
-            server.send_message(message)
+            server.send_message(emailmsg)
         return
 
     with smtplib.SMTP(SMTPConfig.smtp_host, int(SMTPConfig.smtp_port)) as server:
         server.ehlo()
-
         if SMTPConfig.smtp_starttls:
             server.starttls()
-
         if SMTPConfig.smtp_username:
             server.login(SMTPConfig.smtp_username, SMTPSecretConfig.smtp_password)
 
-        server.send_message(message)
+        server.send_message(emailmsg)
 
 
 async def send_report(
@@ -90,8 +104,9 @@ async def send_report(
     邮件上报配置完整时不会触发任何场景消息；未启用邮件时才使用场景上报。
     """
     if email_report_enabled():
+        subject = f"[AkariBot] {locale.t_str(subject)}"
         if body is None:
-            body = MessageChain.assign(message).as_sendable(disable_markdown=True).to_str()
+            body = MessageChain.assign(message).as_sendable(enable_markdown=False).to_str()
         try:
             await asyncio.to_thread(send_email, subject, body)
         except Exception:

@@ -96,6 +96,70 @@ async def _test_tos_report_no_targets():
         return False
 
 
+async def _test_tos_report_delegates_to_send_report():
+    """tos_report: 上报统一经 core.smtp.send_report，并透传上报场景与邮件主题"""
+    from core.builtins.message.chain import MessageChain
+    from core.builtins.message.elements import I18NContextElement
+    from modules.core.hooks.tos import tos_report
+
+    with (
+        patch("modules.core.hooks.tos._report_targets", return_value=["TEST|Group|report"]),
+        patch("modules.core.hooks.tos.send_report", new_callable=AsyncMock) as report,
+    ):
+        await tos_report("TEST|sender", "TEST|target", "{I18N:tos.message.reason.abuse}")
+
+    message = report.await_args.args[0]
+    elements = [element for element in message.values if isinstance(element, I18NContextElement)]
+    action = next(element for element in elements if element.key == "tos.message.action")
+    return (
+        isinstance(message, MessageChain)
+        and [element.key for element in elements] == ["tos.message.report", "tos.message.reason", "tos.message.action"]
+        and action.kwargs["action"] == "{I18N:tos.message.action.warning}"
+        and report.await_args.kwargs["targets"] == ["TEST|Group|report"]
+        and "TEST|sender" in report.await_args.kwargs["subject"]
+    )
+
+
+async def _test_tos_report_blocked_action():
+    """tos_report: 封禁上报应标记为已封禁动作"""
+    from core.builtins.message.elements import I18NContextElement
+    from modules.core.hooks.tos import tos_report
+
+    with patch("modules.core.hooks.tos.send_report", new_callable=AsyncMock) as report:
+        await tos_report("TEST|sender", "TEST|target", "{I18N:tos.message.reason.abuse}", banned=True)
+
+    message = report.await_args.args[0]
+    action = next(
+        element
+        for element in message.values
+        if isinstance(element, I18NContextElement) and element.key == "tos.message.action"
+    )
+    return action.kwargs["action"] == "{I18N:tos.message.action.blocked}"
+
+
+async def _test_tos_report_email_takes_priority():
+    """tos_report: 启用邮件上报后发邮件，不再回传到上报场景"""
+    from core.builtins.bot import Bot
+    from core.config.base import SMTPConfig
+    from modules.core.hooks.tos import tos_report
+
+    direct_sender = AsyncMock()
+    with (
+        patch.object(SMTPConfig, "enable_email_report", True),
+        patch.object(SMTPConfig, "smtp_host", "smtp.example.com"),
+        patch.object(SMTPConfig, "smtp_recipients", ["ops@example.com"]),
+        patch("core.smtp.send_email") as send_email,
+        patch.object(Bot, "send_direct_message", direct_sender),
+        patch("modules.core.hooks.tos._report_targets", return_value=["TEST|Group|report"]),
+    ):
+        await tos_report("TEST|sender", "TEST|target", "{I18N:tos.message.reason.abuse}", banned=True)
+
+    subject, body = send_email.call_args.args
+    return (
+        send_email.call_count == 1 and "TEST|sender" in subject and "TEST|target" in body and not direct_sender.called
+    )
+
+
 async def _test_temp_ban_counter_type():
     """temp_ban_counter: 应为 ExpiringTempDict 实例"""
     try:
@@ -188,6 +252,9 @@ async def test_tos(tester: Tester):
     await tester.test(_test_remove_temp_ban, "remove_temp_ban 测试")
     await tester.test(_test_abuse_warn_target_sends_message, "abuse_warn_target 发送消息测试")
     await tester.test(_test_tos_report_no_targets, "tos_report 无场景测试")
+    await tester.test(_test_tos_report_delegates_to_send_report, "tos_report 经上报服务分发测试")
+    await tester.test(_test_tos_report_blocked_action, "tos_report 封禁动作测试")
+    await tester.test(_test_tos_report_email_takes_priority, "tos_report 邮件上报优先测试")
     await tester.test(_test_temp_ban_counter_type, "temp_ban_counter 类型测试")
     await tester.test(_test_temp_ban_shared_by_sender_union, "临时封禁按用户 Union 共享测试")
     await tester.test(_test_rate_bucket_shared_by_sender_union, "ToS 令牌桶按用户 Union 共享测试")

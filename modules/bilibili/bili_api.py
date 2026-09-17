@@ -35,7 +35,7 @@ async def get_video_info(msg: Bot.MessageSession, query, get_detail=False, use_e
     title = view.get("title", "")
     tname = view.get("tname", "")
     desc = truncate_text(view.get("desc", ""), DESC_LENGTH)
-    time = msg.format_time(view.get("pubdate", 0), iso=True, timezone=False)
+    time = msg.format_time(view.get("pubdate", 0), simple=True, timezone=False)
 
     pages = view.get("pages", [])
     if len(pages) > 1:

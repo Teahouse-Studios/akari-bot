@@ -13,12 +13,14 @@ from tortoise.expressions import F
 from tortoise.models import Model
 from tortoise.transactions import in_transaction
 
-from core.constants.default import default_locale
+from core.config.base import BaseConfig
 from core.queue.transport import DEFAULT_TIMEOUT_SECONDS
 from core.utils.func import convert_list
 from .base import DBModel, extract_session_id
 from ..logger import Logger
 
+
+default_locale = BaseConfig.default_locale
 
 UNION_SCOPE_SENDER = "sender"
 UNION_SCOPE_TARGET = "target"

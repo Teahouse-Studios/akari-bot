@@ -19,7 +19,7 @@ async def get_first_record():
     try:
         first_record = await AnalyticsData.get(id=1)
         ts = first_record.timestamp.replace(tzinfo=UTC).timestamp()
-        return str(FormattedTime(ts, iso=True))
+        return str(FormattedTime(ts, simple=True))
     except DoesNotExist:
         return None
     except Exception:

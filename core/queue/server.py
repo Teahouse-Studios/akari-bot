@@ -12,14 +12,13 @@ from core.builtins.parser.command import CommandParser
 from core.builtins.parser.message import parser
 from core.builtins.session.info import EventInfo, SessionInfo
 from core.builtins.utils import command_prefix
-from core.constants.default import default_locale
 from core.constants.path import PrivateAssets
 from core.config.base import CoreConfig
 from core.exports import exports, add_export
 from core.i18n import Locale
 from core.loader import ModulesManager
 from core.logger import Logger
-from core.report import send_report
+from core.smtp import send_report
 from core.utils.bash import run_sys_command
 from core.utils.web_render import check_web_render_status
 from .base import JobQueueBase
@@ -99,8 +98,8 @@ async def report_error(method: str, details: str) -> None:
 
     await send_report(
         [],
-        subject=f"[AkariBot] RPC Error occurred: {method}",
-        body=f"{Locale(default_locale).t('error.message.report', command=method)}\n{details.strip()}",
+        subject=str(I18NContext("smtp.report.subject.error.rpc", method=method)),
+        body=f"{str(I18NContext('error.message.report', command=method))}\n{details.strip()}",
         direct_sender=send_to_report_target,
         targets=CoreConfig.report_targets,
     )

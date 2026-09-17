@@ -18,6 +18,7 @@ from core.config.base import CoreConfig
 from core.constants.exceptions import AbuseWarning, SendMessageFailed, SessionFinished, WaitCancelException
 from core.loader import ModulesManager
 from core.logger import Logger
+from core.smtp import send_report
 from core.utils.container import ExpiringTempDict, TokenBucket
 
 if TYPE_CHECKING:
@@ -110,22 +111,27 @@ async def remove_temp_ban(target):
 
 
 async def tos_report(sender: str, target: str, reason: str, banned: bool = False):
-    from core.builtins.bot import Bot
+    """上报滥用行为。
 
-    report_targets = _report_targets()
-    if not report_targets:
-        return
-    warn_template = [I18NContext("tos.message.report", sender=sender, target=target, disable_joke=True)]
+    上报统一交给 ``core.smtp.send_report``：启用 SMTP 邮件上报时发邮件，
+    未启用时才回传到配置的上报场景（按场景组展开，同一现实场景只通知一次）。
+    """
+    warn_template = MessageChain.assign(
+        [I18NContext("tos.message.report", sender=sender, target=target, disable_joke=True)]
+    )
     warn_template.append(I18NContext("tos.message.reason", reason=reason, disable_joke=True))
     if banned:
-        action = "{I18N:tos.message.action.blocked}"
+        action = str(I18NContext("tos.message.action.blocked", disable_joke=True))
     else:
-        action = "{I18N:tos.message.action.warning}"
+        action = str(I18NContext("tos.message.action.warning", disable_joke=True))
     warn_template.append(I18NContext("tos.message.action", action=action, disable_joke=True))
 
     # 上报场景按场景组配置，展开后同一现实场景的多个平台入口只应由其中一个收到回传
-    for f in await Bot.pick_channel_heads(await Bot.fetch_union_target_list(report_targets)):
-        await Bot.send_direct_message(f, warn_template)
+    await send_report(
+        warn_template,
+        subject=str(I18NContext("smtp.report.subject.tos", sender=sender)),
+        targets=_report_targets(),
+    )
 
 
 async def abuse_warn_target(msg, reason: str):
@@ -348,7 +354,7 @@ async def _(ctx: "Bot.ModuleHookContext"):
     """args: {"sender","target","reason","banned"} → None
 
     Client 侧经 ``ServerAPI.trigger_hook("tos.report", ...)`` 调用，
-    上报与场景组展开在 Server 进程完成。
+    上报（SMTP 邮件或上报场景）与场景组展开在 Server 进程完成。
     """
     await tos_report(
         ctx.args.get("sender"),

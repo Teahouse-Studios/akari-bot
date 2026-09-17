@@ -302,14 +302,14 @@ async def _test_degraded_creates_element_when_first():
 
 
 async def _test_degraded_when_markdown_disabled():
-    """测试 disable_markdown 时即使平台支持也降级
+    """测试 enable_markdown 时即使平台支持也降级
 
     QQ 适配器的两条发送路径以该参数区分：纯文本路径传 True，markdown 路径用默认值。
     """
     try:
         session_info = await _session("at_nomd", True)
         chain = MessageChain.assign([ActionText("~wiki 沙盒")])
-        sendable = chain.as_sendable(session_info, disable_markdown=True)
+        sendable = chain.as_sendable(session_info, enable_markdown=False)
         if not isinstance(sendable.values[0], PlainElement):
             return False
         return True
@@ -714,7 +714,7 @@ async def test_action_text_fallback(tester: Tester):
     await tester.test(_test_kept_when_supported, "支持平台保留元素测试")
     await tester.test(_test_degraded_when_unsupported, "不支持平台降级并入测试")
     await tester.test(_test_degraded_creates_element_when_first, "降级为首元素时新建测试")
-    await tester.test(_test_degraded_when_markdown_disabled, "disable_markdown 降级测试")
+    await tester.test(_test_degraded_when_markdown_disabled, "enable_markdown 降级测试")
     await tester.test(_test_degraded_when_text_empty, "空 text 降级测试")
     await tester.test(_test_i18n_inner_resolved, "内层多语言翻译测试")
     await tester.test(_test_degraded_suppresses_show, "降级不带出交互提示测试")

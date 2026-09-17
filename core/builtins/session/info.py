@@ -19,12 +19,13 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.session.event_types import EventName
 from core.builtins.session.features import Features
 from core.builtins.utils import command_prefix
-from core.config.base import CoreConfig
-from core.constants.default import default_locale
+from core.config.base import BaseConfig, CoreConfig
 from core.database.models import TargetUnionInfo, SenderUnionInfo
 from core.i18n import Locale
 from core.utils.func import parse_time_string
 from core.utils.session import inject_features
+
+default_locale = BaseConfig.default_locale
 
 
 async def _none():
