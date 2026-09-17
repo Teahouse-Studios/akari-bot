@@ -23,7 +23,6 @@ import orjson
 from PIL import Image as PILImage
 from attrs import define
 from filetype import filetype
-from japanera import EraDate
 from tenacity import retry, stop_after_attempt
 
 from core.logger import Logger
@@ -393,10 +392,6 @@ class FormattedTimeElement(BaseElement):
                 if self.simple:
                     # simple 格式：YYYY-MM-DD
                     ftime_template.append(session_info.locale.t("time.date.simple.format"))
-                elif session_info.locale.locale == "ja_jp":
-                    # 日本格式：支持年号显示（如 令和 5 年）
-                    era_date = EraDate.from_date(dt).strftime(session_info.locale.t("time.date.format"))
-                    ftime_template.append(era_date)
                 else:
                     # 其他地区的日期格式
                     ftime_template.append(session_info.locale.t("time.date.format"))
