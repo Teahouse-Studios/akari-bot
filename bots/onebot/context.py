@@ -16,6 +16,7 @@ from bots.onebot.utils import CQCodeHandler
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, AudioElement, VideoElement, MentionElement
 from core.builtins.session.context import ContextManager
+from core.builtins.session.bot_state import BotState
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
@@ -170,6 +171,60 @@ class OneBotContextManager(ContextManager):
             return False
 
         return await _check()
+
+    @classmethod
+    async def check_bot_state(cls, session_info: SessionInfo) -> BotState:
+        """Query the OneBot group member record for the bot itself."""
+        if session_info.target_from == target_private_prefix:
+            return BotState(
+                available=True,
+                joined=True,
+                is_owner=None,
+                is_admin=None,
+                can_read_messages=True,
+                can_read_all_messages=True,
+                can_send_messages=True,
+                can_manage_messages=None,
+                can_manage_members=None,
+                can_restrict_members=None,
+                can_react=None,
+                can_send_private_messages=True,
+                raw={"detail_type": "private"},
+            )
+        if session_info.target_from != target_group_prefix:
+            return BotState(available=None, joined=None, error="OneBot scene is not a group or private chat")
+
+        bot_id = session_info.bot_id or Temp.data.get("qq_account")
+        if bot_id is None:
+            return BotState(available=None, joined=None, error="OneBot bot ID is unavailable")
+        try:
+            member = await aiocqhttp_bot.call_action(
+                "get_group_member_info",
+                group_id=int(session_info.get_common_target_id()),
+                user_id=int(str(bot_id).split("|")[-1]),
+            )
+            role = member.get("role")
+            is_owner = role == "owner"
+            is_admin = role in {"owner", "admin"}
+            return BotState(
+                available=True,
+                joined=True,
+                is_owner=is_owner,
+                is_admin=is_admin,
+                can_read_messages=True,
+                can_read_all_messages=None,
+                can_send_messages=True,
+                can_manage_messages=is_admin,
+                can_manage_members=is_admin,
+                can_restrict_members=is_admin,
+                can_react=True,
+                can_send_private_messages=True,
+                permissions={"role": role},
+                raw=dict(member),
+            )
+        except Exception as exc:
+            Logger.exception(f"Failed to check OneBot bot state in {session_info.target_id}: ")
+            return BotState(available=None, joined=None, error=str(exc))
 
     @classmethod
     async def send_message(

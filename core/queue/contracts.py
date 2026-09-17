@@ -10,6 +10,7 @@ from typing import Any, Literal
 
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.session.context import ContextManager
+from core.builtins.session.bot_state import BotState
 from core.builtins.session.features import Features
 from core.builtins.session.info import EventInfo, SessionInfo
 from .codec import register_value_type
@@ -21,6 +22,7 @@ register_value_type("message", MessageChain | MessageNodes)
 register_value_type("session", SessionInfo)
 register_value_type("event", EventInfo)
 register_value_type("features", Features)
+register_value_type("bot_state", BotState)
 
 
 def _platform_target(args) -> str | ServiceRoute:
@@ -41,6 +43,7 @@ def _server_event_target(args) -> ServiceRoute:
 
 class PlatformAPI:
     check_native_permission = context_method(ContextManager.check_native_permission)
+    check_bot_state = context_method(ContextManager.check_bot_state)
     send_message = context_method(ContextManager.send_message)
     send_private_msg = context_method(ContextManager.send_private_msg)
     delete_message = context_method(ContextManager.delete_message)

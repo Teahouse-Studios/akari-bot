@@ -50,6 +50,11 @@ def format_error_detail(msg_or_session, text: str) -> MessageChain:
     if not session_info.support_markdown:
         return match_kecode(text)
 
+    return format_error_detail_markdown(text)
+
+
+def format_error_detail_markdown(text: str) -> MessageChain:
+    """将错误详情包装成可按接收方能力降级的 Markdown 代码块。"""
     longest_fence = max((len(match.group(0)) for match in re.finditer(r"`+", text)), default=0)
     fence = "`" * max(3, longest_fence + 1)
     return MessageChain.assign(Markdown(f"{fence}\n{text}\n{fence}", disable_joke=True, allow_parse=False))
@@ -103,12 +108,8 @@ async def process_exception(msg: "Bot.MessageSession", error: Exception) -> None
     await msg.send_message(err_msg_chain)
     await send_common_emote(msg, BUG_EMOTES)
     await send_report(
-        message=MessageChain.assign(
-            [
-                I18NContext("error.message.report", disable_joke=True, command=msg.trigger_msg),
-                Plain(tb.strip(), disable_joke=True, allow_parse=False),
-            ]
-        ),
+        message=MessageChain.assign(I18NContext("error.message.report", disable_joke=True, command=msg.trigger_msg))
+        + format_error_detail_markdown(tb.strip()),
         subject=f"[AkariBot] An error occurred: {msg.trigger_msg}",
         targets=CoreConfig.report_targets,
     )

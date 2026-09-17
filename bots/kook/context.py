@@ -8,6 +8,7 @@ from khl import Message, MessageTypes, PublicChannel, User
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, AudioElement, VideoElement, MentionElement
 from core.builtins.session.context import ContextManager
+from core.builtins.session.bot_state import BotState
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
@@ -94,6 +95,85 @@ class KOOKContextManager(ContextManager):
         if author == guild.master_id:
             return True
         return False
+
+    @classmethod
+    async def check_bot_state(cls, session_info: SessionInfo) -> BotState:
+        """Resolve KOOK guild roles and expose their permission bitmasks."""
+        if session_info.target_from == target_person_prefix:
+            return BotState(
+                available=True,
+                joined=True,
+                is_owner=None,
+                is_admin=None,
+                can_read_messages=True,
+                can_read_all_messages=True,
+                can_send_messages=True,
+                can_manage_messages=None,
+                can_manage_members=None,
+                can_restrict_members=None,
+                can_react=True,
+                can_send_private_messages=True,
+                raw={"channel_type": "person"},
+            )
+        try:
+            guild = await get_guild(session_info)
+            if guild is None:
+                return BotState(available=None, joined=None, error="KOOK guild is unavailable")
+            me = await bot.client.fetch_me()
+            bot_user_id = str(getattr(me, "id", ""))
+            member = await guild.fetch_user(bot_user_id)
+            role_ids = [int(role_id) for role_id in getattr(member, "roles", [])]
+            roles = await guild.fetch_roles()
+            role_map = {int(role.id): role for role in roles}
+            is_owner = str(guild.master_id) == bot_user_id
+            role_permissions = {
+                str(role_id): int(role_map[role_id].permissions) for role_id in role_ids if role_id in role_map
+            }
+            is_admin = is_owner or any(
+                role_map[role_id].has_permission(0) for role_id in role_ids if role_id in role_map
+            )
+            raw = {
+                "guild_id": str(guild.id),
+                "member_id": bot_user_id,
+                "roles": role_ids,
+                "role_permissions": role_permissions,
+            }
+            try:
+                channel = await get_channel(session_info)
+                if isinstance(channel, PublicChannel):
+                    channel_permissions = await channel.fetch_permission()
+                    raw["channel_permissions"] = {
+                        "sync": channel_permissions.sync,
+                        "role_overwrites": [
+                            {"role_id": str(item.role_id), "allow": item.allow, "deny": item.deny}
+                            for item in channel_permissions.roles
+                        ],
+                        "user_overwrites": [
+                            {"user_id": str(item.user.id), "allow": item.allow, "deny": item.deny}
+                            for item in channel_permissions.users
+                        ],
+                    }
+            except Exception as exc:
+                raw["channel_permissions_error"] = str(exc)
+            return BotState(
+                available=True,
+                joined=True,
+                is_owner=is_owner,
+                is_admin=is_admin,
+                can_read_messages=None,
+                can_read_all_messages=None,
+                can_send_messages=None,
+                can_manage_messages=is_admin,
+                can_manage_members=is_admin,
+                can_restrict_members=is_admin,
+                can_react=None,
+                can_send_private_messages=True,
+                permissions={"role_permissions": role_permissions, "admin_role": is_admin},
+                raw=raw,
+            )
+        except Exception as exc:
+            Logger.exception(f"Failed to check KOOK bot state in {session_info.target_id}: ")
+            return BotState(available=None, joined=None, error=str(exc))
 
     @classmethod
     async def send_message(

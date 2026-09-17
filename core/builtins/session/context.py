@@ -15,6 +15,7 @@ from typing import Any
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
+from core.builtins.session.bot_state import BotState
 from core.constants.exceptions import SessionContextUnavailable
 from core.logger import Logger
 
@@ -126,6 +127,12 @@ class ContextManager(ABC):
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
         # 这里可以添加权限检查的逻辑
+        raise NotImplementedError  # 请继承 class 后实现方法
+
+    @classmethod
+    @abstractmethod
+    async def check_bot_state(cls, session_info: SessionInfo) -> BotState:
+        """Return the bot's membership and platform permission state in a scene."""
         raise NotImplementedError  # 请继承 class 后实现方法
 
     @classmethod

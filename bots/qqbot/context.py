@@ -41,6 +41,7 @@ from core.builtins.message.elements import (
 )
 from core.builtins.message.internal import I18NContext, Image
 from core.builtins.session.context import ContextManager
+from core.builtins.session.bot_state import BotState
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.config.base import CoreConfig
@@ -548,6 +549,83 @@ class QQBotContextManager(ContextManager):
             else:
                 return get_cached_permission(f"{session_info.target_id}|{session_info.sender_id}")
         return False
+
+    @classmethod
+    async def check_bot_state(cls, session_info: SessionInfo) -> BotState:
+        """Query QQ official bot membership state or channel permissions."""
+        if session_info.target_from in {target_c2c_prefix, target_direct_prefix}:
+            return BotState(
+                available=True,
+                joined=True,
+                is_owner=None,
+                is_admin=None,
+                can_read_messages=True,
+                can_read_all_messages=True,
+                can_send_messages=True,
+                can_manage_messages=None,
+                can_manage_members=None,
+                can_restrict_members=None,
+                can_react=None,
+                can_send_private_messages=True,
+                raw={"scene": session_info.target_from},
+            )
+        client = _get_client()
+        try:
+            if session_info.target_from == target_group_prefix:
+                state = await client.api.get_group_bot_state(session_info.get_common_target_id())
+                state = dict(state)
+                role = state.get("member_role")
+                recv_setting = state.get("recv_msg_setting")
+                is_owner = role == "owner"
+                is_admin = role in {"owner", "admin"}
+                return BotState(
+                    available=True,
+                    joined=True,
+                    is_owner=is_owner,
+                    is_admin=is_admin,
+                    can_read_messages=recv_setting in {"all", "mention_and_context", "only_mention"},
+                    can_read_all_messages=recv_setting == "all",
+                    can_send_messages=True,
+                    can_manage_messages=is_admin,
+                    can_manage_members=is_admin,
+                    can_restrict_members=is_admin,
+                    can_react=True,
+                    can_send_private_messages=True,
+                    permissions={
+                        "allow_proactive_msg": state.get("allow_proactive_msg"),
+                        "recv_msg_setting": recv_setting,
+                        "member_role": role,
+                    },
+                    raw=state,
+                )
+            if session_info.target_from == target_guild_prefix:
+                bot_id = session_info.bot_id
+                if not bot_id:
+                    return BotState(available=None, joined=None, error="QQBot ID is unavailable")
+                target_parts = session_info.target_id.removeprefix(f"{target_guild_prefix}|").split("|", 1)
+                if len(target_parts) != 2:
+                    return BotState(available=None, joined=None, error="Invalid QQBot channel target")
+                channel_id = target_parts[1]
+                permissions = await client.api.get_channel_user_permissions(channel_id, str(bot_id))
+                raw = dict(permissions)
+                return BotState(
+                    available=True,
+                    joined=True,
+                    can_read_messages=None,
+                    can_read_all_messages=None,
+                    can_send_messages=None,
+                    can_manage_messages=None,
+                    can_manage_members=None,
+                    can_restrict_members=None,
+                    can_react=None,
+                    can_send_private_messages=True,
+                    permissions={"permissions": raw.get("permissions"), "role_id": raw.get("role_id")},
+                    raw=raw,
+                )
+            return BotState(available=None, joined=None, error="Unsupported QQBot scene")
+        except Exception as exc:
+            Logger.exception(f"Failed to check QQBot state in {session_info.target_id}: ")
+            return BotState(available=None, joined=None, error=str(exc))
 
     @classmethod
     async def _prepare_message(

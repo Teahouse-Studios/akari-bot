@@ -8,6 +8,7 @@ from nio.api import RelationshipType
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, AudioElement, VideoElement, MentionElement
 from core.builtins.session.context import ContextManager
+from core.builtins.session.bot_state import BotState
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
@@ -81,6 +82,94 @@ class MatrixContextManager(ContextManager):
         if level and int(level) >= 50:
             return True
         return False
+
+    @classmethod
+    async def check_bot_state(cls, session_info: SessionInfo) -> BotState:
+        """Map Matrix membership and room power levels to common capabilities."""
+        if session_info.is_private:
+            return BotState(
+                available=True,
+                joined=True,
+                is_owner=None,
+                is_admin=None,
+                can_read_messages=True,
+                can_read_all_messages=True,
+                can_send_messages=True,
+                can_manage_messages=None,
+                can_manage_members=None,
+                can_restrict_members=None,
+                can_react=True,
+                can_send_private_messages=True,
+                raw={"room_type": "private"},
+            )
+        room_id = session_info.get_common_target_id()
+        bot_mxid = matrix_bot.user_id or session_info.bot_id
+        if not bot_mxid:
+            return BotState(available=None, joined=None, error="Matrix bot ID is unavailable")
+        try:
+            member_response = await matrix_bot.room_get_state_event(room_id, "m.room.member", bot_mxid)
+            if isinstance(member_response, nio.ErrorResponse):
+                return BotState(available=None, joined=None, error=str(member_response))
+            member_content = dict(member_response.content)
+            membership = member_content.get("membership")
+            joined = membership == "join"
+            if not joined:
+                return BotState(
+                    available=True,
+                    joined=False,
+                    permissions={"membership": membership},
+                    raw={"membership": member_content},
+                )
+            power_response = await matrix_bot.room_get_state_event(room_id, "m.room.power_levels")
+            if isinstance(power_response, nio.ErrorResponse):
+                return BotState(
+                    available=True,
+                    joined=True,
+                    can_read_messages=True,
+                    can_send_messages=True,
+                    permissions={"membership": membership},
+                    raw={"membership": member_content},
+                    error=str(power_response),
+                )
+            levels = dict(power_response.content)
+            users = levels.get("users", {})
+            level = int(users.get(bot_mxid, levels.get("users_default", 0)))
+            events = levels.get("events", {})
+            events_default = int(levels.get("events_default", 0))
+            send_level = int(events.get("m.room.message", events_default))
+            redact_level = int(levels.get("redact", 50))
+            ban_level = int(levels.get("ban", 50))
+            kick_level = int(levels.get("kick", 50))
+            invite_level = int(levels.get("invite", 0))
+            is_owner = level >= 100
+            is_admin = level >= 50
+            permissions = {
+                "power_level": level,
+                "send_message_level": send_level,
+                "redact_level": redact_level,
+                "ban_level": ban_level,
+                "kick_level": kick_level,
+                "invite_level": invite_level,
+            }
+            return BotState(
+                available=True,
+                joined=True,
+                is_owner=is_owner,
+                is_admin=is_admin,
+                can_read_messages=True,
+                can_read_all_messages=True,
+                can_send_messages=level >= send_level,
+                can_manage_messages=level >= redact_level,
+                can_manage_members=level >= min(ban_level, kick_level),
+                can_restrict_members=level >= ban_level,
+                can_react=level >= int(events.get("m.reaction", send_level)),
+                can_send_private_messages=True,
+                permissions=permissions,
+                raw={"membership": member_content, "power_levels": levels},
+            )
+        except Exception as exc:
+            Logger.exception(f"Failed to check Matrix bot state in {session_info.target_id}: ")
+            return BotState(available=None, joined=None, error=str(exc))
 
     @classmethod
     async def send_message(

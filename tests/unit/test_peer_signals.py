@@ -572,6 +572,27 @@ async def _test_maintenance_temporarily_removes_instance_from_stable_routes():
         )
 
 
+async def _test_maintenance_window_poll_lock_wait_is_bounded():
+    """维护窗口等待轮询锁超时后不得把整个测试或进程卡住。"""
+    async with _peer_cluster() as (controller, worker_a, worker_b):
+        del controller, worker_b
+        original_timeout = worker_a.MAINTENANCE_POLL_LOCK_TIMEOUT_SECONDS
+        worker_a.MAINTENANCE_POLL_LOCK_TIMEOUT_SECONDS = 0.05
+        await worker_a._poll_lock.acquire()
+        try:
+            started = asyncio.get_running_loop().time()
+            try:
+                async with worker_a.maintenance_window():
+                    return False
+            except TimeoutError:
+                pass
+            elapsed = asyncio.get_running_loop().time() - started
+            return elapsed < 0.5 and worker_a.pause_event.is_set() and not worker_a._maintenance_active
+        finally:
+            worker_a._poll_lock.release()
+            worker_a.MAINTENANCE_POLL_LOCK_TIMEOUT_SECONDS = original_timeout
+
+
 async def _test_fetched_session_metadata_matches_authoritative_route():
     target_id = f"workers|Group|{uuid4()}"
     async with _peer_cluster() as (controller, worker_a, worker_b):
@@ -949,6 +970,7 @@ async def test_peer_signals(tester: Tester):
     )
     await tester.test(_test_draining_instance_is_removed_from_new_delivery_snapshots, "关闭实例先摘流再清理")
     await tester.test(_test_maintenance_temporarily_removes_instance_from_stable_routes, "维护窗口临时摘流并恢复")
+    await tester.test(_test_maintenance_window_poll_lock_wait_is_bounded, "维护窗口轮询锁占用不会无界等待")
     await tester.test(_test_fetched_session_metadata_matches_authoritative_route, "主动会话元数据与权威实例路由一致")
     await tester.test(_test_authoritative_registry_rejects_stale_alive_entry, "权威注册表拒绝本地缓存幽灵实例")
     await tester.test(

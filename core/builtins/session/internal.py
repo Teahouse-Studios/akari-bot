@@ -21,6 +21,7 @@ from core.builtins.filter import filter_badwords
 from core.builtins.message.chain import MessageChain, get_message_chain, Chainable, MessageNodes
 from core.builtins.message.internal import Button, ButtonFrame, I18NContext, PlainElement
 from core.builtins.session.info import SessionInfo, FetchedSessionInfo
+from core.builtins.session.bot_state import BotState
 from core.builtins.session.lock import ExecutionLockList, ExecutionState
 from core.builtins.session.tasks import SessionTaskManager
 from core.builtins.types import MessageElement
@@ -664,6 +665,10 @@ class MessageSession:
         """
         return await PlatformAPI.check_native_permission(self.session_info)
 
+    async def check_bot_state(self) -> BotState:
+        """Return the bot's scene membership and native permission state."""
+        return await PlatformAPI.check_bot_state(self.session_info)
+
     async def handle_error_signal(self):
         """
         用于处理错误信号。
@@ -1091,6 +1096,7 @@ class MessageSession:
     sendDirectMessage = send_direct_message
     asDisplay = as_display
     checkNativePermission = check_native_permission
+    checkBotState = check_bot_state
     callOneBotAPI = call_onebot_api
 
     def format_time(

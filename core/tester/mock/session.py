@@ -5,6 +5,7 @@ from core.builtins.message.chain import get_message_chain, MessageChain
 from core.builtins.message.elements import ButtonFrameElement, PlainElement, ImageElement, MentionElement, BaseElement
 from core.builtins.message.internal import Button
 from core.builtins.session.info import SessionInfo
+from core.builtins.session.bot_state import BotState
 from core.builtins.session.internal import MessageSession, I18NContext
 from core.builtins.utils import confirm_command
 from core.config.base import CoreConfig
@@ -174,6 +175,27 @@ class MockMessageSession(MessageSession):
 
     async def check_native_permission(self):
         return True
+
+    async def check_bot_state(self) -> BotState:
+        """Provide deterministic platform-state data to modules under the test parser."""
+        info = self.session_info
+        return BotState(
+            available=True,
+            joined=True,
+            is_owner=True,
+            is_admin=True,
+            can_read_messages=True,
+            can_read_all_messages=info.read_all_messages,
+            can_send_messages=True,
+            can_manage_messages=info.support_manage,
+            can_manage_members=info.support_manage,
+            can_restrict_members=info.support_manage,
+            can_react=info.support_reaction,
+            can_send_private_messages=info.support_private_msg,
+            raw={"platform": "test"},
+        )
+
+    checkBotState = check_bot_state
 
     async def handle_error_signal(self):
         pass

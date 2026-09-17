@@ -18,6 +18,7 @@ from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
+from core.builtins.session.bot_state import BotState
 from core.logger import Logger
 
 
@@ -44,6 +45,84 @@ class TelegramContextManager(ContextManager):
             return True
         admins = [member.user.id for member in await aiogram_bot.get_chat_administrators(chat_id)]
         return user_id in admins
+
+    @classmethod
+    async def check_bot_state(cls, session_info: SessionInfo) -> BotState:
+        """Read the bot's Telegram ``ChatMember`` state for this chat."""
+        ctx = cls.context.get(session_info.session_id)
+        try:
+            if ctx:
+                chat_id = ctx.chat_id
+                chat_type = ctx.chat_type
+            else:
+                chat = await aiogram_bot.get_chat(session_info.get_common_target_id())
+                chat_id = chat.id
+                chat_type = str(getattr(chat.type, "value", chat.type))
+
+            me = await aiogram_bot.me()
+            if chat_type == "private":
+                return BotState(
+                    available=True,
+                    joined=True,
+                    is_owner=None,
+                    is_admin=None,
+                    can_read_messages=True,
+                    can_read_all_messages=True,
+                    can_send_messages=True,
+                    can_manage_messages=None,
+                    can_manage_members=None,
+                    can_restrict_members=None,
+                    can_react=True,
+                    can_send_private_messages=True,
+                    raw={"status": "private", "user_id": me.id},
+                )
+
+            member = await aiogram_bot.get_chat_member(chat_id, me.id)
+            status_value = getattr(member, "status", "unknown")
+            status = str(getattr(status_value, "value", status_value))
+            raw = member.model_dump(mode="json") if hasattr(member, "model_dump") else {"status": status}
+            permissions = {
+                key: value
+                for key in (
+                    "can_change_info",
+                    "can_delete_messages",
+                    "can_manage_video_chats",
+                    "can_restrict_members",
+                    "can_promote_members",
+                    "can_invite_users",
+                    "can_post_messages",
+                    "can_edit_messages",
+                    "can_pin_messages",
+                    "can_manage_topics",
+                )
+                if (value := getattr(member, key, None)) is not None
+            }
+            joined = status not in {"left", "kicked"}
+            is_owner = status == "creator"
+            is_admin = is_owner or status == "administrator"
+            return BotState(
+                available=True,
+                joined=joined,
+                is_owner=is_owner,
+                is_admin=is_admin,
+                can_read_messages=joined,
+                can_read_all_messages=None,
+                can_send_messages=(
+                    True
+                    if status in {"member", "administrator", "creator"}
+                    else getattr(member, "can_send_messages", None)
+                ),
+                can_manage_messages=permissions.get("can_delete_messages"),
+                can_manage_members=permissions.get("can_restrict_members") or permissions.get("can_promote_members"),
+                can_restrict_members=permissions.get("can_restrict_members"),
+                can_react=joined,
+                can_send_private_messages=True if session_info.is_private else None,
+                permissions=permissions,
+                raw=raw,
+            )
+        except Exception as exc:
+            Logger.exception(f"Failed to check Telegram bot state in {session_info.target_id}: ")
+            return BotState(available=None, joined=None, raw={}, error=str(exc))
 
     @classmethod
     async def send_message(

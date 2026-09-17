@@ -20,6 +20,7 @@ from core.builtins.message.elements import (
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
+from core.builtins.session.bot_state import BotState
 from core.builtins.temp import Temp
 from core.logger import Logger
 from core.utils.media import resolve_media_path
@@ -179,6 +180,26 @@ class WebContextManager(ContextManager):
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
         return True
+
+    @classmethod
+    async def check_bot_state(cls, session_info: SessionInfo) -> BotState:
+        """WebUI sessions are backed by the trusted local bot interface."""
+        return BotState(
+            available=True,
+            joined=True,
+            is_owner=True,
+            is_admin=True,
+            can_read_messages=True,
+            can_read_all_messages=True,
+            can_send_messages=True,
+            can_manage_messages=True,
+            can_manage_members=True,
+            can_restrict_members=True,
+            can_react=True,
+            can_send_private_messages=True,
+            permissions={"webui": True},
+            raw={"platform": "webui"},
+        )
 
     @classmethod
     def _get_websocket(cls, session_info: SessionInfo) -> WebSocket | None:
