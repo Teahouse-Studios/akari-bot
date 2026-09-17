@@ -11,9 +11,12 @@ from tortoise.context import TortoiseContext
 
 from core.builtins.temp import Temp
 from core.logger import Logger
+from .compat import install_tortoise_sqlite_transaction_compat
 from .link import get_db_link, prepare_db_link
 from .local import DB_LINK
 from .models import DBModel
+
+install_tortoise_sqlite_transaction_compat()
 
 _reload_lock = asyncio.Lock()
 
