@@ -1,18 +1,40 @@
 """Tortoise ORM 兼容补丁。
 
-Tortoise 1.1 的 SQLite 事务上下文在 ``__aenter__`` 里先取连接锁，再执行
-``BEGIN``；若任务在这两步之间被取消（例如关闭超时取消了一个
-``registry.unregister``），``__aexit__`` 永远不会执行，连接锁便再也无人释放。
-SQLite 后端全进程共用这一把锁，此后所有数据库操作都会静默挂起。补丁让
-``__aenter__`` 在失败或取消时回滚并释放连接锁，与 ``__aexit__`` 的清理语义一致。
+Tortoise 1.1 的 SQLite 后端在三处清理缺口上会把连接留在坏状态：
+
+1. ``SqliteTransactionContext.__aenter__`` 先取连接锁再执行 ``BEGIN``；若在两步
+   之间被取消（例如关闭超时取消了一个 ``registry.unregister``），``__aexit__``
+   永远不会执行，连接锁再也无人释放。SQLite 后端全进程共用这一把锁，此后所有
+   数据库操作都会静默挂起。
+2. ``SqliteTransactionContext.__aexit__`` 在 ``commit``/``rollback`` 被取消或失败
+   时直接进入 ``finally`` 释放锁，事务本身可能仍处于打开状态。
+3. ``SqliteClient.execute_many`` 自行 ``BEGIN``/``commit``，却只在
+   ``except Exception`` 里回滚；取消抛出的 ``CancelledError`` 会跳过回滚，把连接
+   留在已打开的事务里，下一次批量写入就会报
+   ``cannot start a transaction within a transaction``。
+
+补丁让这些路径在失败或取消时回滚并释放资源，与正常退出路径的清理语义一致。
 """
 
 from __future__ import annotations
 
-from tortoise.backends.sqlite.client import SqliteTransactionContext
+from tortoise.backends.sqlite.client import (
+    SqliteClient,
+    SqliteTransactionContext,
+    translate_exceptions,
+)
 from tortoise.connection import get_connections
+from tortoise.exceptions import TransactionManagementError
 
 _installed = False
+
+
+async def _rollback_quietly(connection) -> None:
+    try:
+        if connection._connection is not None:
+            await connection.rollback()
+    except BaseException:
+        pass
 
 
 async def _cancellation_safe_aenter(self):
@@ -24,11 +46,7 @@ async def _cancellation_safe_aenter(self):
         self.token = token
         await self.connection.begin()
     except BaseException:
-        try:
-            if self.connection._connection is not None:
-                await self.connection.rollback()
-        except BaseException:
-            pass
+        await _rollback_quietly(self.connection)
         if token is not None:
             get_connections().reset(token)
         self._trxlock.release()
@@ -36,12 +54,46 @@ async def _cancellation_safe_aenter(self):
     return self.connection
 
 
+async def _cancellation_safe_aexit(self, exc_type, exc_val, exc_tb):
+    try:
+        if not self.connection._finalized:
+            if exc_type:
+                if exc_type is not TransactionManagementError:
+                    await self.connection.rollback()
+            else:
+                await self.connection.commit()
+    except BaseException:
+        await _rollback_quietly(self.connection)
+        raise
+    finally:
+        get_connections().reset(self.token)
+        self._trxlock.release()
+
+
+@translate_exceptions
+async def _cancellation_safe_execute_many(self, query: str, values: list[list]) -> None:
+    async with self.acquire_connection() as connection:
+        self.log.debug("%s: %s", query, values)
+        try:
+            await connection.execute("BEGIN")
+            await connection.executemany(query, values)
+            await connection.commit()
+        except BaseException:
+            try:
+                await connection.rollback()
+            except BaseException:
+                pass
+            raise
+
+
 def install_tortoise_sqlite_transaction_compat() -> None:
-    """安装 SQLite 事务上下文的取消安全补丁，可重复调用。"""
+    """安装 SQLite 的事务与批量写入取消安全补丁，可重复调用。"""
     global _installed
     if _installed:
         return
     SqliteTransactionContext.__aenter__ = _cancellation_safe_aenter
+    SqliteTransactionContext.__aexit__ = _cancellation_safe_aexit
+    SqliteClient.execute_many = _cancellation_safe_execute_many
     _installed = True
 
 
