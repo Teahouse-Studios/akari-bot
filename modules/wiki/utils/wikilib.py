@@ -1030,6 +1030,7 @@ class WikiLib:
                         )
                         page_info.link = full_url
                         page_info.status = True
+                        page_info.invalid_section = False
                     else:
                         # handling normal pages
                         query_langlinks = False
