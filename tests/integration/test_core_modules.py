@@ -49,6 +49,21 @@ async def test_help(tester: Tester):
 
 
 @func_case
+async def test_merged_setup_commands(tester: Tester):
+    """并入 setup 的前缀、语言与别名子命令测试"""
+    await tester.integrate(
+        "~help setup",
+        ContainsAll("~setup prefix", "~setup locale", "~setup alias"),
+        "合并后的 setup 帮助应展示前缀、语言与别名子命令",
+    )
+    await tester.integrate("~setup prefix list", Contains("前缀"), "setup prefix list 应显示前缀")
+    await tester.integrate("~setup locale", Contains("简体中文"), "setup locale 应显示语言列表")
+    await tester.integrate("~setup alias list", Contains("别名"), "setup alias list 应显示别名列表")
+
+    return tester
+
+
+@func_case
 async def test_module_list(tester: Tester):
     """module list 命令测试"""
     await tester.integrate("~module list", Contains("当前可用的模块有"), "module list 应显示模块列表")

@@ -7,7 +7,13 @@ admin = module(
     "admin",
     base=True,
     required_admin=True,
-    alias={"ban": "admin ban", "unban": "admin unban", "ban list": "admin ban list"},
+    alias={
+        "ban": "admin ban",
+        "unban": "admin unban",
+        "ban list": "admin ban list",
+        "leave": "admin leave",
+        "dismiss": "admin leave",
+    },
     desc="{I18N:core.help.admin.desc}",
     doc=True,
 )
@@ -106,3 +112,12 @@ async def _(msg: Bot.MessageSession):
         union_id = await _resolve_union_id(user, create=False)
         if await msg.session_info.target_union_info.config_banned_user(union_id, enable=False):
             await msg.finish(I18NContext("core.message.admin.unban.success", sender=user))
+
+
+@admin.command("leave {{I18N:core.help.leave}}", available_for="QQ|Group")
+async def _(msg: Bot.MessageSession):
+    if await msg.wait_confirm(I18NContext("core.message.leave.confirm")):
+        await msg.send_message(I18NContext("core.message.leave.success"))
+        await msg.call_onebot_api("set_group_leave", group_id=int(msg.session_info.get_common_target_id()))
+    else:
+        await msg.finish()

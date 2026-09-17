@@ -92,6 +92,32 @@ def qqbot_permissions_limited(msg: Bot.MessageSession) -> bool:
     )
 
 
+async def check_scene_admin(msg: Bot.MessageSession) -> bool:
+    """
+    判定会话用户是否具备场景管理员权限，供帮助列表按权限过滤内容。
+
+    平台查询可能因网络或权限接口异常而失败。帮助只是展示，失败时按无权限处理，
+    不能因此让整条帮助命令报错。
+
+    :param msg: 消息会话。
+    :return: 用户是否可执行管理员命令。
+    """
+    try:
+        return await msg.check_permission()
+    except Exception:
+        Logger.exception("Failed to check scene admin permission for help display.")
+        return False
+
+
+def module_has_admin_entries(module_) -> bool:
+    """判断模块是否含有仅管理员可用的命令或正则，用于决定是否需要查询用户权限。"""
+    if module_.required_admin:
+        return True
+    if any(meta.required_admin for meta in module_.command_list.set):
+        return True
+    return any(meta.required_admin for meta in module_.regex_list.set)
+
+
 def split_subscription_modules(module_list: dict, names: list[str]) -> tuple[list[str], list[str]]:
     """按模块的 RSS 标记拆分普通模块与订阅模块，并保持原有顺序。"""
     regular = []
@@ -555,8 +581,12 @@ async def _(msg: Bot.MessageSession, module: str, image: bool = False, legacy: b
 
             if not module_._db_load:
                 await msg.finish(I18NContext("parser.module.unloaded", module=help_name))
-            if (module_.required_superuser and not is_superuser) or (
-                module_.required_base_superuser and not is_base_superuser
+            # 仅在模块确实含有管理员条目时才查询平台权限，普通模块的帮助不额外付出一次接口调用
+            is_admin = is_superuser or (module_has_admin_entries(module_) and await check_scene_admin(msg))
+            if (
+                (module_.required_superuser and not is_superuser)
+                or (module_.required_base_superuser and not is_base_superuser)
+                or (module_.required_admin and not is_admin)
             ):
                 await msg.finish(I18NContext("core.message.help.not_found"))
             if module_.desc:
@@ -569,6 +599,7 @@ async def _(msg: Bot.MessageSession, module: str, image: bool = False, legacy: b
                 module_name=module_.module_name,
                 command_prefixes=msg.session_info.prefixes,
                 is_superuser=is_superuser,
+                is_admin=is_admin,
             )
 
             if help_.args:
@@ -578,6 +609,7 @@ async def _(msg: Bot.MessageSession, module: str, image: bool = False, legacy: b
                 msg.session_info.target_from,
                 show_required_superuser=is_superuser,
                 show_required_base_superuser=is_base_superuser,
+                show_required_admin=is_admin,
             )
 
             devs_msg = ""
@@ -731,13 +763,13 @@ async def help_overview(msg: Bot.MessageSession, image: bool = False, legacy: bo
     force_legacy = legacy and not force_image
     use_table = should_use_markdown_table(msg, force_image, force_legacy)
     use_clickable = not use_table and not force_legacy and msg.session_info.support_action_text
-    qqbot_admin = msg.session_info.client_name == "QQBot" and await msg.check_permission()
-    qqbot_style = qqbot_admin and not force_legacy
+    is_admin = await check_scene_admin(msg)
+    qqbot_style = msg.session_info.client_name == "QQBot" and is_admin and not force_legacy
     show_all_modules = qqbot_style or not msg.session_info.require_enable_modules
 
     legacy_help = True
     if not use_table and not force_legacy and msg.session_info.support_image:
-        imgs = await help_generator(msg, show_disabled_modules=show_all_modules)
+        imgs = await help_generator(msg, show_disabled_modules=show_all_modules, is_admin=is_admin)
         if imgs:
             legacy_help = False
 
@@ -788,6 +820,8 @@ async def help_overview(msg: Bot.MessageSession, image: bool = False, legacy: bo
                 continue
             if not is_superuser and value.required_superuser or not is_base_superuser and value.required_base_superuser:
                 continue
+            if value.required_admin and not is_admin:
+                continue
 
             if value.base:
                 essential.append(key)
@@ -816,7 +850,7 @@ async def help_overview(msg: Bot.MessageSession, image: bool = False, legacy: bo
                         ("core.message.help.table.subscription", subscription),
                     ],
                     include_help_header=True,
-                    permission="superuser" if is_superuser else "admin" if qqbot_admin else "user",
+                    permission="superuser" if is_superuser else "admin" if is_admin else "user",
                 )
             )
             help_msg += I18NContext("core.message.help.mdtable")
@@ -888,10 +922,17 @@ async def modules_list_help(msg: Bot.MessageSession, legacy, force_image=False):
     # 与 ~help 同理：表格不可用时优先保留图片，图片生成失败后再降级到文字版
     use_table = should_use_markdown_table(msg, force_image, legacy)
     use_clickable = not use_table and not legacy and msg.session_info.support_action_text
+    is_admin = await check_scene_admin(msg)
 
     legacy_help = True
     if not use_table and msg.session_info.support_image and not legacy:
-        imgs = await help_generator(msg, show_disabled_modules=True, show_base_modules=False, show_dev_modules=False)
+        imgs = await help_generator(
+            msg,
+            show_disabled_modules=True,
+            show_base_modules=False,
+            show_dev_modules=False,
+            is_admin=is_admin,
+        )
         if imgs:
             legacy_help = False
             help_msg = MessageChain.assign(
@@ -907,7 +948,7 @@ async def modules_list_help(msg: Bot.MessageSession, legacy, force_image=False):
             help_msg.append(ButtonFrame(get_module_list_button_data(msg)))
             await msg.finish(imgs + help_msg)
     if legacy_help:
-        can_manage_modules = msg.session_info.client_name == "QQBot" and await msg.check_permission()
+        can_manage_modules = msg.session_info.client_name == "QQBot" and is_admin
         module_list = ModulesManager.return_modules_list(
             target_from=msg.session_info.target_from, client_name=msg.session_info.client_name
         )
@@ -922,6 +963,7 @@ async def modules_list_help(msg: Bot.MessageSession, legacy, force_image=False):
                 or not module_list[x]._db_load
                 or module_list[x].required_superuser
                 or module_list[x].required_base_superuser
+                or (module_list[x].required_admin and not is_admin)
             ):
                 continue
             module_.append(module_list[x].module_name)
@@ -990,9 +1032,12 @@ async def help_generator(
     show_base_modules: bool = True,
     show_disabled_modules: bool = False,
     show_dev_modules: bool = True,
+    is_admin: bool | None = None,
 ):
     is_base_superuser = msg.session_info.sender_id in Bot.base_superuser_list
     is_superuser = msg.check_super_user()
+    if is_admin is None:
+        is_admin = is_superuser or await check_scene_admin(msg)
     module_list = ModulesManager.return_modules_list(
         target_from=msg.session_info.target_from, client_name=msg.session_info.client_name
     )
@@ -1012,6 +1057,8 @@ async def help_generator(
         if value.unsupported_reason(msg.session_info):
             continue
         if not is_superuser and value.required_superuser or not is_base_superuser and value.required_base_superuser:
+            continue
+        if value.required_admin and not is_admin:
             continue
 
         if value.base:
@@ -1056,6 +1103,7 @@ async def help_generator(
         CommandParser=CommandParser,
         is_base_superuser=is_base_superuser,
         is_superuser=is_superuser,
+        is_admin=is_admin,
         len=len,
         module_list=module_list,
         module_groups=module_groups,

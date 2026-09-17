@@ -27,12 +27,15 @@ class CommandMatches(BaseMatches):
         target_from: str | None = None,
         show_required_superuser: bool = False,
         show_required_base_superuser: bool = False,
+        show_required_admin: bool = True,
     ) -> list[CommandMeta]:
         metas = []
         for meta in self.set:
             if not show_required_base_superuser and meta.required_base_superuser:
                 continue
             if not show_required_superuser and meta.required_superuser:
+                continue
+            if not show_required_admin and meta.required_admin:
                 continue
             if not meta.load:
                 continue
@@ -60,12 +63,15 @@ class RegexMatches(BaseMatches):
         target_from: str | None = None,
         show_required_superuser: bool = False,
         show_required_base_superuser: bool = False,
+        show_required_admin: bool = True,
     ) -> list[RegexMeta]:
         metas = []
         for meta in self.set:
             if not show_required_base_superuser and meta.required_base_superuser:
                 continue
             if not show_required_superuser and meta.required_superuser:
+                continue
+            if not show_required_admin and meta.required_admin:
                 continue
             if not meta.load:
                 continue

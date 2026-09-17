@@ -4,11 +4,9 @@ from string import Template as StringTemplate
 from core.builtins.bot import Bot
 from core.builtins.message.internal import Image, I18NContext, Plain
 from core.builtins.parser.hooks import HookPoint
-from core.component import module
 from core.logger import Logger
 from core.utils.image_table import image_table_render, ImageTable
-
-ali = module("alias", base=True, doc=True)
+from modules.core.common_tools.setup import setup
 
 
 def transform_alias(command: str, aliases: dict[str, str], prefix: str) -> str:
@@ -36,7 +34,7 @@ def transform_alias(command: str, aliases: dict[str, str], prefix: str) -> str:
     return command
 
 
-@ali.hook(point=HookPoint.MESSAGE_NORMALIZED, priority=10, name="rewrite", server_scope=True)
+@setup.hook(point=HookPoint.MESSAGE_NORMALIZED, priority=10, name="rewrite", server_scope=True)
 async def _(ctx: Bot.ParserHookContext):
     info = ctx.msg.session_info
     target = info.target_union_info
@@ -50,15 +48,15 @@ async def _(ctx: Bot.ParserHookContext):
     return ctx.RewriteTrigger(trigger_msg)
 
 
-@ali.command(
-    "list [--legacy] {{I18N:core.help.alias.list}}",
+@setup.command(
+    "alias list [--legacy] {{I18N:core.help.alias.list}}",
     options_desc={"--legacy": "{I18N:help.option.legacy}"},
 )
-@ali.command(
+@setup.command(
     [
-        "add <alias> <command> {{I18N:core.help.alias.add}}",
-        "remove <alias> {{I18N:core.help.alias.remove}}",
-        "reset {{I18N:core.help.alias.reset}}",
+        "alias add <alias> <command> {{I18N:core.help.alias.add}}",
+        "alias remove <alias> {{I18N:core.help.alias.remove}}",
+        "alias reset {{I18N:core.help.alias.reset}}",
     ],
     required_admin=True,
 )

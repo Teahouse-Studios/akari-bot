@@ -9,7 +9,19 @@ from core.config.base import CoreConfig
 from core.i18n import Locale
 from core.utils.button import arrange_buttons
 
-setup = module("setup", base=True, desc="{I18N:core.help.setup.desc}", doc=True, alias="toggle")
+setup = module(
+    "setup",
+    base=True,
+    desc="{I18N:core.help.setup.desc}",
+    doc=True,
+    alias={
+        "toggle": "setup",
+        "prefix": "setup prefix",
+        "locale": "setup locale",
+        "lang": "setup locale",
+        "alias": "setup alias",
+    },
+)
 
 
 @setup.command("typing {{I18N:core.help.setup.typing}}")
@@ -134,8 +146,8 @@ def build_target_rows(msg: Bot.MessageSession) -> list[SettingRow]:
     """
     构造场景域的设置行。
 
-    语言、静音、自定义前缀三项由 locale、mute、prefix 三个模块各自维护，此处只读取其状态
-    并给出入口，不重复实现切换逻辑。
+    语言与自定义前缀由 setup 自身的子命令维护（``setup locale`` 与 ``setup prefix``），
+    静音仍由 mute 模块维护；此处只读取各自的状态并给出入口，不重复实现切换逻辑。
 
     带参数的命令一律附上当前取值，使点击后输入框里就是现设定，改动何处一目了然。
     自定义前缀是例外：它承载的是一个列表，且入口做的是追加而非替换，没有可预填的单值。
@@ -156,7 +168,7 @@ def build_target_rows(msg: Bot.MessageSession) -> list[SettingRow]:
             label=locale.t("core.message.setup.list.item.locale"),
             value=locale.t("language"),
             action=locale.t("core.message.setup.list.action.modify"),
-            command=f"locale {target_union_info.locale}",
+            command=f"setup locale {target_union_info.locale}",
         ),
         _toggle_row(
             locale,
@@ -168,7 +180,7 @@ def build_target_rows(msg: Bot.MessageSession) -> list[SettingRow]:
             label=locale.t("core.message.setup.list.item.prefix"),
             value=locale.t("message.delimiter").join(prefixes) or locale.t("message.none"),
             action=locale.t("core.message.setup.list.action.add"),
-            command="prefix add ",
+            command="setup prefix add ",
         ),
     ]
 

@@ -2,7 +2,6 @@
 
 from .admin import *
 from .alias import *
-from .leave import *
 from .locale import *
 from .modules import *
 from .mute import *

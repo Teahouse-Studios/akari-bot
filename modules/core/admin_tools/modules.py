@@ -9,7 +9,7 @@ from core.constants.exceptions import InvalidHelpDocTypeError
 from core.database.models import ModuleStatus
 from core.loader import ModulesManager
 from core.logger import Logger
-from modules.core.common_tools.help import modules_list_help
+from modules.core.common_tools.help import check_scene_admin, modules_list_help
 
 # 模块受限成因到提示文案的映射，键取自 Module.unsupported_reason() 的返回值。
 UNSUPPORTED_PROMPTS = {
@@ -183,6 +183,7 @@ async def config_modules(msg: Bot.MessageSession):
                         if msg.session_info.locale.locale not in support_lang:
                             msglist.append(I18NContext("core.message.module.unsupported_language", module=x))
         if recommend_modules_list:
+            is_admin = is_superuser or await check_scene_admin(msg)
             for m in recommend_modules_list:
                 try:
                     recommend_modules_help_doc_list.append(I18NContext("core.message.module.recommends.help", module=m))
@@ -195,6 +196,7 @@ async def config_modules(msg: Bot.MessageSession):
                         module_name=modules_[m].module_name,
                         command_prefixes=msg.session_info.prefixes,
                         is_superuser=is_superuser,
+                        is_admin=is_admin,
                     ).return_formatted_help_doc()
                     if hdoc:
                         recommend_modules_help_doc_list.append(Plain(hdoc))

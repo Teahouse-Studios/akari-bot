@@ -181,8 +181,9 @@
             <div class="grid-item {{ group_class }}{{ ' dev' if value.required_superuser or value.required_base_superuser else '' }}{{ ' disabled' if show_disabled_modules and key not in target_enabled_list and not (value.base or value.required_superuser or value.required_base_superuser) else '' }}">
                 <div class="{% if not (value.required_superuser or value.required_base_superuser) %}{{ 'admin' if value.required_admin else '' }}{% endif %}">
                     {% set help_=CommandParser(value, msg=msg, module_name=value.module_name,
-                                  command_prefixes=msg.session_info.prefixes, is_superuser=is_superuser) %}
-                    {% set regex_list=value.regex_list.get(msg.session_info.target_from, show_required_superuser=is_superuser, show_required_base_superuser=is_base_superuser) %}
+                                  command_prefixes=msg.session_info.prefixes, is_superuser=is_superuser,
+                                  is_admin=is_admin) %}
+                    {% set regex_list=value.regex_list.get(msg.session_info.target_from, show_required_superuser=is_superuser, show_required_base_superuser=is_base_superuser, show_required_admin=is_admin) %}
                     <div class="module-name">{{ value.module_name | e }}</div>
                     {% if len(help_.args) > 0 %}
                     <div>{{ locale.t('core.message.help.command_count', count=len(help_.args)) }}</div>

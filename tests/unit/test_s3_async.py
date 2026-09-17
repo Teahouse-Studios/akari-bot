@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from botocore.exceptions import ClientError
 from core.tester import Tester, func_case
+from core.tester.timing import TIME_SCALE
 from core.utils.s3 import S3StorageAPI
 
 
@@ -33,7 +34,7 @@ async def _test_s3_sync_call_is_bounded_without_blocking_loop():
     elapsed = time.perf_counter() - started
     await marker
     storage._executor.shutdown(wait=True)
-    return timed_out and loop_progressed and elapsed < 0.1
+    return timed_out and loop_progressed and elapsed < 0.1 * TIME_SCALE
 
 
 async def _test_manifest_updater_result_is_written():

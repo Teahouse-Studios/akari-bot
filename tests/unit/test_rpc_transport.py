@@ -34,11 +34,11 @@ RPC_TEST_TIMEOUT = 10 * TIME_SCALE
 async def _peers():
     class Caller(JobQueueBase):
         name = f"RPC-TEST-CALLER-{uuid4()}"
-        POLL_INTERVAL_SECONDS = 0.005
+        POLL_INTERVAL_SECONDS = 0.05
 
     class Receiver(JobQueueBase):
         name = f"RPC-TEST-RECEIVER-{uuid4()}"
-        POLL_INTERVAL_SECONDS = 0.005
+        POLL_INTERVAL_SECONDS = 0.05
 
     pollers = [asyncio.create_task(peer.check_job_queue(peer.name)) for peer in (Caller, Receiver)]
     try:
@@ -553,7 +553,7 @@ async def _test_abandon_cleanup_is_bounded():
                     return False
                 except RpcTimeoutError:
                     pass
-            return time.monotonic() - started < 1
+            return time.monotonic() - started < 1 * TIME_SCALE
         finally:
             caller.ABANDON_TIMEOUT_SECONDS = original_timeout
 

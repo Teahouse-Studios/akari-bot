@@ -4,18 +4,16 @@ from akari_bot_i18n.i18n import build_locale_snapshot
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import ActionText, I18NContext, Plain, Url
-from core.component import module
 from core.config.base import CoreConfig
 from core.constants import all_locales_path, lang_list, weblate_lang_codes
 from core.i18n import Locale, get_available_locales
 from core.utils.http import get_url
 from core.constants.path import cache_path
+from modules.core.common_tools.setup import setup
 
 WEBLATE_LANGUAGES_API = "https://hosted.weblate.org/api/projects/akaribot/languages/"
 TRANSLATION_PROGRESS_THRESHOLD = 95.0
 WEBLATE_LANGUAGES_CACHE = cache_path / "weblate_languages.json"
-
-locale = module("locale", base=True, desc="{I18N:core.help.locale.desc}", alias="lang", doc=True)
 
 
 def build_locale_list(msg: Bot.MessageSession) -> list:
@@ -27,7 +25,7 @@ def build_locale_list(msg: Bot.MessageSession) -> list:
     prefix = msg.session_info.prefixes[0]
     parts = []
     for index, (lang, name) in enumerate(locales):
-        parts.append(ActionText(f"{prefix}locale {lang}", show=name))
+        parts.append(ActionText(f"{prefix}setup locale {lang}", show=name))
         parts.append(Plain("\n" if index + 1 < len(locales) else " ", disable_joke=True))
     return [I18NContext("core.message.locale.langlist", langlist=MessageChain.assign(parts))]
 
@@ -38,7 +36,7 @@ def build_locale_overview(msg: Bot.MessageSession, locale_url: str | None) -> li
         I18NContext("core.message.locale.prompt", lang="{I18N:language}"),
         I18NContext(
             "core.message.locale.set.prompt",
-            cmd=ActionText(f"{msg.session_info.prefixes[0]}locale "),
+            cmd=ActionText(f"{msg.session_info.prefixes[0]}setup locale "),
         ),
         *build_locale_list(msg),
     ]
@@ -105,13 +103,13 @@ async def build_translation_notice(lang: str):
     ]
 
 
-@locale.command()
+@setup.command("locale {{I18N:core.help.locale.desc}}")
 async def _(msg: Bot.MessageSession):
     await msg.send_message(build_locale_overview(msg, CoreConfig.locale_url))
     await msg.finish(await build_translation_notice(msg.session_info.locale.locale))
 
 
-@locale.command("[<lang>] {{I18N:core.help.locale.set}}", required_admin=True)
+@setup.command("locale [<lang>] {{I18N:core.help.locale.set}}", required_admin=True)
 async def _(msg: Bot.MessageSession, lang: str):
     if lang in get_available_locales():
         await msg.session_info.target_union_info.edit_attr("locale", lang)
@@ -121,7 +119,7 @@ async def _(msg: Bot.MessageSession, lang: str):
         await msg.finish([I18NContext("core.message.locale.set.invalid"), *build_locale_list(msg)])
 
 
-@locale.command("reload {{I18N:core.help.locale.reload}}", required_superuser=True)
+@setup.command("locale reload {{I18N:core.help.locale.reload}}", required_superuser=True)
 async def _(msg: Bot.MessageSession):
     err = build_locale_snapshot(list(lang_list.keys()), all_locales_path, "akari-bot")
     if len(err) == 0:

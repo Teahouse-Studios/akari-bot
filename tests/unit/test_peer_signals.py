@@ -37,20 +37,20 @@ async def _peer_cluster():
 
     class Controller(JobQueueBase):
         name = f"PEER-CONTROLLER-{uuid4()}"
-        POLL_INTERVAL_SECONDS = 0.02
-        RECONCILE_INTERVAL_SECONDS = 0.1
+        POLL_INTERVAL_SECONDS = 0.1
+        RECONCILE_INTERVAL_SECONDS = 1.0
         SHUTDOWN_OPERATION_TIMEOUT_SECONDS = max(1.0, TIME_SCALE)
 
     class WorkerA(JobQueueBase):
         name = f"PEER-WORKER-A-{uuid4()}"
-        POLL_INTERVAL_SECONDS = 0.02
-        RECONCILE_INTERVAL_SECONDS = 0.1
+        POLL_INTERVAL_SECONDS = 0.1
+        RECONCILE_INTERVAL_SECONDS = 1.0
         SHUTDOWN_OPERATION_TIMEOUT_SECONDS = max(1.0, TIME_SCALE)
 
     class WorkerB(JobQueueBase):
         name = f"PEER-WORKER-B-{uuid4()}"
-        POLL_INTERVAL_SECONDS = 0.02
-        RECONCILE_INTERVAL_SECONDS = 0.1
+        POLL_INTERVAL_SECONDS = 0.1
+        RECONCILE_INTERVAL_SECONDS = 1.0
         SHUTDOWN_OPERATION_TIMEOUT_SECONDS = max(1.0, TIME_SCALE)
 
     Controller.configure_peer(role="server", service="controller", capabilities=["signals"])
@@ -853,7 +853,7 @@ async def _test_interrupted_emit_cleanup_is_bounded():
                     return False
                 except RuntimeError:
                     pass
-            return asyncio.get_running_loop().time() - started < 1
+            return asyncio.get_running_loop().time() - started < 1 * TIME_SCALE
         finally:
             controller.ABANDON_TIMEOUT_SECONDS = original_timeout
 

@@ -117,6 +117,7 @@ class CommandParser:
         module_name=None,
         msg: "Bot.MessageSession | None" = None,
         is_superuser: bool | None = None,
+        is_admin: bool | None = None,
     ):
         """
         初始化命令解析器。
@@ -126,6 +127,8 @@ class CommandParser:
         :param module_name: 模块名称
         :param msg: 消息会话对象（用于权限检查）
         :param is_superuser: 是否为超级用户（如为 None 则从会话自动检测）
+        :param is_admin: 是否为场景管理员。为 None 时不过滤管理员命令，保持命令解析行为；
+            传入布尔值则据其过滤 ``required_admin`` 命令，供帮助文档按权限展示
         """
         # 存储命令前缀列表（如 ["~", "!"]）
         self.command_prefixes = command_prefixes
@@ -168,6 +171,7 @@ class CommandParser:
                 self.msg.session_info.target_from,  # 按平台过滤
                 show_required_superuser=is_superuser,  # 根据权限过滤
                 show_required_base_superuser=is_base_superuser,
+                show_required_admin=True if is_admin is None else (is_admin or is_superuser),
             )
         ):
             # 为每个命令模板建立映射

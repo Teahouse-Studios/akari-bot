@@ -167,7 +167,7 @@ def _test_commands_carry_current_value() -> bool:
     msg = _make_msg(target_data={"cooldown_time": 5, "command_prefix": ["!"]})
     rows = build_target_rows(msg)
     expected = {
-        "语言": f"locale {msg.session_info.target_union_info.locale}",
+        "语言": f"setup locale {msg.session_info.target_union_info.locale}",
         "时间偏移": "setup timeoffset +8",
         "命令冷却": "setup cooldown 5",
     }
@@ -178,7 +178,7 @@ def _test_commands_carry_current_value() -> bool:
             return False
     # 自定义前缀做的是追加而非替换，没有可预填的单值
     prefix_row = _row_by_label(rows, "自定义前缀")
-    if not prefix_row or prefix_row.command != "prefix add ":
+    if not prefix_row or prefix_row.command != "setup prefix add ":
         Logger.error(f"The prefix entry appends rather than replaces, got {prefix_row and prefix_row.command!r}")
         return False
     return True

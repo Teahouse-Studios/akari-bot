@@ -1,17 +1,15 @@
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
 from core.builtins.utils import command_prefix
-from core.component import module
-
-p = module("prefix", base=True, doc=True)
+from modules.core.common_tools.setup import setup
 
 
-@p.command("list {{I18N:core.help.prefix.list}}")
-@p.command(
+@setup.command("prefix list {{I18N:core.help.prefix.list}}")
+@setup.command(
     [
-        "add <prefix> {{I18N:core.help.prefix.add}}",
-        "remove <prefix> {{I18N:core.help.prefix.remove}}",
-        "reset {{I18N:core.help.prefix.reset}}",
+        "prefix add <prefix> {{I18N:core.help.prefix.add}}",
+        "prefix remove <prefix> {{I18N:core.help.prefix.remove}}",
+        "prefix reset {{I18N:core.help.prefix.reset}}",
     ],
     required_admin=True,
 )

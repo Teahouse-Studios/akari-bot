@@ -15,12 +15,16 @@ from bots.discord.features import features as discord_features
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import ActionTextElement, ButtonFrameElement, ImageElement, PlainElement
 from core.builtins.message.internal import ActionText, I18NContext, Image, Plain
+from core.builtins.parser.args import parse_template
+from core.builtins.parser.command import CommandParser
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.constants.exceptions import SessionFinished
 from core.i18n import Locale
 from core.logger import Logger
 from core.tester import func_case, Tester
+from core.types import Module
+from core.types.module.component_meta import CommandMeta
 from core.utils.table import TABLE_MAX_ROWS, format_table_code
 from modules.core.common_tools.help import (
     ModuleListEntry,
@@ -114,6 +118,9 @@ class _ImageHelpSession(_FakeSession):
         self.parsed_msg = {}
         self.finished_message = None
 
+    async def check_permission(self):
+        return False
+
     async def finish(self, message, **kwargs):
         self.finished_message = MessageChain.assign(message)
         raise SessionFinished
@@ -145,13 +152,14 @@ def _button_rows(chain: MessageChain) -> list[dict[str, str]]:
     ]
 
 
-def _module(name: str, *, base: bool = False, rss: bool = False, unsupported: bool = False):
+def _module(name: str, *, base: bool = False, rss: bool = False, unsupported: bool = False, admin: bool = False):
     return SimpleNamespace(
         module_name=name,
         base=base,
         rss=rss,
         hidden=False,
         _db_load=True,
+        required_admin=admin,
         required_superuser=False,
         required_base_superuser=False,
         unsupported_reason=lambda _session_info: "rss" if unsupported else None,
@@ -608,6 +616,69 @@ async def _test_qqbot_non_admin_help_keeps_module_list_button():
         and "[coin]" not in rendered
         and "普通用户" in rendered
         and any(command.endswith("module list") for command in buttons.values())
+    )
+
+
+async def _test_help_hides_admin_modules_from_non_admin():
+    """普通用户的 help 概览不展示仅管理员可用的模块，顶栏显示普通用户。"""
+    session_info = await _session("help_permission_non_admin")
+    msg = _OverviewSession(session_info, is_admin=False)
+    modules = {
+        "help": _module("help", base=True),
+        "admin": _module("admin", base=True, admin=True),
+    }
+    try:
+        with patch("modules.core.common_tools.help.ModulesManager.return_modules_list", return_value=modules):
+            await help_overview(msg)
+    except SessionFinished:
+        pass
+    rendered = "\n".join(_render_lines(session_info, msg.finished_message.values))
+    return "[admin]" not in rendered and "[help]" in rendered and "普通用户" in rendered
+
+
+async def _test_help_shows_admin_modules_and_header_for_platform_admin():
+    """平台管理员在非 QQBot 平台上同样能看到管理员模块，顶栏显示场景管理员。"""
+    session_info = await _session("help_permission_admin")
+    msg = _OverviewSession(session_info, is_admin=True)
+    modules = {
+        "help": _module("help", base=True),
+        "admin": _module("admin", base=True, admin=True),
+    }
+    try:
+        with patch("modules.core.common_tools.help.ModulesManager.return_modules_list", return_value=modules):
+            await help_overview(msg)
+    except SessionFinished:
+        pass
+    rendered = "\n".join(_render_lines(session_info, msg.finished_message.values))
+    return "[admin]" in rendered and "场景管理员" in rendered
+
+
+async def _test_command_parser_hides_admin_commands_for_non_admin():
+    """CommandParser 在 is_admin=False 时从帮助文档中剔除管理员命令，管理员仍可见。"""
+    session_info = await _session("help_cmd_admin_filter")
+    msg = _FakeSession(session_info)
+    module_ = Module.assign(
+        module_name="_help_perm_test",
+        alias=None,
+        recommend_modules=None,
+        developers=None,
+        doc=True,
+        _db_load=True,
+    )
+    module_.command_list.add(CommandMeta(function=lambda: None, command_template=parse_template(["open"])))
+    module_.command_list.add(
+        CommandMeta(function=lambda: None, command_template=parse_template(["secret"]), required_admin=True)
+    )
+    hidden_doc = CommandParser(
+        module_, ["~"], module_name="_help_perm_test", msg=msg, is_superuser=False, is_admin=False
+    ).return_json_help_doc()
+    shown_doc = CommandParser(
+        module_, ["~"], module_name="_help_perm_test", msg=msg, is_superuser=False, is_admin=True
+    ).return_json_help_doc()
+    return (
+        all("secret" not in item["args"] for item in hidden_doc["args"])
+        and any("open" in item["args"] for item in hidden_doc["args"])
+        and any("secret" in item["args"] for item in shown_doc["args"])
     )
 
 
@@ -1203,6 +1274,15 @@ async def test_clickable_modules(tester: Tester):
     await tester.test(_test_qqbot_admin_help_includes_disabled_modules, "QQBot 管理员帮助合并模块列表测试")
     await tester.test(_test_qqbot_superuser_help_header, "QQBot 超级用户顶栏权限测试")
     await tester.test(_test_qqbot_non_admin_help_keeps_module_list_button, "QQBot 非管理员保留模块列表按钮测试")
+    await tester.test(_test_help_hides_admin_modules_from_non_admin, "普通用户帮助隐藏管理员模块测试")
+    await tester.test(
+        _test_help_shows_admin_modules_and_header_for_platform_admin,
+        "平台管理员帮助展示管理员模块与顶栏权限测试",
+    )
+    await tester.test(
+        _test_command_parser_hides_admin_commands_for_non_admin,
+        "帮助文档按权限过滤管理员命令测试",
+    )
     await tester.test(
         _test_help_without_enable_requirement_shows_all_modules_as_enabled,
         "不要求启用模块时帮助展示全部且均已启用测试",
