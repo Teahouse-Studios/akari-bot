@@ -52,6 +52,7 @@ async def _test_webui_reports_full_state() -> bool:
             "can_read_messages",
             "can_read_all_messages",
             "can_send_messages",
+            "can_send_proactive_messages",
             "can_manage_messages",
             "can_manage_members",
             "can_restrict_members",
@@ -147,6 +148,7 @@ async def _test_qqbot_group_state_maps_official_bot_state() -> bool:
         and state.is_admin is True
         and state.can_read_messages is True
         and state.can_read_all_messages is False
+        and state.can_send_proactive_messages is False
         and state.permissions["allow_proactive_msg"] is False
         and state.raw["member_openid"] == "bot-openid"
     )

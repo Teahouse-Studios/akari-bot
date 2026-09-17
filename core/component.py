@@ -409,6 +409,7 @@ def module(
     :param event: 将此命令设为事件模块。事件模块要求平台可读取全部消息。（默认为False）
     :param required_superuser: 将此命令设为机器人的超级用户才可执行。（默认为False）
     :param required_base_superuser: 将此命令设为机器人的基础超级用户才可执行。（默认为False）
+    :param required_bot_permissions: 开启模块前要求机器人具备的平台权限字段。
     :param suppress_invalid_prompt: 命令未能匹配任何模板时是否抑制语法错误提示。
     适用于命令按平台分流、匹配不上属于预期结果的模块。（默认为False）
     :param available_for: 此命令支持的平台列表。（默认为`*`）

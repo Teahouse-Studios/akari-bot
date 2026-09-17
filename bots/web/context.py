@@ -192,6 +192,7 @@ class WebContextManager(ContextManager):
             can_read_messages=True,
             can_read_all_messages=True,
             can_send_messages=True,
+            can_send_proactive_messages=True,
             can_manage_messages=True,
             can_manage_members=True,
             can_restrict_members=True,

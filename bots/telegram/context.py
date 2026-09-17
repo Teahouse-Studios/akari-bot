@@ -69,6 +69,7 @@ class TelegramContextManager(ContextManager):
                     can_read_messages=True,
                     can_read_all_messages=True,
                     can_send_messages=True,
+                    can_send_proactive_messages=True,
                     can_manage_messages=None,
                     can_manage_members=None,
                     can_restrict_members=None,
@@ -108,6 +109,11 @@ class TelegramContextManager(ContextManager):
                 can_read_messages=joined,
                 can_read_all_messages=None,
                 can_send_messages=(
+                    True
+                    if status in {"member", "administrator", "creator"}
+                    else getattr(member, "can_send_messages", None)
+                ),
+                can_send_proactive_messages=(
                     True
                     if status in {"member", "administrator", "creator"}
                     else getattr(member, "can_send_messages", None)

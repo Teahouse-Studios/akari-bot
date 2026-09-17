@@ -8,6 +8,7 @@ from core.config.base import CoreConfig
 from core.constants.exceptions import InvalidHelpDocTypeError
 from core.database.models import ModuleStatus
 from core.loader import ModulesManager
+from core.logger import Logger
 from modules.core.common_tools.help import modules_list_help
 
 # 模块受限成因到提示文案的映射，键取自 Module.unsupported_reason() 的返回值。
@@ -16,6 +17,30 @@ UNSUPPORTED_PROMPTS = {
     "regex": "core.message.module.enable.unsupported_regex",
     "event": "core.message.module.enable.unsupported_event",
 }
+
+# 机器人平台权限到中文名称的映射；未登记的权限直接回退为字段名，避免误报为其他能力。
+BOT_PERMISSION_PROMPTS = {
+    "can_read_all_messages": "core.message.module.bot_permission.read_all_messages",
+    "can_send_messages": "core.message.module.bot_permission.send_messages",
+    "can_send_proactive_messages": "core.message.module.bot_permission.send_proactive_messages",
+    "can_manage_messages": "core.message.module.bot_permission.manage_messages",
+    "can_manage_members": "core.message.module.bot_permission.manage_members",
+    "can_restrict_members": "core.message.module.bot_permission.restrict_members",
+    "can_react": "core.message.module.bot_permission.react",
+}
+
+
+def format_bot_permissions(msg: Bot.MessageSession, permissions: list[str]) -> str:
+    """将机器人权限字段渲染为管理员可读的名称列表。"""
+    locale = msg.session_info.locale
+    return locale.t("message.delimiter").join(
+        locale.t(
+            BOT_PERMISSION_PROMPTS.get(permission, "core.message.module.bot_permission.unknown"),
+            permission=permission.removeprefix("permissions."),
+        )
+        for permission in permissions
+    )
+
 
 m = module(
     "module",
@@ -83,6 +108,25 @@ async def config_modules(msg: Bot.MessageSession):
     recommend_modules_list = []
     recommend_modules_help_doc_list = []
     if msg.parsed_msg.get("enable", False):
+        bot_state = None
+        bot_state_checked = False
+
+        async def get_missing_bot_permissions(module_) -> list[str]:
+            nonlocal bot_state, bot_state_checked
+            if not module_.bot_permissions_for_enable():
+                return []
+            if not bot_state_checked:
+                bot_state_checked = True
+                try:
+                    bot_state = await msg.check_bot_state()
+                except Exception:
+                    # 状态查询失败不能把暂时的 RPC 或网络问题误报为机器人无权限；
+                    # 只有平台明确返回 False 才会阻止开启，查询失败仍按既有能力声明处理。
+                    Logger.exception(
+                        f"Failed to check bot state before enabling modules in {msg.session_info.target_id}: "
+                    )
+            return module_.unsupported_bot_permissions(bot_state)
+
         enable_list = []
         if msg.parsed_msg.get("all", False):
             for function in modules_:
@@ -91,6 +135,8 @@ async def config_modules(msg: Bot.MessageSession):
                 if modules_[function].base or modules_[function].hidden or modules_[function].required_superuser:
                     continue
                 if modules_[function].unsupported_reason(msg.session_info):
+                    continue
+                if await get_missing_bot_permissions(modules_[function]):
                     continue
                 enable_list.append(function)
         else:
@@ -110,6 +156,13 @@ async def config_modules(msg: Bot.MessageSession):
                         msglist.append(I18NContext("core.message.module.enable.already", module=module_))
                     elif reason := modules_[module_].unsupported_reason(msg.session_info):
                         msglist.append(I18NContext(UNSUPPORTED_PROMPTS[reason]))
+                    elif missing := await get_missing_bot_permissions(modules_[module_]):
+                        msglist.append(
+                            I18NContext(
+                                "core.message.module.enable.unsupported_bot_permissions",
+                                permissions=format_bot_permissions(msg, missing),
+                            )
+                        )
                     else:
                         enable_list.append(module_)
                         recommend = modules_[module_].recommend_modules
@@ -117,7 +170,7 @@ async def config_modules(msg: Bot.MessageSession):
                             for r in recommend:
                                 if r not in enable_list and r not in enabled_modules_list:
                                     recommend_modules_list.append(r)
-        if await msg.session_info.target_union_info.config_module(enable_list, True):
+        if enable_list and await msg.session_info.target_union_info.config_module(enable_list, True):
             for x in enable_list:
                 if x in enabled_modules_list:
                     msglist.append(I18NContext("core.message.module.enable.already", module=x))

@@ -187,6 +187,7 @@ class MockMessageSession(MessageSession):
             can_read_messages=True,
             can_read_all_messages=info.read_all_messages,
             can_send_messages=True,
+            can_send_proactive_messages=True,
             can_manage_messages=info.support_manage,
             can_manage_members=info.support_manage,
             can_restrict_members=info.support_manage,

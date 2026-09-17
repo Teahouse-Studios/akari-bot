@@ -108,6 +108,7 @@ class DiscordContextManager(ContextManager):
                     can_read_messages=True,
                     can_read_all_messages=True,
                     can_send_messages=True,
+                    can_send_proactive_messages=True,
                     can_manage_messages=None,
                     can_manage_members=None,
                     can_restrict_members=None,
@@ -136,6 +137,7 @@ class DiscordContextManager(ContextManager):
                 can_read_messages=values.get("view_channel"),
                 can_read_all_messages=values.get("read_message_history"),
                 can_send_messages=values.get("send_messages"),
+                can_send_proactive_messages=values.get("send_messages"),
                 can_manage_messages=values.get("manage_messages"),
                 can_manage_members=any(
                     values.get(name) for name in ("kick_members", "ban_members", "moderate_members")

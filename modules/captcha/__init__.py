@@ -36,6 +36,12 @@ captcha = module(
     desc="{I18N:captcha.help.desc}",
     event=True,
     available_for="QQBot|Group",
+    required_bot_permissions=(
+        "can_send_messages",
+        "can_send_proactive_messages",
+        "can_manage_members",
+        "can_restrict_members",
+    ),
 )
 token_module = module("token", base=True, hidden=True, available_for="QQBot")
 
