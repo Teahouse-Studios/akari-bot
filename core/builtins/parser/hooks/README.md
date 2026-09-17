@@ -56,7 +56,7 @@ async def _(ctx: "Bot.ParserHookContext"):
 | `EXECUTION_FINISHED` | 命令/正则函数执行结束 | 统计观察 |
 | `EXECUTION_ERROR` | 可分类异常 | AbuseWarning 处理 |
 | `FINISHED` | parser finally 清理后 | 消息级计数 |
-| `OUTGOING_BEFORE_SEND` | 安全检查后、平台发送前 | 消息转换；可改 `ctx.outgoing.chain` |
+| `OUTGOING_BEFORE_SEND` | 安全检查后、平台发送前 | 消息转换、静音场景拦截主动发言；可改 `ctx.outgoing.chain` |
 | `OUTGOING_SENT` | 平台返回成功 | 观察 |
 | `OUTGOING_FAILED` | 平台发送失败 | 观察 |
 
@@ -118,7 +118,7 @@ hook 不得：
 
 ## 内置订阅方
 
-- `modules/core/hooks/policies.py`：入站、冷却、权限、正则路由和默认命令反馈
+- `modules/core/hooks/policies.py`：入站、冷却、权限、正则路由、出站静音和默认命令反馈
 - `modules/core/hooks/errors.py`：异常反馈与错误详情格式化
 - `modules/core/hooks/retired.py`：退役客户端路由和通道让位
 - `modules/core/admin_tools/alias.py`：自定义别名改写
