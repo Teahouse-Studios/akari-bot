@@ -137,7 +137,12 @@ b = module(
     base=True,
     desc="{I18N:core.help.bind.desc}",
     doc=True,
-    alias={"connect": "bind auto"} if ENABLE_BIND_AUTO else None,
+    alias={
+        "whoami": "bind whoami",
+        "merge": "bind merge",
+        "merge token": "bind merge-token",
+        **({"connect": "bind auto"} if ENABLE_BIND_AUTO else {}),
+    },
 )
 
 

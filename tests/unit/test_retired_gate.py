@@ -35,7 +35,7 @@ from core.utils.retired import (
     should_yield_channel,
 )
 from core.tester import func_case, Tester
-from modules.core.common_tools import merge as merge_module
+from modules.core.common_tools.bind import b as bind_module
 from modules.core.hooks.routing import channel_claim_cache
 
 
@@ -399,13 +399,13 @@ async def _probe_merge_command_route(command: str, order: tuple[str, str], prefi
     async def _record(msg, modules, command_first_word, identify_str):
         executed.append(msg.session_info.client_name)
 
-    module = ModulesManager.modules[merge_module.m.module_name]
+    module = ModulesManager.modules[bind_module.module_name]
     previous_load = module._db_load
     module._db_load = True
     channel_claim_cache.clear()
     try:
         with (
-            patch.object(ModulesManager, "return_modules_list", return_value={"merge": module}),
+            patch.object(ModulesManager, "return_modules_list", return_value={"bind": module}),
             patch("core.builtins.parser.message._execute_module", new=_record),
         ):
             for side in order:

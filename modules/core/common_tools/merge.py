@@ -27,11 +27,16 @@ from core.utils.union_merge import (
     target_lines,
 )
 from core.utils.container import ExpiringTempDict
+from modules.core.common_tools.bind import b
 
 # 迁移码与 bind 的绑定码分开存放，两者不可互相消费：
 # 迁移码用于把退役实例上的数据搬到新实例，与常规的跨平台绑定不是同一件事。
 _sender_merge_codes = ExpiringTempDict(exp=BIND_CODE_EXPIRED)
 _target_merge_codes = ExpiringTempDict(exp=BIND_CODE_EXPIRED)
+
+# 迁移命令已并入 bind（merge 为其别名），此处保留同名隐藏模块，仅承载退役公告触发器：
+# 退役策略的白名单按模块名放行，公告正则须挂在白名单模块上才能在退役场景继续匹配。
+m = module("merge", base=True, hidden=True, load=bool(CoreConfig.retired_clients))
 
 
 def _take_merge_code(code: str) -> tuple[str, dict] | None:
@@ -68,7 +73,7 @@ async def _unify_channel(initiator_target_id: str, current_target_id: str) -> in
         return channel_id
 
     binds = await TargetUnionBind.filter(target_id__in=[initiator_target_id, current_target_id])
-    by_id = {bind.target_id: bind for bind in binds}
+    by_id = {row.target_id: row for row in binds}
     initiator_bind = by_id.get(initiator_target_id)
     current_bind = by_id.get(current_target_id)
     if initiator_bind and current_bind:
@@ -82,17 +87,7 @@ async def _unify_channel(initiator_target_id: str, current_target_id: str) -> in
     return fallback_channel
 
 
-m = module(
-    "merge",
-    base=True,
-    doc=True,
-    suppress_invalid_prompt=True,
-    load=bool(CoreConfig.retired_clients),
-    desc="{I18N:core.help.merge.desc}",
-)
-
-
-@m.command("{{I18N:core.help.merge}}", available_for=RETIRED_SOURCES)
+@b.command("merge {{I18N:core.help.merge}}", available_for=RETIRED_SOURCES)
 async def _(msg: Bot.MessageSession):
     session_info = msg.session_info
     # 迁移码须记下签发方的客户端与场景：前者用于兑换时校验迁移去处，
@@ -209,7 +204,11 @@ async def _merge_private(msg: Bot.MessageSession, entry: dict) -> None:
     )
 
 
-@m.command("token <code> {{I18N:core.help.merge.token}}", available_for=RETIRED_TARGETS)
+# 命令字面量在解析器中按「位置无关的标志」匹配，再取尾随参数。
+# 若沿用 merge token 作为命令路径，源平台上的迁移码会被 bind token 抢先匹配
+# （<code> 吞掉 "merge"），源平台将不再让位给新机器人。故取一个不与其冲突的
+# 单词；用户侧的命令不变，~merge token <code> 经别名映射到这里。
+@b.command("merge-token <code> {{I18N:core.help.merge.token}}", available_for=RETIRED_TARGETS)
 async def _(msg: Bot.MessageSession, code: str):
     taken = _take_merge_code(code)
     if not taken:

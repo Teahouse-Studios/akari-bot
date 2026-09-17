@@ -10,7 +10,15 @@ from core.config.base import CoreConfig
 from core.constants.path import assets_path
 from core.logger import Logger
 
-about = module("about", base=True, doc=True)
+about = module(
+    "about",
+    base=True,
+    doc=True,
+    alias={
+        "version": "about version",
+        "ping": "about ping",
+    },
+)
 
 CHARACTER_IMAGE_PATH = assets_path / "character_marked.png"
 CREDITS_PATH = assets_path / "credits.txt"

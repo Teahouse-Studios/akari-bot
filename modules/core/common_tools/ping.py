@@ -7,10 +7,8 @@ from cpuinfo import get_cpu_info
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import FormattedTime, I18NContext, Markdown, Plain
-from core.component import module
 from core.queue.diagnostics import DAEMON_LABEL, PEERS_LABEL, gather_process_usage
-
-ping = module("ping", base=True, doc=True)
+from modules.core.common_tools.about import about
 
 started_time = time.time()
 
@@ -62,7 +60,7 @@ def _format_ping_result(msg: Bot.MessageSession, result: MessageChain) -> Messag
     return MessageChain.assign(Markdown(f"```\n{body}\n```", disable_joke=True, allow_parse=False))
 
 
-@ping.command("{{I18N:core.help.ping}}")
+@about.command("ping {{I18N:core.help.ping}}")
 async def _(msg: Bot.MessageSession):
     from core.queue.server import JobQueueServer
 

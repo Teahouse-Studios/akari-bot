@@ -49,6 +49,26 @@ async def test_help(tester: Tester):
 
 
 @func_case
+async def test_merged_about_bind_commands(tester: Tester):
+    """并入 about 与 bind 的信息类子命令测试"""
+    await tester.integrate(
+        "~help about",
+        ContainsAll("~about version", "~about ping"),
+        "合并后的 about 帮助应展示版本与状态子命令",
+    )
+    await tester.integrate(
+        "~help bind",
+        Contains("~bind whoami"),
+        "合并后的 bind 帮助应展示 whoami 子命令",
+    )
+    await tester.integrate("~about version", Contains("版本"), "about version 应输出版本信息")
+    await tester.integrate("~about ping", Contains("Pong!"), "about ping 应输出 Pong!")
+    await tester.integrate("~bind whoami", Contains("用户组"), "bind whoami 应显示用户组信息")
+
+    return tester
+
+
+@func_case
 async def test_merged_setup_commands(tester: Tester):
     """并入 setup 的前缀、语言与别名子命令测试"""
     await tester.integrate(

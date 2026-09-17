@@ -126,6 +126,10 @@ class MessageSession:
     # 解析后的消息 - 命令参数等解析结果
     parsed_msg: dict = field(factory=dict)
 
+    # 别名改写前用户实际输入的命令首词。模块别名可能把白名单命令并入其它模块
+    # （如 merge 现为 bind 的别名），退役策略解析后仍需据此判断放行与否。
+    command_original_word: str = field(default="", repr=False, eq=False)
+
     # 仅存在于 Server 进程中的命令执行状态。通过 wait_* 取得的回复会话会共享
     # 同一个对象，使嵌套等待可以释放／重获同一 lease，并由原始 parser 统一
     # 释放等待结果所持有的平台 context。

@@ -1,15 +1,13 @@
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Url
-from core.component import module
 from core.config.base import CoreConfig
 from core.utils.bash import run_sys_command
+from modules.core.common_tools.about import about
 from modules.core.common_tools.version_utils import get_version_display
 
-ver = module("version", base=True, doc=True)
 
-
-@ver.command("{{I18N:core.help.version}}")
+@about.command("version {{I18N:core.help.version}}")
 async def _(msg: Bot.MessageSession):
     if version_display := get_version_display():
         send_msgs = MessageChain.assign(I18NContext("core.message.version", version=version_display, disable_joke=True))

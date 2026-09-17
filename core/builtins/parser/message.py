@@ -440,6 +440,8 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
 
     command = command.strip()
     command_split: list = command.split(" ")  # 切割消息为单词列表
+    # 别名改写会抹去用户实际输入的首词，退役策略的白名单依赖它
+    msg.command_original_word = command_split[0]
 
     # ========== 步骤 2: 检查是否为实际模块名 ==========
     not_alias = False

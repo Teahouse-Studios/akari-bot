@@ -87,6 +87,7 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
 
     command = command.strip()
     command_split: list = command.split(" ")  # 切割消息
+    msg.command_original_word = command_split[0]
 
     not_alias = False
     cm = ""

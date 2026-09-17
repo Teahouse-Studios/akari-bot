@@ -29,11 +29,16 @@ retired = module("retired_policy", hidden=True, load=True, base=True)
 @retired.hook(point=HookPoint.COMMAND_ROUTE, priority=1, name="route_gate", server_scope=True)
 async def _(ctx: "Bot.ParserHookContext"):
     """在通道认领前过滤退役客户端上的非迁移命令。"""
-    if is_retired_client(ctx.msg.session_info.client_name) and not is_module_allowed_when_retired(
-        ctx.module_name or ctx.command_first_word
+    if not is_retired_client(ctx.msg.session_info.client_name):
+        return None
+    # 模块别名可以把白名单命令并入其它模块（merge 现解析为 bind），此时模块名不再落入
+    # 白名单，回退到用户别名改写前实际输入的首词继续判定；其它首词依旧一律拦截。
+    original_word = getattr(ctx.msg, "command_original_word", "")
+    if is_module_allowed_when_retired(ctx.module_name or ctx.command_first_word) or is_module_allowed_when_retired(
+        original_word
     ):
-        return ctx.Stop(scope=ctx.StopScope.MESSAGE)
-    return None
+        return None
+    return ctx.Stop(scope=ctx.StopScope.MESSAGE)
 
 
 @retired.hook(point=HookPoint.SESSION_BEFORE_WAIT, priority=10, name="wait_task", server_scope=True, timeout=0)

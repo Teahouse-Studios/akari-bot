@@ -1,11 +1,9 @@
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
-from core.component import module
-
-whoami = module("whoami", base=True, doc=True)
+from modules.core.common_tools.bind import b
 
 
-@whoami.command("{{I18N:core.help.whoami}}")
+@b.command("whoami {{I18N:core.help.whoami}}")
 async def _(msg: Bot.MessageSession):
     sender_union_info = msg.session_info.sender_union_info
     target_union_info = msg.session_info.target_union_info
