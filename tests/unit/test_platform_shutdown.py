@@ -16,6 +16,7 @@ import bots.web.client as web_client
 from bots.qqbot.context import _MessageSendQueue, _PreparedMessage, _QueuedMessage, _TypingState
 from core.queue.contracts import ServerAPI
 from core.tester import Tester, func_case
+from core.tester.timing import TIME_SCALE
 from bots.matrix.config import MatrixConfig
 from bots.onebot.config import AiocqhttpConfig
 from bots.qqbot.config import QQBotConfig
@@ -211,7 +212,7 @@ async def _test_onebot_shutdown_releases_typing_tasks_and_cache():
     try:
         with patch.object(onebot_context.aiocqhttp_bot, "call_action", new=call_action):
             await context_manager.start_typing(session_info)
-            await asyncio.wait_for(action_started.wait(), timeout=1)
+            await asyncio.wait_for(action_started.wait(), timeout=1 * TIME_SCALE)
 
         typing_flag = context_manager.typing_flags.get(session_id)
         typing_task = context_manager.typing_tasks.get(session_id)
@@ -362,7 +363,7 @@ async def _test_qqbot_close_releases_adapter_tasks_and_waiters():
     context_manager.typing_tasks[session_id] = typing_task
     context_manager.message_send_queues[queue_key] = queue
     queue.worker = asyncio.create_task(context_manager._process_message_send_queue(queue_key, queue))
-    await asyncio.wait_for(send_started.wait(), timeout=1)
+    await asyncio.wait_for(send_started.wait(), timeout=1 * TIME_SCALE)
 
     cleanup = AsyncMock()
     stop_worker = AsyncMock()

@@ -15,6 +15,17 @@ from core.queue.contracts import PlatformAPI
 from core.queue.errors import RpcRemoteError
 from core.tester import func_case, Tester
 from core.tester.mock.session import MockMessageSession
+from core.tester.timing import TIME_SCALE
+
+
+async def _wait_until(predicate, timeout: float | None = None) -> bool:
+    """按真实时限等待条件成立，避免固定轮次在慢速 CI 上过早放弃。"""
+    deadline = asyncio.get_running_loop().time() + (timeout if timeout is not None else 5 * TIME_SCALE)
+    while asyncio.get_running_loop().time() < deadline:
+        if predicate():
+            return True
+        await asyncio.sleep(0.001)
+    return bool(predicate())
 
 
 async def _make_held_session(
@@ -507,12 +518,8 @@ async def _test_wait_resume_reacquires_after_competing_command():
     try:
         if not await ExecutionLockList.acquire(owner):
             return False
-        wait_task = asyncio.create_task(owner.wait_next_message(timeout=1))
-        for _ in range(20):
-            if SessionTaskManager.get() and not ExecutionLockList.check(owner):
-                break
-            await asyncio.sleep(0)
-        else:
+        wait_task = asyncio.create_task(owner.wait_next_message(timeout=1 * TIME_SCALE))
+        if not await _wait_until(lambda: bool(SessionTaskManager.get()) and not ExecutionLockList.check(owner)):
             return False
 
         if not await ExecutionLockList.acquire(contender):
@@ -524,7 +531,7 @@ async def _test_wait_resume_reacquires_after_competing_command():
             return False
 
         ExecutionLockList.remove(contender)
-        result = await asyncio.wait_for(wait_task, timeout=0.5)
+        result = await asyncio.wait_for(wait_task, timeout=0.5 * TIME_SCALE)
         return result is incoming and ExecutionLockList.check(owner) and not SessionTaskManager.get()
     finally:
         if wait_task and not wait_task.done():
@@ -563,11 +570,7 @@ async def _test_cancelled_wait_leaves_no_task_or_lease():
         if not await ExecutionLockList.acquire(msg):
             return False
         task = asyncio.create_task(msg.wait_next_message(timeout=None))
-        for _ in range(20):
-            if SessionTaskManager.get() and not ExecutionLockList.check(msg):
-                break
-            await asyncio.sleep(0)
-        else:
+        if not await _wait_until(lambda: bool(SessionTaskManager.get()) and not ExecutionLockList.check(msg)):
             return False
         task.cancel()
         try:
@@ -687,7 +690,7 @@ async def _test_partial_overlap_merge_reservations_do_not_deadlock():
             return False
         second_reserved = await asyncio.wait_for(
             ExecutionLockList.reserve(second, {"TEST|shared-reservation"}),
-            timeout=0.2,
+            timeout=0.2 * TIME_SCALE,
         )
         first_token = ExecutionLockList.state(first).lock_token
         return (
@@ -750,11 +753,7 @@ async def _test_active_sender_leases_are_barriered_before_merge():
             first.session_info.sender_union_info, merge_command.session_info.sender_union_info
         )
         reserve_task = asyncio.create_task(reserve_sender_merge(merge_command, plan))
-        for _ in range(20):
-            if ExecutionLockList._reservations:
-                break
-            await asyncio.sleep(0)
-        else:
+        if not await _wait_until(lambda: bool(ExecutionLockList._reservations)):
             return False
         if reserve_task.done() or await ExecutionLockList.acquire(first_contender):
             return False
@@ -852,17 +851,13 @@ async def _test_cross_user_wait_result_keeps_root_lock_subject():
     try:
         if not await ExecutionLockList.acquire(owner):
             return False
-        wait_task = asyncio.create_task(owner.wait_anyone(timeout=1))
-        for _ in range(20):
-            if SessionTaskManager.get() and not ExecutionLockList.check(owner):
-                break
-            await asyncio.sleep(0)
-        else:
+        wait_task = asyncio.create_task(owner.wait_anyone(timeout=1 * TIME_SCALE))
+        if not await _wait_until(lambda: bool(SessionTaskManager.get()) and not ExecutionLockList.check(owner)):
             return False
 
         if not await SessionTaskManager.check(incoming):
             return False
-        result = await asyncio.wait_for(wait_task, timeout=0.5)
+        result = await asyncio.wait_for(wait_task, timeout=0.5 * TIME_SCALE)
         await result.sleep(0)
         keys = ExecutionLockList.get()
         owner_is_serialized = not await ExecutionLockList.acquire(owner_contender)
@@ -986,7 +981,7 @@ async def _test_wait_confirm_can_preserve_merge_barrier():
         confirmed = await owner.wait_confirm(
             "prompt",
             delete=False,
-            timeout=0.5,
+            timeout=0.5 * TIME_SCALE,
             release_execution_lock=False,
         )
         lock_still_owned = ExecutionLockList.check(owner)
@@ -1112,10 +1107,10 @@ async def _test_inactive_wait_releases_context_acquired_during_hold():
     SessionTaskManager.add_task(waiting, flag, timeout=60)
     check_task = asyncio.create_task(SessionTaskManager.check(incoming))
     try:
-        await asyncio.wait_for(incoming.hold_started.wait(), timeout=0.5)
+        await asyncio.wait_for(incoming.hold_started.wait(), timeout=0.5 * TIME_SCALE)
         task_info = SessionTaskManager.remove_task(waiting)
         incoming.allow_hold.set()
-        handled = await asyncio.wait_for(check_task, timeout=0.5)
+        handled = await asyncio.wait_for(check_task, timeout=0.5 * TIME_SCALE)
         return (
             not handled
             and task_info is not None
@@ -1174,7 +1169,7 @@ async def _test_sleep_waits_for_competing_lease_before_resuming():
             if sleep_task.done():
                 return False
             ExecutionLockList.remove(contender)
-            await asyncio.wait_for(sleep_task, timeout=0.5)
+            await asyncio.wait_for(sleep_task, timeout=0.5 * TIME_SCALE)
         return ExecutionLockList.check(owner)
     finally:
         if sleep_task and not sleep_task.done():
@@ -1681,7 +1676,7 @@ async def _test_pending_plain_callbacks_make_bot_fallback_ambiguous():
         with patch.object(PlatformAPI, "send_message", new=BlockingQueueServer.client_send_message):
             first_task = asyncio.create_task(first.send_message("one", callback=first_callback))
             second_task = asyncio.create_task(second.send_message("two", callback=second_callback))
-            await asyncio.wait_for(entered.wait(), timeout=0.5)
+            await asyncio.wait_for(entered.wait(), timeout=0.5 * TIME_SCALE)
             ambiguous_handled = await SessionTaskManager.check(incoming)
             if ambiguous_handled or called or len(SessionTaskManager._callback_list) != 2:
                 return False
@@ -1898,7 +1893,7 @@ async def _test_repeatable_callback_is_serialized():
     first_task = asyncio.create_task(SessionTaskManager.check(first))
     second_task = None
     try:
-        await asyncio.wait_for(entered.wait(), timeout=0.5)
+        await asyncio.wait_for(entered.wait(), timeout=0.5 * TIME_SCALE)
         second_task = asyncio.create_task(SessionTaskManager.check(second))
         await asyncio.sleep(0)
         if second_task.done():
@@ -2090,7 +2085,7 @@ async def _test_wait_next_message_registers_before_fast_reply():
     msg = FastReplySession(session_info)
     try:
         with patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)):
-            result = await msg.wait_next_message("prompt", timeout=0.05)
+            result = await msg.wait_next_message("prompt", timeout=0.05 * TIME_SCALE)
             return result is msg
     except WaitCancelException:
         return False
@@ -2128,7 +2123,7 @@ async def _test_wait_next_message_preserves_choice_rows():
     choices = [{f"Page {index}": str(index)} for index in range(1, 6)]
     try:
         with patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)):
-            result = await msg.wait_next_message("prompt", possibly_choices=choices, timeout=0.05)
+            result = await msg.wait_next_message("prompt", possibly_choices=choices, timeout=0.05 * TIME_SCALE)
             frames = [element for element in msg.captured.values if isinstance(element, ButtonFrameElement)]
             return (
                 result is msg
@@ -2172,7 +2167,7 @@ async def _test_wait_confirm_registers_before_reaction_roundtrip():
     msg = FastConfirmSession(session_info)
     try:
         with patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)):
-            return await msg.wait_confirm("prompt", delete=False, timeout=0.05)
+            return await msg.wait_confirm("prompt", delete=False, timeout=0.05 * TIME_SCALE)
     except WaitCancelException:
         return False
     finally:
@@ -2203,7 +2198,7 @@ async def _test_wait_reply_registers_before_send_returns():
     class FastReplySession(MessageSession):
         async def send_message(self, *args, **kwargs):
             check_task_holder["task"] = asyncio.create_task(SessionTaskManager.check(incoming))
-            await asyncio.wait_for(pending_reply_wait_started.wait(), timeout=5)
+            await asyncio.wait_for(pending_reply_wait_started.wait(), timeout=5 * TIME_SCALE)
             return type("Sent", (), {"message_id": ["fast-reply-prompt"]})()
 
         async def end_typing(self):
@@ -2244,7 +2239,7 @@ async def _test_wait_reply_registers_before_send_returns():
             patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)),
             patch.object(SessionTaskManager, "_active_tasks", new=classmethod(observe_active_tasks)),
         ):
-            result = await msg.wait_reply("prompt", delete=False, timeout=5)
+            result = await msg.wait_reply("prompt", delete=False, timeout=5 * TIME_SCALE)
             handled = await check_task_holder["task"] if "task" in check_task_holder else False
             return (
                 result is incoming and handled and pending_reply_wait_started.is_set() and not SessionTaskManager.get()
@@ -2450,7 +2445,7 @@ async def _test_wait_reply_timeout_covers_pending_send():
     SessionTaskManager._task_list.clear()
     try:
         try:
-            await asyncio.wait_for(waiting.wait_reply("prompt", timeout=0.2), timeout=10)
+            await asyncio.wait_for(waiting.wait_reply("prompt", timeout=0.2 * TIME_SCALE), timeout=10)
         except WaitCancelException:
             pass
         except asyncio.TimeoutError:
@@ -2520,14 +2515,14 @@ async def _test_wait_reply_timeout_is_single_deadline():
     reply_task = asyncio.create_task(delayed_reply())
     try:
         try:
-            await asyncio.wait_for(waiting.wait_reply("prompt", timeout=0.2), timeout=0.4)
+            await asyncio.wait_for(waiting.wait_reply("prompt", timeout=0.2 * TIME_SCALE), timeout=0.4 * TIME_SCALE)
         except WaitCancelException:
             pass
         except asyncio.TimeoutError:
             return False
         else:
             return False
-        return not await asyncio.wait_for(reply_task, timeout=0.2) and not SessionTaskManager.get()
+        return not await asyncio.wait_for(reply_task, timeout=0.2 * TIME_SCALE) and not SessionTaskManager.get()
     finally:
         if not reply_task.done():
             reply_task.cancel()
@@ -2569,7 +2564,7 @@ async def _test_wait_reply_none_timeout_keeps_pending_send():
     SessionTaskManager._task_list.clear()
     wait_task = asyncio.create_task(waiting.wait_reply("prompt", timeout=None))
     try:
-        await asyncio.wait_for(send_entered.wait(), timeout=0.2)
+        await asyncio.wait_for(send_entered.wait(), timeout=0.2 * TIME_SCALE)
         await asyncio.sleep(0.05)
         still_pending = not wait_task.done() and bool(SessionTaskManager.get())
         wait_task.cancel()
@@ -2663,7 +2658,7 @@ async def _test_cancelled_wait_reply_deletes_sent_prompt():
     SessionTaskManager._task_list.clear()
     wait_task = asyncio.create_task(waiting.wait_reply("prompt", delete=True, timeout=None))
     try:
-        await asyncio.wait_for(send_returned.wait(), timeout=0.2)
+        await asyncio.wait_for(send_returned.wait(), timeout=0.2 * TIME_SCALE)
         await asyncio.sleep(0)
         wait_task.cancel()
         result = (await asyncio.gather(wait_task, return_exceptions=True))[0]
@@ -2733,7 +2728,7 @@ async def _test_wait_reply_committed_result_beats_timeout_observation():
     SessionTaskManager._task_list.clear()
     try:
         with patch("core.builtins.session.internal.asyncio.timeout", return_value=TimeoutAfterBody()):
-            result = await waiting.wait_reply("prompt", timeout=0.1)
+            result = await waiting.wait_reply("prompt", timeout=0.1 * TIME_SCALE)
         handled = await check_task_holder["task"]
         await waiting.release_execution_resources()
         return (

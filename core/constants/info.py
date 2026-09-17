@@ -26,7 +26,8 @@ class Secret:
     @classmethod
     def update(cls, secret: Iterable):
         if secret:
-            cls.data.union({s.upper() for s in secret})
+            # union 返回新集合、并不就地修改，此处必须用 update 才能登记批量密钥
+            cls.data.update({s.upper() for s in secret})
 
 
 class Info:

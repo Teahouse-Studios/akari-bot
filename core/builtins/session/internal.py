@@ -72,7 +72,7 @@ def _filter_message_chain_badwords(
     return chain
 
 
-async def _normalize_outgoing_chain(session_info: SessionInfo, chain: Any, disable_secret_check: bool):
+async def normalize_outgoing_chain(session_info: SessionInfo, chain: Any, disable_secret_check: bool):
     """对 hook 改写后的最终出站链完整执行发送规范化。
 
     与发送流程的前置段一致：归一化 → 过滤 → 不支持节点时转图 → 压缩 → 安全检查。
@@ -278,7 +278,7 @@ class MessageSession:
         quote = outgoing_payload.quote
 
         # 改写后的最终消息必须重新过完整发送规范化（含 MessageNodes 节点校验与平台转换）
-        chain = await _normalize_outgoing_chain(self.session_info, chain, disable_secret_check)
+        chain = await normalize_outgoing_chain(self.session_info, chain, disable_secret_check)
         if chain is None:
             return cast(FinishedSession, None)
         outgoing_payload.chain = chain
@@ -442,7 +442,7 @@ class MessageSession:
         if isinstance(stop_send, Stop):
             return None
         chain = outgoing_payload.chain
-        chain = await _normalize_outgoing_chain(self.session_info, chain, disable_secret_check)
+        chain = await normalize_outgoing_chain(self.session_info, chain, disable_secret_check)
         if chain is None:
             return None
         outgoing_payload.chain = chain
@@ -507,7 +507,7 @@ class MessageSession:
         if isinstance(stop_send, Stop):
             return []
         chain = outgoing_payload.chain
-        chain = await _normalize_outgoing_chain(self.session_info, chain, disable_secret_check)
+        chain = await normalize_outgoing_chain(self.session_info, chain, disable_secret_check)
         if chain is None:
             return []
         outgoing_payload.chain = chain

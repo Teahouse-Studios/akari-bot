@@ -13,6 +13,7 @@ from core.queue.server import JobQueueServer
 from core.queue.transport import PROTOCOL_VERSION, RpcResponse
 from core.exports import exports
 from core.tester import func_case, Tester
+from core.tester.timing import TIME_SCALE
 
 
 class QueueAuditRuntime(JobQueueBase):
@@ -83,7 +84,7 @@ async def _test_cancelled_fire_and_forget_task_is_deleted():
     (request,) = await AuditQueue.transport.receive(["QUEUE-CANCEL-AUDIT"])
 
     processing = asyncio.create_task(AuditQueue._process_task(request))
-    await asyncio.wait_for(started.wait(), timeout=1)
+    await asyncio.wait_for(started.wait(), timeout=1 * TIME_SCALE)
     processing.cancel()
     try:
         await processing

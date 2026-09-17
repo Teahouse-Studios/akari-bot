@@ -36,6 +36,7 @@ from core.builtins.message.elements import (
     ButtonElement,
     ButtonRows,
     ButtonFrameElement,
+    RawElement,
 )
 from core.config.base import BaseConfig
 from core.constants import Secret
@@ -169,8 +170,13 @@ class MessageChain:
         私密数据等）。这是一个重要的安全机制，用于防止敏感信息泄露。
 
         检查范围：
-        - PlainElement: 检查文本内容
+        - PlainElement / MarkdownElement: 检查文本内容
+        - URLElement: 检查原始链接
         - EmbedElement: 检查标题、描述、页脚、作者、URL、字段名称和值
+        - I18NContextElement: 检查模板参数（发送阶段才会代入文案，此处若不检查会漏过）
+        - ActionTextElement: 检查可点击文本与展示文本
+        - ButtonElement / ButtonFrameElement: 检查按钮展示文本
+        - RawElement: 检查原始内容
 
         :return: 如果消息链不包含敏感信息返回 True，否则返回 False
 
@@ -186,55 +192,85 @@ class MessageChain:
             """生成不安全内容的警告消息"""
             return f'{name} contains unsafe text "{secret}": {text}'
 
+        def check_text(name: str, text: Any) -> bool:
+            """检查最终会以文本形式外发的字段。"""
+            if text is None:
+                return True
+            if secret := Secret.check(str(text)):
+                Logger.warning(unsafeprompt(name, secret, text))
+                return False
+            return True
+
+        def check_value(name: str, value: Any) -> bool:
+            """检查嵌套的消息链、元素或将被代入多语言模板的标量。"""
+            if isinstance(value, (MessageChain, MessageNodes)):
+                return value.is_safe
+            if isinstance(value, BaseElement):
+                # 复用元素所在链的检查逻辑，避免为每种嵌套元素重复实现分支
+                return MessageChain.assign(value).is_safe
+            return check_text(name, value)
+
         # 遍历消息链中的所有元素
         for v in self.values:
-            # ========== 检查纯文本元素 ==========
+            # ========== 检查纯文本与 Markdown 元素 ==========
             if isinstance(v, PlainElement):
-                if secret := Secret.check(v.text):
-                    Logger.warning(unsafeprompt("Plain", secret, v.text))
+                if not check_text("Plain", v.text):
                     return False
-            if isinstance(v, URLElement):
-                if secret := Secret.check(v.original_url):
-                    Logger.warning(unsafeprompt("URL", secret, v.original_url))
+            # ========== 检查 URL 元素 ==========
+            elif isinstance(v, URLElement):
+                if not check_text("URL", v.original_url):
                     return False
             # ========== 检查 Embed 元素 ==========
             elif isinstance(v, EmbedElement):
                 # 检查标题
-                if v.title:
-                    if secret := Secret.check(v.title):
-                        Logger.warning(unsafeprompt("Embed.title", secret, v.title))
-                        return False
+                if not check_text("Embed.title", v.title):
+                    return False
                 # 检查描述
-                if v.description:
-                    if secret := Secret.check(v.description):
-                        Logger.warning(unsafeprompt("Embed.description", secret, v.description))
-                        return False
+                if not check_text("Embed.description", v.description):
+                    return False
                 # 检查页脚
-                if v.footer:
-                    if secret := Secret.check(v.footer):
-                        Logger.warning(unsafeprompt("Embed.footer", secret, v.footer))
-                        return False
+                if not check_text("Embed.footer", v.footer):
+                    return False
                 # 检查作者
-                if v.author:
-                    if secret := Secret.check(v.author):
-                        Logger.warning(unsafeprompt("Embed.author", secret, v.author))
-                        return False
+                if not check_text("Embed.author", v.author):
+                    return False
                 # 检查 URL
-                if v.url:
-                    if secret := Secret.check(v.url):
-                        Logger.warning(unsafeprompt("Embed.url", secret, v.url))
-                        return False
+                if not check_text("Embed.url", v.url):
+                    return False
                 # 检查所有字段
                 if v.fields:
                     for f in v.fields:
                         # 检查字段名称
-                        if secret := Secret.check(f.name):
-                            Logger.warning(unsafeprompt("Embed.field.name", secret, f.name))
+                        if not check_text("Embed.field.name", f.name):
                             return False
                         # 检查字段值
-                        if secret := Secret.check(f.value):
-                            Logger.warning(unsafeprompt("Embed.field.value", secret, f.value))
+                        if not check_text("Embed.field.value", f.value):
                             return False
+            # ========== 检查多语言元素 ==========
+            # 参数会在客户端发送阶段才代入文案，服务端的链检查必须提前覆盖
+            elif isinstance(v, I18NContextElement):
+                for key, value in v.kwargs.items():
+                    if not check_value(f"I18NContext.{key}", value):
+                        return False
+            # ========== 检查指令操作元素 ==========
+            elif isinstance(v, ActionTextElement):
+                if not check_value("ActionText.text", v.text):
+                    return False
+                if not check_value("ActionText.show", v.show):
+                    return False
+            # ========== 检查按钮元素 ==========
+            elif isinstance(v, ButtonElement):
+                if not check_text("Button.show", v.show):
+                    return False
+            elif isinstance(v, ButtonFrameElement):
+                for row in v.rows:
+                    for button in row.buttons:
+                        if not check_text("Button.show", button.show):
+                            return False
+            # ========== 检查原始元素 ==========
+            elif isinstance(v, RawElement):
+                if not check_text("Raw", v.value):
+                    return False
 
         # 所有检查通过，消息链安全
         return True

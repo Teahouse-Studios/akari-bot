@@ -44,6 +44,7 @@ jobs:
         timeout-minutes: 60
         env:
           CI: "1"
+          AKARI_TEST_TIME_SCALE: "10"
         run: |
           uv run python tester.py
 

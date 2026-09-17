@@ -24,9 +24,10 @@ from core.queue.errors import (
 from core.queue.peer import PeerRecord
 from core.queue.transport import MAX_RPC_TRACEBACK_LENGTH, PROTOCOL_VERSION, RpcRequest, RpcResponse
 from core.tester import func_case, Tester
+from core.tester.timing import TIME_SCALE
 
 
-RPC_TEST_TIMEOUT = 10
+RPC_TEST_TIMEOUT = 10 * TIME_SCALE
 
 
 @asynccontextmanager

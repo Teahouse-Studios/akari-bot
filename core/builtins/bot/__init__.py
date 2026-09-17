@@ -14,7 +14,7 @@ from core.builtins.parser.hooks import ParserHookContext
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import EventInfo, SessionInfo, FetchedSessionInfo, ModuleHookContext
-from core.builtins.session.internal import MessageSession, FetchedMessageSession
+from core.builtins.session.internal import MessageSession, FetchedMessageSession, normalize_outgoing_chain
 from core.builtins.session.lock import ExecutionLockList
 from core.builtins.temp import *
 from core.config.base import CoreConfig
@@ -359,6 +359,12 @@ class Bot:
             else:
                 post_message = chain
 
+            # 主动推送也要经过与常规发送一致的出站规范化：过滤关键词并拦截敏感信息，
+            # 不能依赖客户端在渲染阶段补检，此时内容已越过服务端唯一能看到的检查点。
+            post_message = await normalize_outgoing_chain(session_, post_message, False)
+            if post_message is None:
+                continue
+
             # 发送消息
             try:
                 await PlatformAPI.post_message.submit(session_, post_message, module_name)
@@ -549,14 +555,9 @@ class Bot:
             Logger.warning(f"Client {session_info.client_name} does not support private message.")
             return []
 
-        message = get_message_chain(session_info, message)
-
-        return_val = await PlatformAPI.send_private_msg(
-            session_info,
-            user_id,
-            message,
-        )
-        return return_val
+        # 复用 MessageSession 的发送链路，确保关键词过滤与敏感信息检查同样生效
+        session = FetchedMessageSession(session_info=session_info)
+        return await session.send_private_message(message, user_id=user_id)
 
     @classmethod
     async def get_enabled_this_module(cls, module: str) -> list[FetchedSessionInfo]:

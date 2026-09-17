@@ -19,10 +19,11 @@ from core.queue.rpc import remote, signal
 from core.queue.server import JobQueueServer
 from core.queue.transport import BatchSendResult, RpcRequest
 from core.tester import Tester, func_case
+from core.tester.timing import TIME_SCALE
 
 
-RPC_TEST_TIMEOUT = 10
-SIGNAL_TIMEOUT = 5
+RPC_TEST_TIMEOUT = 10 * TIME_SCALE
+SIGNAL_TIMEOUT = 5 * TIME_SCALE
 
 
 class RegistryAuditPeer(JobQueueBase):
@@ -38,16 +39,19 @@ async def _peer_cluster():
         name = f"PEER-CONTROLLER-{uuid4()}"
         POLL_INTERVAL_SECONDS = 0.02
         RECONCILE_INTERVAL_SECONDS = 0.1
+        SHUTDOWN_OPERATION_TIMEOUT_SECONDS = max(1.0, TIME_SCALE)
 
     class WorkerA(JobQueueBase):
         name = f"PEER-WORKER-A-{uuid4()}"
         POLL_INTERVAL_SECONDS = 0.02
         RECONCILE_INTERVAL_SECONDS = 0.1
+        SHUTDOWN_OPERATION_TIMEOUT_SECONDS = max(1.0, TIME_SCALE)
 
     class WorkerB(JobQueueBase):
         name = f"PEER-WORKER-B-{uuid4()}"
         POLL_INTERVAL_SECONDS = 0.02
         RECONCILE_INTERVAL_SECONDS = 0.1
+        SHUTDOWN_OPERATION_TIMEOUT_SECONDS = max(1.0, TIME_SCALE)
 
     Controller.configure_peer(role="server", service="controller", capabilities=["signals"])
     WorkerA.configure_peer(

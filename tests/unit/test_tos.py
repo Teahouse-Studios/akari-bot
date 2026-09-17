@@ -9,6 +9,7 @@ from core.builtins.session.info import SessionInfo
 from core.constants.exceptions import SendMessageFailed, SessionFinished, WaitCancelException
 from core.database.models import SenderUnionInfo
 from core.tester import Tester, func_case
+from core.tester.timing import TIME_SCALE
 from core.tester.mock.factory import TestDataFactory
 from core.tester.mock.session import MockMessageSession
 from core.utils.container import ExpiringTempDict
@@ -422,7 +423,7 @@ async def _test_slow_penalty_keeps_rejection():
             with patch("modules.core.hooks.tos._apply_abuse", side_effect=slow_penalty):
                 outcome = await asyncio.wait_for(
                     _dispatch_tos_point(HookPoint.COMMAND_BEFORE_PARSE, first),
-                    timeout=0.5,
+                    timeout=0.5 * TIME_SCALE,
                 )
         assert outcome.failed == 0 and outcome.executed == 1
         return isinstance(outcome.result, Stop)
