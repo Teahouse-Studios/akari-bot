@@ -12,7 +12,7 @@ from datetime import datetime, UTC
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Coroutine, Match, NoReturn, cast
 
-from akari_bot_i18n.i18n import Locale
+from akari_bot_i18n.i18n import Locale, safe_strftime
 from attrs import define, field
 from deprecated import deprecated
 
@@ -1138,8 +1138,9 @@ class MessageSession:
                 ftime_template.append("(UTC)")
             else:
                 ftime_template.append(f"(UTC{self.session_info._tz_offset})")
-        return (datetime.fromtimestamp(timestamp, UTC) + self.session_info.timezone_offset).strftime(
-            " ".join(ftime_template)
+        return safe_strftime(
+            datetime.fromtimestamp(timestamp, UTC) + self.session_info.timezone_offset,
+            " ".join(ftime_template),
         )
 
     def format_num(self, number: Decimal | int | str, precision: int = 0) -> str:

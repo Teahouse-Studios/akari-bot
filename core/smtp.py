@@ -9,7 +9,7 @@ from core.builtins.message.chain import Chainable, MessageChain
 from core.config.base import BaseConfig, CoreConfig, SMTPConfig, SMTPSecretConfig
 from core.constants.path import assets_path
 from core.exports import exports
-from core.i18n import Locale
+from core.i18n import Locale, safe_strftime
 from core.logger import Logger
 
 locale = Locale(BaseConfig.default_locale)
@@ -43,7 +43,7 @@ def _build_email_html(body: str, footer: str) -> str:
         <div>{body.replace(chr(10), "<br>")}</div>
         <div style="margin-top:24px">
           <img src="cid:akaribot_logo" height="64" alt="AkariBot Logo"><br>
-          <span>{datetime.now().strftime(locale.t_str("{I18N:time.date.format} {I18N:time.time.format}"))}</span>
+          <span>{safe_strftime(datetime.now(), locale.t_str("{I18N:time.date.format} {I18N:time.time.format}"))}</span>
         </div>
         <div style="margin-top:20px;font-size:12px;color:#808080">{footer}</div>
       </body>

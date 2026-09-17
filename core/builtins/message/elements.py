@@ -25,6 +25,7 @@ from attrs import define
 from filetype import filetype
 from tenacity import retry, stop_after_attempt
 
+from core.i18n import safe_strftime
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 
@@ -414,7 +415,7 @@ class FormattedTimeElement(BaseElement):
                     # 其他时区，显示偏移量
                     ftime_template.append(f"(UTC{session_info._tz_offset})")
 
-            return dt.strftime(" ".join(ftime_template))
+            return safe_strftime(dt, " ".join(ftime_template))
 
         # ========== 不使用会话信息的默认格式化 ==========
         if self.date:
@@ -453,7 +454,7 @@ class FormattedTimeElement(BaseElement):
 
             ftime_template.append(tz_template)
 
-        return datetime.fromtimestamp(self.timestamp).strftime(" ".join(ftime_template))
+        return safe_strftime(datetime.fromtimestamp(self.timestamp), " ".join(ftime_template))
 
     def kecode(self, session_info: SessionInfo | None = None):
         """
