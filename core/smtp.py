@@ -42,7 +42,7 @@ def _build_email_html(body: str, footer: str) -> str:
       <body>
         <div>{body.replace(chr(10), "<br>")}</div>
         <div style="margin-top:24px">
-          <img src="cid:akari_logo" height="64"><br>
+          <img src="cid:akaribot_logo" height="64" alt="AkariBot Logo"><br>
           <span>{datetime.now().strftime(locale.t_str("{I18N:time.date.format} {I18N:time.time.format}"))}</span>
         </div>
         <div style="margin-top:20px;font-size:12px;color:#808080">{footer}</div>
@@ -60,6 +60,8 @@ def send_email(subject: str, body: str) -> None:
     emailmsg["To"] = ", ".join(SMTPConfig.smtp_recipients)
 
     issue_url = CoreConfig.issue_url
+    if issue_url:
+        emailmsg["List-Unsubscribe"] = f"<{issue_url}>"
 
     # 纯文本版本
     emailmsg.set_content(f"{body}\n\n{_report_footer(issue_url)}")
@@ -73,7 +75,7 @@ def send_email(subject: str, body: str) -> None:
             logo_data = fp.read()
 
         html_part = emailmsg.get_payload()[-1]
-        html_part.add_related(logo_data, maintype="image", subtype="png", cid="<akari_logo>")
+        html_part.add_related(logo_data, maintype="image", subtype="png", cid="<akaribot_logo>")
 
     if SMTPConfig.smtp_ssl:
         with smtplib.SMTP_SSL(SMTPConfig.smtp_host, int(SMTPConfig.smtp_port)) as server:

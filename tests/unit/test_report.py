@@ -73,7 +73,7 @@ async def _test_external_smtp_client_uses_starttls_and_login():
     message = smtp_context.send_message.call_args.args[0]
     plain_part = message.get_body(preferencelist=("plain",))
     html_part = message.get_body(preferencelist=("html",))
-    inline_logo = [part for part in message.walk() if part.get("Content-ID") == "<akari_logo>"]
+    inline_logo = [part for part in message.walk() if part.get("Content-ID") == "<akaribot_logo>"]
     issue_url = CoreConfig.issue_url
     footer = Locale(BaseConfig.default_locale).t("smtp.report.footer", issue_url=issue_url)
     return (
