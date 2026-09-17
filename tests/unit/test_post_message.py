@@ -144,6 +144,45 @@ async def _test_rpc_rejects_offline_client():
         Alive.values.update(alive)
 
 
+async def _test_muted_target_posts_nothing():
+    """测试主动推送 - 静音场景不接收机器人主动发言"""
+    alive = Alive.values.copy()
+    try:
+        sessions = await _build_channel("POSTG")
+        Alive.values.clear()
+        for client in ("POSTG1", "POSTG2"):
+            await _register_client(client)
+
+        union = await TargetUnionInfo.get_by_target_id("POSTG1|Group|a")
+        union.muted = True
+        await union.save()
+        for session in sessions:
+            await session.refresh_info()
+
+        await Bot.post_message("", MessageChain.assign("hello"), sessions)
+        return await _take_posted() == []
+
+    except Exception:
+        return False
+    finally:
+        Alive.values.clear()
+        Alive.values.update(alive)
+
+
+async def _test_muted_direct_message_skipped():
+    """测试主动推送 - 静音场景的直发链路同样被拦截"""
+    union = await TargetUnionInfo.resolve_union("POSTH1|Group|a")
+    union.muted = True
+    await union.save()
+    session = await FetchedSessionInfo.assign(
+        target_id="POSTH1|Group|a", client_name="POSTH1", target_from="POSTH1|Group", fetch=True
+    )
+    submitted = AsyncMock()
+    with patch.object(PlatformAPI, "send_message", new=SimpleNamespace(submit=submitted)):
+        await Bot.send_direct_message(session, MessageChain.assign("hello"))
+    return submitted.await_count == 0
+
+
 async def _test_post_exception_uses_next_hop():
     session = SimpleNamespace(target_id="POSTE1|Group|a", next_hops=["POSTE2|Group|b"])
     context = SimpleNamespace(send_message=AsyncMock(side_effect=RuntimeError("platform failed")))
@@ -174,6 +213,8 @@ async def test_post_message(tester: Tester):
         await tester.test(_test_channel_posts_once_with_next_hops, "同通道只推一次测试")
         await tester.test(_test_offline_client_skipped, "掉线客户端避让测试")
         await tester.test(_test_all_offline_posts_nothing, "全部掉线放弃推送测试")
+        await tester.test(_test_muted_target_posts_nothing, "静音场景不接收主动推送测试")
+        await tester.test(_test_muted_direct_message_skipped, "静音场景直发消息被拦截测试")
         await tester.test(_test_rpc_rejects_offline_client, "掉线时不入队测试")
         await tester.test(_test_post_exception_uses_next_hop, "平台异常时主动推送继续下一跳测试")
         await tester.test(_test_private_exception_returns_empty, "平台异常时私信返回空消息 ID 测试")

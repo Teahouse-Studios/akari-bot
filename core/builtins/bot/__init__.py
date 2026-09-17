@@ -10,7 +10,7 @@ from typing import Any, Awaitable, Callable
 
 from core.alive import Alive
 from core.builtins.message.chain import *
-from core.builtins.parser.hooks import ParserHookContext
+from core.builtins.parser.hooks import OutgoingPayload, ParserHookContext, Stop, dispatch_outgoing_before_send
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import EventInfo, SessionInfo, FetchedSessionInfo, ModuleHookContext
@@ -362,6 +362,18 @@ class Bot:
             # 主动推送也要经过与常规发送一致的出站规范化：过滤关键词并拦截敏感信息，
             # 不能依赖客户端在渲染阶段补检，此时内容已越过服务端唯一能看到的检查点。
             post_message = await normalize_outgoing_chain(session_, post_message, False)
+            if post_message is None:
+                continue
+
+            # 出站策略（如静音场景停止主动发言）与常规发送共用同一 hook 链。
+            outgoing_payload = OutgoingPayload(chain=post_message, quote=False)
+            stop_send = await dispatch_outgoing_before_send(
+                FetchedMessageSession(session_info=session_), outgoing_payload
+            )
+            if isinstance(stop_send, Stop):
+                continue
+            # 改写后的最终消息须重新过完整发送规范化，语义同 MessageSession.send_message。
+            post_message = await normalize_outgoing_chain(session_, outgoing_payload.chain, False)
             if post_message is None:
                 continue
 

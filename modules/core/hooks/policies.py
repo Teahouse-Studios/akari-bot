@@ -101,10 +101,28 @@ async def _regex_cooldown(ctx: "Bot.ParserHookContext"):
     return await _check_target_cooldown(ctx.msg, ctx)
 
 
-@policies.hook(point=HookPoint.COMMAND_PREPARE, priority=20, name="muted", server_scope=True)
+@policies.hook(point=HookPoint.COMMAND_ROUTE, priority=20, name="muted", server_scope=True)
 async def _command_muted(ctx: "Bot.ParserHookContext"):
-    """静音场景仅保留解除静音命令。"""
+    """静音场景仅保留解除静音命令。
+
+    必须在候选路由阶段拦下：未匹配的模块会走纠错与默认提示，那些路径不会
+    经过 :attr:`HookPoint.COMMAND_PREPARE`，放到模板解析前就拦不干净。
+    """
     if ctx.msg.session_info.muted and ctx.command_first_word != "mute":
+        return ctx.Stop()
+    return None
+
+
+@policies.hook(point=HookPoint.OUTGOING_BEFORE_SEND, priority=10, name="muted_outgoing", server_scope=True)
+async def _outgoing_muted(ctx: "Bot.ParserHookContext"):
+    """静音场景停止机器人的主动发言。
+
+    被动回复已由 :func:`_command_muted` / :func:`_regex_route` 控制，这里只拦
+    主动获取的会话（``fetch``）；否则解除静音命令本身的确认也会被一并取消。
+    """
+    info = ctx.session_info
+    if info.fetch and info.muted:
+        Logger.debug(f"Suppressed proactive message to muted target: {info.target_id}")
         return ctx.Stop()
     return None
 
