@@ -7,9 +7,9 @@
 enable_email_report = false # SMTPメールのレポート機能を有効にします。有効にすると、メッセージはコンテキストにレポートされなくなります。
 smtp_host = "<Replace me with str value>" # SMTP サーバーのアドレス。
 smtp_port = 587 # SMTP サーバーのポート番号。
-smtp_user = "AkariBot" # SMTP 登录邮箱地址。
-smtp_sender_name = "<Replace me with str value>" # 发件人名称，留空则使用登录邮箱地址。
-smtp_recipients = [] # メール レポートの受信者リスト。
+smtp_username = "<Replace me with str value>" # SMTP のログインユーザー名。
+smtp_sender = "<Replace me with str value>" # 送信者アドレス。空欄にすると、ログイン ユーザー名を使用します。
+smtp_recipients = [] # メールの受信者リスト。
 smtp_ssl = false # SMTPS（SSL）接続を使用するかどうか。
 smtp_starttls = true # STARTTLS を有効にするかどうか。
 

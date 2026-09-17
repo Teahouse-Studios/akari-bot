@@ -21,7 +21,7 @@ from core.constants.exceptions import (
 )
 from core.constants.path import assets_path
 from core.logger import Logger
-from core.report import send_report
+from core.smtp import send_report
 from core.utils.random import Random
 
 if TYPE_CHECKING:
@@ -110,7 +110,7 @@ async def process_exception(msg: "Bot.MessageSession", error: Exception) -> None
     await send_report(
         message=MessageChain.assign(I18NContext("error.message.report", disable_joke=True, command=msg.trigger_msg))
         + format_error_detail_markdown(tb.strip()),
-        subject=f"[AkariBot] An error occurred: {msg.trigger_msg}",
+        subject=str(I18NContext("smtp.report.subject.error.command", cmd=msg.trigger_msg)),
         targets=CoreConfig.report_targets,
     )
 

@@ -235,7 +235,7 @@ def nodes_to_table(session_info: SessionInfo, nodes: MessageNodes) -> str:
     """
     cells = []
     for node in nodes.values:
-        pieces = [x.text for x in node.as_sendable(session_info, disable_markdown=True) if isinstance(x, PlainElement)]
+        pieces = [x.text for x in node.as_sendable(session_info, enable_markdown=False) if isinstance(x, PlainElement)]
         cells.append(escape_table_cell("\n".join(pieces)))
     if not cells:
         return escape_table_cell(nodes.name)
@@ -738,7 +738,7 @@ class QQBotContextManager(ContextManager):
             images: list[tuple[ImageElement, str]] = []
             media: list[AudioElement | VideoElement] = []
 
-            for x in message.as_sendable(session_info, disable_markdown=True):
+            for x in message.as_sendable(session_info, enable_markdown=False):
                 if isinstance(x, PlainElement):
                     if x.allow_parse:
                         x.text = match_atcode(x.text, client_name, "<@{uid}>")

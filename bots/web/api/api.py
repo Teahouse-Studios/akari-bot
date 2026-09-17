@@ -195,7 +195,7 @@ async def get_config(request: Request):
         "enable_https": enable_https,
         "command_prefix": command_prefix[0],
         "help_url": CoreConfig.help_url,
-        "locale": BaseConfig.default_locale,
+        "locale": default_locale,
         "heartbeat_interval": WebConfig.heartbeat_interval,
         "heartbeat_timeout": WebConfig.heartbeat_timeout,
         "heartbeat_attempt": WebConfig.heartbeat_attempt,

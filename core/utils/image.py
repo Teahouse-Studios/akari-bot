@@ -89,7 +89,7 @@ async def msgchain2image(
 
     # 图片是纯文本载体，无从承载可点击的行内元素，故按不支持 markdown 转换：
     # 指令操作等元素会就地降级为纯文本，否则模板认不出它们，其内容会静默丢失
-    message_list = message_chain.as_sendable(session, disable_markdown=True)
+    message_list = message_chain.as_sendable(session, enable_markdown=False)
     renderable_list = []
     for m in message_list:
         if isinstance(m, ImageElement):

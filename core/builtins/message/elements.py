@@ -23,9 +23,9 @@ import orjson
 from PIL import Image as PILImage
 from attrs import define
 from filetype import filetype
-from japanera import EraDate
 from tenacity import retry, stop_after_attempt
 
+from core.i18n import safe_strftime
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 
@@ -353,7 +353,7 @@ class FormattedTimeElement(BaseElement):
     属性：
         timestamp: UTC 时间戳（浮点数）
         date: 是否显示日期（默认为 True）
-        iso: 是否使用 ISO 格式显示日期（默认为 False）
+        simple: 是否使用简单格式显示日期（默认为 False）
         time: 是否显示时间（默认为 True）
         seconds: 是否显示秒（默认为 True）
         timezone: 是否显示时区（默认为 True）
@@ -368,7 +368,7 @@ class FormattedTimeElement(BaseElement):
 
     timestamp: float
     date: bool = True
-    iso: bool = False
+    simple: bool = False
     time: bool = True
     seconds: bool = True
     timezone: bool = True
@@ -390,13 +390,9 @@ class FormattedTimeElement(BaseElement):
 
             if self.date:
                 # ========== 日期格式化 ==========
-                if self.iso:
-                    # ISO 格式：YYYY-MM-DD
-                    ftime_template.append(session_info.locale.t("time.date.iso.format"))
-                elif session_info.locale.locale == "ja_jp":
-                    # 日本格式：支持年号显示（如 令和 5 年）
-                    era_date = EraDate.from_date(dt).strftime(session_info.locale.t("time.date.format"))
-                    ftime_template.append(era_date)
+                if self.simple:
+                    # simple 格式：YYYY-MM-DD
+                    ftime_template.append(session_info.locale.t("time.date.simple.format"))
                 else:
                     # 其他地区的日期格式
                     ftime_template.append(session_info.locale.t("time.date.format"))
@@ -419,12 +415,12 @@ class FormattedTimeElement(BaseElement):
                     # 其他时区，显示偏移量
                     ftime_template.append(f"(UTC{session_info._tz_offset})")
 
-            return dt.strftime(" ".join(ftime_template))
+            return safe_strftime(dt, " ".join(ftime_template))
 
         # ========== 不使用会话信息的默认格式化 ==========
         if self.date:
-            if self.iso:
-                # ISO 格式：YYYY-MM-DD
+            if self.simple:
+                # simple 格式：YYYY-MM-DD
                 ftime_template.append("%Y-%m-%d")
             else:
                 # 英文格式：Month DD, YYYY
@@ -458,7 +454,7 @@ class FormattedTimeElement(BaseElement):
 
             ftime_template.append(tz_template)
 
-        return datetime.fromtimestamp(self.timestamp).strftime(" ".join(ftime_template))
+        return safe_strftime(datetime.fromtimestamp(self.timestamp), " ".join(ftime_template))
 
     def kecode(self, session_info: SessionInfo | None = None):
         """
@@ -481,7 +477,7 @@ class FormattedTimeElement(BaseElement):
         cls,
         timestamp: float,
         date: bool = True,
-        iso: bool = False,
+        simple: bool = False,
         time: bool = True,
         seconds: bool = True,
         timezone: bool = True,
@@ -491,7 +487,7 @@ class FormattedTimeElement(BaseElement):
 
         :param timestamp: UTC 时间戳
         :param date: 是否显示日期（默认为 True）
-        :param iso: 是否以 ISO 格式显示日期（默认为 False）
+        :param simple: 是否以简单格式显示日期（默认为 False）
         :param time: 是否显示时间（默认为 True）
         :param seconds: 是否显示秒（默认为 True）
         :param timezone: 是否显示时区（默认为 True）
@@ -501,7 +497,7 @@ class FormattedTimeElement(BaseElement):
             cls(
                 timestamp=timestamp,
                 date=date,
-                iso=iso,
+                simple=simple,
                 time=time,
                 seconds=seconds,
                 timezone=timezone,

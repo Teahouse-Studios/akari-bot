@@ -4,12 +4,12 @@
 
 [smtp]
 # SMTP 的組態部分，此處填寫的值可在訊息中以明文顯示。請不要在此部分填寫敏感資訊。
-enable_email_report = false # 是否啟用 SMTP 郵件上報，啟用後將不再上報至場景。
+enable_email_report = false # 是否啟用 SMTP 郵件報告，啟用後將不再報告至場景。
 smtp_host = "<Replace me with str value>" # SMTP 伺服器位址。
 smtp_port = 587 # SMTP 伺服器連接埠。
-smtp_user = "AkariBot" # SMTP 登录邮箱地址。
-smtp_sender_name = "<Replace me with str value>" # 发件人名称，留空则使用登录邮箱地址。
-smtp_recipients = [] # 郵件上報收件者清單。
+smtp_username = "<Replace me with str value>" # SMTP 登入使用者名稱。
+smtp_sender = "<Replace me with str value>" # 寄件者位址，留空則使用登入使用者名稱。
+smtp_recipients = [] # 郵件收件者清單。
 smtp_ssl = false # 是否使用 SMTPS（SSL）連線。
 smtp_starttls = true # 是否啟用 STARTTLS。
 

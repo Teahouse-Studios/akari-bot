@@ -73,7 +73,7 @@ async def _(msg: Bot.MessageSession):
     cpu_percent = psutil.cpu_percent()
     ram_percent = psutil.virtual_memory().percent
     if msg.check_super_user():
-        boot_start = str(FormattedTime(psutil.boot_time(), iso=True))
+        boot_start = str(FormattedTime(psutil.boot_time(), simple=True))
         web_render_status = str(Bot.Info.web_render_status)
         ram = int(psutil.virtual_memory().total / (1024 * 1024))
         swap = int(psutil.swap_memory().total / (1024 * 1024))

@@ -29,7 +29,7 @@ async def get_ab(msg: Bot.MessageSession | Bot.FetchedMessageSession, wiki_url, 
                         'wiki.message.ab.slice',
                         title=title,
                         user=user,
-                        time=msg.format_time(strptime2ts(x['timestamp']), iso=True, timezone=False),
+                        time=msg.format_time(strptime2ts(x['timestamp']), simple=True, timezone=False),
                         action=x['action'],
                         filter_name=x['filter'],
                         result=result,
@@ -96,7 +96,7 @@ async def convert_ab_to_detailed_format(msg: Bot.MessageSession | Bot.FetchedMes
                     )
                 )
             )
-            time = msg.format_time(strptime2ts(x["timestamp"]), iso=True)
+            time = msg.format_time(strptime2ts(x["timestamp"]), simple=True)
             t.append(time)
             if not text_status:
                 if (original_title in title_checked_map and title_checked_map[original_title] != original_title) or (

@@ -48,16 +48,16 @@ def _session(**kwargs) -> SessionInfo:
     )
 
 
-def _render(session_info: SessionInfo, trusted: bool | None = None, disable_markdown: bool = False) -> str:
+def _render(session_info: SessionInfo, trusted: bool | None = None, enable_markdown: bool = True) -> str:
     """跑一遍消息链转换，取回最终文本。
 
     :param session_info: 会话信息。
     :param trusted: 传给 Url 的认证标记；None 表示不表态，交由会话决定。
-    :param disable_markdown: 是否在转换时强制禁用 markdown。
+    :param enable_markdown: 是否允许 markdown 转换，False 表示在转换时强制禁用 markdown。
     :return: 转换后各元素拼接成的文本。
     """
     chain = MessageChain.assign([Url(_URL, trusted=trusted)])
-    return "".join(str(x) for x in chain.as_sendable(session_info, disable_markdown=disable_markdown))
+    return "".join(str(x) for x in chain.as_sendable(session_info, enable_markdown=enable_markdown))
 
 
 def _expected_block(session_info: SessionInfo) -> str:
@@ -144,10 +144,10 @@ async def _test_markdown_off_falls_back_to_springboard():
         return False
 
 
-async def _test_disable_markdown_falls_back_to_springboard():
+async def _test_enable_markdown_falls_back_to_springboard():
     """测试回退 - 转换时强制禁用 markdown 者同样走跳板"""
     try:
-        out = _render(_session(use_url_manager=True, support_markdown=True), disable_markdown=True)
+        out = _render(_session(use_url_manager=True, support_markdown=True), enable_markdown=False)
         return _MM_HOST in out and not out.startswith("```")
 
     except Exception:
@@ -420,7 +420,7 @@ async def test_url_guard(tester: Tester):
     await tester.test(_test_trusted_url_skips_springboard_without_markdown, "已认证链接不套跳板测试")
     await tester.test(_test_md_format_not_applied_inside_code_block, "代码块内不套链接格式测试")
     await tester.test(_test_markdown_off_falls_back_to_springboard, "不支持 markdown 时回退跳板测试")
-    await tester.test(_test_disable_markdown_falls_back_to_springboard, "强制禁用 markdown 时回退跳板测试")
+    await tester.test(_test_enable_markdown_falls_back_to_springboard, "强制禁用 markdown 时回退跳板测试")
     await tester.test(_test_manager_off_leaves_url_untouched, "未启用 URLManager 时原样输出测试")
     await tester.test(_test_global_allowlist_bypasses_guard, "全局 URL 允许列表放行测试")
     await tester.test(_test_explicit_untrusted_overrides_global_allowlist, "显式不可信优先级测试")

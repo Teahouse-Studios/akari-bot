@@ -692,7 +692,7 @@ class WikiLib:
                     if a[0] == "?":
                         section_code = False
                     if section_code:
-                        arg_list.append(urllib.parse.quote(a))
+                        arg_list.append(urllib.parse.quote(a, safe="/:#?="))
                         section_list.append(a)
                     else:
                         _arg_list.append(a)
@@ -855,7 +855,7 @@ class WikiLib:
                             full_url = (
                                 re.sub(
                                     r"\$1",
-                                    urllib.parse.quote(page_info.title.encode("UTF-8")),
+                                    urllib.parse.quote(page_info.title.encode("UTF-8"), safe="/:#?="),
                                     self.wiki_info.articlepath,
                                 )
                                 + page_info.args
@@ -1023,13 +1023,15 @@ class WikiLib:
                         full_url = (
                             re.sub(
                                 r"\$1",
-                                urllib.parse.quote(title.encode("UTF-8")),
+                                urllib.parse.quote(title.encode("UTF-8"), safe="/:#?="),
                                 self.wiki_info.articlepath,
                             )
                             + page_info.args
                         )
                         page_info.link = full_url
                         page_info.status = True
+                        page_info.invalid_section = False
+                        page_info.selected_section = None
                     else:
                         # handling normal pages
                         query_langlinks = False
