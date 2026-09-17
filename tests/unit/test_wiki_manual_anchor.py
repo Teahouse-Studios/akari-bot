@@ -72,7 +72,7 @@ async def _test_manual_anchor_is_not_invalid_and_has_no_summary():
         and page.is_manual_anchor
         and not page.invalid_section
         and not page.desc
-        and page.link == "https://example.com/wiki/示例页面%23manual_anchor"
+        and page.link == "https://example.com/wiki/示例页面#manual_anchor"
         and wiki.get_json.await_count == 3
     )
 
@@ -125,7 +125,7 @@ async def _test_manual_anchor_is_delegated_to_webrender():
     page = PageInfo(
         info=info,
         title="示例页面",
-        link="https://example.com/wiki/示例页面%23manual_anchor",
+        link="https://example.com/wiki/示例页面#manual_anchor",
         selected_section="manual_anchor",
         sections=["普通章节"],
         is_manual_anchor=True,

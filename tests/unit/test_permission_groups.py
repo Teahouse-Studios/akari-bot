@@ -24,11 +24,12 @@ async def _test_permission_group_features():
 
 
 async def _test_server_queue_forwarding():
-    session = await SessionInfo.assign(
-        target_id="Discord|Channel|123",
-        target_from="Discord|Channel",
-        client_name="Discord",
-    )
+    with patch("core.builtins.session.info._current_client_peer_id", return_value=None):
+        session = await SessionInfo.assign(
+            target_id="Discord|Channel|123",
+            target_from="Discord|Channel",
+            client_name="Discord",
+        )
     captured = []
 
     class Peer:

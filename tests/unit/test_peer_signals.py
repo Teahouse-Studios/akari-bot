@@ -36,18 +36,18 @@ async def _peer_cluster():
 
     class Controller(JobQueueBase):
         name = f"PEER-CONTROLLER-{uuid4()}"
-        POLL_INTERVAL_SECONDS = 0.005
-        RECONCILE_INTERVAL_SECONDS = 0.02
+        POLL_INTERVAL_SECONDS = 0.02
+        RECONCILE_INTERVAL_SECONDS = 0.1
 
     class WorkerA(JobQueueBase):
         name = f"PEER-WORKER-A-{uuid4()}"
-        POLL_INTERVAL_SECONDS = 0.005
-        RECONCILE_INTERVAL_SECONDS = 0.02
+        POLL_INTERVAL_SECONDS = 0.02
+        RECONCILE_INTERVAL_SECONDS = 0.1
 
     class WorkerB(JobQueueBase):
         name = f"PEER-WORKER-B-{uuid4()}"
-        POLL_INTERVAL_SECONDS = 0.005
-        RECONCILE_INTERVAL_SECONDS = 0.02
+        POLL_INTERVAL_SECONDS = 0.02
+        RECONCILE_INTERVAL_SECONDS = 0.1
 
     Controller.configure_peer(role="server", service="controller", capabilities=["signals"])
     WorkerA.configure_peer(

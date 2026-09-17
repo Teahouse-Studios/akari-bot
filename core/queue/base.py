@@ -1478,7 +1478,10 @@ class JobQueueBase:
             )
             if not unregistered:
                 try:
-                    await cls.registry.unregister(cls.name)
+                    async with asyncio.timeout(cls.SHUTDOWN_OPERATION_TIMEOUT_SECONDS):
+                        await cls.registry.unregister(cls.name)
+                except TimeoutError:
+                    Logger.warning(f"Timed out unregistering JobQueue peer {cls.name}.")
                 except Exception:
                     Logger.exception(f"Failed to unregister JobQueue peer {cls.name}.")
             cls._registered = False
