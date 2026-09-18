@@ -80,9 +80,9 @@ m = module(
     ],
     required_admin=True,
 )
-async def _(msg: Bot.MessageSession, image: bool = False, legacy: bool = False):
+async def _(msg: Bot.MessageSession, img: bool = False, legacy: bool = False):
     if msg.parsed_msg.get("list", False):
-        force_image = image
+        force_image = img
         await modules_list_help(msg, legacy, force_image)
     await config_modules(msg)
 
