@@ -1403,49 +1403,6 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
     return elements
 
 
-def match_atcode(text: str, client: str, pattern: str) -> str:
-    """
-    匹配并替换 AT 码。
-
-    该函数用于将统一的 AT 码格式转换为平台特定的提及格式。
-    AT 码格式为 `<AT:client|userid>` 或 `<@:client|userid>`。
-
-    处理流程：
-    1. 查找所有 AT 码
-    2. 检查客户端是否匹配
-    3. 如果匹配，使用指定的模式替换
-    4. 如果不匹配，保留原样
-
-    :param text: 包含 AT 码的文本
-    :param client: 客户端标识（如 "QQ"、"Discord"）
-    :param pattern: 替换模式，其中 `{uid}` 会被替换为用户 ID
-    :return: 替换后的文本
-
-    示例：
-    ```
-        > text = "Hello <AT:QQ|123456>"
-        > match_atcode(text, "QQ", "@{uid}")
-        'Hello @123456'
-        > match_atcode(text, "Discord", "@{uid}")
-        'Hello <AT:QQ|123456>'  # 不匹配，保留原样
-    ```
-    """
-
-    def _replacer(match):
-        """内部替换函数"""
-        match_client = match.group(1)  # 提取客户端标识
-        user_id = match.group(2)  # 提取用户 ID
-        if match_client == client:
-            # 客户端匹配，替换为指定模式
-            return pattern.replace("{uid}", user_id)
-        # 客户端不匹配，保留原样
-        return match.group(0)
-
-    # 使用正则表达式查找并替换所有 AT 码
-    # 格式: <AT:client|...?|userid> 或 <@:client|...?|userid>
-    return re.sub(r"<(?:AT|@):([^\|]+)\|(?:.*?\|)?([^\|>]+)>", _replacer, text)
-
-
 def escape_special_char(s: str, escape_comma: bool = True) -> str:
     """
     转义特殊占位符标记的特殊字符。
@@ -1461,39 +1418,6 @@ def escape_special_char(s: str, escape_comma: bool = True) -> str:
     if escape_comma:
         s = s.replace(",", "&#44;")
     return s
-
-
-def convert_senderid_to_atcode(text: str, sender_prefix: str) -> str:
-    """
-    将用户 ID 转换为 AT 码格式。
-
-    该函数用于将文本中的用户 ID 引用转换为统一的 AT 码格式。
-    主要用于在消息中自动识别和转换用户 ID 引用。
-
-    处理流程：
-    1. 转义 sender_prefix 中的特殊字符（仅用于正则，不改动文本）
-    2. 查找所有匹配的用户 ID
-    3. 将其包装为 `<AT:...>` 格式
-
-    文本中的反斜杠是普通字符，原样保留。
-
-    :param text: 包含用户 ID 的文本
-    :param sender_prefix: 用户 ID 的前缀（如 "QQ"）
-    :return: 转换后的文本，用户 ID 被包装为 AT 码
-
-    示例：
-        > text = "User QQ|123456 said hello"
-        > convert_senderid_to_atcode(text, "QQ")
-        'User <AT:QQ|123456> said hello'
-    """
-    # 转义前缀中的特殊字符（如 `|`），避免其被当作正则元字符
-    sender_prefix = re.escape(sender_prefix)
-
-    # 使用正则表达式查找并包装用户 ID
-    # 负向后瞻断言确保不会重复包装已有的 AT 码
-    # \g<0> 引用整个匹配的字符串
-    # 转义只作用于正则本身；文本中的反斜杠是普通字符，须原样保留
-    return re.sub(rf"(?<!<AT:)(?<!<@:){sender_prefix}\|\w+", r"<AT:\g<0>>", text)
 
 
 # 将消息链类添加到导出列表中
@@ -1528,6 +1452,5 @@ __all__ = [
     "get_message_chain",
     "MessageNodes",
     "match_kecode",
-    "match_atcode",
     "escape_special_char",
 ]

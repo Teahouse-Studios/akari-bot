@@ -1,7 +1,6 @@
 """Telegram 消息聚合负载构建。"""
 
 import asyncio
-import re
 from html import escape
 from html.parser import HTMLParser
 
@@ -9,6 +8,7 @@ from aiogram.types import FSInputFile, InputMediaAudio, InputMediaPhoto
 from attrs import define, field
 
 from bots.telegram.info import client_name
+from core.builtins.message.atcode import InlineAt, iter_inline_at
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import (
     ActionTextElement,
@@ -106,25 +106,18 @@ class _HTMLAtomParser(HTMLParser):
         self.atoms.append(_HTMLAtom(raw, tuple(self.contexts)))
 
 
-AT_CODE_PATTERN = re.compile(r"<(?:AT|@):([^\|]+)\|(?:.*?\|)?([^\|>]+)>")
-
-
 def _escape_telegram_text(text: str, parse_mentions: bool = True) -> str:
     """转义普通文本，仅将本平台 AT 码转换为受控的 Telegram HTML。"""
     if not parse_mentions:
         return escape(text)
 
     result = []
-    start = 0
-    for match in AT_CODE_PATTERN.finditer(text):
-        result.append(escape(text[start : match.start()]))
-        if match.group(1) == client_name:
-            user_id = escape(match.group(2), quote=True)
+    for part in iter_inline_at(text):
+        if isinstance(part, InlineAt) and part.client == client_name:
+            user_id = escape(part.id, quote=True)
             result.append(f'<a href="tg://user?id={user_id}">@{user_id}</a>')
         else:
-            result.append(escape(match.group(0)))
-        start = match.end()
-    result.append(escape(text[start:]))
+            result.append(escape(part.raw if isinstance(part, InlineAt) else part))
     return "".join(result)
 
 

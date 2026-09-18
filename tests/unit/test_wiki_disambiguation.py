@@ -66,7 +66,7 @@ class _FakeGroupMessage(GroupMessage):
     def __init__(self):
         self.id = "source-message"
         self.group_openid = "wiki-disambiguation"
-        self.message_scene = None
+        self.message_context = None
 
 
 class _FakeClient:

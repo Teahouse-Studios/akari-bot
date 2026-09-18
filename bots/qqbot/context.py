@@ -26,7 +26,8 @@ from bots.qqbot.info import (
     target_c2c_prefix,
 )
 from bots.qqbot.utils import url_filter
-from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
+from core.builtins.message.atcode import render_inline_at
+from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import (
     ActionTextElement,
     ButtonFrameElement,
@@ -741,7 +742,7 @@ class QQBotContextManager(ContextManager):
             for x in message.as_sendable(session_info, enable_markdown=False):
                 if isinstance(x, PlainElement):
                     if x.allow_parse:
-                        x.text = match_atcode(x.text, client_name, "<@{uid}>")
+                        x.text = render_inline_at(x.text, client_name, lambda at: f"<@{at.id}>")
                     plains.append(x)
                 elif isinstance(x, ImageElement):
                     # 图片不可读（本地文件缺失或下载失败）时跳过该元素
@@ -886,7 +887,7 @@ class QQBotContextManager(ContextManager):
             for x in converted_message:
                 if isinstance(x, PlainElement):
                     if x.allow_parse:
-                        x.text = match_atcode(x.text, client_name, "<@{uid}>")
+                        x.text = render_inline_at(x.text, client_name, lambda at: f"<@{at.id}>")
                     if inline_pending and texts:
                         texts[-1] += x.text
                     else:

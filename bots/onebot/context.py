@@ -13,7 +13,8 @@ from bots.onebot.client import aiocqhttp_bot
 from bots.onebot.config import AiocqhttpConfig
 from bots.onebot.info import target_private_prefix, target_group_prefix, client_name
 from bots.onebot.utils import CQCodeHandler
-from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
+from core.builtins.message.atcode import render_inline_at
+from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import PlainElement, ImageElement, AudioElement, VideoElement, MentionElement
 from core.builtins.session.context import ContextManager
 from core.builtins.session.bot_state import BotState
@@ -266,7 +267,7 @@ class OneBotContextManager(ContextManager):
             for x in message.as_sendable(session_info):
                 if isinstance(x, PlainElement):
                     if x.allow_parse:
-                        x.text = match_atcode(x.text, client_name, "[CQ:at,qq={uid}]")
+                        x.text = render_inline_at(x.text, client_name, lambda at: f"[CQ:at,qq={at.id}]")
                     if x.allow_parse:
                         parts = re.split(r"(\[CQ:[^\]]+\])", x.text)
                         parts = [part for part in parts if part]

@@ -1,6 +1,7 @@
 """core.builtins.message 消息系统单元测试。"""
 
-from core.builtins.message.chain import MessageChain, convert_senderid_to_atcode, match_kecode
+from core.builtins.message.atcode import wrap_sender_id
+from core.builtins.message.chain import MessageChain, match_kecode
 from core.builtins.message.elements import (
     PlainElement,
     MarkdownElement,
@@ -720,17 +721,17 @@ def _test_standalone_buttons_are_auto_arranged():
         return False
 
 
-def _test_convert_senderid_to_atcode_wraps_sender_id():
+def _test_wrap_sender_id_wraps_sender_id():
     """发送者 ID 引用应被包装为 AT 码，已包装的不重复包装。"""
     try:
-        if convert_senderid_to_atcode(r"TEST|0 说 hi", "TEST") != "<AT:TEST|0> 说 hi":
+        if wrap_sender_id(r"TEST|0 说 hi", "TEST") != "<AT:TEST|0> 说 hi":
             return False
-        return convert_senderid_to_atcode("<AT:TEST|0> hi", "TEST") == "<AT:TEST|0> hi"
+        return wrap_sender_id("<AT:TEST|0> hi", "TEST") == "<AT:TEST|0> hi"
     except Exception:
         return False
 
 
-def _test_convert_senderid_to_atcode_preserves_backslashes():
+def _test_wrap_sender_id_preserves_backslashes():
     """文本中的反斜杠是普通字符，转换 AT 码时不得吞掉。"""
     cases = (
         (r"a\b", r"a\b"),
@@ -740,7 +741,7 @@ def _test_convert_senderid_to_atcode_preserves_backslashes():
         (r"C:\\Users TEST|0", r"C:\\Users <AT:TEST|0>"),
     )
     try:
-        return all(convert_senderid_to_atcode(text, "TEST") == expected for text, expected in cases)
+        return all(wrap_sender_id(text, "TEST") == expected for text, expected in cases)
     except Exception:
         return False
 
@@ -754,8 +755,8 @@ async def test_message_chain_operations(tester: Tester):
     await tester.test(_test_chain_is_safe, "MessageChain is_safe 属性")
     await tester.test(_test_chain_copy, "MessageChain copy 方法")
     await tester.test(_test_chain_to_str_connector, "MessageChain to_str 自定义连接符")
-    await tester.test(_test_convert_senderid_to_atcode_wraps_sender_id, "convert_senderid_to_atcode 包装发送者 ID")
-    await tester.test(_test_convert_senderid_to_atcode_preserves_backslashes, "convert_senderid_to_atcode 保留反斜杠")
+    await tester.test(_test_wrap_sender_id_wraps_sender_id, "wrap_sender_id 包装发送者 ID")
+    await tester.test(_test_wrap_sender_id_preserves_backslashes, "wrap_sender_id 保留反斜杠")
     return tester
 
 
