@@ -22,6 +22,7 @@ from core.builtins.message.internal import Button
 from core.builtins.session.info import SessionInfo
 from core.i18n import Locale
 from core.tester import func_case, Tester
+from core.utils.button_runtime import BUTTON_TOKEN_PREFIX, ButtonConsumeStatus, consume_button, _clear_button_registry
 
 
 def _test_render_full_attributes():
@@ -160,13 +161,19 @@ def _test_button_element_builds_keyboard():
             [Button("Docs", "https://example.com"), Button("Help", "~help", reply_id="callback-123")]
         ).as_sendable(session)
         frame = next(element for element in sendable if isinstance(element, ButtonFrameElement))
+        _clear_button_registry()
         keyboard = _build_qqbot_keyboard(frame.rows, session, SimpleNamespace(scope="group"))
         docs, help_button = keyboard["content"]["rows"][0]["buttons"]
         return (
             docs["action"]["type"] == 0
             and docs["action"]["data"] == "https://example.com"
             and help_button["action"]["type"] == 1
-            and help_button["action"]["data"] == "<q:callback-123>~help"
+            and "click_limit" not in help_button["action"]
+            and help_button["action"]["data"].startswith(BUTTON_TOKEN_PREFIX)
+            and (result := consume_button(help_button["action"]["data"], "QQBot|1")).status
+            is ButtonConsumeStatus.SUCCESS
+            and result.payload == "~help"
+            and result.reply_id == "callback-123"
         )
     except Exception:
         return False

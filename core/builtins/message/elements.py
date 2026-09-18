@@ -14,6 +14,7 @@ import random
 import re
 from copy import deepcopy
 from datetime import datetime, UTC
+from enum import Enum
 from pathlib import Path
 from typing import Any, TYPE_CHECKING
 from urllib import parse
@@ -1157,6 +1158,41 @@ class ActionTextElement(BaseElement):
 
 
 _BUTTON_REPLY_PATTERN = re.compile(r"<q:(.*?)>(.*)", re.DOTALL)
+_BUTTON_LIMIT_PATTERN = re.compile(r"<l:(\d+)>(.*)", re.DOTALL)
+_BUTTON_PUBLIC_MARKER = "<a:1>"
+
+
+class ButtonPermission(str, Enum):
+    """按钮点击权限。默认仅允许发送按钮的用户点击。"""
+
+    OWNER = "owner"
+    ALL = "all"
+    EVERYONE = "all"
+
+    @classmethod
+    def normalize(cls, value: "ButtonPermission | str | bool | None") -> "ButtonPermission":
+        """把公开 API 接受的权限写法归一化为枚举值。"""
+        if isinstance(value, cls):
+            return value
+        if value is True:
+            return cls.ALL
+        if value is False or value is None:
+            return cls.OWNER
+        normalized = str(value).strip().lower()
+        if normalized in {"all", "everyone", "public"}:
+            return cls.ALL
+        if normalized in {"owner", "sender", "user", "private"}:
+            return cls.OWNER
+        raise ValueError(f"Unknown button permission: {value!r}")
+
+
+def normalize_button_click_limit(value: int | None) -> int | None:
+    """归一化按钮点击次数；``None`` / ``0`` 表示不限次数。"""
+    if value is None or value == 0:
+        return None
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise ValueError("Button click_limit must be a non-negative integer or None.")
+    return value
 
 
 @define(frozen=True)
@@ -1166,26 +1202,50 @@ class ButtonPayload:
     ``reply_id`` 是框架为按钮交互虚拟出的回复目标。平台收到点击事件后将它写入
     :class:`SessionInfo.reply_id`，即可复用普通回复消息的 callback 分发机制。
     ``<q:...>`` 仅是部分平台传输该字段时使用的兼容编码，不再由模块业务代码拼接。
+    ``permission`` 为 ``"owner"`` 时仅按钮发送者可点击，设为 ``"all"`` 时允许场景内其他用户点击。
+    ``click_limit`` 为 1 时只能点击一次，``None`` / 0 表示不限次数，正整数表示最多点击次数。
     """
 
     value: str
     reply_id: str | None = None
+    permission: ButtonPermission = ButtonPermission.OWNER
+    click_limit: int | None = 1
 
     @classmethod
-    def parse(cls, data: str, reply_id: str | None = None):
+    def parse(
+        cls,
+        data: str,
+        reply_id: str | None = None,
+        permission: ButtonPermission | str | bool | None = ButtonPermission.OWNER,
+        click_limit: int | None = 1,
+    ):
         """从平台数据或旧版 ``<q:reply_id>value`` 编码恢复语义字段。"""
         data = str(data)
+        normalized_permission = ButtonPermission.normalize(permission)
+        if data.startswith(_BUTTON_PUBLIC_MARKER):
+            normalized_permission = ButtonPermission.ALL
+            data = data[len(_BUTTON_PUBLIC_MARKER) :]
+        encoded_click_limit = click_limit
+        if match := _BUTTON_LIMIT_PATTERN.fullmatch(data):
+            encoded_click_limit = int(match.group(1))
+            data = match.group(2)
         legacy_reply_id = None
         if match := _BUTTON_REPLY_PATTERN.fullmatch(data):
             legacy_reply_id = match.group(1) or None
             data = match.group(2)
-        return cls(value=data, reply_id=str(reply_id) if reply_id is not None else legacy_reply_id)
+        return cls(
+            value=data,
+            reply_id=str(reply_id) if reply_id is not None else legacy_reply_id,
+            permission=normalized_permission,
+            click_limit=normalize_button_click_limit(encoded_click_limit),
+        )
 
     def to_data(self) -> str:
         """编码为只支持单个字符串字段的平台按钮数据。"""
-        if self.reply_id is None:
-            return self.value
-        return f"<q:{self.reply_id}>{self.value}"
+        public_marker = _BUTTON_PUBLIC_MARKER if self.permission is ButtonPermission.ALL else ""
+        reply_marker = "" if self.reply_id is None else f"<q:{self.reply_id}>"
+        limit_marker = "" if self.click_limit == 1 else f"<l:{self.click_limit or 0}>"
+        return f"{public_marker}{limit_marker}{reply_marker}{self.value}"
 
 
 @define
@@ -1195,17 +1255,34 @@ class ButtonElement(BaseElement):
     show: str
     value: str
     reply_id: str | None = None
+    permission: ButtonPermission = ButtonPermission.OWNER
+    click_limit: int | None = 1
 
     @classmethod
-    def assign(cls, show: str, value: str, reply_id: str | None = None):
-        """创建单个按钮，show 为展示文本，value 为点击数据。"""
-        payload = ButtonPayload.parse(value, reply_id)
-        return deepcopy(cls(show=str(show), value=payload.value, reply_id=payload.reply_id))
+    def assign(
+        cls,
+        show: str,
+        value: str,
+        reply_id: str | None = None,
+        permission: ButtonPermission | str | bool | None = ButtonPermission.OWNER,
+        click_limit: int | None = 1,
+    ):
+        """创建单个按钮，show 为展示文本，value 为点击数据，permission 可设为 ``"all"``。"""
+        payload = ButtonPayload.parse(value, reply_id, permission, click_limit)
+        return deepcopy(
+            cls(
+                show=str(show),
+                value=payload.value,
+                reply_id=payload.reply_id,
+                permission=payload.permission,
+                click_limit=payload.click_limit,
+            )
+        )
 
     @property
     def payload(self) -> ButtonPayload:
         """返回按钮点击数据；同时兼容反序列化得到的旧版内嵌编码。"""
-        return ButtonPayload.parse(self.value, self.reply_id)
+        return ButtonPayload.parse(self.value, self.reply_id, self.permission, self.click_limit)
 
     def kecode(self):
         """转换为 KE 码格式。"""
@@ -1214,6 +1291,10 @@ class ButtonElement(BaseElement):
         params = [f"show={show}", f"value={value}"]
         if self.reply_id is not None:
             params.append(f"reply_id={parse.quote(self.reply_id, safe='')}")
+        if ButtonPermission.normalize(self.permission) is ButtonPermission.ALL:
+            params.append("permission=all")
+        if self.click_limit != 1:
+            params.append(f"click_limit={self.click_limit or 0}")
         return f"[KE:button,{','.join(params)}]"
 
     def __str__(self):
@@ -1263,6 +1344,12 @@ class ButtonFrameElement(BaseElement):
                     "show": button.show,
                     "value": button.value,
                     **({"reply_id": button.reply_id} if button.reply_id is not None else {}),
+                    **(
+                        {"permission": ButtonPermission.ALL.value}
+                        if ButtonPermission.normalize(button.permission) is ButtonPermission.ALL
+                        else {}
+                    ),
+                    **({"click_limit": button.click_limit or 0} if button.click_limit != 1 else {}),
                 }
                 for button in row.buttons
             ]
@@ -1526,6 +1613,8 @@ __all__ = [
     "EmbedElement",
     "MentionElement",
     "ActionTextElement",
+    "ButtonPermission",
+    "normalize_button_click_limit",
     "ButtonPayload",
     "ButtonElement",
     "ButtonRows",

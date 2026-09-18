@@ -69,6 +69,7 @@ __all__ = [
     "Raw",
     "ActionText",
     "Button",
+    "ButtonPermission",
     "ButtonRows",
     "ButtonFrame",
     "plain",

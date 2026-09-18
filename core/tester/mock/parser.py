@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from core.builtins.message.internal import ActionText, I18NContext
 from core.builtins.parser.command import CommandParser
 from core.builtins.parser.hooks import HookPoint, dispatch_parser_hook
-from core.builtins.parser.message import _build_command_kwargs
+from core.builtins.parser.message import _build_command_kwargs, _confirm_long_regex_message
 from core.builtins.session.tasks import SessionTaskManager
 from core.constants.exceptions import SessionFinished
 from core.config.base import CoreConfig
@@ -46,6 +46,8 @@ async def parser(msg: "Bot.MessageSession"):
     # 检查正则
     if _should_skip_regex(msg.trigger_msg):
         return None
+    if not await _confirm_long_regex_message(msg, modules):
+        return msg
     # 若任何正则命中则会在 _execute_regex 中调用对应函数并抛出 SessionFinished
     await _execute_regex(msg, modules)
     # 若未命中任何正则，视为不匹配（适用于单元测试）

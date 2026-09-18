@@ -8,7 +8,13 @@
 import math
 import uuid
 
-from core.builtins.message.elements import ButtonElement, ButtonFrameElement, ButtonRows, I18NContextElement
+from core.builtins.message.elements import (
+    ButtonElement,
+    ButtonFrameElement,
+    ButtonPermission,
+    ButtonRows,
+    I18NContextElement,
+)
 from core.logger import Logger
 
 # 平台单行按钮数量的硬上限
@@ -126,3 +132,12 @@ def bind_callback_reply_ids(message, callback_id: str | None = None) -> list[str
     if generated_reply_id is not None and generated_reply_id not in reply_ids:
         reply_ids.append(generated_reply_id)
     return reply_ids
+
+
+def public_button_reply_ids(message) -> set[str]:
+    """返回消息中允许所有人点击的按钮 callback ID。"""
+    return {
+        button.reply_id
+        for button in _iter_buttons(message)
+        if button.payload.permission is ButtonPermission.ALL and button.reply_id is not None
+    }

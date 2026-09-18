@@ -5,7 +5,7 @@ from enum import Enum, auto
 
 from attrs import define
 
-from core.builtins.message.elements import ButtonRows
+from core.builtins.message.elements import ButtonPermission, ButtonRows
 from core.builtins.utils import confirm_command_default
 from core.utils.random import SecureRandom
 
@@ -19,9 +19,10 @@ class ButtonState:
 
     payload: str
     reply_id: str | None
-    allowed_sender_id: str
+    allowed_sender_id: str | None
     created_at: float
-    used: bool = False
+    click_limit: int | None = 1
+    click_count: int = 0
 
 
 @define(frozen=True)
@@ -50,6 +51,7 @@ class ButtonConsumeResult:
     status: ButtonConsumeStatus
     payload: str | None = None
     reply_id: str | None = None
+    exhausted: bool = False
 
 
 _button_registry: dict[str, ButtonState] = {}
@@ -81,8 +83,9 @@ def register_button_rows(button_rows: list[ButtonRows], allowed_sender_id: str) 
             _button_registry[token] = ButtonState(
                 payload=payload.value,
                 reply_id=payload.reply_id,
-                allowed_sender_id=allowed_sender_id,
+                allowed_sender_id=(None if payload.permission is ButtonPermission.ALL else allowed_sender_id),
                 created_at=now,
+                click_limit=payload.click_limit,
             )
             registered_row.append(RegisteredButton(label=button.show, token=token))
         if registered_row:
@@ -100,13 +103,18 @@ def consume_button(token: str, sender_id: str, now: float | None = None) -> Butt
     if current_time - state.created_at > BUTTON_EXPIRES:
         del _button_registry[token]
         return ButtonConsumeResult(ButtonConsumeStatus.EXPIRED)
-    if state.allowed_sender_id != sender_id:
+    if state.allowed_sender_id is not None and state.allowed_sender_id != sender_id:
         return ButtonConsumeResult(ButtonConsumeStatus.FORBIDDEN)
-    if state.used:
+    if state.click_limit is not None and state.click_count >= state.click_limit:
         return ButtonConsumeResult(ButtonConsumeStatus.USED)
 
-    state.used = True
-    return ButtonConsumeResult(ButtonConsumeStatus.SUCCESS, state.payload, state.reply_id)
+    state.click_count += 1
+    return ButtonConsumeResult(
+        ButtonConsumeStatus.SUCCESS,
+        state.payload,
+        state.reply_id,
+        exhausted=state.click_limit is not None and state.click_count >= state.click_limit,
+    )
 
 
 def normalize_button_payload(payload: str) -> str:

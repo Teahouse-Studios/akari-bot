@@ -33,6 +33,7 @@ from core.builtins.message.elements import (
     VideoElement,
     MentionElement,
     ActionTextElement,
+    ButtonPermission,
     ButtonElement,
     ButtonRows,
     ButtonFrameElement,
@@ -1366,6 +1367,8 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
                             unquote(button_show),
                             unquote(button_value),
                             unquote(button_reply_id) if button_reply_id is not None else None,
+                            ButtonPermission.normalize(parsed_params.get("permission")),
+                            int(parsed_params["click_limit"]) if parsed_params.get("click_limit") is not None else 1,
                         )
                     )
                     continue
@@ -1388,7 +1391,13 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
                     rows = [
                         ButtonRows.assign(
                             [
-                                ButtonElement.assign(button["show"], button["value"], button.get("reply_id"))
+                                ButtonElement.assign(
+                                    button["show"],
+                                    button["value"],
+                                    button.get("reply_id"),
+                                    button.get("permission"),
+                                    button.get("click_limit", 1),
+                                )
                                 for button in row
                                 if isinstance(button, dict) and "show" in button and "value" in button
                             ]

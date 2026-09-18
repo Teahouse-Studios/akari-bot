@@ -21,6 +21,7 @@ from core.client.init import client_cleanup, client_init
 from core.config.base import CoreConfig
 from core.constants.default import confirm_command_default
 from core.logger import Logger
+from core.utils.button_runtime import BUTTON_TOKEN_PREFIX, ButtonConsumeStatus, consume_button
 
 Bot.register_bot(client_name=client_name)
 Logger.rename(client_name)
@@ -242,6 +243,9 @@ class MyClient(botpy.Client):
                     if not message.content:
                         message.content = f"{command_prefix[0]}help"
         message.content = re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", message.content)
+        if re.match(r"^\[.*?聊天记录]\n.*", message.content):
+            return  # 暂不解析聊天记录，没有实际用途
+
         msg_chain = _convert_message_content(message)
         prefixes = [] if not match_atme else ["/"]
         session = await SessionInfo.assign(
@@ -283,6 +287,8 @@ class MyClient(botpy.Client):
             message.content = f"{command_prefix[0]}help"
 
         message.content = re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", message.content)
+        if re.match(r"^\[.*?聊天记录]\n.*", message.content):
+            return  # 暂不解析聊天记录，没有实际用途
         msg_chain = _convert_message_content(message)
 
         session = await SessionInfo.assign(
@@ -351,6 +357,8 @@ class MyClient(botpy.Client):
         reply_id = _record_message_ids(message)
 
         message.content = re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", message.content)
+        if re.match(r"^\[.*?聊天记录]\n.*", message.content):
+            return  # 暂不解析聊天记录，没有实际用途
         msg_chain = _convert_message_content(message)
 
         session = await SessionInfo.assign(
@@ -402,7 +410,15 @@ class MyClient(botpy.Client):
             return
         # QQBot 的交互事件不会可靠返回按钮所属消息的 ID；发送阶段把框架生成的虚拟
         # reply_id 编进 button data，此处恢复后即可复用 SessionTaskManager 的 callback 匹配。
-        payload = ButtonPayload.parse(send_msg)
+        if send_msg.startswith(BUTTON_TOKEN_PREFIX):
+            result = consume_button(send_msg, sender_id)
+            if result.status is not ButtonConsumeStatus.SUCCESS:
+                Logger.debug(f"QQBot button click rejected: {result.status.name}")
+                return
+            payload = ButtonPayload.parse(result.payload or "", result.reply_id)
+        else:
+            # 兼容旧版尚未迁移到运行时 token 的键盘数据。
+            payload = ButtonPayload.parse(send_msg)
         send_msg = payload.value
         if send_msg == "confirm_yes":
             send_msg = confirm_command_default[0]

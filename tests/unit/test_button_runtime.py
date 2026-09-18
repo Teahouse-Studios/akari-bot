@@ -5,7 +5,7 @@ from unittest.mock import patch
 from core.builtins.utils import confirm_command_default
 from core.tester import Tester, func_case
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Button, ButtonFrame
+from core.builtins.message.internal import Button, ButtonFrame, ButtonRows
 from core.utils.button import bind_callback_reply_ids, build_button_rows
 from core.utils.button_runtime import (
     BUTTON_TOKEN_PREFIX,
@@ -64,11 +64,45 @@ def _test_forbidden_does_not_consume():
     return denied.status is ButtonConsumeStatus.FORBIDDEN and allowed.status is ButtonConsumeStatus.SUCCESS
 
 
+def _test_public_button_accepts_other_sender():
+    _clear_button_registry()
+    rows = register_button_rows(build_button_rows([{"Help": "~help"}]), "Discord|Client|1")
+    # build_button_rows preserves the default owner policy; construct the public
+    # element explicitly to exercise the new API.
+    rows = register_button_rows([ButtonRows.assign([Button("Help", "~help", permission="all")])], "Discord|Client|1")
+    result = consume_button(rows[0][0].token, "Discord|Client|2")
+    return result.status is ButtonConsumeStatus.SUCCESS
+
+
 def _test_second_use_is_rejected():
     button = _register()
     first = consume_button(button.token, "Discord|Client|1")
     second = consume_button(button.token, "Discord|Client|1")
     return first.status is ButtonConsumeStatus.SUCCESS and second.status is ButtonConsumeStatus.USED
+
+
+def _test_click_limit_allows_configured_number_of_uses():
+    _clear_button_registry()
+    rows = register_button_rows([ButtonRows.assign([Button("Vote", "~vote", click_limit=2)])], "Discord|Client|1")
+    token = rows[0][0].token
+    first = consume_button(token, "Discord|Client|1")
+    second = consume_button(token, "Discord|Client|1")
+    third = consume_button(token, "Discord|Client|1")
+    return (
+        first.status is ButtonConsumeStatus.SUCCESS
+        and not first.exhausted
+        and second.status is ButtonConsumeStatus.SUCCESS
+        and second.exhausted
+        and third.status is ButtonConsumeStatus.USED
+    )
+
+
+def _test_unlimited_click_limit():
+    _clear_button_registry()
+    rows = register_button_rows([ButtonRows.assign([Button("Vote", "~vote", click_limit=0)])], "Discord|Client|1")
+    token = rows[0][0].token
+    results = [consume_button(token, "Discord|Client|1") for _ in range(3)]
+    return all(result.status is ButtonConsumeStatus.SUCCESS and not result.exhausted for result in results)
 
 
 def _test_expired_is_distinct_from_invalid():
@@ -128,7 +162,10 @@ async def test_button_runtime(tester: Tester):
     await tester.test(_test_callback_reply_id_is_bound_semantically, "callback 虚拟回复 ID 语义绑定")
     await tester.test(_test_existing_button_reply_id_is_preserved, "保留按钮显式回复 ID")
     await tester.test(_test_forbidden_does_not_consume, "无权限点击不消费按钮")
+    await tester.test(_test_public_button_accepts_other_sender, "公开按钮允许其他用户点击")
     await tester.test(_test_second_use_is_rejected, "按钮只能成功使用一次")
+    await tester.test(_test_click_limit_allows_configured_number_of_uses, "按钮点击次数限制")
+    await tester.test(_test_unlimited_click_limit, "按钮不限点击次数")
     await tester.test(_test_expired_is_distinct_from_invalid, "过期与无效状态可区分")
     await tester.test(_test_consuming_one_button_keeps_sibling, "消费当前按钮不影响同组按钮")
     await tester.test(_test_urls_do_not_register_tokens, "HTTP 链接不注册 token")

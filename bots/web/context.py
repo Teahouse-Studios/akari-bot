@@ -54,13 +54,12 @@ def _serialize_buttons(frame: ButtonFrameElement) -> list[list[dict]]:
         buttons = []
         for button in row.buttons:
             payload = button.payload
-            buttons.append(
-                {
-                    "show": button.show,
-                    "value": payload.value,
-                    "reply_id": payload.reply_id,
-                }
-            )
+            item = {"show": button.show, "value": payload.value, "reply_id": payload.reply_id}
+            if payload.permission.value == "all":
+                item["permission"] = payload.permission.value
+            if payload.click_limit != 1:
+                item["click_limit"] = payload.click_limit or 0
+            buttons.append(item)
         if buttons:
             rows.append(buttons)
     return rows

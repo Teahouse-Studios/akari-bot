@@ -8,7 +8,7 @@
 import asyncio
 import time
 import uuid
-from typing import Coroutine, TYPE_CHECKING
+from typing import Callable, Coroutine, TYPE_CHECKING
 
 from core.constants.exceptions import SessionFinished
 from core.exports import add_export
@@ -50,6 +50,8 @@ class SessionTaskManager:
         reply: list[int] | list[str] | int | str | None = None,
         reply_pending: bool = False,
         timeout: float | None = 120,
+        task_type: str | None = None,
+        matcher: Callable[["MessageSession"], bool] | None = None,
     ):
         """
         添加一个等待任务到管理器。
@@ -62,12 +64,14 @@ class SessionTaskManager:
         :param reply: 期望的回复消息 ID（可以是整数、字符串或列表）
                      如果为 None，表示等待任何回复；否则只等待特定 ID 的回复
         :param timeout: 任务超时时间（秒），默认 120 秒
+        :param task_type: 覆盖自动推断的任务类型（如 ``wait_next``）
+        :param matcher: 可选的消息匹配器；不匹配时任务继续等待
         """
         # 使用物理 ID 建立稳定索引；Union／channel 都允许在等待期间变化。
         target = msg.session_info.target_id
         sender = msg.session_info.sender_id
         # 根据是否指定了回复 ID 来确定任务类型
-        task_type = "reply" if reply or reply_pending else "wait"
+        task_type = task_type or ("reply" if reply or reply_pending else "wait")
         if all_:
             sender = "all"
 
@@ -97,6 +101,7 @@ class SessionTaskManager:
             # reply 的物理 message_id 只在发送它的客户端／平台场景中有意义；
             # 即使两个入口属于同一现实通道，也不能跨平台用碰巧相同的 ID 命中。
             "reply_scope": cls._callback_scope(msg) if task_type == "reply" else None,
+            "matcher": matcher,
         }
         if not reply_pending:
             cls._task_list[target][sender][msg]["reply_ready"].set()
@@ -133,6 +138,7 @@ class SessionTaskManager:
         *,
         timeout: float | None = CALLBACK_TTL,
         once: bool = False,
+        allow_all_reply_ids: set[str] | None = None,
     ) -> tuple[tuple[str | None, str], str]:
         """
         为已发送的消息添加一个回调函数。
@@ -144,6 +150,7 @@ class SessionTaskManager:
         :param fallback_ids: 无法取得精确消息 ID 时使用的后备 ID
         :param timeout: callback 有效秒数；默认为 30 分钟，None 表示不自动过期
         :param once: 是否在首次命中后立即失效
+        :param allow_all_reply_ids: 允许非原发送者触发的按钮 reply ID
         """
         if timeout is not None and timeout <= 0:
             raise ValueError("Callback timeout must be positive or None.")
@@ -166,6 +173,7 @@ class SessionTaskManager:
             "ts": time.time(),  # 添加时间戳（用于超时清理）
             "timeout": timeout,
             "once": once,
+            "allow_all_reply_ids": frozenset(str(reply_id) for reply_id in (allow_all_reply_ids or set())),
             # 可重复 callback 必须串行执行，避免同一消息的快速连续操作并发
             # 修改模块状态；一次性 callback 仍会在 await 用户代码前原子删除。
             "lock": asyncio.Lock(),
@@ -361,7 +369,7 @@ class SessionTaskManager:
         return True
 
     @classmethod
-    async def check(cls, session: "MessageSession") -> bool:
+    async def check(cls, session: "MessageSession", *, allow_wait_next_fallthrough: bool = False) -> bool:
         """
         检查新消息是否匹配任何等待中的任务或回调。
 
@@ -390,7 +398,10 @@ class SessionTaskManager:
                 and reply_id in (item[1]["reply"] or ())
             ]
             if exact_matches:
-                handled = await cls._complete_wait_task(*exact_matches[0], session)
+                matched_task = exact_matches[0]
+                handled = await cls._complete_wait_task(*matched_task, session)
+                if handled and allow_wait_next_fallthrough and matched_task[1]["type"] == "wait_next":
+                    handled = False
                 break
 
             pending_tasks = [
@@ -411,12 +422,18 @@ class SessionTaskManager:
                     await asyncio.gather(*readiness_waiters, return_exceptions=True)
                 continue
 
-            wait_matches = [item for item in active_tasks if item[1]["type"] == "wait"]
+            wait_matches = [item for item in active_tasks if item[1]["type"] in {"wait", "wait_next"}]
+            wait_matches = [
+                item for item in wait_matches if item[1].get("matcher") is None or item[1]["matcher"](session)
+            ]
             if wait_matches:
-                handled = await cls._complete_wait_task(*wait_matches[0], session)
+                matched_task = wait_matches[0]
+                handled = await cls._complete_wait_task(*matched_task, session)
+                if handled and allow_wait_next_fallthrough and matched_task[1]["type"] == "wait_next":
+                    handled = False
             break
 
-        # 等待任务优先消费消息，不能再让同一条回复同时命中 callback 或继续进入 parser。
+        # 已完成的独占等待任务优先消费消息；允许 fallthrough 的 wait_next 任务除外。
         if handled:
             return True
 
@@ -439,13 +456,14 @@ class SessionTaskManager:
             callback_scope, _registration_token = callback_key
             if callback_scope != cls._callback_scope(session):
                 continue
+            reply_id = str(session.session_info.reply_id)
             if (
                 callback_info["owner_sender_id"] is not None
                 and callback_info["owner_sender_id"] != session.session_info.sender_id
+                and reply_id not in callback_info.get("allow_all_reply_ids", ())
             ):
                 continue
             candidate = (callback_key, callback_info)
-            reply_id = str(session.session_info.reply_id)
             if reply_id in callback_info.get("primary_ids", ()):
                 exact_matches.append(candidate)
             elif reply_id in callback_info.get("fallback_ids", ()):

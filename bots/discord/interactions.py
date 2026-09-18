@@ -57,7 +57,7 @@ async def handle_button_click(
     if not interaction.response.is_done():
         await interaction.response.defer()
 
-    if button.view and disable_selected_button(button.view, button.custom_id or ""):
+    if result.exhausted and button.view and disable_selected_button(button.view, button.custom_id or ""):
         try:
             await interaction.message.edit(view=button.view)
         except Exception:

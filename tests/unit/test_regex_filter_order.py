@@ -1,8 +1,14 @@
 """core.builtins.parser.message 单元测试 - 正则平台筛选与执行锁。"""
 
+import re
 from types import SimpleNamespace
+from unittest.mock import AsyncMock
 
-from core.builtins.parser.message import regex_func_available, try_acquire_execution_lock
+from core.builtins.parser.message import (
+    _confirm_long_regex_message,
+    regex_func_available,
+    try_acquire_execution_lock,
+)
 from core.tester import func_case, Tester
 
 
@@ -55,6 +61,66 @@ def _fake_avail_rfunc(available_for=None, exclude_from=None, load: bool = True):
         exclude_from=exclude_from if exclude_from is not None else [],
         load=load,
     )
+
+
+def _fake_long_regex_message(pattern: str, text: str):
+    rfunc = SimpleNamespace(
+        available_for=["*"],
+        exclude_from=[],
+        load=True,
+        mode="M",
+        compiled=re.compile(pattern),
+        text_only=True,
+        element_filter=[],
+        trigger_once_startup=False,
+    )
+    module = SimpleNamespace(
+        _db_load=True,
+        regex=True,
+        base=False,
+        load=True,
+        available_for=["*"],
+        exclude_from=[],
+        regex_list=SimpleNamespace(set=[rfunc]),
+    )
+    msg = SimpleNamespace(
+        trigger_msg=text,
+        session_info=SimpleNamespace(
+            enabled_modules=["test"],
+            read_all_messages=True,
+            target_from="TEST",
+            client_name="TEST",
+            target_id="TEST|0",
+        ),
+        as_display=lambda **_: text,
+        wait_confirm=AsyncMock(return_value=False),
+    )
+    return msg, {"test": module}
+
+
+async def _test_long_regex_match_requests_confirmation():
+    msg, modules = _fake_long_regex_message("触发", "触发" + "x" * 100)
+    result = await _confirm_long_regex_message(msg, modules)
+    return not result and msg.wait_confirm.await_count == 1
+
+
+async def _test_long_regex_confirmation_allows_parsing():
+    msg, modules = _fake_long_regex_message("触发", "触发" + "x" * 100)
+    msg.wait_confirm.return_value = True
+    result = await _confirm_long_regex_message(msg, modules)
+    return result and msg.wait_confirm.await_count == 1
+
+
+async def _test_long_regex_miss_does_not_request_confirmation():
+    msg, modules = _fake_long_regex_message("未命中", "触发" + "x" * 100)
+    result = await _confirm_long_regex_message(msg, modules)
+    return result and msg.wait_confirm.await_count == 0
+
+
+async def _test_short_regex_match_does_not_request_confirmation():
+    msg, modules = _fake_long_regex_message("触发", "触发")
+    result = await _confirm_long_regex_message(msg, modules)
+    return result and msg.wait_confirm.await_count == 0
 
 
 async def _test_wildcard_available_everywhere():
@@ -132,5 +198,9 @@ async def test_regex_filter_order(tester: Tester):
     await tester.test(_test_exclude_from_takes_precedence, "排除优先测试")
     await tester.test(_test_target_from_also_matches, "场景前缀匹配测试")
     await tester.test(_test_unloaded_is_unavailable, "未加载不可用测试")
+    await tester.test(_test_long_regex_match_requests_confirmation, "长消息命中正则时请求确认")
+    await tester.test(_test_long_regex_confirmation_allows_parsing, "确认继续后允许正则解析")
+    await tester.test(_test_long_regex_miss_does_not_request_confirmation, "长消息未命中正则时不请求确认")
+    await tester.test(_test_short_regex_match_does_not_request_confirmation, "短消息不请求确认")
 
     return tester

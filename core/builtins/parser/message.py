@@ -55,6 +55,8 @@ if TYPE_CHECKING:
 # 匹配哈希缓存 - 缓存消息与模块的匹配结果，加速处理
 match_hash_cache = ExpiringTempDict()
 
+LONG_REGEX_MESSAGE_LENGTH = 100
+
 # 标记为单次触发的正则，其「模块名 + 正则序号 + 场景 ID」在此登记，登记后不再参与匹配。
 # 仅存于进程内存，重启即清空；条目数上限为「触发过的场景数 × 单次触发正则条数」，有界。
 regex_once_cache: set[tuple[str, int, str]] = set()
@@ -250,9 +252,9 @@ async def parser(msg: "Bot.MessageSession"):
             isinstance(wait_result, Continue) and wait_result.data.get("skip_wait_tasks", False)
         )
         if not skip_wait_tasks:
-            # 消息已被等待任务或 callback 消费：它属于先前命令的执行域，
-            # 不能再次进入命令/正则路由，否则会与持有锁的根命令形成自锁。
-            if await SessionTaskManager.check(msg):
+            # 独占等待任务或 callback 会消费消息；wait_next／非确认消息等待则允许
+            # 完成等待后继续进入命令/正则路由。
+            if await SessionTaskManager.check(msg, allow_wait_next_fallthrough=True):
                 return
 
         # 获取该平台和客户端的所有可用模块
@@ -335,6 +337,9 @@ async def parser(msg: "Bot.MessageSession"):
         # 正则路由策略（禁用前缀、静音、运行中提醒）由 core policy hook 决定。
         regex_route_result = await _dispatch_stage(HookPoint.REGEX_ROUTE, msg)
         if isinstance(regex_route_result, Stop):
+            return msg
+
+        if not await _confirm_long_regex_message(msg, modules):
             return msg
 
         await _execute_regex(msg, modules, identify_str)
@@ -715,6 +720,64 @@ def regex_func_available(rfunc, target_from: str, client_name: str) -> bool:
     return "*" in rfunc.available_for or target_from in rfunc.available_for or client_name in rfunc.available_for
 
 
+def _match_regex(rfunc, trigger_msg: str):
+    """按正则元数据执行一次匹配，返回 ``(是否命中, 匹配结果)``。"""
+    if rfunc.mode in ("M", "MATCH"):
+        matched_msg = rfunc.compiled.match(trigger_msg)
+        return bool(matched_msg), matched_msg
+    if rfunc.mode in ("A", "FINDALL"):
+        matched_msg = tuple(set(rfunc.compiled.findall(trigger_msg)))
+        return bool(matched_msg), matched_msg
+    return False, None
+
+
+def _regex_module_available(msg: "Bot.MessageSession", module: Module, module_name: str) -> bool:
+    """判断正则模块是否能在当前会话参与匹配。"""
+    if not regex_module_enabled(
+        module, module_name, msg.session_info.enabled_modules, msg.session_info.read_all_messages
+    ):
+        return False
+    if not module.load:
+        return False
+    if msg.session_info.target_from in module.exclude_from or msg.session_info.client_name in module.exclude_from:
+        return False
+    return (
+        "*" in module.available_for
+        or msg.session_info.target_from in module.available_for
+        or msg.session_info.client_name in module.available_for
+    )
+
+
+def _regex_matches_message(msg: "Bot.MessageSession", modules) -> bool:
+    """检查长消息是否至少命中一条当前会话可用的正则。"""
+    if len(msg.trigger_msg) <= LONG_REGEX_MESSAGE_LENGTH:
+        return False
+
+    for module_name, module in modules.items():
+        if not module._db_load or not module.regex_list.set or not _regex_module_available(msg, module, module_name):
+            continue
+        for index, rfunc in enumerate(module.regex_list.set):
+            if not regex_func_available(rfunc, msg.session_info.target_from, msg.session_info.client_name):
+                continue
+            if rfunc.trigger_once_startup and regex_once_triggered(module_name, index, msg.session_info.target_id):
+                continue
+            trigger_msg = msg.as_display(text_only=rfunc.text_only, element_filter=rfunc.element_filter)
+            try:
+                matched, _ = _match_regex(rfunc, trigger_msg)
+            except Exception:
+                continue
+            if matched:
+                return True
+    return False
+
+
+async def _confirm_long_regex_message(msg: "Bot.MessageSession", modules) -> bool:
+    """长消息命中正则时请求确认；返回 False 表示终止本次解析。"""
+    if not _regex_matches_message(msg, modules):
+        return True
+    return await msg.wait_confirm(I18NContext("parser.regex.message_too_long"))
+
+
 async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
     """
     执行正则表达式匹配的模块。
@@ -806,19 +869,11 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                         trigger_msg = get_trigger_msg(rfunc.text_only, rfunc.element_filter)
 
                         # ========== 步骤 5: 执行正则表达式匹配 ==========
-                        # mode 与模式均在注册期归一化/编译，此处直接用
-                        if rfunc.mode in ("M", "MATCH"):
-                            # 使用 match（从字符串开头匹配）
-                            msg.matched_msg = rfunc.compiled.match(trigger_msg)
-                            if msg.matched_msg:
-                                matched = True
-                                matched_hash = hash(msg.matched_msg.groups())
-                        elif rfunc.mode in ("A", "FINDALL"):
-                            # 使用 findall（查找所有匹配）
-                            msg.matched_msg = tuple(set(rfunc.compiled.findall(trigger_msg)))
-                            if msg.matched_msg:
-                                matched = True
-                                matched_hash = hash(msg.matched_msg)
+                        matched, msg.matched_msg = _match_regex(rfunc, trigger_msg)
+                        if matched:
+                            matched_hash = hash(
+                                msg.matched_msg.groups() if rfunc.mode in ("M", "MATCH") else msg.matched_msg
+                            )
 
                         # ========== 步骤 6: 处理匹配成功的情况 ==========
                         if matched:

@@ -50,7 +50,7 @@ async def handle_button_callback(callback: types.CallbackQuery, ctx_slot: int | 
         return
 
     await callback.answer()
-    if callback.message.reply_markup:
+    if result.exhausted and callback.message.reply_markup:
         updated_markup = remove_selected_button(callback.message.reply_markup, callback.data or "")
         try:
             await callback.message.edit_reply_markup(reply_markup=updated_markup)

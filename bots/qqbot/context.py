@@ -30,6 +30,7 @@ from core.builtins.message.mention import render_at_code
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import (
     ActionTextElement,
+    ButtonPermission,
     ButtonFrameElement,
     ButtonRows,
     PlainElement,
@@ -48,6 +49,7 @@ from core.builtins.session.info import SessionInfo
 from core.config.base import CoreConfig
 from core.constants.path import assets_path
 from core.logger import Logger
+from core.utils.button_runtime import register_button_rows
 from core.utils.media import resolve_media_path
 from core.utils.random import Random
 from core.utils.table import escape_table_cell, resolve_table_columns
@@ -177,11 +179,16 @@ def _build_qqbot_keyboard(
         )
         keyboard_rows_data = keyboard_rows_data[:QQBOT_MAX_KEYBOARD_ROWS]
 
+    # QQ 已弃用原生 click_limit；所有按钮点击次数统一由框架运行时 token 控制。
+    registered_rows = register_button_rows(
+        [ButtonRows.assign(row_buttons) for row_buttons in keyboard_rows_data],
+        session_info.sender_id or session_info.get_common_sender_id(),
+    )
     keyboard_rows = []
     button_id = 0
-    for row_buttons in keyboard_rows_data[:QQBOT_MAX_KEYBOARD_ROWS]:
+    for row_buttons, registered_row in zip(keyboard_rows_data[:QQBOT_MAX_KEYBOARD_ROWS], registered_rows, strict=True):
         buttons = []
-        for message_button in row_buttons:
+        for message_button, registered_button in zip(row_buttons, registered_row, strict=True):
             payload = message_button.payload
             button_id += 1
             buttons.append(
@@ -195,12 +202,16 @@ def _build_qqbot_keyboard(
                     action=Action(
                         type=0 if payload.value.startswith(("http://", "https://")) else 1,
                         permission=Permission(
-                            type=2 if target.scope == "c2c" else 0,
-                            specify_user_ids=[session_info.get_common_sender_id()],
-                            specify_role_ids=["1"],
+                            # QQ 官方键盘的 type=2 表示所有成员，type=0 表示指定用户。
+                            type=(2 if payload.permission is ButtonPermission.ALL or target.scope == "c2c" else 0),
+                            specify_user_ids=(
+                                []
+                                if payload.permission is ButtonPermission.ALL
+                                else [session_info.get_common_sender_id()]
+                            ),
+                            specify_role_ids=[] if payload.permission is ButtonPermission.ALL else ["1"],
                         ),
-                        click_limit=1,
-                        data=payload.to_data(),
+                        data=registered_button.url or registered_button.token,
                         at_bot_show_channel_list=False,
                     ),
                 )
@@ -216,6 +227,8 @@ def _build_qqbot_keyboard(
 # 每多一对，列数减半、单行长度随之减半。帮助的表格另有自己的上限，两者不共用。
 MESSAGE_NODES_MAX_ROWS = 2
 MARKDOWN_IMAGE_MAX_WIDTH = 128
+MARKDOWN_IMAGE_LIST_HEIGHT = 128
+MARKDOWN_IMAGE_LIST_COLUMNS = 4
 
 
 def _markdown_image_size(image: ImageElement, width: int, height: int) -> tuple[int, int]:
@@ -223,6 +236,13 @@ def _markdown_image_size(image: ImageElement, width: int, height: int) -> tuple[
     max_width = image.max_h or MARKDOWN_IMAGE_MAX_WIDTH
     scale = max_width / width if width > max_width else 1
     return int(width * scale), int(height * scale)
+
+
+def _markdown_image_list_size(width: int, height: int) -> tuple[int, int]:
+    """计算 QQBot Markdown 图片列表中的缩略图尺寸。"""
+    if height <= 0:
+        return 1, MARKDOWN_IMAGE_LIST_HEIGHT
+    return max(1, int(width * MARKDOWN_IMAGE_LIST_HEIGHT / height)), MARKDOWN_IMAGE_LIST_HEIGHT
 
 
 def nodes_to_table(session_info: SessionInfo, nodes: MessageNodes) -> str:
@@ -880,6 +900,8 @@ class QQBotContextManager(ContextManager):
             # 指令操作是行内元素：它自身与紧随其后的文本都须并入上一项，
             # 否则 "\n".join(texts) 会将同一句话的末尾文本移至下一行。
             inline_pending = False
+            markdown_images: list[tuple[ImageElement, str, int, int]] = []
+            markdown_image_positions: list[int] = []
             s3_storage = None
             if any(isinstance(element, ImageElement) for element in converted_message):
                 s3_storage = await asyncio.to_thread(_load_s3_storage)
@@ -901,8 +923,9 @@ class QQBotContextManager(ContextManager):
                             upload = await s3_storage.upload_temp(image_path)
                             if upload and "public_url" in upload:
                                 w, h = await x.get_wh()
-                                fin_w, fin_h = _markdown_image_size(x, w, h)
-                                texts.append(f"![text #{fin_w}px #{fin_h}px]({upload['public_url']})")
+                                markdown_images.append((x, upload["public_url"], w, h))
+                                texts.append("")
+                                markdown_image_positions.append(len(texts) - 1)
                         except Exception:
                             Logger.exception(
                                 f"Failed to upload a QQBot markdown image to S3 for {session_info.session_id}; "
@@ -927,6 +950,30 @@ class QQBotContextManager(ContextManager):
                         else:
                             texts.append(tag)
                     inline_pending = True
+            if markdown_images:
+                use_image_list = len(markdown_images) > 1 and any(
+                    _markdown_image_size(image, width, height)[1] > MARKDOWN_IMAGE_LIST_HEIGHT
+                    for image, _, width, height in markdown_images
+                )
+                if use_image_list:
+                    image_lines = []
+                    for start in range(0, len(markdown_images), MARKDOWN_IMAGE_LIST_COLUMNS):
+                        line = []
+                        for image, url, width, height in markdown_images[start : start + MARKDOWN_IMAGE_LIST_COLUMNS]:
+                            fin_w, fin_h = _markdown_image_list_size(width, height)
+                            line.append(f"![text #{fin_w}px #{fin_h}px]({url})")
+                        image_lines.append("".join(line))
+                    image_list = session_info.locale.t("message.image.list") + "\n" + "\n".join(image_lines)
+
+                for image_position, (image, url, width, height) in zip(markdown_image_positions, markdown_images):
+                    if use_image_list:
+                        replacement = image_list if image_position == markdown_image_positions[0] else ""
+                    else:
+                        fin_w, fin_h = _markdown_image_size(image, width, height)
+                        replacement = f"![text #{fin_w}px #{fin_h}px]({url})"
+                    texts[image_position] = replacement
+                if use_image_list:
+                    texts = [text for index, text in enumerate(texts) if index not in markdown_image_positions[1:]]
             if keyboard and not texts:
                 texts.append("\u200b")
             prepared_media = await prepare_separate_media(media)
