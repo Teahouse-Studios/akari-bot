@@ -1,9 +1,15 @@
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock, patch
 
+import bots.milky.context as milky_context
+import bots.onebot.context as onebot_context
 from bots.discord.context import DiscordContextManager
 from bots.discord.features import features as discord_features
 from bots.kook.features import features as kook_features
+from bots.milky.context import MilkyContextManager
+from bots.milky.features import features as milky_features
+from bots.onebot.context import OneBotContextManager
+from bots.onebot.features import features as onebot_features
 from bots.qqbot.context import QQBotContextManager
 from bots.qqbot.features import features as qqbot_features, guild_features
 from core.builtins.bot import Bot
@@ -19,6 +25,8 @@ async def _test_permission_group_features():
         discord_features.support_permission_group
         and kook_features.support_permission_group
         and guild_features.support_permission_group
+        and onebot_features.support_permission_group
+        and milky_features.support_permission_group
         and not qqbot_features.support_permission_group
     )
 
@@ -177,6 +185,57 @@ async def _test_qqbot_permission_groups():
     )
 
 
+async def _test_onebot_permission_groups():
+    call_action = AsyncMock(return_value=None)
+    session = SessionInfo(
+        target_id="QQ|Group|123",
+        target_from="QQ|Group",
+        sender_id="QQ|1",
+        sender_from="QQ",
+        client_name="QQ",
+        session_id="onebot-permission-groups",
+    )
+
+    with patch.object(onebot_context.aiocqhttp_bot, "call_action", new=call_action):
+        await OneBotContextManager.grant_permission_group(session, ["QQ|1", "QQ|2"], ["admin"])
+        await OneBotContextManager.revoke_permission_group(session, "QQ|1", "admin")
+        # OneBot 没有「管理员」以外的原生权限组，此类请求应被跳过而非发出无效调用
+        await OneBotContextManager.grant_permission_group(session, "QQ|1", "role|10")
+
+    calls = call_action.await_args_list
+    api_calls = [call.args for call in calls]
+    api_kwargs = [call.kwargs for call in calls]
+    return api_calls == [("set_group_admin",)] * 3 and api_kwargs == [
+        {"group_id": 123, "user_id": 1, "enable": True},
+        {"group_id": 123, "user_id": 2, "enable": True},
+        {"group_id": 123, "user_id": 1, "enable": False},
+    ]
+
+
+async def _test_milky_permission_groups():
+    set_admin = AsyncMock(return_value=None)
+    session = SessionInfo(
+        target_id="QQ|Group|123",
+        target_from="QQ|Group",
+        sender_id="QQ|1",
+        sender_from="QQ",
+        client_name="QQ",
+        session_id="milky-permission-groups",
+    )
+
+    with patch.object(milky_context.milky_bot, "set_group_member_admin", new=set_admin):
+        await MilkyContextManager.grant_permission_group(session, ["QQ|1", "QQ|2"], ["admin"])
+        await MilkyContextManager.revoke_permission_group(session, "QQ|1", "admin")
+        await MilkyContextManager.grant_permission_group(session, "QQ|1", "role|10")
+
+    calls = set_admin.await_args_list
+    return [call.kwargs for call in calls] == [
+        {"group_id": 123, "user_id": 1, "is_set": True},
+        {"group_id": 123, "user_id": 2, "is_set": True},
+        {"group_id": 123, "user_id": 1, "is_set": False},
+    ]
+
+
 @func_case
 async def test_permission_groups(tester: Tester):
     """平台原生权限组能力、队列转换与 SDK 调用测试。"""
@@ -186,4 +245,6 @@ async def test_permission_groups(tester: Tester):
     await tester.test(_test_discord_permission_groups, "Discord 权限组授予与移除测试")
     await tester.test(_test_kook_permission_groups, "KOOK 权限组授予与移除测试")
     await tester.test(_test_qqbot_permission_groups, "QQBot 权限组授予与移除测试")
+    await tester.test(_test_onebot_permission_groups, "OneBot 权限组授予与移除测试")
+    await tester.test(_test_milky_permission_groups, "Milky 权限组授予与移除测试")
     return tester

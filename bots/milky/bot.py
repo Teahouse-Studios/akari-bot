@@ -206,7 +206,7 @@ async def _enforce_group_blocklist(session: SessionInfo, context: str, peer_id) 
 async def message_handler(event: dict) -> None:
     """处理消息接收事件。"""
     message = _event_data(event)
-    context = message_field(message, "message_context")
+    context = message_field(message, "message_scene")
     sender_uin = message_field(message, "sender_id")
     if context == "temp" and not enable_temp_session:
         return

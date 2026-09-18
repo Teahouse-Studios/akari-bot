@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Any
 
 from milky.models import (
+    ImageSubType,
     MentionAllSegmentData,
     MentionSegmentData,
     OutgoingForwardSegment,
@@ -175,6 +176,20 @@ def _append_mention(segments: list, user_id: Any) -> None:
         segments.append(OutgoingMentionAllSegment(data=MentionAllSegmentData()))
 
 
+def _ensure_line_break(segments: list) -> None:
+    """为块级元素补齐换行，使其不与上一行内容粘连。
+
+    末段已是文本段时直接在末尾补换行（已以换行结尾则跳过），否则新增一个换行文本段。
+
+    :param segments: 出站消息段列表，会被就地修改。
+    """
+    if isinstance(segments[-1], OutgoingTextSegment):
+        if not segments[-1].data.text.endswith("\n"):
+            segments[-1].data.text += "\n"
+        return
+    segments.append(OutgoingTextSegment(data=TextSegmentData(text="\n")))
+
+
 async def convert_chain_to_segments(
     session_info: SessionInfo,
     message: MessageChain,
@@ -183,6 +198,9 @@ async def convert_chain_to_segments(
     """将消息链转换为 Milky 出站消息段。
 
     媒体元素不可得时静默跳过该元素；全部元素均被跳过时返回空列表，由调用方放弃发送。
+
+    各元素均为块级元素，除首个元素外都另起一行；仅文本流内部的 AT 码属于行内内容，
+    沿用所在行而不额外换行。
 
     :param session_info: 会话信息。
     :param message: 待发送的消息链。
@@ -193,26 +211,51 @@ async def convert_chain_to_segments(
     if quote and session_info.messages and str(session_info.message_id or "").isdigit():
         segments.append(OutgoingReplySegment(data=ReplySegmentData(message_seq=int(session_info.message_id))))
 
+    # 标记是否已写入过元素内容：首个元素直接落段，其后元素均先补齐换行
+    has_content = False
+
     for element in message.as_sendable(session_info):
         if isinstance(element, PlainElement):
             # AT 码与前后文本同属一条文本，需在文本流内按出现顺序转换为提及段
             parts = iter_at_code(element.text) if element.allow_parse else (element.text,)
+            started = False
             for part in parts:
                 if isinstance(part, InlineMention) and part.client == client_name:
+                    if not started and has_content:
+                        _ensure_line_break(segments)
+                    started = True
                     _append_mention(segments, part.id)
                 else:
-                    _append_text(segments, part.raw if isinstance(part, InlineMention) else part)
-            Logger.info(f"[Bot] -> [{session_info.target_id}]: {element.text}")
+                    text = part.raw if isinstance(part, InlineMention) else part
+                    if not text:
+                        continue
+                    if not started and has_content:
+                        _ensure_line_break(segments)
+                    started = True
+                    _append_text(segments, text)
+            if started:
+                has_content = True
+                Logger.info(f"[Bot] -> [{session_info.target_id}]: {element.text}")
         elif isinstance(element, ImageElement):
             image_b64 = await resolve_media_base64(element)
             if image_b64 is None:
                 continue
-            segments.append(OutgoingImageSegment(data=OutgoingImageSegmentData(uri=f"base64://{image_b64}")))
+            if has_content:
+                _ensure_line_break(segments)
+            # `sub_type` 为协议必填字段，缺失会被 SDK 校验拒绝
+            segments.append(
+                OutgoingImageSegment(
+                    data=OutgoingImageSegmentData(uri=f"base64://{image_b64}", sub_type=ImageSubType.NORMAL)
+                )
+            )
+            has_content = True
             Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(element)}")
         elif isinstance(element, (AudioElement, VideoElement)):
             media_path = await resolve_media_path(element)
             if media_path is None:
                 continue
+            if has_content:
+                _ensure_line_break(segments)
             media_uri = Path(media_path).as_uri()
             if isinstance(element, AudioElement):
                 segments.append(OutgoingRecordSegment(data=OutgoingRecordSegmentData(uri=media_uri)))
@@ -220,13 +263,17 @@ async def convert_chain_to_segments(
             else:
                 segments.append(OutgoingVideoSegment(data=OutgoingVideoSegmentData(uri=media_uri)))
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Video: {str(element)}")
+            has_content = True
         elif isinstance(element, MentionElement):
+            if has_content:
+                _ensure_line_break(segments)
             if element.client == client_name and session_info.target_from == target_group_prefix:
                 _append_mention(segments, element.id)
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Mention: {element.client}|{str(element.id)}")
             else:
                 # 无法在当前场景提及该用户，以空格占位保持文本可读性
                 _append_text(segments, " ")
+            has_content = True
     return segments
 
 

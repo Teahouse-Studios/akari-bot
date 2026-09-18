@@ -1,20 +1,38 @@
 """Milky 消息适配器的出站消息转换单元测试。"""
 
+import os
+import tempfile
+from io import BytesIO
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
+from PIL import Image as PILImage
+from milky.models import ImageSubType
+
 import bots.milky.context as milky_context
-from bots.milky.context import MilkyContextManager
+from bots.milky.context import MilkyContextManager, qq_limited_emoji
 from bots.milky.features import features as milky_features
 from bots.milky.info import client_name, sender_prefix, target_group_prefix
 from bots.milky.utils import convert_chain_to_segments
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import MentionElement, VideoElement
+from core.builtins.message.elements import ImageElement, MentionElement, VideoElement
 from core.builtins.message.internal import Audio, Image, Plain
 from core.builtins.session.info import SessionInfo
 from core.i18n import Locale
 from core.tester import Tester, func_case
 from core.utils.session import inject_features
+
+
+def _png_file() -> str:
+    """生成一个内容合法的临时 PNG 文件，供图片段用例使用。
+
+    :return: 临时文件路径，调用方负责清理。
+    """
+    buffer = BytesIO()
+    PILImage.new("RGB", (2, 2), "red").save(buffer, format="PNG")
+    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as image_file:
+        image_file.write(buffer.getvalue())
+        return image_file.name
 
 
 def _session(session_id: str, message_id: str | None = None) -> SessionInfo:
@@ -98,12 +116,76 @@ async def _test_atcode_converts_to_mention_segments() -> bool:
     )
 
 
+async def _test_block_elements_are_separated_by_newline() -> bool:
+    """块级元素之间另起一行，仅文本流内部的 AT 码沿用所在行。"""
+    session = _session("milky-newline")
+    block_segments = await convert_chain_to_segments(
+        session, MessageChain.assign([Plain("first"), Plain("second")]), quote=False
+    )
+    inline_segments = await convert_chain_to_segments(session, MessageChain.assign("a <AT:QQ|10001> b"), quote=False)
+    block_text = "".join(segment.data.text for segment in block_segments if segment.type == "text")
+    inline_text = "".join(segment.data.text for segment in inline_segments if segment.type == "text")
+    return block_text == "first\nsecond" and inline_text == "a  b"
+
+
+async def _test_image_segment_uses_normal_subtype_and_newline() -> bool:
+    """图片段带必填的 sub_type，且与前置文本以换行分隔。"""
+    image_path = _png_file()
+    try:
+        session = _session("milky-image-newline")
+        segments = await convert_chain_to_segments(
+            session, MessageChain.assign([Plain("caption"), ImageElement.assign(image_path)]), quote=False
+        )
+        return (
+            _segment_types(segments) == ["text", "image"]
+            and segments[0].data.text == "caption\n"
+            and segments[1].data.sub_type == ImageSubType.NORMAL
+            and segments[1].data.uri.startswith("base64://")
+        )
+    finally:
+        os.unlink(image_path)
+
+
 async def _test_quote_uses_message_seq() -> bool:
     """引用发送时以触发消息的序列号构造回复段。"""
     session = _session("milky-quote", message_id="1024")
     session.messages = MessageChain.assign("trigger")
     segments = await convert_chain_to_segments(session, MessageChain.assign("reply"), quote=True)
     return _segment_types(segments) == ["reply", "text"] and segments[0].data.message_seq == 1024
+
+
+async def _test_group_reaction_targets_message_seq() -> bool:
+    """表情回应只作用于群聊消息序列号，私聊与非法 ID 均不发请求。"""
+    session = _session("milky-reaction", message_id="1024")
+    private_session = SessionInfo(
+        target_id="QQ|Private|10001",
+        target_from="QQ|Private",
+        sender_id=f"{sender_prefix}|10001",
+        sender_from=sender_prefix,
+        client_name=client_name,
+        session_id="milky-reaction-private",
+        message_id="1024",
+        locale=Locale("zh_cn"),
+    )
+    client = SimpleNamespace(send_group_message_reaction=AsyncMock(return_value=None))
+    with (
+        patch.object(milky_context, "milky_bot", new=client),
+        patch.object(
+            MilkyContextManager,
+            "context",
+            new={session.session_id: {}, private_session.session_id: {}},
+        ),
+    ):
+        await MilkyContextManager.add_reaction(session, "1024", "🔥")
+        await MilkyContextManager.remove_reaction(session, "1024", "🔥")
+        await MilkyContextManager.error_signal(session)
+        await MilkyContextManager.add_reaction(private_session, "1024", "🔥")
+        await MilkyContextManager.add_reaction(session, "not-a-seq", "🔥")
+    return [call.kwargs for call in client.send_group_message_reaction.await_args_list] == [
+        {"group_id": 123456, "message_seq": 1024, "reaction": "🔥", "is_add": True},
+        {"group_id": 123456, "message_seq": 1024, "reaction": "🔥", "is_add": False},
+        {"group_id": 123456, "message_seq": 1024, "reaction": qq_limited_emoji, "is_add": True},
+    ]
 
 
 def _group_message_event(segments: list[dict], sender_id: int = 10001) -> dict:
@@ -113,7 +195,7 @@ def _group_message_event(segments: list[dict], sender_id: int = 10001) -> dict:
         "time": 1700000000,
         "self_id": 12345,
         "data": {
-            "message_context": "group",
+            "message_scene": "group",
             "peer_id": 20001,
             "message_seq": 777,
             "sender_id": sender_id,
@@ -192,7 +274,7 @@ async def _test_sdk_message_model_is_supported() -> bool:
 
     message = parse_incoming_message(
         {
-            "message_context": "group",
+            "message_scene": "group",
             "peer_id": 20001,
             "message_seq": 1,
             "sender_id": 10001,
@@ -226,7 +308,10 @@ async def test_milky_adapter(tester: Tester):
     await tester.test(_test_unavailable_media_elements_are_skipped, "Milky 不可用的媒体元素被跳过")
     await tester.test(_test_unavailable_media_keeps_remaining_text, "Milky 媒体不可用时保留文本")
     await tester.test(_test_atcode_converts_to_mention_segments, "Milky AT 码转换为提及段")
+    await tester.test(_test_block_elements_are_separated_by_newline, "Milky 块级元素以换行分隔")
+    await tester.test(_test_image_segment_uses_normal_subtype_and_newline, "Milky 图片段携带 sub_type 与换行")
     await tester.test(_test_quote_uses_message_seq, "Milky 引用使用消息序列号")
+    await tester.test(_test_group_reaction_targets_message_seq, "Milky 表情回应使用消息序列号")
     await tester.test(_test_message_dispatch_builds_session, "Milky 消息事件组装会话")
     await tester.test(_test_group_message_ignored_when_not_addressed, "Milky 群聊未 @ 机器人时忽略")
     await tester.test(_test_sdk_message_model_is_supported, "Milky 兼容 SDK 消息模型")

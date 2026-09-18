@@ -381,7 +381,30 @@ class DiscordContextManager(ContextManager):
         permission_group_id: str | list[str],
         reason: str | None = None,
     ) -> None:
-        await cls._edit_permission_groups(session_info, user_id, permission_group_id, reason, grant=True)
+        user_ids = [user_id] if isinstance(user_id, str) else user_id
+        group_ids = [permission_group_id] if isinstance(permission_group_id, str) else permission_group_id
+        if not isinstance(user_ids, list) or not isinstance(group_ids, list):
+            raise TypeError("User ID and permission group ID must be a list or str")
+
+        guild = await get_discord_guild(session_info)
+        if guild is None:
+            return
+        fetched_roles = None
+        roles = []
+        for group_id in group_ids:
+            role_id = int(str(group_id).split("|")[-1])
+            role = guild.get_role(role_id)
+            if role is None:
+                fetched_roles = fetched_roles or await guild.fetch_roles()
+                role = next((item for item in fetched_roles if item.id == role_id), None)
+            if role is None:
+                raise ValueError(f"Discord role {group_id} not found in guild {guild.id}")
+            roles.append(role)
+
+        for uid in user_ids:
+            member = await guild.fetch_member(int(str(uid).split("|")[-1]))
+            await member.add_roles(*roles, reason=reason)
+            Logger.info(f"Granted permission groups {group_ids} for member {uid} in guild {guild.id}")
 
     @classmethod
     async def revoke_permission_group(
@@ -390,17 +413,6 @@ class DiscordContextManager(ContextManager):
         user_id: str | list[str],
         permission_group_id: str | list[str],
         reason: str | None = None,
-    ) -> None:
-        await cls._edit_permission_groups(session_info, user_id, permission_group_id, reason, grant=False)
-
-    @classmethod
-    async def _edit_permission_groups(
-        cls,
-        session_info: SessionInfo,
-        user_id: str | list[str],
-        permission_group_id: str | list[str],
-        reason: str | None,
-        grant: bool,
     ) -> None:
         user_ids = [user_id] if isinstance(user_id, str) else user_id
         group_ids = [permission_group_id] if isinstance(permission_group_id, str) else permission_group_id
@@ -424,12 +436,8 @@ class DiscordContextManager(ContextManager):
 
         for uid in user_ids:
             member = await guild.fetch_member(int(str(uid).split("|")[-1]))
-            if grant:
-                await member.add_roles(*roles, reason=reason)
-            else:
-                await member.remove_roles(*roles, reason=reason)
-            action = "Granted" if grant else "Revoked"
-            Logger.info(f"{action} permission groups {group_ids} for member {uid} in guild {guild.id}")
+            await member.remove_roles(*roles, reason=reason)
+            Logger.info(f"Revoked permission groups {group_ids} for member {uid} in guild {guild.id}")
 
     @classmethod
     async def add_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:

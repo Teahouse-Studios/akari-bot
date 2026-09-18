@@ -44,8 +44,6 @@ def _split_common_id(user_id: str) -> str:
 
 
 class MilkyContextManager(ContextManager):
-    """Milky 协议会话上下文管理器。"""
-
     context: dict[str, dict] = {}
     features: Features = milky_features
     typing_tasks: dict[str, asyncio.Task[None]] = {}
@@ -105,7 +103,7 @@ class MilkyContextManager(ContextManager):
                 can_restrict_members=None,
                 can_react=None,
                 can_send_private_messages=True,
-                raw={"message_context": "friend"},
+                raw={"message_scene": "friend"},
             )
         if session_info.target_from != target_group_prefix:
             return BotState(available=None, joined=None, error="Milky context is not a group or private chat")
@@ -142,21 +140,6 @@ class MilkyContextManager(ContextManager):
             return BotState(available=None, joined=None, error=str(exc))
 
     @classmethod
-    async def _send_segments(cls, session_info: SessionInfo, segments: list) -> list[str]:
-        """按场景投递出站消息段。
-
-        :param session_info: 会话信息。
-        :param segments: 出站消息段列表。
-        :return: 消息 ID 列表。
-        """
-        target_id = int(session_info.get_common_target_id())
-        if session_info.target_from == target_group_prefix:
-            result = await milky_bot.send_group_message(group_id=target_id, message=segments)
-        else:
-            result = await milky_bot.send_private_message(user_id=target_id, message=segments)
-        return [str(result.message_seq)]
-
-    @classmethod
     async def send_message(
         cls,
         session_info: SessionInfo,
@@ -189,7 +172,12 @@ class MilkyContextManager(ContextManager):
             return []
 
         try:
-            return await cls._send_segments(session_info, segments)
+            target_id = int(session_info.get_common_target_id())
+            if session_info.target_from == target_group_prefix:
+                result = await milky_bot.send_group_message(group_id=target_id, message=segments)
+            else:
+                result = await milky_bot.send_private_message(user_id=target_id, message=segments)
+            return [str(result.message_seq)]
         except asyncio.CancelledError:
             raise
         except (MilkyError, MilkyHttpError):
@@ -199,7 +187,11 @@ class MilkyContextManager(ContextManager):
                 fallback = OutgoingTextSegment(
                     data=TextSegmentData(text=session_info.locale.t("error.message.limited"))
                 )
-                return await cls._send_segments(session_info, [fallback])
+                if session_info.target_from == target_group_prefix:
+                    result = await milky_bot.send_group_message(group_id=target_id, message=[fallback])
+                else:
+                    result = await milky_bot.send_private_message(user_id=target_id, message=[fallback])
+                return [str(result.message_seq)]
             except asyncio.CancelledError:
                 raise
             except Exception:
@@ -311,13 +303,7 @@ class MilkyContextManager(ContextManager):
                 Logger.exception(f"Failed to unrestrict member {x} in group {session_info.target_id}: ")
 
     @classmethod
-    async def _kick_member(cls, session_info: SessionInfo, user_id: str | list[str], reject_add_request: bool) -> None:
-        """踢出群成员，并决定是否拒绝其再次加群。
-
-        :param session_info: 会话信息。
-        :param user_id: 用户 ID 或用户 ID 列表。
-        :param reject_add_request: 是否拒绝该用户再次加群，为 True 时等同封禁。
-        """
+    async def kick_member(cls, session_info: SessionInfo, user_id: str | list[str], reason: str | None = None) -> None:
         if isinstance(user_id, str):
             user_id = [user_id]
         if not isinstance(user_id, list):
@@ -325,46 +311,77 @@ class MilkyContextManager(ContextManager):
 
         if session_info.target_from != target_group_prefix:
             return
-        action = "Banned" if reject_add_request else "Kicked"
         for x in user_id:
             try:
                 await milky_bot.kick_group_member(
                     group_id=int(session_info.get_common_target_id()),
                     user_id=int(_split_common_id(x)),
-                    reject_add_request=reject_add_request,
                 )
-                Logger.info(f"{action} member {x} in group {session_info.target_id}")
+                Logger.info(f"Kicked member {x} in group {session_info.target_id}")
             except Exception:
-                Logger.exception(f"Failed to {action.lower()} member {x} in group {session_info.target_id}: ")
-
-    @classmethod
-    async def kick_member(cls, session_info: SessionInfo, user_id: str | list[str], reason: str | None = None) -> None:
-        await cls._kick_member(session_info, user_id, reject_add_request=False)
+                Logger.exception(f"Failed to kick member {x} in group {session_info.target_id}: ")
 
     @classmethod
     async def ban_member(cls, session_info: SessionInfo, user_id: str | list[str], reason: str | None = None) -> None:
-        await cls._kick_member(session_info, user_id, reject_add_request=True)
+        if isinstance(user_id, str):
+            user_id = [user_id]
+        if not isinstance(user_id, list):
+            raise TypeError("User ID must be a list or str")
+
+        if session_info.target_from != target_group_prefix:
+            return
+        for x in user_id:
+            try:
+                await milky_bot.kick_group_member(
+                    group_id=int(session_info.get_common_target_id()),
+                    user_id=int(_split_common_id(x)),
+                    reject_add_request=True,
+                )
+                Logger.info(f"Banned member {x} in group {session_info.target_id}")
+            except Exception:
+                Logger.exception(f"Failed to ban member {x} in group {session_info.target_id}: ")
 
     @classmethod
-    async def unban_member(cls, session_info: SessionInfo, user_id: str | list[str]) -> None:
-        # Milky 协议端只提供踢出成员（可附带拒绝再次加群）的接口，没有单独的解封接口
-        Logger.warning(f"Milky cannot lift bans, ignoring unban request in {session_info.target_id}.")
-
-    @classmethod
-    async def _edit_permission_group(
+    async def grant_permission_group(
         cls,
         session_info: SessionInfo,
         user_id: str | list[str],
         permission_group_id: str | list[str],
-        is_set: bool,
+        reason: str | None = None,
     ) -> None:
-        """授予或撤销群成员的原生权限组。
+        if isinstance(user_id, str):
+            user_id = [user_id]
+        if isinstance(permission_group_id, str):
+            permission_group_id = [permission_group_id]
+        if not isinstance(user_id, list):
+            raise TypeError("User ID must be a list or str")
+        if not isinstance(permission_group_id, list):
+            raise TypeError("Permission group ID must be a list or str")
 
-        :param session_info: 会话信息。
-        :param user_id: 用户 ID 或用户 ID 列表。
-        :param permission_group_id: 权限组 ID 或权限组 ID 列表。
-        :param is_set: True 为授予，False 为撤销。
-        """
+        if session_info.target_from != target_group_prefix:
+            return
+        if "admin" not in {str(x).lower() for x in permission_group_id}:
+            Logger.warning(f"Milky does not support permission group(s) {permission_group_id}, skipping.")
+            return
+        for x in user_id:
+            try:
+                await milky_bot.set_group_member_admin(
+                    group_id=int(session_info.get_common_target_id()),
+                    user_id=int(_split_common_id(x)),
+                    is_set=True,
+                )
+                Logger.info(f"Granted admin of {x} in group {session_info.target_id}")
+            except Exception:
+                Logger.exception(f"Failed to grant admin of {x} in group {session_info.target_id}: ")
+
+    @classmethod
+    async def revoke_permission_group(
+        cls,
+        session_info: SessionInfo,
+        user_id: str | list[str],
+        permission_group_id: str | list[str],
+        reason: str | None = None,
+    ) -> None:
         if isinstance(user_id, str):
             user_id = [user_id]
         if isinstance(permission_group_id, str):
@@ -385,69 +402,11 @@ class MilkyContextManager(ContextManager):
                 await milky_bot.set_group_member_admin(
                     group_id=int(session_info.get_common_target_id()),
                     user_id=int(_split_common_id(x)),
-                    is_set=is_set,
+                    is_set=False,
                 )
-                Logger.info(f"{'Granted' if is_set else 'Revoked'} admin of {x} in group {session_info.target_id}")
+                Logger.info(f"Revoked admin of {x} in group {session_info.target_id}")
             except Exception:
-                Logger.exception(
-                    f"Failed to {'grant' if is_set else 'revoke'} admin of {x} in group {session_info.target_id}: "
-                )
-
-    @classmethod
-    async def grant_permission_group(
-        cls,
-        session_info: SessionInfo,
-        user_id: str | list[str],
-        permission_group_id: str | list[str],
-        reason: str | None = None,
-    ) -> None:
-        await cls._edit_permission_group(session_info, user_id, permission_group_id, is_set=True)
-
-    @classmethod
-    async def revoke_permission_group(
-        cls,
-        session_info: SessionInfo,
-        user_id: str | list[str],
-        permission_group_id: str | list[str],
-        reason: str | None = None,
-    ) -> None:
-        await cls._edit_permission_group(session_info, user_id, permission_group_id, is_set=False)
-
-    @classmethod
-    async def _send_group_reaction(
-        cls, session_info: SessionInfo, message_id: str, reaction: str, is_add: bool
-    ) -> None:
-        """调用协议端接口挂上或取消群消息表情回应。
-
-        Milky 仅支持群聊消息表情回应，且 SDK 固定以 `face` 类型发送回应。
-
-        :param session_info: 会话信息。
-        :param message_id: 消息序列号。
-        :param reaction: 回应内容。
-        :param is_add: True 为添加，False 为取消。
-        """
-        if session_info.target_from != target_group_prefix:
-            Logger.debug("Milky only supports message reactions in group chats, skipping.")
-            return
-        if not str(message_id).isdigit():
-            Logger.warning(f"Invalid message id {message_id}, cannot send reaction.")
-            return
-        try:
-            await milky_bot.send_group_message_reaction(
-                group_id=int(session_info.get_common_target_id()),
-                message_seq=int(message_id),
-                reaction=str(reaction),
-                is_add=is_add,
-            )
-            Logger.info(
-                f'{"Added" if is_add else "Removed"} reaction "{reaction}" to message {message_id} '
-                f"in session {session_info.session_id}"
-            )
-        except Exception:
-            Logger.exception(
-                f'Failed to {"add" if is_add else "remove"} reaction "{reaction}" to message {message_id} '
-                f"in session {session_info.session_id}: "
-            )
+                Logger.exception(f"Failed to revoke admin of {x} in group {session_info.target_id}: ")
 
     @classmethod
     async def add_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
@@ -459,8 +418,28 @@ class MilkyContextManager(ContextManager):
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
 
-        if message_id:
-            await cls._send_group_reaction(session_info, message_id[-1], emoji, is_add=True)
+        if not message_id:
+            return
+        # Milky 仅支持群聊消息表情回应，且 SDK 固定以 `face` 类型发送回应
+        if session_info.target_from != target_group_prefix:
+            Logger.debug("Milky only supports message reactions in group chats, skipping.")
+            return
+        message_seq = message_id[-1]
+        if not str(message_seq).isdigit():
+            Logger.warning(f"Invalid message id {message_seq}, cannot send reaction.")
+            return
+        try:
+            await milky_bot.send_group_message_reaction(
+                group_id=int(session_info.get_common_target_id()),
+                message_seq=int(message_seq),
+                reaction=str(emoji),
+                is_add=True,
+            )
+            Logger.info(f'Added reaction "{emoji}" to message {message_seq} in session {session_info.session_id}')
+        except Exception:
+            Logger.exception(
+                f'Failed to add reaction "{emoji}" to message {message_seq} in session {session_info.session_id}: '
+            )
 
     @classmethod
     async def remove_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
@@ -472,8 +451,28 @@ class MilkyContextManager(ContextManager):
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
 
-        if message_id:
-            await cls._send_group_reaction(session_info, message_id[-1], emoji, is_add=False)
+        if not message_id:
+            return
+        # Milky 仅支持群聊消息表情回应，且 SDK 固定以 `face` 类型发送回应
+        if session_info.target_from != target_group_prefix:
+            Logger.debug("Milky only supports message reactions in group chats, skipping.")
+            return
+        message_seq = message_id[-1]
+        if not str(message_seq).isdigit():
+            Logger.warning(f"Invalid message id {message_seq}, cannot send reaction.")
+            return
+        try:
+            await milky_bot.send_group_message_reaction(
+                group_id=int(session_info.get_common_target_id()),
+                message_seq=int(message_seq),
+                reaction=str(emoji),
+                is_add=False,
+            )
+            Logger.info(f'Removed reaction "{emoji}" to message {message_seq} in session {session_info.session_id}')
+        except Exception:
+            Logger.exception(
+                f'Failed to remove reaction "{emoji}" to message {message_seq} in session {session_info.session_id}: '
+            )
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
@@ -495,9 +494,7 @@ class MilkyContextManager(ContextManager):
                 async with asyncio.timeout(TYPING_MAX_LIFETIME):
                     Logger.debug(f"Start typing in session: {session_info.session_id}")
                     if session_info.message_id:
-                        await cls._send_group_reaction(
-                            session_info, session_info.message_id, qq_typing_emoji, is_add=True
-                        )
+                        await cls.add_reaction(session_info, session_info.message_id, qq_typing_emoji)
                     await flag.wait()
             except TimeoutError:
                 Logger.debug(f"Typing state expired in session: {session_info.session_id}")
@@ -531,7 +528,7 @@ class MilkyContextManager(ContextManager):
             raise ValueError("Session not found in context")
 
         if session_info.target_from == target_group_prefix and session_info.message_id:
-            await cls._send_group_reaction(session_info, session_info.message_id, qq_limited_emoji, is_add=True)
+            await cls.add_reaction(session_info, session_info.message_id, qq_limited_emoji)
 
 
 _tasks_high_priority = deque()

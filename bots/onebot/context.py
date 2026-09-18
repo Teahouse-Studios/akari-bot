@@ -506,6 +506,72 @@ class OneBotContextManager(ContextManager):
                     Logger.exception(f"Failed to ban member {x} in group {session_info.target_id}: ")
 
     @classmethod
+    async def grant_permission_group(
+        cls,
+        session_info: SessionInfo,
+        user_id: str | list[str],
+        permission_group_id: str | list[str],
+        reason: str | None = None,
+    ) -> None:
+        if isinstance(user_id, str):
+            user_id = [user_id]
+        if isinstance(permission_group_id, str):
+            permission_group_id = [permission_group_id]
+        if not isinstance(user_id, list):
+            raise TypeError("User ID must be a list or str")
+        if not isinstance(permission_group_id, list):
+            raise TypeError("Permission group ID must be a list or str")
+
+        if session_info.target_from == target_group_prefix:
+            if "admin" not in {str(x).lower() for x in permission_group_id}:
+                Logger.warning(f"OneBot does not support permission group(s) {permission_group_id}, skipping.")
+                return
+            for x in user_id:
+                try:
+                    await aiocqhttp_bot.call_action(
+                        "set_group_admin",
+                        group_id=int(session_info.get_common_target_id()),
+                        user_id=int(x.split("|")[-1]),
+                        enable=True,
+                    )
+                    Logger.info(f"Granted admin of {x} in group {session_info.target_id}")
+                except Exception:
+                    Logger.exception(f"Failed to grant admin of {x} in group {session_info.target_id}: ")
+
+    @classmethod
+    async def revoke_permission_group(
+        cls,
+        session_info: SessionInfo,
+        user_id: str | list[str],
+        permission_group_id: str | list[str],
+        reason: str | None = None,
+    ) -> None:
+        if isinstance(user_id, str):
+            user_id = [user_id]
+        if isinstance(permission_group_id, str):
+            permission_group_id = [permission_group_id]
+        if not isinstance(user_id, list):
+            raise TypeError("User ID must be a list or str")
+        if not isinstance(permission_group_id, list):
+            raise TypeError("Permission group ID must be a list or str")
+
+        if session_info.target_from == target_group_prefix:
+            if "admin" not in {str(x).lower() for x in permission_group_id}:
+                Logger.warning(f"OneBot does not support permission group(s) {permission_group_id}, skipping.")
+                return
+            for x in user_id:
+                try:
+                    await aiocqhttp_bot.call_action(
+                        "set_group_admin",
+                        group_id=int(session_info.get_common_target_id()),
+                        user_id=int(x.split("|")[-1]),
+                        enable=False,
+                    )
+                    Logger.info(f"Revoked admin of {x} in group {session_info.target_id}")
+                except Exception:
+                    Logger.exception(f"Failed to revoke admin of {x} in group {session_info.target_id}: ")
+
+    @classmethod
     async def add_reaction(cls, session_info: SessionInfo, message_id: str | list[str], emoji: str) -> None:
         if isinstance(message_id, str):
             message_id = [message_id]

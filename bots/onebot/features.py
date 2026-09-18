@@ -19,6 +19,7 @@ features = Features(
     support_typing=True,
     support_wait=True,
     support_private_msg=True,
+    support_permission_group=True,
     support_handle_message_nodes=True,
     use_url_manager=use_url_manager,
     require_check_dirty_words=dirty_word_check,
