@@ -145,6 +145,28 @@ async def _test_spawned_tasks_are_cancelled_on_stop():
     return task.cancelled() and stopped.is_set() and task not in ModuleRuntimeManager._current[module_name].tasks
 
 
+async def _test_spawned_task_failure_logs_traceback():
+    """后台任务未处理异常日志必须包含任务 traceback。"""
+    module_name = "__test_module_runtime_task_traceback"
+
+    async def worker():
+        raise ValueError("visible task failure")
+
+    runtime = ModuleRuntimeManager.get_or_create(module_name)
+    with patch("core.module_runtime.Logger.error") as log_error:
+        task = runtime.spawn(worker(), name="runtime-test-failing-task")
+        result = (await asyncio.gather(task, return_exceptions=True))[0]
+        await asyncio.sleep(0)
+
+    logged_message = log_error.call_args.args[0]
+    return (
+        isinstance(result, ValueError)
+        and "visible task failure" in logged_message
+        and "worker" in logged_message
+        and "Traceback (most recent call last)" in logged_message
+    )
+
+
 async def _test_stop_cancellation_still_closes_remaining_resources():
     """停止流程被取消时仍须继续关闭后续资源，再传播取消。"""
     module_name = "__test_module_runtime_stop_cancelled"
@@ -298,6 +320,7 @@ async def test_module_runtime(tester: Tester):
         await tester.test(_test_resource_is_lazy_and_recreated_after_suspend, "资源惰性创建与停用后重建")
         await tester.test(_test_resource_creation_timeout_is_bounded, "资源创建超时受框架约束")
         await tester.test(_test_spawned_tasks_are_cancelled_on_stop, "托管后台任务随 runtime 取消")
+        await tester.test(_test_spawned_task_failure_logs_traceback, "托管后台任务异常日志包含 traceback")
         await tester.test(
             _test_stop_cancellation_still_closes_remaining_resources,
             "runtime 停止被取消时继续清理资源",

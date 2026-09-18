@@ -125,6 +125,7 @@
     "wiki.message.redirect.autofix": "（已指定 [${title}] 更正为 [${redirected_title}]。）",
     "wiki.message.redirect.template_to_page": "（[${title}] 尚未创建，已自动重定向至 [${redirected_title}]）",
     "wiki.message.render.button": "渲染预览图",
+    "wiki.message.render.delete": "❌ 删除",
     "wiki.message.render.auto": "已切换为自动渲染 Wiki 页面。",
     "wiki.message.render.off": "已关闭 Wiki 页面渲染。",
     "wiki.message.render.invalid": "无效的渲染方式，请使用 button、auto 或 off。",

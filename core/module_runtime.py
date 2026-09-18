@@ -12,6 +12,7 @@ import copy
 import inspect
 import re
 import shutil
+import traceback
 from collections.abc import Awaitable, Callable
 from contextlib import asynccontextmanager
 from contextvars import ContextVar
@@ -244,7 +245,8 @@ class ModuleRuntime:
             return
         error = task.exception()
         if error is not None and not isinstance(error, suppressed):
-            Logger.error(f"Module runtime task {task.get_name()!r} failed: {error!r}")
+            task_traceback = "".join(traceback.format_exception(error))
+            Logger.error(f"Module runtime task {task.get_name()!r} failed:\n{task_traceback}")
 
     def activate(self) -> None:
         self.active = True

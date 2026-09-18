@@ -118,9 +118,18 @@ async def _render_preview_items(
 
 
 def _build_render_preview_callback(items: list[dict], headers: dict):
-    """Build a one-shot callback for the public WebRender preview button."""
+    """Build a one-shot callback for the public preview and delete buttons."""
 
     async def _callback(session: Bot.MessageSession):
+        action = session.as_display(text_only=True).strip()
+        if action == "wiki_render_delete":
+            try:
+                await session.delete()
+            except Exception:
+                Logger.exception("Failed to delete Wiki result message: ")
+            return
+        if action != "wiki_render_preview":
+            return
         try:
             rendered = await _render_preview_items(session, items, headers)
             if rendered:
@@ -883,23 +892,25 @@ async def _query_pages_impl(
                 msg_list.extend(error_message)
     if isinstance(session, Bot.MessageSession):
         render_callback = None
-        if render_button_items:
-            msg_list.append(
-                ButtonFrame(
-                    [
-                        ButtonRows.assign(
-                            [
-                                Button(
-                                    session.t("wiki.message.render.button"),
-                                    "wiki_render_preview",
-                                    permission="all",
-                                    click_limit=1,
-                                )
-                            ]
-                        )
-                    ]
+        if render_mode == WIKI_RENDER_MODE_BUTTON and session.session_info.support_button:
+            render_buttons = []
+            if render_button_items:
+                render_buttons.append(
+                    Button(
+                        session.t("wiki.message.render.button"),
+                        "wiki_render_preview",
+                        permission="all",
+                        click_limit=1,
+                    )
+                )
+            render_buttons.append(
+                Button(
+                    session.t("wiki.message.render.delete"),
+                    "wiki_render_delete",
+                    click_limit=1,
                 )
             )
+            msg_list.append(ButtonFrame([ButtonRows.assign(render_buttons)]))
             render_callback = _build_render_preview_callback(render_button_items, headers)
         if msg_list:
             if all(
@@ -913,7 +924,10 @@ async def _query_pages_impl(
             ):
                 await session.finish(msg_list, callback=render_callback, callback_once=bool(render_callback))
             else:
-                await session.send_message(msg_list, callback=render_callback, callback_once=bool(render_callback))
+                quote = not session.session_info.support_markdown
+                await session.send_message(
+                    msg_list, callback=render_callback, callback_once=bool(render_callback), quote=quote
+                )
 
         async def infobox():
             if render_infobox_list and session.session_info.support_image:

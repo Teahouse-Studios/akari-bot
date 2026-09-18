@@ -432,6 +432,7 @@ class MyClient(botpy.Client):
             is_private=target_from in (target_c2c_prefix, target_direct_prefix),
             sender_from=sender_from,
             client_name=client_name,
+            message_id=interaction.data.resolved.message_id,
             reply_id=payload.reply_id or interaction.data.resolved.message_id,
             messages=MessageChain.assign([Plain(send_msg)]),
             ctx_slot=ctx_id,
