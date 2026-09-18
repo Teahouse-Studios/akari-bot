@@ -107,7 +107,7 @@ async def _render_preview_items(
             else:
                 images = await generate_screenshot_v1(item["url"], link, headers, allow_special_page=item["is_allowed"])
             if images:
-                result.extend(Image(image) for image in images)
+                result.extend([Image(image) for image in images])
             elif report_failure:
                 result.append(I18NContext("wiki.message.error.render_section"))
         except Exception:
