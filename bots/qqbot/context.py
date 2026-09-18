@@ -49,7 +49,7 @@ from core.builtins.session.info import SessionInfo
 from core.config.base import CoreConfig
 from core.constants.path import assets_path
 from core.logger import Logger
-from core.utils.button_runtime import BUTTON_TOKEN_PREFIX, bind_button_message_id, register_button_rows
+from core.utils.button_runtime import register_button_rows
 from core.utils.media import resolve_media_path
 from core.utils.random import Random
 from core.utils.table import escape_table_cell, resolve_table_columns
@@ -221,19 +221,6 @@ def _build_qqbot_keyboard(
     if not keyboard_rows:
         return None
     return KeyboardPayload(content=Keyboard(rows=keyboard_rows))
-
-
-def _keyboard_button_tokens(keyboard: KeyboardPayload | None) -> list[str]:
-    """Extract runtime button tokens from a QQ keyboard for post-send ID binding."""
-    if keyboard is None:
-        return []
-    tokens = []
-    for row in getattr(getattr(keyboard, "content", None), "rows", ()) or ():
-        for button in getattr(row, "buttons", ()) or ():
-            data = getattr(getattr(button, "action", None), "data", None)
-            if isinstance(data, str) and data.startswith(BUTTON_TOKEN_PREFIX):
-                tokens.append(data)
-    return tokens
 
 
 # 节点表格的高度上限，按「编号行 + 内容行」计对。过宽的表格平台会渲染失败，故此值宜小不宜大：
@@ -891,7 +878,6 @@ class QQBotContextManager(ContextManager):
             converted_message = message.as_sendable(session_info)
             possibly_choices = [row for x in converted_message if isinstance(x, ButtonFrameElement) for row in x.rows]
             keyboard = _build_qqbot_keyboard(possibly_choices, session_info, target)
-            keyboard_tokens = _keyboard_button_tokens(keyboard)
 
             _use_markdown = True
 
@@ -1003,8 +989,6 @@ class QQBotContextManager(ContextManager):
                 if texts:
                     result = await send_with_proactive_fallback(client.send_markdown, msg, keyboard=keyboard)
                     result_ids = _message_ids(result)
-                    if result_ids and keyboard_tokens:
-                        bind_button_message_id(keyboard_tokens, result_ids[0])
                     msg_ids.extend(result_ids)
                     if result_ids and not _typing_prompt:
                         cls._on_message_sent(session_info)

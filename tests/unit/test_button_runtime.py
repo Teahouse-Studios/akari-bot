@@ -11,7 +11,6 @@ from core.utils.button_runtime import (
     BUTTON_TOKEN_PREFIX,
     ButtonConsumeStatus,
     _clear_button_registry,
-    bind_button_message_id,
     consume_button,
     normalize_button_payload,
     register_button_rows,
@@ -32,13 +31,6 @@ def _test_callback_id_is_restored():
     button = _register("<q:callback-123>2")
     result = consume_button(button.token, "Discord|Client|1")
     return result.status is ButtonConsumeStatus.SUCCESS and result.payload == "2" and result.reply_id == "callback-123"
-
-
-def _test_button_message_id_is_bound_after_send():
-    button = _register("~delete")
-    bind_button_message_id([button.token], 12345)
-    result = consume_button(button.token, "Discord|Client|1")
-    return result.status is ButtonConsumeStatus.SUCCESS and result.message_id == "12345"
 
 
 def _test_callback_reply_id_is_bound_semantically():
@@ -167,7 +159,6 @@ async def test_button_runtime(tester: Tester):
     """core.utils.button_runtime: 按钮运行时。"""
     await tester.test(_test_token_is_short_and_namespaced, "按钮 token 长度与命名空间")
     await tester.test(_test_callback_id_is_restored, "callback ID 拆分与恢复")
-    await tester.test(_test_button_message_id_is_bound_after_send, "按钮发送消息 ID 绑定")
     await tester.test(_test_callback_reply_id_is_bound_semantically, "callback 虚拟回复 ID 语义绑定")
     await tester.test(_test_existing_button_reply_id_is_preserved, "保留按钮显式回复 ID")
     await tester.test(_test_forbidden_does_not_consume, "无权限点击不消费按钮")
