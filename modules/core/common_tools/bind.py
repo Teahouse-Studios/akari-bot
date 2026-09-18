@@ -332,7 +332,7 @@ async def _(msg: Bot.MessageSession, code: str):
     # 绑定码的生成与使用须处于同类场景：私聊码带着发起方的场景组，若在群里兑换，
     # 会把一个群的数据并进对方的私聊；群码在私聊里兑换同理。
     if entry["is_private"] != msg.session_info.is_private:
-        await msg.finish(I18NContext("core.message.bind.code.scene.mismatch"))
+        await msg.finish(I18NContext("core.message.bind.code.context.mismatch"))
 
     if scope == UNION_SCOPE_SENDER:
         await _bind_private(msg, entry)

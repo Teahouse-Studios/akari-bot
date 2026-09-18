@@ -520,7 +520,7 @@ async def _test_service_target_remains_anycast_for_load_balancing():
 
 async def _test_service_route_is_stable_and_distributes_routing_keys():
     async with _peer_cluster() as (controller, worker_a, worker_b):
-        routes = [ServiceRoute("workers", f"scene-{index}", role="client") for index in range(64)]
+        routes = [ServiceRoute("workers", f"context-{index}", role="client") for index in range(64)]
         first = [await controller.resolve_target(route) for route in routes]
         second = [await controller.resolve_target(route) for route in routes]
         return first == second and set(first) == {worker_a.name, worker_b.name}
@@ -529,7 +529,7 @@ async def _test_service_route_is_stable_and_distributes_routing_keys():
 async def _test_draining_instance_is_removed_from_new_delivery_snapshots():
     async with _peer_cluster() as (controller, worker_a, worker_b):
         await worker_a.begin_shutdown()
-        routed_peer = await controller.resolve_target(ServiceRoute("workers", "scene-1", role="client"))
+        routed_peer = await controller.resolve_target(ServiceRoute("workers", "context-1", role="client"))
         receipt = await controller.emit_signal(
             "audit.after-drain", None, PeerSelector.service("workers"), timeout=RPC_TEST_TIMEOUT
         )
@@ -662,7 +662,7 @@ async def _test_route_resolution_obeys_rpc_deadline():
     with patch.object(RegistryAuditPeer.registry, "select_route", new=slow_lookup):
         try:
             await RegistryAuditPeer.submit(
-                ServiceRoute("workers", "scene-timeout", role="client"),
+                ServiceRoute("workers", "context-timeout", role="client"),
                 "audit.never",
                 None,
                 timeout=0.01,

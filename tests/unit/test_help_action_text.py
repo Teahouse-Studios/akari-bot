@@ -206,7 +206,7 @@ async def _test_discord_detail_help_does_not_use_markdown_table():
 
 
 async def _test_image_flag_overrides_markdown_table():
-    """--image 应在支持 Markdown 表格的平台上仍强制生成图片帮助。"""
+    """--img 应在支持 Markdown 表格的平台上仍强制生成图片帮助。"""
     session_info = await SessionInfo.assign(
         target_id="TEST|Group|help_force_image",
         target_from="TEST|Group",
@@ -1258,7 +1258,7 @@ async def test_clickable_modules(tester: Tester):
     await tester.test(_test_help_about_button_replaces_donate, "help 关于我们按钮测试")
     await tester.test(_test_image_help_precedes_action_text_fallback, "无表格能力时图片帮助优先测试")
     await tester.test(_test_discord_detail_help_does_not_use_markdown_table, "Discord 详细帮助禁用 Markdown 表格测试")
-    await tester.test(_test_image_flag_overrides_markdown_table, "--image 强制图片帮助测试")
+    await tester.test(_test_image_flag_overrides_markdown_table, "--img 强制图片帮助测试")
     await tester.test(_test_image_template_omits_help_command, "图片内移除查看详情提示测试")
     await tester.test(_test_help_doc_template_marks_module_type_with_swatch, "模块详细帮助类型色块测试")
     await tester.test(_test_markdown_help_marks_module_type_with_emoji, "Markdown 模块详细帮助类型标记测试")

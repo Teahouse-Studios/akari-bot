@@ -14,7 +14,7 @@ from attrs import define, field
 
 @define
 class BotState:
-    """A serializable snapshot of the bot in the current scene."""
+    """A serializable snapshot of the bot in the current context."""
 
     available: bool | None = None
     joined: bool | None = None

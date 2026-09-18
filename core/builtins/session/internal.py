@@ -671,7 +671,7 @@ class MessageSession:
         return await PlatformAPI.check_native_permission(self.session_info)
 
     async def check_bot_state(self) -> BotState:
-        """Return the bot's scene membership and native permission state."""
+        """Return the bot's context membership and native permission state."""
         return await PlatformAPI.check_bot_state(self.session_info)
 
     async def handle_error_signal(self):

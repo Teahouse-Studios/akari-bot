@@ -114,7 +114,7 @@
     "maimai.message.oauth.failed": "無法發起查分器授權，請稍後再試。",
     "maimai.message.oauth.lx.code_invalid": "授權碼無效或已過期，請重新發起綁定。",
     "maimai.message.oauth.lx.not_configured": "未找到落雪咖啡屋 OAuth 的 client_id，請聯絡機器人擁有者。",
-    "maimai.message.oauth.lx.prompt": "請由本人開啟以下連結完成落雪咖啡屋帳號授權。授權完成後頁面會顯示授權碼， 請使用「${cmd} <授權碼>」回傳該授權碼。",
+    "maimai.message.oauth.lx.prompt": "請由本人開啟以下連結完成落雪咖啡屋帳號授權。授權完成後頁面會顯示授權碼，請使用「${cmd} <授權碼>」回傳該授權碼。",
     "maimai.message.oauth.lx.revoked": "落雪咖啡屋帳號的授權已失效，請使用「${cmd}」重新完成綁定。",
     "maimai.message.oauth.not_configured": "未找到水魚帳號 OAuth 的 client_id，請聯絡機器人擁有者。",
     "maimai.message.oauth.prompt": "請由本人開啟以下連結完成水魚帳號授權，連結在 ${minutes} 分鐘內有效：",

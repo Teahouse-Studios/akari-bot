@@ -17,6 +17,7 @@ about = module(
     alias={
         "version": "about version",
         "ping": "about ping",
+        "status": "about status",
     },
 )
 

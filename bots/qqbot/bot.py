@@ -39,9 +39,10 @@ def _message_application_ids(message) -> tuple[str | None, str | None]:
     """读取消息场景中的当前消息 ID 和被引用消息 ID。"""
     application_id = None
     reply_id = None
-    message_scene = getattr(message, "message_scene", None)
-    if isinstance(message_scene, Mapping):
-        ext = message_scene.get("ext") or []
+    # QQ 官方 SDK 中该字段名为 message_scene。
+    message_context = getattr(message, "message_scene", None)
+    if isinstance(message_context, Mapping):
+        ext = message_context.get("ext") or []
         for item in ext:
             if not isinstance(item, str):
                 continue

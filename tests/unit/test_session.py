@@ -2963,7 +2963,7 @@ async def _test_wait_task_follows_target_rechannel_without_old_channel_takeover(
         SessionTaskManager._task_list.clear()
 
 
-async def _test_reply_wait_is_scoped_to_physical_platform_scene():
+async def _test_reply_wait_is_scoped_to_physical_platform_context():
     """同现实通道的另一平台即使 message_id 碰撞，也不得命中本平台 wait_reply。"""
     target_a = "WAITREPLYSA|Group|1"
     target_b = "WAITREPLYSB|Group|2"
@@ -3269,7 +3269,7 @@ async def test_session_task(tester: Tester):
         "waiter 跟随场景 rechannel 并隔离旧通道测试",
     )
     await tester.test(
-        _test_reply_wait_is_scoped_to_physical_platform_scene,
+        _test_reply_wait_is_scoped_to_physical_platform_context,
         "wait_reply 物理平台场景隔离测试",
     )
     await tester.test(

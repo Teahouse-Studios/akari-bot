@@ -7,10 +7,12 @@ from modules.core.common_tools.about import about
 from modules.core.common_tools.version_utils import get_version_display
 
 
-@about.command("version {{I18N:core.help.version}}")
+@about.command("version {{I18N:core.help.about.version}}")
 async def _(msg: Bot.MessageSession):
     if version_display := get_version_display():
-        send_msgs = MessageChain.assign(I18NContext("core.message.version", version=version_display, disable_joke=True))
+        send_msgs = MessageChain.assign(
+            I18NContext("core.message.about.version", version=version_display, disable_joke=True)
+        )
         if str(Bot.Info.version).startswith("git:"):
             if CoreConfig.enable_commit_url:
                 returncode, repo_url, _ = await run_sys_command(["git", "config", "--get", "remote.origin.url"])
@@ -28,4 +30,4 @@ async def _(msg: Bot.MessageSession):
                     send_msgs.append(Url(commit_url, trusted=True))
         await msg.finish(send_msgs)
     else:
-        await msg.finish(I18NContext("core.message.version.unknown"))
+        await msg.finish(I18NContext("core.message.about.version.unknown"))

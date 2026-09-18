@@ -568,7 +568,7 @@ class QQBotContextManager(ContextManager):
                 can_restrict_members=None,
                 can_react=None,
                 can_send_private_messages=True,
-                raw={"scene": session_info.target_from},
+                raw={"context": session_info.target_from},
             )
         client = _get_client()
         try:
@@ -625,7 +625,7 @@ class QQBotContextManager(ContextManager):
                     permissions={"permissions": raw.get("permissions"), "role_id": raw.get("role_id")},
                     raw=raw,
                 )
-            return BotState(available=None, joined=None, error="Unsupported QQBot scene")
+            return BotState(available=None, joined=None, error="Unsupported QQBot context")
         except Exception as exc:
             Logger.exception(f"Failed to check QQBot state in {session_info.target_id}: ")
             return BotState(available=None, joined=None, error=str(exc))

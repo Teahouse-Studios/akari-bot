@@ -20,22 +20,22 @@ def build_locale_list(msg: Bot.MessageSession) -> list:
     """构造逐行显示的可用语言列表。"""
     locales = [(lang, Locale(lang).t("language")) for lang in get_available_locales()]
     if not msg.session_info.support_action_text:
-        return [I18NContext("core.message.locale.langlist", langlist="\n".join(name for _, name in locales))]
+        return [I18NContext("core.message.setup.locale.langlist", langlist="\n".join(name for _, name in locales))]
 
     prefix = msg.session_info.prefixes[0]
     parts = []
     for index, (lang, name) in enumerate(locales):
         parts.append(ActionText(f"{prefix}setup locale {lang}", show=name))
         parts.append(Plain("\n" if index + 1 < len(locales) else " ", disable_joke=True))
-    return [I18NContext("core.message.locale.langlist", langlist=MessageChain.assign(parts))]
+    return [I18NContext("core.message.setup.locale.langlist", langlist=MessageChain.assign(parts))]
 
 
 def build_locale_overview(msg: Bot.MessageSession, locale_url: str | None) -> list:
     """构造语言命令的概览消息。"""
     res = [
-        I18NContext("core.message.locale.prompt", lang="{I18N:language}"),
+        I18NContext("core.message.setup.locale.prompt", lang="{I18N:language}"),
         I18NContext(
-            "core.message.locale.set.prompt",
+            "core.message.setup.locale.set.prompt",
             cmd=ActionText(f"{msg.session_info.prefixes[0]}setup locale "),
         ),
         *build_locale_list(msg),
@@ -43,7 +43,7 @@ def build_locale_overview(msg: Bot.MessageSession, locale_url: str | None) -> li
     if locale_url:
         res.append(
             I18NContext(
-                "core.message.locale.contribute",
+                "core.message.setup.locale.contribute",
                 url=MessageChain.assign(Url(locale_url, trusted=True)),
             )
         )
@@ -97,32 +97,34 @@ async def build_translation_notice(lang: str):
         return None
     return [
         I18NContext(
-            "core.message.locale.translation_progress", name=Locale(lang).t("language"), percent=f"{progress:g}"
+            "core.message.setup.locale.translation_progress", name=Locale(lang).t("language"), percent=f"{progress:g}"
         ),
         Url(entry.get("url") or CoreConfig.locale_url, trusted=True),
     ]
 
 
-@setup.command("locale {{I18N:core.help.locale.desc}}")
+@setup.command("locale {{I18N:core.help.setup.locale.desc}}")
 async def _(msg: Bot.MessageSession):
     await msg.send_message(build_locale_overview(msg, CoreConfig.locale_url))
     await msg.finish(await build_translation_notice(msg.session_info.locale.locale))
 
 
-@setup.command("locale [<lang>] {{I18N:core.help.locale.set}}", required_admin=True)
+@setup.command("locale [<lang>] {{I18N:core.help.setup.locale.set}}", required_admin=True)
 async def _(msg: Bot.MessageSession, lang: str):
     if lang in get_available_locales():
         await msg.session_info.target_union_info.edit_attr("locale", lang)
         await msg.send_message(Locale(lang).t("message.success"))
         await msg.finish(await build_translation_notice(lang))
     else:
-        await msg.finish([I18NContext("core.message.locale.set.invalid"), *build_locale_list(msg)])
+        await msg.finish([I18NContext("core.message.setup.locale.set.invalid"), *build_locale_list(msg)])
 
 
-@setup.command("locale reload {{I18N:core.help.locale.reload}}", required_superuser=True)
+@setup.command("locale reload {{I18N:core.help.setup.locale.reload}}", required_superuser=True)
 async def _(msg: Bot.MessageSession):
     err = build_locale_snapshot(list(lang_list.keys()), all_locales_path, "akari-bot")
     if len(err) == 0:
         await msg.finish(I18NContext("message.success"))
     else:
-        await msg.finish([I18NContext("core.message.locale.reload.failed"), Plain("\n".join(err), disable_joke=True)])
+        await msg.finish(
+            [I18NContext("core.message.setup.locale.reload.failed"), Plain("\n".join(err), disable_joke=True)]
+        )

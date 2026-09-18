@@ -104,7 +104,7 @@ async def _test_cancel_leaves_nothing_bound():
         return False
 
 
-async def _test_scene_mismatch_rejected():
+async def _test_context_mismatch_rejected():
     """测试 bind start - 私聊码与群组码不得跨场景兑换"""
     try:
         entry = _issue_private_code(await _session("BINDE", True))
@@ -121,6 +121,6 @@ async def test_bind_start(tester: Tester):
     """modules.core.common_tools.bind: bind start 测试"""
     await tester.test(_test_private_binds_both_unions, "私聊同时绑定两组测试")
     await tester.test(_test_cancel_leaves_nothing_bound, "取消不留半绑状态测试")
-    await tester.test(_test_scene_mismatch_rejected, "跨场景兑换拦截测试")
+    await tester.test(_test_context_mismatch_rejected, "跨场景兑换拦截测试")
 
     return tester

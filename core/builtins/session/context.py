@@ -132,7 +132,7 @@ class ContextManager(ABC):
     @classmethod
     @abstractmethod
     async def check_bot_state(cls, session_info: SessionInfo) -> BotState:
-        """Return the bot's membership and platform permission state in a scene."""
+        """Return the bot's membership and platform permission state in a context."""
         raise NotImplementedError  # 请继承 class 后实现方法
 
     @classmethod

@@ -66,7 +66,7 @@ def current_generation(module_name: str) -> int | None:
     return runtime.generation if runtime is not None else None
 
 
-def _module_scene_enabled(module: "Module", module_name: str, session_info) -> bool:
+def _module_context_enabled(module: "Module", module_name: str, session_info) -> bool:
     if module.base:
         return True
     if not getattr(session_info, "require_enable_modules", True):
@@ -101,7 +101,7 @@ class HookExecutor:
         client_name: str | None,
         session_info: Any = None,
         *,
-        check_scene: bool = True,
+        check_context: bool = True,
     ) -> tuple[bool, bool]:
         """返回 ``(可执行, 代际过期)``。"""
         if not sub.load:
@@ -117,8 +117,8 @@ class HookExecutor:
             return False, False
         if not platform_allows(sub.available_for, sub.exclude_from, target_from, client_name):
             return False, False
-        if check_scene and session_info is not None and not sub.server_scope:
-            if not _module_scene_enabled(module, sub.module_name, session_info):
+        if check_context and session_info is not None and not sub.server_scope:
+            if not _module_context_enabled(module, sub.module_name, session_info):
                 return False, False
         return True, False
 
@@ -172,7 +172,7 @@ class ModuleHookExecutor(HookExecutor):
         target_from = getattr(session_info, "target_from", None) if session_info is not None else None
         client_name = getattr(session_info, "client_name", None) if session_info is not None else None
         # 具名能力由显式名称调用，不要求目标场景启用该模块。
-        return self.subscription_eligible(sub, target_from, client_name, check_scene=False)
+        return self.subscription_eligible(sub, target_from, client_name, check_context=False)
 
     def _subscriptions(self, hook_name: str, module_trigger: bool) -> list[HookSubscription]:
         index_name = "module_hook_subscriptions" if module_trigger else "modules_hook_subscriptions"

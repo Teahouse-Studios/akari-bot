@@ -21,8 +21,8 @@ async def _build_process_usage_lines(msg: Bot.MessageSession) -> list[str]:
     locale = msg.session_info.locale
     # 平台名与 jobqueue-hub 为专有名词，仅占位标签需本地化。
     labels = {
-        DAEMON_LABEL: "core.message.ping.process.daemon",
-        PEERS_LABEL: "core.message.ping.process.peers",
+        DAEMON_LABEL: "core.message.about.status.process.daemon",
+        PEERS_LABEL: "core.message.about.status.process.peers",
     }
 
     def display_name(name: str) -> str:
@@ -32,7 +32,7 @@ async def _build_process_usage_lines(msg: Bot.MessageSession) -> list[str]:
     for usage in usages:
         lines.append(
             locale.t(
-                "core.message.ping.process",
+                "core.message.about.status.process",
                 name=display_name(usage.name),
                 pid=usage.pid if usage.pid is not None else "-",
                 memory=int(usage.memory / (1024 * 1024)),
@@ -42,7 +42,7 @@ async def _build_process_usage_lines(msg: Bot.MessageSession) -> list[str]:
     for failure in failures:
         lines.append(
             locale.t(
-                "core.message.ping.process.unavailable",
+                "core.message.about.status.process.unavailable",
                 name=display_name(failure.name),
                 reason=failure.reason,
             )
@@ -50,8 +50,14 @@ async def _build_process_usage_lines(msg: Bot.MessageSession) -> list[str]:
     return lines
 
 
-def _format_ping_result(msg: Bot.MessageSession, result: MessageChain) -> MessageChain:
-    """在支持 Markdown 的平台将 ping 信息整理到代码块中。"""
+def _format_running_time() -> str:
+    """返回自模块加载以来的运行时长，格式为 ``HH:MM:SS``。"""
+    td_seconds = time.time() - started_time
+    return f"{int(td_seconds // 3600):02d}:{int((td_seconds % 3600) // 60):02d}:{int(td_seconds % 60):02d}"
+
+
+def _format_status_result(msg: Bot.MessageSession, result: MessageChain) -> MessageChain:
+    """在支持 Markdown 的平台将 ping / status 信息整理到代码块中。"""
     if not msg.session_info.support_markdown:
         return result
 
@@ -60,59 +66,50 @@ def _format_ping_result(msg: Bot.MessageSession, result: MessageChain) -> Messag
     return MessageChain.assign(Markdown(f"```\n{body}\n```", disable_joke=True, allow_parse=False))
 
 
-@about.command("ping {{I18N:core.help.ping}}")
+@about.command("ping {{I18N:core.help.about.ping}}")
+async def _(msg: Bot.MessageSession):
+    result = MessageChain.assign(Plain("Pong!"))
+    result.append(
+        I18NContext(
+            "core.message.about.ping",
+            bot_running_time=_format_running_time(),
+            cpu_percent=psutil.cpu_percent(),
+            ram_percent=psutil.virtual_memory().percent,
+            disk_percent=psutil.disk_usage("/").percent,
+            disable_joke=True,
+        )
+    )
+    await msg.finish(result)
+
+
+@about.command("status {{I18N:core.help.about.status}}", required_superuser=True)
 async def _(msg: Bot.MessageSession):
     from core.queue.server import JobQueueServer
 
-    result = MessageChain.assign(Plain("Pong!"))
-
-    td_seconds = time.time() - started_time
-    timediff = f"{int(td_seconds // 3600):02d}:{int((td_seconds % 3600) // 60):02d}:{int(td_seconds % 60):02d}"
-    cpu_percent = psutil.cpu_percent()
-    ram_percent = psutil.virtual_memory().percent
-    if msg.check_super_user():
-        boot_start = str(FormattedTime(psutil.boot_time(), simple=True))
-        web_render_status = str(Bot.Info.web_render_status)
-        ram = int(psutil.virtual_memory().total / (1024 * 1024))
-        swap = int(psutil.swap_memory().total / (1024 * 1024))
-        swap_percent = psutil.swap_memory().percent
-        disk = int(psutil.disk_usage("/").used / (1024 * 1024 * 1024))
-        disk_total = int(psutil.disk_usage("/").total / (1024 * 1024 * 1024))
-        result.append(
-            I18NContext(
-                "core.message.ping.detail",
-                system_boot_time=boot_start,
-                bot_running_time=timediff,
-                python_version=platform.python_version(),
-                web_render_status=web_render_status,
-                jobqueue_backend=JobQueueServer.backend.name,
-                cpu_brand=get_cpu_info()["brand_raw"],
-                cpu_percent=cpu_percent,
-                ram=ram,
-                ram_percent=ram_percent,
-                swap=swap,
-                swap_percent=swap_percent,
-                disk_space=disk,
-                disk_space_total=disk_total,
-                client_name=msg.session_info.client_name,
-                command_parsed=Bot.Info.command_parsed,
-                parsed=Bot.Info.message_parsed,
-                disable_joke=True,
-            )
+    disk = psutil.disk_usage("/")
+    result = MessageChain.assign(
+        I18NContext(
+            "core.message.about.status.detail",
+            system_boot_time=str(FormattedTime(psutil.boot_time(), simple=True)),
+            bot_running_time=_format_running_time(),
+            python_version=platform.python_version(),
+            web_render_status=str(Bot.Info.web_render_status),
+            jobqueue_backend=JobQueueServer.backend.name,
+            client_name=msg.session_info.client_name,
+            command_parsed=Bot.Info.command_parsed,
+            parsed=Bot.Info.message_parsed,
+            cpu_brand=get_cpu_info()["brand_raw"],
+            cpu_percent=psutil.cpu_percent(),
+            ram=int(psutil.virtual_memory().total / (1024 * 1024)),
+            ram_percent=psutil.virtual_memory().percent,
+            swap=int(psutil.swap_memory().total / (1024 * 1024)),
+            swap_percent=psutil.swap_memory().percent,
+            disk_space=int(disk.used / (1024 * 1024 * 1024)),
+            disk_space_total=int(disk.total / (1024 * 1024 * 1024)),
+            disable_joke=True,
         )
-        if process_lines := await _build_process_usage_lines(msg):
-            header = msg.session_info.locale.t("core.message.ping.process.list")
-            result.append(Plain("\n".join([header, *process_lines]), disable_joke=True, allow_parse=False))
-    else:
-        disk_percent = psutil.disk_usage("/").percent
-        result.append(
-            I18NContext(
-                "core.message.ping.simple",
-                bot_running_time=timediff,
-                cpu_percent=cpu_percent,
-                ram_percent=ram_percent,
-                disk_percent=disk_percent,
-                disable_joke=True,
-            )
-        )
-    await msg.finish(_format_ping_result(msg, result))
+    )
+    if process_lines := await _build_process_usage_lines(msg):
+        header = msg.session_info.locale.t("core.message.about.status.process.list")
+        result.append(Plain("\n".join([header, *process_lines]), disable_joke=True, allow_parse=False))
+    await msg.finish(_format_status_result(msg, result))

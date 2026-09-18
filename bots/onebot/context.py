@@ -193,7 +193,7 @@ class OneBotContextManager(ContextManager):
                 raw={"detail_type": "private"},
             )
         if session_info.target_from != target_group_prefix:
-            return BotState(available=None, joined=None, error="OneBot scene is not a group or private chat")
+            return BotState(available=None, joined=None, error="OneBot context is not a group or private chat")
 
         bot_id = session_info.bot_id or Temp.data.get("qq_account")
         if bot_id is None:

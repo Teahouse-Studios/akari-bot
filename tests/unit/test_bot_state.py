@@ -154,7 +154,7 @@ async def _test_qqbot_group_state_maps_official_bot_state() -> bool:
     )
 
 
-async def _test_non_web_private_scene_does_not_claim_management_permissions() -> bool:
+async def _test_non_web_private_context_does_not_claim_management_permissions() -> bool:
     import bots.qqbot.context as qqbot_context
     from bots.qqbot.info import target_c2c_prefix
 
@@ -346,7 +346,7 @@ async def test_bot_state(tester: Tester):
         "Discord 使用频道最终权限映射机器人状态",
     )
     await tester.test(_test_qqbot_group_state_maps_official_bot_state, "QQBot 映射官方群机器人状态")
-    await tester.test(_test_non_web_private_scene_does_not_claim_management_permissions, "非 Web 私聊不宣称管理权限")
+    await tester.test(_test_non_web_private_context_does_not_claim_management_permissions, "非 Web 私聊不宣称管理权限")
     await tester.test(_test_onebot_group_state_maps_bot_role, "OneBot 映射机器人群角色")
     await tester.test(_test_matrix_power_levels_map_to_common_permissions, "Matrix 映射房间 Power Level")
     await tester.test(_test_telegram_chat_member_status_uses_enum_value, "Telegram 映射 ChatMember 状态")

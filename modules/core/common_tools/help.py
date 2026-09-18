@@ -92,7 +92,7 @@ def qqbot_permissions_limited(msg: Bot.MessageSession) -> bool:
     )
 
 
-async def check_scene_admin(msg: Bot.MessageSession) -> bool:
+async def check_context_admin(msg: Bot.MessageSession) -> bool:
     """
     判定会话用户是否具备场景管理员权限，供帮助列表按权限过滤内容。
 
@@ -105,7 +105,7 @@ async def check_scene_admin(msg: Bot.MessageSession) -> bool:
     try:
         return await msg.check_permission()
     except Exception:
-        Logger.exception("Failed to check scene admin permission for help display.")
+        Logger.exception("Failed to check context admin permission for help display.")
         return False
 
 
@@ -553,10 +553,10 @@ async def qqbot_permissions(msg: Bot.MessageSession, qq_group_id: str | None = N
 
 
 @hlp.command(
-    "<module> [--legacy] [--image] {{I18N:core.help.help.detail}}",
+    "<module> [--legacy] [--img] {{I18N:core.help.help.detail}}",
     options_desc={
         "--legacy": "{I18N:help.option.legacy}",
-        "--image": "{I18N:help.option.image}",
+        "--img": "{I18N:help.option.img}",
     },
 )
 async def _(msg: Bot.MessageSession, module: str, image: bool = False, legacy: bool = False):
@@ -582,7 +582,7 @@ async def _(msg: Bot.MessageSession, module: str, image: bool = False, legacy: b
             if not module_._db_load:
                 await msg.finish(I18NContext("parser.module.unloaded", module=help_name))
             # 仅在模块确实含有管理员条目时才查询平台权限，普通模块的帮助不额外付出一次接口调用
-            is_admin = is_superuser or (module_has_admin_entries(module_) and await check_scene_admin(msg))
+            is_admin = is_superuser or (module_has_admin_entries(module_) and await check_context_admin(msg))
             if (
                 (module_.required_superuser and not is_superuser)
                 or (module_.required_base_superuser and not is_base_superuser)
@@ -752,10 +752,10 @@ async def _(msg: Bot.MessageSession, module: str, image: bool = False, legacy: b
 
 
 @hlp.command(
-    "[--legacy] [--image] {{I18N:core.help.help}}",
+    "[--legacy] [--img] {{I18N:core.help.help}}",
     options_desc={
         "--legacy": "{I18N:help.option.legacy}",
-        "--image": "{I18N:help.option.image}",
+        "--img": "{I18N:help.option.img}",
     },
 )
 async def help_overview(msg: Bot.MessageSession, image: bool = False, legacy: bool = False):
@@ -763,7 +763,7 @@ async def help_overview(msg: Bot.MessageSession, image: bool = False, legacy: bo
     force_legacy = legacy and not force_image
     use_table = should_use_markdown_table(msg, force_image, force_legacy)
     use_clickable = not use_table and not force_legacy and msg.session_info.support_action_text
-    is_admin = await check_scene_admin(msg)
+    is_admin = await check_context_admin(msg)
     qqbot_style = msg.session_info.client_name == "QQBot" and is_admin and not force_legacy
     show_all_modules = qqbot_style or not msg.session_info.require_enable_modules
 
@@ -922,7 +922,7 @@ async def modules_list_help(msg: Bot.MessageSession, legacy, force_image=False):
     # 与 ~help 同理：表格不可用时优先保留图片，图片生成失败后再降级到文字版
     use_table = should_use_markdown_table(msg, force_image, legacy)
     use_clickable = not use_table and not legacy and msg.session_info.support_action_text
-    is_admin = await check_scene_admin(msg)
+    is_admin = await check_context_admin(msg)
 
     legacy_help = True
     if not use_table and msg.session_info.support_image and not legacy:
@@ -1037,7 +1037,7 @@ async def help_generator(
     is_base_superuser = msg.session_info.sender_id in Bot.base_superuser_list
     is_superuser = msg.check_super_user()
     if is_admin is None:
-        is_admin = is_superuser or await check_scene_admin(msg)
+        is_admin = is_superuser or await check_context_admin(msg)
     module_list = ModulesManager.return_modules_list(
         target_from=msg.session_info.target_from, client_name=msg.session_info.client_name
     )
