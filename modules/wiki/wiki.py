@@ -5,7 +5,18 @@ import filetype
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import ButtonFrame, I18NContext, Markdown, Plain, Image, Audio, Video, Url
+from core.builtins.message.internal import (
+    Button,
+    ButtonFrame,
+    ButtonRows,
+    I18NContext,
+    Markdown,
+    Plain,
+    Image,
+    Audio,
+    Video,
+    Url,
+)
 from core.builtins.session.internal import MessageSession, confirm_prompt_key
 from core.builtins.utils import confirm_command
 from core.component import module
@@ -47,6 +58,78 @@ wiki = module(
     developers=["OasisAkari"],
     doc=True,
 )
+
+WIKI_RENDER_MODE_KEY = "wiki_render_mode"
+WIKI_RENDER_MODE_BUTTON = "button"
+WIKI_RENDER_MODE_AUTO = "auto"
+WIKI_RENDER_MODE_OFF = "off"
+
+
+def _wiki_render_mode(session: Bot.MessageSession | QueryInfo) -> str:
+    """Return the scene's WebRender mode, with button platforms defaulting to preview buttons."""
+    if not isinstance(session, MessageSession):
+        return WIKI_RENDER_MODE_AUTO
+    target_union = session.session_info.target_union_info
+    configured = (target_union.target_data or {}).get(WIKI_RENDER_MODE_KEY) if target_union else None
+    if configured not in {WIKI_RENDER_MODE_BUTTON, WIKI_RENDER_MODE_AUTO, WIKI_RENDER_MODE_OFF}:
+        return WIKI_RENDER_MODE_BUTTON if session.session_info.support_button else WIKI_RENDER_MODE_AUTO
+    if configured == WIKI_RENDER_MODE_BUTTON and not session.session_info.support_button:
+        return WIKI_RENDER_MODE_AUTO
+    return configured
+
+
+async def _render_preview_items(
+    session: Bot.MessageSession,
+    items: list[dict],
+    headers: dict,
+    *,
+    report_failure: bool = False,
+) -> MessageChain:
+    """Render pre-checked pages/sections and optionally report legacy failures."""
+    result = MessageChain.create()
+    for item in items:
+        try:
+            link = item["link"]
+            if item.get("section"):
+                if item["url"] in generate_screenshot_v2_blocklist:
+                    images = await generate_screenshot_v1(item["url"], link, headers, section=item["section"])
+                else:
+                    images = await generate_screenshot_v2(
+                        link, section=item["section"], locale=session.session_info.locale.locale
+                    )
+            elif item["url"] not in generate_screenshot_v2_blocklist:
+                images = await generate_screenshot_v2(
+                    link,
+                    allow_special_page=item["is_allowed"],
+                    content_mode=item.get("content_mode", False),
+                    locale=session.session_info.locale.locale,
+                )
+            else:
+                images = await generate_screenshot_v1(item["url"], link, headers, allow_special_page=item["is_allowed"])
+            if images:
+                result.extend(Image(image) for image in images)
+            elif report_failure:
+                result.append(I18NContext("wiki.message.error.render_section"))
+        except Exception:
+            Logger.exception("Failed to render Wiki preview: ")
+            if report_failure:
+                result.append(I18NContext("wiki.message.error.render_section"))
+    return result
+
+
+def _build_render_preview_callback(items: list[dict], headers: dict):
+    """Build a one-shot callback for the public WebRender preview button."""
+
+    async def _callback(session: Bot.MessageSession):
+        try:
+            rendered = await _render_preview_items(session, items, headers)
+            if rendered:
+                await session.send_message(rendered, quote=False)
+        except Exception:
+            # A browser/WAF failure is expected to be possible even after the API pre-check.
+            Logger.exception("Wiki WebRender preview failed: ")
+
+    return _callback
 
 
 async def _release_background_session(session: Bot.MessageSession) -> None:
@@ -345,11 +428,13 @@ async def _query_pages_impl(
         interwiki_list = target.interwikis
         headers = target.headers
         prefix = target.prefix
+        render_mode = _wiki_render_mode(session)
     elif isinstance(session, QueryInfo):
         start_wiki = session.api
         interwiki_list = {}
         headers = session.headers
         prefix = session.prefix
+        render_mode = WIKI_RENDER_MODE_AUTO
     else:
         raise TypeError("Session must be Bot.MessageSession or QueryInfo.")
 
@@ -428,6 +513,7 @@ async def _query_pages_impl(
     wait_possible_list = []
     render_infobox_list = []
     render_section_list = []
+    render_button_items = []
     dl_list = []
     if preset_message:
         msg_list.extend(preset_message)
@@ -452,6 +538,7 @@ async def _query_pages_impl(
                             inline=inline_mode,
                             lang=lang,
                             session=session if isinstance(session, Bot.MessageSession) else None,
+                            check_render=render_mode == WIKI_RENDER_MODE_BUTTON,
                         )
                     )
                 )
@@ -463,6 +550,7 @@ async def _query_pages_impl(
                             inline=inline_mode,
                             lang=lang,
                             session=session if isinstance(session, Bot.MessageSession) else None,
+                            check_render=render_mode == WIKI_RENDER_MODE_BUTTON,
                         )
                     )
                 )
@@ -483,6 +571,15 @@ async def _query_pages_impl(
                 r.possible_research_title = new_possible_title_list[:MAX_RESEARCH_SUGGESTIONS]
                 if r.status:
                     plain_slice = MessageChain.create()
+                    render_allowed = r.info.is_allowed or not (
+                        isinstance(session, Bot.MessageSession) and session.session_info.use_url_manager
+                    )
+                    content_mode = (
+                        r.has_template_doc
+                        or r.title.split(":")[0] in ["User"]
+                        or r.is_disambiguation
+                        or r.is_forum_topic
+                    )
                     if display_before_title and display_before_title != display_title:
                         if r.before_page_property == "template" and r.page_property == "page":
                             plain_slice.append(
@@ -503,26 +600,36 @@ async def _query_pages_impl(
                     if (
                         r.link
                         and r.selected_section
-                        and (
-                            r.info.is_allowed
-                            or not (isinstance(session, Bot.MessageSession) and session.session_info.use_url_manager)
-                        )
+                        and render_allowed
                         and not r.invalid_section
                         and Bot.Info.web_render_status
+                        and render_mode != WIKI_RENDER_MODE_OFF
                     ):
-                        render_section_list.append(
-                            {
-                                r.link: {
-                                    "url": r.info.realurl,
-                                    "section": r.selected_section,
-                                    "is_allowed": r.info.is_allowed
-                                    or not (
-                                        isinstance(session, Bot.MessageSession) and session.session_info.use_url_manager
-                                    ),
+                        section_item = {
+                            "link": r.link,
+                            "url": r.info.realurl,
+                            "section": r.selected_section,
+                            "is_allowed": render_allowed,
+                        }
+                        if render_mode == WIKI_RENDER_MODE_BUTTON:
+                            if (
+                                getattr(r, "renderable", False)
+                                and isinstance(session, Bot.MessageSession)
+                                and session.session_info.support_button
+                                and session.session_info.support_image
+                            ):
+                                render_button_items.append(section_item)
+                        else:
+                            render_section_list.append(
+                                {
+                                    r.link: {
+                                        "url": r.info.realurl,
+                                        "section": r.selected_section,
+                                        "is_allowed": render_allowed,
+                                    }
                                 }
-                            }
-                        )
-                        plain_slice.append(I18NContext("wiki.message.section.rendering"))
+                            )
+                            plain_slice.append(I18NContext("wiki.message.section.rendering"))
                     else:
                         if isinstance(session, Bot.MessageSession) and r.is_disambiguation and r.disambiguation_blocks:
                             plain_slice.extend(_build_disambiguation_output(session, r, iw_prefix))
@@ -537,26 +644,34 @@ async def _query_pages_impl(
                         plain_slice.append(I18NContext("wiki.message.flies"))
                         plain_slice.append(Url(r.file, trusted=True if r.info.is_allowed else None))
                     else:
-                        if r.link and not r.selected_section:
-                            render_infobox_list.append(
-                                {
-                                    r.link: {
-                                        "url": r.info.realurl,
-                                        "is_allowed": r.info.is_allowed
-                                        or not (
-                                            isinstance(session, Bot.MessageSession)
-                                            and session.session_info.use_url_manager
-                                        ),
-                                        "content_mode": r.has_template_doc
-                                        or r.title.split(":")[0] in ["User"]
-                                        or r.is_disambiguation
-                                        or r.is_forum_topic,
+                        if r.link and not r.selected_section and render_mode != WIKI_RENDER_MODE_OFF:
+                            infobox_item = {
+                                "link": r.link,
+                                "url": r.info.realurl,
+                                "is_allowed": render_allowed,
+                                "content_mode": content_mode,
+                            }
+                            if render_mode == WIKI_RENDER_MODE_BUTTON:
+                                if (
+                                    getattr(r, "renderable", False)
+                                    and isinstance(session, Bot.MessageSession)
+                                    and session.session_info.support_button
+                                    and session.session_info.support_image
+                                ):
+                                    render_button_items.append(infobox_item)
+                            else:
+                                render_infobox_list.append(
+                                    {
+                                        r.link: {
+                                            "url": r.info.realurl,
+                                            "is_allowed": render_allowed,
+                                            "content_mode": content_mode,
+                                        }
                                     }
-                                }
-                            )
+                                )
                     if plain_slice:
                         msg_list.extend(plain_slice)
-                    if Bot.Info.web_render_status:
+                    if Bot.Info.web_render_status and render_mode != WIKI_RENDER_MODE_OFF:
                         if (
                             r.invalid_section
                             and (
@@ -767,6 +882,25 @@ async def _query_pages_impl(
             else:
                 msg_list.extend(error_message)
     if isinstance(session, Bot.MessageSession):
+        render_callback = None
+        if render_button_items:
+            msg_list.append(
+                ButtonFrame(
+                    [
+                        ButtonRows.assign(
+                            [
+                                Button(
+                                    session.t("wiki.message.render.button"),
+                                    "wiki_render_preview",
+                                    permission="all",
+                                    click_limit=1,
+                                )
+                            ]
+                        )
+                    ]
+                )
+            )
+            render_callback = _build_render_preview_callback(render_button_items, headers)
         if msg_list:
             if all(
                 [
@@ -777,9 +911,9 @@ async def _query_pages_impl(
                     not wait_possible_list,
                 ]
             ):
-                await session.finish(msg_list)
+                await session.finish(msg_list, callback=render_callback, callback_once=bool(render_callback))
             else:
-                await session.send_message(msg_list)
+                await session.send_message(msg_list, callback=render_callback, callback_once=bool(render_callback))
 
         async def infobox():
             if render_infobox_list and session.session_info.support_image:

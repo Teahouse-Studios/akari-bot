@@ -9,8 +9,26 @@ from core.utils.image_table import image_table_render, ImageTable
 from . import wiki
 from .database.models import WikiTargetInfo
 from .utils.wikilib import WikiLib
+from .wiki import WIKI_RENDER_MODE_AUTO, WIKI_RENDER_MODE_BUTTON, WIKI_RENDER_MODE_KEY, WIKI_RENDER_MODE_OFF
 
 wiki_allowlist_url = WikiConfig.wiki_allowlist_url
+
+
+@wiki.command("render <mode> {{I18N:wiki.help.render}}", required_admin=True)
+async def _(msg: Bot.MessageSession, mode: str):
+    """切换当前场景的 Wiki WebRender 行为。"""
+    mode = mode.lower()
+    aliases = {
+        "button": WIKI_RENDER_MODE_BUTTON,
+        "auto": WIKI_RENDER_MODE_AUTO,
+        "off": WIKI_RENDER_MODE_OFF,
+    }
+    mode = aliases.get(mode)
+    if mode is None:
+        await msg.finish(I18NContext("wiki.message.render.invalid"))
+    if await msg.session_info.target_union_info.edit_target_data(WIKI_RENDER_MODE_KEY, mode):
+        await msg.finish(I18NContext(f"wiki.message.render.{mode}"))
+    await msg.finish(I18NContext("message.failed"))
 
 
 @wiki.command("set <wikiurl> {{I18N:wiki.help.set}}", required_admin=True)

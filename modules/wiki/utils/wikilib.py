@@ -138,6 +138,8 @@ class PageInfo:
     is_forum: bool = False
     is_forum_topic: bool = False
     forum_data: dict = field(factory=dict)
+    # MediaWiki parse API pre-check result used by the deferred WebRender button.
+    renderable: bool = False
 
 
 class WikiLib:
@@ -580,6 +582,31 @@ class WikiLib:
         parse_head_html = BeautifulSoup(get_parse["parse"]["headhtml"]["*"], "html.parser")
         return parse_head_html.body["class"]
 
+    async def check_page_renderable(self, page_name: str, *, content_mode: bool = False) -> bool:
+        """Check the rendered page HTML before exposing a WebRender button.
+
+        WebRender selects elements from the rendered page, so checking the wikitext alone
+        cannot tell whether a page actually contains a renderable target.  MediaWiki's
+        ``parse`` endpoint gives us the same HTML structure without opening a browser.
+        """
+        try:
+            parsed = await self.get_json(action="parse", page=page_name, prop="text|headhtml")
+            parse_data = parsed.get("parse", {})
+            html = "\n".join(
+                value.get("*")
+                for value in (parse_data.get("text"), parse_data.get("headhtml"))
+                if isinstance(value, dict) and isinstance(value.get("*"), str)
+            )
+            if not html:
+                return False
+            soup = BeautifulSoup(html, "html.parser")
+            if content_mode:
+                return bool(soup.select(".mw-body-content") or soup.select(".mw-parser-output"))
+            return any(soup.select(selector) for selector in infobox_elements)
+        except Exception:
+            Logger.debug("Failed to pre-check Wiki WebRender targets.")
+            return False
+
     async def get_forums_data(self, page_name):
         parse = BeautifulSoup(
             (await self.get_json(action="parse", page=page_name, prop="text"))["parse"]["text"]["*"],
@@ -626,6 +653,7 @@ class WikiLib:
         _iw=False,
         _search=False,
         session: MessageSession | None = None,
+        check_render: bool = False,
     ) -> PageInfo:
         """
         :param title: 页面标题，如果为None，则使用pageid。
@@ -638,6 +666,7 @@ class WikiLib:
         :param _iw: 是否为iw模式，仅用作内部递归调用判断。
         :param _search: 是否为搜索模式，仅用作内部递归调用判断。
         :param session: 消息会话，用作检查结果时使用。
+        :param check_render: 是否使用 MediaWiki parse API 预检查 WebRender 目标。
         """
         if title:
             if m := re.match(r"w:c:.*?:(.*)", title) and self.wiki_info.api.find("fandom.com") != -1:
@@ -1163,6 +1192,25 @@ class WikiLib:
                             page_info.desc = page_desc
                             if not _iw and not page_info.args and page_info.id != -1 and page_info.id:
                                 page_info.link = self.wiki_info.script + f"?curid={page_info.id}"
+
+                            if check_render and page_info.link:
+                                render_content_mode = (
+                                    page_info.has_template_doc
+                                    or page_info.title.split(":")[0] in ["User"]
+                                    or page_info.is_disambiguation
+                                    or page_info.is_forum_topic
+                                )
+                                allow_special_page = self.wiki_info.is_allowed or not (
+                                    isinstance(session, MessageSession) and session.session_info.use_url_manager
+                                )
+                                page_info.renderable = (
+                                    not page_info.invalid_section
+                                    if selected_section
+                                    else await self.check_page_renderable(
+                                        page_info.title,
+                                        content_mode=render_content_mode and allow_special_page,
+                                    )
+                                )
                         else:
                             # handling langlinks query result, skip normal processing
                             page_info.title = query_langlinks.title
