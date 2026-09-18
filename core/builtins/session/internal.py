@@ -1012,7 +1012,7 @@ class MessageSession:
         await self.end_typing()
         chain = get_message_chain(self.session_info, message_chain)
         if append_instruction and isinstance(chain, MessageChain):
-            chain.append(I18NContext("message.reply.prompt"))
+            chain.append(I18NContext("message.wait.reply.prompt"))
         send = None
         flag = asyncio.Event()
         SessionTaskManager.add_task(self, flag, all_=all_, reply_pending=True, timeout=timeout)

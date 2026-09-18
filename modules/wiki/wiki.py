@@ -618,7 +618,7 @@ async def _query_pages_impl(
 
                                 if not session.session_info.support_button:
                                     i_msg_lst.append(I18NContext("wiki.message.invalid_section.select"))
-                                    i_msg_lst.append(I18NContext("message.reply.prompt"))
+                                    i_msg_lst.append(I18NContext("message.wait.reply.prompt"))
                                 else:
                                     if len(button_data_) > 50:
                                         i_msg_lst.append(
@@ -669,7 +669,7 @@ async def _query_pages_impl(
                                 i_msg_lst += [Image(ii) for ii in await image_table_render(img_table)]
                                 if not session.session_info.support_button:
                                     i_msg_lst.append(I18NContext("wiki.message.invalid_section.select"))
-                                    i_msg_lst.append(I18NContext("message.reply.prompt"))
+                                    i_msg_lst.append(I18NContext("message.wait.reply.prompt"))
                                 else:
                                     i_msg_lst.append(I18NContext("wiki.message.invalid_section.select.button"))
                                     if len(forum_data) > 50:

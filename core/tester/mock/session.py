@@ -365,7 +365,7 @@ class MockMessageSession(MessageSession):
         if message_chain:
             message_chain = get_message_chain(self.session_info, message_chain)
             if append_instruction:
-                message_chain.append(I18NContext("message.reply.prompt"))
+                message_chain.append(I18NContext("message.wait.reply.prompt"))
             await self.send_message(message_chain, quote)
             confirm_prompt = "\n".join(
                 [x.text if isinstance(x, PlainElement) else str(x) for x in message_chain.as_sendable()]
