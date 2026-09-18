@@ -1,4 +1,6 @@
+import asyncio
 import inspect
+import traceback
 from collections.abc import Callable
 
 from core.logger import Logger
@@ -11,7 +13,19 @@ class Tester:
         self.name = name
         self._entries: list[dict] = []
         self._results: list[dict] = []
+        self._progress_event = asyncio.Event()
+        self._progress_revision = 0
         self.is_ci: bool = False
+
+    async def _wait_for_progress(self, after_revision: int) -> int:
+        while self._progress_revision <= after_revision:
+            await self._progress_event.wait()
+            self._progress_event.clear()
+        return self._progress_revision
+
+    def _notify_progress(self) -> None:
+        self._progress_revision += 1
+        self._progress_event.set()
 
     async def test(
         self,
@@ -25,8 +39,6 @@ class Tester:
         :param note: 额外说明。
         :returns: 测试结果字典。
         """
-        import asyncio
-
         # Predicate 等可调用对象没有 __name__，回退到其类名
         Logger.trace(f"[{self.name}] test: {note or getattr(func, '__name__', type(func).__name__)}")
 
@@ -41,10 +53,31 @@ class Tester:
         }
         self._entries.append(entry_meta)
 
-        if asyncio.iscoroutinefunction(func):
-            result = await func()
-        else:
-            result = func()
+        try:
+            if asyncio.iscoroutinefunction(func):
+                result = await func()
+            else:
+                result = func()
+        except (asyncio.CancelledError, KeyboardInterrupt, SystemExit, GeneratorExit):
+            # Cancellation and process-control signals belong to the runner, not
+            # to an individual assertion result.
+            raise
+        except BaseException as exception:
+            final = {
+                "type": "unit",
+                "input": None,
+                "output": None,
+                "action": [],
+                "expected": func,
+                "match": False,
+                "note": note,
+                "exception_type": type(exception).__name__,
+                "exception_message": str(exception),
+                "traceback": traceback.format_exc(),
+            }
+            self._results.append(final)
+            self._notify_progress()
+            return final
 
         passed = bool(result)
         final = {
@@ -57,6 +90,7 @@ class Tester:
             "note": note,
         }
         self._results.append(final)
+        self._notify_progress()
         return final
 
     async def integrate(
@@ -93,6 +127,7 @@ class Tester:
         if "timeout" in result or "exception" in result and not isinstance(expected, Expectation):
             result.update({"type": "integration", "expected": expected, "match": False, "note": note})
             self._results.append(result)
+            self._notify_progress()
             return result
 
         if not expected:
@@ -113,6 +148,7 @@ class Tester:
             result.pop("traceback", None)
 
         self._results.append(result)
+        self._notify_progress()
         return result
 
     def get_entries(self) -> list[dict]:

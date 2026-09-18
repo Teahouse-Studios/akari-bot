@@ -26,6 +26,7 @@ from core.logger import Logger
 
 debug = CoreConfig.debug
 proxy = CoreSecretConfig.proxy if CoreSecretConfig.proxy else None
+repo_url = CoreConfig.repo_url
 
 url_pattern = re.compile(
     r"\b(?:http[s]?:\/\/)?(?:[a-zA-Z0-9\-\:_@]+\.)+[a-zA-Z]{2,}(?:\/[a-zA-Z0-9-._~:\/?#[\]@!$&\'()*+,;=%]*)?\b"
@@ -114,7 +115,7 @@ async def request_url(
         headers = {}
     # Default User-Agent
     if "User-Agent" not in headers:
-        headers["User-Agent"] = "AkariBot/1.0 (+https://github.com/Teahouse-Studios/akari-bot)"
+        headers["User-Agent"] = f"AkariBot/1.0 (+{repo_url})"
 
     # HTTPMock: check for cached mock response before making real request
     if Info.http_mock_enabled:

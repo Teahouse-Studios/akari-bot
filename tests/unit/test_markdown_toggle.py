@@ -36,7 +36,7 @@ SWITCH_KEY = "use_markdown"
 MARKDOWN_ON_BASE = evolve(
     qqbot_features,
     support_markdown=True,
-    support_markdown_table=True,
+    support_markdown_extension=True,
     support_action_text=True,
     support_button=True,
     support_markdown_toggle=True,
@@ -103,7 +103,7 @@ def _test_resolve_disables_markdown_features() -> bool:
     resolved = _resolve({SWITCH_KEY: False})
     for name in (
         "support_markdown",
-        "support_markdown_table",
+        "support_markdown_extension",
         "support_handle_message_nodes",
         "support_action_text",
         "support_button",

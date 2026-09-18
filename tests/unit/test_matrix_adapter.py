@@ -11,7 +11,8 @@ import nio
 from bots.matrix.info import client_name, sender_prefix, target_prefix
 from bots.matrix.features import features as matrix_features
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Image, Mention, Plain
+from core.builtins.message.elements import VideoElement
+from core.builtins.message.internal import Audio, Image, Mention, Plain
 from core.builtins.session.info import SessionInfo
 from core.tester import Tester, func_case
 
@@ -50,6 +51,39 @@ async def _test_matrix_image_preserves_detected_mimetype():
                 quote=False,
             )
     return result == ["$sent"] and upload.await_args.kwargs["content_type"] == "image/jpeg"
+
+
+async def _test_matrix_unavailable_media_is_skipped():
+    """图片/音频/视频文件缺失时不上传也不发送。"""
+    session = SessionInfo(
+        target_id=f"{target_prefix}|!room:test",
+        target_from=target_prefix,
+        sender_id=f"{sender_prefix}|user:test",
+        sender_from=sender_prefix,
+        client_name=client_name,
+        session_id="matrix-unavailable-media",
+        support_image=True,
+        support_audio=True,
+    )
+    upload = AsyncMock()
+    room_send = AsyncMock(return_value=SimpleNamespace(event_id="$sent"))
+    with (
+        patch.object(matrix_context.matrix_bot, "upload", new=upload),
+        patch.object(matrix_context.matrix_bot, "room_send", new=room_send),
+        patch.object(matrix_context.matrix_bot, "encrypted_rooms", new=set()),
+    ):
+        result = await matrix_context.MatrixContextManager.send_message(
+            session,
+            MessageChain.assign(
+                [
+                    Image("missing-image-fixture.png", allow_split=False),
+                    Audio("missing-audio-fixture.mp3"),
+                    VideoElement.assign("missing-video-fixture.mp4"),
+                ]
+            ),
+            quote=False,
+        )
+    return result == [] and upload.await_count == 0 and room_send.await_count == 0
 
 
 async def _test_matrix_private_room_handles_error_response():
@@ -422,6 +456,7 @@ async def test_matrix_adapter(tester: Tester):
     """Matrix 输入与媒体发送必须安全处理缺失字段和 MIME 类型。"""
     await tester.test(_test_invalid_matrix_image_is_ignored, "Matrix 无 URL 图片被忽略")
     await tester.test(_test_matrix_image_preserves_detected_mimetype, "Matrix 图片保留 MIME 类型")
+    await tester.test(_test_matrix_unavailable_media_is_skipped, "Matrix 不可用的媒体元素被跳过")
     await tester.test(_test_matrix_private_room_handles_error_response, "Matrix 私聊房间处理错误响应")
     await tester.test(_test_matrix_private_room_create_error_returns_none, "Matrix 私聊房间创建错误返回空")
     await tester.test(_test_matrix_initial_sync_is_not_replayed, "Matrix 初始同步不重复回放")

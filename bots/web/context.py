@@ -20,8 +20,10 @@ from core.builtins.message.elements import (
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
+from core.builtins.session.bot_state import BotState
 from core.builtins.temp import Temp
 from core.logger import Logger
+from core.utils.media import resolve_media_path
 
 _MEDIA_URL_LIFETIME = 600
 _media_urls: dict[str, tuple[str, float]] = {}
@@ -64,10 +66,25 @@ def _serialize_buttons(frame: ButtonFrameElement) -> list[list[dict]]:
     return rows
 
 
+async def _get_image_base64(image: ImageElement | None) -> str | None:
+    """取得图片的 Base64 内容，图片不可读时返回 None。
+
+    :param image: 待编码的图片元素；为 None 时直接返回 None。
+    :return: 带 MIME 前缀的 Base64 字符串；无法取得时返回 None。
+    """
+    if image is None:
+        return None
+    try:
+        return await image.get_base64(mime=True)
+    except Exception:
+        Logger.exception(f"Unable to get image {image.path}, skipping it: ")
+        return None
+
+
 async def _serialize_embed(embed: EmbedElement, session_info: SessionInfo) -> dict:
     """把 Embed 序列化为前端可直接渲染的富文本卡片数据。"""
-    image = await embed.image.get_base64(mime=True) if embed.image else None
-    thumbnail = await embed.thumbnail.get_base64(mime=True) if embed.thumbnail else None
+    image = await _get_image_base64(embed.image)
+    thumbnail = await _get_image_base64(embed.thumbnail)
 
     raw_fields = embed.fields
     if raw_fields is None:
@@ -105,11 +122,16 @@ async def _serialize_element(x, session_info: SessionInfo) -> dict | None:
     if isinstance(x, PlainElement):
         return {"type": "text", "content": x.text}
     if isinstance(x, ImageElement):
-        return {"type": "image", "content": await x.get_base64(mime=True)}
-    if isinstance(x, AudioElement):
-        return {"type": "audio", "content": register_media_url(x.path)}
-    if isinstance(x, VideoElement):
-        return {"type": "video", "content": register_media_url(x.path)}
+        content = await _get_image_base64(x)
+        if content is None:
+            return None
+        return {"type": "image", "content": content}
+    if isinstance(x, (AudioElement, VideoElement)):
+        media_path = await resolve_media_path(x)
+        if media_path is None:
+            return None
+        kind = "audio" if isinstance(x, AudioElement) else "video"
+        return {"type": kind, "content": register_media_url(media_path)}
     if isinstance(x, ActionTextElement):
         return {
             "type": "action_text",
@@ -158,6 +180,27 @@ class WebContextManager(ContextManager):
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
         return True
+
+    @classmethod
+    async def check_bot_state(cls, session_info: SessionInfo) -> BotState:
+        """WebUI sessions are backed by the trusted local bot interface."""
+        return BotState(
+            available=True,
+            joined=True,
+            is_owner=True,
+            is_admin=True,
+            can_read_messages=True,
+            can_read_all_messages=True,
+            can_send_messages=True,
+            can_send_proactive_messages=True,
+            can_manage_messages=True,
+            can_manage_members=True,
+            can_restrict_members=True,
+            can_react=True,
+            can_send_private_messages=True,
+            permissions={"webui": True},
+            raw={"platform": "webui"},
+        )
 
     @classmethod
     def _get_websocket(cls, session_info: SessionInfo) -> WebSocket | None:

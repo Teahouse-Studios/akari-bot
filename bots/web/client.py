@@ -7,10 +7,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
 from slowapi import Limiter
 
+from bots.web.config import WebConfig, WebSecretConfig
 from bots.web.info import *
 from core.client.init import client_cleanup, client_init
 from core.config import CFGManager
-from bots.web.config import WebConfig, WebSecretConfig
 from core.constants.path import assets_path, webui_path
 from core.database.models import SenderUnionInfo
 from core.logger import Logger

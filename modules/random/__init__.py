@@ -2,6 +2,7 @@ import uuid
 
 from core.builtins.bot import Bot
 from core.component import module
+from core.types import Param
 from core.utils.random import Random
 
 r = module(
@@ -24,15 +25,15 @@ async def _(msg: Bot.MessageSession, minimum: int, maximum: int):
 
 
 @r.command("choice <choices> ... {{I18N:random.help.choice}}")
-async def _(msg: Bot.MessageSession):
-    choices = [msg.parsed_msg.get("<choices>")] + msg.parsed_msg.get("...", [])
+async def _(msg: Bot.MessageSession, choice: Param("<choices>", str) = None, extra_choices: Param("...", list) = None):
+    choices = [choice] + (extra_choices or [])
     c = Random.choice(choices)
     await msg.finish(c)
 
 
 @r.command("shuffle <cards> ... {{I18N:random.help.shuffle}}")
-async def _(msg: Bot.MessageSession):
-    cards = [msg.parsed_msg.get("<cards>")] + msg.parsed_msg.get("...", [])
+async def _(msg: Bot.MessageSession, card: Param("<cards>", str) = None, extra_cards: Param("...", list) = None):
+    cards = [card] + (extra_cards or [])
     x = Random.shuffle(cards)
     await msg.finish(", ".join(x))
 

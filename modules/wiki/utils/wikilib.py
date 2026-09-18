@@ -9,23 +9,35 @@ from attrs import define, field
 from bs4 import BeautifulSoup
 
 import core.utils.html2text as html2text
-from core.builtins.message.internal import Url
+from core.builtins.message.internal import I18NContext, Url
 from core.builtins.session.internal import MessageSession
 from core.config.base import BaseConfig, CoreConfig
 from core.constants.exceptions import AbuseWarning, NoReportException
-from core.dirty_check import check
+from core.utils.dirty_check import check
 from core.i18n import Locale
 from core.logger import Logger
 from core.utils.http import get_url
-from core.web_render import web_render, SourceOptions
-from modules.wiki.database.models import WikiSiteInfo, WikiAllowList, WikiBlockList
+from core.utils.url_audit import evaluate_url_policy
+from core.utils.web_render import web_render, SourceOptions
+from modules.wiki.database.models import WikiSiteInfo
 from modules.wiki.utils.bot import BotAccount
+from modules.wiki.utils.disambiguation import DisambiguationBlock, is_disambiguation_page, parse_disambiguation_html
 from modules.wiki.utils.summarize import extract_summary, truncate_summary
 from .mapping import *
 
 default_locale = BaseConfig.default_locale
 enable_tos = CoreConfig.enable_tos
 MAX_RESEARCH_SUGGESTIONS = 5
+
+
+def _has_manual_anchor(html: str, section: str) -> bool:
+    """检查渲染正文中是否存在与 URL 片段匹配的手动锚点。"""
+    normalized = urllib.parse.unquote(section).replace(" ", "_")
+    soup = BeautifulSoup(html, "html.parser")
+    for anchor in soup.find_all("span", id=True):
+        if "anchor" in anchor.get("class", []) and anchor["id"].replace(" ", "_") == normalized:
+            return True
+    return False
 
 
 def _merge_research_suggestions(search_results, limit: int = MAX_RESEARCH_SUGGESTIONS) -> list[str]:
@@ -42,6 +54,12 @@ def _merge_research_suggestions(search_results, limit: int = MAX_RESEARCH_SUGGES
 
 class InvalidWikiError(Exception):
     pass
+
+
+class BlockedWikiError(InvalidWikiError):
+    def __init__(self, url: str):
+        super().__init__(url)
+        self.url = url
 
 
 @define
@@ -75,8 +93,8 @@ class WikiInfo:
     namespaces: dict[str, int] = field(factory=dict)
     namespaces_local: dict[str, str] = field(factory=dict)
     namespacealiases: dict[str, str] = field(factory=dict)
-    in_allowlist: bool = False
-    in_blocklist: bool = False
+    is_allowed: bool = False
+    is_blocked: bool = False
     script: str = ""
     logo_url: str = ""
     lang: str = None
@@ -106,6 +124,8 @@ class PageInfo:
     interwiki_prefix: str | None = ""
     status: bool = True
     templates: list[str] = None
+    is_disambiguation: bool = False
+    disambiguation_blocks: list[DisambiguationBlock] = field(factory=list)
     before_page_property: str = "page"
     page_property: str = "page"
     has_template_doc: bool = False
@@ -113,6 +133,7 @@ class PageInfo:
     possible_research_title: list[str] = None
     body_class: list[str] = None
     invalid_section: bool = False
+    is_manual_anchor: bool = False
     is_talk_page: bool = False
     is_forum: bool = False
     is_forum_topic: bool = False
@@ -128,6 +149,16 @@ class WikiLib:
         if not headers:
             headers = {}
         self.headers = headers
+
+    @staticmethod
+    def should_check_content(session: MessageSession | None = None) -> bool:
+        """当前会话是否要求检查 Wiki 返回内容。"""
+        if session is None:
+            return False
+        session_info = getattr(session, "session_info", None)
+        if session_info is None:
+            return False
+        return bool(getattr(session_info, "require_check_dirty_words", False))
 
     async def get_json_from_api(self, api, _no_login=False, **kwargs) -> dict:
         cookies = None
@@ -162,7 +193,7 @@ class WikiLib:
         except Exception as e:
             # Exception handling for moegirl.org.cn
             if api.find("moegirl.org.cn") != -1:
-                raise InvalidWikiError(self.locale.t("wiki.message.utils.wikilib.get_failed.moegirl"))
+                raise InvalidWikiError(str(I18NContext("wiki.message.utils.wikilib.get_failed.moegirl")))
             raise NoReportException(str(e))
 
     async def rearrange_siteinfo(self, info: dict | str | bytes, wiki_api_link) -> WikiInfo:
@@ -208,6 +239,7 @@ class WikiLib:
         interwiki_dict = {}
         for interwiki in interwiki_map:
             interwiki_dict[interwiki["prefix"]] = interwiki["url"]
+        policy = evaluate_url_policy(wiki_api_link)
         return WikiInfo(
             articlepath=real_url + info["query"]["general"]["articlepath"],
             extensions=ext_list,
@@ -220,13 +252,15 @@ class WikiLib:
             namespaces_local=namespaces_local,
             namespacealiases=namespacealiases,
             interwiki=interwiki_dict,
-            in_allowlist=await WikiAllowList.check(wiki_api_link),
-            in_blocklist=await WikiBlockList.check(wiki_api_link),
+            is_allowed=policy.allowed,
+            is_blocked=policy.blocked,
             script=real_url + info["query"]["general"]["script"],
             logo_url=info["query"]["general"].get("logo"),
         )
 
-    async def check_wiki_available(self):
+    async def check_wiki_available(self, ignore_url_policy: bool = False):
+        if not ignore_url_policy and evaluate_url_policy(self.url).blocked:
+            raise BlockedWikiError(self.url)
         try:
             self.url = re.sub(
                 r"https://zh\.moegirl\.org\.cn/",
@@ -239,17 +273,17 @@ class WikiLib:
         except Exception:
             try:
                 get_page = await get_url(self.url, status_code=None, fmt="text", headers=self.headers)
-                if get_page.find("T400119") != -1:
+                if get_page.find("https://w.wiki/4wJS") != -1:
                     return WikiStatus(
                         available=False,
                         value=False,
-                        message=self.locale.t("wiki.message.utils.wikilib.get_failed.wikimedia"),
+                        message=str(I18NContext("wiki.message.utils.wikilib.get_failed.wikimedia")),
                     )
                 if get_page.find("<title>Attention Required! | Cloudflare</title>") != -1:
                     return WikiStatus(
                         available=False,
                         value=False,
-                        message=self.locale.t("wiki.message.utils.wikilib.get_failed.cloudflare"),
+                        message=str(I18NContext("wiki.message.utils.wikilib.get_failed.cloudflare")),
                     )
                 try:
                     m = re.findall(
@@ -262,31 +296,33 @@ class WikiLib:
                     # Logger.info(api_match)
                     wiki_api_link = api_match
                 except IndexError:
-                    Logger.error(get_page)
+                    Logger.trace(get_page)
                     return WikiStatus(
                         available=False,
                         value=False,
-                        message=self.locale.t("wiki.message.utils.wikilib.get_failed.not_mediawiki"),
+                        message=str(I18NContext("wiki.message.utils.wikilib.get_failed.not_mediawiki")),
                     )
             except TimeoutError:
                 return WikiStatus(
                     available=False,
                     value=False,
-                    message=self.locale.t("wiki.message.utils.wikilib.get_failed.timeout"),
+                    message=str(I18NContext("wiki.message.utils.wikilib.get_failed.timeout")),
                 )
             except Exception as e:
                 Logger.exception()
                 if str(e).startswith("403"):
-                    message = self.locale.t("wiki.message.utils.wikilib.get_failed.forbidden")
+                    message = str(I18NContext("wiki.message.utils.wikilib.get_failed.forbidden"))
                 elif not re.match(r"^(https?://).*", self.url):
-                    message = self.locale.t("wiki.message.utils.wikilib.get_failed.no_http_or_https_headers")
+                    message = str(I18NContext("wiki.message.utils.wikilib.get_failed.no_http_or_https_headers"))
                 else:
-                    message = self.locale.t("wiki.message.utils.wikilib.get_failed.may_not_mediawiki") + str(e)
+                    message = str(I18NContext("wiki.message.utils.wikilib.get_failed.may_not_mediawiki")) + str(e)
                 if self.url.find("moegirl.org.cn") != -1:
-                    message += "\n" + self.locale.t("wiki.message.utils.wikilib.get_failed.moegirl")
+                    message += "\n" + str(I18NContext("wiki.message.utils.wikilib.get_failed.moegirl"))
                 return WikiStatus(available=False, value=False, message=message)
         if wiki_api_link in redirect_list:
             wiki_api_link = redirect_list[wiki_api_link]
+        if not ignore_url_policy and evaluate_url_policy(wiki_api_link).blocked:
+            raise BlockedWikiError(wiki_api_link)
         get_cache_info = await WikiSiteInfo.get_or_none(api_link=wiki_api_link)
         if get_cache_info:
             if (
@@ -317,9 +353,9 @@ class WikiLib:
         except Exception as e:
             if CoreConfig.debug:
                 Logger.exception()
-            message = self.locale.t("wiki.message.utils.wikilib.get_failed.api") + str(e)
+            message = str(I18NContext("wiki.message.utils.wikilib.get_failed.api")) + str(e)
             if self.url.find("moegirl.org.cn") != -1:
-                message += "\n" + self.locale.t("wiki.message.utils.wikilib.get_failed.moegirl")
+                message += "\n" + str(I18NContext("wiki.message.utils.wikilib.get_failed.moegirl"))
             return WikiStatus(available=False, value=False, message=message)
         get_cache_info.site_info = get_json
         # 须带时区：不带时区的时间会被 Tortoise 当作 UTC 存入，缓存时间凭空提前一个时区差，
@@ -330,7 +366,7 @@ class WikiLib:
             available=True,
             value=info,
             message=(
-                self.locale.t("wiki.message.utils.wikilib.no_textextracts")
+                str(I18NContext("wiki.message.utils.wikilib.no_textextracts"))
                 if "TextExtracts" not in info.extensions
                 else ""
             ),
@@ -398,6 +434,8 @@ class WikiLib:
 
     async def get_json(self, _no_login=False, **kwargs) -> dict:
         await self.fixup_wiki_info()
+        if evaluate_url_policy(self.wiki_info.api).blocked:
+            raise BlockedWikiError(self.wiki_info.api)
         return await self.get_json_from_api(self.wiki_info.api, _no_login=_no_login, **kwargs)
 
     async def return_api(self, _no_login=False, _no_format=False, **kwargs) -> str:
@@ -436,7 +474,7 @@ class WikiLib:
         parse_text = get_parse["parse"]["text"]["*"]
         t = h.handle(parse_text)
         if len(t) > 65535:
-            return self.locale.t("wiki.message.utils.wikilib.error.text_too_long")
+            return str(I18NContext("wiki.message.utils.wikilib.error.text_too_long"))
         if section:
             for i in range(1, 7):  # H1 to H6
                 s = re.split(r"(.*" + "#" * i + r"[^#].*\[.*?])", t, re.M | re.S)  # e.g. ### Section [..]
@@ -607,6 +645,8 @@ class WikiLib:
                 return await nq.parse_page_info(m.group(1))
         try:
             await self.fixup_wiki_info()
+        except BlockedWikiError:
+            raise
         except InvalidWikiError as e:
             link = None
             if self.url.find("$1") != -1:
@@ -615,13 +655,11 @@ class WikiLib:
                 title=title if title else pageid,
                 id=pageid,
                 link=link,
-                desc=self.locale.t("message.error") + str(e),
+                desc=str(I18NContext("message.error")) + str(e),
                 info=self.wiki_info,
                 templates=[],
             )
         ban = False
-        if self.wiki_info.in_blocklist and not self.wiki_info.in_allowlist:
-            ban = True
 
         # if redirected too many times, raise AbuseWarning
         if _tried > 5 and enable_tos:
@@ -654,7 +692,7 @@ class WikiLib:
                     if a[0] == "?":
                         section_code = False
                     if section_code:
-                        arg_list.append(urllib.parse.quote(a))
+                        arg_list.append(urllib.parse.quote(a, safe="/:#?="))
                         section_list.append(a)
                     else:
                         _arg_list.append(a)
@@ -740,10 +778,11 @@ class WikiLib:
             # 摘要须由本地解析 Wikitext 得出。此处随主查询一并取回，无须额外请求。
             # rvslots 自 MediaWiki 1.32 起提供，更低版本会忽略该参数并返回旧式结构，
             # 故读取时两种结构都要认。
-            query_props += ["revisions"]
+            query_props += ["revisions", "pageprops"]
             query_string.update(
                 {
                     "prop": "|".join(query_props),
+                    "ppprop": "description|displaytitle|disambiguation|infoboxes",
                     "rvprop": "content",
                     "rvslots": "main",
                 }
@@ -759,7 +798,7 @@ class WikiLib:
         if not query:
             return PageInfo(
                 title=title,
-                desc=self.locale.t("wiki.message.utils.wikilib.error.empty"),
+                desc=str(I18NContext("wiki.message.utils.wikilib.error.empty")),
                 info=self.wiki_info,
             )
 
@@ -799,12 +838,14 @@ class WikiLib:
                 if "invalid" in page_raw:
                     match = re.search(r"\"(.)\"", page_raw["invalidreason"])
                     if match:
-                        rs = self.locale.t(
-                            "wiki.message.utils.wikilib.invalid.invalid_character",
-                            char=match.group(1),
+                        rs = str(
+                            I18NContext(
+                                "wiki.message.utils.wikilib.invalid.invalid_character",
+                                char=match.group(1),
+                            )
                         )
                     else:
-                        rs = self.locale.t("wiki.message.utils.wikilib.invalid.empty_title")
+                        rs = str(I18NContext("wiki.message.utils.wikilib.invalid.empty_title"))
                     page_info.desc = rs
                 elif "missing" in page_raw:
                     # if page is missing... try to research
@@ -814,7 +855,7 @@ class WikiLib:
                             full_url = (
                                 re.sub(
                                     r"\$1",
-                                    urllib.parse.quote(page_info.title.encode("UTF-8")),
+                                    urllib.parse.quote(page_info.title.encode("UTF-8"), safe="/:#?="),
                                     self.wiki_info.articlepath,
                                 )
                                 + page_info.args
@@ -857,6 +898,10 @@ class WikiLib:
                                 page_info.desc = reparse.desc
                                 page_info.file = reparse.file
                                 page_info.status = reparse.status
+                                page_info.templates = reparse.templates
+                                page_info.is_disambiguation = reparse.is_disambiguation
+                                page_info.disambiguation_blocks = reparse.disambiguation_blocks
+                                page_info.is_manual_anchor = reparse.is_manual_anchor
                                 page_info.invalid_namespace = reparse.invalid_namespace
                                 page_info.possible_research_title = reparse.possible_research_title
                             else:
@@ -939,6 +984,7 @@ class WikiLib:
                     # handling templates
 
                     templates = page_info.templates = [t["title"] for t in page_raw.get("templates", [])]
+                    page_info.is_disambiguation = is_disambiguation_page(page_raw.get("pageprops"), templates)
 
                     # handling special talk page
                     if selected_section or page_info.invalid_section or page_info.is_talk_page:
@@ -957,19 +1003,35 @@ class WikiLib:
                         if selected_section:
                             if urllib.parse.unquote(selected_section) not in section_list:
                                 page_info.invalid_section = True
+                                try:
+                                    parsed_page = await self.get_json(
+                                        action="parse",
+                                        page=page_info.title,
+                                        prop="text",
+                                    )
+                                    parsed_text = parsed_page.get("parse", {}).get("text", "")
+                                    if isinstance(parsed_text, dict):
+                                        parsed_text = parsed_text.get("*", "")
+                                    if parsed_text and _has_manual_anchor(parsed_text, selected_section):
+                                        page_info.invalid_section = False
+                                        page_info.is_manual_anchor = True
+                                except Exception:
+                                    Logger.exception("Failed to check Wiki manual section anchor: ")
 
                     # handling special pages
                     if "special" in page_raw:
                         full_url = (
                             re.sub(
                                 r"\$1",
-                                urllib.parse.quote(title.encode("UTF-8")),
+                                urllib.parse.quote(title.encode("UTF-8"), safe="/:#?="),
                                 self.wiki_info.articlepath,
                             )
                             + page_info.args
                         )
                         page_info.link = full_url
                         page_info.status = True
+                        page_info.invalid_section = False
+                        page_info.selected_section = None
                     else:
                         # handling normal pages
                         query_langlinks = False
@@ -1071,7 +1133,7 @@ class WikiLib:
                                         page_info.has_template_doc = True
                                     page_info.before_page_property = page_info.page_property = "template"
                             # get description
-                            if get_desc:
+                            if get_desc and not page_info.is_manual_anchor:
                                 if use_extracts:
                                     raw_desc = page_raw.get("extract")
                                     if raw_desc:
@@ -1082,6 +1144,15 @@ class WikiLib:
                                     page_desc = self.parse_text(
                                         extract_summary(self._get_revision_content(page_raw), selected_section)
                                     )
+                            if page_info.is_disambiguation and not selected_section:
+                                try:
+                                    parsed_page = await self.get_json(action="parse", page=title, prop="text")
+                                    page_info.disambiguation_blocks = parse_disambiguation_html(
+                                        parsed_page["parse"]["text"]["*"],
+                                        self.wiki_info.realurl or self.wiki_info.api,
+                                    )
+                                except Exception:
+                                    Logger.exception("Failed to parse Wiki disambiguation page: ")
                             full_url = page_raw["fullurl"] + page_info.args
                             file = None
                             if "imageinfo" in page_raw:
@@ -1100,6 +1171,9 @@ class WikiLib:
                             page_info.edit_link = query_langlinks.edit_link
                             page_info.file = query_langlinks.file
                             page_info.desc = query_langlinks.desc
+                            page_info.templates = query_langlinks.templates
+                            page_info.is_disambiguation = query_langlinks.is_disambiguation
+                            page_info.disambiguation_blocks = query_langlinks.disambiguation_blocks
         interwiki_: list[dict[str, str]] = query.get("interwiki")
         if interwiki_:
             # handling interwiki pages
@@ -1112,7 +1186,9 @@ class WikiLib:
                     # MediaWiki 的 iwurl 会返回已经解析过全域、本地及转发规则的完整 URL。
                     # siteinfo.interwikimap 不一定包含扩展提供的全域前缀，因此只把缓存映射作为兼容回退。
                     if not (get_iw := i.get("url") or self.wiki_info.interwiki.get(i["iw"])):
-                        raise InvalidWikiError(self.locale.t("wiki.message.utils.wikilib.get_failed.invalid_interwiki"))
+                        raise InvalidWikiError(
+                            str(I18NContext("wiki.message.utils.wikilib.get_failed.invalid_interwiki"))
+                        )
 
                     target_wiki = WikiLib(url=get_iw, headers=self.headers)
                     if i.get("url"):
@@ -1163,7 +1239,7 @@ class WikiLib:
 
                                 if before_page_info.selected_section:
                                     page_info.selected_section = before_page_info.selected_section
-        if not self.wiki_info.in_allowlist:  # check content if not in allowlist
+        if not self.wiki_info.is_allowed and self.should_check_content(session):
             checklist = []
             if page_info.title:
                 checklist.append(page_info.title)
@@ -1180,6 +1256,8 @@ class WikiLib:
             page_info.id = -1
             page_info.desc = ""
             page_info.link = str(Url(page_info.link, trusted=False))
+        if page_info.desc:
+            page_info.desc = page_info.desc.strip()
         return page_info
 
     async def random_page(self) -> PageInfo:

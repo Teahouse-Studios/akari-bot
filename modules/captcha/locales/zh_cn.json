@@ -26,7 +26,7 @@
     "captcha.emote.watermelon": "西瓜",
     "captcha.help.desc": "为新加入 QQ 群聊的成员执行按钮验证码校验。",
     "captcha.message.challenge": "欢迎加入，正在验证你是否为人类！本群启用了入群验证，机器人已暂时禁言你 30 天。请点击下方按钮中的数字“${answer}”完成验证。\n如果无法点击按钮，请先添加机器人，然后私聊发送：\n```\n${command}\n```\n验证码仅限本人使用。",
-    "captcha.message.emote_challenge": "本群启用了入群验证，机器人已暂时禁言你 30 天。请选择${bot_name}手中拿着的物品。\n如果无法点击按钮，请先添加机器人，然后私聊发送：\n```\n${command}\n```\n验证码仅限本人使用。",
+    "captcha.message.emote_challenge": "本群启用了入群验证，机器人已暂时禁言你 30 天。请选择${bot_name}手中拿着的物品。\n如果无法点击按钮（QQ 电脑端），请先添加机器人，然后私聊发送：\n```\n${command}\n```\n验证码仅限本人使用。",
     "captcha.message.emote_welcome": "欢迎加入，正在验证你是否为人类！",
     "captcha.message.failed": "选择了错误的验证码，验证已失败并保持禁言，请管理员人工处理。",
     "captcha.message.permission_error": "入群验证执行失败。请管理员检查机器人是否拥有群成员事件、读取全部消息、发送按钮消息及成员禁言管理权限。",

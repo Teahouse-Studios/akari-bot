@@ -7,13 +7,15 @@ from typing import Union
 from urllib.parse import quote
 
 import botpy
+import httpx
 from botpy.interaction import Interaction
 from botpy.message import BaseMessage, C2CMessage, DirectMessage, GroupMessage, Message
-from botpy.protocol import ApiError, MediaFileType, MediaSendResult, MessageType, ReplyTarget
+from botpy.protocol import ApiError, MediaFileType, MediaSendResult, MessageType, ReplyTarget, TransportError
 from botpy.types.group import SetMemberMuteState
 from botpy.types.message import Reference, KeyboardPayload
 from botpy.types.inline import Keyboard, Button, KeyboardRow, RenderData, Action, Permission
 
+from bots.qqbot.config import QQBotConfig
 from bots.qqbot.features import features as qqbot_features
 from bots.qqbot.info import (
     client_name,
@@ -39,12 +41,13 @@ from core.builtins.message.elements import (
 )
 from core.builtins.message.internal import I18NContext, Image
 from core.builtins.session.context import ContextManager
+from core.builtins.session.bot_state import BotState
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
-from bots.qqbot.config import QQBotConfig
 from core.config.base import CoreConfig
 from core.constants.path import assets_path
 from core.logger import Logger
+from core.utils.media import resolve_media_path
 from core.utils.random import Random
 from core.utils.table import escape_table_cell, resolve_table_columns
 
@@ -54,13 +57,22 @@ qq_use_markdown = QQBotConfig.qq_use_markdown
 
 # 平台对指令操作标签内文本的字符数上限，按 urlencode 前的原文计算
 ACTION_TEXT_MAX_LENGTH = 100
-EXPIRED_REPLY_MESSAGE_CODE = 40034005
+# QQ Bot inline keyboards accept at most five rows with ten buttons per row.
+# Core button layout is shared across platforms with different limits; normalize it
+# at this adapter boundary before handing the payload to botpy.
+QQBOT_MAX_KEYBOARD_ROWS = 5
+QQBOT_MAX_KEYBOARD_COLUMNS = 10
+PASSIVE_REPLY_FALLBACK_ERROR_CODES = frozenset({"40034005", "40034128"})
+PROACTIVE_PERMISSION_DENIED_ERROR_CODES = frozenset({"304046", "40034102", "40034105"})
+SILENT_SEND_ABORT_ERROR_CODES = frozenset({"40034101", "40054002", "40054003"})
 PERMISSION_CACHE_TTL = 3600
 PERMISSION_CACHE_MAX_SIZE = 4096
+MESSAGE_ID_CACHE_MAX_SIZE = 4096
 INITIATIVE_QUEUE_MAX_SIZE = 128
 HIGH_PRIORITY_BURST = 5
 HIGH_PRIORITY_QUEUE_RESERVE = 16
 ADAPTER_SHUTDOWN_TIMEOUT = 10
+MEDIA_UPLOAD_MAX_ATTEMPTS = 3
 TYPING_EMOTE_DIR = assets_path / "emotes" / "typing"
 TYPING_EMOTES = tuple(sorted(TYPING_EMOTE_DIR.glob("*.gif")))
 
@@ -69,6 +81,36 @@ def _load_s3_storage():
     from core.utils.s3 import S3Storage
 
     return S3Storage
+
+
+async def _upload_media(
+    client: botpy.Client, target: ReplyTarget, file_type: MediaFileType, *, local_path: str
+) -> dict[str, str]:
+    """仅为媒体预上传的瞬态网络错误补充重试，最多调用上传三次。"""
+    attempts = 0
+    while True:
+        try:
+            # 只上传资源，禁止平台随上传自动发消息，确保重试不会重复投递。
+            upload = await client.upload_media(target, file_type, local_path=local_path, srv_send_msg=False)
+            break
+        except TransportError as error:
+            # SDK 报告的尝试次数用于减少后续补充重试；单次调用内的重试仍由 SDK 控制。
+            attempts += max(error.attempts or 1, 1)
+            if attempts >= MEDIA_UPLOAD_MAX_ATTEMPTS or not isinstance(
+                error.cause, (httpx.TimeoutException, httpx.NetworkError, httpx.RemoteProtocolError)
+            ):
+                raise
+            delay = 2 ** (attempts - 1)
+            Logger.warning(
+                f"QQBot media upload to {target.scope}|{target.target_id} failed after {attempts} attempt(s) "
+                f"({type(error.cause).__name__}); retrying in {delay}s."
+            )
+            await asyncio.sleep(delay)
+
+    file_info = upload.get("file_info") if isinstance(upload, Mapping) else None
+    if not file_info:
+        raise RuntimeError("QQBot media upload response does not contain file_info")
+    return {"file_info": file_info}
 
 
 def _truncate_action_text(value: str, field: str) -> str:
@@ -115,11 +157,30 @@ def _build_qqbot_keyboard(
     """将 ButtonFrame 的按钮行转换为 QQBot 键盘。"""
     if not rows:
         return None
+
+    # ButtonFrame is shared by platforms with different keyboard limits. Split
+    # only oversized rows so normal row grouping remains intact. A keyboard
+    # cannot represent more than 50 buttons; keep the earliest buttons, matching
+    # the existing truncation policy elsewhere.
+    keyboard_rows_data = [
+        row.buttons[start : start + QQBOT_MAX_KEYBOARD_COLUMNS]
+        for row in rows
+        for start in range(0, len(row.buttons), QQBOT_MAX_KEYBOARD_COLUMNS)
+    ]
+    if len(keyboard_rows_data) > QQBOT_MAX_KEYBOARD_ROWS:
+        button_count = sum(len(row) for row in keyboard_rows_data)
+        rendered_count = sum(len(row) for row in keyboard_rows_data[:QQBOT_MAX_KEYBOARD_ROWS])
+        Logger.warning(
+            f"QQBot inline keyboard has {button_count} buttons but only {rendered_count} fit; "
+            f"dropped the last {button_count - rendered_count}."
+        )
+        keyboard_rows_data = keyboard_rows_data[:QQBOT_MAX_KEYBOARD_ROWS]
+
     keyboard_rows = []
     button_id = 0
-    for row in rows:
+    for row_buttons in keyboard_rows_data[:QQBOT_MAX_KEYBOARD_ROWS]:
         buttons = []
-        for message_button in row.buttons:
+        for message_button in row_buttons:
             payload = message_button.payload
             button_id += 1
             buttons.append(
@@ -174,7 +235,7 @@ def nodes_to_table(session_info: SessionInfo, nodes: MessageNodes) -> str:
     """
     cells = []
     for node in nodes.values:
-        pieces = [x.text for x in node.as_sendable(session_info, disable_markdown=True) if isinstance(x, PlainElement)]
+        pieces = [x.text for x in node.as_sendable(session_info, enable_markdown=False) if isinstance(x, PlainElement)]
         cells.append(escape_table_cell("\n".join(pieces)))
     if not cells:
         return escape_table_cell(nodes.name)
@@ -195,6 +256,7 @@ def nodes_to_table(session_info: SessionInfo, nodes: MessageNodes) -> str:
 
 # 用户权限缓存，用于部分场景接口未返回群聊内身份使用。只缓存管理员，缺失时安全退化为无权限。
 permission_cache: OrderedDict[str, float] = OrderedDict()
+message_id_cache: OrderedDict[str, str] = OrderedDict()
 
 
 def cache_permission(key: str, is_admin: bool, now: float | None = None) -> None:
@@ -217,6 +279,30 @@ def get_cached_permission(key: str, now: float | None = None) -> bool:
         return False
     permission_cache.move_to_end(key)
     return True
+
+
+def cache_message_id_pair(application_id: str | None, api_id: str | None) -> None:
+    """缓存应用层消息 ID 到平台接口消息 ID 的映射。"""
+    if not application_id or not api_id:
+        return
+    application_id = str(application_id)
+    api_id = str(api_id)
+    message_id_cache.pop(application_id, None)
+    message_id_cache[application_id] = api_id
+    while len(message_id_cache) > MESSAGE_ID_CACHE_MAX_SIZE:
+        message_id_cache.popitem(last=False)
+
+
+def _resolve_api_message_id(message_id: str) -> str | None:
+    """把框架持有的应用层消息 ID 还原成可用于 QQ OpenAPI 的 ID。"""
+    message_id = str(message_id)
+    if api_id := message_id_cache.get(message_id):
+        message_id_cache.move_to_end(message_id)
+        return api_id
+    # REFIDX 仅用于应用层识别，映射丢失时不能误传给平台接口。
+    if message_id.startswith("REFIDX"):
+        return None
+    return message_id
 
 
 def _get_client():
@@ -243,17 +329,56 @@ def _message_ids(result) -> list[str]:
         return _message_ids(result.message)
     if isinstance(result, list):
         return [message_id for item in result for message_id in _message_ids(item)]
-    if isinstance(result, Mapping) and result.get("id"):
-        return [str(result["id"])]
+    if isinstance(result, Mapping):
+        api_id = result.get("id")
+        ext_info = result.get("ext_info")
+        application_id = None
+        if isinstance(ext_info, Mapping):
+            application_id = ext_info.get("msg_idx") or ext_info.get("ref_idx")
+        if application_id:
+            cache_message_id_pair(str(application_id), str(api_id) if api_id else None)
+            return [str(application_id)]
+        if api_id:
+            api_id = str(api_id)
+            # 真实平台的 ROBOT ID 只能用于接口调用，不能作为 wait_reply 等应用层标识。
+            if api_id.startswith("ROBOT"):
+                Logger.warning("QQBot send response has a ROBOT message ID but no ext_info message index.")
+                return []
+            return [api_id]
     return []
 
 
-def _is_expired_reply_message_error(error: ApiError) -> bool:
-    """判断 QQ OpenAPI 异常是否表示被回复的消息 ID 已过期。"""
+def _api_error_codes(error: ApiError) -> set[str]:
+    """收集 QQ OpenAPI 异常在兼容层和响应正文中的错误码。"""
     codes = [error.code]
     if isinstance(error.response, Mapping):
         codes.extend((error.response.get("code"), error.response.get("err_code")))
-    return any(str(code) == str(EXPIRED_REPLY_MESSAGE_CODE) for code in codes if code is not None)
+    return {str(code) for code in codes if code is not None}
+
+
+def _api_error_messages(error: ApiError) -> set[str]:
+    """收集 QQ OpenAPI 异常在兼容层和响应正文中的错误文案。"""
+    messages = [error.message]
+    if isinstance(error.response, Mapping):
+        messages.extend((error.response.get("message"), error.response.get("msg")))
+    return {str(message) for message in messages if message is not None}
+
+
+def _is_passive_reply_fallback_error(error: ApiError) -> bool:
+    """判断被动回复是否因消息过期或回复次数超限而可改发主动消息。"""
+    return bool(_api_error_codes(error) & PASSIVE_REPLY_FALLBACK_ERROR_CODES)
+
+
+def _is_proactive_permission_denied_error(error: ApiError) -> bool:
+    """判断主动消息是否因目标未授予主动发送权限而失败。"""
+    if _api_error_codes(error) & PROACTIVE_PERMISSION_DENIED_ERROR_CODES:
+        return True
+    return any("主动消息失败" in message and "无权限" in message for message in _api_error_messages(error))
+
+
+def _is_silent_send_abort_error(error: ApiError) -> bool:
+    """判断平台是否要求静默终止整条消息发送流程。"""
+    return bool(_api_error_codes(error) & SILENT_SEND_ABORT_ERROR_CODES)
 
 
 class _TypingState:
@@ -426,6 +551,86 @@ class QQBotContextManager(ContextManager):
         return False
 
     @classmethod
+    async def check_bot_state(cls, session_info: SessionInfo) -> BotState:
+        """Query QQ official bot membership state or channel permissions."""
+        if session_info.target_from in {target_c2c_prefix, target_direct_prefix}:
+            return BotState(
+                available=True,
+                joined=True,
+                is_owner=None,
+                is_admin=None,
+                can_read_messages=True,
+                can_read_all_messages=True,
+                can_send_messages=True,
+                can_send_proactive_messages=True,
+                can_manage_messages=None,
+                can_manage_members=None,
+                can_restrict_members=None,
+                can_react=None,
+                can_send_private_messages=True,
+                raw={"context": session_info.target_from},
+            )
+        client = _get_client()
+        try:
+            if session_info.target_from == target_group_prefix:
+                state = await client.api.get_group_bot_state(session_info.get_common_target_id())
+                state = dict(state)
+                role = state.get("member_role")
+                recv_setting = state.get("recv_msg_setting")
+                is_owner = role == "owner"
+                is_admin = role in {"owner", "admin"}
+                return BotState(
+                    available=True,
+                    joined=True,
+                    is_owner=is_owner,
+                    is_admin=is_admin,
+                    can_read_messages=recv_setting in {"all", "mention_and_context", "only_mention"},
+                    can_read_all_messages=recv_setting == "all",
+                    can_send_messages=True,
+                    can_send_proactive_messages=state.get("allow_proactive_msg"),
+                    can_manage_messages=is_admin,
+                    can_manage_members=is_admin,
+                    can_restrict_members=is_admin,
+                    can_react=True,
+                    can_send_private_messages=True,
+                    permissions={
+                        "allow_proactive_msg": state.get("allow_proactive_msg"),
+                        "recv_msg_setting": recv_setting,
+                        "member_role": role,
+                    },
+                    raw=state,
+                )
+            if session_info.target_from == target_guild_prefix:
+                bot_id = session_info.bot_id
+                if not bot_id:
+                    return BotState(available=None, joined=None, error="QQBot ID is unavailable")
+                target_parts = session_info.target_id.removeprefix(f"{target_guild_prefix}|").split("|", 1)
+                if len(target_parts) != 2:
+                    return BotState(available=None, joined=None, error="Invalid QQBot channel target")
+                channel_id = target_parts[1]
+                permissions = await client.api.get_channel_user_permissions(channel_id, str(bot_id))
+                raw = dict(permissions)
+                return BotState(
+                    available=True,
+                    joined=True,
+                    can_read_messages=None,
+                    can_read_all_messages=None,
+                    can_send_messages=None,
+                    can_send_proactive_messages=None,
+                    can_manage_messages=None,
+                    can_manage_members=None,
+                    can_restrict_members=None,
+                    can_react=None,
+                    can_send_private_messages=True,
+                    permissions={"permissions": raw.get("permissions"), "role_id": raw.get("role_id")},
+                    raw=raw,
+                )
+            return BotState(available=None, joined=None, error="Unsupported QQBot context")
+        except Exception as exc:
+            Logger.exception(f"Failed to check QQBot state in {session_info.target_id}: ")
+            return BotState(available=None, joined=None, error=str(exc))
+
+    @classmethod
     async def _prepare_message(
         cls,
         session_info: SessionInfo,
@@ -439,6 +644,44 @@ class QQBotContextManager(ContextManager):
         ctx: BaseMessage | Interaction | None = cls.context.get(session_info.session_id)
         client = _get_client()
         target = _reply_target(session_info, ctx)
+        send_target = target
+        send_aborted = False
+
+        async def send_with_proactive_fallback(sender, /, *args, **kwargs):
+            """被动回复不可用时改发主动消息；不可发送时静默终止。"""
+            nonlocal send_aborted, send_target
+            if send_aborted:
+                return None
+            try:
+                return await sender(send_target, *args, **kwargs)
+            except ApiError as error:
+                if _is_silent_send_abort_error(error):
+                    send_aborted = True
+                    return None
+                # 平台会按实际解析结果判断消息类型；即使本地 ReplyTarget 仍带有
+                # message_id，也可能被平台归类成主动消息，因此必须优先识别此错误。
+                if _is_proactive_permission_denied_error(error):
+                    send_aborted = True
+                    return None
+                if send_target.message_id is None:
+                    raise
+                if not _is_passive_reply_fallback_error(error):
+                    raise
+
+                Logger.warning(
+                    f"Passive reply {send_target.message_id} is no longer available when sending to "
+                    f"{send_target.scope}|{send_target.target_id}; retrying as a proactive message."
+                )
+                send_target = ReplyTarget(scope=send_target.scope, target_id=send_target.target_id)
+                try:
+                    return await sender(send_target, *args, **kwargs)
+                except ApiError as proactive_error:
+                    if _is_silent_send_abort_error(proactive_error) or _is_proactive_permission_denied_error(
+                        proactive_error
+                    ):
+                        send_aborted = True
+                        return None
+                    raise
 
         if isinstance(message, MessageNodes):
             message = MessageChain.assign(
@@ -451,15 +694,15 @@ class QQBotContextManager(ContextManager):
         async def prepare_separate_media(elements: list[AudioElement | VideoElement]):
             media = []
             for element in elements:
+                # 底层文件不可得（文件缺失或为空）时跳过该元素
+                media_path = await resolve_media_path(element)
+                if media_path is None:
+                    continue
                 media_type = MediaFileType.VOICE if isinstance(element, AudioElement) else MediaFileType.VIDEO
                 if target.scope in ("group", "c2c"):
-                    upload = await client.upload_media(target, media_type, local_path=element.path)
-                    file_info = upload.get("file_info") if isinstance(upload, Mapping) else None
-                    if not file_info:
-                        raise RuntimeError("QQBot media upload response does not contain file_info")
-                    media.append((element, {"file_info": file_info}))
+                    media.append((element, await _upload_media(client, target, media_type, local_path=media_path)))
                 else:
-                    media.append((element, element.path))
+                    media.append((element, media_path))
             return media
 
         async def send_separate_media(prepared_media) -> list[str]:
@@ -467,13 +710,19 @@ class QQBotContextManager(ContextManager):
             for element, media in prepared_media:
                 media_name = "audio" if isinstance(element, AudioElement) else "video"
                 try:
-                    if target.scope in ("group", "c2c"):
-                        result = await client.send(target, msg_type=MessageType.MEDIA, media=media)
+                    if send_target.scope in ("group", "c2c"):
+                        result = await send_with_proactive_fallback(
+                            client.send, msg_type=MessageType.MEDIA, media=media
+                        )
                     else:
-                        result = await client.send(target, extra={f"file_{media_name}": media})
-                    msg_ids.extend(_message_ids(result))
-                    cls._on_message_sent(session_info)
-                    Logger.info(f"[Bot] -> [{session_info.target_id}]: {media_name.title()}: {str(element)}")
+                        result = await send_with_proactive_fallback(client.send, extra={f"file_{media_name}": media})
+                    result_ids = _message_ids(result)
+                    msg_ids.extend(result_ids)
+                    if result_ids:
+                        cls._on_message_sent(session_info)
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {media_name.title()}: {str(element)}")
+                    if send_aborted:
+                        break
                 except Exception:
                     if not msg_ids:
                         raise
@@ -486,16 +735,19 @@ class QQBotContextManager(ContextManager):
 
         async def prepare_plain_message() -> _PreparedMessage:
             plains: list[PlainElement] = []
-            images: list[ImageElement] = []
+            images: list[tuple[ImageElement, str]] = []
             media: list[AudioElement | VideoElement] = []
 
-            for x in message.as_sendable(session_info, disable_markdown=True):
+            for x in message.as_sendable(session_info, enable_markdown=False):
                 if isinstance(x, PlainElement):
                     if x.allow_parse:
                         x.text = match_atcode(x.text, client_name, "<@{uid}>")
                     plains.append(x)
                 elif isinstance(x, ImageElement):
-                    images.append(x)
+                    # 图片不可读（本地文件缺失或下载失败）时跳过该元素
+                    image_path = await resolve_media_path(x)
+                    if image_path is not None:
+                        images.append((x, image_path))
                 elif isinstance(x, (AudioElement, VideoElement)):
                     media.append(x)
                 elif isinstance(x, MentionElement):
@@ -513,28 +765,17 @@ class QQBotContextManager(ContextManager):
 
             message_reference = None
             if quote and not images:
-                if isinstance(ctx, (Message, DirectMessage)):
+                if isinstance(ctx, (Message, DirectMessage, GroupMessage)):
                     message_reference = Reference(message_id=ctx.id, ignore_get_message_error=False)
-                elif isinstance(ctx, GroupMessage) and ctx.message_scene:
-                    ext = ctx.message_scene.get("ext") or []
-                    if ext and ext[0].startswith("msg_idx=REFIDX"):
-                        message_reference = Reference(
-                            message_id=ext[0].replace("msg_idx=", ""),
-                            ignore_get_message_error=False,
-                        )
 
             if quote and images and isinstance(ctx, Message):
                 msg = f"<@{ctx.author.id}> \n{msg}"
 
             prepared_images: list[tuple[ImageElement, str | Mapping]] = []
-            for image in images:
-                image_path = await image.get()
+            for image, image_path in images:
                 if target.scope in ("group", "c2c"):
-                    upload = await client.upload_media(target, MediaFileType.IMAGE, local_path=image_path)
-                    file_info = upload.get("file_info") if isinstance(upload, Mapping) else None
-                    if not file_info:
-                        raise RuntimeError("QQBot media upload response does not contain file_info")
-                    prepared_images.append((image, {"file_info": file_info}))
+                    media_ref = await _upload_media(client, target, MediaFileType.IMAGE, local_path=image_path)
+                    prepared_images.append((image, media_ref))
                 else:
                     prepared_images.append((image, image_path))
 
@@ -543,31 +784,16 @@ class QQBotContextManager(ContextManager):
             async def send_plain_message() -> list[str]:
                 msg_ids = []
                 if not plains and not images:
-                    return await send_separate_media(media)
-                send_target = target
-
-                async def send_with_proactive_fallback(sender, /, *args, **kwargs):
-                    """回复消息 ID 过期时，移除回复信息并立即改发一条主动消息。"""
-                    nonlocal send_target
-                    try:
-                        return await sender(send_target, *args, **kwargs)
-                    except ApiError as error:
-                        if send_target.message_id is None or not _is_expired_reply_message_error(error):
-                            raise
-
-                        Logger.warning(
-                            f"Reply message {send_target.message_id} expired when sending to "
-                            f"{send_target.scope}|{send_target.target_id}; retrying as a proactive message."
-                        )
-                        send_target = ReplyTarget(scope=send_target.scope, target_id=send_target.target_id)
-                        return await sender(send_target, *args, **kwargs)
+                    return await send_separate_media(prepared_media)
 
                 async def record(result, image: ImageElement | None = None):
-                    msg_ids.extend(_message_ids(result))
-                    if not _typing_prompt:
+                    result_ids = _message_ids(result)
+                    msg_ids.extend(result_ids)
+                    if result_ids and not _typing_prompt:
                         cls._on_message_sent(session_info)
-                    if image:
+                    if result_ids and image:
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(image)}")
+                    return bool(result_ids)
 
                 try:
                     remaining_images = list(prepared_images)
@@ -587,15 +813,18 @@ class QQBotContextManager(ContextManager):
                                 message_reference=message_reference,
                                 extra={"file_image": prepared_image},
                             )
-                        await record(result, image)
+                        sent = await record(result, image)
                     else:
                         result = await send_with_proactive_fallback(
                             client.send, content=msg, message_reference=message_reference
                         )
-                        await record(result)
+                        sent = await record(result)
 
-                    Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
+                    if sent:
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
                     for image, prepared_image in remaining_images:
+                        if send_aborted:
+                            break
                         if send_target.scope in ("group", "c2c"):
                             result = await send_with_proactive_fallback(
                                 client.send,
@@ -664,9 +893,11 @@ class QQBotContextManager(ContextManager):
                         texts.append(x.text)
                     inline_pending = False
                 elif isinstance(x, ImageElement):
-                    if s3_storage is not None:
+                    # 图片不可读（本地文件缺失或下载失败）时跳过该元素
+                    image_path = await resolve_media_path(x)
+                    if image_path is not None and s3_storage is not None:
                         try:
-                            upload = await s3_storage.upload_temp(await x.get())
+                            upload = await s3_storage.upload_temp(image_path)
                             if upload and "public_url" in upload:
                                 w, h = await x.get_wh()
                                 fin_w, fin_h = _markdown_image_size(x, w, h)
@@ -701,27 +932,20 @@ class QQBotContextManager(ContextManager):
             if not texts and not prepared_media:
                 return _PreparedMessage(target, empty_send, has_payload=False)
 
-            msg = "\n".join(texts)
+            # Markdown 路径不像普通文本路径那样整体 strip，以免破坏正文末尾的 Markdown 语义；
+            # 但开头的换行没有有效语义，还会在首个 at 标签前渲染出空行。
+            msg = "\n".join(texts).lstrip("\r\n")
 
             async def send_markdown_message() -> list[str]:
                 msg_ids = []
                 if texts:
-                    send_target = target
-                    try:
-                        result = await client.send_markdown(send_target, msg, keyboard=keyboard)
-                    except ApiError as error:
-                        if send_target.message_id is None or not _is_expired_reply_message_error(error):
-                            raise
-                        Logger.warning(
-                            f"Reply message {send_target.message_id} expired when sending to "
-                            f"{send_target.scope}|{send_target.target_id}; retrying as a proactive message."
-                        )
-                        send_target = ReplyTarget(scope=send_target.scope, target_id=target.target_id)
-                        result = await client.send_markdown(send_target, msg, keyboard=keyboard)
-                    msg_ids.extend(_message_ids(result))
-                    if not _typing_prompt:
+                    result = await send_with_proactive_fallback(client.send_markdown, msg, keyboard=keyboard)
+                    result_ids = _message_ids(result)
+                    msg_ids.extend(result_ids)
+                    if result_ids and not _typing_prompt:
                         cls._on_message_sent(session_info)
-                    Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
+                    if result_ids:
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
                 msg_ids.extend(await send_separate_media(prepared_media))
                 return msg_ids
 
@@ -913,8 +1137,14 @@ class QQBotContextManager(ContextManager):
             return
         client = _get_client()
         for msg_id in message_id:
+            api_message_id = _resolve_api_message_id(msg_id)
+            if api_message_id is None:
+                Logger.warning(
+                    f"Cannot delete QQBot application message ID {msg_id}: its API message ID is unavailable."
+                )
+                continue
             try:
-                await client.recall_message(target, msg_id, hidetip=target.scope == "channel")
+                await client.recall_message(target, api_message_id, hidetip=target.scope == "channel")
                 Logger.info(f"Deleted message {msg_id} in session {session_info.session_id}")
             except Exception:
                 Logger.exception(f"Failed to delete message {msg_id} in session {session_info.session_id}: ")
@@ -932,11 +1162,18 @@ class QQBotContextManager(ContextManager):
         if session_info.target_from == target_guild_prefix:
             emoji_type = 1 if int(qq_typing_emoji) < 9000 else 2
             client = _get_client()
+            api_message_id = _resolve_api_message_id(message_id[-1])
+            if api_message_id is None:
+                Logger.warning(
+                    f"Cannot add reaction to QQBot application message ID {message_id[-1]}: "
+                    "its API message ID is unavailable."
+                )
+                return
 
             try:
                 await client.api.put_reaction(
                     channel_id=session_info.get_common_target_id(),
-                    message_id=message_id[-1],
+                    message_id=api_message_id,
                     emoji_type=emoji_type,
                     emoji_id=emoji,
                 )
@@ -959,11 +1196,18 @@ class QQBotContextManager(ContextManager):
         if session_info.target_from == target_guild_prefix:
             emoji_type = 1 if int(qq_typing_emoji) < 9000 else 2
             client = _get_client()
+            api_message_id = _resolve_api_message_id(message_id[-1])
+            if api_message_id is None:
+                Logger.warning(
+                    f"Cannot remove reaction from QQBot application message ID {message_id[-1]}: "
+                    "its API message ID is unavailable."
+                )
+                return
 
             try:
                 await client.api.delete_reaction(
                     channel_id=session_info.get_common_target_id(),
-                    message_id=message_id[-1],
+                    message_id=api_message_id,
                     emoji_type=emoji_type,
                     emoji_id=emoji,
                 )

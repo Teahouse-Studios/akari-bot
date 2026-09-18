@@ -16,7 +16,7 @@ from core.tester import (
 async def test_wiki(tester: Tester):
     """wiki 模块测试 - MediaWiki 查询"""
     await tester.integrate(
-        "~wiki set https://zh.minecraft.wiki/api.php", Contains("成功设置起始 Wiki"), "wiki set 应提示成功"
+        "~wiki set https://zh.minecraft.wiki/api.php", Contains("成功设置默认 Wiki"), "wiki set 应提示成功"
     )
     await tester.integrate("~wiki", Contains("Minecraft"), "wiki 应返回 Minecraft Wiki 内容")
     await tester.integrate("~wiki Minecraft", Contains("Minecraft"), "wiki Minecraft 应返回页面内容")

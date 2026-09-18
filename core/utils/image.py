@@ -14,8 +14,7 @@ from core.config.base import CoreConfig
 from core.constants.path import templates_path
 from core.logger import Logger
 from core.utils.cache import random_cache_path
-from core.utils.image_split import image_split as image_split
-from core.web_render import web_render, ElementScreenshotOptions
+from core.utils.web_render import web_render, ElementScreenshotOptions
 
 if TYPE_CHECKING:
     from core.builtins.session.internal import MessageSession
@@ -90,20 +89,30 @@ async def msgchain2image(
 
     # 图片是纯文本载体，无从承载可点击的行内元素，故按不支持 markdown 转换：
     # 指令操作等元素会就地降级为纯文本，否则模板认不出它们，其内容会静默丢失
-    message_list = message_chain.as_sendable(session, disable_markdown=True)
+    message_list = message_chain.as_sendable(session, enable_markdown=False)
+    renderable_list = []
     for m in message_list:
         if isinstance(m, ImageElement):
-            await m.get_base64(mime=True)
+            try:
+                await m.get_base64(mime=True)
+            except Exception:
+                Logger.exception(f"Unable to get image {m.path}, skipping this element: ")
+                continue
         elif isinstance(m, EmbedElement):
             if m.image is not None:
-                await m.image.get_base64(mime=True)
+                try:
+                    await m.image.get_base64(mime=True)
+                except Exception:
+                    Logger.exception(f"Unable to get embed image {m.image.path}, skipping the image: ")
+                    m.image = None
+        renderable_list.append(m)
     title = "Message List"
     if session and session.locale:
         title = session.locale.t("message.list")
 
     html_content = await env.get_template("msgchain_to_image.html").render_async(
         title=title,
-        message_list=message_list,
+        message_list=renderable_list,
         isinstance=isinstance,
         PlainElement=PlainElement,
         ImageElement=ImageElement,

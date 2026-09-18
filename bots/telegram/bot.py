@@ -4,6 +4,7 @@ from aiogram import F, types
 from aiogram.enums import MessageEntityType
 
 from bots.telegram.client import dp, aiogram_bot, token
+from bots.telegram.config import AiogramConfig
 from bots.telegram.context import TelegramContextManager, TelegramFetchedContextManager
 from bots.telegram.context_snapshot import TelegramContextSnapshot
 from bots.telegram.action_text import handle_action_text_inline_query, is_own_inline_message
@@ -16,7 +17,6 @@ from core.builtins.message.internal import Audio, Video, Image, Plain
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
 from core.client.init import client_cleanup, client_init
-from bots.telegram.config import AiogramConfig
 from core.config.base import CoreConfig
 from core.utils.button_runtime import BUTTON_TOKEN_PREFIX
 from core.utils.cache import random_cache_path

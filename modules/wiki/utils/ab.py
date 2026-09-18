@@ -1,7 +1,7 @@
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Plain, Url
-from core.dirty_check import check
+from core.utils.dirty_check import check
 from modules.wiki.utils.utils import strptime2ts
 from modules.wiki.utils.wikilib import WikiLib
 
@@ -29,7 +29,7 @@ async def get_ab(msg: Bot.MessageSession | Bot.FetchedMessageSession, wiki_url, 
                         'wiki.message.ab.slice',
                         title=title,
                         user=user,
-                        time=msg.format_time(strptime2ts(x['timestamp']), iso=True, timezone=False),
+                        time=msg.format_time(strptime2ts(x['timestamp']), simple=True, timezone=False),
                         action=x['action'],
                         filter_name=x['filter'],
                         result=result,
@@ -39,7 +39,7 @@ async def get_ab(msg: Bot.MessageSession | Bot.FetchedMessageSession, wiki_url, 
         )
     y = await check(d, session=msg)
 
-    g = MessageChain.assign([Url(pageurl, trusted=True if wiki.wiki_info.in_allowlist else None)])
+    g = MessageChain.assign([Url(pageurl, trusted=True if wiki.wiki_info.is_allowed else None)])
     g += MessageChain.assign([Plain(z["content"]) for z in y])
     g.append(I18NContext("message.collapse", amount=AB_LIMIT))
 
@@ -96,7 +96,7 @@ async def convert_ab_to_detailed_format(msg: Bot.MessageSession | Bot.FetchedMes
                     )
                 )
             )
-            time = msg.format_time(strptime2ts(x["timestamp"]), iso=True)
+            time = msg.format_time(strptime2ts(x["timestamp"]), simple=True)
             t.append(time)
             if not text_status:
                 if (original_title in title_checked_map and title_checked_map[original_title] != original_title) or (

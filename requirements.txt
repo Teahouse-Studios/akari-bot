@@ -9,7 +9,7 @@ aiofiles==24.1.0
     #   aiogram
     #   matrix-nio
     #   quart
-aiogram==3.29.1
+aiogram==3.31.0
     # via akari-bot
 aiohappyeyeballs==2.6.1
     # via aiohttp
@@ -20,27 +20,31 @@ aiohttp==3.14.3
     #   khl-py
     #   matrix-nio
     #   py-cord
-    #   qq-botpy-sdk
 aiohttp-socks==0.11.0
     # via matrix-nio
 aiosignal==1.4.0
     # via aiohttp
 aiosqlite==0.22.1
     # via tortoise-orm
-akari-bot-i18n==0.1.2
+akari-bot-i18n==0.1.3
     # via akari-bot
-akari-bot-webrender==0.6.1
+akari-bot-webrender==0.6.2
     # via akari-bot
-akari-bot-webui==0.4.3
+akari-bot-webui==0.4.5
     # via akari-bot
 annotated-doc==0.0.4
     # via fastapi
 annotated-types==0.7.0
     # via pydantic
+anthropic==1.5.0
+    # via akari-bot
 anyio==4.12.1
     # via
+    #   anthropic
     #   gql
     #   httpx
+    #   httpx-ws
+    #   httpx2
     #   openai
     #   starlette
     #   tortoise-orm
@@ -116,7 +120,8 @@ colorama==0.4.6 ; sys_platform == 'win32'
     # via
     #   click
     #   loguru
-    #   tqdm
+    #   pytest
+    #   qrcode
     #   uvicorn
 contourpy==1.3.3
     # via matplotlib
@@ -143,12 +148,12 @@ deprecated==1.3.1
     #   limits
 distlib==0.4.0
     # via virtualenv
-distro==1.9.0
-    # via openai
 dnspython==2.8.0
     # via mcstatus
 dockerfile-parse==2.0.1
     # via e2b
+docstring-parser==0.18.0
+    # via anthropic
 e2b==2.21.0
     # via e2b-code-interpreter
 e2b-code-interpreter==2.6.2
@@ -194,6 +199,7 @@ greenlet==3.3.1
 h11==0.16.0
     # via
     #   httpcore
+    #   httpcore2
     #   hypercorn
     #   matrix-nio
     #   uvicorn
@@ -211,6 +217,9 @@ httpcore==1.0.9
     # via
     #   e2b
     #   httpx
+    #   httpx-ws
+httpcore2==2.12.0 ; sys_platform != 'emscripten'
+    # via httpx2
 httptools==0.7.1
     # via uvicorn
 httpx==0.28.1
@@ -220,20 +229,34 @@ httpx==0.28.1
     #   akari-bot-webrender
     #   e2b
     #   e2b-code-interpreter
+    #   httpx-ws
     #   milky-python-sdk
-    #   openai
+    #   qq-botpy-sdk
     #   wolframalpha
+httpx-ws==0.9.0
+    # via
+    #   akari-bot
+    #   qq-botpy-sdk
+httpx2==2.12.0
+    # via
+    #   anthropic
+    #   openai
+httpx2-jsfetch==1.0 ; sys_platform == 'emscripten'
+    # via httpx2
 hypercorn==0.18.0
     # via quart
 hyperframe==6.1.0
     # via h2
 identify==2.6.16
     # via pre-commit
-idna==3.11
+idna==3.19
     # via
     #   anyio
     #   httpx
+    #   httpx2
     #   yarl
+iniconfig==2.3.0
+    # via pytest
 iso639-lang==2.6.3
     # via langconv
 iso8601==2.1.0
@@ -242,8 +265,6 @@ itsdangerous==2.2.0
     # via
     #   flask
     #   quart
-japanera==2.1.3
-    # via akari-bot
 jaraco-context==6.1.0
     # via wolframalpha
 jinja2==3.1.6
@@ -252,8 +273,10 @@ jinja2==3.1.6
     #   akari-bot-webrender
     #   flask
     #   quart
-jiter==0.13.0
-    # via openai
+jiter==0.16.0
+    # via
+    #   anthropic
+    #   openai
 jmespath==1.1.0
     # via
     #   boto3
@@ -264,8 +287,6 @@ jsonschema-specifications==2025.9.1
     # via jsonschema
 justext==3.0.2
     # via trafilatura
-kanjize==1.6.1
-    # via japanera
 khl-py==0.3.17
     # via akari-bot
 kiwisolver==1.4.9
@@ -301,7 +322,7 @@ matplotlib==3.10.8
     # via akari-bot
 matrix-nio==0.25.2
     # via akari-bot
-mcstatus==13.1.0
+mcstatus==14.1.0
     # via akari-bot
 mdurl==0.1.2
     # via markdown-it-py
@@ -316,14 +337,14 @@ multidict==6.7.1
     #   yarl
 nodeenv==1.10.0
     # via pre-commit
-numpy==2.5.1
+numpy==2.5.2
     # via
     #   akari-bot
     #   contourpy
     #   matplotlib
     #   pandas
     #   rdkit
-openai==2.20.0
+openai==3.6.0
     # via akari-bot
 orjson==3.11.7
     # via
@@ -335,6 +356,7 @@ packaging==26.0
     #   e2b
     #   limits
     #   matplotlib
+    #   pytest
 pandas==3.0.0
     # via akari-bot
 pillow==12.3.0
@@ -352,6 +374,8 @@ playwright==1.58.0
     # via
     #   akari-bot-webrender
     #   tf-playwright-stealth
+pluggy==1.6.0
+    # via pytest
 pre-commit==4.5.1
     # via akari-bot
 primp==1.2.3
@@ -383,6 +407,7 @@ pydantic==2.12.5
     # via
     #   aiogram
     #   akari-bot-webrender
+    #   anthropic
     #   fastapi
     #   milky-python-sdk
     #   openai
@@ -391,7 +416,9 @@ pydantic-core==2.41.5
 pyee==13.0.0
     # via playwright
 pygments==2.20.0
-    # via rich
+    # via
+    #   pytest
+    #   rich
 pyjwt==2.13.0
     # via akari-bot
 pyotp==2.10.0
@@ -400,6 +427,9 @@ pyparsing==3.3.2
     # via matplotlib
 pypika-tortoise==0.6.3
     # via tortoise-orm
+pytest==9.1.1
+    # via pytest-asyncio
+pytest-asyncio==1.4.0
 python-dateutil==2.9.0.post0
     # via
     #   botocore
@@ -426,10 +456,13 @@ pywin32==312 ; sys_platform == 'win32'
     # via akari-bot
 pyyaml==6.0.3
     # via
+    #   akari-bot
     #   pre-commit
     #   qq-botpy-sdk
     #   uvicorn
-qq-botpy-sdk==2.0.3
+qq-botpy-sdk==2.0.4
+    # via akari-bot
+qrcode==8.2
     # via akari-bot
 quart==0.20.0
     # via aiocqhttp
@@ -443,6 +476,7 @@ referencing==0.37.0
     #   jsonschema-specifications
 regex==2026.5.9
     # via
+    #   akari-bot
     #   dateparser
     #   wikitextparser
 rich==15.0.0
@@ -463,7 +497,9 @@ six==1.17.0
 slowapi==0.1.9
     # via akari-bot
 sniffio==1.3.1
-    # via openai
+    # via
+    #   anthropic
+    #   openai
 soupsieve==2.8.3
     # via beautifulsoup4
 starlette==0.52.1
@@ -480,15 +516,18 @@ tomlkit==0.14.0
     # via akari-bot
 tortoise-orm==1.1.2
     # via akari-bot
-tqdm==4.67.3
-    # via openai
 trafilatura==2.0.0
     # via akari-bot
+truststore==0.10.4 ; sys_platform != 'emscripten'
+    # via
+    #   httpcore2
+    #   httpx2
 typing-extensions==4.15.0
     # via
     #   aiogram
     #   aiohttp
     #   aiosignal
+    #   anthropic
     #   anyio
     #   beautifulsoup4
     #   cattrs
@@ -496,6 +535,7 @@ typing-extensions==4.15.0
     #   fastapi
     #   flexcache
     #   flexparser
+    #   httpx2
     #   limits
     #   openai
     #   pint
@@ -503,6 +543,7 @@ typing-extensions==4.15.0
     #   pydantic
     #   pydantic-core
     #   pyee
+    #   pytest-asyncio
     #   referencing
     #   starlette
     #   typing-inspection
@@ -558,7 +599,9 @@ wolframalpha==5.1.3
 wrapt==2.1.1
     # via deprecated
 wsproto==1.3.2
-    # via hypercorn
+    # via
+    #   httpx-ws
+    #   hypercorn
 xmltodict==1.0.2
     # via wolframalpha
 yarl==1.22.0

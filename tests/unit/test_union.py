@@ -945,7 +945,7 @@ async def _test_delete_sender_union_cleans_current_state():
     await target.save(update_fields=["custom_admins", "banned_users"])
     await CytoidBindInfo.create(union_id=sender.union_id, username="delete-me")
     await DivingProberBindInfo.create(union_id=sender.union_id, username="delete-me")
-    await LxnsProberBindInfo.create(union_id=sender.union_id, friend_code="123456")
+    await LxnsProberBindInfo.create(union_id=sender.union_id, refresh_token="delete-me")
     await PhigrosBindInfo.create(union_id=sender.union_id, session_token="delete-me", username="delete-me")
     pair_id = verification_id(target.union_id, sender.union_id)
     await CaptchaTrust.create(
@@ -1333,7 +1333,7 @@ async def _test_bind_models_reject_deleted_union():
     results = [
         await CytoidBindInfo.set_bind_info(union_id, "user"),
         await DivingProberBindInfo.set_bind_info(union_id, "user"),
-        await LxnsProberBindInfo.set_bind_info(union_id, "123456"),
+        await LxnsProberBindInfo.set_bind_info(union_id, "refresh-token"),
         await PhigrosBindInfo.set_bind_info(union_id, "a" * 25),
     ]
     return results == [False] * 4 and not any(
@@ -1429,25 +1429,6 @@ async def _test_wikilog_mutations_use_fresh_nested_data():
     )
 
 
-async def _test_wiki_allowlist_matches_exact_authority():
-    """Wiki 白名单只信任相同主机与端口，不得以域名子串命中。"""
-    from modules.wiki.database.models import WikiAllowList
-
-    allowed = "https://trusted-sub.example.test/api.php"
-    await WikiAllowList.remove(allowed)
-    if not await WikiAllowList.add(allowed):
-        return False
-    try:
-        return (
-            await WikiAllowList.check("https://TRUSTED-SUB.EXAMPLE.TEST./w/api.php")
-            and not await WikiAllowList.check("https://example.test/api.php")
-            and not await WikiAllowList.check("https://nottrusted-sub.example.test/api.php")
-            and not await WikiAllowList.check("https://trusted-sub.example.test:8443/api.php")
-        )
-    finally:
-        await WikiAllowList.remove(allowed)
-
-
 @func_case
 async def test_union(tester: Tester):
     """core.database.models: union 绑定测试"""
@@ -1509,6 +1490,4 @@ async def test_union(tester: Tester):
     await tester.test(_test_bind_models_reject_deleted_union, "模块绑定拒绝已删除 Union 测试")
     await tester.test(_test_wiki_mutations_use_fresh_row, "Wiki 旧实例定向更新测试")
     await tester.test(_test_wikilog_mutations_use_fresh_nested_data, "Wikilog 旧实例嵌套更新测试")
-    await tester.test(_test_wiki_allowlist_matches_exact_authority, "Wiki 白名单精确域名测试")
-
     return tester

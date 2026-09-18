@@ -1,7 +1,7 @@
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Plain, Url
 from core.builtins.session.internal import MessageSession
-from core.dirty_check import check
+from core.utils.dirty_check import check
 from modules.wiki.utils.wikilib import WikiLib
 
 NEWBIE_LIMIT = 10
@@ -16,7 +16,7 @@ async def get_newbie(wiki_url, headers=None, session: MessageSession | None = No
         if "title" in x:
             d.append(x["title"])
     y = await check(d, session=session)
-    g = MessageChain.assign([Url(pageurl, trusted=True if wiki.wiki_info.in_allowlist else None)])
+    g = MessageChain.assign([Url(pageurl, trusted=True if wiki.wiki_info.is_allowed else None)])
     g += MessageChain.assign([Plain(z["content"]) for z in y])
     g.append(I18NContext("message.collapse", amount=NEWBIE_LIMIT))
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import base64
 import shutil
 import subprocess
 from copy import deepcopy
@@ -16,6 +17,49 @@ from core.utils.cache import random_cache_path
 
 ffmpeg_path = CoreConfig.ffmpeg_path
 threshold = CoreConfig.media_compression_threshold
+
+
+async def resolve_media_path(element: ImageElement | AudioElement | VideoElement) -> str | None:
+    """取得媒体元素对应的本地文件路径，无法取得时返回 None。
+
+    :param element: 待解析的媒体元素。
+    :return: 本地文件路径；无法取得时返回 None。
+    """
+    if isinstance(element, ImageElement):
+        try:
+            return str(await element.get())
+        except Exception:
+            Logger.exception(f"Unable to get image {element.path}, skipping this element: ")
+            return None
+
+    source = Path(element.path)
+    try:
+        if source.is_file() and source.stat().st_size > 0:
+            return str(source)
+    except OSError:
+        Logger.exception(f"Unable to inspect media file {source}, skipping this element: ")
+        return None
+    Logger.warning(f"Media file {source} does not exist or is empty, skipping this element.")
+    return None
+
+
+async def resolve_media_base64(element: ImageElement | AudioElement | VideoElement) -> str | None:
+    """取得媒体元素内容的 Base64 编码，无法取得时返回 None。
+
+    与 :func:`resolve_media_path` 相同，元素不可用时返回 None，由调用方跳过该元素。
+
+    :param element: 待解析的媒体元素。
+    :return: 不带 MIME 前缀的 Base64 字符串；无法取得时返回 None。
+    """
+    path = await resolve_media_path(element)
+    if path is None:
+        return None
+    try:
+        with open(path, "rb") as file:
+            return base64.b64encode(file.read()).decode("UTF-8")
+    except OSError:
+        Logger.exception(f"Unable to read media file {path}, skipping this element: ")
+        return None
 
 
 def compress_image(element: ImageElement, threshold_bytes: int) -> ImageElement:
@@ -155,4 +199,10 @@ async def compress_media_chain(chain: MessageChain) -> MessageChain:
     return compressed
 
 
-__all__ = ["compress_image", "compress_audio_video", "compress_media_chain"]
+__all__ = [
+    "compress_image",
+    "compress_audio_video",
+    "compress_media_chain",
+    "resolve_media_path",
+    "resolve_media_base64",
+]

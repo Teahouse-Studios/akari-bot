@@ -1,4 +1,4 @@
-"""core.dirty_check 内容审核系统单元测试。"""
+"""core.utils.dirty_check 内容审核系统单元测试。"""
 
 import json
 import urllib.parse
@@ -10,7 +10,7 @@ from core.tester import func_case, Tester
 def _test_parse_data_clean():
     """parse_data: 正常文本应返回 status=True"""
     try:
-        from core.dirty_check import parse_data
+        from core.utils.dirty_check import parse_data
 
         result = parse_data("Hello World", {})
         return result["status"] is True and result["content"] == "Hello World"
@@ -21,7 +21,7 @@ def _test_parse_data_clean():
 def _test_parse_data_empty():
     """parse_data: 空结果应返回原始文本"""
     try:
-        from core.dirty_check import parse_data
+        from core.utils.dirty_check import parse_data
 
         result = parse_data("test", {})
         return result["content"] == "test" and result["original"] == "test"
@@ -32,7 +32,7 @@ def _test_parse_data_empty():
 def _test_parse_data_protects_at_code():
     """parse_data: AT 码整体豁免，其中的命中词不应被替换"""
     try:
-        from core.dirty_check import parse_data
+        from core.utils.dirty_check import parse_data
 
         result = parse_data(
             "hello <AT:123 BADWORD> world",
@@ -46,7 +46,7 @@ def _test_parse_data_protects_at_code():
 def _test_parse_data_protects_ke_i18n_structure():
     """parse_data: KE/I18N 的 value 参与过滤，结构与 key 保持原样"""
     try:
-        from core.dirty_check import parse_data
+        from core.utils.dirty_check import parse_data
 
         dirty = {"RiskLevel": "high", "Result": [{"Confidence": 100, "RiskWords": "BADWORD", "Label": "mock"}]}
 
@@ -70,7 +70,7 @@ def _test_parse_data_protects_ke_i18n_structure():
 def _test_hash_hmac():
     """hash_hmac: 应返回 base64 编码的 HMAC"""
     try:
-        from core.dirty_check import hash_hmac
+        from core.utils.dirty_check import hash_hmac
 
         result = hash_hmac("secret", "message")
         return isinstance(result, str) and len(result) > 0
@@ -81,8 +81,8 @@ def _test_hash_hmac():
 async def _test_check_no_keys():
     """check: 无 API 密钥时应跳过检查并返回原始文本"""
     try:
-        with patch("core.dirty_check.access_key_id", ""), patch("core.dirty_check.access_key_secret", ""):
-            from core.dirty_check import check
+        with patch("core.utils.dirty_check.access_key_id", ""), patch("core.utils.dirty_check.access_key_secret", ""):
+            from core.utils.dirty_check import check
 
             results = await check("Hello World")
             if len(results) != 1:
@@ -95,8 +95,8 @@ async def _test_check_no_keys():
 async def _test_check_empty_text():
     """check: 空文本列表应返回空结果"""
     try:
-        with patch("core.dirty_check.access_key_id", ""), patch("core.dirty_check.access_key_secret", ""):
-            from core.dirty_check import check
+        with patch("core.utils.dirty_check.access_key_id", ""), patch("core.utils.dirty_check.access_key_secret", ""):
+            from core.utils.dirty_check import check
 
             results = await check([])
             return results == []
@@ -107,7 +107,7 @@ async def _test_check_empty_text():
 def _test_rickroll():
     """rickroll: 应返回字符串"""
     try:
-        from core.dirty_check import rickroll
+        from core.utils.dirty_check import rickroll
 
         result = rickroll()
         return isinstance(result, str) and len(result) > 0
@@ -122,8 +122,8 @@ async def _test_check_bool_clean_is_false():
     调用方曾据其旧有的文档把两个分支写反，故在此把语义钉住。
     """
     try:
-        with patch("core.dirty_check.access_key_id", ""), patch("core.dirty_check.access_key_secret", ""):
-            from core.dirty_check import check_bool
+        with patch("core.utils.dirty_check.access_key_id", ""), patch("core.utils.dirty_check.access_key_secret", ""):
+            from core.utils.dirty_check import check_bool
 
             return (await check_bool("Hello World")) is False
     except Exception:
@@ -133,12 +133,12 @@ async def _test_check_bool_clean_is_false():
 async def _test_check_bool_dirty_is_true():
     """check_bool: 含有不合规内容时返回 True"""
     try:
-        from core.dirty_check import check_bool
+        from core.utils.dirty_check import check_bool
 
         async def _redacted(*args, **kwargs):
             return [{"content": "<ALL REDACTED:test>", "status": False, "original": "test"}]
 
-        with patch("core.dirty_check.check", _redacted):
+        with patch("core.utils.dirty_check.check", _redacted):
             return (await check_bool("test")) is True
     except Exception:
         return False
@@ -147,7 +147,7 @@ async def _test_check_bool_dirty_is_true():
 async def _test_aliyun_split_cache_preserves_result():
     """check: 长文本命中缓存后应保持所有分片的审核结果"""
     try:
-        import core.dirty_check as dirty_check
+        import core.utils.dirty_check as dirty_check
         from core.database.local import DirtyWordCache
 
         class FakeResponse:
@@ -211,7 +211,7 @@ async def _test_aliyun_split_cache_preserves_result():
 def _test_aliyun_cache_namespace_isolated():
     """DirtyWordCache: 阿里云 v1 与 v2 的缓存应隔离"""
     try:
-        import core.dirty_check as dirty_check
+        import core.utils.dirty_check as dirty_check
 
         with patch.object(dirty_check, "use_textscan_v1", True):
             v1_namespace = dirty_check.dirty_word_cache_namespace(dirty_check.ALIYUN_BACKEND)
@@ -224,7 +224,7 @@ def _test_aliyun_cache_namespace_isolated():
 
 @func_case
 async def test_dirty_check(tester: Tester):
-    """core.dirty_check: 内容审核系统测试"""
+    """core.utils.dirty_check: 内容审核系统测试"""
     await tester.test(_test_parse_data_clean, "parse_data 正常文本测试")
     await tester.test(_test_parse_data_empty, "parse_data 空结果测试")
     await tester.test(_test_parse_data_protects_at_code, "parse_data AT 码豁免测试")

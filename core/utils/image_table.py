@@ -6,11 +6,11 @@ from PIL import Image as PILImage
 from tabulate import tabulate
 
 from core.builtins.session.info import SessionInfo
-from core.joke import shuffle_joke as joke
+from core.utils.joke import shuffle_joke as joke
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.image import cb64imglst
-from core.web_render import web_render, LegacyScreenshotOptions
+from core.utils.web_render import web_render, LegacyScreenshotOptions
 
 
 class ImageTable:

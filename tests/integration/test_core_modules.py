@@ -3,11 +3,13 @@
 from core.tester import (
     func_case,
     Tester,
+    All,
     Contains,
     ContainsAll,
     Empty,
+    Not,
 )
-from modules.core.help import regex_disable_prefixes
+from modules.core.common_tools.help import regex_disable_prefixes
 
 
 @func_case
@@ -30,15 +32,69 @@ async def test_about(tester: Tester):
 async def test_help(tester: Tester):
     """help 命令测试"""
     await tester.integrate("~help", Contains("基础模块"), "help 应显示基础模块列表")
-    await tester.integrate("~help help", Contains("--image"), "help 帮助应展示强制图片选项")
+    await tester.integrate("~help help", Contains("--img"), "help 帮助应展示强制图片选项")
     await tester.integrate("~help version", Contains("version"), "help version 应显示版本帮助")
     await tester.integrate("~help version", Contains("版本号"), "help version 应包含版本号描述")
+    await tester.integrate(
+        "~help url-audit",
+        ContainsAll("~url-audit allowlist", "~url-audit blocklist"),
+        "合并后的 URL 模块帮助应展示允许列表与阻止列表子命令",
+    )
     await tester.integrate("~help mojang-status", Contains("~mojang-status"), "help 应展示无文档模块自身的默认命令")
     await tester.integrate(
         "~help bilibili",
         ContainsAll("提示：", regex_disable_prefixes[0]),
         "带正则表达式的详细 help 应展示当前配置的临时关闭前缀",
     )
+
+    return tester
+
+
+@func_case
+async def test_merged_about_bind_commands(tester: Tester):
+    """并入 about 与 bind 的信息类子命令测试"""
+    await tester.integrate(
+        "~help about",
+        ContainsAll("~about version", "~about ping", "~about status"),
+        "合并后的 about 帮助应展示版本、状态与详细状态子命令",
+    )
+    await tester.integrate(
+        "~help bind",
+        Contains("~bind whoami"),
+        "合并后的 bind 帮助应展示 whoami 子命令",
+    )
+    await tester.integrate("~about version", Contains("版本"), "about version 应输出版本信息")
+    await tester.integrate(
+        "~about ping",
+        All(Contains("Pong!"), Not(Contains("WebRender")), Not(Contains("JobQueue"))),
+        "about ping 应输出 Pong! 且不泄露服务器细节",
+    )
+    await tester.integrate(
+        "~about status",
+        ContainsAll("WebRender", "JobQueue", "Python"),
+        "about status 应输出详细状态信息（以各语言保留的专有名词为锚点）",
+    )
+    await tester.integrate(
+        "~status",
+        ContainsAll("WebRender", "JobQueue"),
+        "status 别名应指向 about status",
+    )
+    await tester.integrate("~bind whoami", Contains("用户组"), "bind whoami 应显示用户组信息")
+
+    return tester
+
+
+@func_case
+async def test_merged_setup_commands(tester: Tester):
+    """并入 setup 的前缀、语言与别名子命令测试"""
+    await tester.integrate(
+        "~help setup",
+        ContainsAll("~setup prefix", "~setup locale", "~setup alias"),
+        "合并后的 setup 帮助应展示前缀、语言与别名子命令",
+    )
+    await tester.integrate("~setup prefix list", Contains("前缀"), "setup prefix list 应显示前缀")
+    await tester.integrate("~setup locale", Contains("简体中文"), "setup locale 应显示语言列表")
+    await tester.integrate("~setup alias list", Contains("别名"), "setup alias list 应显示别名列表")
 
     return tester
 
@@ -98,9 +154,21 @@ async def test_unknown_command(tester: Tester):
 
 @func_case
 async def test_ping(tester: Tester):
-    """ping 命令测试"""
-    await tester.integrate("~ping", Contains("Pong!"), "ping 应输出 Pong!")
-    await tester.integrate("~ping", Contains("Python 版本"), "ping 应显示 Python 版本")
+    """ping 命令测试
+
+    ping 为公开命令，须始终只返回简略信息；这里以各语言均保留的专有名词
+    （WebRender、JobQueue、Python）作为锚点，避免断言随默认语言变化。
+    """
+    await tester.integrate(
+        "~ping",
+        All(
+            Contains("Pong!"),
+            Not(Contains("WebRender")),
+            Not(Contains("JobQueue")),
+            Not(Contains("Python")),
+        ),
+        "ping 应输出 Pong! 且不泄露服务器细节",
+    )
 
     return tester
 

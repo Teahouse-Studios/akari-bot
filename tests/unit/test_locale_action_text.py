@@ -6,7 +6,7 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import ActionTextElement, I18NContextElement, PlainElement, URLElement
 from core.i18n import Locale, get_available_locales
 from core.tester import func_case, Tester
-from modules.core.utils import build_locale_list, build_locale_overview
+from modules.core.admin_tools.locale import build_locale_list, build_locale_overview
 
 
 def _msg(support_action_text: bool = True):
@@ -32,7 +32,7 @@ def _test_locale_list_action_texts():
     if len(actions) != len(locales) or len(langlist.values) != len(locales) * 2:
         return False
     for index, (action, lang) in enumerate(zip(actions, locales, strict=True)):
-        if action.text.text != f"~locale {lang}" or action.show.text != Locale(lang).t("language"):
+        if action.text.text != f"~setup locale {lang}" or action.show.text != Locale(lang).t("language"):
             return False
         separator = langlist.values[1 + index * 2]
         expected_separator = "\n" if index + 1 < len(locales) else " "

@@ -15,12 +15,12 @@ from core.logger import Logger
 from core.scheduler import IntervalTrigger
 from core.utils.http import get_url
 from core.utils.storedata import get_stored_list, update_stored_list
-from core.web_render import web_render, SourceOptions
+from core.utils.web_render import web_render, SourceOptions
 
-SNAPSHOT_PATTERN = re.compile(r"^(?P<major>[\d.]+)-snapshot-?(?P<patch>\d)+$")
+SNAPSHOT_PATTERN = re.compile(r"^(?P<major>[\d.]+)-snapshot-?(?P<patch>\d+)$")
 OLD_SNAPSHOT_PATTERN = re.compile(r"^(1\d)|(2[0-5])[w|W]\d{2}[A-Fa-f]$")
-PRERELEASE_PATTERN = re.compile(r"^(?P<major>[\d.]+)-pre-?(?P<patch>\d)+$")
-RELEASE_CANDIDATE_PATTERN = re.compile(r"^(?P<major>[\d.]+)-rc-?(?P<patch>\d)+$")
+PRERELEASE_PATTERN = re.compile(r"^(?P<major>[\d.]+)-pre-?(?P<patch>\d+)$")
+RELEASE_CANDIDATE_PATTERN = re.compile(r"^(?P<major>[\d.]+)-rc-?(?P<patch>\d+)$")
 RELEASE_PATTERN = re.compile(r"^\d{1,2}\.\d+(\.\d+)?$")
 
 CHANGELOG_URL_PREFIX = "https://www.minecraft.net/en-us/article/minecraft"
@@ -60,15 +60,13 @@ async def get_article(version):
     return "", ""
 
 
-trigger_times = 60 if not CoreConfig.slower_schedule else 180
-
 startup_mute = [True, True]
 
 mcv_rss = module(
     "mcv-rss",
     developers=["OasisAkari", "Dianliang233"],
     # recommend_modules=["mcv_jira_rss"],
-    desc="{I18N:mcv_rss.help.mcv_rss.desc}",
+    desc="{I18N:mcv_rss.help.mcv-rss.desc}",
     alias=["mcv_rss", "mcvrss"],
     doc=True,
     rss=True,
@@ -77,7 +75,7 @@ mcv_rss = module(
 mcbv_rss = module(
     "mcbv-rss",
     developers=["OasisAkari"],
-    desc="{I18N:mcv_rss.help.mcbv_rss.desc}",
+    desc="{I18N:mcv_rss.help.mcbv-rss.desc}",
     alias=["mcbv_rss", "mcbvrss"],
     doc=True,
     rss=True,
@@ -89,7 +87,7 @@ mcbv_rss = module(
 #     "mcv_jira_rss",
 #     developers=["OasisAkari", "Dianliang233"],
 #     recommend_modules=["mcv_rss"],
-#     desc="{I18N:mcv_rss.help.mcv_jira_rss.desc}",
+#     desc="{I18N:mcv_rss.help.mcv-jira-rss.desc}",
 #     alias="mcvjirarss",
 #     doc=True,
 #     rss=True,
@@ -101,7 +99,7 @@ mcbv_rss = module(
 #     await fetch.post_message("mcv_jira_rss", **ctx.args)
 
 
-@mcv_rss.schedule(IntervalTrigger(seconds=trigger_times))
+@mcv_rss.schedule(IntervalTrigger(seconds=60))
 async def _():
     global startup_mute
     url = "https://piston-meta.mojang.com/mc/game/version_manifest.json"
@@ -128,10 +126,10 @@ async def _():
                     message=MessageChain.assign(
                         [
                             I18NContext(
-                                "mcv_rss.message.mcv_rss.release",
+                                "mcv_rss.message.mcv-rss.release",
                                 version=release,
-                                record_time=FormattedTime(time_release, iso=True),
-                                posted_time=FormattedTime(datetime.now().timestamp(), iso=True),
+                                record_time=FormattedTime(time_release, simple=True),
+                                posted_time=FormattedTime(datetime.now().timestamp(), simple=True),
                             ),
                         ]
                     ),
@@ -165,10 +163,10 @@ async def _():
                     message=MessageChain.assign(
                         [
                             I18NContext(
-                                "mcv_rss.message.mcv_rss.snapshot",
+                                "mcv_rss.message.mcv-rss.snapshot",
                                 version=file["latest"]["snapshot"],
-                                record_time=FormattedTime(time_snapshot, iso=True),
-                                posted_time=FormattedTime(datetime.now().timestamp(), iso=True),
+                                record_time=FormattedTime(time_snapshot, simple=True),
+                                posted_time=FormattedTime(datetime.now().timestamp(), simple=True),
                             ),
                         ]
                     ),
@@ -213,7 +211,7 @@ async def _():
             if not startup_mute[1]:
                 await Bot.post_message(
                     "mcbv-rss",
-                    message=MessageChain.assign([I18NContext("mcv_rss.message.mcbv_rss", version=version)]),
+                    message=MessageChain.assign([I18NContext("mcv_rss.message.mcbv-rss", version=version)]),
                 )
                 verlist.append(version)
             await update_stored_list(Bot.Info.client_name, "mcbv_rss", verlist)

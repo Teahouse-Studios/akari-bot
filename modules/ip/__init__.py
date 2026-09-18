@@ -20,7 +20,7 @@ async def _(msg: Bot.MessageSession, ip_address: str):
     except Exception:
         await msg.finish(I18NContext("ip.message.invalid"))
     res = await check_ip(ip_address)
-    await msg.finish(await format_ip(msg, res), disable_secret_check=True)
+    await msg.finish(await format_ip(msg, res))
 
 
 async def check_ip(ip: str):

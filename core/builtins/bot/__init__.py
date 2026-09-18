@@ -6,14 +6,15 @@
 """
 
 import asyncio
-from typing import Any, Awaitable, Callable, TYPE_CHECKING
+from typing import Any, Awaitable, Callable
 
 from core.alive import Alive
 from core.builtins.message.chain import *
+from core.builtins.parser.hooks import OutgoingPayload, ParserHookContext, Stop, dispatch_outgoing_before_send
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import EventInfo, SessionInfo, FetchedSessionInfo, ModuleHookContext
-from core.builtins.session.internal import MessageSession, FetchedMessageSession
+from core.builtins.session.internal import MessageSession, FetchedMessageSession, normalize_outgoing_chain
 from core.builtins.session.lock import ExecutionLockList
 from core.builtins.temp import *
 from core.config.base import CoreConfig
@@ -26,15 +27,14 @@ from core.database.models import (
     TargetUnionBind,
     TargetUnionInfo,
 )
-from core.exports import add_export, exports
+from core.exports import add_export
 from core.logger import Logger
-from core.retired import filter_retired_targets
+from core.utils.retired import filter_retired_targets
 from core.utils.func import convert_list
 from core.utils.session import inject_features
 
-if TYPE_CHECKING:
-    from core.queue.client import JobQueueClient
-    from core.queue.server import JobQueueServer
+from core.queue.contracts import PlatformAPI, ServerAPI
+from core.queue.errors import RpcUnavailableError
 
 enable_analytics = CoreConfig.enable_analytics
 
@@ -57,6 +57,9 @@ class Bot:
 
     # 模块钩子上下文类型 - 用于模块钩子函数的参数传递
     ModuleHookContext = ModuleHookContext
+
+    # Parser 入口 hook 上下文；控制结果类型可通过 ``ctx.Stop`` 等访问。
+    ParserHookContext = ParserHookContext
 
     EventInfo = EventInfo
 
@@ -119,8 +122,7 @@ class Bot:
             ctx_manager.add_context(session_info, ctx)
             try:
                 # 获取消息队列客户端并发送消息给服务器处理
-                queue_client: "JobQueueClient" = exports["JobQueueClient"]
-                await queue_client.send_message_to_server(session_info)
+                await ServerAPI.receive_message(session_info)
 
                 # 等待 1 秒后清理上下文（防止删除过快导致的错误）
                 await asyncio.sleep(1)
@@ -158,8 +160,7 @@ class Bot:
         if not isinstance(event_info, EventInfo):
             raise TypeError("event_info must be an EventInfo")
 
-        queue_client: "JobQueueClient" = exports["JobQueueClient"]
-        return await queue_client.send_event_to_server(event_info)
+        return await ServerAPI.receive_event.submit(event_info)
 
     @staticmethod
     async def post_global_message(
@@ -343,9 +344,6 @@ class Bot:
         if session_list is None:
             session_list = await Bot.get_enabled_this_module(module_name)
 
-        # 获取消息队列服务器
-        queue_server: "JobQueueServer" = exports["JobQueueServer"]
-
         # 同一条消息通道仅推送一次，其余会话作为发送失败时的后备
         for session_ in await cls.pick_channel_heads(session_list):
             # 将消息转换为该会话支持的消息链格式
@@ -361,8 +359,31 @@ class Bot:
             else:
                 post_message = chain
 
+            # 主动推送也要经过与常规发送一致的出站规范化：过滤关键词并拦截敏感信息，
+            # 不能依赖客户端在渲染阶段补检，此时内容已越过服务端唯一能看到的检查点。
+            post_message = await normalize_outgoing_chain(session_, post_message, False)
+            if post_message is None:
+                continue
+
+            # 出站策略（如静音场景停止主动发言）与常规发送共用同一 hook 链。
+            outgoing_payload = OutgoingPayload(chain=post_message, quote=False)
+            stop_send = await dispatch_outgoing_before_send(
+                FetchedMessageSession(session_info=session_), outgoing_payload
+            )
+            if isinstance(stop_send, Stop):
+                continue
+            # 改写后的最终消息须重新过完整发送规范化，语义同 MessageSession.send_message。
+            post_message = await normalize_outgoing_chain(session_, outgoing_payload.chain, False)
+            if post_message is None:
+                continue
+
             # 发送消息
-            await queue_server.client_post_message(session_, post_message, module_name)
+            try:
+                await PlatformAPI.post_message.submit(session_, post_message, module_name)
+            except RpcUnavailableError:
+                # 选择队首之后可能刚好掉线，仍让剩余场景获得投递机会。
+                await ServerAPI.post_next_hop.submit(session_.next_hops, post_message, module_name)
+                continue
 
             # 如果启用分析功能，记录统计数据。一条消息通道计为一次推送，因此每组仅记录一条
             if enable_analytics and module_name:
@@ -390,8 +411,7 @@ class Bot:
         """
         if not isinstance(session_info, SessionInfo):
             raise TypeError("session_info must be a SessionInfo")
-        queue_server: "JobQueueServer" = exports["JobQueueServer"]
-        await queue_server.client_start_typing_signal(session_info)
+        await PlatformAPI.start_typing(session_info)
 
     @classmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
@@ -403,8 +423,7 @@ class Bot:
         """
         if not isinstance(session_info, SessionInfo):
             raise TypeError("session_info must be a SessionInfo")
-        queue_server: "JobQueueServer" = exports["JobQueueServer"]
-        await queue_server.client_end_typing_signal(session_info)
+        await PlatformAPI.end_typing(session_info)
 
     @classmethod
     def register_context_manager(cls, ctx_manager: Any, fetch_session: bool = False) -> int:
@@ -548,15 +567,9 @@ class Bot:
             Logger.warning(f"Client {session_info.client_name} does not support private message.")
             return []
 
-        queue_server: "JobQueueServer" = exports["JobQueueServer"]
-        message = get_message_chain(session_info, message)
-
-        return_val = await queue_server.client_send_private_message(
-            session_info,
-            user_id,
-            message,
-        )
-        return return_val.get("message_id") or []
+        # 复用 MessageSession 的发送链路，确保关键词过滤与敏感信息检查同样生效
+        session = FetchedMessageSession(session_info=session_info)
+        return await session.send_private_message(message, user_id=user_id)
 
     @classmethod
     async def get_enabled_this_module(cls, module: str) -> list[FetchedSessionInfo]:
@@ -585,7 +598,12 @@ class Bot:
         """
 
         @staticmethod
-        async def trigger(module_or_hook_name: str, session_info: SessionInfo | None = None, args=None) -> Any:
+        async def trigger(
+            module_or_hook_name: str,
+            session_info: SessionInfo | None = None,
+            args=None,
+            timeout: float | None = None,
+        ) -> Any:
             """
             触发模块钩子或自定义钩子。
 
@@ -595,42 +613,18 @@ class Bot:
                                       如果包含 `.`，视为自定义钩子名；否则视为模块名
             :param session_info: 会话信息（可选）
             :param args: 传递给钩子的参数字典
+            :param timeout: 覆盖订阅默认执行预算；``<=0`` 表示不限时
             :return: 钩子函数的返回值
             :raises ValueError: 如果模块或钩子名称无效
             """
-            from core.loader import ModulesManager
+            from core.builtins.hooks import dispatch_module_hook
 
-            if args is None:
-                args = {}
-
-            # 判断是否为自定义钩子（包含 "."）或模块钩子
-            hook_mode = False
-            if "." in module_or_hook_name:
-                hook_mode = True
-
-            # 处理模块钩子
-            if not hook_mode:
-                if module_or_hook_name:
-                    modules = ModulesManager.modules
-                    # 检查模块是否存在且已加载
-                    if module_or_hook_name in modules:
-                        if not modules[module_or_hook_name]._db_load:
-                            return None
-
-                        # 执行模块的所有钩子
-                        for hook in modules[module_or_hook_name].hooks_list.set:
-                            await asyncio.create_task(hook.function(ModuleHookContext(args, session_info=session_info)))
-                        return None
-
-                raise ValueError(f"Invalid module name {module_or_hook_name}")
-
-            # 处理自定义钩子
-            if module_or_hook_name:
-                if module_or_hook_name in ModulesManager.modules_hooks:
-                    return await ModulesManager.modules_hooks[module_or_hook_name](
-                        ModuleHookContext(args, session_info=session_info)
-                    )
-            raise ValueError(f"Invalid hook name {module_or_hook_name}")
+            return await dispatch_module_hook(
+                module_or_hook_name,
+                session_info=session_info,
+                args=args,
+                timeout=timeout,
+            )
 
 
 # 将 Bot 类导出到系统的导出列表中

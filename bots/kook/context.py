@@ -8,9 +8,11 @@ from khl import Message, MessageTypes, PublicChannel, User
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, AudioElement, VideoElement, MentionElement
 from core.builtins.session.context import ContextManager
+from core.builtins.session.bot_state import BotState
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
+from core.utils.media import resolve_media_path
 from .client import bot
 from .client import token as kook_token
 from .features import features as kook_features
@@ -95,6 +97,87 @@ class KOOKContextManager(ContextManager):
         return False
 
     @classmethod
+    async def check_bot_state(cls, session_info: SessionInfo) -> BotState:
+        """Resolve KOOK guild roles and expose their permission bitmasks."""
+        if session_info.target_from == target_person_prefix:
+            return BotState(
+                available=True,
+                joined=True,
+                is_owner=None,
+                is_admin=None,
+                can_read_messages=True,
+                can_read_all_messages=True,
+                can_send_messages=True,
+                can_send_proactive_messages=True,
+                can_manage_messages=None,
+                can_manage_members=None,
+                can_restrict_members=None,
+                can_react=True,
+                can_send_private_messages=True,
+                raw={"channel_type": "person"},
+            )
+        try:
+            guild = await get_guild(session_info)
+            if guild is None:
+                return BotState(available=None, joined=None, error="KOOK guild is unavailable")
+            me = await bot.client.fetch_me()
+            bot_user_id = str(getattr(me, "id", ""))
+            member = await guild.fetch_user(bot_user_id)
+            role_ids = [int(role_id) for role_id in getattr(member, "roles", [])]
+            roles = await guild.fetch_roles()
+            role_map = {int(role.id): role for role in roles}
+            is_owner = str(guild.master_id) == bot_user_id
+            role_permissions = {
+                str(role_id): int(role_map[role_id].permissions) for role_id in role_ids if role_id in role_map
+            }
+            is_admin = is_owner or any(
+                role_map[role_id].has_permission(0) for role_id in role_ids if role_id in role_map
+            )
+            raw = {
+                "guild_id": str(guild.id),
+                "member_id": bot_user_id,
+                "roles": role_ids,
+                "role_permissions": role_permissions,
+            }
+            try:
+                channel = await get_channel(session_info)
+                if isinstance(channel, PublicChannel):
+                    channel_permissions = await channel.fetch_permission()
+                    raw["channel_permissions"] = {
+                        "sync": channel_permissions.sync,
+                        "role_overwrites": [
+                            {"role_id": str(item.role_id), "allow": item.allow, "deny": item.deny}
+                            for item in channel_permissions.roles
+                        ],
+                        "user_overwrites": [
+                            {"user_id": str(item.user.id), "allow": item.allow, "deny": item.deny}
+                            for item in channel_permissions.users
+                        ],
+                    }
+            except Exception as exc:
+                raw["channel_permissions_error"] = str(exc)
+            return BotState(
+                available=True,
+                joined=True,
+                is_owner=is_owner,
+                is_admin=is_admin,
+                can_read_messages=None,
+                can_read_all_messages=None,
+                can_send_messages=None,
+                can_send_proactive_messages=None,
+                can_manage_messages=is_admin,
+                can_manage_members=is_admin,
+                can_restrict_members=is_admin,
+                can_react=None,
+                can_send_private_messages=True,
+                permissions={"role_permissions": role_permissions, "admin_role": is_admin},
+                raw=raw,
+            )
+        except Exception as exc:
+            Logger.exception(f"Failed to check KOOK bot state in {session_info.target_id}: ")
+            return BotState(available=None, joined=None, error=str(exc))
+
+    @classmethod
     async def send_message(
         cls,
         session_info: SessionInfo,
@@ -164,7 +247,9 @@ class KOOKContextManager(ContextManager):
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
                 msg_ids.append(str(send_.get("msg_id", "")))
             if isinstance(x, ImageElement):
-                image_path = await x.get()
+                image_path = await resolve_media_path(x)
+                if image_path is None:
+                    continue
                 with open(image_path, "rb") as image:
                     url = await bot.create_asset(image)
                 if ctx:
@@ -178,7 +263,10 @@ class KOOKContextManager(ContextManager):
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(x.path)}")
                 msg_ids.append(str(send_.get("msg_id", "")))
             if isinstance(x, AudioElement):
-                with open(x.path, "rb") as audio:
+                audio_path = await resolve_media_path(x)
+                if audio_path is None:
+                    continue
+                with open(audio_path, "rb") as audio:
                     url = await bot.create_asset(audio)
                 if ctx:
                     send_ = await ctx.reply(
@@ -191,7 +279,10 @@ class KOOKContextManager(ContextManager):
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Audio: {str(x.__dict__)}")
                 msg_ids.append(str(send_.get("msg_id", "")))
             if isinstance(x, VideoElement):
-                with open(x.path, "rb") as video:
+                video_path = await resolve_media_path(x)
+                if video_path is None:
+                    continue
+                with open(video_path, "rb") as video:
                     url = await bot.create_asset(video)
                 if ctx:
                     send_ = await ctx.reply(

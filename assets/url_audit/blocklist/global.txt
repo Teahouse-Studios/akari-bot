@@ -1,0 +1,4 @@
+# Repository-managed global URL blocklist.
+#
+# One exact HTTP(S) URL per line. Use "regex:<pattern>" for a constrained
+# full-match regular expression. Local operator rules belong in user.txt.

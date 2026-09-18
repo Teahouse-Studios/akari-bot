@@ -4,4 +4,4 @@
 
 [module_wiki]
 # 模組的組態部分，此處填寫的值可在訊息中以明文顯示。請不要在此部分填寫敏感資訊。
-wiki_whitelist_url = "https://github.com/Teahouse-Studios/akari-bot/issues/new?template=request_wiki_whitelist.yaml" # Wiki 白名單申請網址。
+wiki_allowlist_url = "https://github.com/Teahouse-Studios/akari-bot/issues/new?template=request_wiki_whitelist.yaml" # Wiki API 加入全局 URL 允许列表的申请网址。

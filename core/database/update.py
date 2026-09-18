@@ -3,6 +3,7 @@ from tortoise import Tortoise
 from core.database import fetch_module_db
 from core.database.link import db_type, get_db_link
 from core.database.models import DBVersion, TargetUnionInfo, TargetUnionBind, backfill_union_binds
+from core.utils.url_audit import GlobalURLAllowlist, GlobalURLBlocklist
 
 # v3：原本以平台 ID 为主键的两张核心表改挂 union，表名一并对齐模型名，
 # 以免「target_info」这类旧名继续读作「平台场景信息」。
@@ -29,6 +30,23 @@ UNION_RENAME_TABLES = {
 
 # v3：统计与审计表保留原始 ID，另增 union 列用于聚合。
 UNION_RECORD_TABLES = ["analytics_data", "unfriendly_actions"]
+
+# v4：Wiki API 独立名单并入全局 URL 规则文件，迁移成功后移除旧表。
+WIKI_URL_RULE_TABLES = (
+    ("module_wiki_allow_list", GlobalURLAllowlist),
+    ("module_wiki_block_list", GlobalURLBlocklist),
+)
+
+# v6：绑定表补充 OAuth 授权所需的列，水鱼、落雪两侧的取数方式都改由 OAuth 令牌决定。
+OAUTH_BIND_COLUMNS = (
+    ("module_maimai_diving_prober_bind_info", "refresh_token", "VARCHAR(1024)"),
+    ("module_maimai_diving_prober_bind_info", "subject", "VARCHAR(512)"),
+    ("module_maimai_lxns_prober_bind_info", "refresh_token", "VARCHAR(1024)"),
+)
+
+# v6：绑定方式换代后不再读写的历史列。落雪好友码曾用于免授权的查分接口，现已改为上传 OAuth 令牌，
+# 模型也不再声明该列；留着它只会让库结构与模型长期不一致（旧列带 NOT NULL 且无默认值，新写入会直接失败）。
+OBSOLETE_BIND_COLUMNS = (("module_maimai_lxns_prober_bind_info", "friend_code"),)
 
 
 def quote_ident(name: str) -> str:
@@ -102,6 +120,16 @@ async def has_index(conn, table: str, column: str) -> bool:
         [table, column],
     )
     return bool(rows)
+
+
+async def migrate_wiki_url_rules(conn) -> None:
+    """将旧 Wiki API 名单迁入全局 URL 用户规则文件。"""
+    for table, rule_list in WIKI_URL_RULE_TABLES:
+        if not await has_table(conn, table):
+            continue
+        rows = await conn.execute_query_dict(f"SELECT {quote_ident('api_link')} FROM {quote_ident(table)};")
+        rule_list.import_user_rules(row["api_link"] for row in rows)
+        await conn.execute_query(f"DROP TABLE {quote_ident(table)};")
 
 
 async def update_database_to_v3(conn):
@@ -216,6 +244,56 @@ async def update_database_to_v3(conn):
             )
 
 
+async def update_database_to_v4(conn):
+    """将数据库升级至 v4：将 Wiki API 名单迁入全局 URL 名单。
+
+    :param conn: 数据库连接。
+    """
+    await migrate_wiki_url_rules(conn)
+
+
+async def update_database_to_v5(conn):
+    """将数据库升级至 v5：丢弃旧任务队列表并按当前模型重新创建。
+
+    JobQueue 记录仅表示进程间的临时在途任务，不属于需要跨版本保留的业务数据。协议 v2 的表结构
+    与旧协议不兼容，因此升级时直接删除旧表，避免保留无法可靠解释或继续执行的历史任务。
+
+    :param conn: 数据库连接。
+    """
+    await conn.execute_query(f"DROP TABLE IF EXISTS {quote_ident('job_queues')};")
+    await Tortoise.generate_schemas(safe=True)
+
+
+async def update_database_to_v6(conn):
+    """将数据库升级至 v6：为绑定表调整 OAuth 授权所需的列。
+
+    水鱼分发给用户各自部署的应用属于公开客户端，换票接口对它不可用，只能为每位用户各自保存一把
+    refresh token；落雪侧则改为保存用户的授权令牌。Developer-Token 时代无需保存任何用户凭据，
+    表内因而没有这些列。表若由 ``generate_schemas()`` 新建，列已存在，跳过即可。旧行没有
+    refresh token，仅在用户重新完成一次绑定之前不可用。
+
+    同一批变更里还要删掉落雪的旧好友码列：该字段已彻底退出模型，旧表上却是 NOT NULL 且无默认值，
+    不删除会让新绑定写入直接失败。两段都是先探测再执行，可重复运行。
+
+    :param conn: 数据库连接。
+    """
+    for table, column, column_type in OAUTH_BIND_COLUMNS:
+        if not await has_table(conn, table):
+            # 未启用该模块时这张表可能根本不存在，此时无需迁移。
+            continue
+        if await has_column(conn, table, column):
+            continue
+        await conn.execute_query(
+            f"ALTER TABLE {quote_ident(table)} ADD COLUMN {quote_ident(column)} {column_type} NULL;"
+        )
+    for table, column in OBSOLETE_BIND_COLUMNS:
+        if not await has_table(conn, table):
+            continue
+        if not await has_column(conn, table, column):
+            continue
+        await conn.execute_query(f"ALTER TABLE {quote_ident(table)} DROP COLUMN {quote_ident(column)};")
+
+
 async def update_database():
     database_list = fetch_module_db()
     await Tortoise.init(db_url=get_db_link(), modules={"models": ["core.database.models"] + database_list})
@@ -296,5 +374,25 @@ async def update_database():
 
             await query_dbver.delete()
             await DBVersion.create(version=3)
+        if db_version < 4:
+            query_dbver = await DBVersion.first()
 
+            await update_database_to_v4(conn)
+
+            await query_dbver.delete()
+            await DBVersion.create(version=4)
+        if db_version < 5:
+            query_dbver = await DBVersion.first()
+
+            await update_database_to_v5(conn)
+
+            await query_dbver.delete()
+            await DBVersion.create(version=5)
+        if db_version < 6:
+            query_dbver = await DBVersion.first()
+
+            await update_database_to_v6(conn)
+
+            await query_dbver.delete()
+            await DBVersion.create(version=6)
     await Tortoise.close_connections()

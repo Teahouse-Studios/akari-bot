@@ -5,19 +5,21 @@ QQ 官方机器人在群主未开启「读取全部消息」权限时只收到�
 事件类型为判据，一并关闭两类模块。
 """
 
-from unittest.mock import patch
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, patch
 
 from bots.qqbot.features import group_disable_read_all_message_features
 from core.builtins.parser.message import regex_module_enabled
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
+from core.builtins.session.bot_state import BotState
 from core.constants.exceptions import SessionFinished
 from core.logger import Logger
 from core.tester import func_case, Tester
 from core.types.module import Module
-from modules.core.help import create_module_entry, format_module_entries
-from modules.core.modules import config_modules
+from modules.core.common_tools.help import create_module_entry, format_module_entries
+from modules.core.admin_tools.modules import config_modules
 
 
 def _make_module(**kwargs) -> Module:
@@ -130,7 +132,10 @@ async def _enable_prompt(
     features=group_disable_read_all_message_features,
     target_from: str = "TEST|Group",
     client_name: str = "TEST",
-) -> str:
+    bot_state: BotState | None = None,
+    return_session_info: bool = False,
+    target_suffix: str = "",
+) -> str | tuple[str, SessionInfo]:
     """在 QQ 官方机器人的提及消息场景中跑一遍启用流程，取回渲染后的提示。
 
     该场景的会话特性直接取自 bots/qqbot/features.py，故本用例同时守住了那份声明。
@@ -139,7 +144,7 @@ async def _enable_prompt(
     :return: 提示文案，多条以竖线相接。
     """
     session_info = await SessionInfo.assign(
-        target_id=f"{target_from}|enable_{module_name}",
+        target_id=f"{target_from}|enable_{module_name}{target_suffix}",
         target_from=target_from,
         client_name=client_name,
         sender_id=f"{client_name}|1",
@@ -153,10 +158,14 @@ async def _enable_prompt(
         captured.append(message_chain)
         raise SessionFinished
 
+    async def _check_bot_state(self):
+        return bot_state
+
     with (
         patch.object(MessageSession, "finish", new=_capture),
         patch.object(MessageSession, "send_message", new=_capture),
         patch.object(MessageSession, "check_super_user", lambda self: False),
+        patch.object(MessageSession, "check_bot_state", new=_check_bot_state),
     ):
         try:
             await config_modules(msg)
@@ -167,7 +176,8 @@ async def _enable_prompt(
     for chain in captured:
         for element in chain if isinstance(chain, list) else [chain]:
             rendered.append(session_info.locale.t_str(str(element)))
-    return " | ".join(rendered)
+    output = " | ".join(rendered)
+    return (output, session_info) if return_session_info else output
 
 
 async def _test_enable_regex_module_is_rejected():
@@ -216,6 +226,84 @@ async def _test_enable_event_module_warns_permissions():
     return "成功：开启模块“captcha”" in actual and "事件模块依赖平台事件订阅" in actual
 
 
+async def _test_enable_captcha_is_rejected_when_bot_permissions_are_missing():
+    """BotState 明确缺少 captcha 所需权限时不得记录模块启用状态。"""
+    actual, session_info = await _enable_prompt(
+        "captcha",
+        features=Features(read_all_messages=True),
+        target_from="QQBot|Group",
+        client_name="QQBot",
+        bot_state=BotState(
+            can_read_all_messages=True,
+            can_send_messages=True,
+            can_send_proactive_messages=False,
+            can_manage_members=False,
+            can_restrict_members=False,
+        ),
+        return_session_info=True,
+        target_suffix="_missing_bot_permissions",
+    )
+    return (
+        "缺少开启模块所需的平台权限" in actual
+        and "主动发送消息" in actual
+        and "管理成员" in actual
+        and "限制成员" in actual
+        and "成功：开启模块“captcha”" not in actual
+        and "captcha" not in (session_info.target_union_info.modules or [])
+    )
+
+
+async def _test_enable_captcha_allows_unknown_bot_permissions():
+    """平台未提供状态字段时保持兼容，不应因 None 误拒绝模块。"""
+    actual = await _enable_prompt(
+        "captcha",
+        features=Features(read_all_messages=True),
+        target_from="QQBot|Group",
+        client_name="QQBot",
+        bot_state=BotState(can_read_all_messages=True),
+        target_suffix="_unknown_bot_permissions",
+    )
+    return "成功：开启模块“captcha”" in actual
+
+
+async def _test_enable_all_skips_modules_with_missing_bot_permissions():
+    """enable all 只写入已满足机器人权限要求的模块。"""
+    allowed = _make_module(module_name="allowed", required_bot_permissions=["can_send_messages"])
+    blocked = _make_module(module_name="blocked", required_bot_permissions=["can_manage_members"])
+    allowed._db_load = blocked._db_load = True
+    config_module = AsyncMock(return_value=True)
+    session_info = SessionInfo(
+        target_id="TEST|Group|enable-all-bot-permissions",
+        target_from="TEST|Group",
+        client_name="TEST",
+        enabled_modules=[],
+        target_union_info=SimpleNamespace(config_module=config_module),
+    )
+    msg = MessageSession(session_info=session_info)
+    msg.parsed_msg = {"enable": True, "all": True, "<module>": None, "...": []}
+
+    async def _finish(_self, _message_chain=None, **_kwargs):
+        raise SessionFinished
+
+    async def _check_bot_state(_self):
+        return BotState(can_send_messages=True, can_manage_members=False)
+
+    with (
+        patch(
+            "modules.core.admin_tools.modules.ModulesManager.return_modules_list",
+            return_value={"allowed": allowed, "blocked": blocked},
+        ),
+        patch.object(MessageSession, "finish", new=_finish),
+        patch.object(MessageSession, "check_super_user", lambda self: False),
+        patch.object(MessageSession, "check_bot_state", new=_check_bot_state),
+    ):
+        try:
+            await config_modules(msg)
+        except SessionFinished:
+            pass
+    return config_module.await_args.args == (["allowed"], True)
+
+
 @func_case
 async def test_read_all_messages(tester: Tester):
     """core: read_all_messages 特性与正则模块管控"""
@@ -233,5 +321,10 @@ async def test_read_all_messages(tester: Tester):
     await tester.test(_test_enable_rss_module_is_rejected, "启用推送模块被拒")
     await tester.test(_test_enable_event_module_is_rejected, "启用事件模块被拒")
     await tester.test(_test_enable_event_module_warns_permissions, "事件模块权限提醒")
+    await tester.test(
+        _test_enable_captcha_is_rejected_when_bot_permissions_are_missing, "Captcha 缺少机器人权限时拒绝启用"
+    )
+    await tester.test(_test_enable_captcha_allows_unknown_bot_permissions, "未知机器人权限不误拒绝 Captcha")
+    await tester.test(_test_enable_all_skips_modules_with_missing_bot_permissions, "批量启用跳过缺少机器人权限的模块")
     await tester.test(_test_enable_plain_module_still_works, "普通模块照常启用")
     return tester

@@ -15,8 +15,8 @@ from core.config.base import CoreConfig
 from core.database.models import SenderUnionInfo, TargetUnionInfo
 from core.logger import Logger
 from core.tester import func_case, Tester
-from modules.core.help import get_setup_button_data
-from modules.core.setup import (
+from modules.core.common_tools.help import get_setup_button_data
+from modules.core.common_tools.setup import (
     _ends_with_inline_entry,
     build_jump_buttons,
     build_sender_rows,
@@ -167,7 +167,7 @@ def _test_commands_carry_current_value() -> bool:
     msg = _make_msg(target_data={"cooldown_time": 5, "command_prefix": ["!"]})
     rows = build_target_rows(msg)
     expected = {
-        "语言": f"locale {msg.session_info.target_union_info.locale}",
+        "语言": f"setup locale {msg.session_info.target_union_info.locale}",
         "时间偏移": "setup timeoffset +8",
         "命令冷却": "setup cooldown 5",
     }
@@ -178,7 +178,7 @@ def _test_commands_carry_current_value() -> bool:
             return False
     # 自定义前缀做的是追加而非替换，没有可预填的单值
     prefix_row = _row_by_label(rows, "自定义前缀")
-    if not prefix_row or prefix_row.command != "prefix add ":
+    if not prefix_row or prefix_row.command != "setup prefix add ":
         Logger.error(f"The prefix entry appends rather than replaces, got {prefix_row and prefix_row.command!r}")
         return False
     return True
@@ -323,7 +323,7 @@ def _test_markdown_row_follows_setting() -> bool:
 def _test_invalid_prompt_row() -> bool:
     """「模块不存在」提示是场景域的开关，取值随场景设置反转"""
     on = _row_by_label(build_target_rows(_make_msg()), "“模块不存在”提示")
-    if not on or on.command != "setup invalid_module_prompt":
+    if not on or on.command != "setup invalid-module-prompt":
         Logger.error(f"The target panel should carry the invalid-module switch, got {on}")
         return False
     if on.value != "已开启":
@@ -433,7 +433,7 @@ def _test_help_buttons_absent_without_support() -> bool:
 
 @func_case
 async def test_setup_panel(tester: Tester):
-    """modules.core.setup: 设置面板构造测试"""
+    """modules.core.common_tools.setup: 设置面板构造测试"""
     await tester.test(_test_sender_rows_default_to_enabled, "个人设置默认开启测试")
     await tester.test(_test_sender_rows_follow_setting, "个人设置跟随取值测试")
     await tester.test(_test_target_rows_content, "场景设置内容测试")

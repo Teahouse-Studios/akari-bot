@@ -10,13 +10,14 @@ from core.component import module
 from modules.wiki.config import WikiConfig
 from core.logger import Logger
 from core.scheduler import IntervalTrigger
+from core.types import Param
 from modules.wiki.utils.ab import convert_ab_to_detailed_format
 from modules.wiki.utils.rc import convert_rc_to_detailed_format
-from modules.wiki.utils.wikilib import WikiLib
+from modules.wiki.utils.wikilib import BlockedWikiError, WikiLib
 from .database.models import WikiLogTargetSetInfo
 from .utils import convert_data_to_text
 
-wiki_whitelist_url = WikiConfig.wiki_whitelist_url
+wiki_allowlist_url = WikiConfig.wiki_allowlist_url
 
 type_map = {
     "abuselog": "AbuseLog",
@@ -43,6 +44,14 @@ rcshows = [
     "unpatrolled",
 ]
 
+
+async def _check_wiki_available(msg: Bot.MessageSession, wiki_info: WikiLib):
+    try:
+        return await wiki_info.check_wiki_available()
+    except BlockedWikiError as exc:
+        await msg.finish(I18NContext("wiki.message.invalid.blocked", name=exc.url))
+
+
 wikilog = module("wikilog", developers=["OasisAkari"], required_admin=True, doc=True, rss=True, required_superuser=True)
 
 
@@ -53,19 +62,19 @@ wikilog = module("wikilog", developers=["OasisAkari"], required_admin=True, doc=
 )
 async def _(msg: Bot.MessageSession, apilink: str):
     wiki_info = WikiLib(apilink)
-    status = await wiki_info.check_wiki_available()
-    in_allowlist = True
+    status = await _check_wiki_available(msg, wiki_info)
+    is_allowed = True
     wiki_name = status.value.name
     if status.value.lang:
         wiki_name += f" ({status.value.lang})"
-    if Bot.Info.use_url_manager:
-        in_allowlist = status.value.in_allowlist
-        if status.value.in_blocklist and not in_allowlist:
+    if msg.session_info.use_url_manager:
+        is_allowed = status.value.is_allowed
+        if status.value.is_blocked and not is_allowed:
             await msg.finish(I18NContext("wiki.message.invalid.blocked", name=wiki_name))
-    if not in_allowlist:
-        prompt = [I18NContext("wikilog.message.untrust.wiki", name=wiki_name)]
-        if wiki_whitelist_url:
-            prompt.append(I18NContext("wiki.message.wiki_audit.untrust.address", url=wiki_whitelist_url))
+    if not is_allowed:
+        prompt = [I18NContext("wikilog.message.untrust.wiki")]
+        if wiki_allowlist_url:
+            prompt.append(I18NContext("wiki.message.url_policy.untrust.address", url=wiki_allowlist_url))
         await msg.finish(prompt)
     if status.available:
         records = await WikiLogTargetSetInfo.get_by_target_id(msg)
@@ -89,7 +98,7 @@ async def _(msg: Bot.MessageSession, apilink, logtype: str):
     logtype = type_map.get(logtype)
     if logtype:
         wiki_info = WikiLib(apilink)
-        status = await wiki_info.check_wiki_available()
+        status = await _check_wiki_available(msg, wiki_info)
         if status.available:
             wiki_name = status.value.name
             if status.value.lang:
@@ -155,7 +164,7 @@ async def _(msg: Bot.MessageSession, apilink, logtype):
     records = await WikiLogTargetSetInfo.get_by_target_id(msg)
     infos = records.infos
     wiki_info = WikiLib(apilink)
-    status = await wiki_info.check_wiki_available()
+    status = await _check_wiki_available(msg, wiki_info)
     logtype = type_map.get(logtype)
     if status.available:
         if status.value.api in infos:
@@ -188,18 +197,21 @@ async def _(msg: Bot.MessageSession, apilink, logtype):
 
 @wikilog.command("filter set <apilink> <logtype> ... {{I18N:wikilog.help.filter.set}}")
 @wikilog.command("filter reset <apilink> <logtype> {{I18N:wikilog.help.filter.reset}}")
-async def _(msg: Bot.MessageSession, apilink: str, logtype: str):
+async def _(
+    msg: Bot.MessageSession,
+    apilink: str,
+    logtype: str,
+    filters: Param("...", list) = None,
+):
     if "reset" in msg.parsed_msg:
         filters = ["*"]
-    else:
-        filters = msg.parsed_msg.get("...")
     if filters:
         logtype = type_map.get(logtype)
         if logtype:
             records = await WikiLogTargetSetInfo.get_by_target_id(msg)
             infos = records.infos
             wiki_info = WikiLib(apilink)
-            status = await wiki_info.check_wiki_available()
+            status = await _check_wiki_available(msg, wiki_info)
             if status.available:
                 wiki_name = status.value.name
                 if status.value.lang:
@@ -244,7 +256,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
     records = await WikiLogTargetSetInfo.get_by_target_id(msg)
     infos = records.infos
     wiki_info = WikiLib(apilink)
-    status = await wiki_info.check_wiki_available()
+    status = await _check_wiki_available(msg, wiki_info)
     if status.available:
         wiki_name = status.value.name
         if status.value.lang:
@@ -266,16 +278,13 @@ async def _(msg: Bot.MessageSession, apilink: str):
 
 @wikilog.command("rcshow set <apilink> ... {{I18N:wikilog.help.rcshow.set}}")
 @wikilog.command("rcshow reset <apilink> {{I18N:wikilog.help.rcshow.reset}}")
-async def _(msg: Bot.MessageSession, apilink: str):
-    if "reset" in msg.parsed_msg:
-        rcshows_ = []
-    else:
-        rcshows_ = msg.parsed_msg.get("...")
+async def _(msg: Bot.MessageSession, apilink: str, rcshow_args: Param("...", list) = None):
+    rcshows_ = [] if "reset" in msg.parsed_msg else rcshow_args
     if rcshows_ is not None:
         records = await WikiLogTargetSetInfo.get_by_target_id(msg)
         infos = records.infos
         wiki_info = WikiLib(apilink)
-        status = await wiki_info.check_wiki_available()
+        status = await _check_wiki_available(msg, wiki_info)
         if status.available:
             wiki_name = status.value.name
             if status.value.lang:
@@ -308,57 +317,57 @@ async def _(msg: Bot.MessageSession):
     for apilink in infos:
         text += f"{apilink}: \n"
         text += (
-            msg.session_info.locale.t("wikilog.message.list.abuselog")
+            str(I18NContext("wikilog.message.list.abuselog"))
             + (
-                msg.session_info.locale.t("wikilog.message.enabled")
+                str(I18NContext("wikilog.message.enabled"))
                 if infos[apilink]["AbuseLog"]["enable"]
-                else msg.session_info.locale.t("wikilog.message.disabled")
+                else str(I18NContext("wikilog.message.disabled"))
             )
             + "\n"
         )
         text += (
-            msg.session_info.locale.t("wikilog.message.filters")
+            str(I18NContext("wikilog.message.filters"))
             + '\n"'
             + '" "'.join(infos[apilink]["AbuseLog"]["filters"])
             + '"'
             + "\n"
         )
         text += (
-            msg.session_info.locale.t("wikilog.message.recentchanges")
+            str(I18NContext("wikilog.message.recentchanges"))
             + (
-                msg.session_info.locale.t("wikilog.message.enabled")
+                str(I18NContext("wikilog.message.enabled"))
                 if infos[apilink]["RecentChanges"]["enable"]
-                else msg.session_info.locale.t("wikilog.message.disabled")
+                else str(I18NContext("wikilog.message.disabled"))
             )
             + "\n"
         )
         text += (
-            msg.session_info.locale.t("wikilog.message.filters")
+            str(I18NContext("wikilog.message.filters"))
             + '\n"'
             + '" "'.join(infos[apilink]["RecentChanges"]["filters"])
             + '"'
             + "\n"
         )
         text += (
-            msg.session_info.locale.t("wikilog.message.rcshow")
+            str(I18NContext("wikilog.message.rcshow"))
             + '\n"'
             + '" "'.join(infos[apilink]["RecentChanges"]["rcshow"])
             + '"'
             + "\n"
         )
         text += (
-            msg.session_info.locale.t("wikilog.message.usebot")
+            str(I18NContext("wikilog.message.usebot"))
             + (
-                msg.session_info.locale.t("wikilog.message.enabled")
+                str(I18NContext("wikilog.message.enabled"))
                 if infos[apilink]["use_bot"]
-                else msg.session_info.locale.t("wikilog.message.disabled")
+                else str(I18NContext("wikilog.message.disabled"))
             )
             + "\n"
         )
         if "note" in infos[apilink] and infos[apilink]["note"]:
-            text += msg.session_info.locale.t("wikilog.message.note") + infos[apilink]["note"] + "\n"
+            text += str(I18NContext("wikilog.message.note")) + infos[apilink]["note"] + "\n"
     if not text:
-        text += msg.session_info.locale.t("message.none")
+        text += str(I18NContext("message.none"))
     await msg.finish(text)
 
 
@@ -366,20 +375,17 @@ async def _(msg: Bot.MessageSession):
     "note set <apilink> ... {{I18N:wikilog.help.note.set}}",
     "note remove <apilink> {{I18N:wikilog.help.note.remove}}",
 )
-async def _(msg: Bot.MessageSession, apilink: str):
+async def _(msg: Bot.MessageSession, apilink: str, note_words: Param("...", list) = None):
     records = await WikiLogTargetSetInfo.get_by_target_id(msg)
     infos = records.infos
     wiki_info = WikiLib(apilink)
-    status = await wiki_info.check_wiki_available()
+    status = await _check_wiki_available(msg, wiki_info)
     if status.available:
         wiki_name = status.value.name
         if status.value.lang:
             wiki_name += f" ({status.value.lang})"
         if status.value.api in infos:
-            if "remove" in msg.parsed_msg:
-                note = ""
-            else:
-                note = " ".join(msg.parsed_msg.get("...", []))
+            note = "" if "remove" in msg.parsed_msg else " ".join(note_words or [])
             r = await records.conf_note(status.value.api, note)
             if r:
                 await msg.finish(I18NContext("wikilog.message.note.success", wiki=wiki_name, note=note))
@@ -412,7 +418,7 @@ async def _(ctx: Bot.ModuleHookContext):
             await Bot.send_direct_message_to_union_target(union_id, message)
 
 
-fetch_cache = {}
+fetch_cache = wikilog.cache("fetch_cache", version=1)
 
 
 @wikilog.schedule(IntervalTrigger(seconds=60))

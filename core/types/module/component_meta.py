@@ -71,8 +71,28 @@ class ScheduleMeta(ModuleMeta):
 
 @define
 class HookMeta(ModuleMeta):
+    """模块 hook 元数据。
+
+    两种用法：
+    - 具名能力：``.hook("reload")``，经 ``Bot.Hook.trigger`` 调用，一名一函数。
+    - 入口订阅：``.hook(point=HookPoint.COMMAND_PREPARE)``，经 ParserHookExecutor 分发。
+
+    ``point`` 与具名能力共用订阅元数据：有 ``point`` 时进入 parser 入口索引；否则进入具名索引。
+    ``name`` 在入口订阅中作为稳定订阅 ID 后缀。
+    """
+
     function: Callable = field(default=None)
     name: str | None = None
+    # 入口订阅字段；具名 hook 保持默认即可
+    point: str | None = None
+    priority: int = 100
+    available_for: list = field(default=["*"], converter=convert_list)
+    exclude_from: list = field(default=[], converter=convert_list)
+    load: bool = True
+    # 单次执行预算（秒）；<=0 表示不限时
+    timeout: float = 5.0
+    # server 作用域：免场景 enabled_modules，仍遵守全局停用与平台约束
+    server_scope: bool = False
 
 
 @define

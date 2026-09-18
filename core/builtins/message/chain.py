@@ -36,14 +36,17 @@ from core.builtins.message.elements import (
     ButtonElement,
     ButtonRows,
     ButtonFrameElement,
+    RawElement,
 )
-from core.constants import Secret, default_locale
+from core.config.base import BaseConfig
+from core.constants import Secret
 from core.exports import add_export
 from core.i18n import Locale
-from core.joke import shuffle_joke as joke
+from core.utils.joke import shuffle_joke as joke
 from core.logger import Logger
 from core.utils.func import convert_bool
 from core.utils.http import url_pattern
+from core.utils.url_audit import GlobalURLBlocklist, evaluate_url_policy, redact_blocklisted_urls
 from core.utils.button import AUTO_BUTTON_MAX_ROWS, AUTO_BUTTONS_PER_ROW
 
 if TYPE_CHECKING:
@@ -52,6 +55,8 @@ if TYPE_CHECKING:
 
 
 _I18N_MESSAGE_PATTERN = re.compile(r"\[AKARI-MSG:([A-Za-z0-9_-]+={0,2})\]")
+
+default_locale = BaseConfig.default_locale
 
 
 @define
@@ -165,8 +170,13 @@ class MessageChain:
         私密数据等）。这是一个重要的安全机制，用于防止敏感信息泄露。
 
         检查范围：
-        - PlainElement: 检查文本内容
+        - PlainElement / MarkdownElement: 检查文本内容
+        - URLElement: 检查原始链接
         - EmbedElement: 检查标题、描述、页脚、作者、URL、字段名称和值
+        - I18NContextElement: 检查模板参数（发送阶段才会代入文案，此处若不检查会漏过）
+        - ActionTextElement: 检查可点击文本与展示文本
+        - ButtonElement / ButtonFrameElement: 检查按钮展示文本
+        - RawElement: 检查原始内容
 
         :return: 如果消息链不包含敏感信息返回 True，否则返回 False
 
@@ -182,55 +192,85 @@ class MessageChain:
             """生成不安全内容的警告消息"""
             return f'{name} contains unsafe text "{secret}": {text}'
 
+        def check_text(name: str, text: Any) -> bool:
+            """检查最终会以文本形式外发的字段。"""
+            if text is None:
+                return True
+            if secret := Secret.check(str(text)):
+                Logger.warning(unsafeprompt(name, secret, text))
+                return False
+            return True
+
+        def check_value(name: str, value: Any) -> bool:
+            """检查嵌套的消息链、元素或将被代入多语言模板的标量。"""
+            if isinstance(value, (MessageChain, MessageNodes)):
+                return value.is_safe
+            if isinstance(value, BaseElement):
+                # 复用元素所在链的检查逻辑，避免为每种嵌套元素重复实现分支
+                return MessageChain.assign(value).is_safe
+            return check_text(name, value)
+
         # 遍历消息链中的所有元素
         for v in self.values:
-            # ========== 检查纯文本元素 ==========
+            # ========== 检查纯文本与 Markdown 元素 ==========
             if isinstance(v, PlainElement):
-                if secret := Secret.check(v.text):
-                    Logger.warning(unsafeprompt("Plain", secret, v.text))
+                if not check_text("Plain", v.text):
                     return False
-            if isinstance(v, URLElement):
-                if secret := Secret.check(v.original_url):
-                    Logger.warning(unsafeprompt("URL", secret, v.original_url))
+            # ========== 检查 URL 元素 ==========
+            elif isinstance(v, URLElement):
+                if not check_text("URL", v.original_url):
                     return False
             # ========== 检查 Embed 元素 ==========
             elif isinstance(v, EmbedElement):
                 # 检查标题
-                if v.title:
-                    if secret := Secret.check(v.title):
-                        Logger.warning(unsafeprompt("Embed.title", secret, v.title))
-                        return False
+                if not check_text("Embed.title", v.title):
+                    return False
                 # 检查描述
-                if v.description:
-                    if secret := Secret.check(v.description):
-                        Logger.warning(unsafeprompt("Embed.description", secret, v.description))
-                        return False
+                if not check_text("Embed.description", v.description):
+                    return False
                 # 检查页脚
-                if v.footer:
-                    if secret := Secret.check(v.footer):
-                        Logger.warning(unsafeprompt("Embed.footer", secret, v.footer))
-                        return False
+                if not check_text("Embed.footer", v.footer):
+                    return False
                 # 检查作者
-                if v.author:
-                    if secret := Secret.check(v.author):
-                        Logger.warning(unsafeprompt("Embed.author", secret, v.author))
-                        return False
+                if not check_text("Embed.author", v.author):
+                    return False
                 # 检查 URL
-                if v.url:
-                    if secret := Secret.check(v.url):
-                        Logger.warning(unsafeprompt("Embed.url", secret, v.url))
-                        return False
+                if not check_text("Embed.url", v.url):
+                    return False
                 # 检查所有字段
                 if v.fields:
                     for f in v.fields:
                         # 检查字段名称
-                        if secret := Secret.check(f.name):
-                            Logger.warning(unsafeprompt("Embed.field.name", secret, f.name))
+                        if not check_text("Embed.field.name", f.name):
                             return False
                         # 检查字段值
-                        if secret := Secret.check(f.value):
-                            Logger.warning(unsafeprompt("Embed.field.value", secret, f.value))
+                        if not check_text("Embed.field.value", f.value):
                             return False
+            # ========== 检查多语言元素 ==========
+            # 参数会在客户端发送阶段才代入文案，服务端的链检查必须提前覆盖
+            elif isinstance(v, I18NContextElement):
+                for key, value in v.kwargs.items():
+                    if not check_value(f"I18NContext.{key}", value):
+                        return False
+            # ========== 检查指令操作元素 ==========
+            elif isinstance(v, ActionTextElement):
+                if not check_value("ActionText.text", v.text):
+                    return False
+                if not check_value("ActionText.show", v.show):
+                    return False
+            # ========== 检查按钮元素 ==========
+            elif isinstance(v, ButtonElement):
+                if not check_text("Button.show", v.show):
+                    return False
+            elif isinstance(v, ButtonFrameElement):
+                for row in v.rows:
+                    for button in row.buttons:
+                        if not check_text("Button.show", button.show):
+                            return False
+            # ========== 检查原始元素 ==========
+            elif isinstance(v, RawElement):
+                if not check_text("Raw", v.value):
+                    return False
 
         # 所有检查通过，消息链安全
         return True
@@ -239,7 +279,7 @@ class MessageChain:
         self,
         session_info: SessionInfo | MessageSession | None = None,
         parse_message: bool = True,
-        disable_markdown=False,
+        enable_markdown: bool = True,
     ) -> ConvertedMessageChain:
         """
         将消息链转换为可发送的格式。
@@ -247,13 +287,13 @@ class MessageChain:
         该方法将消息链中的各种元素转换为适合发送的格式，包括：
         1. 多语言翻译
         2. KE 码解析
-        3. URL 处理（跳板和 Markdown 格式）
+        3. URL 处理（全局黑名单、跳板和 Markdown 格式）
         4. 时间格式化
         5. 愚人节玩笑处理
 
         :param session_info: 会话信息，用于本地化和平台特定的处理
         :param parse_message: 是否解析消息中的特殊格式（如 KE 码、多语言标记等）
-        :param disable_markdown: 是否禁用 markdown 格式转换
+        :param enable_markdown: 是否启用 markdown 格式转换
         :return: 可发送的消息元素列表
 
         示例：
@@ -278,7 +318,7 @@ class MessageChain:
             for elem in element_chain.values:
                 elem_ = (
                     MessageChain.assign(elem)
-                    .as_sendable(session_info, parse_message=False, disable_markdown=disable_markdown)
+                    .as_sendable(session_info, parse_message=False, enable_markdown=enable_markdown)
                     .values
                 )
                 is_action_text = isinstance(elem, ActionTextElement)
@@ -299,6 +339,22 @@ class MessageChain:
             if x is None:
                 continue
 
+            if isinstance(x, EmbedElement) and GlobalURLBlocklist.rules():
+                x = deepcopy(x)
+                locale = session_info.locale if session_info else Locale(default_locale)
+                replacement = locale.t("message.url.blocked")
+                for attribute in ("title", "description", "author", "footer"):
+                    text = getattr(x, attribute)
+                    if text:
+                        translated = locale.t_str(text)
+                        setattr(x, attribute, redact_blocklisted_urls(translated, replacement))
+                fields = x.fields if isinstance(x.fields, list) else [x.fields] if x.fields else []
+                for field in fields:
+                    field.name = redact_blocklisted_urls(locale.t_str(field.name), replacement)
+                    field.value = redact_blocklisted_urls(locale.t_str(field.value), replacement)
+                if x.url and GlobalURLBlocklist.is_blocked(x.url):
+                    x.url = None
+
             # ========== 处理 Embed 元素 ==========
             # 如果平台不支持 Embed，将其转换为普通消息链
             if isinstance(x, EmbedElement) and not support_embed:
@@ -306,12 +362,12 @@ class MessageChain:
 
             # ========== 处理 Markdown 文本元素 ==========
             elif isinstance(x, MarkdownElement):
-                markdown_enabled = not disable_markdown and (session_info is None or session_info.support_markdown)
+                markdown_enabled = enable_markdown and (session_info is None or session_info.support_markdown)
                 source = PlainElement.assign(x.text, disable_joke=x.disable_joke, allow_parse=x.allow_parse)
                 converted = MessageChain.assign(source).as_sendable(
                     session_info,
                     parse_message=parse_message,
-                    disable_markdown=disable_markdown,
+                    enable_markdown=enable_markdown,
                 )
                 for element in converted:
                     if isinstance(element, PlainElement):
@@ -350,6 +406,8 @@ class MessageChain:
                     else:
                         # 空文本，使用默认错误消息
                         x = PlainElement.assign(session_info.locale.t("error.message.chain.empty"))
+                locale = session_info.locale if session_info else Locale(default_locale)
+                x.text = redact_blocklisted_urls(x.text, locale.t("message.url.blocked"))
                 value.append(x)
 
             # ========== 处理格式化时间元素 ==========
@@ -390,24 +448,32 @@ class MessageChain:
 
             # ========== 处理 URL 元素 ==========
             elif isinstance(x, URLElement):
+                url_policy = evaluate_url_policy(x.original_url)
+                if url_policy.blocked:
+                    locale = session_info.locale if session_info else Locale(default_locale)
+                    value.append(PlainElement.assign(locale.t("message.url.blocked"), disable_joke=True))
+                    continue
+
+                globally_trusted = bool(
+                    session_info and session_info.use_url_manager and x.trusted is None and url_policy.allowed
+                )
                 # 链接须按未认证处理的两种来源：模块显式标记为不可信，或未表态而会话启用了 URLManager
                 needs_guard = bool(
-                    session_info and x.trusted is not True and (x.trusted is False or session_info.use_url_manager)
+                    session_info
+                    and not globally_trusted
+                    and x.trusted is not True
+                    and (x.trusted is False or session_info.use_url_manager)
                 )
-                if needs_guard and session_info.support_markdown and not disable_markdown:
+                if needs_guard and session_info.support_markdown and enable_markdown:
                     title = session_info.locale.t("message.url.untrusted")
                     value.append(PlainElement.assign(f"```{title}\n{x.original_url}\n```", disable_joke=True))
                     continue
 
                 # 应用 URL 跳板（如果需要）
-                if session_info and x.trusted is None and session_info.use_url_manager:
+                if session_info and x.trusted is None and not globally_trusted and session_info.use_url_manager:
                     x = URLElement.assign(x.url, trusted=False, md_format_name=x.md_format_name)
                 # 应用 Markdown 格式（如果需要）
-                if (
-                    session_info
-                    and (session_info.use_url_md_format and not x.applied_md_format)
-                    and not disable_markdown
-                ):
+                if session_info and (session_info.use_url_md_format and not x.applied_md_format) and enable_markdown:
                     x = URLElement.assign(x.url, md_format=True, md_format_name=x.md_format_name)
 
                 value.append(PlainElement.assign(x.url, disable_joke=True))
@@ -416,7 +482,7 @@ class MessageChain:
             elif isinstance(x, ActionTextElement):
                 # 内层的多语言元素只有在此处才能确定会话语言，故转换阶段一次性解析
                 x = x.resolve(session_info)
-                if session_info and session_info.support_action_text and not disable_markdown and x.text.text:
+                if session_info and session_info.support_action_text and enable_markdown and x.text.text:
                     value.append(x)
                 else:
                     _append_inline(value, x.to_plain(session_info))
@@ -1380,6 +1446,23 @@ def match_atcode(text: str, client: str, pattern: str) -> str:
     return re.sub(r"<(?:AT|@):([^\|]+)\|(?:.*?\|)?([^\|>]+)>", _replacer, text)
 
 
+def escape_special_char(s: str, escape_comma: bool = True) -> str:
+    """
+    转义特殊占位符标记的特殊字符。
+
+    :param s: 要转义的字符串。
+    :param escape_comma: 是否转义逗号（`,`）。
+    :return: 转义后的字符串。
+    """
+    s = s.replace("&", "&amp;")
+    s = s.replace("{", "&#123;").replace("}", "&#124;")
+    s = s.replace("[", "&#91;").replace("]", "&#93;")
+    s = s.replace("<", "&lt;").replace(">", "&gt;")
+    if escape_comma:
+        s = s.replace(",", "&#44;")
+    return s
+
+
 def convert_senderid_to_atcode(text: str, sender_prefix: str) -> str:
     """
     将用户 ID 转换为 AT 码格式。
@@ -1388,26 +1471,29 @@ def convert_senderid_to_atcode(text: str, sender_prefix: str) -> str:
     主要用于在消息中自动识别和转换用户 ID 引用。
 
     处理流程：
-    1. 转义 sender_prefix 中的特殊字符
+    1. 转义 sender_prefix 中的特殊字符（仅用于正则，不改动文本）
     2. 查找所有匹配的用户 ID
     3. 将其包装为 `<AT:...>` 格式
 
+    文本中的反斜杠是普通字符，原样保留。
+
     :param text: 包含用户 ID 的文本
-    :param sender_prefix: 用户 ID 的前缀（如 "QQ|"）
+    :param sender_prefix: 用户 ID 的前缀（如 "QQ"）
     :return: 转换后的文本，用户 ID 被包装为 AT 码
 
     示例：
         > text = "User QQ|123456 said hello"
-        > convert_senderid_to_atcode(text, "QQ|")
+        > convert_senderid_to_atcode(text, "QQ")
         'User <AT:QQ|123456> said hello'
     """
-    # 转义前缀中的特殊字符（如 `|`）
-    sender_prefix = sender_prefix.replace("|", "\\|")
+    # 转义前缀中的特殊字符（如 `|`），避免其被当作正则元字符
+    sender_prefix = re.escape(sender_prefix)
 
     # 使用正则表达式查找并包装用户 ID
     # 负向后瞻断言确保不会重复包装已有的 AT 码
     # \g<0> 引用整个匹配的字符串
-    return re.sub(rf"(?<!<AT:)(?<!<@:){sender_prefix}\|\w+", r"<AT:\g<0>>", text).replace("\\", "")
+    # 转义只作用于正则本身；文本中的反斜杠是普通字符，须原样保留
+    return re.sub(rf"(?<!<AT:)(?<!<@:){sender_prefix}\|\w+", r"<AT:\g<0>>", text)
 
 
 # 将消息链类添加到导出列表中
@@ -1442,4 +1528,6 @@ __all__ = [
     "get_message_chain",
     "MessageNodes",
     "match_kecode",
+    "match_atcode",
+    "escape_special_char",
 ]

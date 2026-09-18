@@ -1032,7 +1032,7 @@
         1
       ]
     },
-    "release_ver_code": "maimai でらっくす BUDDiES PLUS",
+    "release_ver_code": "maimai でらっくす BUDDiES",
     "title": "[奏]テレキャスタービーボーイ",
     "type": "DX"
   },
@@ -1275,7 +1275,7 @@
         1
       ]
     },
-    "release_ver_code": "maimai でらっくす BUDDiES PLUS",
+    "release_ver_code": "maimai でらっくす BUDDiES",
     "title": "[奏]ヒトガタ",
     "type": "DX"
   },
@@ -1304,8 +1304,37 @@
         3
       ]
     },
-    "release_ver_code": "maimai でらっくす BUDDiES PLUS",
+    "release_ver_code": "maimai でらっくす BUDDiES",
     "title": "[協]三妖精SAY YA!!!",
+    "type": "DX"
+  },
+  "111479": {
+    "artist": "ETIA.",
+    "bpm": 175,
+    "charts": [
+      {
+        "notes": [
+          151,
+          24,
+          159,
+          0,
+          56
+        ]
+      }
+    ],
+    "comment": "maimai でらっくす版覚譜面もほしかった",
+    "id": "111479",
+    "level": [
+      "13+?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM PLUS",
+    "title": "[覚]Hainuwele",
     "type": "DX"
   },
   "111488": {
@@ -1490,6 +1519,35 @@
     },
     "release_ver_code": "maimai でらっくす BUDDiES PLUS",
     "title": "[息]ノンブレス・オブリージュ",
+    "type": "DX"
+  },
+  "111628": {
+    "artist": "Zekk",
+    "bpm": 185,
+    "charts": [
+      {
+        "notes": [
+          489,
+          47,
+          56,
+          26,
+          30
+        ]
+      }
+    ],
+    "comment": "SLIDE BACK!!",
+    "id": "111628",
+    "level": [
+      "12+?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM PLUS",
+    "title": "[逆]WE'RE BACK!!",
     "type": "DX"
   },
   "111636": {

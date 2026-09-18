@@ -9,7 +9,7 @@ from core.builtins.message.elements import PlainElement
 from core.constants.exceptions import SessionFinished
 from core.database.models import SenderUnionInfo, TargetUnionInfo
 from core.logger import Logger
-from core.tester.mock.database import init_db, close_db
+from core.tester.mock.database import close_db, get_last_init_error, init_db
 from core.tester.mock.loader import load_modules
 from core.tester.mock.parser import parser
 from core.tester.mock.random import Random
@@ -19,6 +19,58 @@ from .decorator import CaseEntry
 from .expectations import Expectation
 
 DEFAULT_FUNCTION_TEST_TIMEOUT = 120.0
+FUNCTION_TEST_CANCEL_TIMEOUT = 1.0
+
+
+class _FunctionTestNoProgress(Exception):
+    """Raised only when the func_case watchdog observes no completed subtest."""
+
+
+def _consume_task_result(task: asyncio.Task) -> None:
+    if task.cancelled():
+        return
+    try:
+        task.exception()
+    except asyncio.CancelledError:
+        pass
+
+
+async def _cancel_task(task: asyncio.Task) -> bool:
+    """Cancel a task without allowing cancellation cleanup to block the runner."""
+    if task.done():
+        await asyncio.gather(task, return_exceptions=True)
+        return True
+    task.cancel()
+    done, _ = await asyncio.wait((task,), timeout=FUNCTION_TEST_CANCEL_TIMEOUT)
+    if task not in done:
+        task.cancel()
+        task.add_done_callback(_consume_task_result)
+        return False
+    await asyncio.gather(task, return_exceptions=True)
+    return True
+
+
+async def _cancel_orphan_tasks(baseline: set[asyncio.Task] | None = None) -> bool:
+    """Cancel detached tasks created by a function-test entry.
+
+    Function tests share an event loop but rebuild their in-memory SQLite context
+    between entries. A detached task using the old context can otherwise retain
+    locks or resume during the next entry. Cleanup is bounded for the same reason
+    as watchdog cancellation: a task that ignores cancellation must not stall CI.
+    """
+    current = asyncio.current_task()
+    tasks = [
+        task
+        for task in asyncio.all_tasks()
+        if task is not current
+        and not task.done()
+        and not task.get_name().startswith("function-test-progress:")
+        and (baseline is None or task not in baseline)
+    ]
+    if not tasks:
+        return True
+    completed = await asyncio.gather(*(_cancel_task(task) for task in tasks))
+    return all(completed)
 
 
 def _infrastructure_error(input_, expected, message: str) -> list[dict]:
@@ -27,48 +79,63 @@ def _infrastructure_error(input_, expected, message: str) -> list[dict]:
 
 
 async def run_case_entry(entry: CaseEntry, is_ci: bool = False) -> list[dict]:
+    baseline_tasks = set(asyncio.all_tasks())
+
     try:
         await close_db()
     except Exception:
         Logger.exception("Error closing database before test")
 
     if not await init_db():
-        message = f"Failed to reinitialize database for case {entry.get('func')}."
+        message = f"Failed to reinitialize database for case {entry.get('func')}.\n{get_last_init_error()}"
         Logger.critical(message)
         return _infrastructure_error(entry.get("input"), entry.get("expected"), message)
 
     try:
-        await load_modules(show_logs=False, monkey_patches={"Random": Random()})
-    except Exception:
-        error = traceback.format_exc()
-        Logger.exception("Failed to load modules for tests:")
-        return _infrastructure_error(entry.get("input"), entry.get("expected"), error)
+        try:
+            await load_modules(show_logs=False, monkey_patches={"Random": Random()})
+        except Exception:
+            error = traceback.format_exc()
+            Logger.exception("Failed to load modules for tests:")
+            return _infrastructure_error(entry.get("input"), entry.get("expected"), error)
 
-    start = time.perf_counter()
-    timeout = entry.get("timeout")
-    result = await run_test_case(entry["input"], entry["expected"], entry["func"], is_ci, timeout=timeout)
-    elapsed = time.perf_counter() - start
-    if "exception" in result and isinstance(result["expected"], Expectation):
-        match = await result["expected"].match(result)
-        if match:
-            del result["traceback"]
-    try:
-        result["time_cost"] = elapsed
-    except Exception:
-        pass
-    return [result]
+        start = time.perf_counter()
+        timeout = entry.get("timeout")
+        result = await run_test_case(entry["input"], entry["expected"], entry["func"], is_ci, timeout=timeout)
+        elapsed = time.perf_counter() - start
+        if "exception" in result and isinstance(result["expected"], Expectation):
+            match = await result["expected"].match(result)
+            if match:
+                del result["traceback"]
+        try:
+            result["time_cost"] = elapsed
+        except Exception:
+            pass
+        return [result]
+    finally:
+        # Integration cases can start queue pollers, waiters, or platform tasks.
+        # They share the event loop and in-memory database with later cases, so a
+        # detached task must not survive the database context it captured.
+        if not await _cancel_orphan_tasks(baseline_tasks):
+            message = "Registry test left a task that did not finish cancellation cleanup."
+            Logger.error(message)
+            raise RuntimeError(message)
 
 
 async def run_function_entry(
     fn: FunctionType, is_ci: bool = False, timeout: float | None = DEFAULT_FUNCTION_TEST_TIMEOUT
 ) -> dict[str, Any]:
+    # Every func_case is an isolation boundary. Record existing runner tasks so
+    # only work started by this entry is reclaimed after it finishes.
+    cleanup_pending = False
+    baseline_tasks = set(asyncio.all_tasks())
     try:
         await close_db()
     except Exception:
         Logger.exception("Error closing database before func test")
 
     if not await init_db():
-        message = f"Failed to reinitialize database for func test {fn.__name__}."
+        message = f"Failed to reinitialize database for func test {fn.__name__}.\n{get_last_init_error()}"
         Logger.critical(message)
         return {"error": message}
 
@@ -89,22 +156,91 @@ async def run_function_entry(
         if timeout is None:
             returned = await fn(tester)
         else:
-            returned = await asyncio.wait_for(fn(tester), timeout=timeout)
+            function_task = asyncio.create_task(fn(tester))
+            progress_task = None
+            progress_revision = tester._progress_revision
+            progress_deadline = asyncio.get_running_loop().time() + timeout
+            try:
+                while True:
+                    progress_task = asyncio.create_task(
+                        tester._wait_for_progress(progress_revision),
+                        name=f"function-test-progress:{fn.__name__}",
+                    )
+                    remaining = max(0.0, progress_deadline - asyncio.get_running_loop().time())
+                    done, _ = await asyncio.wait(
+                        (function_task, progress_task),
+                        timeout=remaining,
+                        return_when=asyncio.FIRST_COMPLETED,
+                    )
+                    if function_task in done:
+                        progress_task.cancel()
+                        await asyncio.gather(progress_task, return_exceptions=True)
+                        returned = function_task.result()
+                        break
+                    if progress_task in done:
+                        current_revision = tester._progress_revision
+                        if not progress_task.cancelled():
+                            current_revision = progress_task.result()
+                        if current_revision > progress_revision:
+                            progress_revision = current_revision
+                            progress_deadline = asyncio.get_running_loop().time() + timeout
+                        elif asyncio.get_running_loop().time() >= progress_deadline:
+                            raise _FunctionTestNoProgress
+                        continue
+                    raise _FunctionTestNoProgress
+            finally:
+                if progress_task is not None and not progress_task.done():
+                    await _cancel_task(progress_task)
+                if not function_task.done():
+                    cleanup_pending = not await _cancel_task(function_task)
         if isinstance(returned, TesterClass):
             tester = returned
-    except TimeoutError:
+    except _FunctionTestNoProgress:
         elapsed = time.perf_counter() - start
-        Logger.error(f"Function test {fn.__name__} timed out after {timeout} seconds.")
-        return {"timeout": True, "time_cost": elapsed, "timeout_limit": timeout}
-    except Exception:
+        entries = tester.get_entries() if tester is not None else []
+        results = tester.get_results() if tester is not None else []
+        active_test = None
+        if len(entries) > len(results):
+            active_entry = entries[len(results)]
+            active_test = active_entry.get("note") or active_entry.get("input")
+            if active_test is None:
+                expected = active_entry.get("expected")
+                active_test = getattr(expected, "__name__", type(expected).__name__)
+        message = f"Function test {fn.__name__} made no progress for {timeout} seconds"
+        if active_test:
+            message += f" while running {active_test!r}"
+        Logger.error(f"{message}.")
+        cleanup_pending = not await _cancel_orphan_tasks(baseline_tasks) or cleanup_pending
+        return {
+            "timeout": True,
+            "time_cost": elapsed,
+            "timeout_limit": timeout,
+            "active_test": active_test,
+            "completed_tests": len(results),
+            "cleanup_pending": cleanup_pending,
+            "entries": entries,
+            "results": results,
+        }
+    except (asyncio.CancelledError, KeyboardInterrupt, SystemExit, GeneratorExit):
+        raise
+    except BaseException:
         error = traceback.format_exc()
         Logger.exception(f"Error running test function {fn.__name__}:")
-        return {"error": error}
+        cleanup_pending = not await _cancel_orphan_tasks(baseline_tasks) or cleanup_pending
+        return {"error": error, "cleanup_pending": cleanup_pending}
+
+    cleanup_pending = not await _cancel_orphan_tasks(baseline_tasks) or cleanup_pending
 
     elapsed = time.perf_counter() - start
     entries = tester.get_entries()
     results = tester.get_results()
-    return {"tester": tester, "entries": entries, "results": results, "time_cost": elapsed}
+    return {
+        "tester": tester,
+        "entries": entries,
+        "results": results,
+        "time_cost": elapsed,
+        "cleanup_pending": cleanup_pending,
+    }
 
 
 async def run_test_case(

@@ -7,6 +7,14 @@ from core.config.base import CoreSecretConfig
 
 proxy = CoreSecretConfig.proxy
 
+REFERENCE_HINT = (
+    "\n\n"
+    "If you use any of the above results as a source in your final answer, "
+    "append a reference tag `[ref:<url>]` at the end of the cited content, "
+    "replacing `<url>` with the exact URL of this source. "
+    "Only cite the source if you actually reference it."
+)
+
 search_web_desc = {
     "type": "function",
     "function": {
@@ -19,9 +27,9 @@ search_web_desc = {
                 "search_results": {
                     "type": "integer",
                     "description": "Number of search results.",
-                    "default": 5,
+                    "default": 10,
                     "minimum": 1,
-                    "maximum": 10,
+                    "maximum": 20,
                 },
             },
             "required": ["query"],
@@ -51,7 +59,7 @@ async def search_web(query: str, search_results: int = 5):
         if len(results) == 0:
             return "No results found."
 
-        return orjson.dumps(results).decode("utf-8")
+        return orjson.dumps(results).decode("utf-8") + REFERENCE_HINT
     except Exception:
         traceback.print_exc()
         return "Unable to use search engine, let user contact bot owner."

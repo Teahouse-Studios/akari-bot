@@ -5,6 +5,7 @@ from core.builtins.message.chain import get_message_chain, MessageChain
 from core.builtins.message.elements import ButtonFrameElement, PlainElement, ImageElement, MentionElement, BaseElement
 from core.builtins.message.internal import Button
 from core.builtins.session.info import SessionInfo
+from core.builtins.session.bot_state import BotState
 from core.builtins.session.internal import MessageSession, I18NContext
 from core.builtins.utils import confirm_command
 from core.config.base import CoreConfig
@@ -119,7 +120,7 @@ class MockMessageSession(MessageSession):
             self.action.append(
                 f"(restrict {x}{f' ({duration}s)' if duration else ''}{f': {reason}' if reason else ''})"
             )
-        return {"success": True} if wait else None
+        return None if wait else f"mock-task-{len(self.action)}"
 
     async def unrestrict_member(self, user_id, wait=False):
         if isinstance(user_id, str):
@@ -127,7 +128,7 @@ class MockMessageSession(MessageSession):
 
         for x in user_id:
             self.action.append(f"(unrestrict {x})")
-        return {"success": True} if wait else None
+        return None if wait else f"mock-task-{len(self.action)}"
 
     async def kick_member(self, user_id, reason=None):
         if isinstance(user_id, str):
@@ -156,7 +157,7 @@ class MockMessageSession(MessageSession):
         for uid in user_ids:
             for group_id in permission_group_ids:
                 self.action.append(f"(grant permission group {group_id} to {uid}{f': {reason}' if reason else ''})")
-        return {"success": True} if wait else None
+        return None if wait else f"mock-task-{len(self.action)}"
 
     async def revoke_permission_group(self, user_id, permission_group_id, reason=None, wait=False):
         user_ids = [user_id] if isinstance(user_id, str) else user_id
@@ -164,7 +165,7 @@ class MockMessageSession(MessageSession):
         for uid in user_ids:
             for group_id in permission_group_ids:
                 self.action.append(f"(revoke permission group {group_id} from {uid}{f': {reason}' if reason else ''})")
-        return {"success": True} if wait else None
+        return None if wait else f"mock-task-{len(self.action)}"
 
     async def add_reaction(self, emoji):
         self.action.append(f"(add reaction {emoji})")
@@ -174,6 +175,28 @@ class MockMessageSession(MessageSession):
 
     async def check_native_permission(self):
         return True
+
+    async def check_bot_state(self) -> BotState:
+        """Provide deterministic platform-state data to modules under the test parser."""
+        info = self.session_info
+        return BotState(
+            available=True,
+            joined=True,
+            is_owner=True,
+            is_admin=True,
+            can_read_messages=True,
+            can_read_all_messages=info.read_all_messages,
+            can_send_messages=True,
+            can_send_proactive_messages=True,
+            can_manage_messages=info.support_manage,
+            can_manage_members=info.support_manage,
+            can_restrict_members=info.support_manage,
+            can_react=info.support_reaction,
+            can_send_private_messages=info.support_private_msg,
+            raw={"platform": "test"},
+        )
+
+    checkBotState = check_bot_state
 
     async def handle_error_signal(self):
         pass
@@ -342,7 +365,7 @@ class MockMessageSession(MessageSession):
         if message_chain:
             message_chain = get_message_chain(self.session_info, message_chain)
             if append_instruction:
-                message_chain.append(I18NContext("message.reply.prompt"))
+                message_chain.append(I18NContext("message.wait.reply.prompt"))
             await self.send_message(message_chain, quote)
             confirm_prompt = "\n".join(
                 [x.text if isinstance(x, PlainElement) else str(x) for x in message_chain.as_sendable()]

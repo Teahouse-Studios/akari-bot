@@ -55,6 +55,8 @@ async def _query_with_invalid_wiki(inline_mode: bool) -> dict:
     with (
         patch.object(WikiLib, "parse_page_info", new=AsyncMock(side_effect=InvalidWikiError(INVALID_IW_MESSAGE))),
         patch("modules.wiki.wiki.WikiTargetInfo.get_by_target_id", new=AsyncMock(return_value=target_stub)),
+        patch.object(MessageSession, "hold", new=AsyncMock()),
+        patch.object(MessageSession, "release", new=AsyncMock()),
         patch.object(MessageSession, "send_message", new=_send_message),
     ):
         try:

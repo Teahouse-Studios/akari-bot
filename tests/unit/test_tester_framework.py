@@ -8,6 +8,9 @@ mock 未同步，模块代码会在测试中抛出 TypeError，且失败信息�
 import inspect
 import re
 import asyncio
+import sys
+import types
+from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
 from core.builtins.session.internal import MessageSession
@@ -139,11 +142,14 @@ async def _test_integrate_expected_exception_is_not_runner_error():
 
 
 async def _test_function_entry_timeout_is_structured_failure():
-    """挂起的 func_case 应超时返回，不能阻塞整个测试列表。"""
+    """无进展的 func_case 应超时返回，不能阻塞整个测试列表。"""
     from core.tester.process import run_function_entry
 
-    async def slow(_tester):
-        await asyncio.sleep(1)
+    async def stuck():
+        await asyncio.Event().wait()
+
+    async def slow(tester):
+        await tester.test(stuck, "卡住的子测试")
 
     with (
         patch("core.tester.process.close_db", new=AsyncMock()),
@@ -151,7 +157,335 @@ async def _test_function_entry_timeout_is_structured_failure():
         patch("core.tester.process.load_modules", new=AsyncMock()),
     ):
         result = await run_function_entry(slow, is_ci=True, timeout=0.01)
-    return result.get("timeout") is True and result.get("timeout_limit") == 0.01
+    return (
+        result.get("timeout") is True
+        and result.get("timeout_limit") == 0.01
+        and result.get("active_test") == "卡住的子测试"
+        and result.get("completed_tests") == 0
+    )
+
+
+async def _test_function_entry_timeout_resets_on_progress():
+    """func_case 持续完成子测试时，总耗时超过单次超时仍应通过。"""
+    from core.tester.process import run_function_entry
+
+    async def step():
+        await asyncio.sleep(0.02)
+        return True
+
+    async def progressing(tester):
+        for _ in range(12):
+            await tester.test(step)
+        return tester
+
+    with (
+        patch("core.tester.process.close_db", new=AsyncMock()),
+        patch("core.tester.process.init_db", new=AsyncMock(return_value=True)),
+        patch("core.tester.process.load_modules", new=AsyncMock()),
+    ):
+        result = await run_function_entry(progressing, is_ci=True, timeout=0.2)
+    return not result.get("timeout") and all(entry.get("match") for entry in result.get("results", []))
+
+
+async def _test_protocol_exception_is_recorded_without_stopping_function_test():
+    """业务控制流异常应记录为失败，入口异常也必须有界清理。"""
+    from core.constants import WaitCancelException
+    from core.tester.process import run_function_entry
+
+    async def cancelled_wait():
+        raise WaitCancelException
+
+    async def fine():
+        return True
+
+    async def mixed(tester):
+        await tester.test(cancelled_wait, "等待取消")
+        await tester.test(fine, "后续测试")
+        return tester
+
+    orphan_cancelled = asyncio.Event()
+    orphan_started = asyncio.Event()
+    orphan_task = {}
+
+    async def orphan():
+        try:
+            orphan_started.set()
+            await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            orphan_cancelled.set()
+            raise
+
+    async def unhandled_protocol_exception(_tester):
+        orphan_task["task"] = asyncio.create_task(orphan(), name="test-protocol-exception-orphan")
+        await orphan_started.wait()
+        raise WaitCancelException
+
+    try:
+        with (
+            patch("core.tester.process.close_db", new=AsyncMock()),
+            patch("core.tester.process.init_db", new=AsyncMock(return_value=True)),
+            patch("core.tester.process.load_modules", new=AsyncMock()),
+        ):
+            result = await run_function_entry(mixed, is_ci=True)
+            unhandled_result = await run_function_entry(unhandled_protocol_exception, is_ci=True)
+
+        results = result.get("results", [])
+        task = orphan_task.get("task")
+        return (
+            not result.get("error")
+            and len(results) == 2
+            and results[0].get("match") is False
+            and results[0].get("exception_type") == "WaitCancelException"
+            and results[1].get("match") is True
+            and unhandled_result.get("error")
+            and unhandled_result.get("cleanup_pending") is False
+            and task is not None
+            and task.done()
+            and task.cancelled()
+            and orphan_cancelled.is_set()
+        )
+    finally:
+        task = orphan_task.get("task")
+        if task is not None and not task.done():
+            task.cancel()
+        if task is not None:
+            await asyncio.gather(task, return_exceptions=True)
+
+
+async def _test_function_entries_cancel_orphaned_tasks_before_reinitializing_database():
+    """func_case 收尾必须回收遗留任务，避免它们使用上一轮数据库连接。"""
+    from core.tester.process import _cancel_orphan_tasks
+
+    cancelled = asyncio.Event()
+
+    async def orphan():
+        try:
+            await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            cancelled.set()
+            raise
+
+    baseline = set(asyncio.all_tasks())
+    task = asyncio.create_task(orphan(), name="test-orphaned-function-entry-task")
+    await asyncio.sleep(0)
+    return await _cancel_orphan_tasks(baseline) and task.cancelled() and cancelled.is_set()
+
+
+async def _test_case_entry_cancels_orphaned_tasks_before_next_database_context():
+    """注册表用例也必须回收任务，避免 action 持有上一轮数据库连接。"""
+    from core.tester.process import run_case_entry
+
+    cancelled = asyncio.Event()
+    orphan_task = None
+
+    async def orphan():
+        try:
+            await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            cancelled.set()
+            raise
+
+    async def fake_run_test_case(*_args, **_kwargs):
+        nonlocal orphan_task
+        orphan_task = asyncio.create_task(orphan(), name="test-orphaned-case-entry-task")
+        await asyncio.sleep(0)
+        return {"input": "~case", "output": [], "action": [], "expected": None}
+
+    entry = {
+        "func": lambda _msg: None,
+        "input": "~case",
+        "expected": None,
+        "note": None,
+        "timeout": None,
+        "file": None,
+        "line": 0,
+    }
+    with (
+        patch("core.tester.process.close_db", new=AsyncMock()),
+        patch("core.tester.process.init_db", new=AsyncMock(return_value=True)),
+        patch("core.tester.process.load_modules", new=AsyncMock()),
+        patch("core.tester.process.run_test_case", new=fake_run_test_case),
+    ):
+        await run_case_entry(entry, is_ci=True)
+    return orphan_task is not None and orphan_task.cancelled() and cancelled.is_set()
+
+
+async def _test_progress_notifications_coalesce_to_latest_revision():
+    """连续完成的子测试应保留最新进度，但不能作为旧通知反复重置 watchdog。"""
+    tester = Tester("progress_queue")
+    revision = tester._progress_revision
+    tester._notify_progress()
+    tester._notify_progress()
+    observed = await asyncio.wait_for(tester._wait_for_progress(revision), timeout=0.1)
+    return observed == revision + 2
+
+
+async def _test_function_entry_bounds_cancellation_cleanup():
+    """子测试延迟响应取消时，watchdog 也必须在固定时间内返回。"""
+    from core.tester.process import run_function_entry
+
+    cleanup_started = asyncio.Event()
+    release_cleanup = asyncio.Event()
+
+    async def stuck_after_cancel():
+        try:
+            await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            cleanup_started.set()
+            await release_cleanup.wait()
+
+    async def stubborn(tester):
+        await tester.test(stuck_after_cancel, "延迟取消的子测试")
+
+    try:
+        with (
+            patch("core.tester.process.close_db", new=AsyncMock()),
+            patch("core.tester.process.init_db", new=AsyncMock(return_value=True)),
+            patch("core.tester.process.load_modules", new=AsyncMock()),
+            patch("core.tester.process.FUNCTION_TEST_CANCEL_TIMEOUT", 0.01),
+        ):
+            result = await asyncio.wait_for(run_function_entry(stubborn, is_ci=True, timeout=0.01), timeout=0.1)
+        return result.get("timeout") is True and result.get("cleanup_pending") is True and cleanup_started.is_set()
+    finally:
+        release_cleanup.set()
+        await asyncio.sleep(0)
+
+
+async def _test_cancelled_progress_waiter_does_not_reset_deadline():
+    """外部取消进度等待器不能冒充子测试完成并无限刷新 watchdog。"""
+    from core.tester.process import run_function_entry
+
+    async def cancelled_waiter(_self, _after_revision):
+        raise asyncio.CancelledError
+
+    async def stuck(_tester):
+        await asyncio.Event().wait()
+
+    with (
+        patch("core.tester.process.close_db", new=AsyncMock()),
+        patch("core.tester.process.init_db", new=AsyncMock(return_value=True)),
+        patch("core.tester.process.load_modules", new=AsyncMock()),
+        patch.object(Tester, "_wait_for_progress", new=cancelled_waiter),
+    ):
+        result = await asyncio.wait_for(run_function_entry(stuck, is_ci=True, timeout=0.01), timeout=0.1)
+    return result.get("timeout") is True and result.get("cleanup_pending") is False
+
+
+async def _test_unit_subtest_exception_keeps_running_and_counts_once():
+    """unit 子测试抛异常应记录后继续跑后续子测试，runner 只计一次失败。"""
+    import tester as tester_module
+
+    async def boom():
+        raise RuntimeError("unit boom")
+
+    async def fine():
+        return True
+
+    from core.tester.decorator import func_case as _fc
+
+    @_fc
+    async def mixed(tester):
+        await tester.test(boom, "失败子测试")
+        await tester.test(fine, "成功子测试")
+        return tester
+
+    with (
+        patch("core.tester.process.close_db", new=AsyncMock()),
+        patch("core.tester.process.init_db", new=AsyncMock(return_value=True)),
+        patch("core.tester.process.load_modules", new=AsyncMock()),
+    ):
+        from core.tester.process import run_function_entry
+
+        res = await run_function_entry(mixed, is_ci=True)
+
+    class FakeSuite:
+        def __init__(self, name):
+            self.name = name
+            self.test_cases = []
+
+        def add_testcase(self, tc):
+            self.test_cases.append(tc)
+
+    func_suite = FakeSuite("Function Tests")
+    registry_suite = FakeSuite("Registry Tests")
+
+    class _NullLogger:
+        def __getattr__(self, name):
+            return lambda *args, **kwargs: None
+
+    fake_spec = types.SimpleNamespace(
+        name="tests__fake_case",
+        loader=types.SimpleNamespace(exec_module=lambda mod: None),
+    )
+    original_modules = dict(sys.modules)
+
+    with (
+        patch.object(tester_module, "Logger", _NullLogger()),
+        patch.object(tester_module, "init_db", new=AsyncMock(return_value=True)),
+        patch.object(tester_module, "close_db", new=AsyncMock()),
+        patch.object(tester_module, "load_modules", new=AsyncMock()),
+        patch.object(tester_module, "get_registry", return_value=[]),
+        patch.object(tester_module, "run_function_entry", new=AsyncMock(return_value=res)),
+        patch.object(tester_module.glob, "glob", return_value=[str(Path("tests/unit/_fake_case.py"))]),
+        patch.object(tester_module.importlib.util, "spec_from_file_location", return_value=fake_spec),
+        patch.object(tester_module, "junit_func_suite", func_suite),
+        patch.object(tester_module, "junit_registry_suite", registry_suite),
+        patch.object(tester_module, "junit_report") as junit_report,
+        patch.object(tester_module.os.path, "isdir", return_value=True),
+        patch.object(tester_module.importlib.util, "module_from_spec", return_value=types.SimpleNamespace()),
+    ):
+        sys.modules.clear()
+        sys.modules.update(original_modules)
+        junit_report.test_suites = []
+        fake_inspect = types.SimpleNamespace(
+            getmembers=lambda mod, predicate=None: [("mixed", mixed)],
+            isfunction=lambda obj: obj is mixed,
+        )
+        await tester_module.main(inspect_module=fake_inspect)
+
+    names = [tc.name for tc in func_suite.test_cases]
+    failed_cases = [tc for tc in func_suite.test_cases if tc.failure or tc.error]
+    checks = {
+        "exception_recorded": res["results"][0].get("exception_type") == "RuntimeError",
+        "kept_running": len(res["results"]) == 2 and res["results"][1].get("match") is True,
+        "two_cases": len(func_suite.test_cases) == 2,
+        "no_double_count": len(failed_cases) == 2,
+        "subtest_named": any("失败子测试" in name for name in names),
+    }
+    if not all(checks.values()):
+        raise AssertionError(
+            f"runner accounting regression: {checks}; "
+            f"cases={[(tc.name, bool(tc.failure), bool(tc.error)) for tc in func_suite.test_cases]}"
+        )
+    return True
+
+
+async def _test_function_entry_does_not_misclassify_test_timeout():
+    """子测试自身的 TimeoutError 应保留堆栈，不能冒充 runner 无进展超时。"""
+    from core.tester.process import run_function_entry
+
+    async def inner_timeout():
+        raise TimeoutError("inner deadline")
+
+    async def timed_test(tester):
+        await tester.test(inner_timeout, "内部超时")
+        return tester
+
+    with (
+        patch("core.tester.process.close_db", new=AsyncMock()),
+        patch("core.tester.process.init_db", new=AsyncMock(return_value=True)),
+        patch("core.tester.process.load_modules", new=AsyncMock()),
+    ):
+        result = await run_function_entry(timed_test, is_ci=True, timeout=0.2)
+    (subtest,) = result.get("results", [])
+    return (
+        not result.get("timeout")
+        and subtest.get("match") is False
+        and subtest.get("exception_type") == "TimeoutError"
+        and "inner deadline" in subtest.get("exception_message", "")
+        and "inner deadline" in subtest.get("traceback", "")
+        and subtest.get("note") == "内部超时"
+    )
 
 
 async def _test_function_entry_init_failure_is_error():
@@ -182,6 +516,30 @@ async def test_tester_framework(tester: Tester):
     await tester.test(_test_integrate_preserves_unexpected_exception, "func_case 保留非预期异常测试")
     await tester.test(_test_integrate_expected_exception_is_not_runner_error, "func_case 预期异常匹配测试")
     await tester.test(_test_function_entry_timeout_is_structured_failure, "func_case 超时结构化失败测试")
+    await tester.test(_test_function_entry_timeout_resets_on_progress, "func_case 超时按进展刷新测试")
+    await tester.test(
+        _test_protocol_exception_is_recorded_without_stopping_function_test,
+        "业务控制流异常不终止 func_case 测试",
+    )
+    await tester.test(
+        _test_function_entries_cancel_orphaned_tasks_before_reinitializing_database,
+        "func_case 之间回收遗留任务测试",
+    )
+    await tester.test(
+        _test_case_entry_cancels_orphaned_tasks_before_next_database_context,
+        "注册表用例之间回收遗留任务测试",
+    )
+    await tester.test(
+        _test_progress_notifications_coalesce_to_latest_revision,
+        "连续进度通知合并到最新版本测试",
+    )
+    await tester.test(_test_function_entry_bounds_cancellation_cleanup, "func_case 取消收尾有界测试")
+    await tester.test(
+        _test_cancelled_progress_waiter_does_not_reset_deadline,
+        "进度等待器取消不刷新 watchdog 测试",
+    )
+    await tester.test(_test_unit_subtest_exception_keeps_running_and_counts_once, "unit 子测试异常续跑且计数一次测试")
+    await tester.test(_test_function_entry_does_not_misclassify_test_timeout, "子测试超时不冒充 runner 超时测试")
     await tester.test(_test_function_entry_init_failure_is_error, "func_case 初始化错误不可跳过测试")
 
     return tester

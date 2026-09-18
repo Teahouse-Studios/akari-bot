@@ -581,7 +581,7 @@ async def _test_group_typing_preuploads_emote_immediately() -> bool:
         Logger.error(f"Typing emote should be uploaded exactly once, got {client.upload_kwargs}")
         return False
     _, _, kwargs = client.upload_kwargs[0]
-    if kwargs != {"local_path": str(TYPING_EMOTES[0])}:
+    if kwargs != {"local_path": str(TYPING_EMOTES[0]), "srv_send_msg": False}:
         Logger.error(f"Unexpected typing emote upload payload: {kwargs}")
         return False
     return True
@@ -731,7 +731,10 @@ async def _test_not_marked_while_converting_image() -> bool:
     if any(sending or spoken for sending, spoken in observed):
         Logger.error("Image reading and upload_media must finish before entering the send stage")
         return False
-    if len(ctx.client.upload_kwargs) != 1 or ctx.client.upload_kwargs[0][2] != {"local_path": "fake.png"}:
+    if len(ctx.client.upload_kwargs) != 1 or ctx.client.upload_kwargs[0][2] != {
+        "local_path": "fake.png",
+        "srv_send_msg": False,
+    }:
         Logger.error(f"Image preparation should call upload_media once, got {ctx.client.upload_kwargs}")
         return False
     if ctx.client.send_kwargs != [{"content": None, "msg_type": 7, "media": {"file_info": "uploaded-1"}}]:

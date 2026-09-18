@@ -2,7 +2,13 @@
 # NOTE: TOML is not like Python. Do not use Python syntax here.
 # EXAMPLE: Boolean values in TOML must be lowercase.
 
+[module_maimai]
+# The basic config section of the module. The values entered here can be displayed in the message. Please do not enter sensitive information in this section.
+diving_fish_client_id = "<Replace me with str value>"
+lxns_client_id = "<Replace me with str value>"
+
 [module_maimai_secret]
 # The secret config section of the module. The bot will try to intercept if the values here accidentally appears in the message sent, but be careful to prevent leakage.
-diving_fish_developer_token = "<Replace me with str value>" # Diving Fish 查分器的开发者令牌。
+diving_fish_client_secret = "<Replace me with str value>" # 水鱼账号 OAuth 应用的 client_secret。公开客户端可留空。
 lxns_developer_token = "<Replace me with str value>" # 落雪咖啡屋查分器的开发者令牌。
+lxns_client_secret = "<Replace me with str value>" # 落雪咖啡屋 OAuth 应用的 client_secret。

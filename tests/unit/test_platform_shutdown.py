@@ -11,13 +11,27 @@ import discord
 import bots.discord.client as discord_client
 import bots.discord.context as discord_context
 import bots.discord.slash_context as discord_slash_context
-import bots.matrix.bot as matrix_bot_module
-import bots.onebot.bot as onebot_bot_module
 import bots.onebot.context as onebot_context
-import bots.qqbot.bot as qqbot_bot_module
 import bots.web.client as web_client
 from bots.qqbot.context import _MessageSendQueue, _PreparedMessage, _QueuedMessage, _TypingState
+from core.queue.contracts import ServerAPI
 from core.tester import Tester, func_case
+from core.tester.timing import TIME_SCALE
+from bots.matrix.config import MatrixConfig
+from bots.onebot.config import AiocqhttpConfig
+from bots.qqbot.config import QQBotConfig
+from bots.telegram.config import AiogramConfig
+
+# Adapter modules register handlers on import; local enabled credentials must
+# never turn an isolated lifecycle test into a live platform connection.
+with (
+    patch.object(MatrixConfig, "enable", False),
+    patch.object(AiocqhttpConfig, "enable", False),
+    patch.object(QQBotConfig, "enable", False),
+):
+    import bots.matrix.bot as matrix_bot_module
+    import bots.onebot.bot as onebot_bot_module
+    import bots.qqbot.bot as qqbot_bot_module
 
 
 async def _run_web_lifespan(raise_inside: bool) -> bool:
@@ -75,7 +89,7 @@ async def _test_matrix_sync_failure_cleans_up_client():
         patch.object(matrix_bot_module.client, "megolm_backup_passphrase", new=""),
         patch.object(matrix_bot_module, "client_init", new=AsyncMock()),
         patch.object(matrix_bot_module, "client_cleanup", new=client_cleanup),
-        patch.object(matrix_bot_module.JobQueueClient, "get_bot_version", new=AsyncMock(return_value="test")),
+        patch.object(ServerAPI, "get_bot_version", new=AsyncMock(return_value="test")),
         patch.object(matrix_bot, "olm", new=None),
         patch.object(matrix_bot, "add_response_callback", new=MagicMock()),
         patch.object(matrix_bot, "add_event_callback", new=MagicMock()),
@@ -143,7 +157,10 @@ async def _test_matrix_runner_closes_event_loop():
 
 
 async def _test_telegram_shutdown_cleans_core_client():
-    with patch("aiogram.client.bot.validate_token", return_value=None):
+    with (
+        patch("aiogram.client.bot.validate_token", return_value=None),
+        patch.object(AiogramConfig, "enable", False),
+    ):
         telegram_bot_module = importlib.import_module("bots.telegram.bot")
     try:
         if not hasattr(telegram_bot_module, "on_shutdown") or not hasattr(telegram_bot_module, "client_cleanup"):
@@ -195,7 +212,7 @@ async def _test_onebot_shutdown_releases_typing_tasks_and_cache():
     try:
         with patch.object(onebot_context.aiocqhttp_bot, "call_action", new=call_action):
             await context_manager.start_typing(session_info)
-            await asyncio.wait_for(action_started.wait(), timeout=1)
+            await asyncio.wait_for(action_started.wait(), timeout=1 * TIME_SCALE)
 
         typing_flag = context_manager.typing_flags.get(session_id)
         typing_task = context_manager.typing_tasks.get(session_id)
@@ -346,7 +363,7 @@ async def _test_qqbot_close_releases_adapter_tasks_and_waiters():
     context_manager.typing_tasks[session_id] = typing_task
     context_manager.message_send_queues[queue_key] = queue
     queue.worker = asyncio.create_task(context_manager._process_message_send_queue(queue_key, queue))
-    await asyncio.wait_for(send_started.wait(), timeout=1)
+    await asyncio.wait_for(send_started.wait(), timeout=1 * TIME_SCALE)
 
     cleanup = AsyncMock()
     stop_worker = AsyncMock()

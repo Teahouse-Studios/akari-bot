@@ -3,7 +3,7 @@ import orjson
 from core.builtins.bot import Bot
 from core.builtins.message.internal import Embed, EmbedField, Image, Url, I18NContext
 from core.utils.func import truncate_text
-from core.web_render import web_render, SourceOptions
+from core.utils.web_render import web_render, SourceOptions
 
 DESC_LENGTH = 100
 
@@ -35,7 +35,7 @@ async def get_video_info(msg: Bot.MessageSession, query, get_detail=False, use_e
     title = view.get("title", "")
     tname = view.get("tname", "")
     desc = truncate_text(view.get("desc", ""), DESC_LENGTH)
-    time = msg.format_time(view.get("pubdate", 0), iso=True, timezone=False)
+    time = msg.format_time(view.get("pubdate", 0), simple=True, timezone=False)
 
     pages = view.get("pages", [])
     if len(pages) > 1:

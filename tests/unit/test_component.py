@@ -101,6 +101,28 @@ def _test_module_command_matches_init():
         return False
 
 
+def _test_module_bot_permission_requirements():
+    """模块应合并声明权限与 event/regex/rss 的隐含权限。"""
+    try:
+        m = Module.assign(
+            module_name="test_mod",
+            alias=None,
+            recommend_modules=None,
+            developers=None,
+            event=True,
+            rss=True,
+            required_bot_permissions="can_manage_members",
+        )
+        return (
+            m.required_bot_permissions == ["can_manage_members"]
+            and m.bot_permissions_for_enable()
+            == ["can_manage_members", "can_read_all_messages", "can_send_proactive_messages"]
+            and m.to_dict()["required_bot_permissions"] == ["can_manage_members"]
+        )
+    except Exception:
+        return False
+
+
 def _test_module_regex_matches_init():
     """Module: regex_list 应初始化为空"""
     try:
@@ -121,6 +143,7 @@ async def test_component(tester: Tester):
     await tester.test(_test_module_assign_flags, "Module.assign 标志位测试")
     await tester.test(_test_module_assign_available_for, "Module.assign available_for 测试")
     await tester.test(_test_module_to_dict, "Module.to_dict 测试")
+    await tester.test(_test_module_bot_permission_requirements, "Module 机器人权限需求测试")
     await tester.test(_test_module_command_matches_init, "Module command_list 初始化测试")
     await tester.test(_test_module_regex_matches_init, "Module regex_list 初始化测试")
     return tester

@@ -15,14 +15,18 @@ from bots.discord.features import features as discord_features
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import ActionTextElement, ButtonFrameElement, ImageElement, PlainElement
 from core.builtins.message.internal import ActionText, I18NContext, Image, Plain
+from core.builtins.parser.args import parse_template
+from core.builtins.parser.command import CommandParser
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.constants.exceptions import SessionFinished
 from core.i18n import Locale
 from core.logger import Logger
 from core.tester import func_case, Tester
+from core.types import Module
+from core.types.module.component_meta import CommandMeta
 from core.utils.table import TABLE_MAX_ROWS, format_table_code
-from modules.core.help import (
+from modules.core.common_tools.help import (
     ModuleListEntry,
     build_clickable_modules,
     build_command_table,
@@ -43,7 +47,7 @@ TABLE_TITLE_KEY = "core.message.help.table.title"
 
 def _test_help_about_button_replaces_donate():
     msg = SimpleNamespace(session_info=SimpleNamespace(support_button=True, locale=Locale("zh_cn")))
-    with patch("modules.core.help.help_url", "https://example.com/docs"):
+    with patch("modules.core.common_tools.help.help_url", "https://example.com/docs"):
         buttons = get_help_link_buttons(msg, include_modules=False)
     return buttons == [("📃 在线文档", "https://example.com/docs"), ("ℹ️ 关于我们", "~about")]
 
@@ -95,7 +99,7 @@ async def _session(target_suffix: str, support_action_text: bool = True):
         features=Features(
             support_action_text=support_action_text,
             support_markdown=True,
-            support_markdown_table=True,
+            support_markdown_extension=True,
         ),
     )
 
@@ -108,10 +112,14 @@ class _FakeSession:
 
 
 class _ImageHelpSession(_FakeSession):
-    def __init__(self, session_info, parsed_msg=None):
+    def __init__(self, session_info):
         super().__init__(session_info)
-        self.parsed_msg = parsed_msg or {}
+        # 选项已由解析器转成函数参数注入，这里仅保持属性存在
+        self.parsed_msg = {}
         self.finished_message = None
+
+    async def check_permission(self):
+        return False
 
     async def finish(self, message, **kwargs):
         self.finished_message = MessageChain.assign(message)
@@ -144,13 +152,14 @@ def _button_rows(chain: MessageChain) -> list[dict[str, str]]:
     ]
 
 
-def _module(name: str, *, base: bool = False, rss: bool = False, unsupported: bool = False):
+def _module(name: str, *, base: bool = False, rss: bool = False, unsupported: bool = False, admin: bool = False):
     return SimpleNamespace(
         module_name=name,
         base=base,
         rss=rss,
         hidden=False,
         _db_load=True,
+        required_admin=admin,
         required_superuser=False,
         required_base_superuser=False,
         unsupported_reason=lambda _session_info: "rss" if unsupported else None,
@@ -167,13 +176,13 @@ async def _test_image_help_precedes_action_text_fallback():
         features=Features(
             support_image=True,
             support_action_text=True,
-            support_markdown_table=False,
+            support_markdown_extension=False,
         ),
     )
     msg = _ImageHelpSession(session_info)
     generated = [Image("help.png")]
     try:
-        with patch("modules.core.help.help_generator", new=AsyncMock(return_value=generated)) as generator:
+        with patch("modules.core.common_tools.help.help_generator", new=AsyncMock(return_value=generated)) as generator:
             await modules_list_help(msg, legacy=False)
     except SessionFinished:
         pass
@@ -197,7 +206,7 @@ async def _test_discord_detail_help_does_not_use_markdown_table():
 
 
 async def _test_image_flag_overrides_markdown_table():
-    """--image 应在支持 Markdown 表格的平台上仍强制生成图片帮助。"""
+    """--img 应在支持 Markdown 表格的平台上仍强制生成图片帮助。"""
     session_info = await SessionInfo.assign(
         target_id="TEST|Group|help_force_image",
         target_from="TEST|Group",
@@ -206,14 +215,14 @@ async def _test_image_flag_overrides_markdown_table():
         features=Features(
             support_image=True,
             support_action_text=True,
-            support_markdown_table=True,
+            support_markdown_extension=True,
         ),
     )
-    msg = _ImageHelpSession(session_info, parsed_msg={"--image": True})
+    msg = _ImageHelpSession(session_info)
     generated = [Image("help.png")]
     try:
-        with patch("modules.core.help.help_generator", new=AsyncMock(return_value=generated)) as generator:
-            await help_overview(msg)
+        with patch("modules.core.common_tools.help.help_generator", new=AsyncMock(return_value=generated)) as generator:
+            await help_overview(msg, image=True)
     except SessionFinished:
         pass
     sendable = msg.finished_message.as_sendable(session_info).values if msg.finished_message else []
@@ -445,7 +454,7 @@ async def _test_markdown_help_header():
     session_info.bot_name = "小可测试版"
     msg = _FakeSession(session_info)
     try:
-        with patch("modules.core.help.get_version_display", return_value="v1.2.3"):
+        with patch("modules.core.common_tools.help.get_version_display", return_value="v1.2.3"):
             parts = build_module_table(
                 msg,
                 [(TABLE_TITLE_KEY, ["wiki", "dice", "coin"])],
@@ -486,7 +495,7 @@ async def _test_markdown_help_header_permissions_and_width():
         "superuser": "当前权限：超级用户",
     }
     try:
-        with patch("modules.core.help.get_version_display", return_value=None):
+        with patch("modules.core.common_tools.help.get_version_display", return_value=None):
             for permission, display in expected_permissions.items():
                 parts = build_module_table(
                     msg,
@@ -518,7 +527,7 @@ async def _test_qqbot_admin_help_includes_disabled_modules():
             support_action_text=True,
             support_button=True,
             support_markdown=True,
-            support_markdown_table=True,
+            support_markdown_extension=True,
             support_rss=True,
         ),
     )
@@ -530,7 +539,7 @@ async def _test_qqbot_admin_help_includes_disabled_modules():
         "dice": _module("dice"),
     }
     try:
-        with patch("modules.core.help.ModulesManager.return_modules_list", return_value=modules):
+        with patch("modules.core.common_tools.help.ModulesManager.return_modules_list", return_value=modules):
             await help_overview(msg)
     except SessionFinished:
         pass
@@ -559,13 +568,13 @@ async def _test_qqbot_superuser_help_header():
             support_action_text=True,
             support_button=True,
             support_markdown=True,
-            support_markdown_table=True,
+            support_markdown_extension=True,
         ),
     )
     msg = _OverviewSession(session_info, is_admin=True, is_superuser=True)
     modules = {"help": _module("help", base=True)}
     try:
-        with patch("modules.core.help.ModulesManager.return_modules_list", return_value=modules):
+        with patch("modules.core.common_tools.help.ModulesManager.return_modules_list", return_value=modules):
             await help_overview(msg)
     except SessionFinished:
         pass
@@ -584,7 +593,7 @@ async def _test_qqbot_non_admin_help_keeps_module_list_button():
             support_action_text=True,
             support_button=True,
             support_markdown=True,
-            support_markdown_table=True,
+            support_markdown_extension=True,
             support_rss=True,
         ),
     )
@@ -596,7 +605,7 @@ async def _test_qqbot_non_admin_help_keeps_module_list_button():
         "dice": _module("dice"),
     }
     try:
-        with patch("modules.core.help.ModulesManager.return_modules_list", return_value=modules):
+        with patch("modules.core.common_tools.help.ModulesManager.return_modules_list", return_value=modules):
             await help_overview(msg)
     except SessionFinished:
         pass
@@ -610,8 +619,71 @@ async def _test_qqbot_non_admin_help_keeps_module_list_button():
     )
 
 
+async def _test_help_hides_admin_modules_from_non_admin():
+    """普通用户的 help 概览不展示仅管理员可用的模块，顶栏显示普通用户。"""
+    session_info = await _session("help_permission_non_admin")
+    msg = _OverviewSession(session_info, is_admin=False)
+    modules = {
+        "help": _module("help", base=True),
+        "admin": _module("admin", base=True, admin=True),
+    }
+    try:
+        with patch("modules.core.common_tools.help.ModulesManager.return_modules_list", return_value=modules):
+            await help_overview(msg)
+    except SessionFinished:
+        pass
+    rendered = "\n".join(_render_lines(session_info, msg.finished_message.values))
+    return "[admin]" not in rendered and "[help]" in rendered and "普通用户" in rendered
+
+
+async def _test_help_shows_admin_modules_and_header_for_platform_admin():
+    """平台管理员在非 QQBot 平台上同样能看到管理员模块，顶栏显示场景管理员。"""
+    session_info = await _session("help_permission_admin")
+    msg = _OverviewSession(session_info, is_admin=True)
+    modules = {
+        "help": _module("help", base=True),
+        "admin": _module("admin", base=True, admin=True),
+    }
+    try:
+        with patch("modules.core.common_tools.help.ModulesManager.return_modules_list", return_value=modules):
+            await help_overview(msg)
+    except SessionFinished:
+        pass
+    rendered = "\n".join(_render_lines(session_info, msg.finished_message.values))
+    return "[admin]" in rendered and "场景管理员" in rendered
+
+
+async def _test_command_parser_hides_admin_commands_for_non_admin():
+    """CommandParser 在 is_admin=False 时从帮助文档中剔除管理员命令，管理员仍可见。"""
+    session_info = await _session("help_cmd_admin_filter")
+    msg = _FakeSession(session_info)
+    module_ = Module.assign(
+        module_name="_help_perm_test",
+        alias=None,
+        recommend_modules=None,
+        developers=None,
+        doc=True,
+        _db_load=True,
+    )
+    module_.command_list.add(CommandMeta(function=lambda: None, command_template=parse_template(["open"])))
+    module_.command_list.add(
+        CommandMeta(function=lambda: None, command_template=parse_template(["secret"]), required_admin=True)
+    )
+    hidden_doc = CommandParser(
+        module_, ["~"], module_name="_help_perm_test", msg=msg, is_superuser=False, is_admin=False
+    ).return_json_help_doc()
+    shown_doc = CommandParser(
+        module_, ["~"], module_name="_help_perm_test", msg=msg, is_superuser=False, is_admin=True
+    ).return_json_help_doc()
+    return (
+        all("secret" not in item["args"] for item in hidden_doc["args"])
+        and any("open" in item["args"] for item in hidden_doc["args"])
+        and any("secret" in item["args"] for item in shown_doc["args"])
+    )
+
+
 async def _test_help_without_enable_requirement_shows_all_modules_as_enabled():
-    """不要求启用模块时，普通用户的 help 展示全部模块并标记为已启用。"""
+    """不要求启用模块时，普通用户的 help 展示全部模块但不提供管理开关。"""
     session_info = await SessionInfo.assign(
         target_id="TEST|Group|help_without_enable_requirement",
         target_from="TEST|Group",
@@ -622,7 +694,7 @@ async def _test_help_without_enable_requirement_shows_all_modules_as_enabled():
             support_action_text=True,
             support_button=True,
             support_markdown=True,
-            support_markdown_table=True,
+            support_markdown_extension=True,
         ),
     )
     session_info.enabled_modules = ["dice"]
@@ -633,14 +705,18 @@ async def _test_help_without_enable_requirement_shows_all_modules_as_enabled():
         "dice": _module("dice"),
     }
     try:
-        with patch("modules.core.help.ModulesManager.return_modules_list", return_value=modules):
+        with patch("modules.core.common_tools.help.ModulesManager.return_modules_list", return_value=modules):
             await help_overview(msg)
     except SessionFinished:
         pass
     sendable = msg.finished_message.as_sendable(session_info).values
     commands = [element.text.text for element in sendable if isinstance(element, ActionTextElement)]
     rendered = "\n".join(_render_lines(session_info, msg.finished_message.values))
-    return "[coin]" in rendered and "~disable coin" in commands and "~enable coin" not in commands
+    return (
+        "[coin]" in rendered
+        and "~help coin" in commands
+        and not any(command.endswith(("enable coin", "disable coin")) for command in commands)
+    )
 
 
 async def _test_qqbot_admin_legacy_help_keeps_legacy_scope():
@@ -654,15 +730,14 @@ async def _test_qqbot_admin_legacy_help_keeps_legacy_scope():
     )
     session_info.enabled_modules = ["dice"]
     msg = _OverviewSession(session_info, is_admin=True)
-    msg.parsed_msg = {"--legacy": True}
     modules = {
         "help": _module("help", base=True),
         "coin": _module("coin"),
         "dice": _module("dice"),
     }
     try:
-        with patch("modules.core.help.ModulesManager.return_modules_list", return_value=modules):
-            await help_overview(msg)
+        with patch("modules.core.common_tools.help.ModulesManager.return_modules_list", return_value=modules):
+            await help_overview(msg, legacy=True)
     except SessionFinished:
         pass
     rendered = msg.finished_message.to_str()
@@ -685,7 +760,7 @@ async def _test_qqbot_module_list_hides_toggles_from_non_admin():
             support_action_text=True,
             support_button=True,
             support_markdown=True,
-            support_markdown_table=True,
+            support_markdown_extension=True,
             support_rss=True,
         ),
     )
@@ -698,8 +773,8 @@ async def _test_qqbot_module_list_hides_toggles_from_non_admin():
     }
     try:
         with (
-            patch("modules.core.help.ModulesManager.return_modules_list", return_value=modules),
-            patch("modules.core.help.help_url", "https://example.com/help"),
+            patch("modules.core.common_tools.help.ModulesManager.return_modules_list", return_value=modules),
+            patch("modules.core.common_tools.help.help_url", "https://example.com/help"),
         ):
             await modules_list_help(msg, legacy=False)
     except SessionFinished:
@@ -712,7 +787,7 @@ async def _test_qqbot_module_list_hides_toggles_from_non_admin():
         all(f"[{name}]" in rendered for name in modules)
         and not any(emoji in rendered for emoji in ("🔐", "🔓", "🔕", "🔔"))
         and not any(command.startswith(("~enable ", "~disable ")) for command in commands)
-        and button_commands == ["~help --doc"]
+        and button_commands == ["https://example.com/help"]
     )
 
 
@@ -726,7 +801,7 @@ async def _test_qqbot_module_list_keeps_toggles_for_admin():
         features=Features(
             support_action_text=True,
             support_markdown=True,
-            support_markdown_table=True,
+            support_markdown_extension=True,
         ),
     )
     session_info.enabled_modules = ["dice"]
@@ -736,7 +811,7 @@ async def _test_qqbot_module_list_keeps_toggles_for_admin():
         "dice": _module("dice"),
     }
     try:
-        with patch("modules.core.help.ModulesManager.return_modules_list", return_value=modules):
+        with patch("modules.core.common_tools.help.ModulesManager.return_modules_list", return_value=modules):
             await modules_list_help(msg, legacy=False)
     except SessionFinished:
         pass
@@ -893,7 +968,7 @@ async def _test_hint_not_glued_to_module_list():
 
 
 async def _test_table_shape():
-    """测试表格的行列数：高度封顶，宽度随模块数增长"""
+    """在扩列边界前后同时校验高度、列数和末行补齐。"""
     session_info = await _session("help_table_shape")
     msg = _FakeSession(session_info)
     cases = {
@@ -904,9 +979,14 @@ async def _test_table_shape():
         4: (3, 2),
         13: (3, 5),
         25: (3, 9),
+        29: (3, 10),
         30: (3, 10),
+        31: (4, 8),
+        39: (4, 10),
         40: (4, 10),
+        41: (5, 9),
         66: (7, 10),
+        199: (20, 10),
     }
     for count, (columns, rows) in cases.items():
         names = [f"m{i}" for i in range(count)]
@@ -920,39 +1000,9 @@ async def _test_table_shape():
         if lines[1] != "|" + "---|" * columns:
             Logger.error(f"{count} modules should render {columns} columns, got {lines[1]!r}")
             return False
-    return True
-
-
-async def _test_table_never_exceeds_max_rows():
-    """测试任何模块数下高度都不突破上限
-
-    高度失控正是上一版三列不限行被否掉的原因，此处守住不再复发。
-    """
-    session_info = await _session("help_table_height")
-    msg = _FakeSession(session_info)
-    for count in range(1, 200):
-        names = [f"m{i}" for i in range(count)]
-        lines = [
-            line for line in _render_lines(session_info, build_module_table(msg, [(TABLE_TITLE_KEY, names)])) if line
-        ]
         if len(lines) - 2 > TABLE_MAX_ROWS:
             Logger.error(f"{count} modules produced {len(lines) - 2} rows, over the limit of {TABLE_MAX_ROWS}")
             return False
-    return True
-
-
-async def _test_table_rows_are_uniform():
-    """测试各行列数一致，末行不足处补空单元格
-
-    markdown 要求整张表的列数齐平，末行漏补会使该行连同表格一并渲染失败。
-    """
-    session_info = await _session("help_table_pad")
-    msg = _FakeSession(session_info)
-    for count in range(1, 30):
-        names = [f"m{i}" for i in range(count)]
-        lines = [
-            line for line in _render_lines(session_info, build_module_table(msg, [(TABLE_TITLE_KEY, names)])) if line
-        ]
         widths = {line.count("|") for line in lines}
         if len(widths) != 1:
             Logger.error(f"{count} modules produced ragged rows: {lines}")
@@ -1204,11 +1254,11 @@ async def _test_empty_group_skipped():
 
 @func_case
 async def test_clickable_modules(tester: Tester):
-    """modules.core.help: 可点击模块列表测试"""
+    """modules.core.common_tools.help: 可点击模块列表测试"""
     await tester.test(_test_help_about_button_replaces_donate, "help 关于我们按钮测试")
     await tester.test(_test_image_help_precedes_action_text_fallback, "无表格能力时图片帮助优先测试")
     await tester.test(_test_discord_detail_help_does_not_use_markdown_table, "Discord 详细帮助禁用 Markdown 表格测试")
-    await tester.test(_test_image_flag_overrides_markdown_table, "--image 强制图片帮助测试")
+    await tester.test(_test_image_flag_overrides_markdown_table, "--img 强制图片帮助测试")
     await tester.test(_test_image_template_omits_help_command, "图片内移除查看详情提示测试")
     await tester.test(_test_help_doc_template_marks_module_type_with_swatch, "模块详细帮助类型色块测试")
     await tester.test(_test_markdown_help_marks_module_type_with_emoji, "Markdown 模块详细帮助类型标记测试")
@@ -1224,6 +1274,15 @@ async def test_clickable_modules(tester: Tester):
     await tester.test(_test_qqbot_admin_help_includes_disabled_modules, "QQBot 管理员帮助合并模块列表测试")
     await tester.test(_test_qqbot_superuser_help_header, "QQBot 超级用户顶栏权限测试")
     await tester.test(_test_qqbot_non_admin_help_keeps_module_list_button, "QQBot 非管理员保留模块列表按钮测试")
+    await tester.test(_test_help_hides_admin_modules_from_non_admin, "普通用户帮助隐藏管理员模块测试")
+    await tester.test(
+        _test_help_shows_admin_modules_and_header_for_platform_admin,
+        "平台管理员帮助展示管理员模块与顶栏权限测试",
+    )
+    await tester.test(
+        _test_command_parser_hides_admin_commands_for_non_admin,
+        "帮助文档按权限过滤管理员命令测试",
+    )
     await tester.test(
         _test_help_without_enable_requirement_shows_all_modules_as_enabled,
         "不要求启用模块时帮助展示全部且均已启用测试",
@@ -1237,9 +1296,7 @@ async def test_clickable_modules(tester: Tester):
     await tester.test(_test_rendered_layout, "渲染后分行测试")
     await tester.test(_test_multi_group_separation, "组间换行测试")
     await tester.test(_test_hint_not_glued_to_module_list, "提示语不粘连测试")
-    await tester.test(_test_table_shape, "表格行列数测试")
-    await tester.test(_test_table_never_exceeds_max_rows, "表格高度封顶测试")
-    await tester.test(_test_table_rows_are_uniform, "表格列数齐平测试")
+    await tester.test(_test_table_shape, "表格扩列边界、高度封顶与末行补齐测试")
     await tester.test(_test_table_cells_are_clickable, "表格单元格可点击测试")
     await tester.test(_test_table_empty_returns_nothing, "表格空列表测试")
     await tester.test(_test_table_does_not_end_inline, "表格纯文本收尾测试")

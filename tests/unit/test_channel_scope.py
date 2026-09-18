@@ -6,11 +6,11 @@ from unittest.mock import patch
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
 from core.builtins.session.tasks import SessionTaskManager
-from core.cooldown import CoolDown, _cd_dict
-from core.constants import SessionFinished
+from core.utils.cooldown import CoolDown, _cd_dict
+from core.builtins.parser.hooks import HookPoint, Stop, dispatch_parser_hook
 from core.database.models import SenderUnionInfo, StoredData, TargetUnionInfo, TargetUnionBind
-from core.game import PlayState
-import core.petal as petal_module
+from core.utils.game import PlayState
+import core.utils.petal as petal_module
 from core.tester import func_case, Tester
 
 
@@ -107,7 +107,6 @@ async def _test_petal_quota_shared_across_platforms():
 
 async def _test_parser_cooldown_shared_within_channel_and_user_union():
     """Parser 手动冷却应同时按消息通道和用户 Union 共享。"""
-    from core.builtins.parser.message import _check_target_cooldown, target_cooldown_counter
     from core.tester.mock.session import MockMessageSession
 
     target = await TargetUnionInfo.resolve_union("CDSCOPEA|Group|1")
@@ -136,16 +135,18 @@ async def _test_parser_cooldown_shared_within_channel_and_user_union():
 
     first = await make_session("CDSCOPEA|Group|1", "CDSCOPEA|1", "CDSCOPEA")
     second = await make_session("CDSCOPEB|Group|2", "CDSCOPEB|2", "CDSCOPEB")
-    target_cooldown_counter.clear()
+    from core.module_runtime import ModuleRuntimeManager
+
+    runtime = ModuleRuntimeManager._current.get("parser_policies")
+    if runtime is not None:
+        runtime.state.get("target_cooldown_counter", {}).clear()
     try:
-        await _check_target_cooldown(first)
-        try:
-            await _check_target_cooldown(second)
-        except SessionFinished:
-            return True
-        return False
+        first_result = await dispatch_parser_hook(HookPoint.COMMAND_PREPARE, first, data={})
+        second_result = await dispatch_parser_hook(HookPoint.COMMAND_PREPARE, second, data={})
+        return not isinstance(first_result.result, Stop) and isinstance(second_result.result, Stop)
     finally:
-        target_cooldown_counter.clear()
+        if runtime is not None:
+            runtime.state.get("target_cooldown_counter", {}).clear()
 
 
 @func_case

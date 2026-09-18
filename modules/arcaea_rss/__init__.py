@@ -12,8 +12,6 @@ from core.scheduler import IntervalTrigger
 from core.utils.http import get_url
 from core.utils.storedata import get_stored_list, update_stored_list
 
-trigger_times = 60 if not CoreConfig.slower_schedule else 180
-
 arcaea_rss = module(
     "arcaea-rss",
     developers=["SkyEye_FAST"],
@@ -48,7 +46,7 @@ async def get_latest_version() -> tuple[str, str] | None:
 startup_mute = True
 
 
-@arcaea_rss.schedule(IntervalTrigger(seconds=trigger_times))
+@arcaea_rss.schedule(IntervalTrigger(seconds=60))
 async def _():
     global startup_mute
     try:

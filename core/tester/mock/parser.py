@@ -1,16 +1,18 @@
-import inspect
 import re
 from typing import TYPE_CHECKING
 
 from core.builtins.message.internal import ActionText, I18NContext
 from core.builtins.parser.command import CommandParser
-from core.builtins.parser.message import _unwrap_optional, should_skip_regex
+from core.builtins.parser.hooks import HookPoint, dispatch_parser_hook
+from core.builtins.parser.message import _build_command_kwargs
 from core.builtins.session.tasks import SessionTaskManager
-from core.constants.exceptions import InvalidCommandFormatError, SessionFinished
+from core.constants.exceptions import SessionFinished
+from core.config.base import CoreConfig
 from core.exports import exports
 from core.loader import ModulesManager
 from core.logger import Logger
-from core.types import Module, Param
+from core.module_runtime import ModuleRuntimeManager
+from core.types import Module
 from core.types.module.component_meta import CommandMeta
 from core.utils.func import normalize_space
 
@@ -26,6 +28,7 @@ async def parser(msg: "Bot.MessageSession"):
     modules = ModulesManager.return_modules_list()
 
     msg.trigger_msg = normalize_space(msg.as_display())
+    await dispatch_parser_hook(HookPoint.MESSAGE_NORMALIZED, msg)
     if len(msg.trigger_msg) == 0:
         return
 
@@ -41,7 +44,7 @@ async def parser(msg: "Bot.MessageSession"):
         return None
 
     # 检查正则
-    if should_skip_regex(msg.trigger_msg):
+    if _should_skip_regex(msg.trigger_msg):
         return None
     # 若任何正则命中则会在 _execute_regex 中调用对应函数并抛出 SessionFinished
     await _execute_regex(msg, modules)
@@ -71,6 +74,11 @@ def _get_prefixes(msg: "Bot.MessageSession"):
     return disable_prefix, in_prefix_list
 
 
+def _should_skip_regex(trigger_msg: str) -> bool:
+    prefixes = tuple(prefix for prefix in CoreConfig.regex_disable_prefix if isinstance(prefix, str) and prefix)
+    return bool(prefixes) and trigger_msg.startswith(prefixes)
+
+
 async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, in_prefix_list):
     if disable_prefix and not in_prefix_list:
         command = msg.trigger_msg
@@ -79,6 +87,7 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
 
     command = command.strip()
     command_split: list = command.split(" ")  # 切割消息
+    msg.command_original_word = command_split[0]
 
     not_alias = False
     cm = ""
@@ -124,7 +133,6 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                     I18NContext(
                         "parser.module.disabled.prompt",
                         module=command_first_word,
-                        prefix=msg.session_info.prefixes[0],
                         cmd=ActionText(f"{msg.session_info.prefixes[0]}enable {command_first_word}"),
                     )
                 )
@@ -149,7 +157,8 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                 continue
             if msg.session_info.typing_prompt_enabled:
                 await msg.start_typing()
-            await func.function(msg)  # 将msg传入下游模块
+            async with ModuleRuntimeManager.use(module.module_name):
+                await func.function(msg)  # 将msg传入下游模块
             raise SessionFinished  # if not using msg.finish
 
 
@@ -173,7 +182,8 @@ async def _execute_regex(msg: "Bot.MessageSession", modules):
                 if matched:  # 如果匹配成功
                     if hasattr(msg, "_casetest_target") and rfunc.function is not msg._casetest_target:
                         continue
-                    await rfunc.function(msg)  # 将msg传入下游模块
+                    async with ModuleRuntimeManager.use(regex_module.module_name):
+                        await rfunc.function(msg)  # 将msg传入下游模块
                     raise SessionFinished  # if not using msg.finish
 
 
@@ -190,57 +200,10 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
     if hasattr(msg, "_casetest_target") and command.function is not msg._casetest_target:
         return False
 
-    kwargs = {}
-    func_params = inspect.signature(command.function).parameters
-    if len(func_params) > 1 and msg.parsed_msg:
-        parsed_msg_ = msg.parsed_msg.copy()
-        no_message_session = True
-        for param_name, param_obj in func_params.items():
-            if param_obj.annotation == bot.MessageSession:
-                kwargs[param_name] = msg
-                no_message_session = False
-            elif isinstance(param_obj.annotation, Param):
-                if param_obj.annotation.name in parsed_msg_:
-                    if isinstance(parsed_msg_[param_obj.annotation.name], param_obj.annotation.type):
-                        kwargs[param_name] = parsed_msg_[param_obj.annotation.name]
-                        del parsed_msg_[param_obj.annotation.name]
-                    else:
-                        Logger.warning(f"{param_obj.annotation.name} is not a {param_obj.annotation.type}")
-                else:
-                    Logger.warning(f"{param_obj.annotation.name} is not in parsed_msg")
-            param_name_ = param_name
+    kwargs = _build_command_kwargs(command, msg, bot)
 
-            if (param_name__ := f"<{param_name}>") in parsed_msg_:
-                param_name_ = param_name__
-
-            if param_name_ in parsed_msg_:
-                kwargs[param_name] = parsed_msg_[param_name_]
-                try:
-                    annotation = _unwrap_optional(param_obj.annotation)
-                    if annotation == int:
-                        kwargs[param_name] = int(parsed_msg_[param_name_])
-                    elif annotation == float:
-                        kwargs[param_name] = float(parsed_msg_[param_name_])
-                    elif annotation == bool:
-                        kwargs[param_name] = bool(parsed_msg_[param_name_])
-                    del parsed_msg_[param_name_]
-                except (KeyError, ValueError):
-                    raise InvalidCommandFormatError
-            else:
-                if param_name_ not in kwargs:
-                    if param_obj.default is not inspect.Parameter.empty:
-                        kwargs[param_name_] = param_obj.default
-                    else:
-                        kwargs[param_name_] = None
-        if no_message_session:
-            Logger.warning(
-                f"{command.function.__name__} has no Bot.MessageSession parameter, did you forgot to add it?\n"
-                "Remember: MessageSession IS NOT Bot.MessageSession"
-            )
-    else:
-        kwargs[func_params[list(func_params.keys())[0]].name] = msg
-
-    await parsed_msg[0].function(**kwargs)  # 将msg传入下游模块
+    async with ModuleRuntimeManager.use(module.module_name):
+        await parsed_msg[0].function(**kwargs)  # 将msg传入下游模块
     return True
 
 

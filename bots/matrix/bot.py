@@ -7,6 +7,7 @@ import nio
 
 from bots.matrix import client
 from bots.matrix.client import matrix_bot
+from bots.matrix.config import MatrixConfig
 from bots.matrix.context import MatrixContextManager, MatrixFetchedContextManager
 from bots.matrix.events import member_joined, member_left, should_dispatch_member_joined, should_dispatch_member_left
 from bots.matrix.info import *
@@ -16,10 +17,9 @@ from core.builtins.message.internal import Plain, Image, Audio, Video
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
 from core.client.init import client_cleanup, client_init
-from bots.matrix.config import MatrixConfig
 from core.config.base import CoreConfig
 from core.logger import Logger
-from core.queue.client import JobQueueClient
+from core.queue.contracts import ServerAPI
 
 Bot.register_bot(client_name=client_name)
 
@@ -343,7 +343,7 @@ async def _run_client():
     await client_init(target_prefix_list, sender_prefix_list)
 
     Logger.info("starting sync loop...")
-    version = await JobQueueClient.get_bot_version()
+    version = await ServerAPI.get_bot_version()
     await matrix_bot.set_presence("online", f"AkariBot {version}")
     await matrix_bot.sync_forever(timeout=30000, full_state=False)
     Logger.info("sync loop stopped.")

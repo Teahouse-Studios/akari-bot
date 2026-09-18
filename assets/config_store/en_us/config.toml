@@ -3,7 +3,7 @@
 # EXAMPLE: Boolean values in TOML must be lowercase.
 
 default_locale = "en_us" # Default language environment.
-config_version = 3 # Config version number, which will be automatically updated with the new features and generally does not need to be modified.
+config_version = 5 # Config version number, which will be automatically updated with the new features and generally does not need to be modified.
 
 [config]
 # The basic config section. The values entered here can be displayed in the message. Please do not enter sensitive information in this section.
@@ -11,7 +11,7 @@ debug = false # Whether to enable debug mode, more log information will be outpu
 timezone_offset = "+8" # The bot's default timezone offset.
 allow_reload_base = false # Whether to allow reloading of the base modules.
 allow_request_private_ip = false # Whether to allow the bot to request local private IP addresses. (Prevent possible leakage)
-slower_schedule = false # Whether to enable a slower task scheduler. (To reduce request pressure)
+schedule_interval_multiplier = 1.0 # The interval multiplier for scheduled task triggers.
 use_emote = false # Whether to use emote resources.
 use_font_mirror = false # Whether to use font mirrors when rendering web pages.
 use_secrets_random = false # Whether to use the random number generator based on the secrets library.
@@ -27,19 +27,19 @@ confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # The key
 mention_required = false # Whether to force processing of only of messages that mention the bot at the beginning of the message.
 no_confirm = false # Whether to execute the command without the sender confirming the message.
 quick_confirm = true # Whether to enable quick confirmation of message.
-enable_analytics = true # Whether to enable built-in statistics features.
+enable_analytics = true # Whether to enable built-in analytics.
 enable_bind_auto = false # Whether to enable the "bind auto" command to automatically pair with other instances within the same context.
 enable_commit_url = true # Whether to show the commit URL when displaying version information.
 enable_dirty_check = false # Whether to enable text filtering detection.
 check_use_textscan_v1 = false # Whether to use Alibaba Cloud Content Security Text Scan 1.0 legacy API.
 enable_urlmanager = false # Whether to enable URLManager for URL springboard. (Declare that this URL is not an official link, etc.)
 auto_purge_crontab = "0 0 * * *" # Cron expression for automatic cache purging.
-typo_check_module_score = 0.6 # The allowed similarity score for module spelling check, ranging from 0 to 1.
-typo_check_command_score = 0.3 # The allowed similarity score for command spelling check, ranging from 0 to 1.
-typo_check_args_score = 0.5 # The allowed similarity score for argument spelling check, ranging from 0 to 1.
-typo_check_options_score = 0.3 # The allowed similarity score for option spelling check, ranging from 0 to 1.
-typo_check_module_diff_ratio = 0.5 # Threshold for the difference in module name length. If the ratio of the difference between the matched module name length and the user-entered length exceeds this value, the match is skipped. Rranging from 0 to 1.
-typo_check_args_diff_ratio = 0.5 # Threshold for the difference in the number of command parameters. Command matching is skipped when the ratio of the difference between the number of parameters entered by the user and the number of parameters in the template exceeds this value. Ranging from 0 to 1.
+typo_check_module_score = 0.6 # The allowed similarity score for module spelling check. Ranges from 0 to 1.
+typo_check_command_score = 0.3 # The allowed similarity score for command spelling check. Ranges from 0 to 1.
+typo_check_args_score = 0.5 # The allowed similarity score for argument spelling check. Ranges from 0 to 1.
+typo_check_options_score = 0.3 # The allowed similarity score for option spelling check. Ranges from 0 to 1.
+typo_check_module_diff_ratio = 0.5 # Threshold for the difference in module name length. If the ratio of the difference between the matched module name length and the user-entered length exceeds this value, the match is skipped. Ranges from 0 to 1.
+typo_check_args_diff_ratio = 0.5 # Threshold for the difference in the number of command parameters. Command matching is skipped when the ratio of the difference between the number of parameters entered by the user and the number of parameters in the template exceeds this value. Ranges from 0 to 1.
 enable_tos = true # Whether to enable built-in ToS checking rules.
 tos_warning_counts = 5 # Maximum number of warnings for ToS violations.
 tos_temp_ban_time = 300 # Temporary ban duration for ToS violations.
@@ -47,10 +47,13 @@ enable_petal = false # Whether to enable the petal feature.
 enable_get_petal = false # Whether to allow getting petals.
 petal_gained_limit = 0 # The maximum number of petals users can get per day.
 petal_lost_limit = 0 # The maximum number of petals users can lose per day.
-petal_sign_limit = 5 # The maximum number of petals users can get from signing in per day.
-petal_sign_rate = 0.5 # The probability of getting petals by signing in, ranging from 0 to 1, with an exponential decay in the number of petals to be obtained.
+petal_sign_min = 2 # The minimum number of petals users can get from signing in per day.
+petal_sign_max = 12 # The maximum number of petals users can get from signing in per day.
+petal_sign_rate = 0.5 # The probability of getting petals by signing in. Ranges from 0 to 1, with a geometric distribution in the number of petals to be obtained.
+petal_reset_crontab = "0 0 1 * *" # Cron expression for the petal cycle.
+petal_rebate_rate = 0.2 # The percentage of petals retained at the end of the petal cycle. Ranges from 0 to 1.
 enable_joke = true # Whether to enable the joke. It will occur on April 1st server time when enabled.
-shuffle_rate = 0.1 # The random occurrence rate of jokes, ranging from 0 to 1.
+shuffle_rate = 0.1 # The random occurrence rate of jokes. Ranges from 0 to 1.
 enable_rickroll = true # Whether to rickroll the user when text filter detection fails.
 rickroll_msg = "https://b23.tv/vXaKjqJ" # Rickroll message when text filter check fails.
 bug_report_url = "https://s.wd-ljt.com/botreportbug" # Error reporting URL.

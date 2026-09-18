@@ -25,7 +25,7 @@ from modules.wiki.utils.recommend import (
 
 async def _probe(target_id: str, client_name: str, support_button: bool, is_admin: bool) -> dict:
     """
-    跑一遍未设置起始 Wiki 的收尾流程，捕获它交给 finish 的消息与按钮数据。
+    跑一遍未设置默认 Wiki 的收尾流程，捕获它交给 finish 的消息与按钮数据。
 
     :param target_id: 场景 ID，各用例互不相同以免共用 union。
     :param client_name: 客户端名。判定已不再读取此项，保留仅为贴近真实会话。
@@ -62,7 +62,7 @@ async def _probe(target_id: str, client_name: str, support_button: bool, is_admi
 
 
 async def _test_button_data_shape():
-    """测试按钮数据 - 键为 Wiki 名称，值为设置起始 Wiki 的命令"""
+    """测试按钮数据 - 键为 Wiki 名称，值为设置默认 Wiki 的命令"""
     try:
         rows = get_recommend_button_data()
         if len(rows) != 1:

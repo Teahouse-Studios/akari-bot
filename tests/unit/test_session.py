@@ -2,16 +2,30 @@
 
 import asyncio
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.lock import ExecutionLockList
 from core.builtins.session.tasks import SessionTaskManager
+from core.constants import SessionContextUnavailable
 from core.database.models import SenderUnionInfo, TargetUnionBind, TargetUnionInfo
+from core.queue.contracts import PlatformAPI
+from core.queue.errors import RpcRemoteError
 from core.tester import func_case, Tester
 from core.tester.mock.session import MockMessageSession
+from core.tester.timing import TIME_SCALE
+
+
+async def _wait_until(predicate, timeout: float | None = None) -> bool:
+    """按真实时限等待条件成立，避免固定轮次在慢速 CI 上过早放弃。"""
+    deadline = asyncio.get_running_loop().time() + (timeout if timeout is not None else 5 * TIME_SCALE)
+    while asyncio.get_running_loop().time() < deadline:
+        if predicate():
+            return True
+        await asyncio.sleep(0.001)
+    return bool(predicate())
 
 
 async def _make_held_session(
@@ -84,8 +98,42 @@ async def _test_release_context_tolerates_prior_platform_cleanup():
         ContextManager.context_marks_hold.pop(session_id, None)
 
 
+async def _test_hold_normalizes_remote_context_unavailable():
+    """跨进程 hold 的上下文缺失应恢复为可供调用方处理的领域异常。"""
+    from core.builtins.session.internal import MessageSession
+
+    session = MessageSession(
+        SessionInfo(
+            target_id="TEST|Group|hold-unavailable",
+            target_from="TEST|Group",
+            client_name="TEST",
+        )
+    )
+    for remote_type in (SessionContextUnavailable.__name__, ValueError.__name__):
+        remote_error = RpcRemoteError(
+            "Session not found in context",
+            remote_type=remote_type,
+        )
+        with patch.object(PlatformAPI, "hold_context", new=AsyncMock(side_effect=remote_error)):
+            try:
+                await session.hold()
+            except SessionContextUnavailable:
+                continue
+            return False
+
+    unexpected = RpcRemoteError("Session not found in context", remote_type="RuntimeError")
+    with patch.object(PlatformAPI, "hold_context", new=AsyncMock(side_effect=unexpected)):
+        try:
+            await session.hold()
+        except SessionContextUnavailable:
+            return False
+        except RpcRemoteError as exc:
+            return exc is unexpected
+    return False
+
+
 async def _test_features_inject_markdown_table():
-    """测试 support_markdown_table 能注入并随会话序列化"""
+    """测试 support_markdown_extension 能注入并随会话序列化"""
     try:
         from core.builtins.session.info import SessionInfo
 
@@ -94,9 +142,9 @@ async def _test_features_inject_markdown_table():
             target_from="TEST|Group",
             client_name="TEST",
             sender_id="TEST|1",
-            features=Features(support_markdown_table=True),
+            features=Features(support_markdown_extension=True),
         )
-        return session_info.support_markdown_table is True
+        return session_info.support_markdown_extension is True
     except Exception:
         return False
 
@@ -470,12 +518,8 @@ async def _test_wait_resume_reacquires_after_competing_command():
     try:
         if not await ExecutionLockList.acquire(owner):
             return False
-        wait_task = asyncio.create_task(owner.wait_next_message(timeout=1))
-        for _ in range(20):
-            if SessionTaskManager.get() and not ExecutionLockList.check(owner):
-                break
-            await asyncio.sleep(0)
-        else:
+        wait_task = asyncio.create_task(owner.wait_next_message(timeout=1 * TIME_SCALE))
+        if not await _wait_until(lambda: bool(SessionTaskManager.get()) and not ExecutionLockList.check(owner)):
             return False
 
         if not await ExecutionLockList.acquire(contender):
@@ -487,7 +531,7 @@ async def _test_wait_resume_reacquires_after_competing_command():
             return False
 
         ExecutionLockList.remove(contender)
-        result = await asyncio.wait_for(wait_task, timeout=0.5)
+        result = await asyncio.wait_for(wait_task, timeout=0.5 * TIME_SCALE)
         return result is incoming and ExecutionLockList.check(owner) and not SessionTaskManager.get()
     finally:
         if wait_task and not wait_task.done():
@@ -526,11 +570,7 @@ async def _test_cancelled_wait_leaves_no_task_or_lease():
         if not await ExecutionLockList.acquire(msg):
             return False
         task = asyncio.create_task(msg.wait_next_message(timeout=None))
-        for _ in range(20):
-            if SessionTaskManager.get() and not ExecutionLockList.check(msg):
-                break
-            await asyncio.sleep(0)
-        else:
+        if not await _wait_until(lambda: bool(SessionTaskManager.get()) and not ExecutionLockList.check(msg)):
             return False
         task.cancel()
         try:
@@ -650,7 +690,7 @@ async def _test_partial_overlap_merge_reservations_do_not_deadlock():
             return False
         second_reserved = await asyncio.wait_for(
             ExecutionLockList.reserve(second, {"TEST|shared-reservation"}),
-            timeout=0.2,
+            timeout=0.2 * TIME_SCALE,
         )
         first_token = ExecutionLockList.state(first).lock_token
         return (
@@ -670,7 +710,7 @@ async def _test_partial_overlap_merge_reservations_do_not_deadlock():
 async def _test_active_sender_leases_are_barriered_before_merge():
     """两个活跃 Union 合并前须等待另一 lease，期间阻止双方新命令进入。"""
     from core.builtins.session.internal import MessageSession
-    from core.union_merge import apply_sender_merge, plan_sender_merge, reserve_sender_merge
+    from core.utils.union_merge import apply_sender_merge, plan_sender_merge, reserve_sender_merge
 
     target_id = "TEST|Group|active-sender-merge-barrier"
     first_id = "TEST|active-sender-merge-first"
@@ -713,18 +753,14 @@ async def _test_active_sender_leases_are_barriered_before_merge():
             first.session_info.sender_union_info, merge_command.session_info.sender_union_info
         )
         reserve_task = asyncio.create_task(reserve_sender_merge(merge_command, plan))
-        for _ in range(20):
-            if ExecutionLockList._reservations:
-                break
-            await asyncio.sleep(0)
-        else:
+        if not await _wait_until(lambda: bool(ExecutionLockList._reservations)):
             return False
         if reserve_task.done() or await ExecutionLockList.acquire(first_contender):
             return False
 
         ExecutionLockList.remove(first)
-        reserved_plan = await asyncio.wait_for(reserve_task, timeout=0.5)
-        with patch("core.union_merge.write_merge_log"):
+        reserved_plan = await asyncio.wait_for(reserve_task, timeout=10)
+        with patch("core.utils.union_merge.write_merge_log"):
             merged = await apply_sender_merge(reserved_plan, set(), merge_command)
         keys = ExecutionLockList.get()
         return (
@@ -815,17 +851,13 @@ async def _test_cross_user_wait_result_keeps_root_lock_subject():
     try:
         if not await ExecutionLockList.acquire(owner):
             return False
-        wait_task = asyncio.create_task(owner.wait_anyone(timeout=1))
-        for _ in range(20):
-            if SessionTaskManager.get() and not ExecutionLockList.check(owner):
-                break
-            await asyncio.sleep(0)
-        else:
+        wait_task = asyncio.create_task(owner.wait_anyone(timeout=1 * TIME_SCALE))
+        if not await _wait_until(lambda: bool(SessionTaskManager.get()) and not ExecutionLockList.check(owner)):
             return False
 
         if not await SessionTaskManager.check(incoming):
             return False
-        result = await asyncio.wait_for(wait_task, timeout=0.5)
+        result = await asyncio.wait_for(wait_task, timeout=0.5 * TIME_SCALE)
         await result.sleep(0)
         keys = ExecutionLockList.get()
         owner_is_serialized = not await ExecutionLockList.acquire(owner_contender)
@@ -949,7 +981,7 @@ async def _test_wait_confirm_can_preserve_merge_barrier():
         confirmed = await owner.wait_confirm(
             "prompt",
             delete=False,
-            timeout=0.5,
+            timeout=0.5 * TIME_SCALE,
             release_execution_lock=False,
         )
         lock_still_owned = ExecutionLockList.check(owner)
@@ -1075,10 +1107,10 @@ async def _test_inactive_wait_releases_context_acquired_during_hold():
     SessionTaskManager.add_task(waiting, flag, timeout=60)
     check_task = asyncio.create_task(SessionTaskManager.check(incoming))
     try:
-        await asyncio.wait_for(incoming.hold_started.wait(), timeout=0.5)
+        await asyncio.wait_for(incoming.hold_started.wait(), timeout=0.5 * TIME_SCALE)
         task_info = SessionTaskManager.remove_task(waiting)
         incoming.allow_hold.set()
-        handled = await asyncio.wait_for(check_task, timeout=0.5)
+        handled = await asyncio.wait_for(check_task, timeout=0.5 * TIME_SCALE)
         return (
             not handled
             and task_info is not None
@@ -1137,7 +1169,7 @@ async def _test_sleep_waits_for_competing_lease_before_resuming():
             if sleep_task.done():
                 return False
             ExecutionLockList.remove(contender)
-            await asyncio.wait_for(sleep_task, timeout=0.5)
+            await asyncio.wait_for(sleep_task, timeout=0.5 * TIME_SCALE)
         return ExecutionLockList.check(owner)
     finally:
         if sleep_task and not sleep_task.done():
@@ -1270,7 +1302,6 @@ async def _test_send_message_binds_button_callback_reply_id():
     from core.builtins.message.internal import Button
     from core.builtins.session.info import SessionInfo
     from core.builtins.session.internal import MessageSession
-    from core.exports import exports
     from core.i18n import Locale
 
     captured = {}
@@ -1279,7 +1310,7 @@ async def _test_send_message_binds_button_callback_reply_id():
         @classmethod
         async def client_send_message(cls, session_info, chain, **kwargs):
             captured["chain"] = chain
-            return {"message_id": ["physical-message"]}
+            return ["physical-message"]
 
     async def callback(_session):
         pass
@@ -1297,7 +1328,7 @@ async def _test_send_message_binds_button_callback_reply_id():
     msg = MessageSession(session)
     SessionTaskManager._callback_list.clear()
     try:
-        with patch.dict(exports, {"JobQueueServer": FakeJobQueueServer}):
+        with patch.object(PlatformAPI, "send_message", new=FakeJobQueueServer.client_send_message):
             finished = await msg.send_message(
                 MessageChain.assign(Button("Choose", "1")),
                 callback=callback,
@@ -1329,7 +1360,6 @@ async def _test_button_callback_registered_before_send_returns():
     from core.builtins.message.internal import Button
     from core.builtins.session.info import SessionInfo
     from core.builtins.session.internal import MessageSession
-    from core.exports import exports
     from core.i18n import Locale
 
     called = 0
@@ -1368,11 +1398,11 @@ async def _test_button_callback_registered_before_send_returns():
             )
             if not await SessionTaskManager.check(reply):
                 raise RuntimeError("callback was not registered before platform send returned")
-            return {"message_id": ["physical-message"]}
+            return ["physical-message"]
 
     SessionTaskManager._callback_list.clear()
     try:
-        with patch.dict(exports, {"JobQueueServer": RacingJobQueueServer}):
+        with patch.object(PlatformAPI, "send_message", new=RacingJobQueueServer.client_send_message):
             finished = await msg.send_message(MessageChain.assign(Button("Choose", "1")), callback=callback)
         registered = list(SessionTaskManager._callback_list.values())
         return (
@@ -1391,13 +1421,12 @@ async def _test_send_failure_does_not_leave_callback():
     from core.builtins.message.internal import Button
     from core.builtins.session.info import SessionInfo
     from core.builtins.session.internal import MessageSession
-    from core.exports import exports
     from core.i18n import Locale
 
     class FailedJobQueueServer:
         @classmethod
         async def client_send_message(cls, session_info, chain, **kwargs):
-            return {"message_id": []}
+            return []
 
     async def callback(_session):
         return None
@@ -1416,7 +1445,7 @@ async def _test_send_failure_does_not_leave_callback():
     )
     SessionTaskManager._callback_list.clear()
     try:
-        with patch.dict(exports, {"JobQueueServer": FailedJobQueueServer}):
+        with patch.object(PlatformAPI, "send_message", new=FailedJobQueueServer.client_send_message):
             finished = await msg.send_message(MessageChain.assign(Button("Choose", "1")), callback=callback)
         return finished.message_id == [] and not SessionTaskManager._callback_list
     finally:
@@ -1594,7 +1623,6 @@ async def _test_callback_registration_handle_survives_alias_collision():
 async def _test_pending_plain_callbacks_make_bot_fallback_ambiguous():
     """无按钮 callback 在发送回包前也须登记，避免 bot_id fallback 串线。"""
     from core.builtins.session.internal import MessageSession
-    from core.exports import exports
     from core.i18n import Locale
 
     entered = asyncio.Event()
@@ -1611,7 +1639,7 @@ async def _test_pending_plain_callbacks_make_bot_fallback_ambiguous():
             if call_count == 2:
                 entered.set()
             await release_sends.wait()
-            return {"message_id": [f"physical-{call_index}"]}
+            return [f"physical-{call_index}"]
 
     async def first_callback(_session):
         called.append("first")
@@ -1645,10 +1673,10 @@ async def _test_pending_plain_callbacks_make_bot_fallback_ambiguous():
     first_task = None
     second_task = None
     try:
-        with patch.dict(exports, {"JobQueueServer": BlockingQueueServer}):
+        with patch.object(PlatformAPI, "send_message", new=BlockingQueueServer.client_send_message):
             first_task = asyncio.create_task(first.send_message("one", callback=first_callback))
             second_task = asyncio.create_task(second.send_message("two", callback=second_callback))
-            await asyncio.wait_for(entered.wait(), timeout=0.5)
+            await asyncio.wait_for(entered.wait(), timeout=0.5 * TIME_SCALE)
             ambiguous_handled = await SessionTaskManager.check(incoming)
             if ambiguous_handled or called or len(SessionTaskManager._callback_list) != 2:
                 return False
@@ -1865,7 +1893,7 @@ async def _test_repeatable_callback_is_serialized():
     first_task = asyncio.create_task(SessionTaskManager.check(first))
     second_task = None
     try:
-        await asyncio.wait_for(entered.wait(), timeout=0.5)
+        await asyncio.wait_for(entered.wait(), timeout=0.5 * TIME_SCALE)
         second_task = asyncio.create_task(SessionTaskManager.check(second))
         await asyncio.sleep(0)
         if second_task.done():
@@ -2006,7 +2034,6 @@ async def _test_send_message_does_not_set_transport_format_flag():
     from core.builtins.message.internal import Markdown
     from core.builtins.session.info import SessionInfo
     from core.builtins.session.internal import MessageSession
-    from core.exports import exports
 
     class FailingQueueServer:
         @classmethod
@@ -2023,7 +2050,7 @@ async def _test_send_message_does_not_set_transport_format_flag():
     session_info.tmp["existing"] = "value"
     msg = MessageSession(session_info)
 
-    with patch.dict(exports, {"JobQueueServer": FailingQueueServer}):
+    with patch.object(PlatformAPI, "send_message", new=FailingQueueServer.client_send_message):
         try:
             await msg.send_message(Markdown("**test**"))
         except RuntimeError:
@@ -2057,8 +2084,9 @@ async def _test_wait_next_message_registers_before_fast_reply():
     )
     msg = FastReplySession(session_info)
     try:
-        result = await msg.wait_next_message("prompt", timeout=0.05)
-        return result is msg
+        with patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)):
+            result = await msg.wait_next_message("prompt", timeout=0.05 * TIME_SCALE)
+            return result is msg
     except WaitCancelException:
         return False
     finally:
@@ -2094,15 +2122,16 @@ async def _test_wait_next_message_preserves_choice_rows():
     msg = CaptureSession(session_info)
     choices = [{f"Page {index}": str(index)} for index in range(1, 6)]
     try:
-        result = await msg.wait_next_message("prompt", possibly_choices=choices, timeout=0.05)
-        frames = [element for element in msg.captured.values if isinstance(element, ButtonFrameElement)]
-        return (
-            result is msg
-            and len(frames) == 1
-            and len(frames[0].rows) == 5
-            and all(len(row.buttons) == 1 for row in frames[0].rows)
-            and [row.buttons[0].show for row in frames[0].rows] == [f"Page {index}" for index in range(1, 6)]
-        )
+        with patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)):
+            result = await msg.wait_next_message("prompt", possibly_choices=choices, timeout=0.05 * TIME_SCALE)
+            frames = [element for element in msg.captured.values if isinstance(element, ButtonFrameElement)]
+            return (
+                result is msg
+                and len(frames) == 1
+                and len(frames[0].rows) == 5
+                and all(len(row.buttons) == 1 for row in frames[0].rows)
+                and [row.buttons[0].show for row in frames[0].rows] == [f"Page {index}" for index in range(1, 6)]
+            )
     finally:
         SessionTaskManager._task_list.clear()
 
@@ -2137,7 +2166,8 @@ async def _test_wait_confirm_registers_before_reaction_roundtrip():
     )
     msg = FastConfirmSession(session_info)
     try:
-        return await msg.wait_confirm("prompt", delete=False, timeout=0.05)
+        with patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)):
+            return await msg.wait_confirm("prompt", delete=False, timeout=0.05 * TIME_SCALE)
     except WaitCancelException:
         return False
     finally:
@@ -2149,11 +2179,26 @@ async def _test_wait_reply_registers_before_send_returns():
     from core.builtins.session.internal import MessageSession
 
     check_task_holder = {}
+    pending_reply_wait_started = asyncio.Event()
+
+    class ObservedReplyReady:
+        def __init__(self, event):
+            self._event = event
+
+        def is_set(self):
+            return self._event.is_set()
+
+        def set(self):
+            self._event.set()
+
+        async def wait(self):
+            pending_reply_wait_started.set()
+            await self._event.wait()
 
     class FastReplySession(MessageSession):
         async def send_message(self, *args, **kwargs):
             check_task_holder["task"] = asyncio.create_task(SessionTaskManager.check(incoming))
-            await asyncio.sleep(0)
+            await asyncio.wait_for(pending_reply_wait_started.wait(), timeout=5 * TIME_SCALE)
             return type("Sent", (), {"message_id": ["fast-reply-prompt"]})()
 
         async def end_typing(self):
@@ -2179,14 +2224,32 @@ async def _test_wait_reply_registers_before_send_returns():
     )
     msg = FastReplySession(session_info)
     SessionTaskManager._task_list.clear()
+    original_active_tasks = SessionTaskManager._active_tasks
+
+    async def observe_active_tasks(cls, session):
+        active_tasks = await original_active_tasks(session)
+        if session is incoming:
+            for waiting_session, task_info in active_tasks:
+                if waiting_session is msg and not task_info["reply_ready"].is_set():
+                    task_info["reply_ready"] = ObservedReplyReady(task_info["reply_ready"])
+        return active_tasks
+
     try:
-        result = await msg.wait_reply("prompt", delete=False, timeout=0.5)
-        handled = await check_task_holder["task"] if "task" in check_task_holder else False
-        return result is incoming and handled and not SessionTaskManager.get()
+        with (
+            patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)),
+            patch.object(SessionTaskManager, "_active_tasks", new=classmethod(observe_active_tasks)),
+        ):
+            result = await msg.wait_reply("prompt", delete=False, timeout=5 * TIME_SCALE)
+            handled = await check_task_holder["task"] if "task" in check_task_holder else False
+            return (
+                result is incoming and handled and pending_reply_wait_started.is_set() and not SessionTaskManager.get()
+            )
     finally:
         check_task = check_task_holder.get("task")
         if check_task and not check_task.done():
             check_task.cancel()
+        if check_task:
+            await asyncio.gather(check_task, return_exceptions=True)
         SessionTaskManager._task_list.clear()
 
 
@@ -2238,10 +2301,15 @@ async def _test_ready_reply_is_not_blocked_by_earlier_pending_reply():
     SessionTaskManager._task_list.clear()
     SessionTaskManager.add_task(first, first_flag, reply_pending=True, timeout=60)
     SessionTaskManager.add_task(second, second_flag, reply="ready-target", timeout=60)
+    first_info = SessionTaskManager.get()[first.session_info.target_id][first.session_info.sender_id][first]
+    second_info = SessionTaskManager.get()[second.session_info.target_id][second.session_info.sender_id][second]
+
+    async def active_tasks(_cls, _session):
+        return [(first, first_info), (second, second_info)]
+
     try:
-        handled = await asyncio.wait_for(SessionTaskManager.check(incoming), timeout=0.2)
-        first_info = SessionTaskManager.get()[first.session_info.target_id][first.session_info.sender_id][first]
-        second_info = SessionTaskManager.get()[second.session_info.target_id][second.session_info.sender_id][second]
+        with patch.object(SessionTaskManager, "_active_tasks", new=classmethod(active_tasks)):
+            handled = await SessionTaskManager.check(incoming)
         await second.release_execution_resources()
         return (
             handled
@@ -2309,9 +2377,10 @@ async def _test_wait_reply_send_failure_unblocks_pending_parser():
         else:
             return False
         check_task = check_task_holder.get("task")
+        check_result = await asyncio.wait_for(check_task, timeout=10) if check_task is not None else None
         return (
             check_task is not None
-            and not await asyncio.wait_for(check_task, timeout=0.2)
+            and check_result is False
             and not SessionTaskManager.get()
             and incoming.hold_calls == 0
         )
@@ -2376,7 +2445,7 @@ async def _test_wait_reply_timeout_covers_pending_send():
     SessionTaskManager._task_list.clear()
     try:
         try:
-            await asyncio.wait_for(waiting.wait_reply("prompt", timeout=0.05), timeout=0.3)
+            await asyncio.wait_for(waiting.wait_reply("prompt", timeout=0.2 * TIME_SCALE), timeout=10)
         except WaitCancelException:
             pass
         except asyncio.TimeoutError:
@@ -2385,11 +2454,12 @@ async def _test_wait_reply_timeout_covers_pending_send():
             return False
 
         check_task = check_task_holder.get("task")
+        check_result = await asyncio.wait_for(check_task, timeout=10) if check_task is not None else None
         return (
             send_entered.is_set()
             and send_cancelled
             and check_task is not None
-            and not await asyncio.wait_for(check_task, timeout=0.2)
+            and check_result is False
             and not SessionTaskManager.get()
             and incoming.hold_calls == 0
         )
@@ -2445,14 +2515,14 @@ async def _test_wait_reply_timeout_is_single_deadline():
     reply_task = asyncio.create_task(delayed_reply())
     try:
         try:
-            await asyncio.wait_for(waiting.wait_reply("prompt", timeout=0.2), timeout=0.4)
+            await asyncio.wait_for(waiting.wait_reply("prompt", timeout=0.2 * TIME_SCALE), timeout=0.4 * TIME_SCALE)
         except WaitCancelException:
             pass
         except asyncio.TimeoutError:
             return False
         else:
             return False
-        return not await asyncio.wait_for(reply_task, timeout=0.2) and not SessionTaskManager.get()
+        return not await asyncio.wait_for(reply_task, timeout=0.2 * TIME_SCALE) and not SessionTaskManager.get()
     finally:
         if not reply_task.done():
             reply_task.cancel()
@@ -2494,7 +2564,7 @@ async def _test_wait_reply_none_timeout_keeps_pending_send():
     SessionTaskManager._task_list.clear()
     wait_task = asyncio.create_task(waiting.wait_reply("prompt", timeout=None))
     try:
-        await asyncio.wait_for(send_entered.wait(), timeout=0.2)
+        await asyncio.wait_for(send_entered.wait(), timeout=0.2 * TIME_SCALE)
         await asyncio.sleep(0.05)
         still_pending = not wait_task.done() and bool(SessionTaskManager.get())
         wait_task.cancel()
@@ -2588,7 +2658,7 @@ async def _test_cancelled_wait_reply_deletes_sent_prompt():
     SessionTaskManager._task_list.clear()
     wait_task = asyncio.create_task(waiting.wait_reply("prompt", delete=True, timeout=None))
     try:
-        await asyncio.wait_for(send_returned.wait(), timeout=0.2)
+        await asyncio.wait_for(send_returned.wait(), timeout=0.2 * TIME_SCALE)
         await asyncio.sleep(0)
         wait_task.cancel()
         result = (await asyncio.gather(wait_task, return_exceptions=True))[0]
@@ -2658,7 +2728,7 @@ async def _test_wait_reply_committed_result_beats_timeout_observation():
     SessionTaskManager._task_list.clear()
     try:
         with patch("core.builtins.session.internal.asyncio.timeout", return_value=TimeoutAfterBody()):
-            result = await waiting.wait_reply("prompt", timeout=0.1)
+            result = await waiting.wait_reply("prompt", timeout=0.1 * TIME_SCALE)
         handled = await check_task_holder["task"]
         await waiting.release_execution_resources()
         return (
@@ -2893,7 +2963,7 @@ async def _test_wait_task_follows_target_rechannel_without_old_channel_takeover(
         SessionTaskManager._task_list.clear()
 
 
-async def _test_reply_wait_is_scoped_to_physical_platform_scene():
+async def _test_reply_wait_is_scoped_to_physical_platform_context():
     """同现实通道的另一平台即使 message_id 碰撞，也不得命中本平台 wait_reply。"""
     target_a = "WAITREPLYSA|Group|1"
     target_b = "WAITREPLYSB|Group|2"
@@ -3113,7 +3183,8 @@ async def test_features(tester: Tester):
     await tester.test(_test_features_override, "Features.override() 测试")
     await tester.test(_test_features_inject_action_text, "support_action_text 注入测试")
     await tester.test(_test_release_context_tolerates_prior_platform_cleanup, "平台先清理后的上下文释放测试")
-    await tester.test(_test_features_inject_markdown_table, "support_markdown_table 注入测试")
+    await tester.test(_test_hold_normalizes_remote_context_unavailable, "跨进程 hold 上下文缺失归一化测试")
+    await tester.test(_test_features_inject_markdown_table, "support_markdown_extension 注入测试")
     await tester.test(_test_session_refresh_updates_derived_union_state, "SessionInfo 刷新派生状态测试")
     await tester.test(_test_session_refresh_does_not_recreate_deleted_unions, "SessionInfo 刷新不复活已删除 Union")
 
@@ -3198,7 +3269,7 @@ async def test_session_task(tester: Tester):
         "waiter 跟随场景 rechannel 并隔离旧通道测试",
     )
     await tester.test(
-        _test_reply_wait_is_scoped_to_physical_platform_scene,
+        _test_reply_wait_is_scoped_to_physical_platform_context,
         "wait_reply 物理平台场景隔离测试",
     )
     await tester.test(

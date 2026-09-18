@@ -1,8 +1,10 @@
 import re
+from urllib.parse import quote, urlsplit, urlunsplit
 
 import matplotlib.pyplot as plt
 import orjson
 
+from core.builtins.bot import Bot
 from core.utils.cache import random_cache_path
 from core.utils.http import post_url
 from core.utils.image_table import ImageTable, image_table_render
@@ -50,6 +52,36 @@ def parse_markdown(md: str) -> list[dict[str, str]]:
         blocks.append({"type": "text", "content": md[last_end:]})
 
     return blocks
+
+
+def format_refs(session: Bot.MessageSession, text: str) -> str:
+    ref_pattern = re.compile(r"\[ref:([^>]+?)\]")
+    urls: list[str] = []
+
+    def safe_quote_url(url: str) -> str:
+        parts = urlsplit(url)
+        quoted_path = quote(parts.path, safe="/:")
+        quoted_query = quote(parts.query, safe="&=%+~@$-_.")
+        quoted_fragment = quote(parts.fragment, safe="")
+        return urlunsplit((parts.scheme, parts.netloc, quoted_path, quoted_query, quoted_fragment))
+
+    def _replace(match: re.Match) -> str:
+        raw_url = match.group(1).strip()
+        url = safe_quote_url(raw_url)
+        if url not in urls:
+            urls.append(url)
+        return f"[{urls.index(url) + 1}]"
+
+    text = ref_pattern.sub(_replace, text)
+
+    if urls:
+        text += "\n\n"
+        text += f"## {session.session_info.locale.t('ai.message.references.title')}\n"
+        text += f"```{session.session_info.locale.t('ai.message.references.title')}\n"
+        text += "\n".join(f"{urls.index(url) + 1}. {url}" for url in urls)
+        text += "\n```"
+
+    return text
 
 
 def process_redacted(text: str) -> str:

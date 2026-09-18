@@ -1,9 +1,9 @@
-"""modules.core.merge 单元测试 - 迁移码的签发与消费。"""
+"""modules.core.common_tools.merge 单元测试 - 迁移码的签发与消费。"""
 
 from core.database.models import UNION_SCOPE_SENDER, UNION_SCOPE_TARGET, TargetUnionBind, TargetUnionInfo
 from core.tester import func_case, Tester
-from modules.core import merge
-from core.union_merge import generate_code
+from modules.core.common_tools import merge
+from core.utils.union_merge import generate_code
 
 
 async def _test_target_code_roundtrip():
@@ -78,7 +78,7 @@ async def _test_invalid_code_returns_none():
 async def _test_bind_code_not_consumable():
     """测试迁移码 - bind 签发的绑定码不会被 merge 消费"""
     try:
-        from modules.core import bind
+        from modules.core.common_tools import bind
 
         code = generate_code(bind._sender_bind_codes, "USID|DDD", "QQ|1", {"is_private": True})
         taken = merge._take_merge_code(code)
@@ -132,7 +132,7 @@ async def _test_unify_channel_missing_initiator_reassigns_current():
 
 @func_case
 async def test_merge_code(tester: Tester):
-    """modules.core.merge: 迁移码签发与消费测试"""
+    """modules.core.common_tools.merge: 迁移码签发与消费测试"""
     await tester.test(_test_target_code_roundtrip, "场景码往返测试")
     await tester.test(_test_sender_code_roundtrip, "账号码往返测试")
     await tester.test(_test_code_consumed_once, "一次性消费测试")

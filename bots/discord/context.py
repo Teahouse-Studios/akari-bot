@@ -15,6 +15,7 @@ from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.session.context import ContextManager
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
+from core.builtins.session.bot_state import BotState
 from core.logger import Logger
 
 
@@ -88,6 +89,72 @@ class DiscordContextManager(ContextManager):
         except Exception:
             Logger.exception()
         return False
+
+    @classmethod
+    async def check_bot_state(cls, session_info: SessionInfo) -> BotState:
+        """Resolve Discord's effective guild/channel permission bitset for the bot."""
+        try:
+            ctx = cls.context.get(session_info.session_id)
+            channel = getattr(ctx, "channel", None) if ctx else None
+            if channel is None and session_info.target_from != target_guild_prefix:
+                channel = await discord_bot.fetch_channel(int(get_channel_id(session_info)))
+            guild = getattr(channel, "guild", None) or await get_discord_guild(session_info)
+            if guild is None:
+                return BotState(
+                    available=True,
+                    joined=True,
+                    is_owner=None,
+                    is_admin=None,
+                    can_read_messages=True,
+                    can_read_all_messages=True,
+                    can_send_messages=True,
+                    can_send_proactive_messages=True,
+                    can_manage_messages=None,
+                    can_manage_members=None,
+                    can_restrict_members=None,
+                    can_react=True,
+                    can_send_private_messages=True,
+                    raw={"channel_type": "dm"},
+                )
+
+            bot_user = discord_bot.user
+            if bot_user is None:
+                return BotState(available=None, joined=None, error="Discord bot user is unavailable")
+            member = guild.me
+            if member is None or member.id != bot_user.id:
+                member = await guild.fetch_member(bot_user.id)
+            permissions = (
+                channel.permissions_for(member)
+                if channel is not None and getattr(channel, "guild", None) is not None
+                else member.guild_permissions
+            )
+            values = {name: bool(getattr(permissions, name)) for name in discord.Permissions.VALID_FLAGS}
+            return BotState(
+                available=True,
+                joined=True,
+                is_owner=guild.owner_id == member.id,
+                is_admin=bool(permissions.administrator),
+                can_read_messages=values.get("view_channel"),
+                can_read_all_messages=values.get("read_message_history"),
+                can_send_messages=values.get("send_messages"),
+                can_send_proactive_messages=values.get("send_messages"),
+                can_manage_messages=values.get("manage_messages"),
+                can_manage_members=any(
+                    values.get(name) for name in ("kick_members", "ban_members", "moderate_members")
+                ),
+                can_restrict_members=values.get("moderate_members"),
+                can_react=values.get("add_reactions"),
+                can_send_private_messages=True,
+                permissions=values,
+                raw={
+                    "guild_id": str(guild.id),
+                    "channel_id": str(getattr(channel, "id", "")),
+                    "value": permissions.value,
+                },
+            )
+        except Exception as exc:
+            Logger.exception(f"Failed to check Discord bot state in {session_info.target_id}: ")
+            return BotState(available=None, joined=None, error=str(exc))
 
     @classmethod
     async def send_message(
