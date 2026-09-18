@@ -23,7 +23,6 @@ class ButtonState:
     created_at: float
     click_limit: int | None = 1
     click_count: int = 0
-    message_id: str | None = None
 
 
 @define(frozen=True)
@@ -53,7 +52,6 @@ class ButtonConsumeResult:
     payload: str | None = None
     reply_id: str | None = None
     exhausted: bool = False
-    message_id: str | None = None
 
 
 _button_registry: dict[str, ButtonState] = {}
@@ -116,19 +114,7 @@ def consume_button(token: str, sender_id: str, now: float | None = None) -> Butt
         state.payload,
         state.reply_id,
         exhausted=state.click_limit is not None and state.click_count >= state.click_limit,
-        message_id=state.message_id,
     )
-
-
-def bind_button_message_id(tokens: list[str] | tuple[str, ...], message_id: str | int | None) -> None:
-    """Associate rendered button tokens with the physical message that contains them."""
-    if message_id is None:
-        return
-    normalized = str(message_id)
-    for token in tokens:
-        state = _button_registry.get(token)
-        if state is not None:
-            state.message_id = normalized
 
 
 def normalize_button_payload(payload: str) -> str:

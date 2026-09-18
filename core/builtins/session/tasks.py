@@ -212,6 +212,18 @@ class SessionTaskManager:
         timeout = callback_info.get("timeout", SessionTaskManager.CALLBACK_TTL)
         return timeout is not None and (time.time() if now is None else now) - callback_info["ts"] >= timeout
 
+    @staticmethod
+    def _attach_callback_message_id(session: "MessageSession", callback_info: dict) -> None:
+        """Restore the physical message ID when a platform only returns a virtual reply ID."""
+        session_info = session.session_info
+        if session_info.message_id is not None:
+            return
+        reply_id = str(session_info.reply_id) if session_info.reply_id is not None else None
+        for message_id in callback_info.get("primary_ids", ()):
+            if reply_id is None or message_id != reply_id:
+                session_info.message_id = str(message_id)
+                return
+
     @classmethod
     def get_result(cls, msg: "MessageSession"):
         """
@@ -479,6 +491,7 @@ class SessionTaskManager:
         if matched:
             callback_key, callback_info = matched
             callback = callback_info["callback"]
+            cls._attach_callback_message_id(session, callback_info)
             if callback_info.get("once", False):
                 # 一次性 callback 在 await 用户代码前原子删除，避免并发回复重复执行。
                 cls._callback_list.pop(callback_key, None)

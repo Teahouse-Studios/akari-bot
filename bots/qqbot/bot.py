@@ -410,14 +410,12 @@ class MyClient(botpy.Client):
             return
         # QQBot 的交互事件不会可靠返回按钮所属消息的 ID；发送阶段把框架生成的虚拟
         # reply_id 编进 button data，此处恢复后即可复用 SessionTaskManager 的 callback 匹配。
-        button_result = None
         if send_msg.startswith(BUTTON_TOKEN_PREFIX):
             result = consume_button(send_msg, sender_id)
             if result.status is not ButtonConsumeStatus.SUCCESS:
                 Logger.debug(f"QQBot button click rejected: {result.status.name}")
                 return
             payload = ButtonPayload.parse(result.payload or "", result.reply_id)
-            button_result = result
         else:
             # 兼容旧版尚未迁移到运行时 token 的键盘数据。
             payload = ButtonPayload.parse(send_msg)
@@ -434,8 +432,10 @@ class MyClient(botpy.Client):
             is_private=target_from in (target_c2c_prefix, target_direct_prefix),
             sender_from=sender_from,
             client_name=client_name,
-            message_id=button_result.message_id if button_result else None,
-            reply_id=payload.reply_id or (button_result.message_id if button_result else None),
+            message_id=None,
+            reply_id=payload.reply_id
+            or str(getattr(getattr(interaction.data, "resolved", None), "message_id", ""))
+            or None,
             messages=MessageChain.assign([Plain(send_msg)]),
             ctx_slot=ctx_id,
             bot_id=qqbot_openid,
