@@ -11,7 +11,7 @@ from urllib.parse import urlsplit, urlunsplit
 
 import regex
 
-from core.constants.path import assets_path
+from core.constants.path import url_audit_assets_path, url_audit_data_path
 from core.logger import Logger
 
 REGEX_RULE_PREFIX = "regex:"
@@ -144,6 +144,8 @@ def match_regex_rules(url: str, patterns: list[str] | tuple[str, ...]) -> bool:
 
 
 class _GlobalURLRuleList:
+    # 主仓规则（global.txt）随仓库分发，只读，位于 assets；
+    # 部署者规则（user.txt）由命令读写，位于 data。测试可整体替换这几个路径。
     directory: Path
     builtin_path: Path
     user_path: Path
@@ -269,12 +271,12 @@ class _GlobalURLRuleList:
 
     @classmethod
     def _atomic_write(cls, content: str) -> None:
-        cls.directory.mkdir(parents=True, exist_ok=True)
+        # 临时文件与目标同目录，确保 os.replace 只在同一文件系统内进行。
+        target_dir = cls.user_path.parent
+        target_dir.mkdir(parents=True, exist_ok=True)
         temp_path = None
         try:
-            with tempfile.NamedTemporaryFile(
-                "w", encoding="utf-8", dir=cls.directory, delete=False, newline="\n"
-            ) as file:
+            with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=target_dir, delete=False, newline="\n") as file:
                 temp_path = Path(file.name)
                 file.write(content)
                 file.flush()
@@ -345,9 +347,9 @@ class _GlobalURLRuleList:
 
 
 class GlobalURLAllowlist(_GlobalURLRuleList):
-    directory = assets_path / "url_audit" / "allowlist"
+    directory = url_audit_assets_path / "allowlist"
     builtin_path = directory / "global.txt"
-    user_path = directory / "user.txt"
+    user_path = url_audit_data_path / "allowlist" / "user.txt"
     label = "allowlist"
 
     _cache_key = None
@@ -360,9 +362,9 @@ class GlobalURLAllowlist(_GlobalURLRuleList):
 
 
 class GlobalURLBlocklist(_GlobalURLRuleList):
-    directory = assets_path / "url_audit" / "blocklist"
+    directory = url_audit_assets_path / "blocklist"
     builtin_path = directory / "global.txt"
-    user_path = directory / "user.txt"
+    user_path = url_audit_data_path / "blocklist" / "user.txt"
     label = "blocklist"
 
     _cache_key = None

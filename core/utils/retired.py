@@ -287,7 +287,7 @@ def read_notice(client_name: str, locale: str, base_path: Path | None = None) ->
 
     :param client_name: 客户端名称，用于定位目录，匹配时转为小写。
     :param locale: 当前会话的语言。
-    :param base_path: 公告文案的基础目录，缺省为 ``assets/retired``。测试可传入临时目录。
+    :param base_path: 公告文案的基础目录，缺省为 ``data/retired``。测试可传入临时目录。
     :return: 公告正文，无可用文案时为 None。
     """
     base = base_path or retired_path

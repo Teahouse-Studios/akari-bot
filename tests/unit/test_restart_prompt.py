@@ -14,7 +14,7 @@ import orjson
 from core.alive import Alive
 from core.builtins.converter import converter
 from core.builtins.session.info import SessionInfo
-from core.constants import PrivateAssets
+from core.constants import PrivateData
 from core.database.models import JobQueuePeersTable, JobQueuesTable
 from core.server.init import load_prompt
 from core.queue.contracts import PlatformAPI
@@ -31,10 +31,10 @@ async def _write_restart_cache(client: str) -> None:
         sender_id=f"{client}|1",
         create=True,
     )
-    author_cache = PrivateAssets.path / ".cache_restart_author"
+    author_cache = PrivateData.path / ".cache_restart_author"
     author_cache.write_bytes(orjson.dumps(converter.unstructure(session_info)))
     # load_prompt 会一并读取模块加载结果，该文件由 load_modules 写出，此处补齐以隔离依赖
-    loader_cache = PrivateAssets.path / ".cache_loader"
+    loader_cache = PrivateData.path / ".cache_loader"
     if not loader_cache.exists():
         loader_cache.write_text("")
 
@@ -72,7 +72,7 @@ async def _register_client(client: str, peer_id: str | None = None) -> None:
 
 
 def _cleanup(alive: dict) -> None:
-    (PrivateAssets.path / ".cache_restart_author").unlink(missing_ok=True)
+    (PrivateData.path / ".cache_restart_author").unlink(missing_ok=True)
     Alive.values.clear()
     Alive.values.update(alive)
 
@@ -142,7 +142,7 @@ async def _test_gives_up_when_client_never_online():
 
         await asyncio.wait_for(load_prompt(None, timeout=0.05), timeout=10)
         # 超时放弃后不应残留缓存，否则下次启动会重复投递
-        return not await _prompt_sent() and not (PrivateAssets.path / ".cache_restart_author").exists()
+        return not await _prompt_sent() and not (PrivateData.path / ".cache_restart_author").exists()
 
     except (Exception, asyncio.TimeoutError):
         return False
@@ -153,7 +153,7 @@ async def _test_gives_up_when_client_never_online():
 async def _test_corrupt_author_cache_is_discarded():
     """损坏的重启发起者缓存不应阻止 Server 启动，也不能留到下次重复解析。"""
     alive = Alive.values.copy()
-    author_cache = PrivateAssets.path / ".cache_restart_author"
+    author_cache = PrivateData.path / ".cache_restart_author"
     try:
         author_cache.write_bytes(b"{not valid json")
         await load_prompt(None, timeout=0)

@@ -24,9 +24,8 @@ jobs:
 
       - name: Write version file
         run: |
-          mkdir -p assets/private/default
-          echo "$TAG_NAME" > assets/private/default/.version
-          cat assets/private/default/.version
+          echo "$TAG_NAME" > assets/.version
+          cat assets/.version
 
       - name: Package code
         run: |

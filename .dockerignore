@@ -14,6 +14,9 @@ requirements.txt
 tests/
 tester.py
 
+# Runtime cache (recreated on startup)
+cache/
+
 # Documentation
 SECURITY.md
 CODE_OF_CONDUCT.md

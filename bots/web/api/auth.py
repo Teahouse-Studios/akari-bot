@@ -15,12 +15,12 @@ from jwt.exceptions import ExpiredSignatureError
 
 from bots.web.client import app, limiter, ph, jwt_secret, get_client_ip
 from bots.web.config import WebConfig
-from core.constants.path import assets_path
+from core.constants.path import data_path
 from core.database.models import MaliciousLoginRecords
 from core.logger import Logger
 from core.utils.random import SecureRandom
 
-PASSWORD_PATH = assets_path / "private" / "web" / ".password"
+PASSWORD_PATH = data_path / "private" / "web" / ".password"
 LOGIN_BLOCK_DURATION = 3600
 
 

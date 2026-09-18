@@ -19,9 +19,8 @@ jobs:
 
       - name: Write version file
         run: |
-          mkdir -p assets/private/default
-          echo "nightly-v$(date +'%Y%m%d')" > assets/private/default/.version
-          cat assets/private/default/.version
+          echo "nightly-v$(date +'%Y%m%d')" > assets/.version
+          cat assets/.version
 
       - name: Package code
         run: |

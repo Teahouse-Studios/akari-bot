@@ -14,7 +14,7 @@ rst = module("restart", required_superuser=True, base=True, doc=True, exclude_fr
 
 
 def write_restart_cache(msg: Bot.MessageSession):
-    update = Bot.PrivateAssets.path / ".cache_restart_author"
+    update = Bot.PrivateData.path / ".cache_restart_author"
     with open(update, "wb") as write_version:
         write_version.write(orjson.dumps(converter.unstructure(msg.session_info)))
 

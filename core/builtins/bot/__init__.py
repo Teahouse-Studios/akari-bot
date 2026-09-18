@@ -19,7 +19,7 @@ from core.builtins.session.lock import ExecutionLockList
 from core.builtins.temp import *
 from core.config.base import CoreConfig
 from core.constants.info import Info
-from core.constants.path import PrivateAssets, assets_path
+from core.constants.path import PrivateData, data_path
 from core.database.models import (
     AnalyticsData,
     UNION_ID_PREFIXES,
@@ -73,7 +73,7 @@ class Bot:
     Temp = Temp
 
     # 私有资源路径 - 用于存储特定客户端的私有资源
-    PrivateAssets = PrivateAssets
+    PrivateData = PrivateData
 
     # 上下文管理器列表 - 存储注册的各个通讯平台的上下文管理器
     ContextSlots: list[ContextManager] = []
@@ -446,21 +446,21 @@ class Bot:
         return slot_num
 
     @classmethod
-    def register_bot(cls, client_name: str | None = None, private_assets_path: str | None = None):
+    def register_bot(cls, client_name: str | None = None, private_data_path: str | None = None):
         """
         注册机器人实例。
 
         设置客户端名称和私有资源路径。
 
         :param client_name: 客户端名称（如 "qq"、"discord" 等）
-        :param private_assets_path: 私有资源文件夹路径
-                                  如果为 None，自动使用 `assets/private/{client_name}` 路径
+        :param private_data_path: 私有资源文件夹路径
+                                  如果为 None，自动使用 `data/private/{client_name}` 路径
         """
         # 设置私有资源路径
-        if private_assets_path:
-            PrivateAssets.set(private_assets_path)
+        if private_data_path:
+            PrivateData.set(private_data_path)
         else:
-            PrivateAssets.set(assets_path / "private" / client_name.lower())
+            PrivateData.set(data_path / "private" / client_name.lower())
 
         # 设置系统信息中的客户端名称
         Info.client_name = client_name

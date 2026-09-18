@@ -39,9 +39,8 @@ jobs:
 
       - name: Write version file
         run: |
-          mkdir -p assets/private/default
-          echo "${{ steps.tag.outputs.image_tag }}" > assets/private/default/.version
-          cat assets/private/default/.version
+          echo "${{ steps.tag.outputs.image_tag }}" > assets/.version
+          cat assets/.version
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4

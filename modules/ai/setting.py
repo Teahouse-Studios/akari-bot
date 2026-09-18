@@ -4,7 +4,12 @@ from decimal import Decimal, InvalidOperation
 
 import yaml
 
-instructions_path = Path(__file__).parent / "assets" / "instructions.txt"
+from core.constants.path import module_data_path
+
+ai_module_path = Path(__file__).parent
+ai_data_path = module_data_path(ai_module_path)
+
+instructions_path = ai_data_path / "instructions.txt"
 if instructions_path.exists():
     with open(instructions_path, "r", encoding="utf-8") as f:
         INSTRUCTIONS = f.read()
@@ -13,9 +18,9 @@ else:
 
 llm_api_list_path = next(
     (
-        Path(__file__).parent / "assets" / f"llm_api_list{dot_yaml}"
+        ai_data_path / f"llm_api_list{dot_yaml}"
         for dot_yaml in (".yaml", ".yml")
-        if (Path(__file__).parent / "assets" / f"llm_api_list{dot_yaml}").exists()
+        if (ai_data_path / f"llm_api_list{dot_yaml}").exists()
     ),
     None,
 )

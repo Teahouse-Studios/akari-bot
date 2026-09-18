@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 
 from core.builtins.bot import Bot
@@ -9,10 +7,9 @@ from core.utils.cache import random_cache_path
 from core.utils.func import truncate_text
 
 from .PhiCloudActionAsync.ActionLib import getBest
-from .assets import illustration_path, load_song_info
+from .assets import pgr_assets_path, illustration_path, load_song_info
 from .record import get_records, get_save
 
-pgr_assets_path = Path(__file__).parent.parent / "assets"
 saira_regular_path = pgr_assets_path / "Saira Regular.ttf"
 
 LEVEL_INDEX = {"EZ": 0, "HD": 1, "IN": 2, "AT": 3}

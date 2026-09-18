@@ -23,7 +23,7 @@ from loguru import logger
 from core.constants import CONFIG_READONLY_ENV, ascii_art, bots_path, logs_path  # skipcq
 
 
-AKARI_BOT_I18N_CACHE_DIR = str(Path("./assets/i18n_cache/").resolve())
+AKARI_BOT_I18N_CACHE_DIR = str(Path("./data/i18n_cache/").resolve())
 
 load_dotenv()
 os.environ.setdefault("PYTHONIOENCODING", "UTF-8")

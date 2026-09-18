@@ -13,7 +13,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 
 import core.loader as loader_module
 from core.config import CFGManager
-from core.constants import PrivateAssets
+from core.constants import PrivateData
 from core.database.models import ModuleStatus
 from core.loader import ModulesManager
 from core.module_runtime import ModuleRuntimeManager
@@ -1072,7 +1072,7 @@ async def _test_initial_load_rolls_back_partial_registration():
                 patch.object(loader_module.importlib, "import_module", side_effect=import_module),
                 patch.object(ModuleStatus, "init_modules", new=AsyncMock()),
                 patch.object(ModuleStatus, "all", return_value=status_query),
-                patch.object(PrivateAssets, "path", Path(temp_dir)),
+                patch.object(PrivateData, "path", Path(temp_dir)),
             ):
                 await loader_module.load_modules()
                 loader_result = (Path(temp_dir) / ".cache_loader").read_text(encoding="utf-8")

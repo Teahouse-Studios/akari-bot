@@ -19,7 +19,7 @@ __pycache__/
 
 # Cache
 .cache_loader
-/assets/i18n_cache/*
+/data/i18n_cache/*
 cache/*
 
 # Configuration Files
@@ -30,10 +30,11 @@ output/*
 
 # Logs
 *.log
-assets/union_merge_logs/*
+/data/union_merge_logs/*
 
-# Private Assets
-assets/private*
+# Private Data
+/data/private*
+/data/config_store_bak
 
 # Version Files
 /assets/version
@@ -76,20 +77,26 @@ CLAUDE.md
 # ==========
 
 # Local Text Filters
-assets/bad_words/*.txt
+/data/bad_words/*.txt
 
 # Local URL Audit
-assets/url_audit/allowlist/user.txt
-assets/url_audit/blocklist/user.txt
+/data/url_audit/allowlist/user.txt
+/data/url_audit/blocklist/user.txt
 
-# Module Assets
-modules/ai/assets/*
-modules/arcaea/assets/*
-modules/maimai/assets/*
-modules/phigros/assets/*
+# Module Data
+modules/*/data/*
+!modules/ai/data/instructions.txt
 
-# Retired Client Assets
-assets/retired/*
+# Module Assets (Manually set)
+modules/maimai/assets/chu_song_info.json
+modules/maimai/assets/mai_song_alias.json
+modules/maimai/assets/mai_song_info.json
+modules/phigros/assets/resource_version.txt
+modules/phigros/assets/illustration/*
+modules/phigros/assets/song_info.json
+
+# Retired Client Data
+/data/retired/*
 
 # WebUI
 webui/*

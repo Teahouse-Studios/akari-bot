@@ -218,8 +218,8 @@ if __name__ == "__main__":
     config_store_path = assets_path / "config_store"
     # 定义压缩配置文件的输出路径
     config_store_packed_path = assets_path / "config_store_packed"
-    # 定义备份路径（用于失败时的恢复）
-    config_store_path_bak = assets_path / "config_store_bak"
+    # 定义备份路径（用于失败时的恢复），属临时产物，落在 data 下
+    config_store_path_bak = data_path / "config_store_bak"
 
     # 最多尝试 3 次生成配置，如果失败则回滚
     attempt = 1

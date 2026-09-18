@@ -19,6 +19,7 @@ assets_path = Path("./assets").resolve()
 bots_path = Path("./bots").resolve()
 cache_path = Path("./cache").resolve()
 config_path = Path(os.environ.get(CONFIG_PATH_ENV) or "./config").resolve()
+data_path = Path("./data").resolve()
 database_path = Path("./database").resolve()
 base_locales_path = Path("./core/locales").resolve()
 logs_path = Path("./logs").resolve()
@@ -26,12 +27,19 @@ modules_path = Path("./modules").resolve()
 tests_path = Path("./tests").resolve()
 webui_path = Path("./webui").resolve()
 
-# assets 子路径
-bad_words_path = assets_path / "bad_words"
+# assets 与 data 的分工：assets 只放随仓库分发的只读内容，运行时或部署者产生的内容一律写进 data。
+data_path.mkdir(parents=True, exist_ok=True)
+
+# assets 子路径（只读）
 fonts_path = assets_path / "fonts"
 templates_path = assets_path / "templates"
-retired_path = assets_path / "retired"
-union_merge_logs_path = assets_path / "union_merge_logs"
+url_audit_assets_path = assets_path / "url_audit"
+
+# data 子路径（可写）
+bad_words_path = data_path / "bad_words"
+retired_path = data_path / "retired"
+union_merge_logs_path = data_path / "union_merge_logs"
+url_audit_data_path = data_path / "url_audit"
 
 # 字体文件路径
 noto_sans_bold_path = fonts_path / "Noto Sans CJK Bold.otf"
@@ -47,8 +55,10 @@ all_locales_path = (
 )
 
 
-class PrivateAssets:
-    path = assets_path / "private" / "default"
+class PrivateData:
+    """客户端私有资源目录，存放需要跨重启保留的运行时文件。"""
+
+    path = data_path / "private" / "default"
     path.mkdir(parents=True, exist_ok=True)
 
     @classmethod
@@ -56,3 +66,16 @@ class PrivateAssets:
         path_ = Path(path).resolve()
         path_.mkdir(parents=True, exist_ok=True)
         cls.path = path_
+
+
+def module_data_path(module_dir: str | Path) -> Path:
+    """取模块的可写数据目录，并确保其存在。
+
+    模块内的 ``assets`` 只放随仓库分发的只读内容；下载所得的资源、运行时生成的索引等
+    应写入模块的 ``data`` 目录。
+
+    :param module_dir: 模块根目录，例如 ``Path(__file__).parent``。
+    """
+    path = Path(module_dir).resolve() / "data"
+    path.mkdir(parents=True, exist_ok=True)
+    return path

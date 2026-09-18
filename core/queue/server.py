@@ -12,7 +12,7 @@ from core.builtins.parser.command import CommandParser
 from core.builtins.parser.message import parser
 from core.builtins.session.info import EventInfo, SessionInfo
 from core.builtins.utils import command_prefix
-from core.constants.path import PrivateAssets
+from core.constants.path import assets_path
 from core.config.base import CoreConfig
 from core.exports import exports, add_export
 from core.i18n import Locale
@@ -160,7 +160,7 @@ async def direct_message(
 
 @ServerAPI.get_bot_version.bind(JobQueueServer)
 async def get_bot_version() -> str | None:
-    version_path = PrivateAssets.path / ".version"
+    version_path = assets_path / ".version"
     if version_path.exists():
         return version_path.read_text()
     returncode, commit_hash, _ = await run_sys_command(["git", "rev-parse", "HEAD"])

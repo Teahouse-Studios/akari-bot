@@ -3,7 +3,7 @@ from nio import AsyncClient, AsyncClientConfig
 
 from bots.matrix.config import MatrixConfig, MatrixSecretConfig
 from core.config.base import CoreSecretConfig
-from core.constants.path import assets_path
+from core.constants.path import data_path
 from core.logger import Logger
 
 homeserver = MatrixConfig.matrix_homeserver
@@ -14,7 +14,7 @@ token = MatrixSecretConfig.matrix_token
 megolm_backup_passphrase = MatrixSecretConfig.matrix_megolm_backup_passphrase
 proxy = CoreSecretConfig.proxy
 
-store_path = assets_path / "private" / "matrix" / "matrix_store"
+store_path = data_path / "private" / "matrix" / "matrix_store"
 store_path_nio = store_path / "nio"
 store_path_megolm_backup = store_path / "megolm_backup"
 

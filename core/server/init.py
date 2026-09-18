@@ -18,7 +18,7 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, I18NContext
 from core.builtins.session.info import SessionInfo
 from core.config import CFGManager
-from core.constants import Info, PrivateAssets, Secret
+from core.constants import assets_path, Info, PrivateData, Secret
 from core.database import init_db
 from core.loader import load_modules, ModulesManager
 from core.logger import Logger
@@ -60,7 +60,7 @@ async def init_async(start_scheduler=True, send_prompt=True) -> None:
     Logger.rename(Info.client_name)
 
     # 读取版本信息
-    version_path = PrivateAssets.path / ".version"
+    version_path = assets_path / ".version"
     if version_path.exists():
         with open(version_path, "r") as f:
             Info.version = f.read()
@@ -166,8 +166,8 @@ async def load_prompt(locale_load_error, timeout: float | None = None) -> None:
     :param locale_load_error: 语言文件加载过程中产生的错误信息
     :param timeout: 等待目标客户端上线的秒数上限，默认为 `RESTART_PROMPT_TIMEOUT`
     """
-    author_cache = PrivateAssets.path / ".cache_restart_author"
-    loader_cache = PrivateAssets.path / ".cache_loader"
+    author_cache = PrivateData.path / ".cache_restart_author"
+    loader_cache = PrivateData.path / ".cache_loader"
     if author_cache.exists():
         try:
             author_data = author_cache.read_bytes()

@@ -63,16 +63,15 @@ jobs:
             discord
           clang: ${{ matrix.os != 'windows-latest' }}
 
-      - name: Copy Assets
-        run: |
-          python .github/scripts/build_copy_files.py
-
       - name: Write version file
         shell: bash
         run: |
-          mkdir -p assets/private/default
-          echo "nightly-v$(date +'%Y%m%d')" > assets/private/default/.version
-          cat assets/private/default/.version
+          echo "nightly-v$(date +'%Y%m%d')" > assets/.version
+          cat assets/.version
+
+      - name: Copy Assets
+        run: |
+          python .github/scripts/build_copy_files.py
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v7

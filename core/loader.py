@@ -13,7 +13,7 @@ from typing import Callable
 
 from core.builtins.session.info import EventInfo
 from core.config import CFGManager
-from core.constants import PrivateAssets, all_locales_path, lang_list
+from core.constants import PrivateData, all_locales_path, lang_list
 from core.database import activate_db_reload, close_prepared_db_reload, close_previous_db_context, prepare_db_reload
 from core.database.base import DBModel
 from core.database.models import ModuleStatus
@@ -86,7 +86,7 @@ async def load_modules():
 
     Logger.success("All modules loaded.")
 
-    loader_cache = PrivateAssets.path / ".cache_loader"
+    loader_cache = PrivateData.path / ".cache_loader"
     with open(loader_cache, "w", encoding="utf-8") as open_loader_cache:
         if err_prompt:
             err_prompt = re.sub(r"  File \"<frozen importlib.*?>\", .*?\n", "", "\n".join(err_prompt))

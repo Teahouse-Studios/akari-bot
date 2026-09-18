@@ -97,7 +97,7 @@ class MkeyGenerator:
     def __init__(self, debug=False):
         self._dbg = debug
 
-        self._data_path = Path(__file__).parent / "data"
+        self._data_path = Path(__file__).parent / "assets" / "data"
 
     # Dump bytes as hex, for debug output only.
     @staticmethod

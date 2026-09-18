@@ -1,4 +1,4 @@
-在使用本模块前，请确保在 `modules/ai/assets/` 目录下创建 `llm_api_list.yaml` 配置文件，否则模块将无法正常运行。
+在使用本模块前，请确保在 `modules/ai/data/` 目录下创建 `llm_api_list.yaml` 配置文件，否则模块将无法正常运行。
 
 ---
 
@@ -358,7 +358,7 @@ billing:
 
 ---
 
-Before using this module, please make sure to create the `llm_api_list.yaml` configuration file in the `modules/ai/assets/` directory. Otherwise, the module will not function properly.
+Before using this module, please make sure to create the `llm_api_list.yaml` configuration file in the `modules/ai/data/` directory. Otherwise, the module will not function properly.
 
 ---
 

@@ -164,7 +164,7 @@ def write_merge_log(new_union: str, scope: str, snapshot: dict, directory: Path 
     """
     把合并前的快照单独写成一份日志文件，便于人工回溯。
 
-    记录写入 assets 下的 JSON 文件而非 ``StoredData``：这类快照只供人工翻阅，
+    记录写入 data 下的 JSON 文件而非 ``StoredData``：这类快照只供人工翻阅，
     存进数据库既要连库才能查看，又会与各模块的正常存储挤在同一张表里。
 
     每次合并各留一份文件，而非共用一份累积的清单：单份文件写坏只损失那一次记录，

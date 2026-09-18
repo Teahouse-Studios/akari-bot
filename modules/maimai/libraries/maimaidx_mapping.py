@@ -3,7 +3,8 @@ from pathlib import Path
 SONGS_PER_PAGE = 30
 SONGS_NEED_IMG = 10
 
-mai_assets_path = Path(__file__).parent.parent / "assets"
+mai_module_path = Path(__file__).parent.parent
+mai_assets_path = mai_module_path / "assets"
 mai_cover_path = mai_assets_path / "static" / "mai" / "cover"
 mai_alias_path = mai_assets_path / "mai_song_alias.json"
 mai_grade_info_path = mai_assets_path / "mai_grade_info.json"
