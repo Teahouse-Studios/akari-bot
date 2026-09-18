@@ -1,6 +1,6 @@
 import re
 
-from core.builtins.message.atcode import spans_inline_at
+from core.builtins.message.atcode import spans_at_code
 
 KE_CODE_PATTERN = re.compile(r"\[KE:[^\]]*\]")
 I18N_PLACEHOLDER_PATTERN = re.compile(r"\{I18N:[^}]*\}")
@@ -12,7 +12,7 @@ def get_protected_intervals(content: str) -> list[tuple[int, int]]:
     # ---------------------------------------------------------
     # AT / @ 码：整体豁免
     # ---------------------------------------------------------
-    protected.extend(spans_inline_at(content))
+    protected.extend(spans_at_code(content))
 
     # ---------------------------------------------------------
     # KE 码：只豁免结构和 key，value 参与过滤

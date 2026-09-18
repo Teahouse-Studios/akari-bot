@@ -7,7 +7,7 @@ from attrs import define, field
 
 from bots.discord.info import client_name, target_channel_prefix
 from bots.discord.utils import convert_embed
-from core.builtins.message.atcode import render_inline_at
+from core.builtins.message.atcode import render_at_code
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import (
     ActionTextElement,
@@ -65,7 +65,7 @@ async def build_discord_payloads(session_info: SessionInfo, message: MessageChai
     for element in message.as_sendable(session_info):
         if isinstance(element, PlainElement):
             text = (
-                render_inline_at(element.text, client_name, lambda at: f"<@{at.id}>")
+                render_at_code(element.text, client_name, lambda at: f"<@{at.id}>")
                 if element.allow_parse
                 else element.text
             )

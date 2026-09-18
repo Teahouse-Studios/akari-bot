@@ -2,9 +2,9 @@
 
 from core.builtins.message.atcode import (
     InlineAt,
-    iter_inline_at,
-    render_inline_at,
-    spans_inline_at,
+    iter_at_code,
+    render_at_code,
+    spans_at_code,
     wrap_sender_id,
 )
 from core.tester import Tester, func_case
@@ -12,13 +12,13 @@ from core.tester import Tester, func_case
 
 def _rebuild(text: str) -> str:
     """把切分结果按原文拼回，供各用例复用。"""
-    return "".join(part.raw if isinstance(part, InlineAt) else part for part in iter_inline_at(text))
+    return "".join(part.raw if isinstance(part, InlineAt) else part for part in iter_at_code(text))
 
 
 def _test_iter_splits_surrounding_text():
     """AT 码应与前后文本交替产出，并记录原文与区间。"""
     try:
-        parts = list(iter_inline_at("hi <AT:QQ|123> bye"))
+        parts = list(iter_at_code("hi <AT:QQ|123> bye"))
         return (
             len(parts) == 3
             and parts[0] == "hi "
@@ -35,7 +35,7 @@ def _test_iter_splits_surrounding_text():
 def _test_iter_supports_alternate_marker():
     """`<@:client|id>` 与 `<AT:client|id>` 等价。"""
     try:
-        parts = list(iter_inline_at("<@:QQ|123>"))
+        parts = list(iter_at_code("<@:QQ|123>"))
         return len(parts) == 1 and isinstance(parts[0], InlineAt) and parts[0].client == "QQ" and parts[0].id == "123"
     except Exception:
         return False
@@ -44,7 +44,7 @@ def _test_iter_supports_alternate_marker():
 def _test_iter_supports_extra_fields():
     """`client|extra|id` 形式取最后一段作为用户 ID。"""
     try:
-        parts = list(iter_inline_at("<AT:QQ|guild|123>"))
+        parts = list(iter_at_code("<AT:QQ|guild|123>"))
         return len(parts) == 1 and isinstance(parts[0], InlineAt) and parts[0].client == "QQ" and parts[0].id == "123"
     except Exception:
         return False
@@ -53,8 +53,8 @@ def _test_iter_supports_extra_fields():
 def _test_broadcast_detection():
     """非数字 ID（如 all）视为全体提及。"""
     try:
-        broadcast = next(part for part in iter_inline_at("<AT:QQ|all>") if isinstance(part, InlineAt))
-        user = next(part for part in iter_inline_at("<AT:QQ|123>") if isinstance(part, InlineAt))
+        broadcast = next(part for part in iter_at_code("<AT:QQ|all>") if isinstance(part, InlineAt))
+        user = next(part for part in iter_at_code("<AT:QQ|123>") if isinstance(part, InlineAt))
         return broadcast.is_broadcast and not user.is_broadcast
     except Exception:
         return False
@@ -63,7 +63,7 @@ def _test_broadcast_detection():
 def _test_plain_text_passthrough():
     """无 AT 码时原样产出单个文本片段；空文本不产出片段。"""
     try:
-        return list(iter_inline_at("hello")) == ["hello"] and list(iter_inline_at("")) == []
+        return list(iter_at_code("hello")) == ["hello"] and list(iter_at_code("")) == []
     except Exception:
         return False
 
@@ -74,7 +74,7 @@ def _test_adjacent_at_codes_follow_legacy_pattern():
     该行为在本重构前就由各适配器共用的正则决定，此处固定下来以免无意改变线上输出。
     """
     try:
-        parts = list(iter_inline_at("<AT:QQ|1><AT:QQ|2>"))
+        parts = list(iter_at_code("<AT:QQ|1><AT:QQ|2>"))
         return (
             len(parts) == 1
             and isinstance(parts[0], InlineAt)
@@ -121,7 +121,7 @@ def _test_render_platform_syntax():
         ("telegram", "<AT:telegram|789>", "789"),
     )
     try:
-        return all(render_inline_at(text, client, templates[client]) == expected for client, text, expected in cases)
+        return all(render_at_code(text, client, templates[client]) == expected for client, text, expected in cases)
     except Exception:
         return False
 
@@ -130,7 +130,7 @@ def _test_render_keeps_foreign_atcode():
     """非本平台的 AT 码原样保留。"""
     try:
         text = "hi <AT:Discord|7> bye"
-        return render_inline_at(text, "QQ", lambda at: f"@{at.id}") == text
+        return render_at_code(text, "QQ", lambda at: f"@{at.id}") == text
     except Exception:
         return False
 
@@ -138,7 +138,7 @@ def _test_render_keeps_foreign_atcode():
 def _test_render_is_inline():
     """渲染结果嵌入文本流，不引入换行或空格等分隔符。"""
     try:
-        return render_inline_at("a<AT:QQ|1>b", "QQ", lambda at: f"@{at.id}") == "a@1b"
+        return render_at_code("a<AT:QQ|1>b", "QQ", lambda at: f"@{at.id}") == "a@1b"
     except Exception:
         return False
 
@@ -147,8 +147,8 @@ def _test_spans_match_pattern_regions():
     """受保护区间应精确覆盖 AT 码原文，且不吞掉相邻 AT 码之间的正文。"""
     try:
         text = "a <AT:QQ|123> b <@:Discord|456>"
-        spans = spans_inline_at(text)
-        adjacent = spans_inline_at("x<AT:QQ|1><AT:QQ|2>y")
+        spans = spans_at_code(text)
+        adjacent = spans_at_code("x<AT:QQ|1><AT:QQ|2>y")
         return (
             len(spans) == 2
             and text[spans[0][0] : spans[0][1]] == "<AT:QQ|123>"
@@ -191,7 +191,7 @@ def _test_wrap_sender_id_preserves_backslashes():
 def _test_wrap_then_render():
     """wrap_sender_id 产出的 AT 码必须能被渲染回提及。"""
     try:
-        return render_inline_at(wrap_sender_id("TEST|123 hi", "TEST"), "TEST", lambda at: f"@{at.id}") == "@123 hi"
+        return render_at_code(wrap_sender_id("TEST|123 hi", "TEST"), "TEST", lambda at: f"@{at.id}") == "@123 hi"
     except Exception:
         return False
 

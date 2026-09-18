@@ -5,7 +5,7 @@ from pathlib import Path
 import nio
 from nio.api import RelationshipType
 
-from core.builtins.message.atcode import render_inline_at
+from core.builtins.message.atcode import render_at_code
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import PlainElement, ImageElement, AudioElement, VideoElement, MentionElement
 from core.builtins.session.context import ContextManager
@@ -291,7 +291,7 @@ class MatrixContextManager(ContextManager):
 
             if isinstance(x, PlainElement):
                 if x.allow_parse:
-                    x.text = render_inline_at(x.text, client_name, lambda at: at.id)
+                    x.text = render_at_code(x.text, client_name, lambda at: at.id)
                 content = {"msgtype": "m.notice", "body": x.text}
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
                 await _send_msg(content)

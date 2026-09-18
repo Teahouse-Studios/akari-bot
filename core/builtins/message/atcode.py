@@ -5,8 +5,8 @@ AT 码（`<AT:client|userid>` / `<@:client|userid>`）是嵌在**文本流内部
 它与链上的 `MentionElement` 语义不同：`MentionElement` 是链上的独立元素，
 而 AT 码渲染后必须与前后文本同属一条文本。同理，无法渲染的 AT 码应当原样保留（而不是退化为空格占位）。
 
-本模块是 AT 码格式知识的唯一来源：产生（`wrap_sender_id`）、切分（`iter_inline_at`）、
-渲染（`render_inline_at`）与受保护区间（`spans_inline_at`）均由这里导出。
+本模块是 AT 码格式知识的唯一来源：产生（`wrap_sender_id`）、切分（`iter_at_code`）、
+渲染（`render_at_code`）与受保护区间（`spans_at_code`）均由这里导出。
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ from attrs import define
 _AT_CODE_PATTERN = re.compile(r"<(?:AT|@):([^\|]+)\|(?:.*?\|)?([^\|>]+)>")
 
 # 受保护区间专用：不允许跨标签吞掉中间文本，保证相邻 AT 码之间的正文不被豁免。
-_INLINE_AT_SPAN_PATTERN = re.compile(r"<(?:AT|@):[^\|>]+\|(?:[^\|>]*\|)?[^\|>]+>")
+_at_code_SPAN_PATTERN = re.compile(r"<(?:AT|@):[^\|>]+\|(?:[^\|>]*\|)?[^\|>]+>")
 
 
 @define(frozen=True)
@@ -53,7 +53,7 @@ class InlineAt:
         return not self.id.isdigit()
 
 
-def iter_inline_at(text: str) -> Iterator[str | InlineAt]:
+def iter_at_code(text: str) -> Iterator[str | InlineAt]:
     """
     按出现顺序切分文本，依次产出普通文本片段与 AT 码。
 
@@ -78,7 +78,7 @@ def iter_inline_at(text: str) -> Iterator[str | InlineAt]:
         yield text[position:]
 
 
-def render_inline_at(text: str, client: str, render: Callable[[InlineAt], str]) -> str:
+def render_at_code(text: str, client: str, render: Callable[[InlineAt], str]) -> str:
     """
     将本平台的 AT 码替换为平台特定的提及语法。
 
@@ -92,14 +92,14 @@ def render_inline_at(text: str, client: str, render: Callable[[InlineAt], str]) 
     示例：
     ```python
         > text = "Hello <AT:QQ|123456>"
-        > render_inline_at(text, "QQ", lambda at: f"@{at.id}")
+        > render_at_code(text, "QQ", lambda at: f"@{at.id}")
         'Hello @123456'
-        > render_inline_at(text, "Discord", lambda at: f"@{at.id}")
+        > render_at_code(text, "Discord", lambda at: f"@{at.id}")
         'Hello <AT:QQ|123456>'  # 不匹配，保留原样
     ```
     """
     parts: list[str] = []
-    for part in iter_inline_at(text):
+    for part in iter_at_code(text):
         if isinstance(part, InlineAt):
             parts.append(render(part) if part.client == client else part.raw)
         else:
@@ -107,17 +107,17 @@ def render_inline_at(text: str, client: str, render: Callable[[InlineAt], str]) 
     return "".join(parts)
 
 
-def spans_inline_at(text: str) -> list[tuple[int, int]]:
+def spans_at_code(text: str) -> list[tuple[int, int]]:
     """
     列出文本中所有 AT 码的区间。
 
     供过滤器等需要豁免 AT 码结构（而非渲染它）的场景使用。
-    与 :func:`iter_inline_at` 不同，这里的匹配不跨标签：相邻 AT 码之间的正文不会被一并豁免。
+    与 :func:`iter_at_code` 不同，这里的匹配不跨标签：相邻 AT 码之间的正文不会被一并豁免。
 
     :param text: 待检查的文本。
     :return: AT 码区间的列表，元素为 `(start, end)`。
     """
-    return [(match.start(), match.end()) for match in _INLINE_AT_SPAN_PATTERN.finditer(text)]
+    return [(match.start(), match.end()) for match in _at_code_SPAN_PATTERN.finditer(text)]
 
 
 def wrap_sender_id(text: str, sender_prefix: str) -> str:
@@ -145,8 +145,8 @@ def wrap_sender_id(text: str, sender_prefix: str) -> str:
 
 __all__ = [
     "InlineAt",
-    "iter_inline_at",
-    "render_inline_at",
-    "spans_inline_at",
+    "iter_at_code",
+    "render_at_code",
+    "spans_at_code",
     "wrap_sender_id",
 ]

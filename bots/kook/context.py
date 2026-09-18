@@ -5,7 +5,7 @@ import httpx
 import orjson
 from khl import Message, MessageTypes, PublicChannel, User
 
-from core.builtins.message.atcode import render_inline_at
+from core.builtins.message.atcode import render_at_code
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import PlainElement, ImageElement, AudioElement, VideoElement, MentionElement
 from core.builtins.session.context import ContextManager
@@ -236,7 +236,7 @@ class KOOKContextManager(ContextManager):
         for x in message.as_sendable(session_info):
             if isinstance(x, PlainElement):
                 if x.allow_parse:
-                    x.text = render_inline_at(x.text, client_name, lambda at: f"(met){at.id}(met)")
+                    x.text = render_at_code(x.text, client_name, lambda at: f"(met){at.id}(met)")
                 if ctx:
                     send_ = await ctx.reply(
                         x.text,

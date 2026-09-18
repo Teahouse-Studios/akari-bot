@@ -8,7 +8,7 @@ from aiogram.types import FSInputFile, InputMediaAudio, InputMediaPhoto
 from attrs import define, field
 
 from bots.telegram.info import client_name
-from core.builtins.message.atcode import InlineAt, iter_inline_at
+from core.builtins.message.atcode import InlineAt, iter_at_code
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import (
     ActionTextElement,
@@ -112,7 +112,7 @@ def _escape_telegram_text(text: str, parse_mentions: bool = True) -> str:
         return escape(text)
 
     result = []
-    for part in iter_inline_at(text):
+    for part in iter_at_code(text):
         if isinstance(part, InlineAt) and part.client == client_name:
             user_id = escape(part.id, quote=True)
             result.append(f'<a href="tg://user?id={user_id}">@{user_id}</a>')

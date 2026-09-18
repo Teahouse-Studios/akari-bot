@@ -23,7 +23,7 @@ from milky.models import (
 
 from bots.milky.client import milky_bot
 from bots.milky.info import client_name, sender_prefix, target_group_prefix
-from core.builtins.message.atcode import InlineAt, iter_inline_at
+from core.builtins.message.atcode import InlineAt, iter_at_code
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import (
     AudioElement,
@@ -196,7 +196,7 @@ async def convert_chain_to_segments(
     for element in message.as_sendable(session_info):
         if isinstance(element, PlainElement):
             # AT 码与前后文本同属一条文本，需在文本流内按出现顺序转换为提及段
-            parts = iter_inline_at(element.text) if element.allow_parse else (element.text,)
+            parts = iter_at_code(element.text) if element.allow_parse else (element.text,)
             for part in parts:
                 if isinstance(part, InlineAt) and part.client == client_name:
                     _append_mention(segments, part.id)
