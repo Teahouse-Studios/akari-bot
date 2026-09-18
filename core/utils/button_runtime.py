@@ -52,8 +52,8 @@ class ButtonConsumeResult:
     status: ButtonConsumeStatus
     payload: str | None = None
     reply_id: str | None = None
-    message_id: str | None = None
     exhausted: bool = False
+    message_id: str | None = None
 
 
 _button_registry: dict[str, ButtonState] = {}
@@ -115,8 +115,8 @@ def consume_button(token: str, sender_id: str, now: float | None = None) -> Butt
         ButtonConsumeStatus.SUCCESS,
         state.payload,
         state.reply_id,
-        state.message_id,
         exhausted=state.click_limit is not None and state.click_count >= state.click_limit,
+        message_id=state.message_id,
     )
 
 
