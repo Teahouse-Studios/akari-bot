@@ -913,6 +913,7 @@ async def _query_pages_impl(
             msg_list.append(ButtonFrame([ButtonRows.assign(render_buttons)]))
             render_callback = _build_render_preview_callback(render_button_items, headers)
         if msg_list:
+            quote = not session.session_info.support_markdown
             if all(
                 [
                     not render_infobox_list,
@@ -922,9 +923,10 @@ async def _query_pages_impl(
                     not wait_possible_list,
                 ]
             ):
-                await session.finish(msg_list, callback=render_callback, callback_once=bool(render_callback))
+                await session.finish(
+                    msg_list, callback=render_callback, callback_once=bool(render_callback), quote=quote
+                )
             else:
-                quote = not session.session_info.support_markdown
                 await session.send_message(
                     msg_list, callback=render_callback, callback_once=bool(render_callback), quote=quote
                 )
