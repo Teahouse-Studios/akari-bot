@@ -26,7 +26,7 @@ from bots.qqbot.info import (
     target_c2c_prefix,
 )
 from bots.qqbot.utils import url_filter
-from core.builtins.message.atcode import render_at_code
+from core.builtins.message.mention import render_at_code
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import (
     ActionTextElement,

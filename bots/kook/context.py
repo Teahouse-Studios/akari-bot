@@ -5,7 +5,7 @@ import httpx
 import orjson
 from khl import Message, MessageTypes, PublicChannel, User
 
-from core.builtins.message.atcode import render_at_code
+from core.builtins.message.mention import render_at_code
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import PlainElement, ImageElement, AudioElement, VideoElement, MentionElement
 from core.builtins.session.context import ContextManager

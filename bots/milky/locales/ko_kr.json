@@ -3,7 +3,7 @@
     "config.comments.bot_milky.qq_allow_approve_group_invite": "Milky 프로토콜을 사용할 때 그룹 초대를 자동으로 수락할지 여부.",
     "config.comments.bot_milky.qq_enable_temp_session": "Milky 프로토콜을 사용할 때 임시 세션을 활성화할지 여부.",
     "config.comments.bot_milky.qq_enable_listening_self_message": "Milky 프로토콜을 사용할 때, 자체 메시지 수신 기능을 활성화할지 여부.",
-    "config.comments.bot_milky.qq_host": "Milky 프로토콜 측 HTTP 서비스의 주소입니다. 예: http://127.0.0.1:3010 .",
+    "config.comments.bot_milky.qq_host": "Milky 프로토콜 측 HTTP 서비스의 주소입니다.",
     "config.comments.bot_milky.qq_initiative_msg_cooldown": "능동 메시지 전송 대기 시간을 제한합니다. 단위는 초입니다.",
     "config.comments.bot_milky.qq_limited_emoji": "Milky 프로토콜을 사용할 때, 메시지 처리가 실패하면 메시지에 추가되는 응답 이모티콘 ID입니다. 프로토콜 지원이 필요합니다. ID는 다음을 참조하십시오: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji",
     "config.comments.bot_milky.qq_typing_emoji": "Milky 프로토콜을 사용할 때, 메시지 처리 중에 메시지에 첨부되는 응답 이모티콘 ID를 의미합니다. 프로토콜 지원이 필요합니다. ID는 다음을 참조하십시오: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji",

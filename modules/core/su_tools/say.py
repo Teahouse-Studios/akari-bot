@@ -1,5 +1,5 @@
 from core.builtins.bot import Bot
-from core.builtins.message.atcode import wrap_sender_id
+from core.builtins.message.mention import wrap_sender_id
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Button
 from core.component import module

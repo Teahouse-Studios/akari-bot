@@ -13,7 +13,7 @@ from bots.onebot.client import aiocqhttp_bot
 from bots.onebot.config import AiocqhttpConfig
 from bots.onebot.info import target_private_prefix, target_group_prefix, client_name
 from bots.onebot.utils import CQCodeHandler
-from core.builtins.message.atcode import render_at_code
+from core.builtins.message.mention import render_at_code
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import PlainElement, ImageElement, AudioElement, VideoElement, MentionElement
 from core.builtins.session.context import ContextManager

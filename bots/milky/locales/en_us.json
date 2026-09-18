@@ -3,7 +3,7 @@
     "config.comments.bot_milky.qq_allow_approve_group_invite": "Whether to automatically accept group invitations when using the Milky protocol.",
     "config.comments.bot_milky.qq_enable_temp_session": "Whether to enable temp sessions when using the Milky protocol.",
     "config.comments.bot_milky.qq_enable_listening_self_message": "Whether to enable self-message monitoring when using the Milky protocol.",
-    "config.comments.bot_milky.qq_host": "The address of the Milky protocol HTTP service, e.g. http://127.0.0.1:3010 .",
+    "config.comments.bot_milky.qq_host": "The address of the Milky protocol HTTP service.",
     "config.comments.bot_milky.qq_initiative_msg_cooldown": "Cooldown in seconds for sending proactive messages.",
     "config.comments.bot_milky.qq_limited_emoji": "When using the Milky protocol, the reaction emoji ID attached to the message when message processing fails. It needs to be supported by the protocol terminal. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji",
     "config.comments.bot_milky.qq_typing_emoji": "When using the Milky protocol, the reaction emoji ID attached to the message when processing the message. It needs to be supported by the protocol terminal. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji",

@@ -7,7 +7,7 @@ from attrs import define, field
 
 from bots.discord.info import client_name, target_channel_prefix
 from bots.discord.utils import convert_embed
-from core.builtins.message.atcode import render_at_code
+from core.builtins.message.mention import render_at_code
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import (
     ActionTextElement,

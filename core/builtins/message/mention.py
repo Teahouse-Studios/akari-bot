@@ -26,7 +26,7 @@ _at_code_SPAN_PATTERN = re.compile(r"<(?:AT|@):[^\|>]+\|(?:[^\|>]*\|)?[^\|>]+>")
 
 
 @define(frozen=True)
-class InlineAt:
+class InlineMention:
     """
     文本流中的一处 AT 码。
 
@@ -53,20 +53,20 @@ class InlineAt:
         return not self.id.isdigit()
 
 
-def iter_at_code(text: str) -> Iterator[str | InlineAt]:
+def iter_at_code(text: str) -> Iterator[str | InlineMention]:
     """
     按出现顺序切分文本，依次产出普通文本片段与 AT 码。
 
     产出的片段可直接拼接还原原文；文本中相邻的 AT 码之间不会产生空字符串。
 
     :param text: 待切分的文本。
-    :return: `str` 与 `InlineAt` 交替的迭代器。
+    :return: `str` 与 `InlineMention` 交替的迭代器。
     """
     position = 0
     for match in _AT_CODE_PATTERN.finditer(text):
         if match.start() > position:
             yield text[position : match.start()]
-        yield InlineAt(
+        yield InlineMention(
             client=match.group(1),
             id=match.group(2),
             raw=match.group(0),
@@ -78,7 +78,7 @@ def iter_at_code(text: str) -> Iterator[str | InlineAt]:
         yield text[position:]
 
 
-def render_at_code(text: str, client: str, render: Callable[[InlineAt], str]) -> str:
+def render_at_code(text: str, client: str, render: Callable[[InlineMention], str]) -> str:
     """
     将本平台的 AT 码替换为平台特定的提及语法。
 
@@ -100,7 +100,7 @@ def render_at_code(text: str, client: str, render: Callable[[InlineAt], str]) ->
     """
     parts: list[str] = []
     for part in iter_at_code(text):
-        if isinstance(part, InlineAt):
+        if isinstance(part, InlineMention):
             parts.append(render(part) if part.client == client else part.raw)
         else:
             parts.append(part)
@@ -144,7 +144,7 @@ def wrap_sender_id(text: str, sender_prefix: str) -> str:
 
 
 __all__ = [
-    "InlineAt",
+    "InlineMention",
     "iter_at_code",
     "render_at_code",
     "spans_at_code",

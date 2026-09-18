@@ -1,7 +1,7 @@
-"""core.builtins.message.atcode 行内 AT 码解析与渲染单元测试。"""
+"""core.builtins.message.mention 行内 AT 码解析与渲染单元测试。"""
 
-from core.builtins.message.atcode import (
-    InlineAt,
+from core.builtins.message.mention import (
+    InlineMention,
     iter_at_code,
     render_at_code,
     spans_at_code,
@@ -12,7 +12,7 @@ from core.tester import Tester, func_case
 
 def _rebuild(text: str) -> str:
     """把切分结果按原文拼回，供各用例复用。"""
-    return "".join(part.raw if isinstance(part, InlineAt) else part for part in iter_at_code(text))
+    return "".join(part.raw if isinstance(part, InlineMention) else part for part in iter_at_code(text))
 
 
 def _test_iter_splits_surrounding_text():
@@ -22,7 +22,7 @@ def _test_iter_splits_surrounding_text():
         return (
             len(parts) == 3
             and parts[0] == "hi "
-            and isinstance(parts[1], InlineAt)
+            and isinstance(parts[1], InlineMention)
             and (parts[1].client, parts[1].id, parts[1].raw) == ("QQ", "123", "<AT:QQ|123>")
             and parts[1].start == 3
             and parts[1].end == 14
@@ -36,7 +36,9 @@ def _test_iter_supports_alternate_marker():
     """`<@:client|id>` 与 `<AT:client|id>` 等价。"""
     try:
         parts = list(iter_at_code("<@:QQ|123>"))
-        return len(parts) == 1 and isinstance(parts[0], InlineAt) and parts[0].client == "QQ" and parts[0].id == "123"
+        return (
+            len(parts) == 1 and isinstance(parts[0], InlineMention) and parts[0].client == "QQ" and parts[0].id == "123"
+        )
     except Exception:
         return False
 
@@ -45,7 +47,9 @@ def _test_iter_supports_extra_fields():
     """`client|extra|id` 形式取最后一段作为用户 ID。"""
     try:
         parts = list(iter_at_code("<AT:QQ|guild|123>"))
-        return len(parts) == 1 and isinstance(parts[0], InlineAt) and parts[0].client == "QQ" and parts[0].id == "123"
+        return (
+            len(parts) == 1 and isinstance(parts[0], InlineMention) and parts[0].client == "QQ" and parts[0].id == "123"
+        )
     except Exception:
         return False
 
@@ -53,8 +57,8 @@ def _test_iter_supports_extra_fields():
 def _test_broadcast_detection():
     """非数字 ID（如 all）视为全体提及。"""
     try:
-        broadcast = next(part for part in iter_at_code("<AT:QQ|all>") if isinstance(part, InlineAt))
-        user = next(part for part in iter_at_code("<AT:QQ|123>") if isinstance(part, InlineAt))
+        broadcast = next(part for part in iter_at_code("<AT:QQ|all>") if isinstance(part, InlineMention))
+        user = next(part for part in iter_at_code("<AT:QQ|123>") if isinstance(part, InlineMention))
         return broadcast.is_broadcast and not user.is_broadcast
     except Exception:
         return False
@@ -77,7 +81,7 @@ def _test_adjacent_at_codes_follow_legacy_pattern():
         parts = list(iter_at_code("<AT:QQ|1><AT:QQ|2>"))
         return (
             len(parts) == 1
-            and isinstance(parts[0], InlineAt)
+            and isinstance(parts[0], InlineMention)
             and parts[0].raw == "<AT:QQ|1><AT:QQ|2>"
             and parts[0].id == "2"
         )

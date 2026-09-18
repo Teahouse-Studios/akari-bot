@@ -23,7 +23,7 @@ from milky.models import (
 
 from bots.milky.client import milky_bot
 from bots.milky.info import client_name, sender_prefix, target_group_prefix
-from core.builtins.message.atcode import InlineAt, iter_at_code
+from core.builtins.message.mention import InlineMention, iter_at_code
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import (
     AudioElement,
@@ -198,10 +198,10 @@ async def convert_chain_to_segments(
             # AT 码与前后文本同属一条文本，需在文本流内按出现顺序转换为提及段
             parts = iter_at_code(element.text) if element.allow_parse else (element.text,)
             for part in parts:
-                if isinstance(part, InlineAt) and part.client == client_name:
+                if isinstance(part, InlineMention) and part.client == client_name:
                     _append_mention(segments, part.id)
                 else:
-                    _append_text(segments, part.raw if isinstance(part, InlineAt) else part)
+                    _append_text(segments, part.raw if isinstance(part, InlineMention) else part)
             Logger.info(f"[Bot] -> [{session_info.target_id}]: {element.text}")
         elif isinstance(element, ImageElement):
             image_b64 = await resolve_media_base64(element)

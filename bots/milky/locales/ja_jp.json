@@ -3,7 +3,7 @@
     "config.comments.bot_milky.qq_allow_approve_group_invite": "Milky プロトコルを使用するときに、グループの招待を自動的に受け入れるかどうか。",
     "config.comments.bot_milky.qq_enable_temp_session": "Milky プロトコルを使用するときに、一時セッションを有効にするかどうか。",
     "config.comments.bot_milky.qq_enable_listening_self_message": "Milky プロトコルを使用するときに、自己メッセージの監視を有効にするかどうか。",
-    "config.comments.bot_milky.qq_host": "Milky プロトコル側 HTTP サービスのアドレス。例：http://127.0.0.1:3010 。",
+    "config.comments.bot_milky.qq_host": "Milky プロトコル側 HTTP サービスのアドレス。",
     "config.comments.bot_milky.qq_initiative_msg_cooldown": "アクティブ メッセージ送信のクールダウン時間を制限します。単位は秒です。",
     "config.comments.bot_milky.qq_limited_emoji": "Milky プロトコルでメッセージ処理に失敗した際にメッセージに付加される応答絵文字の ID。プロトコルのサポートが必要です。ID の詳細について：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji をご覧ください。",
     "config.comments.bot_milky.qq_typing_emoji": "Milky プロトコルでメッセージを処理するときにメッセージに添付される応答絵文字の ID。プロトコルのサポートが必要です。ID の詳細について：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji をご覧ください。",

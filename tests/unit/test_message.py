@@ -1,6 +1,6 @@
 """core.builtins.message 消息系统单元测试。"""
 
-from core.builtins.message.atcode import wrap_sender_id
+from core.builtins.message.mention import wrap_sender_id
 from core.builtins.message.chain import MessageChain, match_kecode
 from core.builtins.message.elements import (
     PlainElement,

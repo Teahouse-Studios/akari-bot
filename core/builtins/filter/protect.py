@@ -1,6 +1,6 @@
 import re
 
-from core.builtins.message.atcode import spans_at_code
+from core.builtins.message.mention import spans_at_code
 
 KE_CODE_PATTERN = re.compile(r"\[KE:[^\]]*\]")
 I18N_PLACEHOLDER_PATTERN = re.compile(r"\{I18N:[^}]*\}")
