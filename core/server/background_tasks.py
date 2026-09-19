@@ -35,20 +35,47 @@ async def hourly_background_task():
     await ExpiringTempDict.clear_all()
 
 
-async def fetch_ip_info() -> dict:
+async def _fetch_public_ip() -> str | None:
+    providers = [
+        "https://api.ip.sb/ip",
+        "https://api.ipify.org",
+        "https://icanhazip.com",
+        "https://checkip.amazonaws.com",
+    ]
+
+    Logger.info("Fetching public IP...")
+    for url in providers:
+        try:
+            data = await get_url(url, timeout=5, fmt="text")
+            ip = data.strip() if isinstance(data, str) else None
+            if ip:
+                Logger.success("Successfully fetched public IP.")
+                return ip
+
+        except Exception:
+            continue
+    else:
+        Logger.exception("Failed to fetch public IP.")
+        return None
+
+
+async def fetch_ip_info():
     """获取本机公网 IP 信息并记入 ``Secret``，供日志脱敏与展示使用。"""
     try:
-        Logger.info("Fetching IP information...")
-        ip_info = await get_url("https://api.ip.sb/geoip", timeout=10, fmt="json")
-        Logger.success("Successfully fetched IP information.")
-        if ip_info and ip_info.get("ip"):
-            Secret.add(ip_info["ip"])
-        Secret.ip_address = ip_info.get("ip")
-        Secret.ip_country = ip_info.get("country")
-        return ip_info
+        ip = await _fetch_public_ip()
+        if not ip:
+            return
+
+        Secret.add(ip)
+        Secret.ip_address = ip
+
+        Logger.info("Getting IP information...")
+        ip_info = await get_url("http://ip-api.com/json/{ip}", timeout=10, fmt="json")
+        if ip_info and ip_info.get("country"):
+            Secret.ip_country = ip_info.get("country")
+        Logger.success("Successfully get IP information.")
     except Exception:
         Logger.exception("Failed to get IP information.")
-        return {}
 
 
 async def init_background_task():
@@ -67,8 +94,8 @@ async def init_background_task():
             Info.web_render_status = await check_web_render_status()
             if Info.web_render_status:
                 Logger.success("WebRender started successfully.")
-        except asyncio.CancelledError:
-            raise
+        except asyncio.CancelledError as e:
+            raise e
         except Exception:
             Info.web_render_status = False
             Logger.exception("Failed to initialize WebRender.")
