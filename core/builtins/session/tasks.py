@@ -52,6 +52,7 @@ class SessionTaskManager:
         timeout: float | None = 120,
         task_type: str | None = None,
         matcher: Callable[["MessageSession"], bool] | None = None,
+        allow_fallthrough: bool = False,
     ):
         """
         添加一个等待任务到管理器。
@@ -66,6 +67,7 @@ class SessionTaskManager:
         :param timeout: 任务超时时间（秒），默认 120 秒
         :param task_type: 覆盖自动推断的任务类型（如 ``wait_next``）
         :param matcher: 可选的消息匹配器；不匹配时任务继续等待
+        :param allow_fallthrough: 命中后是否允许当前消息继续进入普通 parser
         """
         # 使用物理 ID 建立稳定索引；Union／channel 都允许在等待期间变化。
         target = msg.session_info.target_id
@@ -102,6 +104,7 @@ class SessionTaskManager:
             # 即使两个入口属于同一现实通道，也不能跨平台用碰巧相同的 ID 命中。
             "reply_scope": cls._callback_scope(msg) if task_type == "reply" else None,
             "matcher": matcher,
+            "allow_fallthrough": allow_fallthrough,
         }
         if not reply_pending:
             cls._task_list[target][sender][msg]["reply_ready"].set()
@@ -381,7 +384,7 @@ class SessionTaskManager:
         return True
 
     @classmethod
-    async def check(cls, session: "MessageSession", *, allow_wait_next_fallthrough: bool = False) -> bool:
+    async def check(cls, session: "MessageSession", *, allow_wait_fallthrough: bool = False) -> bool:
         """
         检查新消息是否匹配任何等待中的任务或回调。
 
@@ -412,7 +415,7 @@ class SessionTaskManager:
             if exact_matches:
                 matched_task = exact_matches[0]
                 handled = await cls._complete_wait_task(*matched_task, session)
-                if handled and allow_wait_next_fallthrough and matched_task[1]["type"] == "wait_next":
+                if handled and allow_wait_fallthrough and matched_task[1].get("allow_fallthrough", False):
                     handled = False
                 break
 
@@ -434,14 +437,14 @@ class SessionTaskManager:
                     await asyncio.gather(*readiness_waiters, return_exceptions=True)
                 continue
 
-            wait_matches = [item for item in active_tasks if item[1]["type"] in {"wait", "wait_next"}]
+            wait_matches = [item for item in active_tasks if item[1]["type"] != "reply"]
             wait_matches = [
                 item for item in wait_matches if item[1].get("matcher") is None or item[1]["matcher"](session)
             ]
             if wait_matches:
                 matched_task = wait_matches[0]
                 handled = await cls._complete_wait_task(*matched_task, session)
-                if handled and allow_wait_next_fallthrough and matched_task[1]["type"] == "wait_next":
+                if handled and allow_wait_fallthrough and matched_task[1].get("allow_fallthrough", False):
                     handled = False
             break
 

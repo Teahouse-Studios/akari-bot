@@ -870,7 +870,7 @@ class MessageSession:
         released_lease = ExecutionLockList.remove(self)
         await self.end_typing()
         flag = asyncio.Event()
-        SessionTaskManager.add_task(self, flag, timeout=timeout, task_type="wait_next")
+        SessionTaskManager.add_task(self, flag, timeout=timeout, task_type="wait_next", allow_fallthrough=True)
         task_info = None
         try:
             if message_chain:
@@ -962,7 +962,14 @@ class MessageSession:
         released_lease = ExecutionLockList.remove(self)
         await self.end_typing()
         flag = asyncio.Event()
-        SessionTaskManager.add_task(self, flag, all_=True, timeout=timeout)
+        SessionTaskManager.add_task(
+            self,
+            flag,
+            all_=True,
+            timeout=timeout,
+            task_type="wait_anyone",
+            allow_fallthrough=True,
+        )
         task_info = None
         try:
             if message_chain:

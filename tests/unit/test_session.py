@@ -1997,7 +1997,7 @@ async def _test_wait_confirm_ignores_unrelated_message():
     SessionTaskManager._task_list.clear()
     SessionTaskManager.add_task(owner, flag, matcher=_is_confirmation_message, timeout=60)
     try:
-        handled = await SessionTaskManager.check(incoming, allow_wait_next_fallthrough=True)
+        handled = await SessionTaskManager.check(incoming, allow_wait_fallthrough=True)
         task_info = SessionTaskManager.get()[target_id][sender_id][owner]
         return not handled and task_info["active"] and "result" not in task_info
     finally:
@@ -2036,10 +2036,57 @@ async def _test_wait_next_message_allows_parser_fallthrough():
     )
     flag = asyncio.Event()
     SessionTaskManager._task_list.clear()
-    SessionTaskManager.add_task(owner, flag, task_type="wait_next", timeout=60)
+    SessionTaskManager.add_task(owner, flag, task_type="wait_next", timeout=60, allow_fallthrough=True)
     try:
-        handled = await SessionTaskManager.check(incoming, allow_wait_next_fallthrough=True)
+        handled = await SessionTaskManager.check(incoming, allow_wait_fallthrough=True)
         task_info = SessionTaskManager.get()[target_id][sender_id][owner]
+        return not handled and not task_info["active"] and task_info["result"] is incoming
+    finally:
+        SessionTaskManager._task_list.clear()
+
+
+async def _test_wait_anyone_allows_parser_fallthrough():
+    """wait_anyone 完成等待后，触发消息仍继续普通解析。"""
+    from core.builtins.message.chain import MessageChain
+    from core.builtins.session.internal import MessageSession
+
+    class IncomingSession(MessageSession):
+        async def hold(self):
+            return None
+
+    target_id = "TEST|Group|wait-anyone-fallthrough"
+    owner = MessageSession(
+        await SessionInfo.assign(
+            target_id=target_id,
+            target_from="TEST|Group",
+            client_name="TEST",
+            sender_id="TEST|wait-anyone-owner",
+            sender_from="TEST",
+        )
+    )
+    incoming = IncomingSession(
+        await SessionInfo.assign(
+            target_id=target_id,
+            target_from="TEST|Group",
+            client_name="TEST",
+            sender_id="TEST|wait-anyone-responder",
+            sender_from="TEST",
+            messages=MessageChain.assign("~version"),
+        )
+    )
+    flag = asyncio.Event()
+    SessionTaskManager._task_list.clear()
+    SessionTaskManager.add_task(
+        owner,
+        flag,
+        all_=True,
+        task_type="wait_anyone",
+        timeout=60,
+        allow_fallthrough=True,
+    )
+    try:
+        handled = await SessionTaskManager.check(incoming, allow_wait_fallthrough=True)
+        task_info = SessionTaskManager.get()[target_id]["all"][owner]
         return not handled and not task_info["active"] and task_info["result"] is incoming
     finally:
         SessionTaskManager._task_list.clear()
@@ -3390,6 +3437,7 @@ async def test_session_task(tester: Tester):
     await tester.test(_test_parser_rejects_blocked_wait_responder_before_task_check, "全局屏蔽者不完成等待测试")
     await tester.test(_test_wait_confirm_ignores_unrelated_message, "确认等待忽略非确认消息测试")
     await tester.test(_test_wait_next_message_allows_parser_fallthrough, "下一条消息等待继续普通解析测试")
+    await tester.test(_test_wait_anyone_allows_parser_fallthrough, "任意用户等待继续普通解析测试")
     await tester.test(
         _test_parser_rejects_banned_callback_responder_before_task_check, "场景屏蔽者不执行 callback 测试"
     )

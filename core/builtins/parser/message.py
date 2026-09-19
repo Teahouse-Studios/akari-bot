@@ -252,9 +252,9 @@ async def parser(msg: "Bot.MessageSession"):
             isinstance(wait_result, Continue) and wait_result.data.get("skip_wait_tasks", False)
         )
         if not skip_wait_tasks:
-            # 独占等待任务或 callback 会消费消息；wait_next／非确认消息等待则允许
-            # 完成等待后继续进入命令/正则路由。
-            if await SessionTaskManager.check(msg, allow_wait_next_fallthrough=True):
+            # 独占等待任务或 callback 会消费消息；允许并行路由的等待任务则在完成等待后
+            # 继续进入命令/正则路由。
+            if await SessionTaskManager.check(msg, allow_wait_fallthrough=True):
                 return
 
         # 获取该平台和客户端的所有可用模块
