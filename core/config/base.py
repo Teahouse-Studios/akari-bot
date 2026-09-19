@@ -13,7 +13,7 @@ class BaseConfig:
     config_version: int = config_version_default
 
 
-# 保留既有导入路径，避免第三方模块因配置模板的物理拆分立即失效。项目内部的新代码应从所属领域模块导入。
+# 保留既有导入路径
 from core.config.core import CoreConfig, CoreSecretConfig
 from core.config.jobqueue import JobQueueConfig, JobQueueSecretConfig
 from core.config.s3 import S3Config, S3SecretConfig

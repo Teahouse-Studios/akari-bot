@@ -5,7 +5,6 @@
 """
 
 import importlib
-import pkgutil
 from pathlib import Path
 
 from loguru import logger
@@ -16,13 +15,6 @@ from core.config import CFGManager
 def iter_config_template_modules() -> list[str]:
     """列出全部配置模板的模块名。
 
-    以文件是否存在判断模板有无，而非在导入时捕获 ModuleNotFoundError：后者无法区分
-    「该 bot 或模块未提供 config.py」与「模板自身导入了不存在的依赖」两种情形，
-    后一种会被静默跳过，形成本设计所要杜绝的漏键。
-
-    亦不采用 importlib.util.find_spec()：该函数为取得 __path__ 会导入父包，
-    将一并导入整个 bot 或模块包及其依赖，使配置模板作为叶子模块的优势不复存在。
-
     :return: 配置模板的模块名列表，核心配置排在最前。
     """
     import bots
@@ -31,9 +23,21 @@ def iter_config_template_modules() -> list[str]:
     names = ["core.config.base"]
     for package in (bots, modules):
         package_path = Path(package.__path__[0])
-        for submodule in pkgutil.iter_modules(package.__path__):
-            if (package_path / submodule.name / "config.py").exists():
-                names.append(f"{package.__name__}.{submodule.name}.config")
+        # 按名称排序以固定生成顺序，避免同一批配置项在多次生成间换序而反复改写配置文件
+        for submodule in sorted(package_path.iterdir(), key=lambda path: path.name):
+            if not submodule.is_dir() or submodule.name.startswith((".", "_")):
+                continue
+            if not (submodule / "config.py").is_file():
+                continue
+            if not (submodule / "__init__.py").is_file():
+                # 目录形式的命名空间包仍可导入，配置照常补全；但其它按包枚举的代码看不见它，
+                # 故此处仅告警，提示补上空的 __init__.py 以恢复常规包
+                logger.warning(
+                    f"[Config] {package.__name__}/{submodule.name} provides config.py without __init__.py; "
+                    "its configuration is generated, but an empty __init__.py is required for it to be "
+                    "visible to package-based enumeration."
+                )
+            names.append(f"{package.__name__}.{submodule.name}.config")
     return names
 
 

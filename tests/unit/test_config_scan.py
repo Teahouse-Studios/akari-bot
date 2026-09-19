@@ -172,6 +172,75 @@ def _test_fresh_process_generates_all_grouped_core_templates():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def _test_scan_covers_all_directories_with_config_templates():
+    """模板枚举须覆盖所有含 config.py 的目录，与守护进程按目录挑选平台的依据一致。"""
+    import bots
+    import modules
+    from core.config.scan import iter_config_template_modules
+
+    listed = set(iter_config_template_modules())
+    expected = set()
+    for package in (bots, modules):
+        package_path = Path(package.__path__[0])
+        for entry in package_path.iterdir():
+            if entry.is_dir() and not entry.name.startswith((".", "_")) and (entry / "config.py").is_file():
+                expected.add(f"{package.__name__}.{entry.name}.config")
+    # bots/milky 曾因缺少 __init__.py 而不被 pkgutil.iter_modules 收录，配置因而从未生成
+    return bool(expected) and expected <= listed and "bots.milky.config" in listed
+
+
+def _test_fresh_process_generates_bot_adapter_config():
+    """全新进程扫描后须为各平台生成配置文件，只读子进程方能读取其配置项。"""
+    tmp = Path(tempfile.mkdtemp(prefix="akari_cfg_bot_"))
+    try:
+        current_config = MINIMAL_CONFIG.replace("config_version = 3", f"config_version = {config_version}")
+        (tmp / "config.toml").write_text(current_config, encoding="utf-8")
+        env = os.environ.copy()
+        env["AKARI_CONFIG_PATH"] = str(tmp)
+        env.pop("AKARI_CONFIG_READONLY", None)
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                (
+                    "from core.constants import all_locales_path, lang_list; "
+                    "from core.i18n import build_locale_snapshot, connect_locale_snapshot; "
+                    "build_locale_snapshot(list(lang_list.keys()), all_locales_path, 'akari-bot'); "
+                    "connect_locale_snapshot('akari-bot'); "
+                    "from core.config.scan import scan_config_templates; "
+                    "failed = scan_config_templates(); "
+                    # 与守护进程 spawn 出的平台进程一致：模板导入完毕后一律只读
+                    "from core.config import CFGManager; "
+                    "CFGManager.readonly = True; "
+                    "from bots.milky.config import MilkyConfig, MilkySecretConfig; "
+                    "print('MILKY', failed, MilkyConfig.enable, MilkyConfig.qq_host, "
+                    "repr(MilkySecretConfig.qq_access_token))"
+                ),
+            ],
+            cwd=Path(__file__).resolve().parents[2],
+            env=env,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            timeout=30,
+            check=False,
+        )
+        written = (tmp / "bot_milky.toml").read_text(encoding="utf-8") if (tmp / "bot_milky.toml").is_file() else ""
+        values = tomllib.loads(written) if written else {}
+        summary = [line for line in result.stdout.splitlines() if line.startswith("MILKY ")]
+        return (
+            result.returncode == 0
+            and summary == ["MILKY [] False http://127.0.0.1:8080 None"]
+            and values.get("bot_milky", {}).get("enable") is False
+            and values.get("bot_milky", {}).get("qq_host") == "http://127.0.0.1:8080"
+            and values.get("bot_milky_secret", {}).get("qq_access_token") == "<Replace me with str value>"
+            and "{I18N:" not in written
+            and "使用 Milky 协议时，是否开启自身消息监听。" in written
+        )
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def _test_jobqueue_bootstrap_persists_missing_values_once():
     """JobQueue 共享身份与密钥应在配置生成阶段安全自举，并保留后续已有值。"""
     from core.config.jobqueue import bootstrap_jobqueue_config
@@ -335,6 +404,8 @@ async def test_config_scan(tester: Tester):
     """core.config.scan: 配置模板扫描测试"""
     await tester.test(_test_core_templates_are_grouped_into_domain_files, "核心配置模板独立文件与兼容导入测试")
     await tester.test(_test_fresh_process_generates_all_grouped_core_templates, "全新进程生成领域模板测试")
+    await tester.test(_test_scan_covers_all_directories_with_config_templates, "平台与模块模板枚举一致性测试")
+    await tester.test(_test_fresh_process_generates_bot_adapter_config, "全新进程生成平台适配器配置测试")
     await tester.test(_test_jobqueue_bootstrap_persists_missing_values_once, "JobQueue 身份与密钥持久化自举测试")
     await tester.test(_test_scan_writes_template_fields, "可写进程中模板补写字段测试")
     await tester.test(_test_standalone_comment_declaration_is_validated, "独立配置注释声明校验测试")

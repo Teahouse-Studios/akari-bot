@@ -24,12 +24,8 @@ from tomlkit.items import AoT, Table
 from core.constants.path import CONFIG_READONLY_ENV, config_path as default_config_path
 
 # 守护进程在 spawn 子进程之前置位，spawn 会继承环境。
-# 该闸门须赶在 core.config 被导入之前生效：core/config/update.py 的版本迁移是导入期执行的，
-# 而 go() 中的 Info.subprocess = True 置位过迟：其前一行的 core.logger 已导入 core.config。
 CONFIG_READONLY = bool(os.environ.get(CONFIG_READONLY_ENV))
 
-# 配置版本迁移只应发生在 pre_init 中。core.config.update 全仓仅此一处导入且为纯副作用导入，
-# 跳过该导入即可，无需改动其内部的顶层代码。
 if not CONFIG_READONLY:
     import core.config.update  # noqa
 
@@ -63,7 +59,6 @@ class CFGManager:
 
     # 运行期只读状态统一取自该类属性，便于测试覆盖。
     readonly: bool = CONFIG_READONLY
-    # 授权写入的嵌套深度。用计数而非布尔：write() 内部会调用 save()，两层都须放行。
     _allow_write_depth = 0
 
     # 等待进入临界区的上限（秒）
@@ -77,13 +72,6 @@ class CFGManager:
     def _exclusive(cls):
         """
         以配置目录下的锁文件在进程间互斥，可重入。
-
-        守护进程为每个平台各启动一个子进程，另有一个 server 进程，它们均会读写同一批配置文件，
-        而类属性形式的锁在每个进程中各有一份，无法约束跨进程的并发写入。此处改用锁文件，
-        使同一时刻仅有一个进程处于读写配置的临界区内。
-
-        可重入是必要的：一次改写须在同一个临界区内完成「重新加载 → 修改 → 保存」，
-        否则本进程会以过时的内存副本整体覆盖磁盘，致使其它进程期间写入的配置项丢失。
         """
         if cls._lock_depth:
             cls._lock_depth += 1
@@ -198,10 +186,6 @@ class CFGManager:
         """
         原子地写入配置文件。
 
-        以 ``"w"`` 直接打开会立即截断原文件，此后进程若被强制结束（守护进程重启子进程所用的
-        正是 SIGKILL），磁盘上将只剩一个空文件；而空 TOML 解析不会报错，下次加载即静默丢失全部配置。
-        因此先写入同目录下的临时文件，再由 ``os.replace()`` 原子替换。
-
         :param path: 目标文件路径。
         :param content: 文件内容。
         """
@@ -285,10 +269,6 @@ class CFGManager:
     @classmethod
     def repair_i18n_comments(cls) -> int:
         """翻译配置中遗留的 ``{I18N:key}`` 注释标记。
-
-        旧版 pre-init 在连接 i18n 快照之前补全配置，导致翻译器把原始标记写入 TOML。
-        已存在的配置项不会再次进入生成分支，因此须在模板扫描结束后显式修复。
-        找不到翻译的过时标记会被清空，避免继续把内部键名展示给用户；配置值不受影响。
 
         :return: 被替换或清空的注释数量。
         """
