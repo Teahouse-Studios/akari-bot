@@ -959,7 +959,8 @@ async def _query_pages_impl(
                 msg_list.extend(error_message)
     if isinstance(session, Bot.MessageSession):
         render_callback = None
-        if render_mode == WIKI_RENDER_MODE_BUTTON and session.session_info.support_button:
+        has_message_content = bool(msg_list) or bool(render_button_items)
+        if render_mode == WIKI_RENDER_MODE_BUTTON and session.session_info.support_button and has_message_content:
             render_buttons = []
             if render_button_items:
                 render_buttons.append(

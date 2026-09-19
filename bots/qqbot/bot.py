@@ -418,9 +418,6 @@ class MyClient(botpy.Client):
                 Logger.debug(f"QQBot button click rejected: {result.status.name}")
                 return
             payload = ButtonPayload.parse(result.payload or "", result.reply_id)
-        else:
-            # 兼容旧版尚未迁移到运行时 token 的键盘数据。
-            payload = ButtonPayload.parse(send_msg)
         send_msg = payload.value
         if send_msg == "confirm_yes":
             send_msg = confirm_command_default[0]

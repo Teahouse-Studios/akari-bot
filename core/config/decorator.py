@@ -26,10 +26,6 @@ T = TypeVar("T")
 class ConfigMeta(type):
     """配置模板的元类，使类属性访问直接返回配置文件中的当前值。
 
-    模板此前仅靠导入副作用生成配置文件，类本身无人引用，取值代码只得将键名、默认值、类型与表名
-    重复声明一次，二者不一致即造成同一配置项存在两个互不相同的默认值。引入本元类后，
-    ``OneBotConfig.qq_typing_emoji`` 即为该配置项的当前值，模板成为唯一的定义处。
-
     必须实现在元类上：类体内的 ``__getattr__`` 只对实例生效，对类属性访问不起作用。
     """
 
@@ -241,11 +237,6 @@ def on_config(
 def on_base_config():
     """表外顶层配置项的装饰器工厂函数。
 
-    `config.toml` 中存在少量位于任何表之外的顶层键值对（如 ``default_locale``），
-    它们由配置文件的生成与版本迁移直接写入。以 ``on_config("config")`` 声明将把它们移入
-    ``[config]`` 表内而改变配置文件结构，故另设本装饰器：不指定表名，
-    :meth:`CFGManager.get` 与 :meth:`CFGManager.has` 在表名缺省时会先查找表外的顶层键。
-
     示例:
     ```
         @on_base_config()
@@ -308,9 +299,6 @@ def on_module_config(
             dice_limit: int = 100
     ```
 
-    模块的配置模板不应改用 ``Bind.Module.config()`` 声明：后者需要模板反向导入模块对象
-    （``from . import dice``），一旦同包内其它文件在顶层读取该模板，
-    包的初始化便会与模板互相等待而形成循环导入。本装饰器不依赖模块对象，模板因而是一个叶子模块。
 
     :param module_name: 模块名称，须与 `module()` 声明的名称一致。最终的表名为 "module_模块名"
     :param secret: 是否将此配置中的所有值视为敏感信息进行加密存储（默认 False）
