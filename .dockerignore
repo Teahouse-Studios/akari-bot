@@ -11,6 +11,7 @@ renovate.json
 requirements.txt
 
 # Tests
+conftest.py
 tests/
 tester.py
 

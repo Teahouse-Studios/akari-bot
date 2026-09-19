@@ -25,7 +25,6 @@ base_locales_path = Path("./core/locales").resolve()
 logs_path = Path("./logs").resolve()
 modules_path = Path("./modules").resolve()
 tests_path = Path("./tests").resolve()
-webui_path = Path("./webui").resolve()
 
 # assets 与 data 的分工：assets 只放随仓库分发的只读内容，运行时或部署者产生的内容一律写进 data。
 data_path.mkdir(parents=True, exist_ok=True)

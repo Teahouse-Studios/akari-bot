@@ -12,11 +12,12 @@ from bots.web.config import WebConfig, WebSecretConfig
 from bots.web.info import *
 from core.client.init import client_cleanup, client_init
 from core.config import CFGManager
-from core.constants.path import assets_path, webui_path
+from core.constants.path import assets_path, data_path
 from core.database.models import SenderUnionInfo
 from core.logger import Logger
 from core.utils.random import SecureRandom
 
+webui_path = data_path / "webui"
 if (webui_path / "dist").exists():
     dist_path: Path = webui_path / "dist"
 else:
