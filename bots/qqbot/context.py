@@ -194,6 +194,11 @@ class _QQBotChunkedUploadAPI:
         part_index = payload.get("part_index")
         if isinstance(part_index, int):
             payload["part_index"] = part_index - 1
+        # QQ's API schema declares block_size as a numeric string, while botpy passes
+        # the parsed integer from its internal uploader.
+        block_size = payload.get("block_size")
+        if isinstance(block_size, int):
+            payload["block_size"] = str(block_size)
         return await self._api.post_upload_part_finish(scope, target_id, **payload)
 
     async def post_upload_complete(self, scope: str, target_id: str, **payload):
