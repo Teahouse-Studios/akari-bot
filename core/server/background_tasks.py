@@ -11,11 +11,11 @@
 import asyncio
 
 from core.builtins.session.tasks import SessionTaskManager
-from core.constants import Info
+from core.constants import Info, Secret
 from core.database.models import JobQueuesTable
-from core.utils.ip import fetch_ip_info
 from core.logger import Logger
 from core.utils.container import ExpiringTempDict
+from core.utils.http import get_url
 from core.utils.web_render import check_web_render_status, init_web_render
 
 
@@ -33,6 +33,22 @@ async def hourly_background_task():
     await SessionTaskManager.bg_check()
     await JobQueuesTable.clear_task()
     await ExpiringTempDict.clear_all()
+
+
+async def fetch_ip_info() -> dict:
+    """获取本机公网 IP 信息并记入 ``Secret``，供日志脱敏与展示使用。"""
+    try:
+        Logger.info("Fetching IP information...")
+        ip_info = await get_url("https://api.ip.sb/geoip", timeout=10, fmt="json")
+        Logger.success("Successfully fetched IP information.")
+        if ip_info and ip_info.get("ip"):
+            Secret.add(ip_info["ip"])
+        Secret.ip_address = ip_info.get("ip")
+        Secret.ip_country = ip_info.get("country")
+        return ip_info
+    except Exception:
+        Logger.exception("Failed to get IP information.")
+        return {}
 
 
 async def init_background_task():

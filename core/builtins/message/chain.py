@@ -281,7 +281,7 @@ class MessageChain:
         session_info: SessionInfo | MessageSession | None = None,
         parse_message: bool = True,
         enable_markdown: bool = True,
-    ) -> ConvertedMessageChain:
+    ) -> MessageChain:
         """
         将消息链转换为可发送的格式。
 
@@ -529,7 +529,7 @@ class MessageChain:
             if isinstance(x, PlainElement) and not x.disable_joke:
                 x.text = joke(x.text)
 
-        return ConvertedMessageChain.assign(value)
+        return MessageChain.assign(value)
 
     def to_str(
         self, text_only=True, element_filter: tuple[MessageElement, ...] | None = None, connector: str = "\n"
@@ -782,10 +782,6 @@ class MessageChain:
             if isinstance(x, item):
                 return True
         return False
-
-
-class ConvertedMessageChain(MessageChain):
-    pass
 
 
 @define

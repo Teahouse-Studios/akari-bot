@@ -8,7 +8,7 @@
 import base64
 import random as pyrandom
 import secrets
-from typing import Sequence, MutableSequence, TypeVar
+from typing import MutableSequence, Sequence, TypeVar
 
 from core.config.base import CoreConfig
 
@@ -16,10 +16,137 @@ INF = 2**53
 T = TypeVar("T")
 
 
+class _RandomBackend:
+    """标准库 ``random`` 后端：速度快，不适合用于安全凭据。"""
+
+    @staticmethod
+    def random() -> float:
+        return pyrandom.random()
+
+    @staticmethod
+    def randint(a: int, b: int) -> int:
+        return pyrandom.randint(a, b)
+
+    @staticmethod
+    def uniform(a: float, b: float) -> float:
+        return pyrandom.uniform(a, b)
+
+    @staticmethod
+    def randrange(start: int, stop: int | None = None, step: int = 1) -> int:
+        return pyrandom.randrange(start, stop, step)
+
+    @staticmethod
+    def randbits(k: int) -> int:
+        return pyrandom.getrandbits(k)
+
+    @staticmethod
+    def randbytes(n: int) -> bytes:
+        return pyrandom.randbytes(n)
+
+    @staticmethod
+    def choice(seq: Sequence[T]) -> T:
+        return pyrandom.choice(seq)
+
+    @staticmethod
+    def choices(population: Sequence[T], k: int = 1) -> list[T]:
+        return pyrandom.choices(population, k=k)
+
+    @staticmethod
+    def sample(population: Sequence[T], k: int) -> list[T]:
+        return pyrandom.sample(population, k)
+
+    @staticmethod
+    def shuffle(seq: MutableSequence[T]) -> MutableSequence[T]:
+        pyrandom.shuffle(seq)
+        return seq
+
+    @staticmethod
+    def randstr(length: int, chars: str) -> str:
+        return "".join(pyrandom.choice(chars) for _ in range(length))
+
+    @staticmethod
+    def token_urlsafe(nbytes: int | None = None) -> str:
+        random_bytes = pyrandom.randbytes(32 if nbytes is None else nbytes)
+        return base64.urlsafe_b64encode(random_bytes).rstrip(b"=").decode("ascii")
+
+
+class _SecretsBackend:
+    """``secrets`` 后端：密码学安全，用于凭据与需要不可预测的随机。"""
+
+    @staticmethod
+    def random() -> float:
+        return secrets.randbelow(INF) / INF
+
+    @staticmethod
+    def randint(a: int, b: int) -> int:
+        return secrets.randbelow(b - a + 1) + a
+
+    @staticmethod
+    def uniform(a: float, b: float) -> float:
+        return a + (b - a) * secrets.randbelow(INF) / INF
+
+    @staticmethod
+    def randrange(start: int, stop: int | None = None, step: int = 1) -> int:
+        if not stop:
+            stop = start
+            start = 0
+        width = stop - start
+        if step == 1 and width > 0:
+            return start + secrets.randbelow(width)
+        n = (width + step - 1) // step
+        return start + step * secrets.randbelow(n)
+
+    @staticmethod
+    def randbits(k: int) -> int:
+        return secrets.randbits(k)
+
+    @staticmethod
+    def randbytes(n: int) -> bytes:
+        return secrets.token_bytes(n)
+
+    @staticmethod
+    def choice(seq: Sequence[T]) -> T:
+        return secrets.choice(seq)
+
+    @staticmethod
+    def choices(population: Sequence[T], k: int = 1) -> list[T]:
+        return [secrets.choice(population) for _ in range(k)]
+
+    @staticmethod
+    def sample(population: Sequence[T], k: int) -> list[T]:
+        if k > len(population):
+            raise ValueError("Sample larger than population or is negative")
+        selected = []
+        pool = list(population)
+        for _ in range(k):
+            idx = secrets.randbelow(len(pool))
+            selected.append(pool.pop(idx))
+        return selected
+
+    @staticmethod
+    def shuffle(seq: MutableSequence[T]) -> MutableSequence[T]:
+        for i in reversed(range(1, len(seq))):
+            j = secrets.randbelow(i + 1)
+            seq[i], seq[j] = seq[j], seq[i]
+        return seq
+
+    @staticmethod
+    def randstr(length: int, chars: str) -> str:
+        return "".join(secrets.choice(chars) for _ in range(length))
+
+    @staticmethod
+    def token_urlsafe(nbytes: int | None = None) -> str:
+        return secrets.token_urlsafe(nbytes)
+
+
 class Random:
-    """随机生成工具。"""
+    """随机生成工具。
+
+    后端在类定义时按 ``use_secrets_random`` 选定一次，公开方法仅做转发。
+    """
 
     use_secrets = CoreConfig.use_secrets_random
+    _backend = _SecretsBackend() if use_secrets else _RandomBackend()
 
     @classmethod
     def random(cls) -> float:
@@ -28,9 +155,7 @@ class Random:
 
         :return: 随机浮点数。
         """
-        if cls.use_secrets:
-            return secrets.randbelow(INF) / INF
-        return pyrandom.random()
+        return cls._backend.random()
 
     @classmethod
     def randint(cls, a: int, b: int) -> int:
@@ -41,9 +166,7 @@ class Random:
         :param b: 上界。
         :return: 符合条件的随机整数。
         """
-        if cls.use_secrets:
-            return secrets.randbelow(b - a + 1) + a
-        return pyrandom.randint(a, b)
+        return cls._backend.randint(a, b)
 
     @classmethod
     def uniform(cls, a: float, b: float) -> float:
@@ -54,9 +177,7 @@ class Random:
         :param b: 上界。
         :return: 符合条件的随机浮点数。
         """
-        if cls.use_secrets:
-            return a + (b - a) * secrets.randbelow(INF) / INF
-        return pyrandom.uniform(a, b)
+        return cls._backend.uniform(a, b)
 
     @classmethod
     def randrange(cls, start: int, stop: int | None = None, step: int = 1) -> int:
@@ -68,16 +189,7 @@ class Random:
         :param step: 递增次数。
         :return: 符合条件的随机整数。
         """
-        if cls.use_secrets:
-            if not stop:
-                stop = start
-                start = 0
-            width = stop - start
-            if step == 1 and width > 0:
-                return start + secrets.randbelow(width)
-            n = (width + step - 1) // step
-            return start + step * secrets.randbelow(n)
-        return pyrandom.randrange(start, stop, step)
+        return cls._backend.randrange(start, stop, step)
 
     @classmethod
     def randbits(cls, k: int) -> int:
@@ -87,9 +199,7 @@ class Random:
         :param k: 字节长度。
         :return: 符合条件的随机整数。
         """
-        if cls.use_secrets:
-            return secrets.randbits(k)
-        return pyrandom.getrandbits(k)
+        return cls._backend.randbits(k)
 
     @classmethod
     def randbytes(cls, n: int) -> bytes:
@@ -99,9 +209,7 @@ class Random:
         :param n: 字节数量。
         :return: 符合条件的随机字节。
         """
-        if cls.use_secrets:
-            return secrets.token_bytes(n)
-        return pyrandom.randbytes(n)
+        return cls._backend.randbytes(n)
 
     @classmethod
     def choice(cls, seq: Sequence[T]) -> T:
@@ -111,9 +219,7 @@ class Random:
         :param seq: 给定序列。
         :return: 序列内的随机元素。
         """
-        if cls.use_secrets:
-            return secrets.choice(seq)
-        return pyrandom.choice(seq)
+        return cls._backend.choice(seq)
 
     @classmethod
     def choices(cls, population: Sequence[T], k: int = 1) -> list[T]:
@@ -124,9 +230,7 @@ class Random:
         :param k: 选择的元素个数。
         :return: 序列内符合条件的随机元素列表。
         """
-        if cls.use_secrets:
-            return [secrets.choice(population) for _ in range(k)]
-        return pyrandom.choices(population, k=k)
+        return cls._backend.choices(population, k)
 
     @classmethod
     def sample(cls, population: Sequence[T], k: int) -> list[T]:
@@ -137,16 +241,7 @@ class Random:
         :param k: 选择的元素个数。
         :return: 序列内符合条件的随机元素列表。
         """
-        if cls.use_secrets:
-            if k > len(population):
-                raise ValueError("Sample larger than population or is negative")
-            selected = []
-            pool = list(population)
-            for _ in range(k):
-                idx = secrets.randbelow(len(pool))
-                selected.append(pool.pop(idx))
-            return selected
-        return pyrandom.sample(population, k)
+        return cls._backend.sample(population, k)
 
     @classmethod
     def shuffle(cls, seq: MutableSequence[T]) -> MutableSequence[T]:
@@ -156,13 +251,7 @@ class Random:
         :param seq: 给定序列。
         :return: 重新打乱后的序列。
         """
-        if cls.use_secrets:
-            for i in reversed(range(1, len(seq))):
-                j = secrets.randbelow(i + 1)
-                seq[i], seq[j] = seq[j], seq[i]
-        else:
-            pyrandom.shuffle(seq)
-        return seq
+        return cls._backend.shuffle(seq)
 
     @classmethod
     def randstr(cls, length: int, chars: str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") -> str:
@@ -173,20 +262,16 @@ class Random:
         :param chars: 可选的字符集，默认为大小写字母和数字。
         :return: 随机生成的字符串。
         """
-        if cls.use_secrets:
-            return "".join(secrets.choice(chars) for _ in range(length))
-        return "".join(pyrandom.choice(chars) for _ in range(length))
+        return cls._backend.randstr(length, chars)
 
     @classmethod
     def token_urlsafe(cls, nbytes: int | None = None) -> str:
         """生成适合用于 URL 的随机文本 token。"""
-        if cls.use_secrets:
-            return secrets.token_urlsafe(nbytes)
-        random_bytes = pyrandom.randbytes(32 if nbytes is None else nbytes)
-        return base64.urlsafe_b64encode(random_bytes).rstrip(b"=").decode("ascii")
+        return cls._backend.token_urlsafe(nbytes)
 
 
 class SecureRandom(Random):
     """始终使用 ``secrets`` 后端的安全随机工具。"""
 
     use_secrets = True
+    _backend = _SecretsBackend()

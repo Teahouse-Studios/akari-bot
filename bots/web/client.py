@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
+import socket
 
 from argon2 import PasswordHasher
 from fastapi import FastAPI, Request
@@ -15,7 +16,6 @@ from core.constants.path import assets_path, webui_path
 from core.database.models import SenderUnionInfo
 from core.logger import Logger
 from core.utils.random import SecureRandom
-from core.utils.socket import find_available_port, get_local_ip
 
 if (webui_path / "dist").exists():
     dist_path: Path = webui_path / "dist"
@@ -26,13 +26,47 @@ else:
         dist_path = Path()
 
 
+def _check_port_available(port: int, host: str = "127.0.0.1") -> bool:
+    """判断 ``host:port`` 当前是否可被绑定。"""
+    try:
+        socket.gethostbyname(host)
+
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            return sock.connect_ex((host, port)) != 0
+    except socket.gaierror:
+        return False
+
+
+def _find_available_port(start_port: int, max_retries: int = 100, host: str = "127.0.0.1") -> int:
+    """自 ``start_port`` 起向后寻找可用端口，找不到时返回 0。"""
+    for offset in range(max_retries):
+        current_port = start_port + offset
+        if current_port <= 0:
+            break
+        if _check_port_available(current_port, host):
+            return current_port
+    return 0
+
+
+def _get_local_ip():
+    """取本机在默认路由上使用的地址，无法判定时返回 None。"""
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(("8.8.8.8", 80))
+        return s.getsockname()[0]
+    except Exception:
+        return None
+    finally:
+        s.close()
+
+
 enable_https = WebConfig.enable_https
 protocol = "https" if enable_https else "http"
 
 web_host = WebConfig.web_host
 web_port = WebConfig.web_port
 
-available_web_port = find_available_port(web_port)
+available_web_port = _find_available_port(web_port)
 
 allow_origins = WebSecretConfig.allow_origins
 
@@ -65,7 +99,7 @@ if not jwt_secret:
 
 def _webui_message():
     if web_host == "0.0.0.0":  # skipcq
-        local_ip = get_local_ip()
+        local_ip = _get_local_ip()
         network_line = f"Network: {protocol}://{local_ip}:{available_web_port}/webui\n" if local_ip else ""
         message = (
             f"\n---\n"

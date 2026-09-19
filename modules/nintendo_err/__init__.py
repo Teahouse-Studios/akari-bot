@@ -1,6 +1,9 @@
 # ported from kurisu(https://github.com/nh-server/Kurisu/tree/main/cogs/results)
+import discord
+
 from core.builtins.bot import Bot
-from core.builtins.message.internal import I18NContext
+from core.builtins.message.elements import EmbedElement
+from core.builtins.message.internal import Embed, EmbedField, I18NContext
 from core.component import module
 
 
@@ -88,11 +91,42 @@ Only Nintendo Switch XXXX-YYYY formatted error codes are supported."
 e = module("nintendo-err", alias=["nintendo_err", "err"], developers=["OasisAkari", "kurisu"], doc=True)
 
 
+def _convert_discord_embed(embed) -> EmbedElement:
+    """将 Discord Embed 转换为框架的 Embed 元素，供结果渲染使用。"""
+    from discord import Embed as DiscordEmbed
+
+    embed_ = Embed()
+    if isinstance(embed, DiscordEmbed):
+        embed = embed.to_dict()
+    if isinstance(embed, dict):
+        if "title" in embed:
+            embed_.title = embed["title"]
+        if "description" in embed:
+            embed_.description = embed["description"]
+        if "url" in embed:
+            embed_.url = embed["url"]
+        if "color" in embed:
+            embed_.color = embed["color"]
+        if "timestamp" in embed:
+            embed_.timestamp = embed["timestamp"]
+        if "footer" in embed:
+            embed_.footer = embed["footer"]["text"]
+        if "image" in embed:
+            embed_.image = embed["image"]
+        if "thumbnail" in embed:
+            embed_.thumbnail = embed["thumbnail"]
+        if "author" in embed:
+            embed_.author = embed["author"]
+        if "fields" in embed:
+            fields = []
+            for field_value in embed["fields"]:
+                fields.append(EmbedField(field_value["name"], field_value["value"], field_value["inline"]))
+            embed_.fields = fields
+    return embed_
+
+
 @e.command("<err_code> {{I18N:nintendo_err.help}}")
 async def _(msg: Bot.MessageSession, err_code: str):
-    import discord
-
-    from core.utils.element import convert_discord_embed
 
     results = Results()
     err = results.fixup_input(err_code)
@@ -109,6 +143,6 @@ async def _(msg: Bot.MessageSession, err_code: str):
             embed.description = ret.extra_description
         for field in ret:
             embed.add_field(name=field.field_name, value=field.message, inline=False)
-        await msg.finish(convert_discord_embed(embed))
+        await msg.finish(_convert_discord_embed(embed))
     else:
         await msg.finish(I18NContext("nintendo_err.message.invalid"))
