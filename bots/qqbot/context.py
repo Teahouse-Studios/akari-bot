@@ -125,6 +125,81 @@ async def _upload_media(
     return {"file_info": file_info}
 
 
+def _normalize_chunked_prepare_response(response: Mapping) -> dict:
+    """把 QQ 官方预上传响应转换为 botpy 2.0.4 的内部格式。
+
+    QQ 文档返回字符串形式的 ``block_size``、从 0 开始的分片序号，并将并发配置
+    放在 ``upload_config``；botpy 2.0.4 的解析器则要求整数、从 1 开始且配置字段
+    位于顶层。只复制并调整预上传响应，后续请求仍完全交给 botpy 执行。
+    """
+    normalized = dict(response)
+
+    raw_block_size = normalized.get("block_size")
+    try:
+        normalized["block_size"] = int(raw_block_size)
+    except (TypeError, ValueError):
+        pass
+
+    raw_config = normalized.get("upload_config")
+    if isinstance(raw_config, Mapping):
+        for key in ("concurrency", "retry_timeout"):
+            if key not in normalized and key in raw_config:
+                normalized[key] = raw_config[key]
+
+    raw_parts = normalized.get("parts")
+    if not isinstance(raw_parts, list):
+        return normalized
+    try:
+        indexes = [int(part["index"]) for part in raw_parts if isinstance(part, Mapping)]
+    except (KeyError, TypeError, ValueError):
+        indexes = []
+    zero_based = len(indexes) == len(raw_parts) and indexes == list(range(len(raw_parts)))
+    parts = []
+    for part in raw_parts:
+        if not isinstance(part, Mapping):
+            parts.append(part)
+            continue
+        item = dict(part)
+        try:
+            item["index"] = int(item["index"]) + (1 if zero_based else 0)
+        except (KeyError, TypeError, ValueError):
+            pass
+        if "block_size" in item:
+            try:
+                item["block_size"] = int(item["block_size"])
+            except (TypeError, ValueError):
+                pass
+        parts.append(item)
+    normalized["parts"] = parts
+    return normalized
+
+
+class _QQBotChunkedUploadAPI:
+    """适配 QQ 实际响应与 botpy 分片上传协议之间的细小差异。"""
+
+    def __init__(self, api):
+        self._api = api
+
+    async def post_upload_prepare(self, scope: str, target_id: str, **payload):
+        response = await self._api.post_upload_prepare(scope, target_id, **payload)
+        if not isinstance(response, Mapping):
+            return response
+        return _normalize_chunked_prepare_response(response)
+
+    async def put_upload_part(self, presigned_url: str, data: bytes, *, timeout: float = 300):
+        return await self._api.put_upload_part(presigned_url, data, timeout=timeout)
+
+    async def post_upload_part_finish(self, scope: str, target_id: str, **payload):
+        # botpy numbers parts from 1 internally; QQ's endpoint expects 0-based indexes.
+        part_index = payload.get("part_index")
+        if isinstance(part_index, int):
+            payload["part_index"] = part_index - 1
+        return await self._api.post_upload_part_finish(scope, target_id, **payload)
+
+    async def post_upload_complete(self, scope: str, target_id: str, **payload):
+        return await self._api.post_upload_complete(scope, target_id, **payload)
+
+
 async def _upload_markdown_image(client: botpy.Client, target: ReplyTarget, *, local_path: str) -> str | None:
     """使用 QQ 分片接口取得可嵌入 Markdown 的临时图片直链。
 
@@ -139,13 +214,13 @@ async def _upload_markdown_image(client: botpy.Client, target: ReplyTarget, *, l
     if api is None:
         return None
 
-    uploader = getattr(client, "_chunked_media_uploader", None)
+    uploader = getattr(client, "_markdown_chunked_media_uploader", None)
     if uploader is None:
         uploader = ChunkedMediaUploader(
-            api,
+            _QQBotChunkedUploadAPI(api),
             upload_cache=getattr(client, "_upload_cache", None),
         )
-        client._chunked_media_uploader = uploader
+        client._markdown_chunked_media_uploader = uploader
 
     response = await uploader.upload(
         target.scope,
