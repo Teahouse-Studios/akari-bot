@@ -4,13 +4,17 @@ import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
+from core.builtins.message.chain import MessageChain
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
 from core.constants import SessionContextUnavailable
 from core.module_runtime import ModuleRuntimeManager
+from core.queue.contracts import PlatformAPI
 from core.server.lifecycle import BackgroundTaskLifecycle
 from core.tester import func_case, Tester
 from modules.wiki.wiki import (
+    _WikiMessageTracker,
+    _build_render_preview_callback,
     _build_forum_callback,
     _build_section_callback,
     _gather_background,
@@ -26,6 +30,32 @@ class _ClickSession:
 
     def as_display(self, text_only: bool = False) -> str:
         return self.text
+
+
+async def _test_render_preview_can_be_deleted_after_preview():
+    owner = MessageSession(
+        SessionInfo(
+            target_id="TEST|Group|wiki-render-actions",
+            target_from="TEST|Group",
+            client_name="TEST",
+        )
+    )
+    tracker = _WikiMessageTracker(owner)
+    await tracker.add(SimpleNamespace(message_id=["result", "background"]))
+    click = _ClickSession("wiki_render_preview")
+    click.send_message = AsyncMock(return_value=SimpleNamespace(message_id=["preview"]))
+    rendered = MessageChain.assign("preview")
+
+    with (
+        patch("modules.wiki.wiki._render_preview_items", new=AsyncMock(return_value=rendered)),
+        patch.object(PlatformAPI.delete_message, "submit", new=AsyncMock()) as delete,
+    ):
+        callback = _build_render_preview_callback([], {}, tracker)
+        await callback(click)
+        click.text = "wiki_render_delete"
+        await callback(click)
+
+    return delete.await_count == 1 and delete.await_args.args[1] == ["result", "background", "preview"]
 
 
 async def _test_section_callback_uses_click_session_and_frozen_page():
@@ -234,6 +264,7 @@ async def _test_background_tasks_are_runtime_owned():
 
 @func_case
 async def test_wiki_lifecycle(tester: Tester):
+    await tester.test(_test_render_preview_can_be_deleted_after_preview, "渲染预览后仍可删除全部消息")
     await tester.test(_test_section_callback_uses_click_session_and_frozen_page, "章节回调会话与闭包冻结")
     await tester.test(_test_section_callback_rejects_zero_index, "章节回调拒绝零号索引")
     await tester.test(_test_forum_callback_uses_click_session_and_frozen_page, "论坛回调会话与闭包冻结")

@@ -17,7 +17,7 @@ from core.builtins.message.internal import (
     Video,
     Url,
 )
-from core.builtins.session.internal import MessageSession, confirm_prompt_key
+from core.builtins.session.internal import FinishedSession, MessageSession, confirm_prompt_key
 from core.builtins.utils import confirm_command
 from core.component import module
 from core.constants.exceptions import (
@@ -64,6 +64,36 @@ WIKI_RENDER_MODE_KEY = "wiki_render_mode"
 WIKI_RENDER_MODE_BUTTON = "button"
 WIKI_RENDER_MODE_AUTO = "auto"
 WIKI_RENDER_MODE_OFF = "off"
+
+
+class _WikiMessageTracker:
+    """Track every message emitted by one Wiki query for bulk cleanup."""
+
+    def __init__(self, session: Bot.MessageSession):
+        self.session_info = session.session_info
+        self.message_ids: list[str | int] = []
+        self.deleted = False
+
+    async def add(self, result: FinishedSession | None) -> None:
+        message_ids = getattr(result, "message_id", None) if result else None
+        if not message_ids:
+            return
+        if isinstance(message_ids, (str, int)):
+            message_ids = [message_ids]
+        new_ids = [message_id for message_id in message_ids if message_id not in self.message_ids]
+        if not new_ids:
+            return
+        if self.deleted:
+            await FinishedSession(self.session_info, new_ids).delete()
+            return
+        self.message_ids.extend(new_ids)
+
+    async def delete(self) -> None:
+        self.deleted = True
+        if self.message_ids:
+            message_ids = self.message_ids
+            self.message_ids = []
+            await FinishedSession(self.session_info, message_ids).delete()
 
 
 def _wiki_render_mode(session: Bot.MessageSession | QueryInfo) -> str:
@@ -118,23 +148,23 @@ async def _render_preview_items(
     return result
 
 
-def _build_render_preview_callback(items: list[dict], headers: dict):
-    """Build a one-shot callback for the public preview and delete buttons."""
+def _build_render_preview_callback(items: list[dict], headers: dict, tracker: _WikiMessageTracker):
+    """Build a callback for preview and bulk deletion buttons."""
 
     async def _callback(session: Bot.MessageSession):
         action = session.as_display(text_only=True).strip()
         if action == "wiki_render_delete":
             try:
-                await session.delete()
+                await tracker.delete()
             except Exception:
-                Logger.exception("Failed to delete Wiki result message: ")
+                Logger.exception("Failed to delete Wiki result messages: ")
             return
         if action != "wiki_render_preview":
             return
         try:
             rendered = await _render_preview_items(session, items, headers)
             if rendered:
-                await session.send_message(rendered, quote=False)
+                await tracker.add(await session.send_message(rendered, quote=False))
         except Exception:
             # A browser/WAF failure is expected to be possible even after the API pre-check.
             Logger.exception("Wiki WebRender preview failed: ")
@@ -447,6 +477,14 @@ async def _query_pages_impl(
         render_mode = WIKI_RENDER_MODE_AUTO
     else:
         raise TypeError("Session must be Bot.MessageSession or QueryInfo.")
+
+    message_tracker = _WikiMessageTracker(session) if isinstance(session, Bot.MessageSession) else None
+
+    async def send_message(message_chain, **kwargs):
+        result = await session.send_message(message_chain, **kwargs)
+        if message_tracker:
+            await message_tracker.add(result)
+        return result
 
     if not start_wiki:
         if isinstance(session, MessageSession):
@@ -764,9 +802,9 @@ async def _query_pages_impl(
                                 if button_data and not use_markdown_section:
                                     i_msg_lst.append(ButtonFrame(build_button_rows(button_data)))
                                 if use_markdown_section:
-                                    await session.send_message(i_msg_lst)
+                                    await send_message(i_msg_lst)
                                 else:
-                                    await session.send_message(i_msg_lst, callback=_build_section_callback(r))
+                                    await send_message(i_msg_lst, callback=_build_section_callback(r))
 
                             else:
                                 if r.invalid_section and (
@@ -830,9 +868,9 @@ async def _query_pages_impl(
                                 if button_data and not use_markdown_forum:
                                     i_msg_lst.append(ButtonFrame(build_button_rows(button_data)))
                                 if use_markdown_forum:
-                                    await session.send_message(i_msg_lst)
+                                    await send_message(i_msg_lst)
                                 else:
-                                    await session.send_message(i_msg_lst, callback=_build_forum_callback(r))
+                                    await send_message(i_msg_lst, callback=_build_forum_callback(r))
 
                 else:
                     plain_slice = MessageChain.create()
@@ -916,7 +954,7 @@ async def _query_pages_impl(
             # 异常自身不是消息元素，须先取其文本再并入消息链。
             error_message = MessageChain.assign([I18NContext("message.error"), Plain(str(e))])
             if isinstance(session, Bot.MessageSession):
-                await session.send_message(error_message)
+                await send_message(error_message)
             else:
                 msg_list.extend(error_message)
     if isinstance(session, Bot.MessageSession):
@@ -940,7 +978,7 @@ async def _query_pages_impl(
                 )
             )
             msg_list.append(ButtonFrame([ButtonRows.assign(render_buttons)]))
-            render_callback = _build_render_preview_callback(render_button_items, headers)
+            render_callback = _build_render_preview_callback(render_button_items, headers, message_tracker)
         if msg_list:
             quote = not session.session_info.support_markdown
             if all(
@@ -952,13 +990,14 @@ async def _query_pages_impl(
                     not wait_possible_list,
                 ]
             ):
-                await session.finish(
-                    msg_list, callback=render_callback, callback_once=bool(render_callback), quote=quote
-                )
+                try:
+                    await session.finish(msg_list, callback=render_callback, callback_once=False, quote=quote)
+                except SessionFinished as error:
+                    if message_tracker and error.args:
+                        await message_tracker.add(error.args[0])
+                    raise
             else:
-                await session.send_message(
-                    msg_list, callback=render_callback, callback_once=bool(render_callback), quote=quote
-                )
+                await send_message(msg_list, callback=render_callback, callback_once=False, quote=quote)
 
         async def infobox():
             if render_infobox_list and session.session_info.support_image:
@@ -987,7 +1026,7 @@ async def _query_pages_impl(
                                 for img in get_infobox:
                                     infobox_msg_list.append(Image(img))
                 if infobox_msg_list:
-                    await session.send_message(infobox_msg_list, quote=False)
+                    await send_message(infobox_msg_list, quote=False)
 
         async def section():
             if render_section_list and session.session_info.support_image:
@@ -1014,7 +1053,7 @@ async def _query_pages_impl(
                                 else:
                                     section_msg_list.append(I18NContext("wiki.message.error.render_section"))
                 if section_msg_list:
-                    await session.send_message(section_msg_list, quote=False)
+                    await send_message(section_msg_list, quote=False)
 
         async def image_and_audio():
             if dl_list:
@@ -1032,7 +1071,7 @@ async def _query_pages_impl(
                             "ico",
                         ]:
                             if session.session_info.support_image:
-                                await session.send_message(Image(dl), quote=False)
+                                await send_message(Image(dl), quote=False)
                         elif guess_type.extension in [
                             "oga",
                             "ogg",
@@ -1041,7 +1080,7 @@ async def _query_pages_impl(
                             "wav",
                         ]:
                             if session.session_info.support_audio:
-                                await session.send_message(Audio(dl), quote=False)
+                                await send_message(Audio(dl), quote=False)
                         elif guess_type.extension in [
                             "mp4",
                             "mkv",
@@ -1051,11 +1090,11 @@ async def _query_pages_impl(
                             "webm",
                         ]:
                             if session.session_info.support_video:
-                                await session.send_message(Video(dl), quote=False)
+                                await send_message(Video(dl), quote=False)
                     elif check_svg(dl):
                         rd = await svg_render(dl)
                         if session.session_info.support_image and rd:
-                            await session.send_message(rd, quote=False)
+                            await send_message(rd, quote=False)
 
         async def wait_confirm():
             if wait_msg_list and session.session_info.support_wait:
