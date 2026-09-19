@@ -119,6 +119,7 @@ class Bind:
             text_only: bool = True,
             element_filter: tuple[MessageElement, ...] | None = None,
             trigger_once_startup: bool = False,
+            skip_long_message_confirm: bool = False,
         ):
             def decorator(function):
                 ModulesManager.bind_to_module(
@@ -141,6 +142,7 @@ class Bind:
                         text_only=text_only,
                         element_filter=element_filter or [],
                         trigger_once_startup=trigger_once_startup,
+                        skip_long_message_confirm=skip_long_message_confirm,
                     ),
                 )
                 return function

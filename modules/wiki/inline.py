@@ -75,6 +75,7 @@ async def _(msg: Bot.MessageSession):
     mode="A",
     show_typing=False,
     logging=False,
+    skip_long_message_confirm=True,
     desc="{I18N:wiki.help.wiki-inline.url}",
 )
 async def _(msg: Bot.MessageSession):

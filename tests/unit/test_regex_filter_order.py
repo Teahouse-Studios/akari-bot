@@ -1,6 +1,7 @@
 """core.builtins.parser.message 单元测试 - 正则平台筛选与执行锁。"""
 
 import re
+from copy import copy
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
@@ -64,7 +65,7 @@ def _fake_avail_rfunc(available_for=None, exclude_from=None, load: bool = True):
     )
 
 
-def _fake_long_regex_message(pattern: str, text: str):
+def _fake_long_regex_message(pattern: str, text: str, *, skip_long_message_confirm: bool = False):
     rfunc = SimpleNamespace(
         available_for=["*"],
         exclude_from=[],
@@ -74,6 +75,7 @@ def _fake_long_regex_message(pattern: str, text: str):
         text_only=True,
         element_filter=[],
         trigger_once_startup=False,
+        skip_long_message_confirm=skip_long_message_confirm,
     )
     module = SimpleNamespace(
         _db_load=True,
@@ -139,6 +141,27 @@ async def _test_length_threshold_is_75_characters():
     exact_result = await _confirm_long_regex_message(exact_msg, exact_modules)
     over_result = await _confirm_long_regex_message(over_msg, over_modules)
     return exact_result and exact_msg.wait_confirm.await_count == 0 and not over_result
+
+
+async def _test_long_message_exempt_regex_skips_confirmation():
+    msg, modules = _fake_long_regex_message(
+        "https://example.com/", "https://example.com/" + "x" * 100, skip_long_message_confirm=True
+    )
+    result = await _confirm_long_regex_message(msg, modules)
+    return result and msg.wait_confirm.await_count == 0
+
+
+async def _test_long_message_still_confirms_for_non_exempt_regex():
+    msg, modules = _fake_long_regex_message(
+        "https://example.com/", "https://example.com/" + "x" * 100, skip_long_message_confirm=True
+    )
+    regular_rfunc = copy(modules["test"].regex_list.set[0])
+    regular_rfunc.mode = "A"
+    regular_rfunc.compiled = re.compile("x+")
+    regular_rfunc.skip_long_message_confirm = False
+    modules["test"].regex_list.set.append(regular_rfunc)
+    result = await _confirm_long_regex_message(msg, modules)
+    return not result and msg.wait_confirm.await_count == 1
 
 
 async def _test_wildcard_available_everywhere():
@@ -221,5 +244,7 @@ async def test_regex_filter_order(tester: Tester):
     await tester.test(_test_long_regex_miss_does_not_request_confirmation, "长消息未命中正则时不请求确认")
     await tester.test(_test_short_regex_match_does_not_request_confirmation, "短消息不请求确认")
     await tester.test(_test_length_threshold_is_75_characters, "75 字及以下不请求确认，76 字触发确认")
+    await tester.test(_test_long_message_exempt_regex_skips_confirmation, "豁免正则命中长消息时跳过确认")
+    await tester.test(_test_long_message_still_confirms_for_non_exempt_regex, "其它正则命中时仍请求确认")
 
     return tester

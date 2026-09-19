@@ -766,7 +766,7 @@ def _regex_matches_message(msg: "Bot.MessageSession", modules) -> bool:
                 matched, _ = _match_regex(rfunc, trigger_msg)
             except Exception:
                 continue
-            if matched:
+            if matched and not getattr(rfunc, "skip_long_message_confirm", False):
                 return True
     return False
 
