@@ -230,6 +230,7 @@ httpx==0.28.1
     #   e2b
     #   e2b-code-interpreter
     #   httpx-ws
+    #   milky-python-sdk
     #   qq-botpy-sdk
     #   wolframalpha
 httpx-ws==0.9.0
@@ -325,6 +326,8 @@ mcstatus==14.1.0
     # via akari-bot
 mdurl==0.1.2
     # via markdown-it-py
+milky-python-sdk==0.4.2
+    # via akari-bot
 more-itertools==10.8.0
     # via wolframalpha
 multidict==6.7.1
@@ -406,6 +409,7 @@ pydantic==2.12.5
     #   akari-bot-webrender
     #   anthropic
     #   fastapi
+    #   milky-python-sdk
     #   openai
 pydantic-core==2.41.5
     # via pydantic
@@ -438,6 +442,7 @@ python-dateutil==2.9.0.post0
 python-dotenv==1.2.2
     # via
     #   akari-bot
+    #   milky-python-sdk
     #   uvicorn
 python-multipart==0.0.32
     # via akari-bot
