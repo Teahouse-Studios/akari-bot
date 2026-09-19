@@ -35,7 +35,7 @@ from core.utils.url_audit import evaluate_url_policy
 from core.utils.button import build_button_rows
 from .database.models import WikiSiteInfo, WikiTargetInfo
 from .utils.mapping import generate_screenshot_v2_blocklist
-from .utils.forum import build_forum_markdown_table
+from .utils.forum import build_forum_markdown_table, build_section_markdown_table
 from .utils.disambiguation import (
     build_disambiguation_table,
     build_disambiguation_text,
@@ -643,7 +643,7 @@ async def _query_pages_impl(
                     else:
                         if isinstance(session, Bot.MessageSession) and r.is_disambiguation and r.disambiguation_blocks:
                             plain_slice.extend(_build_disambiguation_output(session, r, iw_prefix))
-                        elif r.desc:
+                        elif r.desc and not r.is_talk_page:
                             plain_slice.append(_format_page_desc(r.desc, session))
 
                     if r.link:
@@ -713,7 +713,6 @@ async def _query_pages_impl(
                                     button_data.append(rb)
 
                                 Logger.debug(button_data)
-                                session_data = [[str(i + 1), r.sections[i]] for i in range(len(r.sections))]
                                 i_msg_lst.append(
                                     I18NContext(
                                         "wiki.message.invalid_section.prompt"
@@ -728,31 +727,46 @@ async def _query_pages_impl(
                                         else "wiki.message.talk_page.prompt"
                                     )
                                 )
-                                i_msg_lst += [
-                                    Image(ii)
-                                    for ii in await image_table_render(
-                                        ImageTable(
-                                            session_data,
-                                            [
-                                                session.t("wiki.message.table.header.id"),
-                                                session.t("wiki.message.table.header.section"),
-                                            ],
+                                use_markdown_section = (
+                                    session.session_info.client_name == "QQBot"
+                                    and session.session_info.support_markdown
+                                    and session.session_info.support_markdown_extension
+                                    and session.session_info.support_action_text
+                                )
+                                if use_markdown_section:
+                                    i_msg_lst.extend(
+                                        build_section_markdown_table(
+                                            r.sections, display_title or r.title, session.session_info.prefixes[0]
                                         )
                                     )
-                                ]
-
-                                if not session.session_info.support_button:
-                                    i_msg_lst.append(I18NContext("wiki.message.invalid_section.select"))
-                                    i_msg_lst.append(I18NContext("message.wait.reply.prompt"))
                                 else:
-                                    if len(button_data_) > 50:
+                                    session_data = [[str(i + 1), r.sections[i]] for i in range(len(r.sections))]
+                                    i_msg_lst += [
+                                        Image(ii)
+                                        for ii in await image_table_render(
+                                            ImageTable(
+                                                session_data,
+                                                [
+                                                    session.t("wiki.message.table.header.id"),
+                                                    session.t("wiki.message.table.header.section"),
+                                                ],
+                                            )
+                                        )
+                                    ]
+                                    if not session.session_info.support_button:
+                                        i_msg_lst.append(I18NContext("wiki.message.invalid_section.select"))
+                                        i_msg_lst.append(I18NContext("message.wait.reply.prompt"))
+                                    elif len(button_data_) > 50:
                                         i_msg_lst.append(
                                             I18NContext("wiki.message.invalid_section.select.button.limit")
                                         )
 
-                                if button_data:
+                                if button_data and not use_markdown_section:
                                     i_msg_lst.append(ButtonFrame(build_button_rows(button_data)))
-                                await session.send_message(i_msg_lst, callback=_build_section_callback(r))
+                                if use_markdown_section:
+                                    await session.send_message(i_msg_lst)
+                                else:
+                                    await session.send_message(i_msg_lst, callback=_build_section_callback(r))
 
                             else:
                                 if r.invalid_section and (
@@ -876,7 +890,7 @@ async def _query_pages_impl(
                         plain_slice.append(I18NContext("wiki.message.not_found", title=display_before_title))
                     elif r.id != -1:
                         plain_slice.append(I18NContext("wiki.message.id.not_found", id=str(r.id)))
-                    if r.desc:
+                    if r.desc and not r.is_talk_page:
                         plain_slice.append(_format_page_desc(r.desc, session))
                     if r.invalid_namespace and r.before_title:
                         plain_slice.append(
