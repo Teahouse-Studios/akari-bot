@@ -14,6 +14,11 @@ import tomlkit
 TEST_CONFIG_PATH_ENV = "AKARI_CONFIG_PATH"  # 须与 core.constants.path.CONFIG_PATH_ENV 一致
 TEST_CONFIG_TEMPLATE_PATH = Path("assets/config_store/zh_cn")
 
+# union 合并日志目录，须与 core.constants.path.UNION_MERGE_LOGS_PATH_ENV 一致。
+# 用例会真实走到合并流程，逐次写下的快照日志只在人工回溯真实合并时才有意义，
+# 留在 data/ 里只会随每次测试运行越积越多。
+TEST_UNION_MERGE_LOGS_PATH_ENV = "AKARI_UNION_MERGE_LOGS_PATH"
+
 # 测试所需的配置覆盖项，格式为 (文件名, 表名, 键名, 值)。
 TEST_CONFIG_OVERRIDES: list[tuple[str, str, str, object]] = [
     ("config.toml", "config", "enable_petal", True),
@@ -47,6 +52,29 @@ def _install_test_config() -> Path:
 
 
 test_config_path = _install_test_config()
+
+
+def _install_test_union_merge_logs() -> Path:
+    """
+    把 union 合并日志引到临时目录，避免测试合成的日志堆积在 data/ 中。
+
+    日志写入本身仍被完整走到，只是产物随进程退出一并删除；需要留存时
+    可自行设置 ``AKARI_UNION_MERGE_LOGS_PATH``，已显式设置的值优先。
+    先行设置过的运行器（如 tests/run_one.py）直接沿用，不再另建一份目录。
+
+    :return: 日志目录的路径。
+    """
+    configured = os.environ.get(TEST_UNION_MERGE_LOGS_PATH_ENV)
+    if configured:
+        return Path(configured)
+
+    path = Path(tempfile.mkdtemp(prefix="akari_test_union_merge_logs_"))
+    os.environ[TEST_UNION_MERGE_LOGS_PATH_ENV] = str(path)
+    atexit.register(lambda: shutil.rmtree(path, ignore_errors=True))
+    return path
+
+
+test_union_merge_logs_path = _install_test_union_merge_logs()
 
 import asyncio
 import glob
@@ -604,6 +632,7 @@ async def main(inspect_module=inspect):
     if force_exit:
         Logger.error("Forcing tester shutdown because a timed-out task is still running.")
         shutil.rmtree(test_config_path, ignore_errors=True)
+        shutil.rmtree(test_union_merge_logs_path, ignore_errors=True)
         sys.stdout.flush()
         sys.stderr.flush()
         os._exit(1)

@@ -8,11 +8,29 @@
 """
 
 import asyncio
+import atexit
 import importlib.util
 import os
+import shutil
 import sys
+import tempfile
 import traceback
 from pathlib import Path
+
+# union 合并日志目录，须与 core.constants.path.UNION_MERGE_LOGS_PATH_ENV 一致。
+# 单入口运行同样会走到真实的合并流程，不重定向就会在 data/ 里留下合成的日志
+# （与 tester.py 的引导一致）；已显式设置的值优先，需要留存日志时可自行指定。
+TEST_UNION_MERGE_LOGS_PATH_ENV = "AKARI_UNION_MERGE_LOGS_PATH"
+_test_union_merge_logs_path = Path(tempfile.mkdtemp(prefix="akari_test_union_merge_logs_"))
+os.environ.setdefault(TEST_UNION_MERGE_LOGS_PATH_ENV, str(_test_union_merge_logs_path))
+
+
+def _cleanup_test_union_merge_logs() -> None:
+    """删除临时日志目录；os._exit 不触发 atexit，收尾时须再显式调用一次。"""
+    shutil.rmtree(_test_union_merge_logs_path, ignore_errors=True)
+
+
+atexit.register(_cleanup_test_union_merge_logs)
 
 # 以文件路径直接启动时，sys.path 首位是 tests/ 而非项目根，须先补上才能 import core
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -80,6 +98,7 @@ if __name__ == "__main__":
         traceback.print_exc()
         code = 1
     # 框架加载的模块会留下未完成的后台任务，正常返回会挂起，故强制退出
+    _cleanup_test_union_merge_logs()
     sys.stdout.flush()
     sys.stderr.flush()
     os._exit(code)

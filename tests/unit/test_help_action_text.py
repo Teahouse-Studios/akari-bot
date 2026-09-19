@@ -222,7 +222,8 @@ async def _test_image_flag_overrides_markdown_table():
     generated = [Image("help.png")]
     try:
         with patch("modules.core.common_tools.help.help_generator", new=AsyncMock(return_value=generated)) as generator:
-            await help_overview(msg, image=True)
+            # 关键字须与命令模板 [--img] 解出的参数名一致，见 core/builtins/parser/message.py
+            await help_overview(msg, img=True)
     except SessionFinished:
         pass
     sendable = msg.finished_message.as_sendable(session_info).values if msg.finished_message else []
@@ -472,7 +473,7 @@ async def _test_markdown_help_header():
         )
         lines = [line for line in rendered.splitlines() if line]
         return (
-            lines[0] == "| 小可测试版 | [语言：简体中文] | [版本：v1.2.3] | 当前权限：场景管理员 |"
+            lines[0] == "| 小可测试版 | [语言：简体中文] | [版本：v1.2.3] | 权限：场景管理员 |"
             and lines[1] == "|---|---|---|---|"
             and lines[2].startswith("| ")
             and lines[3] == "| [wiki] | [dice] | [coin] | |"
@@ -490,9 +491,9 @@ async def _test_markdown_help_header_permissions_and_width():
     msg = _FakeSession(session_info)
     names = [f"m{i}" for i in range(41)]
     expected_permissions = {
-        "user": "当前权限：普通用户",
-        "admin": "当前权限：场景管理员",
-        "superuser": "当前权限：超级用户",
+        "user": "权限：普通用户",
+        "admin": "权限：场景管理员",
+        "superuser": "权限：超级用户",
     }
     try:
         with patch("modules.core.common_tools.help.get_version_display", return_value=None):

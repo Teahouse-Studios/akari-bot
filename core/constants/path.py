@@ -14,6 +14,12 @@ CONFIG_PATH_ENV = "AKARI_CONFIG_PATH"
 # 其导入期版本迁移会在 i18n 快照初始化之前执行。
 CONFIG_READONLY_ENV = "AKARI_CONFIG_READONLY"
 
+# union 合并日志目录的环境变量名。测试引导据此把测试合成的合并记录写进临时目录，
+# 不让它们随着每次测试运行堆积在开发者的 data/ 中。
+# 与 CONFIG_PATH_ENV 同理，此处的取值发生在导入期，引导代码须先于 core 导入置位，
+# 故该名称在 tester.py 与 tests/run_one.py 中各以字面量重复了一次。
+UNION_MERGE_LOGS_PATH_ENV = "AKARI_UNION_MERGE_LOGS_PATH"
+
 # 基本路径
 assets_path = Path("./assets").resolve()
 bots_path = Path("./bots").resolve()
@@ -37,7 +43,7 @@ url_audit_assets_path = assets_path / "url_audit"
 # data 子路径（可写）
 bad_words_path = data_path / "bad_words"
 retired_path = data_path / "retired"
-union_merge_logs_path = data_path / "union_merge_logs"
+union_merge_logs_path = Path(os.environ.get(UNION_MERGE_LOGS_PATH_ENV) or data_path / "union_merge_logs").resolve()
 url_audit_data_path = data_path / "url_audit"
 
 # 字体文件路径

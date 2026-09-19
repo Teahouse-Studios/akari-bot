@@ -503,6 +503,30 @@ async def _test_function_entry_init_failure_is_error():
     return bool(result.get("error")) and not result.get("skipped")
 
 
+def _test_union_merge_logs_stay_out_of_repo_data():
+    """合并日志须写进测试隔离的目录，合成记录不得落进 data/。"""
+    from core.constants.path import data_path, union_merge_logs_path
+    from core.database.models import UNION_SCOPE_SENDER
+    from core.utils.union_merge import write_merge_log
+
+    repo_logs_dir = data_path / "union_merge_logs"
+    before = set(repo_logs_dir.glob("*.json")) if repo_logs_dir.is_dir() else set()
+
+    new_union = "UNIONTEST|merge-log-isolation"
+    write_merge_log(new_union, UNION_SCOPE_SENDER, {"keep_ids": [], "drop_ids": []})
+
+    leaked = (set(repo_logs_dir.glob("*.json")) if repo_logs_dir.is_dir() else set()) - before
+    if leaked:
+        Logger.error(f"Merge logs leaked into {repo_logs_dir}: {sorted(path.name for path in leaked)}")
+        return False
+
+    # 写入本身仍须发生，只是落在隔离目录中；若日志改为空操作，泄漏检查会假通过。
+    if not list(union_merge_logs_path.glob(f"*_{new_union.replace('|', '-')}.json")):
+        Logger.error(f"Expected a merge log under {union_merge_logs_path}, found none")
+        return False
+    return True
+
+
 @func_case
 async def test_tester_framework(tester: Tester):
     """core.tester: 测试框架自身一致性测试"""
@@ -541,5 +565,6 @@ async def test_tester_framework(tester: Tester):
     await tester.test(_test_unit_subtest_exception_keeps_running_and_counts_once, "unit 子测试异常续跑且计数一次测试")
     await tester.test(_test_function_entry_does_not_misclassify_test_timeout, "子测试超时不冒充 runner 超时测试")
     await tester.test(_test_function_entry_init_failure_is_error, "func_case 初始化错误不可跳过测试")
+    await tester.test(_test_union_merge_logs_stay_out_of_repo_data, "合并日志不落进 data/ 测试")
 
     return tester

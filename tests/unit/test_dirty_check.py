@@ -34,11 +34,22 @@ def _test_parse_data_protects_at_code():
     try:
         from core.utils.dirty_check import parse_data
 
-        result = parse_data(
-            "hello <AT:123 BADWORD> world",
-            {"RiskLevel": "high", "Result": [{"Confidence": 100, "RiskWords": "BADWORD", "Label": "mock"}]},
+        dirty = {"RiskLevel": "high", "Result": [{"Confidence": 100, "RiskWords": "BADWORD", "Label": "mock"}]}
+        # AT 码的合法形式是 <AT:client|id>（见 core/builtins/message/mention.py），
+        # 中间的额外字段为展示名，与 client、id 一并豁免。
+        code = "<AT:TEST|123|BADWORD>"
+
+        inside_only = parse_data(f"hello {code} world", dirty)
+        outside_too = parse_data(f"hello BADWORD {code} world", dirty)
+
+        return (
+            inside_only["status"] is True
+            and inside_only["content"] == f"hello {code} world"
+            # 豁免不得扩大成整条消息不过滤：AT 码之外的同一个词仍应被替换
+            and outside_too["status"] is False
+            and code in outside_too["content"]
+            and outside_too["content"].count("BADWORD") == 1
         )
-        return result["status"] is True and result["content"] == "hello <AT:123 BADWORD> world"
     except Exception:
         return False
 
