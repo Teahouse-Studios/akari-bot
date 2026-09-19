@@ -240,7 +240,6 @@ def _markdown_image_size(image: ImageElement, width: int, height: int) -> tuple[
 
 def _markdown_image_list_size(width: int, height: int) -> tuple[int, int]:
     """计算 QQBot Markdown 图片列表中的缩略图尺寸。"""
-    if height <= 0:
     return MARKDOWN_IMAGE_LIST_SIZE, MARKDOWN_IMAGE_LIST_SIZE
 
 
