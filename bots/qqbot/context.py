@@ -190,15 +190,10 @@ class _QQBotChunkedUploadAPI:
         return await self._api.put_upload_part(presigned_url, data, timeout=timeout)
 
     async def post_upload_part_finish(self, scope: str, target_id: str, **payload):
-        # botpy numbers parts from 1 internally; QQ's endpoint expects 0-based indexes.
-        part_index = payload.get("part_index")
-        if isinstance(part_index, int):
-            payload["part_index"] = part_index - 1
-        # QQ's API schema declares block_size as a numeric string, while botpy passes
-        # the parsed integer from its internal uploader.
-        block_size = payload.get("block_size")
-        if isinstance(block_size, int):
-            payload["block_size"] = str(block_size)
+        # botpy and the working QQ implementation both use 1-based indexes internally;
+        # the documented 0-based example is not accepted consistently by the proxy.
+        # Keep the parsed integer block size as well: the live endpoint accepts the
+        # numeric JSON value even though its schema describes this field as a string.
         return await self._api.post_upload_part_finish(scope, target_id, **payload)
 
     async def post_upload_complete(self, scope: str, target_id: str, **payload):
@@ -223,7 +218,9 @@ async def _upload_markdown_image(client: botpy.Client, target: ReplyTarget, *, l
     if uploader is None:
         uploader = ChunkedMediaUploader(
             _QQBotChunkedUploadAPI(api),
-            upload_cache=getattr(client, "_upload_cache", None),
+            # botpy 的上传缓存只保存 file_info，不保存分片合并响应中的 raw_url；
+            # Markdown 必须每次取得当前仍有效的临时直链，不能复用该缓存。
+            upload_cache=None,
         )
         client._markdown_chunked_media_uploader = uploader
 
@@ -233,7 +230,6 @@ async def _upload_markdown_image(client: botpy.Client, target: ReplyTarget, *, l
         MediaFileType.IMAGE,
         local_path=local_path,
     )
-    Logger.debug(response)
     raw_url = response.get("raw_url") if isinstance(response, Mapping) else None
     if not isinstance(raw_url, str) or not raw_url:
         return None
