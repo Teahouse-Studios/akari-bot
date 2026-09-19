@@ -153,6 +153,7 @@ async def _upload_markdown_image(client: botpy.Client, target: ReplyTarget, *, l
         MediaFileType.IMAGE,
         local_path=local_path,
     )
+    Logger.debug(response)
     raw_url = response.get("raw_url") if isinstance(response, Mapping) else None
     if not isinstance(raw_url, str) or not raw_url:
         return None
@@ -983,7 +984,7 @@ class QQBotContextManager(ContextManager):
                                 markdown_url = await _upload_markdown_image(client, target, local_path=image_path)
                             except Exception:
                                 markdown_url = None
-                                Logger.debug(
+                                Logger.exception(
                                     f"QQBot temporary markdown image upload failed for {session_info.session_id}; "
                                     "trying S3 fallback."
                                 )
