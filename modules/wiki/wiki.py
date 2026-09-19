@@ -897,7 +897,7 @@ async def _query_pages_impl(
             if render_button_items:
                 render_buttons.append(
                     Button(
-                        session.t("wiki.message.render.button"),
+                        session.t("wiki.message.render.action.button"),
                         "wiki_render_preview",
                         permission="all",
                         click_limit=1,
@@ -905,7 +905,7 @@ async def _query_pages_impl(
                 )
             render_buttons.append(
                 Button(
-                    session.t("wiki.message.render.delete"),
+                    session.t("wiki.message.render.action.delete"),
                     "wiki_render_delete",
                     click_limit=1,
                 )
