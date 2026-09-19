@@ -10,8 +10,8 @@ qq_enable_listening_self_message = false # 使用 OneBot 協定時，是否啟�
 qq_enable_temp_session = true # 使用 OneBot 協定時，是否啟用臨時會話。
 qq_allow_approve_friend = false # 使用 OneBot 協定時，是否自動同意好友請求。
 qq_allow_approve_group_invite = false # 使用 OneBot 協定時，是否自動同意群組邀請。
-qq_typing_emoji = 181 # 使用 OneBot 協定時，正在處理訊息時向訊息掛上的回應表情 ID，需協定端支援。 ID 詳見：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
-qq_limited_emoji = 10060 # 使用 OneBot 協定時，訊息處理失敗時向訊息掛上的回應表情 ID，需協定端支援。 ID 詳見：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
+qq_typing_emoji = 181 # 使用 OneBot 協定時，正在處理訊息時向訊息掛上的回應表情 ID，需協定端支援。ID 詳見：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
+qq_limited_emoji = 10060 # 使用 OneBot 協定時，訊息處理失敗時向訊息掛上的回應表情 ID，需協定端支援。ID 詳見：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
 qq_initiative_msg_cooldown = 10 # 限制主動訊息傳送的冷卻時間，單位為秒。
 
 [bot_onebot_secret]
