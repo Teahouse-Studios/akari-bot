@@ -55,7 +55,7 @@ if TYPE_CHECKING:
 # 匹配哈希缓存 - 缓存消息与模块的匹配结果，加速处理
 match_hash_cache = ExpiringTempDict()
 
-LONG_REGEX_MESSAGE_LENGTH = 100
+LONG_REGEX_MESSAGE_LENGTH = 75
 
 # 标记为单次触发的正则，其「模块名 + 正则序号 + 场景 ID」在此登记，登记后不再参与匹配。
 # 仅存于进程内存，重启即清空；条目数上限为「触发过的场景数 × 单次触发正则条数」，有界。
@@ -775,7 +775,7 @@ async def _confirm_long_regex_message(msg: "Bot.MessageSession", modules) -> boo
     """长消息命中正则时请求确认；返回 False 表示终止本次解析。"""
     if not _regex_matches_message(msg, modules):
         return True
-    return await msg.wait_confirm(I18NContext("parser.regex.message_too_long"))
+    return await msg.wait_confirm(I18NContext("parser.regex.message_too_long"), consume_any_message=True)
 
 
 async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):

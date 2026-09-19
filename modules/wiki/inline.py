@@ -16,6 +16,7 @@ from core.utils.image_table import image_table_render, ImageTable
 from core.utils.button import build_button_rows
 from .database.models import WikiTargetInfo
 from .utils.mapping import generate_screenshot_v2_blocklist
+from .utils.forum import build_forum_markdown_table
 from .utils.screenshot_image import (
     generate_screenshot_v1,
     generate_screenshot_v2,
@@ -278,6 +279,12 @@ async def _(msg: Bot.MessageSession):
                                 await msg.send_message(I18NContext("wiki.message.invalid_section"))
                         if get_page.is_forum:
                             forum_data = get_page.forum_data
+                            use_markdown_forum = (
+                                msg.session_info.client_name == "QQBot"
+                                and msg.session_info.support_markdown
+                                and msg.session_info.support_markdown_extension
+                                and msg.session_info.support_action_text
+                            )
                             img_table_data = []
                             img_table_headers = ["#"]
                             button_data = []
@@ -301,21 +308,29 @@ async def _(msg: Bot.MessageSession):
                             if rb:
                                 button_data.append(rb)
                             Logger.debug(f"Button data: {button_data}")
-                            img_table = ImageTable(img_table_data, img_table_headers)
                             i_msg_lst = []
                             i_msg_lst.append(I18NContext("wiki.message.forum.prompt"))
-                            i_msg_lst += [Image(ii) for ii in await image_table_render(img_table)]
-                            if not msg.session_info.support_button:
-                                i_msg_lst.append(I18NContext("wiki.message.invalid_section.select"))
-                                i_msg_lst.append(I18NContext("message.wait.reply.prompt"))
+                            if use_markdown_forum:
+                                i_msg_lst.extend(build_forum_markdown_table(forum_data, msg.session_info.prefixes[0]))
                             else:
-                                i_msg_lst.append(I18NContext("wiki.message.invalid_section.select.button"))
-                                if len(forum_data) > 25:
-                                    i_msg_lst.append(I18NContext("wiki.message.invalid_section.select.button.limit"))
+                                img_table = ImageTable(img_table_data, img_table_headers)
+                                i_msg_lst += [Image(ii) for ii in await image_table_render(img_table)]
+                                if not msg.session_info.support_button:
+                                    i_msg_lst.append(I18NContext("wiki.message.invalid_section.select"))
+                                    i_msg_lst.append(I18NContext("message.wait.reply.prompt"))
+                                else:
+                                    i_msg_lst.append(I18NContext("wiki.message.invalid_section.select.button"))
+                                    if len(forum_data) > 25:
+                                        i_msg_lst.append(
+                                            I18NContext("wiki.message.invalid_section.select.button.limit")
+                                        )
 
-                            if button_data:
+                            if button_data and not use_markdown_forum:
                                 i_msg_lst.append(ButtonFrame(build_button_rows(button_data)))
-                            await msg.send_message(i_msg_lst, callback=_build_forum_callback(get_page))
+                            if use_markdown_forum:
+                                await msg.send_message(i_msg_lst)
+                            else:
+                                await msg.send_message(i_msg_lst, callback=_build_forum_callback(get_page))
             if len(query_list) == 1 and img_send:
                 return
             if msg.session_info.support_image:

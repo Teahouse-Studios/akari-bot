@@ -2272,6 +2272,49 @@ async def _test_wait_confirm_registers_before_reaction_roundtrip():
         SessionTaskManager._task_list.clear()
 
 
+async def _test_wait_confirm_any_message_retracts_prompt():
+    """长消息确认的否按钮或普通消息都应结束等待并撤回提示。"""
+    from core.builtins.message.chain import MessageChain
+    from core.builtins.session.internal import MessageSession
+
+    class Sent:
+        message_id = ["long-regex-prompt"]
+
+        async def delete(self):
+            self.deleted = True
+
+    for response in ("否", "任意消息"):
+        sent = Sent()
+        sent.deleted = False
+
+        class FastCancelSession(MessageSession):
+            async def send_message(self, *args, **kwargs):
+                await SessionTaskManager.check(self)
+                return sent
+
+            async def end_typing(self):
+                return None
+
+        session_info = await SessionInfo.assign(
+            target_id=f"TEST|Group|long-regex-cancel-{response}",
+            target_from="TEST|Group",
+            client_name="TEST",
+            sender_id=f"TEST|long-regex-cancel-{response}",
+            sender_from="TEST",
+            messages=MessageChain.assign(response),
+        )
+        waiting = FastCancelSession(session_info)
+        SessionTaskManager._task_list.clear()
+        try:
+            with patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)):
+                confirmed = await waiting.wait_confirm("prompt", timeout=0.05 * TIME_SCALE, consume_any_message=True)
+            if confirmed or not sent.deleted:
+                return False
+        finally:
+            SessionTaskManager._task_list.clear()
+    return True
+
+
 async def _test_wait_reply_registers_before_send_returns():
     """提示已在平台显示但发送 action 尚未回包时，快速引用回复不应丢失。"""
     from core.builtins.session.internal import MessageSession
@@ -3395,6 +3438,7 @@ async def test_message_session_lifecycle(tester: Tester):
     await tester.test(_test_wait_next_message_registers_before_fast_reply, "快速回复不丢失测试")
     await tester.test(_test_wait_next_message_preserves_choice_rows, "等待选项保留显式按钮行测试")
     await tester.test(_test_wait_confirm_registers_before_reaction_roundtrip, "确认反应期间快速回复不丢失测试")
+    await tester.test(_test_wait_confirm_any_message_retracts_prompt, "确认否定或任意消息撤回提示测试")
     await tester.test(_test_wait_reply_registers_before_send_returns, "引用回复发送前登记测试")
     await tester.test(_test_wait_reply_timeout_covers_pending_send, "reply 发送阶段受统一超时约束测试")
     await tester.test(_test_wait_reply_timeout_is_single_deadline, "reply 发送与回复共享 deadline 测试")

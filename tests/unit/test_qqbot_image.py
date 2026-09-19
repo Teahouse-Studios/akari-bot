@@ -1,5 +1,5 @@
 from bots.qqbot.context import (
-    MARKDOWN_IMAGE_LIST_HEIGHT,
+    MARKDOWN_IMAGE_LIST_SIZE,
     MARKDOWN_IMAGE_MAX_WIDTH,
     _markdown_image_list_size,
     _markdown_image_size,
@@ -21,7 +21,7 @@ def _test_small_markdown_image_is_not_upscaled():
 
 
 def _test_markdown_image_list_size():
-    return _markdown_image_list_size(1000, 2000) == (64, MARKDOWN_IMAGE_LIST_HEIGHT)
+    return _markdown_image_list_size(1000, 2000) == (MARKDOWN_IMAGE_LIST_SIZE, MARKDOWN_IMAGE_LIST_SIZE)
 
 
 @func_case

@@ -5,6 +5,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 from core.builtins.parser.message import (
+    LONG_REGEX_MESSAGE_LENGTH,
     _confirm_long_regex_message,
     regex_func_available,
     try_acquire_execution_lock,
@@ -101,7 +102,11 @@ def _fake_long_regex_message(pattern: str, text: str):
 async def _test_long_regex_match_requests_confirmation():
     msg, modules = _fake_long_regex_message("触发", "触发" + "x" * 100)
     result = await _confirm_long_regex_message(msg, modules)
-    return not result and msg.wait_confirm.await_count == 1
+    return (
+        not result
+        and msg.wait_confirm.await_count == 1
+        and msg.wait_confirm.await_args.kwargs.get("consume_any_message") is True
+    )
 
 
 async def _test_long_regex_confirmation_allows_parsing():
@@ -121,6 +126,19 @@ async def _test_short_regex_match_does_not_request_confirmation():
     msg, modules = _fake_long_regex_message("触发", "触发")
     result = await _confirm_long_regex_message(msg, modules)
     return result and msg.wait_confirm.await_count == 0
+
+
+async def _test_length_threshold_is_75_characters():
+    pattern = "触发"
+    exact_msg, exact_modules = _fake_long_regex_message(
+        pattern, pattern + "x" * (LONG_REGEX_MESSAGE_LENGTH - len(pattern))
+    )
+    over_msg, over_modules = _fake_long_regex_message(
+        pattern, pattern + "x" * (LONG_REGEX_MESSAGE_LENGTH + 1 - len(pattern))
+    )
+    exact_result = await _confirm_long_regex_message(exact_msg, exact_modules)
+    over_result = await _confirm_long_regex_message(over_msg, over_modules)
+    return exact_result and exact_msg.wait_confirm.await_count == 0 and not over_result
 
 
 async def _test_wildcard_available_everywhere():
@@ -202,5 +220,6 @@ async def test_regex_filter_order(tester: Tester):
     await tester.test(_test_long_regex_confirmation_allows_parsing, "确认继续后允许正则解析")
     await tester.test(_test_long_regex_miss_does_not_request_confirmation, "长消息未命中正则时不请求确认")
     await tester.test(_test_short_regex_match_does_not_request_confirmation, "短消息不请求确认")
+    await tester.test(_test_length_threshold_is_75_characters, "75 字及以下不请求确认，76 字触发确认")
 
     return tester

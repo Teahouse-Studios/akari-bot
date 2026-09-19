@@ -227,8 +227,8 @@ def _build_qqbot_keyboard(
 # 每多一对，列数减半、单行长度随之减半。帮助的表格另有自己的上限，两者不共用。
 MESSAGE_NODES_MAX_ROWS = 2
 MARKDOWN_IMAGE_MAX_WIDTH = 128
-MARKDOWN_IMAGE_LIST_HEIGHT = 128
-MARKDOWN_IMAGE_LIST_COLUMNS = 4
+MARKDOWN_IMAGE_LIST_MAX_TOTAL_HEIGHT = 768
+MARKDOWN_IMAGE_LIST_SIZE = 32
 
 
 def _markdown_image_size(image: ImageElement, width: int, height: int) -> tuple[int, int]:
@@ -241,8 +241,19 @@ def _markdown_image_size(image: ImageElement, width: int, height: int) -> tuple[
 def _markdown_image_list_size(width: int, height: int) -> tuple[int, int]:
     """计算 QQBot Markdown 图片列表中的缩略图尺寸。"""
     if height <= 0:
-        return 1, MARKDOWN_IMAGE_LIST_HEIGHT
-    return max(1, int(width * MARKDOWN_IMAGE_LIST_HEIGHT / height)), MARKDOWN_IMAGE_LIST_HEIGHT
+    return MARKDOWN_IMAGE_LIST_SIZE, MARKDOWN_IMAGE_LIST_SIZE
+
+
+def _markdown_image_list_table(images: list[tuple[str, int, int]]) -> str:
+    """将图片整理为只有一行图片内容的 Markdown 表格。"""
+    indexes = "| " + " | ".join(str(index) for index in range(1, len(images) + 1)) + " |"
+    separator = "| " + " | ".join("---" for _ in images) + " |"
+    contents = []
+    for url, width, height in images:
+        fin_w, fin_h = _markdown_image_list_size(width, height)
+        contents.append(f"![text #{fin_w}px #{fin_h}px]({url})")
+    image_row = "| " + " | ".join(contents) + " |"
+    return "\n".join((indexes, separator, image_row))
 
 
 def nodes_to_table(session_info: SessionInfo, nodes: MessageNodes) -> str:
@@ -951,19 +962,18 @@ class QQBotContextManager(ContextManager):
                             texts.append(tag)
                     inline_pending = True
             if markdown_images:
-                use_image_list = len(markdown_images) > 1 and any(
-                    _markdown_image_size(image, width, height)[1] > MARKDOWN_IMAGE_LIST_HEIGHT
-                    for image, _, width, height in markdown_images
+                use_image_list = (
+                    sum(_markdown_image_size(image, width, height)[1] for image, _, width, height in markdown_images)
+                    > MARKDOWN_IMAGE_LIST_MAX_TOTAL_HEIGHT
                 )
                 if use_image_list:
-                    image_lines = []
-                    for start in range(0, len(markdown_images), MARKDOWN_IMAGE_LIST_COLUMNS):
-                        line = []
-                        for image, url, width, height in markdown_images[start : start + MARKDOWN_IMAGE_LIST_COLUMNS]:
-                            fin_w, fin_h = _markdown_image_list_size(width, height)
-                            line.append(f"![text #{fin_w}px #{fin_h}px]({url})")
-                        image_lines.append("".join(line))
-                    image_list = session_info.locale.t("message.image.list") + "\n" + "\n".join(image_lines)
+                    image_list = (
+                        session_info.locale.t("message.image.list")
+                        + "\n"
+                        + _markdown_image_list_table(
+                            [(url, width, height) for _, url, width, height in markdown_images]
+                        )
+                    )
 
                 for image_position, (image, url, width, height) in zip(markdown_image_positions, markdown_images):
                     if use_image_list:

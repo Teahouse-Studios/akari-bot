@@ -222,6 +222,7 @@ class MockMessageSession(MessageSession):
         append_instruction=True,
         no_confirm_action=True,
         release_execution_lock=True,
+        consume_any_message=False,
     ):
         if CoreConfig.no_confirm:
             return no_confirm_action

@@ -545,7 +545,7 @@ async def _test_s3_failure_keeps_markdown_message_sendable() -> bool:
     return result == ["markdown"] and client.calls == [("markdown", {"content": "hello", "keyboard": None})]
 
 
-async def _test_long_markdown_images_use_image_list_layout() -> bool:
+async def _test_markdown_images_over_total_height_use_table_layout() -> bool:
     class _Storage:
         def __init__(self):
             self.index = 0
@@ -570,10 +570,8 @@ async def _test_long_markdown_images_use_image_list_layout() -> bool:
     if result != ["markdown"] or len(client.calls) != 1:
         return False
     content = client.calls[0][1]["content"]
-    expected_images = [
-        f"![text #{width}px #128px](https://example.com/{index}.png)"
-        for index, width in enumerate((64, 64, 64, 64, 64), 1)
-    ]
+    expected_images = [f"![text #32px #32px](https://example.com/{index}.png)" for index in range(1, 6)]
+    table_lines = content[content.index("| 1 |") :].removesuffix("\nafter").splitlines()
     return (
         content.startswith("before\n图片列表：\n")
         and content.endswith("\nafter")
@@ -581,6 +579,10 @@ async def _test_long_markdown_images_use_image_list_layout() -> bool:
         and content.count("![text ") == 5
         and all(image in content for image in expected_images)
         and content.index(expected_images[0]) < content.index(expected_images[4])
+        and table_lines[0] == "| 1 | 2 | 3 | 4 | 5 |"
+        and table_lines[1] == "| --- | --- | --- | --- | --- |"
+        and table_lines[2] == "| " + " | ".join(expected_images) + " |"
+        and len(table_lines) == 3
     )
 
 
@@ -780,7 +782,7 @@ async def test_qqbot_modern_api(tester: Tester):
     await tester.test(_test_markdown_removes_line_break_before_at, "Markdown at 标签前换行清理测试")
     await tester.test(_test_plain_allow_parse_controls_qq_atcode, "Plain.allow_parse 逐段控制 QQ 提及解析测试")
     await tester.test(_test_s3_failure_keeps_markdown_message_sendable, "S3 失败后继续发送 Markdown 测试")
-    await tester.test(_test_long_markdown_images_use_image_list_layout, "超长 Markdown 多图列表排版测试")
+    await tester.test(_test_markdown_images_over_total_height_use_table_layout, "Markdown 图片总高度超限表格排版测试")
     await tester.test(_test_plain_message_preserves_ids_before_later_send_failure, "Plain 后续失败保留已发送 ID 测试")
     await tester.test(_test_private_message_uses_explicit_channel_user, "频道私信使用显式目标用户测试")
     await tester.test(_test_private_message_does_not_reuse_another_users_dm, "频道私信不复用其他用户 DM 测试")

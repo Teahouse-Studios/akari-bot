@@ -757,6 +757,7 @@ class MessageSession:
         append_instruction: bool = True,
         no_confirm_action: bool = True,
         release_execution_lock: bool = True,
+        consume_any_message: bool = False,
     ) -> bool:
         """
         一次性模板，用于等待触发对象确认。
@@ -780,6 +781,7 @@ class MessageSession:
         :param no_confirm_action: 在 `no_confirm` 配置项启用后的默认行为（默认为 True）
         :param release_execution_lock: 等待期间是否释放执行锁。Union 合并在建立
                                        双方 barrier 后须保持锁，避免冲突选择期间重新并发。
+        :param consume_any_message: 是否将下一条任意消息作为否定结果消费，而不是仅消费确认词。
         :return: 若对象发送确认指令返回 True，反之返回 False
 
         :raises WaitCancelException: 如果超时或用户未确认
@@ -800,7 +802,13 @@ class MessageSession:
             chain.append(Button(self.session_info.locale.t("message.button.no"), "confirm_no"))
         send = None
         flag = asyncio.Event()
-        SessionTaskManager.add_task(self, flag, timeout=timeout, task_type="wait", matcher=_is_confirmation_message)
+        SessionTaskManager.add_task(
+            self,
+            flag,
+            timeout=timeout,
+            task_type="wait",
+            matcher=None if consume_any_message else _is_confirmation_message,
+        )
         task_info = None
         try:
             # 等待任务须在跨进程发送提示前登记；平台可能已展示消息并收到用户操作，
