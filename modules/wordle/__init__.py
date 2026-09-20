@@ -41,69 +41,69 @@ async def _(msg: Bot.MessageSession, hard: bool = False, trial: bool = False):
         wordle_board=board, dark_theme=msg.session_info.target_union_info.target_data.get("wordle_dark_theme")
     )
 
-    play_state.enable()
-    play_state.update(answer=board.word)
-    Logger.info(f"Answer: {board.word}")
-    start_msg = []
-    if not text_mode:
-        start_msg.append(BImage(board_image.board_image))
-        start_msg.append(BImage(board_image.keyboard_image))
-    start_msg.append(I18NContext("wordle.message.start"))
-    if hard:
-        start_msg.append(I18NContext("wordle.message.start.hard"))
-    if trial:
-        start_msg.append(I18NContext("wordle.message.start.trial"))
-    await msg.send_message(start_msg)
-    reply_target = msg
-
-    while board.get_trials() <= 6 and play_state.check() and not board.is_game_over():
-        if trial:
-            wait = await msg.wait_next_message(timeout=GAME_EXPIRED)
-        else:
-            wait = await msg.wait_anyone(timeout=GAME_EXPIRED)
-        reply_target = wait
-        word = wait.as_display(text_only=True).strip().lower()
-        if len(word) != 5 or not (word.isalpha() and word.isascii()):
-            continue
-        if not board.verify_word(word):
-            await wait.send_message(I18NContext("wordle.message.not_a_word"))
-            continue
-        if not board.add_word(word, last_word):
-            await wait.send_message(I18NContext("wordle.message.hard.not_matched"))
-            continue
+    with play_state.running():
+        play_state.update(answer=board.word)
+        Logger.info(f"Answer: {board.word}")
+        start_msg = []
+        if not text_mode:
+            start_msg.append(BImage(board_image.board_image))
+            start_msg.append(BImage(board_image.keyboard_image))
+        start_msg.append(I18NContext("wordle.message.start"))
         if hard:
-            last_word = word
-        board_image.update_board()
-        board_image.update_keyboard()
+            start_msg.append(I18NContext("wordle.message.start.hard"))
+        if trial:
+            start_msg.append(I18NContext("wordle.message.start.trial"))
+        await msg.send_message(start_msg)
+        reply_target = msg
 
-        if not board.is_game_over() and board.get_trials() <= 6:
-            Logger.info(f"{word} != {board.word}, attempt {board.get_trials() - 1}")
-            if text_mode:
-                await wait.send_message(board.format_board())
-            else:
-                await wait.send_message([BImage(board_image.board_image), BImage(board_image.keyboard_image)])
-
-    if board.is_game_over():
-        play_state.disable()
-        attempt = board.get_trials() - 1
-        g_msg = [
-            I18NContext("wordle.message.finish", answer=board.word),
-            Url("https://dictionary.cambridge.org/dictionary/english/" + board.word, trusted=True),
-        ]
-        if board.board[-1] == board.word:
-            g_msg = [I18NContext("wordle.message.finish.success", attempt=attempt)]
+        while board.get_trials() <= 6 and play_state.check() and not board.is_game_over():
             if trial:
-                petal = 2 if attempt <= 3 else 1
-                petal += 1 if hard else 0
-                if reward := await gained_petal(reply_target, petal):
-                    g_msg.append(reward)
-        qc.reset()
-        if text_mode:
-            await reply_target.send_message([Plain(board.format_board())] + g_msg, quote=False)
-        else:
-            await reply_target.send_message(
-                [BImage(board_image.board_image), BImage(board_image.keyboard_image)] + g_msg, quote=False
-            )
+                wait = await msg.wait_next_message(timeout=GAME_EXPIRED)
+            else:
+                wait = await msg.wait_anyone(timeout=GAME_EXPIRED)
+            reply_target = wait
+            word = wait.as_display(text_only=True).strip().lower()
+            if len(word) != 5 or not (word.isalpha() and word.isascii()):
+                continue
+            if not board.verify_word(word):
+                await wait.send_message(I18NContext("wordle.message.not_a_word"))
+                continue
+            if not board.add_word(word, last_word):
+                await wait.send_message(I18NContext("wordle.message.hard.not_matched"))
+                continue
+            if hard:
+                last_word = word
+            board_image.update_board()
+            board_image.update_keyboard()
+
+            if not board.is_game_over() and board.get_trials() <= 6:
+                Logger.info(f"{word} != {board.word}, attempt {board.get_trials() - 1}")
+                if text_mode:
+                    await wait.send_message(board.format_board())
+                else:
+                    await wait.send_message([BImage(board_image.board_image), BImage(board_image.keyboard_image)])
+
+        if board.is_game_over():
+            play_state.disable()
+            attempt = board.get_trials() - 1
+            g_msg = [
+                I18NContext("wordle.message.finish", answer=board.word),
+                Url("https://dictionary.cambridge.org/dictionary/english/" + board.word, trusted=True),
+            ]
+            if board.board[-1] == board.word:
+                g_msg = [I18NContext("wordle.message.finish.success", attempt=attempt)]
+                if trial:
+                    petal = 2 if attempt <= 3 else 1
+                    petal += 1 if hard else 0
+                    if reward := await gained_petal(reply_target, petal):
+                        g_msg.append(reward)
+            qc.reset()
+            if text_mode:
+                await reply_target.send_message([Plain(board.format_board())] + g_msg, quote=False)
+            else:
+                await reply_target.send_message(
+                    [BImage(board_image.board_image), BImage(board_image.keyboard_image)] + g_msg, quote=False
+                )
 
 
 @wordle.command("stop {{I18N:game.help.stop}}")

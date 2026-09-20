@@ -1,3 +1,5 @@
+from collections.abc import Iterator
+from contextlib import contextmanager
 from typing import Any
 
 from core.builtins.session.internal import MessageSession
@@ -24,6 +26,7 @@ class PlayState:
         # 各自的对局互不相干，并作一处会让一边开局把另一边也带进游戏中。
         self.channel_key = self.msg.session_info.channel_key
         self.sender_union_id = self.msg.session_info.sender_union_id
+        self._generation = None
 
     def _get_ps_dict(self) -> ExpiringTempDict:
         """
@@ -37,7 +40,9 @@ class PlayState:
         开启游戏事件。
         """
         playstate_dict = self._get_ps_dict()
+        self._generation = object()
         playstate_dict["_status"] = True
+        playstate_dict["_generation"] = self._generation
         playstate_dict.refresh()
         Logger.info(f"[{self.channel_key}]: Enabled {self.game} by {self.sender_union_id}.")
 
@@ -50,7 +55,19 @@ class PlayState:
         playstate_dict = _ps_dict[self.channel_key].get(self.game)
         if playstate_dict and playstate_dict.get("_status"):
             playstate_dict["_status"] = False
+            playstate_dict["_generation"] = None
             Logger.info(f"[{self.channel_key}]: Disabled {self.game} by {self.sender_union_id}.")
+
+    @contextmanager
+    def running(self) -> Iterator["PlayState"]:
+        """在当前调用存活期间维护游戏状态，并只清理它开启的这一局。"""
+        self.enable()
+        try:
+            yield self
+        finally:
+            playstate_dict = self._get_ps_dict()
+            if playstate_dict.get("_generation") is self._generation:
+                self.disable()
 
     def update(self, **kwargs) -> None:
         """

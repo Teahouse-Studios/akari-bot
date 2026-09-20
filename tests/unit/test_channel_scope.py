@@ -76,6 +76,30 @@ async def _test_states_shared_within_channel():
         return False
 
 
+async def _test_play_state_running_lifecycle():
+    """异常退出应清理本局，旧局退出不能关闭后来开启的新局。"""
+    msg = await _session("CHGAME|Group|x", "CHGAME")
+    failed = PlayState("managed_failure", msg)
+    try:
+        with failed.running():
+            if not failed.check():
+                return False
+            raise RuntimeError("game failed")
+    except RuntimeError:
+        pass
+    if failed.check():
+        return False
+
+    old_game = PlayState("managed_replacement", msg)
+    new_game = PlayState("managed_replacement", msg)
+    with old_game.running():
+        old_game.disable()
+        new_game.enable()
+    replacement_survived = new_game.check()
+    new_game.disable()
+    return replacement_survived
+
+
 async def _test_petal_quota_shared_across_platforms():
     """测试作用域 - 花瓣每日额度按 union 共享，不随平台账号翻倍"""
     union = await SenderUnionInfo.resolve_union("PETALA|1")
@@ -154,6 +178,7 @@ async def test_channel_scope(tester: Tester):
     """core: union 与消息通道的作用域测试"""
     await tester.test(_test_states_isolated_across_channels, "跨通道内存态隔离测试")
     await tester.test(_test_states_shared_within_channel, "同通道内存态共享测试")
+    await tester.test(_test_play_state_running_lifecycle, "游戏状态异常清理与新局隔离测试")
     await tester.test(_test_petal_quota_shared_across_platforms, "花瓣额度按 union 共享测试")
     await tester.test(
         _test_parser_cooldown_shared_within_channel_and_user_union,

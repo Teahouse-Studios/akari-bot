@@ -256,134 +256,137 @@ async def chemical_code(msg: Bot.MessageSession, id: int | None = None, random_m
     play_state = PlayState("chemical_code", msg)
     if play_state.check():
         await msg.finish(I18NContext("game.message.running"))
-    else:
-        play_state.enable()
-    try:
-        csr = await search_pubchem(id)
-    except Exception:
-        Logger.exception()
-        play_state.disable()
-        await msg.finish(I18NContext("chemical_code.message.error"))
-    play_state.update(**csr)  # 储存并获取不同用户所需的信息
-    Logger.info(f"Answer: {play_state.get('answer')}")
+    with play_state.running():
+        try:
+            csr = await search_pubchem(id)
+        except Exception:
+            Logger.exception()
+            play_state.disable()
+            await msg.finish(I18NContext("chemical_code.message.error"))
+        play_state.update(**csr)  # 储存并获取不同用户所需的信息
+        Logger.info(f"Answer: {play_state.get('answer')}")
 
-    mol = Chem.MolFromSmiles(play_state.get("smiles"))
-    if not mol:
-        play_state.disable()
-        await msg.finish(I18NContext("chemical_code.message.error"))
+        mol = Chem.MolFromSmiles(play_state.get("smiles"))
+        if not mol:
+            play_state.disable()
+            await msg.finish(I18NContext("chemical_code.message.error"))
 
-    AllChem.Compute2DCoords(mol)
+        AllChem.Compute2DCoords(mol)
 
-    num_atoms = mol.GetNumAtoms()
-    size = max(num_atoms * 500 // 100, 500)
+        num_atoms = mol.GetNumAtoms()
+        size = max(num_atoms * 500 // 100, 500)
 
-    drawer = Draw.rdMolDraw2D.MolDraw2DCairo(size, size)
-    options = drawer.drawOptions()
-    options.padding = min(0.2 * (10 / max(num_atoms, 1)), 0.2)
-    options.setAtomPalette(element_colors)
-    drawer.SetDrawOptions(options)
-    drawer.DrawMolecule(mol)
-    drawer.FinishDrawing()
+        drawer = Draw.rdMolDraw2D.MolDraw2DCairo(size, size)
+        options = drawer.drawOptions()
+        options.padding = min(0.2 * (10 / max(num_atoms, 1)), 0.2)
+        options.setAtomPalette(element_colors)
+        drawer.SetDrawOptions(options)
+        drawer.DrawMolecule(mol)
+        drawer.FinishDrawing()
 
-    image_bytes = drawer.GetDrawingText()
-    image = PImage.open(io.BytesIO(image_bytes))
-    newpath = f"{random_cache_path()}.png"
-    image.save(newpath)
+        image_bytes = drawer.GetDrawingText()
+        image = PImage.open(io.BytesIO(image_bytes))
+        newpath = f"{random_cache_path()}.png"
+        image.save(newpath)
 
-    set_timeout = max(num_atoms // 30, 2)
+        set_timeout = max(num_atoms // 30, 2)
 
-    async def ans(msg: Bot.MessageSession, random_mode):
-        wait = await msg.wait_next_message(timeout=GAME_EXPIRED)
-        if play_state.check():
-            if (wait_text := wait.as_display(text_only=True)) != play_state.get("answer"):
-                if re.match(r"^[A-Za-z0-9]+$", wait_text):
-                    try:
-                        parse_ = parse_elements(wait_text)  # 解析消息中的化学元素
-                        value = 0
-                        for _, v in parse_.items():
-                            value += v
-                        v_ = num_atoms - value
-                        if v_ < 0:
-                            v_ = -v_
-                        if v_ > 6:
-                            await wait.send_message(I18NContext("chemical_code.message.incorrect.remind1"))
-                        else:
-                            if play_state.get("elements") == parse_:
-                                await wait.send_message(I18NContext("chemical_code.message.incorrect.remind5"))
-                            elif v_ <= 2:
-                                missing_something = False
-                                for i in play_state.get("elements"):
-                                    if i not in parse_:
-                                        await wait.send_message(I18NContext("chemical_code.message.incorrect.remind4"))
-                                        missing_something = True
-                                        break
-                                if not missing_something:
-                                    await wait.send_message(I18NContext("chemical_code.message.incorrect.remind3"))
+        async def ans(msg: Bot.MessageSession, random_mode):
+            wait = await msg.wait_next_message(timeout=GAME_EXPIRED)
+            if play_state.check():
+                if (wait_text := wait.as_display(text_only=True)) != play_state.get("answer"):
+                    if re.match(r"^[A-Za-z0-9]+$", wait_text):
+                        try:
+                            parse_ = parse_elements(wait_text)  # 解析消息中的化学元素
+                            value = 0
+                            for _, v in parse_.items():
+                                value += v
+                            v_ = num_atoms - value
+                            if v_ < 0:
+                                v_ = -v_
+                            if v_ > 6:
+                                await wait.send_message(I18NContext("chemical_code.message.incorrect.remind1"))
                             else:
-                                incorrect_list = []
-                                for i in play_state.get("elements"):
-                                    if i in parse_:
-                                        if parse_[i] != play_state.get("elements")[i]:
-                                            incorrect_list.append(i)
-                                    else:
-                                        await wait.send_message(I18NContext("chemical_code.message.incorrect.remind4"))
-                                        incorrect_list = []
-                                        break
+                                if play_state.get("elements") == parse_:
+                                    await wait.send_message(I18NContext("chemical_code.message.incorrect.remind5"))
+                                elif v_ <= 2:
+                                    missing_something = False
+                                    for i in play_state.get("elements"):
+                                        if i not in parse_:
+                                            await wait.send_message(
+                                                I18NContext("chemical_code.message.incorrect.remind4")
+                                            )
+                                            missing_something = True
+                                            break
+                                    if not missing_something:
+                                        await wait.send_message(I18NContext("chemical_code.message.incorrect.remind3"))
+                                else:
+                                    incorrect_list = []
+                                    for i in play_state.get("elements"):
+                                        if i in parse_:
+                                            if parse_[i] != play_state.get("elements")[i]:
+                                                incorrect_list.append(i)
+                                        else:
+                                            await wait.send_message(
+                                                I18NContext("chemical_code.message.incorrect.remind4")
+                                            )
+                                            incorrect_list = []
+                                            break
 
-                                if incorrect_list:
-                                    incorrect_elements = "{I18N:message.delimiter}".join(incorrect_list)
-                                    await wait.send_message(
-                                        I18NContext(
-                                            "chemical_code.message.incorrect.remind2", elements=incorrect_elements
+                                    if incorrect_list:
+                                        incorrect_elements = "{I18N:message.delimiter}".join(incorrect_list)
+                                        await wait.send_message(
+                                            I18NContext(
+                                                "chemical_code.message.incorrect.remind2", elements=incorrect_elements
+                                            )
                                         )
-                                    )
-                    except ValueError:
-                        Logger.exception()
+                        except ValueError:
+                            Logger.exception()
 
-                Logger.info(f"{wait_text} != {play_state.get('answer')}")
-                return await ans(wait, random_mode)
-            send_ = [I18NContext("chemical_code.message.correct")]
-            if random_mode:
-                if g_msg := await gained_petal(wait, 1):
-                    send_.append(g_msg)
-            play_state.disable()
-            await wait.finish(send_)
-
-    async def timer(start):
-        if play_state.check():
-            if time.time() - start > 60 * set_timeout:
-                play_state.disable()
-                await msg.finish(I18NContext("chemical_code.message.timeup", answer=play_state.get("answer")))
-            else:
-                await msg.sleep(1)  # 防冲突
-                await timer(start)
-
-    if not captcha_mode:
-        await msg.send_message(
-            [
-                I18NContext("chemical_code.message.showid", id=play_state.get("id")),
-                Image(newpath),
-                I18NContext("chemical_code.message", times=set_timeout),
-            ]
-        )
-        time_start = time.time()
-
-        await asyncio.gather(ans(msg, random_mode), timer(time_start))
-    else:
-        result = await msg.wait_next_message(
-            [
-                I18NContext("chemical_code.message.showid", id=play_state.get("id")),
-                Image(newpath),
-                I18NContext("chemical_code.message.captcha", times=set_timeout),
-            ],
-            timeout=GAME_EXPIRED,
-        )
-        if play_state.check():
-            play_state.disable()
-            if result.as_display(text_only=True) == play_state.get("answer"):
+                    Logger.info(f"{wait_text} != {play_state.get('answer')}")
+                    return await ans(wait, random_mode)
                 send_ = [I18NContext("chemical_code.message.correct")]
-                if g_msg := await gained_petal(msg, 2):
-                    send_.append(g_msg)
-                await result.finish(send_)
-            else:
-                await result.finish(I18NContext("chemical_code.message.incorrect", answer=play_state.get("answer")))
+                if random_mode:
+                    if g_msg := await gained_petal(wait, 1):
+                        send_.append(g_msg)
+                play_state.disable()
+                await wait.finish(send_)
+
+        async def timer(start):
+            if play_state.check():
+                if time.time() - start > 60 * set_timeout:
+                    play_state.disable()
+                    await msg.finish(I18NContext("chemical_code.message.timeup", answer=play_state.get("answer")))
+                else:
+                    await msg.sleep(1)  # 防冲突
+                    await timer(start)
+
+        if not captcha_mode:
+            await msg.send_message(
+                [
+                    I18NContext("chemical_code.message.showid", id=play_state.get("id")),
+                    Image(newpath),
+                    I18NContext("chemical_code.message", times=set_timeout),
+                ]
+            )
+            time_start = time.time()
+
+            await asyncio.gather(ans(msg, random_mode), timer(time_start))
+        else:
+            result = await msg.wait_next_message(
+                [
+                    I18NContext("chemical_code.message.showid", id=play_state.get("id")),
+                    Image(newpath),
+                    I18NContext("chemical_code.message.captcha", times=set_timeout),
+                ],
+                timeout=GAME_EXPIRED,
+            )
+            if play_state.check():
+                play_state.disable()
+                if result.as_display(text_only=True) == play_state.get("answer"):
+                    send_ = [I18NContext("chemical_code.message.correct")]
+                    if g_msg := await gained_petal(msg, 2):
+                        send_.append(g_msg)
+                    await result.finish(send_)
+                else:
+                    await result.finish(I18NContext("chemical_code.message.incorrect", answer=play_state.get("answer")))

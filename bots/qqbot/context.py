@@ -74,7 +74,7 @@ ACTION_TEXT_MAX_LENGTH = 100
 # at this adapter boundary before handing the payload to botpy.
 QQBOT_MAX_KEYBOARD_ROWS = 5
 QQBOT_MAX_KEYBOARD_COLUMNS = 10
-PASSIVE_REPLY_FALLBACK_ERROR_CODES = frozenset({"40034005", "40034128"})
+PASSIVE_REPLY_FALLBACK_ERROR_CODES = frozenset({"40034005", "40034128", "40054005"})
 PROACTIVE_PERMISSION_DENIED_ERROR_CODES = frozenset({"304046", "40034102", "40034105"})
 SILENT_SEND_ABORT_ERROR_CODES = frozenset({"40034101", "40054002", "40054003"})
 PERMISSION_CACHE_TTL = 3600
@@ -437,7 +437,7 @@ def _api_error_messages(error: ApiError) -> set[str]:
 
 
 def _is_passive_reply_fallback_error(error: ApiError) -> bool:
-    """判断被动回复是否因消息过期或回复次数超限而可改发主动消息。"""
+    """判断被动回复是否因过期、超限或消息去重而可改发主动消息。"""
     return bool(_api_error_codes(error) & PASSIVE_REPLY_FALLBACK_ERROR_CODES)
 
 
@@ -741,8 +741,8 @@ class QQBotContextManager(ContextManager):
                     raise
 
                 Logger.warning(
-                    f"Passive reply {send_target.message_id} is no longer available when sending to "
-                    f"{send_target.scope}|{send_target.target_id}; retrying as a proactive message."
+                    f"Passive reply {send_target.message_id} failed with codes {sorted(_api_error_codes(error))} "
+                    f"when sending to {send_target.scope}|{send_target.target_id}; retrying as a proactive message."
                 )
                 send_target = ReplyTarget(scope=send_target.scope, target_id=send_target.target_id)
                 try:

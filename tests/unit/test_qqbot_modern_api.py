@@ -109,6 +109,7 @@ class _FailingSendClient:
                 40034101: "机器人非群成员",
                 40054002: "机器人已被禁言",
                 40054003: "机器人不是群成员",
+                40054005: "消息被去重，请检查请求msgseq",
             }
             message = messages.get(code, "回复消息失败，被动回复时间或者次数超过限制")
             raise ServerError(
@@ -204,6 +205,17 @@ async def _test_expired_reply_falls_back_to_proactive() -> bool:
 async def _test_passive_reply_limit_falls_back_to_proactive() -> bool:
     session = _make_session(target_group_prefix)
     client = _FailingSendClient(40034128)
+    QQBotContextManager.context[session.session_id] = object()
+    try:
+        result = await _send_with_client(session, client)
+    finally:
+        QQBotContextManager.context.pop(session.session_id, None)
+    return result == ["fallback"] and [call[2] for call in client.calls] == ["source-message", None]
+
+
+async def _test_duplicate_passive_reply_falls_back_to_proactive() -> bool:
+    session = _make_session(target_group_prefix)
+    client = _FailingSendClient(40054005)
     QQBotContextManager.context[session.session_id] = object()
     try:
         result = await _send_with_client(session, client)
@@ -753,6 +765,7 @@ async def test_qqbot_modern_api(tester: Tester):
     await tester.test(_test_c2c_delete_uses_unified_api, "C2C 统一撤回接口测试")
     await tester.test(_test_expired_reply_falls_back_to_proactive, "过期回复消息转主动消息测试")
     await tester.test(_test_passive_reply_limit_falls_back_to_proactive, "被动回复时间或次数超限转主动消息测试")
+    await tester.test(_test_duplicate_passive_reply_falls_back_to_proactive, "被动回复消息去重转主动消息测试")
     await tester.test(_test_fallback_without_proactive_permission_is_silent, "被动回复回退无主动权限静默测试")
     await tester.test(_test_proactive_permission_denied_is_silent, "主动消息无权限静默测试")
     await tester.test(
