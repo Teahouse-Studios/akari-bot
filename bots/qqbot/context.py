@@ -202,10 +202,6 @@ def _build_qqbot_keyboard(rows: list[ButtonRows], session_info: SessionInfo, tar
     if not rows:
         return None
 
-    # ButtonFrame is shared by platforms with different keyboard limits. Split
-    # only oversized rows so normal row grouping remains intact. A keyboard
-    # cannot represent more than 50 buttons; keep the earliest buttons, matching
-    # the existing truncation policy elsewhere.
     keyboard_rows_data = [
         row.buttons[start : start + QQBOT_MAX_KEYBOARD_COLUMNS]
         for row in rows
@@ -264,8 +260,7 @@ def _build_qqbot_keyboard(rows: list[ButtonRows], session_info: SessionInfo, tar
     return Keyboard(content=KeyboardContent(rows=keyboard_rows))
 
 
-# 节点表格的高度上限，按「编号行 + 内容行」计对。过宽的表格平台会渲染失败，故此值宜小不宜大：
-# 每多一对，列数减半、单行长度随之减半。帮助的表格另有自己的上限，两者不共用。
+# 节点表格的高度上限，每多一对，列数减半、单行长度随之减半。
 MESSAGE_NODES_MAX_ROWS = 2
 MARKDOWN_IMAGE_MAX_WIDTH = 128
 MARKDOWN_IMAGE_LIST_MAX_TOTAL_HEIGHT = 768
@@ -1047,9 +1042,7 @@ class QQBotContextManager(ContextManager):
             if not texts and not prepared_media:
                 return _PreparedMessage(target, empty_send, has_payload=False)
 
-            # Markdown 路径不像普通文本路径那样整体 strip，以免破坏正文末尾的 Markdown 语义；
-            # 但开头的换行没有有效语义，还会在首个 at 标签前渲染出空行。
-            msg = "\n".join(texts).lstrip("\r\n")
+            msg = "\n".join(texts)
 
             async def send_markdown_message() -> list[str]:
                 msg_ids = []
@@ -1084,8 +1077,6 @@ class QQBotContextManager(ContextManager):
                 if queued.future.cancelled():
                     continue
 
-                # typing 出队后再让出一次执行权，允许同一时刻准备完成的普通回复
-                # 先置位 sending；随后仍会在真正调用平台消息接口前作最后检查。
                 await asyncio.sleep(0)
                 state = queued.typing_state
                 try:
@@ -1446,8 +1437,6 @@ class QQBotContextManager(ContextManager):
             state_waiter.cancel()
             await asyncio.gather(state_waiter, return_exceptions=True)
 
-            # 延时从 start_typing 信号开始计算；图片读取与 upload_media 不会额外
-            # 把提示发送时间向后推，从而避免资源准备慢于普通回复时 typing 后发。
             remaining_delay = max(0.0, cls.TYPING_PROMPT_DELAY - (time.monotonic() - prepare_started_at))
             if await cls._wait_typing_over(state, remaining_delay):
                 return
@@ -1473,8 +1462,7 @@ class QQBotContextManager(ContextManager):
             if prepare_task and not prepare_task.done():
                 prepare_task.cancel()
                 await asyncio.gather(prepare_task, return_exceptions=True)
-            # 撤回置于 finally：异常与任务取消同样不得使提示消息滞留于群中。
-            # 撤回自身再失败也只作记录，不使本轮任务带着异常收场。
+
             if typing_msg:
                 try:
                     await cls.delete_message(session_info, typing_msg)
@@ -1518,8 +1506,6 @@ class QQBotContextManager(ContextManager):
         Logger.debug(f"Start typing in session: {session_info.session_id}")
 
         # 同一会话重复开启时先结束上一轮，否则其提示消息将失去撤回时机。
-        # 不可直接取消任务：平台可能已接受发送请求但尚未返回消息 ID；取消后提示仍会
-        # 留在群聊中，且无法取得用于撤回的 ID。
         previous = cls.typing_states.pop(session_info.session_id, None)
         if previous:
             previous.finished.set()
@@ -1537,14 +1523,12 @@ class QQBotContextManager(ContextManager):
     @classmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
         # 结束输入状态属于清理动作，须幂等且容错：此时上下文可能已被回收，
-        # 若在此抛错，提示消息将连撤回的机会都没有。
         state = cls.typing_states.pop(session_info.session_id, None)
         if state:
             state.finished.set()
         task = cls.typing_tasks.pop(session_info.session_id, None)
         if task:
-            # 让正在发送的提示取得消息 ID 后自行进入 finally 撤回。直接取消可能造成
-            # 「平台已发出、SDK 未返回 ID」的孤儿提示消息。
+            # 让正在发送的提示取得消息 ID 后自行进入 finally 撤回。
             await asyncio.shield(asyncio.gather(task, return_exceptions=True))
         Logger.debug(f"End typing in session: {session_info.session_id}")
 
@@ -1678,8 +1662,6 @@ class QQBotFetchedContextManager(QQBotContextManager):
         _typing_prompt: bool = False,
         _force_plain: bool = False,
     ) -> list[str]:
-        # 主动消息须按冷却排队发出，但调用方需要取得真实的消息 ID 才能判断本跳是否送达，
-        # 因此入队的是「任务 + future」，待实际发送完成后再回传结果。
         future = asyncio.get_running_loop().create_future()
         high_priority = session_info.target_union_info.target_data.get("in_post_whitelist", False)
         append_tsk = _tasks_high_priority if high_priority else _tasks
