@@ -82,7 +82,7 @@ async def _(msg: Bot.MessageSession):
     match_msg = msg.matched_msg
 
     async def _run_bgtask(query_list):
-        Logger.info(query_list)
+        Logger.trace(query_list)
         for q in query_list:
             img_send = False
             for qq in q:
