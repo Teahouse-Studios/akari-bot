@@ -372,8 +372,8 @@ async def run_bot():
             if p.name == "server":
                 if p.exitcode == 0:
                     sys.exit(0)
-                if p.exitcode == 10:
-                    Logger.warning(f"Process {p.pid} (server) exited with code 10, restart all bots.")
+                if p.exitcode == 33:
+                    Logger.warning(f"Process {p.pid} (server) exited with code {p.exitcode}, restart all bots.")
                     raise RestartBot
                 Logger.critical(f"Process {p.pid} (server) exited with code {p.exitcode}, please check the log.")
                 sys.exit(p.exitcode)
@@ -385,8 +385,8 @@ async def run_bot():
                 processes.remove(p)
                 terminate_process(p)
                 break
-            if p.exitcode == 10:
-                Logger.warning(f"Process {p.pid} ({p.name}) exited with code 10, restart all bots.")
+            if p.exitcode == 33:
+                Logger.warning(f"Process {p.pid} ({p.name}) exited with code {p.exitcode}, restart all bots.")
                 raise RestartBot
             if p.exitcode == 78:  # 已明确没有必要重启的进程异常退出码
                 processes.remove(p)
