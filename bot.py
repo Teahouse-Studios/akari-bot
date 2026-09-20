@@ -232,9 +232,8 @@ def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
     try:
         importlib.import_module(f"bots.{bot_name}.bot")
     except ModuleNotFoundError:
-        Logger.exception(f"[{bot_name}] ???, entry not found.")
-
-        sys.exit(1)
+        Logger.error(f"[{bot_name}] ???, entry not found.")
+        sys.exit(466)
 
 
 def server_go(
@@ -389,6 +388,10 @@ async def run_bot():
             if p.exitcode == 233:
                 Logger.warning(f"Process {p.pid} ({p.name}) exited with code 233, restart all bots.")
                 raise RestartBot
+            if p.exitcode == 466:  # 已明确没有必要重启的进程异常退出码
+                processes.remove(p)
+                terminate_process(p)
+                break
             Logger.critical(f"Process {p.pid} ({p.name}) exited with code {p.exitcode}, please check the log.")
             processes.remove(p)
             terminate_process(p)
