@@ -38,10 +38,9 @@ data_path.mkdir(parents=True, exist_ok=True)
 # assets 子路径（只读）
 fonts_path = assets_path / "fonts"
 templates_path = assets_path / "templates"
-url_audit_assets_path = assets_path / "url_audit"
 
 # data 子路径（可写）
-bad_words_path = data_path / "bad_words"
+filter_words_path = data_path / "filter_words"
 retired_path = data_path / "retired"
 union_merge_logs_path = Path(os.environ.get(UNION_MERGE_LOGS_PATH_ENV) or data_path / "union_merge_logs").resolve()
 url_audit_data_path = data_path / "url_audit"

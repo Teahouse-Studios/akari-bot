@@ -10,7 +10,7 @@
 目录结构：
 
 ```text
-bad_words/
+filter_words/
 ├── politics.txt
 ├── porn.txt
 ├── profanity.txt
@@ -65,7 +65,7 @@ bad_words/
 Directory structure: 
 
 ```text
-bad_words/
+filter_words/
 ├── politics.txt
 ├── porn.txt
 ├── profanity.txt

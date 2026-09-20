@@ -125,6 +125,12 @@ class ServerAPI:
     async def get_web_render_status() -> bool: ...
 
     @staticmethod
+    @remote("server.reload_filter_words", timeout=30)
+    async def reload_filter_words() -> bool:
+        """让持有词库的进程重新读取 data/filter_words，使外部写入立即生效。"""
+        ...
+
+    @staticmethod
     @remote("server.get_modules_list", timeout=30)
     async def get_modules_list() -> list[str]: ...
 

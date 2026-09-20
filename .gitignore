@@ -78,7 +78,7 @@ CLAUDE.md
 # ==========
 
 # Local Text Filters
-/data/bad_words/*.txt
+/data/filter_words/*.txt
 
 # Local URL Audit
 /data/url_audit/allowlist/user.txt

@@ -54,7 +54,7 @@ def _resolve_reason_text(msg, reason: str) -> str:
     return msg.session_info.locale.t_str(text)
 
 
-tos = module("tos", hidden=True, load=True, base=True)
+tos = module("_tos", hidden=True, load=True, base=True)
 
 
 def _enforce_tos(function):

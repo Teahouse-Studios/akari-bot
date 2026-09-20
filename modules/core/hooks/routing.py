@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 CHANNEL_DEDUP_WINDOW = 10
 
-routing = module("parser_routing", hidden=True, load=True, base=True)
+routing = module("_parser_routing", hidden=True, load=True, base=True)
 
 channel_claim_cache = routing.state(
     "channel_claim_cache",

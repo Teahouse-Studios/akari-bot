@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from core.builtins.bot import Bot
 
 
-retired = module("retired_policy", hidden=True, load=True, base=True)
+retired = module("_retired_policy", hidden=True, load=True, base=True)
 
 
 @retired.hook(point=HookPoint.COMMAND_ROUTE, priority=1, name="route_gate", server_scope=True)

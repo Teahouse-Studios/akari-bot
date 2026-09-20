@@ -11,7 +11,7 @@ from urllib.parse import urlsplit, urlunsplit
 
 import regex
 
-from core.constants.path import url_audit_assets_path, url_audit_data_path
+from core.constants.path import url_audit_data_path
 from core.logger import Logger
 
 REGEX_RULE_PREFIX = "regex:"
@@ -144,8 +144,9 @@ def match_regex_rules(url: str, patterns: list[str] | tuple[str, ...]) -> bool:
 
 
 class _GlobalURLRuleList:
-    # 主仓规则（global.txt）随仓库分发，只读，位于 assets；
-    # 部署者规则（user.txt）由命令读写，位于 data。测试可整体替换这几个路径。
+    # 主仓规则（global.txt）随仓库分发，由项目维护者提交，位于 data/url_audit/<名单>；
+    # 部署者规则（user.txt）由命令与 WebUI 读写，与之同目录但被 Git 忽略。
+    # 测试可整体替换这几个路径。
     directory: Path
     builtin_path: Path
     user_path: Path
@@ -270,6 +271,50 @@ class _GlobalURLRuleList:
         return cls._load().rules
 
     @classmethod
+    def user_rules(cls) -> tuple[URLRule, ...]:
+        """取用户自定义文件中的规则，保留文件内的书写顺序与重复项。"""
+        return tuple(rule for rule, _ in cls._read_rules(cls.user_path, "user"))
+
+    @classmethod
+    def file_signature(cls, path: Path) -> tuple[str, int | None, int | None]:
+        """取文件的路径与元信息签名，供接口计算版本号与展示文件状态。"""
+        return cls._path_signature(path)
+
+    @classmethod
+    def replace_user_rules(cls, serialized_rules: Iterable[str]) -> list[str]:
+        """整体替换用户规则文件，逐条校验并去重，返回写入的序列化规则。
+
+        :raises URLRuleError: 任一条规则非法，或总规则数、正则数、文件体积超限。
+        """
+        parsed: list[URLRule] = []
+        seen: set[str] = set()
+        for serialized in serialized_rules:
+            rule, _ = parse_rule(serialized)
+            if rule.serialized in seen:
+                continue
+            seen.add(rule.serialized)
+            parsed.append(rule)
+
+        with cls._write_lock:
+            # 全局规则与用户规则合计适用同一份上限，重复项按加载时的去重结果计数。
+            merged: dict[str, URLRule] = {}
+            for rule, _ in cls._read_rules(cls.builtin_path, "global") + [(rule, None) for rule in parsed]:
+                merged.setdefault(rule.serialized, rule)
+            if len(merged) > MAX_RULES:
+                raise URLRuleError("too_many_rules")
+            if sum(rule.is_regex for rule in merged.values()) > MAX_REGEX_RULES:
+                raise URLRuleError("too_many_regex")
+
+            content = "".join(f"{rule.serialized}\n" for rule in parsed)
+            if len(content.encode("utf-8")) > MAX_FILE_BYTES:
+                raise URLRuleError("file_too_large")
+
+            cls._atomic_write(content)
+            cls.clear_cache()
+
+        return [rule.serialized for rule in parsed]
+
+    @classmethod
     def _atomic_write(cls, content: str) -> None:
         # 临时文件与目标同目录，确保 os.replace 只在同一文件系统内进行。
         target_dir = cls.user_path.parent
@@ -347,9 +392,9 @@ class _GlobalURLRuleList:
 
 
 class GlobalURLAllowlist(_GlobalURLRuleList):
-    directory = url_audit_assets_path / "allowlist"
+    directory = url_audit_data_path / "allowlist"
     builtin_path = directory / "global.txt"
-    user_path = url_audit_data_path / "allowlist" / "user.txt"
+    user_path = directory / "user.txt"
     label = "allowlist"
 
     _cache_key = None
@@ -362,9 +407,9 @@ class GlobalURLAllowlist(_GlobalURLRuleList):
 
 
 class GlobalURLBlocklist(_GlobalURLRuleList):
-    directory = url_audit_assets_path / "blocklist"
+    directory = url_audit_data_path / "blocklist"
     builtin_path = directory / "global.txt"
-    user_path = url_audit_data_path / "blocklist" / "user.txt"
+    user_path = directory / "user.txt"
     label = "blocklist"
 
     _cache_key = None

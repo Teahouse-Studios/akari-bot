@@ -6,7 +6,7 @@ URL 全局阻止列表用于阻止机器人发出指定的 HTTP(S) 链接。命�
 
 ## 配置文件
 
-- `global.txt`：随主仓同步的规则，由项目维护者修改并提交，与本文件同处 `assets` 目录。
+- `global.txt`：随主仓同步的规则，由项目维护者修改并提交，与本文件同处 `data/url_audit/blocklist` 目录。
 - `user.txt`：部署者的本地规则，可手动创建，也可通过命令维护。该文件已被 Git 忽略，存放于 `data/url_audit/blocklist/user.txt`。
 
 每行填写一条规则。空行以及以 `#` 开头的行会被忽略。
@@ -41,6 +41,7 @@ regex:https://example\.com/malware/[^/?#]+\.zip
 ```
 
 `add-regex` 和 `remove-regex` 接收正则表达式本身，不需要添加 `regex:` 前缀。命令不能删除 `global.txt` 中的主仓规则。
+
 
 ## Wiki 集成
 

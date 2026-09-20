@@ -6,6 +6,7 @@ from hashlib import sha256
 from typing import TYPE_CHECKING, Any, Literal
 
 from core.alive import Alive
+from core.builtins.filter import reload_filter_words as reload_badword_rules
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.internal import I18NContext
 from core.builtins.parser.command import CommandParser
@@ -170,6 +171,17 @@ async def get_bot_version() -> str | None:
 @ServerAPI.get_web_render_status.bind(JobQueueServer)
 async def get_web_render_status() -> bool:
     return await check_web_render_status()
+
+
+@ServerAPI.reload_filter_words.bind(JobQueueServer)
+async def reload_filter_words() -> bool:
+    try:
+        reload_badword_rules()
+    except Exception:
+        # 词库文件可能正被手工编辑；失败时保留旧词库并如实回报，不中断服务端。
+        Logger.exception("Failed to reload filter words: ")
+        return False
+    return True
 
 
 @ServerAPI.get_modules_list.bind(JobQueueServer)
