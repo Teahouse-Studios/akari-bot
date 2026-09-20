@@ -460,7 +460,7 @@ pyyaml==6.0.3
     #   pre-commit
     #   qq-botpy-sdk
     #   uvicorn
-qq-botpy-sdk==2.0.4
+qq-botpy-sdk==2.0.5
     # via akari-bot
 qrcode==8.2
     # via akari-bot

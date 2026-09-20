@@ -21,8 +21,8 @@ from botpy.protocol import (
     TransportError,
 )
 from botpy.types.group import SetMemberMuteState
-from botpy.types.message import Reference, KeyboardPayload
-from botpy.types.inline import Keyboard, Button, KeyboardRow, RenderData, Action, Permission
+from botpy.types.message import Reference
+from botpy.types.inline import Keyboard, Button, KeyboardRow, RenderData, Action, Permission, KeyboardContent
 
 from bots.qqbot.config import QQBotConfig
 from bots.qqbot.features import features as qqbot_features
@@ -197,9 +197,7 @@ def _render_action_text(element: ActionTextElement) -> str:
     return f"<qqbot-cmd-input {' '.join(attrs)} />"
 
 
-def _build_qqbot_keyboard(
-    rows: list[ButtonRows], session_info: SessionInfo, target: ReplyTarget
-) -> KeyboardPayload | None:
+def _build_qqbot_keyboard(rows: list[ButtonRows], session_info: SessionInfo, target: ReplyTarget) -> Keyboard | None:
     """将 ButtonFrame 的按钮行转换为 QQBot 键盘。"""
     if not rows:
         return None
@@ -263,7 +261,7 @@ def _build_qqbot_keyboard(
             keyboard_rows.append(KeyboardRow(buttons=buttons))
     if not keyboard_rows:
         return None
-    return KeyboardPayload(content=Keyboard(rows=keyboard_rows))
+    return Keyboard(content=KeyboardContent(rows=keyboard_rows))
 
 
 # 节点表格的高度上限，按「编号行 + 内容行」计对。过宽的表格平台会渲染失败，故此值宜小不宜大：
