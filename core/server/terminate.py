@@ -86,4 +86,4 @@ async def restart():
     执行清理后强制退出并发出自定义状态码，上级进程会自动重启服务。
     """
     await cleanup_sessions()
-    os._exit(233)
+    os._exit(10)
