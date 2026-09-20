@@ -1,4 +1,5 @@
 import asyncio
+import mimetypes
 import time
 from collections import OrderedDict, deque
 from collections.abc import Awaitable, Callable, Mapping
@@ -10,7 +11,15 @@ import botpy
 import httpx
 from botpy.interaction import Interaction
 from botpy.message import BaseMessage, C2CMessage, DirectMessage, GroupMessage, Message
-from botpy.protocol import ApiError, MediaFileType, MediaSendResult, MessageType, ReplyTarget, TransportError
+from botpy.protocol import (
+    ApiError,
+    ChunkedMediaUploader,
+    MediaFileType,
+    MediaSendResult,
+    MessageType,
+    ReplyTarget,
+    TransportError,
+)
 from botpy.types.group import SetMemberMuteState
 from botpy.types.message import Reference, KeyboardPayload
 from botpy.types.inline import Keyboard, Button, KeyboardRow, RenderData, Action, Permission
@@ -114,6 +123,40 @@ async def _upload_media(
     if not file_info:
         raise RuntimeError("QQBot media upload response does not contain file_info")
     return {"file_info": file_info}
+
+
+async def _upload_markdown_image(client: botpy.Client, target: ReplyTarget, *, local_path: str) -> str | None:
+    """使用 QQ 分片接口取得可嵌入 Markdown 的临时图片直链。"""
+    if target.scope not in ("group", "c2c"):
+        return None
+    api = getattr(client, "api", None)
+    if api is None:
+        return None
+
+    uploader = getattr(client, "_markdown_chunked_media_uploader", None)
+    if uploader is None:
+        uploader = ChunkedMediaUploader(
+            api,
+            # botpy 的上传缓存只保存 file_info，不保存 raw_url。
+            upload_cache=None,
+        )
+        client._markdown_chunked_media_uploader = uploader
+
+    response = await uploader.upload(
+        target.scope,
+        target.target_id,
+        MediaFileType.IMAGE,
+        local_path=local_path,
+    )
+    raw_url = response.get("raw_url") if isinstance(response, Mapping) else None
+    if not isinstance(raw_url, str) or not raw_url:
+        return None
+
+    mime_type = mimetypes.guess_type(local_path)[0] or "image/jpeg"
+    if not mime_type.startswith("image/"):
+        mime_type = "image/jpeg"
+    separator = "&" if "?" in raw_url else "?"
+    return f"{raw_url}{separator}response-content-type={quote(mime_type, safe='')}"
 
 
 def _truncate_action_text(value: str, field: str) -> str:
@@ -913,8 +956,6 @@ class QQBotContextManager(ContextManager):
             markdown_images: list[tuple[ImageElement, str, int, int]] = []
             markdown_image_positions: list[int] = []
             s3_storage = None
-            if any(isinstance(element, ImageElement) for element in converted_message):
-                s3_storage = await asyncio.to_thread(_load_s3_storage)
 
             for x in converted_message:
                 if isinstance(x, PlainElement):
@@ -928,17 +969,36 @@ class QQBotContextManager(ContextManager):
                 elif isinstance(x, ImageElement):
                     # 图片不可读（本地文件缺失或下载失败）时跳过该元素
                     image_path = await resolve_media_path(x)
-                    if image_path is not None and s3_storage is not None:
+                    if image_path is not None:
                         try:
-                            upload = await s3_storage.upload_temp(image_path)
-                            if upload and "public_url" in upload:
+                            try:
+                                markdown_url = await _upload_markdown_image(client, target, local_path=image_path)
+                            except Exception:
+                                markdown_url = None
+                                Logger.exception(
+                                    f"QQBot temporary markdown image upload failed for {session_info.session_id}; "
+                                    "trying S3 fallback."
+                                )
+                            if markdown_url is None:
+                                if s3_storage is None:
+                                    s3_storage = await asyncio.to_thread(_load_s3_storage)
+                                if s3_storage is not None:
+                                    try:
+                                        upload = await s3_storage.upload_temp(image_path)
+                                        markdown_url = upload.get("public_url") if upload else None
+                                    except Exception:
+                                        Logger.exception(
+                                            f"Failed to upload a QQBot markdown image to S3 for "
+                                            f"{session_info.session_id}; "
+                                        )
+                            if markdown_url:
                                 w, h = await x.get_wh()
-                                markdown_images.append((x, upload["public_url"], w, h))
+                                markdown_images.append((x, markdown_url, w, h))
                                 texts.append("")
                                 markdown_image_positions.append(len(texts) - 1)
                         except Exception:
                             Logger.exception(
-                                f"Failed to upload a QQBot markdown image to S3 for {session_info.session_id}; "
+                                f"Failed to upload a QQBot markdown image for {session_info.session_id}; "
                                 "the remaining message will still be sent: "
                             )
                     inline_pending = False
