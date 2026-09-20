@@ -14,9 +14,9 @@ _多功能、跨平台、可自由扩展的异步聊天机器人助手_
 [![Weblate translation](https://hosted.weblate.org/widget/akaribot/svg-badge.svg)](https://hosted.weblate.org/engage/akaribot/)
 ![GitHub Repo stars](https://img.shields.io/github/stars/Teahouse-Studios/akari-bot?style=social)
 <br>
-![Python](https://img.shields.io/badge/Python-3.12+-blue)
-![OneBot 11](https://img.shields.io/badge/OneBot-11-black)
-![Milky 1.3](https://img.shields.io/badge/Milky-1.3-black)
+[![Python](https://img.shields.io/badge/Python-3.12+-blue)](https://www.python.org/downloads/release/python-3120/)
+[![OneBot 11](https://img.shields.io/badge/OneBot-11-black)](https://github.com/botuniverse/onebot-11)
+[![Milky v1.1](https://img.shields.io/badge/Milky-v1.1-white)](https://github.com/SaltifyDev/milky)
 [![License](https://img.shields.io/github/license/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/blob/master/LICENSE)
 </div>
 
