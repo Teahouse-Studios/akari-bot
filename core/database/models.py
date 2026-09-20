@@ -10,6 +10,7 @@ from typing import Any, ClassVar, Literal, Self, overload
 
 from tortoise import fields
 from tortoise.expressions import F
+from tortoise.functions import Count
 from tortoise.models import Model
 from tortoise.transactions import in_transaction
 
@@ -1505,6 +1506,25 @@ class AnalyticsData(DBModel):
         analytics = await cls.all().values("module_name")
         module_counter = Counter([entry["module_name"] for entry in analytics])
         return dict(module_counter)
+
+    @classmethod
+    async def get_modules_count_by_times(cls, new, old) -> dict[str, int]:
+        """按时间区间统计各模块的调用次数。
+
+        聚合在数据库内完成：统计页可选的时间窗足以覆盖整表，取回全部行再在
+        Python 侧计数会让单次请求的传输量随历史数据线性增长。
+
+        :param new: 区间起点（含）。
+        :param old: 区间终点（含）。
+        :return: 模块名到调用次数的映射。
+        """
+        rows = (
+            await cls.filter(timestamp__gte=old, timestamp__lte=new)
+            .group_by("module_name")
+            .annotate(count=Count("id"))
+            .values("module_name", "count")
+        )
+        return {row["module_name"]: row["count"] for row in rows if row["module_name"] is not None}
 
 
 class ModuleStatus(DBModel):

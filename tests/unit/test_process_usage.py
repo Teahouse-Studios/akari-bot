@@ -10,8 +10,11 @@ from core.queue.diagnostics import (
     build_usage,
     collect_external_usage,
     collect_self_usage,
+    ProcessUnavailable,
+    ProcessUsage,
     REASON_MAX_LENGTH,
     summarize_process_usage,
+    usage_payload,
 )
 from core.tester import func_case, Tester
 
@@ -163,6 +166,26 @@ async def test_process_usage_summary(tester: Tester):
     await tester.test(_test_summarize_reports_invalid_payload, "无效载荷可见测试")
     await tester.test(_test_summarize_skips_non_dict_values, "跳过非字典返回值测试")
     await tester.test(_test_summarize_truncates_reason, "失败原因截断测试")
+
+    return tester
+
+
+def _test_usage_payload_is_plain_dict():
+    """测试展示行与失败行转为 RPC 可编码的纯字典"""
+    payload = usage_payload(
+        [ProcessUsage(name="Server", pid=3, memory=30, metric="USS", threads=2)],
+        [ProcessUnavailable(name="jobqueue-hub", reason="timeout")],
+    )
+    return payload == {
+        "items": [{"name": "Server", "pid": 3, "memory": 30, "metric": "USS", "threads": 2}],
+        "failures": [{"name": "jobqueue-hub", "reason": "timeout"}],
+    }
+
+
+@func_case
+async def test_process_usage_payload(tester: Tester):
+    """core.queue.diagnostics: 进程占用的可序列化载荷测试"""
+    await tester.test(_test_usage_payload_is_plain_dict, "内存占用转纯字典测试")
 
     return tester
 

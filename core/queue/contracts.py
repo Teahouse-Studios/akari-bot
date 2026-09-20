@@ -125,6 +125,36 @@ class ServerAPI:
     async def get_web_render_status() -> bool: ...
 
     @staticmethod
+    @remote("server.get_runtime_stats", timeout=30)
+    async def get_runtime_stats() -> dict:
+        """汇总 JobQueue 后端与自服务端启动以来的解析计数，供 WebUI 状态页展示。"""
+        ...
+
+    @staticmethod
+    @remote("server.get_process_usage", timeout=15)
+    async def get_process_usage() -> dict:
+        """汇总各进程内存占用；扇出失败时以 failures 说明，而非抛出异常。"""
+        ...
+
+    @staticmethod
+    @remote("server.get_web_render_status_detail", timeout=30)
+    async def get_web_render_status_detail() -> dict | None:
+        """返回 WebRender 的完整状态详情，已转换为可序列化结构。"""
+        ...
+
+    @staticmethod
+    @remote("server.control_web_render", timeout=120)
+    async def control_web_render(action: Literal["start", "stop", "restart"]) -> dict:
+        """启动、关闭或重启服务端的 WebRender 浏览器。"""
+        ...
+
+    @staticmethod
+    @remote("server.test_web_render", timeout=120)
+    async def test_web_render(options: dict) -> dict:
+        """按 WebUI 提交的参数执行一次渲染测试，失败以 error 字段回报。"""
+        ...
+
+    @staticmethod
     @remote("server.reload_filter_words", timeout=30)
     async def reload_filter_words() -> bool:
         """让持有词库的进程重新读取 data/filter_words，使外部写入立即生效。"""

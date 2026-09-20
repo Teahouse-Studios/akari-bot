@@ -1,5 +1,6 @@
 """服务端 RPC 实现；调用签名与编码由共享契约统一管理。"""
 
+import asyncio
 import re
 import time
 from hashlib import sha256
@@ -13,6 +14,7 @@ from core.builtins.parser.command import CommandParser
 from core.builtins.parser.message import parser
 from core.builtins.session.info import EventInfo, SessionInfo
 from core.builtins.utils import command_prefix
+from core.constants import Info
 from core.constants.path import assets_path
 from core.config.base import CoreConfig
 from core.exports import exports, add_export
@@ -21,10 +23,20 @@ from core.loader import ModulesManager
 from core.logger import Logger
 from core.smtp import send_report
 from core.utils.bash import run_sys_command
-from core.utils.web_render import check_web_render_status
+from core.utils.web_render import (
+    ElementScreenshotOptions,
+    PageScreenshotOptions,
+    SourceOptions,
+    StatusOptions,
+    check_web_render_status,
+    close_web_render,
+    enable_web_render,
+    init_web_render,
+    web_render,
+)
 from .base import JobQueueBase
 from .contracts import PlatformAPI, ProcessAPI, ServerAPI
-from .diagnostics import collect_self_usage
+from .diagnostics import collect_self_usage, gather_process_usage, usage_payload
 from .errors import RpcUnavailableError
 from .reporting import report_rpc_error
 
@@ -171,6 +183,231 @@ async def get_bot_version() -> str | None:
 @ServerAPI.get_web_render_status.bind(JobQueueServer)
 async def get_web_render_status() -> bool:
     return await check_web_render_status()
+
+
+# 渲染测试的单次响应上限：截图按张数、源码按字符数截断，避免一次请求把响应体
+# 撑到 WebUI 无法处理的量级。超限只截断，不视为失败。
+WEB_RENDER_TEST_MAX_IMAGES = 16
+WEB_RENDER_TEST_MAX_SOURCE_CHARS = 200_000
+# 渲染测试允许透传的字段；未列出的键一律忽略，避免任意参数进入依赖库的选项模型。
+WEB_RENDER_TEST_SCREENSHOT_KEYS = (
+    "url",
+    "content",
+    "css",
+    "width",
+    "height",
+    "locale",
+    "output_type",
+    "output_quality",
+    "counttime",
+    "stealth",
+    "wait_until",
+    "wait_after_load",
+)
+WEB_RENDER_TEST_SOURCE_KEYS = ("url", "locale", "stealth", "wait_until", "wait_after_load", "raw_text")
+
+
+def _web_render_status_payload(status: dict | None) -> dict | None:
+    """把依赖库的状态字典转为可经 RPC 与 JSON 传递的结构。
+
+    ``contexts_open_sorted`` 以 BrowserContext 对象为键，无法序列化，改为按出现顺序编号的列表。
+    """
+    if not isinstance(status, dict):
+        return None
+    contexts = []
+    raw_contexts = status.get("contexts_open_sorted")
+    if isinstance(raw_contexts, dict):
+        for index, pages in enumerate(raw_contexts.values()):
+            contexts.append({"index": index, "pages": [str(page) for page in pages] if isinstance(pages, list) else []})
+    return {
+        "available": bool(status.get("browser_initialized") or status.get("remote_configured")),
+        "browser_initialized": bool(status.get("browser_initialized")),
+        "browser_mode": status.get("browser_mode"),
+        "headless": bool(status.get("headless")),
+        "keep_pages_open": bool(status.get("keep_pages_open")),
+        "debug_mode": bool(status.get("debug_mode")),
+        "remote_only": bool(status.get("remote_only")),
+        "remote_configured": bool(status.get("remote_configured")),
+        "remote_timeout": status.get("remote_timeout"),
+        "export_logs": bool(status.get("export_logs")),
+        "logs_path": status.get("logs_path"),
+        "name": status.get("name"),
+        "contexts": contexts,
+        "contexts_total": status.get("contexts_total"),
+        "leaked": bool(status.get("leaked")),
+    }
+
+
+async def _web_render_status_detail() -> dict | None:
+    try:
+        status = await web_render.status(StatusOptions())
+    except asyncio.CancelledError:
+        raise
+    except Exception:
+        Logger.exception("Failed to read WebRender status for WebUI.")
+        return None
+    # 本地浏览器未就绪且未配置远端时，依赖库直接返回 None；此时仍给出未就绪的状态，
+    # 让前端能区分「读不到状态」与「浏览器没起来」。
+    return _web_render_status_payload(status if status is not None else {"browser_initialized": False})
+
+
+@ServerAPI.get_runtime_stats.bind(JobQueueServer)
+async def get_runtime_stats() -> dict:
+    backend_name = getattr(JobQueueServer.backend, "name", None)
+    return {
+        "jobqueue_backend": backend_name if isinstance(backend_name, str) and backend_name else None,
+        "command_parsed": int(Info.command_parsed or 0),
+        "message_parsed": int(Info.message_parsed or 0),
+    }
+
+
+@ServerAPI.get_process_usage.bind(JobQueueServer)
+async def get_process_usage() -> dict:
+    try:
+        usages, failures = await gather_process_usage()
+    except asyncio.CancelledError:
+        raise
+    except Exception as exc:
+        Logger.exception("Failed to gather process usage for WebUI.")
+        return {"items": [], "failures": [], "error": type(exc).__name__}
+    payload = usage_payload(usages, failures)
+    payload["error"] = None
+    return payload
+
+
+@ServerAPI.get_web_render_status_detail.bind(JobQueueServer)
+async def get_web_render_status_detail() -> dict | None:
+    return await _web_render_status_detail()
+
+
+@ServerAPI.control_web_render.bind(JobQueueServer)
+async def control_web_render(action: Literal["start", "stop", "restart"]) -> dict:
+    if action not in ("start", "stop", "restart"):
+        return {"ok": False, "error": "invalid_action", "status": None}
+    try:
+        if action in ("stop", "restart"):
+            await close_web_render()
+        # stop 只需浏览器已按请求关闭；start / restart 则以依赖库的初始化结果为准。
+        ok = True
+        if action in ("start", "restart"):
+            ok = bool(await init_web_render())
+        Info.web_render_status = await check_web_render_status()
+    except asyncio.CancelledError:
+        raise
+    except Exception:
+        Logger.exception(f"Failed to {action} WebRender for WebUI.")
+        Info.web_render_status = False
+        return {"ok": False, "error": "control_failed", "status": None}
+    return {
+        "ok": ok,
+        "error": None if ok else "init_failed",
+        "status": await _web_render_status_detail(),
+    }
+
+
+def _web_render_test_failure(mode: str | None, error: str, started: float) -> dict:
+    return {
+        "ok": False,
+        "mode": mode,
+        "elapsed": round(time.monotonic() - started, 3),
+        "status": None,
+        "source": None,
+        "source_truncated": False,
+        "images": [],
+        "output_type": None,
+        "error": error,
+    }
+
+
+@ServerAPI.test_web_render.bind(JobQueueServer)
+async def test_web_render(options: dict) -> dict:
+    started = time.monotonic()
+
+    def elapsed() -> float:
+        return round(time.monotonic() - started, 3)
+
+    if not isinstance(options, dict):
+        return _web_render_test_failure(None, "invalid_options", started)
+    mode = options.get("mode") or "status"
+    if mode not in ("status", "source", "screenshot"):
+        return _web_render_test_failure(mode if isinstance(mode, str) else None, "invalid_mode", started)
+    if not enable_web_render:
+        return _web_render_test_failure(mode, "web_render_disabled", started)
+
+    status = await _web_render_status_detail()
+    if mode == "status":
+        # 只探测可用性：不渲染任何页面，供前端的「测试连接」按钮使用。
+        ok = bool(status and status.get("available"))
+        return {
+            "ok": ok,
+            "mode": mode,
+            "elapsed": elapsed(),
+            "status": status,
+            "source": None,
+            "source_truncated": False,
+            "images": [],
+            "output_type": None,
+            "error": None if ok else "browser_unavailable",
+        }
+
+    if mode == "source":
+        source_args = {key: options[key] for key in WEB_RENDER_TEST_SOURCE_KEYS if options.get(key) is not None}
+        if not source_args.get("url"):
+            return _web_render_test_failure(mode, "missing_target", started)
+        try:
+            source = await web_render.source(SourceOptions(**source_args))
+        except ValueError:
+            return _web_render_test_failure(mode, "invalid_options", started)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            Logger.exception("WebRender source test failed.")
+            return _web_render_test_failure(mode, "render_failed", started)
+        if not isinstance(source, str):
+            return _web_render_test_failure(mode, "render_failed", started)
+        return {
+            "ok": True,
+            "mode": mode,
+            "elapsed": elapsed(),
+            "status": status,
+            "source": source[:WEB_RENDER_TEST_MAX_SOURCE_CHARS],
+            "source_truncated": len(source) > WEB_RENDER_TEST_MAX_SOURCE_CHARS,
+            "images": [],
+            "output_type": None,
+            "error": None,
+        }
+
+    screenshot_args = {key: options[key] for key in WEB_RENDER_TEST_SCREENSHOT_KEYS if options.get(key) is not None}
+    if not screenshot_args.get("url") and not screenshot_args.get("content"):
+        return _web_render_test_failure(mode, "missing_target", started)
+    element = options.get("element")
+    try:
+        if element:
+            images = await web_render.element_screenshot(ElementScreenshotOptions(element=element, **screenshot_args))
+        else:
+            images = await web_render.page_screenshot(PageScreenshotOptions(**screenshot_args))
+    except ValueError:
+        return _web_render_test_failure(mode, "invalid_options", started)
+    except asyncio.CancelledError:
+        raise
+    except Exception:
+        Logger.exception("WebRender screenshot test failed.")
+        return _web_render_test_failure(mode, "render_failed", started)
+    rendered = [image for image in images if isinstance(image, str)] if isinstance(images, list) else []
+    if not rendered:
+        return _web_render_test_failure(mode, "render_failed", started)
+    return {
+        "ok": True,
+        "mode": mode,
+        "elapsed": elapsed(),
+        "status": status,
+        # 与依赖库一致，images 为裸 base64，data URL 前缀由前端自行拼接。
+        "images": rendered[:WEB_RENDER_TEST_MAX_IMAGES],
+        "source": None,
+        "source_truncated": False,
+        "output_type": screenshot_args.get("output_type", "jpeg"),
+        "error": None,
+    }
 
 
 @ServerAPI.reload_filter_words.bind(JobQueueServer)

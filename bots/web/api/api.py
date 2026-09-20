@@ -206,6 +206,17 @@ async def get_config(request: Request):
 @limiter.limit("6/minute")
 async def server_info(request: Request):
     verify_jwt(request)
+    try:
+        runtime_stats = await ServerAPI.get_runtime_stats()
+    except Exception:
+        # 服务端不可用时仍交付本机信息，只让该项目为空，前端据此显示「不可用」。
+        Logger.exception("Failed to read runtime stats for WebUI.")
+        runtime_stats = {"jobqueue_backend": None, "command_parsed": None, "message_parsed": None}
+    try:
+        processes = await ServerAPI.get_process_usage()
+    except Exception:
+        Logger.exception("Failed to read process usage for WebUI.")
+        processes = {"items": [], "failures": [], "error": "unavailable"}
     return {
         "os": {
             "system": platform.system(),
@@ -218,7 +229,13 @@ async def server_info(request: Request):
             "python_version": platform.python_version(),
             "version": await ServerAPI.get_bot_version(),
             "web_render_status": await ServerAPI.get_web_render_status(),
+            # 自服务端启动以来的累计值；与 ~status 命令同源。
+            "jobqueue_backend": runtime_stats.get("jobqueue_backend"),
+            "command_parsed": runtime_stats.get("command_parsed"),
+            "message_parsed": runtime_stats.get("message_parsed"),
         },
+        # 各进程内存占用：memory 为字节，metric 说明口径（USS / RSS）。
+        "processes": processes,
         "cpu": {"cpu_brand": get_cpu_info()["brand_raw"], "cpu_percent": psutil.cpu_percent(interval=1)},
         "memory": {
             "total": psutil.virtual_memory().total / (1024 * 1024),
@@ -259,19 +276,71 @@ async def get_analytics(request: Request, days: int = Query(1)):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
+@app.get("/api/analytics/modules")
+@limiter.limit("10/minute")
+async def get_analytics_modules(
+    request: Request,
+    days: int = Query(1, ge=1),
+    limit: int = Query(50, ge=1, le=200),
+):
+    """按模块汇总调用次数，供统计页的「模块调用数量」图表使用。"""
+    verify_jwt(request)
+    try:
+        # 与 /api/analytics 相同：窗口必须以带时区的 datetime 传入，且 days 为整数天。
+        now = datetime.now(UTC)
+        past = now - timedelta(days=days)
+        counts = await AnalyticsData.get_modules_count_by_times(now, past)
+        count = sum(counts.values())
+        past_past = now - timedelta(days=2 * days)
+        past_count = await AnalyticsData.get_count_by_times(past, past_past)
+        try:
+            change_rate = round((count - past_count) / past_count, 2)
+        except ZeroDivisionError:
+            change_rate = 0.00
+
+        # 次数相同的模块按名称排序，保证同一份数据每次返回的顺序一致。
+        ranked = sorted(counts.items(), key=lambda item: (-item[1], item[0]))
+        modules = [
+            {
+                "module_name": module_name,
+                "count": module_count,
+                "percent": round(module_count / count * 100, 2) if count else 0.00,
+            }
+            for module_name, module_count in ranked
+        ]
+        return {
+            "days": days,
+            "count": count,
+            "change_rate": change_rate,
+            "total_modules": len(modules),
+            "modules": modules[:limit],
+        }
+
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
+# 主配置承载 db_path 等不可重建的项：删除后下次启动会以模板占位值重建，
+# 可能连到错误的数据库，故接口层直接拒绝删除。
+PROTECTED_CONFIG_FILES = (config_filename,)
+
+
+def _list_cfg_files() -> list[str]:
+    """列出配置目录下的 TOML 文件，主配置置顶。"""
+    cfg_files = sorted(cfg.name for cfg in config_path.iterdir() if cfg.name.endswith(".toml"))
+    if config_filename in cfg_files:
+        cfg_files.remove(config_filename)
+        cfg_files.insert(0, config_filename)
+    return cfg_files
+
+
 @app.get("/api/config")
 @limiter.limit("30/minute")
 async def get_config_list(request: Request):
     verify_jwt(request)
     try:
-        files = [c.name for c in config_path.iterdir()]
-        cfg_files = sorted([f for f in files if f.endswith(".toml")])
-
-        if config_filename in cfg_files:
-            cfg_files.remove(config_filename)
-            cfg_files.insert(0, config_filename)
-
-        return {"cfg_files": cfg_files}
+        return {"cfg_files": _list_cfg_files()}
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Not found")
     except Exception:
@@ -323,6 +392,48 @@ async def edit_config_file(request: Request, cfg_filename: str):
             f.write(content)
         Logger.info(f"[WebUI] {ip} has edited the config file: {cfg_filename}")
         return Response(status_code=204)
+
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.delete("/api/config/{cfg_filename}")
+@limiter.limit("10/minute")
+async def delete_config_file(request: Request, cfg_filename: str):
+    """删除配置文件。
+
+    只删除磁盘文件，不触碰运行时内存中的配置副本：核心进程在重启前仍沿用已加载的值，
+    而下次启动的模板补全会按默认值重建该文件，因此删除等价于「重启后恢复默认」。
+    """
+    ip = get_client_ip(request)
+    try:
+        verify_jwt(request)
+
+        if not config_path.exists():
+            raise HTTPException(status_code=404, detail="config_dir_not_found")
+        if not cfg_filename.endswith(".toml"):
+            raise HTTPException(status_code=400, detail="invalid_config_name")
+
+        config_root = config_path.resolve()
+        cfg_file_path = (config_path / cfg_filename).resolve()
+        # 仅允许配置目录直属的 TOML 文件，避免路径穿越与误删子目录中的内容。
+        if cfg_file_path.parent != config_root:
+            raise HTTPException(status_code=400, detail="invalid_config_name")
+        if cfg_file_path.name in PROTECTED_CONFIG_FILES:
+            Logger.warning(f'[WebUI] {ip} failed to delete the protected config file: "{cfg_filename}"')
+            raise HTTPException(status_code=403, detail="protected_config")
+
+        # 文件本就不存在时同样返回成功，方便前端幂等地重试删除。
+        changed = cfg_file_path.is_file()
+        if changed:
+            cfg_file_path.unlink()
+            Logger.info(f'[WebUI] {ip} has deleted the config file: "{cfg_filename}"')
+        else:
+            Logger.warning(f'[WebUI] {ip} tried to delete a missing config file: "{cfg_filename}"')
+        return {"changed": changed, "restart_required": True, "cfg_files": _list_cfg_files()}
 
     except HTTPException as e:
         raise e

@@ -142,6 +142,29 @@ def summarize_process_usage(
     return usages, failures
 
 
+def usage_payload(
+    usages: list[ProcessUsage],
+    failures: list[ProcessUnavailable],
+) -> dict[str, list[dict]]:
+    """把内存占用汇总转为可经 RPC 与 JSON 传递的纯字典。
+
+    展示层需要本地化的名称仍以原始标签给出，翻译由调用方处理。
+    """
+    return {
+        "items": [
+            {
+                "name": usage.name,
+                "pid": usage.pid,
+                "memory": usage.memory,
+                "metric": usage.metric,
+                "threads": usage.threads,
+            }
+            for usage in usages
+        ],
+        "failures": [{"name": failure.name, "reason": failure.reason} for failure in failures],
+    }
+
+
 _usage_cache: tuple[float, list[ProcessUsage], list[ProcessUnavailable]] | None = None
 _usage_lock = asyncio.Lock()
 
